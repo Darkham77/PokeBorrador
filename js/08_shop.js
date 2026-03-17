@@ -82,18 +82,19 @@
 
     // ===== SHOP ITEMS =====
     // Item categories for market tabs
-    const ITEM_CATEGORIES = ['todos', 'pokeballs', 'pociones', 'held', 'stones', 'especial'];
-    const CATEGORY_LABELS = { todos: 'Todo', pokeballs: 'Pokéballs', pociones: 'Pociones', held: 'Equipables', stones: 'Piedras', especial: 'Especial' };
+    const ITEM_CATEGORIES = ['todos', 'pokeballs', 'pociones', 'stones', 'especial'];
+    const CATEGORY_LABELS = { todos: 'Todo', pokeballs: 'Pokéballs', pociones: 'Pociones', stones: 'Piedras', especial: 'Especial' };
+    const MARKET_CAT_ORDER = { pokeballs: 1, pociones: 2, stones: 3, especial: 4 };
 
     const SHOP_ITEMS = [
       // ── BREEDING ITEMS ──────────────────────────────────────────────────────────
       { id: 'destiny_knot', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/destiny-knot.png', name: 'Lazo Destino', icon: '🔴', price: 0, unlockLv: 5, tier: 'rare', market: false, trainerShop: true, bcPrice: 200, desc: 'El Pokémon que lo lleva transmite 5 IVs en lugar de 3 al criar.', effect: null },
-      { id: 'power_bracer', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-bracer.png', name: 'Brazal Potencia', icon: '💪', price: 1000, unlockLv: 5, tier: 'uncommon', desc: 'Garantiza heredar el Ataque Físico del padre al criar.', effect: null },
-      { id: 'power_belt', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-belt.png', name: 'Fajín Potencia', icon: '🛡️', price: 1000, unlockLv: 5, tier: 'uncommon', desc: 'Garantiza heredar la Defensa del padre al criar.', effect: null },
-      { id: 'power_lens', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-lens.png', name: 'Lente Potencia', icon: '🔮', price: 1000, unlockLv: 5, tier: 'uncommon', desc: 'Garantiza heredar el Ataque Especial del padre al criar.', effect: null },
-      { id: 'power_band', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-band.png', name: 'Banda Potencia', icon: '🎗️', price: 1000, unlockLv: 5, tier: 'uncommon', desc: 'Garantiza heredar la Defensa Especial del padre al criar.', effect: null },
-      { id: 'power_anklet', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-anklet.png', name: 'Tobillera Potencia', icon: '⚡', price: 1000, unlockLv: 5, tier: 'uncommon', desc: 'Garantiza heredar la Velocidad del padre al criar.', effect: null },
-      { id: 'power_weight', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-weight.png', name: 'Pesa Recia', icon: '❤️', price: 1000, unlockLv: 5, tier: 'uncommon', desc: 'Garantiza heredar los HP del padre al criar.', effect: null },
+      { id: 'power_bracer', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-bracer.png', name: 'Brazal Potencia', icon: '💪', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar el Ataque Físico del padre al criar.', effect: null },
+      { id: 'power_belt', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-belt.png', name: 'Fajín Potencia', icon: '🛡️', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar la Defensa del padre al criar.', effect: null },
+      { id: 'power_lens', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-lens.png', name: 'Lente Potencia', icon: '🔮', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar el Ataque Especial del padre al criar.', effect: null },
+      { id: 'power_band', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-band.png', name: 'Banda Potencia', icon: '🎗️', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar la Defensa Especial del padre al criar.', effect: null },
+      { id: 'power_anklet', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-anklet.png', name: 'Tobillera Potencia', icon: '⚡', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar la Velocidad del padre al criar.', effect: null },
+      { id: 'power_weight', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-weight.png', name: 'Pesa Recia', icon: '❤️', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar los HP del padre al criar.', effect: null },
 
       // ── POKÉBALLS ──────────────────────────────────────────────────────────────
       {
@@ -277,69 +278,13 @@
         effect: (qty) => { state.inventory['Piedra Brillo'] = (state.inventory['Piedra Brillo'] || 0) + qty; }
       },
 
-      // ── ÍTEMS EQUIPABLES (held items) ──────────────────────────────────────────
+      // ── ÍTEMS EQUIPABLES (held items) — solo en Tienda Entrenador ──────────────
       {
         id: 'exp_share', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/exp-share.png',
         name: 'Compartir EXP', icon: '⭐', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 300,
         desc: 'Equipable. El portador gana EXP aunque no participe en batalla.',
         type: 'held', heldEffect: 'exp_share',
         effect: (qty) => { state.inventory['Compartir EXP'] = (state.inventory['Compartir EXP'] || 0) + qty; }
-      },
-      {
-        id: 'leftovers', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leftovers.png',
-        name: 'Restos', icon: '🍖', price: 4000, unlockLv: 6, tier: 'epic',
-        desc: 'Equipable. El portador recupera 1/16 de su HP máx. cada turno.',
-        type: 'held', heldEffect: 'leftovers',
-        effect: (qty) => { state.inventory['Restos'] = (state.inventory['Restos'] || 0) + qty; }
-      },
-      {
-        id: 'scope_lens', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/scope-lens.png',
-        name: 'Lente Zoom', icon: '🔍', price: 3500, unlockLv: 5, tier: 'epic',
-        desc: 'Equipable. Aumenta la tasa de golpe crítico del portador.',
-        type: 'held', heldEffect: 'scope_lens',
-        effect: (qty) => { state.inventory['Lente Zoom'] = (state.inventory['Lente Zoom'] || 0) + qty; }
-      },
-      {
-        id: 'shell_bell', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/shell-bell.png',
-        name: 'Cascabel Concha', icon: '🔔', price: 4000, unlockLv: 6, tier: 'epic',
-        desc: 'Equipable. El portador recupera HP igual a 1/8 del daño infligido.',
-        type: 'held', heldEffect: 'shell_bell',
-        effect: (qty) => { state.inventory['Cascabel Concha'] = (state.inventory['Cascabel Concha'] || 0) + qty; }
-      },
-      {
-        id: 'black_belt', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/black-belt.png',
-        name: 'Cinturón Negro', icon: '🥋', price: 2500, unlockLv: 4, tier: 'rare',
-        desc: 'Equipable. Aumenta 20% el poder de movimientos de tipo Lucha.',
-        type: 'held', heldEffect: 'black_belt',
-        effect: (qty) => { state.inventory['Cinturón Negro'] = (state.inventory['Cinturón Negro'] || 0) + qty; }
-      },
-      {
-        id: 'charcoal', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/charcoal.png',
-        name: 'Carbón', icon: '🪨', price: 2500, unlockLv: 4, tier: 'rare',
-        desc: 'Equipable. Aumenta 20% el poder de movimientos de tipo Fuego.',
-        type: 'held', heldEffect: 'charcoal',
-        effect: (qty) => { state.inventory['Carbón'] = (state.inventory['Carbón'] || 0) + qty; }
-      },
-      {
-        id: 'mystic_water', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/mystic-water.png',
-        name: 'Agua Mística', icon: '💦', price: 2500, unlockLv: 4, tier: 'rare',
-        desc: 'Equipable. Aumenta 20% el poder de movimientos de tipo Agua.',
-        type: 'held', heldEffect: 'mystic_water',
-        effect: (qty) => { state.inventory['Agua Mística'] = (state.inventory['Agua Mística'] || 0) + qty; }
-      },
-      {
-        id: 'miracle_seed', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/miracle-seed.png',
-        name: 'Semilla Milagro', icon: '🌱', price: 2500, unlockLv: 4, tier: 'rare',
-        desc: 'Equipable. Aumenta 20% el poder de movimientos de tipo Planta.',
-        type: 'held', heldEffect: 'miracle_seed',
-        effect: (qty) => { state.inventory['Semilla Milagro'] = (state.inventory['Semilla Milagro'] || 0) + qty; }
-      },
-      {
-        id: 'magnet', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/magnet.png',
-        name: 'Imán', icon: '🧲', price: 2500, unlockLv: 4, tier: 'rare',
-        desc: 'Equipable. Aumenta 20% el poder de movimientos de tipo Eléctrico.',
-        type: 'held', heldEffect: 'magnet',
-        effect: (qty) => { state.inventory['Imán'] = (state.inventory['Imán'] || 0) + qty; }
       },
       {
         id: 'lucky_egg', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucky-egg.png',
@@ -349,24 +294,80 @@
         effect: (qty) => { state.inventory['Huevo Suerte'] = (state.inventory['Huevo Suerte'] || 0) + qty; }
       },
       {
+        id: 'leftovers', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leftovers.png',
+        name: 'Restos', icon: '🍖', price: 0, unlockLv: 6, tier: 'epic', market: false, trainerShop: true, bcPrice: 600,
+        desc: 'Equipable. El portador recupera 1/16 de su HP máx. cada turno.',
+        type: 'held', heldEffect: 'leftovers',
+        effect: (qty) => { state.inventory['Restos'] = (state.inventory['Restos'] || 0) + qty; }
+      },
+      {
+        id: 'shell_bell', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/shell-bell.png',
+        name: 'Cascabel Concha', icon: '🔔', price: 0, unlockLv: 6, tier: 'epic', market: false, trainerShop: true, bcPrice: 500,
+        desc: 'Equipable. El portador recupera HP igual a 1/8 del daño infligido.',
+        type: 'held', heldEffect: 'shell_bell',
+        effect: (qty) => { state.inventory['Cascabel Concha'] = (state.inventory['Cascabel Concha'] || 0) + qty; }
+      },
+      {
         id: 'choice_band', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/choice-band.png',
-        name: 'Cinta Elegida', icon: '🎀', price: 5000, unlockLv: 7, tier: 'legend',
+        name: 'Cinta Elegida', icon: '🎀', price: 0, unlockLv: 7, tier: 'legend', market: false, trainerShop: true, bcPrice: 800,
         desc: 'Equipable. Aumenta 50% el Ataque, pero solo permite un movimiento.',
         type: 'held', heldEffect: 'choice_band',
         effect: (qty) => { state.inventory['Cinta Elegida'] = (state.inventory['Cinta Elegida'] || 0) + qty; }
       },
       {
         id: 'focus_sash', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/focus-sash.png',
-        name: 'Banda Focus', icon: '🎗️', price: 4500, unlockLv: 8, tier: 'legend',
+        name: 'Banda Focus', icon: '🎗️', price: 0, unlockLv: 8, tier: 'legend', market: false, trainerShop: true, bcPrice: 700,
         desc: 'Equipable. Sobrevive con 1 HP si el portador tiene HP completo al recibir un golpe KO.',
         type: 'held', heldEffect: 'focus_sash',
         effect: (qty) => { state.inventory['Banda Focus'] = (state.inventory['Banda Focus'] || 0) + qty; }
+      },
+      {
+        id: 'scope_lens', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/scope-lens.png',
+        name: 'Lente Zoom', icon: '🔍', price: 0, unlockLv: 5, tier: 'epic', market: false, trainerShop: true, bcPrice: 400,
+        desc: 'Equipable. Aumenta la tasa de golpe crítico del portador.',
+        type: 'held', heldEffect: 'scope_lens',
+        effect: (qty) => { state.inventory['Lente Zoom'] = (state.inventory['Lente Zoom'] || 0) + qty; }
+      },
+      {
+        id: 'black_belt', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/black-belt.png',
+        name: 'Cinturón Negro', icon: '🥋', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 250,
+        desc: 'Equipable. Aumenta 20% el poder de movimientos de tipo Lucha.',
+        type: 'held', heldEffect: 'black_belt',
+        effect: (qty) => { state.inventory['Cinturón Negro'] = (state.inventory['Cinturón Negro'] || 0) + qty; }
+      },
+      {
+        id: 'charcoal', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/charcoal.png',
+        name: 'Carbón', icon: '🪨', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 250,
+        desc: 'Equipable. Aumenta 20% el poder de movimientos de tipo Fuego.',
+        type: 'held', heldEffect: 'charcoal',
+        effect: (qty) => { state.inventory['Carbón'] = (state.inventory['Carbón'] || 0) + qty; }
+      },
+      {
+        id: 'mystic_water', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/mystic-water.png',
+        name: 'Agua Mística', icon: '💦', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 250,
+        desc: 'Equipable. Aumenta 20% el poder de movimientos de tipo Agua.',
+        type: 'held', heldEffect: 'mystic_water',
+        effect: (qty) => { state.inventory['Agua Mística'] = (state.inventory['Agua Mística'] || 0) + qty; }
+      },
+      {
+        id: 'miracle_seed', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/miracle-seed.png',
+        name: 'Semilla Milagro', icon: '🌱', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 250,
+        desc: 'Equipable. Aumenta 20% el poder de movimientos de tipo Planta.',
+        type: 'held', heldEffect: 'miracle_seed',
+        effect: (qty) => { state.inventory['Semilla Milagro'] = (state.inventory['Semilla Milagro'] || 0) + qty; }
+      },
+      {
+        id: 'magnet', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/magnet.png',
+        name: 'Imán', icon: '🧲', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 250,
+        desc: 'Equipable. Aumenta 20% el poder de movimientos de tipo Eléctrico.',
+        type: 'held', heldEffect: 'magnet',
+        effect: (qty) => { state.inventory['Imán'] = (state.inventory['Imán'] || 0) + qty; }
       },
 
       // ── ESPECIALES ─────────────────────────────────────────────────────────────
       {
         id: 'rare_candy', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png',
-        name: 'Caramelo Raro', icon: '🍬', price: 5000, unlockLv: 5, tier: 'epic',
+        name: 'Caramelo Raro', icon: '🍬', price: 0, unlockLv: 5, tier: 'epic', market: false, trainerShop: true, bcPrice: 500,
         desc: 'Sube un nivel a cualquier Pokémon del equipo al instante.',
         type: 'usable',
         effect: (qty) => { state.inventory['Caramelo Raro'] = (state.inventory['Caramelo Raro'] || 0) + qty; }
@@ -468,15 +469,37 @@ function renderTrainerShop() {
   if (levelEl) levelEl.innerHTML = `<span style="color:var(--purple);">⭐ Rango: <strong>${rank.title}</strong> (Nv. ${state.trainerLevel})</span> &nbsp;·&nbsp; Comprá ítems exclusivos con Battle Coins.`;
   const tierColors = { common: 'tier-common', rare: 'tier-rare', epic: 'tier-epic', legend: 'tier-legend' };
   const tierLabels = { common: 'Común', rare: 'Raro', epic: 'Épico', legend: 'Legendario' };
-  const trainerItems = SHOP_ITEMS.filter(i => i.trainerShop === true);
+  const TRAINER_CAT_ORDER = { held: 1, especial: 2, booster: 3, breeding: 4, utility: 5 };
+  const trainerItems = SHOP_ITEMS
+    .filter(i => i.trainerShop === true)
+    .sort((a, b) => {
+      const ao = TRAINER_CAT_ORDER[a.cat] || 99;
+      const bo = TRAINER_CAT_ORDER[b.cat] || 99;
+      if (ao !== bo) return ao - bo;
+      return (b.bcPrice || 0) - (a.bcPrice || 0);
+    });
+  const TRAINER_CAT_LABELS = {
+    held: '⚔️ Ítems Equipables',
+    especial: '✨ Especiales',
+    booster: '🚀 Potenciadores',
+    breeding: '🥚 Cría',
+    utility: '🛠️ Utilidad',
+  };
   const grid = document.getElementById('trainer-shop-grid');
   if (!grid) return;
-  grid.innerHTML = trainerItems.map(item => {
+  let lastCat = null;
+  const rows = [];
+  trainerItems.forEach(item => {
+    if (item.cat !== lastCat) {
+      const label = TRAINER_CAT_LABELS[item.cat] || item.cat;
+      rows.push(`<div style="grid-column:1/-1;padding:10px 4px 4px;font-size:10px;font-family:'Press Start 2P';color:var(--purple);letter-spacing:1px;border-bottom:1px solid rgba(155,77,255,0.25);margin-bottom:4px;">${label}</div>`);
+      lastCat = item.cat;
+    }
     const locked = state.trainerLevel < item.unlockLv;
     const bc = state.battleCoins || 0;
     const canAfford = bc >= item.bcPrice;
     const tierCls = tierColors[item.tier] || 'tier-common';
-    return `<div class="market-card ${locked ? 'locked' : ''}">
+    rows.push(`<div class="market-card ${locked ? 'locked' : ''}">
       <span class="market-tier-badge ${tierCls}">${tierLabels[item.tier] || item.tier}</span>
       <div class="market-item-icon">
         ${item.sprite ? `<img src="${item.sprite}" width="40" height="40" style="image-rendering:pixelated;" onerror="this.style.display='none'">` : `<span style="font-size:32px">${item.icon}</span>`}
@@ -490,8 +513,9 @@ function renderTrainerShop() {
         ${locked || !canAfford ? 'disabled' : ''}>
         ${locked ? '🔒 BLOQUEADO' : !canAfford ? 'SIN BC' : 'COMPRAR'}
       </button>
-    </div>`;
-  }).join('');
+    </div>`);
+  });
+  grid.innerHTML = rows.join('');
 }
 
 function buyItemBC(itemId) {
@@ -562,7 +586,17 @@ function _marketSetQty(itemId, raw) {
         </div>`;
 
       // ── Items grid ──
-      const filtered = SHOP_ITEMS.filter(i => i.market !== false && (_marketCat === 'todos' || i.cat === _marketCat));
+      const filtered = SHOP_ITEMS
+        .filter(i => i.market !== false && (_marketCat === 'todos' || i.cat === _marketCat))
+        .sort((a, b) => {
+          const aLocked = state.trainerLevel < a.unlockLv ? 1 : 0;
+          const bLocked = state.trainerLevel < b.unlockLv ? 1 : 0;
+          if (aLocked !== bLocked) return aLocked - bLocked;
+          const aCat = MARKET_CAT_ORDER[a.cat] || 99;
+          const bCat = MARKET_CAT_ORDER[b.cat] || 99;
+          if (aCat !== bCat) return aCat - bCat;
+          return a.unlockLv - b.unlockLv;
+        });
       const grid = document.getElementById('market-grid');
       grid.innerHTML = filtered.map(item => {
         const locked = state.trainerLevel < item.unlockLv;
