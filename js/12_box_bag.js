@@ -489,6 +489,19 @@
     }
 
     function openBagUseMenu(itemName) {
+      const GLOBAL_ITEMS = ['Repelente', 'Ticket Shiny', 'Moneda Amuleto'];
+      if (GLOBAL_ITEMS.includes(itemName)) {
+        const fn = HEALING_ITEMS[itemName];
+        if (!fn || !state.inventory[itemName]) return;
+        const result = fn(null);
+        if (result === null) { notify('No se puede usar ahora.', '⚠️'); return; }
+        state.inventory[itemName]--;
+        if (!state.inventory[itemName]) delete state.inventory[itemName];
+        notify('¡' + itemName + ' ' + result + '!', '✨');
+        renderBag();
+        if (typeof scheduleSave === 'function') scheduleSave();
+        return;
+      }
       const usableTeam = state.team;
       if (!usableTeam.length) return;
 

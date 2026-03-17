@@ -190,6 +190,50 @@
       log.scrollTop = log.scrollHeight;
     }
 
+    // Shows "Continue" and "Return to city" buttons after battle and expands log
+    function showBattleEndUI(callback, locId) {
+      const log = document.getElementById('battle-log');
+      log.style.height = 'auto';
+      log.style.maxHeight = '260px';
+      log.style.transition = 'max-height 0.35s ease';
+      log.scrollTop = log.scrollHeight;
+
+      const actionRow = document.querySelector('.action-row');
+      if (actionRow) actionRow.style.display = 'none';
+
+      const mb = document.getElementById('move-buttons');
+
+      const resetLog = () => {
+        log.style.height = '';
+        log.style.maxHeight = '';
+        log.style.transition = '';
+        mb.innerHTML = '';
+        if (actionRow) actionRow.style.display = '';
+      };
+
+      if (locId) {
+        mb.innerHTML = `
+          <button id="battle-continue-btn" style="width:100%;padding:14px;margin-top:4px;background:linear-gradient(135deg,#6BCB77 0%,#3b82f6 100%);border:none;border-radius:14px;color:#fff;font-family:inherit;font-size:12px;font-weight:bold;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(107,203,119,0.3);">▶ CONTINUAR</button>
+          <button id="battle-city-btn" style="width:100%;padding:11px;margin-top:8px;background:rgba(255,59,59,0.18);border:1px solid rgba(255,59,59,0.4);border-radius:14px;color:#f87171;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer;letter-spacing:1px;">🏙️ VOLVER A LA CIUDAD</button>
+        `;
+        document.getElementById('battle-continue-btn').onclick = () => {
+          resetLog();
+          callback();
+        };
+        document.getElementById('battle-city-btn').onclick = () => {
+          resetLog();
+          showScreen('game-screen');
+          showTab('map');
+        };
+      } else {
+        mb.innerHTML = '<button id="battle-continue-btn" style="width:100%;padding:14px;margin-top:4px;background:linear-gradient(135deg,#6BCB77 0%,#3b82f6 100%);border:none;border-radius:14px;color:#fff;font-family:inherit;font-size:12px;font-weight:bold;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(107,203,119,0.3);">▶ CONTINUAR</button>';
+        document.getElementById('battle-continue-btn').onclick = () => {
+          resetLog();
+          callback();
+        };
+      }
+    }
+
     function setBtns(enabled) {
       ['btn-fight', 'btn-catch'].forEach(id => {
         document.getElementById(id).disabled = !enabled;
@@ -249,8 +293,10 @@
 
       const base = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
 
-      const eff = getTypeEffectiveness(md.type, defender.type);
-      const stab = (md.type === attacker.type) ? 1.5 : 1;
+      const _defType2 = defender.type2 || POKE_TYPE2[defender.id];
+      const eff = getTypeEffectiveness(md.type, defender.type) * (_defType2 ? getTypeEffectiveness(md.type, _defType2) : 1);
+      const _atkType2 = attacker.type2 || POKE_TYPE2[attacker.id];
+      const stab = (md.type === attacker.type || (_atkType2 && md.type === _atkType2)) ? 1.5 : 1;
       const abilityMult = 1;
 
       // Held Items multipliers
@@ -337,7 +383,6 @@
             setTimeout(() => {
               showScreen('game-screen');
               showTab('map');
-              if (state.lastWildLocId) showExploreAgainPrompt(state.lastWildLocId);
             }, 1000);
           } else {
             addLogFn('¡Pero falló!', 'log-enemy');
@@ -440,6 +485,14 @@
         const playerFirst = getPlayerFirstThisTurn(b);
 
       const runPlayerAction = (enemyAlreadyActed) => {
+        // Check flinch
+        if (b.player.flinched) {
+          b.player.flinched = false;
+          setLog(`¡${b.player.name} no pudo moverse por el impacto!`, 'log-enemy');
+          _battleLock = true; setBtns(false);
+          setTimeout(() => { _battleLock = false; enemyAlreadyActed ? _endEnemyTurn() : enemyTurn(); }, 1000);
+          return;
+        }
         // Check paralysis skip
         if (b.player.status === 'paralyze' && Math.random() < 0.25) {
           setLog(`¡${b.player.name} está paralizado y no puede moverse!`, 'log-enemy');
@@ -492,6 +545,30 @@
           }, 1000);
           return;
         }
+        // Check confusion
+        if (b.player.confused > 0) {
+          b.player.confused--;
+          if (b.player.confused === 0) {
+            setLog(`¡${b.player.name} ya no está confundido!`, 'log-info');
+          } else {
+            setLog(`¡${b.player.name} está confundido!`, 'log-enemy');
+            if (Math.random() < 0.5) {
+              const selfDmg = Math.max(1, Math.floor(((2 * b.player.level / 5 + 2) * 40 * b.player.atk / b.player.def) / 50) + 2);
+              b.player.hp = Math.max(0, b.player.hp - selfDmg);
+              const tm = state.team.find(p => p.name === b.player.name);
+              if (tm) tm.hp = b.player.hp;
+              setLog(`¡${b.player.name} se golpeó a sí mismo! (-${selfDmg} HP)`, 'log-enemy');
+              _battleLock = true; setBtns(false);
+              updateBattleUI();
+              setTimeout(() => {
+                _battleLock = false;
+                if (b.player.hp <= 0) { endBattle(false); return; }
+                enemyAlreadyActed ? _endEnemyTurn() : enemyTurn();
+              }, 1000);
+              return;
+            }
+          }
+        }
 
         move.pp--;
         _battleLock = true;
@@ -522,8 +599,27 @@
         animateAttack('player', () => {
           const { dmg, eff, stab, isCrit } = calcDamage(b.player, b.enemy, move, b.playerStages.atk, b.enemyStages.def);
 
-          // Focus Sash check (Banda Focus)
+          // Multi-hit moves
           let finalDmg = dmg;
+          if (md.hits) {
+            const _MULTIHIT_TABLE = [2,2,2,3,3,3,4,5];
+            const numHits = (md.hits === 2) ? 2 : _MULTIHIT_TABLE[Math.floor(Math.random() * _MULTIHIT_TABLE.length)];
+            if (numHits > 1) {
+              let _total = dmg;
+              for (let _h = 1; _h < numHits; _h++) {
+                const { dmg: _hd } = calcDamage(b.player, b.enemy, move, b.playerStages.atk, b.enemyStages.def);
+                _total += _hd;
+              }
+              finalDmg = _total;
+              addLog(`¡Golpeó ${numHits} veces!`, 'log-player');
+            }
+          }
+          // Seismic Toss: damage = attacker level
+          if (md.levelDmg) finalDmg = b.player.level;
+          // Counter: deal 2× last physical damage taken from enemy
+          if (md.counter) finalDmg = (b.player.lastPhysDmg || 0) * 2;
+
+          // Focus Sash check (Banda Focus)
           if (b.enemy.heldItem === 'Banda Focus' && b.enemy.hp === b.enemy.maxHp && dmg >= b.enemy.hp) {
             finalDmg = b.enemy.hp - 1;
             addLog(`¡${b.enemy.name} resistió con su Banda Focus!`, 'log-info');
@@ -547,6 +643,7 @@
           }
 
           b.enemy.hp = Math.max(0, b.enemy.hp - finalDmg);
+          if (md.cat === 'physical') b.enemy.lastPhysDmg = finalDmg;
           addLog(`¡Causó ${finalDmg} de daño!${isCrit ? ' <strong>¡GOLPE CRÍTICO!</strong>' : ''}${drainHeal ? ` (recuperó ${drainHeal} HP)` : ''}`);
           
           // Choice Band lock
@@ -563,6 +660,23 @@
 
           // Recharge
           if (md.effect === 'recharge') b.recharging = true;
+
+          // Recoil damage to player
+          if (md.recoil) {
+            const recoilDmg = Math.max(1, Math.floor(finalDmg / md.recoil));
+            b.player.hp = Math.max(0, b.player.hp - recoilDmg);
+            const tm2 = state.team.find(p => p.name === b.player.name);
+            if (tm2) tm2.hp = b.player.hp;
+            addLog(`¡${b.player.name} recibió ${recoilDmg} de daño de retroceso!`, 'log-enemy');
+          }
+
+          // Self-destruct / Explosion: KO the user
+          if (md.selfKO) {
+            b.player.hp = 0;
+            const _tm = state.team.find(p => p.name === b.player.name);
+            if (_tm) _tm.hp = 0;
+            addLog(`¡${b.player.name} se autodestruyó!`, 'log-enemy');
+          }
 
           animateDamage('enemy', b.enemy.hp <= 0);
           updateBattleUI();
@@ -610,6 +724,13 @@
         if (endTurn) _endEnemyTurn();
       };
 
+      // Check enemy recharging (Hiperrayo, etc.)
+      if (b.enemyRecharging) {
+        b.enemyRecharging = false;
+        addLog(`¡${b.enemy.name} debe recargar!`, 'log-enemy');
+        finish(); return;
+      }
+
       const validMoves = b.enemy.moves.filter(m => m.pp > 0);
       if (!validMoves.length) {
         addLog(`¡${b.enemy.name} no tiene más PP! Usa Forcejeo.`, 'log-enemy');
@@ -620,6 +741,13 @@
         if (tm) tm.hp = b.player.hp;
         updateBattleUI();
         if (b.player.hp <= 0) { setTimeout(() => { endBattle(false); _battleLock = false; }, 900); return; }
+        finish(); return;
+      }
+
+      // Check flinch
+      if (b.enemy.flinched) {
+        b.enemy.flinched = false;
+        addLog(`¡${b.enemy.name} no pudo moverse por el impacto!`, 'log-player');
         finish(); return;
       }
 
@@ -646,6 +774,23 @@
         addLog(`¡${b.enemy.name} está paralizado y no puede moverse!`, 'log-enemy');
         finish(); return;
       }
+      // Check confusion
+      if (b.enemy.confused > 0) {
+        b.enemy.confused--;
+        if (b.enemy.confused === 0) {
+          addLog(`¡${b.enemy.name} ya no está confundido!`, 'log-info');
+        } else {
+          addLog(`¡${b.enemy.name} está confundido!`, 'log-player');
+          if (Math.random() < 0.5) {
+            const selfDmg = Math.max(1, Math.floor(((2 * b.enemy.level / 5 + 2) * 40 * b.enemy.atk / b.enemy.def) / 50) + 2);
+            b.enemy.hp = Math.max(0, b.enemy.hp - selfDmg);
+            addLog(`¡${b.enemy.name} se golpeó a sí mismo! (-${selfDmg} HP)`, 'log-player');
+            updateBattleUI();
+            if (b.enemy.hp <= 0) { setTimeout(() => { endBattle(true); _battleLock = false; }, 600); return; }
+            finish(); return;
+          }
+        }
+      }
 
       const move = validMoves[Math.floor(Math.random() * validMoves.length)];
       move.pp--;
@@ -670,6 +815,24 @@
       animateAttack('enemy', () => {
         const { dmg, eff, stab, isCrit } = calcDamage(b.enemy, b.player, move, b.enemyStages.atk, b.playerStages.def);
         let finalDmg = dmg;
+        if (md.hits) {
+          const _MULTIHIT_TABLE = [2,2,2,3,3,3,4,5];
+          const numHits = (md.hits === 2) ? 2 : _MULTIHIT_TABLE[Math.floor(Math.random() * _MULTIHIT_TABLE.length)];
+          if (numHits > 1) {
+            let _total = dmg;
+            for (let _h = 1; _h < numHits; _h++) {
+              const { dmg: _hd } = calcDamage(b.enemy, b.player, move, b.enemyStages.atk, b.playerStages.def);
+              _total += _hd;
+            }
+            finalDmg = _total;
+            addLog(`¡Golpeó ${numHits} veces!`, 'log-enemy');
+          }
+        }
+        // Seismic Toss: damage = attacker level
+        if (md.levelDmg) finalDmg = b.enemy.level;
+        // Counter: deal 2× last physical damage taken from player
+        if (md.counter) finalDmg = (b.enemy.lastPhysDmg || 0) * 2;
+
         if (b.player.heldItem === 'Banda Focus' && b.player.hp === b.player.maxHp && dmg >= b.player.hp) {
           finalDmg = b.player.hp - 1;
           addLog(`¡${b.player.name} resistió con su Banda Focus!`, 'log-info');
@@ -681,6 +844,7 @@
         if (drainHeal) b.enemy.hp = Math.min(b.enemy.maxHp, b.enemy.hp + drainHeal);
 
         b.player.hp = Math.max(0, b.player.hp - finalDmg);
+        if (md.cat === 'physical') b.player.lastPhysDmg = finalDmg;
         const teamIdx = state.team.findIndex(p => p.name === b.player.name);
         if (teamIdx !== -1) state.team[teamIdx].hp = b.player.hp;
 
@@ -689,11 +853,32 @@
         if (effMsg) addLog(effMsg, eff >= 2 ? 'log-enemy' : 'log-info');
 
         if (md.effect) applyMoveEffect(md.effect, b.enemy, b.player, b.enemyStages, b.playerStages, addLog);
+
+        // Recoil damage to enemy
+        if (md.recoil) {
+          const recoilDmg = Math.max(1, Math.floor(finalDmg / md.recoil));
+          b.enemy.hp = Math.max(0, b.enemy.hp - recoilDmg);
+          addLog(`¡${b.enemy.name} recibió ${recoilDmg} de daño de retroceso!`, 'log-player');
+        }
+
+        // Self-destruct / Explosion: KO the enemy user
+        if (md.selfKO) {
+          b.enemy.hp = 0;
+          addLog(`¡${b.enemy.name} se autodestruyó!`, 'log-player');
+        }
+
+        // Enemy recharge (Hiperrayo, etc.)
+        if (md.effect === 'recharge') b.enemyRecharging = true;
+
         animateDamage('player', b.player.hp <= 0);
         updateBattleUI();
 
         if (b.player.hp <= 0) {
           setTimeout(() => { endBattle(false); _battleLock = false; }, 900);
+          return;
+        }
+        if (b.enemy.hp <= 0) {
+          setTimeout(() => { endBattle(true); _battleLock = false; }, 900);
           return;
         }
 
@@ -845,8 +1030,9 @@
     };
 
     function tryCatch() {
-      if (b.over || b.isGym || b.isTrainer || b.isPvP) {
-        if (b.isGym || b.isTrainer || b.isPvP) notify('¡No podés capturar al Pokémon de otro entrenador!', '❌');
+      const b = state.battle;
+      if (!b || b.over || b.isGym || b.isTrainer || b.isPvP) {
+        if (b && (b.isGym || b.isTrainer || b.isPvP)) notify('¡No podés capturar al Pokémon de otro entrenador!', '❌');
         return;
       }
 
@@ -1054,11 +1240,14 @@
       notify(`¡${enemy.name} se unió a tu equipo!`, '🎉');
       setBtns(false);
 
-      setTimeout(() => {
+      const _captureLocId = state.lastWildLocId || b.locationId || null;
+      showBattleEndUI(() => {
         showScreen('game-screen');
         showTab('map');
-        if (!b.isGym && state.lastWildLocId) showExploreAgainPrompt(state.lastWildLocId);
-      }, 2500);
+        if (_captureLocId) {
+          setTimeout(() => goLocation(_captureLocId), 50);
+        }
+      }, _captureLocId);
     }
 
     function showExploreAgainPrompt(locId) {
@@ -1117,9 +1306,12 @@
               b.enemy.confused = 0; b.enemy.flinched = false;
               b.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 };
               b.over = false;
+              b.turn = 'player';
+              _battleLock = false;
               updateBattleUI();
               setLog(`¡${nextP.name} entró al combate!`);
               setBtns(true);
+              renderMoveButtons();
             }, 2000);
             return;
           }
@@ -1152,6 +1344,7 @@
         // Money reward + Battle Coins
         let moneyWon = b.isGym ? b.enemy.level * 80 : b.enemy.level * 20;
         if (b.isTrainer) moneyWon *= 2; // Trainers pay more
+        if ((state.amuletCoinUntil || 0) > Date.now()) moneyWon *= 2; // Moneda Amuleto
         state.money += moneyWon;
         addLog(`¡Ganaste <span style="color:#22c55e;font-weight:bold;">₽${moneyWon.toLocaleString()}</span>!`, 'log-info');
 
@@ -1192,23 +1385,28 @@
         state.stats.wins = (state.stats.wins || 0) + 1;
         scheduleSave(); updateProfilePanel();
         setBtns(false);
-        // Check level-up evolution
-        const _evoMember = state.team.find(p => p.name === b.player.name);
-        if (_evoMember) {
-          checkLevelUpEvolution(_evoMember, () => {
-            setTimeout(() => {
-              showScreen('game-screen');
-              showTab('map');
-              if (!b.isGym && (state.lastWildLocId || b.locationId)) showExploreAgainPrompt(state.lastWildLocId || b.locationId);
-            }, 1200);
-          });
-        } else {
-          setTimeout(() => {
+        // Show all rewards in expanded log, then wait for player to press Continue
+        // For gyms: use gym's locationId. For trainers: use locationId (not lastWildLocId which is from wild encounters). For wild: use lastWildLocId then locationId.
+        const _locId = b.isGym
+          ? (b.locationId || null)
+          : b.isTrainer
+            ? (b.locationId || null)
+            : (state.lastWildLocId || b.locationId || null);
+        showBattleEndUI(() => {
+          const _evoMember = state.team.find(p => p.name === b.player.name);
+          const _goToMap = () => {
             showScreen('game-screen');
             showTab('map');
-            if (!b.isGym && (state.lastWildLocId || b.locationId)) showExploreAgainPrompt(state.lastWildLocId || b.locationId);
-          }, 6000);
-        }
+            if (_locId) {
+              setTimeout(() => goLocation(_locId), 50);
+            }
+          };
+          if (_evoMember) {
+            checkLevelUpEvolution(_evoMember, _goToMap);
+          } else {
+            _goToMap();
+          }
+        }, _locId);
       } else {
         setLog(`¡${b.player.name} fue derrotado!`, 'log-enemy');
         // Check if any other Pokémon alive
@@ -1228,10 +1426,7 @@
           state.stats.battles = (state.stats.battles || 0) + 1;
           scheduleSave(); updateProfilePanel();
           setBtns(false);
-          setTimeout(() => {
-            showScreen('game-screen');
-            showTab('map');
-          }, 2500);
+          showBattleEndUI(() => { showScreen('game-screen'); showTab('map'); });
         }
       }
     }
@@ -1246,7 +1441,6 @@
       setTimeout(() => {
         showScreen('game-screen');
         showTab('map');
-        if (state.lastWildLocId) showExploreAgainPrompt(state.lastWildLocId);
       }, 1000);
     }
 

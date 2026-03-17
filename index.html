@@ -7,9 +7,9 @@
   <title>Pokémon Kanto Adventure</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="login_guard.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -21,18 +21,31 @@
       <div class="auth-card">
         <div class="auth-logo">POKÉMON</div>
         <div class="auth-sub">✦ KANTO ADVENTURE ✦</div>
-        <div class="auth-tabs">
+        <div class="auth-tabs" id="auth-tabs">
           <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Iniciar Sesión</button>
           <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Registrarse</button>
         </div>
         <div id="auth-error" class="auth-error"></div>
         <div id="auth-success" class="auth-success"></div>
-        <!-- Login -->
+        <!-- Server Selector -->
+        <div class="server-selector">
+          <div class="server-selector-label">Servidor</div>
+          <div class="server-tabs">
+            <button class="server-tab active" id="tab-server-online" onclick="switchServer('online')">🌐 Online</button>
+            <button class="server-tab" id="tab-server-local" onclick="switchServer('local')">💻 Local</button>
+          </div>
+        </div>
+        <!-- Login Online -->
         <div id="form-login">
           <input class="auth-input" id="login-email" type="email" placeholder="Email" autocomplete="email">
           <input class="auth-input" id="login-password" type="password" placeholder="Contraseña"
             autocomplete="current-password">
           <button class="auth-btn" id="btn-login" onclick="doLogin()">▶ ENTRAR</button>
+        </div>
+        <!-- Login Local -->
+        <div id="form-local" style="display:none">
+          <input class="auth-input" id="local-username" type="text" placeholder="Nombre de Entrenador" maxlength="20" autocomplete="off">
+          <button class="auth-btn" id="btn-local-login" onclick="doLocalLogin()">▶ JUGAR LOCAL</button>
         </div>
         <!-- Signup -->
         <div id="form-signup" style="display:none">
@@ -144,7 +157,7 @@
         <button class="nav-btn" data-tab="gyms"
           onclick="showTab('gyms',this)"><span>🏆</span><span>Gimnasios</span></button>
         <button class="nav-btn" data-tab="market"
-          onclick="showTab('market',this)"><span>🛒</span><span>Market</span></button>
+          onclick="showTab('market',this)"><span>🛒</span><span>PokéMart</span></button>
         <button class="nav-btn" data-tab="friends" onclick="showTab('friends',this);renderFriends()"
           style="position:relative;">
           <span>👥</span>
@@ -220,18 +233,40 @@
       <!-- MARKET TAB -->
       <div id="tab-market" class="tab-content" style="display:none">
         <div class="team-section">
-          <div
-            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-            <div class="section-title" style="margin:0;">🛒 Poké Market</div>
-            <div
-              style="background:rgba(255,217,61,0.15);border:1px solid var(--yellow);border-radius:12px;padding:8px 16px;">
-              <span style="font-size:13px;font-weight:900;color:var(--yellow);">₽<span id="market-money">0</span></span>
-            </div>
+
+          <!-- ── Shop section switcher ── -->
+          <div style="display:flex;gap:6px;margin-bottom:20px;background:rgba(255,255,255,0.04);border-radius:14px;padding:5px;border:1px solid rgba(255,255,255,0.07);">
+            <button id="shop-sw-pokemart" onclick="switchShopSection('pokemart')"
+              style="flex:1;padding:10px 6px;border:none;border-radius:10px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:7px;background:var(--yellow);color:var(--darker);transition:all 0.2s;">🛒 PokéMart</button>
+            <button id="shop-sw-trainer" onclick="switchShopSection('trainer')"
+              style="flex:1;padding:10px 6px;border:none;border-radius:10px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:7px;background:transparent;color:var(--gray);transition:all 0.2s;">🏅 Entrenador</button>
           </div>
-          <div id="market-trainer-level" style="margin-bottom:16px;font-size:12px;color:var(--gray);"></div>
-          <div id="market-tabs"></div>
-          <div id="market-grid"
-            style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;"></div>
+
+          <!-- ── PokéMart section ── -->
+          <div id="shop-pokemart-section">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+              <div class="section-title" style="margin:0;">🛒 PokéMart</div>
+              <div style="background:rgba(255,217,61,0.15);border:1px solid var(--yellow);border-radius:12px;padding:8px 16px;">
+                <span style="font-size:13px;font-weight:900;color:var(--yellow);">₽<span id="market-money">0</span></span>
+              </div>
+            </div>
+            <div id="market-trainer-level" style="margin-bottom:16px;font-size:12px;color:var(--gray);"></div>
+            <div id="market-tabs"></div>
+            <div id="market-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;"></div>
+          </div>
+
+          <!-- ── Trainer Shop section (hidden by default) ── -->
+          <div id="shop-trainer-section" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+              <div class="section-title" style="margin:0;">🏅 Tienda del Entrenador</div>
+              <div style="background:rgba(199,125,255,0.15);border:1px solid var(--purple);border-radius:12px;padding:8px 16px;">
+                <span style="font-size:13px;font-weight:900;color:var(--purple);">🪙 <span id="trainer-shop-bc">0</span> BC</span>
+              </div>
+            </div>
+            <div id="trainer-shop-level" style="margin-bottom:16px;font-size:12px;color:var(--gray);"></div>
+            <div id="trainer-shop-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;"></div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -606,7 +641,7 @@
             <div id="enemy-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-start;justify-content:flex-end;">
               <img id="enemy-sprite-img" src="" alt=""
                 style="height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
-              <span id="enemy-sprite-emoji" class="battle-sprite enemy-sprite" style="font-size:min(35vh, 260px);line-height:1;">❓</span>
+              <span id="enemy-sprite-emoji" class="battle-sprite enemy-sprite" style="font-size:min(35vh, 260px);line-height:1;display:none;">❓</span>
             </div>
           </div>
 
@@ -615,7 +650,7 @@
             <div id="player-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-end;justify-content:flex-start;">
               <img id="player-sprite-img" src="" alt=""
                 style="height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
-              <span id="player-sprite-emoji" class="battle-sprite player-sprite" style="font-size:min(35vh, 260px);line-height:1;">❓</span>
+              <span id="player-sprite-emoji" class="battle-sprite player-sprite" style="font-size:min(35vh, 260px);line-height:1;display:none;">❓</span>
             </div>
           </div>
 
@@ -667,7 +702,6 @@
 
   </div>
 
-
   <script src="js/01_auth.js"></script>
   <script src="js/02_pokemon_data.js"></script>
   <script src="js/03_sprites.js"></script>
@@ -683,7 +717,6 @@
   <script src="js/13_evolution.js"></script>
   <script src="js/14_pvp.js"></script>
   <script src="js/15_breeding.js"></script>
-
 
   <!-- BAG / DAYCARE SELECTOR OVERLAY -->
   <div id="bag-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:center;justify-content:center;flex-direction:column;padding:20px;">
@@ -869,5 +902,3 @@
 
 
 
-
-</html>

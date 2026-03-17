@@ -246,14 +246,14 @@
         <div style="display:flex;align-items:flex-start;justify-content:flex-end;">
           <div id="pvp-enemy-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-start;justify-content:flex-end;">
             <img id="pvp-enemy-img" src="" alt="" style="height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
-            <span id="pvp-enemy-emoji" class="battle-sprite enemy-sprite" style="font-size:min(35vh, 260px);line-height:1;">${enemy?.emoji || '❓'}</span>
+            <span id="pvp-enemy-emoji" class="battle-sprite enemy-sprite" style="font-size:min(35vh, 260px);line-height:1;display:none;">${enemy?.emoji || '❓'}</span>
           </div>
         </div>
         <!-- BOTTOM-LEFT: My sprite -->
         <div style="display:flex;align-items:flex-end;justify-content:flex-start;">
           <div id="pvp-player-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-end;justify-content:flex-start;">
             <img id="pvp-player-img" src="" alt="" style="height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
-            <span id="pvp-player-emoji" class="battle-sprite player-sprite" style="font-size:min(35vh, 260px);line-height:1;">${me?.emoji || '❓'}</span>
+            <span id="pvp-player-emoji" class="battle-sprite player-sprite" style="font-size:min(35vh, 260px);line-height:1;display:none;">${me?.emoji || '❓'}</span>
           </div>
         </div>
         <!-- BOTTOM-RIGHT: My HP info -->

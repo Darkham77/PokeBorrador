@@ -217,9 +217,9 @@
     }
     function calculateInheritance(pA, pB, iA, iB) {
       const STATS = ['hp','atk','def','spa','spd','spe'];
-      const pItems = { 'Power Weight':'hp', 'Power Bracer':'atk', 'Power Belt':'def', 'Power Lens':'spa', 'Power Band':'spd', 'Power Anklet':'spe' };
+      const pItems = { 'Pesa Recia':'hp', 'Brazal Potencia':'atk', 'Fajín Potencia':'def', 'Lente Potencia':'spa', 'Banda Potencia':'spd', 'Tobillera Potencia':'spe' };
       const ivs = {}; STATS.forEach(s => ivs[s] = Math.floor(Math.random()*32));
-      const dk = iA === 'Destiny Knot' || iB === 'Destiny Knot';
+      const dk = iA === 'Lazo Destino' || iB === 'Lazo Destino';
       const count = dk ? 5 : 3;
       const gA = pItems[iA], gB = pItems[iB];
       const used = new Set();
@@ -240,8 +240,8 @@
       return `${hrs}h`;
     }
     function _daycareInheritanceInfo(pA, pB) {
-      const powerItems = { 'Power Weight':'hp', 'Power Bracer':'atk', 'Power Belt':'def', 'Power Lens':'spa', 'Power Band':'spd', 'Power Anklet':'spe' };
-      const hasDK = pA.heldItem === 'Destiny Knot' || pB.heldItem === 'Destiny Knot';
+      const powerItems = { 'Pesa Recia':'hp', 'Brazal Potencia':'atk', 'Fajín Potencia':'def', 'Lente Potencia':'spa', 'Banda Potencia':'spd', 'Tobillera Potencia':'spe' };
+      const hasDK = pA.heldItem === 'Lazo Destino' || pB.heldItem === 'Lazo Destino';
       const count = hasDK ? 5 : 3;
 
       let forced = null;
@@ -293,7 +293,7 @@
         <div class="daycare-mid-panel">
           <div class="daycare-mid-label">Herencia</div>
           <div class="daycare-mid-note">
-            IVs heredados: <span class="daycare-mid-accent">${inh.count}</span>${inh.hasDK ? ' (Destiny Knot)' : ''}.<br>
+            IVs heredados: <span class="daycare-mid-accent">${inh.count}</span>${inh.hasDK ? ' (Lazo Destino)' : ''}.<br>
             Cada stat no forzado: <span class="daycare-mid-accent">${inh.aChance}%</span> A, <span class="daycare-mid-accent">${inh.bChance}%</span> B, <span class="daycare-mid-accent">${inh.rChance}%</span> aleatorio.<br>
             ${inh.forcedLine ? (inh.forcedLine + '<br>') : ''}
             Naturaleza: <span class="daycare-mid-accent">Aleatoria (1/${natureCount} cada una)</span>.<br>
@@ -611,4 +611,3 @@
 
     // ===== INIT =====
     updateHud();
-

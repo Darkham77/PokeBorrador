@@ -2,9 +2,34 @@
     // ===== SUPABASE =====
     const SUPABASE_URL = 'https://wakrkvizmoqdlrtnxcth.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indha3Jrdml6bW9xZGxydG54Y3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMDA3MjYsImV4cCI6MjA4ODg3NjcyNn0.l_NYYNPDFOAr5CRqbuVf3jLv_TRnOw6shw9j9GzhQsA';
+    const LOCAL_URL = 'http://localhost:3000';
+
+    // Servidor activo: 'online' apunta a Supabase, 'local' apunta a localhost:3000
+    let currentServer = SUPABASE_URL;
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let currentUser = null;
     let _saveTimeout = null;
+
+    // ── Server Selector ───────────────────────────────────────────────────────
+    function switchServer(server) {
+      if (server === 'online') {
+        currentServer = SUPABASE_URL;
+        document.getElementById('form-login').style.display = 'block';
+        document.getElementById('form-signup').style.display = 'none';
+        document.getElementById('form-local').style.display = 'none';
+        document.getElementById('auth-tabs').style.display = 'flex';
+        switchAuthTab('login');
+      } else {
+        currentServer = LOCAL_URL;
+        document.getElementById('form-login').style.display = 'none';
+        document.getElementById('form-signup').style.display = 'none';
+        document.getElementById('form-local').style.display = 'block';
+        document.getElementById('auth-tabs').style.display = 'none';
+      }
+      document.getElementById('tab-server-online').classList.toggle('active', server === 'online');
+      document.getElementById('tab-server-local').classList.toggle('active', server === 'local');
+      clearAuthMessages();
+    }
 
     // ── Auth UI ───────────────────────────────────────────────────────────────
     function switchAuthTab(tab) {
@@ -35,9 +60,27 @@
       if (!email || !password) { showAuthError('Completá email y contraseña.'); return; }
       clearAuthMessages(); setAuthLoading(true);
       try {
-        const { data, error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) { setAuthLoading(false); showAuthError('Error: ' + error.message); return; }
-        await onLogin(data.user);
+        if (currentServer === LOCAL_URL) {
+          // Modo Local: POST a la API local en localhost:3000
+          const res = await fetch(`${currentServer}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({ message: 'Error desconocido' }));
+            setAuthLoading(false);
+            showAuthError('Error: ' + (err.message || res.statusText));
+            return;
+          }
+          const data = await res.json();
+          await onLogin(data.user || { id: data.id, email, user_metadata: { username: data.username } });
+        } else {
+          // Modo Online: usar el cliente Supabase original
+          const { data, error } = await sb.auth.signInWithPassword({ email, password });
+          if (error) { setAuthLoading(false); showAuthError('Error: ' + error.message); return; }
+          await onLogin(data.user);
+        }
       } catch (e) {
         setAuthLoading(false);
         showAuthError('Error de conexión: ' + e.message);
@@ -67,15 +110,68 @@
 
     async function doLogout() {
       await saveGame(false);
-      await sb.auth.signOut();
+      if (currentServer !== LOCAL_URL) await sb.auth.signOut();
       currentUser = null;
       // Reset state
       state.team = []; state.badges = 0; state.money = 3000; state.balls = 10;
       state.pokedex = []; state.defeatedGyms = []; state.trainerLevel = 1;
       state.trainerExp = 0; state.inventory = { 'Poción': 3, 'Pokéball': 10 };
-      state.eggs = []; state.battleCoins = 0; // Reset new systems 
+      state.eggs = []; state.battleCoins = 0;
       toggleProfile();
+      switchServer('online');
       showScreen('auth-screen');
+    }
+
+    // ── Login Local ────────────────────────────────────────────────────────────
+    function doLocalLogin() {
+      const username = document.getElementById('local-username').value.trim();
+      if (!username || username.length < 3) { showAuthError('El nombre debe tener al menos 3 caracteres.'); return; }
+      clearAuthMessages(); setAuthLoading(true);
+      const fakeUser = { id: 'local_' + username.toLowerCase(), email: username + '@local', user_metadata: { username } };
+      onLocalLogin(fakeUser, username);
+    }
+
+    function onLocalLogin(user, username) {
+      currentUser = user;
+      const saveKey = 'pokemon_local_save_' + user.id;
+      try {
+        const raw = localStorage.getItem(saveKey);
+        if (raw) {
+          const s = JSON.parse(raw);
+          Object.assign(state, s);
+          if (Array.isArray(state.badges)) state.badges = state.badges.length;
+          else state.badges = parseInt(state.badges) || 0;
+          const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + Date.now().toString(36);
+          if (state.team) state.team.forEach(p => { if (!p.uid) p.uid = getUidStr(); });
+          if (state.box) state.box.forEach(p => { if (!p.uid) p.uid = getUidStr(); });
+          state.trainerChance = 5;
+          state.trainer = username;
+          updateHud();
+          document.getElementById('hud-name').textContent = username.toUpperCase();
+          setAuthLoading(false);
+          if (state.starterChosen || state.team.length > 0) {
+            state.starterChosen = true;
+            showScreen('game-screen');
+            showTab('map');
+            renderTeam();
+          } else {
+            showScreen('title-screen');
+          }
+          notify('¡Bienvenido de vuelta, ' + username + '! (modo local)', '👋');
+        } else {
+          state.trainer = username;
+          document.getElementById('hud-name').textContent = username.toUpperCase();
+          setAuthLoading(false);
+          showScreen('title-screen');
+          notify('¡Bienvenido, ' + username + '! Nueva partida local creada.', '🎮');
+        }
+        updateProfilePanel(user, { username });
+        setInterval(() => saveGame(false), 60000);
+      } catch (e) {
+        setAuthLoading(false);
+        currentUser = null;
+        showAuthError('Error al cargar la partida local: ' + e.message);
+      }
     }
 
     // ── Login callback ─────────────────────────────────────────────────────────
@@ -175,6 +271,20 @@
     async function saveGame(showNotif = true) {
       if (!currentUser) return;
       const save_data = serializeState();
+      if (currentServer === LOCAL_URL) {
+        // Modo local: guardar en localStorage del dispositivo
+        try {
+          const saveKey = 'pokemon_local_save_' + currentUser.id;
+          localStorage.setItem(saveKey, JSON.stringify(save_data));
+          if (showNotif) flashSaveIndicator();
+          const el = document.getElementById('profile-last-save');
+          if (el) el.textContent = 'Guardado: ' + new Date().toLocaleTimeString();
+        } catch (e) {
+          console.warn('Error al guardar localmente:', e);
+        }
+        return;
+      }
+      // Modo online: guardar en Supabase
       const { error } = await sb.from('game_saves').upsert({
         user_id: currentUser.id,
         save_data,

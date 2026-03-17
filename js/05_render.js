@@ -19,7 +19,7 @@
       if (tab === 'team') renderTeam();
       if (tab === 'pokedex') renderPokedex();
       if (tab === 'gyms') renderGyms();
-      if (tab === 'market') renderMarket();
+      if (tab === 'market') switchShopSection(_shopSection);
       if (tab === 'map') renderMaps();
       if (tab === 'daycare') renderDaycareUI();
       // Al abrir la tab de amigos, ocultar el badge (el usuario ya lo está viendo)

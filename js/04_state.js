@@ -167,7 +167,8 @@
       const ability = abilityList[Math.floor(Math.random() * abilityList.length)];
       const gender = assignGender(id);
 
-      const isShiny = Math.random() < (1 / SHINY_RATE);
+      const _activeShinyRate = (state.shinyBoostUntil || 0) > Date.now() ? Math.floor(SHINY_RATE / 10) : SHINY_RATE;
+      const isShiny = Math.random() < (1 / _activeShinyRate);
 
       const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + Date.now().toString(36);
       const p = {
