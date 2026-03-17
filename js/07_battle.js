@@ -1433,7 +1433,13 @@
 
     function runFromBattle() {
       if (state.battle?.isGym) {
+        setLog('¡No podés huir de un combate contra un Líder de Gimnasio!', 'log-enemy');
         notify('¡No podés huir de un combate de Gimnasio!', '🚫');
+        return;
+      }
+      if (state.battle?.isTrainer) {
+        setLog('¡No podés huir de un combate contra un Entrenador!', 'log-enemy');
+        notify('¡No podés huir de un combate contra un Entrenador!', '🚫');
         return;
       }
       state.battle.over = true;
