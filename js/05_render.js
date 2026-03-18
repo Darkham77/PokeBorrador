@@ -518,6 +518,13 @@
       return 'night';
     }
 
+    let _lastDayCycle = null;
+
+    function recalculateBalls() {
+      const knownBalls = ['Pokéball', 'Súper Ball', 'Ultra Ball', 'Red Ball', 'Ball Oscura', 'Ball Temporizadora', 'Master Ball'];
+      state.balls = knownBalls.reduce((sum, name) => sum + (state.inventory[name] || 0), 0);
+    }
+
     function updateHud() {
       // Robust badge count check (handles legacy array format)
       const badgeCount = (Array.isArray(state.badges) ? state.badges.length : (parseInt(state.badges) || 0));
@@ -538,9 +545,18 @@
         timeLabel.style.color = cycleInfo.color;
       }
 
+      if (cycle !== _lastDayCycle) {
+        _lastDayCycle = cycle;
+        const mapTab = document.getElementById('tab-map');
+        if (mapTab && mapTab.style.display !== 'none') {
+          renderMaps();
+        }
+      }
+
       const badgeEl = document.getElementById('badge-count');
       if (badgeEl) badgeEl.textContent = badgeCount;
 
+      recalculateBalls();
       document.getElementById('ball-count').textContent = state.balls;
       document.getElementById('trainer-level').textContent = state.trainerLevel;
       document.getElementById('hud-money').textContent = '₽' + (state.money || 0).toLocaleString();
@@ -557,7 +573,6 @@
       if (eggCont && eggText) {
         const count = state.eggs ? state.eggs.length : 0;
         eggText.textContent = count;
-        // Always visible as per request, just updating count
       }
     }
 

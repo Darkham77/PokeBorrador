@@ -1,0 +1,12 @@
+{
+  "name": "@workspace/poke-vicio",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "serve-static": "^1.15.0",
+    "finalhandler": "^1.2.0"
+  }
+}

@@ -205,7 +205,7 @@
     }
 
     function levelUpPokemon(p) {
-      if (p.level >= 100) return;
+      if (p.level >= 100) return [];
       p.level++;
       p.expNeeded = getExpNeeded(p.level);
       const oldMaxHp = p.maxHp;
@@ -217,15 +217,143 @@
       // Check evolution
       if (typeof checkEvolution === 'function') checkEvolution(p);
 
-      // Learn moves
+      // Learn moves — returns list of moves that couldn't fit (full moveset)
       const base = POKEMON_DB[p.id];
+      const pendingMoves = [];
       if (base.learnset) {
         base.learnset.filter(m => m.lv === p.level).forEach(m => {
           if (p.moves.length < 4) {
             p.moves.push({ name: m.name, pp: m.pp, maxPP: m.pp });
+          } else {
+            pendingMoves.push({ name: m.name, pp: m.pp, maxPP: m.pp });
           }
         });
       }
+      return pendingMoves;
+    }
+
+    // ===== LEARN MOVE MENU =====
+    // Shows a menu asking the player to replace a move or forget the new one.
+    // onDone() is called when the player makes a decision.
+    function showLearnMoveMenu(pokemon, newMove, onDone) {
+      const existing = document.getElementById('learn-move-overlay');
+      if (existing) existing.remove();
+
+      const typeColors = {
+        normal:'#A8A878', fire:'#F08030', water:'#6890F0', grass:'#78C850', electric:'#F8D030',
+        ice:'#98D8D8', fighting:'#C03028', poison:'#A040A0', ground:'#E0C068', flying:'#A890F0',
+        psychic:'#F85888', bug:'#A8B820', rock:'#B8A038', ghost:'#705898', dragon:'#7038F8',
+        dark:'#705848', steel:'#B8B8D0', fairy:'#EE99AC',
+      };
+      function moveTypeColor(moveName) {
+        const md = (typeof MOVE_DATA !== 'undefined' && MOVE_DATA[moveName]) || {};
+        return typeColors[md.type] || '#6b7280';
+      }
+      function movePower(moveName) {
+        const md = (typeof MOVE_DATA !== 'undefined' && MOVE_DATA[moveName]) || {};
+        return md.power ? md.power : '—';
+      }
+      function movePP(m) { return m.maxPP || m.pp || '?'; }
+      function moveType(moveName) {
+        const md = (typeof MOVE_DATA !== 'undefined' && MOVE_DATA[moveName]) || {};
+        return md.type ? md.type.charAt(0).toUpperCase() + md.type.slice(1) : '?';
+      }
+
+      function moveCard(m, idx, isNew) {
+        const col = moveTypeColor(m.name);
+        const label = isNew ? '✨ NUEVO' : `Movimiento ${idx + 1}`;
+        const border = isNew ? `border:2px solid ${col};box-shadow:0 0 12px ${col}55;` : 'border:1px solid rgba(255,255,255,0.1);';
+        return `
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.05);
+            border-radius:14px;padding:12px 14px;margin-bottom:8px;${border}cursor:${isNew ? 'default' : 'pointer'};transition:background .15s;"
+            ${isNew ? '' : `onclick="learnMoveReplace(${idx})" onmouseover="this.style.background='rgba(255,255,255,0.11)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'"`}>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;font-size:13px;color:#fff;margin-bottom:4px;">${m.name}</div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${col};color:#fff;">${moveType(m.name)}</span>
+                <span style="font-size:10px;color:#9ca3af;">POW: ${movePower(m.name)}</span>
+                <span style="font-size:10px;color:#9ca3af;">PP: ${movePP(m)}</span>
+              </div>
+            </div>
+            ${isNew ? `<span style="font-size:10px;font-weight:700;color:${col};white-space:nowrap;">NUEVO</span>` :
+              `<span style="font-size:11px;padding:6px 12px;border-radius:8px;
+                background:rgba(239,68,68,0.18);color:#f87171;font-weight:600;white-space:nowrap;">
+                Reemplazar
+              </span>`}
+          </div>`;
+      }
+
+      const ov = document.createElement('div');
+      ov.id = 'learn-move-overlay';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:990;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .2s ease;';
+
+      ov.innerHTML = `
+        <div style="background:var(--card);border-radius:22px;padding:22px;width:100%;max-width:420px;
+          max-height:90vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.08);box-shadow:0 8px 48px rgba(0,0,0,0.7);">
+
+          <div style="text-align:center;margin-bottom:16px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);margin-bottom:8px;">
+              📖 NUEVO MOVIMIENTO
+            </div>
+            <div style="font-size:13px;color:var(--text);line-height:1.5;">
+              <strong>${pokemon.name}</strong> quiere aprender
+              <span style="color:var(--yellow);font-weight:700;">${newMove.name}</span>,
+              ¡pero ya conoce 4 movimientos!
+            </div>
+            <div style="font-size:11px;color:var(--gray);margin-top:6px;">
+              Elegí qué movimiento reemplazar, o presioná "Olvidar" para no aprender ${newMove.name}.
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            ${moveCard(newMove, -1, true)}
+          </div>
+
+          <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin-bottom:10px;">
+            ¿CUÁL MOVIMIENTO OLVIDAR?
+          </div>
+
+          ${pokemon.moves.map((m, i) => moveCard(m, i, false)).join('')}
+
+          <button onclick="learnMoveForget()"
+            style="margin-top:10px;width:100%;padding:14px;border:none;border-radius:12px;
+              cursor:pointer;background:rgba(255,255,255,0.06);color:var(--gray);
+              font-size:12px;font-weight:600;transition:background .15s;"
+            onmouseover="this.style.background='rgba(255,255,255,0.12)'"
+            onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+            ❌ Olvidar ${newMove.name}
+          </button>
+        </div>`;
+
+      document.body.appendChild(ov);
+
+      window.learnMoveReplace = function(slotIndex) {
+        const oldMove = pokemon.moves[slotIndex];
+        pokemon.moves[slotIndex] = { name: newMove.name, pp: newMove.pp, maxPP: newMove.maxPP };
+        ov.remove();
+        delete window.learnMoveReplace;
+        delete window.learnMoveForget;
+        if (typeof addLog === 'function') addLog(`¡${pokemon.name} olvidó <span style="color:#f87171;">${oldMove.name}</span> y aprendió <span style="color:#22c55e;font-weight:bold;">${newMove.name}</span>!`, 'log-info');
+        if (typeof notify === 'function') notify(`¡${pokemon.name} aprendió ${newMove.name}!`, '📖');
+        if (typeof renderMoveButtons === 'function' && state.battle) renderMoveButtons();
+        if (typeof scheduleSave === 'function') scheduleSave();
+        onDone();
+      };
+
+      window.learnMoveForget = function() {
+        ov.remove();
+        delete window.learnMoveReplace;
+        delete window.learnMoveForget;
+        if (typeof addLog === 'function') addLog(`¡${pokemon.name} no aprendió ${newMove.name}!`, 'log-info');
+        onDone();
+      };
+    }
+
+    // Process a queue of { pokemon, move } objects, showing the menu for each one sequentially.
+    function processLearnMoveQueue(queue, onAllDone) {
+      if (!queue.length) { if (onAllDone) onAllDone(); return; }
+      const { pokemon, move } = queue.shift();
+      showLearnMoveMenu(pokemon, move, () => processLearnMoveQueue(queue, onAllDone));
     }
 
 

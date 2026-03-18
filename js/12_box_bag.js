@@ -432,12 +432,15 @@
       const activeTab = document.getElementById(`bag-tab-${category}`);
       if (activeTab) activeTab.classList.add('active');
 
-      const allItems = Object.entries(state.inventory || {}).filter(([name, qty]) => qty > 0);
+      const allItems = Object.entries(state.inventory || {}).filter(([name, qty]) => {
+        if (qty <= 0) return false;
+        return !!SHOP_ITEMS.find(i => i.name === name);
+      });
 
       const filteredItems = allItems.filter(([name, qty]) => {
         if (category === 'all') return true;
         const itemInfo = SHOP_ITEMS.find(i => i.name === name);
-        if (!itemInfo) return category === 'etc';
+        if (!itemInfo) return false;
 
         if (category === 'potion') return itemInfo.cat === 'pociones';
         if (category === 'ball') return itemInfo.cat === 'pokeballs';

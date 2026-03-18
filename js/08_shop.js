@@ -767,7 +767,7 @@ function _marketSetQty(itemId, raw) {
       let cacheKey = locationId + '_' + cycle;
 
       if (locationId === 'gym' || (state.battle && state.battle.isGym)) {
-        src = 'assets/GIMNASIO.jpg';
+        src = 'assets/sprites/gimnasio.png';
         cacheKey = 'gym_global'; 
       } else if (locationId === 'pvp') {
         const pvpBgs = {

@@ -7,8 +7,13 @@
       'Revivir': p => { if (p.hp > 0) return null; p.hp = Math.floor(p.maxHp / 2); return `fue revivido con ${p.hp} HP`; },
       'Caramelo Raro': p => {
         if (p.level >= 100) return null;
-        levelUpPokemon(p);
-        return `subió al nivel ${p.level}`;
+        const pending = levelUpPokemon(p);
+        const lvResult = `subió al nivel ${p.level}`;
+        if (pending && pending.length > 0) {
+          const queue = pending.map(mv => ({ pokemon: p, move: mv }));
+          setTimeout(() => processLearnMoveQueue(queue, () => {}), 300);
+        }
+        return lvResult;
       },
       'Revivir Máximo': p => { if (p.hp > 0) return null; p.hp = p.maxHp; return `fue revivido con HP máximo`; },
       'Antídoto': p => { if (p.status !== 'poison') return null; p.status = null; return `fue curado del veneno`; },
