@@ -397,8 +397,20 @@
       if(_activeDaycareSlots.some(s => s.pokemon_id === p.uid)) return ''; // already in daycare
       const sUrl = getSpriteUrl(p.id, p.isShiny);
       const tier = getPokemonTier(p);
-      const tierHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;padding:2px 6px;border-radius:999px;background:${tier.bg};color:${tier.color};font-size:9px;font-weight:800;line-height:1;">${tier.tier}</span>`;      const g = genderSymbol(p.gender);
+      const tierHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;padding:2px 6px;border-radius:999px;background:${tier.bg};color:${tier.color};font-size:9px;font-weight:800;line-height:1;">${tier.tier}</span>`;
+      const g = genderSymbol(p.gender);
+      
+      // Tags display
+      const tags = p.tags || [];
+      const tagsHtml = tags.length ? `<div style="display:flex;gap:3px;margin-top:2px;">
+        ${tags.includes('fav') ? '<span style="font-size:8px;">⭐</span>' : ''}
+        ${tags.includes('breed') ? '<span style="font-size:8px;">❤️</span>' : ''}
+        ${tags.includes('iv31') ? '<span style="font-size:8px;color:var(--yellow);font-weight:bold;">31</span>' : ''}
+      </div>` : '';
+
       let compatHtml = '';
+      let borderStyle = 'border:1px solid rgba(255,255,255,0.06);';
+      
       if (compareTo) {
         const cp = checkCompatibility(compareTo, p);
         const info = COMPAT_TEXT[cp.level] || COMPAT_TEXT[0];
@@ -407,19 +419,42 @@
         const motherName = cp.eggSpecies ? (POKEMON_DB[cp.eggSpecies]?.name || cp.eggSpecies) : '—';
         const shared = (cp.sharedGroups && cp.sharedGroups.length) ? cp.sharedGroups.join(', ') : '—';
         const extra = cp.level > 0 ? `Cria: ${motherName}` : (cp.reason || 'Incompatible');
-        compatHtml = `<div style="margin-top:4px;font-size:9px;color:${info.color};">${info.label} <span style="color:var(--gray);">· ${extra} · ${every}</span></div>
-        <div style="font-size:9px;color:var(--gray);">Grupo huevo: ${shared}</div>`;
+        
+        if (cp.level > 0) {
+          borderStyle = `border:1px solid ${info.color}44; background:linear-gradient(90deg, rgba(0,0,0,0.4), ${info.color}08);`;
+        }
+
+        compatHtml = `
+          <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.05);">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:10px;color:${info.color};font-weight:bold;">${info.label}</span>
+              <span style="font-size:9px;color:var(--gray);">· ${extra}</span>
+            </div>
+            <div style="font-size:9px;color:var(--gray);margin-top:2px;">
+              ⏱️ Cada ${every} · 🧬 Grupos: <span style="color:#eee;">${shared}</span>
+            </div>
+          </div>`;
       }
-      return `<div onclick="confirmDeposit('${p.uid}')" style="background:rgba(0,0,0,0.4);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.06);">
-        <div style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;">
-          ${sUrl ? `<img src="${sUrl}" style="width:42px;height:42px;image-rendering:pixelated;">` : `<span style="font-size:24px;">${p.emoji||'❓'}</span>`}
+
+      return `<div onclick="confirmDeposit('${p.uid}')" style="${borderStyle}border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateX(4px)';this.style.borderColor='rgba(255,255,255,0.2)';" onmouseout="this.style.transform='none';this.style.borderColor='${compareTo && checkCompatibility(compareTo, p).level > 0 ? COMPAT_TEXT[checkCompatibility(compareTo, p).level].color + '44' : 'rgba(255,255,255,0.06)'}';">
+        <div style="text-align:center;">
+          <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.03);border-radius:8px;">
+            ${sUrl ? `<img src="${sUrl}" style="width:48px;height:48px;image-rendering:pixelated;">` : `<span style="font-size:28px;">${p.emoji||'❓'}</span>`}
+          </div>
+          ${tagsHtml}
         </div>
         <div style="min-width:0;flex:1;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-            <div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
             ${tierHtml}
           </div>
-          <div style="font-size:9px;color:var(--gray);">Nv.${p.level} · ${g} · IVs ${tier.total}/186</div>
+          <div style="font-size:10px;color:var(--gray);display:flex;align-items:center;gap:6px;">
+            <span>Nv.${p.level}</span>
+            <span style="color:rgba(255,255,255,0.1);">|</span>
+            <span>${g}</span>
+            <span style="color:rgba(255,255,255,0.1);">|</span>
+            <span>IVs ${tier.total}/186</span>
+          </div>
           ${compatHtml}
         </div>
       </div>`;

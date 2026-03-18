@@ -65,9 +65,18 @@
           </div>`;
         }
 
+        // Tags display
+        const tags = p.tags || [];
+        const tagsHtml = tags.length ? `<div class="tag-display">
+          ${tags.includes('fav') ? '<span class="tag-icon-small">⭐</span>' : ''}
+          ${tags.includes('breed') ? '<span class="tag-icon-small">❤️</span>' : ''}
+          ${tags.includes('iv31') ? '<span class="tag-icon-small">31</span>' : ''}
+        </div>` : '';
+
         return `<div class="team-card ${selClass}" onclick="${clickFn}" style="cursor:pointer;position:relative;" draggable="${!releasing}" ondragstart="handleDragStart(event, ${i})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${i})">
       ${checkMark}
       ${heldIcon}
+      ${tagsHtml}
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};font-family:'Press Start 2P',monospace;font-size:6px;padding:2px 5px;border-radius:6px;border:1px solid ${tierInfo.color}44;line-height:1.4;z-index:2;">${tierInfo.tier}</div>
       <div style="height:80px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;">
         <img id="team-sprite-${i}" src="" alt="${p.name}" style="width:72px;height:72px;image-rendering:pixelated;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));display:none;pointer-events:none;">
@@ -258,12 +267,31 @@
   </div>`;
     }
 
+    function togglePokeTag(location, index, tag) {
+      const p = location === 'team' ? state.team[index] : state.box[index];
+      if (!p) return;
+      if (!p.tags) p.tags = [];
+      const tagIdx = p.tags.indexOf(tag);
+      if (tagIdx > -1) p.tags.splice(tagIdx, 1);
+      else p.tags.push(tag);
+      
+      if (location === 'team') {
+        renderTeam();
+        openPokemonDetail(index);
+      } else {
+        renderBox();
+        openBoxPokemonDetail(index);
+      }
+      scheduleSave();
+    }
+
     function openPokemonDetail(index) {
       const p = state.team[index];
       const pct = p.hp / p.maxHp;
       const hpClass = getHpClass(pct);
       const typeColors = { grass: '#6BCB77', fire: '#FF3B3B', water: '#3B8BFF', normal: '#aaa', electric: '#FFD93D', psychic: '#C77DFF', rock: '#c8a060', ground: '#c8a060', poison: '#C77DFF' };
       const typeColor = typeColors[p.type] || '#aaa';
+      const tags = p.tags || [];
 
       const ivBars = Object.entries(p.ivs).map(([stat, val]) => {
         const labels = { hp: 'HP', atk: 'Ataque', def: 'Defensa', spa: 'At.Esp', spd: 'Def.Esp', spe: 'Velocidad' };
@@ -313,6 +341,11 @@
           <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:${typeColor};margin-bottom:6px;">${p.name}${p.isShiny ? ' ✨' : ''}</div>
           <div style="font-size:12px;color:#888;">Nivel ${p.level} · ${p.type.charAt(0).toUpperCase() + p.type.slice(1)}</div>
           <div style="font-size:11px;color:#555;margin-top:4px;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <div class="poke-tag ${tags.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'fav')" title="Favorito">⭐</div>
+            <div class="poke-tag ${tags.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'breed')" title="Crianza">❤️</div>
+            <div class="poke-tag ${tags.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'iv31')" title="IV 31">31</div>
+          </div>
         </div>
       </div>
       <button onclick="closePokemonDetail()" style="background:rgba(255,255,255,0.1);border:none;border-radius:10px;color:#aaa;font-size:18px;cursor:pointer;padding:6px 12px;">✕</button>
