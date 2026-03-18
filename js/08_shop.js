@@ -473,10 +473,18 @@ function renderTrainerShop() {
   const trainerItems = SHOP_ITEMS
     .filter(i => i.trainerShop === true)
     .sort((a, b) => {
+      // Primero los desbloqueados, luego los bloqueados (como en el Pokemarket)
+      const aLocked = state.trainerLevel < a.unlockLv ? 1 : 0;
+      const bLocked = state.trainerLevel < b.unlockLv ? 1 : 0;
+      if (aLocked !== bLocked) return aLocked - bLocked;
+
+      // Luego por categoría
       const ao = TRAINER_CAT_ORDER[a.cat] || 99;
       const bo = TRAINER_CAT_ORDER[b.cat] || 99;
       if (ao !== bo) return ao - bo;
-      return (b.bcPrice || 0) - (a.bcPrice || 0);
+
+      // Finalmente por nivel de desbloqueo (ascendente)
+      return a.unlockLv - b.unlockLv;
     });
   const TRAINER_CAT_LABELS = {
     held: '⚔️ Ítems Equipables',
