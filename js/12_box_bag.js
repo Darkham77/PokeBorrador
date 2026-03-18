@@ -492,7 +492,7 @@
     }
 
     function openBagUseMenu(itemName) {
-      const GLOBAL_ITEMS = ['Repelente', 'Ticket Shiny', 'Moneda Amuleto'];
+      const GLOBAL_ITEMS = ['Repelente', 'Superrepelente', 'Máximo Repelente', 'Ticket Shiny', 'Moneda Amuleto'];
       if (GLOBAL_ITEMS.includes(itemName)) {
         const fn = HEALING_ITEMS[itemName];
         if (!fn || !state.inventory[itemName]) return;

@@ -37,7 +37,7 @@ Usables desde la mochila fuera de batalla y desde el menú de mochila en batalla
 | Vitamina HP | +5% del HP base como bonus permanente |
 | Proteína | +8% del Ataque como bonus permanente |
 | Hierro | +8% de la Defensa como bonus permanente |
-| Recordador de Movimientos | Reaprender el último movimiento del learnset olvidado |
+| Recordador de Movimientos | Permite elegir y recuperar cualquier movimiento olvidado del learnset (Solo fuera de combate) |
 
 ### MTs (Máquinas Técnicas)
 | Ítem | Movimiento enseñado |
@@ -52,7 +52,9 @@ Usables desde la mochila fuera de batalla y desde el menú de mochila en batalla
 
 | Ítem | Efecto | Duración |
 |---|---|---|
-| Repelente | Bloquea encuentros salvajes | 30 minutos |
+| Repelente | Bloquea Pokémon de nivel inferior al tuyo | 10 minutos |
+| Superrepelente | Bloquea Pokémon de nivel inferior al tuyo | 20 minutos |
+| Máximo Repelente | Bloquea Pokémon de nivel inferior al tuyo | 30 minutos |
 | Ticket Shiny | Divide SHINY_RATE por 10 (1/200 en vez de 1/2000) | 30 minutos |
 | Moneda Amuleto | Duplica el dinero ganado en batallas | 30 minutos |
 

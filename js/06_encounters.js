@@ -96,12 +96,9 @@
 
       hatchEggs(); // Progress eggs on EACH click
 
-      // Repelente check
-      if ((state.repelUntil || 0) > Date.now()) {
-        const mins = Math.ceil((state.repelUntil - Date.now()) / 60000);
-        notify('¡El Repelente alejó a los Pokémon salvajes! (' + mins + 'min)', '🚫');
-        return;
-      }
+      // Nueva Lógica de Repelente Estratégico
+      let repelActive = (state.repelUntil || 0) > Date.now();
+      let firstPokemon = state.team[0];
 
       // Random Trainer encounter check - Capped at 20% to ensure wild mons always show
       const tChance = Math.min(state.trainerChance || 5, 20);
@@ -138,6 +135,14 @@
       }
 
       const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
+      
+      // Si el repelente está activo, solo permitimos Pokémon de nivel igual o superior al primero del equipo
+      if (repelActive && firstPokemon && level < firstPokemon.level) {
+        const mins = Math.ceil((state.repelUntil - Date.now()) / 60000);
+        notify(`¡El Repelente alejó a un Pokémon de nivel ${level}! (${mins} min restantes)`, '🚫');
+        return;
+      }
+
       const enemy = makePokemon(selectedId, level);
       startBattle(enemy, false, null, locId);
     }

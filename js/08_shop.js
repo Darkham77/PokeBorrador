@@ -215,9 +215,21 @@
       },
       {
         id: 'repelente', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/repel.png',
-        name: 'Repelente', icon: '🚫', price: 350, unlockLv: 1, tier: 'common',
-        desc: 'Evita encuentros con Pokémon salvajes por un tiempo.',
+        name: 'Repelente', icon: '🚫', price: 3000, unlockLv: 1, tier: 'common',
+        desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 10 min.',
         effect: (qty) => { state.inventory['Repelente'] = (state.inventory['Repelente'] || 0) + qty; }
+      },
+      {
+        id: 'super_repel', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-repel.png',
+        name: 'Superrepelente', icon: '🚫', price: 6000, unlockLv: 3, tier: 'rare',
+        desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 20 min.',
+        effect: (qty) => { state.inventory['Superrepelente'] = (state.inventory['Superrepelente'] || 0) + qty; }
+      },
+      {
+        id: 'max_repel', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-repel.png',
+        name: 'Máximo Repelente', icon: '🚫', price: 9000, unlockLv: 5, tier: 'epic',
+        desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 30 min.',
+        effect: (qty) => { state.inventory['Máximo Repelente'] = (state.inventory['Máximo Repelente'] || 0) + qty; }
       },
 
       // ── PIEDRAS DE EVOLUCIÓN ───────────────────────────────────────────────────
@@ -396,9 +408,10 @@
         desc: 'Aumenta permanentemente la Defensa base de un Pokémon.',
         effect: (qty) => { state.inventory['Hierro'] = (state.inventory['Hierro'] || 0) + qty; }
       },
-      { id: 'move_reminder', cat: 'utility', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png',
-        name: 'Recordador de Movimientos', icon: 'ðŸ§ ', price: 0, market: false, trainerShop: true, bcPrice: 150, unlockLv: 1, tier: 'rare', type: 'utility',
-        desc: 'Permite que un Pokemon aprenda un movimiento que ya conocia.',
+      {
+        id: 'move_relearner', cat: 'utility', sprite: 'assets/items/recordador.png',
+        name: 'Recordador de Movimientos', icon: '🧠', price: 0, unlockLv: 1, tier: 'rare', market: false, trainerShop: true, bcPrice: 150,
+        desc: 'Permite que un Pokémon recupere cualquier movimiento olvidado de su lista de aprendizaje.',
         effect: (qty) => { state.inventory['Recordador de Movimientos'] = (state.inventory['Recordador de Movimientos'] || 0) + qty; }
       },
       {

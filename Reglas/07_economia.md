@@ -87,7 +87,9 @@ Precios en ₽ y nivel de entrenador requerido:
 | Poción | 300 | 1 | +20 HP |
 | Antídoto | 100 | 1 | Cura veneno |
 | Despertar | 250 | 1 | Cura sueño |
-| Repelente | 350 | 1 | Bloquea salvajes 30 min |
+| Repelente | 3000 | 1 | Bloquea nivel inferior 10 min |
+| Superrepelente | 6000 | 3 | Bloquea nivel inferior 20 min |
+| Máximo Repelente | 9000 | 5 | Bloquea nivel inferior 30 min |
 | Cura Quemadura | 250 | 2 | Cura quemadura |
 | Super Poción | 700 | 3 | +50 HP |
 | Cura Total | 600 | 4 | Cura todos los estados |
