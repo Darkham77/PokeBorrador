@@ -25,6 +25,7 @@
       if (tab === 'daycare') renderDaycareUI();
       if (tab === 'box') renderBox();
       if (tab === 'bag') renderBag();
+      if (tab === 'friends') renderFriends();
       // Al abrir la tab de amigos, ocultar el badge (el usuario ya lo está viendo)
       if (tab === 'friends') {
         const badge = document.getElementById('friends-nav-badge');
