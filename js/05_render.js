@@ -759,3 +759,49 @@
     // Auto-update time every minute
     setInterval(updateHud, 60000);
 
+
+    // ===== SETTINGS & ZOOM SYSTEM =====
+    function toggleSettings() {
+      const modal = document.getElementById('settings-modal');
+      if (modal.style.display === 'none' || modal.style.display === '') {
+        modal.style.display = 'flex';
+      } else {
+        modal.style.display = 'none';
+      }
+    }
+
+    function updateZoom(val) {
+      const zoom = val / 100;
+      // Aplicar zoom al contenedor principal
+      const app = document.getElementById('app');
+      if (app) {
+        app.style.zoom = zoom;
+        // Fallback para navegadores que no soportan zoom (Firefox)
+        if (app.style.zoom === undefined || app.style.zoom === "") {
+            app.style.transform = `scale(${zoom})`;
+            app.style.transformOrigin = 'top center';
+        }
+      }
+      
+      // Actualizar etiqueta de valor
+      const label = document.getElementById('zoom-value');
+      if (label) label.textContent = val + '%';
+      
+      // Guardar en localStorage
+      localStorage.setItem('poke_vicio_zoom', val);
+    }
+
+    // Cargar zoom guardado al iniciar
+    function initZoom() {
+      const savedZoom = localStorage.getItem('poke_vicio_zoom') || 100;
+      const slider = document.getElementById('zoom-slider');
+      if (slider) slider.value = savedZoom;
+      updateZoom(savedZoom);
+    }
+
+    // Ejecutar inicialización cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', initZoom);
+    // Por si acaso el DOM ya cargó
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      initZoom();
+    }
