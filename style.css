@@ -24,6 +24,10 @@
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
+      user-select: none; /* Desactivar selección de texto */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
     }
 
     .stars {
@@ -41,9 +45,18 @@
     #app {
       position: relative;
       z-index: 1;
-      max-width: 900px;
+      width: 100%;
+      max-width: 100%;
       margin: 0 auto;
       padding: 20px;
+      box-sizing: border-box; /* Asegurar que el padding no sume al ancho total */
+      overflow-x: hidden; /* Evitar cualquier scroll horizontal accidental */
+    }
+
+    @media (min-width: 1200px) {
+      #app {
+        padding: 20px 40px;
+      }
     }
 
     .screen {
@@ -390,10 +403,133 @@
       align-items: center;
       background: var(--card);
       border-radius: 16px;
-      padding: 16px 20px;
+      padding: 12px 24px; /* Reducido un poco el padding vertical */
+      margin-bottom: 8px;
+      flex-wrap: nowrap; /* Evitar que se rompa en PC */
+      gap: 20px;
+      width: 100%;
+      box-sizing: border-box;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    @media (max-width: 1024px) {
+      .hud {
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      .hud-nav {
+        display: none !important; /* Ocultar menú del HUD en móvil */
+      }
+    }
+
+    /* Menú dentro del HUD (PC) */
+    .hud-nav {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hud-nav-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 8px 14px;
+      color: var(--gray);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .hud-nav-btn span:first-child {
+      font-size: 16px;
+    }
+
+    .hud-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .hud-nav-btn.active {
+      background: rgba(255, 217, 61, 0.1);
+      color: var(--yellow);
+      border-color: var(--yellow);
+      box-shadow: 0 0 15px rgba(255, 217, 61, 0.1);
+    }
+
+    /* Contenedor de progreso de huevos debajo del HUD */
+    #hud-eggs-progress {
+      display: flex;
+      gap: 12px;
       margin-bottom: 16px;
       flex-wrap: wrap;
-      gap: 10px;
+      width: 100%;
+    }
+
+    .hud-egg-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 217, 61, 0.2);
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 200px;
+      flex: 1 1 0; /* Forzar a que todas las tarjetas crezcan igual */
+      max-width: none; /* Eliminar el límite para que ocupen todo el ancho */
+      animation: fadeIn 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .hud-egg-icon {
+      font-size: 20px;
+      filter: drop-shadow(0 0 5px rgba(255, 217, 61, 0.3));
+    }
+
+    .hud-egg-info {
+      flex: 1;
+    }
+
+    .hud-egg-label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 6px;
+      color: var(--yellow);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .hud-egg-bar-bg {
+      background: rgba(255, 255, 255, 0.1);
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .hud-egg-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--yellow), #f39c12);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .hud-egg-time {
+      font-size: 9px;
+      color: var(--gray);
+      margin-top: 3px;
+      text-align: right;
+      font-weight: 700;
     }
 
     .hud-trainer {
@@ -421,6 +557,26 @@
     .hud-items {
       display: flex;
       gap: 10px;
+    }
+
+    .money-count {
+      background: rgba(107, 203, 119, 0.15);
+      color: var(--green);
+      font-weight: 900;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      border: 1px solid rgba(107, 203, 119, 0.3);
+    }
+
+    .bc-count {
+      background: rgba(199, 125, 255, 0.15);
+      color: var(--purple);
+      font-weight: 900;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      border: 1px solid rgba(199, 125, 255, 0.3);
     }
 
     .badge-count {
@@ -974,10 +1130,17 @@
     }
 
     .battle-actions {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      display: flex;
+      flex-direction: column; /* Forzar apilado vertical */
       gap: 10px;
       margin-bottom: 12px;
+      width: 100%;
+    }
+
+    .battle-continue-btn-full {
+      width: 100% !important;
+      max-width: 100% !important;
+      display: block;
     }
 
     .move-btn {
@@ -1310,10 +1473,45 @@
 
     /* ===== NAV ===== */
     .nav {
-      display: flex;
+      display: none; /* Ocultar por defecto (se mostrará en móvil vía media query) */
       gap: 10px;
       margin-bottom: 16px;
       flex-wrap: wrap;
+    }
+
+    @media (max-width: 1024px) {
+      .nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--card);
+        margin-bottom: 0;
+        padding: 12px 20px;
+        z-index: 1000;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        justify-content: space-around;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+      }
+      
+      .nav-btn {
+        flex-direction: column;
+        border: none !important;
+        background: transparent !important;
+        padding: 5px !important;
+        font-size: 7px !important;
+        gap: 4px;
+      }
+      
+      .nav-btn span:first-child {
+        font-size: 20px;
+      }
+      
+      /* Ajuste para que el contenido no quede debajo del menú móvil */
+      #app {
+        padding-bottom: 80px !important;
+      }
     }
 
     .nav-btn {
@@ -2225,20 +2423,41 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
-      font-size: 12px;
-      background: rgba(255, 255, 255, 0.05);
+      width: 28px; /* Un poco más grande para mejor visibilidad */
+      height: 28px;
+      border-radius: 8px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.1);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      color: rgba(255, 255, 255, 0.4); /* Color apagado por defecto */
+      filter: grayscale(1);
+    }
+    .poke-tag:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
     }
     .poke-tag.active {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: var(--yellow);
-      transform: scale(1.1);
-      box-shadow: 0 0 8px rgba(255, 217, 61, 0.3);
+      background: rgba(255, 217, 61, 0.15); /* Fondo amarillento suave */
+      border: 2px solid var(--yellow); /* Borde sólido y más grueso */
+      color: #fff;
+      filter: grayscale(0); /* Mostrar color real del emoji/texto */
+      transform: scale(1.15);
+      box-shadow: 0 0 12px rgba(255, 217, 61, 0.4), inset 0 0 4px rgba(255, 217, 61, 0.2);
+      z-index: 5;
+    }
+    .poke-tag.active[title="Crianza"] {
+      background: rgba(255, 59, 59, 0.15);
+      border-color: var(--red);
+      box-shadow: 0 0 12px rgba(255, 59, 59, 0.4);
+    }
+    .poke-tag.active[title="IV 31"] {
+      background: rgba(59, 139, 255, 0.15);
+      border-color: var(--blue);
+      box-shadow: 0 0 12px rgba(59, 139, 255, 0.4);
+      font-weight: 900;
     }
     .tag-display {
       display: flex;
@@ -2963,3 +3182,116 @@
       .friend-card:hover {
         transform: translateY(-2px);
       }
+
+    /* ===== BUFF HUD & TOOLTIPS ===== */
+    #buff-timers-hud {
+      display: flex;
+      flex-direction: row; /* En fila para aprovechar el ancho */
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+      width: 100%;
+      justify-content: flex-start; /* Alineado a la izquierda */
+      pointer-events: auto;
+      z-index: 100;
+    }
+
+    .buff-item {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 100px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      cursor: help;
+    }
+
+    .buff-item:hover {
+      transform: scale(1.05) translateX(5px);
+      background: rgba(20, 20, 30, 0.9);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .buff-icon-container {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .buff-sprite {
+      width: 32px;
+      height: 32px;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+    }
+
+    .buff-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .buff-label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .buff-timer {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* Tooltip styling */
+        .buff-tooltip {
+      position: absolute;
+      left: 0;
+      top: 110%; /* Mostrar debajo del buff */
+      background: #1a1a2e;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 12px;
+      border-radius: 10px;
+      width: 220px;
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      pointer-events: none;
+    }  }
+
+    .buff-tooltip::before {
+      content: '';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      margin-top: -6px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: transparent var(--purple) transparent transparent;
+    }
+
+    .buff-item:hover .buff-tooltip {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    .buff-tooltip-title {
+      color: var(--yellow);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      margin-bottom: 8px;
+      display: block;
+    }

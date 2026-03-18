@@ -79,40 +79,24 @@
       return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${num}.png`;
     }
 
-    // Carga una imagen en un elemento <img> con fallback al emoji
-    function loadSprite(imgEl, emojiEl, url, emoji) {
-      if (!url) { if (emojiEl) { emojiEl.style.display = 'block'; } return; }
-      imgEl.style.display = 'none';
-      if (emojiEl) emojiEl.style.display = 'none';
-
-      const testImg = new Image();
-      testImg.crossOrigin = 'anonymous';
-      testImg.onload = () => {
-        imgEl.src = url;
-        imgEl.style.display = 'block';
-        if (emojiEl) emojiEl.style.display = 'none';
-      };
-      testImg.onerror = () => {
-        // fallback: intentar con pokeapi directamente
-        const num = url.match(/\/([\d]+)\.png/)?.[1];
-        if (num) {
-          fetch(`https://pokeapi.co/api/v2/pokemon/${num}`)
-            .then(r => r.json())
-            .then(data => {
-              const fallbackUrl = data?.sprites?.front_default;
-              if (fallbackUrl) {
-                imgEl.src = fallbackUrl;
-                imgEl.style.display = 'block';
-                if (emojiEl) emojiEl.style.display = 'none';
-              } else { showEmoji(); }
-            })
-            .catch(() => showEmoji());
-        } else { showEmoji(); }
-        function showEmoji() {
-          imgEl.style.display = 'none';
-          if (emojiEl) { emojiEl.style.display = 'block'; emojiEl.textContent = emoji || '❓'; }
-        }
-      };
-      testImg.src = url;
-    }
+	    // Carga una imagen en un elemento <img> (sin fallback a emoji por petición del usuario)
+	    function loadSprite(imgEl, emojiEl, url, emoji) {
+	      if (emojiEl) emojiEl.style.display = 'none';
+	      if (!url) { imgEl.style.display = 'none'; return; }
+	      
+	      // Ocultar imagen actual mientras carga la nueva para evitar parpadeos
+	      imgEl.style.display = 'none';
+	
+	      const testImg = new Image();
+	      testImg.crossOrigin = 'anonymous';
+	      testImg.onload = () => {
+	        imgEl.src = url;
+	        imgEl.style.display = 'block';
+	      };
+	      testImg.onerror = () => {
+	        // Si falla, simplemente no mostramos nada (limpio)
+	        imgEl.style.display = 'none';
+	      };
+	      testImg.src = url;
+	    }
 

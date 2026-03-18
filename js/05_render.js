@@ -7,15 +7,16 @@
     // ===== TABS =====
     function showTab(tab, btnEl) {
       document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('tab-' + tab).style.display = 'block';
-      if (btnEl) btnEl.classList.add('active');
-      else {
-        // activate matching nav btn by data attribute
-        document.querySelectorAll('.nav-btn').forEach(b => {
-          if (b.getAttribute('data-tab') === tab) b.classList.add('active');
-        });
-      }
+      // Limpiar estado activo en ambos menús
+      document.querySelectorAll('.nav-btn, .hud-nav-btn').forEach(b => b.classList.remove('active'));
+      
+      const targetTab = document.getElementById('tab-' + tab);
+      if (targetTab) targetTab.style.display = 'block';
+      
+      // Activar botones correspondientes en ambos menús
+      document.querySelectorAll(`.nav-btn[data-tab="${tab}"], .hud-nav-btn[data-tab="${tab}"]`).forEach(b => {
+        b.classList.add('active');
+      });
       if (tab === 'team') renderTeam();
       if (tab === 'pokedex') renderPokedex();
       if (tab === 'gyms') renderGyms();
@@ -341,7 +342,7 @@
           <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:${typeColor};margin-bottom:6px;">${p.name}${p.isShiny ? ' ✨' : ''}</div>
           <div style="font-size:12px;color:#888;">Nivel ${p.level} · ${p.type.charAt(0).toUpperCase() + p.type.slice(1)}</div>
           <div style="font-size:11px;color:#555;margin-top:4px;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
-          <div style="display:flex;gap:8px;margin-top:8px;">
+          <div style="display:flex;gap:12px;margin-top:10px;">
             <div class="poke-tag ${tags.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'fav')" title="Favorito">⭐</div>
             <div class="poke-tag ${tags.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'breed')" title="Crianza">❤️</div>
             <div class="poke-tag ${tags.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'iv31')" title="IV 31">31</div>
@@ -599,19 +600,67 @@
     }
     initBuffTick();
 
-    function updateBuffHud() {
-      let container = document.getElementById('buff-timers-hud');
-      if (!container) {
-        container = document.createElement('div');
-        container.id = 'buff-timers-hud';
-        container.style.cssText = 'position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;';
-        document.body.appendChild(container);
+    function updateEggProgressHud() {
+      const container = document.getElementById('hud-eggs-progress');
+      if (!container) return;
+
+      if (!state.eggs || state.eggs.length === 0) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
       }
 
+      container.style.display = 'flex';
+      container.innerHTML = state.eggs.map((egg, idx) => {
+        const total = egg.totalSteps || 100;
+        const progress = Math.min(100, Math.max(0, ((total - egg.steps) / total) * 100));
+        const isReady = egg.ready || egg.steps <= 0;
+        const color = egg.origin === 'breeding' ? 'var(--purple)' : 'var(--yellow)';
+        
+        return `
+          <div class="hud-egg-card" onclick="startManualHatch(${idx})" style="cursor: ${isReady ? 'pointer' : 'default'}; ${isReady ? 'border-color: var(--yellow); animation: pulseGlow 2s infinite;' : ''}">
+            <div class="hud-egg-icon" style="${isReady ? 'animation: eggShake 1.5s infinite;' : ''}">🥚</div>
+            <div class="hud-egg-info">
+              <span class="hud-egg-label">${isReady ? '¡LISTO!' : (egg.origin === 'breeding' ? 'CRIANZA' : 'ENCUENTRO')}</span>
+              <div class="hud-egg-bar-bg">
+                <div class="hud-egg-bar-fill" style="width: ${progress}%; background: ${color};"></div>
+              </div>
+              <div class="hud-egg-time">${isReady ? 'ECLOSIONAR' : egg.steps + ' pasos'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateBuffHud() {
+      const container = document.getElementById('buff-timers-hud');
+      if (!container) return;
+
       const buffs = [
-        { id: 'repel', secs: state.repelSecs, icon: '🚫', color: '#ff6b6b', label: 'REPEL' },
-        { id: 'shiny', secs: state.shinyBoostSecs, icon: '✨', color: '#feca57', label: 'SHINY' },
-        { id: 'coin', secs: state.amuletCoinSecs, icon: '💰', color: '#1dd1a1', label: 'COIN' }
+        { 
+          id: 'repel', 
+          secs: state.repelSecs, 
+          sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-repel.png', 
+          color: '#ff6b6b', 
+          label: 'REPEL',
+          desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo.'
+        },
+        { 
+          id: 'shiny', 
+          secs: state.shinyBoostSecs, 
+          sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png', 
+          color: '#feca57', 
+          label: 'SHINY',
+          desc: 'Aumenta significativamente la probabilidad de encontrar Pokémon Shiny.'
+        },
+        { 
+          id: 'coin', 
+          secs: state.amuletCoinSecs, 
+          sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/amulet-coin.png', 
+          color: '#1dd1a1', 
+          label: 'COIN',
+          desc: 'Duplica el dinero obtenido al ganar batallas contra entrenadores.'
+        }
       ];
 
       let html = '';
@@ -621,11 +670,20 @@
           const s = b.secs % 60;
           const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
           html += `
-            <div style="background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);border:1px solid ${b.color}88;border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:8px;animation:slideInLeft 0.3s ease;min-width:90px;box-shadow:0 4px 12px rgba(0,0,0,0.5);">
-              <span style="font-size:18px;">${b.icon}</span>
-              <div style="display:flex;flex-direction:column;">
-                <span style="font-family:'Press Start 2P',monospace;font-size:6px;color:${b.color};">${b.label}</span>
-                <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fff;margin-top:2px;">${timeStr}</span>
+            <div class="buff-item" style="border-color: ${b.color}88;">
+              <div class="buff-icon-container">
+                <img src="${b.sprite}" class="buff-sprite" alt="${b.label}">
+              </div>
+              <div class="buff-info">
+                <span class="buff-label" style="color: ${b.color};">${b.label}</span>
+                <span class="buff-timer">${timeStr}</span>
+              </div>
+              <div class="buff-tooltip" style="border-color: ${b.color};">
+                <span class="buff-tooltip-title" style="color: ${b.color};">${b.label} ACTIVO</span>
+                ${b.desc}
+                <div style="margin-top: 8px; font-size: 10px; color: ${b.color}; opacity: 0.8;">
+                  Tiempo restante: ${timeStr}
+                </div>
               </div>
             </div>`;
         }
@@ -635,6 +693,7 @@
 
     function updateHud() {
       updateBuffHud(); // Actualizar timers al refrescar HUD
+      updateEggProgressHud(); // Actualizar progreso de huevos debajo del HUD
       // Robust badge count check (handles legacy array format)
       const badgeCount = (Array.isArray(state.badges) ? state.badges.length : (parseInt(state.badges) || 0));
 
@@ -668,7 +727,16 @@
       recalculateBalls();
       document.getElementById('ball-count').textContent = state.balls;
       document.getElementById('trainer-level').textContent = state.trainerLevel;
-      document.getElementById('hud-money').textContent = '₽' + (state.money || 0).toLocaleString();
+      
+      const moneyEl = document.getElementById('hud-money');
+      if (moneyEl) moneyEl.textContent = (state.money || 0).toLocaleString();
+      
+      const bcEl = document.getElementById('hud-bc');
+      if (bcEl) bcEl.textContent = (state.battleCoins || 0).toLocaleString();
+      
+      const eggCountEl = document.getElementById('egg-count');
+      if (eggCountEl) eggCountEl.textContent = state.eggs ? state.eggs.length : 0;
+
       const rank = getTrainerRank();
       if (rank) {
         const expPct = Math.min(100, (state.trainerExp / rank.expNeeded) * 100);

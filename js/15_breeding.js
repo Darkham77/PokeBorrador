@@ -158,10 +158,16 @@
       zapdos:['no-eggs'],
       zubat:['flying'],
     };
-    const COMPAT_TEXT = {
-      0: { label: '❌ Incompatibles', color: '#ef4444' }, 1: { label: '😐 Poco interés', color: '#f59e0b' },
-      2: { label: '🙂 Compatibles', color: '#22c55e' }, 3: { label: '❤️ Muy compatibles', color: '#ec4899' },
-    };
+	    const COMPAT_TEXT = {
+	      0: { label: '❌ Incompatibles', color: '#ff5252' }, 1: { label: '😐 Poco interés', color: '#ffb142' },
+	      2: { label: '🙂 Compatibles', color: '#33d9b2' }, 3: { label: '❤️ Muy compatibles', color: '#ff793f' },
+	    };
+	    const EGG_GROUP_TRANSLATIONS = {
+	      'monster': 'Monstruo', 'water1': 'Agua 1', 'water2': 'Agua 2', 'water3': 'Agua 3',
+	      'bug': 'Bicho', 'flying': 'Volador', 'ground': 'Campo', 'fairy': 'Hada',
+	      'plant': 'Planta', 'humanshape': 'Humanoide', 'mineral': 'Mineral',
+	      'indeterminate': 'Amorfo', 'dragon': 'Dragón', 'ditto': 'Ditto', 'no-eggs': 'Desconocido'
+	    };
     const EGG_MOVES_DB = {
       bulbasaur:['leaf_storm','power_whip','ingrain'], charmander:['dragon_rage','flare_blitz','dragon_dance'],
       squirtle:['aqua_jet','mirror_coat','water_spout'], pikachu:['volt_tackle','fake_out','encore'],
@@ -398,43 +404,47 @@
       const sUrl = getSpriteUrl(p.id, p.isShiny);
       const tier = getPokemonTier(p);
       const tierHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;padding:2px 6px;border-radius:999px;background:${tier.bg};color:${tier.color};font-size:9px;font-weight:800;line-height:1;">${tier.tier}</span>`;
-      const g = genderSymbol(p.gender);
-      
-      // Tags display
-      const tags = p.tags || [];
-      const tagsHtml = tags.length ? `<div style="display:flex;gap:3px;margin-top:2px;">
-        ${tags.includes('fav') ? '<span style="font-size:8px;">⭐</span>' : ''}
-        ${tags.includes('breed') ? '<span style="font-size:8px;">❤️</span>' : ''}
-        ${tags.includes('iv31') ? '<span style="font-size:8px;color:var(--yellow);font-weight:bold;">31</span>' : ''}
-      </div>` : '';
+	      const genderIcon = p.gender === 'M' ? '<span style="color:#3498db; font-size:16px; font-weight:900; filter: drop-shadow(0 0 2px #3498db66);">♂</span>' : (p.gender === 'F' ? '<span style="color:#e84393; font-size:16px; font-weight:900; filter: drop-shadow(0 0 2px #e8439366);">♀</span>' : '<span style="color:#95a5a6; font-size:16px;">⚲</span>');
+	      
+	      // Tags display
+	      const tags = p.tags || [];
+	      const tagsHtml = tags.length ? `<div style="display:flex;gap:4px;margin-top:4px;justify-content:center;">
+	        ${tags.includes('fav') ? '<span style="font-size:10px; filter: drop-shadow(0 0 2px #ffd32a);">⭐</span>' : ''}
+	        ${tags.includes('breed') ? '<span style="font-size:10px; filter: drop-shadow(0 0 2px #ff4d4d);">❤️</span>' : ''}
+	        ${tags.includes('iv31') ? '<span style="font-size:10px;color:#ffd32a;font-weight:900;text-shadow: 0 0 5px #ffd32a66;">31</span>' : ''}
+	      </div>` : '';
 
       let compatHtml = '';
       let borderStyle = 'border:1px solid rgba(255,255,255,0.06);';
       
-      if (compareTo) {
-        const cp = checkCompatibility(compareTo, p);
-        const info = COMPAT_TEXT[cp.level] || COMPAT_TEXT[0];
-        const intMs = cp.level > 0 ? EGG_SPAWN_INTERVAL_MS[cp.level] : null;
-        const every = intMs ? `${Math.round(intMs/3600000)}h` : '—';
-        const motherName = cp.eggSpecies ? (POKEMON_DB[cp.eggSpecies]?.name || cp.eggSpecies) : '—';
-        const shared = (cp.sharedGroups && cp.sharedGroups.length) ? cp.sharedGroups.join(', ') : '—';
-        const extra = cp.level > 0 ? `Cria: ${motherName}` : (cp.reason || 'Incompatible');
-        
-        if (cp.level > 0) {
-          borderStyle = `border:1px solid ${info.color}44; background:linear-gradient(90deg, rgba(0,0,0,0.4), ${info.color}08);`;
-        }
-
-        compatHtml = `
-          <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.05);">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:10px;color:${info.color};font-weight:bold;">${info.label}</span>
-              <span style="font-size:9px;color:var(--gray);">· ${extra}</span>
-            </div>
-            <div style="font-size:9px;color:var(--gray);margin-top:2px;">
-              ⏱️ Cada ${every} · 🧬 Grupos: <span style="color:#eee;">${shared}</span>
-            </div>
-          </div>`;
-      }
+	      if (compareTo) {
+	        const cp = checkCompatibility(compareTo, p);
+	        const info = COMPAT_TEXT[cp.level] || COMPAT_TEXT[0];
+	        const intMs = cp.level > 0 ? EGG_SPAWN_INTERVAL_MS[cp.level] : null;
+	        const every = intMs ? `${Math.round(intMs/3600000)}h` : '—';
+	        const motherName = cp.eggSpecies ? (POKEMON_DB[cp.eggSpecies]?.name || cp.eggSpecies) : '—';
+	        const translatedGroups = (cp.sharedGroups || []).map(g => EGG_GROUP_TRANSLATIONS[g] || g.charAt(0).toUpperCase() + g.slice(1));
+	        const shared = translatedGroups.length ? translatedGroups.join(', ') : '—';
+	        const extra = cp.level > 0 ? `Cría: <b style="color:#ffffff; font-size:11px;">${motherName}</b>` : `<span style="color:rgba(255,255,255,0.5); font-size:11px;">${cp.reason || 'Incompatible'}</span>`;
+	        
+	        if (cp.level > 0) {
+	          borderStyle = `border:1px solid ${info.color}aa; background: linear-gradient(135deg, rgba(0,0,0,0.6) 0%, ${info.color}25 100%); box-shadow: 0 4px 15px rgba(0,0,0,0.4);`;
+	        } else {
+	          borderStyle = `border:1px solid rgba(255,255,255,0.1); opacity: 0.7; filter: grayscale(0.3);`;
+	        }
+	
+	        compatHtml = `
+	          <div style="margin-top:10px; padding:10px; border-radius:10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08);">
+	            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+	              <span style="font-size:11px; color:${info.color}; font-weight:900; text-transform:uppercase; letter-spacing:0.8px; text-shadow: 0 0 10px ${info.color}44;">${info.label}</span>
+	              ${cp.level > 0 ? `<span style="font-size:10px; background:${info.color}; color:#000; padding:2px 8px; border-radius:6px; font-weight:900; box-shadow: 0 0 10px ${info.color}66;">⏱️ ${every}</span>` : ''}
+	            </div>
+	            <div style="font-size:11px; color:#ffffff; line-height:1.5; font-weight:500;">
+	              ${extra}<br>
+	              <span style="font-size:10px; color:rgba(255,255,255,0.6); font-weight:400;">🧬 Grupos: <span style="color:#ffffff; font-weight:600;">${shared}</span></span>
+	            </div>
+	          </div>`;
+	      }
 
       return `<div onclick="confirmDeposit('${p.uid}')" style="${borderStyle}border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateX(4px)';this.style.borderColor='rgba(255,255,255,0.2)';" onmouseout="this.style.transform='none';this.style.borderColor='${compareTo && checkCompatibility(compareTo, p).level > 0 ? COMPAT_TEXT[checkCompatibility(compareTo, p).level].color + '44' : 'rgba(255,255,255,0.06)'}';">
         <div style="text-align:center;">
@@ -448,13 +458,12 @@
             <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
             ${tierHtml}
           </div>
-          <div style="font-size:10px;color:var(--gray);display:flex;align-items:center;gap:6px;">
-            <span>Nv.${p.level}</span>
-            <span style="color:rgba(255,255,255,0.1);">|</span>
-            <span>${g}</span>
-            <span style="color:rgba(255,255,255,0.1);">|</span>
-            <span>IVs ${tier.total}/186</span>
-          </div>
+	          <div style="font-size:11px;color:#ffffff;display:flex;align-items:center;gap:8px;font-weight:600;">
+	            <span style="background:rgba(255,255,255,0.1); padding:1px 6px; border-radius:4px;">Nv.${p.level}</span>
+	            ${genderIcon}
+	            <span style="color:rgba(255,255,255,0.4); font-weight:200;">|</span>
+	            <span style="color:rgba(255,255,255,0.8);">IVs <b style="color:#fff;">${tier.total}</b>/186</span>
+	          </div>
           ${compatHtml}
         </div>
       </div>`;
