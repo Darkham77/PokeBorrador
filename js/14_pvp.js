@@ -190,6 +190,15 @@
         .subscribe(status => {
           if (status !== 'SUBSCRIBED') return;
           showPvpScreen();
+          // Guardar el estado PvP activo para que un F5 lo restaure
+          state.activeBattle = {
+            isPvP: true,
+            inviteId: invite.id,
+            isHost,
+            opponentId,
+            enemyUsername,
+          };
+          saveGame(false);
           // Keep re-announcing own team until the rival sends pvp_team_ack.
           // This prevents the race condition where one side subscribes late.
           const _ann = setInterval(() => {
@@ -841,6 +850,8 @@
       if (!state.stats) state.stats = {};
       state.stats.pvpBattles = (state.stats.pvpBattles || 0) + 1;
       if (won) state.stats.pvpWins = (state.stats.pvpWins || 0) + 1;
+      // Limpiar batalla PvP activa guardada
+      state.activeBattle = null;
       scheduleSave();
 
       // Show result overlay inside pvp screen

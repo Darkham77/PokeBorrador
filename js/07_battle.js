@@ -1,4 +1,118 @@
     // ===== BATTLE =====
+
+    // ── Restaurar batalla activa tras F5 ──────────────────────────────────────
+    function restoreActiveBattle() {
+      const ab = state.activeBattle;
+      if (!ab) return;
+
+      // ── Caso PvP: la batalla online no se puede restaurar (canal cerrado), se considera derrota por abandono
+      if (ab.isPvP) {
+        const ov = document.createElement('div');
+        ov.id = 'restore-battle-overlay';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease;';
+        ov.innerHTML = `
+          <div style="background:var(--card);border-radius:24px;padding:32px;max-width:380px;width:100%;
+            border:2px solid var(--red);text-align:center;box-shadow:0 0 40px rgba(239,68,68,0.3);">
+            <div style="font-size:52px;margin-bottom:12px;">⚠️</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--red);margin-bottom:12px;">BATALLA PvP ABANDONADA</div>
+            <div style="font-size:13px;color:#eee;margin:12px 0;line-height:1.7;">
+              Abandonaste una batalla PvP contra <strong>${ab.enemyUsername || 'un rival'}</strong> recargando la página.<br>
+              <span style="color:var(--red);font-weight:bold;">Eso se considera derrota.</span>
+            </div>
+            <button id="restore-pvp-close-btn"
+              style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 28px;border:none;border-radius:14px;
+                cursor:pointer;background:linear-gradient(135deg,#6b7280,#4b5563);color:#fff;width:100%;">
+              CONTINUAR
+            </button>
+          </div>`;
+        document.body.appendChild(ov);
+        document.getElementById('restore-pvp-close-btn').onclick = () => {
+          ov.remove();
+          // Registrar la derrota y limpiar
+          if (!state.stats) state.stats = {};
+          state.stats.pvpBattles = (state.stats.pvpBattles || 0) + 1;
+          state.activeBattle = null;
+          scheduleSave();
+        };
+        return;
+      }
+
+      // Verificar que el jugador tenga Pokémon vivos
+      const player = state.team.find(p => p.hp > 0);
+      if (!player) {
+        // Sin Pokémon vivos: limpiar batalla guardada y no restaurar
+        console.warn('[RESTORE] No hay Pokémon vivos para restaurar la batalla.');
+        state.activeBattle = null;
+        scheduleSave();
+        return;
+      }
+
+      // Verificar que el equipo enemigo tenga al menos un Pokémon vivo
+      const enemyTeam = ab.enemyTeam || [];
+      const firstAliveEnemy = enemyTeam.find(p => p.hp > 0);
+      if (!firstAliveEnemy) {
+        // Todos los enemigos ya estaban derrotados: limpiar y no restaurar
+        console.warn('[RESTORE] Todos los enemigos ya estaban derrotados.');
+        state.activeBattle = null;
+        scheduleSave();
+        return;
+      }
+
+      // Mostrar overlay de aviso antes de restaurar
+      const ov = document.createElement('div');
+      ov.id = 'restore-battle-overlay';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease;';
+
+      const isGymBattle = ab.isGym;
+      const icon = isGymBattle ? '🏅' : '⚔️';
+      const title = isGymBattle ? 'BATALLA DE GIMNASIO' : 'BATALLA CONTRA ENTRENADOR';
+      const desc = isGymBattle
+        ? `¡Estabas en una batalla contra el Líder de Gimnasio! No podés escapar recargando la página.`
+        : `¡Estabas en una batalla contra <strong>${ab.trainerName || 'un entrenador'}</strong>! No podés escapar recargando la página.`;
+
+      // Calcular Pokémon vivos del equipo enemigo para mostrar en el overlay
+      const aliveEnemies = enemyTeam.filter(p => p.hp > 0).length;
+      const totalEnemies = enemyTeam.length;
+
+      ov.innerHTML = `
+        <div style="background:var(--card);border-radius:24px;padding:32px;max-width:380px;width:100%;
+          border:2px solid var(--red);text-align:center;box-shadow:0 0 40px rgba(239,68,68,0.3);">
+          <div style="font-size:52px;margin-bottom:12px;">${icon}</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--red);margin-bottom:12px;">${title}</div>
+          <div style="font-size:13px;color:#eee;margin:12px 0;line-height:1.7;">${desc}</div>
+          <div style="font-size:11px;color:var(--yellow);margin-bottom:6px;">
+            📊 Estado: ${aliveEnemies}/${totalEnemies} Pokémon rivales vivos
+          </div>
+          <div style="font-size:11px;color:var(--gray);margin-bottom:20px;">La batalla fue guardada automáticamente. ¡Debés terminarla!</div>
+          <button id="restore-battle-btn"
+            style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 28px;border:none;border-radius:14px;
+              cursor:pointer;background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;
+              box-shadow:0 4px 16px rgba(239,68,68,0.5);width:100%;">
+            ⚡ CONTINUAR BATALLA
+          </button>
+        </div>`;
+      document.body.appendChild(ov);
+
+      document.getElementById('restore-battle-btn').onclick = () => {
+        ov.remove();
+        // Restaurar la batalla con el primer Pokémon vivo del equipo enemigo
+        firstAliveEnemy._revealed = true;
+        startBattle(
+          firstAliveEnemy,
+          ab.isGym,
+          ab.gymId,
+          ab.locationId,
+          ab.isTrainer,
+          enemyTeam,
+          ab.trainerName
+        );
+        // Mostrar mensaje de restauración en el log de batalla
+        setTimeout(() => {
+          addLog('⚠️ <span style="color:var(--yellow);">Batalla restaurada tras recarga de página.</span>', 'log-info');
+        }, 200);
+      };
+    }
+
     function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trainerName) {
       if (enemy) enemy._revealed = true;
       _battleLock = false;
@@ -20,6 +134,12 @@
         enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 },
       };
       state.battle.player.choiceMove = null;
+
+      // Guardar inmediatamente si es batalla obligatoria (entrenador o gimnasio)
+      // Esto asegura que el estado se persista antes de que el jugador pueda hacer F5
+      if ((isTrainer || isGym) && typeof saveGame === 'function') {
+        saveGame(false);
+      }
 
       showScreen('battle-screen');
       updateBattleUI();
@@ -1390,6 +1510,8 @@
         if (!state.stats) state.stats = {};
         state.stats.battles = (state.stats.battles || 0) + 1;
         state.stats.wins = (state.stats.wins || 0) + 1;
+        // Limpiar batalla activa guardada (la batalla terminó correctamente)
+        state.activeBattle = null;
         scheduleSave(); updateProfilePanel();
         setBtns(false);
         // Show all rewards in expanded log, then wait for player to press Continue
@@ -1434,6 +1556,8 @@
           notify('¡Todo tu equipo fue derrotado!', '❤️‍🩹');
           if (!state.stats) state.stats = {};
           state.stats.battles = (state.stats.battles || 0) + 1;
+          // Limpiar batalla activa guardada (derrota total)
+          state.activeBattle = null;
           scheduleSave(); updateProfilePanel();
           setBtns(false);
           showBattleEndUI(() => { showScreen('game-screen'); showTab('map'); });

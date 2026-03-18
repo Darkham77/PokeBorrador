@@ -154,6 +154,10 @@
             showScreen('game-screen');
             showTab('map');
             renderTeam();
+            // Restaurar batalla activa si el jugador hizo F5 durante un combate obligatorio
+            if (state.activeBattle) {
+              setTimeout(() => restoreActiveBattle(), 300);
+            }
           } else {
             showScreen('title-screen');
           }
@@ -225,6 +229,10 @@
             showTab('map');
             renderTeam();
             processOfflineBreeding(user.id);
+            // Restaurar batalla activa si el jugador hizo F5 durante un combate obligatorio
+            if (state.activeBattle) {
+              setTimeout(() => restoreActiveBattle(), 300);
+            }
           } else {
             showScreen('title-screen');
           }
@@ -248,6 +256,35 @@
 
     // ── Save / Load ────────────────────────────────────────────────────────────
     function serializeState() {
+      // Guardar batalla activa solo si es contra entrenador o líder de gimnasio (no salvajes)
+      let activeBattle = null;
+      if (state.battle && !state.battle.over && (state.battle.isTrainer || state.battle.isGym)) {
+        try {
+          activeBattle = {
+            isGym: state.battle.isGym || false,
+            gymId: state.battle.gymId || null,
+            isTrainer: state.battle.isTrainer || false,
+            trainerName: state.battle.trainerName || null,
+            locationId: state.battle.locationId || null,
+            enemyTeam: state.battle.enemyTeam
+              ? state.battle.enemyTeam.map(p => ({
+                  uid: p.uid, id: p.id, name: p.name, emoji: p.emoji, type: p.type,
+                  level: p.level, hp: p.hp, maxHp: p.maxHp, atk: p.atk, def: p.def,
+                  spa: p.spa, spd: p.spd, spe: p.spe, moves: p.moves,
+                  status: p.status || null, isShiny: p.isShiny || false,
+                  gender: p.gender || null, ivs: p.ivs, nature: p.nature,
+                  ability: p.ability, exp: p.exp || 0, expNeeded: p.expNeeded || 100,
+                  friendship: p.friendship || 70,
+                  _revealed: p._revealed || false, _gymLeader: p._gymLeader || null,
+                  _gymBadge: p._gymBadge || null,
+                }))
+              : null,
+          };
+        } catch(e) {
+          console.warn('[SAVE] Error serializando batalla activa:', e);
+          activeBattle = null;
+        }
+      }
       return {
         trainer: state.trainer,
         badges: state.badges,
@@ -265,6 +302,7 @@
         defeatedGyms: state.defeatedGyms,
         starterChosen: state.starterChosen || false,
         stats: state.stats || {},
+        activeBattle,
       };
     }
 
