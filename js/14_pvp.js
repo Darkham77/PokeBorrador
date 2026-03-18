@@ -122,8 +122,8 @@
         myTeam, enemyTeam: null,
         myHp: myTeam.map(p => p.hp), enemyHp: [],
         over: false, channel: null, enemyUsername,
-        // ── Turn state ─────────────────────────────────────────
-        // phase: 'sync' | 'choosing' | 'waiting' | 'resolving' | 'faint_switch'
+        // ── Turn state ──────────────────────────────────────
+        // phase: 'sync' | 'choosing' | 'waiting' | 'resolving' | 'faint_switch' | 'opponent_disconnected'
         phase: 'sync',
         myPick: null,       // { type:'move', moveIndex } | { type:'switch', switchIndex }
         enemyPick: null,    // host only: client's committed pick
@@ -131,6 +131,9 @@
         enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 },
         _teamAcknowledged: false,
         _announceCount: 0,
+        _lastActivityTime: Date.now(),
+        _disconnectTimer: null,
+        _opponentDisconnected: false,
       };
       _pvpLock = false;
 
@@ -187,6 +190,23 @@
           if (!_pvpState.over) pvpEnd(true);
         })
 
+        // ── Heartbeat y reconexion ──────────────────────────────────────
+        .on('broadcast', { event: 'pvp_heartbeat' }, () => {
+          if (_pvpState.over) return;
+          _pvpState._lastActivityTime = Date.now();
+          // Si el rival se reconecta, limpiar el timer de desconexion
+          if (_pvpState._opponentDisconnected) {
+            _pvpState._opponentDisconnected = false;
+            _pvpState.phase = 'choosing';
+            addPvpLog('🔄 ¡El rival se reconectó!', 'log-info');
+            if (_pvpState._disconnectTimer) {
+              clearTimeout(_pvpState._disconnectTimer);
+              _pvpState._disconnectTimer = null;
+            }
+            renderPvpBattle();
+          }
+        })
+
         .subscribe(status => {
           if (status !== 'SUBSCRIBED') return;
           showPvpScreen();
@@ -200,13 +220,34 @@
           };
           saveGame(false);
           // Keep re-announcing own team until the rival sends pvp_team_ack.
-          // This prevents the race condition where one side subscribes late.
           const _ann = setInterval(() => {
             if (_pvpState._teamAcknowledged || _pvpState.over || _pvpState._announceCount++ > 40) {
               clearInterval(_ann); return;
             }
             _pvpState.channel.send({ type: 'broadcast', event: 'pvp_team', payload: { team: myTeam } });
           }, 1500);
+          // Heartbeat cada 5s para detectar desconexiones
+          const _heartbeat = setInterval(() => {
+            if (_pvpState.over) { clearInterval(_heartbeat); return; }
+            _pvpState.channel.send({ type: 'broadcast', event: 'pvp_heartbeat', payload: {} });
+          }, 5000);
+          // Timer de desconexion: si no hay actividad en 10s, marcar como desconectado
+          const _checkDisconnect = setInterval(() => {
+            if (_pvpState.over || _pvpState._opponentDisconnected) { clearInterval(_checkDisconnect); return; }
+            const timeSinceActivity = Date.now() - _pvpState._lastActivityTime;
+            if (timeSinceActivity > 10000) {
+              _pvpState._opponentDisconnected = true;
+              _pvpState.phase = 'opponent_disconnected';
+              addPvpLog('\u26a0\ufe0f El rival se desconect\u00f3. Esperando reconexion... (60s)', 'log-enemy');
+              renderPvpBattle();
+              if (_pvpState._disconnectTimer) clearTimeout(_pvpState._disconnectTimer);
+              _pvpState._disconnectTimer = setTimeout(() => {
+                if (_pvpState.over || !_pvpState._opponentDisconnected) return;
+                addPvpLog('\ud83d\udcaf El rival no se reconect\u00f3. \u00a1Ganaste por abandono!', 'log-info');
+                pvpEnd(true);
+              }, 60000);
+            }
+          }, 2000);
         });
     }
 
@@ -330,14 +371,15 @@
       // Status message
       if (status) {
         const msgs = {
-          sync: '⏳ Conectando...',
-          choosing: '⚔️ ¡Elegí tu movimiento!',
-          waiting: '⏳ Esperando al rival...',
-          resolving: '⚡ Resolviendo turno...',
-          faint_switch: '💀 Esperando cambio del rival...',
+          sync: '\u23f3 Conectando...',
+          choosing: '\u2694\ufe0f \u00a1Elegí tu movimiento!',
+          waiting: '\u23f3 Esperando al rival...',
+          resolving: '\u26a1 Resolviendo turno...',
+          faint_switch: '\ud83d\udcab Esperando cambio del rival...',
+          opponent_disconnected: '\u26a0\ufe0f Rival desconectado (60s)',
         };
         status.textContent = msgs[phase] || '';
-        status.style.color = phase === 'choosing' ? 'var(--green)' : 'var(--yellow)';
+        status.style.color = phase === 'choosing' ? 'var(--green)' : phase === 'opponent_disconnected' ? 'var(--red)' : 'var(--yellow)';
       }
 
       if (_pvpState.over || phase === 'sync' || phase === 'resolving') {
@@ -358,7 +400,7 @@
         rock: '#c8a060', ghost: '#7B2FBE', dragon: '#5C16C5', dark: '#555', steel: '#9E9E9E'
       };
       const CAT_ICO = { physical: '⚔️', special: '✨', status: '🔮' };
-      const waiting = phase === 'waiting';
+      const waiting = phase === 'waiting' || phase === 'opponent_disconnected';
 
       panel.innerHTML = (me.moves || []).map((mv, i) => {
         const md = MOVE_DATA[mv.name] || { power: mv.power || 40, type: 'normal', cat: 'physical' };

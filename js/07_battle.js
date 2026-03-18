@@ -5,6 +5,16 @@
       const ab = state.activeBattle;
       if (!ab) return;
 
+      // Verificar expiración (1 minuto = 60000ms)
+      const now = Date.now();
+      const battleTime = ab.timestamp || 0;
+      if (battleTime > 0 && (now - battleTime) > 60000) {
+        console.log('[RESTORE] La batalla guardada ha expirado (> 1 min).');
+        state.activeBattle = null;
+        scheduleSave();
+        return;
+      }
+
       // ── Caso PvP: la batalla online no se puede restaurar (canal cerrado), se considera derrota por abandono
       if (ab.isPvP) {
         const ov = document.createElement('div');

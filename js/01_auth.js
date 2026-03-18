@@ -279,6 +279,7 @@
                   _gymBadge: p._gymBadge || null,
                 }))
               : null,
+            timestamp: Date.now(),
           };
         } catch(e) {
           console.warn('[SAVE] Error serializando batalla activa:', e);
