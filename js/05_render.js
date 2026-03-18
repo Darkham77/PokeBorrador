@@ -509,9 +509,33 @@
       }).join('');
     }
 
+    // Sincronización de tiempo con API externa para evitar exploit de reloj local
+    let _serverTimeOffset = 0;
+    let _timeSynced = false;
+
+    async function syncServerTime() {
+      try {
+        const start = Date.now();
+        const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+        const data = await response.json();
+        const serverTime = new Date(data.datetime).getTime();
+        const end = Date.now();
+        const latency = (end - start) / 2;
+        _serverTimeOffset = serverTime - (end - latency);
+        _timeSynced = true;
+        console.log('[TIME] Sincronizado con servidor UTC. Offset:', _serverTimeOffset);
+      } catch (e) {
+        console.error('[TIME] Error sincronizando tiempo:', e);
+      }
+    }
+    syncServerTime();
+    setInterval(syncServerTime, 300000); // Re-sincronizar cada 5 min
+
     function getDayCycle() {
-      const now = new Date();
-      const hour = now.getHours();
+      const now = new Date(Date.now() + _serverTimeOffset);
+      const hour = now.getUTCHours(); // Usamos UTC para consistencia global
+      
+      // Ajuste de horas para ciclo día/noche (UTC)
       if (hour >= 6 && hour < 9) return 'morning';
       if (hour >= 9 && hour < 18) return 'day';
       if (hour >= 18 && hour < 21) return 'dusk';
@@ -525,7 +549,59 @@
       state.balls = knownBalls.reduce((sum, name) => sum + (state.inventory[name] || 0), 0);
     }
 
+    // ===== BUFF TICK SYSTEM & HUD =====
+    function initBuffTick() {
+      setInterval(() => {
+        let changed = false;
+        if (state.repelSecs > 0) { state.repelSecs--; changed = true; }
+        if (state.shinyBoostSecs > 0) { state.shinyBoostSecs--; changed = true; }
+        if (state.amuletCoinSecs > 0) { state.amuletCoinSecs--; changed = true; }
+        
+        if (changed) {
+          updateBuffHud();
+          // Guardar cada 30 segundos si hay buffs activos para persistencia
+          if (state.repelSecs % 30 === 0) scheduleSave();
+        }
+      }, 1000);
+    }
+    initBuffTick();
+
+    function updateBuffHud() {
+      let container = document.getElementById('buff-timers-hud');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'buff-timers-hud';
+        container.style.cssText = 'position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;';
+        document.body.appendChild(container);
+      }
+
+      const buffs = [
+        { id: 'repel', secs: state.repelSecs, icon: '🚫', color: '#ff6b6b', label: 'REPEL' },
+        { id: 'shiny', secs: state.shinyBoostSecs, icon: '✨', color: '#feca57', label: 'SHINY' },
+        { id: 'coin', secs: state.amuletCoinSecs, icon: '💰', color: '#1dd1a1', label: 'COIN' }
+      ];
+
+      let html = '';
+      buffs.forEach(b => {
+        if (b.secs > 0) {
+          const m = Math.floor(b.secs / 60);
+          const s = b.secs % 60;
+          const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
+          html += `
+            <div style="background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);border:1px solid ${b.color}88;border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:8px;animation:slideInLeft 0.3s ease;min-width:90px;box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+              <span style="font-size:18px;">${b.icon}</span>
+              <div style="display:flex;flex-direction:column;">
+                <span style="font-family:'Press Start 2P',monospace;font-size:6px;color:${b.color};">${b.label}</span>
+                <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fff;margin-top:2px;">${timeStr}</span>
+              </div>
+            </div>`;
+        }
+      });
+      container.innerHTML = html;
+    }
+
     function updateHud() {
+      updateBuffHud(); // Actualizar timers al refrescar HUD
       // Robust badge count check (handles legacy array format)
       const badgeCount = (Array.isArray(state.badges) ? state.badges.length : (parseInt(state.badges) || 0));
 

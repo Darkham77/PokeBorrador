@@ -97,7 +97,7 @@
       hatchEggs(); // Progress eggs on EACH click
 
       // Nueva Lógica de Repelente Estratégico
-      let repelActive = (state.repelUntil || 0) > Date.now();
+      let repelActive = (state.repelSecs || 0) > 0;
       let firstPokemon = state.team[0];
 
       // Random Trainer encounter check - Capped at 20% to ensure wild mons always show
@@ -138,7 +138,7 @@
       
       // Si el repelente está activo, solo permitimos Pokémon de nivel igual o superior al primero del equipo
       if (repelActive && firstPokemon && level < firstPokemon.level) {
-        const mins = Math.ceil((state.repelUntil - Date.now()) / 60000);
+        const mins = Math.ceil(state.repelSecs / 60);
         notify(`¡El Repelente alejó a un Pokémon de nivel ${level}! (${mins} min restantes)`, '🚫');
         return;
       }

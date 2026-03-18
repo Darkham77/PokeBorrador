@@ -175,6 +175,17 @@
       }
     }
 
+    @keyframes slideInLeft {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
     /* ===== TITLE SCREEN ===== */
     #title-screen {
       text-align: center;

@@ -1481,7 +1481,7 @@
         // Money reward + Battle Coins
         let moneyWon = b.isGym ? b.enemy.level * 80 : b.enemy.level * 20;
         if (b.isTrainer) moneyWon *= 2; // Trainers pay more
-        if ((state.amuletCoinUntil || 0) > Date.now()) moneyWon *= 2; // Moneda Amuleto
+        if ((state.amuletCoinSecs || 0) > 0) moneyWon *= 2; // Moneda Amuleto
         state.money += moneyWon;
         addLog(`¡Ganaste <span style="color:#22c55e;font-weight:bold;">₽${moneyWon.toLocaleString()}</span>!`, 'log-info');
 

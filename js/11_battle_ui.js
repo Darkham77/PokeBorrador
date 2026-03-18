@@ -41,11 +41,11 @@
         setTimeout(() => openMoveRelearnerMenu(p, forgotten), 100);
         return 'está recordando sus raíces...';
       },
-      'Repelente': _ => { state.repelUntil = Date.now() + 10 * 60 * 1000; return `activó el Repelente (10 min)`; },
-      'Superrepelente': _ => { state.repelUntil = Date.now() + 20 * 60 * 1000; return `activó el Superrepelente (20 min)`; },
-      'Máximo Repelente': _ => { state.repelUntil = Date.now() + 30 * 60 * 1000; return `activó el Máximo Repelente (30 min)`; },
-      'Ticket Shiny': _ => { state.shinyBoostUntil = Date.now() + 30 * 60 * 1000; return `activó el Ticket Shiny (30 min)`; },
-      'Moneda Amuleto': _ => { state.amuletCoinUntil = Date.now() + 30 * 60 * 1000; return `activó la Moneda Amuleto (30 min)`; },
+      'Repelente': _ => { state.repelSecs = (state.repelSecs || 0) + 10 * 60; return `activó el Repelente (10 min)`; },
+      'Superrepelente': _ => { state.repelSecs = (state.repelSecs || 0) + 20 * 60; return `activó el Superrepelente (20 min)`; },
+      'Máximo Repelente': _ => { state.repelSecs = (state.repelSecs || 0) + 30 * 60; return `activó el Máximo Repelente (30 min)`; },
+      'Ticket Shiny': _ => { state.shinyBoostSecs = (state.shinyBoostSecs || 0) + 30 * 60; return `activó el Ticket Shiny (30 min)`; },
+      'Moneda Amuleto': _ => { state.amuletCoinSecs = (state.amuletCoinSecs || 0) + 30 * 60; return `activó la Moneda Amuleto (30 min)`; },
     };
 
     function showBattleBag() {
