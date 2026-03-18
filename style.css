@@ -1549,9 +1549,11 @@
 
     /* ===== LAYOUT BASE ===== */
     #app {
-      max-width: 680px;
+      width: 100%;
+      max-width: 100%;
       margin: 0 auto;
       padding: 12px;
+      box-sizing: border-box;
     }
 
     /* Centro Pokémon ocupa todo el ancho siempre */

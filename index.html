@@ -130,10 +130,12 @@
         <div class="hud-nav">
           <button class="hud-nav-btn active" data-tab="map" onclick="showTab('map',this)"><span>🗺️</span><span>Mapa</span></button>
           <button class="hud-nav-btn" data-tab="team" onclick="showTab('team',this)"><span>⚡</span><span>Equipo</span></button>
+          <button class="hud-nav-btn" data-tab="gyms" onclick="showTab('gyms',this)"><span>🏆</span><span>Gimnasios</span></button>
           <button class="hud-nav-btn" data-tab="box" onclick="showTab('box',this)"><span>📦</span><span>Caja</span></button>
           <button class="hud-nav-btn" data-tab="bag" onclick="showTab('bag',this)"><span>🎒</span><span>Mochila</span></button>
-          <button class="hud-nav-btn" data-tab="shop" onclick="showTab('shop',this)"><span>🏪</span><span>Tienda</span></button>
-          <button class="hud-nav-btn" data-tab="social" onclick="showTab('social',this)"><span>🤝</span><span>Social</span></button>
+          <button class="hud-nav-btn" data-tab="market" onclick="showTab('market',this)"><span>🛒</span><span>PokéMart</span></button>
+          <button class="hud-nav-btn" data-tab="friends" onclick="showTab('friends',this)"><span>👥</span><span>Amigos</span></button>
+          <button class="hud-nav-btn" data-tab="daycare" onclick="showTab('daycare',this)"><span>🥚</span><span>Crianza</span></button>
         </div>
 
         <div class="hud-items">
@@ -185,11 +187,11 @@
             font-family:'Press Start 2P',monospace;z-index:2;"></span>
         </button>
         <button class="nav-btn" data-tab="box"
-          onclick="showTab('box',this);renderBox()"><span>📦</span><span>Caja</span></button>
+          onclick="showTab('box',this)"><span>📦</span><span>Caja</span></button>
         <button class="nav-btn" data-tab="bag"
-          onclick="showTab('bag',this);renderBag()"><span>🎒</span><span>Mochila</span></button>
+          onclick="showTab('bag',this)"><span>🎒</span><span>Mochila</span></button>
         <button class="nav-btn" data-tab="daycare"
-          onclick="showTab('daycare',this);renderDaycareUI()">
+          onclick="showTab('daycare',this)">
           <span>🥚</span><span>Crianza</span>
           <span id="daycare-nav-badge" style="display:none;position:absolute;top:4px;right:4px;
             background:var(--red);color:#fff;font-size:9px;font-weight:900;min-width:16px;height:16px;
