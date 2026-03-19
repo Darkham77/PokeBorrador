@@ -221,16 +221,11 @@
       const level = (idA === idB) ? 3 : 2;
       return { level, eggSpecies, motherId: mother.id, reason: 'OK', sharedGroups: shared };
     }
-    function calculateInheritance(pA, pB, iA, iB) {
+    function calculateInheritance(pA, pB) {
       const STATS = ['hp','atk','def','spa','spd','spe'];
-      const pItems = { 'Pesa Recia':'hp', 'Brazal Potencia':'atk', 'Fajín Potencia':'def', 'Lente Potencia':'spa', 'Banda Potencia':'spd', 'Tobillera Potencia':'spe' };
       const ivs = {}; STATS.forEach(s => ivs[s] = Math.floor(Math.random()*32));
-      const dk = iA === 'Lazo Destino' || iB === 'Lazo Destino';
-      const count = dk ? 5 : 3;
-      const gA = pItems[iA], gB = pItems[iB];
-      const used = new Set();
-      if(gA) { ivs[gA] = pA.ivs[gA]; used.add(gA); } else if(gB) { ivs[gB] = pB.ivs[gB]; used.add(gB); }
-      const rem = STATS.filter(s => !used.has(s)).sort(()=>Math.random()-0.5).slice(0, count - used.size);
+      const count = 3;
+      const rem = STATS.sort(()=>Math.random()-0.5).slice(0, count);
       rem.forEach(s => ivs[s] = Math.random() < 0.5 ? pA.ivs[s] : pB.ivs[s]);
       return ivs;
     }
@@ -245,27 +240,14 @@
       const hrs = Math.round(ms / 3600000);
       return `${hrs}h`;
     }
-    function _daycareInheritanceInfo(pA, pB) {
-      const powerItems = { 'Pesa Recia':'hp', 'Brazal Potencia':'atk', 'Fajín Potencia':'def', 'Lente Potencia':'spa', 'Banda Potencia':'spd', 'Tobillera Potencia':'spe' };
-      const hasDK = pA.heldItem === 'Lazo Destino' || pB.heldItem === 'Lazo Destino';
-      const count = hasDK ? 5 : 3;
-
-      let forced = null;
-      if (powerItems[pA.heldItem]) forced = { stat: powerItems[pA.heldItem], item: pA.heldItem, side: 'A' };
-      else if (powerItems[pB.heldItem]) forced = { stat: powerItems[pB.heldItem], item: pB.heldItem, side: 'B' };
-
-      const remainingStats = forced ? 5 : 6;
-      const remainingToPick = count - (forced ? 1 : 0);
-      const pickChance = remainingToPick / remainingStats;
+    function _daycareInheritanceInfo() {
+      const count = 3;
+      const pickChance = count / 6;
       const aChance = Math.round((pickChance / 2) * 100);
       const bChance = aChance;
       const rChance = Math.round((1 - pickChance) * 100);
 
-      const forcedLine = forced
-        ? `Stat forzado: <span style="color:var(--text);font-weight:800;">${_daycareStatLabel(forced.stat)}</span> por <span style="color:var(--text);font-weight:800;">${forced.item}</span> (${forced.side}).`
-        : '';
-
-      return { count, hasDK, aChance, bChance, rChance, forcedLine };
+      return { count, hasDK: false, aChance, bChance, rChance, forcedLine: '' };
     }
     function renderDaycareBreedingSummary(pA, pB, compat) {
       const inh = _daycareInheritanceInfo(pA, pB);
@@ -546,7 +528,7 @@
     async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
       const compat = checkCompatibility(pA,pB);
       if(compat.level===0) return;
-      const ivs = calculateInheritance(pA,pB,iA,iB);
+      const ivs = calculateInheritance(pA,pB);
       let moves = (EGG_MOVES_DB[compat.eggSpecies] || []).filter(m => (pA.moves||[]).concat(pB.moves||[]).map(x=>x.id||x).includes(m)).slice(0,2);
       const ready = new Date(dateObj.getTime() + 30*60*1000); // 30 mins
       await sb.from('eggs').insert({ player_id:pid, species:compat.eggSpecies, parent_a:pA.uid, parent_b:pB.uid, inherited_ivs:ivs, egg_moves:moves, shiny_roll:(Math.random() < 1/512), created_at:dateObj.toISOString(), hatch_ready_time:ready.toISOString(), incubation_speed_bonus:0 });

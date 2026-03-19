@@ -593,6 +593,7 @@ function initBuffTick() {
     if (state.repelSecs > 0) { state.repelSecs--; changed = true; }
     if (state.shinyBoostSecs > 0) { state.shinyBoostSecs--; changed = true; }
     if (state.amuletCoinSecs > 0) { state.amuletCoinSecs--; changed = true; }
+    if (state.luckyEggSecs > 0) { state.luckyEggSecs--; changed = true; }
 
     if (changed) {
       updateBuffPanel();
@@ -641,7 +642,8 @@ function updateBuffPanel() {
   const buffs = [
     { id: 'repel', secs: state.repelSecs },
     { id: 'shiny', secs: state.shinyBoostSecs },
-    { id: 'amulet', secs: state.amuletCoinSecs }
+    { id: 'amulet', secs: state.amuletCoinSecs },
+    { id: 'lucky-egg', secs: state.luckyEggSecs }
   ];
 
   buffs.forEach(b => {

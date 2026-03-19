@@ -1,3 +1,35 @@
+    // ===== MIGRATION: LUCKY EGG =====
+    function migrateLuckyEgg() {
+      if (!state.team) return;
+      let count = 0;
+      
+      // Check team
+      state.team.forEach(p => {
+        if (p.heldItem === 'Huevo Suerte' || p.heldItem === 'lucky_egg') {
+          p.heldItem = null;
+          count++;
+        }
+      });
+      
+      // Check box
+      if (state.box) {
+        state.box.forEach(p => {
+          if (p.heldItem === 'Huevo Suerte' || p.heldItem === 'lucky_egg') {
+            p.heldItem = null;
+            count++;
+          }
+        });
+      }
+      
+      if (count > 0) {
+        state.inventory['Huevo Suerte Pequeño'] = (state.inventory['Huevo Suerte Pequeño'] || 0) + count;
+        console.log(`[MIGRATION] Convertidos ${count} Huevo Suerte a Huevo Suerte Pequeño.`);
+        // Note: No notify here to avoid spamming on start, but the items are safe.
+      }
+    }
+    // Call it once on load (since this script is loaded after 04_state.js)
+    setTimeout(migrateLuckyEgg, 500);
+
     // ===== NOTIFICATION =====
     function notify(msg, icon = '✨') {
       const el = document.createElement('div');
@@ -88,13 +120,7 @@
 
     const SHOP_ITEMS = [
       // ── BREEDING ITEMS ──────────────────────────────────────────────────────────
-      { id: 'destiny_knot', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/destiny-knot.png', name: 'Lazo Destino', icon: '🔴', price: 0, unlockLv: 5, tier: 'rare', market: false, trainerShop: true, bcPrice: 200, desc: 'El Pokémon que lo lleva transmite 5 IVs en lugar de 3 al criar.', effect: null },
-      { id: 'power_bracer', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-bracer.png', name: 'Brazal Potencia', icon: '💪', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar el Ataque Físico del padre al criar.', effect: null },
-      { id: 'power_belt', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-belt.png', name: 'Fajín Potencia', icon: '🛡️', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar la Defensa del padre al criar.', effect: null },
-      { id: 'power_lens', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-lens.png', name: 'Lente Potencia', icon: '🔮', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar el Ataque Especial del padre al criar.', effect: null },
-      { id: 'power_band', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-band.png', name: 'Banda Potencia', icon: '🎗️', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar la Defensa Especial del padre al criar.', effect: null },
-      { id: 'power_anklet', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-anklet.png', name: 'Tobillera Potencia', icon: '⚡', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar la Velocidad del padre al criar.', effect: null },
-      { id: 'power_weight', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-weight.png', name: 'Pesa Recia', icon: '❤️', price: 0, unlockLv: 5, tier: 'uncommon', market: false, trainerShop: true, bcPrice: 120, desc: 'Garantiza heredar los HP del padre al criar.', effect: null },
+
 
       // ── POKÉBALLS ──────────────────────────────────────────────────────────────
       {
@@ -105,33 +131,33 @@
       },
       {
         id: 'great_ball', cat: 'pokeballs', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png',
-        name: 'Súper Ball', icon: '🔵', price: 600, unlockLv: 3, tier: 'rare',
+        name: 'Súper Ball', icon: '🔵', price: 500, unlockLv: 3, tier: 'rare',
         desc: 'Tasa de captura x1.5 respecto a la Pokéball normal.',
         effect: (qty) => { state.inventory['Súper Ball'] = (state.inventory['Súper Ball'] || 0) + qty; state.balls += Math.floor(qty * 1.5); }
       },
       {
         id: 'ultra_ball', cat: 'pokeballs', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png',
-        name: 'Ultra Ball', icon: '⚫', price: 1200, unlockLv: 5, tier: 'epic',
+        name: 'Ultra Ball', icon: '⚫', price: 1000, unlockLv: 5, tier: 'epic',
         desc: 'Tasa de captura x2. Alta efectividad contra Pokémon raros.',
         effect: (qty) => { state.inventory['Ultra Ball'] = (state.inventory['Ultra Ball'] || 0) + qty; state.balls += qty * 2; }
       },
       {
         id: 'net_ball', cat: 'pokeballs', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/net-ball.png',
-        name: 'Red Ball', icon: '🕸️', price: 1000, unlockLv: 4, tier: 'rare',
+        name: 'Red Ball', icon: '🕸️', price: 800, unlockLv: 4, tier: 'rare',
         desc: 'Tasa de captura x3 contra Pokémon de tipo Agua o Bicho.',
         effect: (qty) => { state.inventory['Red Ball'] = (state.inventory['Red Ball'] || 0) + qty; state.balls += Math.floor(qty * 1.8); }
       },
       {
         id: 'dusk_ball', cat: 'pokeballs', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dusk-ball.png',
-        name: 'Ball Oscura', icon: '🌑', price: 1000, unlockLv: 4, tier: 'rare',
+        name: 'Ocaso Ball', icon: '🌑', price: 800, unlockLv: 4, tier: 'rare',
         desc: 'Tasa de captura x3 en cuevas o de noche.',
-        effect: (qty) => { state.inventory['Ball Oscura'] = (state.inventory['Ball Oscura'] || 0) + qty; state.balls += Math.floor(qty * 1.8); }
+        effect: (qty) => { state.inventory['Ocaso Ball'] = (state.inventory['Ocaso Ball'] || 0) + qty; state.balls += Math.floor(qty * 1.8); }
       },
       {
         id: 'timer_ball', cat: 'pokeballs', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/timer-ball.png',
-        name: 'Ball Temporizadora', icon: '⏱️', price: 1000, unlockLv: 6, tier: 'epic',
+        name: 'Turno Ball', icon: '⏱️', price: 800, unlockLv: 6, tier: 'epic',
         desc: 'Tasa de captura que aumenta según turnos transcurridos.',
-        effect: (qty) => { state.inventory['Ball Temporizadora'] = (state.inventory['Ball Temporizadora'] || 0) + qty; state.balls += qty; }
+        effect: (qty) => { state.inventory['Turno Ball'] = (state.inventory['Turno Ball'] || 0) + qty; state.balls += qty; }
       },
       {
         id: 'master_ball', cat: 'pokeballs', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png',
@@ -143,19 +169,19 @@
       // ── POCIONES ───────────────────────────────────────────────────────────────
       {
         id: 'pocion', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/potion.png',
-        name: 'Poción', icon: '🧪', price: 300, unlockLv: 1, tier: 'common',
+        name: 'Poción', icon: '🧪', price: 200, unlockLv: 1, tier: 'common',
         desc: 'Restaura 20 HP a un Pokémon.',
         effect: (qty) => { state.inventory['Poción'] = (state.inventory['Poción'] || 0) + qty; }
       },
       {
         id: 'super_pocion', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-potion.png',
-        name: 'Super Poción', icon: '🔵', price: 700, unlockLv: 3, tier: 'rare',
+        name: 'Super Poción', icon: '🔵', price: 600, unlockLv: 3, tier: 'rare',
         desc: 'Restaura 50 HP a un Pokémon.',
         effect: (qty) => { state.inventory['Super Poción'] = (state.inventory['Super Poción'] || 0) + qty; }
       },
       {
         id: 'hiper_pocion', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/hyper-potion.png',
-        name: 'Hiper Poción', icon: '🟣', price: 1200, unlockLv: 5, tier: 'epic',
+        name: 'Hiper Poción', icon: '🟣', price: 1500, unlockLv: 5, tier: 'epic',
         desc: 'Restaura 200 HP a un Pokémon.',
         effect: (qty) => { state.inventory['Hiper Poción'] = (state.inventory['Hiper Poción'] || 0) + qty; }
       },
@@ -167,7 +193,7 @@
       },
       {
         id: 'revivir', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/revive.png',
-        name: 'Revivir', icon: '❤️', price: 1500, unlockLv: 5, tier: 'epic',
+        name: 'Revivir', icon: '❤️', price: 2000, unlockLv: 5, tier: 'epic',
         desc: 'Revive a un Pokémon debilitado con la mitad del HP.',
         effect: (qty) => { state.inventory['Revivir'] = (state.inventory['Revivir'] || 0) + qty; }
       },
@@ -235,86 +261,66 @@
       // ── PIEDRAS DE EVOLUCIÓN ───────────────────────────────────────────────────
       {
         id: 'piedra_fuego', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png',
-        name: 'Piedra Fuego', icon: '🔥', price: 2000, unlockLv: 4, tier: 'rare',
+        name: 'Piedra Fuego', icon: '🔥', price: 3000, unlockLv: 4, tier: 'rare',
         desc: 'Hace evolucionar a Vulpix, Growlithe, Eevee y otros Pokémon de Fuego.',
         type: 'stone', stoneType: 'fire',
         effect: (qty) => { state.inventory['Piedra Fuego'] = (state.inventory['Piedra Fuego'] || 0) + qty; }
       },
       {
         id: 'piedra_agua', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/water-stone.png',
-        name: 'Piedra Agua', icon: '💧', price: 2000, unlockLv: 4, tier: 'rare',
+        name: 'Piedra Agua', icon: '💧', price: 3000, unlockLv: 4, tier: 'rare',
         desc: 'Hace evolucionar a Poliwhirl, Shellder, Staryu y Eevee.',
         type: 'stone', stoneType: 'water',
         effect: (qty) => { state.inventory['Piedra Agua'] = (state.inventory['Piedra Agua'] || 0) + qty; }
       },
       {
         id: 'piedra_trueno', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-stone.png',
-        name: 'Piedra Trueno', icon: '⚡', price: 2000, unlockLv: 4, tier: 'rare',
+        name: 'Piedra Trueno', icon: '⚡', price: 3000, unlockLv: 4, tier: 'rare',
         desc: 'Hace evolucionar a Pikachu y Eevee.',
         type: 'stone', stoneType: 'thunder',
         effect: (qty) => { state.inventory['Piedra Trueno'] = (state.inventory['Piedra Trueno'] || 0) + qty; }
       },
       {
         id: 'piedra_hoja', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leaf-stone.png',
-        name: 'Piedra Hoja', icon: '🌿', price: 2000, unlockLv: 4, tier: 'rare',
+        name: 'Piedra Hoja', icon: '🌿', price: 3000, unlockLv: 4, tier: 'rare',
         desc: 'Hace evolucionar a Gloom, Weepinbell, Exeggcute y Eevee.',
         type: 'stone', stoneType: 'leaf',
         effect: (qty) => { state.inventory['Piedra Hoja'] = (state.inventory['Piedra Hoja'] || 0) + qty; }
       },
       {
         id: 'piedra_luna', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/moon-stone.png',
-        name: 'Piedra Lunar', icon: '🌙', price: 2500, unlockLv: 5, tier: 'epic',
+        name: 'Piedra Lunar', icon: '🌙', price: 3000, unlockLv: 5, tier: 'epic',
         desc: 'Hace evolucionar a Nidorina, Nidorino, Clefairy y Jigglypuff.',
         type: 'stone', stoneType: 'moon',
         effect: (qty) => { state.inventory['Piedra Lunar'] = (state.inventory['Piedra Lunar'] || 0) + qty; }
       },
-      {
-        id: 'piedra_sol', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sun-stone.png',
-        name: 'Piedra Solar', icon: '☀️', price: 3000, unlockLv: 6, tier: 'epic',
-        desc: 'Hace evolucionar a Gloom y Sunkern.',
-        type: 'stone', stoneType: 'sun',
-        effect: (qty) => { state.inventory['Piedra Solar'] = (state.inventory['Piedra Solar'] || 0) + qty; }
-      },
-      {
-        id: 'piedra_hielo', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ice-stone.png',
-        name: 'Piedra Hielo', icon: '🧊', price: 3000, unlockLv: 7, tier: 'epic',
-        desc: 'Hace evolucionar a Eevee y Alolan forms.',
-        type: 'stone', stoneType: 'ice',
-        effect: (qty) => { state.inventory['Piedra Hielo'] = (state.inventory['Piedra Hielo'] || 0) + qty; }
-      },
-      {
-        id: 'piedra_brillo', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/shiny-stone.png',
-        name: 'Piedra Brillo', icon: '✨', price: 3500, unlockLv: 7, tier: 'legend',
-        desc: 'Hace evolucionar a Togetic, Roselia y Minccino.',
-        type: 'stone', stoneType: 'shiny',
-        effect: (qty) => { state.inventory['Piedra Brillo'] = (state.inventory['Piedra Brillo'] || 0) + qty; }
-      },
+
 
       // ── ÍTEMS EQUIPABLES (held items) — solo en Tienda Entrenador ──────────────
       {
         id: 'exp_share', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/exp-share.png',
-        name: 'Compartir EXP', icon: '⭐', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 300,
+        name: 'Compartir EXP', icon: '⭐', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 400,
         desc: 'Equipable. El portador gana EXP aunque no participe en batalla.',
         type: 'held', heldEffect: 'exp_share',
         effect: (qty) => { state.inventory['Compartir EXP'] = (state.inventory['Compartir EXP'] || 0) + qty; }
       },
       {
-        id: 'lucky_egg', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucky-egg.png',
-        name: 'Huevo Suerte', icon: '🥚', price: 0, unlockLv: 7, tier: 'legend', market: false, trainerShop: true, bcPrice: 500,
-        desc: 'Equipable. El portador gana 50% más de EXP en cada batalla.',
-        type: 'held', heldEffect: 'lucky_egg',
-        effect: (qty) => { state.inventory['Huevo Suerte'] = (state.inventory['Huevo Suerte'] || 0) + qty; }
+        id: 'lucky_egg', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucky-egg.png',
+        name: 'Huevo Suerte Pequeño', icon: '🥚', price: 0, unlockLv: 7, tier: 'legend', market: false, trainerShop: true, bcPrice: 500,
+        desc: 'Aumenta la EXP ganada en un 50% durante 30 minutos.',
+        type: 'booster',
+        effect: (qty) => { state.inventory['Huevo Suerte Pequeño'] = (state.inventory['Huevo Suerte Pequeño'] || 0) + qty; }
       },
       {
         id: 'leftovers', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leftovers.png',
-        name: 'Restos', icon: '🍖', price: 0, unlockLv: 6, tier: 'epic', market: false, trainerShop: true, bcPrice: 600,
+        name: 'Restos', icon: '🍖', price: 0, unlockLv: 6, tier: 'epic', market: false, trainerShop: true, bcPrice: 750,
         desc: 'Equipable. El portador recupera 1/16 de su HP máx. cada turno.',
         type: 'held', heldEffect: 'leftovers',
         effect: (qty) => { state.inventory['Restos'] = (state.inventory['Restos'] || 0) + qty; }
       },
       {
         id: 'shell_bell', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/shell-bell.png',
-        name: 'Cascabel Concha', icon: '🔔', price: 0, unlockLv: 6, tier: 'epic', market: false, trainerShop: true, bcPrice: 500,
+        name: 'Cascabel Concha', icon: '🔔', price: 0, unlockLv: 6, tier: 'epic', market: false, trainerShop: true, bcPrice: 750,
         desc: 'Equipable. El portador recupera HP igual a 1/8 del daño infligido.',
         type: 'held', heldEffect: 'shell_bell',
         effect: (qty) => { state.inventory['Cascabel Concha'] = (state.inventory['Cascabel Concha'] || 0) + qty; }
@@ -390,24 +396,7 @@
         desc: 'Aumenta los PP máximos de un movimiento en un 20%.',
         effect: (qty) => { state.inventory['Subida PP'] = (state.inventory['Subida PP'] || 0) + qty; }
       },
-      {
-        id: 'hp_up', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/hp-up.png',
-        name: 'Vitamina HP', icon: '❤️', price: 4000, unlockLv: 5, tier: 'epic',
-        desc: 'Aumenta permanentemente los PS base de un Pokémon.',
-        effect: (qty) => { state.inventory['Vitamina HP'] = (state.inventory['Vitamina HP'] || 0) + qty; }
-      },
-      {
-        id: 'protein', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/protein.png',
-        name: 'Proteína', icon: '💪', price: 4000, unlockLv: 5, tier: 'epic',
-        desc: 'Aumenta permanentemente el Ataque base de un Pokémon.',
-        effect: (qty) => { state.inventory['Proteína'] = (state.inventory['Proteína'] || 0) + qty; }
-      },
-      {
-        id: 'iron', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/iron.png',
-        name: 'Hierro', icon: '🛡️', price: 4000, unlockLv: 5, tier: 'epic',
-        desc: 'Aumenta permanentemente la Defensa base de un Pokémon.',
-        effect: (qty) => { state.inventory['Hierro'] = (state.inventory['Hierro'] || 0) + qty; }
-      },
+
       {
         id: 'move_relearner', cat: 'utility', sprite: 'assets/items/recordador.png',
         name: 'Recordador de Movimientos', icon: '🧠', price: 0, unlockLv: 1, tier: 'rare', market: false, trainerShop: true, bcPrice: 150,
@@ -416,7 +405,7 @@
       },
       {
         id: 'ticket_shiny', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png',
-        name: 'Ticket Shiny', icon: 'âœ¨', price: 0, market: false, trainerShop: true, bcPrice: 400, unlockLv: 1, tier: 'epic', type: 'booster',
+        name: 'Ticket Shiny', icon: 'âœ¨', price: 0, market: false, trainerShop: true, bcPrice: 1000, unlockLv: 1, tier: 'epic', type: 'booster',
         desc: 'Aumenta temporalmente la probabilidad de encontrar Pokemon Shiny durante 30 minutos.',
         effect: (qty) => { state.inventory['Ticket Shiny'] = (state.inventory['Ticket Shiny'] || 0) + qty; }
       },
@@ -426,19 +415,19 @@
         desc: 'Aumenta el dinero obtenido en las batallas durante 30 minutos.',
         effect: (qty) => { state.inventory['Moneda Amuleto'] = (state.inventory['Moneda Amuleto'] || 0) + qty; }
       },      { id: 'tm_return', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png',
-        name: 'MT27 Retribución', icon: '📀', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 200,
+        name: 'MT27 Retribución', icon: '📀', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 300,
         desc: 'Enseña Retribución. Potencia según la amistad del Pokémon (máx. 102).',
         effect: (qty) => { state.inventory['MT Retribución'] = (state.inventory['MT Retribución'] || 0) + qty; }
       },
       {
         id: 'tm_earthquake', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-ground.png',
-        name: 'MT26 Terremoto', icon: '📀', price: 0, unlockLv: 6, tier: 'epic', market: false, trainerShop: true, bcPrice: 350,
+        name: 'MT26 Terremoto', icon: '📀', price: 0, unlockLv: 6, tier: 'epic', market: false, trainerShop: true, bcPrice: 500,
         desc: 'Enseña Terremoto. Movimiento Tierra de 100 de potencia.',
         effect: (qty) => { state.inventory['MT Terremoto'] = (state.inventory['MT Terremoto'] || 0) + qty; }
       },
       {
         id: 'tm_blizzard', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-ice.png',
-        name: 'MT14 Ventisca', icon: '📀', price: 0, unlockLv: 7, tier: 'legend', market: false, trainerShop: true, bcPrice: 300,
+        name: 'MT14 Ventisca', icon: '📀', price: 0, unlockLv: 7, tier: 'legend', market: false, trainerShop: true, bcPrice: 500,
         desc: 'Enseña Ventisca. Movimiento Hielo de 110 de potencia.',
         effect: (qty) => { state.inventory['MT Ventisca'] = (state.inventory['MT Ventisca'] || 0) + qty; }
       },

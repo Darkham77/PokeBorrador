@@ -352,12 +352,11 @@ function showBattleEndUI(callback, locId) {
         `;
     document.getElementById('battle-continue-btn').onclick = () => {
       resetLog();
-      callback();
+      callback(false); // callback(toCity=false)
     };
     document.getElementById('battle-city-btn').onclick = () => {
       resetLog();
-      showScreen('game-screen');
-      showTab('map');
+      callback(true); // callback(toCity=true)
     };
   } else {
     mb.style.display = 'flex';
@@ -365,7 +364,7 @@ function showBattleEndUI(callback, locId) {
     mb.innerHTML = '<button id="battle-continue-btn" class="battle-continue-btn-full" style="padding:14px;margin-top:4px;background:linear-gradient(135deg,#6BCB77 0%,#3b82f6 100%);border:none;border-radius:14px;color:#fff;font-family:inherit;font-size:12px;font-weight:bold;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(107,203,119,0.3);">▶ CONTINUAR</button>';
     document.getElementById('battle-continue-btn').onclick = () => {
       resetLog();
-      callback();
+      callback(false);
     };
   }
 }
@@ -481,10 +480,19 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
     case 'stat_down_enemy_spd': tgtStages.spd = Math.max(-6, (tgtStages.spd || 0) - 1); addLogFn(`¡Bajó la Def.Esp de ${tgt.name}!`, 'log-info'); break;
     case 'stat_down_enemy_acc': tgtStages.acc = Math.max(-6, (tgtStages.acc || 0) - 1); addLogFn(`¡Bajó la Precisión de ${tgt.name}!`, 'log-info'); break;
     case 'stat_up_self_atk': srcStages.atk = Math.min(6, (srcStages.atk || 0) + 1); addLogFn(`¡Subió el Ataque de ${src.name}!`, 'log-info'); break;
+    case 'stat_up_self_atk_2': srcStages.atk = Math.min(6, (srcStages.atk || 0) + 2); addLogFn(`¡Subió mucho el Ataque de ${src.name}!`, 'log-info'); break;
     case 'stat_up_self_def': srcStages.def = Math.min(6, (srcStages.def || 0) + 1); addLogFn(`¡Subió la Defensa de ${src.name}!`, 'log-info'); break;
     case 'stat_up_self_def_2': srcStages.def = Math.min(6, (srcStages.def || 0) + 2); addLogFn(`¡Subió mucho la Defensa de ${src.name}!`, 'log-info'); break;
     case 'stat_up_self_spa_2': srcStages.spa = Math.min(6, (srcStages.spa || 0) + 2); addLogFn(`¡Subió mucho el At.Esp de ${src.name}!`, 'log-info'); break;
     case 'stat_up_self_spe_2': srcStages.spe = Math.min(6, (srcStages.spe || 0) + 2); addLogFn(`¡Subió mucho la Velocidad de ${src.name}!`, 'log-info'); break;
+    case 'stat_up_self_eva_2': srcStages.eva = Math.min(6, (srcStages.eva || 0) + 2); addLogFn(`¡Aumentó mucho la evasión de ${src.name}!`, 'log-info'); break;
+    case 'stat_down_enemy_def_2': tgtStages.def = Math.max(-6, (tgtStages.def || 0) - 2); addLogFn(`¡Bajó mucho la Defensa de ${tgt.name}!`, 'log-info'); break;
+    case 'stat_down_enemy_atk_2': tgtStages.atk = Math.max(-6, (tgtStages.atk || 0) - 2); addLogFn(`¡Bajó mucho el Ataque de ${tgt.name}!`, 'log-info'); break;
+    case 'heal_50':
+      const healAmt = Math.floor(src.maxHp / 2);
+      src.hp = Math.min(src.maxHp, src.hp + healAmt);
+      addLogFn(`¡${src.name} recuperó salud! (+${healAmt} HP)`, 'log-info');
+      break;
     case 'burn': case 'burn_10':
       if (!tgt.status) {
         if (tgt.type === 'fire') { addLogFn(`¡${tgt.name} es inmune a las quemaduras!`, 'log-info'); break; }
@@ -534,6 +542,51 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
         addLogFn(`¡${tgt.name} fue infectado por drenadoras!`, 'log-info');
       } else {
         addLogFn(`¡${tgt.name} ya está infectado!`, 'log-info');
+      }
+      break;
+    case 'metronome':
+      addLogFn(`¡${src.name} está usando Metrónomo!`, 'log-info');
+      addLogFn('¡Pero no pasó nada aún!', 'log-enemy');
+      break;
+    case 'roar':
+      addLogFn(`¡${src.name} rugió con fuerza!`, 'log-info');
+      addLogFn('¡Pero el rival no se asustó!', 'log-enemy');
+      break;
+    case 'disable':
+      addLogFn(`¡${src.name} intentó anular un movimiento!`, 'log-info');
+      addLogFn('¡Pero falló!', 'log-enemy');
+      break;
+    case 'encore':
+      addLogFn(`¡${src.name} quiere un Otra Vez!`, 'log-info');
+      addLogFn('¡Pero no funcionó!', 'log-enemy');
+      break;
+    case 'focus_energy':
+      addLogFn(`¡${src.name} se está concentrando!`, 'log-info');
+      addLogFn('¡Su tasa de críticos aumentó!', 'log-info');
+      // Simple implementation: just a log for now, could add a flag if needed
+      src.focusEnergy = true;
+      break;
+    case 'transform':
+      const originalName = src.name;
+      src.id = tgt.id;
+      src.name = tgt.name;
+      src.type = tgt.type;
+      src.type2 = tgt.type2 || (POKE_TYPE2 ? POKE_TYPE2[tgt.id] : null);
+      src.atk = tgt.atk;
+      src.def = tgt.def;
+      src.spa = tgt.spa;
+      src.spd = tgt.spd;
+      src.spe = tgt.spe;
+      // Copy moves with 5 PP
+      src.moves = JSON.parse(JSON.stringify(tgt.moves)).map(m => {
+        m.pp = 5;
+        m.maxPP = 5;
+        return m;
+      });
+      addLogFn(`¡${originalName} se transformó en ${tgt.name}!`, 'log-info');
+      // No transition needed here as updateBattleUI will handle sprite shift
+      if (typeof updateBattleUI === 'function') {
+        setTimeout(updateBattleUI, 50);
       }
       break;
   }
@@ -1230,8 +1283,15 @@ function executeCatch(ballName) {
   else if (ballName === 'Red Ball') {
     ballMult = (b.enemy.type === 'water' || b.enemy.type === 'bug') ? 3.5 : 1;
   }
-  else if (ballName === 'Ocaso Ball') { ballMult = 2; }
-  else if (ballName === 'Turno Ball') { ballMult = Math.min(4, 1 + (b.turn || 1) * 0.3); }
+  else if (ballName === 'Ocaso Ball') {
+    const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
+    const locId = b.locationId;
+    const isCave = ['cave', 'mt_moon', 'rock_tunnel', 'cerulean_cave', 'victory_road', 'diglett_cave'].includes(locId);
+    ballMult = (cycle === 'night' || isCave) ? 3 : 1;
+  }
+  else if (ballName === 'Turno Ball') {
+    ballMult = Math.min(4, 1 + (b.turn || 1) * 0.3);
+  }
 
   const selectedItem = SHOP_ITEMS.find(i => i.name === ballName);
   state.activeBallSrc = selectedItem ? selectedItem.sprite : 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
@@ -1365,7 +1425,7 @@ function catchSuccess(enemy) {
 
   const _captureLocId = state.lastWildLocId || b.locationId || null;
   processLearnMoveQueue(b.learnQueue || [], () => {
-    showBattleEndUI(() => {
+    showBattleEndUI((toCity) => {
       // Evolution check on capture too
       const potentialEvos = state.team.filter(p => 
         (p.uid === b.player.uid || (b.participants && b.participants.includes(p.uid)) || p.heldItem === 'Compartir EXP') && p.hp > 0
@@ -1375,7 +1435,7 @@ function catchSuccess(enemy) {
         if (evoIdx >= potentialEvos.length) {
           showScreen('game-screen');
           showTab('map');
-          if (_captureLocId) {
+          if (!toCity && _captureLocId) {
             setTimeout(() => goLocation(_captureLocId), 50);
           }
           return;
@@ -1413,7 +1473,7 @@ function awardBattleExperience(isCapture = false) {
     // If it participated but was switched, it also gets full share (standard pokemon logic)
     // Actually, in many games exp is split. For simplicity in this fan game, we'll keep it generous.
 
-    if (p.heldItem === 'Huevo Suerte') pExp = Math.floor(pExp * 1.5);
+    if ((state.luckyEggSecs || 0) > 0) pExp = Math.floor(pExp * 1.5);
     
     addLog(`${p.name} ganó <span style="color:#6BCB77;font-weight:bold;">${pExp} EXP</span>.`, 'log-player');
 
@@ -1563,7 +1623,7 @@ function endBattle(won) {
         : (state.lastWildLocId || b.locationId || null);
     // Show learn-move menus (if any) BEFORE the battle end UI
     processLearnMoveQueue(b.learnQueue || [], () => {
-      showBattleEndUI(() => {
+      showBattleEndUI((toCity) => {
         // Evolution check: Check all team members that could have leveled up, not just active one
         // For simplicity, we'll check everyone who participated or has Exp Share
         const potentialEvos = state.team.filter(p => 
@@ -1573,7 +1633,7 @@ function endBattle(won) {
         const _goToMap = () => {
           showScreen('game-screen');
           showTab('map');
-          if (_locId) {
+          if (!toCity && _locId) {
             setTimeout(() => goLocation(_locId), 50);
           }
         };

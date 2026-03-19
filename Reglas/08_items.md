@@ -34,9 +34,7 @@ Usables desde la mochila fuera de batalla y desde el menú de mochila en batalla
 | Elixir Máximo | Restaura todos los PP al máximo |
 | Caramelo Raro | +1 nivel (hasta nivel 100) |
 | Subida PP | +20% PP máx. del primer movimiento que no esté al máximo |
-| Vitamina HP | +5% del HP base como bonus permanente |
-| Proteína | +8% del Ataque como bonus permanente |
-| Hierro | +8% de la Defensa como bonus permanente |
+| Subida PP | +20% PP máx. del primer movimiento que no esté al máximo |
 | Recordador de Movimientos | Permite elegir y recuperar cualquier movimiento olvidado del learnset (Solo fuera de combate) |
 
 ### MTs (Máquinas Técnicas)
@@ -55,8 +53,10 @@ Usables desde la mochila fuera de batalla y desde el menú de mochila en batalla
 | Repelente | Bloquea Pokémon de nivel inferior al tuyo | 10 minutos |
 | Superrepelente | Bloquea Pokémon de nivel inferior al tuyo | 20 minutos |
 | Máximo Repelente | Bloquea Pokémon de nivel inferior al tuyo | 30 minutos |
-| Ticket Shiny | Divide SHINY_RATE por 10 (1/200 en vez de 1/2000) | 30 minutos |
+| Ticket Shiny | Divide SHINY_RATE por 2 (1/1000 en vez de 1/2000) | 30 minutos |
 | Moneda Amuleto | Duplica el dinero ganado en batallas | 30 minutos |
+| Huevo Suerte Pequeño | Aumenta la EXP ganada en un 50% | 30 minutos |
+
 
 ---
 
@@ -89,7 +89,8 @@ Equipados en un Pokémon específico. Se activan automáticamente en batalla.
 | Ítem | Efecto |
 |---|---|
 | Compartir EXP | El portador gana `floor(baseExp × 0.5)` aunque no luche |
-| Huevo Suerte | El portador gana `floor(baseExp × 1.5)` |
+
+
 
 ### De Crianza
 

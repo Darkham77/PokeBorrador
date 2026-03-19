@@ -54,15 +54,16 @@ Los ítems de la Trainer Shop solo se compran con Battle Coins y requieren un ni
 | Banda Potencia | 120 | 5 | Herencia SpD en crianza |
 | Tobillera Potencia | 120 | 5 | Herencia SPE en crianza |
 | Pesa Recia | 120 | 5 | Herencia HP en crianza |
-| Compartir EXP | 300 | 4 | EXP aunque no luche |
+| Compartir EXP | 400 | 4 | EXP aunque no luche |
 | Lente Zoom | 400 | 5 | +Críticos |
 | Lazo Destino | 200 | 5 | 5 IVs heredados |
 | Caramelo Raro | 500 | 5 | +1 nivel al instante |
-| Restos | 600 | 6 | Recupera 1/16 HP/turno |
-| Cascabel Concha | 500 | 6 | Recupera 1/8 del daño infligido |
+| Restos | 750 | 6 | Recupera 1/16 HP/turno |
+| Cascabel Concha | 750 | 6 | Recupera 1/8 del daño infligido |
 | Cinta Elegida | 800 | 7 | +50% Ataque (solo 1 movimiento) |
-| Huevo Suerte | 500 | 7 | +50% EXP ganada |
+| Huevo Suerte Pequeño | 500 | 7 | +50% EXP ganada (30 min) |
 | Banda Focus | 700 | 8 | Sobrevive con 1 HP |
+| Ticket Shiny | 1000 | 1 | x2 Shiny rate |
 
 ---
 
@@ -91,11 +92,11 @@ Precios en ₽ y nivel de entrenador requerido:
 | Superrepelente | 6000 | 3 | Bloquea nivel inferior 20 min |
 | Máximo Repelente | 9000 | 5 | Bloquea nivel inferior 30 min |
 | Cura Quemadura | 250 | 2 | Cura quemadura |
-| Super Poción | 700 | 3 | +50 HP |
+| Super Poción | 600 | 3 | +50 HP |
 | Cura Total | 600 | 4 | Cura todos los estados |
 | Éter | 1.200 | 4 | +10 PP a un movimiento |
-| Hiper Poción | 1.200 | 5 | +200 HP |
-| Revivir | 1.500 | 5 | Revive con 50% HP |
+| Hiper Poción | 1.500 | 5 | +200 HP |
+| Revivir | 2.000 | 5 | Revive con 50% HP |
 | Poción Máxima | 2.500 | 7 | HP completo |
 | Revivir Máximo | 3.000 | 8 | Revive con HP completo |
 | Elixir Máximo | 4.500 | 8 | Restaura todos los PP |
@@ -103,21 +104,14 @@ Precios en ₽ y nivel de entrenador requerido:
 ### Piedras de Evolución
 | Ítem | Precio | Nivel req. |
 |---|---|---|
-| Piedra Fuego | 2.000 | 4 |
-| Piedra Agua | 2.000 | 4 |
-| Piedra Trueno | 2.000 | 4 |
-| Piedra Hoja | 2.000 | 4 |
-| Piedra Lunar | 2.500 | 5 |
+| Piedra Fuego | 3.000 | 4 |
+| Piedra Agua | 3.000 | 4 |
+| Piedra Trueno | 3.000 | 4 |
+| Piedra Hoja | 3.000 | 4 |
+| Piedra Lunar | 3.000 | 5 |
 | Piedra Solar | 3.000 | 6 |
 | Piedra Hielo | 3.000 | 7 |
 | Piedra Brillo | 3.500 | 7 |
-
-### Vitaminas (permanentes)
-| Ítem | Precio | Nivel req. | Efecto |
-|---|---|---|---|
-| Vitamina HP | 4.000 | 5 | +5% HP base permanente |
-| Proteína | 4.000 | 5 | +8% Ataque permanente |
-| Hierro | 4.000 | 5 | +8% Defensa permanente |
 
 ---
 

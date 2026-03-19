@@ -106,9 +106,9 @@ baseExp = floor(enemy.level × 8)   // doble que salvaje
 expGain = floor(enemy.level × 4 / 2) = floor(enemy.level × 2)  // 50% de derrota
 ```
 
-### Ítem Huevo Suerte (held item)
+### Ítem Huevo Suerte Pequeño (booster)
 ```
-expFinal = floor(baseExp × 1.5)
+expFinal = floor(baseExp × 1.5) // Mientras el buff esté activo
 ```
 
 ### Ítem Compartir EXP (held item)
@@ -122,7 +122,7 @@ El Pokémon portador recibe `floor(baseExp × 0.5)` aunque no haya participado e
 const SHINY_RATE = 2000;  // 1/2000 por Pokémon creado
 
 // Con Ticket Shiny activo (30 minutos):
-const activeRate = Math.floor(SHINY_RATE / 10);  // = 200 → 1/200
+const activeRate = Math.floor(SHINY_RATE / 2);  // = 1000 → 1/1000
 ```
 
 La probabilidad se evalúa en `makePokemon()` con:
@@ -135,7 +135,7 @@ const isShiny = Math.random() < (1 / activeRate);
 | Condición | Tasa | Probabilidad |
 |---|---|---|
 | Normal | 1/2000 | 0.05% |
-| Ticket Shiny activo | 1/200 | 0.5% |
+| Ticket Shiny activo | 1/1000 | 0.1% |
 | Huevo de crianza (fijo) | 1/512 | 0.195% |
 
 ---

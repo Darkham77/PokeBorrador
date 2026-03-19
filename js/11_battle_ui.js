@@ -22,9 +22,6 @@
       'Cura Total': p => { if (!p.status && p.hp === p.maxHp) return null; p.hp = p.maxHp; p.status = null; p.sleepTurns = 0; return `fue curado completamente (Max HP + curado)`; },
       'Éter': p => { p.moves.forEach(m => { m.pp = Math.min(m.maxPP, m.pp + 10); }); return `recuperó PP`; },
       'Elixir Máximo': p => { p.moves.forEach(m => { m.pp = m.maxPP; }); return `recuperó todos los PP`; },
-      'Vitamina HP': p => { const gain = Math.max(5, Math.floor(p.maxHp * 0.05)); p.maxHp += gain; p.hp += gain; return `aumentó sus PS en ${gain}`; },
-      'Proteína': p => { const gain = Math.max(3, Math.floor((p.atk||50) * 0.08)); p.atk = (p.atk||50) + gain; return `aumentó su Ataque en ${gain}`; },
-      'Hierro': p => { const gain = Math.max(3, Math.floor((p.def||50) * 0.08)); p.def = (p.def||50) + gain; return `aumentó su Defensa en ${gain}`; },
       'Subida PP': p => { const m = p.moves && p.moves.find(mv => mv.maxPP && mv.maxPP < 99); if (!m) return null; const b = Math.max(1, Math.floor(m.maxPP * 0.2)); m.maxPP += b; m.pp = Math.min(m.pp + b, m.maxPP); return `aumentó los PP de ${m.name} en ${b}`; },
       'MT Retribución': p => { if (p.moves && p.moves.find(m => m.name === 'Retribución')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Retribución', pp: 20, maxPP: 20 }); return `aprendió Retribución`; },
       'MT Terremoto': p => { if (p.moves && p.moves.find(m => m.name === 'Terremoto')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Terremoto', pp: 10, maxPP: 10 }); return `aprendió Terremoto`; },
@@ -46,6 +43,7 @@
       'Máximo Repelente': _ => { state.repelSecs = (state.repelSecs || 0) + 30 * 60; return `activó el Máximo Repelente (30 min)`; },
       'Ticket Shiny': _ => { state.shinyBoostSecs = (state.shinyBoostSecs || 0) + 30 * 60; return `activó el Ticket Shiny (30 min)`; },
       'Moneda Amuleto': _ => { state.amuletCoinSecs = (state.amuletCoinSecs || 0) + 30 * 60; return `activó la Moneda Amuleto (30 min)`; },
+      'Huevo Suerte Pequeño': _ => { state.luckyEggSecs = (state.luckyEggSecs || 0) + 30 * 60; return `activó el Huevo Suerte Pequeño (30 min)`; },
     };
 
     function showBattleBag() {
