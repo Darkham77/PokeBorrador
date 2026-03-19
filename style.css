@@ -470,75 +470,100 @@
     /* ===== BUFFS PANEL ===== */
     #buff-panel {
       position: fixed;
-      top: 50%;
       left: 0;
-      transform: translateY(-50%);
-      z-index: 10000; /* Alta prioridad, incluso sobre overlays */
+      top: 160px; /* Justo debajo del panel de huevos */
+      z-index: 99999; /* Siempre por encima de todo, incluido el combate */
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      pointer-events: none; /* Por defecto no interactuable */
+      gap: 6px;
+      pointer-events: none;
     }
 
     .buff-item {
-      background: rgba(0, 0, 0, 0.85); /* Fondo negro semi-transparente */
-      border-radius: 0 12px 12px 0; /* Bordes redondeados solo a la derecha */
-      padding: 8px 10px;
+      position: relative;
       display: flex;
       align-items: center;
-      color: var(--text);
-      font-size: 12px;
-      overflow: hidden;
-      width: 50px; /* Ancho inicial compacto */
-      transition: width 0.3s ease, padding 0.3s ease;
-      box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-left: none;
-      pointer-events: auto; /* Hacer interactuable */
+      pointer-events: auto;
+      cursor: default;
     }
 
-    .buff-item:hover {
-      width: 250px; /* Ancho expandido al pasar el mouse */
-      padding: 8px 15px;
-    }
-
-    .buff-icon {
-      font-size: 20px;
-      margin-right: 10px;
-      flex-shrink: 0;
-    }
-
-    .buff-content {
+    /* Parte visible siempre: icono + timer pegado al borde */
+    .buff-collapsed {
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 10, 20, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-left: none;
+      border-radius: 0 10px 10px 0;
+      padding: 6px 8px 5px 6px;
+      gap: 3px;
+      min-width: 44px;
+      box-shadow: 3px 2px 12px rgba(0,0,0,0.5);
+      backdrop-filter: blur(6px);
+    }
+
+    .buff-sprite {
+      width: 28px;
+      height: 28px;
+      image-rendering: pixelated;
+      display: block;
+    }
+
+    .buff-timer-badge {
+      font-size: 9px;
+      font-family: 'Press Start 2P', monospace;
+      color: #FFD93D;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      opacity: 0; /* Oculto por defecto */
-      transition: opacity 0.2s ease 0.1s; /* Retraso para que se vea la transición de ancho */
+      letter-spacing: 0;
+      line-height: 1;
     }
 
-    .buff-item:hover .buff-content {
-      opacity: 1; /* Visible al pasar el mouse */
+    /* Tooltip que aparece al hacer hover */
+    .buff-tooltip {
+      position: absolute;
+      left: calc(100%); /* Sale hacia la derecha desde el icono */
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(10, 10, 20, 0.96);
+      border: 1px solid rgba(255, 217, 61, 0.3);
+      border-radius: 0 10px 10px 0;
+      padding: 8px 12px;
+      min-width: 180px;
+      max-width: 220px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(-50%) translateX(-6px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 4px 4px 16px rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
     }
 
-    .buff-name {
-      font-weight: 700;
+    .buff-item:hover .buff-tooltip {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0px);
+    }
+
+    .buff-tooltip-name {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
       color: var(--yellow);
+      margin-bottom: 5px;
+      white-space: nowrap;
+    }
+
+    .buff-tooltip-desc {
+      font-size: 11px;
+      color: #ccc;
+      line-height: 1.4;
+      margin-bottom: 5px;
+    }
+
+    .buff-tooltip-time {
       font-family: 'Press Start 2P', monospace;
       font-size: 9px;
-      margin-bottom: 2px;
-    }
-
-    .buff-desc {
-      font-size: 10px;
-      color: var(--gray);
-      margin-bottom: 4px;
-    }
-
-    .buff-time {
-      font-size: 11px;
-      color: var(--text);
+      color: #a78bfa;
     }
 
     /* Contenedor de progreso de huevos debajo del HUD */
@@ -3260,115 +3285,5 @@
         transform: translateY(-2px);
       }
 
-    /* ===== BUFF HUD & TOOLTIPS ===== */
-    #buff-timers-hud {
-      display: flex;
-      flex-direction: row; /* En fila para aprovechar el ancho */
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 16px;
-      width: 100%;
-      justify-content: flex-start; /* Alineado a la izquierda */
-      pointer-events: auto;
-      z-index: 100;
-    }
-
-    .buff-item {
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(8px);
-      border-radius: 12px;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 100px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      cursor: help;
-    }
-
-    .buff-item:hover {
-      transform: scale(1.05) translateX(5px);
-      background: rgba(20, 20, 30, 0.9);
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    .buff-icon-container {
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .buff-sprite {
-      width: 32px;
-      height: 32px;
-      image-rendering: pixelated;
-      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
-    }
-
-    .buff-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .buff-label {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 7px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    .buff-timer {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 9px;
-      color: #fff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    }
-
-    /* Tooltip styling */
-        .buff-tooltip {
-      position: absolute;
-      left: 0;
-      top: 110%; /* Mostrar debajo del buff */
-      background: #1a1a2e;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 12px;
-      border-radius: 10px;
-      width: 220px;
-      visibility: hidden;
-      opacity: 0;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-      z-index: 10000;
-      pointer-events: none;
-    }  }
-
-    .buff-tooltip::before {
-      content: '';
-      position: absolute;
-      right: 100%;
-      top: 50%;
-      margin-top: -6px;
-      border-width: 6px;
-      border-style: solid;
-      border-color: transparent var(--purple) transparent transparent;
-    }
-
-    .buff-item:hover .buff-tooltip {
-      opacity: 1;
-      transform: translateY(-50%) translateX(0);
-    }
-
-    .buff-tooltip-title {
-      color: var(--yellow);
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
-      margin-bottom: 8px;
-      display: block;
-    }
+    /* #buff-timers-hud legacy (ya no se usa) */
+    #buff-timers-hud { display: none; }

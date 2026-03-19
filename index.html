@@ -135,6 +135,7 @@
           <button class="hud-nav-btn" data-tab="bag" onclick="showTab('bag',this)"><span>🎒</span><span>Mochila</span></button>
           <button class="hud-nav-btn" data-tab="market" onclick="showTab('market',this)"><span>🛒</span><span>PokéMart</span></button>
           <button class="hud-nav-btn" data-tab="friends" onclick="showTab('friends',this)"><span>👥</span><span>Amigos</span></button>
+          <button class="hud-nav-btn" data-tab="profession" onclick="showTab('profession',this);renderProfessionTab();startProfessionTabRefresh()"><span>🎭</span><span>Clase</span></button>
           <button class="hud-nav-btn" data-tab="daycare" onclick="showTab('daycare',this)"><span>🥚</span><span>Crianza</span></button>
         </div>
 
@@ -169,30 +170,39 @@
       <!-- BUFF HUD -->
       <div id="buff-timers-hud"></div>
 
-      <!-- NEW BUFFS PANEL -->
+      <!-- BUFF SIDE PANEL -->
       <div id="buff-panel">
-        <div class="buff-item" id="buff-repel">
-          <div class="buff-icon">🧴</div>
-          <div class="buff-content">
-            <div class="buff-name">Repelente</div>
-            <div class="buff-desc">Aleja Pokémon salvajes de nivel inferior al tuyo.</div>
-            <div class="buff-time" id="buff-repel-time"></div>
+        <div class="buff-item" id="buff-repel" style="display:none;">
+          <div class="buff-collapsed">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/repel.png" class="buff-sprite" alt="Repelente">
+            <div class="buff-timer-badge" id="buff-repel-time">--:--</div>
+          </div>
+          <div class="buff-tooltip">
+            <div class="buff-tooltip-name">Repelente</div>
+            <div class="buff-tooltip-desc">Aleja Pokémon salvajes de nivel inferior al tuyo.</div>
+            <div class="buff-tooltip-time" id="buff-repel-time2"></div>
           </div>
         </div>
-        <div class="buff-item" id="buff-shiny">
-          <div class="buff-icon">✨</div>
-          <div class="buff-content">
-            <div class="buff-name">Ticket Shiny</div>
-            <div class="buff-desc">Aumenta la probabilidad de encontrar Pokémon shiny.</div>
-            <div class="buff-time" id="buff-shiny-time"></div>
+        <div class="buff-item" id="buff-shiny" style="display:none;">
+          <div class="buff-collapsed">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png" class="buff-sprite" alt="Ticket Shiny">
+            <div class="buff-timer-badge" id="buff-shiny-time">--:--</div>
+          </div>
+          <div class="buff-tooltip">
+            <div class="buff-tooltip-name">✨ Ticket Shiny</div>
+            <div class="buff-tooltip-desc">Aumenta la probabilidad de encontrar Pokémon shiny.</div>
+            <div class="buff-tooltip-time" id="buff-shiny-time2"></div>
           </div>
         </div>
-        <div class="buff-item" id="buff-amulet">
-          <div class="buff-icon">💰</div>
-          <div class="buff-content">
-            <div class="buff-name">Moneda Amuleto</div>
-            <div class="buff-desc">Duplica el dinero ganado en combate.</div>
-            <div class="buff-time" id="buff-amulet-time"></div>
+        <div class="buff-item" id="buff-amulet" style="display:none;">
+          <div class="buff-collapsed">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/amulet-coin.png" class="buff-sprite" alt="Moneda Amuleto">
+            <div class="buff-timer-badge" id="buff-amulet-time">--:--</div>
+          </div>
+          <div class="buff-tooltip">
+            <div class="buff-tooltip-name">💰 Moneda Amuleto</div>
+            <div class="buff-tooltip-desc">Duplica el dinero ganado en combate.</div>
+            <div class="buff-tooltip-time" id="buff-amulet-time2"></div>
           </div>
         </div>
       </div>
@@ -241,6 +251,10 @@
           onclick="showTab('box',this)"><span>📦</span><span>Caja</span></button>
         <button class="nav-btn" data-tab="bag"
           onclick="showTab('bag',this)"><span>🎒</span><span>Mochila</span></button>
+        <button class="nav-btn" data-tab="profession"
+          onclick="showTab('profession',this);renderProfessionTab();startProfessionTabRefresh()">
+          <span>🎭</span><span>Clase</span>
+        </button>
         <button class="nav-btn" data-tab="daycare"
           onclick="showTab('daycare',this)">
           <span>🥚</span><span>Crianza</span>
@@ -588,6 +602,9 @@
     </div>
   </div>
 
+  <!-- PROFESSION TAB -->
+  <div id="tab-profession" class="tab-content" style="display:none; padding:16px; padding-bottom:100px;"></div>
+
   <!-- DAYCARE TAB -->
   <div id="tab-daycare" class="tab-content" style="display:none;padding-bottom:100px;">
     <div class="team-section">
@@ -787,6 +804,7 @@
   <script src="js/13_evolution.js"></script>
   <script src="js/14_pvp.js"></script>
   <script src="js/15_breeding.js"></script>
+  <script src="js/16_profession.js"></script>
 
   <!-- BAG / DAYCARE SELECTOR OVERLAY -->
   <div id="bag-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:center;justify-content:center;flex-direction:column;padding:20px;">
