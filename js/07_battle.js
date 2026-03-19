@@ -142,6 +142,8 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
     recharging: false, // for Hiperrayo etc
     playerStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 },
     enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 },
+    participants: [player.uid], // Track which pokemon saw this enemy
+    learnQueue: [], // Accumulate moves to learn at end of battle
   };
   state.battle.player.choiceMove = null;
 
@@ -1354,43 +1356,81 @@ function catchSuccess(enemy) {
 
   setLog(`¡${enemy.name} fue capturado!`, 'log-catch');
 
-  // EXP gain on capture — 50% for active pokemon, full trainer exp
-  const teamMember = state.team.find(p => p.name === b.player.name);
-  const _captureLearnQueue = [];
-  if (teamMember) {
-    const expGain = Math.floor(enemy.level * 4); // 50% of defeat exp (defeat gives level*8)
-    if (!teamMember.exp) teamMember.exp = 0;
-    teamMember.exp += expGain;
-    addLog(`${teamMember.name} ganó ${expGain} puntos de EXP.`, 'log-player');
-
-    let expNeeded = teamMember.expNeeded;
-    while (teamMember.exp >= expNeeded && teamMember.level < 100) {
-      teamMember.exp -= expNeeded;
-      const pending = levelUpPokemon(teamMember);
-      addLog(`¡${teamMember.name} subió al nivel ${teamMember.level}!`, 'log-info');
-      pending.forEach(mv => _captureLearnQueue.push({ pokemon: teamMember, move: mv }));
-      expNeeded = teamMember.expNeeded;
-    }
-  }
-
-  // Trainer EXP on capture (same as defeating)
-  const trainerExpGain = enemy.level * 2;
-  addTrainerExp(trainerExpGain);
+  // EXP gain on capture: awarded to all participants
+  awardBattleExperience(true);
 
   scheduleSave(); updateProfilePanel();
   notify(`¡${enemy.name} se unió a tu equipo!`, '🎉');
   setBtns(false);
 
   const _captureLocId = state.lastWildLocId || b.locationId || null;
-  processLearnMoveQueue(_captureLearnQueue, () => {
+  processLearnMoveQueue(b.learnQueue || [], () => {
     showBattleEndUI(() => {
-      showScreen('game-screen');
-      showTab('map');
-      if (_captureLocId) {
-        setTimeout(() => goLocation(_captureLocId), 50);
-      }
+      // Evolution check on capture too
+      const potentialEvos = state.team.filter(p => 
+        (p.uid === b.player.uid || (b.participants && b.participants.includes(p.uid)) || p.heldItem === 'Compartir EXP') && p.hp > 0
+      );
+      let evoIdx = 0;
+      const checkNextEvo = () => {
+        if (evoIdx >= potentialEvos.length) {
+          showScreen('game-screen');
+          showTab('map');
+          if (_captureLocId) {
+            setTimeout(() => goLocation(_captureLocId), 50);
+          }
+          return;
+        }
+        const p = potentialEvos[evoIdx++];
+        checkLevelUpEvolution(p, checkNextEvo);
+      };
+      
+      checkNextEvo();
     }, _captureLocId);
   });
+}
+
+function awardBattleExperience(isCapture = false) {
+  const b = state.battle;
+  if (!b || !b.enemy) return;
+
+  const expMultiplier = isCapture ? 4 : ((b.isTrainer || b.isGym) ? 8 : 4);
+  const baseExp = Math.floor(b.enemy.level * expMultiplier);
+
+  // winners = current active + those who participated + exp share holders
+  const winners = state.team.filter(p =>
+    (p.uid === b.player.uid || (b.participants && b.participants.includes(p.uid)) || p.heldItem === 'Compartir EXP') && p.hp > 0
+  );
+
+  winners.forEach(p => {
+    let pExp = baseExp;
+    // Shared experience if not the finishing pokemon?
+    // In standard games, participants get half if there's more than one. 
+    // Here we'll stick to a simple: Participants get full, Exp Share gets half if not participant.
+    if (p.uid !== b.player.uid && !(b.participants && b.participants.includes(p.uid))) {
+      pExp = Math.floor(baseExp * 0.5); // Only if it's JUST exp share
+    }
+    
+    // If it participated but was switched, it also gets full share (standard pokemon logic)
+    // Actually, in many games exp is split. For simplicity in this fan game, we'll keep it generous.
+
+    if (p.heldItem === 'Huevo Suerte') pExp = Math.floor(pExp * 1.5);
+
+    if (p.level < 100) {
+      p.exp = (p.exp || 0) + pExp;
+      let needed = p.expNeeded;
+      while (p.exp >= needed && p.level < 100) {
+        p.exp -= needed;
+        const pending = levelUpPokemon(p);
+        addLog(`¡${p.name} subió al <span style="color:#3b82f6;font-weight:bold;">nivel ${p.level}</span>!`, 'log-info');
+        if (pending) pending.forEach(mv => b.learnQueue.push({ pokemon: p, move: mv }));
+        needed = p.expNeeded;
+      }
+    }
+  });
+
+  // Trainer EXP
+  const trainerExpGain = b.isGym ? (b.enemy.level * 2) : Math.max(1, Math.floor(b.enemy.level / 2));
+  addTrainerExp(trainerExpGain);
 }
 
 function showExploreAgainPrompt(locId) {
@@ -1437,6 +1477,8 @@ function endBattle(won) {
   b.over = true;
 
   if (won) {
+    awardBattleExperience();
+
     // Multi-Pokémon Trainer/Gym Logic: If the opponent still has pokemon, don't end yet.
     if ((b.isTrainer || b.isGym) && b.enemyTeam) {
       const nextIdx = b.enemyTeam.findIndex(p => p.hp > 0);
@@ -1448,6 +1490,10 @@ function endBattle(won) {
           b.enemy = nextP;
           b.enemy.confused = 0; b.enemy.flinched = false;
           b.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 };
+          
+          // RESET participants for the new enemy
+          b.participants = [b.player.uid];
+          
           b.over = false;
           b.turn = 'player';
           _battleLock = false;
@@ -1461,30 +1507,6 @@ function endBattle(won) {
     }
 
     setLog(`¡${b.enemy.name} fue derrotado!`, 'log-player');
-
-    // Level up player - Double EXP for trainers and gyms
-    const winners = state.team.filter(p => (p.name === b.player.name || p.heldItem === 'Compartir EXP') && p.hp > 0);
-    const expMultiplier = (b.isTrainer || b.isGym) ? 8 : 4;
-    const baseExp = Math.floor(b.enemy.level * expMultiplier);
-    const _learnQueue = [];
-
-    winners.forEach(p => {
-      let pExp = baseExp;
-      if (p.name !== b.player.name) pExp = Math.floor(baseExp * 0.5); // Exp Share gets half
-      if (p.heldItem === 'Huevo Suerte') pExp = Math.floor(pExp * 1.5);
-
-      if (p.level < 100) {
-        p.exp += pExp;
-        let needed = p.expNeeded;
-        while (p.exp >= needed && p.level < 100) {
-          p.exp -= needed;
-          const pending = levelUpPokemon(p);
-          addLog(`¡${p.name} subió al <span style="color:#3b82f6;font-weight:bold;">nivel ${p.level}</span>!`, 'log-info');
-          pending.forEach(mv => _learnQueue.push({ pokemon: p, move: mv }));
-          needed = p.expNeeded;
-        }
-      }
-    });
 
     // Money reward + Battle Coins
     let moneyWon = b.isGym ? b.enemy.level * 80 : b.enemy.level * 20;
@@ -1509,9 +1531,7 @@ function endBattle(won) {
       }
     }
 
-    // Trainer EXP
-    const trainerExpGain = b.isGym ? b.enemy.level * 5 : b.enemy.level * 2;
-    addTrainerExp(trainerExpGain);
+    // Trainer level EXP (removed duplicate call)
 
     if (b.isGym) {
       const gym = GYMS.find(g => g.id === b.gymId);
@@ -1540,9 +1560,14 @@ function endBattle(won) {
         ? (b.locationId || null)
         : (state.lastWildLocId || b.locationId || null);
     // Show learn-move menus (if any) BEFORE the battle end UI
-    processLearnMoveQueue(_learnQueue, () => {
+    processLearnMoveQueue(b.learnQueue || [], () => {
       showBattleEndUI(() => {
-        const _evoMember = state.team.find(p => p.name === b.player.name);
+        // Evolution check: Check all team members that could have leveled up, not just active one
+        // For simplicity, we'll check everyone who participated or has Exp Share
+        const potentialEvos = state.team.filter(p => 
+          (p.uid === b.player.uid || (b.participants && b.participants.includes(p.uid)) || p.heldItem === 'Compartir EXP') && p.hp > 0
+        );
+        
         const _goToMap = () => {
           showScreen('game-screen');
           showTab('map');
@@ -1550,11 +1575,18 @@ function endBattle(won) {
             setTimeout(() => goLocation(_locId), 50);
           }
         };
-        if (_evoMember) {
-          checkLevelUpEvolution(_evoMember, _goToMap);
-        } else {
-          _goToMap();
-        }
+
+        let evoIdx = 0;
+        const checkNextEvo = () => {
+          if (evoIdx >= potentialEvos.length) {
+            _goToMap();
+            return;
+          }
+          const p = potentialEvos[evoIdx++];
+          checkLevelUpEvolution(p, checkNextEvo);
+        };
+        
+        checkNextEvo();
       }, _locId);
     });
   } else {

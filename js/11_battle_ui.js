@@ -364,6 +364,12 @@
 
       // Usar referencia al Pokémon del equipo (evita desync de PP)
       b.player = teamRef;
+      
+      // TRACK participation for experience distribution
+      if (b.participants && !b.participants.includes(teamRef.uid)) {
+        b.participants.push(teamRef.uid);
+      }
+      
       b.playerStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 };
       b.player.confused = 0;
       b.player.flinched = false;
