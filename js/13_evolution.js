@@ -27,13 +27,16 @@
       paras: { level: 24, to: 'parasect' },
       venonat: { level: 31, to: 'venomoth' },
       geodude: { level: 25, to: 'graveler' },
+      graveler: { level: 36, to: 'golem' },
       slowpoke: { level: 37, to: 'slowbro' },
       magnemite: { level: 30, to: 'magneton' },
       gastly: { level: 25, to: 'haunter' },
+      haunter: { level: 36, to: 'gengar' },
       drowzee: { level: 26, to: 'hypno' },
       krabby: { level: 28, to: 'kingler' },
       cubone: { level: 28, to: 'marowak' },
       machop: { level: 28, to: 'machoke' },
+      machoke: { level: 36, to: 'machamp' },
       bellsprout: { level: 21, to: 'weepinbell' },
       weepinbell: { level: 36, to: 'victreebel' },
       tentacool: { level: 30, to: 'tentacruel' },
@@ -47,6 +50,7 @@
       dratini: { level: 30, to: 'dragonair' },
       dragonair: { level: 55, to: 'dragonite' },
       abra: { level: 16, to: 'kadabra' },
+      kadabra: { level: 36, to: 'alakazam' },
       mankey: { level: 28, to: 'primeape' },
       growlithe: { level: 36, to: 'arcanine' },
       poliwag: { level: 25, to: 'poliwhirl' },
@@ -57,13 +61,6 @@
       rhyhorn: { level: 42, to: 'rhydon' },
       kabuto: { level: 40, to: 'kabutops' },
       omanyte: { level: 40, to: 'omastar' },
-    };
-
-    const TRADE_EVOLUTIONS = {
-      kadabra: 'alakazam',
-      machoke: 'machamp',
-      graveler: 'golem',
-      haunter: 'gengar'
     };
 
     const STONE_EVOLUTIONS = {
@@ -81,19 +78,7 @@
       eevee_thunder: { stone: '⚡ Piedra Trueno', to: 'jolteon' },
       eevee_fire: { stone: '🔥 Piedra Fuego', to: 'flareon' },
       exeggcute: { stone: '🌿 Piedra Hoja', to: 'exeggutor' },
-      vulpix: { stone: '🔥 Piedra Fuego', to: 'ninetales' },
-      nidorina: { stone: '🌙 Piedra Luna', to: 'nidoqueen' },
-      nidorino: { stone: '🌙 Piedra Luna', to: 'nidoking' },
     };
-
-    // ── Trade evolution check ─────────────────────────────────────
-    function checkTradeEvolution(pokemon, onComplete) {
-      const toId = TRADE_EVOLUTIONS[pokemon.id];
-      if (!toId) { if (onComplete) onComplete(); return; }
-      const toData = POKEMON_DB[toId];
-      if (!toData) { if (onComplete) onComplete(); return; }
-      showEvolutionScene(pokemon, toId, onComplete);
-    }
 
     // ── Level-up evolution check ──────────────────────────────────
     function checkLevelUpEvolution(pokemon, onComplete) {
@@ -240,16 +225,6 @@
       ov.innerHTML = html;
       ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
       document.body.appendChild(ov);
-    }
-
-    function canEvolveWithStone(pokemonId, stoneName) {
-      if (!pokemonId || !stoneName) return false;
-      const evoKey = pokemonId === 'eevee' ? (['Piedra Agua', 'Piedra Trueno', 'Piedra Fuego'].includes(stoneName) ? {
-        'Piedra Agua': 'vaporeon',
-        'Piedra Trueno': 'jolteon',
-        'Piedra Fuego': 'flareon',
-      }[stoneName] : null) : STONE_EVOLUTIONS[pokemonId]?.to;
-      return !!evoKey && !!POKEMON_DB[evoKey];
     }
 
     function useStoneOnPokemon(stoneName, teamIndex) {

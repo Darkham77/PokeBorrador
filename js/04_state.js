@@ -6,7 +6,7 @@
       'luchador': { name: 'Luchador', sprite: 'https://play.pokemonshowdown.com/sprites/trainers/blackbelt.png', quote: '¡Sentí el poder de mis puños!', pool: ['mankey', 'machop'] },
       'pescador': { name: 'Pescador', sprite: 'https://play.pokemonshowdown.com/sprites/trainers/fisherman.png', quote: '¡Pesqué algo más que un zapato!', pool: ['magikarp', 'goldeen', 'poliwag'] },
       'nadador': { name: 'Nadador', sprite: 'https://play.pokemonshowdown.com/sprites/trainers/swimmer.png', quote: '¡El agua está genial hoy!', pool: ['psyduck', 'tentacool', 'staryu', 'horsea'] },
-      'domador': { name: 'Domador', sprite: 'https://play.pokemonshowdown.com/sprites/trainers/tamer-gen3.png', quote: '¡Mis bestias te devorarán!', pool: ['growlithe', 'vulpix', 'ponyta', 'ekans'] },
+      'domador': { name: 'Domador', sprite: 'https://play.pokemonshowdown.com/sprites/trainers/tamer.png', quote: '¡Mis bestias te devorarán!', pool: ['growlithe', 'vulpix', 'ponyta', 'ekans'] },
       'medium': { name: 'Médium', sprite: 'https://play.pokemonshowdown.com/sprites/trainers/psychic.png', quote: '...puedo ver tu derrota...', pool: ['abra', 'drowzee'] },
       'motorista': { name: 'Motorista', sprite: 'https://play.pokemonshowdown.com/sprites/trainers/biker.png', quote: '¡Hacéte a un lado, novato!', pool: ['koffing', 'grimer', 'rattata'] },
       'montanero': { name: 'Montañero', sprite: 'https://play.pokemonshowdown.com/sprites/trainers/hiker.png', quote: '¡Mis Pokémon son duros como rocas!', pool: ['geodude', 'sandshrew', 'rhyhorn'] }

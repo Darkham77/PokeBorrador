@@ -213,7 +213,7 @@
       <div style="font-size:9px;color:var(--gray);">Nv.${p.level}</div>
       <div style="font-size:8px;color:${tierInfo.color};margin-top:1px;">IVs: ${ivTotal}/186</div>
       <div style="background:rgba(255,255,255,0.1);border-radius:3px;height:4px;margin-top:4px;overflow:hidden;">
-        <div style="width:${hpPct}%;height:100%;background:${hpCol};"></div>
+        <div style="width:${hpPct}%;height:100%;background:${hpCol};border-radius:3px;"></div>
       </div>
     </div>`;
       }).join('');
@@ -488,8 +488,7 @@
         const sprite = itemInfo?.sprite || '';
         const tier = itemInfo?.tier || 'common';
         const type = itemInfo?.type || 'usable';
-        const isEvolutionStone = Object.values(STONE_EVOLUTIONS).some(evo => evo.stone.replace(/^[^ ]+ /, '') === name);
-        const isUsable = !!HEALING_ITEMS[name] || name === 'Caramelo Raro' || isEvolutionStone;
+        const isUsable = !!HEALING_ITEMS[name] || name === 'Caramelo Raro';
 
         const tierCls = tierColors[tier];
         const typeTag = `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:${typeTagColors[type] || '#666'}22;color:${typeTagColors[type] || '#aaa'};border:1px solid ${typeTagColors[type] || '#666'}44;">${typeTagLabels[type] || type}</span>`;
@@ -536,12 +535,10 @@
     <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:16px;">¿EN QUIÉN USAR ${itemName.toUpperCase()}?</div>
     <div style="display:flex;flex-direction:column;gap:8px;">`;
 
-      const stoneName = itemName.replace(/^[^ ]+ /, "");
       usableTeam.forEach((p, i) => {
-        const canEvolve = canEvolveWithStone(p.id, stoneName);
         const hpPct = Math.round(p.hp / p.maxHp * 100);
         const hpCol = hpPct > 50 ? 'var(--green)' : hpPct > 20 ? 'var(--yellow)' : 'var(--red)';
-        const statusText = p.status ? `<span style="background:rgba(255,59,59,0.2);color:var(--red);padding:2px 4px;border-radius:44px;font-size:9px;">${p.status.toUpperCase()}</span>` : '';
+        const statusText = p.status ? `<span style="background:rgba(255,59,59,0.2);color:var(--red);padding:2px 4px;border-radius:4px;font-size:9px;">${p.status.toUpperCase()}</span>` : '';
 
         html += `<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.05);border-radius:12px;padding:10px 14px;">
       <div>
@@ -551,10 +548,7 @@
           <span style="font-size:10px;color:var(--gray);">${p.hp}/${p.maxHp}</span>
         </div>
       </div>
-      <button onclick="applyBagItem('${itemName}', ${i})" ${canEvolve ? '' : 'disabled style="opacity:0.5; cursor:not-allowed;"'}
-        style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;background:rgba(199,125,255,0.15);color:var(--purple);border:1px solid rgba(199,125,255,0.3);border-radius:8px;cursor:pointer;">
-        ${canEvolve ? 'APLICAR' : 'NO EVOLUCIONA'}
-      </button>
+      <button onclick="applyBagItem('${itemName}', ${i})" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;background:rgba(199,125,255,0.15);color:var(--purple);border:1px solid rgba(199,125,255,0.3);border-radius:8px;cursor:pointer;">APLICAR</button>
     </div>`;
       });
 
@@ -572,14 +566,6 @@
       if (!p || !state.inventory[itemName]) return;
 
       const fn = HEALING_ITEMS[itemName];
-      const isEvolutionStone = Object.values(STONE_EVOLUTIONS).some(evo => evo.stone.replace(/^[^ ]+ /, '') === itemName);
-
-      if (isEvolutionStone) {
-        // If it's an evolution stone, call the stone evolution logic
-        useStoneOnPokemon(itemName, teamIndex);
-        return;
-      }
-
       if (!fn) return;
 
       const result = fn(p);
@@ -596,307 +582,3 @@
       scheduleSave();
     }
 
-    function openTeamItemMenu(teamIndex) {
-      _openItemMenuFor('team', teamIndex);
-    }
-
-    function openBoxItemMenu(boxIndex) {
-      document.getElementById('box-menu-overlay')?.remove();
-      _openItemMenuFor('box', boxIndex);
-    }
-
-    function _openItemMenuFor(context, index) {
-      const p = context === 'team' ? state.team[index] : state.box[index];
-      if (!p) return;
-
-      const items = Object.entries(state.inventory || {})
-        .filter(([name, qty]) => qty > 0);
-
-      const usable = items.filter(([name]) => HEALING_ITEMS[name]);
-      const equippable = items.filter(([name]) => {
-        const item = SHOP_ITEMS.find(i => i.name === name);
-        return item && item.type === 'held';
-      });
-
-      const ov = document.createElement('div');
-      ov.id = 'outside-item-overlay';
-      ov.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:16px;';
-
-      let html = `<div style="background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:340px;text-align:left;">`;
-      html += `<div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:14px;">🎒 MOCHILA PARA ${p.name.toUpperCase()}</div>`;
-
-      // Currently equipped item
-      if (p.heldItem) {
-        const h = SHOP_ITEMS.find(i => i.name === p.heldItem);
-        html += `<div style="background:rgba(199,125,255,0.1);border:1px solid rgba(199,125,255,0.3);border-radius:12px;padding:12px;margin-bottom:20px;">
-          <div style="font-size:8px;color:var(--purple);margin-bottom:8px;font-family:'Press Start 2P',monospace;">
-            EQUIPADO ACTUALMENTE
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-weight:700;">${h.icon} ${p.heldItem}</div>
-            <button onclick="unEquipItem('${context}', ${index})"
-              style="background:rgba(255,59,59,0.2);color:var(--red);border:none;border-radius:8px;padding:6px 10px;font-size:10px;cursor:pointer;">
-              QUITAR
-            </button>
-          </div>
-        </div>`;
-      }
-
-      // Usable items
-      if (usable.length) {
-        html += `<div style="font-size:8px;color:var(--green);margin-bottom:8px;font-family:'Press Start 2P',monospace;">OBJETOS USABLES</div>`;
-        html += usable.map(([name, qty]) => {
-          const item = SHOP_ITEMS.find(i => i.name === name);
-          return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;margin-bottom:6px;">
-            <div>
-              <div style="font-weight:700;">${item.icon} ${name}</div>
-              <div style="font-size:10px;color:var(--gray);">x${qty}</div>
-            </div>
-            <button onclick="applyOutsideItem('${name}', '${context}', ${index})"
-              style="background:rgba(107,203,119,0.2);color:var(--green);border:none;border-radius:8px;padding:6px 10px;font-size:10px;cursor:pointer;">
-              USAR
-            </button>
-          </div>`;
-        }).join('');
-      }
-
-      // Equippable items
-      if (equippable.length) {
-        html += `<div style="font-size:8px;color:var(--blue);margin:16px 0 8px;font-family:'Press Start 2P',monospace;">OBJETOS EQUIPABLES</div>`;
-        html += equippable.map(([name, qty]) => {
-          const item = SHOP_ITEMS.find(i => i.name === name);
-          return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;margin-bottom:6px;">
-            <div>
-              <div style="font-weight:700;">${item.icon} ${name}</div>
-              <div style="font-size:10px;color:var(--gray);">x${qty}</div>
-            </div>
-            <button onclick="equipItem('${context}', ${index}, '${name}')"
-              style="background:rgba(59,139,255,0.2);color:var(--blue);border:none;border-radius:8px;padding:6px 10px;font-size:10px;cursor:pointer;">
-              EQUIPAR
-            </button>
-          </div>`;
-        }).join('');
-      }
-
-      html += `<button onclick="document.getElementById('outside-item-overlay').remove()"
-        style="width:100%;margin-top:20px;padding:12px;border:none;border-radius:10px;cursor:pointer;background:rgba(255,255,255,0.06);color:var(--gray);font-size:12px;">
-        Cerrar
-      </button></div>`;
-
-      ov.innerHTML = html;
-      ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
-      document.body.appendChild(ov);
-    }
-
-    function applyOutsideItem(itemName, context, index) {
-      const p = context === 'team' ? state.team[index] : state.box[index];
-      if (!p) return;
-
-      const fn = HEALING_ITEMS[itemName];
-      if (!fn) return;
-
-      const result = fn(p);
-      if (result === null) { notify('No tiene ningún efecto.', '⚠️'); return; }
-
-      state.inventory[itemName]--;
-      if (!state.inventory[itemName]) delete state.inventory[itemName];
-
-      document.getElementById('outside-item-overlay')?.remove();
-      notify(`Usaste ${itemName}. ¡${p.name} ${result}!`, '✨');
-
-      if (context === 'team') renderTeam();
-      else renderBox();
-      scheduleSave();
-    }
-
-    function equipItem(context, index, itemName) {
-      const p = context === 'team' ? state.team[index] : state.box[index];
-      if (!p) return;
-      // Unequip old item if any
-      if (p.heldItem) {
-        state.inventory[p.heldItem] = (state.inventory[p.heldItem] || 0) + 1;
-      }
-      p.heldItem = itemName;
-      state.inventory[itemName]--;
-      if (!state.inventory[itemName]) delete state.inventory[itemName];
-      document.getElementById('outside-item-overlay')?.remove();
-      notify(`${p.name} ahora lleva ${itemName}.`, '🎒');
-      if (context === 'team') renderTeam();
-      else renderBox();
-      scheduleSave();
-    }
-
-    function unEquipItem(context, index) {
-      const p = context === 'team' ? state.team[index] : state.box[index];
-      if (!p || !p.heldItem) return;
-      const oldItem = p.heldItem;
-      state.inventory[oldItem] = (state.inventory[oldItem] || 0) + 1;
-      p.heldItem = null;
-      document.getElementById('outside-item-overlay')?.remove();
-      notify(`${oldItem} fue guardado en la mochila.`, '🎒');
-      if (context === 'team') renderTeam();
-      else renderBox();
-      scheduleSave();
-    }
-
-    // ===== POKEMON TAGS =====
-    function togglePokeTag(context, index, tag) {
-      const p = context === 'team' ? state.team[index] : state.box[index];
-      if (!p) return;
-      if (!p.tags) p.tags = [];
-      if (p.tags.includes(tag)) {
-        p.tags = p.tags.filter(t => t !== tag);
-      } else {
-        p.tags.push(tag);
-      }
-      // Re-render menus if open
-      if (document.getElementById('team-menu-overlay')) openTeamMenu(index);
-      if (document.getElementById('box-menu-overlay')) openBoxPokemonMenu(index);
-      if (document.getElementById('box-detail-overlay')) openBoxPokemonDetail(index);
-      // Re-render main views
-      if (context === 'team') renderTeam();
-      else renderBox();
-      scheduleSave();
-    }
-
-    // ===== MOVE LEARNING & RELEARNING =====
-    let _learnMoveQueue = [];
-
-    function processLearnMoveQueue(queue, onComplete) {
-      _learnMoveQueue = queue;
-      const next = _learnMoveQueue.shift();
-      if (!next) { if (onComplete) onComplete(); return; }
-
-      const { pokemon, move } = next;
-      if (pokemon.moves.length < 4) {
-        pokemon.moves.push({ name: move.name, pp: move.pp, maxPP: move.pp });
-        notify(`${pokemon.name} aprendió ${move.name}.`, '✨');
-        if (typeof renderTeam === 'function') renderTeam();
-        processLearnMoveQueue(_learnMoveQueue, onComplete);
-      } else {
-        showLearnMoveMenu(pokemon, move, () => {
-          processLearnMoveQueue(_learnMoveQueue, onComplete);
-        });
-      }
-    }
-
-    function showLearnMoveMenu(pokemon, newMove, onComplete) {
-      const ov = document.createElement('div');
-      ov.id = 'learn-move-overlay';
-      ov.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;';
-
-      let html = `<div style="background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:380px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);margin-bottom:10px;">APRENDER MOVIMIENTO</div>
-        <div style="font-size:13px;margin-bottom:16px;">${pokemon.name} quiere aprender <b>${newMove.name}</b>, pero ya sabe 4 movimientos. ¿Olvidar alguno?</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">`;
-
-      pokemon.moves.forEach((m, i) => {
-        html += `<button onclick="replaceMove(${pokemon.uid}, ${i}, '${newMove.name}', ${newMove.pp})"
-          style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;color:#fff;cursor:pointer;text-align:left;">
-          <div>
-            <div style="font-weight:700;">${m.name}</div>
-            <div style="font-size:10px;color:var(--gray);">PP ${m.pp}/${m.maxPP}</div>
-          </div>
-          <span style="font-size:10px;color:var(--red);">OLVIDAR</span>
-        </button>`;
-      });
-
-      html += `</div>
-        <button onclick="skipLearnMove('${newMove.name}', onComplete)"
-          style="margin-top:16px;width:100%;padding:12px;background:rgba(255,59,59,0.2);color:var(--red);border:none;border-radius:12px;cursor:pointer;font-weight:700;">
-          No aprender ${newMove.name}
-        </button>
-      </div>`;
-
-      ov.innerHTML = html.replace('onComplete', `() => { document.getElementById('learn-move-overlay').remove(); ${onComplete.toString()}() }`);
-      document.body.appendChild(ov);
-    }
-
-    function replaceMove(pokemonUid, moveIndex, newMoveName, newMovePP) {
-      const p = state.team.find(pk => pk.uid === pokemonUid) || state.box.find(pk => pk.uid === pokemonUid);
-      if (!p) return;
-      const oldMove = p.moves[moveIndex];
-      p.moves[moveIndex] = { name: newMoveName, pp: newMovePP, maxPP: newMovePP };
-      document.getElementById('learn-move-overlay').remove();
-      notify(`${p.name} olvidó ${oldMove.name} y aprendió ${newMoveName}.`, '✨');
-      if (typeof renderTeam === 'function') renderTeam();
-      if (typeof renderBox === 'function') renderBox();
-    }
-
-    function skipLearnMove(moveName, onComplete) {
-      document.getElementById('learn-move-overlay').remove();
-      notify(`No se aprendió ${moveName}.`, '❌');
-      onComplete();
-    }
-
-    function openMoveRelearnerMenu(pokemon, forgottenMoves) {
-      const ov = document.createElement('div');
-      ov.id = 'move-relearner-overlay';
-      ov.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
-      
-      let html = `<div style="background:var(--card);border-radius:24px;padding:28px;width:100%;max-width:400px;border:2px solid var(--purple);box-shadow:0 0 30px rgba(155,77,255,0.3);">
-        <div style="text-align:center;margin-bottom:20px;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--purple);margin-bottom:10px;">RECORDADOR DE MOVIMIENTOS</div>
-          <div style="font-size:14px;font-weight:700;color:#fff;">¿Qué movimiento debe recordar ${pokemon.name}?</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto;padding-right:5px;" class="custom-scroll">`;
-
-      forgottenMoves.forEach(mv => {
-        html += `<button onclick="confirmRelearnMove('${pokemon.uid}', '${mv.name}', ${mv.pp})" 
-          style="display:flex;justify-content:space-between;align-items:center;background:rgba(155,77,255,0.1);border:1px solid rgba(155,77,255,0.3);border-radius:12px;padding:12px 16px;color:#fff;cursor:pointer;transition:all 0.2s;"
-          onmouseover="this.style.background='rgba(155,77,255,0.2)';this.style.transform='translateX(5px)'"
-          onmouseout="this.style.background='rgba(155,77,255,0.1)';this.style.transform='translateX(0)'">
-          <div style="text-align:left;">
-            <div style="font-weight:700;font-size:13px;">${mv.name}</div>
-            <div style="font-size:10px;color:var(--gray);">Nv. ${mv.lv || '—'}</div>
-          </div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);">PP ${mv.pp}/${mv.pp}</div>
-        </button>`;
-      });
-
-      html += `</div>
-        <button onclick="document.getElementById('move-relearner-overlay').remove()" 
-          style="margin-top:20px;width:100%;padding:12px;background:rgba(255,255,255,0.05);color:var(--gray);border:none;border-radius:12px;cursor:pointer;font-weight:700;">
-          CANCELAR
-        </button>
-      </div>`;
-
-      ov.innerHTML = html;
-      document.body.appendChild(ov);
-    }
-
-    function confirmRelearnMove(pokemonUid, moveName, movePP) {
-      const p = state.team.find(pk => pk.uid === pokemonUid) || state.box.find(pk => pk.uid === pokemonUid);
-      if (!p) return;
-
-      document.getElementById('move-relearner-overlay').remove();
-
-      // Efecto visual de "brillo" en la pantalla
-      const flash = document.createElement('div');
-      flash.style.cssText = 'position:fixed;inset:0;z-index:2000;background:#fff;opacity:0.8;pointer-events:none;transition:opacity 0.5s;';
-      document.body.appendChild(flash);
-      setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 500); }, 50);
-
-      if (p.moves.length < 4) {
-        p.moves.push({ name: moveName, pp: movePP, maxPP: movePP });
-        notify(`¡${p.name} ha recordado ${moveName.toUpperCase()}!`, '🧠');
-        if (typeof renderTeam === 'function') renderTeam();
-        if (typeof renderBox === 'function') renderBox();
-      } else {
-        // Si tiene 4 movimientos, usar la interfaz de aprendizaje existente para elegir cuál olvidar
-        const newMove = { name: moveName, pp: movePP, maxPP: movePP };
-        if (typeof showLearnMoveMenu === 'function') {
-          showLearnMoveMenu(p, newMove, () => {
-            notify(`¡${p.name} recordó ${moveName}!`, '✨');
-            if (typeof renderTeam === 'function') renderTeam();
-            if (typeof renderBox === 'function') renderBox();
-          });
-        } else {
-          // Fallback si no existe la función (aunque debería estar en state.js)
-          p.moves.shift();
-          p.moves.push(newMove);
-          notify(`¡${p.name} recordó ${moveName}!`, '✨');
-        }
-      }
-      if (typeof scheduleSave === 'function') scheduleSave();
-    }
