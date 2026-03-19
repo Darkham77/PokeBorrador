@@ -488,7 +488,10 @@
         const alreadyHave = uid
           ? (state.team.some(p => p?.uid === uid) || (state.box || []).some(p => p?.uid === uid))
           : false;
-        if (!alreadyHave) state.team.push(offeredPokemonActual);
+        if (!alreadyHave) {
+          state.team.push(offeredPokemonActual);
+          checkTradeEvolution(offeredPokemonActual, null);
+        }
       }
     
       Object.entries(trade.offer_items || {}).forEach(([k, v]) => { state.inventory[k] = (state.inventory[k] || 0) + v; });
@@ -522,7 +525,10 @@
         if (!requestedPokemonActual.uid) requestedPokemonActual.uid = getUidStr();
         const uid = requestedPokemonActual.uid;
         const senderAlreadyHasReq = (ss.team || []).some(p => p?.uid === uid) || (ss.box || []).some(p => p?.uid === uid);
-        if (!senderAlreadyHasReq) ss.team.push(requestedPokemonActual);
+        if (!senderAlreadyHasReq) {
+          ss.team.push(requestedPokemonActual);
+          checkTradeEvolution(requestedPokemonActual, null);
+        }
         ss.pokedex = ss.pokedex || [];
         if (!ss.pokedex.includes(requestedPokemonActual.id)) ss.pokedex.push(requestedPokemonActual.id);
       }

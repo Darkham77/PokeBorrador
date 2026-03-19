@@ -177,103 +177,74 @@
       if (p.heldItem) {
         const h = SHOP_ITEMS.find(i => i.name === p.heldItem);
         html += `<div style="background:rgba(199,125,255,0.1);border:1px solid rgba(199,125,255,0.3);border-radius:12px;padding:12px;margin-bottom:20px;">
-          <div style="font-size:8px;color:var(--purple);margin-bottom:8px;font-family:'Press Start 2P',monospace;">OBJETO EQUIPADO:</div>
+          <div style="font-size:8px;color:var(--purple);margin-bottom:8px;font-family:'Press Start 2P',monospace;">
+            EQUIPADO ACTUALMENTE
+          </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:24px;">${h ? h.icon : '📦'}</span>
-              <div>
-                <div style="font-size:13px;font-weight:700;">${p.heldItem}</div>
-              </div>
-            </div>
-            <button onclick="unequipItem('${context}', ${index})" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:rgba(255,100,100,0.2);color:#ff6464;border:1px solid rgba(255,100,100,0.3);">QUITAR</button>
+            <div style="font-weight:700;">${h.icon} ${p.heldItem}</div>
+            <button onclick="unEquipItem('${context}', ${index})"
+              style="background:rgba(255,59,59,0.2);color:var(--red);border:none;border-radius:8px;padding:6px 10px;font-size:10px;cursor:pointer;">
+              QUITAR
+            </button>
           </div>
         </div>`;
       }
 
-      if (!usable.length && !equippable.length) {
-        html += `<div style="color:var(--gray);font-size:12px;">No tenés objetos utilizables o equipables.</div>`;
-      } else {
-        if (usable.length) {
-          html += `<div style="font-size:9px;color:var(--gray);margin-bottom:8px;">ITEMS CURATIVOS:</div>`;
-          html += usable.map(([name, qty]) =>
-            `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;margin-bottom:8px;">
-              <div>
-                <div style="font-size:13px;font-weight:700;">${name}</div>
-                <div style="font-size:10px;color:var(--gray);">x${qty}</div>
-              </div>
-              <button onclick="useItemOutsideBattle('${name}', '${context}', ${index})" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:rgba(107,203,119,0.2);color:var(--green);border:1px solid rgba(107,203,119,0.3);">USAR</button>
-            </div>`
-          ).join('');
-        }
-        
-        if (equippable.length) {
-          html += `<div style="font-size:9px;color:var(--gray);margin-top:12px;margin-bottom:8px;">ITEMS EQUIPABLES:</div>`;
-          html += equippable.map(([name, qty]) =>
-            `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;margin-bottom:8px;">
-              <div>
-                <div style="font-size:13px;font-weight:700;">${name}</div>
-                <div style="font-size:10px;color:var(--gray);">x${qty}</div>
-              </div>
-              <button onclick="equipItem('${name}', '${context}', ${index})" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:rgba(59,139,255,0.2);color:var(--blue);border:1px solid rgba(59,139,255,0.3);">EQUIPAR</button>
-            </div>`
-          ).join('');
-        }
+      // Usable items
+      if (usable.length) {
+        html += `<div style="font-size:8px;color:var(--green);margin-bottom:8px;font-family:'Press Start 2P',monospace;">OBJETOS USABLES</div>`;
+        html += usable.map(([name, qty]) => {
+          const item = SHOP_ITEMS.find(i => i.name === name);
+          return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;margin-bottom:6px;">
+            <div>
+              <div style="font-weight:700;">${item.icon} ${name}</div>
+              <div style="font-size:10px;color:var(--gray);">x${qty}</div>
+            </div>
+            <button onclick="applyOutsideItem('${name}', '${context}', ${index})"
+              style="background:rgba(107,203,119,0.2);color:var(--green);border:none;border-radius:8px;padding:6px 10px;font-size:10px;cursor:pointer;">
+              USAR
+            </button>
+          </div>`;
+        }).join('');
       }
 
-      html += `<button onclick="document.getElementById('outside-item-overlay').remove()" style="margin-top:14px;width:100%;padding:10px;border:none;border-radius:10px;background:rgba(255,255,255,0.1);color:#fff;cursor:pointer;font-size:13px;">Cerrar</button>`;
-      html += `</div>`;
+      // Equippable items
+      if (equippable.length) {
+        html += `<div style="font-size:8px;color:var(--blue);margin:16px 0 8px;font-family:'Press Start 2P',monospace;">OBJETOS EQUIPABLES</div>`;
+        html += equippable.map(([name, qty]) => {
+          const item = SHOP_ITEMS.find(i => i.name === name);
+          return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;margin-bottom:6px;">
+            <div>
+              <div style="font-weight:700;">${item.icon} ${name}</div>
+              <div style="font-size:10px;color:var(--gray);">x${qty}</div>
+            </div>
+            <button onclick="equipItem('${context}', ${index}, '${name}')"
+              style="background:rgba(59,139,255,0.2);color:var(--blue);border:none;border-radius:8px;padding:6px 10px;font-size:10px;cursor:pointer;">
+              EQUIPAR
+            </button>
+          </div>`;
+        }).join('');
+      }
+
+      html += `<button onclick="document.getElementById('outside-item-overlay').remove()"
+        style="width:100%;margin-top:20px;padding:12px;border:none;border-radius:10px;cursor:pointer;background:rgba(255,255,255,0.06);color:var(--gray);font-size:12px;">
+        Cerrar
+      </button></div>`;
 
       ov.innerHTML = html;
       ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
       document.body.appendChild(ov);
     }
 
-    function equipItem(itemName, context, index) {
-      const p = context === 'team' ? state.team[index] : state.box[index];
-      if (!p) return;
-
-      if (p.heldItem) { unequipItem(context, index, true); }
-
-      p.heldItem = itemName;
-      state.inventory[itemName]--;
-      if (state.inventory[itemName] <= 0) delete state.inventory[itemName];
-
-      document.getElementById('outside-item-overlay')?.remove();
-      notify(`¡${p.name} ahora lleva ${itemName}!`, '✨');
-      
-      if (context === 'team') renderTeam();
-      else renderBox();
-      if (currentTab === 'bag') renderBag();
-      scheduleSave();
-    }
-
-    function unequipItem(context, index, silent = false) {
-      const p = context === 'team' ? state.team[index] : state.box[index];
-      if (!p || !p.heldItem) return;
-
-      const item = p.heldItem;
-      state.inventory[item] = (state.inventory[item] || 0) + 1;
-      p.heldItem = null;
-
-      if (!silent) {
-        document.getElementById('outside-item-overlay')?.remove();
-        notify(`Recuperaste ${item} de ${p.name}.`, '📥');
-        if (context === 'team') renderTeam();
-        else renderBox();
-        if (currentTab === 'bag') renderBag();
-        scheduleSave();
-      }
-    }
-
-    function useItemOutsideBattle(itemName, context, index) {
+    function applyOutsideItem(itemName, context, index) {
       const p = context === 'team' ? state.team[index] : state.box[index];
       if (!p) return;
 
       const fn = HEALING_ITEMS[itemName];
-      if (!fn || !state.inventory[itemName]) return;
+      if (!fn) return;
 
       const result = fn(p);
-      if (result === null) { notify('No hace efecto.', '⚠️'); return; }
+      if (result === null) { notify('No tiene ningún efecto.', '⚠️'); return; }
 
       state.inventory[itemName]--;
       if (!state.inventory[itemName]) delete state.inventory[itemName];
@@ -282,158 +253,130 @@
       notify(`Usaste ${itemName}. ¡${p.name} ${result}!`, '✨');
 
       if (context === 'team') renderTeam();
-      if (currentTab === 'map') renderMaps();
-      if (currentTab === 'bag') renderBag();
+      else renderBox();
       scheduleSave();
     }
 
-    // ===== BATTLE SWITCH =====
-    function showBattleSwitch(forced = false) {
-      if (_battleLock && !forced) return;
-      const b = state.battle;
-      const eligible = state.team.filter(p => p.name !== b.player.name && p.hp > 0);
+    function equipItem(context, index, itemName) {
+      const p = context === 'team' ? state.team[index] : state.box[index];
+      if (!p) return;
+      // Unequip old item if any
+      if (p.heldItem) {
+        state.inventory[p.heldItem] = (state.inventory[p.heldItem] || 0) + 1;
+      }
+      p.heldItem = itemName;
+      state.inventory[itemName]--;
+      if (!state.inventory[itemName]) delete state.inventory[itemName];
+      document.getElementById('outside-item-overlay')?.remove();
+      notify(`${p.name} ahora lleva ${itemName}.`, '🎒');
+      if (context === 'team') renderTeam();
+      else renderBox();
+      scheduleSave();
+    }
 
-      let html = `<div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--purple);margin-bottom:14px;">
-    🔄 ${forced ? '¡ELEGÍ UN POKÉMON!' : 'CAMBIAR POKÉMON'}
-  </div>`;
+    function unEquipItem(context, index) {
+      const p = context === 'team' ? state.team[index] : state.box[index];
+      if (!p || !p.heldItem) return;
+      const oldItem = p.heldItem;
+      state.inventory[oldItem] = (state.inventory[oldItem] || 0) + 1;
+      p.heldItem = null;
+      document.getElementById('outside-item-overlay')?.remove();
+      notify(`${oldItem} fue guardado en la mochila.`, '🎒');
+      if (context === 'team') renderTeam();
+      else renderBox();
+      scheduleSave();
+    }
 
-      if (eligible.length === 0) {
-        html += `<div style="color:var(--gray);font-size:12px;">No tenés otros Pokémon disponibles.</div>
-      <button onclick="closeBattleOverlay()" style="margin-top:14px;width:100%;padding:10px;border:none;border-radius:10px;
-        background:rgba(255,255,255,0.1);color:#fff;cursor:pointer;font-size:13px;">Cerrar</button>`;
+    // ===== POKEMON TAGS =====
+    function togglePokeTag(context, index, tag) {
+      const p = context === 'team' ? state.team[index] : state.box[index];
+      if (!p) return;
+      if (!p.tags) p.tags = [];
+      if (p.tags.includes(tag)) {
+        p.tags = p.tags.filter(t => t !== tag);
       } else {
-        html += state.team.map((p, idx) => {
-          if (idx === b.playerTeamIndex || p.hp <= 0) return ''; // No mostrar el actual o debilitados
-          const hpPct = Math.round(p.hp / p.maxHp * 100);
-          const hpCol = hpPct > 50 ? 'var(--green)' : hpPct > 20 ? 'var(--yellow)' : 'var(--red)';
-          return `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.05);
-        border-radius:12px;padding:12px;margin-bottom:8px;">
-        <img src="${getSpriteUrl(p.id)}"
-          width="48" height="48" style="image-rendering:pixelated;"
-          onerror="this.style.display='none'">
-        <div style="flex:1;">
-          <div style="font-weight:700;font-size:13px;">${p.name}</div>
-          <div style="font-size:10px;color:var(--gray);">Nv.${p.level}</div>
-          <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:5px;margin-top:4px;overflow:hidden;">
-            <div style="width:${hpPct}%;height:100%;background:${hpCol};border-radius:4px;"></div>
+        p.tags.push(tag);
+      }
+      // Re-render menus if open
+      if (document.getElementById('team-menu-overlay')) openTeamMenu(index);
+      if (document.getElementById('box-menu-overlay')) openBoxPokemonMenu(index);
+      if (document.getElementById('box-detail-overlay')) openBoxPokemonDetail(index);
+      // Re-render main views
+      if (context === 'team') renderTeam();
+      else renderBox();
+      scheduleSave();
+    }
+
+    // ===== MOVE LEARNING & RELEARNING =====
+    let _learnMoveQueue = [];
+
+    function processLearnMoveQueue(queue, onComplete) {
+      _learnMoveQueue = queue;
+      const next = _learnMoveQueue.shift();
+      if (!next) { if (onComplete) onComplete(); return; }
+
+      const { pokemon, move } = next;
+      if (pokemon.moves.length < 4) {
+        pokemon.moves.push({ name: move.name, pp: move.pp, maxPP: move.pp });
+        notify(`${pokemon.name} aprendió ${move.name}.`, '✨');
+        if (typeof renderTeam === 'function') renderTeam();
+        processLearnMoveQueue(_learnMoveQueue, onComplete);
+      } else {
+        showLearnMoveMenu(pokemon, move, () => {
+          processLearnMoveQueue(_learnMoveQueue, onComplete);
+        });
+      }
+    }
+
+    function showLearnMoveMenu(pokemon, newMove, onComplete) {
+      const ov = document.createElement('div');
+      ov.id = 'learn-move-overlay';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;';
+
+      let html = `<div style="background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:380px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);margin-bottom:10px;">APRENDER MOVIMIENTO</div>
+        <div style="font-size:13px;margin-bottom:16px;">${pokemon.name} quiere aprender <b>${newMove.name}</b>, pero ya sabe 4 movimientos. ¿Olvidar alguno?</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">`;
+
+      pokemon.moves.forEach((m, i) => {
+        html += `<button onclick="replaceMove(${pokemon.uid}, ${i}, '${newMove.name}', ${newMove.pp})"
+          style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;color:#fff;cursor:pointer;text-align:left;">
+          <div>
+            <div style="font-weight:700;">${m.name}</div>
+            <div style="font-size:10px;color:var(--gray);">PP ${m.pp}/${m.maxPP}</div>
           </div>
-          <div style="font-size:10px;color:${hpCol};margin-top:2px;">${p.hp}/${p.maxHp} HP</div>
-        </div>
-        <button onclick="switchBattlePokemonByIndex(${idx},${forced})" style="font-family:'Press Start 2P',monospace;font-size:8px;
-          padding:8px 10px;border:none;border-radius:8px;cursor:pointer;
-          background:rgba(199,125,255,0.2);color:var(--purple);border:1px solid rgba(199,125,255,0.3);">
-          ¡IR!
+          <span style="font-size:10px;color:var(--red);">OLVIDAR</span>
+        </button>`;
+      });
+
+      html += `</div>
+        <button onclick="skipLearnMove('${newMove.name}', onComplete)"
+          style="margin-top:16px;width:100%;padding:12px;background:rgba(255,59,59,0.2);color:var(--red);border:none;border-radius:12px;cursor:pointer;font-weight:700;">
+          No aprender ${newMove.name}
         </button>
       </div>`;
-        }).join('');
-      }
-      if (!forced) html += `<button onclick="closeBattleOverlay()" style="margin-top:8px;width:100%;padding:10px;border:none;border-radius:10px;
-    background:rgba(255,255,255,0.06);color:var(--gray);cursor:pointer;font-size:12px;">Cancelar</button>`;
 
-      // Para el forced switch usamos un overlay fijo en body para no interferir con battle-screen
-      if (forced) {
-        // Eliminar overlay anterior si existe
-        document.getElementById('forced-switch-overlay')?.remove();
-        const ov = document.createElement('div');
-        ov.id = 'forced-switch-overlay';
-        ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.88);display:flex;align-items:flex-end;justify-content:center;padding:16px;';
-        ov.innerHTML = `<div style="background:var(--card);border-radius:20px;padding:20px;width:100%;max-width:400px;max-height:70vh;overflow-y:auto;">${html}</div>`;
-        document.body.appendChild(ov);
-      } else {
-        showBattleOverlay(html, false);
-      }
+      ov.innerHTML = html.replace('onComplete', `() => { document.getElementById('learn-move-overlay').remove(); ${onComplete.toString()}() }`);
+      document.body.appendChild(ov);
     }
 
-
-    function switchBattlePokemonByIndex(teamIndex, forced) {
-      const b = state.battle;
-      const teamRef = state.team[teamIndex];
-      if (!teamRef || teamRef.hp <= 0) return;
-
-      console.log("Switching to:", teamRef.name, "Forced:", forced);
-
-      // PRIMERO: resetear estado de batalla para que useMove no bloquee
-      if (forced) {
-        b.over = false;
-        b.turn = 'player';
-        _battleLock = false;
-      }
-
-      // Guardar el índice del Pokémon activo en la batalla para sincronizar HP después
-      b.playerTeamIndex = teamIndex;
-
-      // Usar referencia al Pokémon del equipo (evita desync de PP)
-      b.player = teamRef;
-      b.playerStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 };
-      b.player.confused = 0;
-      b.player.flinched = false;
-      b.player.choiceMove = null; // Clear Choice Band lock on switch
-
-      // Limpiar animaciones previas (IMPORTANTE: si faineó, tiene anim-faint que lo oculta)
-      const imgEl = document.getElementById('player-sprite-img');
-      const emoEl = document.getElementById('player-sprite-emoji');
-      if (imgEl) imgEl.classList.remove('anim-faint', 'anim-damage', 'anim-shake');
-      if (emoEl) emoEl.classList.remove('anim-faint', 'anim-damage', 'anim-shake');
-
-      // Eliminar AMBOS overlays posibles
-      document.getElementById('forced-switch-overlay')?.remove();
-      closeBattleOverlay();
-
-      setLog(`¡${b.player.name} salió a combatir!`, 'log-player');
-
-      // Actualizar UI
-      updateBattleUI();
-      renderMoveButtons();
-
-      if (forced) {
-        setBtns(true);
-        showMoves(); // Esto es más robusto que solo poner display:grid
-
-        // Cargar sprite con fallback
-        const pData = POKEMON_DB[b.player.id];
-        const emoji = pData ? pData.emoji : (b.player.emoji || '❓');
-        if (imgEl && emoEl) {
-          imgEl.src = '';
-          imgEl.style.display = 'none';
-          emoEl.style.display = 'block';
-          emoEl.textContent = emoji;
-          setTimeout(() => {
-            const url = getBackSpriteUrl(b.player.id);
-            if (url) {
-              const testImg = new Image();
-              testImg.onload = () => { imgEl.src = url; imgEl.style.display = 'block'; emoEl.style.display = 'none'; };
-              testImg.onerror = () => { emoEl.style.display = 'block'; emoEl.textContent = emoji; };
-              testImg.src = url;
-            }
-          }, 80);
-        }
-      } else {
-        _battleLock = true;
-        setBtns(false);
-        setTimeout(() => enemyTurn(), 800);
-      }
+    function replaceMove(pokemonUid, moveIndex, newMoveName, newMovePP) {
+      const p = state.team.find(pk => pk.uid === pokemonUid) || state.box.find(pk => pk.uid === pokemonUid);
+      if (!p) return;
+      const oldMove = p.moves[moveIndex];
+      p.moves[moveIndex] = { name: newMoveName, pp: newMovePP, maxPP: newMovePP };
+      document.getElementById('learn-move-overlay').remove();
+      notify(`${p.name} olvidó ${oldMove.name} y aprendió ${newMoveName}.`, '✨');
+      if (typeof renderTeam === 'function') renderTeam();
+      if (typeof renderBox === 'function') renderBox();
     }
 
-
-    // ===== BATTLE OVERLAY (shared) =====
-    function showBattleOverlay(html, noDismiss = false) {
-      let ov = document.getElementById('battle-overlay');
-      if (!ov) {
-        ov = document.createElement('div');
-        ov.id = 'battle-overlay';
-        document.getElementById('battle-screen').appendChild(ov);
-      }
-      ov.style.cssText = 'position:absolute;inset:0;z-index:50;background:rgba(0,0,0,0.85);display:flex;align-items:flex-end;justify-content:center;padding:16px;border-radius:18px;';
-      ov.innerHTML = `<div style="background:var(--card);border-radius:20px;padding:20px;width:100%;max-width:400px;max-height:70vh;overflow-y:auto;">${html}</div>`;
-      if (!noDismiss) ov.addEventListener('click', e => { if (e.target === ov) closeBattleOverlay(); }, { once: true });
+    function skipLearnMove(moveName, onComplete) {
+      document.getElementById('learn-move-overlay').remove();
+      notify(`No se aprendió ${moveName}.`, '❌');
+      onComplete();
     }
 
-    function closeBattleOverlay() {
-      document.getElementById('battle-overlay')?.remove();
-    }
-
-
-    // ===== MOVE RELEARNER UI =====
     function openMoveRelearnerMenu(pokemon, forgottenMoves) {
       const ov = document.createElement('div');
       ov.id = 'move-relearner-overlay';

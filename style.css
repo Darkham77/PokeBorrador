@@ -467,6 +467,80 @@
       box-shadow: 0 0 15px rgba(255, 217, 61, 0.1);
     }
 
+    /* ===== BUFFS PANEL ===== */
+    #buff-panel {
+      position: fixed;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      z-index: 10000; /* Alta prioridad, incluso sobre overlays */
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none; /* Por defecto no interactuable */
+    }
+
+    .buff-item {
+      background: rgba(0, 0, 0, 0.85); /* Fondo negro semi-transparente */
+      border-radius: 0 12px 12px 0; /* Bordes redondeados solo a la derecha */
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      color: var(--text);
+      font-size: 12px;
+      overflow: hidden;
+      width: 50px; /* Ancho inicial compacto */
+      transition: width 0.3s ease, padding 0.3s ease;
+      box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-left: none;
+      pointer-events: auto; /* Hacer interactuable */
+    }
+
+    .buff-item:hover {
+      width: 250px; /* Ancho expandido al pasar el mouse */
+      padding: 8px 15px;
+    }
+
+    .buff-icon {
+      font-size: 20px;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .buff-content {
+      display: flex;
+      flex-direction: column;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0; /* Oculto por defecto */
+      transition: opacity 0.2s ease 0.1s; /* Retraso para que se vea la transición de ancho */
+    }
+
+    .buff-item:hover .buff-content {
+      opacity: 1; /* Visible al pasar el mouse */
+    }
+
+    .buff-name {
+      font-weight: 700;
+      color: var(--yellow);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      margin-bottom: 2px;
+    }
+
+    .buff-desc {
+      font-size: 10px;
+      color: var(--gray);
+      margin-bottom: 4px;
+    }
+
+    .buff-time {
+      font-size: 11px;
+      color: var(--text);
+    }
+
     /* Contenedor de progreso de huevos debajo del HUD */
     #hud-eggs-progress {
       display: flex;

@@ -595,7 +595,7 @@
         if (state.amuletCoinSecs > 0) { state.amuletCoinSecs--; changed = true; }
         
         if (changed) {
-          updateBuffHud();
+          updateBuffPanel();
           // Guardar cada 30 segundos si hay buffs activos para persistencia
           if (state.repelSecs % 30 === 0) scheduleSave();
         }
@@ -635,67 +635,37 @@
       }).join('');
     }
 
-    function updateBuffHud() {
-      const container = document.getElementById('buff-timers-hud');
-      if (!container) return;
+    function updateBuffPanel() {
+      const repelEl = document.getElementById('buff-repel');
+      const shinyEl = document.getElementById('buff-shiny');
+      const amuletEl = document.getElementById('buff-amulet');
+
+      if (!repelEl || !shinyEl || !amuletEl) return;
 
       const buffs = [
-        { 
-          id: 'repel', 
-          secs: state.repelSecs, 
-          sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-repel.png', 
-          color: '#ff6b6b', 
-          label: 'REPEL',
-          desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo.'
-        },
-        { 
-          id: 'shiny', 
-          secs: state.shinyBoostSecs, 
-          sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png', 
-          color: '#feca57', 
-          label: 'SHINY',
-          desc: 'Aumenta significativamente la probabilidad de encontrar Pokémon Shiny.'
-        },
-        { 
-          id: 'coin', 
-          secs: state.amuletCoinSecs, 
-          sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/amulet-coin.png', 
-          color: '#1dd1a1', 
-          label: 'COIN',
-          desc: 'Duplica el dinero obtenido al ganar batallas contra entrenadores.'
-        }
+        { id: 'repel', secs: state.repelSecs, timeEl: document.getElementById('buff-repel-time') },
+        { id: 'shiny', secs: state.shinyBoostSecs, timeEl: document.getElementById('buff-shiny-time') },
+        { id: 'amulet', secs: state.amuletCoinSecs, timeEl: document.getElementById('buff-amulet-time') }
       ];
 
-      let html = '';
       buffs.forEach(b => {
+        const buffItemEl = document.getElementById(`buff-${b.id}`);
+        if (!buffItemEl) return;
+
         if (b.secs > 0) {
-          const m = Math.floor(b.secs / 60);
-          const s = b.secs % 60;
-          const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
-          html += `
-            <div class="buff-item" style="border-color: ${b.color}88;">
-              <div class="buff-icon-container">
-                <img src="${b.sprite}" class="buff-sprite" alt="${b.label}">
-              </div>
-              <div class="buff-info">
-                <span class="buff-label" style="color: ${b.color};">${b.label}</span>
-                <span class="buff-timer">${timeStr}</span>
-              </div>
-              <div class="buff-tooltip" style="border-color: ${b.color};">
-                <span class="buff-tooltip-title" style="color: ${b.color};">${b.label} ACTIVO</span>
-                ${b.desc}
-                <div style="margin-top: 8px; font-size: 10px; color: ${b.color}; opacity: 0.8;">
-                  Tiempo restante: ${timeStr}
-                </div>
-              </div>
-            </div>`;
+          const minutes = Math.floor(b.secs / 60);
+          const seconds = b.secs % 60;
+          const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          if (b.timeEl) b.timeEl.textContent = timeStr;
+          buffItemEl.style.display = 'flex';
+        } else {
+          buffItemEl.style.display = 'none';
         }
       });
-      container.innerHTML = html;
     }
 
     function updateHud() {
-      updateBuffHud(); // Actualizar timers al refrescar HUD
+          updateBuffPanel(); // Actualizar timers al refrescar HUD
       updateEggProgressHud(); // Actualizar progreso de huevos debajo del HUD
       // Robust badge count check (handles legacy array format)
       const badgeCount = (Array.isArray(state.badges) ? state.badges.length : (parseInt(state.badges) || 0));
