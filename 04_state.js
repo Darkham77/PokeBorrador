@@ -86,6 +86,11 @@
       pokedex: [],
       defeatedGyms: [],
       battle: null,
+      // ── Sistema de Profesiones ──
+      profession: null,
+      passionPoints: 0,
+      professionXP: 0,
+      professionData: {},
     };
 
     // ===== STARTER =====

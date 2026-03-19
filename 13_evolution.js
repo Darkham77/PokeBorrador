@@ -145,6 +145,8 @@
           clearInterval(interval);
           fromEl.style.display = 'none';
           document.getElementById('evo-to').style.display = 'block';
+          // PASO 15 MOD 4 — Caza Bichos: usar piedra/evolución rompe la racha de Pasión
+          if (state.profession === 'cazabichos' && typeof resetPassion === 'function') resetPassion();
           evolvePokemon(pokemon, toId);
           setTimeout(() => {
             ov.remove();
