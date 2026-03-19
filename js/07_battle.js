@@ -1414,6 +1414,8 @@ function awardBattleExperience(isCapture = false) {
     // Actually, in many games exp is split. For simplicity in this fan game, we'll keep it generous.
 
     if (p.heldItem === 'Huevo Suerte') pExp = Math.floor(pExp * 1.5);
+    
+    addLog(`${p.name} ganó <span style="color:#6BCB77;font-weight:bold;">${pExp} EXP</span>.`, 'log-player');
 
     if (p.level < 100) {
       p.exp = (p.exp || 0) + pExp;
