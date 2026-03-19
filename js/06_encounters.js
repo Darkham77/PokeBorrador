@@ -39,17 +39,16 @@
           if (ex.length) exclusives[slot] = ex;
         });
 
-        // Helper: render a small Pokémon sprite with emoji fallback
+        // Helper: render a small Pokémon sprite (sin fallback a emoji)
         const spriteImg = (id) => {
           const num = POKEMON_SPRITE_IDS[id];
           const pData = POKEMON_DB[id];
           const name = pData?.name || id;
-          const emoji = pData?.emoji || '❓';
-          if (!num) return `<span title="${name}" style="font-size:18px;line-height:1;">${emoji}</span>`;
+          if (!num) return '';
           return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
             title="${name}" width="32" height="32"
             style="image-rendering:pixelated;"
-            onerror="this.outerHTML='<span style=\\'font-size:18px;line-height:1;\\'>${emoji}</span>'">`;
+            onerror="this.style.display='none'">`;
         };
 
         const timeSlotsHtml = Object.entries(exclusives).map(([slot, ids]) => {
@@ -87,60 +86,98 @@
     }
 
     // ===== LOCATION / WILD BATTLE =====
-    function goLocation(locId) {
-      const alive = state.team.filter(p => p.hp > 0);
-      if (alive.length === 0) {
-        notify('¡Todos tus Pokémon están debilitados! Curá tu equipo primero.', '❤️‍🩹');
-        return;
-      }
-
-      hatchEggs(); // Progress eggs on EACH click
-
-      // Repelente check
-      if ((state.repelUntil || 0) > Date.now()) {
-        const mins = Math.ceil((state.repelUntil - Date.now()) / 60000);
-        notify('¡El Repelente alejó a los Pokémon salvajes! (' + mins + 'min)', '🚫');
-        return;
-      }
-
-      // Random Trainer encounter check - Capped at 20% to ensure wild mons always show
-      const tChance = Math.min(state.trainerChance || 5, 20);
-      if (Math.random() * 100 < tChance) {
-        generateTrainerBattle(locId);
-        return;
-      }
-
-      const loc = FIRE_RED_MAPS.find(l => l.id === locId);
-      if (!loc) return;
-
-      const badgeCount = state.badges;
-      if (badgeCount < loc.badges) {
-        notify(`¡Necesitás ${loc.badges} medallas para acceder!`, '🔒');
-        return;
-      }
-
-      const cycle = getDayCycle();
-      const wildPool = loc.wild[cycle] || loc.wild.day;
-      const wildRates = loc.rates[cycle] || loc.rates.day;
-
-      // Selección por probabilidad (Rates) dinámica
-      const totalRate = wildRates.reduce((a, b) => a + b, 0);
-      let rand = Math.random() * totalRate;
-      let cumulative = 0;
-      let selectedId = wildPool[0];
-
-      for (let i = 0; i < wildPool.length; i++) {
-        cumulative += wildRates[i] || 0;
-        if (rand <= cumulative) {
-          selectedId = wildPool[i];
-          break;
-        }
-      }
-
-      const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
-      const enemy = makePokemon(selectedId, level);
-      startBattle(enemy, false, null, locId);
-    }
+	    function goLocation(locId) {
+	      const alive = state.team.filter(p => p.hp > 0);
+	      if (alive.length === 0) {
+	        notify('¡Todos tus Pokémon están debilitados! Curá tu equipo primero.', '❤️‍🩹');
+	        return;
+	      }
+	
+	      hatchEggs(); // Progress eggs on EACH click
+	
+	      const loc = FIRE_RED_MAPS.find(l => l.id === locId);
+	      if (!loc) return;
+	
+	      const badgeCount = state.badges;
+	      if (badgeCount < loc.badges) {
+	        notify(`¡Necesitás ${loc.badges} medallas para acceder!`, '🔒');
+	        return;
+	      }
+	
+	      // Nueva Lógica de Repelente Estratégico
+	      let repelActive = (state.repelSecs || 0) > 0;
+	      let firstPokemon = state.team[0];
+	
+	      // Si el repelente está activo, garantizamos un encuentro (Entrenador o Pokémon de nivel adecuado)
+	      if (repelActive) {
+	        // 30% de probabilidad de entrenador bajo repelente (más alto de lo normal para incentivar su uso)
+	        if (Math.random() < 0.3) {
+	          generateTrainerBattle(locId);
+	          return;
+	        }
+	
+	        const cycle = getDayCycle();
+	        const wildPool = loc.wild[cycle] || loc.wild.day;
+	        const wildRates = loc.rates[cycle] || loc.rates.day;
+	
+	        // Intentar encontrar un Pokémon de nivel adecuado (máximo 10 intentos para evitar bucles infinitos)
+	        for (let attempt = 0; attempt < 10; attempt++) {
+	          const totalRate = wildRates.reduce((a, b) => a + b, 0);
+	          let rand = Math.random() * totalRate;
+	          let cumulative = 0;
+	          let selectedId = wildPool[0];
+	
+	          for (let i = 0; i < wildPool.length; i++) {
+	            cumulative += wildRates[i] || 0;
+	            if (rand <= cumulative) {
+	              selectedId = wildPool[i];
+	              break;
+	            }
+	          }
+	
+	          const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
+	          
+	          // Si el nivel es adecuado, iniciamos la batalla
+	          if (!firstPokemon || level >= firstPokemon.level) {
+	            const enemy = makePokemon(selectedId, level);
+	            startBattle(enemy, false, null, locId);
+	            return;
+	          }
+	        }
+	        
+	        // Si después de 10 intentos no sale uno de nivel alto, forzamos un entrenador para no romper la promesa de "encuentro garantizado"
+	        generateTrainerBattle(locId);
+	        return;
+	      }
+	
+	      // Lógica normal sin repelente
+	      const tChance = Math.min(state.trainerChance || 5, 20);
+	      if (Math.random() * 100 < tChance) {
+	        generateTrainerBattle(locId);
+	        return;
+	      }
+	
+	      const cycle = getDayCycle();
+	      const wildPool = loc.wild[cycle] || loc.wild.day;
+	      const wildRates = loc.rates[cycle] || loc.rates.day;
+	
+	      const totalRate = wildRates.reduce((a, b) => a + b, 0);
+	      let rand = Math.random() * totalRate;
+	      let cumulative = 0;
+	      let selectedId = wildPool[0];
+	
+	      for (let i = 0; i < wildPool.length; i++) {
+	        cumulative += wildRates[i] || 0;
+	        if (rand <= cumulative) {
+	          selectedId = wildPool[i];
+	          break;
+	        }
+	      }
+	
+	      const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
+	      const enemy = makePokemon(selectedId, level);
+	      startBattle(enemy, false, null, locId);
+	    }
 
     // ===== GYM BATTLE =====
     function challengeGym(gymId) {

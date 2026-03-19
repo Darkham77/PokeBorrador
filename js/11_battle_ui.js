@@ -29,10 +29,23 @@
       'MT Retribución': p => { if (p.moves && p.moves.find(m => m.name === 'Retribución')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Retribución', pp: 20, maxPP: 20 }); return `aprendió Retribución`; },
       'MT Terremoto': p => { if (p.moves && p.moves.find(m => m.name === 'Terremoto')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Terremoto', pp: 10, maxPP: 10 }); return `aprendió Terremoto`; },
       'MT Ventisca': p => { if (p.moves && p.moves.find(m => m.name === 'Ventisca')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Ventisca', pp: 5, maxPP: 5 }); return `aprendió Ventisca`; },
-      'Recordador de Movimientos': p => { const ls = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[p.id] && POKEMON_DB[p.id].learnset) || []; const known = new Set((p.moves || []).map(m => m.name)); const forg = ls.filter(l => l.lv <= p.level && !known.has(l.name)); if (!forg.length) return null; const mv = forg[forg.length - 1]; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: mv.name, pp: mv.pp, maxPP: mv.pp }); return `recordó ${mv.name}`; },
-      'Repelente': _ => { state.repelUntil = Date.now() + 30 * 60 * 1000; return `activó el Repelente (30 min)`; },
-      'Ticket Shiny': _ => { state.shinyBoostUntil = Date.now() + 30 * 60 * 1000; return `activó el Ticket Shiny (30 min)`; },
-      'Moneda Amuleto': _ => { state.amuletCoinUntil = Date.now() + 30 * 60 * 1000; return `activó la Moneda Amuleto (30 min)`; },
+      'Recordador de Movimientos': p => {
+        if (state.battle) return null; // Restricción: No usar en combate
+        const ls = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[p.id] && POKEMON_DB[p.id].learnset) || [];
+        const known = new Set((p.moves || []).map(m => m.name));
+        const forgotten = ls.filter(l => l.lv <= p.level && !known.has(l.name));
+        
+        if (!forgotten.length) return null;
+        
+        // Abrir interfaz de selección profesional
+        setTimeout(() => openMoveRelearnerMenu(p, forgotten), 100);
+        return 'está recordando sus raíces...';
+      },
+      'Repelente': _ => { state.repelSecs = (state.repelSecs || 0) + 10 * 60; return `activó el Repelente (10 min)`; },
+      'Superrepelente': _ => { state.repelSecs = (state.repelSecs || 0) + 20 * 60; return `activó el Superrepelente (20 min)`; },
+      'Máximo Repelente': _ => { state.repelSecs = (state.repelSecs || 0) + 30 * 60; return `activó el Máximo Repelente (30 min)`; },
+      'Ticket Shiny': _ => { state.shinyBoostSecs = (state.shinyBoostSecs || 0) + 30 * 60; return `activó el Ticket Shiny (30 min)`; },
+      'Moneda Amuleto': _ => { state.amuletCoinSecs = (state.amuletCoinSecs || 0) + 30 * 60; return `activó la Moneda Amuleto (30 min)`; },
     };
 
     function showBattleBag() {
@@ -419,3 +432,76 @@
       document.getElementById('battle-overlay')?.remove();
     }
 
+
+    // ===== MOVE RELEARNER UI =====
+    function openMoveRelearnerMenu(pokemon, forgottenMoves) {
+      const ov = document.createElement('div');
+      ov.id = 'move-relearner-overlay';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+      
+      let html = `<div style="background:var(--card);border-radius:24px;padding:28px;width:100%;max-width:400px;border:2px solid var(--purple);box-shadow:0 0 30px rgba(155,77,255,0.3);">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--purple);margin-bottom:10px;">RECORDADOR DE MOVIMIENTOS</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;">¿Qué movimiento debe recordar ${pokemon.name}?</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto;padding-right:5px;" class="custom-scroll">`;
+
+      forgottenMoves.forEach(mv => {
+        html += `<button onclick="confirmRelearnMove('${pokemon.uid}', '${mv.name}', ${mv.pp})" 
+          style="display:flex;justify-content:space-between;align-items:center;background:rgba(155,77,255,0.1);border:1px solid rgba(155,77,255,0.3);border-radius:12px;padding:12px 16px;color:#fff;cursor:pointer;transition:all 0.2s;"
+          onmouseover="this.style.background='rgba(155,77,255,0.2)';this.style.transform='translateX(5px)'"
+          onmouseout="this.style.background='rgba(155,77,255,0.1)';this.style.transform='translateX(0)'">
+          <div style="text-align:left;">
+            <div style="font-weight:700;font-size:13px;">${mv.name}</div>
+            <div style="font-size:10px;color:var(--gray);">Nv. ${mv.lv || '—'}</div>
+          </div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);">PP ${mv.pp}/${mv.pp}</div>
+        </button>`;
+      });
+
+      html += `</div>
+        <button onclick="document.getElementById('move-relearner-overlay').remove()" 
+          style="margin-top:20px;width:100%;padding:12px;background:rgba(255,255,255,0.05);color:var(--gray);border:none;border-radius:12px;cursor:pointer;font-weight:700;">
+          CANCELAR
+        </button>
+      </div>`;
+
+      ov.innerHTML = html;
+      document.body.appendChild(ov);
+    }
+
+    function confirmRelearnMove(pokemonUid, moveName, movePP) {
+      const p = state.team.find(pk => pk.uid === pokemonUid) || state.box.find(pk => pk.uid === pokemonUid);
+      if (!p) return;
+
+      document.getElementById('move-relearner-overlay').remove();
+
+      // Efecto visual de "brillo" en la pantalla
+      const flash = document.createElement('div');
+      flash.style.cssText = 'position:fixed;inset:0;z-index:2000;background:#fff;opacity:0.8;pointer-events:none;transition:opacity 0.5s;';
+      document.body.appendChild(flash);
+      setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 500); }, 50);
+
+      if (p.moves.length < 4) {
+        p.moves.push({ name: moveName, pp: movePP, maxPP: movePP });
+        notify(`¡${p.name} ha recordado ${moveName.toUpperCase()}!`, '🧠');
+        if (typeof renderTeam === 'function') renderTeam();
+        if (typeof renderBox === 'function') renderBox();
+      } else {
+        // Si tiene 4 movimientos, usar la interfaz de aprendizaje existente para elegir cuál olvidar
+        const newMove = { name: moveName, pp: movePP, maxPP: movePP };
+        if (typeof showLearnMoveMenu === 'function') {
+          showLearnMoveMenu(p, newMove, () => {
+            notify(`¡${p.name} recordó ${moveName}!`, '✨');
+            if (typeof renderTeam === 'function') renderTeam();
+            if (typeof renderBox === 'function') renderBox();
+          });
+        } else {
+          // Fallback si no existe la función (aunque debería estar en state.js)
+          p.moves.shift();
+          p.moves.push(newMove);
+          notify(`¡${p.name} recordó ${moveName}!`, '✨');
+        }
+      }
+      if (typeof scheduleSave === 'function') scheduleSave();
+    }

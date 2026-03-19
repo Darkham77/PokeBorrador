@@ -7,21 +7,25 @@
     // ===== TABS =====
     function showTab(tab, btnEl) {
       document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('tab-' + tab).style.display = 'block';
-      if (btnEl) btnEl.classList.add('active');
-      else {
-        // activate matching nav btn by data attribute
-        document.querySelectorAll('.nav-btn').forEach(b => {
-          if (b.getAttribute('data-tab') === tab) b.classList.add('active');
-        });
-      }
+      // Limpiar estado activo en ambos menús
+      document.querySelectorAll('.nav-btn, .hud-nav-btn').forEach(b => b.classList.remove('active'));
+      
+      const targetTab = document.getElementById('tab-' + tab);
+      if (targetTab) targetTab.style.display = 'block';
+      
+      // Activar botones correspondientes en ambos menús
+      document.querySelectorAll(`.nav-btn[data-tab="${tab}"], .hud-nav-btn[data-tab="${tab}"]`).forEach(b => {
+        b.classList.add('active');
+      });
       if (tab === 'team') renderTeam();
       if (tab === 'pokedex') renderPokedex();
       if (tab === 'gyms') renderGyms();
       if (tab === 'market') switchShopSection(_shopSection);
       if (tab === 'map') renderMaps();
       if (tab === 'daycare') renderDaycareUI();
+      if (tab === 'box') renderBox();
+      if (tab === 'bag') renderBag();
+      if (tab === 'friends') renderFriends();
       // Al abrir la tab de amigos, ocultar el badge (el usuario ya lo está viendo)
       if (tab === 'friends') {
         const badge = document.getElementById('friends-nav-badge');
@@ -65,9 +69,18 @@
           </div>`;
         }
 
+        // Tags display
+        const tags = p.tags || [];
+        const tagsHtml = tags.length ? `<div class="tag-display">
+          ${tags.includes('fav') ? '<span class="tag-icon-small">⭐</span>' : ''}
+          ${tags.includes('breed') ? '<span class="tag-icon-small">❤️</span>' : ''}
+          ${tags.includes('iv31') ? '<span class="tag-icon-small">31</span>' : ''}
+        </div>` : '';
+
         return `<div class="team-card ${selClass}" onclick="${clickFn}" style="cursor:pointer;position:relative;" draggable="${!releasing}" ondragstart="handleDragStart(event, ${i})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${i})">
       ${checkMark}
       ${heldIcon}
+      ${tagsHtml}
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};font-family:'Press Start 2P',monospace;font-size:6px;padding:2px 5px;border-radius:6px;border:1px solid ${tierInfo.color}44;line-height:1.4;z-index:2;">${tierInfo.tier}</div>
       <div style="height:80px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;">
         <img id="team-sprite-${i}" src="" alt="${p.name}" style="width:72px;height:72px;image-rendering:pixelated;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));display:none;pointer-events:none;">
@@ -258,12 +271,31 @@
   </div>`;
     }
 
+    function togglePokeTag(location, index, tag) {
+      const p = location === 'team' ? state.team[index] : state.box[index];
+      if (!p) return;
+      if (!p.tags) p.tags = [];
+      const tagIdx = p.tags.indexOf(tag);
+      if (tagIdx > -1) p.tags.splice(tagIdx, 1);
+      else p.tags.push(tag);
+      
+      if (location === 'team') {
+        renderTeam();
+        openPokemonDetail(index);
+      } else {
+        renderBox();
+        openBoxPokemonDetail(index);
+      }
+      scheduleSave();
+    }
+
     function openPokemonDetail(index) {
       const p = state.team[index];
       const pct = p.hp / p.maxHp;
       const hpClass = getHpClass(pct);
       const typeColors = { grass: '#6BCB77', fire: '#FF3B3B', water: '#3B8BFF', normal: '#aaa', electric: '#FFD93D', psychic: '#C77DFF', rock: '#c8a060', ground: '#c8a060', poison: '#C77DFF' };
       const typeColor = typeColors[p.type] || '#aaa';
+      const tags = p.tags || [];
 
       const ivBars = Object.entries(p.ivs).map(([stat, val]) => {
         const labels = { hp: 'HP', atk: 'Ataque', def: 'Defensa', spa: 'At.Esp', spd: 'Def.Esp', spe: 'Velocidad' };
@@ -313,6 +345,11 @@
           <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:${typeColor};margin-bottom:6px;">${p.name}${p.isShiny ? ' ✨' : ''}</div>
           <div style="font-size:12px;color:#888;">Nivel ${p.level} · ${p.type.charAt(0).toUpperCase() + p.type.slice(1)}</div>
           <div style="font-size:11px;color:#555;margin-top:4px;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
+          <div style="display:flex;gap:12px;margin-top:10px;">
+            <div class="poke-tag ${tags.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'fav')" title="Favorito">⭐</div>
+            <div class="poke-tag ${tags.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'breed')" title="Crianza">❤️</div>
+            <div class="poke-tag ${tags.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'iv31')" title="IV 31">31</div>
+          </div>
         </div>
       </div>
       <button onclick="closePokemonDetail()" style="background:rgba(255,255,255,0.1);border:none;border-radius:10px;color:#aaa;font-size:18px;cursor:pointer;padding:6px 12px;">✕</button>
@@ -509,9 +546,33 @@
       }).join('');
     }
 
+    // Sincronización de tiempo con API externa para evitar exploit de reloj local
+    let _serverTimeOffset = 0;
+    let _timeSynced = false;
+
+    async function syncServerTime() {
+      try {
+        const start = Date.now();
+        const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+        const data = await response.json();
+        const serverTime = new Date(data.datetime).getTime();
+        const end = Date.now();
+        const latency = (end - start) / 2;
+        _serverTimeOffset = serverTime - (end - latency);
+        _timeSynced = true;
+        console.log('[TIME] Sincronizado con servidor UTC. Offset:', _serverTimeOffset);
+      } catch (e) {
+        console.error('[TIME] Error sincronizando tiempo:', e);
+      }
+    }
+    syncServerTime();
+    setInterval(syncServerTime, 300000); // Re-sincronizar cada 5 min
+
     function getDayCycle() {
-      const now = new Date();
-      const hour = now.getHours();
+      const now = new Date(Date.now() + _serverTimeOffset);
+      const hour = now.getUTCHours(); // Usamos UTC para consistencia global
+      
+      // Ajuste de horas para ciclo día/noche (UTC)
       if (hour >= 6 && hour < 9) return 'morning';
       if (hour >= 9 && hour < 18) return 'day';
       if (hour >= 18 && hour < 21) return 'dusk';
@@ -525,7 +586,86 @@
       state.balls = knownBalls.reduce((sum, name) => sum + (state.inventory[name] || 0), 0);
     }
 
+    // ===== BUFF TICK SYSTEM & HUD =====
+    function initBuffTick() {
+      setInterval(() => {
+        let changed = false;
+        if (state.repelSecs > 0) { state.repelSecs--; changed = true; }
+        if (state.shinyBoostSecs > 0) { state.shinyBoostSecs--; changed = true; }
+        if (state.amuletCoinSecs > 0) { state.amuletCoinSecs--; changed = true; }
+        
+        if (changed) {
+          updateBuffPanel();
+          // Guardar cada 30 segundos si hay buffs activos para persistencia
+          if (state.repelSecs % 30 === 0) scheduleSave();
+        }
+      }, 1000);
+    }
+    initBuffTick();
+
+    function updateEggProgressHud() {
+      const container = document.getElementById('hud-eggs-progress');
+      if (!container) return;
+
+      if (!state.eggs || state.eggs.length === 0) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'flex';
+      container.innerHTML = state.eggs.map((egg, idx) => {
+        const total = egg.totalSteps || 100;
+        const progress = Math.min(100, Math.max(0, ((total - egg.steps) / total) * 100));
+        const isReady = egg.ready || egg.steps <= 0;
+        const color = egg.origin === 'breeding' ? 'var(--purple)' : 'var(--yellow)';
+        
+        return `
+          <div class="hud-egg-card" onclick="startManualHatch(${idx})" style="cursor: ${isReady ? 'pointer' : 'default'}; ${isReady ? 'border-color: var(--yellow); animation: pulseGlow 2s infinite;' : ''}">
+            <div class="hud-egg-icon" style="${isReady ? 'animation: eggShake 1.5s infinite;' : ''}">🥚</div>
+            <div class="hud-egg-info">
+              <span class="hud-egg-label">${isReady ? '¡LISTO!' : (egg.origin === 'breeding' ? 'CRIANZA' : 'ENCUENTRO')}</span>
+              <div class="hud-egg-bar-bg">
+                <div class="hud-egg-bar-fill" style="width: ${progress}%; background: ${color};"></div>
+              </div>
+              <div class="hud-egg-time">${isReady ? 'ECLOSIONAR' : egg.steps + ' pasos'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateBuffPanel() {
+      const buffs = [
+        { id: 'repel',  secs: state.repelSecs },
+        { id: 'shiny',  secs: state.shinyBoostSecs },
+        { id: 'amulet', secs: state.amuletCoinSecs }
+      ];
+
+      buffs.forEach(b => {
+        const itemEl = document.getElementById(`buff-${b.id}`);
+        if (!itemEl) return;
+
+        if ((b.secs || 0) > 0) {
+          const minutes = Math.floor(b.secs / 60);
+          const seconds = b.secs % 60;
+          const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          // Badge timer (siempre visible)
+          const badge = document.getElementById(`buff-${b.id}-time`);
+          if (badge) badge.textContent = timeStr;
+          // Tooltip timer (visible al hover)
+          const tip = document.getElementById(`buff-${b.id}-time2`);
+          if (tip) tip.textContent = `⏱ ${timeStr} restante`;
+          itemEl.style.display = 'flex';
+        } else {
+          itemEl.style.display = 'none';
+        }
+      });
+    }
+
     function updateHud() {
+          updateBuffPanel(); // Actualizar timers al refrescar HUD
+      updateEggProgressHud(); // Actualizar progreso de huevos debajo del HUD
       // Robust badge count check (handles legacy array format)
       const badgeCount = (Array.isArray(state.badges) ? state.badges.length : (parseInt(state.badges) || 0));
 
@@ -559,7 +699,16 @@
       recalculateBalls();
       document.getElementById('ball-count').textContent = state.balls;
       document.getElementById('trainer-level').textContent = state.trainerLevel;
-      document.getElementById('hud-money').textContent = '₽' + (state.money || 0).toLocaleString();
+      
+      const moneyEl = document.getElementById('hud-money');
+      if (moneyEl) moneyEl.textContent = (state.money || 0).toLocaleString();
+      
+      const bcEl = document.getElementById('hud-bc');
+      if (bcEl) bcEl.textContent = (state.battleCoins || 0).toLocaleString();
+      
+      const eggCountEl = document.getElementById('egg-count');
+      if (eggCountEl) eggCountEl.textContent = state.eggs ? state.eggs.length : 0;
+
       const rank = getTrainerRank();
       if (rank) {
         const expPct = Math.min(100, (state.trainerExp / rank.expNeeded) * 100);
@@ -579,3 +728,49 @@
     // Auto-update time every minute
     setInterval(updateHud, 60000);
 
+
+    // ===== SETTINGS & ZOOM SYSTEM =====
+    function toggleSettings() {
+      const modal = document.getElementById('settings-modal');
+      if (modal.style.display === 'none' || modal.style.display === '') {
+        modal.style.display = 'flex';
+      } else {
+        modal.style.display = 'none';
+      }
+    }
+
+    function updateZoom(val) {
+      const zoom = val / 100;
+      // Aplicar zoom al contenedor principal
+      const app = document.getElementById('app');
+      if (app) {
+        app.style.zoom = zoom;
+        // Fallback para navegadores que no soportan zoom (Firefox)
+        if (app.style.zoom === undefined || app.style.zoom === "") {
+            app.style.transform = `scale(${zoom})`;
+            app.style.transformOrigin = 'top center';
+        }
+      }
+      
+      // Actualizar etiqueta de valor
+      const label = document.getElementById('zoom-value');
+      if (label) label.textContent = val + '%';
+      
+      // Guardar en localStorage
+      localStorage.setItem('poke_vicio_zoom', val);
+    }
+
+    // Cargar zoom guardado al iniciar
+    function initZoom() {
+      const savedZoom = localStorage.getItem('poke_vicio_zoom') || 100;
+      const slider = document.getElementById('zoom-slider');
+      if (slider) slider.value = savedZoom;
+      updateZoom(savedZoom);
+    }
+
+    // Ejecutar inicialización cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', initZoom);
+    // Por si acaso el DOM ya cargó
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      initZoom();
+    }

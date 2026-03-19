@@ -116,9 +116,7 @@
         <div class="hud-trainer">
           <span class="trainer-avatar">🧢</span>
           <div>
-            <div class="trainer-name" id="hud-name">ASH</div>
-            <div class="trainer-info">Entrenador Nv.<span id="trainer-level">1</span> &nbsp;·&nbsp; <span
-                id="hud-money">₽3000</span></div>
+            <div class="trainer-name" id="hud-name">ASH</div>            <div class="trainer-info">Entrenador Nv.<span id="trainer-level">1</span></div>
             <div
               style="margin-top:5px;background:rgba(255,255,255,0.1);border-radius:10px;height:5px;width:140px;overflow:hidden;">
               <div id="trainer-exp-bar"
@@ -127,6 +125,19 @@
             </div>
           </div>
         </div>
+
+        <!-- PC NAVIGATION (HUD CENTER) -->
+        <div class="hud-nav">
+          <button class="hud-nav-btn active" data-tab="map" onclick="showTab('map',this)"><span>🗺️</span><span>Mapa</span></button>
+          <button class="hud-nav-btn" data-tab="team" onclick="showTab('team',this)"><span>⚡</span><span>Equipo</span></button>
+          <button class="hud-nav-btn" data-tab="gyms" onclick="showTab('gyms',this)"><span>🏆</span><span>Gimnasios</span></button>
+          <button class="hud-nav-btn" data-tab="box" onclick="showTab('box',this)"><span>📦</span><span>Caja</span></button>
+          <button class="hud-nav-btn" data-tab="bag" onclick="showTab('bag',this)"><span>🎒</span><span>Mochila</span></button>
+          <button class="hud-nav-btn" data-tab="market" onclick="showTab('market',this)"><span>🛒</span><span>PokéMart</span></button>
+          <button class="hud-nav-btn" data-tab="friends" onclick="showTab('friends',this)"><span>👥</span><span>Amigos</span></button>
+          <button class="hud-nav-btn" data-tab="daycare" onclick="showTab('daycare',this)"><span>🥚</span><span>Crianza</span></button>
+        </div>
+
         <div class="hud-items">
           <div id="time-cycle-display"
             style="display:flex;align-items:center;background:rgba(255,255,255,0.05);padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);font-size:12px;gap:8px;cursor:help;"
@@ -134,6 +145,8 @@
             <span id="time-icon">🕒</span>
             <span id="time-label">Cargando...</span>
           </div>
+          <span class="money-count">₽ <span id="hud-money">3000</span></span>
+          <span class="bc-count">🪙 <span id="hud-bc">0</span></span>
           <span class="badge-count">🏅 <span id="badge-count">0</span></span>
           <span class="ball-count"><img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'>
   <circle cx='20' cy='20' r='19' fill='%23222' stroke='%23111' stroke-width='1.5'/>
@@ -145,7 +158,73 @@
                 <circle cx='18' cy='18' r='1.2' fill='%23ffffff' opacity='0.7'/>
               </svg>" width="24" height="24" style="vertical-align:middle;margin-right:4px;"><span id="ball-count">10</span></span>
             <span id="hud-egg-container" style="display:inline-block;margin-right:12px;font-size:13px;cursor:pointer;background:rgba(255,217,61,0.15);padding:4px 10px;border-radius:15px;border:1px solid rgba(255,217,61,0.3);transition:all 0.2s;box-shadow: 0 0 5px rgba(255,217,61,0.1);" onclick="toggleProfile()" title="Huevos en incubación">🥚 <span id="egg-count">0</span></span>
+            <button onclick="toggleSettings()" id="hud-settings-btn" title="Configuración" style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:8px;">⚙️</button>
             <button onclick="toggleProfile()" id="hud-profile-btn" title="Perfil y opciones">👤</button>
+        </div>
+      </div>
+
+      <!-- EGG PROGRESS HUD -->
+      <div id="hud-eggs-progress"></div>
+
+      <!-- BUFF HUD -->
+      <div id="buff-timers-hud"></div>
+
+      <!-- BUFF SIDE PANEL -->
+      <div id="buff-panel">
+        <div class="buff-item" id="buff-repel" style="display:none;">
+          <div class="buff-collapsed">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/repel.png" class="buff-sprite" alt="Repelente">
+            <div class="buff-timer-badge" id="buff-repel-time">--:--</div>
+          </div>
+          <div class="buff-tooltip">
+            <div class="buff-tooltip-name">Repelente</div>
+            <div class="buff-tooltip-desc">Aleja Pokémon salvajes de nivel inferior al tuyo.</div>
+            <div class="buff-tooltip-time" id="buff-repel-time2"></div>
+          </div>
+        </div>
+        <div class="buff-item" id="buff-shiny" style="display:none;">
+          <div class="buff-collapsed">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png" class="buff-sprite" alt="Ticket Shiny">
+            <div class="buff-timer-badge" id="buff-shiny-time">--:--</div>
+          </div>
+          <div class="buff-tooltip">
+            <div class="buff-tooltip-name">✨ Ticket Shiny</div>
+            <div class="buff-tooltip-desc">Aumenta la probabilidad de encontrar Pokémon shiny.</div>
+            <div class="buff-tooltip-time" id="buff-shiny-time2"></div>
+          </div>
+        </div>
+        <div class="buff-item" id="buff-amulet" style="display:none;">
+          <div class="buff-collapsed">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/amulet-coin.png" class="buff-sprite" alt="Moneda Amuleto">
+            <div class="buff-timer-badge" id="buff-amulet-time">--:--</div>
+          </div>
+          <div class="buff-tooltip">
+            <div class="buff-tooltip-name">💰 Moneda Amuleto</div>
+            <div class="buff-tooltip-desc">Duplica el dinero ganado en combate.</div>
+            <div class="buff-tooltip-time" id="buff-amulet-time2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS MODAL -->
+      <div id="settings-modal" class="modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;align-items:center;justify-content:center;">
+        <div style="background:var(--card);padding:24px;border-radius:20px;width:90%;max-width:400px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2 style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin:0;">⚙️ CONFIGURACIÓN</h2>
+            <button onclick="toggleSettings()" style="background:transparent;border:none;color:var(--gray);font-size:20px;cursor:pointer;">✕</button>
+          </div>
+          
+          <div style="margin-bottom:24px;">
+            <label style="display:block;font-size:14px;color:var(--text);margin-bottom:12px;font-weight:700;">Zoom de la Interfaz: <span id="zoom-value">100%</span></label>
+            <input type="range" id="zoom-slider" min="50" max="150" value="100" step="5" style="width:100%;accent-color:var(--yellow);cursor:pointer;" oninput="updateZoom(this.value)">
+            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--gray);font-family:'Press Start 2P',monospace;">
+              <span>50%</span>
+              <span>100%</span>
+              <span>150%</span>
+            </div>
+          </div>
+
+          <button onclick="toggleSettings()" style="width:100%;padding:12px;background:var(--yellow);color:var(--darker);border:none;border-radius:12px;font-family:'Press Start 2P',monospace;font-size:10px;cursor:pointer;font-weight:900;">GUARDAR Y CERRAR</button>
         </div>
       </div>
 
@@ -168,11 +247,11 @@
             font-family:'Press Start 2P',monospace;z-index:2;"></span>
         </button>
         <button class="nav-btn" data-tab="box"
-          onclick="showTab('box',this);renderBox()"><span>📦</span><span>Caja</span></button>
+          onclick="showTab('box',this)"><span>📦</span><span>Caja</span></button>
         <button class="nav-btn" data-tab="bag"
-          onclick="showTab('bag',this);renderBag()"><span>🎒</span><span>Mochila</span></button>
+          onclick="showTab('bag',this)"><span>🎒</span><span>Mochila</span></button>
         <button class="nav-btn" data-tab="daycare"
-          onclick="showTab('daycare',this);renderDaycareUI()">
+          onclick="showTab('daycare',this)">
           <span>🥚</span><span>Crianza</span>
           <span id="daycare-nav-badge" style="display:none;position:absolute;top:4px;right:4px;
             background:var(--red);color:#fff;font-size:9px;font-weight:900;min-width:16px;height:16px;

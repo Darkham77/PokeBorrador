@@ -342,9 +342,11 @@
       };
 
       if (locId) {
+        mb.style.display = 'flex';
+        mb.style.flexDirection = 'column';
         mb.innerHTML = `
-          <button id="battle-continue-btn" style="width:100%;padding:14px;margin-top:4px;background:linear-gradient(135deg,#6BCB77 0%,#3b82f6 100%);border:none;border-radius:14px;color:#fff;font-family:inherit;font-size:12px;font-weight:bold;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(107,203,119,0.3);">▶ CONTINUAR</button>
-          <button id="battle-city-btn" style="width:100%;padding:11px;margin-top:8px;background:rgba(255,59,59,0.18);border:1px solid rgba(255,59,59,0.4);border-radius:14px;color:#f87171;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer;letter-spacing:1px;">🏙️ VOLVER A LA CIUDAD</button>
+          <button id="battle-continue-btn" class="battle-continue-btn-full" style="padding:14px;margin-top:4px;background:linear-gradient(135deg,#6BCB77 0%,#3b82f6 100%);border:none;border-radius:14px;color:#fff;font-family:inherit;font-size:12px;font-weight:bold;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(107,203,119,0.3);">▶ CONTINUAR</button>
+          <button id="battle-city-btn" class="battle-continue-btn-full" style="padding:11px;margin-top:8px;background:rgba(255,59,59,0.18);border:1px solid rgba(255,59,59,0.4);border-radius:14px;color:#f87171;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer;letter-spacing:1px;">🏙️ VOLVER A LA CIUDAD</button>
         `;
         document.getElementById('battle-continue-btn').onclick = () => {
           resetLog();
@@ -356,7 +358,9 @@
           showTab('map');
         };
       } else {
-        mb.innerHTML = '<button id="battle-continue-btn" style="width:100%;padding:14px;margin-top:4px;background:linear-gradient(135deg,#6BCB77 0%,#3b82f6 100%);border:none;border-radius:14px;color:#fff;font-family:inherit;font-size:12px;font-weight:bold;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(107,203,119,0.3);">▶ CONTINUAR</button>';
+        mb.style.display = 'flex';
+        mb.style.flexDirection = 'column';
+        mb.innerHTML = '<button id="battle-continue-btn" class="battle-continue-btn-full" style="padding:14px;margin-top:4px;background:linear-gradient(135deg,#6BCB77 0%,#3b82f6 100%);border:none;border-radius:14px;color:#fff;font-family:inherit;font-size:12px;font-weight:bold;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(107,203,119,0.3);">▶ CONTINUAR</button>';
         document.getElementById('battle-continue-btn').onclick = () => {
           resetLog();
           callback();
@@ -403,7 +407,9 @@
 
     function showMoves() {
       renderMoveButtons();
-      document.getElementById('move-buttons').style.display = 'grid';
+      const mb = document.getElementById('move-buttons');
+      mb.style.display = 'grid';
+      mb.style.flexDirection = ''; // Reset flex if it was set
     }
 
     // ── Official damage formula (Gen 4+) ──────────────────────
@@ -1481,7 +1487,7 @@
         // Money reward + Battle Coins
         let moneyWon = b.isGym ? b.enemy.level * 80 : b.enemy.level * 20;
         if (b.isTrainer) moneyWon *= 2; // Trainers pay more
-        if ((state.amuletCoinUntil || 0) > Date.now()) moneyWon *= 2; // Moneda Amuleto
+        if ((state.amuletCoinSecs || 0) > 0) moneyWon *= 2; // Moneda Amuleto
         state.money += moneyWon;
         addLog(`¡Ganaste <span style="color:#22c55e;font-weight:bold;">₽${moneyWon.toLocaleString()}</span>!`, 'log-info');
 
