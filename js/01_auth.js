@@ -453,7 +453,7 @@
       let anyReady = false;
       for (let i = 0; i < state.eggs.length; i++) {
         const egg = state.eggs[i];
-        if (!egg.ready && egg.steps > 0) {
+        if (!egg.ready && (typeof egg.steps === 'number') && egg.steps > 0) {
           egg.steps--;
           if (egg.steps <= 0) {
             egg.steps = 0;
@@ -461,6 +461,9 @@
             anyReady = true;
             notify('¡Un Huevo Pokémon está listo para eclosionar!', '🥚');
           }
+        } else if (!egg.ready && (egg.steps === undefined || egg.steps === null || isNaN(egg.steps))) {
+          // Si el huevo tiene pasos corruptos, le asignamos un valor seguro
+          egg.steps = 150;
         }
       }
       if (anyReady) updateProfilePanel(); 
@@ -470,13 +473,17 @@
     function startManualHatch(eggIdx) {
       const egg = state.eggs[eggIdx];
       if (!egg) return;
+
+      // Validación extra de seguridad (prevención de bugs de eclosión instantánea)
+      const isReady = (egg.ready === true) || (typeof egg.steps === 'number' && egg.steps <= 0);
       
-      // Safety check: egg must be ready
-      if (!egg.ready && egg.steps > 0) {
-        console.warn('[HATCH] Intentando eclosionar un huevo que no está listo.', egg);
+      if (!isReady) {
+        notify(`¡Este huevo todavía no está listo! Faltan ${egg.steps || 150} pasos.`, '🥚');
         return;
       }
 
+      // Guardar estado antes de empezar para evitar inconsistencias
+      scheduleSave();
       let clicks = 0;
       const totalClicks = 5 + Math.floor(Math.random() * 3);
       

@@ -615,13 +615,15 @@ function updateEggProgressHud() {
 
   container.style.display = 'flex';
   container.innerHTML = state.eggs.map((egg, idx) => {
-    const total = egg.totalSteps || 100;
-    const progress = Math.min(100, Math.max(0, ((total - egg.steps) / total) * 100));
-    const isReady = egg.ready || egg.steps <= 0;
+    const total = egg.totalSteps || 150;
+    const currentSteps = typeof egg.steps === 'number' ? egg.steps : total;
+    const progress = Math.min(100, Math.max(0, ((total - currentSteps) / total) * 100));
+    const isReady = (egg.ready === true) || (typeof egg.steps === 'number' && egg.steps <= 0);
     const color = egg.origin === 'breeding' ? 'var(--purple)' : 'var(--yellow)';
 
     return `
-          <div class="hud-egg-card" ${isReady ? `onclick="startManualHatch(${idx})"` : ''} style="cursor: ${isReady ? 'pointer' : 'default'}; ${isReady ? 'border-color: var(--yellow); animation: pulseGlow 2s infinite;' : ''}">
+          <div class="hud-egg-card" ${isReady ? `onclick="startManualHatch(${idx})"` : ''} 
+            style="animation: slideInDown ${0.3 + idx*0.1}s ease forwards; ${isReady ? 'cursor: pointer; border-color: var(--yellow); animation: pulseGlow 2s infinite;' : 'cursor: default;'}">
             <div class="hud-egg-icon" style="${isReady ? 'animation: eggShake 1.5s infinite;' : ''}">🥚</div>
             <div class="hud-egg-info">
               <span class="hud-egg-label">${isReady ? '¡LISTO!' : (egg.origin === 'breeding' ? 'CRIANZA' : 'ENCUENTRO')}</span>
