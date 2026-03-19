@@ -470,6 +470,12 @@
     function startManualHatch(eggIdx) {
       const egg = state.eggs[eggIdx];
       if (!egg) return;
+      
+      // Safety check: egg must be ready
+      if (!egg.ready && egg.steps > 0) {
+        console.warn('[HATCH] Intentando eclosionar un huevo que no está listo.', egg);
+        return;
+      }
 
       let clicks = 0;
       const totalClicks = 5 + Math.floor(Math.random() * 3);

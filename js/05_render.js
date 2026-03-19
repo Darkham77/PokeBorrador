@@ -621,7 +621,7 @@
         const color = egg.origin === 'breeding' ? 'var(--purple)' : 'var(--yellow)';
         
         return `
-          <div class="hud-egg-card" onclick="startManualHatch(${idx})" style="cursor: ${isReady ? 'pointer' : 'default'}; ${isReady ? 'border-color: var(--yellow); animation: pulseGlow 2s infinite;' : ''}">
+          <div class="hud-egg-card" ${isReady ? `onclick="startManualHatch(${idx})"` : ''} style="cursor: ${isReady ? 'pointer' : 'default'}; ${isReady ? 'border-color: var(--yellow); animation: pulseGlow 2s infinite;' : ''}">
             <div class="hud-egg-icon" style="${isReady ? 'animation: eggShake 1.5s infinite;' : ''}">🥚</div>
             <div class="hud-egg-info">
               <span class="hud-egg-label">${isReady ? '¡LISTO!' : (egg.origin === 'breeding' ? 'CRIANZA' : 'ENCUENTRO')}</span>
