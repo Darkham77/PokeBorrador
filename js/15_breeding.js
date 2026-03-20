@@ -221,12 +221,35 @@ function checkCompatibility(pA, pB) {
   const level = (idA === idB) ? 3 : 2;
   return { level, eggSpecies, motherId: mother.id, reason: 'OK', sharedGroups: shared };
 }
-function calculateInheritance(pA, pB) {
+function calculateInheritance(pA, pB, iA, iB) {
   const STATS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
   const ivs = {}; STATS.forEach(s => ivs[s] = Math.floor(Math.random() * 32));
-  const count = 3;
-  const rem = STATS.sort(() => Math.random() - 0.5).slice(0, count);
+  
+  const powerMap = {
+      'Pesa Recia': 'hp',
+      'Brazal Recio': 'atk',
+      'Cinto Recio': 'def',
+      'Lente Recia': 'spa',
+      'Banda Recia': 'spd',
+      'Franja Recia': 'spe'
+  };
+  
+  let forcedA = null, forcedB = null;
+  if (iA && powerMap[iA]) forcedA = powerMap[iA];
+  if (iB && powerMap[iB]) forcedB = powerMap[iB];
+  
+  if (forcedA) ivs[forcedA] = pA.ivs[forcedA];
+  if (forcedB && forcedB !== forcedA) ivs[forcedB] = pB.ivs[forcedB];
+  else if (forcedB && forcedB === forcedA) {
+      ivs[forcedB] = Math.random() < 0.5 ? pA.ivs[forcedB] : pB.ivs[forcedB];
+  }
+  
+  const forcedCount = (forcedA && forcedB && forcedA !== forcedB) ? 2 : ((forcedA || forcedB) ? 1 : 0);
+  let count = Math.max(0, 3 - forcedCount);
+  
+  const rem = STATS.filter(s => s !== forcedA && s !== forcedB).sort(() => Math.random() - 0.5).slice(0, count);
   rem.forEach(s => ivs[s] = Math.random() < 0.5 ? pA.ivs[s] : pB.ivs[s]);
+  
   return ivs;
 }
 
@@ -249,48 +272,74 @@ function _daycareInheritanceInfo() {
 
   return { count, hasDK: false, aChance, bChance, rChance, forcedLine: '' };
 }
-function renderDaycareBreedingSummary(pA, pB, compat) {
-  const inh = _daycareInheritanceInfo(pA, pB);
+function renderDaycareBreedingSummary(pA, pB, compat, itemA = '', itemB = '') {
   const cost = calculateBreedingCost(pA, pB);
-  const natureCount = (typeof NATURES !== 'undefined' && NATURES && NATURES.length) ? NATURES.length : 20;
   const intervalTxt = (compat && compat.level > 0) ? _daycareEggIntervalText(compat.level) : '—';
-  const shared = (compat && compat.sharedGroups && compat.sharedGroups.length) ? compat.sharedGroups.join(', ') : '—';
   const motherId = compat && compat.eggSpecies ? compat.eggSpecies : null;
   const motherName = motherId ? (POKEMON_DB[motherId]?.name || motherId) : '—';
-  const gA = genderSymbol(pA.gender);
-  const gB = genderSymbol(pB.gender);
-  const compatClass = compat.level >= 3 ? 'compat-high' : (compat.level === 2 ? 'compat-mid' : (compat.level === 1 ? 'compat-low' : 'compat-none'));
+  
+  const powerMap = {
+      'Pesa Recia': { stat: 'hp', label: 'PS' },
+      'Brazal Recio': { stat: 'atk', label: 'Ataque' },
+      'Cinto Recio': { stat: 'def', label: 'Defensa' },
+      'Lente Recia': { stat: 'spa', label: 'At. Especial' },
+      'Banda Recia': { stat: 'spd', label: 'Def. Especial' },
+      'Franja Recia': { stat: 'spe', label: 'Velocidad' }
+  };
+
+  let guaranteedNature = 'Aleatoria (1/20)';
+  if (itemA === 'Piedra Eterna' && itemB === 'Piedra Eterna') {
+      guaranteedNature = `${pA.nature} o ${pB.nature} (50/50)`;
+  } else if (itemA === 'Piedra Eterna') {
+      guaranteedNature = `<span style="color:var(--yellow);">${pA.nature}</span>`;
+  } else if (itemB === 'Piedra Eterna') {
+      guaranteedNature = `<span style="color:var(--yellow);">${pB.nature}</span>`;
+  }
+
+  let forcedA = powerMap[itemA] ? powerMap[itemA] : null;
+  let forcedB = powerMap[itemB] ? powerMap[itemB] : null;
+
+  let guaranteedIVs = [];
+  if (forcedA) guaranteedIVs.push(`✓ 100% de ${forcedA.label} (${pA.name})`);
+  if (forcedB && (!forcedA || forcedB.stat !== forcedA.stat)) guaranteedIVs.push(`✓ 100% de ${forcedB.label} (${pB.name})`);
+  else if (forcedB && forcedA && forcedB.stat === forcedA.stat) {
+      guaranteedIVs = [`✓ 50% ${forcedA.label} (${pA.name}) / 50% (${pB.name})`];
+  }
+  const ivText = guaranteedIVs.length > 0 ? guaranteedIVs.join('<br>') : '<span style="color:var(--gray);">3 stats al azar (Madre/Padre)</span>';
+
   return `
-        <div class="daycare-mid-title">CRIANZA</div>
-        <div class="daycare-mid-grid">
-          <div class="daycare-mid-panel">
-            <div class="daycare-mid-label">Compatibilidad</div>
-            <div class="daycare-mid-value ${compatClass}">${COMPAT_TEXT[compat.level]?.label || '—'}</div>
-            <div class="daycare-mid-pill">🥚 Huevo cada ${intervalTxt}</div>
-          </div>
-          <div class="daycare-mid-panel">
-             <div class="daycare-mid-label">Reglas y Costo</div>
-             <div class="daycare-mid-note">Solo macho + hembra.<br>La madre define la especie.<br><span style="color:var(--yellow)">Costo: $${cost.toLocaleString()}</span></div>
-          </div>
+    <div style="background:linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95)); border:1px solid rgba(139,92,246,0.5); border-radius:16px; padding:16px; box-shadow:0 8px 32px rgba(0,0,0,0.6); text-align:left; position:relative; overflow:hidden;">
+      <div style="position:absolute; top:-20px; right:-20px; font-size:100px; opacity:0.03; z-index:0;">🧬</div>
+      <div style="text-align:center; font-family:'Press Start 2P', monospace; font-size:10px; color:var(--purple); margin-bottom:16px; text-shadow:0 0 10px rgba(139,92,246,0.5); position:relative; z-index:1;">PRONÓSTICO DE CRÍA</div>
+      
+      <div style="display:flex; flex-direction:column; gap:12px; position:relative; z-index:1;">
+        <!-- Especie -->
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:10px 12px; border-radius:10px; border-left:4px solid var(--green);">
+          <span style="font-size:10px; color:var(--gray); font-family:'Press Start 2P', monospace;">ESPECIE</span>
+          <span style="font-size:12px; font-weight:800; color:#fff;">🥚 ${motherName}</span>
         </div>
-        <div class="daycare-mid-panel" style="margin-bottom:10px;">
-          <div class="daycare-mid-label">Padres</div>
-          <div class="daycare-mid-kv"><span class="k">Pareja</span><span class="v">${pA.name} (${gA}) + ${pB.name} (${gB})</span></div>
-          <div class="daycare-mid-kv"><span class="k">Grupo compartido</span><span class="v">${shared}</span></div>
-          <div class="daycare-mid-kv"><span class="k">Cría</span><span class="v">${motherName}</span></div>
+
+        <!-- Naturaleza -->
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:10px 12px; border-radius:10px; border-left:4px solid var(--yellow);">
+          <span style="font-size:10px; color:var(--gray); font-family:'Press Start 2P', monospace;">NATURALEZA</span>
+          <span style="font-size:11px; font-weight:700; color:#fff; text-align:right;">${guaranteedNature}</span>
         </div>
-        <div class="daycare-mid-panel">
-          <div class="daycare-mid-label">Herencia</div>
-          <div class="daycare-mid-note">
-            IVs heredados: <span class="daycare-mid-accent">${inh.count}</span>${inh.hasDK ? ' (Lazo Destino)' : ''}.<br>
-            Cada stat no forzado: <span class="daycare-mid-accent">${inh.aChance}%</span> A, <span class="daycare-mid-accent">${inh.bChance}%</span> B, <span class="daycare-mid-accent">${inh.rChance}%</span> aleatorio.<br>
-            ${inh.forcedLine ? (inh.forcedLine + '<br>') : ''}
-            Naturaleza: <span class="daycare-mid-accent">Aleatoria (1/${natureCount} cada una)</span>.<br>
-            Shiny: <span class="daycare-mid-accent">1/512</span>.<br>
-            Incubación: <span class="daycare-mid-accent">30 min</span>.
+
+        <!-- IVs -->
+        <div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:10px; border-left:4px solid var(--blue);">
+          <div style="font-size:10px; color:var(--gray); font-family:'Press Start 2P', monospace; margin-bottom:8px;">GENÉTICA (IVs)</div>
+          <div style="font-size:11px; font-weight:700; color:var(--blue); line-height:1.6;">
+            ${ivText}
           </div>
         </div>
-      `;
+      </div>
+      
+      <div style="margin-top:16px; padding-top:12px; border-top:1px dashed rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1;">
+        <div style="font-size:10px; color:var(--gray);">Costo: <span style="color:var(--yellow); font-weight:800;">$${cost.toLocaleString()}</span></div>
+        <div style="font-size:10px; color:var(--gray);">Tiempo: <span style="color:var(--green); font-weight:800;">${intervalTxt}</span></div>
+      </div>
+    </div>
+  `;
 } let _daycareTimer = null;
 let _activeDaycareSlots = [];
 async function loadDaycareSlots() {
@@ -303,6 +352,19 @@ async function loadDaycareSlots() {
     return { ...s, pokemon: p };
   });
 }
+async function updateDaycareSummary() {
+    const slots = await loadDaycareSlots();
+    if (slots.length === 2 && slots[0].pokemon && slots[1].pokemon) {
+        const compat = checkCompatibility(slots[0].pokemon, slots[1].pokemon);
+        const midCard = document.getElementById('daycare-mid-card');
+        const selA = document.getElementById('slot-a-item')?.value || '';
+        const selB = document.getElementById('slot-b-item')?.value || '';
+        if (midCard) {
+            midCard.innerHTML = renderDaycareBreedingSummary(slots[0].pokemon, slots[1].pokemon, compat, selA, selB);
+        }
+    }
+}
+
 async function renderDaycareUI() {
   const slots = await loadDaycareSlots();
   renderDaycareSlot('a', slots.find(s => s.slot_index === 1));
@@ -320,7 +382,9 @@ async function renderDaycareUI() {
     if (hasPair) {
       slotsGrid.classList.add('has-mid');
       midCard.style.display = 'block';
-      midCard.innerHTML = renderDaycareBreedingSummary(slots[0].pokemon, slots[1].pokemon, compat);
+      const selA = document.getElementById('slot-a-item')?.value || '';
+      const selB = document.getElementById('slot-b-item')?.value || '';
+      midCard.innerHTML = renderDaycareBreedingSummary(slots[0].pokemon, slots[1].pokemon, compat, selA, selB);
     } else {
       slotsGrid.classList.remove('has-mid');
       midCard.style.display = 'none';
@@ -343,8 +407,33 @@ async function renderDaycareUI() {
   await renderEggGrid();
   renderDaycareMission();
 }
+function populateDaycareItemSelect(slotId) {
+    const sel = document.getElementById(`slot-${slotId}-item`);
+    if (!sel) return;
+    const currentVal = sel.value;
+    const inv = state.inventory || {};
+    const validItems = [
+        { id: 'Piedra Eterna', label: '🪨 Piedra Eterna' },
+        { id: 'Pesa Recia', label: '🏋️ Pesa Recia (PS)' },
+        { id: 'Brazal Recio', label: '🥊 Brazal Recio (ATK)' },
+        { id: 'Cinto Recio', label: '🛡️ Cinto Recio (DEF)' },
+        { id: 'Lente Recia', label: '🔍 Lente Recia (SPA)' },
+        { id: 'Banda Recia', label: '🎗️ Banda Recia (SPD)' },
+        { id: 'Franja Recia', label: '👢 Franja Recia (SPE)' }
+    ];
+    let html = '<option value="">-- Sin Ítem --</option>';
+    validItems.forEach(item => {
+        const qty = inv[item.id] || 0;
+        if (qty > 0) {
+            html += `<option value="${item.id}" ${currentVal === item.id ? 'selected' : ''}>${item.label} (x${qty})</option>`;
+        }
+    });
+    sel.innerHTML = html;
+}
+
 function renderDaycareSlot(id, slot) {
   const has = slot && slot.pokemon;
+  const itemContainer = document.getElementById(`slot-${id}-item-container`);
   document.getElementById(`slot-${id}-deposit-btn`).style.display = has ? 'none' : 'block';
   document.getElementById(`slot-${id}-withdraw-btn`).style.display = has ? 'block' : 'none';
   if (has) {
@@ -353,10 +442,12 @@ function renderDaycareSlot(id, slot) {
     document.getElementById(`slot-${id}-sprite`).innerHTML = sUrl ? `<img src="${sUrl}">` : p.emoji;
     document.getElementById(`slot-${id}-name`).innerHTML = `${p.name} <span class="daycare-slot-level">Nv.${p.level}</span>`;
     document.getElementById(`slot-${id}-info`).innerHTML = `<span class="daycare-slot-info-label">IVs</span> <span class="daycare-slot-info-values">${p.ivs.hp}/${p.ivs.atk}/${p.ivs.def}/${p.ivs.spa}/${p.ivs.spd}/${p.ivs.spe}</span><span class="daycare-slot-info-sep">•</span><span class="daycare-slot-info-label">Gen</span> <span class="daycare-slot-info-values">${genderSymbol(p.gender)}</span><span class="daycare-slot-info-sep">•</span><span class="daycare-slot-info-label">Vig</span> <span class="daycare-slot-info-values">⚡${p.vigor || 0}</span>`;
+    if (itemContainer) { itemContainer.style.display = 'block'; populateDaycareItemSelect(id); }
   } else {
     document.getElementById(`slot-${id}-sprite`).innerHTML = '❓';
     document.getElementById(`slot-${id}-name`).innerHTML = '— Vacía —';
     document.getElementById(`slot-${id}-info`).textContent = '';
+    if (itemContainer) { itemContainer.style.display = 'none'; document.getElementById(`slot-${id}-item`).value = ''; }
   }
 }
 
@@ -545,15 +636,27 @@ function manageDaycareTimer(compatLvl, slots) {
         const pA = slots[0].pokemon, pB = slots[1].pokemon;
         if (typeof ensureVigor === 'function') { ensureVigor(pA); ensureVigor(pB); }
         if (pA.vigor > 0 && pB.vigor > 0) {
-            const success = await generateEggAt(currentUser.id, pA, pB, pA.heldItem, pB.heldItem, new Date(_nextEggTime - intMs));
+            let iA = document.getElementById('slot-a-item')?.value || '';
+            let iB = document.getElementById('slot-b-item')?.value || '';
+            
+            // Validate inventory presence for equipped items since they are consumed
+            if (iA && (!state.inventory[iA] || state.inventory[iA] <= 0)) iA = '';
+            if (iB && (!state.inventory[iB] || state.inventory[iB] <= 0)) iB = '';
+            if (iA === iB && iA && state.inventory[iA] < 2) iB = ''; // Can't use same item if only 1 in inventory
+            
+            const success = await generateEggAt(currentUser.id, pA, pB, iA, iB, new Date(_nextEggTime - intMs));
             if (success !== false) {
+                // Consume the items
+                if (iA) { state.inventory[iA]--; if (state.inventory[iA] <= 0) document.getElementById('slot-a-item').value = ''; }
+                if (iB) { state.inventory[iB]--; if (state.inventory[iB] <= 0) document.getElementById('slot-b-item').value = ''; }
+                
                 // Consume time by updating parent deposited_at
                 const consumeTo = new Date(_nextEggTime - intMs);
                 await sb.from('daycare_slots').update({ deposited_at: consumeTo.toISOString() }).eq('player_id', currentUser.id);
 
                 notify('¡Tus Pokémon han puesto un huevo!', '🥚');
                 renderEggGrid();
-                renderDaycareUI(); // Refresh UI to show updated vigor
+                renderDaycareUI(); // Refresh UI to show updated vigor and item counts
             }
         } else {
             clearInterval(_daycareTimer);
@@ -652,7 +755,16 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
 
   const compat = checkCompatibility(pA, pB);
   if (compat.level === 0) return false;
-  const ivs = calculateInheritance(pA, pB);
+  const ivs = calculateInheritance(pA, pB, iA, iB);
+  
+  if (iA === 'Piedra Eterna' && iB === 'Piedra Eterna') {
+      ivs._nature = Math.random() < 0.5 ? pA.nature : pB.nature;
+  } else if (iA === 'Piedra Eterna') {
+      ivs._nature = pA.nature;
+  } else if (iB === 'Piedra Eterna') {
+      ivs._nature = pB.nature;
+  }
+  
   let moves = (EGG_MOVES_DB[compat.eggSpecies] || []).filter(m => (pA.moves || []).concat(pB.moves || []).map(x => x.id || x).includes(m)).slice(0, 2);
   const ready = new Date(dateObj.getTime() + 30 * 60 * 1000); // 30 mins
   await sb.from('eggs').insert({ player_id: pid, species: compat.eggSpecies, parent_a: pA.uid, parent_b: pB.uid, inherited_ivs: ivs, egg_moves: moves, shiny_roll: (Math.random() < 1 / 512), created_at: dateObj.toISOString(), hatch_ready_time: ready.toISOString(), incubation_speed_bonus: 0 });
@@ -781,8 +893,13 @@ function generateDailyMission() {
         { name: 'Baya de Bronce', qty: 3, icon: '🥉' },
         { name: 'Baya de Plata', qty: 2, icon: '🥈' },
         { name: 'Baya de Oro', qty: 1, icon: '🥇' },
-        { name: 'Compartir EXP', qty: 1, icon: '🎒' },
-        { name: 'Lente Zoom', qty: 1, icon: '🔍' }
+        { name: 'Piedra Eterna', qty: 1, icon: '🪨' },
+        { name: 'Pesa Recia', qty: 1, icon: '🏋️' },
+        { name: 'Brazal Recio', qty: 1, icon: '🥊' },
+        { name: 'Cinto Recio', qty: 1, icon: '🛡️' },
+        { name: 'Lente Recia', qty: 1, icon: '🔍' },
+        { name: 'Banda Recia', qty: 1, icon: '🎗️' },
+        { name: 'Franja Recia', qty: 1, icon: '👢' }
     ];
     const reward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
     

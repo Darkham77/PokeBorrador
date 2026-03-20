@@ -696,6 +696,13 @@
           <div id="slot-a-sprite" class="daycare-slot-sprite">❓</div>
           <div id="slot-a-name" class="daycare-slot-name">— Vacía —</div>
           <div id="slot-a-info" class="daycare-slot-info"></div>
+          
+          <div id="slot-a-item-container" style="display:none;margin-top:8px;">
+            <select id="slot-a-item" onchange="updateDaycareSummary()" style="width:100%;padding:6px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.2);outline:none;font-size:10px;">
+              <option value="">-- Sin Ítem --</option>
+            </select>
+          </div>
+
           <button id="slot-a-deposit-btn" onclick="openDepositModal(0)" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 14px;border:none;
             border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#3b82f6,#2563eb);
             color:#fff;margin-top:8px;">📥 Depositar</button>
@@ -712,6 +719,13 @@
           <div id="slot-b-sprite" class="daycare-slot-sprite">❓</div>
           <div id="slot-b-name" class="daycare-slot-name">— Vacía —</div>
           <div id="slot-b-info" class="daycare-slot-info"></div>
+          
+          <div id="slot-b-item-container" style="display:none;margin-top:8px;">
+            <select id="slot-b-item" onchange="updateDaycareSummary()" style="width:100%;padding:6px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.2);outline:none;font-size:10px;">
+              <option value="">-- Sin Ítem --</option>
+            </select>
+          </div>
+
           <button id="slot-b-deposit-btn" onclick="openDepositModal(1)" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 14px;border:none;
             border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#3b82f6,#2563eb);
             color:#fff;margin-top:8px;">📥 Depositar</button>

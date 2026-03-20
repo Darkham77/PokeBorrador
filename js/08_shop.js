@@ -166,6 +166,48 @@
         desc: 'Acorta el tiempo de la guardería un 50%. Solo un uso por ciclo.',
         effect: (qty) => { state.inventory['Baya de Oro'] = (state.inventory['Baya de Oro'] || 0) + qty; }
       },
+      {
+        id: 'everstone', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/everstone.png',
+        name: 'Piedra Eterna', icon: '🪨', price: 10000, unlockLv: 15, tier: 'epic',
+        desc: 'Equipada en la guardería, asegura que la cría herede la naturaleza de este padre.',
+        effect: (qty) => { state.inventory['Piedra Eterna'] = (state.inventory['Piedra Eterna'] || 0) + qty; }
+      },
+      {
+        id: 'power_weight', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-weight.png',
+        name: 'Pesa Recia', icon: '🏋️', price: 15000, unlockLv: 20, tier: 'legendary',
+        desc: 'Equipada en la guardería, asegura heredar los IVs de PS (Vida) de este padre.',
+        effect: (qty) => { state.inventory['Pesa Recia'] = (state.inventory['Pesa Recia'] || 0) + qty; }
+      },
+      {
+        id: 'power_bracer', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-bracer.png',
+        name: 'Brazal Recio', icon: '🥊', price: 15000, unlockLv: 20, tier: 'legendary',
+        desc: 'Equipada en la guardería, asegura heredar los IVs de Ataque de este padre.',
+        effect: (qty) => { state.inventory['Brazal Recio'] = (state.inventory['Brazal Recio'] || 0) + qty; }
+      },
+      {
+        id: 'power_belt', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-belt.png',
+        name: 'Cinto Recio', icon: '🛡️', price: 15000, unlockLv: 20, tier: 'legendary',
+        desc: 'Equipada en la guardería, asegura heredar los IVs de Defensa de este padre.',
+        effect: (qty) => { state.inventory['Cinto Recio'] = (state.inventory['Cinto Recio'] || 0) + qty; }
+      },
+      {
+        id: 'power_lens', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-lens.png',
+        name: 'Lente Recia', icon: '🔍', price: 15000, unlockLv: 20, tier: 'legendary',
+        desc: 'Equipada en la guardería, asegura heredar los IVs de Ataque Especial de este padre.',
+        effect: (qty) => { state.inventory['Lente Recia'] = (state.inventory['Lente Recia'] || 0) + qty; }
+      },
+      {
+        id: 'power_band', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-band.png',
+        name: 'Banda Recia', icon: '🎗️', price: 15000, unlockLv: 20, tier: 'legendary',
+        desc: 'Equipada en la guardería, asegura heredar los IVs de Defensa Especial de este padre.',
+        effect: (qty) => { state.inventory['Banda Recia'] = (state.inventory['Banda Recia'] || 0) + qty; }
+      },
+      {
+        id: 'power_anklet', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-anklet.png',
+        name: 'Franja Recia', icon: '👢', price: 15000, unlockLv: 20, tier: 'legendary',
+        desc: 'Equipada en la guardería, asegura heredar los IVs de Velocidad de este padre.',
+        effect: (qty) => { state.inventory['Franja Recia'] = (state.inventory['Franja Recia'] || 0) + qty; }
+      },
 
       // ── POKÉBALLS ──────────────────────────────────────────────────────────────
       {
