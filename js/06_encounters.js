@@ -194,16 +194,18 @@
 	      const totalRate = rates.reduce((a, b) => a + b, 0);
 	      let rand = Math.random() * totalRate;
 	      let cumulative = 0;
-	      let selectedId = pool[0];
+	      let selectedIdx = 0;
 	
 	      for (let i = 0; i < pool.length; i++) {
 	        cumulative += rates[i];
 	        if (rand <= cumulative) {
-	          selectedId = pool[i];
+	          selectedIdx = i;
 	          break;
 	        }
 	      }
 	
+	      const selectedId = pool[selectedIdx];
+	      const rarity = (rates[selectedIdx] / totalRate) * 100;
 	      const level = Math.floor(Math.random() * (lv[1] - lv[0] + 1)) + lv[0];
 	      const enemy = makePokemon(selectedId, level);
 	
@@ -220,16 +222,139 @@
 	          <button id="fishing-start-btn" style="font-family:\'Press Start 2P\',monospace;font-size:10px;padding:16px 32px;border:none;border-radius:14px;
 	            cursor:pointer;background:linear-gradient(135deg,var(--blue),#2563eb);color:#fff;
 	            box-shadow:0 4px 16px rgba(59,130,246,0.5);margin-top:12px;width:100%;">
-	            🎣 ¡TIRAR DE LA CAÑA!
+	            🎣 ¡MINIJUEGO DE PESCA!
 	          </button>
 	        </div>`;
 	      document.body.appendChild(introOv);
 	
 	      document.getElementById('fishing-start-btn').onclick = () => {
 	        introOv.remove();
-	        startBattle(enemy, false, null, locId);
+	        startFishingMinigame(enemy, rarity, locId);
 	      };
 	    }
+	
+	    function startFishingMinigame(enemy, rarity, locId) {
+	      const overlay = document.createElement('div');
+	      overlay.id = 'fishing-game-overlay';
+	      
+	      // Dificultad basada en rareza (rarity es el % de aparición)
+	      // Pokémon más raros (< 10%) tienen barras más pequeñas y peces más rápidos
+	      const barHeight = Math.max(40, Math.min(100, rarity * 2)); 
+	      const fishSpeed = Math.max(1, Math.min(5, 10 / rarity));
+	      const progressGain = Math.max(0.1, Math.min(0.5, rarity / 20));
+	      const progressLoss = 0.3;
+	
+	      overlay.innerHTML = `
+	        <div class="fishing-game-container">
+	          <div class="fishing-title">Pescando...</div>
+	          <div class="fishing-area" id="fishing-area">
+	            <div class="fishing-bar" id="fishing-bar" style="height: ${barHeight}px; top: 200px;"></div>
+	            <div class="fishing-fish" id="fishing-fish" style="top: 150px;">🐟</div>
+	          </div>
+	          <div class="fishing-progress-wrap">
+	            <div class="fishing-progress-fill" id="fishing-progress"></div>
+	          </div>
+	          <div class="fishing-hint">
+	            Mantén <span>CLICK</span> para subir<br>Suelta para bajar
+	          </div>
+	        </div>
+	      `;
+	      document.body.appendChild(overlay);
+	
+	      const bar = document.getElementById('fishing-bar');
+	      const fish = document.getElementById('fishing-fish');
+	      const progressFill = document.getElementById('fishing-progress');
+	      const area = document.getElementById('fishing-area');
+	      const areaHeight = 350;
+	
+	      let barTop = 200;
+	      let barVel = 0;
+	      let fishTop = 150;
+	      let fishTargetTop = 150;
+	      let progress = 30;
+	      let isPressing = false;
+	      let gameActive = true;
+	
+	      // Input handling
+	      const startPress = () => isPressing = true;
+	      const endPress = () => isPressing = false;
+	      window.addEventListener('mousedown', startPress);
+	      window.addEventListener('mouseup', endPress);
+	      window.addEventListener('touchstart', startPress);
+	      window.addEventListener('touchend', endPress);
+	
+	      function update() {
+	        if (!gameActive) return;
+	
+	        // Bar logic (Physics)
+	        if (isPressing) barVel -= 0.8;
+	        else barVel += 0.5;
+	        barVel *= 0.95; // Friction
+	        barTop += barVel;
+	
+	        // Constrain bar
+	        if (barTop < 0) { barTop = 0; barVel = 0; }
+	        if (barTop > areaHeight - barHeight) { barTop = areaHeight - barHeight; barVel = 0; }
+	        bar.style.top = barTop + 'px';
+	
+	        // Fish logic (AI)
+	        if (Math.abs(fishTop - fishTargetTop) < 5) {
+	          fishTargetTop = Math.random() * (areaHeight - 40);
+	        }
+	        const moveDir = fishTargetTop > fishTop ? 1 : -1;
+	        fishTop += moveDir * fishSpeed;
+	        fish.style.top = fishTop + 'px';
+	
+	        // Collision detection
+	        const fishCenter = fishTop + 15;
+	        if (fishCenter >= barTop && fishCenter <= barTop + barHeight) {
+	          progress += progressGain;
+	          bar.style.borderColor = 'var(--green)';
+	          bar.style.background = 'rgba(50, 215, 75, 0.4)';
+	        } else {
+	          progress -= progressLoss;
+	          bar.style.borderColor = 'var(--red)';
+	          bar.style.background = 'rgba(255, 69, 58, 0.4)';
+	        }
+	
+	        // Progress constraint & Win/Loss
+	        progress = Math.max(0, Math.min(100, progress));
+	        progressFill.style.width = progress + '%';
+	
+	        if (progress >= 100) {
+	          gameActive = false;
+	          finish(true);
+	        } else if (progress <= 0) {
+	          gameActive = false;
+	          finish(false);
+	        } else {
+	          requestAnimationFrame(update);
+	        }
+	      }
+	
+	      function finish(win) {
+	        window.removeEventListener('mousedown', startPress);
+	        window.removeEventListener('mouseup', endPress);
+	        window.removeEventListener('touchstart', startPress);
+	        window.removeEventListener('touchend', endPress);
+	
+	        if (win) {
+	          notify('¡Lo atrapaste!', '🎣');
+	          overlay.style.animation = 'scaleOut .3s ease forwards';
+	          setTimeout(() => {
+	            overlay.remove();
+	            startBattle(enemy, false, null, locId);
+	          }, 300);
+	        } else {
+	          notify('¡El Pokémon se escapó!', '💨');
+	          overlay.style.animation = 'scaleOut .3s ease forwards';
+	          setTimeout(() => overlay.remove(), 300);
+	        }
+	      }
+	
+	      update();
+	    }
+
 
     // ===== GYM BATTLE =====
     function challengeGym(gymId) {
