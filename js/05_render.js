@@ -60,27 +60,28 @@ function renderTeam() {
     const clickFn = releasing ? `toggleReleaseSelect(${i})` : `openPokemonDetail(${i})`;
     const tierInfo = getPokemonTier(p);
 
-    // Held item info
-    let heldIcon = '';
-    if (p.heldItem) {
-      const item = SHOP_ITEMS.find(it => it.name === p.heldItem);
-      heldIcon = `<div style="position:absolute;top:5px;left:5px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);padding:3px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);z-index:2;display:flex;align-items:center;gap:4px;" title="Equipado: ${p.heldItem}">
-            <span style="font-size:12px;">${item ? item.icon : '📦'}</span>
+    // Badges Container (Held Item + Tags)
+    const tags = p.tags || [];
+    let badgesHtml = '';
+    if (p.heldItem || tags.length) {
+      const item = p.heldItem ? SHOP_ITEMS.find(it => it.name === p.heldItem) : null;
+      const itemHtml = p.heldItem ? `<span style="font-size:12px;" title="Equipado: ${p.heldItem}">${item ? item.icon : '📦'}</span>` : '';
+      const tagsListHtml = tags.map(tag => {
+        if (tag === 'fav') return '<span class="tag-icon-small">⭐</span>';
+        if (tag === 'breed') return '<span class="tag-icon-small">❤️</span>';
+        if (tag === 'iv31') return '<span class="tag-icon-small">31</span>';
+        return '';
+      }).join('');
+
+      badgesHtml = `<div style="position:absolute;top:5px;left:5px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);padding:3px 6px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);z-index:2;display:flex;align-items:center;gap:6px;">
+            ${itemHtml}
+            ${tagsListHtml}
           </div>`;
     }
 
-    // Tags display
-    const tags = p.tags || [];
-    const tagsHtml = tags.length ? `<div class="tag-display">
-          ${tags.includes('fav') ? '<span class="tag-icon-small">⭐</span>' : ''}
-          ${tags.includes('breed') ? '<span class="tag-icon-small">❤️</span>' : ''}
-          ${tags.includes('iv31') ? '<span class="tag-icon-small">31</span>' : ''}
-        </div>` : '';
-
     return `<div class="team-card ${selClass}" onclick="${clickFn}" style="cursor:pointer;position:relative;" draggable="${!releasing}" ondragstart="handleDragStart(event, ${i})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${i})">
       ${checkMark}
-      ${heldIcon}
-      ${tagsHtml}
+      ${badgesHtml}
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};font-family:'Press Start 2P',monospace;font-size:6px;padding:2px 5px;border-radius:6px;border:1px solid ${tierInfo.color}44;line-height:1.4;z-index:2;">${tierInfo.tier}</div>
       <div style="height:80px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;">
         <img id="team-sprite-${i}" src="" alt="${p.name}" style="width:72px;height:72px;image-rendering:pixelated;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));display:none;pointer-events:none;">
@@ -345,8 +346,8 @@ function openPokemonDetail(index) {
           <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:${typeColor};margin-bottom:6px;">${p.name}${p.isShiny ? ' ✨' : ''}</div>
           <div style="font-size:12px;color:#888;">Nivel ${p.level} · ${p.type.charAt(0).toUpperCase() + p.type.slice(1)}</div>
           <div style="font-size:11px;color:#555;margin-top:4px;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
-          <div style="margin-top:12px;">
-            <span class="tag-label">Destacar:</span>
+          <div style="margin-top:12px; display:flex; align-items:center; gap:12px;">
+            <span class="tag-label" style="margin-bottom:0;">Destacar:</span>
             <div style="display:flex;gap:10px;">
               <div class="poke-tag ${tags.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'fav')" title="Favorito">⭐</div>
               <div class="poke-tag ${tags.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'breed')" title="Crianza">❤️</div>

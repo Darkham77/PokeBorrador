@@ -2545,12 +2545,12 @@
       transform: translateY(-2px);
     }
     .poke-tag.active {
-      background: rgba(255, 217, 61, 0.2);
+      background: rgba(255, 217, 61, 0.25);
       border: 2px solid var(--yellow);
       color: #fff;
-      filter: grayscale(0) opacity(1);
-      transform: scale(1.1) rotate(2deg);
-      box-shadow: 0 0 15px rgba(255, 217, 61, 0.5), inset 0 0 6px rgba(255, 217, 61, 0.3);
+      filter: grayscale(0) opacity(1) brightness(1.2);
+      transform: scale(1.2) rotate(3deg);
+      box-shadow: 0 0 20px rgba(255, 217, 61, 0.6), inset 0 0 8px rgba(255, 217, 61, 0.4);
       z-index: 5;
     }
     .poke-tag.active[title="Crianza"] {
@@ -2569,8 +2569,8 @@
       font-family: 'Press Start 2P', monospace;
       font-size: 8px;
       color: var(--gray);
-      margin-bottom: 8px;
-      display: block;
+      margin-bottom: 0;
+      display: inline-block;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -2585,7 +2585,9 @@
     .tag-icon-small {
       font-size: 10px;
       text-shadow: 0 0 4px rgba(0,0,0,0.8);
-    } border-radius: 24px;
+    }
+    .auth-card {
+      border-radius: 24px;
       padding: 40px 32px;
       width: 100%;
       max-width: 400px;
