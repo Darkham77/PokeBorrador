@@ -453,11 +453,33 @@
   <!-- BOX TAB -->
   <div id="tab-box" class="tab-content" style="display:none">
     <div class="team-section">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
         <div class="section-title" style="margin:0;">📦 Caja Pokémon</div>
-        <div id="box-count-badge" style="font-size:11px;color:var(--gray);"></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="btn-box-release-mode" onclick="toggleBoxReleaseMode()" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
+                 border-radius:10px;border:1px solid rgba(255,100,100,0.4);
+                 background:rgba(255,59,59,0.1);color:var(--red);cursor:pointer;transition:all .2s;">
+            🌿 SOLTAR
+          </button>
+          <button id="btn-box-confirm-release" onclick="confirmBoxRelease()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
+                 border-radius:10px;border:none;
+                 background:linear-gradient(135deg,var(--red),#c0392b);color:#fff;cursor:pointer;">
+            ✓ CONFIRMAR
+          </button>
+          <button id="btn-box-cancel-release" onclick="toggleBoxReleaseMode()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
+                 border-radius:10px;border:1px solid rgba(255,255,255,0.1);
+                 background:transparent;color:var(--gray);cursor:pointer;">
+            ✕ CANCELAR
+          </button>
+        </div>
       </div>
-      <div style="font-size:12px;color:var(--gray);margin-bottom:12px;">
+      <div id="box-count-badge" style="font-size:11px;color:var(--gray);margin-bottom:8px;"></div>
+      <div id="box-release-hint" style="display:none;font-size:11px;color:var(--red);margin-bottom:12px;
+         background:rgba(255,59,59,0.08);border:1px solid rgba(255,59,59,0.2);
+         border-radius:10px;padding:10px 14px;">
+        ⚠️ Seleccioná los Pokémon que querés soltar de la caja.
+      </div>
+      <div id="box-normal-hint" style="font-size:12px;color:var(--gray);margin-bottom:12px;">
         Tocá un Pokémon para intercambiarlo con uno de tu equipo activo.
       </div>
 

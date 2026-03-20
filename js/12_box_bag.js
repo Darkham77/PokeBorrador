@@ -28,6 +28,8 @@
       ivHP: 0, ivATK: 0, ivDEF: 0, ivSPA: 0, ivSPD: 0, ivSPE: 0
     };
     let _boxFiltersOpen = false;
+    let _boxReleaseMode = false;
+    let _boxReleaseSelected = new Set();
 
     function toggleBoxFilters() {
       _boxFiltersOpen = !_boxFiltersOpen;
@@ -113,6 +115,86 @@
         f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 || f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0;
     }
 
+    // ── Box Release Mode ─────────────────────────────────────────
+    function toggleBoxReleaseMode() {
+      _boxReleaseMode = !_boxReleaseMode;
+      _boxReleaseSelected.clear();
+
+      const btnRelease = document.getElementById('btn-box-release-mode');
+      const btnConfirm = document.getElementById('btn-box-confirm-release');
+      const btnCancel = document.getElementById('btn-box-cancel-release');
+      const hintRelease = document.getElementById('box-release-hint');
+      const hintNormal = document.getElementById('box-normal-hint');
+
+      if (btnRelease) btnRelease.style.display = _boxReleaseMode ? 'none' : 'inline-block';
+      if (btnConfirm) btnConfirm.style.display = _boxReleaseMode ? 'inline-block' : 'none';
+      if (btnCancel) btnCancel.style.display = _boxReleaseMode ? 'inline-block' : 'none';
+      if (hintRelease) hintRelease.style.display = _boxReleaseMode ? 'block' : 'none';
+      if (hintNormal) hintNormal.style.display = _boxReleaseMode ? 'none' : 'block';
+
+      renderBox();
+    }
+
+    function toggleBoxReleaseSelect(index) {
+      if (_boxReleaseSelected.has(index)) {
+        _boxReleaseSelected.delete(index);
+      } else {
+        _boxReleaseSelected.add(index);
+      }
+      renderBox();
+    }
+
+    function confirmBoxRelease() {
+      if (_boxReleaseSelected.size === 0) {
+        notify('No seleccionaste ningún Pokémon.', '❓');
+        return;
+      }
+      const names = [..._boxReleaseSelected].map(i => state.box[i].name).join(', ');
+
+      const overlay = document.createElement('div');
+      overlay.id = 'box-release-confirm-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+      overlay.innerHTML = `
+        <div style="background:var(--card);border-radius:20px;padding:32px 24px;max-width:340px;width:100%;text-align:center;border:1px solid rgba(255,59,59,0.3);">
+          <div style="font-size:48px;margin-bottom:12px;">🌿</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--red);margin-bottom:16px;">¿SOLTAR POKÉMON DE LA CAJA?</div>
+          <div style="font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:24px;">
+            Vas a soltar a:<br>
+            <strong style="color:var(--text);">${names}</strong><br><br>
+            Esta acción es <strong style="color:var(--red);">permanente</strong> y no se puede deshacer.
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center;">
+            <button onclick="doBoxRelease()" style="font-family:'Press Start 2P',monospace;font-size:8px;
+              padding:12px 20px;border:none;border-radius:12px;cursor:pointer;
+              background:linear-gradient(135deg,var(--red),#c0392b);color:#fff;">
+              ¡SÍ, SOLTAR!
+            </button>
+            <button onclick="document.getElementById('box-release-confirm-overlay').remove()" style="font-family:'Press Start 2P',monospace;font-size:8px;
+              padding:12px 20px;border:1px solid rgba(255,255,255,0.1);border-radius:12px;cursor:pointer;
+              background:transparent;color:var(--gray);">
+              CANCELAR
+            </button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+
+    function doBoxRelease() {
+      document.getElementById('box-release-confirm-overlay')?.remove();
+
+      const indices = [..._boxReleaseSelected].sort((a, b) => b - a);
+      const releasedNames = indices.map(i => state.box[i].name);
+
+      indices.forEach(i => state.box.splice(i, 1));
+
+      _boxReleaseSelected.clear();
+      toggleBoxReleaseMode(); // This will also handle UI reset and renderBox()
+
+      updateHud();
+      scheduleSave();
+      notify(`¡${releasedNames.join(', ')} ${releasedNames.length > 1 ? 'fueron soltados' : 'fue soltado'}!`, '🌿');
+    }
+
     function renderBox() {
       if (!state.box) state.box = [];
       const grid = document.getElementById('box-grid');
@@ -122,6 +204,15 @@
 
       badge.textContent = `${state.box.length}/100 Pokémon`;
       warning.style.display = state.box.length >= 100 ? 'block' : 'none';
+
+      // Disable release button if box is empty
+      const btnRelease = document.getElementById('btn-box-release-mode');
+      if (btnRelease) {
+        const isEmpty = state.box.length === 0;
+        btnRelease.disabled = isEmpty;
+        btnRelease.style.opacity = isEmpty ? '0.5' : '1';
+        btnRelease.style.cursor = isEmpty ? 'not-allowed' : 'pointer';
+      }
 
       // Apply filters
       const filtered = _applyBoxFilters(state.box);
@@ -198,9 +289,16 @@
               </div>`;
         }
 
-        return `<div onclick="openBoxPokemonMenu(${i})" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+        const selected = _boxReleaseSelected.has(i);
+        const selClass = _boxReleaseMode ? (selected ? 'release-selected' : 'release-selectable') : '';
+        const checkMark = _boxReleaseMode && selected ? '<div class="release-check">✓</div>' : '';
+        const onclickFn = _boxReleaseMode ? `toggleBoxReleaseSelect(${i})` : `openBoxPokemonMenu(${i})`;
+
+        return `<div onclick="${onclickFn}" class="${selClass}" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
       border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;transition:all .2s;position:relative;"
-      onmouseover="this.style.borderColor='rgba(199,125,255,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+      ${_boxReleaseMode ? '' : 'onmouseover="this.style.borderColor=\'rgba(199,125,255,0.4)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.08)\'"'}>
+      <!-- Release checkmark -->
+      ${checkMark}
       <!-- Tier and Held Item badges -->
       ${badgesHtml}
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};

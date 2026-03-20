@@ -869,17 +869,17 @@
       transform: scale(1.02);
     }
 
-    /* Release mode */
-    .team-card.release-selectable {
+    /* Release mode (Generic but compatible with team/box) */
+    .release-selectable {
       cursor: pointer !important;
     }
 
-    .team-card.release-selectable:hover {
-      border-color: rgba(255, 59, 59, 0.5);
+    .release-selectable:hover {
+      border-color: rgba(255, 59, 59, 0.5) !important;
       transform: scale(1.02);
     }
 
-    .team-card.release-selected {
+    .release-selected {
       border-color: var(--red) !important;
       background: rgba(255, 59, 59, 0.15) !important;
       transform: scale(1.02);
