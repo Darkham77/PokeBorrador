@@ -100,6 +100,8 @@
       console.log("[DEBUG] Game state reset to defaults");
     }
 
+
+
     // ===== STARTER =====
     function chooseStarter(id) {
       const p = POKEMON_DB[id];
@@ -120,13 +122,35 @@
     }
 
     const NATURES = ['Audaz', 'Firme', 'Pícaro', 'Manso', 'Serio', 'Osado', 'Plácido', 'Agitado', 'Jovial', 'Ingenuo', 'Modesto', 'Moderado', 'Raro', 'Dócil', 'Tímido', 'Activo', 'Alocado', 'Tranquilo', 'Grosero', 'Cauto'];
-    const ABILITIES = {bulbasaur: ['Espesura', 'Clorofila'], charmander: ['Mar Llamas', 'Poder Solar'],
+    const ABILITIES = {
+      bulbasaur: ['Espesura', 'Clorofila'], charmander: ['Mar Llamas', 'Poder Solar'],
       squirtle: ['Torrente', 'Lluvia Ligera'], pidgey: ['Vista Lince', 'Alboroto'],
       rattata: ['Escape', 'Correcaminos'], caterpie: ['Escudo Polvo', 'Metamorfosis'],
       weedle: ['Escudo Polvo', 'Metamorfosis'], pikachu: ['Electricidad Estática', 'Pararrayos'],
       geodude: ['Robustez', 'Nerviosismo'], zubat: ['Vista Lince', 'Infiltrador'],
       psyduck: ['Humedad', 'Obstruir'], magikarp: ['Escurridizo', 'Ráfaga'],
       eevee: ['Escape', 'Adaptable'], jigglypuff: ['Velo Húmedo', 'Punto Cura'],
+      ekans: ['Intimidación', 'Mudar'], sandshrew: ['Velo Arena'],
+      nidoran_f: ['Punto Tóxico'], nidoran_m: ['Punto Tóxico'],
+      vulpix: ['Absorbe Fuego'], oddish: ['Clorofila'], paras: ['Efecto Espora'],
+      venonat: ['Ojo Compuesto'], diglett: ['Trampa Arena'], meowth: ['Recogida'],
+      mankey: ['Espíritu Vital'], growlithe: ['Intimidación'], poliwag: ['Absorbe Agua'],
+      abra: ['Sincronía'], machop: ['Agallas'], bellsprout: ['Clorofila'],
+      tentacool: ['Cuerpo Puro'], ponyta: ['Escape'], slowpoke: ['Despiste'],
+      magnemite: ['Imán'], doduo: ['Fuga'], seel: ['Sebo'], grimer: ['Hedor'],
+      shellder: ['Caparazón'], gastly: ['Levitación'], onix: ['Cabeza Roca'],
+      drowzee: ['Insomnio'], krabby: ['Corte Fuerte'], voltorb: ['Insonorizar'],
+      exeggcute: ['Clorofila'], cubone: ['Cabeza Roca'], hitmonlee: ['Flexibilidad'],
+      hitmonchan: ['Vista Lince'], lickitung: ['Despiste'], koffing: ['Levitación'],
+      rhyhorn: ['Pararrayos'], chansey: ['Cura Natural'], tangela: ['Clorofila'],
+      kangaskhan: ['Madrugar'], horsea: ['Nado Rápido'], goldeen: ['Nado Rápido'],
+      staryu: ['Cura Natural'], mr_mime: ['Insonorizar'], scyther: ['Enjambre'],
+      jynx: ['Despiste'], electabuzz: ['Electricidad Estática'], magmar: ['Cuerpo Llama'],
+      pinsir: ['Corte Fuerte'], tauros: ['Intimidación'], gyarados: ['Intimidación'],
+      lapras: ['Absorbe Agua'], ditto: ['Flexibilidad'], porygon: ['Calco'],
+      aerodactyl: ['Cabeza Roca'], snorlax: ['Inmunidad'], articuno: ['Presión'],
+      zapdos: ['Presión'], moltres: ['Presión'], dratini: ['Mudar'],
+      mewtwo: ['Presión'], mew: ['Sincronía']
     };
     const GENDERLESS = ['articuno', 'ditto', 'electrode', 'magnemite', 'magneton', 'mew', 'mewtwo', 'moltres', 'porygon', 'starmie', 'staryu', 'voltorb', 'zapdos'];
     function assignGender(id) {

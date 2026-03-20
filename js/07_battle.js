@@ -167,6 +167,44 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   setLog(startMsg);
   setBtns(true);
 
+  // Ability: Intimidación (Intimidate) on start
+  if (player.ability === 'Intimidación') {
+    state.battle.enemyStages.atk = Math.max(-6, (state.battle.enemyStages.atk || 0) - 1);
+    addLog(`¡La Intimidación de ${player.name} bajó el ataque de ${enemy.name}!`, 'log-info');
+  }
+  if (enemy.ability === 'Intimidación') {
+    state.battle.playerStages.atk = Math.max(-6, (state.battle.playerStages.atk || 0) - 1);
+    addLog(`¡La Intimidación de ${enemy.name} bajó el ataque de ${player.name}!`, 'log-info');
+  }
+
+  // Trace (Calco)
+  if (player.ability === 'Calco' && enemy.ability) {
+    player.ability = enemy.ability;
+    addLog(`¡${player.name} copió la habilidad ${enemy.ability} de ${enemy.name} con Calco!`, 'log-info');
+  }
+  if (enemy.ability === 'Calco' && player.ability) {
+    enemy.ability = player.ability;
+    addLog(`¡${enemy.name} copió la habilidad ${player.ability} de ${player.name} con Calco!`, 'log-info');
+  }
+
+  // Download (Descarga)
+  const applyDownload = (attacker, defender) => {
+    if (attacker.ability === 'Descarga') {
+      const defValue = defender.def || 40;
+      const spdValue = defender.spd || 40;
+      const stages = (state.battle.enemy === attacker) ? state.battle.enemyStages : state.battle.playerStages;
+      if (spdValue > defValue) {
+        stages.atk = Math.min(6, (stages.atk || 0) + 1);
+        addLog(`¡La Descarga de ${attacker.name} subió su Ataque!`, 'log-info');
+      } else {
+        stages.spa = Math.min(6, (stages.spa || 0) + 1);
+        addLog(`¡La Descarga de ${attacker.name} subió su At. Especial!`, 'log-info');
+      }
+    }
+  };
+  applyDownload(player, enemy);
+  applyDownload(enemy, player);
+
   // Draw background after screen is visible
   setTimeout(() => drawBattleBackground(state.battle.locationId), 50);
 }
@@ -442,10 +480,15 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
   const base = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
 
   const _defType2 = defender.type2 || POKE_TYPE2[defender.id];
-  const eff = getTypeEffectiveness(md.type, defender.type) * (_defType2 ? getTypeEffectiveness(md.type, _defType2) : 1);
+  const eff = getTypeEffectiveness(md.type, defender.type, defender, attacker) * (_defType2 ? getTypeEffectiveness(md.type, _defType2, defender, attacker) : 1);
   const _atkType2 = attacker.type2 || POKE_TYPE2[attacker.id];
   const stab = (md.type === attacker.type || (_atkType2 && md.type === _atkType2)) ? 1.5 : 1;
-  const abilityMult = 1;
+  let abilityMult = getAbilityMultiplier(attacker, defender, move);
+
+  // Thick Fat (Sebo)
+  if (defender.ability === 'Sebo' && (md.type === 'fire' || md.type === 'ice')) {
+    abilityMult *= 0.5;
+  }
 
   // Held Items multipliers
   let itemMult = 1;
@@ -464,11 +507,61 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
 
   const random = 0.85 + Math.random() * 0.15;
   const critRate = (attacker.heldItem === 'Lente Zoom') ? 0.12 : 0.06;
-  const isCrit = Math.random() < critRate;
-  const critMult = isCrit ? 1.5 : 1;
+  let isCrit = Math.random() < critRate;
+  if (defender.ability === 'Caparazón' || defender.ability === 'Armadura Batalla') isCrit = false;
+  const critMult = isCrit ? (attacker.ability === 'Francotirador' ? 3 : 2) : 1;
 
   const finalDmg = Math.max(1, Math.floor(base * stab * abilityMult * eff * random * itemMult * critMult));
   return { dmg: finalDmg, eff, stab, isCrit };
+}
+
+function getTypeEffectiveness(moveType, defType, defender = null, attacker = null) {
+  // Scrappy (Intrépido) logic
+  if (attacker?.ability === 'Intrépido' && defType === 'ghost' && (moveType === 'normal' || moveType === 'fighting')) {
+    return 1;
+  }
+  const row = TYPE_CHART[moveType] || {};
+  return row[defType] ?? 1;
+}
+
+function getAbilityMultiplier(attacker, defender, move) {
+  const md = MOVE_DATA[move.name] || {};
+  let mult = 1;
+  const ab = attacker.ability;
+
+  // Damage boosters at low HP (1/3)
+  const isLowHp = attacker.hp <= (attacker.maxHp / 3);
+  if (isLowHp) {
+    if (ab === 'Mar Llamas' && md.type === 'fire') mult *= 1.5;
+    if (ab === 'Torrente' && md.type === 'water') mult *= 1.5;
+    if (ab === 'Espesura' && md.type === 'grass') mult *= 1.5;
+    if (ab === 'Enjambre' && md.type === 'bug') mult *= 1.5;
+  }
+
+  // Agallas (Guts)
+  if (ab === 'Agallas' && attacker.status && md.cat === 'physical') {
+    mult *= 1.5;
+  }
+
+  // Experto (Technician)
+  if (ab === 'Experto' && md.power > 0 && md.power <= 60) {
+    mult *= 1.5;
+  }
+
+  // Adaptable: STAB 2x instead of 1.5x
+  // Since stab is already 1.5 in calcDamage, we multiply by 1.333 to get ~2x (1.5 * 1.333 = 2)
+  if (ab === 'Adaptable') {
+    const _atkType2 = attacker.type2 || POKE_TYPE2[attacker.id];
+    if (md.type === attacker.type || (_atkType2 && md.type === _atkType2)) {
+      mult *= 1.3333;
+    }
+  }
+
+  // Poder Solar: Sp. Atk +50% under sun (simulated as always if no weather implemented?)
+  // Developer note: since weather isn't here, I'll ignore weather-dependent for now or assume partial.
+  // Actually, the user asked for Blaze (Mar llamas), so let's stick to those.
+
+  return mult;
 }
 
 let _battleLock = false;
@@ -482,14 +575,41 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
   const effectBase = effect.replace(/_\d+$/, '');
 
   if (roll > chance && chance < 100) return; // didn't proc
+  
+  // Shield Dust (Escudo Polvo): Protects against secondary effects (chance < 100)
+  if (tgt.ability === 'Escudo Polvo' && chance < 100) {
+    if (effectBase !== 'leech_seed' && effectBase !== 'metronome') { // usually effects like burn_10
+       return; 
+    }
+  }
+  
+  // Clear Body (Cuerpo Puro): Protects against stat drops from opponent
+  if (tgt.ability === 'Cuerpo Puro' && effectBase.startsWith('stat_down_enemy') && src !== tgt) {
+    addLogFn(`¡El Cuerpo Puro de ${tgt.name} evitó las reducciones de estadísticas!`, 'log-info');
+    return;
+  }
 
   switch (effectBase) {
-    case 'stat_down_enemy_atk': tgtStages.atk = Math.max(-6, (tgtStages.atk || 0) - 1); addLogFn(`¡Bajó el Ataque de ${tgt.name}!`, 'log-info'); break;
+    case 'stat_down_enemy_atk': 
+      if (tgt.ability === 'Corte Fuerte') {
+        addLogFn(`¡El Corte Fuerte de ${tgt.name} evitó que bajara su ataque!`, 'log-info');
+      } else {
+        tgtStages.atk = Math.max(-6, (tgtStages.atk || 0) - 1); 
+        addLogFn(`¡Bajó el Ataque de ${tgt.name}!`, 'log-info'); 
+      }
+      break;
     case 'stat_down_enemy_def': tgtStages.def = Math.max(-6, (tgtStages.def || 0) - 1); addLogFn(`¡Bajó la Defensa de ${tgt.name}!`, 'log-info'); break;
     case 'stat_down_enemy_spe': tgtStages.spe = Math.max(-6, (tgtStages.spe || 0) - 1); addLogFn(`¡Bajó la Velocidad de ${tgt.name}!`, 'log-info'); break;
     case 'stat_down_enemy_spa': tgtStages.spa = Math.max(-6, (tgtStages.spa || 0) - 1); addLogFn(`¡Bajó el At.Esp de ${tgt.name}!`, 'log-info'); break;
     case 'stat_down_enemy_spd': tgtStages.spd = Math.max(-6, (tgtStages.spd || 0) - 1); addLogFn(`¡Bajó la Def.Esp de ${tgt.name}!`, 'log-info'); break;
-    case 'stat_down_enemy_acc': tgtStages.acc = Math.max(-6, (tgtStages.acc || 0) - 1); addLogFn(`¡Bajó la Precisión de ${tgt.name}!`, 'log-info'); break;
+    case 'stat_down_enemy_acc': 
+      if (tgt.ability === 'Vista Lince') {
+        addLogFn(`¡La Vista Lince de ${tgt.name} evitó que bajara su precisión!`, 'log-info');
+      } else {
+        tgtStages.acc = Math.max(-6, (tgtStages.acc || 0) - 1); 
+        addLogFn(`¡Bajó la Precisión de ${tgt.name}!`, 'log-info'); 
+      }
+      break;
     case 'stat_up_self_atk': srcStages.atk = Math.min(6, (srcStages.atk || 0) + 1); addLogFn(`¡Subió el Ataque de ${src.name}!`, 'log-info'); break;
     case 'stat_up_self_atk_2': srcStages.atk = Math.min(6, (srcStages.atk || 0) + 2); addLogFn(`¡Subió mucho el Ataque de ${src.name}!`, 'log-info'); break;
     case 'stat_up_self_def': srcStages.def = Math.min(6, (srcStages.def || 0) + 1); addLogFn(`¡Subió la Defensa de ${src.name}!`, 'log-info'); break;
@@ -512,11 +632,13 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
     case 'paralyze': case 'paralyze_10': case 'paralyze_30':
       if (!tgt.status) {
         if (tgt.type === 'electric') { addLogFn(`¡${tgt.name} es inmune a la parálisis!`, 'log-info'); break; }
+        if (tgt.ability === 'Flexibilidad') { addLogFn(`¡La Flexibilidad de ${tgt.name} evitó la parálisis!`, 'log-info'); break; }
         tgt.status = 'paralyze'; addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info');
       } break;
     case 'poison': case 'poison_20':
       if (!tgt.status) {
         if (tgt.type === 'poison' || tgt.type === 'steel') { addLogFn(`¡${tgt.name} es inmune al veneno!`, 'log-info'); break; }
+        if (tgt.ability === 'Inmunidad') { addLogFn(`¡La Inmunidad de ${tgt.name} evitó el envenenamiento!`, 'log-info'); break; }
         tgt.status = 'poison'; addLogFn(`¡${tgt.name} fue envenenado!`, 'log-info');
       } break;
     case 'freeze': case 'freeze_10':
@@ -525,9 +647,15 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
         tgt.status = 'freeze'; addLogFn(`¡${tgt.name} fue congelado!`, 'log-info');
       } break;
     case 'sleep':
-      if (!tgt.status) { tgt.status = 'sleep'; tgt.sleepTurns = 1 + Math.floor(Math.random() * 3); addLogFn(`¡${tgt.name} se quedó dormido!`, 'log-info'); } break;
+      if (!tgt.status) { 
+        if (tgt.ability === 'Insomnio' || tgt.ability === 'Espíritu Vital') { addLogFn(`¡${tgt.name} tiene ${tgt.ability} y no puede dormir!`, 'log-info'); break; }
+        tgt.status = 'sleep'; tgt.sleepTurns = 1 + Math.floor(Math.random() * 3); addLogFn(`¡${tgt.name} se quedó dormido!`, 'log-info'); 
+      } break;
     case 'confuse':
-      if (!tgt.confused) { tgt.confused = 2 + Math.floor(Math.random() * 4); addLogFn(`¡${tgt.name} está confundido!`, 'log-info'); } break;
+      if (!tgt.confused) { 
+        if (tgt.ability === 'Ritmo Propio') { addLogFn(`¡El Ritmo Propio de ${tgt.name} evitó la confusión!`, 'log-info'); break; }
+        tgt.confused = 2 + Math.floor(Math.random() * 4); addLogFn(`¡${tgt.name} está confundido!`, 'log-info'); 
+      } break;
     case 'rest':
       src.hp = src.maxHp; src.status = 'sleep'; src.sleepTurns = 2;
       addLogFn(`¡${src.name} se recuperó completamente y se quedó dormido!`, 'log-info'); break;
@@ -603,6 +731,44 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
   }
 }
 
+function checkAbilityImmunity(attacker, defender, move, addLogFn) {
+  const ab = defender.ability;
+  const md = MOVE_DATA[move.name] || {};
+
+  if (ab === 'Pararrayos' && md.type === 'electric') {
+    addLogFn(`¡El Pararrayos de ${defender.name} absorbió el ataque!`, 'log-info');
+    const stages = (state.battle.enemy === defender) ? state.battle.enemyStages : state.battle.playerStages;
+    stages.spa = Math.min(6, (stages.spa || 0) + 1);
+    addLogFn(`¡Subió el At. Esp de ${defender.name}!`, 'log-info');
+    return true;
+  }
+  
+  if (ab === 'Absorbe Agua' && md.type === 'water') {
+    addLogFn(`¡El Absorbe Agua de ${defender.name} absorbió el ataque!`, 'log-info');
+    const heal = Math.floor(defender.maxHp / 4);
+    defender.hp = Math.min(defender.maxHp, defender.hp + heal);
+    addLogFn(`¡${defender.name} recuperó HP!`, 'log-info');
+    return true;
+  }
+
+  if (ab === 'Absorbe Fuego' && md.type === 'fire') {
+    addLogFn(`¡El Absorbe Fuego de ${defender.name} absorbió el ataque!`, 'log-info');
+    return true;
+  }
+
+  if (ab === 'Levitación' && md.type === 'ground' && md.cat !== 'status') {
+    addLogFn(`¡${defender.name} levita y evita el ataque!`, 'log-info');
+    return true;
+  }
+  
+  if (ab === 'Humedad' && (move.name === 'Autodestrucción' || move.name === 'Explosión')) {
+    addLogFn(`¡La Humedad de ${defender.name} impide la explosión!`, 'log-info');
+    return true;
+  }
+
+  return false;
+}
+
 // ── Status effect tick (end of turn) ─────────────────────
 function tickStatus(pokemon, addLogFn, role) {
   if (!pokemon.status) return false; // false = no damage
@@ -653,8 +819,80 @@ function getEffectiveSpeed(pokemon, stages) {
   const baseSpe = pokemon.spe || 40;
   const stage = stages?.spe || 0;
   let spe = Math.max(1, Math.floor(baseSpe * stageMult(stage)));
+  
+  // Abilities affecting speed
+  if (pokemon.ability === 'Ráfaga' && pokemon.hp <= (pokemon.maxHp / 3)) {
+    spe *= 3;
+  }
+  if (pokemon.ability === 'Correcaminos' && pokemon.status) {
+    spe *= 2;
+  }
+  
   if (pokemon.status === 'paralyze') spe = Math.max(1, Math.floor(spe * 0.5));
   return spe;
+}
+
+function applyAbilityEffects(attacker, defender, move, damageResult, addLogFn) {
+  const ab = defender.ability;
+  const md = MOVE_DATA[move.name] || {};
+
+  // Robustez (Sturdy)
+  if (ab === 'Robustez' && defender.hp <= 0 && damageResult.prevHp === defender.maxHp) {
+    defender.hp = 1;
+    addLogFn(`¡${defender.name} resistió el golpe gracias a su Robustez!`, 'log-info');
+  }
+
+  // Contact abilities (Physical moves)
+  if (md.cat === 'physical' && Math.random() < 0.3) {
+    if (ab === 'Electricidad Estática' && !attacker.status && attacker.type !== 'electric') {
+      attacker.status = 'paralyze';
+      addLogFn(`¡La Electricidad Estática de ${defender.name} paralizó a ${attacker.name}!`, 'log-info');
+    }
+    if (ab === 'Punto Tóxico' && !attacker.status && attacker.type !== 'poison' && attacker.type !== 'steel') {
+      attacker.status = 'poison';
+      addLogFn(`¡El Punto Tóxico de ${defender.name} envenenó a ${attacker.name}!`, 'log-info');
+    }
+    if (ab === 'Cuerpo Llama' && !attacker.status && attacker.type !== 'fire') {
+      attacker.status = 'burn';
+      addLogFn(`¡El Cuerpo Llama de ${defender.name} quemó a ${attacker.name}!`, 'log-info');
+    }
+    if (ab === 'Efecto Espora' && !attacker.status) {
+      const roll = Math.random();
+      if (roll < 0.33) {
+        attacker.status = 'sleep'; attacker.sleepTurns = 1 + Math.floor(Math.random() * 3);
+        addLogFn(`¡El Efecto Espora de ${defender.name} durmió a ${attacker.name}!`, 'log-info');
+      } else if (roll < 0.66) {
+        attacker.status = 'paralyze';
+        addLogFn(`¡El Efecto Espora de ${defender.name} paralizó a ${attacker.name}!`, 'log-info');
+      } else {
+        attacker.status = 'poison';
+        addLogFn(`¡El Efecto Espora de ${defender.name} envenenó a ${attacker.name}!`, 'log-info');
+      }
+    }
+  }
+
+  // Stench (Hedor): 10% flinch on attack
+  if (attacker.ability === 'Hedor' && Math.random() < 0.1) {
+    defender.flinched = true;
+  }
+}
+
+function applyAbilityTurnEndEffects(pokemon, role, addLogFn) {
+  const ab = pokemon.ability;
+
+  // Shed Skin (Mudar): 30% chance to heal status
+  if (ab === 'Mudar' && pokemon.status && Math.random() < 0.3) {
+    pokemon.status = null;
+    addLogFn(`¡La habilidad Mudar de ${pokemon.name} curó su estado!`, 'log-info');
+  }
+
+  // Natural Cure (Cura Natural) / Punto Cura: Simplified to heal at turn end
+  if ((ab === 'Cura Natural' || ab === 'Punto Cura') && pokemon.status) {
+    pokemon.status = null;
+    addLogFn(`¡La habilidad ${ab} de ${pokemon.name} curó su estado!`, 'log-info');
+  }
+
+  // Rain Dish / Ice Body etc would go here
 }
 
 function playerActsFirst(b, pMove, eMove) {
@@ -797,6 +1035,12 @@ function useMove(moveIndex) {
 
     setLog(`${b.player.name} usó <strong>${move.name}</strong>!`, 'log-player');
 
+    // Ability Immunity Check
+    if (checkAbilityImmunity(b.player, b.enemy, move, addLog)) {
+      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 900);
+      return;
+    }
+
     // Status move — no damage
     if (md.cat === 'status') {
       applyMoveEffect(md.effect, b.player, b.enemy, b.playerStages, b.enemyStages, addLog);
@@ -813,7 +1057,8 @@ function useMove(moveIndex) {
       let finalDmg = dmg;
       if (md.hits) {
         const _MULTIHIT_TABLE = [2, 2, 2, 3, 3, 3, 4, 5];
-        const numHits = (md.hits === 2) ? 2 : _MULTIHIT_TABLE[Math.floor(Math.random() * _MULTIHIT_TABLE.length)];
+        let numHits = (md.hits === 2) ? 2 : _MULTIHIT_TABLE[Math.floor(Math.random() * _MULTIHIT_TABLE.length)];
+        if (b.player.ability === 'Encadenado') numHits = 5;
         if (numHits > 1) {
           let _total = dmg;
           for (let _h = 1; _h < numHits; _h++) {
@@ -852,7 +1097,12 @@ function useMove(moveIndex) {
         if (tm) tm.hp = b.player.hp;
       }
 
+      const prevEnemyHp = b.enemy.hp;
       b.enemy.hp = Math.max(0, b.enemy.hp - finalDmg);
+      
+      // Ability Effects (Reactive/Defensive)
+      applyAbilityEffects(b.player, b.enemy, move, { dmg: finalDmg, prevHp: prevEnemyHp }, addLog);
+
       if (md.cat === 'physical') b.enemy.lastPhysDmg = finalDmg;
       addLog(`¡Causó ${finalDmg} de daño!${isCrit ? ' <strong>¡GOLPE CRÍTICO!</strong>' : ''}${drainHeal ? ` (recuperó ${drainHeal} HP)` : ''}`);
 
@@ -873,11 +1123,15 @@ function useMove(moveIndex) {
 
       // Recoil damage to player
       if (md.recoil) {
-        const recoilDmg = Math.max(1, Math.floor(finalDmg / md.recoil));
-        b.player.hp = Math.max(0, b.player.hp - recoilDmg);
-        const tm2 = state.team.find(p => p.name === b.player.name);
-        if (tm2) tm2.hp = b.player.hp;
-        addLog(`¡${b.player.name} recibió ${recoilDmg} de daño de retroceso!`, 'log-enemy');
+        if (b.player.ability === 'Cabeza Roca') {
+          addLog(`¡${b.player.name} no recibió daño de retroceso por su Cabeza Roca!`, 'log-info');
+        } else {
+          const recoilDmg = Math.max(1, Math.floor(finalDmg / md.recoil));
+          b.player.hp = Math.max(0, b.player.hp - recoilDmg);
+          const tm2 = state.team.find(p => p.name === b.player.name);
+          if (tm2) tm2.hp = b.player.hp;
+          addLog(`¡${b.player.name} recibió ${recoilDmg} de daño de retroceso!`, 'log-enemy');
+        }
       }
 
       // Self-destruct / Explosion: KO the user
@@ -1017,6 +1271,11 @@ function enemyTurn(opts = {}) {
 
   addLog(`${b.enemy.name} usó <strong>${move.name}</strong>!`, 'log-enemy');
 
+  // Ability Immunity Check
+  if (checkAbilityImmunity(b.enemy, b.player, move, addLog)) {
+    finish(); return;
+  }
+
   if (md.cat === 'status') {
     applyMoveEffect(md.effect, b.enemy, b.player, b.enemyStages, b.playerStages, addLog);
     const teamIdx = state.team.findIndex(p => p.name === b.player.name);
@@ -1030,7 +1289,8 @@ function enemyTurn(opts = {}) {
     let finalDmg = dmg;
     if (md.hits) {
       const _MULTIHIT_TABLE = [2, 2, 2, 3, 3, 3, 4, 5];
-      const numHits = (md.hits === 2) ? 2 : _MULTIHIT_TABLE[Math.floor(Math.random() * _MULTIHIT_TABLE.length)];
+      let numHits = (md.hits === 2) ? 2 : _MULTIHIT_TABLE[Math.floor(Math.random() * _MULTIHIT_TABLE.length)];
+      if (b.enemy.ability === 'Encadenado') numHits = 5;
       if (numHits > 1) {
         let _total = dmg;
         for (let _h = 1; _h < numHits; _h++) {
@@ -1056,7 +1316,12 @@ function enemyTurn(opts = {}) {
     if (b.enemy.heldItem === 'Cascabel Concha') drainHeal += Math.max(1, Math.floor(finalDmg / 8));
     if (drainHeal) b.enemy.hp = Math.min(b.enemy.maxHp, b.enemy.hp + drainHeal);
 
+    const prevPlayerHp = b.player.hp;
     b.player.hp = Math.max(0, b.player.hp - finalDmg);
+    
+    // Ability Effects (Reactive/Defensive)
+    applyAbilityEffects(b.enemy, b.player, move, { dmg: finalDmg, prevHp: prevPlayerHp }, addLog);
+
     if (md.cat === 'physical') b.player.lastPhysDmg = finalDmg;
     const teamIdx = state.team.findIndex(p => p.name === b.player.name);
     if (teamIdx !== -1) state.team[teamIdx].hp = b.player.hp;
@@ -1069,9 +1334,13 @@ function enemyTurn(opts = {}) {
 
     // Recoil damage to enemy
     if (md.recoil) {
-      const recoilDmg = Math.max(1, Math.floor(finalDmg / md.recoil));
-      b.enemy.hp = Math.max(0, b.enemy.hp - recoilDmg);
-      addLog(`¡${b.enemy.name} recibió ${recoilDmg} de daño de retroceso!`, 'log-player');
+      if (b.enemy.ability === 'Cabeza Roca') {
+        addLog(`¡${b.enemy.name} no recibió daño de retroceso por su Cabeza Roca!`, 'log-info');
+      } else {
+        const recoilDmg = Math.max(1, Math.floor(finalDmg / md.recoil));
+        b.enemy.hp = Math.max(0, b.enemy.hp - recoilDmg);
+        addLog(`¡${b.enemy.name} recibió ${recoilDmg} de daño de retroceso!`, 'log-player');
+      }
     }
 
     // Self-destruct / Explosion: KO the enemy user
@@ -1119,6 +1388,12 @@ function _endEnemyTurn() {
     // Leftovers (Restos)
     for (const role of order) {
       applyHeldItemTurnEndEffects(getPoke(role), role);
+      if (stopIfFainted()) return;
+    }
+
+    // Abilities at Turn End
+    for (const role of order) {
+      applyAbilityTurnEndEffects(getPoke(role), role, addLog);
       if (stopIfFainted()) return;
     }
 
