@@ -1565,7 +1565,7 @@ function endBattle(won) {
   b.over = true;
 
   if (won) {
-    awardBattleExperience();
+    // EXP moved down next to setLog to avoid being overwritten
 
     // Multi-Pokémon Trainer/Gym Logic: If the opponent still has pokemon, don't end yet.
     if ((b.isTrainer || b.isGym) && b.enemyTeam) {
@@ -1573,6 +1573,7 @@ function endBattle(won) {
       if (nextIdx !== -1) {
         const nextP = b.enemyTeam[nextIdx];
         setLog(`¡${b.enemy.name} fue derrotado! ${b.isGym ? 'El Líder' : 'El entrenador'} envía a ${nextP.name}...`, 'log-player');
+        awardBattleExperience();
         setTimeout(() => {
           nextP._revealed = true;
           b.enemy = nextP;
@@ -1595,6 +1596,7 @@ function endBattle(won) {
     }
 
     setLog(`¡${b.enemy.name} fue derrotado!`, 'log-player');
+    awardBattleExperience();
 
     // Money reward + Battle Coins
     let moneyWon = b.isGym ? b.enemy.level * 80 : b.enemy.level * 20;
