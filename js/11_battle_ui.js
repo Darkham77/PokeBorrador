@@ -372,6 +372,7 @@
       // PRIMERO: resetear estado de batalla para que useMove no bloquee
       if (forced) {
         b.over = false;
+        b._ending = false;
         b.turn = 'player';
         _battleLock = false;
       }
