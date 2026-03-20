@@ -65,6 +65,7 @@
         }).join('');
 
         html += `<div class="location-card ${isLocked ? 'locked' : ''}" onclick="${isLocked ? '' : `goLocation('${loc.id}')`}">
+          ${loc.fishing ? '<span class="fishing-rod">🎣</span>' : ''}
           <span class="location-tag ${isLocked ? 'tag-locked' : 'tag-wild'}">${isLocked ? `🔒 ${loc.badges} Medallas` : `${slotMeta[cycle].icon} ${slotMeta[cycle].label}`}</span>
           <div class="location-icon">${loc.icon}</div>
           <div class="location-name">${loc.name}</div>
@@ -157,6 +158,12 @@
 	        return;
 	      }
 	
+	      // Encuentro de Pesca (10% de probabilidad)
+	      if (loc.fishing && Math.random() < 0.1) {
+	        generateFishingBattle(locId);
+	        return;
+	      }
+	
 	      const cycle = getDayCycle();
 	      const wildPool = loc.wild[cycle] || loc.wild.day;
 	      const wildRates = loc.rates[cycle] || loc.rates.day;
@@ -177,6 +184,51 @@
 	      const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
 	      const enemy = makePokemon(selectedId, level);
 	      startBattle(enemy, false, null, locId);
+	    }
+	
+	    function generateFishingBattle(locId) {
+	      const loc = FIRE_RED_MAPS.find(l => l.id === locId);
+	      if (!loc || !loc.fishing) return;
+	
+	      const { pool, rates, lv } = loc.fishing;
+	      const totalRate = rates.reduce((a, b) => a + b, 0);
+	      let rand = Math.random() * totalRate;
+	      let cumulative = 0;
+	      let selectedId = pool[0];
+	
+	      for (let i = 0; i < pool.length; i++) {
+	        cumulative += rates[i];
+	        if (rand <= cumulative) {
+	          selectedId = pool[i];
+	          break;
+	        }
+	      }
+	
+	      const level = Math.floor(Math.random() * (lv[1] - lv[0] + 1)) + lv[0];
+	      const enemy = makePokemon(selectedId, level);
+	
+	      // Modal Intro Pesca
+	      const introOv = document.createElement('div');
+	      introOv.id = 'fishing-intro-overlay';
+	      introOv.style.cssText = 'position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease;';
+	      introOv.innerHTML = `
+	        <div style="background:var(--card);border-radius:24px;padding:32px;max-width:380px;width:100%;
+	          border:2px solid var(--blue);text-align:center;position:relative;box-shadow:0 0 30px rgba(10, 132, 255, 0.4);">
+	          <div style="font-size:80px;margin-bottom:20px;animation:bounce 1.5s infinite;">🎣</div>
+	          <div style="font-family:\'Press Start 2P\',monospace;font-size:12px;color:var(--blue);margin-bottom:16px;">¡ALGO PICÓ!</div>
+	          <div style="font-size:14px;color:#eee;margin:16px 0;line-height:1.6;">¡Un Pokémon ha mordido el anzuelo!</div>
+	          <button id="fishing-start-btn" style="font-family:\'Press Start 2P\',monospace;font-size:10px;padding:16px 32px;border:none;border-radius:14px;
+	            cursor:pointer;background:linear-gradient(135deg,var(--blue),#2563eb);color:#fff;
+	            box-shadow:0 4px 16px rgba(59,130,246,0.5);margin-top:12px;width:100%;">
+	            🎣 ¡TIRAR DE LA CAÑA!
+	          </button>
+	        </div>`;
+	      document.body.appendChild(introOv);
+	
+	      document.getElementById('fishing-start-btn').onclick = () => {
+	        introOv.remove();
+	        startBattle(enemy, false, null, locId);
+	      };
 	    }
 
     // ===== GYM BATTLE =====

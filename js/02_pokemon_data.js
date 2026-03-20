@@ -666,7 +666,8 @@
       {
         id: 'route22', name: 'Ruta 22', icon: '🌾', badges: 0, desc: 'Camino a la Liga Pokémon.',
         wild: { morning: ['rattata', 'spearow', 'mankey', 'nidoran_m', 'nidoran_f'], day: ['rattata', 'spearow', 'mankey', 'nidoran_m', 'nidoran_f'], dusk: ['rattata', 'mankey'], night: ['rattata', 'mankey'] },
-        rates: { morning: [30, 30, 10, 15, 15], day: [30, 30, 10, 15, 15], dusk: [50, 50], night: [70, 30] }, lv: [3, 5]
+        rates: { morning: [30, 30, 10, 15, 15], day: [30, 30, 10, 15, 15], dusk: [50, 50], night: [70, 30] }, lv: [3, 5],
+        fishing: { pool: ['magikarp', 'goldeen', 'poliwag'], rates: [40, 40, 20], lv: [1, 5] }
       },
       {
         id: 'route3', name: 'Ruta 3', icon: '⛰️', badges: 1, desc: 'Hacia el Mt. Moon.',
@@ -686,7 +687,8 @@
       {
         id: 'route24', name: 'Ruta 24', icon: '🌉', badges: 2, desc: 'Puente Pepita.',
         wild: { morning: ['pidgey', 'oddish', 'bellsprout', 'abra', 'venonat'], day: ['pidgey', 'oddish', 'bellsprout', 'abra', 'venonat'], dusk: ['oddish', 'venonat', 'abra'], night: ['oddish', 'meowth', 'abra'] },
-        rates: { morning: [25, 25, 25, 15, 10], day: [25, 25, 25, 15, 10], dusk: [40, 40, 20], night: [40, 40, 20] }, lv: [12, 16]
+        rates: { morning: [25, 25, 25, 15, 10], day: [25, 25, 25, 15, 10], dusk: [40, 40, 20], night: [40, 40, 20] }, lv: [12, 16],
+        fishing: { pool: ['psyduck', 'krabby', 'horsea'], rates: [35, 35, 30], lv: [1, 5] }
       },
       {
         id: 'route25', name: 'Ruta 25', icon: '🏠', badges: 2, desc: 'Cerca de la casa de Bill.',
@@ -701,7 +703,8 @@
       {
         id: 'route6', name: 'Ruta 6', icon: '🌾', badges: 2, desc: 'Conecta Celeste con Carmín.',
         wild: { morning: ['pidgey', 'meowth', 'oddish', 'bellsprout', 'psyduck', 'mankey', 'tangela'], day: ['pidgey', 'meowth', 'oddish', 'bellsprout', 'psyduck', 'mankey', 'tangela'], dusk: ['meowth', 'psyduck', 'tangela'], night: ['meowth', 'psyduck'] },
-        rates: { morning: [20, 18, 13, 13, 13, 13, 10], day: [20, 18, 13, 13, 13, 13, 10], dusk: [45, 40, 15], night: [60, 40] }, lv: [13, 16]
+        rates: { morning: [20, 18, 13, 13, 13, 13, 10], day: [20, 18, 13, 13, 13, 13, 10], dusk: [45, 40, 15], night: [60, 40] }, lv: [13, 16],
+        fishing: { pool: ['slowpoke', 'shellder', 'poliwhirl'], rates: [45, 45, 10], lv: [10, 15] }
       },
       {
         id: 'route11', name: 'Ruta 11', icon: '🌾', badges: 3, desc: 'Al este de Carmín.',
@@ -744,9 +747,10 @@
         rates: { morning: [100], day: [100], dusk: [80, 20], night: [70, 20, 10] }, lv: [20, 25]
       },
       {
-        id: 'route12', name: 'Ruta 12', icon: '🎣', badges: 4, desc: 'Vía marítima.',
+        id: 'route12', name: 'Ruta 12', icon: '🌊', badges: 4, desc: 'Vía marítima.',
         wild: { morning: ['pidgey', 'oddish', 'bellsprout', 'venonat', 'weepinbell', 'gloom', 'snorlax', 'farfetchd'], day: ['pidgey', 'oddish', 'bellsprout', 'venonat', 'weepinbell', 'gloom', 'snorlax', 'farfetchd'], dusk: ['venonat', 'zubat', 'farfetchd'], night: ['venonat', 'zubat', 'golbat'] },
-        rates: { morning: [18, 18, 18, 13, 10, 10, 5, 8], day: [18, 18, 18, 13, 10, 10, 5, 8], dusk: [55, 35, 10], night: [50, 40, 10] }, lv: [22, 26]
+        rates: { morning: [18, 18, 18, 13, 10, 10, 5, 8], day: [18, 18, 18, 13, 10, 10, 5, 8], dusk: [55, 35, 10], night: [50, 40, 10] }, lv: [22, 26],
+        fishing: { pool: ['tentacool', 'seel', 'staryu'], rates: [40, 40, 20], lv: [10, 15] }
       },
       {
         id: 'route13', name: 'Ruta 13', icon: '🌾', badges: 5, desc: 'Laberinto de vallas.',
@@ -756,12 +760,14 @@
       {
         id: 'safari_zone', name: 'Zona Safari', icon: '🦒', badges: 5, desc: 'Pokémon raros de todo el mundo.',
         wild: { morning: ['nidoran_f', 'nidoran_m', 'parasect', 'venomoth', 'scyther', 'pinsir', 'chansey', 'tauros', 'kangaskhan', 'exeggcute', 'rhyhorn', 'slowpoke', 'lickitung', 'poliwag'], day: ['nidoran_f', 'nidoran_m', 'parasect', 'venomoth', 'scyther', 'pinsir', 'chansey', 'tauros', 'kangaskhan', 'exeggcute', 'rhyhorn', 'slowpoke', 'lickitung', 'poliwag'], dusk: ['venomoth', 'parasect', 'slowpoke'], night: ['venomoth', 'parasect', 'slowpoke', 'chansey'] },
-        rates: { morning: [8, 8, 8, 8, 5, 5, 5, 5, 5, 15, 10, 8, 5, 5], day: [8, 8, 8, 8, 5, 5, 5, 5, 5, 15, 10, 8, 5, 5], dusk: [45, 40, 15], night: [30, 30, 20, 20] }, lv: [25, 35]
+        rates: { morning: [8, 8, 8, 8, 5, 5, 5, 5, 5, 15, 10, 8, 5, 5], day: [8, 8, 8, 8, 5, 5, 5, 5, 5, 15, 10, 8, 5, 5], dusk: [45, 40, 15], night: [30, 30, 20, 20] }, lv: [25, 35],
+        fishing: { pool: ['seaking', 'dratini', 'dragonair'], rates: [90, 8, 2], lv: [30, 35] }
       },
       {
         id: 'seafoam_islands', name: 'Islas Espuma', icon: '❄️', badges: 6, desc: 'Cueva de hielo y Articuno.',
         wild: { morning: ['seel', 'dewgong', 'shellder', 'horsea', 'krabby', 'golduck', 'slowbro', 'jynx'], day: ['seel', 'dewgong', 'shellder', 'horsea', 'krabby', 'golduck', 'slowbro', 'jynx'], dusk: ['seel', 'shellder'], night: ['seel', 'dewgong', 'staryu'] },
-        rates: { morning: [20, 10, 15, 15, 15, 10, 10, 5], day: [20, 10, 15, 15, 15, 10, 10, 5], dusk: [60, 40], night: [50, 30, 20] }, lv: [30, 40]
+        rates: { morning: [20, 10, 15, 15, 15, 10, 10, 5], day: [20, 10, 15, 15, 15, 10, 10, 5], dusk: [60, 40], night: [50, 30, 20] }, lv: [30, 40],
+        fishing: { pool: ['shellder', 'dewgong', 'tentacruel'], rates: [50, 25, 25], lv: [30, 40] }
       },
       {
         id: 'mansion', name: 'Mansión Pokémon', icon: '🏚️', badges: 7, desc: 'Laboratorio quemado.',
@@ -781,7 +787,8 @@
       {
         id: 'cerulean_cave', name: 'Cueva Celeste', icon: '✨', badges: 8, desc: 'Lugar de descanso de Mewtwo.',
         wild: { morning: ['kadabra', 'rhydon', 'golduck', 'magneton', 'parasect', 'venomoth', 'dragonair', 'chansey'], day: ['kadabra', 'rhydon', 'golduck', 'magneton', 'parasect', 'venomoth', 'dragonair', 'chansey'], dusk: ['kadabra', 'magneton'], night: ['kadabra', 'magneton', 'dragonite'] },
-        rates: { morning: [15, 15, 15, 15, 15, 15, 5, 5], day: [15, 15, 15, 15, 15, 15, 5, 5], dusk: [50, 50], night: [40, 40, 20] }, lv: [50, 65]
+        rates: { morning: [15, 15, 15, 15, 15, 15, 5, 5], day: [15, 15, 15, 15, 15, 15, 5, 5], dusk: [50, 50], night: [40, 40, 20] }, lv: [50, 65],
+        fishing: { pool: ['golduck', 'poliwhirl', 'gyarados'], rates: [50, 40, 10], lv: [30, 50] }
       }
     ];
 
