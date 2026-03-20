@@ -1039,6 +1039,7 @@ function renderDaycareMission() {
         const targetName = POKEMON_DB[m.targetId]?.name || m.targetId;
         const shopItem = window.SHOP_ITEMS ? window.SHOP_ITEMS.find(x => x.id === m.reward.id) : null;
         const rIcon = shopItem && shopItem.sprite ? `<img src="${shopItem.sprite}" style="width:18px;height:18px;vertical-align:middle;filter:drop-shadow(0 0 2px rgba(255,255,255,0.4));margin-right:4px;">` : (m.reward.icon || '🎁');
+        const tooltip = shopItem ? `${shopItem.name}: ${shopItem.desc}` : m.reward.name;
         
         html += `
             <div style="background:rgba(255,255,255,0.03);border:1px solid ${m.completed ? 'rgba(107,203,119,0.3)' : 'rgba(255,255,255,0.08)'};border-radius:12px;padding:12px;display:flex;flex-direction:column;position:relative;overflow:hidden;">
@@ -1055,7 +1056,7 @@ function renderDaycareMission() {
                 <div style="margin-top:auto;">
                     <div style="font-size:10px;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:4px;">
                         <span>Recompensa:</span>
-                        <div style="background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:4px;">
+                        <div title="${tooltip}" style="background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:4px;cursor:help;border:1px solid rgba(255,255,255,0.05);">
                             ${rIcon} <span style="font-weight:700;">x${m.reward.qty}</span>
                         </div>
                     </div>
