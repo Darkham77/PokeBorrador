@@ -4,6 +4,7 @@
 
     let _chatInboxChannel = null;
     let _chatNotifyCount = 0;
+    const _outboxChannels = {};
 
     function getChatNotificationCount() {
       return _chatNotifyCount;
@@ -166,19 +167,26 @@
         timestamp: Date.now()
       };
       
-      // Send to recipient's inbox
-      const recipientChannel = sb.channel(`chat-inbox-${friendId}`);
-      recipientChannel.subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          recipientChannel.send({
-            type: 'broadcast',
-            event: 'chat_msg',
-            payload: payload
-          });
-          // After sending, we can unsubscribe from the recipient's channel to save connections?
-          // Or keep a small pool. For now, just send.
-        }
-      });
+      // Send to recipient's inbox using a cached outbox channel
+      if (!_outboxChannels[friendId]) {
+        const channel = sb.channel(`chat-inbox-${friendId}`);
+        _outboxChannels[friendId] = channel;
+        channel.subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            channel.send({
+              type: 'broadcast',
+              event: 'chat_msg',
+              payload: payload
+            });
+          }
+        });
+      } else {
+        _outboxChannels[friendId].send({
+          type: 'broadcast',
+          event: 'chat_msg',
+          payload: payload
+        });
+      }
 
       // Also add to our own local history immediately
       _handleIncomingMessage(friendId, _chats[friendId].username, payload);
@@ -196,5 +204,9 @@
       _chatInboxChannel = null;
       Object.keys(_chats).forEach(id => {
         delete _chats[id];
+      });
+      Object.keys(_outboxChannels).forEach(id => {
+        if (_outboxChannels[id]) _outboxChannels[id].unsubscribe();
+        delete _outboxChannels[id];
       });
     }

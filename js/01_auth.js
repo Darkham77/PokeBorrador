@@ -388,64 +388,6 @@
         `;
         statsGrid.parentElement.appendChild(resetContainer);
       }
-
-      // Render Eggs
-      const eggContainer = document.getElementById('profile-eggs-section');
-      if (eggContainer) {
-        eggContainer.style.display = 'block';
-        if (state.eggs && state.eggs.length > 0) {
-          const encounterEggs = state.eggs.filter(e => (e.origin || 'encounter') === 'encounter');
-          const breedingEggs = state.eggs.filter(e => e.origin === 'breeding');
-
-          let html = '';
-          
-          if (encounterEggs.length > 0) {
-            html += '<h3 style="font-family:\'Press Start 2P\',monospace; font-size:9px; color:var(--yellow); margin-top:20px; margin-bottom:10px;">🍃 Huevos de Encuentro</h3>';
-            html += encounterEggs.map(egg => renderEggItem(egg, state.eggs.indexOf(egg))).join('');
-          }
-          
-          if (breedingEggs.length > 0) {
-            html += '<h3 style="font-family:\'Press Start 2P\',monospace; font-size:9px; color:var(--purple); margin-top:20px; margin-bottom:10px;">🏠 Huevos de Crianza</h3>';
-            html += breedingEggs.map(egg => renderEggItem(egg, state.eggs.indexOf(egg))).join('');
-          }
-
-          eggContainer.innerHTML = html;
-        } else {
-          eggContainer.innerHTML = `
-            <h3 style="font-family:'Press Start 2P',monospace; font-size:10px; color:var(--yellow); margin-top:15px; margin-bottom:5px;">🥚 Huevos Pokémon</h3>
-            <div style="font-size:10px; color:var(--gray); font-style:italic;">No tienes huevos en incubación.</div>
-          `;
-        }
-      }
-    }
-
-    function renderEggItem(egg, idx) {
-      const total = egg.totalSteps || 100;
-      const progress = Math.min(100, Math.max(0, ((total - egg.steps) / total) * 100));
-      
-      if (egg.ready || egg.steps <= 0) {
-        return `
-        <div class="egg-item ready" onclick="startManualHatch(${idx})" style="background:linear-gradient(135deg, rgba(255,217,61,0.2), rgba(255,166,0,0.2)); border-radius:16px; padding:15px; margin-top:10px; border:2px solid var(--yellow); cursor:pointer; position:relative; overflow:hidden; animation: pulseGlow 2s infinite;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="font-size:24px; animation: eggShake 1.5s infinite;">🥚</div>
-            <div>
-              <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:var(--text); margin-bottom:4px;">¡LISTO PARA ABRIR!</div>
-              <div style="font-size:10px; color:var(--yellow); font-weight:bold;">Toca para eclosionar ${egg.origin === 'breeding' ? '🏠' : '🍃'}</div>
-            </div>
-          </div>
-        </div>`;
-      }
-
-      return `
-      <div class="egg-item" style="background:rgba(255,255,255,0.03); border-radius:12px; padding:12px; margin-top:10px; border:1px solid rgba(255,255,255,0.05);">
-        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text); margin-bottom:8px;">
-          <span style="color:var(--gray);">${egg.name}</span>
-          <span style="color:var(--yellow); font-weight:bold;">${egg.steps} pasos</span>
-        </div>
-        <div style="height:6px; background:rgba(0,0,0,0.3); border-radius:3px; overflow:hidden;">
-          <div style="width:${progress}%; height:100%; background:linear-gradient(90deg, ${egg.origin === 'breeding' ? 'var(--purple)' : 'var(--yellow)'}, #fcd34d); box-shadow: 0 0 10px var(--yellow)44;"></div>
-        </div>
-      </div>`;
     }
 
     function hatchEggs() {

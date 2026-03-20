@@ -1,15 +1,15 @@
     :root {
-      --red: #FF3B3B;
-      --blue: #3B8BFF;
-      --yellow: #FFD93D;
-      --green: #6BCB77;
-      --purple: #C77DFF;
-      --dark: #1a1a2e;
-      --darker: #0f0f1a;
-      --card: #16213e;
-      --card2: #1a1a3e;
-      --text: #eaeaea;
-      --gray: #888;
+      --red: #ff453a;
+      --blue: #0a84ff;
+      --yellow: #ffd60a;
+      --green: #32d74b;
+      --purple: #bf5af2;
+      --dark: #0a0a0a;
+      --darker: #000000;
+      --card: #121212;
+      --card2: #1a1a1a;
+      --text: #f5f5f7;
+      --gray: #86868b;
     }
 
     * {
@@ -2540,6 +2540,7 @@
       min-height: 100vh;
       padding: 20px;
       overflow-y: auto;
+    }
         .hp-bar.hp-low {
       background: var(--red);
     }
