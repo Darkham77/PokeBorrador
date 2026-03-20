@@ -1355,16 +1355,17 @@
       align-items: center;
       gap: 15px;
       margin-top: 15px;
+      width: 100%;
     }
 
-    #btn-switch { grid-area: switch; }
-    #btn-catch-container { grid-area: catch; }
-    #btn-bag { grid-area: bag; }
+    #btn-switch { grid-area: switch; width: 100%; }
+    #btn-catch-container { grid-area: catch; display: flex; justify-content: center; align-items: center; }
+    #btn-bag { grid-area: bag; width: 100%; }
     #btn-run { 
       grid-area: run;
       width: 100%;
-      max-width: 240px;
-      margin: 0 auto;
+      max-width: 100%;
+      margin: 0;
     }
 
     /* Layout cuando no hay botón de captura */
@@ -1373,6 +1374,10 @@
       grid-template-areas: 
         "switch bag"
         "run run";
+    }
+    
+    .action-row.no-catch #btn-catch-container {
+      display: none !important;
     }
 
     .action-btn {
@@ -1471,16 +1476,17 @@
       align-items: center;
       gap: 15px;
       margin-top: 15px;
+      width: 100%;
     }
 
-    #btn-switch { grid-area: switch; }
-    #btn-catch-container { grid-area: catch; }
-    #btn-bag { grid-area: bag; }
+    #btn-switch { grid-area: switch; width: 100%; }
+    #btn-catch-container { grid-area: catch; display: flex; justify-content: center; align-items: center; }
+    #btn-bag { grid-area: bag; width: 100%; }
     #btn-run { 
       grid-area: run;
       width: 100%;
-      max-width: 240px;
-      margin: 0 auto;
+      max-width: 100%;
+      margin: 0;
     }
 
     /* Layout cuando no hay botón de captura */
@@ -1490,11 +1496,17 @@
         "switch bag"
         "run run";
     }
+    
+    .action-row.no-catch #btn-catch-container {
+      display: none !important;
+    }
 
+    /* Contenedor de captura unificado */
     #btn-catch-container {
       display: flex;
       justify-content: center;
       align-items: center;
+      min-width: 80px;
     }
 
     .btn-run {

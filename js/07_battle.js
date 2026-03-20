@@ -306,12 +306,12 @@ function updateBattleUI() {
   }
 
   // Hide capture button if trainer/gym/pvp
-  const btnCatch = document.getElementById('btn-catch');
+  const btnCatchContainer = document.getElementById('btn-catch-container');
   const actionRow = document.getElementById('battle-action-row');
   const isNoCatch = (b.isGym || b.isTrainer || b.isPvP);
   
-  if (btnCatch) {
-    btnCatch.style.display = isNoCatch ? 'none' : 'flex';
+  if (btnCatchContainer) {
+    btnCatchContainer.style.display = isNoCatch ? 'none' : 'flex';
   }
   if (actionRow) {
     if (isNoCatch) {
