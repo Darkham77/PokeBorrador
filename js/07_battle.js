@@ -646,18 +646,17 @@ function getEffectiveSpeed(pokemon, stages) {
   return spe;
 }
 
-function playerActsFirstBySpeed(b) {
+function playerActsFirst(b, pMove, eMove) {
+  const pPrio = (MOVE_DATA[pMove?.name]?.priority) || 0;
+  const ePrio = (MOVE_DATA[eMove?.name]?.priority) || 0;
+  
+  if (pPrio !== ePrio) {
+    return pPrio > ePrio;
+  }
+  
   const pSpe = getEffectiveSpeed(b.player, b.playerStages);
   const eSpe = getEffectiveSpeed(b.enemy, b.enemyStages);
   return pSpe > eSpe || (pSpe === eSpe && Math.random() < 0.5);
-}
-
-function getPlayerFirstThisTurn(b) {
-  if (!b) return true;
-  if (b.turnFirst === undefined || b.turnFirst === null) {
-    b.turnFirst = playerActsFirstBySpeed(b);
-  }
-  return b.turnFirst;
 }
 
 
@@ -673,7 +672,16 @@ function useMove(moveIndex) {
   const move = b.player.moves[moveIndex];
   if (!move || move.pp <= 0) { setLog('¡Sin PP!'); return; }
 
-  const playerFirst = getPlayerFirstThisTurn(b);
+  // Enemy selects move NOW
+  let eMove = null;
+  if (!b.enemyRecharging && !b.enemy.flinched && b.enemy.status !== 'sleep' && b.enemy.status !== 'freeze') {
+    const validMoves = b.enemy.moves.filter(m => m.pp > 0);
+    if (validMoves.length > 0) {
+      eMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+    }
+  }
+
+  const playerFirst = playerActsFirst(b, move, eMove);
 
   const runPlayerAction = (enemyAlreadyActed) => {
     // Check flinch
@@ -681,7 +689,7 @@ function useMove(moveIndex) {
       b.player.flinched = false;
       setLog(`¡${b.player.name} no pudo moverse por el impacto!`, 'log-enemy');
       _battleLock = true; setBtns(false);
-      setTimeout(() => { _battleLock = false; enemyAlreadyActed ? _endEnemyTurn() : enemyTurn(); }, 1000);
+      setTimeout(() => { _battleLock = false; enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 1000);
       return;
     }
     // Check paralysis skip
@@ -690,7 +698,7 @@ function useMove(moveIndex) {
       _battleLock = true; setBtns(false);
       setTimeout(() => {
         _battleLock = false;
-        enemyAlreadyActed ? _endEnemyTurn() : enemyTurn();
+        enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
       }, 1000);
       return;
     }
@@ -702,7 +710,7 @@ function useMove(moveIndex) {
         _battleLock = true; setBtns(false);
         setTimeout(() => {
           _battleLock = false;
-          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn();
+          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
         }, 1000);
         return;
       } else {
@@ -717,7 +725,7 @@ function useMove(moveIndex) {
         _battleLock = true; setBtns(false);
         setTimeout(() => {
           _battleLock = false;
-          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn();
+          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
         }, 1000);
         return;
       } else {
@@ -732,7 +740,7 @@ function useMove(moveIndex) {
       _battleLock = true; setBtns(false);
       setTimeout(() => {
         _battleLock = false;
-        enemyAlreadyActed ? _endEnemyTurn() : enemyTurn();
+        enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
       }, 1000);
       return;
     }
@@ -754,7 +762,7 @@ function useMove(moveIndex) {
           setTimeout(() => {
             _battleLock = false;
             if (b.player.hp <= 0) { endBattle(false); return; }
-            enemyAlreadyActed ? _endEnemyTurn() : enemyTurn();
+            enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
           }, 1000);
           return;
         }
@@ -772,7 +780,7 @@ function useMove(moveIndex) {
     const accMult = stageMult(accStage);
     if (Math.random() * 100 > (md.acc || 100) * accMult) {
       setLog(`${b.player.name} usó <strong>${move.name}</strong>... ¡Falló!`, 'log-player');
-      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn(); }, 900);
+      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 900);
       return;
     }
 
@@ -782,7 +790,7 @@ function useMove(moveIndex) {
     if (md.cat === 'status') {
       applyMoveEffect(md.effect, b.player, b.enemy, b.playerStages, b.enemyStages, addLog);
       updateBattleUI();
-      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn(); }, 900);
+      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 900);
       return;
     }
 
@@ -877,7 +885,7 @@ function useMove(moveIndex) {
         return;
       }
 
-      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn(); }, 1000);
+      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 1000);
     });
   };
 
@@ -886,6 +894,7 @@ function useMove(moveIndex) {
   } else {
     _battleLock = true; setBtns(false);
     enemyTurn({
+      chosenMove: eMove,
       endTurn: false, after: () => {
         if (b.over) return;
         if (b.player.hp <= 0) { _endEnemyTurn(); return; }
@@ -911,7 +920,7 @@ function enemyTurn(opts = {}) {
   const b = state.battle;
   if (b.over) return;
 
-  const { endTurn = true, after = null } = opts || {};
+  const { endTurn = true, after = null, chosenMove = null } = opts || {};
   const finish = () => {
     if (after) { after(); return; }
     if (endTurn) _endEnemyTurn();
@@ -985,7 +994,7 @@ function enemyTurn(opts = {}) {
     }
   }
 
-  const move = validMoves[Math.floor(Math.random() * validMoves.length)];
+  const move = chosenMove || validMoves[Math.floor(Math.random() * validMoves.length)];
   move.pp--;
   const md = MOVE_DATA[move.name] || { power: 40, type: 'normal', cat: 'physical', acc: 100 };
 
@@ -1130,7 +1139,6 @@ function _endEnemyTurn() {
   }
   setTimeout(() => {
     b.turn = 'player';
-    b.turnFirst = playerActsFirstBySpeed(b);
     _battleLock = false;
     setBtns(true);
     renderMoveButtons();

@@ -11,6 +11,11 @@
       return _chatNotifyCount;
     }
 
+    function getUnreadCount(friendId) {
+      if (!_chats[friendId]) return 0;
+      return _chats[friendId].unreadCount || 0;
+    }
+
     async function initGlobalChatListener() {
       if (!currentUser || _chatInboxChannel) return;
 
@@ -31,16 +36,22 @@
       if (!_chats[friendId]) {
         _chats[friendId] = {
           messages: [],
-          username: friendUsername
+          username: friendUsername,
+          unreadCount: 0
         };
+      } else {
+        const unread = _chats[friendId].unreadCount || 0;
+        if (unread > 0) {
+          _chatNotifyCount = Math.max(0, _chatNotifyCount - unread);
+          _chats[friendId].unreadCount = 0;
+        }
       }
 
       // Create or show chat UI
       renderChatModal(friendId);
       
-      // Clear notifications if many or specifically for this friend (simplified: clear all for now)
-      _chatNotifyCount = 0;
       refreshFriendsBadge();
+      if (typeof renderFriendsList === 'function') renderFriendsList();
     }
 
     function renderChatModal(friendId) {
@@ -128,8 +139,10 @@
         // Notify user if chat is not open/focused
         if (payload.senderId !== currentUser.id) {
           notify(`Nuevo mensaje de ${chat.username}`, '💬');
+          chat.unreadCount = (chat.unreadCount || 0) + 1;
           _chatNotifyCount++;
           if (typeof refreshFriendsBadge === 'function') refreshFriendsBadge();
+          if (typeof renderFriendsList === 'function') renderFriendsList();
         }
       }
     }

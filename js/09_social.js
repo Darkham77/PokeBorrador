@@ -91,16 +91,21 @@
       // Get profile for each friend
       const friendIds = all.map(f => f.requester_id === currentUser.id ? f.addressee_id : f.requester_id);
       const { data: profiles } = await sb.from('profiles').select('*').in('id', friendIds);
-      const { data: saves } = await sb.from('game_saves').select('user_id,save_data').in('user_id', friendIds);
+      const { data: saves } = await sb.from('game_saves').select('user_id,save_data,updated_at').in('user_id', friendIds);
 
       el.innerHTML = (profiles || []).map(p => {
-        const save = saves?.find(s => s.user_id === p.id)?.save_data;
+        const saveRow = saves?.find(s => s.user_id === p.id);
+        const save = saveRow?.save_data;
         const level = save?.trainerLevel || 1;
         const badges = save?.badges || 0;
         const friendship = all.find(f => f.requester_id === p.id || f.addressee_id === p.id);
         // Online = updated_at within last 5 min
-        const lastSeen = save ? new Date(saves?.find(s => s.user_id === p.id)?.save_data?.lastSeen || 0) : null;
+        const lastSeen = saveRow?.updated_at ? new Date(saveRow.updated_at) : null;
         const isOnline = lastSeen && (Date.now() - lastSeen.getTime()) < 5 * 60 * 1000;
+        
+        const unreadCount = typeof getUnreadCount === 'function' ? getUnreadCount(p.id) : 0;
+        const chatUnreadBadge = unreadCount > 0 ? `<div style="position:absolute;top:-6px;right:-6px;background:#ff4757;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:bold;box-shadow:0 2px 5px rgba(0,0,0,0.4);z-index:10;">${unreadCount}</div>` : '';
+
         return `<div class="friend-card">
       <div class="friend-avatar">
         🧢
@@ -111,8 +116,8 @@
         <div class="friend-meta">Nv. ${level} &nbsp;·&nbsp; ${badges} medallas</div>
       </div>
       <div class="friend-actions">
-        <button class="friend-btn" style="background:rgba(107,203,119,0.15);color:var(--green);border:1px solid rgba(107,203,119,0.3);"
-          onclick="openChat('${p.id}','${p.username}')">💬 Chat</button>
+        <button class="friend-btn" style="position:relative;background:rgba(107,203,119,0.15);color:var(--green);border:1px solid rgba(107,203,119,0.3);"
+          onclick="openChat('${p.id}','${p.username}')">💬 Chat${chatUnreadBadge}</button>
         <button class="friend-btn" style="background:rgba(255,217,61,0.15);color:var(--yellow);border:1px solid rgba(255,217,61,0.3);"
           onclick="openTradeModal('${p.id}','${p.username}')">🔄 Intercambiar</button>
         <button class="friend-btn" onclick="sendBattleInvite('${p.id}','${p.username}')"

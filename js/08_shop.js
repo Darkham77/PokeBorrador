@@ -299,7 +299,7 @@
       // ── ÍTEMS EQUIPABLES (held items) — solo en Tienda Entrenador ──────────────
       {
         id: 'exp_share', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/exp-share.png',
-        name: 'Compartir EXP', icon: '⭐', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 400,
+        name: 'Compartir EXP', icon: '🎒', price: 0, unlockLv: 4, tier: 'rare', market: false, trainerShop: true, bcPrice: 400,
         desc: 'Equipable. El portador gana EXP aunque no participe en batalla.',
         type: 'held', heldEffect: 'exp_share',
         effect: (qty) => { state.inventory['Compartir EXP'] = (state.inventory['Compartir EXP'] || 0) + qty; }
