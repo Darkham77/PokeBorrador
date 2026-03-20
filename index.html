@@ -819,19 +819,21 @@
 
       <div id="move-panel">
         <div class="battle-actions" id="move-buttons"></div>
-        <div class="action-row">
-          <button class="action-btn btn-fight" id="btn-fight" onclick="showMoves()">⚔️ LUCHAR</button>
+        <div class="action-row" id="battle-action-row">
+          <button class="action-btn" id="btn-switch" onclick="showBattleSwitch()"
+            style="background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);color:var(--purple);">🔄
+            CAMBIAR</button>
+          
           <div id="btn-catch-container">
             <button class="action-btn btn-catch" id="btn-catch" onclick="tryCatch()">
               <span>CAPTURAR</span>
             </button>
           </div>
+
           <button class="action-btn" id="btn-bag" onclick="showBattleBag()"
             style="background:rgba(107,203,119,0.15);border:1px solid rgba(107,203,119,0.3);color:var(--green);">🎒
             MOCHILA</button>
-          <button class="action-btn" id="btn-switch" onclick="showBattleSwitch()"
-            style="background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);color:var(--purple);">🔄
-            CAMBIAR</button>
+
           <button class="action-btn" id="btn-run" onclick="runFromBattle()"
             style="background:rgba(255,255,255,0.05);color:var(--gray);">🏃 HUIR</button>
         </div>

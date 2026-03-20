@@ -307,8 +307,18 @@ function updateBattleUI() {
 
   // Hide capture button if trainer/gym/pvp
   const btnCatch = document.getElementById('btn-catch');
+  const actionRow = document.getElementById('battle-action-row');
+  const isNoCatch = (b.isGym || b.isTrainer || b.isPvP);
+  
   if (btnCatch) {
-    btnCatch.style.display = (b.isGym || b.isTrainer || b.isPvP) ? 'none' : 'flex';
+    btnCatch.style.display = isNoCatch ? 'none' : 'flex';
+  }
+  if (actionRow) {
+    if (isNoCatch) {
+      actionRow.classList.add('no-catch');
+    } else {
+      actionRow.classList.remove('no-catch');
+    }
   }
 }
 
@@ -370,8 +380,9 @@ function showBattleEndUI(callback, locId) {
 }
 
 function setBtns(enabled) {
-  ['btn-fight', 'btn-catch'].forEach(id => {
-    document.getElementById(id).disabled = !enabled;
+  ['btn-catch', 'btn-switch', 'btn-bag', 'btn-run'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !enabled;
   });
 }
 

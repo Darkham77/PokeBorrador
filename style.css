@@ -1349,9 +1349,30 @@
     .action-row {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
+      grid-template-areas: 
+        "switch catch bag"
+        "run run run";
       align-items: center;
       gap: 15px;
       margin-top: 15px;
+    }
+
+    #btn-switch { grid-area: switch; }
+    #btn-catch-container { grid-area: catch; }
+    #btn-bag { grid-area: bag; }
+    #btn-run { 
+      grid-area: run;
+      width: 100%;
+      max-width: 240px;
+      margin: 0 auto;
+    }
+
+    /* Layout cuando no hay botón de captura */
+    .action-row.no-catch {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: 
+        "switch bag"
+        "run run";
     }
 
     .action-btn {
@@ -1444,13 +1465,33 @@
     .action-row {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
+      grid-template-areas: 
+        "switch catch bag"
+        "run run run";
       align-items: center;
       gap: 15px;
       margin-top: 15px;
     }
 
+    #btn-switch { grid-area: switch; }
+    #btn-catch-container { grid-area: catch; }
+    #btn-bag { grid-area: bag; }
+    #btn-run { 
+      grid-area: run;
+      width: 100%;
+      max-width: 240px;
+      margin: 0 auto;
+    }
+
+    /* Layout cuando no hay botón de captura */
+    .action-row.no-catch {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: 
+        "switch bag"
+        "run run";
+    }
+
     #btn-catch-container {
-      grid-column: 2;
       display: flex;
       justify-content: center;
       align-items: center;
