@@ -237,12 +237,10 @@
 	      const overlay = document.createElement('div');
 	      overlay.id = 'fishing-game-overlay';
 	      
-	      // Dificultad basada en rareza (rarity es el % de aparición)
-	      // Pokémon más raros (< 10%) tienen barras más pequeñas y peces más rápidos
-	      const barHeight = Math.max(40, Math.min(100, rarity * 2)); 
-	      const fishSpeed = Math.max(1, Math.min(5, 10 / rarity));
-	      const progressGain = Math.max(0.1, Math.min(0.5, rarity / 20));
-	      const progressLoss = 0.3;
+	      const barHeight = Math.max(45, Math.min(110, rarity * 2.5)); 
+	      const fishSpeedBase = Math.max(1.5, Math.min(4.5, 12 / rarity));
+	      const progressGain = Math.max(0.15, Math.min(0.4, rarity / 25));
+	      const progressLoss = 0.25;
 	
 	      overlay.innerHTML = `
 	        <div class="fishing-game-container">
@@ -264,79 +262,87 @@
 	      const bar = document.getElementById('fishing-bar');
 	      const fish = document.getElementById('fishing-fish');
 	      const progressFill = document.getElementById('fishing-progress');
-	      const area = document.getElementById('fishing-area');
 	      const areaHeight = 350;
 	
 	      let barTop = 200;
 	      let barVel = 0;
 	      let fishTop = 150;
+	      let fishVel = 0;
 	      let fishTargetTop = 150;
 	      let progress = 30;
 	      let isPressing = false;
 	      let gameActive = true;
+	      let lastTime = performance.now();
 	
-	      // Input handling
-	      const startPress = () => isPressing = true;
-	      const endPress = () => isPressing = false;
-	      window.addEventListener('mousedown', startPress);
-	      window.addEventListener('mouseup', endPress);
-	      window.addEventListener('touchstart', startPress);
-	      window.addEventListener('touchend', endPress);
+	      // Eventos
+	      const startPress = (e) => { e.preventDefault(); isPressing = true; };
+	      const endPress = (e) => { e.preventDefault(); isPressing = false; };
+	      overlay.addEventListener('mousedown', startPress);
+	      overlay.addEventListener('mouseup', endPress);
+	      overlay.addEventListener('touchstart', startPress, {passive: false});
+	      overlay.addEventListener('touchend', endPress, {passive: false});
 	
-	      function update() {
+	      function update(time) {
 	        if (!gameActive) return;
+	        const dt = (time - lastTime) / 16.66; // Normalizado a 60fps
+	        lastTime = time;
 	
-	        // Bar logic (Physics)
-	        if (isPressing) barVel -= 0.8;
-	        else barVel += 0.5;
-	        barVel *= 0.95; // Friction
-	        barTop += barVel;
+	        // --- Física de la Barra ---
+	        // Gravedad y Empuje balanceados
+	        if (isPressing) barVel -= 0.5 * dt;
+	        else barVel += 0.35 * dt;
+	        
+	        barVel *= Math.pow(0.96, dt); // Fricción suavizada
+	        barTop += barVel * dt;
 	
-	        // Constrain bar
-	        if (barTop < 0) { barTop = 0; barVel = 0; }
-	        if (barTop > areaHeight - barHeight) { barTop = areaHeight - barHeight; barVel = 0; }
+	        if (barTop < 0) { barTop = 0; barVel *= -0.2; } // Rebote suave arriba
+	        if (barTop > areaHeight - barHeight) { barTop = areaHeight - barHeight; barVel *= -0.2; } // Rebote suave abajo
 	        bar.style.top = barTop + 'px';
 	
-	        // Fish logic (AI)
-	        if (Math.abs(fishTop - fishTargetTop) < 5) {
+	        // --- Inteligencia del Pez ---
+	        // El pez busca un objetivo y acelera hacia él de forma más orgánica
+	        if (Math.abs(fishTop - fishTargetTop) < 10 || Math.random() < 0.01) {
 	          fishTargetTop = Math.random() * (areaHeight - 40);
 	        }
-	        const moveDir = fishTargetTop > fishTop ? 1 : -1;
-	        fishTop += moveDir * fishSpeed;
+	        
+	        const dist = fishTargetTop - fishTop;
+	        const fishAccl = (dist > 0 ? 1 : -1) * 0.15 * fishSpeedBase;
+	        fishVel += fishAccl * dt;
+	        fishVel *= Math.pow(0.92, dt); // El pez tiene más "agua" (fricción)
+	        fishTop += fishVel * dt;
+	        
+	        // Mantener dentro del área
+	        if (fishTop < 0) { fishTop = 0; fishVel = 0; }
+	        if (fishTop > areaHeight - 35) { fishTop = areaHeight - 35; fishVel = 0; }
 	        fish.style.top = fishTop + 'px';
 	
-	        // Collision detection
+	        // --- Detección de Captura ---
 	        const fishCenter = fishTop + 15;
-	        if (fishCenter >= barTop && fishCenter <= barTop + barHeight) {
-	          progress += progressGain;
+	        const inZone = fishCenter >= barTop && fishCenter <= barTop + barHeight;
+	        
+	        if (inZone) {
+	          progress += progressGain * dt;
 	          bar.style.borderColor = 'var(--green)';
-	          bar.style.background = 'rgba(50, 215, 75, 0.4)';
+	          bar.style.boxShadow = '0 0 20px var(--green)';
 	        } else {
-	          progress -= progressLoss;
-	          bar.style.borderColor = 'var(--red)';
-	          bar.style.background = 'rgba(255, 69, 58, 0.4)';
+	          progress -= progressLoss * dt;
+	          bar.style.borderColor = 'rgba(255, 69, 58, 0.8)';
+	          bar.style.boxShadow = 'none';
 	        }
 	
-	        // Progress constraint & Win/Loss
 	        progress = Math.max(0, Math.min(100, progress));
 	        progressFill.style.width = progress + '%';
 	
-	        if (progress >= 100) {
-	          gameActive = false;
-	          finish(true);
-	        } else if (progress <= 0) {
-	          gameActive = false;
-	          finish(false);
-	        } else {
-	          requestAnimationFrame(update);
-	        }
+	        if (progress >= 100) { gameActive = false; finish(true); }
+	        else if (progress <= 0) { gameActive = false; finish(false); }
+	        else requestAnimationFrame(update);
 	      }
 	
 	      function finish(win) {
-	        window.removeEventListener('mousedown', startPress);
-	        window.removeEventListener('mouseup', endPress);
-	        window.removeEventListener('touchstart', startPress);
-	        window.removeEventListener('touchend', endPress);
+	        overlay.removeEventListener('mousedown', startPress);
+	        overlay.removeEventListener('mouseup', endPress);
+	        overlay.removeEventListener('touchstart', startPress);
+	        overlay.removeEventListener('touchend', endPress);
 	
 	        if (win) {
 	          notify('¡Lo atrapaste!', '🎣');
@@ -352,8 +358,9 @@
 	        }
 	      }
 	
-	      update();
+	      requestAnimationFrame(update);
 	    }
+
 
 
     // ===== GYM BATTLE =====
