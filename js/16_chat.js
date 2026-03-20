@@ -5,6 +5,7 @@
     let _chatInboxChannel = null;
     let _chatNotifyCount = 0;
     const _outboxChannels = {};
+    const _chats = {}; // Added to fix ReferenceError
 
     function getChatNotificationCount() {
       return _chatNotifyCount;
