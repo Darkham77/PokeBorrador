@@ -150,28 +150,40 @@
         </div>
 
         <div class="hud-items">
-          <div id="time-cycle-display"
-            style="display:flex;align-items:center;background:rgba(255,255,255,0.05);padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);font-size:12px;gap:8px;cursor:help;"
-            title="Ciclo Día/Noche (Argentina)">
+          <div id="time-cycle-display" class="hud-pill time-pill" title="Ciclo Día/Noche (Argentina)">
             <span id="time-icon">🕒</span>
-            <span id="time-label">Cargando...</span>
+            <span id="time-label" style="font-size: 10px;">Cargando...</span>
           </div>
-          <span class="money-count">₽ <span id="hud-money">3000</span></span>
-          <span class="bc-count"><i class="fas fa-coins"></i> <span id="hud-bc">0</span></span>
-          <span class="badge-count">🏅 <span id="badge-count">0</span></span>
-          <span class="ball-count"><img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'>
-  <circle cx='20' cy='20' r='19' fill='%23222' stroke='%23111' stroke-width='1.5'/>
-  <path d='M1 20 A19 19 0 0 1 39 20 Z' fill='%23e63030'/>
-  <path d='M1 20 A19 19 0 0 0 39 20 Z' fill='%23f5f5f5'/>
-  <rect x='1' y='18' width='38' height='4' fill='%23111'/>
-  <circle cx='20' cy='20' r='6' fill='%23111'/>
-  <circle cx='20' cy='20' r='4' fill='%23f5f5f5'/>
+          <div class="hud-pill money-pill">
+            <span>₽</span>
+            <span id="hud-money">3000</span>
+          </div>
+          <div class="hud-pill bc-pill">
+            <i class="fas fa-coins"></i>
+            <span id="hud-bc">0</span>
+          </div>
+          <div class="hud-pill badge-pill">
+            <i class="fas fa-medal"></i>
+            <span id="badge-count">0</span>
+          </div>
+          <div class="hud-pill ball-pill">
+            <div class="ball-icon-wrap" style="height: 24px; display: flex; align-items: center;">
+              <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'>
+                <circle cx='20' cy='20' r='19' fill='%23222' stroke='%23111' stroke-width='1.5'/>
+                <path d='M1 20 A19 19 0 0 1 39 20 Z' fill='%23e63030'/>
+                <path d='M1 20 A19 19 0 0 0 39 20 Z' fill='%23f5f5f5'/>
+                <rect x='1' y='18' width='38' height='4' fill='%23111'/>
+                <circle cx='20' cy='20' r='6' fill='%23111'/>
+                <circle cx='20' cy='20' r='4' fill='%23f5f5f5'/>
                 <circle cx='18' cy='18' r='1.2' fill='%23ffffff' opacity='0.7'/>
-              </svg>" width="24" height="24" style="vertical-align:middle;margin-right:4px;"><span
-              id="ball-count">10</span></span>
-          <span id="hud-egg-container"
-            style="display:inline-block;margin-right:12px;font-size:13px;cursor:pointer;background:rgba(255,217,61,0.15);padding:4px 10px;border-radius:15px;border:1px solid rgba(255,217,61,0.3);transition:all 0.2s;box-shadow: 0 0 5px rgba(255,217,61,0.1);"
-            onclick="toggleProfile()" title="Huevos en incubación">🥚 <span id="egg-count">0</span></span>
+              </svg>" width="24" height="24">
+            </div>
+            <span id="ball-count">10</span>
+          </div>
+          <div id="hud-egg-container" class="hud-pill egg-pill" onclick="toggleProfile()" title="Huevos en incubación">
+            <i class="fas fa-egg"></i>
+            <span id="egg-count">0</span>
+          </div>
           <button onclick="toggleSettings()" id="hud-settings-btn" title="Configuración"
             style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:8px;">⚙️</button>
           <button onclick="toggleProfile()" id="hud-profile-btn" title="Perfil y opciones">👤</button>

@@ -246,6 +246,7 @@
         setInterval(() => saveGame(false), 60000);
         initTrainerPityTimer();
         startPresence(); subscribeFriendNotifs(); subscribeTradeNotifs(); subscribeBattleInvites(); refreshFriendsBadge();
+        if (typeof initGlobalChatListener === 'function') initGlobalChatListener();
       } catch (e) {
         setAuthLoading(false);
         currentUser = null;

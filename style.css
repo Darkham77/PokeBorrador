@@ -655,49 +655,70 @@
 
     .hud-items {
       display: flex;
-      gap: 10px;
-    }
-
-    .money-count {
-      background: rgba(107, 203, 119, 0.15);
-      color: var(--green);
-      font-weight: 900;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      border: 1px solid rgba(107, 203, 119, 0.3);
-    }
-
-    .bc-count {
-      background: rgba(199, 125, 255, 0.15);
-      color: var(--purple);
-      font-weight: 900;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      border: 1px solid rgba(199, 125, 255, 0.3);
-      display: flex;
+      gap: 12px;
       align-items: center;
-      gap: 6px;
     }
 
-    .badge-count {
-      background: var(--yellow);
-      color: var(--darker);
-      font-weight: 900;
-      padding: 6px 14px;
-      border-radius: 20px;
+    .hud-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 65px;
+      height: 65px;
+      padding: 8px 10px;
+      border-radius: 18px;
       font-size: 13px;
+      font-weight: 900;
+      transition: all 0.2s;
+      gap: 4px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
     }
 
-    .ball-count {
-      background: rgba(255, 59, 59, 0.2);
+    .hud-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    }
+
+    .hud-pill i, .hud-pill span:first-child {
+      font-size: 18px;
+    }
+
+    .time-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+    }
+
+    .money-pill {
+      background: rgba(107, 203, 119, 0.12);
+      color: var(--green);
+      border-color: rgba(107, 203, 119, 0.25);
+    }
+
+    .bc-pill {
+      background: rgba(199, 125, 255, 0.12);
+      color: var(--purple);
+      border-color: rgba(199, 125, 255, 0.25);
+    }
+
+    .badge-pill {
+      background: rgba(255, 217, 61, 0.12);
+      color: var(--yellow);
+      border-color: rgba(255, 217, 61, 0.25);
+    }
+
+    .ball-pill {
+      background: rgba(255, 59, 59, 0.12);
       color: var(--red);
-      font-weight: 900;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      border: 1px solid var(--red);
+      border-color: rgba(255, 59, 59, 0.25);
+    }
+
+    .egg-pill {
+      background: rgba(180, 140, 80, 0.12);
+      color: #c8a060;
+      border-color: rgba(180, 140, 80, 0.25);
     }
 
     /* ===== MAP ===== */

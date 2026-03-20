@@ -2,7 +2,25 @@
     // This system uses Supabase Realtime broadcast for ephemeral player-to-player messaging.
     // Messages are kept in-memory (max 20 per conversation) to save space.
 
-    const _chats = {}; // friendId -> { messages: [], channel: null, username: '' }
+    let _chatInboxChannel = null;
+    let _chatNotifyCount = 0;
+
+    function getChatNotificationCount() {
+      return _chatNotifyCount;
+    }
+
+    async function initGlobalChatListener() {
+      if (!currentUser || _chatInboxChannel) return;
+
+      const inboxName = `chat-inbox-${currentUser.id}`;
+      _chatInboxChannel = sb.channel(inboxName)
+        .on('broadcast', { event: 'chat_msg' }, ({ payload }) => {
+          _handleIncomingMessage(payload.senderId, payload.senderName, payload);
+        })
+        .subscribe();
+      
+      console.log("[CHAT] Global inbox listener initialized");
+    }
 
     async function openChat(friendId, friendUsername) {
       if (!currentUser) return;
@@ -11,26 +29,16 @@
       if (!_chats[friendId]) {
         _chats[friendId] = {
           messages: [],
-          username: friendUsername,
-          channel: null
+          username: friendUsername
         };
       }
 
       // Create or show chat UI
       renderChatModal(friendId);
-
-      // Subscribe to chat channel if not already
-      if (!_chats[friendId].channel) {
-        // Use a unique channel for this friendship. Sort IDs to always get the same name.
-        const ids = [currentUser.id, friendId].sort();
-        const channelName = `chat-v1-${ids[0]}-${ids[1]}`;
-
-        _chats[friendId].channel = sb.channel(channelName, { config: { broadcast: { self: true } } })
-          .on('broadcast', { event: 'chat_msg' }, ({ payload }) => {
-            _handleIncomingMessage(friendId, payload);
-          })
-          .subscribe();
-      }
+      
+      // Clear notifications if many or specifically for this friend (simplified: clear all for now)
+      _chatNotifyCount = 0;
+      refreshFriendsBadge();
     }
 
     function renderChatModal(friendId) {
@@ -87,10 +95,21 @@
       _updateChatUI(friendId);
     }
 
-    function _handleIncomingMessage(friendId, payload) {
-      if (!_chats[friendId]) return;
+    function _handleIncomingMessage(friendId, friendUsername, payload) {
+      // Initialize state if it didn't exist (background message)
+      if (!_chats[friendId]) {
+        _chats[friendId] = {
+          messages: [],
+          username: friendUsername || 'Entrenador'
+        };
+      }
       
       const chat = _chats[friendId];
+      
+      // Prevent duplicates (in case of double delivery or self-send broadcast issues)
+      const isDup = chat.messages.some(m => m.timestamp === payload.timestamp && m.text === payload.text);
+      if (isDup) return;
+
       chat.messages.push(payload);
       
       // Keep only last 20 messages
@@ -98,10 +117,19 @@
         chat.messages.shift();
       }
       
-      _updateChatUI(friendId);
-      
-      // Add a small notification badge if the window is minimized or not in focus?
-      // (Simplified for now: just update UI)
+      const modal = document.getElementById(`chat-modal-${friendId}`);
+      const isVisible = modal && modal.style.display !== 'none';
+
+      if (isVisible) {
+        _updateChatUI(friendId);
+      } else {
+        // Notify user if chat is not open/focused
+        if (payload.senderId !== currentUser.id) {
+          notify(`Nuevo mensaje de ${chat.username}`, '💬');
+          _chatNotifyCount++;
+          if (typeof refreshFriendsBadge === 'function') refreshFriendsBadge();
+        }
+      }
     }
 
     function _updateChatUI(friendId) {
@@ -133,22 +161,28 @@
       
       const payload = {
         senderId: currentUser.id,
-        senderName: state.username || 'Entrenador',
+        senderName: state.trainer || 'Entrenador',
         text: text,
         timestamp: Date.now()
       };
       
-      const chat = _chats[friendId];
-      if (chat.channel) {
-        chat.channel.send({
-          type: 'broadcast',
-          event: 'chat_msg',
-          payload: payload
-        });
-        input.value = '';
-      } else {
-        notify('Error: Chat no conectado', '❌');
-      }
+      // Send to recipient's inbox
+      const recipientChannel = sb.channel(`chat-inbox-${friendId}`);
+      recipientChannel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          recipientChannel.send({
+            type: 'broadcast',
+            event: 'chat_msg',
+            payload: payload
+          });
+          // After sending, we can unsubscribe from the recipient's channel to save connections?
+          // Or keep a small pool. For now, just send.
+        }
+      });
+
+      // Also add to our own local history immediately
+      _handleIncomingMessage(friendId, _chats[friendId].username, payload);
+      input.value = '';
     }
 
     function closeChat(friendId) {
@@ -158,8 +192,9 @@
     }
 
     function cleanupChats() {
+      if (_chatInboxChannel) _chatInboxChannel.unsubscribe();
+      _chatInboxChannel = null;
       Object.keys(_chats).forEach(id => {
-        if (_chats[id].channel) _chats[id].channel.unsubscribe();
         delete _chats[id];
       });
     }

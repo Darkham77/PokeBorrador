@@ -47,7 +47,8 @@
       const total = (pendingFriends?.length || 0)
         + (pendingTrades?.length || 0)
         + (acceptedTrades?.length || 0)
-        + (pendingBattles?.length || 0);
+        + (pendingBattles?.length || 0)
+        + (typeof getChatNotificationCount === 'function' ? getChatNotificationCount() : 0);
 
       const badge = document.getElementById('friends-nav-badge');
       const lbl = document.getElementById('friends-nav-label');
