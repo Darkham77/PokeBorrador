@@ -464,12 +464,22 @@ function _renderDaycarePicker() {
   const compareTo = _getOtherDaycarePokemonForPicker();
   const slotLabel = _depositingSlot === 1 ? 'Ranura A' : 'Ranura B';
   const compareHint = compareTo ? `<div style="font-size:10px;color:var(--gray);text-align:center;margin:-6px 0 12px;">Compatibilidad vs <b style="color:var(--text);">${compareTo.name}</b></div>` : '';
+  
+  let allPoks = [...state.team, ...(state.box || [])].filter(p => !_activeDaycareSlots.some(s => s.pokemon_id === p.uid));
+  
+  if (compareTo) {
+    allPoks.sort((a, b) => {
+      const cpA = checkCompatibility(compareTo, a).level;
+      const cpB = checkCompatibility(compareTo, b).level;
+      return cpB - cpA;
+    });
+  }
+
   bModal.innerHTML = `
         <div style="font-family:'Press Start 2P';font-size:12px;margin-bottom:16px;color:var(--yellow);text-align:center;">Elegi un Pokemon (${slotLabel})</div>
         ${compareHint}
         <div style="max-height:60vh;overflow-y:auto;display:grid;grid-template-columns:1fr;gap:10px;">
-          ${state.team.map(p => _pickerHtml(p, compareTo)).join('')}
-          ${(state.box || []).map(p => _pickerHtml(p, compareTo)).join('')}
+          ${allPoks.map(p => _pickerHtml(p, compareTo)).join('')}
         </div>
         <button onclick="document.getElementById('bag-overlay').style.display='none'" style="margin-top:16px;width:100%;padding:14px;border-radius:12px;background:rgba(255,255,255,0.1);color:#fff;font-family:'Press Start 2P';font-size:10px;border:none;">CANCELAR</button>
       `;
@@ -503,11 +513,19 @@ function _pickerHtml(p, compareTo) {
 	      </div>` : '';
 
   let compatHtml = '';
+  let inlineCompat = '';
   let borderStyle = 'border:1px solid rgba(255,255,255,0.06);';
 
   if (compareTo) {
     const cp = checkCompatibility(compareTo, p);
     const info = COMPAT_TEXT[cp.level] || COMPAT_TEXT[0];
+    
+    // Inline label for the info bar
+    if (cp.level > 0) {
+      inlineCompat = `<span style="color:${info.color}; font-size:10px; font-weight:800; background:${info.color}15; padding: 1px 6px; border-radius: 4px; margin-left: 4px;">${info.label}</span>`;
+    } else {
+       inlineCompat = `<span style="color:var(--gray); font-size:10px; margin-left: 4px;">Incompatible</span>`;
+    }
     const intMs = cp.level > 0 ? EGG_SPAWN_INTERVAL_MS[cp.level] : null;
     const every = intMs ? `${Math.round(intMs / 3600000)}h` : '—';
     const motherName = cp.eggSpecies ? (POKEMON_DB[cp.eggSpecies]?.name || cp.eggSpecies) : '—';
@@ -557,6 +575,7 @@ function _pickerHtml(p, compareTo) {
 	            ${genderIcon}
 	            <span style="color:rgba(255,255,255,0.4); font-weight:200;">|</span>
 	            <span style="color:rgba(255,255,255,0.8);">IVs <b style="color:#fff;">${tier.total}</b>/186</span>
+                ${inlineCompat}
                 <span style="color:var(--yellow);margin-left:auto;">⚡${p.vigor || 0}</span>
 	          </div>
           ${compatHtml}
@@ -630,6 +649,11 @@ function manageDaycareTimer(compatLvl, slots) {
 
   _daycareTimer = setInterval(async () => {
     if (Date.now() >= _nextEggTime) {
+      const lockKey = `daycare_timer_lock_${currentUser.id}`;
+      const nowMs = Date.now();
+      if (nowMs - Number(localStorage.getItem(lockKey) || 0) < 5000) return;
+      localStorage.setItem(lockKey, nowMs.toString());
+
       const cap = await getEggCapacity();
       const { count } = await sb.from('eggs').select('egg_id', { count: 'exact', head: true }).eq('player_id', currentUser.id);
       if (count < cap) {
@@ -755,6 +779,10 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
 
   const compat = checkCompatibility(pA, pB);
   if (compat.level === 0) return false;
+
+  const cap = await getEggCapacity();
+  const { count } = await sb.from('eggs').select('egg_id', { count: 'exact', head: true }).eq('player_id', pid);
+  if (count >= cap) return false;
   const ivs = calculateInheritance(pA, pB, iA, iB);
   
   if (iA === 'Piedra Eterna' && iB === 'Piedra Eterna') {
@@ -795,6 +823,11 @@ async function reduceHatchTimer(pid, activity) {
 }
 
 async function processOfflineBreeding(pid, inSlots) {
+  const lockKey = `daycare_offline_lock_${pid}`;
+  const nowMs = Date.now();
+  if (nowMs - Number(localStorage.getItem(lockKey) || 0) < 5000) return;
+  localStorage.setItem(lockKey, nowMs.toString());
+
   const s = inSlots || await loadDaycareSlots();
   if (!s || s.length < 2 || !s[0].pokemon || !s[1].pokemon) return;
 
