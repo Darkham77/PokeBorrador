@@ -88,7 +88,9 @@
       battle: null,
       starterChosen: false,
       stats: {},
-      activeBattle: null
+      activeBattle: null,
+      daycare_missions: [],
+      daycare_mission_refreshes: 3
     };
 
     let state = JSON.parse(JSON.stringify(INITIAL_STATE));

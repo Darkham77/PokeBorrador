@@ -925,8 +925,33 @@ async function collectEgg(eggId, sp, shiny, ivsJson) {
 // ===== DAILY MISSIONS =====
 function generateDailyMission() {
     const today = new Date().toISOString().split('T')[0];
-    if (state.daycare_mission && state.daycare_mission.date === today && state.daycare_mission.targetId !== 'psyduck' && state.daycare_mission.minLevel > 25) return;
     
+    // Migración para saves viejos
+    if (!state.daycare_missions) state.daycare_missions = [];
+    if (state.daycare_mission_refreshes === undefined) state.daycare_mission_refreshes = 3;
+
+    // Si ya tiene misiones de hoy, no regenerar (al menos que sea un reset diario)
+    const hasTodayMissions = state.daycare_missions.length === 2 && state.daycare_missions.every(m => m.date === today);
+    if (hasTodayMissions) return;
+
+    // Reset diario de refrescos
+    state.daycare_mission_refreshes = 3;
+    
+    // Generar 2 misiones
+    state.daycare_missions = [
+        _createNewMissionObject(today),
+        _createNewMissionObject(today)
+    ];
+
+    // Asegurar que no sean el mismo objetivo
+    while (state.daycare_missions[1].targetId === state.daycare_missions[0].targetId) {
+        state.daycare_missions[1] = _createNewMissionObject(today);
+    }
+
+    if (typeof scheduleSave === 'function') scheduleSave();
+}
+
+function _createNewMissionObject(date) {
     const possibleTargets = ['arcanine', 'kadabra', 'machoke', 'graveler', 'rapidash', 'slowbro', 'magneton', 'dodrio', 'dewgong', 'muk', 'cloyster', 'haunter', 'onix', 'hypno', 'kingler', 'electrode', 'exeggutor', 'marowak', 'weezing', 'rhydon', 'tangela', 'seadra', 'seaking', 'starmie', 'gyarados', 'vaporeon', 'jolteon', 'flareon', 'aerodactyl', 'snorlax', 'dragonair'];
     const target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
     const minLvl = Math.floor(Math.random() * 21) + 30; // Niveles 30 a 50
@@ -945,48 +970,117 @@ function generateDailyMission() {
     ];
     const reward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
     
-    state.daycare_mission = { date: today, targetId: target, minLevel: minLvl, reward: reward, completed: (!state.daycare_mission || (state.daycare_mission.date === today && state.daycare_mission.targetId === 'psyduck') ? false : (state.daycare_mission.completed || false)) };
-    if (typeof scheduleSave === 'function') scheduleSave();
+    // Asignar un entrenador aleatorio para el sprite
+    const trainerKeys = Object.keys(TRAINER_TYPES);
+    const tKey = trainerKeys[Math.floor(Math.random() * trainerKeys.length)];
+    const trainer = TRAINER_TYPES[tKey];
+
+    return { 
+        date: date, 
+        targetId: target, 
+        minLevel: minLvl, 
+        reward: reward, 
+        completed: false,
+        trainerType: tKey,
+        trainerName: trainer.name,
+        trainerSprite: trainer.sprite
+    };
+}
+
+function refreshBreedingMissions() {
+    if (state.daycare_mission_refreshes <= 0) {
+        notify('No te quedan refrescos por hoy.', '⚠️');
+        return;
+    }
+    
+    if (!confirm('¿Quieres refrescar las misiones? Gastarás 1 uso.')) return;
+
+    state.daycare_mission_refreshes--;
+    const today = new Date().toISOString().split('T')[0];
+    
+    state.daycare_missions = [
+        _createNewMissionObject(today),
+        _createNewMissionObject(today)
+    ];
+
+    while (state.daycare_missions[1].targetId === state.daycare_missions[0].targetId) {
+        state.daycare_missions[1] = _createNewMissionObject(today);
+    }
+
+    notify('Misiones actualizadas.', '🔄');
+    renderDaycareMission();
+    scheduleSave();
 }
 
 function renderDaycareMission() {
     generateDailyMission();
-    const m = state.daycare_mission;
-    if (!m) return;
+    const missions = state.daycare_missions;
+    if (!missions || missions.length === 0) return;
     
     const panel = document.getElementById('daycare-mission-panel');
     if (!panel) return;
-    
-    const targetName = POKEMON_DB[m.targetId]?.name || m.targetId;
-    document.getElementById('daycare-mission-desc').innerHTML = `La Guardería necesita estudiar un <b style="color:var(--yellow);">${targetName}</b> de <b style="color:#fff;">Nivel ${m.minLevel}</b> o superior.`;
-    
-    const shopItem = window.SHOP_ITEMS ? window.SHOP_ITEMS.find(x => x.id === m.reward.id) : null;
-    const rIcon = shopItem && shopItem.sprite ? `<img src="${shopItem.sprite}" style="width:20px;height:20px;vertical-align:bottom;filter:drop-shadow(0 0 2px rgba(255,255,255,0.4));margin-right:2px;">` : (m.reward.icon || '🎁');
-    
-    document.getElementById('daycare-mission-reward').innerHTML = `Recompensa: <span style="display:inline-flex;align-items:center;background:rgba(0,0,0,0.4);border-radius:6px;padding:2px 6px;margin-top:4px;">${rIcon} <span style="font-weight:700;color:var(--green);font-size:10px;">${m.reward.name} x${m.reward.qty}</span></span>`;
-    
-    const btn = document.getElementById('daycare-mission-btn');
-    const status = document.getElementById('daycare-mission-status');
-    if (m.completed) {
-        status.textContent = 'COMPLETADA';
-        status.style.color = '#fff';
-        status.style.background = 'var(--green)';
-        btn.style.display = 'none';
-    } else {
-        status.textContent = 'PENDIENTE';
-        status.style.color = 'var(--yellow)';
-        status.style.background = 'rgba(255,217,61,0.1)';
-        btn.style.display = 'block';
-    }
+
+    // Contenedor principal para las dos misiones
+    let html = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);">📜 MISIONES DIARIAS</div>
+            <button onclick="refreshBreedingMissions()" ${state.daycare_mission_refreshes <= 0 ? 'disabled' : ''} 
+                style="font-size:9px;background:${state.daycare_mission_refreshes > 0 ? 'rgba(59,139,255,0.15)' : 'rgba(255,255,255,0.05)'};
+                color:${state.daycare_mission_refreshes > 0 ? 'var(--blue)' : 'var(--gray)'};
+                border:1px solid ${state.daycare_mission_refreshes > 0 ? 'rgba(59,139,255,0.3)' : 'rgba(255,255,255,0.1)'};
+                padding:6px 10px;border-radius:8px;cursor:pointer;font-family:'Press Start 2P',monospace;">
+                🔄 REFRESCAR (${state.daycare_mission_refreshes}/3)
+            </button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    `;
+
+    missions.forEach((m, idx) => {
+        const targetName = POKEMON_DB[m.targetId]?.name || m.targetId;
+        const shopItem = window.SHOP_ITEMS ? window.SHOP_ITEMS.find(x => x.id === m.reward.id) : null;
+        const rIcon = shopItem && shopItem.sprite ? `<img src="${shopItem.sprite}" style="width:18px;height:18px;vertical-align:middle;filter:drop-shadow(0 0 2px rgba(255,255,255,0.4));margin-right:4px;">` : (m.reward.icon || '🎁');
+        
+        html += `
+            <div style="background:rgba(255,255,255,0.03);border:1px solid ${m.completed ? 'rgba(107,203,119,0.3)' : 'rgba(255,255,255,0.08)'};border-radius:12px;padding:12px;display:flex;flex-direction:column;position:relative;overflow:hidden;">
+                ${m.completed ? '<div style="position:absolute;top:5px;right:5px;background:var(--green);color:#fff;font-size:7px;padding:2px 6px;border-radius:4px;font-family:\'Press Start 2P\';z-index:2;">LITP</div>' : ''}
+                <div style="display:flex;gap:10px;margin-bottom:10px;">
+                    <div style="flex-shrink:0;width:50px;height:50px;background:rgba(0,0,0,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(255,255,255,0.05);">
+                        <img src="${m.trainerSprite}" style="width:60px;height:auto;image-rendering:pixelated;margin-top:10px;" onerror="this.outerHTML='👤'">
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                         <div style="font-size:9px;color:var(--gray);margin-bottom:4px;text-transform:uppercase;">${m.trainerName} pide:</div>
+                         <div style="font-size:12px;color:#fff;line-height:1.3;">Un <b style="color:var(--yellow);">${targetName}</b> <br>Nv. ${m.minLevel}+</div>
+                    </div>
+                </div>
+                <div style="margin-top:auto;">
+                    <div style="font-size:10px;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:4px;">
+                        <span>Recompensa:</span>
+                        <div style="background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:4px;">
+                            ${rIcon} <span style="font-weight:700;">x${m.reward.qty}</span>
+                        </div>
+                    </div>
+                    <button id="daycare-mission-btn-${idx}" onclick="openMissionPicker(${idx})" ${m.completed ? 'style="display:none;"' : ''} 
+                        style="width:100%;padding:8px;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-family:'Press Start 2P',monospace;font-size:7px;border:none;cursor:pointer;">
+                        ENTREGAR
+                    </button>
+                    ${m.completed ? '<div style="text-align:center;font-family:\'Press Start 2P\';font-size:7px;color:var(--green);padding:8px;">COMPLETADA</div>' : ''}
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+    panel.innerHTML = html;
 }
 
-function openMissionPicker() {
+function openMissionPicker(missionIdx) {
     _depositingSlot = 'mission'; 
     const bModal = document.getElementById('bag-modal');
     document.getElementById('bag-overlay').style.display = 'flex';
     
-    const m = state.daycare_mission;
-    const targetName = POKEMON_DB[m.targetId]?.name || m.targetId;
+    const m = state.daycare_missions[missionIdx];
+    const targetId = m.targetId;
+    const targetName = POKEMON_DB[targetId]?.name || targetId;
     const validPoks = [...state.team, ...(state.box || [])].filter(p => !p.favorite && !_activeDaycareSlots.some(s => s.pokemon_id === p.uid));
     
     bModal.innerHTML = `
@@ -995,11 +1089,11 @@ function openMissionPicker() {
         <div style="max-height:60vh;overflow-y:auto;display:grid;grid-template-columns:1fr;gap:10px;">
           ${validPoks.map(p => {
               const baseId = typeof _breedingBaseId === 'function' ? _breedingBaseId(p.id) : p.id;
-              const isMatch = baseId === m.targetId && p.level >= m.minLevel;
+              const isMatch = baseId === targetId && p.level >= m.minLevel;
               if (!isMatch) return '';
               
               const sUrl = typeof getSpriteUrl === 'function' ? getSpriteUrl(p.id, p.isShiny) : '';
-              return `<div onclick="confirmMissionDelivery('${p.uid}')" style="border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:rgba(255,255,255,0.05);">
+              return `<div onclick="confirmMissionDelivery('${p.uid}', ${missionIdx})" style="border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:rgba(255,255,255,0.05);">
                 <img src="${sUrl}" style="width:48px;height:48px;image-rendering:pixelated;" onerror="this.style.display='none'">
                 <div>
                   <div style="font-weight:700;font-size:12px;color:#fff;">${p.name} <span style="font-size:10px;color:var(--gray);">Nv.${p.level}</span></div>
@@ -1012,7 +1106,7 @@ function openMissionPicker() {
     `;
 }
 
-function confirmMissionDelivery(uid) {
+function confirmMissionDelivery(uid, missionIdx) {
     if (!confirm('¿Seguro que quieres entregar a este Pokémon? Se irá de tu equipo/caja para siempre.')) return;
     
     let idx = state.team.findIndex(p => p.uid === uid);
@@ -1025,7 +1119,7 @@ function confirmMissionDelivery(uid) {
         else return;
     }
     
-    const m = state.daycare_mission;
+    const m = state.daycare_missions[missionIdx];
     m.completed = true;
     state.inventory[m.reward.name] = (state.inventory[m.reward.name] || 0) + m.reward.qty;
     
