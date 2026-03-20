@@ -396,12 +396,12 @@ function renderMoveButtons() {
     }
 
     return `<button class="move-btn" onclick="useMove(${i})" ${disabled ? 'disabled' : ''}
-      style="border-left: 3px solid ${col}; ${disabled ? 'opacity:0.6; grayscale(1);' : ''}">
+      style="--move-color: ${col};">
       <span class="move-name">${m.name}</span>
-      <span class="move-pp" style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="color:${col};font-size:9px;">${md.type?.toUpperCase()} ${CAT_ICON[md.cat] || ''}</span>
-        <span>POD:${powerTxt} | PP:${m.pp}/${m.maxPP}</span>
-      </span>
+      <div class="move-pp">
+        <span class="move-type-badge">${md.type?.toUpperCase()}</span>
+        <span>${CAT_ICON[md.cat] || ''} PP:${m.pp}/${m.maxPP}</span>
+      </div>
     </button>`;
   }).join('');
 }
@@ -1276,6 +1276,13 @@ function executeCatch(ballName) {
   const b = state.battle;
   if (b.over) return;
   if ((state.inventory[ballName] || 0) <= 0) return;
+
+  // Efecto visual de lanzamiento
+  const btnCatch = document.getElementById('btn-catch');
+  if (btnCatch) {
+    btnCatch.style.animation = 'shake 0.5s ease infinite';
+    setTimeout(() => { btnCatch.style.animation = ''; }, 1000);
+  }
 
   state.inventory[ballName]--;
   state.balls = Math.max(0, state.balls - 1);

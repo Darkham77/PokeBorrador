@@ -821,15 +821,11 @@
         <div class="battle-actions" id="move-buttons"></div>
         <div class="action-row">
           <button class="action-btn btn-fight" id="btn-fight" onclick="showMoves()">⚔️ LUCHAR</button>
-          <button class="action-btn btn-catch" id="btn-catch" onclick="tryCatch()"><img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'>
-    <circle cx='20' cy='20' r='19' fill='%23222' stroke='%23111' stroke-width='1.5'/>
-    <path d='M1 20 A19 19 0 0 1 39 20 Z' fill='%23e63030'/>
-    <path d='M1 20 A19 19 0 0 0 39 20 Z' fill='%23f5f5f5'/>
-    <rect x='1' y='18' width='38' height='4' fill='%23111'/>
-    <circle cx='20' cy='20' r='6' fill='%23111'/>
-    <circle cx='20' cy='20' r='4' fill='%23f5f5f5'/>
-    <circle cx='18' cy='18' r='1.2' fill='%23ffffff' opacity='0.7'/>
-  </svg>" width="24" height="24" style="vertical-align:middle;margin-right:4px;"> CAPTURAR</button>
+          <div id="btn-catch-container">
+            <button class="action-btn btn-catch" id="btn-catch" onclick="tryCatch()">
+              <span>CAPTURAR</span>
+            </button>
+          </div>
           <button class="action-btn" id="btn-bag" onclick="showBattleBag()"
             style="background:rgba(107,203,119,0.15);border:1px solid rgba(107,203,119,0.3);color:var(--green);">🎒
             MOCHILA</button>
