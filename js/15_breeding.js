@@ -345,12 +345,12 @@ let _activeDaycareSlots = [];
 async function loadDaycareSlots() {
   if (!currentUser) return [];
   const { data } = await sb.from('daycare_slots').select('*').eq('player_id', currentUser.id).order('slot_index');
-  _activeDaycareSlots = data || [];
-  // Hydrate with full pokemon objects from state
-  return _activeDaycareSlots.map(s => {
+  const hydrated = (data || []).map(s => {
     const p = state.team.find(x => x.uid === s.pokemon_id) || (state.box && state.box.find(x => x.uid === s.pokemon_id));
     return { ...s, pokemon: p };
   });
+  _activeDaycareSlots = hydrated;
+  return hydrated;
 }
 async function updateDaycareSummary() {
     const slots = await loadDaycareSlots();
