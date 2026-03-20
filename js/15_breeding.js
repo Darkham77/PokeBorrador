@@ -335,7 +335,7 @@ function renderDaycareBreedingSummary(pA, pB, compat, itemA = '', itemB = '') {
       </div>
       
       <div style="margin-top:16px; padding-top:12px; border-top:1px dashed rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1;">
-        <div style="font-size:10px; color:var(--gray);">Costo: <span style="color:var(--yellow); font-weight:800;">$${cost.toLocaleString()}</span></div>
+        <div style="font-size:10px; color:var(--gray);">Costo al recoger: <span style="color:var(--yellow); font-weight:800;">$${cost.toLocaleString()}</span></div>
         <div style="font-size:10px; color:var(--gray);">Tiempo: <span style="color:var(--green); font-weight:800;">${intervalTxt}</span></div>
       </div>
     </div>
@@ -593,16 +593,11 @@ async function confirmDeposit(uid) {
       const cpVal = checkCompatibility(pToDeposit, otherSlot.pokemon);
       if (cpVal.level > 0) {
           const cost = calculateBreedingCost(pToDeposit, otherSlot.pokemon);
-          if (state.money < cost) {
-              notify(`No tienes suficiente dinero. La crianza cuesta $${cost.toLocaleString()}.`, '💰');
+          // No upfront payment, payment is handled when collecting the egg.
+          // Just confirm the cost for the user.
+          if (!confirm(`Al recoger el huevo de esta pareja, costará $${cost.toLocaleString()}. ¿Estás de acuerdo?`)) {
               return;
           }
-          if (!confirm(`Poner a criar esta pareja costará $${cost.toLocaleString()}.\n¿Estás de acuerdo?`)) {
-              return;
-          }
-          state.money -= cost;
-          if (typeof addLog === 'function') addLog(`Pagaste $${cost.toLocaleString()} en la guardería.`, 'log-info');
-          if (typeof updateHud === 'function') updateHud();
       }
   }
 
@@ -784,6 +779,7 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
   const { count } = await sb.from('eggs').select('egg_id', { count: 'exact', head: true }).eq('player_id', pid);
   if (count >= cap) return false;
   const ivs = calculateInheritance(pA, pB, iA, iB);
+  ivs._cost = calculateBreedingCost(pA, pB);
   
   if (iA === 'Piedra Eterna' && iB === 'Piedra Eterna') {
       ivs._nature = Math.random() < 0.5 ? pA.nature : pB.nature;
@@ -903,8 +899,21 @@ async function collectEgg(eggId, sp, shiny, ivsJson) {
   };
   try { extra.inherited_ivs = JSON.parse(unescape(ivsJson)); } catch (e) { }
 
+  const cost = extra.inherited_ivs ? (extra.inherited_ivs._cost || 0) : 0;
+  if (cost > 0) {
+    if ((state.money || 0) < cost) {
+      notify(`No tienes suficiente dinero para recoger este huevo. Costo: $${cost.toLocaleString()}.`, '💰');
+      return;
+    }
+  }
+
   const added = addEgg(sp, 'breeding', extra);
   if (added) {
+    if (cost > 0) {
+      state.money -= cost;
+      if (typeof addLog === 'function') addLog(`Pagaste $${cost.toLocaleString()} al recoger un huevo.`, 'log-info');
+      if (typeof updateHud === 'function') updateHud();
+    }
     await sb.from('eggs').delete().eq('egg_id', eggId);
     notify('¡Recogiste el huevo de la guardería! Ahora camina para eclosionarlo.', '🏠');
     renderDaycareUI();
