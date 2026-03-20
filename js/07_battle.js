@@ -1484,7 +1484,7 @@ function awardBattleExperience(isCapture = false) {
 
   // winners = current active + those who participated + exp share holders
   const winners = state.team.filter(p =>
-    (p.uid === b.player.uid || (b.participants && b.participants.includes(p.uid)) || p.heldItem === 'Compartir EXP') && p.hp > 0
+    (p === b.player || (p.uid && p.uid === b.player?.uid) || (b.participants && b.participants.includes(p.uid)) || p.heldItem === 'Compartir EXP') && p.hp > 0
   );
 
   winners.forEach(p => {
@@ -1492,7 +1492,7 @@ function awardBattleExperience(isCapture = false) {
     // Shared experience if not the finishing pokemon?
     // In standard games, participants get half if there's more than one. 
     // Here we'll stick to a simple: Participants get full, Exp Share gets half if not participant.
-    if (p.uid !== b.player.uid && !(b.participants && b.participants.includes(p.uid))) {
+    if (p !== b.player && p.uid !== b.player?.uid && !(b.participants && b.participants.includes(p.uid))) {
       pExp = Math.floor(baseExp * 0.5); // Only if it's JUST exp share
     }
     
@@ -1562,6 +1562,8 @@ function showExploreAgainPrompt(locId) {
 
 function endBattle(won) {
   const b = state.battle;
+  if (!b || b._ending) return; // Prevent multiple calls from overlapping timeouts
+  b._ending = true;
   b.over = true;
 
   if (won) {
