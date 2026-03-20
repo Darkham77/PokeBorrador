@@ -1092,7 +1092,7 @@ function _endEnemyTurn() {
   const b = state.battle;
   // End of turn effects (Gen 3+ order)
   if (b && !b.over) {
-    const playerFirst = getPlayerFirstThisTurn(b);
+    const playerFirst = getEffectiveSpeed(b.player, b.playerStages) >= getEffectiveSpeed(b.enemy, b.enemyStages);
     const order = playerFirst ? ['player', 'enemy'] : ['enemy', 'player'];
     const getPoke = role => role === 'player' ? b.player : b.enemy;
 
