@@ -82,7 +82,27 @@
       { lv: 7, title: 'Experto', expNeeded: 3000 },
       { lv: 8, title: 'Maestro', expNeeded: 4200 },
       { lv: 9, title: 'Gran Maestro', expNeeded: 6000 },
-      { lv: 10, title: 'Campeón', expNeeded: 99999 },
+      { lv: 10, title: 'Campeón', expNeeded: 8500 },
+      { lv: 11, title: 'As de la Liga', expNeeded: 11500 },
+      { lv: 12, title: 'Entrenador de Elite', expNeeded: 15000 },
+      { lv: 13, title: 'Gran Campeón', expNeeded: 19000 },
+      { lv: 14, title: 'Leyenda Viviente', expNeeded: 23500 },
+      { lv: 15, title: 'Maestro Pokémon', expNeeded: 28500 },
+      { lv: 16, title: 'Héroe Regional', expNeeded: 34000 },
+      { lv: 17, title: 'Vencedor Supremo', expNeeded: 40000 },
+      { lv: 18, title: 'Estratega Maestro', expNeeded: 46500 },
+      { lv: 19, title: 'Guardián de Kanto', expNeeded: 53500 },
+      { lv: 20, title: 'Elegido de los Dioses', expNeeded: 61000 },
+      { lv: 21, title: 'Trascendente', expNeeded: 69000 },
+      { lv: 22, title: 'Sabio de Combate', expNeeded: 77500 },
+      { lv: 23, title: 'Señor de los Dragones', expNeeded: 86500 },
+      { lv: 24, title: 'Conquistador de Cimas', expNeeded: 96000 },
+      { lv: 25, title: 'Místico de Kanto', expNeeded: 106000 },
+      { lv: 26, title: 'Soberano de Batalla', expNeeded: 116500 },
+      { lv: 27, title: 'Omnisciente', expNeeded: 127500 },
+      { lv: 28, title: 'Eterno', expNeeded: 139000 },
+      { lv: 29, title: 'Divinidad Pokémon', expNeeded: 151500 },
+      { lv: 30, title: 'Deidad de Kanto', expNeeded: 9999999 },
     ];
 
     function getTrainerRank() {
@@ -91,13 +111,15 @@
 
     function addTrainerExp(amount) {
       state.trainerExp += amount;
-      const rank = getTrainerRank();
-      if (state.trainerExp >= rank.expNeeded && state.trainerLevel < 10) {
+      const MAX_TRAINER_LEVEL = 30;
+      
+      let rank = getTrainerRank();
+      while (state.trainerExp >= rank.expNeeded && state.trainerLevel < MAX_TRAINER_LEVEL) {
         state.trainerExp -= rank.expNeeded;
         state.trainerLevel++;
-        const newRank = getTrainerRank();
-        notify(`¡Subiste al rango ${newRank.title}! Nivel ${state.trainerLevel}`, '⭐');
-        // Unlock message
+        rank = getTrainerRank();
+        notify(`¡Subiste al rango ${rank.title}! Nivel ${state.trainerLevel}`, '⭐');
+        
         const unlocks = MARKET_UNLOCKS[state.trainerLevel];
         if (unlocks) setTimeout(() => notify(`¡Nuevos items en el Poké Market!`, '🛒'), 1500);
       }
@@ -110,7 +132,12 @@
       5: ['Hiper Poción', 'Super Ball', 'Cura Total'],
       7: ['Poción Máxima', 'Ultra Ball', 'Revivir'],
       9: ['Revivir Máximo', 'Master Ball', 'Elixir Máximo'],
+      12: ['Máximo Repelente', 'Caramelo Raro'],
+      15: ['Piedra Agua', 'Piedra Fuego', 'Piedra Trueno', 'Piedra Hoja', 'Piedra Lunar'],
+      20: ['Incienso Suave', 'Huevo Suerte Grande'], // Hypothetical future items or just specialized ones
+      25: ['Master Ball'] // Re-unlock or bundle if supported
     };
+
 
     // ===== SHOP ITEMS =====
     // Item categories for market tabs
@@ -253,7 +280,7 @@
       },
       {
         id: 'max_repel', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-repel.png',
-        name: 'Máximo Repelente', icon: '🚫', price: 9000, unlockLv: 5, tier: 'epic',
+        name: 'Máximo Repelente', icon: '🚫', price: 9000, unlockLv: 12, tier: 'epic',
         desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 30 min.',
         effect: (qty) => { state.inventory['Máximo Repelente'] = (state.inventory['Máximo Repelente'] || 0) + qty; }
       },
@@ -261,35 +288,35 @@
       // ── PIEDRAS DE EVOLUCIÓN ───────────────────────────────────────────────────
       {
         id: 'piedra_fuego', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png',
-        name: 'Piedra Fuego', icon: '🔥', price: 3000, unlockLv: 4, tier: 'rare',
+        name: 'Piedra Fuego', icon: '🔥', price: 3000, unlockLv: 15, tier: 'rare',
         desc: 'Hace evolucionar a Vulpix, Growlithe, Eevee y otros Pokémon de Fuego.',
         type: 'stone', stoneType: 'fire',
         effect: (qty) => { state.inventory['Piedra Fuego'] = (state.inventory['Piedra Fuego'] || 0) + qty; }
       },
       {
         id: 'piedra_agua', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/water-stone.png',
-        name: 'Piedra Agua', icon: '💧', price: 3000, unlockLv: 4, tier: 'rare',
+        name: 'Piedra Agua', icon: '💧', price: 3000, unlockLv: 15, tier: 'rare',
         desc: 'Hace evolucionar a Poliwhirl, Shellder, Staryu y Eevee.',
         type: 'stone', stoneType: 'water',
         effect: (qty) => { state.inventory['Piedra Agua'] = (state.inventory['Piedra Agua'] || 0) + qty; }
       },
       {
         id: 'piedra_trueno', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-stone.png',
-        name: 'Piedra Trueno', icon: '⚡', price: 3000, unlockLv: 4, tier: 'rare',
-        desc: 'Hace evolucionar a Pikachu y Eevee.',
+        name: 'Piedra Trueno', icon: '⚡', price: 3000, unlockLv: 15, tier: 'rare',
+        desc: 'Hace evolucionar a Pikachu and Eevee.',
         type: 'stone', stoneType: 'thunder',
         effect: (qty) => { state.inventory['Piedra Trueno'] = (state.inventory['Piedra Trueno'] || 0) + qty; }
       },
       {
         id: 'piedra_hoja', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leaf-stone.png',
-        name: 'Piedra Hoja', icon: '🌿', price: 3000, unlockLv: 4, tier: 'rare',
+        name: 'Piedra Hoja', icon: '🌿', price: 3000, unlockLv: 15, tier: 'rare',
         desc: 'Hace evolucionar a Gloom, Weepinbell, Exeggcute y Eevee.',
         type: 'stone', stoneType: 'leaf',
         effect: (qty) => { state.inventory['Piedra Hoja'] = (state.inventory['Piedra Hoja'] || 0) + qty; }
       },
       {
         id: 'piedra_luna', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/moon-stone.png',
-        name: 'Piedra Lunar', icon: '🌙', price: 3000, unlockLv: 5, tier: 'epic',
+        name: 'Piedra Lunar', icon: '🌙', price: 3000, unlockLv: 15, tier: 'epic',
         desc: 'Hace evolucionar a Nidorina, Nidorino, Clefairy y Jigglypuff.',
         type: 'stone', stoneType: 'moon',
         effect: (qty) => { state.inventory['Piedra Lunar'] = (state.inventory['Piedra Lunar'] || 0) + qty; }
@@ -385,7 +412,7 @@
       // ── ESPECIALES ─────────────────────────────────────────────────────────────
       {
         id: 'rare_candy', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png',
-        name: 'Caramelo Raro', icon: '🍬', price: 0, unlockLv: 5, tier: 'epic', market: false, trainerShop: true, bcPrice: 500,
+        name: 'Caramelo Raro', icon: '🍬', price: 0, unlockLv: 12, tier: 'epic', market: false, trainerShop: true, bcPrice: 500,
         desc: 'Sube un nivel a cualquier Pokémon del equipo al instante.',
         type: 'usable',
         effect: (qty) => { state.inventory['Caramelo Raro'] = (state.inventory['Caramelo Raro'] || 0) + qty; }
