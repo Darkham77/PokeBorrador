@@ -1861,6 +1861,7 @@ function endBattle(won) {
           b.participants = [b.player.uid];
           
           b.over = false;
+          b._ending = false; // RESET the ending flag for the next pokemon
           b.turn = 'player';
           _battleLock = false;
           updateBattleUI();
