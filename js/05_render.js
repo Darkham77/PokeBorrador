@@ -345,10 +345,13 @@ function openPokemonDetail(index) {
           <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:${typeColor};margin-bottom:6px;">${p.name}${p.isShiny ? ' ✨' : ''}</div>
           <div style="font-size:12px;color:#888;">Nivel ${p.level} · ${p.type.charAt(0).toUpperCase() + p.type.slice(1)}</div>
           <div style="font-size:11px;color:#555;margin-top:4px;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
-          <div style="display:flex;gap:12px;margin-top:10px;">
-            <div class="poke-tag ${tags.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'fav')" title="Favorito">⭐</div>
-            <div class="poke-tag ${tags.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'breed')" title="Crianza">❤️</div>
-            <div class="poke-tag ${tags.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'iv31')" title="IV 31">31</div>
+          <div style="margin-top:12px;">
+            <span class="tag-label">Destacar:</span>
+            <div style="display:flex;gap:10px;">
+              <div class="poke-tag ${tags.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'fav')" title="Favorito">⭐</div>
+              <div class="poke-tag ${tags.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'breed')" title="Crianza">❤️</div>
+              <div class="poke-tag ${tags.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'iv31')" title="IV 31">31</div>
+            </div>
           </div>
         </div>
       </div>
@@ -452,10 +455,23 @@ const POKEDEX_NUMBERS = {
 function renderGyms() {
   const list = document.getElementById('gym-list');
   const TYPE_ICON = {
-    rock: '🪨', water: '💧', electric: '⚡', grass: '🌿',
-    poison: '☠️', psychic: '🔮', fire: '🔥', ground: '🏜️',
-    normal: '⬜', ice: '❄️', fighting: '🥊', flying: '🪶',
-    ghost: '👻', dragon: '🐉', dark: '🌑', steel: '⚙️', bug: '🐛'
+    rock: '<i class="fas fa-mountain fa-fw"></i>',
+    water: '<i class="fas fa-tint fa-fw"></i>',
+    electric: '<i class="fas fa-bolt fa-fw"></i>',
+    grass: '<i class="fas fa-leaf fa-fw"></i>',
+    poison: '<i class="fas fa-skull-crossbones fa-fw"></i>',
+    psychic: '<i class="fas fa-eye fa-fw"></i>',
+    fire: '<i class="fas fa-fire fa-fw"></i>',
+    ground: '<i class="fas fa-mountain-sun fa-fw"></i>',
+    normal: '<i class="fas fa-circle fa-fw"></i>',
+    ice: '<i class="fas fa-snowflake fa-fw"></i>',
+    fighting: '<i class="fas fa-hand-fist fa-fw"></i>',
+    flying: '<i class="fas fa-feather fa-fw"></i>',
+    ghost: '<i class="fas fa-ghost fa-fw"></i>',
+    dragon: '<i class="fas fa-dragon fa-fw"></i>',
+    dark: '<i class="fas fa-moon fa-fw"></i>',
+    steel: '<i class="fas fa-cog fa-fw"></i>',
+    bug: '<i class="fas fa-bug fa-fw"></i>'
   };
 
   list.innerHTML = GYMS.map(gym => {

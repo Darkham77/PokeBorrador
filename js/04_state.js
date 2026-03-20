@@ -69,7 +69,7 @@
       };
     }
 
-    let state = {
+    const INITIAL_STATE = {
       trainer: 'ASH',
       badges: 0,
       balls: 10,
@@ -86,7 +86,19 @@
       pokedex: [],
       defeatedGyms: [],
       battle: null,
+      starterChosen: false,
+      stats: {},
+      activeBattle: null
     };
+
+    let state = JSON.parse(JSON.stringify(INITIAL_STATE));
+
+    function resetGameState() {
+      // Clear current state and re-assign from initial
+      Object.keys(state).forEach(key => delete state[key]);
+      Object.assign(state, JSON.parse(JSON.stringify(INITIAL_STATE)));
+      console.log("[DEBUG] Game state reset to defaults");
+    }
 
     // ===== STARTER =====
     function chooseStarter(id) {

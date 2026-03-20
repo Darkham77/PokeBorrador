@@ -887,7 +887,7 @@
 
       _pvpState.channel.unsubscribe();
 
-      const reward = won ? 300 : 50;
+      const reward = 0;
       state.money += reward;
       if (!state.stats) state.stats = {};
       state.stats.pvpBattles = (state.stats.pvpBattles || 0) + 1;
@@ -902,13 +902,15 @@
         const result = document.createElement('div');
         result.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;';
         result.innerHTML = `
-      <div style="font-size:64px;margin-bottom:16px;">${won ? '🏆' : '💔'}</div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${won ? 'var(--yellow)' : 'var(--red)'};margin-bottom:12px;">
-        ${won ? '¡GANASTE!' : 'DERROTA'}
+      <div style="font-size:64px;margin-bottom:16px;">${won ? '🏆' : '🤝'}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${won ? 'var(--yellow)' : 'var(--blue)'};margin-bottom:12px;">
+        ${won ? '¡VICTORIA AMISTOSA!' : '¡BUEN COMBATE!'}
       </div>
-      <div style="font-size:13px;color:#ccc;margin-bottom:24px;">+₽${reward}</div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:24px;text-align:center;padding:0 20px;">
+        Las batallas entre amigos son para divertirse.<br>No se gana ni se pierde dinero.
+      </div>
       <button onclick="closePvpOverlay()" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 24px;
-        border:none;border-radius:14px;cursor:pointer;background:var(--yellow);color:#000;">
+        border:none;border-radius:14px;cursor:pointer;background:var(--purple);color:#fff;">
         CONTINUAR
       </button>`;
         ov.style.position = 'fixed';

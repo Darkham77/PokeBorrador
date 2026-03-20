@@ -55,22 +55,24 @@
       // Build overlay
       let html = `<div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:14px;">🎒 MOCHILA</div>`;
       if (!usable.length) {
-        html += `<div style="color:var(--gray);font-size:12px;">No tenés objetos curables.</div>`;
+        html += `<div style="color:var(--gray);font-size:12px;">No tenés objetos utilizables.</div>`;
       } else {
-        html += usable.map(([name, qty]) =>
-          `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);
-        border-radius:10px;padding:10px 14px;margin-bottom:8px;">
-        <div>
-          <div style="font-size:13px;font-weight:700;">${name}</div>
-          <div style="font-size:10px;color:var(--gray);">x${qty}</div>
-        </div>
-        <button onclick="showBattleItemTarget('${name}')" style="font-family:'Press Start 2P',monospace;font-size:8px;
-          padding:8px 12px;border:none;border-radius:8px;cursor:pointer;
-          background:rgba(107,203,119,0.2);color:var(--green);border:1px solid rgba(107,203,119,0.3);">
-          USAR
-        </button>
-      </div>`
-        ).join('');
+        html += usable.map(([name, qty]) => {
+          const isGlobal = HEALING_ITEMS[name]?.length === 0 || ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente'].includes(name);
+          return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);
+            border-radius:10px;padding:10px 14px;margin-bottom:8px;">
+            <div>
+              <div style="font-size:13px;font-weight:700;">${name} ${isGlobal ? '<span style="color:var(--yellow);font-size:8px;">(GLOBAL)</span>' : ''}</div>
+              <div style="font-size:10px;color:var(--gray);">x${qty}</div>
+            </div>
+            <button onclick="${isGlobal ? `useBagItem('${name}', 0)` : `showBattleItemTarget('${name}')`}" 
+              style="font-family:'Press Start 2P',monospace;font-size:8px;
+              padding:8px 12px;border:none;border-radius:8px;cursor:pointer;
+              background:rgba(107,203,119,0.2);color:var(--green);border:1px solid rgba(107,203,119,0.3);">
+              USAR
+            </button>
+          </div>`;
+        }).join('');
       }
 
       showBattleOverlay(html);
@@ -116,25 +118,34 @@
       const fn = HEALING_ITEMS[itemName];
       if (!fn || !state.inventory[itemName]) return;
 
-      const target = state.team[teamIndex];
-      if (!target) return;
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente'].includes(itemName);
+      
+      let result;
+      let targetName = 'Equipo';
 
-      const result = fn(target);
-      if (result === null) { notify('No se puede usar en este momento.', '⚠️'); return; }
+      if (isGlobal) {
+        result = fn(); // No target
+      } else {
+        const target = state.team[teamIndex];
+        if (!target) return;
+        result = fn(target);
+        if (result === null) { notify('No se puede usar en este momento.', '⚠️'); return; }
+        targetName = target.name;
+        
+        // Sync battle object if target is active
+        if (teamIndex === b.playerTeamIndex) {
+          b.player.hp = target.hp;
+          b.player.status = target.status;
+          if (target.moves) b.player.moves = JSON.parse(JSON.stringify(target.moves));
+          updateBattleUI();
+        }
+      }
 
       state.inventory[itemName]--;
       if (!state.inventory[itemName]) delete state.inventory[itemName];
 
-      // If target is the active pokemon, sync battle object
-      if (teamIndex === b.playerTeamIndex) {
-        b.player.hp = target.hp;
-        b.player.status = target.status;
-        if (target.moves) b.player.moves = JSON.parse(JSON.stringify(target.moves));
-        updateBattleUI();
-      }
-
       closeBattleOverlay();
-      setLog(`Usaste ${itemName}. ¡${target.name} ${result}!`, 'log-catch');
+      setLog(`Usaste ${itemName}. ¡${isGlobal ? '' : targetName + ' '}${result}!`, 'log-catch');
 
       // Item use costs a turn — enemy attacks
       _battleLock = true;
@@ -270,14 +281,22 @@
       const fn = HEALING_ITEMS[itemName];
       if (!fn || !state.inventory[itemName]) return;
 
-      const result = fn(p);
-      if (result === null) { notify('No hace efecto.', '⚠️'); return; }
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente'].includes(itemName);
 
-      state.inventory[itemName]--;
-      if (!state.inventory[itemName]) delete state.inventory[itemName];
-
-      document.getElementById('outside-item-overlay')?.remove();
-      notify(`Usaste ${itemName}. ¡${p.name} ${result}!`, '✨');
+      if (isGlobal) {
+        const result = fn();
+        state.inventory[itemName]--;
+        if (!state.inventory[itemName]) delete state.inventory[itemName];
+        document.getElementById('outside-item-overlay')?.remove();
+        notify(`Usaste ${itemName}. ¡${result}!`, '✨');
+      } else {
+        const result = fn(p);
+        if (result === null) { notify('No hace efecto.', '⚠️'); return; }
+        state.inventory[itemName]--;
+        if (!state.inventory[itemName]) delete state.inventory[itemName];
+        document.getElementById('outside-item-overlay')?.remove();
+        notify(`Usaste ${itemName}. ¡${p.name} ${result}!`, '✨');
+      }
 
       if (context === 'team') renderTeam();
       if (currentTab === 'map') renderMaps();

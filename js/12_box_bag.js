@@ -263,10 +263,13 @@
       <span style="display:none;font-size:52px;line-height:1;">${p.emoji}</span>
       <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);margin-top:8px;">${p.name}</div>
       <div style="font-size:11px;color:var(--gray);">Nv.${p.level} · ${p.nature} · ${p.ability}</div>
-      <div style="display:flex;gap:8px;margin-top:8px;justify-content:center;">
-        <div class="poke-tag ${p.tags?.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'fav')" title="Favorito">⭐</div>
-        <div class="poke-tag ${p.tags?.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'breed')" title="Crianza">❤️</div>
-        <div class="poke-tag ${p.tags?.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'iv31')" title="IV 31">31</div>
+      <div style="margin-top:12px;text-align:center;">
+        <span class="tag-label">Destacar:</span>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <div class="poke-tag ${p.tags?.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'fav')" title="Favorito">⭐</div>
+          <div class="poke-tag ${p.tags?.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'breed')" title="Crianza">❤️</div>
+          <div class="poke-tag ${p.tags?.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'iv31')" title="IV 31">31</div>
+        </div>
       </div>
       <div style="font-size:11px;color:var(--gray);margin-top:2px;">${p.hp}/${p.maxHp} HP${p.status ? ' · <span style="color:var(--red);">' + p.status.toUpperCase() + '</span>' : ''}</div>
     </div>
@@ -345,10 +348,13 @@
             <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:${typeColor};margin-bottom:6px;">${p.name}</div>
             <div style="font-size:12px;color:#888;">Nivel ${p.level} · ${p.type.charAt(0).toUpperCase() + p.type.slice(1)}</div>
             <div style="font-size:11px;color:#555;margin-top:4px;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
-            <div style="display:flex;gap:12px;margin-top:10px;">
-              <div class="poke-tag ${p.tags?.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'fav')" title="Favorito">⭐</div>
-              <div class="poke-tag ${p.tags?.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'breed')" title="Crianza">❤️</div>
-              <div class="poke-tag ${p.tags?.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'iv31')" title="IV 31">31</div>
+            <div style="margin-top:12px;">
+              <span class="tag-label">Destacar:</span>
+              <div style="display:flex;gap:10px;">
+                <div class="poke-tag ${p.tags?.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'fav')" title="Favorito">⭐</div>
+                <div class="poke-tag ${p.tags?.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'breed')" title="Crianza">❤️</div>
+                <div class="poke-tag ${p.tags?.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'iv31')" title="IV 31">31</div>
+              </div>
             </div>
           </div>
         </div>

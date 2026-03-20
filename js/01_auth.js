@@ -112,11 +112,8 @@
       await saveGame(false);
       if (currentServer !== LOCAL_URL) await sb.auth.signOut();
       currentUser = null;
-      // Reset state
-      state.team = []; state.badges = 0; state.money = 3000; state.balls = 10;
-      state.pokedex = []; state.defeatedGyms = []; state.trainerLevel = 1;
-      state.trainerExp = 0; state.inventory = { 'Poción': 3, 'Pokéball': 10 };
-      state.eggs = []; state.battleCoins = 0;
+      // Reset state using central function
+      resetGameState();
       toggleProfile();
       switchServer('online');
       showScreen('auth-screen');
@@ -133,6 +130,7 @@
 
     function onLocalLogin(user, username) {
       currentUser = user;
+      resetGameState(); // Ensure clean slate before loading local save
       const saveKey = 'pokemon_local_save_' + user.id;
       try {
         const raw = localStorage.getItem(saveKey);
@@ -181,6 +179,7 @@
     // ── Login callback ─────────────────────────────────────────────────────────
     async function onLogin(user) {
       currentUser = user;
+      resetGameState(); // Ensure clean slate before loading online save
       setAuthLoading(true);
       try {
         const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();

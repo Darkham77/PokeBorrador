@@ -110,6 +110,8 @@
         <div class="friend-meta">Nv. ${level} &nbsp;·&nbsp; ${badges} medallas</div>
       </div>
       <div class="friend-actions">
+        <button class="friend-btn" style="background:rgba(107,203,119,0.15);color:var(--green);border:1px solid rgba(107,203,119,0.3);"
+          onclick="openChat('${p.id}','${p.username}')">💬 Chat</button>
         <button class="friend-btn" style="background:rgba(255,217,61,0.15);color:var(--yellow);border:1px solid rgba(255,217,61,0.3);"
           onclick="openTradeModal('${p.id}','${p.username}')">🔄 Intercambiar</button>
         <button class="friend-btn" onclick="sendBattleInvite('${p.id}','${p.username}')"
