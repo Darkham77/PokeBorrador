@@ -883,27 +883,27 @@ async function collectEgg(eggId, sp, shiny, ivsJson) {
 // ===== DAILY MISSIONS =====
 function generateDailyMission() {
     const today = new Date().toISOString().split('T')[0];
-    if (state.daycare_mission && state.daycare_mission.date === today) return;
+    if (state.daycare_mission && state.daycare_mission.date === today && state.daycare_mission.targetId !== 'psyduck' && state.daycare_mission.minLevel > 25) return;
     
-    const possibleTargets = ['vulpix', 'pidgey', 'rattata', 'oddish', 'meowth', 'psyduck', 'growlithe', 'poliwag', 'abra', 'machop', 'geodude', 'ponyta', 'slowpoke', 'magnemite', 'doduo', 'seel', 'grimer', 'shellder', 'gastly', 'onix', 'drowzee', 'krabby', 'voltorb', 'exeggcute', 'cubone', 'koffing', 'rhyhorn', 'tangela', 'horsea', 'goldeen', 'staryu', 'magikarp'];
+    const possibleTargets = ['arcanine', 'kadabra', 'machoke', 'graveler', 'rapidash', 'slowbro', 'magneton', 'dodrio', 'dewgong', 'muk', 'cloyster', 'haunter', 'onix', 'hypno', 'kingler', 'electrode', 'exeggutor', 'marowak', 'weezing', 'rhydon', 'tangela', 'seadra', 'seaking', 'starmie', 'gyarados', 'vaporeon', 'jolteon', 'flareon', 'aerodactyl', 'snorlax', 'dragonair'];
     const target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
-    const minLvl = Math.floor(Math.random() * 15) + 5;
+    const minLvl = Math.floor(Math.random() * 21) + 30; // Niveles 30 a 50
     
     const possibleRewards = [
-        { name: 'Baya de Bronce', qty: 3, icon: '🥉' },
-        { name: 'Baya de Plata', qty: 2, icon: '🥈' },
-        { name: 'Baya de Oro', qty: 1, icon: '🥇' },
-        { name: 'Piedra Eterna', qty: 1, icon: '🪨' },
-        { name: 'Pesa Recia', qty: 1, icon: '🏋️' },
-        { name: 'Brazal Recio', qty: 1, icon: '🥊' },
-        { name: 'Cinto Recio', qty: 1, icon: '🛡️' },
-        { name: 'Lente Recia', qty: 1, icon: '🔍' },
-        { name: 'Banda Recia', qty: 1, icon: '🎗️' },
-        { name: 'Franja Recia', qty: 1, icon: '👢' }
+        { id: 'berry_bronze', name: 'Baya de Bronce', qty: 3, icon: '🥉' },
+        { id: 'berry_silver', name: 'Baya de Plata', qty: 2, icon: '🥈' },
+        { id: 'berry_gold', name: 'Baya de Oro', qty: 1, icon: '🥇' },
+        { id: 'everstone', name: 'Piedra Eterna', qty: 1, icon: '🪨' },
+        { id: 'power_weight', name: 'Pesa Recia', qty: 1, icon: '🏋️' },
+        { id: 'power_bracer', name: 'Brazal Recio', qty: 1, icon: '🥊' },
+        { id: 'power_belt', name: 'Cinto Recio', qty: 1, icon: '🛡️' },
+        { id: 'power_lens', name: 'Lente Recia', qty: 1, icon: '🔍' },
+        { id: 'power_band', name: 'Banda Recia', qty: 1, icon: '🎗️' },
+        { id: 'power_anklet', name: 'Franja Recia', qty: 1, icon: '👢' }
     ];
     const reward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
     
-    state.daycare_mission = { date: today, targetId: target, minLevel: minLvl, reward: reward, completed: false };
+    state.daycare_mission = { date: today, targetId: target, minLevel: minLvl, reward: reward, completed: (!state.daycare_mission || (state.daycare_mission.date === today && state.daycare_mission.targetId === 'psyduck') ? false : (state.daycare_mission.completed || false)) };
     if (typeof scheduleSave === 'function') scheduleSave();
 }
 
@@ -917,7 +917,11 @@ function renderDaycareMission() {
     
     const targetName = POKEMON_DB[m.targetId]?.name || m.targetId;
     document.getElementById('daycare-mission-desc').innerHTML = `La Guardería necesita estudiar un <b style="color:var(--yellow);">${targetName}</b> de <b style="color:#fff;">Nivel ${m.minLevel}</b> o superior.`;
-    document.getElementById('daycare-mission-reward').innerHTML = `Recompensa: ${m.reward.icon} ${m.reward.name} x${m.reward.qty}`;
+    
+    const shopItem = window.SHOP_ITEMS ? window.SHOP_ITEMS.find(x => x.id === m.reward.id) : null;
+    const rIcon = shopItem && shopItem.sprite ? `<img src="${shopItem.sprite}" style="width:20px;height:20px;vertical-align:bottom;filter:drop-shadow(0 0 2px rgba(255,255,255,0.4));margin-right:2px;">` : (m.reward.icon || '🎁');
+    
+    document.getElementById('daycare-mission-reward').innerHTML = `Recompensa: <span style="display:inline-flex;align-items:center;background:rgba(0,0,0,0.4);border-radius:6px;padding:2px 6px;margin-top:4px;">${rIcon} <span style="font-weight:700;color:var(--green);font-size:10px;">${m.reward.name} x${m.reward.qty}</span></span>`;
     
     const btn = document.getElementById('daycare-mission-btn');
     const status = document.getElementById('daycare-mission-status');
