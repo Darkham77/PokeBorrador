@@ -816,6 +816,9 @@ function _marketSetQty(itemId, raw) {
           dusk: 'assets/pvp_dawn.jpg'
         };
         src = pvpBgs[cycle] || 'assets/pvp_day.jpg';
+      } else if (state.battle && state.battle.isFishing) {
+        src = 'assets/sprites/bg_fishing.jpg';
+        cacheKey = 'fishing_global';
       } else {
         let key = _getBgKey(locationId, cycle);
         src = BATTLE_BG_DATA[key] || BATTLE_BG_DATA.ruta_day;

@@ -350,6 +350,7 @@
 	          setTimeout(() => {
 	            overlay.remove();
 	            startBattle(enemy, false, null, locId);
+	            if (state.battle) state.battle.isFishing = true;
 	          }, 300);
 	        } else {
 	          notify('¡El Pokémon se escapó!', '💨');
