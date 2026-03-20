@@ -474,6 +474,7 @@
       if (egg.origin === 'breeding') {
         if (egg.inherited_ivs) p.ivs = { ...egg.inherited_ivs };
         if (egg.isShiny !== undefined) p.isShiny = egg.isShiny;
+        p.vigor = Math.floor(Math.random() * 3) + 1; // 1 a 3 para crías
       }
       
       const ov = document.getElementById('manual-hatch-overlay');

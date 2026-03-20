@@ -731,6 +731,29 @@
         <div id="daycare-timer-countdown" style="font-family:'Press Start 2P',monospace;font-size:18px;color:#22c55e;">
           --:--
         </div>
+        <div id="daycare-berry-container" style="margin-top:12px;display:flex;justify-content:center;align-items:center;gap:10px;">
+          <select id="daycare-berry-select" style="padding:6px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.2);outline:none;font-size:11px;">
+            <option value="">-- Sin Baya --</option>
+          </select>
+          <button onclick="useBreedingBerry()" style="padding:6px 12px;border-radius:8px;background:var(--yellow);color:var(--darker);font-size:9px;font-family:'Press Start 2P',monospace;font-weight:900;border:none;cursor:pointer;">USAR BAYA</button>
+        </div>
+      </div>
+
+      <!-- Daily Mission -->
+      <div id="daycare-mission-panel" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);">📜 MISIÓN DIARIA</div>
+          <div id="daycare-mission-status" style="font-size:10px;color:var(--gray);background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:6px;">NUEVA</div>
+        </div>
+        <div id="daycare-mission-desc" style="font-size:13px;color:#fff;margin-bottom:12px;">
+          Cargando misión...
+        </div>
+        <div id="daycare-mission-reward" style="font-size:11px;color:var(--green);margin-bottom:12px;">
+          Recompensa: ???
+        </div>
+        <button id="daycare-mission-btn" onclick="openMissionPicker()" style="width:100%;padding:10px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;border:none;cursor:pointer;">
+          ENTREGAR POKÉMON
+        </button>
       </div>
 
       <!-- Egg Storage -->

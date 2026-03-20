@@ -188,6 +188,14 @@
       return Math.floor(Math.pow(level + 1, 3) - Math.pow(level, 3));
     }
 
+    function ensureVigor(p) {
+      if (p.vigor === undefined) {
+        // Asignar vigor por defecto a Pokémon antiguos (3 a 6)
+        p.vigor = Math.floor(Math.random() * 4) + 3;
+      }
+      return p;
+    }
+
     function makePokemon(id, level) {
       if (level > 100) level = 100;
       let base = POKEMON_DB[id];
@@ -205,6 +213,8 @@
 
       const _activeShinyRate = (state.shinyBoostSecs || 0) > 0 ? Math.floor(SHINY_RATE / 2) : SHINY_RATE;
       const isShiny = Math.random() < (1 / _activeShinyRate);
+      
+      const vigor = Math.floor(Math.random() * 4) + 3; // 3 a 6
 
       const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + Date.now().toString(36);
       const p = {
@@ -213,7 +223,7 @@
         level, exp: 0, expNeeded: getExpNeeded(level),
         ivs, nature, ability, gender, isShiny,
         moves: getMovesAtLevel(id, level),
-        status: null, sleepTurns: 0, friendship: 70
+        status: null, sleepTurns: 0, friendship: 70, vigor
       };
 
       recalcPokemonStats(p);

@@ -142,13 +142,30 @@
 
     // ===== SHOP ITEMS =====
     // Item categories for market tabs
-    const ITEM_CATEGORIES = ['todos', 'pokeballs', 'pociones', 'stones', 'especial'];
-    const CATEGORY_LABELS = { todos: 'Todo', pokeballs: 'Pokéballs', pociones: 'Pociones', stones: 'Piedras', especial: 'Especial' };
-    const MARKET_CAT_ORDER = { pokeballs: 1, pociones: 2, stones: 3, especial: 4 };
+    const ITEM_CATEGORIES = ['todos', 'pokeballs', 'pociones', 'stones', 'breeding', 'especial'];
+    const CATEGORY_LABELS = { todos: 'Todo', pokeballs: 'Pokéballs', pociones: 'Pociones', stones: 'Piedras', breeding: 'Cría', especial: 'Especial' };
+    const MARKET_CAT_ORDER = { pokeballs: 1, pociones: 2, stones: 3, breeding: 4, especial: 5 };
 
     const SHOP_ITEMS = [
       // ── BREEDING ITEMS ──────────────────────────────────────────────────────────
-
+      {
+        id: 'berry_bronze', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/oran-berry.png',
+        name: 'Baya de Bronce', icon: '🥉', price: 1000, unlockLv: 5, tier: 'common',
+        desc: 'Acorta el tiempo de la guardería un 10%. Solo un uso por ciclo.',
+        effect: (qty) => { state.inventory['Baya de Bronce'] = (state.inventory['Baya de Bronce'] || 0) + qty; }
+      },
+      {
+        id: 'berry_silver', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sitrus-berry.png',
+        name: 'Baya de Plata', icon: '🥈', price: 3000, unlockLv: 10, tier: 'rare',
+        desc: 'Acorta el tiempo de la guardería un 30%. Solo un uso por ciclo.',
+        effect: (qty) => { state.inventory['Baya de Plata'] = (state.inventory['Baya de Plata'] || 0) + qty; }
+      },
+      {
+        id: 'berry_gold', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lum-berry.png',
+        name: 'Baya de Oro', icon: '🥇', price: 8000, unlockLv: 15, tier: 'epic',
+        desc: 'Acorta el tiempo de la guardería un 50%. Solo un uso por ciclo.',
+        effect: (qty) => { state.inventory['Baya de Oro'] = (state.inventory['Baya de Oro'] || 0) + qty; }
+      },
 
       // ── POKÉBALLS ──────────────────────────────────────────────────────────────
       {
