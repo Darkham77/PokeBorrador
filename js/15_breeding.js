@@ -176,6 +176,7 @@ const EGG_MOVES_DB = {
 };
 function _breedingBaseId(id) {
   if (!id) return id;
+  if (id === 'nidoran_f' || id === 'nidoran_m') return id;
   return id.endsWith('_m') || id.endsWith('_f') ? id.slice(0, -2) : id;
 }
 function _breedingEggGroups(id) {
@@ -183,7 +184,19 @@ function _breedingEggGroups(id) {
   return EGG_GROUPS[base] || [];
 }
 function getBaseEvolution(id) {
-  const b = { ivysaur: 'bulbasaur', venusaur: 'bulbasaur', charmeleon: 'charmander', charizard: 'charmander', wartortle: 'squirtle', blastoise: 'squirtle', raichu: 'pikachu', vaporeon: 'eevee', jolteon: 'eevee', flareon: 'eevee', haunter: 'gastly', gengar: 'gastly', machoke: 'machop', machamp: 'machop', graveler: 'geodude', golem: 'geodude', gyarados: 'magikarp' };
+  const b = { 
+    ivysaur: 'bulbasaur', venusaur: 'bulbasaur', 
+    charmeleon: 'charmander', charizard: 'charmander', 
+    wartortle: 'squirtle', blastoise: 'squirtle', 
+    raichu: 'pikachu', 
+    vaporeon: 'eevee', jolteon: 'eevee', flareon: 'eevee', 
+    haunter: 'gastly', gengar: 'gastly', 
+    machoke: 'machop', machamp: 'machop', 
+    graveler: 'geodude', golem: 'geodude', 
+    gyarados: 'magikarp',
+    nidorina: 'nidoran_f', nidoqueen: 'nidoran_f',
+    nidorino: 'nidoran_m', nidoking: 'nidoran_m'
+  };
   return b[id] || id;
 }
 function checkCompatibility(pA, pB) {
