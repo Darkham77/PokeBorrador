@@ -27,16 +27,14 @@
       paras: { level: 24, to: 'parasect' },
       venonat: { level: 31, to: 'venomoth' },
       geodude: { level: 25, to: 'graveler' },
-      graveler: { level: 36, to: 'golem' },
       slowpoke: { level: 37, to: 'slowbro' },
       magnemite: { level: 30, to: 'magneton' },
       gastly: { level: 25, to: 'haunter' },
-      haunter: { level: 36, to: 'gengar' },
       drowzee: { level: 26, to: 'hypno' },
       krabby: { level: 28, to: 'kingler' },
       cubone: { level: 28, to: 'marowak' },
       machop: { level: 28, to: 'machoke' },
-      machoke: { level: 36, to: 'machamp' },
+      machop: { level: 28, to: 'machoke' },
       bellsprout: { level: 21, to: 'weepinbell' },
       weepinbell: { level: 36, to: 'victreebel' },
       tentacool: { level: 30, to: 'tentacruel' },
@@ -50,7 +48,7 @@
       dratini: { level: 30, to: 'dragonair' },
       dragonair: { level: 55, to: 'dragonite' },
       abra: { level: 16, to: 'kadabra' },
-      kadabra: { level: 36, to: 'alakazam' },
+      abra: { level: 16, to: 'kadabra' },
       mankey: { level: 28, to: 'primeape' },
       growlithe: { level: 36, to: 'arcanine' },
       poliwag: { level: 25, to: 'poliwhirl' },
@@ -80,13 +78,34 @@
       exeggcute: { stone: '🌿 Piedra Hoja', to: 'exeggutor' },
     };
 
+    const TRADE_EVOLUTIONS = {
+      haunter: 'gengar',
+      kadabra: 'alakazam',
+      machoke: 'machamp',
+      graveler: 'golem'
+    };
+
     // ── Level-up evolution check ──────────────────────────────────
     function checkLevelUpEvolution(pokemon, onComplete) {
       const evo = EVOLUTION_TABLE[pokemon.id];
       if (!evo || pokemon.level < evo.level) { if (onComplete) onComplete(); return; }
+      if (evo.to === pokemon.id) { if (onComplete) onComplete(); return; } // Avoid self-evolution loop if placeholder
       const toData = POKEMON_DB[evo.to];
       if (!toData) { if (onComplete) onComplete(); return; }
       showEvolutionScene(pokemon, evo.to, onComplete);
+    }
+
+    // ── Trade evolution check ─────────────────────────────────────
+    function checkTradeEvolution(pokemon, onComplete) {
+      const toId = TRADE_EVOLUTIONS[pokemon.id];
+      if (!toId) { if (onComplete) onComplete(); return; }
+      const toData = POKEMON_DB[toId];
+      if (!toData) { if (onComplete) onComplete(); return; }
+      
+      // We might want a small delay to let the trade modal close or the notification show
+      setTimeout(() => {
+        showEvolutionScene(pokemon, toId, onComplete);
+      }, 500);
     }
 
     function showEvolutionScene(pokemon, toId, onComplete) {

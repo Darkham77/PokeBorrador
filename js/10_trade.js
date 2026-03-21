@@ -425,9 +425,28 @@
 
       // Show what we got
       const receivedLines = [];
-      if (trade.request_pokemon) receivedLines.push(`${trade.request_pokemon.emoji || '❓'} ${trade.request_pokemon.name}`);
-      Object.entries(trade.request_items || {}).forEach(([k, v]) => receivedLines.push(`${k} x${v}`));
-      if (trade.request_money > 0) receivedLines.push(`₽${trade.request_money.toLocaleString()}`);
+      if (trade.request_pokemon) {
+        receivedLines.push(`${trade.request_pokemon.emoji || '❓'} ${trade.request_pokemon.name}`);
+        // Add to local team if not already there (sender side)
+        const uid = trade.request_pokemon.uid;
+        const alreadyHave = uid 
+          ? (state.team.some(p => p?.uid === uid) || (state.box || []).some(p => p?.uid === uid))
+          : false;
+        if (!alreadyHave) {
+          state.team.push(trade.request_pokemon);
+          checkTradeEvolution(trade.request_pokemon);
+          renderTeam();
+        }
+      }
+      Object.entries(trade.request_items || {}).forEach(([k, v]) => {
+        receivedLines.push(`${k} x${v}`);
+        state.inventory[k] = (state.inventory[k] || 0) + v;
+      });
+      if (trade.request_money > 0) {
+        receivedLines.push(`₽${trade.request_money.toLocaleString()}`);
+        state.money += trade.request_money;
+      }
+      updateHud();
 
       const msg = receivedLines.length
         ? `¡Reclamaste: ${receivedLines.join(', ')}!`
@@ -488,7 +507,10 @@
         const alreadyHave = uid
           ? (state.team.some(p => p?.uid === uid) || (state.box || []).some(p => p?.uid === uid))
           : false;
-        if (!alreadyHave) state.team.push(offeredPokemonActual);
+        if (!alreadyHave) {
+          state.team.push(offeredPokemonActual);
+          checkTradeEvolution(offeredPokemonActual);
+        }
       }
     
       Object.entries(trade.offer_items || {}).forEach(([k, v]) => { state.inventory[k] = (state.inventory[k] || 0) + v; });
