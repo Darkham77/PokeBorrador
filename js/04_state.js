@@ -315,7 +315,7 @@
       p.hp = Math.min(p.hp, p.maxHp);
 
       // Check evolution
-      if (typeof checkEvolution === 'function') checkEvolution(p);
+      if (typeof checkLevelUpEvolution === 'function') checkLevelUpEvolution(p, null);
 
       // Learn moves — returns list of moves that couldn't fit (full moveset)
       const base = POKEMON_DB[p.id];
