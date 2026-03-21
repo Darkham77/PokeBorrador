@@ -975,6 +975,69 @@ function _createNewMissionObject(date) {
     const tKey = trainerKeys[Math.floor(Math.random() * trainerKeys.length)];
     const trainer = TRAINER_TYPES[tKey];
 
+    const MISSION_DIALOGUES = {
+        'caza_bichos': [
+            "¡Busco un ${pokemon} para completar mi colección de insectos! ¿Tienes uno de Nv. ${level}+?",
+            "¡Dicen que los ${pokemon} de Nv. ${level}+ son increíbles! ¿Me consigues uno?",
+            "¡Mi red de caza no es suficiente para este ${pokemon}! ¡Dámelo si es Nv. ${level}+!"
+        ],
+        'ornitologo': [
+            "¡Urgente! Necesito un ${pokemon} veloz para mis mensajerías. Debe ser al menos Nv. ${level}.",
+            "¡Ese ${pokemon} volaría alto en mi equipo! ¿Tienes uno de Nv. ${level}+?",
+            "¡Necesito un ${pokemon} de Nv. ${level}+ para una competencia de vuelo pronto!"
+        ],
+        'cientifico': [
+            "¡Mi investigación requiere un ejemplar de ${pokemon}! ¿Me consigues uno de Nv. ${level}+?",
+            "¡La energía de un ${pokemon} Nv. ${level}+ es fascinante! ¡Tráeme uno!",
+            "¡Para mis experimentos necesito un ${pokemon}! Que sea Nv. ${level} o superior."
+        ],
+        'luchador': [
+            "¡Busco un ${pokemon} para entrenar mis puños! ¡Tráeme uno que sea Nv. ${level}+!",
+            "¡Ese ${pokemon} tiene un espíritu de lucha increíble! ¿Tienes uno Nv. ${level}+?",
+            "¡Entrenemos juntos! Pero primero consígueme un ${pokemon} de Nv. ${level}+."
+        ],
+        'pescador': [
+            "¡Lancé el anzuelo pero no pica nada! ¿Podrías darme un ${pokemon} de Nv. ${level}+?",
+            "¡Este ${pokemon} se me escapó por poco! ¿Tienes uno de Nv. ${level}+ para mí?",
+            "¡Qué buena pesca sería un ${pokemon}! Tráeme uno que sea Nv. ${level}+."
+        ],
+        'nadador': [
+            "¡Las olas son fuertes hoy! Un ${pokemon} de Nv. ${level}+ me ayudaría mucho.",
+            "¡Nadando encontré un ${pokemon}, pero era débil! Tráeme uno Nv. ${level}+.",
+            "¡El agua está genial! Y más si tuviera un ${pokemon} de Nv. ${level}+ conmigo."
+        ],
+        'domador': [
+            "¡Mi hermano quiere hacer competencia y mis Pokemon son lentos! ¡Necesito un ${pokemon} Nv. ${level}+!",
+            "¡Mi equipo necesita más fieras! Un ${pokemon} de Nv. ${level}+ sería ideal.",
+            "¡Ese ${pokemon} se ve salvaje! ¿Tienes uno de Nv. ${level}+ para mi colección?"
+        ],
+        'medium': [
+            "He tenido una visión... ¡Necesito un ${pokemon} de Nv. ${level}+ ahora mismo!",
+            "El cosmos dice que un ${pokemon} Nv. ${level}+ traerá suerte. ¿Me das uno?",
+            "Puedo leer tu mente... sabes dónde hallar un ${pokemon} Nv. ${level}+."
+        ],
+        'motorista': [
+            "¡Mi banda necesita potencia! Tráeme un ${pokemon} de Nv. ${level}+ para rugir.",
+            "¡Ese ${pokemon} tiene estilo! ¿Me das uno de Nv. ${level}+ para mi moto?",
+            "¡Hacéte a un lado! A menos que tengas un ${pokemon} Nv. ${level}+ para mí."
+        ],
+        'montanero': [
+            "¡Las montañas son duras! Un ${pokemon} de Nv. ${level}+ me vendría de perlas.",
+            "¡Escalando perdí a mi ${pokemon}! ¿Me das uno que sea Nv. ${level}?",
+            "¡Rocas y más rocas! Necesito un ${pokemon} de Nv. ${level}+ para avanzar."
+        ],
+        'default': [
+            "Necesito un ${pokemon} de Nv. ${level}+ con urgencia. ¿Podrás ayudarme?",
+            "¿Podrías traerme un ${pokemon} que sea al menos Nv. ${level}?",
+            "¡Garantizo una buena recompensa por un ${pokemon} Nv. ${level}+!"
+        ]
+    };
+
+    const targetName = POKEMON_DB[target]?.name || target;
+    const templates = MISSION_DIALOGUES[tKey] || MISSION_DIALOGUES['default'];
+    const template = templates[Math.floor(Math.random() * templates.length)];
+    const dialogue = template.replace('${pokemon}', `<b style="color:var(--yellow);">${targetName}</b>`).replace('${level}', minLvl);
+
     return { 
         date: date, 
         targetId: target, 
@@ -983,7 +1046,8 @@ function _createNewMissionObject(date) {
         completed: false,
         trainerType: tKey,
         trainerName: trainer.name,
-        trainerSprite: trainer.sprite
+        trainerSprite: trainer.sprite,
+        dialogue: dialogue
     };
 }
 
@@ -1055,7 +1119,7 @@ function renderDaycareMission() {
                     </div>
                     <div style="flex:1;min-width:0;">
                          <div style="font-size:9px;color:var(--gray);margin-bottom:4px;text-transform:uppercase;">${m.trainerName} pide:</div>
-                         <div style="font-size:12px;color:#fff;line-height:1.3;font-weight:700;">Un <b style="color:var(--yellow);">${targetName}</b> <br>Nv. ${m.minLevel}+</div>
+                         <div style="font-size:11px;color:#fff;line-height:1.4;font-style:italic;font-family:'Nunito',sans-serif;">"${m.dialogue}"</div>
                     </div>
                 </div>
                 <div style="margin-top:auto;">
