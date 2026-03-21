@@ -368,7 +368,7 @@
           <div class="profile-stat"><span class="profile-stat-val">${st.wins || 0}</span><span class="profile-stat-lbl">Vics. Salvaje</span></div>
           <div class="profile-stat"><span class="profile-stat-val">${st.trainersDefeated || 0}</span><span class="profile-stat-lbl">Entr. Derrotados</span></div>
           <div class="profile-stat"><span class="profile-stat-val">₽${state.money.toLocaleString()}</span><span class="profile-stat-lbl">Dinero</span></div>
-          <div class="profile-stat"><span class="profile-stat-val">🪙${state.battleCoins || 0}</span><span class="profile-stat-lbl">Battle Coins</span></div>
+          <div class="profile-stat"><span class="profile-stat-val"><i class="fas fa-coins coin-icon"></i>${state.battleCoins || 0}</span><span class="profile-stat-lbl">Battle Coins</span></div>
         `;
       }
 

@@ -16,8 +16,13 @@
             <div class="location-desc">Saná a tus Pokémon y restaurá sus PP al máximo.</div>
           </div>`;
 
-      FIRE_RED_MAPS.forEach(loc => {
-        const isLocked = badgeCount < loc.badges;
+    FIRE_RED_MAPS.forEach(loc => {
+        let isLocked = badgeCount < loc.badges;
+        
+        // Ticket Overrides
+        if (loc.id === 'safari_zone' && state.safariTicketSecs > 0) isLocked = false;
+        if (loc.id === 'cerulean_cave' && state.ceruleanTicketSecs > 0) isLocked = false;
+
         const availableWild = loc.wild[cycle] || loc.wild.day;
 
         // Build time slots preview — show which Pokémon are exclusive to each slot
@@ -100,8 +105,20 @@
 	      if (!loc) return;
 	
 	      const badgeCount = state.badges;
-	      if (badgeCount < loc.badges) {
+	      let accessDenied = badgeCount < loc.badges;
+	      
+	      // Ticket Overrides
+	      if (locId === 'safari_zone' && state.safariTicketSecs > 0) accessDenied = false;
+	      if (locId === 'cerulean_cave' && state.ceruleanTicketSecs > 0) accessDenied = false;
+
+	      if (accessDenied) {
 	        notify(`¡Necesitás ${loc.badges} medallas para acceder!`, '🔒');
+	        return;
+	      }
+
+	      // 1% Chance de Rival (En cualquier mapa)
+	      if (Math.random() < 0.01) {
+	        triggerRivalSequence(locId);
 	        return;
 	      }
 	
@@ -168,6 +185,18 @@
 	      const wildPool = loc.wild[cycle] || loc.wild.day;
 	      const wildRates = loc.rates[cycle] || loc.rates.day;
 	
+	      // Special Legendary Ticket Spawns
+	      if (locId === 'seafoam_islands' && state.articunoTicketSecs > 0 && Math.random() < 0.05) {
+	        const enemy = makePokemon('articuno', 50);
+	        startBattle(enemy, false, null, locId);
+	        return;
+	      }
+	      if (locId === 'cerulean_cave' && state.mewtwoTicketSecs > 0 && Math.random() < 0.03) {
+	        const enemy = makePokemon('mewtwo', 70);
+	        startBattle(enemy, false, null, locId);
+	        return;
+	      }
+
 	      const totalRate = wildRates.reduce((a, b) => a + b, 0);
 	      let rand = Math.random() * totalRate;
 	      let cumulative = 0;
@@ -184,6 +213,23 @@
 	      const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
 	      const enemy = makePokemon(selectedId, level);
 	      startBattle(enemy, false, null, locId);
+	    }
+
+	    function triggerRivalSequence(locId) {
+	      const flicker = document.createElement('div');
+	      flicker.className = 'rival-flicker';
+	      document.body.appendChild(flicker);
+	
+	      const excl = document.createElement('div');
+	      excl.className = 'rival-exclamation';
+	      excl.textContent = '!';
+	      document.body.appendChild(excl);
+	
+	      setTimeout(() => {
+	        flicker.remove();
+	        excl.remove();
+	        generateRivalBattle(locId);
+	      }, 1200);
 	    }
 	
 	    function generateFishingBattle(locId) {

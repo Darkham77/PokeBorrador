@@ -616,6 +616,10 @@ function initBuffTick() {
     if (state.shinyBoostSecs > 0) { state.shinyBoostSecs--; changed = true; }
     if (state.amuletCoinSecs > 0) { state.amuletCoinSecs--; changed = true; }
     if (state.luckyEggSecs > 0) { state.luckyEggSecs--; changed = true; }
+    if (state.safariTicketSecs > 0) { state.safariTicketSecs--; changed = true; }
+    if (state.ceruleanTicketSecs > 0) { state.ceruleanTicketSecs--; changed = true; }
+    if (state.articunoTicketSecs > 0) { state.articunoTicketSecs--; changed = true; }
+    if (state.mewtwoTicketSecs > 0) { state.mewtwoTicketSecs--; changed = true; }
 
     if (changed) {
       updateBuffPanel();
@@ -665,7 +669,11 @@ function updateBuffPanel() {
     { id: 'repel', secs: state.repelSecs },
     { id: 'shiny', secs: state.shinyBoostSecs },
     { id: 'amulet', secs: state.amuletCoinSecs },
-    { id: 'lucky-egg', secs: state.luckyEggSecs }
+    { id: 'lucky-egg', secs: state.luckyEggSecs },
+    { id: 'safari', secs: state.safariTicketSecs },
+    { id: 'cerulean', secs: state.ceruleanTicketSecs },
+    { id: 'articuno', secs: state.articunoTicketSecs },
+    { id: 'mewtwo', secs: state.mewtwoTicketSecs }
   ];
 
   buffs.forEach(b => {

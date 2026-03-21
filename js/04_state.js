@@ -69,6 +69,54 @@
       };
     }
 
+    function generateRivalBattle(locId) {
+      const loc = FIRE_RED_MAPS.find(l => l.id === locId);
+      const rivalSprite = 'https://play.pokemonshowdown.com/sprites/trainers/blue.png';
+      const rivalName = 'Rival Azul';
+      
+      // El nivel de los pokemon del Rival se asemejan al más fuerte de tu equipo
+      const playerLevels = state.team.map(p => p.level);
+      const rivalLevel = Math.max(...playerLevels, 5);
+      
+      // Equipo fuerte y variado (6 Pokémon)
+      const rivalPool = ['pidgeot', 'alakazam', 'gyarados', 'arcanine', 'exeggutor', 'charizard']; 
+      // Si el jugador no tiene un nivel muy alto, bajamos un poco la agresividad de la selección, 
+      // pero el usuario pidió "dificultad para el jugador".
+      
+      const enemyTeam = rivalPool.map(id => makePokemon(id, rivalLevel));
+
+      // Visual Intro Sequence is handled in encounters.js before calling this.
+      // But we still need the Modal Intro for the Rival specifically if we want a quote.
+      const introOv = document.createElement('div');
+      introOv.id = 'rival-intro-overlay';
+      introOv.style.cssText = 'position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .5s ease;';
+      introOv.innerHTML = `
+        <div style="background:linear-gradient(135deg, #1a1a2e, #16213e);border-radius:24px;padding:32px;max-width:400px;width:100%;
+          border:3px solid #ff453a;text-align:center;position:relative;box-shadow: 0 0 40px rgba(255, 69, 58, 0.4);">
+          <div style="position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:#ff453a;color:white;padding:4px 16px;border-radius:10px;font-family:'Press Start 2P',monospace;font-size:10px;">¡ENCUENTRO LEGENDARIO!</div>
+          <img src="${rivalSprite}" alt="${rivalName}"
+            style="height:160px;width:auto;image-rendering:pixelated;margin-bottom:16px;
+            filter:drop-shadow(0 4px 20px rgba(255, 69, 58, 0.6));">
+          <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#ff453a;margin-bottom:12px;">${rivalName}</div>
+          <div style="font-size:14px;color:#eee;margin:20px 0;line-height:1.6;font-style:italic;background:rgba(0,0,0,0.3);padding:15px;border-radius:12px;">
+            "¡Ey, vos! ¡He estado entrenando a mi equipo para que sea invencible! ¡Preparate para perder!"
+          </div>
+          <button id="rival-intro-btn" style="font-family:'Press Start 2P',monospace;font-size:10px;padding:18px 36px;border:none;border-radius:16px;
+            cursor:pointer;background:linear-gradient(135deg,#ff453a, #c0392b);color:#fff;
+            box-shadow:0 6px 20px rgba(255, 69, 58, 0.5);margin-top:10px;width:100%;">
+            ⚔️ ¡ACEPTAR EL DESAFÍO!
+          </button>
+        </div>`;
+      document.body.appendChild(introOv);
+
+      document.getElementById('rival-intro-btn').onclick = () => {
+        introOv.remove();
+        enemyTeam[0]._revealed = true;
+        startBattle(enemyTeam[0], false, null, locId, true, enemyTeam, rivalName);
+        if (state.battle) state.battle.isRival = true;
+      };
+    }
+
     const INITIAL_STATE = {
       trainer: 'ASH',
       badges: 0,
@@ -90,7 +138,11 @@
       stats: {},
       activeBattle: null,
       daycare_missions: [],
-      daycare_mission_refreshes: 3
+      daycare_mission_refreshes: 3,
+      safariTicketSecs: 0,
+      ceruleanTicketSecs: 0,
+      articunoTicketSecs: 0,
+      mewtwoTicketSecs: 0
     };
 
     let state = JSON.parse(JSON.stringify(INITIAL_STATE));

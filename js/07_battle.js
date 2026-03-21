@@ -1886,16 +1886,34 @@ function endBattle(won) {
     if (b.isTrainer || b.isGym) {
       const coins = Math.floor(b.enemy.level * 2);
       state.battleCoins = (state.battleCoins || 0) + coins;
-      addLog(`¡Obtuviste <span style="color:var(--yellow);font-weight:bold;">🪙 ${coins} Battle Coins</span>!`, 'log-catch');
+      addLog(`¡Obtuviste <span style="color:var(--yellow);font-weight:bold;"><i class="fas fa-coins coin-icon"></i> ${coins} Battle Coins</span>!`, 'log-catch');
 
       if (!state.stats) state.stats = {};
       if (b.isTrainer) state.stats.trainersDefeated = (state.stats.trainersDefeated || 0) + 1;
 
       // Egg system (only for random trainers, not gyms)
-      if (b.isTrainer && Math.random() < 0.05) {
+      if (b.isTrainer && !b.isRival && Math.random() < 0.05) {
         const eggPool = ['pichu', 'magby', 'elekid', 'cleffa', 'igglybuff', 'togepi', 'eevee'];
         const pId = eggPool[Math.floor(Math.random() * eggPool.length)];
         addEgg(pId, 'encounter');
+      }
+
+      // RIVAL REWARDS
+      if (b.isRival) {
+        const randRec = Math.random() * 100;
+        let rewardedItem = null;
+        if (randRec < 20) rewardedItem = 'Masterball';
+        else if (randRec < 40) rewardedItem = 'Ticket Shiny';
+        else if (randRec < 60) rewardedItem = 'Ticket Safari';
+        else if (randRec < 80) rewardedItem = 'Ticket Cueva Celeste';
+        else if (randRec < 95) rewardedItem = 'Ticket Articuno';
+        else rewardedItem = 'Ticket Mewtwo';
+
+        if (rewardedItem) {
+          state.inventory[rewardedItem] = (state.inventory[rewardedItem] || 0) + 1;
+          addLog(`¡El Rival dejó caer un <span style="color:var(--yellow);font-weight:bold;">${rewardedItem}</span>!`, 'log-catch');
+          notify(`¡Recibiste ${rewardedItem}! 🎁`, '🎁');
+        }
       }
     }
 
@@ -1990,6 +2008,11 @@ function runFromBattle() {
     return;
   }
   if (state.battle?.isTrainer) {
+    if (state.battle.isRival) {
+      setLog('¡No podés huir de tu Rival!', 'log-enemy');
+      notify('¡No podés huir de tu Rival!', '🚫');
+      return;
+    }
     setLog('¡No podés huir de un combate contra un Entrenador!', 'log-enemy');
     notify('¡No podés huir de un combate contra un Entrenador!', '🚫');
     return;

@@ -44,6 +44,10 @@
       'Ticket Shiny': _ => { state.shinyBoostSecs = (state.shinyBoostSecs || 0) + 30 * 60; return `activó el Ticket Shiny (30 min)`; },
       'Moneda Amuleto': _ => { state.amuletCoinSecs = (state.amuletCoinSecs || 0) + 30 * 60; return `activó la Moneda Amuleto (30 min)`; },
       'Huevo Suerte Pequeño': _ => { state.luckyEggSecs = (state.luckyEggSecs || 0) + 30 * 60; return `activó el Huevo Suerte Pequeño (30 min)`; },
+      'Ticket Safari': _ => { state.safariTicketSecs = (state.safariTicketSecs || 0) + 30 * 60; updateHud(); updateBuffPanel(); renderMaps(); return `activó el Ticket Safari (30 min)`; },
+      'Ticket Cueva Celeste': _ => { state.ceruleanTicketSecs = (state.ceruleanTicketSecs || 0) + 30 * 60; updateHud(); updateBuffPanel(); renderMaps(); return `activó el Ticket Cueva Celeste (30 min)`; },
+      'Ticket Articuno': _ => { state.articunoTicketSecs = (state.articunoTicketSecs || 0) + 30 * 60; updateHud(); updateBuffPanel(); renderMaps(); return `activó el Ticket Articuno (30 min)`; },
+      'Ticket Mewtwo': _ => { state.mewtwoTicketSecs = (state.mewtwoTicketSecs || 0) + 30 * 60; updateHud(); updateBuffPanel(); renderMaps(); return `activó el Ticket Mewtwo (30 min)`; },
     };
 
     function showBattleBag() {

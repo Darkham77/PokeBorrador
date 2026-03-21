@@ -530,6 +530,31 @@
         desc: 'Restaura 80 HP a un Pokémon.',
         effect: (qty) => { state.inventory['Limonada'] = (state.inventory['Limonada'] || 0) + qty; }
       },
+      // ── RECOMPENSAS DEL RIVAL (No en tienda) ─────────────────────────────
+      {
+        id: 'ticket_safari', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png',
+        name: 'Ticket Safari', icon: '🎫', price: 0, market: false, trainerShop: false, tier: 'epic', type: 'booster',
+        desc: 'Otorga acceso a la Zona Safari durante 30 minutos sin importar tus medallas.',
+        effect: (qty) => { state.inventory['Ticket Safari'] = (state.inventory['Ticket Safari'] || 0) + qty; }
+      },
+      {
+        id: 'ticket_cerulean', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png',
+        name: 'Ticket Cueva Celeste', icon: '🎫', price: 0, market: false, trainerShop: false, tier: 'epic', type: 'booster',
+        desc: 'Otorga acceso a la Cueva Celeste durante 30 minutos sin importar tus medallas.',
+        effect: (qty) => { state.inventory['Ticket Cueva Celeste'] = (state.inventory['Ticket Cueva Celeste'] || 0) + qty; }
+      },
+      {
+        id: 'ticket_articuno', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png',
+        name: 'Ticket Articuno', icon: '❄️', price: 0, market: false, trainerShop: false, tier: 'epic', type: 'booster',
+        desc: 'Aumenta un 5% la probabilidad de que aparezca Articuno en las Islas Espuma (30 min).',
+        effect: (qty) => { state.inventory['Ticket Articuno'] = (state.inventory['Ticket Articuno'] || 0) + qty; }
+      },
+      {
+        id: 'ticket_mewtwo', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png',
+        name: 'Ticket Mewtwo', icon: '✨', price: 0, market: false, trainerShop: false, tier: 'legend', type: 'booster',
+        desc: 'Aumenta un 3% la probabilidad de que aparezca Mewtwo en la Cueva Celeste (30 min).',
+        effect: (qty) => { state.inventory['Ticket Mewtwo'] = (state.inventory['Ticket Mewtwo'] || 0) + qty; }
+      },
     ];
     window.SHOP_ITEMS = SHOP_ITEMS;
 
@@ -620,7 +645,7 @@ function buyItemBC(itemId) {
   const item = SHOP_ITEMS.find(i => i.id === itemId);
   if (!item || !item.trainerShop) return;
   if (state.trainerLevel < item.unlockLv) { notify('¡Ítem bloqueado!', '🔒'); return; }
-  if ((state.battleCoins || 0) < item.bcPrice) { notify('¡No tenés suficientes Battle Coins!', '🪙'); return; }
+  if ((state.battleCoins || 0) < item.bcPrice) { notify('¡No tenés suficientes Battle Coins!', '<i class="fas fa-coins" style="color:#FFD700"></i>'); return; }
   if (typeof item.effect !== 'function') { notify('Este ítem todavía no se puede comprar.', '⚠️'); return; }
   state.battleCoins -= item.bcPrice;
   item.effect(1);
