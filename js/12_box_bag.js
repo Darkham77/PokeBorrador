@@ -26,6 +26,7 @@
     let _boxFilters = {
       tier: 'all', type: 'all', levelMin: 1, levelMax: 100,
       ivHP: 0, ivATK: 0, ivDEF: 0, ivSPA: 0, ivSPD: 0, ivSPE: 0,
+      ivAny31: false, ivTotalMin: 0, ivTotalMax: 186,
       search: ''
     };
     let _boxFiltersOpen = false;
@@ -45,6 +46,16 @@
       // Sync slider labels
       if (key === 'levelMin') { const el = document.getElementById('box-level-min-val'); if (el) el.textContent = val; }
       if (key === 'levelMax') { const el = document.getElementById('box-level-max-val'); if (el) el.textContent = val; }
+      if (key === 'ivTotalMin') { const el = document.getElementById('box-iv-total-min-val'); if (el) el.textContent = val; }
+      if (key === 'ivTotalMax') { const el = document.getElementById('box-iv-total-max-val'); if (el) el.textContent = val; }
+      if (key === 'ivAny31') {
+        const el = document.getElementById('box-filter-iv31');
+        if (el) {
+          el.style.background = val ? 'var(--yellow)' : 'rgba(255,255,255,0.1)';
+          el.style.color = val ? 'var(--darker)' : '#eee';
+          el.style.borderColor = val ? 'var(--yellow)' : 'rgba(255,255,255,0.15)';
+        }
+      }
       if (key === 'search') { const el = document.getElementById('box-search-input'); if (el && el.value !== val) el.value = val; }
       const ivMap = { ivHP: 'iv-hp-val', ivATK: 'iv-atk-val', ivDEF: 'iv-def-val', ivSPA: 'iv-spa-val', ivSPD: 'iv-spd-val', ivSPE: 'iv-spe-val' };
       if (ivMap[key]) { const el = document.getElementById(ivMap[key]); if (el) el.textContent = val; }
@@ -69,6 +80,7 @@
       _boxFilters = {
         tier: 'all', type: 'all', levelMin: 1, levelMax: 100,
         ivHP: 0, ivATK: 0, ivDEF: 0, ivSPA: 0, ivSPD: 0, ivSPE: 0,
+        ivAny31: false, ivTotalMin: 0, ivTotalMax: 186,
         search: ''
       };
       // Reset inputs
@@ -76,13 +88,31 @@
       if (searchEl) searchEl.value = '';
 
       // Reset sliders
-      ['box-level-min', 'box-level-max', 'iv-hp', 'iv-atk', 'iv-def', 'iv-spa', 'iv-spd', 'iv-spe'].forEach(id => {
+      ['box-level-min', 'box-level-max', 'box-iv-total-min', 'box-iv-total-max', 'iv-hp', 'iv-atk', 'iv-def', 'iv-spa', 'iv-spd', 'iv-spe'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.value = id.includes('max') ? 100 : (id.includes('level-min') ? 1 : 0);
+        if (el) {
+          if (id === 'box-level-max') el.value = 100;
+          else if (id === 'box-iv-total-max') el.value = 186;
+          else if (id === 'box-level-min') el.value = 1;
+          else el.value = 0;
+        }
       });
-      ['box-level-min-val', 'box-level-max-val', 'iv-hp-val', 'iv-atk-val', 'iv-def-val', 'iv-spa-val', 'iv-spd-val', 'iv-spe-val'].forEach((id, i) => {
-        const el = document.getElementById(id); if (el) el.textContent = i === 1 ? '100' : i === 0 ? '1' : '0';
+      ['box-level-min-val', 'box-level-max-val', 'box-iv-total-min-val', 'box-iv-total-max-val', 'iv-hp-val', 'iv-atk-val', 'iv-def-val', 'iv-spa-val', 'iv-spd-val', 'iv-spe-val'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (id === 'box-level-max-val') el.textContent = '100';
+          else if (id === 'box-iv-total-max-val') el.textContent = '186';
+          else if (id === 'box-level-min-val') el.textContent = '1';
+          else el.textContent = '0';
+        }
       });
+      // Reset IV 31 button
+      const iv31Btn = document.getElementById('box-filter-iv31');
+      if (iv31Btn) {
+        iv31Btn.style.background = 'rgba(255,255,255,0.1)';
+        iv31Btn.style.color = '#eee';
+        iv31Btn.style.borderColor = 'rgba(255,255,255,0.15)';
+      }
       document.querySelectorAll('[data-tier]').forEach(b => {
         b.style.outline = b.dataset.tier === 'all' ? '2px solid currentColor' : 'none';
       });
@@ -105,6 +135,17 @@
         if (f.type !== 'all' && p.type !== f.type) return false;
         // Level
         if (p.level < f.levelMin || p.level > f.levelMax) return false;
+
+        // IV Any 31
+        if (f.ivAny31) {
+          const has31 = Object.values(ivs).some(v => v === 31);
+          if (!has31) return false;
+        }
+
+        // IV Total Range
+        const total = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
+        if (total < f.ivTotalMin || total > f.ivTotalMax) return false;
+
         // IV minimums
         if ((ivs.hp || 0) < f.ivHP) return false;
         if ((ivs.atk || 0) < f.ivATK) return false;
@@ -122,6 +163,7 @@
       const f = _boxFilters;
       return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < 100 ||
         f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 || f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 ||
+        f.ivAny31 || f.ivTotalMin > 0 || f.ivTotalMax < 186 ||
         f.search !== '';
     }
 
@@ -262,15 +304,7 @@
 
       // Build cards — filtered array has real box indices mapped
       const indexedFiltered = state.box.map((p, i) => ({ p, i })).filter(({ p }) => {
-        const ivs = p.ivs || {};
-        const f = _boxFilters;
-        if (f.tier !== 'all' && getPokemonTier(p).tier !== f.tier) return false;
-        if (f.type !== 'all' && p.type !== f.type) return false;
-        if (p.level < f.levelMin || p.level > f.levelMax) return false;
-        if ((ivs.hp || 0) < f.ivHP || (ivs.atk || 0) < f.ivATK || (ivs.def || 0) < f.ivDEF) return false;
-        if ((ivs.spa || 0) < f.ivSPA || (ivs.spd || 0) < f.ivSPD || (ivs.spe || 0) < f.ivSPE) return false;
-        if (f.search && !p.name.toLowerCase().includes(f.search.toLowerCase())) return false;
-        return true;
+        return _applyBoxFilters([p]).length > 0;
       });
 
       grid.innerHTML = indexedFiltered.map(({ p, i }) => {

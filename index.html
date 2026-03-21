@@ -653,7 +653,33 @@
             </div>
           </div>
 
-          <!-- Row 3: Level + IV filter -->
+          <!-- Row 3: Total IV + IV 31 filter -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div>
+              <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">IV Totales (Rango)</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="range" id="box-iv-total-min" min="0" max="186" value="0"
+                  oninput="setBoxFilter('ivTotalMin',+this.value)" style="flex:1;accent-color:var(--yellow);">
+                <span id="box-iv-total-min-val"
+                  style="font-size:11px;color:var(--yellow);width:26px;text-align:right;font-weight:700;">0</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                <input type="range" id="box-iv-total-max" min="0" max="186" value="186"
+                  oninput="setBoxFilter('ivTotalMax',+this.value)" style="flex:1;accent-color:var(--yellow);">
+                <span id="box-iv-total-max-val"
+                  style="font-size:11px;color:var(--yellow);width:26px;text-align:right;font-weight:700;">186</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;justify-content:center;">
+              <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">IV Especial</div>
+              <button onclick="setBoxFilter('ivAny31', !_boxFilters.ivAny31)" id="box-filter-iv31" class="box-filter-btn"
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:10px;border:1px solid rgba(255,255,255,0.15);border-radius:12px;cursor:pointer;background:rgba(255,255,255,0.1);color:#eee;transition:all .2s;">
+                Cualquier IV en 31
+              </button>
+            </div>
+          </div>
+
+          <!-- Row 4: Level filter -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px;">
             <div>
               <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">Nivel mínimo</div>
