@@ -433,6 +433,14 @@
               </div>
             </div>
             <div id="market-trainer-level" style="margin-bottom:16px;font-size:12px;color:var(--gray);"></div>
+            
+            <!-- Search Input -->
+            <div style="margin-bottom:14px;">
+              <input id="market-search-input" type="text" placeholder="Buscar ítem..." 
+                oninput="renderMarket()" 
+                style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
+            </div>
+
             <div id="market-tabs"></div>
             <div id="market-grid"
               style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;"></div>
@@ -450,6 +458,14 @@
               </div>
             </div>
             <div id="trainer-shop-level" style="margin-bottom:16px;font-size:12px;color:var(--gray);"></div>
+            
+            <!-- Search Input -->
+            <div style="margin-bottom:14px;">
+              <input id="trainer-shop-search-input" type="text" placeholder="Buscar ítem exclusivo..." 
+                oninput="renderTrainerShop()" 
+                style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
+            </div>
+
             <div id="trainer-shop-grid"
               style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;"></div>
           </div>
@@ -542,6 +558,13 @@
             <span id="box-filter-summary" style="font-size:10px;color:var(--gray);"></span>
             <span id="box-filter-chevron" style="color:var(--gray);font-size:14px;transition:transform .2s;">▼</span>
           </div>
+        </div>
+        
+        <!-- Search Input -->
+        <div style="margin-top:12px;">
+          <input id="box-search-input" type="text" placeholder="Buscar por nombre..." 
+            oninput="setBoxFilter('search', this.value)" 
+            style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
         </div>
 
         <!-- Filter body (collapsible) -->
@@ -826,6 +849,14 @@
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div class="section-title" style="margin:0;">🎒 Mochila</div>
       </div>
+
+      <!-- Search Input -->
+      <div style="margin-bottom:14px;">
+        <input id="bag-search-input" type="text" placeholder="Buscar en la mochila..." 
+          oninput="renderBag()" 
+          style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
+      </div>
+
       <div id="bag-tabs" class="market-tab-bar" style="margin-bottom:16px;">
         <button onclick="renderBag('all')" class="market-tab-btn active" id="bag-tab-all">Todo</button>
         <button onclick="renderBag('potion')" class="market-tab-btn" id="bag-tab-potion">Pociones</button>

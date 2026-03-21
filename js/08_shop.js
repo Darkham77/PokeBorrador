@@ -585,8 +585,15 @@ function renderTrainerShop() {
   const tierColors = { common: 'tier-common', rare: 'tier-rare', epic: 'tier-epic', legend: 'tier-legend' };
   const tierLabels = { common: 'Común', rare: 'Raro', epic: 'Épico', legend: 'Legendario' };
   const TRAINER_CAT_ORDER = { held: 1, especial: 2, booster: 3, breeding: 4, utility: 5 };
+  const trSearchInput = document.getElementById('trainer-shop-search-input');
+  const trSearchQuery = trSearchInput ? trSearchInput.value.toLowerCase() : '';
+
   const trainerItems = SHOP_ITEMS
-    .filter(i => i.trainerShop === true)
+    .filter(i => {
+      if (i.trainerShop !== true) return false;
+      if (trSearchQuery && !i.name.toLowerCase().includes(trSearchQuery)) return false;
+      return true;
+    })
     .sort((a, b) => {
       // Primero los desbloqueados, luego los bloqueados (como en el Pokemarket)
       const aLocked = state.trainerLevel < a.unlockLv ? 1 : 0;
@@ -708,9 +715,17 @@ function _marketSetQty(itemId, raw) {
             </button>`).join('')}
         </div>`;
 
+      const mktSearchInput = document.getElementById('market-search-input');
+      const mktSearchQuery = mktSearchInput ? mktSearchInput.value.toLowerCase() : '';
+
       // ── Items grid ──
       const filtered = SHOP_ITEMS
-        .filter(i => i.market !== false && (_marketCat === 'todos' || i.cat === _marketCat))
+        .filter(i => {
+          if (i.market === false) return false;
+          if (_marketCat !== 'todos' && i.cat !== _marketCat) return false;
+          if (mktSearchQuery && !i.name.toLowerCase().includes(mktSearchQuery)) return false;
+          return true;
+        })
         .sort((a, b) => {
           const aLocked = state.trainerLevel < a.unlockLv ? 1 : 0;
           const bLocked = state.trainerLevel < b.unlockLv ? 1 : 0;

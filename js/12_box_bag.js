@@ -25,7 +25,8 @@
     // ── Active filters state ─────────────────────────────────────
     let _boxFilters = {
       tier: 'all', type: 'all', levelMin: 1, levelMax: 100,
-      ivHP: 0, ivATK: 0, ivDEF: 0, ivSPA: 0, ivSPD: 0, ivSPE: 0
+      ivHP: 0, ivATK: 0, ivDEF: 0, ivSPA: 0, ivSPD: 0, ivSPE: 0,
+      search: ''
     };
     let _boxFiltersOpen = false;
     let _boxReleaseMode = false;
@@ -44,6 +45,7 @@
       // Sync slider labels
       if (key === 'levelMin') { const el = document.getElementById('box-level-min-val'); if (el) el.textContent = val; }
       if (key === 'levelMax') { const el = document.getElementById('box-level-max-val'); if (el) el.textContent = val; }
+      if (key === 'search') { const el = document.getElementById('box-search-input'); if (el && el.value !== val) el.value = val; }
       const ivMap = { ivHP: 'iv-hp-val', ivATK: 'iv-atk-val', ivDEF: 'iv-def-val', ivSPA: 'iv-spa-val', ivSPD: 'iv-spd-val', ivSPE: 'iv-spe-val' };
       if (ivMap[key]) { const el = document.getElementById(ivMap[key]); if (el) el.textContent = val; }
       // Active state on tier buttons
@@ -66,8 +68,13 @@
     function resetBoxFilters() {
       _boxFilters = {
         tier: 'all', type: 'all', levelMin: 1, levelMax: 100,
-        ivHP: 0, ivATK: 0, ivDEF: 0, ivSPA: 0, ivSPD: 0, ivSPE: 0
+        ivHP: 0, ivATK: 0, ivDEF: 0, ivSPA: 0, ivSPD: 0, ivSPE: 0,
+        search: ''
       };
+      // Reset inputs
+      const searchEl = document.getElementById('box-search-input');
+      if (searchEl) searchEl.value = '';
+
       // Reset sliders
       ['box-level-min', 'box-level-max', 'iv-hp', 'iv-atk', 'iv-def', 'iv-spa', 'iv-spd', 'iv-spe'].forEach(id => {
         const el = document.getElementById(id);
@@ -105,6 +112,8 @@
         if ((ivs.spa || 0) < f.ivSPA) return false;
         if ((ivs.spd || 0) < f.ivSPD) return false;
         if ((ivs.spe || 0) < f.ivSPE) return false;
+        // Search
+        if (f.search && !p.name.toLowerCase().includes(f.search.toLowerCase())) return false;
         return true;
       });
     }
@@ -112,7 +121,8 @@
     function _hasActiveFilters() {
       const f = _boxFilters;
       return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < 100 ||
-        f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 || f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0;
+        f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 || f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 ||
+        f.search !== '';
     }
 
     // ── Box Release Mode ─────────────────────────────────────────
@@ -259,6 +269,7 @@
         if (p.level < f.levelMin || p.level > f.levelMax) return false;
         if ((ivs.hp || 0) < f.ivHP || (ivs.atk || 0) < f.ivATK || (ivs.def || 0) < f.ivDEF) return false;
         if ((ivs.spa || 0) < f.ivSPA || (ivs.spd || 0) < f.ivSPD || (ivs.spe || 0) < f.ivSPE) return false;
+        if (f.search && !p.name.toLowerCase().includes(f.search.toLowerCase())) return false;
         return true;
       });
 
@@ -561,8 +572,12 @@
       const activeTab = document.getElementById(`bag-tab-${category}`);
       if (activeTab) activeTab.classList.add('active');
 
+      const searchInput = document.getElementById('bag-search-input');
+      const searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
+
       const allItems = Object.entries(state.inventory || {}).filter(([name, qty]) => {
         if (qty <= 0) return false;
+        if (searchQuery && !name.toLowerCase().includes(searchQuery)) return false;
         return !!SHOP_ITEMS.find(i => i.name === name);
       });
 
