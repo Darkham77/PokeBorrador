@@ -1038,34 +1038,42 @@ function renderDaycareMission() {
     missions.forEach((m, idx) => {
         const targetName = POKEMON_DB[m.targetId]?.name || m.targetId;
         const shopItem = window.SHOP_ITEMS ? window.SHOP_ITEMS.find(x => x.id === m.reward.id) : null;
-        const rIcon = shopItem && shopItem.sprite ? `<img src="${shopItem.sprite}" style="width:18px;height:18px;vertical-align:middle;filter:drop-shadow(0 0 2px rgba(255,255,255,0.4));margin-right:4px;">` : (m.reward.icon || '🎁');
+        
+        // Icono más grande y con sombra
+        const rIcon = shopItem && shopItem.sprite 
+            ? `<img src="${shopItem.sprite}" style="width:32px;height:32px;image-rendering:pixelated;filter:drop-shadow(0 0 4px rgba(255,255,255,0.3));">` 
+            : `<span style="font-size:24px;">${m.reward.icon || '🎁'}</span>`;
+            
         const tooltip = shopItem ? `${shopItem.name}: ${shopItem.desc}` : m.reward.name;
         
         html += `
-            <div style="background:rgba(255,255,255,0.03);border:1px solid ${m.completed ? 'rgba(107,203,119,0.3)' : 'rgba(255,255,255,0.08)'};border-radius:12px;padding:12px;display:flex;flex-direction:column;position:relative;overflow:hidden;">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid ${m.completed ? 'rgba(107,203,119,0.3)' : 'rgba(255,255,255,0.08)'};border-radius:12px;padding:12px;display:flex;flex-direction:column;position:relative;overflow:hidden;min-height:165px;">
                 ${m.completed ? '<div style="position:absolute;top:5px;right:5px;background:var(--green);color:#fff;font-size:7px;padding:2px 6px;border-radius:4px;font-family:\'Press Start 2P\';z-index:2;">LITP</div>' : ''}
-                <div style="display:flex;gap:10px;margin-bottom:10px;">
+                <div style="display:flex;gap:10px;margin-bottom:12px;">
                     <div style="flex-shrink:0;width:50px;height:50px;background:rgba(0,0,0,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(255,255,255,0.05);">
                         <img src="${m.trainerSprite}" style="width:60px;height:auto;image-rendering:pixelated;margin-top:10px;" onerror="this.outerHTML='👤'">
                     </div>
                     <div style="flex:1;min-width:0;">
                          <div style="font-size:9px;color:var(--gray);margin-bottom:4px;text-transform:uppercase;">${m.trainerName} pide:</div>
-                         <div style="font-size:12px;color:#fff;line-height:1.3;">Un <b style="color:var(--yellow);">${targetName}</b> <br>Nv. ${m.minLevel}+</div>
+                         <div style="font-size:12px;color:#fff;line-height:1.3;font-weight:700;">Un <b style="color:var(--yellow);">${targetName}</b> <br>Nv. ${m.minLevel}+</div>
                     </div>
                 </div>
                 <div style="margin-top:auto;">
-                    <div style="font-size:10px;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-                        <span style="white-space:nowrap;">Recompensa:</span>
-                        <div title="${tooltip}" style="background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:4px;cursor:help;border:1px solid rgba(255,255,255,0.05);">
-                            ${rIcon} <span style="font-weight:700;">${m.reward.name} x${m.reward.qty}</span>
-                        </div>
+                    <div style="font-size:10px;color:white;margin-bottom:12px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);cursor:help;" title="${tooltip}">
+                         <div style="background:rgba(0,0,0,0.4);width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.1);">
+                            ${rIcon}
+                         </div>
+                         <div style="line-height:1.2;">
+                            <div style="font-size:8px;color:rgba(255,255,255,0.5);text-transform:uppercase;">Recompensa</div>
+                            <div style="color:var(--green);font-weight:800;font-size:11px;">${m.reward.name} <span style="color:#fff;">x${m.reward.qty}</span></div>
+                         </div>
                     </div>
-                    <button id="daycare-mission-btn-${idx}" onclick="openMissionPicker(${idx})" ${m.completed ? 'style="display:none;"' : ''} 
-                        style="width:100%;padding:8px;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-family:'Press Start 2P',monospace;font-size:7px;border:none;cursor:pointer;">
-                        ENTREGAR
-                    </button>
-                    ${m.completed ? '<div style="text-align:center;font-family:\'Press Start 2P\';font-size:7px;color:var(--green);padding:8px;">COMPLETADA</div>' : ''}
                 </div>
+                <button id="daycare-mission-btn-${idx}" onclick="openMissionPicker(${idx})" ${m.completed ? 'style="display:none;"' : ''} 
+                    style="width:100%;padding:10px;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-family:'Press Start 2P',monospace;font-size:7px;border:none;cursor:pointer;box-shadow:0 4px 0 #5b21b6;margin-top:4px;">
+                    ENTREGAR
+                </button>
+                ${m.completed ? '<div style="text-align:center;font-family:\'Press Start 2P\';font-size:7px;color:var(--green);padding:10px;letter-spacing:1px;">✅ COMPLETADA</div>' : ''}
             </div>
         `;
     });

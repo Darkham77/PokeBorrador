@@ -294,6 +294,7 @@ function openPokemonDetail(index) {
   const p = state.team[index];
   const pct = p.hp / p.maxHp;
   const hpClass = getHpClass(pct);
+  if (typeof ensureVigor === 'function') ensureVigor(p);
   const typeColors = { grass: '#6BCB77', fire: '#FF3B3B', water: '#3B8BFF', normal: '#aaa', electric: '#FFD93D', psychic: '#C77DFF', rock: '#c8a060', ground: '#c8a060', poison: '#C77DFF' };
   const typeColor = typeColors[p.type] || '#aaa';
   const tags = p.tags || [];
@@ -379,8 +380,8 @@ function openPokemonDetail(index) {
       </div>
     </div>
 
-    <!-- Nature & Ability -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+    <!-- Nature, Ability & Vigor -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
       <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center;">
         <div style="font-size:10px;color:#888;margin-bottom:4px;">Naturaleza</div>
         ${buildNatureTooltip(p.nature || 'Serio')}
@@ -388,6 +389,10 @@ function openPokemonDetail(index) {
       <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center;">
         <div style="font-size:10px;color:#888;margin-bottom:4px;">Habilidad</div>
         ${buildAbilityTooltip(p.ability || '—')}
+      </div>
+      <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:10px;color:#888;margin-bottom:4px;">Vigor</div>
+        <div style="font-size:13px;font-weight:700;color:var(--yellow);">⚡${p.vigor || 0}</div>
       </div>
     </div>
 

@@ -361,7 +361,7 @@
         onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
       <span style="display:none;font-size:52px;line-height:1;">${p.emoji}</span>
       <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);margin-top:8px;">${p.name}</div>
-      <div style="font-size:11px;color:var(--gray);">Nv.${p.level} · ${p.nature} · ${p.ability}</div>
+      <div style="font-size:11px;color:var(--gray);">Nv.${p.level} · ${p.nature} · ${p.ability} · ⚡${p.vigor || 0}</div>
       <div style="margin-top:12px; display:flex; align-items:center; gap:12px; justify-content:center;">
         <span class="tag-label" style="margin-bottom:0;">Destacar:</span>
         <div style="display:flex;gap:10px;">
@@ -399,6 +399,7 @@
     function openBoxPokemonDetail(boxIndex) {
       const p = state.box[boxIndex];
       if (!p) return;
+      if (typeof ensureVigor === 'function') ensureVigor(p);
       const pct = p.hp / p.maxHp;
       const hpClass = getHpClass(pct);
       const typeColors = { grass: '#6BCB77', fire: '#FF3B3B', water: '#3B8BFF', normal: '#aaa', electric: '#FFD93D', psychic: '#C77DFF', rock: '#c8a060', ground: '#c8a060', poison: '#C77DFF', bug: '#8BC34A', flying: '#89CFF0', ghost: '#7B2FBE', dragon: '#5C16C5', ice: '#7DF9FF', fighting: '#FF3B3B', dark: '#555', steel: '#9E9E9E' };
@@ -468,7 +469,7 @@
           <div style="width:${pct * 100}%;height:100%;border-radius:10px;" class="${hpClass}"></div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
         <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center;">
           <div style="font-size:10px;color:#888;margin-bottom:4px;">Naturaleza</div>
           ${buildNatureTooltip(p.nature || 'Serio')}
@@ -476,6 +477,10 @@
         <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center;">
           <div style="font-size:10px;color:#888;margin-bottom:4px;">Habilidad</div>
           ${buildAbilityTooltip(p.ability || '—')}
+        </div>
+        <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center;">
+          <div style="font-size:10px;color:#888;margin-bottom:4px;">Vigor</div>
+          <div style="font-size:13px;font-weight:700;color:var(--yellow);">⚡${p.vigor || 0}</div>
         </div>
       </div>
       <div style="margin-bottom:16px;">

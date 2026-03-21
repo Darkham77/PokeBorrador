@@ -605,7 +605,7 @@ function renderTrainerShop() {
       <div class="market-item-name">${item.name}</div>
       <div class="market-item-desc" style="margin-top:4px;">${item.desc}</div>
       ${locked ? `<div class="market-item-unlock">🔒 Nv. ${item.unlockLv}</div>` : ''}
-      <div class="market-item-price" style="color:var(--purple);">🪙 ${item.bcPrice} BC</div>
+      <div class="market-item-price" style="color:var(--purple);"><i class="fa-solid fa-coins"></i> ${item.bcPrice} BC</div>
       <button class="market-buy-btn" onclick="buyItemBC('${item.id}')"
         style="${!locked && canAfford ? 'background:linear-gradient(135deg,var(--purple),#9b4dff);' : ''}"
         ${locked || !canAfford ? 'disabled' : ''}>
