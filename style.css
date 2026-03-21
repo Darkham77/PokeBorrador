@@ -847,6 +847,113 @@
       animation: bounce 2s ease-in-out infinite;
     }
 
+    /* ===== POKEMON CENTER SPLIT LAYOUT ===== */
+    .pc-split-container {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      grid-column: 1 / -1;
+      width: 100%;
+    }
+
+    .pc-left {
+      flex: 1.5;
+      min-width: 0;
+    }
+
+    .pc-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pc-banner {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    .pc-banner:hover {
+      transform: translateX(4px);
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .pc-banner-icon {
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+    }
+
+    .pc-banner-content {
+      flex: 1;
+    }
+
+    .pc-banner-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      color: var(--gray);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .pc-banner-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .pc-banner-text span {
+      color: var(--yellow);
+    }
+
+    .pc-banner-spawns {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .pc-banner-spawns img {
+      width: 32px;
+      height: 32px;
+      image-rendering: pixelated;
+    }
+
+    /* Pokemon Center Card Adjustments */
+    .location-card-center {
+      margin-bottom: 0 !important;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    @media (max-width: 900px) {
+      .pc-split-container {
+        flex-direction: column;
+      }
+      .pc-left, .pc-right {
+        flex: none;
+        width: 100%;
+      }
+    }
+
     /* ===== POKEMON TEAM ===== */
     .team-section {
       background: var(--card);

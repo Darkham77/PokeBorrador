@@ -1,20 +1,95 @@
     // ===== LOCATION / WILD BATTLE =====
-    function renderMaps() {
+    async function renderMaps() {
       const container = document.getElementById('map-list');
       if (!container) return;
       const cycle = getDayCycle();
       const badgeCount = (Array.isArray(state.badges) ? state.badges.length : (parseInt(state.badges) || 0));
 
+      // Fetch dynamic data for banners
+      let eggCount = 0;
+      let interactionCount = state.totalNotifications || 0;
+      
+      if (currentUser) {
+        try {
+          const { count } = await sb.from('eggs').select('egg_id', { count: 'exact', head: true }).eq('player_id', currentUser.id);
+          eggCount = count || 0;
+        } catch (e) { console.error("Error fetching eggs:", e); }
+      }
+
+      // Calculate "Current Spawns" (exclusive to this cycle or just a few featured ones)
+      const featuredSpawns = [];
+      FIRE_RED_MAPS.forEach(loc => {
+        if (badgeCount < loc.badges) return;
+        const pool = loc.wild[cycle] || [];
+        const dayPool = new Set(loc.wild.day || []);
+        pool.forEach(id => {
+          if (!dayPool.has(id) && featuredSpawns.length < 5) {
+            if (!featuredSpawns.includes(id)) featuredSpawns.push(id);
+          }
+        });
+      });
+
+      // Helper: render a small Pokémon sprite
+      const spriteImg = (id) => {
+        const num = POKEMON_SPRITE_IDS[id];
+        const pData = POKEMON_DB[id];
+        const name = pData?.name || id;
+        if (!num) return '';
+        return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
+          title="${name}" width="32" height="32"
+          style="image-rendering:pixelated;"
+          onerror="this.style.display='none'">`;
+      };
+
       let html = '';
 
-      // Siempre añadir el Centro Pokémon primero
-      html += `<div class="location-card location-card-center" onclick="openPokemonCenter()"
-            style="grid-column: 1 / -1; border-color:rgba(255,100,150,0.4);background:linear-gradient(135deg,#1a1a3e,#2a1a2e);margin-bottom:16px;">
-            <span class="location-tag" style="background:rgba(255,100,150,0.2);color:#ff6496;">🏥 Curación</span>
-            <div class="location-icon">🏥</div>
-            <div class="location-name" style="color:#ff6496;">Centro Pokémon</div>
-            <div class="location-desc">Saná a tus Pokémon y restaurá sus PP al máximo.</div>
-          </div>`;
+      // Rediseño: Barra dividida (Centro Pokémon + Banners)
+      html += `
+        <div class="pc-split-container">
+          <!-- Parte Izquierda: Centro Pokémon -->
+          <div class="pc-left">
+            <div class="location-card location-card-center" onclick="openPokemonCenter()"
+              style="border-color:rgba(255,100,150,0.4);background:linear-gradient(135deg,#1a1a3e,#2a1a2e);">
+              <span class="location-tag" style="background:rgba(255,100,150,0.2);color:#ff6496;">🏥 Curación</span>
+              <div class="location-icon">🏥</div>
+              <div class="location-name" style="color:#ff6496;">Centro Pokémon</div>
+              <div class="location-desc">Saná a tus Pokémon y restaurá sus PP al máximo.</div>
+            </div>
+          </div>
+
+          <!-- Parte Derecha: Banners Recordatorios -->
+          <div class="pc-right">
+            <!-- Banner 1: Huevos -->
+            <div class="pc-banner" onclick="showTab('daycare')">
+              <div class="pc-banner-icon">🥚</div>
+              <div class="pc-banner-content">
+                <div class="pc-banner-title">Crianza</div>
+                <div class="pc-banner-text">¡Tienes <span>${eggCount}</span> huevos en tu almacén!</div>
+              </div>
+            </div>
+
+            <!-- Banner 2: Amigos -->
+            <div class="pc-banner" onclick="showTab('friends')">
+              <div class="pc-banner-icon">👥</div>
+              <div class="pc-banner-content">
+                <div class="pc-banner-title">Social</div>
+                <div class="pc-banner-text">¡Tienes <span>${interactionCount}</span> interacciones con tus amigos!</div>
+              </div>
+            </div>
+
+            <!-- Banner 3: Spawns -->
+            <div class="pc-banner" style="cursor: default;">
+              <div class="pc-banner-icon">✨</div>
+              <div class="pc-banner-content">
+                <div class="pc-banner-title">A esta hora aparecen:</div>
+                <div class="pc-banner-spawns">
+                  ${featuredSpawns.map(id => spriteImg(id)).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
 
     FIRE_RED_MAPS.forEach(loc => {
         let isLocked = badgeCount < loc.badges;

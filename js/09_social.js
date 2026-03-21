@@ -50,6 +50,8 @@
         + (pendingBattles?.length || 0)
         + (typeof getChatNotificationCount === 'function' ? getChatNotificationCount() : 0);
 
+      state.totalNotifications = total;
+
       const badge = document.getElementById('friends-nav-badge');
       const lbl = document.getElementById('friends-nav-label');
       // Si el usuario ya está mirando la tab de amigos, no mostrar el badge
