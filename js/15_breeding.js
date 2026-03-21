@@ -956,6 +956,33 @@ function _createNewMissionObject(date) {
     const target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
     const minLvl = Math.floor(Math.random() * 21) + 30; // Niveles 30 a 50
     
+    // Nuevos tipos de requisitos
+    const missionTypes = ['level', 'iv_total', 'nature', 'iv_31'];
+    const type = missionTypes[Math.floor(Math.random() * missionTypes.length)];
+    
+    let requirement = { type: type };
+    let reqText = '';
+
+    if (type === 'level') {
+        requirement.minLevel = minLvl;
+        reqText = `Nv. ${minLvl}+`;
+    } else if (type === 'iv_total') {
+        const minIvTotal = Math.floor(Math.random() * 31) + 120; // 120 a 150 IVs totales
+        requirement.minIvTotal = minIvTotal;
+        reqText = `${minIvTotal}+ IVs totales`;
+    } else if (type === 'nature') {
+        const NATURES = ['Audaz', 'Firme', 'Pícaro', 'Manso', 'Serio', 'Osado', 'Plácido', 'Agitado', 'Jovial', 'Ingenuo', 'Modesto', 'Moderado', 'Raro', 'Dócil', 'Tímido', 'Activo', 'Alocado', 'Tranquilo', 'Grosero', 'Cauto'];
+        const targetNature = NATURES[Math.floor(Math.random() * NATURES.length)];
+        requirement.nature = targetNature;
+        reqText = `naturaleza ${targetNature}`;
+    } else if (type === 'iv_31') {
+        const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+        const statLabels = { hp: 'PS', atk: 'Ataque', def: 'Defensa', spa: 'At. Esp', spd: 'Def. Esp', spe: 'Velocidad' };
+        const targetStat = stats[Math.floor(Math.random() * stats.length)];
+        requirement.stat31 = targetStat;
+        reqText = `IV 31 en ${statLabels[targetStat]}`;
+    }
+
     const possibleRewards = [
         { id: 'berry_bronze', name: 'Baya de Bronce', qty: 3, icon: '🥉' },
         { id: 'berry_silver', name: 'Baya de Plata', qty: 2, icon: '🥈' },
@@ -970,78 +997,78 @@ function _createNewMissionObject(date) {
     ];
     const reward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
     
-    // Asignar un entrenador aleatorio para el sprite
     const trainerKeys = Object.keys(TRAINER_TYPES);
     const tKey = trainerKeys[Math.floor(Math.random() * trainerKeys.length)];
     const trainer = TRAINER_TYPES[tKey];
 
     const MISSION_DIALOGUES = {
         'caza_bichos': [
-            "¡Busco un ${pokemon} para completar mi colección de insectos! ¿Tienes uno de Nv. ${level}+?",
-            "¡Dicen que los ${pokemon} de Nv. ${level}+ son increíbles! ¿Me consigues uno?",
-            "¡Mi red de caza no es suficiente para este ${pokemon}! ¡Dámelo si es Nv. ${level}+!"
+            "¡Busco un ${pokemon} para mi colección! ¿Tienes uno con ${req}?",
+            "¡Dicen que los ${pokemon} con ${req} son increíbles! ¿Me consigues uno?",
+            "¡Mi red de caza no es suficiente para este ${pokemon}! ¡Dámelo si tiene ${req}!"
         ],
         'ornitologo': [
-            "¡Urgente! Necesito un ${pokemon} veloz para mis mensajerías. Debe ser al menos Nv. ${level}.",
-            "¡Ese ${pokemon} volaría alto en mi equipo! ¿Tienes uno de Nv. ${level}+?",
-            "¡Necesito un ${pokemon} de Nv. ${level}+ para una competencia de vuelo pronto!"
+            "¡Urgente! Necesito un ${pokemon} para mis mensajerías. Debe tener ${req}.",
+            "¡Ese ${pokemon} volaría alto en mi equipo! ¿Tienes uno con ${req}?",
+            "¡Necesito un ${pokemon} con ${req} para una competencia pronto!"
         ],
         'cientifico': [
-            "¡Mi investigación requiere un ejemplar de ${pokemon}! ¿Me consigues uno de Nv. ${level}+?",
-            "¡La energía de un ${pokemon} Nv. ${level}+ es fascinante! ¡Tráeme uno!",
-            "¡Para mis experimentos necesito un ${pokemon}! Que sea Nv. ${level} o superior."
+            "¡Mi investigación requiere un ejemplar de ${pokemon}! ¿Me consigues uno con ${req}?",
+            "¡La energía de un ${pokemon} con ${req} es fascinante! ¡Tráeme uno!",
+            "¡Para mis experimentos necesito un ${pokemon}! Que tenga ${req}."
         ],
         'luchador': [
-            "¡Busco un ${pokemon} para entrenar mis puños! ¡Tráeme uno que sea Nv. ${level}+!",
-            "¡Ese ${pokemon} tiene un espíritu de lucha increíble! ¿Tienes uno Nv. ${level}+?",
-            "¡Entrenemos juntos! Pero primero consígueme un ${pokemon} de Nv. ${level}+."
+            "¡Busco un ${pokemon} para entrenar mis puños! ¡Tráeme uno con ${req}!",
+            "¡Ese ${pokemon} tiene un espíritu increíble! ¿Tienes uno con ${req}?",
+            "¡Entrenemos juntos! Pero primero consígueme un ${pokemon} con ${req}."
         ],
         'pescador': [
-            "¡Lancé el anzuelo pero no pica nada! ¿Podrías darme un ${pokemon} de Nv. ${level}+?",
-            "¡Este ${pokemon} se me escapó por poco! ¿Tienes uno de Nv. ${level}+ para mí?",
-            "¡Qué buena pesca sería un ${pokemon}! Tráeme uno que sea Nv. ${level}+."
+            "¡Lancé el anzuelo pero no pica nada! ¿Podrías darme un ${pokemon} con ${req}?",
+            "¡Este ${pokemon} se me escapó por poco! ¿Tienes uno con ${req} para mí?",
+            "¡Qué buena pesca sería un ${pokemon}! Tráeme uno con ${req}."
         ],
         'nadador': [
-            "¡Las olas son fuertes hoy! Un ${pokemon} de Nv. ${level}+ me ayudaría mucho.",
-            "¡Nadando encontré un ${pokemon}, pero era débil! Tráeme uno Nv. ${level}+.",
-            "¡El agua está genial! Y más si tuviera un ${pokemon} de Nv. ${level}+ conmigo."
+            "¡Las olas son fuertes hoy! Un ${pokemon} con ${req} me ayudaría mucho.",
+            "¡Nadando encontré un ${pokemon}, pero era débil! Tráeme uno con ${req}.",
+            "¡El agua está genial! Y más si tuviera un ${pokemon} con ${req} conmigo."
         ],
         'domador': [
-            "¡Mi hermano quiere hacer competencia y mis Pokemon son lentos! ¡Necesito un ${pokemon} Nv. ${level}+!",
-            "¡Mi equipo necesita más fieras! Un ${pokemon} de Nv. ${level}+ sería ideal.",
-            "¡Ese ${pokemon} se ve salvaje! ¿Tienes uno de Nv. ${level}+ para mi colección?"
+            "¡Mi hermano quiere hacer competencia y mis Pokemon son lentos! ¡Necesito un ${pokemon} con ${req}!",
+            "¡Mi equipo necesita más fieras! Un ${pokemon} con ${req} sería ideal.",
+            "¡Ese ${pokemon} se ve salvaje! ¿Tienes uno con ${req} para mi colección?"
         ],
         'medium': [
-            "He tenido una visión... ¡Necesito un ${pokemon} de Nv. ${level}+ ahora mismo!",
-            "El cosmos dice que un ${pokemon} Nv. ${level}+ traerá suerte. ¿Me das uno?",
-            "Puedo leer tu mente... sabes dónde hallar un ${pokemon} Nv. ${level}+."
+            "He tenido una visión... ¡Necesito un ${pokemon} con ${req} ahora mismo!",
+            "El cosmos dice que un ${pokemon} con ${req} traerá suerte. ¿Me das uno?",
+            "Puedo leer tu mente... sabes dónde hallar un ${pokemon} con ${req}."
         ],
         'motorista': [
-            "¡Mi banda necesita potencia! Tráeme un ${pokemon} de Nv. ${level}+ para rugir.",
-            "¡Ese ${pokemon} tiene estilo! ¿Me das uno de Nv. ${level}+ para mi moto?",
-            "¡Hacéte a un lado! A menos que tengas un ${pokemon} Nv. ${level}+ para mí."
+            "¡Mi banda necesita potencia! Tráeme un ${pokemon} con ${req} para rugir.",
+            "¡Ese ${pokemon} tiene estilo! ¿Me das uno con ${req} para mi moto?",
+            "¡Hacéte a un lado! A menos que tengas un ${pokemon} con ${req} para mí."
         ],
         'montanero': [
-            "¡Las montañas son duras! Un ${pokemon} de Nv. ${level}+ me vendría de perlas.",
-            "¡Escalando perdí a mi ${pokemon}! ¿Me das uno que sea Nv. ${level}?",
-            "¡Rocas y más rocas! Necesito un ${pokemon} de Nv. ${level}+ para avanzar."
+            "¡Las montañas son duras! Un ${pokemon} con ${req} me vendría de perlas.",
+            "¡Escalando perdí a mi ${pokemon}! ¿Me das uno con ${req}?",
+            "¡Rocas y más rocas! Necesito un ${pokemon} con ${req} para avanzar."
         ],
         'default': [
-            "Necesito un ${pokemon} de Nv. ${level}+ con urgencia. ¿Podrás ayudarme?",
-            "¿Podrías traerme un ${pokemon} que sea al menos Nv. ${level}?",
-            "¡Garantizo una buena recompensa por un ${pokemon} Nv. ${level}+!"
+            "Necesito un ${pokemon} con ${req} con urgencia. ¿Podrás ayudarme?",
+            "¿Podrías traerme un ${pokemon} que tenga ${req}?",
+            "¡Garantizo una buena recompensa por un ${pokemon} con ${req}!"
         ]
     };
 
     const targetName = POKEMON_DB[target]?.name || target;
     const templates = MISSION_DIALOGUES[tKey] || MISSION_DIALOGUES['default'];
     const template = templates[Math.floor(Math.random() * templates.length)];
-    const dialogue = template.replace('${pokemon}', `<b style="color:var(--yellow);">${targetName}</b>`).replace('${level}', minLvl);
+    const dialogue = template.replace('${pokemon}', `<b style="color:var(--yellow);">${targetName}</b>`).replace('${req}', reqText);
 
     return { 
         date: date, 
         targetId: target, 
-        minLevel: minLvl, 
+        requirement: requirement,
+        reqText: reqText,
         reward: reward, 
         completed: false,
         trainerType: tKey,
@@ -1157,12 +1184,29 @@ function openMissionPicker(missionIdx) {
     const validPoks = [...state.team, ...(state.box || [])].filter(p => !p.favorite && !_activeDaycareSlots.some(s => s.pokemon_id === p.uid));
     
     bModal.innerHTML = `
-        <div style="font-family:'Press Start 2P';font-size:12px;margin-bottom:16px;color:var(--yellow);text-align:center;">Entregar a ${targetName} Nv.${m.minLevel}+</div>
+        <div style="font-family:'Press Start 2P';font-size:12px;margin-bottom:16px;color:var(--yellow);text-align:center;">Entregar a ${targetName}</div>
+        <div style="font-size:10px;text-align:center;color:var(--gray);margin-bottom:4px;">Requisito: ${m.reqText || ('Nv.' + m.minLevel + '+')}</div>
         <div style="font-size:10px;text-align:center;color:var(--gray);margin-bottom:12px;">⚠️ El Pokémon será entregado permanentemente.</div>
         <div style="max-height:60vh;overflow-y:auto;display:grid;grid-template-columns:1fr;gap:10px;">
           ${validPoks.map(p => {
               const baseId = typeof _breedingBaseId === 'function' ? _breedingBaseId(p.id) : p.id;
-              const isMatch = baseId === targetId && p.level >= m.minLevel;
+              if (baseId !== targetId) return '';
+
+              // Validar requisito
+              let isMatch = false;
+              const req = m.requirement || { type: 'level', minLevel: m.minLevel };
+
+              if (req.type === 'level') {
+                  isMatch = p.level >= req.minLevel;
+              } else if (req.type === 'iv_total') {
+                  const total = (p.ivs.hp || 0) + (p.ivs.atk || 0) + (p.ivs.def || 0) + (p.ivs.spa || 0) + (p.ivs.spd || 0) + (p.ivs.spe || 0);
+                  isMatch = total >= req.minIvTotal;
+              } else if (req.type === 'nature') {
+                  isMatch = p.nature === req.nature;
+              } else if (req.type === 'iv_31') {
+                  isMatch = p.ivs[req.stat31] === 31;
+              }
+
               if (!isMatch) return '';
               
               const sUrl = typeof getSpriteUrl === 'function' ? getSpriteUrl(p.id, p.isShiny) : '';
@@ -1170,6 +1214,10 @@ function openMissionPicker(missionIdx) {
                 <img src="${sUrl}" style="width:48px;height:48px;image-rendering:pixelated;" onerror="this.style.display='none'">
                 <div>
                   <div style="font-weight:700;font-size:12px;color:#fff;">${p.name} <span style="font-size:10px;color:var(--gray);">Nv.${p.level}</span></div>
+                  <div style="font-size:9px;color:var(--gray);margin-top:2px;">
+                    IVs: ${p.ivs.hp}/${p.ivs.atk}/${p.ivs.def}/${p.ivs.spa}/${p.ivs.spd}/${p.ivs.spe} 
+                    <span style="color:var(--yellow);margin-left:4px;">${p.nature}</span>
+                  </div>
                   <div style="font-size:10px;color:var(--yellow);margin-top:4px;">Tocar para entregar</div>
                 </div>
               </div>`;
