@@ -59,6 +59,11 @@ function renderTeam() {
     const checkMark = releasing && selected ? '<div class="release-check">✓</div>' : '';
     const clickFn = releasing ? `toggleReleaseSelect(${i})` : `openPokemonDetail(${i})`;
     const tierInfo = getPokemonTier(p);
+    
+    // Obedience check
+    const maxObeyLv = (typeof getMaxObeyLevel === 'function') ? getMaxObeyLevel() : 100;
+    const disobeys = p.level > maxObeyLv;
+    const obedienceTag = disobeys ? `<div style="position:absolute;bottom:70px;left:5px;background:var(--red);color:white;font-family:'Press Start 2P',monospace;font-size:6px;padding:2px 5px;border-radius:6px;border:1px solid white;line-height:1.4;z-index:2;animation:pulse 1s infinite;">NV ALTO</div>` : '';
 
     // Badges Container (Held Item + Tags)
     const tags = p.tags || [];
@@ -82,6 +87,7 @@ function renderTeam() {
     return `<div class="team-card ${selClass}" onclick="${clickFn}" style="cursor:pointer;position:relative;" draggable="${!releasing}" ondragstart="handleDragStart(event, ${i})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${i})">
       ${checkMark}
       ${badgesHtml}
+      ${obedienceTag}
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};font-family:'Press Start 2P',monospace;font-size:6px;padding:2px 5px;border-radius:6px;border:1px solid ${tierInfo.color}44;line-height:1.4;z-index:2;">${tierInfo.tier}</div>
       <div style="height:80px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;">
         <img id="team-sprite-${i}" src="" alt="${p.name}" style="width:72px;height:72px;image-rendering:pixelated;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));display:none;pointer-events:none;">
@@ -347,6 +353,17 @@ function openPokemonDetail(index) {
           <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:${typeColor};margin-bottom:6px;">${p.name}${p.isShiny ? ' ✨' : ''}</div>
           <div style="font-size:12px;color:#888;">Nivel ${p.level} · ${p.type.charAt(0).toUpperCase() + p.type.slice(1)}</div>
           <div style="font-size:11px;color:#555;margin-top:4px;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
+          
+          ${(function() {
+            const maxL = (typeof getMaxObeyLevel === 'function') ? getMaxObeyLevel() : 100;
+            if (p.level > maxL) {
+              return `<div style="margin-top:8px;background:rgba(255,59,59,0.15);border:1px solid var(--red);border-radius:8px;padding:6px 10px;font-size:10px;color:#ff4d4d;line-height:1.4;font-weight:700;">
+                ⚠️ ¡Tu nivel es demasiado alto para tus medallas! Podría desobedecer en combate. (Máx Nv. ${maxL})
+              </div>`;
+            }
+            return '';
+          })()}
+
           <div style="margin-top:12px; display:flex; align-items:center; gap:12px;">
             <span class="tag-label" style="margin-bottom:0;">Destacar:</span>
             <div style="display:flex;gap:10px;">

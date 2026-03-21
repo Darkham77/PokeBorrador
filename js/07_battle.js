@@ -853,6 +853,19 @@ function getEffectiveSpeed(pokemon, stages) {
   return spe;
 }
 
+function getMaxObeyLevel() {
+  const badges = (state.defeatedGyms || []).length;
+  if (badges >= 8) return 100;
+  if (badges >= 7) return 75;
+  if (badges >= 6) return 65;
+  if (badges >= 5) return 55;
+  if (badges >= 4) return 45;
+  if (badges >= 3) return 35;
+  if (badges >= 2) return 30;
+  if (badges >= 1) return 25;
+  return 20;
+}
+
 function applyAbilityEffects(attacker, defender, move, damageResult, addLogFn) {
   const ab = defender.ability;
   const md = MOVE_DATA[move.name] || {};
@@ -1022,6 +1035,52 @@ function useMove(moveIndex) {
         enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
       }, 1000);
       return;
+    }
+
+    // Check obedience
+    const maxLevel = getMaxObeyLevel();
+    if (b.player.level > maxLevel) {
+      const disobedienceChance = 0.25;
+      if (Math.random() < disobedienceChance) {
+        const roll = Math.random();
+        _battleLock = true; setBtns(false);
+        
+        if (roll < 0.4) {
+          // Loafing around
+          setLog(`¡${b.player.name} está haciendo el vago!`, 'log-enemy');
+        } else if (roll < 0.6) {
+          // Nap
+          b.player.status = 'sleep';
+          b.player.sleepTurns = 1 + Math.floor(Math.random() * 3);
+          setLog(`¡${b.player.name} decidió echarse una siesta!`, 'log-enemy');
+        } else if (roll < 0.8) {
+          // Hurt self
+          const selfDmg = Math.max(1, Math.floor(((2 * b.player.level / 5 + 2) * 40 * b.player.atk / b.player.def) / 50) + 2);
+          b.player.hp = Math.max(0, b.player.hp - selfDmg);
+          const tm = state.team.find(p => p.name === b.player.name);
+          if (tm) tm.hp = b.player.hp;
+          setLog(`¡${b.player.name} ignoró tus órdenes y se golpeó a sí mismo! (-${selfDmg} HP)`, 'log-enemy');
+          updateBattleUI();
+        } else {
+          // Random move
+          const randomMove = b.player.moves[Math.floor(Math.random() * b.player.moves.length)];
+          setLog(`¡${b.player.name} ignoró tus órdenes y usó <strong>${randomMove.name}</strong>!`, 'log-player');
+          // We trigger the move manually but it doesn't spend PP of the intended move
+          // For simplicity, we just log it and do nothing else this turn, 
+          // or we could execute it... but let's keep it simple: it fails or does nothing.
+          // Actually, let's make it more fun: it uses the random move.
+          // Due to recursion/structure, it's easier to just log it failed.
+          // Let's stick to "Doing something else... but it failed!"
+          addLog(`¡Pero falló!`, 'log-enemy');
+        }
+
+        setTimeout(() => {
+          _battleLock = false;
+          if (b.player.hp <= 0) { endBattle(false); return; }
+          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
+        }, 1100);
+        return;
+      }
     }
     // Check confusion
     if (b.player.confused > 0) {
