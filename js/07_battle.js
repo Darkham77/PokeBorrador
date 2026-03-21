@@ -235,6 +235,11 @@ function triggerShinySparkles(side) {
   const container = document.querySelector(`.battle-pokemon-container.${side}`);
   if (!container) return;
 
+  // ✨ 8-bit shiny sound
+  if (window.SFX && typeof window.SFX.shiny === 'function') {
+    try { window.SFX.shiny(); } catch(e) {}
+  }
+
   const sparklesWrap = document.createElement('div');
   sparklesWrap.className = 'shiny-sparkles';
   for (let i = 0; i < 8; i++) {

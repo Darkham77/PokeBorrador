@@ -114,6 +114,11 @@
         </div>`;
       document.body.appendChild(introOv);
 
+      // ⚔️ 8-bit epic rival encounter sound
+      if (window.SFX && typeof window.SFX.rivalEncounter === 'function') {
+        try { window.SFX.rivalEncounter(); } catch(e) {}
+      }
+
       document.getElementById('rival-intro-btn').onclick = () => {
         introOv.remove();
         enemyTeam[0]._revealed = true;

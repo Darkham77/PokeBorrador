@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poké Vicio — Preview Mejoras Visuales</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+:root {
+  --red: #ff453a; --blue: #0a84ff; --yellow: #ffd60a;
+  --green: #32d74b; --purple: #bf5af2;
+  --card: #121212; --card2: #1a1a1a; --text: #f5f5f7; --gray: #86868b;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Nunito', sans-serif; color: var(--text); min-height:100vh; overflow-x:hidden;
+  background: radial-gradient(ellipse at 20% 30%, #0d0d2b 0%, #000820 60%, #000 100%);
+}
+.stars {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse at 15% 40%, rgba(99,40,200,0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 20%, rgba(59,139,255,0.14) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(199,125,255,0.1) 0%, transparent 40%),
+    radial-gradient(ellipse at 70% 60%, rgba(10,132,255,0.07) 0%, transparent 35%);
+  animation: nebulaShift 20s ease-in-out infinite alternate;
+}
+@keyframes nebulaShift {
+  0%{opacity:1} 50%{opacity:0.85} 100%{opacity:1}
+}
+.particle {
+  position:fixed; width:2px; height:2px; background:rgba(255,255,255,0.4);
+  border-radius:50%; animation:floatParticle linear infinite; pointer-events:none; z-index:0;
+}
+@keyframes floatParticle {
+  0%{transform:translateY(100vh) translateX(0);opacity:0}
+  10%{opacity:1} 90%{opacity:0.5}
+  100%{transform:translateY(-10vh) translateX(20px);opacity:0}
+}
+#app { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:24px; }
+.section-label {
+  font-family:'Press Start 2P',monospace; font-size:8px; color:var(--purple);
+  margin:36px 0 16px; display:flex; align-items:center; gap:10px; letter-spacing:1px;
+}
+.section-label::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,rgba(191,90,242,0.4),transparent); }
+
+/* HUD */
+.hud {
+  display:flex; justify-content:space-between; align-items:center;
+  background:rgba(18,18,30,0.85); backdrop-filter:blur(16px);
+  border-radius:20px; padding:14px 24px; margin-bottom:12px; gap:20px;
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 8px 40px rgba(0,0,0,0.6), 0 0 60px rgba(99,40,200,0.05);
+}
+.hud-trainer{display:flex;align-items:center;gap:12px}
+.trainer-avatar{font-size:36px;filter:drop-shadow(0 0 10px rgba(255,214,10,0.4))}
+.trainer-name{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow)}
+.trainer-info{font-size:12px;color:var(--gray);margin-top:4px}
+.exp-bar-bg{margin-top:5px;background:rgba(255,255,255,0.1);border-radius:10px;height:5px;width:140px;overflow:hidden}
+.exp-bar-fill{height:100%;background:linear-gradient(90deg,#C77DFF,#9b4dca);border-radius:10px;width:65%;transition:width 0.5s}
+.hud-nav{display:flex;gap:8px;flex:1;justify-content:center;align-items:center}
+.hud-nav-btn {
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px; padding:8px 14px; color:var(--gray);
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:13px;
+  cursor:pointer; transition:all 0.25s; display:flex; align-items:center; gap:6px; white-space:nowrap;
+}
+.hud-nav-btn:hover{background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.2);transform:translateY(-2px)}
+.hud-nav-btn.active {
+  background:linear-gradient(135deg,rgba(255,214,10,0.22),rgba(255,140,0,0.12));
+  color:#fff; border-color:var(--yellow);
+  box-shadow:0 0 24px rgba(255,214,10,0.3),inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.hud-items{display:flex;gap:10px;align-items:center}
+.hud-pill {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:65px;height:65px;padding:8px;border-radius:18px;font-size:13px;
+  font-weight:900;gap:4px;border:1px solid rgba(255,255,255,0.1);
+  transition:all 0.25s;backdrop-filter:blur(8px);
+}
+.hud-pill:hover{transform:translateY(-3px)}
+.hud-pill i{font-size:18px}
+.money-pill{background:rgba(50,215,75,0.15);color:var(--green);border-color:rgba(50,215,75,0.3);box-shadow:0 0 20px rgba(50,215,75,0.15);animation:pulseGreen 4s ease-in-out infinite}
+@keyframes pulseGreen{0%,100%{box-shadow:0 0 20px rgba(50,215,75,0.15)}50%{box-shadow:0 0 30px rgba(50,215,75,0.3)}}
+.bc-pill{background:rgba(191,90,242,0.15);color:var(--purple);border-color:rgba(191,90,242,0.3);box-shadow:0 0 20px rgba(191,90,242,0.15)}
+.badge-pill{background:rgba(255,214,10,0.15);color:var(--yellow);border-color:rgba(255,214,10,0.3);box-shadow:0 0 20px rgba(255,214,10,0.15)}
+.ball-pill{background:rgba(255,69,58,0.15);color:var(--red);border-color:rgba(255,69,58,0.3);box-shadow:0 0 20px rgba(255,69,58,0.15)}
+
+/* MAP */
+.map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:16px}
+.location-card{border-radius:20px;padding:22px;cursor:pointer;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);border:1px solid transparent;position:relative;overflow:hidden}
+.location-card::before{content:'';position:absolute;inset:0;border-radius:19px;opacity:0;transition:opacity 0.3s}
+.location-card:hover::before{opacity:1}
+.location-card:hover{transform:translateY(-6px) scale(1.01)}
+.zone-grass{background:linear-gradient(135deg,#080f08,#0d1f0d,#111a11);border-color:rgba(50,215,75,0.2);box-shadow:0 4px 20px rgba(50,215,75,0.08)}
+.zone-grass::before{background:radial-gradient(circle at 30% 30%,rgba(50,215,75,0.1),transparent 60%)}
+.zone-grass:hover{border-color:rgba(50,215,75,0.6);box-shadow:0 10px 40px rgba(50,215,75,0.2)}
+.zone-water{background:linear-gradient(135deg,#050c1a,#081525,#0a1a30);border-color:rgba(10,132,255,0.2);box-shadow:0 4px 20px rgba(10,132,255,0.08)}
+.zone-water::before{background:radial-gradient(circle at 30% 30%,rgba(10,132,255,0.12),transparent 60%)}
+.zone-water:hover{border-color:rgba(10,132,255,0.6);box-shadow:0 10px 40px rgba(10,132,255,0.2)}
+.zone-city{background:linear-gradient(135deg,#0f0f18,#151520,#1a1a28);border-color:rgba(255,214,10,0.2)}
+.zone-city:hover{border-color:rgba(255,214,10,0.5);box-shadow:0 10px 40px rgba(255,214,10,0.15)}
+.zone-cave{background:linear-gradient(135deg,#0d0a14,#150d20,#1a1028);border-color:rgba(191,90,242,0.2);box-shadow:0 4px 20px rgba(191,90,242,0.08)}
+.zone-cave::before{background:radial-gradient(circle at 30% 30%,rgba(191,90,242,0.1),transparent 60%)}
+.zone-cave:hover{border-color:rgba(191,90,242,0.6);box-shadow:0 10px 40px rgba(191,90,242,0.2)}
+.zone-fire{background:linear-gradient(135deg,#120808,#200d0d,#280f0f);border-color:rgba(255,69,58,0.2);box-shadow:0 4px 20px rgba(255,69,58,0.08)}
+.zone-fire:hover{border-color:rgba(255,69,58,0.6);box-shadow:0 10px 40px rgba(255,69,58,0.2)}
+.location-icon{font-size:52px;display:block;margin-bottom:14px;filter:drop-shadow(0 0 12px currentColor);animation:float 4s ease-in-out infinite;transition:transform 0.3s}
+.location-card:hover .location-icon{transform:scale(1.15)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.location-name{font-family:'Press Start 2P',monospace;font-size:9px;margin-bottom:8px;color:var(--yellow);text-shadow:0 0 20px rgba(255,214,10,0.4)}
+.location-desc{font-size:12px;color:var(--gray);line-height:1.6}
+.location-tag{position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px}
+.tag-wild{background:rgba(50,215,75,0.15);color:var(--green);border:1px solid rgba(50,215,75,0.3)}
+.tag-water{background:rgba(10,132,255,0.15);color:var(--blue);border:1px solid rgba(10,132,255,0.3)}
+.tag-cave{background:rgba(191,90,242,0.15);color:var(--purple);border:1px solid rgba(191,90,242,0.3)}
+
+/* POKEMON */
+.team-section{background:rgba(18,18,28,0.85);backdrop-filter:blur(12px);border-radius:20px;padding:22px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 8px 40px rgba(0,0,0,0.5)}
+.section-title-text{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--purple);margin-bottom:18px;text-shadow:0 0 20px rgba(191,90,242,0.5)}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.team-card{border-radius:16px;padding:16px;text-align:center;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);position:relative;overflow:hidden}
+.team-card::after{content:'';position:absolute;inset:0;border-radius:16px;opacity:0;transition:opacity 0.3s}
+.team-card:hover{transform:translateY(-6px) scale(1.03)}
+.team-card:hover::after{opacity:1}
+.card-fire{background:linear-gradient(160deg,#1a0a08,#221008);border:1px solid rgba(255,69,58,0.35);box-shadow:0 4px 20px rgba(255,69,58,0.12),inset 0 1px 0 rgba(255,100,70,0.08)}
+.card-fire:hover{border-color:rgba(255,69,58,0.7);box-shadow:0 8px 30px rgba(255,69,58,0.25)}
+.card-fire::after{background:radial-gradient(circle at 50% 100%,rgba(255,69,58,0.08),transparent 60%)}
+.card-water{background:linear-gradient(160deg,#080e1a,#0a1525);border:1px solid rgba(10,132,255,0.35);box-shadow:0 4px 20px rgba(10,132,255,0.12)}
+.card-water:hover{border-color:rgba(10,132,255,0.7);box-shadow:0 8px 30px rgba(10,132,255,0.25)}
+.card-grass{background:linear-gradient(160deg,#081408,#0d1e0d);border:1px solid rgba(50,215,75,0.35);box-shadow:0 4px 20px rgba(50,215,75,0.12)}
+.card-grass:hover{border-color:rgba(50,215,75,0.7);box-shadow:0 8px 30px rgba(50,215,75,0.25)}
+.card-electric{background:linear-gradient(160deg,#14120a,#1e1a08);border:1px solid rgba(255,214,10,0.35);box-shadow:0 4px 20px rgba(255,214,10,0.12)}
+.card-electric:hover{border-color:rgba(255,214,10,0.7);box-shadow:0 8px 30px rgba(255,214,10,0.25)}
+.card-psychic{background:linear-gradient(160deg,#110814,#1a0d1e);border:1px solid rgba(191,90,242,0.35);box-shadow:0 4px 20px rgba(191,90,242,0.12)}
+.card-psychic:hover{border-color:rgba(191,90,242,0.7);box-shadow:0 8px 30px rgba(191,90,242,0.25)}
+.card-normal{background:linear-gradient(160deg,#111118,#1a1a22);border:1px solid rgba(150,150,180,0.2);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+.card-normal:hover{border-color:rgba(200,200,220,0.4)}
+.pokemon-sprite{width:80px;height:80px;image-rendering:pixelated;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5));transition:filter 0.3s;animation:floatSprite 3s ease-in-out infinite;display:block;margin:0 auto 10px}
+@keyframes floatSprite{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.team-card:hover .pokemon-sprite{filter:drop-shadow(0 6px 16px rgba(255,255,255,0.15))}
+.pokemon-name{font-family:'Press Start 2P',monospace;font-size:7px;margin-bottom:6px;color:var(--text)}
+.pokemon-level{font-size:11px;color:var(--yellow);font-weight:700;margin-bottom:8px}
+.hp-bar-wrap{background:rgba(255,255,255,0.1);border-radius:10px;height:6px;overflow:hidden}
+.hp-bar{height:100%;border-radius:10px;transition:width 0.5s}
+.hp-high{background:linear-gradient(90deg,var(--green),#90EE90)}
+.hp-mid{background:linear-gradient(90deg,var(--yellow),#FFD93D)}
+.hp-low{background:linear-gradient(90deg,var(--red),#FF6B6B)}
+.type-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:8px}
+.type-fire-b{background:rgba(255,69,58,0.2);color:var(--red)}
+.type-water-b{background:rgba(10,132,255,0.2);color:var(--blue)}
+.type-grass-b{background:rgba(50,215,75,0.2);color:var(--green)}
+.type-electric-b{background:rgba(255,214,10,0.2);color:var(--yellow)}
+.type-psychic-b{background:rgba(191,90,242,0.2);color:var(--purple)}
+
+/* AUTH */
+.auth-demo{display:flex;justify-content:center;margin-bottom:40px}
+.auth-card{background:rgba(16,16,26,0.88);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.1);box-shadow:0 25px 80px rgba(0,0,0,0.8),0 0 60px rgba(191,90,242,0.1),inset 0 1px 0 rgba(255,255,255,0.05);border-radius:28px;padding:36px;width:100%;max-width:380px;text-align:center;position:relative;overflow:hidden}
+.auth-card::before{content:'';position:absolute;inset:-2px;border-radius:30px;background:linear-gradient(90deg,var(--purple),var(--blue),var(--yellow),var(--purple));background-size:300% 300%;animation:borderGlow 6s ease infinite;z-index:-1;opacity:0.5}
+@keyframes borderGlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.auth-logo{font-family:'Press Start 2P',monospace;font-size:22px;background:linear-gradient(135deg,var(--yellow),var(--red),var(--blue));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(255,214,10,0.4));margin-bottom:8px}
+.auth-sub{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--purple);margin-bottom:28px;letter-spacing:2px;text-shadow:0 0 15px rgba(191,90,242,0.4)}
+.auth-input{width:100%;padding:14px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;color:var(--text);font-size:14px;font-family:'Nunito',sans-serif;margin-bottom:12px;outline:none;transition:all 0.3s}
+.auth-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(191,90,242,0.15);background:rgba(191,90,242,0.05)}
+.auth-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--purple),#7b2fbe);color:#fff;border:none;border-radius:14px;font-family:'Press Start 2P',monospace;font-size:10px;cursor:pointer;margin-top:4px;box-shadow:0 4px 20px rgba(191,90,242,0.4);transition:all 0.3s}
+.auth-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(191,90,242,0.6)}
+
+.page-title{font-family:'Press Start 2P',monospace;font-size:clamp(14px,3vw,24px);text-align:center;padding:30px 0 8px;background:linear-gradient(135deg,var(--yellow),var(--red),var(--blue));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(255,214,10,0.4))}
+.page-subtitle{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);text-align:center;margin-bottom:30px;letter-spacing:2px}
+.preview-note{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);text-align:center;padding:20px;background:rgba(255,214,10,0.06);border:1px solid rgba(255,214,10,0.2);border-radius:16px;margin-top:20px;line-height:2}
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="particle" style="left:10%;animation-duration:15s;animation-delay:0s"></div>
+<div class="particle" style="left:25%;animation-duration:22s;animation-delay:3s;width:3px;height:3px"></div>
+<div class="particle" style="left:50%;animation-duration:18s;animation-delay:7s"></div>
+<div class="particle" style="left:75%;animation-duration:25s;animation-delay:2s;background:rgba(191,90,242,0.5)"></div>
+<div class="particle" style="left:90%;animation-duration:20s;animation-delay:9s;background:rgba(10,132,255,0.5)"></div>
+
+<div id="app">
+  <div class="page-title">Poké Vicio</div>
+  <div class="page-subtitle">✨ PREVIEW — MEJORAS VISUALES ✨</div>
+
+  <div class="section-label">1. HUD — GLASSMORPHISM + PILLS CON GLOW PULSANTE</div>
+  <div class="hud">
+    <div class="hud-trainer">
+      <span class="trainer-avatar">🧢</span>
+      <div>
+        <div class="trainer-name">ASH</div>
+        <div class="trainer-info">Entrenador Nv.12</div>
+        <div class="exp-bar-bg"><div class="exp-bar-fill"></div></div>
+      </div>
+    </div>
+    <div class="hud-nav">
+      <button class="hud-nav-btn active"><span>🗺️</span><span>Mapa</span></button>
+      <button class="hud-nav-btn"><span>⚡</span><span>Equipo</span></button>
+      <button class="hud-nav-btn"><span>🏆</span><span>Gimnasios</span></button>
+      <button class="hud-nav-btn"><span>📦</span><span>Caja</span></button>
+      <button class="hud-nav-btn"><span>🎒</span><span>Mochila</span></button>
+    </div>
+    <div class="hud-items">
+      <div class="hud-pill money-pill"><span style="font-size:16px">₽</span><span>8500</span></div>
+      <div class="hud-pill bc-pill"><i class="fas fa-coins"></i><span>240</span></div>
+      <div class="hud-pill badge-pill"><i class="fas fa-medal"></i><span>3</span></div>
+      <div class="hud-pill ball-pill"><span style="font-size:16px">⚫</span><span>15</span></div>
+    </div>
+  </div>
+
+  <div class="section-label">2. LOCATION CARDS — FONDOS ATMOSFÉRICOS POR ZONA</div>
+  <div class="map-grid">
+    <div class="location-card zone-grass">
+      <div class="location-tag tag-wild">🌿 Salvaje</div>
+      <span class="location-icon" style="color:#32d74b">🌲</span>
+      <div class="location-name">Ruta 1</div>
+      <div class="location-desc">Bosques llenos de Pokémon de tipo Planta y Normal.</div>
+    </div>
+    <div class="location-card zone-water">
+      <div class="location-tag tag-water">💧 Agua</div>
+      <span class="location-icon" style="color:#0a84ff">🌊</span>
+      <div class="location-name">Puerto Azul</div>
+      <div class="location-desc">El mar de Kanto. Pokémon de tipo Agua te esperan.</div>
+    </div>
+    <div class="location-card zone-cave">
+      <div class="location-tag tag-cave">👻 Cueva</div>
+      <span class="location-icon" style="color:#bf5af2">⛰️</span>
+      <div class="location-name">Cueva Celeste</div>
+      <div class="location-desc">Oscuridad eterna. Solo los valientes entran aquí.</div>
+    </div>
+    <div class="location-card zone-city">
+      <span class="location-icon" style="color:#ffd60a">🏙️</span>
+      <div class="location-name">Ciudad Paleta</div>
+      <div class="location-desc">Tu hogar. El lugar donde todo comenzó.</div>
+    </div>
+    <div class="location-card zone-fire">
+      <span class="location-icon" style="color:#ff453a">🌋</span>
+      <div class="location-name">Monte Ígneo</div>
+      <div class="location-desc">Temperaturas extremas. Pokémon de Fuego dominan aquí.</div>
+    </div>
+    <div class="location-card zone-grass" style="opacity:0.4;cursor:not-allowed;pointer-events:none">
+      <div class="location-tag" style="background:rgba(120,120,120,0.2);color:#888;border:1px solid #444">🔒 Bloqueado</div>
+      <span class="location-icon" style="color:#555;filter:none;animation:none">🏔️</span>
+      <div class="location-name" style="color:#555">Zona Desconocida</div>
+      <div class="location-desc">Necesitás más medallas para acceder.</div>
+    </div>
+  </div>
+
+  <div class="section-label">3. POKÉMON CARDS — TYPE-GLOW POR TIPO (HOVER PARA VER EFECTO)</div>
+  <div class="team-section">
+    <div class="section-title-text">⚡ Mi Equipo</div>
+    <div class="team-grid">
+      <div class="team-card card-fire">
+        <img class="pokemon-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png" alt="Charizard">
+        <div class="pokemon-name">Charizard</div>
+        <div class="pokemon-level">Nv. 52</div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-high" style="width:78%"></div></div>
+        <div class="type-badge type-fire-b">🔥 Fuego</div>
+      </div>
+      <div class="team-card card-water">
+        <img class="pokemon-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png" alt="Blastoise">
+        <div class="pokemon-name">Blastoise</div>
+        <div class="pokemon-level">Nv. 48</div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-high" style="width:92%"></div></div>
+        <div class="type-badge type-water-b">💧 Agua</div>
+      </div>
+      <div class="team-card card-grass">
+        <img class="pokemon-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png" alt="Venusaur">
+        <div class="pokemon-name">Venusaur</div>
+        <div class="pokemon-level">Nv. 45</div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-high" style="width:55%"></div></div>
+        <div class="type-badge type-grass-b">🌿 Planta</div>
+      </div>
+      <div class="team-card card-electric">
+        <img class="pokemon-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="Pikachu">
+        <div class="pokemon-name">Pikachu</div>
+        <div class="pokemon-level">Nv. 38</div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-mid" style="width:40%"></div></div>
+        <div class="type-badge type-electric-b">⚡ Eléctr.</div>
+      </div>
+      <div class="team-card card-psychic">
+        <img class="pokemon-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png" alt="Mewtwo">
+        <div class="pokemon-name">Mewtwo</div>
+        <div class="pokemon-level">Nv. 70</div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-high" style="width:95%"></div></div>
+        <div class="type-badge type-psychic-b">🔮 Psíquico</div>
+      </div>
+      <div class="team-card card-normal">
+        <img class="pokemon-sprite" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png" alt="Snorlax">
+        <div class="pokemon-name">Snorlax</div>
+        <div class="pokemon-level">Nv. 42</div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-low" style="width:20%"></div></div>
+        <div class="type-badge" style="background:rgba(180,180,180,0.15);color:#bbb">⬜ Normal</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">4. LOGIN — GLASSMORPHISM + BORDE AURORA ANIMADO</div>
+  <div class="auth-demo">
+    <div class="auth-card">
+      <div class="auth-logo">Poké Vicio</div>
+      <div class="auth-sub">Te reto a dejar de jugarlo</div>
+      <input class="auth-input" type="email" placeholder="Email" value="ash@pokemail.com">
+      <input class="auth-input" type="password" placeholder="Contraseña" value="pikachu123">
+      <button class="auth-btn">▶ ENTRAR</button>
+    </div>
+  </div>
+
+  <div class="preview-note">
+    ↑ PREVIEW INTERACTIVO — Pasá el mouse por las cards y botones para ver los efectos ↑<br><br>
+    Todos los cambios son 100% CSS · Sin tocar la lógica del juego
+  </div>
+</div>
+</body>
+</html>
