@@ -243,12 +243,20 @@
     }
 
     // Update lastSeen timestamp every 2 min so friends can see if estás online
+    // IMPORTANTE: Solo actualizar lastSeen sin sobrescribir el save completo
     function startPresence() {
       async function ping() {
         if (!currentUser) return;
-        const s = serializeState();
-        s.lastSeen = new Date().toISOString();
-        await sb.from('game_saves').upsert({ user_id: currentUser.id, save_data: s, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+        try {
+          // Solo actualizar el timestamp lastSeen sin tocar el resto del save
+          // Esto evita que el ping sobrescriba cambios de trades que ocurrieron entre pings
+          const now = new Date().toISOString();
+          await sb.from('game_saves').update({ 
+            updated_at: now 
+          }).eq('user_id', currentUser.id);
+        } catch (err) {
+          console.warn('[PRESENCE] Error updating lastSeen:', err);
+        }
       }
       ping();
       setInterval(ping, 120000);
