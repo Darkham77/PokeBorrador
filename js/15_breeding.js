@@ -638,14 +638,14 @@ function manageDaycareTimer(compatLvl, slots) {
   const depA = new Date(slots[0].deposited_at).getTime();
   const depB = new Date(slots[1].deposited_at).getTime();
   const earliest = Math.max(depA, depB);
-  const elapsed = Date.now() - earliest;
+  const elapsed = getServerTime() - earliest;
 
   _nextEggTime = earliest + (Math.floor(elapsed / intMs) + 1) * intMs;
 
   _daycareTimer = setInterval(async () => {
-    if (Date.now() >= _nextEggTime) {
+    if (getServerTime() >= _nextEggTime) {
       const lockKey = `daycare_timer_lock_${currentUser.id}`;
-      const nowMs = Date.now();
+      const nowMs = getServerTime();
       if (nowMs - Number(localStorage.getItem(lockKey) || 0) < 5000) return;
       localStorage.setItem(lockKey, nowMs.toString());
 
@@ -690,7 +690,7 @@ function manageDaycareTimer(compatLvl, slots) {
   }, 1000);
 }
 function updateTimerDisplay() {
-  const left = Math.max(0, Math.floor((_nextEggTime - Date.now()) / 1000));
+  const left = Math.max(0, Math.floor((_nextEggTime - getServerTime()) / 1000));
   const m = String(Math.floor(left / 60)).padStart(2, '0');
   const s = String(left % 60).padStart(2, '0');
   document.getElementById('daycare-timer-countdown').textContent = `${m}:${s}`;
@@ -743,7 +743,7 @@ async function useBreedingBerry() {
     const depB = new Date(currentDepB - msToReduce).toISOString();
     
     const earliest = Math.max(currentDepA - msToReduce, currentDepB - msToReduce);
-    const elapsed = Date.now() - earliest;
+    const elapsed = getServerTime() - earliest;
     
     await sb.from('daycare_slots').update({ deposited_at: depA }).eq('slot_index', 1).eq('player_id', currentUser.id);
     await sb.from('daycare_slots').update({ deposited_at: depB }).eq('slot_index', 2).eq('player_id', currentUser.id);
@@ -812,7 +812,7 @@ async function reduceHatchTimer(pid, activity) {
     if (document.getElementById('tab-daycare').style.display === 'block') renderEggGrid();
 
     // Notify if newly ready
-    const now = Date.now();
+    const now = getServerTime();
     const newlyReady = data.filter(e => new Date(e.hatch_ready_time).getTime() > now && (new Date(e.hatch_ready_time).getTime() - ms) <= now);
     if (newlyReady.length) { notify('¡Un huevo está listo para eclosionar!', '🐣'); document.getElementById('daycare-nav-badge').style.display = 'block'; }
   }
@@ -820,7 +820,7 @@ async function reduceHatchTimer(pid, activity) {
 
 async function processOfflineBreeding(pid, inSlots) {
   const lockKey = `daycare_offline_lock_${pid}`;
-  const nowMs = Date.now();
+  const nowMs = getServerTime();
   if (nowMs - Number(localStorage.getItem(lockKey) || 0) < 5000) return;
   localStorage.setItem(lockKey, nowMs.toString());
 
@@ -833,7 +833,7 @@ async function processOfflineBreeding(pid, inSlots) {
 
   const depA = new Date(s[0].deposited_at).getTime(), depB = new Date(s[1].deposited_at).getTime();
   const earliest = Math.max(depA, depB);
-  const elapsed = Date.now() - earliest;
+  const elapsed = getServerTime() - earliest;
   const pot = Math.floor(elapsed / intMs);
   if (pot <= 0) return;
 
@@ -872,7 +872,7 @@ async function renderEggGrid() {
   let badgeReady = false;
   grid.innerHTML = eggs.map(e => {
     const hAt = new Date(e.hatch_ready_time).getTime();
-    const leftMs = Math.max(0, hAt - Date.now());
+    const leftMs = Math.max(0, hAt - getServerTime());
     const leftMin = Math.ceil(leftMs / 60000);
     const pct = Math.min(100, Math.round(100 - (leftMs / (30 * 60 * 1000)) * 100));
     const pd = POKEMON_DB[e.species];
@@ -924,7 +924,7 @@ async function collectEgg(eggId, sp, shiny, ivsJson) {
 
 // ===== DAILY MISSIONS =====
 function generateDailyMission() {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getGMT3Date().toISOString().split('T')[0];
     
     // Migración para saves viejos
     if (!state.daycare_missions) state.daycare_missions = [];
@@ -1060,7 +1060,7 @@ function refreshBreedingMissions() {
     if (!confirm('¿Quieres refrescar las misiones? Gastarás 1 uso.')) return;
 
     state.daycare_mission_refreshes--;
-    const today = new Date().toISOString().split('T')[0];
+    const today = getGMT3Date().toISOString().split('T')[0];
     
     state.daycare_missions = [
         _createNewMissionObject(today),

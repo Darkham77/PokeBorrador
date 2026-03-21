@@ -270,7 +270,7 @@
       
       const vigor = Math.floor(Math.random() * 4) + 3; // 3 a 6
 
-      const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + Date.now().toString(36);
+      const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + getServerTime().toString(36);
       const p = {
         uid: getUidStr(),
         id, name: base.name, emoji: base.emoji, type: base.type,

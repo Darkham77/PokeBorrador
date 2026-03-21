@@ -568,33 +568,11 @@ function renderGyms() {
   }).join('');
 }
 
-// Sincronización de tiempo con API externa para evitar exploit de reloj local
-let _serverTimeOffset = 0;
-let _timeSynced = false;
-
-async function syncServerTime() {
-  try {
-    const start = Date.now();
-    const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
-    const data = await response.json();
-    const serverTime = new Date(data.datetime).getTime();
-    const end = Date.now();
-    const latency = (end - start) / 2;
-    _serverTimeOffset = serverTime - (end - latency);
-    _timeSynced = true;
-    console.log('[TIME] Sincronizado con servidor UTC. Offset:', _serverTimeOffset);
-  } catch (e) {
-    console.error('[TIME] Error sincronizando tiempo:', e);
-  }
-}
-syncServerTime();
-setInterval(syncServerTime, 300000); // Re-sincronizar cada 5 min
-
 function getDayCycle() {
-  const now = new Date(Date.now() + _serverTimeOffset);
-  const hour = now.getUTCHours(); // Usamos UTC para consistencia global
+  const now = getGMT3Date(); 
+  const hour = now.getHours(); // Using the local hours of the GMT-3 adjusted date
 
-  // Ajuste de horas para ciclo día/noche (UTC)
+  // Argentina Day/Night Cycle (GMT-3)
   if (hour >= 6 && hour < 9) return 'morning';
   if (hour >= 9 && hour < 18) return 'day';
   if (hour >= 18 && hour < 21) return 'dusk';

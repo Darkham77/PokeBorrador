@@ -178,7 +178,7 @@
         senderId: currentUser.id,
         senderName: state.trainer || 'Entrenador',
         text: text,
-        timestamp: Date.now()
+        timestamp: getServerTime()
       };
       
       // Send to recipient's inbox using a cached outbox channel
