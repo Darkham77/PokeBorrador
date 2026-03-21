@@ -1054,10 +1054,10 @@ function renderDaycareMission() {
                     </div>
                 </div>
                 <div style="margin-top:auto;">
-                    <div style="font-size:10px;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:4px;">
-                        <span>Recompensa:</span>
+                    <div style="font-size:10px;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+                        <span style="white-space:nowrap;">Recompensa:</span>
                         <div title="${tooltip}" style="background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:4px;cursor:help;border:1px solid rgba(255,255,255,0.05);">
-                            ${rIcon} <span style="font-weight:700;">x${m.reward.qty}</span>
+                            ${rIcon} <span style="font-weight:700;">${m.reward.name} x${m.reward.qty}</span>
                         </div>
                     </div>
                     <button id="daycare-mission-btn-${idx}" onclick="openMissionPicker(${idx})" ${m.completed ? 'style="display:none;"' : ''} 

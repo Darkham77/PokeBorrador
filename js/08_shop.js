@@ -531,6 +531,7 @@
         effect: (qty) => { state.inventory['Limonada'] = (state.inventory['Limonada'] || 0) + qty; }
       },
     ];
+    window.SHOP_ITEMS = SHOP_ITEMS;
 
     let _marketCat = 'todos';
 let _marketQty = {};
