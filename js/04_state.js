@@ -74,16 +74,21 @@
       const rivalSprite = 'https://play.pokemonshowdown.com/sprites/trainers/blue.png';
       const rivalName = 'Rival Azul';
       
-      // El nivel de los pokemon del Rival se asemejan al más fuerte de tu equipo
-      const playerLevels = state.team.map(p => p.level);
-      const rivalLevel = Math.max(...playerLevels, 5);
+      // El nivel de los pokemon del Rival: promedio del equipo + 2
+      const teamSize = state.team.length || 1;
+      const avgLevel = state.team.reduce((sum, p) => sum + p.level, 0) / teamSize;
+      const rivalLevel = Math.floor(avgLevel) + 2;
       
-      // Equipo fuerte y variado (6 Pokémon)
-      const rivalPool = ['pidgeot', 'alakazam', 'gyarados', 'arcanine', 'exeggutor', 'charizard']; 
-      // Si el jugador no tiene un nivel muy alto, bajamos un poco la agresividad de la selección, 
-      // pero el usuario pidió "dificultad para el jugador".
+      // Equipo fuerte y variado (6 Pokémon base, pero usamos el mismo tamaño que el jugador)
+      const rivalPoolBase = ['pidgeot', 'alakazam', 'gyarados', 'arcanine', 'exeggutor', 'charizard']; 
+      // Mezclar y tomar teamSize
+      const shuffledPool = [...rivalPoolBase].sort(() => Math.random() - 0.5).slice(0, teamSize);
       
-      const enemyTeam = rivalPool.map(id => makePokemon(id, rivalLevel));
+      const enemyTeam = shuffledPool.map(id => {
+        // Obtenemos la evolución adecuada para el nivel (si existe la función)
+        const species = (typeof getEvolvedForm === 'function') ? getEvolvedForm(id, rivalLevel) : id;
+        return makePokemon(species, rivalLevel);
+      });
 
       // Visual Intro Sequence is handled in encounters.js before calling this.
       // But we still need the Modal Intro for the Rival specifically if we want a quote.

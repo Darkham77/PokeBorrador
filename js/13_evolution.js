@@ -59,6 +59,11 @@
       rhyhorn: { level: 42, to: 'rhydon' },
       kabuto: { level: 40, to: 'kabutops' },
       omanyte: { level: 40, to: 'omastar' },
+      // Scaling levels for NPC/Rival (Trade/Stone)
+      kadabra: { level: 36, to: 'alakazam' },
+      machoke: { level: 36, to: 'machamp' },
+      haunter: { level: 36, to: 'gengar' },
+      graveler: { level: 36, to: 'golem' },
     };
 
     const STONE_EVOLUTIONS = {
@@ -271,5 +276,43 @@
       state.inventory[stoneName]--;
       if (!state.inventory[stoneName]) delete state.inventory[stoneName];
       showEvolutionScene(p, evoKey, null);
+    }
+
+    /**
+     * getEvolvedForm
+     * Given a target ID (usually a final form) and a level, 
+     * returns the best species for that level by backtracking to base form.
+     */
+    function getEvolvedForm(id, level) {
+      // 1. Build reverse map to find base form
+      const PRE_EVO = {};
+      for (const [from, data] of Object.entries(EVOLUTION_TABLE)) {
+        PRE_EVO[data.to] = from;
+      }
+      for (const [from, data] of Object.entries(STONE_EVOLUTIONS)) {
+        if (!PRE_EVO[data.to]) PRE_EVO[data.to] = from;
+      }
+      for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {
+         if (!PRE_EVO[to]) PRE_EVO[to] = from;
+      }
+
+      // 2. Backtrack to the very first base form
+      let current = id;
+      while (PRE_EVO[current]) {
+        current = PRE_EVO[current];
+      }
+
+      // 3. Evolve forward as much as level permits
+      let evolved = current;
+      let canEvolve = true;
+      while (canEvolve) {
+        const evo = EVOLUTION_TABLE[evolved];
+        if (evo && level >= evo.level) {
+          evolved = evo.to;
+        } else {
+          canEvolve = false;
+        }
+      }
+      return evolved;
     }
 
