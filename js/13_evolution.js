@@ -167,7 +167,13 @@
       pokemon.name = toData.name;
       pokemon.emoji = toData.emoji;
       pokemon.type = toData.type;
-      pokemon.ability = toData.abilities ? toData.abilities[Math.floor(Math.random() * toData.abilities.length)] : pokemon.ability;
+      
+      // Update ability based on the ABILITIES table in 04_state.js
+      const abilityList = ABILITIES[toId] || [pokemon.ability];
+      if (!abilityList.includes(pokemon.ability)) {
+        pokemon.ability = abilityList[Math.floor(Math.random() * abilityList.length)];
+      }
+      
       // Recalc stats with same IVs
       const newBase = makePokemon(toId, pokemon.level);
       pokemon.maxHp = newBase.maxHp;

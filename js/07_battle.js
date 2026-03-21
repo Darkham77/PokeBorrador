@@ -658,7 +658,7 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       } break;
     case 'confuse':
       if (!tgt.confused) { 
-        if (tgt.ability === 'Ritmo Propio') { addLogFn(`¡El Ritmo Propio de ${tgt.name} evitó la confusión!`, 'log-info'); break; }
+        if (tgt.ability === 'Ritmo Propio' || tgt.ability === 'Despiste') { addLogFn(`¡El ${tgt.ability} de ${tgt.name} evitó la confusión!`, 'log-info'); break; }
         tgt.confused = 2 + Math.floor(Math.random() * 4); addLogFn(`¡${tgt.name} está confundido!`, 'log-info'); 
       } break;
     case 'rest':
@@ -761,6 +761,11 @@ function checkAbilityImmunity(attacker, defender, move, addLogFn) {
     return true;
   }
 
+  if (ab === 'Insonorizar' && md.sound) {
+    addLogFn(`¡El Insonorizar de ${defender.name} bloqueó el ataque de sonido!`, 'log-info');
+    return true;
+  }
+
   if (ab === 'Levitación' && md.type === 'ground' && md.cat !== 'status') {
     addLogFn(`¡${defender.name} levita y evita el ataque!`, 'log-info');
     return true;
@@ -833,6 +838,17 @@ function getEffectiveSpeed(pokemon, stages) {
     spe *= 2;
   }
   
+  const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
+  if (pokemon.ability === 'Clorofila' && (cycle === 'day' || cycle === 'morning')) {
+    spe *= 2;
+  }
+  if (pokemon.ability === 'Lluvia Ligera' && (cycle === 'dusk' || cycle === 'night')) {
+    spe *= 2;
+  }
+  if (pokemon.ability === 'Nado Rápido' && (cycle === 'dusk' || cycle === 'night')) {
+    spe *= 2;
+  }
+
   if (pokemon.status === 'paralyze') spe = Math.max(1, Math.floor(spe * 0.5));
   return spe;
 }
@@ -1039,9 +1055,12 @@ function useMove(moveIndex) {
     const md = MOVE_DATA[move.name] || { power: move.power || 40, type: 'normal', cat: 'physical', acc: 100 };
 
     // Accuracy check
+    let acc = md.acc || 100;
+    if (b.player.ability === 'Ojo Compuesto') acc *= 1.3;
+    const evaMult = (b.enemy.ability === 'Velo Arena' && (typeof getDayCycle === 'function' && getDayCycle() === 'day')) ? 1.25 : 1;
     const accStage = (b.playerStages.acc || 0) - (b.enemyStages.eva || 0);
-    const accMult = stageMult(accStage);
-    if (Math.random() * 100 > (md.acc || 100) * accMult) {
+    const accMult = stageMult(accStage) / evaMult;
+    if (Math.random() * 100 > acc * accMult) {
       setLog(`${b.player.name} usó <strong>${move.name}</strong>... ¡Falló!`, 'log-player');
       setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 900);
       return;
@@ -1277,8 +1296,11 @@ function enemyTurn(opts = {}) {
   move.pp--;
   const md = MOVE_DATA[move.name] || { power: 40, type: 'normal', cat: 'physical', acc: 100 };
 
-  const accMult = stageMult((b.enemyStages.acc || 0) - (b.playerStages.eva || 0));
-  if (Math.random() * 100 > (md.acc || 100) * accMult) {
+  let acc = md.acc || 100;
+  if (b.enemy.ability === 'Ojo Compuesto') acc *= 1.3;
+  const evaMult = (b.player.ability === 'Velo Arena' && (typeof getDayCycle === 'function' && getDayCycle() === 'day')) ? 1.25 : 1;
+  const accMult = stageMult((b.enemyStages.acc || 0) - (b.playerStages.eva || 0)) / evaMult;
+  if (Math.random() * 100 > acc * accMult) {
     addLog(`${b.enemy.name} usó <strong>${move.name}</strong>... ¡Falló!`, 'log-enemy');
     finish(); return;
   }
