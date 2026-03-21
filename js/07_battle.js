@@ -481,14 +481,34 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
 
   const _defType2 = defender.type2 || POKE_TYPE2[defender.id];
   const eff = getTypeEffectiveness(md.type, defender.type, defender, attacker) * (_defType2 ? getTypeEffectiveness(md.type, _defType2, defender, attacker) : 1);
+  
+  let triggeredAbility = null;
+  let defensiveAbility = null;
+
+  // Detect Intrépido (Scrappy) activation
+  if (attacker?.ability === 'Intrépido' && (md.type === 'normal' || md.type === 'fighting')) {
+    const rawEff = (TYPE_CHART[md.type]?.[defender.type] ?? 1) * (_defType2 ? (TYPE_CHART[md.type]?.[_defType2] ?? 1) : 1);
+    if (rawEff === 0 && eff > 0) {
+      triggeredAbility = 'Intrépido';
+    }
+  }
+
   const _atkType2 = attacker.type2 || POKE_TYPE2[attacker.id];
   let stab = (md.type === attacker.type || (_atkType2 && md.type === _atkType2)) ? 1.5 : 1;
-  if (attacker.ability === 'Adaptable' && stab > 1) stab = 2;
-  let abilityMult = getAbilityMultiplier(attacker, defender, move);
+
+  if (attacker.ability === 'Adaptable' && stab > 1) {
+    stab = 2;
+    triggeredAbility = 'Adaptable';
+  }
+
+  const { mult: abilityMult, triggeredAbility: boosterAb } = getAbilityMultiplier(attacker, defender, move);
+  if (boosterAb) triggeredAbility = boosterAb;
+  let finalAbilityMult = abilityMult;
 
   // Thick Fat (Sebo)
   if (defender.ability === 'Sebo' && (md.type === 'fire' || md.type === 'ice')) {
-    abilityMult *= 0.5;
+    finalAbilityMult *= 0.5;
+    defensiveAbility = 'Sebo';
   }
 
   // Held Items multipliers
@@ -509,11 +529,15 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
   const random = 0.85 + Math.random() * 0.15;
   const critRate = (attacker.heldItem === 'Lente Zoom') ? 0.12 : 0.06;
   let isCrit = Math.random() < critRate;
-  if (defender.ability === 'Caparazón' || defender.ability === 'Armadura Batalla') isCrit = false;
+  if (defender.ability === 'Caparazón' || defender.ability === 'Armadura Batalla') {
+    if (isCrit) defensiveAbility = defender.ability;
+    isCrit = false;
+  }
   const critMult = isCrit ? (attacker.ability === 'Francotirador' ? 3 : 2) : 1;
+  if (isCrit && attacker.ability === 'Francotirador') triggeredAbility = 'Francotirador';
 
-  const finalDmg = Math.max(1, Math.floor(base * stab * abilityMult * eff * random * itemMult * critMult));
-  return { dmg: finalDmg, eff, stab, isCrit };
+  const finalDmg = Math.max(1, Math.floor(base * stab * finalAbilityMult * eff * random * itemMult * critMult));
+  return { dmg: finalDmg, eff, stab, isCrit, triggeredAbility, defensiveAbility };
 }
 
 function getTypeEffectiveness(moveType, defType, defender = null, attacker = null) {
@@ -528,36 +552,43 @@ function getTypeEffectiveness(moveType, defType, defender = null, attacker = nul
 function getAbilityMultiplier(attacker, defender, move) {
   const md = MOVE_DATA[move.name] || {};
   let mult = 1;
+  let triggeredAbility = null;
   const ab = attacker.ability;
 
   // Damage boosters at low HP (1/3)
   const isLowHp = attacker.hp <= (attacker.maxHp / 3);
   if (isLowHp) {
-    if (ab === 'Mar Llamas' && md.type === 'fire') mult *= 1.5;
-    if (ab === 'Torrente' && md.type === 'water') mult *= 1.5;
-    if (ab === 'Espesura' && md.type === 'grass') mult *= 1.5;
-    if (ab === 'Enjambre' && md.type === 'bug') mult *= 1.5;
+    if (ab === 'Mar Llamas' && md.type === 'fire') { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Torrente' && md.type === 'water') { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Espesura' && md.type === 'grass') { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Enjambre' && md.type === 'bug') { mult *= 1.5; triggeredAbility = ab; }
   }
 
   // Agallas (Guts)
   if (ab === 'Agallas' && attacker.status && md.cat === 'physical') {
     mult *= 1.5;
+    triggeredAbility = ab;
   }
 
   // Experto (Technician)
   if (ab === 'Experto' && md.power > 0 && md.power <= 60) {
     mult *= 1.5;
+    triggeredAbility = ab;
   }
 
-  // Adaptable handled in calcDamage now for cleaner logic
+  // Adaptable handled in calcDamage for cleaner logic but could be set here too
+  // Actually, let's keep it in calcDamage as it's a STAB modifier.
 
   // Poder Solar: Sp. Atk +50% under sun
   if (ab === 'Poder Solar' && md.cat === 'special') {
     const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
-    if (cycle === 'day' || cycle === 'morning') mult *= 1.5;
+    if (cycle === 'day' || cycle === 'morning') {
+      mult *= 1.5;
+      triggeredAbility = ab;
+    }
   }
 
-  return mult;
+  return { mult, triggeredAbility };
 }
 
 let _battleLock = false;
@@ -575,6 +606,7 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
   // Shield Dust (Escudo Polvo): Protects against secondary effects (chance < 100)
   if (tgt.ability === 'Escudo Polvo' && chance < 100) {
     if (effectBase !== 'leech_seed' && effectBase !== 'metronome') { // usually effects like burn_10
+       addLogFn(`¡El Escudo Polvo de ${tgt.name} evitó los efectos secundarios!`, 'log-info');
        return; 
     }
   }
@@ -907,7 +939,10 @@ function applyAbilityEffects(attacker, defender, move, damageResult, addLogFn) {
 
   // Stench (Hedor): 10% flinch on attack
   if (attacker.ability === 'Hedor' && Math.random() < 0.1) {
-    defender.flinched = true;
+    if (!defender.flinched) {
+      defender.flinched = true;
+      addLogFn(`¡El Hedor de ${attacker.name} hizo retroceder a ${defender.name}!`, 'log-info');
+    }
   }
 }
 
@@ -1143,7 +1178,7 @@ function useMove(moveIndex) {
 
     // Damage move
     animateAttack('player', () => {
-      const { dmg, eff, stab, isCrit } = calcDamage(b.player, b.enemy, move, b.playerStages.atk, b.enemyStages.def);
+      const { dmg, eff, stab, isCrit, triggeredAbility, defensiveAbility } = calcDamage(b.player, b.enemy, move, b.playerStages.atk, b.enemyStages.def);
 
       // Multi-hit moves
       let finalDmg = dmg;
@@ -1159,6 +1194,7 @@ function useMove(moveIndex) {
           }
           finalDmg = _total;
           addLog(`¡Golpeó ${numHits} veces!`, 'log-player');
+          if (b.player.ability === 'Encadenado') addLog(`¡Hizo el máximo de golpes por su Encadenado!`, 'log-info');
         }
       }
       // Seismic Toss: damage = attacker level
@@ -1197,6 +1233,12 @@ function useMove(moveIndex) {
 
       if (md.cat === 'physical') b.enemy.lastPhysDmg = finalDmg;
       addLog(`¡Causó ${finalDmg} de daño!${isCrit ? ' <strong>¡GOLPE CRÍTICO!</strong>' : ''}${drainHeal ? ` (recuperó ${drainHeal} HP)` : ''}`);
+
+      if (triggeredAbility) addLog(`¡Hizo más daño por ${triggeredAbility}!`, 'log-info');
+      if (defensiveAbility) {
+        if (defensiveAbility === 'Sebo') addLog(`¡Recibió menos daño por Sebo!`, 'log-info');
+        else if (defensiveAbility === 'Caparazón' || defensiveAbility === 'Armadura Batalla') addLog(`¡${b.enemy.name} está protegido por su ${defensiveAbility}!`, 'log-info');
+      }
 
       // Choice Band lock
       if (b.player.heldItem === 'Cinta Elegida') {
@@ -1380,7 +1422,7 @@ function enemyTurn(opts = {}) {
   }
 
   animateAttack('enemy', () => {
-    const { dmg, eff, stab, isCrit } = calcDamage(b.enemy, b.player, move, b.enemyStages.atk, b.playerStages.def);
+    const { dmg, eff, stab, isCrit, triggeredAbility, defensiveAbility } = calcDamage(b.enemy, b.player, move, b.enemyStages.atk, b.playerStages.def);
     let finalDmg = dmg;
     if (md.hits) {
       const _MULTIHIT_TABLE = [2, 2, 2, 3, 3, 3, 4, 5];
@@ -1394,6 +1436,7 @@ function enemyTurn(opts = {}) {
         }
         finalDmg = _total;
         addLog(`¡Golpeó ${numHits} veces!`, 'log-enemy');
+        if (b.enemy.ability === 'Encadenado') addLog(`¡Hizo el máximo de golpes por su Encadenado!`, 'log-info');
       }
     }
     // Seismic Toss: damage = attacker level
@@ -1422,6 +1465,13 @@ function enemyTurn(opts = {}) {
     if (teamIdx !== -1) state.team[teamIdx].hp = b.player.hp;
 
     addLog(`¡Causó ${finalDmg} de daño!${isCrit ? ' <strong>¡GOLPE CRÍTICO!</strong>' : ''}`);
+    
+    if (triggeredAbility) addLog(`¡Hizo más daño por ${triggeredAbility}!`, 'log-info');
+    if (defensiveAbility) {
+      if (defensiveAbility === 'Sebo') addLog(`¡Recibió menos daño por Sebo!`, 'log-info');
+      else if (defensiveAbility === 'Caparazón' || defensiveAbility === 'Armadura Batalla') addLog(`¡${b.player.name} está protegido por su ${defensiveAbility}!`, 'log-info');
+    }
+
     const effMsg = getTypeEffectivenessMsg(eff);
     if (effMsg) addLog(effMsg, eff >= 2 ? 'log-enemy' : 'log-info');
 
