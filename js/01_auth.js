@@ -304,6 +304,17 @@
         starterChosen: state.starterChosen || false,
         stats: state.stats || {},
         activeBattle,
+        daycare_missions: state.daycare_missions || [],
+        daycare_mission_refreshes: state.daycare_mission_refreshes !== undefined ? state.daycare_mission_refreshes : 3,
+        safariTicketSecs: state.safariTicketSecs || 0,
+        ceruleanTicketSecs: state.ceruleanTicketSecs || 0,
+        articunoTicketSecs: state.articunoTicketSecs || 0,
+        mewtwoTicketSecs: state.mewtwoTicketSecs || 0,
+        repelSecs: state.repelSecs || 0,
+        shinyBoostSecs: state.shinyBoostSecs || 0,
+        amuletCoinSecs: state.amuletCoinSecs || 0,
+        luckyEggSecs: state.luckyEggSecs || 0,
+        daycare_berry_egg_time: state.daycare_berry_egg_time || 0,
       };
     }
 
