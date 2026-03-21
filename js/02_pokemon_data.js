@@ -960,6 +960,7 @@
         'Meditación': { power: 0, acc: 100, type: 'psychic', cat: 'status', pp: 40, effect: 'stat_up_self_atk' },
         'Teletransporte': { power: 0, acc: 100, type: 'psychic', cat: 'status', pp: 20, effect: 'teleport' },
         'Recuperación': { power: 0, acc: 100, type: 'psychic', cat: 'status', pp: 10, effect: 'heal_50' },
+        'Síntesis': { power: 0, acc: 100, type: 'grass', cat: 'status', pp: 5, effect: 'heal_weather' },
         'Barrera': { power: 0, acc: 100, type: 'psychic', cat: 'status', pp: 20, effect: 'stat_up_self_def_2' },
         'Psicocorte': { power: 70, acc: 100, type: 'psychic', cat: 'physical', pp: 20 },
         // ── Rock / Ground / Fighting ─────────────────────────────
@@ -996,7 +997,7 @@
         'Guillotina': { power: 1, acc: 30, type: 'normal', cat: 'physical', pp: 5, ohko: true },
         'Martillazo': { power: 100, acc: 90, type: 'water', cat: 'physical', pp: 10 },
         'Puño Hielo': { power: 75, acc: 100, type: 'ice', cat: 'physical', pp: 15, effect: 'freeze_10' },
-        'Luz Lunar': { power: 0, acc: 100, type: 'fairy', cat: 'status', pp: 5, effect: 'heal_50' },
+        'Luz Lunar': { power: 0, acc: 100, type: 'fairy', cat: 'status', pp: 5, effect: 'heal_weather' },
         'Encanto': { power: 0, acc: 100, type: 'fairy', cat: 'status', pp: 20, effect: 'stat_down_enemy_atk_2' },
         'Beso Dulce': { power: 0, acc: 75, type: 'fairy', cat: 'status', pp: 10, effect: 'confuse' },
         'Espora': { power: 0, acc: 100, type: 'grass', cat: 'status', pp: 15, effect: 'sleep' },
@@ -1133,8 +1134,13 @@
       'Escurridizo': 'Impide ser atrapado por el rival. En combates salvajes, garantiza la huida.',
       'Ráfaga': 'Cuando el HP baja a 1/3 o menos, la Velocidad se triplica.',
       'Adaptable': 'Potencia el bonus STAB (mismo tipo que el movimiento) de x1.5 a x2.',
-      'Punto Cura': 'Al final de cada turno, cura a los aliados adyacentes de estados alterados.',
+      'Punto Cura': 'Al final de cada turno, cura su propio estado alterado.',
       'Velo Húmedo': 'Protege a todo el equipo de la niebla. Impide Niebla del rival.',
+      'Sebo': 'Reduce a la mitad el daño recibido por movimientos de tipo Fuego y Hielo.',
+      'Caparazón': 'Protege al Pokémon de los golpes críticos.',
+      'Armadura Batalla': 'Protege al Pokémon de los golpes críticos.',
+      'Francotirador': 'Potencia los golpes críticos de x2 a x3.',
+      'Intrépido': 'Permite golpear a Pokémon de tipo Fantasma con movimientos de tipo Normal y Lucha.',
     };
 
 

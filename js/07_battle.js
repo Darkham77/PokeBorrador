@@ -482,7 +482,8 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
   const _defType2 = defender.type2 || POKE_TYPE2[defender.id];
   const eff = getTypeEffectiveness(md.type, defender.type, defender, attacker) * (_defType2 ? getTypeEffectiveness(md.type, _defType2, defender, attacker) : 1);
   const _atkType2 = attacker.type2 || POKE_TYPE2[attacker.id];
-  const stab = (md.type === attacker.type || (_atkType2 && md.type === _atkType2)) ? 1.5 : 1;
+  let stab = (md.type === attacker.type || (_atkType2 && md.type === _atkType2)) ? 1.5 : 1;
+  if (attacker.ability === 'Adaptable' && stab > 1) stab = 2;
   let abilityMult = getAbilityMultiplier(attacker, defender, move);
 
   // Thick Fat (Sebo)
@@ -548,18 +549,13 @@ function getAbilityMultiplier(attacker, defender, move) {
     mult *= 1.5;
   }
 
-  // Adaptable: STAB 2x instead of 1.5x
-  // Since stab is already 1.5 in calcDamage, we multiply by 1.333 to get ~2x (1.5 * 1.333 = 2)
-  if (ab === 'Adaptable') {
-    const _atkType2 = attacker.type2 || POKE_TYPE2[attacker.id];
-    if (md.type === attacker.type || (_atkType2 && md.type === _atkType2)) {
-      mult *= 1.3333;
-    }
-  }
+  // Adaptable handled in calcDamage now for cleaner logic
 
-  // Poder Solar: Sp. Atk +50% under sun (simulated as always if no weather implemented?)
-  // Developer note: since weather isn't here, I'll ignore weather-dependent for now or assume partial.
-  // Actually, the user asked for Blaze (Mar llamas), so let's stick to those.
+  // Poder Solar: Sp. Atk +50% under sun
+  if (ab === 'Poder Solar' && md.cat === 'special') {
+    const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
+    if (cycle === 'day' || cycle === 'morning') mult *= 1.5;
+  }
 
   return mult;
 }
@@ -623,6 +619,15 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       const healAmt = Math.floor(src.maxHp / 2);
       src.hp = Math.min(src.maxHp, src.hp + healAmt);
       addLogFn(`¡${src.name} recuperó salud! (+${healAmt} HP)`, 'log-info');
+      break;
+    case 'heal_weather':
+      const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
+      let healPct = 0.5;
+      if (cycle === 'day' || cycle === 'morning') healPct = 0.66;
+      if (cycle === 'night') healPct = 0.25;
+      const hwAmt = Math.floor(src.maxHp * healPct);
+      src.hp = Math.min(src.maxHp, src.hp + hwAmt);
+      addLogFn(`¡${src.name} recuperó salud con el clima! (+${hwAmt} HP)`, 'log-info');
       break;
     case 'burn': case 'burn_10':
       if (!tgt.status) {
@@ -879,6 +884,7 @@ function applyAbilityEffects(attacker, defender, move, damageResult, addLogFn) {
 
 function applyAbilityTurnEndEffects(pokemon, role, addLogFn) {
   const ab = pokemon.ability;
+  const logCls = role === 'player' ? 'log-enemy' : role === 'enemy' ? 'log-player' : 'log-info';
 
   // Shed Skin (Mudar): 30% chance to heal status
   if (ab === 'Mudar' && pokemon.status && Math.random() < 0.3) {
@@ -892,7 +898,15 @@ function applyAbilityTurnEndEffects(pokemon, role, addLogFn) {
     addLogFn(`¡La habilidad ${ab} de ${pokemon.name} curó su estado!`, 'log-info');
   }
 
-  // Rain Dish / Ice Body etc would go here
+  // Solar Power (Poder Solar): lose HP under sun
+  if (ab === 'Poder Solar') {
+    const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
+    if (cycle === 'day' || cycle === 'morning') {
+      const loss = Math.max(1, Math.floor(pokemon.maxHp / 8));
+      pokemon.hp = Math.max(0, pokemon.hp - loss);
+      addLogFn(`¡El Poder Solar de ${pokemon.name} le resta salud bajo el sol! (-${loss} HP)`, logCls);
+    }
+  }
 }
 
 function playerActsFirst(b, pMove, eMove) {
