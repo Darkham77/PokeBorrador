@@ -3764,3 +3764,1384 @@
       color: var(--blue);
     }
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   ██████╗ ██████╗ ███████╗███╗   ███╗██╗██╗   ██╗███╗   ███╗
+   ██╔══██╗██╔══██╗██╔════╝████╗ ████║██║██║   ██║████╗ ████║
+   ██████╔╝██████╔╝█████╗  ██╔████╔██║██║██║   ██║██╔████╔██║
+   ██╔═══╝ ██╔══██╗██╔══╝  ██║╚██╔╝██║██║██║   ██║██║╚██╔╝██║
+   ██║     ██║  ██║███████╗██║ ╚═╝ ██║██║╚██████╔╝██║ ╚═╝ ██║
+   ╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═╝
+   PREMIUM VISUAL OVERRIDES — Pokémon Theme v2.0
+   Todas las clases e IDs originales son respetados.
+   Solo se sobreescriben/añaden estilos visuales.
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── ENHANCED CSS VARIABLES ── */
+:root {
+  --red: #ff453a;
+  --blue: #3b8bff;
+  --yellow: #ffd93d;
+  --green: #32d74b;
+  --purple: #c77dff;
+  --dark: #080b12;
+  --darker: #050709;
+  --card: #0f1421;
+  --card2: #141927;
+  --text: #f0f0f5;
+  --gray: #8a8a9a;
+  --coin-gold: #FFD700;
+
+  /* New premium tokens */
+  --gold: #ffd93d;
+  --gold-bright: #ffe576;
+  --red-glow: rgba(255, 69, 58, 0.4);
+  --blue-glow: rgba(59, 139, 255, 0.4);
+  --yellow-glow: rgba(255, 217, 61, 0.4);
+  --green-glow: rgba(50, 215, 75, 0.4);
+  --purple-glow: rgba(199, 125, 255, 0.4);
+
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-mid: rgba(255, 255, 255, 0.12);
+  --border-accent: rgba(255, 255, 255, 0.2);
+  --glass: rgba(15, 20, 33, 0.75);
+  --glass-light: rgba(255, 255, 255, 0.04);
+  --surface: rgba(20, 25, 39, 0.8);
+  --inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ── GLOBAL FONT SMOOTHING ── */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── ANIMATED BACKGROUND ── */
+body {
+  background:
+    radial-gradient(ellipse 120% 80% at 15% -10%, rgba(59, 139, 255, 0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 100% 70% at 90% 5%,  rgba(199, 125, 255, 0.10) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 60% at 50% 105%, rgba(255, 217, 61, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 0% 60%,   rgba(59, 139, 255, 0.05) 0%, transparent 60%),
+    linear-gradient(165deg, #080d18 0%, #06080f 50%, #080b16 100%);
+  background-attachment: fixed;
+}
+
+/* ── STAR FIELD ── */
+.stars {
+  background:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 35%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 8%,  rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 25%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 5%,  rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 18%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(2px 2px at 18% 55%, rgba(199, 125, 255, 0.5) 0%, transparent 100%),
+    radial-gradient(2px 2px at 70% 70%, rgba(59, 139, 255, 0.5) 0%, transparent 100%),
+    radial-gradient(2px 2px at 45% 80%, rgba(255, 217, 61, 0.4) 0%, transparent 100%),
+    radial-gradient(ellipse at 20% 50%, rgba(59, 139, 255, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(199, 125, 255, 0.07) 0%, transparent 60%);
+  animation: starsFloat 30s ease-in-out infinite alternate;
+}
+
+@keyframes starsFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-8px, 10px) scale(1.005); }
+  100% { transform: translate(8px, -10px) scale(1); }
+}
+
+/* ── POKEBALL WATERMARK DECORATION ── */
+body::before {
+  content: '';
+  position: fixed;
+  bottom: -180px;
+  right: -180px;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.025);
+  background:
+    radial-gradient(circle at center, transparent 40%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -178px;
+  right: -178px;
+  width: 516px;
+  height: 256px;
+  border-radius: 516px 516px 0 0;
+  border-top: 3px solid rgba(255, 100, 100, 0.04);
+  background: rgba(255, 69, 58, 0.02);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ════════════════════════════════════
+   AUTH SCREEN
+════════════════════════════════════ */
+#auth-screen {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(199, 125, 255, 0.12), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(59, 139, 255, 0.10), transparent 50%),
+    linear-gradient(165deg, #080d18 0%, #05080f 100%);
+}
+
+.auth-card {
+  background: linear-gradient(145deg,
+    rgba(20, 25, 40, 0.95) 0%,
+    rgba(14, 18, 30, 0.97) 100%);
+  border: 1px solid rgba(199, 125, 255, 0.2);
+  border-radius: 28px;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 60px rgba(199, 125, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(199, 125, 255, 0.6),
+    rgba(255, 217, 61, 0.6),
+    rgba(59, 139, 255, 0.6),
+    transparent);
+  border-radius: 28px 28px 0 0;
+}
+
+.auth-logo {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(18px, 4vw, 28px);
+  background: linear-gradient(135deg, var(--yellow) 0%, #ff9f43 40%, var(--red) 70%, var(--purple) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 20px rgba(255, 217, 61, 0.5));
+  margin-bottom: 6px;
+  letter-spacing: 2px;
+}
+
+.auth-sub {
+  color: var(--gray);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.auth-tab {
+  border-radius: 10px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  transition: all 0.25s ease !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-tab.active {
+  background: linear-gradient(135deg, rgba(199, 125, 255, 0.2), rgba(59, 139, 255, 0.15)) !important;
+  color: #fff !important;
+  border-color: rgba(199, 125, 255, 0.4) !important;
+  box-shadow: 0 4px 16px rgba(199, 125, 255, 0.2), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+.auth-input {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  color: var(--text) !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-size: 14px !important;
+  padding: 14px 18px !important;
+  transition: all 0.25s ease !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.auth-input:focus {
+  outline: none !important;
+  border-color: rgba(199, 125, 255, 0.5) !important;
+  background: rgba(199, 125, 255, 0.05) !important;
+  box-shadow: 0 0 0 3px rgba(199, 125, 255, 0.1), inset 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.auth-btn {
+  background: linear-gradient(135deg, var(--purple), #9b4dca) !important;
+  border-radius: 14px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 1px !important;
+  box-shadow: 0 8px 24px rgba(199, 125, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+  transition: all 0.25s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  transition: left 0.5s ease;
+}
+
+.auth-btn:hover::after { left: 100%; }
+.auth-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 32px rgba(199, 125, 255, 0.45), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+}
+
+.server-selector {
+  margin-bottom: 16px;
+}
+
+.server-selector-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: var(--gray);
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.server-tab {
+  border-radius: 10px !important;
+  font-size: 11px !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+.server-tab.active {
+  background: linear-gradient(135deg, rgba(50, 215, 75, 0.2), rgba(50, 215, 75, 0.1)) !important;
+  border-color: rgba(50, 215, 75, 0.4) !important;
+  color: var(--green) !important;
+  box-shadow: 0 4px 14px rgba(50, 215, 75, 0.15) !important;
+}
+
+/* ════════════════════════════════════
+   HUD - HEADER BAR
+════════════════════════════════════ */
+.hud {
+  background: linear-gradient(
+    to bottom,
+    rgba(20, 26, 42, 0.98),
+    rgba(14, 18, 30, 0.98)
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  padding: 10px 20px !important;
+  margin-bottom: 12px !important;
+  backdrop-filter: blur(20px) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.hud::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(199, 125, 255, 0.3) 30%,
+    rgba(255, 217, 61, 0.3) 50%,
+    rgba(59, 139, 255, 0.3) 70%,
+    transparent 100%);
+}
+
+/* Trainer info */
+.trainer-avatar {
+  font-size: 32px;
+  filter: drop-shadow(0 0 8px rgba(255, 217, 61, 0.3));
+}
+
+.trainer-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--yellow);
+  text-shadow: 0 0 12px rgba(255, 217, 61, 0.4);
+  letter-spacing: 1px;
+}
+
+.trainer-info {
+  font-size: 11px;
+  color: var(--gray);
+  margin-top: 3px;
+}
+
+/* HUD NAV BUTTONS */
+.hud-nav-btn {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  color: rgba(200, 200, 220, 0.55) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 8px 13px !important;
+  transition: all 0.2s ease !important;
+  gap: 5px !important;
+  letter-spacing: 0.3px;
+}
+
+.hud-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+.hud-nav-btn.active {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 217, 61, 0.14),
+    rgba(255, 217, 61, 0.07)
+  ) !important;
+  color: var(--yellow) !important;
+  border-color: rgba(255, 217, 61, 0.3) !important;
+  box-shadow:
+    0 0 16px rgba(255, 217, 61, 0.12),
+    inset 0 1px 0 rgba(255, 217, 61, 0.1) !important;
+  text-shadow: 0 0 10px rgba(255, 217, 61, 0.4);
+}
+
+/* HUD PILLS */
+.hud-pill {
+  border-radius: 16px !important;
+  min-width: 58px !important;
+  height: 58px !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+.hud-pill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 40%;
+  background: rgba(255,255,255,0.04);
+  border-radius: 14px 14px 0 0;
+  pointer-events: none;
+}
+
+.hud-pill:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+.time-pill {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+.money-pill {
+  background: linear-gradient(165deg, rgba(50,215,75,0.12), rgba(50,215,75,0.05)) !important;
+  color: var(--green) !important;
+  border-color: rgba(50,215,75,0.22) !important;
+  text-shadow: 0 0 8px rgba(50,215,75,0.4);
+}
+
+.bc-pill {
+  background: linear-gradient(165deg, rgba(199,125,255,0.14), rgba(199,125,255,0.05)) !important;
+  color: var(--purple) !important;
+  border-color: rgba(199,125,255,0.25) !important;
+  text-shadow: 0 0 8px rgba(199,125,255,0.4);
+}
+
+.badge-pill {
+  background: linear-gradient(165deg, rgba(255,217,61,0.14), rgba(255,217,61,0.05)) !important;
+  color: var(--yellow) !important;
+  border-color: rgba(255,217,61,0.25) !important;
+  text-shadow: 0 0 8px rgba(255,217,61,0.4);
+}
+
+.ball-pill {
+  background: linear-gradient(165deg, rgba(255,69,58,0.14), rgba(255,69,58,0.05)) !important;
+  color: var(--red) !important;
+  border-color: rgba(255,69,58,0.25) !important;
+  text-shadow: 0 0 8px rgba(255,69,58,0.3);
+}
+
+.egg-pill {
+  background: linear-gradient(165deg, rgba(180,140,80,0.14), rgba(180,140,80,0.05)) !important;
+  color: #d4a050 !important;
+  border-color: rgba(180,140,80,0.25) !important;
+}
+
+/* Settings & Profile buttons */
+#hud-settings-btn, #hud-profile-btn {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#hud-settings-btn:hover, #hud-profile-btn:hover {
+  background: rgba(255,255,255,0.12) !important;
+  border-color: rgba(255,255,255,0.2) !important;
+  transform: scale(1.08) !important;
+}
+
+/* ════════════════════════════════════
+   EGG PROGRESS BAR
+════════════════════════════════════ */
+.hud-egg-card {
+  background: linear-gradient(135deg, rgba(30,36,55,0.9), rgba(20,25,40,0.9)) !important;
+  border: 1px solid rgba(255, 217, 61, 0.18) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+}
+
+.hud-egg-bar-fill {
+  background: linear-gradient(90deg, var(--yellow), #f7b731) !important;
+  box-shadow: 0 0 8px rgba(255, 217, 61, 0.4) !important;
+}
+
+/* ════════════════════════════════════
+   TEAM SECTIONS
+════════════════════════════════════ */
+.team-section {
+  background: linear-gradient(
+    145deg,
+    rgba(18, 23, 38, 0.95),
+    rgba(12, 16, 28, 0.97)
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  padding: 24px !important;
+}
+
+.section-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px !important;
+  color: var(--purple) !important;
+  letter-spacing: 2px;
+  margin-bottom: 20px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 0 0 12px rgba(199, 125, 255, 0.4);
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(199,125,255,0.3), transparent);
+  border-radius: 2px;
+}
+
+/* ════════════════════════════════════
+   TEAM CARDS
+════════════════════════════════════ */
+.team-card {
+  background: linear-gradient(
+    160deg,
+    rgba(25, 31, 50, 0.9),
+    rgba(18, 22, 38, 0.95)
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+}
+
+.team-card:hover {
+  border-color: rgba(255, 217, 61, 0.3) !important;
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(255, 217, 61, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.team-pokemon-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px !important;
+  letter-spacing: 0.5px;
+}
+
+.team-pokemon-level {
+  color: var(--yellow) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+.hp-bar-wrap {
+  background: rgba(0,0,0,0.3) !important;
+  border-radius: 10px !important;
+  height: 7px !important;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.4) !important;
+}
+
+.hp-high { background: linear-gradient(90deg, #32d74b, #5dde6a) !important; box-shadow: 0 0 6px rgba(50,215,75,0.4); }
+.hp-mid  { background: linear-gradient(90deg, #ffd93d, #ffeb70) !important; box-shadow: 0 0 6px rgba(255,217,61,0.4); }
+.hp-low  { background: linear-gradient(90deg, #ff453a, #ff6b62) !important; box-shadow: 0 0 6px rgba(255,69,58,0.5); animation: pulseLow 1.2s ease-in-out infinite; }
+
+@keyframes pulseLow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+.exp-bar {
+  background: linear-gradient(90deg, #3b8bff, #60a8ff) !important;
+  box-shadow: 0 0 6px rgba(59, 139, 255, 0.4) !important;
+}
+
+/* ════════════════════════════════════
+   LOCATION / MAP CARDS
+════════════════════════════════════ */
+.location-card {
+  background: linear-gradient(
+    150deg,
+    rgba(18, 23, 38, 0.95) 0%,
+    rgba(13, 17, 30, 0.98) 100%
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.05) !important;
+  transition: all 0.28s cubic-bezier(0.34, 1.2, 0.64, 1) !important;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Subtle colored top border on hover */
+.location-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,217,61,0.5), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.location-card:hover::before { opacity: 1; }
+
+.location-card:hover {
+  border-color: rgba(255, 217, 61, 0.28) !important;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.55),
+    0 0 25px rgba(255, 217, 61, 0.1),
+    inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  transform: translateY(-5px) !important;
+}
+
+.location-card.locked {
+  opacity: 0.38 !important;
+  filter: grayscale(0.3) !important;
+}
+
+.location-card.locked:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.location-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px !important;
+  color: var(--yellow) !important;
+  margin-bottom: 6px !important;
+  text-shadow: 0 0 8px rgba(255,217,61,0.3);
+  letter-spacing: 0.5px;
+}
+
+.location-desc {
+  font-size: 11px !important;
+  color: var(--gray) !important;
+  line-height: 1.6 !important;
+}
+
+.location-icon {
+  font-size: 36px !important;
+  margin-bottom: 10px !important;
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+}
+
+.location-tag {
+  font-size: 9px !important;
+  padding: 3px 9px !important;
+  border-radius: 20px !important;
+  font-family: 'Press Start 2P', monospace;
+  letter-spacing: 0.5px;
+}
+
+.tag-wild {
+  background: rgba(50,215,75,0.12) !important;
+  color: var(--green) !important;
+  border: 1px solid rgba(50,215,75,0.25) !important;
+}
+
+.tag-gym {
+  background: rgba(255,69,58,0.12) !important;
+  color: var(--red) !important;
+  border: 1px solid rgba(255,69,58,0.25) !important;
+}
+
+.tag-locked {
+  background: rgba(140,140,155,0.1) !important;
+  color: var(--gray) !important;
+  border: 1px solid rgba(140,140,155,0.2) !important;
+}
+
+/* ════════════════════════════════════
+   POKEMON CENTER SPLIT LAYOUT
+════════════════════════════════════ */
+.pc-banner {
+  background: linear-gradient(
+    135deg,
+    rgba(22, 28, 46, 0.95),
+    rgba(16, 20, 36, 0.98)
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 18px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.pc-banner::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--purple), var(--blue));
+  border-radius: 18px 0 0 18px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.pc-banner:hover::before { opacity: 1; }
+.pc-banner:hover {
+  transform: translateX(5px) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(199,125,255,0.2) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+}
+
+.pc-banner-title {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 7px !important;
+  color: var(--gray) !important;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.pc-banner-text {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.pc-banner-text span { color: var(--yellow) !important; }
+
+/* ════════════════════════════════════
+   GYM CARDS
+════════════════════════════════════ */
+.gym-card {
+  background: linear-gradient(
+    145deg,
+    rgba(20, 25, 40, 0.95),
+    rgba(14, 18, 30, 0.98)
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 18px !important;
+  padding: 18px 20px !important;
+  gap: 16px !important;
+  transition: all 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+}
+
+.gym-card:hover:not(.gym-defeated):not(.gym-locked) {
+  transform: translateX(8px) !important;
+  border-color: rgba(255, 69, 58, 0.35) !important;
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(255, 69, 58, 0.12),
+    inset 0 1px 0 rgba(255,255,255,0.07) !important;
+}
+
+.gym-card.gym-defeated {
+  border-color: rgba(50,215,75,0.25) !important;
+  background: linear-gradient(
+    145deg,
+    rgba(20, 35, 25, 0.8),
+    rgba(14, 22, 18, 0.9)
+  ) !important;
+}
+
+.gym-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px !important;
+  color: var(--yellow) !important;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 8px rgba(255,217,61,0.3);
+}
+
+.gym-leader {
+  font-size: 12px !important;
+  color: var(--gray) !important;
+}
+
+/* ════════════════════════════════════
+   MARKET CARDS
+════════════════════════════════════ */
+.market-card {
+  background: linear-gradient(
+    160deg,
+    rgba(20, 26, 42, 0.95),
+    rgba(14, 18, 30, 0.98)
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  transition: all 0.25s ease !important;
+  overflow: hidden;
+}
+
+.market-card:hover {
+  border-color: rgba(59, 139, 255, 0.25) !important;
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.5),
+    0 0 18px rgba(59,139,255,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  transform: translateY(-4px) !important;
+}
+
+.market-buy-btn {
+  border-radius: 12px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 7px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+}
+
+.market-buy-btn:hover {
+  transform: translateY(-2px) !important;
+  filter: brightness(1.15) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* ════════════════════════════════════
+   FRIEND CARDS
+════════════════════════════════════ */
+.friend-card {
+  background: linear-gradient(
+    145deg,
+    rgba(20, 26, 42, 0.95),
+    rgba(14, 18, 30, 0.98)
+  ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  transition: all 0.25s ease !important;
+}
+
+.friend-card:hover {
+  border-color: rgba(199, 125, 255, 0.25) !important;
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.5),
+    0 0 18px rgba(199, 125, 255, 0.1),
+    inset 0 1px 0 rgba(255,255,255,0.07) !important;
+  transform: translateY(-3px) !important;
+}
+
+.friend-btn {
+  border-radius: 12px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 7px !important;
+  transition: all 0.2s ease !important;
+}
+
+/* ════════════════════════════════════
+   STARTER CARDS
+════════════════════════════════════ */
+.starter-card {
+  background: linear-gradient(
+    160deg,
+    rgba(22, 28, 46, 0.97),
+    rgba(15, 19, 34, 0.99)
+  ) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 24px !important;
+  padding: 28px 18px !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.starter-card.grass:hover {
+  border-color: rgba(50,215,75,0.4) !important;
+  box-shadow:
+    0 16px 40px rgba(0,0,0,0.6),
+    0 0 30px rgba(50,215,75,0.2),
+    inset 0 1px 0 rgba(50,215,75,0.08) !important;
+  transform: translateY(-8px) !important;
+}
+.starter-card.fire:hover {
+  border-color: rgba(255,69,58,0.4) !important;
+  box-shadow:
+    0 16px 40px rgba(0,0,0,0.6),
+    0 0 30px rgba(255,69,58,0.2),
+    inset 0 1px 0 rgba(255,69,58,0.08) !important;
+  transform: translateY(-8px) !important;
+}
+.starter-card.water:hover {
+  border-color: rgba(59,139,255,0.4) !important;
+  box-shadow:
+    0 16px 40px rgba(0,0,0,0.6),
+    0 0 30px rgba(59,139,255,0.2),
+    inset 0 1px 0 rgba(59,139,255,0.08) !important;
+  transform: translateY(-8px) !important;
+}
+
+.starter-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px !important;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.starter-type {
+  font-size: 10px !important;
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px;
+  border: 1px solid currentColor;
+  opacity: 0.9;
+}
+
+/* ════════════════════════════════════
+   BATTLE SCREEN
+════════════════════════════════════ */
+#battle-screen .battle-container {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 13, 22, 0.97) 0%,
+    rgba(7, 9, 18, 0.99) 100%
+  ) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 28px !important;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255,255,255,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+.battle-arena {
+  border-radius: 20px !important;
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.7) !important;
+}
+
+.battle-log {
+  background: rgba(8, 10, 18, 0.7) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  border-radius: 14px !important;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.4) !important;
+  font-size: 12px !important;
+  line-height: 1.6;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(199,125,255,0.3) transparent;
+}
+
+.battle-pokemon-info {
+  background: rgba(0,0,0,0.5) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  border-radius: 16px !important;
+  padding: 14px 18px !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.battle-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px !important;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(255,255,255,0.15);
+}
+
+.battle-level {
+  font-size: 10px !important;
+  color: var(--yellow) !important;
+}
+
+.vs-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 18px !important;
+  color: var(--yellow) !important;
+  text-shadow: 0 0 25px rgba(255,217,61,0.7), 0 0 50px rgba(255,217,61,0.3) !important;
+}
+
+/* Battle Moves */
+.move-btn {
+  background: rgba(255,255,255,0.025) !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  border-radius: 16px !important;
+  transition: all 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+  min-height: 70px !important;
+}
+
+.move-btn:hover:not(:disabled) {
+  transform: translateY(-4px) !important;
+  background: rgba(255,255,255,0.07) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.45) !important;
+}
+
+/* Action Buttons */
+.action-btn {
+  border-radius: 14px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  transition: all 0.22s ease !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-3px) !important;
+  filter: brightness(1.1) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+}
+
+.btn-fight {
+  background: linear-gradient(135deg, #ff453a, #e03329) !important;
+  box-shadow: 0 6px 20px rgba(255,69,58,0.35), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+}
+
+.btn-run {
+  background: linear-gradient(135deg, rgba(120,120,140,0.4), rgba(90,90,110,0.3)) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+}
+
+/* ════════════════════════════════════
+   PROFILE PANEL
+════════════════════════════════════ */
+#profile-panel {
+  background: linear-gradient(
+    160deg,
+    rgba(18, 23, 40, 0.98),
+    rgba(12, 16, 28, 0.99)
+  ) !important;
+  border: 1px solid rgba(199, 125, 255, 0.18) !important;
+  border-radius: 24px !important;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(255,255,255,0.03),
+    inset 0 1px 0 rgba(255,255,255,0.06) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+#profile-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(199,125,255,0.5), transparent);
+}
+
+.profile-avatar {
+  font-size: 56px !important;
+  margin: 16px auto !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(199,125,255,0.08);
+  border: 2px solid rgba(199,125,255,0.2);
+  box-shadow: 0 0 20px rgba(199,125,255,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* ════════════════════════════════════
+   TRADE MODAL
+════════════════════════════════════ */
+#trade-modal {
+  background: rgba(0,0,0,0.75) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.trade-modal-box {
+  background: linear-gradient(
+    160deg,
+    rgba(20, 26, 42, 0.98),
+    rgba(13, 17, 30, 0.99)
+  ) !important;
+  border: 1px solid rgba(255, 217, 61, 0.18) !important;
+  border-radius: 24px !important;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.8),
+    0 0 0 1px rgba(255,255,255,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+.trade-money-input {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 12px !important;
+  color: var(--text) !important;
+  transition: all 0.2s ease !important;
+}
+
+.trade-money-input:focus {
+  border-color: rgba(255,217,61,0.4) !important;
+  box-shadow: 0 0 0 3px rgba(255,217,61,0.08) !important;
+  outline: none !important;
+}
+
+/* ════════════════════════════════════
+   SAVE INDICATOR
+════════════════════════════════════ */
+.save-indicator {
+  background: linear-gradient(
+    135deg,
+    rgba(50,215,75,0.15),
+    rgba(50,215,75,0.08)
+  ) !important;
+  border: 1px solid rgba(50,215,75,0.3) !important;
+  border-radius: 12px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  color: var(--green) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 12px rgba(50,215,75,0.15) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* ════════════════════════════════════
+   BUFF PANEL
+════════════════════════════════════ */
+.buff-collapsed {
+  background: rgba(10, 12, 22, 0.95) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-left: none !important;
+  border-radius: 0 12px 12px 0 !important;
+  box-shadow: 4px 2px 16px rgba(0,0,0,0.6) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.buff-tooltip {
+  background: rgba(10, 12, 22, 0.97) !important;
+  border: 1px solid rgba(255,217,61,0.25) !important;
+  border-radius: 0 14px 14px 0 !important;
+  box-shadow: 6px 4px 20px rgba(0,0,0,0.7) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* ════════════════════════════════════
+   POKÉMON CENTER OVERLAY
+════════════════════════════════════ */
+#pokemon-center-overlay > div {
+  background: linear-gradient(
+    145deg,
+    rgba(22, 33, 62, 0.98),
+    rgba(15, 22, 42, 0.99)
+  ) !important;
+  border: 1px solid rgba(255, 100, 150, 0.3) !important;
+  border-radius: 28px !important;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.8),
+    0 0 40px rgba(255, 100, 150, 0.1),
+    inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+/* ════════════════════════════════════
+   EMPTY STATE
+════════════════════════════════════ */
+.empty-state {
+  color: var(--gray);
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 14px;
+  opacity: 0.4;
+  filter: grayscale(0.3);
+}
+
+/* ════════════════════════════════════
+   SEARCH INPUTS (global)
+════════════════════════════════════ */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"] {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 13px !important;
+  color: var(--text) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus {
+  border-color: rgba(199,125,255,0.45) !important;
+  box-shadow: 0 0 0 3px rgba(199,125,255,0.08) !important;
+  outline: none !important;
+}
+
+/* ════════════════════════════════════
+   SCROLLBARS (webkit)
+════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(199,125,255,0.25); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(199,125,255,0.45); }
+
+/* ════════════════════════════════════
+   BOX FILTER BTNS
+════════════════════════════════════ */
+.box-filter-btn {
+  border-radius: 20px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.box-filter-active,
+.box-filter-btn.box-filter-active {
+  background: rgba(199,125,255,0.18) !important;
+  color: var(--purple) !important;
+  border-color: rgba(199,125,255,0.35) !important;
+  box-shadow: 0 0 10px rgba(199,125,255,0.15) !important;
+}
+
+/* ════════════════════════════════════
+   FISHING GAME
+════════════════════════════════════ */
+.fishing-game-container {
+  background: linear-gradient(
+    145deg,
+    rgba(14, 20, 36, 0.98),
+    rgba(10, 14, 26, 0.99)
+  ) !important;
+  border: 2px solid rgba(59,139,255,0.35) !important;
+  border-radius: 32px !important;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.8),
+    0 0 40px rgba(59,139,255,0.15) !important;
+}
+
+.fishing-area {
+  background: linear-gradient(
+    to bottom,
+    rgba(8,30,63,0.9),
+    rgba(20,80,200,0.8),
+    rgba(8,30,63,0.9)
+  ) !important;
+  border: 2px solid rgba(59,139,255,0.2) !important;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 20px rgba(59,139,255,0.1) !important;
+}
+
+/* ════════════════════════════════════
+   TYPE BADGES - Enhanced
+════════════════════════════════════ */
+.type-grass   { background: rgba(50,215,75,0.12) !important;   color: #4be56b !important;  border: 1px solid rgba(50,215,75,0.25) !important; }
+.type-fire    { background: rgba(255,69,58,0.12) !important;   color: #ff6a62 !important;  border: 1px solid rgba(255,69,58,0.25) !important; }
+.type-water   { background: rgba(59,139,255,0.12) !important;  color: #5ea8ff !important;  border: 1px solid rgba(59,139,255,0.25) !important; }
+.type-electric{ background: rgba(255,217,61,0.12) !important;  color: #ffe063 !important;  border: 1px solid rgba(255,217,61,0.25) !important; }
+.type-psychic { background: rgba(199,125,255,0.12) !important; color: #d49bff !important;  border: 1px solid rgba(199,125,255,0.25) !important; }
+.type-normal  { background: rgba(200,200,210,0.1) !important;  color: #c0c0cc !important;  border: 1px solid rgba(200,200,210,0.18) !important; }
+.type-rock    { background: rgba(180,140,80,0.12) !important;  color: #d4a85a !important;  border: 1px solid rgba(180,140,80,0.22) !important; }
+.type-ground  { background: rgba(180,130,70,0.12) !important;  color: #c8955a !important;  border: 1px solid rgba(180,130,70,0.22) !important; }
+.type-poison  { background: rgba(160,80,200,0.12) !important;  color: #c078e0 !important;  border: 1px solid rgba(160,80,200,0.22) !important; }
+
+/* ════════════════════════════════════
+   GENDER BADGES - Enhanced
+════════════════════════════════════ */
+.gender-badge {
+  border-radius: 999px !important;
+  padding: 1px 7px !important;
+  font-size: 9px !important;
+}
+
+.gender-badge.gender-male   { color: var(--blue)   !important; border-color: rgba(59,139,255,0.4)  !important; background: rgba(59,139,255,0.1) !important; }
+.gender-badge.gender-female { color: var(--red)    !important; border-color: rgba(255,69,58,0.4)   !important; background: rgba(255,69,58,0.1)  !important; }
+.gender-badge.gender-none   { color: var(--gray)   !important; border-color: rgba(200,200,210,0.2) !important; background: rgba(200,200,210,0.06) !important; }
+
+/* ════════════════════════════════════
+   TITLE SCREEN PREMIUM
+════════════════════════════════════ */
+#title-screen {
+  background:
+    radial-gradient(ellipse 100% 70% at 50% 0%, rgba(199,125,255,0.12), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 80%, rgba(59,139,255,0.09), transparent 50%);
+}
+
+.title-logo {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(22px, 5vw, 46px) !important;
+  background: linear-gradient(135deg, #ffd93d 0%, #ff9f43 35%, #ff453a 65%, #c77dff 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 0 24px rgba(255,217,61,0.45)) !important;
+  letter-spacing: 3px;
+  margin-bottom: 10px !important;
+}
+
+.title-sub {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px !important;
+  color: var(--purple) !important;
+  letter-spacing: 3px !important;
+  text-shadow: 0 0 16px rgba(199,125,255,0.4) !important;
+  opacity: 0.85;
+}
+
+.title-btn {
+  background: linear-gradient(135deg, var(--red), var(--purple)) !important;
+  border-radius: 50px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 1px;
+  box-shadow:
+    0 10px 30px rgba(255,69,58,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  transition: all 0.25s ease !important;
+}
+
+.title-btn:hover {
+  transform: scale(1.06) translateY(-2px) !important;
+  box-shadow:
+    0 16px 40px rgba(255,69,58,0.5),
+    0 0 20px rgba(199,125,255,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.25) !important;
+}
+
+/* ════════════════════════════════════
+   EXTRA GLOBAL ANIMATIONS
+════════════════════════════════════ */
+
+/* Shimmer keyframe for special elements */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Shine sweep on shiny Pokémon badges */
+@keyframes shinySweep {
+  0%   { opacity: 0; transform: translateX(-100%) skewX(-20deg); }
+  30%  { opacity: 0.6; }
+  100% { opacity: 0; transform: translateX(200%) skewX(-20deg); }
+}
+
+/* Glow pulse for active nav elements */
+@keyframes navGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255,217,61,0.1), inset 0 1px 0 rgba(255,217,61,0.1); }
+  50%       { box-shadow: 0 0 20px rgba(255,217,61,0.2), inset 0 1px 0 rgba(255,217,61,0.15); }
+}
+
+.hud-nav-btn.active {
+  animation: navGlow 2.5s ease-in-out infinite !important;
+}
+
+/* Pokeball catch animation enhanced */
+.pokeball-anim {
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+}
+
+/* ════════════════════════════════════
+   MOBILE RESPONSIVE ENHANCEMENTS
+════════════════════════════════════ */
+@media (max-width: 768px) {
+  .hud {
+    border-radius: 16px !important;
+    padding: 10px 14px !important;
+  }
+
+  .team-section {
+    border-radius: 16px !important;
+    padding: 16px !important;
+  }
+
+  .location-card {
+    border-radius: 16px !important;
+  }
+
+  .gym-card, .market-card, .friend-card {
+    border-radius: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .starter-card {
+    border-radius: 18px !important;
+    padding: 20px 14px !important;
+  }
+
+  .auth-card {
+    border-radius: 22px !important;
+  }
+}
+
+/* ════════════════════════════════════
+   FINE DETAILS
+════════════════════════════════════ */
+
+/* log entries in battle */
+.log-player { color: #4be56b !important; font-weight: 700; }
+.log-enemy  { color: #ff6a62 !important; font-weight: 700; }
+.log-info   { color: #ffe063 !important; }
+.log-catch  { color: #d49bff !important; font-weight: 700; }
+
+/* coin icon glow */
+.coin-icon {
+  filter: drop-shadow(0 0 5px rgba(255,215,0,0.5)) !important;
+}
+
+/* Release selected state */
+.release-selected {
+  border-color: var(--red) !important;
+  background: rgba(255,69,58,0.12) !important;
+  box-shadow: 0 0 20px rgba(255,69,58,0.25) !important;
+}
+
+/* Fishing hint */
+.fishing-hint span { color: var(--blue) !important; text-shadow: 0 0 8px rgba(59,139,255,0.4); }
+
+/* ── END PREMIUM OVERRIDES ── */
