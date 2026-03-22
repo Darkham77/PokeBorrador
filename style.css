@@ -1192,6 +1192,37 @@
       margin-bottom: 12px;
     }
 
+    /* Desktop BATTLE Layout: Log on the left */
+    @media (min-width: 1024px) {
+      #battle-screen .battle-container {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        grid-template-rows: auto auto;
+        grid-template-areas: 
+          "log arena"
+          "log panel";
+        gap: 16px;
+        max-width: 1100px;
+        align-items: stretch;
+      }
+
+      .battle-arena {
+        grid-area: arena;
+        margin-bottom: 0;
+      }
+
+      .battle-log {
+        grid-area: log;
+        height: auto;
+        margin-bottom: 0;
+      }
+
+      #move-panel {
+        grid-area: panel;
+        margin-bottom: 0;
+      }
+    }
+
     .battle-actions {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
