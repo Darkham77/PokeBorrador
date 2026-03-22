@@ -64,6 +64,12 @@ function showGameError(error, context = {}) {
                     <strong>Mensaje:</strong> ${errorMessage}
                 </div>
 
+                <div class="error-user-action-container" style="margin-top: 15px; margin-bottom: 15px;">
+                    <div class="error-sub-title" style="margin-bottom: 5px;">¿QUÉ ESTABAS HACIENDO?</div>
+                    <textarea id="error-user-action" placeholder="Ej: Estaba por cambiar de Pokémon en batalla..." style="width: 100%; height: 60px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px; border-radius: 4px; resize: vertical; font-family: inherit; font-size: 0.9em; box-sizing: border-box;"></textarea>
+                    <div style="font-size: 0.8em; color: #aaa; margin-top: 4px;">Esta información nos ayuda a reproducir y arreglar el error más rápido.</div>
+                </div>
+
                 <div class="error-stack-wrap">
                     <div class="error-sub-title">DETALLES TÉCNICOS:</div>
                     <pre class="error-stack">${errorStack}</pre>
@@ -104,7 +110,10 @@ function copyErrorToClipboard() {
     const context = Array.from(document.querySelectorAll('.error-context-item'))
                          .map(el => el.innerText).join('\n');
     
-    const fullText = `${errorTitle}\n\n${errorMessage}\n\nCONTEXTO:\n${context}\n\nSTACK TRACE:\n${errorStack}`;
+    const userActionElement = document.getElementById('error-user-action');
+    const userAction = userActionElement && userActionElement.value.trim() ? userActionElement.value.trim() : "No especificado";
+    
+    const fullText = `${errorTitle}\n\n¿QUÉ ESTABA HACIENDO EL JUGADOR?\n${userAction}\n\n${errorMessage}\n\nCONTEXTO:\n${context}\n\nSTACK TRACE:\n${errorStack}`;
     
     navigator.clipboard.writeText(fullText).then(() => {
         const btn = document.querySelector('.copy-btn');

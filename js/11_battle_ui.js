@@ -336,7 +336,7 @@
       
       if (context === 'team') renderTeam();
       else renderBox();
-      if (currentTab === 'bag') renderBag();
+      if (document.getElementById('tab-bag')?.style.display !== 'none' && typeof renderBag === 'function') renderBag();
       scheduleSave();
     }
 
@@ -353,7 +353,7 @@
         notify(`Recuperaste ${item} de ${p.name}.`, '📥');
         if (context === 'team') renderTeam();
         else renderBox();
-        if (currentTab === 'bag') renderBag();
+        if (document.getElementById('tab-bag')?.style.display !== 'none' && typeof renderBag === 'function') renderBag();
         scheduleSave();
       }
     }
@@ -385,8 +385,8 @@
       }
 
       if (context === 'team') renderTeam();
-      if (currentTab === 'map') renderMaps();
-      if (currentTab === 'bag') renderBag();
+      if (document.getElementById('tab-map')?.style.display !== 'none' && typeof renderMaps === 'function') renderMaps();
+      if (document.getElementById('tab-bag')?.style.display !== 'none' && typeof renderBag === 'function') renderBag();
       scheduleSave();
     }
 

@@ -1587,11 +1587,13 @@ function _endEnemyTurn() {
     if (dirty) updateBattleUI();
   }
   setTimeout(() => {
-    b.turn = 'player';
+    if (!state.battle || state.battle.over) return;
+    state.battle.turn = 'player';
     _battleLock = false;
     setBtns(true);
     renderMoveButtons();
-    document.getElementById('move-buttons').style.display = 'grid';
+    const btnContainer = document.getElementById('move-buttons');
+    if (btnContainer) btnContainer.style.display = 'grid';
   }, 600);
 }
 
