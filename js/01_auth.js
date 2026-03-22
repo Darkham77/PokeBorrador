@@ -142,6 +142,9 @@
           const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + Date.now().toString(36);
           if (state.team) state.team.forEach(p => { if (!p.uid) p.uid = getUidStr(); });
           if (state.box) state.box.forEach(p => { if (!p.uid) p.uid = getUidStr(); });
+          
+          if (typeof syncRetroactivePokedex === 'function') syncRetroactivePokedex();
+          
           state.trainerChance = 5;
           state.trainer = username;
           updateHud();
@@ -214,6 +217,8 @@
           });
           state.team = _dedupeByUid(state.team);
           state.box = _dedupeByUid(state.box);
+
+          if (typeof syncRetroactivePokedex === 'function') syncRetroactivePokedex();
 
           state.trainerChance = 5; 
           console.log("[DEBUG] Pity forced to 5% on login");

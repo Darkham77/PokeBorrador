@@ -255,11 +255,11 @@
       },
       kadabra: {
         name: 'Kadabra', emoji: '🧘', type: 'psychic', hp: 40, atk: 35, def: 30, spa: 120, spd: 70, spe: 105,
-        learnset: [{ lv: 1, name: 'Teletransporte', pp: 20 }, { lv: 16, name: 'Confusión', pp: 25 }, { lv: 31, name: 'Psíquico', pp: 10 }, { lv: 38, name: 'Recuperación', pp: 10 }]
+        learnset: [{ lv: 1, name: 'Teletransporte', pp: 20 }, { lv: 16, name: 'Confusión', pp: 25 }, { lv: 27, name: 'Psicorrayo', pp: 20 }, { lv: 31, name: 'Psíquico', pp: 10 }, { lv: 38, name: 'Recuperación', pp: 10 }]
       },
       alakazam: {
         name: 'Alakazam', emoji: '🧘', type: 'psychic', hp: 55, atk: 50, def: 45, spa: 135, spd: 95, spe: 120,
-        learnset: [{ lv: 1, name: 'Teletransporte', pp: 20 }, { lv: 16, name: 'Confusión', pp: 25 }, { lv: 31, name: 'Psíquico', pp: 10 }, { lv: 38, name: 'Recuperación', pp: 10 }]
+        learnset: [{ lv: 1, name: 'Teletransporte', pp: 20 }, { lv: 16, name: 'Confusión', pp: 25 }, { lv: 27, name: 'Psicorrayo', pp: 20 }, { lv: 31, name: 'Psíquico', pp: 10 }, { lv: 38, name: 'Recuperación', pp: 10 }]
       },
       machop: {
         name: 'Machop', emoji: '💪', type: 'fighting', hp: 70, atk: 80, def: 50, spa: 35, spd: 35, spe: 35,
@@ -994,6 +994,7 @@
         // ── Psychic ──────────────────────────────────────────────
         'Confusión': { power: 50, acc: 100, type: 'psychic', cat: 'special', pp: 25, effect: 'confuse_10' },
         'Psíquico': { power: 90, acc: 100, type: 'psychic', cat: 'special', pp: 10, effect: 'stat_down_enemy_spd_10' },
+        'Psicorrayo': { power: 65, acc: 100, type: 'psychic', cat: 'special', pp: 20, effect: 'confuse_10' },
         'Psicoataque': { power: 90, acc: 100, type: 'psychic', cat: 'special', pp: 10, effect: 'stat_down_enemy_spd_10' },
         'Hipnosis': { power: 0, acc: 60, type: 'psychic', cat: 'status', pp: 20, effect: 'sleep' },
         'Meditación': { power: 0, acc: 100, type: 'psychic', cat: 'status', pp: 40, effect: 'stat_up_self_atk' },

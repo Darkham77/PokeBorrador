@@ -384,3 +384,29 @@ function switchPdexTab(tab) {
     // Nothing extra needed — renderPokedex is called in 05_render.js when tab=pokedex
   });
 })();
+
+function syncRetroactivePokedex() {
+  if (!state.pokedex) state.pokedex = [];
+  if (!state.seenPokedex) state.seenPokedex = [];
+
+  let updated = false;
+  const registerOwned = (p) => {
+    if (!p || !p.id) return;
+    const baseId = p.id;
+    if (!state.seenPokedex.includes(baseId)) {
+      state.seenPokedex.push(baseId);
+      updated = true;
+    }
+    if (!state.pokedex.includes(baseId)) {
+      state.pokedex.push(baseId);
+      updated = true;
+    }
+  };
+
+  if (state.team) state.team.forEach(registerOwned);
+  if (state.box) state.box.forEach(registerOwned);
+
+  if (updated) {
+    console.log("[POKEDEX] Retroactive sync applied. Updated Pokédex entries.");
+  }
+}
