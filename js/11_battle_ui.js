@@ -23,10 +23,57 @@
       'Éter': p => { p.moves.forEach(m => { m.pp = Math.min(m.maxPP, m.pp + 10); }); return `recuperó PP`; },
       'Elixir Máximo': p => { p.moves.forEach(m => { m.pp = m.maxPP; }); return `recuperó todos los PP`; },
       'Subida PP': p => { const m = p.moves && p.moves.find(mv => mv.maxPP && mv.maxPP < 99); if (!m) return null; const b = Math.max(1, Math.floor(m.maxPP * 0.2)); m.maxPP += b; m.pp = Math.min(m.pp + b, m.maxPP); return `aumentó los PP de ${m.name} en ${b}`; },
-      'MT Retribución': p => { if (p.moves && p.moves.find(m => m.name === 'Retribución')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Retribución', pp: 20, maxPP: 20 }); return `aprendió Retribución`; },
-      'MT Terremoto': p => { if (p.moves && p.moves.find(m => m.name === 'Terremoto')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Terremoto', pp: 10, maxPP: 10 }); return `aprendió Terremoto`; },
-      'MT Ventisca': p => { if (p.moves && p.moves.find(m => m.name === 'Ventisca')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Ventisca', pp: 5, maxPP: 5 }); return `aprendió Ventisca`; },
-      'Recordador de Movimientos': p => {
+      'MT Retribución': p => {
+        if (p.moves && p.moves.find(m => m.name === 'Retribución')) return null;
+        const moveData = { name: 'Retribución', pp: 20, maxPP: 20 };
+        if (p.moves.length >= 4) {
+          showLearnMoveMenu(p, moveData, () => {
+            if (p.moves.find(m => m.name === 'Retribución')) {
+              state.inventory['MT Retribución']--;
+              if (!state.inventory['MT Retribución']) delete state.inventory['MT Retribución'];
+              if (typeof renderBag === 'function') renderBag();
+              if (typeof scheduleSave === 'function') scheduleSave();
+            }
+          });
+          return 'deferred';
+        }
+        p.moves.push(moveData);
+        return `aprendió Retribución`;
+      },
+      'MT Terremoto': p => {
+        if (p.moves && p.moves.find(m => m.name === 'Terremoto')) return null;
+        const moveData = { name: 'Terremoto', pp: 10, maxPP: 10 };
+        if (p.moves.length >= 4) {
+          showLearnMoveMenu(p, moveData, () => {
+            if (p.moves.find(m => m.name === 'Terremoto')) {
+              state.inventory['MT Terremoto']--;
+              if (!state.inventory['MT Terremoto']) delete state.inventory['MT Terremoto'];
+              if (typeof renderBag === 'function') renderBag();
+              if (typeof scheduleSave === 'function') scheduleSave();
+            }
+          });
+          return 'deferred';
+        }
+        p.moves.push(moveData);
+        return `aprendió Terremoto`;
+      },
+      'MT Ventisca': p => {
+        if (p.moves && p.moves.find(m => m.name === 'Ventisca')) return null;
+        const moveData = { name: 'Ventisca', pp: 5, maxPP: 5 };
+        if (p.moves.length >= 4) {
+          showLearnMoveMenu(p, moveData, () => {
+            if (p.moves.find(m => m.name === 'Ventisca')) {
+              state.inventory['MT Ventisca']--;
+              if (!state.inventory['MT Ventisca']) delete state.inventory['MT Ventisca'];
+              if (typeof renderBag === 'function') renderBag();
+              if (typeof scheduleSave === 'function') scheduleSave();
+            }
+          });
+          return 'deferred';
+        }
+        p.moves.push(moveData);
+        return `aprendió Ventisca`;
+      },      'Recordador de Movimientos': p => {
         if (state.battle && !state.battle.over) return null; // Restricción: No usar en combate activo
         
         // Reunir movimientos de la especie actual y evoluciones previas
@@ -68,7 +115,7 @@
         
         // Abrir interfaz de selección profesional
         setTimeout(() => openMoveRelearnerMenu(p, allPossibleMoves), 100);
-        return 'está recordando sus raíces...';
+        return 'deferred';
       },
       'Repelente': _ => { state.repelSecs = (state.repelSecs || 0) + 10 * 60; return `activó el Repelente (10 min)`; },
       'Superrepelente': _ => { state.repelSecs = (state.repelSecs || 0) + 20 * 60; return `activó el Superrepelente (20 min)`; },
@@ -166,6 +213,7 @@
         if (!target) return;
         result = fn(target);
         if (result === null) { notify('No se puede usar en este momento.', '⚠️'); return; }
+        if (result === 'deferred') return;
         targetName = target.name;
         
         // Sync battle object if target is active
@@ -328,6 +376,8 @@
       } else {
         const result = fn(p);
         if (result === null) { notify('No hace efecto.', '⚠️'); return; }
+        if (result === 'deferred') return;
+
         state.inventory[itemName]--;
         if (!state.inventory[itemName]) delete state.inventory[itemName];
         document.getElementById('outside-item-overlay')?.remove();
@@ -534,6 +584,9 @@
       const p = state.team.find(pk => pk.uid === pokemonUid) || state.box.find(pk => pk.uid === pokemonUid);
       if (!p) return;
 
+      const itemName = 'Recordador de Movimientos';
+      if (!state.inventory[itemName]) return;
+
       document.getElementById('move-relearner-overlay').remove();
 
       // Efecto visual de "brillo" en la pantalla
@@ -563,5 +616,10 @@
           notify(`¡${p.name} recordó ${moveName}!`, '✨');
         }
       }
+      // Consumir el objeto
+      state.inventory[itemName]--;
+      if (!state.inventory[itemName]) delete state.inventory[itemName];
+      if (typeof renderBag === 'function') renderBag();
+
       if (typeof scheduleSave === 'function') scheduleSave();
     }

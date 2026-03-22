@@ -729,6 +729,7 @@
 
       const result = fn(p);
       if (result === null) { notify('No tiene ningún efecto.', '⚠️'); return; }
+      if (result === 'deferred') return;
 
       state.inventory[itemName]--;
       if (!state.inventory[itemName]) delete state.inventory[itemName];
