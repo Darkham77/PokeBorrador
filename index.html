@@ -134,6 +134,8 @@
 
         <!-- PC NAVIGATION (HUD CENTER) -->
         <div class="hud-nav">
+          <button class="hud-nav-btn" data-tab="pokedex"
+            onclick="showTab('pokedex',this)"><span>📖</span><span>Pokédex</span></button>
           <button class="hud-nav-btn active" data-tab="map"
             onclick="showTab('map',this)"><span>🗺️</span><span>Mapa</span></button>
           <button class="hud-nav-btn" data-tab="team"
@@ -331,6 +333,8 @@
       </div>
 
       <div class="nav">
+        <button class="nav-btn" data-tab="pokedex"
+          onclick="showTab('pokedex',this)"><span>📖</span><span>Pokédex</span></button>
         <button class="nav-btn active" data-tab="map"
           onclick="showTab('map',this)"><span>🗺️</span><span>Mapa</span></button>
         <button class="nav-btn" data-tab="team"
@@ -364,6 +368,20 @@
       <div id="tab-map" class="tab-content" style="padding-bottom:100px;">
         <div id="map-list" class="map-grid">
           <!-- Dynamically rendered -->
+        </div>
+      </div>
+
+      <!-- POKEDEX TAB -->
+      <div id="tab-pokedex" class="tab-content" style="display:none;padding-bottom:100px;">
+        <div class="team-section">
+          <div class="section-title">📖 Pokédex Nacional</div>
+          <div style="font-size:11px;color:var(--gray);margin-bottom:14px;display:flex;justify-content:space-between;">
+            <span>Vistos: <span id="pokedex-seen-count" style="color:#fff;">0</span></span>
+            <span>Capturados: <span id="pokedex-caught-count" style="color:var(--yellow);">0</span>/151</span>
+          </div>
+          <div id="pokedex-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:10px;">
+            <!-- Dynamically rendered -->
+          </div>
         </div>
       </div>
 
@@ -1017,6 +1035,12 @@
   <script src="js/15_breeding.js"></script>
   <script src="js/16_chat.js"></script>
   <script src="js/17_sounds.js"></script>
+  <script src="js/18_pokedex.js"></script>
+
+  <!-- POKEDEX DETAIL MODAL -->
+  <div id="pokedex-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s ease;">
+    <!-- Content injected via JS -->
+  </div>
 
   <!-- BAG / DAYCARE SELECTOR OVERLAY -->
   <div id="bag-overlay"

@@ -167,6 +167,18 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   setLog(startMsg);
   setBtns(true);
 
+  // ── Register enemy as Seen in Pokédex ────────────────────────────────────
+  state.seenPokedex = state.seenPokedex || [];
+  if (enemy && enemy.id && !state.seenPokedex.includes(enemy.id)) {
+    state.seenPokedex.push(enemy.id);
+  }
+  // For trainer battles, also register rest of the enemy team as seen
+  if (isTrainer && enemyTeam) {
+    enemyTeam.forEach(p => {
+      if (p && p.id && !state.seenPokedex.includes(p.id)) state.seenPokedex.push(p.id);
+    });
+  }
+
   // Ability: Intimidación (Intimidate) on start
   if (player.ability === 'Intimidación') {
     state.battle.enemyStages.atk = Math.max(-6, (state.battle.enemyStages.atk || 0) - 1);
@@ -1868,7 +1880,16 @@ function catchSuccess(enemy) {
     addLog('¡La Caja está llena! Soltá Pokémon para poder capturar más.', 'log-enemy');
   }
 
-  // Add to pokedex
+  // Add to pokedex (caught) – also ensures it's removed from seenPokedex/only-seen list
+  state.pokedex = state.pokedex || [];
+  if (enemy && enemy.id && !state.pokedex.includes(enemy.id)) {
+    state.pokedex.push(enemy.id);
+  }
+  // Ensure it's in seenPokedex too (it should already be there)
+  state.seenPokedex = state.seenPokedex || [];
+  if (enemy && enemy.id && !state.seenPokedex.includes(enemy.id)) {
+    state.seenPokedex.push(enemy.id);
+  }
 
   setLog(`¡${enemy.name} fue capturado!`, 'log-catch');
 

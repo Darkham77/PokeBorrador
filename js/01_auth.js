@@ -300,6 +300,8 @@
         team: state.team,
         box: state.box || [],
         pokedex: state.pokedex,
+        seenPokedex: state.seenPokedex || [],
+
         defeatedGyms: state.defeatedGyms,
         starterChosen: state.starterChosen || false,
         stats: state.stats || {},

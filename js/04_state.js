@@ -141,7 +141,8 @@
       inventory: { 'Poción': 3, 'Pokéball': 10 },
       team: [],
       box: [],
-      pokedex: [],
+      pokedex: [], // capturados
+      seenPokedex: [], // vistos
       defeatedGyms: [],
       battle: null,
       starterChosen: false,
