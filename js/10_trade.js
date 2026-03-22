@@ -498,160 +498,40 @@
     // ── Accept ────────────────────────────────────────
     async function acceptTrade(tradeId) {
       try {
-        // PASO 1: Validar trade y obtener datos iniciales
-        const { data: trade, error: tradeErr } = await sb.from('trade_offers').select('*').eq('id', tradeId).single();
-        if (tradeErr || !trade) { notify('No se pudo cargar el trade.', '⚠️'); return; }
-        if (trade.status !== 'pending') { notify('Este trade ya fue respondido.', '⚠️'); renderFriends(); return; }
-      
-        const offerUid = trade.offer_pokemon?.uid || null;
-        const requestUid = trade.request_pokemon?.uid || null;
-      
-        // PASO 2: Validar que el receiver tenga el Pokémon/dinero que ofrece
-        let requestedPokemonActual = null;
-        if (trade.request_pokemon) {
-          requestedPokemonActual = requestUid
-            ? state.team.find(p => p.uid === requestUid)
-            : state.team.find(p => p.name === trade.request_pokemon.name && p.level === trade.request_pokemon.level);
-          if (!requestedPokemonActual) { notify('Ya no tenés ese Pokémon.', '❌'); return; }
-        }
-      
-        if (trade.request_money > 0 && state.money < trade.request_money) { notify('No tenés suficiente dinero.', '💸'); return; }
-        if (trade.offer_pokemon && state.team.length >= 6 && !trade.request_pokemon) { notify('Tu equipo está lleno (máx. 6).', '❌'); return; }
-      
-        // PASO 3: Validar items del receiver
-        Object.entries(trade.request_items || {}).forEach(([k, v]) => {
-          if ((state.inventory[k] || 0) < v) throw new Error(`No tenés suficientes ${k}`);
-        });
-      
-        // PASO 4: Cargar save del sender y validar que tenga los Pokémon/items/dinero
-        const { data: sRow } = await sb.from('game_saves').select('*').eq('user_id', trade.sender_id).single();
-        const ss = sRow?.save_data || {};
-        ss.team = ss.team || [];
-        ss.box = ss.box || [];
-        ss.inventory = ss.inventory || {};
-        ss.money = ss.money || 0;
-      
-        let offeredPokemonActual = null;
-        if (trade.offer_pokemon) {
-          offeredPokemonActual = offerUid
-            ? (ss.team.find(p => p?.uid === offerUid) || ss.box.find(p => p?.uid === offerUid))
-            : (ss.team.find(p => p?.name === trade.offer_pokemon.name && p?.level === trade.offer_pokemon.level)
-              || ss.box.find(p => p?.name === trade.offer_pokemon.name && p?.level === trade.offer_pokemon.level));
-      
-          if (!offeredPokemonActual) {
-            await sb.from('trade_offers').update({ status: 'rejected' }).eq('id', tradeId);
-            notify('El remitente ya no tiene ese Pokémon. Trade cancelado.', '⚠️');
-            renderFriends();
-            return;
-          }
-      
-          if (!offeredPokemonActual.uid) offeredPokemonActual.uid = getUidStr();
-        }
-      
-        // PASO 5: Validar que el sender tenga dinero y items
-        if (trade.offer_money > 0 && ss.money < trade.offer_money) {
-          await sb.from('trade_offers').update({ status: 'rejected' }).eq('id', tradeId);
-          notify('El remitente no tiene suficiente dinero. Trade cancelado.', '⚠️');
-          renderFriends();
-          return;
-        }
-      
-        Object.entries(trade.offer_items || {}).forEach(([k, v]) => {
-          if ((ss.inventory[k] || 0) < v) throw new Error(`El remitente no tiene suficientes ${k}`);
-        });
-      
-        // PASO 6: Clonar el Pokémon ofrecido para evitar referencias compartidas
-        let offeredPokemonClone = null;
-        if (offeredPokemonActual) {
-          offeredPokemonClone = JSON.parse(JSON.stringify(offeredPokemonActual));
-          if (!offeredPokemonClone.uid) offeredPokemonClone.uid = getUidStr();
-        }
-      
-        // PASO 7: Clonar el Pokémon solicitado para evitar referencias compartidas
-        let requestedPokemonClone = null;
-        if (requestedPokemonActual) {
-          requestedPokemonClone = JSON.parse(JSON.stringify(requestedPokemonActual));
-          if (!requestedPokemonClone.uid) requestedPokemonClone.uid = getUidStr();
-        }
-      
-        // PASO 8: Aplicar cambios al receiver (state actual)
-        if (offeredPokemonClone) {
-          const uid = offeredPokemonClone.uid;
-          const alreadyHave = uid
-            ? (state.team.some(p => p?.uid === uid) || (state.box || []).some(p => p?.uid === uid))
-            : false;
-          if (!alreadyHave) {
-            state.team.push(offeredPokemonClone);
-            checkTradeEvolution(offeredPokemonClone);
-          }
-        }
-      
-        Object.entries(trade.offer_items || {}).forEach(([k, v]) => { state.inventory[k] = (state.inventory[k] || 0) + v; });
-        state.money += (trade.offer_money || 0);
-      
-        // Remover lo que el receiver entrega
-        if (requestedPokemonActual) {
-          const idx = state.team.findIndex(p => (p.uid && requestedPokemonActual.uid) ? p.uid === requestedPokemonActual.uid : p === requestedPokemonActual);
-          if (idx !== -1) state.team.splice(idx, 1);
-        }
-      
-        Object.entries(trade.request_items || {}).forEach(([k, v]) => {
-          state.inventory[k] = Math.max(0, (state.inventory[k] || 0) - v);
-          if (!state.inventory[k]) delete state.inventory[k];
-        });
-        state.money = Math.max(0, state.money - (trade.request_money || 0));
-      
-        // PASO 9: Aplicar cambios al sender (ss = sender save)
-        if (offeredPokemonClone) {
-          const uid = offeredPokemonClone.uid;
-          if (uid) {
-            ss.team = (ss.team || []).filter(p => p?.uid !== uid);
-            ss.box = (ss.box || []).filter(p => p?.uid !== uid);
-          } else {
-            ss.team = (ss.team || []).filter(p => !(p?.name === trade.offer_pokemon.name && p?.level === trade.offer_pokemon.level));
-            ss.box = (ss.box || []).filter(p => !(p?.name === trade.offer_pokemon.name && p?.level === trade.offer_pokemon.level));
-          }
-        }
-      
-        if (requestedPokemonClone) {
-          const uid = requestedPokemonClone.uid;
-          const senderAlreadyHasReq = (ss.team || []).some(p => p?.uid === uid) || (ss.box || []).some(p => p?.uid === uid);
-          if (!senderAlreadyHasReq) ss.team.push(requestedPokemonClone);
-          ss.pokedex = ss.pokedex || [];
-          if (!ss.pokedex.includes(requestedPokemonClone.id)) ss.pokedex.push(requestedPokemonClone.id);
-        }
-      
-        Object.entries(trade.request_items || {}).forEach(([k, v]) => { ss.inventory[k] = (ss.inventory[k] || 0) + v; });
-        ss.money = (ss.money || 0) + (trade.request_money || 0);
-      
-        Object.entries(trade.offer_items || {}).forEach(([k, v]) => {
-          ss.inventory[k] = Math.max(0, (ss.inventory[k] || 0) - v);
-          if (!ss.inventory[k]) delete ss.inventory[k];
-        });
-        ss.money = Math.max(0, (ss.money || 0) - (trade.offer_money || 0));
-      
-        // PASO 10 y 11: Guardar ambos saves y actualizar status atómicamente vía RPC en el servidor
+        setAuthLoading(true);
+        
+        // El servidor (Supabase RPC) ahora se encarga de TODO:
+        // 1. Validar que ambos jugadores tengan los Pokémon/items/dinero.
+        // 2. Realizar el intercambio en los dos saves de forma atómica.
+        // 3. Cambiar el estado del trade a 'accepted'.
         const { error: rpcErr } = await sb.rpc('execute_trade', {
-          p_trade_id: tradeId,
-          p_receiver_save: serializeState(),
-          p_sender_save: ss
+          p_trade_id: tradeId
         });
       
         if (rpcErr) {
-          throw new Error('Error al guardar el intercambio en el servidor: ' + rpcErr.message);
+          throw new Error(rpcErr.message);
         }
 
-      
-        updateHud(); renderTeam();
-        notify('¡Intercambio realizado con éxito!', '🎉');
+        // Una vez que el servidor procesó el trade exitosamente, 
+        // recargamos el save para que el cliente local esté sincronizado.
+        const { data: save } = await sb.from('game_saves').select('save_data').eq('user_id', currentUser.id).single();
+        if (save?.save_data) {
+          Object.assign(state, save.save_data);
+          updateHud();
+          renderTeam();
+          notify('¡Intercambio realizado con éxito!', '🎉');
+        }
+        
+        setAuthLoading(false);
         renderFriends();
       } catch (err) {
+        setAuthLoading(false);
         console.error('[TRADE ERROR]', err);
         notify('Error en el intercambio: ' + err.message, '❌');
         renderFriends();
       }
     }
-    
+      
     async function rejectTrade(tradeId) {
       await sb.from('trade_offers').update({ status: 'rejected' }).eq('id', tradeId);
       notify('Oferta rechazada.', '👋');

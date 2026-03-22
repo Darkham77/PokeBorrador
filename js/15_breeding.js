@@ -965,12 +965,31 @@ function generateDailyMission() {
 }
 
 function _createNewMissionObject(date) {
-    const possibleTargets = ['arcanine', 'kadabra', 'machoke', 'graveler', 'rapidash', 'slowbro', 'magneton', 'dodrio', 'dewgong', 'muk', 'cloyster', 'haunter', 'onix', 'hypno', 'kingler', 'electrode', 'exeggutor', 'marowak', 'weezing', 'rhydon', 'tangela', 'seadra', 'seaking', 'starmie', 'gyarados', 'vaporeon', 'jolteon', 'flareon', 'aerodactyl', 'snorlax', 'dragonair'];
+    const level = state.trainerLevel || 1;
+
+    // --- Dynamic Target Pool based on Trainer Level ---
+    const POOLS = {
+        novice: ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'zubat', 'geodude', 'sandshrew', 'nidoran_f', 'nidoran_m', 'magikarp', 'ekans', 'paras'],
+        apprentice: ['pikachu', 'abra', 'gastly', 'drowzee', 'machop', 'bellsprout', 'oddish', 'venonat', 'psyduck', 'poliwag', 'meowth', 'mankey', 'vulpix', 'clefairy', 'jigglypuff', 'pidgeotto', 'raticate', 'fearow', 'golbat', 'graveler', 'kakuna', 'metapod'],
+        veteran: ['growlithe', 'ponyta', 'slowpoke', 'magnemite', 'doduo', 'seel', 'grimer', 'shellder', 'krabby', 'voltorb', 'exeggcute', 'cubone', 'horsea', 'goldeen', 'staryu', 'kadabra', 'machoke', 'haunter', 'weepinbell', 'gloom', 'poliwhirl'],
+        master: ['arcanine', 'rapidash', 'slowbro', 'magneton', 'dodrio', 'dewgong', 'muk', 'cloyster', 'onix', 'hypno', 'kingler', 'electrode', 'exeggutor', 'marowak', 'weezing', 'rhydon', 'tangela', 'seadra', 'seaking', 'starmie', 'gyarados', 'vaporeon', 'jolteon', 'flareon', 'aerodactyl', 'snorlax', 'dragonair', 'scyther', 'pinsir', 'tauros', 'kangaskhan', 'lapras']
+    };
+
+    let possibleTargets = [...POOLS.novice];
+    if (level >= 10) possibleTargets = possibleTargets.concat(POOLS.apprentice);
+    if (level >= 25) possibleTargets = possibleTargets.concat(POOLS.veteran);
+    if (level >= 40) possibleTargets = possibleTargets.concat(POOLS.master);
+
     const target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
-    const minLvl = Math.floor(Math.random() * 21) + 30; // Niveles 30 a 50
     
-    // Nuevos tipos de requisitos
-    const missionTypes = ['level', 'iv_total', 'nature', 'iv_31'];
+    // --- Scale Level Requirement ---
+    // Nv. del entrenador + random(-5, +10), min 5, max 100
+    const minLvl = Math.max(5, Math.min(100, level + Math.floor(Math.random() * 16) - 5));
+    
+    // --- Mission Types (conditional on level) ---
+    const missionTypes = ['level', 'nature', 'iv_total'];
+    if (level >= 15) missionTypes.push('iv_31');
+    
     const type = missionTypes[Math.floor(Math.random() * missionTypes.length)];
     
     let requirement = { type: type };
@@ -980,7 +999,11 @@ function _createNewMissionObject(date) {
         requirement.minLevel = minLvl;
         reqText = `Nv. ${minLvl}+`;
     } else if (type === 'iv_total') {
-        const minIvTotal = Math.floor(Math.random() * 31) + 120; // 120 a 150 IVs totales
+        // --- Scale IV Total Requirement ---
+        // Base: 90. Incremento por nivel hasta +60.
+        // Un jugador nivel 1: ~100 IVs. Nivel 50: ~150 IVs.
+        const baseIv = 90 + Math.min(level, 60);
+        const minIvTotal = baseIv + Math.floor(Math.random() * 21); // Rango de 20
         requirement.minIvTotal = minIvTotal;
         reqText = `${minIvTotal}+ IVs totales`;
     } else if (type === 'nature') {
@@ -996,18 +1019,28 @@ function _createNewMissionObject(date) {
         reqText = `IV 31 en ${statLabels[targetStat]}`;
     }
 
+    // --- Scale Rewards based on level ---
+    const rewardQty = level >= 40 ? 4 : (level >= 20 ? 3 : 2);
     const possibleRewards = [
-        { id: 'berry_bronze', name: 'Baya de Bronce', qty: 3, icon: '🥉' },
-        { id: 'berry_silver', name: 'Baya de Plata', qty: 2, icon: '🥈' },
-        { id: 'berry_gold', name: 'Baya de Oro', qty: 1, icon: '🥇' },
-        { id: 'everstone', name: 'Piedra Eterna', qty: 1, icon: '🪨' },
-        { id: 'power_weight', name: 'Pesa Recia', qty: 1, icon: '🏋️' },
-        { id: 'power_bracer', name: 'Brazal Recio', qty: 1, icon: '🥊' },
-        { id: 'power_belt', name: 'Cinto Recio', qty: 1, icon: '🛡️' },
-        { id: 'power_lens', name: 'Lente Recia', qty: 1, icon: '🔍' },
-        { id: 'power_band', name: 'Banda Recia', qty: 1, icon: '🎗️' },
-        { id: 'power_anklet', name: 'Franja Recia', qty: 1, icon: '👢' }
+        { id: 'berry_bronze', name: 'Baya de Bronce', qty: rewardQty + 1, icon: '🥉' },
+        { id: 'berry_silver', name: 'Baya de Plata', qty: rewardQty, icon: '🥈' },
+        { id: 'berry_gold', name: 'Baya de Oro', qty: Math.max(1, rewardQty - 2), icon: '🥇' },
+        { id: 'everstone', name: 'Piedra Eterna', qty: 1, icon: '🪨' }
     ];
+    
+    // Add power items to rewards for higher levels
+    if (level >= 15) {
+        const powerItems = [
+            { id: 'power_weight', name: 'Pesa Recia', qty: 1, icon: '🏋️' },
+            { id: 'power_bracer', name: 'Brazal Recio', qty: 1, icon: '🥊' },
+            { id: 'power_belt', name: 'Cinto Recio', qty: 1, icon: '🛡️' },
+            { id: 'power_lens', name: 'Lente Recia', qty: 1, icon: '🔍' },
+            { id: 'power_band', name: 'Banda Recia', qty: 1, icon: '🎗️' },
+            { id: 'power_anklet', name: 'Franja Recia', qty: 1, icon: '👢' }
+        ];
+        possibleRewards.push(...powerItems);
+    }
+
     const reward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
     
     const trainerKeys = Object.keys(TRAINER_TYPES);
