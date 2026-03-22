@@ -8,20 +8,20 @@
 window.GAME_RATIOS = {
   // --- Shiny ---
   // Shiny encounter rate. 2000 means 1 in 2000 chance.
-  shinyRate: 2000, 
-  
+  shinyRate: 3000,
+
   // --- Encounters ---
   encounters: {
-    rival: 0.01,              // 1% chance for a Rival encounter on any map
+    rival: 0.001,              // 0.1% chance for a Rival encounter on any map
     fishing: 0.10,            // 10% chance for a fishing encounter when on a map with water
-    legendaryArticuno: 0.05,  // 5% chance to encounter Articuno in Seafoam Islands if ticket is active
-    legendaryMewtwo: 0.03,    // 3% chance to encounter Mewtwo in Cerulean Cave if ticket is active
-    
+    legendaryArticuno: 0.01,  // 1% chance to encounter Articuno in Seafoam Islands if ticket is active
+    legendaryMewtwo: 0.001,    // 0.1% chance to encounter Mewtwo in Cerulean Cave if ticket is active
+
     // Trainer normal encounters
     trainerBase: 5,           // Base % chance for trainer encounter (increases with pity timer)
     trainerMax: 20,           // Maximum % chance for trainer encounter (pity limit)
     trainerIncrement: 5,      // % added to trainer chance every 2 minutes
-    
+
     // Trainer guaranteed encounters (Repel)
     trainerRepel: 0.30        // 30% chance for trainer encounter when Repel is active (guaranteed encounter logic)
   },
