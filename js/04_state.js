@@ -14,12 +14,12 @@
 
     function initTrainerPityTimer() {
       setInterval(() => {
-        if (!state.trainerChance) state.trainerChance = 5;
-        if (state.trainerChance < 20) {
-          state.trainerChance += 5;
+        if (!state.trainerChance) state.trainerChance = GAME_RATIOS.encounters.trainerBase;
+        if (state.trainerChance < GAME_RATIOS.encounters.trainerMax) {
+          state.trainerChance += GAME_RATIOS.encounters.trainerIncrement;
           console.log(`[PITY] Trainer Chance increased to ${state.trainerChance}%`);
         }
-        if (state.trainerChance > 20) state.trainerChance = 20;
+        if (state.trainerChance > GAME_RATIOS.encounters.trainerMax) state.trainerChance = GAME_RATIOS.encounters.trainerMax;
       }, 120000); // 2 minutes
     }
 
@@ -75,8 +75,8 @@
       const rivalName = 'Rival Azul';
       
       // El nivel de los pokemon del Rival: promedio del equipo + 2
-      const teamSize = state.team.length || 1;
-      const avgLevel = state.team.reduce((sum, p) => sum + p.level, 0) / teamSize;
+      const teamSize = Math.max(3, state.team.length || 1);
+      const avgLevel = state.team.reduce((sum, p) => sum + p.level, 0) / (state.team.length || 1);
       const rivalLevel = Math.floor(avgLevel) + 2;
       
       // Equipo fuerte y variado (6 Pokémon base, pero usamos el mismo tamaño que el jugador)
@@ -134,7 +134,7 @@
       money: 3000,
       battleCoins: 0,
       eggs: [],
-      trainerChance: 5,
+      trainerChance: GAME_RATIOS.encounters.trainerBase,
       trainerLevel: 1,
       trainerExp: 0,
       trainerExpNeeded: 100,
@@ -275,7 +275,7 @@
       const ability = abilityList[Math.floor(Math.random() * abilityList.length)];
       const gender = assignGender(id);
 
-      const _activeShinyRate = (state.shinyBoostSecs || 0) > 0 ? Math.floor(SHINY_RATE / 2) : SHINY_RATE;
+      const _activeShinyRate = (state.shinyBoostSecs || 0) > 0 ? Math.floor(GAME_RATIOS.shinyRate / 2) : GAME_RATIOS.shinyRate;
       const isShiny = Math.random() < (1 / _activeShinyRate);
       
       const vigor = Math.floor(Math.random() * 4) + 3; // 3 a 6

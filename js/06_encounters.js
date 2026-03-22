@@ -191,8 +191,8 @@
 	        return;
 	      }
 
-	      // 1% Chance de Rival (En cualquier mapa)
-	      if (Math.random() < 0.01) {
+	      // Chance de Rival (En cualquier mapa)
+	      if (Math.random() < GAME_RATIOS.encounters.rival) {
 	        triggerRivalSequence(locId);
 	        return;
 	      }
@@ -203,8 +203,8 @@
 	
 	      // Si el repelente está activo, garantizamos un encuentro (Entrenador o Pokémon de nivel adecuado)
 	      if (repelActive) {
-	        // 30% de probabilidad de entrenador bajo repelente (más alto de lo normal para incentivar su uso)
-	        if (Math.random() < 0.3) {
+	        // Probabilidad de entrenador bajo repelente
+	        if (Math.random() < GAME_RATIOS.encounters.trainerRepel) {
 	          generateTrainerBattle(locId);
 	          return;
 	        }
@@ -244,14 +244,14 @@
 	      }
 	
 	      // Lógica normal sin repelente
-	      const tChance = Math.min(state.trainerChance || 5, 20);
+	      const tChance = Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax);
 	      if (Math.random() * 100 < tChance) {
 	        generateTrainerBattle(locId);
 	        return;
 	      }
 	
-	      // Encuentro de Pesca (10% de probabilidad)
-	      if (loc.fishing && Math.random() < 0.1) {
+	      // Encuentro de Pesca
+	      if (loc.fishing && Math.random() < GAME_RATIOS.encounters.fishing) {
 	        generateFishingBattle(locId);
 	        return;
 	      }
@@ -261,12 +261,12 @@
 	      const wildRates = loc.rates[cycle] || loc.rates.day;
 	
 	      // Special Legendary Ticket Spawns
-	      if (locId === 'seafoam_islands' && state.articunoTicketSecs > 0 && Math.random() < 0.05) {
+	      if (locId === 'seafoam_islands' && state.articunoTicketSecs > 0 && Math.random() < GAME_RATIOS.encounters.legendaryArticuno) {
 	        const enemy = makePokemon('articuno', 50);
 	        startBattle(enemy, false, null, locId);
 	        return;
 	      }
-	      if (locId === 'cerulean_cave' && state.mewtwoTicketSecs > 0 && Math.random() < 0.03) {
+	      if (locId === 'cerulean_cave' && state.mewtwoTicketSecs > 0 && Math.random() < GAME_RATIOS.encounters.legendaryMewtwo) {
 	        const enemy = makePokemon('mewtwo', 70);
 	        startBattle(enemy, false, null, locId);
 	        return;

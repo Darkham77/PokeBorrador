@@ -1673,6 +1673,11 @@ function tryCatch() {
     return;
   }
 
+  if (state.team.length >= 6 && state.box && state.box.length >= 200) {
+    notify('¡Libera la caja primero!', '📦');
+    return;
+  }
+
   const availableBalls = SHOP_ITEMS.filter(item => item.cat === 'pokeballs' && (state.inventory[item.name] || 0) > 0);
   if (availableBalls.length === 0) {
     notify('¡No tenés Pokéballs en tu mochila!', '😱');
@@ -1749,8 +1754,8 @@ function executeCatch(ballName) {
 
   const statusBonus = (b.enemy.status === 'sleep' || b.enemy.status === 'freeze') ? 2 : (b.enemy.status ? 1.5 : 1);
 
-  // Official Formula Factors
-  const a = (((3 * b.enemy.maxHp - 2 * b.enemy.hp) * baseRate * ballMult) / (3 * b.enemy.maxHp)) * statusBonus;
+  // Official Formula Factors + configurable multiplier
+  const a = (((3 * b.enemy.maxHp - 2 * b.enemy.hp) * baseRate * ballMult * (window.GAME_RATIOS ? GAME_RATIOS.battle.catchFormulaParams.catchBaseMultiplier : 1.0)) / (3 * b.enemy.maxHp)) * statusBonus;
 
   let shakes = 0;
   if (a >= 255 || ballName === 'Master Ball') {
@@ -1852,7 +1857,7 @@ function catchSuccess(enemy) {
   if (!state.box) state.box = [];
   if (state.team.length < 6) {
     state.team.push(caught);
-  } else if (state.box.length < 100) {
+  } else if (state.box.length < 200) {
     // Pokémon en caja siempre entran con HP y status restaurados
     caught.hp = caught.maxHp;
     caught.status = null;
@@ -2052,7 +2057,7 @@ function endBattle(won) {
       if (b.isRival) {
         const randRec = Math.random() * 100;
         let rewardedItem = null;
-        if (randRec < 20) rewardedItem = 'Masterball';
+        if (randRec < 20) rewardedItem = 'Master Ball';
         else if (randRec < 40) rewardedItem = 'Ticket Shiny';
         else if (randRec < 60) rewardedItem = 'Ticket Safari';
         else if (randRec < 80) rewardedItem = 'Ticket Cueva Celeste';

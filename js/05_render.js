@@ -119,7 +119,7 @@ function sendToBox(index) {
     return;
   }
   if (!state.box) state.box = [];
-  if (state.box.length >= 100) {
+  if (state.box.length >= 200) {
     notify('¡La Caja está llena!', '⚠️');
     return;
   }

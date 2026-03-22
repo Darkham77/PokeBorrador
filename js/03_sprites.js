@@ -63,7 +63,6 @@
 
     // Cache de sprites ya cargados
     const spriteCache = {};
-    const SHINY_RATE = 2000;
 
     function getSpriteUrl(id, isShiny = false) {
       const num = POKEMON_SPRITE_IDS[id];

@@ -254,8 +254,8 @@
       const warning = document.getElementById('box-full-warning');
       const resultsInfo = document.getElementById('box-results-info');
 
-      badge.textContent = `${state.box.length}/100 Pokémon`;
-      warning.style.display = state.box.length >= 100 ? 'block' : 'none';
+      badge.textContent = `${state.box.length}/200 Pokémon`;
+      warning.style.display = state.box.length >= 200 ? 'block' : 'none';
 
       // Disable release button if box is empty
       const btnRelease = document.getElementById('btn-box-release-mode');

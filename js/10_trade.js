@@ -454,6 +454,23 @@
           state.money += trade.request_money;
         }
 
+        // Remover completamente lo que el SENDER había ofrecido para evitar duplicados
+        if (trade.offer_pokemon) {
+          const offerUid = trade.offer_pokemon.uid;
+          if (offerUid) {
+            state.team = state.team.filter(p => p?.uid !== offerUid);
+            state.box = (state.box || []).filter(p => p?.uid !== offerUid);
+          } else {
+            state.team = state.team.filter(p => !(p?.name === trade.offer_pokemon.name && p?.level === trade.offer_pokemon.level));
+            state.box = (state.box || []).filter(p => !(p?.name === trade.offer_pokemon.name && p?.level === trade.offer_pokemon.level));
+          }
+        }
+        Object.entries(trade.offer_items || {}).forEach(([k, v]) => {
+          state.inventory[k] = Math.max(0, (state.inventory[k] || 0) - v);
+          if (!state.inventory[k]) delete state.inventory[k];
+        });
+        state.money = Math.max(0, state.money - (trade.offer_money || 0));
+
         // PASO 4: Guardar el estado actualizado
         await sb.from('game_saves').upsert({ 
           user_id: currentUser.id, 
@@ -613,24 +630,17 @@
         });
         ss.money = Math.max(0, (ss.money || 0) - (trade.offer_money || 0));
       
-        // PASO 10: Guardar ambos saves de forma atómica (en paralelo)
-        const nowIso = new Date().toISOString();
-        const receiverSave = { user_id: currentUser.id, save_data: serializeState(), updated_at: nowIso };
-        const senderSave = { user_id: trade.sender_id, save_data: ss, updated_at: nowIso };
+        // PASO 10 y 11: Guardar ambos saves y actualizar status atómicamente vía RPC en el servidor
+        const { error: rpcErr } = await sb.rpc('execute_trade', {
+          p_trade_id: tradeId,
+          p_receiver_save: serializeState(),
+          p_sender_save: ss
+        });
       
-        // Guardar ambos en paralelo para reducir ventana de inconsistencia
-        const [receiverErr, senderErr] = await Promise.all([
-          sb.from('game_saves').upsert(receiverSave, { onConflict: 'user_id' }).then(r => r.error),
-          sb.from('game_saves').upsert(senderSave, { onConflict: 'user_id' }).then(r => r.error)
-        ]);
-      
-        if (receiverErr || senderErr) {
-          throw new Error('Error al guardar: ' + (receiverErr?.message || senderErr?.message));
+        if (rpcErr) {
+          throw new Error('Error al guardar el intercambio en el servidor: ' + rpcErr.message);
         }
-      
-        // PASO 11: Actualizar estado del trade (DESPUÉS de guardar ambos saves)
-        const { error: updateErr } = await sb.from('trade_offers').update({ status: 'accepted' }).eq('id', tradeId);
-        if (updateErr) throw new Error('Error al actualizar trade: ' + updateErr.message);
+
       
         updateHud(); renderTeam();
         notify('¡Intercambio realizado con éxito!', '🎉');
