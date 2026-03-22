@@ -190,6 +190,7 @@
     const ABILITIES = {
       bulbasaur: ['Espesura', 'Clorofila'], charmander: ['Mar Llamas', 'Poder Solar'],
       squirtle: ['Torrente', 'Lluvia Ligera'], pidgey: ['Vista Lince', 'Alboroto'],
+      pidgeotto: ['Vista Lince', 'Alboroto'], pidgeot: ['Vista Lince', 'Alboroto'],
       rattata: ['Escape', 'Correcaminos'], caterpie: ['Escudo Polvo', 'Metamorfosis'],
       weedle: ['Escudo Polvo', 'Metamorfosis'], pikachu: ['Electricidad Estática', 'Pararrayos'],
       geodude: ['Robustez', 'Nerviosismo'], zubat: ['Vista Lince', 'Infiltrador'],

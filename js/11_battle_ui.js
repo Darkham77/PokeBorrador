@@ -28,14 +28,46 @@
       'MT Ventisca': p => { if (p.moves && p.moves.find(m => m.name === 'Ventisca')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Ventisca', pp: 5, maxPP: 5 }); return `aprendió Ventisca`; },
       'Recordador de Movimientos': p => {
         if (state.battle && !state.battle.over) return null; // Restricción: No usar en combate activo
-        const ls = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[p.id] && POKEMON_DB[p.id].learnset) || [];
-        const known = new Set((p.moves || []).map(m => m.name));
-        const forgotten = ls.filter(l => l.lv <= p.level && !known.has(l.name));
         
-        if (!forgotten.length) return null;
+        // Reunir movimientos de la especie actual y evoluciones previas
+        let currentId = p.id;
+        const allPossibleMoves = [];
+        const seenCurrentMoves = new Set((p.moves || []).map(m => m.name));
+        const processedIds = new Set();
+        
+        while (currentId && !processedIds.has(currentId)) {
+          processedIds.add(currentId);
+          const dbEntry = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[currentId]);
+          if (dbEntry && dbEntry.learnset) {
+            dbEntry.learnset.forEach(m => {
+              // Si ya conoce el movimiento, ignorar
+              if (seenCurrentMoves.has(m.name)) return;
+              
+              // Solo añadir si el nivel es alcanzado
+              if (m.lv <= p.level) {
+                const existing = allPossibleMoves.find(am => am.name === m.name);
+                if (!existing) {
+                  allPossibleMoves.push({ ...m, fromId: currentId });
+                } else if (m.lv < existing.lv) {
+                  existing.lv = m.lv;
+                }
+              }
+            });
+          }
+          
+          // Buscar de qué especie evoluciona
+          if (typeof EVOLUTION_TABLE !== 'undefined') {
+            const prevEntry = Object.entries(EVOLUTION_TABLE).find(([id, data]) => data.to === currentId);
+            currentId = prevEntry ? prevEntry[0] : null;
+          } else {
+            currentId = null;
+          }
+        }
+        
+        if (!allPossibleMoves.length) return null;
         
         // Abrir interfaz de selección profesional
-        setTimeout(() => openMoveRelearnerMenu(p, forgotten), 100);
+        setTimeout(() => openMoveRelearnerMenu(p, allPossibleMoves), 100);
         return 'está recordando sus raíces...';
       },
       'Repelente': _ => { state.repelSecs = (state.repelSecs || 0) + 10 * 60; return `activó el Repelente (10 min)`; },
