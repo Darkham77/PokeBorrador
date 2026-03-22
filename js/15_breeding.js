@@ -184,20 +184,156 @@ function _breedingEggGroups(id) {
   return EGG_GROUPS[base] || [];
 }
 function getBaseEvolution(id) {
-  const b = { 
-    ivysaur: 'bulbasaur', venusaur: 'bulbasaur', 
-    charmeleon: 'charmander', charizard: 'charmander', 
-    wartortle: 'squirtle', blastoise: 'squirtle', 
-    raichu: 'pikachu', 
-    vaporeon: 'eevee', jolteon: 'eevee', flareon: 'eevee', 
-    haunter: 'gastly', gengar: 'gastly', 
-    machoke: 'machop', machamp: 'machop', 
-    graveler: 'geodude', golem: 'geodude', 
-    gyarados: 'magikarp',
+  const b = {
+    // Bulbasaur line
+    ivysaur: 'bulbasaur', venusaur: 'bulbasaur',
+    // Charmander line
+    charmeleon: 'charmander', charizard: 'charmander',
+    // Squirtle line
+    wartortle: 'squirtle', blastoise: 'squirtle',
+    // Caterpie line
+    metapod: 'caterpie', butterfree: 'caterpie',
+    // Weedle line
+    kakuna: 'weedle', beedrill: 'weedle',
+    // Pidgey line
+    pidgeotto: 'pidgey', pidgeot: 'pidgey',
+    // Rattata line
+    raticate: 'rattata',
+    // Spearow line
+    fearow: 'spearow',
+    // Ekans line
+    arbok: 'ekans',
+    // Pikachu line (baby: pichu)
+    raichu: 'pikachu',
+    // Sandshrew line
+    sandslash: 'sandshrew',
+    // Nidoran lines
     nidorina: 'nidoran_f', nidoqueen: 'nidoran_f',
-    nidorino: 'nidoran_m', nidoking: 'nidoran_m'
+    nidorino: 'nidoran_m', nidoking: 'nidoran_m',
+    // Clefairy line (baby: cleffa)
+    clefable: 'clefairy',
+    // Vulpix line
+    ninetales: 'vulpix',
+    // Jigglypuff line (baby: igglybuff)
+    wigglytuff: 'jigglypuff',
+    // Zubat line
+    golbat: 'zubat',
+    // Oddish line
+    gloom: 'oddish', vileplume: 'oddish',
+    // Paras line
+    parasect: 'paras',
+    // Venonat line
+    venomoth: 'venonat',
+    // Diglett line
+    dugtrio: 'diglett',
+    // Meowth line
+    persian: 'meowth',
+    // Psyduck line
+    golduck: 'psyduck',
+    // Mankey line
+    primeape: 'mankey',
+    // Growlithe line
+    arcanine: 'growlithe',
+    // Poliwag line
+    poliwhirl: 'poliwag', poliwrath: 'poliwag',
+    // Abra line
+    kadabra: 'abra', alakazam: 'abra',
+    // Machop line
+    machoke: 'machop', machamp: 'machop',
+    // Bellsprout line
+    weepinbell: 'bellsprout', victreebel: 'bellsprout',
+    // Tentacool line
+    tentacruel: 'tentacool',
+    // Geodude line
+    graveler: 'geodude', golem: 'geodude',
+    // Ponyta line
+    rapidash: 'ponyta',
+    // Slowpoke line
+    slowbro: 'slowpoke',
+    // Magnemite line
+    magneton: 'magnemite',
+    // Doduo line
+    dodrio: 'doduo',
+    // Seel line
+    dewgong: 'seel',
+    // Grimer line
+    muk: 'grimer',
+    // Shellder line
+    cloyster: 'shellder',
+    // Gastly line
+    haunter: 'gastly', gengar: 'gastly',
+    // Onix line
+    // (no evolutions in gen1)
+    // Drowzee line
+    hypno: 'drowzee',
+    // Krabby line
+    kingler: 'krabby',
+    // Voltorb line
+    electrode: 'voltorb',
+    // Exeggcute line
+    exeggutor: 'exeggcute',
+    // Cubone line
+    marowak: 'cubone',
+    // Hitmon lines
+    // (no shared base in gen1)
+    // Lickitung line (no evo in gen1)
+    // Koffing line
+    weezing: 'koffing',
+    // Rhyhorn line
+    rhydon: 'rhyhorn',
+    // Chansey line (no baby in gen1)
+    // Tangela line
+    // Horsea line
+    seadra: 'horsea',
+    // Goldeen line
+    seaking: 'goldeen',
+    // Staryu line
+    starmie: 'staryu',
+    // Scyther line (no evo in gen1/2)
+    // Electabuzz line (baby: elekid)
+    // (electabuzz is already base, no further evo in gen1)
+    // Magmar line (baby: magby)
+    // (magmar is already base, no further evo in gen1)
+    // Eevee eeveelutions
+    vaporeon: 'eevee', jolteon: 'eevee', flareon: 'eevee',
+    // Kabuto line
+    kabutops: 'kabuto',
+    // Omanyte line
+    omastar: 'omanyte',
+    // Dratini line
+    dragonair: 'dratini', dragonite: 'dratini',
+    // Magikarp line
+    gyarados: 'magikarp',
+    // Pidgey duplicates (already above but safe)
   };
   return b[id] || id;
+}
+
+/**
+ * Returns the correct egg species for a mother:
+ * first resolves to the base form, then checks whether a
+ * baby form exists in EGG_GROUPS (meaning it's enabled in the game).
+ * If the baby form is present (even as 'no-eggs'), we use it as the egg.
+ * If the game doesn't have the baby Pokémon at all, we use the base form.
+ */
+function getBabyOrBase(motherId) {
+  const base = getBaseEvolution(motherId);
+  // Map from base form → baby form
+  const BABY_MAP = {
+    pikachu:    'pichu',
+    clefairy:   'cleffa',
+    jigglypuff: 'igglybuff',
+    electabuzz: 'elekid',
+    magmar:     'magby',
+    // togepi has no pre-evolution listed (it IS the baby)
+    // mr_mime → mime_jr. not in Gen1/2 scope here
+  };
+  const baby = BABY_MAP[base];
+  // Only use the baby if it exists in EGG_GROUPS (i.e. the game has it)
+  if (baby && baby in EGG_GROUPS) {
+    return baby;
+  }
+  return base;
 }
 function checkCompatibility(pA, pB) {
   const idA = _breedingBaseId(pA.id);
@@ -215,7 +351,7 @@ function checkCompatibility(pA, pB) {
   const aDitto = idA === 'ditto', bDitto = idB === 'ditto';
   if (aDitto !== bDitto) {
     const other = aDitto ? pB : pA;
-    const eggSpecies = getBaseEvolution(_breedingBaseId(other.id));
+    const eggSpecies = getBabyOrBase(_breedingBaseId(other.id));
     return { level: 2, eggSpecies, motherId: _breedingBaseId(other.id), reason: 'OK', sharedGroups: shared };
   }
 
@@ -230,7 +366,7 @@ function checkCompatibility(pA, pB) {
   if (shared.length === 0) return { level: 0, eggSpecies: null, reason: 'Sin grupo huevo comun', sharedGroups: shared };
 
   const mother = aFemale ? pA : pB;
-  const eggSpecies = getBaseEvolution(_breedingBaseId(mother.id));
+  const eggSpecies = getBabyOrBase(_breedingBaseId(mother.id));
   const level = (idA === idB) ? 3 : 2;
   return { level, eggSpecies, motherId: mother.id, reason: 'OK', sharedGroups: shared };
 }
