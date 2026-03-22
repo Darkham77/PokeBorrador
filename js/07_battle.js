@@ -719,6 +719,7 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       if (state.battle && !state.battle.isTrainer && !state.battle.isGym) {
         addLogFn(`¡${src.name} se teletransportó lejos de la batalla!`, 'log-info');
         state.battle.over = true;
+        state.battle = null;
         setTimeout(() => {
           showScreen('game-screen');
           showTab('map');
@@ -2131,6 +2132,7 @@ function endBattle(won) {
         );
         
         const _goToMap = () => {
+          state.battle = null;
           showScreen('game-screen');
           showTab('map');
           if (!toCity && _locId) {
@@ -2194,6 +2196,7 @@ function runFromBattle() {
     return;
   }
   state.battle.over = true;
+  state.battle = null;
   setLog('¡Huiste del combate!', 'log-info');
   setTimeout(() => {
     showScreen('game-screen');

@@ -27,7 +27,7 @@
       'MT Terremoto': p => { if (p.moves && p.moves.find(m => m.name === 'Terremoto')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Terremoto', pp: 10, maxPP: 10 }); return `aprendió Terremoto`; },
       'MT Ventisca': p => { if (p.moves && p.moves.find(m => m.name === 'Ventisca')) return null; if (!p.moves) p.moves = []; if (p.moves.length >= 4) p.moves.shift(); p.moves.push({ name: 'Ventisca', pp: 5, maxPP: 5 }); return `aprendió Ventisca`; },
       'Recordador de Movimientos': p => {
-        if (state.battle) return null; // Restricción: No usar en combate
+        if (state.battle && !state.battle.over) return null; // Restricción: No usar en combate activo
         const ls = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[p.id] && POKEMON_DB[p.id].learnset) || [];
         const known = new Set((p.moves || []).map(m => m.name));
         const forgotten = ls.filter(l => l.lv <= p.level && !known.has(l.name));

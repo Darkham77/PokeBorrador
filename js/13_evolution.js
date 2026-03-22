@@ -154,10 +154,19 @@
           clearInterval(interval);
           fromEl.style.display = 'none';
           document.getElementById('evo-to').style.display = 'block';
-          evolvePokemon(pokemon, toId);
+          const pending = evolvePokemon(pokemon, toId);
           setTimeout(() => {
             ov.remove();
-            if (onComplete) onComplete();
+            if (pending && pending.length > 0) {
+              if (typeof processLearnMoveQueue === 'function') {
+                processLearnMoveQueue(pending.map(m => ({ pokemon: pokemon, move: m })), onComplete);
+              } else {
+                console.error("processLearnMoveQueue not found");
+                if (onComplete) onComplete();
+              }
+            } else {
+              if (onComplete) onComplete();
+            }
           }, 2200);
         }
       }, 250);
@@ -188,6 +197,23 @@
       pokemon.spd = newBase.spd;
       // Keep existing moves unless empty
       if (!pokemon.moves || pokemon.moves.length === 0) pokemon.moves = newBase.moves;
+
+      // Check for moves learned at the current level for the new species
+      const pendingMoves = [];
+      if (toData.learnset) {
+        toData.learnset.filter(m => m.lv === pokemon.level).forEach(m => {
+          // Check if already knows the move (by name)
+          if (!pokemon.moves.find(em => em.name === m.name)) {
+            if (pokemon.moves.length < 4) {
+              pokemon.moves.push({ name: m.name, pp: m.pp, maxPP: m.pp });
+              if (typeof addLog === 'function') addLog(`¡${pokemon.name} aprendió <span style="color:#22c55e;font-weight:bold;">${m.name}</span>!`, 'log-info');
+            } else {
+              pendingMoves.push({ name: m.name, pp: m.pp, maxPP: m.pp });
+            }
+          }
+        });
+      }
+
       // Pokedex
       // Sync to team
       const idx = state.team.findIndex(p => p === pokemon);
@@ -195,6 +221,8 @@
       renderTeam();
       scheduleSave();
       notify(`¡${oldName} evolucionó a ${toData.name}!`, '🌟');
+
+      return pendingMoves;
     }
 
     // ── Stone evolutions ──────────────────────────────────────────
