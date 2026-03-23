@@ -800,7 +800,7 @@
         sprite: 'https://play.pokemonshowdown.com/sprites/trainers/brock.png',
         quote: '¡Mis Pokémon de roca tienen una defensa impenetrable!',
         victoryQuote: 'Hay muchos tipos de entrenadores en el mundo... Tú pareces ser uno con un gran futuro. Toma esto, te ayudará en tu viaje.',
-        rewardTM: 'MT Tumba Rocas',
+        rewardTM: 'MT39 Tumba Rocas',
         pokemon: ['geodude', 'onix'], levels: [12, 14], badgesRequired: 0,
       },
       {
@@ -810,7 +810,7 @@
         sprite: 'https://play.pokemonshowdown.com/sprites/trainers/misty.png',
         quote: '¡Soy la chica sensacional del agua! ¡No te voy a perdonar!',
         victoryQuote: '¡Vaya! Eres mucho más fuerte de lo que pareces. Mi estrategia no fue suficiente... ¡Espero que esta MT te sea de utilidad!',
-        rewardTM: 'MT Hidropulso',
+        rewardTM: 'MT03 Hidropulso',
         pokemon: ['staryu', 'starmie'], levels: [18, 21], badgesRequired: 1,
       },
       {
@@ -820,7 +820,7 @@
         sprite: 'https://play.pokemonshowdown.com/sprites/trainers/ltsurge.png',
         quote: '¡La electricidad es el arma definitiva! ¡Nunca me han derrotado!',
         victoryQuote: '¡Maldita sea! ¡Me has dejado frito! Eres un recluta de primera, sí señor. ¡Lleva esto contigo al campo de batalla!',
-        rewardTM: 'MT Onda Voltio',
+        rewardTM: 'MT34 Onda Voltio',
         pokemon: ['voltorb', 'pikachu', 'raichu'], levels: [21, 24, 28], badgesRequired: 2,
       },
       {
@@ -830,7 +830,7 @@
         sprite: 'https://play.pokemonshowdown.com/sprites/trainers/erika.png',
         quote: '¡Mis Pokémon de planta son tan hermosos como poderosos!',
         victoryQuote: 'Vaya, me has derrotado... Tu valor es admirable. Por favor, acepta esta humilde muestra de mi respeto.',
-        rewardTM: 'MT Gigadrenado',
+        rewardTM: 'MT19 Gigadrenado',
         pokemon: ['victreebel', 'tangela', 'vileplume'], levels: [29, 24, 29], badgesRequired: 3,
       },
       {
@@ -840,7 +840,7 @@
         sprite: 'https://play.pokemonshowdown.com/sprites/trainers/koga.png',
         quote: '¡El veneno es el arma más elegante de un ninja Pokémon!',
         victoryQuote: '¡Jajaja! Mis técnicas ninja han sido superadas. Has demostrado una gran tenacidad. ¡Usa esta técnica secreta con sabiduría!',
-        rewardTM: 'MT Tóxico',
+        rewardTM: 'MT06 Tóxico',
         pokemon: ['koffing', 'muk', 'koffing', 'weezing'], levels: [37, 39, 37, 43], badgesRequired: 4,
       },
       {
@@ -850,7 +850,7 @@
         sprite: 'https://play.pokemonshowdown.com/sprites/trainers/sabrina.png',
         quote: '¡Puedo leer tu mente y ver cada uno de tus movimientos!',
         victoryQuote: 'Lo predije... Tu victoria estaba escrita en las estrellas. Toma esto, desarrolla tu fuerza interior tanto como la de tus Pokémon.',
-        rewardTM: 'MT Paz Mental',
+        rewardTM: 'MT04 Paz Mental',
         pokemon: ['kadabra', 'mr_mime', 'jynx', 'alakazam'], levels: [38, 37, 38, 43], badgesRequired: 5,
       },
       {
@@ -860,7 +860,7 @@
         sprite: 'https://play.pokemonshowdown.com/sprites/trainers/blaine.png',
         quote: '¡Si no podés soportar el calor, ¡salí de mi gimnasio!',
         victoryQuote: '¡Fuego! ¡Me has quemado vivo! ¡Qué combate más ardiente! ¡Lleva esta MT y haz que tu pasión arda con la misma intensidad!',
-        rewardTM: 'MT Llamarada',
+        rewardTM: 'MT38 Llamarada',
         pokemon: ['growlithe', 'ponyta', 'rapidash', 'arcanine'], levels: [42, 40, 42, 47], badgesRequired: 6,
       },
       {
@@ -870,7 +870,7 @@
         sprite: 'https://play.pokemonshowdown.com/sprites/trainers/giovanni.png',
         quote: '¡Seré el último y más difícil obstáculo en tu camino!',
         victoryQuote: 'He perdido... Una vez más. Tu fuerza es incuestionable. No tengo nada más que enseñarte por ahora. Toma esto y sigue tu camino.',
-        rewardTM: 'MT Terremoto',
+        rewardTM: 'MT26 Terremoto',
         pokemon: ['rhyhorn', 'dugtrio', 'nidoqueen', 'nidoking', 'rhydon'], levels: [45, 42, 44, 45, 50], badgesRequired: 7,
       },
     ];
