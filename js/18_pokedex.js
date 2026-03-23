@@ -283,6 +283,64 @@ function showPokedexDetail(pokemonId) {
       </div>`
     : '<div style="color:#777;font-size:11px;">Próximamente</div>';
 
+  // Evolutions section
+  const evoTable = typeof EVOLUTION_TABLE !== 'undefined' ? EVOLUTION_TABLE : {};
+  const stoneEvoTable = typeof STONE_EVOLUTIONS !== 'undefined' ? STONE_EVOLUTIONS : {};
+  const tradeEvoTable = typeof TRADE_EVOLUTIONS !== 'undefined' ? TRADE_EVOLUTIONS : {};
+  
+  const possibleEvos = [];
+  
+  // Level up
+  if (evoTable[pokemonId]) {
+    possibleEvos.push({ 
+      method: `Nivel ${evoTable[pokemonId].level}`, 
+      toId: evoTable[pokemonId].to 
+    });
+  }
+  
+  // Stone
+  if (pokemonId === 'eevee') {
+    possibleEvos.push({ method: '💧 Piedra Agua', toId: 'vaporeon' });
+    possibleEvos.push({ method: '⚡ Piedra Trueno', toId: 'jolteon' });
+    possibleEvos.push({ method: '🔥 Piedra Fuego', toId: 'flareon' });
+  } else if (stoneEvoTable[pokemonId]) {
+    possibleEvos.push({ 
+      method: stoneEvoTable[pokemonId].stone, 
+      toId: stoneEvoTable[pokemonId].to 
+    });
+  }
+  
+  // Trade
+  if (tradeEvoTable[pokemonId]) {
+    possibleEvos.push({ 
+      method: 'Intercambio', 
+      toId: tradeEvoTable[pokemonId] 
+    });
+  }
+
+  const evosHtml = possibleEvos.length > 0
+    ? `<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
+        ${possibleEvos.map(evo => {
+          const toData = POKEMON_DB[evo.toId] || {};
+          const toName = toData.name || evo.toId;
+          const isCaught = caught.includes(evo.toId);
+          const evoSpriteId = POKEMON_SPRITE_IDS[evo.toId];
+          const evoSpriteUrl = evoSpriteId 
+            ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evoSpriteId}.png` 
+            : '';
+          
+          return `<div style="display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;width:100px;">
+            ${evoSpriteUrl 
+              ? `<img src="${evoSpriteUrl}" alt="${toName}" style="width:64px;height:64px;image-rendering:pixelated;${isCaught ? '' : 'filter:brightness(0);opacity:0.6;'}">`
+              : `<div style="font-size:32px;line-height:64px;">?</div>`
+            }
+            <div style="font-size:10px;font-weight:bold;color:${isCaught ? '#fff' : '#666'};margin-top:6px;text-align:center;">${isCaught ? toName : '???'}</div>
+            <div style="font-size:8px;color:#aaa;margin-top:4px;text-align:center;background:rgba(0,0,0,0.2);padding:4px;border-radius:4px;width:100%;">${evo.method}</div>
+          </div>`;
+        }).join('')}
+      </div>`
+    : '<div style="color:#777;font-size:11px;">Este Pokémon no tiene evoluciones conocidas.</div>';
+
   const modalEl = document.getElementById('pokedex-modal');
   if (!modalEl) return;
 
@@ -315,14 +373,14 @@ function showPokedexDetail(pokemonId) {
 
       <!-- Tabs -->
       <div id="pdex-tabs" style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);margin-top:16px;">
-        ${['stats','moves','tms'].map((tab, i) => `
+        ${['stats','moves','tms','evos'].map((tab, i) => `
           <button onclick="switchPdexTab('${tab}')" id="pdex-tab-${tab}"
             style="flex:1;padding:10px;border:none;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;
             background:${i===0?'rgba(255,255,255,0.06)':'transparent'};
             color:${i===0?'var(--yellow)':'#777'};
             border-bottom:${i===0?'2px solid var(--yellow)':'2px solid transparent'};
             transition:all 0.2s;">
-            ${{stats:'📊 Stats',moves:'📖 Movimientos',tms:'💿 MTs'}[tab]}
+            ${{stats:'📊 Stats',moves:'📖 Mov.',tms:'💿 MTs',evos:'✨ Evol.'}[tab]}
           </button>`).join('')}
       </div>
 
@@ -346,6 +404,11 @@ function showPokedexDetail(pokemonId) {
         <div style="font-size:10px;color:#666;margin-bottom:12px;">Las MTs resaltadas pueden ser aprendidas por este Pokémon.</div>
         ${tmsHtml}
       </div>
+
+      <div id="pdex-panel-evos" style="padding:20px;display:none;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);margin-bottom:14px;">EVOLUCIONES</div>
+        ${evosHtml}
+      </div>
     </div>
   `;
 
@@ -364,7 +427,7 @@ function closePokedexModal() {
 }
 
 function switchPdexTab(tab) {
-  ['stats','moves','tms'].forEach(t => {
+  ['stats','moves','tms','evos'].forEach(t => {
     const panel = document.getElementById(`pdex-panel-${t}`);
     const btn = document.getElementById(`pdex-tab-${t}`);
     if (panel) panel.style.display = t === tab ? 'block' : 'none';
