@@ -1051,14 +1051,14 @@ function useMove(moveIndex) {
     // Check flinch
     if (b.player.flinched) {
       b.player.flinched = false;
-      setLog(`¡${b.player.name} no pudo moverse por el impacto!`, 'log-enemy');
+      addLog(`¡${b.player.name} no pudo moverse por el impacto!`, 'log-enemy');
       _battleLock = true; setBtns(false);
       setTimeout(() => { _battleLock = false; enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 1000);
       return;
     }
     // Check paralysis skip
     if (b.player.status === 'paralyze' && Math.random() < 0.25) {
-      setLog(`¡${b.player.name} está paralizado y no puede moverse!`, 'log-enemy');
+      addLog(`¡${b.player.name} está paralizado y no puede moverse!`, 'log-enemy');
       _battleLock = true; setBtns(false);
       setTimeout(() => {
         _battleLock = false;
@@ -1070,7 +1070,7 @@ function useMove(moveIndex) {
     if (b.player.status === 'sleep') {
       b.player.sleepTurns = (b.player.sleepTurns || 1) - 1;
       if (b.player.sleepTurns > 0) {
-        setLog(`¡${b.player.name} está dormido! 💤`, 'log-enemy');
+        addLog(`¡${b.player.name} está dormido! 💤`, 'log-enemy');
         _battleLock = true; setBtns(false);
         setTimeout(() => {
           _battleLock = false;
@@ -1079,13 +1079,13 @@ function useMove(moveIndex) {
         return;
       } else {
         b.player.status = null;
-        setLog(`¡${b.player.name} se despertó!`, 'log-info');
+        addLog(`¡${b.player.name} se despertó!`, 'log-info');
       }
     }
     // Check freeze
     if (b.player.status === 'freeze') {
       if (Math.random() < 0.8) {
-        setLog(`¡${b.player.name} está congelado! 🧊`, 'log-enemy');
+        addLog(`¡${b.player.name} está congelado! 🧊`, 'log-enemy');
         _battleLock = true; setBtns(false);
         setTimeout(() => {
           _battleLock = false;
@@ -1094,13 +1094,13 @@ function useMove(moveIndex) {
         return;
       } else {
         b.player.status = null;
-        setLog(`¡${b.player.name} se descongeló!`, 'log-info');
+        addLog(`¡${b.player.name} se descongeló!`, 'log-info');
       }
     }
     // Check recharging
     if (b.recharging) {
       b.recharging = false;
-      setLog(`¡${b.player.name} debe recargar!`, 'log-enemy');
+      addLog(`¡${b.player.name} debe recargar!`, 'log-enemy');
       _battleLock = true; setBtns(false);
       setTimeout(() => {
         _battleLock = false;
@@ -1119,24 +1119,24 @@ function useMove(moveIndex) {
         
         if (roll < 0.4) {
           // Loafing around
-          setLog(`¡${b.player.name} está haciendo el vago!`, 'log-enemy');
+          addLog(`¡${b.player.name} está haciendo el vago!`, 'log-enemy');
         } else if (roll < 0.6) {
           // Nap
           b.player.status = 'sleep';
           b.player.sleepTurns = 1 + Math.floor(Math.random() * 3);
-          setLog(`¡${b.player.name} decidió echarse una siesta!`, 'log-enemy');
+          addLog(`¡${b.player.name} decidió echarse una siesta!`, 'log-enemy');
         } else if (roll < 0.8) {
           // Hurt self
           const selfDmg = Math.max(1, Math.floor(((2 * b.player.level / 5 + 2) * 40 * b.player.atk / b.player.def) / 50) + 2);
           b.player.hp = Math.max(0, b.player.hp - selfDmg);
           const tm = state.team.find(p => p.name === b.player.name);
           if (tm) tm.hp = b.player.hp;
-          setLog(`¡${b.player.name} ignoró tus órdenes y se golpeó a sí mismo! (-${selfDmg} HP)`, 'log-enemy');
+          addLog(`¡${b.player.name} ignoró tus órdenes y se golpeó a sí mismo! (-${selfDmg} HP)`, 'log-enemy');
           updateBattleUI();
         } else {
           // Random move
           const randomMove = b.player.moves[Math.floor(Math.random() * b.player.moves.length)];
-          setLog(`¡${b.player.name} ignoró tus órdenes y usó <strong>${randomMove.name}</strong>!`, 'log-player');
+          addLog(`¡${b.player.name} ignoró tus órdenes y usó <strong>${randomMove.name}</strong>!`, 'log-player');
           // We trigger the move manually but it doesn't spend PP of the intended move
           // For simplicity, we just log it and do nothing else this turn, 
           // or we could execute it... but let's keep it simple: it fails or does nothing.
@@ -1158,15 +1158,15 @@ function useMove(moveIndex) {
     if (b.player.confused > 0) {
       b.player.confused--;
       if (b.player.confused === 0) {
-        setLog(`¡${b.player.name} ya no está confundido!`, 'log-info');
+        addLog(`¡${b.player.name} ya no está confundido!`, 'log-info');
       } else {
-        setLog(`¡${b.player.name} está confundido!`, 'log-enemy');
+        addLog(`¡${b.player.name} está confundido!`, 'log-enemy');
         if (Math.random() < 0.5) {
           const selfDmg = Math.max(1, Math.floor(((2 * b.player.level / 5 + 2) * 40 * b.player.atk / b.player.def) / 50) + 2);
           b.player.hp = Math.max(0, b.player.hp - selfDmg);
           const tm = state.team.find(p => p.name === b.player.name);
           if (tm) tm.hp = b.player.hp;
-          setLog(`¡${b.player.name} se golpeó a sí mismo! (-${selfDmg} HP)`, 'log-enemy');
+          addLog(`¡${b.player.name} se golpeó a sí mismo! (-${selfDmg} HP)`, 'log-enemy');
           _battleLock = true; setBtns(false);
           updateBattleUI();
           setTimeout(() => {
@@ -1192,12 +1192,12 @@ function useMove(moveIndex) {
     const accStage = (b.playerStages.acc || 0) - (b.enemyStages.eva || 0);
     const accMult = stageMult(accStage) / evaMult;
     if (Math.random() * 100 > acc * accMult) {
-      setLog(`${b.player.name} usó <strong>${move.name}</strong>... ¡Falló!`, 'log-player');
+      addLog(`${b.player.name} usó <strong>${move.name}</strong>... ¡Falló!`, 'log-player');
       setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 900);
       return;
     }
 
-    setLog(`${b.player.name} usó <strong>${move.name}</strong>!`, 'log-player');
+    addLog(`${b.player.name} usó <strong>${move.name}</strong>!`, 'log-player');
 
     // Ability Immunity Check
     if (checkAbilityImmunity(b.player, b.enemy, move, addLog)) {
