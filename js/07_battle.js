@@ -2134,24 +2134,49 @@ function endBattle(won) {
 
     if (b.isGym) {
       const gym = GYMS.find(g => g.id === b.gymId);
-      if (gym && !state.defeatedGyms.includes(b.gymId)) {
-        state.defeatedGyms.push(b.gymId);
-        state.badges++;
-        updateHud();
+      if (gym) {
+        const today = (function() {
+          const d = getGMT3Date();
+          return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        })();
         
-        // Victory dialogue
-        if (gym.victoryQuote) {
-          addLog(`${gym.leader}: "${gym.victoryQuote}"`, 'log-player');
+        state.lastGymWins = state.lastGymWins || {};
+        state.lastGymWins[b.gymId] = today;
+
+        const diffUsed = b.difficulty || 'easy';
+        // current progress: 1=easy beaten, 2=normal beaten, 3=hard beaten
+        const progress = state.gymProgress?.[b.gymId] || (state.defeatedGyms.includes(b.gymId) ? 1 : 0);
+        const diffValue = { easy: 1, normal: 2, hard: 3 }[diffUsed];
+
+        if (diffValue > progress) {
+          state.gymProgress = state.gymProgress || {};
+          state.gymProgress[b.gymId] = diffValue;
         }
 
-        addLog(`¡Obtuviste la ${gym.badgeName || gym.badge} de ${gym.leader}!`, 'log-catch');
-        notify(`¡${gym.badgeName || gym.badge} obtenida! 🏆`, '🏆');
+        if (!state.defeatedGyms.includes(b.gymId)) {
+          state.defeatedGyms.push(b.gymId);
+          state.badges++;
+          updateHud();
+          
+          // Victory dialogue
+          if (gym.victoryQuote) {
+            addLog(`${gym.leader}: "${gym.victoryQuote}"`, 'log-player');
+          }
 
-        // TM Reward
-        if (gym.rewardTM) {
-          state.inventory[gym.rewardTM] = (state.inventory[gym.rewardTM] || 0) + 1;
-          addLog(`${gym.leader} te entregó la ${gym.rewardTM}.`, 'log-catch');
-          notify(`¡Recibiste ${gym.rewardTM}! 📀`, '📀');
+          addLog(`¡Obtuviste la ${gym.badgeName || gym.badge} de ${gym.leader}!`, 'log-catch');
+          notify(`¡${gym.badgeName || gym.badge} obtenida! 🏆`, '🏆');
+
+          // TM Reward
+          if (gym.rewardTM) {
+            state.inventory[gym.rewardTM] = (state.inventory[gym.rewardTM] || 0) + 1;
+            addLog(`${gym.leader} te entregó la ${gym.rewardTM}.`, 'log-catch');
+            notify(`¡Recibiste ${gym.rewardTM}! 📀`, '📀');
+          }
+        } else {
+          // Rematch extra reward
+          const extraCoins = diffValue * 150;
+          state.battleCoins = (state.battleCoins || 0) + extraCoins;
+          addLog(`¡Rematch ganado! Obtuviste <span style="color:var(--yellow);font-weight:bold;">${extraCoins} Battle Coins</span> adicionales.`, 'log-catch');
         }
       }
     }

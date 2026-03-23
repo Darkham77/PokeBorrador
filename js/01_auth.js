@@ -308,6 +308,8 @@
         seenPokedex: state.seenPokedex || [],
 
         defeatedGyms: state.defeatedGyms,
+        gymProgress: state.gymProgress || {},
+        lastGymWins: state.lastGymWins || {},
         starterChosen: state.starterChosen || false,
         stats: state.stats || {},
         activeBattle,

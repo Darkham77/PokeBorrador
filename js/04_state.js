@@ -144,6 +144,8 @@
       pokedex: [], // capturados
       seenPokedex: [], // vistos
       defeatedGyms: [],
+      gymProgress: {}, // { gymId: 1=easy, 2=normal, 3=hard }
+      lastGymWins: {}, // { gymId: 'YYYY-MM-DD' }
       battle: null,
       starterChosen: false,
       stats: {},

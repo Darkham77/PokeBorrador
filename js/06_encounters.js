@@ -486,17 +486,23 @@
 
 
     // ===== GYM BATTLE =====
-    function challengeGym(gymId) {
+    function challengeGym(gymId, difficulty = 'easy') {
       const gym = GYMS.find(g => g.id === gymId);
       const alive = state.team.filter(p => p.hp > 0);
       if (alive.length === 0) {
         notify('¡Todos tus Pokémon están debilitados!', '❤️‍🩹');
         return;
       }
+      
+      const teamData = gym.difficulties?.[difficulty] || { pokemon: gym.pokemon, levels: gym.levels };
+
       // Show leader intro overlay before battle
       const introOv = document.createElement('div');
       introOv.id = 'gym-intro-overlay';
       introOv.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease;';
+      
+      const diffLabel = { easy: 'FÁCIL', normal: 'NORMAL', hard: 'DIFÍCIL' }[difficulty] || 'FÁCIL';
+
       introOv.innerHTML = `
         <div style="background:var(--card);border-radius:24px;padding:32px;max-width:380px;width:100%;
           border:2px solid ${gym.typeColor}55;text-align:center;position:relative;">
@@ -509,6 +515,7 @@
             filter:drop-shadow(0 4px 16px ${gym.typeColor}88);"
             onerror="this.outerHTML='<div style=\'font-size:80px;\'>${gym.badge}</div>'">
           <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${gym.typeColor};margin-bottom:6px;">${gym.leader}</div>
+          <div style="font-size:10px;color:var(--gray);margin-bottom:4px;font-family:'Press Start 2P',monospace;">MODO ${diffLabel}</div>
           <div style="font-size:12px;color:var(--gray);margin-bottom:6px;">Líder del ${gym.name}</div>
           <div style="font-size:13px;color:#eee;margin:16px 0;line-height:1.6;font-style:italic;">"${gym.quote}"</div>
           <button id="gym-intro-btn" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 28px;border:none;border-radius:14px;
@@ -518,14 +525,14 @@
           </button>
         </div>`;
       document.body.appendChild(introOv);
-
+      
       document.getElementById('gym-intro-btn').onclick = () => {
         introOv.remove();
         
-        // Generate full team
-        const enemyTeam = gym.pokemon.map((id, i) => {
-          const p = makePokemon(id, gym.levels[i]);
-          if (i === gym.pokemon.length - 1) {
+        // Generate full team base on selected difficulty
+        const enemyTeam = teamData.pokemon.map((id, i) => {
+          const p = makePokemon(id, teamData.levels[i]);
+          if (i === teamData.pokemon.length - 1) {
             // Ace gets additional info
             p._gymLeader = gym.leader;
             p._gymBadge = gym.badge;
@@ -534,12 +541,13 @@
           return p;
         });
 
-        // The first Pokémon to fight is the first in the array (not necessarily the ace)
-        // Usually, the Ace is at the end. Pokemon games often start with the weakest.
         const firstEnemy = enemyTeam[0];
         firstEnemy._revealed = true;
         
         startBattle(firstEnemy, true, gymId, 'gym', false, enemyTeam);
+        if (state.battle) {
+          state.battle.difficulty = difficulty;
+        }
       };
     }
 

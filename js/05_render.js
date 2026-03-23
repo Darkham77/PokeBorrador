@@ -497,52 +497,89 @@ function renderGyms() {
     bug: '<i class="fas fa-bug fa-fw"></i>'
   };
 
+  const today = (function() {
+    const d = getGMT3Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  })();
+
   list.innerHTML = GYMS.map(gym => {
-    const defeated = state.defeatedGyms?.includes(gym.id);
+    const reached = state.defeatedGyms?.includes(gym.id);
     const locked = state.badges < gym.badgesRequired;
     const typeColor = gym.typeColor || '#888';
-    const onclick = (!defeated && !locked) ? `challengeGym('${gym.id}')` : '';
+    
+    // Daily limit check
+    const wonToday = state.lastGymWins?.[gym.id] === today;
+    
+    // Difficulty unlocking
+    // progress: 0 or undefined = not even easy beaten, 1 = easy beaten (normal unlocked), 2 = normal beaten (hard unlocked), 3 = all beaten
+    const progress = state.gymProgress?.[gym.id] || (reached ? 1 : 0);
+    
+    // Current UI selection (we can store it in a temporary object if needed, or just default to highest)
+    const selectedDifficulty = wonToday ? 'won' : (progress >= 2 ? 'hard' : (progress >= 1 ? 'normal' : 'easy'));
 
-    // Pokémon team preview (sprites from PokeAPI)
-    const teamHtml = gym.pokemon.map(id => {
-      const num = POKEMON_SPRITE_IDS[id];
-      const pData = POKEMON_DB[id];
-      return num
-        ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
-                 width="36" height="36" style="image-rendering:pixelated;"
-                 title="${pData?.name || id}"
-                 onerror="this.style.display='none'">`
-        : `<span style="font-size:22px;">${pData?.emoji || '❓'}</span>`;
-    }).join('');
+    const buildTeamPreview = (diffKey) => {
+      const teamData = gym.difficulties?.[diffKey] || { pokemon: gym.pokemon, levels: gym.levels };
+      return teamData.pokemon.map(id => {
+        const num = POKEMON_SPRITE_IDS[id];
+        const pData = POKEMON_DB[id];
+        return num
+          ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
+                   width="32" height="32" style="image-rendering:pixelated; ${diffKey === 'hard' ? 'filter:drop-shadow(0 0 2px gold)' : ''}"
+                   title="${pData?.name || id}"
+                   onerror="this.style.display='none'">`
+          : `<span style="font-size:18px;">${pData?.emoji || '❓'}</span>`;
+      }).join('');
+    };
 
-    // Ace = last Pokémon in array
-    const aceIdx = gym.pokemon.length - 1;
-    const aceLevel = gym.levels[aceIdx];
+    let actionHtml = '';
+    if (locked) {
+      actionHtml = `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.2);font-size:10px;color:var(--red);">🔒 Requiere ${gym.badgesRequired} medallas</div>`;
+    } else if (wonToday) {
+      actionHtml = `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:rgba(107,203,119,0.1);border:1px solid rgba(107,203,119,0.3);font-size:10px;color:var(--green);font-weight:700;">✅ GANADO HOY</div>`;
+    } else {
+      // Difficulty Selector
+      const diffs = [
+        { key: 'easy', label: 'FÁCIL', unlocked: true },
+        { key: 'normal', label: 'NORMAL', unlocked: progress >= 1 },
+        { key: 'hard', label: 'DIFÍCIL', unlocked: progress >= 2 }
+      ];
 
-    // State badge
-    const stateBadge = defeated
-      ? `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:rgba(107,203,119,0.15);border:1px solid rgba(107,203,119,0.4);font-size:10px;color:var(--green);font-weight:700;">✅ Completado — ${gym.badge} obtenida</div>`
-      : locked
-        ? `<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.2);font-size:10px;color:var(--red);">🔒 Requiere ${gym.badgesRequired} medalla${gym.badgesRequired !== 1 ? 's' : ''}</div>`
-        : `<button onclick="${onclick}" style="padding:8px 20px;border:none;border-radius:20px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:7px;
-                background:linear-gradient(135deg,${typeColor},${typeColor}99);color:#fff;font-weight:900;
-                box-shadow:0 2px 12px ${typeColor}55;transition:all .2s;"
-                onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                ⚔️ DESAFIAR
+      actionHtml = `
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
+          <div style="display:flex;gap:4px;">
+            ${diffs.map(d => {
+              const current = selectedDifficulty === d.key;
+              return `<button onclick="updateGymDifficultyUI('${gym.id}', '${d.key}')" 
+                ${!d.unlocked ? 'disabled' : ''}
+                id="btn-diff-${gym.id}-${d.key}"
+                class="gym-diff-btn ${current ? 'active' : ''} ${!d.unlocked ? 'locked' : ''}"
+                style="font-family:'Press Start 2P',monospace;font-size:6px;padding:6px 8px;border-radius:6px;border:1px solid ${current ? typeColor : 'rgba(255,255,255,0.1)'};
+                background:${current ? typeColor + '33' : 'transparent'};
+                color:${current ? '#fff' : (d.unlocked ? 'var(--gray)' : '#444')};
+                cursor:${d.unlocked ? 'pointer' : 'not-allowed'}; opacity:${d.unlocked ? 1 : 0.5};">
+                ${d.label}
               </button>`;
+            }).join('')}
+          </div>
+          <button onclick="challengeGym('${gym.id}', document.querySelector('.gym-diff-btn.active[id^=\\'btn-diff-${gym.id}-\\']')?.id.split('-').pop())" 
+            style="padding:10px 24px;border:none;border-radius:20px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:8px;
+            background:linear-gradient(135deg,${typeColor},${typeColor}cc);color:#fff;font-weight:900;
+            box-shadow:0 4px 14px ${typeColor}66;transition:all .2s;"
+            onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            ⚔️ DESAFIAR
+          </button>
+        </div>`;
+    }
 
     return `
           <div style="background:var(--card);border-radius:20px;overflow:hidden;
-            border:2px solid ${defeated ? 'rgba(107,203,119,0.35)' : locked ? 'rgba(255,255,255,0.05)' : typeColor + '44'};
+            border:2px solid ${wonToday ? 'rgba(107,203,119,0.5)' : locked ? 'rgba(255,255,255,0.05)' : typeColor + '44'};
             transition:all .3s;opacity:${locked ? '0.5' : '1'};"
-            ${!defeated && !locked ? `onmouseover="this.style.boxShadow='0 4px 24px ${typeColor}33'" onmouseout="this.style.boxShadow='none'"` : ''}>
+            id="gym-card-${gym.id}">
 
-            <!-- Colored header stripe -->
             <div style="background:linear-gradient(135deg,${typeColor}22,${typeColor}08);padding:16px 20px 0;
               border-bottom:1px solid ${typeColor}22;">
               <div style="display:flex;align-items:flex-start;gap:16px;">
-
-                <!-- Left: info -->
                 <div style="flex:1;min-width:0;">
                   <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                     <span style="font-size:18px;">${TYPE_ICON[gym.type] || '❓'}</span>
@@ -555,34 +592,64 @@ function renderGyms() {
                       ${TYPE_ICON[gym.type]} ${gym.type.charAt(0).toUpperCase() + gym.type.slice(1)}
                     </span>
                     <span style="font-size:11px;color:var(--yellow);">${gym.badge} ${gym.badgeName}</span>
-                    <span style="font-size:10px;color:var(--gray);">As: Nv.${aceLevel}</span>
-                  </div>
-                  <div style="font-size:11px;color:#888;font-style:italic;margin-bottom:12px;line-height:1.5;">
-                    "${gym.quote}"
                   </div>
                 </div>
-
-                <!-- Right: gym image -->
-                <div style="flex-shrink:0;width:96px;text-align:center;">
+                <div style="flex-shrink:0;width:90px;text-align:center;">
                   <img src="${gym.sprite}" alt="${gym.name}"
-                    style="height:96px;width:auto;image-rendering:pixelated;filter:drop-shadow(0 2px 8px ${typeColor}66);"
+                    style="height:90px;width:auto;image-rendering:pixelated;filter:drop-shadow(0 2px 8px ${typeColor}66);"
                     onerror="this.outerHTML='<div style=\'font-size:52px;line-height:1;\'>${gym.badge}</div>'">
                 </div>
-
               </div>
             </div>
 
-            <!-- Bottom: team + action -->
             <div style="padding:12px 20px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-              <div>
-                <div style="font-size:9px;color:var(--gray);margin-bottom:6px;font-weight:700;">EQUIPO</div>
-                <div style="display:flex;align-items:center;gap:4px;">${teamHtml}</div>
+              <div id="gym-team-preview-${gym.id}">
+                <div style="font-size:9px;color:var(--gray);margin-bottom:6px;font-weight:700;">PROGRESOS: ${progress}/3</div>
+                <div style="display:flex;align-items:center;gap:2px;">${buildTeamPreview(selectedDifficulty === 'won' ? (progress >= 3 ? 'hard' : (progress >= 2 ? 'hard' : (progress >= 1 ? 'normal' : 'easy'))) : selectedDifficulty)}</div>
               </div>
-              ${stateBadge}
+              <div id="gym-action-${gym.id}">
+                ${actionHtml}
+              </div>
             </div>
-
           </div>`;
   }).join('');
+}
+
+// Global helper to switch difficulty in the UI before fighting
+function updateGymDifficultyUI(gymId, diffKey) {
+  const gym = GYMS.find(g => g.id === gymId);
+  if (!gym) return;
+  
+  // Update buttons
+  document.querySelectorAll(`#gym-card-${gymId} .gym-diff-btn`).forEach(btn => {
+    const isThis = btn.id === `btn-diff-${gymId}-${diffKey}`;
+    btn.classList.toggle('active', isThis);
+    btn.style.borderColor = isThis ? gym.typeColor : 'rgba(255,255,255,0.1)';
+    btn.style.background = isThis ? gym.typeColor + '33' : 'transparent';
+    btn.style.color = isThis ? '#fff' : 'var(--gray)';
+  });
+
+  // Update team preview
+  const preview = document.getElementById(`gym-team-preview-${gymId}`);
+  if (preview) {
+    const teamData = gym.difficulties?.[diffKey] || { pokemon: gym.pokemon, levels: gym.levels };
+    const progress = state.gymProgress?.[gymId] || (state.defeatedGyms?.includes(gymId) ? 1 : 0);
+    const teamHtml = teamData.pokemon.map(id => {
+      const num = POKEMON_SPRITE_IDS[id];
+      const pData = POKEMON_DB[id];
+      return num
+        ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
+                 width="32" height="32" style="image-rendering:pixelated; ${diffKey === 'hard' ? 'filter:drop-shadow(0 0 2px gold)' : ''}"
+                 title="${pData?.name || id}"
+                 onerror="this.style.display='none'">`
+        : `<span style="font-size:18px;">${pData?.emoji || '❓'}</span>`;
+    }).join('');
+    
+    preview.innerHTML = `
+      <div style="font-size:9px;color:var(--gray);margin-bottom:6px;font-weight:700;">PROGRESOS: ${progress}/3</div>
+      <div style="display:flex;align-items:center;gap:2px;">${teamHtml}</div>
+    `;
+  }
 }
 
 function getDayCycle() {
