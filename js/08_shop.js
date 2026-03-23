@@ -874,6 +874,10 @@ function _marketSetQty(itemId, raw) {
       pvp_dawn: 'assets/sprites/pvp_dawn.png',
       pvp_day: 'assets/sprites/pvp_day.png',
       pvp_night: 'assets/sprites/pvp_night.png',
+      tower_dawn: 'assets/sprites/pokemon_tower_bg.jpg',
+      tower_day: 'assets/sprites/pokemon_tower_bg.jpg',
+      tower_dusk: 'assets/sprites/pokemon_tower_bg.jpg',
+      tower_night: 'assets/sprites/pokemon_tower_bg.jpg',
       ruta_dawn: 'assets/sprites/ruta_dawn.png',
       ruta_day: 'assets/sprites/ruta_day.png',
       ruta_night: 'assets/sprites/ruta_night.png',
@@ -881,7 +885,7 @@ function _marketSetQty(itemId, raw) {
 
     // ===== BATTLE BACKGROUNDS =====
     // Maps each location to a biome key, then picks the right time variant.
-    // Biomes: bosque | montana | playa | puente | ruta | pvp
+    // Biomes: bosque | montana | playa | puente | ruta | pvp | tower
     const _BIOME_MAP = {
       // Forest / jungle
       forest: 'bosque', route2: 'bosque', route25: 'puente',
@@ -892,6 +896,8 @@ function _marketSetQty(itemId, raw) {
       water: 'playa', seafoam_islands: 'playa',
       // Bridge routes
       route24: 'puente', route12: 'puente',
+      // Pokemon Tower
+      pokemon_tower: 'tower',
       // Gym / pvp
       gym: 'pvp', pvp: 'pvp',
       // Default routes → ruta
@@ -992,6 +998,17 @@ function _marketSetQty(itemId, raw) {
         };
         img.onerror = () => {
           console.error("Failed to load background:", src);
+          const fallbackSrc = BATTLE_BG_DATA.ruta_day;
+          if (src && src !== fallbackSrc) {
+            const fb = new Image();
+            fb.onload = () => draw(fb);
+            fb.onerror = () => {
+              ctx.fillStyle = '#0d1117';
+              ctx.fillRect(0, 0, W, H);
+            };
+            fb.src = fallbackSrc;
+            return;
+          }
           ctx.fillStyle = '#0d1117';
           ctx.fillRect(0, 0, W, H);
         };
