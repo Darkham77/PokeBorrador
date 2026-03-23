@@ -240,7 +240,11 @@
         });
       }
 
-      // Pokedex
+      // Pokedex – register the evolved form so the "caught" indicator works for the whole line
+      state.pokedex = state.pokedex || [];
+      if (!state.pokedex.includes(toId)) state.pokedex.push(toId);
+      state.seenPokedex = state.seenPokedex || [];
+      if (!state.seenPokedex.includes(toId)) state.seenPokedex.push(toId);
       // Sync to team
       const idx = state.team.findIndex(p => p === pokemon);
       if (idx !== -1) state.team[idx] = pokemon;

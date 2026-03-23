@@ -287,8 +287,23 @@ function updateBattleUI() {
   }
   const caughtIcon = document.getElementById('enemy-caught-icon');
   if (caughtIcon) {
-    const caught = (state.pokedex || []).includes(b.enemy.id);
-    caughtIcon.style.display = caught ? 'inline-block' : 'none';
+    // Check the enemy's form and all its pre-evolutions against the pokédex.
+    // Forward evolutions (forms you haven't obtained yet) are NOT included.
+    const pokedex = state.pokedex || [];
+    let familyCaught = pokedex.includes(b.enemy.id);
+    if (!familyCaught && typeof EVOLUTION_TABLE !== 'undefined') {
+      // Build a reverse map (evolved form → pre-evolution)
+      const PRE_EVO = {};
+      for (const [from, data] of Object.entries(EVOLUTION_TABLE)) {
+        PRE_EVO[data.to] = from;
+      }
+      // Walk backwards to the base form, collecting all ancestor IDs
+      const family = new Set([b.enemy.id]);
+      let cur = b.enemy.id;
+      while (PRE_EVO[cur]) { cur = PRE_EVO[cur]; family.add(cur); }
+      familyCaught = [...family].some(id => pokedex.includes(id));
+    }
+    caughtIcon.style.display = familyCaught ? 'inline-block' : 'none';
   }
   document.getElementById('enemy-level').textContent = `Nv. ${b.enemy.level}`;
   setBattleSprite('enemy', b.enemy.id, false);
