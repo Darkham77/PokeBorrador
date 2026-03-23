@@ -762,6 +762,10 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       break;
     case 'transform':
       const originalName = src.name;
+      if (!src.isTransformed) {
+        src.originalForm = JSON.parse(JSON.stringify(src));
+        src.isTransformed = true;
+      }
       src.id = tgt.id;
       src.name = tgt.name;
       src.type = tgt.type;
@@ -1866,9 +1870,10 @@ function catchSuccess(enemy) {
   const b = state.battle;
   b.over = true;
 
-  const caught = JSON.parse(JSON.stringify(enemy));
-  // Ensure current health is preserved or slightly adjusted
-  caught.hp = Math.max(1, enemy.hp);
+  const baseEnemy = enemy.isTransformed && enemy.originalForm ? enemy.originalForm : enemy;
+  const caught = JSON.parse(JSON.stringify(baseEnemy));
+  // Ensure current health is preserved or slightly adjusted, capped by true maxHp
+  caught.hp = Math.min(caught.maxHp, Math.max(1, enemy.hp));
   if (!state.box) state.box = [];
   if (state.team.length < 6) {
     state.team.push(caught);
@@ -1878,23 +1883,23 @@ function catchSuccess(enemy) {
     caught.status = null;
     caught.sleepTurns = 0;
     state.box.push(caught);
-    addLog(`${enemy.name} fue enviado a la Caja (equipo lleno).`, 'log-info');
+    addLog(`${baseEnemy.name} fue enviado a la Caja (equipo lleno).`, 'log-info');
   } else {
     addLog('¡La Caja está llena! Soltá Pokémon para poder capturar más.', 'log-enemy');
   }
 
   // Add to pokedex (caught) – also ensures it's removed from seenPokedex/only-seen list
   state.pokedex = state.pokedex || [];
-  if (enemy && enemy.id && !state.pokedex.includes(enemy.id)) {
-    state.pokedex.push(enemy.id);
+  if (baseEnemy && baseEnemy.id && !state.pokedex.includes(baseEnemy.id)) {
+    state.pokedex.push(baseEnemy.id);
   }
   // Ensure it's in seenPokedex too (it should already be there)
   state.seenPokedex = state.seenPokedex || [];
-  if (enemy && enemy.id && !state.seenPokedex.includes(enemy.id)) {
-    state.seenPokedex.push(enemy.id);
+  if (baseEnemy && baseEnemy.id && !state.seenPokedex.includes(baseEnemy.id)) {
+    state.seenPokedex.push(baseEnemy.id);
   }
 
-  setLog(`¡${enemy.name} fue capturado!`, 'log-catch');
+  setLog(`¡${baseEnemy.name} fue capturado!`, 'log-catch');
 
   // EXP gain on capture: awarded to all participants
   awardBattleExperience(true);
@@ -2019,6 +2024,20 @@ function endBattle(won) {
   if (!b || b._ending) return; // Prevent multiple calls from overlapping timeouts
   b._ending = true;
   b.over = true;
+
+  // If the player's active Pokémon was transformed (e.g. Ditto), restore its original form
+  if (b.player && b.player.isTransformed && b.player.originalForm) {
+    const prevHp = b.player.hp;
+    const savedItem = b.player.heldItem;
+    const origRef = state.team.find(p => p.uid === b.player.originalForm.uid);
+    if (origRef) {
+      Object.assign(origRef, b.player.originalForm);
+      origRef.hp = Math.min(origRef.maxHp, Math.max(0, prevHp));
+      if (savedItem !== undefined) origRef.heldItem = savedItem;
+      b.player = origRef;
+    }
+  }
+
 
   if (won) {
     // EXP moved down next to setLog to avoid being overwritten
@@ -2182,6 +2201,7 @@ function endBattle(won) {
 }
 
 function runFromBattle() {
+  if (!state.battle) return;
   if (state.battle?.isGym) {
     setLog('¡No podés huir de un combate contra un Líder de Gimnasio!', 'log-enemy');
     notify('¡No podés huir de un combate de Gimnasio!', '🚫');

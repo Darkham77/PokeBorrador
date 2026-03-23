@@ -217,7 +217,7 @@
         targetName = target.name;
         
         // Sync battle object if target is active
-        if (teamIndex === b.playerTeamIndex) {
+        if (b && teamIndex === b.playerTeamIndex) {
           b.player.hp = target.hp;
           b.player.status = target.status;
           if (target.moves) b.player.moves = JSON.parse(JSON.stringify(target.moves));
@@ -450,6 +450,7 @@
 
     function switchBattlePokemonByIndex(teamIndex, forced) {
       const b = state.battle;
+      if (!b) return;
       const teamRef = state.team[teamIndex];
       if (!teamRef || teamRef.hp <= 0) return;
 
@@ -465,6 +466,18 @@
 
       // Guardar el índice del Pokémon activo en la batalla para sincronizar HP después
       b.playerTeamIndex = teamIndex;
+
+      // If the current player was transformed (e.g. Ditto), restore its original form now
+      if (b.player && b.player.isTransformed && b.player.originalForm) {
+        const prevHp = b.player.hp;
+        const savedItem = b.player.heldItem;
+        const origRef = state.team.find(p => p.uid === b.player.originalForm.uid);
+        if (origRef) {
+          Object.assign(origRef, b.player.originalForm);
+          origRef.hp = Math.min(origRef.maxHp, Math.max(0, prevHp));
+          if (savedItem !== undefined) origRef.heldItem = savedItem;
+        }
+      }
 
       // Usar referencia al Pokémon del equipo (evita desync de PP)
       b.player = teamRef;
