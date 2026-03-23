@@ -5,7 +5,36 @@
       const cycle = getDayCycle();
       const badgeCount = (Array.isArray(state.badges) ? state.badges.length : (parseInt(state.badges) || 0));
 
-      // Fetch dynamic data for banners
+      const MAP_IMAGE_MAPPING = {
+        route1: 'ruta 1.png',
+        route2: 'ruta 2.png',
+        forest: 'bosque viridian.png',
+        route22: 'ruta 22.png',
+        route3: 'ruta 3.png',
+        mt_moon: 'mt. moon.png',
+        route4: 'ruta 4.png',
+        route24: 'ruta 24.png',
+        route25: 'ruta 25.png',
+        route5: 'ruta 5.png',
+        route6: 'ruta 6.png',
+        route11: 'ruta 11.png',
+        diglett_cave: 'cueva diglett.png',
+        route9: 'ruta 9.png',
+        rock_tunnel: 'tunel roca.png',
+        route10: 'ruta 10.png',
+        power_plant: 'central de energia.png',
+        route8: 'ruta 8.png',
+        pokemon_tower: 'torre pokemon.png',
+        route12: 'ruta 12.png',
+        route13: 'ruta 13.png',
+        safari_zone: 'zona safari.png',
+        seafoam_islands: 'islas espuma.png',
+        mansion: 'mansion pokemon.png',
+        route23: 'ruta 23.png',
+        victory_road: 'calle victoria.png',
+        cerulean_cave: 'cueva celeste.png'
+      };
+
       let eggCount = 0;
       let interactionCount = state.totalNotifications || 0;
       
@@ -16,20 +45,6 @@
         } catch (e) { console.error("Error fetching eggs:", e); }
       }
 
-      // Calculate "Current Spawns" (exclusive to this cycle or just a few featured ones)
-      const featuredSpawns = [];
-      FIRE_RED_MAPS.forEach(loc => {
-        if (badgeCount < loc.badges) return;
-        const pool = loc.wild[cycle] || [];
-        const dayPool = new Set(loc.wild.day || []);
-        pool.forEach(id => {
-          if (!dayPool.has(id) && featuredSpawns.length < 5) {
-            if (!featuredSpawns.includes(id)) featuredSpawns.push(id);
-          }
-        });
-      });
-
-      // Helper: render a small Pokémon sprite
       const spriteImg = (id) => {
         const num = POKEMON_SPRITE_IDS[id];
         const pData = POKEMON_DB[id];
@@ -37,130 +52,76 @@
         if (!num) return '';
         return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
           title="${name}" width="32" height="32"
-          style="image-rendering:pixelated;"
           onerror="this.style.display='none'">`;
       };
 
       let html = '';
 
-      // Rediseño: Barra dividida (Centro Pokémon + Banners)
+      // PC Bar (Remains similar but styled for cinematic feel if needed)
+      // For now, let's keep it clean as requested for maps specifically
       html += `
         <div class="pc-split-container">
-          <!-- Parte Izquierda: Centro Pokémon -->
           <div class="pc-left">
-            <div class="location-card location-card-center" onclick="openPokemonCenter()"
-              style="border-color:rgba(255,100,150,0.4);background:linear-gradient(135deg,#1a1a3e,#2a1a2e);">
-              <span class="location-tag" style="background:rgba(255,100,150,0.2);color:#ff6496;">🏥 Curación</span>
-              <div class="location-icon">🏥</div>
-              <div class="location-name" style="color:#ff6496;">Centro Pokémon</div>
-              <div class="location-desc">Saná a tus Pokémon y restaurá sus PP al máximo.</div>
+            <div class="location-card" onclick="openPokemonCenter()" style="height: 180px; background: linear-gradient(135deg,#200,#400);">
+               <div class="location-info-card" style="bottom: 10px; left: 10px; right: 10px; padding: 10px;">
+                  <div class="location-top-row">
+                    <span class="location-cycle-badge" style="color:#ff6496;">🏥</span>
+                    <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#ff6496;">Centro Pokémon</span>
+                  </div>
+                  <div style="font-size:11px; color:#ccc; margin-top:5px;">Curá a tu equipo al instante.</div>
+               </div>
             </div>
           </div>
-
-          <!-- Parte Derecha: Banners Recordatorios -->
           <div class="pc-right">
-            <!-- Banner 1: Huevos -->
-            <div class="pc-banner" onclick="showTab('daycare')">
-              <div class="pc-banner-icon">🥚</div>
-              <div class="pc-banner-content">
-                <div class="pc-banner-title">Crianza</div>
-                <div class="pc-banner-text">¡Tienes <span>${eggCount}</span> huevos en tu almacén!</div>
-              </div>
-            </div>
-
-            <!-- Banner 2: Amigos -->
-            <div class="pc-banner" onclick="showTab('friends')">
-              <div class="pc-banner-icon">👥</div>
-              <div class="pc-banner-content">
-                <div class="pc-banner-title">Social</div>
-                <div class="pc-banner-text">¡Tienes <span>${interactionCount}</span> interacciones con tus amigos!</div>
-              </div>
-            </div>
-
-            <!-- Banner 3: Spawns -->
-            <div class="pc-banner" style="cursor: default;">
-              <div class="pc-banner-icon">✨</div>
-              <div class="pc-banner-content">
-                <div class="pc-banner-title">A esta hora aparecen:</div>
-                <div class="pc-banner-spawns">
-                  ${featuredSpawns.map(id => spriteImg(id)).join('')}
-                </div>
-              </div>
-            </div>
+             <!-- Placeholder for other banners if needed, but let's focus on map grid -->
+             <div class="pc-banner" onclick="showTab('daycare')">
+                <span>🥚</span><span>Huevos: ${eggCount}</span>
+             </div>
+             <div class="pc-banner" onclick="showTab('friends')">
+                <span>👥</span><span>Amigos: ${interactionCount}</span>
+             </div>
           </div>
         </div>
       `;
 
-    FIRE_RED_MAPS.forEach(loc => {
+      FIRE_RED_MAPS.forEach(loc => {
         let isLocked = badgeCount < loc.badges;
-        
-        // Ticket Overrides
         if (loc.id === 'safari_zone' && state.safariTicketSecs > 0) isLocked = false;
         if (loc.id === 'cerulean_cave' && state.ceruleanTicketSecs > 0) isLocked = false;
 
         const availableWild = loc.wild[cycle] || loc.wild.day;
-
-        // Build time slots preview — show which Pokémon are exclusive to each slot
-        const allSlots = ['morning', 'day', 'dusk', 'night'];
         const slotMeta = {
-          morning: { icon: '🌅', label: 'Alba', color: '#FFD93D' },
-          day: { icon: '☀️', label: 'Día', color: '#FFEEAD' },
-          dusk: { icon: '🌆', label: 'Crepúsculo', color: '#FF9632' },
-          night: { icon: '🌙', label: 'Noche', color: '#9b4dca' },
+          morning: { icon: '🌅', label: 'Alba' },
+          day: { icon: '☀️', label: 'Día' },
+          dusk: { icon: '🌆', label: 'Tarde' },
+          night: { icon: '🌙', label: 'Noche' },
         };
 
-        // Pokémon exclusive to each slot (not in day pool)
-        const dayPool = new Set(loc.wild.day || []);
-        const exclusives = {};
-        allSlots.forEach(slot => {
-          if (slot === 'day') return;
-          const pool = loc.wild[slot] || [];
-          const ex = pool.filter(id => !dayPool.has(id));
-          if (ex.length) exclusives[slot] = ex;
-        });
+        const imgPath = `maps/${MAP_IMAGE_MAPPING[loc.id] || 'default.png'}`;
 
-        // Helper: render a small Pokémon sprite (sin fallback a emoji)
-        const spriteImg = (id) => {
-          const num = POKEMON_SPRITE_IDS[id];
-          const pData = POKEMON_DB[id];
-          const name = pData?.name || id;
-          if (!num) return '';
-          return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
-            title="${name}" width="32" height="32"
-            style="image-rendering:pixelated;"
-            onerror="this.style.display='none'">`;
-        };
+        html += `
+          <div class="location-card ${isLocked ? 'locked' : ''}" onclick="${isLocked ? '' : `goLocation('${loc.id}')`}">
+            <img src="${imgPath}" class="location-card-img" alt="${loc.name}">
+            
+            <div class="location-info-card">
+              <div class="location-top-row">
+                ${!isLocked ? `
+                  <div class="location-cycle-badge">${slotMeta[cycle].icon} ${slotMeta[cycle].label}</div>
+                  ${loc.fishing ? '<div class="fishing-indicator">🎣</div>' : ''}
+                ` : `
+                  <div class="location-lock-tag">🔒 Requisito: ${loc.badges} Medallas</div>
+                `}
+              </div>
 
-        const timeSlotsHtml = Object.entries(exclusives).map(([slot, ids]) => {
-          const meta = slotMeta[slot];
-          const active = slot === cycle;
-          return `<div style="display:flex;align-items:center;gap:2px;padding:3px 6px;border-radius:8px;
-            background:${active ? 'rgba(255,255,255,0.08)' : 'transparent'};
-            border:1px solid ${active ? meta.color + '55' : 'transparent'};">
-            <span style="font-size:10px;margin-right:2px;">${meta.icon}</span>
-            <span style="font-size:8px;color:${meta.color};font-weight:${active ? '700' : '400'};margin-right:4px;white-space:nowrap;">${meta.label}:</span>
-            ${ids.slice(0, 4).map(id => spriteImg(id)).join('')}
-            ${ids.length > 4 ? `<span style="font-size:9px;color:#666;margin-left:2px;">+${ids.length - 4}</span>` : ''}
-          </div>`;
-        }).join('');
-
-        html += `<div class="location-card ${isLocked ? 'locked' : ''}" onclick="${isLocked ? '' : `goLocation('${loc.id}')`}">
-          ${loc.fishing ? '<span class="fishing-rod">🎣</span>' : ''}
-          <span class="location-tag ${isLocked ? 'tag-locked' : 'tag-wild'}">${isLocked ? `🔒 ${loc.badges} Medallas` : `${slotMeta[cycle].icon} ${slotMeta[cycle].label}`}</span>
-          <div class="location-icon">${loc.icon}</div>
-          <div class="location-name">${loc.name}</div>
-          <div class="location-desc">${loc.desc}</div>
-          ${!isLocked ? `
-          <div style="margin-top:8px;">
-            <div style="font-size:8px;color:#666;margin-bottom:4px;">Ahora disponibles:</div>
-            <div style="display:flex;flex-wrap:wrap;gap:0px;align-items:center;">
-              ${availableWild.slice(0, 6).map(id => spriteImg(id)).join('')}
-              ${availableWild.length > 6 ? `<span style="font-size:9px;color:#666;margin-left:4px;">+${availableWild.length - 6}</span>` : ''}
+              ${!isLocked ? `
+                <div class="location-spawn-list">
+                  ${availableWild.slice(0, 6).map(id => spriteImg(id)).join('')}
+                  ${availableWild.length > 6 ? `<span style="font-size:10px; color:#aaa; margin-left:4px;">+${availableWild.length - 6}</span>` : ''}
+                </div>
+              ` : ''}
             </div>
           </div>
-          ${timeSlotsHtml ? `<div style="margin-top:6px;display:flex;flex-direction:column;gap:2px;">${timeSlotsHtml}</div>` : ''}
-          ` : ''}
-        </div>`;
+        `;
       });
 
       container.innerHTML = html;
