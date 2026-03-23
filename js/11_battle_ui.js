@@ -1,4 +1,24 @@
     // ===== BATTLE BAG =====
+    const teachTM = (p, tmId, moveName) => {
+      const moveData = MOVE_DATA[moveName];
+      if (!TM_COMPAT[p.id]?.includes(tmId)) return null;
+      if (p.moves && p.moves.some(m => m.name === moveData.name)) return null;
+      const inventoryName = `MT ${moveName}`;
+      if (p.moves.length >= 4) {
+        showLearnMoveMenu(p, moveData, () => {
+          state.inventory[inventoryName]--;
+          if (!state.inventory[inventoryName]) delete state.inventory[inventoryName];
+          if (typeof renderBag === 'function') renderBag();
+          if (typeof scheduleSave === 'function') scheduleSave();
+        });
+        return 'deferred';
+      }
+      p.moves.push({ name: moveData.name, pp: moveData.pp, maxPP: moveData.pp });
+      state.inventory[inventoryName]--;
+      if (!state.inventory[inventoryName]) delete state.inventory[inventoryName];
+      return `aprendió ${moveName}`;
+    };
+
     const HEALING_ITEMS = {
       'Poción': p => { if (p.hp === p.maxHp) return null; const h = Math.min(p.maxHp, p.hp + 20); const g = h - p.hp; p.hp = h; return `restauró 20 HP (ahora ${p.hp}/${p.maxHp})`; },
       'Super Poción': p => { if (p.hp === p.maxHp) return null; const h = Math.min(p.maxHp, p.hp + 50); const g = h - p.hp; p.hp = h; return `restauró 50 HP`; },
@@ -23,57 +43,57 @@
       'Éter': p => { p.moves.forEach(m => { m.pp = Math.min(m.maxPP, m.pp + 10); }); return `recuperó PP`; },
       'Elixir Máximo': p => { p.moves.forEach(m => { m.pp = m.maxPP; }); return `recuperó todos los PP`; },
       'Subida PP': p => { const m = p.moves && p.moves.find(mv => mv.maxPP && mv.maxPP < 99); if (!m) return null; const b = Math.max(1, Math.floor(m.maxPP * 0.2)); m.maxPP += b; m.pp = Math.min(m.pp + b, m.maxPP); return `aumentó los PP de ${m.name} en ${b}`; },
-      'MT Retribución': p => {
-        if (p.moves && p.moves.find(m => m.name === 'Retribución')) return null;
-        const moveData = { name: 'Retribución', pp: 20, maxPP: 20 };
-        if (p.moves.length >= 4) {
-          showLearnMoveMenu(p, moveData, () => {
-            if (p.moves.find(m => m.name === 'Retribución')) {
-              state.inventory['MT Retribución']--;
-              if (!state.inventory['MT Retribución']) delete state.inventory['MT Retribución'];
-              if (typeof renderBag === 'function') renderBag();
-              if (typeof scheduleSave === 'function') scheduleSave();
-            }
-          });
-          return 'deferred';
-        }
-        p.moves.push(moveData);
-        return `aprendió Retribución`;
-      },
-      'MT Terremoto': p => {
-        if (p.moves && p.moves.find(m => m.name === 'Terremoto')) return null;
-        const moveData = { name: 'Terremoto', pp: 10, maxPP: 10 };
-        if (p.moves.length >= 4) {
-          showLearnMoveMenu(p, moveData, () => {
-            if (p.moves.find(m => m.name === 'Terremoto')) {
-              state.inventory['MT Terremoto']--;
-              if (!state.inventory['MT Terremoto']) delete state.inventory['MT Terremoto'];
-              if (typeof renderBag === 'function') renderBag();
-              if (typeof scheduleSave === 'function') scheduleSave();
-            }
-          });
-          return 'deferred';
-        }
-        p.moves.push(moveData);
-        return `aprendió Terremoto`;
-      },
-      'MT Ventisca': p => {
-        if (p.moves && p.moves.find(m => m.name === 'Ventisca')) return null;
-        const moveData = { name: 'Ventisca', pp: 5, maxPP: 5 };
-        if (p.moves.length >= 4) {
-          showLearnMoveMenu(p, moveData, () => {
-            if (p.moves.find(m => m.name === 'Ventisca')) {
-              state.inventory['MT Ventisca']--;
-              if (!state.inventory['MT Ventisca']) delete state.inventory['MT Ventisca'];
-              if (typeof renderBag === 'function') renderBag();
-              if (typeof scheduleSave === 'function') scheduleSave();
-            }
-          });
-          return 'deferred';
-        }
-        p.moves.push(moveData);
-        return `aprendió Ventisca`;
-      },      'Recordador de Movimientos': p => {
+      'MT Puño Certero': p => teachTM(p, 'TM01', 'Puño Certero'),
+      'MT Garra Dragón': p => teachTM(p, 'TM02', 'Garra Dragón'),
+      'MT Hidropulso': p => teachTM(p, 'TM03', 'Hidropulso'),
+      'MT Paz Mental': p => teachTM(p, 'TM04', 'Paz Mental'),
+      'MT Rugido': p => teachTM(p, 'TM05', 'Rugido'),
+      'MT Tóxico': p => teachTM(p, 'TM06', 'Tóxico'),
+      'MT Granizo': p => teachTM(p, 'TM07', 'Granizo'),
+      'MT Corpulencia': p => teachTM(p, 'TM08', 'Corpulencia'),
+      'MT Recurrente': p => teachTM(p, 'TM09', 'Recurrente'),
+      'MT Poder Oculto': p => teachTM(p, 'TM10', 'Poder Oculto'),
+      'MT Día Soleado': p => teachTM(p, 'TM11', 'Día Soleado'),
+      'MT Mofa': p => teachTM(p, 'TM12', 'Mofa'),
+      'MT Rayo Hielo': p => teachTM(p, 'TM13', 'Rayo Hielo'),
+      'MT Ventisca': p => teachTM(p, 'TM14', 'Ventisca'),
+      'MT Hiperrayo': p => teachTM(p, 'TM15', 'Hiperrayo'),
+      'MT Pantalla de Luz': p => teachTM(p, 'TM16', 'Pantalla de Luz'),
+      'MT Protección': p => teachTM(p, 'TM17', 'Protección'),
+      'MT Danza Lluvia': p => teachTM(p, 'TM18', 'Danza Lluvia'),
+      'MT Gigadrenado': p => teachTM(p, 'TM19', 'Gigadrenado'),
+      'MT Velo Sagrado': p => teachTM(p, 'TM20', 'Velo Sagrado'),
+      'MT Frustración': p => teachTM(p, 'TM21', 'Frustración'),
+      'MT Rayo Solar': p => teachTM(p, 'TM22', 'Rayo Solar'),
+      'MT Cola Férrea': p => teachTM(p, 'TM23', 'Cola Férrea'),
+      'MT Rayo': p => teachTM(p, 'TM24', 'Rayo'),
+      'MT Trueno': p => teachTM(p, 'TM25', 'Trueno'),
+      'MT Terremoto': p => teachTM(p, 'TM26', 'Terremoto'),
+      'MT Retribución': p => teachTM(p, 'TM27', 'Retribución'),
+      'MT Excavar': p => teachTM(p, 'TM28', 'Excavar'),
+      'MT Psíquico': p => teachTM(p, 'TM29', 'Psíquico'),
+      'MT Bola Sombra': p => teachTM(p, 'TM30', 'Bola Sombra'),
+      'MT Demolición': p => teachTM(p, 'TM31', 'Demolición'),
+      'MT Doble Equipo': p => teachTM(p, 'TM32', 'Doble Equipo'),
+      'MT Reflejo': p => teachTM(p, 'TM33', 'Reflejo'),
+      'MT Onda Voltio': p => teachTM(p, 'TM34', 'Onda Voltio'),
+      'MT Lanzallamas': p => teachTM(p, 'TM35', 'Lanzallamas'),
+      'MT Bomba Lodo': p => teachTM(p, 'TM36', 'Bomba Lodo'),
+      'MT Tormenta de Arena': p => teachTM(p, 'TM37', 'Tormenta de Arena'),
+      'MT Llamarada': p => teachTM(p, 'TM38', 'Llamarada'),
+      'MT Tumba Rocas': p => teachTM(p, 'TM39', 'Tumba Rocas'),
+      'MT Golpe Aéreo': p => teachTM(p, 'TM40', 'Golpe Aéreo'),
+      'MT Tormento': p => teachTM(p, 'TM41', 'Tormento'),
+      'MT Imagen': p => teachTM(p, 'TM42', 'Imagen'),
+      'MT Daño Secreto': p => teachTM(p, 'TM43', 'Daño Secreto'),
+      'MT Descanso': p => teachTM(p, 'TM44', 'Descanso'),
+      'MT Atracción': p => teachTM(p, 'TM45', 'Atracción'),
+      'MT Ladrón': p => teachTM(p, 'TM46', 'Ladrón'),
+      'MT Ala de Acero': p => teachTM(p, 'TM47', 'Ala de Acero'),
+      'MT Intercambio': p => teachTM(p, 'TM48', 'Intercambio'),
+      'MT Robo': p => teachTM(p, 'TM49', 'Robo'),
+      'MT Sofoco': p => teachTM(p, 'TM50', 'Sofoco'),
+      'Recordador de Movimientos': p => {
         if (state.battle && !state.battle.over) return null; // Restricción: No usar en combate activo
         
         // Reunir movimientos de la especie actual y evoluciones previas
@@ -133,7 +153,15 @@
       if (_battleLock) return;
       const b = state.battle;
       const usable = Object.entries(state.inventory || {})
-        .filter(([name, qty]) => qty > 0 && HEALING_ITEMS[name]);
+        .filter(([name, qty]) => {
+          if (qty <= 0) return false;
+          if (!HEALING_ITEMS[name]) return false;
+          // IMPORTANT: Hide non-combat items during battle
+          if (name.startsWith('MT ')) return false;
+          const nonCombat = ['Repelente', 'Superrepelente', 'Máximo Repelente', 'Ticket Shiny', 'Moneda Amuleto', 'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo'];
+          if (nonCombat.includes(name)) return false;
+          return true;
+        });
 
       // Build overlay
       let html = `<div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:14px;">🎒 MOCHILA</div>`;
