@@ -23,24 +23,19 @@
       meowth:  { level: 28, to: 'persian' },
       // ── Electric ─────────────────────────────────────────────────
       pichu:    { level: 16, to: 'pikachu' },
-      pikachu:  { level: 22, to: 'raichu' },
       magnemite: { level: 30, to: 'magneton' },
       voltorb:   { level: 30, to: 'electrode' },
       elekid:    { level: 30, to: 'electabuzz' },
       // ── Normal / Fairy ────────────────────────────────────────────
       cleffa:     { level: 16, to: 'clefairy' },
-      clefairy:   { level: 36, to: 'clefable' },
       igglybuff:  { level: 16, to: 'jigglypuff' },
-      jigglypuff: { level: 36, to: 'wigglytuff' },
       // ── Poison ───────────────────────────────────────────────────
       ekans:     { level: 22, to: 'arbok' },
       nidoran_f: { level: 16, to: 'nidorina' },
       nidoran_m: { level: 16, to: 'nidorino' },
       zubat:     { level: 22, to: 'golbat' },
       oddish:    { level: 21, to: 'gloom' },
-      gloom:     { level: 36, to: 'vileplume' },
       bellsprout:  { level: 21, to: 'weepinbell' },
-      weepinbell:  { level: 36, to: 'victreebel' },
       tentacool:   { level: 30, to: 'tentacruel' },
       koffing:     { level: 35, to: 'weezing' },
       grimer:      { level: 38, to: 'muk' },
@@ -52,13 +47,10 @@
       cubone:    { level: 28, to: 'marowak' },
       // ── Water ────────────────────────────────────────────────────
       poliwag:    { level: 25, to: 'poliwhirl' },
-      poliwhirl:  { level: 36, to: 'poliwrath' },
       psyduck:    { level: 33, to: 'golduck' },
       seel:       { level: 34, to: 'dewgong' },
-      shellder:   { level: 36, to: 'cloyster' },
       krabby:     { level: 28, to: 'kingler' },
       goldeen:    { level: 33, to: 'seaking' },
-      staryu:     { level: 36, to: 'starmie' },
       horsea:     { level: 32, to: 'seadra' },
       magikarp:   { level: 20, to: 'gyarados' },
       omanyte:    { level: 40, to: 'omastar' },
@@ -67,7 +59,6 @@
       // ── Grass ────────────────────────────────────────────────────
       paras:     { level: 24, to: 'parasect' },
       venonat:   { level: 31, to: 'venomoth' },
-      exeggcute: { level: 36, to: 'exeggutor' },
       // ── Psychic ──────────────────────────────────────────────────
       abra:    { level: 16, to: 'kadabra' },
       drowzee: { level: 26, to: 'hypno' },
@@ -76,16 +67,10 @@
       machop:  { level: 28, to: 'machoke' },
       // ── Fire ─────────────────────────────────────────────────────
       magby:    { level: 30, to: 'magmar' },
-      growlithe: { level: 36, to: 'arcanine' },
       ponyta:    { level: 40, to: 'rapidash' },
       // ── Dragon ───────────────────────────────────────────────────
       dratini:   { level: 30, to: 'dragonair' },
       dragonair: { level: 55, to: 'dragonite' },
-      // ── Trade/Stone NPC equivalents (also enable wild-trainer evos) ─
-      kadabra:  { level: 36, to: 'alakazam' },
-      machoke:  { level: 36, to: 'machamp' },
-      haunter:  { level: 36, to: 'gengar' },
-      graveler: { level: 36, to: 'golem' },
       // ── Ghost ────────────────────────────────────────────────────
       gastly:   { level: 25, to: 'haunter' },
     };
@@ -107,6 +92,7 @@
       eevee_thunder: { stone: '⚡ Piedra Trueno', to: 'jolteon' },
       eevee_fire:    { stone: '🔥 Piedra Fuego', to: 'flareon' },
       exeggcute:  { stone: '🌿 Piedra Hoja',  to: 'exeggutor' },
+      vulpix:     { stone: '🔥 Piedra Fuego', to: 'ninetales' },
     };
 
     const TRADE_EVOLUTIONS = {
