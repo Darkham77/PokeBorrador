@@ -425,7 +425,8 @@ function renderDaycareBreedingSummary(pA, pB, compat, itemA = '', itemB = '') {
   const cost = calculateBreedingCost(pA, pB);
   const intervalTxt = (compat && compat.level > 0) ? _daycareEggIntervalText(compat.level) : '—';
   const motherId = compat && compat.eggSpecies ? compat.eggSpecies : null;
-  const motherName = motherId ? (POKEMON_DB[motherId]?.name || motherId) : '—';
+  let motherName = motherId ? (POKEMON_DB[motherId]?.name || motherId) : '—';
+  if (motherId === 'nidoran_f' || motherId === 'nidoran_m') motherName = 'Nidoran ♀/♂';
   
   const powerMap = {
       'Pesa Recia': { stat: 'hp', label: 'PS' },
@@ -677,7 +678,8 @@ function _pickerHtml(p, compareTo) {
     }
     const intMs = cp.level > 0 ? EGG_SPAWN_INTERVAL_MS[cp.level] : null;
     const every = intMs ? `${Math.round(intMs / 3600000)}h` : '—';
-    const motherName = cp.eggSpecies ? (POKEMON_DB[cp.eggSpecies]?.name || cp.eggSpecies) : '—';
+    let motherName = cp.eggSpecies ? (POKEMON_DB[cp.eggSpecies]?.name || cp.eggSpecies) : '—';
+    if (cp.eggSpecies === 'nidoran_f' || cp.eggSpecies === 'nidoran_m') motherName = 'Nidoran ♀/♂';
     const translatedGroups = (cp.sharedGroups || []).map(g => EGG_GROUP_TRANSLATIONS[g] || g.charAt(0).toUpperCase() + g.slice(1));
     const shared = translatedGroups.length ? translatedGroups.join(', ') : '—';
     const extra = cp.level > 0 ? `Cría: <b style="color:#ffffff; font-size:11px;">${motherName}</b>` : `<span style="color:rgba(255,255,255,0.5); font-size:11px;">${cp.reason || 'Incompatible'}</span>`;
@@ -940,7 +942,13 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
   
   let moves = (EGG_MOVES_DB[compat.eggSpecies] || []).filter(m => (pA.moves || []).concat(pB.moves || []).map(x => x.id || x).includes(m)).slice(0, 2);
   const ready = new Date(dateObj.getTime() + 30 * 60 * 1000); // 30 mins
-  await sb.from('eggs').insert({ player_id: pid, species: compat.eggSpecies, parent_a: pA.uid, parent_b: pB.uid, inherited_ivs: ivs, egg_moves: moves, shiny_roll: (Math.random() < 1 / 512), created_at: dateObj.toISOString(), hatch_ready_time: ready.toISOString(), incubation_speed_bonus: 0 });
+  
+  let finalSpecies = compat.eggSpecies;
+  if (finalSpecies === 'nidoran_f' || finalSpecies === 'nidoran_m') {
+      finalSpecies = Math.random() < 0.5 ? 'nidoran_f' : 'nidoran_m';
+  }
+  
+  await sb.from('eggs').insert({ player_id: pid, species: finalSpecies, parent_a: pA.uid, parent_b: pB.uid, inherited_ivs: ivs, egg_moves: moves, shiny_roll: (Math.random() < 1 / 512), created_at: dateObj.toISOString(), hatch_ready_time: ready.toISOString(), incubation_speed_bonus: 0 });
 
   pA.vigor--;
   pB.vigor--;
