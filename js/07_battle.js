@@ -2138,8 +2138,21 @@ function endBattle(won) {
         state.defeatedGyms.push(b.gymId);
         state.badges++;
         updateHud();
+        
+        // Victory dialogue
+        if (gym.victoryQuote) {
+          addLog(`${gym.leader}: "${gym.victoryQuote}"`, 'log-player');
+        }
+
         addLog(`¡Obtuviste la ${gym.badgeName || gym.badge} de ${gym.leader}!`, 'log-catch');
         notify(`¡${gym.badgeName || gym.badge} obtenida! 🏆`, '🏆');
+
+        // TM Reward
+        if (gym.rewardTM) {
+          state.inventory[gym.rewardTM] = (state.inventory[gym.rewardTM] || 0) + 1;
+          addLog(`${gym.leader} te entregó la ${gym.rewardTM}.`, 'log-catch');
+          notify(`¡Recibiste ${gym.rewardTM}! 📀`, '📀');
+        }
       }
     }
 
