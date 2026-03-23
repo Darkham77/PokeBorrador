@@ -1041,7 +1041,7 @@ function useMove(moveIndex) {
   if (!b.enemyRecharging && !b.enemy.flinched && b.enemy.status !== 'sleep' && b.enemy.status !== 'freeze') {
     const validMoves = b.enemy.moves.filter(m => m.pp > 0);
     if (validMoves.length > 0) {
-      eMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+      eMove = (b.isTrainer || b.isGym) ? getBestEnemyMove(b.enemy, b.player, b.playerStages) : validMoves[Math.floor(Math.random() * validMoves.length)];
     }
   }
 
@@ -1352,6 +1352,156 @@ function applyHeldItemTurnEndEffects(pokemon, role) {
 }
 
 
+// ── AI HEURISTICS ──────────────────────────────────────────────────────────
+
+function scoreEnemyMove(move, attacker, defender, defStages) {
+  const md = MOVE_DATA[move.name] || { power: 0, type: 'normal', cat: 'status' };
+  let score = md.power || 40;
+
+  // Type effectiveness
+  const eff1 = getTypeEffectiveness(md.type, defender.type, defender, attacker);
+  const pData = POKEMON_DB[defender.id];
+  const eff2 = (pData && pData.type2) ? getTypeEffectiveness(md.type, pData.type2, defender, attacker) : 1;
+  const totalEff = eff1 * eff2;
+  
+  if (totalEff === 0) return 0;
+  score *= totalEff;
+
+  // STAB
+  const aData = POKEMON_DB[attacker.id];
+  if (aData && (md.type === aData.type || md.type === aData.type2)) {
+    score *= 1.5;
+  }
+
+  // Status moves
+  if (md.cat === 'status') {
+    score = 30; // Base score for status moves
+    
+    // Don't repeat status
+    const statusEffects = ['sleep', 'paralyze', 'poison', 'toxic', 'burn', 'freeze'];
+    if (statusEffects.includes(md.effect) && defender.status) score = 0;
+    
+    // Stage modifiers
+    if (md.effect === 'lower_atk' && (defStages.atk || 0) <= -2) score = 5;
+    if (md.effect === 'lower_def' && (defStages.def || 0) <= -2) score = 5;
+    if (md.effect === 'lower_spa' && (defStages.spa || 0) <= -2) score = 5;
+    if (md.effect === 'lower_spd' && (defStages.spd || 0) <= -2) score = 5;
+    if (md.effect === 'lower_spe' && (defStages.spe || 0) <= -2) score = 5;
+    
+    // If it's a very good status (sleep/paralyze), give it decent priority if not set
+    if ((md.effect === 'sleep' || md.effect === 'paralyze') && !defender.status) score = 60;
+  }
+
+  // Self-destruct logic (User's request: Koga should stop gifting wins)
+  if (md.selfKO) {
+    const hpPct = attacker.hp / attacker.maxHp;
+    // Only use if very low HP or can definitely KO and it's not the first Pokémon
+    const canKO = (score >= defender.hp);
+    if (hpPct > 0.25 && !canKO) score *= 0.01; 
+    else if (canKO) score *= 1.5;
+    else score *= 0.8;
+  }
+
+  // Added randomness to avoid being 100% predictable
+  return score * (0.8 + Math.random() * 0.4);
+}
+
+function getBestEnemyMove(enemy, player, playerStages) {
+  const validMoves = enemy.moves.filter(m => m.pp > 0);
+  if (validMoves.length === 0) return null;
+  
+  let bestMove = validMoves[0];
+  let maxScore = -1;
+  
+  validMoves.forEach(m => {
+    const s = scoreEnemyMove(m, enemy, player, playerStages);
+    if (s > maxScore) {
+      maxScore = s;
+      bestMove = m;
+    }
+  });
+  
+  return bestMove;
+}
+
+function isBadMatchup(enemy, player) {
+  const pData = POKEMON_DB[player.id];
+  if (!pData) return false;
+
+  // Takes 2x or 4x damage from player?
+  const eff1 = getTypeEffectiveness(pData.type, enemy.type, enemy, player);
+  const eData = POKEMON_DB[enemy.id];
+  const eff2 = (eData && eData.type2) ? getTypeEffectiveness(pData.type, eData.type2, enemy, player) : 1;
+  
+  let playerEff = eff1 * eff2;
+  
+  if (pData.type2) {
+    const eff3 = getTypeEffectiveness(pData.type2, enemy.type, enemy, player);
+    const eff4 = (eData && eData.type2) ? getTypeEffectiveness(pData.type2, eData.type2, enemy, player) : 1;
+    playerEff = Math.max(playerEff, eff3 * eff4);
+  }
+
+  if (playerEff >= 2) return true;
+  
+  // Can't hurt player?
+  const bestEff = Math.max(...enemy.moves.map(m => {
+    const md = MOVE_DATA[m.name];
+    if (!md) return 0;
+    const e1 = getTypeEffectiveness(md.type, player.type, player, enemy);
+    const pType2 = pData.type2;
+    const e2 = pType2 ? getTypeEffectiveness(md.type, pType2, player, enemy) : 1;
+    return e1 * e2;
+  }));
+  
+  if (bestEff <= 0.5) return true;
+
+  return false;
+}
+
+function findBestSwitch(enemyTeam, player) {
+  const pData = POKEMON_DB[player.id];
+  if (!pData) return null;
+
+  let bestIdx = -1;
+  let bestScore = -1;
+
+  enemyTeam.forEach((p, idx) => {
+    if (p.hp <= 0 || p === state.battle.enemy) return;
+
+    let score = 0;
+    const eData = POKEMON_DB[p.id];
+    if (!eData) return;
+
+    // Defense score: how much damage we take
+    const eff1 = getTypeEffectiveness(pData.type, eData.type, p, player);
+    const eff2 = (eData && eData.type2) ? getTypeEffectiveness(pData.type, eData.type2, p, player) : 1;
+    let defEff = eff1 * eff2;
+    if (pData.type2) {
+        const eff3 = getTypeEffectiveness(pData.type2, eData.type, p, player);
+        const eff4 = (eData && eData.type2) ? getTypeEffectiveness(pData.type2, eData.type2, p, player) : 1;
+        defEff = Math.max(defEff, eff3 * eff4);
+    }
+    score += (2 - defEff) * 50;
+
+    // Offense score: can we hit them?
+    const offenseScore = Math.max(...p.moves.map(m => {
+      const md = MOVE_DATA[m.name];
+      if (!md) return 0;
+      const o1 = getTypeEffectiveness(md.type, pData.type, player, p);
+      const o2 = pData.type2 ? getTypeEffectiveness(md.type, pData.type2, player, p) : 1;
+      return (o1 * o2) * (md.power || 40);
+    }));
+    score += offenseScore;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestIdx = idx;
+    }
+  });
+
+  return bestIdx;
+}
+
 function enemyTurn(opts = {}) {
   const b = state.battle;
   if (b.over) return;
@@ -1367,6 +1517,58 @@ function enemyTurn(opts = {}) {
     b.enemyRecharging = false;
     addLog(`¡${b.enemy.name} debe recargar!`, 'log-enemy');
     finish(); return;
+  }
+
+  // --- AI DECISION MAKING ---
+  if (b.isTrainer || b.isGym) {
+    // 1. Check for Item Usage (Gym Leaders only)
+    if (b.isGym && !b.enemyUsedItem) {
+      const hpPct = b.enemy.hp / b.enemy.maxHp;
+      let itemToUse = null;
+      
+      if (hpPct < 0.25) {
+        itemToUse = 'Hiper Poción';
+        if (b.enemy.level > 40) itemToUse = 'Poción Máxima';
+      } else if (b.enemy.status) {
+        itemToUse = 'Cura Total';
+      }
+
+      if (itemToUse) {
+        b.enemyUsedItem = true; // Limit to one item per battle for now
+        addLog(`¡${b.trainerName || 'El Líder'} usó ${itemToUse}!`, 'log-enemy');
+        
+        if (itemToUse === 'Hiper Poción') b.enemy.hp = Math.min(b.enemy.maxHp, b.enemy.hp + 200);
+        else if (itemToUse === 'Poción Máxima') b.enemy.hp = b.enemy.maxHp;
+        else if (itemToUse === 'Cura Total') b.enemy.status = null;
+        
+        updateBattleUI();
+        finish(); return;
+      }
+    }
+
+    // 2. Check for Switching
+    if (isBadMatchup(b.enemy, b.player) && (b.enemyTeam && b.enemyTeam.filter(p=>p.hp > 0).length > 1)) {
+      // Chance to switch based on trainer type
+      const switchChance = b.isGym ? 0.4 : 0.2;
+      if (Math.random() < switchChance && (b.enemySwitches || 0) < 3) {
+        const bestIdx = findBestSwitch(b.enemyTeam, b.player);
+        if (bestIdx !== -1) {
+          b.enemySwitches = (b.enemySwitches || 0) + 1;
+          const oldPoke = b.enemy;
+          const newPoke = b.enemyTeam[bestIdx];
+          
+          addLog(`¡${b.trainerName || 'El entrenador'} retira a ${oldPoke.name}!`, 'log-enemy');
+          setTimeout(() => {
+            b.enemy = newPoke;
+            newPoke._revealed = true;
+            addLog(`¡${b.trainerName || 'El entrenador'} envía a ${newPoke.name}!`, 'log-enemy');
+            updateBattleUI();
+            finish();
+          }, 800);
+          return;
+        }
+      }
+    }
   }
 
   const validMoves = b.enemy.moves.filter(m => m.pp > 0);
@@ -1430,7 +1632,7 @@ function enemyTurn(opts = {}) {
     }
   }
 
-  const move = chosenMove || validMoves[Math.floor(Math.random() * validMoves.length)];
+  const move = chosenMove || (b.isTrainer || b.isGym ? getBestEnemyMove(b.enemy, b.player, b.playerStages) : validMoves[Math.floor(Math.random() * validMoves.length)]);
   move.pp--;
   const md = MOVE_DATA[move.name] || { power: 40, type: 'normal', cat: 'physical', acc: 100 };
 
@@ -2177,6 +2379,22 @@ function endBattle(won) {
           const extraCoins = diffValue * 150;
           state.battleCoins = (state.battleCoins || 0) + extraCoins;
           addLog(`¡Rematch ganado! Obtuviste <span style="color:var(--yellow);font-weight:bold;">${extraCoins} Battle Coins</span> adicionales.`, 'log-catch');
+
+          // Chance to get another TM on rematch (Normal/Hard)
+          let tmChance = 0;
+          const ratios = window.GAME_RATIOS?.gym;
+          if (ratios) {
+            if (diffUsed === 'normal') tmChance = ratios.rematchTMRateNormal;
+            else if (diffUsed === 'hard') tmChance = ratios.rematchTMRateHard;
+          }
+
+          if (tmChance > 0 && Math.random() < tmChance) {
+            if (gym.rewardTM) {
+              state.inventory[gym.rewardTM] = (state.inventory[gym.rewardTM] || 0) + 1;
+              addLog(`${gym.leader} te entregó otra ${gym.rewardTM} por tu excelente combate.`, 'log-catch');
+              notify(`¡Recibiste otra ${gym.rewardTM}! 📀`, '📀');
+            }
+          }
         }
       }
     }

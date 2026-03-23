@@ -31,5 +31,11 @@ window.GAME_RATIOS = {
     catchFormulaParams: {
       catchBaseMultiplier: 1.0, // A multiplier applied to the catch rate.
     }
+  },
+  
+  // --- Gym ---
+  gym: {
+    rematchTMRateNormal: 0.03, // 3% chance for TM on Normal rematch
+    rematchTMRateHard: 0.05    // 5% chance for TM on Hard rematch
   }
 };
