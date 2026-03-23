@@ -57,43 +57,37 @@
 
       let html = '';
 
-      // PC & Stats Bar (Fidelity Version)
+      // PC & Stats Bar (Balanced Version)
       html += `
         <div class="pc-split-container" style="display: flex; gap: 20px; margin-bottom: 25px; align-items: stretch;">
-          <div class="pc-left" style="flex: 2;">
+          <div class="pc-left" style="flex: 1;">
             <div class="location-card" onclick="openPokemonCenter()" 
-                 style="min-height: 180px; background: linear-gradient(135deg, #2a0a2a, #4a0a1a); border: 2px solid #f69; align-items: flex-start; text-align: left; justify-content: flex-start;">
-               <div style="position: relative; z-index: 2;">
-                  <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:#f69; margin-bottom: 10px;">Centro Pokémon</div>
-                  <div style="font-size:12px; color:#ccc;">Saná a tus Pokémon y restaurá sus PP al máximo.</div>
-               </div>
-               <span class="location-tag" style="background: #f69; color: white; border: none;">🏥 CURACIÓN</span>
+                 style="background: linear-gradient(135deg, #320a2a, #5a0a1a); border: 2px solid #f69; padding: 25px; height: 100%; display: flex; flex-direction: column; justify-content: center; min-height: 140px;">
+               <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:#f69; margin-bottom: 15px;">Centro Pokémon</div>
+               <div style="font-size:12px; color:#ddd; line-height:1.5;">Saná a tu equipo y restaurá todos sus PP al instante.</div>
+               <span class="location-tag" style="background: #f69; color: white; border: none; top: 15px; right: 15px;">🏥 CURACIÓN</span>
             </div>
           </div>
-          <div class="pc-right" style="flex: 1.2; display: flex; flex-direction: column; gap: 12px;">
-             <div class="pc-banner" onclick="showTab('daycare')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer;">
+          <div class="pc-right" style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
+             <div class="pc-banner" onclick="showTab('daycare')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px; display: flex; align-items: center; gap: 15px; cursor: pointer; flex: 1;">
                 <span style="font-size: 24px;">🥚</span>
                 <div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#eee; margin-bottom: 4px;">CRIANZA</div>
-                  <div style="font-size: 11px; color: #888;">¡Tenés <b>${eggCount}</b> huevos!</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#fff; margin-bottom: 5px;">CRIANZA</div>
+                  <div style="font-size: 11px; color: #aaa;">Tenés <b>${eggCount}</b> huevos esperando.</div>
                 </div>
              </div>
-             <div class="pc-banner" onclick="showTab('friends')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer;">
+             <div class="pc-banner" onclick="showTab('friends')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px; display: flex; align-items: center; gap: 15px; cursor: pointer; flex: 1;">
                 <span style="font-size: 24px;">👥</span>
                 <div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#eee; margin-bottom: 4px;">SOCIAL</div>
-                  <div style="font-size: 11px; color: #888;">¡Tenés <b>${interactionCount}</b> interacciones!</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#fff; margin-bottom: 5px;">SOCIAL</div>
+                  <div style="font-size: 11px; color: #aaa;">Tenés <b>${interactionCount}</b> interacciones nuevas.</div>
                 </div>
-             </div>
-             <div class="pc-banner" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px;">
-                <span style="font-size: 24px;">✨</span>
-                <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#666;">A ESTA HORA APARECEN...</div>
              </div>
           </div>
         </div>
       `;
 
-      // MAP GRID (Wrapped to ensure grid styles apply to cards only)
+      // MAP GRID
       html += `<div class="map-list">`;
 
       FIRE_RED_MAPS.forEach(loc => {
@@ -105,7 +99,7 @@
         const imgPath = `maps/${MAP_IMAGE_MAPPING[loc.id] || 'default.png'}`;
 
         html += `
-          <div class="location-card ${isLocked ? 'locked' : ''}" 
+          <div class="location-card map-card ${isLocked ? 'locked' : ''}" 
                onclick="${isLocked ? '' : `goLocation('${loc.id}')`}"
                style="--bg-image: url('${imgPath}')">
             
