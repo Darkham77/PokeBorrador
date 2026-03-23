@@ -757,6 +757,10 @@
       border-color: rgba(180, 140, 80, 0.25);
     }
 
+    .map-grid {
+      display: block; /* Ensure it doesn't grid the PC bar + Map list together */
+    }
+
     /* ===== MAP & LOCATIONS (V5: TRUE GRID RESTORATION) ===== */
     .map-list {
       display: grid;
@@ -769,7 +773,7 @@
     .location-card {
       background: var(--card); /* Fallback */
       border-radius: 16px;
-      padding: 20px;
+      padding: 15px;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -780,7 +784,8 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      min-height: 280px; 
+      aspect-ratio: 1 / 1.1; /* Slightly taller than wide */
+      min-height: 240px; 
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 

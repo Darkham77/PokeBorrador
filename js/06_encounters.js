@@ -93,6 +93,9 @@
         </div>
       `;
 
+      // MAP GRID (Wrapped to ensure grid styles apply to cards only)
+      html += `<div class="map-list">`;
+
       FIRE_RED_MAPS.forEach(loc => {
         let isLocked = badgeCount < loc.badges;
         if (loc.id === 'safari_zone' && state.safariTicketSecs > 0) isLocked = false;
@@ -124,6 +127,8 @@
           </div>
         `;
       });
+
+      html += `</div>`; // Close map-list grid container
 
       container.innerHTML = html;
     }
