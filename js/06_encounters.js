@@ -107,7 +107,9 @@
 
       FIRE_RED_MAPS.forEach(loc => {
         let isLocked = badgeCount < loc.badges;
-        if (loc.id === 'safari_zone' && state.safariTicketSecs > 0) isLocked = false;
+        const safariActive = (state.safariTicketSecs || 0) > 0;
+        const isSafariTicketLocked = loc.id === 'safari_zone' && !safariActive;
+        if (loc.id === 'safari_zone') isLocked = isSafariTicketLocked;
         if (loc.id === 'cerulean_cave' && state.ceruleanTicketSecs > 0) isLocked = false;
 
         const imgPath = `maps/${MAP_IMAGE_MAPPING[loc.id] || 'default.png'}`;
@@ -148,19 +150,19 @@
            !currentCycleWild.every(p => dayCycleWild.includes(p)));
 
         html += `
-          <div class="location-card map-card ${isLocked ? 'locked' : ''}" 
+          <div class="location-card map-card ${isLocked ? 'locked' : ''} ${isSafariTicketLocked ? 'safari-locked' : ''}" 
                onclick="${isLocked ? '' : `goLocation('${loc.id}')`}"
                style="--bg-image: url('${imgPath}')">
             
             <span class="location-tag ${isLocked ? 'tag-locked' : 'tag-wild'}">
-              ${isLocked ? `🔒 ${loc.badges} Medallas` : `${cycle === 'night' ? '🌙' : '☀️'} ${translateCycle(cycle)}`}
+              ${isLocked ? (loc.id === 'safari_zone' ? `🔒 Ticket Safari` : `🔒 ${loc.badges} Medallas`) : `${cycle === 'night' ? '🌙' : '☀️'} ${translateCycle(cycle)}`}
             </span>
 
             ${loc.fishing ? '<span class="fishing-rod">🎣</span>' : ''}
 
             <div class="location-name">${loc.name}</div>
             <div class="location-desc">${loc.desc}</div>
-
+            ${isSafariTicketLocked ? `<div class="safari-lock-msg">Necesitas un Ticket Safari</div>` : ''}
             ${!isLocked ? `
               <div class="location-spawns">
                 <div class="spawn-row">
@@ -202,18 +204,21 @@
 	
 	      const loc = FIRE_RED_MAPS.find(l => l.id === locId);
 	      if (!loc) return;
-	
-	      const badgeCount = state.badges;
+	      const badgeCount = (Array.isArray(state.badges) ? state.badges.length : (parseInt(state.badges) || 0));
 	      let accessDenied = badgeCount < loc.badges;
 	      
 	      // Ticket Overrides
-	      if (locId === 'safari_zone' && state.safariTicketSecs > 0) accessDenied = false;
+	      if (locId === 'safari_zone') accessDenied = (state.safariTicketSecs || 0) <= 0;
 	      if (locId === 'cerulean_cave' && state.ceruleanTicketSecs > 0) accessDenied = false;
 
 	      if (accessDenied) {
-	        notify(`¡Necesitás ${loc.badges} medallas para acceder!`, '🔒');
-	        return;
-	      }
+        if (locId === 'safari_zone') {
+          notify('<span style="color:#ff4d4d">Necesitas un Ticket Safari</span>', '🎫');
+        } else {
+          notify(`¡Necesitás ${loc.badges} medallas para acceder!`, '🔒');
+        }
+        return;
+      }
 
 	      // Chance de Rival (En cualquier mapa)
 	      if (Math.random() < GAME_RATIOS.encounters.rival) {
