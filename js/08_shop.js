@@ -44,8 +44,7 @@
     function openPokemonCenter() {
       const overlay = document.getElementById('pokemon-center-overlay');
       overlay.style.display = 'flex';
-      document.getElementById('center-msg').innerHTML = '¡Bienvenido al Centro Pokémon!<br>¿Descansamos a tus Pokémon?';
-      document.getElementById('center-btn-wrap').style.display = 'flex';
+      healAllPokemon();
     }
 
     function closePokemonCenter() {
@@ -53,6 +52,7 @@
     }
 
     function healAllPokemon() {
+      // Logic to heal
       state.team.forEach(p => {
         p.hp = p.maxHp;
         p.status = null;
@@ -60,13 +60,20 @@
         p.moves.forEach(m => { m.pp = m.maxPP; });
       });
 
-      document.getElementById('center-msg').innerHTML = '✨ ¡Tus Pokémon están completamente curados!<br><br>¡Buena suerte en tu aventura!';
-      document.getElementById('center-btn-wrap').style.display = 'none';
+      // UI Feedback
+      const effect = document.getElementById('healing-effect');
+      if (effect) effect.style.display = 'block';
 
+      // 2 seconds animation
       setTimeout(() => {
-        closePokemonCenter();
-        notify('¡Todo el equipo fue curado al 100%!', '💊');
-        renderTeam();
+        if (effect) effect.style.display = 'none';
+        
+        // Wait 0.8s more so the user can read the "Healed" text on the image
+        setTimeout(() => {
+          closePokemonCenter();
+          notify('¡Tu equipo ha sido curado!', '💊');
+          if (typeof renderTeam === 'function') renderTeam();
+        }, 800);
       }, 2000);
     }
 

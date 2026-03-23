@@ -70,27 +70,29 @@
       // PC & Stats Bar (Balanced Version)
       html += `
         <div class="pc-split-container" style="display: flex; gap: 20px; margin-bottom: 25px; align-items: stretch;">
-          <div class="pc-left" style="flex: 1;">
-            <div class="location-card" onclick="openPokemonCenter()" 
-                 style="background: linear-gradient(135deg, #320a2a, #5a0a1a); border: 2px solid #f69; padding: 25px; height: 100%; display: flex; flex-direction: column; justify-content: center; min-height: 140px;">
-               <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:#f69; margin-bottom: 15px;">Centro Pokémon</div>
-               <div style="font-size:12px; color:#ddd; line-height:1.5;">Saná a tu equipo y restaurá todos sus PP al instante.</div>
-               <span class="location-tag" style="background: #f69; color: white; border: none; top: 15px; right: 15px;">🏥 CURACIÓN</span>
+          <div class="pc-left" style="flex: 1.5;">
+            <div class="location-card pokecenter-banner-card" onclick="openPokemonCenter()" 
+                 style="background-image: url('assets/pokecenter_banner.png'); background-size: cover; background-position: 50% 10%; border: 2px solid #f69; padding: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; min-height: 240px; position: relative; overflow: hidden; border-radius: 18px;">
+               <div style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 30px; width: 100%;">
+                 <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#f69; margin-bottom: 12px; letter-spacing: 1px;">Centro Pokémon</div>
+                 <div style="font-size:14px; color:#ddd; line-height:1.6;">Saná a tu equipo y restaurá todos sus PP al instante.</div>
+               </div>
+               <span class="location-tag" style="background: #f69; color: white; border: none; top: 15px; right: 15px; z-index: 2;">🏥 CURACIÓN</span>
             </div>
           </div>
-          <div class="pc-right" style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
-             <div class="pc-banner" onclick="showTab('daycare')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px; display: flex; align-items: center; gap: 15px; cursor: pointer; flex: 1;">
-                <span style="font-size: 24px;">🥚</span>
+          <div class="pc-right" style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+             <div class="pc-banner" onclick="showTab('daycare')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 25px; display: flex; align-items: center; gap: 15px; cursor: pointer; flex: 1;">
+                <span style="font-size: 32px;">🥚</span>
                 <div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#fff; margin-bottom: 5px;">CRIANZA</div>
-                  <div style="font-size: 11px; color: #aaa;">Tenés <b>${eggCount}</b> huevos esperando.</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:#fff; margin-bottom: 8px;">CRIANZA</div>
+                  <div style="font-size: 12px; color: #aaa;">Tenés <b>${eggCount}</b> huevos esperando.</div>
                 </div>
              </div>
-             <div class="pc-banner" onclick="showTab('friends')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px; display: flex; align-items: center; gap: 15px; cursor: pointer; flex: 1;">
-                <span style="font-size: 24px;">👥</span>
+             <div class="pc-banner" onclick="showTab('friends')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 25px; display: flex; align-items: center; gap: 15px; cursor: pointer; flex: 1;">
+                <span style="font-size: 32px;">👥</span>
                 <div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#fff; margin-bottom: 5px;">SOCIAL</div>
-                  <div style="font-size: 11px; color: #aaa;">Tenés <b>${interactionCount}</b> interacciones nuevas.</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:#fff; margin-bottom: 8px;">SOCIAL</div>
+                  <div style="font-size: 12px; color: #aaa;">Tenés <b>${interactionCount}</b> interacciones nuevas.</div>
                 </div>
              </div>
           </div>

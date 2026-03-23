@@ -1054,22 +1054,18 @@
 
   <!-- POKEMON CENTER OVERLAY -->
   <div id="pokemon-center-overlay"
-    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:150;display:none;align-items:center;justify-content:center;flex-direction:column;">
-    <div
-      style="background:#16213e;border-radius:24px;padding:40px;text-align:center;max-width:400px;width:90%;border:2px solid rgba(255,100,150,0.4);animation:fadeIn 0.3s ease;">
-      <div style="font-size:80px;margin-bottom:16px;">🏥</div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#ff6496;margin-bottom:12px;">CENTRO
-        POKÉMON</div>
-      <div style="font-size:14px;color:#888;margin-bottom:24px;line-height:1.6;" id="center-msg">¡Bienvenido al Centro
-        Pokémon!<br>¿Descansamos a tus Pokémon?</div>
-      <div id="center-btn-wrap" style="display:flex;gap:12px;justify-content:center;">
-        <button onclick="healAllPokemon()"
-          style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 24px;background:linear-gradient(135deg,#ff6496,#ff90b3);border:none;border-radius:12px;color:white;cursor:pointer;">¡SÍ,
-          POR FAVOR!</button>
-        <button onclick="closePokemonCenter()"
-          style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 24px;background:#333;border:none;border-radius:12px;color:#aaa;cursor:pointer;">SALIR</button>
-      </div>
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;align-items:center;justify-content:center;padding:0;">
+    
+    <!-- image-only container -->
+    <div id="center-image-container" style="width:100%; max-width:600px; position:relative; display:flex; justify-content:center; box-shadow:0 0 50px rgba(0,0,0,0.8); border-radius:24px; overflow:hidden;">
+       <img id="center-nurse-img" src="assets/pokecenter_heal.png" style="width:100%; height:auto; image-rendering: pixelated; object-fit: contain;">
+       <!-- Healing Effect Layer -->
+       <div id="healing-effect" style="display:none; position:absolute; inset:0; background:rgba(100,255,100,0.25); z-index:2; animation: healPulse 1s infinite;"></div>
     </div>
+
+    <!-- Hidden msg for logic compatibility -->
+    <div id="center-msg" style="display:none;"></div>
+    <div id="center-btn-wrap" style="display:none;"></div>
   </div>
   <!-- PROFILE PANEL -->
   <div id="profile-panel">
