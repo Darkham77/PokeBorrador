@@ -57,33 +57,37 @@
 
       let html = '';
 
-      // PC & Stats Bar
+      // PC & Stats Bar (Fidelity Version)
       html += `
-        <div class="pc-split-container" style="margin-bottom: 20px; gap: 15px;">
-          <div class="pc-left" style="flex: 1;">
+        <div class="pc-split-container" style="display: flex; gap: 20px; margin-bottom: 25px; align-items: stretch;">
+          <div class="pc-left" style="flex: 2;">
             <div class="location-card" onclick="openPokemonCenter()" 
-                 style="min-height: 120px; background: linear-gradient(135deg, #300, #600); border-color: #f69;">
-               <div style="text-align: center;">
-                  <div style="font-size: 24px; margin-bottom: 5px;">🏥</div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#f69;">Centro Pokémon</div>
-                  <div style="font-size:10px; color:#aaa; margin-top:5px;">Curación instantánea</div>
+                 style="min-height: 180px; background: linear-gradient(135deg, #2a0a2a, #4a0a1a); border: 2px solid #f69; align-items: flex-start; text-align: left; justify-content: flex-start;">
+               <div style="position: relative; z-index: 2;">
+                  <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:#f69; margin-bottom: 10px;">Centro Pokémon</div>
+                  <div style="font-size:12px; color:#ccc;">Saná a tus Pokémon y restaurá sus PP al máximo.</div>
                </div>
+               <span class="location-tag" style="background: #f69; color: white; border: none;">🏥 CURACIÓN</span>
             </div>
           </div>
-          <div class="pc-right" style="flex: 1.5; display: flex; flex-direction: column; gap: 10px;">
-             <div class="pc-banner" onclick="showTab('daycare')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                <span style="font-size: 20px;">🥚</span>
+          <div class="pc-right" style="flex: 1.2; display: flex; flex-direction: column; gap: 12px;">
+             <div class="pc-banner" onclick="showTab('daycare')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer;">
+                <span style="font-size: 24px;">🥚</span>
                 <div>
-                  <div style="font-size: 11px; font-weight: bold;">Crianza</div>
-                  <div style="font-size: 10px; color: #888;">Huevos en almacén: ${eggCount}</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#eee; margin-bottom: 4px;">CRIANZA</div>
+                  <div style="font-size: 11px; color: #888;">¡Tenés <b>${eggCount}</b> huevos!</div>
                 </div>
              </div>
-             <div class="pc-banner" onclick="showTab('friends')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                <span style="font-size: 20px;">👥</span>
+             <div class="pc-banner" onclick="showTab('friends')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer;">
+                <span style="font-size: 24px;">👥</span>
                 <div>
-                  <div style="font-size: 11px; font-weight: bold;">Social</div>
-                  <div style="font-size: 10px; color: #888;">Nuevas interacciones: ${interactionCount}</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#eee; margin-bottom: 4px;">SOCIAL</div>
+                  <div style="font-size: 11px; color: #888;">¡Tenés <b>${interactionCount}</b> interacciones!</div>
                 </div>
+             </div>
+             <div class="pc-banner" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px;">
+                <span style="font-size: 24px;">✨</span>
+                <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#666;">A ESTA HORA APARECEN...</div>
              </div>
           </div>
         </div>
@@ -103,19 +107,18 @@
                style="--bg-image: url('${imgPath}')">
             
             <span class="location-tag ${isLocked ? 'tag-locked' : 'tag-wild'}">
-              ${isLocked ? `🔒 ${loc.badges} Medallas` : `${cycle === 'night' ? '🌙' : '☀️'} EXPLORAR`}
+              ${isLocked ? `🔒 ${loc.badges} Medallas` : `${cycle === 'night' ? '🌙' : '☀️'} ${cycle.toUpperCase()}`}
             </span>
 
             ${loc.fishing ? '<span class="fishing-rod">🎣</span>' : ''}
 
-            <div class="location-icon">${loc.icon}</div>
             <div class="location-name">${loc.name}</div>
             <div class="location-desc">${loc.desc}</div>
 
             ${!isLocked ? `
               <div class="location-spawns">
-                ${availableWild.slice(0, 6).map(id => spriteImg(id)).join('')}
-                ${availableWild.length > 6 ? `<span style="font-size:10px; color:#aaa; margin-left:4px; align-self:center;">+${availableWild.length - 6}</span>` : ''}
+                ${availableWild.slice(0, 5).map(id => spriteImg(id)).join('')}
+                ${availableWild.length > 5 ? `<span style="font-size:9px; color:#666; align-self:center; margin-left:2px;">+${availableWild.length - 5}</span>` : ''}
               </div>
             ` : ''}
           </div>
