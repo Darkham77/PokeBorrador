@@ -102,15 +102,15 @@ BEGIN
   -- 5. ADD TO EACH OTHER
   -- Add sender's Pokémon to receiver
   IF v_trade.offer_pokemon IS NOT NULL THEN
-    v_new_receiver_save := jsonb_set(v_new_receiver_save, '{team}', (v_new_receiver_save->'team') || v_trade.offer_pokemon);
+    v_new_receiver_save := jsonb_set(v_new_receiver_save, '{team}', (v_new_receiver_save->'team') || jsonb_build_array(v_trade.offer_pokemon));
   END IF;
-  v_new_receiver_save := jsonb_set(v_new_receiver_save, '{money}', to_jsonb((v_new_receiver_save->>'money')::BIGINT + (v_trade.offer_money || 0)::BIGINT));
+  v_new_receiver_save := jsonb_set(v_new_receiver_save, '{money}', to_jsonb((v_new_receiver_save->>'money')::BIGINT + COALESCE(v_trade.offer_money, 0)));
 
   -- Add receiver's Pokémon to sender
   IF v_trade.request_pokemon IS NOT NULL THEN
-    v_new_sender_save := jsonb_set(v_new_sender_save, '{team}', (v_new_sender_save->'team') || v_trade.request_pokemon);
+    v_new_sender_save := jsonb_set(v_new_sender_save, '{team}', (v_new_sender_save->'team') || jsonb_build_array(v_trade.request_pokemon));
   END IF;
-  v_new_sender_save := jsonb_set(v_new_sender_save, '{money}', to_jsonb((v_new_sender_save->>'money')::BIGINT + (v_trade.request_money || 0)::BIGINT));
+  v_new_sender_save := jsonb_set(v_new_sender_save, '{money}', to_jsonb((v_new_sender_save->>'money')::BIGINT + COALESCE(v_trade.request_money, 0)));
 
   -- 6. Apply final updates
   UPDATE game_saves SET save_data = v_new_sender_save, updated_at = NOW() WHERE user_id = v_sender_id;
