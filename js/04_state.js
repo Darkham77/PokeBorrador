@@ -174,6 +174,11 @@
       const p = POKEMON_DB[id];
       const starter = makePokemon(id, 5);
       state.team.push(starter);
+      // Register starter in Pokédex as caught
+      state.pokedex = state.pokedex || [];
+      state.seenPokedex = state.seenPokedex || [];
+      if (!state.pokedex.includes(id)) state.pokedex.push(id);
+      if (!state.seenPokedex.includes(id)) state.seenPokedex.push(id);
       // Hide title, show game
       document.getElementById('title-screen').style.display = 'none';
       document.getElementById('title-screen').classList.remove('active');

@@ -898,6 +898,42 @@
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
     }
 
+    /* Rare spawn indicator - red glow border */
+    .rare-spawn {
+      outline: 2px solid #ff3333;
+      border-radius: 4px;
+      box-shadow: 0 0 6px rgba(255, 50, 50, 0.8);
+    }
+
+    /* Spawn row layout */
+    .spawn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* Cycle-specific row (Atardecer / Noche) */
+    .cycle-specific-spawns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+      width: 100%;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .cycle-emoji-label {
+      font-size: 14px;
+      align-self: center;
+      margin-right: 4px;
+      flex-shrink: 0;
+    }
+
+
     /* ===== POKEMON CENTER SPLIT LAYOUT ===== */
     .pc-split-container {
       display: flex;

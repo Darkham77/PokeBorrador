@@ -45,14 +45,24 @@
         } catch (e) { console.error("Error fetching eggs:", e); }
       }
 
-      const spriteImg = (id) => {
+      const getPokemonSpriteHtml = (id, isRare = false) => {
         const num = POKEMON_SPRITE_IDS[id];
         const pData = POKEMON_DB[id];
         const name = pData?.name || id;
         if (!num) return '';
         return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
           title="${name}" width="32" height="32"
-          onerror="this.style.display='none'">`;
+          onerror="this.style.display='none'" class="${isRare ? 'rare-spawn' : ''}">`;
+      };
+
+      const translateCycle = (c) => {
+        switch (c) {
+          case 'day': return 'DÍA';
+          case 'night': return 'NOCHE';
+          case 'dawn': return 'AMANECER';
+          case 'dusk': return 'ATARDECER';
+          default: return c.toUpperCase();
+        }
       };
 
       let html = '';
@@ -87,6 +97,9 @@
         </div>
       `;
 
+      // Cycle helpers
+      const CYCLE_ICONS = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' };
+
       // MAP GRID
       html += `<div class="map-list">`;
 
@@ -95,8 +108,42 @@
         if (loc.id === 'safari_zone' && state.safariTicketSecs > 0) isLocked = false;
         if (loc.id === 'cerulean_cave' && state.ceruleanTicketSecs > 0) isLocked = false;
 
-        const availableWild = loc.wild[cycle] || loc.wild.day;
         const imgPath = `maps/${MAP_IMAGE_MAPPING[loc.id] || 'default.png'}`;
+
+        // Collect all unique Pokémon for this location across all cycles and fishing
+        // Track minimum single-cycle rate per pokemon (to detect truly rare spawns)
+        const minSingleRate = {}; // id -> min rate in any single slot
+        const allPokemonIds = new Set();
+
+        const processPool = (pool, rates) => {
+          if (!pool || !rates) return;
+          pool.forEach((id, index) => {
+            const rate = rates[index] || 0;
+            allPokemonIds.add(id);
+            if (minSingleRate[id] === undefined || rate < minSingleRate[id]) {
+              minSingleRate[id] = rate;
+            }
+          });
+        };
+
+        ['morning', 'day', 'night', 'dusk'].forEach(c => {
+          processPool(loc.wild[c], loc.rates ? loc.rates[c] : null);
+        });
+        if (loc.fishing) {
+          processPool(loc.fishing.pool, loc.fishing.rates);
+        }
+
+        // Sort unique Pokémon by minimum rate (rarest first = lowest rate first)
+        const sortedPokemon = Array.from(allPokemonIds)
+          .map(id => ({ id, minRate: minSingleRate[id] ?? 100 }))
+          .sort((a, b) => a.minRate - b.minRate);
+
+        // Determine current cycle's wild Pokémon
+        const currentCycleWild = loc.wild[cycle] || loc.wild.day;
+        const dayCycleWild = loc.wild.day;
+        const hasDifferentCycleSpawns = currentCycleWild && dayCycleWild &&
+          (currentCycleWild.length !== dayCycleWild.length ||
+           !currentCycleWild.every(p => dayCycleWild.includes(p)));
 
         html += `
           <div class="location-card map-card ${isLocked ? 'locked' : ''}" 
@@ -104,7 +151,7 @@
                style="--bg-image: url('${imgPath}')">
             
             <span class="location-tag ${isLocked ? 'tag-locked' : 'tag-wild'}">
-              ${isLocked ? `🔒 ${loc.badges} Medallas` : `${cycle === 'night' ? '🌙' : '☀️'} ${cycle.toUpperCase()}`}
+              ${isLocked ? `🔒 ${loc.badges} Medallas` : `${cycle === 'night' ? '🌙' : '☀️'} ${translateCycle(cycle)}`}
             </span>
 
             ${loc.fishing ? '<span class="fishing-rod">🎣</span>' : ''}
@@ -114,8 +161,22 @@
 
             ${!isLocked ? `
               <div class="location-spawns">
-                ${availableWild.slice(0, 5).map(id => spriteImg(id)).join('')}
-                ${availableWild.length > 5 ? `<span style="font-size:9px; color:#666; align-self:center; margin-left:2px;">+${availableWild.length - 5}</span>` : ''}
+                <div class="spawn-row">
+                  ${(() => {
+                    // Only apply rare-spawn styling if at least one pokemon qualifies (<10 in some slot)
+                    const anyRare = sortedPokemon.some(p => p.minRate < 10);
+                    return sortedPokemon.map(p => {
+                      const isRare = anyRare && p.minRate < 10;
+                      return getPokemonSpriteHtml(p.id, isRare);
+                    }).join('');
+                  })()}
+                </div>
+                ${hasDifferentCycleSpawns && cycle !== 'day' && cycle !== 'morning' ? `
+                  <div class="spawn-row cycle-specific-spawns">
+                    <span class="cycle-emoji-label">${CYCLE_ICONS[cycle] || '☀️'}</span>
+                    ${currentCycleWild.map(id => getPokemonSpriteHtml(id, false)).join('')}
+                  </div>
+                ` : ''}
               </div>
             ` : ''}
           </div>
