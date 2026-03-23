@@ -559,7 +559,9 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
   }
 
   const random = 0.85 + Math.random() * 0.15;
-  const critRate = (attacker.heldItem === 'Lente Zoom') ? 0.12 : 0.06;
+  let critRate = (attacker.heldItem === 'Lente Zoom') ? 0.12 : 0.06;
+  if (attacker.focusEnergy) critRate += 0.25; // Foco Energía = +2 critical stages
+
   let isCrit = Math.random() < critRate;
   if (defender.ability === 'Caparazón' || defender.ability === 'Armadura Batalla') {
     if (isCrit) defensiveAbility = defender.ability;
@@ -754,21 +756,109 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       }
       break;
     case 'metronome':
-      addLogFn(`¡${src.name} está usando Metrónomo!`, 'log-info');
-      addLogFn('¡Pero no pasó nada aún!', 'log-enemy');
+      // This is reached if Metrónomo is executed generically (which we intercept anyway),
+      // just in case we let it here, but interception is preferred due to move object mutation.
       break;
-    case 'roar':
-      addLogFn(`¡${src.name} rugió con fuerza!`, 'log-info');
-      addLogFn('¡Pero el rival no se asustó!', 'log-enemy');
+    case 'roar': {
+      const b = state.battle;
+      if (!b) break;
+
+      // Inmunidad: Succión (Suction Cups) y Anclaje (Ingrain)
+      if (tgt.ability === 'Succión' || tgt.ability === 'Ventosa') {
+        addLogFn(`¡${src.name} usó Remolino/Rugido!`, 'log-info');
+        addLogFn(`¡La ${tgt.ability} de ${tgt.name} impidió ser arrastrado!`, 'log-info');
+        break;
+      }
+
+      const isPlayerAttacking = (src === b.player);
+
+      if (isPlayerAttacking) {
+        // Jugador usa Remolino/Rugido sobre el enemigo
+        if (!b.isTrainer && !b.isGym) {
+          // Batalla salvaje: el Pokémon huye
+          addLogFn(`¡${src.name} usó Remolino!`, 'log-info');
+          addLogFn(`¡El ${tgt.name} salvaje huyó asustado!`, 'log-player');
+          b.over = true;
+          setTimeout(() => {
+            state.battle = null;
+            showScreen('game-screen');
+            showTab('map');
+          }, 1500);
+        } else {
+          // Batalla de entrenador/gimnasio: fuerza cambio aleatorio
+          const aliveOthers = (b.enemyTeam || []).filter(p => p !== b.enemy && p.hp > 0);
+          if (aliveOthers.length === 0) {
+            addLogFn(`¡${src.name} usó Remolino!`, 'log-info');
+            addLogFn('¡Pero no surtió efecto!', 'log-enemy');
+            break;
+          }
+          const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
+          addLogFn(`¡${src.name} usó Remolino!`, 'log-info');
+          addLogFn(`¡${tgt.name} fue expulsado del campo! ¡${randomPick.name} entra al combate!`, 'log-player');
+          randomPick._revealed = true;
+          b.enemy = randomPick;
+          b.enemy.confused = 0;
+          b.enemy.flinched = false;
+          b.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 };
+          b.participants = b.participants || [b.player.uid];
+          if (typeof updateBattleUI === 'function') setTimeout(updateBattleUI, 50);
+        }
+      } else {
+        // Enemigo usa Remolino/Rugido sobre el jugador
+        const alivePlayerOthers = (state.team || []).filter(p => p !== b.player && p.hp > 0);
+        if (alivePlayerOthers.length === 0) {
+          addLogFn(`¡${src.name} usó Rugido!`, 'log-info');
+          addLogFn('¡Pero no surtió efecto!', 'log-enemy');
+          break;
+        }
+        const randomPlayerPick = alivePlayerOthers[Math.floor(Math.random() * alivePlayerOthers.length)];
+        addLogFn(`¡${src.name} usó Rugido!`, 'log-info');
+        addLogFn(`¡${tgt.name} fue expulsado del campo! ¡${randomPlayerPick.name} entra al combate!`, 'log-enemy');
+        // Sync current player HP back to team
+        const tm = state.team.find(p => p.name === b.player.name);
+        if (tm) tm.hp = b.player.hp;
+        b.player = randomPlayerPick;
+        b.player.confused = 0;
+        b.player.flinched = false;
+        b.playerStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 };
+        b.playerTeamIndex = state.team.indexOf(randomPlayerPick);
+        if (typeof updateBattleUI === 'function') setTimeout(updateBattleUI, 50);
+        if (typeof renderMoveButtons === 'function') setTimeout(renderMoveButtons, 60);
+      }
       break;
-    case 'disable':
-      addLogFn(`¡${src.name} intentó anular un movimiento!`, 'log-info');
-      addLogFn('¡Pero falló!', 'log-enemy');
+    }
+    case 'disable': {
+      if (tgt.disabledTurns > 0) {
+        addLogFn('¡Pero falló!', 'log-enemy');
+        break;
+      }
+      const validMoves = tgt.moves.filter(m => m.pp > 0);
+      if (validMoves.length === 0) {
+        addLogFn('¡Pero falló!', 'log-enemy');
+        break;
+      }
+      const moveToDisable = validMoves[Math.floor(Math.random() * validMoves.length)].name;
+      tgt.disabledMove = moveToDisable;
+      tgt.disabledTurns = 4;
+      addLogFn(`¡La Anulación deshabilitó ${moveToDisable} de ${tgt.name}!`, 'log-info');
       break;
-    case 'encore':
-      addLogFn(`¡${src.name} quiere un Otra Vez!`, 'log-info');
-      addLogFn('¡Pero no funcionó!', 'log-enemy');
+    }
+    case 'encore': {
+      if (tgt.encoreTurns > 0) {
+        addLogFn('¡Pero falló!', 'log-enemy');
+        break;
+      }
+      const validEncore = tgt.moves.filter(m => m.pp > 0);
+      if (validEncore.length === 0) {
+        addLogFn('¡Pero falló!', 'log-enemy');
+        break;
+      }
+      const enMove = validEncore[Math.floor(Math.random() * validEncore.length)].name;
+      tgt.encoreMove = enMove;
+      tgt.encoreTurns = 4; // 1 duration tick immediately happens sometimes, 3-4 is fine
+      addLogFn(`¡${tgt.name} fue obligado a repetir ${enMove}!`, 'log-info');
       break;
+    }
     case 'focus_energy':
       addLogFn(`¡${src.name} se está concentrando!`, 'log-info');
       addLogFn('¡Su tasa de críticos aumentó!', 'log-info');
@@ -850,6 +940,21 @@ function checkAbilityImmunity(attacker, defender, move, addLogFn) {
 
 // ── Status effect tick (end of turn) ─────────────────────
 function tickStatus(pokemon, addLogFn, role) {
+  if (pokemon.disabledTurns > 0) {
+    pokemon.disabledTurns--;
+    if (pokemon.disabledTurns <= 0) {
+      addLogFn(`¡${pokemon.name} ya puede usar ${pokemon.disabledMove || 'su movimiento'} de nuevo!`, 'log-info');
+      pokemon.disabledMove = null;
+    }
+  }
+  if (pokemon.encoreTurns > 0) {
+    pokemon.encoreTurns--;
+    if (pokemon.encoreTurns <= 0) {
+      addLogFn(`¡${pokemon.name} ya no está bajo el efecto de Otra Vez!`, 'log-info');
+      pokemon.encoreMove = null;
+    }
+  }
+
   if (!pokemon.status) return false; // false = no damage
   const logCls = role === 'player' ? 'log-enemy' : role === 'enemy' ? 'log-player' : 'log-info';
   switch (pokemon.status) {
@@ -1033,8 +1138,18 @@ function useMove(moveIndex) {
     return;
   }
 
-  const move = b.player.moves[moveIndex];
+  let move = b.player.moves[moveIndex];
   if (!move || move.pp <= 0) { setLog('¡Sin PP!'); return; }
+
+  // Check Otra Vez (Encore) early for UI/logic override
+  if (b.player.encoreTurns > 0 && b.player.encoreMove) {
+    const forcedMove = b.player.moves.find(m => m.name === b.player.encoreMove);
+    if (forcedMove && forcedMove.pp > 0) {
+      move = forcedMove;
+    } else {
+      b.player.encoreTurns = 0;
+    }
+  }
 
   // Enemy selects move NOW
   let eMove = null;
@@ -1179,7 +1294,24 @@ function useMove(moveIndex) {
       }
     }
 
-    move.pp--;
+    // Check Anulación (Disable)
+    if (b.player.disabledTurns > 0 && move.name === b.player.disabledMove) {
+      addLog(`¡${b.player.name} intentó usar <strong>${move.name}</strong>... pero está anulado!`, 'log-player');
+      _battleLock = true; setBtns(false);
+      setTimeout(() => { _battleLock = false; enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 1000);
+      return;
+    }
+
+    let originalMove = move;
+    if (move.name === 'Metrónomo') {
+      const allMoves = Object.keys(MOVE_DATA).filter(m => m !== 'Metrónomo' && m !== 'Esquema' && m !== 'Bosquejo');
+      const randomMoveName = allMoves[Math.floor(Math.random() * allMoves.length)];
+      addLog(`${b.player.name} usó <strong>Metrónomo</strong>!`, 'log-player');
+      addLog(`¡Metrónomo usó <strong>${randomMoveName}</strong>!`, 'log-info');
+      move = { name: randomMoveName, pp: originalMove.pp, maxPP: originalMove.maxPP };
+    }
+
+    originalMove.pp--;
     _battleLock = true;
     setBtns(false);
 
@@ -1632,8 +1764,34 @@ function enemyTurn(opts = {}) {
     }
   }
 
-  const move = chosenMove || (b.isTrainer || b.isGym ? getBestEnemyMove(b.enemy, b.player, b.playerStages) : validMoves[Math.floor(Math.random() * validMoves.length)]);
-  move.pp--;
+  let move = chosenMove || (b.isTrainer || b.isGym ? getBestEnemyMove(b.enemy, b.player, b.playerStages) : validMoves[Math.floor(Math.random() * validMoves.length)]);
+  
+  // Encore
+  if (b.enemy.encoreTurns > 0 && b.enemy.encoreMove) {
+    const forced = b.enemy.moves.find(m => m.name === b.enemy.encoreMove);
+    if (forced && forced.pp > 0) {
+      move = forced;
+    } else {
+      b.enemy.encoreTurns = 0;
+    }
+  }
+
+  // Disable
+  if (b.enemy.disabledTurns > 0 && move.name === b.enemy.disabledMove) {
+    addLog(`¡${b.enemy.name} intentó usar <strong>${move.name}</strong>... pero está anulado!`, 'log-enemy');
+    finish(); return;
+  }
+
+  let originalMove = move;
+  if (move.name === 'Metrónomo') {
+    const allMoves = Object.keys(MOVE_DATA).filter(m => m !== 'Metrónomo' && m !== 'Esquema' && m !== 'Bosquejo');
+    const randomMoveName = allMoves[Math.floor(Math.random() * allMoves.length)];
+    addLog(`${b.enemy.name} usó <strong>Metrónomo</strong>!`, 'log-enemy');
+    addLog(`¡Metrónomo usó <strong>${randomMoveName}</strong>!`, 'log-info');
+    move = { name: randomMoveName };
+  }
+  
+  originalMove.pp--;
   const md = MOVE_DATA[move.name] || { power: 40, type: 'normal', cat: 'physical', acc: 100 };
 
   let acc = md.acc || 100;
