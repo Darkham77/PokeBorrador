@@ -354,17 +354,47 @@
         return;
       }
       // Modo online: guardar en Supabase
-      const { error } = await sb.from('game_saves').upsert({
-        user_id: currentUser.id,
-        save_data,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' });
-      if (!error) {
+      // Nota: si no hay UNIQUE(user_id) en la tabla, upsert puede generar duplicados o fallar.
+      // Para evitarlo, actualizamos la fila más reciente del usuario (si existe) y, si no existe, insertamos.
+      if (!state.starterChosen && (!state.team || state.team.length === 0)) return;
+
+      let saveError = null;
+      try {
+        const nowIso = new Date().toISOString();
+        const { data: existingRows, error: selectErr } = await sb
+          .from('game_saves')
+          .select('id')
+          .eq('user_id', currentUser.id)
+          .order('updated_at', { ascending: false })
+          .limit(1);
+        if (selectErr) throw selectErr;
+
+        const existingId = Array.isArray(existingRows) ? existingRows[0]?.id : null;
+
+        if (existingId) {
+          const { error } = await sb.from('game_saves').update({
+            save_data,
+            updated_at: nowIso,
+          }).eq('id', existingId);
+          saveError = error;
+        } else {
+          const { error } = await sb.from('game_saves').insert({
+            user_id: currentUser.id,
+            save_data,
+            updated_at: nowIso,
+          });
+          saveError = error;
+        }
+      } catch (e) {
+        console.warn('[SAVE] Error guardando en Supabase:', e);
+        saveError = e;
+      }
+
+      if (!saveError) {
         if (showNotif) flashSaveIndicator();
         const el = document.getElementById('profile-last-save');
         if (el) el.textContent = 'Guardado: ' + new Date().toLocaleTimeString();
-      }
-    }
+      }}
 
     function scheduleSave() {
       // Debounced auto-save 10s after any action
