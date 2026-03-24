@@ -171,7 +171,9 @@
           notify('¡Bienvenido, ' + username + '! Nueva partida local creada.', '🎮');
         }
         updateProfilePanel(user, { username });
-        setInterval(() => saveGame(false), 60000);
+        if (state.starterChosen || (state.team && state.team.length > 0)) {
+          setInterval(() => saveGame(false), 60000);
+        }
       } catch (e) {
         setAuthLoading(false);
         currentUser = null;
@@ -187,7 +189,13 @@
       try {
         const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
         const username = profile?.username || user.user_metadata?.username || user.email.split('@')[0];
-        const { data: save, error: saveError } = await sb.from('game_saves').select('*').eq('user_id', user.id).single();
+        const { data: saves, error: saveError } = await sb
+          .from('game_saves')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(1);
+        const save = Array.isArray(saves) ? saves[0] : null;
         if (LoginGuard.shouldAbortSaveLoad(saveError)) throw saveError;
         if (save?.save_data) {
           const s = save.save_data;
@@ -248,7 +256,9 @@
           showScreen('title-screen');
         }
         updateProfilePanel(user, profile || { username });
-        setInterval(() => saveGame(false), 60000);
+        if (state.starterChosen || (state.team && state.team.length > 0)) {
+          setInterval(() => saveGame(false), 60000);
+        }
         initTrainerPityTimer();
         startPresence(); subscribeFriendNotifs(); subscribeTradeNotifs(); subscribeBattleInvites(); refreshFriendsBadge();
         if (typeof initGlobalChatListener === 'function') initGlobalChatListener();
