@@ -1050,6 +1050,35 @@
       image-rendering: pixelated;
     }
 
+    
+    .pc-banner-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+      align-content: stretch;
+    }
+
+    .pc-banner-static {
+      cursor: default;
+    }
+
+    .pc-banner-static:hover {
+      transform: none;
+    }
+
+    .pc-banner-spawns-compact {
+      flex-wrap: wrap;
+      max-height: 42px;
+      overflow: hidden;
+    }
+    .pc-banner-trainers img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
     /* Pokemon Center Card Adjustments */
     .location-card-center {
       margin-bottom: 0 !important;
@@ -1066,6 +1095,9 @@
       .pc-left, .pc-right {
         flex: none;
         width: 100%;
+      }
+      .pc-banner-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -3584,11 +3616,19 @@
       0%, 100% { transform: rotate(-8deg); }
       50% { transform: rotate(8deg); }
     }
-
     @media (max-width: 900px) {
-      .daycare-slots-grid.has-mid #daycare-mid-card { flex-basis: 100%; }
+      .pc-split-container {
+        flex-direction: column;
+      }
+      .pc-left, .pc-right {
+        flex: none;
+        width: 100%;
+      }
+      .pc-banner-grid {
+        grid-template-columns: 1fr;
+      }
     }
-    @media (max-width: 560px) {
+@media (max-width: 560px) {
       .daycare-slots-grid > .daycare-slot-card { flex-basis: 100%; }
       .daycare-slots-grid.has-mid #daycare-mid-card { flex-basis: 100%; }
       .daycare-mid-grid { grid-template-columns: 1fr; }
