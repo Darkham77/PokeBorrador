@@ -111,7 +111,11 @@
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       })();
 
-      const gymAvailable = (Array.isArray(window.GYMS) ? window.GYMS : [])
+
+      const gymsList = (typeof GYMS !== 'undefined' && Array.isArray(GYMS))
+        ? GYMS
+        : (Array.isArray(window.GYMS) ? window.GYMS : []);
+      const gymAvailable = gymsList
         .filter(g => {
           const locked = (state.badges || 0) < (g.badgesRequired || 0);
           const wonToday = state.lastGymWins?.[g.id] === today;
