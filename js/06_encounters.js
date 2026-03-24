@@ -70,16 +70,21 @@
       // PC & Stats Bar (Balanced Version)
       const cycleLabel = ({ morning: 'AMANECER', day: 'DÍA', dusk: 'ATARDECER', night: 'NOCHE' }[cycle] || cycle.toUpperCase());
       const cycleIcon = ({ morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }[cycle] || '⏰');
-
-      // Rare spawns (current cycle only, <10%)
+      // Rare spawns (exclusive to current cycle vs. day, <10%)
       const rareByCycleMinRate = {}; // id -> minRate in this cycle across all maps
       FIRE_RED_MAPS.forEach(loc => {
         const pool = loc.wild?.[cycle] || null;
         const rates = loc.rates?.[cycle] || null;
         if (!pool || !rates) return;
+        const dayPool = loc.wild?.day || null;
+
         pool.forEach((id, idx) => {
           const rate = rates[idx] ?? 100;
           if (rate >= 10) return;
+
+          // Exclusivo del ciclo actual (no aparece en día)
+          if (cycle !== 'day' && dayPool && dayPool.includes(id)) return;
+
           if (rareByCycleMinRate[id] === undefined || rate < rareByCycleMinRate[id]) rareByCycleMinRate[id] = rate;
         });
       });
@@ -88,9 +93,8 @@
         .sort((a, b) => a.minRate - b.minRate)
         .slice(0, 6);
       const rareCycleSpritesHtml = rareCycleTop.length
-        ? rareCycleTop.map(p => getPokemonSpriteHtml(p.id, true)).join('')
-        : `<span style="font-size:12px;color:var(--gray);">Sin raros &lt;10%.</span>`;
-
+        ? rareCycleTop.map(p => getPokemonSpriteHtml(p.id, false)).join('')
+        : `<span style="font-size:12px;color:var(--gray);">Sin raros exclusivos &lt;10%.</span>`;
       // Daycare missions (remaining)
       try {
         if (typeof generateDailyMission === 'function') generateDailyMission();
@@ -101,31 +105,33 @@
       const missionsSpritesHtml = missionTrainerSprites.length
         ? missionTrainerSprites.map(src => `<img src="${src}" alt="Misión" onerror="this.style.display='none'">`).join('')
         : `<span style="font-size:24px;">👤</span>`;
-
-      // Gym rematches available today (strongest first)
+      // Gyms available today (strongest available difficulty first)
       const today = (function() {
         const d = getGMT3Date();
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       })();
+
       const gymAvailable = (Array.isArray(window.GYMS) ? window.GYMS : [])
         .filter(g => {
-          const reached = state.defeatedGyms?.includes(g.id);
           const locked = (state.badges || 0) < (g.badgesRequired || 0);
           const wonToday = state.lastGymWins?.[g.id] === today;
-          return reached && !locked && !wonToday;
+          return !locked && !wonToday;
         })
         .map(g => {
-          const hard = g.difficulties?.hard || null;
-          const maxLevel = hard?.levels ? Math.max(...hard.levels) : (g.levels ? Math.max(...g.levels) : 0);
+          const reached = state.defeatedGyms?.includes(g.id);
+          const progress = state.gymProgress?.[g.id] || (reached ? 1 : 0);
+          const diffKey = (progress >= 2) ? 'hard' : ((progress >= 1) ? 'normal' : 'easy');
+          const teamData = g.difficulties?.[diffKey] || { pokemon: g.pokemon, levels: g.levels };
+          const maxLevel = Array.isArray(teamData.levels) ? Math.max(...teamData.levels) : 0;
           return { gym: g, strength: maxLevel };
         })
         .sort((a, b) => b.strength - a.strength);
+
       const gymTop3 = gymAvailable.slice(0, 3);
       const gymRematchCount = gymAvailable.length;
       const gymSpritesHtml = gymTop3.length
         ? gymTop3.map(x => `<img src="${x.gym.sprite}" alt="${x.gym.leader}" onerror="this.style.display='none'">`).join('')
         : `<span style="font-size:12px;color:var(--gray);">Nada por hoy.</span>`;
-
       html += `
         <div class="pc-split-container" style="display: flex; gap: 20px; margin-bottom: 25px; align-items: stretch;">
           <div class="pc-left" style="flex: 1.5;">
@@ -141,10 +147,9 @@
           <div class="pc-right" style="flex: 1; display: flex; min-width: 0;">
             <div class="pc-banner-grid">
               <div class="pc-banner pc-banner-static">
-                <div class="pc-banner-icon">${cycleIcon}</div>
+                <div class="pc-banner-icon">🌙</div>
                 <div class="pc-banner-content">
                   <div class="pc-banner-title">Raros por horario</div>
-                  <div class="pc-banner-text">${cycleLabel}: <span>&lt;10%</span></div>
                   <div class="pc-banner-spawns pc-banner-spawns-compact">${rareCycleSpritesHtml}</div>
                 </div>
               </div>
@@ -161,7 +166,7 @@
               <div class="pc-banner" onclick="showTab('gyms')">
                 <div class="pc-banner-icon">🏆</div>
                 <div class="pc-banner-content">
-                  <div class="pc-banner-title">Revancha</div>
+                  <div class="pc-banner-title">Gimnasios</div>
                   <div class="pc-banner-text">Tenés <span>${gymRematchCount}</span> gimnasios por derrotar</div>
                   <div class="pc-banner-spawns pc-banner-trainers">${gymSpritesHtml}</div>
                 </div>
