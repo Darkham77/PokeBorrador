@@ -4252,3 +4252,641 @@
       line-height: 1.4;
       font-style: italic;
     }
+
+
+/* ============================================================
+   RESPONSIVE MOBILE & TABLET — Agregado por Manus
+   Afecta SOLO pantallas ≤ 1024px; no modifica la vista PC.
+   ============================================================ */
+
+/* ── Tablet general (601px – 1024px) ── */
+@media (max-width: 1024px) and (min-width: 601px) {
+
+  /* HUD: permitir wrap para que las pills no se salgan */
+  .hud {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 16px;
+  }
+
+  .hud-trainer {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .hud-items {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  /* Pills más compactas en tablet */
+  .hud-pill {
+    min-width: 52px;
+    height: 52px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .hud-pill i,
+  .hud-pill span:first-child {
+    font-size: 15px;
+  }
+
+  /* Barra de navegación inferior en tablet */
+  .nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    margin-bottom: 0;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    z-index: 1000;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    justify-content: space-around;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+
+  .nav-btn {
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    border: none !important;
+    background: transparent !important;
+    padding: 6px 4px !important;
+    font-size: 7px !important;
+    gap: 4px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .nav-btn span:first-child {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .nav-btn span:last-child {
+    display: block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+  }
+
+  /* Padding inferior para que el contenido no quede bajo la nav */
+  #app {
+    padding-bottom: 80px !important;
+  }
+
+  /* Mapa: 2 columnas en tablet */
+  .map-list {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  /* Batalla: layout vertical en tablet */
+  #battle-screen .battle-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 600px;
+  }
+
+  .battle-arena {
+    height: auto;
+    max-height: 50vh;
+  }
+
+  .battle-log {
+    height: auto;
+    max-height: 120px;
+  }
+
+  /* Trade modal: ancho completo con scroll */
+  .trade-modal-box {
+    max-width: 100%;
+    padding: 16px;
+  }
+
+  /* Perfil: ancho reducido en tablet */
+  #profile-panel {
+    width: 300px;
+  }
+
+  /* Starter grid: 2 columnas en tablet pequeño */
+  .starter-grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 500px;
+  }
+
+  /* Daycare: columna única en tablet pequeño */
+  .daycare-slots-grid > .daycare-slot-card {
+    flex-basis: calc(50% - 6px);
+  }
+
+  /* Caja/Bolsa overlay: padding adecuado */
+  #bag-overlay {
+    padding: 12px;
+  }
+
+  #bag-modal {
+    max-width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  /* Pokédex modal: ancho completo */
+  #pokedex-modal {
+    padding: 12px;
+  }
+
+  /* Fishing game: padding reducido */
+  .fishing-game-container {
+    padding: 24px 16px;
+    max-width: 380px;
+  }
+
+  /* Notificaciones: ancho ajustado */
+  .notification {
+    max-width: 260px;
+    font-size: 13px;
+  }
+
+  /* Guardar indicador: no quede sobre la nav */
+  .save-indicator {
+    bottom: 80px;
+  }
+
+  /* Settings modal: ancho completo */
+  #settings-modal > div {
+    width: 95% !important;
+    max-width: 380px !important;
+  }
+}
+
+/* ── Móvil (≤ 600px) — Complemento y correcciones ── */
+@media (max-width: 600px) {
+
+  /* HUD: layout compacto de dos filas */
+  .hud {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .hud-trainer {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Ocultar la barra de exp del entrenador en móvil muy pequeño para ahorrar espacio */
+  @media (max-width: 380px) {
+    .hud-trainer > div > div[style*="width:140px"],
+    .hud-trainer > div > div[style*="width: 140px"] {
+      display: none !important;
+    }
+  }
+
+  .hud-items {
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: flex-end;
+    flex: 1 1 auto;
+  }
+
+  /* Pills más pequeñas */
+  .hud-pill {
+    min-width: 44px;
+    height: 44px;
+    padding: 5px 6px;
+    font-size: 11px;
+    border-radius: 12px;
+    gap: 2px;
+  }
+
+  .hud-pill i,
+  .hud-pill span:first-child {
+    font-size: 14px;
+  }
+
+  /* Botones de perfil y settings en HUD */
+  #hud-settings-btn {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 14px !important;
+  }
+
+  #hud-profile-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
+
+  /* Guardar indicador: no quede sobre la nav */
+  .save-indicator {
+    bottom: 80px;
+    right: 12px;
+    font-size: 10px;
+    padding: 6px 12px;
+  }
+
+  /* Notificaciones: ancho completo en móvil */
+  .notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    font-size: 12px;
+    padding: 12px 14px;
+  }
+
+  /* Settings modal: ancho completo */
+  #settings-modal > div {
+    width: 95% !important;
+    max-width: 360px !important;
+    padding: 18px !important;
+  }
+
+  /* Trade modal: padding reducido, scroll */
+  #trade-modal {
+    padding: 8px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .trade-modal-box {
+    padding: 14px;
+    border-radius: 14px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+  }
+
+  .trade-pokemon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  }
+
+  /* Bag/Bolsa overlay */
+  #bag-overlay {
+    padding: 8px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    align-items: flex-end !important;
+  }
+
+  #bag-modal {
+    max-width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: 16px 16px 0 0 !important;
+  }
+
+  /* Pokédex modal */
+  #pokedex-modal {
+    padding: 8px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    align-items: flex-end !important;
+  }
+
+  #pokedex-modal > div {
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 16px 16px 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Perfil: ancho completo en móvil */
+  #profile-panel {
+    width: 100vw;
+    padding: 16px;
+  }
+
+  /* Fishing game: compacto en móvil */
+  .fishing-game-container {
+    padding: 20px 12px;
+    border-radius: 20px;
+    max-width: calc(100vw - 16px);
+  }
+
+  .fishing-area {
+    height: 260px;
+    width: 80px;
+  }
+
+  .fishing-title {
+    font-size: 10px;
+    margin-bottom: 16px;
+  }
+
+  /* Gym list: columna única en móvil */
+  .gym-list {
+    grid-template-columns: 1fr;
+  }
+
+  /* Team grid: 2 columnas mínimo en móvil */
+  .team-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  /* Pokédex grid: más compacto */
+  #pokedex-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  /* Starter screen: columna única */
+  .starter-grid {
+    grid-template-columns: 1fr;
+    max-width: 280px;
+    gap: 12px;
+  }
+
+  .starter-card {
+    padding: 14px 12px;
+  }
+
+  /* Buff panel: ajuste de posición para que no tape contenido */
+  #buff-panel {
+    top: 120px;
+  }
+
+  /* Buff tooltip: aparece a la derecha sin salirse */
+  .buff-tooltip {
+    min-width: 150px;
+    max-width: 180px;
+    font-size: 10px;
+  }
+
+  /* Daycare slots: columna única en móvil */
+  .daycare-slots-grid > .daycare-slot-card,
+  .daycare-slots-grid > .daycare-mid-card {
+    flex-basis: 100%;
+  }
+
+  /* Huevos en progreso: scroll horizontal si hay muchos */
+  #hud-eggs-progress {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  #hud-eggs-progress::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hud-egg-card {
+    min-width: 160px;
+    flex: 0 0 auto;
+  }
+
+  /* Error overlay: botones en columna */
+  .error-footer {
+    flex-direction: column;
+  }
+
+  .error-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Market: 2 columnas en móvil */
+  .market-grid,
+  [id^="market-items-"] {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  /* Pokemon Center overlay: imagen responsiva */
+  #pokemon-center-overlay > div {
+    max-width: calc(100vw - 16px) !important;
+    border-radius: 16px !important;
+  }
+
+  /* Catch animation: centrado correcto */
+  .catch-animation {
+    padding: 20px;
+  }
+
+  .catch-text {
+    font-size: 11px;
+  }
+
+  /* Pokeball botón de captura: un poco más pequeño en móvil */
+  .btn-catch {
+    width: 68px !important;
+    height: 68px !important;
+  }
+
+  /* Box filters: scroll horizontal para los botones de tipo */
+  #box-type-btns {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  #box-type-btns::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Box filter tier buttons: wrap normal */
+  #box-tier-btns {
+    flex-wrap: wrap;
+  }
+
+  /* Tooltips: deshabilitar en móvil (sin hover) */
+  .tooltip-wrap .tooltip-box {
+    display: none !important;
+  }
+
+  /* Move tooltip: no se muestra en móvil */
+  .move-tooltip {
+    display: none !important;
+  }
+
+  /* Buff tooltip: también se oculta en móvil */
+  .buff-item:hover .buff-tooltip {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Chat flotante: reposicionar en móvil */
+  [id^="chat-modal-"] {
+    bottom: 80px !important;
+    right: 8px !important;
+    width: calc(100vw - 16px) !important;
+    max-width: 340px !important;
+    left: auto !important;
+  }
+
+  /* Pokédex detail modal: full screen en móvil */
+  #pokedex-modal[style*="flex"] {
+    align-items: flex-end !important;
+  }
+}
+
+/* ── Pantallas muy pequeñas (≤ 380px) ── */
+@media (max-width: 380px) {
+
+  .hud-pill {
+    min-width: 38px;
+    height: 40px;
+    padding: 4px 5px;
+    font-size: 10px;
+    border-radius: 10px;
+  }
+
+  .hud-pill i,
+  .hud-pill span:first-child {
+    font-size: 13px;
+  }
+
+  #hud-settings-btn {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 12px !important;
+    margin-right: 4px !important;
+  }
+
+  #hud-profile-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  .trainer-avatar {
+    font-size: 22px;
+  }
+
+  .trainer-name {
+    font-size: 6px;
+  }
+
+  .nav-btn {
+    font-size: 5px !important;
+  }
+
+  .nav-btn span:first-child {
+    font-size: 16px;
+  }
+
+  .battle-actions {
+    gap: 4px;
+  }
+
+  .move-btn {
+    padding: 8px 6px;
+    min-height: 54px;
+  }
+
+  .move-btn .move-name {
+    font-size: 10px;
+  }
+
+  .action-btn {
+    padding: 10px 2px;
+    font-size: 6px;
+  }
+
+  .btn-catch {
+    width: 58px !important;
+    height: 58px !important;
+  }
+}
+
+/* ── Tablet landscape y pantallas medianas (768px – 1024px) ── */
+@media (max-width: 1024px) and (min-width: 768px) {
+
+  /* Mapa: 2 columnas cómodas */
+  .map-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Gym list: 2 columnas */
+  .gym-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Team grid: columnas más anchas */
+  .team-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  /* Starter grid: 3 columnas (igual que PC) */
+  .starter-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 600px;
+  }
+
+  /* Pokédex: más columnas */
+  #pokedex-grid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)) !important;
+  }
+
+  /* Perfil: ancho intermedio */
+  #profile-panel {
+    width: 280px;
+  }
+}
+
+/* ── Safe area para dispositivos con notch ── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (max-width: 1024px) {
+    .nav {
+      padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    }
+
+    #app {
+      padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+    }
+  }
+}
+
+/* ── Overlays inline generados por JS: asegurar responsive en móvil ── */
+@media (max-width: 600px) {
+
+  /* Overlays de encuentro con entrenador, rival, restauración de batalla, evolución, etc. */
+  #trainer-intro-overlay > div,
+  #rival-intro-overlay > div,
+  #restore-battle-overlay > div,
+  #evo-overlay > div,
+  #stone-overlay > div,
+  #pvp-invite-popup {
+    max-width: calc(100vw - 32px) !important;
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+  }
+
+  /* Imagen del entrenador rival: no se desborde */
+  #rival-intro-overlay img,
+  #trainer-intro-overlay img {
+    max-height: 100px !important;
+    width: auto !important;
+  }
+
+  /* Texto de intro: tamaño legible */
+  #rival-intro-overlay [style*="font-size:14px"],
+  #trainer-intro-overlay [style*="font-size:13px"] {
+    font-size: 12px !important;
+  }
+
+  /* Botones de intro: ancho completo */
+  #trainer-intro-btn,
+  #rival-intro-btn {
+    width: 100% !important;
+    padding: 12px 16px !important;
+    font-size: 8px !important;
+  }
+
+  /* PvP overlay: asegurar scroll */
+  #pvp-overlay {
+    overflow-y: auto !important;
+  }
+}
