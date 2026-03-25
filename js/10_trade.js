@@ -441,6 +441,12 @@
             state.team.push(requestedPokemonClone);
             checkTradeEvolution(requestedPokemonClone);
             renderTeam();
+          } else {
+            // Si ya lo tenemos (por sincronización previa), buscamos la referencia real en el equipo para evolucionarlo
+            const existing = state.team.find(p => p?.uid === uid);
+            if (existing) {
+              checkTradeEvolution(existing);
+            }
           }
         }
         
@@ -513,12 +519,24 @@
         }
 
         // Una vez que el servidor procesó el trade exitosamente, 
-        // recargamos el save para que el cliente local esté sincronizado.
+        // necesitamos saber qué Pokémon recibimos para activar su evolución si corresponde.
+        const { data: trade } = await sb.from('trade_offers').select('*').eq('id', tradeId).single();
         const { data: save } = await sb.from('game_saves').select('save_data').eq('user_id', currentUser.id).single();
+        
         if (save?.save_data) {
           Object.assign(state, save.save_data);
           updateHud();
           renderTeam();
+          
+          // Si recibimos un Pokémon, buscamos el que acabamos de recibir en nuestro equipo
+          // El RPC lo agrega al final del array 'team'
+          if (trade && trade.offer_pokemon) {
+            const receivedPokemon = state.team.find(p => p.uid === trade.offer_pokemon.uid);
+            if (receivedPokemon) {
+              checkTradeEvolution(receivedPokemon);
+            }
+          }
+          
           notify('¡Intercambio realizado con éxito!', '🎉');
         }
         
