@@ -1178,9 +1178,10 @@ function applyAbilityTurnEndEffects(pokemon, role, addLogFn) {
   }
 }
 
-function playerActsFirst(b, pMove, eMove) {
+function playerActsFirst(b, pMove, eMove, enemyWillUseItem = null) {
+  // Items have priority over moves (standard priority 6)
   const pPrio = (MOVE_DATA[pMove?.name]?.priority) || 0;
-  const ePrio = (MOVE_DATA[eMove?.name]?.priority) || 0;
+  const ePrio = enemyWillUseItem ? 6 : ((MOVE_DATA[eMove?.name]?.priority) || 0);
   
   if (pPrio !== ePrio) {
     return pPrio > ePrio;
@@ -1214,16 +1215,30 @@ function useMove(moveIndex) {
     }
   }
 
-  // Enemy selects move NOW
+  // Enemy selects move OR item NOW
   let eMove = null;
+  let enemyWillUseItem = null;
+
   if (!b.enemyRecharging && !b.enemy.flinched && b.enemy.status !== 'sleep' && b.enemy.status !== 'freeze') {
-    const validMoves = b.enemy.moves.filter(m => m.pp > 0);
-    if (validMoves.length > 0) {
-      eMove = (b.isTrainer || b.isGym) ? getBestEnemyMove(b.enemy, b.player, b.playerStages) : validMoves[Math.floor(Math.random() * validMoves.length)];
+    // Check for Item Usage (Gym Leaders only) - DECIDE NOW to avoid "prediction" bug
+    if (b.isGym && !b.enemyUsedItem) {
+      const hpPct = b.enemy.hp / b.enemy.maxHp;
+      if (hpPct < 0.25) {
+        enemyWillUseItem = (b.enemy.level > 40) ? 'Poción Máxima' : 'Hiper Poción';
+      } else if (b.enemy.status) {
+        enemyWillUseItem = 'Cura Total';
+      }
+    }
+
+    if (!enemyWillUseItem) {
+      const validMoves = b.enemy.moves.filter(m => m.pp > 0);
+      if (validMoves.length > 0) {
+        eMove = (b.isTrainer || b.isGym) ? getBestEnemyMove(b.enemy, b.player, b.playerStages) : validMoves[Math.floor(Math.random() * validMoves.length)];
+      }
     }
   }
 
-  const playerFirst = playerActsFirst(b, move, eMove);
+  const playerFirst = playerActsFirst(b, move, eMove, enemyWillUseItem);
 
   const runPlayerAction = (enemyAlreadyActed) => {
     // Check flinch
@@ -1231,7 +1246,7 @@ function useMove(moveIndex) {
       b.player.flinched = false;
       addLog(`¡${b.player.name} no pudo moverse por el impacto!`, 'log-enemy');
       _battleLock = true; setBtns(false);
-      setTimeout(() => { _battleLock = false; enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 1000);
+      setTimeout(() => { _battleLock = false; enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem }); }, 1000);
       return;
     }
     // Check paralysis skip
@@ -1240,7 +1255,7 @@ function useMove(moveIndex) {
       _battleLock = true; setBtns(false);
       setTimeout(() => {
         _battleLock = false;
-        enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
+        enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem });
       }, 1000);
       return;
     }
@@ -1252,7 +1267,7 @@ function useMove(moveIndex) {
         _battleLock = true; setBtns(false);
         setTimeout(() => {
           _battleLock = false;
-          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
+          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem });
         }, 1000);
         return;
       } else {
@@ -1267,7 +1282,7 @@ function useMove(moveIndex) {
         _battleLock = true; setBtns(false);
         setTimeout(() => {
           _battleLock = false;
-          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
+          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem });
         }, 1000);
         return;
       } else {
@@ -1282,7 +1297,7 @@ function useMove(moveIndex) {
       _battleLock = true; setBtns(false);
       setTimeout(() => {
         _battleLock = false;
-        enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
+        enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem });
       }, 1000);
       return;
     }
@@ -1327,7 +1342,7 @@ function useMove(moveIndex) {
         setTimeout(() => {
           _battleLock = false;
           if (b.player.hp <= 0) { endBattle(false); return; }
-          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
+          enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem });
         }, 1100);
         return;
       }
@@ -1350,7 +1365,7 @@ function useMove(moveIndex) {
           setTimeout(() => {
             _battleLock = false;
             if (b.player.hp <= 0) { endBattle(false); return; }
-            enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove });
+            enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem });
           }, 1000);
           return;
         }
@@ -1361,7 +1376,7 @@ function useMove(moveIndex) {
     if (b.player.disabledTurns > 0 && move.name === b.player.disabledMove) {
       addLog(`¡${b.player.name} intentó usar <strong>${move.name}</strong>... pero está anulado!`, 'log-player');
       _battleLock = true; setBtns(false);
-      setTimeout(() => { _battleLock = false; enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 1000);
+      setTimeout(() => { _battleLock = false; enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem }); }, 1000);
       return;
     }
 
@@ -1389,7 +1404,7 @@ function useMove(moveIndex) {
     const accMult = stageMult(accStage) / evaMult;
     if (Math.random() * 100 > acc * accMult) {
       addLog(`${b.player.name} usó <strong>${move.name}</strong>... ¡Falló!`, 'log-player');
-      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 900);
+      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem }); }, 900);
       return;
     }
 
@@ -1397,7 +1412,7 @@ function useMove(moveIndex) {
 
     // Ability Immunity Check
     if (checkAbilityImmunity(b.player, b.enemy, move, addLog)) {
-      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 900);
+      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem }); }, 900);
       return;
     }
 
@@ -1405,7 +1420,7 @@ function useMove(moveIndex) {
     if (md.cat === 'status') {
       applyMoveEffect(md.effect, b.player, b.enemy, b.playerStages, b.enemyStages, addLog);
       updateBattleUI();
-      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 900);
+      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem }); }, 900);
       return;
     }
 
@@ -1518,7 +1533,7 @@ function useMove(moveIndex) {
         return;
       }
 
-      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove }); }, 1000);
+      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem }); }, 1000);
     });
   };
 
@@ -1528,6 +1543,7 @@ function useMove(moveIndex) {
     _battleLock = true; setBtns(false);
     enemyTurn({
       chosenMove: eMove,
+      preDecidedItem: enemyWillUseItem,
       endTurn: false, after: () => {
         if (b.over) return;
         if (b.player.hp <= 0) { _endEnemyTurn(); return; }
@@ -1703,7 +1719,7 @@ function enemyTurn(opts = {}) {
   const b = state.battle;
   if (b.over) return;
 
-  const { endTurn = true, after = null, chosenMove = null } = opts || {};
+  const { endTurn = true, after = null, chosenMove = null, preDecidedItem = null } = opts || {};
   const finish = () => {
     if (after) { after(); return; }
     if (endTurn) _endEnemyTurn();
@@ -1719,28 +1735,30 @@ function enemyTurn(opts = {}) {
   // --- AI DECISION MAKING ---
   if (b.isTrainer || b.isGym) {
     // 1. Check for Item Usage (Gym Leaders only)
-    if (b.isGym && !b.enemyUsedItem) {
+    // Use preDecidedItem if available to avoid "prediction" bug
+    let itemToUse = preDecidedItem;
+    
+    if (!itemToUse && b.isGym && !b.enemyUsedItem) {
+      // Fallback for cases where enemyTurn is called without pre-decision (e.g. after player uses item)
       const hpPct = b.enemy.hp / b.enemy.maxHp;
-      let itemToUse = null;
-      
       if (hpPct < 0.25) {
         itemToUse = 'Hiper Poción';
         if (b.enemy.level > 40) itemToUse = 'Poción Máxima';
       } else if (b.enemy.status) {
         itemToUse = 'Cura Total';
       }
+    }
 
-      if (itemToUse) {
-        b.enemyUsedItem = true; // Limit to one item per battle for now
-        addLog(`¡${b.trainerName || 'El Líder'} usó ${itemToUse}!`, 'log-enemy');
-        
-        if (itemToUse === 'Hiper Poción') b.enemy.hp = Math.min(b.enemy.maxHp, b.enemy.hp + 200);
-        else if (itemToUse === 'Poción Máxima') b.enemy.hp = b.enemy.maxHp;
-        else if (itemToUse === 'Cura Total') b.enemy.status = null;
-        
-        updateBattleUI();
-        finish(); return;
-      }
+    if (itemToUse && !b.enemyUsedItem) {
+      b.enemyUsedItem = true; // Limit to one item per battle for now
+      addLog(`¡${b.trainerName || 'El Líder'} usó ${itemToUse}!`, 'log-enemy');
+      
+      if (itemToUse === 'Hiper Poción') b.enemy.hp = Math.min(b.enemy.maxHp, b.enemy.hp + 200);
+      else if (itemToUse === 'Poción Máxima') b.enemy.hp = b.enemy.maxHp;
+      else if (itemToUse === 'Cura Total') b.enemy.status = null;
+      
+      updateBattleUI();
+      finish(); return;
     }
 
     // 2. Check for Switching
