@@ -895,6 +895,23 @@
     <div class="team-section" style="min-height:50vh;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div class="section-title" style="margin:0;">🎒 Mochila</div>
+        <div style="display:flex; gap:10px;">
+          <button id="btn-bag-sell-mode" onclick="toggleBagSellMode()" 
+            style="font-family:'Press Start 2P',monospace; font-size:8px; padding:10px 16px; background:linear-gradient(135deg, #4caf50, #388e3c); color:white; border:none; border-radius:12px; cursor:pointer; box-shadow:0 4px 12px rgba(76,175,80,0.3);">
+            💰 MODO VENTA
+          </button>
+          <button id="btn-bag-confirm-sell" onclick="confirmBagSell()" 
+            style="display:none; font-family:'Press Start 2P',monospace; font-size:8px; padding:10px 16px; background:linear-gradient(135deg, #ff9800, #f57c00); color:white; border:none; border-radius:12px; cursor:pointer; box-shadow:0 4px 12px rgba(255,152,0,0.3);">
+            ✅ VENDER SELECCIÓN
+          </button>
+          <button id="btn-bag-cancel-sell" onclick="toggleBagSellMode()" 
+            style="display:none; font-family:'Press Start 2P',monospace; font-size:8px; padding:10px 16px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:12px; cursor:pointer;">
+            CANCELAR
+          </button>
+        </div>
+      </div>
+      <div id="bag-sell-hint" style="display:none; background:rgba(76,175,80,0.1); border:1px solid rgba(76,175,80,0.3); border-radius:12px; padding:12px; margin-bottom:16px; font-size:11px; color:#81c784; text-align:center;">
+        Seleccioná los objetos que quieras vender. Recibirás el <strong>40% de su valor</strong>.
       </div>
 
       <!-- Search Input -->

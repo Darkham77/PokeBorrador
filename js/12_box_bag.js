@@ -32,6 +32,8 @@
     let _boxFiltersOpen = false;
     let _boxReleaseMode = false;
     let _boxReleaseSelected = new Set();
+    let _bagSellMode = false;
+    let _bagSellSelected = {}; // { itemName: quantityToSell }
 
     function toggleBoxFilters() {
       _boxFiltersOpen = !_boxFiltersOpen;
@@ -597,6 +599,84 @@
     }
 
     // ===== BAG SYSTEM =====
+    function toggleBagSellMode() {
+      _bagSellMode = !_bagSellMode;
+      _bagSellSelected = {};
+
+      const btnSellMode = document.getElementById('btn-bag-sell-mode');
+      const btnConfirm = document.getElementById('btn-bag-confirm-sell');
+      const btnCancel = document.getElementById('btn-bag-cancel-sell');
+      const hintSell = document.getElementById('bag-sell-hint');
+
+      if (btnSellMode) btnSellMode.style.display = _bagSellMode ? 'none' : 'inline-block';
+      if (btnConfirm) btnConfirm.style.display = _bagSellMode ? 'inline-block' : 'none';
+      if (btnCancel) btnCancel.style.display = _bagSellMode ? 'inline-block' : 'none';
+      if (hintSell) hintSell.style.display = _bagSellMode ? 'block' : 'none';
+
+      renderBag();
+    }
+
+    function toggleBagSellSelect(itemName, maxQty) {
+      if (_bagSellSelected[itemName]) {
+        delete _bagSellSelected[itemName];
+      } else {
+        _bagSellSelected[itemName] = maxQty;
+      }
+      renderBag();
+    }
+
+    function updateBagSellQty(itemName, qty, maxQty) {
+      qty = parseInt(qty);
+      if (isNaN(qty) || qty < 1) qty = 1;
+      if (qty > maxQty) qty = maxQty;
+      _bagSellSelected[itemName] = qty;
+      
+      // Update total gain display if we add one later, for now just re-render or update label
+      const confirmBtn = document.getElementById('btn-bag-confirm-sell');
+      if (confirmBtn) {
+        let totalGain = 0;
+        Object.entries(_bagSellSelected).forEach(([name, q]) => {
+          const itemInfo = SHOP_ITEMS.find(i => i.name === name);
+          if (itemInfo) totalGain += Math.floor(itemInfo.price * 0.4) * q;
+        });
+        confirmBtn.textContent = totalGain > 0 ? `✅ VENDER (₽${totalGain.toLocaleString()})` : '✅ VENDER SELECCIÓN';
+      }
+    }
+
+    function confirmBagSell() {
+      const selectedEntries = Object.entries(_bagSellSelected);
+      if (selectedEntries.length === 0) {
+        notify('No seleccionaste ningún objeto para vender.', '❓');
+        return;
+      }
+
+      let totalGain = 0;
+      let summary = [];
+      selectedEntries.forEach(([name, qty]) => {
+        const itemInfo = SHOP_ITEMS.find(i => i.name === name);
+        if (itemInfo) {
+          const price = Math.floor(itemInfo.price * 0.4);
+          totalGain += price * qty;
+          summary.push(`${name} x${qty}`);
+        }
+      });
+
+      if (!confirm(`¿Vender los siguientes objetos por ₽${totalGain.toLocaleString()}?\n\n${summary.join('\n')}`)) return;
+
+      selectedEntries.forEach(([name, qty]) => {
+        state.inventory[name] -= qty;
+        if (state.inventory[name] <= 0) delete state.inventory[name];
+      });
+
+      state.money += totalGain;
+      notify(`¡Vendiste objetos por ₽${totalGain.toLocaleString()}!`, '💰');
+      
+      _bagSellMode = false;
+      toggleBagSellMode(); // This will reset and re-render
+      updateHud();
+      if (typeof scheduleSave === 'function') scheduleSave();
+    }
+
     function renderBag(category = 'all') {
       const grid = document.getElementById('bag-grid');
       const empty = document.getElementById('bag-empty-warning');
@@ -648,9 +728,38 @@
         const tier = itemInfo?.tier || 'common';
         const type = itemInfo?.type || 'usable';
         const isUsable = !!HEALING_ITEMS[name] || name === 'Caramelo Raro';
+        const canSell = itemInfo && itemInfo.market !== false;
 
         const tierCls = tierColors[tier];
         const typeTag = `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:${typeTagColors[type] || '#666'}22;color:${typeTagColors[type] || '#aaa'};border:1px solid ${typeTagColors[type] || '#666'}44;">${typeTagLabels[type] || type}</span>`;
+
+        if (_bagSellMode) {
+          const isSelected = !!_bagSellSelected[name];
+          const sellQty = _bagSellSelected[name] || qty;
+          const sellPrice = itemInfo ? Math.floor(itemInfo.price * 0.4) : 0;
+          
+          return `<div class="market-card ${isSelected ? 'selected' : ''}" 
+            style="${!canSell ? 'opacity:0.5; filter:grayscale(1);' : 'cursor:pointer;'} ${isSelected ? 'border:2px solid #4caf50; background:rgba(76,175,80,0.05);' : ''}"
+            onclick="${canSell ? `toggleBagSellSelect('${name}', ${qty})` : ''}">
+            <span class="market-tier-badge ${tierCls}">${tierLabels[tier]}</span>
+            <div style="position:absolute; top:10px; right:10px; font-size:16px;">${isSelected ? '✅' : canSell ? '⬜' : '🚫'}</div>
+            <div class="market-item-icon">
+              ${sprite ? `<img src="${sprite}" width="40" height="40" style="image-rendering:pixelated;">` : `<span style="font-size:32px">${icon}</span>`}
+            </div>
+            <div class="market-item-name">${name}</div>
+            <div class="market-item-price" style="color:#4caf50; font-weight:bold;">₽${sellPrice.toLocaleString()} c/u</div>
+            ${isSelected ? `
+              <div style="margin-top:10px; display:flex; align-items:center; gap:8px;" onclick="event.stopPropagation()">
+                <span style="font-size:10px; color:var(--gray);">Cant:</span>
+                <input type="number" min="1" max="${qty}" value="${sellQty}" 
+                  oninput="updateBagSellQty('${name}', this.value, ${qty})"
+                  style="width:60px; padding:4px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:6px; color:#fff; text-align:center; font-size:11px;">
+              </div>
+              <div style="font-size:10px; color:var(--yellow); margin-top:6px; font-weight:bold;">Total: ₽${(sellPrice * sellQty).toLocaleString()}</div>
+            ` : `<div class="market-item-price" style="margin-top:auto;">Cantidad: ${qty}</div>`}
+            ${!canSell ? '<div style="font-size:9px; color:var(--red); margin-top:4px; font-weight:bold;">NO VENDIBLE</div>' : ''}
+          </div>`;
+        }
 
         return `<div class="market-card">
           <span class="market-tier-badge ${tierCls}">${tierLabels[tier]}</span>
