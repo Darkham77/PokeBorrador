@@ -319,7 +319,8 @@ function openPokemonDetail(index) {
   }).join('');
 
   const movesList = p.moves.map(m => {
-    const power = (typeof MOVE_POWER !== 'undefined' ? MOVE_POWER[m.name] : 0) || 40;
+    const md = (typeof MOVE_DATA !== 'undefined') ? MOVE_DATA[m.name] : null;
+    const power = md ? (md.power || '—') : (m.power || '—');
     return `<div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
       <div>
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${m.name}</div>
