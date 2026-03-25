@@ -108,6 +108,7 @@
           closePokemonCenter();
           notify('¡Tu equipo ha sido curado!', '💊');
           if (typeof renderTeam === 'function') renderTeam();
+          if (typeof renderMaps === 'function') renderMaps();
         }, 800);
       }, 2000);
     }

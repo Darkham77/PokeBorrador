@@ -123,7 +123,16 @@
         .filter(g => {
           const locked = (state.badges || 0) < (g.badgesRequired || 0);
           const wonToday = state.lastGymWins?.[g.id] === today;
-          return !locked && !wonToday;
+          const attemptedToday = state.lastGymAttempts?.[g.id] === today;
+          const progress = state.gymProgress?.[g.id] || (state.defeatedGyms?.includes(g.id) ? 1 : 0);
+          const isFirstEasyAttempt = progress === 0;
+          
+          // Un gimnasio NO está disponible si:
+          // 1. Está bloqueado por medallas
+          // 2. Ya se ganó hoy
+          // 3. Ya se intentó hoy (y no es el primer intento en fácil)
+          const canChallenge = !locked && !wonToday && (!attemptedToday || isFirstEasyAttempt);
+          return canChallenge;
         })
         .map(g => {
           const reached = state.defeatedGyms?.includes(g.id);
