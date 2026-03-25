@@ -45,15 +45,18 @@
               m.maxPP = md.pp;
               m.pp = Math.min(m.pp, m.maxPP);
             }
-            // Los efectos y tipos se toman de MOVE_DATA en tiempo de ejecución,
-            // pero asegurar que el nombre coincida exactamente con la base de datos.
+            // LIMPIEZA AGRESIVA: Si el movimiento es de estado en MOVE_DATA,
+            // forzar que no tenga poder en el objeto persistido.
+            if (md.cat === 'status') {
+              m.power = 0;
+            }
           }
         });
       };
 
       state.team.forEach(migrate);
       if (state.box) state.box.forEach(migrate);
-      console.log("[MIGRATION] Datos de movimientos normalizados para todo el equipo y caja.");
+      console.log("[MIGRATION] Datos de movimientos normalizados y categorías corregidas.");
     }
 
     // Ejecutar migraciones al cargar
