@@ -950,7 +950,7 @@
         'Tenaza': {'power':35,'acc':85,'type':'water','cat':'physical','pp':10,'effect':'bind'},
         'Súper Colmillo': {'power':1,'acc':90,'type':'normal','cat':'physical','pp':10,'halfHP':true},
         'Maldición': {'power':0,'acc':100,'type':'ghost','cat':'status','pp':10,'effect':'curse'},
-        'Descanso': {'power':0,'acc':100,'type':'psychic','cat':'status','pp':10,'effect':'sleep_self_heal'},
+        'Descanso': {'power':0,'acc':100,'type':'psychic','cat':'status','pp':10,'effect':'rest'},
         'Aire Afilado': {'power':60,'acc':95,'type':'flying','cat':'special','pp':25},
         'Residuos': {'power':65,'acc':100,'type':'poison','cat':'special','pp':20,'effect':'poison_30'},
         'Polución': {'power':20,'acc':70,'type':'poison','cat':'special','pp':20,'effect':'poison_40'},
