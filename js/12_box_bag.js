@@ -637,7 +637,7 @@
         let totalGain = 0;
         Object.entries(_bagSellSelected).forEach(([name, q]) => {
           const itemInfo = SHOP_ITEMS.find(i => i.name === name);
-          if (itemInfo) totalGain += Math.floor(itemInfo.price * 0.4) * q;
+          if (itemInfo) totalGain += Math.floor(itemInfo.price * 0.5) * q;
         });
         confirmBtn.textContent = totalGain > 0 ? `✅ VENDER (₽${totalGain.toLocaleString()})` : '✅ VENDER SELECCIÓN';
       }
@@ -655,7 +655,7 @@
       selectedEntries.forEach(([name, qty]) => {
         const itemInfo = SHOP_ITEMS.find(i => i.name === name);
         if (itemInfo) {
-          const price = Math.floor(itemInfo.price * 0.4);
+          const price = Math.floor(itemInfo.price * 0.5);
           totalGain += price * qty;
           summary.push(`${name} x${qty}`);
         }
@@ -736,7 +736,7 @@
         if (_bagSellMode) {
           const isSelected = !!_bagSellSelected[name];
           const sellQty = _bagSellSelected[name] || qty;
-          const sellPrice = itemInfo ? Math.floor(itemInfo.price * 0.4) : 0;
+          const sellPrice = itemInfo ? Math.floor(itemInfo.price * 0.5) : 0;
           
           return `<div class="market-card ${isSelected ? 'selected' : ''}" 
             style="${!canSell ? 'opacity:0.5; filter:grayscale(1);' : 'cursor:pointer;'} ${isSelected ? 'border:2px solid #4caf50; background:rgba(76,175,80,0.05);' : ''}"

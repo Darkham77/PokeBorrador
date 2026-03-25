@@ -37,5 +37,11 @@ window.GAME_RATIOS = {
   gym: {
     rematchTMRateNormal: 0.03, // 3% chance for TM on Normal rematch
     rematchTMRateHard: 0.05    // 5% chance for TM on Hard rematch
+  },
+
+  // --- Held Items ---
+  heldItems: {
+    commonRate: 0.50,         // 50% chance for common wild held item
+    rareRate: 0.05            // 5% chance for rare wild held item
   }
 };

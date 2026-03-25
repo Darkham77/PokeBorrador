@@ -226,6 +226,31 @@
       zapdos: ['Presión'], moltres: ['Presión'], dratini: ['Mudar'],
       mewtwo: ['Presión'], mew: ['Sincronía']
     };
+
+    const WILD_HELD_ITEMS = {
+      butterfree: { rare: 'Polvo Plata' },
+      beedrill: { rare: 'Flecha Venenosa' },
+      pikachu: { common: 'Baya Aranja', rare: 'Bola Luminosa' },
+      meowth: { rare: 'Moneda Amuleto' },
+      abra: { rare: 'Cuchara Torcida' },
+      kadabra: { rare: 'Cuchara Torcida' },
+      machoke: { rare: 'Banda Focus' },
+      magneton: { rare: 'Imán' },
+      farfetchd: { rare: 'Palo' },
+      shellder: { common: 'Perla Grande', rare: 'Perla' },
+      cloyster: { common: 'Perla Grande', rare: 'Perla' },
+      haunter: { rare: 'Hechizo' },
+      gengar: { rare: 'Hechizo' },
+      cubone: { rare: 'Hueso Grueso' },
+      marowak: { rare: 'Hueso Grueso' },
+      chansey: { rare: 'Huevo Suerte' },
+      staryu: { common: 'Trozo Estrella', rare: 'Polvo Estelar' },
+      starmie: { common: 'Trozo Estrella', rare: 'Polvo Estelar' },
+      ditto: { rare: 'Polvo Metálico' },
+      snorlax: { rare: 'Restos' },
+      dragonair: { rare: 'Escama Dragón' },
+      dragonite: { rare: 'Escama Dragón' }
+    };
     const GENDERLESS = ['articuno', 'ditto', 'electrode', 'magnemite', 'magneton', 'mew', 'mewtwo', 'moltres', 'porygon', 'starmie', 'staryu', 'voltorb', 'zapdos'];
     function assignGender(id) {
       if (GENDERLESS.includes(id)) return null;
@@ -291,13 +316,23 @@
       const vigor = Math.floor(Math.random() * 4) + 3; // 3 a 6
 
       const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + getServerTime().toString(36);
+      let heldItem = null;
+      const itemData = WILD_HELD_ITEMS[id];
+      if (itemData) {
+        const rand = Math.random();
+        const r = GAME_RATIOS.heldItems;
+        if (itemData.rare && rand < r.rareRate) heldItem = itemData.rare;
+        else if (itemData.common && rand < r.commonRate) heldItem = itemData.common;
+      }
+
       const p = {
         uid: getUidStr(),
         id, name: base.name, emoji: base.emoji, type: base.type,
         level, exp: 0, expNeeded: getExpNeeded(level),
         ivs, nature, ability, gender, isShiny,
         moves: getMovesAtLevel(id, level),
-        status: null, sleepTurns: 0, friendship: 70, vigor
+        status: null, sleepTurns: 0, friendship: 70, vigor,
+        heldItem
       };
 
       recalcPokemonStats(p);
@@ -319,6 +354,7 @@
       p.maxHp = Math.floor((base.hp * 2 + p.ivs.hp) * p.level / 100 + p.level + 10);
       p.atk = getStat(base.atk, p.ivs.atk, p.level, 'Ataque');
       p.def = getStat(base.def, p.ivs.def, p.level, 'Defensa');
+      if (p.heldItem === 'Polvo Metálico' && p.id === 'ditto') p.def = Math.floor(p.def * 1.5);
       p.spa = getStat(base.spa || base.atk, p.ivs.spa, p.level, 'At. Esp');
       p.spd = getStat(base.spd || base.def, p.ivs.spd, p.level, 'Def. Esp');
       p.spe = getStat(base.spe || 45, p.ivs.spe, p.level, 'Velocidad');

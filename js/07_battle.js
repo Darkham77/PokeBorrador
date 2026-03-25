@@ -557,6 +557,12 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
     if (h === 'Agua Mística' && md.type === 'water') itemMult *= 1.2;
     if (h === 'Semilla Milagro' && md.type === 'grass') itemMult *= 1.2;
     if (h === 'Cinturón Negro' && md.type === 'fighting') itemMult *= 1.2;
+    if (h === 'Cuchara Torcida' && md.type === 'psychic') itemMult *= 1.2;
+    if (h === 'Hechizo' && md.type === 'ghost') itemMult *= 1.2;
+    if (h === 'Polvo Plata' && md.type === 'bug') itemMult *= 1.2;
+    if (h === 'Flecha Venenosa' && md.type === 'poison') itemMult *= 1.2;
+    if (h === 'Bola Luminosa' && attacker.id === 'pikachu') itemMult *= 2.0;
+    if (h === 'Hueso Grueso' && (attacker.id === 'cubone' || attacker.id === 'marowak')) itemMult *= 2.0;
 
     // Choice Band (50% physical)
     if (h === 'Cinta Elegida' && md.cat === 'physical') itemMult *= 1.5;
@@ -564,6 +570,7 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
 
   const random = 0.85 + Math.random() * 0.15;
   let critRate = (attacker.heldItem === 'Lente Zoom') ? 0.12 : 0.06;
+  if (attacker.heldItem === 'Palo' && attacker.id === 'farfetchd') critRate += 0.25;
   if (attacker.focusEnergy) critRate += 0.25; // Foco Energía = +2 critical stages
 
   let isCrit = Math.random() < critRate;
@@ -1931,9 +1938,24 @@ function _endEnemyTurn() {
       return false;
     };
 
-    // Leftovers (Restos)
+    // Held Items (Restos, Baya Aranja, etc.)
     for (const role of order) {
-      applyHeldItemTurnEndEffects(getPoke(role), role);
+      const p = getPoke(role);
+      applyHeldItemTurnEndEffects(p, role);
+      
+      // Baya Aranja (Heal 10 HP at 50% HP)
+      if (p.heldItem === 'Baya Aranja' && p.hp > 0 && p.hp <= (p.maxHp / 2)) {
+        const heal = Math.min(10, p.maxHp - p.hp);
+        if (heal > 0) {
+          p.hp += heal;
+          addLog(`¡${p.name} consumió su Baya Aranja y recuperó ${heal} HP!`, role === 'player' ? 'log-player' : 'log-enemy');
+          p.heldItem = null; // Consumed
+          const tm = state.team.find(t => t.uid === p.uid);
+          if (tm) { tm.hp = p.hp; tm.heldItem = null; }
+          dirty = true;
+        }
+      }
+
       if (stopIfFainted()) return;
     }
 
@@ -2279,6 +2301,9 @@ function catchSuccess(enemy) {
   }
 
   setLog(`¡${baseEnemy.name} fue capturado!`, 'log-catch');
+  if (caught.heldItem) {
+    addLog(`¡Parece que ${caught.name} llevaba un <strong>${caught.heldItem}</strong> equipado!`, 'log-info');
+  }
 
   // EXP gain on capture: awarded to all participants
   awardBattleExperience(true);
@@ -2337,7 +2362,7 @@ function awardBattleExperience(isCapture = false) {
     // If it participated but was switched, it also gets full share (standard pokemon logic)
     // Actually, in many games exp is split. For simplicity in this fan game, we'll keep it generous.
 
-    if ((state.luckyEggSecs || 0) > 0) pExp = Math.floor(pExp * 1.5);
+    if ((state.luckyEggSecs || 0) > 0 || p.heldItem === 'Huevo Suerte') pExp = Math.floor(pExp * 1.5);
     
     addLog(`${p.name} ganó <span style="color:#6BCB77;font-weight:bold;">${pExp} EXP</span>.`, 'log-player');
 
@@ -2456,7 +2481,7 @@ function endBattle(won) {
     // Money reward + Battle Coins
     let moneyWon = b.isGym ? b.enemy.level * 80 : b.enemy.level * 20;
     if (b.isTrainer) moneyWon *= 2; // Trainers pay more
-    if ((state.amuletCoinSecs || 0) > 0) moneyWon *= 2; // Moneda Amuleto
+    if ((state.amuletCoinSecs || 0) > 0 || b.player.heldItem === 'Moneda Amuleto') moneyWon *= 2; // Moneda Amuleto
     state.money += moneyWon;
     addLog(`¡Ganaste <span style="color:#22c55e;font-weight:bold;">₽${moneyWon.toLocaleString()}</span>!`, 'log-info');
 

@@ -504,10 +504,124 @@
         effect: (qty) => { state.inventory['Ticket Shiny'] = (state.inventory['Ticket Shiny'] || 0) + qty; }
       },
       {
-        id: 'amulet_coin', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/amulet-coin.png',
-        name: 'Moneda Amuleto', icon: 'ðŸ’°', price: 0, market: false, trainerShop: true, bcPrice: 1000, unlockLv: 1, tier: 'rare', type: 'booster',
+        id: 'amulet_coin_booster', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/amulet-coin.png',
+        name: 'Moneda Amuleto', icon: '💰', price: 5000, market: false, trainerShop: true, bcPrice: 1000, unlockLv: 1, tier: 'rare', type: 'booster',
         desc: 'Aumenta el dinero obtenido en las batallas durante 30 minutos.',
         effect: (qty) => { state.inventory['Moneda Amuleto'] = (state.inventory['Moneda Amuleto'] || 0) + qty; }
+      },
+      {
+        id: 'oran_berry', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/oran-berry.png',
+        name: 'Baya Aranja', icon: '🫐', price: 500, market: false, trainerShop: false, tier: 'common',
+        desc: 'Una baya que restaura 10 HP al Pokémon que la lleva si su salud baja.',
+        effect: (qty) => { state.inventory['Baya Aranja'] = (state.inventory['Baya Aranja'] || 0) + qty; }
+      },
+      {
+        id: 'lucky_egg_held', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucky-egg.png',
+        name: 'Huevo Suerte', icon: '🥚', price: 10000, market: false, trainerShop: true, bcPrice: 2500, unlockLv: 10, tier: 'epic', type: 'held',
+        desc: 'Equipado: Aumenta la experiencia ganada un 50%. Permanente.',
+        effect: (qty) => { state.inventory['Huevo Suerte'] = (state.inventory['Huevo Suerte'] || 0) + qty; }
+      },
+      {
+        id: 'light_ball', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/light-ball.png',
+        name: 'Bola Luminosa', icon: '⚡', price: 5000, market: false, trainerShop: true, bcPrice: 1500, unlockLv: 8, tier: 'rare', type: 'held',
+        desc: 'Equipado en Pikachu: Duplica su Ataque y At. Especial.',
+        effect: (qty) => { state.inventory['Bola Luminosa'] = (state.inventory['Bola Luminosa'] || 0) + qty; }
+      },
+      {
+        id: 'thick_club', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thick-club.png',
+        name: 'Hueso Grueso', icon: '🦴', price: 5000, market: false, trainerShop: true, bcPrice: 1500, unlockLv: 8, tier: 'rare', type: 'held',
+        desc: 'Equipado en Cubone o Marowak: Duplica su Ataque.',
+        effect: (qty) => { state.inventory['Hueso Grueso'] = (state.inventory['Hueso Grueso'] || 0) + qty; }
+      },
+      {
+        id: 'stick', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/stick.png',
+        name: 'Palo', icon: '🎋', price: 2000, market: false, trainerShop: true, bcPrice: 800, unlockLv: 5, tier: 'common', type: 'held',
+        desc: 'Equipado en Farfetch\'d: Aumenta mucho el ratio de críticos.',
+        effect: (qty) => { state.inventory['Palo'] = (state.inventory['Palo'] || 0) + qty; }
+      },
+      {
+        id: 'metal_powder', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/metal-powder.png',
+        name: 'Polvo Metálico', icon: '✨', price: 3000, market: false, trainerShop: true, bcPrice: 1000, unlockLv: 8, tier: 'rare', type: 'held',
+        desc: 'Equipado en Ditto: Aumenta su Defensa un 50%.',
+        effect: (qty) => { state.inventory['Polvo Metálico'] = (state.inventory['Polvo Metálico'] || 0) + qty; }
+      },
+      {
+        id: 'twisted_spoon', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/twisted-spoon.png',
+        name: 'Cuchara Torcida', icon: '🥄', price: 2000, market: false, trainerShop: true, bcPrice: 500, unlockLv: 4, tier: 'common', type: 'held',
+        desc: 'Equipado: Potencia ataques de tipo Psíquico (+20%).',
+        effect: (qty) => { state.inventory['Cuchara Torcida'] = (state.inventory['Cuchara Torcida'] || 0) + qty; }
+      },
+      {
+        id: 'spell_tag', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/spell-tag.png',
+        name: 'Hechizo', icon: '📜', price: 2000, market: false, trainerShop: true, bcPrice: 500, unlockLv: 4, tier: 'common', type: 'held',
+        desc: 'Equipado: Potencia ataques de tipo Fantasma (+20%).',
+        effect: (qty) => { state.inventory['Hechizo'] = (state.inventory['Hechizo'] || 0) + qty; }
+      },
+      {
+        id: 'silver_powder', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/silver-powder.png',
+        name: 'Polvo Plata', icon: '✨', price: 2000, market: false, trainerShop: false, tier: 'common', type: 'held',
+        desc: 'Equipado: Potencia ataques de tipo Bicho (+20%).',
+        effect: (qty) => { state.inventory['Polvo Plata'] = (state.inventory['Polvo Plata'] || 0) + qty; }
+      },
+      {
+        id: 'poison_barb', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poison-barb.png',
+        name: 'Flecha Venenosa', icon: '🏹', price: 2000, market: false, trainerShop: false, tier: 'common', type: 'held',
+        desc: 'Equipado: Potencia ataques de tipo Veneno (+20%).',
+        effect: (qty) => { state.inventory['Flecha Venenosa'] = (state.inventory['Flecha Venenosa'] || 0) + qty; }
+      },
+      {
+        id: 'focus_band', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/focus-band.png',
+        name: 'Banda Focus', icon: '🎗️', price: 5000, market: false, trainerShop: true, bcPrice: 1500, unlockLv: 8, tier: 'rare', type: 'held',
+        desc: 'Equipado: Puede evitar que el Pokémon sea debilitado de un golpe.',
+        effect: (qty) => { state.inventory['Banda Focus'] = (state.inventory['Banda Focus'] || 0) + qty; }
+      },
+      {
+        id: 'magnet_held', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/magnet.png',
+        name: 'Imán', icon: '🧲', price: 2000, market: false, trainerShop: false, tier: 'common', type: 'held',
+        desc: 'Equipado: Potencia ataques de tipo Eléctrico (+20%).',
+        effect: (qty) => { state.inventory['Imán'] = (state.inventory['Imán'] || 0) + qty; }
+      },
+      {
+        id: 'leftovers_held', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leftovers.png',
+        name: 'Restos', icon: '🍏', price: 8000, market: false, trainerShop: true, bcPrice: 2000, unlockLv: 10, tier: 'rare', type: 'held',
+        desc: 'Equipado: Recupera un poco de HP en cada turno.',
+        effect: (qty) => { state.inventory['Restos'] = (state.inventory['Restos'] || 0) + qty; }
+      },
+      {
+        id: 'dragon_scale', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dragon-scale.png',
+        name: 'Escama Dragón', icon: '🐉', price: 5000, market: false, trainerShop: false, tier: 'rare',
+        desc: 'Una escama dura. Algunos Pokémon evolucionan con ella.',
+        effect: (qty) => { state.inventory['Escama Dragón'] = (state.inventory['Escama Dragón'] || 0) + qty; }
+      },
+      {
+        id: 'nugget', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/nugget.png',
+        name: 'Pepita', icon: '🟡', price: 5000, market: false, trainerShop: false, tier: 'rare',
+        desc: 'Una pepita de oro puro. Se vende a buen precio.',
+        effect: (qty) => { state.inventory['Pepita'] = (state.inventory['Pepita'] || 0) + qty; }
+      },
+      {
+        id: 'pearl', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/pearl.png',
+        name: 'Perla', icon: '⚪', price: 1000, market: false, trainerShop: false, tier: 'common',
+        desc: 'Una perla pequeña. Se vende a buen precio.',
+        effect: (qty) => { state.inventory['Perla'] = (state.inventory['Perla'] || 0) + qty; }
+      },
+      {
+        id: 'big_pearl', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/big-pearl.png',
+        name: 'Perla Grande', icon: '🔘', price: 4000, market: false, trainerShop: false, tier: 'rare',
+        desc: 'Una perla grande y hermosa. Se vende a muy buen precio.',
+        effect: (qty) => { state.inventory['Perla Grande'] = (state.inventory['Perla Grande'] || 0) + qty; }
+      },
+      {
+        id: 'stardust', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/stardust.png',
+        name: 'Polvo Estelar', icon: '✨', price: 1000, market: false, trainerShop: false, tier: 'common',
+        desc: 'Arena roja muy fina. Se vende a buen precio.',
+        effect: (qty) => { state.inventory['Polvo Estelar'] = (state.inventory['Polvo Estelar'] || 0) + qty; }
+      },
+      {
+        id: 'star_piece', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/star-piece.png',
+        name: 'Trozo Estrella', icon: '⭐', price: 5000, market: false, trainerShop: false, tier: 'rare',
+        desc: 'Un trozo de gema roja. Se vende a muy buen precio.',
+        effect: (qty) => { state.inventory['Trozo Estrella'] = (state.inventory['Trozo Estrella'] || 0) + qty; }
       },      // ── TMs (GEN 3 OFFICIAL) ──
       { id: 'tm01', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-fighting.png', name: 'MT01 Puño Certero', icon: '📀', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 2500, desc: 'Enseña Puño Certero. Requiere concentración.', effect: (qty) => { state.inventory['MT01 Puño Certero'] = (state.inventory['MT01 Puño Certero'] || 0) + qty; } },
       { id: 'tm02', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-dragon.png', name: 'MT02 Garra Dragón', icon: '📀', price: 0, unlockLv: 12, tier: 'rare', market: false, trainerShop: true, bcPrice: 2500, desc: 'Enseña Garra Dragón. Poderoso ataque de tipo Dragón.', effect: (qty) => { state.inventory['MT02 Garra Dragón'] = (state.inventory['MT02 Garra Dragón'] || 0) + qty; } },
