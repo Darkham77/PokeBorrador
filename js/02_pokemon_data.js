@@ -786,8 +786,8 @@
       },
       {
         id: 'cerulean_cave', name: 'Cueva Celeste', icon: '✨', badges: 8, desc: 'Lugar de descanso de Mewtwo.',
-        wild: { morning: ['kadabra', 'rhydon', 'golduck', 'magneton', 'parasect', 'venomoth', 'dragonair', 'chansey'], day: ['kadabra', 'rhydon', 'golduck', 'magneton', 'parasect', 'venomoth', 'dragonair', 'chansey'], dusk: ['kadabra', 'magneton'], night: ['kadabra', 'magneton', 'dragonite'] },
-        rates: { morning: [15, 15, 15, 15, 15, 15, 5, 5], day: [15, 15, 15, 15, 15, 15, 5, 5], dusk: [50, 50], night: [40, 40, 20] }, lv: [50, 65],
+        wild: { morning: ['kadabra', 'rhydon', 'golduck', 'magneton', 'parasect', 'venomoth', 'dragonair'], day: ['kadabra', 'rhydon', 'golduck', 'magneton', 'parasect', 'venomoth', 'dragonair'], dusk: ['kadabra', 'magneton'], night: ['kadabra', 'magneton', 'dragonite'] },
+        rates: { morning: [15, 15, 15, 15, 15, 15, 10], day: [15, 15, 15, 15, 15, 15, 10], dusk: [50, 50], night: [40, 40, 20] }, lv: [50, 65],
         fishing: { pool: ['golduck', 'poliwhirl', 'gyarados'], rates: [50, 40, 10], lv: [30, 50] }
       }
     ];
