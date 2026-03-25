@@ -695,15 +695,26 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
     case 'heal_50':
       const healAmt = Math.floor(src.maxHp / 2);
       src.hp = Math.min(src.maxHp, src.hp + healAmt);
+      // Sincronizar con el equipo persistente si es el jugador
+      if (src.uid) {
+        const pIdx = state.team.findIndex(p => p.uid === src.uid);
+        if (pIdx !== -1) state.team[pIdx].hp = src.hp;
+      }
       addLogFn(`¡${src.name} recuperó salud! (+${healAmt} HP)`, 'log-info');
       break;
     case 'heal_weather':
       const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
       let healPct = 0.5;
       if (cycle === 'day' || cycle === 'morning') healPct = 0.66;
+      if (cycle === 'dusk') healPct = 0.33; // Añadir lógica para el atardecer
       if (cycle === 'night') healPct = 0.25;
       const hwAmt = Math.floor(src.maxHp * healPct);
       src.hp = Math.min(src.maxHp, src.hp + hwAmt);
+      // Sincronizar con el equipo persistente si es el jugador
+      if (src.uid) {
+        const pIdx = state.team.findIndex(p => p.uid === src.uid);
+        if (pIdx !== -1) state.team[pIdx].hp = src.hp;
+      }
       addLogFn(`¡${src.name} recuperó salud con el clima! (+${hwAmt} HP)`, 'log-info');
       break;
     case 'burn': case 'burn_10':
@@ -740,6 +751,15 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       } break;
     case 'rest':
       src.hp = src.maxHp; src.status = 'sleep'; src.sleepTurns = 2;
+      // Sincronizar con el equipo persistente si es el jugador
+      if (src.uid) {
+        const pIdx = state.team.findIndex(p => p.uid === src.uid);
+        if (pIdx !== -1) {
+          state.team[pIdx].hp = src.hp;
+          state.team[pIdx].status = src.status;
+          state.team[pIdx].sleepTurns = src.sleepTurns;
+        }
+      }
       addLogFn(`¡${src.name} se recuperó completamente y se quedó dormido!`, 'log-info'); break;
     case 'flinch_30': case 'flinch':
       tgt.flinched = true; break;
@@ -1401,8 +1421,11 @@ function useMove(moveIndex) {
 
       if (drainHeal) {
         b.player.hp = Math.min(b.player.maxHp, b.player.hp + drainHeal);
-        const tm = state.team.find(p => p.name === b.player.name);
-        if (tm) tm.hp = b.player.hp;
+        // Sincronizar con el equipo persistente si es el jugador
+        if (b.player.uid) {
+          const pIdx = state.team.findIndex(p => p.uid === b.player.uid);
+          if (pIdx !== -1) state.team[pIdx].hp = b.player.hp;
+        }
       }
 
       const prevEnemyHp = b.enemy.hp;
