@@ -570,7 +570,7 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
   const critMult = isCrit ? (attacker.ability === 'Francotirador' ? 3 : 2) : 1;
   if (isCrit && attacker.ability === 'Francotirador') triggeredAbility = 'Francotirador';
 
-  const finalDmg = Math.max(1, Math.floor(base * stab * finalAbilityMult * eff * random * itemMult * critMult));
+  const finalDmg = eff > 0 ? Math.max(1, Math.floor(base * stab * finalAbilityMult * eff * random * itemMult * critMult)) : 0;
   return { dmg: finalDmg, eff, stab, isCrit, triggeredAbility, defensiveAbility };
 }
 
@@ -1379,12 +1379,12 @@ function useMove(moveIndex) {
 
       // Drain moves
       let drainHeal = 0;
-      if (md.drain) {
+      if (md.drain && finalDmg > 0) {
         drainHeal = Math.max(1, Math.floor(finalDmg / 2));
       }
 
       // Shell Bell (Cascabel Concha)
-      if (b.player.heldItem === 'Cascabel Concha') {
+      if (b.player.heldItem === 'Cascabel Concha' && finalDmg > 0) {
         drainHeal += Math.max(1, Math.floor(finalDmg / 8));
       }
 
@@ -1428,7 +1428,7 @@ function useMove(moveIndex) {
       if (md.recoil) {
         if (b.player.ability === 'Cabeza Roca') {
           addLog(`¡${b.player.name} no recibió daño de retroceso por su Cabeza Roca!`, 'log-info');
-        } else {
+        } else if (finalDmg > 0) {
           const recoilDmg = Math.max(1, Math.floor(finalDmg / md.recoil));
           b.player.hp = Math.max(0, b.player.hp - recoilDmg);
           const tm2 = state.team.find(p => p.name === b.player.name);
@@ -1847,8 +1847,8 @@ function enemyTurn(opts = {}) {
     }
 
     let drainHeal = 0;
-    if (md.drain) drainHeal = Math.max(1, Math.floor(finalDmg / 2));
-    if (b.enemy.heldItem === 'Cascabel Concha') drainHeal += Math.max(1, Math.floor(finalDmg / 8));
+    if (md.drain && finalDmg > 0) drainHeal = Math.max(1, Math.floor(finalDmg / 2));
+    if (b.enemy.heldItem === 'Cascabel Concha' && finalDmg > 0) drainHeal += Math.max(1, Math.floor(finalDmg / 8));
     if (drainHeal) b.enemy.hp = Math.min(b.enemy.maxHp, b.enemy.hp + drainHeal);
 
     const prevPlayerHp = b.player.hp;
@@ -1870,7 +1870,7 @@ function enemyTurn(opts = {}) {
     }
 
     const effMsg = getTypeEffectivenessMsg(eff);
-    if (effMsg) addLog(effMsg, eff >= 2 ? 'log-enemy' : 'log-info');
+    if (effMsg) addLog(effMsg, eff === 0 ? 'log-player' : (eff >= 2 ? 'log-enemy' : 'log-info'));
 
     if (md.effect) applyMoveEffect(md.effect, b.enemy, b.player, b.enemyStages, b.playerStages, addLog);
 
@@ -1878,7 +1878,7 @@ function enemyTurn(opts = {}) {
     if (md.recoil) {
       if (b.enemy.ability === 'Cabeza Roca') {
         addLog(`¡${b.enemy.name} no recibió daño de retroceso por su Cabeza Roca!`, 'log-info');
-      } else {
+      } else if (finalDmg > 0) {
         const recoilDmg = Math.max(1, Math.floor(finalDmg / md.recoil));
         b.enemy.hp = Math.max(0, b.enemy.hp - recoilDmg);
         addLog(`¡${b.enemy.name} recibió ${recoilDmg} de daño de retroceso!`, 'log-player');
