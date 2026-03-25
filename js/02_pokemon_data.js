@@ -62,15 +62,15 @@
         learnset: [{ lv: 1, name: 'Picotazo Veneno', pp: 35 }, { lv: 12, name: 'Furia', pp: 20 }, { lv: 16, name: 'Pin misil', pp: 20 }, { lv: 20, name: 'Doble Atake', pp: 20 }, { lv: 30, name: 'Agilidad', pp: 30 }]
       },
       pidgey: {
-        name: 'Pidgey', emoji: '🐦', type: 'flying', hp: 40, atk: 45, def: 40, spa: 35, spd: 35, spe: 56,
+        name: 'Pidgey', emoji: '🐦', type: 'normal', hp: 40, atk: 45, def: 40, spa: 35, spd: 35, spe: 56,
         learnset: [{ lv: 1, name: 'Tornado', pp: 35 }, { lv: 5, name: 'Ataque Arena', pp: 15 }, { lv: 12, name: 'Ataque Rápido', pp: 30 }, { lv: 19, name: 'Remolino', pp: 20 }, { lv: 28, name: 'Ala de Acero', pp: 25 }, { lv: 36, name: 'Agilidad', pp: 30 }, { lv: 44, name: 'Pájaro Osado', pp: 15 }]
       },
       pidgeotto: {
-        name: 'Pidgeotto', emoji: '🐦', type: 'flying', hp: 63, atk: 60, def: 55, spa: 50, spd: 50, spe: 71,
+        name: 'Pidgeotto', emoji: '🐦', type: 'normal', hp: 63, atk: 60, def: 55, spa: 50, spd: 50, spe: 71,
         learnset: [{ lv: 1, name: 'Tornado', pp: 35 }, { lv: 5, name: 'Ataque Arena', pp: 15 }, { lv: 12, name: 'Ataque Rápido', pp: 30 }, { lv: 21, name: 'Remolino', pp: 20 }, { lv: 31, name: 'Ala de Acero', pp: 25 }, { lv: 40, name: 'Agilidad', pp: 30 }, { lv: 49, name: 'Pájaro Osado', pp: 15 }]
       },
       pidgeot: {
-        name: 'Pidgeot', emoji: '🐦', type: 'flying', hp: 83, atk: 80, def: 75, spa: 70, spd: 70, spe: 91,
+        name: 'Pidgeot', emoji: '🐦', type: 'normal', hp: 83, atk: 80, def: 75, spa: 70, spd: 70, spe: 91,
         learnset: [{ lv: 1, name: 'Tornado', pp: 35 }, { lv: 5, name: 'Ataque Arena', pp: 15 }, { lv: 12, name: 'Ataque Rápido', pp: 30 }, { lv: 21, name: 'Remolino', pp: 20 }, { lv: 31, name: 'Ala de Acero', pp: 25 }, { lv: 44, name: 'Agilidad', pp: 30 }, { lv: 54, name: 'Pájaro Osado', pp: 15 }]
       },
       rattata: {
@@ -82,11 +82,11 @@
         learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Látigo', pp: 30 }, { lv: 7, name: 'Ataque Rápido', pp: 30 }, { lv: 14, name: 'Hiper Colmillo', pp: 15 }, { lv: 27, name: 'Foco Energía', pp: 30 }, { lv: 41, name: 'Súper Colmillo', pp: 10 }]
       },
       spearow: {
-        name: 'Spearow', emoji: '🐦', type: 'flying', hp: 40, atk: 60, def: 30, spa: 31, spd: 31, spe: 70,
+        name: 'Spearow', emoji: '🐦', type: 'normal', hp: 40, atk: 60, def: 30, spa: 31, spd: 31, spe: 70,
         learnset: [{ lv: 1, name: 'Picoteo', pp: 20 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 9, name: 'Furia', pp: 20 }, { lv: 15, name: 'Foco Energía', pp: 30 }, { lv: 22, name: 'Furia', pp: 20 }, { lv: 29, name: 'Pico Taladro', pp: 20 }, { lv: 36, name: 'Agilidad', pp: 30 }]
       },
       fearow: {
-        name: 'Fearow', emoji: '🐦', type: 'flying', hp: 65, atk: 90, def: 65, spa: 61, spd: 61, spe: 100,
+        name: 'Fearow', emoji: '🐦', type: 'normal', hp: 65, atk: 90, def: 65, spa: 61, spd: 61, spe: 100,
         learnset: [{ lv: 1, name: 'Picoteo', pp: 20 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 9, name: 'Furia', pp: 20 }, { lv: 15, name: 'Foco Energía', pp: 30 }, { lv: 25, name: 'Furia', pp: 20 }, { lv: 34, name: 'Pico Taladro', pp: 20 }, { lv: 43, name: 'Agilidad', pp: 30 }]
       },
       ekans: {
@@ -546,11 +546,11 @@
         learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 18, name: 'Triataque', pp: 10 }, { lv: 23, name: 'Rayo', pp: 15 }, { lv: 29, name: 'Recuperación', pp: 10 }]
       },
       omanyte: {
-        name: 'Omanyte', emoji: '🐚', type: 'water', hp: 35, atk: 40, def: 100, spa: 90, spd: 55, spe: 35,
+        name: 'Omanyte', emoji: '🐚', type: 'rock', hp: 35, atk: 40, def: 100, spa: 90, spd: 55, spe: 35,
         learnset: [{ lv: 1, name: 'Pistola Agua', pp: 25 }, { lv: 1, name: 'Refugio', pp: 40 }, { lv: 39, name: 'Pámpano', pp: 10 }, { lv: 46, name: 'Hidrobomba', pp: 5 }]
       },
       omastar: {
-        name: 'Omastar', emoji: '🐚', type: 'water', hp: 70, atk: 60, def: 125, spa: 115, spd: 70, spe: 55,
+        name: 'Omastar', emoji: '🐚', type: 'rock', hp: 70, atk: 60, def: 125, spa: 115, spd: 70, spe: 55,
         learnset: [{ lv: 1, name: 'Pistola Agua', pp: 25 }, { lv: 39, name: 'Pámpano', pp: 10 }, { lv: 53, name: 'Hidrobomba', pp: 5 }]
       },
       kabuto: {
