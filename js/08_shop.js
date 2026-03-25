@@ -804,10 +804,18 @@ function _marketSetQty(itemId, raw) {
         </div>
         <div class="market-item-price">₽${item.price.toLocaleString()}</div>
         <div style="font-size:11px;color:var(--yellow);font-weight:900;margin-top:6px;">Total: ₽<span id="market-total-${item.id}">${total.toLocaleString()}</span></div>
-        <button id="market-buy-${item.id}" class="market-buy-btn" onclick="buyItem('${item.id}')"
-          ${locked || !canAfford ? 'disabled' : ''}>
-          ${locked ? '🔒 BLOQUEADO' : !canAfford ? 'SIN FONDOS' : ('COMPRAR x' + qty)}
-        </button>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button id="market-buy-${item.id}" class="market-buy-btn" onclick="buyItem('${item.id}')"
+            style="flex:1;"
+            ${locked || !canAfford ? 'disabled' : ''}>
+            ${locked ? '🔒 BLOQUEADO' : !canAfford ? 'SIN FONDOS' : ('COMPRAR x' + qty)}
+          </button>
+          <button id="market-sell-${item.id}" class="market-sell-btn" onclick="sellItem('${item.id}')"
+            style="flex:1;background:linear-gradient(135deg, #4caf50, #388e3c);color:white;border:none;border-radius:12px;padding:10px;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;box-shadow:0 4px 12px rgba(76,175,80,0.3);"
+            ${locked || (state.inventory[item.name] || 0) < qty ? 'disabled' : ''}>
+            VENDER x${qty}
+          </button>
+        </div>
       </div>`;
       }).join('');
     }
@@ -828,6 +836,38 @@ function _marketSetQty(itemId, raw) {
       updateHud();
       renderMarket();
       notify(`¡Compraste x${qty} ${item.name}!`, item.icon);
+    }
+
+    function sellItem(itemId) {
+      const item = SHOP_ITEMS.find(i => i.id === itemId);
+      if (!item) return;
+      
+      // Solo se pueden vender items que estén en el mercado (no en la tienda de entrenadores)
+      if (item.market === false) {
+        notify('Este objeto no se puede vender aquí.', '❌');
+        return;
+      }
+
+      const qty = _marketGetQty(itemId);
+      const currentInvQty = state.inventory[item.name] || 0;
+
+      if (currentInvQty < qty) {
+        notify(`No tenés suficientes ${item.name} para vender.`, '❌');
+        return;
+      }
+
+      const sellPrice = Math.floor(item.price * 0.4);
+      const totalGain = sellPrice * qty;
+
+      state.money += totalGain;
+      state.inventory[item.name] -= qty;
+      
+      // Limpiar si llega a 0
+      if (state.inventory[item.name] <= 0) delete state.inventory[item.name];
+
+      updateHud();
+      renderMarket();
+      notify(`¡Vendiste x${qty} ${item.name} por ₽${totalGain.toLocaleString()}!`, '💰');
     }
 
     // Use item in battle
