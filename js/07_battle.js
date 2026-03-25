@@ -477,7 +477,11 @@ function renderMoveButtons() {
     }
 
     return `<button class="move-btn" onclick="useMove(${i})" ${disabled ? 'disabled' : ''}
-      style="--move-color: ${col};">
+      style="--move-color: ${col};"
+      onmouseenter="showMoveTooltip(event, '${m.name.replace(/'/g, "\\'")}')"
+      onmouseleave="hideMoveTooltip()"
+      ontouchstart="showMoveTooltip(event, '${m.name.replace(/'/g, "\\'")}')"
+      ontouchend="hideMoveTooltip()">
       <span class="move-name">${m.name}</span>
       <div class="move-pp">
         <span class="move-type-badge">${md.type?.toUpperCase()}</span>
@@ -2689,3 +2693,101 @@ function addEgg(pokemonId, origin = 'encounter', extraData = {}) {
   return true;
 }
 
+
+// ── Move Tooltip Functions ──────────────────────────
+let _tooltipTimer = null;
+
+function showMoveTooltip(e, moveName) {
+  const md = MOVE_DATA[moveName];
+  if (!md) return;
+
+  let tooltip = document.getElementById('move-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'move-tooltip';
+    tooltip.className = 'move-tooltip';
+    document.body.appendChild(tooltip);
+  }
+
+  const TYPE_COLORS = {
+    normal: '#aaa', fire: '#FF6B35', water: '#3B8BFF', grass: '#6BCB77',
+    electric: '#FFD93D', ice: '#7DF9FF', fighting: '#FF3B3B', poison: '#C77DFF',
+    ground: '#c8a060', flying: '#89CFF0', psychic: '#FF6EFF', bug: '#8BC34A',
+    rock: '#c8a060', ghost: '#7B2FBE', dragon: '#5C16C5', dark: '#555', steel: '#9E9E9E'
+  };
+  const col = TYPE_COLORS[md.type] || '#aaa';
+  const catIcon = { physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' }[md.cat] || '';
+
+  tooltip.style.setProperty('--move-color', col);
+  tooltip.innerHTML = `
+    <div class="move-tooltip-header">
+      <span class="move-tooltip-name">${moveName}</span>
+      <span class="move-tooltip-type">${md.type.toUpperCase()}</span>
+    </div>
+    <div class="move-tooltip-stats">
+      <div class="move-tooltip-stat">
+        <span class="move-tooltip-stat-label">Potencia</span>
+        <span class="move-tooltip-stat-value">${md.power || '—'}</span>
+      </div>
+      <div class="move-tooltip-stat">
+        <span class="move-tooltip-stat-label">Precisión</span>
+        <span class="move-tooltip-stat-value">${md.acc || '—'}%</span>
+      </div>
+      <div class="move-tooltip-stat">
+        <span class="move-tooltip-stat-label">Categoría</span>
+        <span class="move-tooltip-stat-value">${catIcon}</span>
+      </div>
+      <div class="move-tooltip-stat">
+        <span class="move-tooltip-stat-label">PP</span>
+        <span class="move-tooltip-stat-value">${md.pp}</span>
+      </div>
+    </div>
+    <div class="move-tooltip-desc">
+      ${getMoveDescription(moveName, md)}
+    </div>
+  `;
+
+  // Position
+  const rect = e.target.getBoundingClientRect();
+  const x = rect.left + rect.width / 2 - 110; // 110 is half of width 220
+  const y = rect.top - tooltip.offsetHeight - 10;
+  
+  tooltip.style.left = Math.max(10, Math.min(window.innerWidth - 230, x)) + 'px';
+  tooltip.style.top = Math.max(10, y) + 'px';
+  tooltip.style.display = 'block';
+
+  if (e.type === 'touchstart') {
+    if (_tooltipTimer) clearTimeout(_tooltipTimer);
+    _tooltipTimer = setTimeout(hideMoveTooltip, 3000);
+  }
+}
+
+function hideMoveTooltip() {
+  const tooltip = document.getElementById('move-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
+  if (_tooltipTimer) clearTimeout(_tooltipTimer);
+}
+
+function getMoveDescription(name, md) {
+  if (md.ohko) return "Fulmina al enemigo de un solo golpe si acierta.";
+  if (md.halfHP) return "Reduce a la mitad los PS actuales del oponente.";
+  if (md.recoil) return "El usuario recibe daño por retroceso al golpear.";
+  if (md.drain) return "Restaura PS al usuario según el daño causado.";
+  if (md.selfKO) return "El usuario se debilita para causar un daño masivo.";
+  if (md.priority > 0) return "Ataque rápido que siempre golpea primero.";
+  
+  const effects = {
+    'burn_10': "Puede quemar al objetivo (10%).",
+    'paralyze_30': "Puede paralizar al objetivo (30%).",
+    'poison_30': "Puede envenenar al objetivo (30%).",
+    'flinch_30': "Puede hacer retroceder al objetivo (30%).",
+    'confuse_30': "Puede confundir al objetivo (30%).",
+    'stat_down_enemy_atk': "Reduce el Ataque del oponente.",
+    'stat_down_enemy_def': "Reduce la Defensa del oponente.",
+    'stat_up_self_atk': "Aumenta el Ataque del usuario.",
+    'stat_up_self_def': "Aumenta la Defensa del usuario.",
+    'stat_up_self_spe_2': "Aumenta mucho la Velocidad del usuario."
+  };
+
+  return effects[md.effect] || "Causa daño al oponente sin efectos secundarios adicionales.";
+}

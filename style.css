@@ -4181,3 +4181,74 @@
       }
     }
 
+
+    /* MOVE TOOLTIP */
+    .move-tooltip {
+      position: fixed;
+      z-index: 10000;
+      background: rgba(18, 18, 18, 0.95);
+      border: 2px solid var(--move-color, var(--purple));
+      border-radius: 12px;
+      padding: 12px;
+      width: 220px;
+      pointer-events: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      font-family: 'Nunito', sans-serif;
+      color: white;
+      display: none;
+      animation: appear 0.2s ease-out;
+    }
+
+    .move-tooltip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 6px;
+    }
+
+    .move-tooltip-name {
+      font-weight: 900;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .move-tooltip-type {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--move-color);
+      font-weight: 800;
+    }
+
+    .move-tooltip-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .move-tooltip-stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .move-tooltip-stat-label {
+      font-size: 9px;
+      color: var(--gray);
+      text-transform: uppercase;
+    }
+
+    .move-tooltip-stat-value {
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .move-tooltip-desc {
+      font-size: 11px;
+      color: #ddd;
+      line-height: 1.4;
+      font-style: italic;
+    }
