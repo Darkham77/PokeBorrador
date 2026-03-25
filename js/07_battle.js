@@ -1346,6 +1346,7 @@ function useMove(moveIndex) {
     _battleLock = true;
     setBtns(false);
 
+    // Siempre usar MOVE_DATA para obtener el efecto y tipo actualizados, ignorando datos persistidos viejos
     const md = MOVE_DATA[move.name] || { power: move.power || 40, type: 'normal', cat: 'physical', acc: 100 };
 
     // Accuracy check

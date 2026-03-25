@@ -24,11 +24,43 @@
       if (count > 0) {
         state.inventory['Huevo Suerte Pequeño'] = (state.inventory['Huevo Suerte Pequeño'] || 0) + count;
         console.log(`[MIGRATION] Convertidos ${count} Huevo Suerte a Huevo Suerte Pequeño.`);
-        // Note: No notify here to avoid spamming on start, but the items are safe.
       }
     }
-    // Call it once on load (since this script is loaded after 04_state.js)
-    setTimeout(migrateLuckyEgg, 500);
+
+    /**
+     * Migración Global de Movimientos:
+     * Asegura que los Pokémon existentes en el equipo y la caja usen los datos
+     * actualizados de MOVE_DATA (especialmente efectos de curación y tipos).
+     */
+    function migrateMoveData() {
+      if (!state.team || typeof MOVE_DATA === 'undefined') return;
+      
+      const migrate = (p) => {
+        if (!p.moves) return;
+        p.moves.forEach(m => {
+          const md = MOVE_DATA[m.name];
+          if (md) {
+            // Actualizar PP máximo si ha cambiado en la base de datos
+            if (m.maxPP !== md.pp) {
+              m.maxPP = md.pp;
+              m.pp = Math.min(m.pp, m.maxPP);
+            }
+            // Los efectos y tipos se toman de MOVE_DATA en tiempo de ejecución,
+            // pero asegurar que el nombre coincida exactamente con la base de datos.
+          }
+        });
+      };
+
+      state.team.forEach(migrate);
+      if (state.box) state.box.forEach(migrate);
+      console.log("[MIGRATION] Datos de movimientos normalizados para todo el equipo y caja.");
+    }
+
+    // Ejecutar migraciones al cargar
+    setTimeout(() => {
+      migrateLuckyEgg();
+      migrateMoveData();
+    }, 500);
 
     // ===== NOTIFICATION =====
     function notify(msg, icon = '✨') {
