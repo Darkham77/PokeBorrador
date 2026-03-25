@@ -643,8 +643,15 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
   if (!effect) return;
   const roll = Math.random() * 100;
 
-  const chance = parseInt(effect.match(/\d+$/)?.[0] || '100');
-  const effectBase = effect.replace(/_\d+$/, '');
+  let chance = 100;
+  let effectBase = effect;
+
+  // Solo separar probabilidad si el efecto termina en _10, _15, _20, _30, _40 (probabilidades típicas de efectos secundarios)
+  // Pero NO si es _2 (niveles de stat) o _50 (curación, que debe ser 100% de probabilidad de activarse)
+  if (/_(10|15|20|30|40)$/.test(effect) && !effect.startsWith('heal_')) {
+    chance = parseInt(effect.match(/\d+$/)?.[0] || '100');
+    effectBase = effect.replace(/_\d+$/, '');
+  }
 
   if (roll > chance && chance < 100) return; // didn't proc
   
@@ -657,12 +664,37 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
   }
   
   // Clear Body (Cuerpo Puro): Protects against stat drops from opponent
-  if (tgt.ability === 'Cuerpo Puro' && effectBase.startsWith('stat_down_enemy') && src !== tgt) {
+  const isStatDownEnemy = effect.startsWith('stat_down_enemy') || effectBase.startsWith('stat_down_enemy');
+  if (tgt.ability === 'Cuerpo Puro' && isStatDownEnemy && src !== tgt) {
     addLogFn(`¡El Cuerpo Puro de ${tgt.name} evitó las reducciones de estadísticas!`, 'log-info');
     return;
   }
 
-  switch (effectBase) {
+  // Intentar primero con el efecto completo, si no coincide, usar el base
+  // (Esto permite que case 'heal_50' funcione y también case 'burn')
+  let finalEffect = effect;
+  // Si el efecto base es diferente y no hay un case para el efecto completo, podríamos usar el base.
+  // Pero en JS no podemos "probar" un switch fácilmente.
+  // Sin embargo, viendo el código, la mayoría de los cases ya contemplan ambos o usan el base.
+  
+  // Para asegurar compatibilidad, usaremos una lógica que favorezca el match más específico
+  switch (effect) {
+    case 'heal_50':
+    case 'stat_up_self_atk_2':
+    case 'stat_up_self_def_2':
+    case 'stat_up_self_spa_2':
+    case 'stat_up_self_spe_2':
+    case 'stat_up_self_eva_2':
+    case 'stat_down_enemy_def_2':
+    case 'stat_down_enemy_atk_2':
+    case 'stat_down_self_spa_2':
+      finalEffect = effect;
+      break;
+    default:
+      finalEffect = effectBase;
+  }
+
+  switch (finalEffect) {
     case 'stat_down_enemy_atk': 
       if (tgt.ability === 'Corte Fuerte') {
         addLogFn(`¡El Corte Fuerte de ${tgt.name} evitó que bajara su ataque!`, 'log-info');
