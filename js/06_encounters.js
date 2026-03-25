@@ -70,22 +70,26 @@
       // PC & Stats Bar (Balanced Version)
       const cycleLabel = ({ morning: 'AMANECER', day: 'DÍA', dusk: 'ATARDECER', night: 'NOCHE' }[cycle] || cycle.toUpperCase());
       const cycleIcon = ({ morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }[cycle] || '⏰');
-      // Rare spawns (exclusive to current cycle vs. day, <10%)
+      // Rare spawns (exclusive to current cycle, <10%)
       const rareByCycleMinRate = {}; // id -> minRate in this cycle across all maps
       FIRE_RED_MAPS.forEach(loc => {
         const pool = loc.wild?.[cycle] || null;
         const rates = loc.rates?.[cycle] || null;
         if (!pool || !rates) return;
-        const dayPool = loc.wild?.day || null;
 
         pool.forEach((id, idx) => {
           const rate = rates[idx] ?? 100;
           if (rate >= 10) return;
 
-          // Exclusivo del ciclo actual (no aparece en día)
-          if (cycle !== 'day' && dayPool && dayPool.includes(id)) return;
+          // Verificar si el Pokémon sale en CUALQUIER otro horario en este mapa
+          const otherCycles = Object.keys(loc.wild || {}).filter(c => c !== cycle);
+          const isExclusiveToThisCycleInThisMap = !otherCycles.some(c => loc.wild[c].includes(id));
 
-          if (rareByCycleMinRate[id] === undefined || rate < rareByCycleMinRate[id]) rareByCycleMinRate[id] = rate;
+          if (isExclusiveToThisCycleInThisMap) {
+            if (rareByCycleMinRate[id] === undefined || rate < rareByCycleMinRate[id]) {
+              rareByCycleMinRate[id] = rate;
+            }
+          }
         });
       });
       const rareCycleTop = Object.entries(rareByCycleMinRate)
@@ -151,7 +155,7 @@
           <div class="pc-right" style="flex: 1; display: flex; min-width: 0;">
             <div class="pc-banner-grid">
               <div class="pc-banner pc-banner-static">
-                <div class="pc-banner-icon">🌙</div>
+                <div class="pc-banner-icon">${cycleIcon}</div>
                 <div class="pc-banner-content">
                   <div class="pc-banner-title">Raros por horario</div>
                   <div class="pc-banner-spawns pc-banner-spawns-compact">${rareCycleSpritesHtml}</div>
