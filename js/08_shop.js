@@ -138,10 +138,9 @@
       3: ['Súper Ball', 'Super Poción', 'Superrepelente'],
       5: ['Red Ball', 'Ocaso Ball', 'Cura Total', 'Compartir EXP', 'MT27 Retribución', 'Ítems de Poder'],
       8: ['Hiper Poción', 'Ultra Ball', 'Revivir', 'Lente Zoom', 'Subida PP'],
-      10: ['Turno Ball', 'Restos', 'Cascabel Concha'],
+      10: ['Turno Ball', 'Restos', 'Cascabel Concha', 'Piedras de Evolución'],
       12: ['Poción Máxima', 'Huevo Suerte Pequeño', 'Cinta Elegida', 'MT14 Ventisca'],
       15: ['Revivir Máximo', 'Elixir Máximo', 'Banda Focus'],
-      18: ['Piedras de Evolución'],
       22: ['Máximo Repelente', 'Caramelo Raro'],
       25: ['Master Ball']
     };
@@ -355,35 +354,35 @@
       // ── PIEDRAS DE EVOLUCIÓN ───────────────────────────────────────────────────
       {
         id: 'piedra_fuego', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png',
-        name: 'Piedra Fuego', icon: '🔥', price: 3000, unlockLv: 18, tier: 'rare',
+        name: 'Piedra Fuego', icon: '🔥', price: 3000, unlockLv: 10, tier: 'rare',
         desc: 'Hace evolucionar a Vulpix, Growlithe, Eevee y otros Pokémon de Fuego.',
         type: 'stone', stoneType: 'fire',
         effect: (qty) => { state.inventory['Piedra Fuego'] = (state.inventory['Piedra Fuego'] || 0) + qty; }
       },
       {
         id: 'piedra_agua', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/water-stone.png',
-        name: 'Piedra Agua', icon: '💧', price: 3000, unlockLv: 18, tier: 'rare',
+        name: 'Piedra Agua', icon: '💧', price: 3000, unlockLv: 10, tier: 'rare',
         desc: 'Hace evolucionar a Poliwhirl, Shellder, Staryu y Eevee.',
         type: 'stone', stoneType: 'water',
         effect: (qty) => { state.inventory['Piedra Agua'] = (state.inventory['Piedra Agua'] || 0) + qty; }
       },
       {
         id: 'piedra_trueno', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-stone.png',
-        name: 'Piedra Trueno', icon: '⚡', price: 3000, unlockLv: 18, tier: 'rare',
+        name: 'Piedra Trueno', icon: '⚡', price: 3000, unlockLv: 10, tier: 'rare',
         desc: 'Hace evolucionar a Pikachu and Eevee.',
         type: 'stone', stoneType: 'thunder',
         effect: (qty) => { state.inventory['Piedra Trueno'] = (state.inventory['Piedra Trueno'] || 0) + qty; }
       },
       {
         id: 'piedra_hoja', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leaf-stone.png',
-        name: 'Piedra Hoja', icon: '🌿', price: 3000, unlockLv: 18, tier: 'rare',
+        name: 'Piedra Hoja', icon: '🌿', price: 3000, unlockLv: 10, tier: 'rare',
         desc: 'Hace evolucionar a Gloom, Weepinbell, Exeggcute y Eevee.',
         type: 'stone', stoneType: 'leaf',
         effect: (qty) => { state.inventory['Piedra Hoja'] = (state.inventory['Piedra Hoja'] || 0) + qty; }
       },
       {
         id: 'piedra_luna', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/moon-stone.png',
-        name: 'Piedra Lunar', icon: '🌙', price: 3000, unlockLv: 18, tier: 'epic',
+        name: 'Piedra Lunar', icon: '🌙', price: 3000, unlockLv: 10, tier: 'epic',
         desc: 'Hace evolucionar a Nidorina, Nidorino, Clefairy y Jigglypuff.',
         type: 'stone', stoneType: 'moon',
         effect: (qty) => { state.inventory['Piedra Lunar'] = (state.inventory['Piedra Lunar'] || 0) + qty; }
