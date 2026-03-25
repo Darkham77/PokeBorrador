@@ -335,6 +335,7 @@
         amuletCoinSecs: state.amuletCoinSecs || 0,
         luckyEggSecs: state.luckyEggSecs || 0,
         daycare_berry_egg_time: state.daycare_berry_egg_time || 0,
+        boxCount: state.boxCount || 4,
         chats: state.chats || {}
       };
     }

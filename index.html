@@ -143,7 +143,7 @@
           <button class="hud-nav-btn" data-tab="gyms"
             onclick="showTab('gyms',this)"><span>🏆</span><span>Gimnasios</span></button>
           <button class="hud-nav-btn" data-tab="box"
-            onclick="showTab('box',this)"><span>📦</span><span>Caja</span></button>
+            onclick="showTab('box',this)"><span>📦</span><span>PC</span></button>
           <button class="hud-nav-btn" data-tab="bag"
             onclick="showTab('bag',this)"><span>🎒</span><span>Mochila</span></button>
           <button class="hud-nav-btn" data-tab="market"
@@ -254,7 +254,7 @@
             border-radius:8px;padding:0 4px;line-height:16px;text-align:center;
             font-family:'Press Start 2P',monospace;z-index:2;"></span>
         </button>
-        <button class="nav-btn" data-tab="box" onclick="showTab('box',this)"><span>📦</span><span>Caja</span></button>
+        <button class="nav-btn" data-tab="box" onclick="showTab('box',this)"><span>📦</span><span>PC</span></button>
         <button class="nav-btn" data-tab="bag"
           onclick="showTab('bag',this)"><span>🎒</span><span>Mochila</span></button>
         <button class="nav-btn" data-tab="daycare" onclick="showTab('daycare',this)">
@@ -441,7 +441,7 @@
   <div id="tab-box" class="tab-content" style="display:none">
     <div class="team-section">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
-        <div class="section-title" style="margin:0;">📦 Caja Pokémon</div>
+        <div class="section-title" style="margin:0;">📦 PC de Almacenamiento</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <button id="btn-box-release-mode" onclick="toggleBoxReleaseMode()" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
                  border-radius:10px;border:1px solid rgba(255,100,100,0.4);
@@ -461,6 +461,12 @@
         </div>
       </div>
       <div id="box-count-badge" style="font-size:11px;color:var(--gray);margin-bottom:8px;"></div>
+      
+      <!-- Box Tabs Container -->
+      <div id="box-tabs-container" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; align-items:center;">
+        <!-- Tabs will be injected here -->
+      </div>
+
       <div id="box-release-hint" style="display:none;font-size:11px;color:var(--red);margin-bottom:12px;
          background:rgba(255,59,59,0.08);border:1px solid rgba(255,59,59,0.2);
          border-radius:10px;padding:10px 14px;">

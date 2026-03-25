@@ -34,6 +34,7 @@
     let _boxReleaseSelected = new Set();
     let _bagSellMode = false;
     let _bagSellSelected = {}; // { itemName: quantityToSell }
+    let _currentBoxIndex = 0; // Caja actual visualizada (0 a state.boxCount-1)
 
     function toggleBoxFilters() {
       _boxFiltersOpen = !_boxFiltersOpen;
@@ -221,11 +222,11 @@
             <button onclick="doBoxRelease()" style="font-family:'Press Start 2P',monospace;font-size:8px;
               padding:12px 20px;border:none;border-radius:12px;cursor:pointer;
               background:linear-gradient(135deg,var(--red),#c0392b);color:#fff;">
-              ¡SÍ, SOLTAR!
+              ✓ SOLTAR
             </button>
             <button onclick="document.getElementById('box-release-confirm-overlay').remove()" style="font-family:'Press Start 2P',monospace;font-size:8px;
-              padding:12px 20px;border:1px solid rgba(255,255,255,0.1);border-radius:12px;cursor:pointer;
-              background:transparent;color:var(--gray);">
+              padding:12px 20px;border:none;border-radius:12px;cursor:pointer;
+              background:rgba(255,255,255,0.1);color:#fff;">
               CANCELAR
             </button>
           </div>
@@ -235,29 +236,91 @@
 
     function doBoxRelease() {
       document.getElementById('box-release-confirm-overlay')?.remove();
-
       const indices = [..._boxReleaseSelected].sort((a, b) => b - a);
-      const releasedNames = indices.map(i => state.box[i].name);
+      const releasedNames = [];
+      indices.forEach(i => {
+        releasedNames.push(state.box[i].name);
+        state.box.splice(i, 1);
+      });
 
-      indices.forEach(i => state.box.splice(i, 1));
-
-      _boxReleaseSelected.clear();
-      toggleBoxReleaseMode(); // This will also handle UI reset and renderBox()
-
-      updateHud();
+      _boxReleaseMode = false;
+      toggleBoxReleaseMode();
+      renderBox();
       scheduleSave();
       notify(`¡${releasedNames.join(', ')} ${releasedNames.length > 1 ? 'fueron soltados' : 'fue soltado'}!`, '🌿');
     }
 
+    function switchBox(index) {
+      _currentBoxIndex = index;
+      renderBox();
+    }
+
+    function getBoxBuyCost() {
+      const count = state.boxCount || 4;
+      if (count < 4) return 500000;
+      if (count === 4) return 500000;
+      if (count === 5) return 1000000;
+      // Duplicar a partir de ahí: 6->2M, 7->4M, 8->8M, 9->16M
+      return 1000000 * Math.pow(2, count - 5);
+    }
+
+    function buyNewBox() {
+      const cost = getBoxBuyCost();
+      const maxBoxes = 10;
+      if (state.boxCount >= maxBoxes) {
+        notify('Ya alcanzaste el máximo de 10 cajas.', '⚠️');
+        return;
+      }
+      if (state.money < cost) {
+        notify(`No tenés suficiente dinero. Necesitás ₽${cost.toLocaleString()}.`, '❌');
+        return;
+      }
+
+      if (!confirm(`¿Comprar una nueva caja por ₽${cost.toLocaleString()}?`)) return;
+
+      state.money -= cost;
+      state.boxCount = (state.boxCount || 4) + 1;
+      updateHud();
+      renderBox();
+      scheduleSave();
+      notify(`¡Compraste la Caja ${state.boxCount}!`, '💰');
+    }
+
     function renderBox() {
       if (!state.box) state.box = [];
+      if (!state.boxCount) state.boxCount = 4;
+      
       const grid = document.getElementById('box-grid');
       const badge = document.getElementById('box-count-badge');
       const warning = document.getElementById('box-full-warning');
       const resultsInfo = document.getElementById('box-results-info');
+      const tabsContainer = document.getElementById('box-tabs-container');
 
-      badge.textContent = `${state.box.length}/200 Pokémon`;
-      warning.style.display = state.box.length >= 200 ? 'block' : 'none';
+      const maxCapacity = state.boxCount * 50;
+      badge.textContent = `${state.box.length}/${maxCapacity} Pokémon`;
+      warning.style.display = state.box.length >= maxCapacity ? 'block' : 'none';
+
+      // Render Tabs
+      if (tabsContainer) {
+        let tabsHtml = '';
+        for (let i = 0; i < state.boxCount; i++) {
+          const isActive = _currentBoxIndex === i;
+          tabsHtml += `<button onclick="switchBox(${i})" style="padding:8px 12px; border-radius:10px; border:1px solid ${isActive ? 'var(--purple)' : 'rgba(255,255,255,0.1)'}; 
+            background:${isActive ? 'rgba(199,125,255,0.2)' : 'rgba(255,255,255,0.05)'}; color:${isActive ? 'var(--purple-light)' : 'var(--gray)'}; 
+            font-family:'Press Start 2P',monospace; font-size:7px; cursor:pointer; transition:all 0.2s;">
+            CAJA ${i + 1}
+          </button>`;
+        }
+        
+        if (state.boxCount < 10) {
+          const nextCost = getBoxBuyCost();
+          tabsHtml += `<button onclick="buyNewBox()" title="Comprar nueva caja (₽${nextCost.toLocaleString()})" style="width:30px; height:30px; border-radius:50%; border:1px solid var(--green); 
+            background:rgba(107,203,119,0.1); color:var(--green); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-left:4px;">
+            +
+          </button>`;
+        }
+        tabsContainer.innerHTML = tabsHtml;
+      }
 
       // Disable release button if box is empty
       const btnRelease = document.getElementById('btn-box-release-mode');
@@ -269,14 +332,27 @@
       }
 
       // Apply filters
-      const filtered = _applyBoxFilters(state.box);
       const isFiltered = _hasActiveFilters();
+      
+      // Determine which pokemon to show
+      let displayList = [];
+      if (isFiltered) {
+        // If filtering, show all matches from all boxes
+        displayList = state.box.map((p, i) => ({ p, i })).filter(({ p }) => _applyBoxFilters([p]).length > 0);
+      } else {
+        // If not filtering, show only current box
+        const start = _currentBoxIndex * 50;
+        const end = Math.min(start + 50, state.box.length);
+        for (let i = start; i < end; i++) {
+          displayList.push({ p: state.box[i], i: i });
+        }
+      }
 
       // Summary in filter header
       const summaryEl = document.getElementById('box-filter-summary');
       if (summaryEl) {
         if (isFiltered) {
-          summaryEl.textContent = `${filtered.length} resultado${filtered.length !== 1 ? 's' : ''}`;
+          summaryEl.textContent = `${displayList.length} resultado${displayList.length !== 1 ? 's' : ''}`;
           summaryEl.style.color = 'var(--yellow)';
         } else { summaryEl.textContent = ''; }
       }
@@ -284,32 +360,27 @@
       // Results info bar
       if (resultsInfo) {
         if (isFiltered) {
-          resultsInfo.textContent = `Mostrando ${filtered.length} de ${state.box.length} Pokémon`;
+          resultsInfo.textContent = `Mostrando ${displayList.length} de ${state.box.length} Pokémon`;
           resultsInfo.style.display = 'block';
         } else { resultsInfo.style.display = 'none'; }
       }
 
       if (state.box.length === 0) {
-        grid.innerHTML = '<div class="empty-state"><span class="empty-icon">📦</span>La Caja está vacía.<br>Los Pokémon capturados con el equipo lleno van aquí.</div>';
+        grid.innerHTML = '<div class="empty-state"><span class="empty-icon">📦</span>La PC está vacía.<br>Los Pokémon capturados con el equipo lleno van aquí.</div>';
         return;
       }
 
-      if (filtered.length === 0) {
+      if (displayList.length === 0) {
+        const emptyMsg = isFiltered ? 'Ningún Pokémon cumple los filtros activos.' : `La Caja ${_currentBoxIndex + 1} está vacía.`;
         grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;padding:32px;text-align:center;">
-          <span class="empty-icon" style="font-size:48px;display:block;margin-bottom:12px;">🔍</span>
-          <div style="font-size:12px;color:var(--gray);">Ningún Pokémon cumple<br>los filtros activos.</div>
-          <button onclick="resetBoxFilters()" style="margin-top:12px;padding:8px 16px;border:none;border-radius:10px;
-            cursor:pointer;background:rgba(255,255,255,0.08);color:var(--gray);font-size:11px;">↺ Limpiar filtros</button>
+          <span class="empty-icon" style="font-size:48px;display:block;margin-bottom:12px;">${isFiltered ? '🔍' : '📦'}</span>
+          <div style="font-size:12px;color:var(--gray);">${emptyMsg}</div>
+          ${isFiltered ? '<button onclick="resetBoxFilters()" style="margin-top:12px;padding:8px 16px;border:none;border-radius:10px;cursor:pointer;background:rgba(255,255,255,0.08);color:var(--gray);font-size:11px;">↺ Limpiar filtros</button>' : ''}
         </div>`;
         return;
       }
 
-      // Build cards — filtered array has real box indices mapped
-      const indexedFiltered = state.box.map((p, i) => ({ p, i })).filter(({ p }) => {
-        return _applyBoxFilters([p]).length > 0;
-      });
-
-      grid.innerHTML = indexedFiltered.map(({ p, i }) => {
+      grid.innerHTML = displayList.map(({ p, i }) => {
         const sid = getSpriteId(p.id);
         const url = getSpriteUrl(p.id, p.isShiny);
         const hpPct = Math.round(p.hp / p.maxHp * 100);
@@ -449,55 +520,51 @@
       if (typeof ensureVigor === 'function') ensureVigor(p);
       const pct = p.hp / p.maxHp;
       const hpClass = getHpClass(pct);
-      const typeColors = { grass: '#6BCB77', fire: '#FF3B3B', water: '#3B8BFF', normal: '#aaa', electric: '#FFD93D', psychic: '#C77DFF', rock: '#c8a060', ground: '#c8a060', poison: '#C77DFF', bug: '#8BC34A', flying: '#89CFF0', ghost: '#7B2FBE', dragon: '#5C16C5', ice: '#7DF9FF', fighting: '#FF3B3B', dark: '#555', steel: '#9E9E9E' };
-      const typeColor = typeColors[p.type] || '#aaa';
-      const ivBars = Object.entries(p.ivs || {}).map(([stat, val]) => {
-        const labels = { hp: 'HP', atk: 'Ataque', def: 'Defensa', spa: 'At.Esp', spd: 'Def.Esp', spe: 'Velocidad' };
-        const bp = (val / 31) * 100;
-        const color = val >= 28 ? '#6BCB77' : val >= 15 ? '#FFD93D' : '#FF3B3B';
-        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <span style="font-size:10px;color:#888;width:65px;flex-shrink:0">${labels[stat]}</span>
-        <div style="flex:1;background:rgba(255,255,255,0.1);border-radius:10px;height:8px;overflow:hidden;">
-          <div style="width:${bp}%;height:100%;background:${color};border-radius:10px;"></div>
-        </div>
-        <span style="font-size:11px;color:${color};width:24px;text-align:right;">${val}</span>
-      </div>`;
+      const statsHtml = Object.entries(p.stats || {}).map(([s, v]) => `
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:8px;text-align:center;border:1px solid rgba(255,255,255,0.05);">
+          <div style="font-size:8px;color:#888;text-transform:uppercase;margin-bottom:2px;">${s}</div>
+          <div style="font-size:12px;font-weight:700;">${v}</div>
+        </div>`).join('');
+      const ivBars = Object.entries(p.ivs || {}).map(([s, v]) => {
+        const ivPct = v / 31;
+        const ivCol = v === 31 ? 'var(--yellow)' : v > 20 ? 'var(--green)' : v > 10 ? 'var(--blue)' : 'var(--gray)';
+        return `
+          <div style="margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px;">
+              <span style="text-transform:uppercase;color:#888;">${s}</span>
+              <span style="font-weight:700;color:${ivCol}">${v}/31</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.05);height:4px;border-radius:2px;overflow:hidden;">
+              <div style="width:${ivPct * 100}%;height:100%;background:${ivCol};"></div>
+            </div>
+          </div>`;
       }).join('');
-      const movesList = (p.moves || []).map(m => {
-        const md = (typeof MOVE_DATA !== 'undefined') ? MOVE_DATA[m.name] : null;
-        const power = md ? (md.power || '—') : (m.power || '—');
-        return `<div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${m.name}</div>
-          <div style="font-size:11px;color:#888;">Poder: ${power}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:11px;color:#FFD93D;">PP</div>
-          <div style="font-size:13px;font-weight:700;">${m.pp}/${m.maxPP}</div>
-        </div>
-      </div>`;
-      }).join('');
-      const statsHtml = [
-        { label: 'HP', val: p.maxHp }, { label: 'Ataque', val: p.atk }, { label: 'Defensa', val: p.def },
-        { label: 'At. Esp', val: p.spa || p.atk }, { label: 'Def. Esp', val: p.spd || p.def }, { label: 'Velocidad', val: p.spe || 40 }
-      ].map(s => `<div style="text-align:center;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;">
-        <div style="font-size:10px;color:#888;margin-bottom:4px;">${s.label}</div>
-        <div style="font-size:16px;font-weight:900;color:#eaeaea;">${s.val}</div>
-      </div>`).join('');
-      const html = `<div style="background:#16213e;border-radius:24px;padding:28px;max-width:480px;width:92%;max-height:88vh;overflow-y:auto;border:2px solid ${typeColor}33;animation:fadeIn 0.3s ease;">
+      const movesList = p.moves.map(m => `
+        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,0.08);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-size:11px;font-weight:700;">${m.name}</span>
+            <span class="type-badge type-${m.type.toLowerCase()}" style="font-size:8px;padding:2px 6px;">${m.type}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:#888;">
+            <span>Poder: ${m.power || '—'}</span>
+            <span>PP: ${m.pp}/${m.maxPP}</span>
+          </div>
+        </div>`).join('');
+
+      const html = `
+    <div style="background:var(--card);border-radius:24px;padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;position:relative;border:1px solid rgba(255,255,255,0.1);box-shadow:0 20px 50px rgba(0,0,0,0.5);">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
-        <div style="display:flex;align-items:center;gap:16px;">
-          <div style="width:80px;height:80px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:12px;">
-            <img id="box-detail-sprite-img" src="" alt="${p.name}" style="width:72px;height:72px;image-rendering:pixelated;display:none;">
-            <span id="box-detail-sprite-emoji" style="font-size:52px;">${p.emoji}</span>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <div style="position:relative;width:80px;height:80px;background:rgba(255,255,255,0.05);border-radius:18px;display:flex;align-items:center;justify-content:center;">
+            <img id="box-detail-sprite-img" src="" style="width:72px;height:72px;image-rendering:pixelated;z-index:2;">
+            <span id="box-detail-sprite-emoji" style="display:none;font-size:48px;">${p.emoji}</span>
           </div>
           <div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:${typeColor};margin-bottom:6px;">${p.name}</div>
-            <div style="font-size:12px;color:#888;">Nivel ${p.level} · ${p.type.charAt(0).toUpperCase() + p.type.slice(1)}</div>
-            <div style="font-size:11px;color:#555;margin-top:4px;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
-            <div style="margin-top:12px; display:flex; align-items:center; gap:12px;">
-              <span class="tag-label" style="margin-bottom:0;">Destacar:</span>
-              <div style="display:flex;gap:10px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin-bottom:6px;">${p.name}${p.isShiny ? ' ✨' : ''}</div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span class="type-badge type-${p.type.toLowerCase()}">${p.type}</span>
+              <span style="font-size:11px;color:var(--gray);">Nv. ${p.level}</span>
+              <div style="display:flex;gap:6px;margin-left:4px;">
                 <div class="poke-tag ${p.tags?.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'fav')" title="Favorito">⭐</div>
                 <div class="poke-tag ${p.tags?.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'breed')" title="Crianza">❤️</div>
                 <div class="poke-tag ${p.tags?.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('box', ${boxIndex}, 'iv31')" title="IV 31">31</div>
@@ -742,112 +809,36 @@
             style="${!canSell ? 'opacity:0.5; filter:grayscale(1);' : 'cursor:pointer;'} ${isSelected ? 'border:2px solid #4caf50; background:rgba(76,175,80,0.05);' : ''}"
             onclick="${canSell ? `toggleBagSellSelect('${name}', ${qty})` : ''}">
             <span class="market-tier-badge ${tierCls}">${tierLabels[tier]}</span>
-            <div style="position:absolute; top:10px; right:10px; font-size:16px;">${isSelected ? '✅' : canSell ? '⬜' : '🚫'}</div>
-            <div class="market-item-icon">
-              ${sprite ? `<img src="${sprite}" width="40" height="40" style="image-rendering:pixelated;">` : `<span style="font-size:32px">${icon}</span>`}
-            </div>
-            <div class="market-item-name">${name}</div>
-            <div class="market-item-price" style="color:#4caf50; font-weight:bold;">₽${sellPrice.toLocaleString()} c/u</div>
+            <div class="market-item-icon" style="font-size:32px;margin-bottom:8px;">${icon}</div>
+            <div class="market-item-name" style="font-size:12px;margin-bottom:4px;">${name}</div>
+            <div style="font-size:10px;color:var(--gray);margin-bottom:10px;">Posees: ${qty}</div>
+            
             ${isSelected ? `
-              <div style="margin-top:10px; display:flex; align-items:center; gap:8px;" onclick="event.stopPropagation()">
-                <span style="font-size:10px; color:var(--gray);">Cant:</span>
-                <input type="number" min="1" max="${qty}" value="${sellQty}" 
-                  oninput="updateBagSellQty('${name}', this.value, ${qty})"
-                  style="width:60px; padding:4px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:6px; color:#fff; text-align:center; font-size:11px;">
+              <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1);" onclick="event.stopPropagation()">
+                <div style="font-size:9px; color:var(--gray); margin-bottom:6px;">Cantidad a vender:</div>
+                <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
+                  <button onclick="updateBagSellQty('${name}', ${_bagSellSelected[name] - 1}, ${qty})" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;cursor:pointer;">-</button>
+                  <input type="number" value="${sellQty}" min="1" max="${qty}" 
+                    onchange="updateBagSellQty('${name}', this.value, ${qty})"
+                    style="width:40px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:white; text-align:center; font-size:11px; padding:2px;">
+                  <button onclick="updateBagSellQty('${name}', ${_bagSellSelected[name] + 1}, ${qty})" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;cursor:pointer;">+</button>
+                </div>
+                <div style="font-size:10px; color:var(--yellow); margin-top:8px; font-weight:700;">+₽${(sellPrice * sellQty).toLocaleString()}</div>
               </div>
-              <div style="font-size:10px; color:var(--yellow); margin-top:6px; font-weight:bold;">Total: ₽${(sellPrice * sellQty).toLocaleString()}</div>
-            ` : `<div class="market-item-price" style="margin-top:auto;">Cantidad: ${qty}</div>`}
-            ${!canSell ? '<div style="font-size:9px; color:var(--red); margin-top:4px; font-weight:bold;">NO VENDIBLE</div>' : ''}
+            ` : `<div style="font-size:10px; color:var(--gray);">Precio venta: ₽${sellPrice.toLocaleString()}</div>`}
           </div>`;
         }
 
-        return `<div class="market-card">
+        return `<div class="market-card" style="cursor:default;">
           <span class="market-tier-badge ${tierCls}">${tierLabels[tier]}</span>
-          <div class="market-item-icon">
-            ${sprite ? `<img src="${sprite}" width="40" height="40" style="image-rendering:pixelated;">` : `<span style="font-size:32px">${icon}</span>`}
+          <div class="market-item-icon" style="font-size:32px;margin-bottom:8px;">${icon}</div>
+          <div class="market-item-name" style="font-size:12px;margin-bottom:4px;">${name}</div>
+          <div style="margin-bottom:8px;">${typeTag}</div>
+          <div style="font-size:10px;color:var(--gray);margin-bottom:10px;line-height:1.4;min-height:28px;">${desc}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05);">
+            <span style="font-size:11px;font-weight:700;color:var(--purple-light);">x${qty}</span>
+            ${isUsable ? `<button onclick="openBagItemMenu('${name}')" style="padding:6px 12px;border:none;border-radius:8px;background:var(--purple);color:white;font-size:10px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(199,125,255,0.3);">USAR</button>` : ''}
           </div>
-          <div class="market-item-name">${name}</div>
-          ${typeTag}
-          <div class="market-item-desc" style="margin-top:4px;">${desc}</div>
-          <div class="market-item-price" style="margin-top:auto;">Cantidad: ${qty}</div>
-          <button class="market-buy-btn" onclick="openBagUseMenu('${name}')" 
-            ${!isUsable ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
-            ${isUsable ? 'USAR' : 'NO USABLE'}
-          </button>
         </div>`;
       }).join('');
     }
-
-    function openBagUseMenu(itemName) {
-      const GLOBAL_ITEMS = ['Repelente', 'Superrepelente', 'Máximo Repelente', 'Ticket Shiny', 'Moneda Amuleto'];
-      if (GLOBAL_ITEMS.includes(itemName)) {
-        const fn = HEALING_ITEMS[itemName];
-        if (!fn || !state.inventory[itemName]) return;
-        const result = fn(null);
-        if (result === null) { notify('No se puede usar ahora.', '⚠️'); return; }
-        state.inventory[itemName]--;
-        if (!state.inventory[itemName]) delete state.inventory[itemName];
-        notify('¡' + itemName + ' ' + result + '!', '✨');
-        renderBag();
-        if (typeof scheduleSave === 'function') scheduleSave();
-        return;
-      }
-      const usableTeam = state.team;
-      if (!usableTeam.length) return;
-
-      const ov = document.createElement('div');
-      ov.id = 'bag-use-overlay';
-      ov.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:16px;';
-
-      let html = `<div style="background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:340px;">
-    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:16px;">¿EN QUIÉN USAR ${itemName.toUpperCase()}?</div>
-    <div style="display:flex;flex-direction:column;gap:8px;">`;
-
-      usableTeam.forEach((p, i) => {
-        const hpPct = Math.round(p.hp / p.maxHp * 100);
-        const hpCol = hpPct > 50 ? 'var(--green)' : hpPct > 20 ? 'var(--yellow)' : 'var(--red)';
-        const statusText = p.status ? `<span style="background:rgba(255,59,59,0.2);color:var(--red);padding:2px 4px;border-radius:4px;font-size:9px;">${p.status.toUpperCase()}</span>` : '';
-
-        html += `<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.05);border-radius:12px;padding:10px 14px;">
-      <div>
-        <div style="font-size:12px;font-weight:700;margin-bottom:4px;">${p.name} Nv.${p.level} ${statusText}</div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <div style="width:60px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="width:${hpPct}%;height:100%;background:${hpCol};"></div></div>
-          <span style="font-size:10px;color:var(--gray);">${p.hp}/${p.maxHp}</span>
-        </div>
-      </div>
-      <button onclick="applyBagItem('${itemName}', ${i})" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;background:rgba(199,125,255,0.15);color:var(--purple);border:1px solid rgba(199,125,255,0.3);border-radius:8px;cursor:pointer;">APLICAR</button>
-    </div>`;
-      });
-
-      html += `</div>
-    <button onclick="document.getElementById('bag-use-overlay').remove()" style="margin-top:12px;width:100%;padding:10px;background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:10px;cursor:pointer;">Cerrar</button>
-  </div>`;
-
-      ov.innerHTML = html;
-      ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
-      document.body.appendChild(ov);
-    }
-
-    function applyBagItem(itemName, teamIndex) {
-      const p = state.team[teamIndex];
-      if (!p || !state.inventory[itemName]) return;
-
-      const fn = HEALING_ITEMS[itemName];
-      if (!fn) return;
-
-      const result = fn(p);
-      if (result === null) { notify('No tiene ningún efecto.', '⚠️'); return; }
-      if (result === 'deferred') return;
-
-      state.inventory[itemName]--;
-      if (!state.inventory[itemName]) delete state.inventory[itemName];
-
-      document.getElementById('bag-use-overlay')?.remove();
-      notify(`Usaste ${itemName}. ¡${p.name} ${result}!`, '✨');
-
-      renderBag();
-      renderTeam();
-      scheduleSave();
-    }
-
