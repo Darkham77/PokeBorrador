@@ -56,10 +56,29 @@
       const lbl = document.getElementById('friends-nav-label');
       // Si el usuario ya está mirando la tab de amigos, no mostrar el badge
       const friendsTabOpen = document.getElementById('tab-friends')?.style.display !== 'none';
+      const chatUnread = (typeof getChatNotificationCount === 'function' ? getChatNotificationCount() : 0);
+      
       if (badge) {
-        if (total > 0 && !friendsTabOpen) {
-          badge.textContent = total > 99 ? '99+' : total;
-          badge.style.display = 'block';
+        if (total > 0) {
+          // Si estamos en la tab de amigos pero hay chats sin leer, mostramos un punto rojo
+          if (friendsTabOpen) {
+            if (chatUnread > 0) {
+              badge.textContent = ''; // Punto rojo sin número
+              badge.style.minWidth = '10px';
+              badge.style.height = '10px';
+              badge.style.borderRadius = '50%';
+              badge.style.display = 'block';
+            } else {
+              badge.style.display = 'none';
+            }
+          } else {
+            // Comportamiento normal fuera de la tab
+            badge.textContent = total > 99 ? '99+' : total;
+            badge.style.minWidth = '16px';
+            badge.style.height = '16px';
+            badge.style.borderRadius = '8px';
+            badge.style.display = 'block';
+          }
         } else {
           badge.style.display = 'none';
         }

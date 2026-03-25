@@ -26,16 +26,8 @@ function showTab(tab, btnEl) {
   if (tab === 'box') renderBox();
   if (tab === 'bag') renderBag();
   if (tab === 'friends') renderFriends();
-  // Al abrir la tab de amigos, ocultar el badge (el usuario ya lo está viendo)
-  if (tab === 'friends') {
-    const badge = document.getElementById('friends-nav-badge');
-    if (badge) {
-      badge.style.display = 'none';
-      badge.textContent = '';
-    }
-  } else {
-    refreshFriendsBadge();
-  }
+  // Al abrir la tab de amigos, refrescar el badge para ver si quedan notificaciones (como chats no leídos)
+  refreshFriendsBadge();
 }
 
 // ===== RENDER =====

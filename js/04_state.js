@@ -156,7 +156,8 @@
       safariTicketSecs: 0,
       ceruleanTicketSecs: 0,
       articunoTicketSecs: 0,
-      mewtwoTicketSecs: 0
+      mewtwoTicketSecs: 0,
+      chats: {} // { friendId: { messages: [], username: '', unreadCount: 0 } }
     };
 
     let state = JSON.parse(JSON.stringify(INITIAL_STATE));

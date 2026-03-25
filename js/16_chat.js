@@ -1,19 +1,18 @@
     // ===== CHAT SYSTEM =====
     // This system uses Supabase Realtime broadcast for ephemeral player-to-player messaging.
-    // Messages are kept in-memory (max 20 per conversation) to save space.
+    // Messages are kept in state.chats (max 20 per conversation) and persisted with the game save.
 
     let _chatInboxChannel = null;
-    let _chatNotifyCount = 0;
     const _outboxChannels = {};
-    const _chats = {}; // Added to fix ReferenceError
 
     function getChatNotificationCount() {
-      return _chatNotifyCount;
+      if (!state.chats) return 0;
+      return Object.values(state.chats).reduce((sum, chat) => sum + (chat.unreadCount || 0), 0);
     }
 
     function getUnreadCount(friendId) {
-      if (!_chats[friendId]) return 0;
-      return _chats[friendId].unreadCount || 0;
+      if (!state.chats || !state.chats[friendId]) return 0;
+      return state.chats[friendId].unreadCount || 0;
     }
 
     async function initGlobalChatListener() {
@@ -33,18 +32,16 @@
       if (!currentUser) return;
 
       // Initialize chat state if not exists
-      if (!_chats[friendId]) {
-        _chats[friendId] = {
+      if (!state.chats) state.chats = {};
+      if (!state.chats[friendId]) {
+        state.chats[friendId] = {
           messages: [],
           username: friendUsername,
           unreadCount: 0
         };
       } else {
-        const unread = _chats[friendId].unreadCount || 0;
-        if (unread > 0) {
-          _chatNotifyCount = Math.max(0, _chatNotifyCount - unread);
-          _chats[friendId].unreadCount = 0;
-        }
+        // Mark as read
+        state.chats[friendId].unreadCount = 0;
       }
 
       // Create or show chat UI
@@ -52,10 +49,13 @@
       
       refreshFriendsBadge();
       if (typeof renderFriendsList === 'function') renderFriendsList();
+      
+      // Save progress (read status)
+      scheduleSave();
     }
 
     function renderChatModal(friendId) {
-      const chat = _chats[friendId];
+      const chat = state.chats[friendId];
       let ov = document.getElementById(`chat-modal-${friendId}`);
       
       if (!ov) {
@@ -109,15 +109,17 @@
     }
 
     function _handleIncomingMessage(friendId, friendUsername, payload) {
+      if (!state.chats) state.chats = {};
       // Initialize state if it didn't exist (background message)
-      if (!_chats[friendId]) {
-        _chats[friendId] = {
+      if (!state.chats[friendId]) {
+        state.chats[friendId] = {
           messages: [],
-          username: friendUsername || 'Entrenador'
+          username: friendUsername || 'Entrenador',
+          unreadCount: 0
         };
       }
       
-      const chat = _chats[friendId];
+      const chat = state.chats[friendId];
       
       // Prevent duplicates (in case of double delivery or self-send broadcast issues)
       const isDup = chat.messages.some(m => m.timestamp === payload.timestamp && m.text === payload.text);
@@ -131,27 +133,30 @@
       }
       
       const modal = document.getElementById(`chat-modal-${friendId}`);
-      const isVisible = modal && modal.style.display !== 'none';
+      const isVisible = modal && modal.style.display !== 'none' && modal.style.height !== '45px';
 
       if (isVisible) {
         _updateChatUI(friendId);
+        chat.unreadCount = 0;
       } else {
         // Notify user if chat is not open/focused
         if (payload.senderId !== currentUser.id) {
           notify(`Nuevo mensaje de ${chat.username}`, '💬');
           chat.unreadCount = (chat.unreadCount || 0) + 1;
-          _chatNotifyCount++;
-          if (typeof refreshFriendsBadge === 'function') refreshFriendsBadge();
+          refreshFriendsBadge();
           if (typeof renderFriendsList === 'function') renderFriendsList();
         }
       }
+      
+      // Persist the message
+      scheduleSave();
     }
 
     function _updateChatUI(friendId) {
       const el = document.getElementById(`chat-messages-${friendId}`);
       if (!el) return;
       
-      const chat = _chats[friendId];
+      const chat = state.chats[friendId];
       
       // Clear except the intro message
       el.innerHTML = '<div style="color:var(--gray);font-size:10px;text-align:center;margin:10px 0;">Comienzo de la conversación amistosa</div>';
@@ -172,7 +177,7 @@
     async function sendChatMessage(friendId) {
       const input = document.getElementById(`chat-input-${friendId}`);
       const text = input.value.trim();
-      if (!text || !currentUser || !_chats[friendId]) return;
+      if (!text || !currentUser || !state.chats || !state.chats[friendId]) return;
       
       const payload = {
         senderId: currentUser.id,
@@ -203,7 +208,7 @@
       }
 
       // Also add to our own local history immediately
-      _handleIncomingMessage(friendId, _chats[friendId].username, payload);
+      _handleIncomingMessage(friendId, state.chats[friendId].username, payload);
       input.value = '';
     }
 
@@ -216,9 +221,7 @@
     function cleanupChats() {
       if (_chatInboxChannel) _chatInboxChannel.unsubscribe();
       _chatInboxChannel = null;
-      Object.keys(_chats).forEach(id => {
-        delete _chats[id];
-      });
+      // We don't delete state.chats here because we want persistence
       Object.keys(_outboxChannels).forEach(id => {
         if (_outboxChannels[id]) _outboxChannels[id].unsubscribe();
         delete _outboxChannels[id];
