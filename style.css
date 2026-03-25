@@ -508,7 +508,7 @@
       position: fixed;
       left: 0;
       top: 160px; /* Justo debajo del panel de huevos */
-      z-index: 99999; /* Siempre por encima de todo, incluido el combate */
+      z-index: 1000000; /* Por encima de todo, incluyendo modales y combate */
       display: flex;
       flex-direction: column;
       gap: 6px;
