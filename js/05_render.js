@@ -509,10 +509,13 @@ function renderGyms() {
     
     // Daily limit check
     const wonToday = state.lastGymWins?.[gym.id] === today;
+    const attemptedToday = state.lastGymAttempts?.[gym.id] === today;
     
     // Difficulty unlocking
     // progress: 0 or undefined = not even easy beaten, 1 = easy beaten (normal unlocked), 2 = normal beaten (hard unlocked), 3 = all beaten
     const progress = state.gymProgress?.[gym.id] || (reached ? 1 : 0);
+    const isFirstEasyAttempt = progress === 0;
+    const canChallenge = !attemptedToday || isFirstEasyAttempt;
     
     // Current UI selection (we can store it in a temporary object if needed, or just default to highest)
     const selectedDifficulty = wonToday ? 'won' : (progress >= 2 ? 'hard' : (progress >= 1 ? 'normal' : 'easy'));
@@ -562,11 +565,14 @@ function renderGyms() {
             }).join('')}
           </div>
           <button onclick="challengeGym('${gym.id}', document.querySelector('.gym-diff-btn.active[id^=\\'btn-diff-${gym.id}-\\']')?.id.split('-').pop())" 
-            style="padding:10px 24px;border:none;border-radius:20px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:8px;
-            background:linear-gradient(135deg,${typeColor},${typeColor}cc);color:#fff;font-weight:900;
-            box-shadow:0 4px 14px ${typeColor}66;transition:all .2s;"
-            onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-            ⚔️ DESAFIAR
+            ${!canChallenge ? 'disabled' : ''}
+            style="padding:10px 24px;border:none;border-radius:20px;cursor:${canChallenge ? 'pointer' : 'not-allowed'};font-family:'Press Start 2P',monospace;font-size:8px;
+            background:${canChallenge ? `linear-gradient(135deg,${typeColor},${typeColor}cc)` : 'var(--gray-dark)'};
+            color:${canChallenge ? '#fff' : 'var(--gray)'};font-weight:900;
+            box-shadow:${canChallenge ? `0 4px 14px ${typeColor}66` : 'none'};transition:all .2s;
+            opacity:${canChallenge ? 1 : 0.7};"
+            ${canChallenge ? 'onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'"' : ''}>
+            ${attemptedToday && !isFirstEasyAttempt ? '⌛ MAÑANA' : '⚔️ DESAFIAR'}
           </button>
         </div>`;
     }

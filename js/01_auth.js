@@ -320,6 +320,7 @@
         defeatedGyms: state.defeatedGyms,
         gymProgress: state.gymProgress || {},
         lastGymWins: state.lastGymWins || {},
+        lastGymAttempts: state.lastGymAttempts || {},
         starterChosen: state.starterChosen || false,
         stats: state.stats || {},
         activeBattle,

@@ -611,6 +611,18 @@
         notify('¡Todos tus Pokémon están debilitados!', '❤️‍🩹');
         return;
       }
+
+      // Daily attempt limit logic
+      const d = getGMT3Date();
+      const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      const progress = state.gymProgress?.[gymId] || (state.defeatedGyms?.includes(gymId) ? 1 : 0);
+      const hasAttemptedToday = state.lastGymAttempts?.[gymId] === today;
+      const isFirstEasyAttempt = progress === 0;
+
+      if (hasAttemptedToday && !isFirstEasyAttempt) {
+        notify(`Ya agotaste tu intento diario contra ${gym.leader}. ¡Vuelve mañana!`, '🚫');
+        return;
+      }
       
       const teamData = gym.difficulties?.[difficulty] || { pokemon: gym.pokemon, levels: gym.levels };
 
@@ -646,6 +658,10 @@
       
       document.getElementById('gym-intro-btn').onclick = () => {
         introOv.remove();
+
+        // Record the attempt for today
+        state.lastGymAttempts = state.lastGymAttempts || {};
+        state.lastGymAttempts[gymId] = today;
         
         // Generate full team base on selected difficulty
         const enemyTeam = teamData.pokemon.map((id, i) => {
