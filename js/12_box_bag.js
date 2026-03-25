@@ -276,7 +276,8 @@
         return;
       }
 
-      if (!confirm(`¿Comprar una nueva caja por ₽${cost.toLocaleString()}?`)) return;
+      const nextBoxNum = (state.boxCount || 4) + 1;
+      if (!confirm(`¿Querés gastar ₽${cost.toLocaleString()} para comprar la Caja ${nextBoxNum}?`)) return;
 
       state.money -= cost;
       state.boxCount = (state.boxCount || 4) + 1;
