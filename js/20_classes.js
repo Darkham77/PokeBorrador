@@ -28,7 +28,18 @@ const PLAYER_CLASSES = {
       daycareCostMult: 1.0,
       catchMult: 1.0,
       shopDiscount: 0.20
-    }
+    },
+    technicalBonuses: [
+      "Venta directa en PC: ₽500 + (Nivel Seleccionado x 10). Pokémon de Tier alta dan bonos extra.",
+      "15% de probabilidad base. Escala a 30% al alcanzar el nivel 15 de clase. Solo vs Entrenadores NPC.",
+      "Aplica un modificador de x0.80 al precio de todos los objetos en la Tienda del Entrenador.",
+      "Misiones que generan ingresos y objetos de contrabando de forma pasiva mientras juegas."
+    ],
+    technicalPenalties: [
+      "El servicio de enfermería básico tiene un recargo del 100% (x2) por ser miembro del Team Rocket.",
+      "Tus patrocinadores te dan un 10% menos de Battle Coins por batalla debido a tu mala reputación.",
+      "Los PokéMart oficiales detectan tu afiliación y aplican un recargo del +20% en todos los precios."
+    ]
   },
   cazabichos: {
     id: 'cazabichos',
@@ -56,7 +67,18 @@ const PLAYER_CLASSES = {
       healCostMult: 1.0,
       daycareCostMult: 1.5,
       catchMult: 1.0
-    }
+    },
+    technicalBonuses: [
+      "Cada captura del mismo tipo suma +1 racha. +1 racha = +2% Shiny rate y +5 IVs garantizados (máx 3 acumulaciones).",
+      "Bono de +5% de Catch Rate por cada Pokémon tipo Bicho en tu equipo activo de 6. (Bonificador máximo: +20%).",
+      "Probabilidad de 0.5% por paso en hierba alta de forzar la aparición de un Pokémon raro (Scyther/Pinsir).",
+      "Misiones pasivas que traen Pokémon salvajes de nivel bajo y objetos de captura (Red Balls, etc)."
+    ],
+    technicalPenalties: [
+      "Tu enfoque en la naturaleza te hace menos eficiente entrenando contra otros humanos (x0.80 EXP).",
+      "Los premios en metálico se reducen un 15% debido a tu falta de patrocinio oficial.",
+      "La infraestructura de la guardería no está adaptada para tus métodos de crianza rústicos (x1.50 costo)."
+    ]
   },
   entrenador: {
     id: 'entrenador',
@@ -84,7 +106,18 @@ const PLAYER_CLASSES = {
       healCostMult: 1.0,
       daycareCostMult: 1.5,
       catchMult: 1.0
-    }
+    },
+    technicalBonuses: [
+      "Multiplicador fijo de x1.10 a toda la experiencia base ganada al derrotar Pokémon salvajes o entrenadores.",
+      "Bono de x1.30 a las Battle Coins obtenidas exclusivamente en batallas de Gimnasio / Líderes.",
+      "Ganas 10 REP por cada victoria en Gimnasio. La reputación es una moneda para comprar ítems exclusivos.",
+      "Misiones pasivas que otorgan grandes cantidades de EXP a tu nivel de entrenador mientras no estas en batalla."
+    ],
+    technicalPenalties: [
+      "Tu ética profesional te impide capturar Pokémon genéticamente perfectos con facilidad (-10% Catch Rate si IV > 120).",
+      "Prefieres el entrenamiento en campo; el mantenimiento en guardería te resulta más costoso (x1.50).",
+      "Como figura pública, no puedes ser visto operando en mercados de dudosa legalidad."
+    ]
   },
   criador: {
     id: 'criador',
@@ -114,7 +147,20 @@ const PLAYER_CLASSES = {
       healCostForeignMult: 1.5,
       daycareCostMult: 1.0,
       catchMult: 1.0
-    }
+    },
+    technicalBonuses: [
+      "Al criar, se eligen 4 IVs aleatorios de entre los 12 disponibles de los padres (normalmente son solo 3).",
+      "El contador de pasos requerido para que un huevo eclosione se reduce en un 25%.",
+      "Cada eclosión tiene un 15% de posibilidad de devolver 1 punto de vigor a uno de los padres en la guardería.",
+      "Permite ver el IV Total (suma de los 6 stats) del Pokémon rival directamente en el log de batalla.",
+      "Interfaz opcional en la Guardería que vende automáticamente los huevos por ₽1000 + 75% del costo de cría.",
+      "Misiones pasivas de larga duración que garantizan mejores IVs mínimos para los huevos generados."
+    ],
+    technicalPenalties: [
+      "Tu tiempo invertido en la genética reduce tu eficiencia en el entrenamiento de combate activo (-10% EXP).",
+      "Cuesta un 50% más (x1.5) curar Pokémon que no tengan tu ID de entrenador original (Pokémon intercambiados).",
+      "Tu dedicación a la crianza pura te aleja de los círculos de contrabando del Mercado Negro."
+    ]
   }
 };
 
@@ -288,92 +334,146 @@ function openClassInfoPanel() {
   const bonusesHtml = cls.bonuses.map((bonus, i) => {
     const reqLevel = (cls.bonusLevels && cls.bonusLevels[i]) || 1;
     const unlocked = trainerLevel >= reqLevel;
+    const tech = cls.technicalBonuses ? cls.technicalBonuses[i] : 'Información no disponible.';
     const borderColor = unlocked ? cls.color : '#374151';
     const textColor = unlocked ? '#e2e8f0' : '#6b7280';
     const icon = unlocked ? '✅' : '🔒';
-    const levelTag = reqLevel > 1
-      ? `<span style="font-size:8px;color:${unlocked ? cls.color : '#4b5563'};background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;margin-left:6px;white-space:nowrap;">Nv.${reqLevel}</span>`
-      : '';
-    const sublabel = !unlocked
-      ? `<div style="font-size:9px;color:#4b5563;margin-top:3px;">Se desbloquea en Nv. ${reqLevel}</div>`
-      : '';
+    
     return `
-      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:3px solid ${borderColor};">
-        <span style="font-size:13px;flex-shrink:0;margin-top:1px;">${icon}</span>
-        <div>
-          <div style="font-size:11px;color:${textColor};line-height:1.5;display:flex;align-items:center;flex-wrap:wrap;">${bonus}${levelTag}</div>
-          ${sublabel}
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(0,0,0,0.4);border-radius:14px;border-left:4px solid ${borderColor};position:relative;">
+        <span style="font-size:16px;flex-shrink:0;">${icon}</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;color:${textColor};line-height:1.4;display:flex;align-items:center;">
+            ${bonus}
+            ${reqLevel > 1 ? `<span style="font-size:9px;color:${unlocked ? cls.color : '#4b5563'};background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:6px;margin-left:8px;font-family:'Press Start 2P',monospace;">Nv.${reqLevel}</span>` : ''}
+            <div class="class-tooltip">
+              ❓
+              <span class="class-tooltiptext"><strong>Mecánica:</strong><br>${tech}</span>
+            </div>
+          </div>
+          ${!unlocked ? `<div style="font-size:10px;color:#4b5563;margin-top:4px;">Requiere Nivel de Entrenador ${reqLevel}</div>` : ''}
         </div>
       </div>`;
   }).join('');
 
-  const penaltiesHtml = cls.penalties.map(p => `
-    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:3px solid #ef444455;">
-      <span style="font-size:13px;flex-shrink:0;margin-top:1px;">❌</span>
-      <div style="font-size:11px;color:#f87171;line-height:1.5;">${p}</div>
-    </div>`).join('');
+  const penaltiesHtml = cls.penalties.map((p, i) => {
+    const tech = cls.technicalPenalties ? cls.technicalPenalties[i] : 'Información no disponible.';
+    return `
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(0,0,0,0.4);border-radius:14px;border-left:4px solid #ef444466;">
+        <span style="font-size:16px;flex-shrink:0;">❌</span>
+        <div style="flex:1;font-size:13px;color:#f87171;line-height:1.4;display:flex;align-items:center;">
+          ${p}
+          <div class="class-tooltip">
+            ❓
+            <span class="class-tooltiptext" style="border-color:#ef444444;"><strong>Efecto Negativo:</strong><br>${tech}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
 
   const ov = document.createElement('div');
   ov.id = 'class-info-panel-overlay';
   ov.style.cssText = `
-    position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9000;
+    position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9000;
     display:flex;align-items:center;justify-content:center;
     padding:16px;animation:fadeIn 0.2s;overflow-y:auto;
   `;
 
   ov.innerHTML = `
-    <div style="background:#1e293b;border-radius:20px;padding:24px;width:100%;max-width:480px;border:2px solid ${cls.color}44;box-shadow:0 8px 40px rgba(0,0,0,0.7);">
+    <style>
+      .class-tooltip { position:relative; display:inline-block; margin-left:10px; cursor:help; font-size:12px; color:#4b5563; transition:color 0.2s; }
+      .class-tooltip:hover { color:#fff; }
+      .class-tooltiptext {
+        visibility:hidden; width:260px; background:#0f172a; color:#cbd5e1; text-align:left;
+        border:1px solid ${cls.color}44; border-radius:12px; padding:12px; position:absolute;
+        z-index:100; bottom:125%; left:50%; margin-left:-130px; opacity:0; transition:opacity 0.3s, transform 0.3s;
+        transform:translateY(10px); pointer-events:none; font-family:sans-serif; font-size:11px;
+        line-height:1.5; box-shadow:0 10px 25px -5px rgba(0,0,0,0.6);
+      }
+      .class-tooltip:hover .class-tooltiptext { visibility:visible; opacity:1; transform:translateY(0); }
+      @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    </style>
+
+    <div style="background:#111827;border-radius:24px;padding:32px;width:100%;max-width:650px;border:1px solid ${cls.color}33;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);position:relative;">
+      
+      <!-- Close Button -->
+      <button onclick="document.getElementById('class-info-panel-overlay').remove()"
+        style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.05);border:none;color:#9ca3af;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:0.2s;"
+        onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'"
+        onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#9ca3af'">✕</button>
 
       <!-- Header -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
-        <div style="display:flex;align-items:center;gap:14px;">
-          <span style="font-size:44px;line-height:1;">${cls.icon}</span>
+      <div style="display:flex;align-items:center;gap:24px;margin-bottom:32px;">
+        <div style="width:90px;height:90px;background:linear-gradient(135deg,${cls.color}22,${cls.colorDark}44);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:54px;border:1px solid ${cls.color}44;box-shadow:0 8px 16px rgba(0,0,0,0.2);">
+          ${cls.icon}
+        </div>
+        <div style="flex:1;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${cls.color};margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">${cls.name}</div>
+          <div style="font-size:13px;color:#9ca3af;line-height:1.6;max-width:400px;font-style:italic;">"${cls.description}"</div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px;">
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:16px;padding:16px;display:flex;align-items:center;gap:16px;">
+          <div style="width:48px;height:48px;background:${cls.color}15;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">🎖️</div>
           <div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cls.color};margin-bottom:6px;">${cls.name}</div>
-            <div style="font-size:10px;color:#9ca3af;line-height:1.6;max-width:240px;">${cls.description}</div>
+            <div style="font-size:9px;color:#6b7280;margin-bottom:2px;font-family:'Press Start 2P',monospace;">NIVEL ENTRENADOR</div>
+            <div style="font-size:24px;font-weight:900;color:${cls.color};">Nv. ${trainerLevel}</div>
           </div>
         </div>
-        <button onclick="document.getElementById('class-info-panel-overlay').remove()"
-          style="background:none;border:none;color:#6b7280;font-size:22px;cursor:pointer;flex-shrink:0;line-height:1;">✕</button>
-      </div>
-
-      <!-- Nivel -->
-      <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
-        <span style="font-size:22px;">🎖️</span>
-        <div style="flex:1;">
-          <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;font-family:'Press Start 2P',monospace;">NIVEL DE ENTRENADOR</div>
-          <div style="font-size:20px;font-weight:900;color:${cls.color};">Nv. ${trainerLevel}</div>
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:16px;padding:16px;display:flex;align-items:center;gap:16px;">
+          <div style="width:48px;height:48px;background:#eab30815;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">✨</div>
+          <div>
+            <div style="font-size:9px;color:#6b7280;margin-bottom:2px;font-family:'Press Start 2P',monospace;">RANGO ACTUAL</div>
+            <div style="font-size:14px;font-weight:700;color:#eab308;text-transform:uppercase;">${getTrainerRank().title}</div>
+          </div>
         </div>
       </div>
 
-      <!-- Habilidades -->
-      <div style="margin-bottom:16px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#22c55e;margin-bottom:10px;letter-spacing:0.5px;">✅ HABILIDADES</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">${bonusesHtml}</div>
+      <!-- Tabs / Sections -->
+      <div style="display:grid;grid-template-columns:1fr;gap:24px;">
+        <!-- Bonos -->
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <div style="width:4px;height:16px;background:#22c55e;border-radius:2px;"></div>
+            <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#22c55e;letter-spacing:1px;">HABILIDADES DE CLASE</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr;gap:10px;">${bonusesHtml}</div>
+        </div>
+
+        <!-- Penalizaciones -->
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <div style="width:4px;height:16px;background:#ef4444;border-radius:2px;"></div>
+            <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;letter-spacing:1px;">LIMITACIONES</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr;gap:10px;">${penaltiesHtml}</div>
+        </div>
       </div>
 
-      <!-- Penalizaciones -->
-      <div style="margin-bottom:24px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:10px;letter-spacing:0.5px;">❌ PENALIZACIONES</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">${penaltiesHtml}</div>
-      </div>
-
-      <!-- Footer -->
-      <div style="display:flex;flex-direction:column;gap:10px;border-top:1px dashed rgba(255,255,255,0.1);padding-top:16px;">
+      <!-- Action Buttons -->
+      <div style="margin-top:32px;display:flex;flex-direction:column;gap:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:24px;">
         ${state.playerClass === 'entrenador' ? `
         <button onclick="document.getElementById('class-info-panel-overlay').remove();openReputationShop()"
-          style="width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;box-shadow:0 4px 0 #14532d;">
+          style="width:100%;padding:18px;border:none;border-radius:16px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;cursor:pointer;box-shadow:0 6px 0 #14532d;transition:0.2s;"
+          onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 0 #14532d'"
+          onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 0 #14532d'">
           🏅 TIENDA DE REPUTACIÓN
         </button>` : ''}
         
-        <div style="display:flex;gap:10px;">
+        <div style="display:flex;gap:12px;">
           <button onclick="document.getElementById('class-info-panel-overlay').remove();openClassModal(false)"
-            style="flex:1;padding:12px 8px;border:1px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.05);color:#9ca3af;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;line-height:1.8;">
-            🔄 CAMBIAR CLASE<br><span style="color:#f59e0b;">10,000 BC</span>
+            style="flex:1;padding:14px;border:1px solid rgba(255,255,255,0.08);border-radius:16px;background:rgba(255,255,255,0.03);color:#9ca3af;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;transition:0.2s;"
+            onmouseover="this.style.background='rgba(255,255,255,0.05)';this.style.color='#fff'"
+            onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.color='#9ca3af'">
+            🔄 CAMBIAR CLASE<br><span style="color:#f59e0b;font-size:7px;">10,000 BC</span>
           </button>
           <button onclick="document.getElementById('class-info-panel-overlay').remove()"
-            style="flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,${cls.color},${cls.colorDark});color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
-            ✓ CERRAR
+            style="flex:1;padding:14px;border:none;border-radius:16px;background:linear-gradient(135deg,${cls.color},${cls.colorDark});color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;cursor:pointer;box-shadow:0 6px 0 ${cls.colorDark}99;transition:0.2s;"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 0 ${cls.colorDark}aa'"
+            onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 0 ${cls.colorDark}99'">
+            ✓ ENTENDIDO
           </button>
         </div>
       </div>
@@ -895,11 +995,11 @@ function processOfflineClassMissions() {
 
 // ── Tienda de Reputación (Entrenador) ────────────────────────────────────
 const REPUTATION_SHOP_ITEMS = [
-  { id: 'rep_ultra_ball', name: 'Ultra Ball x3', cost: 20, icon: '🔵', desc: 'Tres Ultra Balls de la tienda oficial del Gimnasio.', grant: () => { state.inventory['Ultra Ball'] = (state.inventory['Ultra Ball'] || 0) + 3; } },
-  { id: 'rep_tm_earthquake', name: 'MT Terremoto', cost: 50, icon: '🌋', desc: 'El poderoso movimiento Terremoto en formato MT.', grant: () => { state.inventory['TM26 Terremoto'] = (state.inventory['TM26 Terremoto'] || 0) + 1; } },
+  { id: 'rep_ultra_ball', name: 'Ultra Ball x3', cost: 20, icon: '🔵', desc: 'Tres Ultra Balls de la tienda oficial del Gimnasio.', grant: () => { state.inventory['Ultra Ball'] = (state.inventory['Ultra Ball'] || 0) + 3; state.balls += 6; } },
+  { id: 'rep_tm_earthquake', name: 'MT26 Terremoto', cost: 80, icon: '🌋', desc: 'El poderoso movimiento Terremoto en formato MT.', grant: () => { state.inventory['MT26 Terremoto'] = (state.inventory['MT26 Terremoto'] || 0) + 1; } },
   { id: 'rep_revive', name: 'Revivir x5', cost: 30, icon: '💊', desc: 'Cinco Revivires del botiquín de los Gimnasios.', grant: () => { state.inventory['Revivir'] = (state.inventory['Revivir'] || 0) + 5; } },
-  { id: 'rep_full_restore', name: 'Restauración Total', cost: 45, icon: '💉', desc: 'Restaura PS y estados. Uso exclusivo de campeones.', grant: () => { state.inventory['Restauración Total'] = (state.inventory['Restauración Total'] || 0) + 2; } },
-  { id: 'rep_lucky_egg', name: 'Huevo Suerte', cost: 100, icon: '🍀', desc: 'Aumenta la EXP obtenida al 1.5x mientras se sujeta.', grant: () => { state.inventory['Huevo Suerte'] = (state.inventory['Huevo Suerte'] || 0) + 1; } },
+  { id: 'rep_full_heal', name: 'Cura Total x3', cost: 25, icon: '✨', desc: 'Tres Cura Total para sanar cualquier estado alterado.', grant: () => { state.inventory['Cura Total'] = (state.inventory['Cura Total'] || 0) + 3; } },
+  { id: 'rep_lucky_egg_small', name: 'Huevo Suerte Pequeño', cost: 50, icon: '🥚', desc: 'Potenciador: +50% EXP durante 30 minutos.', grant: () => { state.inventory['Huevo Suerte Pequeño'] = (state.inventory['Huevo Suerte Pequeño'] || 0) + 1; } },
   { id: 'rep_star_piece', name: 'Trozo Estrella x3', cost: 60, icon: '⭐', desc: 'Tres trozos de estrella de valor extraordinario.', grant: () => { state.inventory['Trozo Estrella'] = (state.inventory['Trozo Estrella'] || 0) + 3; } },
 ];
 
