@@ -502,7 +502,7 @@
       
       ov.innerHTML = `
         <div id="hatch-container" style="text-align:center;">
-          <div id="hatch-egg" style="font-size:120px; cursor:pointer; user-select:none; transition:transform 0.1s ease; filter:drop-shadow(0 0 20px var(--yellow)44);">🥚</div>
+          <div id="hatch-egg" style="font-size:120px; cursor:pointer; user-select:none; transition:transform 0.1s ease; filter:drop-shadow(0 0 20px rgba(255,217,61,0.3));">🥚</div>
           <div id="hatch-msg" style="font-family:'Press Start 2P',monospace; font-size:10px; color:var(--yellow); margin-top:30px; line-height:1.6;">¡TOCA EL HUEVO!<br><span style="font-size:8px; color:var(--gray);">¡Parece que está por romperse!</span></div>
         </div>
         <div id="hatch-reveal" style="display:none; text-align:center; animation: fadeIn 0.8s ease;">

@@ -78,8 +78,8 @@
           border:2px solid var(--blue);text-align:center;position:relative;">
           <img src="${t.sprite}" alt="${t.name}"
             style="height:140px;width:auto;image-rendering:pixelated;margin-bottom:12px;
-            filter:drop-shadow(0 4px 16px var(--blue)88);"
-            onerror="this.outerHTML='<div style=\'font-size:80px;\'>👤</div>'">
+            filter:drop-shadow(0 4px 16px rgba(10,132,255,0.5));"
+            onerror="this.outerHTML='<div style=&quot;font-size:80px;&quot;>👤</div>'">
           <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--blue);margin-bottom:6px;">${t.name}</div>
           <div style="font-size:13px;color:#eee;margin:16px 0;line-height:1.6;font-style:italic;">"${t.quote}"</div>
           <button id="trainer-intro-btn" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 28px;border:none;border-radius:14px;
