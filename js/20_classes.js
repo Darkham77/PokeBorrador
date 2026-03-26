@@ -51,8 +51,8 @@ const PLAYER_CLASSES = {
     bonuses: [
       '⚡ Racha de Capturas: cada captura seguida aumenta Shiny rate e IVs mínimos (máx x3)',
       '🦋 Sinergia Bicho: +5% catchRate por Pokémon Bicho en el equipo (máx +20%)',
-      '🌸 Aroma Atractivo: 0.5% de chance de atraer a Scyther o Pinsir en cualquier mapa (10% en Zona Safari)',
-      '🏕️ Expediciones: misiones idle de 1/3/6h que traen Pokémon y objetos de captura'
+      '🐝 Aroma Atractivo: Chance de atraer Pokémon raros (Scyther/Pinsir) al caminar.',
+      '🕸️ Red Maestra: 20% de capturar un segundo ejemplar de tipo Bicho (2x1).'
     ],
     bonusLevels: [1, 1, 10, 20],
     penalties: [
@@ -72,7 +72,7 @@ const PLAYER_CLASSES = {
       "Cada captura del mismo tipo suma +1 racha. +1 racha = +2% Shiny rate y +5 IVs garantizados (máx 3 acumulaciones).",
       "Bono de +5% de Catch Rate por cada Pokémon tipo Bicho en tu equipo activo de 6. (Bonificador máximo: +20%).",
       "Probabilidad de 0.5% por paso en hierba alta de forzar la aparición de un Pokémon raro (Scyther/Pinsir).",
-      "Misiones pasivas que traen Pokémon salvajes de nivel bajo y objetos de captura (Red Balls, etc)."
+      "Al capturar un Pokémon tipo Bicho, hay un 20% de probabilidad de recibir un segundo ejemplar idéntico en la caja."
     ],
     technicalPenalties: [
       "Tu enfoque en la naturaleza te hace menos eficiente entrenando contra otros humanos (x0.80 EXP).",
@@ -128,9 +128,9 @@ const PLAYER_CLASSES = {
     description: 'Maestro genético. Produce los Pokémon con mejores IVs y habilidades del servidor. Domina el meta competitivo desde la guardería.',
     bonuses: [
       '🧬 Lazo Destino transmite 4 IVs (vs 3 normal)',
-      '⏱️ -25% tiempo de eclosión de huevos',
-      '🔋 Vigor renovado: 15% de chance de recuperar 1 Vigor a los padres al eclosionar',
-      '🔬 Ojo de Criador: ves el IV total de Pokémon salvajes en batalla',
+      '🥚 Lazo Destino: Hereda 4 IVs aleatorios de los padres en lugar de 3.',
+      '❤️ Vigor: 15% de chance de recuperar vigor tras eclosionar.',
+      '👁️ Predecir Naturaleza: Permite ver la naturaleza del Pokémon rival en batalla.',
       '🏪 Mercado de Crías: venta automática de Pokémon criados',
       '🥚 Incubación Asistida: misiones idle de 4/8/12h que mejoran IVs'
     ],
@@ -152,7 +152,7 @@ const PLAYER_CLASSES = {
       "Al criar, se eligen 4 IVs aleatorios de entre los 12 disponibles de los padres (normalmente son solo 3).",
       "El contador de pasos requerido para que un huevo eclosione se reduce en un 25%.",
       "Cada eclosión tiene un 15% de posibilidad de devolver 1 punto de vigor a uno de los padres en la guardería.",
-      "Permite ver el IV Total (suma de los 6 stats) del Pokémon rival directamente en el log de batalla.",
+      "Muestra la Naturaleza (Modificadores de Stats) del Pokémon rival directamente en el HUD de batalla.",
       "Interfaz opcional en la Guardería que vende automáticamente los huevos por ₽1000 + 75% del costo de cría.",
       "Misiones pasivas de larga duración que garantizan mejores IVs mínimos para los huevos generados."
     ],
@@ -999,7 +999,7 @@ const REPUTATION_SHOP_ITEMS = [
   { id: 'rep_tm_earthquake', name: 'MT26 Terremoto', cost: 80, icon: '🌋', desc: 'El poderoso movimiento Terremoto en formato MT.', grant: () => { state.inventory['MT26 Terremoto'] = (state.inventory['MT26 Terremoto'] || 0) + 1; } },
   { id: 'rep_revive', name: 'Revivir x5', cost: 30, icon: '💊', desc: 'Cinco Revivires del botiquín de los Gimnasios.', grant: () => { state.inventory['Revivir'] = (state.inventory['Revivir'] || 0) + 5; } },
   { id: 'rep_full_heal', name: 'Cura Total x3', cost: 25, icon: '✨', desc: 'Tres Cura Total para sanar cualquier estado alterado.', grant: () => { state.inventory['Cura Total'] = (state.inventory['Cura Total'] || 0) + 3; } },
-  { id: 'rep_lucky_egg_small', name: 'Huevo Suerte Pequeño', cost: 50, icon: '🥚', desc: 'Potenciador: +50% EXP durante 30 minutos.', grant: () => { state.inventory['Huevo Suerte Pequeño'] = (state.inventory['Huevo Suerte Pequeño'] || 0) + 1; } },
+  { id: 'rep_iv_scanner', name: 'Escáner de IVs', cost: 100, icon: '🔍', desc: 'Radar avanzado: Revela los IVs totales de los rivales salvajes durante 1 hora.', grant: () => { state.inventory['Escáner de IVs'] = (state.inventory['Escáner de IVs'] || 0) + 1; } },
   { id: 'rep_star_piece', name: 'Trozo Estrella x3', cost: 60, icon: '⭐', desc: 'Tres trozos de estrella de valor extraordinario.', grant: () => { state.inventory['Trozo Estrella'] = (state.inventory['Trozo Estrella'] || 0) + 3; } },
 ];
 

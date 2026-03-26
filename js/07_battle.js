@@ -227,6 +227,12 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   applyDownload(player, enemy);
   applyDownload(enemy, player);
 
+  // ── Predict Nature (Criador) ────────────────────────────────────────────
+  if (state.playerClass === 'criador' && enemy.nature) {
+    const nat = enemy.nature;
+    addLog(`¡Tu instinto de Criador predice que ${enemy.name} es de naturaleza <strong>${nat}</strong>!`, 'log-info');
+  }
+
   // Draw background after screen is visible
   setTimeout(() => drawBattleBackground(state.battle.locationId), 50);
 }
@@ -285,7 +291,10 @@ function updateBattleUI() {
 
   const _pSt = statusIcon(b.player?.status);
   const _eSt = statusIcon(b.enemy?.status);
-  const enemyName = b.enemy.name + (b.enemy.isShiny ? ' ✨' : '') + (_eSt ? ' ' + _eSt : '');
+  let enemyName = b.enemy.name + (b.enemy.isShiny ? ' ✨' : '') + (_eSt ? ' ' + _eSt : '');
+  if (state.playerClass === 'criador' && b.enemy.nature) {
+    enemyName += ` (${b.enemy.nature})`;
+  }
   document.getElementById('enemy-name').textContent = enemyName;
   const enemyGenderEl = document.getElementById('enemy-gender');
   if (enemyGenderEl) {
@@ -322,12 +331,18 @@ function updateBattleUI() {
   if (ivTotalEl) {
     const isCriador = state.playerClass === 'criador' && !b.isPvP;
     const isCazabichos = state.playerClass === 'cazabichos' && !b.isTrainer && !b.isGym && !b.isPvP;
+    const isScannerActive = state.playerClass === 'entrenador' && (state.ivScannerSecs || 0) > 0 && !b.isPvP && !b.isTrainer && !b.isGym;
     
     if (isCriador && b.enemy.ivs) {
       const total = Object.values(b.enemy.ivs).reduce((s, v) => s + (v || 0), 0);
       ivTotalEl.textContent = `IV: ${total}/186`;
       ivTotalEl.style.display = 'block';
       ivTotalEl.style.color = 'var(--blue)';
+    } else if (isScannerActive && b.enemy.ivs) {
+      const total = Object.values(b.enemy.ivs).reduce((s, v) => s + (v || 0), 0);
+      ivTotalEl.textContent = `RADAR IV: ${total}/186`;
+      ivTotalEl.style.display = 'block';
+      ivTotalEl.style.color = 'var(--yellow)';
     } else if (isCazabichos) {
       const streak = (state.classData && state.classData.captureStreak) || 0;
       const mult = Math.min(1.0 + 0.15 * streak, 3.0).toFixed(1);
@@ -2410,6 +2425,17 @@ function catchSuccess(enemy) {
     addLog(`${baseEnemy.name} fue enviado a la Caja (equipo lleno).`, 'log-info');
   } else {
     addLog('¡La Caja está llena! Soltá Pokémon para poder capturar más.', 'log-enemy');
+  }
+
+  // Red Maestra (Cazabichos)
+  const isBugType = (baseEnemy.type === 'bug' || (baseEnemy.type2 || POKE_TYPE2[baseEnemy.id]) === 'bug');
+  if (state.playerClass === 'cazabichos' && isBugType && Math.random() < 0.20) {
+    const secondCaught = JSON.parse(JSON.stringify(caught));
+    secondCaught.uid = 'extra_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    if (state.box.length < 200) {
+      state.box.push(secondCaught);
+      addLog(`¡La <strong>Red Maestra</strong> atrapó a un segundo ${baseEnemy.name}! (2x1)`, 'log-catch');
+    }
   }
 
   // Add to pokedex (caught) – also ensures it's removed from seenPokedex/only-seen list

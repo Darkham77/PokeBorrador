@@ -783,6 +783,15 @@
         desc: 'Aumenta un 3% la probabilidad de que aparezca Mewtwo en la Cueva Celeste (30 min).',
         effect: (qty) => { state.inventory['Ticket Mewtwo'] = (state.inventory['Ticket Mewtwo'] || 0) + qty; }
       },
+      {
+        id: 'iv_scanner', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-radar.png',
+        name: 'Escáner de IVs', icon: '🔍', price: 0, market: false, trainerShop: false, tier: 'epic', type: 'booster',
+        desc: 'Un radar avanzado. Al usarlo, revela los IVs totales de los Pokémon salvajes durante 1 hora.',
+        effect: (qty) => {
+          state.inventory['Escáner de IVs'] = (state.inventory['Escáner de IVs'] || 0) + qty;
+          notify(`¡Recibiste ${qty} Escáner de IVs!`, '🔍');
+        }
+      },
     ];
     window.SHOP_ITEMS = SHOP_ITEMS;
 

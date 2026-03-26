@@ -155,6 +155,7 @@
       'Ticket Cueva Celeste': _ => { state.ceruleanTicketSecs = (state.ceruleanTicketSecs || 0) + 30 * 60; updateHud(); updateBuffPanel(); renderMaps(); return `activó el Ticket Cueva Celeste (30 min)`; },
       'Ticket Articuno': _ => { state.articunoTicketSecs = (state.articunoTicketSecs || 0) + 30 * 60; updateHud(); updateBuffPanel(); renderMaps(); return `activó el Ticket Articuno (30 min)`; },
       'Ticket Mewtwo': _ => { state.mewtwoTicketSecs = (state.mewtwoTicketSecs || 0) + 30 * 60; updateHud(); updateBuffPanel(); renderMaps(); return `activó el Ticket Mewtwo (30 min)`; },
+      'Escáner de IVs': _ => { state.ivScannerSecs = (state.ivScannerSecs || 0) + 60 * 60; if (typeof updateHud === 'function') updateHud(); if (typeof updateBuffPanel === 'function') updateBuffPanel(); return `activó el Escáner de IVs (60 min)`; },
     };
 
     function showBattleBag() {
@@ -177,7 +178,7 @@
         html += `<div style="color:var(--gray);font-size:12px;">No tenés objetos utilizables.</div>`;
       } else {
         html += usable.map(([name, qty]) => {
-          const isGlobal = HEALING_ITEMS[name]?.length === 0 || ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente'].includes(name);
+          const isGlobal = HEALING_ITEMS[name]?.length === 0 || ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs'].includes(name);
           return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);
             border-radius:10px;padding:10px 14px;margin-bottom:8px;">
             <div>
@@ -237,7 +238,7 @@
       const fn = HEALING_ITEMS[itemName];
       if (!fn || !state.inventory[itemName]) return;
 
-      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente'].includes(itemName);
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs'].includes(itemName);
       
       let result;
       let targetName = 'Equipo';
@@ -401,7 +402,7 @@
       const fn = HEALING_ITEMS[itemName];
       if (!fn || !state.inventory[itemName]) return;
 
-      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente'].includes(itemName);
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs'].includes(itemName);
 
       if (isGlobal) {
         const result = fn();
