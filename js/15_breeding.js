@@ -394,7 +394,9 @@ function calculateInheritance(pA, pB, iA, iB) {
   }
   
   const forcedCount = (forcedA && forcedB && forcedA !== forcedB) ? 2 : ((forcedA || forcedB) ? 1 : 0);
-  let count = Math.max(0, 3 - forcedCount);
+  // Criador: hereda 4 IVs en lugar de 3 (Lazo Destino potenciado)
+  const baseInheritCount = (typeof state !== 'undefined' && state.playerClass === 'criador') ? 4 : 3;
+  let count = Math.max(0, baseInheritCount - forcedCount);
   
   const rem = STATS.filter(s => s !== forcedA && s !== forcedB).sort(() => Math.random() - 0.5).slice(0, count);
   rem.forEach(s => ivs[s] = Math.random() < 0.5 ? pA.ivs[s] : pB.ivs[s]);
@@ -455,7 +457,9 @@ function renderDaycareBreedingSummary(pA, pB, compat, itemA = '', itemB = '') {
   else if (forcedB && forcedA && forcedB.stat === forcedA.stat) {
       guaranteedIVs = [`✓ 50% ${forcedA.label} (${pA.name}) / 50% (${pB.name})`];
   }
-  const ivText = guaranteedIVs.length > 0 ? guaranteedIVs.join('<br>') : '<span style="color:var(--gray);">3 stats al azar (Madre/Padre)</span>';
+  const isCriador = typeof state !== 'undefined' && state.playerClass === 'criador';
+  const baseCount = isCriador ? 4 : 3;
+  const ivText = guaranteedIVs.length > 0 ? guaranteedIVs.join('<br>') : `<span style="color:var(--gray);">${baseCount} stats al azar (Madre/Padre)</span>`;
 
   return `
     <div style="background:linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95)); border:1px solid rgba(139,92,246,0.5); border-radius:16px; padding:16px; box-shadow:0 8px 32px rgba(0,0,0,0.6); text-align:left; position:relative; overflow:hidden;">
@@ -657,10 +661,10 @@ function _pickerHtml(p, compareTo) {
   // Tags display
   const tags = p.tags || [];
   const tagsHtml = tags.length ? `<div style="display:flex;gap:4px;margin-top:4px;justify-content:center;">
-	        ${tags.includes('fav') ? '<span style="font-size:10px; filter: drop-shadow(0 0 2px #ffd32a);">⭐</span>' : ''}
-	        ${tags.includes('breed') ? '<span style="font-size:10px; filter: drop-shadow(0 0 2px #ff4d4d);">❤️</span>' : ''}
-	        ${tags.includes('iv31') ? '<span style="font-size:10px;color:#ffd32a;font-weight:900;text-shadow: 0 0 5px #ffd32a66;">31</span>' : ''}
-	      </div>` : '';
+                ${tags.includes('fav') ? '<span style="font-size:10px; filter: drop-shadow(0 0 2px #ffd32a);">⭐</span>' : ''}
+                ${tags.includes('breed') ? '<span style="font-size:10px; filter: drop-shadow(0 0 2px #ff4d4d);">❤️</span>' : ''}
+                ${tags.includes('iv31') ? '<span style="font-size:10px;color:#ffd32a;font-weight:900;text-shadow: 0 0 5px #ffd32a66;">31</span>' : ''}
+              </div>` : '';
 
   let compatHtml = '';
   let inlineCompat = '';
@@ -691,16 +695,16 @@ function _pickerHtml(p, compareTo) {
     }
 
     compatHtml = `
-	          <div style="margin-top:10px; padding:10px; border-radius:10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08);">
-	            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-	              <span style="font-size:11px; color:${info.color}; font-weight:900; text-transform:uppercase; letter-spacing:0.8px; text-shadow: 0 0 10px ${info.color}44;">${info.label}</span>
-	              ${cp.level > 0 ? `<span style="font-size:10px; background:${info.color}; color:#000; padding:2px 8px; border-radius:6px; font-weight:900; box-shadow: 0 0 10px ${info.color}66;">⏱️ ${every}</span>` : ''}
-	            </div>
-	            <div style="font-size:11px; color:#ffffff; line-height:1.5; font-weight:500;">
-	              ${extra}<br>
-	              <span style="font-size:10px; color:rgba(255,255,255,0.6); font-weight:400;">🧬 Grupos: <span style="color:#ffffff; font-weight:600;">${shared}</span></span>
-	            </div>
-	          </div>`;
+                  <div style="margin-top:10px; padding:10px; border-radius:10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08);">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                      <span style="font-size:11px; color:${info.color}; font-weight:900; text-transform:uppercase; letter-spacing:0.8px; text-shadow: 0 0 10px ${info.color}44;">${info.label}</span>
+                      ${cp.level > 0 ? `<span style="font-size:10px; background:${info.color}; color:#000; padding:2px 8px; border-radius:6px; font-weight:900; box-shadow: 0 0 10px ${info.color}66;">⏱️ ${every}</span>` : ''}
+                    </div>
+                    <div style="font-size:11px; color:#ffffff; line-height:1.5; font-weight:500;">
+                      ${extra}<br>
+                      <span style="font-size:10px; color:rgba(255,255,255,0.6); font-weight:400;">🧬 Grupos: <span style="color:#ffffff; font-weight:600;">${shared}</span></span>
+                    </div>
+                  </div>`;
   }
 
   const isExhausted = p.vigor <= 0;
@@ -721,14 +725,14 @@ function _pickerHtml(p, compareTo) {
             <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
             ${tierHtml}
           </div>
-	          <div style="font-size:11px;color:#ffffff;display:flex;align-items:center;gap:8px;font-weight:600;">
-	            <span style="background:rgba(255,255,255,0.1); padding:1px 6px; border-radius:4px;">Nv.${p.level}</span>
-	            ${genderIcon}
-	            <span style="color:rgba(255,255,255,0.4); font-weight:200;">|</span>
-	            <span style="color:rgba(255,255,255,0.8);">IVs <b style="color:#fff;">${tier.total}</b>/186</span>
+                  <div style="font-size:11px;color:#ffffff;display:flex;align-items:center;gap:8px;font-weight:600;">
+                    <span style="background:rgba(255,255,255,0.1); padding:1px 6px; border-radius:4px;">Nv.${p.level}</span>
+                    ${genderIcon}
+                    <span style="color:rgba(255,255,255,0.4); font-weight:200;">|</span>
+                    <span style="color:rgba(255,255,255,0.8);">IVs <b style="color:#fff;">${tier.total}</b>/186</span>
                 ${inlineCompat}
                 <span style="color:var(--yellow);margin-left:auto;">⚡${p.vigor || 0}</span>
-	          </div>
+                  </div>
           ${compatHtml}
         </div>
       </div>`;
@@ -932,16 +936,24 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
   const ivs = calculateInheritance(pA, pB, iA, iB);
   ivs._cost = calculateBreedingCost(pA, pB);
   
+  const _isCriador = typeof state !== 'undefined' && state.playerClass === 'criador';
   if (iA === 'Piedra Eterna' && iB === 'Piedra Eterna') {
-      ivs._nature = Math.random() < 0.5 ? pA.nature : pB.nature;
+      // Criador: elige siempre la naturaleza del padre A (100% control)
+      ivs._nature = _isCriador ? pA.nature : (Math.random() < 0.5 ? pA.nature : pB.nature);
   } else if (iA === 'Piedra Eterna') {
       ivs._nature = pA.nature;
   } else if (iB === 'Piedra Eterna') {
       ivs._nature = pB.nature;
   }
+  // Criador: marca el huevo para mayor probabilidad de Habilidad Oculta (75% vs 60%)
+  if (_isCriador) ivs._haBoost = true;
   
   let moves = (EGG_MOVES_DB[compat.eggSpecies] || []).filter(m => (pA.moves || []).concat(pB.moves || []).map(x => x.id || x).includes(m)).slice(0, 2);
-  const ready = new Date(dateObj.getTime() + 30 * 60 * 1000); // 30 mins
+  // Criador: 25% menos tiempo de eclosión
+  const hatchMs = (typeof state !== 'undefined' && state.playerClass === 'criador')
+    ? Math.floor(30 * 0.75 * 60 * 1000)
+    : 30 * 60 * 1000;
+  const ready = new Date(dateObj.getTime() + hatchMs); // 30 mins (22.5 para Criador)
   
   let finalSpecies = compat.eggSpecies;
   if (finalSpecies === 'nidoran_f' || finalSpecies === 'nidoran_m') {
@@ -1041,14 +1053,14 @@ async function renderEggGrid() {
           <div class="egg-species">${pd ? pd.emoji + ' ' + pd.name : e.species}</div>
           <div class="egg-timer" style="${isReady ? 'color:#22c55e;font-weight:700;' : ''}">${isReady ? '¡Listo para recoger!' : `Eclosiona en ${leftMin} min`}</div>
           <div class="egg-progress-bar"><div class="egg-progress-fill" style="width:${pct}%"></div></div>
-          ${isReady ? `<button onclick="collectEgg('${e.egg_id}', '${e.species}', ${e.shiny_roll}, '${escape(JSON.stringify(e.inherited_ivs))}')" style="margin-top:8px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px;font-family:'Press Start 2P';font-size:8px;cursor:pointer;">📥 Recoger</button>` : ''}
+          ${isReady ? `<button onclick="collectEgg('${e.egg_id}', '${e.species}', ${e.shiny_roll}, '${escape(JSON.stringify(e.inherited_ivs))}', '${e.parent_a || ''}', '${e.parent_b || ''}')" style="margin-top:8px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px;font-family:'Press Start 2P';font-size:8px;cursor:pointer;">📥 Recoger</button>` : ''}
         </div>`;
   }).join('');
 
   document.getElementById('daycare-nav-badge').style.display = badgeReady ? 'block' : 'none';
 }
 
-async function collectEgg(eggId, sp, shiny, ivsJson) {
+async function collectEgg(eggId, sp, shiny, ivsJson, parentAUid = '', parentBUid = '') {
   const extra = {
     origin: 'breeding',
     isShiny: shiny,
@@ -1072,6 +1084,22 @@ async function collectEgg(eggId, sp, shiny, ivsJson) {
       if (typeof updateHud === 'function') updateHud();
     }
     await sb.from('eggs').delete().eq('egg_id', eggId);
+
+    // Criador: 15% de chance de recuperar 1 Vigor a cada padre del huevo
+    if (state.playerClass === 'criador' && (parentAUid || parentBUid)) {
+      const MAX_VIGOR = 10;
+      const all = [...(state.team || []), ...(state.box || [])];
+      const parents = all.filter(p => p.uid === parentAUid || p.uid === parentBUid);
+      let recovered = 0;
+      parents.forEach(p => {
+        if (p.vigor !== undefined && p.vigor < MAX_VIGOR && Math.random() < 0.15) {
+          p.vigor = Math.min(MAX_VIGOR, p.vigor + 1);
+          recovered++;
+        }
+      });
+      if (recovered > 0) notify(`¡${recovered === 2 ? 'Ambos padres recuperaron' : 'Un padre recuperó'} 1 Vigor! 🔋`, '🧬');
+    }
+
     notify('¡Recogiste el huevo de la guardería! Ahora camina para eclosionarlo.', '🏠');
     renderDaycareUI();
     updateProfilePanel();

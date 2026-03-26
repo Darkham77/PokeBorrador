@@ -387,11 +387,25 @@
 	        return;
 	      }
 	
-	      const cycle = getDayCycle();
-	      const wildPool = loc.wild[cycle] || loc.wild.day;
-	      const wildRates = loc.rates[cycle] || loc.rates.day;
-	
-	      // Special Legendary Ticket Spawns
+      const cycle = getDayCycle();
+      const wildPool = loc.wild[cycle] || loc.wild.day;
+      const wildRates = loc.rates[cycle] || loc.rates.day;
+
+      // Habilidad Cazabichos: Aroma Atractivo
+      if (state.playerClass === 'cazabichos') {
+        const isSafari = locId === 'safari_zone';
+        const attractProb = isSafari ? 0.10 : 0.005;
+        if (Math.random() < attractProb) {
+          const attractId = Math.random() < 0.5 ? 'scyther' : 'pinsir';
+          const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
+          const enemy = makePokemon(attractId, level);
+          notify(`¡Tu Aroma Atractivo ha atraído a un ${attractId.toUpperCase()}!`, '🌸');
+          startBattle(enemy, false, null, locId);
+          return;
+        }
+      }
+
+      // Special Legendary Ticket Spawns
 	      if (locId === 'seafoam_islands' && state.articunoTicketSecs > 0 && Math.random() < GAME_RATIOS.encounters.legendaryArticuno) {
 	        const enemy = makePokemon('articuno', 50);
 	        startBattle(enemy, false, null, locId);

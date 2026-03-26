@@ -153,6 +153,11 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
     saveGame(false);
   }
 
+  // Robo Rápido del Equipo Rocket al inicio de batalla vs entrenador
+  if (isTrainer && !isGym && typeof tryRocketSteal === 'function') {
+    tryRocketSteal();
+  }
+
   showScreen('battle-screen');
   updateBattleUI();
   renderMoveButtons();
@@ -161,7 +166,12 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   let startMsg = `¡Un ${enemy.name} salvaje apareció!`;
   if (isGym) startMsg = `¡Un ${enemy.name} salvaje apareció! ¡Es un combate de Gimnasio!`;
   if (isTrainer) {
-    startMsg = `¡${trainerName || 'El entrenador'} te desafía!`;
+    const criminality = (state.playerClass === 'rocket' && state.classData?.criminality >= 100);
+    if (criminality && !isGym) {
+      startMsg = `¡${trainerName || 'El entrenador'} te desafía! <br><span style="color:#ef4444;font-weight:bold;">"Tu cabeza vale mucho. ¡Ya no robarás más Pokémon!"</span>`;
+    } else {
+      startMsg = `¡${trainerName || 'El entrenador'} te desafía!`;
+    }
   }
 
   setLog(startMsg);
@@ -308,6 +318,26 @@ function updateBattleUI() {
   document.getElementById('enemy-level').textContent = `Nv. ${b.enemy.level}`;
   setBattleSprite('enemy', b.enemy.id, false);
   document.getElementById('enemy-hp-text').textContent = `HP: ${b.enemy.hp}/${b.enemy.maxHp}`;
+  const ivTotalEl = document.getElementById('enemy-iv-total');
+  if (ivTotalEl) {
+    const isCriador = state.playerClass === 'criador' && !b.isPvP;
+    const isCazabichos = state.playerClass === 'cazabichos' && !b.isTrainer && !b.isGym && !b.isPvP;
+    
+    if (isCriador && b.enemy.ivs) {
+      const total = Object.values(b.enemy.ivs).reduce((s, v) => s + (v || 0), 0);
+      ivTotalEl.textContent = `IV: ${total}/186`;
+      ivTotalEl.style.display = 'block';
+      ivTotalEl.style.color = 'var(--blue)';
+    } else if (isCazabichos) {
+      const streak = (state.classData && state.classData.captureStreak) || 0;
+      const mult = Math.min(1.0 + 0.15 * streak, 3.0).toFixed(1);
+      ivTotalEl.textContent = `RACHA: x${streak} (Shiny x${mult})`;
+      ivTotalEl.style.display = 'block';
+      ivTotalEl.style.color = 'var(--green)';
+    } else {
+      ivTotalEl.style.display = 'none';
+    }
+  }
   const enemyPct = b.enemy.hp / b.enemy.maxHp;
   document.getElementById('enemy-hp-bar').style.width = (enemyPct * 100) + '%';
   document.getElementById('enemy-hp-bar').className = `hp-bar ${getHpClass(enemyPct)}`;
@@ -1734,11 +1764,14 @@ function enemyTurn(opts = {}) {
 
   // --- AI DECISION MAKING ---
   if (b.isTrainer || b.isGym) {
-    // 1. Check for Item Usage (Gym Leaders only)
+    // 1. Check for Item Usage (Gym Leaders and Police Officers)
     // Use preDecidedItem if available to avoid "prediction" bug
     let itemToUse = preDecidedItem;
     
-    if (!itemToUse && b.isGym && !b.enemyUsedItem) {
+    const isPolice = (state.playerClass === 'rocket' && state.classData?.criminality >= 100);
+    const canUseItem = (b.isGym || isPolice) && !b.enemyUsedItem;
+
+    if (!itemToUse && canUseItem) {
       // Fallback for cases where enemyTurn is called without pre-decision (e.g. after player uses item)
       const hpPct = b.enemy.hp / b.enemy.maxHp;
       if (hpPct < 0.25) {
@@ -1751,7 +1784,8 @@ function enemyTurn(opts = {}) {
 
     if (itemToUse && !b.enemyUsedItem) {
       b.enemyUsedItem = true; // Limit to one item per battle for now
-      addLog(`¡${b.trainerName || 'El Líder'} usó ${itemToUse}!`, 'log-enemy');
+      const trainerDisplayName = b.trainerName || (b.isGym ? 'El Líder' : 'El Entrenador');
+      addLog(`¡${trainerDisplayName} usó ${itemToUse}!`, 'log-enemy');
       
       if (itemToUse === 'Hiper Poción') b.enemy.hp = Math.min(b.enemy.maxHp, b.enemy.hp + 200);
       else if (itemToUse === 'Poción Máxima') b.enemy.hp = b.enemy.maxHp;
@@ -2247,7 +2281,22 @@ function executeCatch(ballName) {
   const statusBonus = (b.enemy.status === 'sleep' || b.enemy.status === 'freeze') ? 2 : (b.enemy.status ? 1.5 : 1);
 
   // Official Formula Factors + configurable multiplier
-  const a = (((3 * b.enemy.maxHp - 2 * b.enemy.hp) * baseRate * ballMult * (window.GAME_RATIOS ? GAME_RATIOS.battle.catchFormulaParams.catchBaseMultiplier : 1.0)) / (3 * b.enemy.maxHp)) * statusBonus;
+  let a = (((3 * b.enemy.maxHp - 2 * b.enemy.hp) * baseRate * ballMult * (window.GAME_RATIOS ? GAME_RATIOS.battle.catchFormulaParams.catchBaseMultiplier : 1.0)) / (3 * b.enemy.maxHp)) * statusBonus;
+
+  // Modificadores de clase sobre la captura
+  if (state.playerClass === 'cazabichos') {
+    // Sinergia Bicho: +5% por Pokémon tipo Bicho en el equipo (máx +20%)
+    const bugCount = (state.team || []).filter(p => {
+      const data = (typeof POKEMON_DB !== 'undefined') ? POKEMON_DB[p.id] : null;
+      return data && (data.type === 'bug' || data.type2 === 'bug' || p.type === 'bug');
+    }).length;
+    const bugBonus = Math.min(bugCount * 0.05, 0.20);
+    if (bugBonus > 0) a *= (1 + bugBonus);
+  } else if (state.playerClass === 'entrenador') {
+    // Penalización: -10% catchRate en Pokémon con IV total > 120
+    const enemyIvTotal = Object.values(b.enemy.ivs || {}).reduce((s, v) => s + (v || 0), 0);
+    if (enemyIvTotal > 120) a *= 0.90;
+  }
 
   let shakes = 0;
   if (a >= 255 || ballName === 'Master Ball') {
@@ -2317,6 +2366,8 @@ function showCatchAnim(success, enemy, shakes) {
           catchSuccess(enemy);
         } else {
           setLog(`¡${enemy.name} se escapó de la Pokéball!`, 'log-enemy');
+          // Hook de clase: rompe la racha del Cazabichos
+          if (typeof onCaptureFail === 'function') onCaptureFail();
           setBtns(true);
           enemyTurn();
         }
@@ -2373,6 +2424,10 @@ function catchSuccess(enemy) {
   }
 
   setLog(`¡${baseEnemy.name} fue capturado!`, 'log-catch');
+
+  // Hook de clase: racha de capturas (Cazabichos) + classXP
+  if (typeof onCaptureSuccess === 'function') onCaptureSuccess();
+
   if (caught.heldItem) {
     addLog(`¡Parece que ${caught.name} llevaba un <strong>${caught.heldItem}</strong> equipado!`, 'log-info');
   }
@@ -2435,6 +2490,19 @@ function awardBattleExperience(isCapture = false) {
     // Actually, in many games exp is split. For simplicity in this fan game, we'll keep it generous.
 
     if ((state.luckyEggSecs || 0) > 0 || p.heldItem === 'Huevo Suerte') pExp = Math.floor(pExp * 1.5);
+
+    // Modificador de clase
+    if (typeof getClassModifier === 'function') {
+      const isTrainerBattle = !!(b.isTrainer || b.isGym);
+      const expClassMult = getClassModifier('expMult', { isTrainer: isTrainerBattle });
+      if (expClassMult !== 1.0) {
+        pExp = Math.floor(pExp * expClassMult);
+        const bonusTxt = expClassMult > 1.0 ? 'BONO' : 'PENALIZACIÓN';
+        const bonusColor = expClassMult > 1.0 ? '#3b82f6' : '#ef4444';
+        const clsName = state.playerClass === 'entrenador' ? 'Entrenador' : (state.playerClass === 'criador' ? 'Criador' : 'Cazabichos');
+        addLog(`<span style="color:${bonusColor};font-size:9px;">[${bonusTxt} ${clsName.toUpperCase()}: x${expClassMult}]</span>`, 'log-info');
+      }
+    }
     
     addLog(`${p.name} ganó <span style="color:#6BCB77;font-weight:bold;">${pExp} EXP</span>.`, 'log-player');
 
@@ -2501,6 +2569,10 @@ function endBattle(won) {
   b._ending = true;
   b.over = true;
 
+  // Cleanup move tooltips to prevent them from sticking on screen
+  const tooltip = document.getElementById('move-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
+
   // If the player's active Pokémon was transformed (e.g. Ditto), restore its original form
   if (b.player && b.player.isTransformed && b.player.originalForm) {
     const prevHp = b.player.hp;
@@ -2558,12 +2630,30 @@ function endBattle(won) {
     addLog(`¡Ganaste <span style="color:#22c55e;font-weight:bold;">₽${moneyWon.toLocaleString()}</span>!`, 'log-info');
 
     if (b.isTrainer || b.isGym) {
-      const coins = Math.floor(b.enemy.level * 2);
+      let coins = Math.floor(b.enemy.level * 2);
+      // Modificador de BC por clase
+      if (typeof getClassModifier === 'function') {
+        const bcMult = getClassModifier('bcMult', { isGym: !!b.isGym });
+        coins = Math.floor(coins * bcMult);
+      }
       state.battleCoins = (state.battleCoins || 0) + coins;
       addLog(`¡Obtuviste <span style="color:var(--yellow);font-weight:bold;"><i class="fas fa-coins coin-icon"></i> ${coins} Battle Coins</span>!`, 'log-catch');
+      // Reputación del Entrenador (por ganar gimnasios)
+      if (b.isGym && typeof addReputationPoints === 'function') addReputationPoints(10);
+      // ClassXP por victorias
+      if (typeof addClassXP === 'function') addClassXP(b.isGym ? 30 : 10);
 
       if (!state.stats) state.stats = {};
       if (b.isTrainer) state.stats.trainersDefeated = (state.stats.trainersDefeated || 0) + 1;
+
+      // Reset criminality if defeated the Police Officer
+      if (b.trainerName === 'Oficial de Policía' && state.playerClass === 'rocket') {
+        if (state.classData) {
+          state.classData.criminality = 0;
+          addLog('¡Tu criminalidad ha sido reseteada tras derrotar a la ley!', 'log-info');
+          if (typeof updateProfilePanel === 'function') updateProfilePanel();
+        }
+      }
 
       // Egg system (only for random trainers, not gyms)
       if (b.isTrainer && !b.isRival && Math.random() < 0.05) {
@@ -2717,6 +2807,19 @@ function endBattle(won) {
       showBattleSwitch(true); // forced = true
     } else {
       // All fainted — true defeat
+      
+      // Penalización por Criminalidad Máxima (Equipo Rocket)
+      if (state.playerClass === 'rocket' && state.classData?.criminality >= 100) {
+        const strongest = [...state.team].sort((a, b) => b.level - a.level)[0];
+        const penalty = (strongest?.level || 1) * 100;
+        state.money = Math.max(0, (state.money || 0) - penalty);
+        state.classData.criminality = 0; // Reset criminality
+        setTimeout(() => {
+          notify(`¡Fuiste capturado! Perdiste ₽${penalty.toLocaleString()} por tu recompensa.`, '🚔');
+          if (typeof updateCriminalityBar === 'function') updateCriminalityBar();
+        }, 1000);
+      }
+
       state.team.forEach(p => { p.hp = Math.max(p.hp, Math.floor(p.maxHp * 0.3)); });
       notify('¡Todo tu equipo fue derrotado!', '❤️‍🩹');
       if (!state.stats) state.stats = {};
@@ -2750,6 +2853,8 @@ function runFromBattle() {
   state.battle.over = true;
   state.battle = null;
   setLog('¡Huiste del combate!', 'log-info');
+  // Romper racha del Cazabichos al huir
+  if (typeof onCaptureFail === 'function') onCaptureFail();
   setTimeout(() => {
     showScreen('game-screen');
     showTab('map');

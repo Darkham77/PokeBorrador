@@ -86,7 +86,43 @@
       document.getElementById('pokemon-center-overlay').style.display = 'none';
     }
 
+    function getHealCost() {
+      if (!state.playerClass || typeof getClassModifier !== 'function') return 0;
+      const damagedCount = (state.team || []).filter(p => p.hp < p.maxHp || p.status || p.moves.some(m => m.pp < m.maxPP)).length;
+      if (damagedCount === 0) return 0;
+
+      let mult = 1.0;
+      if (state.playerClass === 'rocket') {
+        mult = getClassModifier('healCostMult');
+      } else if (state.playerClass === 'criador') {
+        const hasForeign = (state.team || []).some(p => p.originalTrainer && p.originalTrainer !== state.trainer);
+        mult = getClassModifier('healCostMult', { isForeign: hasForeign });
+      }
+      if (mult <= 1.0) return 0;
+      return Math.floor(50 * damagedCount * (mult - 1.0));
+    }
+
     function healAllPokemon() {
+      // Costo extra por clase
+      const extraCost = getHealCost();
+      
+      // Si hay costo, pedir confirmación visual antes de curar (opcional, pero mejor informamos)
+      if (extraCost > 0 && !confirm(`Curar a tu equipo tiene un costo de ₽${extraCost} debido a tu clase (${state.playerClass === 'rocket' ? 'Equipo Rocket' : 'Criador'}). ¿Continuar?`)) {
+        closePokemonCenter();
+        return;
+      }
+
+      if (extraCost > 0 && (state.money || 0) < extraCost) {
+        notify(`No tenés suficiente dinero para curar (costo: ₽${extraCost})`, '💸');
+        closePokemonCenter();
+        return;
+      }
+      if (extraCost > 0) {
+        state.money -= extraCost;
+        const cls = state.playerClass === 'rocket' ? '🚀 Equipo Rocket' : '🧬 Criador';
+        notify(`${cls}: curación con recargo. ₽${extraCost} cobrados.`, '🏥');
+      }
+
       // Logic to heal
       state.team.forEach(p => {
         p.hp = p.maxHp;
@@ -109,6 +145,7 @@
           notify('¡Tu equipo ha sido curado!', '💊');
           if (typeof renderTeam === 'function') renderTeam();
           if (typeof renderMaps === 'function') renderMaps();
+          if (typeof updateHud === 'function') updateHud();
         }, 800);
       }, 2000);
     }
@@ -167,6 +204,7 @@
         if (unlocks) setTimeout(() => notify(`¡Nuevos items en el Poké Market!`, '🛒'), 1500);
       }
       updateHud();
+      if (typeof checkClassUnlock === 'function') checkClassUnlock();
     }
 
     // What unlocks at each trainer level
@@ -766,6 +804,55 @@ function switchShopSection(section) {
   else renderMarket();
 }
 
+function getBlackMarketItems() {
+  if (!state.classData) state.classData = {};
+  if (!state.classData.blackMarketDaily) {
+    state.classData.blackMarketDaily = { date: '', items: [], purchased: [] };
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const daily = state.classData.blackMarketDaily;
+
+  if (daily.date !== today) {
+    // Generar nuevos items para hoy
+    const possibleItems = SHOP_ITEMS.filter(i => i.trainerShop === true && i.bcPrice > 0);
+    const shuffled = [...possibleItems].sort(() => 0.5 - Math.random());
+    daily.items = shuffled.slice(0, 3).map(i => i.id);
+    daily.date = today;
+    daily.purchased = [];
+    if (typeof saveGame === 'function') saveGame(false);
+  }
+  return daily.items;
+}
+
+function buyBlackMarketItem(itemId) {
+  if (state.playerClass !== 'rocket') return;
+  const daily = state.classData.blackMarketDaily;
+  if (!daily.items.includes(itemId)) return;
+  if (daily.purchased.includes(itemId)) {
+    notify('Ya compraste este objeto hoy.', '🚫');
+    return;
+  }
+
+  const item = SHOP_ITEMS.find(i => i.id === itemId);
+  if (!item) return;
+
+  const priceInMoney = item.bcPrice * 50;
+  if (state.money < priceInMoney) {
+    notify('No tenés suficiente dinero (₽).', '❌');
+    return;
+  }
+
+  state.money -= priceInMoney;
+  daily.purchased.push(itemId);
+  item.effect(1);
+  
+  updateHud();
+  renderTrainerShop();
+  notify(`¡Compraste ${item.name} en el Mercado Negro! 🚀`, '💰');
+  if (typeof saveGame === 'function') saveGame(false);
+}
+
 function renderTrainerShop() {
   const bcEl = document.getElementById('trainer-shop-bc');
   if (bcEl) bcEl.textContent = (state.battleCoins || 0).toLocaleString();
@@ -807,8 +894,45 @@ function renderTrainerShop() {
   };
   const grid = document.getElementById('trainer-shop-grid');
   if (!grid) return;
-  let lastCat = null;
+
   const rows = [];
+
+  // --- MERCADO NEGRO (Solo visible para Team Rocket) ---
+  const isRocket = state.playerClass === 'rocket';
+  
+  if (isRocket) {
+    const bmItemIds = getBlackMarketItems();
+    rows.push(`<div style="grid-column:1/-1;padding:10px 4px 4px;font-size:10px;font-family:'Press Start 2P';color:#ef4444;letter-spacing:1px;border-bottom:1px solid rgba(239,68,68,0.25);margin-bottom:4px;">🕵️ Mercado Negro</div>`);
+    
+    bmItemIds.forEach(id => {
+      const item = SHOP_ITEMS.find(i => i.id === id);
+      if (!item) return;
+      
+      const daily = state.classData.blackMarketDaily;
+      const alreadyPurchased = daily.purchased.includes(id);
+      const priceInMoney = item.bcPrice * 50;
+      const canAfford = state.money >= priceInMoney;
+      const tierCls = tierColors[item.tier] || 'tier-common';
+
+      rows.push(`<div class="market-card" style="border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.05);">
+        <span class="market-tier-badge ${tierCls}">${tierLabels[item.tier] || item.tier}</span>
+        <div class="market-item-icon">
+          ${item.sprite ? `<img src="${item.sprite}" width="40" height="40" style="image-rendering:pixelated;" onerror="this.style.display='none'">` : `<span style="font-size:32px">${item.icon}</span>`}
+        </div>
+        <div class="market-item-name" style="color:#ef4444;">${item.name}</div>
+        <div class="market-item-desc" style="margin-top:4px;">${item.desc}</div>
+        <div class="market-item-price" style="color:#22c55e;">₽ ${priceInMoney.toLocaleString()}</div>
+        <button class="market-buy-btn" 
+          onclick="${!alreadyPurchased ? `buyBlackMarketItem('${item.id}')` : ''}"
+          style="${!alreadyPurchased && canAfford ? 'background:linear-gradient(135deg,#ef4444,#991b1b);' : 'background:#374151; cursor:not-allowed;'}"
+          ${alreadyPurchased || !canAfford ? 'disabled' : ''}>
+          ${alreadyPurchased ? 'VENDIDO' : !canAfford ? 'SIN DINERO' : 'COMPRAR'}
+        </button>
+      </div>`);
+    });
+  }
+
+  let lastCat = null;
   trainerItems.forEach(item => {
     if (item.cat !== lastCat) {
       const label = TRAINER_CAT_LABELS[item.cat] || item.cat;

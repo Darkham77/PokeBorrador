@@ -155,6 +155,8 @@
             showScreen('game-screen');
             showTab('map');
             renderTeam();
+            // Inicializar sistema de clases
+            if (typeof initClassSystem === 'function') setTimeout(() => initClassSystem(), 500);
             // Restaurar batalla activa si el jugador hizo F5 durante un combate obligatorio
             if (state.activeBattle) {
               setTimeout(() => restoreActiveBattle(), 300);
@@ -240,6 +242,8 @@
             showScreen('game-screen');
             showTab('map');
             renderTeam();
+            // Inicializar sistema de clases
+            if (typeof initClassSystem === 'function') setTimeout(() => initClassSystem(), 500);
             processOfflineBreeding(user.id);
             // Restaurar batalla activa si el jugador hizo F5 durante un combate obligatorio
             if (state.activeBattle) {
@@ -336,7 +340,17 @@
         luckyEggSecs: state.luckyEggSecs || 0,
         daycare_berry_egg_time: state.daycare_berry_egg_time || 0,
         boxCount: state.boxCount || 4,
-        chats: state.chats || {}
+        chats: state.chats || {},
+        playerClass: state.playerClass || null,
+        classLevel: state.classLevel || 1,
+        classXP: state.classXP || 0,
+        classData: state.classData || {
+          captureStreak: 0,
+          longestStreak: 0,
+          reputationPoints: 0,
+          blackMarketSales: 0,
+          criminality: 0
+        }
       };
     }
 
@@ -498,7 +512,7 @@
       
       ov.innerHTML = `
         <div id="hatch-container" style="text-align:center;">
-          <div id="hatch-egg" style="font-size:120px; cursor:pointer; user-select:none; transition:transform 0.1s ease; filter:drop-shadow(0 0 20px var(--yellow)44);">🥚</div>
+          <div id="hatch-egg" style="font-size:120px; cursor:pointer; user-select:none; transition:transform 0.1s ease; filter:drop-shadow(0 0 20px rgba(255,217,61,0.3));">🥚</div>
           <div id="hatch-msg" style="font-family:'Press Start 2P',monospace; font-size:10px; color:var(--yellow); margin-top:30px; line-height:1.6;">¡TOCA EL HUEVO!<br><span style="font-size:8px; color:var(--gray);">¡Parece que está por romperse!</span></div>
         </div>
         <div id="hatch-reveal" style="display:none; text-align:center; animation: fadeIn 0.8s ease;">

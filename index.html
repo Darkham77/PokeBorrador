@@ -118,8 +118,8 @@
     <!-- MAIN GAME -->
     <div id="game-screen" class="screen">
       <div class="hud">
-        <div class="hud-trainer">
-          <span class="trainer-avatar">🧢</span>
+        <div class="hud-trainer" id="hud-trainer-panel" onclick="if(typeof openClassInfoPanel==='function')openClassInfoPanel()" style="cursor:pointer;">
+          <span class="trainer-avatar" id="hud-class-avatar">🧢</span>
           <div>
             <div class="trainer-name" id="hud-name">ASH</div>
             <div class="trainer-info">Entrenador Nv.<span id="trainer-level">1</span></div>
@@ -129,6 +129,7 @@
                 style="height:100%;background:linear-gradient(90deg,#C77DFF,#9b4dca);border-radius:10px;width:0%;transition:width 0.5s;">
               </div>
             </div>
+            <div id="hud-class-label" style="display:none;margin-top:4px;font-size:8px;font-family:'Press Start 2P',monospace;"></div>
           </div>
         </div>
 
@@ -458,6 +459,22 @@
                  background:transparent;color:var(--gray);cursor:pointer;">
             ✕ CANCELAR
           </button>
+          <!-- Botones Mercado Negro (Rocket) -->
+          <button id="btn-box-rocket-mode" onclick="toggleBoxRocketMode()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
+                 border-radius:10px;border:1px solid rgba(239,68,68,0.4);
+                 background:rgba(239,68,68,0.1);color:#ef4444;cursor:pointer;transition:all .2s;">
+            🚀 VENTA MASIVA
+          </button>
+          <button id="btn-box-confirm-rocket" onclick="confirmBoxRocketSell()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
+                 border-radius:10px;border:none;
+                 background:linear-gradient(135deg,#ef4444,#991b1b);color:#fff;cursor:pointer;box-shadow:0 0 15px rgba(239,68,68,0.4);">
+            ✓ VENDER SELECCIÓN
+          </button>
+          <button id="btn-box-cancel-rocket" onclick="toggleBoxRocketMode()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
+                 border-radius:10px;border:1px solid rgba(255,255,255,0.1);
+                 background:transparent;color:var(--gray);cursor:pointer;">
+            ✕ CANCELAR
+          </button>
         </div>
       </div>
       <div id="box-count-badge" style="font-size:11px;color:var(--gray);margin-bottom:8px;"></div>
@@ -474,6 +491,11 @@
       </div>
       <div id="box-normal-hint" style="font-size:12px;color:var(--gray);margin-bottom:12px;">
         Tocá un Pokémon para intercambiarlo con uno de tu equipo activo.
+      </div>
+      <div id="box-rocket-hint" style="display:none;font-size:11px;color:#ef4444;margin-bottom:12px;
+         background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);
+         border-radius:10px;padding:10px 14px;">
+        ⚠️ Seleccioná los Pokémon que querés vender al Mercado Negro (₽ + Crimen).
       </div>
 
       <!-- FILTER PANEL -->
@@ -868,6 +890,7 @@
               </div>
               <div id="enemy-team-status" style="margin-top:2px;display:flex;gap:3px;font-size:10px;"></div>
               <div class="battle-hp-text" id="enemy-hp-text">HP: ?/?</div>
+              <div id="enemy-iv-total" style="display:none;font-size:9px;color:#a855f7;margin-top:2px;font-family:'Press Start 2P',monospace;letter-spacing:0.5px;"></div>
             </div>
           </div>
 
@@ -962,6 +985,7 @@
   <script src="js/16_chat.js"></script>
   <script src="js/17_sounds.js"></script>
   <script src="js/18_pokedex.js"></script>
+  <script src="js/20_classes.js"></script>
 
   <!-- POKEDEX DETAIL MODAL -->
   <div id="pokedex-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s ease;">

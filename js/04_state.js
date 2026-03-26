@@ -25,20 +25,54 @@
 
     function generateTrainerBattle(locId) {
       const loc = FIRE_RED_MAPS.find(l => l.id === locId);
-      const keys = Object.keys(TRAINER_TYPES);
-      const typeKey = keys[Math.floor(Math.random() * keys.length)];
-      const t = TRAINER_TYPES[typeKey];
+      const isMaxCriminality = (state.playerClass === 'rocket' && state.classData?.criminality >= 100);
       
-      const teamSize = Math.floor(Math.random() * 3) + 1;
-      const enemyTeam = [];
+      let t, trainerLv, teamSize;
       const baseLv = loc ? loc.lv[0] : 5;
-      const trainerLv = baseLv + 2;
 
-      for (let i = 0; i < teamSize; i++) {
-        const pId = t.pool[Math.floor(Math.random() * t.pool.length)];
-        const p = makePokemon(pId, trainerLv);
-        enemyTeam.push(p);
+      if (isMaxCriminality) {
+        // Entrenador Especial: Policía / Cazarrecompensas
+        const criminality = state.classData?.criminality || 100;
+        const excess = Math.max(0, criminality - 100);
+        const bonusLv = Math.floor(excess / 50);
+
+        t = {
+          name: 'Oficial de Policía',
+          sprite: 'https://play.pokemonshowdown.com/sprites/trainers/officer.png',
+          quote: excess > 0 ? `¡Tu criminalidad es de ${criminality}! ¡No escaparás de la justicia!` : '¡Tu cabeza tiene precio! ¡Ya no robarás más Pokémon!'
+        };
+        
+        trainerLv = baseLv + 5 + bonusLv; 
+        teamSize = Math.floor(Math.random() * 2) + 3; // 3-4 Pokémon
+        
+        // Pool de policía: Pokémon de autoridad/orden
+        const policePool = ['arcanine', 'pidgeot', 'machamp', 'magneton', 'kadabra'];
+        const policeTeam = [];
+        for (let i = 0; i < teamSize; i++) {
+          const pId = policePool[Math.floor(Math.random() * policePool.length)];
+          const p = makePokemon(pId, trainerLv);
+          policeTeam.push(p);
+        }
+        
+        _startTrainerBattle(policeTeam, t, locId);
+      } else {
+        const keys = Object.keys(TRAINER_TYPES);
+        const typeKey = keys[Math.floor(Math.random() * keys.length)];
+        t = TRAINER_TYPES[typeKey];
+        trainerLv = baseLv + 2;
+        teamSize = Math.floor(Math.random() * 3) + 1;
+        
+        const enemyTeam = [];
+        for (let i = 0; i < teamSize; i++) {
+          const pId = t.pool[Math.floor(Math.random() * t.pool.length)];
+          const p = makePokemon(pId, trainerLv);
+          enemyTeam.push(p);
+        }
+        _startTrainerBattle(enemyTeam, t, locId);
       }
+    }
+
+    function _startTrainerBattle(enemyTeam, t, locId) {
 
       // Intro Modal
       const introOv = document.createElement('div');
@@ -49,8 +83,8 @@
           border:2px solid var(--blue);text-align:center;position:relative;">
           <img src="${t.sprite}" alt="${t.name}"
             style="height:140px;width:auto;image-rendering:pixelated;margin-bottom:12px;
-            filter:drop-shadow(0 4px 16px var(--blue)88);"
-            onerror="this.outerHTML='<div style=\'font-size:80px;\'>👤</div>'">
+            filter:drop-shadow(0 4px 16px rgba(10,132,255,0.5));"
+            onerror="this.outerHTML='<div style=&quot;font-size:80px;&quot;>👤</div>'">
           <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--blue);margin-bottom:6px;">${t.name}</div>
           <div style="font-size:13px;color:#eee;margin:16px 0;line-height:1.6;font-style:italic;">"${t.quote}"</div>
           <button id="trainer-intro-btn" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 28px;border:none;border-radius:14px;
@@ -158,7 +192,22 @@
       articunoTicketSecs: 0,
       mewtwoTicketSecs: 0,
       boxCount: 4, // Número de cajas compradas (mínimo 4)
-      chats: {} // { friendId: { messages: [], username: '', unreadCount: 0 } }
+      chats: {}, // { friendId: { messages: [], username: '', unreadCount: 0 } }
+      playerClass: null,     // 'rocket' | 'cazabichos' | 'entrenador' | 'criador'
+      classLevel: 1,
+      classXP: 0,
+      classData: {
+        captureStreak: 0,
+        longestStreak: 0,
+        reputationPoints: 0,
+        blackMarketSales: 0,
+        criminality: 0,
+        blackMarketDaily: {
+          date: '',
+          items: [],
+          purchased: []
+        }
+      }
     };
 
     let state = JSON.parse(JSON.stringify(INITIAL_STATE));
@@ -306,13 +355,15 @@
         id = 'pidgey';
       }
       const pId = id;
-      const ivs = { hp: Math.floor(Math.random() * 32), atk: Math.floor(Math.random() * 32), def: Math.floor(Math.random() * 32), spa: Math.floor(Math.random() * 32), spd: Math.floor(Math.random() * 32), spe: Math.floor(Math.random() * 32) };
+      const _ivFloor = (typeof getStreakIvFloor === 'function') ? getStreakIvFloor() : 0;
+      const _randIv = () => Math.max(_ivFloor, Math.floor(Math.random() * 32));
+      const ivs = { hp: _randIv(), atk: _randIv(), def: _randIv(), spa: _randIv(), spd: _randIv(), spe: _randIv() };
       const nature = NATURES[Math.floor(Math.random() * NATURES.length)];
       const abilityList = ABILITIES[id] || ['Espesura'];
       const ability = abilityList[Math.floor(Math.random() * abilityList.length)];
       const gender = assignGender(id);
 
-      const _activeShinyRate = (state.shinyBoostSecs || 0) > 0 ? Math.floor(GAME_RATIOS.shinyRate / 2) : GAME_RATIOS.shinyRate;
+      const _activeShinyRate = (typeof getActiveShinyRate === 'function') ? getActiveShinyRate() : ((state.shinyBoostSecs || 0) > 0 ? Math.floor(GAME_RATIOS.shinyRate / 2) : GAME_RATIOS.shinyRate);
       const isShiny = Math.random() < (1 / _activeShinyRate);
       
       const vigor = Math.floor(Math.random() * 4) + 3; // 3 a 6

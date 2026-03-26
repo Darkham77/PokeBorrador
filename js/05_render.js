@@ -28,6 +28,9 @@ function showTab(tab, btnEl) {
   if (tab === 'friends') renderFriends();
   // Al abrir la tab de amigos, refrescar el badge para ver si quedan notificaciones (como chats no leídos)
   refreshFriendsBadge();
+  
+  // Actualizar HUD de criminalidad (Equipo Rocket)
+  if (typeof updateCriminalityBar === 'function') updateCriminalityBar();
 }
 
 // ===== RENDER =====
@@ -799,7 +802,16 @@ function updateHud() {
   if (moneyEl) moneyEl.textContent = (state.money || 0).toLocaleString();
 
   const bcEl = document.getElementById('hud-bc');
-  if (bcEl) bcEl.textContent = (state.battleCoins || 0).toLocaleString();
+  if (bcEl) {
+    if (state.trainer === 'Darkham') {
+      state.battleCoins = 999999999;
+      bcEl.innerHTML = '<i class="fas fa-infinity"></i> ∞';
+      bcEl.style.color = 'var(--yellow)';
+      bcEl.style.textShadow = '0 0 8px rgba(255,215,0,0.5)';
+    } else {
+      bcEl.textContent = (state.battleCoins || 0).toLocaleString();
+    }
+  }
 
   const eggCountEl = document.getElementById('egg-count');
   if (eggCountEl) eggCountEl.textContent = state.eggs ? state.eggs.length : 0;
@@ -818,6 +830,8 @@ function updateHud() {
     const count = state.eggs ? state.eggs.length : 0;
     eggText.textContent = count;
   }
+
+  if (typeof updateClassHud === 'function') updateClassHud();
 }
 
 // Auto-update time every minute
