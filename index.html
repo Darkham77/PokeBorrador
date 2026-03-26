@@ -118,8 +118,8 @@
     <!-- MAIN GAME -->
     <div id="game-screen" class="screen">
       <div class="hud">
-        <div class="hud-trainer">
-          <span class="trainer-avatar">🧢</span>
+        <div class="hud-trainer" id="hud-trainer-panel" onclick="if(typeof openClassModal==='function')openClassModal(false)" style="cursor:pointer;">
+          <span class="trainer-avatar" id="hud-class-avatar">🧢</span>
           <div>
             <div class="trainer-name" id="hud-name">ASH</div>
             <div class="trainer-info">Entrenador Nv.<span id="trainer-level">1</span></div>
@@ -129,6 +129,7 @@
                 style="height:100%;background:linear-gradient(90deg,#C77DFF,#9b4dca);border-radius:10px;width:0%;transition:width 0.5s;">
               </div>
             </div>
+            <div id="hud-class-label" style="display:none;margin-top:4px;font-size:8px;font-family:'Press Start 2P',monospace;"></div>
           </div>
         </div>
 

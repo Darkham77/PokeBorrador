@@ -139,19 +139,10 @@ function getClassModifier(type, context = {}) {
   }
 }
 
-// ── Añadir XP de clase ────────────────────────────────────────────────────
+// ── Añadir XP de clase (usa el mismo XP que el entrenador) ───────────────
 function addClassXP(amount) {
   if (!state.playerClass) return;
-  state.classXP = (state.classXP || 0) + amount;
-  const xpPerLevel = 500;
-  const maxLevel = 10;
-  while (state.classXP >= xpPerLevel && (state.classLevel || 1) < maxLevel) {
-    state.classXP -= xpPerLevel;
-    state.classLevel = (state.classLevel || 1) + 1;
-    const cls = PLAYER_CLASSES[state.playerClass];
-    notify(`¡Subiste al nivel ${state.classLevel} de ${cls.name}! ${cls.icon}`, '🎖️');
-  }
-  updateClassHud();
+  if (typeof addTrainerExp === 'function') addTrainerExp(amount);
 }
 
 // ── Seleccionar clase ──────────────────────────────────────────────────────
@@ -272,43 +263,30 @@ function closeClassModal() {
   if (m) m.remove();
 }
 
-// ── HUD badge de clase ─────────────────────────────────────────────────────
+// ── HUD de clase: actualiza el panel del entrenador ───────────────────────
 function updateClassHud() {
-  let badge = document.getElementById('class-hud-badge');
+  // Eliminar badge flotante viejo si existe
+  const oldBadge = document.getElementById('class-hud-badge');
+  if (oldBadge) oldBadge.remove();
+
+  const label = document.getElementById('hud-class-label');
+  const avatar = document.getElementById('hud-class-avatar');
+
   if (!state.playerClass) {
-    if (badge) badge.remove();
+    if (label) label.style.display = 'none';
+    if (avatar) avatar.textContent = '🧢';
     return;
   }
+
   const cls = PLAYER_CLASSES[state.playerClass];
-  const lvl = state.classLevel || 1;
-  const xp = state.classXP || 0;
-  const xpNeeded = 500;
-  const pct = Math.min(100, Math.floor((xp / xpNeeded) * 100));
 
-  if (!badge) {
-    badge = document.createElement('div');
-    badge.id = 'class-hud-badge';
-    badge.style.cssText = `
-      position:fixed;bottom:72px;right:12px;z-index:500;
-      background:#1e293b;border:1px solid ${cls.color}44;border-radius:14px;
-      padding:8px 12px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.4);
-      min-width:120px;transition:all 0.2s;
-    `;
-    badge.onclick = () => openClassModal(false);
-    const hudRoot = document.getElementById('app') || document.body;
-    hudRoot.appendChild(badge);
+  if (avatar) avatar.textContent = cls.icon;
+
+  if (label) {
+    label.style.display = 'block';
+    label.style.color = cls.color;
+    label.textContent = cls.name;
   }
-
-  badge.style.borderColor = cls.color + '66';
-  badge.innerHTML = `
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-      <span style="font-size:14px;">${cls.icon}</span>
-      <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:${cls.color};">${cls.name}</span>
-    </div>
-    <div style="font-size:9px;color:#9ca3af;margin-bottom:4px;">Nv. ${lvl} · ${xp}/${xpNeeded} XP</div>
-    <div style="background:rgba(255,255,255,0.08);border-radius:4px;height:4px;overflow:hidden;">
-      <div style="background:${cls.color};width:${pct}%;height:100%;border-radius:4px;transition:width 0.5s;"></div>
-    </div>`;
 }
 
 // ── Verificar si mostrar el modal al subir de nivel ────────────────────────

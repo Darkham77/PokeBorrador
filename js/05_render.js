@@ -818,6 +818,8 @@ function updateHud() {
     const count = state.eggs ? state.eggs.length : 0;
     eggText.textContent = count;
   }
+
+  if (typeof updateClassHud === 'function') updateClassHud();
 }
 
 // Auto-update time every minute
