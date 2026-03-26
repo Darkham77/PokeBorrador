@@ -615,6 +615,13 @@
             updateProfilePanel();
             updateHud();
             scheduleSave();
+
+            // Sinergia Criador: Escáner de Huevos post-eclosión
+            if (state.playerClass === 'criador' && state.eggs && state.eggs.length > 0) {
+              setTimeout(() => {
+                if (typeof openEggScannerMenu === 'function') openEggScannerMenu();
+              }, 600);
+            }
           };
         }, 2000);
       }, 500);

@@ -1500,5 +1500,100 @@ function confirmMissionDelivery(uid, missionIdx) {
     if (typeof updateHud === 'function') updateHud();
 }
 
+// ===== EGG SCANNER (BREEDER) =====
+function openEggScannerMenu() {
+  const eggs = state.eggs || [];
+  if (eggs.length === 0) return;
+
+  const ov = document.createElement('div');
+  ov.id = 'egg-scanner-overlay';
+  ov.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:11000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);`;
+  
+  let html = `
+    <div style="background:#1a1a2e;border:1px solid #a855f744;border-radius:20px;padding:24px;max-width:400px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#a855f7;margin-bottom:16px;text-align:center;">🔍 ESCÁNER DE HUEVOS</div>
+      <div style="font-size:10px;color:var(--gray);margin-bottom:20px;text-align:center;line-height:1.4;">Como Criador, podés escanear un huevo tras la eclosión. Elegí uno para revelar su genética:</div>
+      <div style="max-height:300px;overflow-y:auto;margin-bottom:20px;display:grid;gap:10px;">
+  `;
+
+  eggs.forEach((egg, idx) => {
+    const name = POKEMON_DB[egg.pokemonId]?.name || 'Huevo';
+    html += `
+      <div onclick="scanEggInMenu(${idx})" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);padding:12px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:0.2s;" onmouseover="this.style.background='rgba(168,85,247,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <div style="font-size:24px;">🥚</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;">${name}</div>
+          <div style="font-size:9px;color:var(--gray);">${egg.steps || 0} pasos rest.</div>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `
+      </div>
+      <button onclick="document.getElementById('egg-scanner-overlay').remove()" style="width:100%;padding:12px;background:rgba(255,255,255,0.05);color:var(--gray);border:none;border-radius:12px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:8px;">CERRAR</button>
+    </div>
+  `;
+  
+  ov.innerHTML = html;
+  document.body.appendChild(ov);
+}
+
+window.scanEggInMenu = function(idx) {
+  const egg = state.eggs[idx];
+  if (!egg) return;
+  
+  const p = makePokemon(egg.pokemonId, 5);
+  if (egg.origin === 'breeding' && egg.inherited_ivs) {
+     if (egg.inherited_ivs._nature) { p.nature = egg.inherited_ivs._nature; }
+     p.ivs = { ...egg.inherited_ivs };
+     if (egg.isShiny !== undefined) p.isShiny = egg.isShiny;
+  }
+  
+  const totalIV = (p.ivs.hp||0)+(p.ivs.atk||0)+(p.ivs.def||0)+(p.ivs.spa||0)+(p.ivs.spd||0)+(p.ivs.spe||0);
+  const ability = p.ability || 'Desconocida';
+
+  const ov = document.getElementById('egg-scanner-overlay');
+  ov.innerHTML = `
+    <div style="background:#1a1a2e;border:1px solid #a855f788;border-radius:20px;padding:24px;max-width:400px;width:100%;animation:fadeIn 0.3s ease;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#a855f7;margin-bottom:20px;text-align:center;">📊 RESULTADO DEL ESCÁNER</div>
+      
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:40px;margin-bottom:10px;">🥚</div>
+        <div style="font-size:16px;font-weight:800;color:#fff;">${p.name} ${p.isShiny ? '✨' : ''}</div>
+        <div style="font-size:11px;color:var(--yellow);margin-top:4px;">Naturaleza: ${p.nature}</div>
+      </div>
+
+      <div style="background:rgba(0,0,0,0.2);padding:15px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);margin-bottom:20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:10px;color:#fff;">
+          <div>HP: ${p.ivs.hp}/31</div><div>ATK: ${p.ivs.atk}/31</div>
+          <div>DEF: ${p.ivs.def}/31</div><div>SPA: ${p.ivs.spa}/31</div>
+          <div>SPD: ${p.ivs.spd}/31</div><div>SPE: ${p.ivs.spe}/31</div>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:9px;color:var(--gray);">TOTAL IVs:</span>
+          <span style="font-size:12px;font-weight:800;color:var(--green);">${totalIV}/186</span>
+        </div>
+        <div style="margin-top:6px;font-size:9px;color:var(--gray);">Habilidad: <span style="color:#fff;">${ability}</span></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <button onclick="document.getElementById('egg-scanner-overlay').remove()" style="padding:14px;background:var(--green);color:#000;border:none;border-radius:12px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:8px;font-weight:900;">MANTENER</button>
+        <button onclick="discardEggInMenu(${idx})" style="padding:14px;background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid #ef444444;border-radius:12px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:8px;">DESCARTAR</button>
+      </div>
+    </div>
+  `;
+}
+
+window.discardEggInMenu = function(idx) {
+  if (!confirm('¿Seguro que quieres descartar este huevo? No se podrá recuperar.')) return;
+  state.eggs.splice(idx, 1);
+  document.getElementById('egg-scanner-overlay').remove();
+  notify('Huevo descartado correctamente.', '🗑️');
+  updateProfilePanel();
+  updateHud();
+  scheduleSave();
+}
+
 // ===== INIT =====
 updateHud();

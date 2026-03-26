@@ -131,7 +131,7 @@ const PLAYER_CLASSES = {
       '🥚 Lazo Destino: Hereda 4 IVs aleatorios de los padres en lugar de 3.',
       '❤️ Vigor: 15% de chance de recuperar vigor tras eclosionar.',
       '👁️ Predecir Naturaleza: Permite ver la naturaleza del Pokémon rival en batalla.',
-      '🏪 Mercado de Crías: venta automática de Pokémon criados',
+      '🔍 Escáner de Huevos: Escanea un huevo tras cada eclosión para ver sus stats.',
       '🥚 Incubación Asistida: misiones idle de 4/8/12h que mejoran IVs'
     ],
     bonusLevels: [1, 1, 5, 5, 15, 20],
