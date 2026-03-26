@@ -200,7 +200,8 @@
         captureStreak: 0,
         longestStreak: 0,
         reputationPoints: 0,
-        blackMarketSales: 0
+        blackMarketSales: 0,
+        criminality: 0
       }
     };
 

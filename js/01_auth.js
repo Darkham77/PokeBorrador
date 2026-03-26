@@ -340,7 +340,17 @@
         luckyEggSecs: state.luckyEggSecs || 0,
         daycare_berry_egg_time: state.daycare_berry_egg_time || 0,
         boxCount: state.boxCount || 4,
-        chats: state.chats || {}
+        chats: state.chats || {},
+        playerClass: state.playerClass || null,
+        classLevel: state.classLevel || 1,
+        classXP: state.classXP || 0,
+        classData: state.classData || {
+          captureStreak: 0,
+          longestStreak: 0,
+          reputationPoints: 0,
+          blackMarketSales: 0,
+          criminality: 0
+        }
       };
     }
 
