@@ -155,6 +155,8 @@
             showScreen('game-screen');
             showTab('map');
             renderTeam();
+            // Inicializar sistema de clases
+            if (typeof initClassSystem === 'function') setTimeout(() => initClassSystem(), 500);
             // Restaurar batalla activa si el jugador hizo F5 durante un combate obligatorio
             if (state.activeBattle) {
               setTimeout(() => restoreActiveBattle(), 300);
@@ -240,6 +242,8 @@
             showScreen('game-screen');
             showTab('map');
             renderTeam();
+            // Inicializar sistema de clases
+            if (typeof initClassSystem === 'function') setTimeout(() => initClassSystem(), 500);
             processOfflineBreeding(user.id);
             // Restaurar batalla activa si el jugador hizo F5 durante un combate obligatorio
             if (state.activeBattle) {

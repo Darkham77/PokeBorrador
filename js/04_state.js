@@ -158,7 +158,16 @@
       articunoTicketSecs: 0,
       mewtwoTicketSecs: 0,
       boxCount: 4, // Número de cajas compradas (mínimo 4)
-      chats: {} // { friendId: { messages: [], username: '', unreadCount: 0 } }
+      chats: {}, // { friendId: { messages: [], username: '', unreadCount: 0 } }
+      playerClass: null,     // 'rocket' | 'cazabichos' | 'entrenador' | 'criador'
+      classLevel: 1,
+      classXP: 0,
+      classData: {
+        captureStreak: 0,
+        longestStreak: 0,
+        reputationPoints: 0,
+        blackMarketSales: 0
+      }
     };
 
     let state = JSON.parse(JSON.stringify(INITIAL_STATE));
@@ -306,13 +315,15 @@
         id = 'pidgey';
       }
       const pId = id;
-      const ivs = { hp: Math.floor(Math.random() * 32), atk: Math.floor(Math.random() * 32), def: Math.floor(Math.random() * 32), spa: Math.floor(Math.random() * 32), spd: Math.floor(Math.random() * 32), spe: Math.floor(Math.random() * 32) };
+      const _ivFloor = (typeof getStreakIvFloor === 'function') ? getStreakIvFloor() : 0;
+      const _randIv = () => Math.max(_ivFloor, Math.floor(Math.random() * 32));
+      const ivs = { hp: _randIv(), atk: _randIv(), def: _randIv(), spa: _randIv(), spd: _randIv(), spe: _randIv() };
       const nature = NATURES[Math.floor(Math.random() * NATURES.length)];
       const abilityList = ABILITIES[id] || ['Espesura'];
       const ability = abilityList[Math.floor(Math.random() * abilityList.length)];
       const gender = assignGender(id);
 
-      const _activeShinyRate = (state.shinyBoostSecs || 0) > 0 ? Math.floor(GAME_RATIOS.shinyRate / 2) : GAME_RATIOS.shinyRate;
+      const _activeShinyRate = (typeof getActiveShinyRate === 'function') ? getActiveShinyRate() : ((state.shinyBoostSecs || 0) > 0 ? Math.floor(GAME_RATIOS.shinyRate / 2) : GAME_RATIOS.shinyRate);
       const isShiny = Math.random() < (1 / _activeShinyRate);
       
       const vigor = Math.floor(Math.random() * 4) + 3; // 3 a 6

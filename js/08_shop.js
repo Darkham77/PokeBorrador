@@ -86,7 +86,36 @@
       document.getElementById('pokemon-center-overlay').style.display = 'none';
     }
 
+    function getHealCost() {
+      if (!state.playerClass || typeof getClassModifier !== 'function') return 0;
+      const damagedCount = (state.team || []).filter(p => p.hp < p.maxHp || p.status || p.moves.some(m => m.pp < m.maxPP)).length;
+      if (damagedCount === 0) return 0;
+
+      let mult = 1.0;
+      if (state.playerClass === 'rocket') {
+        mult = getClassModifier('healCostMult');
+      } else if (state.playerClass === 'criador') {
+        const hasForeign = (state.team || []).some(p => p.originalTrainer && p.originalTrainer !== state.trainer);
+        mult = getClassModifier('healCostMult', { isForeign: hasForeign });
+      }
+      if (mult <= 1.0) return 0;
+      return Math.floor(50 * damagedCount * (mult - 1.0));
+    }
+
     function healAllPokemon() {
+      // Costo extra por clase
+      const extraCost = getHealCost();
+      if (extraCost > 0 && (state.money || 0) < extraCost) {
+        notify(`No tenés suficiente dinero para curar (costo extra: ₽${extraCost})`, '💸');
+        closePokemonCenter();
+        return;
+      }
+      if (extraCost > 0) {
+        state.money -= extraCost;
+        const cls = state.playerClass === 'rocket' ? '🚀 Equipo Rocket' : '🧬 Criador';
+        notify(`${cls}: curación con recargo. ₽${extraCost} cobrados.`, '🏥');
+      }
+
       // Logic to heal
       state.team.forEach(p => {
         p.hp = p.maxHp;
@@ -109,6 +138,7 @@
           notify('¡Tu equipo ha sido curado!', '💊');
           if (typeof renderTeam === 'function') renderTeam();
           if (typeof renderMaps === 'function') renderMaps();
+          if (typeof updateHud === 'function') updateHud();
         }, 800);
       }, 2000);
     }
@@ -167,6 +197,7 @@
         if (unlocks) setTimeout(() => notify(`¡Nuevos items en el Poké Market!`, '🛒'), 1500);
       }
       updateHud();
+      if (typeof checkClassUnlock === 'function') checkClassUnlock();
     }
 
     // What unlocks at each trainer level

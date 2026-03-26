@@ -153,6 +153,11 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
     saveGame(false);
   }
 
+  // Robo Rápido del Equipo Rocket al inicio de batalla vs entrenador
+  if (isTrainer && !isGym && typeof tryRocketSteal === 'function') {
+    tryRocketSteal();
+  }
+
   showScreen('battle-screen');
   updateBattleUI();
   renderMoveButtons();
@@ -2317,6 +2322,8 @@ function showCatchAnim(success, enemy, shakes) {
           catchSuccess(enemy);
         } else {
           setLog(`¡${enemy.name} se escapó de la Pokéball!`, 'log-enemy');
+          // Hook de clase: rompe la racha del Cazabichos
+          if (typeof onCaptureFail === 'function') onCaptureFail();
           setBtns(true);
           enemyTurn();
         }
@@ -2373,6 +2380,10 @@ function catchSuccess(enemy) {
   }
 
   setLog(`¡${baseEnemy.name} fue capturado!`, 'log-catch');
+
+  // Hook de clase: racha de capturas (Cazabichos) + classXP
+  if (typeof onCaptureSuccess === 'function') onCaptureSuccess();
+
   if (caught.heldItem) {
     addLog(`¡Parece que ${caught.name} llevaba un <strong>${caught.heldItem}</strong> equipado!`, 'log-info');
   }
@@ -2435,6 +2446,13 @@ function awardBattleExperience(isCapture = false) {
     // Actually, in many games exp is split. For simplicity in this fan game, we'll keep it generous.
 
     if ((state.luckyEggSecs || 0) > 0 || p.heldItem === 'Huevo Suerte') pExp = Math.floor(pExp * 1.5);
+
+    // Modificador de clase
+    if (typeof getClassModifier === 'function') {
+      const isTrainerBattle = !!(b.isTrainer || b.isGym);
+      const expClassMult = getClassModifier('expMult', { isTrainer: isTrainerBattle });
+      pExp = Math.floor(pExp * expClassMult);
+    }
     
     addLog(`${p.name} ganó <span style="color:#6BCB77;font-weight:bold;">${pExp} EXP</span>.`, 'log-player');
 
@@ -2558,9 +2576,18 @@ function endBattle(won) {
     addLog(`¡Ganaste <span style="color:#22c55e;font-weight:bold;">₽${moneyWon.toLocaleString()}</span>!`, 'log-info');
 
     if (b.isTrainer || b.isGym) {
-      const coins = Math.floor(b.enemy.level * 2);
+      let coins = Math.floor(b.enemy.level * 2);
+      // Modificador de BC por clase
+      if (typeof getClassModifier === 'function') {
+        const bcMult = getClassModifier('bcMult', { isGym: !!b.isGym });
+        coins = Math.floor(coins * bcMult);
+      }
       state.battleCoins = (state.battleCoins || 0) + coins;
       addLog(`¡Obtuviste <span style="color:var(--yellow);font-weight:bold;"><i class="fas fa-coins coin-icon"></i> ${coins} Battle Coins</span>!`, 'log-catch');
+      // Reputación del Entrenador (por ganar gimnasios)
+      if (b.isGym && typeof addReputationPoints === 'function') addReputationPoints(10);
+      // ClassXP por victorias
+      if (typeof addClassXP === 'function') addClassXP(b.isGym ? 30 : 10);
 
       if (!state.stats) state.stats = {};
       if (b.isTrainer) state.stats.trainersDefeated = (state.stats.trainersDefeated || 0) + 1;
@@ -2750,6 +2777,8 @@ function runFromBattle() {
   state.battle.over = true;
   state.battle = null;
   setLog('¡Huiste del combate!', 'log-info');
+  // Romper racha del Cazabichos al huir
+  if (typeof onCaptureFail === 'function') onCaptureFail();
   setTimeout(() => {
     showScreen('game-screen');
     showTab('map');
