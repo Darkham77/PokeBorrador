@@ -2569,6 +2569,10 @@ function endBattle(won) {
   b._ending = true;
   b.over = true;
 
+  // Cleanup move tooltips to prevent them from sticking on screen
+  const tooltip = document.getElementById('move-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
+
   // If the player's active Pokémon was transformed (e.g. Ditto), restore its original form
   if (b.player && b.player.isTransformed && b.player.originalForm) {
     const prevHp = b.player.hp;

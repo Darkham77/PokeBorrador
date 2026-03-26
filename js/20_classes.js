@@ -194,8 +194,9 @@ function openClassModal(forced = false) {
   modal.id = 'class-selection-modal';
   modal.style.cssText = `
     position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.92);
-    display:flex;align-items:center;justify-content:center;padding:16px;
+    display:flex;align-items:flex-start;justify-content:center;padding:16px;
     animation:fadeIn 0.3s ease;overflow-y:auto;
+    -webkit-overflow-scrolling: touch;
   `;
 
   const cardsHtml = Object.values(PLAYER_CLASSES).map(cls => {
@@ -233,16 +234,16 @@ function openClassModal(forced = false) {
   }).join('');
 
   modal.innerHTML = `
-    <div style="width:100%;max-width:960px;">
+    <div style="width:100%;max-width:960px;padding-top:20px;padding-bottom:40px;">
       <div style="text-align:center;margin-bottom:24px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:16px;color:#f59e0b;margin-bottom:8px;">
           🎭 ELEGÍ TU CLASE
         </div>
-        <div style="font-size:13px;color:#9ca3af;">
+        <div style="font-size:13px;color:#9ca3af;padding:0 10px;">
           ${isChange ? 'Cambiar de clase cuesta <strong style="color:#f59e0b;">10,000 Battle Coins</strong>.' : 'Esta elección define cómo jugás. Podés cambiar más adelante por 10,000 Battle Coins.'}
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px;">
         ${cardsHtml}
       </div>
       ${canClose && state.playerClass ? `<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px;">
