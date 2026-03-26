@@ -837,7 +837,7 @@ function buyBlackMarketItem(itemId) {
   const item = SHOP_ITEMS.find(i => i.id === itemId);
   if (!item) return;
 
-  const priceInMoney = item.bcPrice * 10;
+  const priceInMoney = item.bcPrice * 50;
   if (state.money < priceInMoney) {
     notify('No tenés suficiente dinero (₽).', '❌');
     return;
@@ -910,7 +910,7 @@ function renderTrainerShop() {
       
       const daily = state.classData.blackMarketDaily;
       const alreadyPurchased = daily.purchased.includes(id);
-      const priceInMoney = item.bcPrice * 10;
+      const priceInMoney = item.bcPrice * 50;
       const canAfford = state.money >= priceInMoney;
       const tierCls = tierColors[item.tier] || 'tier-common';
 
