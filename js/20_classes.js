@@ -26,7 +26,8 @@ const PLAYER_CLASSES = {
       bcMult: 0.90,
       healCostMult: 2.0,
       daycareCostMult: 1.0,
-      catchMult: 1.0
+      catchMult: 1.0,
+      shopDiscount: 0.20
     }
   },
   cazabichos: {
@@ -138,6 +139,8 @@ function getClassModifier(type, context = {}) {
       return m.daycareCostMult || 1.0;
     case 'catchMult':
       return m.catchMult || 1.0;
+    case 'shopDiscount':
+      return m.shopDiscount || 0;
     default:
       return 1.0;
   }
@@ -356,15 +359,23 @@ function openClassInfoPanel() {
       </div>
 
       <!-- Footer -->
-      <div style="border-top:1px dashed rgba(255,255,255,0.1);padding-top:16px;display:flex;gap:10px;">
-        <button onclick="document.getElementById('class-info-panel-overlay').remove();openClassModal(false)"
-          style="flex:1;padding:12px 8px;border:1px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.05);color:#9ca3af;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;line-height:1.8;">
-          🔄 CAMBIAR CLASE<br><span style="color:#f59e0b;">10,000 BC</span>
-        </button>
-        <button onclick="document.getElementById('class-info-panel-overlay').remove()"
-          style="flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,${cls.color},${cls.colorDark});color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
-          ✓ CERRAR
-        </button>
+      <div style="display:flex;flex-direction:column;gap:10px;border-top:1px dashed rgba(255,255,255,0.1);padding-top:16px;">
+        ${state.playerClass === 'entrenador' ? `
+        <button onclick="document.getElementById('class-info-panel-overlay').remove();openReputationShop()"
+          style="width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;box-shadow:0 4px 0 #14532d;">
+          🏅 TIENDA DE REPUTACIÓN
+        </button>` : ''}
+        
+        <div style="display:flex;gap:10px;">
+          <button onclick="document.getElementById('class-info-panel-overlay').remove();openClassModal(false)"
+            style="flex:1;padding:12px 8px;border:1px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.05);color:#9ca3af;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;line-height:1.8;">
+            🔄 CAMBIAR CLASE<br><span style="color:#f59e0b;">10,000 BC</span>
+          </button>
+          <button onclick="document.getElementById('class-info-panel-overlay').remove()"
+            style="flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,${cls.color},${cls.colorDark});color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
+            ✓ CERRAR
+          </button>
+        </div>
       </div>
     </div>`;
 

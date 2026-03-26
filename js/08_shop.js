@@ -837,7 +837,9 @@ function buyBlackMarketItem(itemId) {
   const item = SHOP_ITEMS.find(i => i.id === itemId);
   if (!item) return;
 
-  const priceInMoney = item.bcPrice * 50;
+  const discount = (typeof getClassModifier === 'function') ? getClassModifier('shopDiscount') : 0;
+  const priceInMoney = Math.floor((item.bcPrice * 50) * (1 - discount));
+  
   if (state.money < priceInMoney) {
     notify('No tenés suficiente dinero (₽).', '❌');
     return;
@@ -910,7 +912,8 @@ function renderTrainerShop() {
       
       const daily = state.classData.blackMarketDaily;
       const alreadyPurchased = daily.purchased.includes(id);
-      const priceInMoney = item.bcPrice * 50;
+      const discount = (typeof getClassModifier === 'function') ? getClassModifier('shopDiscount') : 0;
+      const priceInMoney = Math.floor((item.bcPrice * 50) * (1 - discount));
       const canAfford = state.money >= priceInMoney;
       const tierCls = tierColors[item.tier] || 'tier-common';
 
@@ -991,7 +994,11 @@ function _marketSetQty(itemId, raw) {
 
   _marketQty[itemId] = qty;
 
-  const total = item.price * qty;
+  let price = item.price;
+  if (state.playerClass === 'rocket') {
+    price = Math.floor(price * 1.20);
+  }
+  const total = price * qty;
   const totalEl = document.getElementById('market-total-' + itemId);
   if (totalEl) totalEl.textContent = total.toLocaleString();
 
@@ -1005,9 +1012,17 @@ function _marketSetQty(itemId, raw) {
 }
 
     function renderMarket() {
+      const isRocket = state.playerClass === 'rocket';
       document.getElementById('market-money').textContent = state.money.toLocaleString();
+      
+      const grid = document.getElementById('market-grid');
+      const tabsEl = document.getElementById('market-tabs');
+      const levelEl = document.getElementById('market-trainer-level');
+
+      if (grid) grid.style.display = 'grid';
+
       const rank = getTrainerRank();
-      document.getElementById('market-trainer-level').innerHTML =
+      if (levelEl) levelEl.innerHTML =
         `<span style="color:var(--purple);">⭐ Rango: <strong>${rank.title}</strong> (Nv. ${state.trainerLevel})</span> &nbsp;·&nbsp; Más ítems se desbloquean al subir de nivel.`;
 
       // Inventory
@@ -1019,7 +1034,6 @@ function _marketSetQty(itemId, raw) {
       const typeTagLabels = { stone: 'Piedra', held: 'Equipable', usable: 'Usable' };
 
       // ── Category tabs — separate container, no grid inheritance ──
-      const tabsEl = document.getElementById('market-tabs');
       tabsEl.innerHTML = `
         <div class="market-tab-bar">
           ${ITEM_CATEGORIES.map(c => `
@@ -1049,11 +1063,14 @@ function _marketSetQty(itemId, raw) {
           if (aCat !== bCat) return aCat - bCat;
           return a.unlockLv - b.unlockLv;
         });
-      const grid = document.getElementById('market-grid');
       grid.innerHTML = filtered.map(item => {
         const locked = state.trainerLevel < item.unlockLv;
         const qty = _marketGetQty(item.id);
-        const total = item.price * qty;
+        let price = item.price;
+        if (state.playerClass === 'rocket') {
+          price = Math.floor(price * 1.20);
+        }
+        const total = price * qty;
         const canAfford = state.money >= total;
         const tierCls = tierColors[item.tier];
         const typeTag = item.type ? `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:${typeTagColors[item.type] || '#666'}22;color:${typeTagColors[item.type] || '#aaa'};border:1px solid ${typeTagColors[item.type] || '#666'}44;">${typeTagLabels[item.type] || item.type}</span>` : '';
@@ -1068,6 +1085,7 @@ function _marketSetQty(itemId, raw) {
         ${typeTag}
         <div class="market-item-desc" style="margin-top:4px;">${item.desc}</div>
         ${locked ? `<div class="market-item-unlock">🔒 Nv. ${item.unlockLv}</div>` : ''}
+        <div class="market-item-price" style="${state.playerClass === 'rocket' ? 'color:#ef4444;' : ''}">₽ ${price.toLocaleString()}${state.playerClass === 'rocket' ? ' <small>(+20%)</small>' : ''}</div>
         <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:10px;">
           <span style="font-size:11px;color:var(--gray);font-weight:700;">Cantidad</span>
           <input id="market-qty-${item.id}" type="number" min="1" max="999" value="${qty}"
@@ -1075,7 +1093,6 @@ function _marketSetQty(itemId, raw) {
             oninput="_marketSetQty('${item.id}', this.value)" onchange="_marketSetQty('${item.id}', this.value)"
             style="width:90px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);text-align:center;outline:none;">
         </div>
-        <div class="market-item-price">₽${item.price.toLocaleString()}</div>
         <div style="font-size:11px;color:var(--yellow);font-weight:900;margin-top:6px;">Total: ₽<span id="market-total-${item.id}">${total.toLocaleString()}</span></div>
         <button id="market-buy-${item.id}" class="market-buy-btn" onclick="buyItem('${item.id}')"
           ${locked || !canAfford ? 'disabled' : ''}>
@@ -1091,7 +1108,11 @@ function _marketSetQty(itemId, raw) {
       if (state.trainerLevel < item.unlockLv) { notify('¡Item bloqueado!', '🔒'); return; }
 
       const qty = _marketGetQty(itemId);
-      const total = item.price * qty;
+      let price = item.price;
+      if (state.playerClass === 'rocket') {
+        price = Math.floor(price * 1.20);
+      }
+      const total = price * qty;
 
       if (state.money < total) { notify('¡No tenés suficiente dinero!', '💸'); return; }
       if (typeof item.effect !== 'function') { notify('Este ítem todavía no se puede comprar.', '⚠️'); return; }
