@@ -32,6 +32,8 @@
     let _boxFiltersOpen = false;
     let _boxReleaseMode = false;
     let _boxReleaseSelected = new Set();
+    let _boxRocketMode = false;
+    let _boxRocketSelected = new Set();
     let _bagSellMode = false;
     let _bagSellSelected = {}; // { itemName: quantityToSell }
     let _currentBoxIndex = 0; // Caja actual visualizada (0 a state.boxCount-1)
@@ -250,6 +252,110 @@
       notify(`¡${releasedNames.join(', ')} ${releasedNames.length > 1 ? 'fueron soltados' : 'fue soltado'}!`, '🌿');
     }
 
+    // ── Rocket Box Sell Mode ─────────────────────────────────────
+    function toggleBoxRocketMode() {
+      if (state.playerClass !== 'rocket') return;
+      _boxRocketMode = !_boxRocketMode;
+      _boxRocketSelected.clear();
+
+      const btnRocket = document.getElementById('btn-box-rocket-mode');
+      const btnConfirm = document.getElementById('btn-box-confirm-rocket');
+      const btnCancel = document.getElementById('btn-box-cancel-rocket');
+      const hintRocket = document.getElementById('box-rocket-hint');
+      const hintNormal = document.getElementById('box-normal-hint');
+      const btnRelease = document.getElementById('btn-box-release-mode');
+
+      if (btnRocket) btnRocket.style.display = _boxRocketMode ? 'none' : 'inline-block';
+      if (btnConfirm) btnConfirm.style.display = _boxRocketMode ? 'inline-block' : 'none';
+      if (btnCancel) btnCancel.style.display = _boxRocketMode ? 'inline-block' : 'none';
+      if (hintRocket) hintRocket.style.display = _boxRocketMode ? 'block' : 'none';
+      if (hintNormal) hintNormal.style.display = _boxRocketMode ? 'none' : 'block';
+      if (btnRelease) btnRelease.style.display = _boxRocketMode ? 'none' : 'inline-block';
+
+      renderBox();
+    }
+
+    function toggleBoxRocketSelect(index) {
+      if (_boxRocketSelected.has(index)) {
+        _boxRocketSelected.delete(index);
+      } else {
+        _boxRocketSelected.add(index);
+      }
+      renderBox();
+    }
+
+    function confirmBoxRocketSell() {
+      if (_boxRocketSelected.size === 0) {
+        notify('No seleccionaste ningún Pokémon.', '❓');
+        return;
+      }
+      
+      let totalPrice = 0;
+      _boxRocketSelected.forEach(i => {
+        const p = state.box[i];
+        const ivs = p.ivs || {};
+        const totalIv = Object.values(ivs).reduce((s, v) => s + (v || 0), 0);
+        const price = Math.floor((p.level * 50 + (totalIv / 186) * 500) * 0.8);
+        totalPrice += price;
+      });
+
+      const overlay = document.createElement('div');
+      overlay.id = 'box-rocket-confirm-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+      overlay.innerHTML = `
+        <div style="background:var(--card);border-radius:20px;padding:32px 24px;max-width:340px;width:100%;text-align:center;border:1px solid rgba(239,68,68,0.3);box-shadow: 0 0 30px rgba(239,68,68,0.2);">
+          <div style="font-size:48px;margin-bottom:12px;">🚀</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;margin-bottom:16px;">¿VENDER AL MERCADO NEGRO?</div>
+          <div style="font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:24px;">
+            Vas a vender <strong>${_boxRocketSelected.size} Pokémon</strong>.<br><br>
+            Ganancia total: <strong style="color:#22c55e;">₽${totalPrice.toLocaleString()}</strong><br>
+            Criminalidad: <strong style="color:#ef4444;">+${_boxRocketSelected.size * 15}</strong><br><br>
+            Esta acción es <strong style="color:#ef4444;">irreversible</strong>.
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center;">
+            <button onclick="doBoxRocketSell(${totalPrice})" style="font-family:'Press Start 2P',monospace;font-size:8px;
+              padding:12px 20px;border:none;border-radius:12px;cursor:pointer;
+              background:linear-gradient(135deg,#ef4444,#991b1b);color:#fff;box-shadow: 0 4px 12px rgba(239,68,68,0.3);">
+              ✓ VENDER
+            </button>
+            <button onclick="document.getElementById('box-rocket-confirm-overlay').remove()" style="font-family:'Press Start 2P',monospace;font-size:8px;
+              padding:12px 20px;border:none;border-radius:12px;cursor:pointer;
+              background:rgba(255,255,255,0.1);color:#fff;">
+              CANCELAR
+            </button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+
+    function doBoxRocketSell(totalPrice) {
+      document.getElementById('box-rocket-confirm-overlay')?.remove();
+      const indices = [..._boxRocketSelected].sort((a, b) => b - a);
+      const count = indices.length;
+      
+      indices.forEach(i => {
+        state.box.splice(i, 1);
+      });
+
+      state.money = (state.money || 0) + totalPrice;
+      state.classData = state.classData || {};
+      state.classData.blackMarketSales = (state.classData.blackMarketSales || 0) + count;
+      
+      // Aumentar criminalidad masiva (15 por cada uno)
+      if (typeof addCriminality === 'function') {
+        addCriminality(count * 15);
+      }
+
+      addClassXP(25 * count);
+      
+      _boxRocketMode = false;
+      toggleBoxRocketMode(); // Reset buttons and state
+      renderBox();
+      updateHud();
+      scheduleSave();
+      notify(`¡${count} Pokémon vendidos por ₽${totalPrice.toLocaleString()}! 💰`, '🚀');
+    }
+
     function switchBox(index) {
       _currentBoxIndex = index;
       renderBox();
@@ -296,6 +402,16 @@
       const warning = document.getElementById('box-full-warning');
       const resultsInfo = document.getElementById('box-results-info');
       const tabsContainer = document.getElementById('box-tabs-container');
+
+      // Rocket buttons visibility
+      const btnRocketMode = document.getElementById('btn-box-rocket-mode');
+      if (btnRocketMode) {
+        const isRocket = state.playerClass === 'rocket';
+        btnRocketMode.style.display = (isRocket && !_boxReleaseMode && !_boxRocketMode) ? 'inline-block' : 'none';
+        const isEmpty = state.box.length === 0;
+        btnRocketMode.disabled = isEmpty;
+        btnRocketMode.style.opacity = isEmpty ? '0.5' : '1';
+      }
 
       const maxCapacity = state.boxCount * 50;
       badge.textContent = `${state.box.length}/${maxCapacity} Pokémon`;
@@ -408,15 +524,16 @@
               </div>`;
         }
 
-        const selected = _boxReleaseSelected.has(i);
-        const selClass = _boxReleaseMode ? (selected ? 'release-selected' : 'release-selectable') : '';
-        const checkMark = _boxReleaseMode && selected ? '<div class="release-check">✓</div>' : '';
-        const onclickFn = _boxReleaseMode ? `toggleBoxReleaseSelect(${i})` : `openBoxPokemonMenu(${i})`;
+        const selected = _boxReleaseMode ? _boxReleaseSelected.has(i) : _boxRocketSelected.has(i);
+        const isSelectionMode = _boxReleaseMode || _boxRocketMode;
+        const selClass = isSelectionMode ? (selected ? 'release-selected' : 'release-selectable') : '';
+        const checkMark = isSelectionMode && selected ? '<div class="release-check">✓</div>' : '';
+        const onclickFn = _boxReleaseMode ? `toggleBoxReleaseSelect(${i})` : (_boxRocketMode ? `toggleBoxRocketSelect(${i})` : `openBoxPokemonMenu(${i})`);
 
         return `<div onclick="${onclickFn}" class="${selClass}" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
       border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;transition:all .2s;position:relative;"
-      ${_boxReleaseMode ? '' : 'onmouseover="this.style.borderColor=\'rgba(199,125,255,0.4)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.08)\'"'}>
-      <!-- Release checkmark -->
+      ${isSelectionMode ? '' : 'onmouseover="this.style.borderColor=\'rgba(199,125,255,0.4)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.08)\'"'}>
+      <!-- Selection checkmark -->
       ${checkMark}
       <!-- Tier and Held Item badges -->
       ${badgesHtml}

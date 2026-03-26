@@ -459,6 +459,22 @@
                  background:transparent;color:var(--gray);cursor:pointer;">
             ✕ CANCELAR
           </button>
+          <!-- Botones Mercado Negro (Rocket) -->
+          <button id="btn-box-rocket-mode" onclick="toggleBoxRocketMode()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
+                 border-radius:10px;border:1px solid rgba(239,68,68,0.4);
+                 background:rgba(239,68,68,0.1);color:#ef4444;cursor:pointer;transition:all .2s;">
+            🚀 VENTA MASIVA
+          </button>
+          <button id="btn-box-confirm-rocket" onclick="confirmBoxRocketSell()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
+                 border-radius:10px;border:none;
+                 background:linear-gradient(135deg,#ef4444,#991b1b);color:#fff;cursor:pointer;box-shadow:0 0 15px rgba(239,68,68,0.4);">
+            ✓ VENDER SELECCIÓN
+          </button>
+          <button id="btn-box-cancel-rocket" onclick="toggleBoxRocketMode()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
+                 border-radius:10px;border:1px solid rgba(255,255,255,0.1);
+                 background:transparent;color:var(--gray);cursor:pointer;">
+            ✕ CANCELAR
+          </button>
         </div>
       </div>
       <div id="box-count-badge" style="font-size:11px;color:var(--gray);margin-bottom:8px;"></div>
@@ -475,6 +491,11 @@
       </div>
       <div id="box-normal-hint" style="font-size:12px;color:var(--gray);margin-bottom:12px;">
         Tocá un Pokémon para intercambiarlo con uno de tu equipo activo.
+      </div>
+      <div id="box-rocket-hint" style="display:none;font-size:11px;color:#ef4444;margin-bottom:12px;
+         background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);
+         border-radius:10px;padding:10px 14px;">
+        ⚠️ Seleccioná los Pokémon que querés vender al Mercado Negro (₽ + Crimen).
       </div>
 
       <!-- FILTER PANEL -->
