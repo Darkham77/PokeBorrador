@@ -65,9 +65,8 @@ const PLAYER_CLASSES = {
     bonuses: [
       '📈 +10% EXP en todos los combates',
       '🏆 +30% Battle Coins en victorias de Gimnasio + ítem bonus',
-      '💊 Entrenamiento de EVs en el Centro a mitad de precio',
       '⭐ Sistema de Reputación: desbloquea tienda exclusiva al acumular victorias en gym',
-      '🏋️ Entrenamiento de Gimnasio Pasivo: misiones idle de 2/4/8h con EXP y EVs'
+      '🏋️ Entrenamiento de Gimnasio Pasivo: misiones idle de 2/4/8h con EXP'
     ],
     penalties: [
       '🎯 -10% catchRate en Pokémon con IV total > 120',
@@ -92,12 +91,11 @@ const PLAYER_CLASSES = {
     description: 'Maestro genético. Produce los Pokémon con mejores IVs y habilidades del servidor. Domina el meta competitivo desde la guardería.',
     bonuses: [
       '🧬 Lazo Destino transmite 4 IVs (vs 3 normal)',
-      '✨ Habilidad Oculta: 75% de probabilidad (vs 60%)',
       '⏱️ -25% tiempo de eclosión de huevos',
       '💯 Everstone garantiza naturaleza al 100%',
       '🔬 Análisis Genético: ver IVs exactos desde la caja',
       '🏪 Mercado de Crías: venta automática de Pokémon criados',
-      '🥚 Incubación Asistida: misiones idle de 4/8/12h que mejoran IVs y HA'
+      '🥚 Incubación Asistida: misiones idle de 4/8/12h que mejoran IVs'
     ],
     penalties: [
       '📉 -10% EXP en todos los combates',
