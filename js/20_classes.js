@@ -175,6 +175,7 @@ function selectClass(classId) {
   state.classData.longestStreak = 0;
   state.classData.reputationPoints = state.classData.reputationPoints || 0;
   state.classData.blackMarketSales = state.classData.blackMarketSales || 0;
+  state.classData.criminality = state.classData.criminality || 0;
 
   closeClassModal();
   updateClassHud();
@@ -381,6 +382,7 @@ function updateClassHud() {
   if (!state.playerClass) {
     if (label) label.style.display = 'none';
     if (avatar) avatar.textContent = '🧢';
+    updateCriminalityBar();
     return;
   }
 
@@ -393,6 +395,8 @@ function updateClassHud() {
     label.style.color = cls.color;
     label.textContent = cls.name;
   }
+  
+  updateCriminalityBar();
 }
 
 // ── Verificar si mostrar el modal al subir de nivel ────────────────────────
@@ -467,10 +471,99 @@ function tryRocketSteal() {
   state.inventory = state.inventory || {};
   state.inventory[item] = (state.inventory[item] || 0) + 1;
   addClassXP(15);
+  
+  // Aumentar criminalidad por robo exitoso
+  addCriminality(10);
 
   setTimeout(() => {
     notify(`¡Robo Rápido exitoso! Robaste: ${item} 🚀`, '🎯');
   }, 500);
+}
+
+// ── Sistema de Criminalidad (Equipo Rocket) ────────────────────────────────
+function addCriminality(amount) {
+  if (state.playerClass !== 'rocket') return;
+  state.classData = state.classData || {};
+  const prev = state.classData.criminality || 0;
+  state.classData.criminality = Math.min(100, prev + amount);
+  
+  updateCriminalityBar();
+  
+  if (prev < 100 && state.classData.criminality >= 100) {
+    notify("¡Tu nivel de criminalidad es máximo! La policía te busca.", "🚔");
+  }
+  
+  if (typeof scheduleSave === 'function') scheduleSave();
+}
+
+function updateCriminalityBar() {
+  const container = document.getElementById('criminality-bar-container');
+  if (state.playerClass !== 'rocket') {
+    if (container) container.style.display = 'none';
+    return;
+  }
+
+  // Si no existe, lo creamos (se inyecta en el body para estar a la derecha del HUD de mapas)
+  let bar = document.getElementById('criminality-bar-fill');
+  if (!container) {
+    const newContainer = document.createElement('div');
+    newContainer.id = 'criminality-bar-container';
+    newContainer.style.cssText = `
+      position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
+      width: 12px; height: 200px; background: rgba(0,0,0,0.6);
+      border: 2px solid #333; border-radius: 10px; z-index: 100;
+      display: flex; align-items: flex-end; overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5); pointer-events: none;
+    `;
+    
+    const fill = document.createElement('div');
+    fill.id = 'criminality-bar-fill';
+    fill.style.cssText = `
+      width: 100%; height: 0%; background: #ef4444;
+      transition: height 0.3s ease, background 0.3s ease;
+      box-shadow: 0 0 15px #ef4444;
+    `;
+    
+    const label = document.createElement('div');
+    label.style.cssText = `
+      position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
+      color: #ef4444; font-family: 'Press Start 2P', monospace; font-size: 8px;
+      white-space: nowrap; text-shadow: 1px 1px #000;
+    `;
+    label.textContent = "CRIMEN";
+    
+    newContainer.appendChild(label);
+    newContainer.appendChild(fill);
+    document.body.appendChild(newContainer);
+    bar = fill;
+  }
+
+  const criminality = state.classData?.criminality || 0;
+  const containerEl = document.getElementById('criminality-bar-container');
+  
+  // Mostrar solo en la pestaña de mapa
+  const activeTab = document.querySelector('.hud-nav-btn.active')?.dataset.tab;
+  containerEl.style.display = (activeTab === 'map') ? 'flex' : 'none';
+  
+  bar.style.height = criminality + '%';
+  
+  if (criminality >= 100) {
+    bar.style.animation = 'blinkRed 0.5s infinite';
+    if (!document.getElementById('criminality-anim')) {
+      const style = document.createElement('style');
+      style.id = 'criminality-anim';
+      style.textContent = `
+        @keyframes blinkRed {
+          0% { background: #ef4444; box-shadow: 0 0 20px #ef4444; }
+          50% { background: #991b1b; box-shadow: 0 0 5px #991b1b; }
+          100% { background: #ef4444; box-shadow: 0 0 20px #ef4444; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  } else {
+    bar.style.animation = 'none';
+  }
 }
 
 // ── Reputación del Entrenador ─────────────────────────────────────────────
@@ -600,6 +693,11 @@ function confirmBlackMarketSell(boxIndex, price) {
   state.money = (state.money || 0) + price;
   state.classData = state.classData || {};
   state.classData.blackMarketSales = (state.classData.blackMarketSales || 0) + 1;
+  
+  // Aumentar criminalidad por venta en mercado negro
+  if (state.playerClass === 'rocket') {
+    addCriminality(15);
+  }
 
   addClassXP(25);
   notify(`¡Pokémon vendido por ₽${price.toLocaleString()}! 💰`, '🚀');

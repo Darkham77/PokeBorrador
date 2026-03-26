@@ -166,7 +166,12 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   let startMsg = `¡Un ${enemy.name} salvaje apareció!`;
   if (isGym) startMsg = `¡Un ${enemy.name} salvaje apareció! ¡Es un combate de Gimnasio!`;
   if (isTrainer) {
-    startMsg = `¡${trainerName || 'El entrenador'} te desafía!`;
+    const criminality = (state.playerClass === 'rocket' && state.classData?.criminality >= 100);
+    if (criminality && !isGym) {
+      startMsg = `¡${trainerName || 'El entrenador'} te desafía! <br><span style="color:#ef4444;font-weight:bold;">"Tu cabeza vale mucho. ¡Ya no robarás más Pokémon!"</span>`;
+    } else {
+      startMsg = `¡${trainerName || 'El entrenador'} te desafía!`;
+    }
   }
 
   setLog(startMsg);
@@ -2785,6 +2790,19 @@ function endBattle(won) {
       showBattleSwitch(true); // forced = true
     } else {
       // All fainted — true defeat
+      
+      // Penalización por Criminalidad Máxima (Equipo Rocket)
+      if (state.playerClass === 'rocket' && state.classData?.criminality >= 100) {
+        const strongest = [...state.team].sort((a, b) => b.level - a.level)[0];
+        const penalty = (strongest?.level || 1) * 100;
+        state.money = Math.max(0, (state.money || 0) - penalty);
+        state.classData.criminality = 0; // Reset criminality
+        setTimeout(() => {
+          notify(`¡Fuiste capturado! Perdiste ₽${penalty.toLocaleString()} por tu recompensa.`, '🚔');
+          if (typeof updateCriminalityBar === 'function') updateCriminalityBar();
+        }, 1000);
+      }
+
       state.team.forEach(p => { p.hp = Math.max(p.hp, Math.floor(p.maxHp * 0.3)); });
       notify('¡Todo tu equipo fue derrotado!', '❤️‍🩹');
       if (!state.stats) state.stats = {};

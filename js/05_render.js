@@ -28,6 +28,9 @@ function showTab(tab, btnEl) {
   if (tab === 'friends') renderFriends();
   // Al abrir la tab de amigos, refrescar el badge para ver si quedan notificaciones (como chats no leídos)
   refreshFriendsBadge();
+  
+  // Actualizar HUD de criminalidad (Equipo Rocket)
+  if (typeof updateCriminalityBar === 'function') updateCriminalityBar();
 }
 
 // ===== RENDER =====
