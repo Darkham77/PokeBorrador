@@ -2642,6 +2642,15 @@ function endBattle(won) {
       if (!state.stats) state.stats = {};
       if (b.isTrainer) state.stats.trainersDefeated = (state.stats.trainersDefeated || 0) + 1;
 
+      // Reset criminality if defeated the Police Officer
+      if (b.trainerName === 'Oficial de Policía' && state.playerClass === 'rocket') {
+        if (state.classData) {
+          state.classData.criminality = 0;
+          addLog('¡Tu criminalidad ha sido reseteada tras derrotar a la ley!', 'log-info');
+          if (typeof updateProfilePanel === 'function') updateProfilePanel();
+        }
+      }
+
       // Egg system (only for random trainers, not gyms)
       if (b.isTrainer && !b.isRival && Math.random() < 0.05) {
         const eggPool = ['pichu', 'magby', 'elekid', 'cleffa', 'igglybuff', 'togepi', 'eevee'];

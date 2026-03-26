@@ -32,12 +32,17 @@
 
       if (isMaxCriminality) {
         // Entrenador Especial: Policía / Cazarrecompensas
+        const criminality = state.classData?.criminality || 100;
+        const excess = Math.max(0, criminality - 100);
+        const bonusLv = Math.floor(excess / 50);
+
         t = {
           name: 'Oficial de Policía',
           sprite: 'https://play.pokemonshowdown.com/sprites/trainers/officer.png',
-          quote: '¡Tu cabeza vale mucho. ¡Ya no robarás más Pokémon!'
+          quote: excess > 0 ? `¡Tu criminalidad es de ${criminality}! ¡No escaparás de la justicia!` : '¡Tu cabeza tiene precio! ¡Ya no robarás más Pokémon!'
         };
-        trainerLv = baseLv + 5; // +3 niveles sobre el normal (que es base+2)
+        
+        trainerLv = baseLv + 5 + bonusLv; 
         teamSize = Math.floor(Math.random() * 2) + 3; // 3-4 Pokémon
         
         // Pool de policía: Pokémon de autoridad/orden
