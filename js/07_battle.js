@@ -315,7 +315,7 @@ function updateBattleUI() {
   document.getElementById('enemy-hp-text').textContent = `HP: ${b.enemy.hp}/${b.enemy.maxHp}`;
   const ivTotalEl = document.getElementById('enemy-iv-total');
   if (ivTotalEl) {
-    const showIv = state.playerClass === 'criador' && !b.isTrainer && !b.isGym && !b.isPvP;
+    const showIv = state.playerClass === 'criador' && !b.isPvP;
     if (showIv && b.enemy.ivs) {
       const total = Object.values(b.enemy.ivs).reduce((s, v) => s + (v || 0), 0);
       ivTotalEl.textContent = `IV: ${total}/186`;

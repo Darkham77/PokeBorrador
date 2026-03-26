@@ -105,8 +105,15 @@
     function healAllPokemon() {
       // Costo extra por clase
       const extraCost = getHealCost();
+      
+      // Si hay costo, pedir confirmación visual antes de curar (opcional, pero mejor informamos)
+      if (extraCost > 0 && !confirm(`Curar a tu equipo tiene un costo de ₽${extraCost} debido a tu clase (${state.playerClass === 'rocket' ? 'Equipo Rocket' : 'Criador'}). ¿Continuar?`)) {
+        closePokemonCenter();
+        return;
+      }
+
       if (extraCost > 0 && (state.money || 0) < extraCost) {
-        notify(`No tenés suficiente dinero para curar (costo extra: ₽${extraCost})`, '💸');
+        notify(`No tenés suficiente dinero para curar (costo: ₽${extraCost})`, '💸');
         closePokemonCenter();
         return;
       }

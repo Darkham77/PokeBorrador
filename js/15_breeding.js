@@ -457,7 +457,9 @@ function renderDaycareBreedingSummary(pA, pB, compat, itemA = '', itemB = '') {
   else if (forcedB && forcedA && forcedB.stat === forcedA.stat) {
       guaranteedIVs = [`✓ 50% ${forcedA.label} (${pA.name}) / 50% (${pB.name})`];
   }
-  const ivText = guaranteedIVs.length > 0 ? guaranteedIVs.join('<br>') : '<span style="color:var(--gray);">3 stats al azar (Madre/Padre)</span>';
+  const isCriador = typeof state !== 'undefined' && state.playerClass === 'criador';
+  const baseCount = isCriador ? 4 : 3;
+  const ivText = guaranteedIVs.length > 0 ? guaranteedIVs.join('<br>') : `<span style="color:var(--gray);">${baseCount} stats al azar (Madre/Padre)</span>`;
 
   return `
     <div style="background:linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95)); border:1px solid rgba(139,92,246,0.5); border-radius:16px; padding:16px; box-shadow:0 8px 32px rgba(0,0,0,0.6); text-align:left; position:relative; overflow:hidden;">
