@@ -127,9 +127,22 @@
         const unreadCount = typeof getUnreadCount === 'function' ? getUnreadCount(p.id) : 0;
         const chatUnreadBadge = unreadCount > 0 ? `<div style="position:absolute;top:-6px;right:-6px;background:#ff4757;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:bold;box-shadow:0 2px 5px rgba(0,0,0,0.4);z-index:10;">${unreadCount}</div>` : '';
 
+        const clsId = save?.playerClass;
+        let avatarHtml = `<div style="font-size:24px;">🧢</div>`;
+        if (clsId && typeof PLAYER_CLASSES !== 'undefined' && PLAYER_CLASSES[clsId]) {
+          const cls = PLAYER_CLASSES[clsId];
+          let borderColor = '#cd7f32';
+          if (level >= 20) borderColor = '#ffd700';
+          else if (level >= 10) borderColor = '#c0c0c0';
+          avatarHtml = `
+            <div style="width:40px;height:40px;border-radius:50%;border:2px solid ${borderColor};background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%);display:flex;align-items:flex-start;justify-content:center;overflow:hidden;box-shadow:0 0 8px ${borderColor}66;">
+              <img src="${cls.sprite}" style="width:250%;height:auto;margin-top:-2px;image-rendering:pixelated;">
+            </div>`;
+        }
+
         return `<div class="friend-card">
-      <div class="friend-avatar">
-        🧢
+      <div class="friend-avatar" style="border:none;background:transparent;">
+        ${avatarHtml}
         <div class="online-dot ${isOnline ? '' : 'offline-dot'}"></div>
       </div>
       <div class="friend-info">
@@ -160,16 +173,34 @@
 
       if (!data || data.length === 0) { section.style.display = 'none'; return; }
 
-      // Get requester profiles separately
+      // Get requester profiles and saves
       const requesterIds = data.map(f => f.requester_id);
       const { data: profiles } = await sb.from('profiles').select('*').in('id', requesterIds);
+      const { data: saves } = await sb.from('game_saves').select('user_id,save_data').in('user_id', requesterIds);
 
       section.style.display = 'block';
       list.innerHTML = data.map(f => {
         const profile = profiles?.find(p => p.id === f.requester_id);
+        const saveRow = saves?.find(s => s.user_id === f.requester_id);
+        const save = saveRow?.save_data || {};
+        const level = save.trainerLevel || 1;
+        const clsId = save.playerClass;
+        
+        let avatarHtml = `<div style="font-size:24px;">🧢</div>`;
+        if (clsId && typeof PLAYER_CLASSES !== 'undefined' && PLAYER_CLASSES[clsId]) {
+          const cls = PLAYER_CLASSES[clsId];
+          let borderColor = '#cd7f32';
+          if (level >= 20) borderColor = '#ffd700';
+          else if (level >= 10) borderColor = '#c0c0c0';
+          avatarHtml = `
+            <div style="width:40px;height:40px;border-radius:50%;border:2px solid ${borderColor};background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%);display:flex;align-items:flex-start;justify-content:center;overflow:hidden;box-shadow:0 0 8px ${borderColor}66;">
+              <img src="${cls.sprite}" style="width:250%;height:auto;margin-top:-2px;image-rendering:pixelated;">
+            </div>`;
+        }
+
         return `
     <div class="friend-card">
-      <div class="friend-avatar">🧢</div>
+      <div class="friend-avatar" style="border:none;background:transparent;">${avatarHtml}</div>
       <div class="friend-info">
         <div class="friend-name">${profile?.username || '?'}</div>
         <div class="friend-meta">Quiere ser tu amigo</div>
@@ -200,17 +231,36 @@
           return;
         }
 
-        // Check existing friendships
+        // Get saves for classes
         const ids = data.map(p => p.id);
         const { data: existing } = await sb.from('friendships')
           .select('*')
           .or(`requester_id.in.(${[currentUser.id, ...ids].join(',')}),addressee_id.in.(${[currentUser.id, ...ids].join(',')})`);
+        const { data: saves } = await sb.from('game_saves').select('user_id,save_data').in('user_id', ids);
 
         el.innerHTML = data.map(p => {
           const rel = (existing || []).find(f =>
             (f.requester_id === currentUser.id && f.addressee_id === p.id) ||
             (f.requester_id === p.id && f.addressee_id === currentUser.id)
           );
+          
+          const saveRow = saves?.find(s => s.user_id === p.id);
+          const save = saveRow?.save_data || {};
+          const level = save.trainerLevel || 1;
+          const clsId = save.playerClass;
+          
+          let avatarHtml = `<div style="font-size:24px;">🧢</div>`;
+          if (clsId && typeof PLAYER_CLASSES !== 'undefined' && PLAYER_CLASSES[clsId]) {
+            const cls = PLAYER_CLASSES[clsId];
+            let borderColor = '#cd7f32';
+            if (level >= 20) borderColor = '#ffd700';
+            else if (level >= 10) borderColor = '#c0c0c0';
+            avatarHtml = `
+              <div style="width:40px;height:40px;border-radius:50%;border:2px solid ${borderColor};background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%);display:flex;align-items:flex-start;justify-content:center;overflow:hidden;box-shadow:0 0 8px ${borderColor}66;">
+                <img src="${cls.sprite}" style="width:250%;height:auto;margin-top:-2px;image-rendering:pixelated;">
+              </div>`;
+          }
+
           let actionBtn = `<button class="friend-btn" style="background:rgba(199,125,255,0.2);color:var(--purple);border:1px solid rgba(199,125,255,0.3);"
           onclick="sendFriendRequest('${p.id}','${p.username}',this)">➕ Agregar</button>`;
           if (rel) {
@@ -222,7 +272,7 @@
               actionBtn = `<button class="friend-btn friend-btn-accept" onclick="respondFriend('${rel.id}','accepted');renderFriends();">✓ Aceptar</button>`;
           }
           return `<div class="search-result-card">
-        <div class="friend-avatar" style="width:40px;height:40px;font-size:18px;">🧢</div>
+        <div class="friend-avatar" style="width:auto;height:auto;border:none;background:transparent;">${avatarHtml}</div>
         <div class="friend-info">
           <div class="friend-name">${p.username}</div>
         </div>

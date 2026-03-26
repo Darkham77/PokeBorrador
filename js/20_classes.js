@@ -287,7 +287,7 @@ function openClassModal(forced = false) {
   }).join('');
 
   modal.innerHTML = `
-    <div style="width:100%;max-width:960px;padding-top:20px;padding-bottom:40px;">
+    <div style="width:100%;max-width:1200px;padding-top:20px;padding-bottom:40px;">
       <div style="text-align:center;margin-bottom:24px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:16px;color:#f59e0b;margin-bottom:8px;">
           🎭 ELEGÍ TU CLASE
@@ -296,7 +296,7 @@ function openClassModal(forced = false) {
           ${isChange ? 'Cambiar de clase cuesta <strong style="color:#f59e0b;">10,000 Battle Coins</strong>.' : 'Esta elección define cómo jugás. Podés cambiar más adelante por 10,000 Battle Coins.'}
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:20px;">
         ${cardsHtml}
       </div>
       ${canClose && state.playerClass ? `<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px;">
@@ -383,6 +383,16 @@ function openClassInfoPanel() {
     padding:16px;animation:fadeIn 0.2s;overflow-y:auto;
   `;
 
+  const levelForBorder = state.trainerLevel || 1;
+  let panelBorderColor = '#cd7f32';
+  if (levelForBorder >= 20) panelBorderColor = '#ffd700';
+  else if (levelForBorder >= 10) panelBorderColor = '#c0c0c0';
+
+  const avatarHtml = `
+    <div style="position:absolute;top:20px;left:20px;width:60px;height:60px;border-radius:50%;border:2px solid ${panelBorderColor};background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%);display:flex;align-items:flex-start;justify-content:center;overflow:hidden;box-shadow: 0 0 12px ${panelBorderColor}88;">
+      <img src="${cls.sprite}" style="width:250%; height:auto; margin-top:-5px; image-rendering:pixelated; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.5));">
+    </div>`;
+
   ov.innerHTML = `
     <style>
       .class-tooltip { position:relative; display:inline-block; margin-left:10px; cursor:help; font-size:12px; color:#4b5563; transition:color 0.2s; }
@@ -412,9 +422,7 @@ function openClassInfoPanel() {
         <div style="flex:1;min-width:280px;display:flex;flex-direction:column;align-items:center;">
           <div style="position:relative;width:100%;max-width:300px;background:radial-gradient(circle, ${cls.color}15 0%, transparent 70%);border-radius:30px;padding:20px;display:flex;justify-content:center;margin-bottom:24px;border:1px solid ${cls.color}11;">
             <img src="${cls.sprite}" style="width:220px;height:auto;image-rendering:pixelated;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.5));">
-            <div style="position:absolute;top:20px;left:20px;width:60px;height:60px;background:${cls.color}22;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:40px;border:1px solid ${cls.color}33;">
-              ${cls.icon}
-            </div>
+            ${avatarHtml}
           </div>
 
           <div style="width:100%;text-align:center;">
@@ -528,14 +536,14 @@ function updateClassHud() {
   if (avatar) {
     avatar.innerHTML = `
       <div style="width:36px; height:36px; border-radius:50%; border:2px solid ${borderColor}; background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%); display:flex; align-items:flex-start; justify-content:center; overflow:hidden; box-shadow: 0 0 8px ${borderColor}66;">
-        <img src="${cls.sprite}" style="width:140%; height:auto; margin-top:-2px; image-rendering:pixelated; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
+        <img src="${cls.sprite}" style="width:250%; height:auto; margin-top:-2px; image-rendering:pixelated; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
       </div>`;
   }
 
   if (profAvatar) {
     profAvatar.innerHTML = `
       <div style="width:80px; height:80px; border-radius:50%; border:3px solid ${borderColor}; background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%); display:flex; align-items:flex-start; justify-content:center; overflow:hidden; box-shadow: 0 0 20px ${borderColor}88; margin: 0 auto 16px; position:relative;">
-        <img src="${cls.sprite}" style="width:150%; height:auto; margin-top:-5px; image-rendering:pixelated; filter:drop-shadow(0 5px 10px rgba(0,0,0,0.5));">
+        <img src="${cls.sprite}" style="width:250%; height:auto; margin-top:-5px; image-rendering:pixelated; filter:drop-shadow(0 5px 10px rgba(0,0,0,0.5));">
       </div>`;
     profAvatar.style.background = 'transparent';
     profAvatar.style.border = 'none';
