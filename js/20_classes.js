@@ -15,6 +15,7 @@ const PLAYER_CLASSES = {
       '🏪 20% de descuento en el Mercado Negro exclusivo',
       '📦 Contrabando Pasivo: misiones idle de 2/4/8h con ₽ y objetos raros'
     ],
+    bonusLevels: [1, 1, 10, 20],
     penalties: [
       '🏥 Centro Pokémon cuesta el doble (2x)',
       '🪙 -10% Battle Coins en todas las batallas',
@@ -41,6 +42,7 @@ const PLAYER_CLASSES = {
       '🗺️ Zonas Privilegiadas: más encuentros y Pokémon raros en zonas exclusivas',
       '🏕️ Expediciones: misiones idle de 1/3/6h que traen Pokémon y objetos de captura'
     ],
+    bonusLevels: [1, 1, 10, 20],
     penalties: [
       '⚔️ -20% EXP en batallas contra entrenadores NPC',
       '🪙 -15% Battle Coins en todas las batallas',
@@ -68,6 +70,7 @@ const PLAYER_CLASSES = {
       '⭐ Sistema de Reputación: desbloquea tienda exclusiva al acumular victorias en gym',
       '🏋️ Entrenamiento de Gimnasio Pasivo: misiones idle de 2/4/8h con EXP'
     ],
+    bonusLevels: [1, 1, 10, 20],
     penalties: [
       '🎯 -10% catchRate en Pokémon con IV total > 120',
       '🏠 Guardería cuesta 1.5x más',
@@ -97,6 +100,7 @@ const PLAYER_CLASSES = {
       '🏪 Mercado de Crías: venta automática de Pokémon criados',
       '🥚 Incubación Asistida: misiones idle de 4/8/12h que mejoran IVs'
     ],
+    bonusLevels: [1, 1, 5, 5, 15, 20],
     penalties: [
       '📉 -10% EXP en todos los combates',
       '🏥 Centro Pokémon cuesta 1.5x para Pokémon no criados por vos',
@@ -152,13 +156,13 @@ function selectClass(classId) {
 
   const alreadyHasClass = !!state.playerClass;
   if (alreadyHasClass) {
-    const cost = 500;
+    const cost = 10000;
     if ((state.battleCoins || 0) < cost) {
-      notify(`Necesitás ${cost} Battle Coins para cambiar de clase.`, '🔒');
+      notify(`Necesitás ${cost.toLocaleString()} Battle Coins para cambiar de clase.`, '🔒');
       return;
     }
     state.battleCoins -= cost;
-    notify(`Cambiaste a ${cls.name}. Costó ${cost} Battle Coins.`, cls.icon);
+    notify(`Cambiaste a ${cls.name}. Costó ${cost.toLocaleString()} Battle Coins.`, cls.icon);
   } else {
     notify(`¡Elegiste ser ${cls.name}! ${cls.description.split('.')[0]}.`, cls.icon);
   }
@@ -222,7 +226,7 @@ function openClassModal(forced = false) {
         <button style="width:100%;margin-top:16px;padding:12px;border:none;border-radius:12px;
           background:linear-gradient(135deg,${cls.color},${cls.colorDark});color:#fff;
           font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">
-          ${isActive ? '✓ CLASE ACTUAL' : (isChange ? '🔄 CAMBIAR (500 BC)' : '▶ ELEGIR')}
+          ${isActive ? '✓ CLASE ACTUAL' : (isChange ? '🔄 CAMBIAR (10,000 BC)' : '▶ ELEGIR')}
         </button>
       </div>`;
   }).join('');
@@ -234,7 +238,7 @@ function openClassModal(forced = false) {
           🎭 ELEGÍ TU CLASE
         </div>
         <div style="font-size:13px;color:#9ca3af;">
-          ${isChange ? 'Cambiar de clase cuesta <strong style="color:#f59e0b;">500 Battle Coins</strong> y reinicia tu progreso de clase.' : 'Esta elección define cómo jugás. Podés cambiar más adelante por 500 Battle Coins.'}
+          ${isChange ? 'Cambiar de clase cuesta <strong style="color:#f59e0b;">10,000 Battle Coins</strong>.' : 'Esta elección define cómo jugás. Podés cambiar más adelante por 10,000 Battle Coins.'}
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px;">
@@ -261,6 +265,108 @@ function openClassModal(forced = false) {
 function closeClassModal() {
   const m = document.getElementById('class-selection-modal');
   if (m) m.remove();
+}
+
+// ── Panel de información de clase (estilo mochila) ─────────────────────────
+function openClassInfoPanel() {
+  if (!state.playerClass) {
+    openClassModal(true);
+    return;
+  }
+
+  const existing = document.getElementById('class-info-panel-overlay');
+  if (existing) existing.remove();
+
+  const cls = PLAYER_CLASSES[state.playerClass];
+  const trainerLevel = state.trainerLevel || 1;
+
+  const bonusesHtml = cls.bonuses.map((bonus, i) => {
+    const reqLevel = (cls.bonusLevels && cls.bonusLevels[i]) || 1;
+    const unlocked = trainerLevel >= reqLevel;
+    const borderColor = unlocked ? cls.color : '#374151';
+    const textColor = unlocked ? '#e2e8f0' : '#6b7280';
+    const icon = unlocked ? '✅' : '🔒';
+    const levelTag = reqLevel > 1
+      ? `<span style="font-size:8px;color:${unlocked ? cls.color : '#4b5563'};background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;margin-left:6px;white-space:nowrap;">Nv.${reqLevel}</span>`
+      : '';
+    const sublabel = !unlocked
+      ? `<div style="font-size:9px;color:#4b5563;margin-top:3px;">Se desbloquea en Nv. ${reqLevel}</div>`
+      : '';
+    return `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:3px solid ${borderColor};">
+        <span style="font-size:13px;flex-shrink:0;margin-top:1px;">${icon}</span>
+        <div>
+          <div style="font-size:11px;color:${textColor};line-height:1.5;display:flex;align-items:center;flex-wrap:wrap;">${bonus}${levelTag}</div>
+          ${sublabel}
+        </div>
+      </div>`;
+  }).join('');
+
+  const penaltiesHtml = cls.penalties.map(p => `
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(0,0,0,0.3);border-radius:10px;border-left:3px solid #ef444455;">
+      <span style="font-size:13px;flex-shrink:0;margin-top:1px;">❌</span>
+      <div style="font-size:11px;color:#f87171;line-height:1.5;">${p}</div>
+    </div>`).join('');
+
+  const ov = document.createElement('div');
+  ov.id = 'class-info-panel-overlay';
+  ov.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9000;
+    display:flex;align-items:center;justify-content:center;
+    padding:16px;animation:fadeIn 0.2s;overflow-y:auto;
+  `;
+
+  ov.innerHTML = `
+    <div style="background:#1e293b;border-radius:20px;padding:24px;width:100%;max-width:480px;border:2px solid ${cls.color}44;box-shadow:0 8px 40px rgba(0,0,0,0.7);">
+
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span style="font-size:44px;line-height:1;">${cls.icon}</span>
+          <div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cls.color};margin-bottom:6px;">${cls.name}</div>
+            <div style="font-size:10px;color:#9ca3af;line-height:1.6;max-width:240px;">${cls.description}</div>
+          </div>
+        </div>
+        <button onclick="document.getElementById('class-info-panel-overlay').remove()"
+          style="background:none;border:none;color:#6b7280;font-size:22px;cursor:pointer;flex-shrink:0;line-height:1;">✕</button>
+      </div>
+
+      <!-- Nivel -->
+      <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:22px;">🎖️</span>
+        <div style="flex:1;">
+          <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;font-family:'Press Start 2P',monospace;">NIVEL DE ENTRENADOR</div>
+          <div style="font-size:20px;font-weight:900;color:${cls.color};">Nv. ${trainerLevel}</div>
+        </div>
+      </div>
+
+      <!-- Habilidades -->
+      <div style="margin-bottom:16px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#22c55e;margin-bottom:10px;letter-spacing:0.5px;">✅ HABILIDADES</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">${bonusesHtml}</div>
+      </div>
+
+      <!-- Penalizaciones -->
+      <div style="margin-bottom:24px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:10px;letter-spacing:0.5px;">❌ PENALIZACIONES</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">${penaltiesHtml}</div>
+      </div>
+
+      <!-- Footer -->
+      <div style="border-top:1px dashed rgba(255,255,255,0.1);padding-top:16px;display:flex;gap:10px;">
+        <button onclick="document.getElementById('class-info-panel-overlay').remove();openClassModal(false)"
+          style="flex:1;padding:12px 8px;border:1px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.05);color:#9ca3af;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;line-height:1.8;">
+          🔄 CAMBIAR CLASE<br><span style="color:#f59e0b;">10,000 BC</span>
+        </button>
+        <button onclick="document.getElementById('class-info-panel-overlay').remove()"
+          style="flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,${cls.color},${cls.colorDark});color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
+          ✓ CERRAR
+        </button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(ov);
 }
 
 // ── HUD de clase: actualiza el panel del entrenador ───────────────────────
