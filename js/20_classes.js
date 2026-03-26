@@ -39,7 +39,8 @@ const PLAYER_CLASSES = {
       "El servicio de enfermería básico tiene un recargo del 100% (x2) por ser miembro del Team Rocket.",
       "Tus patrocinadores te dan un 10% menos de Battle Coins por batalla debido a tu mala reputación.",
       "Los PokéMart oficiales detectan tu afiliación y aplican un recargo del +20% en todos los precios."
-    ]
+    ],
+    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/rocket-m.png'
   },
   cazabichos: {
     id: 'cazabichos',
@@ -78,7 +79,8 @@ const PLAYER_CLASSES = {
       "Tu enfoque en la naturaleza te hace menos eficiente entrenando contra otros humanos (x0.80 EXP).",
       "Los premios en metálico se reducen un 15% debido a tu falta de patrocinio oficial.",
       "La infraestructura de la guardería no está adaptada para tus métodos de crianza rústicos (x1.50 costo)."
-    ]
+    ],
+    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/bugcatcher.png'
   },
   entrenador: {
     id: 'entrenador',
@@ -117,7 +119,8 @@ const PLAYER_CLASSES = {
       "Tu ética profesional te impide capturar Pokémon genéticamente perfectos con facilidad (-10% Catch Rate si IV > 120).",
       "Prefieres el entrenamiento en campo; el mantenimiento en guardería te resulta más costoso (x1.50).",
       "Como figura pública, no puedes ser visto operando en mercados de dudosa legalidad."
-    ]
+    ],
+    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/red.png'
   },
   criador: {
     id: 'criador',
@@ -127,11 +130,11 @@ const PLAYER_CLASSES = {
     colorDark: '#7e22ce',
     description: 'Maestro genético. Produce los Pokémon con mejores IVs y habilidades del servidor. Domina el meta competitivo desde la guardería.',
     bonuses: [
-      '🧬 Lazo Destino transmite 4 IVs (vs 3 normal)',
-      '🥚 Lazo Destino: Hereda 4 IVs aleatorios de los padres en lugar de 3.',
+      '🧬 Lazo Destino: Hereda 4 IVs aleatorios de los padres (vs 3 normal).',
+      '🥚 Incubación Rápida: Los pasos para eclosionar se reducen un 25%.',
       '❤️ Vigor: 15% de chance de recuperar vigor tras eclosionar.',
       '👁️ Predecir Naturaleza: Permite ver la naturaleza del Pokémon rival en batalla.',
-      '🔍 Escáner de Huevos: Escanea un huevo tras cada eclosión para ver sus stats.',
+      '🔍 Escáner de Huevos: Visualiza y gestiona IVs/Naturaleza post-eclosión.',
       '🥚 Incubación Asistida: misiones idle de 4/8/12h que mejoran IVs'
     ],
     bonusLevels: [1, 1, 5, 5, 15, 20],
@@ -151,16 +154,17 @@ const PLAYER_CLASSES = {
     technicalBonuses: [
       "Al criar, se eligen 4 IVs aleatorios de entre los 12 disponibles de los padres (normalmente son solo 3).",
       "El contador de pasos requerido para que un huevo eclosione se reduce en un 25%.",
-      "Cada eclosión tiene un 15% de posibilidad de devolver 1 punto de vigor a uno de los padres en la guardería.",
+      "Cada eclosión tiene un 15% de posibilidad de recuperar 1 punto de vigor en uno de los padres en la guardería.",
       "Muestra la Naturaleza (Modificadores de Stats) del Pokémon rival directamente en el HUD de batalla.",
-      "Interfaz opcional en la Guardería que vende automáticamente los huevos por ₽1000 + 75% del costo de cría.",
+      "Tras eclosionar, permite elegir un huevo del inventario para conocer sus genes y decidir si conservarlo.",
       "Misiones pasivas de larga duración que garantizan mejores IVs mínimos para los huevos generados."
     ],
     technicalPenalties: [
-      "Tu tiempo invertido en la genética reduce tu eficiencia en el entrenamiento de combate activo (-10% EXP).",
-      "Cuesta un 50% más (x1.5) curar Pokémon que no tengan tu ID de entrenador original (Pokémon intercambiados).",
-      "Tu dedicación a la crianza pura te aleja de los círculos de contrabando del Mercado Negro."
-    ]
+      "Tu enfoque en la genética te aleja del fragor de la batalla (x0.90 EXP global).",
+      "La enfermera Joy te cobra un extra por el mantenimiento especializado de Pokémon ajenos (x1.50).",
+      "Como científico respetable, no posees los contactos necesarios para entrar al Mercado Negro."
+    ],
+    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/scientist-f.png'
   }
 };
 
@@ -394,88 +398,95 @@ function openClassInfoPanel() {
       @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
     </style>
 
-    <div style="background:#111827;border-radius:24px;padding:32px;width:100%;max-width:650px;border:1px solid ${cls.color}33;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);position:relative;">
+    <div style="background:#111827;border-radius:24px;padding:32px;width:95%;max-width:900px;border:1px solid ${cls.color}33;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);position:relative;display:flex;flex-direction:column;gap:32px;">
       
       <!-- Close Button -->
       <button onclick="document.getElementById('class-info-panel-overlay').remove()"
-        style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.05);border:none;color:#9ca3af;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:0.2s;"
+        style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.05);border:none;color:#9ca3af;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;z-index:10;transition:0.2s;"
         onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'"
         onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#9ca3af'">✕</button>
 
-      <!-- Header -->
-      <div style="display:flex;align-items:center;gap:24px;margin-bottom:32px;">
-        <div style="width:90px;height:90px;background:linear-gradient(135deg,${cls.color}22,${cls.colorDark}44);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:54px;border:1px solid ${cls.color}44;box-shadow:0 8px 16px rgba(0,0,0,0.2);">
-          ${cls.icon}
-        </div>
-        <div style="flex:1;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${cls.color};margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">${cls.name}</div>
-          <div style="font-size:13px;color:#9ca3af;line-height:1.6;max-width:400px;font-style:italic;">"${cls.description}"</div>
-        </div>
-      </div>
-
-      <!-- Stats Grid -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px;">
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:16px;padding:16px;display:flex;align-items:center;gap:16px;">
-          <div style="width:48px;height:48px;background:${cls.color}15;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">🎖️</div>
-          <div>
-            <div style="font-size:9px;color:#6b7280;margin-bottom:2px;font-family:'Press Start 2P',monospace;">NIVEL ENTRENADOR</div>
-            <div style="font-size:24px;font-weight:900;color:${cls.color};">Nv. ${trainerLevel}</div>
-          </div>
-        </div>
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:16px;padding:16px;display:flex;align-items:center;gap:16px;">
-          <div style="width:48px;height:48px;background:#eab30815;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">✨</div>
-          <div>
-            <div style="font-size:9px;color:#6b7280;margin-bottom:2px;font-family:'Press Start 2P',monospace;">RANGO ACTUAL</div>
-            <div style="font-size:14px;font-weight:700;color:#eab308;text-transform:uppercase;">${getTrainerRank().title}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabs / Sections -->
-      <div style="display:grid;grid-template-columns:1fr;gap:24px;">
-        <!-- Bonos -->
-        <div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-            <div style="width:4px;height:16px;background:#22c55e;border-radius:2px;"></div>
-            <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#22c55e;letter-spacing:1px;">HABILIDADES DE CLASE</span>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr;gap:10px;">${bonusesHtml}</div>
-        </div>
-
-        <!-- Penalizaciones -->
-        <div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-            <div style="width:4px;height:16px;background:#ef4444;border-radius:2px;"></div>
-            <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;letter-spacing:1px;">LIMITACIONES</span>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr;gap:10px;">${penaltiesHtml}</div>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div style="margin-top:32px;display:flex;flex-direction:column;gap:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:24px;">
-        ${state.playerClass === 'entrenador' ? `
-        <button onclick="document.getElementById('class-info-panel-overlay').remove();openReputationShop()"
-          style="width:100%;padding:18px;border:none;border-radius:16px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;cursor:pointer;box-shadow:0 6px 0 #14532d;transition:0.2s;"
-          onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 0 #14532d'"
-          onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 0 #14532d'">
-          🏅 TIENDA DE REPUTACIÓN
-        </button>` : ''}
+      <div style="display:flex;gap:40px;flex-wrap:wrap;">
         
-        <div style="display:flex;gap:12px;">
-          <button onclick="document.getElementById('class-info-panel-overlay').remove();openClassModal(false)"
-            style="flex:1;padding:14px;border:1px solid rgba(255,255,255,0.08);border-radius:16px;background:rgba(255,255,255,0.03);color:#9ca3af;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;transition:0.2s;"
-            onmouseover="this.style.background='rgba(255,255,255,0.05)';this.style.color='#fff'"
-            onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.color='#9ca3af'">
-            🔄 CAMBIAR CLASE<br><span style="color:#f59e0b;font-size:7px;">10,000 BC</span>
-          </button>
-          <button onclick="document.getElementById('class-info-panel-overlay').remove()"
-            style="flex:1;padding:14px;border:none;border-radius:16px;background:linear-gradient(135deg,${cls.color},${cls.colorDark});color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;cursor:pointer;box-shadow:0 6px 0 ${cls.colorDark}99;transition:0.2s;"
-            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 0 ${cls.colorDark}aa'"
-            onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 0 ${cls.colorDark}99'">
-            ✓ ENTENDIDO
-          </button>
+        <!-- LEFT COLUMN: Sprite & Summary -->
+        <div style="flex:1;min-width:280px;display:flex;flex-direction:column;align-items:center;">
+          <div style="position:relative;width:100%;max-width:300px;background:radial-gradient(circle, ${cls.color}15 0%, transparent 70%);border-radius:30px;padding:20px;display:flex;justify-content:center;margin-bottom:24px;border:1px solid ${cls.color}11;">
+            <img src="${cls.sprite}" style="width:220px;height:auto;image-rendering:pixelated;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.5));">
+            <div style="position:absolute;top:20px;left:20px;width:60px;height:60px;background:${cls.color}22;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:40px;border:1px solid ${cls.color}33;">
+              ${cls.icon}
+            </div>
+          </div>
+
+          <div style="width:100%;text-align:center;">
+             <div style="font-family:'Press Start 2P',monospace;font-size:16px;color:${cls.color};margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;text-shadow:0 0 10px ${cls.color}44;">${cls.name}</div>
+             <div style="font-size:14px;color:#9ca3af;line-height:1.6;font-style:italic;max-width:340px;margin:0 auto;">"${cls.description}"</div>
+          </div>
+
+          <div style="width:100%;margin-top:32px;display:grid;gap:12px;">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:20px;padding:20px;display:flex;align-items:center;gap:20px;">
+              <div style="width:50px;height:50px;background:${cls.color}15;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;">🎖️</div>
+              <div>
+                <div style="font-size:9px;color:#6b7280;margin-bottom:4px;font-family:'Press Start 2P',monospace;">NIVEL ENTRENADOR</div>
+                <div style="font-size:26px;font-weight:900;color:${cls.color};text-shadow:0 0 10px ${cls.color}33;">Nv. ${trainerLevel}</div>
+              </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:20px;padding:20px;display:flex;align-items:center;gap:20px;">
+              <div style="width:50px;height:50px;background:#eab30815;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;">✨</div>
+              <div>
+                <div style="font-size:9px;color:#6b7280;margin-bottom:4px;font-family:'Press Start 2P',monospace;">RANGO ACTUAL</div>
+                <div style="font-size:16px;font-weight:700;color:#eab308;text-transform:uppercase;letter-spacing:1px;">${getTrainerRank().title}</div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- RIGHT COLUMN: Abilities & Penalties -->
+        <div style="flex:1.5;min-width:350px;display:flex;flex-direction:column;gap:32px;">
+          <!-- Bonos -->
+          <div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+              <div style="width:6px;height:20px;background:#22c55e;border-radius:3px;box-shadow:0 0 10px #22c55e44;"></div>
+              <span style="font-family:'Press Start 2P',monospace;font-size:11px;color:#22c55e;letter-spacing:1.5px;">HABILIDADES DE CLASE</span>
+            </div>
+            <div style="display:grid;gap:10px;">${bonusesHtml}</div>
+          </div>
+
+          <!-- Penalizaciones -->
+          <div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+              <div style="width:6px;height:20px;background:#ef4444;border-radius:3px;box-shadow:0 0 10px #ef444444;"></div>
+              <span style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ef4444;letter-spacing:1.5px;">LIMITACIONES</span>
+            </div>
+            <div style="display:grid;gap:10px;">${penaltiesHtml}</div>
+          </div>
+
+          <!-- Footer Actions inside Right Column -->
+          <div style="margin-top:auto;display:grid;gap:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:24px;">
+            ${state.playerClass === 'entrenador' ? `
+            <button onclick="document.getElementById('class-info-panel-overlay').remove();openReputationShop()"
+              style="width:100%;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;box-shadow:0 5px 0 #14532d;transition:0.2s;"
+              onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 7px 0 #14532d'"
+              onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 5px 0 #14532d'">
+              🏅 TIENDA DE REPUTACIÓN
+            </button>` : ''}
+            
+            <div style="display:flex;gap:12px;">
+              <button onclick="document.getElementById('class-info-panel-overlay').remove();openClassModal(false)"
+                style="flex:1;padding:12px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;background:rgba(255,255,255,0.03);color:#9ca3af;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;transition:0.2s;line-height:1.4;"
+                onmouseover="this.style.background='rgba(255,255,255,0.05)';this.style.color='#fff'"
+                onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.color='#9ca3af'">
+                🔄 CAMBIAR CLASE<br><span style="color:#f59e0b;font-size:7px;">10,000 BC</span>
+              </button>
+              <button onclick="document.getElementById('class-info-panel-overlay').remove()"
+                style="flex:1;padding:12px;border:none;border-radius:14px;background:linear-gradient(135deg,${cls.color},${cls.colorDark});color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;cursor:pointer;box-shadow:0 5px 0 ${cls.colorDark}99;transition:0.2s;"
+                onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 7px 0 ${cls.colorDark}aa'"
+                onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 5px 0 ${cls.colorDark}99'">
+                ✓ ENTENDIDO
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>`;
 
