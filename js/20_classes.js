@@ -40,7 +40,7 @@ const PLAYER_CLASSES = {
       "Tus patrocinadores te dan un 10% menos de Battle Coins por batalla debido a tu mala reputación.",
       "Los PokéMart oficiales detectan tu afiliación y aplican un recargo del +20% en todos los precios."
     ],
-    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/rocket-m.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.png'
   },
   cazabichos: {
     id: 'cazabichos',
@@ -80,7 +80,7 @@ const PLAYER_CLASSES = {
       "Los premios en metálico se reducen un 15% debido a tu falta de patrocinio oficial.",
       "La infraestructura de la guardería no está adaptada para tus métodos de crianza rústicos (x1.50 costo)."
     ],
-    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/bugcatcher.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.png'
   },
   entrenador: {
     id: 'entrenador',
@@ -120,7 +120,7 @@ const PLAYER_CLASSES = {
       "Prefieres el entrenamiento en campo; el mantenimiento en guardería te resulta más costoso (x1.50).",
       "Como figura pública, no puedes ser visto operando en mercados de dudosa legalidad."
     ],
-    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/red.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png'
   },
   criador: {
     id: 'criador',
@@ -164,7 +164,7 @@ const PLAYER_CLASSES = {
       "La enfermera Joy te cobra un extra por el mantenimiento especializado de Pokémon ajenos (x1.50).",
       "Como científico respetable, no posees los contactos necesarios para entrar al Mercado Negro."
     ],
-    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/scientist-f.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.png'
   }
 };
 
