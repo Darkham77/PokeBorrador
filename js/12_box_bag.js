@@ -801,6 +801,10 @@
         const tierCls = tierColors[tier];
         const typeTag = `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:${typeTagColors[type] || '#666'}22;color:${typeTagColors[type] || '#aaa'};border:1px solid ${typeTagColors[type] || '#666'}44;">${typeTagLabels[type] || type}</span>`;
 
+        const iconHtml = sprite 
+          ? `<img src="${sprite}" width="40" height="40" style="image-rendering:pixelated;" onerror="this.style.display='none'">`
+          : `<span style="font-size:32px">${icon}</span>`;
+
         if (_bagSellMode) {
           const isSelected = !!_bagSellSelected[name];
           const sellQty = _bagSellSelected[name] || qty;
@@ -810,7 +814,7 @@
             style="${!canSell ? 'opacity:0.5; filter:grayscale(1);' : 'cursor:pointer;'} ${isSelected ? 'border:2px solid #4caf50; background:rgba(76,175,80,0.05);' : ''}"
             onclick="${canSell ? `toggleBagSellSelect('${name}', ${qty})` : ''}">
             <span class="market-tier-badge ${tierCls}">${tierLabels[tier]}</span>
-            <div class="market-item-icon" style="font-size:32px;margin-bottom:8px;">${icon}</div>
+            <div class="market-item-icon" style="margin-bottom:8px;">${iconHtml}</div>
             <div class="market-item-name" style="font-size:12px;margin-bottom:4px;">${name}</div>
             <div style="font-size:10px;color:var(--gray);margin-bottom:10px;">Posees: ${qty}</div>
             
@@ -832,7 +836,7 @@
 
         return `<div class="market-card" style="cursor:default;">
           <span class="market-tier-badge ${tierCls}">${tierLabels[tier]}</span>
-          <div class="market-item-icon" style="font-size:32px;margin-bottom:8px;">${icon}</div>
+          <div class="market-item-icon" style="margin-bottom:8px;">${iconHtml}</div>
           <div class="market-item-name" style="font-size:12px;margin-bottom:4px;">${name}</div>
           <div style="margin-bottom:8px;">${typeTag}</div>
           <div style="font-size:10px;color:var(--gray);margin-bottom:10px;line-height:1.4;min-height:28px;">${desc}</div>
