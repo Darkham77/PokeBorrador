@@ -201,7 +201,12 @@
         longestStreak: 0,
         reputationPoints: 0,
         blackMarketSales: 0,
-        criminality: 0
+        criminality: 0,
+        blackMarketDaily: {
+          date: '',
+          items: [],
+          purchased: []
+        }
       }
     };
 
