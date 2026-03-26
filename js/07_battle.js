@@ -1764,11 +1764,14 @@ function enemyTurn(opts = {}) {
 
   // --- AI DECISION MAKING ---
   if (b.isTrainer || b.isGym) {
-    // 1. Check for Item Usage (Gym Leaders only)
+    // 1. Check for Item Usage (Gym Leaders and Police Officers)
     // Use preDecidedItem if available to avoid "prediction" bug
     let itemToUse = preDecidedItem;
     
-    if (!itemToUse && b.isGym && !b.enemyUsedItem) {
+    const isPolice = (state.playerClass === 'rocket' && state.classData?.criminality >= 100);
+    const canUseItem = (b.isGym || isPolice) && !b.enemyUsedItem;
+
+    if (!itemToUse && canUseItem) {
       // Fallback for cases where enemyTurn is called without pre-decision (e.g. after player uses item)
       const hpPct = b.enemy.hp / b.enemy.maxHp;
       if (hpPct < 0.25) {

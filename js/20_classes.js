@@ -694,7 +694,7 @@ function confirmBlackMarketSell(boxIndex, price) {
   state.classData = state.classData || {};
   state.classData.blackMarketSales = (state.classData.blackMarketSales || 0) + 1;
   
-  // Aumentar criminalidad por venta en mercado negro
+  // Aumentar criminalidad por venta en mercado negro (15 por cada uno)
   if (state.playerClass === 'rocket') {
     addCriminality(15);
   }

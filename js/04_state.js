@@ -25,20 +25,49 @@
 
     function generateTrainerBattle(locId) {
       const loc = FIRE_RED_MAPS.find(l => l.id === locId);
-      const keys = Object.keys(TRAINER_TYPES);
-      const typeKey = keys[Math.floor(Math.random() * keys.length)];
-      const t = TRAINER_TYPES[typeKey];
+      const isMaxCriminality = (state.playerClass === 'rocket' && state.classData?.criminality >= 100);
       
-      const teamSize = Math.floor(Math.random() * 3) + 1;
-      const enemyTeam = [];
+      let t, trainerLv, teamSize;
       const baseLv = loc ? loc.lv[0] : 5;
-      const trainerLv = baseLv + 2;
 
-      for (let i = 0; i < teamSize; i++) {
-        const pId = t.pool[Math.floor(Math.random() * t.pool.length)];
-        const p = makePokemon(pId, trainerLv);
-        enemyTeam.push(p);
+      if (isMaxCriminality) {
+        // Entrenador Especial: Policía / Cazarrecompensas
+        t = {
+          name: 'Oficial de Policía',
+          sprite: 'https://play.pokemonshowdown.com/sprites/trainers/officer.png',
+          quote: '¡Tu cabeza vale mucho. ¡Ya no robarás más Pokémon!'
+        };
+        trainerLv = baseLv + 5; // +3 niveles sobre el normal (que es base+2)
+        teamSize = Math.floor(Math.random() * 2) + 3; // 3-4 Pokémon
+        
+        // Pool de policía: Pokémon de autoridad/orden
+        const policePool = ['arcanine', 'pidgeot', 'machamp', 'magneton', 'kadabra'];
+        const enemyTeam = [];
+        for (let i = 0; i < teamSize; i++) {
+          const pId = policePool[Math.floor(Math.random() * policePool.length)];
+          const p = makePokemon(pId, trainerLv);
+          enemyTeam.push(p);
+        }
+        
+        _startTrainerBattle(enemyTeam, t, locId);
+      } else {
+        const keys = Object.keys(TRAINER_TYPES);
+        const typeKey = keys[Math.floor(Math.random() * keys.length)];
+        t = TRAINER_TYPES[typeKey];
+        trainerLv = baseLv + 2;
+        teamSize = Math.floor(Math.random() * 3) + 1;
+        
+        const enemyTeam = [];
+        for (let i = 0; i < teamSize; i++) {
+          const pId = t.pool[Math.floor(Math.random() * t.pool.length)];
+          const p = makePokemon(pId, trainerLv);
+          enemyTeam.push(p);
+        }
+        _startTrainerBattle(enemyTeam, t, locId);
       }
+    }
+
+    function _startTrainerBattle(enemyTeam, t, locId) {
 
       // Intro Modal
       const introOv = document.createElement('div');
