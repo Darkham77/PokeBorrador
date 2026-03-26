@@ -251,6 +251,14 @@ function openClassModal(forced = false) {
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px;">
         ${cardsHtml}
       </div>
+      ${canClose && state.playerClass ? `<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px;">
+        <button onclick="closeClassModal();openClassMissionsPanel()" style="background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;padding:10px 20px;border-radius:10px;cursor:pointer;font-size:11px;font-weight:700;">
+          📋 Misiones de Clase
+        </button>
+        ${state.playerClass === 'entrenador' ? `<button onclick="closeClassModal();openReputationShop()" style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:10px 20px;border-radius:10px;cursor:pointer;font-size:11px;font-weight:700;">
+          🏅 Tienda de Reputación (${state.classData?.reputation || 0} ⭐)
+        </button>` : ''}
+      </div>` : ''}
       ${canClose ? `<div style="text-align:center;">
         <button onclick="closeClassModal()" style="background:rgba(255,255,255,0.08);border:none;color:#9ca3af;padding:10px 24px;border-radius:10px;cursor:pointer;font-size:12px;">
           Cerrar
@@ -518,9 +526,250 @@ function confirmBlackMarketSell(boxIndex, price) {
   if (typeof saveGame === 'function') saveGame(false);
 }
 
+// ── Sistema de Misiones Idle por Clase ────────────────────────────────────
+const CLASS_MISSIONS = {
+  rocket: [
+    { id: 'contrabando_basico', name: 'Contrabando Básico', desc: 'Vende artículos robados en el mercado negro.', icon: '💼', durationMs: 30 * 60 * 1000, rewardMoney: 1200, rewardXP: 40, classOnly: 'rocket' },
+    { id: 'robo_laboratorio', name: 'Robo de Laboratorio', desc: 'Infiltra el Laboratorio Oak y roba recursos.', icon: '🧪', durationMs: 60 * 60 * 1000, rewardMoney: 3500, rewardXP: 90, classOnly: 'rocket' },
+    { id: 'extorsion', name: 'Extorsión', desc: 'Amenaza a un criador local para obtener fondos.', icon: '🃏', durationMs: 45 * 60 * 1000, rewardMoney: 2000, rewardXP: 60, classOnly: 'rocket' },
+  ],
+  cazabichos: [
+    { id: 'expedicion_captura', name: 'Expedición de Captura', desc: 'Explora el Bosque Verde en busca de Pokémon insecto.', icon: '🌲', durationMs: 45 * 60 * 1000, rewardMoney: 600, rewardXP: 55, rewardItem: 'Poké Ball', rewardItemQty: 3, classOnly: 'cazabichos' },
+    { id: 'torneo_bicho', name: 'Torneo de Insectos', desc: 'Participa en el concurso de bichos de Azulona.', icon: '🏆', durationMs: 90 * 60 * 1000, rewardMoney: 1500, rewardXP: 120, classOnly: 'cazabichos' },
+    { id: 'investigacion_habitat', name: 'Investigación de Hábitat', desc: 'Documenta Pokémon raros en zonas remotas.', icon: '🔍', durationMs: 60 * 60 * 1000, rewardMoney: 800, rewardXP: 75, classOnly: 'cazabichos' },
+  ],
+  entrenador: [
+    { id: 'entrenamiento_gym', name: 'Sesión de Gimnasio', desc: 'Practica con el equipo de un gimnasio local.', icon: '🥊', durationMs: 30 * 60 * 1000, rewardMoney: 400, rewardXP: 80, rewardReputation: 5, classOnly: 'entrenador' },
+    { id: 'torneo_local', name: 'Torneo Local', desc: 'Compite en un torneo organizado en Pueblo Paleta.', icon: '🎖️', durationMs: 90 * 60 * 1000, rewardMoney: 2200, rewardXP: 150, rewardReputation: 15, classOnly: 'entrenador' },
+    { id: 'mentoria', name: 'Mentoría', desc: 'Entrena a un aprendiz y aumenta tu fama.', icon: '📚', durationMs: 60 * 60 * 1000, rewardMoney: 700, rewardXP: 90, rewardReputation: 10, classOnly: 'entrenador' },
+  ],
+  criador: [
+    { id: 'incubacion_asistida', name: 'Incubación Asistida', desc: 'Ayuda a empollar huevos de criadores novatos.', icon: '🥚', durationMs: 60 * 60 * 1000, rewardMoney: 900, rewardXP: 70, classOnly: 'criador' },
+    { id: 'concurso_belleza', name: 'Concurso de Belleza', desc: 'Presenta tu Pokémon mejor criado en un concurso.', icon: '✨', durationMs: 45 * 60 * 1000, rewardMoney: 1100, rewardXP: 85, classOnly: 'criador' },
+    { id: 'analisis_genetico_prof', name: 'Análisis Genético Profundo', desc: 'Estudia combinaciones de IVs para clientes.', icon: '🔬', durationMs: 90 * 60 * 1000, rewardMoney: 2800, rewardXP: 130, classOnly: 'criador' },
+  ],
+};
+
+const MAX_ACTIVE_CLASS_MISSIONS = 2;
+
+function getAvailableClassMissions() {
+  const cls = state.playerClass;
+  if (!cls) return [];
+  const active = (state.classData?.activeMissions || []).map(m => m.id);
+  return (CLASS_MISSIONS[cls] || []).filter(m => !active.includes(m.id));
+}
+
+function startClassMission(missionId) {
+  const cls = state.playerClass;
+  if (!cls) return notify('Debes elegir una clase primero.', '⚠️');
+  const mission = (CLASS_MISSIONS[cls] || []).find(m => m.id === missionId);
+  if (!mission) return;
+  state.classData = state.classData || {};
+  state.classData.activeMissions = state.classData.activeMissions || [];
+  if (state.classData.activeMissions.length >= MAX_ACTIVE_CLASS_MISSIONS)
+    return notify('Ya tienes el máximo de misiones activas.', '⚠️');
+  if (state.classData.activeMissions.find(m => m.id === missionId))
+    return notify('Esa misión ya está en curso.', '⚠️');
+  state.classData.activeMissions.push({ id: missionId, startedAt: Date.now(), endsAt: Date.now() + mission.durationMs });
+  if (typeof scheduleSave === 'function') scheduleSave();
+  notify(`Misión iniciada: ${mission.name}`, mission.icon);
+  openClassMissionsPanel();
+}
+
+function collectClassMission(missionId) {
+  const cls = state.playerClass;
+  if (!cls) return;
+  const idx = (state.classData?.activeMissions || []).findIndex(m => m.id === missionId);
+  if (idx < 0) return;
+  const active = state.classData.activeMissions[idx];
+  if (Date.now() < active.endsAt) return notify('La misión aún no ha terminado.', '⏳');
+  const mission = (CLASS_MISSIONS[cls] || []).find(m => m.id === missionId);
+  if (!mission) return;
+
+  state.classData.activeMissions.splice(idx, 1);
+  state.money = (state.money || 0) + (mission.rewardMoney || 0);
+  addClassXP(mission.rewardXP || 0);
+  if (mission.rewardReputation) {
+    state.classData.reputation = (state.classData.reputation || 0) + mission.rewardReputation;
+  }
+  if (mission.rewardItem) {
+    state.inventory = state.inventory || {};
+    state.inventory[mission.rewardItem] = (state.inventory[mission.rewardItem] || 0) + (mission.rewardItemQty || 1);
+  }
+  if (typeof updateHud === 'function') updateHud();
+  if (typeof scheduleSave === 'function') scheduleSave();
+  notify(`¡Misión completada! +₽${(mission.rewardMoney || 0).toLocaleString()} ${mission.rewardReputation ? `+${mission.rewardReputation} REP` : ''} ${mission.rewardItem ? `+${mission.rewardItemQty || 1}x ${mission.rewardItem}` : ''}`, mission.icon);
+  openClassMissionsPanel();
+}
+
+function openClassMissionsPanel() {
+  document.getElementById('class-missions-overlay')?.remove();
+  const cls = state.playerClass;
+  if (!cls) return notify('Debes elegir una clase primero.', '⚠️');
+  const clsDef = PLAYER_CLASSES[cls];
+  const activeMissions = state.classData?.activeMissions || [];
+  const available = getAvailableClassMissions();
+  const now = Date.now();
+
+  const missionRows = activeMissions.map(am => {
+    const m = (CLASS_MISSIONS[cls] || []).find(x => x.id === am.id);
+    if (!m) return '';
+    const done = now >= am.endsAt;
+    const pct = Math.min(100, Math.floor(((now - am.startedAt) / (am.endsAt - am.startedAt)) * 100));
+    const remaining = done ? '¡Lista!' : formatTimerMs(am.endsAt - now);
+    return `
+    <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid ${done ? clsDef.color + '88' : 'rgba(255,255,255,0.1)'};">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:12px;font-weight:700;">${m.icon} ${m.name}</span>
+        <span style="font-size:10px;color:${done ? clsDef.color : '#9ca3af'};">${remaining}</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.08);border-radius:4px;height:6px;margin-bottom:8px;">
+        <div style="background:${clsDef.color};border-radius:4px;height:6px;width:${pct}%;transition:width 0.3s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#9ca3af;">
+        <span>+₽${(m.rewardMoney || 0).toLocaleString()} | +${m.rewardXP} XP${m.rewardReputation ? ' | +' + m.rewardReputation + ' REP' : ''}${m.rewardItem ? ' | ' + (m.rewardItemQty || 1) + 'x ' + m.rewardItem : ''}</span>
+        ${done ? `<button onclick="collectClassMission('${m.id}')" style="padding:6px 14px;border:none;border-radius:8px;background:${clsDef.color};color:#fff;font-size:10px;cursor:pointer;font-weight:700;">COBRAR</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const availableRows = available.map(m => `
+    <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:12px;font-weight:700;">${m.icon} ${m.name}</span>
+        <span style="font-size:10px;color:#9ca3af;">${formatTimerMs(m.durationMs)}</span>
+      </div>
+      <div style="font-size:10px;color:#6b7280;margin-bottom:8px;">${m.desc}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#9ca3af;">
+        <span>+₽${(m.rewardMoney || 0).toLocaleString()} | +${m.rewardXP} XP${m.rewardReputation ? ' | +' + m.rewardReputation + ' REP' : ''}${m.rewardItem ? ' | ' + (m.rewardItemQty || 1) + 'x ' + m.rewardItem : ''}</span>
+        ${activeMissions.length < MAX_ACTIVE_CLASS_MISSIONS
+          ? `<button onclick="startClassMission('${m.id}')" style="padding:6px 14px;border:none;border-radius:8px;background:${clsDef.color}33;color:${clsDef.color};font-size:10px;cursor:pointer;font-weight:700;border:1px solid ${clsDef.color}44;">INICIAR</button>`
+          : `<span style="color:#6b7280;font-size:9px;">Máx. activas</span>`}
+      </div>
+    </div>`).join('');
+
+  const ov = document.createElement('div');
+  ov.id = 'class-missions-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:3000;display:flex;align-items:center;justify-content:center;padding:12px;';
+  ov.innerHTML = `
+    <div style="background:#0f172a;border:1px solid ${clsDef.color}44;border-radius:20px;padding:20px;max-width:420px;width:100%;max-height:88vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${clsDef.color};">${clsDef.icon} MISIONES ${clsDef.name.toUpperCase()}</div>
+        <button onclick="document.getElementById('class-missions-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      ${activeMissions.length > 0 ? `<div style="font-size:10px;color:#9ca3af;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">En Curso (${activeMissions.length}/${MAX_ACTIVE_CLASS_MISSIONS})</div>${missionRows}` : ''}
+      <div style="font-size:10px;color:#9ca3af;margin-top:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Disponibles</div>
+      ${availableRows || '<div style="font-size:11px;color:#6b7280;text-align:center;padding:16px;">Sin misiones disponibles ahora.</div>'}
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+function formatTimerMs(ms) {
+  if (ms <= 0) return '¡Lista!';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+// Procesa misiones offline al cargar el juego
+function processOfflineClassMissions() {
+  const active = state.classData?.activeMissions || [];
+  if (!active.length) return;
+  const now = Date.now();
+  const cls = state.playerClass;
+  let collected = 0;
+  for (const am of [...active]) {
+    if (now >= am.endsAt) {
+      const m = (CLASS_MISSIONS[cls] || []).find(x => x.id === am.id);
+      if (m) {
+        const idx = state.classData.activeMissions.findIndex(x => x.id === am.id);
+        if (idx >= 0) state.classData.activeMissions.splice(idx, 1);
+        state.money = (state.money || 0) + (m.rewardMoney || 0);
+        addClassXP(m.rewardXP || 0);
+        if (m.rewardReputation) state.classData.reputation = (state.classData.reputation || 0) + m.rewardReputation;
+        if (m.rewardItem) {
+          state.inventory = state.inventory || {};
+          state.inventory[m.rewardItem] = (state.inventory[m.rewardItem] || 0) + (m.rewardItemQty || 1);
+        }
+        collected++;
+      }
+    }
+  }
+  if (collected > 0) notify(`${collected} misión(es) de clase completadas mientras estabas ausente.`, '📬');
+}
+
+// ── Tienda de Reputación (Entrenador) ────────────────────────────────────
+const REPUTATION_SHOP_ITEMS = [
+  { id: 'rep_ultra_ball', name: 'Ultra Ball x3', cost: 20, icon: '🔵', desc: 'Tres Ultra Balls de la tienda oficial del Gimnasio.', grant: () => { state.inventory['Ultra Ball'] = (state.inventory['Ultra Ball'] || 0) + 3; } },
+  { id: 'rep_tm_earthquake', name: 'MT Terremoto', cost: 50, icon: '🌋', desc: 'El poderoso movimiento Terremoto en formato MT.', grant: () => { state.inventory['TM26 Terremoto'] = (state.inventory['TM26 Terremoto'] || 0) + 1; } },
+  { id: 'rep_revive', name: 'Revivir x5', cost: 30, icon: '💊', desc: 'Cinco Revivires del botiquín de los Gimnasios.', grant: () => { state.inventory['Revivir'] = (state.inventory['Revivir'] || 0) + 5; } },
+  { id: 'rep_full_restore', name: 'Restauración Total', cost: 45, icon: '💉', desc: 'Restaura PS y estados. Uso exclusivo de campeones.', grant: () => { state.inventory['Restauración Total'] = (state.inventory['Restauración Total'] || 0) + 2; } },
+  { id: 'rep_lucky_egg', name: 'Huevo Suerte', cost: 100, icon: '🍀', desc: 'Aumenta la EXP obtenida al 1.5x mientras se sujeta.', grant: () => { state.inventory['Huevo Suerte'] = (state.inventory['Huevo Suerte'] || 0) + 1; } },
+  { id: 'rep_star_piece', name: 'Trozo Estrella x3', cost: 60, icon: '⭐', desc: 'Tres trozos de estrella de valor extraordinario.', grant: () => { state.inventory['Trozo Estrella'] = (state.inventory['Trozo Estrella'] || 0) + 3; } },
+];
+
+function openReputationShop() {
+  if (state.playerClass !== 'entrenador') return notify('Solo disponible para Entrenadores.', '⚠️');
+  document.getElementById('rep-shop-overlay')?.remove();
+  const rep = state.classData?.reputation || 0;
+  const cls = PLAYER_CLASSES.entrenador;
+
+  const rows = REPUTATION_SHOP_ITEMS.map(item => {
+    const canAfford = rep >= item.cost;
+    return `
+    <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:700;">${item.icon} ${item.name}</span>
+        <span style="font-size:11px;font-weight:700;color:${canAfford ? cls.color : '#6b7280'};">${item.cost} ⭐ REP</span>
+      </div>
+      <div style="font-size:10px;color:#6b7280;margin-bottom:8px;">${item.desc}</div>
+      <button onclick="buyReputationItem('${item.id}')" ${canAfford ? '' : 'disabled'} 
+        style="width:100%;padding:8px;border:none;border-radius:8px;cursor:${canAfford ? 'pointer' : 'not-allowed'};
+          background:${canAfford ? cls.color + '33' : 'rgba(255,255,255,0.04)'};
+          color:${canAfford ? cls.color : '#4b5563'};font-size:10px;font-weight:700;
+          border:1px solid ${canAfford ? cls.color + '55' : 'transparent'};">
+        ${canAfford ? 'CANJEAR' : 'SIN REPUTACIÓN'}
+      </button>
+    </div>`;
+  }).join('');
+
+  const ov = document.createElement('div');
+  ov.id = 'rep-shop-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:3000;display:flex;align-items:center;justify-content:center;padding:12px;';
+  ov.innerHTML = `
+    <div style="background:#0f172a;border:1px solid ${cls.color}44;border-radius:20px;padding:20px;max-width:420px;width:100%;max-height:88vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cls.color};">🏅 TIENDA DE REPUTACIÓN</div>
+        <button onclick="document.getElementById('rep-shop-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:16px;">Tu reputación: <strong style="color:${cls.color};">${rep} ⭐</strong></div>
+      ${rows}
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+function buyReputationItem(itemId) {
+  if (state.playerClass !== 'entrenador') return;
+  const item = REPUTATION_SHOP_ITEMS.find(i => i.id === itemId);
+  if (!item) return;
+  const rep = state.classData?.reputation || 0;
+  if (rep < item.cost) return notify('No tienes suficiente reputación.', '⚠️');
+  state.classData.reputation = rep - item.cost;
+  item.grant();
+  addClassXP(20);
+  if (typeof updateHud === 'function') updateHud();
+  if (typeof scheduleSave === 'function') scheduleSave();
+  notify(`¡${item.name} canjeado! (-${item.cost} REP)`, item.icon);
+  openReputationShop();
+}
+
 // ── Inicialización ────────────────────────────────────────────────────────
 function initClassSystem() {
   updateClassHud();
   checkClassUnlock();
+  processOfflineClassMissions();
   console.log('[CLASES] Sistema de clases inicializado.');
 }

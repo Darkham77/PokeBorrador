@@ -2252,7 +2252,22 @@ function executeCatch(ballName) {
   const statusBonus = (b.enemy.status === 'sleep' || b.enemy.status === 'freeze') ? 2 : (b.enemy.status ? 1.5 : 1);
 
   // Official Formula Factors + configurable multiplier
-  const a = (((3 * b.enemy.maxHp - 2 * b.enemy.hp) * baseRate * ballMult * (window.GAME_RATIOS ? GAME_RATIOS.battle.catchFormulaParams.catchBaseMultiplier : 1.0)) / (3 * b.enemy.maxHp)) * statusBonus;
+  let a = (((3 * b.enemy.maxHp - 2 * b.enemy.hp) * baseRate * ballMult * (window.GAME_RATIOS ? GAME_RATIOS.battle.catchFormulaParams.catchBaseMultiplier : 1.0)) / (3 * b.enemy.maxHp)) * statusBonus;
+
+  // Modificadores de clase sobre la captura
+  if (state.playerClass === 'cazabichos') {
+    // Sinergia Bicho: +5% por Pokémon tipo Bicho en el equipo (máx +20%)
+    const bugCount = (state.team || []).filter(p => {
+      const data = (typeof POKEMON_DB !== 'undefined') ? POKEMON_DB[p.id] : null;
+      return data && (data.type === 'bug' || data.type2 === 'bug' || p.type === 'bug');
+    }).length;
+    const bugBonus = Math.min(bugCount * 0.05, 0.20);
+    if (bugBonus > 0) a *= (1 + bugBonus);
+  } else if (state.playerClass === 'entrenador') {
+    // Penalización: -10% catchRate en Pokémon con IV total > 120
+    const enemyIvTotal = Object.values(b.enemy.ivs || {}).reduce((s, v) => s + (v || 0), 0);
+    if (enemyIvTotal > 120) a *= 0.90;
+  }
 
   let shakes = 0;
   if (a >= 255 || ballName === 'Master Ball') {

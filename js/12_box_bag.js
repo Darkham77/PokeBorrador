@@ -502,6 +502,8 @@
       background:rgba(107,203,119,0.15);color:var(--green);font-size:12px;font-weight:700;border:1px solid rgba(107,203,119,0.2);">
       🎒 Usar Objeto
     </button>
+    ${state.playerClass === 'rocket' ? `<button onclick="document.getElementById('box-menu-overlay').remove();sellPokemonBlackMarket(state.box[${boxIndex}], ${boxIndex})" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;background:rgba(239,68,68,0.15);color:#ef4444;font-size:12px;font-weight:700;border:1px solid rgba(239,68,68,0.3);">🚀 Vender en Mercado Negro</button>` : ''}
+    ${state.playerClass === 'criador' ? `<button onclick="document.getElementById('box-menu-overlay').remove();showGeneticAnalysis(state.box[${boxIndex}])" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;background:rgba(168,85,247,0.15);color:#a855f7;font-size:12px;font-weight:700;border:1px solid rgba(168,85,247,0.3);">🔬 Análisis Genético</button>` : ''}
     <button onclick="releaseFromBox(${boxIndex})" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;
       background:rgba(255,59,59,0.15);color:var(--red);font-size:12px;font-weight:700;border:1px solid rgba(255,59,59,0.2);">
       🌿 Soltar a ${p.name}
