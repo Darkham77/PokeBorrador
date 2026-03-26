@@ -1784,7 +1784,8 @@ function enemyTurn(opts = {}) {
 
     if (itemToUse && !b.enemyUsedItem) {
       b.enemyUsedItem = true; // Limit to one item per battle for now
-      addLog(`¡${b.trainerName || 'El Líder'} usó ${itemToUse}!`, 'log-enemy');
+      const trainerDisplayName = b.trainerName || (b.isGym ? 'El Líder' : 'El Entrenador');
+      addLog(`¡${trainerDisplayName} usó ${itemToUse}!`, 'log-enemy');
       
       if (itemToUse === 'Hiper Poción') b.enemy.hp = Math.min(b.enemy.maxHp, b.enemy.hp + 200);
       else if (itemToUse === 'Poción Máxima') b.enemy.hp = b.enemy.maxHp;

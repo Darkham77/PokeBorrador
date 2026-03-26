@@ -42,14 +42,14 @@
         
         // Pool de policía: Pokémon de autoridad/orden
         const policePool = ['arcanine', 'pidgeot', 'machamp', 'magneton', 'kadabra'];
-        const enemyTeam = [];
+        const policeTeam = [];
         for (let i = 0; i < teamSize; i++) {
           const pId = policePool[Math.floor(Math.random() * policePool.length)];
           const p = makePokemon(pId, trainerLv);
-          enemyTeam.push(p);
+          policeTeam.push(p);
         }
         
-        _startTrainerBattle(enemyTeam, t, locId);
+        _startTrainerBattle(policeTeam, t, locId);
       } else {
         const keys = Object.keys(TRAINER_TYPES);
         const typeKey = keys[Math.floor(Math.random() * keys.length)];
