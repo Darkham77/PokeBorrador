@@ -651,7 +651,7 @@ function sellPokemonBlackMarket(pokemon, boxIndex) {
 
   const ivs = pokemon.ivs || {};
   const totalIv = Object.values(ivs).reduce((s, v) => s + (v || 0), 0);
-  const price = Math.floor(pokemon.level * 50 + (totalIv / 186) * 500);
+  const price = Math.floor((pokemon.level * 50 + (totalIv / 186) * 500) * 0.8);
 
   const ov = document.createElement('div');
   ov.id = 'black-market-sell-modal';
