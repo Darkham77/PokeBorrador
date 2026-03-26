@@ -1051,14 +1051,14 @@ async function renderEggGrid() {
           <div class="egg-species">${pd ? pd.emoji + ' ' + pd.name : e.species}</div>
           <div class="egg-timer" style="${isReady ? 'color:#22c55e;font-weight:700;' : ''}">${isReady ? '¡Listo para recoger!' : `Eclosiona en ${leftMin} min`}</div>
           <div class="egg-progress-bar"><div class="egg-progress-fill" style="width:${pct}%"></div></div>
-          ${isReady ? `<button onclick="collectEgg('${e.egg_id}', '${e.species}', ${e.shiny_roll}, '${escape(JSON.stringify(e.inherited_ivs))}')" style="margin-top:8px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px;font-family:'Press Start 2P';font-size:8px;cursor:pointer;">📥 Recoger</button>` : ''}
+          ${isReady ? `<button onclick="collectEgg('${e.egg_id}', '${e.species}', ${e.shiny_roll}, '${escape(JSON.stringify(e.inherited_ivs))}', '${e.parent_a || ''}', '${e.parent_b || ''}')" style="margin-top:8px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px;font-family:'Press Start 2P';font-size:8px;cursor:pointer;">📥 Recoger</button>` : ''}
         </div>`;
   }).join('');
 
   document.getElementById('daycare-nav-badge').style.display = badgeReady ? 'block' : 'none';
 }
 
-async function collectEgg(eggId, sp, shiny, ivsJson) {
+async function collectEgg(eggId, sp, shiny, ivsJson, parentAUid = '', parentBUid = '') {
   const extra = {
     origin: 'breeding',
     isShiny: shiny,
@@ -1083,18 +1083,19 @@ async function collectEgg(eggId, sp, shiny, ivsJson) {
     }
     await sb.from('eggs').delete().eq('egg_id', eggId);
 
-    // Criador: recupera 1 Vigor en todos los Pokémon propios al eclosionar un huevo
-    if (state.playerClass === 'criador') {
-      const myName = state.trainer;
+    // Criador: 15% de chance de recuperar 1 Vigor a cada padre del huevo
+    if (state.playerClass === 'criador' && (parentAUid || parentBUid)) {
       const MAX_VIGOR = 10;
+      const all = [...(state.team || []), ...(state.box || [])];
+      const parents = all.filter(p => p.uid === parentAUid || p.uid === parentBUid);
       let recovered = 0;
-      [...(state.team || []), ...(state.box || [])].forEach(p => {
-        if (p.originalTrainer === myName && p.vigor !== undefined && p.vigor < MAX_VIGOR) {
+      parents.forEach(p => {
+        if (p.vigor !== undefined && p.vigor < MAX_VIGOR && Math.random() < 0.15) {
           p.vigor = Math.min(MAX_VIGOR, p.vigor + 1);
           recovered++;
         }
       });
-      if (recovered > 0) notify(`¡Vigor recuperado en ${recovered} Pokémon propios! 🔋`, '🧬');
+      if (recovered > 0) notify(`¡${recovered === 2 ? 'Ambos padres recuperaron' : 'Un padre recuperó'} 1 Vigor! 🔋`, '🧬');
     }
 
     notify('¡Recogiste el huevo de la guardería! Ahora camina para eclosionarlo.', '🏠');

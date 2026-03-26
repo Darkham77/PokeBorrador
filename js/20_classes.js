@@ -92,7 +92,7 @@ const PLAYER_CLASSES = {
     bonuses: [
       '🧬 Lazo Destino transmite 4 IVs (vs 3 normal)',
       '⏱️ -25% tiempo de eclosión de huevos',
-      '🔋 Vigor renovado: tus Pokémon propios recuperan 1 Vigor al eclosionar un huevo',
+      '🔋 Vigor renovado: 15% de chance de recuperar 1 Vigor a los padres al eclosionar',
       '🔬 Ojo de Criador: ves el IV total de Pokémon salvajes en batalla',
       '🏪 Mercado de Crías: venta automática de Pokémon criados',
       '🥚 Incubación Asistida: misiones idle de 4/8/12h que mejoran IVs'
