@@ -315,11 +315,20 @@ function updateBattleUI() {
   document.getElementById('enemy-hp-text').textContent = `HP: ${b.enemy.hp}/${b.enemy.maxHp}`;
   const ivTotalEl = document.getElementById('enemy-iv-total');
   if (ivTotalEl) {
-    const showIv = state.playerClass === 'criador' && !b.isPvP;
-    if (showIv && b.enemy.ivs) {
+    const isCriador = state.playerClass === 'criador' && !b.isPvP;
+    const isCazabichos = state.playerClass === 'cazabichos' && !b.isTrainer && !b.isGym && !b.isPvP;
+    
+    if (isCriador && b.enemy.ivs) {
       const total = Object.values(b.enemy.ivs).reduce((s, v) => s + (v || 0), 0);
       ivTotalEl.textContent = `IV: ${total}/186`;
       ivTotalEl.style.display = 'block';
+      ivTotalEl.style.color = 'var(--blue)';
+    } else if (isCazabichos) {
+      const streak = (state.classData && state.classData.captureStreak) || 0;
+      const mult = Math.min(1.0 + 0.15 * streak, 3.0).toFixed(1);
+      ivTotalEl.textContent = `RACHA: x${streak} (Shiny x${mult})`;
+      ivTotalEl.style.display = 'block';
+      ivTotalEl.style.color = 'var(--green)';
     } else {
       ivTotalEl.style.display = 'none';
     }
@@ -2477,7 +2486,13 @@ function awardBattleExperience(isCapture = false) {
     if (typeof getClassModifier === 'function') {
       const isTrainerBattle = !!(b.isTrainer || b.isGym);
       const expClassMult = getClassModifier('expMult', { isTrainer: isTrainerBattle });
-      pExp = Math.floor(pExp * expClassMult);
+      if (expClassMult !== 1.0) {
+        pExp = Math.floor(pExp * expClassMult);
+        const bonusTxt = expClassMult > 1.0 ? 'BONO' : 'PENALIZACIÓN';
+        const bonusColor = expClassMult > 1.0 ? '#3b82f6' : '#ef4444';
+        const clsName = state.playerClass === 'entrenador' ? 'Entrenador' : (state.playerClass === 'criador' ? 'Criador' : 'Cazabichos');
+        addLog(`<span style="color:${bonusColor};font-size:9px;">[${bonusTxt} ${clsName.toUpperCase()}: x${expClassMult}]</span>`, 'log-info');
+      }
     }
     
     addLog(`${p.name} ganó <span style="color:#6BCB77;font-weight:bold;">${pExp} EXP</span>.`, 'log-player');
