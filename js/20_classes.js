@@ -92,8 +92,8 @@ const PLAYER_CLASSES = {
     bonuses: [
       '🧬 Lazo Destino transmite 4 IVs (vs 3 normal)',
       '⏱️ -25% tiempo de eclosión de huevos',
-      '💯 Everstone garantiza naturaleza al 100%',
-      '🔬 Análisis Genético: ver IVs exactos desde la caja',
+      '🔋 Vigor renovado: tus Pokémon propios recuperan 1 Vigor al eclosionar un huevo',
+      '🔬 Ojo de Criador: ves el IV total de Pokémon salvajes en batalla',
       '🏪 Mercado de Crías: venta automática de Pokémon criados',
       '🥚 Incubación Asistida: misiones idle de 4/8/12h que mejoran IVs'
     ],

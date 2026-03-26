@@ -313,6 +313,17 @@ function updateBattleUI() {
   document.getElementById('enemy-level').textContent = `Nv. ${b.enemy.level}`;
   setBattleSprite('enemy', b.enemy.id, false);
   document.getElementById('enemy-hp-text').textContent = `HP: ${b.enemy.hp}/${b.enemy.maxHp}`;
+  const ivTotalEl = document.getElementById('enemy-iv-total');
+  if (ivTotalEl) {
+    const showIv = state.playerClass === 'criador' && !b.isTrainer && !b.isGym && !b.isPvP;
+    if (showIv && b.enemy.ivs) {
+      const total = Object.values(b.enemy.ivs).reduce((s, v) => s + (v || 0), 0);
+      ivTotalEl.textContent = `IV: ${total}/186`;
+      ivTotalEl.style.display = 'block';
+    } else {
+      ivTotalEl.style.display = 'none';
+    }
+  }
   const enemyPct = b.enemy.hp / b.enemy.maxHp;
   document.getElementById('enemy-hp-bar').style.width = (enemyPct * 100) + '%';
   document.getElementById('enemy-hp-bar').className = `hp-bar ${getHpClass(enemyPct)}`;

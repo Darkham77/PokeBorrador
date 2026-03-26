@@ -1082,6 +1082,21 @@ async function collectEgg(eggId, sp, shiny, ivsJson) {
       if (typeof updateHud === 'function') updateHud();
     }
     await sb.from('eggs').delete().eq('egg_id', eggId);
+
+    // Criador: recupera 1 Vigor en todos los Pokémon propios al eclosionar un huevo
+    if (state.playerClass === 'criador') {
+      const myName = state.trainer;
+      const MAX_VIGOR = 10;
+      let recovered = 0;
+      [...(state.team || []), ...(state.box || [])].forEach(p => {
+        if (p.originalTrainer === myName && p.vigor !== undefined && p.vigor < MAX_VIGOR) {
+          p.vigor = Math.min(MAX_VIGOR, p.vigor + 1);
+          recovered++;
+        }
+      });
+      if (recovered > 0) notify(`¡Vigor recuperado en ${recovered} Pokémon propios! 🔋`, '🧬');
+    }
+
     notify('¡Recogiste el huevo de la guardería! Ahora camina para eclosionarlo.', '🏠');
     renderDaycareUI();
     updateProfilePanel();
