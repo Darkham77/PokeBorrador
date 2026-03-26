@@ -465,8 +465,8 @@ function tryRocketSteal() {
   if (Math.random() > prob) return;
 
   const lootTable = [
-    'Poción', 'Super Poción', 'Antídoto', 'Pokéball', 'Super Ball',
-    'Revivir', 'Éter', 'Elixir', 'Vendaje Cura', 'Hiper Poción'
+    'Poción', 'Super Poción', 'Antídoto', 'Pokéball', 'Súper Ball',
+    'Revivir', 'Éter', 'Elixir Máximo', 'Cura Total', 'Hiper Poción'
   ];
   const item = lootTable[Math.floor(Math.random() * lootTable.length)];
   state.inventory = state.inventory || {};
