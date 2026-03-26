@@ -493,25 +493,55 @@ function openClassInfoPanel() {
   document.body.appendChild(ov);
 }
 
-// ── HUD de clase: actualiza el panel del entrenador ───────────────────────
+// ── HUD de clase y Perfil: actualiza avatares y panel ───────────────────────
 function updateClassHud() {
-  // Eliminar badge flotante viejo si existe
   const oldBadge = document.getElementById('class-hud-badge');
   if (oldBadge) oldBadge.remove();
 
   const label = document.getElementById('hud-class-label');
   const avatar = document.getElementById('hud-class-avatar');
+  const profAvatar = document.querySelector('.profile-avatar');
+
+  const level = state.trainerLevel || 1;
+  let borderColor = '#cd7f32'; // Bronce (1-9)
+  if (level >= 20) borderColor = '#ffd700'; // Oro (20+)
+  else if (level >= 10) borderColor = '#c0c0c0'; // Plata (10-19)
 
   if (!state.playerClass) {
     if (label) label.style.display = 'none';
-    if (avatar) avatar.textContent = '🧢';
+    if (avatar) {
+      avatar.innerHTML = `<div style="width:36px; height:36px; border-radius:50%; border:2px solid ${borderColor}; background:#1e293b; display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow: 0 0 8px ${borderColor}66;">🧢</div>`;
+    }
+    if (profAvatar) {
+      profAvatar.innerHTML = `<div style="width:80px; height:80px; border-radius:50%; border:3px solid ${borderColor}; background:#1e293b; display:flex; align-items:center; justify-content:center; font-size:40px; box-shadow: 0 0 15px ${borderColor}88; margin: 0 auto 16px;">🧢</div>`;
+      profAvatar.style.background = 'transparent';
+      profAvatar.style.border = 'none';
+      profAvatar.style.width = 'auto';
+      profAvatar.style.height = 'auto';
+    }
     updateCriminalityBar();
     return;
   }
 
   const cls = PLAYER_CLASSES[state.playerClass];
 
-  if (avatar) avatar.textContent = cls.icon;
+  if (avatar) {
+    avatar.innerHTML = `
+      <div style="width:36px; height:36px; border-radius:50%; border:2px solid ${borderColor}; background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%); display:flex; align-items:flex-start; justify-content:center; overflow:hidden; box-shadow: 0 0 8px ${borderColor}66;">
+        <img src="${cls.sprite}" style="width:140%; height:auto; margin-top:-2px; image-rendering:pixelated; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
+      </div>`;
+  }
+
+  if (profAvatar) {
+    profAvatar.innerHTML = `
+      <div style="width:80px; height:80px; border-radius:50%; border:3px solid ${borderColor}; background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%); display:flex; align-items:flex-start; justify-content:center; overflow:hidden; box-shadow: 0 0 20px ${borderColor}88; margin: 0 auto 16px; position:relative;">
+        <img src="${cls.sprite}" style="width:150%; height:auto; margin-top:-5px; image-rendering:pixelated; filter:drop-shadow(0 5px 10px rgba(0,0,0,0.5));">
+      </div>`;
+    profAvatar.style.background = 'transparent';
+    profAvatar.style.border = 'none';
+    profAvatar.style.width = 'auto';
+    profAvatar.style.height = 'auto';
+  }
 
   if (label) {
     label.style.display = 'block';
