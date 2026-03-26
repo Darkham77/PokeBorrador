@@ -39,7 +39,7 @@ const PLAYER_CLASSES = {
     bonuses: [
       '⚡ Racha de Capturas: cada captura seguida aumenta Shiny rate e IVs mínimos (máx x3)',
       '🦋 Sinergia Bicho: +5% catchRate por Pokémon Bicho en el equipo (máx +20%)',
-      '🗺️ Zonas Privilegiadas: más encuentros y Pokémon raros en zonas exclusivas',
+      '🌸 Aroma Atractivo: 0.5% de chance de atraer a Scyther o Pinsir en cualquier mapa (10% en Zona Safari)',
       '🏕️ Expediciones: misiones idle de 1/3/6h que traen Pokémon y objetos de captura'
     ],
     bonusLevels: [1, 1, 10, 20],
