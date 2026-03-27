@@ -1,0 +1,26 @@
+{
+  "events": [
+    {
+      "id": "doble_exp",
+      "name": "Fin de Semana de Doble EXP",
+      "icon": "⚡",
+      "type": "passive_bonus",
+      "active": false,
+      "manual": false,
+      "schedule": { "type": "weekly", "days": [6, 0] },
+      "config": { "expMult": 2 },
+      "description": "¡EXP x2 en todos los combates durante el fin de semana!"
+    },
+    {
+      "id": "hora_magikarp",
+      "name": "Hora de Pesca del Magikarp",
+      "icon": "🎣",
+      "type": "competition",
+      "active": false,
+      "manual": false,
+      "schedule": { "type": "weekly", "days": [2], "startHour": 18, "endHour": 20 },
+      "config": { "species": "magikarp", "metric": "total_ivs", "prize": null },
+      "description": "¡Capturá el Magikarp con mejores IVs y ganá un premio especial!"
+    }
+  ]
+}

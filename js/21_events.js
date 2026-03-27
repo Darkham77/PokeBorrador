@@ -41,9 +41,18 @@ async function _evGetToken() {
 }
 
 // ── Motor de eventos ──────────────────────────────────────────────────────────
+function _getApiUrl(path) {
+  // Si estamos en local (localhost o 127.0.0.1), usamos la misma URL
+  // Si estamos en producción (GitHub Pages, etc), intentamos conectar al servidor de eventos
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const baseUrl = isLocal ? '' : 'http://localhost:5000'; // Ajustar si el servidor corre en otro puerto
+  return baseUrl + path;
+}
+
 async function loadActiveEvents() {
   try {
-    const res = await fetch('/api/events');
+    const res = await fetch(_getApiUrl('/api/events'));
+    if (!res.ok) return;
     const data = await res.json();
     _activeEvents = data.events || [];
     _eventsLoaded = true;
@@ -93,7 +102,7 @@ async function submitMagikarpEntry(pokemon) {
   if (!token) return;
   const totalIvs = Object.values(pokemon.ivs || {}).reduce((a, b) => a + b, 0);
   try {
-    const res = await fetch('/api/events/entries', {
+    const res = await fetch(_getApiUrl('/api/events/entries'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
@@ -155,7 +164,7 @@ async function checkPendingAwards() {
   const token = await _evGetToken();
   if (!token) return;
   try {
-    const res = await fetch('/api/awards', { headers: { 'Authorization': `Bearer ${token}` } });
+    const res = await fetch(_getApiUrl('/api/awards'), { headers: { 'Authorization': `Bearer ${token}` } });
     const data = await res.json();
     const awards = data.awards || [];
     for (const award of awards) {
@@ -204,7 +213,7 @@ async function _deliverAward(award, token) {
     if (typeof updateHud === 'function') updateHud();
     if (typeof saveGame === 'function') saveGame(false);
     try {
-      await fetch('/api/awards/claim', {
+      await fetch(_getApiUrl('/api/awards/claim'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ award_id: award.id })
@@ -227,8 +236,13 @@ async function openAdminPanel() {
     const token = await _evGetToken();
     if (!token) { notify('Error de sesión (Token no encontrado).', '❌'); return; }
     
-    const res = await fetch('/api/events/config', { headers: { 'Authorization': `Bearer ${token}` } });
+    const apiUrl = _getApiUrl('/api/events/config');
+    const res = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+    
     if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error('Servidor de eventos no encontrado (404). Asegúrate de que el servidor de Node.js esté corriendo.');
+      }
       const errData = await res.json().catch(() => ({}));
       throw new Error(errData.error || `Error HTTP ${res.status}`);
     }
@@ -310,7 +324,7 @@ function _renderAdminPanel(token) {
   window._evAdminSave = async (tok) => {
     _evReadFormIntoConfig();
     try {
-      const r = await fetch('/api/events/config', {
+      const r = await fetch(_getApiUrl('/api/events/config'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tok}` },
         body: JSON.stringify(_adminConfig)
@@ -516,7 +530,7 @@ async function _evLoadEntries(tok) {
   const token = tok || await _evGetToken();
   if (!token) return;
   try {
-    const res = await fetch('/api/events/entries/hora_magikarp', { headers: { 'Authorization': `Bearer ${token}` } });
+    const res = await fetch(_getApiUrl('/api/events/entries/hora_magikarp'), { headers: { 'Authorization': `Bearer ${token}` } });
     const data = await res.json();
     _adminEntries = (data.entries || []).sort((a, b) => (b.data?.total_ivs || 0) - (a.data?.total_ivs || 0));
     _renderEntriesTable(token);
@@ -578,7 +592,7 @@ async function _evSavePrize() {
     ev.config.prize = prize;
   }
   try {
-    const r = await fetch('/api/events/config', {
+    const r = await fetch(_getApiUrl('/api/events/config'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify(_adminConfig)
@@ -626,7 +640,7 @@ async function _evAwardEntry(email, name, token) {
   if (!prize) { notify('Primero configurá el premio en la sección de abajo.', '⚠️'); return; }
   if (!confirm(`¿Otorgar el premio a ${name}?\\n\\nPremio: ${_prizeSummary(prize)}`)) return;
   try {
-    const r = await fetch('/api/awards/create', {
+    const r = await fetch(_getApiUrl('/api/awards/create'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ winner_email: email, winner_name: name, event_id: 'hora_magikarp', prize })
