@@ -648,8 +648,8 @@
         const moveData = MOVE_DATA[m.name] || {};
         return { 
           name: m.name, 
-          pp: m.pp, 
-          maxPP: m.pp,
+          pp: m.pp || moveData.pp || 35, 
+          maxPP: m.pp || moveData.pp || 35,
           type: moveData.type || 'normal',
           power: moveData.power || 0
         };
