@@ -548,7 +548,8 @@ function showMoves() {
 // ── Official damage formula (Gen 4+) ──────────────────────
 function calcDamage(attacker, defender, move, atkStages, defStages) {
   const md = MOVE_DATA[move.name] || { power: move.power || 40, type: 'normal', cat: 'physical' };
-  const power = md.power || 0;
+  let power = md.power || 0;
+  if (md.effect === 'status_boost' && attacker.status) power *= 2;
   if (power === 0) return 0;
 
   const isPhysical = md.cat === 'physical';
@@ -746,6 +747,8 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
     case 'stat_down_enemy_def_2':
     case 'stat_down_enemy_atk_2':
     case 'stat_down_self_spa_2':
+    case 'stat_up_self_atk_def':
+    case 'stat_up_self_spa_spd':
       finalEffect = effect;
       break;
     default:
@@ -782,9 +785,21 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
     case 'stat_up_self_def_2': srcStages.def = Math.min(6, (srcStages.def || 0) + 2); addLogFn(`¡Subió mucho la Defensa de ${src.name}!`, 'log-info'); break;
     case 'stat_up_self_spa_2': srcStages.spa = Math.min(6, (srcStages.spa || 0) + 2); addLogFn(`¡Subió mucho el At.Esp de ${src.name}!`, 'log-info'); break;
     case 'stat_up_self_spe_2': srcStages.spe = Math.min(6, (srcStages.spe || 0) + 2); addLogFn(`¡Subió mucho la Velocidad de ${src.name}!`, 'log-info'); break;
+    case 'stat_up_self_eva': srcStages.eva = Math.min(6, (srcStages.eva || 0) + 1); addLogFn(`¡Aumentó la evasión de ${src.name}!`, 'log-info'); break;
     case 'stat_up_self_eva_2': srcStages.eva = Math.min(6, (srcStages.eva || 0) + 2); addLogFn(`¡Aumentó mucho la evasión de ${src.name}!`, 'log-info'); break;
     case 'stat_down_enemy_def_2': tgtStages.def = Math.max(-6, (tgtStages.def || 0) - 2); addLogFn(`¡Bajó mucho la Defensa de ${tgt.name}!`, 'log-info'); break;
     case 'stat_down_enemy_atk_2': tgtStages.atk = Math.max(-6, (tgtStages.atk || 0) - 2); addLogFn(`¡Bajó mucho el Ataque de ${tgt.name}!`, 'log-info'); break;
+    case 'stat_down_self_spa_2': srcStages.spa = Math.max(-6, (srcStages.spa || 0) - 2); addLogFn(`¡Bajó mucho el At. Esp de ${src.name}!`, 'log-info'); break;
+    case 'stat_up_self_atk_def': 
+      srcStages.atk = Math.min(6, (srcStages.atk || 0) + 1);
+      srcStages.def = Math.min(6, (srcStages.def || 0) + 1);
+      addLogFn(`¡Subió el Ataque y la Defensa de ${src.name}!`, 'log-info');
+      break;
+    case 'stat_up_self_spa_spd':
+      srcStages.spa = Math.min(6, (srcStages.spa || 0) + 1);
+      srcStages.spd = Math.min(6, (srcStages.spd || 0) + 1);
+      addLogFn(`¡Subió el At. Esp y la Def. Esp de ${src.name}!`, 'log-info');
+      break;
     case 'heal_50':
       const healAmt = Math.floor(src.maxHp / 2);
       src.hp = Math.min(src.maxHp, src.hp + healAmt);
@@ -832,6 +847,14 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
         if (tgt.type === 'ice') { addLogFn(`¡${tgt.name} es inmune al congelamiento!`, 'log-info'); break; }
         tgt.status = 'freeze'; addLogFn(`¡${tgt.name} fue congelado!`, 'log-info');
       } break;
+    case 'bad_poison':
+      if (!tgt.status) {
+        if (tgt.type === 'poison' || tgt.type === 'steel') { addLogFn(`¡${tgt.name} es inmune al veneno!`, 'log-info'); break; }
+        if (tgt.ability === 'Inmunidad') { addLogFn(`¡La Inmunidad de ${tgt.name} evitó el envenenamiento!`, 'log-info'); break; }
+        tgt.status = 'poison'; 
+        tgt.badPoison = 1; 
+        addLogFn(`¡${tgt.name} fue gravemente envenenado!`, 'log-info');
+      } break;
     case 'sleep':
       if (!tgt.status) { 
         if (tgt.ability === 'Insomnio' || tgt.ability === 'Espíritu Vital') { addLogFn(`¡${tgt.name} tiene ${tgt.ability} y no puede dormir!`, 'log-info'); break; }
@@ -854,6 +877,18 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
         }
       }
       addLogFn(`¡${src.name} se recuperó completamente y se quedó dormido!`, 'log-info'); break;
+    case 'tri_attack':
+      if (!tgt.status) {
+        const rollTA = Math.random();
+        if (rollTA < 0.33) {
+           tgt.status = 'burn'; addLogFn(`¡${tgt.name} fue quemado!`, 'log-info');
+        } else if (rollTA < 0.66) {
+           tgt.status = 'paralyze'; addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info');
+        } else {
+           tgt.status = 'freeze'; addLogFn(`¡${tgt.name} fue congelado!`, 'log-info');
+        }
+      }
+      break;
     case 'flinch_30': case 'flinch':
       if (tgt.ability === 'Foco Interno') {
         addLogFn(`¡El Foco Interno de ${tgt.name} evitó que retrocediera!`, 'log-info');
@@ -1108,8 +1143,13 @@ function tickStatus(pokemon, addLogFn, role) {
          addLogFn(`¡El Muro Mágico de ${pokemon.name} evitó el daño por veneno!`, 'log-info');
          return false;
       }
-      pokemon.hp = Math.max(0, pokemon.hp - Math.max(1, Math.floor(pokemon.maxHp / 8)));
-      addLogFn(`¡${pokemon.name} sufre el veneno! (-${Math.max(1, Math.floor(pokemon.maxHp / 8))} HP)`, logCls);
+      let dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
+      if (pokemon.badPoison) {
+        dmg = Math.max(1, Math.floor((pokemon.maxHp * pokemon.badPoison) / 16));
+        pokemon.badPoison++;
+      }
+      pokemon.hp = Math.max(0, pokemon.hp - dmg);
+      addLogFn(`¡${pokemon.name} sufre el veneno! (-${dmg} HP)`, logCls);
       return true;
   }
   return false;
@@ -1520,6 +1560,29 @@ function useMove(moveIndex) {
 
       // Multi-hit moves
       let finalDmg = dmg;
+      if (md.effect === 'magnitude') {
+        const magnitudes = [
+          { mag: 4, pow: 10, prob: 5 },
+          { mag: 5, pow: 30, prob: 10 },
+          { mag: 6, pow: 50, prob: 20 },
+          { mag: 7, pow: 70, prob: 30 },
+          { mag: 8, pow: 90, prob: 20 },
+          { mag: 9, pow: 110, prob: 10 },
+          { mag: 10, pow: 150, prob: 5 }
+        ];
+        let rollMag = Math.random() * 100;
+        let selected = magnitudes[3]; // default 7
+        let sum = 0;
+        for (const m of magnitudes) {
+          sum += m.prob;
+          if (rollMag <= sum) { selected = m; break; }
+        }
+        addLog(`¡Magnitud ${selected.mag}!`, 'log-info');
+        // Recalcular daño con el poder de Magnitud
+        const magRes = calcDamage(b.player, b.enemy, { name: move.name, power: selected.pow }, b.playerStages.atk, b.enemyStages.def);
+        finalDmg = magRes.dmg;
+      }
+
       if (md.hits) {
         const _MULTIHIT_TABLE = [2, 2, 2, 3, 3, 3, 4, 5];
         let numHits = (md.hits === 2) ? 2 : _MULTIHIT_TABLE[Math.floor(Math.random() * _MULTIHIT_TABLE.length)];
