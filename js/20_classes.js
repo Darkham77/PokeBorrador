@@ -368,10 +368,10 @@ function openClassInfoPanel() {
       <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(0,0,0,0.4);border-radius:14px;border-left:4px solid ${borderColor};position:relative;">
         <span style="font-size:16px;flex-shrink:0;">${icon}</span>
         <div style="flex:1;">
-          <div style="font-size:13px;color:${textColor};line-height:1.4;display:flex;align-items:center;">
-            ${bonus}
-            ${reqLevel > 1 ? `<span style="font-size:9px;color:${unlocked ? cls.color : '#4b5563'};background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:6px;margin-left:8px;font-family:'Press Start 2P',monospace;">Nv.${reqLevel}</span>` : ''}
-            <div class="class-tooltip">
+          <div class="class-ability-row" style="font-size:13px;color:${textColor};line-height:1.4;">
+            <span style="flex:1;min-width:0;">${bonus}</span>
+            ${reqLevel > 1 ? `<span style="font-size:9px;color:${unlocked ? cls.color : '#4b5563'};background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:6px;font-family:'Press Start 2P',monospace;white-space:nowrap;">Nv.${reqLevel}</span>` : ''}
+            <div class="class-tooltip" style="flex-shrink:0;">
               ❓
               <span class="class-tooltiptext"><strong>Mecánica:</strong><br>${tech}</span>
             </div>
@@ -386,9 +386,9 @@ function openClassInfoPanel() {
     return `
       <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(0,0,0,0.4);border-radius:14px;border-left:4px solid #ef444466;">
         <span style="font-size:16px;flex-shrink:0;">❌</span>
-        <div style="flex:1;font-size:13px;color:#f87171;line-height:1.4;display:flex;align-items:center;">
-          ${p}
-          <div class="class-tooltip">
+        <div class="class-ability-row" style="flex:1;font-size:13px;color:#f87171;line-height:1.4;">
+          <span style="flex:1;min-width:0;">${p}</span>
+          <div class="class-tooltip" style="flex-shrink:0;">
             ❓
             <span class="class-tooltiptext" style="border-color:#ef444444;"><strong>Efecto Negativo:</strong><br>${tech}</span>
           </div>
@@ -424,20 +424,33 @@ function openClassInfoPanel() {
       }
       .class-tooltip:hover .class-tooltiptext { visibility:visible; opacity:1; transform:translateY(0); }
       @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+      .class-modal-content { padding: 32px; gap: 32px; box-sizing: border-box; }
+      .class-modal-cols { gap: 40px; }
+      .class-col-left { min-width: 280px; box-sizing: border-box; max-width: 100%; }
+      .class-col-right { min-width: 350px; box-sizing: border-box; max-width: 100%; }
+      .class-ability-row { display:flex; align-items:center; flex-wrap: wrap; gap: 4px; }
+      @media (max-width: 600px) {
+        .class-modal-content { padding: 16px 12px !important; gap: 20px !important; }
+        .class-modal-cols { gap: 20px !important; flex-direction: column; }
+        .class-col-left, .class-col-right { min-width: 100% !important; max-width: 100% !important; }
+        .class-tooltiptext { width: 200px; left: auto; right: 0; margin-left: 0; }
+        .class-col-left img { width: 140px !important; }
+        .class-ability-row { flex-wrap: wrap; }
+      }
     </style>
 
-    <div style="background:#111827;border-radius:24px;padding:32px;width:95%;max-width:900px;border:1px solid ${cls.color}33;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);position:relative;display:flex;flex-direction:column;gap:32px;">
+    <div class="class-modal-content" style="background:#111827;border-radius:24px;width:95%;max-width:900px;border:1px solid ${cls.color}33;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);position:relative;display:flex;flex-direction:column;">
       
       <!-- Close Button -->
       <button onclick="document.getElementById('class-info-panel-overlay').remove()"
-        style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.05);border:none;color:#9ca3af;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;z-index:10;transition:0.2s;"
+        style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.05);border:none;color:#9ca3af;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;z-index:10;transition:0.2s;"
         onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'"
         onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#9ca3af'">✕</button>
 
-      <div style="display:flex;gap:40px;flex-wrap:wrap;">
+      <div class="class-modal-cols" style="display:flex;flex-wrap:wrap;">
         
         <!-- LEFT COLUMN: Sprite & Summary -->
-        <div style="flex:1;min-width:280px;display:flex;flex-direction:column;align-items:center;">
+        <div class="class-col-left" style="flex:1;display:flex;flex-direction:column;align-items:center;">
           <div style="position:relative;width:100%;max-width:300px;background:radial-gradient(circle, ${cls.color}15 0%, transparent 70%);border-radius:30px;padding:20px;display:flex;justify-content:center;margin-bottom:24px;border:1px solid ${cls.color}11;">
             <img src="${cls.sprite}" style="width:220px;height:auto;image-rendering:pixelated;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.5));">
             <div style="position:absolute;top:20px;left:20px;">
@@ -469,14 +482,14 @@ function openClassInfoPanel() {
         </div>
 
         <!-- RIGHT COLUMN: Abilities & Penalties -->
-        <div style="flex:1.5;min-width:350px;display:flex;flex-direction:column;gap:32px;">
+        <div class="class-col-right" style="flex:1.5;display:flex;flex-direction:column;gap:32px;">
           <!-- Bonos -->
           <div>
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
               <div style="width:6px;height:20px;background:#22c55e;border-radius:3px;box-shadow:0 0 10px #22c55e44;"></div>
               <span style="font-family:'Press Start 2P',monospace;font-size:11px;color:#22c55e;letter-spacing:1.5px;">HABILIDADES DE CLASE</span>
             </div>
-            <div style="display:grid;gap:10px;">${bonusesHtml}</div>
+            <div style="display:grid;gap:10px;box-sizing:border-box;max-width:100%;">${bonusesHtml}</div>
           </div>
 
           <!-- Penalizaciones -->
@@ -485,7 +498,7 @@ function openClassInfoPanel() {
               <div style="width:6px;height:20px;background:#ef4444;border-radius:3px;box-shadow:0 0 10px #ef444444;"></div>
               <span style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ef4444;letter-spacing:1.5px;">LIMITACIONES</span>
             </div>
-            <div style="display:grid;gap:10px;">${penaltiesHtml}</div>
+            <div style="display:grid;gap:10px;box-sizing:border-box;max-width:100%;">${penaltiesHtml}</div>
           </div>
 
           <!-- Footer Actions inside Right Column -->
