@@ -115,6 +115,9 @@
       </div>
     </div>
 
+    <!-- EVENT BANNER -->
+    <div id="event-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:500;background:linear-gradient(90deg,rgba(245,158,11,0.9),rgba(234,88,12,0.9));color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;text-align:center;"></div>
+
     <!-- MAIN GAME -->
     <div id="game-screen" class="screen">
       <div class="hud">
@@ -986,6 +989,7 @@
   <script src="js/17_sounds.js"></script>
   <script src="js/18_pokedex.js"></script>
   <script src="js/20_classes.js"></script>
+  <script src="js/21_events.js"></script>
 
   <!-- POKEDEX DETAIL MODAL -->
   <div id="pokedex-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s ease;">
@@ -1031,6 +1035,15 @@
       <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin-bottom:10px;">GUARDADO
       </div>
       <div style="font-size:11px;color:var(--gray);" id="profile-last-save">Sin datos</div>
+    </div>
+
+    <div id="profile-admin-section" style="display:none;margin-bottom:10px;">
+      <button onclick="openAdminPanel()"
+        style="width:100%;padding:12px;border:1px solid rgba(245,158,11,0.4);border-radius:12px;cursor:pointer;
+          background:rgba(245,158,11,0.1);color:#f59e0b;
+          font-family:'Press Start 2P',monospace;font-size:9px;">
+        🛡️ PANEL DE ADMIN
+      </button>
     </div>
 
     <button onclick="doLogout()" style="width:100%;padding:12px;border:1px solid rgba(255,59,59,0.3);border-radius:12px;cursor:pointer;

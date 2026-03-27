@@ -190,6 +190,8 @@
     }
 
     function addTrainerExp(amount) {
+      const evBonus = (typeof getEventBonus === 'function') ? getEventBonus('exp') : 1;
+      if (evBonus > 1) amount = Math.round(amount * evBonus);
       state.trainerExp += amount;
       const MAX_TRAINER_LEVEL = 30;
       

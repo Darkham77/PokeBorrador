@@ -157,6 +157,7 @@
             renderTeam();
             // Inicializar sistema de clases
             if (typeof initClassSystem === 'function') setTimeout(() => initClassSystem(), 500);
+            if (typeof checkPendingAwards === 'function') setTimeout(() => checkPendingAwards(), 2000);
             // Restaurar batalla activa si el jugador hizo F5 durante un combate obligatorio
             if (state.activeBattle) {
               setTimeout(() => restoreActiveBattle(), 300);
@@ -244,6 +245,7 @@
             renderTeam();
             // Inicializar sistema de clases
             if (typeof initClassSystem === 'function') setTimeout(() => initClassSystem(), 500);
+            if (typeof checkPendingAwards === 'function') setTimeout(() => checkPendingAwards(), 2000);
             processOfflineBreeding(user.id);
             // Restaurar batalla activa si el jugador hizo F5 durante un combate obligatorio
             if (state.activeBattle) {
@@ -435,6 +437,8 @@
       if (user && profile) {
         document.getElementById('profile-username').textContent = profile?.username || '—';
         document.getElementById('profile-email').textContent = user.email;
+        const adminSection = document.getElementById('profile-admin-section');
+        if (adminSection) adminSection.style.display = user.email === 'kodrol77@gmail.com' ? 'block' : 'none';
       }
       const st = state.stats || {};
       const statsGrid = document.getElementById('profile-stats');
