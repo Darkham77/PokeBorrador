@@ -196,6 +196,7 @@
           <button onclick="toggleSettings()" id="hud-settings-btn" title="Configuración"
             style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:8px;">⚙️</button>
           <button onclick="toggleProfile()" id="hud-profile-btn" title="Perfil y opciones">👤</button>
+          <button onclick="toggleLibrary()" id="hud-library-btn" class="library-btn" title="Biblioteca">📚 Biblioteca</button>
         </div>
       </div>
 
@@ -206,6 +207,26 @@
       <div id="buff-timers-hud"></div>
 
 
+
+      <!-- LIBRARY MODAL -->
+      <div id="library-modal">
+        <div class="library-container">
+          <aside class="library-sidebar">
+            <h2>📚 BIBLIOTECA</h2>
+            <div class="library-nav-item active" onclick="switchLibraryTab('gimnasios', this)">🏆 Gimnasios</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('captura', this)">🔴 Captura</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('eventos', this)">🔥 Eventos</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('clases', this)">🧑‍🤝‍🧑 Clases</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('crianza', this)">🥚 Crianza</div>
+          </aside>
+          <main class="library-content">
+            <button class="library-close" onclick="toggleLibrary()">✕</button>
+            <div id="library-article-content" class="library-article">
+              <!-- Content will be injected here -->
+            </div>
+          </main>
+        </div>
+      </div>
 
       <!-- SETTINGS MODAL -->
       <div id="settings-modal" class="modal"
@@ -1260,4 +1281,30 @@
 
 </body>
 
+</html>
+  <!-- Scripts del Juego -->
+  <script src="js/00_ratios.js"></script>
+  <script src="js/00_time.js"></script>
+  <script src="js/04_state.js"></script>
+  <script src="js/02_pokemon_data.js"></script>
+  <script src="js/03_sprites.js"></script>
+  <script src="js/05_render.js"></script>
+  <script src="js/06_encounters.js"></script>
+  <script src="js/07_battle.js"></script>
+  <script src="js/08_shop.js"></script>
+  <script src="js/09_social.js"></script>
+  <script src="js/10_trade.js"></script>
+  <script src="js/11_battle_ui.js"></script>
+  <script src="js/12_box_bag.js"></script>
+  <script src="js/13_evolution.js"></script>
+  <script src="js/14_pvp.js"></script>
+  <script src="js/15_breeding.js"></script>
+  <script src="js/16_chat.js"></script>
+  <script src="js/17_sounds.js"></script>
+  <script src="js/18_pokedex.js"></script>
+  <script src="js/19_error_handler.js"></script>
+  <script src="js/20_classes.js"></script>
+  <script src="js/21_events.js"></script>
+  <script src="js/22_library.js"></script>
+</body>
 </html>
