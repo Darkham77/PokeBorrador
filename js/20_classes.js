@@ -40,9 +40,7 @@ const PLAYER_CLASSES = {
       "Tus patrocinadores te dan un 10% menos de Battle Coins por batalla debido a tu mala reputación.",
       "Los PokéMart oficiales detectan tu afiliación y aplican un recargo del +20% en todos los precios."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.png',
-    faceScale: '450%',
-    facePos: '75% 15%'
+    sprite: 'assets/sprites/trainers/teamrocket.png'
   },
   cazabichos: {
     id: 'cazabichos',
@@ -82,9 +80,7 @@ const PLAYER_CLASSES = {
       "Los premios en metálico se reducen un 15% debido a tu falta de patrocinio oficial.",
       "La infraestructura de la guardería no está adaptada para tus métodos de crianza rústicos (x1.50 costo)."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.png',
-    faceScale: '400%',
-    facePos: '60% 5%'
+    sprite: 'assets/sprites/trainers/cazabichos.png'
   },
   entrenador: {
     id: 'entrenador',
@@ -124,9 +120,7 @@ const PLAYER_CLASSES = {
       "Prefieres el entrenamiento en campo; el mantenimiento en guardería te resulta más costoso (x1.50).",
       "Como figura pública, no puedes ser visto operando en mercados de dudosa legalidad."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
-    faceScale: '350%',
-    facePos: '65% 5%'
+    sprite: 'assets/sprites/trainers/entrenador.png'
   },
   criador: {
     id: 'criador',
@@ -170,9 +164,7 @@ const PLAYER_CLASSES = {
       "La enfermera Joy te cobra un extra por el mantenimiento especializado de Pokémon ajenos (x1.50).",
       "Como científico respetable, no posees los contactos necesarios para entrar al Mercado Negro."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.png',
-    faceScale: '350%',
-    facePos: 'center 10%'
+    sprite: 'assets/sprites/trainers/criador.png'
   }
 };
 
@@ -182,8 +174,8 @@ function getAvatarHtml(cls, borderColor, sizePx = 40) {
     return `<div style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background:#1e293b; display:flex; align-items:center; justify-content:center; font-size:${sizePx/2}px; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66;">🧢</div>`;
   }
   
-  const bgSize = cls.faceScale || '380%';
-  const bgPos = cls.facePos || 'center 10%';
+  const bgSize = cls.faceScale || 'cover';
+  const bgPos = cls.facePos || 'center';
   
   return `
     <div style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background-color: #1e293b; background-image: radial-gradient(circle, ${cls.color}44 0%, transparent 80%), url('${cls.sprite}'); background-size: cover, ${bgSize}; background-position: center, ${bgPos}; background-repeat: no-repeat; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66; image-rendering: pixelated; transition: background-position 0.2s;">

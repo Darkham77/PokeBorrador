@@ -38,7 +38,7 @@
 
         t = {
           name: 'Oficial de Policía',
-          sprite: 'https://play.pokemonshowdown.com/sprites/trainers/officer.png',
+          sprite: 'https://play.pokemonshowdown.com/sprites/trainers/policeman.png',
           quote: excess > 0 ? `¡Tu criminalidad es de ${criminality}! ¡No escaparás de la justicia!` : '¡Tu cabeza tiene precio! ¡Ya no robarás más Pokémon!'
         };
         
