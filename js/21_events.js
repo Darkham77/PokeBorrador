@@ -225,16 +225,19 @@ async function openAdminPanel() {
 
   try {
     const token = await _evGetToken();
-    if (!token) { notify('Error de sesión.', '❌'); return; }
+    if (!token) { notify('Error de sesión (Token no encontrado).', '❌'); return; }
     
     const res = await fetch('/api/events/config', { headers: { 'Authorization': `Bearer ${token}` } });
-    if (!res.ok) throw new Error('Error al cargar config');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Error HTTP ${res.status}`);
+    }
     _adminConfig = await res.json();
 
     _renderAdminPanel(token);
   } catch (e) {
     console.error('[Admin] Error:', e);
-    notify('Error al abrir el panel.', '❌');
+    notify('Error: ' + e.message, '❌');
   }
 }
 
