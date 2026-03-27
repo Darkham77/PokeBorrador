@@ -297,7 +297,7 @@ function updateBattleUI() {
   const natureEl = document.getElementById('enemy-nature-display');
   if (natureEl) {
     if (state.playerClass === 'criador' && b.enemy.nature) {
-      natureEl.textContent = `(${b.enemy.nature})`;
+      natureEl.innerHTML = buildNatureTooltip(b.enemy.nature);
       natureEl.style.display = 'block';
     } else {
       natureEl.style.display = 'none';

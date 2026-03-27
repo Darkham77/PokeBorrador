@@ -2569,8 +2569,14 @@
       text-align: left;
     }
 
-    .tooltip-wrap:hover .tooltip-box {
+    .tooltip-wrap:hover .tooltip-box,
+    .tooltip-wrap.touched .tooltip-box {
       display: block;
+    }
+
+    .battle-nature .tooltip-box {
+      bottom: auto;
+      top: calc(100% + 8px);
     }
 
     .tooltip-up {

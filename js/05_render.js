@@ -259,7 +259,7 @@ function buildNatureTooltip(nature) {
   } else {
     effect = `<span class="tooltip-neutral">Sin efecto en estadísticas</span>`;
   }
-  return `<div class="tooltip-wrap">
+  return `<div class="tooltip-wrap" ontouchstart="this.classList.toggle('touched')" onmouseleave="this.classList.remove('touched')">
     <div style="font-size:13px;font-weight:700;color:#FFD93D;text-decoration:underline dotted;text-underline-offset:3px;">${nature} ❓</div>
     <div class="tooltip-box"><span class="tooltip-title">${nature}</span>${effect}</div>
   </div>`;
