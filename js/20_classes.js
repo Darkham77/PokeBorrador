@@ -523,6 +523,14 @@ function openClassInfoPanel() {
 
           <!-- Footer Actions inside Right Column -->
           <div style="margin-top:auto;display:grid;gap:12px;border-top:1px solid rgba(255,255,255,0.05);padding-top:24px;">
+
+            <button onclick="document.getElementById('class-info-panel-overlay').remove();openClassMissionsPanel()"
+              style="width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,${cls.color},${cls.colorDark});color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;box-shadow:0 5px 0 ${cls.colorDark}99;transition:0.2s;position:relative;overflow:hidden;"
+              onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 7px 0 ${cls.colorDark}aa'"
+              onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 5px 0 ${cls.colorDark}99'">
+              <div style="position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);"></div>
+              <span style="position:relative;z-index:1;">📋 MISIONES PASIVAS</span>
+            </button>
             ${state.playerClass === 'entrenador' ? `
             <button onclick="document.getElementById('class-info-panel-overlay').remove();openReputationShop()"
               style="width:100%;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;box-shadow:0 5px 0 #14532d;transition:0.2s;"
@@ -587,7 +595,14 @@ function updateClassHud() {
   const cls = PLAYER_CLASSES[state.playerClass];
 
   if (avatar) {
+    avatar.style.position = 'relative';
     avatar.innerHTML = getAvatarHtml(cls, borderColor, 36);
+    
+    // Alerta visual de misiones inactivas en el HUD
+    const active = state.classData?.activeMissions || [];
+    if (active.length === 0) {
+      avatar.innerHTML += '<div style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:\\"Press Start 2P\\",monospace;text-shadow:1px 1px 0 #000;box-shadow:0 0 10px #ef4444, inset 0 0 4px #000;z-index:100;animation:blinkRed 1.5s infinite;">!</div>';
+    }
   }
 
   if (profAvatar) {
@@ -969,179 +984,98 @@ function confirmBlackMarketSell(boxIndex, price) {
   if (typeof saveGame === 'function') saveGame(false);
 }
 
-// ── Sistema de Misiones Idle por Clase ────────────────────────────────────
-const CLASS_MISSIONS = {
-  rocket: [
-    { id: 'contrabando_basico', name: 'Contrabando Básico', desc: 'Vende artículos robados en el mercado negro.', icon: '💼', durationMs: 30 * 60 * 1000, rewardMoney: 1200, rewardXP: 40, classOnly: 'rocket' },
-    { id: 'robo_laboratorio', name: 'Robo de Laboratorio', desc: 'Infiltra el Laboratorio Oak y roba recursos.', icon: '🧪', durationMs: 60 * 60 * 1000, rewardMoney: 3500, rewardXP: 90, classOnly: 'rocket' },
-    { id: 'extorsion', name: 'Extorsión', desc: 'Amenaza a un criador local para obtener fondos.', icon: '🃏', durationMs: 45 * 60 * 1000, rewardMoney: 2000, rewardXP: 60, classOnly: 'rocket' },
-  ],
-  cazabichos: [
-    { id: 'expedicion_captura', name: 'Expedición de Captura', desc: 'Explora el Bosque Verde en busca de Pokémon insecto.', icon: '🌲', durationMs: 45 * 60 * 1000, rewardMoney: 600, rewardXP: 55, rewardItem: 'Poké Ball', rewardItemQty: 3, classOnly: 'cazabichos' },
-    { id: 'torneo_bicho', name: 'Torneo de Insectos', desc: 'Participa en el concurso de bichos de Azulona.', icon: '🏆', durationMs: 90 * 60 * 1000, rewardMoney: 1500, rewardXP: 120, classOnly: 'cazabichos' },
-    { id: 'investigacion_habitat', name: 'Investigación de Hábitat', desc: 'Documenta Pokémon raros en zonas remotas.', icon: '🔍', durationMs: 60 * 60 * 1000, rewardMoney: 800, rewardXP: 75, classOnly: 'cazabichos' },
-  ],
-  entrenador: [
-    { id: 'entrenamiento_gym', name: 'Sesión de Gimnasio', desc: 'Practica con el equipo de un gimnasio local.', icon: '🥊', durationMs: 30 * 60 * 1000, rewardMoney: 400, rewardXP: 80, rewardReputation: 5, classOnly: 'entrenador' },
-    { id: 'torneo_local', name: 'Torneo Local', desc: 'Compite en un torneo organizado en Pueblo Paleta.', icon: '🎖️', durationMs: 90 * 60 * 1000, rewardMoney: 2200, rewardXP: 150, rewardReputation: 15, classOnly: 'entrenador' },
-    { id: 'mentoria', name: 'Mentoría', desc: 'Entrena a un aprendiz y aumenta tu fama.', icon: '📚', durationMs: 60 * 60 * 1000, rewardMoney: 700, rewardXP: 90, rewardReputation: 10, classOnly: 'entrenador' },
-  ],
-  criador: [
-    { id: 'incubacion_asistida', name: 'Incubación Asistida', desc: 'Ayuda a empollar huevos de criadores novatos.', icon: '🥚', durationMs: 60 * 60 * 1000, rewardMoney: 900, rewardXP: 70, classOnly: 'criador' },
-    { id: 'concurso_belleza', name: 'Concurso de Belleza', desc: 'Presenta tu Pokémon mejor criado en un concurso.', icon: '✨', durationMs: 45 * 60 * 1000, rewardMoney: 1100, rewardXP: 85, classOnly: 'criador' },
-    { id: 'analisis_genetico_prof', name: 'Análisis Genético Profundo', desc: 'Estudia combinaciones de IVs para clientes.', icon: '🔬', durationMs: 90 * 60 * 1000, rewardMoney: 2800, rewardXP: 130, classOnly: 'criador' },
-  ],
-};
-
-const MAX_ACTIVE_CLASS_MISSIONS = 2;
-
-function getAvailableClassMissions() {
-  const cls = state.playerClass;
-  if (!cls) return [];
-  const active = (state.classData?.activeMissions || []).map(m => m.id);
-  return (CLASS_MISSIONS[cls] || []).filter(m => !active.includes(m.id));
-}
-
-function startClassMission(missionId) {
-  const cls = state.playerClass;
-  if (!cls) return notify('Debes elegir una clase primero.', '⚠️');
-  const mission = (CLASS_MISSIONS[cls] || []).find(m => m.id === missionId);
-  if (!mission) return;
-  state.classData = state.classData || {};
-  state.classData.activeMissions = state.classData.activeMissions || [];
-  if (state.classData.activeMissions.length >= MAX_ACTIVE_CLASS_MISSIONS)
-    return notify('Ya tienes el máximo de misiones activas.', '⚠️');
-  if (state.classData.activeMissions.find(m => m.id === missionId))
-    return notify('Esa misión ya está en curso.', '⚠️');
-  state.classData.activeMissions.push({ id: missionId, startedAt: Date.now(), endsAt: Date.now() + mission.durationMs });
-  if (typeof scheduleSave === 'function') scheduleSave();
-  notify(`Misión iniciada: ${mission.name}`, mission.icon);
-  openClassMissionsPanel();
-}
-
-function collectClassMission(missionId) {
-  const cls = state.playerClass;
-  if (!cls) return;
-  const idx = (state.classData?.activeMissions || []).findIndex(m => m.id === missionId);
-  if (idx < 0) return;
-  const active = state.classData.activeMissions[idx];
-  if (Date.now() < active.endsAt) return notify('La misión aún no ha terminado.', '⏳');
-  const mission = (CLASS_MISSIONS[cls] || []).find(m => m.id === missionId);
-  if (!mission) return;
-
-  state.classData.activeMissions.splice(idx, 1);
-  state.money = (state.money || 0) + (mission.rewardMoney || 0);
-  addClassXP(mission.rewardXP || 0);
-  if (mission.rewardReputation) {
-    state.classData.reputation = (state.classData.reputation || 0) + mission.rewardReputation;
-  }
-  if (mission.rewardItem) {
-    state.inventory = state.inventory || {};
-    state.inventory[mission.rewardItem] = (state.inventory[mission.rewardItem] || 0) + (mission.rewardItemQty || 1);
-  }
-  if (typeof updateHud === 'function') updateHud();
-  if (typeof scheduleSave === 'function') scheduleSave();
-  notify(`¡Misión completada! +₽${(mission.rewardMoney || 0).toLocaleString()} ${mission.rewardReputation ? `+${mission.rewardReputation} REP` : ''} ${mission.rewardItem ? `+${mission.rewardItemQty || 1}x ${mission.rewardItem}` : ''}`, mission.icon);
-  openClassMissionsPanel();
-}
+// ── Sistema de Misiones Idle por Clase (Rediseño) ────────────────────────
+const CLASS_MISSIONS_NEW = [
+  { id: 'mission_6h',  durationHs: 6,  reqLv: 1,  name: 'Misión Básica (6h)',     color: '#22c55e' },
+  { id: 'mission_12h', durationHs: 12, reqLv: 15, name: 'Misión Avanzada (12h)',  color: '#3b82f6' },
+  { id: 'mission_24h', durationHs: 24, reqLv: 25, name: 'Misión Experta (24h)',   color: '#a855f7' }
+];
 
 function openClassMissionsPanel() {
   document.getElementById('class-missions-overlay')?.remove();
   const cls = state.playerClass;
   if (!cls) return notify('Debes elegir una clase primero.', '⚠️');
   const clsDef = PLAYER_CLASSES[cls];
-  const activeMissions = state.classData?.activeMissions || [];
-  const available = getAvailableClassMissions();
+  const activeMission = state.classData?.activeMission || null; // Ahora solo permite 1 misión a la vez
   const now = Date.now();
+  const trainerLevel = state.trainerLevel || 1;
 
-  const missionRows = activeMissions.map(am => {
-    const m = (CLASS_MISSIONS[cls] || []).find(x => x.id === am.id);
-    if (!m) return '';
-    const done = now >= am.endsAt;
-    const pct = Math.min(100, Math.floor(((now - am.startedAt) / (am.endsAt - am.startedAt)) * 100));
-    const remaining = done ? '¡Lista!' : formatTimerMs(am.endsAt - now);
+  let activeHtml = '';
+  if (activeMission) {
+    const m = CLASS_MISSIONS_NEW.find(x => x.id === activeMission.id);
+    const done = now >= activeMission.endsAt;
+    const pct = Math.min(100, Math.floor(((now - activeMission.startedAt) / (activeMission.endsAt - activeMission.startedAt)) * 100));
+    
+    // Formato de tiempo restante local
+    let remaining = '¡Lista!';
+    if (!done) {
+      const ms = activeMission.endsAt - now;
+      const h = Math.floor(ms / 3600000);
+      const min = Math.floor((ms % 3600000) / 60000);
+      remaining = h > 0 ? `${h}h ${min}m` : `${min}m`;
+    }
+
+    activeHtml = `
+      <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid ${done ? clsDef.color : 'rgba(255,255,255,0.1)'};">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="font-size:13px;font-weight:bold;color:${m.color};">📍 ${m.name}</span>
+          <span style="font-size:11px;color:${done ? clsDef.color : '#9ca3af'};font-weight:bold;">${remaining}</span>
+        </div>
+        <div style="background:rgba(0,0,0,0.4);border-radius:6px;height:8px;margin-bottom:12px;overflow:hidden;">
+          <div style="background:${done ? clsDef.color : m.color};height:100%;width:${pct}%;transition:width 0.5s;"></div>
+        </div>
+        ${done ? `<button onclick="collectClassMission()" style="width:100%;padding:10px;border:none;border-radius:8px;background:${clsDef.color};color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;cursor:pointer;box-shadow:0 4px 0 ${clsDef.colorDark};">RECOLECTAR RECOMPENSA</button>` : `<div style="text-align:center;font-size:10px;color:#6b7280;">Tus Pokémon están trabajando arduamente...</div>`}
+      </div>
+    `;
+  }
+
+  const availableRows = CLASS_MISSIONS_NEW.map(m => {
+    const isUnlocked = trainerLevel >= m.reqLv;
     return `
-    <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid ${done ? clsDef.color + '88' : 'rgba(255,255,255,0.1)'};">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:12px;font-weight:700;">${m.icon} ${m.name}</span>
-        <span style="font-size:10px;color:${done ? clsDef.color : '#9ca3af'};">${remaining}</span>
+    <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);opacity:${isUnlocked ? '1' : '0.5'};">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:12px;font-weight:700;color:${isUnlocked ? m.color : '#6b7280'};">⏳ ${m.name}</span>
+        <span style="font-size:9px;color:#9ca3af;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">Lv.${m.reqLv}</span>
       </div>
-      <div style="background:rgba(255,255,255,0.08);border-radius:4px;height:6px;margin-bottom:8px;">
-        <div style="background:${clsDef.color};border-radius:4px;height:6px;width:${pct}%;transition:width 0.3s;"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#9ca3af;">
-        <span>+₽${(m.rewardMoney || 0).toLocaleString()} | +${m.rewardXP} XP${m.rewardReputation ? ' | +' + m.rewardReputation + ' REP' : ''}${m.rewardItem ? ' | ' + (m.rewardItemQty || 1) + 'x ' + m.rewardItem : ''}</span>
-        ${done ? `<button onclick="collectClassMission('${m.id}')" style="padding:6px 14px;border:none;border-radius:8px;background:${clsDef.color};color:#fff;font-size:10px;cursor:pointer;font-weight:700;">COBRAR</button>` : ''}
-      </div>
+      <button onclick="startClassMission('${m.id}')" ${!isUnlocked || activeMission ? 'disabled' : ''} 
+        style="width:100%;padding:8px;border:none;border-radius:8px;cursor:${isUnlocked && !activeMission ? 'pointer' : 'not-allowed'};background:${isUnlocked && !activeMission ? m.color + '44' : 'rgba(255,255,255,0.05)'};color:${isUnlocked && !activeMission ? '#fff' : '#6b7280'};font-size:10px;font-weight:bold;border:1px solid ${isUnlocked && !activeMission ? m.color : 'transparent'};">
+        ${activeMission ? 'OCUPADO' : isUnlocked ? 'INICIAR MISIÓN' : 'BLOQUEADO'}
+      </button>
     </div>`;
   }).join('');
 
-  const availableRows = available.map(m => `
-    <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-        <span style="font-size:12px;font-weight:700;">${m.icon} ${m.name}</span>
-        <span style="font-size:10px;color:#9ca3af;">${formatTimerMs(m.durationMs)}</span>
-      </div>
-      <div style="font-size:10px;color:#6b7280;margin-bottom:8px;">${m.desc}</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#9ca3af;">
-        <span>+₽${(m.rewardMoney || 0).toLocaleString()} | +${m.rewardXP} XP${m.rewardReputation ? ' | +' + m.rewardReputation + ' REP' : ''}${m.rewardItem ? ' | ' + (m.rewardItemQty || 1) + 'x ' + m.rewardItem : ''}</span>
-        ${activeMissions.length < MAX_ACTIVE_CLASS_MISSIONS
-          ? `<button onclick="startClassMission('${m.id}')" style="padding:6px 14px;border:none;border-radius:8px;background:${clsDef.color}33;color:${clsDef.color};font-size:10px;cursor:pointer;font-weight:700;border:1px solid ${clsDef.color}44;">INICIAR</button>`
-          : `<span style="color:#6b7280;font-size:9px;">Máx. activas</span>`}
-      </div>
-    </div>`).join('');
-
   const ov = document.createElement('div');
   ov.id = 'class-missions-overlay';
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:3000;display:flex;align-items:center;justify-content:center;padding:12px;';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s;';
   ov.innerHTML = `
-    <div style="background:#0f172a;border:1px solid ${clsDef.color}44;border-radius:20px;padding:20px;max-width:420px;width:100%;max-height:88vh;overflow-y:auto;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div style="background:#0f172a;border:1px solid ${clsDef.color}44;border-radius:20px;padding:24px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.8);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:12px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${clsDef.color};">${clsDef.icon} MISIONES ${clsDef.name.toUpperCase()}</div>
         <button onclick="document.getElementById('class-missions-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;">✕</button>
       </div>
-      ${activeMissions.length > 0 ? `<div style="font-size:10px;color:#9ca3af;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">En Curso (${activeMissions.length}/${MAX_ACTIVE_CLASS_MISSIONS})</div>${missionRows}` : ''}
-      <div style="font-size:10px;color:#9ca3af;margin-top:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Disponibles</div>
-      ${availableRows || '<div style="font-size:11px;color:#6b7280;text-align:center;padding:16px;">Sin misiones disponibles ahora.</div>'}
+      
+      ${activeHtml}
+      
+      <div style="font-size:10px;color:#9ca3af;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;font-weight:bold;">Disponibles</div>
+      ${availableRows}
+      
+      <div style="margin-top:16px;padding:12px;background:rgba(239, 68, 68, 0.1);border-radius:8px;border:1px solid rgba(239, 68, 68, 0.2);font-size:10px;color:#fca5a5;line-height:1.4;">
+        <strong style="color:#ef4444;">⚠️ ATENCIÓN:</strong> Solo puedes tener 1 misión activa a la vez. Los Pokémon enviados a la misión quedarán bloqueados hasta que cobres la recompensa.
+      </div>
     </div>`;
   document.body.appendChild(ov);
 }
 
-function formatTimerMs(ms) {
-  if (ms <= 0) return '¡Lista!';
-  const h = Math.floor(ms / 3600000);
-  const m = Math.floor((ms % 3600000) / 60000);
-  const s = Math.floor((ms % 60000) / 1000);
-  if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m ${s}s`;
-  return `${s}s`;
+function startClassMission(missionId) {
+  // TODO: UI de Selección de Pokémon e inicio según clase
 }
 
-// Procesa misiones offline al cargar el juego
+function collectClassMission() {
+  // TODO: Recibir recompensas según clase y liberar Pokémon
+}
+
 function processOfflineClassMissions() {
-  const active = state.classData?.activeMissions || [];
-  if (!active.length) return;
-  const now = Date.now();
-  const cls = state.playerClass;
-  let collected = 0;
-  for (const am of [...active]) {
-    if (now >= am.endsAt) {
-      const m = (CLASS_MISSIONS[cls] || []).find(x => x.id === am.id);
-      if (m) {
-        const idx = state.classData.activeMissions.findIndex(x => x.id === am.id);
-        if (idx >= 0) state.classData.activeMissions.splice(idx, 1);
-        state.money = (state.money || 0) + (m.rewardMoney || 0);
-        addClassXP(m.rewardXP || 0);
-        if (m.rewardReputation) state.classData.reputation = (state.classData.reputation || 0) + m.rewardReputation;
-        if (m.rewardItem) {
-          state.inventory = state.inventory || {};
-          state.inventory[m.rewardItem] = (state.inventory[m.rewardItem] || 0) + (m.rewardItemQty || 1);
-        }
-        collected++;
-      }
-    }
-  }
-  if (collected > 0) notify(`${collected} misión(es) de clase completadas mientras estabas ausente.`, '📬');
+  // TODO: Manejo de login y timers offline
 }
 
 // ── Tienda de Reputación (Entrenador) ────────────────────────────────────
