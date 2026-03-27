@@ -2376,9 +2376,11 @@
       .battle-name {
         font-size: 3.2cqw;
         margin-bottom: 1cqw;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        word-break: break-word;
+        line-height: 1.2;
       }
 
       .battle-level {

@@ -329,16 +329,10 @@ function updateBattleUI() {
   document.getElementById('enemy-hp-text').textContent = `HP: ${b.enemy.hp}/${b.enemy.maxHp}`;
   const ivTotalEl = document.getElementById('enemy-iv-total');
   if (ivTotalEl) {
-    const isCriador = state.playerClass === 'criador' && !b.isPvP;
     const isCazabichos = state.playerClass === 'cazabichos' && !b.isTrainer && !b.isGym && !b.isPvP;
     const isScannerActive = state.playerClass === 'entrenador' && (state.ivScannerSecs || 0) > 0 && !b.isPvP && !b.isTrainer && !b.isGym;
     
-    if (isCriador && b.enemy.ivs) {
-      const total = Object.values(b.enemy.ivs).reduce((s, v) => s + (v || 0), 0);
-      ivTotalEl.textContent = `IV: ${total}/186`;
-      ivTotalEl.style.display = 'block';
-      ivTotalEl.style.color = 'var(--blue)';
-    } else if (isScannerActive && b.enemy.ivs) {
+    if (isScannerActive && b.enemy.ivs) {
       const total = Object.values(b.enemy.ivs).reduce((s, v) => s + (v || 0), 0);
       ivTotalEl.textContent = `RADAR IV: ${total}/186`;
       ivTotalEl.style.display = 'block';
