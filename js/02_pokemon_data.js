@@ -1341,6 +1341,10 @@
       'Descarga': 'Sube el Ataque o At. Especial según la defensa del rival al entrar.',
       'Nado Rápido': 'Duplica la Velocidad del Pokémon bajo la lluvia.',
       'Experto': 'Aumenta un 50% el poder de los movimientos con potencia de 60 o menos.',
+      'Absorbe Voltio': 'Los movimientos de tipo Eléctrico no le hacen daño y le curan un 25% de HP.',
+      'Foco Interno': 'Protege al Pokémon y evita que retroceda ante ataques del rival.',
+      'Rivalidad': 'Aumenta el Ataque un 25% si el rival es del mismo género.',
+      'Muro Mágico': 'El Pokémon solo recibe daño de ataques directos. Es inmune al veneno o clima.',
     };
 
 

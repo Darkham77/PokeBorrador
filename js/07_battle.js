@@ -679,6 +679,17 @@ function getAbilityMultiplier(attacker, defender, move) {
       triggeredAbility = ab;
     }
   }
+  
+  // Rivalidad (Rivalry)
+  if (ab === 'Rivalidad' && attacker.gender && defender.gender) {
+    if (attacker.gender === defender.gender) {
+      mult *= 1.25;
+      triggeredAbility = ab;
+    } else if (attacker.gender !== 'none' && defender.gender !== 'none') {
+      mult *= 0.75;
+      triggeredAbility = ab;
+    }
+  }
 
   return { mult, triggeredAbility };
 }
@@ -740,6 +751,9 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
     default:
       finalEffect = effectBase;
   }
+
+  // Magic Guard (Muro Mágico) prevents indirect damage effects normally, 
+  // but it's handled in the tick functions rather than here for better control.
 
   switch (finalEffect) {
     case 'stat_down_enemy_atk': 
@@ -841,7 +855,12 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       }
       addLogFn(`¡${src.name} se recuperó completamente y se quedó dormido!`, 'log-info'); break;
     case 'flinch_30': case 'flinch':
-      tgt.flinched = true; break;
+      if (tgt.ability === 'Foco Interno') {
+        addLogFn(`¡El Foco Interno de ${tgt.name} evitó que retrocediera!`, 'log-info');
+      } else {
+        tgt.flinched = true; 
+      }
+      break;
     case 'teleport':
       if (state.battle && !state.battle.isTrainer && !state.battle.isGym) {
         addLogFn(`¡${src.name} se teletransportó lejos de la batalla!`, 'log-info');
@@ -1025,6 +1044,14 @@ function checkAbilityImmunity(attacker, defender, move, addLogFn) {
     return true;
   }
 
+  if (ab === 'Absorbe Voltio' && md.type === 'electric') {
+    addLogFn(`¡El Absorbe Voltio de ${defender.name} absorbió el ataque!`, 'log-info');
+    const heal = Math.floor(defender.maxHp / 4);
+    defender.hp = Math.min(defender.maxHp, defender.hp + heal);
+    addLogFn(`¡${defender.name} recuperó HP!`, 'log-info');
+    return true;
+  }
+
   if (ab === 'Absorbe Fuego' && md.type === 'fire') {
     addLogFn(`¡El Absorbe Fuego de ${defender.name} absorbió el ataque!`, 'log-info');
     return true;
@@ -1069,10 +1096,18 @@ function tickStatus(pokemon, addLogFn, role) {
   const logCls = role === 'player' ? 'log-enemy' : role === 'enemy' ? 'log-player' : 'log-info';
   switch (pokemon.status) {
     case 'burn':
+      if (pokemon.ability === 'Muro Mágico') {
+         addLogFn(`¡El Muro Mágico de ${pokemon.name} evitó el daño por quemadura!`, 'log-info');
+         return false;
+      }
       pokemon.hp = Math.max(0, pokemon.hp - Math.max(1, Math.floor(pokemon.maxHp / 8)));
       addLogFn(`¡${pokemon.name} sufre quemaduras! (-${Math.max(1, Math.floor(pokemon.maxHp / 8))} HP)`, logCls);
       return true;
     case 'poison':
+      if (pokemon.ability === 'Muro Mágico') {
+         addLogFn(`¡El Muro Mágico de ${pokemon.name} evitó el daño por veneno!`, 'log-info');
+         return false;
+      }
       pokemon.hp = Math.max(0, pokemon.hp - Math.max(1, Math.floor(pokemon.maxHp / 8)));
       addLogFn(`¡${pokemon.name} sufre el veneno! (-${Math.max(1, Math.floor(pokemon.maxHp / 8))} HP)`, logCls);
       return true;
@@ -1085,6 +1120,10 @@ function tickLeechSeed(pokemon, role, addLogFn) {
   const b = state.battle;
   if (!b) return false;
 
+  if (pokemon.ability === 'Muro Mágico') {
+     addLogFn(`¡El Muro Mágico de ${pokemon.name} evitó el daño por drenadoras!`, 'log-info');
+     return false;
+  }
   const dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
   pokemon.hp = Math.max(0, pokemon.hp - dmg);
   addLogFn(`¡Drenadoras resta salud a ${pokemon.name}! (-${dmg} HP)`, 'log-enemy');
@@ -1223,6 +1262,9 @@ function applyAbilityTurnEndEffects(pokemon, role, addLogFn) {
       addLogFn(`¡El Poder Solar de ${pokemon.name} le resta salud bajo el sol! (-${loss} HP)`, logCls);
     }
   }
+
+  // Magic Guard (Muro Mágico) vs recoil (not handled in calcDamage recoil section yet but could be)
+  // Actually recoil is in useMove specifically.
 }
 
 function playerActsFirst(b, pMove, eMove, enemyWillUseItem = null) {
@@ -1308,7 +1350,8 @@ function useMove(moveIndex) {
     }
     // Check sleep
     if (b.player.status === 'sleep') {
-      b.player.sleepTurns = (b.player.sleepTurns || 1) - 1;
+      const sleepReduction = (b.player.ability === 'Madrugar') ? 2 : 1;
+      b.player.sleepTurns = Math.max(0, (b.player.sleepTurns || 1) - sleepReduction);
       if (b.player.sleepTurns > 0) {
         addLog(`¡${b.player.name} está dormido! 💤`, 'log-enemy');
         _battleLock = true; setBtns(false);
@@ -1556,11 +1599,15 @@ function useMove(moveIndex) {
         if (b.player.ability === 'Cabeza Roca') {
           addLog(`¡${b.player.name} no recibió daño de retroceso por su Cabeza Roca!`, 'log-info');
         } else if (finalDmg > 0) {
-          const recoilDmg = Math.max(1, Math.floor(finalDmg / md.recoil));
-          b.player.hp = Math.max(0, b.player.hp - recoilDmg);
-          const tm2 = state.team.find(p => p.name === b.player.name);
-          if (tm2) tm2.hp = b.player.hp;
-          addLog(`¡${b.player.name} recibió ${recoilDmg} de daño de retroceso!`, 'log-enemy');
+          if (b.player.ability === 'Muro Mágico') {
+            addLog(`¡El Muro Mágico de ${b.player.name} evitó el daño de retroceso!`, 'log-info');
+          } else {
+            const recoilDmg = Math.max(1, Math.floor(finalDmg / md.recoil));
+            b.player.hp = Math.max(0, b.player.hp - recoilDmg);
+            const tm2 = state.team.find(p => p.name === b.player.name);
+            if (tm2) tm2.hp = b.player.hp;
+            addLog(`¡${b.player.name} recibió ${recoilDmg} de daño de retroceso!`, 'log-enemy');
+          }
         }
       }
 
@@ -1858,7 +1905,8 @@ function enemyTurn(opts = {}) {
   }
 
   if (b.enemy.status === 'sleep') {
-    b.enemy.sleepTurns = (b.enemy.sleepTurns || 1) - 1;
+    const sleepReduction = (b.enemy.ability === 'Madrugar') ? 2 : 1;
+    b.enemy.sleepTurns = Math.max(0, (b.enemy.sleepTurns || 1) - sleepReduction);
     if (b.enemy.sleepTurns > 0) {
       addLog(`¡${b.enemy.name} está dormido! 💤`, 'log-enemy');
       finish(); return;
@@ -2862,6 +2910,20 @@ function endBattle(won) {
 }
 
 function runFromBattle() {
+  const b = state.battle;
+  if (!b) return;
+
+  if (b.player.ability === 'Escape') {
+    addLog(`¡${b.player.name} escapó gracias a su habilidad Escape!`, 'log-info');
+    b.over = true;
+    setTimeout(() => {
+      state.battle = null;
+      showScreen('game-screen');
+      showTab('map');
+    }, 800);
+    return;
+  }
+
   if (!state.battle) return;
   if (state.battle?.isGym) {
     setLog('¡No podés huir de un combate contra un Líder de Gimnasio!', 'log-enemy');
