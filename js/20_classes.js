@@ -42,7 +42,7 @@ const PLAYER_CLASSES = {
     ],
     sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.png',
     faceScale: '450%',
-    facePos: 'center 15%'
+    facePos: '75% 15%'
   },
   cazabichos: {
     id: 'cazabichos',
@@ -83,8 +83,8 @@ const PLAYER_CLASSES = {
       "La infraestructura de la guardería no está adaptada para tus métodos de crianza rústicos (x1.50 costo)."
     ],
     sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.png',
-    faceScale: '380%',
-    facePos: 'center 20%'
+    faceScale: '400%',
+    facePos: '60% 5%'
   },
   entrenador: {
     id: 'entrenador',
@@ -126,7 +126,7 @@ const PLAYER_CLASSES = {
     ],
     sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
     faceScale: '350%',
-    facePos: 'center 15%'
+    facePos: '65% 5%'
   },
   criador: {
     id: 'criador',
