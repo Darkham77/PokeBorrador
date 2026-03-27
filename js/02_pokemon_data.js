@@ -1347,4 +1347,31 @@
       'Muro Mágico': 'El Pokémon solo recibe daño de ataques directos. Es inmune al veneno o clima.',
     };
 
+    function getMoveDescription(name, md) {
+      if (!md) md = (typeof MOVE_DATA !== 'undefined' ? MOVE_DATA[name] : null);
+      if (!md) return "Causa daño al oponente sin efectos secundarios adicionales.";
+      
+      if (md.ohko) return "Fulmina al enemigo de un solo golpe si acierta.";
+      if (md.halfHP) return "Reduce a la mitad los PS actuales del oponente.";
+      if (md.recoil) return "El usuario recibe daño por retroceso al golpear.";
+      if (md.drain) return "Restaura PS al usuario según el daño causado.";
+      if (md.selfKO) return "El usuario se debilita para causar un daño masivo.";
+      if (md.priority > 0) return "Ataque rápido que siempre golpea primero.";
+      
+      const effects = {
+        'burn_10': "Puede quemar al objetivo (10%).",
+        'paralyze_30': "Puede paralizar al objetivo (30%).",
+        'poison_30': "Puede envenenar al objetivo (30%).",
+        'flinch_30': "Puede hacer retroceder al objetivo (30%).",
+        'confuse_30': "Puede confundir al objetivo (30%).",
+        'stat_down_enemy_atk': "Reduce el Ataque del oponente.",
+        'stat_down_enemy_def': "Reduce la Defensa del oponente.",
+        'stat_up_self_atk': "Aumenta el Ataque del usuario.",
+        'stat_up_self_def': "Aumenta la Defensa del usuario.",
+        'stat_up_self_spe_2': "Aumenta mucho la Velocidad del usuario."
+      };
+
+      return effects[md.effect] || "Causa daño al oponente sin efectos secundarios adicionales.";
+    }
+
 

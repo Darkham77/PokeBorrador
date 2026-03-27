@@ -409,7 +409,10 @@ function showPokedexDetail(pokemonId) {
           ${learnset.map(m => {
             const md = (typeof MOVE_DATA !== 'undefined' && MOVE_DATA[m.name]) || {};
             const mColor = typeColors[md.type] || '#aaa';
-            return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            return `<tr onclick="showMoveDetail('${m.name.replace(/'/g, "\\'")}')" 
+                style="border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.2s;"
+                onmouseover="this.style.background='rgba(255,255,255,0.05)'" 
+                onmouseout="this.style.background='transparent'">
               <td style="padding:5px 6px;color:var(--yellow);font-weight:700;">${m.lv}</td>
               <td style="padding:5px 6px;">
                 <span style="font-weight:600;color:#fff;">${m.name}</span>

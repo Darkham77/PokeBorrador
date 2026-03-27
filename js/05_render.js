@@ -316,7 +316,12 @@ function openPokemonDetail(index) {
   const movesList = p.moves.map(m => {
     const md = (typeof MOVE_DATA !== 'undefined') ? MOVE_DATA[m.name] : null;
     const power = md ? (md.power || '—') : (m.power || '—');
-    return `<div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+    const typeCol = (typeof PDEX_TYPE_COLORS !== 'undefined' && md) ? PDEX_TYPE_COLORS[md.type] : '#aaa';
+    
+    return `<div onclick="showMoveDetail('${m.name.replace(/'/g, "\\'")}')" 
+      style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all 0.2s;border:1px solid rgba(255,255,255,0.08);"
+      onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.borderColor='${typeCol}66'" 
+      onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.08)'">
       <div>
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${m.name}</div>
         <div style="font-size:11px;color:#888;">Poder: ${power}</div>
@@ -461,6 +466,72 @@ function openPokemonDetail(index) {
 function closePokemonDetail() {
   const overlay = document.getElementById('pokemon-detail-overlay');
   if (overlay) overlay.style.display = 'none';
+}
+
+function showMoveDetail(moveName) {
+  const md = (typeof MOVE_DATA !== 'undefined') ? MOVE_DATA[moveName] : null;
+  if (!md) return;
+
+  const typeColors = (typeof PDEX_TYPE_COLORS !== 'undefined') ? PDEX_TYPE_COLORS : {
+    normal: '#aaa', fire: '#FF6B35', water: '#3B8BFF', grass: '#6BCB77',
+    electric: '#FFD93D', ice: '#7DF9FF', fighting: '#FF3B3B', poison: '#C77DFF',
+    ground: '#c8a060', flying: '#89CFF0', psychic: '#FF6EFF', bug: '#8BC34A',
+    rock: '#c8a060', ghost: '#7B2FBE', dragon: '#5C16C5', dark: '#555', steel: '#9E9E9E'
+  };
+  const typeColor = typeColors[md.type] || '#aaa';
+  const catIcon = { physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' }[md.cat] || '';
+  const desc = (typeof getMoveDescription === 'function') ? getMoveDescription(moveName, md) : "Causa daño al oponente.";
+
+  let overlay = document.getElementById('move-detail-modal');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'move-detail-modal';
+    overlay.className = 'move-detail-overlay';
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.style.display = 'none'; };
+    document.body.appendChild(overlay);
+  }
+
+  overlay.innerHTML = `
+    <div class="move-detail-card" style="border-top: 4px solid ${typeColor}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:${typeColor}">${moveName}</div>
+        <button onclick="document.getElementById('move-detail-modal').style.display='none'" 
+          style="background:rgba(255,255,255,0.1);border:none;border-radius:10px;color:#aaa;font-size:18px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:20px;">
+        <span class="type-badge type-${md.type}" style="font-size:10px;padding:4px 12px;border-radius:20px;">${md.type.toUpperCase()}</span>
+        <span style="font-size:10px;background:rgba(255,255,255,0.08);padding:4px 12px;border-radius:20px;color:#aaa;font-weight:bold;text-transform:uppercase;border:1px solid rgba(255,255,255,0.05);">${catIcon}</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:rgba(255,255,255,0.04);padding:12px;border-radius:12px;text-align:center;border:1px solid rgba(255,255,255,0.05);">
+          <div style="font-size:9px;color:#666;text-transform:uppercase;margin-bottom:4px;font-weight:bold;">Potencia</div>
+          <div style="font-size:16px;font-weight:900;color:var(--text);">${md.power || '—'}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);padding:12px;border-radius:12px;text-align:center;border:1px solid rgba(255,255,255,0.05);">
+          <div style="font-size:9px;color:#666;text-transform:uppercase;margin-bottom:4px;font-weight:bold;">Precisión</div>
+          <div style="font-size:16px;font-weight:900;color:var(--text);">${md.acc || '—'}%</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.04);padding:12px;border-radius:12px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.05);">
+        <div style="font-size:9px;color:#666;text-transform:uppercase;margin-bottom:6px;font-weight:bold;">PP Máximos del Movimiento</div>
+        <div style="font-size:14px;font-weight:700;color:var(--yellow);">${md.pp}</div>
+      </div>
+
+      <div style="background:linear-gradient(135deg, ${typeColor}22, transparent);padding:16px;border-radius:16px;border:1px solid ${typeColor}33;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:${typeColor};margin-bottom:10px;">DESCRIPCIÓN EN BATALLA</div>
+        <div style="font-size:12px;line-height:1.6;color:#ccc;font-weight:500;">${desc}</div>
+      </div>
+      
+      <button onclick="document.getElementById('move-detail-modal').style.display='none'" 
+        style="width:100%;margin-top:24px;padding:14px;background:rgba(255,255,255,0.05);color:var(--gray);border:none;border-radius:14px;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='var(--gray)'">CERRAR</button>
+    </div>
+  `;
+
+  overlay.style.display = 'flex';
 }
 
 

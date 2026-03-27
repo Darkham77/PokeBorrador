@@ -659,8 +659,14 @@
             </div>
           </div>`;
       }).join('');
-      const movesList = p.moves.map(m => `
-        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,0.08);">
+      const movesList = p.moves.map(m => {
+        const md = (typeof MOVE_DATA !== 'undefined' ? MOVE_DATA[m.name] : null);
+        const typeCol = (typeof PDEX_TYPE_COLORS !== 'undefined' && md) ? PDEX_TYPE_COLORS[md.type] : '#aaa';
+
+        return `<div onclick="showMoveDetail('${m.name.replace(/'/g, "\\'")}')" 
+          style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,0.08);cursor:pointer;transition:all 0.2s;"
+          onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.borderColor='${typeCol}66'" 
+          onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.08)'">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
             <span style="font-size:11px;font-weight:700;">${m.name}</span>
             <span class="type-badge type-${(m.type || 'normal').toLowerCase()}" style="font-size:8px;padding:2px 6px;">${m.type || 'Normal'}</span>
@@ -669,7 +675,8 @@
             <span>Poder: ${m.power || '—'}</span>
             <span>PP: ${m.pp}/${m.maxPP}</span>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
 
       const html = `
     <div style="background:var(--card);border-radius:24px;padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;position:relative;border:1px solid rgba(255,255,255,0.1);box-shadow:0 20px 50px rgba(0,0,0,0.5);">
@@ -915,7 +922,7 @@
         const tier = itemInfo?.tier || 'common';
         const type = itemInfo?.type || 'usable';
         const isUsable = !!HEALING_ITEMS[name] || name === 'Caramelo Raro';
-        const canSell = itemInfo && itemInfo.market !== false;
+        const canSell = itemInfo && (itemInfo.market !== false || (itemInfo.price && itemInfo.price > 0));
 
         const tierCls = tierColors[tier];
         const typeTag = `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:${typeTagColors[type] || '#666'}22;color:${typeTagColors[type] || '#aaa'};border:1px solid ${typeTagColors[type] || '#666'}44;">${typeTagLabels[type] || type}</span>`;
