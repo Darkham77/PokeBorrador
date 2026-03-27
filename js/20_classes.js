@@ -40,7 +40,9 @@ const PLAYER_CLASSES = {
       "Tus patrocinadores te dan un 10% menos de Battle Coins por batalla debido a tu mala reputación.",
       "Los PokéMart oficiales detectan tu afiliación y aplican un recargo del +20% en todos los precios."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.png',
+    faceScale: '450%',
+    facePos: 'center 15%'
   },
   cazabichos: {
     id: 'cazabichos',
@@ -80,7 +82,9 @@ const PLAYER_CLASSES = {
       "Los premios en metálico se reducen un 15% debido a tu falta de patrocinio oficial.",
       "La infraestructura de la guardería no está adaptada para tus métodos de crianza rústicos (x1.50 costo)."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.png',
+    faceScale: '380%',
+    facePos: 'center 20%'
   },
   entrenador: {
     id: 'entrenador',
@@ -120,7 +124,9 @@ const PLAYER_CLASSES = {
       "Prefieres el entrenamiento en campo; el mantenimiento en guardería te resulta más costoso (x1.50).",
       "Como figura pública, no puedes ser visto operando en mercados de dudosa legalidad."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
+    faceScale: '350%',
+    facePos: 'center 15%'
   },
   criador: {
     id: 'criador',
@@ -164,9 +170,25 @@ const PLAYER_CLASSES = {
       "La enfermera Joy te cobra un extra por el mantenimiento especializado de Pokémon ajenos (x1.50).",
       "Como científico respetable, no posees los contactos necesarios para entrar al Mercado Negro."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.png',
+    faceScale: '350%',
+    facePos: 'center 10%'
   }
 };
+
+// ── HELPER: Generar HTML del Avatar ───────────────────────────────────────
+function getAvatarHtml(cls, borderColor, sizePx = 40) {
+  if (!cls) {
+    return `<div style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background:#1e293b; display:flex; align-items:center; justify-content:center; font-size:${sizePx/2}px; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66;">🧢</div>`;
+  }
+  
+  const bgSize = cls.faceScale || '380%';
+  const bgPos = cls.facePos || 'center 10%';
+  
+  return `
+    <div style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background-color: #1e293b; background-image: radial-gradient(circle, ${cls.color}44 0%, transparent 80%), url('${cls.sprite}'); background-size: cover, ${bgSize}; background-position: center, ${bgPos}; background-repeat: no-repeat; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66; image-rendering: pixelated; transition: background-position 0.2s;">
+    </div>`;
+}
 
 // ── Obtener modificador de la clase activa ─────────────────────────────────
 function getClassModifier(type, context = {}) {
@@ -388,10 +410,7 @@ function openClassInfoPanel() {
   if (levelForBorder >= 20) panelBorderColor = '#ffd700';
   else if (levelForBorder >= 10) panelBorderColor = '#c0c0c0';
 
-  const avatarHtml = `
-    <div style="position:absolute;top:20px;left:20px;width:60px;height:60px;border-radius:50%;border:2px solid ${panelBorderColor};background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%);display:flex;align-items:flex-start;justify-content:center;overflow:hidden;box-shadow: 0 0 12px ${panelBorderColor}88;">
-      <img src="${cls.sprite}" style="width:250%; height:auto; margin-top:-5px; image-rendering:pixelated; filter:drop-shadow(0 2px 5px rgba(0,0,0,0.5));">
-    </div>`;
+  const avatarHtml = getAvatarHtml(cls, panelBorderColor, 60);
 
   ov.innerHTML = `
     <style>
@@ -422,7 +441,9 @@ function openClassInfoPanel() {
         <div style="flex:1;min-width:280px;display:flex;flex-direction:column;align-items:center;">
           <div style="position:relative;width:100%;max-width:300px;background:radial-gradient(circle, ${cls.color}15 0%, transparent 70%);border-radius:30px;padding:20px;display:flex;justify-content:center;margin-bottom:24px;border:1px solid ${cls.color}11;">
             <img src="${cls.sprite}" style="width:220px;height:auto;image-rendering:pixelated;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.5));">
-            ${avatarHtml}
+            <div style="position:absolute;top:20px;left:20px;">
+              ${avatarHtml}
+            </div>
           </div>
 
           <div style="width:100%;text-align:center;">
@@ -517,11 +538,9 @@ function updateClassHud() {
 
   if (!state.playerClass) {
     if (label) label.style.display = 'none';
-    if (avatar) {
-      avatar.innerHTML = `<div style="width:36px; height:36px; border-radius:50%; border:2px solid ${borderColor}; background:#1e293b; display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow: 0 0 8px ${borderColor}66;">🧢</div>`;
-    }
+    if (avatar) avatar.innerHTML = getAvatarHtml(null, borderColor, 36);
     if (profAvatar) {
-      profAvatar.innerHTML = `<div style="width:80px; height:80px; border-radius:50%; border:3px solid ${borderColor}; background:#1e293b; display:flex; align-items:center; justify-content:center; font-size:40px; box-shadow: 0 0 15px ${borderColor}88; margin: 0 auto 16px;">🧢</div>`;
+      profAvatar.innerHTML = getAvatarHtml(null, borderColor, 80);
       profAvatar.style.background = 'transparent';
       profAvatar.style.border = 'none';
       profAvatar.style.width = 'auto';
@@ -534,17 +553,12 @@ function updateClassHud() {
   const cls = PLAYER_CLASSES[state.playerClass];
 
   if (avatar) {
-    avatar.innerHTML = `
-      <div style="width:36px; height:36px; border-radius:50%; border:2px solid ${borderColor}; background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%); display:flex; align-items:flex-start; justify-content:center; overflow:hidden; box-shadow: 0 0 8px ${borderColor}66;">
-        <img src="${cls.sprite}" style="width:250%; height:auto; margin-top:-2px; image-rendering:pixelated; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
-      </div>`;
+    avatar.innerHTML = getAvatarHtml(cls, borderColor, 36);
   }
 
   if (profAvatar) {
-    profAvatar.innerHTML = `
-      <div style="width:80px; height:80px; border-radius:50%; border:3px solid ${borderColor}; background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%); display:flex; align-items:flex-start; justify-content:center; overflow:hidden; box-shadow: 0 0 20px ${borderColor}88; margin: 0 auto 16px; position:relative;">
-        <img src="${cls.sprite}" style="width:250%; height:auto; margin-top:-5px; image-rendering:pixelated; filter:drop-shadow(0 5px 10px rgba(0,0,0,0.5));">
-      </div>`;
+    profAvatar.innerHTML = getAvatarHtml(cls, borderColor, 80);
+    profAvatar.style.margin = '0 auto 16px';
     profAvatar.style.background = 'transparent';
     profAvatar.style.border = 'none';
     profAvatar.style.width = 'auto';

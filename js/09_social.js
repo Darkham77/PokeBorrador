@@ -129,15 +129,12 @@
 
         const clsId = save?.playerClass;
         let avatarHtml = `<div style="font-size:24px;">🧢</div>`;
-        if (clsId && typeof PLAYER_CLASSES !== 'undefined' && PLAYER_CLASSES[clsId]) {
-          const cls = PLAYER_CLASSES[clsId];
+        if (typeof getAvatarHtml === 'function') {
+          const cls = (clsId && typeof PLAYER_CLASSES !== 'undefined') ? PLAYER_CLASSES[clsId] : null;
           let borderColor = '#cd7f32';
           if (level >= 20) borderColor = '#ffd700';
           else if (level >= 10) borderColor = '#c0c0c0';
-          avatarHtml = `
-            <div style="width:40px;height:40px;border-radius:50%;border:2px solid ${borderColor};background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%);display:flex;align-items:flex-start;justify-content:center;overflow:hidden;box-shadow:0 0 8px ${borderColor}66;">
-              <img src="${cls.sprite}" style="width:250%;height:auto;margin-top:-2px;image-rendering:pixelated;">
-            </div>`;
+          avatarHtml = getAvatarHtml(cls, borderColor, 40);
         }
 
         return `<div class="friend-card">
@@ -187,15 +184,12 @@
         const clsId = save.playerClass;
         
         let avatarHtml = `<div style="font-size:24px;">🧢</div>`;
-        if (clsId && typeof PLAYER_CLASSES !== 'undefined' && PLAYER_CLASSES[clsId]) {
-          const cls = PLAYER_CLASSES[clsId];
+        if (typeof getAvatarHtml === 'function') {
+          const cls = (clsId && typeof PLAYER_CLASSES !== 'undefined') ? PLAYER_CLASSES[clsId] : null;
           let borderColor = '#cd7f32';
           if (level >= 20) borderColor = '#ffd700';
           else if (level >= 10) borderColor = '#c0c0c0';
-          avatarHtml = `
-            <div style="width:40px;height:40px;border-radius:50%;border:2px solid ${borderColor};background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%);display:flex;align-items:flex-start;justify-content:center;overflow:hidden;box-shadow:0 0 8px ${borderColor}66;">
-              <img src="${cls.sprite}" style="width:250%;height:auto;margin-top:-2px;image-rendering:pixelated;">
-            </div>`;
+          avatarHtml = getAvatarHtml(cls, borderColor, 40);
         }
 
         return `
@@ -250,15 +244,12 @@
           const clsId = save.playerClass;
           
           let avatarHtml = `<div style="font-size:24px;">🧢</div>`;
-          if (clsId && typeof PLAYER_CLASSES !== 'undefined' && PLAYER_CLASSES[clsId]) {
-            const cls = PLAYER_CLASSES[clsId];
+          if (typeof getAvatarHtml === 'function') {
+            const cls = (clsId && typeof PLAYER_CLASSES !== 'undefined') ? PLAYER_CLASSES[clsId] : null;
             let borderColor = '#cd7f32';
             if (level >= 20) borderColor = '#ffd700';
             else if (level >= 10) borderColor = '#c0c0c0';
-            avatarHtml = `
-              <div style="width:40px;height:40px;border-radius:50%;border:2px solid ${borderColor};background:radial-gradient(circle, ${cls.color}44 0%, #1e293b 80%);display:flex;align-items:flex-start;justify-content:center;overflow:hidden;box-shadow:0 0 8px ${borderColor}66;">
-                <img src="${cls.sprite}" style="width:250%;height:auto;margin-top:-2px;image-rendering:pixelated;">
-              </div>`;
+            avatarHtml = getAvatarHtml(cls, borderColor, 40);
           }
 
           let actionBtn = `<button class="friend-btn" style="background:rgba(199,125,255,0.2);color:var(--purple);border:1px solid rgba(199,125,255,0.3);"
