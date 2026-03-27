@@ -644,7 +644,16 @@
       if (!db) return [];
       const learned = db.learnset.filter(m => m.lv <= level);
       const last4 = learned.slice(-4);
-      return last4.map(m => ({ name: m.name, pp: m.pp, maxPP: m.pp }));
+      return last4.map(m => {
+        const moveData = MOVES_DB[m.name] || {};
+        return { 
+          name: m.name, 
+          pp: m.pp, 
+          maxPP: m.pp,
+          type: moveData.type || 'normal',
+          power: moveData.power || 0
+        };
+      });
     }
 
     const FIRE_RED_MAPS = [

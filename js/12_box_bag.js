@@ -663,7 +663,7 @@
         <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,0.08);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
             <span style="font-size:11px;font-weight:700;">${m.name}</span>
-            <span class="type-badge type-${m.type.toLowerCase()}" style="font-size:8px;padding:2px 6px;">${m.type}</span>
+            <span class="type-badge type-${(m.type || 'normal').toLowerCase()}" style="font-size:8px;padding:2px 6px;">${m.type || 'Normal'}</span>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:9px;color:#888;">
             <span>Poder: ${m.power || '—'}</span>
