@@ -1186,6 +1186,22 @@ function _marketSetQty(itemId, raw) {
       ruta_dawn: 'assets/sprites/ruta_dawn.png',
       ruta_day: 'assets/sprites/ruta_day.png',
       ruta_night: 'assets/sprites/ruta_night.png',
+      mansion_dawn: 'assets/sprites/mansionpokemon.png',
+      mansion_day: 'assets/sprites/mansionpokemon.png',
+      mansion_dusk: 'assets/sprites/mansionpokemon.png',
+      mansion_night: 'assets/sprites/mansionpokemon.png',
+      safari_dawn: 'assets/sprites/zonasafari.png',
+      safari_day: 'assets/sprites/zonasafari.png',
+      safari_dusk: 'assets/sprites/zonasafari.png',
+      safari_night: 'assets/sprites/zonasafari.png',
+      espuma_dawn: 'assets/sprites/islasespuma.png',
+      espuma_day: 'assets/sprites/islasespuma.png',
+      espuma_dusk: 'assets/sprites/islasespuma.png',
+      espuma_night: 'assets/sprites/islasespuma.png',
+      celeste_dawn: 'assets/sprites/cuevaceleste.png',
+      celeste_day: 'assets/sprites/cuevaceleste.png',
+      celeste_dusk: 'assets/sprites/cuevaceleste.png',
+      celeste_night: 'assets/sprites/cuevaceleste.png',
     };
 
     // ===== BATTLE BACKGROUNDS =====
@@ -1196,9 +1212,12 @@ function _marketSetQty(itemId, raw) {
       forest: 'bosque', route2: 'bosque', route25: 'puente',
       // Mountain / cave
       cave: 'montana', mt_moon: 'montana', rock_tunnel: 'montana',
-      cerulean_cave: 'montana', victory_road: 'montana', diglett_cave: 'montana',
+      victory_road: 'montana', diglett_cave: 'montana',
+      cerulean_cave: 'celeste',
       // Water / beach
-      water: 'playa', seafoam_islands: 'playa',
+      water: 'playa', seafoam_islands: 'espuma',
+      // Safaris & Mansions
+      safari_zone: 'safari', mansion: 'mansion',
       // Bridge routes
       route24: 'puente', route12: 'puente',
       // Pokemon Tower

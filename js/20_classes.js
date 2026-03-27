@@ -40,7 +40,8 @@ const PLAYER_CLASSES = {
       "Tus patrocinadores te dan un 10% menos de Battle Coins por batalla debido a tu mala reputación.",
       "Los PokéMart oficiales detectan tu afiliación y aplican un recargo del +20% en todos los precios."
     ],
-    sprite: 'assets/sprites/trainers/teamrocket.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.png',
+    avatarSprite: 'assets/sprites/trainers/teamrocket.png'
   },
   cazabichos: {
     id: 'cazabichos',
@@ -80,7 +81,8 @@ const PLAYER_CLASSES = {
       "Los premios en metálico se reducen un 15% debido a tu falta de patrocinio oficial.",
       "La infraestructura de la guardería no está adaptada para tus métodos de crianza rústicos (x1.50 costo)."
     ],
-    sprite: 'assets/sprites/trainers/cazabichos.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.png',
+    avatarSprite: 'assets/sprites/trainers/cazabichos.png'
   },
   entrenador: {
     id: 'entrenador',
@@ -120,7 +122,8 @@ const PLAYER_CLASSES = {
       "Prefieres el entrenamiento en campo; el mantenimiento en guardería te resulta más costoso (x1.50).",
       "Como figura pública, no puedes ser visto operando en mercados de dudosa legalidad."
     ],
-    sprite: 'assets/sprites/trainers/entrenador.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
+    avatarSprite: 'assets/sprites/trainers/entrenador.png'
   },
   criador: {
     id: 'criador',
@@ -164,7 +167,8 @@ const PLAYER_CLASSES = {
       "La enfermera Joy te cobra un extra por el mantenimiento especializado de Pokémon ajenos (x1.50).",
       "Como científico respetable, no posees los contactos necesarios para entrar al Mercado Negro."
     ],
-    sprite: 'assets/sprites/trainers/criador.png'
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.png',
+    avatarSprite: 'assets/sprites/trainers/criador.png'
   }
 };
 
@@ -176,9 +180,10 @@ function getAvatarHtml(cls, borderColor, sizePx = 40) {
   
   const bgSize = cls.faceScale || 'cover';
   const bgPos = cls.facePos || 'center';
+  const displayUrl = cls.avatarSprite || cls.sprite;
   
   return `
-    <div style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background-color: #1e293b; background-image: radial-gradient(circle, ${cls.color}44 0%, transparent 80%), url('${cls.sprite}'); background-size: cover, ${bgSize}; background-position: center, ${bgPos}; background-repeat: no-repeat; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66; image-rendering: pixelated; transition: background-position 0.2s;">
+    <div style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background-color: #1e293b; background-image: radial-gradient(circle, ${cls.color}44 0%, transparent 80%), url('${displayUrl}'); background-size: cover, ${bgSize}; background-position: center, ${bgPos}; background-repeat: no-repeat; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66; image-rendering: pixelated; transition: background-position 0.2s;">
     </div>`;
 }
 
@@ -281,7 +286,9 @@ function openClassModal(forced = false) {
         onmouseover="this.style.borderColor='${cls.color}';this.style.transform='translateY(-2px)'"
         onmouseout="this.style.borderColor='${borderColor}';this.style.transform='translateY(0)'">
         ${isActive ? `<div style="position:absolute;top:12px;right:12px;background:${cls.color};color:#fff;font-size:9px;padding:3px 8px;border-radius:8px;font-family:'Press Start 2P',monospace;">ACTIVA</div>` : ''}
-        <div style="font-size:36px;margin-bottom:8px;text-align:center;">${cls.icon}</div>
+        <div style="margin-bottom:16px;display:flex;justify-content:center;">
+          ${getAvatarHtml(cls, borderColor, 80)}
+        </div>
         <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cls.color};text-align:center;margin-bottom:8px;">${cls.name}</div>
         <div style="font-size:11px;color:#9ca3af;text-align:center;margin-bottom:16px;line-height:1.5;">${cls.description}</div>
         <div style="margin-bottom:10px;">
@@ -301,7 +308,7 @@ function openClassModal(forced = false) {
   }).join('');
 
   modal.innerHTML = `
-    <div style="width:100%;max-width:1200px;padding-top:20px;padding-bottom:40px;">
+    <div style="width:95%;max-width:1500px;padding-top:20px;padding-bottom:40px;">
       <div style="text-align:center;margin-bottom:24px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:16px;color:#f59e0b;margin-bottom:8px;">
           🎭 ELEGÍ TU CLASE
@@ -310,7 +317,7 @@ function openClassModal(forced = false) {
           ${isChange ? 'Cambiar de clase cuesta <strong style="color:#f59e0b;">10,000 Battle Coins</strong>.' : 'Esta elección define cómo jugás. Podés cambiar más adelante por 10,000 Battle Coins.'}
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin-bottom:20px;">
         ${cardsHtml}
       </div>
       ${canClose && state.playerClass ? `<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px;">
@@ -576,38 +583,48 @@ function applyClassTheme() {
     root.style.setProperty('--dark', '#0a0a0a');
     root.style.setProperty('--card', '#121212');
     root.style.setProperty('--card2', '#1a1a1a');
-    root.style.setProperty('--blue', '#0a84ff'); // Azul base (o el color original del layout)
+    root.style.setProperty('--blue', '#0a84ff'); 
+    root.style.setProperty('--hud-bg', 'var(--card)');
+    root.style.setProperty('--hud-border', 'rgba(255,255,255,0.05)');
     return;
   }
   
   switch(state.playerClass) {
     case 'rocket':
-      root.style.setProperty('--darker', '#050303');
-      root.style.setProperty('--dark', '#0f0505');
-      root.style.setProperty('--card', '#170a0a');
-      root.style.setProperty('--card2', '#241212');
-      root.style.setProperty('--blue', '#ef4444'); // Rojo Team Rocket
+      root.style.setProperty('--darker', '#050000');
+      root.style.setProperty('--dark', '#0a0000');
+      root.style.setProperty('--card', '#140505');
+      root.style.setProperty('--card2', '#1f0a0a');
+      root.style.setProperty('--blue', '#ef4444'); 
+      root.style.setProperty('--hud-bg', 'linear-gradient(to right, #380b0b, #140202)');
+      root.style.setProperty('--hud-border', '#ef4444');
       break;
     case 'cazabichos':
-      root.style.setProperty('--darker', '#151c14');
-      root.style.setProperty('--dark', '#1a2518');
-      root.style.setProperty('--card', '#202e1c');
-      root.style.setProperty('--card2', '#2e3e29');
-      root.style.setProperty('--blue', '#65a30d'); // Verde Musgo Cazabichos
+      root.style.setProperty('--darker', '#080d06');
+      root.style.setProperty('--dark', '#0e170a');
+      root.style.setProperty('--card', '#152410');
+      root.style.setProperty('--card2', '#1e3316');
+      root.style.setProperty('--blue', '#65a30d'); 
+      root.style.setProperty('--hud-bg', 'linear-gradient(to right, #213813, #101c09)');
+      root.style.setProperty('--hud-border', '#84cc16');
       break;
     case 'entrenador':
-      root.style.setProperty('--darker', '#050a12');
-      root.style.setProperty('--dark', '#0a1220');
-      root.style.setProperty('--card', '#121d30');
-      root.style.setProperty('--card2', '#1e2b42');
-      root.style.setProperty('--blue', '#3b82f6'); // Azul Plata Entrenador
+      root.style.setProperty('--darker', '#030812');
+      root.style.setProperty('--dark', '#060d1a');
+      root.style.setProperty('--card', '#0d1a33');
+      root.style.setProperty('--card2', '#14274a');
+      root.style.setProperty('--blue', '#3b82f6'); 
+      root.style.setProperty('--hud-bg', 'linear-gradient(to right, #132a54, #081326)');
+      root.style.setProperty('--hud-border', '#60a5fa');
       break;
     case 'criador':
-      root.style.setProperty('--darker', '#0c0512');
-      root.style.setProperty('--dark', '#13081c');
-      root.style.setProperty('--card', '#1b0d29');
-      root.style.setProperty('--card2', '#28153b');
-      root.style.setProperty('--blue', '#a855f7'); // Violeta Criador
+      root.style.setProperty('--darker', '#0a0312');
+      root.style.setProperty('--dark', '#11051f');
+      root.style.setProperty('--card', '#1b0a33');
+      root.style.setProperty('--card2', '#28114a');
+      root.style.setProperty('--blue', '#a855f7'); 
+      root.style.setProperty('--hud-bg', 'linear-gradient(to right, #34125c, #1a082e)');
+      root.style.setProperty('--hud-border', '#c084fc');
       break;
   }
 }
