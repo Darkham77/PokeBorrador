@@ -1,8 +1,9 @@
-
 /**
  * Lógica de la Biblioteca (Tutorial y Ayuda)
+ * Este archivo se sincroniza con SKILL_LIBRARY_SYNC.md
  */
 
+// --- SECCIÓN DE CONTENIDO (EDITABLE POR IA) ---
 const libraryContent = {
   gimnasios: `
     <h1>🏆 Gimnasios de Kanto</h1>
@@ -84,14 +85,23 @@ const libraryContent = {
     <p>Los <strong>Criadores Pokémon</strong> tienen bonificaciones especiales que reducen el tiempo de espera y aseguran mejores resultados genéticos.</p>
   `
 };
+// --- FIN SECCIÓN DE CONTENIDO ---
 
+// --- LÓGICA DEL MODAL ---
 function toggleLibrary() {
   const modal = document.getElementById('library-modal');
+  if (!modal) return;
+  
   if (modal.style.display === 'none' || modal.style.display === '') {
     modal.style.display = 'block';
     // Cargar la primera pestaña por defecto si no hay contenido
-    if (!document.getElementById('library-article-content').innerHTML.trim()) {
-      switchLibraryTab('gimnasios', document.querySelector('.library-nav-item'));
+    const contentArea = document.getElementById('library-article-content');
+    if (contentArea && !contentArea.innerHTML.trim()) {
+      const firstTab = document.querySelector('.library-nav-item');
+      if (firstTab) {
+        const tabKey = firstTab.getAttribute('onclick').match(/'([^']+)'/)[1];
+        switchLibraryTab(tabKey, firstTab);
+      }
     }
   } else {
     modal.style.display = 'none';
@@ -101,10 +111,12 @@ function toggleLibrary() {
 function switchLibraryTab(tab, element) {
   // Actualizar UI de pestañas
   document.querySelectorAll('.library-nav-item').forEach(el => el.classList.remove('active'));
-  element.classList.add('active');
+  if (element) element.classList.add('active');
 
   // Actualizar contenido
   const contentArea = document.getElementById('library-article-content');
+  if (!contentArea) return;
+  
   contentArea.style.opacity = 0;
   
   setTimeout(() => {
