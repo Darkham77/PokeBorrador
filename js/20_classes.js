@@ -599,9 +599,12 @@ function updateClassHud() {
     avatar.innerHTML = getAvatarHtml(cls, borderColor, 36);
     
     // Alerta visual de misiones inactivas en el HUD
-    const active = state.classData?.activeMissions || [];
-    if (active.length === 0) {
-      avatar.innerHTML += '<div style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:\\"Press Start 2P\\",monospace;text-shadow:1px 1px 0 #000;box-shadow:0 0 10px #ef4444, inset 0 0 4px #000;z-index:100;animation:blinkRed 1.5s infinite;">!</div>';
+    const hasActiveMission = !!state.classData?.activeMission;
+    if (!hasActiveMission) {
+      const alertEl = document.createElement('div');
+      alertEl.style.cssText = 'position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;box-shadow:0 0 10px #ef4444;z-index:100;animation:blinkRed 1.5s infinite;';
+      alertEl.textContent = '!';
+      avatar.appendChild(alertEl);
     }
   }
 
@@ -1066,16 +1069,500 @@ function openClassMissionsPanel() {
   document.body.appendChild(ov);
 }
 
+// ── Helpers internos de misiones ────────────────────────────────────────
+
+// Calcula el coste y recompensas de la misión según clase y duración
+function getMissionCostInfo(missionId) {
+  const m = CLASS_MISSIONS_NEW.find(x => x.id === missionId);
+  if (!m) return null;
+  const cls = state.playerClass;
+  const hs = m.durationHs;
+
+  if (cls === 'cazabichos') {
+    const costs = { mission_6h: 5000, mission_12h: 10000, mission_24h: 20000 };
+    const ivFloor = { mission_6h: 5, mission_12h: 10, mission_24h: 15 };
+    const shinyDiv = { mission_6h: 2, mission_12h: 4, mission_24h: 8 };
+    return { type: 'money', cost: costs[missionId], ivFloor: ivFloor[missionId], shinyDiv: shinyDiv[missionId] };
+  }
+  if (cls === 'rocket') {
+    const pokReq = { mission_6h: 1, mission_12h: 2, mission_24h: 3 };
+    const mult = { mission_6h: 1.0, mission_12h: 1.3, mission_24h: 1.8 };
+    return { type: 'pokemon_sacrifice', pokReq: pokReq[missionId], mult: mult[missionId] };
+  }
+  if (cls === 'entrenador') {
+    const costs = { mission_6h: 5000, mission_12h: 10000, mission_24h: 20000 };
+    const blocks = { mission_6h: 1, mission_12h: 2, mission_24h: 4 };
+    const bonusLevel = missionId === 'mission_24h';
+    return { type: 'money_pokemon', cost: costs[missionId], blocks: blocks[missionId], bonusLevel };
+  }
+  if (cls === 'criador') {
+    const costs = { mission_6h: 300, mission_12h: 600, mission_24h: 1000 };
+    const blocks = { mission_6h: 1, mission_12h: 2, mission_24h: 4 };
+    const vigorSaveChance = missionId === 'mission_24h' ? 0.10 : 0;
+    return { type: 'bc_pokemon', cost: costs[missionId], blocks: blocks[missionId], vigorSaveChance };
+  }
+  return null;
+}
+
+// Genera 3 Pokémon bicho de rutas desbloqueadas (Cazabichos)
+function generateBugNetPokemon(ivFloor, shinyDivisor) {
+  const badgeCount = (Array.isArray(state.badges) ? state.badges.length : (parseInt(state.badges) || 0));
+  const BUG_TYPES = ['bug'];
+  
+  // Recopilar todos los Pokémon bicho accesibles
+  const accessibleBugs = [];
+  FIRE_RED_MAPS.forEach(map => {
+    if (map.badges > badgeCount) return;
+    const allWild = Object.values(map.wild || {}).flat();
+    allWild.forEach(id => {
+      const pData = POKEMON_DB[id];
+      if (pData && BUG_TYPES.includes(pData.type) && !accessibleBugs.includes(id)) {
+        accessibleBugs.push({ id, lv: map.lv });
+      }
+    });
+  });
+
+  if (!accessibleBugs.length) return [];
+  
+  const shinyRate = Math.floor((GAME_RATIOS?.shinyRate || 4096) / shinyDivisor);
+  const results = [];
+  for (let i = 0; i < 3; i++) {
+    const pick = accessibleBugs[Math.floor(Math.random() * accessibleBugs.length)];
+    const level = Math.floor(Math.random() * (pick.lv[1] - pick.lv[0] + 1)) + pick.lv[0];
+    const poke = makePokemon(pick.id, level);
+    // Aplicar piso de IVs
+    if (poke.ivs) {
+      ['hp','atk','def','spa','spd','spe'].forEach(stat => {
+        if (poke.ivs[stat] < ivFloor) poke.ivs[stat] = ivFloor;
+      });
+    }
+    // Shiny check mejorado
+    if (Math.random() < 1 / shinyRate) poke.shiny = true;
+    results.push(poke);
+  }
+  return results;
+}
+
+// Calcula el dinero que da el Rocket (por Pokémon)
+function calcRocketMissionMoney(pokeList, mult) {
+  const subtotal = pokeList.reduce((acc, p) => {
+    const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
+    const val = 1000 + (p.level * 100) + (totalIvs * 25);
+    return acc + val;
+  }, 0);
+  return Math.floor(subtotal * mult);
+}
+
+// ── startClassMission: Abre UI de selección o pago según clase ────────────
 function startClassMission(missionId) {
-  // TODO: UI de Selección de Pokémon e inicio según clase
+  const cls = state.playerClass;
+  if (!cls) return notify('Debes elegir una clase primero.', '⚠️');
+  if (state.classData?.activeMission) return notify('Ya tienes una misión activa. Cobrálas antes de iniciar otra.', '⚠️');
+  
+  const m = CLASS_MISSIONS_NEW.find(x => x.id === missionId);
+  if (!m) return;
+  const trainerLevel = state.trainerLevel || 1;
+  if (trainerLevel < m.reqLv) return notify(`Necesitas nivel ${m.reqLv} de entrenador para esta misión.`, '🔒');
+
+  const info = getMissionCostInfo(missionId);
+  if (!info) return;
+  const clsDef = PLAYER_CLASSES[cls];
+
+  if (cls === 'cazabichos') {
+    // Costo en dinero, sin Pokémon que seleccionar
+    if ((state.money || 0) < info.cost) {
+      return notify(`Necesitas ₽${info.cost.toLocaleString()} para esta misión.`, '💸');
+    }
+    state.money -= info.cost;
+    _launchMission(missionId, { ivFloor: info.ivFloor, shinyDiv: info.shinyDiv });
+    return;
+  }
+
+  if (cls === 'rocket') {
+    // Mostrar modal de selección de Pokémon tipo Veneno
+    _openRocketSacrificeModal(missionId, info);
+    return;
+  }
+
+  if (cls === 'entrenador') {
+    if ((state.money || 0) < info.cost) {
+      return notify(`Necesitas ₽${info.cost.toLocaleString()} para esta misión.`, '💸');
+    }
+    _openPokemonSelectModal(missionId, info, 'entrenador');
+    return;
+  }
+
+  if (cls === 'criador') {
+    if ((state.battleCoins || 0) < info.cost) {
+      return notify(`Necesitas ${info.cost} Battle Coins para esta misión.`, '💸');
+    }
+    _openPokemonSelectModal(missionId, info, 'criador');
+    return;
+  }
 }
 
+// Modal para Rocket: seleccionar Pokémon tipo Veneno para sacrificar
+function _openRocketSacrificeModal(missionId, info) {
+  document.getElementById('mission-select-overlay')?.remove();
+  const clsDef = PLAYER_CLASSES.rocket;
+  const poisonBox = (state.box || []).filter((p, idx) => {
+    if (p.onMission) return false;
+    const pData = POKEMON_DB[p.id];
+    if (!pData) return false;
+    const type1 = pData.type || '';
+    const type2 = pData.type2 || '';
+    return type1 === 'poison' || type2 === 'poison';
+  });
+
+  let selected = [];
+
+  const renderSelected = () => {
+    const el = document.getElementById('rocket-selected-list');
+    if (!el) return;
+    el.innerHTML = selected.length === 0
+      ? `<div style="color:#6b7280;font-size:11px;text-align:center;padding:8px;">Sin seleccionar</div>`
+      : selected.map((p, i) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(239,68,68,0.1);border-radius:8px;padding:8px 12px;margin-bottom:4px;border:1px solid rgba(239,68,68,0.3);">
+            <span style="font-size:12px;">${p.name || p.id} Nv.${p.level}</span>
+            <button onclick="_rocketDeselect(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;">✕</button>
+          </div>`).join('');
+
+    const btnConfirm = document.getElementById('rocket-confirm-btn');
+    if (btnConfirm) {
+      btnConfirm.disabled = selected.length < info.pokReq;
+      btnConfirm.style.opacity = selected.length >= info.pokReq ? '1' : '0.4';
+    }
+  };
+
+  window._rocketDeselect = (i) => { selected.splice(i, 1); renderSelected(); };
+
+  const ov = document.createElement('div');
+  ov.id = 'mission-select-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px;';
+  ov.innerHTML = `
+    <div style="background:#0f172a;border:1px solid #ef444444;border-radius:20px;padding:20px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;">💀 SACRIFICIO ROCKET</div>
+        <button onclick="document.getElementById('mission-select-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:12px;">Selecciona <strong style="color:#ef4444;">${info.pokReq}</strong> Pokémon tipo Veneno para sacrificar. Sus objetos volverán a tu mochila.</div>
+      <div id="rocket-selected-list" style="margin-bottom:12px;min-height:40px;"></div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Tu PC (Tipo Veneno)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:240px;overflow-y:auto;">
+        ${poisonBox.length === 0
+          ? `<div style="grid-column:span 2;text-align:center;color:#6b7280;padding:16px;font-size:11px;">Sin Pokémon tipo Veneno en la PC.</div>`
+          : poisonBox.map((p, idx) => {
+              const realIdx = (state.box || []).indexOf(p);
+              const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
+              const projected = 1000 + (p.level * 100) + (totalIvs * 25);
+              return `<div class="rocket-poke-card" onclick="_rocketSelect(${realIdx})" data-idx="${realIdx}"
+                style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:10px;cursor:pointer;transition:0.15s;"
+                onmouseover="this.style.background='rgba(239,68,68,0.18)'"
+                onmouseout="this.style.background='rgba(239,68,68,0.08)'">
+                <div style="font-size:12px;font-weight:bold;color:#e2e8f0;">${p.name || p.id}</div>
+                <div style="font-size:10px;color:#9ca3af;">Nv.${p.level} · IV:${totalIvs}</div>
+                <div style="font-size:10px;color:#22c55e;">≈₽${projected.toLocaleString()}</div>
+              </div>`;
+            }).join('')
+        }
+      </div>
+      <button id="rocket-confirm-btn" disabled
+        onclick="_confirmRocketSacrifice('${missionId}')"
+        style="width:100%;margin-top:16px;padding:12px;border:none;border-radius:10px;background:#ef4444;color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;opacity:0.4;">
+        💀 CONFIRMAR SACRIFICIO
+      </button>
+    </div>`;
+  document.body.appendChild(ov);
+
+  window._rocketSelect = (boxIdx) => {
+    const p = (state.box || [])[boxIdx];
+    if (!p) return;
+    if (selected.find(x => x === p)) return notify('Ya seleccionaste este Pokémon.', '⚠️');
+    if (selected.length >= info.pokReq) return notify(`Solo podés seleccionar ${info.pokReq} Pokémon.`, '⚠️');
+    selected.push(p);
+    renderSelected();
+  };
+  window._confirmRocketSacrifice = (mid) => {
+    if (selected.length < info.pokReq) return;
+    // Devolver objetos a la mochila
+    selected.forEach(p => {
+      if (p.heldItem) {
+        state.inventory = state.inventory || {};
+        state.inventory[p.heldItem] = (state.inventory[p.heldItem] || 0) + 1;
+        p.heldItem = null;
+      }
+      // Eliminar de box
+      const bIdx = (state.box || []).indexOf(p);
+      if (bIdx >= 0) state.box.splice(bIdx, 1);
+    });
+    const money = calcRocketMissionMoney(selected, info.mult);
+    document.getElementById('mission-select-overlay')?.remove();
+    _launchMission(mid, { pendingMoney: money });
+    if (typeof renderBox === 'function') renderBox();
+    if (typeof updateHud === 'function') updateHud();
+  };
+
+  renderSelected();
+}
+
+// Modal genérico para Entrenador o Criador: seleccionar 1 Pokémon de la PC
+function _openPokemonSelectModal(missionId, info, cls) {
+  document.getElementById('mission-select-overlay')?.remove();
+  const clsDef = PLAYER_CLASSES[cls];
+  const availBox = (state.box || []).filter(p => !p.onMission);
+  
+  // Para entrenador: cualquier Pokémon. Para criador: cualquier Pokémon.
+  const ov = document.createElement('div');
+  ov.id = 'mission-select-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px;';
+  
+  const costHtml = cls === 'criador'
+    ? `<strong style="color:${clsDef.color};">${info.cost} BC</strong> de Battle Coins`
+    : `<strong style="color:${clsDef.color};">₽${info.cost.toLocaleString()}</strong>`;
+
+  const rewardHtml = cls === 'criador'
+    ? `+${info.blocks} punto(s) de IV aleatorio | -${info.blocks} Vigor${info.vigorSaveChance > 0 ? ' <span style="color:#a855f7;">(10% sin Vigor)</span>' : ''}`
+    : `~${(2500 + 20 * 50) * info.blocks} EXP${info.bonusLevel ? ' + <strong>+1 Nivel garantizado</strong>' : ''}`;
+
+  ov.innerHTML = `
+    <div style="background:#0f172a;border:1px solid ${clsDef.color}44;border-radius:20px;padding:20px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${clsDef.color};">SELECCIONAR POKÉMON</div>
+        <button onclick="document.getElementById('mission-select-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Costo: ${costHtml}</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:12px;">Recompensa estimada: ${rewardHtml}</div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Elige 1 Pokémon de tu PC</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:320px;overflow-y:auto;">
+        ${availBox.length === 0
+          ? `<div style="grid-column:span 2;text-align:center;color:#6b7280;padding:16px;font-size:11px;">Tu PC está vacía.</div>`
+          : availBox.map((p) => {
+              const realIdx = (state.box || []).indexOf(p);
+              const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
+              const vigor = p.vigor !== undefined ? p.vigor : 20;
+              const extraInfo = cls === 'criador'
+                ? `<div style="font-size:10px;color:#a855f7;">💧${vigor} Vigor · IV:${totalIvs}</div>`
+                : `<div style="font-size:10px;color:#3b82f6;">~${2500 + p.level * 50} EXP/6h</div>`;
+              return `<div onclick="_confirmPokemonSelect(${realIdx}, '${missionId}')"
+                style="background:${clsDef.color}11;border:1px solid ${clsDef.color}33;border-radius:10px;padding:10px;cursor:pointer;transition:0.15s;"
+                onmouseover="this.style.background='${clsDef.color}22'"
+                onmouseout="this.style.background='${clsDef.color}11'">
+                <div style="font-size:12px;font-weight:bold;color:#e2e8f0;">${p.name || p.id}</div>
+                <div style="font-size:10px;color:#9ca3af;">Nv.${p.level}</div>
+                ${extraInfo}
+              </div>`;
+            }).join('')
+        }
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+
+  window._confirmPokemonSelect = (boxIdx, mid) => {
+    const p = (state.box || [])[boxIdx];
+    if (!p) return;
+    const info2 = getMissionCostInfo(mid);
+    
+    if (cls === 'entrenador') {
+      state.money = (state.money || 0) - info2.cost;
+    } else if (cls === 'criador') {
+      state.battleCoins = (state.battleCoins || 0) - info2.cost;
+    }
+    
+    p.onMission = true;
+    document.getElementById('mission-select-overlay')?.remove();
+    _launchMission(mid, { pokeBoxIdx: boxIdx, pokeName: p.name || p.id });
+    if (typeof updateHud === 'function') updateHud();
+  };
+}
+
+// Inicia la misión en state y actualiza el HUD
+function _launchMission(missionId, extraData = {}) {
+  const m = CLASS_MISSIONS_NEW.find(x => x.id === missionId);
+  if (!m) return;
+  state.classData = state.classData || {};
+  state.classData.activeMission = {
+    id: missionId,
+    startedAt: Date.now(),
+    endsAt: Date.now() + (m.durationHs * 3600 * 1000),
+    ...extraData
+  };
+  if (typeof scheduleSave === 'function') scheduleSave();
+  if (typeof updateClassHud === 'function') updateClassHud();
+  notify(`¡Misión iniciada! (${m.durationHs}h)`, '📋');
+  openClassMissionsPanel();
+}
+
+// ── collectClassMission: Cobrar recompensas al terminar ──────────────────
 function collectClassMission() {
-  // TODO: Recibir recompensas según clase y liberar Pokémon
+  const cls = state.playerClass;
+  if (!cls) return;
+  const am = state.classData?.activeMission;
+  if (!am) return;
+  if (Date.now() < am.endsAt) return notify('¡La misión aún no ha terminado!', '⏳');
+
+  const m = CLASS_MISSIONS_NEW.find(x => x.id === am.id);
+  if (!m) return;
+  const info = getMissionCostInfo(am.id);
+
+  let notifMsg = '⚠️ Misión completada.';
+  let notifIcon = '📋';
+
+  if (cls === 'cazabichos') {
+    const pokemons = generateBugNetPokemon(am.ivFloor || 5, am.shinyDiv || 2);
+    state.box = state.box || [];
+    state.box.push(...pokemons);
+    const shinyCount = pokemons.filter(p => p.shiny).length;
+    notifMsg = `¡Red recogida! Capturaste ${pokemons.length} Pokémon${shinyCount > 0 ? ` (¡${shinyCount} SHINY!)` : ''}.`;
+    notifIcon = shinyCount > 0 ? '✨' : '🦋';
+    addClassXP(30 * m.durationHs / 6);
+
+  } else if (cls === 'rocket') {
+    const earned = am.pendingMoney || 0;
+    state.money = (state.money || 0) + earned;
+    notifMsg = `¡Extorsión completada! +₽${earned.toLocaleString()}`;
+    notifIcon = '🚀';
+    addClassXP(40 * m.durationHs / 6);
+    addCriminality(5 * m.durationHs / 6);
+
+  } else if (cls === 'entrenador') {
+    const boxIdx = am.pokeBoxIdx;
+    const p = (state.box || [])[boxIdx];
+    if (p) {
+      const expBlocks = info?.blocks || 1;
+      const expGained = expBlocks * (2500 + (p.level * 50));
+      p.exp = (p.exp || 0) + expGained;
+      // Si opgión 24h, dar +1 nivel garantizado
+      if (am.id === 'mission_24h') {
+        p.level = Math.min((p.level || 1) + 1, 100);
+        notifMsg = `¡${am.pokeName} ganó +${expGained.toLocaleString()} EXP y subió un nivel!`;
+      } else {
+        notifMsg = `¡${am.pokeName} ganó +${expGained.toLocaleString()} EXP!`;
+      }
+      p.onMission = false;
+    } else {
+      notifMsg = '¡Entrenamiento completado!';
+    }
+    notifIcon = '🏅';
+    addClassXP(30 * m.durationHs / 6);
+    if (typeof updateHud === 'function') updateHud();
+
+  } else if (cls === 'criador') {
+    const boxIdx = am.pokeBoxIdx;
+    const p = (state.box || [])[boxIdx];
+    if (p) {
+      const blocks = info?.blocks || 1;
+      const vigorSaveChance = info?.vigorSaveChance || 0;
+      const IV_STATS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+      let ivGained = 0;
+      let vigorLost = 0;
+      const vigor = (p.vigor !== undefined && p.vigor !== null) ? p.vigor : 20;
+      let currentVigor = vigor;
+      
+      for (let block = 0; block < blocks; block++) {
+        if (currentVigor <= 0) break; // Sin vigor, no sube IVs
+        
+        // Buscar stat que no esté en 31
+        let attempts = 0;
+        let gained = false;
+        while (attempts < 6 && !gained) {
+          const stat = IV_STATS[Math.floor(Math.random() * IV_STATS.length)];
+          p.ivs = p.ivs || {};
+          if ((p.ivs[stat] || 0) < 31) {
+            p.ivs[stat] = (p.ivs[stat] || 0) + 1;
+            ivGained++;
+            gained = true;
+          }
+          attempts++;
+        }
+        // Consumir Vigor (con chance de ahorro en 24h)
+        if (Math.random() >= vigorSaveChance) {
+          currentVigor--;
+          vigorLost++;
+        }
+      }
+      p.vigor = currentVigor;
+      p.onMission = false;
+      notifMsg = `¡Laboratorio: ${am.pokeName} ganó +${ivGained} IV${ivGained !== 1 ? 's' : ''} (-${vigorLost} Vigor)!`;
+      notifIcon = '🧬';
+    }
+    addClassXP(20 * m.durationHs / 6);
+  }
+
+  state.classData.activeMission = null;
+  if (typeof scheduleSave === 'function') scheduleSave();
+  if (typeof updateClassHud === 'function') updateClassHud();
+  if (typeof renderBox === 'function') renderBox();
+  notify(notifMsg, notifIcon);
+  openClassMissionsPanel();
 }
 
+// ── processOfflineClassMissions: Cobro automático offline ────────────────
 function processOfflineClassMissions() {
-  // TODO: Manejo de login y timers offline
+  const am = state.classData?.activeMission;
+  if (!am || Date.now() < am.endsAt) return;
+  
+  const cls = state.playerClass;
+  if (!cls) return;
+  const m = CLASS_MISSIONS_NEW.find(x => x.id === am.id);
+  if (!m) return;
+  const info = getMissionCostInfo(am.id);
+
+  // Liberar el Pokémon si había uno bloqueado
+  const boxIdx = am.pokeBoxIdx;
+  if (boxIdx !== undefined) {
+    const p = (state.box || [])[boxIdx];
+    if (p) p.onMission = false;
+  }
+
+  let notifMsg = 'Misión completada mientras estabas fuera.';
+  if (cls === 'cazabichos') {
+    const pokemons = generateBugNetPokemon(am.ivFloor || 5, am.shinyDiv || 2);
+    state.box = state.box || [];
+    state.box.push(...pokemons);
+    const shinyCount = pokemons.filter(p => p.shiny).length;
+    notifMsg = `📬 Red recogida: +${pokemons.length} Pokémon${shinyCount > 0 ? ` (${shinyCount} SHINY!)` : ''}.`;
+  } else if (cls === 'rocket') {
+    const earned = am.pendingMoney || 0;
+    state.money = (state.money || 0) + earned;
+    notifMsg = `📬 Extorsión offline: +₽${earned.toLocaleString()}.`;
+  } else if (cls === 'entrenador') {
+    const p = (state.box || [])[boxIdx];
+    if (p) {
+      const expBlocks = info?.blocks || 1;
+      const expGained = expBlocks * (2500 + (p.level * 50));
+      p.exp = (p.exp || 0) + expGained;
+      if (am.id === 'mission_24h') p.level = Math.min((p.level || 1) + 1, 100);
+      notifMsg = `📬 ${am.pokeName || 'Tu Pokémon'} ganó EXP mientras no estabas.`;
+    }
+  } else if (cls === 'criador') {
+    const p = (state.box || [])[boxIdx];
+    if (p) {
+      const blocks = info?.blocks || 1;
+      const vigorSaveChance = info?.vigorSaveChance || 0;
+      const IV_STATS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+      let ivGained = 0;
+      let currentVigor = (p.vigor !== undefined && p.vigor !== null) ? p.vigor : 20;
+      for (let block = 0; block < blocks; block++) {
+        if (currentVigor <= 0) break;
+        let attempts = 0, gained = false;
+        while (attempts < 6 && !gained) {
+          const stat = IV_STATS[Math.floor(Math.random() * IV_STATS.length)];
+          p.ivs = p.ivs || {};
+          if ((p.ivs[stat] || 0) < 31) { p.ivs[stat]++; ivGained++; gained = true; }
+          attempts++;
+        }
+        if (Math.random() >= vigorSaveChance) currentVigor--;
+      }
+      p.vigor = currentVigor;
+      notifMsg = `📬 ${am.pokeName || 'Tu Pokémon'} ganó +${ivGained} IV${ivGained !== 1 ? 's' : ''} en el laboratorio.`;
+    }
+  }
+
+  state.classData.activeMission = null;
+  addClassXP(15);
+  if (typeof scheduleSave === 'function') scheduleSave();
+  if (typeof updateClassHud === 'function') updateClassHud();
+  notify(notifMsg, '📬');
 }
 
 // ── Tienda de Reputación (Entrenador) ────────────────────────────────────
@@ -1149,4 +1636,28 @@ function initClassSystem() {
   checkClassUnlock();
   processOfflineClassMissions();
   console.log('[CLASES] Sistema de clases inicializado.');
+}
+
+// ── Helpers XP de clase y criminalidad ───────────────────────────────────
+/**
+ * Otorga XP de clase (classXP en state), sin afectar el nivel de entrenador.
+ * Se usa internamente por las misiones idle.
+ */
+function addClassXP(amount) {
+  if (!amount || amount <= 0) return;
+  state.classXP = (state.classXP || 0) + amount;
+  // Puede extenderse más adelante para subir nivel de clase
+  if (typeof scheduleSave === 'function') scheduleSave();
+}
+
+/**
+ * Incrementa el contador de criminalidad del Rocket.
+ * Se usa internamente al cobrar misiones de extorsión.
+ */
+function addCriminality(amount) {
+  if (!amount || amount <= 0) return;
+  state.classData = state.classData || {};
+  state.classData.criminality = (state.classData.criminality || 0) + amount;
+  if (typeof updateCriminalityBar === 'function') updateCriminalityBar();
+  if (typeof scheduleSave === 'function') scheduleSave();
 }

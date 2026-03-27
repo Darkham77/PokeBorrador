@@ -158,6 +158,7 @@
             // Inicializar sistema de clases
             if (typeof initClassSystem === 'function') setTimeout(() => initClassSystem(), 500);
             if (typeof checkPendingAwards === 'function') setTimeout(() => checkPendingAwards(), 2000);
+            if (typeof processOfflineClassMissions === 'function') setTimeout(() => processOfflineClassMissions(), 1000);
             // Restaurar batalla activa si el jugador hizo F5 durante un combate obligatorio
             if (state.activeBattle) {
               setTimeout(() => restoreActiveBattle(), 300);
@@ -247,6 +248,7 @@
             if (typeof initClassSystem === 'function') setTimeout(() => initClassSystem(), 500);
             if (typeof checkPendingAwards === 'function') setTimeout(() => checkPendingAwards(), 2000);
             processOfflineBreeding(user.id);
+            if (typeof processOfflineClassMissions === 'function') setTimeout(() => processOfflineClassMissions(), 1000);
             // Restaurar batalla activa si el jugador hizo F5 durante un combate obligatorio
             if (state.activeBattle) {
               setTimeout(() => restoreActiveBattle(), 300);

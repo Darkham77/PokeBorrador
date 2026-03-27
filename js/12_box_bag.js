@@ -530,11 +530,14 @@
         const checkMark = isSelectionMode && selected ? '<div class="release-check">✓</div>' : '';
         const onclickFn = _boxReleaseMode ? `toggleBoxReleaseSelect(${i})` : (_boxRocketMode ? `toggleBoxRocketSelect(${i})` : `openBoxPokemonMenu(${i})`);
 
-        return `<div onclick="${onclickFn}" class="${selClass}" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
-      border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;transition:all .2s;position:relative;"
-      ${isSelectionMode ? '' : 'onmouseover="this.style.borderColor=\'rgba(199,125,255,0.4)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.08)\'"'}>
+        return `<div onclick="${onclickFn}" class="${selClass}" style="background:rgba(255,255,255,0.04);border:1px solid ${p.onMission ? 'rgba(251,191,36,0.5)' : 'rgba(255,255,255,0.08)'};
+      border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;transition:all .2s;position:relative;${p.onMission ? 'opacity:0.75;' : ''}"
+      ${isSelectionMode ? '' : `onmouseover="this.style.borderColor='${p.onMission ? 'rgba(251,191,36,0.7)' : 'rgba(199,125,255,0.4)'}'" onmouseout="this.style.borderColor='${p.onMission ? 'rgba(251,191,36,0.5)' : 'rgba(255,255,255,0.08)'}'"` }>
       <!-- Selection checkmark -->
       ${checkMark}
+      <!-- Mission badge -->
+      ${p.onMission ? `<div style="position:absolute;inset:0;border-radius:12px;background:rgba(251,191,36,0.07);pointer-events:none;z-index:1;"></div>
+        <div style="position:absolute;top:5px;left:5px;background:#fbbf24;color:#000;border-radius:6px;font-size:7px;font-weight:bold;padding:2px 5px;z-index:3;letter-spacing:0.5px;">📋 MISIÓN</div>` : ''}
       <!-- Tier and Held Item badges -->
       ${badgesHtml}
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};
@@ -642,8 +645,9 @@
       document.getElementById('box-menu-overlay')?.remove();
       if (!state.box) state.box = [];
       if (state.team.length >= 6) { notify('Tu equipo está lleno (máx. 6).', '⚠️'); return; }
-      const boxPoke = state.box.splice(boxIndex, 1)[0];
-      if (!boxPoke) return;
+      const boxPoke = state.box[boxIndex];
+      if (boxPoke?.onMission) { notify(`¡${boxPoke.name} está en una misión idle! Cobrá la recompensa primero.`, '📋'); return; }
+      state.box.splice(boxIndex, 1);
       state.team.push(boxPoke);
       renderBox();
       renderTeam();
@@ -652,7 +656,9 @@
     }
     function swapBoxWithTeam(boxIndex, teamIndex) {
       document.getElementById('box-menu-overlay')?.remove();
-      const boxPoke = state.box.splice(boxIndex, 1)[0];
+      const boxPoke = state.box[boxIndex];
+      if (boxPoke?.onMission) { notify(`¡${boxPoke.name} está en una misión idle! No se puede intercambiar.`, '📋'); return; }
+      state.box.splice(boxIndex, 1);
       const teamPoke = state.team.splice(teamIndex, 1, boxPoke)[0];
       // El que va a la caja se cura completamente
       teamPoke.hp = teamPoke.maxHp;
@@ -668,6 +674,7 @@
 
     function releaseFromBox(boxIndex) {
       const p = state.box[boxIndex];
+      if (p?.onMission) { notify(`¡${p.name} está en una misión idle! No se puede soltar.`, '📋'); return; }
       if (!confirm(`¿Soltar a ${p.name} definitivamente?`)) return;
       document.getElementById('box-menu-overlay')?.remove();
       state.box.splice(boxIndex, 1);
