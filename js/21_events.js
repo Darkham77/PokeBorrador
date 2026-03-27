@@ -223,11 +223,19 @@ async function openAdminPanel() {
   const existing = document.getElementById('admin-panel-overlay');
   if (existing) existing.remove();
 
-  const token = await _evGetToken();
-  const res = await fetch('/api/events/config', { headers: { 'Authorization': `Bearer ${token}` } });
-  _adminConfig = await res.json();
+  try {
+    const token = await _evGetToken();
+    if (!token) { notify('Error de sesión.', '❌'); return; }
+    
+    const res = await fetch('/api/events/config', { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!res.ok) throw new Error('Error al cargar config');
+    _adminConfig = await res.json();
 
-  _renderAdminPanel(token);
+    _renderAdminPanel(token);
+  } catch (e) {
+    console.error('[Admin] Error:', e);
+    notify('Error al abrir el panel.', '❌');
+  }
 }
 
 function _renderAdminPanel(token) {
@@ -469,35 +477,31 @@ function _renderCompetitionTab() {
         <div style="margin-bottom:10px;">
           <div style="font-size:9px;color:#9ca3af;margin-bottom:4px;">NATURALEZA</div>
           <select id="prize-nature" onchange="_prizeState.nature=this.value"
-            style="width:100%;padding:8px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:12px;box-sizing:border-box;">
+            style="width:100%;padding:8px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;box-sizing:border-box;">
             ${natureOptions}
           </select>
         </div>
-        <div style="margin-bottom:10px;">
-          <div style="font-size:9px;color:#9ca3af;margin-bottom:8px;">IVs (0–31)</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">${ivInputs}</div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">GENÉTICA (IVs)</div>
+          <div style="display:flex;justify-content:space-between;gap:4px;">${ivInputs}</div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-          <input type="checkbox" id="prize-shiny" ${_prizeState.shiny?'checked':''} onchange="_prizeState.shiny=this.checked"
-            style="accent-color:#fbbf24;width:16px;height:16px;cursor:pointer;">
-          <span style="font-size:11px;color:#fbbf24;">✨ Shiny</span>
+          <input type="checkbox" id="prize-shiny" ${_prizeState.shiny?'checked':''} onchange="_prizeState.shiny=this.checked" style="accent-color:#f59e0b;width:16px;height:16px;">
+          <span style="font-size:10px;color:#f59e0b;">✨ ES SHINY</span>
         </label>
       </div>
 
       <button onclick="window._evSavePrize()"
-        style="width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;margin-top:4px;">
+        style="width:100%;padding:12px;border:none;border-radius:12px;background:rgba(255,255,255,0.07);color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
         💾 GUARDAR PREMIO
       </button>
     </div>
 
     <!-- Participantes -->
     <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#22c55e;">🎣 PARTICIPANTES</div>
-        <button onclick="window._evLoadEntries(null, true)"
-          style="padding:6px 12px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;background:transparent;color:#9ca3af;font-size:10px;cursor:pointer;">
-          🔄 Actualizar
-        </button>
+        <button onclick="window._evLoadEntries()" style="background:none;border:none;color:#6b7280;font-size:14px;cursor:pointer;">🔄</button>
       </div>
       <div id="admin-entries-container">
         <div style="font-size:11px;color:#6b7280;text-align:center;padding:20px;">Cargando...</div>
@@ -505,7 +509,7 @@ function _renderCompetitionTab() {
     </div>`;
 }
 
-async function _evLoadEntries(tok, forceToken = false) {
+async function _evLoadEntries(tok) {
   const token = tok || await _evGetToken();
   if (!token) return;
   try {
@@ -537,7 +541,7 @@ function _renderEntriesTable(token) {
           <div style="font-size:9px;color:#6b7280;margin-top:2px;">${ivDetail}</div>
           <div style="font-size:8px;color:#4b5563;margin-top:1px;">${new Date(entry.submitted_at).toLocaleString('es-AR')}</div>
         </div>
-        <button onclick="window._evAwardEntry('${entry.player_email}','${entry.player_name.replace(/'/g,"\\'")}','${token}')"
+        <button onclick="window._evAwardEntry('${entry.player_email}','${entry.player_name.replace(/'/g,"\\\\'")}', '${token}')"
           style="padding:8px 10px;border:none;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;flex-shrink:0;white-space:nowrap;">
           🏆 PREMIAR
         </button>
@@ -617,7 +621,7 @@ async function _evAwardEntry(email, name, token) {
   const compEv = _adminConfig?.events?.find(e => e.id === 'hora_magikarp');
   const prize = compEv?.config?.prize;
   if (!prize) { notify('Primero configurá el premio en la sección de abajo.', '⚠️'); return; }
-  if (!confirm(`¿Otorgar el premio a ${name}?\n\nPremio: ${_prizeSummary(prize)}`)) return;
+  if (!confirm(`¿Otorgar el premio a ${name}?\\n\\nPremio: ${_prizeSummary(prize)}`)) return;
   try {
     const r = await fetch('/api/awards/create', {
       method: 'POST',
@@ -665,7 +669,7 @@ window._evHourChange = (idx, field, val) => {
   _adminConfig.events[idx].schedule[field] = parseInt(val) || 0;
 };
 
-window._evLoadEntries = async (tok, reload = false) => {
+window._evLoadEntries = async (tok) => {
   const token = tok || await _evGetToken();
   await _evLoadEntries(token);
 };
