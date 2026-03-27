@@ -523,6 +523,8 @@ function updateClassHud() {
   const avatar = document.getElementById('hud-class-avatar');
   const profAvatar = document.querySelector('.profile-avatar');
 
+  if (typeof applyClassTheme === 'function') applyClassTheme();
+
   const level = state.trainerLevel || 1;
   let borderColor = '#cd7f32'; // Bronce (1-9)
   if (level >= 20) borderColor = '#ffd700'; // Oro (20+)
@@ -564,6 +566,50 @@ function updateClassHud() {
   }
   
   updateCriminalityBar();
+}
+
+// ── Tema Dinámico del HUD por Clase ───────────────────────────────────────
+function applyClassTheme() {
+  const root = document.documentElement;
+  if (!state.playerClass) {
+    root.style.setProperty('--darker', '#000000');
+    root.style.setProperty('--dark', '#0a0a0a');
+    root.style.setProperty('--card', '#121212');
+    root.style.setProperty('--card2', '#1a1a1a');
+    root.style.setProperty('--blue', '#0a84ff'); // Azul base (o el color original del layout)
+    return;
+  }
+  
+  switch(state.playerClass) {
+    case 'rocket':
+      root.style.setProperty('--darker', '#050303');
+      root.style.setProperty('--dark', '#0f0505');
+      root.style.setProperty('--card', '#170a0a');
+      root.style.setProperty('--card2', '#241212');
+      root.style.setProperty('--blue', '#ef4444'); // Rojo Team Rocket
+      break;
+    case 'cazabichos':
+      root.style.setProperty('--darker', '#151c14');
+      root.style.setProperty('--dark', '#1a2518');
+      root.style.setProperty('--card', '#202e1c');
+      root.style.setProperty('--card2', '#2e3e29');
+      root.style.setProperty('--blue', '#65a30d'); // Verde Musgo Cazabichos
+      break;
+    case 'entrenador':
+      root.style.setProperty('--darker', '#050a12');
+      root.style.setProperty('--dark', '#0a1220');
+      root.style.setProperty('--card', '#121d30');
+      root.style.setProperty('--card2', '#1e2b42');
+      root.style.setProperty('--blue', '#3b82f6'); // Azul Plata Entrenador
+      break;
+    case 'criador':
+      root.style.setProperty('--darker', '#0c0512');
+      root.style.setProperty('--dark', '#13081c');
+      root.style.setProperty('--card', '#1b0d29');
+      root.style.setProperty('--card2', '#28153b');
+      root.style.setProperty('--blue', '#a855f7'); // Violeta Criador
+      break;
+  }
 }
 
 // ── Verificar si mostrar el modal al subir de nivel ────────────────────────
