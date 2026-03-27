@@ -4893,3 +4893,37 @@
     overflow-y: auto !important;
   }
 }
+
+/* ===== FIX: BATTLE NAME AND NATURE DISPLAY ===== */
+.battle-name-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin-bottom: 6px;
+  width: 100%;
+}
+
+.battle-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  margin-bottom: 0 !important; /* Override previous margin */
+  white-space: nowrap;
+}
+
+.battle-nature {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #ff69b4; /* Rosa */
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .battle-name {
+    font-size: 9px;
+  }
+  .battle-nature {
+    font-size: 8px;
+  }
+}

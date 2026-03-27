@@ -292,10 +292,17 @@ function updateBattleUI() {
   const _pSt = statusIcon(b.player?.status);
   const _eSt = statusIcon(b.enemy?.status);
   let enemyName = b.enemy.name + (b.enemy.isShiny ? ' ✨' : '') + (_eSt ? ' ' + _eSt : '');
-  if (state.playerClass === 'criador' && b.enemy.nature) {
-    enemyName += ` (${b.enemy.nature})`;
-  }
   document.getElementById('enemy-name').textContent = enemyName;
+
+  const natureEl = document.getElementById('enemy-nature-display');
+  if (natureEl) {
+    if (state.playerClass === 'criador' && b.enemy.nature) {
+      natureEl.textContent = `(${b.enemy.nature})`;
+      natureEl.style.display = 'block';
+    } else {
+      natureEl.style.display = 'none';
+    }
+  }
   const enemyGenderEl = document.getElementById('enemy-gender');
   if (enemyGenderEl) {
     const data = genderBadgeData(b.enemy.gender);

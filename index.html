@@ -880,12 +880,15 @@
           <!-- TOP-LEFT: Enemy HP info -->
           <div style="display:flex;align-items:flex-start;justify-content:flex-start;">
             <div class="battle-pokemon-info">
-              <div class="battle-name" style="display:flex;align-items:center;gap:6px;">
-                <span id="enemy-name">???</span><span id="enemy-gender" class="gender-badge"
-                  style="margin-left:4px;"></span>
-                <img id="enemy-caught-icon"
-                  src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" width="14"
-                  height="14" alt="Capturado" style="image-rendering:pixelated;display:none;opacity:0.9;">
+              <div class="battle-name-container">
+                <div class="battle-name" style="display:flex;align-items:center;gap:6px;">
+                  <span id="enemy-name">???</span><span id="enemy-gender" class="gender-badge"
+                    style="margin-left:4px;"></span>
+                  <img id="enemy-caught-icon"
+                    src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" width="14"
+                    height="14" alt="Capturado" style="image-rendering:pixelated;display:none;opacity:0.9;">
+                </div>
+                <div id="enemy-nature-display" class="battle-nature" style="display:none;"></div>
               </div>
               <div class="battle-level" id="enemy-level">Nv. 1</div>
               <div class="hp-bar-wrap">
