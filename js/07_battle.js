@@ -524,7 +524,8 @@ function renderMoveButtons() {
 
     return `<button class="move-btn" onclick="useMove(${i})" ${disabled ? 'disabled' : ''}
       style="--move-color: ${col};"
-      onmouseenter="showMoveTooltip(event, '${m.name.replace(/'/g, "\\'")}')"
+      onmousedown="showMoveTooltip(event, '${m.name.replace(/'/g, "\\'")}')"
+      onmouseup="hideMoveTooltip()"
       onmouseleave="hideMoveTooltip()"
       ontouchstart="showMoveTooltip(event, '${m.name.replace(/'/g, "\\'")}')"
       ontouchend="hideMoveTooltip()">
@@ -2985,10 +2986,8 @@ function showMoveTooltip(e, moveName) {
   tooltip.style.top = Math.max(10, y) + 'px';
   tooltip.style.display = 'block';
 
-  if (e.type === 'touchstart') {
-    if (_tooltipTimer) clearTimeout(_tooltipTimer);
-    _tooltipTimer = setTimeout(hideMoveTooltip, 3000);
-  }
+  // No auto-hide timer anymore, it stays as long as the button is held
+  if (_tooltipTimer) clearTimeout(_tooltipTimer);
 }
 
 function hideMoveTooltip() {
