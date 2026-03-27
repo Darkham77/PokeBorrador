@@ -1546,6 +1546,13 @@ function useMove(moveIndex) {
       return;
     }
 
+    // Dream Eater check: target must be asleep
+    if (md.effect === 'dream_eater' && b.enemy.status !== 'sleep') {
+      addLog(`¡Pero falló! ${b.enemy.name} no está dormido.`, 'log-info');
+      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem }); }, 900);
+      return;
+    }
+
     // Status move — no damage
     if (md.cat === 'status') {
       applyMoveEffect(md.effect, b.player, b.enemy, b.playerStages, b.enemyStages, addLog);
@@ -2052,6 +2059,12 @@ function enemyTurn(opts = {}) {
 
   // Ability Immunity Check
   if (checkAbilityImmunity(b.enemy, b.player, move, addLog)) {
+    finish(); return;
+  }
+
+  // Dream Eater check: target must be asleep
+  if (md.effect === 'dream_eater' && b.player.status !== 'sleep') {
+    addLog(`¡Pero falló! ${b.player.name} no está dormido.`, 'log-info');
     finish(); return;
   }
 

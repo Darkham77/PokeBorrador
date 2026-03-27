@@ -1094,7 +1094,7 @@
         'Tinieblas': { power: 1, acc: 100, type: 'ghost', cat: 'physical', pp: 15, levelDmg: true },
         'Contraataque': { power: 1, acc: 100, type: 'fighting', cat: 'physical', pp: 20, counter: true, priority: -5 },
         'Rayo Confuso': { power: 0, acc: 100, type: 'ghost', cat: 'status', pp: 10, effect: 'confuse' },
-        'Comesueños': { power: 100, acc: 100, type: 'psychic', cat: 'special', pp: 15, drain: true },
+        'Comesueños': { power: 100, acc: 100, type: 'psychic', cat: 'special', pp: 15, drain: true, effect: 'dream_eater' },
         'Guillotina': { power: 1, acc: 30, type: 'normal', cat: 'physical', pp: 5, ohko: true },
         'Martillazo': { power: 100, acc: 90, type: 'water', cat: 'physical', pp: 10 },
         'Puño Hielo': { power: 75, acc: 100, type: 'ice', cat: 'special', pp: 15, effect: 'freeze_10' },

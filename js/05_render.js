@@ -291,44 +291,52 @@ function togglePokeTag(location, index, tag) {
   scheduleSave();
 }
 
-function openPokemonDetail(index) {
-  const p = state.team[index];
+function showPokemonDetails(p, index, location = 'team') {
+  if (!p) return;
   const pct = p.hp / p.maxHp;
   const hpClass = getHpClass(pct);
   if (typeof ensureVigor === 'function') ensureVigor(p);
-  const typeColors = { grass: '#6BCB77', fire: '#FF3B3B', water: '#3B8BFF', normal: '#aaa', electric: '#FFD93D', psychic: '#C77DFF', rock: '#c8a060', ground: '#c8a060', poison: '#C77DFF' };
-  const typeColor = typeColors[p.type] || '#aaa';
+  
+  const typeColors = (typeof PDEX_TYPE_COLORS !== 'undefined') ? PDEX_TYPE_COLORS : {
+    grass: '#6BCB77', fire: '#FF3B3B', water: '#3B8BFF', normal: '#aaa', electric: '#FFD93D', psychic: '#C77DFF', rock: '#c8a060', ground: '#c8a060', poison: '#C77DFF', ghost: '#7B2FBE'
+  };
+  const typeCol = typeColors[p.type.toLowerCase()] || '#aaa';
   const tags = p.tags || [];
 
-  const ivBars = Object.entries(p.ivs).map(([stat, val]) => {
+  const ivBars = Object.entries(p.ivs || {}).map(([stat, val]) => {
     const labels = { hp: 'HP', atk: 'Ataque', def: 'Defensa', spa: 'At.Esp', spd: 'Def.Esp', spe: 'Velocidad' };
-    const pct = (val / 31) * 100;
+    const ivPct = (val / 31) * 100;
     const color = val >= 28 ? '#6BCB77' : val >= 15 ? '#FFD93D' : '#FF3B3B';
     return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
       <span style="font-size:10px;color:#888;width:65px;flex-shrink:0">${labels[stat]}</span>
       <div style="flex:1;background:rgba(255,255,255,0.1);border-radius:10px;height:8px;overflow:hidden;">
-        <div style="width:${pct}%;height:100%;background:${color};border-radius:10px;transition:width 0.5s;"></div>
+        <div style="width:${ivPct}%;height:100%;background:${color};border-radius:10px;transition:width 0.5s;"></div>
       </div>
       <span style="font-size:11px;color:${color};width:24px;text-align:right;">${val}</span>
     </div>`;
   }).join('');
 
   const movesList = p.moves.map(m => {
+    // BUG FIX: ALWAYS pull from MOVE_DATA for updated type, category and power
     const md = (typeof MOVE_DATA !== 'undefined') ? MOVE_DATA[m.name] : null;
-    const power = md ? (md.power || '—') : (m.power || '—');
-    const typeCol = (typeof PDEX_TYPE_COLORS !== 'undefined' && md) ? PDEX_TYPE_COLORS[md.type] : '#aaa';
+    const mType = md ? md.type : (m.type || 'normal');
+    const mPower = md ? (md.power || '—') : (m.power || '—');
+    const mTypeCol = typeColors[mType.toLowerCase()] || '#aaa';
     
     return `<div onclick="showMoveDetail('${m.name.replace(/'/g, "\\'")}')" 
       style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all 0.2s;border:1px solid rgba(255,255,255,0.08);"
-      onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.borderColor='${typeCol}66'" 
+      onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.borderColor='${mTypeCol}66'" 
       onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.08)'">
-      <div>
-        <div style="font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${m.name}</div>
-        <div style="font-size:11px;color:#888;">Poder: ${power}</div>
+      <div style="flex:1;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:7px;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+          ${m.name}
+          <span class="type-badge type-${mType.toLowerCase()}" style="font-size:6px;padding:2px 4px;">${mType.toUpperCase()}</span>
+        </div>
+        <div style="font-size:10px;color:#888;">Poder: ${mPower}</div>
       </div>
-      <div style="text-align:right;">
-        <div style="font-size:11px;color:#FFD93D;">PP</div>
-        <div style="font-size:13px;font-weight:700;">${m.pp}/${m.maxPP}</div>
+      <div style="text-align:right;min-width:45px;">
+        <div style="font-size:10px;color:#FFD93D;">PP</div>
+        <div style="font-size:12px;font-weight:700;">${m.pp}/${m.maxPP}</div>
       </div>
     </div>`;
   }).join('');
@@ -336,112 +344,112 @@ function openPokemonDetail(index) {
   const statsHtml = [
     { label: 'HP', val: p.maxHp }, { label: 'Ataque', val: p.atk }, { label: 'Defensa', val: p.def },
     { label: 'At. Esp', val: p.spa || p.atk }, { label: 'Def. Esp', val: p.spd || p.def }, { label: 'Velocidad', val: p.spe || 40 }
-  ].map(s => `<div style="text-align:center;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;">
-    <div style="font-size:10px;color:#888;margin-bottom:4px;">${s.label}</div>
-    <div style="font-size:16px;font-weight:900;color:#eaeaea;">${s.val}</div>
+  ].map(s => `<div style="text-align:center;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,0.03);">
+    <div style="font-size:9px;color:#888;margin-bottom:4px;text-transform:uppercase;">${s.label}</div>
+    <div style="font-size:14px;font-weight:900;color:#eaeaea;">${s.val}</div>
   </div>`).join('');
 
   const expPct = p.expNeeded ? Math.min(100, (p.exp || 0) / p.expNeeded * 100) : 0;
+  const maxL = (typeof getMaxObeyLevel === 'function') ? getMaxObeyLevel() : 100;
+  const obedienceWarning = (location === 'team' && p.level > maxL) ? `
+    <div style="margin:12px 0;background:rgba(255,59,59,0.1);border:1px solid var(--red);border-radius:10px;padding:8px 12px;font-size:10px;color:#ff4d4d;line-height:1.4;font-weight:700;">
+      ⚠️ ¡Tu nivel es demasiado alto para tus medallas! Podría desobedecer en combate. (Máx Nv. ${maxL})
+    </div>` : '';
 
-  const html = `<div style="background:#16213e;border-radius:24px;padding:28px;max-width:480px;width:92%;max-height:88vh;overflow-y:auto;border:2px solid ${typeColor}33;animation:fadeIn 0.3s ease;">
+  const html = `<div style="background:#16213e;border-radius:24px;padding:28px;max-width:480px;width:92%;max-height:88vh;overflow-y:auto;border:1px solid ${typeCol}44;box-shadow:0 20px 50px rgba(0,0,0,0.6);animation:modalSlideUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
       <div style="display:flex;align-items:center;gap:16px;">
-        <div style="width:80px;height:80px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:12px;">
-          <img id="detail-sprite-img" src="${getSpriteUrl(p.id, p.isShiny)}" alt="${p.name}" style="width:72px;height:72px;image-rendering:pixelated;display:none;">
-          <span id="detail-sprite-emoji" style="font-size:52px;">${p.emoji}</span>
+        <div style="position:relative;width:80px;height:80px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:16px;border:1px solid rgba(255,255,255,0.08);">
+          <img id="unified-detail-sprite" src="${getSpriteUrl(p.id, p.isShiny)}" alt="${p.name}" style="width:72px;height:72px;image-rendering:pixelated;z-index:2;display:none;">
+          <span id="unified-detail-emoji" style="font-size:52px;">${p.emoji}</span>
+          ${p.isShiny ? '<div style="position:absolute;top:-5px;right:-5px;font-size:16px;filter:drop-shadow(0 0 4px gold);">✨</div>' : ''}
         </div>
         <div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:${typeColor};margin-bottom:6px;">${p.name}${p.isShiny ? ' ✨' : ''}</div>
-          <div style="font-size:12px;color:#888;">Nivel ${p.level} · ${p.type.charAt(0).toUpperCase() + p.type.slice(1)}</div>
-          <div style="font-size:11px;color:#555;margin-top:4px;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--yellow);margin-bottom:6px;">${p.name} ${renderGenderBadge(p.gender)}</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">
+            <span class="type-badge type-${p.type.toLowerCase()}" style="font-size:9px;">${p.type.toUpperCase()}</span>
+            <span style="font-size:11px;color:var(--gray);font-weight:700;">Nv. ${p.level}</span>
+          </div>
+          <div style="font-size:10px;color:#555;font-weight:bold;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
           
-          ${(function() {
-            const maxL = (typeof getMaxObeyLevel === 'function') ? getMaxObeyLevel() : 100;
-            if (p.level > maxL) {
-              return `<div style="margin-top:8px;background:rgba(255,59,59,0.15);border:1px solid var(--red);border-radius:8px;padding:6px 10px;font-size:10px;color:#ff4d4d;line-height:1.4;font-weight:700;">
-                ⚠️ ¡Tu nivel es demasiado alto para tus medallas! Podría desobedecer en combate. (Máx Nv. ${maxL})
-              </div>`;
-            }
-            return '';
-          })()}
-
-          <div style="margin-top:12px; display:flex; align-items:center; gap:12px;">
-            <span class="tag-label" style="margin-bottom:0;">Destacar:</span>
-            <div style="display:flex;gap:10px;">
-              <div class="poke-tag ${tags.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'fav')" title="Favorito">⭐</div>
-              <div class="poke-tag ${tags.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'breed')" title="Crianza">❤️</div>
-              <div class="poke-tag ${tags.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('team', ${index}, 'iv31')" title="IV 31">31</div>
+          <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+            <div style="display:flex;gap:8px;">
+              <div class="poke-tag ${tags.includes('fav') ? 'active' : ''}" onclick="togglePokeTag('${location}', ${index}, 'fav')" title="Favorito">⭐</div>
+              <div class="poke-tag ${tags.includes('breed') ? 'active' : ''}" onclick="togglePokeTag('${location}', ${index}, 'breed')" title="Crianza">❤️</div>
+              <div class="poke-tag ${tags.includes('iv31') ? 'active' : ''}" onclick="togglePokeTag('${location}', ${index}, 'iv31')" title="IV 31">31</div>
             </div>
           </div>
         </div>
       </div>
-      <button onclick="closePokemonDetail()" style="background:rgba(255,255,255,0.1);border:none;border-radius:10px;color:#aaa;font-size:18px;cursor:pointer;padding:6px 12px;">✕</button>
+      <button onclick="closePokemonDetail()" style="background:rgba(255,255,255,0.08);border:none;border-radius:12px;color:#aaa;font-size:18px;cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,59,59,0.2)';this.style.color='#ff4d4d'" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.color='#aaa'">✕</button>
     </div>
 
-    <!-- HP -->
-    <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px;margin-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-        <span style="font-size:12px;font-weight:700;">HP</span>
-        <span style="font-size:12px;color:#888;">${p.hp} / ${p.maxHp}</span>
+    ${obedienceWarning}
+
+    <div style="background:rgba(255,255,255,0.04);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.05);">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:12px;font-weight:700;color:#eee;">HP</span>
+        <span style="font-size:12px;color:var(--gray);">${p.hp} / ${p.maxHp}</span>
       </div>
-      <div style="background:rgba(255,255,255,0.1);border-radius:10px;height:10px;overflow:hidden;">
-        <div style="width:${pct * 100}%;height:100%;border-radius:10px;" class="${hpClass}"></div>
+      <div style="background:rgba(0,0,0,0.3);border-radius:10px;height:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);">
+        <div style="width:${pct * 100}%;height:100%;border-radius:10px;transition:width 0.5s;" class="${hpClass}"></div>
       </div>
-      <div style="margin-top:10px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span style="font-size:11px;color:#888;">EXP</span>
-          <span style="font-size:11px;color:#C77DFF;">${p.exp || 0} / ${p.expNeeded || 0}</span>
+      ${location === 'team' ? `
+      <div style="margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:10px;color:var(--gray);font-weight:700;">EXPERIENCIA</span>
+          <span style="font-size:10px;color:var(--purple-light);">${p.exp || 0} / ${p.expNeeded || 0}</span>
         </div>
-        <div style="background:rgba(255,255,255,0.1);border-radius:10px;height:6px;overflow:hidden;">
-          <div style="width:${expPct}%;height:100%;background:linear-gradient(90deg,#C77DFF,#9b4dca);border-radius:10px;"></div>
+        <div style="background:rgba(0,0,0,0.3);border-radius:10px;height:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);">
+          <div style="width:${expPct}%;height:100%;background:linear-gradient(90deg,var(--purple),var(--purple-light));border-radius:10px;transition:width 0.5s;"></div>
         </div>
-      </div>
+      </div>` : ''}
     </div>
 
-    <!-- Nature, Ability & Vigor -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
-      <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center;">
-        <div style="font-size:10px;color:#888;margin-bottom:4px;">Naturaleza</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+      <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:12px;text-align:center;border:1px solid rgba(255,255,255,0.05);transition:all 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.06)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.03)'">
+        <div style="font-size:9px;color:var(--gray);margin-bottom:6px;text-transform:uppercase;font-weight:bold;">Naturaleza</div>
         ${buildNatureTooltip(p.nature || 'Serio')}
       </div>
-      <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center;">
-        <div style="font-size:10px;color:#888;margin-bottom:4px;">Habilidad</div>
+      <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:12px;text-align:center;border:1px solid rgba(255,255,255,0.05);transition:all 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.06)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.03)'">
+        <div style="font-size:9px;color:var(--gray);margin-bottom:6px;text-transform:uppercase;font-weight:bold;">Habilidad</div>
         ${buildAbilityTooltip(p.ability || '—')}
       </div>
-      <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;text-align:center;">
-        <div style="font-size:10px;color:#888;margin-bottom:4px;">Vigor</div>
-        <div style="font-size:13px;font-weight:700;color:var(--yellow);">⚡${p.vigor || 0}</div>
+      <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:12px;text-align:center;border:1px solid rgba(255,255,255,0.05);transition:all 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.06)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.03)'">
+        <div style="font-size:9px;color:var(--gray);margin-bottom:6px;text-transform:uppercase;font-weight:bold;">Vigor</div>
+        <div style="font-size:14px;font-weight:900;color:var(--yellow);text-shadow:0 0 8px rgba(255,217,61,0.2);">⚡${p.vigor || 0}</div>
       </div>
     </div>
 
-    <!-- Stats -->
-    <div style="margin-bottom:16px;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#C77DFF;margin-bottom:10px;">📊 ESTADÍSTICAS</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">${statsHtml}</div>
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--purple-light);margin-bottom:12px;display:flex;align-items:center;gap:8px;"><span style="font-size:12px;">📊</span> ESTADÍSTICAS BASE</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">${statsHtml}</div>
     </div>
 
-    <!-- IVs -->
-    <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:14px;margin-bottom:16px;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#C77DFF;margin-bottom:12px;">🧬 IVs</div>
+    <div style="background:rgba(0,0,0,0.2);border-radius:18px;padding:18px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.03);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--purple-light);margin-bottom:14px;display:flex;align-items:center;gap:8px;"><span style="font-size:12px;">🧬</span> POTENCIAL GENÉTICO (IVs)</div>
       ${ivBars}
     </div>
 
-    <!-- Moves -->
     <div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#C77DFF;margin-bottom:10px;">⚔️ MOVIMIENTOS</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${movesList}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--purple-light);margin-bottom:12px;display:flex;align-items:center;gap:8px;"><span style="font-size:12px;">⚔️</span> MOVIMIENTOS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${movesList}</div>
     </div>
-    ${(STONE_EVOLUTIONS[p.id] || (p.id === 'eevee')) ? `
+
+    ${location === 'team' && (STONE_EVOLUTIONS[p.id] || (p.id === 'eevee')) ? `
     <button onclick="closePokemonDetail();showStonePicker(${index})"
-      style="width:100%;margin-top:12px;padding:12px;border:none;border-radius:12px;cursor:pointer;
-             font-family:'Press Start 2P',monospace;font-size:8px;
-             background:rgba(255,217,61,0.15);color:var(--yellow);border:1px solid rgba(255,217,61,0.3);">
+      style="width:100%;margin-top:16px;padding:14px;border:none;border-radius:14px;cursor:pointer;
+             font-family:'Press Start 2P',monospace;font-size:8px;transition:all 0.2s;
+             background:rgba(255,217,61,0.1);color:var(--yellow);border:1px solid rgba(255,217,61,0.25);"
+             onmouseover="this.style.backgroundColor='rgba(255,217,61,0.2)';this.style.transform='translateY(-2px)'"
+             onmouseout="this.style.backgroundColor='rgba(255,217,61,0.1)';this.style.transform='translateY(0)'">
       💎 EVOLUCIONAR CON PIEDRA
     </button>` : ''}
-    ${(EVOLUTION_TABLE[p.id] && p.level >= EVOLUTION_TABLE[p.id].level) ? `
-    <div style="margin-top:10px;background:rgba(107,203,119,0.08);border:1px solid rgba(107,203,119,0.25);
-      border-radius:10px;padding:10px 14px;font-size:11px;color:var(--green);text-align:center;">
-      🌟 ¡Puede evolucionar! Ganás otra batalla y evoluciona.
+
+    ${location === 'team' && (EVOLUTION_TABLE[p.id] && p.level >= EVOLUTION_TABLE[p.id].level) ? `
+    <div style="margin-top:12px;background:rgba(107,203,119,0.08);border:1px solid rgba(107,203,119,0.2);
+      border-radius:12px;padding:12px 16px;font-size:11px;color:var(--green);text-align:center;font-weight:700;line-height:1.4;">
+      🌟 ¡Está listo para evolucionar! Ganá un combate más para verlo transformarse.
     </div>` : ''}
   </div>`;
 
@@ -449,18 +457,23 @@ function openPokemonDetail(index) {
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'pokemon-detail-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:160;display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px); transition:all 0.3s;';
     overlay.onclick = (e) => { if (e.target === overlay) closePokemonDetail(); };
     document.body.appendChild(overlay);
   }
   overlay.innerHTML = html;
   overlay.style.display = 'flex';
+  
   // Load sprite
   setTimeout(() => {
-    const img = document.getElementById('detail-sprite-img');
-    const emo = document.getElementById('detail-sprite-emoji');
-    if (img) loadSprite(img, emo, getSpriteUrl(p.id), p.emoji);
+    const img = document.getElementById('unified-detail-sprite');
+    const emo = document.getElementById('unified-detail-emoji');
+    if (img) loadSprite(img, emo, getSpriteUrl(p.id, p.isShiny), p.emoji);
   }, 50);
+}
+
+function openPokemonDetail(index) {
+  showPokemonDetails(state.team[index], index, 'team');
 }
 
 function closePokemonDetail() {
