@@ -430,16 +430,36 @@ function openClassInfoPanel() {
       .class-col-right { min-width: 350px; box-sizing: border-box; max-width: 100%; }
       .class-ability-row { display:flex; align-items:center; flex-wrap: wrap; gap: 4px; }
       @media (max-width: 600px) {
-        .class-modal-content { padding: 16px 12px !important; gap: 20px !important; }
-        .class-modal-cols { gap: 20px !important; flex-direction: column; }
-        .class-col-left, .class-col-right { min-width: 100% !important; max-width: 100% !important; }
+        .class-modal-content { 
+          padding: 24px 16px !important; 
+          gap: 24px !important; 
+          width: 100% !important;
+          height: 100% !important;
+          max-width: none !important;
+          border-radius: 0 !important;
+          overflow-y: auto !important;
+          display: block !important; /* Permitir scroll natural */
+        }
+        .class-modal-cols { 
+          gap: 32px !important; 
+          flex-direction: column !important; 
+          display: flex !important;
+        }
+        .class-col-left, .class-col-right { 
+          min-width: 100% !important; 
+          max-width: 100% !important; 
+          flex: none !important;
+        }
         .class-tooltiptext { width: 200px; left: auto; right: 0; margin-left: 0; }
-        .class-col-left img { width: 140px !important; }
+        .class-col-left img { width: 180px !important; }
         .class-ability-row { flex-wrap: wrap; }
+        
+        /* Asegurar que el footer no se coma el contenido */
+        .class-col-right { padding-bottom: 40px; }
       }
     </style>
 
-    <div class="class-modal-content" style="background:#111827;border-radius:24px;width:95%;max-width:900px;border:1px solid ${cls.color}33;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);position:relative;display:flex;flex-direction:column;">
+    <div class="class-modal-content" style="background:#111827;border-radius:24px;width:95%;max-width:900px;border:1px solid ${cls.color}33;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);position:relative;display:flex;flex-direction:column;max-height:90vh;overflow-y:auto;">
       
       <!-- Close Button -->
       <button onclick="document.getElementById('class-info-panel-overlay').remove()"
