@@ -1390,10 +1390,11 @@ function useMove(moveIndex) {
     }
     // Check sleep
     if (b.player.status === 'sleep') {
-      const sleepReduction = (b.player.ability === 'Madrugar') ? 2 : 1;
-      b.player.sleepTurns = Math.max(0, (b.player.sleepTurns || 1) - sleepReduction);
-      if (b.player.sleepTurns > 0) {
+      const currentSleep = b.player.sleepTurns !== undefined ? b.player.sleepTurns : 1;
+      if (currentSleep > 0) {
         addLog(`¡${b.player.name} está dormido! 💤`, 'log-enemy');
+        const sleepReduction = (b.player.ability === 'Madrugar') ? 2 : 1;
+        b.player.sleepTurns = Math.max(0, currentSleep - sleepReduction);
         _battleLock = true; setBtns(false);
         setTimeout(() => {
           _battleLock = false;
@@ -1402,6 +1403,7 @@ function useMove(moveIndex) {
         return;
       } else {
         b.player.status = null;
+        b.player.sleepTurns = 0;
         addLog(`¡${b.player.name} se despertó!`, 'log-info');
       }
     }
@@ -1975,13 +1977,15 @@ function enemyTurn(opts = {}) {
   }
 
   if (b.enemy.status === 'sleep') {
-    const sleepReduction = (b.enemy.ability === 'Madrugar') ? 2 : 1;
-    b.enemy.sleepTurns = Math.max(0, (b.enemy.sleepTurns || 1) - sleepReduction);
-    if (b.enemy.sleepTurns > 0) {
+    const currentSleep = b.enemy.sleepTurns !== undefined ? b.enemy.sleepTurns : 1;
+    if (currentSleep > 0) {
       addLog(`¡${b.enemy.name} está dormido! 💤`, 'log-enemy');
+      const sleepReduction = (b.enemy.ability === 'Madrugar') ? 2 : 1;
+      b.enemy.sleepTurns = Math.max(0, currentSleep - sleepReduction);
       finish(); return;
     } else {
       b.enemy.status = null;
+      b.enemy.sleepTurns = 0;
       addLog(`¡${b.enemy.name} se despertó!`, 'log-info');
     }
   }
@@ -2335,8 +2339,9 @@ const GEN1_CATCH_RATES = {
 
 function tryCatch() {
   const b = state.battle;
-  if (!b || b.over || b.isGym || b.isTrainer || b.isPvP) {
+  if (!b || b.over || b.isGym || b.isTrainer || b.isPvP || b.enemy.hp <= 0) {
     if (b && (b.isGym || b.isTrainer || b.isPvP)) notify('¡No podés capturar al Pokémon de otro entrenador!', '❌');
+    else if (b && b.enemy && b.enemy.hp <= 0) notify('¡No puedes capturar a un Pokémon debilitado!', '❌');
     return;
   }
 
@@ -2382,7 +2387,7 @@ function tryCatch() {
 function executeCatch(ballName) {
   document.getElementById('catch-menu-overlay')?.remove();
   const b = state.battle;
-  if (b.over) return;
+  if (b.over || b.enemy.hp <= 0) return;
   if ((state.inventory[ballName] || 0) <= 0) return;
 
   // Efecto visual de lanzamiento
