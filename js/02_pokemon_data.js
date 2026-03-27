@@ -645,7 +645,7 @@
       const learned = db.learnset.filter(m => m.lv <= level);
       const last4 = learned.slice(-4);
       return last4.map(m => {
-        const moveData = MOVES_DB[m.name] || {};
+        const moveData = MOVE_DATA[m.name] || {};
         return { 
           name: m.name, 
           pp: m.pp, 
