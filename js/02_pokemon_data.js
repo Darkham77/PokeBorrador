@@ -1351,10 +1351,11 @@
       if (md.ohko) return "Fulmina al enemigo de un solo golpe si acierta.";
       if (md.halfHP) return "Reduce a la mitad los PS actuales del oponente.";
       if (md.recoil) return "El usuario recibe daño por retroceso al golpear.";
-      if (md.drain) return "Restaura PS al usuario según el daño causado.";
+      if (md.drain && md.cat !== 'status') return "Restaura PS al usuario según el daño causado."; // Added non-status check
       if (md.selfKO) return "El usuario se debilita para causar un daño masivo.";
       if (md.priority > 0) return "Ataque rápido que siempre golpea primero.";
       if (md.levelDmg) return "Causa un daño igual al nivel del usuario.";
+      if (md.counter) return "Devuelve al rival el doble del daño físico recibido este turno.";
       
       const effects = {
         'burn_10': "Puede quemar al objetivo (10%).",
@@ -1373,6 +1374,7 @@
         'confuse_30': "Puede confundir al objetivo (30%).",
         'confuse': "Confunde al objetivo de forma garantizada.",
         'stat_down_enemy_atk': "Reduce el Ataque del oponente.",
+        'stat_down_enemy_atk_10': "Puede reducir el Ataque del oponente (10%).",
         'stat_down_enemy_atk_2': "Reduce mucho el Ataque del oponente.",
         'stat_down_enemy_def': "Reduce la Defensa del oponente.",
         'stat_down_enemy_def_2': "Reduce mucho la Defensa del oponente.",
@@ -1399,17 +1401,26 @@
         'roar': "Ahuyenta al rival o lo fuerza a cambiar por otro aliado.",
         'disable': "Deshabilita el último movimiento usado por el oponente.",
         'encore': "Obliga al oponente a repetir su último movimiento.",
-        'confuse': "Confunde al oponente de forma garantizada.",
         'sleep': "Duerme al oponente de forma garantizada.",
         'bad_poison': "Envenena gravemente al oponente (daño progresivo).",
         'transform': "Copia la forma, tipos y movimientos del oponente.",
         'focus_energy': "Aumenta la probabilidad de asestar golpes críticos.",
         'bind': "Atrapa al oponente y le causa daño durante varios turnos.",
         'magnitude': "Causa un daño aleatorio basado en la intensidad sísmica.",
-        'recharge': "El usuario debe descansar el siguiente turno tras atacar."
+        'recharge': "El usuario debe descansar el siguiente turno tras atacar.",
+        'teleport': "Permite huir de un combate contra un Pokémon salvaje.",
+        'dream_eater': "Absorbe PS a un oponente dormido para restaurar salud.",
+        'rest': "El usuario duerme dos turnos para recuperar todos sus PS.",
+        'curse': "Si es Fantasma, pierde PS para maldecir al rival cada turno.",
+        'tri_attack': "Puede quemar, paralizar o congelar al objetivo."
       };
-
-      return effects[md.effect] || "Causa daño al oponente sin efectos secundarios adicionales.";
+      
+      if (effects[md.effect]) return effects[md.effect];
+      
+      // Better default for status moves
+      if (md.cat === 'status') return "Un movimiento que causa un efecto de estado o alteración.";
+      
+      return "Causa daño al oponente sin efectos secundarios adicionales.";
     }
 
 
