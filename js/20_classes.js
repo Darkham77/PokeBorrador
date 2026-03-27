@@ -317,7 +317,7 @@ function openClassModal(forced = false) {
           ${isChange ? 'Cambiar de clase cuesta <strong style="color:#f59e0b;">10,000 Battle Coins</strong>.' : 'Esta elección define cómo jugás. Podés cambiar más adelante por 10,000 Battle Coins.'}
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px;margin-bottom:20px;">
         ${cardsHtml}
       </div>
       ${canClose && state.playerClass ? `<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px;">
