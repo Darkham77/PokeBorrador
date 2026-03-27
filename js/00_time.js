@@ -4,7 +4,7 @@
  * Also provides helpers for GMT-3 (Argentina) time.
  */
 
-let _serverTimeOffset = 0;
+var _serverTimeOffset = _serverTimeOffset || 0;
 let _timeSynced = false;
 
 /**
