@@ -1204,6 +1204,10 @@ function _marketSetQty(itemId, raw) {
       celeste_day: 'assets/sprites/cuevaceleste.png',
       celeste_dusk: 'assets/sprites/cuevaceleste.png',
       celeste_night: 'assets/sprites/cuevaceleste.png',
+      central_dawn: 'assets/sprites/centralenergía.png',
+      central_day: 'assets/sprites/centralenergía.png',
+      central_dusk: 'assets/sprites/centralenergía.png',
+      central_night: 'assets/sprites/centralenergía.png',
     };
 
     // ===== BATTLE BACKGROUNDS =====
@@ -1226,6 +1230,8 @@ function _marketSetQty(itemId, raw) {
       pokemon_tower: 'tower',
       // Gym / pvp
       gym: 'pvp', pvp: 'pvp',
+      // Central / Power Plant
+      power_plant: 'central',
       // Default routes → ruta
     };
     function _getBiome(locationId) {
@@ -1242,7 +1248,7 @@ function _marketSetQty(itemId, raw) {
       }[cycle] || 'day';
 
       // For biomes that share dawn/dusk art
-      const sharedDawnDusk = ['bosque', 'playa', 'ruta', 'pvp'];
+      const sharedDawnDusk = ['bosque', 'playa', 'ruta', 'pvp', 'central'];
       if (sharedDawnDusk.includes(biome) && cycleKey === 'dusk') return `${biome}_dawn`;
       return `${biome}_${cycleKey}`;
     }
