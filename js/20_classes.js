@@ -97,7 +97,7 @@ const PLAYER_CLASSES = {
     description: 'El camino legítimo. Sube de nivel más rápido, domina los gimnasios y acumula Reputación que desbloquea tiendas exclusivas.',
     bonuses: [
       '📈 +10% EXP en todos los combates',
-      '🏆 +30% Battle Coins en victorias de Gimnasio + ítem bonus',
+      '🏆 +30% Battle Coins en victorias de Gimnasio',
       '⭐ Sistema de Reputación: acumulá puntos venciendo gimnasios',
       '📍 Ruta Oficial: marcá una ruta diaria para ganar +1 REP por combate (30 min)',
       '⚔️ Rival Doble: chance x2 de aparición del Rival si venciste todo en Difícil'
@@ -1084,9 +1084,12 @@ function openClassMissionsPanel() {
     const isUnlocked = trainerLevel >= m.reqLv;
     return `
     <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);opacity:${isUnlocked ? '1' : '0.5'};">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <span style="font-size:12px;font-weight:700;color:${isUnlocked ? m.color : '#6b7280'};">⏳ ${m.name}</span>
         <span style="font-size:9px;color:#9ca3af;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">Lv.${m.reqLv}</span>
+      </div>
+      <div style="font-size:10px;color:#9ca3af;margin-bottom:10px;line-height:1.4;">
+        ${getMissionDescription(m.id, cls)}
       </div>
       <button onclick="startClassMission('${m.id}')" ${!isUnlocked || activeMission ? 'disabled' : ''} 
         style="width:100%;padding:8px;border:none;border-radius:8px;cursor:${isUnlocked && !activeMission ? 'pointer' : 'not-allowed'};background:${isUnlocked && !activeMission ? m.color + '44' : 'rgba(255,255,255,0.05)'};color:${isUnlocked && !activeMission ? '#fff' : '#6b7280'};font-size:10px;font-weight:bold;border:1px solid ${isUnlocked && !activeMission ? m.color : 'transparent'};">
@@ -1150,6 +1153,25 @@ function getMissionCostInfo(missionId) {
     return { type: 'bc_pokemon', cost: costs[missionId], blocks: blocks[missionId], vigorSaveChance };
   }
   return null;
+}
+
+// Retorna una descripción amigable según la clase y misión
+function getMissionDescription(missionId, cls) {
+  if (cls === 'cazabichos') {
+    return 'Captura 3 Pokémon Bicho con IVs garantizados y mayor probabilidad de Shiny.';
+  }
+  if (cls === 'rocket') {
+    const mults = { mission_6h: '1.0', mission_12h: '1.3', mission_24h: '1.8' };
+    return `Vende Pokémon Veneno en el mercado negro con un multiplicador de ₽ x${mults[missionId] || '1'}.`;
+  }
+  if (cls === 'entrenador') {
+    return `Entrena a un Pokémon para que gane mucha EXP${missionId === 'mission_24h' ? ' y un +1 NV (nivel) extra' : ''}.`;
+  }
+  if (cls === 'criador') {
+    const blocks = { mission_6h: 1, mission_12h: 2, mission_24h: 4 };
+    return `Aumenta ${blocks[missionId]} IVs aleatorios del Pokémon enviado a cambio de Vigor.`;
+  }
+  return 'Realiza tareas especiales para obtener recompensas de clase.';
 }
 
 // Genera 3 Pokémon bicho de rutas desbloqueadas (Cazabichos)
