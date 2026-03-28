@@ -142,14 +142,12 @@ const PLAYER_CLASSES = {
     bonusLevels: [1, 1, 5, 5, 20],
     penalties: [
       '📉 -10% EXP en todos los combates',
-      '🏥 Centro Pokémon cuesta 1.5x para Pokémon no criados por vos',
       '🚫 Sin acceso al Mercado Negro'
     ],
     modifiers: {
       expMult: 0.90,
       bcMult: 1.0,
       healCostMult: 1.0,
-      healCostForeignMult: 1.5,
       daycareCostMult: 1.0,
       catchMult: 1.0
     },
@@ -162,7 +160,6 @@ const PLAYER_CLASSES = {
     ],
     technicalPenalties: [
       "Tu enfoque en la genética te aleja del fragor de la batalla (x0.90 EXP global).",
-      "La enfermera Joy te cobra un extra por el mantenimiento especializado de Pokémon ajenos (x1.50).",
       "Como científico respetable, no posees los contactos necesarios para entrar al Mercado Negro."
     ],
     sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.png',
@@ -319,9 +316,6 @@ function openClassModal(forced = false) {
         ${cardsHtml}
       </div>
       ${canClose && state.playerClass ? `<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px;">
-        <button onclick="closeClassModal();openClassMissionsPanel()" style="background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;padding:10px 20px;border-radius:10px;cursor:pointer;font-size:11px;font-weight:700;">
-          📋 Misiones de Clase
-        </button>
         ${state.playerClass === 'entrenador' ? `<button onclick="closeClassModal();openReputationShop()" style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:10px 20px;border-radius:10px;cursor:pointer;font-size:11px;font-weight:700;">
           🏅 Tienda de Reputación (${state.classData?.reputation || 0} ⭐)
         </button>` : ''}
