@@ -211,13 +211,13 @@
 
     // What unlocks at each trainer level
     const MARKET_UNLOCKS = {
-      3: ['Súper Ball', 'Super Poción', 'Superrepelente'],
+      3: ['Súper Ball', 'Super Poción'],
       5: ['Red Ball', 'Ocaso Ball', 'Cura Total', 'Compartir EXP', 'MT27 Retribución', 'Ítems de Poder'],
       8: ['Hiper Poción', 'Ultra Ball', 'Revivir', 'Lente Zoom', 'Subida PP'],
       10: ['Turno Ball', 'Restos', 'Cascabel Concha', 'Piedras de Evolución'],
       12: ['Poción Máxima', 'Huevo Suerte Pequeño', 'Cinta Elegida', 'MT14 Ventisca'],
       15: ['Revivir Máximo', 'Elixir Máximo', 'Banda Focus'],
-      22: ['Máximo Repelente', 'Caramelo Raro'],
+      22: ['Caramelo Raro'],
       25: ['Master Ball']
     };
 
@@ -409,19 +409,19 @@
         effect: (qty) => { state.inventory['Elixir Máximo'] = (state.inventory['Elixir Máximo'] || 0) + qty; }
       },
       {
-        id: 'repelente', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/repel.png',
+        id: 'repelente', cat: 'utility', trainerShop: true, bcPrice: 500, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/repel.png',
         name: 'Repelente', icon: '🚫', price: 20000, unlockLv: 1, tier: 'common',
         desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 10 min.',
         effect: (qty) => { state.inventory['Repelente'] = (state.inventory['Repelente'] || 0) + qty; }
       },
       {
-        id: 'super_repel', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-repel.png',
+        id: 'super_repel', cat: 'utility', trainerShop: true, bcPrice: 1000, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-repel.png',
         name: 'Superrepelente', icon: '🚫', price: 40000, unlockLv: 3, tier: 'rare',
         desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 20 min.',
         effect: (qty) => { state.inventory['Superrepelente'] = (state.inventory['Superrepelente'] || 0) + qty; }
       },
       {
-        id: 'max_repel', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-repel.png',
+        id: 'max_repel', cat: 'utility', trainerShop: true, bcPrice: 1500, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-repel.png',
         name: 'Máximo Repelente', icon: '🚫', price: 60000, unlockLv: 22, tier: 'epic',
         desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 30 min.',
         effect: (qty) => { state.inventory['Máximo Repelente'] = (state.inventory['Máximo Repelente'] || 0) + qty; }
