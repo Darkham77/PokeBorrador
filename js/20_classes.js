@@ -137,10 +137,9 @@ const PLAYER_CLASSES = {
       '🥚 Incubación Rápida: Los pasos para eclosionar se reducen un 25%.',
       '❤️ Vigor: 15% de chance de recuperar vigor tras eclosionar.',
       '👁️ Predecir Naturaleza: Permite ver la naturaleza del Pokémon rival en batalla.',
-      '🔍 Escáner de Huevos: Visualiza y gestiona IVs/Naturaleza post-eclosión.',
-      '🥚 Incubación Asistida: misiones idle de 4/8/12h que mejoran IVs'
+      '🔍 Escáner de Huevos: Visualiza y gestiona IVs/Naturaleza post-eclosión.'
     ],
-    bonusLevels: [1, 1, 5, 5, 15, 20],
+    bonusLevels: [1, 1, 5, 5, 20],
     penalties: [
       '📉 -10% EXP en todos los combates',
       '🏥 Centro Pokémon cuesta 1.5x para Pokémon no criados por vos',
@@ -159,8 +158,7 @@ const PLAYER_CLASSES = {
       "El contador de pasos requerido para que un huevo eclosione se reduce en un 25%.",
       "Cada eclosión tiene un 15% de posibilidad de recuperar 1 punto de vigor en uno de los padres en la guardería.",
       "Muestra la Naturaleza (Modificadores de Stats) del Pokémon rival directamente en el HUD de batalla.",
-      "Tras eclosionar, permite elegir un huevo del inventario para conocer sus genes y decidir si conservarlo.",
-      "Misiones pasivas de larga duración que garantizan mejores IVs mínimos para los huevos generados."
+      "Tras eclosionar un huevo, selecciona otro huevo para conocer su genética. Permite conservarlo con un recordatorio en pantalla o venderlo (₽1000 - ₽5000) según sus IVs."
     ],
     technicalPenalties: [
       "Tu enfoque en la genética te aleja del fragor de la batalla (x0.90 EXP global).",

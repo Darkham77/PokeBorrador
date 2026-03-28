@@ -1079,7 +1079,19 @@ async function renderEggGrid() {
     const isReady = leftMs === 0;
     if (isReady) badgeReady = true;
 
-    return `<div class="egg-card">
+    const ivs = e.inherited_ivs || {};
+    const tooltipHtml = (ivs._scanned && ivs._predictedName) ? `
+      <div class="tooltip-wrap" style="position:absolute;top:-4px;right:-4px;z-index:10;">
+        <span style="font-size:14px;cursor:help;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🔍</span>
+        <div class="tooltip-box" style="right:0;width:180px;font-size:9px;line-height:1.4;text-align:left;">
+          <strong style="color:var(--yellow);font-size:10px;">${ivs._predictedName}</strong><br>
+          <span style="color:var(--gray);">Naturaleza:</span> <span style="color:#fff;">${ivs._predictedNature}</span><br>
+          <span style="color:var(--gray);">Genética:</span> <span style="color:var(--green);font-weight:bold;">${ivs._predictedTotalIV}/186</span>
+        </div>
+      </div>` : '';
+
+    return `<div class="egg-card" style="position:relative;">
+          ${tooltipHtml}
           <div class="egg-icon" style="${isReady ? 'animation:eggShake 0.6s infinite;' : ''}">🥚</div>
           <div class="egg-species">${pd ? pd.emoji + ' ' + pd.name : e.species}</div>
           <div class="egg-timer" style="${isReady ? 'color:#22c55e;font-weight:700;' : ''}">${isReady ? '¡Listo para recoger!' : `Eclosiona en ${leftMin} min`}</div>
@@ -1501,9 +1513,24 @@ function confirmMissionDelivery(uid, missionIdx) {
 }
 
 // ===== EGG SCANNER (BREEDER) =====
-function openEggScannerMenu() {
-  const eggs = state.eggs || [];
-  if (eggs.length === 0) return;
+window.openEggScannerMenu = async function() {
+  const walkedEggs = state.eggs || [];
+  let daycareEggs = [];
+  try {
+    const { data } = await sb.from('eggs').select('*').eq('player_id', currentUser.id).order('created_at');
+    if (data) daycareEggs = data;
+  } catch (e) {
+    console.warn("Could not fetch daycare eggs for scanner", e);
+  }
+
+  const allEggs = [];
+  walkedEggs.forEach((e, idx) => allEggs.push({ type: 'walked', data: e, index: idx }));
+  daycareEggs.forEach((e) => allEggs.push({ type: 'daycare', data: e, index: e.egg_id }));
+
+  if (allEggs.length === 0) {
+      notify("No tienes huevos sin abrir para escanear.", "❓");
+      return;
+  }
 
   const ov = document.createElement('div');
   ov.id = 'egg-scanner-overlay';
@@ -1512,18 +1539,38 @@ function openEggScannerMenu() {
   let html = `
     <div style="background:#1a1a2e;border:1px solid #a855f744;border-radius:20px;padding:24px;max-width:400px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
       <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#a855f7;margin-bottom:16px;text-align:center;">🔍 ESCÁNER DE HUEVOS</div>
-      <div style="font-size:10px;color:var(--gray);margin-bottom:20px;text-align:center;line-height:1.4;">Como Criador, podés escanear un huevo tras la eclosión. Elegí uno para revelar su genética:</div>
+      <div style="font-size:10px;color:var(--gray);margin-bottom:20px;text-align:center;line-height:1.4;">Elegí un huevo de tu mochila o de la guardería para revelar su genética temporalmente:</div>
       <div style="max-height:300px;overflow-y:auto;margin-bottom:20px;display:grid;gap:10px;">
   `;
 
-  eggs.forEach((egg, idx) => {
-    const name = POKEMON_DB[egg.pokemonId]?.name || 'Huevo';
+  allEggs.forEach((item) => {
+    let name = 'Huevo';
+    let stepsText = '';
+    let badgeHtml = '';
+    let isDaycare = item.type === 'daycare';
+    
+    if (isDaycare) {
+        name = POKEMON_DB[item.data.species]?.name || 'Huevo';
+        const hAt = new Date(item.data.hatch_ready_time).getTime();
+        const leftMs = Math.max(0, hAt - getServerTime());
+        const leftMin = Math.ceil(leftMs / 60000);
+        stepsText = leftMs > 0 ? `${leftMin} min rest.` : '¡Listo!';
+        badgeHtml = `<span style="font-size:8px;background:var(--purple);color:white;padding:2px 4px;border-radius:4px;margin-right:4px;">🏠 GUARD.</span>`;
+    } else {
+        name = POKEMON_DB[item.data.pokemonId]?.name || 'Huevo';
+        stepsText = `${item.data.steps || 0} pasos rest.`;
+        badgeHtml = `<span style="font-size:8px;background:var(--blue);color:white;padding:2px 4px;border-radius:4px;margin-right:4px;">🎒 MOCH.</span>`;
+    }
+
+    const typeStr = item.type;
+    const idxStr = typeof item.index === 'string' ? `'${item.index}'` : item.index;
+
     html += `
-      <div onclick="scanEggInMenu(${idx})" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);padding:12px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:0.2s;" onmouseover="this.style.background='rgba(168,85,247,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+      <div onclick="scanEggInMenu('${typeStr}', ${idxStr})" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);padding:12px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:0.2s;" onmouseover="this.style.background='rgba(168,85,247,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
         <div style="font-size:24px;">🥚</div>
         <div>
-          <div style="font-size:12px;font-weight:700;">${name}</div>
-          <div style="font-size:9px;color:var(--gray);">${egg.steps || 0} pasos rest.</div>
+          <div style="font-size:12px;font-weight:700;">${badgeHtml}${name}</div>
+          <div style="font-size:9px;color:var(--gray);margin-top:4px;">${stepsText}</div>
         </div>
       </div>
     `;
@@ -1539,19 +1586,40 @@ function openEggScannerMenu() {
   document.body.appendChild(ov);
 }
 
-window.scanEggInMenu = function(idx) {
-  const egg = state.eggs[idx];
-  if (!egg) return;
+window.scanEggInMenu = async function(type, index) {
+  let egg = null;
+  let pokemonId = null;
   
-  const p = makePokemon(egg.pokemonId, 5);
-  if (egg.origin === 'breeding' && egg.inherited_ivs) {
-     if (egg.inherited_ivs._nature) { p.nature = egg.inherited_ivs._nature; }
-     p.ivs = { ...egg.inherited_ivs };
-     if (egg.isShiny !== undefined) p.isShiny = egg.isShiny;
+  if (type === 'walked') {
+      egg = state.eggs[index];
+      if (!egg) return;
+      pokemonId = egg.pokemonId;
+  } else {
+      const { data } = await sb.from('eggs').select('*').eq('egg_id', index).single();
+      if (!data) return;
+      egg = data;
+      pokemonId = egg.species;
+  }
+  
+  const p = makePokemon(pokemonId, 5);
+  
+  // Apply genetics
+  const ivSource = type === 'walked' ? egg.inherited_ivs : egg.inherited_ivs;
+  if (ivSource) {
+     if (ivSource._nature) { p.nature = ivSource._nature; }
+     p.ivs = { ...ivSource };
+     if (type === 'walked' && egg.isShiny !== undefined) p.isShiny = egg.isShiny;
+     if (type === 'daycare' && egg.shiny_roll) p.isShiny = true;
   }
   
   const totalIV = (p.ivs.hp||0)+(p.ivs.atk||0)+(p.ivs.def||0)+(p.ivs.spa||0)+(p.ivs.spd||0)+(p.ivs.spe||0);
   const ability = p.ability || 'Desconocida';
+  const sellPrice = 1000 + Math.floor((totalIV / 186) * 4000);
+
+  const typeStr = type;
+  const idxStr = typeof index === 'string' ? `'${index}'` : index;
+  const pNameEnc = escape(p.name);
+  const pNatureEnc = escape(p.nature);
 
   const ov = document.getElementById('egg-scanner-overlay');
   ov.innerHTML = `
@@ -1578,18 +1646,67 @@ window.scanEggInMenu = function(idx) {
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <button onclick="document.getElementById('egg-scanner-overlay').remove()" style="padding:14px;background:var(--green);color:#000;border:none;border-radius:12px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:8px;font-weight:900;">MANTENER</button>
-        <button onclick="discardEggInMenu(${idx})" style="padding:14px;background:rgba(239,68,68,0.2);color:#ef4444;border:1px solid #ef444444;border-radius:12px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:8px;">DESCARTAR</button>
+        <button onclick="keepScannedEgg('${typeStr}', ${idxStr}, '${pNameEnc}', '${pNatureEnc}', ${totalIV})" style="padding:14px;background:var(--green);color:#000;border:none;border-radius:12px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:8px;font-weight:900;">MANTENER</button>
+        <button onclick="sellEggInMenu('${typeStr}', ${idxStr}, ${sellPrice})" style="padding:14px;background:rgba(234,179,8,0.15);color:#eab308;border:1px solid rgba(234,179,8,0.3);border-radius:12px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:8px;font-weight:900;">VENDER (₽${sellPrice})</button>
       </div>
+      
+      <button onclick="closeEggScanner()" style="width:100%;margin-top:12px;padding:12px;background:rgba(255,255,255,0.05);color:var(--gray);border:none;border-radius:12px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:8px;">CERRAR</button>
     </div>
   `;
 }
 
-window.discardEggInMenu = function(idx) {
-  if (!confirm('¿Seguro que quieres descartar este huevo? No se podrá recuperar.')) return;
-  state.eggs.splice(idx, 1);
-  document.getElementById('egg-scanner-overlay').remove();
-  notify('Huevo descartado correctamente.', '🗑️');
+window.closeEggScanner = function() {
+  const ov = document.getElementById('egg-scanner-overlay');
+  if (ov) ov.remove();
+}
+
+window.keepScannedEgg = async function(type, index, pNameEnc, pNatureEnc, totalIV) {
+  const pName = unescape(pNameEnc);
+  const pNature = unescape(pNatureEnc);
+  
+  if (type === 'walked') {
+      const egg = state.eggs[index];
+      if (egg) {
+          egg.scanned = true;
+          egg.predictedInfo = { name: pName, nature: pNature, ivTotal: totalIV };
+      }
+      updateHud();
+      scheduleSave();
+  } else {
+      // Daycare Egg
+      const { data } = await sb.from('eggs').select('inherited_ivs').eq('egg_id', index).single();
+      if (data) {
+          const ivs = data.inherited_ivs || {};
+          ivs._scanned = true;
+          ivs._predictedName = pName;
+          ivs._predictedNature = pNature;
+          ivs._predictedTotalIV = totalIV;
+          await sb.from('eggs').update({ inherited_ivs: ivs }).eq('egg_id', index);
+          if (document.getElementById('tab-daycare').style.display === 'block') {
+             renderEggGrid(); 
+          }
+      }
+  }
+  
+  closeEggScanner();
+  notify('Datos del huevo registrados.', '📋');
+}
+
+window.sellEggInMenu = async function(type, index, sellPrice) {
+  if (!confirm('¿Seguro que quieres vender este huevo genético? No podrás recuperarlo.')) return;
+  
+  if (type === 'walked') {
+      state.eggs.splice(index, 1);
+  } else {
+      await sb.from('eggs').delete().eq('egg_id', index);
+      if (document.getElementById('tab-daycare').style.display === 'block') {
+         renderEggGrid(); 
+      }
+  }
+  
+  state.money = (state.money || 0) + sellPrice;
+  closeEggScanner();
+  notify('Huevo vendido al Mercado Genético.', '💰');
   updateProfilePanel();
   updateHud();
   scheduleSave();

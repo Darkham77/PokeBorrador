@@ -622,8 +622,8 @@
             updateHud();
             scheduleSave();
 
-            // Sinergia Criador: Escáner de Huevos post-eclosión
-            if (state.playerClass === 'criador' && state.eggs && state.eggs.length > 0) {
+            // Sinergia Criador: Escáner de Huevos post-eclosión (Nivel 20+)
+            if (state.playerClass === 'criador' && (state.trainerLevel || 1) >= 20) {
               setTimeout(() => {
                 if (typeof openEggScannerMenu === 'function') openEggScannerMenu();
               }, 600);

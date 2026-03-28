@@ -799,7 +799,18 @@ function updateEggProgressHud() {
 
     return `
           <div class="hud-egg-card" ${isReady ? `onclick="startManualHatch(${idx})"` : ''} 
-            style="animation: slideInDown ${0.3 + idx*0.1}s ease forwards; ${isReady ? 'cursor: pointer; border-color: var(--yellow); animation: pulseGlow 2s infinite;' : 'cursor: default;'}">
+            style="animation: slideInDown ${0.3 + idx*0.1}s ease forwards; ${isReady ? 'cursor: pointer; border-color: var(--yellow); animation: pulseGlow 2s infinite;' : 'cursor: default;'} position: relative;">
+            
+            ${egg.scanned && egg.predictedInfo ? `
+              <div class="tooltip-wrap" style="position:absolute;top:-4px;right:-4px;z-index:10;">
+                <span style="font-size:14px;cursor:help;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🔍</span>
+                <div class="tooltip-box" style="right:0;width:180px;font-size:9px;line-height:1.4;text-align:left;">
+                  <strong style="color:var(--yellow);font-size:10px;">${egg.predictedInfo.name}</strong><br>
+                  <span style="color:var(--gray);">Naturaleza:</span> <span style="color:#fff;">${egg.predictedInfo.nature}</span><br>
+                  <span style="color:var(--gray);">Genética:</span> <span style="color:var(--green);font-weight:bold;">${egg.predictedInfo.ivTotal}/186</span>
+                </div>
+              </div>` : ''}
+
             <div class="hud-egg-icon" style="${isReady ? 'animation: eggShake 1.5s infinite;' : ''}">🥚</div>
             <div class="hud-egg-info">
               <span class="hud-egg-label">${isReady ? '¡LISTO!' : (egg.origin === 'breeding' ? 'CRIANZA' : 'ENCUENTRO')}</span>
