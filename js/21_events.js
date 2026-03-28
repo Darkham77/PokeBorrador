@@ -754,7 +754,7 @@ function _renderEntriesTable() {
           <div style="font-size:9px;color:#6b7280;margin-top:2px;">${ivDetail}</div>
           <div style="font-size:8px;color:#4b5563;margin-top:1px;">${new Date(entry.submitted_at).toLocaleString('es-AR')}</div>
         </div>
-        <button onclick="window._evAwardEntry('${entry.player_id}', '${entry.player_name.replace(/'/g,"\\\\'")}')"
+        <button onclick="window._evAwardEntry('${entry.player_id}', '${entry.player_name.replace(/'/g,"\\\\'")}', '${entry.player_email}')"
           style="padding:8px 10px;border:none;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;flex-shrink:0;white-space:nowrap;">
           🏆 PREMIAR
         </button>
@@ -842,7 +842,7 @@ function _prizeSummary(prize) {
   return 'Premio desconocido';
 }
 
-async function _evAwardEntry(playerId, playerName) {
+async function _evAwardEntry(playerId, playerName, playerEmail) {
   if (!confirm(`¿Premiar directamente a ${playerName}? (Solo 1er puesto)`)) return;
   try {
     const evId = window._currentCompetitionId || 'hora_magikarp';
@@ -855,6 +855,7 @@ async function _evAwardEntry(playerId, playerName) {
     const { error } = await sb.from('awards').insert({
       winner_id: playerId,
       winner_name: playerName,
+      winner_email: playerEmail || '—', // Garantizamos el email
       event_id: evId,
       prize,
       awarded_at: new Date().toISOString()
@@ -941,14 +942,16 @@ async function awardEvent(eventId, manual = false) {
       const prize = prizes[winner.rank];
       if (!prize) continue;
 
-      await sb.from('awards').insert({
+      // 3. Registrar el premio para el ganador
+      const { error: awardErr } = await sb.from('awards').insert({
         winner_id: winner.entry.player_id,
         winner_name: winner.entry.player_name,
-        winner_email: winner.entry.player_email,
+        winner_email: winner.entry.player_email || '—', // Incluir para evitar null constraint
         event_id: eventId,
         prize,
         awarded_at: new Date().toISOString()
       });
+      if (awardErr) throw awardErr;
     }
 
     // 4. Guardar resultado histórico del podio
