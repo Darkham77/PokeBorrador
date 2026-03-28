@@ -1284,6 +1284,22 @@
   <!-- SAVE INDICATOR -->
   <div class="save-indicator" id="save-indicator">✓ Partida guardada</div>
 
+  <!-- EVENT DETAIL MODAL -->
+  <div id="event-detail-modal" onclick="if(event.target === this) this.style.display='none'">
+    <div class="event-detail-card" onclick="event.stopPropagation()">
+      <button onclick="document.getElementById('event-detail-modal').style.display='none'" 
+              style="position:absolute;top:20px;right:20px;background:none;border:none;color:var(--gray);font-size:24px;cursor:pointer;">✕</button>
+      <div id="event-detail-content">
+        <!-- Injected via JS -->
+      </div>
+      <button onclick="document.getElementById('event-detail-modal').style.display='none'" 
+              style="width:100%;margin-top:10px;padding:14px;border:none;border-radius:14px;cursor:pointer;
+                     font-family:'Press Start 2P',monospace;font-size:9px;background:var(--yellow);color:#111;font-weight:900;">
+        ¡ENTENDIDO!
+      </button>
+    </div>
+  </div>
+
 </body>
 
 </html>

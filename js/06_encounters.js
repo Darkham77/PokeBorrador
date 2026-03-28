@@ -17,6 +17,9 @@ function _startCarouselTimer() {
       if (slides.length > 0) {
         slides.forEach((s, i) => s.classList.toggle('active', i === _currentCarouselIndex));
         dots.forEach((d, i) => d.classList.toggle('active', i === _currentCarouselIndex));
+        
+        // El slide 0 es "Raros", los slides > 0 son eventos activos
+        carousel.classList.toggle('event-active', _currentCarouselIndex > 0);
       }
     }
   }, 5000);
@@ -31,7 +34,8 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
     icon: cycleIcon,
     title: 'Raros por horario',
     content: `<div class="pc-banner-spawns pc-banner-spawns-compact">${rareCycleSpritesHtml}</div>`,
-    onclick: null
+    onclick: null,
+    isEvent: false
   });
 
   // Slides de Eventos
@@ -40,7 +44,8 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
       icon: ev.icon || '🎁',
       title: ev.name,
       content: `<div class="pc-banner-text" style="font-size:11px; line-height:1.4;">${ev.description || '¡Evento especial activo ahora!'}</div>`,
-      onclick: `if(typeof openLibrarySection === 'function') openLibrarySection('eventos')`
+      onclick: `if(typeof showEventDetail === 'function') showEventDetail('${ev.id}')`,
+      isEvent: true
     });
   });
 
@@ -51,7 +56,7 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
          ${s.onclick ? `onclick="event.stopPropagation(); ${s.onclick}"` : ''}>
       <div class="pc-banner-icon">${s.icon}</div>
       <div class="pc-banner-content">
-        <div class="pc-banner-title">${s.title}</div>
+        <div class="pc-banner-title" style="${s.isEvent ? 'color:var(--yellow);' : ''}">${s.title}</div>
         ${s.content}
       </div>
     </div>
@@ -61,8 +66,10 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
     <div class="pc-dot ${i === _currentCarouselIndex ? 'active' : ''}"></div>
   `).join('');
 
+  const hasEventActive = _currentCarouselIndex > 0 && slides[_currentCarouselIndex]?.isEvent;
+
   return `
-    <div class="pc-banner pc-banner-carousel" id="event-carousel">
+    <div class="pc-banner pc-banner-carousel ${hasEventActive ? 'event-active' : ''}" id="event-carousel" style="min-height: 80px;">
       ${slidesHtml}
       <div class="pc-carousel-dots">${dotsHtml}</div>
     </div>

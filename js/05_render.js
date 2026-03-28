@@ -876,7 +876,7 @@ function updateBuffPanel() {
           <div class="buff-tooltip-time" style="color:#fff;">Toca para más info</div>
         </div>
       `;
-      el.onclick = () => { if (typeof openLibrarySection === 'function') openLibrarySection('eventos'); };
+      el.onclick = () => { if (typeof showEventDetail === 'function') showEventDetail(ev.id); };
       panel.appendChild(el);
     });
   }

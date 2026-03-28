@@ -108,6 +108,43 @@ function _updateEventBanner() {
   }
 }
 
+function showEventDetail(evId) {
+  const ev = _activeEvents.find(e => e.id === evId);
+  if (!ev) return;
+
+  const modal = document.getElementById('event-detail-modal');
+  const content = document.getElementById('event-detail-content');
+  if (!modal || !content) return;
+
+  let configHtml = '';
+  if (ev.config) {
+    configHtml = '<div class="event-detail-config">';
+    Object.entries(ev.config).forEach(([key, val]) => {
+      let label = key.replace(/Mult$/, '');
+      if (label === 'exp') label = 'Experiencia';
+      if (label === 'money') label = 'Dinero (₽)';
+      if (label === 'bc') label = 'Battle Coins';
+      if (label === 'shiny') label = 'Probabilidad Shiny';
+      
+      configHtml += `
+        <div class="config-item">
+          <span class="config-label">${label.toUpperCase()}</span>
+          <span class="config-value">x${val}</span>
+        </div>`;
+    });
+    configHtml += '</div>';
+  }
+
+  content.innerHTML = `
+    <div class="event-detail-icon">${ev.icon || '🎁'}</div>
+    <div class="event-detail-title">${ev.name}</div>
+    <div class="event-detail-desc">${ev.description || '¡Aprovechá este evento especial mientras esté activo!'}</div>
+    ${configHtml}
+  `;
+
+  modal.style.display = 'flex';
+}
+
 // ── Concurso de Magikarp ──────────────────────────────────────────────────────
 async function submitMagikarpEntry(pokemon) {
   if (!isEventActive('hora_magikarp') || !currentUser) return;
