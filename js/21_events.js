@@ -1034,22 +1034,43 @@ window._evClearEntries = async (eventId) => {
   const targetId = eventId || window._currentCompetitionId;
   if (!targetId) { alert('Error: No se encontró el ID del evento.'); return; }
   
-  if (!confirm(`¿Estás seguro de REINICIAR y ELIMINAR a todos los participantes del evento [${targetId}]?\n\nEsta acción es irreversible.`)) return;
+  if (!confirm(`¿Estás seguro de ELIMINAR a todos los participantes del evento [${targetId}]?\n\nEsta acción es irreversible.`)) return;
   
   try {
-    const { error } = await window.sb.from('competition_entries').delete().eq('event_id', targetId);
+    const { error, count } = await window.sb
+      .from('competition_entries')
+      .delete({ count: 'exact' })
+      .eq('event_id', targetId);
+
     if (error) throw error;
     
-    // Solo vaciar localmente SI la base de datos confirmó el borrado
+    if (count === 0) {
+      // RLS no dejó borrar nada - intentar borrar solo la entrada propia
+      const myId = window.currentUser?.id;
+      if (myId) {
+        const { error: err2, count: cnt2 } = await window.sb
+          .from('competition_entries')
+          .delete({ count: 'exact' })
+          .eq('event_id', targetId)
+          .eq('player_id', myId);
+        
+        if (err2) throw err2;
+        if (cnt2 === 0) {
+          alert('AVISO: No se pudo borrar ningún participante.\n\nNecesitás agregar una política RLS en Supabase.\nAbrí la consola de Supabase → SQL Editor y ejecutá la consulta que aparece en los pasos de configuración.');
+          await _evLoadEntries();
+          return;
+        }
+      }
+    }
+
     _adminEntries = [];
     notify('¡Lista de participantes vaciada!', '🗑️');
-    
     _renderAdminPanel();
-    _evLoadEntries(); 
+    await _evLoadEntries(); 
   } catch (e) {
     console.error('[Events] Error al limpiar:', e);
-    alert('ERROR AL BOORRAR EN BASE DE DATOS:\n' + (e.message || e));
-    _evLoadEntries(); // Recargar para mostrar lo que hay realmente
+    alert('ERROR AL BORRAR:\n' + (e.message || e));
+    await _evLoadEntries();
   }
 };
 
