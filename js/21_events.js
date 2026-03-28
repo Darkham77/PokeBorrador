@@ -61,24 +61,6 @@ async function loadActiveEvents() {
     
     _activeEvents = events.filter(ev => _isEventActiveNow(ev));
 
-    // 2. Cargar resultados de los últimos 3 días (72hs)
-    try {
-      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-      const { data: results, error: resError } = await window.sb.from('competition_results')
-        .select('*, events_config(name, icon)')
-        .gt('ended_at', threeDaysAgo);
-
-      if (!resError && results) {
-        _finishedEvents = results.map(r => ({
-          ...r,
-          name: r.events_config?.name || 'Evento Finalizado',
-          icon: r.events_config?.icon || '🏁'
-        }));
-      }
-    } catch (err) {
-      console.warn('[Events] Error cargando resultados recientes:', err);
-    }
-
     _eventsLoaded = true;
     _updateEventBanner();
 
@@ -893,26 +875,31 @@ window._evSwitchCompetition = (val) => {
 
 async function awardEvent(eventId, manual = false) {
   try {
+    // 1. Obtener config del evento
     const { data: ev, error: fetchEvErr } = await window.sb.from('events_config').select('*').eq('id', eventId).single();
     if (fetchEvErr) throw fetchEvErr;
 
+    // 2. Obtener participantes
     const { data: entries, error: fetchEntErr } = await window.sb.from('competition_entries').select('*').eq('event_id', eventId);
     if (fetchEntErr) throw fetchEntErr;
 
-    // Evitar premiación doble si ya se hizo recientemente (ej. hace menos de 10 min)
+    // Evitar premiación doble si ya se hizo recientemente (< 10 min)
     const lastAwarded = ev.config?.lastAwardedAt ? new Date(ev.config.lastAwardedAt) : new Date(0);
     if (!manual && (new Date() - lastAwarded < 10 * 60 * 1000)) return;
 
     const prizes = ev.config?.prizes;
-    if (!prizes) return;
+    if (!prizes) { if (manual) alert('ERROR: No hay premios configurados para este evento.'); return; }
 
-    // Dejar una notificación visual de que el proceso ha comenzado
+    if (!entries || entries.length === 0) {
+      if (manual) notify('No hay participantes para premiar.', '⚠️');
+      return;
+    }
+
     notify('Procesando premios...', '🏆');
 
+    // 3. Ordenar participantes
     const sortBy = ev.config?.sortBy || 'data.total_ivs';
-    
-    // Ordenar participantes
-    const sorted = (entries || []).sort((a, b) => {
+    const sorted = [...entries].sort((a, b) => {
       const valA = sortBy.startsWith('data.') ? a.data?.[sortBy.split('.')[1]] : a[sortBy];
       const valB = sortBy.startsWith('data.') ? b.data?.[sortBy.split('.')[1]] : b[sortBy];
       return (valB || 0) - (valA || 0);
@@ -924,34 +911,14 @@ async function awardEvent(eventId, manual = false) {
       { rank: 'third', entry: sorted[2] }
     ].filter(w => w.entry);
 
-    // 4. Guardar resultado histórico del podio
-    const { error: resErr } = await window.sb.from('competition_results').insert({
-      event_id: eventId,
-      results: winners.map(w => ({
-        rank: w.rank,
-        player_id: w.entry.player_id,
-        player_name: w.entry.player_name,
-        score: w.entry.data?.total_ivs || 0,
-        pokemon: w.entry.data?.pokemon_name || '?'
-      })),
-      ended_at: new Date().toISOString()
-    });
-    if (resErr) throw resErr;
-
-    // 5. Limpiar tabla de participantes (Cleanup)
-    const { error: delErr } = await window.sb.from('competition_entries').delete().eq('event_id', eventId);
-    if (delErr) throw delErr;
-
-    // 3. Insertar premios individuales
+    // 4. Insertar premios individuales en tabla 'awards'
     for (const winner of winners) {
       const prize = prizes[winner.rank];
       if (!prize) continue;
-
-      // Registrar el premio para el ganador
       const { error: awardErr } = await window.sb.from('awards').insert({
         winner_id: winner.entry.player_id,
         winner_name: winner.entry.player_name,
-        winner_email: winner.entry.player_email || '—', // Incluir para evitar null constraint
+        winner_email: winner.entry.player_email || '—',
         event_id: eventId,
         prize,
         awarded_at: new Date().toISOString()
@@ -959,35 +926,21 @@ async function awardEvent(eventId, manual = false) {
       if (awardErr) throw awardErr;
     }
 
-    // 4. Guardar resultado histórico del podio
-    const resultsData = winners.map(w => ({
-      player_id: w.entry.player_id,
-      player_name: w.entry.player_name,
-      rank: w.rank,
-      score: (sortBy.startsWith('data.') ? w.entry.data?.[sortBy.split('.')[1]] : w.entry[sortBy]) || 0,
-      prize: prizes[w.rank],
-      data: w.entry.data
-    }));
+    // 5. Limpiar participantes
+    const { error: delErr } = await window.sb.from('competition_entries').delete().eq('event_id', eventId);
+    if (delErr) throw delErr;
 
-    await sb.from('competition_results').insert({
-      event_id: eventId,
-      winners: resultsData,
-      ended_at: new Date().toISOString()
-    });
-
-    // 5. Limpiar entradas y actualizar config
-    await sb.from('competition_entries').delete().eq('event_id', eventId);
-    
+    // 6. Actualizar config con timestamp de última premiación
     const newConfig = { ...ev.config, lastAwardedAt: new Date().toISOString() };
-    await sb.from('events_config').update({ config: newConfig }).eq('id', eventId);
+    await window.sb.from('events_config').update({ config: newConfig }).eq('id', eventId);
 
-    if (manual) notify(`¡Evento premiado con éxito! Se repartieron ${winners.length} premios.`, '🏆');
+    if (manual) notify(`¡Evento premiado! Se repartieron ${winners.length} premios.`, '🏆');
     else console.log(`[Events] Automatización: Evento ${eventId} premiado.`);
-    
-    // Forzar refresco completo
+
+    // Refrescar UI
     _adminEntries = [];
     _renderAdminPanel();
-    _evLoadEntries();
+    await _evLoadEntries();
   } catch (e) {
     console.error('[Events] Error en awardEvent:', e);
     alert('ERROR EN PREMIACIÓN:\n' + (e.message || e));
@@ -996,98 +949,32 @@ async function awardEvent(eventId, manual = false) {
 
 async function showEventResultsModal(eventId) {
   try {
-    // 1. Cargar resultados y configuración del evento
-    const { data: result, error: resError } = await sb.from('competition_results')
-      .select('*')
-      .eq('event_id', eventId)
-      .order('ended_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    const { data: ev, error: evError } = await sb.from('events_config').select('name, icon, config').eq('id', eventId).single();
-
-    if (resError || !result) { notify('No se encontraron resultados para este evento.', '❓'); return; }
-
-    const winners = result.winners || [];
+    const { data: ev } = await window.sb.from('events_config').select('name, icon, config').eq('id', eventId).single();
     const myAward = state._pendingAwards?.find(a => a.event_id === eventId);
     
-    // 2. Construir el Modal
-    const modal = document.createElement('div');
-    modal.id = 'podium-modal-overlay';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);animation:fadeIn 0.3s;';
-    
-    const p1 = winners.find(w => w.rank === 'first');
-    const p2 = winners.find(w => w.rank === 'second');
-    const p3 = winners.find(w => w.rank === 'third');
-
-    const renderPodiumStep = (winner, rank) => {
-      if (!winner) return '<div style="flex:1;"></div>';
-      const isMe = winner.player_id === currentUser?.id;
-      const isP1 = rank === 'first';
-      const size = isP1 ? 120 : 90;
-      const medal = rank === 'first' ? '🥇' : rank === 'second' ? '🥈' : '🥉';
-      const color = rank === 'first' ? '#fbbf24' : rank === 'second' ? '#94a3b8' : '#b45309';
-      
-      // Intentamos obtener sprite si es pokemon
-      let prizeImg = '';
-      if (winner.prize?.type === 'pokemon') {
-        const sprite = getSpriteUrl(winner.prize.species, winner.prize.shiny);
-        prizeImg = `<img src="${sprite}" style="width:${isP1 ? 100 : 70}px; height:${isP1 ? 100 : 70}px; image-rendering:pixelated; filter:drop-shadow(0 0 10px ${color}88);">`;
-      } else if (winner.prize?.type === 'item') {
-        prizeImg = `<div style="font-size:${isP1 ? 60 : 40}px; filter:drop-shadow(0 0 10px ${color}44);">📦</div>`;
-      } else {
-        prizeImg = `<div style="font-size:${isP1 ? 60 : 40}px; filter:drop-shadow(0 0 10px ${color}44);">💰</div>`;
-      }
-
-      return `
-        <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:10px; position:relative; animation: slideUp 0.5s ${rank === 'first' ? '0.1s' : rank === 'second' ? '0s' : '0.2s'} both;">
-          <div style="font-size:24px; position:absolute; top:-30px;">${medal}</div>
-          <div style="width:${size}px; height:${size}px; background:rgba(255,255,255,0.05); border:2px solid ${color}; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 0 20px ${color}33;">
-            <div style="font-size:${isP1 ? 40 : 30}px;">👤</div>
-          </div>
-          <div style="text-align:center;">
-            <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:${isMe ? '#22c55e' : '#fff'}; margin-bottom:4px;">${winner.player_name}</div>
-            <div style="font-size:10px; color:#64748b;">${winner.score} Pts</div>
-          </div>
-          <div style="margin-top:10px; background:rgba(255,255,255,0.03); padding:10px; border-radius:15px; border:1px solid ${color}44;">
-             ${prizeImg}
-             <div style="font-size:8px; color:${color}; margin-top:5px; font-weight:bold;">${_prizeSummary(winner.prize)}</div>
-          </div>
-        </div>`;
-    };
-
     modal.innerHTML = `
-      <div style="background:#0f172a; width:100%; max-width:600px; border-radius:30px; border:2px solid #334155; padding:40px; position:relative; overflow:hidden;">
-        <div style="position:absolute; top:0; left:0; right:0; height:150px; background:linear-gradient(to bottom, #1e293b, transparent); z-index:0;"></div>
-        
+      <div style="background:#0f172a; width:100%; max-width:480px; border-radius:24px; border:2px solid #334155; padding:32px; position:relative; overflow:hidden;">
         <button onclick="document.getElementById('podium-modal-overlay').remove()" 
-          style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.05); border:none; color:#94a3b8; font-size:20px; cursor:pointer; z-index:10; width:40px; height:40px; border-radius:50%;">✕</button>
+          style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.05); border:none; color:#94a3b8; font-size:20px; cursor:pointer; z-index:10; width:36px; height:36px; border-radius:50%;">✕</button>
 
-        <div style="position:relative; z-index:1; text-align:center; margin-bottom:40px;">
-          <div style="font-size:40px; margin-bottom:10px;">🏆</div>
-          <h2 style="font-family:'Press Start 2P',monospace; font-size:16px; color:#fbbf24; margin:0;">PODIO DEL EVENTO</h2>
-          <div style="color:#64748b; font-size:12px; margin-top:8px;">${ev?.name || eventId}</div>
+        <div style="text-align:center; margin-bottom:28px;">
+          <div style="font-size:36px; margin-bottom:10px;">${ev?.icon || '🏆'}</div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#fbbf24; margin-bottom:6px;">RESULTADO DEL EVENTO</div>
+          <div style="color:#64748b; font-size:12px;">${ev?.name || eventId}</div>
         </div>
 
-        <div style="position:relative; z-index:1; display:flex; align-items:flex-end; gap:10px; margin-bottom:40px; min-height:280px;">
-          ${renderPodiumStep(p2, 'second')}
-          ${renderPodiumStep(p1, 'first')}
-          ${renderPodiumStep(p3, 'third')}
-        </div>
-
-        <div style="position:relative; z-index:1; text-align:center;">
+        <div style="text-align:center;">
           ${myAward ? `
-            <div style="margin-bottom:20px; padding:15px; background:rgba(34,197,94,0.1); border:1px solid #22c55e44; border-radius:15px; color:#22c55e; font-size:12px;">
-              ¡Felicidades! Tenés un premio pendiente por reclamar.
+            <div style="margin-bottom:16px; padding:14px; background:rgba(34,197,94,0.1); border:1px solid #22c55e44; border-radius:14px; color:#22c55e; font-size:12px;">
+              🎁 ¡Tenés un premio pendiente por reclamar!
             </div>
             <button onclick="claimAward('${myAward.id}'); document.getElementById('podium-modal-overlay').remove();"
-              style="width:100%; padding:18px; border:none; border-radius:18px; background:linear-gradient(135deg, #22c55e, #15803d); color:#fff; font-family:'Press Start 2P',monospace; font-size:10px; cursor:pointer; box-shadow:0 10px 25px rgba(34,197,94,0.4); transform:scale(1); transition:transform 0.2s;"
-              onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+              style="width:100%; padding:16px; border:none; border-radius:16px; background:linear-gradient(135deg, #22c55e, #15803d); color:#fff; font-family:'Press Start 2P',monospace; font-size:10px; cursor:pointer; box-shadow:0 8px 20px rgba(34,197,94,0.4);">
               🎁 RECLAMAR RECOMPENSA
             </button>
           ` : `
-            <div style="color:#64748b; font-size:11px; font-style:italic;">
-              ${currentUser ? 'No tenés premios pendientes en este evento.' : 'Iniciá sesión para ver tus resultados.'}
+            <div style="color:#64748b; font-size:11px; font-style:italic; padding:20px 0;">
+              No tenés premios pendientes en este evento.
             </div>
           `}
         </div>
@@ -1095,7 +982,7 @@ async function showEventResultsModal(eventId) {
 
     document.body.appendChild(modal);
 
-    // 3. Añadir Animaciones si no existen
+    // Animaciones CSS
     if (!document.getElementById('podium-animations')) {
       const style = document.createElement('style');
       style.id = 'podium-animations';
