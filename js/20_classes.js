@@ -13,9 +13,10 @@ const PLAYER_CLASSES = {
       '💰 Mercado Negro: vendé Pokémon de la caja directo por ₽',
       '🎯 Robo Rápido: 15-30% de chance de robar un ítem al iniciar batalla vs entrenador',
       '🏪 20% de descuento en el Mercado Negro exclusivo',
-      '📦 Contrabando Pasivo: misiones idle de 2/4/8h con ₽ y objetos raros'
+      '🗺️ Extorsión de Ruta: una ruta diaria x1.5 ₽ en batallas NPC',
+      '🚔 Robo al Oficial: 5% chance de robar un Pokémon al Oficial'
     ],
-    bonusLevels: [1, 1, 10, 20],
+    bonusLevels: [1, 1, 10, 15, 20],
     penalties: [
       '🏥 Centro Pokémon cuesta el doble (2x)',
       '🪙 -10% Battle Coins en todas las batallas',
@@ -33,7 +34,8 @@ const PLAYER_CLASSES = {
       "Venta directa en PC: ₽500 + (Nivel Seleccionado x 10). Pokémon de Tier alta dan bonos extra.",
       "15% de probabilidad base. Escala a 30% al alcanzar el nivel 15 de clase. Solo vs Entrenadores NPC.",
       "Aplica un modificador de x0.80 al precio de todos los objetos en la Tienda del Entrenador.",
-      "Misiones que generan ingresos y objetos de contrabando de forma pasiva mientras juegas."
+      "Cada día se elige una ruta al azar. En esa ruta (marcada con [R]), ganarás x1.5 de dinero al derrotar entrenadores NPC.",
+      "Al derrotar al Oficial de Policía en batalla, hay un 5% de probabilidad de robarle aleatoriamente uno de los Pokémon que utilizó y enviarlo a tu PC."
     ],
     technicalPenalties: [
       "El servicio de enfermería básico tiene un recargo del 100% (x2) por ser miembro del Team Rocket.",

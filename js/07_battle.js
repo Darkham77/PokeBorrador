@@ -2781,8 +2781,16 @@ function endBattle(won) {
     awardBattleExperience();
 
     // Money reward + Battle Coins
-    let moneyWon = b.isGym ? b.enemy.level * 80 : b.enemy.level * 20;
-    if (b.isTrainer) moneyWon *= 2; // Trainers pay more
+    let moneyWon = b.isGym ? b.enemy.level * 80 : (b.isTrainer ? b.enemy.level * 40 : Math.floor(b.enemy.level * 10));
+    
+    // Extorsión de Ruta (Equipo Rocket)
+    if (b.isTrainer && !b.isGym && state.playerClass === 'rocket' && (state.classLevel || 1) >= 15) {
+      if (state.classData?.extortedRouteId && (b.locationId === state.classData.extortedRouteId || state.lastWildLocId === state.classData.extortedRouteId)) {
+        moneyWon = Math.floor(moneyWon * 1.5);
+        addLog(`🪙 ¡Extorsión de Ruta en efecto! (+50% ₽)`, 'log-info');
+      }
+    }
+
     if ((state.amuletCoinSecs || 0) > 0 || b.player.heldItem === 'Moneda Amuleto') moneyWon *= 2; // Moneda Amuleto
     state.money += moneyWon;
     addLog(`¡Ganaste <span style="color:#22c55e;font-weight:bold;">₽${moneyWon.toLocaleString()}</span>!`, 'log-info');
@@ -2809,6 +2817,27 @@ function endBattle(won) {
         if (state.classData) {
           state.classData.criminality = 0;
           addLog('¡Tu criminalidad ha sido reseteada tras derrotar a la ley!', 'log-info');
+          
+          // Robo al Oficial (Nv. 20+)
+          if ((state.classLevel || 1) >= 20 && Math.random() < 0.05) {
+            const targetTeam = b.enemyTeam && b.enemyTeam.length > 0 ? b.enemyTeam : [b.enemy];
+            const randIdx = Math.floor(Math.random() * targetTeam.length);
+            const stolen = targetTeam[randIdx];
+            
+            const stolenCopy = JSON.parse(JSON.stringify(stolen));
+            stolenCopy.uid = 'stolen_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+            stolenCopy.hp = stolenCopy.maxHp;
+            stolenCopy.status = null;
+            stolenCopy.sleepTurns = 0;
+            
+            state.box = state.box || [];
+            if (state.box.length < 200) {
+              state.box.push(stolenCopy);
+              setTimeout(() => notify(`¡Le robaste un Pokémon al oficial!`, '🚔'), 500);
+              addLog(`¡Increíble! Le has robado el <strong>${stolenCopy.name}</strong> al Oficial de Policía y fue enviado curado a tu PC.`, 'log-catch');
+            }
+          }
+
           if (typeof updateProfilePanel === 'function') updateProfilePanel();
         }
       }

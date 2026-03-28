@@ -115,6 +115,19 @@
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       })();
 
+      // Equipo Rocket: Extorsión de Ruta diaria (Nv. 15+)
+      if (state.playerClass === 'rocket' && (state.classLevel || 1) >= 15) {
+        if (state.classData?.extortedRouteDate !== today) {
+          state.classData = state.classData || {};
+          state.classData.extortedRouteDate = today;
+          // Seleccionar ruta que no sea un pueblo ni un gimnasio, del pool de FIRE_RED_MAPS
+          const validRoutes = FIRE_RED_MAPS.filter(m => m.wild && Object.keys(m.wild).length > 0);
+          const randomMap = validRoutes[Math.floor(Math.random() * validRoutes.length)];
+          state.classData.extortedRouteId = randomMap.id;
+          if (typeof scheduleSave === 'function') scheduleSave();
+        }
+      }
+
 
       const gymsList = (typeof GYMS !== 'undefined' && Array.isArray(GYMS))
         ? GYMS
@@ -262,7 +275,10 @@
 
             ${loc.fishing ? '<span class="fishing-rod">🎣</span>' : ''}
 
-            <div class="location-name">${loc.name}</div>
+            <div class="location-name">
+              ${loc.name}
+              ${state.playerClass === 'rocket' && (state.classLevel || 1) >= 15 && state.classData?.extortedRouteId === loc.id ? '<span style="color:#ef4444;margin-left:5px;font-weight:bold;text-shadow:0 0 5px #ef4444;" title="Ruta Extorsionada (x1.5 ₽ en batallas NPC)">[R]</span>' : ''}
+            </div>
             <div class="location-desc">${loc.desc}</div>
             ${isSafariTicketLocked ? `<div class="safari-lock-msg">Necesitas un Ticket Safari</div>` : ''}
             ${!isLocked ? `
