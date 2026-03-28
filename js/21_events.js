@@ -1113,6 +1113,19 @@ window._evAwardFullEvent = async (eventId) => {
   await awardEvent(eventId, true);
 };
 
+window._evClearEntries = async (eventId) => {
+  if (!confirm('¿Estás seguro de REINICIAR y ELIMINAR a todos los participantes de este evento? Esto no se puede deshacer.')) return;
+  try {
+    const { error } = await sb.from('competition_entries').delete().eq('event_id', eventId);
+    if (error) throw error;
+    notify('¡Participantes eliminados correctamente!', '🗑️');
+    _evLoadEntries();
+  } catch (e) {
+    console.error(e);
+    notify('Error al reiniciar tabla.', '❌');
+  }
+};
+
 window._evSavePrize = _evSavePrize;
 
 window._evFieldChange = (idx, field, val) => {
@@ -1138,6 +1151,8 @@ window._evHourChange = (idx, field, val) => {
   _adminConfig.events[idx].schedule = _adminConfig.events[idx].schedule || {};
   _adminConfig.events[idx].schedule[field] = parseInt(val) || 0;
 };
+
+window._evLoadEntriesGlobal = _evLoadEntries;
 
 // Se renombra la función global para evitar colisión con la local y recursión infinita
 window._evLoadEntriesGlobal = async () => {
