@@ -33,6 +33,7 @@ let _adminTab = 'events';
 let _adminEntries = [];
 let _currentPrizeRank = 'first';
 let _currentCompetitionId = 'hora_magikarp';
+window._currentCompetitionId = _currentCompetitionId; // Aseguramos acceso global
 const _prizeTemplate = () => ({ type: 'money', amount: 0, item: 'Pokéball', qty: 1, species: 'magikarp', level: 5, nature: 'Serio', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, shiny: false });
 let _prizeStates = {
   first: _prizeTemplate(),
@@ -684,7 +685,7 @@ function _renderCompetitionTab() {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#22c55e;">🎣 PARTICIPANTES (${_adminEntries.length})</div>
         <div style="display:flex;gap:12px;align-items:center;">
-          <button onclick="window._evClearEntries(_currentCompetitionId)" title="Reiniciar lista" 
+          <button onclick="window._evClearEntries(window._currentCompetitionId)" title="Reiniciar lista" 
             style="background:none;border:none;color:#ef4444;font-size:16px;cursor:pointer;opacity:0.7;padding:4px;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">🗑️</button>
           <button onclick="window._evLoadEntriesGlobal()" style="background:none;border:none;color:#6b7280;font-size:16px;cursor:pointer;padding:4px;">🔄</button>
         </div>
@@ -884,10 +885,11 @@ window._evSwitchPrizeRank = (rank) => {
   _renderAdminPanel();
 };
 
-window._evSwitchCompetition = (id) => {
-  _currentCompetitionId = id;
-  _renderAdminPanel();
+window._evSwitchCompetition = (val) => {
+  _currentCompetitionId = val;
+  window._currentCompetitionId = val;
   _evLoadEntries();
+  _renderAdminPanel();
 };
 
 async function awardEvent(eventId, manual = false) {
@@ -1118,14 +1120,23 @@ window._evAwardFullEvent = async (eventId) => {
 };
 
 window._evClearEntries = async (eventId) => {
-  if (!confirm('¿Estás seguro de REINICIAR y ELIMINAR a todos los participantes de este evento? Esto no se puede deshacer.')) return;
+  const targetId = eventId || window._currentCompetitionId;
+  if (!targetId) { notify('ID de evento no encontrado.', '❌'); return; }
+  
+  if (!confirm(`¿Estás seguro de REINICIAR y ELIMINAR a todos los participantes del evento [${targetId}]?`)) return;
+  
   try {
-    const { error } = await sb.from('competition_entries').delete().eq('event_id', eventId);
+    const { error } = await sb.from('competition_entries').delete().eq('event_id', targetId);
     if (error) throw error;
+    
+    _adminEntries = [];
     notify('¡Participantes eliminados correctamente!', '🗑️');
-    _evLoadEntries();
+    
+    // Refrescar todo el panel para actualizar los contadores en el header
+    _renderAdminPanel();
+    _evLoadEntries(); 
   } catch (e) {
-    console.error(e);
+    console.error('[Events] Error al limpiar:', e);
     notify('Error al reiniciar tabla.', '❌');
   }
 };
