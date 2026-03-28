@@ -1310,70 +1310,143 @@ function _openPokemonSelectModal(missionId, info, cls) {
   document.getElementById('mission-select-overlay')?.remove();
   const clsDef = PLAYER_CLASSES[cls];
   const availBox = (state.box || []).filter(p => !p.onMission);
-  
-  // Para entrenador: cualquier Pokémon. Para criador: cualquier Pokémon.
-  const ov = document.createElement('div');
-  ov.id = 'mission-select-overlay';
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px;';
-  
+
   const costHtml = cls === 'criador'
-    ? `<strong style="color:${clsDef.color};">${info.cost} BC</strong> de Battle Coins`
+    ? `<strong style="color:${clsDef.color};">${info.cost} BC</strong>`
     : `<strong style="color:${clsDef.color};">₽${info.cost.toLocaleString()}</strong>`;
 
   const rewardHtml = cls === 'criador'
-    ? `+${info.blocks} punto(s) de IV aleatorio | -${info.blocks} Vigor${info.vigorSaveChance > 0 ? ' <span style="color:#a855f7;">(10% sin Vigor)</span>' : ''}`
-    : `~${(2500 + 20 * 50) * info.blocks} EXP${info.bonusLevel ? ' + <strong>+1 Nivel garantizado</strong>' : ''}`;
+    ? `+${info.blocks} IV aleatorio | -${info.blocks} Vigor${info.vigorSaveChance > 0 ? ' <span style="color:#a855f7;">(10% ahorro)</span>' : ''}`
+    : `~${(2500 + 20 * 50) * info.blocks} EXP${info.bonusLevel ? ' + <strong>+1 Nivel</strong>' : ''}`;
 
-  ov.innerHTML = `
-    <div style="background:#0f172a;border:1px solid ${clsDef.color}44;border-radius:20px;padding:20px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${clsDef.color};">SELECCIONAR POKÉMON</div>
-        <button onclick="document.getElementById('mission-select-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;">✕</button>
+  // Genera el HTML de una tarjeta Pokémon con toda la info
+  const buildCard = (p, realIdx) => {
+    const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
+    const vigor = (p.vigor !== undefined && p.vigor !== null) ? p.vigor : 20;
+    const tags = p.tags || [];
+    const spriteUrl = (typeof getSpriteUrl === 'function') ? getSpriteUrl(p.id, p.isShiny) : '';
+
+    // Tags HTML
+    const tagsHtml = tags.length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
+      ${tags.includes('fav')   ? '<span style="background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);border-radius:6px;padding:1px 6px;font-size:10px;">⭐ Fav</span>' : ''}
+      ${tags.includes('breed') ? '<span style="background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.4);border-radius:6px;padding:1px 6px;font-size:10px;">❤️ Crianza</span>' : ''}
+      ${tags.includes('iv31')  ? '<span style="background:rgba(34,197,94,0.2);color:#4ade80;border:1px solid rgba(34,197,94,0.4);border-radius:6px;padding:1px 6px;font-size:10px;">31 IV Max</span>' : ''}
+    </div>` : '';
+
+    // IV bars individuales
+    const IV_LABELS = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SpA', spd: 'SpD', spe: 'VEL' };
+    const ivBars = Object.entries(p.ivs || {}).map(([stat, val]) => {
+      const pct = Math.round((val / 31) * 100);
+      const color = val >= 28 ? '#4ade80' : val >= 15 ? '#fbbf24' : '#f87171';
+      return `<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
+        <span style="font-size:9px;color:#6b7280;width:26px;flex-shrink:0;">${IV_LABELS[stat] || stat}</span>
+        <div style="flex:1;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+          <div style="width:${pct}%;height:100%;background:${color};border-radius:3px;"></div>
+        </div>
+        <span style="font-size:9px;color:${color};width:18px;text-align:right;">${val}</span>
+      </div>`;
+    }).join('');
+
+    // Stat extra según clase
+    const extraInfo = cls === 'criador'
+      ? `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+          <span style="font-size:10px;color:#a855f7;">💧 Vigor: <strong>${vigor}/20</strong></span>
+          <span style="margin:0 4px;color:#374151;">|</span>
+          <span style="font-size:10px;color:#6b7280;">IV Total: <strong style="color:#e2e8f0;">${totalIvs}/186</strong></span>
+        </div>`
+      : `<div style="font-size:10px;color:#3b82f6;margin-top:6px;">⚡ ~${(2500 + p.level * 50) * info.blocks} EXP totales</div>`;
+
+    const shinyBadge = p.isShiny ? '<span style="font-size:11px;margin-left:4px;">✨</span>' : '';
+
+    return `<div style="background:${clsDef.color}0d;border:1px solid ${clsDef.color}33;border-radius:12px;padding:12px;transition:0.15s;"
+        onmouseover="this.style.background='${clsDef.color}20';this.style.borderColor='${clsDef.color}66'"
+        onmouseout="this.style.background='${clsDef.color}0d';this.style.borderColor='${clsDef.color}33'">
+      <!-- Fila superior: sprite + nombre + nivel -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="width:44px;height:44px;flex-shrink:0;position:relative;">
+          ${spriteUrl
+            ? `<img src="${spriteUrl}" width="44" height="44" style="image-rendering:pixelated;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+               <span style="display:none;font-size:32px;line-height:44px;">${p.emoji || '❓'}</span>`
+            : `<span style="font-size:32px;line-height:44px;">${p.emoji || '❓'}</span>`}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:bold;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name || p.id}${shinyBadge}</div>
+          <div style="font-size:10px;color:#9ca3af;">Nv.${p.level} · ${p.nature || '—'}</div>
+          ${tagsHtml}
+        </div>
       </div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Costo: ${costHtml}</div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:12px;">Recompensa estimada: ${rewardHtml}</div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Elige 1 Pokémon de tu PC</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:320px;overflow-y:auto;">
-        ${availBox.length === 0
-          ? `<div style="grid-column:span 2;text-align:center;color:#6b7280;padding:16px;font-size:11px;">Tu PC está vacía.</div>`
-          : availBox.map((p) => {
-              const realIdx = (state.box || []).indexOf(p);
-              const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
-              const vigor = p.vigor !== undefined ? p.vigor : 20;
-              const extraInfo = cls === 'criador'
-                ? `<div style="font-size:10px;color:#a855f7;">💧${vigor} Vigor · IV:${totalIvs}</div>`
-                : `<div style="font-size:10px;color:#3b82f6;">~${2500 + p.level * 50} EXP/6h</div>`;
-              return `<div onclick="_confirmPokemonSelect(${realIdx}, '${missionId}')"
-                style="background:${clsDef.color}11;border:1px solid ${clsDef.color}33;border-radius:10px;padding:10px;cursor:pointer;transition:0.15s;"
-                onmouseover="this.style.background='${clsDef.color}22'"
-                onmouseout="this.style.background='${clsDef.color}11'">
-                <div style="font-size:12px;font-weight:bold;color:#e2e8f0;">${p.name || p.id}</div>
-                <div style="font-size:10px;color:#9ca3af;">Nv.${p.level}</div>
-                ${extraInfo}
-              </div>`;
-            }).join('')
-        }
+      <!-- IVs -->
+      <div style="margin-bottom:8px;">${ivBars}</div>
+      <!-- Stat extra -->
+      ${extraInfo}
+      <!-- Botones -->
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button onclick="_missionViewDetail(${realIdx},'${missionId}')"
+          style="flex:0 0 auto;padding:6px 10px;border:1px solid ${clsDef.color}55;border-radius:8px;background:rgba(255,255,255,0.05);color:${clsDef.color};font-size:10px;cursor:pointer;transition:0.15s;"
+          onmouseover="this.style.background='${clsDef.color}22'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+          🔍 Ver
+        </button>
+        <button onclick="_confirmPokemonSelect(${realIdx},'${missionId}')"
+          style="flex:1;padding:6px 10px;border:none;border-radius:8px;background:${clsDef.color};color:#fff;font-size:10px;font-weight:bold;cursor:pointer;transition:0.15s;"
+          onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+          ✓ Enviar a misión
+        </button>
+      </div>
+    </div>`;
+  };
+
+  const cardsHtml = availBox.length === 0
+    ? `<div style="text-align:center;color:#6b7280;padding:24px;font-size:11px;">Tu PC está vacía o todos tus Pokémon están en misión.</div>`
+    : availBox.map(p => buildCard(p, (state.box || []).indexOf(p))).join('');
+
+  const ov = document.createElement('div');
+  ov.id = 'mission-select-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s;';
+  ov.innerHTML = `
+    <div style="background:#0f172a;border:1px solid ${clsDef.color}44;border-radius:20px;padding:20px;max-width:440px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${clsDef.color};">${clsDef.icon || ''} SELECCIONAR PARA MISIÓN</div>
+        <button onclick="document.getElementById('mission-select-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;line-height:1;">✕</button>
+      </div>
+      <!-- Coste y recompensa -->
+      <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.06);font-size:11px;color:#9ca3af;line-height:1.7;">
+        💰 Costo: ${costHtml}&nbsp;&nbsp;·&nbsp;&nbsp;🎁 Recompensa: ${rewardHtml}
+      </div>
+      <!-- Pokémon cards -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${cardsHtml}
       </div>
     </div>`;
   document.body.appendChild(ov);
+
+  // Ver detalles completos (sin cerrar el selector)
+  window._missionViewDetail = (boxIdx, mid) => {
+    if (typeof showPokemonDetails === 'function') {
+      showPokemonDetails((state.box || [])[boxIdx], boxIdx, 'box');
+    }
+  };
 
   window._confirmPokemonSelect = (boxIdx, mid) => {
     const p = (state.box || [])[boxIdx];
     if (!p) return;
     const info2 = getMissionCostInfo(mid);
-    
+
     if (cls === 'entrenador') {
       state.money = (state.money || 0) - info2.cost;
     } else if (cls === 'criador') {
       state.battleCoins = (state.battleCoins || 0) - info2.cost;
     }
-    
+
     p.onMission = true;
+    // Cerrar tanto el selector como el panel de detalles si está abierto
     document.getElementById('mission-select-overlay')?.remove();
+    if (typeof closePokemonDetail === 'function') closePokemonDetail();
     _launchMission(mid, { pokeBoxIdx: boxIdx, pokeName: p.name || p.id });
     if (typeof updateHud === 'function') updateHud();
   };
 }
+
 
 // Inicia la misión en state y actualiza el HUD
 function _launchMission(missionId, extraData = {}) {
