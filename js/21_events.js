@@ -62,9 +62,15 @@ function _isEventActiveNow(ev) {
   if (!sched) return false;
   
   // Ajuste horario (ej. Argentina UTC-3)
-  const now = new Date(Date.now() - 3 * 60 * 60 * 1000);
-  const day = now.getUTCDay();
-  const hour = now.getUTCHours() + now.getUTCMinutes() / 60;
+  // Usamos el tiempo local del navegador ajustado a la zona horaria de Argentina si es necesario,
+  // pero para simplificar y que coincida con lo que ve el usuario, usamos el objeto Date estándar.
+  const now = new Date();
+  // Si el servidor/entorno está en UTC, restamos 3 horas para Argentina. 
+  // Si el usuario está en Argentina, su hora local ya es correcta.
+  // Para que sea consistente con el panel "hs. (ARG)", forzamos el cálculo:
+  const argTime = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Argentina/Buenos_Aires"}));
+  const day = argTime.getDay();
+  const hour = argTime.getHours() + argTime.getMinutes() / 60;
   
   if (sched.type === 'weekly' && sched.days) {
     if (!sched.days.includes(day)) return false;
@@ -99,12 +105,14 @@ function _updateEventBanner() {
     return;
   }
   const html = _activeEvents.map(ev => `
-    <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.1);border-radius:20px;padding:4px 10px;font-size:9px;white-space:nowrap;">
+    <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:6px 12px;font-size:10px;white-space:nowrap;color:#fff;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
       <span>${ev.icon}</span>
       <span>${ev.name}</span>
     </span>`).join('');
-  banner.innerHTML = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;padding:6px 12px;">${html}</div>`;
+  banner.innerHTML = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;padding:8px 12px;">${html}</div>`;
   banner.style.display = 'block';
+  banner.style.background = 'linear-gradient(to right, rgba(245,158,11,0.1), rgba(245,158,11,0.2), rgba(245,158,11,0.1))';
+  banner.style.borderBottom = '1px solid rgba(245,158,11,0.3)';
 }
 
 // ── Concurso de Magikarp ──────────────────────────────────────────────────────
@@ -693,7 +701,11 @@ window._evPrizeType = (type) => {
 window._evSavePrize = _evSavePrize;
 
 window._evFieldChange = (idx, field, val) => {
-  if (_adminConfig?.events?.[idx]) _adminConfig.events[idx][field] = val;
+  if (_adminConfig?.events?.[idx]) {
+    _adminConfig.events[idx][field] = val;
+    // Forzamos re-render para actualizar el texto ON/OFF inmediatamente
+    _renderAdminPanel();
+  }
 };
 
 window._evDayToggle = (idx, day, checked) => {
