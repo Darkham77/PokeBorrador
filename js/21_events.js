@@ -262,6 +262,9 @@ async function openAdminPanel() {
     
     _adminConfig = { events };
     _renderAdminPanel();
+    
+    // Cargamos los participantes del concurso de inmediato
+    await _evLoadEntries();
   } catch (e) {
     console.error('[Admin] Error:', e);
     notify('Error: ' + e.message, '❌');
@@ -331,7 +334,10 @@ function _renderAdminPanel() {
   window._evAdminSwitchTab = (tab) => {
     _adminTab = tab;
     _renderAdminPanel();
-    if (tab === 'competition') _evLoadEntriesGlobal();
+    // Cargamos los participantes con un pequeño delay para que el DOM esté listo
+    if (tab === 'competition') {
+      setTimeout(() => _evLoadEntriesGlobal(), 100);
+    }
   };
 
   window._evAdminSave = async () => {
