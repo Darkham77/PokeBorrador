@@ -798,6 +798,7 @@
     window.SHOP_ITEMS = SHOP_ITEMS;
 
     let _marketCat = 'todos';
+let _trainerShopCat = 'todos';
 let _marketQty = {};
 let _shopSection = 'pokemart';
 
@@ -875,12 +876,35 @@ function renderTrainerShop() {
   const tierColors = { common: 'tier-common', rare: 'tier-rare', epic: 'tier-epic', legend: 'tier-legend' };
   const tierLabels = { common: 'Común', rare: 'Raro', epic: 'Épico', legend: 'Legendario' };
   const TRAINER_CAT_ORDER = { held: 1, especial: 2, booster: 3, breeding: 4, utility: 5 };
+  const TRAINER_ITEM_CATEGORIES = ['todos', 'held', 'especial', 'booster', 'breeding', 'utility'];
+  const TRAINER_CAT_LABELS = {
+    todos: 'Todo',
+    held: '⚔️ Ítems Equipables',
+    especial: '✨ Especiales',
+    booster: '🚀 Potenciadores',
+    breeding: '🥚 Cría',
+    utility: '🛠️ Utilidad',
+  };
+
+  const tabsEl = document.getElementById('trainer-shop-tabs');
+  if (tabsEl) {
+    tabsEl.innerHTML = `
+      <div class="market-tab-bar">
+        ${TRAINER_ITEM_CATEGORIES.map(c => `
+          <button class="market-tab-btn ${_trainerShopCat === c ? 'active' : ''}"
+            onclick="_trainerShopCat='${c}';renderTrainerShop()">
+            ${TRAINER_CAT_LABELS[c]}
+          </button>`).join('')}
+      </div>`;
+  }
+
   const trSearchInput = document.getElementById('trainer-shop-search-input');
   const trSearchQuery = trSearchInput ? trSearchInput.value.toLowerCase() : '';
 
   const trainerItems = SHOP_ITEMS
     .filter(i => {
       if (i.trainerShop !== true) return false;
+      if (_trainerShopCat !== 'todos' && i.cat !== _trainerShopCat) return false;
       if (trSearchQuery && !i.name.toLowerCase().includes(trSearchQuery)) return false;
       return true;
     })
@@ -898,13 +922,7 @@ function renderTrainerShop() {
       // Finalmente por nivel de desbloqueo (ascendente)
       return a.unlockLv - b.unlockLv;
     });
-  const TRAINER_CAT_LABELS = {
-    held: '⚔️ Ítems Equipables',
-    especial: '✨ Especiales',
-    booster: '🚀 Potenciadores',
-    breeding: '🥚 Cría',
-    utility: '🛠️ Utilidad',
-  };
+
   const grid = document.getElementById('trainer-shop-grid');
   if (!grid) return;
 
@@ -948,7 +966,7 @@ function renderTrainerShop() {
 
   let lastCat = null;
   trainerItems.forEach(item => {
-    if (item.cat !== lastCat) {
+    if (_trainerShopCat === 'todos' && item.cat !== lastCat) {
       const label = TRAINER_CAT_LABELS[item.cat] || item.cat;
       rows.push(`<div style="grid-column:1/-1;padding:10px 4px 4px;font-size:10px;font-family:'Press Start 2P';color:var(--purple);letter-spacing:1px;border-bottom:1px solid rgba(155,77,255,0.25);margin-bottom:4px;">${label}</div>`);
       lastCat = item.cat;
