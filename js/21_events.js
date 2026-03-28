@@ -98,21 +98,14 @@ function _startEventPolling() {
 
 // ── Banner de eventos activos ─────────────────────────────────────────────────
 function _updateEventBanner() {
-  const banner = document.getElementById('event-banner');
-  if (!banner) return;
-  if (_activeEvents.length === 0) {
-    banner.style.display = 'none';
-    return;
+  // Ahora los eventos se muestran como Buffs dorados en el panel lateral
+  if (typeof updateBuffPanel === 'function') updateBuffPanel();
+  
+  // Refrescar la pestaña de Mapa si está abierta para actualizar el carrusel del HUD
+  const mapTab = document.getElementById('tab-map');
+  if (mapTab && mapTab.style.display !== 'none') {
+    if (typeof renderMaps === 'function') renderMaps();
   }
-  const html = _activeEvents.map(ev => `
-    <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:6px 12px;font-size:10px;white-space:nowrap;color:#fff;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
-      <span>${ev.icon}</span>
-      <span>${ev.name}</span>
-    </span>`).join('');
-  banner.innerHTML = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;padding:8px 12px;">${html}</div>`;
-  banner.style.display = 'block';
-  banner.style.background = 'linear-gradient(to right, rgba(245,158,11,0.1), rgba(245,158,11,0.2), rgba(245,158,11,0.1))';
-  banner.style.borderBottom = '1px solid rgba(245,158,11,0.3)';
 }
 
 // ── Concurso de Magikarp ──────────────────────────────────────────────────────

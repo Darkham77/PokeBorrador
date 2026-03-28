@@ -825,6 +825,9 @@ function updateEggProgressHud() {
 }
 
 function updateBuffPanel() {
+  const panel = document.getElementById('buff-panel');
+  if (!panel) return;
+
   const buffs = [
     { id: 'repel', secs: state.repelSecs },
     { id: 'shiny', secs: state.shinyBoostSecs },
@@ -845,10 +848,8 @@ function updateBuffPanel() {
       const minutes = Math.floor(b.secs / 60);
       const seconds = b.secs % 60;
       const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-      // Badge timer (siempre visible)
       const badge = document.getElementById(`buff-${b.id}-time`);
       if (badge) badge.textContent = timeStr;
-      // Tooltip timer (visible al hover)
       const tip = document.getElementById(`buff-${b.id}-time2`);
       if (tip) tip.textContent = `⏱ ${timeStr} restante`;
       itemEl.style.display = 'flex';
@@ -856,6 +857,29 @@ function updateBuffPanel() {
       itemEl.style.display = 'none';
     }
   });
+
+  // --- Dynamic Event Buffs ---
+  panel.querySelectorAll('.buff-item.event').forEach(el => el.remove());
+  if (typeof _activeEvents !== 'undefined' && _activeEvents.length > 0) {
+    _activeEvents.forEach(ev => {
+      const el = document.createElement('div');
+      el.className = 'buff-item event';
+      el.style.cursor = 'pointer';
+      el.innerHTML = `
+        <div class="buff-collapsed">
+          <div style="font-size:20px; line-height:1;">${ev.icon || '🎁'}</div>
+          <div class="buff-timer-badge">ACTIVO</div>
+        </div>
+        <div class="buff-tooltip">
+          <div class="buff-tooltip-name" style="color:var(--yellow);">${ev.name}</div>
+          <div class="buff-tooltip-desc">${ev.description || '¡Evento especial activo ahora! Participá para ganar premios.'}</div>
+          <div class="buff-tooltip-time" style="color:#fff;">Toca para más info</div>
+        </div>
+      `;
+      el.onclick = () => { if (typeof openLibrarySection === 'function') openLibrarySection('eventos'); };
+      panel.appendChild(el);
+    });
+  }
 }
 
 function updateHud() {

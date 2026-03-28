@@ -449,11 +449,20 @@ function toggleLibrary() {
       const firstTab = document.querySelector('.library-nav-item');
       if (firstTab) {
         const match = firstTab.getAttribute('onclick').match(/'([^']+)'/);
-        if (match) switchLibraryTab(match[1], firstTab);
+        if (match) openLibrarySection(match[1], firstTab);
       }
     }
   } else {
     modal.style.display = 'none';
+  }
+}
+
+function openLibrarySection(tab) {
+  const modal = document.getElementById('library-modal');
+  if (modal) {
+    modal.style.display = 'block';
+    const element = document.querySelector(`.library-nav-item[onclick*="'${tab}'"]`);
+    switchLibraryTab(tab, element);
   }
 }
 

@@ -54,6 +54,10 @@
       overflow-x: hidden; /* Evitar cualquier scroll horizontal accidental */
     }
 
+    #event-banner {
+      display: none !important;
+    }
+
     @media (min-width: 1200px) {
       #app {
         padding: 20px 40px;
@@ -587,6 +591,21 @@
       transform: translateY(-50%) translateX(0px);
     }
 
+    /* Estilo Dorado para Eventos */
+    .buff-item.event .buff-collapsed {
+      border: 1px solid var(--yellow);
+      box-shadow: 0 0 12px rgba(255, 214, 10, 0.4);
+      background: rgba(25, 20, 5, 0.95);
+    }
+    .buff-item.event .buff-timer-badge {
+      color: #fff;
+      text-shadow: 0 0 5px var(--yellow);
+    }
+    .buff-item.event .buff-tooltip {
+      border-color: var(--yellow);
+      background: rgba(25, 20, 5, 0.98);
+    }
+
     .buff-tooltip-name {
       font-family: 'Press Start 2P', monospace;
       font-size: 8px;
@@ -606,6 +625,21 @@
       font-family: 'Press Start 2P', monospace;
       font-size: 9px;
       color: #a78bfa;
+    }
+
+    /* Estilo Dorado para Eventos */
+    .buff-item.event .buff-collapsed {
+      border: 1px solid var(--yellow);
+      box-shadow: 0 0 12px rgba(255, 214, 10, 0.4);
+      background: rgba(25, 20, 5, 0.95);
+    }
+    .buff-item.event .buff-timer-badge {
+      color: #fff;
+      text-shadow: 0 0 5px var(--yellow);
+    }
+    .buff-item.event .buff-tooltip {
+      border-color: var(--yellow);
+      background: rgba(25, 20, 5, 0.98);
     }
 
     /* Contenedor de progreso de huevos debajo del HUD */
@@ -1083,6 +1117,59 @@
       max-height: 42px;
       overflow: hidden;
     }
+
+    /* Carrusel de Eventos en el HUD */
+    .pc-banner-carousel {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+    .pc-banner-carousel:hover {
+      background: rgba(255, 215, 0, 0.1) !important;
+      border-color: rgba(255, 215, 0, 0.4) !important;
+      transform: scale(1.02);
+    }
+    .pc-carousel-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+    .pc-carousel-slide.active {
+      opacity: 1;
+      z-index: 1;
+      pointer-events: auto;
+    }
+    .pc-carousel-dots {
+      position: absolute;
+      bottom: -2px;
+      right: 4px;
+      display: flex;
+      gap: 3px;
+      z-index: 2;
+    }
+    .pc-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      transition: all 0.3s ease;
+    }
+    .pc-dot.active {
+      background: var(--yellow);
+      width: 10px;
+      border-radius: 4px;
+      box-shadow: 0 0 5px var(--yellow);
+    }
+
     .pc-banner-trainers img {
       width: 48px;
       height: 48px;

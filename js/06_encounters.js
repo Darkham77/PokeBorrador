@@ -1,5 +1,76 @@
-    // ===== LOCATION / WILD BATTLE =====
-    async function renderMaps() {
+// ===== LOCATION / WILD BATTLE =====
+let _currentCarouselIndex = 0;
+let _carouselInterval = null;
+
+function _startCarouselTimer() {
+  if (_carouselInterval) return;
+  _carouselInterval = setInterval(() => {
+    const activeEvents = (typeof _activeEvents !== 'undefined') ? _activeEvents : [];
+    const totalSlides = 1 + activeEvents.length;
+    
+    _currentCarouselIndex = (_currentCarouselIndex + 1) % totalSlides;
+    
+    const carousel = document.getElementById('event-carousel');
+    if (carousel) {
+      const slides = carousel.querySelectorAll('.pc-carousel-slide');
+      const dots = carousel.querySelectorAll('.pc-dot');
+      if (slides.length > 0) {
+        slides.forEach((s, i) => s.classList.toggle('active', i === _currentCarouselIndex));
+        dots.forEach((d, i) => d.classList.toggle('active', i === _currentCarouselIndex));
+      }
+    }
+  }, 5000);
+}
+
+function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
+  const activeEvents = (typeof _activeEvents !== 'undefined') ? _activeEvents : [];
+  const slides = [];
+
+  // Slide 0: Raros del día
+  slides.push({
+    icon: cycleIcon,
+    title: 'Raros por horario',
+    content: `<div class="pc-banner-spawns pc-banner-spawns-compact">${rareCycleSpritesHtml}</div>`,
+    onclick: null
+  });
+
+  // Slides de Eventos
+  activeEvents.forEach(ev => {
+    slides.push({
+      icon: ev.icon || '🎁',
+      title: ev.name,
+      content: `<div class="pc-banner-text" style="font-size:11px; line-height:1.4;">${ev.description || '¡Evento especial activo ahora!'}</div>`,
+      onclick: `if(typeof openLibrarySection === 'function') openLibrarySection('eventos')`
+    });
+  });
+
+  if (_currentCarouselIndex >= slides.length) _currentCarouselIndex = 0;
+
+  const slidesHtml = slides.map((s, i) => `
+    <div class="pc-carousel-slide ${i === _currentCarouselIndex ? 'active' : ''}" 
+         ${s.onclick ? `onclick="event.stopPropagation(); ${s.onclick}"` : ''}>
+      <div class="pc-banner-icon">${s.icon}</div>
+      <div class="pc-banner-content">
+        <div class="pc-banner-title">${s.title}</div>
+        ${s.content}
+      </div>
+    </div>
+  `).join('');
+
+  const dotsHtml = slides.map((_, i) => `
+    <div class="pc-dot ${i === _currentCarouselIndex ? 'active' : ''}"></div>
+  `).join('');
+
+  return `
+    <div class="pc-banner pc-banner-carousel" id="event-carousel">
+      ${slidesHtml}
+      <div class="pc-carousel-dots">${dotsHtml}</div>
+    </div>
+  `;
+}
+
+async function renderMaps() {
+  _startCarouselTimer();
       const container = document.getElementById('map-list');
       if (!container) return;
       const cycle = getDayCycle();
@@ -176,13 +247,7 @@
           </div>
           <div class="pc-right" style="flex: 1; display: flex; min-width: 0;">
             <div class="pc-banner-grid">
-              <div class="pc-banner pc-banner-static">
-                <div class="pc-banner-icon">${cycleIcon}</div>
-                <div class="pc-banner-content">
-                  <div class="pc-banner-title">Raros por horario</div>
-                  <div class="pc-banner-spawns pc-banner-spawns-compact">${rareCycleSpritesHtml}</div>
-                </div>
-              </div>
+              ${renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml)}
 
               <div class="pc-banner" onclick="showTab('daycare')">
                 <div class="pc-banner-icon">📜</div>
