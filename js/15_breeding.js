@@ -517,9 +517,15 @@ let _daycareTimer = null;
 let _activeDaycareSlots = [];
 async function loadDaycareSlots() {
   if (!currentUser) return [];
+  // Clear previous daycare flags from everyone
+  [...state.team, ...(state.box || [])].forEach(p => p.inDaycare = false);
+
   const { data } = await sb.from('daycare_slots').select('*').eq('player_id', currentUser.id).order('slot_index');
   const hydrated = (data || []).map(s => {
     const p = state.team.find(x => x.uid === s.pokemon_id) || (state.box && state.box.find(x => x.uid === s.pokemon_id));
+    if (p) {
+        p.inDaycare = true; // Mark as busy for UI and battles
+    }
     return { ...s, pokemon: p };
   });
   _activeDaycareSlots = hydrated;
@@ -727,9 +733,22 @@ function _pickerHtml(p, compareTo) {
   }
 
   const isExhausted = p.vigor <= 0;
-  const clickAction = isExhausted ? `notify('Este Pokémon está agotado (Vigor 0). No puede criar más.', '💤')` : `confirmDeposit('${p.uid}')`;
-  if (isExhausted) {
+  const inOtherSlot = _activeDaycareSlots.some(s => s.pokemon_id === p.uid);
+  const onMission = p.onMission || false;
+  
+  let clickAction = isExhausted ? `notify('Este Pokémon está agotado (Vigor 0). No puede criar más.', '💤')` : `confirmDeposit('${p.uid}')`;
+  if (inOtherSlot) clickAction = `notify('Este Pokémon ya está en la otra ranura.', '⚠️')`;
+  if (onMission) clickAction = `notify('Este Pokémon está en una misión.', '📋')`;
+
+  if (isExhausted || inOtherSlot || onMission) {
       borderStyle = `border:1px solid rgba(255,69,58,0.4); background:rgba(255,69,58,0.05); filter: grayscale(0.5); opacity: 0.8;`;
+  }
+
+  // Prevet depositing the last alive pokemon from team
+  const isLastAlive = state.team.filter(x => x.hp > 0).length <= 1 && state.team.some(x => x.uid === p.uid && x.hp > 0);
+  if (isLastAlive && !inOtherSlot && !onMission && !isExhausted) {
+      // clickAction = `notify('No podés depositar a tu único Pokémon sano.', '⚠️')`;
+      // borderStyle = `border:1px solid rgba(255,255,255,0.1); opacity: 0.6;`;
   }
 
   return `<div onclick="${clickAction}" style="${borderStyle}border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateX(4px)';this.style.borderColor='rgba(255,255,255,0.2)';" onmouseout="this.style.transform='none';this.style.borderColor='${compareTo && checkCompatibility(compareTo, p).level > 0 ? COMPAT_TEXT[checkCompatibility(compareTo, p).level].color + '44' : 'rgba(255,255,255,0.06)'}';">
@@ -741,7 +760,7 @@ function _pickerHtml(p, compareTo) {
         </div>
         <div style="min-width:0;flex:1;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px;">
-            <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name} ${inOtherSlot ? '<small>(Ocupado)</small>' : ''}</div>
             ${tierHtml}
           </div>
                   <div style="font-size:11px;color:#ffffff;display:flex;align-items:center;gap:8px;font-weight:600;">
@@ -752,13 +771,25 @@ function _pickerHtml(p, compareTo) {
                 ${inlineCompat}
                 <span style="color:var(--yellow);margin-left:auto;">⚡${p.vigor || 0}</span>
                   </div>
+          ${onMission ? `<div style="font-size:10px;color:var(--yellow);margin-top:4px;">📋 En misión</div>` : ''}
           ${compatHtml}
         </div>
       </div>`;
 }
 
 async function confirmDeposit(uid) {
-  const pToDeposit = state.team.find(p => p.uid === uid) || (state.box && state.box.find(p => p.uid === uid));
+  const pIdx = state.team.findIndex(p => p.uid === uid);
+  const pToDeposit = pIdx !== -1 ? state.team[pIdx] : (state.box && state.box.find(p => p.uid === uid));
+  
+  if (pIdx !== -1) {
+      // If it's the last alive pokemon in the team, prevent depositing
+      const aliveCount = state.team.filter(x => x.hp > 0).length;
+      if (aliveCount <= 1 && state.team[pIdx].hp > 0) {
+          notify('No podés depositar a tu único Pokémon sano.', '⚠️');
+          return;
+      }
+  }
+
   const otherIdx = _depositingSlot === 1 ? 2 : 1;
   const otherSlot = _activeDaycareSlots.find(s => s.slot_index === otherIdx);
   
@@ -767,8 +798,6 @@ async function confirmDeposit(uid) {
       const cpVal = checkCompatibility(pToDeposit, otherSlot.pokemon);
       if (cpVal.level > 0) {
           const cost = calculateBreedingCost(pToDeposit, otherSlot.pokemon);
-          // No upfront payment, payment is handled when collecting the egg.
-          // Just confirm the cost for the user.
           if (!confirm(`Al recoger el huevo de esta pareja, costará $${cost.toLocaleString()}. ¿Estás de acuerdo?`)) {
               return;
           }
@@ -784,6 +813,18 @@ async function confirmDeposit(uid) {
     console.error("Daycare Deposit Error:", error);
     notify('Error en Guardería: ' + error.message, '❌');
   } else {
+    // If it was in the team, move it to the box
+    if (pIdx !== -1) {
+        const removed = state.team.splice(pIdx, 1)[0];
+        // Heal it when going to "storage" (daycare)
+        removed.hp = removed.maxHp;
+        removed.status = null;
+        removed.moves.forEach(m => m.pp = m.maxPP);
+        if (!state.box) state.box = [];
+        state.box.push(removed);
+        renderTeam();
+        renderBox();
+    }
     notify('Pokémon depositado.', '🏡');
     saveGame(true); // Ensure uid assignment and positions match DB
   }

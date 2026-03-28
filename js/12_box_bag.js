@@ -538,6 +538,9 @@
       <!-- Mission badge -->
       ${p.onMission ? `<div style="position:absolute;inset:0;border-radius:12px;background:rgba(251,191,36,0.07);pointer-events:none;z-index:1;"></div>
         <div style="position:absolute;top:5px;left:5px;background:#fbbf24;color:#000;border-radius:6px;font-size:7px;font-weight:bold;padding:2px 5px;z-index:3;letter-spacing:0.5px;">📋 MISIÓN</div>` : ''}
+      <!-- Daycare badge -->
+      ${p.inDaycare ? `<div style="position:absolute;inset:0;border-radius:12px;background:rgba(59,130,246,0.07);pointer-events:none;z-index:1;"></div>
+        <div style="position:absolute;top:30px;left:5px;background:#3b82f6;color:#fff;border-radius:6px;font-size:7px;font-weight:bold;padding:2px 5px;z-index:3;letter-spacing:0.5px;">🏡 GUARDERÍA</div>` : ''}
       <!-- Tier and Held Item badges -->
       ${badgesHtml}
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};
@@ -625,7 +628,7 @@
     ${state.playerClass === 'rocket' ? `<button onclick="document.getElementById('box-menu-overlay').remove();sellPokemonBlackMarket(state.box[${boxIndex}], ${boxIndex})" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;background:rgba(239,68,68,0.15);color:#ef4444;font-size:12px;font-weight:700;border:1px solid rgba(239,68,68,0.3);box-shadow: 0 0 10px rgba(239,68,68,0.2);">🚀 Vender en Mercado Negro</button>` : ''}
     ${state.playerClass === 'criador' ? `<button onclick="document.getElementById('box-menu-overlay').remove();showGeneticAnalysis(state.box[${boxIndex}])" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;background:rgba(168,85,247,0.15);color:#a855f7;font-size:12px;font-weight:700;border:1px solid rgba(168,85,247,0.3);">🔬 Análisis Genético</button>` : ''}
     <button onclick="releaseFromBox(${boxIndex})" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;
-      background:rgba(255,59,59,0.15);color:var(--red);font-size:12px;font-weight:700;border:1px solid rgba(255,59,59,0.2);">
+      background:rgba(255,59,59,0.15);color:var(--red);${p.inDaycare ? 'opacity:0.5;cursor:not-allowed;' : ''}font-size:12px;font-weight:700;border:1px solid rgba(255,59,59,0.2);">
       🌿 Soltar a ${p.name}
     </button>
     <button onclick="document.getElementById('box-menu-overlay').remove()" style="width:100%;margin-top:8px;padding:10px;border:none;
@@ -647,6 +650,7 @@
       if (state.team.length >= 6) { notify('Tu equipo está lleno (máx. 6).', '⚠️'); return; }
       const boxPoke = state.box[boxIndex];
       if (boxPoke?.onMission) { notify(`¡${boxPoke.name} está en una misión idle! Cobrá la recompensa primero.`, '📋'); return; }
+      if (boxPoke?.inDaycare) { notify(`¡${boxPoke.name} está en la Guardería! Retiralo primero.`, '🏡'); return; }
       state.box.splice(boxIndex, 1);
       state.team.push(boxPoke);
       renderBox();
@@ -658,6 +662,7 @@
       document.getElementById('box-menu-overlay')?.remove();
       const boxPoke = state.box[boxIndex];
       if (boxPoke?.onMission) { notify(`¡${boxPoke.name} está en una misión idle! No se puede intercambiar.`, '📋'); return; }
+      if (boxPoke?.inDaycare) { notify(`¡${boxPoke.name} está en la Guardería! No se puede intercambiar.`, '🏡'); return; }
       state.box.splice(boxIndex, 1);
       const teamPoke = state.team.splice(teamIndex, 1, boxPoke)[0];
       // El que va a la caja se cura completamente
@@ -675,6 +680,7 @@
     function releaseFromBox(boxIndex) {
       const p = state.box[boxIndex];
       if (p?.onMission) { notify(`¡${p.name} está en una misión idle! No se puede soltar.`, '📋'); return; }
+      if (p?.inDaycare) { notify(`¡${p.name} está en la Guardería! No se puede soltar.`, '🏡'); return; }
       if (!confirm(`¿Soltar a ${p.name} definitivamente?`)) return;
       document.getElementById('box-menu-overlay')?.remove();
       state.box.splice(boxIndex, 1);

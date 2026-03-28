@@ -1275,7 +1275,7 @@ function _openRocketSacrificeModal(missionId, info) {
   document.getElementById('mission-select-overlay')?.remove();
   const clsDef = PLAYER_CLASSES.rocket;
   const poisonBox = (state.box || []).filter((p, idx) => {
-    if (p.onMission) return false;
+    if (p.onMission || p.inDaycare) return false;
     const pData = typeof POKEMON_DB !== 'undefined' ? POKEMON_DB[p.id] : null;
     if (!pData) return false;
     return pData.type === 'poison' || pData.type2 === 'poison';
@@ -1471,7 +1471,7 @@ function _openRocketSacrificeModal(missionId, info) {
 function _openPokemonSelectModal(missionId, info, cls) {
   document.getElementById('mission-select-overlay')?.remove();
   const clsDef = PLAYER_CLASSES[cls];
-  const availBox = (state.box || []).filter(p => !p.onMission);
+  const availBox = (state.box || []).filter(p => !p.onMission && !p.inDaycare);
 
   const costHtml = cls === 'criador'
     ? `<strong style="color:${clsDef.color};">${info.cost} BC</strong>`
