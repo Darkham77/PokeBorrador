@@ -30,7 +30,14 @@ let _eventPollInterval = null;
 let _adminConfig = null;
 let _adminTab = 'events';
 let _adminEntries = [];
-let _prizeState = { type: 'money', amount: 0, item: 'Pokéball', qty: 1, species: 'magikarp', level: 5, nature: 'Serio', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, shiny: false };
+let _currentPrizeRank = 'first';
+let _currentCompetitionId = 'hora_magikarp';
+const _prizeTemplate = () => ({ type: 'money', amount: 0, item: 'Pokéball', qty: 1, species: 'magikarp', level: 5, nature: 'Serio', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, shiny: false });
+let _prizeStates = {
+  first: _prizeTemplate(),
+  second: _prizeTemplate(),
+  third: _prizeTemplate()
+};
 
 // ── Auth token ────────────────────────────────────────────────────────────────
 async function _evGetToken() {
@@ -50,6 +57,9 @@ async function loadActiveEvents() {
     _activeEvents = events.filter(ev => _isEventActiveNow(ev));
     _eventsLoaded = true;
     _updateEventBanner();
+
+    // Verificación automática de premios al cargar/actualizar
+    checkAndDistributePrizes(events);
   } catch (e) {
     console.warn('[Events] Error cargando eventos:', e);
   }
@@ -146,24 +156,23 @@ function showEventDetail(evId) {
 }
 
 // ── Concurso de Magikarp ──────────────────────────────────────────────────────
-async function submitMagikarpEntry(pokemon) {
-  if (!isEventActive('hora_magikarp') || !currentUser) return;
+async function submitMagikarpEntry(pokemon, eventId = 'hora_magikarp') {
+  if (!isEventActive(eventId) || !currentUser) return;
   const totalIvs = Object.values(pokemon.ivs || {}).reduce((a, b) => a + b, 0);
   try {
-    // Supabase Upsert (usando event_id y player_id como clave única)
     const { data: existing } = await sb.from('competition_entries')
       .select('data')
-      .eq('event_id', 'hora_magikarp')
+      .eq('event_id', eventId)
       .eq('player_id', currentUser.id)
       .single();
 
     if (existing && (existing.data?.total_ivs || 0) >= totalIvs) {
-      notify('Ya tenés una inscripción mejor en el concurso de Magikarp.', '🎣');
+      notify('Ya tenés una inscripción mejor en este concurso.', '🎣');
       return;
     }
 
     const { error } = await sb.from('competition_entries').upsert({
-      event_id: 'hora_magikarp',
+      event_id: eventId,
       player_id: currentUser.id,
       player_name: state.trainer || 'Jugador',
       player_email: currentUser.email,
@@ -178,9 +187,9 @@ async function submitMagikarpEntry(pokemon) {
     });
 
     if (error) throw error;
-    notify(`¡Magikarp inscripto! IVs totales: ${totalIvs}/186`, '🎣');
+    notify(`¡Registro exitoso! Puntuación actual: ${totalIvs}`, '🎣');
   } catch (e) {
-    console.warn('[Events] Error al inscribir Magikarp:', e);
+    console.warn('[Events] Error al inscribir:', e);
     notify('Error al inscribir en el concurso.', '❌');
   }
 }
@@ -486,31 +495,54 @@ function _renderEventCard(ev, idx) {
 }
 
 function _renderCompetitionTab() {
-  const compEv = _adminConfig?.events?.find(e => e.id === 'hora_magikarp');
-  const currentPrize = compEv?.config?.prize || null;
+  const compEvents = _adminConfig?.events || [];
+  const compEv = compEvents.find(e => e.id === _currentCompetitionId) || compEvents[0];
+  if (!compEv) return '<div style="color:#6b7280;text-align:center;padding:20px;">No hay eventos disponibles.</div>';
 
-  const prizePreview = currentPrize
-    ? `<div style="font-size:10px;color:#22c55e;margin-top:4px;">${_prizeSummary(currentPrize)}</div>`
-    : `<div style="font-size:10px;color:#6b7280;margin-top:4px;">Sin configurar aún</div>`;
+  const prizes = compEv.config?.prizes || {};
+  
+  const p1 = prizes.first ? _prizeSummary(prizes.first) : 'Sin configurar';
+  const p2 = prizes.second ? _prizeSummary(prizes.second) : 'Sin configurar';
+  const p3 = prizes.third ? _prizeSummary(prizes.third) : 'Sin configurar';
+
+  const competitionOptions = compEvents.map(e => `<option value="${e.id}" ${_currentCompetitionId === e.id ? 'selected' : ''}>${e.icon} ${e.name}</button>`).join('');
+
+  const prizePreview = `
+    <div style="font-size:10px;margin-top:4px;display:flex;flex-direction:column;gap:4px;">
+      <div style="color:#fbbf24;">🥇 1°. ${p1}</div>
+      <div style="color:#94a3b8;">🥈 2°. ${p2}</div>
+      <div style="color:#b45309;">🥉 3°. ${p3}</div>
+    </div>`;
+
+  const state = _prizeStates[_currentPrizeRank];
 
   const pokemonOptions = typeof POKEMON_DB !== 'undefined'
-    ? Object.entries(POKEMON_DB).map(([k, v]) => `<option value="${k}" ${_prizeState.species === k ? 'selected' : ''}>${v.name}</option>`).join('')
+    ? Object.entries(POKEMON_DB).map(([k, v]) => `<option value="${k}" ${state.species === k ? 'selected' : ''}>${v.name}</option>`).join('')
     : '';
 
-  const itemOptions = ALL_PRIZE_ITEMS.map(it => `<option value="${it}" ${_prizeState.item === it ? 'selected' : ''}>${it}</option>`).join('');
-  const natureOptions = EV_NATURES.map(n => `<option value="${n}" ${_prizeState.nature === n ? 'selected' : ''}>${n}</option>`).join('');
+  const itemOptions = ALL_PRIZE_ITEMS.map(it => `<option value="${it}" ${state.item === it ? 'selected' : ''}>${it}</option>`).join('');
+  const natureOptions = EV_NATURES.map(n => `<option value="${n}" ${state.nature === n ? 'selected' : ''}>${n}</option>`).join('');
 
   const statsFields = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
   const statLabels = { hp: 'PS', atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Vel' };
   const ivInputs = statsFields.map(s => `
     <div style="text-align:center;">
       <div style="font-size:8px;color:#6b7280;margin-bottom:3px;">${statLabels[s]}</div>
-      <input type="number" min="0" max="31" value="${_prizeState.ivs[s] ?? 31}"
+      <input type="number" min="0" max="31" value="${state.ivs[s] ?? 31}"
         id="prize-iv-${s}"
         style="width:40px;padding:5px 2px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;text-align:center;font-size:11px;">
     </div>`).join('');
 
   return `
+    <!-- Selector de Evento -->
+    <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.08);">
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:8px;">SELECCIONAR EVENTO</div>
+      <select onchange="window._evSwitchCompetition(this.value)"
+        style="width:100%;padding:10px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:11px;box-sizing:border-box;">
+        ${competitionOptions}
+      </select>
+    </div>
+
     <!-- Premio actual -->
     <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:14px;margin-bottom:16px;">
       <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:6px;">PREMIO ACTUAL</div>
@@ -521,58 +553,66 @@ function _renderCompetitionTab() {
     <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;margin-bottom:16px;">
       <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#f59e0b;margin-bottom:14px;">🏆 CONFIGURAR PREMIO</div>
 
+      <div style="display:flex;gap:4px;margin-bottom:12px;">
+        ${[['first','🥇 1ro'],['second','🥈 2do'],['third','🥉 3ro']].map(([v,l]) => `
+          <button onclick="window._evSwitchPrizeRank('${v}')"
+            style="flex:1;padding:8px;border:none;border-radius:8px;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;background:${_currentPrizeRank===v?'#f59e0b':'rgba(255,255,255,0.05)'};color:${_currentPrizeRank===v?'#000':'#9ca3af'};">
+            ${l}
+          </button>`).join('')}
+      </div>
+
       <div style="margin-bottom:12px;">
         <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">TIPO DE PREMIO</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
           ${[['money','💰 Dinero (₽)'],['bc','🪙 Battle Coins'],['item','📦 Ítem'],['pokemon','🐾 Pokémon']].map(([v,l]) => `
-            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;background:rgba(0,0,0,0.3);border-radius:8px;padding:6px 10px;border:1px solid ${_prizeState.type===v?'#f59e0b':'rgba(255,255,255,0.08)'};">
-              <input type="radio" name="prize-type" value="${v}" ${_prizeState.type===v?'checked':''} onchange="window._evPrizeType('${v}')" style="accent-color:#f59e0b;">
-              <span style="font-size:10px;color:${_prizeState.type===v?'#f59e0b':'#9ca3af'};">${l}</span>
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;background:rgba(0,0,0,0.3);border-radius:8px;padding:6px 10px;border:1px solid ${state.type===v?'#f59e0b':'rgba(255,255,255,0.08)'};">
+              <input type="radio" name="prize-type" value="${v}" ${state.type===v?'checked':''} onchange="window._evPrizeType('${v}')" style="accent-color:#f59e0b;">
+              <span style="font-size:10px;color:${state.type===v?'#f59e0b':'#9ca3af'};">${l}</span>
             </label>`).join('')}
         </div>
       </div>
 
       <!-- Money / BC -->
-      <div id="prize-field-amount" style="display:${['money','bc'].includes(_prizeState.type)?'block':'none'};margin-bottom:12px;">
-        <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">CANTIDAD ${_prizeState.type === 'bc' ? 'BC' : '₽'}</div>
-        <input type="number" min="0" id="prize-amount" value="${_prizeState.amount}"
-          oninput="_prizeState.amount=parseInt(this.value)||0"
+      <div id="prize-field-amount" style="display:${['money','bc'].includes(state.type)?'block':'none'};margin-bottom:12px;">
+        <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">CANTIDAD ${state.type === 'bc' ? 'BC' : '₽'}</div>
+        <input type="number" min="0" id="prize-amount" value="${state.amount}"
+          oninput="_prizeStates[_currentPrizeRank].amount=parseInt(this.value)||0"
           style="width:100%;padding:10px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:14px;box-sizing:border-box;">
       </div>
 
       <!-- Item -->
-      <div id="prize-field-item" style="display:${_prizeState.type==='item'?'block':'none'};margin-bottom:12px;">
+      <div id="prize-field-item" style="display:${state.type==='item'?'block':'none'};margin-bottom:12px;">
         <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">ÍTEM</div>
-        <select id="prize-item" onchange="_prizeState.item=this.value"
+        <select id="prize-item" onchange="_prizeStates[_currentPrizeRank].item=this.value"
           style="width:100%;padding:10px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:12px;margin-bottom:8px;box-sizing:border-box;">
           ${itemOptions}
         </select>
         <div style="font-size:9px;color:#9ca3af;margin-bottom:4px;">CANTIDAD</div>
-        <input type="number" min="1" id="prize-qty" value="${_prizeState.qty}"
-          oninput="_prizeState.qty=parseInt(this.value)||1"
+        <input type="number" min="1" id="prize-qty" value="${state.qty}"
+          oninput="_prizeStates[_currentPrizeRank].qty=parseInt(this.value)||1"
           style="width:80px;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;">
       </div>
 
       <!-- Pokémon -->
-      <div id="prize-field-pokemon" style="display:${_prizeState.type==='pokemon'?'block':'none'};margin-bottom:12px;">
+      <div id="prize-field-pokemon" style="display:${state.type==='pokemon'?'block':'none'};margin-bottom:12px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
           <div>
             <div style="font-size:9px;color:#9ca3af;margin-bottom:4px;">ESPECIE</div>
-            <select id="prize-species" onchange="_prizeState.species=this.value"
+            <select id="prize-species" onchange="_prizeStates[_currentPrizeRank].species=this.value"
               style="width:100%;padding:8px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;box-sizing:border-box;">
               ${pokemonOptions}
             </select>
           </div>
           <div>
             <div style="font-size:9px;color:#9ca3af;margin-bottom:4px;">NIVEL</div>
-            <input type="number" min="1" max="100" id="prize-level" value="${_prizeState.level}"
-              oninput="_prizeState.level=parseInt(this.value)||5"
+            <input type="number" min="1" max="100" id="prize-level" value="${state.level}"
+              oninput="_prizeStates[_currentPrizeRank].level=parseInt(this.value)||5"
               style="width:100%;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;box-sizing:border-box;">
           </div>
         </div>
         <div style="margin-bottom:10px;">
           <div style="font-size:9px;color:#9ca3af;margin-bottom:4px;">NATURALEZA</div>
-          <select id="prize-nature" onchange="_prizeState.nature=this.value"
+          <select id="prize-nature" onchange="_prizeStates[_currentPrizeRank].nature=this.value"
             style="width:100%;padding:8px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;box-sizing:border-box;">
             ${natureOptions}
           </select>
@@ -582,14 +622,14 @@ function _renderCompetitionTab() {
           <div style="display:flex;justify-content:space-between;gap:4px;">${ivInputs}</div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-          <input type="checkbox" id="prize-shiny" ${_prizeState.shiny?'checked':''} onchange="_prizeState.shiny=this.checked" style="accent-color:#f59e0b;width:16px;height:16px;">
+          <input type="checkbox" id="prize-shiny" ${state.shiny?'checked':''} onchange="_prizeStates[_currentPrizeRank].shiny=this.checked" style="accent-color:#f59e0b;width:16px;height:16px;">
           <span style="font-size:10px;color:#f59e0b;">✨ ES SHINY</span>
         </label>
       </div>
 
       <button onclick="window._evSavePrize()"
         style="width:100%;padding:12px;border:none;border-radius:12px;background:rgba(255,255,255,0.07);color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
-        💾 GUARDAR PREMIO
+        💾 GUARDAR PODIO
       </button>
     </div>
 
@@ -602,6 +642,11 @@ function _renderCompetitionTab() {
       <div id="admin-entries-container">
         <div style="font-size:11px;color:#6b7280;text-align:center;padding:20px;">Cargando...</div>
       </div>
+
+      <button onclick="window._evAwardFullEvent(_currentCompetitionId)"
+        style="width:100%;margin-top:16px;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;box-shadow:0 4px 15px rgba(34,197,94,0.3);">
+        🏆 CERRAR Y PREMIAR PODIO
+      </button>
     </div>`;
 }
 
@@ -610,10 +655,19 @@ async function _evLoadEntries() {
   try {
     const { data: entries, error } = await sb.from('competition_entries')
       .select('*')
-      .eq('event_id', 'hora_magikarp');
+      .eq('event_id', _currentCompetitionId);
     
     if (error) throw error;
-    _adminEntries = (entries || []).sort((a, b) => (b.data?.total_ivs || 0) - (a.data?.total_ivs || 0));
+    
+    const compEv = _adminConfig?.events?.find(e => e.id === _currentCompetitionId);
+    const sortBy = compEv?.config?.sortBy || 'data.total_ivs';
+    
+    _adminEntries = (entries || []).sort((a, b) => {
+      const valA = sortBy.startsWith('data.') ? a.data?.[sortBy.split('.')[1]] : a[sortBy];
+      const valB = sortBy.startsWith('data.') ? b.data?.[sortBy.split('.')[1]] : b[sortBy];
+      return (valB || 0) - (valA || 0);
+    });
+    
     _renderEntriesTable();
   } catch (e) { 
     console.warn('[Events] Error cargando participantes:', e); 
@@ -627,6 +681,10 @@ function _renderEntriesTable() {
     container.innerHTML = '<div style="font-size:11px;color:#6b7280;text-align:center;padding:20px;">Sin participantes aún.</div>';
     return;
   }
+  
+  const sortBy = _adminConfig?.events?.find(e => e.id === _currentCompetitionId)?.config?.sortBy || 'data.total_ivs';
+  const scoreLabel = sortBy.includes('ivs') ? 'IVs' : 'Puntos';
+
   const rows = _adminEntries.map((entry, rank) => {
     const d = entry.data || {};
     const ivDetail = d.ivs ? Object.values(d.ivs).join('/') : '—';
@@ -654,54 +712,62 @@ async function _evSavePrize() {
   if (!isAdminUser()) return;
   
   const stats = ['hp','atk','def','spa','spd','spe'];
-  if (_prizeState.type === 'pokemon') {
+  const state = _prizeStates[_currentPrizeRank];
+
+  if (state.type === 'pokemon') {
     stats.forEach(s => {
       const el = document.getElementById(`prize-iv-${s}`);
-      if (el) _prizeState.ivs[s] = parseInt(el.value) || 0;
+      if (el) state.ivs[s] = parseInt(el.value) || 0;
     });
     const specEl = document.getElementById('prize-species');
     const lvEl = document.getElementById('prize-level');
     const natEl = document.getElementById('prize-nature');
     const shinyEl = document.getElementById('prize-shiny');
-    if (specEl) _prizeState.species = specEl.value;
-    if (lvEl) _prizeState.level = parseInt(lvEl.value) || 5;
-    if (natEl) _prizeState.nature = natEl.value;
-    if (shinyEl) _prizeState.shiny = shinyEl.checked;
+    if (specEl) state.species = specEl.value;
+    if (lvEl) state.level = parseInt(lvEl.value) || 5;
+    if (natEl) state.nature = natEl.value;
+    if (shinyEl) state.shiny = shinyEl.checked;
   }
   
-  const prize = _buildPrizeObject();
-  const ev = _adminConfig?.events?.find(e => e.id === 'hora_magikarp');
+  const ev = _adminConfig?.events?.find(e => e.id === _currentCompetitionId);
   if (ev) {
     ev.config = ev.config || {};
-    ev.config.prize = prize;
+    ev.config.prizes = {
+      first: _buildPrizeObject(_prizeStates.first),
+      second: _buildPrizeObject(_prizeStates.second),
+      third: _buildPrizeObject(_prizeStates.third)
+    };
+    // Mantenemos el criterio si ya existe, sino total_ivs
+    ev.config.sortBy = ev.config.sortBy || 'data.total_ivs';
   }
 
   try {
     const { error } = await sb.from('events_config').update({
       config: ev.config
-    }).eq('id', 'hora_magikarp');
+    }).eq('id', _currentCompetitionId);
     
     if (error) throw error;
-    notify('¡Premio guardado! ' + _prizeSummary(prize), '🏆'); 
+    notify('¡Podio guardado correctamente!', '🏆'); 
     _renderAdminPanel();
   } catch (e) { 
     console.error(e);
-    notify('Error al guardar premio en Supabase.', '❌'); 
+    notify('Error al guardar podio en Supabase.', '❌'); 
   }
 }
 
-function _buildPrizeObject() {
-  if (_prizeState.type === 'money') return { type: 'money', amount: _prizeState.amount };
-  if (_prizeState.type === 'bc') return { type: 'bc', amount: _prizeState.amount };
-  if (_prizeState.type === 'item') return { type: 'item', item: _prizeState.item, qty: _prizeState.qty };
-  if (_prizeState.type === 'pokemon') {
+function _buildPrizeObject(state) {
+  if (!state) return null;
+  if (state.type === 'money') return { type: 'money', amount: state.amount };
+  if (state.type === 'bc') return { type: 'bc', amount: state.amount };
+  if (state.type === 'item') return { type: 'item', item: state.item, qty: state.qty };
+  if (state.type === 'pokemon') {
     return {
       type: 'pokemon',
-      species: _prizeState.species,
-      level: _prizeState.level,
-      nature: _prizeState.nature,
-      ivs: { ..._prizeState.ivs },
-      shiny: _prizeState.shiny
+      species: state.species,
+      level: state.level,
+      nature: state.nature,
+      ivs: { ...state.ivs },
+      shiny: state.shiny
     };
   }
   return null;
@@ -752,7 +818,8 @@ async function _evAwardEntry(winnerId, name) {
 window._evAwardEntry = _evAwardEntry;
 
 window._evPrizeType = (type) => {
-  _prizeState.type = type;
+  const state = _prizeStates[_currentPrizeRank];
+  state.type = type;
   document.getElementById('prize-field-amount').style.display = ['money','bc'].includes(type) ? 'block' : 'none';
   document.getElementById('prize-field-item').style.display = type === 'item' ? 'block' : 'none';
   document.getElementById('prize-field-pokemon').style.display = type === 'pokemon' ? 'block' : 'none';
@@ -760,6 +827,104 @@ window._evPrizeType = (type) => {
     r.parentElement.style.borderColor = r.value === type ? '#f59e0b' : 'rgba(255,255,255,0.08)';
     r.parentElement.querySelector('span').style.color = r.value === type ? '#f59e0b' : '#9ca3af';
   });
+};
+
+window._evSwitchPrizeRank = (rank) => {
+  _currentPrizeRank = rank;
+  _renderAdminPanel();
+};
+
+window._evSwitchCompetition = (id) => {
+  _currentCompetitionId = id;
+  _renderAdminPanel();
+  _evLoadEntries();
+};
+
+async function awardEvent(eventId, manual = false) {
+  try {
+    // 1. Obtener config del evento
+    const { data: ev, error: evError } = await sb.from('events_config').select('*').eq('id', eventId).single();
+    if (evError || !ev) return;
+
+    // Evitar premiación doble si ya se hizo recientemente (ej. hace menos de 10 min)
+    const lastAwarded = ev.config?.lastAwardedAt ? new Date(ev.config.lastAwardedAt) : new Date(0);
+    if (!manual && (new Date() - lastAwarded < 10 * 60 * 1000)) return;
+
+    const prizes = ev.config?.prizes;
+    if (!prizes) return;
+
+    // 2. Obtener participantes ordenados
+    const { data: entries, error: entError } = await sb.from('competition_entries')
+      .select('*')
+      .eq('event_id', eventId);
+    
+    if (entError || !entries || entries.length === 0) {
+      if (manual) notify('No hay participantes para premiar.', '⚠️');
+      return;
+    }
+
+    // Ordenar (Asumimos Magikarp por ahora: total_ivs desc)
+    const sorted = entries.sort((a, b) => (b.data?.total_ivs || 0) - (a.data?.total_ivs || 0));
+
+    const winners = [
+      { rank: 'first', entry: sorted[0] },
+      { rank: 'second', entry: sorted[1] },
+      { rank: 'third', entry: sorted[2] }
+    ].filter(w => w.entry);
+
+    // 3. Insertar premios
+    for (const winner of winners) {
+      const prize = prizes[winner.rank];
+      if (!prize) continue;
+
+      await sb.from('awards').insert({
+        winner_id: winner.entry.player_id,
+        winner_name: winner.entry.player_name,
+        winner_email: winner.entry.player_email,
+        event_id: eventId,
+        prize,
+        awarded_at: new Date().toISOString()
+      });
+    }
+
+    // 4. Limpiar entradas y actualizar config
+    await sb.from('competition_entries').delete().eq('event_id', eventId);
+    
+    const newConfig = { ...ev.config, lastAwardedAt: new Date().toISOString() };
+    await sb.from('events_config').update({ config: newConfig }).eq('id', eventId);
+
+    if (manual) notify(`¡Evento premiado con éxito! Se repartieron ${winners.length} premios.`, '🏆');
+    else console.log(`[Events] Automatización: Evento ${eventId} premiado.`);
+    
+    if (isAdminUser()) openAdminPanel(); // Refrescar si está abierto
+  } catch (e) {
+    console.error('[Events] Error en awardEvent:', e);
+  }
+}
+
+async function checkAndDistributePrizes(allEvents) {
+  // Solo el admin o un proceso "autorizado" debería disparar esto para evitar colisiones masivas,
+  // pero Supabase RLS y la lógica de lastAwardedAt mitigarán duplicados.
+  for (const ev of allEvents) {
+    const isActive = _isEventActiveNow(ev);
+    const lastAwarded = ev.config?.lastAwardedAt ? new Date(ev.config.lastAwardedAt) : new Date(0);
+    
+    // Si NO está activo pero TIENE un criterio de premiación y NO ha sido premiado recientemente
+    // (Y el tiempo actual es posterior al fin del evento programado)
+    if (!isActive && ev.config?.prizes) {
+      const sched = ev.schedule;
+      if (sched && sched.type === 'weekly') {
+        // Lógica simple: si terminó hace poco y no se ha premiado esta sesión
+        // Para mayor precisión, compararíamos contra el bloque horario exacto.
+        awardEvent(ev.id);
+      }
+    }
+  }
+}
+
+window._evAwardFullEvent = async (eventId) => {
+  if (!confirm('¿Estás seguro de cerrar el concurso y repartir los premios del podio ahora? Esto eliminará a los participantes actuales.')) return;
+  await awardEvent(eventId, true);
 };
 
 window._evSavePrize = _evSavePrize;
