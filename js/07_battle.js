@@ -2586,6 +2586,13 @@ function catchSuccess(enemy) {
   // Hook de clase: racha de capturas (Cazabichos) + classXP
   if (typeof onCaptureSuccess === 'function') onCaptureSuccess();
 
+  // Hook de evento: Concurso de Magikarp
+  if (baseEnemy.id === 'magikarp' && typeof isEventActive === 'function' && isEventActive('hora_magikarp')) {
+    if (typeof promptMagikarpSubmit === 'function') {
+      promptMagikarpSubmit(caught);
+    }
+  }
+
   if (caught.heldItem) {
     addLog(`¡Parece que ${caught.name} llevaba un <strong>${caught.heldItem}</strong> equipado!`, 'log-info');
   }
