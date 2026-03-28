@@ -44,28 +44,27 @@ let _prizeStates = {
 // ── Auth token ────────────────────────────────────────────────────────────────
 async function _evGetToken() {
   try {
-    const { data: { session } } = await sb.auth.getSession();
+    const { data: { session } } = await window.sb.auth.getSession();
     return session?.access_token || null;
   } catch { return null; }
 }
 
 function isAdminUser() {
-  return currentUser?.email === ADMIN_EMAIL_EV;
+  return window.currentUser?.email === ADMIN_EMAIL_EV;
 }
 
 // ── Motor de eventos (Supabase) ────────────────────────────────────────────────
 async function loadActiveEvents() {
   try {
-    const { data: events, error } = await sb.from('events_config').select('*');
+    const { data: events, error } = await window.sb.from('events_config').select('*');
     if (error) throw error;
     
     _activeEvents = events.filter(ev => _isEventActiveNow(ev));
 
     // 2. Cargar resultados de los últimos 3 días (72hs)
-    // Lo aislamos en su propio bloque para que si falla no bloquee los eventos activos
     try {
       const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-      const { data: results, error: resError } = await sb.from('competition_results')
+      const { data: results, error: resError } = await window.sb.from('competition_results')
         .select('*, events_config(name, icon)')
         .gt('ended_at', threeDaysAgo);
 
@@ -188,13 +187,13 @@ function showEventDetail(evId) {
 
 // ── Concurso de Magikarp ──────────────────────────────────────────────────────
 async function submitMagikarpEntry(pokemon, eventId = 'hora_magikarp') {
-  if (!isEventActive(eventId) || !currentUser) return;
+  if (!isEventActive(eventId) || !window.currentUser) return;
   const totalIvs = Object.values(pokemon.ivs || {}).reduce((a, b) => a + b, 0);
   try {
-    const { data: existing } = await sb.from('competition_entries')
+    const { data: existing } = await window.sb.from('competition_entries')
       .select('data')
       .eq('event_id', eventId)
-      .eq('player_id', currentUser.id)
+      .eq('player_id', window.currentUser.id)
       .single();
 
     if (existing && (existing.data?.total_ivs || 0) >= totalIvs) {
@@ -202,11 +201,11 @@ async function submitMagikarpEntry(pokemon, eventId = 'hora_magikarp') {
       return;
     }
 
-    const { error } = await sb.from('competition_entries').upsert({
+    const { error } = await window.sb.from('competition_entries').upsert({
       event_id: eventId,
-      player_id: currentUser.id,
+      player_id: window.currentUser.id,
       player_name: state.trainer || 'Jugador',
-      player_email: currentUser.email,
+      player_email: window.currentUser.email,
       data: {
         pokemon_name: pokemon.name,
         ivs: pokemon.ivs,
@@ -227,16 +226,16 @@ async function submitMagikarpEntry(pokemon, eventId = 'hora_magikarp') {
 
 // ── Verificación de récord antes de mostrar el diálogo ────────────────────────
 async function checkMagikarpAndPrompt(pokemon) {
-  if (!isEventActive('hora_magikarp') || !currentUser) return;
+  if (!isEventActive('hora_magikarp') || !window.currentUser) return;
   
   const totalIvs = Object.values(pokemon.ivs || {}).reduce((a, b) => a + b, 0);
   
   try {
     // Verificar si el jugador ya tiene un Magikarp registrado
-    const { data: existing } = await sb.from('competition_entries')
+    const { data: existing } = await window.sb.from('competition_entries')
       .select('data')
       .eq('event_id', 'hora_magikarp')
-      .eq('player_id', currentUser.id)
+      .eq('player_id', window.currentUser.id)
       .single();
     
     // Si existe un registro y el nuevo Magikarp no es mejor, no mostrar diálogo
@@ -282,12 +281,12 @@ function promptMagikarpSubmit(pokemon) {
 
 // ── Entrega de premios ────────────────────────────────────────────────────────
 async function checkPendingAwards() {
-  if (!currentUser) return;
+  if (!window.currentUser) return;
   try {
     const seventyTwoHoursAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: awards, error } = await sb.from('awards')
+    const { data: awards, error } = await window.sb.from('awards')
       .select('*')
-      .eq('winner_id', currentUser.id)
+      .eq('winner_id', window.currentUser.id)
       .eq('claimed', false)
       .gt('awarded_at', seventyTwoHoursAgo);
     
@@ -300,7 +299,7 @@ async function checkPendingAwards() {
 }
 
 async function claimAward(awardId) {
-  if (!currentUser) return;
+  if (!window.currentUser) return;
   try {
     const award = state._pendingAwards?.find(a => a.id === awardId);
     if (!award) return;
@@ -356,7 +355,7 @@ async function _deliverAward(award) {
     if (typeof updateHud === 'function') updateHud();
     if (typeof saveGame === 'function') saveGame(false);
     try {
-      await sb.from('awards').update({ 
+      await window.sb.from('awards').update({ 
         claimed: true, 
         claimed_at: new Date().toISOString() 
       }).eq('id', award.id);
@@ -365,17 +364,13 @@ async function _deliverAward(award) {
 }
 
 // ── Panel de Administrador ────────────────────────────────────────────────────
-function isAdminUser() {
-  return currentUser?.email === ADMIN_EMAIL_EV;
-}
-
 async function openAdminPanel() {
   if (!isAdminUser()) { notify('Sin acceso.', '🚫'); return; }
   const existing = document.getElementById('admin-panel-overlay');
   if (existing) existing.remove();
 
   try {
-    const { data: events, error } = await sb.from('events_config').select('*').order('id');
+    const { data: events, error } = await window.sb.from('events_config').select('*').order('id');
     if (error) throw error;
     
     _adminConfig = { events };
@@ -462,7 +457,7 @@ function _renderAdminPanel() {
     try {
       // Guardamos cada evento modificado
       for (const ev of (_adminConfig?.events || [])) {
-        const { error } = await sb.from('events_config').update({
+        const { error } = await window.sb.from('events_config').update({
           active: ev.active,
           manual: ev.manual,
           schedule: ev.schedule,
@@ -708,9 +703,9 @@ function _renderCompetitionTab() {
 async function _evLoadEntries() {
   if (!isAdminUser()) return;
   try {
-    const { data: entries, error } = await sb.from('competition_entries')
+    const { data: entries, error } = await window.sb.from('competition_entries')
       .select('*')
-      .eq('event_id', _currentCompetitionId);
+      .eq('event_id', window._currentCompetitionId);
     
     if (error) throw error;
     
@@ -797,7 +792,7 @@ async function _evSavePrize() {
   }
 
   try {
-    const { error } = await sb.from('events_config').update({
+    const { error } = await window.sb.from('events_config').update({
       config: ev.config
     }).eq('id', _currentCompetitionId);
     
@@ -846,13 +841,13 @@ async function _evAwardEntry(playerId, playerName, playerEmail) {
   if (!confirm(`¿Premiar directamente a ${playerName}? (Solo 1er puesto)`)) return;
   try {
     const evId = window._currentCompetitionId || 'hora_magikarp';
-    const { data: ev, error: fetchErr } = await sb.from('events_config').select('config').eq('id', evId).single();
+    const { data: ev, error: fetchErr } = await window.sb.from('events_config').select('config').eq('id', evId).single();
     if (fetchErr) throw fetchErr;
 
     const prize = ev?.config?.prizes?.first;
     if (!prize) { alert('ERROR: El premio del 1er puesto no está configurado para este evento.'); return; }
 
-    const { error } = await sb.from('awards').insert({
+    const { error } = await window.sb.from('awards').insert({
       winner_id: playerId,
       winner_name: playerName,
       winner_email: playerEmail || '—', // Garantizamos el email
@@ -898,9 +893,11 @@ window._evSwitchCompetition = (val) => {
 
 async function awardEvent(eventId, manual = false) {
   try {
-    // 1. Obtener config del evento
-    const { data: ev, error: evError } = await sb.from('events_config').select('*').eq('id', eventId).single();
-    if (evError || !ev) return;
+    const { data: ev, error: fetchEvErr } = await window.sb.from('events_config').select('*').eq('id', eventId).single();
+    if (fetchEvErr) throw fetchEvErr;
+
+    const { data: entries, error: fetchEntErr } = await window.sb.from('competition_entries').select('*').eq('event_id', eventId);
+    if (fetchEntErr) throw fetchEntErr;
 
     // Evitar premiación doble si ya se hizo recientemente (ej. hace menos de 10 min)
     const lastAwarded = ev.config?.lastAwardedAt ? new Date(ev.config.lastAwardedAt) : new Date(0);
@@ -909,22 +906,12 @@ async function awardEvent(eventId, manual = false) {
     const prizes = ev.config?.prizes;
     if (!prizes) return;
 
-    // 2. Obtener participantes ordenados
-    const { data: entries, error: entError } = await sb.from('competition_entries')
-      .select('*')
-      .eq('event_id', eventId);
-    
-    if (entError || !entries || entries.length === 0) {
-      if (manual) notify('No hay participantes para premiar.', '⚠️');
-      return;
-    }
-
-    const sortBy = ev.config?.sortBy || 'data.total_ivs';
-    
     // Dejar una notificación visual de que el proceso ha comenzado
     notify('Procesando premios...', '🏆');
 
-    // Ordenar participantes (Magikarp: total_ivs desc, otros: según config)
+    const sortBy = ev.config?.sortBy || 'data.total_ivs';
+    
+    // Ordenar participantes
     const sorted = (entries || []).sort((a, b) => {
       const valA = sortBy.startsWith('data.') ? a.data?.[sortBy.split('.')[1]] : a[sortBy];
       const valB = sortBy.startsWith('data.') ? b.data?.[sortBy.split('.')[1]] : b[sortBy];
@@ -937,13 +924,31 @@ async function awardEvent(eventId, manual = false) {
       { rank: 'third', entry: sorted[2] }
     ].filter(w => w.entry);
 
+    // 4. Guardar resultado histórico del podio
+    const { error: resErr } = await window.sb.from('competition_results').insert({
+      event_id: eventId,
+      results: winners.map(w => ({
+        rank: w.rank,
+        player_id: w.entry.player_id,
+        player_name: w.entry.player_name,
+        score: w.entry.data?.total_ivs || 0,
+        pokemon: w.entry.data?.pokemon_name || '?'
+      })),
+      ended_at: new Date().toISOString()
+    });
+    if (resErr) throw resErr;
+
+    // 5. Limpiar tabla de participantes (Cleanup)
+    const { error: delErr } = await window.sb.from('competition_entries').delete().eq('event_id', eventId);
+    if (delErr) throw delErr;
+
     // 3. Insertar premios individuales
     for (const winner of winners) {
       const prize = prizes[winner.rank];
       if (!prize) continue;
 
-      // 3. Registrar el premio para el ganador
-      const { error: awardErr } = await sb.from('awards').insert({
+      // Registrar el premio para el ganador
+      const { error: awardErr } = await window.sb.from('awards').insert({
         winner_id: winner.entry.player_id,
         winner_name: winner.entry.player_name,
         winner_email: winner.entry.player_email || '—', // Incluir para evitar null constraint
@@ -1145,18 +1150,19 @@ window._evClearEntries = async (eventId) => {
   if (!confirm(`¿Estás seguro de REINICIAR y ELIMINAR a todos los participantes del evento [${targetId}]?\n\nEsta acción es irreversible.`)) return;
   
   try {
-    const { error } = await sb.from('competition_entries').delete().eq('event_id', targetId);
+    const { error } = await window.sb.from('competition_entries').delete().eq('event_id', targetId);
     if (error) throw error;
     
-    // Limpieza inmediata del estado local para feedback visual instantáneo
+    // Solo vaciar localmente SI la base de datos confirmó el borrado
     _adminEntries = [];
-    notify('¡Participantes eliminados correctamente!', '🗑️');
+    notify('¡Lista de participantes vaciada!', '🗑️');
     
     _renderAdminPanel();
     _evLoadEntries(); 
   } catch (e) {
     console.error('[Events] Error al limpiar:', e);
-    alert('ERROR AL REINICIAR TABLA:\n' + (e.message || e));
+    alert('ERROR AL BOORRAR EN BASE DE DATOS:\n' + (e.message || e));
+    _evLoadEntries(); // Recargar para mostrar lo que hay realmente
   }
 };
 

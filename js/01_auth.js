@@ -5,9 +5,9 @@
     const LOCAL_URL = 'http://localhost:3000';
 
     // Servidor activo: 'online' apunta a Supabase, 'local' apunta a localhost:3000
-    let currentServer = SUPABASE_URL;
-    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let currentUser = null;
+    window.currentServer = SUPABASE_URL;
+    window.sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.currentUser = null;
     let _saveTimeout = null;
 
     // ── Server Selector ───────────────────────────────────────────────────────
@@ -110,8 +110,8 @@
 
     async function doLogout() {
       await saveGame(false);
-      if (currentServer !== LOCAL_URL) await sb.auth.signOut();
-      currentUser = null;
+      if (window.currentServer !== LOCAL_URL) await window.sb.auth.signOut();
+      window.currentUser = null;
       // Reset state using central function
       resetGameState();
       toggleProfile();
@@ -147,6 +147,7 @@
           
           state.trainerChance = 5;
           state.trainer = username;
+          window.currentUser = user; // Asegurar que sea global
           updateHud();
           document.getElementById('hud-name').textContent = username.toUpperCase();
           setAuthLoading(false);
@@ -235,6 +236,7 @@
           state.trainerChance = 5; 
           console.log("[DEBUG] Pity forced to 5% on login");
           state.trainer = username;
+          window.currentUser = user; // Asegurar que sea global
           updateHud();
           document.getElementById('hud-name').textContent = username.toUpperCase();
           setAuthLoading(false);
