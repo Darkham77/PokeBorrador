@@ -155,6 +155,34 @@ async function submitMagikarpEntry(pokemon) {
   }
 }
 
+// ── Verificación de récord antes de mostrar el diálogo ────────────────────────
+async function checkMagikarpAndPrompt(pokemon) {
+  if (!isEventActive('hora_magikarp') || !currentUser) return;
+  
+  const totalIvs = Object.values(pokemon.ivs || {}).reduce((a, b) => a + b, 0);
+  
+  try {
+    // Verificar si el jugador ya tiene un Magikarp registrado
+    const { data: existing } = await sb.from('competition_entries')
+      .select('data')
+      .eq('event_id', 'hora_magikarp')
+      .eq('player_id', currentUser.id)
+      .single();
+    
+    // Si existe un registro y el nuevo Magikarp no es mejor, no mostrar diálogo
+    if (existing && (existing.data?.total_ivs || 0) >= totalIvs) {
+      return; // Silenciosamente ignorar Magikarp peores
+    }
+    
+    // Si el nuevo Magikarp es mejor (o no hay registro), mostrar el diálogo
+    promptMagikarpSubmit(pokemon);
+  } catch (e) {
+    // Si hay error en la consulta, mostrar el diálogo de todas formas
+    console.warn('[Events] Error verificando récord de Magikarp:', e);
+    promptMagikarpSubmit(pokemon);
+  }
+}
+
 function promptMagikarpSubmit(pokemon) {
   if (!isEventActive('hora_magikarp')) return;
   const totalIvs = Object.values(pokemon.ivs || {}).reduce((a, b) => a + b, 0);

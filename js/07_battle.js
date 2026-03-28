@@ -2588,8 +2588,8 @@ function catchSuccess(enemy) {
 
   // Hook de evento: Concurso de Magikarp
   if (baseEnemy.id === 'magikarp' && typeof isEventActive === 'function' && isEventActive('hora_magikarp')) {
-    if (typeof promptMagikarpSubmit === 'function') {
-      promptMagikarpSubmit(caught);
+    if (typeof checkMagikarpAndPrompt === 'function') {
+      checkMagikarpAndPrompt(caught);
     }
   }
 
