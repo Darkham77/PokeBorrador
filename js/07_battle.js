@@ -2649,6 +2649,15 @@ function awardBattleExperience(isCapture = false) {
 
     if ((state.luckyEggSecs || 0) > 0 || p.heldItem === 'Huevo Suerte') pExp = Math.floor(pExp * 1.5);
 
+    // Bonus de Eventos (Doble EXP, etc)
+    if (typeof getEventBonus === 'function') {
+      const eventMult = getEventBonus('exp');
+      if (eventMult !== 1) {
+        pExp = Math.floor(pExp * eventMult);
+        addLog(`<span style="color:#f59e0b;font-size:9px;">[BONO EVENTO: x${eventMult}]</span>`, 'log-info');
+      }
+    }
+
     // Modificador de clase
     if (typeof getClassModifier === 'function') {
       const isTrainerBattle = !!(b.isTrainer || b.isGym);

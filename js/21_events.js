@@ -323,7 +323,7 @@ function _renderAdminPanel() {
   window._evAdminSwitchTab = (tab) => {
     _adminTab = tab;
     _renderAdminPanel();
-    if (tab === 'competition') _evLoadEntries();
+    if (tab === 'competition') _evLoadEntriesGlobal();
   };
 
   window._evAdminSave = async () => {
@@ -525,7 +525,7 @@ function _renderCompetitionTab() {
     <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#22c55e;">🎣 PARTICIPANTES</div>
-        <button onclick="window._evLoadEntries()" style="background:none;border:none;color:#6b7280;font-size:14px;cursor:pointer;">🔄</button>
+        <button onclick="window._evLoadEntriesGlobal()" style="background:none;border:none;color:#6b7280;font-size:14px;cursor:pointer;">🔄</button>
       </div>
       <div id="admin-entries-container">
         <div style="font-size:11px;color:#6b7280;text-align:center;padding:20px;">Cargando...</div>
@@ -712,7 +712,8 @@ window._evHourChange = (idx, field, val) => {
   _adminConfig.events[idx].schedule[field] = parseInt(val) || 0;
 };
 
-window._evLoadEntries = async () => {
+// Se renombra la función global para evitar colisión con la local y recursión infinita
+window._evLoadEntriesGlobal = async () => {
   await _evLoadEntries();
 };
 
