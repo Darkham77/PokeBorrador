@@ -838,30 +838,28 @@ function _prizeSummary(prize) {
   return 'Premio desconocido';
 }
 
-async function _evAwardEntry(winnerId, name) {
-  if (!isAdminUser()) return;
-  const compEv = _adminConfig?.events?.find(e => e.id === 'hora_magikarp');
-  const prize = compEv?.config?.prize;
-  if (!prize) { notify('Primero configurá el premio en la sección de abajo.', '⚠️'); return; }
-  if (!confirm(`¿Otorgar el premio a ${name}?\\n\\nPremio: ${_prizeSummary(prize)}`)) return;
-  
+async function _evAwardEntry(playerId, playerName) {
+  if (!confirm(`¿Premiar directamente a ${playerName}? (Solo 1er puesto)`)) return;
   try {
-    // Buscamos el email del ganador (necesario para el sistema de premios actual o notificaciones)
-    const { data: profile } = await sb.from('profiles').select('email').eq('id', winnerId).single();
+    const evId = _currentCompetitionId || 'hora_magikarp';
+    const { data: ev } = await sb.from('events_config').select('config').eq('id', evId).single();
+    const prize = ev?.config?.prizes?.first;
     
+    if (!prize) { notify('Premio no configurado.', '⚠️'); return; }
+
     const { error } = await sb.from('awards').insert({
-      winner_id: winnerId,
-      winner_name: name,
-      winner_email: profile?.email || '—',
-      event_id: 'hora_magikarp',
+      winner_id: playerId,
+      winner_name: playerName,
+      event_id: evId,
       prize,
       awarded_at: new Date().toISOString()
     });
-    
+
     if (error) throw error;
-    notify(`✅ Premio enviado a ${name}. Lo recibirá al ingresar al juego.`, '🏆');
+    notify(`¡Recompensa enviada a ${playerName}!`, '🎁');
+    checkPendingAwards(); // Refrescar si es el mismo usuario
   } catch (e) {
-    console.error(e);
+    console.warn('[Admin] Error al premiar:', e);
     notify('Error al enviar premio.', '❌');
   }
 }
@@ -915,8 +913,14 @@ async function awardEvent(eventId, manual = false) {
       return;
     }
 
-    // Ordenar (Asumimos Magikarp por ahora: total_ivs desc)
-    const sorted = entries.sort((a, b) => (b.data?.total_ivs || 0) - (a.data?.total_ivs || 0));
+    const sortBy = ev.config?.sortBy || 'data.total_ivs';
+    
+    // Ordenar participantes (Magikarp: total_ivs desc, otros: según config)
+    const sorted = entries.sort((a, b) => {
+      const valA = sortBy.startsWith('data.') ? a.data?.[sortBy.split('.')[1]] : a[sortBy];
+      const valB = sortBy.startsWith('data.') ? b.data?.[sortBy.split('.')[1]] : b[sortBy];
+      return (valB || 0) - (valA || 0);
+    });
 
     const winners = [
       { rank: 'first', entry: sorted[0] },
