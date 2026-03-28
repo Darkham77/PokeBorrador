@@ -1207,11 +1207,9 @@ function _openRocketSacrificeModal(missionId, info) {
   const clsDef = PLAYER_CLASSES.rocket;
   const poisonBox = (state.box || []).filter((p, idx) => {
     if (p.onMission) return false;
-    const pData = POKEMON_DB[p.id];
+    const pData = typeof POKEMON_DB !== 'undefined' ? POKEMON_DB[p.id] : null;
     if (!pData) return false;
-    const type1 = pData.type || '';
-    const type2 = pData.type2 || '';
-    return type1 === 'poison' || type2 === 'poison';
+    return pData.type === 'poison' || pData.type2 === 'poison';
   });
 
   let selected = [];
@@ -1220,68 +1218,162 @@ function _openRocketSacrificeModal(missionId, info) {
     const el = document.getElementById('rocket-selected-list');
     if (!el) return;
     el.innerHTML = selected.length === 0
-      ? `<div style="color:#6b7280;font-size:11px;text-align:center;padding:8px;">Sin seleccionar</div>`
-      : selected.map((p, i) => `
-          <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(239,68,68,0.1);border-radius:8px;padding:8px 12px;margin-bottom:4px;border:1px solid rgba(239,68,68,0.3);">
-            <span style="font-size:12px;">${p.name || p.id} Nv.${p.level}</span>
-            <button onclick="_rocketDeselect(${i})" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;">✕</button>
-          </div>`).join('');
+      ? `<div style="color:#6b7280;font-size:11px;text-align:center;padding:12px;border:1px dashed #ef444444;border-radius:12px;background:rgba(239,68,68,0.02);">Aún no seleccionaste ningún Pokémon</div>`
+      : `<div style="display:flex;flex-direction:column;gap:6px;">` + selected.map((p, i) => {
+          const projected = 1000 + (p.level * 100) + (Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0) * 25);
+          return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(239,68,68,0.1);border-radius:10px;padding:8px 12px;border:1px solid rgba(239,68,68,0.3);">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:14px;">${p.emoji || '❓'}</span>
+              <div>
+                <div style="font-size:11px;font-weight:bold;color:#e2e8f0;">${p.name || p.id}</div>
+                <div style="font-size:9px;color:#9ca3af;">Nv.${p.level} · <strong style="color:#22c55e;">≈₽${projected.toLocaleString()}</strong></div>
+              </div>
+            </div>
+            <button onclick="_rocketDeselect(${i})" style="background:rgba(239,68,68,0.2);border:none;border-radius:6px;width:24px;height:24px;color:#ef4444;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:0.1s;" onmouseover="this.style.background='rgba(239,68,68,0.4)'" onmouseout="this.style.background='rgba(239,68,68,0.2)'">✕</button>
+          </div>`;
+        }).join('') + `</div>`;
 
     const btnConfirm = document.getElementById('rocket-confirm-btn');
     if (btnConfirm) {
       btnConfirm.disabled = selected.length < info.pokReq;
       btnConfirm.style.opacity = selected.length >= info.pokReq ? '1' : '0.4';
     }
+    
+    // Actualizar estado visual de los botones "Agregar" en la grilla
+    document.querySelectorAll('.rocket-add-btn').forEach(btn => {
+      const bIdx = parseInt(btn.dataset.idx);
+      const p = (state.box || [])[bIdx];
+      const isSelected = selected.find(x => x === p);
+      if (isSelected) {
+        btn.innerHTML = '✓ Sel.';
+        btn.style.background = '#22c55e';
+        btn.style.color = '#fff';
+        btn.style.opacity = '1';
+      } else {
+        btn.innerHTML = '+ Ag.';
+        btn.style.background = 'rgba(239,68,68,0.15)';
+        btn.style.color = '#ef4444';
+        btn.style.opacity = selected.length >= info.pokReq ? '0.3' : '1';
+      }
+    });
   };
 
   window._rocketDeselect = (i) => { selected.splice(i, 1); renderSelected(); };
 
+  // Genera el HTML de una tarjeta Pokémon rica
+  const buildCard = (p, realIdx) => {
+    const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
+    const tags = p.tags || [];
+    const spriteUrl = (typeof getSpriteUrl === 'function') ? getSpriteUrl(p.id, p.isShiny) : '';
+    const projected = 1000 + (p.level * 100) + (totalIvs * 25);
+
+    const tagsHtml = tags.length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
+      ${tags.includes('fav')   ? '<span style="background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);border-radius:6px;padding:1px 6px;font-size:10px;">⭐ Fav</span>' : ''}
+      ${tags.includes('breed') ? '<span style="background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.4);border-radius:6px;padding:1px 6px;font-size:10px;">❤️ Crianza</span>' : ''}
+      ${tags.includes('iv31')  ? '<span style="background:rgba(34,197,94,0.2);color:#4ade80;border:1px solid rgba(34,197,94,0.4);border-radius:6px;padding:1px 6px;font-size:10px;">31 IV Max</span>' : ''}
+    </div>` : '';
+
+    const IV_LABELS = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SpA', spd: 'SpD', spe: 'VEL' };
+    const ivBars = Object.entries(p.ivs || {}).map(([stat, val]) => {
+      const pct = Math.round((val / 31) * 100);
+      const color = val >= 28 ? '#4ade80' : val >= 15 ? '#fbbf24' : '#f87171';
+      return `<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
+        <span style="font-size:9px;color:#6b7280;width:26px;flex-shrink:0;">${IV_LABELS[stat] || stat}</span>
+        <div style="flex:1;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+          <div style="width:${pct}%;height:100%;background:${color};border-radius:3px;"></div>
+        </div>
+        <span style="font-size:9px;color:${color};width:18px;text-align:right;">${val}</span>
+      </div>`;
+    }).join('');
+
+    const shinyBadge = p.isShiny ? '<span style="font-size:11px;margin-left:4px;">✨</span>' : '';
+
+    return `<div style="background:#ef44440d;border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:12px;transition:0.15s;"
+        onmouseover="this.style.background='rgba(239,68,68,0.15)';this.style.borderColor='rgba(239,68,68,0.4)'"
+        onmouseout="this.style.background='#ef44440d';this.style.borderColor='rgba(239,68,68,0.2)'">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="width:44px;height:44px;flex-shrink:0;position:relative;">
+          ${spriteUrl
+            ? `<img src="${spriteUrl}" width="44" height="44" style="image-rendering:pixelated;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+               <span style="display:none;font-size:32px;line-height:44px;">${p.emoji || '❓'}</span>`
+            : `<span style="font-size:32px;line-height:44px;">${p.emoji || '❓'}</span>`}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:bold;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name || p.id}${shinyBadge}</div>
+          <div style="font-size:10px;color:#9ca3af;">Nv.${p.level} · ${p.nature || '—'}</div>
+          ${tagsHtml}
+        </div>
+      </div>
+      <div style="margin-bottom:8px;">${ivBars}</div>
+      <div style="font-size:10px;color:#22c55e;margin-top:6px;font-weight:bold;">💵 Estimado: ≈₽${projected.toLocaleString()}</div>
+      
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button onclick="_missionViewDetail(${realIdx},'${missionId}')"
+          style="flex:0 0 auto;padding:6px 10px;border:1px solid rgba(239,68,68,0.3);border-radius:8px;background:rgba(255,255,255,0.05);color:#ef4444;font-size:10px;cursor:pointer;transition:0.15s;"
+          onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+          🔍 Ver
+        </button>
+        <button onclick="_rocketSelect(${realIdx})" class="rocket-add-btn" data-idx="${realIdx}"
+          style="flex:1;padding:6px 10px;border:none;border-radius:8px;background:rgba(239,68,68,0.15);color:#ef4444;font-size:10px;font-weight:bold;cursor:pointer;transition:0.15s;"
+          onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter='none'">
+          + Ag.
+        </button>
+      </div>
+    </div>`;
+  };
+
+  const cardsHtml = poisonBox.length === 0
+    ? `<div style="text-align:center;color:#6b7280;padding:24px;font-size:11px;">Tu PC está vacía o no hay Pokémon tipo Veneno disponibles.</div>`
+    : poisonBox.map(p => buildCard(p, (state.box || []).indexOf(p))).join('');
+
   const ov = document.createElement('div');
   ov.id = 'mission-select-overlay';
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px;';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s;';
   ov.innerHTML = `
-    <div style="background:#0f172a;border:1px solid #ef444444;border-radius:20px;padding:20px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div style="background:#0f172a;border:1px solid #ef444444;border-radius:20px;padding:20px;max-width:440px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-shrink:0;">
         <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;">💀 SACRIFICIO ROCKET</div>
-        <button onclick="document.getElementById('mission-select-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;">✕</button>
+        <button onclick="document.getElementById('mission-select-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;line-height:1;">✕</button>
       </div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:12px;">Selecciona <strong style="color:#ef4444;">${info.pokReq}</strong> Pokémon tipo Veneno para sacrificar. Sus objetos volverán a tu mochila.</div>
-      <div id="rocket-selected-list" style="margin-bottom:12px;min-height:40px;"></div>
-      <div style="font-size:11px;color:#6b7280;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Tu PC (Tipo Veneno)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:240px;overflow-y:auto;">
-        ${poisonBox.length === 0
-          ? `<div style="grid-column:span 2;text-align:center;color:#6b7280;padding:16px;font-size:11px;">Sin Pokémon tipo Veneno en la PC.</div>`
-          : poisonBox.map((p, idx) => {
-              const realIdx = (state.box || []).indexOf(p);
-              const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
-              const projected = 1000 + (p.level * 100) + (totalIvs * 25);
-              return `<div class="rocket-poke-card" onclick="_rocketSelect(${realIdx})" data-idx="${realIdx}"
-                style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:10px;cursor:pointer;transition:0.15s;"
-                onmouseover="this.style.background='rgba(239,68,68,0.18)'"
-                onmouseout="this.style.background='rgba(239,68,68,0.08)'">
-                <div style="font-size:12px;font-weight:bold;color:#e2e8f0;">${p.name || p.id}</div>
-                <div style="font-size:10px;color:#9ca3af;">Nv.${p.level} · IV:${totalIvs}</div>
-                <div style="font-size:10px;color:#22c55e;">≈₽${projected.toLocaleString()}</div>
-              </div>`;
-            }).join('')
-        }
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:12px;flex-shrink:0;">Selecciona <strong style="color:#ef4444;">${info.pokReq}</strong> Pokémon tipo Veneno para el mercado negro. <strong style="color:#3b82f6;">(Se borrarán de tu PC, los objetos volverán a tu mochila)</strong></div>
+      
+      <div id="rocket-selected-list" style="margin-bottom:12px;flex-shrink:0;"></div>
+      
+      <div style="font-size:10px;color:#6b7280;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:6px;">Tu PC (Tipo Veneno)</div>
+      
+      <div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;padding-right:4px;">
+        ${cardsHtml}
       </div>
+      
       <button id="rocket-confirm-btn" disabled
         onclick="_confirmRocketSacrifice('${missionId}')"
-        style="width:100%;margin-top:16px;padding:12px;border:none;border-radius:10px;background:#ef4444;color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;opacity:0.4;">
+        style="width:100%;margin-top:16px;padding:12px;border:none;border-radius:12px;background:#ef4444;color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;opacity:0.4;flex-shrink:0;box-shadow:0 4px 12px rgba(239,68,68,0.3);">
         💀 CONFIRMAR SACRIFICIO
       </button>
     </div>`;
   document.body.appendChild(ov);
 
+  window._missionViewDetail = (boxIdx, mid) => {
+    if (typeof showPokemonDetails === 'function') {
+      showPokemonDetails((state.box || [])[boxIdx], boxIdx, 'box');
+    }
+  };
+
   window._rocketSelect = (boxIdx) => {
     const p = (state.box || [])[boxIdx];
     if (!p) return;
-    if (selected.find(x => x === p)) return notify('Ya seleccionaste este Pokémon.', '⚠️');
+    const isAlreadySelected = selected.find(x => x === p);
+    if (isAlreadySelected) {
+      // Si ya estaba seleccionado, lo deseleccionamos
+      selected = selected.filter(x => x !== p);
+      renderSelected();
+      return;
+    }
     if (selected.length >= info.pokReq) return notify(`Solo podés seleccionar ${info.pokReq} Pokémon.`, '⚠️');
     selected.push(p);
     renderSelected();
   };
+
   window._confirmRocketSacrifice = (mid) => {
     if (selected.length < info.pokReq) return;
     // Devolver objetos a la mochila
@@ -1297,6 +1389,7 @@ function _openRocketSacrificeModal(missionId, info) {
     });
     const money = calcRocketMissionMoney(selected, info.mult);
     document.getElementById('mission-select-overlay')?.remove();
+    if (typeof closePokemonDetail === 'function') closePokemonDetail();
     _launchMission(mid, { pendingMoney: money });
     if (typeof renderBox === 'function') renderBox();
     if (typeof updateHud === 'function') updateHud();

@@ -228,7 +228,7 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   applyDownload(enemy, player);
 
   // ── Predict Nature (Criador) ────────────────────────────────────────────
-  if (state.playerClass === 'criador' && enemy.nature) {
+  if (state.playerClass === 'criador' && enemy.nature && !isGym && !isTrainer && !state.battle.isPvP) {
     const nat = enemy.nature;
     addLog(`¡Tu instinto de Criador predice que ${enemy.name} es de naturaleza <strong>${nat}</strong>!`, 'log-info');
   }
@@ -296,7 +296,8 @@ function updateBattleUI() {
 
   const natureEl = document.getElementById('enemy-nature-display');
   if (natureEl) {
-    if (state.playerClass === 'criador' && b.enemy.nature) {
+    const isWild = !b.isTrainer && !b.isGym && !b.isPvP;
+    if (state.playerClass === 'criador' && b.enemy.nature && isWild) {
       natureEl.innerHTML = buildNatureTooltip(b.enemy.nature);
       natureEl.style.display = 'block';
     } else {
