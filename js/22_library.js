@@ -383,28 +383,54 @@ const libraryContent = {
         <tr><td>🔥 Quemado</td><td>Pierde % de PS al final de cada turno. ATK reducido.</td></tr>
         <tr><td>⚡ Paralizado</td><td>Puede no poder atacar ese turno. VEL reducida.</td></tr>
         <tr><td>☠️ Envenenado</td><td>Pierde PS progresivamente. El daño escala por turno.</td></tr>
-        <tr><td>😴 Dormido</td><td>No puede actuar. Se despierta después de varios turnos.</td></tr>
-        <tr><td>🧊 Congelado</td><td>No puede actuar hasta descongelarse (suele requerir un movimiento de fuego).</td></tr>
+        <tr><td>😴 Dormido</td><td>No puede atacar. Se despierta después de varios turnos.</td></tr>
+        <tr><td>🧊 Congelado</td><td>No puede atacar hasta descongelarse (suele requerir un movimiento de fuego).</td></tr>
       </tbody>
     </table>
     <p><strong>Tip de captura:</strong> Dormido y Congelado dan ×2 al catch rate. Cualquier otro estado da ×1.5.</p>
 
-    <h3>📈 EXP y Battle Coins</h3>
+    <h3>📈 EXP y Monedas (₽ / BC)</h3>
     <ul>
       <li>La EXP ganada depende del nivel del Pokémon enemigo y del tuyo.</li>
-      <li>Las Battle Coins (BC) se ganan al vencer y se usan en la tienda y el sistema de clases.</li>
+      <li><strong>Poké-Dólares (₽):</strong> Se ganan en todos los combates. Los entrenadores NPC dan 10 veces más que los salvajes.</li>
+      <li><strong>Battle Coins (BC):</strong> Se ganan al vencer y se usan en la tienda y el sistema de clases.</li>
     </ul>
 
     <h3>🎭 Modificadores de Clase en Combate</h3>
     <table class="library-table">
       <thead><tr><th>Clase</th><th>Modificador</th></tr></thead>
       <tbody>
-        <tr><td>🚀 Equipo Rocket</td><td>-10% BC en todas las batallas. Roba ítems al iniciar vs NPC (15–30%).</td></tr>
+        <tr><td>🚀 Equipo Rocket</td><td><strong>Bono de Extorsión:</strong> +50% ₽ en batallas NPC. -10% BC en todas las batallas. Roba ítems al iniciar vs NPC (15–30%).</td></tr>
         <tr><td>🦗 Cazabichos</td><td>-20% EXP vs Entrenadores NPC. -15% BC en todas las batallas.</td></tr>
         <tr><td>🏅 Entrenador</td><td>+10% EXP en todos los combates. +30% BC en gimnasios.</td></tr>
         <tr><td>🧬 Criador</td><td>-10% EXP en todos los combates.</td></tr>
       </tbody>
     </table>
+  `,
+
+  // ─────────────────────────────────────────────────────────────
+  eventos: `
+    <h1>📅 Sistema de Eventos</h1>
+    <p>Poké Vicio cuenta con un sistema de eventos dinámicos que otorgan bonificaciones temporales y desafíos especiales. Podés ver los eventos activos en el banner superior del juego.</p>
+
+    <h3>🎣 Hora de Pesca (Magikarp)</h3>
+    <p>Durante este evento, podés inscribir tus capturas de Magikarp en un concurso de IVs. ¡Los mejores ejemplares reciben premios exclusivos!</p>
+    <ul>
+      <li><strong>Inscripción:</strong> Automática al capturar un Magikarp mientras el evento está activo.</li>
+      <li><strong>Puntuación:</strong> Se basa en la suma total de IVs (máximo 186).</li>
+      <li><strong>Premios:</strong> Se entregan automáticamente al finalizar el evento a través del sistema de premios.</li>
+    </ul>
+
+    <h3>🎁 Premios y Recompensas</h3>
+    <p>Si ganás un torneo o evento, recibirás una notificación. Los premios pueden incluir:</p>
+    <ul>
+      <li><strong>Dinero:</strong> Poké-Dólares (₽) o Battle Coins (BC).</li>
+      <li><strong>Objetos:</strong> Ítems raros, MTs o consumibles.</li>
+      <li><strong>Pokémon:</strong> Ejemplares especiales, a veces con IVs perfectos o en su versión Shiny ✨.</li>
+    </ul>
+
+    <h3>🛡️ Administración de Eventos</h3>
+    <p>Los eventos son gestionados por los administradores y pueden ser programados (semanales) o activados manualmente para celebraciones especiales.</p>
   `
 
 };
