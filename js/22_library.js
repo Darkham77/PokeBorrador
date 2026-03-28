@@ -444,7 +444,8 @@ function toggleLibrary() {
   if (modal.style.display === 'none' || modal.style.display === '') {
     modal.style.display = 'block';
     const contentArea = document.getElementById('library-article-content');
-    if (contentArea && !contentArea.innerHTML.trim()) {
+    // Forzamos la carga de la primera pestaña si el área de contenido está vacía o invisible
+    if (contentArea && (!contentArea.innerHTML.trim() || contentArea.style.opacity === "0")) {
       const firstTab = document.querySelector('.library-nav-item');
       if (firstTab) {
         const match = firstTab.getAttribute('onclick').match(/'([^']+)'/);
