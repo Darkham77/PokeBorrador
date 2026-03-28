@@ -40,26 +40,38 @@ async function _evGetToken() {
   } catch { return null; }
 }
 
-// ── Motor de eventos ──────────────────────────────────────────────────────────
-function _getApiUrl(path) {
-  // Si estamos en local (localhost o 127.0.0.1), usamos la misma URL
-  // Si estamos en producción (GitHub Pages, etc), intentamos conectar al servidor de eventos
-  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const baseUrl = isLocal ? '' : 'http://localhost:5000'; // Ajustar si el servidor corre en otro puerto
-  return baseUrl + path;
-}
-
+// ── Motor de eventos (Supabase) ────────────────────────────────────────────────
 async function loadActiveEvents() {
   try {
-    const res = await fetch(_getApiUrl('/api/events'));
-    if (!res.ok) return;
-    const data = await res.json();
-    _activeEvents = data.events || [];
+    // Verificamos eventos cuyo horario coincida o manual=true
+    const { data: events, error } = await sb.from('events_config').select('*');
+    if (error) throw error;
+    
+    _activeEvents = events.filter(ev => _isEventActiveNow(ev));
     _eventsLoaded = true;
     _updateEventBanner();
   } catch (e) {
     console.warn('[Events] Error cargando eventos:', e);
   }
+}
+
+function _isEventActiveNow(ev) {
+  if (!ev.active) return false;
+  if (ev.manual) return true;
+  const sched = ev.schedule;
+  if (!sched) return false;
+  
+  // Ajuste horario (ej. Argentina UTC-3)
+  const now = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  const day = now.getUTCDay();
+  const hour = now.getUTCHours() + now.getUTCMinutes() / 60;
+  
+  if (sched.type === 'weekly' && sched.days) {
+    if (!sched.days.includes(day)) return false;
+    if (sched.startHour !== undefined && hour < sched.startHour) return false;
+    if (sched.endHour !== undefined && hour >= sched.endHour) return false;
+  }
+  return true;
 }
 
 function isEventActive(id) {
@@ -97,38 +109,41 @@ function _updateEventBanner() {
 
 // ── Concurso de Magikarp ──────────────────────────────────────────────────────
 async function submitMagikarpEntry(pokemon) {
-  if (!isEventActive('hora_magikarp')) return;
-  const token = await _evGetToken();
-  if (!token) return;
+  if (!isEventActive('hora_magikarp') || !currentUser) return;
   const totalIvs = Object.values(pokemon.ivs || {}).reduce((a, b) => a + b, 0);
   try {
-    const res = await fetch(_getApiUrl('/api/events/entries'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({
-        event_id: 'hora_magikarp',
-        player_name: state.trainer || 'Jugador',
-        data: {
-          pokemon_name: pokemon.name,
-          ivs: pokemon.ivs,
-          total_ivs: totalIvs,
-          level: pokemon.level,
-          isShiny: pokemon.isShiny || false
-        }
-      })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      if (data.kept === 'previous') {
-        notify('Ya tenés una inscripción mejor en el concurso de Magikarp.', '🎣');
-      } else {
-        notify(`¡Magikarp inscripto! IVs totales: ${totalIvs}/186`, '🎣');
-      }
-    } else {
-      notify(data.error || 'Error al inscribir.', '❌');
+    // Supabase Upsert (usando event_id y player_id como clave única)
+    const { data: existing } = await sb.from('competition_entries')
+      .select('data')
+      .eq('event_id', 'hora_magikarp')
+      .eq('player_id', currentUser.id)
+      .single();
+
+    if (existing && (existing.data?.total_ivs || 0) >= totalIvs) {
+      notify('Ya tenés una inscripción mejor en el concurso de Magikarp.', '🎣');
+      return;
     }
+
+    const { error } = await sb.from('competition_entries').upsert({
+      event_id: 'hora_magikarp',
+      player_id: currentUser.id,
+      player_name: state.trainer || 'Jugador',
+      player_email: currentUser.email,
+      data: {
+        pokemon_name: pokemon.name,
+        ivs: pokemon.ivs,
+        total_ivs: totalIvs,
+        level: pokemon.level,
+        isShiny: pokemon.isShiny || false
+      },
+      submitted_at: new Date().toISOString()
+    });
+
+    if (error) throw error;
+    notify(`¡Magikarp inscripto! IVs totales: ${totalIvs}/186`, '🎣');
   } catch (e) {
     console.warn('[Events] Error al inscribir Magikarp:', e);
+    notify('Error al inscribir en el concurso.', '❌');
   }
 }
 
@@ -161,21 +176,23 @@ function promptMagikarpSubmit(pokemon) {
 
 // ── Entrega de premios ────────────────────────────────────────────────────────
 async function checkPendingAwards() {
-  const token = await _evGetToken();
-  if (!token) return;
+  if (!currentUser) return;
   try {
-    const res = await fetch(_getApiUrl('/api/awards'), { headers: { 'Authorization': `Bearer ${token}` } });
-    const data = await res.json();
-    const awards = data.awards || [];
-    for (const award of awards) {
-      await _deliverAward(award, token);
+    const { data: awards, error } = await sb.from('awards')
+      .select('*')
+      .eq('winner_id', currentUser.id)
+      .eq('claimed', false);
+    
+    if (error) throw error;
+    for (const award of (awards || [])) {
+      await _deliverAward(award);
     }
   } catch (e) {
     console.warn('[Events] Error al verificar premios:', e);
   }
 }
 
-async function _deliverAward(award, token) {
+async function _deliverAward(award) {
   const prize = award.prize;
   if (!prize) return;
 
@@ -213,11 +230,10 @@ async function _deliverAward(award, token) {
     if (typeof updateHud === 'function') updateHud();
     if (typeof saveGame === 'function') saveGame(false);
     try {
-      await fetch(_getApiUrl('/api/awards/claim'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ award_id: award.id })
-      });
+      await sb.from('awards').update({ 
+        claimed: true, 
+        claimed_at: new Date().toISOString() 
+      }).eq('id', award.id);
     } catch (e) { console.warn('[Events] Error al marcar premio como reclamado:', e); }
   }
 }
@@ -233,29 +249,18 @@ async function openAdminPanel() {
   if (existing) existing.remove();
 
   try {
-    const token = await _evGetToken();
-    if (!token) { notify('Error de sesión (Token no encontrado).', '❌'); return; }
+    const { data: events, error } = await sb.from('events_config').select('*').order('id');
+    if (error) throw error;
     
-    const apiUrl = _getApiUrl('/api/events/config');
-    const res = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
-    
-    if (!res.ok) {
-      if (res.status === 404) {
-        throw new Error('Servidor de eventos no encontrado (404). Asegúrate de que el servidor de Node.js esté corriendo.');
-      }
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || `Error HTTP ${res.status}`);
-    }
-    _adminConfig = await res.json();
-
-    _renderAdminPanel(token);
+    _adminConfig = { events };
+    _renderAdminPanel();
   } catch (e) {
     console.error('[Admin] Error:', e);
     notify('Error: ' + e.message, '❌');
   }
 }
 
-function _renderAdminPanel(token) {
+function _renderAdminPanel() {
   const existing = document.getElementById('admin-panel-overlay');
   if (existing) existing.remove();
 
@@ -277,7 +282,7 @@ function _renderAdminPanel(token) {
           <span style="font-size:28px;">🛡️</span>
           <div>
             <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#f59e0b;">ADMINISTRADOR</div>
-            <div style="font-size:9px;color:#6b7280;margin-top:3px;">Solo visible para ti</div>
+            <div style="font-size:9px;color:#6b7280;margin-top:3px;">Solo visible para ti (Online)</div>
           </div>
         </div>
         <button onclick="document.getElementById('admin-panel-overlay').remove()"
@@ -286,11 +291,11 @@ function _renderAdminPanel(token) {
 
       <!-- Tabs -->
       <div style="display:flex;background:rgba(255,255,255,0.05);border-radius:12px;padding:4px;margin-bottom:20px;gap:4px;">
-        <button onclick="window._evAdminSwitchTab('events','${token}')"
+        <button onclick="window._evAdminSwitchTab('events')"
           style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;background:${tab1Active ? '#f59e0b' : 'transparent'};color:${tab1Active ? '#000' : '#9ca3af'};">
           ⚙️ EVENTOS
         </button>
-        <button onclick="window._evAdminSwitchTab('competition','${token}')"
+        <button onclick="window._evAdminSwitchTab('competition')"
           style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;background:${tab2Active ? '#22c55e' : 'transparent'};color:${tab2Active ? '#000' : '#9ca3af'};">
           🎣 CONCURSO
         </button>
@@ -301,7 +306,7 @@ function _renderAdminPanel(token) {
         <div style="display:flex;flex-direction:column;gap:14px;" id="admin-events-list">
           ${eventsHtml}
         </div>
-        <button onclick="window._evAdminSave('${token}')"
+        <button onclick="window._evAdminSave()"
           style="width:100%;margin-top:16px;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">
           💾 GUARDAR CAMBIOS
         </button>
@@ -315,28 +320,30 @@ function _renderAdminPanel(token) {
 
   document.body.appendChild(ov);
 
-  window._evAdminSwitchTab = (tab, tok) => {
+  window._evAdminSwitchTab = (tab) => {
     _adminTab = tab;
-    _renderAdminPanel(tok);
-    if (tab === 'competition') _evLoadEntries(tok);
+    _renderAdminPanel();
+    if (tab === 'competition') _evLoadEntries();
   };
 
-  window._evAdminSave = async (tok) => {
-    _evReadFormIntoConfig();
+  window._evAdminSave = async () => {
     try {
-      const r = await fetch(_getApiUrl('/api/events/config'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tok}` },
-        body: JSON.stringify(_adminConfig)
-      });
-      const d = await r.json();
-      if (d.ok) {
-        notify('¡Cambios guardados!', '✅');
-        await loadActiveEvents();
-      } else {
-        notify('Error al guardar: ' + (d.error || 'desconocido'), '❌');
+      // Guardamos cada evento modificado
+      for (const ev of (_adminConfig?.events || [])) {
+        const { error } = await sb.from('events_config').update({
+          active: ev.active,
+          manual: ev.manual,
+          schedule: ev.schedule,
+          config: ev.config
+        }).eq('id', ev.id);
+        if (error) throw error;
       }
-    } catch (e) { notify('Error de red al guardar.', '❌'); }
+      notify('¡Cambios guardados!', '✅');
+      await loadActiveEvents();
+    } catch (e) { 
+      console.error(e);
+      notify('Error al guardar en Supabase.', '❌'); 
+    }
   };
 }
 
@@ -526,18 +533,22 @@ function _renderCompetitionTab() {
     </div>`;
 }
 
-async function _evLoadEntries(tok) {
-  const token = tok || await _evGetToken();
-  if (!token) return;
+async function _evLoadEntries() {
+  if (!isAdminUser()) return;
   try {
-    const res = await fetch(_getApiUrl('/api/events/entries/hora_magikarp'), { headers: { 'Authorization': `Bearer ${token}` } });
-    const data = await res.json();
-    _adminEntries = (data.entries || []).sort((a, b) => (b.data?.total_ivs || 0) - (a.data?.total_ivs || 0));
-    _renderEntriesTable(token);
-  } catch (e) { console.warn('[Events] Error cargando participantes:', e); }
+    const { data: entries, error } = await sb.from('competition_entries')
+      .select('*')
+      .eq('event_id', 'hora_magikarp');
+    
+    if (error) throw error;
+    _adminEntries = (entries || []).sort((a, b) => (b.data?.total_ivs || 0) - (a.data?.total_ivs || 0));
+    _renderEntriesTable();
+  } catch (e) { 
+    console.warn('[Events] Error cargando participantes:', e); 
+  }
 }
 
-function _renderEntriesTable(token) {
+function _renderEntriesTable() {
   const container = document.getElementById('admin-entries-container');
   if (!container) return;
   if (_adminEntries.length === 0) {
@@ -558,7 +569,7 @@ function _renderEntriesTable(token) {
           <div style="font-size:9px;color:#6b7280;margin-top:2px;">${ivDetail}</div>
           <div style="font-size:8px;color:#4b5563;margin-top:1px;">${new Date(entry.submitted_at).toLocaleString('es-AR')}</div>
         </div>
-        <button onclick="window._evAwardEntry('${entry.player_email}','${entry.player_name.replace(/'/g,"\\\\'")}', '${token}')"
+        <button onclick="window._evAwardEntry('${entry.player_id}', '${entry.player_name.replace(/'/g,"\\\\'")}')"
           style="padding:8px 10px;border:none;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;flex-shrink:0;white-space:nowrap;">
           🏆 PREMIAR
         </button>
@@ -568,8 +579,8 @@ function _renderEntriesTable(token) {
 }
 
 async function _evSavePrize() {
-  const token = await _evGetToken();
-  if (!token) return;
+  if (!isAdminUser()) return;
+  
   const stats = ['hp','atk','def','spa','spd','spe'];
   if (_prizeState.type === 'pokemon') {
     stats.forEach(s => {
@@ -585,22 +596,26 @@ async function _evSavePrize() {
     if (natEl) _prizeState.nature = natEl.value;
     if (shinyEl) _prizeState.shiny = shinyEl.checked;
   }
+  
   const prize = _buildPrizeObject();
   const ev = _adminConfig?.events?.find(e => e.id === 'hora_magikarp');
   if (ev) {
     ev.config = ev.config || {};
     ev.config.prize = prize;
   }
+
   try {
-    const r = await fetch(_getApiUrl('/api/events/config'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify(_adminConfig)
-    });
-    const d = await r.json();
-    if (d.ok) { notify('¡Premio guardado! ' + _prizeSummary(prize), '🏆'); _renderAdminPanel(token); }
-    else notify('Error al guardar premio.', '❌');
-  } catch { notify('Error de red.', '❌'); }
+    const { error } = await sb.from('events_config').update({
+      config: ev.config
+    }).eq('id', 'hora_magikarp');
+    
+    if (error) throw error;
+    notify('¡Premio guardado! ' + _prizeSummary(prize), '🏆'); 
+    _renderAdminPanel();
+  } catch (e) { 
+    console.error(e);
+    notify('Error al guardar premio en Supabase.', '❌'); 
+  }
 }
 
 function _buildPrizeObject() {
@@ -634,21 +649,32 @@ function _prizeSummary(prize) {
   return 'Premio desconocido';
 }
 
-async function _evAwardEntry(email, name, token) {
+async function _evAwardEntry(winnerId, name) {
+  if (!isAdminUser()) return;
   const compEv = _adminConfig?.events?.find(e => e.id === 'hora_magikarp');
   const prize = compEv?.config?.prize;
   if (!prize) { notify('Primero configurá el premio en la sección de abajo.', '⚠️'); return; }
   if (!confirm(`¿Otorgar el premio a ${name}?\\n\\nPremio: ${_prizeSummary(prize)}`)) return;
+  
   try {
-    const r = await fetch(_getApiUrl('/api/awards/create'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ winner_email: email, winner_name: name, event_id: 'hora_magikarp', prize })
+    // Buscamos el email del ganador (necesario para el sistema de premios actual o notificaciones)
+    const { data: profile } = await sb.from('profiles').select('email').eq('id', winnerId).single();
+    
+    const { error } = await sb.from('awards').insert({
+      winner_id: winnerId,
+      winner_name: name,
+      winner_email: profile?.email || '—',
+      event_id: 'hora_magikarp',
+      prize,
+      awarded_at: new Date().toISOString()
     });
-    const d = await r.json();
-    if (d.ok) notify(`✅ Premio enviado a ${name}. Lo recibirá al ingresar al juego.`, '🏆');
-    else notify('Error: ' + (d.error || 'desconocido'), '❌');
-  } catch { notify('Error de red al enviar premio.', '❌'); }
+    
+    if (error) throw error;
+    notify(`✅ Premio enviado a ${name}. Lo recibirá al ingresar al juego.`, '🏆');
+  } catch (e) {
+    console.error(e);
+    notify('Error al enviar premio.', '❌');
+  }
 }
 
 window._evAwardEntry = _evAwardEntry;
@@ -686,24 +712,11 @@ window._evHourChange = (idx, field, val) => {
   _adminConfig.events[idx].schedule[field] = parseInt(val) || 0;
 };
 
-window._evLoadEntries = async (tok) => {
-  const token = tok || await _evGetToken();
-  await _evLoadEntries(token);
+window._evLoadEntries = async () => {
+  await _evLoadEntries();
 };
 
-function _evReadFormIntoConfig() {
-  if (!_adminConfig?.events) return;
-  _adminConfig.events.forEach((ev, i) => {
-    const activeEl = document.querySelector(`input[data-ev="${i}"][data-field="active"]`);
-    const manualEl = document.querySelector(`input[data-ev="${i}"][data-field="manual"]`);
-    if (activeEl) ev.active = activeEl.checked;
-    if (manualEl) ev.manual = manualEl.checked;
-    const startEl = document.querySelector(`input[data-ev="${i}"][data-field="startHour"]`);
-    const endEl = document.querySelector(`input[data-ev="${i}"][data-field="endHour"]`);
-    if (startEl && ev.schedule) ev.schedule.startHour = parseInt(startEl.value) || 0;
-    if (endEl && ev.schedule) ev.schedule.endHour = parseInt(endEl.value) || 24;
-  });
-}
+// Se elimina _evReadFormIntoConfig ya que ahora guardamos directamente del objeto _adminConfig modificado por los eventos de los inputs
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 (function _initEvents() {

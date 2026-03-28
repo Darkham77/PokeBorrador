@@ -13,25 +13,12 @@
      * Fetches the current time from the server and calculates the offset.
      */
     async function syncServerTime() {
-        try {
-            const start = Date.now();
-            const response = await fetch('/api/time');
-            const data = await response.json();
-            const serverTime = data.now;
-            const end = Date.now();
-            
-            // Calculate latency (estimated as half the round-trip time)
-            const latency = (end - start) / 2;
-            
-            // Offset is what we add to Date.now() to get server time
-            global._serverTimeOffset = serverTime - (end - latency);
-            _timeSynced = true;
-            
-            console.log(`[TIME] Sincronizado con el servidor. Offset: ${global._serverTimeOffset}ms`);
-        } catch (e) {
-            console.warn('[TIME] Error sincronizando con el servidor, usando hora local.', e);
-            global._serverTimeOffset = 0;
-        }
+        // En la versión tradicional buscábamos /api/time (Node.js).
+        // En la versión Online, podemos usar la hora local o un RPC de Supabase si se desea total precisión.
+        // Por ahora, usamos la hora del dispositivo para evitar errores de red.
+        global._serverTimeOffset = 0;
+        _timeSynced = true;
+        console.log('[TIME] Usando hora del dispositivo (Sincronización local).');
     }
 
     /**
