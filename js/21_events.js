@@ -682,8 +682,12 @@ function _renderCompetitionTab() {
     <!-- Participantes -->
     <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#22c55e;">🎣 PARTICIPANTES</div>
-        <button onclick="window._evLoadEntriesGlobal()" style="background:none;border:none;color:#6b7280;font-size:14px;cursor:pointer;">🔄</button>
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#22c55e;">🎣 PARTICIPANTES (${_adminEntries.length})</div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <button onclick="window._evClearEntries(_currentCompetitionId)" title="Reiniciar lista" 
+            style="background:none;border:none;color:#ef4444;font-size:16px;cursor:pointer;opacity:0.7;padding:4px;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">🗑️</button>
+          <button onclick="window._evLoadEntriesGlobal()" style="background:none;border:none;color:#6b7280;font-size:16px;cursor:pointer;padding:4px;">🔄</button>
+        </div>
       </div>
       <div id="admin-entries-container">
         <div style="font-size:11px;color:#6b7280;text-align:center;padding:20px;">Cargando...</div>
