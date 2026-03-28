@@ -27,6 +27,7 @@ const EV_DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 let _activeEvents = [];
 let _eventsLoaded = false;
 let _eventPollInterval = null;
+let _finishedEvents = [];
 let _adminConfig = null;
 let _adminTab = 'events';
 let _adminEntries = [];
@@ -50,18 +51,37 @@ async function _evGetToken() {
 // ── Motor de eventos (Supabase) ────────────────────────────────────────────────
 async function loadActiveEvents() {
   try {
-    // Verificamos eventos cuyo horario coincida o manual=true
     const { data: events, error } = await sb.from('events_config').select('*');
     if (error) throw error;
     
-    _activeEvents = events.filter(ev => _isEventActiveNow(ev));
+    const now = new Date();
+    _activeEvents = events.filter(ev => {
+      const start = new Date(ev.start_at);
+      const end = new Date(ev.end_at);
+      return now >= start && now <= end;
+    });
+
+    // 2. Cargar resultados de los últimos 3 días (72hs)
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: results, error: resError } = await sb.from('competition_results')
+      .select('*, events_config(name, icon)')
+      .gt('ended_at', threeDaysAgo);
+
+    if (!resError) {
+      _finishedEvents = (results || []).map(r => ({
+        ...r,
+        name: r.events_config?.name || 'Evento Finalizado',
+        icon: r.events_config?.icon || '🏁'
+      }));
+    }
+
     _eventsLoaded = true;
     _updateEventBanner();
 
     // Verificación automática de premios al cargar/actualizar
     checkAndDistributePrizes(events);
   } catch (e) {
-    console.warn('[Events] Error cargando eventos:', e);
+    console.warn('[Events] Error:', e);
   }
 }
 
@@ -253,17 +273,37 @@ function promptMagikarpSubmit(pokemon) {
 async function checkPendingAwards() {
   if (!currentUser) return;
   try {
+    const seventyTwoHoursAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
     const { data: awards, error } = await sb.from('awards')
       .select('*')
       .eq('winner_id', currentUser.id)
-      .eq('claimed', false);
+      .eq('claimed', false)
+      .gt('awarded_at', seventyTwoHoursAgo);
     
     if (error) throw error;
-    for (const award of (awards || [])) {
-      await _deliverAward(award);
+    // Guardamos en estado global para que el HUD sepa que hay premios pendientes
+    state._pendingAwards = awards || [];
+  } catch (e) {
+    console.warn('[Events] Error al verificar premios pendientes:', e);
+  }
+}
+
+async function claimAward(awardId) {
+  if (!currentUser) return;
+  try {
+    const award = state._pendingAwards?.find(a => a.id === awardId);
+    if (!award) return;
+
+    const delivered = await _deliverAward(award);
+    if (delivered) {
+      state._pendingAwards = state._pendingAwards.filter(a => a.id !== awardId);
+      notify('¡Premio reclamado con éxito!', '🎉');
+      // Refrescar el carrusel del mapa si está abierto
+      if (typeof renderMaps === 'function') renderMaps();
     }
   } catch (e) {
-    console.warn('[Events] Error al verificar premios:', e);
+    console.warn('[Events] Error al reclamar premio:', e);
+    notify('Error al reclamar el premio.', '❌');
   }
 }
 
@@ -872,7 +912,7 @@ async function awardEvent(eventId, manual = false) {
       { rank: 'third', entry: sorted[2] }
     ].filter(w => w.entry);
 
-    // 3. Insertar premios
+    // 3. Insertar premios individuales
     for (const winner of winners) {
       const prize = prizes[winner.rank];
       if (!prize) continue;
@@ -887,7 +927,23 @@ async function awardEvent(eventId, manual = false) {
       });
     }
 
-    // 4. Limpiar entradas y actualizar config
+    // 4. Guardar resultado histórico del podio
+    const resultsData = winners.map(w => ({
+      player_id: w.entry.player_id,
+      player_name: w.entry.player_name,
+      rank: w.rank,
+      score: (sortBy.startsWith('data.') ? w.entry.data?.[sortBy.split('.')[1]] : w.entry[sortBy]) || 0,
+      prize: prizes[w.rank],
+      data: w.entry.data
+    }));
+
+    await sb.from('competition_results').insert({
+      event_id: eventId,
+      winners: resultsData,
+      ended_at: new Date().toISOString()
+    });
+
+    // 5. Limpiar entradas y actualizar config
     await sb.from('competition_entries').delete().eq('event_id', eventId);
     
     const newConfig = { ...ev.config, lastAwardedAt: new Date().toISOString() };
@@ -901,6 +957,130 @@ async function awardEvent(eventId, manual = false) {
     console.error('[Events] Error en awardEvent:', e);
   }
 }
+
+async function showEventResultsModal(eventId) {
+  try {
+    // 1. Cargar resultados y configuración del evento
+    const { data: result, error: resError } = await sb.from('competition_results')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('ended_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    const { data: ev, error: evError } = await sb.from('events_config').select('name, icon, config').eq('id', eventId).single();
+
+    if (resError || !result) { notify('No se encontraron resultados para este evento.', '❓'); return; }
+
+    const winners = result.winners || [];
+    const myAward = state._pendingAwards?.find(a => a.event_id === eventId);
+    
+    // 2. Construir el Modal
+    const modal = document.createElement('div');
+    modal.id = 'podium-modal-overlay';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);animation:fadeIn 0.3s;';
+    
+    const p1 = winners.find(w => w.rank === 'first');
+    const p2 = winners.find(w => w.rank === 'second');
+    const p3 = winners.find(w => w.rank === 'third');
+
+    const renderPodiumStep = (winner, rank) => {
+      if (!winner) return '<div style="flex:1;"></div>';
+      const isMe = winner.player_id === currentUser?.id;
+      const isP1 = rank === 'first';
+      const size = isP1 ? 120 : 90;
+      const medal = rank === 'first' ? '🥇' : rank === 'second' ? '🥈' : '🥉';
+      const color = rank === 'first' ? '#fbbf24' : rank === 'second' ? '#94a3b8' : '#b45309';
+      
+      // Intentamos obtener sprite si es pokemon
+      let prizeImg = '';
+      if (winner.prize?.type === 'pokemon') {
+        const sprite = getSpriteUrl(winner.prize.species, winner.prize.shiny);
+        prizeImg = `<img src="${sprite}" style="width:${isP1 ? 100 : 70}px; height:${isP1 ? 100 : 70}px; image-rendering:pixelated; filter:drop-shadow(0 0 10px ${color}88);">`;
+      } else if (winner.prize?.type === 'item') {
+        prizeImg = `<div style="font-size:${isP1 ? 60 : 40}px; filter:drop-shadow(0 0 10px ${color}44);">📦</div>`;
+      } else {
+        prizeImg = `<div style="font-size:${isP1 ? 60 : 40}px; filter:drop-shadow(0 0 10px ${color}44);">💰</div>`;
+      }
+
+      return `
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:10px; position:relative; animation: slideUp 0.5s ${rank === 'first' ? '0.1s' : rank === 'second' ? '0s' : '0.2s'} both;">
+          <div style="font-size:24px; position:absolute; top:-30px;">${medal}</div>
+          <div style="width:${size}px; height:${size}px; background:rgba(255,255,255,0.05); border:2px solid ${color}; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 0 20px ${color}33;">
+            <div style="font-size:${isP1 ? 40 : 30}px;">👤</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:${isMe ? '#22c55e' : '#fff'}; margin-bottom:4px;">${winner.player_name}</div>
+            <div style="font-size:10px; color:#64748b;">${winner.score} Pts</div>
+          </div>
+          <div style="margin-top:10px; background:rgba(255,255,255,0.03); padding:10px; border-radius:15px; border:1px solid ${color}44;">
+             ${prizeImg}
+             <div style="font-size:8px; color:${color}; margin-top:5px; font-weight:bold;">${_prizeSummary(winner.prize)}</div>
+          </div>
+        </div>`;
+    };
+
+    modal.innerHTML = `
+      <div style="background:#0f172a; width:100%; max-width:600px; border-radius:30px; border:2px solid #334155; padding:40px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:150px; background:linear-gradient(to bottom, #1e293b, transparent); z-index:0;"></div>
+        
+        <button onclick="document.getElementById('podium-modal-overlay').remove()" 
+          style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.05); border:none; color:#94a3b8; font-size:20px; cursor:pointer; z-index:10; width:40px; height:40px; border-radius:50%;">✕</button>
+
+        <div style="position:relative; z-index:1; text-align:center; margin-bottom:40px;">
+          <div style="font-size:40px; margin-bottom:10px;">🏆</div>
+          <h2 style="font-family:'Press Start 2P',monospace; font-size:16px; color:#fbbf24; margin:0;">PODIO DEL EVENTO</h2>
+          <div style="color:#64748b; font-size:12px; margin-top:8px;">${ev?.name || eventId}</div>
+        </div>
+
+        <div style="position:relative; z-index:1; display:flex; align-items:flex-end; gap:10px; margin-bottom:40px; min-height:280px;">
+          ${renderPodiumStep(p2, 'second')}
+          ${renderPodiumStep(p1, 'first')}
+          ${renderPodiumStep(p3, 'third')}
+        </div>
+
+        <div style="position:relative; z-index:1; text-align:center;">
+          ${myAward ? `
+            <div style="margin-bottom:20px; padding:15px; background:rgba(34,197,94,0.1); border:1px solid #22c55e44; border-radius:15px; color:#22c55e; font-size:12px;">
+              ¡Felicidades! Tenés un premio pendiente por reclamar.
+            </div>
+            <button onclick="claimAward('${myAward.id}'); document.getElementById('podium-modal-overlay').remove();"
+              style="width:100%; padding:18px; border:none; border-radius:18px; background:linear-gradient(135deg, #22c55e, #15803d); color:#fff; font-family:'Press Start 2P',monospace; font-size:10px; cursor:pointer; box-shadow:0 10px 25px rgba(34,197,94,0.4); transform:scale(1); transition:transform 0.2s;"
+              onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+              🎁 RECLAMAR RECOMPENSA
+            </button>
+          ` : `
+            <div style="color:#64748b; font-size:11px; font-style:italic;">
+              ${currentUser ? 'No tenés premios pendientes en este evento.' : 'Iniciá sesión para ver tus resultados.'}
+            </div>
+          `}
+        </div>
+      </div>`;
+
+    document.body.appendChild(modal);
+
+    // 3. Añadir Animaciones si no existen
+    if (!document.getElementById('podium-animations')) {
+      const style = document.createElement('style');
+      style.id = 'podium-animations';
+      style.innerHTML = `
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  } catch (e) {
+    console.error('[Events] Error al mostrar podio:', e);
+  }
+}
+
+window._evShowPodium = (eventId) => showEventResultsModal(eventId);
 
 async function checkAndDistributePrizes(allEvents) {
   // Solo el admin o un proceso "autorizado" debería disparar esto para evitar colisiones masivas,

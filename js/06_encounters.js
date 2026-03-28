@@ -38,14 +38,34 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
     isEvent: false
   });
 
-  // Slides de Eventos
+  // Slides de Eventos Activos
   activeEvents.forEach(ev => {
     slides.push({
       icon: ev.icon || '🎁',
       title: ev.name,
       content: `<div class="pc-banner-text" style="font-size:11px; line-height:1.4;">${ev.description || '¡Evento especial activo ahora!'}</div>`,
       onclick: `if(typeof showEventDetail === 'function') showEventDetail('${ev.id}')`,
-      isEvent: true
+      isEvent: true,
+      color: '#fbbf24'
+    });
+  });
+
+  // Slides de Eventos Finalizados (Reclamo/Resultados)
+  const finishedEvents = (typeof _finishedEvents !== 'undefined') ? _finishedEvents : [];
+  finishedEvents.forEach(fv => {
+    const award = (state._pendingAwards || []).find(a => a.event_id === fv.event_id);
+    const title = award ? '¡HAS GANADO!' : 'Evento Terminado';
+    const sub = award ? '¡Reclama tus premios!' : 'Ver resultados finales';
+    const icon = award ? '🏆' : fv.icon || '🏁';
+    const color = award ? '#22c55e' : '#94a3b8';
+
+    slides.push({
+      icon: icon,
+      title: title,
+      content: `<div class="pc-banner-text" style="font-size:10px; color:${color}; font-weight:bold;">${fv.name}<br>${sub}</div>`,
+      onclick: `if(typeof _evShowPodium === 'function') _evShowPodium('${fv.event_id}')`,
+      isEvent: true,
+      color: color
     });
   });
 
@@ -56,7 +76,7 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
          ${s.onclick ? `onclick="event.stopPropagation(); ${s.onclick}"` : ''}>
       <div class="pc-banner-icon">${s.icon}</div>
       <div class="pc-banner-content">
-        <div class="pc-banner-title" style="${s.isEvent ? 'color:var(--yellow);' : ''}">${s.title}</div>
+        <div class="pc-banner-title" style="color:${s.color || '#fff'};">${s.title}</div>
         ${s.content}
       </div>
     </div>
