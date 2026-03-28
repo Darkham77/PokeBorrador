@@ -49,6 +49,10 @@ async function _evGetToken() {
   } catch { return null; }
 }
 
+function isAdminUser() {
+  return currentUser?.email === ADMIN_EMAIL_EV;
+}
+
 // ── Motor de eventos (Supabase) ────────────────────────────────────────────────
 async function loadActiveEvents() {
   try {
@@ -841,11 +845,12 @@ function _prizeSummary(prize) {
 async function _evAwardEntry(playerId, playerName) {
   if (!confirm(`¿Premiar directamente a ${playerName}? (Solo 1er puesto)`)) return;
   try {
-    const evId = _currentCompetitionId || 'hora_magikarp';
-    const { data: ev } = await sb.from('events_config').select('config').eq('id', evId).single();
+    const evId = window._currentCompetitionId || 'hora_magikarp';
+    const { data: ev, error: fetchErr } = await sb.from('events_config').select('config').eq('id', evId).single();
+    if (fetchErr) throw fetchErr;
+
     const prize = ev?.config?.prizes?.first;
-    
-    if (!prize) { notify('Premio no configurado.', '⚠️'); return; }
+    if (!prize) { alert('ERROR: El premio del 1er puesto no está configurado para este evento.'); return; }
 
     const { error } = await sb.from('awards').insert({
       winner_id: playerId,
@@ -857,10 +862,10 @@ async function _evAwardEntry(playerId, playerName) {
 
     if (error) throw error;
     notify(`¡Recompensa enviada a ${playerName}!`, '🎁');
-    checkPendingAwards(); // Refrescar si es el mismo usuario
+    if (typeof checkPendingAwards === 'function') checkPendingAwards();
   } catch (e) {
-    console.warn('[Admin] Error al premiar:', e);
-    notify('Error al enviar premio.', '❌');
+    console.error('[Admin] Error al premiar:', e);
+    alert('ERROR AL ENVIAR PREMIO:\n' + (e.message || e));
   }
 }
 
@@ -915,8 +920,11 @@ async function awardEvent(eventId, manual = false) {
 
     const sortBy = ev.config?.sortBy || 'data.total_ivs';
     
+    // Dejar una notificación visual de que el proceso ha comenzado
+    notify('Procesando premios...', '🏆');
+
     // Ordenar participantes (Magikarp: total_ivs desc, otros: según config)
-    const sorted = entries.sort((a, b) => {
+    const sorted = (entries || []).sort((a, b) => {
       const valA = sortBy.startsWith('data.') ? a.data?.[sortBy.split('.')[1]] : a[sortBy];
       const valB = sortBy.startsWith('data.') ? b.data?.[sortBy.split('.')[1]] : b[sortBy];
       return (valB || 0) - (valA || 0);
@@ -968,9 +976,13 @@ async function awardEvent(eventId, manual = false) {
     if (manual) notify(`¡Evento premiado con éxito! Se repartieron ${winners.length} premios.`, '🏆');
     else console.log(`[Events] Automatización: Evento ${eventId} premiado.`);
     
-    if (isAdminUser()) openAdminPanel(); // Refrescar si está abierto
+    // Forzar refresco completo
+    _adminEntries = [];
+    _renderAdminPanel();
+    _evLoadEntries();
   } catch (e) {
     console.error('[Events] Error en awardEvent:', e);
+    alert('ERROR EN PREMIACIÓN:\n' + (e.message || e));
   }
 }
 
@@ -1125,23 +1137,23 @@ window._evAwardFullEvent = async (eventId) => {
 
 window._evClearEntries = async (eventId) => {
   const targetId = eventId || window._currentCompetitionId;
-  if (!targetId) { notify('ID de evento no encontrado.', '❌'); return; }
+  if (!targetId) { alert('Error: No se encontró el ID del evento.'); return; }
   
-  if (!confirm(`¿Estás seguro de REINICIAR y ELIMINAR a todos los participantes del evento [${targetId}]?`)) return;
+  if (!confirm(`¿Estás seguro de REINICIAR y ELIMINAR a todos los participantes del evento [${targetId}]?\n\nEsta acción es irreversible.`)) return;
   
   try {
     const { error } = await sb.from('competition_entries').delete().eq('event_id', targetId);
     if (error) throw error;
     
+    // Limpieza inmediata del estado local para feedback visual instantáneo
     _adminEntries = [];
     notify('¡Participantes eliminados correctamente!', '🗑️');
     
-    // Refrescar todo el panel para actualizar los contadores en el header
     _renderAdminPanel();
     _evLoadEntries(); 
   } catch (e) {
     console.error('[Events] Error al limpiar:', e);
-    notify('Error al reiniciar tabla.', '❌');
+    alert('ERROR AL REINICIAR TABLA:\n' + (e.message || e));
   }
 };
 
