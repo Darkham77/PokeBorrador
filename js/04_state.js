@@ -199,7 +199,7 @@
       classData: {
         captureStreak: 0,
         longestStreak: 0,
-        reputationPoints: 0,
+        reputation: 0,
         blackMarketSales: 0,
         criminality: 0,
         blackMarketDaily: {

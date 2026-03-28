@@ -2780,17 +2780,19 @@ function endBattle(won) {
     setLog(`¡${b.enemy.name} fue derrotado!`, 'log-player');
     awardBattleExperience();
 
-    // Money reward + Battle Coins
-    let moneyWon = b.isGym ? b.enemy.level * 80 : (b.isTrainer ? b.enemy.level * 40 : Math.floor(b.enemy.level * 10));
-    
-    // Extorsión de Ruta (Equipo Rocket)
-    if (b.isTrainer && !b.isGym && state.playerClass === 'rocket' && (state.classLevel || 1) >= 15) {
-      if (state.classData?.extortedRouteId && (b.locationId === state.classData.extortedRouteId || state.lastWildLocId === state.classData.extortedRouteId)) {
-        moneyWon = Math.floor(moneyWon * 1.5);
-        addLog(`🪙 ¡Extorsión de Ruta en efecto! (+50% ₽)`, 'log-info');
+    // Ruta Oficial (Entrenador Nv. 15+)
+    if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= 15) {
+      if (state.classData?.officialRouteId && (state.classData.officialRouteExp || 0) > Date.now()) {
+        const curLocId = b.locationId || state.lastWildLocId;
+        if (curLocId === state.classData.officialRouteId) {
+          if (typeof addReputationPoints === 'function') {
+            addReputationPoints(1);
+            addLog('⭐ ¡+1 REP por combatir en Ruta Oficial!', 'log-info');
+          }
+        }
       }
     }
-
+    
     if ((state.amuletCoinSecs || 0) > 0 || b.player.heldItem === 'Moneda Amuleto') moneyWon *= 2; // Moneda Amuleto
     state.money += moneyWon;
     addLog(`¡Ganaste <span style="color:#22c55e;font-weight:bold;">₽${moneyWon.toLocaleString()}</span>!`, 'log-info');

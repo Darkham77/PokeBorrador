@@ -278,8 +278,15 @@
             <div class="location-name">
               ${loc.name}
               ${state.playerClass === 'rocket' && (state.classLevel || 1) >= 15 && state.classData?.extortedRouteId === loc.id ? '<span style="color:#ef4444;margin-left:5px;font-weight:bold;text-shadow:0 0 5px #ef4444;" title="Ruta Extorsionada (x1.5 ₽ en batallas NPC)">[R]</span>' : ''}
+              ${state.playerClass === 'entrenador' && (state.classLevel || 1) >= 15 && state.classData?.officialRouteId === loc.id && (state.classData?.officialRouteExp || 0) > Date.now() ? '<span style="color:#3b82f6;margin-left:5px;font-weight:bold;text-shadow:0 0 5px #3b82f6;" title="Ruta Oficial Activa (+1 REP por combate)">[O]</span>' : ''}
             </div>
             <div class="location-desc">${loc.desc}</div>
+            ${state.playerClass === 'entrenador' && (state.classLevel || 1) >= 15 && state.classData?.officialRouteId !== loc.id && state.classData?.lastOfficialRouteDate !== today ? `
+              <button onclick="event.stopPropagation(); activateOfficialRoute('${loc.id}')" 
+                style="margin-top:5px;padding:4px 8px;font-size:9px;background:rgba(59,130,246,0.2);color:#60a5fa;border:1px solid rgba(59,130,246,0.4);border-radius:4px;cursor:pointer;">
+                📍 Marcar Oficial
+              </button>
+            ` : ''}
             ${isSafariTicketLocked ? `<div class="safari-lock-msg">Necesitas un Ticket Safari</div>` : ''}
             ${!isLocked ? `
               <div class="location-spawns">
@@ -339,7 +346,14 @@
       }
 
 	      // Chance de Rival (En cualquier mapa)
-	      if (Math.random() < GAME_RATIOS.encounters.rival) {
+	      let rivalChance = GAME_RATIOS.encounters.rival;
+	      if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= 20) {
+	        if (typeof checkAllGymsHardBeaten === 'function' && checkAllGymsHardBeaten()) {
+	          rivalChance *= 2;
+	        }
+	      }
+	      
+	      if (Math.random() < rivalChance) {
 	        triggerRivalSequence(locId);
 	        return;
 	      }

@@ -98,10 +98,11 @@ const PLAYER_CLASSES = {
     bonuses: [
       '📈 +10% EXP en todos los combates',
       '🏆 +30% Battle Coins en victorias de Gimnasio + ítem bonus',
-      '⭐ Sistema de Reputación: desbloquea tienda exclusiva al acumular victorias en gym',
-      '🏋️ Entrenamiento de Gimnasio Pasivo: misiones idle de 2/4/8h con EXP'
+      '⭐ Sistema de Reputación: acumulá puntos venciendo gimnasios',
+      '📍 Ruta Oficial: marcá una ruta diaria para ganar +1 REP por combate (30 min)',
+      '⚔️ Rival Doble: chance x2 de aparición del Rival si venciste todo en Difícil'
     ],
-    bonusLevels: [1, 1, 10, 20],
+    bonusLevels: [1, 1, 10, 15, 20],
     penalties: [
       '🎯 -10% catchRate en Pokémon con IV total > 120',
       '🏠 Guardería cuesta 1.5x más',
@@ -118,8 +119,9 @@ const PLAYER_CLASSES = {
     technicalBonuses: [
       "Multiplicador fijo de x1.10 a toda la experiencia base ganada al derrotar Pokémon salvajes o entrenadores.",
       "Bono de x1.30 a las Battle Coins obtenidas exclusivamente en batallas de Gimnasio / Líderes.",
-      "Ganas 10 REP por cada victoria en Gimnasio. La reputación es una moneda para comprar ítems exclusivos.",
-      "Misiones pasivas que otorgan grandes cantidades de EXP a tu nivel de entrenador mientras no estas en batalla."
+      "Ganas 10 REP por cada victoria en Gimnasio. Los puntos se usan en la Tienda de Reputación.",
+      "Una vez cada 24h podés marcar una ruta como 'Oficial'. Durante 30 min, cada combate en esa ruta otorga +1 Reputation.",
+      "Si has derrotado a todos los Líderes de Gimnasio en dificultad Difícil al menos una vez, la probabilidad de que aparezca el Rival se duplica."
     ],
     technicalPenalties: [
       "Tu ética profesional te impide capturar Pokémon genéticamente perfectos con facilidad (-10% Catch Rate si IV > 120).",
@@ -244,7 +246,7 @@ function selectClass(classId) {
   state.classData = state.classData || {};
   state.classData.captureStreak = 0;
   state.classData.longestStreak = 0;
-  state.classData.reputationPoints = state.classData.reputationPoints || 0;
+  state.classData.reputation = state.classData.reputation || 0;
   state.classData.blackMarketSales = state.classData.blackMarketSales || 0;
   state.classData.criminality = state.classData.criminality || 0;
 
@@ -859,18 +861,56 @@ function updateCriminalityBar() {
 function addReputationPoints(points) {
   if (state.playerClass !== 'entrenador') return;
   state.classData = state.classData || {};
-  const prev = state.classData.reputationPoints || 0;
-  state.classData.reputationPoints = prev + points;
-  const newVal = state.classData.reputationPoints;
+  const prev = state.classData.reputation || 0;
+  state.classData.reputation = prev + points;
+  const newVal = state.classData.reputation;
 
   const milestones = [50, 100, 200];
   milestones.forEach(m => {
     if (prev < m && newVal >= m) {
-      notify(`¡Reputación desbloqueada! Nivel ${m} pts — Nueva tienda disponible ⭐`, '🏆');
+      notify(`¡Reputación ⭐! Alcanzaste ${m} pts. Nueva tienda disponible.`, '🏆');
     }
   });
   addClassXP(20);
   updateClassHud();
+}
+
+function checkAllGymsHardBeaten() {
+  const gymList = (typeof GYMS !== 'undefined') ? GYMS : [];
+  if (!gymList.length) return false;
+  return gymList.every(g => (state.gymProgress?.[g.id] || 0) >= 3);
+}
+
+function activateOfficialRoute(locId) {
+  if (state.playerClass !== 'entrenador') return;
+  if ((state.classLevel || 1) < 15) {
+    notify('Necesitás nivel 15 de Entrenador para marcar una Ruta Oficial.', '🔒');
+    return;
+  }
+
+  const today = (function() {
+    const d = getGMT3Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  })();
+
+  state.classData = state.classData || {};
+  if (state.classData.lastOfficialRouteDate === today) {
+    notify('Ya marcaste una Ruta Oficial hoy. ¡Vuelve mañana!', '🚫');
+    return;
+  }
+
+  const loc = FIRE_RED_MAPS.find(m => m.id === locId);
+  if (!loc) return;
+
+  state.classData.officialRouteId = locId;
+  state.classData.officialRouteExp = Date.now() + (30 * 60 * 1000); // 30 min
+  state.classData.lastOfficialRouteDate = today;
+
+  notify(`📍 ¡${loc.name} marcada como Ruta Oficial! (+1 REP por combate durante 30 min)`, '🏅');
+  
+  if (typeof renderMaps === 'function') renderMaps();
+  if (typeof updateClassHud === 'function') updateClassHud();
+  if (typeof saveGame === 'function') saveGame(false);
 }
 
 // ── Análisis Genético (Criador) ───────────────────────────────────────────
