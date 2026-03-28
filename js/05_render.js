@@ -868,7 +868,6 @@ function updateBuffPanel() {
       el.innerHTML = `
         <div class="buff-collapsed">
           <div style="font-size:20px; line-height:1;">${ev.icon || '🎁'}</div>
-          <div class="buff-timer-badge">ACTIVO</div>
         </div>
         <div class="buff-tooltip">
           <div class="buff-tooltip-name" style="color:var(--yellow);">${ev.name}</div>

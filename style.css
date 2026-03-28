@@ -596,6 +596,8 @@
       border: 1px solid var(--yellow);
       box-shadow: 0 0 12px rgba(255, 214, 10, 0.4);
       background: rgba(25, 20, 5, 0.95);
+      min-width: 32px;
+      padding: 8px 6px;
     }
     .buff-item.event .buff-timer-badge {
       color: #fff;
@@ -627,20 +629,6 @@
       color: #a78bfa;
     }
 
-    /* Estilo Dorado para Eventos */
-    .buff-item.event .buff-collapsed {
-      border: 1px solid var(--yellow);
-      box-shadow: 0 0 12px rgba(255, 214, 10, 0.4);
-      background: rgba(25, 20, 5, 0.95);
-    }
-    .buff-item.event .buff-timer-badge {
-      color: #fff;
-      text-shadow: 0 0 5px var(--yellow);
-    }
-    .buff-item.event .buff-tooltip {
-      border-color: var(--yellow);
-      background: rgba(25, 20, 5, 0.98);
-    }
 
     /* Contenedor de progreso de huevos debajo del HUD */
     #hud-eggs-progress {
