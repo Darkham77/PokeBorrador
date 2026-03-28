@@ -2437,7 +2437,7 @@ function executeCatch(ballName) {
       const data = (typeof POKEMON_DB !== 'undefined') ? POKEMON_DB[p.id] : null;
       return data && (data.type === 'bug' || data.type2 === 'bug' || p.type === 'bug');
     }).length;
-    const bugBonus = Math.min(bugCount * 0.05, 0.20);
+    const bugBonus = Math.min(bugCount * 0.05, 0.30);
     if (bugBonus > 0) a *= (1 + bugBonus);
   } else if (state.playerClass === 'entrenador') {
     // Penalización: -10% catchRate en Pokémon con IV total > 120

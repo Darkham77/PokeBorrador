@@ -53,12 +53,13 @@ const PLAYER_CLASSES = {
     colorDark: '#15803d',
     description: 'Maestro del campo. Acumula rachas de capturas para aumentar las chances de Shiny e IVs altos. Vive en la naturaleza.',
     bonuses: [
-      '⚡ Racha de Capturas: cada captura seguida aumenta Shiny rate e IVs mínimos (máx x3)',
-      '🦋 Sinergia Bicho: +5% catchRate por Pokémon Bicho en el equipo (máx +20%)',
-      '🐝 Aroma Atractivo: Chance de atraer Pokémon raros (Scyther/Pinsir) al caminar.',
-      '🕸️ Red Maestra: 20% de capturar un segundo ejemplar de tipo Bicho (2x1).'
+      '⚡ Racha de Capturas: cada captura seguida aumenta Shiny rate e IVs (máx x4)',
+      '🦋 Sinergia Bicho: +5% catchRate por Pokémon Bicho en el equipo (máx +30%)',
+      '🎒 Kit de Campo: cada 10 capturas salvajes recibís 1 Poké Ball',
+      '🐝 Aroma Atractivo: chance de atraer Pokémon raros (Scyther/Pinsir)',
+      '🕸️ Red Maestra: 20% de capturar un segundo ejemplar de tipo Bicho (2x1)'
     ],
-    bonusLevels: [1, 1, 10, 20],
+    bonusLevels: [1, 1, 10, 15, 20],
     penalties: [
       '⚔️ -20% EXP en batallas contra entrenadores NPC',
       '🪙 -15% Battle Coins en todas las batallas',
@@ -73,9 +74,10 @@ const PLAYER_CLASSES = {
       catchMult: 1.0
     },
     technicalBonuses: [
-      "Cada captura del mismo tipo suma +1 racha. +1 racha = +2% Shiny rate y +5 IVs garantizados (máx 3 acumulaciones).",
-      "Bono de +5% de Catch Rate por cada Pokémon tipo Bicho en tu equipo activo de 6. (Bonificador máximo: +20%).",
-      "Probabilidad de 0.5% por paso en hierba alta de forzar la aparición de un Pokémon raro (Scyther/Pinsir).",
+      "Cada captura del mismo tipo suma +1 racha. +1 racha = +15% Shiny rate y +5 IVs garantizados (máx multiplicador x4.0).",
+      "Bono de +5% de Catch Rate por cada Pokémon tipo Bicho en tu equipo activo (Bonificador máximo: +30%).",
+      "Al ser un experto en el campo, por cada 10 Pokémon salvajes capturados, encontrás 1 Poké Ball extra en el equipo del Kit de Campo.",
+      "Probabilidad de 0.5% por paso (10% en Safari) de forzar la aparición de un Pokémon raro (Scyther/Pinsir).",
       "Al capturar un Pokémon tipo Bicho, hay un 20% de probabilidad de recibir un segundo ejemplar idéntico en la caja."
     ],
     technicalPenalties: [
@@ -690,10 +692,22 @@ function onCaptureSuccess() {
     state.classData.longestStreak = state.classData.captureStreak;
   }
   const streak = state.classData.captureStreak;
-  const mult = Math.min(1.0 + 0.15 * streak, 3.0).toFixed(2);
+  const mult = Math.min(1.0 + 0.15 * streak, 4.0).toFixed(2);
   if (streak % 5 === 0) {
     notify(`¡Racha x${streak}! Shiny x${mult} — ¡Seguí!`, '⚡');
   }
+
+  // Kit de Campo (Nv. 10): 1 Poké Ball cada 10 capturas salvajes
+  if ((state.classLevel || 1) >= 10) {
+    state.classData.kitCaptures = (state.classData.kitCaptures || 0) + 1;
+    if (state.classData.kitCaptures >= 10) {
+      state.classData.kitCaptures = 0;
+      state.inventory = state.inventory || {};
+      state.inventory['Pokéball'] = (state.inventory['Pokéball'] || 0) + 1;
+      notify('¡Kit de Campo! Recibiste 1 Poké Ball 🎒', '🎒');
+    }
+  }
+
   addClassXP(10);
   updateClassHud();
 }
@@ -717,7 +731,7 @@ function getActiveShinyRate() {
   if (state.playerClass === 'cazabichos') {
     const streak = (state.classData && state.classData.captureStreak) || 0;
     if (streak > 0) {
-      const mult = Math.min(1.0 + 0.15 * streak, 3.0);
+      const mult = Math.min(1.0 + 0.15 * streak, 4.0);
       baseRate = Math.floor(baseRate / mult);
     }
   }
