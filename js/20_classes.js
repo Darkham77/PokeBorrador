@@ -20,7 +20,7 @@ const PLAYER_CLASSES = {
     penalties: [
       '🏥 Centro Pokémon cuesta el doble (2x)',
       '🪙 -10% Battle Coins en todas las batallas',
-      '🚫 Sin acceso a torneos y tiendas oficiales'
+      '🏪 20% de recargo en compras del Pokémart'
     ],
     modifiers: {
       expMult: 1.0,
@@ -398,7 +398,7 @@ function openClassInfoPanel() {
   ov.id = 'class-info-panel-overlay';
   ov.style.cssText = `
     position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9000;
-    display:flex;align-items:center;justify-content:center;
+    display:flex;align-items:flex-start;justify-content:center;
     padding:16px;animation:fadeIn 0.2s;overflow-y:auto;
   `;
 
@@ -432,10 +432,9 @@ function openClassInfoPanel() {
           padding: 24px 16px !important; 
           gap: 24px !important; 
           width: 100% !important;
-          height: 100% !important;
+          height: auto !important;
           max-width: none !important;
           border-radius: 0 !important;
-          overflow-y: auto !important;
           display: block !important; /* Permitir scroll natural */
         }
         .class-modal-cols { 
@@ -457,7 +456,7 @@ function openClassInfoPanel() {
       }
     </style>
 
-    <div class="class-modal-content" style="background:#111827;border-radius:24px;width:95%;max-width:900px;border:1px solid ${cls.color}33;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);position:relative;display:flex;flex-direction:column;max-height:90vh;overflow-y:auto;">
+    <div class="class-modal-content" style="background:#111827;border-radius:24px;width:95%;max-width:900px;border:1px solid ${cls.color}33;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);position:relative;display:flex;flex-direction:column;margin-top:auto;margin-bottom:auto;">
       
       <!-- Close Button -->
       <button onclick="document.getElementById('class-info-panel-overlay').remove()"
@@ -1817,22 +1816,40 @@ function openReputationShop() {
   const rep = state.classData?.reputation || 0;
   const cls = PLAYER_CLASSES.entrenador;
 
-  const rows = REPUTATION_SHOP_ITEMS.map(item => {
+  // Ordenar por costo (menor a mayor)
+  const sortedItems = [...REPUTATION_SHOP_ITEMS].sort((a, b) => a.cost - b.cost);
+
+  const rows = sortedItems.map(item => {
     const canAfford = rep >= item.cost;
+    
+    // Buscar sprite en SHOP_ITEMS
+    const baseName = item.name.split(' x')[0];
+    const shopItem = (typeof SHOP_ITEMS !== 'undefined') ? SHOP_ITEMS.find(si => si.name === baseName) : null;
+    const spriteUrl = shopItem?.sprite || '';
+
     return `
-    <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-        <span style="font-size:13px;font-weight:700;">${item.icon} ${item.name}</span>
-        <span style="font-size:11px;font-weight:700;color:${canAfford ? cls.color : '#6b7280'};">${item.cost} ⭐ REP</span>
+    <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);display:flex;gap:12px;align-items:center;">
+      <div style="width:44px;height:44px;flex-shrink:0;background:rgba(255,255,255,0.03);border-radius:10px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.05);">
+        ${spriteUrl 
+          ? `<img src="${spriteUrl}" width="32" height="32" style="image-rendering:pixelated;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+             <span style="display:none;font-size:24px;">${item.icon}</span>`
+          : `<span style="font-size:24px;">${item.icon}</span>`}
       </div>
-      <div style="font-size:10px;color:#6b7280;margin-bottom:8px;">${item.desc}</div>
-      <button onclick="buyReputationItem('${item.id}')" ${canAfford ? '' : 'disabled'} 
-        style="width:100%;padding:8px;border:none;border-radius:8px;cursor:${canAfford ? 'pointer' : 'not-allowed'};
-          background:${canAfford ? cls.color + '33' : 'rgba(255,255,255,0.04)'};
-          color:${canAfford ? cls.color : '#4b5563'};font-size:10px;font-weight:700;
-          border:1px solid ${canAfford ? cls.color + '55' : 'transparent'};">
-        ${canAfford ? 'CANJEAR' : 'SIN REPUTACIÓN'}
-      </button>
+      <div style="flex:1;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+          <span style="font-size:13px;font-weight:700;color:#f8fafc;">${item.name}</span>
+          <span style="font-size:11px;font-weight:700;color:${canAfford ? cls.color : '#6b7280'};">${item.cost} ⭐ REP</span>
+        </div>
+        <div style="font-size:10px;color:#94a3b8;margin-bottom:8px;line-height:1.4;">${item.desc}</div>
+        <button onclick="buyReputationItem('${item.id}')" ${canAfford ? '' : 'disabled'} 
+          style="width:100%;padding:8px;border:none;border-radius:10px;cursor:${canAfford ? 'pointer' : 'not-allowed'};
+            background:${canAfford ? cls.color + '22' : 'rgba(255,255,255,0.04)'};
+            color:${canAfford ? cls.color : '#4b5563'};font-size:10px;font-weight:700;
+            border:1px solid ${canAfford ? cls.color + '44' : 'transparent'};
+            transition:0.2s;">
+          ${canAfford ? 'CANJEAR' : 'SIN REPUTACIÓN'}
+        </button>
+      </div>
     </div>`;
   }).join('');
 
@@ -1840,7 +1857,7 @@ function openReputationShop() {
   ov.id = 'rep-shop-overlay';
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:3000;display:flex;align-items:center;justify-content:center;padding:12px;';
   ov.innerHTML = `
-    <div style="background:#0f172a;border:1px solid ${cls.color}44;border-radius:20px;padding:20px;max-width:420px;width:100%;max-height:88vh;overflow-y:auto;">
+    <div style="background:#0f172a;border:1px solid ${cls.color}44;border-radius:20px;padding:20px;max-width:420px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${cls.color};">🏅 TIENDA DE REPUTACIÓN</div>
         <button onclick="document.getElementById('rep-shop-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;">✕</button>
