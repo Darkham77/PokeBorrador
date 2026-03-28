@@ -2792,7 +2792,18 @@ function endBattle(won) {
         }
       }
     }
-    
+    // Recompensa de Poké-Dólares (₽)
+    // Wild: 4 * level (halved = 2 * level). Trainers: 20 * level.
+    let moneyWon = (b.isTrainer || b.isGym) ? (b.enemy.level * 20) : Math.floor(b.enemy.level * 2);
+
+    // Bono de Extorsión (Equipo Rocket x1.5 ₽ en batallas NPC)
+    if (state.playerClass === 'rocket' && (b.isTrainer || b.isGym)) {
+      if (state.classData?.officialRouteId && (b.locationId === state.classData.officialRouteId)) {
+        moneyWon = Math.floor(moneyWon * 1.5);
+        addLog('🚀 ¡Bono de Extorsión: x1.5 ₽!', 'log-info');
+      }
+    }
+
     if ((state.amuletCoinSecs || 0) > 0 || b.player.heldItem === 'Moneda Amuleto') moneyWon *= 2; // Moneda Amuleto
     state.money += moneyWon;
     addLog(`¡Ganaste <span style="color:#22c55e;font-weight:bold;">₽${moneyWon.toLocaleString()}</span>!`, 'log-info');
