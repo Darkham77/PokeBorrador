@@ -54,25 +54,25 @@ async function loadActiveEvents() {
     const { data: events, error } = await sb.from('events_config').select('*');
     if (error) throw error;
     
-    const now = new Date();
-    _activeEvents = events.filter(ev => {
-      const start = new Date(ev.start_at);
-      const end = new Date(ev.end_at);
-      return now >= start && now <= end;
-    });
+    _activeEvents = events.filter(ev => _isEventActiveNow(ev));
 
     // 2. Cargar resultados de los últimos 3 días (72hs)
-    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: results, error: resError } = await sb.from('competition_results')
-      .select('*, events_config(name, icon)')
-      .gt('ended_at', threeDaysAgo);
+    // Lo aislamos en su propio bloque para que si falla no bloquee los eventos activos
+    try {
+      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: results, error: resError } = await sb.from('competition_results')
+        .select('*, events_config(name, icon)')
+        .gt('ended_at', threeDaysAgo);
 
-    if (!resError) {
-      _finishedEvents = (results || []).map(r => ({
-        ...r,
-        name: r.events_config?.name || 'Evento Finalizado',
-        icon: r.events_config?.icon || '🏁'
-      }));
+      if (!resError && results) {
+        _finishedEvents = results.map(r => ({
+          ...r,
+          name: r.events_config?.name || 'Evento Finalizado',
+          icon: r.events_config?.icon || '🏁'
+        }));
+      }
+    } catch (err) {
+      console.warn('[Events] Error cargando resultados recientes:', err);
     }
 
     _eventsLoaded = true;
@@ -88,16 +88,20 @@ async function loadActiveEvents() {
 function _isEventActiveNow(ev) {
   if (!ev.active) return false;
   if (ev.manual) return true;
+
+  const now = new Date();
+  
+  // 1. Verificar por fechas absolutas si existen
+  if (ev.start_at && ev.end_at) {
+    const start = new Date(ev.start_at);
+    const end = new Date(ev.end_at);
+    if (now >= start && now <= end) return true;
+  }
+
+  // 2. Verificar por horario programado (Weekly)
   const sched = ev.schedule;
   if (!sched) return false;
   
-  // Ajuste horario (ej. Argentina UTC-3)
-  // Usamos el tiempo local del navegador ajustado a la zona horaria de Argentina si es necesario,
-  // pero para simplificar y que coincida con lo que ve el usuario, usamos el objeto Date estándar.
-  const now = new Date();
-  // Si el servidor/entorno está en UTC, restamos 3 horas para Argentina. 
-  // Si el usuario está en Argentina, su hora local ya es correcta.
-  // Para que sea consistente con el panel "hs. (ARG)", forzamos el cálculo:
   const argTime = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Argentina/Buenos_Aires"}));
   const day = argTime.getDay();
   const hour = argTime.getHours() + argTime.getMinutes() / 60;
@@ -106,8 +110,10 @@ function _isEventActiveNow(ev) {
     if (!sched.days.includes(day)) return false;
     if (sched.startHour !== undefined && hour < sched.startHour) return false;
     if (sched.endHour !== undefined && hour >= sched.endHour) return false;
+    return true;
   }
-  return true;
+  
+  return false;
 }
 
 function isEventActive(id) {
