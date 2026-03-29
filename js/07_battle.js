@@ -2439,17 +2439,21 @@ function executeCatch(ballName) {
 
   // Modificadores de clase sobre la captura
   if (state.playerClass === 'cazabichos') {
-    // Sinergia Bicho: +5% por Pokémon tipo Bicho en el equipo (máx +20%)
+    // Sinergia Bicho: +5% por Pokémon tipo Bicho en el equipo (máx +30%)
     const bugCount = (state.team || []).filter(p => {
-      const data = (typeof POKEMON_DB !== 'undefined') ? POKEMON_DB[p.id] : null;
-      return data && (data.type === 'bug' || data.type2 === 'bug' || p.type === 'bug');
+      const pId = p.id || p.pokemonId;
+      const data = (typeof POKEMON_DB !== 'undefined') ? POKEMON_DB[pId] : null;
+      const isBug = (data && (data.type === 'bug' || data.type2 === 'bug')) || p.type === 'bug' || p.type2 === 'bug';
+      return isBug;
     }).length;
     const bugBonus = Math.min(bugCount * 0.05, 0.30);
     if (bugBonus > 0) a *= (1 + bugBonus);
   } else if (state.playerClass === 'entrenador') {
-    // Penalización: -10% catchRate en Pokémon con IV total > 120
+    // Penalización: -10% catchRate en Pokémon con IV total > 120 (Ética Profesional)
     const enemyIvTotal = Object.values(b.enemy.ivs || {}).reduce((s, v) => s + (v || 0), 0);
-    if (enemyIvTotal > 120) a *= 0.90;
+    if (enemyIvTotal > 120) {
+      a *= 0.90;
+    }
   }
 
   let shakes = 0;
@@ -2571,9 +2575,13 @@ function catchSuccess(enemy) {
   if (state.playerClass === 'cazabichos' && isBugType && Math.random() < 0.20) {
     const secondCaught = JSON.parse(JSON.stringify(caught));
     secondCaught.uid = 'extra_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    
+    // Verificar espacio en la caja (máx 200)
     if (state.box.length < 200) {
       state.box.push(secondCaught);
       addLog(`¡La <strong>Red Maestra</strong> atrapó a un segundo ${baseEnemy.name}! (2x1)`, 'log-catch');
+    } else {
+      addLog(`¡La Red Maestra intentó atrapar otro ${baseEnemy.name}, pero la Caja está llena!`, 'log-enemy');
     }
   }
 
@@ -2819,11 +2827,12 @@ function endBattle(won) {
     // Wild: 4 * level (halved = 2 * level). Trainers: 20 * level.
     let moneyWon = (b.isTrainer || b.isGym) ? (b.enemy.level * 20) : Math.floor(b.enemy.level * 2);
 
-    // Bono de Extorsión (Equipo Rocket x1.5 ₽ en batallas NPC)
-    if (state.playerClass === 'rocket' && (b.isTrainer || b.isGym)) {
-      if (state.classData?.officialRouteId && (b.locationId === state.classData.officialRouteId)) {
+    // Bono de Extorsión (Equipo Rocket x1.5 ₽ en batallas NPC genéricas en su Ruta Oficial, Nivel 15+)
+    if (state.playerClass === 'rocket' && (state.classLevel || 1) >= 15 && b.isTrainer && !b.isGym && !b.isRival) {
+      const curLocId = b.locationId || state.lastWildLocId;
+      if (state.classData?.extortedRouteId && curLocId === state.classData.extortedRouteId) {
         moneyWon = Math.floor(moneyWon * 1.5);
-        addLog('🚀 ¡Bono de Extorsión: x1.5 ₽!', 'log-info');
+        addLog('🚀 ¡Bono de Extorsión: x1.5 ₽ en Ruta Oficial!', 'log-info');
       }
     }
 
@@ -2854,7 +2863,7 @@ function endBattle(won) {
           state.classData.criminality = 0;
           addLog('¡Tu criminalidad ha sido reseteada tras derrotar a la ley!', 'log-info');
           
-          // Robo al Oficial (Nv. 20+)
+          // Robo al Oficial (5% de chance, requiere Nivel 20 de clase)
           if ((state.classLevel || 1) >= 20 && Math.random() < 0.05) {
             const targetTeam = b.enemyTeam && b.enemyTeam.length > 0 ? b.enemyTeam : [b.enemy];
             const randIdx = Math.floor(Math.random() * targetTeam.length);
@@ -2871,6 +2880,8 @@ function endBattle(won) {
               state.box.push(stolenCopy);
               setTimeout(() => notify(`¡Le robaste un Pokémon al oficial!`, '🚔'), 500);
               addLog(`¡Increíble! Le has robado el <strong>${stolenCopy.name}</strong> al Oficial de Policía y fue enviado curado a tu PC.`, 'log-catch');
+            } else {
+              addLog(`¡Intentaste robarle el ${stolenCopy.name} al Oficial, pero tu PC está llena!`, 'log-enemy');
             }
           }
 

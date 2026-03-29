@@ -85,8 +85,8 @@ const libraryContent = {
 
     <h3>🎭 Modificadores de Clase sobre la Captura</h3>
     <ul>
-      <li><strong>Cazabichos — Sinergia Bicho:</strong> +5% de catch rate por cada Pokémon tipo Bicho en tu equipo activo. Máximo <strong>+20%</strong> (con 4 o más bichos).</li>
-      <li><strong>Entrenador — Ética Profesional:</strong> -10% de catch rate en Pokémon con IVs totales superiores a <strong>120</strong>.</li>
+      <li><strong>Cazabichos — Sinergia Bicho:</strong> +5% de catch rate por cada Pokémon tipo Bicho en tu equipo activo. Máximo <strong>+30%</strong> (con 6 bichos).</li>
+      <li><strong>Entrenador — Ética Profesional:</strong> -10% de catch rate permanente en Pokémon con IVs totales superiores a <strong>120</strong>.</li>
     </ul>
 
     <h3>💡 Consejos de Captura</h3>
@@ -110,9 +110,10 @@ const libraryContent = {
       <tbody>
         <tr><td>💰 Mercado Negro</td><td>Vendé Pokémon directamente desde la Caja por ₽. El precio escala con el nivel del Pokémon.</td></tr>
         <tr><td>🎯 Robo Rápido</td><td>15–30% de chance de robar un ítem al iniciar batalla contra un Entrenador NPC. Escala con el nivel de clase.</td></tr>
+        <tr><td>🗺️ Extorsión (Nv. 15)</td><td>x1.5 ₽ en batallas contra NPCs genéricos en tu Ruta Oficial del día.</td></tr>
+        <tr><td>🚔 Robo al Oficial (Nv. 20)</td><td>5% de chance de robar un Pokémon al Oficial tras derrotarlo (requiere espacio en PC).</td></tr>
         <tr><td>🏪 Battle Coins</td><td>-10% BC en todas las batallas.</td></tr>
         <tr><td>🏥 Curación</td><td>El Centro Pokémon cuesta el <strong>doble (2×)</strong>.</td></tr>
-        <tr><td>📋 Misiones</td><td>Contrabando (30m), Extorsión (45m), Robo de Lab (60m).</td></tr>
       </tbody>
     </table>
 
@@ -121,8 +122,8 @@ const libraryContent = {
     <table class="library-table">
       <thead><tr><th>Mecánica</th><th>Detalle</th></tr></thead>
       <tbody>
-        <tr><td>⚡ Racha de Capturas</td><td>Cada captura suma +1 a la racha. Por cada punto de racha: Shiny rate ×1.15 (máx ×3.0) y IV mínimo +2 (máx 20).</td></tr>
-        <tr><td>🦋 Sinergia Bicho</td><td>+5% catch rate por Pokémon tipo Bicho en el equipo. Máximo +20% con 4+ bichos.</td></tr>
+        <tr><td>⚡ Racha de Capturas</td><td>Cada captura consecutiva suma +1 racha (máx x4). Cada punto de racha otorga +75% Shiny rate y +5 IVs garantizados (máx x4.0).</td></tr>
+        <tr><td>🦋 Sinergia Bicho</td><td>+5% catch rate por Pokémon tipo Bicho en el equipo. Máximo +30% con 6 bichos.</td></tr>
         <tr><td>⚔️ EXP vs Entrenadores</td><td>-20% EXP en batallas contra entrenadores NPC.</td></tr>
         <tr><td>🪙 Battle Coins</td><td>-15% BC en todas las batallas.</td></tr>
         <tr><td>🏠 Guardería</td><td>Cuesta 1.5× más.</td></tr>
@@ -138,8 +139,9 @@ const libraryContent = {
       <tbody>
         <tr><td>📈 EXP</td><td>+10% EXP en <strong>todos</strong> los combates.</td></tr>
         <tr><td>🏆 BC en Gimnasios</td><td>+30% Battle Coins en victorias contra Líderes de Gimnasio.</td></tr>
-        <tr><td>⭐ Reputación</td><td>Ganás puntos de Reputación por victorias en gimnasio. Canjeables en la Tienda de Reputación por ítems exclusivos (Ultra Balls, MTs, Revivires, Huevo Suerte, etc.).</td></tr>
-        <tr><td>🎯 Penalización de captura</td><td>-10% catch rate en Pokémon con IVs totales superiores a 120.</td></tr>
+        <tr><td>⭐ Reputación</td><td>Ganás puntos de Reputación por victorias en gimnasio. Canjeables en la Tienda de Reputación por ítems exclusivos.</td></tr>
+        <tr><td>⚔️ Rival Doble (Nv. 20)</td><td>x2 de chance de aparición del Rival si venciste a todos los Líderes en dificultad Difícil.</td></tr>
+        <tr><td>🎯 Ética Profesional</td><td>-10% catch rate permanente en Pokémon con IVs totales superiores a 120.</td></tr>
         <tr><td>🏠 Guardería</td><td>Cuesta 1.5× más.</td></tr>
         <tr><td>📋 Misiones</td><td>Sesión de Gimnasio (30m, +5 REP), Mentoría (60m, +10 REP), Torneo Local (90m, +15 REP).</td></tr>
       </tbody>
@@ -443,13 +445,16 @@ function toggleLibrary() {
 
   if (modal.style.display === 'none' || modal.style.display === '') {
     modal.style.display = 'block';
-    const contentArea = document.getElementById('library-article-content');
-    // Forzamos la carga de la primera pestaña si el área de contenido está vacía o invisible
-    if (contentArea && (!contentArea.innerHTML.trim() || contentArea.style.opacity === "0")) {
+    // Abrir siempre en la sección de Gimnasios por defecto
+    const gymTab = document.querySelector('.library-nav-item[onclick*="\'gimnasios\'"]');
+    if (gymTab) {
+      switchLibraryTab('gimnasios', gymTab);
+    } else {
+      // Fallback a la primera pestaña si no se encuentra la de gimnasios
       const firstTab = document.querySelector('.library-nav-item');
       if (firstTab) {
         const match = firstTab.getAttribute('onclick').match(/'([^']+)'/);
-        if (match) openLibrarySection(match[1], firstTab);
+        if (match) switchLibraryTab(match[1], firstTab);
       }
     }
   } else {
