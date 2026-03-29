@@ -59,8 +59,39 @@ async function loadActiveEvents() {
     const { data: events, error } = await window.sb.from('events_config').select('*');
     if (error) throw error;
     
-    _activeEvents = events.filter(ev => _isEventActiveNow(ev));
+    // 1. Eventos actualmente activos por horario
+    const active = events.filter(ev => _isEventActiveNow(ev));
 
+    // 2. Buscar eventos terminados en las últimas 24hs que tengan resultados
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: results } = await window.sb.from('competition_results')
+      .select('*')
+      .gt('ended_at', twentyFourHoursAgo)
+      .order('ended_at', { ascending: false });
+
+    const finished = [];
+    if (results && results.length > 0) {
+      // Evitar duplicados: si el evento está activo, no lo mostramos como terminado
+      const activeIds = new Set(active.map(a => a.id));
+      const processedIds = new Set();
+
+      for (const res of results) {
+        if (activeIds.has(res.event_id) || processedIds.has(res.event_id)) continue;
+        
+        const baseEv = events.find(e => e.id === res.event_id);
+        if (baseEv) {
+          finished.push({
+            ...baseEv,
+            isFinished: true,
+            resultData: res.winners,
+            endedAt: res.ended_at
+          });
+          processedIds.add(res.event_id);
+        }
+      }
+    }
+
+    _activeEvents = [...active, ...finished];
     _eventsLoaded = true;
     _updateEventBanner();
 
@@ -103,11 +134,12 @@ function _isEventActiveNow(ev) {
 }
 
 function isEventActive(id) {
-  return _activeEvents.some(e => e.id === id);
+  return _activeEvents.some(e => e.id === id && !e.isFinished);
 }
 
 function getEventBonus(type) {
   for (const ev of _activeEvents) {
+    if (ev.isFinished) continue;
     if (ev.config && ev.config[type + 'Mult']) return ev.config[type + 'Mult'];
   }
   return 1;
@@ -1186,7 +1218,25 @@ async function awardEvent(eventId, manual = false) {
       }
     }
 
-    // 5. Limpiar participantes
+    // 5. Guardar "foto" del podio en historial (competition_results)
+    try {
+      const winnersSnapshot = winners.map(w => ({
+        rank: w.rank,
+        player_name: w.entry.player_name,
+        score: w.entry.data?.total_ivs || 0,
+        player_id: w.entry.player_id
+      }));
+
+      await window.sb.from('competition_results').insert({
+        event_id: eventId,
+        winners: winnersSnapshot,
+        ended_at: new Date().toISOString()
+      });
+    } catch (histErr) {
+      console.warn('[Events] No se pudo guardar el historial del podio:', histErr);
+    }
+
+    // 6. Limpiar participantes
     const { error: delErr } = await window.sb.from('competition_entries').delete().eq('event_id', eventId);
     if (delErr) throw delErr;
 
@@ -1213,39 +1263,74 @@ async function awardEvent(eventId, manual = false) {
 
 async function showEventResultsModal(eventId) {
   try {
-    const { data: ev } = await window.sb.from('events_config').select('name, icon, config').eq('id', eventId).single();
-    const myAward = state._pendingAwards?.find(a => a.event_id === eventId);
+    // Buscar si el evento es uno de los terminados en la lista activa
+    const ev = _activeEvents.find(e => e.id === eventId);
+    if (!ev) {
+      // Si no lo encontramos en la lista local, pedimos los datos básicos
+      const { data: baseEv } = await window.sb.from('events_config').select('name, icon').eq('id', eventId).single();
+      if (!baseEv) return;
+      var eventData = baseEv;
+    } else {
+      var eventData = ev;
+    }
+
+    let podium = eventData.resultData;
+    
+    // Si no tenemos los datos del podio (porque entramos directo), los buscamos
+    if (!podium) {
+      const { data: res } = await window.sb.from('competition_results')
+        .select('winners')
+        .eq('event_id', eventId)
+        .order('ended_at', { ascending: false })
+        .limit(1)
+        .single();
+      podium = res?.winners;
+    }
+
+    if (!podium) {
+      alert('No se encontraron resultados para este evento.');
+      if (typeof checkPendingAwards === 'function') checkPendingAwards();
+      return;
+    }
 
     const modal = document.createElement('div');
     modal.id = 'podium-modal-overlay';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s;';
 
-    modal.innerHTML = `
+    const rows = podium.map(w => {
+      const medal = w.rank === 'first' ? '🥇' : w.rank === 'second' ? '🥈' : '🥉';
+      const color = w.rank === 'first' ? '#fbbf24' : w.rank === 'second' ? '#94a3b8' : '#b45309';
+      return `
+        <div style="background:rgba(255,255,255,0.05); border:1px solid ${color}44; border-radius:16px; padding:16px; display:flex; align-items:center; gap:16px; margin-bottom:12px;">
+          <div style="font-size:28px;">${medal}</div>
+          <div style="flex:1;">
+            <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:#fff; margin-bottom:4px;">${w.player_name}</div>
+            <div style="font-size:12px; color:${color}; font-weight:bold;">${w.score} IVs Totales</div>
+          </div>
+        </div>`;
+    }).join('');
 
-      <div style="background:#0f172a; width:100%; max-width:480px; border-radius:24px; border:2px solid #334155; padding:32px; position:relative; overflow:hidden;">
+    modal.innerHTML = `
+      <div style="background:#0f172a; width:100%; max-width:480px; border-radius:24px; border:2px solid #334155; padding:32px; position:relative; overflow:hidden; box-shadow: 0 0 50px rgba(0,0,0,0.5);">
         <button onclick="document.getElementById('podium-modal-overlay').remove()" 
           style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.05); border:none; color:#94a3b8; font-size:20px; cursor:pointer; z-index:10; width:36px; height:36px; border-radius:50%;">✕</button>
 
         <div style="text-align:center; margin-bottom:28px;">
-          <div style="font-size:36px; margin-bottom:10px;">${ev?.icon || '🏆'}</div>
-          <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#fbbf24; margin-bottom:6px;">RESULTADO DEL EVENTO</div>
-          <div style="color:#64748b; font-size:12px;">${ev?.name || eventId}</div>
+          <div style="font-size:48px; margin-bottom:12px;">${eventData.icon || '🏆'}</div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#fbbf24; margin-bottom:8px; letter-spacing:1px;">¡PODIO FINAL!</div>
+          <div style="color:#64748b; font-size:12px;">${eventData.name}</div>
         </div>
 
-        <div style="text-align:center;">
-          ${myAward ? `
-            <div style="margin-bottom:16px; padding:14px; background:rgba(34,197,94,0.1); border:1px solid #22c55e44; border-radius:14px; color:#22c55e; font-size:12px;">
-              🎁 ¡Tenés un premio pendiente por reclamar!
-            </div>
-            <button onclick="claimAward('${myAward.id}'); document.getElementById('podium-modal-overlay').remove();"
-              style="width:100%; padding:16px; border:none; border-radius:16px; background:linear-gradient(135deg, #22c55e, #15803d); color:#fff; font-family:'Press Start 2P',monospace; font-size:10px; cursor:pointer; box-shadow:0 8px 20px rgba(34,197,94,0.4);">
-              🎁 RECLAMAR RECOMPENSA
-            </button>
-          ` : `
-            <div style="color:#64748b; font-size:11px; font-style:italic; padding:20px 0;">
-              No tenés premios pendientes en este evento.
-            </div>
-          `}
+        <div style="max-height:400px; overflow-y:auto; padding-right:4px;">
+          ${rows}
+        </div>
+
+        <div style="margin-top:24px; text-align:center;">
+          <div style="font-size:11px; color:#475569; font-style:italic;">Resultados finales del evento</div>
+          <button onclick="document.getElementById('podium-modal-overlay').remove()"
+            style="margin-top:20px; width:100%; padding:14px; border:none; border-radius:12px; background:rgba(255,255,255,0.08); color:#94a3b8; font-family:'Press Start 2P',monospace; font-size:9px; cursor:pointer;">
+            CERRAR
+          </button>
         </div>
       </div>`;
 
@@ -1269,6 +1354,7 @@ async function showEventResultsModal(eventId) {
     }
   } catch (e) {
     console.error('[Events] Error al mostrar podio:', e);
+    alert('No se pudieron cargar los resultados.');
   }
 }
 

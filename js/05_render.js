@@ -862,20 +862,40 @@ function updateBuffPanel() {
   panel.querySelectorAll('.buff-item.event').forEach(el => el.remove());
   if (typeof _activeEvents !== 'undefined' && _activeEvents.length > 0) {
     _activeEvents.forEach(ev => {
+      const isFinished = ev.isFinished === true;
       const el = document.createElement('div');
-      el.className = 'buff-item event';
+      el.className = 'buff-item event' + (isFinished ? ' finished' : '');
       el.style.cursor = 'pointer';
+      
+      // Estilo para evento terminado (más opaco o borde distinto)
+      if (isFinished) {
+        el.style.filter = 'saturate(0.5) brightness(0.8)';
+        el.style.border = '1px solid #475569';
+      }
+
       el.innerHTML = `
         <div class="buff-collapsed">
           <div style="font-size:20px; line-height:1;">${ev.icon || '🎁'}</div>
         </div>
         <div class="buff-tooltip">
-          <div class="buff-tooltip-name" style="color:var(--yellow);">${ev.name}</div>
-          <div class="buff-tooltip-desc">${ev.description || '¡Evento especial activo ahora! Participá para ganar premios.'}</div>
-          <div class="buff-tooltip-time" style="color:#fff;">Toca para más info</div>
+          <div class="buff-tooltip-name" style="color:${isFinished ? '#94a3b8' : 'var(--yellow)'};">
+            ${isFinished ? '[TERMINADO] ' : ''}${ev.name}
+          </div>
+          <div class="buff-tooltip-desc">
+            ${isFinished ? '<b>Evento Finalizado.</b><br>Toca para ver quiénes ganaron el podio.' : (ev.description || '¡Evento activo ahora!')}
+          </div>
+          <div class="buff-tooltip-time" style="color:#fff;">
+            ${isFinished ? 'Ver Ganadores 🏆' : 'Toca para más info'}
+          </div>
         </div>
       `;
-      el.onclick = () => { if (typeof showEventDetail === 'function') showEventDetail(ev.id); };
+      el.onclick = () => { 
+        if (isFinished) {
+          if (typeof showEventResultsModal === 'function') showEventResultsModal(ev.id);
+        } else {
+          if (typeof showEventDetail === 'function') showEventDetail(ev.id);
+        }
+      };
       panel.appendChild(el);
     });
   }
