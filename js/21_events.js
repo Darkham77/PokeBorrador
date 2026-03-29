@@ -350,11 +350,133 @@ async function checkPendingAwards() {
       .gt('awarded_at', seventyTwoHoursAgo);
     
     if (error) throw error;
-    // Guardamos en estado global para que el HUD sepa que hay premios pendientes
     state._pendingAwards = awards || [];
+    _renderPendingAwardBanner(); // Mostrar/ocultar banner según premios pendientes
   } catch (e) {
     console.warn('[Events] Error al verificar premios pendientes:', e);
   }
+}
+
+// ── Banner de premio pendiente ────────────────────────────────────────────────
+function _renderPendingAwardBanner() {
+  const existing = document.getElementById('pending-award-banner');
+  const awards = state._pendingAwards || [];
+
+  if (awards.length === 0) {
+    if (existing) existing.remove();
+    return;
+  }
+
+  if (existing) return; // Ya está visible, no duplicar
+
+  // Agregar la animación de pulso si no existe
+  if (!document.getElementById('award-banner-style')) {
+    const style = document.createElement('style');
+    style.id = 'award-banner-style';
+    style.innerHTML = `
+      @keyframes awardPulse {
+        0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.4), 0 4px 24px rgba(0,0,0,0.5); }
+        50% { box-shadow: 0 0 40px rgba(251,191,36,0.9), 0 4px 24px rgba(0,0,0,0.5); }
+      }
+      @keyframes awardSlideIn {
+        from { transform: translateY(100px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      #pending-award-banner:hover { transform: scale(1.02); }
+      #pending-award-banner { transition: transform 0.2s; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const banner = document.createElement('div');
+  banner.id = 'pending-award-banner';
+  banner.style.cssText = [
+    'position:fixed',
+    'bottom:20px',
+    'left:50%',
+    'transform:translateX(-50%)',
+    'z-index:8500',
+    'background:linear-gradient(135deg,#92400e,#b45309,#d97706,#fbbf24,#d97706,#b45309)',
+    'background-size:300% 300%',
+    'border-radius:20px',
+    'padding:14px 24px',
+    'cursor:pointer',
+    'animation:awardPulse 2s ease-in-out infinite, awardSlideIn 0.5s ease-out',
+    'display:flex',
+    'align-items:center',
+    'gap:12px',
+    'max-width:90vw',
+    'white-space:nowrap'
+  ].join(';');
+
+  const count = awards.length;
+  banner.innerHTML = `
+    <span style="font-size:24px;">🏆</span>
+    <div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fff;letter-spacing:1px;">
+        ${count > 1 ? `¡TENÉS ${count} PREMIOS!` : '¡HAS GANADO!'}
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.85);margin-top:3px;">
+        Tocá aquí para reclamar tus premios
+      </div>
+    </div>
+    <span style="font-size:20px;">🎁</span>
+  `;
+
+  banner.onclick = () => _openPendingAwardsModal();
+  document.body.appendChild(banner);
+}
+
+function _openPendingAwardsModal() {
+  const awards = state._pendingAwards || [];
+  if (awards.length === 0) return;
+
+  const existing = document.getElementById('pending-awards-modal');
+  if (existing) existing.remove();
+
+  const ov = document.createElement('div');
+  ov.id = 'pending-awards-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9900;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s;';
+
+  const rows = awards.map(a => {
+    const prize = a.prize || {};
+    let desc = '';
+    if (prize.type === 'money') desc = `💰 ₽${(prize.amount || 0).toLocaleString()}`;
+    else if (prize.type === 'bc') desc = `🪙 ${(prize.amount || 0).toLocaleString()} Battle Coins`;
+    else if (prize.type === 'item') desc = `📦 ${prize.qty || 1}x ${prize.item}`;
+    else if (prize.type === 'pokemon') {
+      const name = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[prize.species]?.name) || prize.species;
+      desc = `🐾 ${name}${prize.shiny ? ' ✨' : ''} Nv.${prize.level}`;
+    }
+    const fecha = new Date(a.awarded_at).toLocaleDateString('es-AR');
+    return `
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(251,191,36,0.2);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div>
+          <div style="font-size:13px;color:#fde68a;font-weight:700;margin-bottom:4px;">${desc}</div>
+          <div style="font-size:10px;color:#64748b;">Ganado el ${fecha}</div>
+        </div>
+        <button onclick="claimAward('${a.id}')" 
+          style="padding:10px 14px;border:none;border-radius:12px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+          ¡RECLAMAR!
+        </button>
+      </div>`;
+  }).join('');
+
+  ov.innerHTML = `
+    <div style="background:#0f172a;border-radius:24px;padding:28px;width:100%;max-width:480px;border:2px solid rgba(251,191,36,0.4);box-shadow:0 0 60px rgba(251,191,36,0.15);">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:44px;margin-bottom:8px;">🏆</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#fbbf24;margin-bottom:6px;">¡PREMIOS PENDIENTES!</div>
+        <div style="font-size:11px;color:#64748b;">Tenés ${awards.length} premio(s) esperándote</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">${rows}</div>
+      <button onclick="document.getElementById('pending-awards-modal').remove()"
+        style="width:100%;padding:12px;border:none;border-radius:12px;background:rgba(255,255,255,0.06);color:#6b7280;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
+        CERRAR
+      </button>
+    </div>`;
+
+  document.body.appendChild(ov);
 }
 
 async function claimAward(awardId) {
@@ -367,7 +489,13 @@ async function claimAward(awardId) {
     if (delivered) {
       state._pendingAwards = state._pendingAwards.filter(a => a.id !== awardId);
       notify('¡Premio reclamado con éxito!', '🎉');
-      // Refrescar el carrusel del mapa si está abierto
+      // Refrescar banner y listas
+      _renderPendingAwardBanner();
+      const modal = document.getElementById('pending-awards-modal');
+      if (modal) {
+        if ((state._pendingAwards || []).length === 0) { modal.remove(); }
+        else { _openPendingAwardsModal(); } // Refrescar la lista
+      }
       if (typeof renderMaps === 'function') renderMaps();
     }
   } catch (e) {
@@ -569,6 +697,16 @@ function _renderEventCard(ev, idx) {
           <div>
             <span style="font-size:9px;color:#f59e0b;font-family:'Press Start 2P',monospace;">ACTIVAR AHORA (MANUAL)</span>
             <div style="font-size:8px;color:#6b7280;margin-top:2px;">Ignora el horario programado</div>
+          </div>
+        </label>
+      </div>
+      <div style="background:rgba(34,197,94,0.06);border-radius:10px;padding:10px;margin-bottom:10px;border:1px solid rgba(34,197,94,0.15);">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" data-ev="${idx}" data-field="hasCompetition" ${ev.config?.hasCompetition !== false ? 'checked' : ''}
+            style="accent-color:#22c55e;cursor:pointer;" onchange="window._evConfigToggle(${idx},'hasCompetition',this.checked)">
+          <div>
+            <span style="font-size:9px;color:#22c55e;font-family:'Press Start 2P',monospace;">🏆 TIENE COMPETENCIA/PREMIOS</span>
+            <div style="font-size:8px;color:#6b7280;margin-top:2px;">Desactivar para eventos solo de bonificaciones (EXP doble, etc.)</div>
           </div>
         </label>
       </div>
@@ -1104,19 +1242,14 @@ async function showEventResultsModal(eventId) {
 window._evShowPodium = (eventId) => showEventResultsModal(eventId);
 
 async function checkAndDistributePrizes(allEvents) {
-  // Solo el admin o un proceso "autorizado" debería disparar esto para evitar colisiones masivas,
-  // pero Supabase RLS y la lógica de lastAwardedAt mitigarán duplicados.
   for (const ev of allEvents) {
+    // Saltar eventos sin competencia/premios
+    if (ev.config?.hasCompetition === false) continue;
     const isActive = _isEventActiveNow(ev);
     const lastAwarded = ev.config?.lastAwardedAt ? new Date(ev.config.lastAwardedAt) : new Date(0);
-    
-    // Si NO está activo pero TIENE un criterio de premiación y NO ha sido premiado recientemente
-    // (Y el tiempo actual es posterior al fin del evento programado)
     if (!isActive && ev.config?.prizes) {
       const sched = ev.schedule;
       if (sched && sched.type === 'weekly') {
-        // Lógica simple: si terminó hace poco y no se ha premiado esta sesión
-        // Para mayor precisión, compararíamos contra el bloque horario exacto.
         awardEvent(ev.id);
       }
     }
@@ -1198,6 +1331,13 @@ window._evHourChange = (idx, field, val) => {
   _adminConfig.events[idx].schedule[field] = parseInt(val) || 0;
 };
 
+window._evConfigToggle = (idx, field, val) => {
+  if (!_adminConfig?.events?.[idx]) return;
+  _adminConfig.events[idx].config = _adminConfig.events[idx].config || {};
+  _adminConfig.events[idx].config[field] = val;
+};
+
+
 window._evLoadEntriesGlobal = _evLoadEntries;
 
 // Se renombra la función global para evitar colisión con la local y recursión infinita
@@ -1211,4 +1351,6 @@ window._evLoadEntriesGlobal = async () => {
 (function _initEvents() {
   loadActiveEvents();
   _startEventPolling();
+  // Verificar premios pendientes al cargar la página
+  setTimeout(checkPendingAwards, 3000); // Esperar 3s a que el usuario esté logueado
 })();
