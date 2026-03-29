@@ -75,24 +75,25 @@
       gastly:   { level: 25, to: 'haunter' },
     };
 
+    // Stone names MUST match inventory keys exactly (see SHOP_ITEMS in 08_shop.js)
     const STONE_EVOLUTIONS = {
-      pikachu:    { stone: '⚡ Piedra Trueno', to: 'raichu' },
-      clefairy:   { stone: '🌙 Piedra Luna',   to: 'clefable' },
-      jigglypuff: { stone: '🌙 Piedra Luna',   to: 'wigglytuff' },
-      nidorina:   { stone: '🌙 Piedra Luna',   to: 'nidoqueen' },
-      nidorino:   { stone: '🌙 Piedra Luna',   to: 'nidoking' },
-      oddish:     { stone: '🌿 Piedra Hoja',   to: 'vileplume' },
-      gloom:      { stone: '🌿 Piedra Hoja',   to: 'vileplume' },
-      growlithe:  { stone: '🔥 Piedra Fuego', to: 'arcanine' },
-      poliwhirl:  { stone: '💧 Piedra Agua',  to: 'poliwrath' },
-      weepinbell: { stone: '🌿 Piedra Hoja',  to: 'victreebel' },
-      shellder:   { stone: '💧 Piedra Agua',  to: 'cloyster' },
-      staryu:     { stone: '💧 Piedra Agua',  to: 'starmie' },
-      eevee_water:   { stone: '💧 Piedra Agua',  to: 'vaporeon' },
-      eevee_thunder: { stone: '⚡ Piedra Trueno', to: 'jolteon' },
-      eevee_fire:    { stone: '🔥 Piedra Fuego', to: 'flareon' },
-      exeggcute:  { stone: '🌿 Piedra Hoja',  to: 'exeggutor' },
-      vulpix:     { stone: '🔥 Piedra Fuego', to: 'ninetales' },
+      pikachu:    { stone: 'Piedra Trueno', to: 'raichu' },
+      clefairy:   { stone: 'Piedra Lunar',  to: 'clefable' },
+      jigglypuff: { stone: 'Piedra Lunar',  to: 'wigglytuff' },
+      nidorina:   { stone: 'Piedra Lunar',  to: 'nidoqueen' },
+      nidorino:   { stone: 'Piedra Lunar',  to: 'nidoking' },
+      oddish:     { stone: 'Piedra Hoja',   to: 'vileplume' },
+      gloom:      { stone: 'Piedra Hoja',   to: 'vileplume' },
+      growlithe:  { stone: 'Piedra Fuego',  to: 'arcanine' },
+      poliwhirl:  { stone: 'Piedra Agua',   to: 'poliwrath' },
+      weepinbell: { stone: 'Piedra Hoja',   to: 'victreebel' },
+      shellder:   { stone: 'Piedra Agua',   to: 'cloyster' },
+      staryu:     { stone: 'Piedra Agua',   to: 'starmie' },
+      eevee_water:   { stone: 'Piedra Agua',   to: 'vaporeon' },
+      eevee_thunder: { stone: 'Piedra Trueno', to: 'jolteon' },
+      eevee_fire:    { stone: 'Piedra Fuego',  to: 'flareon' },
+      exeggcute:  { stone: 'Piedra Hoja',   to: 'exeggutor' },
+      vulpix:     { stone: 'Piedra Fuego',  to: 'ninetales' },
     };
 
     const TRADE_EVOLUTIONS = {
@@ -249,19 +250,13 @@
       // Check eevee special case
       const evoKey = p.id === 'eevee' ? null : STONE_EVOLUTIONS[p.id];
       const eeveeOptions = p.id === 'eevee' ? [
-        { stone: '💧 Piedra Agua', to: 'vaporeon' },
-        { stone: '⚡ Piedra Trueno', to: 'jolteon' },
-        { stone: '🔥 Piedra Fuego', to: 'flareon' },
+        { stone: 'Piedra Agua',   to: 'vaporeon' },
+        { stone: 'Piedra Trueno', to: 'jolteon' },
+        { stone: 'Piedra Fuego',  to: 'flareon' },
       ] : null;
 
       const options = eeveeOptions || (evoKey ? [evoKey] : []);
       if (!options.length) { notify(`${p.name} no puede evolucionar con piedras.`, '💎'); return; }
-
-      // Check inventory
-      const available = options.filter(o => {
-        const stoneName = o.stone.replace(/^[^ ]+ /, '');
-        return state.inventory && state.inventory[stoneName] > 0;
-      });
 
       const ov = document.createElement('div');
       ov.id = 'stone-overlay';
@@ -272,12 +267,18 @@
     <div style="font-size:12px;color:var(--gray);margin-bottom:16px;">¿Qué piedra usás en ${p.name}?</div>`;
 
       options.forEach(o => {
-        const stoneName = o.stone.replace(/^[^ ]+ /, '');
+        // stoneName IS the inventory key — already canonical
+        const stoneName = o.stone;
         const qty = state.inventory?.[stoneName] || 0;
         const toData = POKEMON_DB[o.to];
         const disabled = qty <= 0;
+        // Look up the SHOP_ITEMS entry to get the real sprite & icon 
+        const shopItem = (typeof SHOP_ITEMS !== 'undefined') ? SHOP_ITEMS.find(i => i.name === stoneName) : null;
+        const stoneDisplay = shopItem
+          ? `<img src="${shopItem.sprite}" style="width:32px;height:32px;image-rendering:pixelated;" onerror="this.outerHTML='<span style=\'font-size:24px;\'>${shopItem.icon}</span>'">`
+          : `<span style="font-size:24px;">💎</span>`;
         html += `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border-radius:12px;padding:12px;margin-bottom:8px;${disabled ? 'opacity:0.4' : ''}">
-      <div style="font-size:28px;">${o.stone.split(' ')[0]}</div>
+      <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">${stoneDisplay}</div>
       <div style="flex:1;">
         <div style="font-size:12px;font-weight:700;">${stoneName}</div>
         <div style="font-size:10px;color:var(--gray);">→ ${toData?.name || o.to} &nbsp;·&nbsp; x${qty}</div>
@@ -309,11 +310,15 @@
         notify(`No tenés ${stoneName}.`, '❌'); return;
       }
 
-      const evoKey = p.id === 'eevee' ? (['Piedra Agua', 'Piedra Trueno', 'Piedra Fuego'].includes(stoneName) ? {
-        'Piedra Agua': 'vaporeon',
-        'Piedra Trueno': 'jolteon',
-        'Piedra Fuego': 'flareon',
-      }[stoneName] : null) : STONE_EVOLUTIONS[p.id]?.to;
+      let evoKey;
+      if (p.id === 'eevee') {
+        const eeveeMap = { 'Piedra Agua': 'vaporeon', 'Piedra Trueno': 'jolteon', 'Piedra Fuego': 'flareon' };
+        evoKey = eeveeMap[stoneName] || null;
+      } else {
+        // Verify the stone matches what this Pokémon needs
+        const evo = STONE_EVOLUTIONS[p.id];
+        evoKey = (evo && evo.stone === stoneName) ? evo.to : null;
+      }
 
       if (!evoKey || !POKEMON_DB[evoKey]) { notify(`${p.name} no puede evolucionar con ${stoneName}.`, '💎'); return; }
 

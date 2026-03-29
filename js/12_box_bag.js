@@ -818,7 +818,8 @@
         const sprite = itemInfo?.sprite || '';
         const tier = itemInfo?.tier || 'common';
         const type = itemInfo?.type || 'usable';
-        const isUsable = !!HEALING_ITEMS[name] || name === 'Caramelo Raro';
+        const isStone = itemInfo?.type === 'stone';
+        const isUsable = !!HEALING_ITEMS[name] || isStone;
         const canSell = itemInfo && (itemInfo.market !== false || (itemInfo.price && itemInfo.price > 0));
 
         const tierCls = tierColors[tier];
@@ -865,7 +866,7 @@
           <div style="font-size:10px;color:var(--gray);margin-bottom:10px;line-height:1.4;min-height:28px;">${desc}</div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05);">
             <span style="font-size:11px;font-weight:700;color:var(--purple-light);">x${qty}</span>
-            ${isUsable ? `<button onclick="openBagItemMenu('${name}')" style="padding:6px 12px;border:none;border-radius:8px;background:var(--purple);color:white;font-size:10px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(199,125,255,0.3);">USAR</button>` : ''}
+            ${isUsable ? `<button onclick="${isStone ? `openBagStoneMenu('${name}')` : `openBagItemMenu('${name}')`}" style="padding:6px 12px;border:none;border-radius:8px;background:${isStone ? 'rgba(255,217,61,0.2);color:var(--yellow);border:1px solid rgba(255,217,61,0.3)' : 'var(--purple);color:white'};font-size:10px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(199,125,255,0.3);">USAR</button>` : ''}
           </div>
         </div>`;
       }).join('');

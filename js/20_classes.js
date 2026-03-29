@@ -1507,11 +1507,19 @@ function _openRocketSacrificeModal(missionId, info) {
   renderSelected();
 }
 
-// Modal genérico para Entrenador o Criador: seleccionar 1 Pokémon de la PC
+// Modal genérico para Entrenador o Criador: seleccionar 1 Pokémon de la PC o Equipo
 function _openPokemonSelectModal(missionId, info, cls) {
   document.getElementById('mission-select-overlay')?.remove();
   const clsDef = PLAYER_CLASSES[cls];
+  
+  // Asignar UIDs a Pokémon que no lo tengan para evitar problemas de tracking
+  [...(state.team || []), ...(state.box || [])].forEach(p => {
+    if (!p.uid && typeof getUidStr === 'function') p.uid = getUidStr();
+  });
+  
+  const availTeam = (state.team || []).filter(p => !p.onMission && !p.inDaycare);
   const availBox = (state.box || []).filter(p => !p.onMission && !p.inDaycare);
+  const availPokes = [...availTeam, ...availBox];
 
   const costHtml = cls === 'criador'
     ? `<strong style="color:${clsDef.color};">${info.cost} BC</strong>`
@@ -1525,7 +1533,6 @@ function _openPokemonSelectModal(missionId, info, cls) {
   window._missionFilter = { search: '', fav: false, breed: false, iv31: false };
 
   const buildCard = (p) => {
-    const realIdx = (state.box || []).indexOf(p);
     const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
     const vigor = (p.vigor !== undefined && p.vigor !== null) ? p.vigor : 20;
     const tags = p.tags || [];
@@ -1579,12 +1586,7 @@ function _openPokemonSelectModal(missionId, info, cls) {
       <div style="margin-bottom:8px;">${ivBars}</div>
       ${extraInfo}
       <div style="display:flex;gap:6px;margin-top:10px;">
-        <button onclick="_missionViewDetail(${realIdx})"
-          style="flex:0 0 auto;padding:6px 10px;border:1px solid ${clsDef.color}55;border-radius:8px;background:rgba(255,255,255,0.05);color:${clsDef.color};font-size:10px;cursor:pointer;transition:0.15s;"
-          onmouseover="this.style.background='${clsDef.color}22'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-          🔍 Ver
-        </button>
-        <button onclick="_confirmPokemonSelect(${realIdx},'${missionId}')"
+        <button onclick="_confirmPokemonSelect('${p.uid}','${missionId}')"
           style="flex:1;padding:6px 10px;border:none;border-radius:8px;background:${clsDef.color};color:#fff;font-size:10px;font-weight:bold;cursor:pointer;transition:0.15s;"
           onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
           ✓ Enviar a misión
@@ -1635,7 +1637,7 @@ function _openPokemonSelectModal(missionId, info, cls) {
     const f = window._missionFilter;
     const nameQuery = document.getElementById('mission-pokes-filter-name')?.value.toLowerCase().trim() || '';
     
-    const filtered = availBox.filter(p => {
+    const filtered = availPokes.filter(p => {
       if (nameQuery && !p.name.toLowerCase().includes(nameQuery) && !p.id.toLowerCase().includes(nameQuery)) return false;
       const tags = p.tags || [];
       if (f.fav && !tags.includes('fav')) return false;
@@ -1673,14 +1675,18 @@ function _openPokemonSelectModal(missionId, info, cls) {
   window._updateMissionPokemonList_internal();
 
   // Ver detalles completos (sin cerrar el selector)
-  window._missionViewDetail = (boxIdx) => {
+  window._missionViewDetail = (uid) => {
+    const p = (state.team || []).find(x => x.uid === uid) || (state.box || []).find(x => x.uid === uid);
+    if (!p) return;
     if (typeof showPokemonDetails === 'function') {
-      showPokemonDetails((state.box || [])[boxIdx], boxIdx, 'box');
+      // Pasamos un índice temporal 0 y 'box' solo por el argumento, 
+      // pero showPokemonDetails usa la referencia interna del Pokémon
+      showPokemonDetails(p, 0, 'box');
     }
   };
 
-  window._confirmPokemonSelect = (boxIdx, mid) => {
-    const p = (state.box || [])[boxIdx];
+  window._confirmPokemonSelect = (uid, mid) => {
+    const p = (state.team || []).find(x => x.uid === uid) || (state.box || []).find(x => x.uid === uid);
     if (!p) return;
     const info2 = getMissionCostInfo(mid);
 
@@ -1695,6 +1701,8 @@ function _openPokemonSelectModal(missionId, info, cls) {
     document.getElementById('mission-select-overlay')?.remove();
     if (typeof closePokemonDetail === 'function') closePokemonDetail();
     _launchMission(mid, { pokeUid: p.uid, pokeName: p.name || p.id });
+    // Persistir inmediatamente para que un reload no pierda el flag onMission
+    if (typeof scheduleSave === 'function') scheduleSave();
     if (typeof updateHud === 'function') updateHud();
   };
 }
@@ -1818,6 +1826,7 @@ function collectClassMission() {
   if (typeof scheduleSave === 'function') scheduleSave();
   if (typeof updateClassHud === 'function') updateClassHud();
   if (typeof renderBox === 'function') renderBox();
+  if (typeof renderTeam === 'function') renderTeam();
   notify(notifMsg, notifIcon);
   openClassMissionsPanel();
 }
@@ -1980,6 +1989,7 @@ function initClassSystem() {
   
   // Revisar Box y Equipo
   [...(state.team || []), ...(state.box || [])].forEach(p => {
+    if (!p.uid && typeof getUidStr === 'function') p.uid = getUidStr(); // Auto-fix
     if (p.onMission && p.uid !== activeUid) {
       p.onMission = false;
       console.log(`[CLASES] Pokémon desbloqueado (misión fantasma): ${p.name}`);

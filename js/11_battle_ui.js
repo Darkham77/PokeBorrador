@@ -486,6 +486,93 @@
       document.body.appendChild(ov);
     }
 
+    function openBagStoneMenu(stoneName) {
+      if (!state.inventory[stoneName] || state.inventory[stoneName] <= 0) {
+        notify(`No tenés ${stoneName}.`, '❌');
+        return;
+      }
+
+      // Determine which team pokémon can evolve with this stone
+      const stoneEvoTable = (typeof STONE_EVOLUTIONS !== 'undefined') ? STONE_EVOLUTIONS : {};
+      const eeveeStones = ['Piedra Agua', 'Piedra Trueno', 'Piedra Fuego'];
+      const shopItem = (typeof SHOP_ITEMS !== 'undefined') ? SHOP_ITEMS.find(i => i.name === stoneName) : null;
+      const stoneIcon = shopItem ? shopItem.icon : '💎';
+      const stoneSprite = shopItem ? shopItem.sprite : '';
+
+      const eligible = state.team.map((p, i) => {
+        let canEvolve = false;
+        if (p.id === 'eevee') {
+          canEvolve = eeveeStones.includes(stoneName);
+        } else {
+          const evo = stoneEvoTable[p.id];
+          canEvolve = !!(evo && evo.stone === stoneName);
+        }
+        return { p, i, canEvolve };
+      });
+
+      const ov = document.createElement('div');
+      ov.id = 'bag-stone-target-overlay';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);';
+
+      const stoneImgHtml = stoneSprite
+        ? `<img src="${stoneSprite}" style="width:40px;height:40px;image-rendering:pixelated;" onerror="this.outerHTML='<span style=\\'font-size:32px;\\'>${stoneIcon}</span>'">`
+        : `<span style="font-size:32px;">${stoneIcon}</span>`;
+
+      let html = `<div style="background:var(--card);border-radius:24px;padding:24px;width:100%;max-width:380px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,217,61,0.2);box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          ${stoneImgHtml}
+          <div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);">${stoneName.toUpperCase()}</div>
+            <div style="font-size:11px;color:var(--gray);margin-top:4px;">x${state.inventory[stoneName]} en mochila</div>
+          </div>
+        </div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin-bottom:14px;">¿SOBRE QUÉ POKÉMON USARLA?</div>`;
+
+      const hasEligible = eligible.some(e => e.canEvolve);
+
+      if (!hasEligible) {
+        html += `<div style="background:rgba(255,59,59,0.08);border:1px solid rgba(255,59,59,0.2);border-radius:12px;padding:14px;font-size:12px;color:#ff8888;line-height:1.6;text-align:center;">
+          Ningún Pokémon en tu equipo puede evolucionar con esta piedra.
+        </div>`;
+      } else {
+        eligible.forEach(({ p, i, canEvolve }) => {
+          const evoTarget = p.id === 'eevee'
+            ? ({ 'Piedra Agua': 'vaporeon', 'Piedra Trueno': 'jolteon', 'Piedra Fuego': 'flareon' }[stoneName])
+            : stoneEvoTable[p.id]?.to;
+          const toData = (typeof POKEMON_DB !== 'undefined' && evoTarget) ? POKEMON_DB[evoTarget] : null;
+
+          const spriteUrl = (typeof getSpriteUrl === 'function') ? getSpriteUrl(p.id, p.isShiny) : '';
+
+          html += `<div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border-radius:16px;padding:12px;margin-bottom:10px;
+            border:1px solid ${canEvolve ? 'rgba(255,217,61,0.2)' : 'rgba(255,255,255,0.06)'};
+            ${canEvolve ? 'cursor:pointer;' : 'opacity:0.4;cursor:not-allowed;'}transition:all 0.2s;"
+            ${canEvolve ? `onclick="document.getElementById('bag-stone-target-overlay').remove();useStoneOnPokemon('${stoneName}', ${i})"
+              onmouseover="this.style.background='rgba(255,217,61,0.08)';this.style.borderColor='rgba(255,217,61,0.4)';this.style.transform='translateY(-2px)'"
+              onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='rgba(255,217,61,0.2)';this.style.transform='translateY(0)'"` : ''}>
+            <img src="${spriteUrl}" width="44" height="44" style="image-rendering:pixelated;"
+              onerror="this.outerHTML='<span style=\\'font-size:32px;\\'>${p.emoji}</span>'">
+            <div style="flex:1;">
+              <div style="font-weight:700;font-size:13px;">${p.name} <span style="font-size:10px;color:var(--gray);font-weight:400;">Nv.${p.level}</span></div>
+              <div style="font-size:10px;color:${canEvolve ? 'var(--yellow)' : 'var(--gray)'};margin-top:3px;">
+                ${canEvolve ? `→ ${toData ? toData.name : evoTarget || '?'}` : 'No compatible'}
+              </div>
+            </div>
+            ${canEvolve ? `<span style="font-size:18px;">✨</span>` : ''}
+          </div>`;
+        });
+      }
+
+      html += `<button onclick="document.getElementById('bag-stone-target-overlay').remove()"
+        style="width:100%;margin-top:10px;padding:14px;border:none;border-radius:14px;background:rgba(255,255,255,0.05);color:var(--gray);cursor:pointer;font-size:12px;font-weight:700;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        CANCELAR
+      </button></div>`;
+
+      ov.innerHTML = html;
+      ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+      document.body.appendChild(ov);
+    }
+
     // ===== BATTLE SWITCH =====
     function showBattleSwitch(forced = false) {
       if (_battleLock && !forced) return;

@@ -460,12 +460,17 @@ function showPokedexDetail(pokemonId) {
   
   // Stone
   if (pokemonId === 'eevee') {
-    possibleEvos.push({ method: '💧 Piedra Agua', toId: 'vaporeon' });
-    possibleEvos.push({ method: '⚡ Piedra Trueno', toId: 'jolteon' });
-    possibleEvos.push({ method: '🔥 Piedra Fuego', toId: 'flareon' });
+    possibleEvos.push({ method: '💧 Piedra Agua',   stoneName: 'Piedra Agua',   toId: 'vaporeon' });
+    possibleEvos.push({ method: '⚡ Piedra Trueno', stoneName: 'Piedra Trueno', toId: 'jolteon' });
+    possibleEvos.push({ method: '🔥 Piedra Fuego',  stoneName: 'Piedra Fuego',  toId: 'flareon' });
   } else if (stoneEvoTable[pokemonId]) {
+    const sName = stoneEvoTable[pokemonId].stone;
+    // Get icon from SHOP_ITEMS if available
+    const shopItem = (typeof SHOP_ITEMS !== 'undefined') ? SHOP_ITEMS.find(i => i.name === sName) : null;
+    const stoneIcon = shopItem ? shopItem.icon : '💎';
     possibleEvos.push({ 
-      method: stoneEvoTable[pokemonId].stone, 
+      method: `${stoneIcon} ${sName}`,
+      stoneName: sName,
       toId: stoneEvoTable[pokemonId].to 
     });
   }
@@ -488,6 +493,11 @@ function showPokedexDetail(pokemonId) {
           const evoSpriteUrl = evoSpriteId 
             ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evoSpriteId}.png` 
             : '';
+          // For stone evolutions, show the item sprite if available  
+          const shopItem = (evo.stoneName && typeof SHOP_ITEMS !== 'undefined') ? SHOP_ITEMS.find(i => i.name === evo.stoneName) : null;
+          const methodHtml = shopItem
+            ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><img src="${shopItem.sprite}" style="width:16px;height:16px;image-rendering:pixelated;" onerror="this.outerHTML='<span>${shopItem.icon}</span>'">${shopItem.name}</div>`
+            : evo.method;
           
           return `<div style="display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;width:100px;">
             ${evoSpriteUrl 
@@ -495,7 +505,7 @@ function showPokedexDetail(pokemonId) {
               : `<div style="font-size:32px;line-height:64px;">?</div>`
             }
             <div style="font-size:10px;font-weight:bold;color:${isCaught ? '#fff' : '#666'};margin-top:6px;text-align:center;">${isCaught ? toName : '???'}</div>
-            <div style="font-size:8px;color:#aaa;margin-top:4px;text-align:center;background:rgba(0,0,0,0.2);padding:4px;border-radius:4px;width:100%;">${evo.method}</div>
+            <div style="font-size:8px;color:#aaa;margin-top:4px;text-align:center;background:rgba(0,0,0,0.2);padding:4px;border-radius:4px;width:100%;line-height:1.4;">${methodHtml}</div>
           </div>`;
         }).join('')}
       </div>`
