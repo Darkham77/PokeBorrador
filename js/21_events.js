@@ -126,8 +126,19 @@ function _isEventActiveNow(ev) {
   
   if (sched.type === 'weekly' && sched.days) {
     if (!sched.days.includes(day)) return false;
-    if (sched.startHour !== undefined && hour < sched.startHour) return false;
-    if (sched.endHour !== undefined && hour >= sched.endHour) return false;
+    
+    if (sched.startHour !== undefined && sched.endHour !== undefined) {
+      const start = sched.startHour;
+      const end = sched.endHour;
+      if (start < end) {
+        // Rango normal (ej: 10 a 18)
+        if (hour < start || hour >= end) return false;
+      } else {
+        // Rango que cruza medianoche (ej: 23 a 01)
+        // Activo si: hora >= 23:00 O hora < 01:00
+        if (!(hour >= start || hour < end)) return false;
+      }
+    }
     return true;
   }
   
