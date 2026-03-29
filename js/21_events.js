@@ -138,34 +138,111 @@ function showEventDetail(evId) {
   const content = document.getElementById('event-detail-content');
   if (!modal || !content) return;
 
-  let configHtml = '';
-  if (ev.config) {
-    configHtml = '<div class="event-detail-config">';
-    Object.entries(ev.config).forEach(([key, val]) => {
-      let label = key.replace(/Mult$/, '');
-      if (label === 'exp') label = 'Experiencia';
-      if (label === 'money') label = 'Dinero (₽)';
-      if (label === 'bc') label = 'Battle Coins';
-      if (label === 'shiny') label = 'Probabilidad Shiny';
-      
-      configHtml += `
-        <div class="config-item">
-          <span class="config-label">${label.toUpperCase()}</span>
-          <span class="config-value">x${val}</span>
-        </div>`;
-    });
-    configHtml += '</div>';
+  const cfg = ev.config || {};
+
+  // ── Bonificaciones activas ──────────────────────────────────────
+  const bonusMap = {
+    expMult:   { label: '⚡ EXP', color: '#a78bfa' },
+    moneyMult: { label: '💰 Dinero', color: '#fbbf24' },
+    bcMult:    { label: '🪙 Battle Coins', color: '#60a5fa' },
+    shinyMult: { label: '✨ Shiny Rate', color: '#f472b6' },
+  };
+
+  const bonusItems = Object.entries(bonusMap)
+    .filter(([key]) => cfg[key] && cfg[key] > 1)
+    .map(([key, meta]) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;
+                  background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
+        <span style="font-size:12px;color:#cbd5e1;">${meta.label}</span>
+        <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:${meta.color};">x${cfg[key]}</span>
+      </div>`).join('');
+
+  const bonusHtml = bonusItems
+    ? `<div style="margin-bottom:16px;">
+         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">BONIFICACIONES</div>
+         <div style="display:flex;flex-direction:column;gap:6px;">${bonusItems}</div>
+       </div>`
+    : '';
+
+  // ── Premio del 1er puesto ────────────────────────────────────────
+  let prizeHtml = '';
+  const prize = cfg.prizes?.first;
+  if (prize) {
+    let prizeDesc = '';
+    if (prize.type === 'money')   prizeDesc = `💰 ₽${(prize.amount || 0).toLocaleString()}`;
+    if (prize.type === 'bc')      prizeDesc = `🪙 ${(prize.amount || 0).toLocaleString()} Battle Coins`;
+    if (prize.type === 'item')    prizeDesc = `📦 ${prize.qty || 1}x ${prize.item}`;
+    if (prize.type === 'pokemon') {
+      const name = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[prize.species]?.name) || prize.species;
+      prizeDesc = `🐾 ${name}${prize.shiny ? ' ✨' : ''} Nv.${prize.level} — ${prize.nature}`;
+    }
+
+    prizeHtml = `
+      <div style="margin-bottom:16px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">🥇 PREMIO AL GANADOR</div>
+        <div style="background:linear-gradient(135deg,rgba(251,191,36,0.12),rgba(245,158,11,0.06));
+                    border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:12px 16px;
+                    font-size:13px;color:#fde68a;font-weight:700;">
+          ${prizeDesc}
+        </div>
+      </div>`;
+  }
+
+  // ── Métrica del concurso ─────────────────────────────────────────
+  let metricHtml = '';
+  const sortBy = cfg.sortBy;
+  if (sortBy) {
+    const metricLabels = {
+      'data.total_ivs': '🧬 Mayor cantidad de IVs totales del Magikarp',
+    };
+    const metricText = metricLabels[sortBy] || sortBy;
+    metricHtml = `
+      <div style="margin-bottom:16px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">CRITERIO DE VICTORIA</div>
+        <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 14px;font-size:12px;color:#94a3b8;">
+          ${metricText}
+        </div>
+      </div>`;
+  }
+
+  // ── Horario ──────────────────────────────────────────────────────
+  let schedHtml = '';
+  const sched = ev.schedule;
+  if (sched?.type === 'weekly' && sched.days?.length) {
+    const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    const days = sched.days.map(d => dayNames[d]).join(', ');
+    const hours = (sched.startHour !== undefined && sched.endHour !== undefined)
+      ? ` · ${sched.startHour}:00 – ${sched.endHour}:00 hs (ARG)` : '';
+    schedHtml = `
+      <div style="margin-bottom:8px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">⏰ HORARIO</div>
+        <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 14px;font-size:12px;color:#94a3b8;">
+          ${days}${hours}
+        </div>
+      </div>`;
+  } else if (ev.manual) {
+    schedHtml = `
+      <div style="margin-bottom:8px;">
+        <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#4ade80;text-align:center;">
+          🟢 Evento activo ahora mismo
+        </div>
+      </div>`;
   }
 
   content.innerHTML = `
-    <div class="event-detail-icon">${ev.icon || '🎁'}</div>
-    <div class="event-detail-title">${ev.name}</div>
-    <div class="event-detail-desc">${ev.description || '¡Aprovechá este evento especial mientras esté activo!'}</div>
-    ${configHtml}
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:52px;margin-bottom:10px;">${ev.icon || '🎁'}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fbbf24;
+                  margin-bottom:10px;line-height:1.5;">${ev.name}</div>
+      <div style="font-size:13px;color:#94a3b8;line-height:1.6;">${ev.description || '¡Aprovechá este evento especial mientras esté activo!'}</div>
+    </div>
+    <div style="height:1px;background:rgba(255,255,255,0.08);margin-bottom:16px;"></div>
+    ${bonusHtml}${prizeHtml}${metricHtml}${schedHtml}
   `;
 
   modal.style.display = 'flex';
 }
+
 
 // ── Concurso de Magikarp ──────────────────────────────────────────────────────
 async function submitMagikarpEntry(pokemon, eventId = 'hora_magikarp') {
