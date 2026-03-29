@@ -10,6 +10,7 @@
     window.currentUser = null;
     let _saveTimeout = null;
     let _isSaving = false; // Flag para evitar solapamientos
+    let _saveLoaded = false; // Flag para prevenir guardado prematuro mientras se carga
 
     // ── Server Selector ───────────────────────────────────────────────────────
     function switchServer(server) {
@@ -111,6 +112,7 @@
 
     async function doLogout() {
       await saveGame(false);
+      _saveLoaded = false;
       if (window.currentServer !== LOCAL_URL) await window.sb.auth.signOut();
       window.currentUser = null;
       // Reset state using central function
@@ -131,6 +133,7 @@
 
     function onLocalLogin(user, username) {
       currentUser = user;
+      _saveLoaded = false;
       resetGameState(); // Ensure clean slate before loading local save
       const saveKey = 'pokemon_local_save_' + user.id;
       try {
@@ -149,6 +152,7 @@
           state.trainerChance = 5;
           state.trainer = username;
           window.currentUser = user; // Asegurar que sea global
+          _saveLoaded = true;
           updateHud();
           document.getElementById('hud-name').textContent = username.toUpperCase();
           setAuthLoading(false);
@@ -172,6 +176,7 @@
         } else {
           state.trainer = username;
           document.getElementById('hud-name').textContent = username.toUpperCase();
+          _saveLoaded = true;
           setAuthLoading(false);
           showScreen('title-screen');
           notify('¡Bienvenido, ' + username + '! Nueva partida local creada.', '🎮');
@@ -190,6 +195,7 @@
     // ── Login callback ─────────────────────────────────────────────────────────
     async function onLogin(user) {
       currentUser = user;
+      _saveLoaded = false;
       resetGameState(); // Ensure clean slate before loading online save
       setAuthLoading(true);
       try {
@@ -264,6 +270,7 @@
           console.log("[DEBUG] Pity forced to 5% on login");
           state.trainer = username;
           window.currentUser = user; // Asegurar que sea global
+          _saveLoaded = true;
           updateHud();
           document.getElementById('hud-name').textContent = username.toUpperCase();
           setAuthLoading(false);
@@ -289,6 +296,7 @@
         } else {
           state.trainer = username;
           document.getElementById('hud-name').textContent = username.toUpperCase();
+          _saveLoaded = true;
           setAuthLoading(false);
           showScreen('title-screen');
         }
@@ -401,7 +409,7 @@
     }
 
     async function saveGame(showNotif = true) {
-      if (!currentUser || _isSaving) return;
+      if (!currentUser || _isSaving || !_saveLoaded) return;
       
       const save_data = serializeState();
       if (!isValidState(save_data)) {
