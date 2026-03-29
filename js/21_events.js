@@ -952,7 +952,7 @@ window._evSwitchCompetition = (val) => {
 
 async function awardEvent(eventId, manual = false) {
   try {
-    // 1. Obtener config del evento
+    // 1. Obtener config
     const { data: ev, error: fetchEvErr } = await window.sb.from('events_config').select('*').eq('id', eventId).single();
     if (fetchEvErr) throw fetchEvErr;
 
@@ -960,21 +960,24 @@ async function awardEvent(eventId, manual = false) {
     const { data: entries, error: fetchEntErr } = await window.sb.from('competition_entries').select('*').eq('event_id', eventId);
     if (fetchEntErr) throw fetchEntErr;
 
-    // Evitar premiación doble si ya se hizo recientemente (< 10 min)
+    // Evitar premiación doble (< 10 min)
     const lastAwarded = ev.config?.lastAwardedAt ? new Date(ev.config.lastAwardedAt) : new Date(0);
     if (!manual && (new Date() - lastAwarded < 10 * 60 * 1000)) return;
 
     const prizes = ev.config?.prizes;
-    if (!prizes) { if (manual) alert('ERROR: No hay premios configurados para este evento.'); return; }
+    if (!prizes) {
+      if (manual) alert('ERROR: No hay premios configurados.\nConfigure los premios en el Panel Admin → Concurso → Configurar Premio.');
+      return;
+    }
 
     if (!entries || entries.length === 0) {
-      if (manual) notify('No hay participantes para premiar.', '⚠️');
+      if (manual) alert('No hay participantes para premiar.\n\nEl evento terminó sin inscriptos, o ya fueron borrados previamente.');
       return;
     }
 
     notify('Procesando premios...', '🏆');
 
-    // 3. Ordenar participantes
+    // 3. Ordenar
     const sortBy = ev.config?.sortBy || 'data.total_ivs';
     const sorted = [...entries].sort((a, b) => {
       const valA = sortBy.startsWith('data.') ? a.data?.[sortBy.split('.')[1]] : a[sortBy];
@@ -988,7 +991,7 @@ async function awardEvent(eventId, manual = false) {
       { rank: 'third', entry: sorted[2] }
     ].filter(w => w.entry);
 
-    // 4. Insertar premios individuales en tabla 'awards'
+    // 4. Insertar premios en 'awards'
     for (const winner of winners) {
       const prize = prizes[winner.rank];
       if (!prize) continue;
@@ -998,23 +1001,36 @@ async function awardEvent(eventId, manual = false) {
         winner_email: winner.entry.player_email || '—',
         event_id: eventId,
         prize,
+        claimed: false,
         awarded_at: new Date().toISOString()
       });
-      if (awardErr) throw awardErr;
+      if (awardErr) {
+        throw new Error(
+          `No se pudo guardar el premio de ${winner.entry.player_name}.\n` +
+          `Error: ${awardErr.message}\n\n` +
+          `Si es un error de permisos (RLS), ejecutá este SQL en Supabase:\n` +
+          `CREATE POLICY "Admin inserta premios" ON awards FOR INSERT TO authenticated ` +
+          `WITH CHECK (auth.jwt() ->> 'email' = 'kodrol77@gmail.com');`
+        );
+      }
     }
 
     // 5. Limpiar participantes
     const { error: delErr } = await window.sb.from('competition_entries').delete().eq('event_id', eventId);
     if (delErr) throw delErr;
 
-    // 6. Actualizar config con timestamp de última premiación
+    // 6. Actualizar lastAwardedAt
     const newConfig = { ...ev.config, lastAwardedAt: new Date().toISOString() };
     await window.sb.from('events_config').update({ config: newConfig }).eq('id', eventId);
 
-    if (manual) notify(`¡Evento premiado! Se repartieron ${winners.length} premios.`, '🏆');
-    else console.log(`[Events] Automatización: Evento ${eventId} premiado.`);
+    const lista = winners.map(w => {
+      const num = w.rank === 'first' ? '1°' : w.rank === 'second' ? '2°' : '3°';
+      return `${num} ${w.entry.player_name}`;
+    }).join('\n');
 
-    // Refrescar UI
+    if (manual) alert(`¡EVENTO PREMIADO!\n\nPremios entregados:\n${lista}\n\nLos jugadores los recibirán al abrir el juego.`);
+    else console.log(`[Events] Auto: Evento ${eventId} premiado (${winners.length} ganadores).`);
+
     _adminEntries = [];
     _renderAdminPanel();
     await _evLoadEntries();
@@ -1028,8 +1044,13 @@ async function showEventResultsModal(eventId) {
   try {
     const { data: ev } = await window.sb.from('events_config').select('name, icon, config').eq('id', eventId).single();
     const myAward = state._pendingAwards?.find(a => a.event_id === eventId);
-    
+
+    const modal = document.createElement('div');
+    modal.id = 'podium-modal-overlay';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s;';
+
     modal.innerHTML = `
+
       <div style="background:#0f172a; width:100%; max-width:480px; border-radius:24px; border:2px solid #334155; padding:32px; position:relative; overflow:hidden;">
         <button onclick="document.getElementById('podium-modal-overlay').remove()" 
           style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.05); border:none; color:#94a3b8; font-size:20px; cursor:pointer; z-index:10; width:36px; height:36px; border-radius:50%;">✕</button>
