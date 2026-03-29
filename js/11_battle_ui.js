@@ -165,10 +165,21 @@
         .filter(([name, qty]) => {
           if (qty <= 0) return false;
           if (!HEALING_ITEMS[name]) return false;
+
           // IMPORTANT: Hide non-combat items during battle
-          if (name.startsWith('MT ')) return false;
-          const nonCombat = ['Repelente', 'Superrepelente', 'Máximo Repelente', 'Ticket Shiny', 'Moneda Amuleto', 'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo'];
+          // 1. TMs (MTs) - check for "MT" at start (catches MT01, MT 01, etc.)
+          if (name.startsWith('MT')) return false;
+
+          // 2. Explicitly non-combat items from HEALING_ITEMS
+          const nonCombat = [
+            'Recordador de Movimientos', 'Caramelo Raro', 'Subida PP',
+            'Repelente', 'Superrepelente', 'Máximo Repelente',
+            'Ticket Shiny', 'Moneda Amuleto', 'Huevo Suerte Pequeño',
+            'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo',
+            'Escáner de IVs'
+          ];
           if (nonCombat.includes(name)) return false;
+
           return true;
         });
 
