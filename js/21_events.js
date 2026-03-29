@@ -479,35 +479,72 @@ function _openPendingAwardsModal() {
   document.body.appendChild(ov);
 }
 
+// IDs de premios que están siendo procesados (evita doble-click)
+const _claimingIds = new Set();
+
 async function claimAward(awardId) {
   if (!window.currentUser) return;
+  // Guard: si ya estamos procesando este premio, ignorar
+  if (_claimingIds.has(awardId)) return;
+  _claimingIds.add(awardId);
+
+  // Deshabilitar el botón correspondiente inmediatamente
+  document.querySelectorAll(`[onclick*="claimAward('${awardId}')"]`).forEach(btn => {
+    btn.disabled = true;
+    btn.textContent = '...';
+    btn.style.opacity = '0.5';
+  });
+
   try {
     const award = state._pendingAwards?.find(a => a.id === awardId);
-    if (!award) return;
+    if (!award) { _claimingIds.delete(awardId); return; }
+
+    // Eliminar del array local ANTES de entregar (previene segunda ejecución)
+    state._pendingAwards = state._pendingAwards.filter(a => a.id !== awardId);
 
     const delivered = await _deliverAward(award);
     if (delivered) {
-      state._pendingAwards = state._pendingAwards.filter(a => a.id !== awardId);
       notify('¡Premio reclamado con éxito!', '🎉');
-      // Refrescar banner y listas
       _renderPendingAwardBanner();
       const modal = document.getElementById('pending-awards-modal');
       if (modal) {
         if ((state._pendingAwards || []).length === 0) { modal.remove(); }
-        else { _openPendingAwardsModal(); } // Refrescar la lista
+        else { _openPendingAwardsModal(); }
       }
       if (typeof renderMaps === 'function') renderMaps();
+    } else {
+      // Si falló la entrega, restaurar el award
+      state._pendingAwards = [...(state._pendingAwards || []), award];
     }
   } catch (e) {
     console.warn('[Events] Error al reclamar premio:', e);
     notify('Error al reclamar el premio.', '❌');
+  } finally {
+    _claimingIds.delete(awardId);
   }
 }
 
 async function _deliverAward(award) {
   const prize = award.prize;
-  if (!prize) return;
+  if (!prize) return false;
 
+  // PASO 1: Marcar como reclamado en la DB PRIMERO (previene doble entrega)
+  try {
+    const { error: claimErr } = await window.sb.from('awards').update({
+      claimed: true,
+      claimed_at: new Date().toISOString()
+    }).eq('id', award.id).eq('claimed', false); // La condición .eq('claimed', false) es la segunda capa de protección
+
+    if (claimErr) {
+      console.warn('[Events] Error al marcar claimed:', claimErr);
+      return false; // No continuar si falló el marqueo
+    }
+  } catch (e) {
+    console.warn('[Events] Error actualizando award:', e);
+    return false;
+  }
+
+  // PASO 2: Entregar el premio localmente
   let delivered = false;
 
   if (prize.type === 'money') {
@@ -541,13 +578,9 @@ async function _deliverAward(award) {
   if (delivered) {
     if (typeof updateHud === 'function') updateHud();
     if (typeof saveGame === 'function') saveGame(false);
-    try {
-      await window.sb.from('awards').update({ 
-        claimed: true, 
-        claimed_at: new Date().toISOString() 
-      }).eq('id', award.id);
-    } catch (e) { console.warn('[Events] Error al marcar premio como reclamado:', e); }
   }
+
+  return delivered;
 }
 
 // ── Panel de Administrador ────────────────────────────────────────────────────
