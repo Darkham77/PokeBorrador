@@ -1190,109 +1190,62 @@ window._evSwitchCompetition = (val) => {
 
 async function awardEvent(eventId, manual = false) {
   try {
-    // 1. Obtener config
-    const { data: ev, error: fetchEvErr } = await window.sb.from('events_config').select('*').eq('id', eventId).single();
-    if (fetchEvErr) throw fetchEvErr;
-
-    // 2. Obtener participantes
-    const { data: entries, error: fetchEntErr } = await window.sb.from('competition_entries').select('*').eq('event_id', eventId);
-    if (fetchEntErr) throw fetchEntErr;
-
-    // Evitar premiación doble (< 10 min)
-    const lastAwarded = ev.config?.lastAwardedAt ? new Date(ev.config.lastAwardedAt) : new Date(0);
-    if (!manual && (new Date() - lastAwarded < 10 * 60 * 1000)) return;
-
-    const prizes = ev.config?.prizes;
-    if (!prizes) {
-      if (manual) alert('ERROR: No hay premios configurados.\nConfigure los premios en el Panel Admin → Concurso → Configurar Premio.');
-      return;
-    }
-
-    if (!entries || entries.length === 0) {
-      if (manual) alert('No hay participantes para premiar.\n\nEl evento terminó sin inscriptos, o ya fueron borrados previamente.');
-      return;
-    }
-
-    notify('Procesando premios...', '🏆');
-
-    // 3. Ordenar
-    const sortBy = ev.config?.sortBy || 'data.total_ivs';
-    const sorted = [...entries].sort((a, b) => {
-      const valA = sortBy.startsWith('data.') ? a.data?.[sortBy.split('.')[1]] : a[sortBy];
-      const valB = sortBy.startsWith('data.') ? b.data?.[sortBy.split('.')[1]] : b[sortBy];
-      return (valB || 0) - (valA || 0);
+    if (manual && !isAdminUser()) return;
+    if (manual) notify('Procesando premios...', '🏆');
+    
+    // Llamar a la función segura en el servidor (Supabase RPC)
+    const { data: res, error } = await window.sb.rpc('fn_award_event_automated', { 
+      target_event_id: eventId 
     });
 
-    const winners = [
-      { rank: 'first', entry: sorted[0] },
-      { rank: 'second', entry: sorted[1] },
-      { rank: 'third', entry: sorted[2] }
-    ].filter(w => w.entry);
+    if (error) throw error;
 
-    // 4. Insertar premios en 'awards'
-    for (const winner of winners) {
-      const prize = prizes[winner.rank];
-      if (!prize) continue;
-      const { error: awardErr } = await window.sb.from('awards').insert({
-        winner_id: winner.entry.player_id,
-        winner_name: winner.entry.player_name,
-        winner_email: winner.entry.player_email || '—',
-        event_id: eventId,
-        prize,
-        claimed: false,
-        awarded_at: new Date().toISOString()
-      });
-      if (awardErr) {
-        throw new Error(
-          `No se pudo guardar el premio de ${winner.entry.player_name}.\n` +
-          `Error: ${awardErr.message}\n\n` +
-          `Si es un error de permisos (RLS), ejecutá este SQL en Supabase:\n` +
-          `CREATE POLICY "Admin inserta premios" ON awards FOR INSERT TO authenticated ` +
-          `WITH CHECK (auth.jwt() ->> 'email' = 'kodrol77@gmail.com');`
-        );
+    if (res.ok) {
+      if (manual) {
+        const winners = res.winners || [];
+        const lista = winners.map(w => {
+          const num = w.rank === 'first' ? '1°' : w.rank === 'second' ? '2°' : '3°';
+          return `${num} ${w.player_name}`;
+        }).join('\n');
+        alert(`¡EVENTO PREMIADO!\n\nPremios entregados:\n${lista}\n\nLos jugadores recibirán sus premios al entrar al juego.`);
+      } else {
+        console.log(`[Events] Auto: Evento ${eventId} premiado exitosamente.`);
+      }
+    } else {
+      // Si el error es "Ya premiado", no molestamos en automático
+      if (!manual && res.error?.includes('Ya premiado')) return;
+      if (manual) alert('AVISO: ' + res.error);
+    }
+
+    if (manual) {
+      _adminEntries = [];
+      _renderAdminPanel();
+      await _evLoadEntries();
+    }
+  } catch (e) {
+    console.error('[Events] Error en awardEvent RPC:', e);
+    if (manual) alert('ERROR EN PREMIACIÓN:\n' + (e.message || e));
+  }
+}
+
+async function checkAndDistributePrizes(allEvents) {
+  // Ahora CUALQUIER jugador puede disparar la función segura de Supabase.
+  // La función misma en Postgres verifica si ya se premió para no duplicar.
+
+  for (const ev of allEvents) {
+    if (ev.config?.hasCompetition === false) continue;
+    
+    const isActive = _isEventActiveNow(ev);
+    if (!isActive && ev.config?.prizes) {
+      // Para eventos semanales/programados que terminaron
+      if (ev.schedule && ev.schedule.type === 'weekly') {
+        // Solo intentamos premiar si no hay registro de premiación reciente en la tabla local o en el config
+        const lastAwarded = ev.last_awarded_at ? new Date(ev.last_awarded_at) : new Date(0);
+        if (new Date() - lastAwarded > 10 * 60 * 1000) {
+          awardEvent(ev.id, false);
+        }
       }
     }
-
-    // 5. Guardar "foto" del podio en historial (competition_results)
-    try {
-      const winnersSnapshot = winners.map(w => ({
-        rank: w.rank,
-        player_name: w.entry.player_name,
-        score: w.entry.data?.total_ivs || 0,
-        player_id: w.entry.player_id
-      }));
-
-      await window.sb.from('competition_results').insert({
-        event_id: eventId,
-        winners: winnersSnapshot,
-        ended_at: new Date().toISOString()
-      });
-    } catch (histErr) {
-      console.warn('[Events] No se pudo guardar el historial del podio:', histErr);
-    }
-
-    // 6. Limpiar participantes
-    const { error: delErr } = await window.sb.from('competition_entries').delete().eq('event_id', eventId);
-    if (delErr) throw delErr;
-
-    // 6. Actualizar lastAwardedAt
-    const newConfig = { ...ev.config, lastAwardedAt: new Date().toISOString() };
-    await window.sb.from('events_config').update({ config: newConfig }).eq('id', eventId);
-
-    const lista = winners.map(w => {
-      const num = w.rank === 'first' ? '1°' : w.rank === 'second' ? '2°' : '3°';
-      return `${num} ${w.entry.player_name}`;
-    }).join('\n');
-
-    if (manual) alert(`¡EVENTO PREMIADO!\n\nPremios entregados:\n${lista}\n\nLos jugadores los recibirán al abrir el juego.`);
-    else console.log(`[Events] Auto: Evento ${eventId} premiado (${winners.length} ganadores).`);
-
-    _adminEntries = [];
-    _renderAdminPanel();
-    await _evLoadEntries();
-  } catch (e) {
-    console.error('[Events] Error en awardEvent:', e);
-    alert('ERROR EN PREMIACIÓN:\n' + (e.message || e));
   }
 }
 
@@ -1398,21 +1351,6 @@ async function showEventResultsModal(eventId) {
 }
 
 window._evShowPodium = (eventId) => showEventResultsModal(eventId);
-
-async function checkAndDistributePrizes(allEvents) {
-  for (const ev of allEvents) {
-    // Saltar eventos sin competencia/premios
-    if (ev.config?.hasCompetition === false) continue;
-    const isActive = _isEventActiveNow(ev);
-    const lastAwarded = ev.config?.lastAwardedAt ? new Date(ev.config.lastAwardedAt) : new Date(0);
-    if (!isActive && ev.config?.prizes) {
-      const sched = ev.schedule;
-      if (sched && sched.type === 'weekly') {
-        awardEvent(ev.id);
-      }
-    }
-  }
-}
 
 window._evAwardFullEvent = async (eventId) => {
   if (!confirm('¿Estás seguro de cerrar el concurso y repartir los premios del podio ahora? Esto eliminará a los participantes actuales.')) return;

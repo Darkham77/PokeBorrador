@@ -438,6 +438,54 @@
       scheduleSave();
     }
 
+    function openBagItemMenu(itemName) {
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo', 'Escáner de IVs'].includes(itemName);
+      
+      if (isGlobal) {
+        useItemOutsideBattle(itemName, 'team', 0);
+        return;
+      }
+
+      const ov = document.createElement('div');
+      ov.id = 'bag-item-target-overlay';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);';
+      
+      let html = `<div style="background:var(--card);border-radius:24px;padding:24px;width:100%;max-width:380px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.1);box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:20px;text-align:center;line-height:1.5;">¿SOBRE QUÉ POKÉMON USAR EL ${itemName.toUpperCase()}?</div>`;
+      
+      html += state.team.map((p, i) => {
+        const hpPct = Math.round(p.hp / p.maxHp * 100);
+        const hpCol = hpPct > 50 ? 'var(--green)' : hpPct > 20 ? 'var(--yellow)' : 'var(--red)';
+        return `<div onclick="document.getElementById('bag-item-target-overlay').remove();useItemOutsideBattle('${itemName}', 'team', ${i})" 
+          style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border-radius:16px;padding:12px;margin-bottom:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.06);transition:all 0.2s;"
+          onmouseover="this.style.background='rgba(155,77,255,0.1)';this.style.borderColor='rgba(155,77,255,0.3)';this.style.transform='translateY(-2px)'" 
+          onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='rgba(255,255,255,0.06)';this.style.transform='translateY(0)'">
+          <img src="${getSpriteUrl(p.id)}" width="44" height="44" style="image-rendering:pixelated;">
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;">
+              ${p.name} <span style="font-size:10px;color:var(--gray);font-weight:400;">Nv.${p.level}</span>
+              ${p.status ? `<span style="background:rgba(255,59,59,0.1);color:var(--red);font-size:8px;padding:2px 6px;border-radius:4px;text-transform:uppercase;">${p.status}</span>` : ''}
+            </div>
+            <div style="background:rgba(255,255,255,0.05);border-radius:4px;height:5px;margin-top:6px;overflow:hidden;">
+              <div style="width:${hpPct}%;height:100%;background:${hpCol};box-shadow:0 0 10px ${hpCol}55;"></div>
+            </div>
+            <div style="font-size:10px;color:var(--gray);margin-top:4px;">${p.hp} / ${p.maxHp} HP</div>
+          </div>
+        </div>`;
+      }).join('');
+
+      html += `<button onclick="document.getElementById('bag-item-target-overlay').remove()" 
+        style="width:100%;margin-top:10px;padding:14px;border:none;border-radius:14px;background:rgba(255,255,255,0.05);color:var(--gray);cursor:pointer;font-size:12px;font-weight:700;transition:all 0.2s;"
+        onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        CANCELAR
+      </button>
+      </div>`;
+      
+      ov.innerHTML = html;
+      ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+      document.body.appendChild(ov);
+    }
+
     // ===== BATTLE SWITCH =====
     function showBattleSwitch(forced = false) {
       if (_battleLock && !forced) return;

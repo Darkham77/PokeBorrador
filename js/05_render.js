@@ -858,11 +858,9 @@ function updateBuffPanel() {
     }
   });
 
-  // --- Dynamic Event Buffs ---
+  // --- Dynamic Event Buffs (Active Only) ---
   panel.querySelectorAll('.buff-item.event').forEach(el => el.remove());
-  if (typeof _activeEvents !== 'undefined' && _activeEvents.length > 0) {
-  // --- Dynamic Event Buffs ---
-  panel.querySelectorAll('.buff-item.event').forEach(el => el.remove());
+  
   if (typeof _activeEvents !== 'undefined' && _activeEvents.length > 0) {
     _activeEvents.forEach(ev => {
       const el = document.createElement('div');
@@ -881,7 +879,6 @@ function updateBuffPanel() {
       el.onclick = () => { if (typeof showEventDetail === 'function') showEventDetail(ev.id); };
       panel.appendChild(el);
     });
-  }
   }
 }
 

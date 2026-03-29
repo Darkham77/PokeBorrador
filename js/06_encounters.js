@@ -6,7 +6,8 @@ function _startCarouselTimer() {
   if (_carouselInterval) return;
   _carouselInterval = setInterval(() => {
     const activeEvents = (typeof _activeEvents !== 'undefined') ? _activeEvents : [];
-    const totalSlides = 1 + activeEvents.length;
+    const finishedEvents = (typeof _finishedEvents !== 'undefined') ? _finishedEvents : [];
+    const totalSlides = 1 + activeEvents.length + finishedEvents.length;
     
     _currentCarouselIndex = (_currentCarouselIndex + 1) % totalSlides;
     
@@ -18,8 +19,9 @@ function _startCarouselTimer() {
         slides.forEach((s, i) => s.classList.toggle('active', i === _currentCarouselIndex));
         dots.forEach((d, i) => d.classList.toggle('active', i === _currentCarouselIndex));
         
-        // El slide 0 es "Raros", los slides > 0 son eventos activos
-        carousel.classList.toggle('event-active', _currentCarouselIndex > 0);
+        // El slide 0 es "Raros", los slides > 0 son eventos (activos o podios)
+        const hasEventActive = _currentCarouselIndex > 0;
+        carousel.classList.toggle('event-active', hasEventActive);
       }
     }
   }, 5000);
@@ -27,6 +29,7 @@ function _startCarouselTimer() {
 
 function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
   const activeEvents = (typeof _activeEvents !== 'undefined') ? _activeEvents : [];
+  const finishedEvents = (typeof _finishedEvents !== 'undefined') ? _finishedEvents : [];
   const slides = [];
 
   // Slide 0: Raros del día
@@ -51,14 +54,13 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
   });
 
   // Slides de Eventos Finalizados (Reclamo/Resultados)
-  const finishedEvents = (typeof _finishedEvents !== 'undefined') ? _finishedEvents : [];
   finishedEvents.forEach(fv => {
     // Verificar si el jugador tiene un premio para mostrar "¡HAS GANADO!"
     const award = (state._pendingAwards || []).find(a => a.event_id === fv.id);
-    const title = award ? '¡HAS GANADO!' : 'Evento Terminado';
-    const sub = award ? '¡Reclama tus premios!' : '¡Aquí los ganadores!';
-    const icon = award ? '🏆' : fv.icon || '🏁';
-    const color = award ? '#22c55e' : '#94a3b8';
+    const title = award ? '¡HAS GANADO!' : '¡PODIO FINAL!';
+    const sub = award ? '¡Reclama tus premios!' : '¡Tocá para ver ganadores!';
+    const icon = award ? '🏆' : (fv.icon || '🏁');
+    const color = award ? '#22c55e' : '#fbbf24';
 
     slides.push({
       icon: icon,
