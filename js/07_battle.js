@@ -452,8 +452,15 @@ function addLog(msg, cls = '') {
 // Shows "Continue" and "Return to city" buttons after battle and expands log
 function showBattleEndUI(callback, locId) {
   const log = document.getElementById('battle-log');
-  log.style.height = 'auto';
-  log.style.maxHeight = '260px';
+  const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+  if (!isDesktop) {
+    log.style.height = 'auto';
+    log.style.maxHeight = '260px';
+  } else {
+    // On desktop, keep log constrained to its grid area
+    log.style.height = '100%';
+    log.style.maxHeight = 'none';
+  }
   log.style.transition = 'max-height 0.35s ease';
   log.scrollTop = log.scrollHeight;
 
