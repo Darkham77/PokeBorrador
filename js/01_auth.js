@@ -8,7 +8,9 @@
     window.currentServer = SUPABASE_URL;
     window.sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.currentUser = null;
+    window.currentSessionId = null; // ID único para esta pestaña
     let _saveTimeout = null;
+    let _sessionCheckInterval = null;
 
     // ── Server Selector ───────────────────────────────────────────────────────
     function switchServer(server) {
@@ -115,8 +117,38 @@
       // Reset state using central function
       resetGameState();
       toggleProfile();
+      stopSessionCheck();
       switchServer('online');
       showScreen('auth-screen');
+    }
+
+    function startSessionCheck() {
+      if (_sessionCheckInterval) clearInterval(_sessionCheckInterval);
+      // Chequeo cada 12 segundos para no saturar Supabase
+      _sessionCheckInterval = setInterval(async () => {
+        if (!currentUser || currentServer === LOCAL_URL) return;
+        try {
+          const { data, error } = await sb.from('game_saves').select('save_data').eq('user_id', currentUser.id).single();
+          if (error) return;
+          const remoteSessId = data?.save_data?._session_id;
+          if (remoteSessId && remoteSessId !== currentSessionId) {
+            handleDuplicateSession();
+          }
+        } catch(e) {}
+      }, 12000);
+    }
+
+    function stopSessionCheck() {
+      if (_sessionCheckInterval) clearInterval(_sessionCheckInterval);
+      _sessionCheckInterval = null;
+    }
+
+    function handleDuplicateSession() {
+      stopSessionCheck();
+      // Bloquear TODO el guardado futuro
+      window.isDisconnected = true;
+      document.getElementById('session-disconnect-modal').style.display = 'flex';
+      console.warn('[SESSION] Desconectado: Se detectó otra sesión activa.');
     }
 
     // ── Login Local ────────────────────────────────────────────────────────────
@@ -190,6 +222,8 @@
     async function onLogin(user) {
       currentUser = user;
       resetGameState(); // Ensure clean slate before loading online save
+      window.currentSessionId = Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+      window.isDisconnected = false;
       setAuthLoading(true);
       try {
         const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
@@ -272,6 +306,7 @@
         initTrainerPityTimer();
         startPresence(); subscribeFriendNotifs(); subscribeTradeNotifs(); subscribeBattleInvites(); refreshFriendsBadge();
         if (typeof initGlobalChatListener === 'function') initGlobalChatListener();
+        startSessionCheck();
       } catch (e) {
         setAuthLoading(false);
         currentUser = null;
@@ -361,8 +396,10 @@
     }
 
     async function saveGame(showNotif = true) {
-      if (!currentUser) return;
+      if (!currentUser || window.isDisconnected) return;
       const save_data = serializeState();
+      // Incluimos el ID de sesión en el save_data para que otros clientes lo detecten
+      save_data._session_id = currentSessionId;
       if (currentServer === LOCAL_URL) {
         // Modo local: guardar en localStorage del dispositivo
         try {

@@ -639,11 +639,75 @@
     };
 
     // Get moves a pokemon knows at a given level (up to 4, most recent)
+    // Get species history from base form to the given id
+    function getSpeciesHistory(id) {
+      const history = [id];
+      let current = id;
+      
+      // We need to look up into the evolution tables (assumed global)
+      // They are in 13_evolution.js, but since this runs after all scripts load, they should be available.
+      const findPreEvo = (speciesId) => {
+        if (typeof EVOLUTION_TABLE === 'undefined') return null;
+        for (const [from, data] of Object.entries(EVOLUTION_TABLE)) {
+          if (data.to === speciesId) return from;
+        }
+        if (typeof STONE_EVOLUTIONS !== 'undefined') {
+          for (const [from, data] of Object.entries(STONE_EVOLUTIONS)) {
+            if (data.to === speciesId) return from;
+          }
+        }
+        if (typeof TRADE_EVOLUTIONS !== 'undefined') {
+          for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {
+            if (to === speciesId) return from;
+          }
+        }
+        return null;
+      };
+
+      let pre;
+      while ((pre = findPreEvo(current))) {
+        if (history.includes(pre)) break; // Prevent loops
+        history.unshift(pre);
+        current = pre;
+      }
+      return history;
+    }
+
+    // Get moves a pokemon knows at a given level (up to 4, most recent)
+    // Now considers the entire evolution chain to avoid missing moves from pre-evolutions.
     function getMovesAtLevel(id, level) {
-      const db = POKEMON_DB[id];
-      if (!db) return [];
-      const learned = db.learnset.filter(m => m.lv <= level);
-      const last4 = learned.slice(-4);
+      const history = getSpeciesHistory(id);
+      let allPotentialMoves = [];
+      const seenNames = new Set();
+
+      // Collect learnset from all ancestors + current species
+      // Process in reverse (newest to oldest) to prefer evolved forms' levels? 
+      // Actually, we want a pool of all moves it COULD have learned by reaching this level.
+      history.forEach(spId => {
+        const db = POKEMON_DB[spId];
+        if (db && db.learnset) {
+          db.learnset.forEach(m => {
+            if (m.lv <= level) {
+              allPotentialMoves.push(m);
+            }
+          });
+        }
+      });
+
+      // Sort by level (ascending) to take the last 4
+      allPotentialMoves.sort((a, b) => a.lv - b.lv);
+
+      // Keep only unique move names, taking the one with highest level if duplicates
+      const uniqueMoves = [];
+      for (let i = allPotentialMoves.length - 1; i >= 0; i--) {
+        const m = allPotentialMoves[i];
+        if (!seenNames.has(m.name)) {
+          uniqueMoves.unshift(m);
+          seenNames.add(m.name);
+        }
+      }
+
+      const last4 = uniqueMoves.slice(-4);
       return last4.map(m => {
         const moveData = MOVE_DATA[m.name] || {};
         return { 
