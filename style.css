@@ -1512,13 +1512,15 @@
           "log panel";
         gap: 16px;
         max-width: 1100px;
-        height: min(96vh, 800px); /* Constrain height to avoid layout displacement */
+        height: min(96vh, 850px); /* Increased slightly but still constrained */
+        overflow: hidden; 
         align-items: stretch;
       }
 
       .battle-arena {
         grid-area: arena;
         margin-bottom: 0;
+        min-height: 0; /* Allow arena to shrink if panel is tall */
       }
 
       .battle-log {
@@ -1531,6 +1533,54 @@
       #move-panel {
         grid-area: panel;
         margin-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+
+      .action-row {
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-areas: 
+          "switch catch bag"
+          "run run run" !important;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .action-row.no-catch {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas: 
+          "switch bag"
+          "run run" !important;
+      }
+
+      .action-btn {
+        padding: 8px;
+        font-size: 7px;
+      }
+
+      .btn-catch {
+        width: 64px !important;
+        height: 64px !important;
+      }
+
+      .battle-actions {
+        margin-bottom: 6px;
+        gap: 6px;
+      }
+
+      .move-btn {
+        min-height: 48px;
+        padding: 6px 10px;
+      }
+      
+      .move-btn .move-name {
+        font-size: 10px;
+        margin-bottom: 1px;
+      }
+      
+      .move-btn .move-pp {
+        font-size: 8px;
       }
     }
 
