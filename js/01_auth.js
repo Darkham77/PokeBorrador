@@ -478,10 +478,12 @@
     function hatchEggs() {
       if (!state.eggs || state.eggs.length === 0) return;
       let anyReady = false;
+      const hatchMult = (typeof getEventBonus === 'function') ? getEventBonus('hatch') : 1;
+      
       for (let i = 0; i < state.eggs.length; i++) {
         const egg = state.eggs[i];
         if (!egg.ready && (typeof egg.steps === 'number') && egg.steps > 0) {
-          egg.steps--;
+          egg.steps -= hatchMult;
           if (egg.steps <= 0) {
             egg.steps = 0;
             egg.ready = true;
@@ -505,7 +507,7 @@
       const isReady = (egg.ready === true) || (typeof egg.steps === 'number' && egg.steps <= 0);
       
       if (!isReady) {
-        notify(`¡Este huevo todavía no está listo! Faltan ${egg.steps || 150} pasos.`, '🥚');
+        notify(`¡Este huevo todavía no está listo! Faltan ${Math.ceil(egg.steps) || 150} pasos.`, '🥚');
         return;
       }
 

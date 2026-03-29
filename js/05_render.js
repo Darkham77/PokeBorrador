@@ -817,7 +817,7 @@ function updateEggProgressHud() {
               <div class="hud-egg-bar-bg">
                 <div class="hud-egg-bar-fill" style="width: ${progress}%; background: ${color};"></div>
               </div>
-              <div class="hud-egg-time">${isReady ? 'ECLOSIONAR' : egg.steps + ' pasos'}</div>
+              <div class="hud-egg-time">${isReady ? 'ECLOSIONAR' : Math.ceil(egg.steps) + ' pasos'}</div>
             </div>
           </div>
         `;
