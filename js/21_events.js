@@ -261,7 +261,17 @@ function showEventDetail(evId) {
       </div>`;
   }
 
+  // ── Imagen / Banner ──────────────────────────────────────────────
+  let bannerHtml = '';
+  if (cfg.banner) {
+    bannerHtml = `
+      <div style="width:100%; height:160px; border-radius:18px; overflow:hidden; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1); background:#000;">
+        <img src="assets/eventos/${cfg.banner}" style="width:100%; height:100%; object-fit:cover;" onerror="this.parentElement.style.display='none'">
+      </div>`;
+  }
+
   content.innerHTML = `
+    ${bannerHtml}
     <div style="text-align:center;margin-bottom:20px;">
       <div style="font-size:52px;margin-bottom:10px;">${ev.icon || '🎁'}</div>
       <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fbbf24;
@@ -774,6 +784,16 @@ function _renderEventCard(ev, idx) {
             <div style="font-size:8px;color:#6b7280;margin-top:2px;">Desactivar para eventos solo de bonificaciones (EXP doble, etc.)</div>
           </div>
         </label>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;">
+        <span style="font-size:18px;">🖼️</span>
+        <div style="flex:1;">
+          <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">IMAGEN DE EVENTO (assets/eventos/...)</div>
+          <input type="text" value="${ev.config?.banner || ''}" placeholder="ej: capturamagikarp.png"
+            onchange="window._evBannerChange(${idx}, this.value)"
+            style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:11px;">
+        </div>
       </div>
 
       <div style="font-size:9px;color:#9ca3af;margin-bottom:8px;font-family:'Press Start 2P',monospace;">DÍAS DE LA SEMANA (ARG)</div>
@@ -1316,7 +1336,11 @@ async function showEventResultsModal(eventId) {
           style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.05); border:none; color:#94a3b8; font-size:20px; cursor:pointer; z-index:10; width:36px; height:36px; border-radius:50%;">✕</button>
 
         <div style="text-align:center; margin-bottom:28px;">
-          <div style="font-size:48px; margin-bottom:12px;">${eventData.icon || '🏆'}</div>
+          ${eventData.config?.banner ? `
+            <div style="width:100%; height:140px; border-radius:16px; overflow:hidden; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1); background:#000;">
+              <img src="assets/eventos/${eventData.config.banner}" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+          ` : `<div style="font-size:48px; margin-bottom:12px;">${eventData.icon || '🏆'}</div>`}
           <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#fbbf24; margin-bottom:8px; letter-spacing:1px;">¡PODIO FINAL!</div>
           <div style="color:#64748b; font-size:12px;">${eventData.name}</div>
         </div>
@@ -1454,6 +1478,12 @@ window._evConfigToggle = (idx, field, val) => {
   if (!_adminConfig?.events?.[idx]) return;
   _adminConfig.events[idx].config = _adminConfig.events[idx].config || {};
   _adminConfig.events[idx].config[field] = val;
+};
+
+window._evBannerChange = (idx, val) => {
+  if (!_adminConfig?.events?.[idx]) return;
+  _adminConfig.events[idx].config = _adminConfig.events[idx].config || {};
+  _adminConfig.events[idx].config.banner = val;
 };
 
 
