@@ -2593,11 +2593,9 @@ function catchSuccess(enemy) {
   // Hook de clase: racha de capturas (Cazabichos) + classXP
   if (typeof onCaptureSuccess === 'function') onCaptureSuccess();
 
-  // Hook de evento: Concurso de Magikarp
-  if (baseEnemy.id === 'magikarp' && typeof isEventActive === 'function' && isEventActive('hora_magikarp')) {
-    if (typeof checkMagikarpAndPrompt === 'function') {
-      checkMagikarpAndPrompt(caught);
-    }
+  // Hook de eventos de competencia (atrapa el Pokémon del evento)
+  if (typeof checkCompetitionsAndPrompt === 'function') {
+    checkCompetitionsAndPrompt(caught);
   }
 
   if (caught.heldItem) {

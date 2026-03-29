@@ -301,10 +301,17 @@ function showEventDetail(evId) {
 }
 
 
-// ── Concurso de Magikarp ──────────────────────────────────────────────────────
-async function submitMagikarpEntry(pokemon, eventId = 'hora_magikarp') {
+// ── Concursos — Registro genérico ─────────────────────────────────────────────
+async function submitCompetitionEntry(pokemon, eventId) {
   if (!isEventActive(eventId) || !window.currentUser) return;
+  const ev = _activeEvents.find(e => e.id === eventId);
+  const cfg = ev?.config || {};
+  const sortBy = cfg.sortBy || 'data.total_ivs';
   const totalIvs = Object.values(pokemon.ivs || {}).reduce((a, b) => a + b, 0);
+  
+  // Determinamos el score comparativo basado en sortBy
+  const currentScore = sortBy.startsWith('data.') ? (pokemon.data?.[sortBy.split('.')[1]] || totalIvs) : (pokemon[sortBy] || totalIvs);
+
   try {
     const { data: existing } = await window.sb.from('competition_entries')
       .select('data')
@@ -312,9 +319,12 @@ async function submitMagikarpEntry(pokemon, eventId = 'hora_magikarp') {
       .eq('player_id', window.currentUser.id)
       .single();
 
-    if (existing && (existing.data?.total_ivs || 0) >= totalIvs) {
-      notify('Ya tenés una inscripción mejor en este concurso.', '🎣');
-      return;
+    if (existing) {
+      const oldScore = existing.data?.total_ivs || 0; // Por ahora comparamos por IVs si el data es viejo
+      if (oldScore >= totalIvs) {
+        notify('Ya tenés una inscripción mejor en este concurso.', '🏆');
+        return;
+      }
     }
 
     const { error } = await window.sb.from('competition_entries').upsert({
@@ -333,67 +343,94 @@ async function submitMagikarpEntry(pokemon, eventId = 'hora_magikarp') {
     });
 
     if (error) throw error;
-    notify(`¡Registro exitoso! Puntuación actual: ${totalIvs}`, '🎣');
+    notify(`¡Registro exitoso en ${ev.name}! Puntuación: ${totalIvs}`, ev.icon || '🏆');
   } catch (e) {
     console.warn('[Events] Error al inscribir:', e);
     notify('Error al inscribir en el concurso.', '❌');
   }
 }
 
-// ── Verificación de récord antes de mostrar el diálogo ────────────────────────
-async function checkMagikarpAndPrompt(pokemon) {
-  if (!isEventActive('hora_magikarp') || !window.currentUser) return;
+// ── Aliases para compatibilidad con código viejo (si lo hubiera) ───────────
+async function submitMagikarpEntry(pokemon) { await submitCompetitionEntry(pokemon, 'hora_magikarp'); }
+
+
+// ── Verificación de récords para todos los eventos activos ───────────────────
+async function checkCompetitionsAndPrompt(pokemon) {
+  if (!window.currentUser || _activeEvents.length === 0) return;
   
   const totalIvs = Object.values(pokemon.ivs || {}).reduce((a, b) => a + b, 0);
-  
-  try {
-    // Verificar si el jugador ya tiene un Magikarp registrado
-    const { data: existing } = await window.sb.from('competition_entries')
-      .select('data')
-      .eq('event_id', 'hora_magikarp')
-      .eq('player_id', window.currentUser.id)
-      .single();
-    
-    // Si existe un registro y el nuevo Magikarp no es mejor, no mostrar diálogo
-    if (existing && (existing.data?.total_ivs || 0) >= totalIvs) {
-      return; // Silenciosamente ignorar Magikarp peores
+  const pokeId = pokemon.id || pokemon.name?.toLowerCase();
+
+  for (const ev of _activeEvents) {
+    // Si el evento no tiene competencia activa, lo salteamos
+    if (ev.config?.hasCompetition === false) continue;
+
+    // Verificar si la especie coincide (soporta una especie o varias separadas por coma)
+    // Fallback: si no hay species configurada y el ID es 'hora_magikarp', asumimos 'magikarp'
+    const targetSpecies = ev.config?.species || (ev.id === 'hora_magikarp' ? 'magikarp' : null);
+    if (!targetSpecies) continue;
+
+    const speciesList = targetSpecies.split(',').map(s => s.trim().toLowerCase());
+    if (!speciesList.includes(pokeId)) continue;
+
+    try {
+      // Verificar si el jugador ya tiene un registro en ESTE evento
+      const { data: existing } = await window.sb.from('competition_entries')
+        .select('data')
+        .eq('event_id', ev.id)
+        .eq('player_id', window.currentUser.id)
+        .single();
+      
+      // Si existe un registro y el nuevo Pokémon no es mejor, ignorar
+      if (existing && (existing.data?.total_ivs || 0) >= totalIvs) continue;
+      
+      // Si el nuevo es mejor, mostrar el diálogo específico para este evento
+      promptCompetitionSubmit(pokemon, ev);
+    } catch (e) {
+      console.warn(`[Events] Error verificando récord para ${ev.id}:`, e);
+      promptCompetitionSubmit(pokemon, ev);
     }
-    
-    // Si el nuevo Magikarp es mejor (o no hay registro), mostrar el diálogo
-    promptMagikarpSubmit(pokemon);
-  } catch (e) {
-    // Si hay error en la consulta, mostrar el diálogo de todas formas
-    console.warn('[Events] Error verificando récord de Magikarp:', e);
-    promptMagikarpSubmit(pokemon);
   }
 }
 
-function promptMagikarpSubmit(pokemon) {
-  if (!isEventActive('hora_magikarp')) return;
+// Alias para compatibilidad con código viejo en js/07_battle.js
+async function checkMagikarpAndPrompt(pokemon) { await checkCompetitionsAndPrompt(pokemon); }
+
+function promptCompetitionSubmit(pokemon, event) {
   const totalIvs = Object.values(pokemon.ivs || {}).reduce((a, b) => a + b, 0);
   const ov = document.createElement('div');
-  ov.id = 'magikarp-submit-overlay';
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.id = `comp-submit-overlay-${event.id}`;
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.2s;';
+  
+  const icon = event.icon || '🏆';
+  const name = event.name || 'Concurso';
+
   ov.innerHTML = `
-    <div style="background:#1e293b;border-radius:20px;padding:24px;max-width:360px;width:100%;border:2px solid #22c55e44;text-align:center;">
-      <div style="font-size:40px;margin-bottom:12px;">🎣</div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#22c55e;margin-bottom:12px;">HORA DE PESCA ACTIVA</div>
-      <div style="font-size:12px;color:#e2e8f0;margin-bottom:8px;">¡Capturaste un Magikarp con <strong style="color:#f59e0b;">${totalIvs}/186 IVs</strong>!</div>
+    <div style="background:#1e293b;border-radius:20px;padding:24px;max-width:360px;width:100%;border:2px solid rgba(251,191,36,0.2);text-align:center;box-shadow:0 0 40px rgba(0,0,0,0.5);">
+      <div style="font-size:40px;margin-bottom:12px;">${icon}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#fbbf24;margin-bottom:12px;">${name.toUpperCase()}</div>
+      <div style="font-size:12px;color:#e2e8f0;margin-bottom:8px;">¡Capturaste un ${pokemon.name} con <strong style="color:#f59e0b;">${totalIvs}/186 IVs</strong>!</div>
       <div style="font-size:11px;color:#9ca3af;margin-bottom:20px;">¿Querés inscribirlo en el concurso?${pokemon.isShiny ? ' <span style="color:#fbbf24;">✨ ¡Es Shiny!</span>' : ''}</div>
       <div style="display:flex;gap:10px;">
-        <button onclick="submitMagikarpEntry(_magikarpPrize);document.getElementById('magikarp-submit-overlay').remove()"
-          style="flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
+        <button id="btn-submit-comp-${event.id}"
+          style="flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;font-weight:bold;">
           🏆 INSCRIBIR
         </button>
-        <button onclick="document.getElementById('magikarp-submit-overlay').remove()"
+        <button onclick="this.closest('#comp-submit-overlay-${event.id}').remove()"
           style="flex:1;padding:12px;border:none;border-radius:12px;background:rgba(255,255,255,0.07);color:#9ca3af;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
           NO GRACIAS
         </button>
       </div>
     </div>`;
-  window._magikarpPrize = pokemon;
+  
   document.body.appendChild(ov);
+  
+  document.getElementById(`btn-submit-comp-${event.id}`).onclick = () => {
+    submitCompetitionEntry(pokemon, event.id);
+    ov.remove();
+  };
 }
+
 
 // ── Entrega de premios ────────────────────────────────────────────────────────
 async function checkPendingAwards() {
@@ -815,7 +852,7 @@ function _renderEventCard(ev, idx) {
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">${daysHtml}</div>
 
       ${hasHours ? `
-      <div style="display:flex;gap:12px;align-items:center;">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
         <div>
           <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">HORA INICIO</div>
           <input type="number" min="0" max="23" value="${sched.startHour ?? 0}"
@@ -833,8 +870,31 @@ function _renderEventCard(ev, idx) {
         </div>
         <div style="font-size:8px;color:#4b5563;padding-top:14px;">hs. (ARG)</div>
       </div>` : `
-      <div style="font-size:9px;color:#4b5563;">⏰ Todo el día</div>`}
+      <div style="font-size:9px;color:#4b5563;margin-bottom:12px;">⏰ Todo el día</div>`}
+
+      <!-- Configuración de Competencia -->
+      <div style="background:rgba(34,197,94,0.03); border:1px solid rgba(34,197,94,0.1); border-radius:10px; padding:10px;">
+        <div style="font-size:8px; color:#22c55e; font-family:'Press Start 2P',monospace; margin-bottom:10px;">🎯 CONFIG. COMPETENCIA</div>
+        
+        <div style="margin-bottom:8px;">
+           <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">POKÉMON OBJETIVO (ID)</div>
+           <input type="text" value="${ev.config?.species || ''}" placeholder="ej: magikarp"
+             onchange="window._evConfigFieldChange(${idx}, 'species', this.value)"
+             style="width:100%;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;box-sizing:border-box;">
+        </div>
+
+        <div>
+           <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">CRITERIO (sortBy)</div>
+           <select onchange="window._evConfigFieldChange(${idx}, 'sortBy', this.value)"
+             style="width:100%;padding:8px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;box-sizing:border-box;">
+             <option value="data.total_ivs" ${ev.config?.sortBy==='data.total_ivs'?'selected':''}>🧬 IVs Totales</option>
+             <option value="data.level" ${ev.config?.sortBy==='data.level'?'selected':''}>📈 Nivel</option>
+             <option value="data.isShiny" ${ev.config?.sortBy==='data.isShiny'?'selected':''}>✨ Shiny</option>
+           </select>
+        </div>
+      </div>
     </div>`;
+
 }
 
 function _renderCompetitionTab() {
@@ -1437,6 +1497,12 @@ window._evBannerChange = (idx, val) => {
   if (!_adminConfig?.events?.[idx]) return;
   _adminConfig.events[idx].config = _adminConfig.events[idx].config || {};
   _adminConfig.events[idx].config.banner = val;
+};
+
+window._evConfigFieldChange = (idx, field, val) => {
+  if (!_adminConfig?.events?.[idx]) return;
+  _adminConfig.events[idx].config = _adminConfig.events[idx].config || {};
+  _adminConfig.events[idx].config[field] = val;
 };
 
 
