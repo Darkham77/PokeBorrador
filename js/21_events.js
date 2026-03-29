@@ -144,12 +144,12 @@ function _isEventActiveNow(ev) {
 }
 
 
-function getActiveShinyRate(customBase) {
+function getActiveShinyRate(customBase, bonusType = 'shiny') {
   let base = customBase;
   if (base === undefined) {
     base = (state.shinyBoostSecs || 0) > 0 ? Math.floor(GAME_RATIOS.shinyRate / 2) : GAME_RATIOS.shinyRate;
   }
-  const eventMult = getEventBonus('shiny');
+  const eventMult = getEventBonus(bonusType);
   return Math.max(1, Math.floor(base / eventMult));
 }
 
@@ -199,11 +199,12 @@ function showEventDetail(evId) {
 
   // ── Bonificaciones activas ──────────────────────────────────────
   const bonusMap = {
-    expMult:   { label: '⚡ EXP', color: '#a78bfa' },
-    moneyMult: { label: '💰 Dinero', color: '#fbbf24' },
-    bcMult:    { label: '🪙 Battle Coins', color: '#60a5fa' },
-    shinyMult: { label: '✨ Shiny Rate', color: '#f472b6' },
-    hatchMult: { label: '🥚 Eclosión Rápida', color: '#34d399' },
+    expMult:      { label: '⚡ EXP', color: '#a78bfa' },
+    moneyMult:    { label: '💰 Dinero', color: '#fbbf24' },
+    bcMult:       { label: '🪙 Battle Coins', color: '#60a5fa' },
+    shinyMult:    { label: '✨ Shiny Rate (Salvaje)', color: '#f472b6' },
+    eggShinyMult: { label: '✨ Shiny Rate (Huevos)', color: '#f472b6' },
+    hatchMult:    { label: '🥚 Eclosión Rápida', color: '#34d399' },
   };
 
 
@@ -756,10 +757,16 @@ function _renderAdminPanel() {
         <div style="display:flex;flex-direction:column;gap:14px;" id="admin-events-list">
           ${eventsHtml}
         </div>
-        <button onclick="window._evAdminSave()"
-          style="width:100%;margin-top:16px;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">
-          💾 GUARDAR CAMBIOS
-        </button>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button onclick="window._evAdminAddEvent()"
+            style="flex:1;padding:14px;border:none;border-radius:14px;background:rgba(255,255,255,0.08);color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">
+            ➕ CREAR EVENTO
+          </button>
+          <button onclick="window._evAdminSave()"
+            style="flex:1;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">
+            💾 GUARDAR CAMBIOS
+          </button>
+        </div>
       </div>
 
       <!-- Competition Tab -->
@@ -779,16 +786,58 @@ function _renderAdminPanel() {
     }
   };
 
+  window._evAdminAddEvent = () => {
+    const newId = 'custom_' + Date.now();
+    _adminConfig.events.push({
+      id: newId,
+      name: 'Nuevo Evento',
+      icon: '🎁',
+      description: 'Descripción del evento',
+      active: false,
+      manual: false,
+      schedule: { type: 'weekly', days: [], startHour: 0, endHour: 24 },
+      config: {
+        banner: '',
+        hasCompetition: false,
+        species: '',
+        sortBy: 'data.total_ivs',
+        expMult: 1,
+        shinyMult: 1,
+        eggShinyMult: 1,
+        hatchMult: 1,
+        prizes: {}
+      }
+    });
+    _renderAdminPanel();
+  };
+
+  window._evAdminDeleteEvent = async (idx) => {
+    if(!confirm('¿Eliminar este evento? Esta acción no se puede deshacer.')) return;
+    const ev = _adminConfig.events[idx];
+    _adminConfig.events.splice(idx, 1);
+    _renderAdminPanel();
+    try {
+      await window.sb.from('events_config').delete().eq('id', ev.id);
+      notify('Evento eliminado', '🗑️');
+      await loadActiveEvents();
+    } catch(e) {
+       console.error(e);
+    }
+  };
+
   window._evAdminSave = async () => {
     try {
-      // Guardamos cada evento modificado
       for (const ev of (_adminConfig?.events || [])) {
-        const { error } = await window.sb.from('events_config').update({
+        const { error } = await window.sb.from('events_config').upsert({
+          id: ev.id,
+          name: ev.name,
+          description: ev.description,
+          icon: ev.icon,
           active: ev.active,
           manual: ev.manual,
           schedule: ev.schedule,
           config: ev.config
-        }).eq('id', ev.id);
+        }, { onConflict: 'id' });
         if (error) throw error;
       }
       notify('¡Cambios guardados!', '✅');
@@ -814,19 +863,29 @@ function _renderEventCard(ev, idx) {
 
   return `
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:22px;">${ev.icon}</span>
-          <div>
-            <div style="font-size:11px;font-weight:700;color:#e2e8f0;">${ev.name}</div>
-            <div style="font-size:9px;color:#6b7280;margin-top:2px;">${ev.description}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:8px;">ID INTERNO: ${ev.id}</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+        <div style="display:flex;flex:1;gap:10px;">
+          <input type="text" value="${ev.icon}" title="Icono"
+            onchange="window._evPropChange(${idx}, 'icon', this.value)"
+            style="font-size:22px; width:45px; height:45px; text-align:center; background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;">
+          <div style="flex:1;">
+            <input type="text" value="${ev.name}" placeholder="Nombre del Evento"
+              onchange="window._evPropChange(${idx}, 'name', this.value)"
+              style="width:100%;font-size:11px;font-weight:700;color:#e2e8f0;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px;margin-bottom:4px;box-sizing:border-box;">
+            <input type="text" value="${ev.description}" placeholder="Descripción breve"
+              onchange="window._evPropChange(${idx}, 'description', this.value)"
+              style="width:100%;font-size:9px;color:#6b7280;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px;box-sizing:border-box;">
           </div>
         </div>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;">
-          <input type="checkbox" data-ev="${idx}" data-field="active" ${ev.active ? 'checked' : ''}
-            style="accent-color:#22c55e;width:16px;height:16px;cursor:pointer;" onchange="window._evFieldChange(${idx},'active',this.checked)">
-          <span style="font-size:9px;color:${ev.active ? '#22c55e' : '#6b7280'};font-family:'Press Start 2P',monospace;">${ev.active ? 'ON' : 'OFF'}</span>
-        </label>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+            <button onclick="window._evAdminDeleteEvent(${idx})" title="Eliminar Evento" style="background:none;border:none;color:#ef4444;font-size:14px;cursor:pointer;padding:4px;">🗑️</button>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;">
+              <input type="checkbox" data-ev="${idx}" data-field="active" ${ev.active ? 'checked' : ''}
+                style="accent-color:#22c55e;width:16px;height:16px;cursor:pointer;" onchange="window._evFieldChange(${idx},'active',this.checked)">
+              <span style="font-size:9px;color:${ev.active ? '#22c55e' : '#6b7280'};font-family:'Press Start 2P',monospace;">${ev.active ? 'ON' : 'OFF'}</span>
+            </label>
+        </div>
       </div>
 
       <div style="background:rgba(245,158,11,0.08);border-radius:10px;padding:10px;margin-bottom:10px;">
@@ -913,9 +972,17 @@ function _renderEventCard(ev, idx) {
               style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
           </div>
           <div>
-            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">SHINY x</div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">SHINY SALVAJE x</div>
             <input type="number" step="0.1" value="${ev.config?.shinyMult || 1}"
               onchange="window._evConfigFieldChange(${idx}, 'shinyMult', parseFloat(this.value))"
+              style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+          </div>
+        </div>
+        <div style="margin-top:8px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">SHINY HUEVO x</div>
+            <input type="number" step="0.1" value="${ev.config?.eggShinyMult || 1}"
+              onchange="window._evConfigFieldChange(${idx}, 'eggShinyMult', parseFloat(this.value))"
               style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
           </div>
           <div>
@@ -1539,7 +1606,11 @@ window._evConfigFieldChange = (idx, field, val) => {
   _adminConfig.events[idx].config[field] = val;
 };
 
-
+window._evPropChange = (idx, field, val) => {
+  if (_adminConfig?.events?.[idx]) {
+    _adminConfig.events[idx][field] = val;
+  }
+};
 window._evLoadEntriesGlobal = _evLoadEntries;
 
 // Se renombra la función global para evitar colisión con la local y recursión infinita

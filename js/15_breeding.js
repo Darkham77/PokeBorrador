@@ -1074,7 +1074,7 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
       finalSpecies = Math.random() < 0.5 ? 'nidoran_f' : 'nidoran_m';
   }
   
-  const eggShinyRate = (typeof getActiveShinyRate === 'function') ? getActiveShinyRate(512) : 512;
+  const eggShinyRate = (typeof getActiveShinyRate === 'function') ? getActiveShinyRate(512, 'eggShiny') : 512;
   await sb.from('eggs').insert({ player_id: pid, species: finalSpecies, parent_a: pA.uid, parent_b: pB.uid, inherited_ivs: ivs, egg_moves: moves, shiny_roll: (Math.random() < 1 / eggShinyRate), created_at: dateObj.toISOString(), hatch_ready_time: ready.toISOString(), incubation_speed_bonus: 0 });
 
 
