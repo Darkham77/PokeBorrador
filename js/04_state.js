@@ -49,7 +49,8 @@
         const policePool = ['arcanine', 'pidgeot', 'machamp', 'magneton', 'kadabra'];
         const policeTeam = [];
         for (let i = 0; i < teamSize; i++) {
-          const pId = policePool[Math.floor(Math.random() * policePool.length)];
+          const pIdBase = policePool[Math.floor(Math.random() * policePool.length)];
+          const pId = (typeof getEvolvedForm === 'function') ? getEvolvedForm(pIdBase, trainerLv) : pIdBase;
           const p = makePokemon(pId, trainerLv);
           policeTeam.push(p);
         }
@@ -64,7 +65,8 @@
         
         const enemyTeam = [];
         for (let i = 0; i < teamSize; i++) {
-          const pId = t.pool[Math.floor(Math.random() * t.pool.length)];
+          const pIdBase = t.pool[Math.floor(Math.random() * t.pool.length)];
+          const pId = (typeof getEvolvedForm === 'function') ? getEvolvedForm(pIdBase, trainerLv) : pIdBase;
           const p = makePokemon(pId, trainerLv);
           enemyTeam.push(p);
         }

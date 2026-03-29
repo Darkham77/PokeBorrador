@@ -355,12 +355,41 @@
       let evolved = current;
       let canEvolve = true;
       while (canEvolve) {
-        const evo = EVOLUTION_TABLE[evolved];
-        if (evo && level >= evo.level) {
-          evolved = evo.to;
-        } else {
-          canEvolve = false;
+        let changed = false;
+
+        // Try Level Evolution (Always applies if level is met)
+        const levelEvo = EVOLUTION_TABLE[evolved];
+        if (levelEvo && level >= levelEvo.level) {
+          evolved = levelEvo.to;
+          changed = true;
+        } 
+        
+        // Try Stone Evolution (50% chance if level >= 30)
+        if (!changed && level >= 30 && Math.random() < 0.5) {
+          // Special check for Eevee branch
+          if (evolved === 'eevee') {
+            const options = ['vaporeon', 'jolteon', 'flareon'];
+            evolved = options[Math.floor(Math.random() * options.length)];
+            changed = true;
+          } else {
+            const stoneEvo = STONE_EVOLUTIONS[evolved];
+            if (stoneEvo) {
+              evolved = stoneEvo.to;
+              changed = true;
+            }
+          }
         }
+
+        // Try Trade Evolution (50% chance if level >= 32)
+        if (!changed && level >= 32 && Math.random() < 0.5) {
+          const tradeEvo = TRADE_EVOLUTIONS[evolved];
+          if (tradeEvo) {
+            evolved = tradeEvo;
+            changed = true;
+          }
+        }
+
+        if (!changed) canEvolve = false;
       }
       return evolved;
     }
