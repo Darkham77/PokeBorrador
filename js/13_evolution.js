@@ -236,7 +236,8 @@
       const idx = state.team.findIndex(p => p === pokemon);
       if (idx !== -1) state.team[idx] = pokemon;
       renderTeam();
-      scheduleSave();
+      if (typeof saveGame === 'function') saveGame(false);
+      else scheduleSave();
       notify(`¡${oldName} evolucionó a ${toData.name}!`, '🌟');
 
       return pendingMoves;

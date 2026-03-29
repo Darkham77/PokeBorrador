@@ -8,9 +8,8 @@
     window.currentServer = SUPABASE_URL;
     window.sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.currentUser = null;
-    window.currentSessionId = null; // ID único para esta pestaña
     let _saveTimeout = null;
-    let _sessionCheckInterval = null;
+    let _isSaving = false; // Flag para evitar solapamientos
 
     // ── Server Selector ───────────────────────────────────────────────────────
     function switchServer(server) {
@@ -117,38 +116,8 @@
       // Reset state using central function
       resetGameState();
       toggleProfile();
-      stopSessionCheck();
       switchServer('online');
       showScreen('auth-screen');
-    }
-
-    function startSessionCheck() {
-      if (_sessionCheckInterval) clearInterval(_sessionCheckInterval);
-      // Chequeo cada 12 segundos para no saturar Supabase
-      _sessionCheckInterval = setInterval(async () => {
-        if (!currentUser || currentServer === LOCAL_URL) return;
-        try {
-          const { data, error } = await sb.from('game_saves').select('save_data').eq('user_id', currentUser.id).single();
-          if (error) return;
-          const remoteSessId = data?.save_data?._session_id;
-          if (remoteSessId && remoteSessId !== currentSessionId) {
-            handleDuplicateSession();
-          }
-        } catch(e) {}
-      }, 12000);
-    }
-
-    function stopSessionCheck() {
-      if (_sessionCheckInterval) clearInterval(_sessionCheckInterval);
-      _sessionCheckInterval = null;
-    }
-
-    function handleDuplicateSession() {
-      stopSessionCheck();
-      // Bloquear TODO el guardado futuro
-      window.isDisconnected = true;
-      document.getElementById('session-disconnect-modal').style.display = 'flex';
-      console.warn('[SESSION] Desconectado: Se detectó otra sesión activa.');
     }
 
     // ── Login Local ────────────────────────────────────────────────────────────
@@ -222,22 +191,46 @@
     async function onLogin(user) {
       currentUser = user;
       resetGameState(); // Ensure clean slate before loading online save
-      window.currentSessionId = Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-      window.isDisconnected = false;
       setAuthLoading(true);
       try {
         const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
         const username = profile?.username || user.user_metadata?.username || user.email.split('@')[0];
+        
+        // 1. Obtener Guardado de la Nube
         const { data: saves, error: saveError } = await sb
           .from('game_saves')
           .select('*')
           .eq('user_id', user.id)
           .order('updated_at', { ascending: false })
           .limit(1);
-        const save = Array.isArray(saves) ? saves[0] : null;
+        const cloudSaveRow = Array.isArray(saves) ? saves[0] : null;
         if (LoginGuard.shouldAbortSaveLoad(saveError)) throw saveError;
-        if (save?.save_data) {
-          const s = save.save_data;
+        
+        let finalSaveData = cloudSaveRow?.save_data;
+
+        // 2. Obtener Guardado Local
+        const localSaveKey = 'pokemon_local_save_' + user.id;
+        const localRaw = localStorage.getItem(localSaveKey);
+        if (localRaw) {
+          try {
+            const localData = JSON.parse(localRaw);
+            const cloudTime = cloudSaveRow?.updated_at ? new Date(cloudSaveRow.updated_at).getTime() : 0;
+            const localTime = localData._last_updated || 0;
+
+            // Si el guardado local es más nuevo por al menos 3 segundos, lo usamos.
+            // (3s de margen para evitar micro-diferencias de reloj/red)
+            if (localTime > cloudTime + 3000) {
+              console.log("[SAVE] El guardado local es más reciente. Sincronizando...");
+              finalSaveData = localData;
+              notify('Se restauró tu progreso local más reciente.', '🔄');
+            }
+          } catch(e) {
+            console.warn('[SAVE] Error comparando guardado local:', e);
+          }
+        }
+
+        if (finalSaveData) {
+          const s = finalSaveData;
           Object.assign(state, s);
           // Normalizar badges (si era array, convertir a contador)
           if (Array.isArray(state.badges)) state.badges = state.badges.length;
@@ -306,7 +299,6 @@
         initTrainerPityTimer();
         startPresence(); subscribeFriendNotifs(); subscribeTradeNotifs(); subscribeBattleInvites(); refreshFriendsBadge();
         if (typeof initGlobalChatListener === 'function') initGlobalChatListener();
-        startSessionCheck();
       } catch (e) {
         setAuthLoading(false);
         currentUser = null;
@@ -395,72 +387,89 @@
       };
     }
 
+    /**
+     * Realiza validaciones básicas para evitar guardar datos corruptos o exploitados.
+     */
+    function isValidState(data) {
+      if (!data) return false;
+      // Anti-exploit básico: valores no negativos
+      if (data.money < 0 || data.battleCoins < 0) return false;
+      if (data.trainerLevel < 1 || data.trainerLevel > 100) return false;
+      // Estructura mínima
+      if (!Array.isArray(data.team)) return false;
+      return true;
+    }
+
     async function saveGame(showNotif = true) {
-      if (!currentUser || window.isDisconnected) return;
+      if (!currentUser || _isSaving) return;
+      
       const save_data = serializeState();
-      // Incluimos el ID de sesión en el save_data para que otros clientes lo detecten
-      save_data._session_id = currentSessionId;
-      if (currentServer === LOCAL_URL) {
-        // Modo local: guardar en localStorage del dispositivo
-        try {
-          const saveKey = 'pokemon_local_save_' + currentUser.id;
-          localStorage.setItem(saveKey, JSON.stringify(save_data));
-          if (showNotif) flashSaveIndicator();
-          const el = document.getElementById('profile-last-save');
-          if (el) el.textContent = 'Guardado: ' + new Date().toLocaleTimeString();
-        } catch (e) {
-          console.warn('Error al guardar localmente:', e);
-        }
+      if (!isValidState(save_data)) {
+        console.error('[SAVE] Estado inválido detectado. Abortando guardado por seguridad.');
         return;
       }
-      // Modo online: guardar en Supabase
-      // Nota: si no hay UNIQUE(user_id) en la tabla, upsert puede generar duplicados o fallar.
-      // Para evitarlo, actualizamos la fila más reciente del usuario (si existe) y, si no existe, insertamos.
-      if (!state.starterChosen && (!state.team || state.team.length === 0)) return;
 
-      let saveError = null;
+      // Incluimos un timestamp preciso
+      save_data._last_updated = Date.now();
+
+      // 1. Guardado en LocalStorage SIEMPRE (es síncrono y ultra-rápido)
       try {
-        const nowIso = new Date().toISOString();
-        const { data: existingRows, error: selectErr } = await sb
-          .from('game_saves')
-          .select('id')
-          .eq('user_id', currentUser.id)
-          .order('updated_at', { ascending: false })
-          .limit(1);
-        if (selectErr) throw selectErr;
-
-        const existingId = Array.isArray(existingRows) ? existingRows[0]?.id : null;
-
-        if (existingId) {
-          const { error } = await sb.from('game_saves').update({
-            save_data,
-            updated_at: nowIso,
-          }).eq('id', existingId);
-          saveError = error;
-        } else {
-          const { error } = await sb.from('game_saves').insert({
-            user_id: currentUser.id,
-            save_data,
-            updated_at: nowIso,
-          });
-          saveError = error;
-        }
+        const saveKey = 'pokemon_local_save_' + currentUser.id;
+        localStorage.setItem(saveKey, JSON.stringify(save_data));
+        const el = document.getElementById('profile-last-save');
+        if (el) el.textContent = 'Guardado (Loc): ' + new Date().toLocaleTimeString();
       } catch (e) {
-        console.warn('[SAVE] Error guardando en Supabase:', e);
-        saveError = e;
+        console.warn('[SAVE] Error en localStorage:', e);
       }
 
-      if (!saveError) {
+      if (currentServer === LOCAL_URL) {
+        if (showNotif) flashSaveIndicator();
+        return;
+      }
+
+      // 2. Guardado en Supabase (Online)
+      if (!state.starterChosen && (!state.team || state.team.length === 0)) return;
+
+      _isSaving = true;
+      try {
+        const nowIso = new Date().toISOString();
+        
+        // Usamos upsert con onConflict 'user_id' para que sea atómico.
+        // Esto asume que la tabla tiene un índice único en user_id.
+        const { error } = await sb.from('game_saves').upsert({
+          user_id: currentUser.id,
+          save_data,
+          updated_at: nowIso,
+        }, { onConflict: 'user_id' });
+
+        if (error) throw error;
+
         if (showNotif) flashSaveIndicator();
         const el = document.getElementById('profile-last-save');
         if (el) el.textContent = 'Guardado: ' + new Date().toLocaleTimeString();
-      }}
+      } catch (e) {
+        console.warn('[SAVE] Error en Supabase:', e);
+        // Si falla Supabase, el progreso sigue a salvo en LocalStorage.
+      } finally {
+        _isSaving = false;
+      }
+    }
+
 
     function scheduleSave() {
-      // Debounced auto-save 10s after any action
+      // Debounced auto-save 2s after any action
       clearTimeout(_saveTimeout);
       _saveTimeout = setTimeout(() => saveGame(false), 2000);
     }
+
+    // Listeners de salida para asegurar guardado final
+    window.addEventListener('beforeunload', () => { if (currentUser) saveGame(false); });
+    window.addEventListener('pagehide', () => { if (currentUser) saveGame(false); });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && currentUser) {
+        saveGame(false);
+      }
+    });
 
     function flashSaveIndicator() {
       const el = document.getElementById('save-indicator');
@@ -661,7 +670,8 @@
             renderTeam();
             updateProfilePanel();
             updateHud();
-            scheduleSave();
+            if (typeof saveGame === 'function') saveGame(false);
+            else scheduleSave();
 
             // Sinergia Criador: Escáner de Huevos post-eclosión (Nivel 20+)
             if (state.playerClass === 'criador' && (state.trainerLevel || 1) >= 20) {

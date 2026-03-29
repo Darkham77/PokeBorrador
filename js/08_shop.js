@@ -207,6 +207,7 @@
       }
       updateHud();
       if (typeof checkClassUnlock === 'function') checkClassUnlock();
+      if (typeof saveGame === 'function') saveGame(false);
     }
 
     // What unlocks at each trainer level
@@ -1005,6 +1006,7 @@ function buyItemBC(itemId) {
   updateHud();
   renderTrainerShop();
   notify(`¡Compraste ${item.name}!`, '🏅');
+  if (typeof saveGame === 'function') saveGame(false);
 }
 
 function _marketGetQty(itemId) {
@@ -1151,6 +1153,7 @@ function _marketSetQty(itemId, raw) {
       updateHud();
       renderMarket();
       notify(`¡Compraste x${qty} ${item.name}!`, item.icon);
+      if (typeof saveGame === 'function') saveGame(false);
     }
 
 

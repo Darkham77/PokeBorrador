@@ -2714,6 +2714,7 @@ function awardBattleExperience(isCapture = false) {
   // Trainer EXP
   const trainerExpGain = b.isGym ? (b.enemy.level * 2) : Math.max(1, Math.floor(b.enemy.level / 2));
   addTrainerExp(trainerExpGain);
+  if (typeof saveGame === 'function') saveGame(false);
 }
 
 function showExploreAgainPrompt(locId) {
@@ -3003,7 +3004,9 @@ function endBattle(won) {
     state.stats.wins = (state.stats.wins || 0) + 1;
     // Limpiar batalla activa guardada (la batalla terminó correctamente)
     state.activeBattle = null;
-    scheduleSave(); updateProfilePanel();
+    if (typeof saveGame === 'function') saveGame(false);
+    else scheduleSave();
+    updateProfilePanel();
     setBtns(false);
     // Show all rewards in expanded log, then wait for player to press Continue
     // For gyms: use gym's locationId. For trainers: use locationId (not lastWildLocId which is from wild encounters). For wild: use lastWildLocId then locationId.
@@ -3075,7 +3078,9 @@ function endBattle(won) {
       state.stats.battles = (state.stats.battles || 0) + 1;
       // Limpiar batalla activa guardada (derrota total)
       state.activeBattle = null;
-      scheduleSave(); updateProfilePanel();
+      if (typeof saveGame === 'function') saveGame(false);
+      else scheduleSave();
+      updateProfilePanel();
       setBtns(false);
       showBattleEndUI(() => { showScreen('game-screen'); showTab('map'); });
     }
@@ -3121,6 +3126,7 @@ function runFromBattle() {
   setTimeout(() => {
     showScreen('game-screen');
     showTab('map');
+    if (typeof saveGame === 'function') saveGame(false);
   }, 1000);
 }
 
@@ -3154,7 +3160,8 @@ function addEgg(pokemonId, origin = 'encounter', extraData = {}) {
   }
 
   updateProfilePanel(); updateHud();
-  scheduleSave();
+  if (typeof saveGame === 'function') saveGame(false);
+  else scheduleSave();
   return true;
 }
 
