@@ -1481,21 +1481,22 @@ function _openPokemonSelectModal(missionId, info, cls) {
     ? `+${info.blocks} IV aleatorio | -${info.blocks} Vigor${info.vigorSaveChance > 0 ? ' <span style="color:#a855f7;">(10% ahorro)</span>' : ''}`
     : `~${(2500 + 20 * 50) * info.blocks} EXP${info.bonusLevel ? ' + <strong>+1 Nivel</strong>' : ''}`;
 
-  // Genera el HTML de una tarjeta Pokémon con toda la info
-  const buildCard = (p, realIdx) => {
+  // Estado local de filtros
+  window._missionFilter = { search: '', fav: false, breed: false, iv31: false };
+
+  const buildCard = (p) => {
+    const realIdx = (state.box || []).indexOf(p);
     const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
     const vigor = (p.vigor !== undefined && p.vigor !== null) ? p.vigor : 20;
     const tags = p.tags || [];
     const spriteUrl = (typeof getSpriteUrl === 'function') ? getSpriteUrl(p.id, p.isShiny) : '';
 
-    // Tags HTML
     const tagsHtml = tags.length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
       ${tags.includes('fav')   ? '<span style="background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);border-radius:6px;padding:1px 6px;font-size:10px;">⭐ Fav</span>' : ''}
       ${tags.includes('breed') ? '<span style="background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.4);border-radius:6px;padding:1px 6px;font-size:10px;">❤️ Crianza</span>' : ''}
       ${tags.includes('iv31')  ? '<span style="background:rgba(34,197,94,0.2);color:#4ade80;border:1px solid rgba(34,197,94,0.4);border-radius:6px;padding:1px 6px;font-size:10px;">31 IV Max</span>' : ''}
     </div>` : '';
 
-    // IV bars individuales
     const IV_LABELS = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SpA', spd: 'SpD', spe: 'VEL' };
     const ivBars = Object.entries(p.ivs || {}).map(([stat, val]) => {
       const pct = Math.round((val / 31) * 100);
@@ -1509,7 +1510,6 @@ function _openPokemonSelectModal(missionId, info, cls) {
       </div>`;
     }).join('');
 
-    // Stat extra según clase
     const extraInfo = cls === 'criador'
       ? `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
           <span style="font-size:10px;color:#a855f7;">💧 Vigor: <strong>${vigor}/20</strong></span>
@@ -1523,7 +1523,6 @@ function _openPokemonSelectModal(missionId, info, cls) {
     return `<div style="background:${clsDef.color}0d;border:1px solid ${clsDef.color}33;border-radius:12px;padding:12px;transition:0.15s;"
         onmouseover="this.style.background='${clsDef.color}20';this.style.borderColor='${clsDef.color}66'"
         onmouseout="this.style.background='${clsDef.color}0d';this.style.borderColor='${clsDef.color}33'">
-      <!-- Fila superior: sprite + nombre + nivel -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
         <div style="width:44px;height:44px;flex-shrink:0;position:relative;">
           ${spriteUrl
@@ -1537,13 +1536,10 @@ function _openPokemonSelectModal(missionId, info, cls) {
           ${tagsHtml}
         </div>
       </div>
-      <!-- IVs -->
       <div style="margin-bottom:8px;">${ivBars}</div>
-      <!-- Stat extra -->
       ${extraInfo}
-      <!-- Botones -->
       <div style="display:flex;gap:6px;margin-top:10px;">
-        <button onclick="_missionViewDetail(${realIdx},'${missionId}')"
+        <button onclick="_missionViewDetail(${realIdx})"
           style="flex:0 0 auto;padding:6px 10px;border:1px solid ${clsDef.color}55;border-radius:8px;background:rgba(255,255,255,0.05);color:${clsDef.color};font-size:10px;cursor:pointer;transition:0.15s;"
           onmouseover="this.style.background='${clsDef.color}22'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
           🔍 Ver
@@ -1557,33 +1553,87 @@ function _openPokemonSelectModal(missionId, info, cls) {
     </div>`;
   };
 
-  const cardsHtml = availBox.length === 0
-    ? `<div style="text-align:center;color:#6b7280;padding:24px;font-size:11px;">Tu PC está vacía o todos tus Pokémon están en misión.</div>`
-    : availBox.map(p => buildCard(p, (state.box || []).indexOf(p))).join('');
-
   const ov = document.createElement('div');
   ov.id = 'mission-select-overlay';
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s;';
   ov.innerHTML = `
-    <div style="background:#0f172a;border:1px solid ${clsDef.color}44;border-radius:20px;padding:20px;max-width:440px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.8);">
+    <div style="background:#0f172a;border:1px solid ${clsDef.color}44;border-radius:20px;padding:20px;max-width:440px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.8);">
       <!-- Header -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-shrink:0;">
         <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${clsDef.color};">${clsDef.icon || ''} SELECCIONAR PARA MISIÓN</div>
         <button onclick="document.getElementById('mission-select-overlay').remove()" style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;line-height:1;">✕</button>
       </div>
       <!-- Coste y recompensa -->
-      <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.06);font-size:11px;color:#9ca3af;line-height:1.7;">
+      <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.06);font-size:11px;color:#9ca3af;line-height:1.7;flex-shrink:0;">
         💰 Costo: ${costHtml}&nbsp;&nbsp;·&nbsp;&nbsp;🎁 Recompensa: ${rewardHtml}
       </div>
-      <!-- Pokémon cards -->
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        ${cardsHtml}
+      
+      <!-- FILTROS -->
+      <div style="margin-bottom:12px;flex-shrink:0;background:rgba(255,255,255,0.02);padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+        <input type="text" id="mission-pokes-filter-name" placeholder="Buscar por nombre..." 
+          style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);padding:10px;border-radius:8px;color:#fff;font-size:11px;margin-bottom:8px;outline:none;"
+          oninput="window._updateMissionPokemonList_internal()">
+        
+        <div style="display:flex;gap:6px;">
+          <button id="btn-mfilter-fav" onclick="window._toggleMissionFilter('fav')" style="flex:1;padding:6px;font-size:9px;border:1px solid rgba(251,191,36,0.2);border-radius:8px;background:rgba(251,191,36,0.05);color:#fbbf24;cursor:pointer;transition:0.15s;">⭐ Fav</button>
+          <button id="btn-mfilter-breed" onclick="window._toggleMissionFilter('breed')" style="flex:1;padding:6px;font-size:9px;border:1px solid rgba(239,68,68,0.2);border-radius:8px;background:rgba(239,68,68,0.05);color:#f87171;cursor:pointer;transition:0.15s;">❤️ Crianza</button>
+          <button id="btn-mfilter-iv31" onclick="window._toggleMissionFilter('iv31')" style="flex:1;padding:6px;font-size:9px;border:1px solid rgba(34,197,94,0.2);border-radius:8px;background:rgba(34,197,94,0.05);color:#4ade80;cursor:pointer;transition:0.15s;">🧬 IV 31</button>
+        </div>
+      </div>
+
+      <!-- Pokémon cards container -->
+      <div id="mission-pokes-list" style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;padding-right:4px;">
+        <!-- Se rellena dinámicamente -->
       </div>
     </div>`;
   document.body.appendChild(ov);
 
+  // Lógica de filtrado y renderizado
+  window._updateMissionPokemonList_internal = () => {
+    const listEl = document.getElementById('mission-pokes-list');
+    if (!listEl) return;
+    const f = window._missionFilter;
+    const nameQuery = document.getElementById('mission-pokes-filter-name')?.value.toLowerCase().trim() || '';
+    
+    const filtered = availBox.filter(p => {
+      if (nameQuery && !p.name.toLowerCase().includes(nameQuery) && !p.id.toLowerCase().includes(nameQuery)) return false;
+      const tags = p.tags || [];
+      if (f.fav && !tags.includes('fav')) return false;
+      if (f.breed && !tags.includes('breed')) return false;
+      if (f.iv31 && !tags.includes('iv31')) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `<div style="text-align:center;color:#6b7280;padding:24px;font-size:11px;">No se encontraron Pokémon con los filtros actuales.</div>`;
+    } else {
+      listEl.innerHTML = filtered.map(p => buildCard(p)).join('');
+    }
+
+    // Update buttons style
+    const updateBtn = (id, active, color) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.background = active ? color : 'rgba(255,255,255,0.05)';
+        el.style.color = active ? '#fff' : color;
+        el.style.border = active ? `1px solid ${color}` : `1px solid rgba(255,255,255,0.1)`;
+      }
+    };
+    updateBtn('btn-mfilter-fav', f.fav, '#fbbf24');
+    updateBtn('btn-mfilter-breed', f.breed, '#f87171');
+    updateBtn('btn-mfilter-iv31', f.iv31, '#4ade80');
+  };
+
+  window._toggleMissionFilter = (key) => {
+    window._missionFilter[key] = !window._missionFilter[key];
+    window._updateMissionPokemonList_internal();
+  };
+
+  // Inicializar lista
+  window._updateMissionPokemonList_internal();
+
   // Ver detalles completos (sin cerrar el selector)
-  window._missionViewDetail = (boxIdx, mid) => {
+  window._missionViewDetail = (boxIdx) => {
     if (typeof showPokemonDetails === 'function') {
       showPokemonDetails((state.box || [])[boxIdx], boxIdx, 'box');
     }
