@@ -13,7 +13,7 @@ const PLAYER_CLASSES = {
       '💰 Mercado Negro: vendé Pokémon de la caja directo por ₽',
       '🎯 Robo Rápido: 15-30% de chance de robar un ítem al iniciar batalla vs entrenador',
       '🏪 20% de descuento en el Mercado Negro exclusivo',
-      '🗺️ Extorsión de Ruta: una ruta diaria x1.5 ₽ en batallas NPC',
+      '🗺️ Extorsión de Ruta: una ruta diaria x1.5 ₽ en batallas NPC genéricas',
       '🚔 Robo al Oficial: 5% chance de robar un Pokémon al Oficial'
     ],
     bonusLevels: [1, 1, 10, 15, 20],
@@ -34,8 +34,8 @@ const PLAYER_CLASSES = {
       "Venta directa en PC: ₽500 + (Nivel Seleccionado x 10). Pokémon de Tier alta dan bonos extra.",
       "15% de probabilidad base. Escala a 30% al alcanzar el nivel 15 de clase. Solo vs Entrenadores NPC.",
       "Aplica un modificador de x0.80 al precio de todos los objetos en la Tienda del Entrenador.",
-      "Cada día se elige una ruta al azar. En esa ruta (marcada con [R]), ganarás x1.5 de dinero al derrotar entrenadores NPC.",
-      "Al derrotar al Oficial de Policía en batalla, hay un 5% de probabilidad de robarle aleatoriamente uno de los Pokémon que utilizó y enviarlo a tu PC."
+      "Cada día se elige una ruta al azar. En esa ruta, ganarás x1.5 de dinero al derrotar entrenadores NPC genéricos.",
+      "Al derrotar al Oficial de Policía en batalla, hay un 5% de probabilidad de robarle aleatoriamente uno de los Pokémon que utilizó y enviarlo a tu PC (requiere espacio)."
     ],
     technicalPenalties: [
       "El servicio de enfermería básico tiene un recargo del 100% (x2) por ser miembro del Team Rocket.",
@@ -243,12 +243,18 @@ function selectClass(classId) {
   state.playerClass = classId;
   state.classLevel = 1;
   state.classXP = 0;
-  state.classData = state.classData || {};
-  state.classData.captureStreak = 0;
-  state.classData.longestStreak = 0;
-  state.classData.reputation = state.classData.reputation || 0;
-  state.classData.blackMarketSales = state.classData.blackMarketSales || 0;
-  state.classData.criminality = state.classData.criminality || 0;
+  
+  // Reiniciar datos específicos de clase para evitar exploits al cambiar
+  state.classData = {
+    captureStreak: 0,
+    longestStreak: 0,
+    reputation: 0,
+    blackMarketSales: 0,
+    criminality: 0,
+    extortedRouteId: null,
+    officialRouteId: null,
+    kitCaptures: 0
+  };
 
   closeClassModal();
   updateClassHud();
@@ -688,15 +694,19 @@ function checkClassUnlock() {
 function onCaptureSuccess() {
   if (state.playerClass !== 'cazabichos') return;
   state.classData = state.classData || {};
-  state.classData.captureStreak = (state.classData.captureStreak || 0) + 1;
+  // Racha máxima de x4 según diseño
+  const currentStreak = state.classData.captureStreak || 0;
+  if (currentStreak < 4) {
+    state.classData.captureStreak = currentStreak + 1;
+  }
+  
   if (state.classData.captureStreak > (state.classData.longestStreak || 0)) {
     state.classData.longestStreak = state.classData.captureStreak;
   }
+  
   const streak = state.classData.captureStreak;
-  const mult = Math.min(1.0 + 0.15 * streak, 4.0).toFixed(2);
-  if (streak % 5 === 0) {
-    notify(`¡Racha x${streak}! Shiny x${mult} — ¡Seguí!`, '⚡');
-  }
+  const mult = (1.0 + 0.75 * streak).toFixed(2); // x1.75, x2.50, x3.25, x4.00
+  notify(`¡Racha x${streak}! Shiny e IVs x${mult}`, '⚡');
 
   // Kit de Campo (Nv. 10): 1 Poké Ball cada 10 capturas salvajes
   if ((state.classLevel || 1) >= 10) {
@@ -732,7 +742,8 @@ function getActiveShinyRate() {
   if (state.playerClass === 'cazabichos') {
     const streak = (state.classData && state.classData.captureStreak) || 0;
     if (streak > 0) {
-      const mult = Math.min(1.0 + 0.15 * streak, 4.0);
+      // Multiplicador lineal hasta x4.0 (1.0 + 0.75 * streak)
+      const mult = 1.0 + 0.75 * streak;
       baseRate = Math.floor(baseRate / mult);
     }
   }
@@ -743,7 +754,8 @@ function getActiveShinyRate() {
 function getStreakIvFloor() {
   if (state.playerClass !== 'cazabichos') return 0;
   const streak = (state.classData && state.classData.captureStreak) || 0;
-  return Math.min(20, Math.floor(streak * 2));
+  // Con racha x4, el suelo de IVs es 20 (buen balance)
+  return Math.min(20, streak * 5);
 }
 
 // ── Robo Rápido (Equipo Rocket) ───────────────────────────────────────────
