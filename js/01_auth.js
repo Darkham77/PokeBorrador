@@ -144,8 +144,14 @@
           if (Array.isArray(state.badges)) state.badges = state.badges.length;
           else state.badges = parseInt(state.badges) || 0;
           const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + Date.now().toString(36);
-          if (state.team) state.team.forEach(p => { if (!p.uid) p.uid = getUidStr(); });
-          if (state.box) state.box.forEach(p => { if (!p.uid) p.uid = getUidStr(); });
+          if (state.team) state.team.forEach(p => { 
+            if (!p.uid) p.uid = getUidStr(); 
+            if (p.ivs) { delete p.ivs._cost; delete p.ivs._haBoost; delete p.ivs._haBoo; delete p.ivs._nature; }
+          });
+          if (state.box) state.box.forEach(p => { 
+            if (!p.uid) p.uid = getUidStr(); 
+            if (p.ivs) { delete p.ivs._cost; delete p.ivs._haBoost; delete p.ivs._haBoo; delete p.ivs._nature; }
+          });
           
           if (typeof syncRetroactivePokedex === 'function') syncRetroactivePokedex();
           
@@ -244,8 +250,14 @@
 
           // Ensure older saves get a UID for breeding system
           const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + Date.now().toString(36);
-          if (state.team) state.team.forEach(p => { if (!p.uid) p.uid = getUidStr(); });
-          if (state.box) state.box.forEach(p => { if (!p.uid) p.uid = getUidStr(); });
+          if (state.team) state.team.forEach(p => { 
+            if (!p.uid) p.uid = getUidStr(); 
+            if (p.ivs) { delete p.ivs._cost; delete p.ivs._haBoost; delete p.ivs._haBoo; delete p.ivs._nature; }
+          });
+          if (state.box) state.box.forEach(p => { 
+            if (!p.uid) p.uid = getUidStr(); 
+            if (p.ivs) { delete p.ivs._cost; delete p.ivs._haBoost; delete p.ivs._haBoo; delete p.ivs._nature; }
+          });
           // Backfill gender for existing Pokemon
           let _genderUpdated = false;
           if (state.team) state.team.forEach(p => { if (ensurePokemonGender(p)) _genderUpdated = true; });
@@ -619,6 +631,10 @@
                 delete egg.inherited_ivs._nature;
             }
             p.ivs = { ...egg.inherited_ivs };
+            delete p.ivs._cost;
+            delete p.ivs._haBoost;
+            delete p.ivs._haBoo;
+            delete p.ivs._nature;
         }
         if (egg.isShiny !== undefined) p.isShiny = egg.isShiny;
         p.vigor = Math.floor(Math.random() * 3) + 1; // 1 a 3 para crías

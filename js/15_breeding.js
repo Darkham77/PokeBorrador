@@ -1708,6 +1708,10 @@ window.scanEggInMenu = async function(type, index) {
   if (ivSource) {
      if (ivSource._nature) { p.nature = ivSource._nature; }
      p.ivs = { ...ivSource };
+     delete p.ivs._nature;
+     delete p.ivs._cost;
+     delete p.ivs._haBoost;
+     delete p.ivs._haBoo;
      if (type === 'walked' && egg.isShiny !== undefined) p.isShiny = egg.isShiny;
      if (type === 'daycare' && egg.shiny_roll) p.isShiny = true;
   }

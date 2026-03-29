@@ -1383,7 +1383,7 @@ function _openRocketSacrificeModal(missionId, info) {
     </div>` : '';
 
     const IV_LABELS = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SpA', spd: 'SpD', spe: 'VEL' };
-    const ivBars = Object.entries(p.ivs || {}).map(([stat, val]) => {
+    const ivBars = Object.entries(p.ivs || {}).filter(([stat]) => IV_LABELS[stat]).map(([stat, val]) => {
       const pct = Math.round((val / 31) * 100);
       const color = val >= 28 ? '#4ade80' : val >= 15 ? '#fbbf24' : '#f87171';
       return `<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
@@ -1545,7 +1545,7 @@ function _openPokemonSelectModal(missionId, info, cls) {
     </div>` : '';
 
     const IV_LABELS = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SpA', spd: 'SpD', spe: 'VEL' };
-    const ivBars = Object.entries(p.ivs || {}).map(([stat, val]) => {
+    const ivBars = Object.entries(p.ivs || {}).filter(([stat]) => IV_LABELS[stat]).map(([stat, val]) => {
       const pct = Math.round((val / 31) * 100);
       const color = val >= 28 ? '#4ade80' : val >= 15 ? '#fbbf24' : '#f87171';
       return `<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">

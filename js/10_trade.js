@@ -138,7 +138,7 @@
              width="80" height="80" style="image-rendering:pixelated;margin-bottom:4px;"
              onerror="this.outerHTML='<div style=\\'font-size:64px;line-height:1;margin-bottom:8px;\\'>${pokemon.emoji}</div>'">`
         : `<div style="font-size:64px;line-height:1;margin-bottom:8px;">${pokemon.emoji}</div>`;
-      const ivEntries = Object.entries(pokemon.ivs || {}).map(([s, v]) => `
+      const ivEntries = Object.entries(pokemon.ivs || {}).filter(([s]) => ['hp','atk','def','spa','spd','spe'].includes(s)).map(([s, v]) => `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
       <span style="font-size:10px;width:40px;color:var(--gray);text-transform:uppercase;">${s}</span>
       <div style="flex:1;background:rgba(255,255,255,0.1);border-radius:4px;height:6px;overflow:hidden;">
