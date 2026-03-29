@@ -492,27 +492,10 @@ function renderDaycareBreedingSummary(pA, pB, compat, itemA = '', itemB = '') {
         <div style="font-size:10px; color:var(--gray);">Costo al recoger: <span style="color:var(--yellow); font-weight:800;">$${cost.toLocaleString()}</span></div>
         <div style="font-size:10px; color:var(--gray);">Tiempo: <span style="color:var(--green); font-weight:800;">${intervalTxt}</span></div>
       </div>
-      ${isCriador ? `
-      <div style="margin-top:12px; padding:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(139,92,246,0.3); border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
-        <div style="flex:1;">
-          <div style="font-size:9px; font-family:'Press Start 2P'; color:var(--purple); margin-bottom:4px;">🏪 MERCADO DE CRÍAS</div>
-          <div style="font-size:9px; color:var(--gray);">Venta automática por ₽</div>
-        </div>
-        <label class="switch-small">
-          <input type="checkbox" id="breeding-auto-sell" ${state.classData?.autoSellBreeding ? 'checked' : ''} onchange="toggleBreedingAutoSell(this.checked)">
-          <span class="slider-small"></span>
-        </label>
-      </div>` : ''}
     </div>
   `;
 }
 
-function toggleBreedingAutoSell(val) {
-  if (!state.classData) state.classData = {};
-  state.classData.autoSellBreeding = val;
-  saveGame();
-  notify(val ? 'Venta automática activada.' : 'Venta automática desactivada.', '🏪');
-}
 let _daycareTimer = null;
 let _activeDaycareSlots = [];
 async function loadDaycareSlots() {
@@ -1020,17 +1003,6 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
       finalSpecies = Math.random() < 0.5 ? 'nidoran_f' : 'nidoran_m';
   }
   
-  // Mercado de Crías: Venta automática para Criador
-  if (_isCriador && state.classData?.autoSellBreeding) {
-      const sellPrice = Math.floor(ivs._cost * 0.75) + 1000; // Recupera costo + bono
-      state.money = (state.money || 0) + sellPrice;
-      addClassXP(30);
-      notify(`¡Cría de ${finalSpecies} vendida al Mercado por ₽${sellPrice.toLocaleString()}!`, '🏪');
-      pA.vigor--;
-      pB.vigor--;
-      if (typeof scheduleSave === 'function') scheduleSave();
-      return true;
-  }
   
   await sb.from('eggs').insert({ player_id: pid, species: finalSpecies, parent_a: pA.uid, parent_b: pB.uid, inherited_ivs: ivs, egg_moves: moves, shiny_roll: (Math.random() < 1 / 512), created_at: dateObj.toISOString(), hatch_ready_time: ready.toISOString(), incubation_speed_bonus: 0 });
 

@@ -162,7 +162,7 @@ const PLAYER_CLASSES = {
       "El contador de pasos requerido para que un huevo eclosione se reduce en un 25%.",
       "Cada eclosión tiene un 15% de posibilidad de recuperar 1 punto de vigor en uno de los padres en la guardería.",
       "Muestra la Naturaleza (Modificadores de Stats) del Pokémon rival directamente en el HUD de batalla.",
-      "Tras eclosionar un huevo, selecciona otro huevo para conocer su genética. Permite conservarlo con un recordatorio en pantalla o venderlo (₽1000 - ₽5000) según sus IVs."
+      "Tras eclosionar un huevo, selecciona otro huevo para conocer su genética. Permite conservarlo con un recordatorio en pantalla para gestionar su eclosión."
     ],
     technicalPenalties: [
       "Tu enfoque en la genética te aleja del fragor de la batalla (x0.90 EXP global).",
