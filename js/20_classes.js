@@ -1604,7 +1604,7 @@ function _openPokemonSelectModal(missionId, info, cls) {
     // Cerrar tanto el selector como el panel de detalles si está abierto
     document.getElementById('mission-select-overlay')?.remove();
     if (typeof closePokemonDetail === 'function') closePokemonDetail();
-    _launchMission(mid, { pokeBoxIdx: boxIdx, pokeName: p.name || p.id });
+    _launchMission(mid, { pokeUid: p.uid, pokeName: p.name || p.id });
     if (typeof updateHud === 'function') updateHud();
   };
 }
@@ -1639,6 +1639,9 @@ function collectClassMission() {
   if (!m) return;
   const info = getMissionCostInfo(am.id);
 
+  // Intentar encontrar al Pokémon por UID en la Caja (o Equipo, por si acaso)
+  const p = (state.box || []).find(x => x.uid === am.pokeUid) || (state.team || []).find(x => x.uid === am.pokeUid);
+
   let notifMsg = '⚠️ Misión completada.';
   let notifIcon = '📋';
 
@@ -1660,13 +1663,11 @@ function collectClassMission() {
     addCriminality(5 * m.durationHs / 6);
 
   } else if (cls === 'entrenador') {
-    const boxIdx = am.pokeBoxIdx;
-    const p = (state.box || [])[boxIdx];
     if (p) {
       const expBlocks = info?.blocks || 1;
       const expGained = expBlocks * (2500 + (p.level * 50));
       p.exp = (p.exp || 0) + expGained;
-      // Si opgión 24h, dar +1 nivel garantizado
+      // Si opción 24h, dar +1 nivel garantizado
       if (am.id === 'mission_24h') {
         p.level = Math.min((p.level || 1) + 1, 100);
         notifMsg = `¡${am.pokeName} ganó +${expGained.toLocaleString()} EXP y subió un nivel!`;
@@ -1682,8 +1683,6 @@ function collectClassMission() {
     if (typeof updateHud === 'function') updateHud();
 
   } else if (cls === 'criador') {
-    const boxIdx = am.pokeBoxIdx;
-    const p = (state.box || [])[boxIdx];
     if (p) {
       const blocks = info?.blocks || 1;
       const vigorSaveChance = info?.vigorSaveChance || 0;
@@ -1719,6 +1718,8 @@ function collectClassMission() {
       p.onMission = false;
       notifMsg = `¡Laboratorio: ${am.pokeName} ganó +${ivGained} IV${ivGained !== 1 ? 's' : ''} (-${vigorLost} Vigor)!`;
       notifIcon = '🧬';
+    } else {
+      notifMsg = '¡Investigación completada!';
     }
     addClassXP(20 * m.durationHs / 6);
   }
@@ -1742,12 +1743,12 @@ function processOfflineClassMissions() {
   if (!m) return;
   const info = getMissionCostInfo(am.id);
 
-  // Liberar el Pokémon si había uno bloqueado
-  const boxIdx = am.pokeBoxIdx;
-  if (boxIdx !== undefined) {
-    const p = (state.box || [])[boxIdx];
-    if (p) p.onMission = false;
-  }
+  // Liberar el Pokémon si había uno bloqueado (usando UID o fallback de Index antiguo)
+  const p = (state.box || []).find(x => x.uid === am.pokeUid) || 
+            (state.team || []).find(x => x.uid === am.pokeUid) ||
+            (am.pokeBoxIdx !== undefined ? (state.box || [])[am.pokeBoxIdx] : null);
+  
+  if (p) p.onMission = false;
 
   let notifMsg = 'Misión completada mientras estabas fuera.';
   if (cls === 'cazabichos') {
@@ -1761,7 +1762,6 @@ function processOfflineClassMissions() {
     state.money = (state.money || 0) + earned;
     notifMsg = `📬 Extorsión offline: +₽${earned.toLocaleString()}.`;
   } else if (cls === 'entrenador') {
-    const p = (state.box || [])[boxIdx];
     if (p) {
       const expBlocks = info?.blocks || 1;
       const expGained = expBlocks * (2500 + (p.level * 50));
@@ -1770,7 +1770,6 @@ function processOfflineClassMissions() {
       notifMsg = `📬 ${am.pokeName || 'Tu Pokémon'} ganó EXP mientras no estabas.`;
     }
   } else if (cls === 'criador') {
-    const p = (state.box || [])[boxIdx];
     if (p) {
       const blocks = info?.blocks || 1;
       const vigorSaveChance = info?.vigorSaveChance || 0;
@@ -1885,6 +1884,18 @@ function buyReputationItem(itemId) {
 
 // ── Inicialización ────────────────────────────────────────────────────────
 function initClassSystem() {
+  // Limpieza de misiones fantasma: si no hay misión activa rastreando un UID, desbloquear todos los Pokémon
+  const activeMission = state.classData?.activeMission;
+  const activeUid = activeMission?.pokeUid;
+  
+  // Revisar Box y Equipo
+  [...(state.team || []), ...(state.box || [])].forEach(p => {
+    if (p.onMission && p.uid !== activeUid) {
+      p.onMission = false;
+      console.log(`[CLASES] Pokémon desbloqueado (misión fantasma): ${p.name}`);
+    }
+  });
+
   updateClassHud();
   checkClassUnlock();
   processOfflineClassMissions();
