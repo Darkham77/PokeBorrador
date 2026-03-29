@@ -91,7 +91,8 @@ async function loadActiveEvents() {
       }
     }
 
-    _activeEvents = [...active, ...finished];
+    _activeEvents = active;
+    _finishedEvents = finished;
     _eventsLoaded = true;
     _updateEventBanner();
 
@@ -134,12 +135,11 @@ function _isEventActiveNow(ev) {
 }
 
 function isEventActive(id) {
-  return _activeEvents.some(e => e.id === id && !e.isFinished);
+  return _activeEvents.some(e => e.id === id);
 }
 
 function getEventBonus(type) {
   for (const ev of _activeEvents) {
-    if (ev.isFinished) continue;
     if (ev.config && ev.config[type + 'Mult']) return ev.config[type + 'Mult'];
   }
   return 1;

@@ -53,9 +53,10 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
   // Slides de Eventos Finalizados (Reclamo/Resultados)
   const finishedEvents = (typeof _finishedEvents !== 'undefined') ? _finishedEvents : [];
   finishedEvents.forEach(fv => {
-    const award = (state._pendingAwards || []).find(a => a.event_id === fv.event_id);
+    // Verificar si el jugador tiene un premio para mostrar "¡HAS GANADO!"
+    const award = (state._pendingAwards || []).find(a => a.event_id === fv.id);
     const title = award ? '¡HAS GANADO!' : 'Evento Terminado';
-    const sub = award ? '¡Reclama tus premios!' : 'Ver resultados finales';
+    const sub = award ? '¡Reclama tus premios!' : '¡Aquí los ganadores!';
     const icon = award ? '🏆' : fv.icon || '🏁';
     const color = award ? '#22c55e' : '#94a3b8';
 
@@ -63,7 +64,7 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
       icon: icon,
       title: title,
       content: `<div class="pc-banner-text" style="font-size:10px; color:${color}; font-weight:bold;">${fv.name}<br>${sub}</div>`,
-      onclick: `if(typeof _evShowPodium === 'function') _evShowPodium('${fv.event_id}')`,
+      onclick: `if(typeof showEventResultsModal === 'function') showEventResultsModal('${fv.id}')`,
       isEvent: true,
       color: color
     });
