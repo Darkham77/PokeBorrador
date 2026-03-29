@@ -519,8 +519,11 @@ async function updateDaycareSummary() {
     if (slots.length === 2 && slots[0].pokemon && slots[1].pokemon) {
         const compat = checkCompatibility(slots[0].pokemon, slots[1].pokemon);
         const midCard = document.getElementById('daycare-mid-card');
-        const selA = document.getElementById('slot-a-item')?.value || '';
-        const selB = document.getElementById('slot-b-item')?.value || '';
+        
+        // Use confirmed items from the Pokemon state if they exist, otherwise look at the selectors
+        const selA = slots[0].pokemon.heldItem || document.getElementById('slot-a-item')?.value || '';
+        const selB = slots[1].pokemon.heldItem || document.getElementById('slot-b-item')?.value || '';
+        
         if (midCard) {
             midCard.innerHTML = renderDaycareBreedingSummary(slots[0].pokemon, slots[1].pokemon, compat, selA, selB);
         }
@@ -604,13 +607,81 @@ function renderDaycareSlot(id, slot) {
     document.getElementById(`slot-${id}-sprite`).innerHTML = sUrl ? `<img src="${sUrl}">` : p.emoji;
     document.getElementById(`slot-${id}-name`).innerHTML = `${p.name} <span class="daycare-slot-level">Nv.${p.level}</span>`;
     document.getElementById(`slot-${id}-info`).innerHTML = `<span class="daycare-slot-info-label">IVs</span> <span class="daycare-slot-info-values">${p.ivs.hp}/${p.ivs.atk}/${p.ivs.def}/${p.ivs.spa}/${p.ivs.spd}/${p.ivs.spe}</span><span class="daycare-slot-info-sep">•</span><span class="daycare-slot-info-label">Nat</span> <span class="daycare-slot-info-values">${p.nature || 'Serio'}</span><span class="daycare-slot-info-sep">•</span><span class="daycare-slot-info-label">Gen</span> <span class="daycare-slot-info-values">${genderSymbol(p.gender)}</span><span class="daycare-slot-info-sep">•</span><span class="daycare-slot-info-label">Vig</span> <span class="daycare-slot-info-values">⚡${p.vigor || 0}</span>`;
-    if (itemContainer) { itemContainer.style.display = 'block'; populateDaycareItemSelect(id); }
+    
+    if (itemContainer) { 
+        itemContainer.style.display = 'block'; 
+        
+        const selectorWrap = document.getElementById(`slot-${id}-item-selector-wrap`);
+        const confirmedWrap = document.getElementById(`slot-${id}-confirmed-item-wrap`);
+        const confirmedName = document.getElementById(`slot-${id}-confirmed-item-name`);
+        
+        if (p.heldItem) {
+            // Item is confirmed
+            if (selectorWrap) selectorWrap.style.display = 'none';
+            if (confirmedWrap) confirmedWrap.style.display = 'block';
+            if (confirmedName) confirmedName.textContent = p.heldItem;
+        } else {
+            // Item selection mode
+            if (selectorWrap) selectorWrap.style.display = 'block';
+            if (confirmedWrap) confirmedWrap.style.display = 'none';
+            populateDaycareItemSelect(id); 
+        }
+    }
   } else {
     document.getElementById(`slot-${id}-sprite`).innerHTML = '❓';
     document.getElementById(`slot-${id}-name`).innerHTML = '— Vacía —';
     document.getElementById(`slot-${id}-info`).textContent = '';
-    if (itemContainer) { itemContainer.style.display = 'none'; document.getElementById(`slot-${id}-item`).value = ''; }
+    if (itemContainer) { 
+        itemContainer.style.display = 'none'; 
+        document.getElementById(`slot-${id}-item`).value = ''; 
+        const selectorWrap = document.getElementById(`slot-${id}-item-selector-wrap`);
+        const confirmedWrap = document.getElementById(`slot-${id}-confirmed-item-wrap`);
+        if (selectorWrap) selectorWrap.style.display = 'block';
+        if (confirmedWrap) confirmedWrap.style.display = 'none';
+    }
   }
+}
+
+async function confirmDaycareItem(slotId) {
+    const slotIdx = slotId === 'a' ? 1 : 2;
+    const slot = _activeDaycareSlots.find(s => s.slot_index === slotIdx);
+    if (!slot || !slot.pokemon) return;
+    
+    const sel = document.getElementById(`slot-${slotId}-item`);
+    const itemId = sel?.value;
+    if (!itemId) {
+        notify('Elegí un ítem primero.', '⚠️');
+        return;
+    }
+    
+    if (!state.inventory[itemId] || state.inventory[itemId] <= 0) {
+        notify(`No tenés ${itemId}.`, '❌');
+        return;
+    }
+    
+    // Confirming
+    state.inventory[itemId]--;
+    slot.pokemon.heldItem = itemId;
+    
+    notify(`¡${itemId} equipado y confirmado!`, '✓');
+    if (typeof saveGame === 'function') saveGame(true);
+    renderDaycareUI();
+}
+
+async function withdrawDaycareItem(slotId) {
+    const slotIdx = slotId === 'a' ? 1 : 2;
+    const slot = _activeDaycareSlots.find(s => s.slot_index === slotIdx);
+    if (!slot || !slot.pokemon || !slot.pokemon.heldItem) return;
+    
+    const itemId = slot.pokemon.heldItem;
+    
+    // Withdrawing
+    state.inventory[itemId] = (state.inventory[itemId] || 0) + 1;
+    slot.pokemon.heldItem = null;
+    
+    notify(`Retiraste ${itemId}.`, '↩');
+    if (typeof saveGame === 'function') saveGame(true);
+    renderDaycareUI();
 }
 
 // Deposit / Withdraw logic
@@ -853,19 +924,19 @@ function manageDaycareTimer(compatLvl, slots) {
         const pA = slots[0].pokemon, pB = slots[1].pokemon;
         if (typeof ensureVigor === 'function') { ensureVigor(pA); ensureVigor(pB); }
         if (pA.vigor > 0 && pB.vigor > 0) {
-            let iA = document.getElementById('slot-a-item')?.value || '';
-            let iB = document.getElementById('slot-b-item')?.value || '';
+            // ALWAYS use confirmed items (heldItem) if they are in daycare
+            // This is refresh-proof because heldItem is synced with the pokemon data
+            let iA = pA.heldItem || '';
+            let iB = pB.heldItem || '';
             
-            // Validate inventory presence for equipped items since they are consumed
-            if (iA && (!state.inventory[iA] || state.inventory[iA] <= 0)) iA = '';
-            if (iB && (!state.inventory[iB] || state.inventory[iB] <= 0)) iB = '';
-            if (iA === iB && iA && state.inventory[iA] < 2) iB = ''; // Can't use same item if only 1 in inventory
+            // Note: We don't need to validate inventory here because the item was 
+            // already deducted when clicking "Confirmar".
             
             const success = await generateEggAt(currentUser.id, pA, pB, iA, iB, new Date(_nextEggTime - intMs));
             if (success !== false) {
-                // Consume the items
-                if (iA) { state.inventory[iA]--; if (state.inventory[iA] <= 0) document.getElementById('slot-a-item').value = ''; }
-                if (iB) { state.inventory[iB]--; if (state.inventory[iB] <= 0) document.getElementById('slot-b-item').value = ''; }
+                // Remove the confirmed items as they are now used
+                pA.heldItem = null;
+                pB.heldItem = null;
                 
                 // Consume time by updating parent deposited_at
                 const consumeTo = new Date(_nextEggTime - intMs);
@@ -1060,8 +1131,19 @@ async function processOfflineBreeding(pid, inSlots) {
     for (let i = 0; i < canGen; i++) {
         if (pA.vigor <= 0 || pB.vigor <= 0) break;
         const spawnTime = new Date(earliest + intMs * (i + 1));
-        const res = await generateEggAt(pid, pA, pB, pA.heldItem, pB.heldItem, spawnTime);
-        if (res !== false) generated++;
+        
+        let iA = pA.heldItem || '';
+        let iB = pB.heldItem || '';
+        
+        const res = await generateEggAt(pid, pA, pB, iA, iB, spawnTime);
+        if (res !== false) {
+            generated++;
+            // Consumir el ítem después de la primera cría si se generaron varias offline
+            if (i === 0) {
+                pA.heldItem = null;
+                pB.heldItem = null;
+            }
+        }
     }
     if (generated > 0) notify(`¡${generated} huevo(s) generado(s) mientras no estabas!`, '🥚');
   }

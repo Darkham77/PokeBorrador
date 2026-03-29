@@ -773,10 +773,19 @@
           <div id="slot-a-name" class="daycare-slot-name">— Vacía —</div>
           <div id="slot-a-info" class="daycare-slot-info"></div>
           
-          <div id="slot-a-item-container" style="display:none;margin-top:8px;">
-            <select id="slot-a-item" onchange="updateDaycareSummary()" style="width:100%;padding:6px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.2);outline:none;font-size:10px;">
-              <option value="">-- Sin Ítem --</option>
-            </select>
+          <div id="slot-a-item-container" style="display:none;margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+            <div id="slot-a-item-selector-wrap">
+              <div style="font-size:9px;color:var(--gray);margin-bottom:6px;font-family:'Press Start 2P';">EQUIPAR ÍTEM:</div>
+              <select id="slot-a-item" onchange="updateDaycareSummary()" style="width:100%;padding:8px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.1);outline:none;font-size:11px;margin-bottom:8px;">
+                <option value="">-- Sin Ítem --</option>
+              </select>
+              <button onclick="confirmDaycareItem('a')" style="width:100%;padding:8px;border-radius:8px;background:rgba(107,203,119,0.15);color:var(--green);border:1px solid rgba(107,203,119,0.3);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">✓ CONFIRMAR</button>
+            </div>
+            <div id="slot-a-confirmed-item-wrap" style="display:none;text-align:center;">
+              <div style="font-size:9px;color:var(--yellow);margin-bottom:6px;font-family:'Press Start 2P';">ÍTEM EQUIPADO:</div>
+              <div id="slot-a-confirmed-item-name" style="font-size:12px;font-weight:800;color:#fff;margin-bottom:8px;"></div>
+              <button onclick="withdrawDaycareItem('a')" style="width:100%;padding:8px;border-radius:8px;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">↩ RETIRAR</button>
+            </div>
           </div>
 
           <button id="slot-a-deposit-btn" onclick="openDepositModal(0)" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 14px;border:none;
@@ -784,8 +793,8 @@
             color:#fff;margin-top:8px;">📥 Depositar</button>
           <button id="slot-a-withdraw-btn" onclick="withdrawFromDaycare(0)" style="display:none;
             font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 14px;border:none;
-            border-radius:10px;cursor:pointer;background:rgba(220,38,38,0.2);color:#f87171;
-            margin-top:8px;">↩️ Retirar</button>
+            border-radius:10px;cursor:pointer;background:rgba(220,38,38,0.1);color:#f87171;
+            margin-top:8px;border:1px solid rgba(220,38,38,0.2);">🚪 Retirar Pokémon</button>
         </div>
         <div id="daycare-mid-card" class="daycare-mid-card"></div>
 
@@ -796,8 +805,28 @@
           <div id="slot-b-name" class="daycare-slot-name">— Vacía —</div>
           <div id="slot-b-info" class="daycare-slot-info"></div>
           
-          <div id="slot-b-item-container" style="display:none;margin-top:8px;">
-            <select id="slot-b-item" onchange="updateDaycareSummary()" style="width:100%;padding:6px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.2);outline:none;font-size:10px;">
+          <div id="slot-b-item-container" style="display:none;margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
+            <div id="slot-b-item-selector-wrap">
+              <div style="font-size:9px;color:var(--gray);margin-bottom:6px;font-family:'Press Start 2P';">EQUIPAR ÍTEM:</div>
+              <select id="slot-b-item" onchange="updateDaycareSummary()" style="width:100%;padding:8px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.1);outline:none;font-size:11px;margin-bottom:8px;">
+                <option value="">-- Sin Ítem --</option>
+              </select>
+              <button onclick="confirmDaycareItem('b')" style="width:100%;padding:8px;border-radius:8px;background:rgba(107,203,119,0.15);color:var(--green);border:1px solid rgba(107,203,119,0.3);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">✓ CONFIRMAR</button>
+            </div>
+            <div id="slot-b-confirmed-item-wrap" style="display:none;text-align:center;">
+              <div style="font-size:9px;color:var(--yellow);margin-bottom:6px;font-family:'Press Start 2P';">ÍTEM EQUIPADO:</div>
+              <div id="slot-b-confirmed-item-name" style="font-size:12px;font-weight:800;color:#fff;margin-bottom:8px;"></div>
+              <button onclick="withdrawDaycareItem('b')" style="width:100%;padding:8px;border-radius:8px;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">↩ RETIRAR</button>
+            </div>
+          </div>
+
+          <button id="slot-b-deposit-btn" onclick="openDepositModal(1)" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 14px;border:none;
+            border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#3b82f6,#2563eb);
+            color:#fff;margin-top:8px;">📥 Depositar</button>
+          <button id="slot-b-withdraw-btn" onclick="withdrawFromDaycare(1)" style="display:none;
+            font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 14px;border:none;
+            border-radius:10px;cursor:pointer;background:rgba(220,38,38,0.1);color:#f87171;
+            margin-top:8px;border:1px solid rgba(220,38,38,0.2);">🚪 Retirar Pokémon</button>
               <option value="">-- Sin Ítem --</option>
             </select>
           </div>
