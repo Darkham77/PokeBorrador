@@ -1051,36 +1051,67 @@ function openClassMissionsPanel() {
   const trainerLevel = state.trainerLevel || 1;
 
   let activeHtml = '';
+  let activePct = 0;
+  let activeRemaining = '';
+  let activeDone = false;
+
   if (activeMission) {
-    const m = CLASS_MISSIONS_NEW.find(x => x.id === activeMission.id);
-    const done = now >= activeMission.endsAt;
-    const pct = Math.min(100, Math.floor(((now - activeMission.startedAt) / (activeMission.endsAt - activeMission.startedAt)) * 100));
+    const mActive = CLASS_MISSIONS_NEW.find(x => x.id === activeMission.id);
+    activeDone = now >= activeMission.endsAt;
+    activePct = Math.min(100, Math.floor(((now - activeMission.startedAt) / (activeMission.endsAt - activeMission.startedAt)) * 100));
     
     // Formato de tiempo restante local
-    let remaining = '¡Lista!';
-    if (!done) {
+    activeRemaining = '¡Lista!';
+    if (!activeDone) {
       const ms = activeMission.endsAt - now;
       const h = Math.floor(ms / 3600000);
       const min = Math.floor((ms % 3600000) / 60000);
-      remaining = h > 0 ? `${h}h ${min}m` : `${min}m`;
+      activeRemaining = h > 0 ? `${h}h ${min}m` : `${min}m`;
     }
 
+    const workingMsg = cls === 'cazabichos' 
+      ? '¡Red colocada! Revisando especies interesantes...' 
+      : 'Tus Pokémon están trabajando arduamente...';
+
     activeHtml = `
-      <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid ${done ? clsDef.color : 'rgba(255,255,255,0.1)'};">
+      <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid ${activeDone ? clsDef.color : 'rgba(255,255,255,0.1)'};">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <span style="font-size:13px;font-weight:bold;color:${m.color};">📍 ${m.name}</span>
-          <span style="font-size:11px;color:${done ? clsDef.color : '#9ca3af'};font-weight:bold;">${remaining}</span>
+          <span style="font-size:13px;font-weight:bold;color:${mActive.color};">📍 ${mActive.name}</span>
+          <span style="font-size:11px;color:${activeDone ? clsDef.color : '#9ca3af'};font-weight:bold;">${activeRemaining}</span>
         </div>
         <div style="background:rgba(0,0,0,0.4);border-radius:6px;height:8px;margin-bottom:12px;overflow:hidden;">
-          <div style="background:${done ? clsDef.color : m.color};height:100%;width:${pct}%;transition:width 0.5s;"></div>
+          <div style="background:${activeDone ? clsDef.color : mActive.color};height:100%;width:${activePct}%;transition:width 0.5s;"></div>
         </div>
-        ${done ? `<button onclick="collectClassMission()" style="width:100%;padding:10px;border:none;border-radius:8px;background:${clsDef.color};color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;cursor:pointer;box-shadow:0 4px 0 ${clsDef.colorDark};">RECOLECTAR RECOMPENSA</button>` : `<div style="text-align:center;font-size:10px;color:#6b7280;">Tus Pokémon están trabajando arduamente...</div>`}
+        ${activeDone ? `<button onclick="collectClassMission()" style="width:100%;padding:10px;border:none;border-radius:8px;background:${clsDef.color};color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;cursor:pointer;box-shadow:0 4px 0 ${clsDef.colorDark};">RECOLECTAR RECOMPENSA</button>` : `<div style="text-align:center;font-size:10px;color:#6b7280;">${workingMsg}</div>`}
       </div>
     `;
   }
 
   const availableRows = CLASS_MISSIONS_NEW.map(m => {
     const isUnlocked = trainerLevel >= m.reqLv;
+    const isActiveThis = activeMission && activeMission.id === m.id;
+
+    let actionItem = '';
+    if (isActiveThis) {
+      actionItem = `
+        <div style="margin-top:8px;">
+          <div style="background:rgba(0,0,0,0.4);border-radius:4px;height:6px;margin-bottom:6px;overflow:hidden;">
+            <div style="background:${activeDone ? clsDef.color : m.color};height:100%;width:${activePct}%;transition:width 0.5s;"></div>
+          </div>
+          <div style="text-align:center;font-size:9px;color:${activeDone ? clsDef.color : '#9ca3af'};font-weight:bold;">
+            ${activeDone ? '¡LISTA PARA COBRAR!' : `PROGRESO: ${activePct}% (${activeRemaining})`}
+          </div>
+        </div>
+      `;
+    } else {
+      actionItem = `
+        <button onclick="startClassMission('${m.id}')" ${!isUnlocked || activeMission ? 'disabled' : ''} 
+          style="width:100%;padding:8px;border:none;border-radius:8px;cursor:${isUnlocked && !activeMission ? 'pointer' : 'not-allowed'};background:${isUnlocked && !activeMission ? m.color + '44' : 'rgba(255,255,255,0.05)'};color:${isUnlocked && !activeMission ? '#fff' : '#6b7280'};font-size:10px;font-weight:bold;border:1px solid ${isUnlocked && !activeMission ? m.color : 'transparent'};">
+          ${activeMission ? 'OCUPADO' : isUnlocked ? 'INICIAR MISIÓN' : 'BLOQUEADO'}
+        </button>
+      `;
+    }
+
     return `
     <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);opacity:${isUnlocked ? '1' : '0.5'};">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
@@ -1090,10 +1121,7 @@ function openClassMissionsPanel() {
       <div style="font-size:10px;color:#9ca3af;margin-bottom:10px;line-height:1.4;">
         ${getMissionDescription(m.id, cls)}
       </div>
-      <button onclick="startClassMission('${m.id}')" ${!isUnlocked || activeMission ? 'disabled' : ''} 
-        style="width:100%;padding:8px;border:none;border-radius:8px;cursor:${isUnlocked && !activeMission ? 'pointer' : 'not-allowed'};background:${isUnlocked && !activeMission ? m.color + '44' : 'rgba(255,255,255,0.05)'};color:${isUnlocked && !activeMission ? '#fff' : '#6b7280'};font-size:10px;font-weight:bold;border:1px solid ${isUnlocked && !activeMission ? m.color : 'transparent'};">
-        ${activeMission ? 'OCUPADO' : isUnlocked ? 'INICIAR MISIÓN' : 'BLOQUEADO'}
-      </button>
+      ${actionItem}
     </div>`;
   }).join('');
 
