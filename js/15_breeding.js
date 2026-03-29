@@ -1064,18 +1064,19 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
   
   let moves = (EGG_MOVES_DB[compat.eggSpecies] || []).filter(m => (pA.moves || []).concat(pB.moves || []).map(x => x.id || x).includes(m)).slice(0, 2);
   // Criador: 25% menos tiempo de eclosión
-  const hatchMs = (typeof state !== 'undefined' && state.playerClass === 'criador')
-    ? Math.floor(30 * 0.75 * 60 * 1000)
-    : 30 * 60 * 1000;
-  const ready = new Date(dateObj.getTime() + hatchMs); // 30 mins (22.5 para Criador)
+  let hatchMs = 30 * 60 * 1000;
+  if (typeof state !== 'undefined' && state.playerClass === 'criador') hatchMs *= 0.75;
+  
+  const ready = new Date(dateObj.getTime() + hatchMs); 
   
   let finalSpecies = compat.eggSpecies;
   if (finalSpecies === 'nidoran_f' || finalSpecies === 'nidoran_m') {
       finalSpecies = Math.random() < 0.5 ? 'nidoran_f' : 'nidoran_m';
   }
   
-  
-  await sb.from('eggs').insert({ player_id: pid, species: finalSpecies, parent_a: pA.uid, parent_b: pB.uid, inherited_ivs: ivs, egg_moves: moves, shiny_roll: (Math.random() < 1 / 512), created_at: dateObj.toISOString(), hatch_ready_time: ready.toISOString(), incubation_speed_bonus: 0 });
+  const eggShinyRate = (typeof getActiveShinyRate === 'function') ? getActiveShinyRate(512) : 512;
+  await sb.from('eggs').insert({ player_id: pid, species: finalSpecies, parent_a: pA.uid, parent_b: pB.uid, inherited_ivs: ivs, egg_moves: moves, shiny_roll: (Math.random() < 1 / eggShinyRate), created_at: dateObj.toISOString(), hatch_ready_time: ready.toISOString(), incubation_speed_bonus: 0 });
+
 
   pA.vigor--;
   pB.vigor--;
@@ -1085,7 +1086,11 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
 
 async function reduceHatchTimer(pid, activity) {
   const RED = { battle: 2 * 60000, capture: 3 * 60000, gym: 10 * 60000 };
-  const ms = RED[activity]; if (!ms) return;
+  let ms = RED[activity]; if (!ms) return;
+  
+  // Aplicar bono de evento (si hatchMult=0.5, reducimos el doble = pasos / 0.5)
+  const hatchMult = (typeof getEventBonus === 'function') ? getEventBonus('hatch') : 1;
+  ms = Math.floor(ms / hatchMult);
   const { data } = await sb.from('eggs').select('egg_id, hatch_ready_time').eq('player_id', pid);
   if (data && data.length) {
     for (let e of data) {

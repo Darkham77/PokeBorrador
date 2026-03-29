@@ -136,14 +136,24 @@ function _isEventActiveNow(ev) {
       } else {
         // Rango que cruza medianoche (ej: 23 a 01)
         // Activo si: hora >= 23:00 O hora < 01:00
-        if (!(hour >= start || hour < end)) return false;
       }
     }
     return true;
   }
-  
   return false;
 }
+
+
+function getActiveShinyRate(customBase) {
+  let base = customBase;
+  if (base === undefined) {
+    base = (state.shinyBoostSecs || 0) > 0 ? Math.floor(GAME_RATIOS.shinyRate / 2) : GAME_RATIOS.shinyRate;
+  }
+  const eventMult = getEventBonus('shiny');
+  return Math.max(1, Math.floor(base / eventMult));
+}
+
+
 
 function isEventActive(id) {
   return _activeEvents.some(e => e.id === id);
@@ -193,7 +203,9 @@ function showEventDetail(evId) {
     moneyMult: { label: '💰 Dinero', color: '#fbbf24' },
     bcMult:    { label: '🪙 Battle Coins', color: '#60a5fa' },
     shinyMult: { label: '✨ Shiny Rate', color: '#f472b6' },
+    hatchMult: { label: '🥚 Eclosión Rápida', color: '#34d399' },
   };
+
 
   const bonusItems = Object.entries(bonusMap)
     .filter(([key]) => cfg[key] && cfg[key] > 1)
@@ -892,8 +904,30 @@ function _renderEventCard(ev, idx) {
              <option value="data.isShiny" ${ev.config?.sortBy==='data.isShiny'?'selected':''}>✨ Shiny</option>
            </select>
         </div>
+
+        <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">EXP x</div>
+            <input type="number" step="0.1" value="${ev.config?.expMult || 1}" 
+              onchange="window._evConfigFieldChange(${idx}, 'expMult', parseFloat(this.value))"
+              style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+          </div>
+          <div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">SHINY x</div>
+            <input type="number" step="0.1" value="${ev.config?.shinyMult || 1}"
+              onchange="window._evConfigFieldChange(${idx}, 'shinyMult', parseFloat(this.value))"
+              style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+          </div>
+          <div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">ECLOSIÓN x (0.5=2x)</div>
+            <input type="number" step="0.1" value="${ev.config?.hatchMult || 1}"
+              onchange="window._evConfigFieldChange(${idx}, 'hatchMult', parseFloat(this.value))"
+              style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+          </div>
+        </div>
       </div>
     </div>`;
+
 
 }
 
