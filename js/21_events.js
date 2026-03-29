@@ -170,6 +170,10 @@ function showEventDetail(evId) {
   const content = document.getElementById('event-detail-content');
   if (!modal || !content) return;
 
+  // Ajuste de ancho adaptativo
+  const container = modal.querySelector('div');
+  if (container) container.style.maxWidth = '550px';
+
   const cfg = ev.config || {};
 
   // ── Bonificaciones activas ──────────────────────────────────────
@@ -265,8 +269,8 @@ function showEventDetail(evId) {
   let bannerHtml = '';
   if (cfg.banner) {
     bannerHtml = `
-      <div style="width:100%; height:160px; border-radius:18px; overflow:hidden; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1); background:#000;">
-        <img src="assets/eventos/${cfg.banner}" style="width:100%; height:100%; object-fit:cover;" onerror="this.parentElement.style.display='none'">
+      <div style="width:100%; border-radius:18px; overflow:hidden; margin-bottom:24px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2);">
+        <img src="assets/eventos/${cfg.banner}" style="width:100%; height:auto; display:block; max-height:300px; object-fit:cover;" onerror="this.parentElement.style.display='none'">
       </div>`;
   }
 
@@ -1331,14 +1335,14 @@ async function showEventResultsModal(eventId) {
     }).join('');
 
     modal.innerHTML = `
-      <div style="background:#0f172a; width:100%; max-width:480px; border-radius:24px; border:2px solid #334155; padding:32px; position:relative; overflow:hidden; box-shadow: 0 0 50px rgba(0,0,0,0.5);">
+      <div style="background:#0f172a; width:100%; max-width:550px; border-radius:32px; border:2px solid #334155; padding:32px; position:relative; overflow:hidden; box-shadow: 0 0 50px rgba(0,0,0,0.5); animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
         <button onclick="document.getElementById('podium-modal-overlay').remove()" 
-          style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.05); border:none; color:#94a3b8; font-size:20px; cursor:pointer; z-index:10; width:36px; height:36px; border-radius:50%;">✕</button>
+          style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.05); border:none; color:#94a3b8; font-size:22px; cursor:pointer; z-index:10; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition: all 0.2s;">✕</button>
 
         <div style="text-align:center; margin-bottom:28px;">
           ${eventData.config?.banner ? `
-            <div style="width:100%; height:140px; border-radius:16px; overflow:hidden; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1); background:#000;">
-              <img src="assets/eventos/${eventData.config.banner}" style="width:100%; height:100%; object-fit:cover;">
+            <div style="width:100%; border-radius:20px; overflow:hidden; margin-bottom:24px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2);">
+              <img src="assets/eventos/${eventData.config.banner}" style="width:100%; height:auto; max-height:280px; object-fit:cover; display:block;">
             </div>
           ` : `<div style="font-size:48px; margin-bottom:12px;">${eventData.icon || '🏆'}</div>`}
           <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#fbbf24; margin-bottom:8px; letter-spacing:1px;">¡PODIO FINAL!</div>
