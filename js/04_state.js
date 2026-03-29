@@ -455,7 +455,38 @@
     }
 
     function recalcPokemonStats(p) {
+      if (!p) return;
+      
+      // Sanitize IVs: remove non-stat properties that may have leaked into p.ivs
+      if (p.ivs) {
+        const validStats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+        Object.keys(p.ivs).forEach(key => {
+          if (!validStats.includes(key)) {
+            console.warn(`[REPAIR] Removing invalid IV key: ${key} from ${p.name || p.id}`);
+            delete p.ivs[key];
+          }
+        });
+      }
+      
+      // Sanitize moves: repair missing names from previous TM bug
+      if (p.moves && Array.isArray(p.moves)) {
+        p.moves.forEach(m => {
+          if (m && (m.name === undefined || m.name === null || m.name === 'undefined')) {
+            console.warn(`[REPAIR] Fixing undefined move for ${p.name || p.id}`, m);
+            // Best effort repair: look for any move with matching maxPP
+            const matches = Object.entries(MOVE_DATA).filter(([name, data]) => data.pp === m.maxPP);
+            if (matches.length === 1) {
+              m.name = matches[0][0];
+            } else {
+              // If ambiguous, at least give it a valid name to avoid crashes
+              m.name = 'Placaje';
+            }
+          }
+        });
+      }
+
       const base = POKEMON_DB[p.id];
+      if (!base) return;
       const natureData = NATURE_DATA[p.nature] || { up: null, down: null };
 
       const getStat = (baseVal, iv, level, statName) => {

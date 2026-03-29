@@ -303,18 +303,20 @@ function showPokemonDetails(p, index, location = 'team') {
   const typeCol = typeColors[p.type.toLowerCase()] || '#aaa';
   const tags = p.tags || [];
 
-  const ivBars = Object.entries(p.ivs || {}).map(([stat, val]) => {
-    const labels = { hp: 'HP', atk: 'Ataque', def: 'Defensa', spa: 'At.Esp', spd: 'Def.Esp', spe: 'Velocidad' };
-    const ivPct = (val / 31) * 100;
-    const color = val >= 28 ? '#6BCB77' : val >= 15 ? '#FFD93D' : '#FF3B3B';
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <span style="font-size:10px;color:#888;width:65px;flex-shrink:0">${labels[stat]}</span>
-      <div style="flex:1;background:rgba(255,255,255,0.1);border-radius:10px;height:8px;overflow:hidden;">
-        <div style="width:${ivPct}%;height:100%;background:${color};border-radius:10px;transition:width 0.5s;"></div>
-      </div>
-      <span style="font-size:11px;color:${color};width:24px;text-align:right;">${val}</span>
-    </div>`;
-  }).join('');
+  const labels = { hp: 'HP', atk: 'Ataque', def: 'Defensa', spa: 'At.Esp', spd: 'Def.Esp', spe: 'Velocidad' };
+  const ivBars = Object.entries(p.ivs || {})
+    .filter(([stat]) => labels[stat])
+    .map(([stat, val]) => {
+      const ivPct = (val / 31) * 100;
+      const color = val >= 28 ? '#6BCB77' : val >= 15 ? '#FFD93D' : '#FF3B3B';
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:10px;color:#888;width:65px;flex-shrink:0">${labels[stat]}</span>
+        <div style="flex:1;background:rgba(255,255,255,0.1);border-radius:10px;height:8px;overflow:hidden;">
+          <div style="width:${ivPct}%;height:100%;background:${color};border-radius:10px;transition:width 0.5s;"></div>
+        </div>
+        <span style="font-size:11px;color:${color};width:24px;text-align:right;">${val}</span>
+      </div>`;
+    }).join('');
 
   const movesList = p.moves.map(m => {
     // BUG FIX: ALWAYS pull from MOVE_DATA for updated type, category and power

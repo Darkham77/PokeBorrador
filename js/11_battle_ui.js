@@ -11,9 +11,9 @@
       }
       const moveData = MOVE_DATA[moveName];
       if (!TM_COMPAT[p.id]?.includes(tmId)) return null;
-      if (p.moves && p.moves.some(m => m.name === moveData.name)) return null;
+      if (p.moves && p.moves.some(m => m.name === moveName)) return null;
       if (p.moves.length >= 4) {
-        showLearnMoveMenu(p, moveData, () => {
+        showLearnMoveMenu(p, { ...moveData, name: moveName }, () => {
           state.inventory[inventoryName]--;
           if (!state.inventory[inventoryName]) delete state.inventory[inventoryName];
           if (typeof renderBag === 'function') renderBag();
@@ -21,7 +21,7 @@
         });
         return 'deferred';
       }
-      p.moves.push({ name: moveData.name, pp: moveData.pp, maxPP: moveData.pp });
+      p.moves.push({ name: moveName, pp: moveData.pp, maxPP: moveData.pp });
       state.inventory[inventoryName]--;
       if (!state.inventory[inventoryName]) delete state.inventory[inventoryName];
       return `aprendió ${moveName}`;

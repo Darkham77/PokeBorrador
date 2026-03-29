@@ -520,27 +520,32 @@ function renderMoveButtons() {
     rock: '#c8a060', ghost: '#7B2FBE', dragon: '#5C16C5', dark: '#555', steel: '#9E9E9E'
   };
   const CAT_ICON = { physical: '⚔️', special: '✨', status: '🔮' };
-  container.innerHTML = b.player.moves.map((m, i) => {
-    const md = MOVE_DATA[m.name] || { power: m.power || 40, type: 'normal', cat: 'physical' };
-    const col = TYPE_COLORS[md.type] || '#aaa';
-    const powerTxt = md.power > 0 ? md.power : '—';
+  if (!b.player || !b.player.moves) return;
 
-    let disabled = m.pp <= 0;
-    if (b.player.heldItem === 'Cinta Elegida' && b.player.choiceMove && b.player.choiceMove !== m.name) {
+  container.innerHTML = b.player.moves.map((m, i) => {
+    if (!m) return '';
+    const moveName = m.name || 'Desconocido';
+    const md = MOVE_DATA[moveName] || { power: m.power || 0, type: 'normal', cat: 'physical' };
+    const col = TYPE_COLORS[md.type] || '#aaa';
+    
+    let disabled = m.pp <= 0 || !m.name;
+    if (b.player.heldItem === 'Cinta Elegida' && b.player.choiceMove && b.player.choiceMove !== moveName) {
       disabled = true;
     }
 
+    const escapedName = moveName.replace(/'/g, "\\'");
+
     return `<button class="move-btn" onclick="useMove(${i})" ${disabled ? 'disabled' : ''}
       style="--move-color: ${col};"
-      onmousedown="showMoveTooltip(event, '${m.name.replace(/'/g, "\\'")}')"
+      onmousedown="showMoveTooltip(event, '${escapedName}')"
       onmouseup="hideMoveTooltip()"
       onmouseleave="hideMoveTooltip()"
-      ontouchstart="showMoveTooltip(event, '${m.name.replace(/'/g, "\\'")}')"
+      ontouchstart="showMoveTooltip(event, '${escapedName}')"
       ontouchend="hideMoveTooltip()">
-      <span class="move-name">${m.name}</span>
+      <span class="move-name">${moveName}</span>
       <div class="move-pp">
-        <span class="move-type-badge">${md.type?.toUpperCase()}</span>
-        <span>${CAT_ICON[md.cat] || ''} PP:${m.pp}/${m.maxPP}</span>
+        <span class="move-type-badge">${(md.type || '???').toUpperCase()}</span>
+        <span>${CAT_ICON[md.cat] || ''} PP:${m.pp || 0}/${m.maxPP || 0}</span>
       </div>
     </button>`;
   }).join('');

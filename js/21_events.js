@@ -723,7 +723,11 @@ async function _deliverAward(award) {
     if (typeof makePokemon === 'function' && POKEMON_DB[prize.species]) {
       const poke = makePokemon(prize.species, prize.level || 5);
       if (prize.nature) poke.nature = prize.nature;
-      if (prize.ivs) poke.ivs = { ...poke.ivs, ...prize.ivs };
+      if (prize.ivs) {
+        ['hp','atk','def','spa','spd','spe'].forEach(k => {
+          if (prize.ivs[k] !== undefined) poke.ivs[k] = prize.ivs[k];
+        });
+      }
       if (prize.shiny) poke.isShiny = true;
       poke.originalTrainer = 'EVENTO';
       state.box = state.box || [];
