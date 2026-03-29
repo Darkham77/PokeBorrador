@@ -441,7 +441,7 @@ async function renderMaps() {
       }
 
 	      // Chance de Rival (En cualquier mapa)
-	      let rivalChance = GAME_RATIOS.encounters.rival;
+	      let rivalChance = GAME_RATIOS.encounters.rival * (typeof getEventBonus === 'function' ? getEventBonus('rival') : 1);
 	      if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= 20) {
 	        if (typeof checkAllGymsHardBeaten === 'function' && checkAllGymsHardBeaten()) {
 	          rivalChance *= 2;
@@ -467,7 +467,10 @@ async function renderMaps() {
 	
 	        const cycle = getDayCycle();
 	        const wildPool = loc.wild[cycle] || loc.wild.day;
-	        const wildRates = loc.rates[cycle] || loc.rates.day;
+	        let wildRates = loc.rates[cycle] || loc.rates.day;
+            if (typeof window.getEventSpeciesBoost === 'function') {
+              wildRates = wildRates.map((r, i) => r * window.getEventSpeciesBoost(wildPool[i]));
+            }
 	
 	        // Intentar encontrar un Pokémon de nivel adecuado (máximo 10 intentos para evitar bucles infinitos)
 	        for (let attempt = 0; attempt < 10; attempt++) {
@@ -500,21 +503,26 @@ async function renderMaps() {
 	      }
 	
 	      // Lógica normal sin repelente
-	      const tChance = Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax);
+          const eventTrainerMult = (typeof getEventBonus === 'function' ? getEventBonus('trainer') : 1);
+	      const tChance = Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * eventTrainerMult;
 	      if (Math.random() * 100 < tChance) {
 	        generateTrainerBattle(locId);
 	        return;
 	      }
 	
 	      // Encuentro de Pesca
-	      if (loc.fishing && Math.random() < GAME_RATIOS.encounters.fishing) {
+          const eventFishingMult = (typeof getEventBonus === 'function' ? getEventBonus('fishing') : 1);
+	      if (loc.fishing && Math.random() < GAME_RATIOS.encounters.fishing * eventFishingMult) {
 	        generateFishingBattle(locId);
 	        return;
 	      }
 	
       const cycle = getDayCycle();
       const wildPool = loc.wild[cycle] || loc.wild.day;
-      const wildRates = loc.rates[cycle] || loc.rates.day;
+      let wildRates = loc.rates[cycle] || loc.rates.day;
+      if (typeof window.getEventSpeciesBoost === 'function') {
+        wildRates = wildRates.map((r, i) => r * window.getEventSpeciesBoost(wildPool[i]));
+      }
 
       // Habilidad Cazabichos: Aroma Atractivo
       if (state.playerClass === 'cazabichos') {
@@ -581,7 +589,12 @@ async function renderMaps() {
 	      const loc = FIRE_RED_MAPS.find(l => l.id === locId);
 	      if (!loc || !loc.fishing) return;
 	
-	      const { pool, rates, lv } = loc.fishing;
+	      const pool = loc.fishing.pool;
+          let rates = loc.fishing.rates.slice();
+          if (typeof window.getEventSpeciesBoost === 'function') {
+            rates = rates.map((r, i) => r * window.getEventSpeciesBoost(pool[i]));
+          }
+	      const lv = loc.fishing.lv;
 	      const totalRate = rates.reduce((a, b) => a + b, 0);
 	      let rand = Math.random() * totalRate;
 	      let cumulative = 0;

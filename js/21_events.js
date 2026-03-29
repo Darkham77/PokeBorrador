@@ -166,6 +166,32 @@ function getEventBonus(type) {
   return 1;
 }
 
+function isEventTargetSpecies(targetStr, id) {
+  if (!targetStr || !id) return false;
+  const array = targetStr.split(',').map(s => s.trim().toLowerCase());
+  return array.includes(id.toLowerCase());
+}
+
+window.getEventSpeciesBoost = (speciesId) => {
+  let mult = 1;
+  for (const ev of _activeEvents) {
+    if (isEventTargetSpecies(ev.config?.species, speciesId) && ev.config?.speciesRateMult) {
+      mult *= parseFloat(ev.config.speciesRateMult);
+    }
+  }
+  return isNaN(mult) ? 1 : mult;
+};
+
+window.getEventSpeciesShiny = (speciesId) => {
+  let mult = 1;
+  for (const ev of _activeEvents) {
+    if (isEventTargetSpecies(ev.config?.species, speciesId) && ev.config?.speciesShinyMult) {
+      mult *= parseFloat(ev.config.speciesShinyMult);
+    }
+  }
+  return isNaN(mult) ? 1 : mult;
+};
+
 function _startEventPolling() {
   if (_eventPollInterval) clearInterval(_eventPollInterval);
   _eventPollInterval = setInterval(loadActiveEvents, 5 * 60 * 1000);
@@ -205,6 +231,9 @@ function showEventDetail(evId) {
     shinyMult:    { label: '✨ Shiny Rate (Salvaje)', color: '#f472b6' },
     eggShinyMult: { label: '✨ Shiny Rate (Huevos)', color: '#f472b6' },
     hatchMult:    { label: '🥚 Eclosión Rápida', color: '#34d399' },
+    rivalMult:    { label: '😈 Aparición de Rival', color: '#ef4444' },
+    trainerMult:  { label: '🎒 Aparición de Entrenadores', color: '#3b82f6' },
+    fishingMult:  { label: '🎣 Eventos de Pesca', color: '#0ea5e9' },
   };
 
 
@@ -224,45 +253,68 @@ function showEventDetail(evId) {
        </div>`
     : '';
 
-  // ── Premio del 1er puesto ────────────────────────────────────────
+  // ── Premios del podio ───────────────────────────────────────────
   let prizeHtml = '';
-  const prize = cfg.prizes?.first;
-  if (prize) {
-    let prizeDesc = '';
-    if (prize.type === 'money')   prizeDesc = `💰 ₽${(prize.amount || 0).toLocaleString()}`;
-    if (prize.type === 'bc')      prizeDesc = `🪙 ${(prize.amount || 0).toLocaleString()} Battle Coins`;
-    if (prize.type === 'item')    prizeDesc = `📦 ${prize.qty || 1}x ${prize.item}`;
-    if (prize.type === 'pokemon') {
-      const name = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[prize.species]?.name) || prize.species;
-      prizeDesc = `🐾 ${name}${prize.shiny ? ' ✨' : ''} Nv.${prize.level} — ${prize.nature}`;
-    }
+  if (cfg.hasCompetition !== false && cfg.prizes && (cfg.prizes.first || cfg.prizes.second || cfg.prizes.third)) {
+    
+    const getPrizeDesc = (p) => {
+      if (!p) return null;
+      if (p.type === 'money') return `💰 ₽${(p.amount || 0).toLocaleString()}`;
+      if (p.type === 'bc') return `🪙 ${(p.amount || 0).toLocaleString()} BC`;
+      if (p.type === 'item') return `📦 ${p.qty || 1}x ${p.item}`;
+      if (p.type === 'pokemon') {
+        const name = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[p.species]?.name) || p.species;
+        return `🐾 ${name}${p.shiny ? ' ✨' : ''} Nv.${p.level}`;
+      }
+      return null;
+    };
+
+    let prizesList = '';
+    const p1 = getPrizeDesc(cfg.prizes.first);
+    if (p1) prizesList += `<div style="font-size:13px;color:#fde68a;font-weight:700;margin-bottom:8px;">🥇 1° — ${p1}</div>`;
+    
+    const p2 = getPrizeDesc(cfg.prizes.second);
+    if (p2) prizesList += `<div style="font-size:11px;color:#cbd5e1;font-weight:600;margin-bottom:6px;">🥈 2° — ${p2}</div>`;
+    
+    const p3 = getPrizeDesc(cfg.prizes.third);
+    if (p3) prizesList += `<div style="font-size:10px;color:#b45309;font-weight:600;">🥉 3° — ${p3}</div>`;
 
     prizeHtml = `
       <div style="margin-bottom:16px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">🥇 PREMIO AL GANADOR</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">🏆 PREMIOS DEL PODIO</div>
         <div style="background:linear-gradient(135deg,rgba(251,191,36,0.12),rgba(245,158,11,0.06));
-                    border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:12px 16px;
-                    font-size:13px;color:#fde68a;font-weight:700;">
-          ${prizeDesc}
+                    border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:14px 16px;">
+          ${prizesList}
         </div>
       </div>`;
   }
 
   // ── Métrica del concurso ─────────────────────────────────────────
   let metricHtml = '';
-  const sortBy = cfg.sortBy;
-  if (sortBy) {
-    const metricLabels = {
-      'data.total_ivs': '🧬 Mayor cantidad de IVs totales del Magikarp',
-    };
-    const metricText = metricLabels[sortBy] || sortBy;
-    metricHtml = `
-      <div style="margin-bottom:16px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">CRITERIO DE VICTORIA</div>
-        <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 14px;font-size:12px;color:#94a3b8;">
-          ${metricText}
-        </div>
-      </div>`;
+  if (cfg.hasCompetition !== false) {
+    const sortBy = cfg.sortBy;
+    if (sortBy) {
+      const metricLabels = {
+        'data.total_ivs': '🧬 Mayor cantidad de IVs totales',
+        'data.level': '📈 Mayor Nivel',
+        'data.isShiny': '✨ Criterio Shiny',
+      };
+      
+      let metricText = metricLabels[sortBy] || sortBy;
+      if (cfg.species && metricLabels[sortBy]) {
+         const especieTarget = cfg.species.split(',')[0].trim();
+         const targetName = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[especieTarget]?.name) || especieTarget;
+         metricText = metricLabels[sortBy] + ' del ' + targetName;
+      }
+      
+      metricHtml = `
+        <div style="margin-bottom:16px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">CRITERIO DE VICTORIA</div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 14px;font-size:12px;color:#94a3b8;">
+            ${metricText}
+          </div>
+        </div>`;
+    }
   }
 
   // ── Horario ──────────────────────────────────────────────────────
@@ -800,14 +852,28 @@ function _renderAdminPanel() {
         banner: '',
         hasCompetition: false,
         species: '',
+        speciesRateMult: 1,
+        speciesShinyMult: 1,
         sortBy: 'data.total_ivs',
         expMult: 1,
+        moneyMult: 1,
+        bcMult: 1,
         shinyMult: 1,
         eggShinyMult: 1,
         hatchMult: 1,
+        rivalMult: 1,
+        trainerMult: 1,
+        fishingMult: 1,
         prizes: {}
-      }
+      },
+      _collapsed: false
     });
+    _renderAdminPanel();
+  };
+
+  window._evToggleCollapse = (idx) => {
+    const ev = _adminConfig.events[idx];
+    ev._collapsed = !ev._collapsed;
     _renderAdminPanel();
   };
 
@@ -862,8 +928,13 @@ function _renderEventCard(ev, idx) {
   const hasHours = sched.startHour !== undefined;
 
   return `
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:8px;">ID INTERNO: ${ev.id}</div>
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;">ID INTERNO: ${ev.id}</div>
+        <button onclick="window._evToggleCollapse(${idx})" style="background:none;border:none;color:#9ca3af;font-size:10px;font-family:'Press Start 2P',monospace;cursor:pointer;">
+          ${ev._collapsed ? '🔽 DESPLEGAR' : '🔼 OCULTAR'}
+        </button>
+      </div>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
         <div style="display:flex;flex:1;gap:10px;">
           <input type="text" value="${ev.icon}" title="Icono"
@@ -887,7 +958,8 @@ function _renderEventCard(ev, idx) {
             </label>
         </div>
       </div>
-
+      
+      <div id="ev-body-${idx}" style="display:${ev._collapsed ? 'none' : 'block'};">
       <div style="background:rgba(245,158,11,0.08);border-radius:10px;padding:10px;margin-bottom:10px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
           <input type="checkbox" data-ev="${idx}" data-field="manual" ${ev.manual ? 'checked' : ''}
@@ -949,9 +1021,23 @@ function _renderEventCard(ev, idx) {
         
         <div style="margin-bottom:8px;">
            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">POKÉMON OBJETIVO (ID)</div>
-           <input type="text" value="${ev.config?.species || ''}" placeholder="ej: magikarp"
-             onchange="window._evConfigFieldChange(${idx}, 'species', this.value)"
-             style="width:100%;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;box-sizing:border-box;">
+           <div style="display:flex;gap:8px;">
+             <input type="text" value="${ev.config?.species || ''}" placeholder="ej: magikarp"
+               onchange="window._evConfigFieldChange(${idx}, 'species', this.value)"
+               style="flex:1;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;box-sizing:border-box;">
+             <div style="display:flex;flex-direction:column;">
+               <div style="font-size:6px;color:#9ca3af;margin-bottom:2px;">MAPA x</div>
+               <input type="number" step="0.1" value="${ev.config?.speciesRateMult || 1}" title="Multiplicador de aparición salvaje"
+                 onchange="window._evConfigFieldChange(${idx}, 'speciesRateMult', parseFloat(this.value))"
+                 style="width:50px;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+             </div>
+             <div style="display:flex;flex-direction:column;">
+               <div style="font-size:6px;color:#9ca3af;margin-bottom:2px;">SHINY x</div>
+               <input type="number" step="0.1" value="${ev.config?.speciesShinyMult || 1}" title="Multiplicador Shiny específico"
+                 onchange="window._evConfigFieldChange(${idx}, 'speciesShinyMult', parseFloat(this.value))"
+                 style="width:50px;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+             </div>
+           </div>
         </div>
 
         <div>
@@ -964,7 +1050,7 @@ function _renderEventCard(ev, idx) {
            </select>
         </div>
 
-        <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
           <div>
             <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">EXP x</div>
             <input type="number" step="0.1" value="${ev.config?.expMult || 1}" 
@@ -972,13 +1058,25 @@ function _renderEventCard(ev, idx) {
               style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
           </div>
           <div>
-            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">SHINY SALVAJE x</div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">DINERO x</div>
+            <input type="number" step="0.1" value="${ev.config?.moneyMult || 1}" 
+              onchange="window._evConfigFieldChange(${idx}, 'moneyMult', parseFloat(this.value))"
+              style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+          </div>
+          <div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">BC x</div>
+            <input type="number" step="0.1" value="${ev.config?.bcMult || 1}" 
+              onchange="window._evConfigFieldChange(${idx}, 'bcMult', parseFloat(this.value))"
+              style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+          </div>
+        </div>
+        <div style="margin-top:8px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+          <div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">SHINY SALV. x</div>
             <input type="number" step="0.1" value="${ev.config?.shinyMult || 1}"
               onchange="window._evConfigFieldChange(${idx}, 'shinyMult', parseFloat(this.value))"
               style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
           </div>
-        </div>
-        <div style="margin-top:8px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
           <div>
             <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">SHINY HUEVO x</div>
             <input type="number" step="0.1" value="${ev.config?.eggShinyMult || 1}"
@@ -986,12 +1084,33 @@ function _renderEventCard(ev, idx) {
               style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
           </div>
           <div>
-            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">ECLOSIÓN x (0.5=2x)</div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">ECLOSIÓN x</div>
             <input type="number" step="0.1" value="${ev.config?.hatchMult || 1}"
               onchange="window._evConfigFieldChange(${idx}, 'hatchMult', parseFloat(this.value))"
               style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
           </div>
         </div>
+        <div style="margin-top:8px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+          <div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">RIVAL x</div>
+            <input type="number" step="0.1" value="${ev.config?.rivalMult || 1}"
+              onchange="window._evConfigFieldChange(${idx}, 'rivalMult', parseFloat(this.value))"
+              style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+          </div>
+          <div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">ENTREN. x</div>
+            <input type="number" step="0.1" value="${ev.config?.trainerMult || 1}"
+              onchange="window._evConfigFieldChange(${idx}, 'trainerMult', parseFloat(this.value))"
+              style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+          </div>
+          <div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">PESCA x</div>
+            <input type="number" step="0.1" value="${ev.config?.fishingMult || 1}"
+              onchange="window._evConfigFieldChange(${idx}, 'fishingMult', parseFloat(this.value))"
+              style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
+          </div>
+        </div>
+      </div>
       </div>
     </div>`;
 

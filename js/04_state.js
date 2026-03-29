@@ -415,7 +415,15 @@
       const gender = assignGender(id);
 
       const _activeShinyRate = (typeof getActiveShinyRate === 'function') ? getActiveShinyRate() : ((state.shinyBoostSecs || 0) > 0 ? Math.floor(GAME_RATIOS.shinyRate / 2) : GAME_RATIOS.shinyRate);
-      const isShiny = Math.random() < (1 / _activeShinyRate);
+      let finalShinyRate = _activeShinyRate;
+      if (typeof window.getEventSpeciesShiny === 'function') {
+        const speciesShinyMult = window.getEventSpeciesShiny(id);
+        if (speciesShinyMult > 1) {
+          finalShinyRate = Math.floor(finalShinyRate / speciesShinyMult);
+        }
+      }
+      finalShinyRate = Math.max(1, finalShinyRate);
+      const isShiny = Math.random() < (1 / finalShinyRate);
       
       const vigor = Math.floor(Math.random() * 4) + 3; // 3 a 6
 

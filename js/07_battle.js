@@ -2835,6 +2835,12 @@ function endBattle(won) {
     }
 
     if ((state.amuletCoinSecs || 0) > 0 || b.player.heldItem === 'Moneda Amuleto') moneyWon *= 2; // Moneda Amuleto
+    
+    // Multiplicador de Evento (Dinero)
+    if (typeof getEventBonus === 'function') {
+      moneyWon = Math.floor(moneyWon * getEventBonus('money'));
+    }
+
     state.money += moneyWon;
     addLog(`¡Ganaste <span style="color:#22c55e;font-weight:bold;">₽${moneyWon.toLocaleString()}</span>!`, 'log-info');
 
@@ -2845,6 +2851,12 @@ function endBattle(won) {
         const bcMult = getClassModifier('bcMult', { isGym: !!b.isGym });
         coins = Math.floor(coins * bcMult);
       }
+      
+      // Multiplicador de Evento (Battle Coins)
+      if (typeof getEventBonus === 'function') {
+        coins = Math.floor(coins * getEventBonus('bc'));
+      }
+      
       state.battleCoins = (state.battleCoins || 0) + coins;
       addLog(`¡Obtuviste <span style="color:var(--yellow);font-weight:bold;"><i class="fas fa-coins coin-icon"></i> ${coins} Battle Coins</span>!`, 'log-catch');
       // Reputación del Entrenador (por ganar gimnasios)
