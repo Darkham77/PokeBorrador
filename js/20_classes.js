@@ -240,6 +240,13 @@ function selectClass(classId) {
     notify(`¡Elegiste ser ${cls.name}! ${cls.description.split('.')[0]}.`, cls.icon);
   }
 
+  // Liberar cualquier Pokémon que estuviese en misión al cambiar de clase
+  [...(state.team || []), ...(state.box || [])].forEach(p => {
+    if (p.onMission) {
+      p.onMission = false;
+    }
+  });
+
   state.playerClass = classId;
   state.classLevel = 1;
   state.classXP = 0;
@@ -1986,15 +1993,21 @@ function initClassSystem() {
   // Limpieza de misiones fantasma: si no hay misión activa rastreando un UID, desbloquear todos los Pokémon
   const activeMission = state.classData?.activeMission;
   const activeUid = activeMission?.pokeUid;
+  let ghostsCleaned = false;
   
   // Revisar Box y Equipo
   [...(state.team || []), ...(state.box || [])].forEach(p => {
     if (!p.uid && typeof getUidStr === 'function') p.uid = getUidStr(); // Auto-fix
     if (p.onMission && p.uid !== activeUid) {
       p.onMission = false;
-      console.log(`[CLASES] Pokémon desbloqueado (misión fantasma): ${p.name}`);
+      ghostsCleaned = true;
+      console.log(`[CLASES] Pokémon desbloqueado (misión fantasma): ${p.name || p.id}`);
     }
   });
+
+  if (ghostsCleaned && typeof scheduleSave === 'function') {
+    scheduleSave();
+  }
 
   updateClassHud();
   checkClassUnlock();

@@ -524,8 +524,8 @@ async function renderMaps() {
         wildRates = wildRates.map((r, i) => r * window.getEventSpeciesBoost(wildPool[i]));
       }
 
-      // Habilidad Cazabichos: Aroma Atractivo
-      if (state.playerClass === 'cazabichos') {
+      // Habilidad Cazabichos: Aroma Atractivo (se desbloquea en Nv. 15 de entrenador)
+      if (state.playerClass === 'cazabichos' && (state.trainerLevel || 1) >= 15) {
         const isSafari = locId === 'safari_zone';
         const attractProb = isSafari ? 0.10 : 0.005;
         if (Math.random() < attractProb) {
