@@ -442,7 +442,7 @@ function showPokemonDetails(p, index, location = 'team') {
 
     <div>
       <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--purple-light);margin-bottom:12px;display:flex;align-items:center;gap:8px;"><span style="font-size:12px;">⚔️</span> MOVIMIENTOS</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${movesList}</div>
+      <div id="pokemon-detail-moves" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${movesList}</div>
     </div>
 
     ${location === 'team' && (STONE_EVOLUTIONS[p.id] || (p.id === 'eevee')) ? `
