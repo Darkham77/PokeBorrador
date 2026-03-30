@@ -555,9 +555,26 @@
         <!-- Filter body (collapsible) -->
         <div id="box-filter-body" style="display:none;margin-top:14px;">
 
+          <!-- Row 0: Sort -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">Ordenar por</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;" id="box-sort-btns">
+              <button onclick="setBoxSort('none')" data-sort="none" class="box-filter-btn box-filter-active"
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:20px;cursor:pointer;background:rgba(255,255,255,0.1);color:#eee;">Captura</button>
+              <button onclick="setBoxSort('level')" data-sort="level" class="box-filter-btn"
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(59,139,255,0.4);border-radius:20px;cursor:pointer;background:rgba(59,139,255,0.12);color:var(--blue);">Nivel</button>
+              <button onclick="setBoxSort('tier')" data-sort="tier" class="box-filter-btn"
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(255,215,0,0.4);border-radius:20px;cursor:pointer;background:rgba(255,215,0,0.12);color:#FFD700;">Tier</button>
+              <button onclick="setBoxSort('type')" data-sort="type" class="box-filter-btn"
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(107,203,119,0.4);border-radius:20px;cursor:pointer;background:rgba(107,203,119,0.12);color:var(--green);">Tipo</button>
+              <button onclick="setBoxSort('pokedex')" data-sort="pokedex" class="box-filter-btn"
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(199,125,255,0.4);border-radius:20px;cursor:pointer;background:rgba(199,125,255,0.12);color:var(--purple);">Pokédex</button>
+            </div>
+          </div>
+
           <!-- Row 1: Tier -->
           <div style="margin-bottom:12px;">
-            <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">Tier</div>
+            <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">Filtrar por Tier</div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;" id="box-tier-btns">
               <button onclick="setBoxFilter('tier','all')" data-tier="all" class="box-filter-btn box-filter-active"
                 style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:20px;cursor:pointer;background:rgba(255,255,255,0.1);color:#eee;">Todos</button>

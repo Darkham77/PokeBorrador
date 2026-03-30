@@ -37,6 +37,7 @@
     let _bagSellMode = false;
     let _bagSellSelected = {}; // { itemName: quantityToSell }
     let _currentBoxIndex = 0; // Caja actual visualizada (0 a state.boxCount-1)
+    let _boxSortMode = 'none'; // 'none', 'level', 'tier', 'type', 'pokedex'
 
     function toggleBoxFilters() {
       _boxFiltersOpen = !_boxFiltersOpen;
@@ -81,6 +82,15 @@
       renderBox();
     }
 
+    function setBoxSort(mode) {
+      _boxSortMode = mode;
+      document.querySelectorAll('[data-sort]').forEach(b => {
+        b.classList.toggle('box-filter-active', b.dataset.sort === mode);
+        b.style.outline = b.dataset.sort === mode ? '2px solid currentColor' : 'none';
+      });
+      renderBox();
+    }
+
     function resetBoxFilters() {
       _boxFilters = {
         tier: 'all', type: 'all', levelMin: 1, levelMax: 100,
@@ -88,6 +98,11 @@
         ivAny31: false, ivTotalMin: 0, ivTotalMax: 186,
         search: ''
       };
+      _boxSortMode = 'none';
+      document.querySelectorAll('[data-sort]').forEach(b => {
+        b.classList.toggle('box-filter-active', b.dataset.sort === 'none');
+        b.style.outline = b.dataset.sort === 'none' ? '2px solid currentColor' : 'none';
+      });
       // Reset inputs
       const searchEl = document.getElementById('box-search-input');
       if (searchEl) searchEl.value = '';
@@ -450,14 +465,44 @@
 
       // Apply filters
       const isFiltered = _hasActiveFilters();
+      const isSorted = _boxSortMode !== 'none';
       
       // Determine which pokemon to show
       let displayList = [];
-      if (isFiltered) {
-        // If filtering, show all matches from all boxes
-        displayList = state.box.map((p, i) => ({ p, i })).filter(({ p }) => _applyBoxFilters([p]).length > 0);
+      if (isFiltered || isSorted) {
+        // If filtering or sorting, we process all pokemon
+        displayList = state.box.map((p, i) => ({ p, i }));
+        
+        if (isFiltered) {
+          displayList = displayList.filter(({ p }) => _applyBoxFilters([p]).length > 0);
+        }
+        
+        if (isSorted) {
+          displayList.sort((a, b) => {
+            if (_boxSortMode === 'level') return b.p.level - a.p.level;
+            if (_boxSortMode === 'tier') {
+              const tierA = getPokemonTier(a.p).total;
+              const tierB = getPokemonTier(b.p).total;
+              return tierB - tierA;
+            }
+            if (_boxSortMode === 'type') return a.p.type.localeCompare(b.p.type);
+            if (_boxSortMode === 'pokedex') {
+              const idxA = POKEDEX_ORDER.indexOf(a.p.id);
+              const idxB = POKEDEX_ORDER.indexOf(b.p.id);
+              return idxA - idxB;
+            }
+            return 0;
+          });
+        }
+        
+        // If it's just sorted but not filtered, we might still want to paginate
+        if (!isFiltered && isSorted) {
+          const start = _currentBoxIndex * 50;
+          const end = Math.min(start + 50, displayList.length);
+          displayList = displayList.slice(start, end);
+        }
       } else {
-        // If not filtering, show only current box
+        // If not filtering nor sorting, show only current box
         const start = _currentBoxIndex * 50;
         const end = Math.min(start + 50, state.box.length);
         for (let i = start; i < end; i++) {
@@ -627,6 +672,10 @@
     </button>
     ${state.playerClass === 'rocket' ? `<button onclick="document.getElementById('box-menu-overlay').remove();sellPokemonBlackMarket(state.box[${boxIndex}], ${boxIndex})" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;background:rgba(239,68,68,0.15);color:#ef4444;font-size:12px;font-weight:700;border:1px solid rgba(239,68,68,0.3);box-shadow: 0 0 10px rgba(239,68,68,0.2);">🚀 Vender en Mercado Negro</button>` : ''}
     ${state.playerClass === 'criador' ? `<button onclick="document.getElementById('box-menu-overlay').remove();showGeneticAnalysis(state.box[${boxIndex}])" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;background:rgba(168,85,247,0.15);color:#a855f7;font-size:12px;font-weight:700;border:1px solid rgba(168,85,247,0.3);">🔬 Análisis Genético</button>` : ''}
+    <button onclick="document.getElementById('box-menu-overlay').remove();promptMoveToBox(${boxIndex})" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;
+      background:rgba(59,139,255,0.15);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(59,139,255,0.2);">
+      📦 Mover a otra caja
+    </button>
     <button onclick="releaseFromBox(${boxIndex})" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;
       background:rgba(255,59,59,0.15);color:var(--red);${p.inDaycare ? 'opacity:0.5;cursor:not-allowed;' : ''}font-size:12px;font-weight:700;border:1px solid rgba(255,59,59,0.2);">
       🌿 Soltar a ${p.name}
@@ -642,6 +691,41 @@
 
     function openBoxPokemonDetail(boxIndex) {
       showPokemonDetails(state.box[boxIndex], boxIndex, 'box');
+    }
+
+    function promptMoveToBox(boxIndex) {
+      const p = state.box[boxIndex];
+      if (!p) return;
+      
+      const targetBox = prompt(`¿A qué caja querés mover a ${p.name}? (1 a ${state.boxCount})`, (_currentBoxIndex + 1));
+      if (targetBox === null) return;
+      
+      const boxNum = parseInt(targetBox);
+      if (isNaN(boxNum) || boxNum < 1 || boxNum > state.boxCount) {
+        notify('Número de caja inválido.', '⚠️');
+        return;
+      }
+      
+      movePokemonToBox(boxIndex, boxNum - 1);
+    }
+
+    function movePokemonToBox(boxIndex, targetBoxIndex) {
+      const p = state.box[boxIndex];
+      if (!p) return;
+      
+      const boxSize = 50;
+      const targetStart = targetBoxIndex * boxSize;
+      
+      // Eliminar de la posición actual
+      state.box.splice(boxIndex, 1);
+      
+      // Insertar al inicio de la caja destino
+      state.box.splice(targetStart, 0, p);
+      
+      _currentBoxIndex = targetBoxIndex;
+      renderBox();
+      scheduleSave();
+      notify(`¡${p.name} movido a la Caja ${targetBoxIndex + 1}!`, '📦');
     }
 
     function moveBoxToTeam(boxIndex) {
