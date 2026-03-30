@@ -59,6 +59,15 @@
         ov.id = 'pp-up-move-selector';
         ov.style.cssText = 'position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);animation:fadeIn 0.2s ease;';
         
+        // Definir colores de tipos localmente para evitar ReferenceError
+        const typeColors = {
+          'normal': '#A8A878', 'fire': '#F08030', 'water': '#6890F0', 'electric': '#F8D030',
+          'grass': '#78C850', 'ice': '#98D8D8', 'fighting': '#C03028', 'poison': '#A040A0',
+          'ground': '#E0C068', 'flying': '#A890F0', 'psychic': '#F85888', 'bug': '#A8B820',
+          'rock': '#B8A038', 'ghost': '#705898', 'dragon': '#7038F8', 'dark': '#705848',
+          'steel': '#B8B8D0', 'fairy': '#EE99AC'
+        };
+
         let html = `<div style="background:var(--card);border-radius:24px;padding:28px;width:100%;max-width:400px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 20px 50px rgba(0,0,0,0.6);">
           <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);margin-bottom:24px;text-align:center;line-height:1.6;">¿A QUÉ MOVIMIENTO DE ${p.name.toUpperCase()} SUBIR PP?</div>
           <div style="display:grid;gap:12px;">`;
@@ -67,7 +76,7 @@
           const ppUps = m.ppUps || 0;
           const isMaxed = ppUps >= 3;
           const moveData = MOVE_DATA[m.name] || { type: 'normal', pp: 35 };
-          const typeCol = typeTagColors[moveData.type] || '#aaa';
+          const typeCol = typeColors[moveData.type] || '#aaa';
           
           html += `<button onclick="applyPPUpToMove(${state.team.indexOf(p)}, ${i})" 
             ${isMaxed ? 'disabled' : ''}
