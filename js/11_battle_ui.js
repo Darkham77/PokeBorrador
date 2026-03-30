@@ -52,7 +52,49 @@
       'Cura Total': p => { if (!p.status && p.hp === p.maxHp) return null; p.hp = p.maxHp; p.status = null; p.sleepTurns = 0; return `fue curado completamente (Max HP + curado)`; },
       'Éter': p => { p.moves.forEach(m => { const cap = (m.maxPP > 0) ? m.maxPP : (MOVE_DATA[m.name]?.pp || 35); if (!m.maxPP || m.maxPP <= 0) m.maxPP = cap; m.pp = Math.min(cap, (isNaN(m.pp) ? 0 : m.pp) + 10); }); return `recuperó PP`; },
       'Elixir Máximo': p => { p.moves.forEach(m => { const cap = (m.maxPP > 0) ? m.maxPP : (MOVE_DATA[m.name]?.pp || 35); if (!m.maxPP || m.maxPP <= 0) m.maxPP = cap; m.pp = cap; }); return `recuperó todos los PP`; },
-      'Subida PP': p => { const m = p.moves && p.moves.find(mv => mv.maxPP && mv.maxPP < 99); if (!m) return null; const b = Math.max(1, Math.floor(m.maxPP * 0.2)); m.maxPP += b; m.pp = Math.min(m.pp + b, m.maxPP); return `aumentó los PP de ${m.name} en ${b}`; },
+      'Subida PP': p => {
+        if (!p.moves || p.moves.length === 0) return null;
+        
+        const ov = document.createElement('div');
+        ov.id = 'pp-up-move-selector';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);animation:fadeIn 0.2s ease;';
+        
+        let html = `<div style="background:var(--card);border-radius:24px;padding:28px;width:100%;max-width:400px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 20px 50px rgba(0,0,0,0.6);">
+          <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);margin-bottom:24px;text-align:center;line-height:1.6;">¿A QUÉ MOVIMIENTO DE ${p.name.toUpperCase()} SUBIR PP?</div>
+          <div style="display:grid;gap:12px;">`;
+        
+        p.moves.forEach((m, i) => {
+          const ppUps = m.ppUps || 0;
+          const isMaxed = ppUps >= 3;
+          const moveData = MOVE_DATA[m.name] || { type: 'normal', pp: 35 };
+          const typeCol = typeTagColors[moveData.type] || '#aaa';
+          
+          html += `<button onclick="applyPPUpToMove(${state.team.indexOf(p)}, ${i})" 
+            ${isMaxed ? 'disabled' : ''}
+            style="display:flex;flex-direction:column;align-items:flex-start;padding:14px;background:rgba(255,255,255,0.05);border:1px solid ${isMaxed ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)'};border-radius:16px;cursor:${isMaxed ? 'not-allowed' : 'pointer'};transition:all 0.2s;text-align:left;position:relative;overflow:hidden;${isMaxed ? 'opacity:0.5;' : ''}"
+            onmouseover="${isMaxed ? '' : "this.style.background='rgba(255,255,255,0.1)';this.style.transform='translateX(4px)';this.style.borderColor='var(--yellow)'"}"
+            onmouseout="${isMaxed ? '' : "this.style.background='rgba(255,255,255,0.05)';this.style.transform='translateX(0)';this.style.borderColor='rgba(255,255,255,0.1)'"}">
+            <div style="display:flex;justify-content:space-between;width:100%;align-items:center;margin-bottom:4px;">
+              <span style="font-weight:700;font-size:14px;color:#fff;">${m.name}</span>
+              <span style="font-size:9px;padding:2px 8px;border-radius:6px;background:${typeCol}33;color:${typeCol};border:1px solid ${typeCol}55;text-transform:uppercase;font-weight:700;">${moveData.type}</span>
+            </div>
+            <div style="font-size:11px;color:var(--gray);">PP: ${m.pp}/${m.maxPP}</div>
+            <div style="display:flex;gap:4px;margin-top:8px;">
+              ${[1, 2, 3].map(step => `<div style="width:20px;height:4px;border-radius:2px;background:${ppUps >= step ? 'var(--yellow)' : 'rgba(255,255,255,0.1)'};"></div>`).join('')}
+            </div>
+            ${isMaxed ? '<div style="position:absolute;right:10px;bottom:10px;font-size:10px;color:var(--yellow);font-weight:700;">MÁXIMO</div>' : ''}
+          </button>`;
+        });
+        
+        html += `</div>
+          <button onclick="document.getElementById('pp-up-move-selector').remove()" 
+            style="margin-top:20px;width:100%;padding:14px;background:rgba(255,255,255,0.05);border:none;border-radius:16px;color:var(--gray);font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">CANCELAR</button>
+        </div>`;
+        
+        ov.innerHTML = html;
+        document.body.appendChild(ov);
+        return 'deferred';
+      },
       'MT01 Puño Certero': p => teachTM(p, 'TM01', 'Puño Certero'),
       'MT02 Garra Dragón': p => teachTM(p, 'TM02', 'Garra Dragón'),
       'MT03 Hidropulso': p => teachTM(p, 'TM03', 'Hidropulso'),
@@ -407,6 +449,34 @@
         scheduleSave();
       }
     }
+
+    window.applyPPUpToMove = function(pIdx, mIdx) {
+      const p = state.team[pIdx];
+      if (!p || !p.moves[mIdx]) return;
+      const m = p.moves[mIdx];
+      
+      if ((m.ppUps || 0) >= 3) {
+        notify('Este movimiento ya alcanzó su límite de PP.', '⚠️');
+        return;
+      }
+      
+      const basePP = MOVE_DATA[m.name]?.pp || 35;
+      const bonus = Math.max(1, Math.floor(basePP * 0.2));
+      
+      m.maxPP += bonus;
+      m.pp += bonus;
+      m.ppUps = (m.ppUps || 0) + 1;
+      
+      state.inventory['Subida PP']--;
+      if (state.inventory['Subida PP'] <= 0) delete state.inventory['Subida PP'];
+      
+      document.getElementById('pp-up-move-selector')?.remove();
+      notify(`¡Los PP de ${m.name} subieron a ${m.maxPP}!`, '📈');
+      
+      if (typeof renderBag === 'function') renderBag();
+      if (typeof renderTeam === 'function') renderTeam();
+      scheduleSave();
+    };
 
     function useItemOutsideBattle(itemName, context, index) {
       const p = context === 'team' ? state.team[index] : state.box[index];
