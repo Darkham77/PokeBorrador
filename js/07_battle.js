@@ -913,8 +913,9 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       if (state.battle && !state.battle.isTrainer && !state.battle.isGym) {
         addLogFn(`¡${src.name} se teletransportó lejos de la batalla!`, 'log-info');
         state.battle.over = true;
-        state.battle = null;
+        // No seteamos state.battle = null inmediatamente para evitar errores en el flujo de turnos
         setTimeout(() => {
+          state.battle = null;
           showScreen('game-screen');
           showTab('map');
         }, 1000);
@@ -1896,7 +1897,7 @@ function findBestSwitch(enemyTeam, player) {
 
 function enemyTurn(opts = {}) {
   const b = state.battle;
-  if (b.over) return;
+  if (!b || b.over) return;
 
   const { endTurn = true, after = null, chosenMove = null, preDecidedItem = null } = opts || {};
   const finish = () => {
