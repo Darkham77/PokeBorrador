@@ -22,10 +22,18 @@
         .on('postgres_changes', {
           event: 'UPDATE', schema: 'public', table: 'trade_offers',
           filter: `sender_id=eq.${currentUser.id}`
-        }, ({ new: row }) => {
+        }, async ({ new: row }) => {
           if (row?.status === 'accepted') {
-            refreshFriendsBadge();
-            notify('¡Tu oferta de trade fue aceptada! Entrá a Amigos para reclamar.', '🎉');
+            // Sincronizar estado automáticamente desde el servidor
+            const { data: save } = await sb.from('game_saves').select('save_data').eq('user_id', currentUser.id).single();
+            if (save?.save_data) {
+              Object.assign(state, save.save_data);
+              updateHud();
+              renderTeam();
+              refreshFriendsBadge();
+              renderPendingTrades();
+              notify('¡Tu oferta de intercambio fue aceptada y procesada!', '🎉');
+            }
           }
         })
         .subscribe();
@@ -336,8 +344,9 @@
 
       section.style.display = 'block';
 
-      // ── Accepted trades (I'm the sender — claim my reward) ─────
+      // ── Accepted trades (I'm the sender — auto-claim and show notice) ─────
       const acceptedHtml = (accepted || []).map(t => {
+        autoClaimTrade(t.id); // Limpiar el estado del trade silenciosamente
         const offerLines = [];
         if (t.offer_pokemon) offerLines.push(`${t.offer_pokemon.emoji || '❓'} ${t.offer_pokemon.name} Nv.${t.offer_pokemon.level}`);
         Object.entries(t.offer_items || {}).forEach(([k, v]) => offerLines.push(`${k} x${v}`));
@@ -363,9 +372,9 @@
               ${receivedLines.map(l => `<div style="font-size:11px;margin-bottom:2px;">${l}</div>`).join('') || '<div style="font-size:11px;color:var(--gray);">Solo fue un regalo 🎁</div>'}
             </div>
           </div>
-          <button class="friend-btn friend-btn-accept" style="width:100%;" onclick="claimAcceptedTrade('${t.id}')">
-            🎁 Reclamar recompensa
-          </button>
+          <div style="width:100%; padding:12px; background:rgba(107,203,119,0.15); border:1px solid rgba(107,203,119,0.3); border-radius:12px; text-align:center; font-family:'Press Start 2P',monospace; font-size:8px; color:var(--green);">
+            ✅ ¡Intercambio recibido!
+          </div>
         </div>`;
       }).join('');
 
@@ -414,91 +423,10 @@
       refreshFriendsBadge();
     }
 
-    // ── Claim reward of an accepted trade (sender's side) ────────
-    async function claimAcceptedTrade(tradeId) {
-      try {
-        // PASO 1: Validar que el trade existe y está en estado 'accepted'
-        const { data: trade } = await sb.from('trade_offers').select('*').eq('id', tradeId).single();
-        if (!trade || trade.status !== 'accepted') { notify('Este trade ya fue reclamado.', '⚠️'); return; }
-
-        // PASO 2: Clonar el Pokémon solicitado para evitar referencias compartidas
-        let requestedPokemonClone = null;
-        if (trade.request_pokemon) {
-          requestedPokemonClone = JSON.parse(JSON.stringify(trade.request_pokemon));
-          if (!requestedPokemonClone.uid) requestedPokemonClone.uid = getUidStr();
-        }
-
-        // PASO 3: Aplicar cambios al estado local (sender side)
-        const receivedLines = [];
-        if (requestedPokemonClone) {
-          receivedLines.push(`${requestedPokemonClone.emoji || '❓'} ${requestedPokemonClone.name}`);
-          // Verificar que no lo tenemos ya (por duplicación)
-          const uid = requestedPokemonClone.uid;
-          const alreadyHave = uid 
-            ? (state.team.some(p => p?.uid === uid) || (state.box || []).some(p => p?.uid === uid))
-            : false;
-          if (!alreadyHave) {
-            state.team.push(requestedPokemonClone);
-            checkTradeEvolution(requestedPokemonClone);
-            renderTeam();
-          } else {
-            // Si ya lo tenemos (por sincronización previa), buscamos la referencia real en el equipo para evolucionarlo
-            const existing = state.team.find(p => p?.uid === uid);
-            if (existing) {
-              checkTradeEvolution(existing);
-            }
-          }
-        }
-        
-        Object.entries(trade.request_items || {}).forEach(([k, v]) => {
-          receivedLines.push(`${k} x${v}`);
-          state.inventory[k] = (state.inventory[k] || 0) + v;
-        });
-        
-        if (trade.request_money > 0) {
-          receivedLines.push(`₽${trade.request_money.toLocaleString()}`);
-          state.money += trade.request_money;
-        }
-
-        // Remover completamente lo que el SENDER había ofrecido para evitar duplicados
-        if (trade.offer_pokemon) {
-          const offerUid = trade.offer_pokemon.uid;
-          if (offerUid) {
-            state.team = state.team.filter(p => p?.uid !== offerUid);
-            state.box = (state.box || []).filter(p => p?.uid !== offerUid);
-          } else {
-            state.team = state.team.filter(p => !(p?.name === trade.offer_pokemon.name && p?.level === trade.offer_pokemon.level));
-            state.box = (state.box || []).filter(p => !(p?.name === trade.offer_pokemon.name && p?.level === trade.offer_pokemon.level));
-          }
-        }
-        Object.entries(trade.offer_items || {}).forEach(([k, v]) => {
-          state.inventory[k] = Math.max(0, (state.inventory[k] || 0) - v);
-          if (!state.inventory[k]) delete state.inventory[k];
-        });
-        state.money = Math.max(0, state.money - (trade.offer_money || 0));
-
-        // PASO 4: Guardar el estado actualizado
-        await sb.from('game_saves').upsert({ 
-          user_id: currentUser.id, 
-          save_data: serializeState(), 
-          updated_at: new Date().toISOString() 
-        }, { onConflict: 'user_id' });
-
-        // PASO 5: Marcar el trade como reclamado (DESPUÉS de guardar)
-        const { error: updateErr } = await sb.from('trade_offers').update({ status: 'claimed' }).eq('id', tradeId);
-        if (updateErr) throw new Error('Error al marcar trade como reclamado: ' + updateErr.message);
-
-        updateHud();
-        const msg = receivedLines.length
-          ? `¡Reclamaste: ${receivedLines.join(', ')}!`
-          : '¡Tu regalo fue entregado!';
-        notify(msg, '🎉');
-        renderFriends();
-      } catch (err) {
-        console.error('[CLAIM TRADE ERROR]', err);
-        notify('Error al reclamar el trade: ' + err.message, '❌');
-        renderFriends();
-      }
+    // ── Auto-claim accepted trades (sender's side) ────────
+    async function autoClaimTrade(tradeId) {
+      // Marcar el trade como reclamado silenciosamente ya que el servidor ya procesó el cambio en el save
+      await sb.from('trade_offers').update({ status: 'claimed' }).eq('id', tradeId);
     }
 
     // ── Accept ────────────────────────────────────────
