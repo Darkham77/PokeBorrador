@@ -637,7 +637,7 @@
               font-size:12px;font-weight:600;transition:background .15s;"
             onmouseover="this.style.background='rgba(255,255,255,0.12)'"
             onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-            ❌ Olvidar ${newMove.name}
+            ❌ Cancelar y no aprender
           </button>
         </div>`;
 
@@ -654,7 +654,7 @@
         if (typeof notify === 'function') notify(`¡${pokemon.name} aprendió ${newMove.name}!`, '📖');
         if (typeof renderMoveButtons === 'function' && state.battle) renderMoveButtons();
         if (typeof scheduleSave === 'function') scheduleSave();
-        onDone();
+        onDone(true);
       };
 
       window.learnMoveForget = function() {
@@ -663,7 +663,7 @@
         delete window.learnMoveReplace;
         delete window.learnMoveForget;
         if (typeof addLog === 'function') addLog(`¡${pokemon.name} no aprendió ${newMove.name}!`, 'log-info');
-        onDone();
+        onDone(false);
       };
     }
 

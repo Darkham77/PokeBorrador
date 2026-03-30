@@ -13,9 +13,11 @@
       if (!TM_COMPAT[p.id]?.includes(tmId)) return null;
       if (p.moves && p.moves.some(m => m.name === moveName)) return null;
       if (p.moves.length >= 4) {
-        showLearnMoveMenu(p, { ...moveData, name: moveName, maxPP: moveData.pp }, () => {
-          state.inventory[inventoryName]--;
-          if (!state.inventory[inventoryName]) delete state.inventory[inventoryName];
+        showLearnMoveMenu(p, { ...moveData, name: moveName, maxPP: moveData.pp }, (learned) => {
+          if (learned) {
+            state.inventory[inventoryName]--;
+            if (!state.inventory[inventoryName]) delete state.inventory[inventoryName];
+          }
           if (typeof renderBag === 'function') renderBag();
           if (typeof scheduleSave === 'function') scheduleSave();
         });
@@ -456,10 +458,30 @@
       html += state.team.map((p, i) => {
         const hpPct = Math.round(p.hp / p.maxHp * 100);
         const hpCol = hpPct > 50 ? 'var(--green)' : hpPct > 20 ? 'var(--yellow)' : 'var(--red)';
-        return `<div onclick="document.getElementById('bag-item-target-overlay').remove();useItemOutsideBattle('${itemName}', 'team', ${i})" 
-          style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border-radius:16px;padding:12px;margin-bottom:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.06);transition:all 0.2s;"
-          onmouseover="this.style.background='rgba(155,77,255,0.1)';this.style.borderColor='rgba(155,77,255,0.3)';this.style.transform='translateY(-2px)'" 
-          onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='rgba(255,255,255,0.06)';this.style.transform='translateY(0)'">
+        
+        let tmInfoHtml = '';
+        let canLearnTm = true;
+        let isTm = itemName.startsWith('MT');
+        if (isTm) {
+          const tmMatch = itemName.match(/MT(\d+)\s*(.*)/);
+          if (tmMatch) {
+            const tmId = 'TM' + tmMatch[1];
+            const moveName = tmMatch[2];
+            if (!TM_COMPAT[p.id]?.includes(tmId)) {
+              canLearnTm = false;
+              tmInfoHtml = `<div style="font-size:9px;color:var(--red);margin-top:4px;font-weight:700;">No compatible</div>`;
+            } else if (p.moves && p.moves.some(m => m.name === moveName)) {
+              canLearnTm = false;
+              tmInfoHtml = `<div style="font-size:9px;color:var(--yellow);margin-top:4px;font-weight:700;">Ya conoce el movimiento</div>`;
+            } else {
+              tmInfoHtml = `<div style="font-size:9px;color:var(--blue);margin-top:4px;font-weight:700;">¡Puede aprenderlo!</div>`;
+            }
+          }
+        }
+
+        return `<div ${canLearnTm ? `onclick="document.getElementById('bag-item-target-overlay').remove();useItemOutsideBattle('${itemName}', 'team', ${i})"` : ''} 
+          style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border-radius:16px;padding:12px;margin-bottom:10px;cursor:${canLearnTm ? 'pointer' : 'not-allowed'};border:1px solid rgba(255,255,255,0.06);transition:all 0.2s; ${!canLearnTm ? 'opacity:0.6;filter:grayscale(0.8);' : ''}"
+          ${canLearnTm ? `onmouseover="this.style.background='rgba(155,77,255,0.1)';this.style.borderColor='rgba(155,77,255,0.3)';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='rgba(255,255,255,0.06)';this.style.transform='translateY(0)'"` : ''}>
           <img src="${getSpriteUrl(p.id)}" width="44" height="44" style="image-rendering:pixelated;">
           <div style="flex:1;">
             <div style="font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;">
@@ -470,6 +492,7 @@
               <div style="width:${hpPct}%;height:100%;background:${hpCol};box-shadow:0 0 10px ${hpCol}55;"></div>
             </div>
             <div style="font-size:10px;color:var(--gray);margin-top:4px;">${p.hp} / ${p.maxHp} HP</div>
+            ${tmInfoHtml}
           </div>
         </div>`;
       }).join('');
@@ -793,29 +816,39 @@
 
       if (p.moves.length < 4) {
         p.moves.push({ name: moveName, pp: movePP, maxPP: movePP });
+        state.inventory[itemName]--;
+        if (!state.inventory[itemName]) delete state.inventory[itemName];
         notify(`¡${p.name} ha recordado ${moveName.toUpperCase()}!`, '🧠');
         if (typeof renderTeam === 'function') renderTeam();
         if (typeof renderBox === 'function') renderBox();
+        if (typeof renderBag === 'function') renderBag();
+        if (typeof scheduleSave === 'function') scheduleSave();
       } else {
         // Si tiene 4 movimientos, usar la interfaz de aprendizaje existente para elegir cuál olvidar
         const newMove = { name: moveName, pp: movePP, maxPP: movePP };
         if (typeof showLearnMoveMenu === 'function') {
-          showLearnMoveMenu(p, newMove, () => {
-            notify(`¡${p.name} recordó ${moveName}!`, '✨');
+          showLearnMoveMenu(p, newMove, (learned) => {
+            if (learned) {
+              state.inventory[itemName]--;
+              if (!state.inventory[itemName]) delete state.inventory[itemName];
+              notify(`¡${p.name} recordó ${moveName}!`, '✨');
+            }
             if (typeof renderTeam === 'function') renderTeam();
             if (typeof renderBox === 'function') renderBox();
+            if (typeof renderBag === 'function') renderBag();
+            if (typeof scheduleSave === 'function') scheduleSave();
           });
         } else {
-          // Fallback si no existe la función (aunque debería estar en state.js)
+          // Fallback si no existe la función
           p.moves.shift();
           p.moves.push(newMove);
+          state.inventory[itemName]--;
+          if (!state.inventory[itemName]) delete state.inventory[itemName];
           notify(`¡${p.name} recordó ${moveName}!`, '✨');
+          if (typeof renderBag === 'function') renderBag();
+          if (typeof scheduleSave === 'function') scheduleSave();
         }
       }
-      // Consumir el objeto
-      state.inventory[itemName]--;
-      if (!state.inventory[itemName]) delete state.inventory[itemName];
-      if (typeof renderBag === 'function') renderBag();
 
       if (typeof scheduleSave === 'function') scheduleSave();
     }
