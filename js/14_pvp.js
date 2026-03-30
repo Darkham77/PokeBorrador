@@ -48,7 +48,7 @@
 
     async function sendBattleInvite(opponentId, opponentUsername) {
       if (!currentUser) return;
-      if (state.team.filter(p => p.hp > 0).length === 0) {
+      if (state.team.filter(p => p.hp > 0 && !p.onMission).length === 0) {
         notify('¡Necesitás al menos 1 Pokémon con HP!', '⚠️'); return;
       }
       const { error } = await sb.from('battle_invites').insert({
@@ -109,7 +109,7 @@
     // ─────────────────────────────────────────────────────────────
 
     async function startPvpBattle(invite, isHost) {
-      const myTeam = state.team.filter(p => p.hp > 0).map(p => JSON.parse(JSON.stringify(p)));
+      const myTeam = state.team.filter(p => p.hp > 0 && !p.onMission).map(p => JSON.parse(JSON.stringify(p)));
       if (!myTeam.length) { notify('¡No tenés Pokémon disponibles!', '⚠️'); return; }
 
       const opponentId = isHost ? invite.opponent_id : invite.challenger_id;

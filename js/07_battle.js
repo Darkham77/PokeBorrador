@@ -48,7 +48,7 @@ function restoreActiveBattle() {
   }
 
   // Verificar que el jugador tenga Pokémon vivos
-  const player = state.team.find(p => p.hp > 0);
+  const player = state.team.find(p => p.hp > 0 && !p.onMission);
   if (!player) {
     // Sin Pokémon vivos: limpiar batalla guardada y no restaurar
     console.warn('[RESTORE] No hay Pokémon vivos para restaurar la batalla.');
@@ -126,7 +126,7 @@ function restoreActiveBattle() {
 function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trainerName) {
   if (enemy) enemy._revealed = true;
   _battleLock = false;
-  const player = state.team.find(p => p.hp > 0);
+  const player = state.team.find(p => p.hp > 0 && !p.onMission);
   // Reset battle-only status flags
   player.confused = 0; player.flinched = false;
   enemy.confused = 0; enemy.flinched = false;

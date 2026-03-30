@@ -414,7 +414,7 @@ async function renderMaps() {
 
     // ===== LOCATION / WILD BATTLE =====
 	    function goLocation(locId) {
-	      const alive = state.team.filter(p => p.hp > 0);
+	      const alive = state.team.filter(p => p.hp > 0 && !p.onMission);
 	      if (alive.length === 0) {
 	        notify('¡Todos tus Pokémon están debilitados! Curá tu equipo primero.', '❤️‍🩹');
 	        return;
@@ -771,7 +771,7 @@ async function renderMaps() {
     // ===== GYM BATTLE =====
     function challengeGym(gymId, difficulty = 'easy') {
       const gym = GYMS.find(g => g.id === gymId);
-      const alive = state.team.filter(p => p.hp > 0);
+      const alive = state.team.filter(p => p.hp > 0 && !p.onMission);
       if (alive.length === 0) {
         notify('¡Todos tus Pokémon están debilitados!', '❤️‍🩹');
         return;

@@ -577,7 +577,7 @@
     function showBattleSwitch(forced = false) {
       if (_battleLock && !forced) return;
       const b = state.battle;
-      const eligible = state.team.filter(p => p.name !== b.player.name && p.hp > 0);
+      const eligible = state.team.filter(p => p.name !== b.player.name && p.hp > 0 && !p.onMission);
 
       let html = `<div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--purple);margin-bottom:14px;">
     🔄 ${forced ? '¡ELEGÍ UN POKÉMON!' : 'CAMBIAR POKÉMON'}

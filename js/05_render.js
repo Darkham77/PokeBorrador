@@ -52,7 +52,8 @@ function renderTeam() {
     const selected = _releaseSelected.has(i);
     const selClass = releasing ? (selected ? 'release-selected' : 'release-selectable') : '';
     const checkMark = releasing && selected ? '<div class="release-check">✓</div>' : '';
-    const clickFn = releasing ? `toggleReleaseSelect(${i})` : `openPokemonDetail(${i})`;
+    let clickFn = releasing ? `toggleReleaseSelect(${i})` : `openPokemonDetail(${i})`;
+    if (p.onMission) clickFn = `notify('¡Este Pokémon está en una misión!', '📋')`;
     const tierInfo = getPokemonTier(p);
     
     // Obedience check
@@ -79,10 +80,11 @@ function renderTeam() {
           </div>`;
     }
 
-    return `<div class="team-card ${selClass}" onclick="${clickFn}" style="cursor:pointer;position:relative;" draggable="${!releasing}" ondragstart="handleDragStart(event, ${i})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${i})">
+    return `<div class="team-card ${selClass}" onclick="${clickFn}" style="cursor:${p.onMission ? 'not-allowed' : 'pointer'};position:relative;${p.onMission ? 'opacity:0.6;' : ''}" draggable="${!releasing && !p.onMission}" ondragstart="handleDragStart(event, ${i})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${i})">
       ${checkMark}
       ${badgesHtml}
       ${obedienceTag}
+      ${p.onMission ? `<div style="position:absolute;top:5px;right:${tierInfo && tierInfo.tier ? '45px' : '5px'};background:#fbbf24;color:#000;border-radius:6px;font-size:6px;font-weight:bold;padding:2px 5px;z-index:3;">📋 MISIÓN</div>` : ''}
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};font-family:'Press Start 2P',monospace;font-size:6px;padding:2px 5px;border-radius:6px;border:1px solid ${tierInfo.color}44;line-height:1.4;z-index:2;">${tierInfo.tier}</div>
       <div style="height:80px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;">
         <img id="team-sprite-${i}" src="" alt="${p.name}" style="width:72px;height:72px;image-rendering:pixelated;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));display:none;pointer-events:none;">
@@ -136,6 +138,11 @@ function sendToBox(index) {
 function handleDragStart(e, index) {
   if (document.getElementById('team-grid').dataset.releaseMode === 'true') {
     e.preventDefault(); return;
+  }
+  if (state.team[index].onMission) {
+    e.preventDefault();
+    notify('¡Este Pokémon está en una misión!', '📋');
+    return;
   }
   e.dataTransfer.setData('text/plain', index);
   e.dataTransfer.effectAllowed = 'move';
