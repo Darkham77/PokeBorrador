@@ -554,7 +554,7 @@
 
       // ── ESPECIALES ─────────────────────────────────────────────────────────────
       {
-        id: 'rare_candy', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png',
+        id: 'rare_candy', cat: 'utility', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png',
         name: 'Caramelo Raro', icon: '🍬', price: 0, unlockLv: 22, tier: 'epic', market: false, trainerShop: true, bcPrice: 2500,
         desc: 'Sube un nivel a cualquier Pokémon del equipo al instante.',
         type: 'usable',
@@ -593,42 +593,42 @@
       },
       {
         id: 'lucky_egg_held', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucky-egg.png',
-        name: 'Huevo Suerte', icon: '🥚', price: 10000, market: false, trainerShop: true, bcPrice: 2500, unlockLv: 10, tier: 'epic', type: 'held',
+        name: 'Huevo Suerte', icon: '🥚', price: 10000, market: false, trainerShop: false, bcPrice: 2500, unlockLv: 10, tier: 'epic', type: 'held',
         desc: 'Equipado: Aumenta la experiencia ganada un 50%. Permanente.',
         effect: (qty) => { state.inventory['Huevo Suerte'] = (state.inventory['Huevo Suerte'] || 0) + qty; }
       },
       {
-        id: 'light_ball', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/light-ball.png',
+        id: 'light_ball', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/light-ball.png',
         name: 'Bola Luminosa', icon: '⚡', price: 5000, market: false, trainerShop: true, bcPrice: 1500, unlockLv: 8, tier: 'rare', type: 'held',
         desc: 'Equipado en Pikachu: Duplica su Ataque y At. Especial.',
         effect: (qty) => { state.inventory['Bola Luminosa'] = (state.inventory['Bola Luminosa'] || 0) + qty; }
       },
       {
-        id: 'thick_club', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thick-club.png',
+        id: 'thick_club', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thick-club.png',
         name: 'Hueso Grueso', icon: '🦴', price: 5000, market: false, trainerShop: true, bcPrice: 1500, unlockLv: 8, tier: 'rare', type: 'held',
         desc: 'Equipado en Cubone o Marowak: Duplica su Ataque.',
         effect: (qty) => { state.inventory['Hueso Grueso'] = (state.inventory['Hueso Grueso'] || 0) + qty; }
       },
       {
-        id: 'stick', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/stick.png',
+        id: 'stick', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/stick.png',
         name: 'Palo', icon: '🎋', price: 2000, market: false, trainerShop: true, bcPrice: 800, unlockLv: 5, tier: 'common', type: 'held',
         desc: 'Equipado en Farfetch\'d: Aumenta mucho el ratio de críticos.',
         effect: (qty) => { state.inventory['Palo'] = (state.inventory['Palo'] || 0) + qty; }
       },
       {
-        id: 'metal_powder', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/metal-powder.png',
+        id: 'metal_powder', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/metal-powder.png',
         name: 'Polvo Metálico', icon: '✨', price: 3000, market: false, trainerShop: true, bcPrice: 1000, unlockLv: 8, tier: 'rare', type: 'held',
         desc: 'Equipado en Ditto: Aumenta su Defensa un 50%.',
         effect: (qty) => { state.inventory['Polvo Metálico'] = (state.inventory['Polvo Metálico'] || 0) + qty; }
       },
       {
-        id: 'twisted_spoon', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/twisted-spoon.png',
+        id: 'twisted_spoon', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/twisted-spoon.png',
         name: 'Cuchara Torcida', icon: '🥄', price: 2000, market: false, trainerShop: true, bcPrice: 500, unlockLv: 4, tier: 'common', type: 'held',
         desc: 'Equipado: Potencia ataques de tipo Psíquico (+20%).',
         effect: (qty) => { state.inventory['Cuchara Torcida'] = (state.inventory['Cuchara Torcida'] || 0) + qty; }
       },
       {
-        id: 'spell_tag', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/spell-tag.png',
+        id: 'spell_tag', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/spell-tag.png',
         name: 'Hechizo', icon: '📜', price: 2000, market: false, trainerShop: true, bcPrice: 500, unlockLv: 4, tier: 'common', type: 'held',
         desc: 'Equipado: Potencia ataques de tipo Fantasma (+20%).',
         effect: (qty) => { state.inventory['Hechizo'] = (state.inventory['Hechizo'] || 0) + qty; }
@@ -646,7 +646,7 @@
         effect: (qty) => { state.inventory['Flecha Venenosa'] = (state.inventory['Flecha Venenosa'] || 0) + qty; }
       },
       {
-        id: 'focus_band', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/focus-band.png',
+        id: 'focus_band', cat: 'held', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/focus-band.png',
         name: 'Banda Focus', icon: '🎗️', price: 5000, market: false, trainerShop: true, bcPrice: 1500, unlockLv: 8, tier: 'rare', type: 'held',
         desc: 'Equipado: Puede evitar que el Pokémon sea debilitado de un golpe.',
         effect: (qty) => { state.inventory['Banda Focus'] = (state.inventory['Banda Focus'] || 0) + qty; }
