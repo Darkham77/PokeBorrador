@@ -109,7 +109,7 @@
       const el = document.getElementById('trade-summary');
       if (!el) return;
       const parts = [];
-      if (_tradeOfferPoke !== null) parts.push(`🔴 ${state.team[_tradeOfferPoke]?.name}`);
+      if (_tradeOfferPoke !== null) parts.push(`🔴 ${_tradeOfferPoke.name || _tradeOfferPoke.id}`);
       Object.entries(_tradeOfferItems).forEach(([k, v]) => parts.push(`${k} x${v}`));
       const om = parseInt(document.getElementById('trade-offer-money')?.value) || 0;
       if (om > 0) parts.push(`₽${om.toLocaleString()}`);
@@ -117,7 +117,7 @@
       const isGift = document.getElementById('trade-is-gift')?.checked;
       const reqParts = [];
       if (!isGift) {
-        if (_tradeRequestPoke !== null) reqParts.push(`🔴 ${(_tradeFriendSave?.team || [])[_tradeRequestPoke]?.name}`);
+        if (_tradeRequestPoke !== null) reqParts.push(`🔴 ${_tradeRequestPoke.name || _tradeRequestPoke.id}`);
         Object.entries(_tradeRequestItems).forEach(([k, v]) => reqParts.push(`${k} x${v}`));
         const rm = parseInt(document.getElementById('trade-request-money')?.value) || 0;
         if (rm > 0) reqParts.push(`₽${rm.toLocaleString()}`);
@@ -226,24 +226,62 @@
 
     function renderTradeOfferPokemon() {
       const el = document.getElementById('trade-offer-pokemon');
-      if (!state.team || state.team.length === 0) {
-        el.innerHTML = '<div style="color:var(--gray);font-size:11px;padding:8px;">Sin Pokémon en el equipo.</div>'; return;
+      const teamAndBox = [...(state.team || []), ...(state.box || [])];
+      
+      let html = '';
+      if (_tradeOfferPoke !== null) {
+        const p = _tradeOfferPoke;
+        const num = POKEMON_SPRITE_IDS[p.id];
+        const spriteUrl = num
+          ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${num}.png`
+          : null;
+        const imgHtml = spriteUrl
+          ? `<img src="${spriteUrl}" width="52" height="52" style="image-rendering:pixelated;display:block;" onerror="this.outerHTML='<span style=\\"font-size:30px;line-height:1;display:block;\\">${p.emoji}</span>'">`
+          : `<span style="font-size:30px;line-height:1;display:block;">${p.emoji}</span>`;
+        html = `<div style="text-align:center;background:rgba(168,85,247,0.1);border:2px solid var(--purple);border-radius:12px;padding:12px;margin-bottom:8px;">
+          ${imgHtml}
+          <div style="font-size:11px;font-weight:700;margin-top:4px;">${p.name}</div>
+          <div style="font-size:10px;color:var(--gray);">Nv.${p.level}</div>
+          <div style="font-size:9px;color:var(--yellow);margin-top:4px;">✓ Seleccionado</div>
+          <button onclick="_tradeOfferPoke=null;renderTradeOfferPokemon();updateTradeSummary();" style="margin-top:8px;width:100%;padding:6px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:var(--gray);font-size:10px;cursor:pointer;">✕ Cambiar</button>
+        </div>`;
       }
-      const cantTrade = state.team.length === 1;
-      el.innerHTML = state.team.map((p, i) =>
-        _tradePokeCard(p, i, 'offer', _tradeOfferPoke === i, cantTrade && _tradeOfferPoke !== i)
-      ).join('');
+      
+      html += `<button onclick="openTradePokeSelector('offer')" style="width:100%;padding:10px;border:1px dashed var(--purple);border-radius:12px;background:rgba(168,85,247,0.05);color:var(--purple);font-size:11px;cursor:pointer;font-weight:bold;transition:0.15s;" onmouseover="this.style.background='rgba(168,85,247,0.15)'" onmouseout="this.style.background='rgba(168,85,247,0.05)'">🔍 Seleccionar Pokémon (Equipo o PC)</button>`;
+      
+      el.innerHTML = html;
     }
 
     function renderTradeRequestPokemon() {
       const el = document.getElementById('trade-request-pokemon');
-      const team = _tradeFriendSave?.team || [];
-      if (team.length === 0) {
+      const teamAndBox = [...(_tradeFriendSave?.team || []), ...(_tradeFriendSave?.box || [])];
+      
+      if (teamAndBox.length === 0) {
         el.innerHTML = '<div style="color:var(--gray);font-size:11px;padding:8px;">Tu amigo no tiene Pokémon.</div>'; return;
       }
-      el.innerHTML = team.map((p, i) =>
-        _tradePokeCard(p, i, 'request', _tradeRequestPoke === i, false)
-      ).join('');
+      
+      let html = '';
+      if (_tradeRequestPoke !== null) {
+        const p = _tradeRequestPoke;
+        const num = POKEMON_SPRITE_IDS[p.id];
+        const spriteUrl = num
+          ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png`
+          : null;
+        const imgHtml = spriteUrl
+          ? `<img src="${spriteUrl}" width="52" height="52" style="image-rendering:pixelated;display:block;" onerror="this.outerHTML='<span style=\\"font-size:30px;line-height:1;display:block;\\">${p.emoji}</span>'">`
+          : `<span style="font-size:30px;line-height:1;display:block;">${p.emoji}</span>`;
+        html = `<div style="text-align:center;background:rgba(251,191,36,0.1);border:2px solid var(--yellow);border-radius:12px;padding:12px;margin-bottom:8px;">
+          ${imgHtml}
+          <div style="font-size:11px;font-weight:700;margin-top:4px;">${p.name}</div>
+          <div style="font-size:10px;color:var(--gray);">Nv.${p.level}</div>
+          <div style="font-size:9px;color:var(--yellow);margin-top:4px;">✓ Seleccionado</div>
+          <button onclick="_tradeRequestPoke=null;renderTradeRequestPokemon();updateTradeSummary();" style="margin-top:8px;width:100%;padding:6px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:var(--gray);font-size:10px;cursor:pointer;">✕ Cambiar</button>
+        </div>`;
+      }
+      
+      html += `<button onclick="openTradePokeSelector('request')" style="width:100%;padding:10px;border:1px dashed var(--yellow);border-radius:12px;background:rgba(251,191,36,0.05);color:var(--yellow);font-size:11px;cursor:pointer;font-weight:bold;transition:0.15s;" onmouseover="this.style.background='rgba(251,191,36,0.15)'" onmouseout="this.style.background='rgba(251,191,36,0.05)'">🔍 Seleccionar Pokémon del amigo (Equipo o PC)</button>`;
+      
+      el.innerHTML = html;
     }
 
     function getSpriteId(id) {
@@ -302,8 +340,8 @@
       if (!hasOffer) { notify('Tenés que ofrecer algo.', '⚠️'); return; }
       if (offerMoney > state.money) { notify('No tenés suficiente dinero.', '💸'); return; }
 
-      const offerPokemon = _tradeOfferPoke !== null ? state.team[_tradeOfferPoke] : null;
-      const requestPokemon = (!isGift && _tradeRequestPoke !== null) ? (_tradeFriendSave?.team || [])[_tradeRequestPoke] : null;
+      const offerPokemon = _tradeOfferPoke !== null ? _tradeOfferPoke : null;
+      const requestPokemon = (!isGift && _tradeRequestPoke !== null) ? _tradeRequestPoke : null;
 
       const { error } = await sb.from('trade_offers').insert({
         sender_id: currentUser.id,
