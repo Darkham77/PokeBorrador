@@ -13,7 +13,7 @@
       if (!TM_COMPAT[p.id]?.includes(tmId)) return null;
       if (p.moves && p.moves.some(m => m.name === moveName)) return null;
       if (p.moves.length >= 4) {
-        showLearnMoveMenu(p, { ...moveData, name: moveName }, () => {
+        showLearnMoveMenu(p, { ...moveData, name: moveName, maxPP: moveData.pp }, () => {
           state.inventory[inventoryName]--;
           if (!state.inventory[inventoryName]) delete state.inventory[inventoryName];
           if (typeof renderBag === 'function') renderBag();
@@ -48,8 +48,8 @@
       'Cura Quemadura': p => { if (p.status !== 'burn') return null; p.status = null; return `fue curado de las quemaduras`; },
       'Despertar': p => { if (p.status !== 'sleep') return null; p.status = null; p.sleepTurns = 0; return `se despertó`; },
       'Cura Total': p => { if (!p.status && p.hp === p.maxHp) return null; p.hp = p.maxHp; p.status = null; p.sleepTurns = 0; return `fue curado completamente (Max HP + curado)`; },
-      'Éter': p => { p.moves.forEach(m => { m.pp = Math.min(m.maxPP, m.pp + 10); }); return `recuperó PP`; },
-      'Elixir Máximo': p => { p.moves.forEach(m => { m.pp = m.maxPP; }); return `recuperó todos los PP`; },
+      'Éter': p => { p.moves.forEach(m => { const cap = (m.maxPP > 0) ? m.maxPP : (MOVE_DATA[m.name]?.pp || 35); if (!m.maxPP || m.maxPP <= 0) m.maxPP = cap; m.pp = Math.min(cap, (isNaN(m.pp) ? 0 : m.pp) + 10); }); return `recuperó PP`; },
+      'Elixir Máximo': p => { p.moves.forEach(m => { const cap = (m.maxPP > 0) ? m.maxPP : (MOVE_DATA[m.name]?.pp || 35); if (!m.maxPP || m.maxPP <= 0) m.maxPP = cap; m.pp = cap; }); return `recuperó todos los PP`; },
       'Subida PP': p => { const m = p.moves && p.moves.find(mv => mv.maxPP && mv.maxPP < 99); if (!m) return null; const b = Math.max(1, Math.floor(m.maxPP * 0.2)); m.maxPP += b; m.pp = Math.min(m.pp + b, m.maxPP); return `aumentó los PP de ${m.name} en ${b}`; },
       'MT01 Puño Certero': p => teachTM(p, 'TM01', 'Puño Certero'),
       'MT02 Garra Dragón': p => teachTM(p, 'TM02', 'Garra Dragón'),

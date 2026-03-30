@@ -482,6 +482,19 @@
               m.name = 'Placaje';
             }
           }
+          // Repair moves with undefined/NaN/0 maxPP (caused by TM teaching bug with showLearnMoveMenu)
+          if (m && m.name && MOVE_DATA[m.name]) {
+            const correctPP = MOVE_DATA[m.name].pp || 35;
+            if (!m.maxPP || m.maxPP <= 0 || isNaN(m.maxPP)) {
+              console.warn(`[REPAIR] Fixing invalid maxPP for move ${m.name} on ${p.name || p.id}. Was: ${m.maxPP}, fixing to: ${correctPP}`);
+              m.maxPP = correctPP;
+            }
+            // Also repair NaN pp values (infinite PP exploit)
+            if (isNaN(m.pp) || m.pp < 0) {
+              console.warn(`[REPAIR] Fixing NaN/negative pp for move ${m.name} on ${p.name || p.id}. Was: ${m.pp}, fixing to: ${m.maxPP}`);
+              m.pp = m.maxPP;
+            }
+          }
         });
       }
 
