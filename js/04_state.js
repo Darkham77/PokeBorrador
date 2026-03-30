@@ -577,10 +577,12 @@
         const col = moveTypeColor(m.name);
         const label = isNew ? '✨ NUEVO' : `Movimiento ${idx + 1}`;
         const border = isNew ? `border:2px solid ${col};box-shadow:0 0 12px ${col}55;` : 'border:1px solid rgba(255,255,255,0.1);';
+        const escapedName = m.name.replace(/'/g, "\\'");
+        const tE = `onmouseenter="this.style.background='rgba(255,255,255,0.11)'; if(typeof showMoveTooltip==='function') showMoveTooltip(event, '${escapedName}')" onmouseleave="this.style.background='rgba(255,255,255,0.05)'; if(typeof hideMoveTooltip==='function') hideMoveTooltip()" ontouchstart="if(typeof showMoveTooltip==='function') showMoveTooltip(event, '${escapedName}')" ontouchend="if(typeof hideMoveTooltip==='function') hideMoveTooltip()"`;
         return `
           <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.05);
-            border-radius:14px;padding:12px 14px;margin-bottom:8px;${border}cursor:${isNew ? 'default' : 'pointer'};transition:background .15s;"
-            ${isNew ? '' : `onclick="learnMoveReplace(${idx})" onmouseover="this.style.background='rgba(255,255,255,0.11)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'"`}>
+            border-radius:14px;padding:12px 14px;margin-bottom:8px;${border}cursor:${isNew ? 'help' : 'pointer'};transition:background .15s;"
+            ${isNew ? tE : `onclick="learnMoveReplace(${idx})" ${tE}`}>
             <div style="flex:1;min-width:0;">
               <div style="font-weight:700;font-size:13px;color:#fff;margin-bottom:4px;">${m.name}</div>
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -642,6 +644,7 @@
       document.body.appendChild(ov);
 
       window.learnMoveReplace = function(slotIndex) {
+        if (typeof hideMoveTooltip === 'function') hideMoveTooltip();
         const oldMove = pokemon.moves[slotIndex];
         pokemon.moves[slotIndex] = { name: newMove.name, pp: newMove.pp, maxPP: newMove.maxPP };
         ov.remove();
@@ -655,6 +658,7 @@
       };
 
       window.learnMoveForget = function() {
+        if (typeof hideMoveTooltip === 'function') hideMoveTooltip();
         ov.remove();
         delete window.learnMoveReplace;
         delete window.learnMoveForget;
