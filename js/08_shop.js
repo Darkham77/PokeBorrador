@@ -657,12 +657,7 @@
         desc: 'Equipado: Potencia ataques de tipo Eléctrico (+20%).',
         effect: (qty) => { state.inventory['Imán'] = (state.inventory['Imán'] || 0) + qty; }
       },
-      {
-        id: 'leftovers_held', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leftovers.png',
-        name: 'Restos', icon: '🍏', price: 8000, market: false, trainerShop: true, bcPrice: 2000, unlockLv: 10, tier: 'rare', type: 'held',
-        desc: 'Equipado: Recupera un poco de HP en cada turno.',
-        effect: (qty) => { state.inventory['Restos'] = (state.inventory['Restos'] || 0) + qty; }
-      },
+
       {
         id: 'dragon_scale', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dragon-scale.png',
         name: 'Escama Dragón', icon: '🐉', price: 5000, market: false, trainerShop: false, tier: 'rare',
