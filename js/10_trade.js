@@ -372,9 +372,9 @@
               ${receivedLines.map(l => `<div style="font-size:11px;margin-bottom:2px;">${l}</div>`).join('') || '<div style="font-size:11px;color:var(--gray);">Solo fue un regalo 🎁</div>'}
             </div>
           </div>
-          <div style="width:100%; padding:12px; background:rgba(107,203,119,0.15); border:1px solid rgba(107,203,119,0.3); border-radius:12px; text-align:center; font-family:'Press Start 2P',monospace; font-size:8px; color:var(--green);">
-            ✅ ¡Intercambio recibido!
-          </div>
+          <button class="friend-btn friend-btn-accept" style="width:100%;" onclick="autoClaimTrade('${t.id}')">
+            ✅ ¡Intercambio recibido! (Entendido)
+          </button>
         </div>`;
       }).join('');
 
@@ -425,8 +425,11 @@
 
     // ── Auto-claim accepted trades (sender's side) ────────
     async function autoClaimTrade(tradeId) {
-      // Marcar el trade como reclamado silenciosamente ya que el servidor ya procesó el cambio en el save
-      await sb.from('trade_offers').update({ status: 'claimed' }).eq('id', tradeId);
+      // Marcar el trade como reclamado para que desaparezca de la lista
+      const { error } = await sb.from('trade_offers').update({ status: 'claimed' }).eq('id', tradeId);
+      if (!error) {
+        renderPendingTrades();
+      }
     }
 
     // ── Accept ────────────────────────────────────────
