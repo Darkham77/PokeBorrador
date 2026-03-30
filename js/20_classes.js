@@ -931,62 +931,6 @@ function activateOfficialRoute(locId) {
   if (typeof saveGame === 'function') saveGame(false);
 }
 
-// ── Análisis Genético (Criador) ───────────────────────────────────────────
-function showGeneticAnalysis(pokemon) {
-  if (state.playerClass !== 'criador') {
-    notify('Solo los Criadores pueden usar el Análisis Genético.', '🔒');
-    return;
-  }
-  if (!pokemon) return;
-
-  const ivs = pokemon.ivs || {};
-  const totalIv = Object.values(ivs).reduce((s, v) => s + (v || 0), 0);
-  const maxIv = 186;
-  const pct = Math.floor((totalIv / maxIv) * 100);
-  const isHA = (pokemon.ability || '').includes('(HA)') ||
-    (ABILITIES[pokemon.id] && ABILITIES[pokemon.id].length > 1 &&
-     pokemon.ability === ABILITIES[pokemon.id][ABILITIES[pokemon.id].length - 1]);
-
-  const stars = pct >= 90 ? '⭐⭐⭐' : pct >= 70 ? '⭐⭐' : pct >= 50 ? '⭐' : '';
-
-  const rows = [
-    ['HP', ivs.hp], ['ATK', ivs.atk], ['DEF', ivs.def],
-    ['SPA', ivs.spa], ['SPD', ivs.spd], ['SPE', ivs.spe]
-  ].map(([stat, val]) => {
-    const v = val ?? '?';
-    const color = v >= 28 ? '#22c55e' : v >= 20 ? '#f59e0b' : v >= 10 ? '#9ca3af' : '#ef4444';
-    return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-      <span style="color:#9ca3af;font-size:11px;">${stat}</span>
-      <span style="color:${color};font-weight:bold;font-size:11px;">${v}/31</span>
-    </div>`;
-  }).join('');
-
-  const ov = document.createElement('div');
-  ov.id = 'genetic-analysis-modal';
-  ov.style.cssText = 'position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s;';
-  ov.innerHTML = `
-    <div style="background:#1e293b;border-radius:20px;padding:24px;max-width:320px;width:100%;border:2px solid #a855f788;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#a855f7;text-align:center;margin-bottom:16px;">
-        🔬 ANÁLISIS GENÉTICO
-      </div>
-      <div style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:14px;font-weight:bold;color:#e2e8f0;">${pokemon.name || pokemon.id} ${stars}</div>
-        <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
-          Naturaleza: <strong style="color:#f59e0b;">${pokemon.nature || '?'}</strong> ·
-          Habilidad: <strong style="color:${isHA ? '#a855f7' : '#9ca3af'};">${pokemon.ability || '?'}${isHA ? ' (HA)' : ''}</strong>
-        </div>
-        <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
-          IV Total: <strong style="color:#22c55e;">${totalIv}/${maxIv} (${pct}%)</strong>
-        </div>
-      </div>
-      <div style="margin-bottom:16px;">${rows}</div>
-      <button onclick="document.getElementById('genetic-analysis-modal').remove()"
-        style="width:100%;padding:10px;border:none;border-radius:10px;background:#a855f7;color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">
-        CERRAR
-      </button>
-    </div>`;
-  document.body.appendChild(ov);
-}
 
 // ── Mercado Negro del Rocket ──────────────────────────────────────────────
 function sellPokemonBlackMarket(pokemon, boxIndex) {

@@ -671,7 +671,6 @@
       🎒 Usar Objeto
     </button>
     ${state.playerClass === 'rocket' ? `<button onclick="document.getElementById('box-menu-overlay').remove();sellPokemonBlackMarket(state.box[${boxIndex}], ${boxIndex})" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;background:rgba(239,68,68,0.15);color:#ef4444;font-size:12px;font-weight:700;border:1px solid rgba(239,68,68,0.3);box-shadow: 0 0 10px rgba(239,68,68,0.2);">🚀 Vender en Mercado Negro</button>` : ''}
-    ${state.playerClass === 'criador' ? `<button onclick="document.getElementById('box-menu-overlay').remove();showGeneticAnalysis(state.box[${boxIndex}])" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;background:rgba(168,85,247,0.15);color:#a855f7;font-size:12px;font-weight:700;border:1px solid rgba(168,85,247,0.3);">🔬 Análisis Genético</button>` : ''}
     <button onclick="document.getElementById('box-menu-overlay').remove();promptMoveToBox(${boxIndex})" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:10px;cursor:pointer;
       background:rgba(59,139,255,0.15);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(59,139,255,0.2);">
       📦 Mover a otra caja
