@@ -560,12 +560,17 @@ async function renderDaycareUI() {
   const timerUI = document.getElementById('daycare-egg-timer');
   if (compat.level > 0) {
     timerUI.style.display = 'block';
-    // Process offline breeding FIRST to catch up and set proper base for timer
-    await processOfflineBreeding(currentUser.id, slots);
-
-    // Re-read slots if they were updated by processOfflineBreeding
-    const updatedSlots = await loadDaycareSlots();
-    manageDaycareTimer(compat.level, updatedSlots);
+    // processOfflineBreeding solo se llama la primera vez que se abre la tab
+    // (controlado por el lock de 5s en localStorage). No debe llamarse en cada render.
+    if (!window._daycareOfflineChecked) {
+      window._daycareOfflineChecked = true;
+      await processOfflineBreeding(currentUser.id, slots);
+      // Re-read slots if they were updated by processOfflineBreeding
+      const updatedSlotsAfterOffline = await loadDaycareSlots();
+      manageDaycareTimer(compat.level, updatedSlotsAfterOffline);
+    } else {
+      manageDaycareTimer(compat.level, slots);
+    }
   }
   else { timerUI.style.display = 'none'; clearInterval(_daycareTimer); }
 
@@ -867,6 +872,11 @@ async function confirmDeposit(uid) {
     console.error("Daycare Deposit Error:", error);
     notify('Error en Guardería: ' + error.message, '❌');
   } else {
+    // SIEMPRE resetear deposited_at de AMBOS slots al cambiar cualquier padre.
+    // Esto garantiza que el timer arranque desde cero con la nueva pareja.
+    const nowIso = new Date().toISOString();
+    await sb.from('daycare_slots').update({ deposited_at: nowIso }).eq('player_id', currentUser.id);
+
     // If it was in the team, move it to the box
     if (pIdx !== -1) {
         const removed = state.team.splice(pIdx, 1)[0];
@@ -890,6 +900,10 @@ async function withdrawFromDaycare(slotIdx) {
     console.error("Daycare Withdraw Error:", error);
     notify('Error al retirar: ' + error.message, '❌');
   } else {
+    // Resetear deposited_at del slot restante para que el timer empiece de cero
+    // cuando se deposite un nuevo compañero.
+    const nowIso = new Date().toISOString();
+    await sb.from('daycare_slots').update({ deposited_at: nowIso }).eq('player_id', currentUser.id);
     notify('Pokémon retirado.', '🏡');
     saveGame(true);
   }
@@ -1063,11 +1077,6 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
   if (_isCriador) ivs._haBoost = true;
   
   let moves = (EGG_MOVES_DB[compat.eggSpecies] || []).filter(m => (pA.moves || []).concat(pB.moves || []).map(x => x.id || x).includes(m)).slice(0, 2);
-  // Criador: 25% menos tiempo de eclosión
-  let hatchMs = 30 * 60 * 1000;
-  if (typeof state !== 'undefined' && state.playerClass === 'criador') hatchMs *= 0.75;
-  
-  const ready = new Date(dateObj.getTime() + hatchMs); 
   
   let finalSpecies = compat.eggSpecies;
   if (finalSpecies === 'nidoran_f' || finalSpecies === 'nidoran_m') {
@@ -1075,7 +1084,9 @@ async function generateEggAt(pid, pA, pB, iA, iB, dateObj) {
   }
   
   const eggShinyRate = (typeof getActiveShinyRate === 'function') ? getActiveShinyRate(512, 'eggShiny') : 512;
-  await sb.from('eggs').insert({ player_id: pid, species: finalSpecies, parent_a: pA.uid, parent_b: pB.uid, inherited_ivs: ivs, egg_moves: moves, shiny_roll: (Math.random() < 1 / eggShinyRate), created_at: dateObj.toISOString(), hatch_ready_time: ready.toISOString(), incubation_speed_bonus: 0 });
+  // Los huevos en el almacén son inmediatamente reclamables (hatch_ready_time = created_at).
+  // El conteo de pasos de eclosión ocurre DESPUÉS de que el jugador reclame el huevo (state.eggs).
+  await sb.from('eggs').insert({ player_id: pid, species: finalSpecies, parent_a: pA.uid, parent_b: pB.uid, inherited_ivs: ivs, egg_moves: moves, shiny_roll: (Math.random() < 1 / eggShinyRate), created_at: dateObj.toISOString(), hatch_ready_time: dateObj.toISOString(), incubation_speed_bonus: 0 });
 
 
   pA.vigor--;
@@ -1167,17 +1178,19 @@ async function renderEggGrid() {
   const { data: eggs } = await sb.from('eggs').select('*').eq('player_id', currentUser.id).order('created_at');
   const grid = document.getElementById('daycare-egg-grid');
   document.getElementById('daycare-egg-count').textContent = eggs?.length || 0;
-  if (!eggs || !eggs.length) { grid.innerHTML = '<div style="color:var(--gray);font-size:11px;padding:16px 0;">Sin huevos en almacén.</div>'; return; }
+  if (!eggs || !eggs.length) { 
+    grid.innerHTML = '<div style="color:var(--gray);font-size:11px;padding:16px 0;">Sin huevos en almacén.</div>'; 
+    document.getElementById('daycare-nav-badge').style.display = 'none';
+    return; 
+  }
 
-  let badgeReady = false;
+  // Todos los huevos en el almacén son inmediatamente reclamables.
+  // NO existe auto-eclosión en el almacén — el jugador debe reclamarlos
+  // y luego CAMINAR para eclosionarlos.
+  document.getElementById('daycare-nav-badge').style.display = 'block';
+  
   grid.innerHTML = eggs.map(e => {
-    const hAt = new Date(e.hatch_ready_time).getTime();
-    const leftMs = Math.max(0, hAt - getServerTime());
-    const leftMin = Math.ceil(leftMs / 60000);
-    const pct = Math.min(100, Math.round(100 - (leftMs / (30 * 60 * 1000)) * 100));
     const pd = POKEMON_DB[e.species];
-    const isReady = leftMs === 0;
-    if (isReady) badgeReady = true;
 
     const ivs = e.inherited_ivs || {};
     const tooltipHtml = (ivs._scanned && ivs._predictedName) ? `
@@ -1192,15 +1205,12 @@ async function renderEggGrid() {
 
     return `<div class="egg-card" style="position:relative;">
           ${tooltipHtml}
-          <div class="egg-icon" style="${isReady ? 'animation:eggShake 0.6s infinite;' : ''}">🥚</div>
+          <div class="egg-icon" style="animation:eggShake 0.6s infinite;">🥚</div>
           <div class="egg-species">${pd ? pd.emoji + ' ' + pd.name : e.species}</div>
-          <div class="egg-timer" style="${isReady ? 'color:#22c55e;font-weight:700;' : ''}">${isReady ? '¡Listo para recoger!' : `Eclosiona en ${leftMin} min`}</div>
-          <div class="egg-progress-bar"><div class="egg-progress-fill" style="width:${pct}%"></div></div>
-          ${isReady ? `<button onclick="collectEgg('${e.egg_id}', '${e.species}', ${e.shiny_roll}, '${escape(JSON.stringify(e.inherited_ivs))}', '${e.parent_a || ''}', '${e.parent_b || ''}')" style="margin-top:8px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px;font-family:'Press Start 2P';font-size:8px;cursor:pointer;">📥 Recoger</button>` : ''}
+          <div class="egg-timer" style="color:#22c55e;font-weight:700;">¡Listo para recoger!</div>
+          <button onclick="collectEgg('${e.egg_id}', '${e.species}', ${e.shiny_roll}, '${escape(JSON.stringify(e.inherited_ivs))}', '${e.parent_a || ''}', '${e.parent_b || ''}')" style="margin-top:8px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px;font-family:'Press Start 2P';font-size:8px;cursor:pointer;">📥 Recoger</button>
         </div>`;
   }).join('');
-
-  document.getElementById('daycare-nav-badge').style.display = badgeReady ? 'block' : 'none';
 }
 
 async function collectEgg(eggId, sp, shiny, ivsJson, parentAUid = '', parentBUid = '') {
