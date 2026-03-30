@@ -225,9 +225,9 @@
 
     // ===== SHOP ITEMS =====
     // Item categories for market tabs
-    const ITEM_CATEGORIES = ['todos', 'pokeballs', 'pociones', 'stones', 'breeding', 'especial'];
-    const CATEGORY_LABELS = { todos: 'Todo', pokeballs: 'Pokéballs', pociones: 'Pociones', stones: 'Piedras', breeding: 'Cría', especial: 'Especial' };
-    const MARKET_CAT_ORDER = { pokeballs: 1, pociones: 2, stones: 3, breeding: 4, especial: 5 };
+    const ITEM_CATEGORIES = ['todos', 'pokeballs', 'pociones', 'stones', 'especial'];
+    const CATEGORY_LABELS = { todos: 'Todo', pokeballs: 'Pokéballs', pociones: 'Pociones', stones: 'Piedras', especial: 'Especial' };
+    const MARKET_CAT_ORDER = { pokeballs: 1, pociones: 2, stones: 3, especial: 4 };
 
     const SHOP_ITEMS = [
       // ── BREEDING ITEMS ──────────────────────────────────────────────────────────
@@ -561,7 +561,7 @@
         effect: (qty) => { state.inventory['Caramelo Raro'] = (state.inventory['Caramelo Raro'] || 0) + qty; }
       },
       {
-        id: 'pp_up', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/pp-up.png',
+        id: 'pp_up', cat: 'utility', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/pp-up.png',
         name: 'Subida PP', icon: '📈', price: 0, unlockLv: 8, tier: 'epic', market: false, trainerShop: true, bcPrice: 1000,
         desc: 'Aumenta los PP máximos de un movimiento en un 20%.',
         effect: (qty) => { state.inventory['Subida PP'] = (state.inventory['Subida PP'] || 0) + qty; }
