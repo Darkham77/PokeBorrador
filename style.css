@@ -5380,3 +5380,16 @@
         padding: 30px 20px;
       }
     }
+
+    /* ── Ajuste de filtros de IV para móvil ── */
+    @media (max-width: 768px) {
+      #box-iv-filters {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      #box-iv-filters {
+        grid-template-columns: 1fr !important;
+      }
+    }
