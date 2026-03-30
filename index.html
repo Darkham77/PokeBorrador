@@ -152,7 +152,13 @@
           <button class="hud-nav-btn" data-tab="market"
             onclick="showTab('market',this)"><span>🛒</span><span>PokéMart</span></button>
           <button class="hud-nav-btn" data-tab="friends"
-            onclick="showTab('friends',this)"><span>👥</span><span>Amigos</span></button>
+            onclick="showTab('friends',this)" style="position:relative;">
+            <span>👥</span><span>Amigos</span>
+            <span id="friends-hud-badge" style="display:none;position:absolute;top:4px;right:4px;
+              background:var(--red);color:#fff;font-size:9px;font-weight:900;min-width:16px;height:16px;
+              border-radius:8px;padding:0 4px;line-height:16px;text-align:center;
+              font-family:'Press Start 2P',monospace;z-index:2;"></span>
+          </button>
           <button class="hud-nav-btn" data-tab="daycare"
             onclick="showTab('daycare',this)"><span>🥚</span><span>Crianza</span></button>
         </div>
