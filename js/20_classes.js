@@ -1534,7 +1534,7 @@ function _openPokemonSelectModal(missionId, info, cls) {
 
   const rewardHtml = cls === 'criador'
     ? `+${info.blocks} IV aleatorio | -${info.blocks} Vigor${info.vigorSaveChance > 0 ? ' <span style="color:#a855f7;">(10% ahorro)</span>' : ''}`
-    : `~${(2500 + 20 * 50) * info.blocks} EXP${info.bonusLevel ? ' + <strong>+1 Nivel</strong>' : ''}`;
+    : `~${(15000 + 20 * 500) * info.blocks} EXP${info.bonusLevel ? ' + <strong>+1 Nivel</strong>' : ''}`;
 
   // Estado local de filtros
   window._missionFilter = { search: '', fav: false, breed: false, iv31: false };
@@ -1570,7 +1570,7 @@ function _openPokemonSelectModal(missionId, info, cls) {
           <span style="margin:0 4px;color:#374151;">|</span>
           <span style="font-size:10px;color:#6b7280;">IV Total: <strong style="color:#e2e8f0;">${totalIvs}/186</strong></span>
         </div>`
-      : `<div style="font-size:10px;color:#3b82f6;margin-top:6px;">⚡ ~${(2500 + p.level * 50) * info.blocks} EXP totales</div>`;
+      : `<div style="font-size:10px;color:#3b82f6;margin-top:6px;">⚡ ~${(15000 + p.level * 500) * info.blocks} EXP totales</div>`;
 
     const shinyBadge = p.isShiny ? '<span style="font-size:11px;margin-left:4px;">✨</span>' : '';
 
@@ -1770,7 +1770,7 @@ function collectClassMission() {
   } else if (cls === 'entrenador') {
     if (p) {
       const expBlocks = info?.blocks || 1;
-      const expGained = expBlocks * (2500 + (p.level * 50));
+      const expGained = expBlocks * (15000 + (p.level * 500));
       p.exp = (p.exp || 0) + expGained;
       // Si opción 24h, dar +1 nivel garantizado
       if (am.id === 'mission_24h') {
@@ -1870,7 +1870,7 @@ function processOfflineClassMissions() {
   } else if (cls === 'entrenador') {
     if (p) {
       const expBlocks = info?.blocks || 1;
-      const expGained = expBlocks * (2500 + (p.level * 50));
+      const expGained = expBlocks * (15000 + (p.level * 500));
       p.exp = (p.exp || 0) + expGained;
       if (am.id === 'mission_24h') p.level = Math.min((p.level || 1) + 1, 100);
       notifMsg = `📬 ${am.pokeName || 'Tu Pokémon'} ganó EXP mientras no estabas.`;
