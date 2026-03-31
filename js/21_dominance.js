@@ -80,7 +80,7 @@ function addWarCoinsLocal(coins) {
   if (typeof scheduleSave === 'function') scheduleSave();
 }
 
-async function addWarPoints(mapId, eventType, success) {
+async function addWarPoints(mapId, eventType, success, overridePts = null) {
   if (!state.faction) return;
   if (!isDisputePhase()) return; 
 
@@ -91,10 +91,13 @@ async function addWarPoints(mapId, eventType, success) {
     fishing:        { win: 4,  lose: 1 },
     shiny_capture:  { win: 40, lose: 10 },
     event:          { win: 20, lose: 5 },
+    guardian:       { win: 150, lose: 10 }
   };
 
   const ptRecord = PTS_TABLE[eventType] || { win: 2, lose: 0 };
-  const pts = success ? ptRecord.win : ptRecord.lose;
+  let pts = success ? ptRecord.win : ptRecord.lose;
+  if (overridePts !== null) pts = overridePts;
+
   if (pts <= 0) return;
 
   const weekId = getCurrentWeekId();
@@ -108,7 +111,19 @@ async function addWarPoints(mapId, eventType, success) {
       p_faction: state.faction,
       p_points: pts
     });
-    addWarCoinsLocal(Math.floor(pts / 10));
+    
+    // Premiar con 1 moneda cada 10 PT
+    if (pts >= 10) {
+      addWarCoinsLocal(Math.floor(pts / 10));
+    } else {
+      // Para puntos pequeños, acumular en un contador oculto si quisieras, 
+      // por ahora solo premiamos los hitos de 10.
+    }
+    
+    // Refrescar panel si está abierto
+    if (document.getElementById('tab-war')?.style.display !== 'none') {
+      renderWarPanel();
+    }
   } catch(e) { console.error("Error sumando PT", e); }
 }
 
@@ -370,16 +385,29 @@ async function claimGuardianCapture(mapId, pokemon) {
   pokemon.isGuardian = true;
   pokemon.guardianFaction = state.faction;
   
-  await addWarPoints(mapId, 'event', true); 
-  await window.sb.rpc('add_war_points', {
-    p_week_id: getCurrentWeekId(),
-    p_map_id: mapId,
-    p_faction: state.faction,
-    p_points: ptsAwarded
-  });
+  // Usar addWarPoints con override para centralizar monedas y guardado
+  await addWarPoints(mapId, 'guardian', true, ptsAwarded);
   
   notify(`¡Capturaste al Guardián! Has reclamado ${ptsAwarded} PT para Team ${state.faction === 'union' ? 'Unión' : 'Poder'}.`, '🏆');
   return true;
+}
+
+async function recordGuardianDefeat(mapId, ptsAwarded) {
+  const userId = window.currentUser?.id;
+  const today = new Date().toISOString().split('T')[0];
+
+  await window.sb
+    .from('guardian_captures')
+    .insert({
+      capture_date: today,
+      map_id: mapId,
+      user_id: userId,
+      winner_faction: state.faction,
+      pts_awarded: Math.floor(ptsAwarded * 0.7) // 70% de puntos por derrota vs captura
+    });
+
+  await addWarPoints(mapId, 'guardian', true, Math.floor(ptsAwarded * 0.7));
+  notify(`¡Guardián Derrotado! +${Math.floor(ptsAwarded * 0.7)} PT.`, '⚔️');
 }
 
 // ── BONOS ──

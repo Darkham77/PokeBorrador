@@ -2841,8 +2841,12 @@ function endBattle(won) {
     if (typeof addWarPoints === 'function') {
       const wMapId = b.locationId || window.currentEncounterMapId;
       if (wMapId) {
-        const wType = (b.isGym) ? 'trainer_win' : (b.isTrainer ? 'trainer_win' : 'wild_win');
-        addWarPoints(wMapId, wType, true); // fire and forget
+        if (b.enemy.isGuardian && typeof recordGuardianDefeat === 'function') {
+          recordGuardianDefeat(wMapId, b.enemy.guardianPts || 150);
+        } else {
+          const wType = (b.isGym) ? 'trainer_win' : (b.isTrainer ? 'trainer_win' : 'wild_win');
+          addWarPoints(wMapId, wType, true); // fire and forget
+        }
       }
     }
 
