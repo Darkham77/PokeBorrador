@@ -28,7 +28,7 @@ async function chooseFaction(faction) {
   
   const { error } = await window.sb
     .from('war_factions')
-    .insert({ user_id: userId, email, faction });
+    .insert({ user_id: userId, faction });
     
   if (!error || error.code === '23505') { // 23505 = conflict/already exists
     state.faction = faction;
