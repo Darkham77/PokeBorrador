@@ -462,15 +462,23 @@ async function renderWarPanel() {
   await resolveWeekIfNeeded();
   const weekId = getCurrentWeekId();
   const dispute = isDisputePhase();
+  const userId = window.currentUser?.id;
 
+  // 1. Banner de Fase y Countdown
   const banner = document.getElementById('war-phase-banner');
   if (banner) {
-    banner.innerHTML = `<div style="padding:10px;border-radius:8px;text-align:center;font-family:'Press Start 2P',monospace;font-size:10px;margin-bottom:16px;
-      ${dispute ? 'background:#1a0f00;border:1px solid #ff8800;color:#ff8800;' : 'background:#001a00;border:1px solid #44ff44;color:#44ff44;'}">
-      ${dispute ? '⚔️ Semana en Disputa — Lunes a Viernes' : '🏆 Fin de Semana de Dominancia'}
+    const nextPhaseName = dispute ? 'DOMINANCIA' : 'DISPUTA';
+    const day = new Date().getDay();
+    const daysUntil = dispute ? (6 - day) : (day === 0 ? 1 : 8 - day);
+    
+    banner.innerHTML = `<div style="padding:12px; border-radius:12px; text-align:center; font-family:'Press Start 2P',monospace; font-size:9px; margin-bottom:20px;
+      ${dispute ? 'background:rgba(255,136,0,0.1); border:1px solid var(--dispute-color); color:var(--dispute-color);' : 'background:rgba(68,255,68,0.1); border:1px solid var(--union-color); color:var(--union-color);'}">
+      ${dispute ? '⚔️ FASE DE DISPUTA' : '🏆 FASE DE DOMINANCIA'}<br>
+      <span style="font-size:7px; opacity:0.8; margin-top:5px; display:inline-block;">Próxima fase en ${daysUntil} día${daysUntil>1?'s':''}</span>
     </div>`;
   }
 
+  // 2. Datos de Dominancia (para el fin de semana)
   const { data: domData } = await window.sb
     .from('war_dominance')
     .select('map_id, winner_faction')
@@ -487,36 +495,95 @@ async function renderWarPanel() {
   if (domU) domU.textContent = unionMaps;
   if (domP) domP.textContent = poderMaps;
   
-  const coinDisp = document.getElementById('war-coins-count');
-  if (coinDisp) coinDisp.textContent = state.warCoins - (state.warCoinsSpent || 0);
+  // 3. Datos de Puntos en Vivo (para la semana)
+  const { data: ptsData } = await window.sb
+    .from('war_points')
+    .select('map_id, faction, points')
+    .eq('week_id', weekId);
 
-  renderKantoWarGrid(domData || []);
+  // 4. Estadísticas Personales
+  if (userId) {
+    // Mi facción
+    const myFacDisp = document.getElementById('war-my-faction');
+    if (myFacDisp) {
+      myFacDisp.textContent = state.faction === 'union' ? 'Unión' : (state.faction === 'poder' ? 'Poder' : 'Sin Bando');
+      myFacDisp.style.color = state.faction === 'union' ? 'var(--union-color)' : (state.faction === 'poder' ? 'var(--poder-color)' : 'var(--gray)');
+    }
+    
+    // Mis monedas
+    const coinDisp = document.getElementById('war-coins-count');
+    if (coinDisp) coinDisp.textContent = (state.warCoins || 0) - (state.warCoinsSpent || 0);
+
+    // Mi contribución (puntos sumados por mí esta semana)
+    const today = new Date();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
+    const mondayStr = monday.toISOString().split('T')[0];
+
+    const { data: myMatches } = await window.sb
+      .from('guardian_captures')
+      .select('pts_awarded')
+      .eq('user_id', userId)
+      .gte('capture_date', mondayStr);
+    
+    const totalContributed = myMatches?.reduce((sum, m) => sum + m.pts_awarded, 0) || 0;
+    const myPtsDisp = document.getElementById('war-my-pts');
+    if (myPtsDisp) myPtsDisp.textContent = totalContributed + " PT";
+  }
+
+  renderKantoWarGrid(ptsData || [], domData || []);
 }
 
-function renderKantoWarGrid(domData) {
+function renderKantoWarGrid(ptsData, domData) {
   const container = document.getElementById('war-kanto-map');
   if (!container) return;
 
-  // Mostramos solo un subset de mapas clave o todos los mapas
+  const dispute = isDisputePhase();
   let html = '';
-  FIRE_RED_MAPS.forEach(map => {
-    const isConflict = isDisputePhase() && isConflictZone(map.id);
-    let domBadge = '';
+
+  // Filtrar solo los mapas que están en FIRE_RED_MAPS y tienen batallas (evitar pueblos vacíos)
+  const relevantMaps = FIRE_RED_MAPS.filter(m => m.wild && Object.keys(m.wild).length > 0);
+
+  relevantMaps.forEach(map => {
+    const isConflict = dispute && isConflictZone(map.id);
     
-    if (isDisputePhase()) {
-      if (isConflict) domBadge = '<span style="color:#ff8800;font-size:8px;">⚔️ En disputa hoy</span>';
-      else domBadge = '<span style="color:#666;font-size:8px;">Tranquilo</span>';
-    } else {
-      const w = domData.find(d => d.map_id === map.id);
-      if (w?.winner_faction === 'union') domBadge = '<span style="color:#66ff66;font-size:8px;">🟢 Unión</span>';
-      else if (w?.winner_faction === 'poder') domBadge = '<span style="color:#ff66ff;font-size:8px;">🟣 Poder</span>';
-      else domBadge = '<span style="color:#888;font-size:8px;">Empate</span>';
+    // Obtener puntos de cada bando para este mapa
+    const pU = ptsData.find(p => p.map_id === map.id && p.faction === 'union')?.points || 0;
+    const pP = ptsData.find(p => p.map_id === map.id && p.faction === 'poder')?.points || 0;
+    const total = pU + pP;
+    
+    // Calcular porcentajes para la barra
+    let pctU = 50, pctP = 50;
+    if (total > 0) {
+      pctU = (pU / total) * 100;
+      pctP = (pP / total) * 100;
     }
 
-    html += `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:10px;color:white;">🗺️ ${map.name}</span>
-      ${domBadge}
-    </div>`;
+    // Estado de dominancia (si estamos en fin de semana)
+    const domInfo = domData.find(d => d.map_id === map.id);
+    const winner = domInfo?.winner_faction;
+    const glowClass = winner === 'union' ? 'winner-glow-union' : (winner === 'poder' ? 'winner-glow-poder' : '');
+
+    html += `
+      <div class="war-map-item ${glowClass}">
+        <div class="war-map-header">
+          <span class="war-map-name">${isConflict ? '⚔️ ' : ''}${map.name}</span>
+          <span style="font-size:8px; font-family:'Press Start 2P',monospace; color:${total>0 ? (pU > pP ? 'var(--union-color)' : (pP > pU ? 'var(--poder-color)' : 'var(--gray)')) : 'var(--gray)'}">
+            ${!dispute && winner ? (winner === 'union' ? 'DOMINADO POR UNIÓN' : 'DOMINADO POR PODER') : (total > 0 ? (pU > pP ? 'UNIÓN LÍDER' : (pP > pU ? 'PODER LÍDER' : 'EMPATE')) : 'SIN ACTIVIDAD')}
+          </span>
+        </div>
+
+        <div class="war-progress-container">
+          <div class="bar-union" style="width:${pctU}%"></div>
+          <div class="bar-poder" style="width:${pctP}%"></div>
+        </div>
+
+        <div class="war-points-label">
+          <span style="color:var(--union-color)">${pU} PT</span>
+          <span style="color:var(--poder-color)">${pP} PT</span>
+        </div>
+      </div>
+    `;
   });
   
   container.innerHTML = html;
