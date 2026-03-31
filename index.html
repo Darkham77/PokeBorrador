@@ -161,6 +161,8 @@
           </button>
           <button class="hud-nav-btn" data-tab="daycare"
             onclick="showTab('daycare',this)"><span>🥚</span><span>Crianza</span></button>
+          <button class="hud-nav-btn" data-tab="war"
+            onclick="showTab('war',this)"><span>⚔️</span><span>Guerra</span></button>
         </div>
 
         <div class="hud-items">
@@ -297,6 +299,9 @@
             background:var(--red);color:#fff;font-size:9px;font-weight:900;min-width:16px;height:16px;
             border-radius:8px;padding:0 4px;line-height:16px;text-align:center;
             font-family:'Press Start 2P',monospace;z-index:2;"></span>
+        </button>
+        <button class="nav-btn" data-tab="war" onclick="showTab('war',this);renderWarTab()">
+          <span>⚔️</span><span>Guerra</span>
         </button>
       </div>
 
@@ -936,6 +941,39 @@
   </div>
   </div>
 
+  <!-- WAR TAB -->
+  <div id="tab-war" class="tab-content" style="display:none;padding-bottom:100px;">
+    <div class="team-section">
+      <div class="section-title">⚔️ Panel de Guerra</div>
+      
+      <!-- Estado de la semana -->
+      <div id="war-phase-banner"></div>
+      
+      <!-- Contador de mapas dominados -->
+      <div id="war-score" style="display:flex;justify-content:space-between;margin-bottom:16px;background:rgba(255,255,255,0.05);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+        <span class="union-score" style="color:#66ff66;font-family:'Press Start 2P',monospace;font-size:8px;">🟢 Unión: <span id="union-maps">0</span> mapas</span>
+        <span class="poder-score" style="color:#ff66ff;font-family:'Press Start 2P',monospace;font-size:8px;">🟣 Poder: <span id="poder-maps">0</span> mapas</span>
+      </div>
+
+      <!-- Próximo Guardián (opcional) -->
+      <div id="next-guardian-info"></div>
+
+      <!-- Mis monedas de guerra -->
+      <div id="war-coins-display" style="display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:14px;border-radius:12px;margin-bottom:20px;border:1px solid rgba(255,215,0,0.3);">
+        <div style="font-size:12px;color:white;">🪙 Monedas: <strong id="war-coins-count" style="color:var(--yellow);font-size:14px;">0</strong></div>
+        <button onclick="showWarShop()" style="background:var(--yellow);color:var(--dark);border:none;border-radius:8px;padding:8px 12px;font-family:'Press Start 2P',monospace;font-size:8px;font-weight:900;cursor:pointer;">🛒 Tienda</button>
+      </div>
+
+      <!-- Mapa de Kanto con colores -->
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin-bottom:10px;">DOMINIO DE KANTO</div>
+      <div id="war-kanto-map" style="display:grid;grid-template-columns:1fr;gap:10px;">
+        <!-- Generado por renderWarPanel() -->
+      </div>
+      
+      <div id="war-top-contributors" style="margin-top:20px;"></div>
+    </div>
+  </div>
+
   <!-- BATTLE SCREEN -->
   <div id="battle-screen" class="screen">
     <div class="battle-container">
@@ -1060,6 +1098,7 @@
   <script src="js/18_pokedex.js"></script>
   <script src="js/20_classes.js"></script>
   <script src="js/21_events.js"></script>
+  <script src="js/21_dominance.js"></script>
   <script src="js/22_library.js"></script>
 
   <!-- POKEDEX DETAIL MODAL -->
@@ -1101,6 +1140,12 @@
     <div class="profile-avatar">🧢</div>
     <div class="profile-username" id="profile-username">—</div>
     <div class="profile-email" id="profile-email">—</div>
+    
+    <div style="margin:12px 0;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;border:1px solid rgba(255,255,255,0.1);text-align:center;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin-bottom:8px;">BANDO</div>
+      <div id="player-faction-badge" style="font-size:11px;color:var(--gray);">Sin Bando</div>
+    </div>
+
     <div class="profile-stat-grid" id="profile-stats"></div>
     <div style="margin-top:8px;">
       <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin-bottom:10px;">GUARDADO
@@ -1342,7 +1387,41 @@
     </div>
   </div>
 
+  <!-- FACTION CHOICE MODAL -->
+  <div id="faction-choice-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#111;border:2px solid var(--gray);border-radius:16px;padding:24px;max-width:400px;text-align:center;">
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:14px;color:var(--yellow);margin-bottom:16px;">¡ELIGE TU BANDO!</h2>
+      <p style="font-size:12px;color:#ccc;margin-bottom:20px;">Tu bando determina con quién disputás el control de Kanto. <strong>Esta decisión es permanente.</strong></p>
+      
+      <div style="display:flex;gap:16px;flex-direction:column;">
+        <button onclick="chooseFaction('union')" style="background:#002a00;border:3px solid #44ff44;border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;transition:transform 0.2s;">
+          <span style="font-size:32px;margin-bottom:8px;">🟢</span>
+          <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#66ff66;margin-bottom:8px;">Team Unión</span>
+          <span style="font-size:10px;color:#aaa;">Amistad. Armonía. Compañerismo.</span>
+        </button>
+        
+        <button onclick="chooseFaction('poder')" style="background:#2a002a;border:3px solid #ff44ff;border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;transition:transform 0.2s;">
+          <span style="font-size:32px;margin-bottom:8px;">🟣</span>
+          <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ff66ff;margin-bottom:8px;">Team Poder</span>
+          <span style="font-size:10px;color:#aaa;">Poder. Herramientas. Eficiencia.</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
+  <!-- WAR SHOP MODAL -->
+  <div id="war-shop-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#111;border:2px solid var(--yellow);border-radius:16px;padding:24px;width:100%;max-width:400px;max-height:80vh;overflow-y:auto;position:relative;">
+      <button onclick="closeWarShop()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">✕</button>
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin-bottom:12px;">🛒 Tienda de Guerra</h2>
+      <div style="font-size:12px;color:white;margin-bottom:16px;background:rgba(255,255,255,0.05);padding:10px;border-radius:8px;">
+        🪙 Saldo: <strong id="war-shop-coins-modal" style="color:var(--yellow);">0</strong> monedas
+      </div>
+      <div id="war-shop-items">
+        <!-- Generado dinámicamente -->
+      </div>
+    </div>
+  </div>
 
 </body>
 

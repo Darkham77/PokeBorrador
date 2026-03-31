@@ -413,7 +413,8 @@ async function renderMaps() {
     }
 
     // ===== LOCATION / WILD BATTLE =====
-	    function goLocation(locId) {
+    async function goLocation(locId) {
+        window.currentEncounterMapId = locId;
 	      const alive = state.team.filter(p => p.hp > 0 && !p.onMission);
 	      if (alive.length === 0) {
 	        notify('¡Todos tus Pokémon están debilitados! Curá tu equipo primero.', '❤️‍🩹');
@@ -438,6 +439,18 @@ async function renderMaps() {
           notify(`¡Necesitás ${loc.badges} medallas para acceder!`, '🔒');
         }
         return;
+      }
+
+      // DOMINANCIA: Verificar Guardián
+      if (typeof tryTriggerGuardian === 'function') {
+        const guardian = await tryTriggerGuardian(locId);
+        if (guardian) {
+          const enemy = makePokemon(guardian.id, guardian.lv);
+          enemy.isGuardian = true;
+          enemy.guardianPts = guardian.pts;
+          startBattle(enemy, false, false, locId);
+          return; // Salir, el combate de guardián ya inició
+        }
       }
 
 	      // Chance de Rival (En cualquier mapa)

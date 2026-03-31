@@ -209,7 +209,11 @@
           items: [],
           purchased: []
         }
-      }
+      },
+      faction: null,          // 'union' | 'poder' | null
+      warCoins: 0,            // monedas de guerra acumuladas
+      warCoinsSpent: 0,       // monedas gastadas
+      warDailyCap: {}         // tope diario por mapa { "Mon Apr 01 2024": { "route1": 500 } }
     };
 
     let state = JSON.parse(JSON.stringify(INITIAL_STATE));
@@ -424,6 +428,12 @@
           finalShinyRate = Math.floor(finalShinyRate / speciesShinyMult);
         }
       }
+      
+      // Multiplicador de Dominancia (Guerra)
+      if (typeof getDominanceShinyMultiplier === 'function' && window.currentEncounterMapId) {
+        finalShinyRate = Math.floor(finalShinyRate / getDominanceShinyMultiplier(window.currentEncounterMapId));
+      }
+
       finalShinyRate = Math.max(1, finalShinyRate);
       const isShiny = Math.random() < (1 / finalShinyRate);
       

@@ -319,6 +319,8 @@
         initTrainerPityTimer();
         startPresence(); subscribeFriendNotifs(); subscribeTradeNotifs(); subscribeBattleInvites(); refreshFriendsBadge();
         if (typeof initGlobalChatListener === 'function') initGlobalChatListener();
+        // Sistema de Dominancia (solo online)
+        if (typeof initDominanceSystem === 'function') setTimeout(() => initDominanceSystem(), 1500);
       } catch (e) {
         setAuthLoading(false);
         currentUser = null;
@@ -403,7 +405,11 @@
           reputation: 0,
           blackMarketSales: 0,
           criminality: 0
-        }
+        },
+        faction: state.faction || null,
+        warCoins: state.warCoins || 0,
+        warCoinsSpent: state.warCoinsSpent || 0,
+        warDailyCap: state.warDailyCap || {}
       };
     }
 
@@ -509,6 +515,20 @@
         document.getElementById('profile-email').textContent = user.email;
         const adminSection = document.getElementById('profile-admin-section');
         if (adminSection) adminSection.style.display = user.email === 'kodrol77@gmail.com' ? 'block' : 'none';
+      }
+      // Actualizar badge de facción
+      const factionBadge = document.getElementById('player-faction-badge');
+      if (factionBadge) {
+        if (state.faction === 'union') {
+          factionBadge.textContent = '🟢 Team Unión';
+          factionBadge.className = 'faction-badge union';
+        } else if (state.faction === 'poder') {
+          factionBadge.textContent = '🟣 Team Poder';
+          factionBadge.className = 'faction-badge poder';
+        } else {
+          factionBadge.textContent = 'Sin Bando';
+          factionBadge.className = '';
+        }
       }
       const st = state.stats || {};
       const statsGrid = document.getElementById('profile-stats');

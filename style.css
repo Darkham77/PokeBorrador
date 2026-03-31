@@ -5396,3 +5396,48 @@
         grid-template-columns: 1fr !important;
       }
     }
+
+/* ===== SISTEMA DE DOMINANCIA DE MAPAS ===== */
+.faction-badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+.faction-badge.union {
+  background: rgba(0,100,0,0.3);
+  color: #66ff66;
+  border: 1px solid #44ff44;
+}
+.faction-badge.poder {
+  background: rgba(80,0,80,0.3);
+  color: #ff66ff;
+  border: 1px solid #ff44ff;
+}
+#war-kanto-map > div {
+  transition: background 0.2s;
+}
+#war-kanto-map > div:hover {
+  background: rgba(255,255,255,0.09) !important;
+}
+.dom-badge {
+  font-size: 9px;
+  padding: 3px 7px;
+  border-radius: 8px;
+  border: 1px solid;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.dom-badge.dispute { border-color: #888; color: #ccc; background: #1a1a1a; }
+.dom-badge.dominance.winning { border-color: gold; color: gold; background: #1a1500; }
+.dom-badge.dominance.losing { border-color: #555; color: #888; background: #111; }
+.bonus-icon { color: #ffe44d; margin-left: 4px; }
+#faction-choice-modal button:hover { transform: scale(1.03); }
+#faction-choice-modal button:active { transform: scale(0.97); }
+@keyframes guardianPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}

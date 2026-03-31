@@ -2553,7 +2553,7 @@ function showCatchAnim(success, enemy, shakes) {
   setTimeout(doShake, 900);
 }
 
-function catchSuccess(enemy) {
+async function catchSuccess(enemy) {
   if (currentUser) reduceHatchTimer(currentUser.id, 'capture');
   const b = state.battle;
   b.over = true;
@@ -2562,6 +2562,17 @@ function catchSuccess(enemy) {
   const caught = JSON.parse(JSON.stringify(baseEnemy));
   // Ensure current health is preserved or slightly adjusted, capped by true maxHp
   caught.hp = Math.min(caught.maxHp, Math.max(1, enemy.hp));
+
+  // DOMINANCIA: Interceptar captura de Guardián
+  if (enemy.isGuardian && typeof claimGuardianCapture === 'function') {
+    const claimed = await claimGuardianCapture(b.locationId, caught);
+    if (!claimed) {
+      setLog(`¡Oh no! El Guardián ya fue capturado por otro entrenador antes de que la Pokéball pudiera transferirlo.`, 'log-enemy');
+      const captureLoc = b.locationId;
+      setTimeout(() => { if (typeof showScreen==='function') showScreen('game-screen'); }, 3000);
+      return;
+    }
+  }
   if (!state.box) state.box = [];
   if (state.team.length < 6) {
     state.team.push(caught);
@@ -2653,7 +2664,17 @@ function awardBattleExperience(isCapture = false) {
   const b = state.battle;
   if (!b || !b.enemy) return;
 
-  const expMultiplier = isCapture ? 4 : ((b.isTrainer || b.isGym) ? 8 : 4);
+  let expMultiplier = isCapture ? 4 : ((b.isTrainer || b.isGym) ? 8 : 4);
+  
+  // Multiplicador de Dominancia (Guerra)
+  if (typeof getDominanceExpMultiplier === 'function' && b.locationId) {
+    const domMult = getDominanceExpMultiplier(b.locationId);
+    if (domMult > 1) {
+      expMultiplier *= domMult;
+      addLog(`<span style="color:var(--yellow);font-size:9px;">[DOMINANCIA: x${domMult}]</span>`, 'log-info');
+    }
+  }
+
   const baseExp = Math.floor(b.enemy.level * expMultiplier);
 
   // winners = current active + those who participated + exp share holders
@@ -2816,7 +2837,16 @@ function endBattle(won) {
     setLog(`¡${b.enemy.name} fue derrotado!`, 'log-player');
     awardBattleExperience();
 
-    // Ruta Oficial (Entrenador Nv. 15+)
+    // DOMINANCIA: Sumar Puntos de Territorio
+    if (typeof addWarPoints === 'function') {
+      const wMapId = b.locationId || window.currentEncounterMapId;
+      if (wMapId) {
+        const wType = (b.isGym) ? 'trainer_win' : (b.isTrainer ? 'trainer_win' : 'wild_win');
+        addWarPoints(wMapId, wType, true); // fire and forget
+      }
+    }
+
+
     if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= 15) {
       if (state.classData?.officialRouteId && (state.classData.officialRouteExp || 0) > Date.now()) {
         const curLocId = b.locationId || state.lastWildLocId;
