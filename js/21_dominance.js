@@ -20,6 +20,19 @@ function isDisputePhase() {
   return day >= 1 && day <= 5; // Lunes a Viernes
 }
 
+const WAR_MAP_IMAGES = {
+  route1: 'ruta 1.png', route2: 'ruta 2.png', forest: 'bosque viridian.png',
+  route22: 'ruta 22.png', route3: 'ruta 3.png', mt_moon: 'mt. moon.png',
+  route4: 'ruta 4.png', route24: 'ruta 24.png', route25: 'ruta 25.png',
+  route5: 'ruta 5.png', route6: 'ruta 6.png', route11: 'ruta 11.png',
+  diglett_cave: 'cueva diglett.png', route9: 'ruta 9.png', rock_tunnel: 'tunel roca.png',
+  route10: 'ruta 10.png', power_plant: 'central de energia.png', route8: 'ruta 8.png',
+  pokemon_tower: 'torre pokemon.png', route12: 'ruta 12.png', route13: 'ruta 13.png',
+  safari_zone: 'zona safari.png', seafoam_islands: 'islas espuma.png',
+  mansion: 'mansion pokemon.png', route14: 'ruta 14.png', route15: 'ruta 15.png',
+  route23: 'ruta 23.png', victory_road: 'calle victoria.png', cerulean_cave: 'cueva celeste.png'
+};
+
 async function chooseFaction(faction) {
   if (state.faction) return; // Ya elegido
   const userId = window.currentUser?.id;
@@ -543,8 +556,8 @@ function renderKantoWarGrid(ptsData, domData) {
   const dispute = isDisputePhase();
   let html = '';
 
-  // Usar la variable global FIRE_RED_MAPS
   const mapsArray = (typeof FIRE_RED_MAPS !== 'undefined') ? FIRE_RED_MAPS : [];
+  // Filtrar mapas relevantes (con batallas)
   const relevantMaps = mapsArray.filter(m => m.wild && Object.keys(m.wild).length > 0);
 
   if (relevantMaps.length === 0) {
@@ -555,12 +568,11 @@ function renderKantoWarGrid(ptsData, domData) {
   relevantMaps.forEach(map => {
     const isConflict = dispute && isConflictZone(map.id);
     
-    // Obtener puntos de cada bando para este mapa
+    // Puntos
     const pU = ptsData.find(p => p.map_id === map.id && p.faction === 'union')?.points || 0;
     const pP = ptsData.find(p => p.map_id === map.id && p.faction === 'poder')?.points || 0;
     const total = pU + pP;
     
-    // Barra Tug-of-war: si no hay puntos, 50% cada uno
     let pctU = 50, pctP = 50;
     if (total > 0) {
       pctU = (pU / total) * 100;
@@ -570,27 +582,39 @@ function renderKantoWarGrid(ptsData, domData) {
     const domInfo = domData.find(d => d.map_id === map.id);
     const winner = domInfo?.winner_faction;
     const glowClass = winner === 'union' ? 'winner-glow-union' : (winner === 'poder' ? 'winner-glow-poder' : '');
+    
+    // Imagen
+    const imgName = WAR_MAP_IMAGES[map.id] || 'default.png';
+    const bgUrl = `maps/${imgName}`;
 
     html += `
-      <div class="war-map-item ${glowClass}">
-        <div class="war-map-header">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:14px;">${map.icon || '📍'}</span>
-            <span class="war-map-name">${isConflict ? '⚔️ ' : ''}${map.name}</span>
+      <div class="war-map-card ${glowClass}" style="background-image: url('${bgUrl}');">
+        <div class="war-card-overlay">
+          <div class="war-card-top">
+            <span class="war-card-name">${map.name}</span>
+            ${isConflict ? '<span class="war-card-status-tag dispute">⚔️ GUERRA</span>' : ''}
+            ${!dispute && winner ? `<span class="war-card-status-tag dominance">${winner.toUpperCase()} DOMINA</span>` : ''}
           </div>
-          <span style="font-size:7px; font-family:'Press Start 2P',monospace; color:${total>0 ? (pU > pP ? 'var(--union-color)' : (pP > pU ? 'var(--poder-color)' : 'var(--gray)')) : 'var(--gray)'}">
-            ${!dispute && winner ? (winner === 'union' ? 'DOMINADO' : 'DOMINADO') : (total > 0 ? (pU > pP ? 'UNIÓN LÍDER' : (pP > pU ? 'PODER LÍDER' : 'EMPATE')) : 'EN CALMA')}
-          </span>
-        </div>
 
-        <div class="war-progress-container">
-          <div class="bar-union" style="width:${pctU}%"></div>
-          <div class="bar-poder" style="width:${pctP}%"></div>
-        </div>
-
-        <div class="war-points-label">
-          <span style="color:var(--union-color); font-weight:bold;">${pU} PT</span>
-          <span style="color:var(--poder-color); font-weight:bold;">${pP} PT</span>
+          <!-- BARRA CENTRAL GRANDE -->
+          <div class="war-central-progress-box">
+            <div class="war-central-labels">
+              <span style="color:var(--union-color)">UNIÓN</span>
+              <span style="color:var(--poder-color)">PODER</span>
+            </div>
+            <div class="war-central-bar">
+              <div class="bar-union" style="width:${pctU}%"></div>
+              <div class="bar-poder" style="width:${pctP}%"></div>
+            </div>
+            <div class="war-central-labels" style="font-size:5px; opacity:0.8;">
+              <span>${pU} PT</span>
+              <span>${pP} PT</span>
+            </div>
+          </div>
+          
+          <div style="font-size:6px; color:rgba(255,255,255,0.5); font-family:'Press Start 2P'; text-align:center;">
+             ${total > 0 ? (pU > pP ? 'Lidera Unión' : (pP > pU ? 'Lidera Poder' : 'Empate Técnico')) : 'Sin actividad'}
+          </div>
         </div>
       </div>
     `;

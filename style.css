@@ -5592,14 +5592,20 @@
       }
     }
 
-/* ===== MEJORAS PANEL DE GUERRA Rediseñado ===== */
+/* ===== PANEL DE GUERRA - REDISEÑO GRANDE Y CENTRAL ===== */
 :root {
-  --union-color: #44ff44;
-  --poder-color: #ff44ff;
-  --dispute-color: #ff8800;
-  --war-bg: rgba(15, 15, 25, 0.8);
-  --war-card-bg: rgba(255, 255, 255, 0.03);
+  --union-color: #22c55e;
+  --poder-color: #a855f7;
+  --war-card-bg: rgba(13, 17, 23, 0.4);
   --war-border: rgba(255, 255, 255, 0.08);
+}
+
+#tab-war .team-section {
+  padding: 25px;
+  border-radius: 24px;
+  background: rgba(10, 10, 15, 0.7) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--war-border);
 }
 
 .war-stats-grid {
@@ -5607,113 +5613,169 @@
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 25px;
-  justify-content: center;
 }
 
 .war-card-stat {
-  background: var(--war-card-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--war-border);
-  border-radius: 16px;
-  padding: 16px;
   flex: 1;
   min-width: 140px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
 }
-.war-card-stat:hover { 
-  transform: translateY(-4px); 
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.15);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+
+.war-card-stat:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .war-label {
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
   color: var(--gray);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.war-value {
-  font-family: 'Nunito', sans-serif;
-  font-size: 18px;
-  font-weight: 900;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  margin-bottom: 8px;
+  opacity: 0.8;
 }
 
-.war-map-item {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--war-border);
+.war-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* Grilla de Mapas Estilo Exploración */
+#war-kanto-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.war-map-card {
+  position: relative;
+  height: 140px; /* Un poco más compactas que las de exploración para que entren más */
   border-radius: 16px;
-  padding: 18px;
-  margin-bottom: 12px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.war-map-card:hover {
+  transform: scale(1.02);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.war-card-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 50%, rgba(0,0,0,0.4) 100%);
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  position: relative;
-  transition: all 0.2s;
-}
-.war-map-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255,255,255,0.12);
+  justify-content: space-between;
 }
 
-.war-progress-container {
+.war-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.war-card-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #fff;
+  text-shadow: 0 1px 3px #000;
+}
+
+.war-card-status-tag {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 5px;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+.war-card-status-tag.dispute { background: #eab308; color: #000; }
+.war-card-status-tag.dominance { background: #8b5cf6; color: #fff; }
+
+/* BARRA CENTRAL GRANDE (Tug of War) */
+.war-central-progress-box {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+}
+
+.war-central-bar {
   height: 10px;
-  background: rgba(0,0,0,0.4);
-  border-radius: 20px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 5px;
   display: flex;
   overflow: hidden;
-  padding: 2px;
-  border: 1px solid rgba(255,255,255,0.05);
+  margin: 6px 0;
 }
 
 .bar-union { 
-  height: 100%; 
-  border-radius: 20px 0 0 20px;
-  background: linear-gradient(90deg, #1fa31f, var(--union-color));
-  box-shadow: 0 0 15px rgba(68, 255, 68, 0.2);
+  background: linear-gradient(90deg, #16a34a, var(--union-color)); 
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+  transition: width 1s ease;
 }
 .bar-poder { 
-  height: 100%; 
-  border-radius: 0 20px 20px 0;
-  background: linear-gradient(90deg, var(--poder-color), #a31fa3);
-  box-shadow: 0 0 15px rgba(255, 68, 255, 0.2);
+  background: linear-gradient(90deg, var(--poder-color), #7c3aed); 
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+  transition: width 1s ease;
 }
 
-.war-rules-card {
-  background: linear-gradient(180deg, rgba(59, 131, 246, 0.03), rgba(0,0,0,0.2));
-  border: 1px solid rgba(59, 131, 246, 0.15);
-  border-radius: 16px;
-  padding: 20px;
-  margin-top: 30px;
-  color: #94a3b8;
+.war-central-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 5px;
+  color: #fff;
 }
 
-.winner-glow-union { border-left: 4px solid var(--union-color) !important; background: rgba(68,255,68,0.03) !important; }
-.winner-glow-poder { border-left: 4px solid var(--poder-color) !important; background: rgba(255,68,255,0.03) !important; }
+/* Brillo de Ganador */
+.winner-glow-union { border: 2px solid var(--union-color) !important; animation: glow-u 2s infinite alternate; }
+.winner-glow-poder { border: 2px solid var(--poder-color) !important; animation: glow-p 2s infinite alternate; }
+
+@keyframes glow-u { 0% { box-shadow: 0 0 5px var(--union-color); } 100% { box-shadow: 0 0 15px var(--union-color); } }
+@keyframes glow-p { 0% { box-shadow: 0 0 5px var(--poder-color); } 100% { box-shadow: 0 0 15px var(--poder-color); } }
 
 .war-shop-btn {
-  background: linear-gradient(135deg, var(--yellow), #f59e0b);
+  background: var(--yellow);
   color: #000;
   border: none;
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 6px 12px;
   font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-  transition: all 0.2s;
+  margin-top: 10px;
+  transition: transform 0.2s;
 }
-.war-shop-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+.war-shop-btn:hover { transform: scale(1.05); }
+
+.war-rules-card {
+  margin-top: 40px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  color: var(--gray);
+  font-size: 11px;
+}
 
 
