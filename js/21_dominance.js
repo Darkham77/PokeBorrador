@@ -87,15 +87,16 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
   const PTS_TABLE = {
     capture:        { win: 5,  lose: 1 },
     trainer_win:    { win: 8,  lose: 2 },
-    wild_win:       { win: 2,  lose: 0 },
+    wild_win:       { win: 1,  lose: 0 }, // 1 PT por baja común
     fishing:        { win: 4,  lose: 1 },
     shiny_capture:  { win: 40, lose: 10 },
     event:          { win: 20, lose: 5 },
     guardian:       { win: 150, lose: 10 }
   };
 
-  const ptRecord = PTS_TABLE[eventType] || { win: 2, lose: 0 };
+  const ptRecord = PTS_TABLE[eventType] || { win: 1, lose: 0 };
   let pts = success ? ptRecord.win : ptRecord.lose;
+  if (eventType === 'wild_win') pts = 1; // Forzar 1 PT por baja común para balance
   if (overridePts !== null) pts = overridePts;
 
   if (pts <= 0) return;
@@ -112,18 +113,19 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
       p_points: pts
     });
     
-    // Premiar con 1 moneda cada 10 PT
-    if (pts >= 10) {
-      addWarCoinsLocal(Math.floor(pts / 10));
-    } else {
-      // Para puntos pequeños, acumular en un contador oculto si quisieras, 
-      // por ahora solo premiamos los hitos de 10.
+    // Nueva Lógica de Monedas Acumulativas
+    if (!state.warPointsAccumulator) state.warPointsAccumulator = 0;
+    state.warPointsAccumulator += pts;
+    
+    if (state.warPointsAccumulator >= 10) {
+      const newCoins = Math.floor(state.warPointsAccumulator / 10);
+      addWarCoinsLocal(newCoins);
+      state.warPointsAccumulator %= 10;
+      notify(`¡Ganaste ${newCoins} Moneda${newCoins>1?'s':''} de Guerra!`, '🪙');
     }
     
     // Refrescar panel si está abierto
-    if (document.getElementById('tab-war')?.style.display !== 'none') {
-      renderWarPanel();
-    }
+    renderWarPanel();
   } catch(e) { console.error("Error sumando PT", e); }
 }
 
@@ -541,8 +543,14 @@ function renderKantoWarGrid(ptsData, domData) {
   const dispute = isDisputePhase();
   let html = '';
 
-  // Filtrar solo los mapas que están en FIRE_RED_MAPS y tienen batallas (evitar pueblos vacíos)
-  const relevantMaps = FIRE_RED_MAPS.filter(m => m.wild && Object.keys(m.wild).length > 0);
+  // Usar la variable global FIRE_RED_MAPS
+  const mapsArray = (typeof FIRE_RED_MAPS !== 'undefined') ? FIRE_RED_MAPS : [];
+  const relevantMaps = mapsArray.filter(m => m.wild && Object.keys(m.wild).length > 0);
+
+  if (relevantMaps.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--gray); font-size:10px;">Monitor no disponible.</div>';
+    return;
+  }
 
   relevantMaps.forEach(map => {
     const isConflict = dispute && isConflictZone(map.id);
@@ -552,14 +560,13 @@ function renderKantoWarGrid(ptsData, domData) {
     const pP = ptsData.find(p => p.map_id === map.id && p.faction === 'poder')?.points || 0;
     const total = pU + pP;
     
-    // Calcular porcentajes para la barra
+    // Barra Tug-of-war: si no hay puntos, 50% cada uno
     let pctU = 50, pctP = 50;
     if (total > 0) {
       pctU = (pU / total) * 100;
       pctP = (pP / total) * 100;
     }
 
-    // Estado de dominancia (si estamos en fin de semana)
     const domInfo = domData.find(d => d.map_id === map.id);
     const winner = domInfo?.winner_faction;
     const glowClass = winner === 'union' ? 'winner-glow-union' : (winner === 'poder' ? 'winner-glow-poder' : '');
@@ -567,9 +574,12 @@ function renderKantoWarGrid(ptsData, domData) {
     html += `
       <div class="war-map-item ${glowClass}">
         <div class="war-map-header">
-          <span class="war-map-name">${isConflict ? '⚔️ ' : ''}${map.name}</span>
-          <span style="font-size:8px; font-family:'Press Start 2P',monospace; color:${total>0 ? (pU > pP ? 'var(--union-color)' : (pP > pU ? 'var(--poder-color)' : 'var(--gray)')) : 'var(--gray)'}">
-            ${!dispute && winner ? (winner === 'union' ? 'DOMINADO POR UNIÓN' : 'DOMINADO POR PODER') : (total > 0 ? (pU > pP ? 'UNIÓN LÍDER' : (pP > pU ? 'PODER LÍDER' : 'EMPATE')) : 'SIN ACTIVIDAD')}
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:14px;">${map.icon || '📍'}</span>
+            <span class="war-map-name">${isConflict ? '⚔️ ' : ''}${map.name}</span>
+          </div>
+          <span style="font-size:7px; font-family:'Press Start 2P',monospace; color:${total>0 ? (pU > pP ? 'var(--union-color)' : (pP > pU ? 'var(--poder-color)' : 'var(--gray)')) : 'var(--gray)'}">
+            ${!dispute && winner ? (winner === 'union' ? 'DOMINADO' : 'DOMINADO') : (total > 0 ? (pU > pP ? 'UNIÓN LÍDER' : (pP > pU ? 'PODER LÍDER' : 'EMPATE')) : 'EN CALMA')}
           </span>
         </div>
 
@@ -579,8 +589,8 @@ function renderKantoWarGrid(ptsData, domData) {
         </div>
 
         <div class="war-points-label">
-          <span style="color:var(--union-color)">${pU} PT</span>
-          <span style="color:var(--poder-color)">${pP} PT</span>
+          <span style="color:var(--union-color); font-weight:bold;">${pU} PT</span>
+          <span style="color:var(--poder-color); font-weight:bold;">${pP} PT</span>
         </div>
       </div>
     `;
