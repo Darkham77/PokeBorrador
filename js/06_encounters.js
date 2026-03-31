@@ -429,6 +429,10 @@ async function renderMaps() {
 
     // ===== LOCATION / WILD BATTLE =====
     async function goLocation(locId) {
+        if (window.isGoingLocation) return;
+        window.isGoingLocation = true;
+        setTimeout(() => { window.isGoingLocation = false; }, 1000); // 1s debounce
+        
         window.currentEncounterMapId = locId;
 	      const alive = state.team.filter(p => p.hp > 0 && !p.onMission);
 	      if (alive.length === 0) {

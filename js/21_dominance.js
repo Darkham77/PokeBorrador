@@ -310,7 +310,7 @@ async function checkGuardianAppearance(mapId) {
     .select('winner_faction')
     .eq('capture_date', today)
     .eq('map_id', mapId)
-    .single();
+    .maybeSingle();
 
   if (data) return false; 
 
