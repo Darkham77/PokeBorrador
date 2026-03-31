@@ -570,58 +570,62 @@ function renderKantoWarGrid(ptsData, domData) {
   }
 
   relevantMaps.forEach(map => {
-    const isConflict = dispute && isConflictZone(map.id);
-    
-    // Puntos
-    const pU = ptsData.find(p => p.map_id === map.id && p.faction === 'union')?.points || 0;
-    const pP = ptsData.find(p => p.map_id === map.id && p.faction === 'poder')?.points || 0;
-    const total = pU + pP;
-    
-    let pctU = 50, pctP = 50;
-    if (total > 0) {
-      pctU = (pU / total) * 100;
-      pctP = (pP / total) * 100;
-    }
+    try {
+      const isConflict = dispute && isConflictZone(map.id);
+      
+      // Puntos
+      const pU = ptsData.find(p => p.map_id === map.id && p.faction === 'union')?.points || 0;
+      const pP = ptsData.find(p => p.map_id === map.id && p.faction === 'poder')?.points || 0;
+      const total = pU + pP;
+      
+      let pctU = 50, pctP = 50;
+      if (total > 0) {
+        pctU = (pU / total) * 100;
+        pctP = (pP / total) * 100;
+      }
 
-    const domInfo = domData.find(d => d.map_id === map.id);
-    const winner = domInfo?.winner_faction;
-    const glowClass = winner === 'union' ? 'winner-glow-union' : (winner === 'poder' ? 'winner-glow-poder' : '');
-    
-    // Imagen
-    const imgName = WAR_MAP_IMAGES[map.id] || 'default.png';
-    const bgUrl = `maps/${imgName}`;
+      const domInfo = domData.find(d => d.map_id === map.id);
+      const winner = domInfo?.winner_faction;
+      const glowClass = winner === 'union' ? 'winner-glow-union' : (winner === 'poder' ? 'winner-glow-poder' : '');
+      
+      // Imagen
+      const imgName = WAR_MAP_IMAGES[map.id] || 'default.png';
+      const bgUrl = `maps/${imgName}`;
 
-    html += `
-      <div class="war-map-card ${glowClass}" style="background-image: url('${bgUrl}');">
-        <div class="war-card-overlay">
-          <div class="war-card-top">
-            <span class="war-card-name">${map.name}</span>
-            ${isConflict ? '<span class="war-card-status-tag dispute">⚔️ GUERRA</span>' : ''}
-            ${!dispute && winner ? `<span class="war-card-status-tag dominance">${winner.toUpperCase()} DOMINA</span>` : ''}
-          </div>
+      html += `
+        <div class="war-map-card ${glowClass}" style="background-image: url('${bgUrl}');">
+          <div class="war-card-overlay">
+            <div class="war-card-top">
+              <span class="war-card-name">${map.name}</span>
+              ${isConflict ? '<span class="war-card-status-tag dispute">⚔️ GUERRA</span>' : ''}
+              ${!dispute && winner ? `<span class="war-card-status-tag dominance">${winner.toUpperCase()} DOMINA</span>` : ''}
+            </div>
 
-          <!-- BARRA CENTRAL GRANDE -->
-          <div class="war-central-progress-box">
-            <div class="war-central-labels">
-              <span style="color:var(--union-color)">UNIÓN</span>
-              <span style="color:var(--poder-color)">PODER</span>
+            <!-- BARRA CENTRAL GRANDE -->
+            <div class="war-central-progress-box">
+              <div class="war-central-labels">
+                <span style="color:var(--union-color)">UNIÓN</span>
+                <span style="color:var(--poder-color)">PODER</span>
+              </div>
+              <div class="war-central-bar">
+                <div class="bar-union" style="width:${pctU}%"></div>
+                <div class="bar-poder" style="width:${pctP}%"></div>
+              </div>
+              <div class="war-central-labels" style="font-size:5px; opacity:0.8;">
+                <span>${pU} PT</span>
+                <span>${pP} PT</span>
+              </div>
             </div>
-            <div class="war-central-bar">
-              <div class="bar-union" style="width:${pctU}%"></div>
-              <div class="bar-poder" style="width:${pctP}%"></div>
+            
+            <div style="font-size:6px; color:rgba(255,255,255,0.5); font-family:'Press Start 2P'; text-align:center;">
+               ${total > 0 ? (pU > pP ? 'Lidera Unión' : (pP > pU ? 'Lidera Poder' : 'Empate Técnico')) : 'Sin actividad'}
             </div>
-            <div class="war-central-labels" style="font-size:5px; opacity:0.8;">
-              <span>${pU} PT</span>
-              <span>${pP} PT</span>
-            </div>
-          </div>
-          
-          <div style="font-size:6px; color:rgba(255,255,255,0.5); font-family:'Press Start 2P'; text-align:center;">
-             ${total > 0 ? (pU > pP ? 'Lidera Unión' : (pP > pU ? 'Lidera Poder' : 'Empate Técnico')) : 'Sin actividad'}
           </div>
         </div>
-      </div>
-    `;
+      `;
+    } catch (err) {
+      console.warn(`Error al renderizar tarjeta de mapa para ${map.id}:`, err);
+    }
   });
   
   container.innerHTML = html;
