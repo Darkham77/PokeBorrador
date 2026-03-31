@@ -315,6 +315,20 @@ async function renderMaps() {
       // MAP GRID
       html += `<div class="map-list">`;
 
+      const domBadgeHtml = (locId) => {
+        if (!state.faction || typeof isDisputePhase !== 'function') return '';
+        if (isDisputePhase()) {
+          if (typeof isConflictZone === 'function' && isConflictZone(locId)) {
+            return `<span class="dom-badge dispute" title="Zonas de guerra activas hoy" style="position:absolute; bottom:8px; right:8px; z-index:2;">⚔️ En Disputa</span>`;
+          }
+        } else {
+          if (state.activeBonuses && state.activeBonuses[locId]) {
+            return `<span class="dom-badge dominance winning" title="Bono Activo (+25% EXP / x2 Shiny)" style="position:absolute; bottom:8px; right:8px; z-index:2;">👑 Dominado <span class="bonus-icon">✨</span></span>`;
+          }
+        }
+        return '';
+      };
+
       FIRE_RED_MAPS.forEach(loc => {
         let isLocked = badgeCount < loc.badges;
         const safariActive = (state.safariTicketSecs || 0) > 0;
@@ -369,6 +383,7 @@ async function renderMaps() {
             </span>
 
             ${loc.fishing ? '<span class="fishing-rod">🎣</span>' : ''}
+            ${domBadgeHtml(loc.id)}
 
             <div class="location-name">
               ${loc.name}
