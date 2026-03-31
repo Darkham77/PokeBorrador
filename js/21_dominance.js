@@ -516,34 +516,38 @@ async function renderWarPanel() {
     .select('map_id, faction, points')
     .eq('week_id', weekId);
 
-  // 4. Estadísticas Personales
-  if (userId) {
-    // Mi facción
-    const myFacDisp = document.getElementById('war-my-faction');
-    if (myFacDisp) {
-      myFacDisp.textContent = state.faction === 'union' ? 'Unión' : (state.faction === 'poder' ? 'Poder' : 'Sin Bando');
-      myFacDisp.style.color = state.faction === 'union' ? 'var(--union-color)' : (state.faction === 'poder' ? 'var(--poder-color)' : 'var(--gray)');
+  // 4. Estadísticas Personales (Blindaje anti-errores)
+  try {
+    if (userId) {
+      // Mi facción
+      const myFacDisp = document.getElementById('war-my-faction');
+      if (myFacDisp) {
+        myFacDisp.textContent = state.faction === 'union' ? 'Unión' : (state.faction === 'poder' ? 'Poder' : 'Sin Bando');
+        myFacDisp.style.color = state.faction === 'union' ? 'var(--union-color)' : (state.faction === 'poder' ? 'var(--poder-color)' : 'var(--gray)');
+      }
+      
+      // Mis monedas
+      const coinDisp = document.getElementById('war-coins-count');
+      if (coinDisp) coinDisp.textContent = (state.warCoins || 0) - (state.warCoinsSpent || 0);
+
+      // Mi contribución
+      const today = new Date();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
+      const mondayStr = monday.toISOString().split('T')[0];
+
+      const { data: myMatches } = await window.sb
+        .from('guardian_captures')
+        .select('pts_awarded')
+        .eq('user_id', userId)
+        .gte('capture_date', mondayStr);
+      
+      const totalContributed = myMatches?.reduce((sum, m) => sum + m.pts_awarded, 0) || 0;
+      const myPtsDisp = document.getElementById('war-my-pts');
+      if (myPtsDisp) myPtsDisp.textContent = totalContributed + " PT";
     }
-    
-    // Mis monedas
-    const coinDisp = document.getElementById('war-coins-count');
-    if (coinDisp) coinDisp.textContent = (state.warCoins || 0) - (state.warCoinsSpent || 0);
-
-    // Mi contribución (puntos sumados por mí esta semana)
-    const today = new Date();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
-    const mondayStr = monday.toISOString().split('T')[0];
-
-    const { data: myMatches } = await window.sb
-      .from('guardian_captures')
-      .select('pts_awarded')
-      .eq('user_id', userId)
-      .gte('capture_date', mondayStr);
-    
-    const totalContributed = myMatches?.reduce((sum, m) => sum + m.pts_awarded, 0) || 0;
-    const myPtsDisp = document.getElementById('war-my-pts');
-    if (myPtsDisp) myPtsDisp.textContent = totalContributed + " PT";
+  } catch (err) {
+    console.warn("Fallo al cargar stats personales de guerra:", err);
   }
 
   renderKantoWarGrid(ptsData || [], domData || []);
@@ -556,7 +560,7 @@ function renderKantoWarGrid(ptsData, domData) {
   const dispute = isDisputePhase();
   let html = '';
 
-  const mapsArray = (typeof FIRE_RED_MAPS !== 'undefined') ? FIRE_RED_MAPS : [];
+  const mapsArray = window.FIRE_RED_MAPS || [];
   // Filtrar mapas relevantes (con batallas)
   const relevantMaps = mapsArray.filter(m => m.wild && Object.keys(m.wild).length > 0);
 

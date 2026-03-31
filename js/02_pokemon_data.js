@@ -720,7 +720,7 @@
       });
     }
 
-    const FIRE_RED_MAPS = [
+    window.FIRE_RED_MAPS = [
       {
         id: 'route1', name: 'Ruta 1', icon: '🌾', badges: 0, desc: 'Pueblo Paleta - Ciudad Verde.',
         wild: { morning: ['pidgey', 'rattata'], day: ['pidgey', 'rattata'], dusk: ['rattata', 'pidgey'], night: ['rattata', 'pidgey'] },
