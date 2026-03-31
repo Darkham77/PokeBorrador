@@ -5597,152 +5597,123 @@
   --union-color: #44ff44;
   --poder-color: #ff44ff;
   --dispute-color: #ff8800;
-}
-
-.faction-badge {
-  display: inline-block;
-  font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 10px;
-  font-weight: 700;
-}
-.faction-badge.union {
-  background: rgba(0,100,0,0.3);
-  color: #66ff66;
-  border: 1px solid #44ff44;
-}
-.faction-badge.poder {
-  background: rgba(80,0,80,0.3);
-  color: #ff66ff;
-  border: 1px solid #ff44ff;
+  --war-bg: rgba(15, 15, 25, 0.8);
+  --war-card-bg: rgba(255, 255, 255, 0.03);
+  --war-border: rgba(255, 255, 255, 0.08);
 }
 
 .war-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  justify-content: center;
 }
 
 .war-card-stat {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  padding: 12px;
+  background: var(--war-card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--war-border);
+  border-radius: 16px;
+  padding: 16px;
+  flex: 1;
+  min-width: 140px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  transition: transform 0.2s;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
-.war-card-stat:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
+.war-card-stat:hover { 
+  transform: translateY(-4px); 
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.15);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+}
 
 .war-label {
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
   color: var(--gray);
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 .war-value {
   font-family: 'Nunito', sans-serif;
-  font-size: 16px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 900;
   color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .war-map-item {
-  background: rgba(10, 10, 10, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--war-border);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   position: relative;
-  overflow: hidden;
+  transition: all 0.2s;
 }
-
-.war-map-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.war-map-name {
-  font-size: 12px;
-  font-weight: 700;
+.war-map-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255,255,255,0.12);
 }
 
 .war-progress-container {
-  height: 8px;
-  background: #222;
-  border-radius: 4px;
+  height: 10px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 20px;
   display: flex;
   overflow: hidden;
+  padding: 2px;
   border: 1px solid rgba(255,255,255,0.05);
 }
 
-.bar-union { height: 100%; transition: width 0.5s ease-out; background: var(--union-color); box-shadow: 0 0 10px rgba(68, 255, 68, 0.3); }
-.bar-poder { height: 100%; transition: width 0.5s ease-out; background: var(--poder-color); box-shadow: 0 0 10px rgba(255, 68, 255, 0.3); }
-
-.war-points-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-  font-family: 'Press Start 2P', monospace;
-  opacity: 0.8;
+.bar-union { 
+  height: 100%; 
+  border-radius: 20px 0 0 20px;
+  background: linear-gradient(90deg, #1fa31f, var(--union-color));
+  box-shadow: 0 0 15px rgba(68, 255, 68, 0.2);
+}
+.bar-poder { 
+  height: 100%; 
+  border-radius: 0 20px 20px 0;
+  background: linear-gradient(90deg, var(--poder-color), #a31fa3);
+  box-shadow: 0 0 15px rgba(255, 68, 255, 0.2);
 }
 
 .war-rules-card {
-  background: rgba(59, 131, 246, 0.05);
-  border: 1px dashed rgba(59, 131, 246, 0.3);
-  border-radius: 12px;
-  padding: 15px;
-  margin-top: 25px;
-  font-size: 11px;
-  line-height: 1.6;
+  background: linear-gradient(180deg, rgba(59, 131, 246, 0.03), rgba(0,0,0,0.2));
+  border: 1px solid rgba(59, 131, 246, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 30px;
   color: #94a3b8;
 }
 
-.winner-glow-union { box-shadow: inset 4px 0 0 var(--union-color); }
-.winner-glow-poder { box-shadow: inset 4px 0 0 var(--poder-color); }
+.winner-glow-union { border-left: 4px solid var(--union-color) !important; background: rgba(68,255,68,0.03) !important; }
+.winner-glow-poder { border-left: 4px solid var(--poder-color) !important; background: rgba(255,68,255,0.03) !important; }
 
-#war-phase-banner > div {
-  animation: pulseBg 2s infinite;
-}
-
-@keyframes pulseBg {
-  0% { opacity: 1; }
-  50% { opacity: 0.75; }
-  100% { opacity: 1; }
-}
-
-.dom-badge {
-  font-size: 9px;
-  padding: 3px 7px;
+.war-shop-btn {
+  background: linear-gradient(135deg, var(--yellow), #f59e0b);
+  color: #000;
+  border: none;
   border-radius: 8px;
-  border: 1px solid;
-  margin-top: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  padding: 8px 16px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  transition: all 0.2s;
 }
-.dom-badge.dispute { border-color: #888; color: #ccc; background: #1a1a1a; }
-.dom-badge.dominance.winning {
-  background: rgba(68,255,68,0.2);
-  color: #44ff44;
-  border-color: #44ff44;
-}
-.bonus-icon {
-  animation: bounceMini 2s infinite;
-}
-@keyframes bounceMini {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-}
+.war-shop-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
 
-@keyframes guardianPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-}
 

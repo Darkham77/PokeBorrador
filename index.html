@@ -943,7 +943,7 @@
 
   <!-- WAR TAB -->
   <div id="tab-war" class="tab-content" style="display:none;padding-bottom:100px;">
-    <div class="team-section" style="max-width:800px; margin:0 auto;">
+    <div class="team-section" style="max-width:800px; margin:0 auto; background:var(--war-bg); backdrop-filter:blur(10px);">
       <div class="section-title">⚔️ Panel de Guerra</div>
       
       <!-- Estado de la semana -->
@@ -952,41 +952,69 @@
       <!-- Estadísticas Personales -->
       <div class="war-stats-grid">
         <div class="war-card-stat">
+          <span style="font-size:20px; margin-bottom:4px;">🛡️</span>
           <span class="war-label">Tu Bando</span>
-          <div id="war-my-faction" class="war-value" style="font-size:12px; font-family:'Press Start 2P',monospace;">—</div>
+          <div id="war-my-faction" class="war-value">—</div>
         </div>
         <div class="war-card-stat">
-          <span class="war-label">PT Guardianes</span>
-          <div id="war-my-pts" class="war-value" style="font-size:12px; font-family:'Press Start 2P',monospace;">0</div>
+          <span style="font-size:20px; margin-bottom:4px;">🏆</span>
+          <span class="war-label">Aporte Semanal</span>
+          <div id="war-my-pts" class="war-value">0 PT</div>
         </div>
         <div class="war-card-stat">
-          <span class="war-label">Monedas</span>
-          <div style="display:flex;align-items:center;gap:8px;justify-content:space-between; margin-top:5px;">
-            <div id="war-coins-count" class="war-value" style="font-size:14px; color:var(--yellow);">0</div>
-            <button onclick="showWarShop()" style="background:var(--yellow);color:var(--dark);border:none;border-radius:6px;padding:5px 10px;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;font-weight:900;">TIENDA</button>
+          <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
+            <span style="font-size:20px; margin-bottom:4px;">🪙</span>
+            <span class="war-label">Saldo Guerra</span>
+            <div id="war-coins-count" class="war-value" style="color:var(--yellow); border-bottom:2px solid rgba(255,214,10,0.2); width:100%; padding-bottom:5px; margin-bottom:10px;">0</div>
+            <button onclick="showWarShop()" class="war-shop-btn">TIENDA</button>
           </div>
         </div>
       </div>
 
       <!-- Marcador Global -->
-      <div id="war-score" style="display:flex;justify-content:space-between;margin-bottom:16px;background:rgba(255,255,255,0.03);padding:12px 20px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);">
-        <span style="color:var(--union-color);font-family:'Press Start 2P',monospace;font-size:8px;">🟢 UNIÓN: <span id="union-maps">0</span></span>
-        <span style="color:var(--poder-color);font-family:'Press Start 2P',monospace;font-size:8px;">🟣 PODER: <span id="poder-maps">0</span></span>
+      <div id="war-score" style="display:flex;justify-content:space-between;margin-bottom:20px;background:rgba(255,255,255,0.03);padding:14px 25px;border-radius:18px;border:1px solid rgba(255,255,255,0.08);">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">🟢</span>
+          <div style="display:flex; flex-direction:column;">
+            <span style="color:var(--gray); font-size:7px; font-family:'Press Start 2P'; margin-bottom:4px;">UNIÓN</span>
+            <span id="union-maps" style="color:var(--union-color); font-weight:900; font-size:14px;">0</span>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; text-align:right;">
+          <div style="display:flex; flex-direction:column;">
+            <span style="color:var(--gray); font-size:7px; font-family:'Press Start 2P'; margin-bottom:4px;">PODER</span>
+            <span id="poder-maps" style="color:var(--poder-color); font-weight:900; font-size:14px;">0</span>
+          </div>
+          <span style="font-size:18px;">🟣</span>
+        </div>
       </div>
 
       <!-- Mapa de Kanto con progreso vivo -->
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin:25px 0 15px; letter-spacing:1px; text-align:center;">--- CONTROL DE TERRITORIOS ---</div>
-      <div id="war-kanto-map" style="display:flex; flex-direction:column; gap:12px;">
-        <!-- Generado dinámicamente por JS -->
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin:30px 0 15px; letter-spacing:2px; text-align:center; opacity:0.6;">
+        :: MONITOR DE TERRITORIOS ::
+      </div>
+      <div id="war-kanto-map" style="display:flex; flex-direction:column; gap:14px;">
+        <!-- Generado dinámicamente -->
       </div>
       
       <!-- Reglas de la Guerra -->
-      <div class="war-rules-card" style="margin-top:30px; border-style:solid; background:rgba(0,0,0,0.2);">
-        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:12px;">¿CÓMO FUNCIONA?</div>
-        <ul style="list-style:none; padding:0; display:flex; flex-direction:column; gap:8px;">
-          <li>• <b style="color:var(--dispute-color)">Lunes a Viernes:</b> Ganá combates en zonas con ⚔️ para sumar puntos.</li>
-          <li>• <b style="color:var(--purple)">Fin de Semana:</b> El bando con más puntos domina el mapa.</li>
-          <li>• <b style="color:var(--green)">Bonificaciones:</b> Mapas controlados dan <b>x2 Shiny</b> y <b>+25% EXP</b>.</li>
+      <div class="war-rules-card">
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+           📜 REGLAS DE LA GUERRA
+        </div>
+        <ul style="list-style:none; padding:0; display:flex; flex-direction:column; gap:10px; font-size:11px;">
+          <li style="display:flex; gap:10px;">
+            <span style="color:var(--dispute-color)">⚔️</span>
+            <span><b>Lunes a Viernes:</b> Ganá combates en zonas en disputa para sumar puntos.</span>
+          </li>
+          <li style="display:flex; gap:10px;">
+            <span style="color:var(--purple)">⌛</span>
+            <span><b>Fin de Semana:</b> El bando con más puntos toma el control total.</span>
+          </li>
+          <li style="display:flex; gap:10px;">
+            <span style="color:var(--green)">⚡</span>
+            <span><b>Beneficios:</b> Controlar un mapa da <b>x2 Shiny</b> y <b>+25% EXP</b>.</span>
+          </li>
         </ul>
       </div>
     </div>
