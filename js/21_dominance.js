@@ -592,10 +592,32 @@ async function renderWarPanel() {
     .eq('week_id', weekId);
 
   let unionMaps = 0, poderMaps = 0;
-  domData?.forEach(r => {
-    if (r.winner_faction === 'union') unionMaps++;
-    else poderMaps++;
-  });
+  
+  // Lógica de conteo: Si no hay datos de dominancia (común en Modo Test), 
+  // usamos los puntos en disputa actuales como proyección.
+  if (!domData || domData.length === 0) {
+    const { data: ptsDataForScore } = await window.sb
+      .from('war_points')
+      .select('map_id, faction, points')
+      .eq('week_id', weekId);
+      
+    if (ptsDataForScore) {
+      const proy = {};
+      ptsDataForScore.forEach(p => {
+        if (!proy[p.map_id]) proy[p.map_id] = { union: 0, poder: 0 };
+        proy[p.map_id][p.faction] += p.points;
+      });
+      Object.values(proy).forEach(p => {
+        if (p.union > p.poder) unionMaps++;
+        else if (p.poder > p.union) poderMaps++;
+      });
+    }
+  } else {
+    domData.forEach(r => {
+      if (r.winner_faction === 'union') unionMaps++;
+      else if (r.winner_faction === 'poder') poderMaps++;
+    });
+  }
 
   const domU = document.getElementById('union-maps');
   const domP = document.getElementById('poder-maps');
@@ -689,8 +711,15 @@ function renderKantoWarGrid(ptsData, domData) {
         pctP = (pP / total) * 100;
       }
 
-      const domInfo = domData.find(d => d.map_id === map.id);
-      const winner = domInfo?.winner_faction;
+      const domInfo = domData?.find(d => d.map_id === map.id);
+      let winner = domInfo?.winner_faction;
+      
+      // Fallback para Modo Test: Si es fin de semana (simulado) y no hay ganador oficial, 
+      // mostramos el ganador provisional basado en puntos.
+      if (!dispute && !winner && total > 0) {
+        winner = (pU > pP) ? 'union' : (pP > pU ? 'poder' : null);
+      }
+
       const glowClass = winner === 'union' ? 'winner-glow-union' : (winner === 'poder' ? 'winner-glow-poder' : '');
       
       // Imagen
