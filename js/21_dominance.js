@@ -78,7 +78,13 @@ async function loadPlayerFaction() {
 function checkDailyCapNotReached(mapId, pts) {
   const today = new Date().toDateString();
   if (!state.warDailyCap) state.warDailyCap = {};
-  if (!state.warDailyCap[today]) state.warDailyCap = { [today]: {} };
+  
+  // Limpiar días anteriores para ahorrar espacio
+  Object.keys(state.warDailyCap).forEach(date => {
+    if (date !== today) delete state.warDailyCap[date];
+  });
+
+  if (!state.warDailyCap[today]) state.warDailyCap[today] = {};
   if (!state.warDailyCap[today][mapId]) state.warDailyCap[today][mapId] = 0;
 
   if (state.warDailyCap[today][mapId] >= 300) return false;
@@ -92,7 +98,13 @@ function addWarCoinsLocal(coins) {
   // Lógica de límite diario (Máximo 50 monedas por día)
   const today = new Date().toDateString();
   if (!state.warDailyCoins) state.warDailyCoins = {};
-  if (!state.warDailyCoins[today]) state.warDailyCoins = { [today]: 0 };
+  
+  // Limpiar días anteriores para ahorrar espacio en el guardado
+  Object.keys(state.warDailyCoins).forEach(date => {
+    if (date !== today) delete state.warDailyCoins[date];
+  });
+
+  if (!state.warDailyCoins[today]) state.warDailyCoins[today] = 0;
   
   const currentDaily = state.warDailyCoins[today];
   if (currentDaily >= 50) return; // Ya alcanzó el límite

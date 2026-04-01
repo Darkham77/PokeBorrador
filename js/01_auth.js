@@ -409,7 +409,8 @@
         faction: state.faction || null,
         warCoins: state.warCoins || 0,
         warCoinsSpent: state.warCoinsSpent || 0,
-        warDailyCap: state.warDailyCap || {}
+        warDailyCap: state.warDailyCap || {},
+        warDailyCoins: state.warDailyCoins || {}
       };
     }
 

@@ -213,7 +213,8 @@
       faction: null,          // 'union' | 'poder' | null
       warCoins: 0,            // monedas de guerra acumuladas
       warCoinsSpent: 0,       // monedas gastadas
-      warDailyCap: {}         // tope diario por mapa { "Mon Apr 01 2024": { "route1": 500 } }
+      warDailyCap: {},        // tope diario por mapa { "Mon Apr 01 2024": { "route1": 500 } }
+      warDailyCoins: {}       // tope diario de monedas { "Mon Apr 01 2024": 50 }
     };
 
     let state = JSON.parse(JSON.stringify(INITIAL_STATE));
