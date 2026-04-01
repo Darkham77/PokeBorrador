@@ -5837,23 +5837,26 @@
   100% { transform: scale(1); box-shadow: 0 0 5px rgba(239, 68, 68, 0.5); }
 }
 
-.guardian-status-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--yellow);
-  border-radius: 12px;
-  padding: 6px;
-  box-shadow: 0 0 15px rgba(255, 214, 10, 0.3);
-  backdrop-filter: blur(8px);
-  animation: pulseGuardianBadge 2s infinite ease-in-out;
-  transition: all 0.3s ease;
+.map-card .guardian-status-badge {
+  position: absolute !important;
+  top: 12px !important;
+  left: 12px !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: 10 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  border: 2px solid var(--yellow) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  box-shadow: 0 0 20px rgba(255, 214, 10, 0.4), 0 4px 10px rgba(0,0,0,0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  animation: pulseGuardianBadge 2s infinite ease-in-out !important;
+  transition: all 0.3s ease !important;
 }
 
 @keyframes pulseGuardianBadge {
@@ -5878,16 +5881,17 @@
   50% { transform: translateY(-5px); }
 }
 
-.guardian-label {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  padding: 3px 6px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+.map-card .guardian-label {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  font-weight: bold !important;
+  letter-spacing: 0.5px !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+  margin-top: 2px !important;
 }
 
 .guardian-label.captured {
@@ -5904,15 +5908,16 @@
   box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
 }
 
-.guardian-mini-sprite {
-  width: 48px;
-  height: 48px;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.9));
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 2px;
-  border: 1px solid rgba(255, 214, 10, 0.2);
+.map-card .guardian-mini-sprite {
+  width: 56px !important;
+  height: 56px !important;
+  image-rendering: pixelated !important;
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 1)) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  padding: 4px !important;
+  border: 1px solid rgba(255, 214, 10, 0.3) !important;
+  display: block !important;
 }
 
 .guardian-mini-sprite.captured {
@@ -5920,13 +5925,18 @@
 }
 
 @media (max-width: 768px) {
-  .guardian-mini-sprite {
-    width: 36px;
-    height: 36px;
+  .map-card .guardian-mini-sprite {
+    width: 36px !important;
+    height: 36px !important;
   }
-  .guardian-status-badge {
-    top: 8px;
-    left: 8px;
-    padding: 4px;
+  .map-card .guardian-status-badge {
+    top: 8px !important;
+    left: 8px !important;
+    padding: 4px !important;
+    border-width: 1px !important;
+  }
+  .map-card .guardian-label {
+    font-size: 6px !important;
+    padding: 2px 4px !important;
   }
 }
