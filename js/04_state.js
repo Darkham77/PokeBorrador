@@ -413,8 +413,29 @@
       }
       const pId = id;
       const _ivFloor = (typeof getStreakIvFloor === 'function') ? getStreakIvFloor() : 0;
-      const _randIv = () => Math.max(_ivFloor, Math.floor(Math.random() * 32));
-      const ivs = { hp: _randIv(), atk: _randIv(), def: _randIv(), spa: _randIv(), spd: _randIv(), spe: _randIv() };
+      const _randIv = (isGuardian = false) => {
+        let val = Math.floor(Math.random() * 32);
+        // Los guardianes tienen un 30% más de chances de mejores IVs (se toma el mejor de dos tiradas)
+        if (isGuardian && Math.random() < 0.30) {
+          val = Math.max(val, Math.floor(Math.random() * 32));
+        }
+        return Math.max(_ivFloor, val);
+      };
+      
+      // Determinar si es un guardián antes de generar IVs (basado en si el ID está en el pool de guardianes o si se pasa un flag)
+      // Nota: makePokemon se llama desde goLocation para guardianes, pero el flag isGuardian se pone DESPUÉS.
+      // Para que funcione, necesitamos saber si es un guardián en este momento.
+      // Revisando js/21_dominance.js, los guardianes se sacan de GUARDIAN_POOL.
+      const isGuardianPotential = (typeof getGuardianForMap === 'function' && window.currentEncounterMapId && getGuardianForMap(window.currentEncounterMapId)?.id === id);
+
+      const ivs = { 
+        hp: _randIv(isGuardianPotential), 
+        atk: _randIv(isGuardianPotential), 
+        def: _randIv(isGuardianPotential), 
+        spa: _randIv(isGuardianPotential), 
+        spd: _randIv(isGuardianPotential), 
+        spe: _randIv(isGuardianPotential) 
+      };
       const nature = NATURES[Math.floor(Math.random() * NATURES.length)];
       const abilityList = ABILITIES[id] || ['Espesura'];
       const ability = abilityList[Math.floor(Math.random() * abilityList.length)];

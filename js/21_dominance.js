@@ -328,7 +328,7 @@ function getGuardianForMap(mapId) {
   return pool[index];
 }
 
-const GUARDIAN_CHANCE = 0.03; 
+const GUARDIAN_CHANCE = 0.015; // Reducido de 3% a 1.5% 
 
 async function loadDailyGuardianCaptures() {
   const today = new Date().toISOString().split('T')[0];

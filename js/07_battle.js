@@ -2443,6 +2443,11 @@ function executeCatch(ballName) {
   // Official Formula Factors + configurable multiplier
   let a = (((3 * b.enemy.maxHp - 2 * b.enemy.hp) * baseRate * ballMult * (window.GAME_RATIOS ? GAME_RATIOS.battle.catchFormulaParams.catchBaseMultiplier : 1.0)) / (3 * b.enemy.maxHp)) * statusBonus;
 
+  // Dificultad especial para Guardianes: el doble de difíciles de capturar
+  if (b.enemy.isGuardian) {
+    a /= 2;
+  }
+
   // Modificadores de clase sobre la captura
   if (state.playerClass === 'cazabichos') {
     // Sinergia Bicho: +5% por Pokémon tipo Bicho en el equipo (máx +30%)
