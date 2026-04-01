@@ -691,11 +691,13 @@ function renderKantoWarGrid(ptsData, domData) {
 }
 
 const WAR_SHOP_ITEMS = [
-  { id: 'shiny_stone', name: 'Piedra Brillante', desc: 'Triplica la probabilidad shiny de un huevo.', cost: 300, icon: '💎' },
-  { id: 'tm_rare_1', name: 'MT99 — Llamarada', desc: 'Movimiento MT exótico.', cost: 200, icon: '🔥' },
-  { id: 'cosmetic_frame_union', name: 'Marco Unión', desc: 'Decoración de perfil exclusiva.', cost: 100, icon: '⚪', factionRequired: 'union' },
-  { id: 'cosmetic_frame_poder', name: 'Marco Poder', desc: 'Decoración de perfil exclusiva.', cost: 100, icon: '⚫', factionRequired: 'poder' },
-  { id: 'title_conquistador', name: 'Título: Conquistador de Kanto', desc: 'Visible en tu perfil público.', cost: 500, icon: '🏆' },
+  { id: 'everstone', name: 'Piedra Eterna', desc: 'Equipada en la guardería, asegura que la cría herede la naturaleza de este padre.', cost: 80, icon: '🪨' },
+  { id: 'power_weight', name: 'Pesa Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de PS (Vida) de este padre.', cost: 120, icon: '🏋️' },
+  { id: 'power_bracer', name: 'Brazal Recio', desc: 'Equipada en la guardería, asegura heredar los IVs de Ataque de este padre.', cost: 120, icon: '🥊' },
+  { id: 'power_belt', name: 'Cinto Recio', desc: 'Equipada en la guardería, asegura heredar los IVs de Defensa de este padre.', cost: 120, icon: '🛡️' },
+  { id: 'power_lens', name: 'Lente Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de At. Especial de este padre.', cost: 120, icon: '🔍' },
+  { id: 'power_band', name: 'Banda Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de Def. Especial de este padre.', cost: 120, icon: '🎗️' },
+  { id: 'power_anklet', name: 'Franja Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de Velocidad de este padre.', cost: 120, icon: '👢' },
 ];
 
 function showWarShop() {
@@ -712,7 +714,7 @@ function closeWarShop() {
 }
 
 function renderWarShop() {
-  const balance = state.warCoins - (state.warCoinsSpent || 0);
+  const balance = (state.warCoins || 0) - (state.warCoinsSpent || 0);
   const balDisp = document.getElementById('war-shop-coins-modal');
   if (balDisp) balDisp.textContent = balance;
 
@@ -738,21 +740,14 @@ function renderWarShop() {
 
 async function buyWarItem(itemId) {
   const item = WAR_SHOP_ITEMS.find(i => i.id === itemId);
-  const balance = state.warCoins - (state.warCoinsSpent || 0);
+  const balance = (state.warCoins || 0) - (state.warCoinsSpent || 0);
   if (!item || balance < item.cost) return;
 
-  if (item.id === 'shiny_stone') {
-    addToInventory('shiny_stone', 1);
-  } else if (item.id === 'tm_rare_1') {
-    addToInventory('tm_llamarada', 1);
-  } else if (item.id.startsWith('cosmetic_frame_')) {
-    state.profileFrame = item.id;
-  } else if (item.id === 'title_conquistador') {
-    state.title = 'Conquistador de Kanto';
-  }
+  // Entrega del ítem al inventario usando su nombre como clave
+  state.inventory[item.name] = (state.inventory[item.name] || 0) + 1;
   
   state.warCoinsSpent = (state.warCoinsSpent || 0) + item.cost;
   if (typeof scheduleSave === 'function') scheduleSave();
   renderWarShop();
-  notify(`Compraste ${item.name}!`, '🛒');
+  notify(`¡Compraste ${item.name}!`, '🛒');
 }
