@@ -691,13 +691,21 @@ function renderKantoWarGrid(ptsData, domData) {
 }
 
 const WAR_SHOP_ITEMS = [
-  { id: 'everstone', name: 'Piedra Eterna', desc: 'Equipada en la guardería, asegura que la cría herede la naturaleza de este padre.', cost: 80, icon: '🪨' },
-  { id: 'power_weight', name: 'Pesa Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de PS (Vida) de este padre.', cost: 120, icon: '🏋️' },
-  { id: 'power_bracer', name: 'Brazal Recio', desc: 'Equipada en la guardería, asegura heredar los IVs de Ataque de este padre.', cost: 120, icon: '🥊' },
-  { id: 'power_belt', name: 'Cinto Recio', desc: 'Equipada en la guardería, asegura heredar los IVs de Defensa de este padre.', cost: 120, icon: '🛡️' },
-  { id: 'power_lens', name: 'Lente Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de At. Especial de este padre.', cost: 120, icon: '🔍' },
-  { id: 'power_band', name: 'Banda Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de Def. Especial de este padre.', cost: 120, icon: '🎗️' },
-  { id: 'power_anklet', name: 'Franja Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de Velocidad de este padre.', cost: 120, icon: '👢' },
+  { id: 'everstone', name: 'Piedra Eterna', desc: 'Equipada en la guardería, asegura que la cría herede la naturaleza de este padre.', cost: 80, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/everstone.png' },
+  { id: 'power_weight', name: 'Pesa Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de PS (Vida) de este padre.', cost: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-weight.png' },
+  { id: 'power_bracer', name: 'Brazal Recio', desc: 'Equipada en la guardería, asegura heredar los IVs de Ataque de este padre.', cost: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-bracer.png' },
+  { id: 'power_belt', name: 'Cinto Recio', desc: 'Equipada en la guardería, asegura heredar los IVs de Defensa de este padre.', cost: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-belt.png' },
+  { id: 'power_lens', name: 'Lente Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de At. Especial de este padre.', cost: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-lens.png' },
+  { id: 'power_band', name: 'Banda Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de Def. Especial de este padre.', cost: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-band.png' },
+  { id: 'power_anklet', name: 'Franja Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de Velocidad de este padre.', cost: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-anklet.png' },
+  
+  // Inciensos
+  { id: 'incense_fire', name: 'Incienso Fuego', desc: 'Atrae Pokémon de tipo Fuego durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/incense.png' },
+  { id: 'incense_water', name: 'Incienso Agua', desc: 'Atrae Pokémon de tipo Agua durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sea-incense.png' },
+  { id: 'incense_grass', name: 'Incienso Planta', desc: 'Atrae Pokémon de tipo Planta durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rose-incense.png' },
+  { id: 'incense_normal', name: 'Incienso Normal', desc: 'Atrae Pokémon de tipo Normal durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/luck-incense.png' },
+  { id: 'incense_ghost', name: 'Incienso Fantasma', desc: 'Atrae Pokémon de tipo Fantasma durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/pure-incense.png' },
+  { id: 'incense_psychic', name: 'Incienso Psíquico', desc: 'Atrae Pokémon de tipo Psíquico durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/odd-incense.png' },
 ];
 
 function showWarShop() {
@@ -725,13 +733,15 @@ function renderWarShop() {
     .filter(item => !item.factionRequired || item.factionRequired === state.faction)
     .map(item => {
       const disabled = balance < item.cost;
-      return `<div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #333;border-radius:8px;margin-bottom:8px;${disabled?'opacity:0.5':''}">
-        <span style="font-size:24px;">${item.icon}</span>
-        <div style="flex:1;">
-          <strong style="font-size:11px;color:white;">${item.name}</strong>
-          <p style="font-size:9px;color:#aaa;margin:4px 0 0 0;">${item.desc}</p>
+      return `<div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #333;border-radius:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);transition:all 0.2s;${disabled?'opacity:0.6':''}" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+        <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2);border-radius:10px;border:1px solid rgba(255,255,255,0.05);">
+          <img src="${item.sprite}" alt="${item.name}" style="width:36px;height:36px;image-rendering:pixelated;">
         </div>
-        <button onclick="buyWarItem('${item.id}')" ${disabled?'disabled':''} style="background:${disabled?'#333':'var(--yellow)'};color:${disabled?'#888':'var(--dark)'};border:none;border-radius:8px;padding:8px;font-family:'Press Start 2P',monospace;font-size:8px;font-weight:900;cursor:${disabled?'not-allowed':'pointer'};">
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:12px;color:white;margin-bottom:4px;">${item.name}</div>
+          <p style="font-size:10px;color:#888;margin:0;line-height:1.4;">${item.desc}</p>
+        </div>
+        <button onclick="buyWarItem('${item.id}')" ${disabled?'disabled':''} style="background:${disabled?'#222':'linear-gradient(135deg,var(--yellow),#f0a500)'};color:${disabled?'#555':'#111'};border:none;border-radius:10px;padding:10px;font-family:'Press Start 2P',monospace;font-size:8px;font-weight:900;cursor:${disabled?'not-allowed':'pointer'};min-width:80px;box-shadow:${disabled?'none':'0 4px 12px rgba(255,214,10,0.2)'};">
           🪙 ${item.cost}
         </button>
       </div>`;

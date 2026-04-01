@@ -856,6 +856,26 @@ function updateBuffPanel() {
     if (!itemEl) return;
 
     if ((b.secs || 0) > 0) {
+      // Especial handling for Incense
+      if (b.id === 'incense' && state.incenseType) {
+        const typeNames = { fire: 'Fuego', water: 'Agua', grass: 'Planta', normal: 'Normal', ghost: 'Fantasma', psychic: 'Psíquico' };
+        const typeSprites = {
+          fire: 'incense.png', water: 'sea-incense.png', grass: 'rose-incense.png',
+          normal: 'luck-incense.png', ghost: 'pure-incense.png', psychic: 'odd-incense.png'
+        };
+        const typeName = typeNames[state.incenseType] || 'Desconocido';
+        const typeSprite = typeSprites[state.incenseType] || 'incense.png';
+        
+        const titleEl = itemEl.querySelector('.buff-tooltip-name');
+        if (titleEl) titleEl.textContent = `💨 Incienso ${typeName}`;
+        
+        const descEl = itemEl.querySelector('.buff-tooltip-desc');
+        if (descEl) descEl.textContent = `Atrae Pokémon de tipo ${typeName} durante 30 min.`;
+        
+        const imgEl = itemEl.querySelector('.buff-sprite');
+        if (imgEl) imgEl.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${typeSprite}`;
+      }
+
       const minutes = Math.floor(b.secs / 60);
       const seconds = b.secs % 60;
       const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;

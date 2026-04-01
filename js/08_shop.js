@@ -428,6 +428,44 @@
         effect: (qty) => { state.inventory['Máximo Repelente'] = (state.inventory['Máximo Repelente'] || 0) + qty; }
       },
 
+      // ── INCIENSOS ──────────────────────────────────────────────────────────────
+      {
+        id: 'incense_fire', cat: 'especial', market: false, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/incense.png',
+        name: 'Incienso Fuego', icon: '🔥', price: 0, unlockLv: 1, tier: 'epic',
+        desc: 'Atrae Pokémon de tipo Fuego durante 30 minutos.',
+        effect: (qty) => { state.inventory['Incienso Fuego'] = (state.inventory['Incienso Fuego'] || 0) + qty; }
+      },
+      {
+        id: 'incense_water', cat: 'especial', market: false, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sea-incense.png',
+        name: 'Incienso Agua', icon: '💧', price: 0, unlockLv: 1, tier: 'epic',
+        desc: 'Atrae Pokémon de tipo Agua durante 30 minutos.',
+        effect: (qty) => { state.inventory['Incienso Agua'] = (state.inventory['Incienso Agua'] || 0) + qty; }
+      },
+      {
+        id: 'incense_grass', cat: 'especial', market: false, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rose-incense.png',
+        name: 'Incienso Planta', icon: '🌿', price: 0, unlockLv: 1, tier: 'epic',
+        desc: 'Atrae Pokémon de tipo Planta durante 30 minutos.',
+        effect: (qty) => { state.inventory['Incienso Planta'] = (state.inventory['Incienso Planta'] || 0) + qty; }
+      },
+      {
+        id: 'incense_normal', cat: 'especial', market: false, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/luck-incense.png',
+        name: 'Incienso Normal', icon: '⚪', price: 0, unlockLv: 1, tier: 'epic',
+        desc: 'Atrae Pokémon de tipo Normal durante 30 minutos.',
+        effect: (qty) => { state.inventory['Incienso Normal'] = (state.inventory['Incienso Normal'] || 0) + qty; }
+      },
+      {
+        id: 'incense_ghost', cat: 'especial', market: false, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/pure-incense.png',
+        name: 'Incienso Fantasma', icon: '👻', price: 0, unlockLv: 1, tier: 'epic',
+        desc: 'Atrae Pokémon de tipo Fantasma durante 30 minutos.',
+        effect: (qty) => { state.inventory['Incienso Fantasma'] = (state.inventory['Incienso Fantasma'] || 0) + qty; }
+      },
+      {
+        id: 'incense_psychic', cat: 'especial', market: false, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/odd-incense.png',
+        name: 'Incienso Psíquico', icon: '👁️', price: 0, unlockLv: 1, tier: 'epic',
+        desc: 'Atrae Pokémon de tipo Psíquico durante 30 minutos.',
+        effect: (qty) => { state.inventory['Incienso Psíquico'] = (state.inventory['Incienso Psíquico'] || 0) + qty; }
+      },
+
       // ── PIEDRAS DE EVOLUCIÓN ───────────────────────────────────────────────────
       {
         id: 'piedra_fuego', cat: 'stones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png',
