@@ -312,6 +312,11 @@ async function renderMaps() {
       // Cycle helpers
       const CYCLE_ICONS = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' };
 
+      // DOMINANCIA: Cargar capturas de guardianes antes de renderizar
+      if (typeof loadDailyGuardianCaptures === 'function') {
+        await loadDailyGuardianCaptures();
+      }
+
       // MAP GRID
       html += `<div class="map-list">`;
 
@@ -319,7 +324,26 @@ async function renderMaps() {
         if (!state.faction || typeof isDisputePhase !== 'function') return '';
         if (isDisputePhase()) {
           if (typeof isConflictZone === 'function' && isConflictZone(locId)) {
-            return `<span class="dom-badge dispute" title="Zonas de guerra activas hoy" style="position:absolute; bottom:8px; right:8px; z-index:2;">⚔️ En Disputa</span>`;
+            const guardian = typeof getGuardianForMap === 'function' ? getGuardianForMap(locId) : null;
+            const isCaptured = state.dailyGuardianCaptures && state.dailyGuardianCaptures.includes(locId);
+            
+            let guardianHtml = '';
+            if (guardian) {
+              const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${POKEMON_SPRITE_IDS[guardian.id] || 1}.png`;
+              guardianHtml = `
+                <div class="guardian-status-badge" title="${isCaptured ? 'Guardián ya derrotado/capturado hoy' : 'Guardián disponible en este mapa'}">
+                  <img src="${spriteUrl}" class="guardian-mini-sprite ${isCaptured ? 'captured' : ''}">
+                  <span class="guardian-label ${isCaptured ? 'captured' : 'pending'}">
+                    ${isCaptured ? 'DERROTADO' : 'GUARDIÁN'}
+                  </span>
+                </div>
+              `;
+            }
+
+            return `
+              ${guardianHtml}
+              <span class="dom-badge dispute" title="Zonas de guerra activas hoy" style="position:absolute; bottom:8px; left:8px; z-index:2;">⚔️ En Disputa</span>
+            `;
           }
         } else {
           if (state.activeBonuses && state.activeBonuses[locId]) {

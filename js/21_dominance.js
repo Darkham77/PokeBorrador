@@ -330,19 +330,37 @@ function getGuardianForMap(mapId) {
 
 const GUARDIAN_CHANCE = 0.03; 
 
-async function checkGuardianAppearance(mapId) {
-  if (!state.faction) return false;
-  if (!getGuardianForMap(mapId)) return false;
-
+async function loadDailyGuardianCaptures() {
   const today = new Date().toISOString().split('T')[0];
-  const { data } = await window.sb
+  const { data, error } = await window.sb
     .from('guardian_captures')
-    .select('winner_faction')
-    .eq('capture_date', today)
-    .eq('map_id', mapId)
-    .maybeSingle();
+    .select('map_id')
+    .eq('capture_date', today);
+    
+  if (!error && data) {
+    state.dailyGuardianCaptures = data.map(c => c.map_id);
+  } else {
+    state.dailyGuardianCaptures = [];
+  }
+}
 
-  if (data) return false; 
+async function checkGuardianAppearance(mapId) {
+  if (!getGuardianForMap(mapId)) return false;
+  
+  // Si ya tenemos el cache, usarlo
+  if (state.dailyGuardianCaptures) {
+    if (state.dailyGuardianCaptures.includes(mapId)) return false;
+  } else {
+    const today = new Date().toISOString().split('T')[0];
+    const { data } = await window.sb
+      .from('guardian_captures')
+      .select('id')
+      .eq('map_id', mapId)
+      .eq('capture_date', today)
+      .maybeSingle();
+      
+    if (data) return false; 
+  }
 
   return Math.random() < GUARDIAN_CHANCE;
 }
