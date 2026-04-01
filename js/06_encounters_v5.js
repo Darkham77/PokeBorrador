@@ -321,33 +321,25 @@ async function renderMaps() {
       html += `<div class="map-list">`;
 
       const domBadgeHtml = (locId) => {
-        if (!state.faction || typeof isDisputePhase !== 'function') return '';
-        if (isDisputePhase()) {
-          if (typeof isConflictZone === 'function' && isConflictZone(locId)) {
-            const guardian = typeof getGuardianForMap === 'function' ? getGuardianForMap(locId) : null;
-            const isCaptured = state.dailyGuardianCaptures && state.dailyGuardianCaptures.includes(locId);
-            
-            let guardianHtml = '';
-            if (guardian) {
-              const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${POKEMON_SPRITE_IDS[guardian.id] || 1}.png`;
-              guardianHtml = `
-                <div class="guardian-status-badge" title="${isCaptured ? 'Guardián ya derrotado/capturado hoy' : 'Guardián disponible en este mapa'}">
-                  <img src="${spriteUrl}" class="guardian-mini-sprite ${isCaptured ? 'captured' : ''}">
-                  <span class="guardian-label ${isCaptured ? 'captured' : 'pending'}">
-                    ${isCaptured ? 'DERROTADO' : 'GUARDIÁN'}
-                  </span>
-                </div>
-              `;
-            }
+        if (!state.faction) return '';
+        const isCaptured = (state.dailyGuardianCaptures || []).includes(locId);
+        const guardian = typeof getGuardianForMap === 'function' ? getGuardianForMap(locId) : null;
+        
+        if (guardian) {
+          const spriteId = POKEMON_SPRITE_IDS ? POKEMON_SPRITE_IDS[guardian.id] : 1;
+          const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteId || 1}.png`;
+          const labelClass = isCaptured ? 'guardian-label captured' : 'guardian-label';
+          const labelText = isCaptured ? 'DERROTADO' : 'GUARDIÁN';
+          const spriteClass = isCaptured ? 'guardian-mini-sprite captured' : 'guardian-mini-sprite';
 
-            return `
-              ${guardianHtml}
-            `;
-          }
-        } else {
-          if (state.activeBonuses && state.activeBonuses[locId]) {
-            return `<span class="dom-badge dominance winning" title="Bono Activo (+25% EXP / x2 Shiny)" style="position:absolute; bottom:8px; right:8px; z-index:2;">👑 Dominado <span class="bonus-icon">✨</span></span>`;
-          }
+          return `
+            <div class="guardian-status-badge" title="${isCaptured ? 'Guardián ya derrotado hoy' : 'Guardián disponible'}">
+              <img src="${spriteUrl}" class="${spriteClass}" alt="Guardian">
+              <span class="${labelClass}">${labelText}</span>
+            </div>
+          `;
+        } else if (state.activeBonuses && state.activeBonuses[locId]) {
+          return `<span class="dom-badge dominance winning" title="Bono Activo (+25% EXP / x2 Shiny)" style="position:absolute; bottom:8px; right:8px; z-index:2;">👑 Dominado <span class="bonus-icon">✨</span></span>`;
         }
         return '';
       };
