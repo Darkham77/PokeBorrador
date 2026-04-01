@@ -5805,53 +5805,80 @@
 .guardian-status-badge {
   position: absolute;
   top: 8px;
-  right: 8px;
+  left: 8px;
   z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.95), rgba(255, 152, 0, 0.95));
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 0 25px rgba(255, 193, 7, 0.7), inset 0 0 10px rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  animation: pulseGuardianBadge 2s infinite ease-in-out;
+}
+
+@keyframes pulseGuardianBadge {
+  0%, 100% { 
+    transform: scale(1); 
+    box-shadow: 0 0 25px rgba(255, 193, 7, 0.7), inset 0 0 10px rgba(255, 255, 255, 0.2);
+  }
+  50% { 
+    transform: scale(1.1); 
+    box-shadow: 0 0 35px rgba(255, 193, 7, 0.95), inset 0 0 15px rgba(255, 255, 255, 0.3);
+  }
 }
 
 .guardian-icon-large {
-  font-size: 20px;
-  filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+  font-size: 28px;
+  filter: drop-shadow(0 0 6px rgba(0,0,0,0.6));
   animation: floatGuardian 3s infinite ease-in-out;
 }
 
 @keyframes floatGuardian {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  50% { transform: translateY(-5px); }
 }
 
 .guardian-label {
   font-family: 'Press Start 2P', monospace;
-  font-size: 5px;
-  padding: 2px 4px;
-  border-radius: 2px;
+  font-size: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
   text-transform: uppercase;
   white-space: nowrap;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .guardian-label.captured {
-  background: rgba(34, 197, 94, 0.9);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: white;
-  border: 1px solid #166534;
+  border: 1px solid #15803d;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
 }
 
 .guardian-label.pending {
-  background: rgba(234, 179, 8, 0.9);
-  color: #422006;
-  border: 1px solid #854d0e;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #78350f;
+  border: 1px solid #d97706;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
 }
 
 .guardian-mini-sprite {
-  width: 32px;
-  height: 32px;
+  width: 56px;
+  height: 56px;
   image-rendering: pixelated;
-  filter: drop-shadow(0 0 3px white);
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .guardian-mini-sprite.captured {
-  filter: grayscale(0.5) opacity(0.7) drop-shadow(0 0 2px #22c55e);
+  filter: grayscale(0.3) opacity(0.9) drop-shadow(0 0 4px rgba(34, 197, 94, 0.9));
 }
