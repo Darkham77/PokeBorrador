@@ -930,20 +930,24 @@ async function tryTriggerDefenderBattle(mapId) {
     }
 
     const { data: defenders } = await query.limit(5);
+    console.log("[WAR] Defensores encontrados en " + mapId, defenders);
       
     if (!defenders || defenders.length === 0) return false;
     
     // Elegir uno al azar
     const selected = defenders[Math.floor(Math.random() * defenders.length)];
     
-    notify(`⚔️ ¡AVISTADO! Un defensor del bando contrario protege esta ruta.`, '🛡️');
-    
     if (typeof startDefenderBattle === 'function') {
+      console.log("[WAR] Iniciando batalla contra defensor:", selected.user_name);
       startDefenderBattle(selected);
       return true;
+    } else {
+      console.error("[WAR] Error: startDefenderBattle no está definida!");
+      return false;
     }
   } catch (err) {
     console.warn("Fallo al buscar defensor de guerra:", err);
+    return false;
   }
   
   return false;

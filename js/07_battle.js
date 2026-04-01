@@ -3320,27 +3320,72 @@ function startDefenderBattle(defenderData) {
   // Asegurar que tenga HP máximo al iniciar (clonación para la batalla)
   const enemyFinal = JSON.parse(JSON.stringify(enemy));
   enemyFinal.hp = enemyFinal.maxHp;
-  
-  // Iniciar batalla tipo Entrenador
-  startBattle(
-    enemyFinal, 
-    true, // isTrainer
-    false, // isGym
-    defenderData.map_id,
-    [enemyFinal], // enemyTeam
-    defenderData.user_name,
-    defenderData.user_sprite
-  );
-  
-  // Marca especial en el bando enemigo (opcional para lógica futura)
-  state.battle.isDefenderBattle = true;
-  state.battle.defenderUserId = defenderData.user_id;
-  state.battle.defenderRecordId = defenderData.id;
+  enemyFinal.isBoss = true; // Marca para recompensas (EXP x3, etc)
 
-  // Actualizar UI para mostrar que es un DEFENSOR
-  const label = document.createElement('div');
-  label.style.cssText = 'position:absolute; top:-20px; left:0; width:100%; text-align:center; color:var(--yellow); font-family:"Press Start 2P"; font-size:8px; text-shadow:0 0 5px #000;';
-  label.textContent = '🛡️ DEFENSOR';
-  document.getElementById('enemy-name').appendChild(label);
+  const trainerSprite = defenderData.user_sprite || 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png';
+  const trainerName = defenderData.user_name || 'Entrenador Anónimo';
+  
+  // ── INTRO OVERLAY ESTILO BOSS ──────────────────────────────────────────
+  const introOv = document.createElement('div');
+  introOv.id = 'boss-intro-overlay';
+  introOv.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .5s ease;';
+  introOv.innerHTML = `
+    <div style="background:linear-gradient(135deg, #2d1b4e, #1a1a2e); border-radius:24px; padding:32px; max-width:400px; width:100%;
+      border:3px solid var(--yellow); text-align:center; position:relative; box-shadow: 0 0 50px rgba(234, 179, 8, 0.4);">
+      <div style="position:absolute; top:-20px; left:50%; transform:translateX(-50%); background:var(--yellow); color:#000; padding:6px 20px; border-radius:12px; font-family:'Press Start 2P',monospace; font-size:10px; font-weight:bold;">⚠️ ¡EVENTO BOSS! 🛡️</div>
+      
+      <img src="${trainerSprite}" alt="${trainerName}"
+        style="height:140px; width:auto; image-rendering:pixelated; margin-bottom:16px; filter:drop-shadow(0 4px 15px rgba(234, 179, 8, 0.6));">
+      
+      <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:var(--yellow); margin-bottom:8px;">DEFENSOR DE RUTA</div>
+      <div style="font-size:16px; font-weight:bold; color:#fff; margin-bottom:16px;">${trainerName}</div>
+      
+      <div style="font-size:12px; color:#eee; margin:15px 0; line-height:1.6; font-style:italic; background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; border:1px solid rgba(234, 179, 8, 0.2);">
+        "¡Este territorio pertenece a la <strong>${(defenderData.faction || 'Unión').toUpperCase()}</strong>! Si querés pasar, vas a tener que derrotar a mi campeón."
+      </div>
+
+      <button id="boss-intro-btn" style="font-family:'Press Start 2P',monospace; font-size:9px; padding:18px 36px; border:none; border-radius:16px;
+        cursor:pointer; background:linear-gradient(135deg, var(--yellow), #ca8a04); color:#000; font-weight:bold;
+        box-shadow:0 6px 20px rgba(234, 179, 8, 0.4); margin-top:10px; width:100%; transform:scale(1); transition:0.2s;"
+        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        ⚔️ ¡ACEPTAR DESAFÍO!
+      </button>
+    </div>`;
+  
+  document.body.appendChild(introOv);
+
+  document.getElementById('boss-intro-btn').onclick = () => {
+    introOv.remove();
+    
+    // Iniciar batalla tipo Entrenador
+    startBattle(
+      enemyFinal,            // enemy
+      false,                 // isGym
+      null,                  // gymId
+      defenderData.map_id,   // locationId
+      true,                  // isTrainer
+      [enemyFinal],          // enemyTeam
+      trainerName            // trainerName
+    );
+    
+    // Marcas de estado para la lógica de recompensas
+    if (state.battle) {
+      state.battle.isDefenderBattle = true;
+      state.battle.defenderUserId = defenderData.user_id;
+      state.battle.defenderRecordId = defenderData.id;
+    }
+
+    // Etiqueta visual de BOSS
+    setTimeout(() => {
+      const parent = document.getElementById('enemy-name');
+      if (parent) {
+        const label = document.createElement('div');
+        label.style.cssText = 'position:absolute; top:-20px; left:0; width:100%; text-align:center; color:var(--yellow); font-family:"Press Start 2P"; font-size:8px; text-shadow:0 0 5px #000; pointer-events:none;';
+        label.textContent = '🛡️ BOSS / DEFENSOR';
+        parent.appendChild(label);
+      }
+    }, 100);
+  };
 }
+
 
