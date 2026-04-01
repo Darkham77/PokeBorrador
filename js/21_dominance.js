@@ -380,7 +380,7 @@ function showGuardianAnnouncement(guardianData) {
   ov.style.cssText = 'position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;';
   ov.innerHTML = `
     <div style="background:var(--card);border-radius:24px;padding:32px;max-width:380px;border:3px solid var(--yellow);text-align:center;">
-      <div style="font-size:50px;animation:pulse 1s infinite;">⚠️</div>
+      <div style="font-size:25px;animation:pulse 1s infinite;">⚠️</div>
       <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin:16px 0;">¡GUARDIÁN DETECTADO!</div>
       <div style="font-size:13px;color:#eee;margin-bottom:20px;">
         Un <strong style="color:var(--yellow);">${name}</strong> Nv. ${guardianData.lv} está custodiando este mapa.<br><br>
