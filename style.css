@@ -5837,26 +5837,32 @@
   100% { transform: scale(1); box-shadow: 0 0 5px rgba(239, 68, 68, 0.5); }
 }
 
-.map-card .guardian-status-badge {
+.guardian-status-badge {
   position: absolute !important;
   top: 12px !important;
   left: 12px !important;
   right: auto !important;
   bottom: auto !important;
-  z-index: 10 !important;
+  z-index: 100 !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
+  justify-content: center !important;
   gap: 4px !important;
-  background: rgba(0, 0, 0, 0.7) !important;
+  background: rgba(0, 0, 0, 0.8) !important;
   border: 2px solid var(--yellow) !important;
   border-radius: 12px !important;
   padding: 8px !important;
-  box-shadow: 0 0 20px rgba(255, 214, 10, 0.4), 0 4px 10px rgba(0,0,0,0.5) !important;
+  box-shadow: 0 0 20px rgba(255, 214, 10, 0.5), 0 4px 15px rgba(0,0,0,0.7) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
   animation: pulseGuardianBadge 2s infinite ease-in-out !important;
   transition: all 0.3s ease !important;
+  pointer-events: auto !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  transform: none !important;
 }
 
 @keyframes pulseGuardianBadge {
@@ -5881,7 +5887,7 @@
   50% { transform: translateY(-5px); }
 }
 
-.map-card .guardian-label {
+.guardian-label {
   font-family: 'Press Start 2P', monospace !important;
   font-size: 8px !important;
   padding: 4px 8px !important;
@@ -5892,6 +5898,7 @@
   letter-spacing: 0.5px !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
   margin-top: 2px !important;
+  display: inline-block !important;
 }
 
 .guardian-label.captured {
@@ -5908,9 +5915,11 @@
   box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
 }
 
-.map-card .guardian-mini-sprite {
-  width: 56px !important;
-  height: 56px !important;
+.guardian-mini-sprite {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  min-height: 64px !important;
   image-rendering: pixelated !important;
   filter: drop-shadow(0 0 8px rgba(0, 0, 0, 1)) !important;
   background: rgba(255, 255, 255, 0.1) !important;
@@ -5918,6 +5927,7 @@
   padding: 4px !important;
   border: 1px solid rgba(255, 214, 10, 0.3) !important;
   display: block !important;
+  object-fit: contain !important;
 }
 
 .guardian-mini-sprite.captured {
@@ -5925,17 +5935,19 @@
 }
 
 @media (max-width: 768px) {
-  .map-card .guardian-mini-sprite {
-    width: 36px !important;
-    height: 36px !important;
+  .guardian-mini-sprite {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
   }
-  .map-card .guardian-status-badge {
+  .guardian-status-badge {
     top: 8px !important;
     left: 8px !important;
     padding: 4px !important;
     border-width: 1px !important;
   }
-  .map-card .guardian-label {
+  .guardian-label {
     font-size: 6px !important;
     padding: 2px 4px !important;
   }
