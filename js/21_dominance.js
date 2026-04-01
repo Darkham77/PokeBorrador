@@ -525,6 +525,13 @@ async function renderWarPanel() {
 
   const domU = document.getElementById('union-maps');
   const domP = document.getElementById('poder-maps');
+  const warScore = document.getElementById('war-score');
+  
+  if (warScore) {
+    // Solo mostrar el marcador global durante la Fase de Dominancia (fines de semana)
+    warScore.style.display = dispute ? 'none' : 'flex';
+  }
+
   if (domU) domU.textContent = unionMaps;
   if (domP) domP.textContent = poderMaps;
   
