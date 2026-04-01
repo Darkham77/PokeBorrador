@@ -212,6 +212,19 @@ async function getMapDominanceStatus(mapId) {
       .eq('week_id', weekId)
       .eq('map_id', mapId)
       .single();
+    
+    // Fallback: Si no hay datos oficiales de dominancia pero hay puntos del mapa
+    // (común en Modo Test), devolvemos el ganador provisional.
+    if (!dom) {
+      const { data: pts } = await window.sb.from('war_points').select('faction, points').eq('week_id', weekId).eq('map_id', mapId);
+      const u = pts?.find(p => p.faction === 'union')?.points || 0;
+      const p = pts?.find(p => p.faction === 'poder')?.points || 0;
+      const winner = u > p ? 'union' : (p > u ? 'poder' : null);
+      if (winner) {
+        return { phase: 'dominance', winner, union: u, poder: p };
+      }
+    }
+
     return { 
       phase: 'dominance', 
       winner: dom?.winner_faction || null, 
@@ -1060,8 +1073,13 @@ async function renderMyDefenders() {
       const map = FIRE_RED_MAPS.find(m => m.id === def.map_id);
       const poke = def.pokemon_data;
       
+      // Construir Sprite seguro (fallback a PokeAPI oficial si falta el objeto sprites)
+      const pokeId = POKEMON_SPRITE_IDS[poke.id] || 0;
+      const spriteUrl = (poke.sprites && (poke.shiny ? poke.sprites.shiny : poke.sprites.front)) 
+                        || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke.shiny ? 'shiny/' : ''}${pokeId}.png`;
+      
       return `<div style="background:rgba(255,255,255,0.03); border:1px solid #333; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; align-items:center; gap:12px;">
-        <img src="${poke.shiny ? poke.sprites.shiny : poke.sprites.front}" style="width:40px; height:40px; image-rendering:pixelated;">
+        <img src="${spriteUrl}" style="width:40px; height:40px; image-rendering:pixelated;">
         <div style="flex:1;">
           <div style="font-weight:700; font-size:12px;">${poke.name} <span style="color:var(--gray); font-size:10px;">Lv.${poke.level}</span></div>
           <div style="font-size:10px; color:var(--yellow);">${map ? map.icon + ' ' + map.name : def.map_id}</div>
