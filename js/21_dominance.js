@@ -293,6 +293,8 @@ async function calculateUserWeeklyContribution() {
 }
 
 function getDefenseSlots(totalPoints) {
+  // En modo test damos slots infinitos para que el usuario pueda probar el despliegue
+  if (window.forceWeekend || localStorage.getItem('force_weekend') === 'true') return 99;
   // 1 Slot cada 4000 puntos
   return Math.floor(totalPoints / 4000);
 }
@@ -757,11 +759,15 @@ function renderKantoWarGrid(ptsData, domData) {
 
             <!-- Botón de Proteger (Fin de semana para ganadores) -->
             ${!dispute && winner === state.faction ? `
-              <button onclick="openSelectDefensePokeModal('${map.id}')" 
-                      class="war-protect-btn" 
-                      style="width: 100%; padding: 10px; background: linear-gradient(135deg, var(--green), #15803d); border: none; border-radius: 8px; color: white; font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer; box-shadow: 0 4px 0 #14532d;">
-                🛡️ PROTEGER RUTA
-              </button>
+              <div style="margin-top: auto; padding-top: 10px;">
+                <button onclick="openSelectDefensePokeModal('${map.id}')" 
+                        class="war-protect-btn" 
+                        style="width: 100%; height: 36px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); border-radius: 12px; color: #4ade80; font-family: 'Press Start 2P', monospace; font-size: 7px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; text-shadow: 0 0 10px rgba(34, 197, 94, 0.3);"
+                        onmouseover="this.style.background='rgba(34, 197, 94, 0.25)'; this.style.borderColor='#4ade80'; this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.background='rgba(34, 197, 94, 0.15)'; this.style.borderColor='rgba(34, 197, 94, 0.4)'; this.style.transform='translateY(0)'">
+                  <span style="font-size: 12px;">🛡️</span> PROTEGER
+                </button>
+              </div>
             ` : ''}
           </div>
         </div>
