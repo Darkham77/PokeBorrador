@@ -2683,6 +2683,12 @@ function awardBattleExperience(isCapture = false) {
 
   let expMultiplier = isCapture ? 4 : ((b.isTrainer || b.isGym) ? 8 : 4);
   
+  // Bonus BOSS: x3 EXP extra por derrotar a un defensor de jugador
+  if (b.isDefenderBattle) {
+    expMultiplier *= 3;
+    addLog('<span style="color:var(--red);font-weight:bold;">¡RECOMPENSA DE BOSS: x3 EXP!</span>', 'log-info');
+  }
+  
   // Multiplicador de Dominancia (Guerra)
   if (typeof getDominanceExpMultiplier === 'function' && b.locationId) {
     const domMult = getDominanceExpMultiplier(b.locationId);
@@ -2854,10 +2860,21 @@ function endBattle(won) {
     setLog(`¡${b.enemy.name} fue derrotado!`, 'log-player');
     awardBattleExperience();
 
+    // Lógica de LOOT de Fósiles (5% chance en batallas de defensor)
+    if (b.isDefenderBattle) {
+      if (Math.random() < 0.05) {
+        const fossils = ['Fósil Hélix', 'Fósil Domo', 'Ámbar Viejo'];
+        const found = fossils[Math.floor(Math.random() * fossils.length)];
+        state.inventory[found] = (state.inventory[found] || 0) + 1;
+        addLog(`<span style="color:gold;font-weight:bold;">¡Increíble! Encontraste un ${found} entre los restos de la batalla.</span>`, 'log-catch');
+        notify(`¡Encontraste ${found}!`, '🐚');
+      }
+    }
+
     // DOMINANCIA: Sumar Puntos de Territorio
     if (typeof addWarPoints === 'function') {
       const wMapId = b.locationId || window.currentEncounterMapId;
-      if (wMapId) {
+      if (wMapId && !b.isDefenderBattle) { // El atacante no gana puntos en zonas ya perdidas/defendidas
         if (b.enemy.isGuardian && typeof recordGuardianDefeat === 'function') {
           recordGuardianDefeat(wMapId, b.enemy.guardianPts || 150);
         } else {
@@ -3100,6 +3117,12 @@ function endBattle(won) {
     });
   } else {
     setLog(`¡${b.player.name} fue derrotado!`, 'log-enemy');
+    
+    // Si el jugador pierde contra un DEFENSOR, este gana una victoria para sus monedas
+    if (b.isDefenderBattle && b.defenderRecordId) {
+      if (typeof incrementDefenderWins === 'function') incrementDefenderWins(b.defenderRecordId);
+    }
+
     // Check if any other Pokémon alive
     const aliveTeam = state.team.filter(p => p.name !== b.player.name && p.hp > 0);
     if (aliveTeam.length > 0) {
@@ -3288,5 +3311,36 @@ function hideMoveTooltip() {
   const tooltip = document.getElementById('move-tooltip');
   if (tooltip) tooltip.style.display = 'none';
   if (_tooltipTimer) clearTimeout(_tooltipTimer);
+}
+
+function startDefenderBattle(defenderData) {
+  // Construir el Pokémon enemigo desde la data guardada
+  const enemy = defenderData.pokemon_data;
+  
+  // Asegurar que tenga HP máximo al iniciar (clonación para la batalla)
+  const enemyFinal = JSON.parse(JSON.stringify(enemy));
+  enemyFinal.hp = enemyFinal.maxHp;
+  
+  // Iniciar batalla tipo Entrenador
+  startBattle(
+    enemyFinal, 
+    true, // isTrainer
+    false, // isGym
+    defenderData.map_id,
+    [enemyFinal], // enemyTeam
+    defenderData.user_name,
+    defenderData.user_sprite
+  );
+  
+  // Marca especial en el bando enemigo (opcional para lógica futura)
+  state.battle.isDefenderBattle = true;
+  state.battle.defenderUserId = defenderData.user_id;
+  state.battle.defenderRecordId = defenderData.id;
+
+  // Actualizar UI para mostrar que es un DEFENSOR
+  const label = document.createElement('div');
+  label.style.cssText = 'position:absolute; top:-20px; left:0; width:100%; text-align:center; color:var(--yellow); font-family:"Press Start 2P"; font-size:8px; text-shadow:0 0 5px #000;';
+  label.textContent = '🛡️ DEFENSOR';
+  document.getElementById('enemy-name').appendChild(label);
 }
 

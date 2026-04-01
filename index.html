@@ -948,7 +948,14 @@
       <div style="width: 100%; margin-bottom: 20px; border-radius: 24px 24px 0 0; overflow: hidden; border-bottom: 2px solid var(--war-border);">
         <img src="assets/war_banner.png" alt="Guerra por el Territorio" style="width: 100%; height: auto; display: block; object-fit: cover;">
       </div>
-      <div class="section-title">⚔️ Panel de Guerra</div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="section-title">⚔️ Panel de Guerra</div>
+        <button id="sim-weekend-btn" onclick="toggleWeekendSimulation()" 
+                style="background:rgba(255,255,255,0.05); border:1px solid #444; color:#888; border-radius:10px; padding:6px 12px; font-size:7px; font-family:'Press Start 2P',monospace; cursor:pointer;"
+                onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+          MODO TEST
+        </button>
+      </div>
       
       <!-- Estado de la semana -->
       <div id="war-phase-banner"></div>
@@ -964,6 +971,11 @@
           <span style="font-size:20px; margin-bottom:4px;">🏆</span>
           <span class="war-label">Aporte Semanal</span>
           <div id="war-my-pts" class="war-value">0 PT</div>
+        </div>
+        <div class="war-card-stat">
+          <span style="font-size:20px; margin-bottom:4px;">⚔️</span>
+          <span class="war-label">Slots Defensa</span>
+          <div id="war-defense-slots" class="war-value">0</div>
         </div>
         <div class="war-card-stat">
           <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
@@ -1001,6 +1013,16 @@
         <!-- Generado dinámicamente -->
       </div>
       
+      <!-- Mis Defensores (Solo se muestra si hay alguno o es fin de semana) -->
+      <div id="war-my-defenders-section" style="margin-top:25px; display:none;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:15px; letter-spacing:1px;">
+          🛡️ MIS DEFENSORES :: RECOMPENSAS
+        </div>
+        <div id="war-my-defenders-list">
+          <!-- Generado dinámicamente -->
+        </div>
+      </div>
+
       <!-- Reglas de la Guerra -->
       <div class="war-rules-card">
         <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:15px; display:flex; align-items:center; gap:8px;">

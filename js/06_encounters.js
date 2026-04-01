@@ -483,6 +483,12 @@ async function renderMaps() {
         return;
       }
 
+      // DEFENSA DE FIN DE SEMANA: Chance de encontrar un defensor del bando contrario
+      if (typeof tryTriggerDefenderBattle === 'function') {
+        const triggered = await tryTriggerDefenderBattle(locId);
+        if (triggered) return; // Si saltó la batalla de defensor, detenemos el resto
+      }
+
       // DOMINANCIA: Verificar Guardián
       if (typeof tryTriggerGuardian === 'function') {
         const guardian = await tryTriggerGuardian(locId);

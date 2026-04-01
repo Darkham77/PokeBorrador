@@ -16,6 +16,7 @@ function getPreviousWeekId() {
 }
 
 function isDisputePhase() {
+  if (window.forceWeekend || localStorage.getItem('force_weekend') === 'true') return false; // Simulación de fin de semana
   const day = new Date().getDay();
   return day >= 1 && day <= 5; // Lunes a Viernes
 }
@@ -153,6 +154,7 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
   if (!checkDailyCapNotReached(mapId, pts)) return;
 
   try {
+    // 1. Registro Global/Bando
     await window.sb.rpc('add_war_points', {
       p_week_id: weekId,
       p_map_id: mapId,
@@ -160,6 +162,30 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
       p_points: pts
     });
     
+    // 2. Registro Individual (para cálculo de Defensores de Fin de Semana)
+    const { data: currentEntry } = await window.sb
+      .from('war_user_points')
+      .select('points')
+      .eq('user_id', window.currentUser.id)
+      .eq('week_id', weekId)
+      .eq('map_id', mapId)
+      .single();
+
+    if (currentEntry) {
+      await window.sb.from('war_user_points')
+        .update({ points: currentEntry.points + pts })
+        .eq('user_id', window.currentUser.id)
+        .eq('week_id', weekId)
+        .eq('map_id', mapId);
+    } else {
+      await window.sb.from('war_user_points').insert({
+        user_id: window.currentUser.id,
+        week_id: weekId,
+        map_id: mapId,
+        points: pts
+      });
+    }
+
     // Nueva Lógica de Monedas Acumulativas
     if (!state.warPointsAccumulator) state.warPointsAccumulator = 0;
     state.warPointsAccumulator += pts;
@@ -250,13 +276,25 @@ async function resolveWeekIfNeeded() {
   await loadActiveBonuses();
 }
 
-function calculateTotalPtThisWeek() {
-  const cap = state.warDailyCap || {};
+async function calculateUserWeeklyContribution() {
+  const userId = window.currentUser?.id;
+  if (!userId) return 0;
+  const weekId = getCurrentWeekId();
+  
+  const { data } = await window.sb
+    .from('war_user_points')
+    .select('points')
+    .eq('user_id', userId)
+    .eq('week_id', weekId);
+    
   let total = 0;
-  Object.keys(cap).forEach(date => {
-     Object.values(cap[date]).forEach(pts => total += pts);
-  });
+  data?.forEach(r => total += (r.points || 0));
   return total;
+}
+
+function getDefenseSlots(totalPoints) {
+  // 1 Slot cada 4000 puntos
+  return Math.floor(totalPoints / 4000);
 }
 
 async function checkFactionWeeklyWin(weekId) {
@@ -333,8 +371,18 @@ function hashString(str) {
 }
 
 function isConflictZone(mapId) {
-  // Todos los mapas están permanentemente en disputa según el nuevo sistema
-  return true;
+  const dateStr = new Date().toISOString().split('T')[0];
+  const allMapIds = FIRE_RED_MAPS.map(m => m.id);
+  const zones = [];
+  let tempSeed = hashString(dateStr + "zones");
+  // Reducido de 12 a 5 zonas por día
+  while (zones.length < 5) {
+    const idx = tempSeed % allMapIds.length;
+    const mId = allMapIds[idx];
+    if (!zones.includes(mId)) zones.push(mId);
+    tempSeed = hashString(tempSeed.toString());
+  }
+  return zones.includes(mapId);
 }
 
 function getGuardianForMap(mapId) {
@@ -581,26 +629,32 @@ async function renderWarPanel() {
       const coinDisp = document.getElementById('war-coins-count');
       if (coinDisp) coinDisp.textContent = (state.warCoins || 0) - (state.warCoinsSpent || 0);
 
-      // Mi contribución
-      const today = new Date();
-      const monday = new Date(today);
-      monday.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
-      const mondayStr = monday.toISOString().split('T')[0];
+      // Mi contribución individual (Aporte Semanal real de todos los mapas)
+      const myContr = await calculateUserWeeklyContribution();
+      const myContrDisp = document.getElementById('war-my-pts');
+      if (myContrDisp) myContrDisp.textContent = myContr.toLocaleString() + " PT";
 
-      const { data: myMatches } = await window.sb
-        .from('guardian_captures')
-        .select('pts_awarded')
-        .eq('user_id', userId)
-        .gte('capture_date', mondayStr);
-      
-      const totalContributed = myMatches?.reduce((sum, m) => sum + m.pts_awarded, 0) || 0;
-      const myPtsDisp = document.getElementById('war-my-pts');
-      if (myPtsDisp) myPtsDisp.textContent = totalContributed + " PT";
+      // Slots de defensa (1 cada 4000 PT)
+      const slots = getDefenseSlots(myContr);
+      const slotsDisp = document.getElementById('war-defense-slots');
+      if (slotsDisp) slotsDisp.textContent = slots;
+
+      // 5. Mostrar mis defensores si no es fase de disputa
+      const defSection = document.getElementById('war-my-defenders-section');
+      if (defSection) {
+        if (!dispute) {
+          defSection.style.display = 'block';
+          renderMyDefenders();
+        } else {
+          defSection.style.display = 'none';
+        }
+      }
     }
   } catch (err) {
     console.warn("Fallo al cargar stats personales de guerra:", err);
   }
 
+  // 6. Grid de Kanto
   renderKantoWarGrid(ptsData || [], domData || []);
 }
 
@@ -653,7 +707,7 @@ function renderKantoWarGrid(ptsData, domData) {
             </div>
 
             <!-- BARRA CENTRAL GRANDE -->
-            <div class="war-central-progress-box">
+            <div class="war-central-progress-box" style="margin-top: 15px;">
               <div class="war-central-labels">
                 <span style="color:var(--union-color)">UNIÓN</span>
                 <span style="color:var(--poder-color)">PODER</span>
@@ -667,10 +721,19 @@ function renderKantoWarGrid(ptsData, domData) {
                 <span>${pP} PT</span>
               </div>
             </div>
-            
-            <div style="font-size:6px; color:rgba(255,255,255,0.5); font-family:'Press Start 2P'; text-align:center;">
+
+            <div style="font-size:6px; color:rgba(255,255,255,0.5); font-family:'Press Start 2P'; text-align:center; margin-bottom: 8px;">
                ${total > 0 ? (pU > pP ? 'Lidera Unión' : (pP > pU ? 'Lidera Poder' : 'Empate Técnico')) : 'Sin actividad'}
             </div>
+
+            <!-- Botón de Proteger (Fin de semana para ganadores) -->
+            ${!dispute && winner === state.faction ? `
+              <button onclick="openSelectDefensePokeModal('${map.id}')" 
+                      class="war-protect-btn" 
+                      style="width: 100%; padding: 10px; background: linear-gradient(135deg, var(--green), #15803d); border: none; border-radius: 8px; color: white; font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer; box-shadow: 0 4px 0 #14532d;">
+                🛡️ PROTEGER RUTA
+              </button>
+            ` : ''}
           </div>
         </div>
       `;
@@ -680,6 +743,148 @@ function renderKantoWarGrid(ptsData, domData) {
   });
   
   container.innerHTML = html;
+}
+
+// ── SISTEMA DE DEFENSA DE FIN DE SEMANA ──
+
+async function openSelectDefensePokeModal(mapId) {
+  const myContr = await calculateUserWeeklyContribution();
+  const maxSlots = getDefenseSlots(myContr);
+  
+  // Contar cuántos mapas ya estamos defendiendo esta semana
+  const { data: activeDefenses } = await window.sb
+    .from('war_defenders')
+    .select('id')
+    .eq('user_id', window.currentUser.id)
+    .eq('week_id', getCurrentWeekId());
+  
+  const currentUsed = activeDefenses?.length || 0;
+  
+  if (currentUsed >= maxSlots) {
+    notify(`Límite alcanzado (${maxSlots}/${maxSlots} slots). Necesitás más puntos para proteger más rutas.`, '⚠️');
+    return;
+  }
+
+  const mapName = FIRE_RED_MAPS.find(m => m.id === mapId)?.name || mapId;
+  
+  const modalHtml = `
+    <div id="defense-selector-modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; display:flex; flex-direction:column; align-items:center; padding:20px; overflow-y:auto;">
+      <div style="width:100%; max-width:600px; background:#1e293b; border-radius:20px; border:2px solid var(--green); padding:24px; box-shadow:0 0 40px rgba(34,197,94,0.3);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="font-family:'Press Start 2P', monospace; font-size:12px; color:var(--green); margin:0;">🛡️ PROTEGER ${mapName.toUpperCase()}</h2>
+          <button onclick="document.getElementById('defense-selector-modal').remove()" style="background:none; border:none; color:var(--gray); cursor:pointer; font-size:18px;">✕</button>
+        </div>
+        
+        <p style="font-size:11px; color:var(--gray); margin-bottom:20px;">Elegí un Pokémon para defender este mapa. Los rivales que lo derroten enfrentarán a tu campeón. (Solo podés enviar Pokémon que no estén en misiones).</p>
+        
+        <div id="defense-poke-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; max-height:400px; overflow-y:auto; padding:10px; background:rgba(0,0,0,0.2); border-radius:12px; margin-bottom:20px;">
+          <!-- Se llena dinámicamente -->
+        </div>
+        
+        <div style="font-size:9px; color:var(--gray); text-align:center;">Slots disponibles: <span style="color:var(--green)">${maxSlots - currentUsed}</span> de ${maxSlots}</div>
+      </div>
+    </div>
+  `;
+  
+  const div = document.createElement('div');
+  div.innerHTML = modalHtml;
+  document.body.appendChild(div.firstElementChild);
+  
+  renderDefensePokeList(mapId);
+}
+
+function renderDefensePokeList(mapId) {
+  const container = document.getElementById('defense-poke-list');
+  if (!container) return;
+  
+  // Obtener todos los Pokémon (equipo + caja)
+  const allPoke = [...(state.team || []), ...(state.box || [])];
+  
+  let html = '';
+  allPoke.forEach(p => {
+    if (p.onMission) return;
+    
+    html += `
+      <div class="def-poke-card" onclick="confirmDefense('${mapId}', '${p.uid}')" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px; text-align:center; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(34,197,94,0.1)';this.style.borderColor='var(--green)'" onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='rgba(255,255,255,0.1)'">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${POKEMON_SPRITE_IDS[p.id]}.png" style="width:60px; height:60px; image-rendering:pixelated;">
+        <div style="font-size:10px; font-weight:bold; color:white; margin:5px 0;">${p.name}</div>
+        <div style="font-size:9px; color:var(--gray);">Nv.${p.level}</div>
+      </div>
+    `;
+  });
+  
+  if (!html) html = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--gray); font-size:10px;">No tenés Pokémon disponibles.</div>';
+  
+  container.innerHTML = html;
+}
+
+async function confirmDefense(mapId, pokemonUid) {
+  const p = [...(state.team || []), ...(state.box || [])].find(x => x.uid === pokemonUid);
+  if (!p) return;
+  
+  const mapName = FIRE_RED_MAPS.find(m => m.id === mapId)?.name || mapId;
+  
+  if (!confirm(`¿Estás seguro de enviar a ${p.name} a proteger ${mapName}? Quedará asignado allí hasta el lunes.`)) return;
+  
+  try {
+    const { error } = await window.sb.from('war_defenders').insert({
+      map_id: mapId,
+      week_id: getCurrentWeekId(),
+      user_id: window.currentUser.id,
+      user_name: window.currentUser.username || 'Entrenador Anónimo',
+      user_sprite: state.playerClass ? PLAYER_CLASSES[state.playerClass].sprite : 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
+      faction: state.faction,
+      pokemon_data: p
+    });
+    
+    if (error) throw error;
+    
+    notify(`¡${p.name} ahora está protegiendo ${mapName}! 🛡️`, '✅');
+    document.getElementById('defense-selector-modal')?.remove();
+    renderWarPanel();
+  } catch (err) {
+    console.error("Error al desplegar defensa:", err);
+    notify('Error al desplegar: ' + err.message, '❌');
+  }
+}
+
+async function tryTriggerDefenderBattle(mapId) {
+  // Solo los fines de semana
+  if (isDisputePhase()) return false;
+  
+  // Chance de 20% de encontrar un defensor al moverte a un mapa dominado
+  if (Math.random() > 0.20) return false;
+  
+  const domInfo = await getMapDominanceStatus(mapId);
+  const mapWinner = domInfo?.winner;
+  
+  // Solo si es una ruta dominada por el bando contrario
+  if (!mapWinner || mapWinner === state.faction) return false;
+  
+  try {
+    const { data: defenders } = await window.sb
+      .from('war_defenders')
+      .select('*')
+      .eq('map_id', mapId)
+      .eq('week_id', getCurrentWeekId())
+      .limit(5); // Tomar algunos candidatos aleatorios
+      
+    if (!defenders || defenders.length === 0) return false;
+    
+    // Elegir uno al azar
+    const selected = defenders[Math.floor(Math.random() * defenders.length)];
+    
+    notify(`⚔️ ¡AVISTADO! Un defensor del bando contrario protege esta ruta.`, '🛡️');
+    
+    if (typeof startDefenderBattle === 'function') {
+      startDefenderBattle(selected);
+      return true;
+    }
+  } catch (err) {
+    console.warn("Fallo al buscar defensor de guerra:", err);
+  }
+  
+  return false;
 }
 
 const WAR_SHOP_ITEMS = [
@@ -753,3 +958,164 @@ async function buyWarItem(itemId) {
   renderWarShop();
   notify(`¡Compraste ${item.name}!`, '🛒');
 }
+
+/**
+ * Incrementa el contador de victorias de un defensor en la DB.
+ * Se llama cuando un atacante pierde contra un BOSS.
+ */
+async function incrementDefenderWins(recordId) {
+  try {
+    // Primero obtenemos el valor actual para no depender de RPC complicados
+    const { data } = await window.sb.from('war_defenders').select('wins_count').eq('id', recordId).single();
+    if (data) {
+      await window.sb.from('war_defenders')
+        .update({ wins_count: (data.wins_count || 0) + 1 })
+        .eq('id', recordId);
+    }
+  } catch (err) {
+    console.warn("No se pudo incrementar victorias del defensor:", err);
+  }
+}
+
+/**
+ * Renderiza la lista de Pokémon que el usuario tiene defendiendo rutas.
+ * Permite ver el botín acumulado y retirar al Pokémon.
+ */
+async function renderMyDefenders() {
+  const container = document.getElementById('war-my-defenders-list');
+  if (!container) return;
+  
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray);font-style:italic;">Cargando tus defensores...</div>';
+  
+  try {
+    const { data: defenders, error } = await window.sb
+      .from('war_defenders')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .eq('week_id', getCurrentWeekId());
+      
+    if (error) throw error;
+    
+    if (!defenders || defenders.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gray);font-size:11px;">No tenés Pokémon defendiendo rutas actualmente.</div>';
+      return;
+    }
+    
+    container.innerHTML = defenders.map(def => {
+      const startTime = new Date(def.created_at);
+      const now = new Date();
+      const hours = Math.floor((now - startTime) / (1000 * 60 * 60));
+      const coins = Math.min(150, (def.wins_count || 0) * 5);
+      const passiveXp = hours * 100; // Ejemplo: 100 XP por hora
+      
+      const map = FIRE_RED_MAPS.find(m => m.id === def.map_id);
+      const poke = def.pokemon_data;
+      
+      return `<div style="background:rgba(255,255,255,0.03); border:1px solid #333; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; align-items:center; gap:12px;">
+        <img src="${poke.shiny ? poke.sprites.shiny : poke.sprites.front}" style="width:40px; height:40px; image-rendering:pixelated;">
+        <div style="flex:1;">
+          <div style="font-weight:700; font-size:12px;">${poke.name} <span style="color:var(--gray); font-size:10px;">Lv.${poke.level}</span></div>
+          <div style="font-size:10px; color:var(--yellow);">${map ? map.icon + ' ' + map.name : def.map_id}</div>
+        </div>
+        <div style="text-align:right; min-width:100px;">
+          <div style="font-size:10px; color:#6BCB77;">💰 +${coins} Monedas</div>
+          <div style="font-size:10px; color:#3b82f6;">⭐ +${passiveXp} EXP</div>
+          <button onclick="claimDefenseRewards('${def.id}')" style="margin-top:4px; padding:4px 8px; font-size:8px; border-radius:4px; cursor:pointer; background:var(--red); color:white; border:none; font-family:'Press Start 2P';">RETIRAR</button>
+        </div>
+      </div>`;
+    }).join('');
+    
+  } catch (err) {
+    container.innerHTML = `<div style="color:var(--red); font-size:10px;">Error al cargar defensores: ${err.message}</div>`;
+  }
+}
+
+/**
+ * Reclama las recompensas de un defensor y lo devuelve al equipo/caja.
+ */
+async function claimDefenseRewards(recordId) {
+  if (!confirm("¿Seguro que querés retirar a este Pokémon y reclamar sus recompensas?")) return;
+  
+  try {
+    const { data: def, error: fetchErr } = await window.sb
+      .from('war_defenders')
+      .select('*')
+      .eq('id', recordId)
+      .single();
+      
+    if (fetchErr || !def) throw new Error("No se encontró el registro de defensa.");
+    
+    // Calcular recompensas
+    const startTime = new Date(def.created_at);
+    const hours = Math.floor((new Date() - startTime) / (1000 * 60 * 60));
+    const coins = Math.min(150, (def.wins_count || 0) * 5);
+    const xpToGive = hours * 100;
+    
+    // 1. Dar monedas
+    state.warCoins = (state.warCoins || 0) + coins;
+    
+    // 2. Dar XP al Pokémon (buscamos el original en equipo/caja)
+    let found = false;
+    const allPokes = [...(state.team || []), ...(state.box || [])];
+    const poke = allPokes.find(p => p.uid === def.pokemon_uid);
+    
+    if (poke) {
+      if (poke.level < 100) {
+        poke.exp = (poke.exp || 0) + xpToGive;
+        while (poke.exp >= poke.expNeeded && poke.level < 100) {
+          poke.exp -= poke.expNeeded;
+          levelUpPokemon(poke);
+        }
+      }
+      poke.onDefense = false;
+      found = true;
+    }
+    
+    // 3. Eliminar de la DB
+    await window.sb.from('war_defenders').delete().eq('id', recordId);
+    
+    notify(`¡Defensor retirado! Ganaste 🪙${coins} y ${xpToGive} EXP.`, '🛡️');
+    
+    if (typeof saveGame === 'function') saveGame(false);
+    renderMyDefenders();
+    renderWarPanel();
+    
+  } catch (err) {
+    console.error("Error al reclamar:", err);
+    notify("Error al reclamar recompensas: " + err.message, '❌');
+  }
+}
+
+/**
+ * Función de utilidad para desarrolladores/testers: Altera entre fase de semana y fin de semana.
+ */
+function toggleWeekendSimulation() {
+  const current = localStorage.getItem('force_weekend') === 'true';
+  const newValue = !current;
+  localStorage.setItem('force_weekend', newValue);
+  window.forceWeekend = newValue;
+  
+  const btn = document.getElementById('sim-weekend-btn');
+  if (btn) {
+    btn.textContent = newValue ? 'SÁBADO (SIM)' : 'MODO TEST';
+    btn.style.color = newValue ? 'var(--yellow)' : '#888';
+    btn.style.borderColor = newValue ? 'var(--yellow)' : '#444';
+  }
+  
+  notify(newValue ? 'Simulando fin de semana...' : 'Restablecida fase real...', '⏱️');
+  
+  if (typeof renderWarPanel === 'function') {
+    renderWarPanel();
+  }
+}
+
+// Inicializar el botón al cargar
+window.addEventListener('load', () => {
+  const btn = document.getElementById('sim-weekend-btn');
+  const isSim = localStorage.getItem('force_weekend') === 'true';
+  if (btn && isSim) {
+    btn.textContent = 'SÁBADO (SIM)';
+    btn.style.color = 'var(--yellow)';
+    btn.style.borderColor = 'var(--yellow)';
+  }
+});

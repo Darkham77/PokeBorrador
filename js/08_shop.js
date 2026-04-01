@@ -299,6 +299,25 @@
         desc: 'Captura Pokémon salvajes. Tasa de captura estándar.',
         effect: (qty) => { state.inventory['Pokéball'] = (state.inventory['Pokéball'] || 0) + qty; state.balls += qty; }
       },
+      // ── FÓSILES (LOOT ESPECIAL) ──────────────────────────────────────────────
+      {
+        id: 'helix_fossil', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/helix-fossil.png',
+        name: 'Fósil Hélix', icon: '🐚', price: 50000, unlockLv: 30, tier: 'rare',
+        desc: 'Un fósil de un Pokémon marino antiguo. Parece un caracol.',
+        effect: (qty) => { state.inventory['Fósil Hélix'] = (state.inventory['Fósil Hélix'] || 0) + qty; }
+      },
+      {
+        id: 'dome_fossil', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dome-fossil.png',
+        name: 'Fósil Domo', icon: '🛡️', price: 50000, unlockLv: 30, tier: 'rare',
+        desc: 'Un fósil de un Pokémon prehistórico con caparazón rígido.',
+        effect: (qty) => { state.inventory['Fósil Domo'] = (state.inventory['Fósil Domo'] || 0) + qty; }
+      },
+      {
+        id: 'old_amber', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/old-amber.png',
+        name: 'Ámbar Viejo', icon: '💎', price: 75000, unlockLv: 30, tier: 'rare',
+        desc: 'Una pieza de ámbar que contiene material genético de un Pokémon volador antiguo.',
+        effect: (qty) => { state.inventory['Ámbar Viejo'] = (state.inventory['Ámbar Viejo'] || 0) + qty; }
+      },
       {
         id: 'great_ball', cat: 'pokeballs', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png',
         name: 'Súper Ball', icon: '🔵', price: 500, unlockLv: 3, tier: 'rare',
