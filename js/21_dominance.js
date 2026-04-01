@@ -88,9 +88,31 @@ function checkDailyCapNotReached(mapId, pts) {
 
 function addWarCoinsLocal(coins) {
   if (coins <= 0) return;
+  
+  // Lógica de límite diario (Máximo 50 monedas por día)
+  const today = new Date().toDateString();
+  if (!state.warDailyCoins) state.warDailyCoins = {};
+  if (!state.warDailyCoins[today]) state.warDailyCoins = { [today]: 0 };
+  
+  const currentDaily = state.warDailyCoins[today];
+  if (currentDaily >= 50) return; // Ya alcanzó el límite
+  
+  let allowedCoins = coins;
+  if (currentDaily + coins > 50) {
+    allowedCoins = 50 - currentDaily;
+  }
+  
+  if (allowedCoins <= 0) return;
+
   if (typeof state.warCoins !== 'number') state.warCoins = 0;
-  state.warCoins += coins;
+  state.warCoins += allowedCoins;
+  state.warDailyCoins[today] += allowedCoins;
+  
   if (typeof scheduleSave === 'function') scheduleSave();
+  
+  if (state.warDailyCoins[today] >= 50) {
+    notify('Has alcanzado el límite diario de 50 Monedas de Guerra.', '🪙');
+  }
 }
 
 async function addWarPoints(mapId, eventType, success, overridePts = null) {
