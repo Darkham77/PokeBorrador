@@ -3324,7 +3324,7 @@ function startDefenderBattle(defenderData) {
 
   const trainerSprite = defenderData.user_sprite || 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png';
   const trainerName = defenderData.user_name || 'Entrenador Anónimo';
-  const trainerLevel = defenderData.user_level || '??';
+  const trainerLevel = defenderData.user_level || (enemy && enemy.trainer_level) || '??';
   
   // Obtener Sprite del Pokémon (Grande para el intro)
   const pokemonSprite = (typeof getSpriteUrl === 'function') 

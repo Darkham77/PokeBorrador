@@ -881,16 +881,19 @@ async function confirmDefense(mapId, pokemonUid) {
   if (!confirm(`¿Estás seguro de enviar a ${p.name} a proteger ${mapName}? Quedará asignado allí hasta el lunes.`)) return;
   
   try {
+    // Adjuntar nivel del entrenador al objeto del Pokémon (evita errores de columna)
+    const pWithLevel = JSON.parse(JSON.stringify(p));
+    pWithLevel.trainer_level = state.playerLevel || 1;
+
     const { error } = await window.sb.from('war_defenders').insert({
       map_id: mapId,
       week_id: getCurrentWeekId(),
       user_id: window.currentUser.id,
       user_name: window.currentUser.username || 'Entrenador Anónimo',
-      user_level: state.playerLevel || 1, // Guardar nivel del entrenador
       user_sprite: state.playerClass ? PLAYER_CLASSES[state.playerClass].sprite : 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
       faction: state.faction,
-      pokemon_uid: p.uid, // Usamos el del objeto por seguridad
-      pokemon_data: p
+      pokemon_uid: pWithLevel.uid,
+      pokemon_data: pWithLevel
     });
     
     if (error) throw error;
