@@ -837,7 +837,12 @@ function renderDefensePokeList(mapId) {
   
   let html = '';
   allPoke.forEach(p => {
-    if (p.onMission) return;
+    if (p.onMission || p.onDefense) return;
+    
+    // Asegurar que tenga un UID antes de mostrarlo en el modal
+    if (!p.uid) {
+      p.uid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + Date.now().toString(36);
+    }
     
     html += `
       <div class="def-poke-card" onclick="confirmDefense('${mapId}', '${p.uid}')" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px; text-align:center; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='rgba(34,197,94,0.1)';this.style.borderColor='var(--green)'" onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='rgba(255,255,255,0.1)'">
@@ -869,6 +874,7 @@ async function confirmDefense(mapId, pokemonUid) {
       user_name: window.currentUser.username || 'Entrenador Anónimo',
       user_sprite: state.playerClass ? PLAYER_CLASSES[state.playerClass].sprite : 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
       faction: state.faction,
+      pokemon_uid: p.uid, // Usamos el del objeto por seguridad
       pokemon_data: p
     });
     
