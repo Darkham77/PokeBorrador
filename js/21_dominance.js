@@ -696,6 +696,12 @@ const WAR_SHOP_ITEMS = [
   { id: 'cosmetic_frame_union', name: 'Marco Unión', desc: 'Decoración de perfil exclusiva.', cost: 100, icon: '⚪', factionRequired: 'union' },
   { id: 'cosmetic_frame_poder', name: 'Marco Poder', desc: 'Decoración de perfil exclusiva.', cost: 100, icon: '⚫', factionRequired: 'poder' },
   { id: 'title_conquistador', name: 'Título: Conquistador de Kanto', desc: 'Visible en tu perfil público.', cost: 500, icon: '🏆' },
+  { id: 'incense_fuego', name: 'Incienso Fuego', desc: 'Atrae solo Pokémon de tipo Fuego durante 30 min.', cost: 150, icon: '🔥' },
+  { id: 'incense_agua', name: 'Incienso Agua', desc: 'Atrae solo Pokémon de tipo Agua durante 30 min.', cost: 150, icon: '💧' },
+  { id: 'incense_planta', name: 'Incienso Planta', desc: 'Atrae solo Pokémon de tipo Planta durante 30 min.', cost: 150, icon: '🌿' },
+  { id: 'incense_normal', name: 'Incienso Normal', desc: 'Atrae solo Pokémon de tipo Normal durante 30 min.', cost: 150, icon: '⚪' },
+  { id: 'incense_fantasma', name: 'Incienso Fantasma', desc: 'Atrae solo Pokémon de tipo Fantasma durante 30 min.', cost: 150, icon: '👻' },
+  { id: 'incense_psiquico', name: 'Incienso Psíquico', desc: 'Atrae solo Pokémon de tipo Psíquico durante 30 min.', cost: 150, icon: '🔮' },
 ];
 
 function showWarShop() {
@@ -749,6 +755,8 @@ async function buyWarItem(itemId) {
     state.profileFrame = item.id;
   } else if (item.id === 'title_conquistador') {
     state.title = 'Conquistador de Kanto';
+  } else if (item.id.startsWith('incense_')) {
+    addToInventory(item.name, 1);
   }
   
   state.warCoinsSpent = (state.warCoinsSpent || 0) + item.cost;

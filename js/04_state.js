@@ -193,6 +193,8 @@
       ceruleanTicketSecs: 0,
       articunoTicketSecs: 0,
       mewtwoTicketSecs: 0,
+      incenseSecs: 0,
+      incenseType: null,
       boxCount: 4, // Número de cajas compradas (mínimo 4)
       chats: {}, // { friendId: { messages: [], username: '', unreadCount: 0 } }
       playerClass: null,     // 'rocket' | 'cazabichos' | 'entrenador' | 'criador'

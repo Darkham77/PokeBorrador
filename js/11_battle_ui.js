@@ -209,6 +209,12 @@
       'Ticket Articuno': _ => { state.articunoTicketSecs = (state.articunoTicketSecs || 0) + 30 * 60; updateHud(); updateBuffPanel(); renderMaps(); return `activó el Ticket Articuno (30 min)`; },
       'Ticket Mewtwo': _ => { state.mewtwoTicketSecs = (state.mewtwoTicketSecs || 0) + 30 * 60; updateHud(); updateBuffPanel(); renderMaps(); return `activó el Ticket Mewtwo (30 min)`; },
       'Escáner de IVs': _ => { state.ivScannerSecs = (state.ivScannerSecs || 0) + 60 * 60; if (typeof updateHud === 'function') updateHud(); if (typeof updateBuffPanel === 'function') updateBuffPanel(); return `activó el Escáner de IVs (60 min)`; },
+      'Incienso Fuego': _ => { state.incenseType = 'fire'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Fuego (30 min)`; },
+      'Incienso Agua': _ => { state.incenseType = 'water'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Agua (30 min)`; },
+      'Incienso Planta': _ => { state.incenseType = 'grass'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Planta (30 min)`; },
+      'Incienso Normal': _ => { state.incenseType = 'normal'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Normal (30 min)`; },
+      'Incienso Fantasma': _ => { state.incenseType = 'ghost'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Fantasma (30 min)`; },
+      'Incienso Psíquico': _ => { state.incenseType = 'psychic'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Psíquico (30 min)`; },
     };
 
     function showBattleBag() {
@@ -229,7 +235,7 @@
             'Repelente', 'Superrepelente', 'Máximo Repelente',
             'Ticket Shiny', 'Moneda Amuleto', 'Huevo Suerte Pequeño',
             'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo',
-            'Escáner de IVs'
+            'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico'
           ];
           if (nonCombat.includes(name)) return false;
 
@@ -242,7 +248,7 @@
         html += `<div style="color:var(--gray);font-size:12px;">No tenés objetos utilizables.</div>`;
       } else {
         html += usable.map(([name, qty]) => {
-          const isGlobal = HEALING_ITEMS[name]?.length === 0 || ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs'].includes(name);
+          const isGlobal = HEALING_ITEMS[name]?.length === 0 || ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico'].includes(name);
           return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);
             border-radius:10px;padding:10px 14px;margin-bottom:8px;">
             <div>
@@ -302,7 +308,7 @@
       const fn = HEALING_ITEMS[itemName];
       if (!fn || !state.inventory[itemName]) return;
 
-      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs'].includes(itemName);
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico'].includes(itemName);
       
       let result;
       let targetName = 'Equipo';
@@ -494,7 +500,7 @@
       const fn = HEALING_ITEMS[itemName];
       if (!fn || !state.inventory[itemName]) return;
 
-      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs'].includes(itemName);
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico'].includes(itemName);
 
       if (isGlobal) {
         const result = fn();
@@ -520,7 +526,7 @@
     }
 
     function openBagItemMenu(itemName) {
-      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo', 'Escáner de IVs'].includes(itemName);
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico'].includes(itemName);
       
       if (isGlobal) {
         useItemOutsideBattle(itemName, 'team', 0);

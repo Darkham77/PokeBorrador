@@ -778,6 +778,7 @@ function initBuffTick() {
     if (state.articunoTicketSecs > 0) { state.articunoTicketSecs--; changed = true; }
     if (state.mewtwoTicketSecs > 0) { state.mewtwoTicketSecs--; changed = true; }
     if (state.ivScannerSecs > 0) { state.ivScannerSecs--; changed = true; }
+    if (state.incenseSecs > 0) { state.incenseSecs--; changed = true; }
 
     if (changed) {
       updateBuffPanel();
@@ -846,7 +847,8 @@ function updateBuffPanel() {
     { id: 'cerulean', secs: state.ceruleanTicketSecs },
     { id: 'articuno', secs: state.articunoTicketSecs },
     { id: 'mewtwo', secs: state.mewtwoTicketSecs },
-    { id: 'iv-scanner', secs: state.ivScannerSecs }
+    { id: 'iv-scanner', secs: state.ivScannerSecs },
+    { id: 'incense', secs: state.incenseSecs }
   ];
 
   buffs.forEach(b => {
