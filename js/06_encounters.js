@@ -574,8 +574,21 @@ async function renderMaps() {
 	      }
 	
       const cycle = getDayCycle();
-      const wildPool = loc.wild[cycle] || loc.wild.day;
+      let wildPool = loc.wild[cycle] || loc.wild.day;
       let wildRates = loc.rates[cycle] || loc.rates.day;
+
+      // Lógica de Incienso
+      if (state.incenseSecs > 0 && state.incenseType) {
+        const filteredIndices = wildPool.map((id, idx) => {
+          const pData = POKEMON_DB[id];
+          return (pData && pData.type === state.incenseType) ? idx : -1;
+        }).filter(idx => idx !== -1);
+
+        if (filteredIndices.length > 0) {
+          wildPool = filteredIndices.map(idx => wildPool[idx]);
+          wildRates = filteredIndices.map(idx => wildRates[idx]);
+        }
+      }
       if (typeof window.getEventSpeciesBoost === 'function') {
         wildRates = wildRates.map((r, i) => r * window.getEventSpeciesBoost(wildPool[i]));
       }
