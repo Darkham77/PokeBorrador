@@ -3338,7 +3338,7 @@ function startDefenderBattle(defenderData) {
   
   introOv.innerHTML = `
     <div style="background:linear-gradient(135deg, #1e1b4b, #000); border-radius:28px; padding:32px; max-width:450px; width:100%;
-      border:3px solid var(--yellow); text-align:center; position:relative; box-shadow: 0 0 60px rgba(234, 179, 8, 0.4); overflow:hidden;">
+      border:3px solid var(--yellow); text-align:center; position:relative; box-shadow: 0 0 60px rgba(234, 179, 8, 0.4);">
       
       <!-- Efecto de brillo de fondo -->
       <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:300px; height:300px; background:radial-gradient(circle, rgba(234,179,8,0.15) 0%, transparent 70%); z-index:1;"></div>

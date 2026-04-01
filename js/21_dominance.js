@@ -889,7 +889,7 @@ async function confirmDefense(mapId, pokemonUid) {
       map_id: mapId,
       week_id: getCurrentWeekId(),
       user_id: window.currentUser.id,
-      user_name: window.currentUser.username || 'Entrenador Anónimo',
+      user_name: window.currentUser.user_metadata?.full_name || state.playerName || 'Entrenador Anónimo',
       user_sprite: state.playerClass ? PLAYER_CLASSES[state.playerClass].sprite : 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
       faction: state.faction,
       pokemon_uid: pWithLevel.uid,
