@@ -333,17 +333,8 @@ function hashString(str) {
 }
 
 function isConflictZone(mapId) {
-  const dateStr = new Date().toISOString().split('T')[0];
-  const allMapIds = FIRE_RED_MAPS.map(m => m.id);
-  const zones = [];
-  let tempSeed = hashString(dateStr + "zones");
-  while (zones.length < 12) {
-    const idx = tempSeed % allMapIds.length;
-    const mId = allMapIds[idx];
-    if (!zones.includes(mId)) zones.push(mId);
-    tempSeed = hashString(tempSeed.toString());
-  }
-  return zones.includes(mapId);
+  // Todos los mapas están permanentemente en disputa según el nuevo sistema
+  return true;
 }
 
 function getGuardianForMap(mapId) {

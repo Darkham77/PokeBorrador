@@ -342,7 +342,6 @@ async function renderMaps() {
 
             return `
               ${guardianHtml}
-              <span class="dom-badge dispute" title="Zonas de guerra activas hoy" style="position:absolute; bottom:8px; left:8px; z-index:2;">⚔️ En Disputa</span>
             `;
           }
         } else {
