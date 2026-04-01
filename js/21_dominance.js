@@ -572,7 +572,7 @@ async function initDominanceSystem() {
 
 function renderFactionModal() {
   if (state.faction) return; 
-  if ((state.playerLevel || 1) < 10) return; // Restricción de nivel 10
+  if ((state.trainerLevel || 1) < 10) return; // Restricción de nivel 10
   const modal = document.getElementById('faction-choice-modal');
   if (modal) modal.style.display = 'flex';
 }
@@ -883,13 +883,13 @@ async function confirmDefense(mapId, pokemonUid) {
   try {
     // Adjuntar nivel del entrenador al objeto del Pokémon (evita errores de columna)
     const pWithLevel = JSON.parse(JSON.stringify(p));
-    pWithLevel.trainer_level = state.playerLevel || 1;
+    pWithLevel.trainer_level = state.trainerLevel || 1;
 
     const { error } = await window.sb.from('war_defenders').insert({
       map_id: mapId,
       week_id: getCurrentWeekId(),
       user_id: window.currentUser.id,
-      user_name: window.currentUser.user_metadata?.full_name || state.playerName || 'Entrenador Anónimo',
+      user_name: window.currentUser.user_metadata?.full_name || state.trainer || 'Entrenador Anónimo',
       user_sprite: state.playerClass ? PLAYER_CLASSES[state.playerClass].sprite : 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
       faction: state.faction,
       pokemon_uid: pWithLevel.uid,
