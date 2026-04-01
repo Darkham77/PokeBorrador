@@ -418,9 +418,10 @@
       const _ivFloor = (typeof getStreakIvFloor === 'function') ? getStreakIvFloor() : 0;
       const _randIv = (isGuardian = false) => {
         let val = Math.floor(Math.random() * 32);
-        // Los guardianes tienen un 30% más de chances de mejores IVs (se toma el mejor de dos tiradas)
-        if (isGuardian && Math.random() < 0.30) {
+        if (isGuardian) {
+          // Los guardianes tienen IVs 40% mejorados (doble tirada + suelo de 12)
           val = Math.max(val, Math.floor(Math.random() * 32));
+          val = Math.max(12, val);
         }
         return Math.max(_ivFloor, val);
       };

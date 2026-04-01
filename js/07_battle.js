@@ -298,8 +298,13 @@ function updateBattleUI() {
 
   const _pSt = statusIcon(b.player?.status);
   const _eSt = statusIcon(b.enemy?.status);
-  let enemyName = b.enemy.name + (b.enemy.isShiny ? ' ✨' : '') + (_eSt ? ' ' + _eSt : '');
-  document.getElementById('enemy-name').textContent = enemyName;
+  let enemyNameText = b.enemy.name + (b.enemy.isShiny ? ' ✨' : '') + (_eSt ? ' ' + _eSt : '');
+  const enemyNameEl = document.getElementById('enemy-name');
+  if (b.enemy.isGuardian) {
+    enemyNameEl.innerHTML = `<span class="guardian-battle-badge">GUARDIÁN</span> ` + enemyNameText;
+  } else {
+    enemyNameEl.textContent = enemyNameText;
+  }
 
   const natureEl = document.getElementById('enemy-nature-display');
   if (natureEl) {
@@ -2450,9 +2455,9 @@ function executeCatch(ballName) {
   // Official Formula Factors + configurable multiplier
   let a = (((3 * b.enemy.maxHp - 2 * b.enemy.hp) * baseRate * ballMult * (window.GAME_RATIOS ? GAME_RATIOS.battle.catchFormulaParams.catchBaseMultiplier : 1.0)) / (3 * b.enemy.maxHp)) * statusBonus;
 
-  // Dificultad especial para Guardianes: el doble de difíciles de capturar
+  // Dificultad especial para Guardianes: 4 veces más difíciles de capturar
   if (b.enemy.isGuardian) {
-    a /= 2;
+    a /= 4;
   }
 
   // Modificadores de clase sobre la captura
