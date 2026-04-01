@@ -48,7 +48,7 @@ async function chooseFaction(faction) {
     if (typeof scheduleSave === 'function') scheduleSave();
     const bdg = document.getElementById('player-faction-badge');
     if (bdg) {
-      bdg.textContent = state.faction === 'union' ? '🟢 Unión' : '🟣 Poder';
+      bdg.textContent = state.faction === 'union' ? '⚪ Unión' : '⚫ Poder';
       bdg.className = `faction-badge ${state.faction}`;
     }
     const modal = document.getElementById('faction-choice-modal');
@@ -693,8 +693,8 @@ function renderKantoWarGrid(ptsData, domData) {
 const WAR_SHOP_ITEMS = [
   { id: 'shiny_stone', name: 'Piedra Brillante', desc: 'Triplica la probabilidad shiny de un huevo.', cost: 300, icon: '💎' },
   { id: 'tm_rare_1', name: 'MT99 — Llamarada', desc: 'Movimiento MT exótico.', cost: 200, icon: '🔥' },
-  { id: 'cosmetic_frame_union', name: 'Marco Unión', desc: 'Decoración de perfil exclusiva.', cost: 100, icon: '🟢', factionRequired: 'union' },
-  { id: 'cosmetic_frame_poder', name: 'Marco Poder', desc: 'Decoración de perfil exclusiva.', cost: 100, icon: '🟣', factionRequired: 'poder' },
+  { id: 'cosmetic_frame_union', name: 'Marco Unión', desc: 'Decoración de perfil exclusiva.', cost: 100, icon: '⚪', factionRequired: 'union' },
+  { id: 'cosmetic_frame_poder', name: 'Marco Poder', desc: 'Decoración de perfil exclusiva.', cost: 100, icon: '⚫', factionRequired: 'poder' },
   { id: 'title_conquistador', name: 'Título: Conquistador de Kanto', desc: 'Visible en tu perfil público.', cost: 500, icon: '🏆' },
 ];
 

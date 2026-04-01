@@ -5594,8 +5594,8 @@
 
 /* ===== PANEL DE GUERRA - REDISEÑO GRANDE Y CENTRAL ===== */
 :root {
-  --union-color: #22c55e;
-  --poder-color: #a855f7;
+  --union-color: #ffffff;
+  --poder-color: #000000;
   --war-card-bg: rgba(13, 17, 23, 0.4);
   --war-border: rgba(255, 255, 255, 0.08);
 }
@@ -5728,12 +5728,12 @@
 }
 
 .bar-union { 
-  background: linear-gradient(90deg, #16a34a, var(--union-color)); 
+  background: linear-gradient(90deg, #888, var(--union-color)); 
   box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
   transition: width 1s ease;
 }
 .bar-poder { 
-  background: linear-gradient(90deg, var(--poder-color), #7c3aed); 
+  background: linear-gradient(90deg, var(--poder-color), #333); 
   box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
   transition: width 1s ease;
 }

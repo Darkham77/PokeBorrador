@@ -13,7 +13,7 @@ que ya existen.
 
 ## Concepto resumido
 
-- Dos bandos permanentes elegibles al crear personaje: **Team Unión** (verde) y **Team Poder** (púrpura)
+- Dos bandos permanentes elegibles al crear personaje: **Team Unión** (blanco) y **Team Poder** (negro)
 - Ciclo semanal: Lunes–Viernes = Disputa de PT (Puntos de Territorio). Sábado–Domingo = Dominancia
 - Cada evento resuelto en un mapa en disputa suma PT al bando del jugador
 - El bando con más PT al cierre del viernes domina el mapa el fin de semana
@@ -761,7 +761,7 @@ function renderFactionUI() {
   // Actualizar badge de bando en el perfil del jugador
   const badge = document.getElementById('player-faction-badge');
   if (badge) {
-    badge.textContent = state.faction === 'union' ? '🟢 Unión' : '🟣 Poder';
+    badge.textContent = state.faction === 'union' ? '⚪ Unión' : '⚫ Poder';
     badge.className = `faction-badge ${state.faction}`;
   }
 }
@@ -825,8 +825,8 @@ Agregar una nueva pestaña en el menú principal (al lado de Pokémon, Mochila, 
   
   <!-- Contador de mapas dominados -->
   <div id="war-score">
-    <span class="union-score">🟢 Unión: <span id="union-maps">0</span> mapas</span>
-    <span class="poder-score">🟣 Poder: <span id="poder-maps">0</span> mapas</span>
+    <span class="union-score">⚪ Unión: <span id="union-maps">0</span> mapas</span>
+    <span class="poder-score">⚫ Poder: <span id="poder-maps">0</span> mapas</span>
   </div>
 
   <!-- Próximo Guardián -->
