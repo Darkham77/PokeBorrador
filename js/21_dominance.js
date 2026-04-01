@@ -893,22 +893,30 @@ async function tryTriggerDefenderBattle(mapId) {
   // Solo los fines de semana
   if (isDisputePhase()) return false;
   
-  // Chance de 20% de encontrar un defensor al moverte a un mapa dominado
-  if (Math.random() > 0.20) return false;
+  // Chance de encontrar defensor (100% en modo test para facilitar pruebas, 20% normal)
+  const isSim = window.forceWeekend || localStorage.getItem('force_weekend') === 'true';
+  if (Math.random() > (isSim ? 1.0 : 0.20)) return false;
   
   const domInfo = await getMapDominanceStatus(mapId);
   const mapWinner = domInfo?.winner;
   
-  // Solo si es una ruta dominada por el bando contrario
-  if (!mapWinner || mapWinner === state.faction) return false;
+  // En modo normal, solo peleamos en rutas enemigas. En modo test, permitimos todo para ver el evento.
+  if (!mapWinner) return false;
+  if (mapWinner === state.faction && !isSim) return false;
   
   try {
-    const { data: defenders } = await window.sb
+    const query = window.sb
       .from('war_defenders')
       .select('*')
       .eq('map_id', mapId)
-      .eq('week_id', getCurrentWeekId())
-      .limit(5); // Tomar algunos candidatos aleatorios
+      .eq('week_id', getCurrentWeekId());
+      
+    // En modo normal (no sim), no queremos encontrarnos a nosotros mismos
+    if (!isSim) {
+      query.neq('user_id', window.currentUser.id);
+    }
+
+    const { data: defenders } = await query.limit(5);
       
     if (!defenders || defenders.length === 0) return false;
     
