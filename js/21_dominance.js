@@ -572,6 +572,7 @@ async function initDominanceSystem() {
 
 function renderFactionModal() {
   if (state.faction) return; 
+  if ((state.playerLevel || 1) < 10) return; // Restricción de nivel 10
   const modal = document.getElementById('faction-choice-modal');
   if (modal) modal.style.display = 'flex';
 }
@@ -885,6 +886,7 @@ async function confirmDefense(mapId, pokemonUid) {
       week_id: getCurrentWeekId(),
       user_id: window.currentUser.id,
       user_name: window.currentUser.username || 'Entrenador Anónimo',
+      user_level: state.playerLevel || 1, // Guardar nivel del entrenador
       user_sprite: state.playerClass ? PLAYER_CLASSES[state.playerClass].sprite : 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
       faction: state.faction,
       pokemon_uid: p.uid, // Usamos el del objeto por seguridad

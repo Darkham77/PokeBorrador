@@ -3324,33 +3324,69 @@ function startDefenderBattle(defenderData) {
 
   const trainerSprite = defenderData.user_sprite || 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png';
   const trainerName = defenderData.user_name || 'Entrenador Anónimo';
+  const trainerLevel = defenderData.user_level || '??';
   
-  // ── INTRO OVERLAY ESTILO BOSS ──────────────────────────────────────────
+  // Obtener Sprite del Pokémon (Grande para el intro)
+  const pokemonSprite = (typeof getSpriteUrl === 'function') 
+    ? getSpriteUrl(enemy.id, enemy.isShiny)
+    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${POKEMON_SPRITE_IDS[enemy.id] || 1}.png`;
+
+  // ── INTRO OVERLAY ESTILO DUELO (Boceto de Usuario) ──────────────────────
   const introOv = document.createElement('div');
   introOv.id = 'boss-intro-overlay';
-  introOv.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .5s ease;';
+  introOv.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;padding:10px;animation:fadeIn .4s ease;';
+  
   introOv.innerHTML = `
-    <div style="background:linear-gradient(135deg, #2d1b4e, #1a1a2e); border-radius:24px; padding:32px; max-width:400px; width:100%;
-      border:3px solid var(--yellow); text-align:center; position:relative; box-shadow: 0 0 50px rgba(234, 179, 8, 0.4);">
-      <div style="position:absolute; top:-20px; left:50%; transform:translateX(-50%); background:var(--yellow); color:#000; padding:6px 20px; border-radius:12px; font-family:'Press Start 2P',monospace; font-size:10px; font-weight:bold;">⚠️ ¡EVENTO BOSS! 🛡️</div>
+    <div style="background:linear-gradient(135deg, #1e1b4b, #000); border-radius:28px; padding:32px; max-width:450px; width:100%;
+      border:3px solid var(--yellow); text-align:center; position:relative; box-shadow: 0 0 60px rgba(234, 179, 8, 0.4); overflow:hidden;">
       
-      <img src="${trainerSprite}" alt="${trainerName}"
-        style="height:140px; width:auto; image-rendering:pixelated; margin-bottom:16px; filter:drop-shadow(0 4px 15px rgba(234, 179, 8, 0.6));">
-      
-      <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:var(--yellow); margin-bottom:8px;">DEFENSOR DE RUTA</div>
-      <div style="font-size:16px; font-weight:bold; color:#fff; margin-bottom:16px;">${trainerName}</div>
-      
-      <div style="font-size:12px; color:#eee; margin:15px 0; line-height:1.6; font-style:italic; background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; border:1px solid rgba(234, 179, 8, 0.2);">
-        "¡Este territorio pertenece a la <strong>${(defenderData.faction || 'Unión').toUpperCase()}</strong>! Si querés pasar, vas a tener que derrotar a mi campeón."
-      </div>
+      <!-- Efecto de brillo de fondo -->
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:300px; height:300px; background:radial-gradient(circle, rgba(234,179,8,0.15) 0%, transparent 70%); z-index:1;"></div>
 
-      <button id="boss-intro-btn" style="font-family:'Press Start 2P',monospace; font-size:9px; padding:18px 36px; border:none; border-radius:16px;
-        cursor:pointer; background:linear-gradient(135deg, var(--yellow), #ca8a04); color:#000; font-weight:bold;
-        box-shadow:0 6px 20px rgba(234, 179, 8, 0.4); margin-top:10px; width:100%; transform:scale(1); transition:0.2s;"
-        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-        ⚔️ ¡ACEPTAR DESAFÍO!
-      </button>
-    </div>`;
+      <div style="position:absolute; top:-20px; left:50%; transform:translateX(-50%); background:var(--yellow); color:#000; padding:6px 20px; border-radius:12px; font-family:'Press Start 2P',monospace; font-size:10px; font-weight:bold; z-index:5; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">⚠️ ¡EVENTO BOSS! 🛡️</div>
+      
+      <!-- CONTENEDOR DE SPRITES SUPERPUESTOS -->
+      <div style="position:relative; height:180px; margin: 30px 0 20px 0; z-index:2; display:flex; align-items:center; justify-content:center;">
+        
+        <!-- Entrenador (Fondo / Derecha) -->
+        <img src="${trainerSprite}" alt="${trainerName}"
+          style="height:150px; width:auto; image-rendering:pixelated; position:absolute; right:15%; bottom:10%;
+          filter: drop-shadow(0 0 10px rgba(0,0,0,0.8)) contrast(1.1); z-index:2; transition:0.5s; opacity:0.8;">
+        
+        <!-- Pokémon (Primer Plano / Izquierda / Grande) -->
+        <img src="${pokemonSprite}" alt="${enemy.name}"
+          style="height:190px; width:auto; image-rendering:pixelated; position:absolute; left:10%; bottom:0%;
+          filter: drop-shadow(0 8px 15px rgba(234, 179, 8, 0.5)); z-index:3; transform: scale(1.2); animation: slideInLeft 0.6s ease-out;">
+      </div>
+      
+      <div style="position:relative; z-index:10;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:var(--yellow); margin-bottom:8px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">DEFENSOR DE RUTA</div>
+        
+        <div style="background:rgba(0,0,0,0.6); padding:12px; border-radius:16px; border:1px solid rgba(234,179,8,0.3); margin-bottom:20px;">
+          <div style="font-size:16px; font-weight:bold; color:#fff; margin-bottom:4px;">${trainerName} <span style="color:var(--gray); font-size:12px;">(LV.${trainerLevel})</span></div>
+          <div style="font-size:13px; color:var(--yellow); text-transform:uppercase; font-family:'Press Start 2P',monospace;">${enemy.name} <span style="font-size:9px;">LV.${enemy.level}</span></div>
+        </div>
+        
+        <div style="font-size:12px; color:#eee; margin-bottom:25px; line-height:1.6; font-style:italic;">
+          "¡Este territorio pertenece a la <strong>${(defenderData.faction || 'Unión').toUpperCase()}</strong>! Si querés pasar, vas a tener que derrotar a mi campeón."
+        </div>
+
+        <button id="boss-intro-btn" style="font-family:'Press Start 2P',monospace; font-size:9px; padding:18px 36px; border:none; border-radius:16px;
+          cursor:pointer; background:linear-gradient(135deg, var(--yellow), #ca8a04); color:#000; font-weight:bold;
+          box-shadow:0 6px 25px rgba(234, 179, 8, 0.5); width:100%; transform:scale(1); transition:0.3s;"
+          onmouseover="this.style.transform='scale(1.03) translateY(-2px)'" onmouseout="this.style.transform='scale(1)'">
+          ⚔️ ¡ACEPTAR DESAFÍO!
+        </button>
+      </div>
+    </div>
+    
+    <style>
+      @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-50px) scale(1.2); }
+        to { opacity: 1; transform: translateX(0) scale(1.2); }
+      }
+    </style>
+  `;
   
   document.body.appendChild(introOv);
 
