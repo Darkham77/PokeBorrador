@@ -451,6 +451,7 @@ async function claimGuardianCapture(mapId, pokemon) {
 
   pokemon.isGuardian = true;
   pokemon.guardianFaction = state.faction;
+  pokemon.aura = state.faction === 'poder' ? 'white' : 'black';
   
   // Usar addWarPoints con override para centralizar monedas y guardado
   await addWarPoints(mapId, 'guardian', true, ptsAwarded);

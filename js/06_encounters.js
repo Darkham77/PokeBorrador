@@ -491,6 +491,9 @@ async function renderMaps() {
           const enemy = makePokemon(guardian.id, guardian.lv);
           enemy.isGuardian = true;
           enemy.guardianPts = guardian.pts;
+          // Asignar el aura basándose en la facción actual para el encuentro salvaje
+          enemy.aura = (state.faction === 'poder' ? 'white' : 'black');
+          
           startBattle(enemy, false, false, locId);
           return; // Salir, el combate de guardián ya inició
         }

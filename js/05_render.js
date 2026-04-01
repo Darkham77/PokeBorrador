@@ -105,7 +105,12 @@ function renderTeam() {
     setTimeout(() => {
       const img = document.getElementById('team-sprite-' + i);
       const emo = document.getElementById('team-emoji-' + i);
-      if (img && emo) loadSprite(img, emo, getSpriteUrl(p.id, p.isShiny), p.emoji);
+      if (img && emo) {
+        loadSprite(img, emo, getSpriteUrl(p.id, p.isShiny), p.emoji);
+        // Apply Aura
+        img.classList.remove('aura-white-mini', 'aura-black-mini');
+        if (p.aura) img.classList.add('aura-' + p.aura + '-mini');
+      }
     }, 30 * i);
   });
 }
@@ -477,7 +482,12 @@ function showPokemonDetails(p, index, location = 'team') {
   setTimeout(() => {
     const img = document.getElementById('unified-detail-sprite');
     const emo = document.getElementById('unified-detail-emoji');
-    if (img) loadSprite(img, emo, getSpriteUrl(p.id, p.isShiny), p.emoji);
+    if (img) {
+      loadSprite(img, emo, getSpriteUrl(p.id, p.isShiny), p.emoji);
+      // Apply Aura
+      img.classList.remove('aura-white', 'aura-black');
+      if (p.aura) img.classList.add('aura-' + p.aura);
+    }
   }, 50);
 }
 

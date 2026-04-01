@@ -209,6 +209,25 @@
       }
     }
 
+    /* ===== GUARDIAN AURAS ===== */
+    .aura-white {
+      filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 4px #fff) !important;
+    }
+    
+    .aura-black {
+      /* Sombra negra intensa con una ligera aura púrpura oscura para visibilidad en fondos negros */
+      filter: drop-shadow(0 0 6px #000) drop-shadow(0 0 10px rgba(0,0,0,0.8)) drop-shadow(0 0 2px rgba(100,0,255,0.2)) !important;
+    }
+    
+    /* Para miniaturas y elementos pequeños */
+    .aura-white-mini {
+      filter: drop-shadow(0 0 3px #fff) !important;
+    }
+    
+    .aura-black-mini {
+      filter: drop-shadow(0 0 3px #000) !important;
+    }
+
     /* ===== RIVAL ENCOUNTER VISUALS ===== */
     @keyframes rival-flicker {
       0%, 100% { background: transparent; }

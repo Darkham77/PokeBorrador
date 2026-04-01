@@ -251,7 +251,14 @@ function setBattleSprite(side, pokemonId, useBack) {
   // Side is 'player' or 'enemy'. Pokemon object is in state.battle[side]
   const p = state.battle[side];
   const url = useBack ? getBackSpriteUrl(pokemonId, p?.isShiny) : getSpriteUrl(pokemonId, p?.isShiny);
-  if (img) loadSprite(img, emojiEl, url, emoji);
+  if (img) {
+    loadSprite(img, emojiEl, url, emoji);
+    // Apply Aura if present
+    img.classList.remove('aura-white', 'aura-black');
+    if (p && p.aura) {
+      img.classList.add('aura-' + p.aura);
+    }
+  }
 
   // Trigger sparkles for shiny
   if (p && p.isShiny) {

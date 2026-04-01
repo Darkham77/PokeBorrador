@@ -591,7 +591,7 @@
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};
         font-family:'Press Start 2P',monospace;font-size:6px;padding:2px 5px;border-radius:6px;
         border:1px solid ${tierInfo.color}44;line-height:1.4;">${tierInfo.tier}</div>
-      <img src="${url}"
+      <img src="${url}" class="${p.aura ? 'aura-' + p.aura + '-mini' : ''}"
         width="56" height="56" style="image-rendering:pixelated;"
         onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
       <span style="display:none;font-size:32px;line-height:1;">${p.emoji}</span>
