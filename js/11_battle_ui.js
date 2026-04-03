@@ -215,9 +215,9 @@
       'Incienso Normal': _ => { state.incenseType = 'normal'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Normal (30 min)`; },
       'Incienso Fantasma': _ => { state.incenseType = 'ghost'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Fantasma (30 min)`; },
       'Incienso Psíquico': _ => { state.incenseType = 'psychic'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Psíquico (30 min)`; },
-      'Fósil Hélix': _ => { setTimeout(() => reviveFossil('omanyte', 'Fósil Hélix'), 100); return 'deferred'; },
-      'Fósil Domo': _ => { setTimeout(() => reviveFossil('kabuto', 'Fósil Domo'), 100); return 'deferred'; },
-      'Ámbar Viejo': _ => { setTimeout(() => reviveFossil('aerodactyl', 'Ámbar Viejo'), 100); return 'deferred'; },
+      'Fósil Hélix': _ => { setTimeout(() => reviveFossil('omanyte', 'Fósil Hélix'), 100); return 'iniciando restauración'; },
+      'Fósil Domo': _ => { setTimeout(() => reviveFossil('kabuto', 'Fósil Domo'), 100); return 'iniciando restauración'; },
+      'Ámbar Viejo': _ => { setTimeout(() => reviveFossil('aerodactyl', 'Ámbar Viejo'), 100); return 'iniciando restauración'; },
     };
 
     function showBattleBag() {
@@ -943,8 +943,6 @@
     }
 
     window.reviveFossil = function(pokemonId, itemName) {
-      if (!state.inventory[itemName]) return;
-      
       const p = makePokemon(pokemonId, 1);
       
       // UI Animation
@@ -988,10 +986,6 @@
         flash.style.opacity = '1';
         
         setTimeout(() => {
-          // Consume item here to avoid duplication if refresh/crash before close
-          state.inventory[itemName]--;
-          if (state.inventory[itemName] <= 0) delete state.inventory[itemName];
-          
           // Register in Pokedex
           state.pokedex = state.pokedex || [];
           state.seenPokedex = state.seenPokedex || [];
