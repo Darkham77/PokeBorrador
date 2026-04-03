@@ -360,7 +360,7 @@ async function renderMaps() {
           const glow = isWeekend ? (winner === 'union' ? `drop-shadow(0 0 10px rgba(59,130,246,1))` : `drop-shadow(0 0 10px rgba(239,68,68,1))`) : 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))';
           const opacity = isWeekend ? '1' : '0.85';
           const logoSrc = winner === 'union' ? 'assets/factions/union.png' : 'assets/factions/poder.png';
-          htmlSnippet += `<img src="${logoSrc}" title="${winner === 'union' ? 'Lidera Unión' : 'Lidera Poder'}" style="position:absolute; top:48px; left:8px; width:28px; height:28px; object-fit:contain; z-index:9; opacity:${opacity}; filter:${glow}; pointer-events:none; animation: pulse 2s infinite;">`;
+          htmlSnippet += `<img src="${logoSrc}" title="${winner === 'union' ? 'Lidera Unión' : 'Lidera Poder'}" style="position:absolute; top:65px; left:10px; width:28px; height:28px; object-fit:contain; z-index:9; opacity:${opacity}; filter:${glow}; pointer-events:none; animation: pulse 2s infinite;">`;
         }
 
         if (!state.faction) return htmlSnippet;
