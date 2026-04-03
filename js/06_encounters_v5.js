@@ -322,12 +322,16 @@ async function renderMaps() {
       try {
         const weekId = typeof getCurrentWarWeekId === 'function' ? getCurrentWarWeekId() : null;
         if (weekId) {
+          let hasDominanceData = false;
           if (isWeekend) {
             const { data } = await window.sb.from('war_dominance').select('map_id, winner_faction').eq('week_id', weekId);
-            if (data) {
+            if (data && data.length > 0) {
+              hasDominanceData = true;
               data.forEach(d => mapWinners[d.map_id] = d.winner_faction);
             }
-          } else {
+          }
+          
+          if (!hasDominanceData) {
             const { data } = await window.sb.from('war_points').select('map_id, faction, points').eq('week_id', weekId);
             if (data) {
                const ptsMap = {};
