@@ -171,8 +171,8 @@ async function renderMaps() {
         }
         
         return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
-          title="${name}" width="32" height="32"
-          onerror="this.parentElement.innerHTML += '<span>❓</span>'; this.remove();" 
+          title="${name}" width="32" height="32" loading="lazy"
+          onerror="this.outerHTML = '<span title=\\'${name}\\' style=\\'margin: 0 4px; font-size: 14px; color: var(--gray);\\' class=\\'${isRare ? 'rare-spawn' : ''}\\'>❓</span>';" 
           class="${isRare ? 'rare-spawn' : ''}">`;
       };
 
