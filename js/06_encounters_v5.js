@@ -312,16 +312,54 @@ async function renderMaps() {
       // Cycle helpers
       const CYCLE_ICONS = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' };
 
-      // DOMINANCIA: Cargar capturas de guardianes antes de renderizar
+      // DOMINANCIA: Cargar capturas de guardianes y estado de guerra
       if (typeof loadDailyGuardianCaptures === 'function') {
         await loadDailyGuardianCaptures();
       }
+
+      let mapWinners = {};
+      let isWeekend = typeof isDisputePhase === 'function' ? !isDisputePhase() : false;
+      try {
+        const weekId = typeof getCurrentWarWeekId === 'function' ? getCurrentWarWeekId() : null;
+        if (weekId) {
+          if (isWeekend) {
+            const { data } = await window.sb.from('war_dominance').select('map_id, winner_faction').eq('week_id', weekId);
+            if (data) {
+              data.forEach(d => mapWinners[d.map_id] = d.winner_faction);
+            }
+          } else {
+            const { data } = await window.sb.from('war_points').select('map_id, faction, points').eq('week_id', weekId);
+            if (data) {
+               const ptsMap = {};
+               data.forEach(d => {
+                 if (!ptsMap[d.map_id]) ptsMap[d.map_id] = { union: 0, poder: 0 };
+                 ptsMap[d.map_id][d.faction] += d.points;
+               });
+               for (const mId in ptsMap) {
+                 if (ptsMap[mId].union > ptsMap[mId].poder) mapWinners[mId] = 'union';
+                 else if (ptsMap[mId].poder > ptsMap[mId].union) mapWinners[mId] = 'poder';
+               }
+            }
+          }
+        }
+      } catch(e) { console.warn("Failed to load map winners", e); }
 
       // MAP GRID
       html += `<div class="map-list">`;
 
       const domBadgeHtml = (locId) => {
-        if (!state.faction) return '';
+        let htmlSnippet = '';
+        
+        // Faction Logo indicating possession
+        const winner = mapWinners[locId];
+        if (winner) {
+          const glow = isWeekend ? (winner === 'union' ? `drop-shadow(0 0 10px rgba(59,130,246,1))` : `drop-shadow(0 0 10px rgba(239,68,68,1))`) : 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))';
+          const opacity = isWeekend ? '1' : '0.85';
+          const logoSrc = winner === 'union' ? 'assets/factions/union.png' : 'assets/factions/poder.png';
+          htmlSnippet += `<img src="${logoSrc}" title="${winner === 'union' ? 'Lidera Unión' : 'Lidera Poder'}" style="position:absolute; top:48px; left:8px; width:28px; height:28px; object-fit:contain; z-index:9; opacity:${opacity}; filter:${glow}; pointer-events:none; animation: pulse 2s infinite;">`;
+        }
+
+        if (!state.faction) return htmlSnippet;
         const isCaptured = (state.dailyGuardianCaptures || []).includes(locId);
         const guardian = typeof getGuardianForMap === 'function' ? getGuardianForMap(locId) : null;
         
@@ -332,16 +370,16 @@ async function renderMaps() {
           const labelText = isCaptured ? 'DERROTADO' : 'GUARDIÁN';
           const spriteClass = isCaptured ? 'guardian-mini-sprite captured' : 'guardian-mini-sprite';
 
-          return `
+          htmlSnippet += `
             <div class="guardian-status-badge" title="${isCaptured ? 'Guardián ya derrotado hoy' : 'Guardián disponible'}">
               <img src="${spriteUrl}" class="${spriteClass}" alt="Guardian">
               <span class="${labelClass}">${labelText}</span>
             </div>
           `;
         } else if (state.activeBonuses && state.activeBonuses[locId]) {
-          return `<span class="dom-badge dominance winning" title="Bono Activo (+25% EXP / x2 Shiny)" style="position:absolute; bottom:8px; right:8px; z-index:2;">👑 Dominado <span class="bonus-icon">✨</span></span>`;
+          htmlSnippet += `<span class="dom-badge dominance winning" title="Bono Activo (+25% EXP / x2 Shiny)" style="position:absolute; bottom:8px; right:8px; z-index:2;">👑 Dominado <span class="bonus-icon">✨</span></span>`;
         }
-        return '';
+        return htmlSnippet;
       };
 
       FIRE_RED_MAPS.forEach(loc => {
