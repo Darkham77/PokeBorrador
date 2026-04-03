@@ -233,25 +233,25 @@
       // ── BREEDING ITEMS ──────────────────────────────────────────────────────────
       {
         id: 'berry_bronze', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/oran-berry.png',
-        name: 'Baya de Bronce', icon: '🥉', price: 5000, unlockLv: 5, tier: 'common',
+        name: 'Baya de Bronce', icon: '🥉', price: 5000, unlockLv: 5, tier: 'common', market: false, trainerShop: false,
         desc: 'Acorta el tiempo de la guardería un 10%. Solo un uso por ciclo.',
         effect: (qty) => { state.inventory['Baya de Bronce'] = (state.inventory['Baya de Bronce'] || 0) + qty; }
       },
       {
         id: 'berry_silver', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sitrus-berry.png',
-        name: 'Baya de Plata', icon: '🥈', price: 15000, unlockLv: 10, tier: 'rare',
+        name: 'Baya de Plata', icon: '🥈', price: 15000, unlockLv: 10, tier: 'rare', market: false, trainerShop: false,
         desc: 'Acorta el tiempo de la guardería un 30%. Solo un uso por ciclo.',
         effect: (qty) => { state.inventory['Baya de Plata'] = (state.inventory['Baya de Plata'] || 0) + qty; }
       },
       {
         id: 'berry_gold', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lum-berry.png',
-        name: 'Baya de Oro', icon: '🥇', price: 25000, unlockLv: 15, tier: 'epic',
+        name: 'Baya de Oro', icon: '🥇', price: 25000, unlockLv: 15, tier: 'epic', market: false, trainerShop: false,
         desc: 'Acorta el tiempo de la guardería un 50%. Solo un uso por ciclo.',
         effect: (qty) => { state.inventory['Baya de Oro'] = (state.inventory['Baya de Oro'] || 0) + qty; }
       },
       {
         id: 'everstone', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/everstone.png',
-        name: 'Piedra Eterna', icon: '🪨', price: 10000, unlockLv: 15, tier: 'epic',
+        name: 'Piedra Eterna', icon: '🪨', price: 10000, unlockLv: 15, tier: 'epic', market: false, trainerShop: false,
         desc: 'Equipada en la guardería, asegura que la cría herede la naturaleza de este padre.',
         effect: (qty) => { state.inventory['Piedra Eterna'] = (state.inventory['Piedra Eterna'] || 0) + qty; }
       },
