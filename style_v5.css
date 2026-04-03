@@ -1,4 +1,4 @@
-    :root {
+:root {
       --red: #ff453a;
       --blue: #0a84ff;
       --yellow: #ffd60a;
@@ -12,6 +12,8 @@
       --gray: #86868b;
       --coin-gold: #FFD700;
     }
+
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
     * {
       margin: 0;
@@ -850,10 +852,10 @@
     /* SPECIFIC FOR MAP GRID */
     .map-card {
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start; /* Changed from center to allow margin-top:auto for footer */
       text-align: center;
       aspect-ratio: 16 / 9; /* More horizontal for maps */
-      min-height: 200px;
+      min-height: 240px; /* Increased to avoid overflow */
     }
 
     .location-card::before {
@@ -977,9 +979,11 @@
       gap: 4px;
       justify-content: center;
       margin-top: auto;
-      padding-top: 12px;
+      padding-top: 10px;
+      padding-bottom: 5px;
       width: 100%;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 5;
     }
 
     .location-spawns img {

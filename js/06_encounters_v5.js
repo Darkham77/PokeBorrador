@@ -147,7 +147,7 @@ async function renderMaps() {
       }
 
       const getPokemonSpriteHtml = (id, isRare = false) => {
-        const num = POKEMON_SPRITE_IDS[id];
+        const num = window.POKEMON_SPRITE_IDS ? window.POKEMON_SPRITE_IDS[id] : null;
         const pData = POKEMON_DB[id];
         const name = pData?.name || id;
         if (!num) return '';
