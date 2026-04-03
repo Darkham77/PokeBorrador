@@ -521,10 +521,10 @@
       const factionBadge = document.getElementById('player-faction-badge');
       if (factionBadge) {
         if (state.faction === 'union') {
-          factionBadge.textContent = '⚪ Team Unión';
+          factionBadge.textContent = '🔵 Team Unión';
           factionBadge.className = 'faction-badge union';
         } else if (state.faction === 'poder') {
-          factionBadge.textContent = '⚫ Team Poder';
+          factionBadge.textContent = '🔴 Team Poder';
           factionBadge.className = 'faction-badge poder';
         } else {
           factionBadge.textContent = 'Sin Bando';

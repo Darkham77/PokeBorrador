@@ -49,7 +49,7 @@ async function chooseFaction(faction) {
     if (typeof scheduleSave === 'function') scheduleSave();
     const bdg = document.getElementById('player-faction-badge');
     if (bdg) {
-      bdg.textContent = state.faction === 'union' ? '⚪ Unión' : '⚫ Poder';
+      bdg.textContent = state.faction === 'union' ? '🔵 Unión' : '🔴 Poder';
       bdg.className = `faction-badge ${state.faction}`;
     }
     const modal = document.getElementById('faction-choice-modal');
@@ -788,10 +788,10 @@ function renderKantoWarGrid(ptsData, domData) {
         const factionLabel = winner ? (winner === 'union' ? 'UNIÓN' : 'PODER') : null;
         const factionColor = winner === 'union' ? 'var(--union-color)' : (winner === 'poder' ? 'var(--poder-color)' : '#aaa');
 
-        // Overlay: blanco suave para Unión, oscuro/negro para Poder, neutro si no hay ganador
+        // Overlay: azul claro + blanco para Unión, negro + rojo oscuro para Poder
         let overlayBg = 'rgba(0,0,0,0.55)'; // neutral
-        if (winner === 'union') overlayBg = 'linear-gradient(0deg, rgba(34,197,94,0.55) 0%, rgba(255,255,255,0.22) 100%)';
-        if (winner === 'poder') overlayBg = 'linear-gradient(0deg, rgba(80,0,120,0.75) 0%, rgba(20,0,40,0.82) 100%)';
+        if (winner === 'union') overlayBg = 'linear-gradient(0deg, rgba(59,130,246,0.6) 0%, rgba(255,255,255,0.25) 100%)';
+        if (winner === 'poder') overlayBg = 'linear-gradient(0deg, rgba(0,0,0,0.90) 0%, rgba(80,0,0,0.70) 100%)';
 
         cardInnerHtml = `
           <!-- Overlay de dominancia -->
@@ -800,7 +800,7 @@ function renderKantoWarGrid(ptsData, domData) {
           <!-- Label grande de facción -->
           ${factionLabel ? `
           <div style="position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; gap:6px;">
-            <span style="font-family:'Press Start 2P',monospace; font-size:18px; color:${factionColor}; text-shadow: 0 0 20px ${factionColor}, 0 2px 8px rgba(0,0,0,0.9); letter-spacing:2px; text-align:center; line-height:1.3;">
+            <span style="font-family:'Press Start 2P',monospace; font-size:18px; color:${factionColor}; text-shadow: 0 0 20px ${factionColor}, 0 2px 8px rgba(0,0,0,0.9); letter-spacing:2px; text-align:center; line-height:1.3; ${winner === 'poder' ? 'text-shadow: 0 0 20px #ef4444, 0 0 40px rgba(239,68,68,0.4), 0 2px 8px rgba(0,0,0,0.9);' : 'text-shadow: 0 0 20px #3b82f6, 0 0 40px rgba(59,130,246,0.4), 0 2px 8px rgba(0,0,0,0.9);'}">
               ${factionLabel}
             </span>
             <span style="font-family:'Press Start 2P',monospace; font-size:7px; color:rgba(255,255,255,0.7); letter-spacing:1px;">

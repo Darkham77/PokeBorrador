@@ -968,7 +968,7 @@
           <!-- Marcador Global -->
           <div id="war-score" class="war-score-box">
             <div class="score-team union">
-              <span class="team-dot">🟢</span>
+              <span class="team-dot">🔵</span>
               <div class="team-info">
                 <span class="team-label">UNIÓN</span>
                 <span id="union-maps" class="team-val">0</span>
@@ -980,9 +980,10 @@
                 <span class="team-label">PODER</span>
                 <span id="poder-maps" class="team-val">0</span>
               </div>
-              <span class="team-dot">🟣</span>
+              <span class="team-dot">🔴</span>
             </div>
           </div>
+
 
           <!-- Estadísticas Personales -->
           <div class="war-stats-sidebar">
@@ -1484,16 +1485,16 @@
       <p style="font-size:12px;color:#ccc;margin-bottom:20px;">Tu bando determina con quién disputás el control de Kanto. <strong>Esta decisión es permanente.</strong></p>
       
       <div style="display:flex;gap:16px;flex-direction:column;">
-        <button onclick="chooseFaction('union')" style="background:#333;border:3px solid #fff;border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;transition:transform 0.2s;">
-          <span style="font-size:32px;margin-bottom:8px;">⚪</span>
-          <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#fff;margin-bottom:8px;">Team Unión</span>
-          <span style="font-size:10px;color:#aaa;">Amistad. Armonía. Compañerismo.</span>
+        <button onclick="chooseFaction('union')" style="background:#0f172a;border:3px solid #3b82f6;border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;transition:transform 0.2s;">
+          <span style="font-size:32px;margin-bottom:8px;">🔵</span>
+          <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#3b82f6;margin-bottom:8px;">Team Unión</span>
+          <span style="font-size:10px;color:#cbd5e1;">Amistad. Armonía. Compañerismo.</span>
         </button>
         
-        <button onclick="chooseFaction('poder')" style="background:#000;border:3px solid #444;border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;transition:transform 0.2s;">
-          <span style="font-size:32px;margin-bottom:8px;">⚫</span>
-          <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#fff;margin-bottom:8px;">Team Poder</span>
-          <span style="font-size:10px;color:#aaa;">Poder. Herramientas. Eficiencia.</span>
+        <button onclick="chooseFaction('poder')" style="background:#2a0f0f;border:3px solid #ef4444;border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;transition:transform 0.2s;">
+          <span style="font-size:32px;margin-bottom:8px;">🔴</span>
+          <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;margin-bottom:8px;">Team Poder</span>
+          <span style="font-size:10px;color:#fca5a5;">Poder. Herramientas. Eficiencia.</span>
         </button>
       </div>
     </div>

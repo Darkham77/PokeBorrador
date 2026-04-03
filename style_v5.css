@@ -5631,8 +5631,10 @@
 
 /* ===== PANEL DE GUERRA - DASHBOARD PREMIUM 2026 ===== */
 :root {
-  --union-color: #22c55e;
-  --poder-color: #a855f7;
+  --union-color: #3b82f6;   /* Azul - Unión */
+  --union-secondary: #ffffff; /* Blanco - Unión */
+  --poder-color: #ef4444;   /* Rojo - Poder */
+  --poder-secondary: #0a0a0a; /* Negro - Poder */
   --war-bg: #0a0a0f;
   --war-sidebar-bg: rgba(15, 15, 23, 0.7);
   --war-border-light: rgba(255, 255, 255, 0.08);
@@ -5700,8 +5702,8 @@
 .team-val { color: #fff; font-weight: 900; font-size: 16px; }
 .score-vs { font-family: 'Press Start 2P'; font-size: 8px; color: var(--gray); opacity: 0.5; }
 
-.score-team.union .team-val { color: var(--union-color); text-shadow: 0 0 10px rgba(34, 197, 94, 0.3); }
-.score-team.poder .team-val { color: var(--poder-color); text-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
+.score-team.union .team-val { color: var(--union-color); text-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+.score-team.poder .team-val { color: var(--poder-color); text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
 
 /* Stats List in Sidebar */
 .war-stats-sidebar {
@@ -5839,7 +5841,7 @@
 }
 
 .war-card-status-tag.dispute { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.4); }
-.war-card-status-tag.dominance { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
+.war-card-status-tag.dominance { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
 
 /* Progress Bar in Card */
 .war-central-progress-box {
@@ -5868,17 +5870,17 @@
 .bar-poder { height: 100%; transition: width 0.5s ease; background: var(--poder-color); box-shadow: 0 0 10px var(--poder-color); }
 
 /* Winners Glows - Fase de Disputa */
-.winner-glow-union { border: 2px solid var(--union-color) !important; box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important; }
-.winner-glow-poder { border: 2px solid var(--poder-color) !important; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4) !important; }
+.winner-glow-union { border: 2px solid var(--union-color) !important; box-shadow: 0 0 20px rgba(59, 130, 246, 0.5) !important; }
+.winner-glow-poder { border: 2px solid var(--poder-color) !important; box-shadow: 0 0 20px rgba(239, 68, 68, 0.5) !important; }
 
 /* Dominance Card Borders - Fin de Semana */
 .dom-union {
-  border: 2px solid rgba(34, 197, 94, 0.7) !important;
-  box-shadow: 0 0 25px rgba(34, 197, 94, 0.5), 0 15px 35px rgba(0,0,0,0.4) !important;
+  border: 2px solid rgba(59, 130, 246, 0.8) !important;
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.5), 0 15px 35px rgba(0,0,0,0.4) !important;
 }
 .dom-poder {
-  border: 2px solid rgba(168, 85, 247, 0.7) !important;
-  box-shadow: 0 0 25px rgba(168, 85, 247, 0.5), 0 15px 35px rgba(0,0,0,0.4) !important;
+  border: 2px solid rgba(239, 68, 68, 0.8) !important;
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.5), 0 15px 35px rgba(0,0,0,0.4) !important;
 }
 
 /* Defenders Section Subtitle */
