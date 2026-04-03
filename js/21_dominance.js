@@ -750,13 +750,16 @@ function renderKantoWarGrid(ptsData, domData) {
       const imgName = WAR_MAP_IMAGES[map.id] || 'default.png';
       const bgUrl = `maps/${imgName}`;
 
-      html += `
-        <div class="war-map-card ${glowClass}" style="background-image: url('${bgUrl}');">
+      // ── Contenido de la tarjeta según fase ──
+      let cardInnerHtml = '';
+
+      if (dispute) {
+        // ── FASE DE DISPUTA: Barras de conquista ──
+        cardInnerHtml = `
           <div class="war-card-overlay">
             <div class="war-card-top">
               <span class="war-card-name">${map.name}</span>
               ${isConflict ? '<span class="war-card-status-tag dispute">⚔️ GUERRA</span>' : ''}
-              ${!dispute && winner ? `<span class="war-card-status-tag dominance">${winner.toUpperCase()} DOMINA</span>` : ''}
             </div>
 
             <!-- BARRA CENTRAL GRANDE -->
@@ -778,22 +781,63 @@ function renderKantoWarGrid(ptsData, domData) {
             <div style="font-size:6px; color:rgba(255,255,255,0.5); font-family:'Press Start 2P'; text-align:center; margin-bottom: 8px;">
                ${total > 0 ? (pU > pP ? 'Lidera Unión' : (pP > pU ? 'Lidera Poder' : 'Empate Técnico')) : 'Sin actividad'}
             </div>
-
-            <!-- Botón de Proteger (Fin de semana para ganadores) -->
-            ${!dispute && winner === state.faction ? `
-              <div style="margin-top: auto; padding-top: 10px;">
-                <button onclick="openSelectDefensePokeModal('${map.id}')" 
-                        class="war-protect-btn" 
-                        style="width: 100%; height: 36px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); border-radius: 12px; color: #4ade80; font-family: 'Press Start 2P', monospace; font-size: 7px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; text-shadow: 0 0 10px rgba(34, 197, 94, 0.3);"
-                        onmouseover="this.style.background='rgba(34, 197, 94, 0.25)'; this.style.borderColor='#4ade80'; this.style.transform='translateY(-2px)'"
-                        onmouseout="this.style.background='rgba(34, 197, 94, 0.15)'; this.style.borderColor='rgba(34, 197, 94, 0.4)'; this.style.transform='translateY(0)'">
-                  <span style="font-size: 12px;">🛡️</span> PROTEGER
-                </button>
-              </div>
-            ` : ''}
           </div>
+        `;
+      } else {
+        // ── FASE DE DOMINANCIA (FIN DE SEMANA): Overlay de facción ──
+        const factionLabel = winner ? (winner === 'union' ? 'UNIÓN' : 'PODER') : null;
+        const factionColor = winner === 'union' ? 'var(--union-color)' : (winner === 'poder' ? 'var(--poder-color)' : '#aaa');
+
+        // Overlay: blanco suave para Unión, oscuro/negro para Poder, neutro si no hay ganador
+        let overlayBg = 'rgba(0,0,0,0.55)'; // neutral
+        if (winner === 'union') overlayBg = 'linear-gradient(0deg, rgba(34,197,94,0.55) 0%, rgba(255,255,255,0.22) 100%)';
+        if (winner === 'poder') overlayBg = 'linear-gradient(0deg, rgba(80,0,120,0.75) 0%, rgba(20,0,40,0.82) 100%)';
+
+        cardInnerHtml = `
+          <!-- Overlay de dominancia -->
+          <div style="position:absolute; inset:0; background:${overlayBg}; border-radius:inherit; z-index:1; pointer-events:none;"></div>
+
+          <!-- Label grande de facción -->
+          ${factionLabel ? `
+          <div style="position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; gap:6px;">
+            <span style="font-family:'Press Start 2P',monospace; font-size:18px; color:${factionColor}; text-shadow: 0 0 20px ${factionColor}, 0 2px 8px rgba(0,0,0,0.9); letter-spacing:2px; text-align:center; line-height:1.3;">
+              ${factionLabel}
+            </span>
+            <span style="font-family:'Press Start 2P',monospace; font-size:7px; color:rgba(255,255,255,0.7); letter-spacing:1px;">
+              ${map.name.toUpperCase()}
+            </span>
+          </div>` : `
+          <div style="position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none;">
+            <span style="font-family:'Press Start 2P',monospace; font-size:8px; color:rgba(255,255,255,0.4); text-align:center;">${map.name}</span>
+            <span style="font-family:'Press Start 2P',monospace; font-size:6px; color:rgba(255,255,255,0.3); margin-top:6px;">SIN CONQUISTAR</span>
+          </div>`}
+
+          <!-- Botón PROTEGER (z-index alto para quedar encima del overlay) -->
+          ${winner === state.faction ? `
+          <div style="position:absolute; bottom:14px; left:14px; right:14px; z-index:10;">
+            <button onclick="openSelectDefensePokeModal('${map.id}')"
+                    style="width:100%; padding:10px 0; background:rgba(34,197,94,0.85); border:2px solid #4ade80; border-radius:12px; color:#fff; font-family:'Press Start 2P',monospace; font-size:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s; box-shadow: 0 0 18px rgba(34,197,94,0.5), 0 4px 12px rgba(0,0,0,0.5); text-shadow:0 1px 4px rgba(0,0,0,0.6);"
+                    onmouseover="this.style.background='rgba(34,197,94,1)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 28px rgba(34,197,94,0.8), 0 8px 18px rgba(0,0,0,0.5)'"
+                    onmouseout="this.style.background='rgba(34,197,94,0.85)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 0 18px rgba(34,197,94,0.5), 0 4px 12px rgba(0,0,0,0.5)'">
+              🛡️ PROTEGER
+            </button>
+          </div>` : ''}
+
+          <!-- Nombre del mapa en esquina superior izq (visible siempre) -->
+          <div style="position:absolute; top:12px; left:14px; z-index:10;">
+            <span style="font-family:'Press Start 2P',monospace; font-size:7px; color:rgba(255,255,255,0.85); text-shadow:0 1px 4px rgba(0,0,0,0.8);">
+              ${!factionLabel ? map.name : ''}
+            </span>
+          </div>
+        `;
+      }
+
+      html += `
+        <div class="war-map-card ${!dispute ? (winner === 'union' ? 'dom-union' : winner === 'poder' ? 'dom-poder' : '') : glowClass}" style="background-image: url('${bgUrl}'); position:relative; overflow:hidden;">
+          ${cardInnerHtml}
         </div>
       `;
+
     } catch (err) {
       console.warn(`Error al renderizar tarjeta de mapa para ${map.id}:`, err);
     }

@@ -5867,9 +5867,19 @@
 .bar-union { height: 100%; transition: width 0.5s ease; background: var(--union-color); box-shadow: 0 0 10px var(--union-color); }
 .bar-poder { height: 100%; transition: width 0.5s ease; background: var(--poder-color); box-shadow: 0 0 10px var(--poder-color); }
 
-/* Winners Glows */
+/* Winners Glows - Fase de Disputa */
 .winner-glow-union { border: 2px solid var(--union-color) !important; box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important; }
 .winner-glow-poder { border: 2px solid var(--poder-color) !important; box-shadow: 0 0 20px rgba(168, 85, 247, 0.4) !important; }
+
+/* Dominance Card Borders - Fin de Semana */
+.dom-union {
+  border: 2px solid rgba(34, 197, 94, 0.7) !important;
+  box-shadow: 0 0 25px rgba(34, 197, 94, 0.5), 0 15px 35px rgba(0,0,0,0.4) !important;
+}
+.dom-poder {
+  border: 2px solid rgba(168, 85, 247, 0.7) !important;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.5), 0 15px 35px rgba(0,0,0,0.4) !important;
+}
 
 /* Defenders Section Subtitle */
 .section-subtitle {
