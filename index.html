@@ -945,102 +945,109 @@
   <!-- WAR TAB -->
   <div id="tab-war" class="tab-content" style="display:none;padding-bottom:100px;">
     <div class="war-container">
-      <!-- Banner de Guerra -->
-      <div style="width: 100%; margin-bottom: 20px; border-radius: 24px 24px 0 0; overflow: hidden; border-bottom: 2px solid var(--war-border);">
-        <img src="assets/war_banner.png" alt="Guerra por el Territorio" style="width: 100%; height: auto; display: block; object-fit: cover;">
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div class="section-title">⚔️ Panel de Guerra</div>
-        <button id="sim-weekend-btn" onclick="toggleWeekendSimulation()" 
-                style="background:rgba(255,255,255,0.05); border:1px solid #444; color:#888; border-radius:10px; padding:6px 12px; font-size:7px; font-family:'Press Start 2P',monospace; cursor:pointer;"
-                onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-          MODO TEST
-        </button>
-      </div>
-      
-      <!-- Estado de la semana -->
-      <div id="war-phase-banner"></div>
-      
-      <!-- Estadísticas Personales -->
-      <div class="war-main-grid">
-        <div class="war-card">
-          <div class="war-card-icon">🛡️</div>
-          <div class="war-card-label">Tu Bando</div>
-          <div id="war-my-faction" class="war-card-value">—</div>
-        </div>
-        <div class="war-card">
-          <div class="war-card-icon">🏆</div>
-          <div class="war-card-label">Aporte Semanal</div>
-          <div id="war-my-pts" class="war-card-value">0 PT</div>
-        </div>
-        <div class="war-card">
-          <div class="war-card-icon">⚔️</div>
-          <div class="war-card-label">Slots Defensa</div>
-          <div id="war-defense-slots" class="war-card-value">0</div>
-        </div>
-        <div class="war-card">
-          <div class="war-card-icon">🪙</div>
-          <div class="war-card-label">Saldo Guerra</div>
-          <div id="war-coins-count" class="war-card-value" style="color:var(--yellow); margin-bottom:10px;">0</div>
-          <button onclick="showWarShop()" class="war-shop-btn">TIENDA</button>
-        </div>
-      </div>
-
-      <!-- Marcador Global -->
-      <div id="war-score" style="display:flex;justify-content:space-between;margin-bottom:20px;background:rgba(255,255,255,0.03);padding:14px 25px;border-radius:18px;border:1px solid rgba(255,255,255,0.08);">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size:18px;">🟢</span>
-          <div style="display:flex; flex-direction:column;">
-            <span style="color:var(--gray); font-size:7px; font-family:'Press Start 2P'; margin-bottom:4px;">UNIÓN</span>
-            <span id="union-maps" style="color:var(--union-color); font-weight:900; font-size:14px;">0</span>
+      <div class="war-dashboard-wrapper">
+        
+        <!-- SIDEBAR: Stats & Global Info -->
+        <aside class="war-sidebar">
+          <!-- Banner de Guerra -->
+          <div class="war-banner-mini">
+            <img src="assets/war_banner.png" alt="Guerra" style="width: 100%; height: auto; display: block; border-radius: 16px;">
           </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:10px; text-align:right;">
-          <div style="display:flex; flex-direction:column;">
-            <span style="color:var(--gray); font-size:7px; font-family:'Press Start 2P'; margin-bottom:4px;">PODER</span>
-            <span id="poder-maps" style="color:var(--poder-color); font-weight:900; font-size:14px;">0</span>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+            <div class="section-title" style="margin:0; font-size: 16px;">⚔️ Panel</div>
+            <button id="sim-weekend-btn" onclick="toggleWeekendSimulation()" 
+                    style="background:rgba(255,255,255,0.05); border:1px solid #444; color:#888; border-radius:8px; padding:4px 8px; font-size:6px; font-family:'Press Start 2P',monospace; cursor:pointer;">
+              TEST
+            </button>
           </div>
-          <span style="font-size:18px;">🟣</span>
-        </div>
-      </div>
+          
+          <!-- Estado de la semana -->
+          <div id="war-phase-banner"></div>
 
-      <!-- Mapa de Kanto con progreso vivo -->
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin:30px 0 15px; letter-spacing:2px; text-align:center; opacity:0.6;">
-        :: MONITOR DE TERRITORIOS ::
-      </div>
-      <div id="war-kanto-map">
-        <!-- Generado dinámicamente -->
-      </div>
-      
-      <!-- Mis Defensores (Solo se muestra si hay alguno o es fin de semana) -->
-      <div id="war-my-defenders-section" style="margin-top:25px; display:none;">
-        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:var(--yellow); margin-bottom:15px; letter-spacing:1px;">
-          🛡️ MIS DEFENSORES :: RECOMPENSAS
-        </div>
-        <div id="war-my-defenders-list">
-          <!-- Generado dinámicamente -->
-        </div>
-      </div>
+          <!-- Marcador Global -->
+          <div id="war-score" class="war-score-box">
+            <div class="score-team union">
+              <span class="team-dot">🟢</span>
+              <div class="team-info">
+                <span class="team-label">UNIÓN</span>
+                <span id="union-maps" class="team-val">0</span>
+              </div>
+            </div>
+            <div class="score-vs">VS</div>
+            <div class="score-team poder">
+              <div class="team-info" style="text-align:right;">
+                <span class="team-label">PODER</span>
+                <span id="poder-maps" class="team-val">0</span>
+              </div>
+              <span class="team-dot">🟣</span>
+            </div>
+          </div>
 
-      <!-- Reglas de la Guerra -->
-      <div class="war-rules-card">
-        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:15px; display:flex; align-items:center; gap:8px;">
-           📜 REGLAS DE LA GUERRA
-        </div>
-        <ul style="list-style:none; padding:0; display:flex; flex-direction:column; gap:10px; font-size:11px;">
-          <li style="display:flex; gap:10px;">
-            <span style="color:var(--dispute-color)">⚔️</span>
-            <span><b>Lunes a Viernes:</b> Ganá combates en zonas en disputa para sumar puntos.</span>
-          </li>
-          <li style="display:flex; gap:10px;">
-            <span style="color:var(--purple)">⌛</span>
-            <span><b>Fin de Semana:</b> El bando con más puntos toma el control total.</span>
-          </li>
-          <li style="display:flex; gap:10px;">
-            <span style="color:var(--green)">⚡</span>
-            <span><b>Beneficios:</b> Controlar un mapa da <b>x2 Shiny</b> y <b>+25% EXP</b>.</span>
-          </li>
-        </ul>
+          <!-- Estadísticas Personales -->
+          <div class="war-stats-sidebar">
+            <div class="war-stat-item">
+              <span class="war-stat-icon">🛡️</span>
+              <div class="war-stat-details">
+                <span class="war-stat-label">Bando</span>
+                <span id="war-my-faction" class="war-stat-value">—</span>
+              </div>
+            </div>
+            <div class="war-stat-item">
+              <span class="war-stat-icon">🏆</span>
+              <div class="war-stat-details">
+                <span class="war-stat-label">Aporte</span>
+                <span id="war-my-pts" class="war-stat-value">0 PT</span>
+              </div>
+            </div>
+            <div class="war-stat-item">
+              <span class="war-stat-icon">⚔️</span>
+              <div class="war-stat-details">
+                <span class="war-stat-label">Slots</span>
+                <span id="war-defense-slots" class="war-stat-value">0</span>
+              </div>
+            </div>
+            <div class="war-stat-item coins" onclick="showWarShop()">
+              <span class="war-stat-icon">🪙</span>
+              <div class="war-stat-details">
+                <span class="war-stat-label">Monedas</span>
+                <span id="war-coins-count" class="war-stat-value">0</span>
+              </div>
+              <div class="war-stat-action">TIENDA</div>
+            </div>
+          </div>
+
+          <!-- Reglas de la Guerra -->
+          <div class="war-rules-compact">
+            <div class="rules-header">📜 REGLAS</div>
+            <ul class="rules-list">
+              <li><span class="bullet">⚔️</span> <b>Lun-Vie:</b> Sumá puntos ganando combates.</li>
+              <li><span class="bullet">⌛</span> <b>Sáb-Dom:</b> Bando líder toma control.</li>
+              <li><span class="bullet">⚡</span> <b>Bonos:</b> x2 Shiny y +25% EXP en mapas controlados.</li>
+            </ul>
+          </div>
+        </aside>
+
+        <!-- MAIN: Monitor -->
+        <main class="war-main-content">
+          <div class="war-monitor-header-premium">
+            <div class="monitor-title">🛰️ MONITOR DE TERRITORIOS</div>
+            <div class="monitor-status">ACTUALIZACIÓN EN VIVO</div>
+          </div>
+          
+          <div id="war-kanto-map" class="war-grid-premium">
+            <!-- Generado dinámicamente -->
+          </div>
+          
+          <!-- Mis Defensores -->
+          <div id="war-my-defenders-section" style="margin-top:30px; display:none;">
+            <div class="section-subtitle">🛡️ MIS DEFENSORES :: RECOMPENSAS</div>
+            <div id="war-my-defenders-list" class="defenders-grid">
+              <!-- Generado dinámicamente -->
+            </div>
+          </div>
+        </main>
+
       </div>
     </div>
   </div>

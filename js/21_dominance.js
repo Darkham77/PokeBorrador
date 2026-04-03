@@ -704,8 +704,16 @@ function renderKantoWarGrid(ptsData, domData) {
   let html = '';
 
   const mapsArray = window.FIRE_RED_MAPS || [];
-  // Filtrar mapas relevantes (con batallas)
-  const relevantMaps = mapsArray.filter(m => m.wild && Object.keys(m.wild).length > 0);
+  // Filtrar mapas relevantes (con batallas) y asegurar unicidad por ID
+  const seenMaps = new Set();
+  const relevantMaps = mapsArray.filter(m => {
+    if (!m.id || seenMaps.has(m.id)) return false;
+    if (m.wild && Object.keys(m.wild).length > 0) {
+      seenMaps.add(m.id);
+      return true;
+    }
+    return false;
+  });
 
   if (relevantMaps.length === 0) {
     container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--gray); font-size:10px;">Monitor no disponible.</div>';
