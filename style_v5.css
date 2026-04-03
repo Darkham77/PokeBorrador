@@ -852,10 +852,10 @@
     /* SPECIFIC FOR MAP GRID */
     .map-card {
       align-items: center;
-      justify-content: flex-start; /* Changed from center to allow margin-top:auto for footer */
+      justify-content: flex-start;
       text-align: center;
-      aspect-ratio: 16 / 9; /* More horizontal for maps */
-      min-height: 240px; /* Increased to avoid overflow */
+      position: relative;
+      min-height: 220px;
     }
 
     .location-card::before {
@@ -967,23 +967,36 @@
     .fishing-rod {
       position: absolute;
       bottom: 12px;
-      right: 12px;
+      left: 12px;
       font-size: 18px;
       z-index: 3;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     }
 
     .location-spawns {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: flex-end;
       gap: 4px;
-      justify-content: center;
-      margin-top: auto;
-      padding-top: 10px;
-      padding-bottom: 5px;
-      width: 100%;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      z-index: 5;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .spawn-row {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 2px;
+      justify-content: flex-end;
+    }
+    
+    .spawn-row img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
     }
 
     .location-spawns img {
