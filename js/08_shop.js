@@ -213,7 +213,7 @@
     // What unlocks at each trainer level
     const MARKET_UNLOCKS = {
       3: ['Súper Ball', 'Super Poción'],
-      5: ['Red Ball', 'Ocaso Ball', 'Cura Total', 'Compartir EXP', 'MT27 Retribución', 'Ítems de Poder'],
+      5: ['Red Ball', 'Ocaso Ball', 'Cura Total', 'Compartir EXP', 'MT27 Retribución'],
       8: ['Hiper Poción', 'Ultra Ball', 'Revivir', 'Lente Zoom', 'Subida PP'],
       10: ['Turno Ball', 'Restos', 'Cascabel Concha', 'Piedras de Evolución'],
       12: ['Poción Máxima', 'Huevo Suerte Pequeño', 'Cinta Elegida', 'MT14 Ventisca'],
@@ -257,37 +257,37 @@
       },
       {
         id: 'power_weight', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-weight.png',
-        name: 'Pesa Recia', icon: '🏋️', price: 15000, unlockLv: 20, tier: 'legendary',
+        name: 'Pesa Recia', icon: '🏋️', price: 15000, unlockLv: 20, tier: 'legendary', market: false, trainerShop: false,
         desc: 'Equipada en la guardería, asegura heredar los IVs de PS (Vida) de este padre.',
         effect: (qty) => { state.inventory['Pesa Recia'] = (state.inventory['Pesa Recia'] || 0) + qty; }
       },
       {
         id: 'power_bracer', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-bracer.png',
-        name: 'Brazal Recio', icon: '🥊', price: 15000, unlockLv: 20, tier: 'legendary',
+        name: 'Brazal Recio', icon: '🥊', price: 15000, unlockLv: 20, tier: 'legendary', market: false, trainerShop: false,
         desc: 'Equipada en la guardería, asegura heredar los IVs de Ataque de este padre.',
         effect: (qty) => { state.inventory['Brazal Recio'] = (state.inventory['Brazal Recio'] || 0) + qty; }
       },
       {
         id: 'power_belt', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-belt.png',
-        name: 'Cinto Recio', icon: '🛡️', price: 15000, unlockLv: 20, tier: 'legendary',
+        name: 'Cinto Recio', icon: '🛡️', price: 15000, unlockLv: 20, tier: 'legendary', market: false, trainerShop: false,
         desc: 'Equipada en la guardería, asegura heredar los IVs de Defensa de este padre.',
         effect: (qty) => { state.inventory['Cinto Recio'] = (state.inventory['Cinto Recio'] || 0) + qty; }
       },
       {
         id: 'power_lens', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-lens.png',
-        name: 'Lente Recia', icon: '🔍', price: 15000, unlockLv: 20, tier: 'legendary',
+        name: 'Lente Recia', icon: '🔍', price: 15000, unlockLv: 20, tier: 'legendary', market: false, trainerShop: false,
         desc: 'Equipada en la guardería, asegura heredar los IVs de Ataque Especial de este padre.',
         effect: (qty) => { state.inventory['Lente Recia'] = (state.inventory['Lente Recia'] || 0) + qty; }
       },
       {
         id: 'power_band', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-band.png',
-        name: 'Banda Recia', icon: '🎗️', price: 15000, unlockLv: 20, tier: 'legendary',
+        name: 'Banda Recia', icon: '🎗️', price: 15000, unlockLv: 20, tier: 'legendary', market: false, trainerShop: false,
         desc: 'Equipada en la guardería, asegura heredar los IVs de Defensa Especial de este padre.',
         effect: (qty) => { state.inventory['Banda Recia'] = (state.inventory['Banda Recia'] || 0) + qty; }
       },
       {
         id: 'power_anklet', cat: 'breeding', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-anklet.png',
-        name: 'Franja Recia', icon: '👢', price: 15000, unlockLv: 20, tier: 'legendary',
+        name: 'Franja Recia', icon: '👢', price: 15000, unlockLv: 20, tier: 'legendary', market: false, trainerShop: false,
         desc: 'Equipada en la guardería, asegura heredar los IVs de Velocidad de este padre.',
         effect: (qty) => { state.inventory['Franja Recia'] = (state.inventory['Franja Recia'] || 0) + qty; }
       },
@@ -302,19 +302,19 @@
       // ── FÓSILES (LOOT ESPECIAL) ──────────────────────────────────────────────
       {
         id: 'helix_fossil', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/helix-fossil.png',
-        name: 'Fósil Hélix', icon: '🐚', price: 50000, unlockLv: 30, tier: 'rare',
+        name: 'Fósil Hélix', icon: '🐚', price: 50000, unlockLv: 30, tier: 'rare', market: false, trainerShop: false,
         desc: 'Un fósil de un Pokémon marino antiguo. Parece un caracol.',
         effect: (qty) => { state.inventory['Fósil Hélix'] = (state.inventory['Fósil Hélix'] || 0) + qty; }
       },
       {
         id: 'dome_fossil', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dome-fossil.png',
-        name: 'Fósil Domo', icon: '🛡️', price: 50000, unlockLv: 30, tier: 'rare',
+        name: 'Fósil Domo', icon: '🛡️', price: 50000, unlockLv: 30, tier: 'rare', market: false, trainerShop: false,
         desc: 'Un fósil de un Pokémon prehistórico con caparazón rígido.',
         effect: (qty) => { state.inventory['Fósil Domo'] = (state.inventory['Fósil Domo'] || 0) + qty; }
       },
       {
         id: 'old_amber', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/old-amber.png',
-        name: 'Ámbar Viejo', icon: '💎', price: 75000, unlockLv: 30, tier: 'rare',
+        name: 'Ámbar Viejo', icon: '💎', price: 75000, unlockLv: 30, tier: 'rare', market: false, trainerShop: false,
         desc: 'Una pieza de ámbar que contiene material genético de un Pokémon volador antiguo.',
         effect: (qty) => { state.inventory['Ámbar Viejo'] = (state.inventory['Ámbar Viejo'] || 0) + qty; }
       },
