@@ -521,10 +521,10 @@
       const factionBadge = document.getElementById('player-faction-badge');
       if (factionBadge) {
         if (state.faction === 'union') {
-          factionBadge.textContent = '🔵 Team Unión';
+          factionBadge.innerHTML = '<img src="assets/factions/union.png" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;filter:drop-shadow(0 0 3px rgba(59,130,246,0.5));"> Team Unión';
           factionBadge.className = 'faction-badge union';
         } else if (state.faction === 'poder') {
-          factionBadge.textContent = '🔴 Team Poder';
+          factionBadge.innerHTML = '<img src="assets/factions/poder.png" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;filter:drop-shadow(0 0 3px rgba(239,68,68,0.5));"> Team Poder';
           factionBadge.className = 'faction-badge poder';
         } else {
           factionBadge.textContent = 'Sin Bando';

@@ -49,7 +49,7 @@ async function chooseFaction(faction) {
     if (typeof scheduleSave === 'function') scheduleSave();
     const bdg = document.getElementById('player-faction-badge');
     if (bdg) {
-      bdg.textContent = state.faction === 'union' ? '🔵 Unión' : '🔴 Poder';
+      bdg.innerHTML = state.faction === 'union' ? '<img src="assets/factions/union.png" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;filter:drop-shadow(0 0 3px rgba(59,130,246,0.5));"> Team Unión' : '<img src="assets/factions/poder.png" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;filter:drop-shadow(0 0 3px rgba(239,68,68,0.5));"> Team Poder';
       bdg.className = `faction-badge ${state.faction}`;
     }
     const modal = document.getElementById('faction-choice-modal');
