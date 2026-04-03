@@ -320,7 +320,7 @@ async function renderMaps() {
       let mapWinners = {};
       let isWeekend = typeof isDisputePhase === 'function' ? !isDisputePhase() : false;
       try {
-        const weekId = typeof getCurrentWarWeekId === 'function' ? getCurrentWarWeekId() : null;
+        const weekId = typeof getCurrentWeekId === 'function' ? getCurrentWeekId() : null;
         if (weekId) {
           let hasDominanceData = false;
           if (isWeekend) {
