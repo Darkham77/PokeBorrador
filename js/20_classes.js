@@ -942,7 +942,7 @@ function sellPokemonBlackMarket(pokemon, boxIndex) {
 
   const ivs = pokemon.ivs || {};
   const totalIv = Object.values(ivs).reduce((s, v) => s + (v || 0), 0);
-  const price = Math.floor((pokemon.level * 50 + (totalIv / 186) * 500) * 0.8);
+  const price = Math.floor((pokemon.level * 100 + (totalIv / 186) * 1000) * 1.5);
 
   const ov = document.createElement('div');
   ov.id = 'black-market-sell-modal';
@@ -1207,7 +1207,7 @@ function generateBugNetPokemon(ivFloor, shinyDivisor) {
 function calcRocketMissionMoney(pokeList, mult) {
   const subtotal = pokeList.reduce((acc, p) => {
     const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
-    const val = 1000 + (p.level * 100) + (totalIvs * 25);
+    const val = 2000 + (p.level * 200) + (totalIvs * 50);
     return acc + val;
   }, 0);
   return Math.floor(subtotal * mult);
@@ -1514,7 +1514,7 @@ function _openPokemonSelectModal(missionId, info, cls) {
           <span style="margin:0 4px;color:#374151;">|</span>
           <span style="font-size:10px;color:#6b7280;">IV Total: <strong style="color:#e2e8f0;">${totalIvs}/186</strong></span>
         </div>`
-      : `<div style="font-size:10px;color:#3b82f6;margin-top:6px;">⚡ ~${(15000 + p.level * 500) * info.blocks} EXP totales</div>`;
+      : `<div style="font-size:10px;color:#3b82f6;margin-top:6px;">⚡ ~${(25000 + p.level * 1000) * info.blocks} EXP totales</div>`;
 
     const shinyBadge = p.isShiny ? '<span style="font-size:11px;margin-left:4px;">✨</span>' : '';
 
@@ -1647,14 +1647,29 @@ function _openPokemonSelectModal(missionId, info, cls) {
       state.battleCoins = (state.battleCoins || 0) - info2.cost;
     }
 
+    // Si el Pokémon está en el equipo, moverlo a la caja (PC) para evitar uso en combate
+    const teamIdx = (state.team || []).indexOf(p);
+    if (teamIdx !== -1) {
+      if (state.team.length <= 1) {
+        return notify('No puedes enviar a tu último Pokémon del equipo a una misión.', '⚠️');
+      }
+      state.team.splice(teamIdx, 1);
+      state.box.push(p);
+      notify(`¡${p.name || p.id} se movió a la Caja para su misión!`, '📦');
+    }
+
     p.onMission = true;
     // Cerrar tanto el selector como el panel de detalles si está abierto
     document.getElementById('mission-select-overlay')?.remove();
     if (typeof closePokemonDetail === 'function') closePokemonDetail();
     _launchMission(mid, { pokeUid: p.uid, pokeName: p.name || p.id });
+    
     // Persistir inmediatamente para que un reload no pierda el flag onMission
     if (typeof scheduleSave === 'function') scheduleSave();
     if (typeof updateHud === 'function') updateHud();
+    if (typeof renderTeam === 'function') renderTeam();
+    if (typeof renderBox === 'function') renderBox();
+    if (typeof updateProfilePanel === 'function') updateProfilePanel();
   };
 }
 
@@ -1714,7 +1729,7 @@ function collectClassMission() {
   } else if (cls === 'entrenador') {
     if (p) {
       const expBlocks = info?.blocks || 1;
-      const expGained = expBlocks * (15000 + (p.level * 500));
+      const expGained = expBlocks * (25000 + (p.level * 1000));
       p.exp = (p.exp || 0) + expGained;
       // Si opción 24h, dar +1 nivel garantizado
       if (am.id === 'mission_24h') {
@@ -1744,10 +1759,10 @@ function collectClassMission() {
       for (let block = 0; block < blocks; block++) {
         if (currentVigor <= 0) break; // Sin vigor, no sube IVs
         
-        // Buscar stat que no esté en 31
+        // Buscar stat que no esté en 31 (intentos aumentados a 12 para asegurar acierto)
         let attempts = 0;
         let gained = false;
-        while (attempts < 6 && !gained) {
+        while (attempts < 12 && !gained) {
           const stat = IV_STATS[Math.floor(Math.random() * IV_STATS.length)];
           p.ivs = p.ivs || {};
           if ((p.ivs[stat] || 0) < 31) {
