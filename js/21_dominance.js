@@ -763,22 +763,22 @@ function renderKantoWarGrid(ptsData, domData) {
             </div>
 
             <!-- BARRA CENTRAL GRANDE -->
-            <div class="war-central-progress-box" style="margin-top: 15px;">
+            <div class="war-central-progress-box">
               <div class="war-central-labels">
-                <span style="color:var(--union-color)">UNIÓN</span>
-                <span style="color:var(--poder-color)">PODER</span>
+                <span style="color:var(--union-color); text-shadow:0 1px 4px rgba(0,0,0,0.8);">UNIÓN</span>
+                <span style="color:var(--poder-color); text-shadow:0 1px 4px rgba(0,0,0,0.8);">PODER</span>
               </div>
               <div class="war-central-bar">
                 <div class="bar-union" style="width:${pctU}%"></div>
                 <div class="bar-poder" style="width:${pctP}%"></div>
               </div>
-              <div class="war-central-labels" style="font-size:5px; opacity:0.8;">
-                <span>${pU} PT</span>
-                <span>${pP} PT</span>
+              <div class="war-central-labels" style="font-size:8px; opacity:0.9; margin-top: 8px;">
+                <span style="text-shadow:0 1px 3px rgba(0,0,0,0.8);">${pU} PT</span>
+                <span style="text-shadow:0 1px 3px rgba(0,0,0,0.8);">${pP} PT</span>
               </div>
             </div>
 
-            <div style="font-size:6px; color:rgba(255,255,255,0.5); font-family:'Press Start 2P'; text-align:center; margin-bottom: 8px;">
+            <div style="margin-top:auto; font-size:7px; color:rgba(255,255,255,0.6); font-family:'Press Start 2P'; text-align:center; margin-bottom: 8px; text-shadow:0 1px 4px rgba(0,0,0,0.8);">
                ${total > 0 ? (pU > pP ? 'Lidera Unión' : (pP > pU ? 'Lidera Poder' : 'Empate Técnico')) : 'Sin actividad'}
             </div>
           </div>

@@ -5845,25 +5845,26 @@
 
 /* Progress Bar in Card */
 .war-central-progress-box {
-  margin-top: auto;
-  margin-bottom: 10px;
+  margin: auto 0;
+  padding: 0 10px;
 }
 
 .war-central-labels {
   display: flex;
   justify-content: space-between;
   font-family: 'Press Start 2P';
-  font-size: 6px;
-  margin-bottom: 6px;
+  font-size: 10px;
+  margin-bottom: 8px;
   font-weight: 900;
 }
 
 .war-central-bar {
-  height: 6px;
+  height: 16px;
   background: rgba(255,255,255,0.1);
   border-radius: 99px;
   overflow: hidden;
   display: flex;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .bar-union { height: 100%; transition: width 0.5s ease; background: var(--union-color); box-shadow: 0 0 10px var(--union-color); }
