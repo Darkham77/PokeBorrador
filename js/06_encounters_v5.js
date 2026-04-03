@@ -100,9 +100,14 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
 }
 
 async function renderMaps() {
+  console.log("[renderMaps] Iniciando renderizado...");
   _startCarouselTimer();
-      const container = document.getElementById('map-list');
-      if (!container) return;
+  try {
+    const container = document.getElementById('map-list');
+    if (!container) {
+      console.error("[renderMaps] No se encontró el contenedor #map-list");
+      return;
+    }
       const cycle = getDayCycle();
       const badgeCount = (Array.isArray(state.badges) ? state.badges.length : (parseInt(state.badges) || 0));
 
@@ -130,11 +135,15 @@ async function renderMaps() {
         route13: 'ruta 13.png',
         safari_zone: 'zona safari.png',
         seafoam_islands: 'islas espuma.png',
+        fishing_island: 'islas espuma.png',
         mansion: 'mansion pokemon.png',
         route23: 'ruta 23.png',
         victory_road: 'calle victoria.png',
         cerulean_cave: 'cueva celeste.png'
       };
+
+      console.log(`[renderMaps] Mapa Actual: ${state.map}, Bando: ${state.faction}, Medallas: ${badgeCount}, Ciclo: ${cycle}`);
+      console.log(`[renderMaps] Sprites Disponibles: ${window.POKEMON_SPRITE_IDS ? 'SÍ' : 'NO'}`);
 
       let eggCount = 0;
       let interactionCount = state.totalNotifications || 0;
@@ -147,13 +156,24 @@ async function renderMaps() {
       }
 
       const getPokemonSpriteHtml = (id, isRare = false) => {
-        const num = window.POKEMON_SPRITE_IDS ? window.POKEMON_SPRITE_IDS[id] : null;
+        const spriteIds = window.POKEMON_SPRITE_IDS;
+        if (!spriteIds) {
+          console.warn("[getPokemonSpriteHtml] window.POKEMON_SPRITE_IDS no está definido aún.");
+          return '';
+        }
+        const num = spriteIds[id];
         const pData = POKEMON_DB[id];
         const name = pData?.name || id;
-        if (!num) return '';
+        
+        if (!num) {
+          console.log(`[getPokemonSpriteHtml] No hay sprite ID para: ${id}`);
+          return '';
+        }
+        
         return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
           title="${name}" width="32" height="32"
-          onerror="this.style.display='none'" class="${isRare ? 'rare-spawn' : ''}">`;
+          onerror="this.parentElement.innerHTML += '<span>❓</span>'; this.remove();" 
+          class="${isRare ? 'rare-spawn' : ''}">`;
       };
 
       const translateCycle = (c) => {
@@ -485,8 +505,12 @@ async function renderMaps() {
 
       html += `</div>`; // Close map-list grid container
 
-      container.innerHTML = html;
-    }
+        container.innerHTML = html;
+        console.log(`[renderMaps] Renderizado completado. HTML inyectado en #map-list`);
+      } catch (err) {
+        console.error("[renderMaps] Error crítico durante el renderizado:", err);
+      }
+}
 
     // ===== LOCATION / WILD BATTLE =====
     async function goLocation(locId) {

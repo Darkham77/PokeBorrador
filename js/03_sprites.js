@@ -61,6 +61,13 @@ window.POKEMON_SPRITE_IDS = {
   pichu: 172, cleffa: 173, igglybuff: 174, togepi: 175, elekid: 239, magby: 240
 };
 
+window.checkSpritesReady = function() {
+  const count = Object.keys(window.POKEMON_SPRITE_IDS || {}).length;
+  console.log(`[SpriteVerify] Encontrados ${count} IDs de sprites.`);
+  return count > 0;
+};
+window.checkSpritesReady();
+
 // Cache de sprites ya cargados
 const spriteCache = {};
 
