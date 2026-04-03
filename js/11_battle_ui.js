@@ -215,6 +215,9 @@
       'Incienso Normal': _ => { state.incenseType = 'normal'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Normal (30 min)`; },
       'Incienso Fantasma': _ => { state.incenseType = 'ghost'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Fantasma (30 min)`; },
       'Incienso Psíquico': _ => { state.incenseType = 'psychic'; state.incenseSecs = 30 * 60; updateHud(); updateBuffPanel(); return `activó el Incienso Psíquico (30 min)`; },
+      'Fósil Hélix': _ => { setTimeout(() => reviveFossil('omanyte', 'Fósil Hélix'), 100); return 'deferred'; },
+      'Fósil Domo': _ => { setTimeout(() => reviveFossil('kabuto', 'Fósil Domo'), 100); return 'deferred'; },
+      'Ámbar Viejo': _ => { setTimeout(() => reviveFossil('aerodactyl', 'Ámbar Viejo'), 100); return 'deferred'; },
     };
 
     function showBattleBag() {
@@ -235,7 +238,8 @@
             'Repelente', 'Superrepelente', 'Máximo Repelente',
             'Ticket Shiny', 'Moneda Amuleto', 'Huevo Suerte Pequeño',
             'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo',
-            'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico'
+            'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico',
+            'Fósil Hélix', 'Fósil Domo', 'Ámbar Viejo'
           ];
           if (nonCombat.includes(name)) return false;
 
@@ -248,7 +252,7 @@
         html += `<div style="color:var(--gray);font-size:12px;">No tenés objetos utilizables.</div>`;
       } else {
         html += usable.map(([name, qty]) => {
-          const isGlobal = HEALING_ITEMS[name]?.length === 0 || ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico'].includes(name);
+          const isGlobal = HEALING_ITEMS[name]?.length === 0 || ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico', 'Fósil Hélix', 'Fósil Domo', 'Ámbar Viejo'].includes(name);
           return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.05);
             border-radius:10px;padding:10px 14px;margin-bottom:8px;">
             <div>
@@ -308,7 +312,7 @@
       const fn = HEALING_ITEMS[itemName];
       if (!fn || !state.inventory[itemName]) return;
 
-      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico'].includes(itemName);
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico', 'Fósil Hélix', 'Fósil Domo', 'Ámbar Viejo'].includes(itemName);
       
       let result;
       let targetName = 'Equipo';
@@ -500,7 +504,7 @@
       const fn = HEALING_ITEMS[itemName];
       if (!fn || !state.inventory[itemName]) return;
 
-      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico'].includes(itemName);
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico', 'Fósil Hélix', 'Fósil Domo', 'Ámbar Viejo'].includes(itemName);
 
       if (isGlobal) {
         const result = fn();
@@ -526,7 +530,7 @@
     }
 
     function openBagItemMenu(itemName) {
-      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico'].includes(itemName);
+      const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico', 'Fósil Hélix', 'Fósil Domo', 'Ámbar Viejo'].includes(itemName);
       
       if (isGlobal) {
         useItemOutsideBattle(itemName, 'team', 0);
@@ -937,3 +941,128 @@
 
       if (typeof scheduleSave === 'function') scheduleSave();
     }
+
+    window.reviveFossil = function(pokemonId, itemName) {
+      if (!state.inventory[itemName]) return;
+      
+      const p = makePokemon(pokemonId, 1);
+      
+      // UI Animation
+      const ov = document.createElement('div');
+      ov.style.cssText = 'position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.96);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(15px);animation:fadeIn 0.5s ease;';
+      
+      const shopItem = SHOP_ITEMS.find(i => i.name === itemName);
+      const itemSprite = shopItem ? shopItem.sprite : '';
+      
+      ov.innerHTML = `
+        <div id="fossil-stage" style="text-align:center;transition:all 0.5s;max-width:400px;width:100%;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin-bottom:30px;letter-spacing:2px;text-shadow:0 0 15px rgba(255,217,61,0.5);">RESTAURACIÓN DE ADN</div>
+          <div style="position:relative;width:120px;height:120px;margin:0 auto 40px;display:flex;align-items:center;justify-content:center;">
+            <div id="fossil-glow" style="position:absolute;width:100px;height:100px;background:radial-gradient(circle, var(--yellow) 0%, transparent 70%);opacity:0;border-radius:50%;filter:blur(15px);transition:all 2s ease-in-out;"></div>
+            <img id="fossil-img" src="${itemSprite}" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated;position:relative;z-index:2;filter:drop-shadow(0 0 15px rgba(0,0,0,0.8));">
+          </div>
+          <div id="fossil-text" style="color:#fff;font-size:15px;font-weight:700;height:40px;line-height:1.4;font-family:'Outfit',sans-serif;">Extrayendo secuencia genética de ${itemName}...</div>
+        </div>
+      `;
+      document.body.appendChild(ov);
+      
+      const stage = ov.querySelector('#fossil-stage');
+      const glow = ov.querySelector('#fossil-glow');
+      const text = ov.querySelector('#fossil-text');
+      const img = ov.querySelector('#fossil-img');
+      
+      // Step 1: Start glow
+      setTimeout(() => {
+        glow.style.opacity = '1';
+        glow.style.transform = 'scale(3)';
+        img.style.animation = 'pulse 1s infinite alternate';
+        text.textContent = '¡La estructura molecular es estable! Iniciando reconstrucción...';
+      }, 1000);
+      
+      // Step 2: Flash and Reveal
+      setTimeout(() => {
+        const flash = document.createElement('div');
+        flash.style.cssText = 'position:absolute;inset:0;background:#fff;z-index:10;opacity:0;transition:opacity 0.4s;';
+        ov.appendChild(flash);
+        
+        flash.style.opacity = '1';
+        
+        setTimeout(() => {
+          // Consume item here to avoid duplication if refresh/crash before close
+          state.inventory[itemName]--;
+          if (state.inventory[itemName] <= 0) delete state.inventory[itemName];
+          
+          // Register in Pokedex
+          state.pokedex = state.pokedex || [];
+          state.seenPokedex = state.seenPokedex || [];
+          if (!state.pokedex.includes(p.id)) state.pokedex.push(p.id);
+          if (!state.seenPokedex.includes(p.id)) state.seenPokedex.push(p.id);
+
+          // Change to Pokemon
+          const pokeSprite = getSpriteUrl(p.id, p.isShiny);
+          img.src = pokeSprite;
+          img.style.animation = 'bounce 2s infinite';
+          img.style.width = '180px';
+          img.style.height = '180px';
+          img.style.filter = `drop-shadow(0 0 30px ${p.isShiny ? 'gold' : 'rgba(255,255,255,0.6)'})`;
+          glow.style.background = p.isShiny ? 'radial-gradient(circle, gold 0%, transparent 70%)' : 'radial-gradient(circle, #fff 0%, transparent 70%)';
+          
+          text.innerHTML = `<span style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:1px;">¡ÉXITO TOTAL!</span><br><span style="font-size:26px;color:var(--yellow);text-shadow:0 0 20px rgba(255,217,61,0.7);font-weight:900;">${p.name.toUpperCase()} ${p.isShiny ? '✨' : ''}</span>`;
+          
+          flash.style.opacity = '0';
+          setTimeout(() => flash.remove(), 400);
+          
+          // Show Stats Card
+          const statsDiv = document.createElement('div');
+          statsDiv.style.cssText = 'margin-top:30px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:20px;width:100%;max-width:320px;animation:slideUp 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) backwards;backdrop-filter:blur(5px);';
+          
+          const ivCol = (val) => val >= 30 ? '#fbbf24' : (val >= 20 ? '#60a5fa' : '#fff');
+          
+          statsDiv.innerHTML = `
+            <div style="display:flex;justify-content:space-between;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:10px;">
+              <span style="color:var(--gray);font-size:10px;font-family:'Press Start 2P';">NATURALEZA</span>
+              <span style="color:#fff;font-weight:800;font-size:14px;">${p.nature}</span>
+            </div>
+            <div style="font-size:9px;color:var(--gray);text-align:center;margin-bottom:12px;font-family:'Press Start 2P',monospace;opacity:0.8;">POTENCIAL GENÉTICO (IVs)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div style="display:flex;justify-content:space-between;background:rgba(0,0,0,0.2);padding:6px 10px;border-radius:8px;"><span style="color:var(--gray);font-size:11px;">HP</span><span style="color:${ivCol(p.ivs.hp)};font-weight:800;">${p.ivs.hp}</span></div>
+              <div style="display:flex;justify-content:space-between;background:rgba(0,0,0,0.2);padding:6px 10px;border-radius:8px;"><span style="color:var(--gray);font-size:11px;">ATK</span><span style="color:${ivCol(p.ivs.atk)};font-weight:800;">${p.ivs.atk}</span></div>
+              <div style="display:flex;justify-content:space-between;background:rgba(0,0,0,0.2);padding:6px 10px;border-radius:8px;"><span style="color:var(--gray);font-size:11px;">DEF</span><span style="color:${ivCol(p.ivs.def)};font-weight:800;">${p.ivs.def}</span></div>
+              <div style="display:flex;justify-content:space-between;background:rgba(0,0,0,0.2);padding:6px 10px;border-radius:8px;"><span style="color:var(--gray);font-size:11px;">SPA</span><span style="color:${ivCol(p.ivs.spa)};font-weight:800;">${p.ivs.spa}</span></div>
+              <div style="display:flex;justify-content:space-between;background:rgba(0,0,0,0.2);padding:6px 10px;border-radius:8px;"><span style="color:var(--gray);font-size:11px;">SPD</span><span style="color:${ivCol(p.ivs.spd)};font-weight:800;">${p.ivs.spd}</span></div>
+              <div style="display:flex;justify-content:space-between;background:rgba(0,0,0,0.2);padding:6px 10px;border-radius:8px;"><span style="color:var(--gray);font-size:11px;">SPE</span><span style="color:${ivCol(p.ivs.spe)};font-weight:800;">${p.ivs.spe}</span></div>
+            </div>
+          `;
+          stage.appendChild(statsDiv);
+          
+          const closeBtn = document.createElement('button');
+          closeBtn.innerHTML = '¡BIENVENIDO AL EQUIPO! 🌿';
+          closeBtn.style.cssText = 'margin-top:25px;width:100%;padding:18px;background:linear-gradient(135deg, var(--yellow), #f59e0b);color:#000;border:none;border-radius:16px;font-family:\'Press Start 2P\',monospace;font-size:9px;cursor:pointer;font-weight:800;transition:all 0.2s;box-shadow:0 4px 15px rgba(245,158,11,0.4);';
+          
+          closeBtn.onmouseover = () => { closeBtn.style.transform = 'scale(1.03)'; closeBtn.style.boxShadow = '0 6px 20px rgba(245,158,11,0.6)'; };
+          closeBtn.onmouseout = () => { closeBtn.style.transform = 'scale(1)'; closeBtn.style.boxShadow = '0 4px 15px rgba(245,158,11,0.4)'; };
+          
+          closeBtn.onclick = () => {
+            ov.style.opacity = '0';
+            setTimeout(() => {
+              ov.remove();
+              if (state.team.length < 6) {
+                state.team.push(p);
+                notify(`¡${p.name} se unió a tu equipo!`, '🎉');
+              } else {
+                state.box.push(p);
+                addLog(`¡${p.name} fue enviado al PC (Equipo Lleno)!`, 'log-info');
+                notify(`¡${p.name} fue enviado al PC!`, '📦');
+              }
+              if (typeof renderBag === 'function') renderBag();
+              if (typeof renderTeam === 'function') renderTeam();
+              if (typeof updateProfilePanel === 'function') updateProfilePanel();
+              if (typeof scheduleSave === 'function') scheduleSave();
+            }, 500);
+          };
+          stage.appendChild(closeBtn);
+          
+        }, 400);
+      }, 4500);
+    }
+
