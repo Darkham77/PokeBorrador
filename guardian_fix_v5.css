@@ -71,7 +71,6 @@
 /* DISABLE THE OLD LARGE ICON COMPLETELY - NUCLEAR OPTION */
 .guardian-icon-large, 
 img.guardian-icon-large,
-.map-card > img:not(.map-image):not(.guardian-mini-sprite),
 .location-card > img[src*="sprites/pokemon"]:not(.guardian-mini-sprite) {
     display: none !important;
 }
