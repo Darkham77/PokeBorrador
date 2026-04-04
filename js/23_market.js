@@ -94,17 +94,16 @@ async function renderOnlineMarket() {
       let innerContent = '';
       if (offer.listing_type === 'pokemon') {
         const p = offer.data;
-        const types = p.type ? p.type.map(t => `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-viii/sword-shield/${typesMap[t]}.png" width="16" style="vertical-align:middle;">`).join(' ') : '';
         const level = p.level || 1;
         const color = RARE_COLORS[p.rarity] || '#fff';
         
         innerContent = `
           <div style="font-size:10px; color:var(--gray); margin-bottom:4px; font-family:'Press Start 2P';">Vende: ${offer.seller_name.substring(0, 10)}</div>
           <div style="text-align:center; margin-bottom:8px;">
-            <img src="${p.shiny ? getPokemonSpriteUrl(p.sprite, true) : getPokemonSpriteUrl(p.sprite, false)}" style="width:60px; height:60px; object-fit:contain;">
+            <img src="${p.shiny ? getSpriteUrl(p.sprite, true) : getSpriteUrl(p.sprite, false)}" style="width:60px; height:60px; object-fit:contain;">
           </div>
           <div style="font-size:14px; font-weight:bold; color:${color}; margin-bottom:4px; text-transform:capitalize;">${p.name} ${p.shiny ? '✨' : ''}</div>
-          <div style="font-size:11px; color:var(--gray); margin-bottom:10px;">Nv ${level} ${types}</div>
+          <div style="font-size:11px; color:var(--gray); margin-bottom:10px;">Nv ${level}</div>
           <div style="display:flex; justify-content:space-between; font-size:10px; background:rgba(255,255,255,0.03); padding:4px; border-radius:4px; margin-bottom:10px; text-align:center;">
              <div style="flex:1;">HP<br><b style="color:#fff;">${p.ivs.hp}</b></div>
              <div style="flex:1;">ATK<br><b style="color:#fff;">${p.ivs.attack}</b></div>
@@ -242,7 +241,7 @@ async function renderMyPublications() {
       let spriteHtml = '';
 
       if (offer.listing_type === 'pokemon') {
-          spriteHtml = `<img src="${offer.data.shiny ? getPokemonSpriteUrl(offer.data.sprite, true) : getPokemonSpriteUrl(offer.data.sprite, false)}" style="height:50px;">`;
+          spriteHtml = `<img src="${offer.data.shiny ? getSpriteUrl(offer.data.sprite, true) : getSpriteUrl(offer.data.sprite, false)}" style="height:50px;">`;
       } else {
           spriteHtml = `<div style="font-size:30px; margin: 10px 0;">🎒</div>`;
       }
@@ -378,7 +377,7 @@ function renderPublishTab() {
         btn.style.borderRadius = '8px';
         btn.style.cursor = 'pointer';
         
-        btn.innerHTML = `<img src="${p.shiny ? getPokemonSpriteUrl(p.sprite, true) : getPokemonSpriteUrl(p.sprite, false)}" style="width:30px;height:30px;object-fit:contain;">`;
+        btn.innerHTML = `<img src="${p.shiny ? getSpriteUrl(p.sprite, true) : getSpriteUrl(p.sprite, false)}" style="width:30px;height:30px;object-fit:contain;">`;
         if (p.shiny) btn.style.borderColor = 'var(--yellow)';
 
         if (_omSelectedData && _omSelectedData.uid === p.uid) {
