@@ -780,16 +780,18 @@ async function renderMaps() {
       const overlay = document.createElement('div');
       overlay.id = 'fishing-game-overlay';
       
-      // Dificultad MUCHO más alta basada en rareza (1-100)
-      const totalNotes = Math.min(20, 5 + Math.floor(rarity / 8)); // Hasta 20 notas
-      const speedBase = Math.max(350, 1200 - (rarity * 10)); // Anillos mucho más rápidos (350ms - 1200ms)
-      const hitWindow = Math.max(100, 200 - (rarity / 2)); // Ventana de acierto más estrecha (100ms - 200ms)
+      // Dificultad ULTRA EXTREMA basada en rareza (1-100)
+      const totalNotes = Math.min(25, 6 + Math.floor(rarity / 6)); // Hasta 25 notas
+      const speedBase = Math.max(300, 1000 - (rarity * 9)); // Anillos ultra rápidos (300ms - 1000ms)
+      const hitWindow = Math.max(80, 180 - (rarity / 1.5)); // Ventana de acierto muy estrecha (80ms - 180ms)
+      const spawnInterval = speedBase * 0.7; // El siguiente círculo aparece al 70% del anterior
       
       overlay.innerHTML = `
         <div class="rhythm-container" id="rhythm-container">
           <div class="fishing-hint-rhythm">
-            ¡Hacia el <span>RITMO EXTREMO</span>!<br>
-            Click cuando el anillo coincida. 1 fallo = Escapa.
+            ¡ULTRA RITMO! <br> 
+            Seguí el orden <span>1, 2, 3...</span><br>
+            ¡NO PUEDEN FALLAR!
           </div>
           <div class="rhythm-counter" id="rhythm-counter">NOTAS: 0 / ${totalNotes}</div>
         </div>
@@ -799,28 +801,26 @@ async function renderMaps() {
       const container = document.getElementById('rhythm-container');
       const counter = document.getElementById('rhythm-counter');
       
-      let currentNoteIndex = 0;
+      let spawnedNotes = 0;
+      let clickedNotes = 0;
       let gameActive = true;
 
-      function spawnNextNote() {
-        if (!gameActive) return;
-        if (currentNoteIndex >= totalNotes) {
-          finish(true);
-          return;
-        }
-
+      function spawnNext() {
+        if (!gameActive || spawnedNotes >= totalNotes) return;
+        
+        spawnedNotes++;
+        const noteId = spawnedNotes;
         const note = document.createElement('div');
         note.className = 'rhythm-note';
         
-        // Posición aleatoria dentro del contenedor (380px)
-        const padding = 60;
+        const padding = 70;
         const x = padding + Math.random() * (380 - padding * 2);
         const y = padding + Math.random() * (380 - padding * 2);
         note.style.left = x + 'px';
         note.style.top = y + 'px';
 
         note.innerHTML = `
-          <div class="rhythm-circle">${currentNoteIndex + 1}</div>
+          <div class="rhythm-circle">${noteId}</div>
           <div class="rhythm-ring" style="animation-duration: ${speedBase}ms"></div>
         `;
 
@@ -832,48 +832,57 @@ async function renderMaps() {
         const handleNoteClick = (e) => {
           if (clicked || !gameActive) return;
           e.stopPropagation();
-          clicked = true;
+          
+          // REGLA DE ORO: Debe clickar en ORDEN (debe ser el siguiente índice)
+          if (noteId !== clickedNotes + 1) {
+             failNote(note, "¡Orden equivocado!");
+             return;
+          }
 
+          clicked = true;
+          const elapsed = performance.now() - startTime;
           const accuracy = Math.abs(elapsed - speedBase);
 
-          // Ventana de acierto más estrecha (hitWindow)
           if (accuracy < hitWindow) {
             note.querySelector('.rhythm-circle').classList.add('rhythm-success');
-            currentNoteIndex++;
-            counter.innerText = `NOTAS: ${currentNoteIndex} / ${totalNotes}`;
+            clickedNotes++;
+            counter.innerText = `NOTAS: ${clickedNotes} / ${totalNotes}`;
             
             setTimeout(() => {
               note.remove();
-              // Aceleramos la espera entre notas
-              setTimeout(spawnNextNote, 50);
+              if (clickedNotes >= totalNotes) finish(true);
             }, 100);
           } else {
-            failNote(note);
+            failNote(note, accuracy < speedBase ? "¡Demasiado pronto!" : "¡Demasiado tarde!");
           }
         };
 
         note.addEventListener('mousedown', handleNoteClick);
         note.addEventListener('touchstart', handleNoteClick, {passive: false});
 
-        // Temporizador de fallo por no clickear a tiempo
+        // Temporizador de fallo por no clickear a tiempo (grace period de 150ms)
         setTimeout(() => {
           if (!clicked && gameActive) {
-            failNote(note);
+            failNote(note, "¡Te dormiste!");
           }
-        }, speedBase + 200); // 200ms de gracia después de que se cierra
+        }, speedBase + 150);
+
+        // Programar la SIGUIENTE nota antes de que termine esta (solapamiento)
+        setTimeout(spawnNext, spawnInterval);
       }
 
-      function failNote(note) {
+      function failNote(note, msg) {
         if (!gameActive) return;
         gameActive = false;
         note.querySelector('.rhythm-circle').classList.add('rhythm-fail');
+        notify(msg, '💨');
         setTimeout(() => finish(false), 500);
       }
 
       function finish(win) {
         gameActive = false;
         if (win) {
-          notify('¡Ritmo perfecto! Lo atrapaste.', '🎣');
+          notify('¡PERFECTO! Lo atrapaste.', '🎣');
           overlay.style.animation = 'scaleOut .3s ease forwards';
           setTimeout(() => {
             overlay.remove();
@@ -881,14 +890,14 @@ async function renderMaps() {
             if (state.battle) state.battle.isFishing = true;
           }, 300);
         } else {
-          notify('¡Perdiste el ritmo! El Pokémon escapó.', '💨');
+          notify('El Pokémon escapó...', '💨');
           overlay.style.animation = 'scaleOut .3s ease forwards';
           setTimeout(() => overlay.remove(), 300);
         }
       }
 
-      // Iniciar primera nota
-      setTimeout(spawnNextNote, 1000);
+      // Iniciar secuencia
+      setTimeout(spawnNext, 800);
     }
 
 
