@@ -131,13 +131,9 @@
         p.moves.forEach(m => { m.pp = m.maxPP; });
       });
 
-      // UI Feedback
-      const effect = document.getElementById('healing-effect');
-      if (effect) effect.style.display = 'block';
-
-      // 2 seconds animation
+      // UI Feedback gone (green flash removed)
+      // 2 seconds delay
       setTimeout(() => {
-        if (effect) effect.style.display = 'none';
         
         // Wait 0.8s more so the user can read the "Healed" text on the image
         setTimeout(() => {
