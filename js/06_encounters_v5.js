@@ -780,15 +780,16 @@ async function renderMaps() {
       const overlay = document.createElement('div');
       overlay.id = 'fishing-game-overlay';
       
-      // Dificultad basada en rareza (1-100)
-      const totalNotes = Math.min(10, 3 + Math.floor(rarity / 15));
-      const speedBase = Math.max(800, 2000 - (rarity * 12)); // ms que tarda el anillo en cerrarse
+      // Dificultad MUCHO más alta basada en rareza (1-100)
+      const totalNotes = Math.min(20, 5 + Math.floor(rarity / 8)); // Hasta 20 notas
+      const speedBase = Math.max(350, 1200 - (rarity * 10)); // Anillos mucho más rápidos (350ms - 1200ms)
+      const hitWindow = Math.max(100, 200 - (rarity / 2)); // Ventana de acierto más estrecha (100ms - 200ms)
       
       overlay.innerHTML = `
         <div class="rhythm-container" id="rhythm-container">
           <div class="fishing-hint-rhythm">
-            ¡Hacé <span>CLICK</span> en el círculo!<br>
-            Cuando el anillo exterior coincida con el borde.
+            ¡Hacia el <span>RITMO EXTREMO</span>!<br>
+            Click cuando el anillo coincida. 1 fallo = Escapa.
           </div>
           <div class="rhythm-counter" id="rhythm-counter">NOTAS: 0 / ${totalNotes}</div>
         </div>
@@ -833,20 +834,19 @@ async function renderMaps() {
           e.stopPropagation();
           clicked = true;
 
-          const elapsed = performance.now() - startTime;
           const accuracy = Math.abs(elapsed - speedBase);
 
-          // Ventana de acierto: +- 200ms
-          if (accuracy < 200) {
+          // Ventana de acierto más estrecha (hitWindow)
+          if (accuracy < hitWindow) {
             note.querySelector('.rhythm-circle').classList.add('rhythm-success');
             currentNoteIndex++;
             counter.innerText = `NOTAS: ${currentNoteIndex} / ${totalNotes}`;
             
             setTimeout(() => {
               note.remove();
-              // Pequeña pausa entre notas
-              setTimeout(spawnNextNote, 200);
-            }, 150);
+              // Aceleramos la espera entre notas
+              setTimeout(spawnNextNote, 50);
+            }, 100);
           } else {
             failNote(note);
           }
