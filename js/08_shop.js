@@ -853,32 +853,6 @@
     let _marketCat = 'todos';
 let _trainerShopCat = 'todos';
 let _marketQty = {};
-let _shopSection = 'pokemart';
-
-function switchShopSection(section) {
-  _shopSection = section; // Actualizar variable global para que showTab('market') lo use
-  const pmDiv = document.getElementById('shop-pokemart-section');
-  const trDiv = document.getElementById('shop-trainer-section');
-  if (pmDiv) pmDiv.style.display = section === 'pokemart' ? 'block' : 'none';
-  if (trDiv) trDiv.style.display = section === 'trainer' ? 'block' : 'none';
-  const pmBtn = document.getElementById('shop-sw-pokemart');
-  const trBtn = document.getElementById('shop-sw-trainer');
-  if (pmBtn) { pmBtn.style.background = section === 'pokemart' ? 'var(--yellow)' : 'transparent'; pmBtn.style.color = section === 'pokemart' ? 'var(--darker)' : 'var(--gray)'; }
-  if (trBtn) { trBtn.style.background = section === 'trainer' ? 'var(--purple)' : 'transparent'; trBtn.style.color = section === 'trainer' ? '#fff' : 'var(--gray)'; }
-  
-  if (section === 'trainer') renderTrainerShop();
-  else if (typeof renderMarket === 'function') renderMarket();
-}
-
-function openTrainerShop(btnEl) {
-  if (typeof showTab === 'function') {
-    _shopSection = 'trainer'; // Forzar sección antes de mostrar tab
-    showTab('market', btnEl);
-    switchShopSection('trainer');
-  } else {
-    notify('No se pudo abrir la tienda (Error de carga)', '⚠️');
-  }
-}
 
 function getBlackMarketItems() {
   if (!state.classData) state.classData = {};

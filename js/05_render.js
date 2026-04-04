@@ -60,7 +60,11 @@ function showTab(tab, btnEl) {
   if (tab === 'team') renderTeam();
   if (tab === 'pokedex') renderPokedex();
   if (tab === 'gyms') renderGyms();
-  if (tab === 'market') switchShopSection(_shopSection);
+  if (tab === 'market') renderMarket();
+  if (tab === 'trainer-shop') renderTrainerShop();
+  if (tab === 'online-market') {
+     if (typeof renderOnlineMarket === 'function') renderOnlineMarket();
+  }
   if (tab === 'map') renderMaps();
   if (tab === 'daycare') renderDaycareUI();
   if (tab === 'box') renderBox();

@@ -165,8 +165,8 @@
             <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>🛒</span><span>Market</span></button>
             <div class="hud-submenu">
               <button class="hud-nav-btn" data-tab="market" onclick="showTab('market',this)"><span>🏪</span><span>PokéMart</span></button>
-              <button class="hud-nav-btn" onclick="openTrainerShop(this)"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
-              <button class="hud-nav-btn" onclick="notify('Mercado Online próximamente...', '🌐')"><span>🌐</span><span>Mercado Online</span></button>
+              <button class="hud-nav-btn" data-tab="trainer-shop" onclick="showTab('trainer-shop', this)"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
+              <button class="hud-nav-btn" data-tab="online-market" onclick="showTab('online-market', this)"><span>🌐</span><span>Mercado Online</span></button>
             </div>
           </div>
 
@@ -322,8 +322,8 @@
           <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>🛒</span><span>Market</span></button>
           <div class="nav-submenu">
             <button class="nav-btn" data-tab="market" onclick="showTab('market',this)"><span>🏪</span><span>PokéMart</span></button>
-            <button class="nav-btn" onclick="openTrainerShop(this)"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
-            <button class="nav-btn" onclick="notify('Próximamente: Mercado Online', '🌐')"><span>🌐</span><span>Online</span></button>
+            <button class="nav-btn" data-tab="trainer-shop" onclick="showTab('trainer-shop', this)"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
+            <button class="nav-btn" data-tab="online-market" onclick="showTab('online-market', this)"><span>🌐</span><span>Mercado Online</span></button>
           </div>
         </div>
 
@@ -409,66 +409,105 @@
       <!-- MARKET TAB -->
       <div id="tab-market" class="tab-content" style="display:none">
         <div class="team-section">
-
-          <!-- ── Shop section switcher ── -->
           <div
-            style="display:flex;gap:6px;margin-bottom:20px;background:rgba(255,255,255,0.04);border-radius:14px;padding:5px;border:1px solid rgba(255,255,255,0.07);">
-            <button id="shop-sw-pokemart" onclick="switchShopSection('pokemart')"
-              style="flex:1;padding:10px 6px;border:none;border-radius:10px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:7px;background:var(--yellow);color:var(--darker);transition:all 0.2s;">🛒
-              PokéMart</button>
-            <button id="shop-sw-trainer" onclick="switchShopSection('trainer')"
-              style="flex:1;padding:10px 6px;border:none;border-radius:10px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:7px;background:transparent;color:var(--gray);transition:all 0.2s;">🏅
-              Entrenador</button>
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+            <div class="section-title" style="margin:0;">🛒 PokéMart</div>
+            <div
+              style="background:rgba(255,217,61,0.15);border:1px solid var(--yellow);border-radius:12px;padding:8px 16px;">
+              <span style="font-size:13px;font-weight:900;color:var(--yellow);">₽<span
+                  id="market-money">0</span></span>
+            </div>
+          </div>
+          <div id="market-trainer-level" style="margin-bottom:16px;font-size:12px;color:var(--gray);"></div>
+          
+          <!-- Search Input -->
+          <div style="margin-bottom:14px;">
+            <input id="market-search-input" type="text" placeholder="Buscar ítem..." 
+              oninput="renderMarket()" 
+              style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
           </div>
 
-          <!-- ── PokéMart section ── -->
-          <div id="shop-pokemart-section">
-            <div
-              style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-              <div class="section-title" style="margin:0;">🛒 PokéMart</div>
-              <div
-                style="background:rgba(255,217,61,0.15);border:1px solid var(--yellow);border-radius:12px;padding:8px 16px;">
-                <span style="font-size:13px;font-weight:900;color:var(--yellow);">₽<span
-                    id="market-money">0</span></span>
-              </div>
-            </div>
-            <div id="market-trainer-level" style="margin-bottom:16px;font-size:12px;color:var(--gray);"></div>
-            
-            <!-- Search Input -->
-            <div style="margin-bottom:14px;">
-              <input id="market-search-input" type="text" placeholder="Buscar ítem..." 
-                oninput="renderMarket()" 
-                style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
-            </div>
+          <div id="market-tabs"></div>
+          <div id="market-grid"
+            style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;"></div>
+        </div>
+      </div>
 
-            <div id="market-tabs"></div>
-            <div id="market-grid"
-              style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;"></div>
+      <!-- TRAINER SHOP TAB -->
+      <div id="tab-trainer-shop" class="tab-content" style="display:none">
+        <div class="team-section">
+          <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+            <div class="section-title" style="margin:0;">🏅 Tienda del Entrenador</div>
+            <div
+              style="background:rgba(199,125,255,0.15);border:1px solid var(--purple);border-radius:12px;padding:8px 16px;">
+              <span style="font-size:13px;font-weight:900;color:var(--purple);">🪙 <span id="trainer-shop-bc">0</span>
+                BC</span>
+            </div>
+          </div>
+          <div id="trainer-shop-level" style="margin-bottom:16px;font-size:12px;color:var(--gray);"></div>
+          
+          <!-- Search Input -->
+          <div style="margin-bottom:14px;">
+            <input id="trainer-shop-search-input" type="text" placeholder="Buscar ítem exclusivo..." 
+              oninput="renderTrainerShop()" 
+              style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
           </div>
 
-          <!-- ── Trainer Shop section (hidden by default) ── -->
-          <div id="shop-trainer-section" style="display:none;">
-            <div
-              style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-              <div class="section-title" style="margin:0;">🏅 Tienda del Entrenador</div>
-              <div
-                style="background:rgba(199,125,255,0.15);border:1px solid var(--purple);border-radius:12px;padding:8px 16px;">
-                <span style="font-size:13px;font-weight:900;color:var(--purple);">🪙 <span id="trainer-shop-bc">0</span>
-                  BC</span>
-              </div>
-            </div>
-            <div id="trainer-shop-level" style="margin-bottom:16px;font-size:12px;color:var(--gray);"></div>
-            
-            <!-- Search Input -->
-            <div style="margin-bottom:14px;">
-              <input id="trainer-shop-search-input" type="text" placeholder="Buscar ítem exclusivo..." 
-                oninput="renderTrainerShop()" 
-                style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
-            </div>
+          <div id="trainer-shop-tabs"></div>
+          <div id="trainer-shop-grid"
+            style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;"></div>
+        </div>
+      </div>
 
-            <div id="trainer-shop-tabs"></div>
-            <div id="trainer-shop-grid"
-              style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;"></div>
+      <!-- ONLINE MARKET TAB (GTS) -->
+      <div id="tab-online-market" class="tab-content" style="display:none">
+        <div class="team-section">
+          
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+            <div class="section-title" style="margin:0;">🌐 Mercado Online</div>
+            <div style="background:rgba(255,217,61,0.15);border:1px solid var(--yellow);border-radius:12px;padding:8px 16px;">
+              <span style="font-size:13px;font-weight:900;color:var(--yellow);">₽<span id="online-market-money">0</span></span>
+            </div>
+          </div>
+
+          <!-- Pestañas internas del mercado online -->
+          <div style="display:flex;gap:6px;margin-bottom:20px;background:rgba(255,255,255,0.04);border-radius:14px;padding:5px;border:1px solid rgba(255,255,255,0.07);">
+            <button id="om-btn-explore" onclick="switchOnlineMarketTab('explore')" class="market-tab-btn active" style="flex:1;">🛒 Explorar</button>
+            <button id="om-btn-mine" onclick="switchOnlineMarketTab('mine')" class="market-tab-btn" style="flex:1;">📦 Mis Publicaciones</button>
+            <button id="om-btn-publish" onclick="switchOnlineMarketTab('publish')" class="market-tab-btn" style="flex:1;">➕ Vender</button>
+          </div>
+
+          <div id="om-view-explore">
+             <div style="margin-bottom:14px; display:flex; gap: 10px;">
+                <select id="om-filter-type" onchange="renderOnlineMarket()" style="padding:10px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
+                  <option value="all">Todo</option>
+                  <option value="pokemon">Pokémon</option>
+                  <option value="item">Ítems</option>
+                </select>
+                <input id="om-search-input" type="text" placeholder="Buscar..." oninput="renderOnlineMarket()" style="flex:1; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
+             </div>
+             <div id="om-explore-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
+          </div>
+
+          <div id="om-view-mine" style="display:none;">
+             <p style="font-size:11px; color:var(--gray); margin-bottom: 12px;">Aquí puedes ver tus ítems y Pokémon listados. Recuerda que el mercado cobra un 5% de comisión cuando reclamas tus ganancias.</p>
+             <div id="om-mine-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
+          </div>
+
+          <div id="om-view-publish" style="display:none;">
+             <div style="margin-bottom: 12px; display:flex; gap:10px;">
+                <button class="action-btn active" id="om-pub-sw-pokemon" onclick="switchPublishType('pokemon')" style="flex:1;">🐾 Vender Pokémon</button>
+                <button class="action-btn" id="om-pub-sw-item" onclick="switchPublishType('item')" style="flex:1;">🎒 Vender Ítem</button>
+             </div>
+             
+             <!-- Selectores dinámicos -->
+             <div id="om-publish-selectors" style="background:rgba(0,0,0,0.2); padding:14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 14px;"></div>
+
+             <div style="display:flex; gap:10px; align-items:center;">
+                <input type="number" id="om-publish-price" placeholder="Precio en ₽" style="flex:1; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:var(--yellow); font-size:14px; font-weight:bold; font-family:'Nunito',sans-serif; outline:none;" min="1" max="999999999">
+                <button onclick="publishToMarket()" class="title-btn" style="padding: 12px 20px; font-size: 10px; margin-top:0;">PUBLICAR</button>
+             </div>
           </div>
 
         </div>
@@ -1216,6 +1255,7 @@
   <script src="js/21_events.js"></script>
   <script src="js/21_dominance.js"></script>
   <script src="js/22_library.js"></script>
+ <script src="js/23_market.js"></script>
 
   <!-- POKEDEX DETAIL MODAL -->
   <div id="pokedex-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s ease;">
