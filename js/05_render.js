@@ -114,7 +114,7 @@ function renderTeam() {
     let badgesHtml = '';
     if (p.heldItem || tags.length) {
       const item = p.heldItem ? SHOP_ITEMS.find(it => it.name === p.heldItem) : null;
-      const itemHtml = p.heldItem ? `<span style="font-size:12px;" title="Equipado: ${p.heldItem}">${item ? item.icon : '📦'}</span>` : '';
+      const itemHtml = p.heldItem ? (item && item.sprite ? `<img src="${item.sprite}" title="Equipado: ${p.heldItem}" style="width:16px;height:16px;image-rendering:pixelated;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));">` : `<span style="font-size:12px;" title="Equipado: ${p.heldItem}">${item ? item.icon : '📦'}</span>`) : '';
       const tagsListHtml = tags.map(tag => {
         if (tag === 'fav') return '<span class="tag-icon-small">⭐</span>';
         if (tag === 'breed') return '<span class="tag-icon-small">❤️</span>';
