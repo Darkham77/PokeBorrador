@@ -1026,10 +1026,10 @@ const WAR_SHOP_ITEMS = [
   { id: 'power_anklet', name: 'Franja Recia', desc: 'Equipada en la guardería, asegura heredar los IVs de Velocidad de este padre.', cost: 120, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/power-anklet.png' },
   
   // Inciensos
-  { id: 'incense_fire', name: 'Incienso Fuego', desc: 'Atrae Pokémon de tipo Fuego durante 30 minutos.', cost: 150, sprite: 'assets/items/incense_fire.png' },
+  { id: 'incense_fire', name: 'Incienso Fuego', desc: 'Atrae Pokémon de tipo Fuego durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rose-incense.png' },
   { id: 'incense_water', name: 'Incienso Agua', desc: 'Atrae Pokémon de tipo Agua durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sea-incense.png' },
-  { id: 'incense_grass', name: 'Incienso Planta', desc: 'Atrae Pokémon de tipo Planta durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rose-incense.png' },
-  { id: 'incense_normal', name: 'Incienso Normal', desc: 'Atrae Pokémon de tipo Normal durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/luck-incense.png' },
+  { id: 'incense_grass', name: 'Incienso Planta', desc: 'Atrae Pokémon de tipo Planta durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/luck-incense.png' },
+  { id: 'incense_normal', name: 'Incienso Normal', desc: 'Atrae Pokémon de tipo Normal durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/full-incense.png' },
   { id: 'incense_ghost', name: 'Incienso Fantasma', desc: 'Atrae Pokémon de tipo Fantasma durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/pure-incense.png' },
   { id: 'incense_psychic', name: 'Incienso Psíquico', desc: 'Atrae Pokémon de tipo Psíquico durante 30 minutos.', cost: 150, sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/odd-incense.png' },
 ];
