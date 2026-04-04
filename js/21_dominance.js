@@ -251,13 +251,14 @@ async function resolveWeekIfNeeded() {
   const currentWeekId = getCurrentWeekId();
   if (state.lastResolvedWeek === currentWeekId) return;
 
+  // Solo resolvemos los resultados durante el fin de semana (fase de descanso)
   if (isDisputePhase()) return;
 
-  const prevWeekId = getPreviousWeekId(); 
+  // Buscamos todos los puntos acumulados por todos los jugadores en esta semana
   const { data: allPoints } = await window.sb
     .from('war_points')
     .select('map_id, faction, points')
-    .eq('week_id', prevWeekId);
+    .eq('week_id', currentWeekId);
 
   if (!allPoints || allPoints.length === 0) {
     state.lastResolvedWeek = currentWeekId;
@@ -282,23 +283,23 @@ async function resolveWeekIfNeeded() {
     });
   }
 
-  await distributeWeeklyWarCoins(prevWeekId);
+  await distributeWeeklyWarCoins(currentWeekId);
 
   state.lastResolvedWeek = currentWeekId;
   if (typeof scheduleSave === 'function') scheduleSave();
   await loadActiveBonuses();
 }
 
-async function calculateUserWeeklyContribution() {
+async function calculateUserWeeklyContribution(weekId) {
   const userId = window.currentUser?.id;
   if (!userId) return 0;
-  const weekId = getCurrentWeekId();
+  const targetWeekId = weekId || getCurrentWeekId();
   
   const { data } = await window.sb
     .from('war_user_points')
     .select('points')
     .eq('user_id', userId)
-    .eq('week_id', weekId);
+    .eq('week_id', targetWeekId);
     
   let total = 0;
   data?.forEach(r => total += (r.points || 0));
@@ -332,7 +333,8 @@ async function distributeWeeklyWarCoins(weekId) {
   const email = window.currentUser?.email;
   if (!email || !state.faction) return;
 
-  const totalPtContributed = calculateTotalPtThisWeek();
+  // Calculamos la contribución total del usuario en la semana indicada
+  const totalPtContributed = await calculateUserWeeklyContribution(weekId);
   let coins = 0;
   if (totalPtContributed >= 1501) coins = 150;
   else if (totalPtContributed >= 501) coins = 75;
