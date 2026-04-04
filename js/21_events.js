@@ -880,6 +880,7 @@ function _renderAdminPanel() {
         rivalMult: 1,
         trainerMult: 1,
         fishingMult: 1,
+        ignoreTimeRestrictions: false,
         prizes: {}
       },
       _collapsed: false
@@ -1030,6 +1031,17 @@ function _renderEventCard(ev, idx) {
         <div style="font-size:8px;color:#4b5563;padding-top:14px;">hs. (ARG)</div>
       </div>` : `
       <div style="font-size:9px;color:#4b5563;margin-bottom:12px;">⏰ Todo el día</div>`}
+
+      <div style="background:rgba(239,68,68,0.06);border-radius:10px;padding:10px;margin-bottom:10px;border:1px solid rgba(239,68,68,0.15);">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" data-ev="${idx}" data-field="ignoreTimeRestrictions" ${ev.config?.ignoreTimeRestrictions ? 'checked' : ''}
+            style="accent-color:#ef4444;cursor:pointer;" onchange="window._evConfigToggle(${idx},'ignoreTimeRestrictions',this.checked)">
+          <div>
+            <span style="font-size:9px;color:#ef4444;font-family:'Press Start 2P',monospace;">⏰ IGNORAR HORARIOS</span>
+            <div style="font-size:8px;color:#6b7280;margin-top:2px;">El Pokémon del evento aparecerá en su mapa a cualquier hora (IGNORA DÍA/NOCHE)</div>
+          </div>
+        </label>
+      </div>
 
       <!-- Configuración de Competencia -->
       <div style="background:rgba(34,197,94,0.03); border:1px solid rgba(34,197,94,0.1); border-radius:10px; padding:10px;">

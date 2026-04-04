@@ -436,8 +436,9 @@ async function renderMaps() {
 
         const imgPath = `maps/${MAP_IMAGE_MAPPING[loc.id] || 'default.png'}`;
 
-        // Determine current cycle's wild Pokémon
-        const currentCycleWild = loc.wild[cycle] || loc.wild.day || [];
+        // Determine current cycle's wild Pokémon (Injection for events)
+        const encounterData = getEncounterPool(loc, cycle);
+        const currentCycleWild = encounterData.pool;
         const baseWild = loc.wild.day || [];
         
         let genericSpawns = [];
@@ -469,7 +470,7 @@ async function renderMaps() {
             }
           });
         };
-        processActiveRates(currentCycleWild, loc.rates ? (loc.rates[cycle] || loc.rates.day) : null);
+        processActiveRates(currentCycleWild, encounterData.rates);
         if (loc.fishing) processActiveRates(loc.fishing.pool, loc.fishing.rates);
 
         const sortByRateFn = (a, b) => (minActiveRate[b] || 0) - (minActiveRate[a] || 0);
@@ -613,8 +614,9 @@ async function renderMaps() {
 	        }
 	
 	        const cycle = getDayCycle();
-	        const wildPool = loc.wild[cycle] || loc.wild.day;
-	        let wildRates = loc.rates[cycle] || loc.rates.day;
+	        const encounterData = getEncounterPool(loc, cycle);
+	        const wildPool = encounterData.pool;
+	        let wildRates = encounterData.rates;
             if (typeof window.getEventSpeciesBoost === 'function') {
               wildRates = wildRates.map((r, i) => r * window.getEventSpeciesBoost(wildPool[i]));
             }
@@ -665,8 +667,9 @@ async function renderMaps() {
 	      }
 	
       const cycle = getDayCycle();
-      let wildPool = loc.wild[cycle] || loc.wild.day;
-      let wildRates = loc.rates[cycle] || loc.rates.day;
+      const encounterData = getEncounterPool(loc, cycle);
+      let wildPool = encounterData.pool;
+      let wildRates = encounterData.rates;
 
       // Lógica de Incienso
       if (state.incenseSecs > 0 && state.incenseType) {
@@ -1060,4 +1063,35 @@ async function renderMaps() {
       el.classList.add(cls);
       if (!faint) el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
     }
+
+    function getEncounterPool(loc, cycle) {
+      if (!loc || !loc.wild) return { pool: [], rates: [] };
+      let pool = [...(loc.wild[cycle] || loc.wild.day || [])];
+      let rates = [...(loc.rates && (loc.rates[cycle] || loc.rates.day) ? (loc.rates[cycle] || loc.rates.day) : [])];
+      
+      while (rates.length < pool.length) rates.push(10);
+
+      const activeEvents = (typeof _activeEvents !== 'undefined') ? _activeEvents : [];
+      activeEvents.forEach(ev => {
+        if (ev.active && ev.config?.ignoreTimeRestrictions && ev.config.species) {
+          const eventSpecies = ev.config.species.split(',').map(s => s.trim().toLowerCase());
+          eventSpecies.forEach(spId => {
+            if (!pool.includes(spId)) {
+              for (const c in loc.wild) {
+                const idx = loc.wild[c].indexOf(spId);
+                if (idx !== -1) {
+                  pool.push(spId);
+                  const originalRates = loc.rates?.[c] || [];
+                  rates.push(originalRates[idx] || 10);
+                  break;
+                }
+              }
+            }
+          });
+        }
+      });
+      
+      return { pool, rates };
+    }
+
 
