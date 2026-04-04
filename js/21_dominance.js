@@ -451,13 +451,16 @@ function hashString(str) {
 }
 
 function isConflictZone(mapId) {
+  const maps = window.FIRE_RED_MAPS || [];
+  if (maps.length === 0) return false;
+  
   const dateStr = new Date().toISOString().split('T')[0];
-  const allMapIds = FIRE_RED_MAPS.map(m => m.id);
+  const allMapIds = maps.map(m => m.id);
   const zones = [];
   let tempSeed = hashString(dateStr + "zones");
   // Reducido de 12 a 5 zonas por día
-  while (zones.length < 5) {
-    const idx = tempSeed % allMapIds.length;
+  while (zones.length < 5 && zones.length < allMapIds.length) {
+    const idx = Math.abs(tempSeed) % allMapIds.length;
     const mId = allMapIds[idx];
     if (!zones.includes(mId)) zones.push(mId);
     tempSeed = hashString(tempSeed.toString());
@@ -769,6 +772,13 @@ function renderKantoWarGrid(ptsData, domData) {
   let html = '';
 
   const mapsArray = window.FIRE_RED_MAPS || [];
+  
+  if (mapsArray.length === 0) {
+    // Si los datos no están listos, reintentar en 500ms
+    setTimeout(() => renderKantoWarGrid(ptsData, domData), 500);
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--gray); font-size:10px;">Cargando monitor...</div>';
+    return;
+  }
   // Filtrar mapas relevantes (con batallas) y asegurar unicidad por ID
   const seenMaps = new Set();
   const relevantMaps = mapsArray.filter(m => {

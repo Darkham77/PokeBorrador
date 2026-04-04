@@ -70,6 +70,10 @@ function showTab(tab, btnEl) {
   if (tab === 'box') renderBox();
   if (tab === 'bag') renderBag();
   if (tab === 'friends') renderFriends();
+  if (tab === 'war') {
+    if (typeof renderWarTab === 'function') renderWarTab();
+  }
+  
   // Al abrir la tab de amigos, refrescar el badge para ver si quedan notificaciones (como chats no leídos)
   refreshFriendsBadge();
   
