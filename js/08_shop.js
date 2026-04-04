@@ -870,10 +870,10 @@ function switchShopSection(section) {
   else if (typeof renderMarket === 'function') renderMarket();
 }
 
-function openTrainerShop() {
+function openTrainerShop(btnEl) {
   if (typeof showTab === 'function') {
     _shopSection = 'trainer'; // Forzar sección antes de mostrar tab
-    showTab('market');
+    showTab('market', btnEl);
     switchShopSection('trainer');
   } else {
     notify('No se pudo abrir la tienda (Error de carga)', '⚠️');

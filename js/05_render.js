@@ -26,7 +26,14 @@ function showTab(tab, btnEl) {
   });
 
   // Forzar cierre de menús en móvil al perder el foco del botón pulsado
-  if (btnEl) btnEl.blur();
+  if (btnEl) {
+    const parentGroup = btnEl.closest('.hud-group, .nav-group');
+    if (parentGroup) {
+      parentGroup.classList.add('closing');
+      setTimeout(() => parentGroup.classList.remove('closing'), 100);
+    }
+    btnEl.blur();
+  }
 
   if (tab === 'team') renderTeam();
   if (tab === 'pokedex') renderPokedex();
