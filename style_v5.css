@@ -483,6 +483,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: relative;
+      z-index: 1500;
       background: var(--hud-bg, var(--card));
       border-radius: 16px;
       padding: 12px 24px; /* Reducido un poco el padding vertical */
