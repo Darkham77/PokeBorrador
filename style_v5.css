@@ -2516,6 +2516,83 @@
       background: rgba(255, 217, 61, 0.05);
     }
 
+    /* Mobile Navigation Groups & Submenus */
+    .nav-group {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .nav-submenu {
+      position: absolute;
+      bottom: calc(100% + 15px); /* Abre hacia arriba */
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(15, 15, 25, 0.98);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
+      z-index: 1001;
+      min-width: 150px;
+    }
+
+    /* Flecha decorativa hacia abajo (porque el menu sube) */
+    .nav-submenu::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 8px solid transparent;
+      border-top-color: rgba(15, 15, 25, 0.98);
+    }
+
+    /* Mostrar al hacer hover */
+    .nav-group:hover .nav-submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .nav-submenu .nav-btn {
+      width: 100% !important;
+      flex-direction: row !important;
+      justify-content: flex-start !important;
+      gap: 12px !important;
+      padding: 12px 16px !important;
+      font-size: 10px !important;
+      border: 1px solid transparent !important;
+    }
+
+    .nav-submenu .nav-btn span:first-child {
+      font-size: 18px !important;
+    }
+
+    /* Mapa prominente en movil */
+    .nav-btn.map-btn {
+      flex: 1.5;
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-radius: 15px !important;
+      box-shadow: 0 -2px 10px rgba(255, 255, 255, 0.05);
+    }
+
+
+
+
+
+
+
+
+
     /* EMPTY STATE */
     .empty-state {
       text-align: center;

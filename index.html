@@ -292,28 +292,23 @@
       </div>
 
       <div class="nav">
-        <button class="nav-btn" data-tab="pokedex"
-          onclick="showTab('pokedex',this)"><span>📖</span><span>Pokédex</span></button>
-        <button class="nav-btn active" data-tab="map"
+        <!-- 1. MAPA (Prominente) -->
+        <button class="nav-btn active map-btn" data-tab="map"
           onclick="showTab('map',this)"><span>🗺️</span><span>Mapa</span></button>
-        <button class="nav-btn" data-tab="team"
-          onclick="showTab('team',this)"><span>⚡</span><span>Equipo</span></button>
-        <button class="nav-btn" data-tab="gyms"
-          onclick="showTab('gyms',this)"><span>🏆</span><span>Gimnasios</span></button>
-        <button class="nav-btn" data-tab="market"
-          onclick="showTab('market',this)"><span>🛒</span><span>PokéMart</span></button>
-        <button class="nav-btn" data-tab="friends" onclick="showTab('friends',this);renderFriends()"
-          style="position:relative;">
-          <span>👥</span>
-          <span id="friends-nav-label">Amigos</span>
-          <span id="friends-nav-badge" style="display:none;position:absolute;top:4px;right:4px;
-            background:var(--red);color:#fff;font-size:9px;font-weight:900;min-width:16px;height:16px;
-            border-radius:8px;padding:0 4px;line-height:16px;text-align:center;
-            font-family:'Press Start 2P',monospace;z-index:2;"></span>
-        </button>
-        <button class="nav-btn" data-tab="box" onclick="showTab('box',this)"><span>📦</span><span>PC</span></button>
-        <button class="nav-btn" data-tab="bag"
-          onclick="showTab('bag',this)"><span>🎒</span><span>Mochila</span></button>
+
+        <!-- 2. POKÉMON (Grupo) -->
+        <div class="nav-group">
+          <button class="nav-btn group-btn"><span>⚡</span><span>Pokémon</span></button>
+          <div class="nav-submenu">
+            <button class="nav-btn" data-tab="team" onclick="showTab('team',this)"><span>⚡</span><span>Equipo</span></button>
+            <button class="nav-btn" data-tab="box" onclick="showTab('box',this)"><span>📦</span><span>PC</span></button>
+            <button class="nav-btn" data-tab="pokedex" onclick="showTab('pokedex',this)"><span>📖</span><span>Pokedex</span></button>
+          </div>
+        </div>
+
+        <!-- 3. OTROS (Individuales) -->
+        <button class="nav-btn" data-tab="bag" onclick="showTab('bag',this)"><span>🎒</span><span>Mochila</span></button>
+        <button class="nav-btn" data-tab="gyms" onclick="showTab('gyms',this)"><span>🏆</span><span>Gimnasios</span></button>
         <button class="nav-btn" data-tab="daycare" onclick="showTab('daycare',this)">
           <span>🥚</span><span>Crianza</span>
           <span id="daycare-nav-badge" style="display:none;position:absolute;top:4px;right:4px;
@@ -321,9 +316,31 @@
             border-radius:8px;padding:0 4px;line-height:16px;text-align:center;
             font-family:'Press Start 2P',monospace;z-index:2;"></span>
         </button>
-        <button class="nav-btn" data-tab="war" onclick="showTab('war',this);renderWarTab()">
-          <span>⚔️</span><span>Guerra</span>
-        </button>
+
+        <!-- 4. MARKET (Grupo) -->
+        <div class="nav-group">
+          <button class="nav-btn group-btn"><span>🛒</span><span>Market</span></button>
+          <div class="nav-submenu">
+            <button class="nav-btn" data-tab="market" onclick="showTab('market',this)"><span>🏪</span><span>PokéMart</span></button>
+            <button class="nav-btn" onclick="openReputationShop()"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
+            <button class="nav-btn" onclick="notify('Próximamente: Mercado Online', '🌐')"><span>🌐</span><span>Online</span></button>
+          </div>
+        </div>
+
+        <!-- 5. SOCIAL (Grupo) -->
+        <div class="nav-group">
+          <button class="nav-btn group-btn" style="position:relative;">
+            <span>👥</span><span>Social</span>
+            <span id="friends-nav-badge" style="display:none;position:absolute;top:4px;right:4px;
+              background:var(--red);color:#fff;font-size:9px;font-weight:900;min-width:16px;height:16px;
+              border-radius:8px;padding:0 4px;line-height:16px;text-align:center;
+              font-family:'Press Start 2P',monospace;z-index:2;"></span>
+          </button>
+          <div class="nav-submenu">
+            <button class="nav-btn" data-tab="friends" onclick="showTab('friends',this);renderFriends()"><span>👥</span><span>Amigos</span></button>
+            <button class="nav-btn" data-tab="war" onclick="showTab('war',this);renderWarTab()"><span>⚔️</span><span>Guerra</span></button>
+          </div>
+        </div>
       </div>
 
       <!-- MAP TAB -->
