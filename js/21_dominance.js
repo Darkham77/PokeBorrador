@@ -76,7 +76,7 @@ async function loadPlayerFaction() {
   }
 }
 
-function checkDailyCapNotReached(mapId, pts) {
+function getAllowedPointsWithCap(mapId, pts) {
   const today = new Date().toDateString();
   if (!state.warDailyCap) state.warDailyCap = {};
   
@@ -88,9 +88,12 @@ function checkDailyCapNotReached(mapId, pts) {
   if (!state.warDailyCap[today]) state.warDailyCap[today] = {};
   if (!state.warDailyCap[today][mapId]) state.warDailyCap[today][mapId] = 0;
 
-  if (state.warDailyCap[today][mapId] >= 300) return false;
-  state.warDailyCap[today][mapId] += pts;
-  return true;
+  const current = state.warDailyCap[today][mapId];
+  if (current >= 300) return 0;
+  
+  const allowed = Math.min(pts, 300 - current);
+  state.warDailyCap[today][mapId] += allowed;
+  return allowed;
 }
 
 function addWarCoinsLocal(coins) {
@@ -148,10 +151,11 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
   if (overridePts !== null) pts = overridePts;
 
   if (pts <= 0) return;
-
+  const allowedPts = getAllowedPointsWithCap(mapId, pts);
+  if (allowedPts <= 0) return;
+  
+  // A partir de aquí usamos allowedPts en lugar de pts original
   const weekId = getCurrentWeekId();
-
-  if (!checkDailyCapNotReached(mapId, pts)) return;
 
   try {
     // 1. Registro Global/Bando
@@ -159,7 +163,7 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
       p_week_id: weekId,
       p_map_id: mapId,
       p_faction: state.faction,
-      p_points: pts
+      p_points: allowedPts
     });
     
     // 2. Registro Individual (para cálculo de Defensores de Fin de Semana)
@@ -173,7 +177,7 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
 
     if (currentEntry) {
       await window.sb.from('war_user_points')
-        .update({ points: currentEntry.points + pts })
+        .update({ points: currentEntry.points + allowedPts })
         .eq('user_id', window.currentUser.id)
         .eq('week_id', weekId)
         .eq('map_id', mapId);
@@ -182,13 +186,13 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
         user_id: window.currentUser.id,
         week_id: weekId,
         map_id: mapId,
-        points: pts
+        points: allowedPts
       });
     }
 
     // Nueva Lógica de Monedas Acumulativas
     if (!state.warPointsAccumulator) state.warPointsAccumulator = 0;
-    state.warPointsAccumulator += pts;
+    state.warPointsAccumulator += allowedPts;
     
     if (state.warPointsAccumulator >= 10) {
       const newCoins = Math.floor(state.warPointsAccumulator / 10);
@@ -275,7 +279,7 @@ async function resolveWeekIfNeeded() {
   for (const [mapId, pts] of Object.entries(mapResults)) {
     const winner = pts.union >= pts.poder ? 'union' : 'poder';
     await window.sb.from('war_dominance').upsert({
-      week_id: prevWeekId,
+      week_id: currentWeekId,
       map_id: mapId,
       winner_faction: winner,
       union_points: pts.union,
