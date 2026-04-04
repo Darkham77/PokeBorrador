@@ -776,134 +776,120 @@ async function renderMaps() {
 	      };
 	    }
 	
-	    function startFishingMinigame(enemy, rarity, locId) {
-	      const overlay = document.createElement('div');
-	      overlay.id = 'fishing-game-overlay';
-	      
-	      const barHeight = Math.max(45, Math.min(110, rarity * 2.5)); 
-	      const fishSpeedBase = Math.max(1.5, Math.min(4.5, 12 / rarity));
-	      const progressGain = Math.max(0.15, Math.min(0.4, rarity / 25));
-	      const progressLoss = 0.25;
-	
-	      overlay.innerHTML = `
-	        <div class="fishing-game-container">
-	          <div class="fishing-title">Pescando...</div>
-	          <div class="fishing-area" id="fishing-area">
-	            <div class="fishing-bar" id="fishing-bar" style="height: ${barHeight}px; top: 200px;"></div>
-	            <div class="fishing-fish" id="fishing-fish" style="top: 150px;">🐟</div>
-	          </div>
-	          <div class="fishing-progress-wrap">
-	            <div class="fishing-progress-fill" id="fishing-progress"></div>
-	          </div>
-	          <div class="fishing-hint">
-	            Mantén <span>CLICK</span> para subir<br>Suelta para bajar
-	          </div>
-	        </div>
-	      `;
-	      document.body.appendChild(overlay);
-	
-	      const bar = document.getElementById('fishing-bar');
-	      const fish = document.getElementById('fishing-fish');
-	      const progressFill = document.getElementById('fishing-progress');
-	      const areaHeight = 350;
-	
-	      let barTop = 200;
-	      let barVel = 0;
-	      let fishTop = 150;
-	      let fishVel = 0;
-	      let fishTargetTop = 150;
-	      let progress = 30;
-	      let isPressing = false;
-	      let gameActive = true;
-	      let lastTime = performance.now();
-	
-	      // Eventos
-	      const startPress = (e) => { e.preventDefault(); isPressing = true; };
-	      const endPress = (e) => { e.preventDefault(); isPressing = false; };
-	      overlay.addEventListener('mousedown', startPress);
-	      overlay.addEventListener('mouseup', endPress);
-	      overlay.addEventListener('touchstart', startPress, {passive: false});
-	      overlay.addEventListener('touchend', endPress, {passive: false});
-	
-	      function update(time) {
-	        if (!gameActive) return;
-	        const dt = (time - lastTime) / 16.66; // Normalizado a 60fps
-	        lastTime = time;
-	
-	        // --- Física de la Barra ---
-	        // Gravedad y Empuje balanceados
-	        if (isPressing) barVel -= 0.5 * dt;
-	        else barVel += 0.35 * dt;
-	        
-	        barVel *= Math.pow(0.96, dt); // Fricción suavizada
-	        barTop += barVel * dt;
-	
-	        if (barTop < 0) { barTop = 0; barVel *= -0.2; } // Rebote suave arriba
-	        if (barTop > areaHeight - barHeight) { barTop = areaHeight - barHeight; barVel *= -0.2; } // Rebote suave abajo
-	        bar.style.top = barTop + 'px';
-	
-	        // --- Inteligencia del Pez ---
-	        // El pez busca un objetivo y acelera hacia él de forma más orgánica
-	        if (Math.abs(fishTop - fishTargetTop) < 10 || Math.random() < 0.01) {
-	          fishTargetTop = Math.random() * (areaHeight - 40);
-	        }
-	        
-	        const dist = fishTargetTop - fishTop;
-	        const fishAccl = (dist > 0 ? 1 : -1) * 0.15 * fishSpeedBase;
-	        fishVel += fishAccl * dt;
-	        fishVel *= Math.pow(0.92, dt); // El pez tiene más "agua" (fricción)
-	        fishTop += fishVel * dt;
-	        
-	        // Mantener dentro del área
-	        if (fishTop < 0) { fishTop = 0; fishVel = 0; }
-	        if (fishTop > areaHeight - 35) { fishTop = areaHeight - 35; fishVel = 0; }
-	        fish.style.top = fishTop + 'px';
-	
-	        // --- Detección de Captura ---
-	        const fishCenter = fishTop + 15;
-	        const inZone = fishCenter >= barTop && fishCenter <= barTop + barHeight;
-	        
-	        if (inZone) {
-	          progress += progressGain * dt;
-	          bar.style.borderColor = 'var(--green)';
-	          bar.style.boxShadow = '0 0 20px var(--green)';
-	        } else {
-	          progress -= progressLoss * dt;
-	          bar.style.borderColor = 'rgba(255, 69, 58, 0.8)';
-	          bar.style.boxShadow = 'none';
-	        }
-	
-	        progress = Math.max(0, Math.min(100, progress));
-	        progressFill.style.width = progress + '%';
-	
-	        if (progress >= 100) { gameActive = false; finish(true); }
-	        else if (progress <= 0) { gameActive = false; finish(false); }
-	        else requestAnimationFrame(update);
-	      }
-	
-	      function finish(win) {
-	        overlay.removeEventListener('mousedown', startPress);
-	        overlay.removeEventListener('mouseup', endPress);
-	        overlay.removeEventListener('touchstart', startPress);
-	        overlay.removeEventListener('touchend', endPress);
-	
-	        if (win) {
-	          notify('¡Lo atrapaste!', '🎣');
-	          overlay.style.animation = 'scaleOut .3s ease forwards';
-	          setTimeout(() => {
-	            overlay.remove();
-	            startBattle(enemy, false, null, locId);
-	            if (state.battle) state.battle.isFishing = true;
-	          }, 300);
-	        } else {
-	          notify('¡El Pokémon se escapó!', '💨');
-	          overlay.style.animation = 'scaleOut .3s ease forwards';
-	          setTimeout(() => overlay.remove(), 300);
-	        }
-	      }
-	
-	      requestAnimationFrame(update);
-	    }
+    function startFishingMinigame(enemy, rarity, locId) {
+      const overlay = document.createElement('div');
+      overlay.id = 'fishing-game-overlay';
+      
+      // Dificultad basada en rareza (1-100)
+      const totalNotes = Math.min(10, 3 + Math.floor(rarity / 15));
+      const speedBase = Math.max(800, 2000 - (rarity * 12)); // ms que tarda el anillo en cerrarse
+      
+      overlay.innerHTML = `
+        <div class="rhythm-container" id="rhythm-container">
+          <div class="fishing-hint-rhythm">
+            ¡Hacé <span>CLICK</span> en el círculo!<br>
+            Cuando el anillo exterior coincida con el borde.
+          </div>
+          <div class="rhythm-counter" id="rhythm-counter">NOTAS: 0 / ${totalNotes}</div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      const container = document.getElementById('rhythm-container');
+      const counter = document.getElementById('rhythm-counter');
+      
+      let currentNoteIndex = 0;
+      let gameActive = true;
+
+      function spawnNextNote() {
+        if (!gameActive) return;
+        if (currentNoteIndex >= totalNotes) {
+          finish(true);
+          return;
+        }
+
+        const note = document.createElement('div');
+        note.className = 'rhythm-note';
+        
+        // Posición aleatoria dentro del contenedor (380px)
+        const padding = 60;
+        const x = padding + Math.random() * (380 - padding * 2);
+        const y = padding + Math.random() * (380 - padding * 2);
+        note.style.left = x + 'px';
+        note.style.top = y + 'px';
+
+        note.innerHTML = `
+          <div class="rhythm-circle">${currentNoteIndex + 1}</div>
+          <div class="rhythm-ring" style="animation-duration: ${speedBase}ms"></div>
+        `;
+
+        container.appendChild(note);
+
+        const startTime = performance.now();
+        let clicked = false;
+
+        const handleNoteClick = (e) => {
+          if (clicked || !gameActive) return;
+          e.stopPropagation();
+          clicked = true;
+
+          const elapsed = performance.now() - startTime;
+          const accuracy = Math.abs(elapsed - speedBase);
+
+          // Ventana de acierto: +- 200ms
+          if (accuracy < 200) {
+            note.querySelector('.rhythm-circle').classList.add('rhythm-success');
+            currentNoteIndex++;
+            counter.innerText = `NOTAS: ${currentNoteIndex} / ${totalNotes}`;
+            
+            setTimeout(() => {
+              note.remove();
+              // Pequeña pausa entre notas
+              setTimeout(spawnNextNote, 200);
+            }, 150);
+          } else {
+            failNote(note);
+          }
+        };
+
+        note.addEventListener('mousedown', handleNoteClick);
+        note.addEventListener('touchstart', handleNoteClick, {passive: false});
+
+        // Temporizador de fallo por no clickear a tiempo
+        setTimeout(() => {
+          if (!clicked && gameActive) {
+            failNote(note);
+          }
+        }, speedBase + 200); // 200ms de gracia después de que se cierra
+      }
+
+      function failNote(note) {
+        if (!gameActive) return;
+        gameActive = false;
+        note.querySelector('.rhythm-circle').classList.add('rhythm-fail');
+        setTimeout(() => finish(false), 500);
+      }
+
+      function finish(win) {
+        gameActive = false;
+        if (win) {
+          notify('¡Ritmo perfecto! Lo atrapaste.', '🎣');
+          overlay.style.animation = 'scaleOut .3s ease forwards';
+          setTimeout(() => {
+            overlay.remove();
+            startBattle(enemy, false, null, locId);
+            if (state.battle) state.battle.isFishing = true;
+          }, 300);
+        } else {
+          notify('¡Perdiste el ritmo! El Pokémon escapó.', '💨');
+          overlay.style.animation = 'scaleOut .3s ease forwards';
+          setTimeout(() => overlay.remove(), 300);
+        }
+      }
+
+      // Iniciar primera nota
+      setTimeout(spawnNextNote, 1000);
+    }
 
 
 

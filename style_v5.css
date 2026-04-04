@@ -5991,3 +5991,115 @@
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+/* === RHYTHM FISHING MINIGAME === */
+#fishing-game-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 10, 20, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(8px);
+}
+
+.rhythm-container {
+  position: relative;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rhythm-note {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.rhythm-circle {
+  width: 100%;
+  height: 100%;
+  background: rgba(14, 165, 233, 0.3);
+  border: 4px solid #0ea5e9;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.6);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 14px;
+}
+
+.rhythm-ring {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border: 4px solid rgba(14, 165, 233, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: shrink-ring linear forwards;
+}
+
+@keyframes shrink-ring {
+  from { transform: scale(3); opacity: 0; border-width: 2px; }
+  10% { opacity: 1; }
+  to { transform: scale(1); opacity: 1; border-width: 4px; }
+}
+
+.rhythm-counter {
+  position: absolute;
+  bottom: -60px;
+  width: 100%;
+  text-align: center;
+  color: #0ea5e9;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.rhythm-fail {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 30px #ef4444 !important;
+  background: rgba(239, 68, 68, 0.2) !important;
+}
+
+.rhythm-success {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 30px #22c55e !important;
+  background: rgba(34, 197, 94, 0.2) !important;
+}
+
+.fishing-hint-rhythm {
+  position: absolute;
+  top: -80px;
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+
+.fishing-hint-rhythm span {
+  color: #0ea5e9;
+  font-weight: 800;
+}
+
