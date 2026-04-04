@@ -378,7 +378,7 @@ const GUARDIAN_POOL = {
   elite: [
     { id: 'dragonite',  lv: 60, pts: 750 }, { id: 'snorlax',    lv: 55, pts: 750 },
     { id: 'lapras',     lv: 55, pts: 750 }, { id: 'chansey',    lv: 50, pts: 750 },
-    { id: 'aerodactyl', lv: 58, pts: 750 }, { id: 'cloyster',   lv: 52, pts: 750 }
+    { id: 'cloyster',   lv: 52, pts: 750 }
   ]
 };
 
