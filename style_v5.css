@@ -2577,7 +2577,15 @@
       border-top-color: rgba(15, 15, 25, 0.98);
     }
 
-    /* Mostrar exclusivamente con clase .is-open (Mobile/Táctil) */
+    /* Mostrar con clase .is-open (Mobile/Táctil) o hover (Desktop) */
+    @media (hover: hover) {
+      .nav-group:hover .nav-submenu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
     .nav-group.is-open .nav-submenu {
       opacity: 1;
       visibility: visible;
@@ -6028,8 +6036,8 @@
   height: 200px;
   border-radius: 28px;
   overflow: hidden;
-  background-size: cover;
-  background-position: center;
+  background-size: 135%;
+  background-position: center 80%;
   border: 1px solid var(--glass-border);
   box-shadow: 0 15px 35px rgba(0,0,0,0.4);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);

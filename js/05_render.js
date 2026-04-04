@@ -10,9 +10,12 @@ function toggleGroupMenu(event, btnEl) {
     if (g !== group) g.classList.remove('is-open');
   });
 
-  // Alternar el actual
-  if (isOpen) group.classList.remove('is-open');
-  else group.classList.add('is-open');
+  // Alternar el actual (Solo en dispositivos que NO soportan hover, como móviles)
+  // En PC, el CSS :hover ya se encarga de mostrarlo y desaparece al mover el mouse.
+  if (!window.matchMedia('(hover: hover)').matches) {
+    if (isOpen) group.classList.remove('is-open');
+    else group.classList.add('is-open');
+  }
 
   // Detener propagación para evitar que el click en el body lo cierre inmediatamente
   if (event) event.stopPropagation();
