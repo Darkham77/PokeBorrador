@@ -528,7 +528,19 @@
           factionBadge.className = 'faction-badge poder';
         } else {
           factionBadge.textContent = 'Sin Bando';
-          factionBadge.className = '';
+          factionBadge.className = 'faction-badge';
+        }
+
+        // Añadir botón de cambiar si tiene sesión iniciada
+        if (window.currentUser) {
+          const changeBtn = document.createElement('span');
+          changeBtn.innerHTML = ' 🔗 <span style="text-decoration:underline;">Cambiar</span>';
+          changeBtn.style.cssText = 'font-size:10px; color:var(--yellow); cursor:pointer; margin-left:8px;';
+          changeBtn.onclick = (e) => {
+             e.stopPropagation();
+             if (typeof openFactionSelection === 'function') openFactionSelection(true);
+          };
+          factionBadge.appendChild(changeBtn);
         }
       }
       const st = state.stats || {};

@@ -1480,9 +1480,14 @@
 
   <!-- FACTION CHOICE MODAL -->
   <div id="faction-choice-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9000;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:#111;border:2px solid var(--gray);border-radius:16px;padding:24px;max-width:400px;text-align:center;">
+    <div style="background:#111;border:2px solid var(--gray);border-radius:16px;padding:24px;max-width:400px;text-align:center;position:relative;">
+      <button onclick="document.getElementById('faction-choice-modal').style.display='none'" 
+        style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">✕</button>
       <h2 style="font-family:'Press Start 2P',monospace;font-size:14px;color:var(--yellow);margin-bottom:16px;">¡ELIGE TU BANDO!</h2>
-      <p style="font-size:12px;color:#ccc;margin-bottom:20px;">Tu bando determina con quién disputás el control de Kanto. <strong>Esta decisión es permanente.</strong></p>
+      <p id="faction-modal-desc" style="font-size:11px;color:#ccc;margin-bottom:20px;line-height:1.4;">
+        Tu bando determina con quién disputás el control de Kanto.<br>
+        <span style="color:var(--yellow);font-weight:bold;">Cambiar de bando cuesta 🪙25,000 y resetea tus puntos semanales.</span>
+      </p>
       
       <div style="display:flex;gap:16px;flex-direction:column;">
         <button onclick="chooseFaction('union')" style="background:#0f172a;border:3px solid #3b82f6;border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;transition:transform 0.2s;">

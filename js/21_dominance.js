@@ -38,32 +38,88 @@ const WAR_MAP_IMAGES = {
 };
 
 async function chooseFaction(faction) {
-  if (state.faction) return; // Ya elegido
   const userId = window.currentUser?.id;
-  const email = window.currentUser?.email;
   if (!userId) { notify('Debés iniciar sesión online para elegir facción.', '⛔'); return; }
+
+  const isChange = !!state.faction;
+  const cost = 25000;
+
+  // Si ya tiene bando y quiere cambiar
+  if (isChange) {
+    if (state.faction === faction) {
+      notify('Ya perteneces a este bando.', 'ℹ️');
+      return;
+    }
+    if (state.money < cost) {
+      notify(`Necesitás 🪙${cost.toLocaleString()} para cambiar de bando.`, '⛔');
+      return;
+    }
+    
+    // Confirmación extra
+    if (!confirm(`¿Estás seguro de cambiar al Team ${faction === 'union' ? 'Unión' : 'Poder'}? Esto costará 🪙${cost.toLocaleString()} y perderás tus puntos de esta semana.`)) {
+      return;
+    }
+
+    state.money -= cost;
+    notify(`Cambiando de bando... -🪙${cost.toLocaleString()}`, '💸');
+    
+    // Resetear puntos de la semana actual
+    const weekId = getCurrentWeekId();
+    await window.sb.from('war_user_points').delete().eq('user_id', userId).eq('week_id', weekId);
+  }
   
   const { error } = await window.sb
     .from('war_factions')
-    .insert({ user_id: userId, faction });
+    .upsert({ user_id: userId, faction }, { onConflict: 'user_id' });
     
-  if (!error || error.code === '23505') { // 23505 = conflict/already exists
+  if (!error) {
     state.faction = faction;
     if (typeof scheduleSave === 'function') scheduleSave();
-    const bdg = document.getElementById('player-faction-badge');
-    if (bdg) {
-      bdg.innerHTML = state.faction === 'union' ? '<img src="assets/factions/union.png" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;filter:drop-shadow(0 0 3px rgba(59,130,246,0.5));"> Team Unión' : '<img src="assets/factions/poder.png" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;filter:drop-shadow(0 0 3px rgba(239,68,68,0.5));"> Team Poder';
-      bdg.className = `faction-badge ${state.faction}`;
-    }
+    
+    updateFactionBadge(); // Función auxiliar para actualizar el badge en toda la UI
+    
     const modal = document.getElementById('faction-choice-modal');
     if (modal) modal.style.display = 'none';
-    notify(`¡Te uniste al Team ${faction === 'union' ? 'Unión' : 'Poder'}!`, '⚔️');
     
-    // Forzar guardado
+    notify(`¡Ahora eres parte del Team ${faction === 'union' ? 'Unión' : 'Poder'}!`, '⚔️');
+    
     if (typeof saveGame === 'function') saveGame(false);
+    if (typeof renderWarPanel === 'function') renderWarPanel();
   } else {
-    notify('Error al registrar facción. Reintentá. ' + error.message, '⛔');
+    notify('Error al registrar facción. ' + error.message, '⛔');
   }
+}
+
+function updateFactionBadge() {
+  const bdg = document.getElementById('player-faction-badge');
+  if (bdg) {
+    if (state.faction === 'union') {
+      bdg.innerHTML = '<img src="assets/factions/union.png" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;filter:drop-shadow(0 0 3px rgba(59,130,246,0.5));"> Team Unión';
+      bdg.className = 'faction-badge union';
+    } else if (state.faction === 'poder') {
+      bdg.innerHTML = '<img src="assets/factions/poder.png" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;filter:drop-shadow(0 0 3px rgba(239,68,68,0.5));"> Team Poder';
+      bdg.className = 'faction-badge poder';
+    } else {
+      bdg.textContent = 'Sin Bando';
+      bdg.className = 'faction-badge';
+    }
+  }
+}
+
+function openFactionSelection(isChange = false) {
+  const modal = document.getElementById('faction-choice-modal');
+  if (!modal) return;
+  
+  const desc = document.getElementById('faction-modal-desc');
+  if (desc) {
+    if (isChange) {
+      desc.innerHTML = `Tu bando determina con quién disputás el control de Kanto.<br><span style="color:var(--yellow);font-weight:bold;">Cambiar cuesta 🪙25,000 y resetea tus puntos actuales.</span>`;
+    } else {
+      desc.innerHTML = `Tu bando determina con quién disputás el control de Kanto.<br>¡Elige con sabiduría!`;
+    }
+  }
+  
+  modal.style.display = 'flex';
 }
 
 async function loadPlayerFaction() {
