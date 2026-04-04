@@ -535,9 +535,9 @@
 
     .hud-submenu {
       position: absolute;
-      bottom: calc(100% + 12px);
+      top: calc(100% + 12px); /* Abre hacia abajo */
       left: 50%;
-      transform: translateX(-50%) translateY(10px);
+      transform: translateX(-50%) translateY(-10px);
       background: rgba(15, 15, 25, 0.95);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -554,18 +554,27 @@
       min-width: 160px;
     }
 
-    /* Flecha decorativa del submenú */
+    /* Flecha decorativa del submenú (ahora hacia arriba) */
     .hud-submenu::after {
       content: '';
       position: absolute;
-      top: 100%;
+      bottom: 100%;
       left: 50%;
       transform: translateX(-50%);
       border: 6px solid transparent;
-      border-top-color: rgba(15, 15, 25, 0.95);
+      border-bottom-color: rgba(15, 15, 25, 0.95);
     }
 
-    .hud-group:hover .hud-submenu {
+    /* Mostrar al hacer hover (Desktop) o con clase .is-open (Mobile) */
+    @media (hover: hover) {
+      .hud-group:hover .hud-submenu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+    
+    .hud-group.is-open .hud-submenu {
       opacity: 1;
       visibility: visible;
       transform: translateX(-50%) translateY(0);
@@ -580,10 +589,12 @@
       border-radius: 10px !important;
     }
 
-    .hud-submenu .hud-nav-btn:hover {
-      background: rgba(255, 255, 255, 0.08) !important;
-      border-color: rgba(255, 255, 255, 0.1) !important;
-      transform: translateX(4px) !important;
+    @media (hover: hover) {
+      .hud-submenu .hud-nav-btn:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        transform: translateX(4px) !important;
+      }
     }
 
     /* Antiguo HUD nav (Eliminado) */
@@ -2556,8 +2567,16 @@
       border-top-color: rgba(15, 15, 25, 0.98);
     }
 
-    /* Mostrar al hacer hover */
-    .nav-group:hover .nav-submenu {
+    /* Mostrar al hacer hover (Desktop) o con clase .is-open (Mobile) */
+    @media (hover: hover) {
+      .nav-group:hover .nav-submenu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+    
+    .nav-group.is-open .nav-submenu {
       opacity: 1;
       visibility: visible;
       transform: translateX(-50%) translateY(0);
@@ -2590,28 +2609,19 @@
     .nav-group:last-child .nav-submenu {
       left: auto !important;
       right: 0 !important;
-      transform: translateY(10px) !important;
     }
 
-    .hud-group:last-child:hover .hud-submenu,
-    .nav-group:last-child:hover .nav-submenu {
+    /* Mostrar al hacer hover o con clase .is-open (Desktop/Mobile) */
+    @media (hover: hover) {
+      .hud-group:last-child:hover .hud-submenu,
+      .nav-group:last-child:hover .nav-submenu {
+        transform: translateY(0) !important;
+      }
+    }
+
+    .hud-group.is-open:last-child .hud-submenu,
+    .nav-group.is-open:last-child .nav-submenu {
       transform: translateY(0) !important;
-    }
-
-    /* Ajuste específico para móvil (flecha decorativa a la derecha) */
-    .nav-group:last-child .nav-submenu::after {
-      left: auto;
-      right: 20px;
-      transform: none;
-    }
-
-    /* Forzar cierre de menús en móvil al elegir opción */
-    .nav-group.closing .nav-submenu,
-    .hud-group.closing .hud-submenu {
-      opacity: 0 !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
-      transition: none !important;
     }
 
 

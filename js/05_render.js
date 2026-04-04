@@ -1,3 +1,30 @@
+// ===== NAVIGATION GROUPS (MOBILE TOGGLE) =====
+function toggleGroupMenu(btnEl) {
+  const group = btnEl.closest('.hud-group, .nav-group');
+  if (!group) return;
+
+  const isOpen = group.classList.contains('is-open');
+
+  // Cerrar otros grupos primero
+  document.querySelectorAll('.hud-group.is-open, .nav-group.is-open').forEach(g => {
+    if (g !== group) g.classList.remove('is-open');
+  });
+
+  // Alternar el actual
+  if (isOpen) group.classList.remove('is-open');
+  else group.classList.add('is-open');
+
+  // Detener propagación para evitar que el click en el body lo cierre inmediatamente
+  if (window.event) window.event.stopPropagation();
+}
+
+// Cerrar menús al hacer clic fuera
+window.addEventListener('click', () => {
+  document.querySelectorAll('.hud-group.is-open, .nav-group.is-open').forEach(g => {
+    g.classList.remove('is-open');
+  });
+});
+
 // ===== SCREENS =====
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -25,15 +52,10 @@ function showTab(tab, btnEl) {
     }
   });
 
-  // Forzar cierre de menús en móvil al perder el foco del botón pulsado
-  if (btnEl) {
-    const parentGroup = btnEl.closest('.hud-group, .nav-group');
-    if (parentGroup) {
-      parentGroup.classList.add('closing');
-      setTimeout(() => parentGroup.classList.remove('closing'), 100);
-    }
-    btnEl.blur();
-  }
+  // Cerrar menús de grupo (HUD/Móvil)
+  document.querySelectorAll('.hud-group.is-open, .nav-group.is-open').forEach(g => {
+    g.classList.remove('is-open');
+  });
 
   if (tab === 'team') renderTeam();
   if (tab === 'pokedex') renderPokedex();
