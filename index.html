@@ -180,7 +180,7 @@
                 font-family:'Press Start 2P',monospace;z-index:2;"></span>
             </button>
             <div class="hud-submenu">
-              <button class="hud-nav-btn" data-tab="friends" onclick="showTab('friends',this)"><span>🫂</span><span>Amigos</span></button>
+              <button class="hud-nav-btn" data-tab="friends" onclick="showTab('friends',this)"><span>👥</span><span>Amigos</span></button>
               <button class="hud-nav-btn" data-tab="war" onclick="showTab('war',this)"><span>⚔️</span><span>Guerra</span></button>
             </div>
           </div>
@@ -1063,28 +1063,28 @@
           <!-- Estadísticas Personales -->
           <div class="war-stats-sidebar">
             <div class="war-stat-item">
-              <span class="war-stat-icon">🛡️</span>
+              <span class="war-stat-icon"><i class="fa-solid fa-shield"></i></span>
               <div class="war-stat-details">
                 <span class="war-stat-label">Bando</span>
                 <span id="war-my-faction" class="war-stat-value">—</span>
               </div>
             </div>
             <div class="war-stat-item">
-              <span class="war-stat-icon">🏆</span>
+              <span class="war-stat-icon"><i class="fa-solid fa-trophy"></i></span>
               <div class="war-stat-details">
                 <span class="war-stat-label">Aporte</span>
                 <span id="war-my-pts" class="war-stat-value">0 PT</span>
               </div>
             </div>
             <div class="war-stat-item">
-              <span class="war-stat-icon">⚔️</span>
+              <span class="war-stat-icon"><i class="fa-solid fa-crosshairs"></i></span>
               <div class="war-stat-details">
                 <span class="war-stat-label">Slots</span>
                 <span id="war-defense-slots" class="war-stat-value">0</span>
               </div>
             </div>
             <div class="war-stat-item coins" onclick="showWarShop()">
-              <span class="war-stat-icon">🪙</span>
+              <span class="war-stat-icon"><i class="fa-solid fa-bolt-lightning"></i></span>
               <div class="war-stat-details">
                 <span class="war-stat-label">Monedas</span>
                 <span id="war-coins-count" class="war-stat-value">0</span>
@@ -1587,7 +1587,7 @@
       <button onclick="closeWarShop()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">✕</button>
       <h2 style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin-bottom:12px;">🛒 Tienda de Guerra</h2>
       <div style="font-size:12px;color:white;margin-bottom:16px;background:rgba(255,255,255,0.05);padding:10px;border-radius:8px;">
-        🪙 Saldo: <strong id="war-shop-coins-modal" style="color:var(--yellow);">0</strong> monedas
+        <i class="fa-solid fa-bolt-lightning"></i> Saldo: <strong id="war-shop-coins-modal" style="color:var(--yellow);">0</strong> monedas
       </div>
       <div id="war-shop-items">
         <!-- Generado dinámicamente -->

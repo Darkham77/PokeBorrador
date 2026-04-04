@@ -186,7 +186,7 @@ function addWarCoinsLocal(coins) {
   if (typeof scheduleSave === 'function') scheduleSave();
   
   if (state.warDailyCoins[today] >= 50) {
-    notify('Has alcanzado el límite diario de 50 Monedas de Guerra.', '🪙');
+    notify('Has alcanzado el límite diario de 50 Monedas de Guerra.', '⚡');
   }
 }
 
@@ -257,7 +257,7 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
       const newCoins = Math.floor(state.warPointsAccumulator / 10);
       addWarCoinsLocal(newCoins);
       state.warPointsAccumulator %= 10;
-      notify(`¡Ganaste ${newCoins} Moneda${newCoins>1?'s':''} de Guerra!`, '🪙');
+      notify(`¡Ganaste ${newCoins} Moneda${newCoins>1?'s':''} de Guerra!`, '⚡');
     }
     
     // Refrescar panel si está abierto
@@ -409,7 +409,7 @@ async function distributeWeeklyWarCoins(weekId) {
 
   if (coins > 0) {
     addWarCoinsLocal(coins);
-    notify(`Fin de guerra. ¡Recibiste ${coins} Monedas de Guerra!`, '🪙');
+    notify(`Fin de guerra. ¡Recibiste ${coins} Monedas de Guerra!`, '⚡');
   }
 }
 
@@ -1137,7 +1137,7 @@ function renderWarShop() {
           <p style="font-size:10px;color:#888;margin:0;line-height:1.4;">${item.desc}</p>
         </div>
         <button onclick="buyWarItem('${item.id}')" ${disabled?'disabled':''} style="background:${disabled?'#222':'linear-gradient(135deg,var(--yellow),#f0a500)'};color:${disabled?'#555':'#111'};border:none;border-radius:10px;padding:10px;font-family:'Press Start 2P',monospace;font-size:8px;font-weight:900;cursor:${disabled?'not-allowed':'pointer'};min-width:80px;box-shadow:${disabled?'none':'0 4px 12px rgba(255,214,10,0.2)'};">
-          🪙 ${item.cost}
+          <i class="fa-solid fa-bolt-lightning"></i> ${item.cost}
         </button>
       </div>`;
     }).join('');
@@ -1277,7 +1277,7 @@ async function claimDefenseRewards(recordId) {
     // 3. Eliminar de la DB
     await window.sb.from('war_defenders').delete().eq('id', recordId);
     
-    notify(`¡Defensor retirado! Ganaste 🪙${coins} y ${xpToGive} EXP.`, '🛡️');
+    notify(`¡Defensor retirado! Ganaste ⚡${coins} y ${xpToGive} EXP.`, '🛡️');
     
     if (typeof saveGame === 'function') saveGame(false);
     renderMyDefenders();
