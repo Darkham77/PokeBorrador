@@ -2567,15 +2567,7 @@
       border-top-color: rgba(15, 15, 25, 0.98);
     }
 
-    /* Mostrar al hacer hover (Desktop) o con clase .is-open (Mobile) */
-    @media (hover: hover) {
-      .nav-group:hover .nav-submenu {
-        opacity: 1;
-        visibility: visible;
-        transform: translateX(-50%) translateY(0);
-      }
-    }
-    
+    /* Mostrar exclusivamente con clase .is-open (Mobile/Táctil) */
     .nav-group.is-open .nav-submenu {
       opacity: 1;
       visibility: visible;
@@ -2613,8 +2605,7 @@
 
     /* Mostrar al hacer hover o con clase .is-open (Desktop/Mobile) */
     @media (hover: hover) {
-      .hud-group:last-child:hover .hud-submenu,
-      .nav-group:last-child:hover .nav-submenu {
+      .hud-group:last-child:hover .hud-submenu {
         transform: translateY(0) !important;
       }
     }

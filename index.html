@@ -144,7 +144,7 @@
 
           <!-- 2. POKÉMON (Grupo) -->
           <div class="hud-group">
-            <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(this)"><span>⚡</span><span>Pokémon</span></button>
+            <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>⚡</span><span>Pokémon</span></button>
             <div class="hud-submenu">
               <button class="hud-nav-btn" data-tab="team" onclick="showTab('team',this)"><span>🐾</span><span>Equipo</span></button>
               <button class="hud-nav-btn" data-tab="box" onclick="showTab('box',this)"><span>📦</span><span>Caja PC</span></button>
@@ -162,7 +162,7 @@
 
           <!-- 4. MARKET (Grupo) -->
           <div class="hud-group">
-            <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(this)"><span>🛒</span><span>Market</span></button>
+            <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>🛒</span><span>Market</span></button>
             <div class="hud-submenu">
               <button class="hud-nav-btn" data-tab="market" onclick="showTab('market',this)"><span>🏪</span><span>PokéMart</span></button>
               <button class="hud-nav-btn" onclick="openTrainerShop(this)"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
@@ -172,7 +172,7 @@
 
           <!-- 5. SOCIAL (Grupo) -->
           <div class="hud-group">
-            <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(this)" style="position:relative;">
+            <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)" style="position:relative;">
               <span>👥</span><span>Social</span>
               <span id="friends-hud-badge" style="display:none;position:absolute;top:4px;right:4px;
                 background:var(--red);color:#fff;font-size:8px;font-weight:900;min-width:14px;height:14px;
@@ -298,7 +298,7 @@
 
         <!-- 2. POKÉMON (Grupo) -->
         <div class="nav-group">
-          <button class="nav-btn group-btn" onclick="toggleGroupMenu(this)"><span>⚡</span><span>Pokémon</span></button>
+          <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>⚡</span><span>Pokémon</span></button>
           <div class="nav-submenu">
             <button class="nav-btn" data-tab="team" onclick="showTab('team',this)"><span>⚡</span><span>Equipo</span></button>
             <button class="nav-btn" data-tab="box" onclick="showTab('box',this)"><span>📦</span><span>PC</span></button>
@@ -319,7 +319,7 @@
 
         <!-- 4. MARKET (Grupo) -->
         <div class="nav-group">
-          <button class="nav-btn group-btn" onclick="toggleGroupMenu(this)"><span>🛒</span><span>Market</span></button>
+          <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>🛒</span><span>Market</span></button>
           <div class="nav-submenu">
             <button class="nav-btn" data-tab="market" onclick="showTab('market',this)"><span>🏪</span><span>PokéMart</span></button>
             <button class="nav-btn" onclick="openTrainerShop(this)"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
@@ -329,7 +329,7 @@
 
         <!-- 5. SOCIAL (Grupo) -->
         <div class="nav-group">
-          <button class="nav-btn group-btn" onclick="toggleGroupMenu(this)" style="position:relative;">
+          <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)" style="position:relative;">
             <span>👥</span><span>Social</span>
             <span id="friends-nav-badge" style="display:none;position:absolute;top:4px;right:4px;
               background:var(--red);color:#fff;font-size:9px;font-weight:900;min-width:16px;height:16px;

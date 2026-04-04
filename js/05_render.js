@@ -1,5 +1,5 @@
 // ===== NAVIGATION GROUPS (MOBILE TOGGLE) =====
-function toggleGroupMenu(btnEl) {
+function toggleGroupMenu(event, btnEl) {
   const group = btnEl.closest('.hud-group, .nav-group');
   if (!group) return;
 
@@ -15,7 +15,7 @@ function toggleGroupMenu(btnEl) {
   else group.classList.add('is-open');
 
   // Detener propagación para evitar que el click en el body lo cierre inmediatamente
-  if (window.event) window.event.stopPropagation();
+  if (event) event.stopPropagation();
 }
 
 // Cerrar menús al hacer clic fuera
