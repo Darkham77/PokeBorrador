@@ -94,21 +94,24 @@ async function renderOnlineMarket() {
       let innerContent = '';
       if (offer.listing_type === 'pokemon') {
         const p = offer.data;
+        const tierInfo = typeof getPokemonTier === 'function' ? getPokemonTier(p) : { color: '#fff', bg: '#000', tier: '?' };
+        const color = tierInfo.color;
+        const ivs = p.ivs || {};
+        const totalIv = (ivs.hp||0) + (ivs.atk||0) + (ivs.def||0) + (ivs.spa||0) + (p.ivs?.spd||0) + (p.ivs?.spe||0);
         const level = p.level || 1;
-        const color = RARE_COLORS[p.rarity] || '#fff';
         
         innerContent = `
-          <div style="font-size:10px; color:var(--gray); margin-bottom:4px; font-family:'Press Start 2P';">Vende: ${offer.seller_name.substring(0, 10)}</div>
-          <div style="text-align:center; margin-bottom:8px;">
+          <div style="font-size:10px; color:var(--gray); margin-bottom:4px; font-family:'Press Start 2P';">Vende: ${offer.seller_name ? offer.seller_name.substring(0, 10) : 'Anon'}</div>
+          <div style="text-align:center; margin-bottom:8px; position: relative;">
+            <div style="position:absolute;top:-5px;right:0px;background:${tierInfo.bg};color:${tierInfo.color};
+              font-family:'Press Start 2P',monospace;font-size:6px;padding:2px 5px;border-radius:6px;
+              border:1px solid ${tierInfo.color}44;">${tierInfo.tier}</div>
             <img src="${p.isShiny ? getSpriteUrl(p.id, true) : getSpriteUrl(p.id, false)}" style="width:60px; height:60px; object-fit:contain;">
           </div>
-          <div style="font-size:14px; font-weight:bold; color:${color}; margin-bottom:4px; text-transform:capitalize;">${p.name} ${p.isShiny ? '✨' : ''}</div>
-          <div style="font-size:11px; color:var(--gray); margin-bottom:10px;">Nv ${level}</div>
-          <div style="display:flex; justify-content:space-between; font-size:10px; background:rgba(255,255,255,0.03); padding:4px; border-radius:4px; margin-bottom:10px; text-align:center;">
-             <div style="flex:1;">HP<br><b style="color:#fff;">${p.ivs.hp}</b></div>
-             <div style="flex:1;">ATK<br><b style="color:#fff;">${p.ivs.attack}</b></div>
-             <div style="flex:1;">DEF<br><b style="color:#fff;">${p.ivs.defense}</b></div>
-             <div style="flex:1;">SPD<br><b style="color:#fff;">${p.ivs.speed}</b></div>
+          <div style="font-size:13px; font-weight:bold; color:${color}; margin-bottom:4px; text-transform:capitalize;">${p.name} ${p.isShiny ? '✨' : ''}</div>
+          <div style="display:flex; justify-content:center; gap:10px; font-size:11px; margin-bottom:10px;">
+             <span style="color:var(--gray);">Nv ${level}</span>
+             <span style="color:${color};">IV ${totalIv}</span>
           </div>
         `;
       } else {
