@@ -380,7 +380,19 @@ async function renderMaps() {
           const glow = isWeekend ? (winner === 'union' ? `drop-shadow(0 0 10px rgba(59,130,246,1))` : `drop-shadow(0 0 10px rgba(239,68,68,1))`) : 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))';
           const opacity = isWeekend ? '1' : '0.85';
           const logoSrc = winner === 'union' ? 'assets/factions/union.png' : 'assets/factions/poder.png';
-          htmlSnippet += `<img src="${logoSrc}" title="${winner === 'union' ? 'Lidera Unión' : 'Lidera Poder'}" style="position:absolute; top:65px; left:10px; width:28px; height:28px; object-fit:contain; z-index:9; opacity:${opacity}; filter:${glow}; pointer-events:none; animation: pulse 2s infinite;">`;
+          const factionName = winner === 'union' ? 'Unión' : 'Poder';
+          const factionDesc = winner === 'union' 
+            ? 'La Unión controla esta zona. Sus miembros ganan +25% EXP y x2 chance de Shiny.' 
+            : 'El Poder controla esta zona. Sus miembros ganan +25% EXP y x2 chance de Shiny.';
+
+          htmlSnippet += `
+            <div class="pv-tooltip-container pv-to-right" style="position:absolute; top:65px; left:10px; z-index:9;">
+              <img src="${logoSrc}" style="width:28px; height:28px; object-fit:contain; opacity:${opacity}; filter:${glow}; pointer-events:none; animation: pulse 2s infinite;">
+              <div class="pv-tooltip">
+                <span class="pv-tooltip-title">ZONA: ${factionName.toUpperCase()}</span>
+                <span class="pv-tooltip-desc">${factionDesc}</span>
+              </div>
+            </div>`;
         }
 
         if (!state.faction) return htmlSnippet;
@@ -393,11 +405,20 @@ async function renderMaps() {
           const labelClass = isCaptured ? 'guardian-label captured' : 'guardian-label';
           const labelText = isCaptured ? 'DERROTADO' : 'GUARDIÁN';
           const spriteClass = isCaptured ? 'guardian-mini-sprite captured' : 'guardian-mini-sprite';
+          const guardianName = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[guardian.id]) ? POKEMON_DB[guardian.id].name : 'Guardián';
 
           htmlSnippet += `
-            <div class="guardian-status-badge" title="${isCaptured ? 'Guardián ya derrotado hoy' : 'Guardián disponible'}">
+            <div class="guardian-status-badge pv-tooltip-container pv-to-left">
               <img src="${spriteUrl}" class="${spriteClass}" alt="Guardian">
               <span class="${labelClass}">${labelText}</span>
+              <div class="pv-tooltip">
+                <span class="pv-tooltip-title">${guardianName.toUpperCase()}</span>
+                <span class="pv-tooltip-desc">
+                  ${isCaptured 
+                    ? 'Este poderoso guardián ya fue derrotado por hoy. Regresará mañana.' 
+                    : 'Un Pokémon alfa protege esta ruta. Derrótalo para ganar puntos de bando y recompensas.'}
+                </span>
+              </div>
             </div>
           `;
         } else if (state.activeBonuses && state.activeBonuses[locId]) {

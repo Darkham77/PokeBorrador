@@ -187,23 +187,39 @@
         </div>
 
         <div class="hud-items">
-          <div id="time-cycle-display" class="hud-pill time-pill" title="Ciclo Día/Noche (Argentina)">
+          <div id="time-cycle-display" class="hud-pill time-pill pv-tooltip-container pv-to-bottom">
             <span id="time-icon">🕒</span>
             <span id="time-label" style="font-size: 10px;">Cargando...</span>
+            <div class="pv-tooltip">
+              <span class="pv-tooltip-title">CICLO HORARIO</span>
+              <span class="pv-tooltip-desc">El mundo cambia cada 4 horas (Amanecer, Día, Atardecer, Noche). ¡Diferentes Pokémon aparecen según la hora!</span>
+            </div>
           </div>
-          <div class="hud-pill money-pill">
+          <div class="hud-pill money-pill pv-tooltip-container pv-to-bottom">
             <span>₽</span>
             <span id="hud-money">3000</span>
+            <div class="pv-tooltip">
+              <span class="pv-tooltip-title">POKÉ-PESOS (₽)</span>
+              <span class="pv-tooltip-desc">Moneda principal. Se gana en batallas y vendiendo objetos. Se usa en el PokéMart.</span>
+            </div>
           </div>
-          <div class="hud-pill bc-pill">
+          <div class="hud-pill bc-pill pv-tooltip-container pv-to-bottom">
             <i class="fas fa-coins"></i>
             <span id="hud-bc">0</span>
+            <div class="pv-tooltip">
+              <span class="pv-tooltip-title">BATTLE COINS (BC)</span>
+              <span class="pv-tooltip-desc">Moneda de élite. Se gana contra entrenadores fuertes. Se usa para objetos raros y crianza.</span>
+            </div>
           </div>
-          <div class="hud-pill badge-pill">
+          <div class="hud-pill badge-pill pv-tooltip-container pv-to-bottom">
             <i class="fas fa-medal"></i>
             <span id="badge-count">0</span>
+            <div class="pv-tooltip">
+              <span class="pv-tooltip-title">MEDALLAS</span>
+              <span class="pv-tooltip-desc">Desbloquean nuevas rutas y aseguran que los Pokémon de nivel alto te obedezcan.</span>
+            </div>
           </div>
-          <div class="hud-pill ball-pill">
+          <div class="hud-pill ball-pill pv-tooltip-container pv-to-bottom">
             <div class="ball-icon-wrap" style="height: 24px; display: flex; align-items: center;">
               <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'>
                 <circle cx='20' cy='20' r='19' fill='%23222' stroke='%23111' stroke-width='1.5'/>
@@ -216,15 +232,41 @@
               </svg>" width="24" height="24">
             </div>
             <span id="ball-count">10</span>
+            <div class="pv-tooltip">
+              <span class="pv-tooltip-title">POKÉ BALLS</span>
+              <span class="pv-tooltip-desc">Cantidad de cápsulas disponibles para capturar nuevos Pokémon.</span>
+            </div>
           </div>
-          <div id="hud-egg-container" class="hud-pill egg-pill" onclick="toggleProfile()" title="Huevos en incubación">
+          <div id="hud-egg-container" class="hud-pill egg-pill pv-tooltip-container pv-to-bottom" onclick="toggleProfile()">
             <i class="fas fa-egg"></i>
             <span id="egg-count">0</span>
+            <div class="pv-tooltip">
+              <span class="pv-tooltip-title">HUEVOS</span>
+              <span class="pv-tooltip-desc">Llevas estos huevos en tu equipo. ¡Camina para que eclosionen!</span>
+            </div>
           </div>
-          <button onclick="toggleSettings()" id="hud-settings-btn" title="Configuración"
-            style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:8px;">⚙️</button>
-          <button onclick="toggleProfile()" id="hud-profile-btn" title="Perfil y opciones">👤</button>
-          <button onclick="toggleLibrary()" id="hud-library-btn" class="library-btn" title="Biblioteca">📚 Biblioteca</button>
+          <div class="pv-tooltip-container pv-to-left">
+            <button onclick="toggleSettings()" id="hud-settings-btn"
+              style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:8px;">⚙️</button>
+            <div class="pv-tooltip">
+              <span class="pv-tooltip-title">CONFIGURACIÓN</span>
+              <span class="pv-tooltip-desc">Ajusta el zoom de la interfaz y otras opciones del juego.</span>
+            </div>
+          </div>
+          <div class="pv-tooltip-container pv-to-left">
+            <button onclick="toggleProfile()" id="hud-profile-btn">👤</button>
+            <div class="pv-tooltip">
+              <span class="pv-tooltip-title">PERFIL</span>
+              <span class="pv-tooltip-desc">Mira tus estadísticas, cambia tu avatar y gestiona tu cuenta.</span>
+            </div>
+          </div>
+          <div class="pv-tooltip-container pv-to-left">
+            <button onclick="toggleLibrary()" id="hud-library-btn" class="library-btn">📚 Biblioteca</button>
+            <div class="pv-tooltip">
+              <span class="pv-tooltip-title">BIBLIOTECA</span>
+              <span class="pv-tooltip-desc">Consulta guías sobre gimnasios, crianza, tipos y más.</span>
+            </div>
+          </div>
         </div>
       </div>
 
