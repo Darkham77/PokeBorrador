@@ -1016,14 +1016,9 @@ function updateHud() {
 
   const bcEl = document.getElementById('hud-bc');
   if (bcEl) {
-    if (state.trainer === 'Darkham') {
-      state.battleCoins = 999999999;
-      bcEl.innerHTML = '<i class="fas fa-infinity"></i> ∞';
-      bcEl.style.color = 'var(--yellow)';
-      bcEl.style.textShadow = '0 0 8px rgba(255,215,0,0.5)';
-    } else {
-      bcEl.textContent = (state.battleCoins || 0).toLocaleString();
-    }
+    bcEl.textContent = (state.battleCoins || 0).toLocaleString();
+    bcEl.style.color = '';
+    bcEl.style.textShadow = '';
   }
 
   const eggCountEl = document.getElementById('egg-count');

@@ -416,29 +416,30 @@
       }
       const pId = id;
       const _ivFloor = (typeof getStreakIvFloor === 'function') ? getStreakIvFloor() : 0;
-      const _randIv = (isGuardian = false) => {
+      const _randIv = (forceReRoll = false, isGuardian = false) => {
         let val = Math.floor(Math.random() * 32);
-        if (isGuardian) {
-          // Los guardianes tienen IVs 40% mejorados (doble tirada + suelo de 12)
+        if (isGuardian || forceReRoll) {
+          // Los guardianes y bonificados tienen IVs mejorados (doble tirada)
           val = Math.max(val, Math.floor(Math.random() * 32));
-          val = Math.max(12, val);
+          if (isGuardian) val = Math.max(12, val);
         }
         return Math.max(_ivFloor, val);
       };
       
-      // Determinar si es un guardián antes de generar IVs (basado en si el ID está en el pool de guardianes o si se pasa un flag)
-      // Nota: makePokemon se llama desde goLocation para guardianes, pero el flag isGuardian se pone DESPUÉS.
-      // Para que funcione, necesitamos saber si es un guardián en este momento.
-      // Revisando js/21_dominance.js, los guardianes se sacan de GUARDIAN_POOL.
+      // Determinar si es un guardián antes de generar IVs
       const isGuardianPotential = (typeof getGuardianForMap === 'function' && window.currentEncounterMapId && getGuardianForMap(window.currentEncounterMapId)?.id === id);
+      
+      // Multiplicador de Dominancia (Guerra) - Bono de IVs (30% de mejores IVs)
+      const hasIvBonusPotential = (typeof hasDominanceIvBonus === 'function' && window.currentEncounterMapId && hasDominanceIvBonus(window.currentEncounterMapId));
+      const appliedIvBonus = hasIvBonusPotential && (Math.random() < 0.30);
 
       const ivs = { 
-        hp: _randIv(isGuardianPotential), 
-        atk: _randIv(isGuardianPotential), 
-        def: _randIv(isGuardianPotential), 
-        spa: _randIv(isGuardianPotential), 
-        spd: _randIv(isGuardianPotential), 
-        spe: _randIv(isGuardianPotential) 
+        hp: _randIv(appliedIvBonus, isGuardianPotential), 
+        atk: _randIv(appliedIvBonus, isGuardianPotential), 
+        def: _randIv(appliedIvBonus, isGuardianPotential), 
+        spa: _randIv(appliedIvBonus, isGuardianPotential), 
+        spd: _randIv(appliedIvBonus, isGuardianPotential), 
+        spe: _randIv(appliedIvBonus, isGuardianPotential) 
       };
       const nature = NATURES[Math.floor(Math.random() * NATURES.length)];
       const abilityList = ABILITIES[id] || ['Espesura'];

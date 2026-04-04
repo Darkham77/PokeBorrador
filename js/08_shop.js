@@ -909,14 +909,13 @@ function renderTrainerShop() {
   if (levelEl) levelEl.innerHTML = `<span style="color:var(--purple);">⭐ Rango: <strong>${rank.title}</strong> (Nv. ${state.trainerLevel})</span> &nbsp;·&nbsp; Comprá ítems exclusivos con Battle Coins.`;
   const tierColors = { common: 'tier-common', rare: 'tier-rare', epic: 'tier-epic', legend: 'tier-legend' };
   const tierLabels = { common: 'Común', rare: 'Raro', epic: 'Épico', legend: 'Legendario' };
-  const TRAINER_CAT_ORDER = { held: 1, especial: 2, booster: 3, breeding: 4, utility: 5 };
-  const TRAINER_ITEM_CATEGORIES = ['todos', 'held', 'especial', 'booster', 'breeding', 'utility'];
+  const TRAINER_CAT_ORDER = { held: 1, especial: 2, booster: 3, utility: 4 };
+  const TRAINER_ITEM_CATEGORIES = ['todos', 'held', 'especial', 'booster', 'utility'];
   const TRAINER_CAT_LABELS = {
     todos: 'Todo',
     held: '⚔️ Ítems Equipables',
     especial: '✨ Especiales',
     booster: '🚀 Potenciadores',
-    breeding: '🥚 Cría',
     utility: '🛠️ Utilidad',
   };
 

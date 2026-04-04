@@ -382,8 +382,8 @@ async function renderMaps() {
           const logoSrc = winner === 'union' ? 'assets/factions/union.png' : 'assets/factions/poder.png';
           const factionName = winner === 'union' ? 'Unión' : 'Poder';
           const factionDesc = winner === 'union' 
-            ? 'La Unión controla esta zona. Sus miembros ganan +25% EXP y x2 chance de Shiny.' 
-            : 'El Poder controla esta zona. Sus miembros ganan +25% EXP y x2 chance de Shiny.';
+            ? 'La Unión controla esta zona. Sus miembros ganan +30% EXP, +30% de Shiny y +30% Mejores IVs.' 
+            : 'El Poder controla esta zona. Sus miembros ganan +30% EXP, +30% de Shiny y +30% Mejores IVs.';
 
           htmlSnippet += `
             <div class="pv-tooltip-container pv-to-right" style="position:absolute; top:65px; left:10px; z-index:9;">
@@ -422,7 +422,7 @@ async function renderMaps() {
             </div>
           `;
         } else if (state.activeBonuses && state.activeBonuses[locId]) {
-          htmlSnippet += `<span class="dom-badge dominance winning" title="Bono Activo (+25% EXP / x2 Shiny)" style="position:absolute; bottom:8px; right:8px; z-index:2;">👑 Dominado <span class="bonus-icon">✨</span></span>`;
+          htmlSnippet += `<span class="dom-badge dominance winning" title="Bono Activo (+30% EXP / +30% Shiny / +30% IVs)" style="position:absolute; bottom:8px; right:8px; z-index:2;">👑 Dominado <span class="bonus-icon">✨</span></span>`;
         }
         return htmlSnippet;
       };

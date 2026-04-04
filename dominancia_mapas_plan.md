@@ -17,7 +17,7 @@ que ya existen.
 - Ciclo semanal: Lunes–Viernes = Disputa de PT (Puntos de Territorio). Sábado–Domingo = Dominancia
 - Cada evento resuelto en un mapa en disputa suma PT al bando del jugador
 - El bando con más PT al cierre del viernes domina el mapa el fin de semana
-- El mapa dominado otorga bonos temáticos (Shiny x2, EXP+25%, etc.) solo al bando ganador
+- El mapa dominado otorga bonos temáticos (Shiny +30%, EXP+30%, Mejores IVs 30% chance, etc.) solo al bando ganador
 - Una vez por día aparece el **Guardián del Territorio** al clickear un mapa: un Pokémon especial
   que solo puede capturar el primer jugador en lograrlo (validado contra Supabase)
 - Los jugadores acumulan **Monedas de Guerra** canjeables en una tienda exclusiva

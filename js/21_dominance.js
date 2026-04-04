@@ -623,8 +623,9 @@ function hasDominanceBonus(mapId) {
   return !!state.activeBonuses?.[mapId];
 }
 
-function getDominanceShinyMultiplier(mapId) { return hasDominanceBonus(mapId) ? 2 : 1; }
-function getDominanceExpMultiplier(mapId) { return hasDominanceBonus(mapId) ? 1.25 : 1; }
+function getDominanceShinyMultiplier(mapId) { return hasDominanceBonus(mapId) ? 1.3 : 1; }
+function getDominanceExpMultiplier(mapId) { return hasDominanceBonus(mapId) ? 1.3 : 1; }
+function hasDominanceIvBonus(mapId) { return hasDominanceBonus(mapId); }
 
 async function initDominanceSystem() {
   await loadPlayerFaction();
