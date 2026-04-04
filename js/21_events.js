@@ -378,21 +378,25 @@ async function submitCompetitionEntry(pokemon, eventId) {
   const currentScore = sortBy.startsWith('data.') ? (pokemon.data?.[sortBy.split('.')[1]] || totalIvs) : (pokemon[sortBy] || totalIvs);
 
   try {
-    const { data: existing } = await window.sb.from('competition_entries')
-      .select('data')
+    const { data: existing, error: fetchErr } = await window.sb.from('competition_entries')
+      .select('id, data')
       .eq('event_id', eventId)
       .eq('player_id', window.currentUser.id)
-      .single();
+      .maybeSingle(); // maybeSingle es más limpio si puede no existir
+
+    if (fetchErr && fetchErr.code !== 'PGRST116') {
+      console.warn('[Events] Error al buscar registro previo:', fetchErr);
+    }
 
     if (existing) {
-      const oldScore = existing.data?.total_ivs || 0; // Por ahora comparamos por IVs si el data es viejo
+      const oldScore = existing.data?.total_ivs || 0;
       if (oldScore >= totalIvs) {
         notify('Ya tenés una inscripción mejor en este concurso.', '🏆');
         return;
       }
     }
 
-    const { error } = await window.sb.from('competition_entries').upsert({
+    const upsertData = {
       event_id: eventId,
       player_id: window.currentUser.id,
       player_name: state.trainer || 'Jugador',
@@ -405,12 +409,20 @@ async function submitCompetitionEntry(pokemon, eventId) {
         isShiny: pokemon.isShiny || false
       },
       submitted_at: new Date().toISOString()
+    };
+
+    // Si ya existe, incluimos el ID para asegurar el update
+    if (existing?.id) upsertData.id = existing.id;
+
+    const { error: upsertErr } = await window.sb.from('competition_entries').upsert(upsertData, {
+      onConflict: 'event_id, player_id'
     });
 
-    if (error) throw error;
+    if (upsertErr) throw upsertErr;
+
     notify(`¡Registro exitoso en ${ev.name}! Puntuación: ${totalIvs}`, ev.icon || '🏆');
   } catch (e) {
-    console.warn('[Events] Error al inscribir:', e);
+    console.error('[Events] Error detallado al inscribir:', e);
     notify('Error al inscribir en el concurso.', '❌');
   }
 }
