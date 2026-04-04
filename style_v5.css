@@ -486,7 +486,7 @@
       position: relative;
       z-index: 1500;
       background: var(--hud-bg, var(--card));
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 12px 24px; /* Reducido un poco el padding vertical */
       margin-bottom: 8px;
       flex-wrap: nowrap; /* Evitar que se rompa en PC */
@@ -543,7 +543,7 @@
       background: rgba(15, 15, 25, 0.95);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 8px;
       display: flex;
       flex-direction: column;
@@ -929,7 +929,7 @@
 
     .location-card {
       background: var(--card); /* Fallback */
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 20px;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1143,7 +1143,7 @@
     .pc-split-container {
       display: flex;
       gap: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       grid-column: 1 / -1;
       width: 100%;
     }
@@ -1164,7 +1164,7 @@
     .pc-banner {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 12px 16px;
       display: flex;
       align-items: center;
@@ -1323,7 +1323,7 @@
     }
     .event-detail-icon {
       font-size: 64px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       filter: drop-shadow(0 0 10px var(--yellow));
       animation: float 3s ease-in-out infinite;
     }
@@ -1342,7 +1342,7 @@
     }
     .event-detail-config {
       background: rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 16px;
       margin-bottom: 24px;
       text-align: left;
@@ -1410,7 +1410,7 @@
     /* ===== POKEMON TEAM ===== */
     .team-section {
       background: var(--card);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 20px;
       margin-bottom: 16px;
     }
@@ -1631,7 +1631,7 @@
 
     .battle-log {
       background: rgba(255, 255, 255, 0.03);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 12px;
       margin-bottom: 12px;
       height: 90px;
@@ -1732,7 +1732,7 @@
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
 
     /* .action-row definida más abajo */
@@ -1965,7 +1965,7 @@
     .move-btn {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 12px 15px;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2391,7 +2391,7 @@
 
     .gym-card {
       background: var(--card);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 20px;
       display: flex;
       align-items: center;
@@ -3740,7 +3740,7 @@
 
     /* ===== SERVER SELECTOR ===== */
     .server-selector {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
 
     .server-selector-label {
@@ -4070,7 +4070,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       align-items: stretch;
     }
     .daycare-slots-grid > .daycare-slot-card {
@@ -4595,7 +4595,7 @@
 
     .error-intro {
       font-size: 15px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       line-height: 1.5;
       color: var(--gray);
     }
@@ -4605,7 +4605,7 @@
       border-left: 4px solid var(--red);
       padding: 15px;
       border-radius: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       font-weight: 700;
       color: #ff8080;
     }
@@ -4625,7 +4625,7 @@
       font-size: 12px;
       color: #bbb;
       overflow-x: auto;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       max-height: 200px;
       white-space: pre-wrap;
       word-break: break-all;
@@ -5588,7 +5588,7 @@
     }
 
     .library-article p {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       color: #ccc;
       font-size: 16px;
     }
@@ -5785,7 +5785,7 @@
     }
 
     .library-article p {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       color: #ccc;
       font-size: 16px;
     }
@@ -5884,9 +5884,9 @@
 @media (min-width: 1025px) {
   .war-dashboard-wrapper {
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 480px 1fr;
     align-items: start;
-    gap: 30px;
+    gap: 40px;
   }
 }
 
@@ -5905,10 +5905,10 @@
 }
 
 .war-banner-mini {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
 }
 
@@ -5951,7 +5951,7 @@
   padding: 14px 18px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
+  border-radius: 20px;
   transition: all 0.2s;
 }
 
@@ -5991,7 +5991,7 @@
   margin-top: 10px;
   padding: 16px;
   background: rgba(255,255,255,0.02);
-  border-radius: 16px;
+  border-radius: 20px;
 }
 
 .rules-header { font-family: 'Press Start 2P'; font-size: 8px; color: var(--yellow); margin-bottom: 12px; }
@@ -6121,7 +6121,7 @@
   font-family: 'Press Start 2P';
   font-size: 9px;
   color: var(--yellow);
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   letter-spacing: 1px;
 }
 

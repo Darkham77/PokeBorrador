@@ -479,16 +479,11 @@
           </div>
 
           <div id="om-view-explore">
-             <div style="margin-bottom:14px; display:flex; gap: 10px;">
-                <select id="om-filter-type" onchange="renderOnlineMarket()" style="padding:10px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
-                  <option value="all">Todo</option>
-                  <option value="pokemon">Pokémon</option>
-                  <option value="item">Ítems</option>
-                </select>
-                <input id="om-search-input" type="text" placeholder="Buscar..." oninput="renderOnlineMarket()" style="flex:1; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
-             </div>
+             <!-- Filtros avanzados dinámicos -->
+             <div id="om-explore-filters"></div>
              <div id="om-explore-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
           </div>
+
 
           <div id="om-view-mine" style="display:none;">
              <p style="font-size:11px; color:var(--gray); margin-bottom: 12px;">Aquí puedes ver tus ítems y Pokémon listados. Recuerda que el mercado cobra un 5% de comisión cuando reclamas tus ganancias.</p>
@@ -501,7 +496,11 @@
                 <button class="action-btn" id="om-pub-sw-item" onclick="switchPublishType('item')" style="flex:1;">🎒 Vender Ítem</button>
              </div>
              
+             <!-- Filtros avanzados dinámicos para Vender -->
+             <div id="om-publish-filters"></div>
+             
              <!-- Selectores dinámicos -->
+
              <div id="om-publish-selectors" style="background:rgba(0,0,0,0.2); padding:14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 14px;"></div>
 
              <div style="display:flex; gap:10px; align-items:center;">
@@ -1020,7 +1019,7 @@
 
   <!-- WAR TAB -->
   <div id="tab-war" class="tab-content" style="display:none;padding-bottom:100px;">
-    <div class="war-container" style="max-width:1600px; margin:0 auto; padding:20px;">
+    <div class="war-container" style="max-width:1800px; margin:0 auto; padding:20px;">
       <div class="war-dashboard-wrapper">
         
         <!-- SIDEBAR: Stats & Global Info -->
