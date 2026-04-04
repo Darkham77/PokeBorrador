@@ -780,18 +780,18 @@ async function renderMaps() {
       const overlay = document.createElement('div');
       overlay.id = 'fishing-game-overlay';
       
-      // Dificultad ULTRA EXTREMA basada en rareza (1-100)
-      const totalNotes = Math.min(25, 6 + Math.floor(rarity / 6)); // Hasta 25 notas
-      const speedBase = Math.max(300, 1000 - (rarity * 9)); // Anillos ultra rápidos (300ms - 1000ms)
-      const hitWindow = Math.max(80, 180 - (rarity / 1.5)); // Ventana de acierto muy estrecha (80ms - 180ms)
-      const spawnInterval = speedBase * 0.7; // El siguiente círculo aparece al 70% del anterior
+      // Ajuste de dificultad: Mantener el nivel 50 igual, pero suavizar el nivel 100 (-20%)
+      const totalNotes = Math.min(22, 5 + Math.floor(rarity / 7)); // Reducido ligeramente de 25
+      const speedBase = Math.max(380, 1100 - (rarity * 7.5)); // Suavizado de 300ms a 380ms floor
+      const hitWindow = Math.max(100, 190 - (rarity / 1.3)); // Suavizado de 80ms a 100ms floor
+      const spawnInterval = speedBase * 0.7; 
       
       overlay.innerHTML = `
         <div class="rhythm-container" id="rhythm-container">
           <div class="fishing-hint-rhythm">
-            ¡ULTRA RITMO! <br> 
+            ¡RITMO DE PESCA! <br> 
             Seguí el orden <span>1, 2, 3...</span><br>
-            ¡NO PUEDEN FALLAR!
+            ¡Mantené el foco!
           </div>
           <div class="rhythm-counter" id="rhythm-counter">NOTAS: 0 / ${totalNotes}</div>
         </div>
@@ -804,6 +804,7 @@ async function renderMaps() {
       let spawnedNotes = 0;
       let clickedNotes = 0;
       let gameActive = true;
+      let activePositions = []; // List of {x, y} to prevent overlaps
 
       function spawnNext() {
         if (!gameActive || spawnedNotes >= totalNotes) return;
@@ -813,9 +814,26 @@ async function renderMaps() {
         const note = document.createElement('div');
         note.className = 'rhythm-note';
         
-        const padding = 70;
-        const x = padding + Math.random() * (380 - padding * 2);
-        const y = padding + Math.random() * (380 - padding * 2);
+        // --- Evitar Solapamiento ---
+        const padding = 75;
+        const minDistance = 85; 
+        let x, y, tooClose;
+        let attempts = 0;
+        
+        do {
+          tooClose = false;
+          x = padding + Math.random() * (380 - padding * 2);
+          y = padding + Math.random() * (380 - padding * 2);
+          
+          for (let pos of activePositions) {
+            const dist = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
+            if (dist < minDistance) { tooClose = true; break; }
+          }
+          attempts++;
+        } while (tooClose && attempts < 15);
+        
+        const myPos = { x, y };
+        activePositions.push(myPos);
         note.style.left = x + 'px';
         note.style.top = y + 'px';
 
@@ -833,13 +851,15 @@ async function renderMaps() {
           if (clicked || !gameActive) return;
           e.stopPropagation();
           
-          // REGLA DE ORO: Debe clickar en ORDEN (debe ser el siguiente índice)
           if (noteId !== clickedNotes + 1) {
              failNote(note, "¡Orden equivocado!");
              return;
           }
 
           clicked = true;
+          // Limpiar posición de la lista de solapamiento
+          activePositions = activePositions.filter(p => p !== myPos);
+
           const elapsed = performance.now() - startTime;
           const accuracy = Math.abs(elapsed - speedBase);
 
@@ -853,21 +873,20 @@ async function renderMaps() {
               if (clickedNotes >= totalNotes) finish(true);
             }, 100);
           } else {
-            failNote(note, accuracy < speedBase ? "¡Demasiado pronto!" : "¡Demasiado tarde!");
+            failNote(note, accuracy < speedBase ? "¡Muy pronto!" : "¡Muy tarde!");
           }
         };
 
         note.addEventListener('mousedown', handleNoteClick);
         note.addEventListener('touchstart', handleNoteClick, {passive: false});
 
-        // Temporizador de fallo por no clickear a tiempo (grace period de 150ms)
         setTimeout(() => {
           if (!clicked && gameActive) {
-            failNote(note, "¡Te dormiste!");
+            activePositions = activePositions.filter(p => p !== myPos);
+            failNote(note, "¡Perdiste el ritmo!");
           }
         }, speedBase + 150);
 
-        // Programar la SIGUIENTE nota antes de que termine esta (solapamiento)
         setTimeout(spawnNext, spawnInterval);
       }
 
