@@ -100,9 +100,9 @@ async function renderOnlineMarket() {
         innerContent = `
           <div style="font-size:10px; color:var(--gray); margin-bottom:4px; font-family:'Press Start 2P';">Vende: ${offer.seller_name.substring(0, 10)}</div>
           <div style="text-align:center; margin-bottom:8px;">
-            <img src="${p.shiny ? getSpriteUrl(p.sprite, true) : getSpriteUrl(p.sprite, false)}" style="width:60px; height:60px; object-fit:contain;">
+            <img src="${p.isShiny ? getSpriteUrl(p.id, true) : getSpriteUrl(p.id, false)}" style="width:60px; height:60px; object-fit:contain;">
           </div>
-          <div style="font-size:14px; font-weight:bold; color:${color}; margin-bottom:4px; text-transform:capitalize;">${p.name} ${p.shiny ? '✨' : ''}</div>
+          <div style="font-size:14px; font-weight:bold; color:${color}; margin-bottom:4px; text-transform:capitalize;">${p.name} ${p.isShiny ? '✨' : ''}</div>
           <div style="font-size:11px; color:var(--gray); margin-bottom:10px;">Nv ${level}</div>
           <div style="display:flex; justify-content:space-between; font-size:10px; background:rgba(255,255,255,0.03); padding:4px; border-radius:4px; margin-bottom:10px; text-align:center;">
              <div style="flex:1;">HP<br><b style="color:#fff;">${p.ivs.hp}</b></div>
@@ -237,11 +237,11 @@ async function renderMyPublications() {
       card.style.background = 'rgba(0,0,0,0.4)';
       card.style.border = '1px solid rgba(255,255,255,0.05)';
       
-      let title = offer.listing_type === 'pokemon' ? `${offer.data.name} ${offer.data.shiny ? '✨' : ''}` : `x${offer.data.qty} ${offer.data.name}`;
+      let title = offer.listing_type === 'pokemon' ? `${offer.data.name} ${offer.data.isShiny ? '✨' : ''}` : `x${offer.data.qty} ${offer.data.name}`;
       let spriteHtml = '';
 
       if (offer.listing_type === 'pokemon') {
-          spriteHtml = `<img src="${offer.data.shiny ? getSpriteUrl(offer.data.sprite, true) : getSpriteUrl(offer.data.sprite, false)}" style="height:50px;">`;
+          spriteHtml = `<img src="${offer.data.isShiny ? getSpriteUrl(offer.data.id, true) : getSpriteUrl(offer.data.id, false)}" style="height:50px;">`;
       } else {
           spriteHtml = `<div style="font-size:30px; margin: 10px 0;">🎒</div>`;
       }
@@ -377,8 +377,8 @@ function renderPublishTab() {
         btn.style.borderRadius = '8px';
         btn.style.cursor = 'pointer';
         
-        btn.innerHTML = `<img src="${p.shiny ? getSpriteUrl(p.sprite, true) : getSpriteUrl(p.sprite, false)}" style="width:30px;height:30px;object-fit:contain;">`;
-        if (p.shiny) btn.style.borderColor = 'var(--yellow)';
+        btn.innerHTML = `<img src="${p.isShiny ? getSpriteUrl(p.id, true) : getSpriteUrl(p.id, false)}" style="width:30px;height:30px;object-fit:contain;">`;
+        if (p.isShiny) btn.style.borderColor = 'var(--yellow)';
 
         if (_omSelectedData && _omSelectedData.uid === p.uid) {
            btn.style.background = 'var(--blue)';
@@ -415,52 +415,63 @@ function renderPublishTab() {
         return;
      }
 
-     const select = document.createElement('select');
-     select.style.width = '100%';
-     select.style.padding = '10px';
-     select.style.background = 'rgba(0,0,0,0.5)';
-     select.style.color = '#fff';
-     select.style.border = '1px solid rgba(255,255,255,0.1)';
-     select.style.borderRadius = '8px';
-     select.style.marginBottom = '10px';
-     
-     select.innerHTML = '<option value="">-- Elige un Ítem --</option>';
+     const grid = document.createElement('div');
+     grid.style.display = 'grid';
+     grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(40px, 1fr))';
+     grid.style.gap = '8px';
+     grid.style.maxHeight = '200px';
+     grid.style.overflowY = 'auto';
+
      vendibles.forEach(item => {
-        select.innerHTML += `<option value="${item}">${item} (Tienes ${state.inventory[item]})</option>`;
+        const btn = document.createElement('button');
+        btn.style.width = '100%';
+        btn.style.height = '40px';
+        btn.style.background = 'rgba(255,255,255,0.05)';
+        btn.style.border = '1px solid rgba(255,255,255,0.1)';
+        btn.style.borderRadius = '8px';
+        btn.style.cursor = 'pointer';
+        
+        let itemInfo = window.SHOP_ITEMS ? window.SHOP_ITEMS.find(x => x.name === item) : null;
+        let iconHtml = itemInfo ? (itemInfo.sprite ? `<img src="${itemInfo.sprite}" style="width:30px;height:30px;object-fit:contain;">` : `<span style="font-size:24px;">${itemInfo.icon}</span>`) : '🎒';
+        
+        btn.innerHTML = `${iconHtml}`;
+
+        if (_omSelectedData && _omSelectedData.name === item) {
+           btn.style.background = 'var(--blue)';
+           btn.style.borderColor = '#fff';
+        }
+
+        btn.onclick = () => {
+           _omSelectedData = { name: item, max: state.inventory[item], qty: 1 };
+           renderPublishTab();
+        };
+        grid.appendChild(btn);
      });
 
-     select.onchange = (e) => {
-        if (e.target.value) {
-           _omSelectedData = { name: e.target.value, max: state.inventory[e.target.value], qty: 1 };
-           renderPublishTab();
-        } else {
-           _omSelectedData = null;
-        }
-     };
+     container.appendChild(grid);
 
      if (_omSelectedData && _omSelectedData.name) {
-        select.value = _omSelectedData.name;
-        container.appendChild(select);
-
         const qtyPanel = document.createElement('div');
+        qtyPanel.style.marginTop = '10px';
         qtyPanel.style.display = 'flex';
         qtyPanel.style.alignItems = 'center';
         qtyPanel.style.gap = '10px';
+        qtyPanel.style.flexWrap = 'wrap';
         qtyPanel.innerHTML = `
-           <span style="font-size:12px; color:var(--gray);">Cantidad a vender:</span>
+           <div style="font-size:12px; text-transform:capitalize; flex: 100%;">
+              Seleccionado: <b style="color:var(--yellow);">${_omSelectedData.name}</b>
+           </div>
+           <span style="font-size:12px; color:var(--gray);">Cantidad:</span>
            <input type="number" id="om-pub-item-qty" value="${_omSelectedData.qty}" min="1" max="${_omSelectedData.max}" style="padding:8px; border-radius:8px; width:70px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; font-family:'Press Start 2P', monospace; font-size:10px;">
            <span style="font-size:10px; color:var(--yellow);">(Max ${_omSelectedData.max})</span>
         `;
-        qtyPanel.querySelector('input').onchange = (e) => {
+        qtyPanel.querySelector('input').addEventListener('input', (e) => {
            let val = parseInt(e.target.value) || 1;
            if (val > _omSelectedData.max) val = _omSelectedData.max;
            if (val < 1) val = 1;
-           e.target.value = val;
            _omSelectedData.qty = val;
-        };
+        });
         container.appendChild(qtyPanel);
-     } else {
-        container.appendChild(select);
      }
   }
 }
