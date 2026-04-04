@@ -18,12 +18,16 @@ function showTab(tab, btnEl) {
     b.classList.add('active');
     
     // Si está dentro de un grupo (HUD Redesign), activar también el padre
-    const group = b.closest('.hud-group');
+    const group = b.closest('.hud-group, .nav-group');
     if (group) {
       const groupBtn = group.querySelector('.group-btn');
       if (groupBtn) groupBtn.classList.add('active');
     }
   });
+
+  // Forzar cierre de menús en móvil al perder el foco del botón pulsado
+  if (btnEl) btnEl.blur();
+
   if (tab === 'team') renderTeam();
   if (tab === 'pokedex') renderPokedex();
   if (tab === 'gyms') renderGyms();

@@ -2585,6 +2585,26 @@
       box-shadow: 0 -2px 10px rgba(255, 255, 255, 0.05);
     }
 
+    /* Prevención contra desbordamiento en ítems de los extremos */
+    .hud-group:last-child .hud-submenu,
+    .nav-group:last-child .nav-submenu {
+      left: auto !important;
+      right: 0 !important;
+      transform: translateY(10px) !important;
+    }
+
+    .hud-group:last-child:hover .hud-submenu,
+    .nav-group:last-child:hover .nav-submenu {
+      transform: translateY(0) !important;
+    }
+
+    /* Ajuste específico para móvil (flecha decorativa a la derecha) */
+    .nav-group:last-child .nav-submenu::after {
+      left: auto;
+      right: 20px;
+      transform: none;
+    }
+
 
 
 
