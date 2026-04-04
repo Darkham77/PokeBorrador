@@ -1065,16 +1065,16 @@
       position: absolute;
       inset: 0;
       background-image: var(--bg-image);
-      background-size: 140%; /* Zoom in to allow cropping */
+      background-size: 155%; /* Increased from 140% (+10% zoom approx) */
       background-position: center bottom; /* Aggressive crop to hide top banner in PNGs */
-      filter: brightness(0.25) contrast(1.1);
+      filter: brightness(0.48) contrast(1.1); /* Reduced darkness by ~30% (from 0.25 brightness) */
       z-index: 0;
       transition: transform 0.6s ease, filter 0.4s ease;
     }
 
     .location-card:hover::before {
       transform: scale(1.1);
-      filter: brightness(0.35) contrast(1.2);
+      filter: brightness(0.6) contrast(1.2); /* Adjusted to match new base brightness */
     }
 
     .location-card:hover {
