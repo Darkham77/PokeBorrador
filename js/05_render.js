@@ -16,6 +16,13 @@ function showTab(tab, btnEl) {
   // Activar botones correspondientes en ambos menús
   document.querySelectorAll(`.nav-btn[data-tab="${tab}"], .hud-nav-btn[data-tab="${tab}"]`).forEach(b => {
     b.classList.add('active');
+    
+    // Si está dentro de un grupo (HUD Redesign), activar también el padre
+    const group = b.closest('.hud-group');
+    if (group) {
+      const groupBtn = group.querySelector('.group-btn');
+      if (groupBtn) groupBtn.classList.add('active');
+    }
   });
   if (tab === 'team') renderTeam();
   if (tab === 'pokedex') renderPokedex();

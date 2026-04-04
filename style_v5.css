@@ -509,11 +509,90 @@
     /* Menú dentro del HUD (PC) */
     .hud-nav {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       flex: 1;
       justify-content: center;
       align-items: center;
     }
+
+    /* Tab de Mapa Prominente */
+    .hud-nav-btn.map-btn {
+      min-width: 120px;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .hud-nav-btn.map-btn span:last-child {
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    /* Agrupación y Submenús */
+    .hud-group {
+      position: relative;
+    }
+
+    .hud-submenu {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(15, 15, 25, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 1000;
+      min-width: 160px;
+    }
+
+    /* Flecha decorativa del submenú */
+    .hud-submenu::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: rgba(15, 15, 25, 0.95);
+    }
+
+    .hud-group:hover .hud-submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .hud-submenu .hud-nav-btn {
+      width: 100% !important;
+      justify-content: flex-start !important;
+      background: transparent !important;
+      border: 1px solid transparent !important;
+      padding: 10px 14px !important;
+      border-radius: 10px !important;
+    }
+
+    .hud-submenu .hud-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+      transform: translateX(4px) !important;
+    }
+
+    /* Antiguo HUD nav (Eliminado) */
+
+
+
+
+
+
 
     .hud-nav-btn {
       background: rgba(255, 255, 255, 0.03);
