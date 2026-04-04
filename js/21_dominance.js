@@ -16,9 +16,12 @@ function getPreviousWeekId() {
 }
 
 function isDisputePhase() {
-  if (window.forceWeekend || localStorage.getItem('force_weekend') === 'true') return false; // Simulación de fin de semana
   const day = new Date().getDay();
-  return day >= 1 && day <= 5; // Lunes a Viernes
+  const isWeekday = (day >= 1 && day <= 5);
+  const isSimulating = localStorage.getItem('force_phase_toggle') === 'true';
+
+  // Si estamos simulando, invertimos la fase real
+  return isSimulating ? !isWeekday : isWeekday;
 }
 
 const WAR_MAP_IMAGES = {
@@ -1221,22 +1224,31 @@ async function claimDefenseRewards(recordId) {
 }
 
 /**
- * Función de utilidad para desarrolladores/testers: Altera entre fase de semana y fin de semana.
+ * Función de utilidad para desarrolladores/testers: Alterna entre fase de semana y fin de semana.
  */
 function toggleWeekendSimulation() {
-  const current = localStorage.getItem('force_weekend') === 'true';
+  const current = localStorage.getItem('force_phase_toggle') === 'true';
   const newValue = !current;
-  localStorage.setItem('force_weekend', newValue);
-  window.forceWeekend = newValue;
+  localStorage.setItem('force_phase_toggle', newValue);
   
+  const day = new Date().getDay();
+  const isWeekendReal = (day === 0 || day === 6);
+  const simulatedIsWeekend = isWeekendReal ? !newValue : newValue;
+
   const btn = document.getElementById('sim-weekend-btn');
   if (btn) {
-    btn.textContent = newValue ? 'SÁBADO (SIM)' : 'MODO TEST';
-    btn.style.color = newValue ? 'var(--yellow)' : '#888';
-    btn.style.borderColor = newValue ? 'var(--yellow)' : '#444';
+    if (newValue) {
+      btn.textContent = simulatedIsWeekend ? 'SÁBADO (SIM)' : 'LUN-VIE (SIM)';
+      btn.style.color = 'var(--yellow)';
+      btn.style.borderColor = 'var(--yellow)';
+    } else {
+      btn.textContent = 'MODO TEST';
+      btn.style.color = '#888';
+      btn.style.borderColor = '#444';
+    }
   }
   
-  notify(newValue ? 'Simulando fin de semana...' : 'Restablecida fase real...', '⏱️');
+  notify(newValue ? 'Simulación de fase activa...' : 'Restablecida fase real...', '⏱️');
   
   if (typeof renderWarPanel === 'function') {
     renderWarPanel();
@@ -1246,9 +1258,13 @@ function toggleWeekendSimulation() {
 // Inicializar el botón al cargar
 window.addEventListener('load', () => {
   const btn = document.getElementById('sim-weekend-btn');
-  const isSim = localStorage.getItem('force_weekend') === 'true';
+  const isSim = localStorage.getItem('force_phase_toggle') === 'true';
   if (btn && isSim) {
-    btn.textContent = 'SÁBADO (SIM)';
+    const day = new Date().getDay();
+    const isWeekendReal = (day === 0 || day === 6);
+    const simulatedIsWeekend = isWeekendReal ? !isSim : isSim;
+    
+    btn.textContent = simulatedIsWeekend ? 'SÁBADO (SIM)' : 'LUN-VIE (SIM)';
     btn.style.color = 'var(--yellow)';
     btn.style.borderColor = 'var(--yellow)';
   }
