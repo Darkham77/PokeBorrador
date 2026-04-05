@@ -409,7 +409,7 @@ function showPokemonDetails(p, index, location = 'team') {
       <div style="flex:1;">
         <div style="font-family:'Press Start 2P',monospace;font-size:7px;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
           ${m.name}
-          <span class="type-badge type-${mType.toLowerCase()}" style="font-size:6px;padding:2px 4px;">${mType.toUpperCase()}</span>
+          <span class="type-badge type-${mType.toLowerCase()}" style="font-size:6px;padding:2px 4px;">${mType}</span>
         </div>
         <div style="font-size:10px;color:#888;">Poder: ${mPower}</div>
       </div>
@@ -446,7 +446,7 @@ function showPokemonDetails(p, index, location = 'team') {
         <div>
           <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--yellow);margin-bottom:6px;">${p.name} ${renderGenderBadge(p.gender)}</div>
           <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">
-            <span class="type-badge type-${p.type.toLowerCase()}" style="font-size:9px;">${p.type.toUpperCase()}</span>
+            <span class="type-badge type-${p.type.toLowerCase()}" style="font-size:9px;">${p.type}</span>
             <span style="font-size:11px;color:var(--gray);font-weight:700;">Nv. ${p.level}</span>
           </div>
           <div style="font-size:10px;color:#555;font-weight:bold;">#${String(POKEMON_SPRITE_IDS[p.id] || '???').padStart(3, '0')}</div>
@@ -597,7 +597,7 @@ function showMoveDetail(moveName) {
       </div>
 
       <div style="display:flex;gap:8px;margin-bottom:20px;">
-        <span class="type-badge type-${md.type}" style="font-size:10px;padding:4px 12px;border-radius:20px;">${md.type.toUpperCase()}</span>
+        <span class="type-badge type-${md.type.toLowerCase()}" style="font-size:10px;padding:4px 12px;border-radius:20px;">${md.type}</span>
         <span style="font-size:10px;background:rgba(255,255,255,0.08);padding:4px 12px;border-radius:20px;color:#aaa;font-weight:bold;text-transform:uppercase;border:1px solid rgba(255,255,255,0.05);">${catIcon}</span>
       </div>
 
@@ -758,8 +758,8 @@ function renderGyms() {
                   <div style="font-size:11px;color:var(--gray);margin-bottom:2px;">📍 ${gym.city}</div>
                   <div style="font-size:13px;font-weight:700;margin-bottom:4px;">Líder: <span style="color:#eee;">${gym.leader}</span></div>
                   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-                    <span style="font-size:11px;background:${typeColor}22;color:${typeColor};padding:3px 8px;border-radius:10px;font-weight:700;border:1px solid ${typeColor}44;">
-                      ${TYPE_ICON[gym.type]} ${gym.type.charAt(0).toUpperCase() + gym.type.slice(1)}
+                    <span class="type-badge type-${gym.type.toLowerCase()}" style="font-size:11px; padding:3px 10px;">
+                      ${TYPE_ICON[gym.type] || ''} ${gym.type}
                     </span>
                     <span style="font-size:11px;color:var(--yellow);">${gym.badge} ${gym.badgeName}</span>
                   </div>

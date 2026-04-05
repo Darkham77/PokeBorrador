@@ -558,7 +558,7 @@ function renderMoveButtons() {
       oncontextmenu="event.preventDefault(); return false;">
       <span class="move-name">${moveName}</span>
       <div class="move-pp">
-        <span class="move-type-badge">${(md.type || '???').toUpperCase()}</span>
+        <span class="type-badge type-${(md.type || 'normal').toLowerCase()}" style="font-size:8px; padding:2px 6px; border-radius:6px;">${md.type || '???'}</span>
         <span>${CAT_ICON[md.cat] || ''} PP:${m.pp || 0}/${m.maxPP || 0}</span>
       </div>
     </button>`;

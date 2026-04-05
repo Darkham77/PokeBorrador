@@ -6435,3 +6435,33 @@
   font-weight: 800;
 }
 
+
+/* Unified Type Badges */
+.type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+}
+
+.type-badge.type-normal { background: rgba(170, 170, 170, 0.13); border-color: #aaa; color: #aaa; }
+.type-badge.type-fire { background: rgba(255, 107, 53, 0.13); border-color: #FF6B35; color: #FF6B35; }
+.type-badge.type-water { background: rgba(59, 139, 255, 0.13); border-color: #3B8BFF; color: #3B8BFF; }
+.type-badge.type-grass { background: rgba(107, 203, 119, 0.13); border-color: #6BCB77; color: #6BCB77; }
+.type-badge.type-electric { background: rgba(255, 217, 61, 0.13); border-color: #FFD93D; color: #FFD93D; }
+.type-badge.type-ice { background: rgba(125, 249, 255, 0.13); border-color: #7DF9FF; color: #7DF9FF; }
+.type-badge.type-fighting { background: rgba(255, 59, 59, 0.13); border-color: #FF3B3B; color: #FF3B3B; }
+.type-badge.type-poison { background: rgba(199, 125, 255, 0.13); border-color: #C77DFF; color: #C77DFF; }
+.type-badge.type-ground { background: rgba(200, 160, 96, 0.13); border-color: #c8a060; color: #c8a060; }
+.type-badge.type-flying { background: rgba(137, 207, 240, 0.13); border-color: #89CFF0; color: #89CFF0; }
+.type-badge.type-psychic { background: rgba(255, 110, 255, 0.13); border-color: #FF6EFF; color: #FF6EFF; }
+.type-badge.type-bug { background: rgba(139, 195, 74, 0.13); border-color: #8BC34A; color: #8BC34A; }
+.type-badge.type-rock { background: rgba(200, 160, 96, 0.13); border-color: #c8a060; color: #c8a060; }
+.type-badge.type-ghost { background: rgba(123, 47, 190, 0.13); border-color: #7B2FBE; color: #7B2FBE; }
+.type-badge.type-dragon { background: rgba(92, 22, 197, 0.13); border-color: #5C16C5; color: #5C16C5; }
+.type-badge.type-dark { background: rgba(85, 85, 85, 0.13); border-color: #555; color: #555; }
+.type-badge.type-steel { background: rgba(158, 158, 158, 0.13); border-color: #9E9E9E; color: #9E9E9E; }
+.type-badge.type-fairy { background: rgba(255, 192, 203, 0.13); border-color: #ffc0cb; color: #ffc0cb; }
