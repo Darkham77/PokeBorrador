@@ -12,7 +12,8 @@ function toggleGroupMenu(event, btnEl) {
 
   // Alternar el actual (Solo en dispositivos que NO soportan hover, como móviles)
   // En PC, el CSS :hover ya se encarga de mostrarlo y desaparece al mover el mouse.
-  if (!window.matchMedia('(hover: hover)').matches) {
+  const isTouch = !window.matchMedia('(hover: hover)').matches;
+  if (isTouch) {
     if (isOpen) group.classList.remove('is-open');
     else group.classList.add('is-open');
   }
@@ -56,9 +57,13 @@ function showTab(tab, btnEl) {
   });
 
   // Cerrar menús de grupo (HUD/Móvil)
-  document.querySelectorAll('.hud-group, .nav-group').forEach(g => {
-    g.classList.remove('is-open');
-  });
+  // Usamos un pequeño delay para asegurar que el click se procese antes de cerrar
+  // y forzamos la eliminación de la clase is-open en todos los contenedores.
+  setTimeout(() => {
+    document.querySelectorAll('.hud-group, .nav-group').forEach(g => {
+      g.classList.remove('is-open');
+    });
+  }, 50);
 
   if (tab === 'team') renderTeam();
   if (tab === 'pokedex') renderPokedex();
