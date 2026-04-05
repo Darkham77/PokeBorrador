@@ -1283,7 +1283,7 @@ function _openRocketSacrificeModal(missionId, info) {
           const projected = 1000 + (p.level * 100) + (Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0) * 25);
           return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(239,68,68,0.1);border-radius:10px;padding:8px 12px;border:1px solid rgba(239,68,68,0.3);">
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:14px;">${p.emoji || '❓'}</span>
+              <span></span>
               <div>
                 <div style="font-size:11px;font-weight:bold;color:#e2e8f0;">${p.name || p.id}</div>
                 <div style="font-size:9px;color:#9ca3af;">Nv.${p.level} · <strong style="color:#22c55e;">≈₽${projected.toLocaleString()}</strong></div>
@@ -1354,9 +1354,8 @@ function _openRocketSacrificeModal(missionId, info) {
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
         <div style="width:44px;height:44px;flex-shrink:0;position:relative;">
           ${spriteUrl
-            ? `<img src="${spriteUrl}" width="44" height="44" style="image-rendering:pixelated;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-               <span style="display:none;font-size:32px;line-height:44px;">${p.emoji || '❓'}</span>`
-            : `<span style="font-size:32px;line-height:44px;">${p.emoji || '❓'}</span>`}
+            ? `<img src="${spriteUrl}" width="44" height="44" style="image-rendering:pixelated;" onerror="this.style.display='none'">`
+            : ''}
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:12px;font-weight:bold;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name || p.id}${shinyBadge}</div>
@@ -1524,9 +1523,8 @@ function _openPokemonSelectModal(missionId, info, cls) {
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
         <div style="width:44px;height:44px;flex-shrink:0;position:relative;">
           ${spriteUrl
-            ? `<img src="${spriteUrl}" width="44" height="44" style="image-rendering:pixelated;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-               <span style="display:none;font-size:32px;line-height:44px;">${p.emoji || '❓'}</span>`
-            : `<span style="font-size:32px;line-height:44px;">${p.emoji || '❓'}</span>`}
+            ? `<img src="${spriteUrl}" width="44" height="44" style="image-rendering:pixelated;" onerror="this.style.display='none'">`
+            : ''}
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:12px;font-weight:bold;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name || p.id}${shinyBadge}</div>
@@ -1895,9 +1893,9 @@ function openReputationShop() {
     <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);display:flex;gap:12px;align-items:center;">
       <div style="width:44px;height:44px;flex-shrink:0;background:rgba(255,255,255,0.03);border-radius:10px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.05);">
         ${spriteUrl 
-          ? `<img src="${spriteUrl}" width="32" height="32" style="image-rendering:pixelated;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-             <span style="display:none;font-size:24px;">${item.icon}</span>`
-          : `<span style="font-size:24px;">${item.icon}</span>`}
+          ? `<img src="${spriteUrl}" width="32" height="32" style="image-rendering:pixelated;" onerror="this.style.display='none'">`
+          : ''}
+        <span style="font-size:24px;">${item.icon}</span>
       </div>
       <div style="flex:1;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">

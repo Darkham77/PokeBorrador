@@ -609,7 +609,7 @@ function renderDaycareSlot(id, slot) {
   if (has) {
     const p = slot.pokemon;
     const sUrl = getSpriteUrl(p.id, p.isShiny);
-    document.getElementById(`slot-${id}-sprite`).innerHTML = sUrl ? `<img src="${sUrl}">` : p.emoji;
+    document.getElementById(`slot-${id}-sprite`).innerHTML = sUrl ? `<img src="${sUrl}">` : '';
     document.getElementById(`slot-${id}-name`).innerHTML = `${p.name} <span class="daycare-slot-level">Nv.${p.level}</span>`;
     document.getElementById(`slot-${id}-info`).innerHTML = `<span class="daycare-slot-info-label">IVs</span> <span class="daycare-slot-info-values">${p.ivs.hp}/${p.ivs.atk}/${p.ivs.def}/${p.ivs.spa}/${p.ivs.spd}/${p.ivs.spe}</span><span class="daycare-slot-info-sep">•</span><span class="daycare-slot-info-label">Nat</span> <span class="daycare-slot-info-values">${p.nature || 'Serio'}</span><span class="daycare-slot-info-sep">•</span><span class="daycare-slot-info-label">Gen</span> <span class="daycare-slot-info-values">${genderSymbol(p.gender)}</span><span class="daycare-slot-info-sep">•</span><span class="daycare-slot-info-label">Vig</span> <span class="daycare-slot-info-values">⚡${p.vigor || 0}</span>`;
     
@@ -633,7 +633,7 @@ function renderDaycareSlot(id, slot) {
         }
     }
   } else {
-    document.getElementById(`slot-${id}-sprite`).innerHTML = '❓';
+    document.getElementById(`slot-${id}-sprite`).innerHTML = '';
     document.getElementById(`slot-${id}-name`).innerHTML = '— Vacía —';
     document.getElementById(`slot-${id}-info`).textContent = '';
     if (itemContainer) { 
@@ -740,7 +740,7 @@ function _pickerHtml(p, compareTo) {
   const sUrl = getSpriteUrl(p.id, p.isShiny);
   const tier = getPokemonTier(p);
   const tierHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;padding:2px 6px;border-radius:999px;background:${tier.bg};color:${tier.color};font-size:9px;font-weight:800;line-height:1;">${tier.tier}</span>`;
-  const genderIcon = p.gender === 'M' ? '<span style="color:#3498db; font-size:16px; font-weight:900; filter: drop-shadow(0 0 2px #3498db66);">♂</span>' : (p.gender === 'F' ? '<span style="color:#e84393; font-size:16px; font-weight:900; filter: drop-shadow(0 0 2px #e8439366);">♀</span>' : '<span style="color:#95a5a6; font-size:16px;">⚲</span>');
+  const genderIcon = p.gender === 'M' ? '<span style="color:#3498db; font-size:16px; font-weight:900; filter: drop-shadow(0 0 2px #3498db66);">♂</span>' : (p.gender === 'F' ? '<span style="color:#e84393; font-size:16px; font-weight:900; filter: drop-shadow(0 0 2px #e8439366);">♀</span>' : '<span style="color:#95a5a6; font-size:16px;"></span>');
 
   // Tags display
   const tags = p.tags || [];
@@ -813,7 +813,7 @@ function _pickerHtml(p, compareTo) {
   return `<div onclick="${clickAction}" style="${borderStyle}border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.transform='translateX(4px)';this.style.borderColor='rgba(255,255,255,0.2)';" onmouseout="this.style.transform='none';this.style.borderColor='${compareTo && checkCompatibility(compareTo, p).level > 0 ? COMPAT_TEXT[checkCompatibility(compareTo, p).level].color + '44' : 'rgba(255,255,255,0.06)'}';">
         <div style="text-align:center;">
           <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.03);border-radius:8px;">
-            ${sUrl ? `<img src="${sUrl}" style="width:48px;height:48px;image-rendering:pixelated;">` : `<span style="font-size:28px;">${p.emoji || '❓'}</span>`}
+            ${sUrl ? `<img src="${sUrl}" style="width:48px;height:48px;image-rendering:pixelated;">` : ''}
           </div>
           ${tagsHtml}
         </div>
@@ -1582,7 +1582,9 @@ function openMissionPicker(missionIdx) {
               
               const sUrl = typeof getSpriteUrl === 'function' ? getSpriteUrl(p.id, p.isShiny) : '';
               return `<div onclick="confirmMissionDelivery('${p.uid}', ${missionIdx})" style="border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:rgba(255,255,255,0.05);">
-                <img src="${sUrl}" style="width:48px;height:48px;image-rendering:pixelated;" onerror="this.style.display='none'">
+                <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;position:relative;background:rgba(0,0,0,0.2);border-radius:10px;overflow:hidden;">
+                  <img src="${sUrl}" style="max-width:100%;max-height:100%;image-rendering:pixelated;z-index:2;" onerror="this.style.display='none'">
+                </div>
                 <div>
                   <div style="font-weight:700;font-size:12px;color:#fff;">${p.name} <span style="font-size:10px;color:var(--gray);">Nv.${p.level}</span></div>
                   <div style="font-size:9px;color:var(--gray);margin-top:2px;">

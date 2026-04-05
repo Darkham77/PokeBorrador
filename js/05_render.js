@@ -153,7 +153,6 @@ function renderTeam() {
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};font-family:'Press Start 2P',monospace;font-size:6px;padding:2px 5px;border-radius:6px;border:1px solid ${tierInfo.color}44;line-height:1.4;z-index:2;">${tierInfo.tier}</div>
       <div style="height:80px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;">
         <img id="team-sprite-${i}" src="" alt="${p.name}" style="width:72px;height:72px;image-rendering:pixelated;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));display:none;pointer-events:none;">
-        <span id="team-emoji-${i}" style="font-size:48px;pointer-events:none;">${p.emoji}</span>
       </div>
       <div class="team-pokemon-name">${p.name}${p.isShiny ? ' ✨' : ''} ${renderGenderBadge(p.gender)}</div>
       <div class="team-pokemon-level">Nv. ${p.level}</div>
@@ -169,9 +168,8 @@ function renderTeam() {
   state.team.forEach((p, i) => {
     setTimeout(() => {
       const img = document.getElementById('team-sprite-' + i);
-      const emo = document.getElementById('team-emoji-' + i);
-      if (img && emo) {
-        loadSprite(img, emo, getSpriteUrl(p.id, p.isShiny), p.emoji);
+      if (img) {
+        loadSprite(img, null, getSpriteUrl(p.id, p.isShiny));
         // Apply Aura
         img.classList.remove('aura-white-mini', 'aura-black-mini');
         if (p.aura) img.classList.add('aura-' + p.aura + '-mini');
@@ -440,7 +438,6 @@ function showPokemonDetails(p, index, location = 'team') {
       <div style="display:flex;align-items:center;gap:16px;">
         <div style="position:relative;width:80px;height:80px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:16px;border:1px solid rgba(255,255,255,0.08);">
           <img id="unified-detail-sprite" src="${getSpriteUrl(p.id, p.isShiny)}" alt="${p.name}" style="width:72px;height:72px;image-rendering:pixelated;z-index:2;display:none;">
-          <span id="unified-detail-emoji" style="font-size:52px;">${p.emoji}</span>
           ${p.isShiny ? '<div style="position:absolute;top:-5px;right:-5px;font-size:16px;filter:drop-shadow(0 0 4px gold);">✨</div>' : ''}
         </div>
         <div>
@@ -548,7 +545,7 @@ function showPokemonDetails(p, index, location = 'team') {
     const img = document.getElementById('unified-detail-sprite');
     const emo = document.getElementById('unified-detail-emoji');
     if (img) {
-      loadSprite(img, emo, getSpriteUrl(p.id, p.isShiny), p.emoji);
+      loadSprite(img, null, getSpriteUrl(p.id, p.isShiny));
       // Apply Aura
       img.classList.remove('aura-white', 'aura-black');
       if (p.aura) img.classList.add('aura-' + p.aura);
@@ -694,7 +691,7 @@ function renderGyms() {
                    width="32" height="32" style="image-rendering:pixelated; ${diffKey === 'hard' ? 'filter:drop-shadow(0 0 2px gold)' : ''}"
                    title="${pData?.name || id}"
                    onerror="this.style.display='none'">`
-          : `<span style="font-size:18px;">${pData?.emoji || '❓'}</span>`;
+          : '';
       }).join('');
     };
 
@@ -812,7 +809,7 @@ function updateGymDifficultyUI(gymId, diffKey) {
                  width="32" height="32" style="image-rendering:pixelated; ${diffKey === 'hard' ? 'filter:drop-shadow(0 0 2px gold)' : ''}"
                  title="${pData?.name || id}"
                  onerror="this.style.display='none'">`
-        : `<span style="font-size:18px;">${pData?.emoji || '❓'}</span>`;
+        : '';
     }).join('');
     
     preview.innerHTML = `

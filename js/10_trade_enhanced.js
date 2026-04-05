@@ -163,9 +163,8 @@ function _buildTradeSelectorCard(p) {
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
       <div style="width:44px;height:44px;flex-shrink:0;position:relative;">
         ${spriteUrl
-          ? `<img src="${spriteUrl}" width="44" height="44" style="image-rendering:pixelated;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-             <span style="display:none;font-size:32px;line-height:44px;">${p.emoji || '❓'}</span>`
-          : `<span style="font-size:32px;line-height:44px;">${p.emoji || '❓'}</span>`}
+          ? `<img src="${spriteUrl}" width="44" height="44" style="image-rendering:pixelated;" onerror="this.style.display='none'">`
+          : ''}
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:12px;font-weight:bold;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;">

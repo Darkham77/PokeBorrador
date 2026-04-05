@@ -240,19 +240,15 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
 
 function setBattleSprite(side, pokemonId, useBack) {
   const img = document.getElementById(side + '-sprite-img');
-  const emojiEl = document.getElementById(side + '-sprite-emoji');
-
   // Clear any previous animations (like anim-faint) that keep the sprite hidden
   if (img) img.classList.remove('anim-faint', 'anim-damage', 'anim-shake');
-  if (emojiEl) emojiEl.classList.remove('anim-faint', 'anim-damage', 'anim-shake');
 
   const pData = POKEMON_DB[pokemonId];
-  const emoji = pData ? pData.emoji : '❓';
   // Side is 'player' or 'enemy'. Pokemon object is in state.battle[side]
   const p = state.battle[side];
   const url = useBack ? getBackSpriteUrl(pokemonId, p?.isShiny) : getSpriteUrl(pokemonId, p?.isShiny);
   if (img) {
-    loadSprite(img, emojiEl, url, emoji);
+    loadSprite(img, null, url);
     // Apply Aura if present
     img.classList.remove('aura-white', 'aura-black');
     if (p && p.aura) {

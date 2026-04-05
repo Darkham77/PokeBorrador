@@ -144,8 +144,8 @@
       const _detailSpriteHtml = _detailNum
         ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${_detailNum}.png"
              width="80" height="80" style="image-rendering:pixelated;margin-bottom:4px;"
-             onerror="this.outerHTML='<div style=\\'font-size:64px;line-height:1;margin-bottom:8px;\\'>${pokemon.emoji}</div>'">`
-        : `<div style="font-size:64px;line-height:1;margin-bottom:8px;">${pokemon.emoji}</div>`;
+             onerror="this.style.display='none'">`
+        : '';
       const ivEntries = Object.entries(pokemon.ivs || {}).filter(([s]) => ['hp','atk','def','spa','spd','spe'].includes(s)).map(([s, v]) => `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
       <span style="font-size:10px;width:40px;color:var(--gray);text-transform:uppercase;">${s}</span>
@@ -209,8 +209,8 @@
         : null;
       const imgHtml = spriteUrl
         ? `<img src="${spriteUrl}" width="52" height="52" style="image-rendering:pixelated;display:block;"
-             onerror="this.outerHTML='<span style=\\'font-size:30px;line-height:1;display:block;\\'>${p.emoji}</span>'">`
-        : `<span style="font-size:30px;line-height:1;display:block;">${p.emoji}</span>`;
+             onerror="this.style.display='none'">`
+        : '';
       const detailCall = `showTradePokeDetail(${JSON.stringify(p).replace(/"/g, '&quot;')},'${side}',${i})`;
       const disabledCall = `notify('No podés ofrecer tu único Pokémon.','⚠️')`;
       return `<div class="trade-poke-card ${sel ? 'selected' : ''} ${disabled ? 'cant-trade' : ''}"
@@ -236,8 +236,8 @@
           ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${num}.png`
           : null;
         const imgHtml = spriteUrl
-          ? `<img src="${spriteUrl}" width="52" height="52" style="image-rendering:pixelated;display:block;" onerror="this.outerHTML='<span style=\\"font-size:30px;line-height:1;display:block;\\">${p.emoji}</span>'">`
-          : `<span style="font-size:30px;line-height:1;display:block;">${p.emoji}</span>`;
+          ? `<img src="${spriteUrl}" width="52" height="52" style="image-rendering:pixelated;display:block;" onerror="this.style.display='none'">`
+          : '';
         html = `<div style="text-align:center;background:rgba(168,85,247,0.1);border:2px solid var(--purple);border-radius:12px;padding:12px;margin-bottom:8px;">
           ${imgHtml}
           <div style="font-size:11px;font-weight:700;margin-top:4px;">${p.name}</div>
@@ -268,8 +268,8 @@
           ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png`
           : null;
         const imgHtml = spriteUrl
-          ? `<img src="${spriteUrl}" width="52" height="52" style="image-rendering:pixelated;display:block;" onerror="this.outerHTML='<span style=\\"font-size:30px;line-height:1;display:block;\\">${p.emoji}</span>'">`
-          : `<span style="font-size:30px;line-height:1;display:block;">${p.emoji}</span>`;
+          ? `<img src="${spriteUrl}" width="52" height="52" style="image-rendering:pixelated;display:block;" onerror="this.style.display='none'">`
+          : '';
         html = `<div style="text-align:center;background:rgba(251,191,36,0.1);border:2px solid var(--yellow);border-radius:12px;padding:12px;margin-bottom:8px;">
           ${imgHtml}
           <div style="font-size:11px;font-weight:700;margin-top:4px;">${p.name}</div>
@@ -386,12 +386,12 @@
       const acceptedHtml = (accepted || []).map(t => {
         autoClaimTrade(t.id); // Limpiar el estado del trade silenciosamente
         const offerLines = [];
-        if (t.offer_pokemon) offerLines.push(`${t.offer_pokemon.emoji || '❓'} ${t.offer_pokemon.name} Nv.${t.offer_pokemon.level}`);
+        if (t.offer_pokemon) offerLines.push(`${t.offer_pokemon.name} Nv.${t.offer_pokemon.level}`);
         Object.entries(t.offer_items || {}).forEach(([k, v]) => offerLines.push(`${k} x${v}`));
         if (t.offer_money > 0) offerLines.push(`₽${t.offer_money.toLocaleString()}`);
 
         const receivedLines = [];
-        if (t.request_pokemon) receivedLines.push(`${t.request_pokemon.emoji || '❓'} ${t.request_pokemon.name} Nv.${t.request_pokemon.level}`);
+        if (t.request_pokemon) receivedLines.push(`${t.request_pokemon.name} Nv.${t.request_pokemon.level}`);
         Object.entries(t.request_items || {}).forEach(([k, v]) => receivedLines.push(`${k} x${v}`));
         if (t.request_money > 0) receivedLines.push(`₽${t.request_money.toLocaleString()}`);
 
@@ -421,11 +421,11 @@
         const sender = profiles?.find(p => p.id === t.sender_id);
         const isGift = !t.request_pokemon && !Object.keys(t.request_items || {}).length && !t.request_money;
         const offerLines = [];
-        if (t.offer_pokemon) offerLines.push(`${t.offer_pokemon.emoji || '❓'} ${t.offer_pokemon.name} Nv.${t.offer_pokemon.level}`);
+        if (t.offer_pokemon) offerLines.push(`${t.offer_pokemon.name} Nv.${t.offer_pokemon.level}`);
         Object.entries(t.offer_items || {}).forEach(([k, v]) => offerLines.push(`${k} x${v}`));
         if (t.offer_money > 0) offerLines.push(`₽${t.offer_money.toLocaleString()}`);
         const reqLines = [];
-        if (t.request_pokemon) reqLines.push(`${t.request_pokemon.emoji || '❓'} ${t.request_pokemon.name} Nv.${t.request_pokemon.level}`);
+        if (t.request_pokemon) reqLines.push(`${t.request_pokemon.name} Nv.${t.request_pokemon.level}`);
         Object.entries(t.request_items || {}).forEach(([k, v]) => reqLines.push(`${k} x${v}`));
         if (t.request_money > 0) reqLines.push(`₽${t.request_money.toLocaleString()}`);
 

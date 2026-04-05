@@ -142,15 +142,13 @@
       ov.innerHTML = `
     <div id="evo-from" style="text-align:center;transition:all 1.5s;">
       <img src="${fromSprite}" width="96" height="96" style="image-rendering:pixelated;filter:brightness(1);"
-           onerror="this.style.display='none';document.getElementById('evo-emoji-from').style.display='block'">
-      <div id="evo-emoji-from" style="display:none;font-size:72px;">${pokemon.emoji}</div>
+           onerror="this.style.display='none'">
     </div>
     <div style="font-size:9px;color:#fff;margin:24px 0 8px;">¡${pokemon.name} está evolucionando!</div>
     <div id="evo-flash" style="position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.15s;"></div>
     <div id="evo-to" style="display:none;text-align:center;">
       <img src="${toSprite}" width="96" height="96" style="image-rendering:pixelated;"
-           onerror="this.style.display='none';document.getElementById('evo-emoji-to').style.display='block'">
-      <div id="evo-emoji-to" style="display:none;font-size:72px;">${toData.emoji}</div>
+           onerror="this.style.display='none'">
       <div style="font-size:10px;color:#FFD93D;margin-top:16px;">¡${pokemon.name} evolucionó<br>a ${toData.name}!</div>
     </div>`;
 

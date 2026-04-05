@@ -662,7 +662,7 @@
               onmouseover="this.style.background='rgba(255,217,61,0.08)';this.style.borderColor='rgba(255,217,61,0.4)';this.style.transform='translateY(-2px)'"
               onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='rgba(255,217,61,0.2)';this.style.transform='translateY(0)'"` : ''}>
             <img src="${spriteUrl}" width="44" height="44" style="image-rendering:pixelated;"
-              onerror="this.outerHTML='<span style=\\'font-size:32px;\\'>${p.emoji}</span>'">
+              onerror="this.style.display='none'">
             <div style="flex:1;">
               <div style="font-weight:700;font-size:13px;">${p.name} <span style="font-size:10px;color:var(--gray);font-weight:400;">Nv.${p.level}</span></div>
               <div style="font-size:10px;color:${canEvolve ? 'var(--yellow)' : 'var(--gray)'};margin-top:3px;">
@@ -789,9 +789,7 @@
 
       // Limpiar animaciones previas (IMPORTANTE: si faineó, tiene anim-faint que lo oculta)
       const imgEl = document.getElementById('player-sprite-img');
-      const emoEl = document.getElementById('player-sprite-emoji');
       if (imgEl) imgEl.classList.remove('anim-faint', 'anim-damage', 'anim-shake');
-      if (emoEl) emoEl.classList.remove('anim-faint', 'anim-damage', 'anim-shake');
 
       // Eliminar AMBOS overlays posibles
       document.getElementById('forced-switch-overlay')?.remove();
@@ -808,19 +806,14 @@
         showMoves(); // Esto es más robusto que solo poner display:grid
 
         // Cargar sprite con fallback
-        const pData = POKEMON_DB[b.player.id];
-        const emoji = pData ? pData.emoji : (b.player.emoji || '❓');
-        if (imgEl && emoEl) {
+        if (imgEl) {
           imgEl.src = '';
           imgEl.style.display = 'none';
-          emoEl.style.display = 'block';
-          emoEl.textContent = emoji;
           setTimeout(() => {
             const url = getBackSpriteUrl(b.player.id);
             if (url) {
               const testImg = new Image();
-              testImg.onload = () => { imgEl.src = url; imgEl.style.display = 'block'; emoEl.style.display = 'none'; };
-              testImg.onerror = () => { emoEl.style.display = 'block'; emoEl.textContent = emoji; };
+              testImg.onload = () => { imgEl.src = url; imgEl.style.display = 'block'; };
               testImg.src = url;
             }
           }, 80);

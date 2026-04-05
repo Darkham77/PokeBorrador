@@ -166,7 +166,7 @@ async function renderMaps() {
         
         return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
           title="${name}" width="32" height="32" loading="lazy"
-          onerror="this.outerHTML = '<span title=\\'${name}\\' style=\\'margin: 0 4px; font-size: 14px; color: var(--gray);\\' class=\\'${isRare ? 'rare-spawn' : ''}\\'>❓</span>';" 
+          onerror="this.style.display='none'" 
           class="${isRare ? 'rare-spawn' : ''}">`;
       };
 
@@ -993,10 +993,9 @@ async function renderMaps() {
 
     // ===== SPRITE ANIMATIONS =====
     function getSpriteEl(side) {
-      // returns whichever element is visible (img or emoji)
+      // returns the image element (emoji fallback removed)
       const img = document.getElementById(side + '-sprite-img');
-      const emo = document.getElementById(side + '-sprite-emoji');
-      return (img && img.style.display !== 'none') ? img : emo;
+      return img;
     }
 
     function animateAttack(attackerSide, cb) {

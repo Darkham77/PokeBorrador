@@ -86,7 +86,8 @@ function getBackSpriteUrl(id, isShiny = false) {
 }
 
 // Carga una imagen en un elemento <img> (sin fallback a emoji por petición del usuario)
-function loadSprite(imgEl, emojiEl, url, emoji) {
+function loadSprite(imgEl, emojiEl, url) {
+  // Ya no usamos el elemento de emoji, lo ocultamos si se proporciona
   if (emojiEl) emojiEl.style.display = 'none';
   if (!url) { imgEl.style.display = 'none'; return; }
   

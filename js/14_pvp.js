@@ -296,14 +296,12 @@
         <div style="display:flex;align-items:flex-start;justify-content:flex-end;">
           <div id="pvp-enemy-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-start;justify-content:flex-end;">
             <img id="pvp-enemy-img" src="" alt="" style="height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
-            <span id="pvp-enemy-emoji" class="battle-sprite enemy-sprite" style="font-size:min(35vh, 260px);line-height:1;display:none;">${enemy?.emoji || '❓'}</span>
           </div>
         </div>
         <!-- BOTTOM-LEFT: My sprite -->
         <div style="display:flex;align-items:flex-end;justify-content:flex-start;">
           <div id="pvp-player-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-end;justify-content:flex-start;">
             <img id="pvp-player-img" src="" alt="" style="height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
-            <span id="pvp-player-emoji" class="battle-sprite player-sprite" style="font-size:min(35vh, 260px);line-height:1;display:none;">${me?.emoji || '❓'}</span>
           </div>
         </div>
         <!-- BOTTOM-RIGHT: My HP info -->
@@ -349,13 +347,11 @@
       const enemy = _pvpState.enemyTeam?.[_pvpState.enemyActive];
       if (me) {
         const img = document.getElementById('pvp-player-img');
-        const emo = document.getElementById('pvp-player-emoji');
-        if (img) loadSprite(img, emo, getBackSpriteUrl(me.id), me.emoji);
+        if (img) loadSprite(img, null, getBackSpriteUrl(me.id));
       }
       if (enemy) {
         const img = document.getElementById('pvp-enemy-img');
-        const emo = document.getElementById('pvp-enemy-emoji');
-        if (img) loadSprite(img, emo, getSpriteUrl(enemy.id), enemy.emoji);
+        if (img) loadSprite(img, null, getSpriteUrl(enemy.id));
       }
     }
 
@@ -466,8 +462,7 @@
       if (bar) { bar.style.width = (pct * 100) + '%'; bar.className = 'hp-bar ' + getHpClass(pct); }
       const ht = document.getElementById('pvp-enemy-hp-text'); if (ht) ht.textContent = hp + '/' + enemy.maxHp + ' HP';
       const img = document.getElementById('pvp-enemy-img');
-      const emo = document.getElementById('pvp-enemy-emoji');
-      if (img && emo) { img.style.display = 'none'; emo.style.display = 'block'; emo.textContent = enemy.emoji; loadSprite(img, emo, getSpriteUrl(enemy.id), enemy.emoji); }
+      if (img) { img.style.display = 'none'; loadSprite(img, null, getSpriteUrl(enemy.id)); }
     }
 
     function _pvpUpdateMyPokemon() {
@@ -481,8 +476,7 @@
       if (bar) { bar.style.width = (pct * 100) + '%'; bar.className = 'hp-bar ' + getHpClass(pct); }
       const ht = document.getElementById('pvp-player-hp-text'); if (ht) ht.textContent = hp + '/' + me.maxHp + ' HP';
       const img = document.getElementById('pvp-player-img');
-      const emo = document.getElementById('pvp-player-emoji');
-      if (img && emo) { img.style.display = 'none'; emo.style.display = 'block'; emo.textContent = me.emoji; loadSprite(img, emo, getBackSpriteUrl(me.id), me.emoji); }
+      if (img) { img.style.display = 'none'; loadSprite(img, null, getBackSpriteUrl(me.id)); }
       _pvpRenderMoves();
     }
 
@@ -855,7 +849,7 @@
             onmouseover="this.style.borderColor='rgba(199,125,255,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
             <div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">
               <img src="${getSpriteUrl(p.id)}" style="max-width:100%;max-height:100%;image-rendering:pixelated;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-              <span style="display:none;">${p.emoji}</span>
+              <span style="display:none;"></span>
             </div>
             <div style="flex:1;">
               <div style="font-size:12px;font-weight:700;">${p.name}</div>

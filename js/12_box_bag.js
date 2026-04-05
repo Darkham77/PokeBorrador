@@ -551,6 +551,7 @@
         const ivTotal = tierInfo.total;
 
         // Badges Container (Held Item + Tags)
+
         const tags = p.tags || [];
         let badgesHtml = '';
         if (p.heldItem || tags.length) {
@@ -593,8 +594,7 @@
         border:1px solid ${tierInfo.color}44;line-height:1.4;">${tierInfo.tier}</div>
       <img src="${url}" class="${p.aura ? 'aura-' + p.aura + '-mini' : ''}"
         width="56" height="56" style="image-rendering:pixelated;"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-size:32px;line-height:1;">${p.emoji}</span>
+        onerror="this.style.display='none'">
       <div style="font-size:9px;font-weight:700;margin-top:4px;">${p.name}${p.isShiny ? ' ✨' : ''}</div>
       <div style="font-size:9px;color:var(--gray);">Nv.${p.level}</div>
       <div style="font-size:8px;color:${tierInfo.color};margin-top:1px;">IVs: ${ivTotal}/186</div>
@@ -628,8 +628,7 @@
       onmouseover="this.style.borderColor='rgba(199,125,255,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
       <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getSpriteId(t.id)}.png"
         width="36" height="36" style="image-rendering:pixelated;" 
-        onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-size:24px;line-height:1;">${t.emoji}</span>
+        onerror="this.style.display='none'">
       <div style="flex:1;">
         <div style="font-size:12px;font-weight:700;">${t.name}</div>
         <div style="font-size:10px;color:var(--gray);">Nv.${t.level} · ${t.hp}/${t.maxHp} HP</div>
@@ -645,8 +644,7 @@
     <div style="text-align:center;margin-bottom:16px;">
       <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getSpriteId(p.id)}.png"
         width="72" height="72" style="image-rendering:pixelated;"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <span style="display:none;font-size:52px;line-height:1;">${p.emoji}</span>
+        onerror="this.style.display='none'">
       <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);margin-top:8px;">${p.name}</div>
       <div style="font-size:11px;color:var(--gray);">Nv.${p.level} · ${p.nature} · ${p.ability} · ⚡${p.vigor || 0}</div>
       <div style="margin-top:12px; display:flex; align-items:center; gap:12px; justify-content:center;">
