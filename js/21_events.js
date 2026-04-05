@@ -896,17 +896,38 @@ function _renderAdminPanel() {
 
   window._evAdminDeleteEvent = async (idx) => {
     if(!confirm('¿Eliminar este evento? Esta acción no se puede deshacer.')) return;
+    
+    // Guardamos una copia por si falla el borrado en el servidor
     const ev = _adminConfig.events[idx];
+    
+    // Lo quitamos de la UI temporalmente
     _adminConfig.events.splice(idx, 1);
     _renderAdminPanel();
+    
     try {
-      await window.sb.from('events_config').delete().eq('id', ev.id);
-      notify('Evento eliminado', '🗑️');
+      // 1. Intentamos borrar de forma segura los registros asociados antes para evitar errores de FK (Foreign Key)
+      // Si la BD no tiene ON DELETE CASCADE, esto es necesario.
+      await window.sb.from('competition_entries').delete().eq('event_id', ev.id);
+      await window.sb.from('competition_results').delete().eq('event_id', ev.id);
+      
+      // 2. Borramos la configuración del evento
+      const { error } = await window.sb.from('events_config').delete().eq('id', ev.id);
+      
+      if (error) throw error;
+
+      notify('Evento eliminado del servidor', '🗑️');
       await loadActiveEvents();
     } catch(e) {
-       console.error(e);
+       console.error('[Admin] Error al eliminar evento:', e);
+       notify('Error al borrar: ' + (e.message || 'Error de red o permisos'), '❌');
+       
+       // Si falló en la DB, restauramos el evento a la lista local para que la UI diga la verdad
+       // Intentamos restaurarlo en su posición original si es posible
+       _adminConfig.events.splice(idx, 0, ev);
+       _renderAdminPanel();
     }
   };
+
 
   window._evAdminSave = async () => {
     try {
