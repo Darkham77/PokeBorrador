@@ -56,7 +56,7 @@ function showTab(tab, btnEl) {
   });
 
   // Cerrar menús de grupo (HUD/Móvil)
-  document.querySelectorAll('.hud-group.is-open, .nav-group.is-open').forEach(g => {
+  document.querySelectorAll('.hud-group, .nav-group').forEach(g => {
     g.classList.remove('is-open');
   });
 
