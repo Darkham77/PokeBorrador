@@ -1,9 +1,3 @@
-(function() {
-  const _origShowTab = typeof showTab === 'function' ? showTab : null;
-  window.addEventListener('DOMContentLoaded', () => {
-  });
-})();
-
 // Pokedex System for PokeBorrador
 // This file handles the rendering and logic for the Pokedex tab.
 
@@ -95,7 +89,7 @@ const PDEX_ORDER = [
   'rattata','raticate',
   'spearow','fearow',
   'ekans','arbok',
-   pikachu:'pikachu', raichu:'raichu',
+  'pikachu', 'raichu',
   'sandshrew','sandslash',
   'nidoran-f','nidorina','nidoqueen',
   'nidoran-m','nidorino','nidoking',
@@ -246,7 +240,7 @@ const TM_COMPAT = {
   mew: ['TM01','TM02','TM03','TM04','TM05','TM06','TM07','TM08','TM09','TM10','TM11','TM12','TM13','TM14','TM15','TM16','TM17','TM18','TM19','TM20','TM21','TM22','TM23','TM24','TM25','TM26','TM27','TM28','TM29','TM30','TM31','TM32','TM33','TM34','TM35','TM36','TM37','TM38','TM39','TM40','TM41','TM42','TM43','TM44','TM45','TM46','TM47','TM48','TM49','TM50']
 };
 
-function renderPokedex() {
+window.renderPokedex = function() {
   const container = document.getElementById('pokedex-list');
   if (!container) return;
 
@@ -276,9 +270,9 @@ function renderPokedex() {
       </div>
     `;
   }).join('');
-}
+};
 
-function showPokedexDetail(pokemonId) {
+window.showPokedexDetail = function(pokemonId) {
   const pData = POKEMON_DB[pokemonId];
   if (!pData) return;
 
@@ -324,7 +318,7 @@ function showPokedexDetail(pokemonId) {
   }).join('');
 
   // Abilities
-  const abilityList = ABILITIES[pokemonId] || [];
+  const abilityList = (typeof ABILITIES !== 'undefined' && ABILITIES[pokemonId]) || [];
   const abilitiesHtml = abilityList.map(ab => {
     const desc = (typeof ABILITY_DATA !== 'undefined' && ABILITY_DATA[ab]) || '';
     return `<div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;margin-bottom:6px;">
@@ -347,7 +341,6 @@ function showPokedexDetail(pokemonId) {
       <tbody>
         ${learnset.map(m => {
           const md = (typeof MOVE_DATA !== 'undefined' && MOVE_DATA[m.name]) || {};
-          const mColor = typeColors[md.type] || '#aaa';
           return `<tr onclick="showMoveDetail('${m.name.replace(/'/g, "\\'")}')" 
               style="border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.2s;"
               onmouseover="this.style.background='rgba(255,255,255,0.05)'" 
@@ -489,9 +482,9 @@ function showPokedexDetail(pokemonId) {
   `;
 
   document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
+};
 
-function closePokedexModal() {
+window.closePokedexModal = function() {
   const modal = document.getElementById('pokedex-modal');
   if (modal) modal.remove();
-}
+};
