@@ -2696,10 +2696,21 @@
       }
     }
 
-    .nav-group.is-open .nav-submenu {
-      opacity: 1;
-      visibility: visible;
-      transform: translateX(-50%) translateY(0);
+    .nav-group.is-open .nav-submenu,
+    .hud-group.is-open .hud-submenu {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateX(-50%) translateY(0) !important;
+      display: flex !important;
+    }
+
+    /* Regla de seguridad: Si NO tiene is-open, forzar ocultación total */
+    .nav-group:not(.is-open) .nav-submenu,
+    .hud-group:not(.is-open) .hud-submenu {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      display: none !important;
+      pointer-events: none !important;
     }
 
     .nav-submenu .nav-btn {

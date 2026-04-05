@@ -146,9 +146,9 @@
           <div class="hud-group">
             <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>⚡</span><span>Pokémon</span></button>
             <div class="hud-submenu">
-              <button class="hud-nav-btn" data-tab="team" onclick="showTab('team',this)"><span>🐾</span><span>Equipo</span></button>
-              <button class="hud-nav-btn" data-tab="box" onclick="showTab('box',this)"><span>📦</span><span>Caja PC</span></button>
-              <button class="hud-nav-btn" data-tab="pokedex" onclick="showTab('pokedex',this)"><span>📖</span><span>Pokédex</span></button>
+              <button class="hud-nav-btn" data-tab="team" onclick="showTab('team',this); this.closest('.hud-group').classList.remove('is-open')"><span>🐾</span><span>Equipo</span></button>
+              <button class="hud-nav-btn" data-tab="box" onclick="showTab('box',this); this.closest('.hud-group').classList.remove('is-open')"><span>📦</span><span>Caja PC</span></button>
+              <button class="hud-nav-btn" data-tab="pokedex" onclick="showTab('pokedex',this); this.closest('.hud-group').classList.remove('is-open')"><span>📖</span><span>Pokédex</span></button>
             </div>
           </div>
 
@@ -164,9 +164,9 @@
           <div class="hud-group">
             <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>🛒</span><span>Market</span></button>
             <div class="hud-submenu">
-              <button class="hud-nav-btn" data-tab="market" onclick="showTab('market',this)"><span>🏪</span><span>PokéMart</span></button>
-              <button class="hud-nav-btn" data-tab="trainer-shop" onclick="showTab('trainer-shop', this)"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
-              <button class="hud-nav-btn" data-tab="online-market" onclick="showTab('online-market', this)"><span>🌐</span><span>Mercado Online</span></button>
+              <button class="hud-nav-btn" data-tab="market" onclick="showTab('market',this); this.closest('.hud-group').classList.remove('is-open')"><span>🏪</span><span>PokéMart</span></button>
+              <button class="hud-nav-btn" data-tab="trainer-shop" onclick="showTab('trainer-shop', this); this.closest('.hud-group').classList.remove('is-open')"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
+              <button class="hud-nav-btn" data-tab="online-market" onclick="showTab('online-market', this); this.closest('.hud-group').classList.remove('is-open')"><span>🌐</span><span>Mercado Online</span></button>
             </div>
           </div>
 
@@ -180,8 +180,8 @@
                 font-family:'Press Start 2P',monospace;z-index:2;"></span>
             </button>
             <div class="hud-submenu">
-              <button class="hud-nav-btn" data-tab="friends" onclick="showTab('friends',this)"><span>👥</span><span>Amigos</span></button>
-              <button class="hud-nav-btn" data-tab="war" onclick="showTab('war',this)"><span>⚔️</span><span>Guerra</span></button>
+              <button class="hud-nav-btn" data-tab="friends" onclick="showTab('friends',this); this.closest('.hud-group').classList.remove('is-open')"><span>🤝</span><span>Amigos</span></button>
+              <button class="hud-nav-btn" data-tab="war" onclick="showTab('war',this); this.closest('.hud-group').classList.remove('is-open')"><span>⚔️</span><span>Guerra</span></button>
             </div>
           </div>
         </div>
@@ -342,9 +342,9 @@
         <div class="nav-group">
           <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>⚡</span><span>Pokémon</span></button>
           <div class="nav-submenu">
-            <button class="nav-btn" data-tab="team" onclick="showTab('team',this)"><span>⚡</span><span>Equipo</span></button>
-            <button class="nav-btn" data-tab="box" onclick="showTab('box',this)"><span>📦</span><span>PC</span></button>
-            <button class="nav-btn" data-tab="pokedex" onclick="showTab('pokedex',this)"><span>📖</span><span>Pokedex</span></button>
+            <button class="nav-btn" data-tab="team" onclick="showTab('team',this); this.closest('.nav-group').classList.remove('is-open')"><span>⚡</span><span>Equipo</span></button>
+            <button class="nav-btn" data-tab="box" onclick="showTab('box',this); this.closest('.nav-group').classList.remove('is-open')"><span>📦</span><span>PC</span></button>
+            <button class="nav-btn" data-tab="pokedex" onclick="showTab('pokedex',this); this.closest('.nav-group').classList.remove('is-open')"><span>📖</span><span>Pokedex</span></button>
           </div>
         </div>
 
@@ -363,9 +363,9 @@
         <div class="nav-group">
           <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>🛒</span><span>Market</span></button>
           <div class="nav-submenu">
-            <button class="nav-btn" data-tab="market" onclick="showTab('market',this)"><span>🏪</span><span>PokéMart</span></button>
-            <button class="nav-btn" data-tab="trainer-shop" onclick="showTab('trainer-shop', this)"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
-            <button class="nav-btn" data-tab="online-market" onclick="showTab('online-market', this)"><span>🌐</span><span>Mercado Online</span></button>
+            <button class="nav-btn" data-tab="market" onclick="showTab('market',this); this.closest('.nav-group').classList.remove('is-open')"><span>🏪</span><span>PokéMart</span></button>
+            <button class="nav-btn" data-tab="trainer-shop" onclick="showTab('trainer-shop', this); this.closest('.nav-group').classList.remove('is-open')"><span>👨‍🏫</span><span>Tienda Entr.</span></button>
+            <button class="nav-btn" data-tab="online-market" onclick="showTab('online-market', this); this.closest('.nav-group').classList.remove('is-open')"><span>🌐</span><span>Mercado Online</span></button>
           </div>
         </div>
 
@@ -379,8 +379,8 @@
               font-family:'Press Start 2P',monospace;z-index:2;"></span>
           </button>
           <div class="nav-submenu">
-            <button class="nav-btn" data-tab="friends" onclick="showTab('friends',this)"><span>👥</span><span>Amigos</span></button>
-            <button class="nav-btn" data-tab="war" onclick="showTab('war',this)"><span>⚔️</span><span>Guerra</span></button>
+            <button class="nav-btn" data-tab="friends" onclick="showTab('friends',this); this.closest('.nav-group').classList.remove('is-open')"><span>🤝</span><span>Amigos</span></button>
+            <button class="nav-btn" data-tab="war" onclick="showTab('war',this); this.closest('.nav-group').classList.remove('is-open')"><span>⚔️</span><span>Guerra</span></button>
           </div>
         </div>
       </div>
