@@ -3647,7 +3647,8 @@
       position: fixed !important;
       inset: 0;
       z-index: 1000;
-      background: var(--darker);
+      background: var(--darker) url('assets/fondo/WALLPAPER.png') no-repeat center center;
+      background-size: cover;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -3730,6 +3731,9 @@
       max-width: 400px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      background: rgba(18, 18, 18, 0.75);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
       animation: fadeIn 0.4s ease;
     }
 

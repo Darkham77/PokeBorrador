@@ -2932,8 +2932,11 @@ function endBattle(won) {
         coins = Math.floor(coins * getEventBonus('bc'));
       }
       
-      state.battleCoins = (state.battleCoins || 0) + coins;
-      addLog(`¡Obtuviste <span style="color:var(--yellow);font-weight:bold;"><i class="fas fa-coins coin-icon"></i> ${coins} Battle Coins</span>!`, 'log-catch');
+      const isGymRematch = b.isGym && state.defeatedGyms && state.defeatedGyms.includes(b.gymId);
+      if (!isGymRematch) {
+        state.battleCoins = (state.battleCoins || 0) + coins;
+        addLog(`¡Obtuviste <span style="color:var(--yellow);font-weight:bold;"><i class="fas fa-coins coin-icon"></i> ${coins} Battle Coins</span>!`, 'log-catch');
+      }
       // Reputación del Entrenador (por ganar gimnasios)
       if (b.isGym && typeof addReputationPoints === 'function') addReputationPoints(10);
       // ClassXP por victorias
@@ -3044,9 +3047,9 @@ function endBattle(won) {
           }
         } else {
           // Rematch extra reward
-          const extraCoins = diffValue * 150;
+          const extraCoins = Math.floor(diffValue * 105); // 150 * 0.7 = 105 (30% reduction)
           state.battleCoins = (state.battleCoins || 0) + extraCoins;
-          addLog(`¡Rematch ganado! Obtuviste <span style="color:var(--yellow);font-weight:bold;">${extraCoins} Battle Coins</span> adicionales.`, 'log-catch');
+          addLog(`¡Rematch ganado! Obtuviste <span style="color:var(--yellow);font-weight:bold;">${extraCoins} Battle Coins</span>.`, 'log-catch');
 
           // Chance to get another TM on rematch (Normal/Hard)
           let tmChance = 0;

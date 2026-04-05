@@ -244,6 +244,14 @@
         if (finalSaveData) {
           const s = finalSaveData;
           Object.assign(state, s);
+          
+          // Data Correction: Reset battleCoins if they were corrupted by the previous infinity bypass
+          if (user.email === 'kodrol77@gmail.com' && (state.battleCoins || 0) > 1000000) {
+            console.log("[AUTH] Corregido balance de BattleCoins para el administrador.");
+            state.battleCoins = 15000;
+            setTimeout(() => scheduleSave(), 2000); 
+          }
+
           // Normalizar badges (si era array, convertir a contador)
           if (Array.isArray(state.badges)) state.badges = state.badges.length;
           else state.badges = parseInt(state.badges) || 0;
