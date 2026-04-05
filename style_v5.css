@@ -1065,8 +1065,8 @@
       position: absolute;
       inset: 0;
       background-image: var(--bg-image);
-      background-size: 155%; /* Increased from 140% (+10% zoom approx) */
-      background-position: center bottom; /* Aggressive crop to hide top banner in PNGs */
+      background-size: 175%; /* Increased from 155% for better clipping */
+      background-position: center 35%; /* Shifted up from 'bottom' to hide bottom border and keep top banner name hidden */
       filter: brightness(0.48) contrast(1.1); /* Reduced darkness by ~30% (from 0.25 brightness) */
       z-index: 0;
       transition: transform 0.6s ease, filter 0.4s ease;
