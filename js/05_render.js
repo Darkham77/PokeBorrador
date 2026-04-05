@@ -13,9 +13,12 @@ function toggleGroupMenu(event, btnEl) {
   // Alternar el actual (Solo en dispositivos que NO soportan hover, como móviles)
   // En PC, el CSS :hover ya se encarga de mostrarlo y desaparece al mover el mouse.
   const isTouch = !window.matchMedia('(hover: hover)').matches;
-  if (isTouch) {
+  if (isTouch || event.pointerType === 'touch') {
     if (isOpen) group.classList.remove('is-open');
     else group.classList.add('is-open');
+  } else if (!isOpen) {
+    // En desktop, si por alguna razón no se abre con hover, permitimos el click
+    group.classList.add('is-open');
   }
 
   // Detener propagación para evitar que el click en el body lo cierre inmediatamente
@@ -23,10 +26,13 @@ function toggleGroupMenu(event, btnEl) {
 }
 
 // Cerrar menús al hacer clic fuera
-window.addEventListener('click', () => {
-  document.querySelectorAll('.hud-group.is-open, .nav-group.is-open').forEach(g => {
-    g.classList.remove('is-open');
-  });
+window.addEventListener('click', (e) => {
+  // Si el click no es dentro de un grupo de navegación, cerramos todos
+  if (!e.target.closest('.hud-group, .nav-group')) {
+    document.querySelectorAll('.hud-group.is-open, .nav-group.is-open, .is-open').forEach(g => {
+      g.classList.remove('is-open');
+    });
+  }
 });
 
 // ===== SCREENS =====
@@ -57,13 +63,16 @@ function showTab(tab, btnEl) {
   });
 
   // Cerrar menús de grupo (HUD/Móvil)
-  // Usamos un pequeño delay para asegurar que el click se procese antes de cerrar
-  // y forzamos la eliminación de la clase is-open en todos los contenedores.
-  setTimeout(() => {
-    document.querySelectorAll('.hud-group, .nav-group').forEach(g => {
+  // Forzamos el cierre inmediato y también con un pequeño delay para mayor seguridad
+  const closeMenus = () => {
+    document.querySelectorAll('.hud-group, .nav-group, .is-open').forEach(g => {
       g.classList.remove('is-open');
     });
-  }, 50);
+  };
+  
+  closeMenus();
+  setTimeout(closeMenus, 50);
+  setTimeout(closeMenus, 150);
 
   if (tab === 'team') renderTeam();
   if (tab === 'pokedex') renderPokedex();
