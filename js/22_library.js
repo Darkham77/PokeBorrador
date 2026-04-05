@@ -1,242 +1,201 @@
 /**
- * Lógica de la Biblioteca (Tutorial y Ayuda)
+ * Logica de la Biblioteca (Tutorial y Ayuda)
  * Sincronizada con SKILL_LIBRARY_SYNC.md
- * Última actualización: Sistema de Clases completo (Fases 1-10)
+ * Ultima actualizacion: Sistema de Clases completo (Fases 1-10)
  */
 
-// --- SECCIÓN DE CONTENIDO ---
+// --- SECCION DE CONTENIDO ---
 const libraryContent = {
 
   gimnasios: `
-    <h1>🏆 Gimnasios de Kanto</h1>
-    <p>Los 8 Gimnasios son la columna vertebral de tu progresión. Cada victoria te otorga una medalla, una MT exclusiva y desbloquea el acceso a nuevas rutas. Hay <strong>3 niveles de dificultad</strong>: Fácil, Normal y Difícil. Podes realizar rematches ilimitados.</p>
+    <h1>Gimnasios de Kanto</h1>
+    <p>Los 8 Gimnasios son la columna vertebral de tu progresion. Cada victoria te otorga una medalla, una MT exclusiva y desbloquea el acceso a nuevas rutas. Hay 3 niveles de dificultad: Facil, Normal y Dificil. Podes realizar rematches ilimitados.</p>
 
-    <h3>💡 Recompensas por Rematch</h3>
+    <h3>Recompensas por Rematch</h3>
     <ul>
-      <li>Dificultad <strong>Fácil</strong>: <strong>105 Battle Coins</strong>.</li>
-      <li>Dificultad <strong>Normal</strong>: <strong>210 Battle Coins</strong> + 3% de probabilidad de recibir la MT otra vez.</li>
-      <li>Dificultad <strong>Difícil</strong>: <strong>315 Battle Coins</strong> + 5% de probabilidad de recibir la MT otra vez.</li>
-      <li>Los <strong>Entrenadores</strong> (clase) reciben un <strong>+30% de Battle Coins</strong> adicionales en todas las victorias de Gimnasio.</li>
+      <li>Dificultad Facil: 105 Battle Coins.</li>
+      <li>Dificultad Normal: 210 Battle Coins + 3% de probabilidad de recibir la MT otra vez.</li>
+      <li>Dificultad Dificil: 315 Battle Coins + 5% de probabilidad de recibir la MT otra vez.</li>
+      <li>Los Entrenadores (clase) reciben un +30% de Battle Coins adicionales en todas las victorias de Gimnasio.</li>
     </ul>
 
-    <h3>📝 Notas de Combate</h3>
+    <h3>Notas de Combate</h3>
     <ul>
-      <li>Cada nivel de dificultad aumenta el nivel de los Pokémon del Líder y mejora su IA.</li>
-      <li>El nivel Difícil cuenta con Pokémon entre nivel <strong>62 y 90</strong>. ¡Prepárate bien!</li>
+      <li>Cada nivel de dificultad aumenta el nivel de los Pokemon del Lider y mejora su IA.</li>
+      <li>El nivel Dificil cuenta con Pokemon entre nivel 62 y 90. ¡Preparate bien!</li>
     </ul>
   `,
 
   captura: `
-    <h1>🔴 Sistema de Captura</h1>
-    <p>Poké Vicio utiliza una fórmula basada en la <strong>Gen 1</strong> para calcular el éxito de captura. Factores como los PS restantes del Pokémon salvaje y el tipo de Pokéball son fundamentales.</p>
+    <h1>Sistema de Captura</h1>
+    <p>Poke Vicio utiliza una formula basada en la Gen 1 para calcular el éxito de captura. Factores como los PS restantes del Pokemon salvaje y el tipo de Pokeball son fundamentales.</p>
 
-    <h3>🎯 Probabilidades</h3>
+    <h3>Probabilidades</h3>
     <ul>
-      <li><strong>PS del Objetivo:</strong> Cuanto menos vida tenga el Pokémon rival, más fácil será capturarlo.</li>
-      <li><strong>Estados Alterados:</strong> Dormir o Congelar al oponente aumenta significativamente el ratio de captura.</li>
-      <li><strong>Rachas (Cazabichos):</strong> Capturar especies iguales de forma consecutiva mejora tus chances generales.</li>
+      <li>PS del Objetivo: Cuanto menos vida tenga el Pokemon rival, más fácil será capturarlo.</li>
+      <li>Estados Alterados: Dormir o Congelar al oponente aumenta significativamente el ratio de captura.</li>
+      <li>Rachas (Cazabichos): Capturar especies iguales de forma consecutiva mejora tus chances generales.</li>
     </ul>
 
-    <h3>🎒 Tipos de Pokéball</h3>
+    <h3>Tipos de Pokeball</h3>
     <table class="library-table">
       <thead><tr><th>Ball</th><th>Eficacia</th><th>Efecto Especial</th></tr></thead>
       <tbody>
-        <tr><td>Poké Ball</td><td>1x</td><td>Uso estándar.</td></tr>
+        <tr><td>Poké Ball</td><td>1x</td><td>Uso estandar.</td></tr>
         <tr><td>Súper Ball</td><td>1.5x</td><td>Mejor rendimiento que la estándar.</td></tr>
         <tr><td>Ultra Ball</td><td>2x</td><td>Gran probabilidad de captura.</td></tr>
         <tr><td>Safari Ball</td><td>1.5x</td><td>Exclusiva de la Zona Safari.</td></tr>
-        <tr><td>Master Ball</td><td>∞</td><td>Captura garantizada (100%).</td></tr>
+        <tr><td>Master Ball</td><td>infinito</td><td>Captura garantizada (100%).</td></tr>
       </tbody>
     </table>
   `,
 
   clases: `
-    <h1>🎭 Clases de Jugador</h1>
-    <p>Al alcanzar el <strong>Nivel 5</strong>, podés elegir una especialización que cambiará drásticamente tu forma de jugar. Podés cambiar de clase por <strong>10,000 BC</strong>.</p>
+    <h1>Clases de Jugador</h1>
+    <p>Al alcanzar el Nivel 5, podés elegir una especialización que cambiará drásticamente tu forma de jugar. Podés cambiar de clase por 10,000 BC.</p>
 
     <div class="class-info-box">
-      <h3>🚀 Equipo Rocket</h3>
+      <h3>Equipo Rocket</h3>
       <ul>
-        <li><strong>Mercado Negro:</strong> Vendé cualquier Pokémon de tu caja directamente por ₽.</li>
-        <li><strong>Robo Rápido:</strong> Chance de robar un objeto al azar al inicio de batallas NPC.</li>
-        <li><strong>Robo al Oficial:</strong> 5% de chance de robarle un Pokémon al Oficial de Policía tras vencerlo.</li>
-        <li><strong>Penalización:</strong> Los Centros Pokémon cuestan <strong>2x</strong>.</li>
+        <li>Mercado Negro: Vendé cualquier Pokemon de tu caja directamente por pesos.</li>
+        <li>Robo Rápido: Chance de robar un objeto al azar al inicio de batallas NPC.</li>
+        <li>Robo al Oficial: 5% de chance de robarle un Pokemon al Oficial de Policía tras vencerlo.</li>
+        <li>Penalización: Los Centros Pokemon cuestan 2x.</li>
       </ul>
     </div>
 
     <div class="class-info-box">
-      <h3>🏅 Entrenador</h3>
+      <h3>Entrenador</h3>
       <ul>
-        <li><strong>Progresión:</strong> Gana un <strong>+10% de EXP</strong> en todos los combates.</li>
-        <li><strong>Dominio:</strong> Gana un <strong>+30% de BC</strong> en gimnasios.</li>
-        <li><strong>Reputación:</strong> Desbloquea la tienda de reputación venciendo gimnasios.</li>
-        <li><strong>Ruta Oficial:</strong> Marcá una ruta diaria para ganar reputación extra por combate.</li>
+        <li>Gana un +10% de EXP en todos los combates.</li>
+        <li>Gana un +30% de BC en gimnasios.</li>
+        <li>Desbloquea la tienda de reputación venciendo gimnasios.</li>
+        <li>Ruta Oficial: Marcá una ruta diaria para ganar reputacion extra.</li>
       </ul>
     </div>
 
     <div class="class-info-box">
-      <h3>🦗 Cazabichos</h3>
+      <h3>Cazabichos</h3>
       <ul>
-        <li><strong>Rachas:</strong> Cada captura consecutiva aumenta el Shiny Rate (hasta x4) e IVs mínimos.</li>
-        <li><strong>Red Maestra:</strong> 20% de chance de capturar un segundo ejemplar si es de tipo Bicho (2x1).</li>
-        <li><strong>Aroma Atractivo:</strong> Chance de forzar la aparición de Scyther o Pinsir salvajes.</li>
+        <li>Cada captura consecutiva aumenta el Shiny Rate (hasta x4).</li>
+        <li>Red Maestra: 20% de chance de capturar un segundo ejemplar de tipo Bicho.</li>
+        <li>Aroma Atractivo: Chance de forzar la aparicion de Scyther o Pinsir.</li>
       </ul>
     </div>
 
     <div class="class-info-box">
-      <h3>🧬 Criador</h3>
+      <h3>Criador</h3>
       <ul>
-        <li><strong>Genética:</strong> Los hijos heredan <strong>4 IVs</strong> de los padres (en lugar de 3).</li>
-        <li><strong>Incubación:</strong> Los pasos para eclosionar se reducen un <strong>25%</strong>.</li>
-        <li><strong>Escáner:</strong> Permite gestionar y visualizar genética detallada post-eclosión.</li>
+        <li>Los hijos heredan 4 IVs de los padres.</li>
+        <li>Los pasos para eclosionar se reducen un 25%.</li>
+        <li>Escáner: Permite gestionar genética detallada.</li>
       </ul>
     </div>
   `,
 
   crianza: `
-    <h1>🥚 Sistema de Crianza</h1>
-    <p>La crianza te permite crear Pokémon con estadísticas perfectas y movimientos heredados. Se realiza en la <strong>Guardería</strong>.</p>
+    <h1>Sistema de Crianza</h1>
+    <p>La crianza te permite crear Pokemon con estadísticas perfectas. Se realiza en la Guardería.</p>
 
-    <h3>🧬 Herencia Genética</h3>
+    <h3>Herencia Genética</h3>
     <ul>
-      <li><strong>IVs:</strong> Se heredan 3 IVs de los padres de forma aleatoria (4 para Criadores).</li>
-      <li><strong>Naturaleza:</strong> El uso de la <strong>Piedra Eterna</strong> garantiza la herencia de la naturaleza del padre que la lleve asignada.</li>
-      <li><strong>Movimientos Huevo:</strong> Ciertas especies pueden aprender movimientos únicos que no se consiguen por nivel.</li>
+      <li>IVs: Se heredan 3 IVs de los padres (4 para Criadores).</li>
+      <li>Naturaleza: La Piedra Eterna garantiza la herencia de la naturaleza.</li>
     </ul>
 
-    <h3>⏳ Eclosión</h3>
-    <p>Para que un Huevo nazca, debés llevarlo en tu equipo y explorar el mapa. Cada "paso" (encuentro salvaje) reduce el contador.</p>
+    <h3>Eclosión</h3>
+    <p>Para que un Huevo nazca, debes llevarlo en tu equipo y explorar el mapa.</p>
   `,
 
   misiones: `
-    <h1>📋 Misiones Diarias</h1>
-    <p>Los NPCs de la Guardería te asignarán misiones diariamente. Completarlas otorga experiencia de clase y recursos valiosos.</p>
+    <h1>Misiones Diarias</h1>
+    <p>Los NPCs de la Guardería te asignarán misiones diariamente.</p>
     <ul>
-      <li>Las misiones se reinician cada 24 horas (horario GMT-3).</li>
-      <li>Podés encontrar misiones de captura, derrota o entrega de objetos.</li>
-      <li>Revisá la pestaña <strong>"Misiones"</strong> en el HUD para ver tu progreso actual.</li>
+      <li>Se reinician cada 24 horas.</li>
+      <li>Misiones de captura, derrota o entrega de objetos.</li>
     </ul>
   `,
 
   encuentros: `
-    <h1>🗺️ Encuentros y Ciclos</h1>
-    <p>El mundo de Poké Vicio es dinámico. Las especies disponibles cambian según el <strong>Ciclo Horario</strong>.</p>
+    <h1>Encuentros y Ciclos</h1>
+    <p>El mundo de Poke Vicio es dinámico. Las especies cambian según el Ciclo Horario.</p>
 
-    <h3>🕒 Ciclo de 4 Horas</h3>
+    <h3>Ciclo de 4 Horas</h3>
     <ul>
-      <li><strong>Amanecer (04:00 - 08:00)</strong></li>
-      <li><strong>Día (08:00 - 16:00)</strong></li>
-      <li><strong>Atardecer (16:00 - 20:00)</strong></li>
-      <li><strong>Noche (20:00 - 04:00)</strong></li>
+      <li>Amanecer (04:00 - 08:00)</li>
+      <li>Día (08:00 - 16:00)</li>
+      <li>Atardecer (16:00 - 20:00)</li>
+      <li>Noche (20:00 - 04:00)</li>
     </ul>
-    <p>Pokémon nocturnos como Gastly o Hoothoot raramente aparecerán durante el día.</p>
     
-    <h3>🎣 Pesca</h3>
-    <p>Si tenés una caña, podés interactuar con el agua en ciertas rutas. Pescar activa un <strong>minijuego de ritmo</strong>; acertar las notas garantiza el encuentro.</p>
+    <h3>Pesca</h3>
+    <p>Si tenés una caña, podés pescar en el agua mediante un minijuego de ritmo.</p>
   `,
 
   shinys: `
-    <h1>✨ Pokémon Shiny</h1>
-    <p>Son versiones raras con colores alternativos. No tienen mejores estadísticas (por ahora), pero son el mayor trofeo de un coleccionista.</p>
+    <h1>Pokémon Shiny</h1>
+    <p>Son versiones raras con colores alternativos.</p>
 
-    <h3>📈 Probabilidades (Ratios)</h3>
+    <h3>Probabilidades</h3>
     <ul>
-      <li><strong>Tasa Base:</strong> 1 en 3,000 encuentros.</li>
-      <li><strong>Bono de Fin de Semana:</strong> 30% más de probabilidad (+1.3x).</li>
-      <li><strong>Dominancia:</strong> Si tu bando controla la zona, ganás un 30% extra de shiny chance.</li>
-      <li><strong>Racha (Cazabichos):</strong> Puede aumentar la probabilidad hasta un <strong>x4.0</strong> (1 en 750).</li>
+      <li>Tasa Base: 1 en 3,000 encuentros.</li>
+      <li>Bono de Fin de Semana/Dominancia: +30% probabilidad.</li>
+      <li>Racha (Cazabichos): Puede aumentar hasta un x4.0.</li>
     </ul>
   `,
 
   combate: `
-    <h1>⚔️ Sistema de Combate</h1>
+    <h1>Sistema de Combate</h1>
     <p>Las batallas usan la lógica de la 1ra Generación con balanceos modernos.</p>
     <ul>
-      <li><strong>STAB:</strong> Los movimientos del mismo tipo que el Pokémon pegan un 50% más fuerte.</li>
-      <li><strong>Críticos:</strong> Se basan en la Velocidad base y el ratio del movimiento (ej: Corte Vacío).</li>
-      <li><strong>Precisión:</strong> Algunos movimientos potentes tienen baja precisión (Trueno, Llamarada).</li>
+      <li>STAB: Movimientos del mismo tipo pegan 50% más fuerte.</li>
+      <li>Críticos: Basados en Velocidad base y ratio del movimiento.</li>
     </ul>
   `,
 
   guerra: `
-    <h1>🛡️ Guerra de Facciones</h1>
-    <p>El juego se divide en dos bandos: <strong>Unión</strong> y <strong>Poder</strong>. Luchá por el control de las zonas de Kanto.</p>
+    <h1>Guerra de Facciones</h1>
+    <p>El juego se divide en bando Unión y Poder.</p>
 
-    <h3>🚩 Dominancia Territorial</h3>
+    <h3>Territorio Dominado</h3>
     <ul>
-      <li><strong>Puntos de Guerra:</strong> Capturar Pokémon o vencer entrenadores en una ruta suma puntos a tu bando.</li>
-      <li><strong>Territorio Dominado:</strong> El bando con más puntos al final de la disputa toma el control del mapa.</li>
-      <li><strong>Beneficios de Dominancia:</strong>
-        <ul>
-          <li>+30% de <strong>Experiencia</strong> en la zona.</li>
-          <li>+30% de probabilidad <strong>Shiny</strong>.</li>
-          <li>+30% de probabilidad de <strong>IVs más altos</strong>.</li>
-        </ul>
-      </li>
+      <li>Capturas y victorias suman puntos para tu bando.</li>
+      <li>Beneficios: +30% Experiencia, +30% Shiny, +30% Mejores IVs.</li>
     </ul>
 
-    <h3>⚠️ Guardianes de Ruta</h3>
-    <p>En zonas en disputa, podés encontrar <strong>Guardianes (Pokémon Alfa)</strong>. Derrotarlos otorga una gran cantidad de puntos y recompensas especiales.</p>
+    <h3>Guardianes de Ruta</h3>
+    <p>Pokemon Alfa que otorgan grandes recompensas al ser derrotados.</p>
   `,
 
   pokedex: `
-    <h1>📂 Pokédex Nacional</h1>
-    <p>Tu enciclopedia Pokémon ha sido mejorada. Ahora podés ver información técnica detallada de cada especie capturada.</p>
-
-    <h3>📑 Datos Disponibles</h3>
-    <ul>
-      <li><strong>Estadísticas Base:</strong> Conocé el potencial real de cada Pokémon.</li>
-      <li><strong>Compatibilidad de MT:</strong> Revisá qué máquinas técnicas puede aprender antes de gastarlas.</li>
-      <li><strong>Lista de Movimientos:</strong> Consultá qué ataques aprende por nivel y evolución.</li>
-      <li><strong>Cadena Evolutiva:</strong> Descubrí cómo y a qué nivel evoluciona tu compañero.</li>
-    </ul>
+    <h1>Pokedex Nacional</h1>
+    <p>Consulta estadísticas base, compatibilidad de MTs y cadenas evolutivas.</p>
   `,
 
   eventos: `
-    <h1>📅 Sistema de Eventos</h1>
-    <p>Mantenete atento al banner superior. Los eventos ofrecen desafíos únicos por tiempo limitado.</p>
-
-    <h3>🏆 Concursos de Captura</h3>
-    <p>Eventos como el de Magikarp donde se premia al ejemplar con mejores IVs. La inscripción es <strong>automática</strong> al realizar la captura durante el evento.</p>
-
-    <h3>⏳ Eventos de Tiempo</h3>
-    <p>Algunos eventos especiales <strong>ignoran las restricciones de ciclo</strong>, permitiendo capturar Pokémon raros en horarios inusuales.</p>
+    <h1>Sistema de Eventos</h1>
+    <p>Concursos de captura automáticos y eventos que ignoran el ciclo horario.</p>
   `,
 
   interfaz: `
-    <h1>📱 Interfaz y Premium Tooltips</h1>
-    <p>Hemos diseñado una interfaz intuitiva para acceder a la información sin salir de la acción.</p>
-
-    <h3>💡 Tooltips en Movimientos</h3>
-    <ul>
-      <li><strong>Móvil:</strong> Mantener presionado el botón de un movimiento para ver su potencia, precisión y descripción detallada.</li>
-      <li><strong>PC:</strong> Simplemente pasá el mouse sobre el movimiento para desplegar la información.</li>
-    </ul>
-    <p>Esto también funciona para los <strong>Estados Alterados</strong> (Quemado, Paralizado, etc.) y los iconos de stats en el HUD.</p>
+    <h1>Interfaz y Tooltips</h1>
+    <p>Mantener presionado un movimiento para ver detalles técnicos en móvil.</p>
   `
 
 };
 
-// --- FIN SECCIÓN DE CONTENIDO ---
+// --- FIN SECCION DE CONTENIDO ---
 
-// --- LÓGICA DEL MODAL ---
+// --- LOGICA DEL MODAL ---
 function toggleLibrary() {
   const modal = document.getElementById('library-modal');
   if (!modal) return;
 
   if (modal.style.display === 'none' || modal.style.display === '') {
     modal.style.display = 'block';
-    // Abrir siempre en la sección de Gimnasios por defecto
-    const gymTab = document.querySelector('.library-nav-item[onclick*="\\'gimnasios\\'"]');
+    const gymTab = document.querySelector(".library-nav-item");
     if (gymTab) {
       switchLibraryTab('gimnasios', gymTab);
-    } else {
-      // Fallback a la primera pestaña si no se encuentra la de gimnasios
-      const firstTab = document.querySelector('.library-nav-item');
-      if (firstTab) {
-        const match = firstTab.getAttribute('onclick').match(/'([^']+)'/);
-        if (match) switchLibraryTab(match[1], firstTab);
-      }
     }
   } else {
     modal.style.display = 'none';
@@ -247,14 +206,17 @@ function openLibrarySection(tab) {
   const modal = document.getElementById('library-modal');
   if (modal) {
     modal.style.display = 'block';
-    const element = document.querySelector(`.library-nav-item[onclick*="'${tab}'"]`);
+    const element = document.querySelector(".library-nav-item");
     switchLibraryTab(tab, element);
   }
 }
 
 function switchLibraryTab(tab, element) {
   document.querySelectorAll('.library-nav-item').forEach(el => el.classList.remove('active'));
-  if (element) element.classList.add('active');
+  if (element) {
+     const target = document.querySelector(".library-nav-item[onclick*='" + tab + "']");
+     if (target) target.classList.add('active');
+  }
 
   const contentArea = document.getElementById('library-article-content');
   if (!contentArea) return;
@@ -262,7 +224,7 @@ function switchLibraryTab(tab, element) {
   contentArea.style.opacity = 0;
 
   setTimeout(() => {
-    contentArea.innerHTML = libraryContent[tab] || '<h1>Próximamente</h1><p>Esta sección está en construcción.</p>';
+    contentArea.innerHTML = libraryContent[tab] || '<h1>Proximamente</h1><p>En construccion.</p>';
     contentArea.style.opacity = 1;
     contentArea.style.transition = 'opacity 0.2s ease';
   }, 100);
