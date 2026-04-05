@@ -13,8 +13,8 @@ const POKEMON_SPRITE_IDS = {
   ekans: 23, arbok: 24,
   pikachu: 25, raichu: 26,
   sandshrew: 27, sandslash: 28,
-  'nidoran-f': 29, nidorina: 30, nidoqueen: 31,
-  'nidoran-m': 32, nidorino: 33, nidoking: 34,
+  nidoran_f: 29, nidorina: 30, nidoqueen: 31,
+  nidoran_m: 32, nidorino: 33, nidoking: 34,
   clefairy: 35, clefable: 36,
   vulpix: 37, ninetales: 38,
   jigglypuff: 39, wigglytuff: 40,
@@ -36,7 +36,7 @@ const POKEMON_SPRITE_IDS = {
   ponyta: 77, rapidash: 78,
   slowpoke: 79, slowbro: 80,
   magnemite: 81, magneton: 82,
-  'farfetchd': 83,
+  farfetchd: 83,
   doduo: 84, dodrio: 85,
   seel: 86, dewgong: 87,
   grimer: 88, muk: 89,
@@ -58,7 +58,7 @@ const POKEMON_SPRITE_IDS = {
   horsea: 116, seadra: 117,
   goldeen: 118, seaking: 119,
   staryu: 120, starmie: 121,
-  'mr-mime': 122,
+  mr_mime: 122,
   scyther: 123,
   jynx: 124,
   electabuzz: 125,
@@ -91,8 +91,8 @@ const PDEX_ORDER = [
   'ekans','arbok',
   'pikachu', 'raichu',
   'sandshrew','sandslash',
-  'nidoran-f','nidorina','nidoqueen',
-  'nidoran-m','nidorino','nidoking',
+  'nidoran_f','nidorina','nidoqueen',
+  'nidoran_m','nidorino','nidoking',
   'clefairy','clefable',
   'vulpix','ninetales',
   'jigglypuff','wigglytuff',
@@ -136,7 +136,7 @@ const PDEX_ORDER = [
   'horsea','seadra',
   'goldeen','seaking',
   'staryu','starmie',
-  'mr-mime',
+  'mr_mime',
   'scyther',
   'jynx',
   'electabuzz',
@@ -353,17 +353,19 @@ window.showPokedexDetail = function(pokemonId) {
       </thead>
       <tbody>
         ${learnset.map(m => {
-          const md = (typeof MOVE_DATA !== 'undefined' && MOVE_DATA[m.name]) || {};
-          return `<tr onclick="showMoveDetail('${m.name.replace(/'/g, "\\'")}')" 
+          const moveName = m.name || m.move;
+          const md = (typeof MOVE_DATA !== 'undefined' && MOVE_DATA[moveName]) || {};
+          const pp = m.pp || md.pp || '—';
+          return `<tr onclick="showMoveDetail('${moveName.replace(/'/g, "\\'")}')" 
               style="border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.2s;"
               onmouseover="this.style.background='rgba(255,255,255,0.05)'" 
               onmouseout="this.style.background='transparent'">
             <td style="padding:5px 6px;color:var(--yellow);font-weight:700;">${m.lv}</td>
             <td style="padding:5px 6px;">
-              <span style="font-weight:600;color:#fff;">${m.name}</span>
+              <span style="font-weight:600;color:#fff;">${moveName}</span>
               ${md.type ? `<span class="type-badge type-${md.type.toLowerCase()}" style="margin-left:6px;font-size:9px;padding:1px 6px;">${md.type}</span>` : ''}
             </td>
-            <td style="padding:5px 6px;text-align:right;color:#aaa;">${m.pp}</td>
+            <td style="padding:5px 6px;text-align:right;color:#aaa;">${pp}</td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -393,7 +395,7 @@ window.showPokedexDetail = function(pokemonId) {
   
   // Level up
   if (evoTable[pokemonId]) {
-    possibleEvos.push({ method: `Nv. ${evoTable[pokemonId].lv}`, toId: evoTable[pokemonId].to });
+    possibleEvos.push({ method: `Nv. ${evoTable[pokemonId].level}`, toId: evoTable[pokemonId].to });
   }
   // Special cases (eevee)
   if (pokemonId === 'eevee') {
