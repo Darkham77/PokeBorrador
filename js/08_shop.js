@@ -1156,7 +1156,7 @@ function _marketSetQty(itemId, raw) {
             oninput="_marketSetQty('${item.id}', this.value)" onchange="_marketSetQty('${item.id}', this.value)"
             style="width:90px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);text-align:center;outline:none;">
         </div>
-        <div style="font-size:11px;color:var(--yellow);font-weight:900;margin-top:6px;">Total: ₽<span id="market-total-${item.id}">${total.toLocaleString()}</span></div>
+        <div style="font-size:11px;color:var(--green);font-weight:900;margin-top:6px;">Total: ₽<span id="market-total-${item.id}">${total.toLocaleString()}</span></div>
         <button id="market-buy-${item.id}" class="market-buy-btn" onclick="buyItem('${item.id}')"
           ${locked || !canAfford ? 'disabled' : ''}>
           ${locked ? '🔒 BLOQUEADO' : !canAfford ? 'SIN FONDOS' : ('COMPRAR x' + qty)}
