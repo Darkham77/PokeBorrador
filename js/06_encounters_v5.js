@@ -7,7 +7,9 @@ function _startCarouselTimer() {
   _carouselInterval = setInterval(() => {
     const activeEvents = (typeof _activeEvents !== 'undefined') ? _activeEvents : [];
     const finishedEvents = (typeof _finishedEvents !== 'undefined') ? _finishedEvents : [];
-    const totalSlides = 1 + activeEvents.length + finishedEvents.length;
+    const totalSlides = activeEvents.length + finishedEvents.length;
+    
+    if (totalSlides <= 0) return;
     
     _currentCarouselIndex = (_currentCarouselIndex + 1) % totalSlides;
     
@@ -19,27 +21,17 @@ function _startCarouselTimer() {
         slides.forEach((s, i) => s.classList.toggle('active', i === _currentCarouselIndex));
         dots.forEach((d, i) => d.classList.toggle('active', i === _currentCarouselIndex));
         
-        // El slide 0 es "Raros", los slides > 0 son eventos (activos o podios)
-        const hasEventActive = _currentCarouselIndex > 0;
-        carousel.classList.toggle('event-active', hasEventActive);
+        // El carrusel indica que hay un evento activo solo si ya no es el slide fijo (que eliminamos)
+        carousel.classList.toggle('event-active', true);
       }
     }
   }, 5000);
 }
 
-function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
+function renderEventCarouselSlides() {
   const activeEvents = (typeof _activeEvents !== 'undefined') ? _activeEvents : [];
   const finishedEvents = (typeof _finishedEvents !== 'undefined') ? _finishedEvents : [];
   const slides = [];
-
-  // Slide 0: Raros del día
-  slides.push({
-    icon: cycleIcon,
-    title: 'Raros por horario',
-    content: `<div class="pc-banner-spawns pc-banner-spawns-compact">${rareCycleSpritesHtml}</div>`,
-    onclick: null,
-    isEvent: false
-  });
 
   // Slides de Eventos Activos
   activeEvents.forEach(ev => {
@@ -72,6 +64,8 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
     });
   });
 
+  if (slides.length === 0) return '';
+  
   if (_currentCarouselIndex >= slides.length) _currentCarouselIndex = 0;
 
   const slidesHtml = slides.map((s, i) => `
@@ -89,7 +83,7 @@ function renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml) {
     <div class="pc-dot ${i === _currentCarouselIndex ? 'active' : ''}"></div>
   `).join('');
 
-  const hasEventActive = _currentCarouselIndex > 0 && slides[_currentCarouselIndex]?.isEvent;
+  const hasEventActive = slides.length > 0;
 
   return `
     <div class="pc-banner pc-banner-carousel ${hasEventActive ? 'event-active' : ''}" id="event-carousel" style="min-height: 80px;">
@@ -189,37 +183,6 @@ async function renderMaps() {
       let html = '';
 
       // PC & Stats Bar (Balanced Version)
-      const cycleLabel = ({ morning: 'AMANECER', day: 'DÍA', dusk: 'ATARDECER', night: 'NOCHE' }[cycle] || cycle.toUpperCase());
-      const cycleIcon = ({ morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }[cycle] || '⏰');
-      // Rare spawns (exclusive to current cycle, <10%)
-      const rareByCycleMinRate = {}; // id -> minRate in this cycle across all maps
-      FIRE_RED_MAPS.forEach(loc => {
-        const pool = loc.wild?.[cycle] || null;
-        const rates = loc.rates?.[cycle] || null;
-        if (!pool || !rates) return;
-
-        pool.forEach((id, idx) => {
-          const rate = rates[idx] ?? 100;
-          if (rate >= 10) return;
-
-          // Verificar si el Pokémon sale en CUALQUIER otro horario en este mapa
-          const otherCycles = Object.keys(loc.wild || {}).filter(c => c !== cycle);
-          const isExclusiveToThisCycleInThisMap = !otherCycles.some(c => loc.wild[c].includes(id));
-
-          if (isExclusiveToThisCycleInThisMap) {
-            if (rareByCycleMinRate[id] === undefined || rate < rareByCycleMinRate[id]) {
-              rareByCycleMinRate[id] = rate;
-            }
-          }
-        });
-      });
-      const rareCycleTop = Object.entries(rareByCycleMinRate)
-        .map(([id, minRate]) => ({ id, minRate }))
-        .sort((a, b) => a.minRate - b.minRate)
-        .slice(0, 6);
-      const rareCycleSpritesHtml = rareCycleTop.length
-        ? rareCycleTop.map(p => getPokemonSpriteHtml(p.id, false)).join('')
-        : `<span style="font-size:12px;color:var(--gray);">Sin raros exclusivos &lt;10%.</span>`;
       // Daycare missions (remaining)
       try {
         if (typeof generateDailyMission === 'function') generateDailyMission();
@@ -297,7 +260,7 @@ async function renderMaps() {
           </div>
           <div class="pc-right" style="flex: 1; display: flex; min-width: 0;">
             <div class="pc-banner-grid">
-              ${renderEventCarouselSlides(cycleIcon, rareCycleSpritesHtml)}
+              ${renderEventCarouselSlides()}
 
               <div class="pc-banner" onclick="showTab('daycare')">
                 <div class="pc-banner-icon">📜</div>
