@@ -17,11 +17,9 @@ function getPreviousWeekId() {
 
 function isDisputePhase() {
   const day = new Date().getDay();
-  const isWeekday = (day >= 1 && day <= 5);
-  const isSimulating = localStorage.getItem('force_phase_toggle') === 'true';
-
-  // Si estamos simulando, invertimos la fase real
-  return isSimulating ? !isWeekday : isWeekday;
+  // Lunes (1) a Viernes (5) es Fase de Disputa.
+  // Sábado (6) y Domingo (0) es Fase de Dominancia.
+  return (day >= 1 && day <= 5);
 }
 
 const WAR_MAP_IMAGES = {
@@ -370,8 +368,6 @@ async function calculateUserWeeklyContribution(weekId) {
 }
 
 function getDefenseSlots(totalPoints) {
-  // En modo test damos slots infinitos para que el usuario pueda probar el despliegue
-  if (window.forceWeekend || localStorage.getItem('force_weekend') === 'true') return 99;
   // 1 Slot cada 4000 puntos
   return Math.floor(totalPoints / 4000);
 }
@@ -1039,16 +1035,14 @@ async function tryTriggerDefenderBattle(mapId) {
   // Solo los fines de semana
   if (isDisputePhase()) return false;
   
-  // Chance de encontrar defensor (100% en modo test para facilitar pruebas, 20% normal)
-  const isSim = window.forceWeekend || localStorage.getItem('force_weekend') === 'true';
-  if (Math.random() > (isSim ? 1.0 : 0.20)) return false;
+  // Chance de encontrar defensor (20% normal)
+  if (Math.random() > 0.20) return false;
   
   const domInfo = await getMapDominanceStatus(mapId);
   const mapWinner = domInfo?.winner;
   
-  // En modo normal, solo peleamos en rutas enemigas. En modo test, permitimos todo para ver el evento.
-  if (!mapWinner) return false;
-  if (mapWinner === state.faction && !isSim) return false;
+  // Solo peleamos en rutas enemigas.
+  if (!mapWinner || mapWinner === state.faction) return false;
   
   try {
     const query = window.sb
@@ -1057,10 +1051,8 @@ async function tryTriggerDefenderBattle(mapId) {
       .eq('map_id', mapId)
       .eq('week_id', getCurrentWeekId());
       
-    // En modo normal (no sim), no queremos encontrarnos a nosotros mismos
-    if (!isSim) {
-      query.neq('user_id', window.currentUser.id);
-    }
+    // No queremos encontrarnos a nosotros mismos
+    query.neq('user_id', window.currentUser.id);
 
     const { data: defenders } = await query.limit(5);
     console.log("[WAR] Defensores encontrados en " + mapId, defenders);
@@ -1290,49 +1282,4 @@ async function claimDefenseRewards(recordId) {
   }
 }
 
-/**
- * Función de utilidad para desarrolladores/testers: Alterna entre fase de semana y fin de semana.
- */
-function toggleWeekendSimulation() {
-  const current = localStorage.getItem('force_phase_toggle') === 'true';
-  const newValue = !current;
-  localStorage.setItem('force_phase_toggle', newValue);
-  
-  const day = new Date().getDay();
-  const isWeekendReal = (day === 0 || day === 6);
-  const simulatedIsWeekend = isWeekendReal ? !newValue : newValue;
 
-  const btn = document.getElementById('sim-weekend-btn');
-  if (btn) {
-    if (newValue) {
-      btn.textContent = simulatedIsWeekend ? 'SÁBADO (SIM)' : 'LUN-VIE (SIM)';
-      btn.style.color = 'var(--yellow)';
-      btn.style.borderColor = 'var(--yellow)';
-    } else {
-      btn.textContent = 'MODO TEST';
-      btn.style.color = '#888';
-      btn.style.borderColor = '#444';
-    }
-  }
-  
-  notify(newValue ? 'Simulación de fase activa...' : 'Restablecida fase real...', '⏱️');
-  
-  if (typeof renderWarPanel === 'function') {
-    renderWarPanel();
-  }
-}
-
-// Inicializar el botón al cargar
-window.addEventListener('load', () => {
-  const btn = document.getElementById('sim-weekend-btn');
-  const isSim = localStorage.getItem('force_phase_toggle') === 'true';
-  if (btn && isSim) {
-    const day = new Date().getDay();
-    const isWeekendReal = (day === 0 || day === 6);
-    const simulatedIsWeekend = isWeekendReal ? !isSim : isSim;
-    
-    btn.textContent = simulatedIsWeekend ? 'SÁBADO (SIM)' : 'LUN-VIE (SIM)';
-    btn.style.color = 'var(--yellow)';
-    btn.style.borderColor = 'var(--yellow)';
-  }
-});
