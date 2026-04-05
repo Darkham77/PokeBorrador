@@ -5349,14 +5349,17 @@
     flex-wrap: wrap;
   }
 
-  /* Tooltips: deshabilitar en móvil (sin hover) */
+  /* Tooltips: re-habilitados para móvil con soporte táctil */
   .tooltip-wrap .tooltip-box {
-    display: none !important;
+    display: none;
+  }
+  .tooltip-wrap.touched .tooltip-box {
+    display: block !important;
+    z-index: 30000;
   }
 
-  /* Move tooltip: no se muestra en móvil */
   .move-tooltip {
-    display: none !important;
+    z-index: 30000;
   }
 
   /* Buff tooltip: también se oculta en móvil */

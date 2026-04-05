@@ -547,13 +547,15 @@ function renderMoveButtons() {
 
     const escapedName = moveName.replace(/'/g, "\\'");
 
-    return `<button class="move-btn" onclick="useMove(${i})" ${disabled ? 'disabled' : ''}
+    return `<button class="move-btn" ${disabled ? 'disabled' : ''}
       style="--move-color: ${col};"
+      onclick="if(!window._touchTriggered) useMove(${i});"
       onmousedown="showMoveTooltip(event, '${escapedName}')"
       onmouseup="hideMoveTooltip()"
       onmouseleave="hideMoveTooltip()"
-      ontouchstart="showMoveTooltip(event, '${escapedName}')"
-      ontouchend="hideMoveTooltip()">
+      ontouchstart="window._touchTriggered=true; this._tm=setTimeout(()=> { showMoveTooltip(event, '${escapedName}'); this._shown=true; }, 400);"
+      ontouchend="clearTimeout(this._tm); if(this._shown){ hideMoveTooltip(); this._shown=false; } else { useMove(${i}); } setTimeout(()=>window._touchTriggered=false, 500);"
+      oncontextmenu="event.preventDefault(); return false;">
       <span class="move-name">${moveName}</span>
       <div class="move-pp">
         <span class="move-type-badge">${(md.type || '???').toUpperCase()}</span>
