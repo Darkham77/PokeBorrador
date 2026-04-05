@@ -241,13 +241,21 @@ const TM_COMPAT = {
 };
 
 window.renderPokedex = function() {
-  const container = document.getElementById('pokedex-list');
+  const container = document.getElementById('pokedex-grid');
   if (!container) return;
 
   const caught = state.pokedex || [];
+  const seen = state.seenPokedex || [];
   
+  // Update counts
+  const seenEl = document.getElementById('pokedex-seen-count');
+  const caughtEl = document.getElementById('pokedex-caught-count');
+  if (seenEl) seenEl.textContent = seen.length;
+  if (caughtEl) caughtEl.textContent = caught.length;
+
   container.innerHTML = PDEX_ORDER.map(id => {
     const isCaught = caught.includes(id);
+    const isSeen = seen.includes(id) || isCaught;
     const pData = POKEMON_DB[id];
     if (!pData) return '';
 
@@ -257,16 +265,21 @@ window.renderPokedex = function() {
       ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteId}.png` 
       : '';
 
+    // If not seen, show silhouette or placeholder
+    const spriteHtml = isSeen 
+      ? `<img src="${spriteUrl}" style="width:50px;height:50px;image-rendering:pixelated;${isCaught ? '' : 'filter:brightness(0) opacity(0.5);'}" alt="${pData.name}">`
+      : `<div style="width:50px;height:50px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#333;">?</div>`;
+
     return `
-      <div class="pokedex-card ${isCaught ? 'caught' : 'unknown'}" onclick="${isCaught ? `showPokedexDetail('${id}')` : ''}">
-        <div class="pokedex-num">#${num}</div>
-        <div class="pokedex-sprite-container">
-          ${isCaught 
-            ? `<img src="${spriteUrl}" class="pokedex-sprite" alt="${pData.name}">`
-            : `<div class="pokedex-sprite-placeholder">?</div>`
-          }
+      <div class="pokedex-card" onclick="${isSeen ? `showPokedexDetail('${id}')` : ''}" 
+        style="background:rgba(255,255,255,0.03);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;border:1px solid ${isCaught ? 'rgba(255,214,10,0.2)' : 'rgba(255,255,255,0.05)'};cursor:${isSeen ? 'pointer' : 'default'};">
+        <div style="font-size:8px;color:#555;margin-bottom:4px;font-family:'Press Start 2P',monospace;">#${num}</div>
+        <div style="height:50px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;">
+          ${spriteHtml}
         </div>
-        <div class="pokedex-name">${isCaught ? pData.name : '???'}</div>
+        <div style="font-size:9px;font-weight:700;color:${isCaught ? 'var(--yellow)' : (isSeen ? '#aaa' : '#444')};text-align:center;text-transform:capitalize;">
+          ${isSeen ? pData.name : '???'}
+        </div>
       </div>
     `;
   }).join('');
