@@ -1,4 +1,7 @@
 
+    // ===== SESSION UNIQUENESS =====
+    window.mySessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
     // ===== SUPABASE =====
     const SUPABASE_URL = 'https://wakrkvizmoqdlrtnxcth.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indha3Jrdml6bW9xZGxydG54Y3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMDA3MjYsImV4cCI6MjA4ODg3NjcyNn0.l_NYYNPDFOAr5CRqbuVf3jLv_TRnOw6shw9j9GzhQsA';
@@ -207,6 +210,10 @@
       try {
         const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
         const username = profile?.username || user.user_metadata?.username || user.email.split('@')[0];
+        
+        // Registrar ID de sesión para unicidad (Last-In-Wins)
+        await sb.from('profiles').update({ current_session_id: window.mySessionId }).eq('id', user.id);
+        monitorSession(user.id);
         
         // 1. Obtener Guardado de la Nube
         const { data: saves, error: saveError } = await sb
@@ -789,4 +796,36 @@
         if (img.complete && !img.naturalWidth) { img.onerror(); }
       });
     })();
+
+    // ── Session Uniqueness ──────────────────────────────────────────────────────
+    function monitorSession(userId) {
+      if (!userId || window.currentServer === LOCAL_URL) return;
+      
+      const debugEl = document.getElementById('session-debug-id');
+      if (debugEl) debugEl.textContent = window.mySessionId.substring(0, 8);
+
+      // Suscribirse a cambios en la tabla profiles para este usuario
+      const channel = sb.channel(`session_check_${userId}`)
+        .on('postgres_changes', { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'profiles', 
+            filter: `id=eq.${userId}` 
+        }, payload => {
+            const newSessionId = payload.new.current_session_id;
+            if (newSessionId && newSessionId !== window.mySessionId) {
+                console.warn("[SESSION] Nueva sesión detectada en otro lugar. Bloqueando esta pestaña.");
+                document.getElementById('session-blocked-modal').style.display = 'flex';
+                // Detener el guardado automático para evitar sobrescribir datos de la nueva sesión
+                _saveLoaded = false;
+                _isSaving = true; // Forzar estado de "guardando" para bloquear saveGame
+                
+                // Opcional: Detener música si existe
+                if (window.bgmInterval) clearInterval(window.bgmInterval);
+            }
+        })
+        .subscribe();
+        
+      console.log("[SESSION] Monitoreo iniciado para el usuario:", userId);
+    }
 
