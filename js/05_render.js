@@ -84,7 +84,10 @@ function showTab(tab, btnEl) {
   }
   if (tab === 'map') renderMaps();
   if (tab === 'daycare') renderDaycareUI();
-  if (tab === 'box') renderBox();
+  if (tab === 'box') {
+    if (typeof openBoxTab === 'function') openBoxTab();
+    else renderBox();
+  }
   if (tab === 'bag') renderBag();
   if (tab === 'friends') renderFriends();
   if (tab === 'war') {

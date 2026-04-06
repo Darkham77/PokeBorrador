@@ -408,6 +408,18 @@
       notify(`¡Compraste la Caja ${state.boxCount}!`, '💰');
     }
 
+    function openBoxTab() {
+      if (!state.box) state.box = [];
+      if (!state.boxCount) state.boxCount = 4;
+      
+      if (state.box.length > 0) {
+        _currentBoxIndex = Math.min(Math.floor((state.box.length - 1) / 50), state.boxCount - 1);
+      } else {
+        _currentBoxIndex = 0;
+      }
+      renderBox();
+    }
+
     function renderBox() {
       if (!state.box) state.box = [];
       if (!state.boxCount) state.boxCount = 4;
