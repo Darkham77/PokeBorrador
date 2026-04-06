@@ -165,7 +165,7 @@ async function renderMaps() {
         }
         
         return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
-          title="${name}" width="32" height="32" loading="lazy"
+          title="${name}" width="54" height="54" loading="lazy"
           onerror="this.style.display='none'" 
           class="${isRare ? 'rare-spawn' : ''}">`;
       };
