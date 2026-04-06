@@ -844,6 +844,8 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       srcStages.spd = Math.min(6, (srcStages.spd || 0) + 1);
       addLogFn(`¡Subió el At. Esp y la Def. Esp de ${src.name}!`, 'log-info');
       break;
+    case 'stat_down_enemy_eva': tgtStages.eva = Math.max(-6, (tgtStages.eva || 0) - 1); addLogFn(`¡Bajó la Evasión de ${tgt.name}!`, 'log-info'); break;
+    case 'stat_down_enemy_spe_2': tgtStages.spe = Math.max(-6, (tgtStages.spe || 0) - 2); addLogFn(`¡Bajó mucho la Velocidad de ${tgt.name}!`, 'log-info'); break;
     case 'heal_50':
       const healAmt = Math.floor(src.maxHp / 2);
       src.hp = Math.min(src.maxHp, src.hp + healAmt);
@@ -1757,6 +1759,13 @@ function useMove(moveIndex) {
       // Super Fang (halfHP)
       if (md.halfHP) {
         finalDmg = Math.max(1, Math.floor(b.enemy.hp / 2));
+      }
+
+      // Fixed damage moves (Dragon Rage, Sonic Boom)
+      if (md.fixedDmg && eff > 0) {
+        finalDmg = md.fixedDmg;
+      } else if (md.fixedDmg && eff === 0) {
+        finalDmg = 0;
       }
 
       // Counter: deal 2× last physical damage taken from enemy
