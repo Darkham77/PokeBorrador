@@ -1169,6 +1169,9 @@
         'Ataque Aéreo': { power: 140, acc: 90, type: 'flying', cat: 'physical', pp: 5, effect: 'flinch_30' },
         'Enfado': { power: 120, acc: 100, type: 'dragon', cat: 'physical', pp: 15, effect: 'thrash' },
         'Más Psique': { power: 0, acc: 1000, type: 'normal', cat: 'status', pp: 10 },
+        'Rapidez': { power: 60, acc: 1000, type: 'normal', cat: 'special', pp: 20, effect: 'always_hits' },
+        'Camuflaje': { power: 0, acc: 100, type: 'normal', cat: 'status', pp: 20 },
+        'Masa Cósmica': { power: 0, acc: 100, type: 'psychic', cat: 'status', pp: 20, effect: 'stat_up_self_def_spd' },
         // ── Fire ─────────────────────────────────────────────────
         'Ascuas': { power: 40, acc: 100, type: 'fire', cat: 'special', pp: 25, effect: 'burn_10' },
         'Lanzallamas': { power: 90, acc: 100, type: 'fire', cat: 'special', pp: 15, effect: 'burn_10' },
@@ -1579,6 +1582,7 @@
         'swagger': "Confunde al oponente y aumenta mucho su Ataque.",
         'belly_drum': "Reduce a la mitad los PS para maximizar el Ataque.",
         'psych_up': "Copia los cambios de estadísticas del oponente.",
+        'always_hits': "Ataque veloz e infalible que nunca falla.",
       };
       
       if (effects[md.effect]) return effects[md.effect];

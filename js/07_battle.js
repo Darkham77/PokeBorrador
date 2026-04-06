@@ -793,6 +793,7 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
     case 'stat_down_self_spa_2':
     case 'stat_up_self_atk_def':
     case 'stat_up_self_spa_spd':
+    case 'stat_up_self_def_spd':
       finalEffect = effect;
       break;
     default:
@@ -843,6 +844,11 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       srcStages.spa = Math.min(6, (srcStages.spa || 0) + 1);
       srcStages.spd = Math.min(6, (srcStages.spd || 0) + 1);
       addLogFn(`¡Subió el At. Esp y la Def. Esp de ${src.name}!`, 'log-info');
+      break;
+    case 'stat_up_self_def_spd':
+      srcStages.def = Math.min(6, (srcStages.def || 0) + 1);
+      srcStages.spd = Math.min(6, (srcStages.spd || 0) + 1);
+      addLogFn(`¡Subió la Defensa y la Def. Esp de ${src.name}!`, 'log-info');
       break;
     case 'stat_down_enemy_eva': tgtStages.eva = Math.max(-6, (tgtStages.eva || 0) - 1); addLogFn(`¡Bajó la Evasión de ${tgt.name}!`, 'log-info'); break;
     case 'stat_down_enemy_spe_2': tgtStages.spe = Math.max(-6, (tgtStages.spe || 0) - 2); addLogFn(`¡Bajó mucho la Velocidad de ${tgt.name}!`, 'log-info'); break;
