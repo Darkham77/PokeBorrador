@@ -372,9 +372,9 @@
 
       const ov = document.createElement('div');
       ov.id = 'outside-item-overlay';
-      ov.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:16px;';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;';
 
-      let html = `<div style="background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:340px;text-align:left;">`;
+      let html = `<div style="background:var(--card);border-radius:20px;padding:24px;width:100%;max-width:340px;text-align:left;max-height:calc(100dvh - 32px);overflow-y:auto;margin:auto;">` ;
       html += `<div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:14px;">🎒 MOCHILA PARA ${p.name.toUpperCase()}</div>`;
 
       // Currently equipped item
