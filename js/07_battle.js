@@ -1631,8 +1631,9 @@ function useMove(moveIndex) {
           if (b.player.ability === 'Encadenado') addLog(`¡Hizo el máximo de golpes por su Encadenado!`, 'log-info');
         }
       }
-      // Seismic Toss: damage = attacker level
-      if (md.levelDmg) finalDmg = b.player.level;
+      // Seismic Toss: damage = attacker level (Respect immunity)
+      if (md.levelDmg && eff > 0) finalDmg = b.player.level;
+      else if (md.levelDmg && eff === 0) finalDmg = 0;
       // Counter: deal 2× last physical damage taken from enemy
       if (md.counter) finalDmg = (b.player.lastPhysDmg || 0) * 2;
 
@@ -2122,8 +2123,9 @@ function enemyTurn(opts = {}) {
         if (b.enemy.ability === 'Encadenado') addLog(`¡Hizo el máximo de golpes por su Encadenado!`, 'log-info');
       }
     }
-    // Seismic Toss: damage = attacker level
-    if (md.levelDmg) finalDmg = b.enemy.level;
+    // Seismic Toss: damage = attacker level (Respect immunity)
+    if (md.levelDmg && eff > 0) finalDmg = b.enemy.level;
+    else if (md.levelDmg && eff === 0) finalDmg = 0;
     // Counter: deal 2× last physical damage taken from player
     if (md.counter) finalDmg = (b.enemy.lastPhysDmg || 0) * 2;
 
