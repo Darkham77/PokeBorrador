@@ -369,7 +369,7 @@ function togglePokeTag(location, index, tag) {
   scheduleSave();
 }
 
-function showPokemonDetails(p, index, location = 'team') {
+function showPokemonDetails(p, index, location = 'team', extraData = null) {
   if (!p) return;
   const pct = p.hp / p.maxHp;
   const hpClass = getHpClass(pct);
@@ -529,6 +529,15 @@ function showPokemonDetails(p, index, location = 'team') {
     <div style="margin-top:12px;background:rgba(107,203,119,0.08);border:1px solid rgba(107,203,119,0.2);
       border-radius:12px;padding:12px 16px;font-size:11px;color:var(--green);text-align:center;font-weight:700;line-height:1.4;">
       🌟 ¡Está listo para evolucionar! Ganá un combate más para verlo transformarse.
+    </div>` : ''}
+
+    ${location === 'market' && extraData ? `
+    <div style="text-align:center;margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);">
+      <div style="font-size:20px;font-weight:bold;color:var(--yellow);margin-bottom:15px;">₽${extraData.price}</div>
+      <button onclick="closePokemonDetail(); buyFromMarket('${extraData.offerId}', ${extraData.price}, '${extraData.type}')"
+        style="width:100%;padding:14px;border-radius:12px;border:none;background:${state.money >= extraData.price ? 'var(--blue)' : 'rgba(255,255,255,0.05)'};color:#fff;font-family:'Press Start 2P';font-size:9px;cursor:${state.money >= extraData.price ? 'pointer' : 'not-allowed'};">
+        ${state.money >= extraData.price ? 'COMPRAR' : 'SALDO INSUFICIENTE'}
+      </button>
     </div>` : ''}
   </div>`;
 

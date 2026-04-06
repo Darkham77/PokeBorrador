@@ -291,15 +291,19 @@ async function renderOnlineMarket() {
 function openMarketListingDetail(offerId) {
   const offer = _omListingsCache[offerId];
   if (!offer) return;
-  let content = '';
+  
   if (offer.listing_type === 'pokemon') {
-    const p = offer.data;
-    const tierInfo = typeof getPokemonTier === 'function' ? getPokemonTier(p) : { color:'#fff', bg:'#000', tier:'?' };
-    content = `<div style="text-align:center;margin-bottom:20px;"><img src="${getSpriteUrl(p.id, p.isShiny)}" style="width:100px;height:100px;image-rendering:pixelated;"><div style="font-family:'Press Start 2P';font-size:11px;color:${tierInfo.color};margin-top:10px;">${p.name}</div><div style="font-size:10px;color:var(--gray);margin-top:5px;">Nv.${p.level} · Tier ${tierInfo.tier}</div></div>`;
-  } else {
-    const i = offer.data;
-    content = `<div style="text-align:center;padding:20px;font-size:16px;">${i.name} (x${i.qty})</div>`;
+    if (typeof showPokemonDetails === 'function') {
+      showPokemonDetails(offer.data, -1, 'market', { offerId: offer.id, price: offer.price, type: offer.listing_type });
+      const ov = document.getElementById('pokemon-detail-overlay');
+      if (ov) ov.style.zIndex = '2150';
+    }
+    return;
   }
+
+  let content = '';
+  const i = offer.data;
+  content = `<div style="text-align:center;padding:20px;font-size:16px;">${i.name} (x${i.qty})</div>`;
   const canBuy = state.money >= offer.price;
   const ov = document.createElement('div');
   ov.id = 'om-detail-overlay';
