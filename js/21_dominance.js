@@ -127,7 +127,7 @@ async function loadPlayerFaction() {
     .from('war_factions')
     .select('faction')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
   if (data && data.faction) {
     state.faction = data.faction;
   }
@@ -230,7 +230,7 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
       .eq('user_id', window.currentUser.id)
       .eq('week_id', weekId)
       .eq('map_id', mapId)
-      .single();
+      .maybeSingle();
 
     if (currentEntry) {
       await window.sb.from('war_user_points')
@@ -272,7 +272,7 @@ async function getMapDominanceStatus(mapId) {
       .select('winner_faction, union_points, poder_points')
       .eq('week_id', weekId)
       .eq('map_id', mapId)
-      .single();
+      .maybeSingle();
     
     // Fallback: Si no hay datos oficiales de dominancia pero hay puntos del mapa
     // (común en Modo Test), devolvemos el ganador provisional.
@@ -368,8 +368,8 @@ async function calculateUserWeeklyContribution(weekId) {
 }
 
 function getDefenseSlots(totalPoints) {
-  // 1 Slot cada 4000 puntos
-  return Math.floor(totalPoints / 4000);
+  // 1 Slot cada 700 puntos
+  return Math.floor(totalPoints / 700);
 }
 
 async function checkFactionWeeklyWin(weekId) {
@@ -731,6 +731,15 @@ async function renderWarPanel() {
       // Mis monedas
       const coinDisp = document.getElementById('war-coins-count');
       if (coinDisp) coinDisp.textContent = (state.warCoins || 0) - (state.warCoinsSpent || 0);
+
+      const limitDisp = document.getElementById('war-coins-daily-limit');
+      if (limitDisp) {
+        const todayStr = new Date().toDateString();
+        const dailyGot = (state.warDailyCoins && state.warDailyCoins[todayStr]) ? state.warDailyCoins[todayStr] : 0;
+        limitDisp.textContent = `(${dailyGot}/50 Hoy)`;
+        if (dailyGot >= 50) limitDisp.style.color = '#ef4444'; // Rojo si llegó al límite
+        else limitDisp.style.color = 'rgba(255,214,10,0.6)';
+      }
 
       // Mi contribución individual (Aporte Semanal real de todos los mapas)
       const myContr = await calculateUserWeeklyContribution();
@@ -1157,7 +1166,7 @@ async function buyWarItem(itemId) {
 async function incrementDefenderWins(recordId) {
   try {
     // Primero obtenemos el valor actual para no depender de RPC complicados
-    const { data } = await window.sb.from('war_defenders').select('wins_count').eq('id', recordId).single();
+    const { data } = await window.sb.from('war_defenders').select('wins_count').eq('id', recordId).maybeSingle();
     if (data) {
       await window.sb.from('war_defenders')
         .update({ wins_count: (data.wins_count || 0) + 1 })
@@ -1237,7 +1246,7 @@ async function claimDefenseRewards(recordId) {
       .from('war_defenders')
       .select('*')
       .eq('id', recordId)
-      .single();
+      .maybeSingle();
       
     if (fetchErr || !def) throw new Error("No se encontró el registro de defensa.");
     
