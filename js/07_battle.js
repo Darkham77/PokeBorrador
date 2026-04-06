@@ -296,11 +296,17 @@ function updateBattleUI() {
   const _eSt = statusIcon(b.enemy?.status);
   let enemyNameText = b.enemy.name + (b.enemy.isShiny ? ' ✨' : '') + (_eSt ? ' ' + _eSt : '');
   const enemyNameEl = document.getElementById('enemy-name');
-  if (b.enemy.isGuardian) {
-    enemyNameEl.innerHTML = `<span class="guardian-battle-badge">GUARDIÁN</span> ` + enemyNameText;
-  } else {
-    enemyNameEl.textContent = enemyNameText;
+  const enemyGuardianEl = document.getElementById('enemy-guardian-tag');
+  if (enemyGuardianEl) {
+    if (b.enemy.isGuardian) {
+      enemyGuardianEl.innerHTML = `<span class="guardian-battle-badge" style="margin:0;">GUARDIÁN</span>`;
+      enemyGuardianEl.style.display = 'block';
+    } else {
+      enemyGuardianEl.style.display = 'none';
+      enemyGuardianEl.innerHTML = '';
+    }
   }
+  enemyNameEl.textContent = enemyNameText;
 
   const natureEl = document.getElementById('enemy-nature-display');
   if (natureEl) {
