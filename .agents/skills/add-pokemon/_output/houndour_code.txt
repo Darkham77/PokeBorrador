@@ -1,0 +1,164 @@
+
+=================================================================
+DATOS PARA AGREGAR: HOUNDOUR (#228)
+Generado automáticamente desde PokeAPI
+=================================================================
+
+⚠️  ADVERTENCIAS:
+   - Traduce manualmente: odor-sleuth
+   - Traduce manualmente: embargo
+
+
+-----------------------------------------------------------------
+1. POKEMON_DB en js/02_pokemon_data.js
+   (Agregar antes del cierre del objeto POKEMON_DB)
+-----------------------------------------------------------------
+  houndour: {
+    name: 'Houndour', emoji: '🌑', type: 'dark',
+    hp: 45, atk: 60, def: 30, spa: 80, spd: 50, spe: 65,
+    learnset: [
+    { lv: 1, name: 'Cara Susto', pp: 35 },
+    { lv: 1, name: 'Ascuas', pp: 35 },
+    { lv: 7, name: 'Aullido', pp: 35 },
+    { lv: 13, name: 'Pantalla Humo', pp: 35 },
+    { lv: 19, name: 'Rugido', pp: 35 },
+    { lv: 25, name: 'Mordisco', pp: 35 },
+    { lv: 27, name: 'Acoso', pp: 35 },
+    { lv: 30, name: 'Colmillo Ígneo', pp: 35 },
+    { lv: 31, name: '⚠️ TRADUCIR: odor-sleuth', pp: 35 },
+    { lv: 37, name: 'Golpe Vacío', pp: 35 },
+    { lv: 40, name: '⚠️ TRADUCIR: embargo', pp: 35 },
+    { lv: 43, name: 'Lanzallamas', pp: 35 },
+    { lv: 49, name: 'Triturar', pp: 35 },
+    { lv: 53, name: 'Maquinación', pp: 35 }
+    ]
+  },
+
+-----------------------------------------------------------------
+2. TIPO SECUNDARIO en POKE_TYPE2 en js/02_pokemon_data.js
+-----------------------------------------------------------------
+  houndour: 'fire',
+
+-----------------------------------------------------------------
+3. ABILITIES en js/04_state.js
+-----------------------------------------------------------------
+  houndour: ['Madrugar', 'Absorbe Fuego'],
+
+-----------------------------------------------------------------
+4. EVOLUCIÓN en js/13_evolution.js
+   (Revisar la cadena completa abajo y agregar en el objeto correcto)
+-----------------------------------------------------------------
+// Cadena de evolución completa:
+{
+  "evolution_details": [],
+  "evolves_to": [
+    {
+      "evolution_details": [
+        {
+          "base_form_id": null,
+          "gender": null,
+          "held_item": null,
+          "item": null,
+          "known_move": null,
+          "known_move_type": null,
+          "location": null,
+          "min_affection": null,
+          "min_beauty": null,
+          "min_damage_taken": null,
+          "min_happiness": null,
+          "min_level": 24,
+          "min_move_count": null,
+          "min_steps": null,
+          "needs_multiplayer": false,
+          "needs_overworld_rain": false,
+          "party_species": null,
+          "party_type": null,
+          "region_id": null,
+          "relative_physical_stats": null,
+          "time_of_day": "",
+          "trade_species": null,
+          "trigger": {
+            "name": "level-up",
+            "url": "https://pokeapi.co/api/v2/evolution-trigger/1/"
+          },
+          "turn_upside_down": false,
+          "used_move": null
+        }
+      ],
+      "evolves_to": [],
+      "is_baby": false,
+      "species": {
+        "name": "houndoom",
+        "url": "https://pokeapi.co/api/v2/pokemon-species/229/"
+      }
+    }
+  ],
+  "is_baby": false,
+  "species": {
+    "name": "houndour",
+    "url": "https://pokeapi.co/api/v2/pokemon-species/228/"
+  }
+}
+
+-----------------------------------------------------------------
+5. POKEMON_SPRITE_IDS en js/18_pokedex.js
+-----------------------------------------------------------------
+  houndour: 228,
+
+-----------------------------------------------------------------
+6. PDEX_ORDER en js/18_pokedex.js
+-----------------------------------------------------------------
+'houndour',  // Insertar en PDEX_ORDER en la posición #228
+
+-----------------------------------------------------------------
+7. TM_COMPAT en js/18_pokedex.js
+   (Lista de movimientos aprendibles por MT - traducir TM ids manualmente)
+   Movimientos por MQ en Gen 3: 
+   roar → Rugido
+   flamethrower → Lanzallamas
+   solar-beam → Rayo Solar
+   toxic → Tóxico
+   double-team → Doble Equipo
+   fire-blast → Llamarada
+   dream-eater → Comeosueños
+   rest → Descanso
+   substitute → Subterfugio
+   thief → Ladrón
+   protect → Protección
+   sludge-bomb → Bomba Lodo
+   endure → Aguante
+   swagger → Fanfarria
+   attract → Atracción
+   sleep-talk → Hablar Dormido
+   return → Retribución
+   frustration → Frustración
+   iron-tail → ⚠️ TRADUCIR
+   hidden-power → Poder Oculto
+   sunny-day → Día Soleado
+   shadow-ball → Bola Sombra
+   rock-smash → Romperroca
+   torment → Tormento
+   will-o-wisp → Fuego Fatuo
+   facade → Imagen
+   taunt → Mofa
+   snatch → Robo
+   secret-power → ⚠️ TRADUCIR
+   overheat → Sofoco
+   natural-gift → ⚠️ TRADUCIR
+   payback → Venganza
+   embargo → ⚠️ TRADUCIR
+   dark-pulse → Pulso Umbrío
+   captivate → ⚠️ TRADUCIR
+
+   Ejemplo aproximado (VERIFICAR con Bulbapedia):
+  houndour: [/* TM IDs aquí - ver SKILL.md */],
+
+-----------------------------------------------------------------
+8. DESCRIPCIÓN POKÉDEX
+-----------------------------------------------------------------
+ES: No disponible
+EN: HOUNDOUR hunt as a coordinated pack. They communicate with each other using a variety of cries to corner their prey. This POKéMON’s remarkable teamwork is unparalleled.
+
+=================================================================
+¡VERIFICAR CON SKILL.md ANTES DE INSERTAR EN EL JUEGO!
+=================================================================

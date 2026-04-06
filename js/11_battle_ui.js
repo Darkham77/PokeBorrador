@@ -774,6 +774,15 @@
         }
       }
 
+      // Cura Natural (Natural Cure) - Heal status when switching out
+      if (b.player && b.player.ability === 'Cura Natural' && b.player.status) {
+        b.player.status = null;
+        if (typeof addLog === 'function') addLog(`¡${b.player.name} se curó de sus problemas de estado al ser retirado!`, 'log-info');
+        const pIdx = state.team.findIndex(p => p.uid === b.player.uid);
+        if (pIdx !== -1) state.team[pIdx].status = null;
+      }
+
+
       // Usar referencia al Pokémon del equipo (evita desync de PP)
       b.player = teamRef;
       

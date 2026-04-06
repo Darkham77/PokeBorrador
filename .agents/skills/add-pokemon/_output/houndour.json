@@ -1,0 +1,268 @@
+{
+  "meta": {
+    "pokemon_name_en": "houndour",
+    "pokemon_name_es": "Houndour",
+    "national_id": 228,
+    "type1": "dark",
+    "type2": "fire",
+    "sprite_url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/228.png"
+  },
+  "stats": {
+    "hp": 45,
+    "atk": 60,
+    "def": 30,
+    "spa": 80,
+    "spd": 50,
+    "spe": 65
+  },
+  "abilities": [
+    {
+      "en": "early-bird",
+      "es": "Madrugar",
+      "isHidden": false
+    },
+    {
+      "en": "flash-fire",
+      "es": "Absorbe Fuego",
+      "isHidden": false
+    },
+    {
+      "en": "unnerve",
+      "es": "Nerviosismo",
+      "isHidden": true
+    }
+  ],
+  "flavor_text": {
+    "es": "No disponible",
+    "en": "HOUNDOUR hunt as a coordinated pack. They communicate with each other using a variety of cries to corner their prey. This POKéMON’s remarkable teamwork is unparalleled."
+  },
+  "learnset": [
+    {
+      "lv": 1,
+      "en": "leer",
+      "es": "Cara Susto",
+      "pp": 35
+    },
+    {
+      "lv": 1,
+      "en": "ember",
+      "es": "Ascuas",
+      "pp": 35
+    },
+    {
+      "lv": 7,
+      "en": "howl",
+      "es": "Aullido",
+      "pp": 35
+    },
+    {
+      "lv": 13,
+      "en": "smog",
+      "es": "Pantalla Humo",
+      "pp": 35
+    },
+    {
+      "lv": 19,
+      "en": "roar",
+      "es": "Rugido",
+      "pp": 35
+    },
+    {
+      "lv": 25,
+      "en": "bite",
+      "es": "Mordisco",
+      "pp": 35
+    },
+    {
+      "lv": 27,
+      "en": "beat-up",
+      "es": "Acoso",
+      "pp": 35
+    },
+    {
+      "lv": 30,
+      "en": "fire-fang",
+      "es": "Colmillo Ígneo",
+      "pp": 35
+    },
+    {
+      "lv": 31,
+      "en": "odor-sleuth",
+      "es": "⚠️ TRADUCIR: odor-sleuth",
+      "pp": 35
+    },
+    {
+      "lv": 37,
+      "en": "feint-attack",
+      "es": "Golpe Vacío",
+      "pp": 35
+    },
+    {
+      "lv": 40,
+      "en": "embargo",
+      "es": "⚠️ TRADUCIR: embargo",
+      "pp": 35
+    },
+    {
+      "lv": 43,
+      "en": "flamethrower",
+      "es": "Lanzallamas",
+      "pp": 35
+    },
+    {
+      "lv": 49,
+      "en": "crunch",
+      "es": "Triturar",
+      "pp": 35
+    },
+    {
+      "lv": 53,
+      "en": "nasty-plot",
+      "es": "Maquinación",
+      "pp": 35
+    }
+  ],
+  "machine_moves": [
+    {
+      "en": "roar",
+      "es": "Rugido"
+    },
+    {
+      "en": "flamethrower",
+      "es": "Lanzallamas"
+    },
+    {
+      "en": "solar-beam",
+      "es": "Rayo Solar"
+    },
+    {
+      "en": "toxic",
+      "es": "Tóxico"
+    },
+    {
+      "en": "double-team",
+      "es": "Doble Equipo"
+    },
+    {
+      "en": "fire-blast",
+      "es": "Llamarada"
+    },
+    {
+      "en": "dream-eater",
+      "es": "Comeosueños"
+    },
+    {
+      "en": "rest",
+      "es": "Descanso"
+    },
+    {
+      "en": "substitute",
+      "es": "Subterfugio"
+    },
+    {
+      "en": "thief",
+      "es": "Ladrón"
+    },
+    {
+      "en": "protect",
+      "es": "Protección"
+    },
+    {
+      "en": "sludge-bomb",
+      "es": "Bomba Lodo"
+    },
+    {
+      "en": "endure",
+      "es": "Aguante"
+    },
+    {
+      "en": "swagger",
+      "es": "Fanfarria"
+    },
+    {
+      "en": "attract",
+      "es": "Atracción"
+    },
+    {
+      "en": "sleep-talk",
+      "es": "Hablar Dormido"
+    },
+    {
+      "en": "return",
+      "es": "Retribución"
+    },
+    {
+      "en": "frustration",
+      "es": "Frustración"
+    },
+    {
+      "en": "iron-tail",
+      "es": null
+    },
+    {
+      "en": "hidden-power",
+      "es": "Poder Oculto"
+    },
+    {
+      "en": "sunny-day",
+      "es": "Día Soleado"
+    },
+    {
+      "en": "shadow-ball",
+      "es": "Bola Sombra"
+    },
+    {
+      "en": "rock-smash",
+      "es": "Romperroca"
+    },
+    {
+      "en": "torment",
+      "es": "Tormento"
+    },
+    {
+      "en": "will-o-wisp",
+      "es": "Fuego Fatuo"
+    },
+    {
+      "en": "facade",
+      "es": "Imagen"
+    },
+    {
+      "en": "taunt",
+      "es": "Mofa"
+    },
+    {
+      "en": "snatch",
+      "es": "Robo"
+    },
+    {
+      "en": "secret-power",
+      "es": null
+    },
+    {
+      "en": "overheat",
+      "es": "Sofoco"
+    },
+    {
+      "en": "natural-gift",
+      "es": null
+    },
+    {
+      "en": "payback",
+      "es": "Venganza"
+    },
+    {
+      "en": "embargo",
+      "es": null
+    },
+    {
+      "en": "dark-pulse",
+      "es": "Pulso Umbrío"
+    },
+    {
+      "en": "captivate",
+      "es": null
+    }
+  ],
+  "evolution_chain": "{\n  \"evolution_details\": [],\n  \"evolves_to\": [\n    {\n      \"evolution_details\": [\n        {\n          \"base_form_id\": null,\n          \"gender\": null,\n          \"held_item\": null,\n          \"item\": null,\n          \"known_move\": null,\n          \"known_move_type\": null,\n          \"location\": null,\n          \"min_affection\": null,\n          \"min_beauty\": null,\n          \"min_damage_taken\": null,\n          \"min_happiness\": null,\n          \"min_level\": 24,\n          \"min_move_count\": null,\n          \"min_steps\": null,\n          \"needs_multiplayer\": false,\n          \"needs_overworld_rain\": false,\n          \"party_species\": null,\n          \"party_type\": null,\n          \"region_id\": null,\n          \"relative_physical_stats\": null,\n          \"time_of_day\": \"\",\n          \"trade_species\": null,\n          \"trigger\": {\n            \"name\": \"level-up\",\n            \"url\": \"https://pokeapi.co/api/v2/evolution-trigger/1/\"\n          },\n          \"turn_upside_down\": false,\n          \"used_move\": null\n        }\n      ],\n      \"evolves_to\": [],\n      \"is_baby\": false,\n      \"species\": {\n        \"name\": \"houndoom\",\n        \"url\": \"https://pokeapi.co/api/v2/pokemon-species/229/\"\n      }\n    }\n  ],\n  \"is_baby\": false,\n  \"species\": {\n    \"name\": \"houndour\",\n    \"url\": \"https://pokeapi.co/api/v2/pokemon-species/228/\"\n  }\n}"
+}

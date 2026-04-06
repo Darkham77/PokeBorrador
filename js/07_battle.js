@@ -850,6 +850,10 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       srcStages.spd = Math.min(6, (srcStages.spd || 0) + 1);
       addLogFn(`¡Subió la Defensa y la Def. Esp de ${src.name}!`, 'log-info');
       break;
+    case 'rage':
+      src.rageActive = true;
+      addLogFn(`¡La Furia de ${src.name} comienza a arder!`, 'log-info');
+      break;
     case 'stat_down_enemy_eva': tgtStages.eva = Math.max(-6, (tgtStages.eva || 0) - 1); addLogFn(`¡Bajó la Evasión de ${tgt.name}!`, 'log-info'); break;
     case 'stat_down_enemy_spe_2': tgtStages.spe = Math.max(-6, (tgtStages.spe || 0) - 2); addLogFn(`¡Bajó mucho la Velocidad de ${tgt.name}!`, 'log-info'); break;
     case 'heal_50':
@@ -1405,14 +1409,8 @@ function applyAbilityTurnEndEffects(pokemon, role, addLogFn) {
   const ab = pokemon.ability;
   const logCls = role === 'player' ? 'log-enemy' : role === 'enemy' ? 'log-player' : 'log-info';
 
-  // Shed Skin (Mudar): 30% chance to heal status
-  if (ab === 'Mudar' && pokemon.status && Math.random() < 0.3) {
-    pokemon.status = null;
-    addLogFn(`¡La habilidad Mudar de ${pokemon.name} curó su estado!`, 'log-info');
-  }
-
-  // Natural Cure (Cura Natural) / Punto Cura: Simplified to heal at turn end
-  if ((ab === 'Cura Natural' || ab === 'Punto Cura') && pokemon.status) {
+  // Shed Skin (Mudar) / Punto Cura: 30% chance to heal status
+  if ((ab === 'Mudar' || ab === 'Punto Cura') && pokemon.status && Math.random() < 0.3) {
     pokemon.status = null;
     addLogFn(`¡La habilidad ${ab} de ${pokemon.name} curó su estado!`, 'log-info');
   }
@@ -1462,6 +1460,8 @@ function useMove(moveIndex) {
 
   let move = b.player.moves[moveIndex];
   if (!move || move.pp <= 0) { setLog('¡Sin PP!'); return; }
+  
+  if (move.name !== 'Furia') b.player.rageActive = false;
 
   // Check Otra Vez (Encore) early for UI/logic override
   if (b.player.encoreTurns > 0 && b.player.encoreMove) {
@@ -1803,6 +1803,10 @@ function useMove(moveIndex) {
 
       const prevEnemyHp = b.enemy.hp;
       b.enemy.hp = Math.max(0, b.enemy.hp - finalDmg);
+      if (b.enemy.rageActive && finalDmg > 0 && b.enemy.hp > 0) {
+        addLog(`¡La Furia de ${b.enemy.name} está creciendo!`, 'log-info');
+        applyMoveEffect('stat_up_self_atk', b.enemy, b.player, b.enemyStages, b.playerStages, addLog);
+      }
       
       // Ability Effects (Reactive/Defensive)
       applyAbilityEffects(b.player, b.enemy, move, { dmg: finalDmg, prevHp: prevEnemyHp }, addLog);
@@ -2191,6 +2195,7 @@ function enemyTurn(opts = {}) {
   }
 
   let move = chosenMove || (b.isTrainer || b.isGym ? getBestEnemyMove(b.enemy, b.player, b.playerStages) : validMoves[Math.floor(Math.random() * validMoves.length)]);
+  if (move && move.name !== 'Furia') b.enemy.rageActive = false;
   
   // Encore
   if (b.enemy.encoreTurns > 0 && b.enemy.encoreMove) {
@@ -2330,6 +2335,10 @@ function enemyTurn(opts = {}) {
 
     const prevPlayerHp = b.player.hp;
     b.player.hp = Math.max(0, b.player.hp - finalDmg);
+    if (b.player.rageActive && finalDmg > 0 && b.player.hp > 0) {
+      addLogFn(`¡La Furia de ${b.player.name} está creciendo!`, 'log-info');
+      applyMoveEffect('stat_up_self_atk', b.player, b.enemy, b.playerStages, b.enemyStages, addLogFn);
+    }
     
     // Ability Effects (Reactive/Defensive)
     applyAbilityEffects(b.enemy, b.player, move, { dmg: finalDmg, prevHp: prevPlayerHp }, addLog);
@@ -3053,6 +3062,15 @@ function endBattle(won) {
   if (!b || b._ending) return; // Prevent multiple calls from overlapping timeouts
   b._ending = true;
   b.over = true;
+
+  // Cura Natural (Natural Cure) - Heal status when battle ends
+  if (state.team) {
+    state.team.forEach(p => {
+      if (p.ability === 'Cura Natural' && p.status) {
+        p.status = null;
+      }
+    });
+  }
 
   // Cleanup move tooltips to prevent them from sticking on screen
   const tooltip = document.getElementById('move-tooltip');
