@@ -639,6 +639,27 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
     if (h === 'Cinta Elegida' && md.cat === 'physical') itemMult *= 1.5;
   }
 
+  // Weather Multiplier
+  let weatherMult = 1;
+  const b = state.battle;
+  if (b && b.weather && b.weather.turns > 0) {
+    if (b.weather.type === 'sun') {
+      if (md.type === 'fire') weatherMult = 1.5;
+      else if (md.type === 'water') weatherMult = 0.5;
+    } else if (b.weather.type === 'rain') {
+      if (md.type === 'water') weatherMult = 1.5;
+      else if (md.type === 'fire') weatherMult = 0.5;
+    }
+  }
+
+  // Screens (Reflect / Light Screen)
+  let screenMult = 1;
+  const defStages = (defender === b?.player) ? b.playerStages : b.enemyStages;
+  if (defStages) {
+    if (isPhysical && defStages.reflect) screenMult = 0.5;
+    else if (!isPhysical && defStages.lightScreen) screenMult = 0.5;
+  }
+
   const random = 0.85 + Math.random() * 0.15;
   let critRate = (attacker.heldItem === 'Lente Zoom') ? 0.12 : 0.06;
   if (attacker.heldItem === 'Palo' && attacker.id === 'farfetchd') critRate += 0.25;
@@ -652,7 +673,7 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
   const critMult = isCrit ? (attacker.ability === 'Francotirador' ? 3 : 2) : 1;
   if (isCrit && attacker.ability === 'Francotirador') triggeredAbility = 'Francotirador';
 
-  const finalDmg = eff > 0 ? Math.max(1, Math.floor(base * stab * finalAbilityMult * eff * random * itemMult * critMult)) : 0;
+  const finalDmg = eff > 0 ? Math.max(1, Math.floor(base * stab * finalAbilityMult * eff * random * itemMult * critMult * weatherMult * (isCrit ? 1 : screenMult))) : 0;
   return { dmg: finalDmg, eff, stab, isCrit, triggeredAbility, defensiveAbility };
 }
 
@@ -1075,9 +1096,57 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
         return m;
       });
       addLogFn(`¡${originalName} se transformó en ${tgt.name}!`, 'log-info');
-      // No transition needed here as updateBattleUI will handle sprite shift
-      if (typeof updateBattleUI === 'function') {
-        setTimeout(updateBattleUI, 50);
+      if (typeof updateBattleUI === 'function') setTimeout(updateBattleUI, 50);
+      break;
+
+    // --- NEW EFFECTS ---
+    case 'sun': 
+      state.battle.weather = { type: 'sun', turns: 5 }; 
+      addLogFn("¡El sol empezó a brillar con fuerza!", 'log-info'); break;
+    case 'rain': 
+      state.battle.weather = { type: 'rain', turns: 5 }; 
+      addLogFn("¡Empezó a llover!", 'log-info'); break;
+    case 'sandstorm': 
+      state.battle.weather = { type: 'sandstorm', turns: 5 }; 
+      addLogFn("¡Se desató una tormenta de arena!", 'log-info'); break;
+    case 'hail': 
+      state.battle.weather = { type: 'hail', turns: 5 }; 
+      addLogFn("¡Empezó a granizar!", 'log-info'); break;
+
+    case 'reflect':
+      if (srcStages.reflect) { addLogFn("¡Pero falló!", 'log-info'); break; }
+      srcStages.reflect = 5;
+      addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques físicos!`, 'log-info'); break;
+    case 'light_screen':
+      if (srcStages.lightScreen) { addLogFn("¡Pero falló!", 'log-info'); break; }
+      srcStages.lightScreen = 5;
+      addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques especiales!`, 'log-info'); break;
+    case 'safeguard':
+      if (srcStages.safeguard) { addLogFn("¡Pero falló!", 'log-info'); break; }
+      srcStages.safeguard = 5;
+      addLogFn(`¡Tu equipo está protegido contra estados por el Velo Sagrado!`, 'log-info'); break;
+
+    case 'protect':
+      src.protected = true;
+      addLogFn(`¡${src.name} se está protegiendo!`, 'log-info'); break;
+
+    case 'bind':
+      if (tgt.bindTurns) { addLogFn("¡Pero falló!", 'log-info'); break; }
+      tgt.bindTurns = 2 + Math.floor(Math.random() * 4);
+      addLogFn(`¡${tgt.name} ha sido atrapado!`, 'log-info'); break;
+
+    case 'curse':
+      if (src.type === 'ghost' || (Array.isArray(src.type) && src.type.includes('ghost'))) {
+        if (tgt.cursed) { addLogFn("¡Pero falló!", 'log-info'); break; }
+        src.hp = Math.max(0, src.hp - Math.floor(src.maxHp / 2));
+        tgt.cursed = true;
+        addLogFn(`¡${src.name} sacrificó PS para maldecir a ${tgt.name}!`, 'log-player');
+      } else {
+        // Non-ghost curse: +Atk, +Def, -Spe
+        srcStages.atk = Math.min(6, (srcStages.atk || 0) + 1);
+        srcStages.def = Math.min(6, (srcStages.def || 0) + 1);
+        srcStages.spe = Math.max(-6, (srcStages.spe || 0) - 1);
+        addLogFn(`¡Subió el Ataque y la Defensa de ${src.name}, pero bajó su Velocidad!`, 'log-info');
       }
       break;
   }
@@ -1302,6 +1371,29 @@ function applyAbilityEffects(attacker, defender, move, damageResult, addLogFn) {
 }
 
 function applyAbilityTurnEndEffects(pokemon, role, addLogFn) {
+  const b = state.battle;
+  if (pokemon.seeded) {
+      const seedDmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
+      pokemon.hp = Math.max(0, pokemon.hp - seedDmg);
+      const other = (pokemon === b.player) ? b.enemy : b.player;
+      other.hp = Math.min(other.maxHp, other.hp + seedDmg);
+      addLogFn(`¡Las drenadoras de ${pokemon.name} absorbieron salud!`, 'log-info');
+    }
+
+    if (pokemon.bindTurns > 0) {
+      const bindDmg = Math.max(1, Math.floor(pokemon.maxHp / 16));
+      pokemon.hp = Math.max(0, pokemon.hp - bindDmg);
+      pokemon.bindTurns--;
+      addLogFn(`¡${pokemon.name} sufre daño por la trampa!`, 'log-info');
+      if (pokemon.bindTurns === 0) addLogFn(`¡${pokemon.name} se liberó!`, 'log-info');
+    }
+
+    if (pokemon.cursed) {
+      const curseDmg = Math.max(1, Math.floor(pokemon.maxHp / 4));
+      pokemon.hp = Math.max(0, pokemon.hp - curseDmg);
+      addLogFn(`¡${pokemon.name} sufre por la maldición!`, 'log-info');
+    }
+
   const ab = pokemon.ability;
   const logCls = role === 'player' ? 'log-enemy' : role === 'enemy' ? 'log-player' : 'log-info';
 
@@ -1349,7 +1441,12 @@ function playerActsFirst(b, pMove, eMove, enemyWillUseItem = null) {
 
 function useMove(moveIndex) {
   const b = state.battle;
-  if (!b) return;
+  if (!b || b.over) return;
+  
+  // Turn Start Reset
+  b.player.protected = false;
+  b.player.lastPhysDmg = 0;
+  b.player.lastSpecDmg = 0; // Added for Mirror Coat parity later
   if (_battleLock || b.over || b.turn !== 'player') {
     console.warn("useMove blocked:", { _battleLock, over: b.over, turn: b.turn });
     return;
@@ -1557,14 +1654,22 @@ function useMove(moveIndex) {
     if (b.player.ability === 'Ojo Compuesto') acc *= 1.3;
     const evaMult = (b.enemy.ability === 'Velo Arena' && (typeof getDayCycle === 'function' && getDayCycle() === 'day')) ? 1.25 : 1;
     const accStage = (b.playerStages.acc || 0) - (b.enemyStages.eva || 0);
-    const accMult = stageMult(accStage) / evaMult;
-    if (Math.random() * 100 > acc * accMult) {
+    const isAlwaysHit = (md.effect === 'always_hits' || (b.player.ability === 'Indefenso' || b.enemy.ability === 'Indefenso'));
+    const accMult = isAlwaysHit ? 1000 : (accStageMult(accStage) / evaMult);
+    if (!isAlwaysHit && Math.random() * 100 > acc * accMult) {
       addLog(`${b.player.name} usó <strong>${move.name}</strong>... ¡Falló!`, 'log-player');
       setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem }); }, 900);
       return;
     }
 
     addLog(`${b.player.name} usó <strong>${move.name}</strong>!`, 'log-player');
+
+    // Protect check
+    if (b.enemy.protected) {
+      addLog(`¡${b.enemy.name} se protegió!`, 'log-info');
+      setTimeout(() => { enemyAlreadyActed ? _endEnemyTurn() : enemyTurn({ chosenMove: eMove, preDecidedItem: enemyWillUseItem }); }, 900);
+      return;
+    }
 
     // Ability Immunity Check
     if (checkAbilityImmunity(b.player, b.enemy, move, addLog)) {
@@ -1589,7 +1694,10 @@ function useMove(moveIndex) {
 
     // Damage move
     animateAttack('player', () => {
-      const { dmg, eff, stab, isCrit, triggeredAbility, defensiveAbility } = calcDamage(b.player, b.enemy, move, b.playerStages.atk, b.enemyStages.def);
+      // Determine correct stages based on move category (Physical vs Special)
+      const atkS = (md.cat === 'special') ? (b.playerStages.spa || 0) : (b.playerStages.atk || 0);
+      const defS = (md.cat === 'special') ? (b.enemyStages.spd || 0) : (b.enemyStages.def || 0);
+      const { dmg, eff, stab, isCrit, triggeredAbility, defensiveAbility } = calcDamage(b.player, b.enemy, move, atkS, defS);
 
       // Multi-hit moves
       let finalDmg = dmg;
@@ -1631,9 +1739,26 @@ function useMove(moveIndex) {
           if (b.player.ability === 'Encadenado') addLog(`¡Hizo el máximo de golpes por su Encadenado!`, 'log-info');
         }
       }
-      // Seismic Toss: damage = attacker level (Respect immunity)
+      // Seismic Toss / Night Shade
       if (md.levelDmg && eff > 0) finalDmg = b.player.level;
       else if (md.levelDmg && eff === 0) finalDmg = 0;
+      
+      // OHKO moves (Guillotine, Horn Drill, etc.)
+      if (md.ohko) {
+        if (b.player.level >= b.enemy.level) {
+          finalDmg = b.enemy.hp;
+          addLog("¡Es un ataque fulminante!", 'log-info');
+        } else {
+          addLog("¡Pero no afectó al oponente!", 'log-info');
+          finalDmg = 0;
+        }
+      }
+      
+      // Super Fang (halfHP)
+      if (md.halfHP) {
+        finalDmg = Math.max(1, Math.floor(b.enemy.hp / 2));
+      }
+
       // Counter: deal 2× last physical damage taken from enemy
       if (md.counter) finalDmg = (b.player.lastPhysDmg || 0) * 2;
 
@@ -1910,6 +2035,11 @@ function enemyTurn(opts = {}) {
   const b = state.battle;
   if (!b || b.over) return;
 
+  // Turn Start Reset
+  b.enemy.protected = false;
+  b.enemy.lastPhysDmg = 0;
+  b.enemy.lastSpecDmg = 0;
+
   const { endTurn = true, after = null, chosenMove = null, preDecidedItem = null } = opts || {};
   const finish = () => {
     if (after) { after(); return; }
@@ -2078,13 +2208,21 @@ function enemyTurn(opts = {}) {
   let acc = md.acc || 100;
   if (b.enemy.ability === 'Ojo Compuesto') acc *= 1.3;
   const evaMult = (b.player.ability === 'Velo Arena' && (typeof getDayCycle === 'function' && getDayCycle() === 'day')) ? 1.25 : 1;
-  const accMult = stageMult((b.enemyStages.acc || 0) - (b.playerStages.eva || 0)) / evaMult;
-  if (Math.random() * 100 > acc * accMult) {
+  const accStage = (b.enemyStages.acc || 0) - (b.playerStages.eva || 0);
+  const isAlwaysHit = (md.effect === 'always_hits' || (b.enemy.ability === 'Indefenso' || b.player.ability === 'Indefenso'));
+  const accMult = isAlwaysHit ? 1000 : (accStageMult(accStage) / evaMult);
+  if (!isAlwaysHit && Math.random() * 100 > acc * accMult) {
     addLog(`${b.enemy.name} usó <strong>${move.name}</strong>... ¡Falló!`, 'log-enemy');
     finish(); return;
   }
 
   addLog(`${b.enemy.name} usó <strong>${move.name}</strong>!`, 'log-enemy');
+
+  // Protect check
+  if (b.player.protected) {
+    addLog(`¡${b.player.name} se protegió!`, 'log-info');
+    finish(); return;
+  }
 
   // Ability Immunity Check
   if (checkAbilityImmunity(b.enemy, b.player, move, addLog)) {
@@ -2106,8 +2244,27 @@ function enemyTurn(opts = {}) {
   }
 
   animateAttack('enemy', () => {
-    const { dmg, eff, stab, isCrit, triggeredAbility, defensiveAbility } = calcDamage(b.enemy, b.player, move, b.enemyStages.atk, b.playerStages.def);
+    // Determine correct stages based on move category (Physical vs Special)
+    const atkS = (md.cat === 'special') ? (b.enemyStages.spa || 0) : (b.enemyStages.atk || 0);
+    const defS = (md.cat === 'special') ? (b.playerStages.spd || 0) : (b.playerStages.def || 0);
+    const { dmg, eff, stab, isCrit, triggeredAbility, defensiveAbility } = calcDamage(b.enemy, b.player, move, atkS, defS);
     let finalDmg = dmg;
+    
+    // Magnitude logic for enemy (Parity with player)
+    if (md.effect === 'magnitude') {
+      const magnitudes = [
+        { mag: 4, pow: 10, prob: 5 }, { mag: 5, pow: 30, prob: 10 }, { mag: 6, pow: 50, prob: 20 },
+        { mag: 7, pow: 70, prob: 30 }, { mag: 8, pow: 90, prob: 20 }, { mag: 9, pow: 110, prob: 10 },
+        { mag: 10, pow: 150, prob: 5 }
+      ];
+      let rollMag = Math.random() * 100;
+      let selected = magnitudes[3];
+      let sum = 0;
+      for (const m of magnitudes) { sum += m.prob; if (rollMag <= sum) { selected = m; break; } }
+      addLog(`¡Magnitud ${selected.mag}!`, 'log-info');
+      const magRes = calcDamage(b.enemy, b.player, { name: move.name, power: selected.pow }, atkS, defS);
+      finalDmg = magRes.dmg;
+    }
     if (md.hits) {
       const _MULTIHIT_TABLE = [2, 2, 2, 3, 3, 3, 4, 5];
       let numHits = (md.hits === 2) ? 2 : _MULTIHIT_TABLE[Math.floor(Math.random() * _MULTIHIT_TABLE.length)];
@@ -2123,9 +2280,26 @@ function enemyTurn(opts = {}) {
         if (b.enemy.ability === 'Encadenado') addLog(`¡Hizo el máximo de golpes por su Encadenado!`, 'log-info');
       }
     }
-    // Seismic Toss: damage = attacker level (Respect immunity)
+    // Seismic Toss / Night Shade
     if (md.levelDmg && eff > 0) finalDmg = b.enemy.level;
     else if (md.levelDmg && eff === 0) finalDmg = 0;
+    
+    // OHKO moves
+    if (md.ohko) {
+      if (b.enemy.level >= b.player.level) {
+        finalDmg = b.player.hp;
+        addLog("¡Es un ataque fulminante!", 'log-info');
+      } else {
+        addLog("¡Pero no afectó al oponente!", 'log-info');
+        finalDmg = 0;
+      }
+    }
+    
+    // Super Fang (halfHP)
+    if (md.halfHP) {
+      finalDmg = Math.max(1, Math.floor(b.player.hp / 2));
+    }
+
     // Counter: deal 2× last physical damage taken from player
     if (md.counter) finalDmg = (b.enemy.lastPhysDmg || 0) * 2;
 
@@ -2265,6 +2439,64 @@ function _endEnemyTurn() {
         if (stopIfFainted()) return;
       }
     }
+
+    if (dirty) updateBattleUI();
+
+    // Weather Tick
+    if (b.weather && b.weather.turns > 0) {
+      b.weather.turns--;
+      if (b.weather.turns === 0) {
+        let msg = "¡El clima volvió a la normalidad!";
+        if (b.weather.type === 'sandstorm') msg = "¡La tormenta de arena amainó!";
+        else if (b.weather.type === 'hail') msg = "¡Dejó de granizar!";
+        else if (b.weather.type === 'sun') msg = "¡El sol se ocultó!";
+        else if (b.weather.type === 'rain') msg = "¡Dejó de llover!";
+        addLog(msg, 'log-info');
+        b.weather = null;
+      } else {
+        // Passive weather damage
+        if (b.weather.type === 'sandstorm' || b.weather.type === 'hail') {
+          for (const role of ['player', 'enemy']) {
+            const p = getPoke(role);
+            if (p.hp <= 0) continue;
+            // Immunity: Rock/Ground/Steel for Sandstorm, Ice for Hail
+            const isImmune = (b.weather.type === 'sandstorm' && ['rock','ground','steel'].some(t => p.type === t || p.type2 === t)) || (b.weather.type === 'hail' && (p.type === 'ice' || p.type2 === t));
+            if (!isImmune) {
+              const wDmg = Math.max(1, Math.floor(p.maxHp / 16));
+              p.hp = Math.max(0, p.hp - wDmg);
+              addLog(`¡${p.name} recibe daño por el clima!`, 'log-info');
+              if (role === 'player') {
+                const teamIdx = state.team.findIndex(p => p.name === b.player.name);
+                if (teamIdx !== -1) state.team[teamIdx].hp = b.player.hp;
+              }
+              dirty = true;
+            }
+          }
+        }
+      }
+    }
+
+    // Screens Decay
+    const decayScreen = (stages, pName) => {
+      if (stages.reflect > 0) {
+        stages.reflect--;
+        if (stages.reflect === 0) addLog(`¡El Reflejo de ${pName} desapareció!`, 'log-info');
+      }
+      if (stages.lightScreen > 0) {
+        stages.lightScreen--;
+        if (stages.lightScreen === 0) addLog(`¡La Pantalla de Luz de ${pName} desapareció!`, 'log-info');
+      }
+      if (stages.safeguard > 0) {
+        stages.safeguard--;
+        if (stages.safeguard === 0) addLog(`¡El Velo Sagrado de ${pName} desapareció!`, 'log-info');
+      }
+    };
+    decayScreen(b.playerStages, b.player.name);
+    decayScreen(b.enemyStages, b.enemy.name);
+
+    // Reset Protect for next turn
+    b.player.protected = false;
+    b.enemy.protected = false;
 
     if (dirty) updateBattleUI();
   }
