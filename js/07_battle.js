@@ -654,10 +654,10 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
 
   // Screens (Reflect / Light Screen)
   let screenMult = 1;
-  const defStages = (defender === b?.player) ? b.playerStages : b.enemyStages;
-  if (defStages) {
-    if (isPhysical && defStages.reflect) screenMult = 0.5;
-    else if (!isPhysical && defStages.lightScreen) screenMult = 0.5;
+  const targetStages = (defender === b?.player) ? b.playerStages : b.enemyStages;
+  if (targetStages) {
+    if (isPhysical && targetStages.reflect) screenMult = 0.5;
+    else if (!isPhysical && targetStages.lightScreen) screenMult = 0.5;
   }
 
   const random = 0.85 + Math.random() * 0.15;
