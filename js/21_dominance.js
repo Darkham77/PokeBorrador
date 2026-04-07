@@ -153,8 +153,9 @@ function getAllowedPointsWithCap(mapId, pts) {
   return allowed;
 }
 
+// Devuelve la cantidad de monedas realmente sumadas (0 si el límite ya estaba alcanzado)
 function addWarCoinsLocal(coins) {
-  if (coins <= 0) return;
+  if (coins <= 0) return 0;
   
   // Lógica de límite diario (Máximo 50 monedas por día)
   const today = new Date().toDateString();
@@ -168,14 +169,14 @@ function addWarCoinsLocal(coins) {
   if (!state.warDailyCoins[today]) state.warDailyCoins[today] = 0;
   
   const currentDaily = state.warDailyCoins[today];
-  if (currentDaily >= 50) return; // Ya alcanzó el límite
+  if (currentDaily >= 50) return 0; // Ya alcanzó el límite
   
   let allowedCoins = coins;
   if (currentDaily + coins > 50) {
     allowedCoins = 50 - currentDaily;
   }
   
-  if (allowedCoins <= 0) return;
+  if (allowedCoins <= 0) return 0;
 
   if (typeof state.warCoins !== 'number') state.warCoins = 0;
   state.warCoins += allowedCoins;
@@ -183,9 +184,12 @@ function addWarCoinsLocal(coins) {
   
   if (typeof scheduleSave === 'function') scheduleSave();
   
+  // Notificar al llegar exactamente al límite (solo 1 vez por día)
   if (state.warDailyCoins[today] >= 50) {
-    notify('Has alcanzado el límite diario de 50 Monedas de Guerra.', '⚡');
+    notify('¡Límite diario alcanzado! Ya no podés ganar más Monedas de Guerra hoy.', '⚡');
   }
+
+  return allowedCoins;
 }
 
 async function addWarPoints(mapId, eventType, success, overridePts = null) {
@@ -208,6 +212,24 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
   if (overridePts !== null) pts = overridePts;
 
   if (pts <= 0) return;
+
+  // Verificar cap diario de PT para este mapa (300 PT/mapa/día)
+  const today = new Date().toDateString();
+  if (!state.warDailyCap) state.warDailyCap = {};
+  if (!state.warDailyCap[today]) state.warDailyCap[today] = {};
+  const currentMapPts = state.warDailyCap[today][mapId] || 0;
+  if (currentMapPts >= 300) {
+    // Notificar solo una vez por mapa por día
+    if (!state.warDailyCapNotified) state.warDailyCapNotified = {};
+    if (!state.warDailyCapNotified[today]) state.warDailyCapNotified[today] = {};
+    if (!state.warDailyCapNotified[today][mapId]) {
+      state.warDailyCapNotified[today][mapId] = true;
+      const mapName = (window.FIRE_RED_MAPS || []).find(m => m.id === mapId)?.name || mapId;
+      notify(`Ya no podés aportar más Puntos de Dominancia en ${mapName} por hoy.`, '🚫');
+    }
+    return;
+  }
+
   const allowedPts = getAllowedPointsWithCap(mapId, pts);
   if (allowedPts <= 0) return;
   
@@ -216,15 +238,16 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
 
   try {
     // 1. Registro Global/Bando
-    await window.sb.rpc('add_war_points', {
+    const { error: rpcError } = await window.sb.rpc('add_war_points', {
       p_week_id: weekId,
       p_map_id: mapId,
       p_faction: state.faction,
       p_points: allowedPts
     });
-    
-    // 2. Registro Individual (para cálculo de Defensores de Fin de Semana)
-    const { data: currentEntry } = await window.sb
+    if (rpcError) console.error('[WAR] Error en add_war_points RPC:', rpcError);
+
+    // 2. Registro Individual (acumulativo, con errores visibles)
+    const { data: existing, error: selErr } = await window.sb
       .from('war_user_points')
       .select('points')
       .eq('user_id', window.currentUser.id)
@@ -232,30 +255,65 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
       .eq('map_id', mapId)
       .maybeSingle();
 
-    if (currentEntry) {
-      await window.sb.from('war_user_points')
-        .update({ points: currentEntry.points + allowedPts })
+    if (selErr) {
+      console.error('[WAR] Error al leer war_user_points:', selErr);
+    } else if (existing) {
+      const { error: updErr } = await window.sb
+        .from('war_user_points')
+        .update({ points: existing.points + allowedPts })
         .eq('user_id', window.currentUser.id)
         .eq('week_id', weekId)
         .eq('map_id', mapId);
+      if (updErr) console.error('[WAR] Error al actualizar war_user_points:', updErr);
     } else {
-      await window.sb.from('war_user_points').insert({
-        user_id: window.currentUser.id,
-        week_id: weekId,
-        map_id: mapId,
-        points: allowedPts
-      });
+      const { error: insErr } = await window.sb
+        .from('war_user_points')
+        .insert({
+          user_id: window.currentUser.id,
+          week_id: weekId,
+          map_id: mapId,
+          points: allowedPts
+        });
+      if (insErr) console.error('[WAR] Error al insertar war_user_points:', insErr);
     }
 
-    // Nueva Lógica de Monedas Acumulativas
+    // Actualizar acumulador local inmediatamente (fallback si BD falla)
+    if (!state.warMyPtsLocal) state.warMyPtsLocal = {};
+    if (!state.warMyPtsLocal[weekId]) state.warMyPtsLocal[weekId] = 0;
+    state.warMyPtsLocal[weekId] += allowedPts;
+    // Limpiar semanas anteriores
+    Object.keys(state.warMyPtsLocal).forEach(wk => { if (wk !== weekId) delete state.warMyPtsLocal[wk]; });
+    if (typeof scheduleSave === 'function') scheduleSave();
+
+    // Lógica de Monedas Acumulativas
     if (!state.warPointsAccumulator) state.warPointsAccumulator = 0;
     state.warPointsAccumulator += allowedPts;
     
     if (state.warPointsAccumulator >= 10) {
       const newCoins = Math.floor(state.warPointsAccumulator / 10);
-      addWarCoinsLocal(newCoins);
+      const coinsActuallyAdded = addWarCoinsLocal(newCoins);
       state.warPointsAccumulator %= 10;
-      notify(`¡Ganaste ${newCoins} Moneda${newCoins>1?'s':''} de Guerra!`, '⚡');
+
+      // Verificar si ya estábamos en el límite ANTES de intentar sumar
+      const todayStr = new Date().toDateString();
+      const dailyTotal = state.warDailyCoins?.[todayStr] || 0;
+
+      if (coinsActuallyAdded > 0) {
+        // Se sumaron monedas normalmente
+        if (dailyTotal < 50) {
+          notify(`¡Ganaste ${coinsActuallyAdded} Moneda${coinsActuallyAdded > 1 ? 's' : ''} de Guerra!`, '⚡');
+        }
+        // Si dailyTotal >= 50, addWarCoinsLocal ya mostró el aviso de límite alcanzado
+      } else {
+        // No se sumó ninguna moneda porque el límite ya estaba alcanzado
+        if (!state.warCoinCapNotifiedToday) {
+          state.warCoinCapNotifiedToday = todayStr;
+          notify('¡Límite diario alcanzado! No más Monedas de Guerra hasta mañana.', '🚫');
+        } else if (state.warCoinCapNotifiedToday !== todayStr) {
+          // Nuevo día, resetear flag
+          state.warCoinCapNotifiedToday = null;
+        }
+      }
     }
     
     // Refrescar panel si está abierto
@@ -741,10 +799,23 @@ async function renderWarPanel() {
         else limitDisp.style.color = 'rgba(255,214,10,0.6)';
       }
 
-      // Mi contribución individual (Aporte Semanal real de todos los mapas)
-      const myContr = await calculateUserWeeklyContribution();
+      // Mi contribución individual — primero mostramos el local, luego actualizamos desde BD
+      const weekIdNow = getCurrentWeekId();
+      const localPts = (state.warMyPtsLocal?.[weekIdNow]) || 0;
       const myContrDisp = document.getElementById('war-my-pts');
-      if (myContrDisp) myContrDisp.textContent = myContr.toLocaleString() + " PT";
+      if (myContrDisp && localPts > 0) myContrDisp.textContent = localPts.toLocaleString() + ' PT';
+
+      // Consultar BD en paralelo y actualizar si el valor es mayor
+      const myContr = await calculateUserWeeklyContribution();
+      if (myContrDisp) {
+        const finalPts = Math.max(myContr, localPts);
+        myContrDisp.textContent = finalPts.toLocaleString() + ' PT';
+        // Sincronizar local si la BD tiene más (ej. sesión anterior)
+        if (myContr > localPts) {
+          if (!state.warMyPtsLocal) state.warMyPtsLocal = {};
+          state.warMyPtsLocal[weekIdNow] = myContr;
+        }
+      }
 
       // Slots de defensa (1 cada 4000 PT)
       const slots = getDefenseSlots(myContr);

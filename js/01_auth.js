@@ -425,7 +425,8 @@
         warCoins: state.warCoins || 0,
         warCoinsSpent: state.warCoinsSpent || 0,
         warDailyCap: state.warDailyCap || {},
-        warDailyCoins: state.warDailyCoins || {}
+        warDailyCoins: state.warDailyCoins || {},
+        warMyPtsLocal: state.warMyPtsLocal || {}
       };
     }
 

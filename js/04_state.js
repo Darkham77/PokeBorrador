@@ -216,7 +216,8 @@
       warCoins: 0,            // monedas de guerra acumuladas
       warCoinsSpent: 0,       // monedas gastadas
       warDailyCap: {},        // tope diario por mapa { "Mon Apr 01 2024": { "route1": 500 } }
-      warDailyCoins: {}       // tope diario de monedas { "Mon Apr 01 2024": 50 }
+      warDailyCoins: {},      // tope diario de monedas { "Mon Apr 01 2024": 50 }
+      warMyPtsLocal: {}       // acumulador local de PT aportados { "2024-W15": 42 }
     };
 
     let state = JSON.parse(JSON.stringify(INITIAL_STATE));
