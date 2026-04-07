@@ -2941,6 +2941,41 @@
         right: 10px;
       }
 
+      /* ── Sprites en móvil: quitar posición absoluta y fluir dentro del card ── */
+      .location-card {
+        min-height: 190px;
+      }
+
+      .location-spawns {
+        position: static !important;
+        /* Desacoplar del fondo absoluto; se convierte en el último item del flexbox */
+        margin-top: auto;
+        padding-top: 6px;
+        width: 100%;
+        align-items: flex-end;
+        gap: 3px;
+      }
+
+      .spawn-row,
+      .cycle-specific-spawns {
+        gap: 2px;
+        justify-content: flex-end;
+      }
+
+      /* Sprites más pequeños en móvil para que quepan sin invadir */
+      .spawn-row img,
+      .location-spawns img {
+        width: 38px !important;
+        height: 38px !important;
+      }
+
+      .fishing-rod {
+        /* El icono de caña de pesca queda absoluto pero más arriba para no chocar */
+        bottom: auto;
+        top: 10px;
+        left: 10px;
+      }
+
       /* ── Batalla ── */
       #battle-screen {
         padding-bottom: 0;
