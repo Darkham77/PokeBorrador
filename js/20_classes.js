@@ -978,9 +978,10 @@ function sellPokemonBlackMarket(pokemon, boxIndex) {
 
 function confirmBlackMarketSell(boxIndex, price) {
   document.getElementById('black-market-sell-modal')?.remove();
-  if (boxIndex < 0 || boxIndex >= (state.box || []).length) return;
-
+  const p = state.box[boxIndex];
+  if (p) returnHeldItem(p);
   state.box.splice(boxIndex, 1);
+
   state.money = (state.money || 0) + price;
   state.classData = state.classData || {};
   state.classData.blackMarketSales = (state.classData.blackMarketSales || 0) + 1;
@@ -1437,12 +1438,15 @@ function _openRocketSacrificeModal(missionId, info) {
     if (selected.length < info.pokReq) return;
     // Devolver objetos a la mochila
     selected.forEach(p => {
-      if (p.heldItem) {
+      if (typeof returnHeldItem === 'function') {
+        returnHeldItem(p);
+      } else if (p.heldItem) {
         state.inventory = state.inventory || {};
         state.inventory[p.heldItem] = (state.inventory[p.heldItem] || 0) + 1;
         p.heldItem = null;
       }
       // Eliminar de box
+
       const bIdx = (state.box || []).indexOf(p);
       if (bIdx >= 0) state.box.splice(bIdx, 1);
     });

@@ -1605,13 +1605,20 @@ function confirmMissionDelivery(uid, missionIdx) {
     
     let idx = state.team.findIndex(p => p.uid === uid);
     if (idx !== -1) {
+        const p = state.team[idx];
         if (state.team.length <= 1) { notify('No puedes entregar tu único Pokémon.', '❌'); return; }
+        returnHeldItem(p);
         state.team.splice(idx, 1);
     } else {
         idx = (state.box || []).findIndex(p => p.uid === uid);
-        if (idx !== -1) state.box.splice(idx, 1);
+        if (idx !== -1) {
+            const p = state.box[idx];
+            returnHeldItem(p);
+            state.box.splice(idx, 1);
+        }
         else return;
     }
+
     
     const m = state.daycare_missions[missionIdx];
     m.completed = true;

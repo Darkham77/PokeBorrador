@@ -13,6 +13,22 @@
       'F': { min: 0, max: 55, color: '#FF3B3B', bg: 'rgba(255,59,59,0.14)', label: 'F' },
     };
 
+    /**
+     * Helper to return a pokemon held item to the inventory.
+     * To be used before releasing or sacrificing a pokemon.
+     */
+    window.returnHeldItem = function(p) {
+      if (p && p.heldItem) {
+        if (!state.inventory) state.inventory = {};
+        state.inventory[p.heldItem] = (state.inventory[p.heldItem] || 0) + 1;
+        const itemName = p.heldItem;
+        p.heldItem = null;
+        return itemName;
+      }
+      return null;
+    };
+
+
     function getPokemonTier(p) {
       const ivs = p.ivs || {};
       const total = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
@@ -256,9 +272,14 @@
       const indices = [..._boxReleaseSelected].sort((a, b) => b - a);
       const releasedNames = [];
       indices.forEach(i => {
-        releasedNames.push(state.box[i].name);
-        state.box.splice(i, 1);
+        const p = state.box[i];
+        if (p) {
+          releasedNames.push(p.name);
+          returnHeldItem(p);
+          state.box.splice(i, 1);
+        }
       });
+
 
       _boxReleaseMode = false;
       toggleBoxReleaseMode();
@@ -349,8 +370,13 @@
       const count = indices.length;
       
       indices.forEach(i => {
-        state.box.splice(i, 1);
+        const p = state.box[i];
+        if (p) {
+          returnHeldItem(p);
+          state.box.splice(i, 1);
+        }
       });
+
 
       state.money = (state.money || 0) + totalPrice;
       state.classData = state.classData || {};
@@ -776,7 +802,9 @@
       if (p?.inDaycare) { notify(`¡${p.name} está en la Guardería! No se puede soltar.`, '🏡'); return; }
       if (!confirm(`¿Soltar a ${p.name} definitivamente?`)) return;
       document.getElementById('box-menu-overlay')?.remove();
+      returnHeldItem(p);
       state.box.splice(boxIndex, 1);
+
       renderBox();
       scheduleSave();
       notify(`${p.name} fue liberado.`, '🌿');
