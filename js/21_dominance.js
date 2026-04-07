@@ -468,6 +468,10 @@ async function distributeWeeklyWarCoins(weekId) {
 }
 
 // ── SISTEMA DE GUARDIANES ──
+function getArgentinaDateString() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' });
+}
+
 const GUARDIAN_POOL = {
   common: [
     { id: 'arcanine',   lv: 45, pts: 150 }, { id: 'pidgeot',    lv: 42, pts: 150 },
@@ -508,7 +512,7 @@ function isConflictZone(mapId) {
   const maps = window.FIRE_RED_MAPS || [];
   if (maps.length === 0) return false;
   
-  const dateStr = new Date().toISOString().split('T')[0];
+  const dateStr = getArgentinaDateString();
   const allMapIds = maps.map(m => m.id);
   const zones = [];
   let tempSeed = hashString(dateStr + "zones");
@@ -525,7 +529,7 @@ function isConflictZone(mapId) {
 function getGuardianForMap(mapId) {
   if (!isConflictZone(mapId)) return null;
 
-  const dateStr = new Date().toISOString().split('T')[0];
+  const dateStr = getArgentinaDateString();
   const seed = hashString(dateStr + mapId);
   
   const rarityRand = (seed % 100);
@@ -541,7 +545,7 @@ function getGuardianForMap(mapId) {
 const GUARDIAN_CHANCE = 0.015; // Reducido de 3% a 1.5% 
 
 async function loadDailyGuardianCaptures() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getArgentinaDateString();
   const { data, error } = await window.sb
     .from('guardian_captures')
     .select('map_id')
@@ -561,7 +565,7 @@ async function checkGuardianAppearance(mapId) {
   if (state.dailyGuardianCaptures) {
     if (state.dailyGuardianCaptures.includes(mapId)) return false;
   } else {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getArgentinaDateString();
     const { data } = await window.sb
       .from('guardian_captures')
       .select('id')
@@ -604,7 +608,7 @@ function showGuardianAnnouncement(guardianData) {
 
 async function claimGuardianCapture(mapId, pokemon) {
   const userId = window.currentUser?.id;
-  const today = new Date().toISOString().split('T')[0];
+  const today = getArgentinaDateString();
 
   const guardianData = getGuardianForMap(mapId);
   if (!guardianData) return false;
@@ -638,7 +642,7 @@ async function claimGuardianCapture(mapId, pokemon) {
 
 async function recordGuardianDefeat(mapId, ptsAwarded) {
   const userId = window.currentUser?.id;
-  const today = new Date().toISOString().split('T')[0];
+  const today = getArgentinaDateString();
 
   await window.sb
     .from('guardian_captures')
