@@ -1702,7 +1702,8 @@
       display: flex !important;
     }
 
-    #battle-screen .battle-container {
+    #battle-screen .battle-container,
+    #pvp-overlay .battle-container {
       width: 95%;
       max-width: 800px;
       max-height: 96vh;
@@ -1795,6 +1796,7 @@
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
+        width: 100%;
       }
 
       .action-row {

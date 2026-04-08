@@ -348,17 +348,17 @@
 
       // Usamos las clases oficiales .battle-container para asegurar responsividad móvil automática
       ov.innerHTML = `
-      <div class="battle-container" style="height:auto; max-height:98vh; overflow:visible;">
+      <div class="battle-container">
         <!-- Arena -->
         <div class="battle-arena" id="pvp-arena" style="position:relative; overflow:hidden;">
           <canvas id="pvp-battle-bg-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;border-radius:18px;"></canvas>
           
           <!-- Ranked Overlay Indicator -->
-          <div style="position:absolute; top:12px; left:12px; z-index:20; pointer-events:none; display:flex; flex-direction:column; gap:4px;">
-             <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:var(--purple); background:rgba(0,0,0,0.6); padding:6px 10px; border-radius:8px; border:1px solid rgba(199,125,255,0.3); backdrop-filter:blur(4px);">
-                ⚔️ PvP ${_pvpState.isRanked ? 'RANKED' : 'AMISTOSO'}
+          <div style="position:absolute; top:8px; left:8px; z-index:20; pointer-events:none; display:flex; flex-direction:column; gap:4px; opacity:0.8;">
+             <div style="font-family:'Press Start 2P',monospace; font-size:6.5px; color:#fff; background:rgba(199,125,255,0.4); padding:4px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(4px);">
+                ⚔️ ${_pvpState.isRanked ? 'RANKED' : 'AMISTOSO'}
              </div>
-             <div id="pvp-status-msg" style="font-size:9px; color:var(--yellow); font-weight:700; background:rgba(0,0,0,0.5); padding:4px 8px; border-radius:6px; display:inline-block;">⏳ Conectando...</div>
+             <div id="pvp-status-msg" style="font-size:8px; color:var(--yellow); font-weight:700; background:rgba(0,0,0,0.4); padding:3px 6px; border-radius:4px; display:inline-block;">⏳ Conectando...</div>
           </div>
 
           <div class="battle-combatants">
