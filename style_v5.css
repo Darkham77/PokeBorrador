@@ -1852,16 +1852,14 @@
         grid-template-columns: 1fr 1fr !important;
         gap: 8px !important;
         width: 100% !important;
-      }
-
       /* Massive sprites in PvP on PC - Perspective parity with standard battle */
       #pvp-player-img {
-        height: 350px !important;
+        height: 310px !important;
         width: auto !important;
-        min-height: 350px !important;
+        min-height: 310px !important;
         z-index: 5;
         image-rendering: pixelated;
-        transform: none !important; /* Remove displacement to match background perspective */
+        transform: none !important; 
       }
       
       #pvp-enemy-img {
@@ -1869,19 +1867,23 @@
         width: auto !important;
         min-height: 250px !important;
         image-rendering: pixelated;
-        transform: none !important; /* Keep aligned with standard battle ground */
+        transform: none !important; 
       }
       
       .battle-arena#pvp-arena {
         height: 520px !important;
       }
-
-      /* Match HP box styling exactly */
+ 
+      /* Match HP box styling exactly - Elevated for visibility over large sprites */
       #pvp-overlay .battle-pokemon-info {
         min-width: 180px;
-        background: rgba(15, 23, 42, 0.7) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+        background: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+        z-index: 20 !important; /* Always on top of sprites */
+        position: relative;
+      }
+
       }
     }
 
