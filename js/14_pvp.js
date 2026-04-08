@@ -633,9 +633,11 @@
         const moveName = move?.name || '???';
         const md = MOVE_DATA[moveName] || { power: move?.power || 40, type: 'normal', cat: 'physical', acc: 100 };
 
+        const effectLog = [];
+
         // Status prevents moving
         if (attacker.status === 'sleep') {
-          if ((attacker.sleepTurns || 0) > 0) { attacker.sleepTurns--; return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'sleep', damage: 0, eff: 1, faintedTarget: false }; }
+          if ((attacker.sleepTurns || 0) > 0) { attacker.sleepTurns--; return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'sleep', damage: 0, eff: 1, effectLog }; }
           attacker.status = null;
         }
         // Flinch
