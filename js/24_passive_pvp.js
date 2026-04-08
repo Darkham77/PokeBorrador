@@ -276,6 +276,9 @@ async function savePassiveTeam(active = true) {
       user_id: currentUser.id, team_data: [], elo_rating: state.eloRating || 1000, is_active: false, updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
     if (error) { notify('Error desactivando', '❌'); return; }
+    
+    state.passiveTeamActive = false;
+    renderPassiveTeamPreview();
     notify('Equipo pasivo desactivado', '🔴');
     return;
   }
