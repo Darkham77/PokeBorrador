@@ -214,13 +214,23 @@
       ch
         .on('broadcast', { event: 'pvp_team' }, ({ payload }) => {
           ch.send({ type: 'broadcast', event: 'pvp_team_ack', payload: {} });
-          if (_pvpState.enemyTeam) return;
           _pvpState.enemyTeam = payload.team;
           _pvpState.enemyHp = payload.team.map(p => p.hp);
           _pvpState.phase = 'choosing';
           renderPvpBattle();
           _pvpLoadSprites();
           addPvpLog('¡Batalla iniciada!', 'log-info');
+          
+          // Entry abilities at start
+          if (typeof handleEntryAbilities === 'function') {
+            handleEntryAbilities(
+              _pvpState.myTeam[_pvpState.myActive], 
+              _pvpState.enemyTeam[_pvpState.enemyActive],
+              _pvpState.myStages,
+              _pvpState.enemyStages,
+              (m, c) => addPvpLog(m, c)
+            );
+          }
         })
         .on('broadcast', { event: 'pvp_team_ack' }, () => { _pvpState._teamAcknowledged = true; })
         .on('broadcast', { event: 'pvp_sync_request' }, () => {
@@ -260,6 +270,17 @@
           if (_pvpState.over) return;
           _pvpState.enemyActive = payload.index;
           _pvpUpdateEnemy();
+          
+          // Entry abilities on forced switch
+          if (typeof handleEntryAbilities === 'function') {
+             handleEntryAbilities(
+              _pvpState.myTeam[_pvpState.myActive], 
+              _pvpState.enemyTeam[_pvpState.enemyActive],
+              _pvpState.myStages,
+              _pvpState.enemyStages,
+              (m, c) => addPvpLog(m, c)
+            );
+          }
           if (_pvpState.phase === 'faint_switch') {
             _pvpState.phase = 'choosing'; _pvpState.myPick = null;
             if (_pvpState.isHost) _pvpState.enemyPick = null;
@@ -282,12 +303,12 @@
 
     function _pvpStartHeartbeatLoop() {
       const hb = setInterval(() => {
-        if (_pvpState.over) { clearInterval(hb); return; }
+        if (!_pvpState || _pvpState.over) { clearInterval(hb); return; }
         _pvpState.channel.send({ type: 'broadcast', event: 'pvp_heartbeat', payload: {} });
       }, 5000);
 
       const cd = setInterval(() => {
-        if (_pvpState.over) { clearInterval(cd); return; }
+        if (!_pvpState || _pvpState.over) { clearInterval(cd); return; }
         const diff = Date.now() - _pvpState._lastActivityTime;
         if (diff > 10000 && !_pvpState._opponentDisconnected) {
           _pvpState._opponentDisconnected = true;
@@ -295,7 +316,7 @@
           addPvpLog('⚠️ Rival desconectado...', 'log-enemy');
           renderPvpBattle();
           _pvpState._disconnectTimer = setTimeout(() => {
-            if (_pvpState.over || !_pvpState._opponentDisconnected) return;
+            if (!_pvpState || _pvpState.over || !_pvpState._opponentDisconnected) return;
             addPvpLog('🏳️ Victoria por abandono.', 'log-info');
             pvpEnd(true);
           }, 60000);
@@ -617,32 +638,93 @@
           if ((attacker.sleepTurns || 0) > 0) { attacker.sleepTurns--; return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'sleep', damage: 0, eff: 1, faintedTarget: false }; }
           attacker.status = null;
         }
-        if (attacker.status === 'freeze') {
-          if (Math.random() < 0.8) return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'freeze', damage: 0, eff: 1, faintedTarget: false };
-          attacker.status = null;
+        // Flinch
+        if (attacker.flinched) {
+          attacker.flinched = false; // Reset
+          return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'flinch', damage: 0, eff: 1 };
         }
+
+        // Confusion
+        if (attacker.confused > 0) {
+          attacker.confused--;
+          if (attacker.confused === 0) {
+            effectLog.push(`¡${attacker.name} ya no está confundido!`);
+          } else {
+            effectLog.push(`¡${attacker.name} está confundido!`);
+            if (Math.random() < 0.5) {
+              const confDmg = Math.max(1, Math.floor(((2 * attacker.level / 5 + 2) * 40 * attacker.atk / attacker.def) / 50) + 2);
+              const curHp = actorIsHost ? s.myHp[s.myActive] : s.enemyHp[s.enemyActive];
+              const newHp = Math.max(0, curHp - confDmg);
+              return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'confused_self', damage: confDmg, newAtkHp: newHp, effectLog };
+            }
+          }
+        }
+
+        // Frozen
+        if (attacker.status === 'freeze') {
+          if (Math.random() < 0.8) return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'freeze', damage: 0, eff: 1 };
+          attacker.status = null;
+          effectLog.push(`¡${attacker.name} se ha descongelado!`);
+        }
+        
+        // Sleep
+        if (attacker.status === 'sleep') {
+          attacker.sleepTurns = (attacker.sleepTurns || 1) - 1;
+          if (attacker.sleepTurns > 0) return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'sleep', damage: 0, eff: 1 };
+          attacker.status = null;
+          effectLog.push(`¡${attacker.name} se despertó!`);
+        }
+
+        // Paralysis
         if (attacker.status === 'paralyze' && Math.random() < 0.25) {
-          return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'paralyze', damage: 0, eff: 1, faintedTarget: false };
+          return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'paralyze', damage: 0, eff: 1 };
+        }
+
+        // Mock context for immunity/damage
+        const pvpCtx = {
+          player: actorIsHost ? attacker : defender,
+          enemy: actorIsHost ? defender : attacker,
+          playerStages: actorIsHost ? atkS : defS,
+          enemyStages: actorIsHost ? defS : atkS,
+          weather: null
+        };
+
+        // Ability Immunity
+        if (typeof checkAbilityImmunity === 'function') {
+          if (checkAbilityImmunity(attacker, defender, { name: moveName }, m => effectLog.push(m), pvpCtx)) {
+            return { type: 'move', moveName, actorIsHost, actorName, targName, damage: 0, eff: 1, effectLog };
+          }
         }
 
         // Accuracy
         if (md.acc && Math.random() * 100 > (md.acc) * stageMult(atkS.acc || 0)) {
-          return { type: 'move', moveName, actorIsHost, actorName, targName, missed: true, damage: 0, eff: 1, faintedTarget: false };
+          return { type: 'move', moveName, actorIsHost, actorName, targName, missed: true, damage: 0, eff: 1 };
         }
 
         if (md.cat === 'status') {
-          const effectLog = [];
-          applyMoveEffect(md.effect, attacker, defender, atkS, defS, m => effectLog.push(m));
-          return { type: 'move', moveName, actorIsHost, actorName, targName, isStatus: true, damage: 0, eff: 1, faintedTarget: false, effectLog };
+          applyMoveEffect(md.effect, attacker, defender, atkS, defS, m => effectLog.push(m), pvpCtx);
+          return { type: 'move', moveName, actorIsHost, actorName, targName, isStatus: true, damage: 0, eff: 1, effectLog };
         }
 
-        const { dmg, eff } = calcDamage(attacker, defender, move, atkS.atk || 0, defS.def || 0);
-        // Tentative new HP (don't apply yet)
+        const { dmg, eff, triggeredAbility, defensiveAbility } = calcDamage(attacker, defender, move, atkS.atk || 0, defS.def || 0, pvpCtx);
+        
+        // Secondary effects for damage moves
+        if (md.effect && md.effect !== 'none') {
+          applyMoveEffect(md.effect, attacker, defender, atkS, defS, m => effectLog.push(m), pvpCtx);
+        }
+
+        // Tentative new HP
         const defHpArr = actorIsHost ? s.enemyHp : s.myHp;
         const defActIdx = actorIsHost ? s.enemyActive : s.myActive;
         const curHp = defHpArr[defActIdx] ?? defender.hp;
         const newHp = Math.max(0, curHp - dmg);
-        return { type: 'move', moveName, actorIsHost, actorName, targName, missed: false, damage: dmg, eff, newDefHp: newHp, faintedTarget: newHp <= 0 };
+        
+        return { 
+          type: 'move', moveName, actorIsHost, actorName, targName, 
+          missed: false, damage: dmg, eff, newDefHp: newHp, 
+          faintedTarget: newHp <= 0, triggeredAbility, defensiveAbility, 
+          effectLog 
+        };
       }
 
       // ── Run first action ─────────────────────────────────────
@@ -758,10 +840,35 @@
             if (myAction) _pvpUpdateMyPokemon();
             else _pvpUpdateEnemy();
 
+            // Entry abilities on manual switch
+            if (typeof handleEntryAbilities === 'function') {
+               handleEntryAbilities(
+                _pvpState.myTeam[_pvpState.myActive], 
+                _pvpState.enemyTeam[_pvpState.enemyActive],
+                _pvpState.myStages,
+                _pvpState.enemyStages,
+                (m, c) => addPvpLog(m, c)
+              );
+            }
+
           } else if (action.statusBlocked) {
-            const statusMsg = { sleep: 'está dormido', freeze: 'está congelado', paralyze: 'está paralizado' };
+            const statusMsg = { 
+              sleep: 'está dormido', 
+              freeze: 'está congelado', 
+              paralyze: 'está paralizado',
+              flinch: 'ha retrocedido y no puede moverse',
+              confused_self: 'está confundido y se ha herido a sí mismo'
+            };
+            
+            (action.effectLog || []).forEach(m => addPvpLog(m, 'log-info'));
             addPvpLog(`¡${action.actorName} ${statusMsg[action.statusBlocked] || 'no pudo moverse'}!`,
               myAction ? 'log-player' : 'log-enemy');
+            
+            if (action.statusBlocked === 'confused_self') {
+               addPvpLog(`(-${action.damage} HP)`, myAction ? 'log-player' : 'log-enemy');
+               if (myAction) _pvpUpdateMyHP(action.newAtkHp);
+               else _pvpUpdateEnemyHP(action.newAtkHp);
+            }
 
           } else if (action.missed) {
             addPvpLog(`¡${action.actorName} usó ${action.moveName}... ¡Falló!`,
@@ -773,10 +880,19 @@
             (action.effectLog || []).forEach(m => addPvpLog(m, 'log-info'));
 
           } else {
+            if (action.triggeredAbility) {
+              addPvpLog(`[Habilidad] ¡${action.actorName} usó ${action.triggeredAbility}!`, myAction ? 'log-player' : 'log-enemy');
+            }
             addPvpLog(`¡${action.actorName} usó ${action.moveName}!`,
               myAction ? 'log-player' : 'log-enemy');
+            if (action.defensiveAbility) {
+              addPvpLog(`[Habilidad] ¡${action.defensiveAbility} de ${action.targName} redujo el daño!`, !myAction ? 'log-player' : 'log-enemy');
+            }
             const effTxt = action.eff >= 2 ? ' ¡Muy eficaz!' : action.eff === 0 ? ' ¡No afecta!' : action.eff <= 0.5 ? ' No muy eficaz...' : '';
             addPvpLog(`(-${action.damage} HP)${effTxt}`, myAction ? 'log-player' : 'log-enemy');
+
+            // Log secondary effects if any
+            (action.effectLog || []).forEach(m => addPvpLog(m, 'log-info'));
 
             // Animate sprites
             const pImg = document.getElementById('pvp-player-img');

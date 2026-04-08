@@ -224,26 +224,8 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
     });
   }
 
-  // Ability: Intimidación (Intimidate) on start
-  if (player.ability === 'Intimidación') {
-    state.battle.enemyStages.atk = Math.max(-6, (state.battle.enemyStages.atk || 0) - 1);
-    addLog(`¡La Intimidación de ${player.name} bajó el ataque de ${enemy.name}!`, 'log-info');
-  }
-  if (enemy.ability === 'Intimidación') {
-    state.battle.playerStages.atk = Math.max(-6, (state.battle.playerStages.atk || 0) - 1);
-    addLog(`¡La Intimidación de ${enemy.name} bajó el ataque de ${player.name}!`, 'log-info');
-  }
-
-  // Trace (Rastro)
-  if (player.ability === 'Rastro' && enemy.ability) {
-    player.ability = enemy.ability;
-    addLog(`¡${player.name} copió la habilidad ${enemy.ability} de ${enemy.name} con Rastro!`, 'log-info');
-  }
-  if (enemy.ability === 'Rastro' && player.ability) {
-    enemy.ability = player.ability;
-    addLog(`¡${enemy.name} copió la habilidad ${player.ability} de ${player.name} con Rastro!`, 'log-info');
-  }
-
+  // ── Entry Abilities ──────────────────────────────────────────────────────
+  handleEntryAbilities(player, enemy, state.battle.playerStages, state.battle.enemyStages, addLog);
 
   // ── Predict Nature (Criador) ────────────────────────────────────────────
   if (state.playerClass === 'criador' && enemy.nature && !isGym && !isTrainer && !state.battle.isPvP) {
@@ -255,6 +237,29 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   setTimeout(() => drawBattleBackground(state.battle.locationId), 50);
 }
 
+function handleEntryAbilities(p1, p2, p1Stages, p2Stages, addLogFn) {
+  if (!p1 || !p2) return;
+
+  // Intimidación (Intimidate)
+  if (p1.ability === 'Intimidación') {
+    p2Stages.atk = Math.max(-6, (p2Stages.atk || 0) - 1);
+    addLogFn(`¡La Intimidación de ${p1.name} bajó el ataque de ${p2.name}!`, 'log-info');
+  }
+  if (p2.ability === 'Intimidación') {
+    p1Stages.atk = Math.max(-6, (p1Stages.atk || 0) - 1);
+    addLogFn(`¡La Intimidación de ${p2.name} bajó el ataque de ${p1.name}!`, 'log-info');
+  }
+
+  // Trace (Rastro)
+  if (p1.ability === 'Rastro' && p2.ability) {
+    p1.ability = p2.ability;
+    addLogFn(`¡${p1.name} copió la habilidad ${p2.ability} de ${p2.name} con Rastro!`, 'log-info');
+  }
+  if (p2.ability === 'Rastro' && p1.ability) {
+    p2.ability = p1.ability;
+    addLogFn(`¡${p2.name} copió la habilidad ${p1.ability} de ${p1.name} con Rastro!`, 'log-info');
+  }
+}
 
 function setBattleSprite(side, pokemonId, useBack) {
   const img = document.getElementById(side + '-sprite-img');
@@ -602,7 +607,7 @@ function showMoves() {
 }
 
 // ── Official damage formula (Gen 4+) ──────────────────────
-function calcDamage(attacker, defender, move, atkStages, defStages) {
+function calcDamage(attacker, defender, move, atkStages, defStages, b_ctx = state.battle) {
   const md = MOVE_DATA[move.name] || { power: move.power || 40, type: 'normal', cat: 'physical' };
   let power = md.power || 0;
   if (md.effect === 'status_boost' && attacker.status) power *= 2;
@@ -674,7 +679,7 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
 
   // Weather Multiplier
   let weatherMult = 1;
-  const b = state.battle;
+  const b = b_ctx;
   if (b && b.weather && b.weather.turns > 0) {
     if (b.weather.type === 'sun') {
       if (md.type === 'fire') weatherMult = 1.5;
@@ -687,7 +692,7 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
 
   // Screens (Reflect / Light Screen)
   let screenMult = 1;
-  const targetStages = (defender === b?.player) ? b.playerStages : b.enemyStages;
+  const targetStages = b ? ((defender === b.player) ? b.playerStages : b.enemyStages) : null;
   if (targetStages) {
     if (isPhysical && targetStages.reflect) screenMult = 0.5;
     else if (!isPhysical && targetStages.lightScreen) screenMult = 0.5;
@@ -774,7 +779,7 @@ function getAbilityMultiplier(attacker, defender, move) {
 let _battleLock = false;
 
 // ── Apply a move effect to battle state ───────────────────
-function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
+function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn, b_ctx = state.battle) {
   if (!effect) return;
   const roll = Math.random() * 100;
 
@@ -1018,7 +1023,7 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       // just in case we let it here, but interception is preferred due to move object mutation.
       break;
     case 'roar': {
-      const b = state.battle;
+      const b = b_ctx;
       if (!b) break;
 
       // Inmunidad: Succión (Suction Cups) y Anclaje (Ingrain)
@@ -1201,15 +1206,18 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
   }
 }
 
-function checkAbilityImmunity(attacker, defender, move, addLogFn) {
+function checkAbilityImmunity(attacker, defender, move, addLogFn, b_ctx = state.battle) {
   const ab = defender.ability;
   const md = MOVE_DATA[move.name] || {};
 
   if (ab === 'Pararrayos' && md.type === 'electric') {
     addLogFn(`¡El Pararrayos de ${defender.name} absorbió el ataque!`, 'log-info');
-    const stages = (state.battle.enemy === defender) ? state.battle.enemyStages : state.battle.playerStages;
-    stages.spa = Math.min(6, (stages.spa || 0) + 1);
-    addLogFn(`¡Subió el At. Esp de ${defender.name}!`, 'log-info');
+    const b = b_ctx;
+    const stages = (b && b.enemy === defender) ? b.enemyStages : (b ? b.playerStages : null);
+    if (stages) {
+      stages.spa = Math.min(6, (stages.spa || 0) + 1);
+      addLogFn(`¡Subió el At. Esp de ${defender.name}!`, 'log-info');
+    }
     return true;
   }
   
@@ -1289,9 +1297,9 @@ function tickStatus(pokemon, addLogFn, role) {
   return false;
 }
 
-function tickLeechSeed(pokemon, role, addLogFn) {
+function tickLeechSeed(pokemon, role, addLogFn, b_ctx = state.battle) {
   if (!pokemon.seeded || pokemon.hp <= 0) return false;
-  const b = state.battle;
+  const b = b_ctx;
   if (!b) return false;
 
   const dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
