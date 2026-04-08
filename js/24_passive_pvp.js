@@ -400,6 +400,7 @@ async function findPassiveOpponent() {
 }
 
 // ── Estado de Matchmaking ─────────────────────────────────────────────
+window.isRankedSearching = false;
 let _matchmakingInterval = null;
 let _matchmakingTimeout  = null;
 let _matchmakingSeconds  = 60;
@@ -409,6 +410,8 @@ let _matchmakingQueueId  = null;   // Row en la tabla ranked_queue
 async function startRankedMatchmaking() {
   if (!currentUser) { notify('Debés estar logueado', '⚠️'); return; }
   if (_matchmakingInterval) return; // Ya buscando
+
+  window.isRankedSearching = true;
 
   const myTeam = (state.team || []).filter(p => p.hp > 0 && !p.onMission);
   if (!myTeam.length) { notify('Necesitás al menos 1 Pokémon con HP para buscar partida', '⚠️'); return; }
@@ -580,6 +583,7 @@ async function cancelRankedMatchmaking() {
 
 // ── Limpieza interna ──────────────────────────────────────────────────
 function _matchmakingStop() {
+  window.isRankedSearching = false;
   if (_matchmakingInterval) { clearInterval(_matchmakingInterval); _matchmakingInterval = null; }
   if (_matchmakingTimeout)  { clearTimeout(_matchmakingTimeout);   _matchmakingTimeout  = null; }
   _showSearchingUI(false);

@@ -21,7 +21,7 @@
         
         if (inv.status === 'ranked_match') {
           // Ghost Queue Protection: Si NO estamos buscando partida localmente, evadimos
-          if (typeof window._matchmakingInterval === 'undefined' || !window._matchmakingInterval) {
+          if (!window.isRankedSearching) {
             // Rechazamos pacíficamente la invitación para no trabar al rival
             await sb.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id);
             // Purgamos toda presencia de nuestra ID de la cola ranked
