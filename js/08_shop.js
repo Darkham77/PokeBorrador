@@ -1348,11 +1348,12 @@ function _marketSetQty(itemId, raw) {
     _preloadBgs();
 
     function drawBattleBackground(locationId, cycleOverride) {
-      const canvasId = locationId === 'pvp' ? 'pvp-battle-bg-canvas' : 'battle-bg-canvas';
+      const isPvp = locationId === 'pvp' || locationId === 'pvp_ranked';
+      const canvasId = isPvp ? 'pvp-battle-bg-canvas' : 'battle-bg-canvas';
       const canvas = document.getElementById(canvasId);
       if (!canvas) return;
 
-      const arenaId = locationId === 'pvp' ? 'pvp-arena' : 'battle-arena';
+      const arenaId = isPvp ? 'pvp-arena' : 'battle-arena';
       const arena = document.getElementById(arenaId);
       if (!arena) return;
 

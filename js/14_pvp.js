@@ -359,8 +359,8 @@
           <canvas id="pvp-battle-bg-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;border-radius:18px;"></canvas>
           
           <!-- Ranked Overlay Indicator -->
-          <div style="position:absolute; top:8px; left:8px; z-index:20; pointer-events:none; display:flex; flex-direction:column; gap:4px; opacity:0.8;">
-             <div style="font-family:'Press Start 2P',monospace; font-size:6.5px; color:#fff; background:rgba(199,125,255,0.4); padding:4px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(4px);">
+          <div style="position:absolute; top:8px; right:8px; z-index:20; pointer-events:none; display:flex; flex-direction:column; align-items:flex-end; gap:4px; opacity:0.8;">
+             <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:#fff; background:rgba(199,125,255,0.4); padding:4px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(4px);">
                 ⚔️ ${_pvpState.isRanked ? 'RANKED' : 'AMISTOSO'}
              </div>
              <div id="pvp-status-msg" style="font-size:8px; color:var(--yellow); font-weight:700; background:rgba(0,0,0,0.4); padding:3px 6px; border-radius:4px; display:inline-block;">⏳ Conectando...</div>
@@ -380,12 +380,12 @@
             </div>
             <div style="display:flex;align-items:flex-start;justify-content:flex-end;">
               <div id="pvp-enemy-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-start;justify-content:flex-end;">
-                <img id="pvp-enemy-img" src="" alt="" style="max-height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
+                <img id="pvp-enemy-img" src="" alt="" style="object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
               </div>
             </div>
             <div style="display:flex;align-items:flex-end;justify-content:flex-start;">
               <div id="pvp-player-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-end;justify-content:flex-start;">
-                <img id="pvp-player-img" src="" alt="" style="max-height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
+                <img id="pvp-player-img" src="" alt="" style="object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
               </div>
             </div>
             <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:10px;">

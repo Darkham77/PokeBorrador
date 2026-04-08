@@ -1854,11 +1854,13 @@
         width: 100% !important;
       }
 
-      /* Larger sprites in PvP on PC */
+      /* Massive sprites in PvP on PC */
       #pvp-player-img, #pvp-enemy-img {
-        max-height: 200px !important;
+        max-height: 260px !important;
+        min-height: 150px !important;
         height: auto !important;
         width: auto !important;
+        image-rendering: pixelated;
       }
       
       .battle-arena#pvp-arena {
