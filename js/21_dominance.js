@@ -545,11 +545,22 @@ function getGuardianForMap(mapId) {
 const GUARDIAN_CHANCE = 0.015; // Reducido de 3% a 1.5% 
 
 async function loadDailyGuardianCaptures() {
+  const userId = window.currentUser?.id;
+  if (!userId) return;
+
   const today = getArgentinaDateString();
+  
+  // Limpieza por cambio de día o primer carga
+  if (state.lastGuardianFetch !== today) {
+    state.dailyGuardianCaptures = [];
+    state.lastGuardianFetch = today;
+  }
+
   const { data, error } = await window.sb
     .from('guardian_captures')
     .select('map_id')
-    .eq('capture_date', today);
+    .eq('capture_date', today)
+    .eq('user_id', userId);
     
   if (!error && data) {
     state.dailyGuardianCaptures = data.map(c => c.map_id);
@@ -561,20 +572,16 @@ async function loadDailyGuardianCaptures() {
 async function checkGuardianAppearance(mapId) {
   if (!getGuardianForMap(mapId)) return false;
   
+  // Sincronizar fecha antes de chequear
+  const today = getArgentinaDateString();
+  if (state.lastGuardianFetch !== today) {
+    await loadDailyGuardianCaptures();
+  }
+
   // Si ya tenemos el cache, usarlo
   if (state.dailyGuardianCaptures) {
     if (state.dailyGuardianCaptures.includes(mapId)) return false;
-  } else {
-    const today = getArgentinaDateString();
-    const { data } = await window.sb
-      .from('guardian_captures')
-      .select('id')
-      .eq('map_id', mapId)
-      .eq('capture_date', today)
-      .maybeSingle();
-      
-    if (data) return false; 
-  }
+  } 
 
   return Math.random() < GUARDIAN_CHANCE;
 }
@@ -625,9 +632,13 @@ async function claimGuardianCapture(mapId, pokemon) {
     });
 
   if (error) {
-    if (error.code === '23505') notify('El Guardián ya fue capturado por alguien más hoy.', 'ℹ️');
+    console.error('[GUARDIAN] Error salvando captura:', error);
     return false;
   }
+
+  // Actualizar cache local inmediatamente
+  if (!state.dailyGuardianCaptures) state.dailyGuardianCaptures = [];
+  if (!state.dailyGuardianCaptures.includes(mapId)) state.dailyGuardianCaptures.push(mapId);
 
   pokemon.isGuardian = true;
   pokemon.guardianFaction = state.faction;
