@@ -338,6 +338,7 @@
         if (typeof initDominanceSystem === 'function') setTimeout(() => initDominanceSystem(), 1500);
         // Cargar ELO de PvP
         if (typeof loadPlayerElo === 'function') setTimeout(() => loadPlayerElo(), 2000);
+        if (typeof initEloWatcher === 'function') setTimeout(() => initEloWatcher(), 3000);
       } catch (e) {
         setAuthLoading(false);
         currentUser = null;

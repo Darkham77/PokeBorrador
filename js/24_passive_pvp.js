@@ -60,6 +60,63 @@ async function loadPlayerElo() {
   }
 }
 
+// ── Watcher de ELO en segundo plano ──────────────────────────────────
+let _eloWatcherInterval = null;
+
+function initEloWatcher() {
+  if (_eloWatcherInterval || !currentUser) return;
+  
+  _eloWatcherInterval = setInterval(async () => {
+    if (!currentUser) return;
+    
+    const oldElo = state.eloRating || 1000;
+    const oldWins = state.pvpStats?.wins || 0;
+    const oldLosses = state.pvpStats?.losses || 0;
+
+    const { data, error } = await sb.from('profiles')
+      .select('elo_rating, pvp_wins, pvp_losses, pvp_draws')
+      .eq('id', currentUser.id)
+      .single();
+
+    if (!error && data) {
+      const newElo = data.elo_rating || 1000;
+      
+      if (newElo !== oldElo) {
+        // Solo notificar si NO estamos en una batalla activa de ranked o buscando
+        // (Para evitar spam mientras uno mismo está jugando rankeds)
+        const isCurrentlyRanked = state.battle && state.battle.isRanked;
+        const isSearching = window.isRankedSearching;
+
+        if (!isCurrentlyRanked && !isSearching) {
+          const delta = newElo - oldElo;
+          const won = delta > 0 || data.pvp_wins > oldWins;
+          
+          if (delta !== 0) {
+            notify(
+              `🛡️ Defensa Pasiva: ${won ? '¡Victoria!' : 'Derrota.'} (${delta > 0 ? '+' : ''}${delta} ELO)`,
+              won ? '⚔️' : '💀'
+            );
+          }
+        }
+
+        // Actualizar estado local
+        state.eloRating = newElo;
+        state.pvpStats = {
+          wins:   data.pvp_wins   || 0,
+          losses: data.pvp_losses || 0,
+          draws:  data.pvp_draws  || 0
+        };
+
+        // Si la pestaña de Ranked está visible, refrescar UI
+        const tab = document.getElementById('tab-ranked');
+        if (tab && tab.style.display !== 'none') {
+          renderRankedTab();
+        }
+      }
+    }
+  }, 20000); // Cada 20 segundos
+}
+
 // ── Renderizar el tab Rankeds ─────────────────────────────────────────
 function renderRankedTab() {
   const elo   = state.eloRating || 1000;
