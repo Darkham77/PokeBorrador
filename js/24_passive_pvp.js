@@ -654,7 +654,7 @@ async function _matchmakingFallbackToPassive() {
 }
 
 // ── Cancelar búsqueda ─────────────────────────────────────────────────
-async function cancelRankedMatchmaking() {
+async function cancelRankedMatchmaking(silent = false) {
   _matchmakingStop();
   // Limpiar TODA fila de la cola en Supabase bajo nuestro user_id (para matar el ghost queue)
   if (currentUser) {
@@ -663,7 +663,7 @@ async function cancelRankedMatchmaking() {
     } catch(e) { /* ignorar */ }
   }
   _matchmakingQueueId = null;
-  notify('Búsqueda cancelada', '✖️');
+  if (!silent) notify('Búsqueda cancelada', '✖️');
 }
 
 // ── Limpieza interna ──────────────────────────────────────────────────

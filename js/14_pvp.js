@@ -32,11 +32,13 @@
           // Auto-accept and start directly
           document.getElementById('pvp-invite-popup')?.remove();
           await sb.from('battle_invites').update({ status: 'ranked_accepted' }).eq('id', inv.id);
-          // Ocultar modal matchmaking si lo tiene abierto
+          
+          // Ocultar modal matchmaking y detener búsqueda
           if (typeof cancelRankedMatchmaking === 'function') {
-             const b = document.getElementById('ranked-search-status');
-             if (b) b.style.display = 'none';
+             await cancelRankedMatchmaking(true);
+          } else {
              if (window._matchmakingInterval) { clearInterval(window._matchmakingInterval); window._matchmakingInterval = null; }
+             window.isRankedSearching = false;
           }
           startPvpBattle(inv, false, true);
         } else {
@@ -132,6 +134,14 @@
     // ─────────────────────────────────────────────────────────────
 
     async function startPvpBattle(invite, isHost, isRanked = false) {
+      // Al entrar en combate, forzamos detener cualquier búsqueda de matchmaking
+      if (typeof cancelRankedMatchmaking === 'function') {
+        cancelRankedMatchmaking(true);
+      } else {
+        window.isRankedSearching = false;
+        if (window._matchmakingInterval) { clearInterval(window._matchmakingInterval); window._matchmakingInterval = null; }
+      }
+
       const myTeam = state.team.filter(p => p.hp > 0 && !p.onMission).map(p => JSON.parse(JSON.stringify(p)));
       if (!myTeam.length) { notify('¡No tenés Pokémon disponibles!', '⚠️'); return; }
 
