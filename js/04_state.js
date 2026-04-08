@@ -398,6 +398,44 @@
       return Math.floor(Math.pow(level + 1, 3) - Math.pow(level, 3));
     }
 
+    // --- AUTO-REPAIR & SANITIZATION ---
+    function sanitizeMoves(p) {
+      if (!p || !p.moves) return;
+      const seen = new Set();
+      const uniqueMoves = [];
+      const moveDataRef = window.MOVE_DATA || {};
+
+      p.moves.forEach(m => {
+        if (!seen.has(m.name)) {
+          seen.add(m.name);
+          
+          // Data repair logic (Official Gen 3 Rules)
+          const baseData = moveDataRef[m.name];
+          if (baseData) {
+            const basePP = baseData.pp || 35;
+            const bonus = Math.max(1, Math.floor(basePP * 0.2));
+            const expectedMax = basePP + ((m.ppUps || 0) * bonus);
+            
+            // Repair if inconsistent (e.g. 10 PP but 3 bars)
+            if (m.maxPP !== expectedMax) {
+              console.log(`[Sanitizer] Repaired move ${m.name} for ${p.name}: maxPP ${m.maxPP} -> ${expectedMax}`);
+              m.maxPP = expectedMax;
+              if (m.pp > m.maxPP) m.pp = m.maxPP;
+            }
+          }
+          uniqueMoves.push(m);
+        }
+      });
+      p.moves = uniqueMoves;
+    }
+
+    function sanitizeAllData(state) {
+      console.log("[Sanitizer] Starting global data repair...");
+      if (Array.isArray(state.team)) state.team.forEach(sanitizeMoves);
+      if (Array.isArray(state.box)) state.box.forEach(sanitizeMoves);
+      console.log("[Sanitizer] Data repair complete.");
+    }
+
     function ensureVigor(p) {
       if (p.vigor === undefined) {
         // Asignar vigor por defecto a Pokémon antiguos (3 a 6)

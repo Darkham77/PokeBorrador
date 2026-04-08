@@ -24,23 +24,60 @@ try {
     if (match[1] !== 'Unknown') learnsetMoves.add(match[1]);
   }
 
-  // Extract all defined moves from MOVE_DATA block
+  // Extract all defined moves from MOVE_DATA block with duplicate detection
   const definedMoves = new Set();
-  const mdMoveRegex = /'([^']+)':\s*\{\s*power:/g;
-  let regexMatch;
-  while ((regexMatch = mdMoveRegex.exec(fileContent)) !== null) {
-    definedMoves.add(regexMatch[1]);
-  }
+  const duplicates = [];
+  const mdMoveRegex = /'([^']+)':\s*\{\s*(power:\s*\d+,|acc:)/g; 
+  const lines = fileContent.split('\n');
+  
+  // Track move entries and their line numbers for better reporting
+  const moveEntries = {}; // name -> [line1, line2...]
+  
+  lines.forEach((line, index) => {
+    const match = line.match(/'([^']+)':\s*\{/);
+    if (match && index > 900) { // Assuming MOVE_DATA starts after line 900
+      const moveName = match[1];
+      if (!moveEntries[moveName]) moveEntries[moveName] = [];
+      moveEntries[moveName].push(index + 1);
+      
+      if (definedMoves.has(moveName)) {
+        duplicates.push(moveName);
+      }
+      definedMoves.add(moveName);
+
+      // PP Validation
+      if (line.includes('pp:')) {
+        const ppMatch = line.match(/pp:\s*(\d+)/);
+        if (!ppMatch) {
+          console.log(`⚠️ Warning: Move '${moveName}' on line ${index + 1} has invalid PP format.`);
+        }
+      }
+    }
+  });
 
   const missingMoves = [...learnsetMoves].filter(move => !definedMoves.has(move));
   
-  if (missingMoves.length === 0) {
-    console.log("✅ All learnset moves are properly defined in MOVE_DATA!");
-  } else {
+  let hasErrors = false;
+
+  if (duplicates.length > 0) {
+    console.log("❌ DUPLICATE MOVES FOUND IN MOVE_DATA:");
+    duplicates.forEach(m => {
+      console.log(`- ${m} (Located at lines: ${moveEntries[m].join(', ')})`);
+    });
+    hasErrors = true;
+  }
+
+  if (missingMoves.length > 0) {
     console.log("❌ MISSING MOVES FOUND:");
     console.log("The following moves are assigned to a Pokémon but not defined in MOVE_DATA:");
     missingMoves.forEach(m => console.log(`- ${m}`));
-    console.log("\nIf you added new Pokémon or Gen learnsets, please add these moves to js/02_pokemon_data.js and implement their logic in js/07_battle.js if necessary.");
+    hasErrors = true;
+  }
+
+  if (!hasErrors) {
+    console.log("✅ MOVE_DATA is clean! All learnset moves exist and no duplicates found.");
+  } else {
+    console.log("\nPlease resolve the errors above in js/02_pokemon_data.js to ensure battle integrity.");
     process.exit(1);
   }
 } catch (e) {

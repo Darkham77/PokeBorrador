@@ -11,6 +11,13 @@ description: Guía paso a paso para agregar un Pokémon completamente nuevo al j
 
 ---
 
+## 🚨 REGLA DE ORO: INTEGRIDAD DE DATOS
+Antes de agregar cualquier dato nuevo, recuerda:
+1. **Nombres de Objetos**: Usa siempre los nombres oficiales completos. Ejemplo: **"Subida de PP"** (NO "Subida PP"). Una discrepancia romperá la lógica de uso.
+2. **Deduplicación**: Nunca agregues un movimiento a `MOVE_DATA` que ya exista. El validador ahora detecta duplicados automáticamente.
+3. **Sincronización de PP**: Al inicializar un movimiento para un Pokémon, `maxPP` debe ser igual a su `pp` base inicial.
+---
+
 ## Paso 0: Obtener todos los datos desde PokeAPI
 
 Ejecutar el script de fetch pasando el nombre en inglés del Pokémon:
@@ -225,8 +232,9 @@ Antes de dar por terminado, verificar cada ítem:
 - `[ ]` Posición en `PDEX_ORDER`
 - `[ ]` Compatibilidad de MTs en `TM_COMPAT`
 - `[ ]` Todos los movimientos del learnset existen en `MOVE_DATA`
-- `[ ]` Validator de movimientos ejecutado sin errores nuevos
+- `[ ]` Validator de movimientos ejecutado sin errores (ni movimientos faltantes ni duplicados)
 - `[ ]` Validator de habilidades ejecutado sin errores nuevos
+- `[ ]` Nombres de movimientos e ítems verificados contra el estándar (ej. "Subida de PP")
 
 ---
 
