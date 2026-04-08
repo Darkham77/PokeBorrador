@@ -164,6 +164,7 @@
         _lastActivityTime: Date.now(),
         _disconnectTimer: null,
         _opponentDisconnected: false,
+        _battleAnnounced: false, // Flag to prevent log spam
       };
       _pvpLock = false;
 
@@ -229,7 +230,11 @@
           _pvpState.phase = 'choosing';
           renderPvpBattle();
           _pvpLoadSprites();
-          addPvpLog('¡Batalla iniciada!', 'log-info');
+          
+          if (!_pvpState._battleAnnounced) {
+            addPvpLog('¡Batalla iniciada!', 'log-info');
+            _pvpState._battleAnnounced = true;
+          }
           
           // Entry abilities at start
           if (typeof handleEntryAbilities === 'function') {
@@ -396,9 +401,9 @@
 
         <div id="pvp-log" class="battle-log"></div>
 
-        <div id="pvp-move-panel" style="z-index:10; width:100%;">
-          <div id="pvp-move-buttons" class="battle-actions" style="margin-bottom:12px;"></div>
-          <div class="action-row no-catch" style="margin-bottom:8px;">
+        <div id="pvp-move-panel" class="move-panel-wrapper">
+          <div id="pvp-move-buttons" class="battle-actions"></div>
+          <div class="action-row no-catch">
             <button class="action-btn" id="btn-switch" onclick="pvpShowSwitch()" style="background:rgba(199,125,255,0.15); border:1px solid rgba(199,125,255,0.3); color:var(--purple);">
               🔄 CAMBIAR
             </button>
