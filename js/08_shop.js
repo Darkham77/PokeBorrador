@@ -67,11 +67,52 @@
 
     // ===== NOTIFICATION =====
     function notify(msg, icon = '✨') {
+      // Obtener o crear el contenedor de notificaciones
+      let container = document.getElementById('notification-stack');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-stack';
+        container.style.cssText = [
+          'position:fixed',
+          'bottom:20px',
+          'right:16px',
+          'z-index:9999',
+          'display:flex',
+          'flex-direction:column-reverse',
+          'gap:8px',
+          'align-items:flex-end',
+          'pointer-events:none',
+          'max-width:320px'
+        ].join(';');
+        document.body.appendChild(container);
+      }
+
       const el = document.createElement('div');
       el.className = 'notification';
+      el.style.cssText = [
+        'position:relative',
+        'opacity:0',
+        'transform:translateX(30px)',
+        'transition:opacity 0.25s ease, transform 0.25s ease',
+        'pointer-events:all'
+      ].join(';');
       el.innerHTML = `${icon} ${msg}`;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 5000);
+      container.appendChild(el);
+
+      // Trigger slide-in
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateX(0)';
+        });
+      });
+
+      // Auto-remove after 4s with fade-out
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(30px)';
+        setTimeout(() => el.remove(), 280);
+      }, 4000);
     }
 
 

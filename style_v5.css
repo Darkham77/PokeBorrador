@@ -2562,19 +2562,31 @@
     }
 
     /* ===== NOTIFICATIONS ===== */
-    .notification {
+    /* El contenedor #notification-stack es creado por JS y maneja el posicionamiento */
+    #notification-stack {
       position: fixed;
-      top: 20px;
-      right: 20px;
+      bottom: 20px;
+      right: 16px;
+      z-index: 20000;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+      align-items: flex-end;
+      pointer-events: none;
+      max-width: 320px;
+    }
+
+    .notification {
+      position: relative;
       background: var(--card);
       border-radius: 12px;
       padding: 16px 20px;
       border-left: 4px solid var(--green);
       font-weight: 700;
       font-size: 14px;
-      z-index: 20000;
-      animation: slideIn 0.3s ease;
       max-width: 300px;
+      pointer-events: all;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
 
     @keyframes slideIn {
@@ -5102,7 +5114,10 @@
     max-width: 380px;
   }
 
-  /* Notificaciones: ancho ajustado */
+  /* Notificaciones: ancho ajustado en tablets */
+  #notification-stack {
+    max-width: 280px;
+  }
   .notification {
     max-width: 260px;
     font-size: 13px;
@@ -5193,11 +5208,15 @@
     padding: 6px 12px;
   }
 
-  /* Notificaciones: ancho completo en móvil */
-  .notification {
-    top: 10px;
+  /* Notificaciones: apiladas en la parte inferior en móvil */
+  #notification-stack {
+    bottom: 90px; /* Encima de la barra de navegación móvil */
     right: 10px;
     left: 10px;
+    max-width: none;
+    align-items: stretch;
+  }
+  .notification {
     max-width: none;
     font-size: 12px;
     padding: 12px 14px;
