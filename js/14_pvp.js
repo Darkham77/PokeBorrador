@@ -381,13 +381,13 @@
               </div>
             </div>
             <div style="display:flex;align-items:flex-start;justify-content:flex-end;">
-              <div id="pvp-enemy-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-start;justify-content:flex-end;">
-                <img id="pvp-enemy-img" src="" alt="" style="object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
+              <div id="pvp-enemy-sprite-wrap" style="display:flex;align-items:flex-start;justify-content:flex-end;">
+                <img id="pvp-enemy-img" src="" alt="" style="image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
               </div>
             </div>
             <div style="display:flex;align-items:flex-end;justify-content:flex-start;">
-              <div id="pvp-player-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-end;justify-content:flex-start;">
-                <img id="pvp-player-img" src="" alt="" style="object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
+              <div id="pvp-player-sprite-wrap" style="display:flex;align-items:flex-end;justify-content:flex-start;">
+                <img id="pvp-player-img" src="" alt="" style="image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
               </div>
             </div>
             <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:10px;">

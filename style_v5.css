@@ -1854,22 +1854,22 @@
         width: 100% !important;
       }
 
-      /* Massive sprites in PvP on PC - Perspective theft */
+      /* Massive sprites in PvP on PC - Perspective parity with standard battle */
       #pvp-player-img {
-        max-height: 340px !important;
-        height: auto !important;
+        height: 350px !important;
         width: auto !important;
-        transform: translateY(30px) scale(1.1); /* Lower and larger for proximity */
+        min-height: 350px !important;
         z-index: 5;
         image-rendering: pixelated;
+        transform: none !important; /* Remove displacement to match background perspective */
       }
       
       #pvp-enemy-img {
-        max-height: 240px !important;
-        height: auto !important;
+        height: 250px !important;
         width: auto !important;
-        transform: translateY(-10px); /* Slightly higher for distance */
+        min-height: 250px !important;
         image-rendering: pixelated;
+        transform: none !important; /* Keep aligned with standard battle ground */
       }
       
       .battle-arena#pvp-arena {
