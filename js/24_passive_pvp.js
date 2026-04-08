@@ -58,6 +58,18 @@ async function loadPlayerElo() {
       draws:  data.pvp_draws  || 0
     };
   }
+  
+  // También cargar el estado de activación del equipo pasivo
+  const { data: passiveData } = await sb.from('passive_teams')
+    .select('is_active')
+    .eq('user_id', currentUser.id)
+    .single();
+  
+  if (passiveData) {
+    state.passiveTeamActive = passiveData.is_active;
+  } else {
+    state.passiveTeamActive = false;
+  }
 }
 
 // ── Watcher de ELO en segundo plano ──────────────────────────────────
@@ -191,10 +203,21 @@ function renderPassiveTeamPreview() {
   let validCount = 0;
   validCount = uids.reduce((acc, uid) => acc + (getPokemonByUid(uid) ? 1 : 0), 0);
   
-  const isValid = validCount === uids.length;
+  const isActive = state.passiveTeamActive !== false; // Default true if not explicitly set to false? No, better explicit.
+  const isSetupValid = validCount === uids.length;
+  const isValid = isActive && isSetupValid;
+
   const borderColor = isValid ? 'var(--green)' : 'var(--red)';
   const glow = isValid ? 'rgba(107,203,119,0.3)' : 'rgba(255,59,59,0.3)';
-  const label = isValid ? '✅ EQUIPO PREPARADO' : '❌ EQUIPO NO PREPARADO (Pokémon faltante)';
+  
+  let label = '';
+  if (!isActive) {
+    label = '🔴 EQUIPO DESACTIVADO';
+  } else if (!isSetupValid) {
+    label = '❌ EQUIPO NO PREPARADO (Pokémon faltante)';
+  } else {
+    label = '✅ EQUIPO PREPARADO';
+  }
 
   let htmlSprites = '';
   uids.forEach(uid => {
@@ -279,7 +302,9 @@ async function savePassiveTeam(active = true) {
   }, { onConflict: 'user_id' });
 
   if (error) { notify('Error guardando equipo: ' + error.message, '❌'); return; }
-  notify('Equipo Rankeds activado correctamente ✓', '🤖');
+  state.passiveTeamActive = active;
+  renderPassiveTeamPreview();
+  notify(`Equipo pasivo ${active ? 'activado' : 'desactivado'} ✓`, '🤖');
 }
 
 // ── Editor Visual de Equipo (Rankeds Modal) ───────────────────────────
