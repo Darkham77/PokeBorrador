@@ -11,14 +11,28 @@
       _pvpBattleInvitesCh = setInterval(async () => {
         if (!currentUser) return;
         const { data } = await sb.from('battle_invites')
-          .select('*').eq('opponent_id', currentUser.id).eq('status', 'pending')
+          .select('*').eq('opponent_id', currentUser.id).in('status', ['pending', 'ranked_match'])
           .order('created_at', { ascending: false }).limit(1);
         if (!data?.length) return;
         const inv = data[0];
         if (_seenInvites.has(inv.id)) return;
         if (Date.now() - new Date(inv.created_at).getTime() > 60000) return;
         _seenInvites.add(inv.id);
-        showPvpInvitePopup(inv);
+        
+        if (inv.status === 'ranked_match') {
+          // Auto-accept and start directly
+          document.getElementById('pvp-invite-popup')?.remove();
+          await sb.from('battle_invites').update({ status: 'ranked_accepted' }).eq('id', inv.id);
+          // Ocultar modal matchmaking si lo tiene abierto
+          if (typeof cancelRankedMatchmaking === 'function') {
+             const b = document.getElementById('ranked-search-status');
+             if (b) b.style.display = 'none';
+             if (window._matchmakingInterval) { clearInterval(window._matchmakingInterval); window._matchmakingInterval = null; }
+          }
+          startPvpBattle(inv, false, true);
+        } else {
+          showPvpInvitePopup(inv);
+        }
       }, 4000);
     }
 
@@ -108,7 +122,7 @@
     // The CLIENT applies the result received. Speed decides who attacks first.
     // ─────────────────────────────────────────────────────────────
 
-    async function startPvpBattle(invite, isHost) {
+    async function startPvpBattle(invite, isHost, isRanked = false) {
       const myTeam = state.team.filter(p => p.hp > 0 && !p.onMission).map(p => JSON.parse(JSON.stringify(p)));
       if (!myTeam.length) { notify('¡No tenés Pokémon disponibles!', '⚠️'); return; }
 
@@ -117,7 +131,7 @@
       const enemyUsername = _oppProf?.username || 'Rival';
 
       _pvpState = {
-        invite, isHost,
+        invite, isHost, isRanked, opponentId,
         myActive: 0, enemyActive: 0,
         myTeam, enemyTeam: null,
         myHp: myTeam.map(p => p.hp), enemyHp: [],
@@ -906,18 +920,35 @@
       if (ov) {
         const result = document.createElement('div');
         result.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;';
-        result.innerHTML = `
-      <div style="font-size:64px;margin-bottom:16px;">${won ? '🏆' : '🤝'}</div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${won ? 'var(--yellow)' : 'var(--blue)'};margin-bottom:12px;">
-        ${won ? '¡VICTORIA AMISTOSA!' : '¡BUEN COMBATE!'}
-      </div>
-      <div style="font-size:11px;color:#aaa;margin-bottom:24px;text-align:center;padding:0 20px;">
-        Las batallas entre amigos son para divertirse.<br>No se gana ni se pierde dinero.
-      </div>
-      <button onclick="closePvpOverlay()" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 24px;
-        border:none;border-radius:14px;cursor:pointer;background:var(--purple);color:#fff;">
-        CONTINUAR
-      </button>`;
+        
+        if (isRanked) {
+          result.innerHTML = `
+            <div style="font-size:64px;margin-bottom:16px;">${won ? '🏅' : '💔'}</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${won ? 'var(--yellow)' : 'var(--red)'};margin-bottom:12px;">
+              ${won ? '¡VICTORIA RANKED!' : '¡DERROTA RANKED!'}
+            </div>
+            <div style="font-size:11px;color:#aaa;margin-bottom:24px;text-align:center;padding:0 20px;">
+              Tus puntuaciones de ELO han sido actualizadas.<br>Comprueba tu perfil.
+            </div>
+            <button onclick="closePvpOverlay()" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 24px;
+              border:none;border-radius:14px;cursor:pointer;background:var(--purple);color:#fff;">
+              CONTINUAR
+            </button>`;
+        } else {
+          result.innerHTML = `
+            <div style="font-size:64px;margin-bottom:16px;">${won ? '🏆' : '🤝'}</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${won ? 'var(--yellow)' : 'var(--blue)'};margin-bottom:12px;">
+              ${won ? '¡VICTORIA AMISTOSA!' : '¡BUEN COMBATE!'}
+            </div>
+            <div style="font-size:11px;color:#aaa;margin-bottom:24px;text-align:center;padding:0 20px;">
+              Las batallas entre amigos son para divertirse.<br>No se gana ni se pierde dinero/ELO.
+            </div>
+            <button onclick="closePvpOverlay()" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 24px;
+              border:none;border-radius:14px;cursor:pointer;background:var(--purple);color:#fff;">
+              CONTINUAR
+            </button>`;
+        }
+        
         ov.style.position = 'fixed';
         ov.appendChild(result);
         updateHud();

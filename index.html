@@ -486,10 +486,15 @@
                 <span style="font-size:11px;color:rgba(255,255,255,0.3);align-self:center;">No configurado</span>
               </div>
               <div style="display:flex;gap:8px;">
+                <button onclick="if(typeof openPassiveTeamEditor==='function')openPassiveTeamEditor()" id="btn-passive-edit"
+                  style="flex:1;font-family:'Press Start 2P',monospace;font-size:7px;padding:10px;border:none;border-radius:10px;cursor:pointer;
+                         background:rgba(255,255,255,0.08);color:var(--gray);border:1px solid rgba(255,255,255,0.2);">
+                  ✏️ Editar
+                </button>
                 <button onclick="if(typeof savePassiveTeam==='function')savePassiveTeam(true)" id="btn-passive-activate"
                   style="flex:1;font-family:'Press Start 2P',monospace;font-size:7px;padding:10px;border:none;border-radius:10px;cursor:pointer;
                          background:linear-gradient(135deg,rgba(107,203,119,0.2),rgba(107,203,119,0.08));color:var(--green);border:1px solid rgba(107,203,119,0.3);">
-                  ✅ Activar Equipo
+                  ✅ Activar
                 </button>
                 <button onclick="if(typeof savePassiveTeam==='function')savePassiveTeam(false)" id="btn-passive-deactivate"
                   style="flex:1;font-family:'Press Start 2P',monospace;font-size:7px;padding:10px;border:none;border-radius:10px;cursor:pointer;
@@ -497,6 +502,27 @@
                   🔴 Desactivar
                 </button>
               </div>
+            </div>
+          </div>
+
+          <!-- Modal de Editor de Equipo Pasivo -->
+          <div id="passive-team-editor-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:900;align-items:center;justify-content:center;padding:16px;">
+            <div style="background:var(--card);max-width:400px;width:100%;border-radius:24px;border:1px solid rgba(107,203,119,0.3);padding:24px;max-height:85vh;overflow-y:auto;position:relative;">
+              <button onclick="closePassiveTeamEditor()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--red);font-size:24px;cursor:pointer;">✕</button>
+              <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);margin-bottom:16px;text-align:center;">ARMADOR PASIVO</div>
+              <div style="font-size:11px;color:var(--gray);margin-bottom:16px;text-align:center;line-height:1.4;">
+                Elegí 6 Pokémon para tu equipo Rankeds. Los IVs, Movimientos y Objetos Equipados en este momento quedarán guardados en esta "fotografía" incluso si después los alterás en tu mochila. ¡Pero cuidado! Si vendés o perdés un Pokémon el equipo fallará.
+              </div>
+              <div id="passive-editor-slots" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;min-height:50px;background:rgba(255,255,255,0.05);padding:10px;border-radius:12px;">
+                <!-- Slots (max 6) -->
+              </div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:8px;">TU EQUIPO / CAJA</div>
+              <div id="passive-editor-pool" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-height:200px;overflow-y:auto;padding-right:4px;">
+                <!-- Pool de Pokemons -->
+              </div>
+              <button onclick="confirmPassiveTeamEdit()" style="width:100%;font-family:'Press Start 2P',monospace;font-size:9px;padding:14px;border:none;border-radius:14px;cursor:pointer;background:var(--green);color:#000;margin-top:20px;">
+                💾 GUARDAR EQUIPO RANKED
+              </button>
             </div>
           </div>
 

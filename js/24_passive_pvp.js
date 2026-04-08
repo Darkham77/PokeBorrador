@@ -108,32 +108,74 @@ function renderRankedTab() {
   }
 }
 
+// ── Helper para obtener Pokémon válidos por UID ───────────────────────
+function getPokemonByUid(uid) {
+  if (!uid) return null;
+  const inTeam = (state.team || []).find(p => p.uid === uid);
+  if (inTeam) return inTeam;
+  const inBox = (state.box || []).find(p => p.uid === uid);
+  return inBox || null;
+}
+
 // ── Preview de equipo pasivo ──────────────────────────────────────────
 function renderPassiveTeamPreview() {
   const el = document.getElementById('ranked-passive-team-preview');
   if (!el) return;
-  const team = (state.team || []).filter(p => p.hp > 0 && !p.onMission).slice(0, 6);
-  if (!team.length) {
-    el.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.3);align-self:center;">No hay Pokémon disponibles</span>';
+  
+  const uids = state.passiveTeamUids || [];
+  if (!uids.length) {
+    el.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.3);align-self:center;">No configurado</span>';
     return;
   }
-  el.innerHTML = team.map(p => {
+  
+  let validCount = 0;
+  validCount = uids.reduce((acc, uid) => acc + (getPokemonByUid(uid) ? 1 : 0), 0);
+  
+  if (validCount !== uids.length) {
+    el.innerHTML = '<span style="font-size:11px;color:rgba(255,59,59,0.9);align-self:center;">⚠️ Equipo Inválido (Pokémon soltado/intercambiado)</span>';
+    return;
+  }
+
+  el.innerHTML = uids.map(uid => {
+    const p = getPokemonByUid(uid);
+    if (!p) return '';
     const num = p.dexNum || p.id || '';
-    return `<img
-      src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
-      style="width:40px;height:40px;image-rendering:pixelated;"
-      title="${p.name}"
-      onerror="this.style.display='none'">`;
+    return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
+      style="width:40px;height:40px;image-rendering:pixelated;" title="${p.name}" onerror="this.style.display='none'">`;
   }).join('');
 }
 
 // ── Guardar equipo pasivo ─────────────────────────────────────────────
 async function savePassiveTeam(active = true) {
   if (!currentUser) { notify('Debés estar logueado', '⚠️'); return; }
-  const eligibleTeam = (state.team || []).filter(p => p.hp > 0 && !p.onMission);
-  if (!eligibleTeam.length) { notify('Necesitás al menos 1 Pokémon disponible', '⚠️'); return; }
+  
+  const uids = state.passiveTeamUids || [];
+  if (active && (!uids || !uids.length)) {
+    notify('Tenés que armar tu equipo pasivo (Editar) antes de activarlo.', '⚠️'); 
+    return;
+  }
+  
+  if (!active) {
+    // Apagar directamente
+    const { error } = await sb.from('passive_teams').upsert({
+      user_id: currentUser.id, team_data: [], elo_rating: state.eloRating || 1000, is_active: false, updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+    if (error) { notify('Error desactivando', '❌'); return; }
+    notify('Equipo pasivo desactivado', '🔴');
+    return;
+  }
 
-  const snapshot  = eligibleTeam.slice(0, 6).map(buildPassiveSnapshot);
+  // Active is True, let's validate and snapshot
+  const teamObjs = uids.map(uid => getPokemonByUid(uid));
+  if (teamObjs.some(p => !p)) {
+    notify('Tu equipo contiene Pokémon que ya no existen. Editalo primero.', '⚠️');
+    return;
+  }
+  
+  const eligibleTeam = teamObjs.filter(p => p.hp > 0 && !p.onMission);
+  if (!eligibleTeam.length) { notify('Tus Pokémon designados no tienen HP.', '⚠️'); return; }
+
+  const snapshot  = eligibleTeam.map(buildPassiveSnapshot);
   const eloRating = state.eloRating || 1000;
 
   const { error } = await sb.from('passive_teams').upsert({
@@ -145,8 +187,92 @@ async function savePassiveTeam(active = true) {
   }, { onConflict: 'user_id' });
 
   if (error) { notify('Error guardando equipo: ' + error.message, '❌'); return; }
-  notify(`Equipo pasivo ${active ? 'activado' : 'desactivado'} ✓`, '🤖');
+  notify('Equipo Rankeds activado correctamente ✓', '🤖');
 }
+
+// ── Editor Visual de Equipo (Rankeds Modal) ───────────────────────────
+let _tempEditingUids = [];
+
+function openPassiveTeamEditor() {
+  const modal = document.getElementById('passive-team-editor-modal');
+  if (!modal) return;
+  _tempEditingUids = [...(state.passiveTeamUids || [])];
+  
+  // Limpiar vacíos o perdidos de the DB original for default
+  _tempEditingUids = _tempEditingUids.filter(uid => getPokemonByUid(uid) !== null);
+
+  modal.style.display = 'flex';
+  _renderPassiveEditor();
+}
+
+function closePassiveTeamEditor() {
+  document.getElementById('passive-team-editor-modal').style.display = 'none';
+}
+
+function _renderPassiveEditor() {
+  const slotsEl = document.getElementById('passive-editor-slots');
+  const poolEl  = document.getElementById('passive-editor-pool');
+  if (!slotsEl || !poolEl) return;
+  
+  // Render de los 6 Slots
+  let htmlSlots = '';
+  for (let i = 0; i < 6; i++) {
+    const uid = _tempEditingUids[i];
+    const p = uid ? getPokemonByUid(uid) : null;
+    htmlSlots += `
+      <div onclick="if(typeof _togglePassiveEditorSlot==='function')_togglePassiveEditorSlot(${i}, true)"
+      style="width:50px;height:50px;border:2px dashed ${p ? 'var(--purple)' : 'rgba(255,255,255,0.2)'};border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);cursor:pointer;position:relative;">
+        ${p ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dexNum||p.id}.png" style="width:100%;height:100%;image-rendering:pixelated;" onerror="this.style.display='none'">` : '<span style="color:#666;font-size:16px;">+</span>'}
+        ${p ? `<div style="position:absolute;top:-4px;right:-4px;background:var(--red);border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;">x</div>` : ''}
+      </div>
+    `;
+  }
+  slotsEl.innerHTML = htmlSlots;
+  
+  // Render Pool (Equipo + Caja combinados)
+  const allAvailable = [...(state.team || []), ...(state.box || [])].filter(p => !p.onMission);
+  let htmlPool = '';
+  
+  allAvailable.forEach(p => {
+    const isSelected = _tempEditingUids.includes(p.uid);
+    htmlPool += `
+      <div onclick="if(typeof _togglePassiveEditorSlot==='function')_togglePassiveEditorSlot('${p.uid}', false)"
+      style="border:1px solid ${isSelected ? 'var(--green)' : 'rgba(255,255,255,0.1)'};border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;cursor:pointer;background:${isSelected ? 'rgba(107,203,119,0.1)' : 'rgba(0,0,0,0.3)'};opacity:${isSelected ? '0.5' : '1'};">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dexNum||p.id}.png" style="width:40px;height:40px;image-rendering:pixelated;" onerror="this.style.display='none'">
+        <div style="font-family:'Press Start 2P',monospace;font-size:6px;margin-top:2px;text-align:center;word-break:break-all;">Lv${p.level}</div>
+      </div>
+    `;
+  });
+  
+  poolEl.innerHTML = htmlPool;
+}
+
+function _togglePassiveEditorSlot(uidOrIndex, isRemoving) {
+  if (isRemoving) {
+    if (_tempEditingUids[uidOrIndex]) {
+      _tempEditingUids.splice(uidOrIndex, 1);
+    }
+  } else {
+    // Toggle (Add/Remove UID)
+    if (_tempEditingUids.includes(uidOrIndex)) {
+      _tempEditingUids = _tempEditingUids.filter(u => u !== uidOrIndex);
+    } else {
+      if (_tempEditingUids.length < 6) {
+        _tempEditingUids.push(uidOrIndex);
+      }
+    }
+  }
+  _renderPassiveEditor();
+}
+
+function confirmPassiveTeamEdit() {
+  state.passiveTeamUids = [..._tempEditingUids];
+  scheduleSave();
+  closePassiveTeamEditor();
+  renderPassiveTeamPreview();
+  notify('Alineación guardada localmente.', '💾');
+}
+
 
 // ── Buscar equipo pasivo para el fallback ─────────────────────────────
 async function findPassiveOpponent() {
@@ -259,10 +385,25 @@ async function _checkForHumanOpponent() {
     // ¡Rival encontrado! Iniciar PvP normal vía invite
     _matchmakingStop();
     notify('¡Rival encontrado! Iniciando batalla...', '⚔️');
-    // Enviar invitación PvP al rival usando el sistema existente
-    const { data: prof } = await sb.from('profiles').select('username').eq('id', opponent.user_id).single();
-    if (typeof sendBattleInvite === 'function') {
-      sendBattleInvite(opponent.user_id, prof?.username || 'Rival');
+    
+    // Crear invitación forzada de Ranked Match
+    if (typeof sb !== 'undefined') {
+      await sb.from('battle_invites').insert({
+        challenger_id: currentUser.id,
+        opponent_id: opponent.user_id,
+        status: 'ranked_match',
+      });
+      // El jugador anfitrión (quien encontró al rival) se auto-conecta:
+      const { data: rows } = await sb.from('battle_invites')
+        .select('*').eq('challenger_id', currentUser.id).in('status', ['ranked_match', 'ranked_accepted'])
+        .order('created_at', { ascending: false }).limit(1);
+        
+      if (rows && rows.length > 0) {
+        if (typeof startPvpBattle === 'function') {
+          // host = true, isRanked = true
+          startPvpBattle(rows[0], true, true);
+        }
+      }
     }
   } catch(e) {
     // La tabla puede no existir — ignorar silenciosamente
@@ -307,13 +448,13 @@ async function _matchmakingFallbackToPassive() {
 // ── Cancelar búsqueda ─────────────────────────────────────────────────
 async function cancelRankedMatchmaking() {
   _matchmakingStop();
-  // Limpiar la fila de la cola en Supabase
-  if (_matchmakingQueueId) {
+  // Limpiar TODA fila de la cola en Supabase bajo nuestro user_id (para matar el ghost queue)
+  if (currentUser) {
     try {
-      await sb.from('ranked_queue').delete().eq('id', _matchmakingQueueId);
+      await sb.from('ranked_queue').delete().eq('user_id', currentUser.id);
     } catch(e) { /* ignorar */ }
-    _matchmakingQueueId = null;
   }
+  _matchmakingQueueId = null;
   notify('Búsqueda cancelada', '✖️');
 }
 
