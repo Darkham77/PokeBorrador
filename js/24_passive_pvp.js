@@ -124,25 +124,54 @@ function renderPassiveTeamPreview() {
   
   const uids = state.passiveTeamUids || [];
   if (!uids.length) {
-    el.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.3);align-self:center;">No configurado</span>';
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;border:1px dashed rgba(255,255,255,0.2);border-radius:12px;">
+        <span style="font-size:11px;color:rgba(255,255,255,0.3);">No configurado</span>
+      </div>`;
     return;
   }
   
   let validCount = 0;
   validCount = uids.reduce((acc, uid) => acc + (getPokemonByUid(uid) ? 1 : 0), 0);
   
-  if (validCount !== uids.length) {
-    el.innerHTML = '<span style="font-size:11px;color:rgba(255,59,59,0.9);align-self:center;">⚠️ Equipo Inválido (Pokémon soltado/intercambiado)</span>';
-    return;
-  }
+  const isValid = validCount === uids.length;
+  const borderColor = isValid ? 'var(--green)' : 'var(--red)';
+  const glow = isValid ? 'rgba(107,203,119,0.3)' : 'rgba(255,59,59,0.3)';
+  const label = isValid ? '✅ EQUIPO PREPARADO' : '❌ EQUIPO NO PREPARADO (Pokémon faltante)';
 
-  el.innerHTML = uids.map(uid => {
+  let htmlSprites = '';
+  uids.forEach(uid => {
     const p = getPokemonByUid(uid);
-    if (!p) return '';
+    if (!p) {
+      // Empty/Missing slot box
+      htmlSprites += `<div style="width:40px;height:40px;border:1px dashed var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,59,59,0.1);"><span style="color:var(--red);font-size:10px;">?</span></div>`;
+      return;
+    }
     const num = p.dexNum || p.id || '';
-    return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
-      style="width:40px;height:40px;image-rendering:pixelated;" title="${p.name}" onerror="this.style.display='none'">`;
-  }).join('');
+    const itemName = p.equippedItem || p.item || null;
+    let itemHtml = '';
+    
+    // Add item miniature logic if exists
+    if (itemName && typeof ITEM_DATA !== 'undefined' && ITEM_DATA[itemName] && ITEM_DATA[itemName].image) {
+       itemHtml = `<img src="${ITEM_DATA[itemName].image}" style="position:absolute;bottom:-4px;right:-4px;width:16px;height:16px;image-rendering:pixelated;filter:drop-shadow(0 0 2px #000);">`;
+    }
+
+    htmlSprites += `<div style="position:relative;width:40px;height:40px;background:rgba(255,255,255,0.05);border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid ${isValid ? 'rgba(107,203,119,0.4)': 'rgba(255,59,59,0.4)'};">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png" style="width:100%;height:100%;image-rendering:pixelated;" title="${p.name}" onerror="this.style.display='none'">
+      ${itemHtml}
+    </div>`;
+  });
+
+  el.innerHTML = `
+    <div style="display:flex;flex-direction:column;width:100%;gap:10px;padding:12px;border:2px solid ${borderColor};border-radius:14px;box-shadow:0 0 15px ${glow};background:rgba(0,0,0,0.4);">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;min-height:40px;">
+        ${htmlSprites}
+      </div>
+      <div style="text-align:center;font-family:'Press Start 2P',monospace;font-size:7px;color:${borderColor};">
+        ${label}
+      </div>
+    </div>
+  `;
 }
 
 // ── Guardar equipo pasivo ─────────────────────────────────────────────
@@ -192,11 +221,13 @@ async function savePassiveTeam(active = true) {
 
 // ── Editor Visual de Equipo (Rankeds Modal) ───────────────────────────
 let _tempEditingUids = [];
+let _passiveEditorSelectedUid = null;
 
 function openPassiveTeamEditor() {
   const modal = document.getElementById('passive-team-editor-modal');
   if (!modal) return;
   _tempEditingUids = [...(state.passiveTeamUids || [])];
+  _passiveEditorSelectedUid = null;
   
   // Limpiar vacíos o perdidos de the DB original for default
   _tempEditingUids = _tempEditingUids.filter(uid => getPokemonByUid(uid) !== null);
@@ -210,9 +241,10 @@ function closePassiveTeamEditor() {
 }
 
 function _renderPassiveEditor() {
-  const slotsEl = document.getElementById('passive-editor-slots');
-  const poolEl  = document.getElementById('passive-editor-pool');
-  if (!slotsEl || !poolEl) return;
+  const slotsEl   = document.getElementById('passive-editor-slots');
+  const poolEl    = document.getElementById('passive-editor-pool');
+  const previewEl = document.getElementById('passive-editor-preview');
+  if (!slotsEl || !poolEl || !previewEl) return;
   
   // Render de los 6 Slots
   let htmlSlots = '';
@@ -220,14 +252,53 @@ function _renderPassiveEditor() {
     const uid = _tempEditingUids[i];
     const p = uid ? getPokemonByUid(uid) : null;
     htmlSlots += `
-      <div onclick="if(typeof _togglePassiveEditorSlot==='function')_togglePassiveEditorSlot(${i}, true)"
+      <div onclick="if(typeof _selectPassiveEditorItem==='function')_selectPassiveEditorItem('${uid}')"
       style="width:50px;height:50px;border:2px dashed ${p ? 'var(--purple)' : 'rgba(255,255,255,0.2)'};border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);cursor:pointer;position:relative;">
         ${p ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dexNum||p.id}.png" style="width:100%;height:100%;image-rendering:pixelated;" onerror="this.style.display='none'">` : '<span style="color:#666;font-size:16px;">+</span>'}
-        ${p ? `<div style="position:absolute;top:-4px;right:-4px;background:var(--red);border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;">x</div>` : ''}
+        ${p && _tempEditingUids.includes(uid) ? `<div style="position:absolute;bottom:-4px;right:-4px;background:var(--green);border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;"><span style="color:#000;font-size:8px;">✓</span></div>` : ''}
       </div>
     `;
   }
   slotsEl.innerHTML = htmlSlots;
+
+  // Render Preview Panel
+  if (_passiveEditorSelectedUid) {
+    const sp = getPokemonByUid(_passiveEditorSelectedUid);
+    if (sp) {
+      previewEl.style.display = 'flex';
+      const isEquipped = _tempEditingUids.includes(sp.uid);
+      const itemName = sp.equippedItem || sp.item || 'Ninguno';
+      let itemImg = '';
+      if (itemName !== 'Ninguno' && typeof ITEM_DATA !== 'undefined' && ITEM_DATA[itemName] && ITEM_DATA[itemName].image) {
+        itemImg = `<img src="${ITEM_DATA[itemName].image}" style="width:16px;height:16px;image-rendering:pixelated;margin-right:4px;">`;
+      }
+      
+      previewEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:16px;width:100%;">
+          <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:8px;">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sp.dexNum||sp.id}.png" style="width:60px;height:60px;image-rendering:pixelated;" onerror="this.style.display='none'">
+          </div>
+          <div style="flex:1;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin-bottom:6px;">${sp.name} <span style="font-size:9px;color:var(--gray);">Lv${sp.level}</span></div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.8);margin-bottom:4px;display:flex;align-items:center;">
+              <span style="font-weight:bold;margin-right:6px;">Objeto:</span> ${itemImg} ${itemName}
+            </div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.8);margin-bottom:4px;">
+              <span style="font-weight:bold;">Hab:</span> ${sp.ability || 'Genérica'} | <span style="font-weight:bold;">Nat:</span> ${sp.nature || 'Seria'}
+            </div>
+          </div>
+        </div>
+        <button onclick="_togglePassiveEditorSelection()" style="margin-top:12px;width:100%;font-family:'Press Start 2P',monospace;font-size:9px;padding:12px;border:none;border-radius:8px;cursor:pointer;
+          background:${isEquipped ? 'var(--red)' : 'var(--green)'};color:${isEquipped ? '#fff' : '#000'};">
+          ${isEquipped ? 'Quitar del Equipo' : 'Asignar al Equipo'}
+        </button>
+      `;
+    } else {
+      previewEl.style.display = 'none';
+    }
+  } else {
+    previewEl.style.display = 'none';
+  }
   
   // Render Pool (Equipo + Caja combinados)
   const allAvailable = [...(state.team || []), ...(state.box || [])].filter(p => !p.onMission);
@@ -235,11 +306,13 @@ function _renderPassiveEditor() {
   
   allAvailable.forEach(p => {
     const isSelected = _tempEditingUids.includes(p.uid);
+    const isPreviewing = _passiveEditorSelectedUid === p.uid;
     htmlPool += `
-      <div onclick="if(typeof _togglePassiveEditorSlot==='function')_togglePassiveEditorSlot('${p.uid}', false)"
-      style="border:1px solid ${isSelected ? 'var(--green)' : 'rgba(255,255,255,0.1)'};border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;cursor:pointer;background:${isSelected ? 'rgba(107,203,119,0.1)' : 'rgba(0,0,0,0.3)'};opacity:${isSelected ? '0.5' : '1'};">
+      <div onclick="if(typeof _selectPassiveEditorItem==='function')_selectPassiveEditorItem('${p.uid}')"
+      style="border:1px solid ${isPreviewing ? 'var(--purple)' : (isSelected ? 'var(--green)' : 'rgba(255,255,255,0.1)')};border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;cursor:pointer;background:${isPreviewing ? 'rgba(199,125,255,0.2)' : (isSelected ? 'rgba(107,203,119,0.1)' : 'rgba(0,0,0,0.3)')};opacity:${!isPreviewing && isSelected ? '0.5' : '1'};position:relative;">
         <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dexNum||p.id}.png" style="width:40px;height:40px;image-rendering:pixelated;" onerror="this.style.display='none'">
         <div style="font-family:'Press Start 2P',monospace;font-size:6px;margin-top:2px;text-align:center;word-break:break-all;">Lv${p.level}</div>
+        ${(p.equippedItem || p.item) && typeof ITEM_DATA !== 'undefined' && ITEM_DATA[p.equippedItem || p.item]?.image ? `<img src="${ITEM_DATA[p.equippedItem || p.item].image}" style="position:absolute;top:2px;right:2px;width:12px;height:12px;image-rendering:pixelated;">` : ''}
       </div>
     `;
   });
@@ -247,19 +320,23 @@ function _renderPassiveEditor() {
   poolEl.innerHTML = htmlPool;
 }
 
-function _togglePassiveEditorSlot(uidOrIndex, isRemoving) {
-  if (isRemoving) {
-    if (_tempEditingUids[uidOrIndex]) {
-      _tempEditingUids.splice(uidOrIndex, 1);
-    }
+function _selectPassiveEditorItem(uid) {
+  if (uid === 'undefined' || !uid) return;
+  _passiveEditorSelectedUid = uid;
+  _renderPassiveEditor();
+}
+
+function _togglePassiveEditorSelection() {
+  if (!_passiveEditorSelectedUid) return;
+  if (_tempEditingUids.includes(_passiveEditorSelectedUid)) {
+    // Quitar
+    _tempEditingUids = _tempEditingUids.filter(u => u !== _passiveEditorSelectedUid);
   } else {
-    // Toggle (Add/Remove UID)
-    if (_tempEditingUids.includes(uidOrIndex)) {
-      _tempEditingUids = _tempEditingUids.filter(u => u !== uidOrIndex);
+    // Agregar
+    if (_tempEditingUids.length < 6) {
+      _tempEditingUids.push(_passiveEditorSelectedUid);
     } else {
-      if (_tempEditingUids.length < 6) {
-        _tempEditingUids.push(uidOrIndex);
-      }
+      notify('¡Tu equipo ya tiene 6 Pokémon!', '⚠️');
     }
   }
   _renderPassiveEditor();
@@ -393,16 +470,30 @@ async function _checkForHumanOpponent() {
         opponent_id: opponent.user_id,
         status: 'ranked_match',
       });
-      // El jugador anfitrión (quien encontró al rival) se auto-conecta:
+      // El jugador anfitrión espera confirmación (si el rival es un fantasma, devolverá declined o timeout)
       const { data: rows } = await sb.from('battle_invites')
-        .select('*').eq('challenger_id', currentUser.id).in('status', ['ranked_match', 'ranked_accepted'])
+        .select('*').eq('challenger_id', currentUser.id).eq('status', 'ranked_match')
         .order('created_at', { ascending: false }).limit(1);
         
       if (rows && rows.length > 0) {
-        if (typeof startPvpBattle === 'function') {
-          // host = true, isRanked = true
-          startPvpBattle(rows[0], true, true);
-        }
+        const inviteId = rows[0].id;
+        let checks = 0;
+        const waitInterval = setInterval(async () => {
+          checks++;
+          const { data: currentInv } = await sb.from('battle_invites').select('status').eq('id', inviteId).single();
+          
+          if (currentInv?.status === 'ranked_accepted') {
+            clearInterval(waitInterval);
+            if (typeof startPvpBattle === 'function') startPvpBattle(rows[0], true, true);
+          } else if (!currentInv || currentInv.status === 'declined' || checks > 10) {
+            // Fantasma detectado o TimeOut (8 segundos)
+            clearInterval(waitInterval);
+            // Purgar de la DB el fantasma del rival solo por si acaso
+            try { await sb.from('ranked_queue').delete().eq('user_id', opponent.user_id); } catch(e){}
+            notify('El rival no respondió. Buscando IA...', '⚠️');
+            _matchmakingFallbackToPassive();
+          }
+        }, 800);
       }
     }
   } catch(e) {

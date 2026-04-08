@@ -20,6 +20,15 @@
         _seenInvites.add(inv.id);
         
         if (inv.status === 'ranked_match') {
+          // Ghost Queue Protection: Si NO estamos buscando partida localmente, evadimos
+          if (typeof window._matchmakingInterval === 'undefined' || !window._matchmakingInterval) {
+            // Rechazamos pacíficamente la invitación para no trabar al rival
+            await sb.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id);
+            // Purgamos toda presencia de nuestra ID de la cola ranked
+            try { await sb.from('ranked_queue').delete().eq('user_id', currentUser.id); } catch(e){}
+            return;
+          }
+
           // Auto-accept and start directly
           document.getElementById('pvp-invite-popup')?.remove();
           await sb.from('battle_invites').update({ status: 'ranked_accepted' }).eq('id', inv.id);
