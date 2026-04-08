@@ -429,7 +429,8 @@ function showPokemonDetails(p, index, location = 'team', extraData = null) {
     <div style="font-size:14px;font-weight:900;color:#eaeaea;">${s.val}</div>
   </div>`).join('');
 
-  const expPct = p.expNeeded ? Math.min(100, (p.exp || 0) / p.expNeeded * 100) : 0;
+  const isMaxLevel = p.level >= 100;
+  const expPct = isMaxLevel ? 100 : (p.expNeeded ? Math.min(100, (p.exp || 0) / p.expNeeded * 100) : 0);
   const maxL = (typeof getMaxObeyLevel === 'function') ? getMaxObeyLevel() : 100;
   const obedienceWarning = (location === 'team' && p.level > maxL) ? `
     <div style="margin:12px 0;background:rgba(255,59,59,0.1);border:1px solid var(--red);border-radius:10px;padding:8px 12px;font-size:10px;color:#ff4d4d;line-height:1.4;font-weight:700;">
@@ -475,12 +476,15 @@ function showPokemonDetails(p, index, location = 'team', extraData = null) {
       </div>
       ${location === 'team' ? `
       <div style="margin-top:12px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <span style="font-size:10px;color:var(--gray);font-weight:700;">EXPERIENCIA</span>
-          <span style="font-size:10px;color:var(--purple-light);">${p.exp || 0} / ${p.expNeeded || 0}</span>
+          ${isMaxLevel
+            ? `<span style="font-size:10px;font-weight:900;color:#FFD700;font-family:'Press Start 2P',monospace;letter-spacing:1px;">MAX</span>`
+            : `<span style="font-size:10px;color:var(--purple-light);">${p.exp || 0} / ${p.expNeeded || 0}</span>`
+          }
         </div>
         <div style="background:rgba(0,0,0,0.3);border-radius:10px;height:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);">
-          <div style="width:${expPct}%;height:100%;background:linear-gradient(90deg,var(--purple),var(--purple-light));border-radius:10px;transition:width 0.5s;"></div>
+          <div style="width:${expPct}%;height:100%;background:${isMaxLevel ? 'linear-gradient(90deg,#FFD700,#FFF176)' : 'linear-gradient(90deg,var(--purple),var(--purple-light))'};border-radius:10px;transition:width 0.5s;${isMaxLevel ? 'box-shadow:0 0 6px rgba(255,215,0,0.5);' : ''}"></div>
         </div>
       </div>` : ''}
     </div>

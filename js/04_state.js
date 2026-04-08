@@ -429,10 +429,23 @@
       p.moves = uniqueMoves;
     }
 
+    function sanitizeLevel100(p) {
+      if (!p) return;
+      if (p.level >= 100) {
+        p.level = 100;
+        p.exp = 0;
+        p.expNeeded = Infinity;
+      }
+    }
+
     function sanitizeAllData(state) {
       console.log("[Sanitizer] Starting global data repair...");
-      if (Array.isArray(state.team)) state.team.forEach(sanitizeMoves);
-      if (Array.isArray(state.box)) state.box.forEach(sanitizeMoves);
+      if (Array.isArray(state.team)) {
+        state.team.forEach(p => { sanitizeMoves(p); sanitizeLevel100(p); });
+      }
+      if (Array.isArray(state.box)) {
+        state.box.forEach(p => { sanitizeMoves(p); sanitizeLevel100(p); });
+      }
       console.log("[Sanitizer] Data repair complete.");
     }
 

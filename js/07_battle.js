@@ -377,10 +377,19 @@ function updateBattleUI() {
 
   const expBar = document.getElementById('player-exp-bar');
   if (expBar) {
-    const exp = b.player?.exp || 0;
-    const need = b.player?.expNeeded || 0;
-    const expPct = need > 0 ? Math.max(0, Math.min(1, exp / need)) : 0;
-    expBar.style.width = (expPct * 100) + '%';
+    const isMax = (b.player?.level || 0) >= 100;
+    if (isMax) {
+      expBar.style.width = '100%';
+      expBar.style.background = 'linear-gradient(90deg,#FFD700,#FFF176)';
+      expBar.style.boxShadow = '0 0 6px rgba(255,215,0,0.6)';
+    } else {
+      const exp = b.player?.exp || 0;
+      const need = b.player?.expNeeded || 0;
+      const expPct = need > 0 ? Math.max(0, Math.min(1, exp / need)) : 0;
+      expBar.style.width = (expPct * 100) + '%';
+      expBar.style.background = '';
+      expBar.style.boxShadow = '';
+    }
   }
   // Render Enemy Team Status (for Trainers/Gyms/PvP)
   const teamStatus = document.getElementById('enemy-team-status');
@@ -2924,8 +2933,9 @@ function awardBattleExperience(isCapture = false) {
   const baseExp = Math.floor(b.enemy.level * expMultiplier);
 
   // winners = current active + those who participated + exp share holders
+  // Pokémon nivel 100 se excluyen: no reciben EXP y no reducen la porción de los demás
   const winners = state.team.filter(p =>
-    (p === b.player || (p.uid && p.uid === b.player?.uid) || (b.participants && b.participants.includes(p.uid)) || p.heldItem === 'Compartir EXP') && p.hp > 0
+    (p === b.player || (p.uid && p.uid === b.player?.uid) || (b.participants && b.participants.includes(p.uid)) || p.heldItem === 'Compartir EXP') && p.hp > 0 && p.level < 100
   );
 
   winners.forEach(p => {
@@ -2966,16 +2976,17 @@ function awardBattleExperience(isCapture = false) {
     
     addLog(`${p.name} ganó <span style="color:#6BCB77;font-weight:bold;">${pExp} EXP</span>.`, 'log-player');
 
-    if (p.level < 100) {
-      p.exp = (p.exp || 0) + pExp;
-      let needed = p.expNeeded;
-      while (p.exp >= needed && p.level < 100) {
-        p.exp -= needed;
-        const pending = levelUpPokemon(p);
-        addLog(`¡${p.name} subió al <span style="color:#3b82f6;font-weight:bold;">nivel ${p.level}</span>!`, 'log-info');
-        if (pending) pending.forEach(mv => b.learnQueue.push({ pokemon: p, move: mv }));
-        needed = p.expNeeded;
-      }
+    // Nivel 100: no recibir EXP (ya filtrado en winners, pero doble check por seguridad)
+    if (p.level >= 100) return;
+
+    p.exp = (p.exp || 0) + pExp;
+    let needed = p.expNeeded;
+    while (p.exp >= needed && p.level < 100) {
+      p.exp -= needed;
+      const pending = levelUpPokemon(p);
+      addLog(`¡${p.name} subió al <span style="color:#3b82f6;font-weight:bold;">nivel ${p.level}</span>!`, 'log-info');
+      if (pending) pending.forEach(mv => b.learnQueue.push({ pokemon: p, move: mv }));
+      needed = p.expNeeded;
     }
   });
 
