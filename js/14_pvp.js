@@ -145,11 +145,8 @@
         myTeam, enemyTeam: null,
         myHp: myTeam.map(p => p.hp), enemyHp: [],
         over: false, channel: null, enemyUsername,
-        // ── Turn state ──────────────────────────────────────
-        // phase: 'sync' | 'choosing' | 'waiting' | 'resolving' | 'faint_switch' | 'opponent_disconnected'
         phase: 'sync',
-        myPick: null,       // { type:'move', moveIndex } | { type:'switch', switchIndex }
-        enemyPick: null,    // host only: client's committed pick
+        myPick: null, enemyPick: null,
         myStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 },
         enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 },
         _teamAcknowledged: false,
@@ -160,118 +157,150 @@
       };
       _pvpLock = false;
 
-      const channelName = 'pvp-' + invite.id;
-      _pvpState.channel = sb.channel(channelName, { config: { broadcast: { self: false } } })
+      const chName = 'pvp-' + invite.id;
+      _pvpState.channel = sb.channel(chName, { config: { broadcast: { self: false } } });
+      _pvpRegisterListeners(_pvpState.channel);
 
-        // ── Team sync ─────────────────────────────────────────
+      _pvpState.channel.subscribe(status => {
+        if (status !== 'SUBSCRIBED') return;
+        showPvpScreen();
+        state.activeBattle = { isPvP: true, inviteId: invite.id, isHost, opponentId, enemyUsername, timestamp: Date.now() };
+        saveGame(false);
+        _pvpStartHeartbeatLoop();
+
+        const _ann = setInterval(() => {
+          if (_pvpState._teamAcknowledged || _pvpState.over || _pvpState._announceCount++ > 40) {
+            clearInterval(_ann); return;
+          }
+          _pvpState.channel.send({ type: 'broadcast', event: 'pvp_team', payload: { team: myTeam } });
+        }, 1000);
+      });
+    }
+
+    async function attemptPvpReconnection(ab) {
+      _pvpState = {
+        invite: { id: ab.inviteId },
+        isHost: ab.isHost,
+        opponentId: ab.opponentId,
+        enemyUsername: ab.enemyUsername,
+        myActive: 0, enemyActive: 0,
+        myTeam: state.team.map(p => JSON.parse(JSON.stringify(p))),
+        enemyTeam: null,
+        myHp: state.team.map(p => p.hp), enemyHp: [],
+        over: false,
+        phase: 'sync',
+        myPick: null, enemyPick: null,
+        myStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 },
+        enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 },
+        _teamAcknowledged: true,
+        _lastActivityTime: Date.now(),
+        _opponentDisconnected: false
+      };
+
+      const chName = 'pvp-' + ab.inviteId;
+      _pvpState.channel = sb.channel(chName, { config: { broadcast: { self: false } } });
+      _pvpRegisterListeners(_pvpState.channel);
+
+      _pvpState.channel.subscribe(status => {
+        if (status !== 'SUBSCRIBED') return;
+        showPvpScreen();
+        addPvpLog('🔄 Sincronizando batalla...', 'log-info');
+        _pvpState.channel.send({ type: 'broadcast', event: 'pvp_sync_request', payload: {} });
+        _pvpStartHeartbeatLoop();
+      });
+    }
+
+    function _pvpRegisterListeners(ch) {
+      ch
         .on('broadcast', { event: 'pvp_team' }, ({ payload }) => {
-          // Always ACK so sender stops re-broadcasting
-          _pvpState.channel.send({ type: 'broadcast', event: 'pvp_team_ack', payload: {} });
+          ch.send({ type: 'broadcast', event: 'pvp_team_ack', payload: {} });
           if (_pvpState.enemyTeam) return;
           _pvpState.enemyTeam = payload.team;
           _pvpState.enemyHp = payload.team.map(p => p.hp);
           _pvpState.phase = 'choosing';
           renderPvpBattle();
           _pvpLoadSprites();
-          addPvpLog('¡La batalla comenzó! Elegí tu movimiento.', 'log-info');
+          addPvpLog('¡Batalla iniciada!', 'log-info');
         })
-        .on('broadcast', { event: 'pvp_team_ack' }, () => {
-          _pvpState._teamAcknowledged = true;
+        .on('broadcast', { event: 'pvp_team_ack' }, () => { _pvpState._teamAcknowledged = true; })
+        .on('broadcast', { event: 'pvp_sync_request' }, () => {
+          if (_pvpState.over || _pvpState.phase === 'sync') return;
+          ch.send({
+            type: 'broadcast', event: 'pvp_sync_data',
+            payload: {
+              enemyTeam: _pvpState.myTeam, enemyHp: _pvpState.myHp, enemyActive: _pvpState.myActive, enemyStages: _pvpState.myStages,
+              myHp: _pvpState.enemyHp, myActive: _pvpState.enemyActive, myStages: _pvpState.enemyStages, phase: _pvpState.phase
+            }
+          });
         })
-
-        // ── Turn events ───────────────────────────────────────
+        .on('broadcast', { event: 'pvp_sync_data' }, ({ payload }) => {
+          if (_pvpState.phase !== 'sync' || _pvpState.over) return;
+          _pvpState.enemyTeam = payload.enemyTeam;
+          _pvpState.enemyHp = payload.enemyHp;
+          _pvpState.enemyActive = payload.enemyActive;
+          _pvpState.enemyStages = payload.enemyStages;
+          _pvpState.myHp = payload.myHp;
+          _pvpState.myActive = payload.myActive;
+          _pvpState.myStages = payload.myStages;
+          _pvpState.phase = payload.phase;
+          addPvpLog('✅ Sincronizado.', 'log-info');
+          renderPvpBattle();
+          _pvpLoadSprites();
+        })
         .on('broadcast', { event: 'pvp_pick' }, ({ payload }) => {
-          // Only the HOST processes picks and resolves the turn
           if (_pvpState.over || !_pvpState.isHost) return;
           _pvpState.enemyPick = payload;
           if (_pvpState.myPick !== null) _pvpResolve();
         })
         .on('broadcast', { event: 'pvp_turn_result' }, ({ payload }) => {
-          // Only the CLIENT applies the result (host already applied it in _pvpResolve)
           if (_pvpState.over || _pvpState.isHost) return;
           _pvpApplyTurnResult(payload);
         })
-
-        // ── Forced switch after faint ─────────────────────────
         .on('broadcast', { event: 'pvp_forced_switch' }, ({ payload }) => {
           if (_pvpState.over) return;
           _pvpState.enemyActive = payload.index;
-          const ep = _pvpState.enemyTeam[payload.index];
-          addPvpLog(`¡${ep?.name} salió a combatir!`, 'log-enemy');
           _pvpUpdateEnemy();
-          // If we were waiting for the rival's forced switch, start the next turn
           if (_pvpState.phase === 'faint_switch') {
-            _pvpState.phase = 'choosing';
-            _pvpState.myPick = null;
+            _pvpState.phase = 'choosing'; _pvpState.myPick = null;
             if (_pvpState.isHost) _pvpState.enemyPick = null;
             _pvpRenderMoves();
-            addPvpLog('─── Nuevo turno ───', 'log-info');
           }
         })
-
-        .on('broadcast', { event: 'pvp_forfeit' }, () => {
-          if (!_pvpState.over) pvpEnd(true);
-        })
-
-        // ── Heartbeat y reconexion ──────────────────────────────────────
+        .on('broadcast', { event: 'pvp_forfeit' }, () => { if (!_pvpState.over) pvpEnd(true); })
         .on('broadcast', { event: 'pvp_heartbeat' }, () => {
           if (_pvpState.over) return;
           _pvpState._lastActivityTime = Date.now();
-          // Si el rival se reconecta, limpiar el timer de desconexion
           if (_pvpState._opponentDisconnected) {
             _pvpState._opponentDisconnected = false;
             _pvpState.phase = 'choosing';
-            addPvpLog('🔄 ¡El rival se reconectó!', 'log-info');
-            if (_pvpState._disconnectTimer) {
-              clearTimeout(_pvpState._disconnectTimer);
-              _pvpState._disconnectTimer = null;
-            }
+            addPvpLog('🔄 ¡Rival reconectado!', 'log-info');
+            if (_pvpState._disconnectTimer) { clearTimeout(_pvpState._disconnectTimer); _pvpState._disconnectTimer = null; }
             renderPvpBattle();
           }
-        })
-
-        .subscribe(status => {
-          if (status !== 'SUBSCRIBED') return;
-          showPvpScreen();
-          // Guardar el estado PvP activo para que un F5 lo restaure
-          state.activeBattle = {
-            isPvP: true,
-            inviteId: invite.id,
-            isHost,
-            opponentId,
-            enemyUsername,
-          };
-          saveGame(false);
-          // Keep re-announcing own team until the rival sends pvp_team_ack.
-          const _ann = setInterval(() => {
-            if (_pvpState._teamAcknowledged || _pvpState.over || _pvpState._announceCount++ > 40) {
-              clearInterval(_ann); return;
-            }
-            _pvpState.channel.send({ type: 'broadcast', event: 'pvp_team', payload: { team: myTeam } });
-          }, 1500);
-          // Heartbeat cada 5s para detectar desconexiones
-          const _heartbeat = setInterval(() => {
-            if (_pvpState.over) { clearInterval(_heartbeat); return; }
-            _pvpState.channel.send({ type: 'broadcast', event: 'pvp_heartbeat', payload: {} });
-          }, 5000);
-          // Timer de desconexion: si no hay actividad en 10s, marcar como desconectado
-          const _checkDisconnect = setInterval(() => {
-            if (_pvpState.over || _pvpState._opponentDisconnected) { clearInterval(_checkDisconnect); return; }
-            const timeSinceActivity = Date.now() - _pvpState._lastActivityTime;
-            if (timeSinceActivity > 10000) {
-              _pvpState._opponentDisconnected = true;
-              _pvpState.phase = 'opponent_disconnected';
-              addPvpLog('⚠️ El rival se desconectó. Esperando reconexion... (60s)', 'log-enemy');
-              renderPvpBattle();
-              if (_pvpState._disconnectTimer) clearTimeout(_pvpState._disconnectTimer);
-              _pvpState._disconnectTimer = setTimeout(() => {
-                if (_pvpState.over || !_pvpState._opponentDisconnected) return;
-                addPvpLog('💯 El rival no se reconectó. ¡Ganaste por abandono!', 'log-info');
-                pvpEnd(true);
-              }, 60000);
-            }
-          }, 2000);
         });
+    }
+
+    function _pvpStartHeartbeatLoop() {
+      const hb = setInterval(() => {
+        if (_pvpState.over) { clearInterval(hb); return; }
+        _pvpState.channel.send({ type: 'broadcast', event: 'pvp_heartbeat', payload: {} });
+      }, 5000);
+
+      const cd = setInterval(() => {
+        if (_pvpState.over) { clearInterval(cd); return; }
+        const diff = Date.now() - _pvpState._lastActivityTime;
+        if (diff > 10000 && !_pvpState._opponentDisconnected) {
+          _pvpState._opponentDisconnected = true;
+          _pvpState.phase = 'opponent_disconnected';
+          addPvpLog('⚠️ Rival desconectado...', 'log-enemy');
+          renderPvpBattle();
+          _pvpState._disconnectTimer = setTimeout(() => {
+            if (_pvpState.over || !_pvpState._opponentDisconnected) return;
+            addPvpLog('🏳️ Victoria por abandono.', 'log-info');
+            pvpEnd(true);
+          }, 60000);
+        }
+      }, 2000);
     }
 
     // ── PvP Screen ───────────────────────────────────────────────
@@ -280,37 +309,36 @@
       if (!ov) {
         ov = document.createElement('div');
         ov.id = 'pvp-overlay';
-        ov.style.cssText = 'position:fixed;inset:0;z-index:600;background:#0d1117;display:flex;flex-direction:column;overflow:hidden;';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:600;background:#0d1117;display:flex;align-items:center;justify-content:center;overflow:hidden;';
         document.body.appendChild(ov);
       }
       const me = _pvpState.myTeam[_pvpState.myActive];
       const enemy = _pvpState.enemyTeam?.[_pvpState.enemyActive];
 
+      // Usamos las clases oficiales .battle-container para asegurar responsividad móvil automática
       ov.innerHTML = `
-      <div class="battle-container" style="max-width:680px;margin:0 auto;padding:16px;height:100%;display:flex;flex-direction:column;">
+      <div class="battle-container" style="height:auto; max-height:98vh; display:flex; flex-direction:column; overflow:visible;">
         <!-- Header Info -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;z-index:10;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;z-index:10;width:100%;">
           <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:40px;height:40px;border-radius:12px;background:rgba(199,125,255,0.1);display:flex;align-items:center;justify-content:center;border:1px solid rgba(199,125,255,0.2);">
-               <img src="https://play.pokemonshowdown.com/sprites/trainers/red.png" alt="Trainer" style="height:32px;image-rendering:pixelated;" onerror="this.style.display='none'">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(199,125,255,0.1);display:flex;align-items:center;justify-content:center;border:1px solid rgba(199,125,255,0.2);">
+               <img src="https://play.pokemonshowdown.com/sprites/trainers/red.png" alt="Trainer" style="height:28px;image-rendering:pixelated;" onerror="this.style.display='none'">
             </div>
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--purple);margin-bottom:2px;">⚔️ MODO RANKED</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);margin-bottom:2px;">⚔️ MODO RANKED</div>
               <div id="pvp-status-msg" style="font-size:10px;color:var(--yellow);font-weight:700;">⏳ Conectando...</div>
             </div>
           </div>
-          <button onclick="pvpForfeit()" 
-            style="font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 16px;border:none;border-radius:12px;cursor:pointer;background:rgba(255,59,59,0.1);color:var(--red);border:1px solid rgba(255,59,59,0.2);transition:all 0.2s;"
-            onmouseover="this.style.background='rgba(255,59,59,0.2)'" onmouseout="this.style.background='rgba(255,59,59,0.1)'">
-            🏳️ RENDIRSE
+          <button onclick="pvpForfeit()" class="action-btn"
+            style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;background:rgba(255,59,59,0.1);color:var(--red);border-color:rgba(255,59,59,0.3);">
+            🏳️ RENDIRESE
           </button>
         </div>
 
-        <!-- Arena (Modern Layout) -->
-        <div class="battle-arena" id="pvp-arena" style="position:relative;overflow:hidden;margin-bottom:16px;flex:1;min-height:280px;">
+        <!-- Arena -->
+        <div class="battle-arena" id="pvp-arena" style="margin-bottom:12px;">
           <canvas id="pvp-battle-bg-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;border-radius:18px;"></canvas>
-          <div class="battle-combatants" style="height:100%;">
-            <!-- TOP-LEFT: Enemy HP info -->
+          <div class="battle-combatants">
             <div style="display:flex;align-items:flex-start;justify-content:flex-start;">
               <div class="battle-pokemon-info">
                 <div style="font-size:9px;color:var(--yellow);font-weight:700;margin-bottom:2px;" id="pvp-enemy-trainer">
@@ -322,22 +350,16 @@
                 <div class="battle-hp-text" id="pvp-enemy-hp-text">${enemy ? enemy.hp + '/' + enemy.maxHp + ' HP' : '???'}</div>
               </div>
             </div>
-
-            <!-- TOP-RIGHT: Enemy sprite -->
             <div style="display:flex;align-items:flex-start;justify-content:flex-end;">
               <div id="pvp-enemy-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-start;justify-content:flex-end;">
                 <img id="pvp-enemy-img" src="" alt="" style="max-height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
               </div>
             </div>
-
-            <!-- BOTTOM-LEFT: My sprite -->
             <div style="display:flex;align-items:flex-end;justify-content:flex-start;">
               <div id="pvp-player-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-end;justify-content:flex-start;">
                 <img id="pvp-player-img" src="" alt="" style="max-height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
               </div>
             </div>
-
-            <!-- BOTTOM-RIGHT: My HP info -->
             <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:10px;">
               <div class="battle-pokemon-info" style="text-align:right;">
                 <div class="battle-name" id="pvp-player-name">${me?.name || '???'}</div>
@@ -349,21 +371,15 @@
           </div>
         </div>
 
-        <!-- Log (Modern) -->
-        <div id="pvp-log" class="battle-log" style="height:80px;margin-bottom:16px;">
-           <div class="log-entry log-info">Estableciendo conexión estratégica...</div>
-        </div>
+        <div id="pvp-log" class="battle-log" style="height:60px; margin-bottom:12px;"></div>
 
-        <!-- Move Panel -->
-        <div id="pvp-move-panel" style="z-index:10;">
-          <div id="pvp-move-buttons" class="battle-actions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"></div>
-          <div class="action-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <button class="action-btn" onclick="pvpShowSwitch()"
-              style="background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);color:var(--purple);height:48px;">
+        <div id="pvp-move-panel" style="z-index:10; width:100%;">
+          <div id="pvp-move-buttons" class="battle-actions" style="margin-bottom:12px;"></div>
+          <div class="action-row no-catch" style="margin-bottom:8px;">
+            <button class="action-btn" id="btn-switch" onclick="pvpShowSwitch()" style="background:rgba(199,125,255,0.15); border:1px solid rgba(199,125,255,0.3); color:var(--purple);">
               🔄 CAMBIAR
             </button>
-            <button class="action-btn" onclick="pvpForfeit()"
-              style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);color:var(--red);height:48px;">
+            <button class="action-btn" id="btn-run" onclick="pvpForfeit()" style="background:rgba(255,59,59,0.1); border:1px solid rgba(255,59,59,0.3); color:var(--red);">
               🏳️ RENDIRSE
             </button>
           </div>
@@ -438,22 +454,18 @@
         const ico = CAT_ICO[md.cat] || '⚔️';
         
         const disabled = mv.pp <= 0 || waiting;
-        const opacity = waiting ? '0.4' : '1';
 
-        // Replicamos el diseño 'action-btn' pero con personalización de tipo
+        // Estructura idéntica a 07_battle.js para mantener fidelidad visual con .move-btn
         return `
-        <button onclick="pvpUseMove(${i})" ${disabled ? 'disabled' : ''} class="action-btn"
-          style="display:flex;flex-direction:column;align-items:flex-start;padding:10px 12px;height:auto;min-height:56px;
-                 background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-left:4px solid ${col};
-                 opacity:${opacity};cursor:${disabled ? 'default' : 'pointer'};transition:all 0.2s;position:relative;overflow:hidden;">
-          
-          <!-- Tipo / Icono de Fondo -->
-          <div style="position:absolute;right:8px;top:8px;font-size:18px;opacity:0.1;pointer-events:none;">${ico}</div>
-          
-          <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:#fff;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.5px;">${moveName}</div>
-          <div style="display:flex;justify-content:space-between;width:100%;align-items:center;font-size:10px;font-weight:700;">
-            <span style="color:${col};background:${col}15;padding:1px 6px;border-radius:4px;border:1px solid ${col}33;">${md.type || 'Normal'}</span>
-            <span style="color:var(--gray);font-family:'Press Start 2P';font-size:7px;">PP ${mv.pp}/${mv.maxPP}</span>
+        <button class="move-btn" ${disabled ? 'disabled' : ''}
+          style="--move-color: ${col}; opacity: ${waiting ? '0.4' : '1'}; cursor: ${disabled ? 'default' : 'pointer'};"
+          onclick="pvpUseMove(${i})">
+          <span class="move-name">${moveName}</span>
+          <div class="move-pp" style="margin-top: 2px;">
+            <span class="type-badge type-${(md.type || 'normal').toLowerCase()}" style="font-size:8px; padding:2px 6px; border-radius:6px;">${md.type || '???'}</span>
+            <span style="display:flex; align-items:center; gap:4px;">
+              ${ico} PP:${mv.pp || 0}/${mv.maxPP || 0}
+            </span>
           </div>
         </button>`;
       }).join('');

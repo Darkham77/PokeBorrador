@@ -15,35 +15,70 @@ function restoreActiveBattle() {
     return;
   }
 
-  // ── Caso PvP: la batalla online no se puede restaurar (canal cerrado), se considera derrota por abandono
+  // ── Caso PvP: Permitir reconexión si es reciente (< 60s) ──────────────────
   if (ab.isPvP) {
     const ov = document.createElement('div');
     ov.id = 'restore-battle-overlay';
     ov.style.cssText = 'position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease;';
-    ov.innerHTML = `
-          <div style="background:var(--card);border-radius:24px;padding:32px;max-width:380px;width:100%;
-            border:2px solid var(--red);text-align:center;box-shadow:0 0 40px rgba(239,68,68,0.3);">
-            <div style="font-size:52px;margin-bottom:12px;">⚠️</div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--red);margin-bottom:12px;">BATALLA PvP ABANDONADA</div>
-            <div style="font-size:13px;color:#eee;margin:12px 0;line-height:1.7;">
-              Abandonaste una batalla PvP contra <strong>${ab.enemyUsername || 'un rival'}</strong> recargando la página.<br>
-              <span style="color:var(--red);font-weight:bold;">Eso se considera derrota.</span>
-            </div>
-            <button id="restore-pvp-close-btn"
-              style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 28px;border:none;border-radius:14px;
-                cursor:pointer;background:linear-gradient(135deg,#6b7280,#4b5563);color:#fff;width:100%;">
-              CONTINUAR
+    
+    // Si la batalla es demasiado vieja (> 1 min), ya se considera derrota definitiva
+    const isTooOld = (now - (ab.timestamp || 0)) > 60000;
+    
+    if (isTooOld) {
+      ov.innerHTML = `
+        <div style="background:var(--card);border-radius:24px;padding:32px;max-width:380px;width:100%;border:2px solid var(--red);text-align:center;box-shadow:0 0 40px rgba(239,68,68,0.3);">
+          <div style="font-size:52px;margin-bottom:12px;">⚠️</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--red);margin-bottom:12px;">BATALLA PvP EXPIRADA</div>
+          <div style="font-size:13px;color:#eee;margin:12px 0;line-height:1.7;">
+            La batalla contra <strong>${ab.enemyUsername || 'el rival'}</strong> ha expirado o fue abandonada.<br>
+            <span style="color:var(--red);font-weight:bold;">Se registró como derrota.</span>
+          </div>
+          <button id="restore-pvp-close-btn" class="action-btn" style="width:100%; background:var(--gray);">CONTINUAR</button>
+        </div>`;
+    } else {
+      ov.innerHTML = `
+        <div style="background:var(--card);border-radius:24px;padding:32px;max-width:400px;width:100%;border:2px solid var(--purple);text-align:center;box-shadow:0 0 40px rgba(199,125,255,0.2);">
+          <div style="font-size:52px;margin-bottom:12px;">⚡</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--purple);margin-bottom:12px;">DETECCION DE DESCONEXION</div>
+          <div style="font-size:13px;color:#eee;margin:12px 0;line-height:1.7;">
+            Parece que te desconectaste de un combate contra <strong>${ab.enemyUsername || 'tu rival'}</strong>.<br>
+            ¡Tenés 60 segundos para volver antes de perder por abandono!
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr; gap:12px; margin-top:20px;">
+            <button id="restore-pvp-reconnect-btn" class="action-btn" style="background:var(--purple); color:#fff; border-color:var(--purple-light);">
+              ⚡ RECONECTAR AL DUELO
             </button>
-          </div>`;
+            <button id="restore-pvp-forfeit-btn" class="action-btn" style="background:rgba(255,59,59,0.1); color:var(--red); border-color:rgba(255,59,59,0.2);">
+              🏳️ ABANDONAR (DERROTA)
+            </button>
+          </div>
+        </div>`;
+    }
+
     document.body.appendChild(ov);
-    document.getElementById('restore-pvp-close-btn').onclick = () => {
+
+    const closeHandler = () => {
       ov.remove();
-      // Registrar la derrota y limpiar
       if (!state.stats) state.stats = {};
       state.stats.pvpBattles = (state.stats.pvpBattles || 0) + 1;
       state.activeBattle = null;
-      scheduleSave();
+      saveGame(false);
     };
+
+    if (isTooOld) {
+      document.getElementById('restore-pvp-close-btn').onclick = closeHandler;
+    } else {
+      document.getElementById('restore-pvp-reconnect-btn').onclick = () => {
+        ov.remove();
+        if (typeof attemptPvpReconnection === 'function') {
+          attemptPvpReconnection(ab);
+        } else {
+          notify('Error: Sistema PvP no disponible', '❌');
+          closeHandler();
+        }
+      };
+      document.getElementById('restore-pvp-forfeit-btn').onclick = closeHandler;
+    }
     return;
   }
 
