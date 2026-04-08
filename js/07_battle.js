@@ -2979,8 +2979,8 @@ async function catchSuccess(enemy) {
 }
 
 function awardBattleExperience(isCapture = false) {
-  const b = state.battle;
-  if (!b || !b.enemy) return;
+  let b = state.battle;
+  if (!b || !b.enemy || b.isPvP) return;
 
   let expMultiplier = isCapture ? 4 : ((b.isTrainer || b.isGym) ? 8 : 4);
   
@@ -3175,7 +3175,10 @@ function endBattle(won) {
     }
 
     setLog(`¡${b.enemy.name} fue derrotado!`, 'log-player');
-    awardBattleExperience();
+    if (!b.isPvP) awardBattleExperience();
+
+    // No material rewards or territory points in PVP
+    if (b.isPvP) return;
 
     // Lógica de LOOT de Fósiles (5% chance en batallas de defensor)
     if (b.isDefenderBattle) {

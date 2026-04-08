@@ -190,6 +190,12 @@ function getAvatarHtml(cls, borderColor, sizePx = 40) {
 
 // ── Obtener modificador de la clase activa ─────────────────────────────────
 function getClassModifier(type, context = {}) {
+  // PvP Balance: No advantages or modifiers allowed during PvP matches
+  if (state.battle && state.battle.isPvP) {
+    if (type === 'shopDiscount') return 0;
+    return 1.0;
+  }
+
   if (!state.playerClass) return 1.0;
   const cls = PLAYER_CLASSES[state.playerClass];
   if (!cls) return 1.0;

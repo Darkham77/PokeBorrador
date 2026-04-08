@@ -368,14 +368,16 @@
 
           <div class="battle-combatants">
             <div style="display:flex;align-items:flex-start;justify-content:flex-start;">
-              <div class="battle-pokemon-info">
-                <div style="font-size:9px;color:var(--yellow);font-weight:700;margin-bottom:2px;" id="pvp-enemy-trainer">
-                   ${_pvpState.enemyUsername ? '🎮 ' + _pvpState.enemyUsername.toUpperCase() : 'OPONENTE'}
+              <div class="battle-pokemon-info" id="pvp-enemy-info">
+                <div class="battle-name">
+                  <span id="pvp-enemy-name">???</span> 
+                  <span id="pvp-enemy-gender" class="gender-badge"></span>
                 </div>
-                <div class="battle-name" id="pvp-enemy-name">${enemy?.name || '???'}</div>
-                <div class="battle-level" id="pvp-enemy-level">Nv. ${enemy?.level || '?'}</div>
-                <div class="hp-bar-wrap"><div class="hp-bar hp-high" id="pvp-enemy-hp-bar" style="width:100%"></div></div>
-                <div class="battle-hp-text" id="pvp-enemy-hp-text">${enemy ? enemy.hp + '/' + enemy.maxHp + ' HP' : '???'}</div>
+                <div class="battle-level" id="pvp-enemy-level">Nv. 1</div>
+                <div class="hp-bar-wrap">
+                  <div class="hp-bar hp-high" id="pvp-enemy-hp-bar" style="width:100%"></div>
+                </div>
+                <div class="battle-hp-text" id="pvp-enemy-hp-text">HP: ?/?</div>
               </div>
             </div>
             <div style="display:flex;align-items:flex-start;justify-content:flex-end;">
@@ -389,11 +391,16 @@
               </div>
             </div>
             <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:10px;">
-              <div class="battle-pokemon-info" style="text-align:right;">
-                <div class="battle-name" id="pvp-player-name">${me?.name || '???'}</div>
-                <div class="battle-level" id="pvp-player-level">Nv. ${me?.level || '?'}</div>
-                <div class="hp-bar-wrap"><div class="hp-bar hp-high" id="pvp-player-hp-bar" style="width:100%"></div></div>
-                <div class="battle-hp-text" id="pvp-player-hp-text">${me?.hp || 0}/${me?.maxHp || 0} HP</div>
+              <div class="battle-pokemon-info" id="pvp-player-info">
+                <div class="battle-name">
+                  <span id="pvp-player-name">???</span> 
+                  <span id="pvp-player-gender" class="gender-badge"></span>
+                </div>
+                <div class="battle-level" id="pvp-player-level">Nv. 1</div>
+                <div class="hp-bar-wrap">
+                  <div class="hp-bar hp-high" id="pvp-player-hp-bar" style="width:100%"></div>
+                </div>
+                <div class="battle-hp-text" id="pvp-player-hp-text">HP: ?/?</div>
               </div>
             </div>
           </div>
@@ -518,22 +525,47 @@
       const myHp = _pvpState.myHp[_pvpState.myActive] ?? me?.hp ?? 0;
       const enemyHp = enemy ? (_pvpState.enemyHp[_pvpState.enemyActive] ?? enemy.hp) : 0;
 
-      if (me) {
-        const pct = Math.max(0, myHp / me.maxHp);
-        const bar = document.getElementById('pvp-player-hp-bar');
-        if (bar) { bar.style.width = (pct * 100) + '%'; bar.className = 'hp-bar ' + getHpClass(pct); }
-        const ht = document.getElementById('pvp-player-hp-text'); if (ht) ht.textContent = myHp + '/' + me.maxHp + ' HP';
-        const nm = document.getElementById('pvp-player-name'); if (nm) nm.textContent = me.name;
-        const lv = document.getElementById('pvp-player-level'); if (lv) lv.textContent = 'Nv. ' + me.level;
-      }
-      if (enemy) {
+      const pEn = document.getElementById('pvp-enemy-name');
+      const pEnG = document.getElementById('pvp-enemy-gender');
+      const pEnLv = document.getElementById('pvp-enemy-level');
+      const pEnBar = document.getElementById('pvp-enemy-hp-bar');
+      const pEnTxt = document.getElementById('pvp-enemy-hp-text');
+      const pEnNat = document.getElementById('pvp-enemy-nature-row');
+
+      const pPl = document.getElementById('pvp-player-name');
+      const pPlG = document.getElementById('pvp-player-gender');
+      const pPlLv = document.getElementById('pvp-player-level');
+      const pPlBar = document.getElementById('pvp-player-hp-bar');
+      const pPlTxt = document.getElementById('pvp-player-hp-text');
+
+      if (enemy && pEn) {
+        pEn.textContent = enemy.name;
+        if (pEnG) {
+          const gData = genderBadgeData(enemy.gender);
+          pEnG.textContent = gData.text;
+          pEnG.className = `gender-badge ${gData.cls}`;
+          pEnG.style.opacity = gData.cls === 'gender-none' ? '0.6' : '1';
+        }
+        pEnLv.textContent = `Nv. ${enemy.level}`;
         const pct = Math.max(0, enemyHp / enemy.maxHp);
-        const bar = document.getElementById('pvp-enemy-hp-bar');
-        if (bar) { bar.style.width = (pct * 100) + '%'; bar.className = 'hp-bar ' + getHpClass(pct); }
-        const ht = document.getElementById('pvp-enemy-hp-text'); if (ht) ht.textContent = enemyHp + '/' + enemy.maxHp + ' HP';
-        const nm = document.getElementById('pvp-enemy-name'); if (nm) nm.textContent = enemy.name;
-        const lv = document.getElementById('pvp-enemy-level'); if (lv) lv.textContent = 'Nv. ' + enemy.level;
-        const tr = document.getElementById('pvp-enemy-trainer'); if (tr && _pvpState.enemyUsername) tr.textContent = '🎮 ' + _pvpState.enemyUsername;
+        pEnBar.style.width = (pct * 100) + '%';
+        pEnBar.className = 'hp-bar ' + getHpClass(pct);
+        pEnTxt.textContent = `HP: ${enemyHp}/${enemy.maxHp}`;
+      }
+
+      if (me && pPl) {
+        pPl.textContent = me.name;
+        if (pPlG) {
+          const gData = genderBadgeData(me.gender);
+          pPlG.textContent = gData.text;
+          pPlG.className = `gender-badge ${gData.cls}`;
+          pPlG.style.opacity = gData.cls === 'gender-none' ? '0.6' : '1';
+        }
+        pPlLv.textContent = `Nv. ${me.level}`;
+        const pct = Math.max(0, myHp / me.maxHp);
+        pPlBar.style.width = (pct * 100) + '%';
+        pPlBar.className = 'hp-bar ' + getHpClass(pct);
+        pPlTxt.textContent = `HP: ${myHp}/${me.maxHp}`;
       }
       _pvpRenderMoves();
     }

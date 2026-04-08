@@ -1854,17 +1854,34 @@
         width: 100% !important;
       }
 
-      /* Massive sprites in PvP on PC */
-      #pvp-player-img, #pvp-enemy-img {
-        max-height: 260px !important;
-        min-height: 150px !important;
+      /* Massive sprites in PvP on PC - Perspective theft */
+      #pvp-player-img {
+        max-height: 340px !important;
         height: auto !important;
         width: auto !important;
+        transform: translateY(30px) scale(1.1); /* Lower and larger for proximity */
+        z-index: 5;
+        image-rendering: pixelated;
+      }
+      
+      #pvp-enemy-img {
+        max-height: 240px !important;
+        height: auto !important;
+        width: auto !important;
+        transform: translateY(-10px); /* Slightly higher for distance */
         image-rendering: pixelated;
       }
       
       .battle-arena#pvp-arena {
         height: 520px !important;
+      }
+
+      /* Match HP box styling exactly */
+      #pvp-overlay .battle-pokemon-info {
+        min-width: 180px;
+        background: rgba(15, 23, 42, 0.7) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
       }
     }
 
