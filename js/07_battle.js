@@ -871,29 +871,28 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       break;
     case 'burn': case 'burn_10':
       if (!tgt.status) {
-        if (tgt.type === 'fire') { addLogFn(`¡${tgt.name} es inmune a las quemaduras!`, 'log-info'); break; }
+        if (tgt.type === 'fire' || tgt.type2 === 'fire') { addLogFn(`¡${tgt.name} es inmune a las quemaduras!`, 'log-info'); break; }
         tgt.status = 'burn'; addLogFn(`¡${tgt.name} fue quemado!`, 'log-info');
       } break;
     case 'paralyze': case 'paralyze_10': case 'paralyze_30':
       if (!tgt.status) {
-        if (tgt.type === 'electric') { addLogFn(`¡${tgt.name} es inmune a la parálisis!`, 'log-info'); break; }
         if (tgt.ability === 'Flexibilidad') { addLogFn(`¡La Flexibilidad de ${tgt.name} evitó la parálisis!`, 'log-info'); break; }
         tgt.status = 'paralyze'; addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info');
       } break;
     case 'poison': case 'poison_20':
       if (!tgt.status) {
-        if (tgt.type === 'poison' || tgt.type === 'steel') { addLogFn(`¡${tgt.name} es inmune al veneno!`, 'log-info'); break; }
+        if (tgt.type === 'poison' || tgt.type2 === 'poison' || tgt.type === 'steel' || tgt.type2 === 'steel') { addLogFn(`¡${tgt.name} es inmune al veneno!`, 'log-info'); break; }
         if (tgt.ability === 'Inmunidad') { addLogFn(`¡La Inmunidad de ${tgt.name} evitó el envenenamiento!`, 'log-info'); break; }
         tgt.status = 'poison'; addLogFn(`¡${tgt.name} fue envenenado!`, 'log-info');
       } break;
     case 'freeze': case 'freeze_10':
       if (!tgt.status) {
-        if (tgt.type === 'ice') { addLogFn(`¡${tgt.name} es inmune al congelamiento!`, 'log-info'); break; }
+        if (tgt.type === 'ice' || tgt.type2 === 'ice') { addLogFn(`¡${tgt.name} es inmune al congelamiento!`, 'log-info'); break; }
         tgt.status = 'freeze'; addLogFn(`¡${tgt.name} fue congelado!`, 'log-info');
       } break;
     case 'bad_poison':
       if (!tgt.status) {
-        if (tgt.type === 'poison' || tgt.type === 'steel') { addLogFn(`¡${tgt.name} es inmune al veneno!`, 'log-info'); break; }
+        if (tgt.type === 'poison' || tgt.type2 === 'poison' || tgt.type === 'steel' || tgt.type2 === 'steel') { addLogFn(`¡${tgt.name} es inmune al veneno!`, 'log-info'); break; }
         if (tgt.ability === 'Inmunidad') { addLogFn(`¡La Inmunidad de ${tgt.name} evitó el envenenamiento!`, 'log-info'); break; }
         tgt.status = 'poison'; 
         tgt.badPoison = 1; 
@@ -906,7 +905,7 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       } break;
     case 'confuse':
       if (!tgt.confused) { 
-        if (tgt.ability === 'Ritmo Propio' || tgt.ability === 'Despiste') { addLogFn(`¡El ${tgt.ability} de ${tgt.name} evitó la confusión!`, 'log-info'); break; }
+        if (tgt.ability === 'Ritmo Propio') { addLogFn(`¡El Ritmo Propio de ${tgt.name} evitó la confusión!`, 'log-info'); break; }
         tgt.confused = 2 + Math.floor(Math.random() * 4); addLogFn(`¡${tgt.name} está confundido!`, 'log-info'); 
       } break;
     case 'rest':
@@ -924,12 +923,18 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
     case 'tri_attack':
       if (!tgt.status) {
         const rollTA = Math.random();
+        const t1 = tgt.type, t2 = tgt.type2;
+        const isFire = (t1 === 'fire' || t2 === 'fire');
+        const isIce = (t1 === 'ice' || t2 === 'ice');
+        
         if (rollTA < 0.33) {
-           tgt.status = 'burn'; addLogFn(`¡${tgt.name} fue quemado!`, 'log-info');
+           if (isFire) { addLogFn(`¡${tgt.name} es inmune a las quemaduras!`, 'log-info'); }
+           else { tgt.status = 'burn'; addLogFn(`¡${tgt.name} fue quemado!`, 'log-info'); }
         } else if (rollTA < 0.66) {
            tgt.status = 'paralyze'; addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info');
         } else {
-           tgt.status = 'freeze'; addLogFn(`¡${tgt.name} fue congelado!`, 'log-info');
+           if (isIce) { addLogFn(`¡${tgt.name} es inmune al congelamiento!`, 'log-info'); }
+           else { tgt.status = 'freeze'; addLogFn(`¡${tgt.name} fue congelado!`, 'log-info'); }
         }
       }
       break;
@@ -955,7 +960,7 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
       }
       break;
     case 'leech_seed':
-      if (tgt.type === 'grass' || (Array.isArray(tgt.type) && tgt.type.includes('grass'))) {
+      if (tgt.type === 'grass' || tgt.type2 === 'grass') {
         addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info');
       } else if (!tgt.seeded) {
         tgt.seeded = true;
