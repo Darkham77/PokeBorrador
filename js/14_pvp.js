@@ -616,6 +616,7 @@
 
       // ── Calculate a single action (doesn't apply HP yet) ──────
       function calcAction(actorIsHost) {
+        var effectLog = [];
         const attacker = actorIsHost ? hostPoke : clientPoke;
         const defender = actorIsHost ? clientPoke : hostPoke;
         const atkS = actorIsHost ? s.myStages : s.enemyStages;
@@ -626,14 +627,13 @@
 
         if (pick.type === 'switch') {
           const newPoke = actorIsHost ? s.myTeam[pick.switchIndex] : s.enemyTeam[pick.switchIndex];
-          return { type: 'switch', switchIndex: pick.switchIndex, pokeName: newPoke?.name || '?', actorIsHost, faintedTarget: false };
+          return { type: 'switch', switchIndex: pick.switchIndex, pokeName: newPoke?.name || '?', actorIsHost, effectLog };
         }
 
         const move = attacker.moves[pick.moveIndex];
         const moveName = move?.name || '???';
         const md = MOVE_DATA[moveName] || { power: move?.power || 40, type: 'normal', cat: 'physical', acc: 100 };
 
-        const effectLog = [];
 
         // Status prevents moving
         if (attacker.status === 'sleep') {
@@ -643,7 +643,7 @@
         // Flinch
         if (attacker.flinched) {
           attacker.flinched = false; // Reset
-          return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'flinch', damage: 0, eff: 1 };
+          return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'flinch', damage: 0, eff: 1, effectLog };
         }
 
         // Confusion
@@ -664,7 +664,7 @@
 
         // Frozen
         if (attacker.status === 'freeze') {
-          if (Math.random() < 0.8) return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'freeze', damage: 0, eff: 1 };
+          if (Math.random() < 0.8) return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'freeze', damage: 0, eff: 1, effectLog };
           attacker.status = null;
           effectLog.push(`¡${attacker.name} se ha descongelado!`);
         }
@@ -672,14 +672,14 @@
         // Sleep
         if (attacker.status === 'sleep') {
           attacker.sleepTurns = (attacker.sleepTurns || 1) - 1;
-          if (attacker.sleepTurns > 0) return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'sleep', damage: 0, eff: 1 };
+          if (attacker.sleepTurns > 0) return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'sleep', damage: 0, eff: 1, effectLog };
           attacker.status = null;
           effectLog.push(`¡${attacker.name} se despertó!`);
         }
 
         // Paralysis
         if (attacker.status === 'paralyze' && Math.random() < 0.25) {
-          return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'paralyze', damage: 0, eff: 1 };
+          return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'paralyze', damage: 0, eff: 1, effectLog };
         }
 
         // Mock context for immunity/damage
@@ -700,7 +700,7 @@
 
         // Accuracy
         if (md.acc && Math.random() * 100 > (md.acc) * stageMult(atkS.acc || 0)) {
-          return { type: 'move', moveName, actorIsHost, actorName, targName, missed: true, damage: 0, eff: 1 };
+          return { type: 'move', moveName, actorIsHost, actorName, targName, missed: true, damage: 0, eff: 1, effectLog };
         }
 
         if (md.cat === 'status') {
