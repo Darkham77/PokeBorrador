@@ -148,16 +148,22 @@ function renderPassiveTeamPreview() {
       return;
     }
     const num = p.dexNum || p.id || '';
-    const itemName = p.equippedItem || p.item || null;
+    const itemName = p.heldItem || null;
     let itemHtml = '';
     
     // Add item miniature logic if exists
-    if (itemName && typeof ITEM_DATA !== 'undefined' && ITEM_DATA[itemName] && ITEM_DATA[itemName].image) {
-       itemHtml = `<img src="${ITEM_DATA[itemName].image}" style="position:absolute;bottom:-4px;right:-4px;width:16px;height:16px;image-rendering:pixelated;filter:drop-shadow(0 0 2px #000);">`;
+    if (itemName && typeof ITEM_DATA !== 'undefined' && ITEM_DATA[itemName]) {
+       if (ITEM_DATA[itemName].sprite) {
+         itemHtml = `<img src="${ITEM_DATA[itemName].sprite}" style="position:absolute;bottom:-4px;right:-4px;width:16px;height:16px;image-rendering:pixelated;filter:drop-shadow(0 0 2px #000);">`;
+       } else if (ITEM_DATA[itemName].icon) {
+         itemHtml = `<span style="position:absolute;bottom:-4px;right:-4px;font-size:12px;filter:drop-shadow(0 0 2px #000);">${ITEM_DATA[itemName].icon}</span>`;
+       }
     }
 
+    const spriteUrl = typeof getSpriteUrl === 'function' ? getSpriteUrl(p.id, p.isShiny) : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png`;
+
     htmlSprites += `<div style="position:relative;width:40px;height:40px;background:rgba(255,255,255,0.05);border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid ${isValid ? 'rgba(107,203,119,0.4)': 'rgba(255,59,59,0.4)'};">
-      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png" style="width:100%;height:100%;image-rendering:pixelated;" title="${p.name}" onerror="this.style.display='none'">
+      <img src="${spriteUrl}" style="width:100%;height:100%;image-rendering:pixelated;" title="${p.name}" onerror="this.style.display='none'">
       ${itemHtml}
     </div>`;
   });
@@ -251,10 +257,16 @@ function _renderPassiveEditor() {
   for (let i = 0; i < 6; i++) {
     const uid = _tempEditingUids[i];
     const p = uid ? getPokemonByUid(uid) : null;
+    
+    let spriteUrl = '';
+    if (p) {
+        spriteUrl = typeof getSpriteUrl === 'function' ? getSpriteUrl(p.id, p.isShiny) : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dexNum||p.id}.png`;
+    }
+
     htmlSlots += `
       <div onclick="if(typeof _selectPassiveEditorItem==='function')_selectPassiveEditorItem('${uid}')"
       style="width:50px;height:50px;border:2px dashed ${p ? 'var(--purple)' : 'rgba(255,255,255,0.2)'};border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);cursor:pointer;position:relative;">
-        ${p ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dexNum||p.id}.png" style="width:100%;height:100%;image-rendering:pixelated;" onerror="this.style.display='none'">` : '<span style="color:#666;font-size:16px;">+</span>'}
+        ${p ? `<img src="${spriteUrl}" style="width:100%;height:100%;image-rendering:pixelated;" onerror="this.style.display='none'">` : '<span style="color:#666;font-size:16px;">+</span>'}
         ${p && _tempEditingUids.includes(uid) ? `<div style="position:absolute;bottom:-4px;right:-4px;background:var(--green);border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;"><span style="color:#000;font-size:8px;">✓</span></div>` : ''}
       </div>
     `;
@@ -267,16 +279,22 @@ function _renderPassiveEditor() {
     if (sp) {
       previewEl.style.display = 'flex';
       const isEquipped = _tempEditingUids.includes(sp.uid);
-      const itemName = sp.equippedItem || sp.item || 'Ninguno';
+      const itemName = sp.heldItem || 'Ninguno';
       let itemImg = '';
-      if (itemName !== 'Ninguno' && typeof ITEM_DATA !== 'undefined' && ITEM_DATA[itemName] && ITEM_DATA[itemName].image) {
-        itemImg = `<img src="${ITEM_DATA[itemName].image}" style="width:16px;height:16px;image-rendering:pixelated;margin-right:4px;">`;
+      if (itemName !== 'Ninguno' && typeof ITEM_DATA !== 'undefined' && ITEM_DATA[itemName]) {
+        if (ITEM_DATA[itemName].sprite) {
+           itemImg = `<img src="${ITEM_DATA[itemName].sprite}" style="width:16px;height:16px;image-rendering:pixelated;margin-right:4px;">`;
+        } else if (ITEM_DATA[itemName].icon) {
+           itemImg = `<span style="font-size:14px;margin-right:2px;">${ITEM_DATA[itemName].icon}</span>`;
+        }
       }
       
+      const spSpriteUrl = typeof getSpriteUrl === 'function' ? getSpriteUrl(sp.id, sp.isShiny) : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sp.dexNum||sp.id}.png`;
+
       previewEl.innerHTML = `
         <div style="display:flex;align-items:center;gap:16px;width:100%;">
           <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:8px;">
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sp.dexNum||sp.id}.png" style="width:60px;height:60px;image-rendering:pixelated;" onerror="this.style.display='none'">
+            <img src="${spSpriteUrl}" style="width:60px;height:60px;image-rendering:pixelated;" onerror="this.style.display='none'">
           </div>
           <div style="flex:1;">
             <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin-bottom:6px;">${sp.name} <span style="font-size:9px;color:var(--gray);">Lv${sp.level}</span></div>
@@ -307,12 +325,23 @@ function _renderPassiveEditor() {
   allAvailable.forEach(p => {
     const isSelected = _tempEditingUids.includes(p.uid);
     const isPreviewing = _passiveEditorSelectedUid === p.uid;
+    const poolSpriteUrl = typeof getSpriteUrl === 'function' ? getSpriteUrl(p.id, p.isShiny) : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dexNum||p.id}.png`;
+    
+    let heldItemHtml = '';
+    if (p.heldItem && typeof ITEM_DATA !== 'undefined' && ITEM_DATA[p.heldItem]) {
+       if (ITEM_DATA[p.heldItem].sprite) {
+         heldItemHtml = `<img src="${ITEM_DATA[p.heldItem].sprite}" style="position:absolute;top:2px;right:2px;width:12px;height:12px;image-rendering:pixelated;">`;
+       } else if (ITEM_DATA[p.heldItem].icon) {
+         heldItemHtml = `<span style="position:absolute;top:2px;right:2px;font-size:8px;">${ITEM_DATA[p.heldItem].icon}</span>`;
+       }
+    }
+
     htmlPool += `
       <div onclick="if(typeof _selectPassiveEditorItem==='function')_selectPassiveEditorItem('${p.uid}')"
       style="border:1px solid ${isPreviewing ? 'var(--purple)' : (isSelected ? 'var(--green)' : 'rgba(255,255,255,0.1)')};border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;cursor:pointer;background:${isPreviewing ? 'rgba(199,125,255,0.2)' : (isSelected ? 'rgba(107,203,119,0.1)' : 'rgba(0,0,0,0.3)')};opacity:${!isPreviewing && isSelected ? '0.5' : '1'};position:relative;">
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dexNum||p.id}.png" style="width:40px;height:40px;image-rendering:pixelated;" onerror="this.style.display='none'">
+        <img src="${poolSpriteUrl}" style="width:40px;height:40px;image-rendering:pixelated;" onerror="this.style.display='none'">
         <div style="font-family:'Press Start 2P',monospace;font-size:6px;margin-top:2px;text-align:center;word-break:break-all;">Lv${p.level}</div>
-        ${(p.equippedItem || p.item) && typeof ITEM_DATA !== 'undefined' && ITEM_DATA[p.equippedItem || p.item]?.image ? `<img src="${ITEM_DATA[p.equippedItem || p.item].image}" style="position:absolute;top:2px;right:2px;width:12px;height:12px;image-rendering:pixelated;">` : ''}
+        ${heldItemHtml}
       </div>
     `;
   });

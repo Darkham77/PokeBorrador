@@ -399,6 +399,7 @@
         lastGymAttempts: state.lastGymAttempts || {},
         starterChosen: state.starterChosen || false,
         stats: state.stats || {},
+        passiveTeamUids: state.passiveTeamUids || [],
         activeBattle,
         daycare_missions: state.daycare_missions || [],
         daycare_mission_refreshes: state.daycare_mission_refreshes !== undefined ? state.daycare_mission_refreshes : 3,
