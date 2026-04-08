@@ -184,6 +184,12 @@
               <button class="hud-nav-btn" data-tab="war" onclick="showTab('war',this); this.closest('.hud-group').classList.remove('is-open')"><span>⚔️</span><span>Guerra</span></button>
             </div>
           </div>
+
+          <!-- 6. RANKEDS -->
+          <button class="hud-nav-btn" data-tab="ranked"
+            onclick="showTab('ranked',this)" style="position:relative;">
+            <span>🏅</span><span>Rankeds</span>
+          </button>
         </div>
 
         <div class="hud-items">
@@ -384,6 +390,130 @@
             <button class="nav-btn" data-tab="friends" onclick="showTab('friends',this); this.closest('.nav-group').classList.remove('is-open')"><span>🤝</span><span>Amigos</span></button>
             <button class="nav-btn" data-tab="war" onclick="showTab('war',this); this.closest('.nav-group').classList.remove('is-open')"><span>⚔️</span><span>Guerra</span></button>
           </div>
+        </div>
+
+        <!-- 6. RANKEDS -->
+        <button class="nav-btn" data-tab="ranked" onclick="showTab('ranked',this)">
+          <span>🏅</span><span>Rankeds</span>
+        </button>
+      </div>
+
+      <!-- RANKED TAB -->
+      <div id="tab-ranked" class="tab-content" style="display:none;padding-bottom:100px;">
+        <div class="team-section">
+
+          <!-- Header -->
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <div style="font-size:32px;">🏅</div>
+            <div>
+              <div class="section-title" style="margin:0;">Rankeds</div>
+              <div style="font-size:11px;color:var(--gray);margin-top:2px;">Sistema de clasificación PvP</div>
+            </div>
+          </div>
+
+          <!-- ELO + Stats card -->
+          <div style="background:linear-gradient(135deg,rgba(199,125,255,0.12),rgba(59,139,255,0.08));border:1px solid rgba(199,125,255,0.25);border-radius:20px;padding:20px;margin-bottom:16px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center;">
+              <div style="text-align:center;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gray);margin-bottom:6px;">TU ELO</div>
+                <div id="ranked-elo-display" style="font-family:'Press Start 2P',monospace;font-size:24px;color:var(--purple);text-shadow:0 0 20px rgba(199,125,255,0.5);">1000</div>
+                <div id="ranked-tier-label" style="font-size:11px;color:var(--gray);margin-top:4px;">🥉 Bronce</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:12px;">
+                  <span style="color:var(--green);">✅ Victorias</span>
+                  <span id="ranked-wins" style="font-weight:700;">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;">
+                  <span style="color:var(--red);">❌ Derrotas</span>
+                  <span id="ranked-losses" style="font-weight:700;">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;">
+                  <span style="color:var(--gray);">🤝 Empates</span>
+                  <span id="ranked-draws" style="font-weight:700;">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;">
+                  <span style="color:var(--yellow);">📊 Winrate</span>
+                  <span id="ranked-winrate" style="font-weight:700;color:var(--yellow);">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Season timer card -->
+          <div style="background:rgba(255,217,61,0.06);border:1px solid rgba(255,217,61,0.2);border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+            <div style="font-size:28px;">⏳</div>
+            <div style="flex:1;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:4px;">TEMPORADA 1</div>
+              <div id="ranked-season-timer" style="font-size:12px;color:var(--gray);">Cargando...</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">Las temporadas duran 3 meses. Al finalizar se otorgan premios y se reinicia el ranking.</div>
+            </div>
+          </div>
+
+          <!-- Matchmaking -->
+          <div style="margin-bottom:16px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);margin-bottom:10px;">⚔️ BUSCAR PARTIDA</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <button onclick="if(typeof startPassiveBattle==='function')startPassiveBattle()" id="btn-ranked-passive"
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:14px 10px;border:none;border-radius:14px;cursor:pointer;
+                       background:linear-gradient(135deg,rgba(59,139,255,0.2),rgba(59,139,255,0.08));color:var(--blue);
+                       border:1px solid rgba(59,139,255,0.3);line-height:1.6;">
+                🤖<br>Desafiar<br>Equipo Pasivo
+              </button>
+              <button onclick="showTab('friends',document.querySelector('[data-tab=friends]'))" id="btn-ranked-active"
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:14px 10px;border:none;border-radius:14px;cursor:pointer;
+                       background:linear-gradient(135deg,rgba(199,125,255,0.2),rgba(199,125,255,0.08));color:var(--purple);
+                       border:1px solid rgba(199,125,255,0.3);line-height:1.6;">
+                👤<br>Desafiar<br>Rival Humano
+              </button>
+            </div>
+          </div>
+
+          <!-- Passive team config -->
+          <div style="margin-bottom:16px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--green);margin-bottom:10px;">🛡️ MI EQUIPO PASIVO</div>
+            <div style="background:rgba(107,203,119,0.06);border:1px solid rgba(107,203,119,0.2);border-radius:14px;padding:14px;">
+              <div style="font-size:12px;color:var(--gray);margin-bottom:12px;">
+                Tu equipo pasivo defiende automáticamente cuando otros jugadores te desafían mientras estás offline. El ELO cambia igual.
+              </div>
+              <div id="ranked-passive-team-preview" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;min-height:44px;">
+                <span style="font-size:11px;color:rgba(255,255,255,0.3);align-self:center;">No configurado</span>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button onclick="if(typeof savePassiveTeam==='function')savePassiveTeam(true)" id="btn-passive-activate"
+                  style="flex:1;font-family:'Press Start 2P',monospace;font-size:7px;padding:10px;border:none;border-radius:10px;cursor:pointer;
+                         background:linear-gradient(135deg,rgba(107,203,119,0.2),rgba(107,203,119,0.08));color:var(--green);border:1px solid rgba(107,203,119,0.3);">
+                  ✅ Activar Equipo
+                </button>
+                <button onclick="if(typeof savePassiveTeam==='function')savePassiveTeam(false)" id="btn-passive-deactivate"
+                  style="flex:1;font-family:'Press Start 2P',monospace;font-size:7px;padding:10px;border:none;border-radius:10px;cursor:pointer;
+                         background:rgba(255,59,59,0.08);color:var(--red);border:1px solid rgba(255,59,59,0.2);">
+                  🔴 Desactivar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rewards (en desarrollo) -->
+          <div style="margin-bottom:16px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:10px;">🎁 PREMIOS POR RANGO</div>
+            <div style="background:rgba(255,217,61,0.04);border:1px solid rgba(255,217,61,0.15);border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-size:28px;margin-bottom:8px;">🚧</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:6px;">EN DESARROLLO</div>
+              <div style="font-size:11px;color:var(--gray);line-height:1.5;">Al finalizar cada temporada, los jugadores recibirán premios exclusivos según su rango final. ¡Prepárate!</div>
+            </div>
+          </div>
+
+          <!-- Leaderboard (en desarrollo) -->
+          <div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--blue);margin-bottom:10px;">🌍 RANKING GLOBAL</div>
+            <div style="background:rgba(59,139,255,0.04);border:1px solid rgba(59,139,255,0.15);border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-size:28px;margin-bottom:8px;">🚧</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--blue);margin-bottom:6px;">EN DESARROLLO</div>
+              <div style="font-size:11px;color:var(--gray);line-height:1.5;">Pronto podrás ver el ranking de los mejores entrenadores del servidor.</div>
+            </div>
+          </div>
+
         </div>
       </div>
 

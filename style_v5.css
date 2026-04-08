@@ -2565,11 +2565,11 @@
     /* El contenedor #notification-stack es creado por JS y maneja el posicionamiento */
     #notification-stack {
       position: fixed;
-      bottom: 20px;
+      top: 20px;
       right: 16px;
       z-index: 20000;
       display: flex;
-      flex-direction: column-reverse;
+      flex-direction: column;
       gap: 8px;
       align-items: flex-end;
       pointer-events: none;
@@ -5208,13 +5208,14 @@
     padding: 6px 12px;
   }
 
-  /* Notificaciones: apiladas en la parte inferior en móvil */
+  /* Notificaciones: arriba a la derecha en móvil */
   #notification-stack {
-    bottom: 90px; /* Encima de la barra de navegación móvil */
+    top: calc(10px + env(safe-area-inset-top));
+    bottom: auto;
     right: 10px;
-    left: 10px;
-    max-width: none;
-    align-items: stretch;
+    left: auto;
+    max-width: 280px;
+    align-items: flex-end;
   }
   .notification {
     max-width: none;

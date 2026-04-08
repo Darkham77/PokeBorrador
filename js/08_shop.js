@@ -72,18 +72,7 @@
       if (!container) {
         container = document.createElement('div');
         container.id = 'notification-stack';
-        container.style.cssText = [
-          'position:fixed',
-          'bottom:20px',
-          'right:16px',
-          'z-index:9999',
-          'display:flex',
-          'flex-direction:column-reverse',
-          'gap:8px',
-          'align-items:flex-end',
-          'pointer-events:none',
-          'max-width:320px'
-        ].join(';');
+        // El estilo ahora se maneja completamente desde style_v5.css para mejor soporte responsive
         document.body.appendChild(container);
       }
 

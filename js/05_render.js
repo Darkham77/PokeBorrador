@@ -93,7 +93,11 @@ function showTab(tab, btnEl) {
   if (tab === 'war') {
     if (typeof renderWarTab === 'function') renderWarTab();
   }
-  
+  if (tab === 'ranked') {
+    if (typeof renderRankedTab === 'function') renderRankedTab();
+    else if (typeof loadPlayerElo === 'function') loadPlayerElo();
+  }
+
   // Al abrir la tab de amigos, refrescar el badge para ver si quedan notificaciones (como chats no leídos)
   refreshFriendsBadge();
   
