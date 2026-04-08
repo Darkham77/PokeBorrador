@@ -1,0 +1,381 @@
+// ===== SISTEMA DE EQUIPOS PASIVOS, ELO Y MATCHMAKING RANKED =====
+// Este archivo es un <script> inline — NO usar export/import.
+
+// ── Constantes de Temporada ───────────────────────────────────────────
+const SEASON_START = new Date('2026-04-01T00:00:00-03:00');
+const SEASON_DURATION_MONTHS = 3;
+
+function getSeasonEndDate() {
+  const end = new Date(SEASON_START);
+  end.setMonth(end.getMonth() + SEASON_DURATION_MONTHS);
+  return end;
+}
+
+// ── Tiers de ELO ─────────────────────────────────────────────────────
+function getEloTier(elo) {
+  if (elo >= 2000) return { name: 'Maestro',  icon: '👑', color: '#FFD700' };
+  if (elo >= 1600) return { name: 'Diamante', icon: '💎', color: '#89CFF0' };
+  if (elo >= 1300) return { name: 'Platino',  icon: '🔶', color: '#E5C100' };
+  if (elo >= 1100) return { name: 'Oro',      icon: '🥇', color: '#FFB800' };
+  if (elo >= 900)  return { name: 'Plata',    icon: '🥈', color: '#9E9E9E' };
+  return                   { name: 'Bronce',  icon: '🥉', color: '#c8a060' };
+}
+
+// ── Snapshot para equipo pasivo ───────────────────────────────────────
+function buildPassiveSnapshot(p) {
+  return {
+    id: p.id,
+    name: p.name,
+    level: p.level,
+    type: p.type,
+    ability: p.ability || null,
+    nature: p.nature || 'Serio',
+    ivs: p.ivs || { hp:15, atk:15, def:15, spa:15, spd:15, spe:15 },
+    maxHp: p.maxHp,
+    atk: p.atk, def: p.def, spa: p.spa, spd: p.spd, spe: p.spe,
+    moves: (p.moves || []).map(m => ({
+      name: m.name,
+      pp: m.maxPP || m.pp,
+      maxPP: m.maxPP || m.pp,
+      ppUps: m.ppUps || 0
+    })),
+    isShiny: p.isShiny || false,
+  };
+}
+
+// ── Cargar ELO del jugador ────────────────────────────────────────────
+async function loadPlayerElo() {
+  if (!currentUser || !sb) return;
+  const { data } = await sb.from('profiles')
+    .select('elo_rating, pvp_wins, pvp_losses, pvp_draws')
+    .eq('id', currentUser.id)
+    .single();
+  if (data) {
+    state.eloRating   = data.elo_rating  || 1000;
+    state.pvpStats    = {
+      wins:   data.pvp_wins   || 0,
+      losses: data.pvp_losses || 0,
+      draws:  data.pvp_draws  || 0
+    };
+  }
+}
+
+// ── Renderizar el tab Rankeds ─────────────────────────────────────────
+function renderRankedTab() {
+  const elo   = state.eloRating || 1000;
+  const stats = state.pvpStats  || { wins: 0, losses: 0, draws: 0 };
+  const tier  = getEloTier(elo);
+
+  // ELO display
+  const eloEl = document.getElementById('ranked-elo-display');
+  if (eloEl) {
+    eloEl.textContent = elo;
+    eloEl.style.color = tier.color;
+    eloEl.style.textShadow = `0 0 20px ${tier.color}88`;
+  }
+  const tierEl = document.getElementById('ranked-tier-label');
+  if (tierEl) tierEl.textContent = tier.icon + ' ' + tier.name;
+
+  // Stats
+  const wEl = document.getElementById('ranked-wins');   if (wEl) wEl.textContent = stats.wins;
+  const lEl = document.getElementById('ranked-losses'); if (lEl) lEl.textContent = stats.losses;
+  const dEl = document.getElementById('ranked-draws');  if (dEl) dEl.textContent = stats.draws;
+
+  const total = stats.wins + stats.losses;
+  const wrEl  = document.getElementById('ranked-winrate');
+  if (wrEl) wrEl.textContent = total > 0 ? Math.round((stats.wins / total) * 100) + '%' : '—';
+
+  // Season timer
+  const timerEl = document.getElementById('ranked-season-timer');
+  if (timerEl) {
+    const now  = new Date();
+    const end  = getSeasonEndDate();
+    const diff = end - now;
+    if (diff <= 0) {
+      timerEl.textContent = 'La temporada ha finalizado.';
+    } else {
+      const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      timerEl.textContent = `Termina en ${days}d ${hours}h`;
+    }
+  }
+
+  renderPassiveTeamPreview();
+
+  // Si hay una búsqueda activa, restaurar el estado visual
+  if (_matchmakingInterval) {
+    _showSearchingUI(true);
+  }
+}
+
+// ── Preview de equipo pasivo ──────────────────────────────────────────
+function renderPassiveTeamPreview() {
+  const el = document.getElementById('ranked-passive-team-preview');
+  if (!el) return;
+  const team = (state.team || []).filter(p => p.hp > 0 && !p.onMission).slice(0, 6);
+  if (!team.length) {
+    el.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.3);align-self:center;">No hay Pokémon disponibles</span>';
+    return;
+  }
+  el.innerHTML = team.map(p => {
+    const num = p.dexNum || p.id || '';
+    return `<img
+      src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
+      style="width:40px;height:40px;image-rendering:pixelated;"
+      title="${p.name}"
+      onerror="this.style.display='none'">`;
+  }).join('');
+}
+
+// ── Guardar equipo pasivo ─────────────────────────────────────────────
+async function savePassiveTeam(active = true) {
+  if (!currentUser) { notify('Debés estar logueado', '⚠️'); return; }
+  const eligibleTeam = (state.team || []).filter(p => p.hp > 0 && !p.onMission);
+  if (!eligibleTeam.length) { notify('Necesitás al menos 1 Pokémon disponible', '⚠️'); return; }
+
+  const snapshot  = eligibleTeam.slice(0, 6).map(buildPassiveSnapshot);
+  const eloRating = state.eloRating || 1000;
+
+  const { error } = await sb.from('passive_teams').upsert({
+    user_id:    currentUser.id,
+    team_data:  snapshot,
+    elo_rating: eloRating,
+    is_active:  active,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'user_id' });
+
+  if (error) { notify('Error guardando equipo: ' + error.message, '❌'); return; }
+  notify(`Equipo pasivo ${active ? 'activado' : 'desactivado'} ✓`, '🤖');
+}
+
+// ── Buscar equipo pasivo para el fallback ─────────────────────────────
+async function findPassiveOpponent() {
+  if (!currentUser) return null;
+  const myElo = state.eloRating || 1000;
+  const range  = 200;
+
+  const { data, error } = await sb.from('passive_teams')
+    .select('user_id, team_data, elo_rating')
+    .eq('is_active', true)
+    .neq('user_id', currentUser.id)
+    .gte('elo_rating', myElo - range)
+    .lte('elo_rating', myElo + range)
+    .order('updated_at', { ascending: false })
+    .limit(10);
+
+  if (error || !data?.length) return null;
+  return data[Math.floor(Math.random() * data.length)];
+}
+
+// ── Estado de Matchmaking ─────────────────────────────────────────────
+let _matchmakingInterval = null;
+let _matchmakingTimeout  = null;
+let _matchmakingSeconds  = 60;
+let _matchmakingQueueId  = null;   // Row en la tabla ranked_queue
+
+// ── Entrada: Buscar Partida ───────────────────────────────────────────
+async function startRankedMatchmaking() {
+  if (!currentUser) { notify('Debés estar logueado', '⚠️'); return; }
+  if (_matchmakingInterval) return; // Ya buscando
+
+  const myTeam = (state.team || []).filter(p => p.hp > 0 && !p.onMission);
+  if (!myTeam.length) { notify('Necesitás al menos 1 Pokémon con HP para buscar partida', '⚠️'); return; }
+
+  // Registrar en la cola de matchmaking (tabla ranked_queue en Supabase)
+  // Si la tabla no existe aún, sigue igual pero el matchmaking funcionará solo por fallback
+  const myElo = state.eloRating || 1000;
+  try {
+    const { data: qRow, error: qErr } = await sb.from('ranked_queue').insert({
+      user_id:    currentUser.id,
+      elo_rating: myElo,
+      status:     'searching',
+    }).select('id').single();
+
+    if (!qErr && qRow?.id) {
+      _matchmakingQueueId = qRow.id;
+    }
+  } catch(e) {
+    // La tabla puede no existir aún — el fallback a pasivo funciona igual
+    console.warn('[Matchmaking] ranked_queue no disponible, modo fallback activo.');
+  }
+
+  _matchmakingSeconds = 60;
+  _showSearchingUI(true);
+
+  // Countdown visual cada segundo
+  _matchmakingInterval = setInterval(() => {
+    _matchmakingSeconds--;
+    const timerEl = document.getElementById('ranked-search-timer');
+    if (timerEl) {
+      timerEl.textContent = _matchmakingSeconds;
+      // Cambiar color cuando queda poco tiempo
+      timerEl.style.color = _matchmakingSeconds <= 10 ? 'var(--red)' : 'var(--purple)';
+    }
+
+    // Cada 5 segundos, buscar un oponente humano en la cola
+    if (_matchmakingSeconds % 5 === 0) {
+      _checkForHumanOpponent();
+    }
+
+    if (_matchmakingSeconds <= 0) {
+      _matchmakingFallbackToPassive();
+    }
+  }, 1000);
+}
+
+// ── Buscar oponente humano en la cola ────────────────────────────────
+async function _checkForHumanOpponent() {
+  if (!currentUser || !_matchmakingInterval) return;
+  const myElo = state.eloRating || 1000;
+
+  try {
+    const { data, error } = await sb.from('ranked_queue')
+      .select('id, user_id, elo_rating')
+      .eq('status', 'searching')
+      .neq('user_id', currentUser.id)
+      .gte('elo_rating', myElo - 300)
+      .lte('elo_rating', myElo + 300)
+      .order('created_at', { ascending: true })
+      .limit(1);
+
+    if (error || !data?.length) return;
+
+    const opponent = data[0];
+    // Intentar "tomar" ese slot atómicamente
+    const { error: matchErr } = await sb.from('ranked_queue')
+      .update({ status: 'matched' })
+      .eq('id', opponent.id)
+      .eq('status', 'searching'); // Solo actualizar si sigue buscando
+
+    if (matchErr) return; // Otro jugador llegó primero
+
+    // Marcar el nuestro también
+    if (_matchmakingQueueId) {
+      await sb.from('ranked_queue')
+        .update({ status: 'matched' })
+        .eq('id', _matchmakingQueueId);
+    }
+
+    // ¡Rival encontrado! Iniciar PvP normal vía invite
+    _matchmakingStop();
+    notify('¡Rival encontrado! Iniciando batalla...', '⚔️');
+    // Enviar invitación PvP al rival usando el sistema existente
+    const { data: prof } = await sb.from('profiles').select('username').eq('id', opponent.user_id).single();
+    if (typeof sendBattleInvite === 'function') {
+      sendBattleInvite(opponent.user_id, prof?.username || 'Rival');
+    }
+  } catch(e) {
+    // La tabla puede no existir — ignorar silenciosamente
+  }
+}
+
+// ── Fallback: luchar contra equipo pasivo ─────────────────────────────
+async function _matchmakingFallbackToPassive() {
+  _matchmakingStop();
+  notify('No se encontró rival. ¡Buscando un equipo pasivo...!', '🤖');
+
+  const opponent = await findPassiveOpponent();
+  if (!opponent) {
+    notify('No hay equipos pasivos disponibles ahora. Intentá más tarde.', '😔');
+    return;
+  }
+
+  const { data: oppProfile } = await sb.from('profiles')
+    .select('username').eq('id', opponent.user_id).single();
+  const oppName = oppProfile?.username || 'Entrenador';
+
+  const enemyTeam = opponent.team_data.map(snap => ({
+    ...snap,
+    hp:          snap.maxHp,
+    status:      null,
+    sleepTurns:  0,
+  }));
+
+  const myTeam = (state.team || []).filter(p => p.hp > 0 && !p.onMission).slice(0, 6);
+  if (!myTeam.length) { notify('Tu equipo no tiene Pokémon disponibles', '⚠️'); return; }
+
+  notify(`¡Desafiando al equipo de ${oppName}! (ELO: ${opponent.elo_rating})`, '⚔️');
+
+  state._passiveBattleOpponentId   = opponent.user_id;
+  state._passiveBattleOpponentName = oppName;
+
+  if (typeof startPassiveBattleMode === 'function') {
+    startPassiveBattleMode(myTeam, enemyTeam, oppName, opponent.user_id);
+  }
+}
+
+// ── Cancelar búsqueda ─────────────────────────────────────────────────
+async function cancelRankedMatchmaking() {
+  _matchmakingStop();
+  // Limpiar la fila de la cola en Supabase
+  if (_matchmakingQueueId) {
+    try {
+      await sb.from('ranked_queue').delete().eq('id', _matchmakingQueueId);
+    } catch(e) { /* ignorar */ }
+    _matchmakingQueueId = null;
+  }
+  notify('Búsqueda cancelada', '✖️');
+}
+
+// ── Limpieza interna ──────────────────────────────────────────────────
+function _matchmakingStop() {
+  if (_matchmakingInterval) { clearInterval(_matchmakingInterval); _matchmakingInterval = null; }
+  if (_matchmakingTimeout)  { clearTimeout(_matchmakingTimeout);   _matchmakingTimeout  = null; }
+  _showSearchingUI(false);
+}
+
+function _showSearchingUI(searching) {
+  const btn    = document.getElementById('btn-ranked-search');
+  const status = document.getElementById('ranked-search-status');
+  if (btn) {
+    btn.style.display = searching ? 'none' : 'block';
+  }
+  if (status) {
+    status.style.display = searching ? 'block' : 'none';
+  }
+}
+
+// ── Reportar resultado de batalla (pasiva o PvP activo) ───────────────
+async function reportPassiveBattleResult(opponentId, result) {
+  const { data, error } = await sb.rpc('fn_report_passive_battle', {
+    p_defender_id: opponentId,
+    p_result:      result
+  });
+  if (error) {
+    console.error('[PvP] Error reportando resultado:', error);
+    notify('Error guardando resultado de batalla.', '⚠️');
+    return;
+  }
+  const delta = data?.delta || 0;
+  state.eloRating = data?.attacker_elo || state.eloRating;
+  state.pvpStats  = state.pvpStats || { wins: 0, losses: 0, draws: 0 };
+  if (result === 'win')  state.pvpStats.wins++;
+  if (result === 'loss') state.pvpStats.losses++;
+  if (result === 'draw') state.pvpStats.draws++;
+
+  const sign = delta >= 0 ? '+' : '';
+  notify(`Resultado registrado. ELO: ${sign}${delta} → ${state.eloRating}`, '📊');
+}
+
+// ── Tabla SQL opcional (ranked_queue) ─────────────────────────────────
+// Ejecutar en Supabase si se quiere matchmaking real entre humanos:
+/*
+CREATE TABLE IF NOT EXISTS ranked_queue (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  elo_rating INTEGER NOT NULL DEFAULT 1000,
+  status     TEXT NOT NULL DEFAULT 'searching',  -- 'searching' | 'matched' | 'cancelled'
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE ranked_queue ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "queue_all" ON ranked_queue
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Los jugadores pueden leer filas de otros buscadores (para matcheo)
+CREATE POLICY "queue_select_others" ON ranked_queue
+  FOR SELECT USING (status = 'searching');
+
+-- Limpiar entradas viejas (> 2 min) automáticamente con pg_cron o desde cliente
+*/

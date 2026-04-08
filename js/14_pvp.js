@@ -881,11 +881,22 @@
 
       _pvpState.channel.unsubscribe();
 
+      const isRanked = _pvpState.isRanked === true;
       const reward = 0;
       state.money += reward;
       if (!state.stats) state.stats = {};
-      state.stats.pvpBattles = (state.stats.pvpBattles || 0) + 1;
-      if (won) state.stats.pvpWins = (state.stats.pvpWins || 0) + 1;
+      
+      if (!isRanked) {
+        state.stats.pvpBattles = (state.stats.pvpBattles || 0) + 1;
+        if (won) state.stats.pvpWins = (state.stats.pvpWins || 0) + 1;
+      } else {
+        // Enviar el resultado al RPC para batallas activas (usar el mismo RPC o un endpoint central)
+        if (typeof reportPassiveBattleResult === 'function') {
+           const resultStr = won ? 'win' : 'loss';
+           reportPassiveBattleResult(_pvpState.opponentId, resultStr);
+        }
+      }
+
       // Limpiar batalla PvP activa guardada
       state.activeBattle = null;
       scheduleSave();

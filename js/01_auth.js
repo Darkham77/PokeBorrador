@@ -336,6 +336,8 @@
         if (typeof initGlobalChatListener === 'function') initGlobalChatListener();
         // Sistema de Dominancia (solo online)
         if (typeof initDominanceSystem === 'function') setTimeout(() => initDominanceSystem(), 1500);
+        // Cargar ELO de PvP
+        if (typeof loadPlayerElo === 'function') setTimeout(() => loadPlayerElo(), 2000);
       } catch (e) {
         setAuthLoading(false);
         currentUser = null;

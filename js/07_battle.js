@@ -2170,7 +2170,33 @@ function enemyTurn(opts = {}) {
     }
   }
 
-  let move = chosenMove || (b.isTrainer || b.isGym ? getBestEnemyMove(b.enemy, b.player, b.playerStages) : validMoves[Math.floor(Math.random() * validMoves.length)]);
+  let move = null;
+  // Hook de IA Pasiva de Rankeds
+  if (b.isPassivePvP && typeof decideAiAction === 'function') {
+    const aiTeam = b.enemyTeam;
+    const activeIdx = aiTeam.findIndex(p => p === b.enemy);
+    const decision = decideAiAction(aiTeam, activeIdx >= 0 ? activeIdx : 0, b.player);
+    
+    if (decision?.type === 'switch') {
+      const newPoke = aiTeam[decision.pokemonIndex];
+      addLog(`¡El Equipo Defensor retira a ${b.enemy.name}!`, 'log-enemy');
+      setTimeout(() => {
+        b.enemy = newPoke;
+        newPoke._revealed = true;
+        addLog(`¡El Equipo Defensor envía a ${newPoke.name}!`, 'log-enemy');
+        updateBattleUI();
+        finish();
+      }, 800);
+      return;
+    } else if (decision?.type === 'move') {
+      move = b.enemy.moves[decision.moveIndex] || validMoves[0];
+    }
+  }
+
+  // Fallback si no hay IA Pasiva o es batalla normal
+  if (!move) {
+    move = chosenMove || (b.isTrainer || b.isGym ? getBestEnemyMove(b.enemy, b.player, b.playerStages) : validMoves[Math.floor(Math.random() * validMoves.length)]);
+  }
   if (move && move.name !== 'Furia') b.enemy.rageActive = false;
   
   // Encore
@@ -3041,6 +3067,11 @@ function endBattle(won) {
   b._ending = true;
   b.over = true;
 
+  if (b.isPassivePvP && b.passiveOpponentId && typeof reportPassiveBattleResult === 'function') {
+    const result = won ? 'win' : 'loss'; // draw is technically not supported here natively, but win/loss works
+    reportPassiveBattleResult(b.passiveOpponentId, result);
+  }
+
   // Cura Natural (Natural Cure) - Heal status when battle ends
   if (state.team) {
     state.team.forEach(p => {
@@ -3670,4 +3701,22 @@ function startDefenderBattle(defenderData) {
   };
 }
 
+// ── Modo de Batalla Pasiva (IA vs Jugador) ────────────────────────────
+function startPassiveBattleMode(playerTeam, aiTeam, opponentName, opponentId) {
+  const enemy = aiTeam[0];
+  startBattle(
+    enemy,          // enemy
+    false,          // isGym
+    null,           // gymId
+    'ranked_arena', // locationId
+    true,           // isTrainer
+    aiTeam,         // enemyTeam
+    opponentName    // trainerName
+  );
 
+  // Marcar como Ranked
+  if (state.battle) {
+    state.battle.isPassivePvP = true;
+    state.battle.passiveOpponentId = opponentId;
+  }
+}

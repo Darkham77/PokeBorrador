@@ -453,18 +453,24 @@
           <!-- Matchmaking -->
           <div style="margin-bottom:16px;">
             <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);margin-bottom:10px;">⚔️ BUSCAR PARTIDA</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-              <button onclick="if(typeof startPassiveBattle==='function')startPassiveBattle()" id="btn-ranked-passive"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:14px 10px;border:none;border-radius:14px;cursor:pointer;
-                       background:linear-gradient(135deg,rgba(59,139,255,0.2),rgba(59,139,255,0.08));color:var(--blue);
-                       border:1px solid rgba(59,139,255,0.3);line-height:1.6;">
-                🤖<br>Desafiar<br>Equipo Pasivo
-              </button>
-              <button onclick="showTab('friends',document.querySelector('[data-tab=friends]'))" id="btn-ranked-active"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:14px 10px;border:none;border-radius:14px;cursor:pointer;
-                       background:linear-gradient(135deg,rgba(199,125,255,0.2),rgba(199,125,255,0.08));color:var(--purple);
-                       border:1px solid rgba(199,125,255,0.3);line-height:1.6;">
-                👤<br>Desafiar<br>Rival Humano
+            <button onclick="startRankedMatchmaking()" id="btn-ranked-search"
+              style="width:100%;font-family:'Press Start 2P',monospace;font-size:9px;padding:18px;border:none;border-radius:16px;cursor:pointer;
+                     background:linear-gradient(135deg,rgba(199,125,255,0.25),rgba(59,139,255,0.15));color:#fff;
+                     border:1px solid rgba(199,125,255,0.4);letter-spacing:0.5px;
+                     box-shadow:0 4px 20px rgba(199,125,255,0.2);transition:all 0.2s;">
+              🔍 BUSCAR PARTIDA
+            </button>
+            <div id="ranked-search-status" style="margin-top:10px;display:none;
+              background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;text-align:center;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:6px;">
+                ⏳ Buscando rival...
+              </div>
+              <div id="ranked-search-timer" style="font-size:22px;font-family:'Press Start 2P',monospace;color:var(--purple);margin-bottom:8px;">60</div>
+              <div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Si no se encuentra un rival en 1 minuto,<br>lucharás contra un equipo pasivo.</div>
+              <button onclick="cancelRankedMatchmaking()" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 14px;
+                border:1px solid rgba(255,59,59,0.3);border-radius:10px;cursor:pointer;
+                background:rgba(255,59,59,0.08);color:var(--red);">
+                ✕ Cancelar
               </button>
             </div>
           </div>
