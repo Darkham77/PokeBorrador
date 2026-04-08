@@ -210,7 +210,7 @@
     const MARKET_UNLOCKS = {
       3: ['Súper Ball', 'Super Poción'],
       5: ['Red Ball', 'Ocaso Ball', 'Cura Total', 'Compartir EXP', 'MT27 Retribución'],
-      8: ['Hiper Poción', 'Ultra Ball', 'Revivir', 'Lente Zoom', 'Subida PP'],
+      8: ['Hiper Poción', 'Ultra Ball', 'Revivir', 'Lente Zoom', 'Subida de PP'],
       10: ['Turno Ball', 'Restos', 'Cascabel Concha', 'Piedras de Evolución'],
       12: ['Poción Máxima', 'Huevo Suerte Pequeño', 'Cinta Elegida', 'MT14 Ventisca'],
       15: ['Revivir Máximo', 'Elixir Máximo', 'Banda Focus'],
@@ -615,9 +615,9 @@
       },
       {
         id: 'pp_up', cat: 'utility', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/pp-up.png',
-        name: 'Subida PP', icon: '📈', price: 0, unlockLv: 8, tier: 'epic', market: false, trainerShop: true, bcPrice: 1000,
+        name: 'Subida de PP', icon: '📈', price: 0, unlockLv: 8, tier: 'epic', market: false, trainerShop: true, bcPrice: 1000,
         desc: 'Aumenta los PP máximos de un movimiento en un 20%.',
-        effect: (qty) => { state.inventory['Subida PP'] = (state.inventory['Subida PP'] || 0) + qty; }
+        effect: (qty) => { state.inventory['Subida de PP'] = (state.inventory['Subida de PP'] || 0) + qty; }
       },
 
       {

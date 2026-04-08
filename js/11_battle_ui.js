@@ -52,7 +52,7 @@
       'Cura Total': p => { if (!p.status && p.hp === p.maxHp) return null; p.hp = p.maxHp; p.status = null; p.sleepTurns = 0; return `fue curado completamente (Max HP + curado)`; },
       'Éter': p => { p.moves.forEach(m => { const cap = (m.maxPP > 0) ? m.maxPP : (MOVE_DATA[m.name]?.pp || 35); if (!m.maxPP || m.maxPP <= 0) m.maxPP = cap; m.pp = Math.min(cap, (isNaN(m.pp) ? 0 : m.pp) + 10); }); return `recuperó PP`; },
       'Elixir Máximo': p => { p.moves.forEach(m => { const cap = (m.maxPP > 0) ? m.maxPP : (MOVE_DATA[m.name]?.pp || 35); if (!m.maxPP || m.maxPP <= 0) m.maxPP = cap; m.pp = cap; }); return `recuperó todos los PP`; },
-      'Subida PP': p => {
+      'Subida de PP': p => {
         if (!p.moves || p.moves.length === 0) return null;
         
         const ov = document.createElement('div');
@@ -234,7 +234,7 @@
 
           // 2. Explicitly non-combat items from HEALING_ITEMS
           const nonCombat = [
-            'Recordador de Movimientos', 'Caramelo Raro', 'Subida PP',
+            'Recordador de Movimientos', 'Caramelo Raro', 'Subida de PP',
             'Repelente', 'Superrepelente', 'Máximo Repelente',
             'Ticket Shiny', 'Moneda Amuleto', 'Huevo Suerte Pequeño',
             'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo',
@@ -486,8 +486,8 @@
       m.pp += bonus;
       m.ppUps = (m.ppUps || 0) + 1;
       
-      state.inventory['Subida PP']--;
-      if (state.inventory['Subida PP'] <= 0) delete state.inventory['Subida PP'];
+      state.inventory['Subida de PP']--;
+      if (state.inventory['Subida de PP'] <= 0) delete state.inventory['Subida de PP'];
       
       document.getElementById('pp-up-move-selector')?.remove();
       notify(`¡Los PP de ${m.name} subieron a ${m.maxPP}!`, '📈');
