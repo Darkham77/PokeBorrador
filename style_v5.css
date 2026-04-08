@@ -1761,7 +1761,8 @@
 
     /* Desktop BATTLE Layout: Log on the left */
     @media (min-width: 1024px) {
-      #battle-screen .battle-container {
+      #battle-screen .battle-container,
+      #pvp-overlay .battle-container {
         display: grid;
         grid-template-columns: 280px 1fr;
         grid-template-rows: 1fr auto;
@@ -1775,20 +1776,20 @@
         align-items: stretch;
       }
 
-      .battle-arena {
+      .battle-arena, #pvp-arena {
         grid-area: arena;
         margin-bottom: 0;
         min-height: 0; /* Allow arena to shrink if panel is tall */
       }
 
-      .battle-log {
+      .battle-log, #pvp-log {
         grid-area: log;
         height: 100%;
         min-height: 0;
         margin-bottom: 0;
       }
 
-      #move-panel {
+      #move-panel, #pvp-move-panel {
         grid-area: panel;
         margin-bottom: 0;
         display: flex;

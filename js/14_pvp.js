@@ -348,7 +348,7 @@
 
       // Usamos las clases oficiales .battle-container para asegurar responsividad móvil automática
       ov.innerHTML = `
-      <div class="battle-container" style="height:auto; max-height:98vh; display:flex; flex-direction:column; overflow:visible;">
+      <div class="battle-container" style="height:auto; max-height:98vh; overflow:visible;">
         <!-- Header Info -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;z-index:10;width:100%;">
           <div style="display:flex;align-items:center;gap:10px;">
@@ -419,7 +419,10 @@
 
       _pvpLoadSprites();
       _pvpRenderMoves();
-      setTimeout(() => drawBattleBackground('pvp'), 50);
+      setTimeout(() => {
+        const bgKey = _pvpState?.isRanked ? 'pvp_ranked' : 'pvp';
+        drawBattleBackground(bgKey);
+      }, 50);
     }
 
     function _pvpLoadSprites() {
