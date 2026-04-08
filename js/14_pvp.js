@@ -416,10 +416,12 @@
 
       _pvpLoadSprites();
       _pvpRenderMoves();
+
+      // Damos un delay extra para asegurar que el contenedor Grid tenga su tamaño final en PC
       setTimeout(() => {
         const bgKey = _pvpState?.isRanked ? 'pvp_ranked' : 'pvp';
         drawBattleBackground(bgKey);
-      }, 50);
+      }, 250);
     }
 
     function _pvpLoadSprites() {
