@@ -261,12 +261,12 @@
             if (timeSinceActivity > 10000) {
               _pvpState._opponentDisconnected = true;
               _pvpState.phase = 'opponent_disconnected';
-              addPvpLog('\u26a0\ufe0f El rival se desconect\u00f3. Esperando reconexion... (60s)', 'log-enemy');
+              addPvpLog('⚠️ El rival se desconectó. Esperando reconexion... (60s)', 'log-enemy');
               renderPvpBattle();
               if (_pvpState._disconnectTimer) clearTimeout(_pvpState._disconnectTimer);
               _pvpState._disconnectTimer = setTimeout(() => {
                 if (_pvpState.over || !_pvpState._opponentDisconnected) return;
-                addPvpLog('\ud83d\udcaf El rival no se reconect\u00f3. \u00a1Ganaste por abandono!', 'log-info');
+                addPvpLog('💯 El rival no se reconectó. ¡Ganaste por abandono!', 'log-info');
                 pvpEnd(true);
               }, 60000);
             }
@@ -287,78 +287,88 @@
       const enemy = _pvpState.enemyTeam?.[_pvpState.enemyActive];
 
       ov.innerHTML = `
-  <div style="max-width:680px;margin:0 auto;padding:16px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <img src="https://play.pokemonshowdown.com/sprites/trainers/red.png" alt="Trainer"
-          style="height:40px;image-rendering:pixelated;filter:drop-shadow(0 2px 8px rgba(199,125,255,0.5));"
-          onerror="this.style.display='none'">
-        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--purple);">⚔️ BATALLA PvP</div>
-      </div>
-      <div id="pvp-status-msg" style="font-size:11px;color:var(--yellow);">⏳ Conectando...</div>
-      <button onclick="pvpForfeit()" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:6px 10px;
-        border:none;border-radius:8px;cursor:pointer;background:rgba(255,59,59,0.1);color:var(--red);border:1px solid rgba(255,59,59,0.2);">
-        🏳️ Rendirse
-      </button>
-    </div>
+      <div class="battle-container" style="max-width:680px;margin:0 auto;padding:16px;height:100%;display:flex;flex-direction:column;">
+        <!-- Header Info -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;z-index:10;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:rgba(199,125,255,0.1);display:flex;align-items:center;justify-content:center;border:1px solid rgba(199,125,255,0.2);">
+               <img src="https://play.pokemonshowdown.com/sprites/trainers/red.png" alt="Trainer" style="height:32px;image-rendering:pixelated;" onerror="this.style.display='none'">
+            </div>
+            <div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--purple);margin-bottom:2px;">⚔️ MODO RANKED</div>
+              <div id="pvp-status-msg" style="font-size:10px;color:var(--yellow);font-weight:700;">⏳ Conectando...</div>
+            </div>
+          </div>
+          <button onclick="pvpForfeit()" 
+            style="font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 16px;border:none;border-radius:12px;cursor:pointer;background:rgba(255,59,59,0.1);color:var(--red);border:1px solid rgba(255,59,59,0.2);transition:all 0.2s;"
+            onmouseover="this.style.background='rgba(255,59,59,0.2)'" onmouseout="this.style.background='rgba(255,59,59,0.1)'">
+            🏳️ RENDIRSE
+          </button>
+        </div>
 
-    <div class="battle-arena" id="pvp-arena" style="position:relative;overflow:hidden;margin-bottom:12px;">
-      <canvas id="pvp-battle-bg-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;border-radius:18px;"></canvas>
-      <div class="battle-combatants">
-        <!-- TOP-LEFT: Enemy HP info -->
-        <div style="display:flex;align-items:flex-start;justify-content:flex-start;">
-          <div class="battle-pokemon-info">
-            <div style="font-size:9px;color:var(--yellow);font-weight:700;margin-bottom:2px;" id="pvp-enemy-trainer">${_pvpState.enemyUsername ? '🎮 ' + _pvpState.enemyUsername : ''}</div>
-            <div class="battle-name" id="pvp-enemy-name">${enemy?.name || '???'}</div>
-            <div class="battle-level" id="pvp-enemy-level">Nv. ${enemy?.level || '?'}</div>
-            <div class="hp-bar-wrap"><div class="hp-bar hp-high" id="pvp-enemy-hp-bar" style="width:100%"></div></div>
-            <div class="battle-hp-text" id="pvp-enemy-hp-text">${enemy ? enemy.hp + '/' + enemy.maxHp + ' HP' : '???'}</div>
-          </div>
-        </div>
-        <!-- TOP-RIGHT: Enemy sprite -->
-        <div style="display:flex;align-items:flex-start;justify-content:flex-end;">
-          <div id="pvp-enemy-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-start;justify-content:flex-end;">
-            <img id="pvp-enemy-img" src="" alt="" style="height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
-          </div>
-        </div>
-        <!-- BOTTOM-LEFT: My sprite -->
-        <div style="display:flex;align-items:flex-end;justify-content:flex-start;">
-          <div id="pvp-player-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-end;justify-content:flex-start;">
-            <img id="pvp-player-img" src="" alt="" style="height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
-          </div>
-        </div>
-        <!-- BOTTOM-RIGHT: My HP info -->
-        <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:10px;">
-          <div class="battle-pokemon-info" style="text-align:right;">
-            <div class="battle-name" id="pvp-player-name">${me?.name || '???'}</div>
-            <div class="battle-level" id="pvp-player-level">Nv. ${me?.level || '?'}</div>
-            <div class="hp-bar-wrap"><div class="hp-bar hp-high" id="pvp-player-hp-bar" style="width:100%"></div></div>
-            <div class="battle-hp-text" id="pvp-player-hp-text">${me?.hp || 0}/${me?.maxHp || 0} HP</div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <!-- Arena (Modern Layout) -->
+        <div class="battle-arena" id="pvp-arena" style="position:relative;overflow:hidden;margin-bottom:16px;flex:1;min-height:280px;">
+          <canvas id="pvp-battle-bg-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;border-radius:18px;"></canvas>
+          <div class="battle-combatants" style="height:100%;">
+            <!-- TOP-LEFT: Enemy HP info -->
+            <div style="display:flex;align-items:flex-start;justify-content:flex-start;">
+              <div class="battle-pokemon-info">
+                <div style="font-size:9px;color:var(--yellow);font-weight:700;margin-bottom:2px;" id="pvp-enemy-trainer">
+                   ${_pvpState.enemyUsername ? '🎮 ' + _pvpState.enemyUsername.toUpperCase() : 'OPONENTE'}
+                </div>
+                <div class="battle-name" id="pvp-enemy-name">${enemy?.name || '???'}</div>
+                <div class="battle-level" id="pvp-enemy-level">Nv. ${enemy?.level || '?'}</div>
+                <div class="hp-bar-wrap"><div class="hp-bar hp-high" id="pvp-enemy-hp-bar" style="width:100%"></div></div>
+                <div class="battle-hp-text" id="pvp-enemy-hp-text">${enemy ? enemy.hp + '/' + enemy.maxHp + ' HP' : '???'}</div>
+              </div>
+            </div>
 
-    <div id="pvp-log" style="background:rgba(0,0,0,0.4);border-radius:12px;padding:12px;font-size:12px;
-      color:#ccc;min-height:56px;max-height:110px;overflow-y:auto;margin-bottom:12px;
-      border:1px solid rgba(255,255,255,0.06);"></div>
+            <!-- TOP-RIGHT: Enemy sprite -->
+            <div style="display:flex;align-items:flex-start;justify-content:flex-end;">
+              <div id="pvp-enemy-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-start;justify-content:flex-end;">
+                <img id="pvp-enemy-img" src="" alt="" style="max-height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
+              </div>
+            </div>
 
-    <div id="pvp-move-panel">
-      <div id="pvp-move-buttons" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <button onclick="pvpShowSwitch()"
-          style="font-family:'Press Start 2P',monospace;font-size:8px;padding:12px;border:none;border-radius:12px;cursor:pointer;
-                 background:rgba(199,125,255,0.15);color:var(--purple);border:1px solid rgba(199,125,255,0.3);">
-          🔄 CAMBIAR
-        </button>
-        <button onclick="pvpForfeit()"
-          style="font-family:'Press Start 2P',monospace;font-size:8px;padding:12px;border:none;border-radius:12px;cursor:pointer;
-                 background:rgba(255,59,59,0.1);color:var(--red);border:1px solid rgba(255,59,59,0.2);">
-          🏳️ RENDIRSE
-        </button>
-      </div>
-    </div>
-  </div>`;
+            <!-- BOTTOM-LEFT: My sprite -->
+            <div style="display:flex;align-items:flex-end;justify-content:flex-start;">
+              <div id="pvp-player-sprite-wrap" style="height:100%;width:100%;display:flex;align-items:flex-end;justify-content:flex-start;">
+                <img id="pvp-player-img" src="" alt="" style="max-height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
+              </div>
+            </div>
+
+            <!-- BOTTOM-RIGHT: My HP info -->
+            <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:10px;">
+              <div class="battle-pokemon-info" style="text-align:right;">
+                <div class="battle-name" id="pvp-player-name">${me?.name || '???'}</div>
+                <div class="battle-level" id="pvp-player-level">Nv. ${me?.level || '?'}</div>
+                <div class="hp-bar-wrap"><div class="hp-bar hp-high" id="pvp-player-hp-bar" style="width:100%"></div></div>
+                <div class="battle-hp-text" id="pvp-player-hp-text">${me?.hp || 0}/${me?.maxHp || 0} HP</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Log (Modern) -->
+        <div id="pvp-log" class="battle-log" style="height:80px;margin-bottom:16px;">
+           <div class="log-entry log-info">Estableciendo conexión estratégica...</div>
+        </div>
+
+        <!-- Move Panel -->
+        <div id="pvp-move-panel" style="z-index:10;">
+          <div id="pvp-move-buttons" class="battle-actions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"></div>
+          <div class="action-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="action-btn" onclick="pvpShowSwitch()"
+              style="background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);color:var(--purple);height:48px;">
+              🔄 CAMBIAR
+            </button>
+            <button class="action-btn" onclick="pvpForfeit()"
+              style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.3);color:var(--red);height:48px;">
+              🏳️ RENDIRSE
+            </button>
+          </div>
+        </div>
+      </div>`;
 
       _pvpLoadSprites();
       _pvpRenderMoves();
@@ -422,20 +432,29 @@
       const waiting = phase === 'waiting' || phase === 'opponent_disconnected';
 
       panel.innerHTML = (me.moves || []).map((mv, i) => {
-        const md = MOVE_DATA[mv.name] || { power: mv.power || 40, type: 'normal', cat: 'physical' };
+        const moveName = mv.name || 'Desconocido';
+        const md = MOVE_DATA[moveName] || { power: mv.power || 40, type: 'normal', cat: 'physical' };
         const col = TYPE_COL[md.type] || '#aaa';
+        const ico = CAT_ICO[md.cat] || '⚔️';
+        
         const disabled = mv.pp <= 0 || waiting;
-        const opacity = waiting ? '0.45' : '1';
-        return `<button onclick="pvpUseMove(${i})" ${disabled ? 'disabled' : ''}
-          style="font-family:'Press Start 2P',monospace;font-size:7px;padding:10px 8px;border:none;border-radius:12px;cursor:${waiting ? 'default' : 'pointer'};
-                 opacity:${opacity};background:rgba(59,139,255,0.12);color:var(--blue);border-left:3px solid ${col};
-                 border-right:none;border-top:1px solid rgba(59,139,255,0.2);border-bottom:1px solid rgba(59,139,255,0.2);
-                 display:flex;flex-direction:column;gap:3px;align-items:flex-start;width:100%;">
-          <span style="color:#fff;">${mv.name}</span>
-          <span style="display:flex;gap:6px;align-items:center;">
-            <span style="color:${col};">${md.type?.toUpperCase()} ${CAT_ICO[md.cat] || ''}</span>
-            <span style="color:var(--gray);">POD:${md.power || '—'} PP:${mv.pp}/${mv.maxPP}</span>
-          </span>
+        const opacity = waiting ? '0.4' : '1';
+
+        // Replicamos el diseño 'action-btn' pero con personalización de tipo
+        return `
+        <button onclick="pvpUseMove(${i})" ${disabled ? 'disabled' : ''} class="action-btn"
+          style="display:flex;flex-direction:column;align-items:flex-start;padding:10px 12px;height:auto;min-height:56px;
+                 background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-left:4px solid ${col};
+                 opacity:${opacity};cursor:${disabled ? 'default' : 'pointer'};transition:all 0.2s;position:relative;overflow:hidden;">
+          
+          <!-- Tipo / Icono de Fondo -->
+          <div style="position:absolute;right:8px;top:8px;font-size:18px;opacity:0.1;pointer-events:none;">${ico}</div>
+          
+          <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:#fff;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.5px;">${moveName}</div>
+          <div style="display:flex;justify-content:space-between;width:100%;align-items:center;font-size:10px;font-weight:700;">
+            <span style="color:${col};background:${col}15;padding:1px 6px;border-radius:4px;border:1px solid ${col}33;">${md.type || 'Normal'}</span>
+            <span style="color:var(--gray);font-family:'Press Start 2P';font-size:7px;">PP ${mv.pp}/${mv.maxPP}</span>
+          </div>
         </button>`;
       }).join('');
     }
@@ -443,7 +462,7 @@
     function addPvpLog(msg, cls) {
       const el = document.getElementById('pvp-log');
       if (!el) return;
-      el.innerHTML += `<div class="${cls || ''}" style="margin-bottom:3px;">${msg}</div>`;
+      el.innerHTML += `<div class="log-entry ${cls || ''}">${msg}</div>`;
       el.scrollTop = el.scrollHeight;
     }
 
