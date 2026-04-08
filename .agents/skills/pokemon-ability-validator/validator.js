@@ -60,17 +60,20 @@ async function runValidator() {
     const dataContent = fs.readFileSync(dataPath, 'utf8');
 
     // 2. Extract in-game abilities dynamically
-    // Look for const ABILITIES = { ... }; and extract strings
+    // Look specifically for the ABILITIES object block
+    const abilitiesBlockMatch = stateContent.match(/const ABILITIES = {([\s\S]+?)\n\s+};/);
     const gameAbilities = new Set();
-    const abilityMatches = stateContent.match(/\[([^\]]+)\]/g);
-    if (abilityMatches) {
-      abilityMatches.forEach(match => {
-        // match is something like ['Espesura', 'Clorofila']
-        const names = match.match(/'([^']+)'/g);
-        if (names) {
-          names.forEach(n => gameAbilities.add(n.replace(/'/g, '')));
-        }
-      });
+    if (abilitiesBlockMatch) {
+      const blockContent = abilitiesBlockMatch[1];
+      const abilityListMatches = blockContent.match(/\[([^\]]+)\]/g);
+      if (abilityListMatches) {
+        abilityListMatches.forEach(match => {
+          const names = match.match(/'([^']+)'/g);
+          if (names) {
+            names.forEach(n => gameAbilities.add(n.replace(/'/g, '')));
+          }
+        });
+      }
     }
     
     // 3. Extract descriptions from js/02_pokemon_data.js
@@ -96,18 +99,17 @@ async function runValidator() {
     const translatedMap = {};
     apiAbilities.forEach(ab => {
       const esNameObj = ab.names.find(n => n.language.name === 'es');
-      const enNameObj = ab.names.find(n => n.language.name === 'en');
-      
-      const esName = esNameObj ? esNameObj.name : null;
-      if (esName) {
-        translatedMap[esName] = ab;
+      if (esNameObj) {
+        const cleaned = esNameObj.name.trim();
+        translatedMap[cleaned] = ab;
+        translatedMap[cleaned.toLowerCase()] = ab;
       }
     });
 
     // Handle some hardcoded mismatched translations just in case
     const customMapping = {
-      'Cura Natural': 'natural-cure',
-      'Corpulencia': 'bulk-up' // Bulkp up is a move, maybe checking for abilities
+      'Cura natural': 'natural-cure',
+      'Gran encanto': 'cute-charm'
     };
 
     console.log("\n=======================================================");
@@ -117,7 +119,10 @@ async function runValidator() {
     let missingInApi = 0;
     
     for (const abName of gameAbilities) {
-      const inGameDesc = abilityData[abName] || "¡Sin descripción en ABILITY_DATA!";
+      const abNameLower = abName.toLowerCase();
+      const gameDescKey = Object.keys(abilityData).find(k => k.toLowerCase() === abNameLower);
+      const inGameDesc = gameDescKey ? abilityData[gameDescKey] : "¡Sin descripción en ABILITY_DATA!";
+      
       let apiEntry = translatedMap[abName];
       
       if (!apiEntry && customMapping[abName]) {
@@ -126,7 +131,7 @@ async function runValidator() {
       
       if (!apiEntry) {
          // Attempt to find by english matching or ignore case
-         apiEntry = apiAbilities.find(a => a.names.some(n => n.language.name === 'es' && n.name.toLowerCase() === abName.toLowerCase()));
+         apiEntry = apiAbilities.find(a => a.names.some(n => n.language.name === 'es' && n.name.toLowerCase() === abNameLower));
       }
 
       if (apiEntry) {

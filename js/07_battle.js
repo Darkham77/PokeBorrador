@@ -199,33 +199,16 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
     addLog(`¡La Intimidación de ${enemy.name} bajó el ataque de ${player.name}!`, 'log-info');
   }
 
-  // Trace (Calco)
-  if (player.ability === 'Calco' && enemy.ability) {
+  // Trace (Rastro)
+  if (player.ability === 'Rastro' && enemy.ability) {
     player.ability = enemy.ability;
-    addLog(`¡${player.name} copió la habilidad ${enemy.ability} de ${enemy.name} con Calco!`, 'log-info');
+    addLog(`¡${player.name} copió la habilidad ${enemy.ability} de ${enemy.name} con Rastro!`, 'log-info');
   }
-  if (enemy.ability === 'Calco' && player.ability) {
+  if (enemy.ability === 'Rastro' && player.ability) {
     enemy.ability = player.ability;
-    addLog(`¡${enemy.name} copió la habilidad ${player.ability} de ${player.name} con Calco!`, 'log-info');
+    addLog(`¡${enemy.name} copió la habilidad ${player.ability} de ${player.name} con Rastro!`, 'log-info');
   }
 
-  // Download (Descarga)
-  const applyDownload = (attacker, defender) => {
-    if (attacker.ability === 'Descarga') {
-      const defValue = defender.def || 40;
-      const spdValue = defender.spd || 40;
-      const stages = (state.battle.enemy === attacker) ? state.battle.enemyStages : state.battle.playerStages;
-      if (spdValue > defValue) {
-        stages.atk = Math.min(6, (stages.atk || 0) + 1);
-        addLog(`¡La Descarga de ${attacker.name} subió su Ataque!`, 'log-info');
-      } else {
-        stages.spa = Math.min(6, (stages.spa || 0) + 1);
-        addLog(`¡La Descarga de ${attacker.name} subió su At. Especial!`, 'log-info');
-      }
-    }
-  };
-  applyDownload(player, enemy);
-  applyDownload(enemy, player);
 
   // ── Predict Nature (Criador) ────────────────────────────────────────────
   if (state.playerClass === 'criador' && enemy.nature && !isGym && !isTrainer && !state.battle.isPvP) {
@@ -676,8 +659,7 @@ function calcDamage(attacker, defender, move, atkStages, defStages) {
     if (isCrit) defensiveAbility = defender.ability;
     isCrit = false;
   }
-  const critMult = isCrit ? (attacker.ability === 'Francotirador' ? 3 : 2) : 1;
-  if (isCrit && attacker.ability === 'Francotirador') triggeredAbility = 'Francotirador';
+  const critMult = isCrit ? 2 : 1;
 
   const finalDmg = eff > 0 ? Math.max(1, Math.floor(base * stab * finalAbilityMult * eff * random * itemMult * critMult * weatherMult * (isCrit ? 1 : screenMult))) : 0;
   return { dmg: finalDmg, eff, stab, isCrit, triggeredAbility, defensiveAbility };
@@ -701,7 +683,7 @@ function getAbilityMultiplier(attacker, defender, move) {
   // Damage boosters at low HP (1/3)
   const isLowHp = attacker.hp <= (attacker.maxHp / 3);
   if (isLowHp) {
-    if (ab === 'Mar Llamas' && md.type === 'fire') { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Mar llamas' && md.type === 'fire') { mult *= 1.5; triggeredAbility = ab; }
     if (ab === 'Torrente' && md.type === 'water') { mult *= 1.5; triggeredAbility = ab; }
     if (ab === 'Espesura' && md.type === 'grass') { mult *= 1.5; triggeredAbility = ab; }
     if (ab === 'Enjambre' && md.type === 'bug') { mult *= 1.5; triggeredAbility = ab; }
@@ -764,10 +746,10 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
 
   if (roll > chance && chance < 100) return; // didn't proc
   
-  // Shield Dust (Escudo Polvo): Protects against secondary effects (chance < 100)
-  if (tgt.ability === 'Escudo Polvo' && chance < 100) {
+  // Shield Dust (Polvo escudo): Protects against secondary effects (chance < 100)
+  if (tgt.ability === 'Polvo escudo' && chance < 100) {
     if (effectBase !== 'leech_seed' && effectBase !== 'metronome') { // usually effects like burn_10
-       addLogFn(`¡El Escudo Polvo de ${tgt.name} evitó los efectos secundarios!`, 'log-info');
+       addLogFn(`¡El Polvo escudo de ${tgt.name} evitó los efectos secundarios!`, 'log-info');
        return; 
     }
   }
@@ -823,8 +805,8 @@ function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn) {
     case 'stat_down_enemy_spa': tgtStages.spa = Math.max(-6, (tgtStages.spa || 0) - 1); addLogFn(`¡Bajó el At.Esp de ${tgt.name}!`, 'log-info'); break;
     case 'stat_down_enemy_spd': tgtStages.spd = Math.max(-6, (tgtStages.spd || 0) - 1); addLogFn(`¡Bajó la Def.Esp de ${tgt.name}!`, 'log-info'); break;
     case 'stat_down_enemy_acc': 
-      if (tgt.ability === 'Vista Lince') {
-        addLogFn(`¡La Vista Lince de ${tgt.name} evitó que bajara su precisión!`, 'log-info');
+      if (tgt.ability === 'Vista lince') {
+        addLogFn(`¡La Vista lince de ${tgt.name} evitó que bajara su precisión!`, 'log-info');
       } else {
         tgtStages.acc = Math.max(-6, (tgtStages.acc || 0) - 1); 
         addLogFn(`¡Bajó la Precisión de ${tgt.name}!`, 'log-info'); 
@@ -1242,18 +1224,10 @@ function tickStatus(pokemon, addLogFn, role) {
   const logCls = role === 'player' ? 'log-enemy' : role === 'enemy' ? 'log-player' : 'log-info';
   switch (pokemon.status) {
     case 'burn':
-      if (pokemon.ability === 'Muro Mágico') {
-         addLogFn(`¡El Muro Mágico de ${pokemon.name} evitó el daño por quemadura!`, 'log-info');
-         return false;
-      }
       pokemon.hp = Math.max(0, pokemon.hp - Math.max(1, Math.floor(pokemon.maxHp / 8)));
       addLogFn(`¡${pokemon.name} sufre quemaduras! (-${Math.max(1, Math.floor(pokemon.maxHp / 8))} HP)`, logCls);
       return true;
     case 'poison':
-      if (pokemon.ability === 'Muro Mágico') {
-         addLogFn(`¡El Muro Mágico de ${pokemon.name} evitó el daño por veneno!`, 'log-info');
-         return false;
-      }
       let dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
       if (pokemon.badPoison) {
         dmg = Math.max(1, Math.floor((pokemon.maxHp * pokemon.badPoison) / 16));
@@ -1271,10 +1245,6 @@ function tickLeechSeed(pokemon, role, addLogFn) {
   const b = state.battle;
   if (!b) return false;
 
-  if (pokemon.ability === 'Muro Mágico') {
-     addLogFn(`¡El Muro Mágico de ${pokemon.name} evitó el daño por drenadoras!`, 'log-info');
-     return false;
-  }
   const dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
   pokemon.hp = Math.max(0, pokemon.hp - dmg);
   addLogFn(`¡Drenadoras resta salud a ${pokemon.name}! (-${dmg} HP)`, 'log-enemy');
@@ -1305,10 +1275,7 @@ function getEffectiveSpeed(pokemon, stages) {
   let spe = Math.max(1, Math.floor(baseSpe * stageMult(stage)));
   
   // Abilities affecting speed
-  if (pokemon.ability === 'Ráfaga' && pokemon.hp <= (pokemon.maxHp / 3)) {
-    spe *= 3;
-  }
-  if (pokemon.ability === 'Correcaminos' && pokemon.status) {
+  if (pokemon.ability === 'Fuga' && pokemon.status) {
     spe *= 2;
   }
   
@@ -1316,10 +1283,7 @@ function getEffectiveSpeed(pokemon, stages) {
   if (pokemon.ability === 'Clorofila' && (cycle === 'day' || cycle === 'morning')) {
     spe *= 2;
   }
-  if (pokemon.ability === 'Lluvia Ligera' && (cycle === 'dusk' || cycle === 'night')) {
-    spe *= 2;
-  }
-  if (pokemon.ability === 'Nado Rápido' && (cycle === 'dusk' || cycle === 'night')) {
+  if (pokemon.ability === 'Nado rápido' && (cycle === 'dusk' || cycle === 'night')) {
     spe *= 2;
   }
 
@@ -1352,13 +1316,13 @@ function applyAbilityEffects(attacker, defender, move, damageResult, addLogFn) {
 
   // Contact abilities (Physical moves)
   if (md.cat === 'physical' && Math.random() < 0.3) {
-    if (ab === 'Electricidad Estática' && !attacker.status && attacker.type !== 'electric') {
+    if (ab === 'Electricidad estática' && !attacker.status && attacker.type !== 'electric') {
       attacker.status = 'paralyze';
-      addLogFn(`¡La Electricidad Estática de ${defender.name} paralizó a ${attacker.name}!`, 'log-info');
+      addLogFn(`¡La Electricidad estática de ${defender.name} paralizó a ${attacker.name}!`, 'log-info');
     }
-    if (ab === 'Punto Tóxico' && !attacker.status && attacker.type !== 'poison' && attacker.type !== 'steel') {
+    if (ab === 'Punto tóxico' && !attacker.status && attacker.type !== 'poison' && attacker.type !== 'steel') {
       attacker.status = 'poison';
-      addLogFn(`¡El Punto Tóxico de ${defender.name} envenenó a ${attacker.name}!`, 'log-info');
+      addLogFn(`¡El Punto tóxico de ${defender.name} envenenó a ${attacker.name}!`, 'log-info');
     }
     if (ab === 'Cuerpo Llama' && !attacker.status && attacker.type !== 'fire') {
       attacker.status = 'burn';
@@ -1416,20 +1380,12 @@ function applyAbilityTurnEndEffects(pokemon, role, addLogFn) {
   const logCls = role === 'player' ? 'log-enemy' : role === 'enemy' ? 'log-player' : 'log-info';
 
   // Shed Skin (Mudar) / Punto Cura: 30% chance to heal status
-  if ((ab === 'Mudar' || ab === 'Punto Cura') && pokemon.status && Math.random() < 0.3) {
+  if (ab === 'Mudar' && pokemon.status && Math.random() < 0.3) {
     pokemon.status = null;
     addLogFn(`¡La habilidad ${ab} de ${pokemon.name} curó su estado!`, 'log-info');
   }
 
   // Solar Power (Poder Solar): lose HP under sun
-  if (ab === 'Poder Solar') {
-    const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
-    if (cycle === 'day' || cycle === 'morning') {
-      const loss = Math.max(1, Math.floor(pokemon.maxHp / 8));
-      pokemon.hp = Math.max(0, pokemon.hp - loss);
-      addLogFn(`¡El Poder Solar de ${pokemon.name} le resta salud bajo el sol! (-${loss} HP)`, logCls);
-    }
-  }
 
   // Magic Guard (Muro Mágico) vs recoil (not handled in calcDamage recoil section yet but could be)
   // Actually recoil is in useMove specifically.
@@ -1666,7 +1622,7 @@ function useMove(moveIndex) {
     // Accuracy check
     let acc = md.acc || 100;
     if (b.player.ability === 'Ojo Compuesto') acc *= 1.3;
-    const evaMult = (b.enemy.ability === 'Velo Arena' && (typeof getDayCycle === 'function' && getDayCycle() === 'day')) ? 1.25 : 1;
+    const evaMult = (b.enemy.ability === 'Velo arena' && (typeof getDayCycle === 'function' && getDayCycle() === 'day')) ? 1.25 : 1;
     const accStage = (b.playerStages.acc || 0) - (b.enemyStages.eva || 0);
     const isAlwaysHit = (md.effect === 'always_hits' || (b.player.ability === 'Indefenso' || b.enemy.ability === 'Indefenso'));
     const accMult = isAlwaysHit ? 1000 : (accStageMult(accStage) / evaMult);
@@ -2233,7 +2189,7 @@ function enemyTurn(opts = {}) {
 
   let acc = md.acc || 100;
   if (b.enemy.ability === 'Ojo Compuesto') acc *= 1.3;
-  const evaMult = (b.player.ability === 'Velo Arena' && (typeof getDayCycle === 'function' && getDayCycle() === 'day')) ? 1.25 : 1;
+  const evaMult = (b.player.ability === 'Velo arena' && (typeof getDayCycle === 'function' && getDayCycle() === 'day')) ? 1.25 : 1;
   const accStage = (b.enemyStages.acc || 0) - (b.playerStages.eva || 0);
   const isAlwaysHit = (md.effect === 'always_hits' || (b.enemy.ability === 'Indefenso' || b.player.ability === 'Indefenso'));
   const accMult = isAlwaysHit ? 1000 : (accStageMult(accStage) / evaMult);
