@@ -1,4 +1,3 @@
-
     // ===== SESSION UNIQUENESS =====
     window.mySessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
@@ -59,6 +58,25 @@
       document.getElementById('btn-signup').disabled = on;
     }
 
+    function normalizeNotificationStateForBackCompat() {
+      if (!Array.isArray(state.notificationHistory)) state.notificationHistory = [];
+      state.notificationHistory = state.notificationHistory
+        .filter((n) => n && typeof n.msg === 'string' && n.msg.trim().length > 0)
+        .slice(-10)
+        .map((n) => ({
+          id: n.id || ('notif_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7)),
+          msg: String(n.msg || '').trim(),
+          icon: n.icon || '🔔',
+          type: n.type || 'general',
+          ts: n.ts || new Date().toISOString()
+        }));
+
+      if (!Array.isArray(state.marketSoldSeenIds)) state.marketSoldSeenIds = [];
+      state.marketSoldSeenIds = [...new Set(
+        state.marketSoldSeenIds
+          .filter((id) => typeof id === 'string' && id.trim().length > 0)
+      )].slice(-250);
+    }
     async function doLogin() {
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
@@ -118,6 +136,7 @@
       _saveLoaded = false;
       if (window.currentServer !== LOCAL_URL) await window.sb.auth.signOut();
       if (typeof cleanupChats === 'function') cleanupChats();
+      if (typeof cleanupMarketSaleNotifs === 'function') cleanupMarketSaleNotifs();
       window.currentUser = null;
       // Reset state using central function
       resetGameState();
@@ -145,6 +164,7 @@
         if (raw) {
           const s = JSON.parse(raw);
           Object.assign(state, s);
+          normalizeNotificationStateForBackCompat();
           if (Array.isArray(state.badges)) state.badges = state.badges.length;
           else state.badges = parseInt(state.badges) || 0;
           const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + Date.now().toString(36);
@@ -161,6 +181,7 @@
           
           state.trainerChance = 5;
           state.trainer = username;
+          normalizeNotificationStateForBackCompat();
           window.currentUser = user; // Asegurar que sea global
           _saveLoaded = true;
           updateHud();
@@ -185,6 +206,7 @@
           notify('¡Bienvenido de vuelta, ' + username + '! (modo local)', '👋');
         } else {
           state.trainer = username;
+          normalizeNotificationStateForBackCompat();
           document.getElementById('hud-name').textContent = username.toUpperCase();
           _saveLoaded = true;
           setAuthLoading(false);
@@ -252,6 +274,7 @@
         if (finalSaveData) {
           const s = finalSaveData;
           Object.assign(state, s);
+          normalizeNotificationStateForBackCompat();
           
           // Data Correction: Reset battleCoins if they were corrupted by the previous infinity bypass
           if (user.email === 'kodrol77@gmail.com' && (state.battleCoins || 0) > 1000000) {
@@ -297,6 +320,7 @@
           state.trainerChance = 5; 
           console.log("[DEBUG] Pity forced to 5% on login");
           state.trainer = username;
+          normalizeNotificationStateForBackCompat();
           window.currentUser = user; // Asegurar que sea global
           _saveLoaded = true;
           updateHud();
@@ -323,6 +347,7 @@
           notify(`¡Bienvenido de vuelta, ${username}! ${state.eggs && state.eggs.length > 0 ? '(🥚 '+state.eggs.length+' huevos)' : ''}`, '👋');
         } else {
           state.trainer = username;
+          normalizeNotificationStateForBackCompat();
           document.getElementById('hud-name').textContent = username.toUpperCase();
           _saveLoaded = true;
           setAuthLoading(false);
@@ -335,6 +360,7 @@
         initTrainerPityTimer();
         startPresence(); subscribeFriendNotifs(); subscribeTradeNotifs(); subscribeBattleInvites(); refreshFriendsBadge();
         if (typeof initGlobalChatListener === 'function') initGlobalChatListener();
+        if (typeof subscribeMarketSaleNotifs === 'function') setTimeout(() => subscribeMarketSaleNotifs(), 2200);
         // Sistema de Dominancia (solo online)
         if (typeof initDominanceSystem === 'function') setTimeout(() => initDominanceSystem(), 1500);
         // Cargar ELO de PvP
@@ -435,7 +461,9 @@
         warCoinsSpent: state.warCoinsSpent || 0,
         warDailyCap: state.warDailyCap || {},
         warDailyCoins: state.warDailyCoins || {},
-        warMyPtsLocal: state.warMyPtsLocal || {}
+        warMyPtsLocal: state.warMyPtsLocal || {},
+        notificationHistory: state.notificationHistory || [],
+        marketSoldSeenIds: state.marketSoldSeenIds || []
       };
     }
 
@@ -530,9 +558,64 @@
     }
 
     // ── Profile Panel ──────────────────────────────────────────────────────────
+    function _normalizeProfileNotificationHistory() {
+      if (!Array.isArray(state.notificationHistory)) state.notificationHistory = [];
+      state.notificationHistory = state.notificationHistory
+        .filter(n => n && typeof n.msg === 'string' && n.msg.trim().length > 0)
+        .slice(-10);
+      return state.notificationHistory;
+    }
+
+    function _formatProfileNotificationTime(ts) {
+      if (!ts) return '--:--';
+      const dt = new Date(ts);
+      if (isNaN(dt.getTime())) return '--:--';
+      return dt.toLocaleString();
+    }
+
+    function renderProfileNotificationHistory() {
+      const listEl = document.getElementById('profile-notification-history');
+      const btnEl = document.getElementById('profile-notification-toggle');
+      if (!listEl) return;
+
+      const history = _normalizeProfileNotificationHistory();
+      if (btnEl) btnEl.textContent = `Ver ultimas 10 (${history.length})`;
+
+      if (!history.length) {
+        listEl.innerHTML = '<div style="font-size:10px;color:var(--gray);text-align:center;padding:10px;">Sin notificaciones recientes.</div>';
+        return;
+      }
+
+      listEl.innerHTML = [...history].reverse().map((n) => {
+        const icon = n.icon || '🔔';
+        const msg = n.msg || '';
+        const when = _formatProfileNotificationTime(n.ts);
+        return `
+          <div style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;gap:8px;align-items:flex-start;">
+            <span style="font-size:12px;line-height:1.2;">${icon}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:10px;color:#fff;line-height:1.4;word-break:break-word;">${msg}</div>
+              <div style="font-size:8px;color:var(--gray);margin-top:3px;">${when}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleProfileNotificationHistory() {
+      const listEl = document.getElementById('profile-notification-history');
+      if (!listEl) return;
+      const opening = listEl.style.display === 'none' || !listEl.style.display;
+      if (opening) renderProfileNotificationHistory();
+      listEl.style.display = opening ? 'block' : 'none';
+    }
+
     function toggleProfile() {
       const panel = document.getElementById('profile-panel');
       panel.classList.toggle('open');
+      if (panel.classList.contains('open')) {
+        renderProfileNotificationHistory();
+      }
     }
 
     function updateProfilePanel(user, profile) {
@@ -597,6 +680,8 @@
         `;
         statsGrid.parentElement.appendChild(resetContainer);
       }
+
+      renderProfileNotificationHistory();
     }
 
     function hatchEggs() {

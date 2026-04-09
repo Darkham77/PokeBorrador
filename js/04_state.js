@@ -217,7 +217,9 @@
       warCoinsSpent: 0,       // monedas gastadas
       warDailyCap: {},        // tope diario por mapa { "Mon Apr 01 2024": { "route1": 500 } }
       warDailyCoins: {},      // tope diario de monedas { "Mon Apr 01 2024": 50 }
-      warMyPtsLocal: {}       // acumulador local de PT aportados { "2024-W15": 42 }
+      warMyPtsLocal: {},      // acumulador local de PT aportados { "2024-W15": 42 }
+      notificationHistory: [],// ultimas notificaciones visibles en perfil (max 10)
+      marketSoldSeenIds: []   // ids de publicaciones de mercado ya notificadas
     };
 
     let state = JSON.parse(JSON.stringify(INITIAL_STATE));

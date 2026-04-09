@@ -66,7 +66,66 @@
     }, 500);
 
     // ===== NOTIFICATION =====
-    function notify(msg, icon = '✨') {
+    function _plainNotificationText(raw) {
+      if (raw === undefined || raw === null) return '';
+      const probe = document.createElement('div');
+      probe.innerHTML = String(raw);
+      return (probe.textContent || probe.innerText || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function _normalizeNotificationHistory() {
+      if (!Array.isArray(state.notificationHistory)) state.notificationHistory = [];
+      state.notificationHistory = state.notificationHistory
+        .filter(n => n && typeof n.msg === 'string' && n.msg.trim().length > 0)
+        .slice(-10);
+      return state.notificationHistory;
+    }
+
+    function pushNotificationHistory(msg, icon = '🔔', options = {}) {
+      const history = _normalizeNotificationHistory();
+      const plainMsg = _plainNotificationText(msg);
+      if (!plainMsg) return;
+
+      const type = (options && typeof options.type === 'string') ? options.type : 'general';
+      const mergeType = (options && typeof options.mergeType === 'string') ? options.mergeType : null;
+      const nowIso = new Date().toISOString();
+
+      if (mergeType) {
+        const idx = history.findIndex(n => n && n.type === mergeType);
+        if (idx >= 0) {
+          history[idx].msg = plainMsg;
+          history[idx].icon = icon || history[idx].icon || '🔔';
+          history[idx].type = mergeType;
+          history[idx].ts = nowIso;
+        } else {
+          history.push({
+            id: 'notif_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+            msg: plainMsg,
+            icon: icon || '🔔',
+            type: mergeType,
+            ts: nowIso
+          });
+        }
+      } else {
+        history.push({
+          id: 'notif_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          msg: plainMsg,
+          icon: icon || '🔔',
+          type,
+          ts: nowIso
+        });
+      }
+
+      state.notificationHistory = history.slice(-10);
+      if (typeof renderProfileNotificationHistory === 'function') {
+        renderProfileNotificationHistory();
+      }
+      if (typeof scheduleSave === 'function') {
+        scheduleSave();
+      }
+    }
+
+    function notify(msg, icon = '✨', options = {}) {
       // Obtener o crear el contenedor de notificaciones
       let container = document.getElementById('notification-stack');
       if (!container) {
@@ -88,6 +147,10 @@
       el.innerHTML = `${icon} ${msg}`;
       container.appendChild(el);
 
+      if (!options || options.saveHistory !== false) {
+        pushNotificationHistory(msg, icon, options || {});
+      }
+
       // Trigger slide-in
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -103,6 +166,8 @@
         setTimeout(() => el.remove(), 280);
       }, 4000);
     }
+
+    window.pushNotificationHistory = pushNotificationHistory;
 
 
     // ===== POKEMON CENTER =====

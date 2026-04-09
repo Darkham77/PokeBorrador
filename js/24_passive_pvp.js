@@ -287,25 +287,57 @@ function buildPassiveSnapshot(p) {
 // ── Cargar ELO del jugador ────────────────────────────────────────────
 async function loadPlayerElo() {
   if (!currentUser || !sb) return;
+  if (_offlineEloSummaryUserId !== currentUser.id) {
+    _offlineEloSummaryShown = false;
+    _offlineEloSummaryUserId = currentUser.id;
+  }
+
+  const previousElo = state.eloRating || 1000;
+  const previousWins = state.pvpStats?.wins || 0;
+  const previousLosses = state.pvpStats?.losses || 0;
+  const previousDraws = state.pvpStats?.draws || 0;
+
   const { data } = await sb.from('profiles')
     .select('elo_rating, pvp_wins, pvp_losses, pvp_draws')
     .eq('id', currentUser.id)
     .single();
+
   if (data) {
-    state.eloRating   = data.elo_rating  || 1000;
-    state.pvpStats    = {
-      wins:   data.pvp_wins   || 0,
-      losses: data.pvp_losses || 0,
-      draws:  data.pvp_draws  || 0
+    const nextElo = data.elo_rating || 1000;
+    const nextWins = data.pvp_wins || 0;
+    const nextLosses = data.pvp_losses || 0;
+    const nextDraws = data.pvp_draws || 0;
+
+    state.eloRating = nextElo;
+    state.pvpStats = {
+      wins: nextWins,
+      losses: nextLosses,
+      draws: nextDraws
     };
+
+    const delta = nextElo - previousElo;
+    const totalBattlesDelta = (nextWins - previousWins) + (nextLosses - previousLosses) + (nextDraws - previousDraws);
+    if (!_offlineEloSummaryShown && delta !== 0 && totalBattlesDelta > 0) {
+      const sign = delta > 0 ? '+' : '';
+      notify(
+        `Defensa pasiva offline: ${sign}${delta} ELO total desde tu ultima conexion.`,
+        delta >= 0 ? '🛡️' : '💀',
+        { type: 'passive_elo_offline' }
+      );
+      _offlineEloSummaryShown = true;
+    }
+
+    if (delta !== 0 && typeof scheduleSave === 'function') {
+      scheduleSave();
+    }
   }
-  
-  // También cargar el estado de activación del equipo pasivo
+
+  // Tambien cargar el estado de activacion del equipo pasivo
   const { data: passiveData } = await sb.from('passive_teams')
     .select('is_active')
     .eq('user_id', currentUser.id)
     .single();
-  
+
   if (passiveData) {
     state.passiveTeamActive = passiveData.is_active;
   } else {
@@ -315,6 +347,8 @@ async function loadPlayerElo() {
 
 // ── Watcher de ELO en segundo plano ──────────────────────────────────
 let _eloWatcherInterval = null;
+let _offlineEloSummaryShown = false;
+let _offlineEloSummaryUserId = null;
 
 function initEloWatcher() {
   if (_eloWatcherInterval || !currentUser) return;

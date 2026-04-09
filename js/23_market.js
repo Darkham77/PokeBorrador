@@ -5,6 +5,116 @@ let _omSelectedData = null;
 let _omMaxListings = 10;
 let _omFeePercent = 0.05;
 let _omListingsCache = {};
+let _marketSalesRealtimeCh = null;
+let _marketSalesBootstrapped = false;
+
+function _ensureMarketSoldSeenState() {
+  if (!Array.isArray(state.marketSoldSeenIds)) state.marketSoldSeenIds = [];
+  state.marketSoldSeenIds = [...new Set(
+    state.marketSoldSeenIds
+      .filter((id) => typeof id === 'string' && id.trim().length > 0)
+  )].slice(-250);
+  return state.marketSoldSeenIds;
+}
+
+function _isMarketSoldSeen(listingId) {
+  if (!listingId) return true;
+  return _ensureMarketSoldSeenState().includes(listingId);
+}
+
+function _markMarketSoldSeen(listingId) {
+  if (!listingId) return;
+  const seen = _ensureMarketSoldSeenState();
+  if (seen.includes(listingId)) return;
+  seen.push(listingId);
+  state.marketSoldSeenIds = seen.slice(-250);
+  if (typeof scheduleSave === 'function') scheduleSave();
+}
+
+function _buildMarketSaleLabel(listing) {
+  if (!listing) return 'una publicacion';
+  if (listing.listing_type === 'pokemon') {
+    return `tu Pokemon ${listing.data?.name || ''}`.trim();
+  }
+  const qty = Math.max(1, parseInt(listing.data?.qty, 10) || 1);
+  const itemName = listing.data?.name || 'objeto';
+  return `tu objeto ${itemName} x${qty}`;
+}
+
+function _notifyMarketSale(listing) {
+  if (!listing || listing.status !== 'sold') return;
+  if (!listing.id || _isMarketSoldSeen(listing.id)) return;
+
+  _markMarketSoldSeen(listing.id);
+  const label = _buildMarketSaleLabel(listing);
+  const price = Math.max(0, parseInt(listing.price, 10) || 0);
+  notify(`Se vendio ${label} por ₽${price.toLocaleString()}.`, '💰', { type: 'market_sale' });
+}
+
+async function checkMarketSoldNotifications() {
+  if (!window.currentUser || !window.sb) return;
+  try {
+    const { data: soldRows, error } = await window.sb
+      .from('market_listings')
+      .select('id, listing_type, data, price, status, created_at')
+      .eq('seller_id', window.currentUser.id)
+      .eq('status', 'sold')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error || !Array.isArray(soldRows) || soldRows.length === 0) return;
+
+    const seen = _ensureMarketSoldSeenState();
+    if (!_marketSalesBootstrapped && seen.length === 0) {
+      soldRows.forEach((row) => {
+        if (row?.id) seen.push(row.id);
+      });
+      state.marketSoldSeenIds = [...new Set(seen)].slice(-250);
+      _marketSalesBootstrapped = true;
+      if (typeof scheduleSave === 'function') scheduleSave();
+      return;
+    }
+
+    _marketSalesBootstrapped = true;
+    [...soldRows].reverse().forEach((row) => _notifyMarketSale(row));
+  } catch (e) {
+    console.warn('[MARKET] Error verificando ventas:', e);
+  }
+}
+
+function subscribeMarketSaleNotifs() {
+  if (!window.currentUser || !window.sb || _marketSalesRealtimeCh) return;
+
+  _marketSalesRealtimeCh = sb
+    .channel('market-sales-' + currentUser.id)
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'market_listings',
+      filter: `seller_id=eq.${currentUser.id}`
+    }, (payload) => {
+      const row = payload?.new;
+      if (!row || row.status !== 'sold') return;
+      _notifyMarketSale(row);
+    })
+    .subscribe();
+
+  setTimeout(() => {
+    checkMarketSoldNotifications();
+  }, 1000);
+}
+
+function cleanupMarketSaleNotifs() {
+  if (_marketSalesRealtimeCh && typeof sb?.removeChannel === 'function') {
+    try { sb.removeChannel(_marketSalesRealtimeCh); } catch (e) {}
+  }
+  _marketSalesRealtimeCh = null;
+  _marketSalesBootstrapped = false;
+}
+
+window.subscribeMarketSaleNotifs = subscribeMarketSaleNotifs;
+window.cleanupMarketSaleNotifs = cleanupMarketSaleNotifs;
+
 
 // FILTERS STATE
 let _omFilters = { mode:'pokemon', tier:'all', type:'all', itemCat:'all', levelMin:1, levelMax:100, ivTotalMin:0, ivTotalMax:186, ivAny31:false, priceMin:0, priceMax:1000000, search:'' };
