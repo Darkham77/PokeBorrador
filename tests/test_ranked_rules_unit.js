@@ -1,4 +1,4 @@
-﻿const assert = require('assert');
+const assert = require('assert');
 const fs = require('fs');
 const vm = require('vm');
 
@@ -42,6 +42,8 @@ assert.strictEqual(typeof sandbox.getRankedPlayableTeam, 'function', 'getRankedP
 
 const normalized = sandbox.normalizeRankedRules(
   {
+    seasonStartDate: '2026-05-10',
+    seasonEndDate: '2026-05-01',
     maxPokemon: 10,
     levelCap: 200,
     allowedTypes: ['fire', 'invalid-type', 'water', 'fire'],
@@ -50,6 +52,8 @@ const normalized = sandbox.normalizeRankedRules(
   'Temporada Test'
 );
 
+assert.strictEqual(normalized.seasonStartDate, '2026-05-10', 'seasonStartDate debe conservar fecha valida');
+assert.strictEqual(normalized.seasonEndDate, '2026-05-10', 'seasonEndDate no puede ser menor que seasonStartDate');
 assert.strictEqual(normalized.maxPokemon, 6, 'maxPokemon debe clamp en 6');
 assert.strictEqual(normalized.levelCap, 100, 'levelCap debe clamp en 100');
 assert.deepStrictEqual(Array.from(normalized.allowedTypes), ['fire', 'water'], 'allowedTypes debe filtrar y deduplicar');

@@ -5,10 +5,69 @@
 const SEASON_START = new Date('2026-04-01T00:00:00-03:00');
 const SEASON_DURATION_MONTHS = 3;
 
-function getSeasonEndDate() {
-  const end = new Date(SEASON_START);
+function _toIsoDay(dateObj) {
+  if (!(dateObj instanceof Date) || Number.isNaN(dateObj.getTime())) return '';
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function _buildSeasonEndFromStart(startDate) {
+  const end = new Date(startDate);
   end.setMonth(end.getMonth() + SEASON_DURATION_MONTHS);
   return end;
+}
+
+function _normalizeSeasonDate(value) {
+  const raw = String(value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return '';
+  const [year, month, day] = raw.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== (month - 1) || date.getDate() !== day) return '';
+  return raw;
+}
+
+function _parseSeasonDate(value) {
+  const safe = _normalizeSeasonDate(value);
+  if (!safe) return null;
+  const [year, month, day] = safe.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+const DEFAULT_SEASON_START_DATE = _toIsoDay(SEASON_START);
+const DEFAULT_SEASON_END_DATE = _toIsoDay(_buildSeasonEndFromStart(SEASON_START));
+
+function getRankedSeasonDateRange(rules = getCurrentRankedRules()) {
+  const startRaw = _normalizeSeasonDate(rules?.seasonStartDate) || DEFAULT_SEASON_START_DATE;
+  let startDate = _parseSeasonDate(startRaw) || new Date(SEASON_START);
+
+  const endRawCandidate = _normalizeSeasonDate(rules?.seasonEndDate);
+  let endDate = endRawCandidate ? _parseSeasonDate(endRawCandidate) : null;
+
+  if (!endDate) {
+    endDate = _buildSeasonEndFromStart(startDate);
+  }
+
+  if (endDate < startDate) {
+    endDate = new Date(startDate);
+  }
+
+  return {
+    startDate,
+    endDate,
+    startIso: _toIsoDay(startDate),
+    endIso: _toIsoDay(endDate)
+  };
+}
+
+function getSeasonEndDate(rules = getCurrentRankedRules()) {
+  return getRankedSeasonDateRange(rules).endDate;
+}
+
+function _formatSeasonDate(dateObj) {
+  if (!(dateObj instanceof Date) || Number.isNaN(dateObj.getTime())) return '-';
+  return dateObj.toLocaleDateString('es-AR', { year: 'numeric', month: '2-digit', day: '2-digit' });
 }
 
 // ── Tiers de ELO ─────────────────────────────────────────────────────
@@ -45,6 +104,8 @@ const RANKED_TYPE_META = {
 
 const DEFAULT_RANKED_RULES = {
   seasonName: 'TEMPORADA ACTUAL',
+  seasonStartDate: DEFAULT_SEASON_START_DATE,
+  seasonEndDate: DEFAULT_SEASON_END_DATE,
   maxPokemon: 6,
   levelCap: 100,
   allowedTypes: [],
@@ -53,6 +114,31 @@ const DEFAULT_RANKED_RULES = {
 
 let _currentRankedRules = { ...DEFAULT_RANKED_RULES };
 let _rankedRulesLoaded = false;
+
+const LOCAL_RANKED_RESULT_SUPPRESS_MS = 120000;
+const PASSIVE_DEFENSE_SUPPRESS_KEY = 'ranked_local_result_suppress_until';
+
+function _markLocalRankedResult(ms = LOCAL_RANKED_RESULT_SUPPRESS_MS) {
+  const ttl = Math.max(1000, Number(ms) || LOCAL_RANKED_RESULT_SUPPRESS_MS);
+  const until = Date.now() + ttl;
+  state._passiveDefenseSuppressUntil = until;
+  try { sessionStorage.setItem(PASSIVE_DEFENSE_SUPPRESS_KEY, String(until)); } catch (e) {}
+}
+
+function _isPassiveDefenseNotificationSuppressed() {
+  let until = Number(state._passiveDefenseSuppressUntil || 0);
+  try {
+    const persisted = Number(sessionStorage.getItem(PASSIVE_DEFENSE_SUPPRESS_KEY) || 0);
+    if (persisted > until) until = persisted;
+  } catch (e) {}
+
+  if (!Number.isFinite(until) || until <= 0) return false;
+  if (Date.now() < until) return true;
+
+  state._passiveDefenseSuppressUntil = 0;
+  try { sessionStorage.removeItem(PASSIVE_DEFENSE_SUPPRESS_KEY); } catch (e) {}
+  return false;
+}
 
 function _normalizeRankedType(v) {
   const key = String(v || '').trim().toLowerCase();
@@ -70,8 +156,20 @@ function _uniqueArray(values) {
 function normalizeRankedRules(rawConfig = {}, seasonNameRaw = DEFAULT_RANKED_RULES.seasonName) {
   const maxPokemonNum = Number(rawConfig?.maxPokemon);
   const levelCapNum = Number(rawConfig?.levelCap);
+
+  const seasonStartDate = _normalizeSeasonDate(rawConfig?.seasonStartDate) || DEFAULT_RANKED_RULES.seasonStartDate;
+
+  const rawSeasonEnd = _normalizeSeasonDate(rawConfig?.seasonEndDate);
+  const derivedSeasonEnd = rawSeasonEnd || _toIsoDay(_buildSeasonEndFromStart(_parseSeasonDate(seasonStartDate) || SEASON_START));
+
+  const startDateObj = _parseSeasonDate(seasonStartDate) || new Date(SEASON_START);
+  let endDateObj = _parseSeasonDate(derivedSeasonEnd) || _buildSeasonEndFromStart(startDateObj);
+  if (endDateObj < startDateObj) endDateObj = new Date(startDateObj);
+
   return {
     seasonName: String(seasonNameRaw || DEFAULT_RANKED_RULES.seasonName).trim() || DEFAULT_RANKED_RULES.seasonName,
+    seasonStartDate,
+    seasonEndDate: _toIsoDay(endDateObj),
     maxPokemon: Number.isFinite(maxPokemonNum) ? Math.max(1, Math.min(6, Math.floor(maxPokemonNum))) : DEFAULT_RANKED_RULES.maxPokemon,
     levelCap: Number.isFinite(levelCapNum) ? Math.max(1, Math.min(100, Math.floor(levelCapNum))) : DEFAULT_RANKED_RULES.levelCap,
     allowedTypes: _uniqueArray((rawConfig?.allowedTypes || []).map(_normalizeRankedType).filter(Boolean)),
@@ -239,10 +337,11 @@ function initEloWatcher() {
       if (newElo !== oldElo) {
         // Solo notificar si NO estamos en una batalla activa de ranked o buscando
         // (Para evitar spam mientras uno mismo está jugando rankeds)
-        const isCurrentlyRanked = state.battle && state.battle.isRanked;
+        const isCurrentlyRanked = (state.activeBattle && state.activeBattle.isRanked) || (state.battle && state.battle.isRanked);
         const isSearching = window.isRankedSearching;
+        const isSuppressedByLocalResult = _isPassiveDefenseNotificationSuppressed();
 
-        if (!isCurrentlyRanked && !isSearching) {
+        if (!isCurrentlyRanked && !isSearching && !isSuppressedByLocalResult) {
           const delta = newElo - oldElo;
           const won = delta > 0 || data.pvp_wins > oldWins;
           
@@ -339,12 +438,18 @@ function getPokemonByUid(uid) {
 function _renderRankedRulesCard() {
   const rules = getCurrentRankedRules();
   const seasonEl = document.getElementById('ranked-season-name');
+  const seasonDatesEl = document.getElementById('ranked-season-dates');
   const summaryEl = document.getElementById('ranked-rules-summary');
   const typesEl = document.getElementById('ranked-rules-types');
   const bansEl = document.getElementById('ranked-rules-bans');
   const passiveStatusEl = document.getElementById('ranked-rules-passive-team-status');
 
   if (seasonEl) seasonEl.textContent = rules.seasonName;
+
+  if (seasonDatesEl) {
+    const range = getRankedSeasonDateRange(rules);
+    seasonDatesEl.textContent = `Inicio: ${_formatSeasonDate(range.startDate)} • Fin: ${_formatSeasonDate(range.endDate)}`;
+  }
 
   if (summaryEl) {
     summaryEl.textContent = `Máximo ${rules.maxPokemon} Pokémon • Nivel máximo ${rules.levelCap}`;
@@ -970,6 +1075,9 @@ function _showSearchingUI(searching) {
 
 // ── Reportar resultado de batalla (pasiva o PvP activo) ───────────────
 async function reportPassiveBattleResult(opponentId, result) {
+  // Este resultado fue generado por una batalla local (ranked activa o ataque a equipo pasivo).
+  // Evita que el watcher lo confunda con una defensa pasiva entrante.
+  _markLocalRankedResult();
   const { data, error } = await sb.rpc('fn_report_passive_battle', {
     p_defender_id: opponentId,
     p_result:      result

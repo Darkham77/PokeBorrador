@@ -78,6 +78,8 @@ const ADMIN_RANKED_TYPE_META = {
 
 const DEFAULT_ADMIN_RANKED_RULES = {
   seasonName: 'TEMPORADA ACTUAL',
+  seasonStartDate: '2026-04-01',
+  seasonEndDate: '2026-07-01',
   maxPokemon: 6,
   levelCap: 100,
   allowedTypes: [],
@@ -99,11 +101,53 @@ function _uniqueAdminArray(values) {
   return Array.from(new Set(values));
 }
 
+function _normalizeAdminSeasonDate(value) {
+  const raw = String(value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return '';
+  const [year, month, day] = raw.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== (month - 1) || date.getDate() !== day) return '';
+  return raw;
+}
+
+function _parseAdminSeasonDate(value) {
+  const safe = _normalizeAdminSeasonDate(value);
+  if (!safe) return null;
+  const [year, month, day] = safe.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function _toAdminIsoDay(dateObj) {
+  if (!(dateObj instanceof Date) || Number.isNaN(dateObj.getTime())) return '';
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function _deriveAdminSeasonEnd(startIso) {
+  const start = _parseAdminSeasonDate(startIso) || new Date(2026, 3, 1);
+  const end = new Date(start);
+  end.setMonth(end.getMonth() + 3);
+  return _toAdminIsoDay(end);
+}
+
 function _normalizeAdminRankedRules(rawConfig = {}, seasonNameRaw = DEFAULT_ADMIN_RANKED_RULES.seasonName) {
   const maxPokemonNum = Number(rawConfig?.maxPokemon);
   const levelCapNum = Number(rawConfig?.levelCap);
+
+  const seasonStartDate = _normalizeAdminSeasonDate(rawConfig?.seasonStartDate) || DEFAULT_ADMIN_RANKED_RULES.seasonStartDate;
+  const rawSeasonEnd = _normalizeAdminSeasonDate(rawConfig?.seasonEndDate);
+  const derivedSeasonEnd = rawSeasonEnd || _deriveAdminSeasonEnd(seasonStartDate);
+
+  const startDateObj = _parseAdminSeasonDate(seasonStartDate) || _parseAdminSeasonDate(DEFAULT_ADMIN_RANKED_RULES.seasonStartDate);
+  let endDateObj = _parseAdminSeasonDate(derivedSeasonEnd) || _parseAdminSeasonDate(DEFAULT_ADMIN_RANKED_RULES.seasonEndDate);
+  if (startDateObj && endDateObj && endDateObj < startDateObj) endDateObj = new Date(startDateObj);
+
   return {
     seasonName: String(seasonNameRaw || DEFAULT_ADMIN_RANKED_RULES.seasonName).trim() || DEFAULT_ADMIN_RANKED_RULES.seasonName,
+    seasonStartDate,
+    seasonEndDate: _toAdminIsoDay(endDateObj || startDateObj || new Date(2026, 6, 1)),
     maxPokemon: Number.isFinite(maxPokemonNum) ? Math.max(1, Math.min(6, Math.floor(maxPokemonNum))) : DEFAULT_ADMIN_RANKED_RULES.maxPokemon,
     levelCap: Number.isFinite(levelCapNum) ? Math.max(1, Math.min(100, Math.floor(levelCapNum))) : DEFAULT_ADMIN_RANKED_RULES.levelCap,
     allowedTypes: _uniqueAdminArray((rawConfig?.allowedTypes || []).map(_normalizeAdminType).filter(Boolean)),
@@ -139,6 +183,8 @@ async function _saveAdminRankedRules() {
     id: 'current',
     season_name: payload.seasonName,
     config: {
+      seasonStartDate: payload.seasonStartDate,
+      seasonEndDate: payload.seasonEndDate,
       maxPokemon: payload.maxPokemon,
       levelCap: payload.levelCap,
       allowedTypes: payload.allowedTypes,
@@ -185,6 +231,16 @@ function _renderAdminRankedTab() {
       <div>
         <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">NOMBRE DE TEMPORADA</div>
         <input value="${rules.seasonName}" onchange="window._rankedSetSeasonName(this.value)" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(0,0,0,0.3);color:#fff;font-size:12px;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">INICIO TEMPORADA</div>
+          <input type="date" value="${rules.seasonStartDate || ''}" onchange="window._rankedSetSeasonStartDate(this.value)" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(0,0,0,0.3);color:#fff;font-size:12px;">
+        </div>
+        <div>
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">FIN TEMPORADA</div>
+          <input type="date" value="${rules.seasonEndDate || ''}" onchange="window._rankedSetSeasonEndDate(this.value)" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(0,0,0,0.3);color:#fff;font-size:12px;">
+        </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div>
@@ -1038,6 +1094,16 @@ function _renderAdminPanel() {
 
   window._rankedSetLevelCap = (value) => {
     _adminRankedRules = _normalizeAdminRankedRules({ ..._adminRankedRules, levelCap: Number(value) }, _adminRankedRules?.seasonName);
+    _renderAdminPanel();
+  };
+
+  window._rankedSetSeasonStartDate = (value) => {
+    _adminRankedRules = _normalizeAdminRankedRules({ ..._adminRankedRules, seasonStartDate: value }, _adminRankedRules?.seasonName);
+    _renderAdminPanel();
+  };
+
+  window._rankedSetSeasonEndDate = (value) => {
+    _adminRankedRules = _normalizeAdminRankedRules({ ..._adminRankedRules, seasonEndDate: value }, _adminRankedRules?.seasonName);
     _renderAdminPanel();
   };
 
