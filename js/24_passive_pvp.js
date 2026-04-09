@@ -39,6 +39,7 @@ function buildPassiveSnapshot(p) {
       maxPP: m.maxPP || m.pp,
       ppUps: m.ppUps || 0
     })),
+    heldItem: p.heldItem || null, // <-- Fix Audit: Incluir objeto equipado
     isShiny: p.isShiny || false,
   };
 }
@@ -707,25 +708,9 @@ async function reportPassiveBattleResult(opponentId, result) {
   notify(`Resultado registrado. ELO: ${sign}${delta} → ${state.eloRating}`, '📊');
 }
 
-// ── Tabla SQL opcional (ranked_queue) ─────────────────────────────────
-// Ejecutar en Supabase si se quiere matchmaking real entre humanos:
-/*
-CREATE TABLE IF NOT EXISTS ranked_queue (
-  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id    UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  elo_rating INTEGER NOT NULL DEFAULT 1000,
-  status     TEXT NOT NULL DEFAULT 'searching',  -- 'searching' | 'matched' | 'cancelled'
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE ranked_queue ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "queue_all" ON ranked_queue
-  FOR ALL USING (auth.uid() = user_id);
-
--- Los jugadores pueden leer filas de otros buscadores (para matcheo)
-CREATE POLICY "queue_select_others" ON ranked_queue
-  FOR SELECT USING (status = 'searching');
-
--- Limpiar entradas viejas (> 2 min) automáticamente con pg_cron o desde cliente
-*/
+// ── Limpieza automática al cerrar pestaña (Antigosting) ───────────────
+window.addEventListener('beforeunload', () => {
+    if (window.isRankedSearching) {
+        cancelRankedMatchmaking(true);
+    }
+});

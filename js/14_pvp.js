@@ -175,7 +175,7 @@
       _pvpState.channel.subscribe(status => {
         if (status !== 'SUBSCRIBED') return;
         showPvpScreen();
-        state.activeBattle = { isPvP: true, inviteId: invite.id, isHost, opponentId, enemyUsername, timestamp: Date.now() };
+        state.activeBattle = { isPvP: true, inviteId: invite.id, isHost, isRanked, opponentId, enemyUsername, timestamp: Date.now() };
         saveGame(false);
         _pvpStartHeartbeatLoop();
 
@@ -192,6 +192,7 @@
       _pvpState = {
         invite: { id: ab.inviteId },
         isHost: ab.isHost,
+        isRanked: ab.isRanked === true, // Restaurar flag de Ranked
         opponentId: ab.opponentId,
         enemyUsername: ab.enemyUsername,
         myActive: 0, enemyActive: 0,
