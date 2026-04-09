@@ -1,7 +1,7 @@
 ﻿// ===== SISTEMA DE EQUIPOS PASIVOS, ELO Y MATCHMAKING RANKED =====
-// Este archivo es un <script> inline � NO usar export/import.
+// Este archivo es un <script> inline â€” NO usar export/import.
 
-// ���� Constantes de Temporada ��������������������������������������������������������������������������������������
+// â”€â”€ Constantes de Temporada â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SEASON_START = new Date('2026-04-01T00:00:00-03:00');
 const SEASON_DURATION_MONTHS = 3;
 const RANKED_RULES_TABLE = 'ranked_rules_config';
@@ -311,17 +311,17 @@ function _renderPassiveEditorRulesHint() {
   hintEl.textContent = `Reglas actuales: máx ${rules.maxPokemon} Pokémon, nivel tope ${rules.levelCap}, tipos permitidos: ${typeText}.`;
 }
 
-// ���� Tiers de ELO ����������������������������������������������������������������������������������������������������������
+// â”€â”€ Tiers de ELO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getEloTier(elo) {
-  if (elo >= 2000) return { name: 'Maestro',  icon: '�x', color: '#FFD700' };
-  if (elo >= 1600) return { name: 'Diamante', icon: '�x}', color: '#89CFF0' };
-  if (elo >= 1300) return { name: 'Platino',  icon: '�x�', color: '#E5C100' };
-  if (elo >= 1100) return { name: 'Oro',      icon: '�x�!', color: '#FFB800' };
-  if (elo >= 900)  return { name: 'Plata',    icon: '�x��', color: '#9E9E9E' };
-  return                   { name: 'Bronce',  icon: '�x�0', color: '#c8a060' };
+  if (elo >= 2000) return { name: 'Maestro',  icon: 'ðŸ‘‘', color: '#FFD700' };
+  if (elo >= 1600) return { name: 'Diamante', icon: 'ðŸ’Ž', color: '#89CFF0' };
+  if (elo >= 1300) return { name: 'Platino',  icon: 'ðŸ”¶', color: '#E5C100' };
+  if (elo >= 1100) return { name: 'Oro',      icon: 'ðŸ¥‡', color: '#FFB800' };
+  if (elo >= 900)  return { name: 'Plata',    icon: 'ðŸ¥ˆ', color: '#9E9E9E' };
+  return                   { name: 'Bronce',  icon: 'ðŸ¥‰', color: '#c8a060' };
 }
 
-// ���� Snapshot para equipo pasivo ������������������������������������������������������������������������������
+// â”€â”€ Snapshot para equipo pasivo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildPassiveSnapshot(p) {
   return {
     id: p.id,
@@ -344,7 +344,7 @@ function buildPassiveSnapshot(p) {
   };
 }
 
-// ���� Cargar ELO del jugador ����������������������������������������������������������������������������������������
+// â”€â”€ Cargar ELO del jugador â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function loadPlayerElo() {
   if (!currentUser || !sb) return;
   const { data } = await sb.from('profiles')
@@ -360,7 +360,7 @@ async function loadPlayerElo() {
     };
   }
   
-  // También cargar el estado de activación del equipo pasivo
+  // TambiÃ©n cargar el estado de activaciÃ³n del equipo pasivo
   const { data: passiveData } = await sb.from('passive_teams')
     .select('is_active')
     .eq('user_id', currentUser.id)
@@ -375,7 +375,7 @@ async function loadPlayerElo() {
   await loadRankedRules(true);
 }
 
-// ���� Watcher de ELO en segundo plano ��������������������������������������������������������������������
+// â”€â”€ Watcher de ELO en segundo plano â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _eloWatcherInterval = null;
 
 function initEloWatcher() {
@@ -398,7 +398,7 @@ function initEloWatcher() {
       
       if (newElo !== oldElo) {
         // Solo notificar si NO estamos en una batalla activa de ranked o buscando
-        // (Para evitar spam mientras uno mismo está jugando rankeds)
+        // (Para evitar spam mientras uno mismo estÃ¡ jugando rankeds)
         const isCurrentlyRanked = state.battle && state.battle.isRanked;
         const isSearching = window.isRankedSearching;
 
@@ -408,8 +408,8 @@ function initEloWatcher() {
           
           if (delta !== 0) {
             notify(
-              `�x:�️ Defensa Pasiva: ${won ? '¡Victoria!' : 'Derrota.'} (${delta > 0 ? '+' : ''}${delta} ELO)`,
-              won ? '�a️' : '�x�'
+              `ðŸ›¡ï¸ Defensa Pasiva: ${won ? 'Â¡Victoria!' : 'Derrota.'} (${delta > 0 ? '+' : ''}${delta} ELO)`,
+              won ? 'âš”ï¸' : 'ðŸ’€'
             );
           }
         }
@@ -422,7 +422,7 @@ function initEloWatcher() {
           draws:  data.pvp_draws  || 0
         };
 
-        // Si la pestaña de Ranked está visible, refrescar UI
+        // Si la pestaÃ±a de Ranked estÃ¡ visible, refrescar UI
         const tab = document.getElementById('tab-ranked');
         if (tab && tab.style.display !== 'none') {
           renderRankedTab();
@@ -432,7 +432,7 @@ function initEloWatcher() {
   }, 20000); // Cada 20 segundos
 }
 
-// ���� Renderizar el tab Rankeds ����������������������������������������������������������������������������������
+// â”€â”€ Renderizar el tab Rankeds â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderRankedTab() {
   const elo   = state.eloRating || 1000;
   const stats = state.pvpStats  || { wins: 0, losses: 0, draws: 0 };
@@ -517,7 +517,7 @@ function getRankedPlayableTeam() {
   return team;
 }
 
-// ���� Preview de equipo pasivo ������������������������������������������������������������������������������������
+// â”€â”€ Preview de equipo pasivo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderPassiveTeamPreview() {
   const el = document.getElementById('ranked-passive-team-preview');
   if (!el) return;
@@ -543,11 +543,11 @@ function renderPassiveTeamPreview() {
   
   let label = '';
   if (!isActive) {
-    label = '�x� EQUIPO DESACTIVADO';
+    label = 'ðŸ”´ EQUIPO DESACTIVADO';
   } else if (!isSetupValid) {
-    label = '�R EQUIPO NO PREPARADO (Pokémon faltante)';
+    label = 'âŒ EQUIPO NO PREPARADO (PokÃ©mon faltante)';
   } else {
-    label = '�S& EQUIPO PREPARADO';
+    label = 'âœ… EQUIPO PREPARADO';
   }
 
   let htmlSprites = '';
@@ -591,13 +591,13 @@ function renderPassiveTeamPreview() {
   `;
 }
 
-// ���� Guardar equipo pasivo ������������������������������������������������������������������������������������������
+// â”€â”€ Guardar equipo pasivo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function savePassiveTeam(active = true) {
-  if (!currentUser) { notify('Debés estar logueado', '�a�️'); return; }
+  if (!currentUser) { notify('DebÃ©s estar logueado', 'âš ï¸'); return; }
   
   const uids = state.passiveTeamUids || [];
   if (active && (!uids || !uids.length)) {
-    notify('Tenés que armar tu equipo pasivo (Editar) antes de activarlo.', '�a�️'); 
+    notify('TenÃ©s que armar tu equipo pasivo (Editar) antes de activarlo.', 'âš ï¸'); 
     return;
   }
   
@@ -606,12 +606,12 @@ async function savePassiveTeam(active = true) {
     const { error } = await sb.from('passive_teams').upsert({
       user_id: currentUser.id, team_data: [], elo_rating: state.eloRating || 1000, is_active: false, updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
-    if (error) { notify('Error desactivando', '�R'); return; }
+    if (error) { notify('Error desactivando', 'âŒ'); return; }
     
     state.passiveTeamActive = false;
     renderPassiveTeamPreview();
     _renderRankedRulesCard();
-    notify('Equipo pasivo desactivado', '�x�');
+    notify('Equipo pasivo desactivado', 'ðŸ”´');
     return;
   }
 
@@ -648,14 +648,14 @@ async function savePassiveTeam(active = true) {
     updated_at: new Date().toISOString(),
   }, { onConflict: 'user_id' });
 
-  if (error) { notify('Error guardando equipo: ' + error.message, '�R'); return; }
+  if (error) { notify('Error guardando equipo: ' + error.message, 'âŒ'); return; }
   state.passiveTeamActive = active;
   renderPassiveTeamPreview();
   _renderRankedRulesCard();
-  notify(`Equipo pasivo ${active ? 'activado' : 'desactivado'} �S`, '�x�');
+  notify(`Equipo pasivo ${active ? 'activado' : 'desactivado'} âœ“`, 'ðŸ¤–');
 }
 
-// ���� Editor Visual de Equipo (Rankeds Modal) ������������������������������������������������������
+// â”€â”€ Editor Visual de Equipo (Rankeds Modal) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _tempEditingUids = [];
 let _passiveEditorSelectedUid = null;
 
@@ -709,7 +709,7 @@ function _renderPassiveEditor() {
       <div onclick="if(typeof _selectPassiveEditorItem==='function')_selectPassiveEditorItem('${uid}')"
       style="width:50px;height:50px;border:2px dashed ${p ? 'var(--purple)' : 'rgba(255,255,255,0.2)'};border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);cursor:pointer;position:relative;">
         ${p ? `<img src="${spriteUrl}" style="width:100%;height:100%;image-rendering:pixelated;" onerror="this.style.display='none'">` : '<span style="color:#666;font-size:16px;">+</span>'}
-        ${p && _tempEditingUids.includes(uid) ? `<div style="position:absolute;bottom:-4px;right:-4px;background:var(--green);border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;"><span style="color:#000;font-size:8px;">�S</span></div>` : ''}
+        ${p && _tempEditingUids.includes(uid) ? `<div style="position:absolute;bottom:-4px;right:-4px;background:var(--green);border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;"><span style="color:#000;font-size:8px;">âœ“</span></div>` : ''}
       </div>
     `;
   }
@@ -746,7 +746,7 @@ function _renderPassiveEditor() {
               <span style="font-weight:bold;margin-right:6px;">Objeto:</span> ${itemImg} ${itemName}
             </div>
             <div style="font-size:10px;color:rgba(255,255,255,0.8);margin-bottom:4px;">
-              <span style="font-weight:bold;">Hab:</span> ${sp.ability || 'Genérica'} | <span style="font-weight:bold;">Nat:</span> ${sp.nature || 'Seria'}
+              <span style="font-weight:bold;">Hab:</span> ${sp.ability || 'GenÃ©rica'} | <span style="font-weight:bold;">Nat:</span> ${sp.nature || 'Seria'}
             </div>
           </div>
         </div>
@@ -850,7 +850,7 @@ function confirmPassiveTeamEdit() {
 }
 
 
-// ���� Buscar equipo pasivo para el fallback ����������������������������������������������������������
+// â”€â”€ Buscar equipo pasivo para el fallback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function findPassiveOpponent() {
   if (!currentUser) return null;
   const myElo = state.eloRating || 1000;
@@ -869,14 +869,14 @@ async function findPassiveOpponent() {
   return data[Math.floor(Math.random() * data.length)];
 }
 
-// ���� Estado de Matchmaking ������������������������������������������������������������������������������������������
+// â”€â”€ Estado de Matchmaking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.isRankedSearching = false;
 let _matchmakingInterval = null;
 let _matchmakingTimeout  = null;
 let _matchmakingSeconds  = 60;
 let _matchmakingQueueId  = null;   // Row en la tabla ranked_queue
 
-// ���� Entrada: Buscar Partida ��������������������������������������������������������������������������������������
+// â”€â”€ Entrada: Buscar Partida â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function startRankedMatchmaking() {
   if (!currentUser) { notify('Debés estar logueado', '⚠️'); return; }
   if (_matchmakingInterval) return; // Ya buscando
@@ -954,33 +954,33 @@ async function _checkForHumanOpponent() {
     if (error || !data?.length) return;
 
     const opponent = data[0];
-    // Intentar "tomar" ese slot atómicamente
+    // Intentar "tomar" ese slot atÃ³micamente
     const { error: matchErr } = await sb.from('ranked_queue')
       .update({ status: 'matched' })
       .eq('id', opponent.id)
       .eq('status', 'searching'); // Solo actualizar si sigue buscando
 
-    if (matchErr) return; // Otro jugador llegó primero
+    if (matchErr) return; // Otro jugador llegÃ³ primero
 
-    // Marcar el nuestro también
+    // Marcar el nuestro tambiÃ©n
     if (_matchmakingQueueId) {
       await sb.from('ranked_queue')
         .update({ status: 'matched' })
         .eq('id', _matchmakingQueueId);
     }
 
-    // ¡Rival encontrado! Iniciar PvP normal vía invite
+    // Â¡Rival encontrado! Iniciar PvP normal vÃ­a invite
     _matchmakingStop();
-    notify('¡Rival encontrado! Iniciando batalla...', '�a️');
+    notify('Â¡Rival encontrado! Iniciando batalla...', 'âš”ï¸');
     
-    // Crear invitación forzada de Ranked Match
+    // Crear invitaciÃ³n forzada de Ranked Match
     if (typeof sb !== 'undefined') {
       await sb.from('battle_invites').insert({
         challenger_id: currentUser.id,
         opponent_id: opponent.user_id,
         status: 'ranked_match',
       });
-      // El jugador anfitrión espera confirmación (si el rival es un fantasma, devolverá declined o timeout)
+      // El jugador anfitriÃ³n espera confirmaciÃ³n (si el rival es un fantasma, devolverÃ¡ declined o timeout)
       const { data: rows } = await sb.from('battle_invites')
         .select('*').eq('challenger_id', currentUser.id).eq('status', 'ranked_match')
         .order('created_at', { ascending: false }).limit(1);
@@ -1000,25 +1000,25 @@ async function _checkForHumanOpponent() {
             clearInterval(waitInterval);
             // Purgar de la DB el fantasma del rival solo por si acaso
             try { await sb.from('ranked_queue').delete().eq('user_id', opponent.user_id); } catch(e){}
-            notify('El rival no respondió. Buscando IA...', '�a�️');
+            notify('El rival no respondiÃ³. Buscando IA...', 'âš ï¸');
             _matchmakingFallbackToPassive();
           }
         }, 800);
       }
     }
   } catch(e) {
-    // La tabla puede no existir � ignorar silenciosamente
+    // La tabla puede no existir â€” ignorar silenciosamente
   }
 }
 
-// ���� Fallback: luchar contra equipo pasivo ����������������������������������������������������������
+// â”€â”€ Fallback: luchar contra equipo pasivo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function _matchmakingFallbackToPassive() {
   _matchmakingStop();
-  notify('No se encontró rival. ¡Buscando un equipo pasivo...!', '�x�');
+  notify('No se encontrÃ³ rival. Â¡Buscando un equipo pasivo...!', 'ðŸ¤–');
 
   const opponent = await findPassiveOpponent();
   if (!opponent) {
-    notify('No hay equipos pasivos disponibles ahora. Intentá más tarde.', '�x�');
+    notify('No hay equipos pasivos disponibles ahora. IntentÃ¡ mÃ¡s tarde.', 'ðŸ˜”');
     return;
   }
 
@@ -1052,7 +1052,7 @@ state._passiveBattleOpponentId   = opponent.user_id;
   }
 }
 
-// ���� Cancelar búsqueda ��������������������������������������������������������������������������������������������������
+// â”€â”€ Cancelar bÃºsqueda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cancelRankedMatchmaking(silent = false) {
   _matchmakingStop();
   // Limpiar TODA fila de la cola en Supabase bajo nuestro user_id (para matar el ghost queue)
@@ -1062,10 +1062,10 @@ async function cancelRankedMatchmaking(silent = false) {
     } catch(e) { /* ignorar */ }
   }
   _matchmakingQueueId = null;
-  if (!silent) notify('Búsqueda cancelada', '�S️');
+  if (!silent) notify('BÃºsqueda cancelada', 'âœ–ï¸');
 }
 
-// ���� Limpieza interna ����������������������������������������������������������������������������������������������������
+// â”€â”€ Limpieza interna â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _matchmakingStop() {
   window.isRankedSearching = false;
   if (_matchmakingInterval) { clearInterval(_matchmakingInterval); _matchmakingInterval = null; }
@@ -1084,7 +1084,7 @@ function _showSearchingUI(searching) {
   }
 }
 
-// ���� Reportar resultado de batalla (pasiva o PvP activo) ������������������������������
+// â”€â”€ Reportar resultado de batalla (pasiva o PvP activo) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function reportPassiveBattleResult(opponentId, result) {
   const { data, error } = await sb.rpc('fn_report_passive_battle', {
     p_defender_id: opponentId,
@@ -1092,7 +1092,7 @@ async function reportPassiveBattleResult(opponentId, result) {
   });
   if (error) {
     console.error('[PvP] Error reportando resultado:', error);
-    notify('Error guardando resultado de batalla.', '�a�️');
+    notify('Error guardando resultado de batalla.', 'âš ï¸');
     return;
   }
   const delta = data?.delta || 0;
@@ -1103,10 +1103,10 @@ async function reportPassiveBattleResult(opponentId, result) {
   if (result === 'draw') state.pvpStats.draws++;
 
   const sign = delta >= 0 ? '+' : '';
-  notify(`Resultado registrado. ELO: ${sign}${delta} �  ${state.eloRating}`, '�x`');
+  notify(`Resultado registrado. ELO: ${sign}${delta} â†’ ${state.eloRating}`, 'ðŸ“Š');
 }
 
-// ���� Limpieza automática al cerrar pestaña (Antigosting) ������������������������������
+// â”€â”€ Limpieza automÃ¡tica al cerrar pestaÃ±a (Antigosting) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.loadRankedRules = loadRankedRules;
 window.getCurrentRankedRules = getCurrentRankedRules;
 window.getRankedPlayableTeam = getRankedPlayableTeam;

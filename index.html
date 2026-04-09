@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Poké Vicio - Te reto a dejar de jugarlo</title>
+  <title>PokÃ© Vicio - Te reto a dejar de jugarlo</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -21,10 +21,10 @@
     <!-- AUTH SCREEN -->
     <div id="auth-screen" class="screen active">
       <div class="auth-card">
-        <div class="auth-logo">Poké Vicio</div>
+        <div class="auth-logo">PokÃ© Vicio</div>
         <div class="auth-sub">Te reto a dejar de jugarlo</div>
         <div class="auth-tabs" id="auth-tabs">
-          <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Iniciar Sesión</button>
+          <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Iniciar SesiÃ³n</button>
           <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Registrarse</button>
         </div>
         <div id="auth-error" class="auth-error"></div>
@@ -33,23 +33,23 @@
         <div class="server-selector">
           <div class="server-selector-label">Servidor</div>
           <div class="server-tabs">
-            <button class="server-tab active" id="tab-server-online" onclick="switchServer('online')">�xR� Online</button>
-            <button class="server-tab" id="tab-server-local" onclick="switchServer('local')">�x� Local</button>
+            <button class="server-tab active" id="tab-server-online" onclick="switchServer('online')">ðŸŒ Online</button>
+            <button class="server-tab" id="tab-server-local" onclick="switchServer('local')">ðŸ’» Local</button>
           </div>
         </div>
         <!-- Login Online -->
         <div id="form-login">
           <input class="auth-input" id="login-email" type="email" placeholder="Email" autocomplete="email"
             onkeydown="if(event.key==='Enter') doLogin()">
-          <input class="auth-input" id="login-password" type="password" placeholder="Contraseña"
+          <input class="auth-input" id="login-password" type="password" placeholder="ContraseÃ±a"
             autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
-          <button class="auth-btn" id="btn-login" onclick="doLogin()">�� ENTRAR</button>
+          <button class="auth-btn" id="btn-login" onclick="doLogin()">â–¶ ENTRAR</button>
         </div>
         <!-- Login Local -->
         <div id="form-local" style="display:none">
           <input class="auth-input" id="local-username" type="text" placeholder="Nombre de Entrenador" maxlength="20"
             autocomplete="off" onkeydown="if(event.key==='Enter') doLocalLogin()">
-          <button class="auth-btn" id="btn-local-login" onclick="doLocalLogin()">�� JUGAR LOCAL</button>
+          <button class="auth-btn" id="btn-local-login" onclick="doLocalLogin()">â–¶ JUGAR LOCAL</button>
         </div>
         <!-- Signup -->
         <div id="form-signup" style="display:none">
@@ -57,30 +57,30 @@
             onkeydown="if(event.key==='Enter') doSignup()">
           <input class="auth-input" id="signup-email" type="email" placeholder="Email" autocomplete="email"
             onkeydown="if(event.key==='Enter') doSignup()">
-          <input class="auth-input" id="signup-password" type="password" placeholder="Contraseña (mín. 6 caracteres)"
+          <input class="auth-input" id="signup-password" type="password" placeholder="ContraseÃ±a (mÃ­n. 6 caracteres)"
             autocomplete="new-password" onkeydown="if(event.key==='Enter') doSignup()">
-          <button class="auth-btn" id="btn-signup" onclick="doSignup()">�� CREAR CUENTA</button>
+          <button class="auth-btn" id="btn-signup" onclick="doSignup()">â–¶ CREAR CUENTA</button>
         </div>
         <div id="auth-loading" style="display:none;text-align:center;padding:16px;color:var(--gray);font-size:13px;">
-          Cargando partida... �R:
+          Cargando partida... âŒ›
         </div>
       </div>
     </div>
 
     <!-- TITLE SCREEN -->
     <div id="title-screen" class="screen">
-      <div class="title-logo">Poké Vicio</div>
+      <div class="title-logo">PokÃ© Vicio</div>
       <div class="title-sub">Te reto a dejar de jugarlo</div>
-      <p style="color:var(--gray);font-size:14px;margin-bottom:30px;">Elegí tu Pokémon inicial para comenzar tu aventura
+      <p style="color:var(--gray);font-size:14px;margin-bottom:30px;">ElegÃ­ tu PokÃ©mon inicial para comenzar tu aventura
       </p>
       <div class="starter-grid">
         <div class="starter-card grass" onclick="chooseStarter('bulbasaur')">
           <img id="starter-img-bulbasaur"
             src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" alt="Bulbasaur"
             class="starter-emoji" style="width:80px;height:80px;image-rendering:pixelated;">
-          <span id="starter-emo-bulbasaur" class="starter-emoji" style="font-size:60px;display:none;">�xR�</span>
+          <span id="starter-emo-bulbasaur" class="starter-emoji" style="font-size:60px;display:none;">ðŸŒ¿</span>
           <div class="starter-name">Bulbasaur</div>
-          <span class="starter-type type-grass">�xR� Planta</span>
+          <span class="starter-type type-grass">ðŸŒ¿ Planta</span>
           <div class="starter-stats">
             <div class="stat-mini"><span>HP</span><span>45</span></div>
             <div class="stat-mini"><span>Ataque</span><span>49</span></div>
@@ -91,9 +91,9 @@
           <img id="starter-img-charmander"
             src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="Charmander"
             class="starter-emoji" style="width:80px;height:80px;image-rendering:pixelated;">
-          <span id="starter-emo-charmander" class="starter-emoji" style="font-size:60px;display:none;">�x�</span>
+          <span id="starter-emo-charmander" class="starter-emoji" style="font-size:60px;display:none;">ðŸ”¥</span>
           <div class="starter-name">Charmander</div>
-          <span class="starter-type type-fire">�x� Fuego</span>
+          <span class="starter-type type-fire">ðŸ”¥ Fuego</span>
           <div class="starter-stats">
             <div class="stat-mini"><span>HP</span><span>39</span></div>
             <div class="stat-mini"><span>Ataque</span><span>52</span></div>
@@ -104,9 +104,9 @@
           <img id="starter-img-squirtle"
             src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" alt="Squirtle"
             class="starter-emoji" style="width:80px;height:80px;image-rendering:pixelated;">
-          <span id="starter-emo-squirtle" class="starter-emoji" style="font-size:60px;display:none;">�x�</span>
+          <span id="starter-emo-squirtle" class="starter-emoji" style="font-size:60px;display:none;">ðŸ’§</span>
           <div class="starter-name">Squirtle</div>
-          <span class="starter-type type-water">�x� Agua</span>
+          <span class="starter-type type-water">ðŸ’§ Agua</span>
           <div class="starter-stats">
             <div class="stat-mini"><span>HP</span><span>44</span></div>
             <div class="stat-mini"><span>Ataque</span><span>48</span></div>
@@ -122,7 +122,7 @@
     <div id="game-screen" class="screen">
       <div class="hud">
         <div class="hud-trainer" id="hud-trainer-panel" onclick="if(typeof openClassInfoPanel==='function')openClassInfoPanel()" style="cursor:pointer;">
-          <span class="trainer-avatar" id="hud-class-avatar">�x��</span>
+          <span class="trainer-avatar" id="hud-class-avatar">ðŸ§¢</span>
           <div>
             <div class="trainer-name" id="hud-name">ASH</div>
             <div class="trainer-info">Entrenador Nv.<span id="trainer-level">1</span></div>
@@ -140,73 +140,73 @@
         <div class="hud-nav">
           <!-- 1. MAPA (Principal y Ancho) -->
           <button class="hud-nav-btn map-btn active" data-tab="map"
-            onclick="showTab('map',this)"><span>�x�️</span><span>Mapa</span></button>
+            onclick="showTab('map',this)"><span>ðŸ—ºï¸</span><span>Mapa</span></button>
 
-          <!-- 2. POK�0MON (Grupo) -->
+          <!-- 2. POKÃ‰MON (Grupo) -->
           <div class="hud-group">
-            <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>�a�</span><span>Pokémon</span></button>
+            <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>âš¡</span><span>PokÃ©mon</span></button>
             <div class="hud-submenu">
-              <button class="hud-nav-btn" data-tab="team" onclick="showTab('team',this); this.closest('.hud-group').classList.remove('is-open')"><span>�x��</span><span>Equipo</span></button>
-              <button class="hud-nav-btn" data-tab="box" onclick="showTab('box',this); this.closest('.hud-group').classList.remove('is-open')"><span>�x�</span><span>Caja PC</span></button>
-              <button class="hud-nav-btn" data-tab="pokedex" onclick="showTab('pokedex',this); this.closest('.hud-group').classList.remove('is-open')"><span>�x</span><span>Pokédex</span></button>
+              <button class="hud-nav-btn" data-tab="team" onclick="showTab('team',this); this.closest('.hud-group').classList.remove('is-open')"><span>ðŸ¾</span><span>Equipo</span></button>
+              <button class="hud-nav-btn" data-tab="box" onclick="showTab('box',this); this.closest('.hud-group').classList.remove('is-open')"><span>ðŸ“¦</span><span>Caja PC</span></button>
+              <button class="hud-nav-btn" data-tab="pokedex" onclick="showTab('pokedex',this); this.closest('.hud-group').classList.remove('is-open')"><span>ðŸ“–</span><span>PokÃ©dex</span></button>
             </div>
           </div>
 
           <!-- 3. ACCESOS DIRECTOS -->
           <button class="hud-nav-btn" data-tab="bag"
-            onclick="showTab('bag',this)"><span>�x}</span><span>Mochila</span></button>
+            onclick="showTab('bag',this)"><span>ðŸŽ’</span><span>Mochila</span></button>
           <button class="hud-nav-btn" data-tab="gyms"
-            onclick="showTab('gyms',this)"><span>�x� </span><span>Gimnasios</span></button>
+            onclick="showTab('gyms',this)"><span>ðŸ†</span><span>Gimnasios</span></button>
           <button class="hud-nav-btn" data-tab="daycare"
-            onclick="showTab('daycare',this)"><span>�x�a</span><span>Crianza</span></button>
+            onclick="showTab('daycare',this)"><span>ðŸ¥š</span><span>Crianza</span></button>
 
           <!-- 4. MARKET (Grupo) -->
           <div class="hud-group">
-            <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>�x:</span><span>Market</span></button>
+            <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>ðŸ›’</span><span>Market</span></button>
             <div class="hud-submenu">
-              <button class="hud-nav-btn" data-tab="market" onclick="showTab('market',this); this.closest('.hud-group').classList.remove('is-open')"><span>�x��</span><span>PokéMart</span></button>
-              <button class="hud-nav-btn" data-tab="trainer-shop" onclick="showTab('trainer-shop', this); this.closest('.hud-group').classList.remove('is-open')"><span>�x�⬍�x��</span><span>Tienda Entr.</span></button>
-              <button class="hud-nav-btn" data-tab="online-market" onclick="showTab('online-market', this); this.closest('.hud-group').classList.remove('is-open')"><span>�xR�</span><span>Mercado Online</span></button>
+              <button class="hud-nav-btn" data-tab="market" onclick="showTab('market',this); this.closest('.hud-group').classList.remove('is-open')"><span>ðŸª</span><span>PokÃ©Mart</span></button>
+              <button class="hud-nav-btn" data-tab="trainer-shop" onclick="showTab('trainer-shop', this); this.closest('.hud-group').classList.remove('is-open')"><span>ðŸ‘¨â€ðŸ«</span><span>Tienda Entr.</span></button>
+              <button class="hud-nav-btn" data-tab="online-market" onclick="showTab('online-market', this); this.closest('.hud-group').classList.remove('is-open')"><span>ðŸŒ</span><span>Mercado Online</span></button>
             </div>
           </div>
 
           <!-- 5. SOCIAL (Grupo) -->
           <div class="hud-group">
             <button class="hud-nav-btn group-btn" onclick="toggleGroupMenu(event, this)" style="position:relative;">
-              <span>�x�</span><span>Social</span>
+              <span>ðŸ‘¥</span><span>Social</span>
               <span id="friends-hud-badge" style="display:none;position:absolute;top:4px;right:4px;
                 background:var(--red);color:#fff;font-size:8px;font-weight:900;min-width:14px;height:14px;
                 border-radius:50%;padding:0;line-height:14px;text-align:center;
                 font-family:'Press Start 2P',monospace;z-index:2;"></span>
             </button>
             <div class="hud-submenu">
-              <button class="hud-nav-btn" data-tab="friends" onclick="showTab('friends',this); this.closest('.hud-group').classList.remove('is-open')"><span>�x��</span><span>Amigos</span></button>
-              <button class="hud-nav-btn" data-tab="war" onclick="showTab('war',this); this.closest('.hud-group').classList.remove('is-open')"><span>�a️</span><span>Guerra</span></button>
+              <button class="hud-nav-btn" data-tab="friends" onclick="showTab('friends',this); this.closest('.hud-group').classList.remove('is-open')"><span>ðŸ¤</span><span>Amigos</span></button>
+              <button class="hud-nav-btn" data-tab="war" onclick="showTab('war',this); this.closest('.hud-group').classList.remove('is-open')"><span>âš”ï¸</span><span>Guerra</span></button>
             </div>
           </div>
 
           <!-- 6. RANKEDS -->
           <button class="hud-nav-btn" data-tab="ranked"
             onclick="showTab('ranked',this)" style="position:relative;">
-            <span>�x�&</span><span>Rankeds</span>
+            <span>ðŸ…</span><span>Rankeds</span>
           </button>
         </div>
 
         <div class="hud-items">
           <div id="time-cycle-display" class="hud-pill time-pill pv-tooltip-container pv-to-bottom">
-            <span id="time-icon">�x"</span>
+            <span id="time-icon">ðŸ•’</span>
             <span id="time-label" style="font-size: 10px;">Cargando...</span>
             <div class="pv-tooltip">
               <span class="pv-tooltip-title">CICLO HORARIO</span>
-              <span class="pv-tooltip-desc">El mundo cambia cada 4 horas (Amanecer, Día, Atardecer, Noche). ¡Diferentes Pokémon aparecen según la hora!</span>
+              <span class="pv-tooltip-desc">El mundo cambia cada 4 horas (Amanecer, DÃ­a, Atardecer, Noche). Â¡Diferentes PokÃ©mon aparecen segÃºn la hora!</span>
             </div>
           </div>
           <div class="hud-pill money-pill pv-tooltip-container pv-to-bottom">
-            <span>��</span>
+            <span>â‚½</span>
             <span id="hud-money">3000</span>
             <div class="pv-tooltip">
-              <span class="pv-tooltip-title">POK�0-PESOS (��)</span>
-              <span class="pv-tooltip-desc">Moneda principal. Se gana en batallas y vendiendo objetos. Se usa en el PokéMart.</span>
+              <span class="pv-tooltip-title">POKÃ‰-PESOS (â‚½)</span>
+              <span class="pv-tooltip-desc">Moneda principal. Se gana en batallas y vendiendo objetos. Se usa en el PokÃ©Mart.</span>
             </div>
           </div>
           <div class="hud-pill bc-pill pv-tooltip-container pv-to-bottom">
@@ -214,7 +214,7 @@
             <span id="hud-bc">0</span>
             <div class="pv-tooltip">
               <span class="pv-tooltip-title">BATTLE COINS (BC)</span>
-              <span class="pv-tooltip-desc">Moneda de élite. Se gana contra entrenadores fuertes. Se usa para objetos raros y crianza.</span>
+              <span class="pv-tooltip-desc">Moneda de Ã©lite. Se gana contra entrenadores fuertes. Se usa para objetos raros y crianza.</span>
             </div>
           </div>
           <div class="hud-pill badge-pill pv-tooltip-container pv-to-bottom">
@@ -222,7 +222,7 @@
             <span id="badge-count">0</span>
             <div class="pv-tooltip">
               <span class="pv-tooltip-title">MEDALLAS</span>
-              <span class="pv-tooltip-desc">Desbloquean nuevas rutas y aseguran que los Pokémon de nivel alto te obedezcan.</span>
+              <span class="pv-tooltip-desc">Desbloquean nuevas rutas y aseguran que los PokÃ©mon de nivel alto te obedezcan.</span>
             </div>
           </div>
           <div class="hud-pill ball-pill pv-tooltip-container pv-to-bottom">
@@ -239,8 +239,8 @@
             </div>
             <span id="ball-count">10</span>
             <div class="pv-tooltip">
-              <span class="pv-tooltip-title">POK�0 BALLS</span>
-              <span class="pv-tooltip-desc">Cantidad de cápsulas disponibles para capturar nuevos Pokémon.</span>
+              <span class="pv-tooltip-title">POKÃ‰ BALLS</span>
+              <span class="pv-tooltip-desc">Cantidad de cÃ¡psulas disponibles para capturar nuevos PokÃ©mon.</span>
             </div>
           </div>
           <div id="hud-egg-container" class="hud-pill egg-pill pv-tooltip-container pv-to-bottom" onclick="toggleProfile()">
@@ -248,29 +248,29 @@
             <span id="egg-count">0</span>
             <div class="pv-tooltip">
               <span class="pv-tooltip-title">HUEVOS</span>
-              <span class="pv-tooltip-desc">Llevas estos huevos en tu equipo. ¡Camina para que eclosionen!</span>
+              <span class="pv-tooltip-desc">Llevas estos huevos en tu equipo. Â¡Camina para que eclosionen!</span>
             </div>
           </div>
           <div class="pv-tooltip-container pv-to-left">
             <button onclick="toggleSettings()" id="hud-settings-btn"
-              style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:8px;">�a"️</button>
+              style="background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:8px;">âš™ï¸</button>
             <div class="pv-tooltip">
-              <span class="pv-tooltip-title">CONFIGURACI�N</span>
+              <span class="pv-tooltip-title">CONFIGURACIÃ“N</span>
               <span class="pv-tooltip-desc">Ajusta el zoom de la interfaz y otras opciones del juego.</span>
             </div>
           </div>
           <div class="pv-tooltip-container pv-to-left">
-            <button onclick="toggleProfile()" id="hud-profile-btn">�x�</button>
+            <button onclick="toggleProfile()" id="hud-profile-btn">ðŸ‘¤</button>
             <div class="pv-tooltip">
               <span class="pv-tooltip-title">PERFIL</span>
-              <span class="pv-tooltip-desc">Mira tus estadísticas, cambia tu avatar y gestiona tu cuenta.</span>
+              <span class="pv-tooltip-desc">Mira tus estadÃ­sticas, cambia tu avatar y gestiona tu cuenta.</span>
             </div>
           </div>
           <div class="pv-tooltip-container pv-to-left">
-            <button onclick="toggleLibrary()" id="hud-library-btn" class="library-btn">�xa Biblioteca</button>
+            <button onclick="toggleLibrary()" id="hud-library-btn" class="library-btn">ðŸ“š Biblioteca</button>
             <div class="pv-tooltip">
               <span class="pv-tooltip-title">BIBLIOTECA</span>
-              <span class="pv-tooltip-desc">Consulta guías sobre gimnasios, crianza, tipos y más.</span>
+              <span class="pv-tooltip-desc">Consulta guÃ­as sobre gimnasios, crianza, tipos y mÃ¡s.</span>
             </div>
           </div>
         </div>
@@ -288,21 +288,21 @@
       <div id="library-modal">
         <div class="library-container">
           <aside class="library-sidebar">
-            <h2>�xa BIBLIOTECA</h2>
-            <div class="library-nav-item active" onclick="switchLibraryTab('gimnasios', this)">�x�  Gimnasios</div>
-            <div class="library-nav-item" onclick="switchLibraryTab('captura', this)">�x� Captura</div>
-            <div class="library-nav-item" onclick="switchLibraryTab('clases', this)">�x}� Clases</div>
-            <div class="library-nav-item" onclick="switchLibraryTab('crianza', this)">�x�a Crianza</div>
-            <div class="library-nav-item" onclick="switchLibraryTab('misiones', this)">�x9 Misiones</div>
-            <div class="library-nav-item" onclick="switchLibraryTab('encuentros', this)">�x�️ Encuentros</div>
-            <div class="library-nav-item" onclick="switchLibraryTab('shinys', this)">�S� Shinys</div>
-            <div class="library-nav-item" onclick="switchLibraryTab('combate', this)">�a️ Combate</div>
-            <div class="library-nav-item" onclick="switchLibraryTab('guerra', this)">�x:�️ Guerra</div>
-            <div class="library-nav-item" onclick="switchLibraryTab('pokedex', this)">�x Pokédex</div>
-            <div class="library-nav-item" onclick="switchLibraryTab('eventos', this)">�x& Eventos</div>
+            <h2>ðŸ“š BIBLIOTECA</h2>
+            <div class="library-nav-item active" onclick="switchLibraryTab('gimnasios', this)">ðŸ† Gimnasios</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('captura', this)">ðŸ”´ Captura</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('clases', this)">ðŸŽ­ Clases</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('crianza', this)">ðŸ¥š Crianza</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('misiones', this)">ðŸ“‹ Misiones</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('encuentros', this)">ðŸ—ºï¸ Encuentros</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('shinys', this)">âœ¨ Shinys</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('combate', this)">âš”ï¸ Combate</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('guerra', this)">ðŸ›¡ï¸ Guerra</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('pokedex', this)">ðŸ“‚ PokÃ©dex</div>
+            <div class="library-nav-item" onclick="switchLibraryTab('eventos', this)">ðŸ“… Eventos</div>
           </aside>
           <main class="library-content">
-            <button class="library-close" onclick="toggleLibrary()">�S"</button>
+            <button class="library-close" onclick="toggleLibrary()">âœ•</button>
             <div id="library-article-content" class="library-article">
               <!-- Content will be injected here -->
             </div>
@@ -316,10 +316,10 @@
         <div
           style="background:var(--card);padding:24px;border-radius:20px;width:90%;max-width:400px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 20px 50px rgba(0,0,0,0.5);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-            <h2 style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin:0;">�a"️
-              CONFIGURACI�N</h2>
+            <h2 style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin:0;">âš™ï¸
+              CONFIGURACIÃ“N</h2>
             <button onclick="toggleSettings()"
-              style="background:transparent;border:none;color:var(--gray);font-size:20px;cursor:pointer;">�S"</button>
+              style="background:transparent;border:none;color:var(--gray);font-size:20px;cursor:pointer;">âœ•</button>
           </div>
 
           <div style="margin-bottom:24px;">
@@ -344,23 +344,23 @@
       <div class="nav">
         <!-- 1. MAPA (Prominente) -->
         <button class="nav-btn active map-btn" data-tab="map"
-          onclick="showTab('map',this)"><span>�x�️</span><span>Mapa</span></button>
+          onclick="showTab('map',this)"><span>ðŸ—ºï¸</span><span>Mapa</span></button>
 
-        <!-- 2. POK�0MON (Grupo) -->
+        <!-- 2. POKÃ‰MON (Grupo) -->
         <div class="nav-group">
-          <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>�a�</span><span>Pokémon</span></button>
+          <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>âš¡</span><span>PokÃ©mon</span></button>
           <div class="nav-submenu">
-            <button class="nav-btn" data-tab="team" onclick="showTab('team',this); this.closest('.nav-group').classList.remove('is-open')"><span>�a�</span><span>Equipo</span></button>
-            <button class="nav-btn" data-tab="box" onclick="showTab('box',this); this.closest('.nav-group').classList.remove('is-open')"><span>�x�</span><span>PC</span></button>
-            <button class="nav-btn" data-tab="pokedex" onclick="showTab('pokedex',this); this.closest('.nav-group').classList.remove('is-open')"><span>�x</span><span>Pokedex</span></button>
+            <button class="nav-btn" data-tab="team" onclick="showTab('team',this); this.closest('.nav-group').classList.remove('is-open')"><span>âš¡</span><span>Equipo</span></button>
+            <button class="nav-btn" data-tab="box" onclick="showTab('box',this); this.closest('.nav-group').classList.remove('is-open')"><span>ðŸ“¦</span><span>PC</span></button>
+            <button class="nav-btn" data-tab="pokedex" onclick="showTab('pokedex',this); this.closest('.nav-group').classList.remove('is-open')"><span>ðŸ“–</span><span>Pokedex</span></button>
           </div>
         </div>
 
         <!-- 3. OTROS (Individuales) -->
-        <button class="nav-btn" data-tab="bag" onclick="showTab('bag',this)"><span>�x}</span><span>Mochila</span></button>
-        <button class="nav-btn" data-tab="gyms" onclick="showTab('gyms',this)"><span>�x� </span><span>Gimnasios</span></button>
+        <button class="nav-btn" data-tab="bag" onclick="showTab('bag',this)"><span>ðŸŽ’</span><span>Mochila</span></button>
+        <button class="nav-btn" data-tab="gyms" onclick="showTab('gyms',this)"><span>ðŸ†</span><span>Gimnasios</span></button>
         <button class="nav-btn" data-tab="daycare" onclick="showTab('daycare',this)">
-          <span>�x�a</span><span>Crianza</span>
+          <span>ðŸ¥š</span><span>Crianza</span>
           <span id="daycare-nav-badge" style="display:none;position:absolute;top:4px;right:4px;
             background:var(--red);color:#fff;font-size:9px;font-weight:900;min-width:16px;height:16px;
             border-radius:8px;padding:0 4px;line-height:16px;text-align:center;
@@ -369,32 +369,32 @@
 
         <!-- 4. MARKET (Grupo) -->
         <div class="nav-group">
-          <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>�x:</span><span>Market</span></button>
+          <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)"><span>ðŸ›’</span><span>Market</span></button>
           <div class="nav-submenu">
-            <button class="nav-btn" data-tab="market" onclick="showTab('market',this); this.closest('.nav-group').classList.remove('is-open')"><span>�x��</span><span>PokéMart</span></button>
-            <button class="nav-btn" data-tab="trainer-shop" onclick="showTab('trainer-shop', this); this.closest('.nav-group').classList.remove('is-open')"><span>�x�⬍�x��</span><span>Tienda Entr.</span></button>
-            <button class="nav-btn" data-tab="online-market" onclick="showTab('online-market', this); this.closest('.nav-group').classList.remove('is-open')"><span>�xR�</span><span>Mercado Online</span></button>
+            <button class="nav-btn" data-tab="market" onclick="showTab('market',this); this.closest('.nav-group').classList.remove('is-open')"><span>ðŸª</span><span>PokÃ©Mart</span></button>
+            <button class="nav-btn" data-tab="trainer-shop" onclick="showTab('trainer-shop', this); this.closest('.nav-group').classList.remove('is-open')"><span>ðŸ‘¨â€ðŸ«</span><span>Tienda Entr.</span></button>
+            <button class="nav-btn" data-tab="online-market" onclick="showTab('online-market', this); this.closest('.nav-group').classList.remove('is-open')"><span>ðŸŒ</span><span>Mercado Online</span></button>
           </div>
         </div>
 
         <!-- 5. SOCIAL (Grupo) -->
         <div class="nav-group">
           <button class="nav-btn group-btn" onclick="toggleGroupMenu(event, this)" style="position:relative;">
-            <span>�x�</span><span>Social</span>
+            <span>ðŸ‘¥</span><span>Social</span>
             <span id="friends-nav-badge" style="display:none;position:absolute;top:4px;right:4px;
               background:var(--red);color:#fff;font-size:9px;font-weight:900;min-width:16px;height:16px;
               border-radius:8px;padding:0 4px;line-height:16px;text-align:center;
               font-family:'Press Start 2P',monospace;z-index:2;"></span>
           </button>
           <div class="nav-submenu">
-            <button class="nav-btn" data-tab="friends" onclick="showTab('friends',this); this.closest('.nav-group').classList.remove('is-open')"><span>�x��</span><span>Amigos</span></button>
-            <button class="nav-btn" data-tab="war" onclick="showTab('war',this); this.closest('.nav-group').classList.remove('is-open')"><span>�a️</span><span>Guerra</span></button>
+            <button class="nav-btn" data-tab="friends" onclick="showTab('friends',this); this.closest('.nav-group').classList.remove('is-open')"><span>ðŸ¤</span><span>Amigos</span></button>
+            <button class="nav-btn" data-tab="war" onclick="showTab('war',this); this.closest('.nav-group').classList.remove('is-open')"><span>âš”ï¸</span><span>Guerra</span></button>
           </div>
         </div>
 
         <!-- 6. RANKEDS -->
         <button class="nav-btn" data-tab="ranked" onclick="showTab('ranked',this)">
-          <span>�x�&</span><span>Rankeds</span>
+          <span>ðŸ…</span><span>Rankeds</span>
         </button>
       </div>
 
@@ -404,10 +404,10 @@
 
           <!-- Header -->
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-            <div style="font-size:32px;">�x�&</div>
+            <div style="font-size:32px;">ðŸ…</div>
             <div>
               <div class="section-title" style="margin:0;">Rankeds</div>
-              <div style="font-size:11px;color:var(--gray);margin-top:2px;">Sistema de clasificación PvP</div>
+              <div style="font-size:11px;color:var(--gray);margin-top:2px;">Sistema de clasificaciÃ³n PvP</div>
             </div>
           </div>
 
@@ -417,24 +417,24 @@
               <div style="text-align:center;">
                 <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gray);margin-bottom:6px;">TU ELO</div>
                 <div id="ranked-elo-display" style="font-family:'Press Start 2P',monospace;font-size:24px;color:var(--purple);text-shadow:0 0 20px rgba(199,125,255,0.5);">1000</div>
-                <div id="ranked-tier-label" style="font-size:11px;color:var(--gray);margin-top:4px;">�x�0 Bronce</div>
+                <div id="ranked-tier-label" style="font-size:11px;color:var(--gray);margin-top:4px;">ðŸ¥‰ Bronce</div>
               </div>
               <div style="display:flex;flex-direction:column;gap:8px;">
                 <div style="display:flex;justify-content:space-between;font-size:12px;">
-                  <span style="color:var(--green);">�S& Victorias</span>
+                  <span style="color:var(--green);">âœ… Victorias</span>
                   <span id="ranked-wins" style="font-weight:700;">0</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:12px;">
-                  <span style="color:var(--red);">�R Derrotas</span>
+                  <span style="color:var(--red);">âŒ Derrotas</span>
                   <span id="ranked-losses" style="font-weight:700;">0</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:12px;">
-                  <span style="color:var(--gray);">�x�� Empates</span>
+                  <span style="color:var(--gray);">ðŸ¤ Empates</span>
                   <span id="ranked-draws" style="font-weight:700;">0</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:12px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;">
-                  <span style="color:var(--yellow);">�x` Winrate</span>
-                  <span id="ranked-winrate" style="font-weight:700;color:var(--yellow);">�</span>
+                  <span style="color:var(--yellow);">ðŸ“Š Winrate</span>
+                  <span id="ranked-winrate" style="font-weight:700;color:var(--yellow);">â€”</span>
                 </div>
               </div>
             </div>
@@ -442,7 +442,7 @@
 
           <!-- Season timer card -->
           <div style="background:rgba(255,217,61,0.06);border:1px solid rgba(255,217,61,0.2);border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
-            <div style="font-size:28px;">⏳</div>
+            <div style="font-size:28px;">â³</div>
             <div style="flex:1;">
               <div id="ranked-season-name" style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:4px;">TEMPORADA ACTUAL</div>
               <div id="ranked-season-timer" style="font-size:12px;color:var(--gray);">Cargando...</div>
@@ -463,35 +463,35 @@
           </div>
           <!-- Matchmaking -->
           <div style="margin-bottom:16px;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);margin-bottom:10px;">�a️ BUSCAR PARTIDA</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);margin-bottom:10px;">âš”ï¸ BUSCAR PARTIDA</div>
             <button onclick="startRankedMatchmaking()" id="btn-ranked-search"
               style="width:100%;font-family:'Press Start 2P',monospace;font-size:9px;padding:18px;border:none;border-radius:16px;cursor:pointer;
                      background:linear-gradient(135deg,rgba(199,125,255,0.25),rgba(59,139,255,0.15));color:#fff;
                      border:1px solid rgba(199,125,255,0.4);letter-spacing:0.5px;
                      box-shadow:0 4px 20px rgba(199,125,255,0.2);transition:all 0.2s;">
-              �x� BUSCAR PARTIDA
+              ðŸ” BUSCAR PARTIDA
             </button>
             <div id="ranked-search-status" style="margin-top:10px;display:none;
               background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;text-align:center;">
               <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:6px;">
-                ⏳ Buscando rival...
+                â³ Buscando rival...
               </div>
               <div id="ranked-search-timer" style="font-size:22px;font-family:'Press Start 2P',monospace;color:var(--purple);margin-bottom:8px;">60</div>
-              <div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Si no se encuentra un rival en 1 minuto,<br>lucharás contra un equipo pasivo.</div>
+              <div style="font-size:11px;color:var(--gray);margin-bottom:10px;">Si no se encuentra un rival en 1 minuto,<br>lucharÃ¡s contra un equipo pasivo.</div>
               <button onclick="cancelRankedMatchmaking()" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 14px;
                 border:1px solid rgba(255,59,59,0.3);border-radius:10px;cursor:pointer;
                 background:rgba(255,59,59,0.08);color:var(--red);">
-                �S" Cancelar
+                âœ• Cancelar
               </button>
             </div>
           </div>
 
           <!-- Passive team config -->
           <div style="margin-bottom:16px;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--green);margin-bottom:10px;">�x:�️ MI EQUIPO PASIVO</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--green);margin-bottom:10px;">ðŸ›¡ï¸ MI EQUIPO PASIVO</div>
             <div style="background:rgba(107,203,119,0.06);border:1px solid rgba(107,203,119,0.2);border-radius:14px;padding:14px;">
               <div style="font-size:12px;color:var(--gray);margin-bottom:12px;">
-                Tu equipo pasivo defiende automáticamente cuando otros jugadores te desafían mientras estás offline. El ELO cambia igual.
+                Tu equipo pasivo defiende automÃ¡ticamente cuando otros jugadores te desafÃ­an mientras estÃ¡s offline. El ELO cambia igual.
               </div>
               <div id="ranked-passive-team-preview" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;min-height:44px;">
                 <span style="font-size:11px;color:rgba(255,255,255,0.3);align-self:center;">No configurado</span>
@@ -500,17 +500,17 @@
                 <button onclick="if(typeof openPassiveTeamEditor==='function')openPassiveTeamEditor()" id="btn-passive-edit"
                   style="flex:1;font-family:'Press Start 2P',monospace;font-size:7px;padding:10px;border:none;border-radius:10px;cursor:pointer;
                          background:rgba(255,255,255,0.08);color:var(--gray);border:1px solid rgba(255,255,255,0.2);">
-                  �S�️ Editar
+                  âœï¸ Editar
                 </button>
                 <button onclick="if(typeof savePassiveTeam==='function')savePassiveTeam(true)" id="btn-passive-activate"
                   style="flex:1;font-family:'Press Start 2P',monospace;font-size:7px;padding:10px;border:none;border-radius:10px;cursor:pointer;
                          background:linear-gradient(135deg,rgba(107,203,119,0.2),rgba(107,203,119,0.08));color:var(--green);border:1px solid rgba(107,203,119,0.3);">
-                  �S& Activar
+                  âœ… Activar
                 </button>
                 <button onclick="if(typeof savePassiveTeam==='function')savePassiveTeam(false)" id="btn-passive-deactivate"
                   style="flex:1;font-family:'Press Start 2P',monospace;font-size:7px;padding:10px;border:none;border-radius:10px;cursor:pointer;
                          background:rgba(255,59,59,0.08);color:var(--red);border:1px solid rgba(255,59,59,0.2);">
-                  �x� Desactivar
+                  ðŸ”´ Desactivar
                 </button>
               </div>
             </div>
@@ -519,45 +519,45 @@
           <!-- Modal de Editor de Equipo Pasivo -->
           <div id="passive-team-editor-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:900;align-items:center;justify-content:center;padding:16px;">
             <div style="background:var(--card);max-width:400px;width:100%;border-radius:24px;border:1px solid rgba(107,203,119,0.3);padding:24px;max-height:85vh;overflow-y:auto;position:relative;">
-              <button onclick="closePassiveTeamEditor()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--red);font-size:24px;cursor:pointer;">�S"</button>
+              <button onclick="closePassiveTeamEditor()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--red);font-size:24px;cursor:pointer;">âœ•</button>
               <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);margin-bottom:16px;text-align:center;">ARMADOR PASIVO</div>
               <div style="font-size:11px;color:var(--gray);margin-bottom:16px;text-align:center;line-height:1.4;">
-                Elegí 6 Pokémon para tu equipo Rankeds. Los IVs, Movimientos y Objetos Equipados en este momento quedarán guardados en esta "fotografía" incluso si después los alterás en tu mochila. ¡Pero cuidado! Si vendés o perdés un Pokémon el equipo fallará.
+                ElegÃ­ 6 PokÃ©mon para tu equipo Rankeds. Los IVs, Movimientos y Objetos Equipados en este momento quedarÃ¡n guardados en esta "fotografÃ­a" incluso si despuÃ©s los alterÃ¡s en tu mochila. Â¡Pero cuidado! Si vendÃ©s o perdÃ©s un PokÃ©mon el equipo fallarÃ¡.
               </div>
               <div id="passive-editor-rules-hint" style="font-size:10px;color:#c7d2fe;margin-bottom:10px;text-align:center;line-height:1.4;">Cargando reglas de temporada...</div>
               <div id="passive-editor-slots" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:12px;min-height:50px;background:rgba(255,255,255,0.05);padding:10px;border-radius:12px;">
                 <!-- Slots (max 6) -->
               </div>
               <div id="passive-editor-preview" style="display:none;flex-direction:column;align-items:center;background:rgba(0,0,0,0.5);border:1px solid var(--purple);border-radius:12px;padding:12px;margin-bottom:16px;">
-                <!-- Pokémon Info Preview -->
+                <!-- PokÃ©mon Info Preview -->
               </div>
               <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:8px;">TU EQUIPO / CAJA</div>
               <div id="passive-editor-pool" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-height:200px;overflow-y:auto;padding-right:4px;">
                 <!-- Pool de Pokemons -->
               </div>
               <button onclick="confirmPassiveTeamEdit()" style="width:100%;font-family:'Press Start 2P',monospace;font-size:9px;padding:14px;border:none;border-radius:14px;cursor:pointer;background:var(--green);color:#000;margin-top:20px;">
-                �x� GUARDAR EQUIPO RANKED
+                ðŸ’¾ GUARDAR EQUIPO RANKED
               </button>
             </div>
           </div>
 
           <!-- Rewards (en desarrollo) -->
           <div style="margin-bottom:16px;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:10px;">�x}� PREMIOS POR RANGO</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:10px;">ðŸŽ PREMIOS POR RANGO</div>
             <div style="background:rgba(255,217,61,0.04);border:1px solid rgba(255,217,61,0.15);border-radius:14px;padding:16px;text-align:center;">
-              <div style="font-size:28px;margin-bottom:8px;">�xa�</div>
+              <div style="font-size:28px;margin-bottom:8px;">ðŸš§</div>
               <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:6px;">EN DESARROLLO</div>
-              <div style="font-size:11px;color:var(--gray);line-height:1.5;">Al finalizar cada temporada, los jugadores recibirán premios exclusivos según su rango final. ¡Prepárate!</div>
+              <div style="font-size:11px;color:var(--gray);line-height:1.5;">Al finalizar cada temporada, los jugadores recibirÃ¡n premios exclusivos segÃºn su rango final. Â¡PrepÃ¡rate!</div>
             </div>
           </div>
 
           <!-- Leaderboard (en desarrollo) -->
           <div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--blue);margin-bottom:10px;">�xR� RANKING GLOBAL</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--blue);margin-bottom:10px;">ðŸŒ RANKING GLOBAL</div>
             <div style="background:rgba(59,139,255,0.04);border:1px solid rgba(59,139,255,0.15);border-radius:14px;padding:16px;text-align:center;">
-              <div style="font-size:28px;margin-bottom:8px;">�xa�</div>
+              <div style="font-size:28px;margin-bottom:8px;">ðŸš§</div>
               <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--blue);margin-bottom:6px;">EN DESARROLLO</div>
-              <div style="font-size:11px;color:var(--gray);line-height:1.5;">Pronto podrás ver el ranking de los mejores entrenadores del servidor.</div>
+              <div style="font-size:11px;color:var(--gray);line-height:1.5;">Pronto podrÃ¡s ver el ranking de los mejores entrenadores del servidor.</div>
             </div>
           </div>
 
@@ -574,7 +574,7 @@
       <!-- POKEDEX TAB -->
       <div id="tab-pokedex" class="tab-content" style="display:none;padding-bottom:100px;">
         <div class="team-section">
-          <div class="section-title">�x Pokédex Nacional</div>
+          <div class="section-title">ðŸ“– PokÃ©dex Nacional</div>
           <div style="font-size:11px;color:var(--gray);margin-bottom:14px;display:flex;justify-content:space-between;">
             <span>Vistos: <span id="pokedex-seen-count" style="color:#fff;">0</span></span>
             <span>Capturados: <span id="pokedex-caught-count" style="color:var(--yellow);">0</span>/151</span>
@@ -590,29 +590,29 @@
         <div class="team-section">
           <div
             style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-            <div class="section-title" style="margin-bottom:0;">�a� Mi Equipo</div>
+            <div class="section-title" style="margin-bottom:0;">âš¡ Mi Equipo</div>
             <div style="display:flex;gap:8px;align-items:center;">
               <button id="btn-release-mode" onclick="toggleReleaseMode()" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
                      border-radius:10px;border:1px solid rgba(255,100,100,0.4);
                      background:rgba(255,59,59,0.1);color:var(--red);cursor:pointer;transition:all .2s;">
-                �xR� SOLTAR
+                ðŸŒ¿ SOLTAR
               </button>
               <button id="btn-confirm-release" onclick="confirmRelease()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
                      border-radius:10px;border:none;
                      background:linear-gradient(135deg,var(--red),#c0392b);color:#fff;cursor:pointer;">
-                �S CONFIRMAR
+                âœ“ CONFIRMAR
               </button>
               <button id="btn-cancel-release" onclick="toggleReleaseMode()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
                      border-radius:10px;border:1px solid rgba(255,255,255,0.1);
                      background:transparent;color:var(--gray);cursor:pointer;">
-                �S" CANCELAR
+                âœ• CANCELAR
               </button>
             </div>
           </div>
           <div id="release-hint" style="display:none;font-size:11px;color:var(--red);margin-bottom:12px;
              background:rgba(255,59,59,0.08);border:1px solid rgba(255,59,59,0.2);
              border-radius:10px;padding:10px 14px;">
-            �a�️ Seleccioná los Pokémon que querés soltar. No podés soltar el último del equipo.
+            âš ï¸ SeleccionÃ¡ los PokÃ©mon que querÃ©s soltar. No podÃ©s soltar el Ãºltimo del equipo.
           </div>
           <div class="team-grid" id="team-grid"></div>
         </div>
@@ -622,7 +622,7 @@
       <!-- GYMS TAB -->
       <div id="tab-gyms" class="tab-content" style="display:none">
         <div class="team-section">
-          <div class="section-title">�x�  Gimnasios de Kanto</div>
+          <div class="section-title">ðŸ† Gimnasios de Kanto</div>
           <div class="gym-list" id="gym-list"></div>
         </div>
       </div>
@@ -632,10 +632,10 @@
         <div class="team-section">
           <div
             style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-            <div class="section-title" style="margin:0;">�x: PokéMart</div>
+            <div class="section-title" style="margin:0;">ðŸ›’ PokÃ©Mart</div>
             <div
               style="background:rgba(50,215,75,0.15);border:1px solid var(--green);border-radius:12px;padding:8px 16px;">
-              <span style="font-size:13px;font-weight:900;color:var(--green);">��<span
+              <span style="font-size:13px;font-weight:900;color:var(--green);">â‚½<span
                   id="market-money">0</span></span>
             </div>
           </div>
@@ -643,7 +643,7 @@
           
           <!-- Search Input -->
           <div style="margin-bottom:14px;">
-            <input id="market-search-input" type="text" placeholder="Buscar ítem..." 
+            <input id="market-search-input" type="text" placeholder="Buscar Ã­tem..." 
               oninput="renderMarket()" 
               style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
           </div>
@@ -659,10 +659,10 @@
         <div class="team-section">
           <div
             style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-            <div class="section-title" style="margin:0;">�x�& Tienda del Entrenador</div>
+            <div class="section-title" style="margin:0;">ðŸ… Tienda del Entrenador</div>
             <div
               style="background:rgba(199,125,255,0.15);border:1px solid var(--purple);border-radius:12px;padding:8px 16px;">
-              <span style="font-size:13px;font-weight:900;color:var(--purple);">�x�" <span id="trainer-shop-bc">0</span>
+              <span style="font-size:13px;font-weight:900;color:var(--purple);">ðŸª™ <span id="trainer-shop-bc">0</span>
                 BC</span>
             </div>
           </div>
@@ -670,7 +670,7 @@
           
           <!-- Search Input -->
           <div style="margin-bottom:14px;">
-            <input id="trainer-shop-search-input" type="text" placeholder="Buscar ítem exclusivo..." 
+            <input id="trainer-shop-search-input" type="text" placeholder="Buscar Ã­tem exclusivo..." 
               oninput="renderTrainerShop()" 
               style="width:100%; padding:10px 14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:#fff; font-size:13px; font-family:'Nunito',sans-serif; outline:none;">
           </div>
@@ -686,46 +686,46 @@
         <div class="team-section">
           
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-            <div class="section-title" style="margin:0;">�xR� Mercado Online</div>
+            <div class="section-title" style="margin:0;">ðŸŒ Mercado Online</div>
             <div style="background:rgba(50,215,75,0.15);border:1px solid var(--green);border-radius:12px;padding:8px 16px;">
-              <span style="font-size:13px;font-weight:900;color:var(--green);">��<span id="online-market-money">0</span></span>
+              <span style="font-size:13px;font-weight:900;color:var(--green);">â‚½<span id="online-market-money">0</span></span>
             </div>
           </div>
 
-          <!-- Pestañas internas del mercado online -->
+          <!-- PestaÃ±as internas del mercado online -->
           <div style="display:flex;gap:6px;margin-bottom:20px;background:rgba(255,255,255,0.04);border-radius:14px;padding:5px;border:1px solid rgba(255,255,255,0.07);">
-            <button id="om-btn-explore" onclick="switchOnlineMarketTab('explore')" class="market-tab-btn active" style="flex:1;">�x: Explorar</button>
-            <button id="om-btn-mine" onclick="switchOnlineMarketTab('mine')" class="market-tab-btn" style="flex:1;">�x� Mis Publicaciones</button>
-            <button id="om-btn-publish" onclick="switchOnlineMarketTab('publish')" class="market-tab-btn" style="flex:1;">�~" Vender</button>
+            <button id="om-btn-explore" onclick="switchOnlineMarketTab('explore')" class="market-tab-btn active" style="flex:1;">ðŸ›’ Explorar</button>
+            <button id="om-btn-mine" onclick="switchOnlineMarketTab('mine')" class="market-tab-btn" style="flex:1;">ðŸ“¦ Mis Publicaciones</button>
+            <button id="om-btn-publish" onclick="switchOnlineMarketTab('publish')" class="market-tab-btn" style="flex:1;">âž• Vender</button>
           </div>
 
           <div id="om-view-explore">
-             <!-- Filtros avanzados dinámicos -->
+             <!-- Filtros avanzados dinÃ¡micos -->
              <div id="om-explore-filters"></div>
              <div id="om-explore-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
           </div>
 
 
           <div id="om-view-mine" style="display:none;">
-             <p style="font-size:11px; color:var(--gray); margin-bottom: 12px;">Aquí puedes ver tus ítems y Pokémon listados. Recuerda que el mercado cobra un 5% de comisión cuando reclamas tus ganancias.</p>
+             <p style="font-size:11px; color:var(--gray); margin-bottom: 12px;">AquÃ­ puedes ver tus Ã­tems y PokÃ©mon listados. Recuerda que el mercado cobra un 5% de comisiÃ³n cuando reclamas tus ganancias.</p>
              <div id="om-mine-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
           </div>
 
           <div id="om-view-publish" style="display:none;">
              <div style="margin-bottom: 12px; display:flex; gap:10px;">
-                <button class="action-btn active" id="om-pub-sw-pokemon" onclick="switchPublishType('pokemon')" style="flex:1;">�x�� Vender Pokémon</button>
-                <button class="action-btn" id="om-pub-sw-item" onclick="switchPublishType('item')" style="flex:1;">�x} Vender Ítem</button>
+                <button class="action-btn active" id="om-pub-sw-pokemon" onclick="switchPublishType('pokemon')" style="flex:1;">ðŸ¾ Vender PokÃ©mon</button>
+                <button class="action-btn" id="om-pub-sw-item" onclick="switchPublishType('item')" style="flex:1;">ðŸŽ’ Vender Ãtem</button>
              </div>
              
-             <!-- Filtros avanzados dinámicos para Vender -->
+             <!-- Filtros avanzados dinÃ¡micos para Vender -->
              <div id="om-publish-filters"></div>
              
-             <!-- Selectores dinámicos -->
+             <!-- Selectores dinÃ¡micos -->
 
              <div id="om-publish-selectors" style="background:rgba(0,0,0,0.2); padding:14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 14px;"></div>
 
              <div style="display:flex; gap:10px; align-items:center;">
-                <input type="number" id="om-publish-price" placeholder="Precio en ��" style="flex:1; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:var(--yellow); font-size:14px; font-weight:bold; font-family:'Nunito',sans-serif; outline:none;" min="1" max="999999999">
+                <input type="number" id="om-publish-price" placeholder="Precio en â‚½" style="flex:1; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:var(--yellow); font-size:14px; font-weight:bold; font-family:'Nunito',sans-serif; outline:none;" min="1" max="999999999">
                 <button onclick="publishToMarket()" class="title-btn" style="padding: 12px 20px; font-size: 10px; margin-top:0;">PUBLICAR</button>
              </div>
           </div>
@@ -736,7 +736,7 @@
     <!-- FRIENDS TAB -->
     <div id="tab-friends" class="tab-content" style="display:none">
       <div class="team-section">
-        <div class="section-title">�x� Amigos</div>
+        <div class="section-title">ðŸ‘¥ Amigos</div>
 
         <!-- Search -->
         <div style="display:flex;gap:8px;margin-bottom:20px;">
@@ -750,7 +750,7 @@
         <!-- Pending trades -->
         <div id="trades-pending-section" style="display:none;margin-bottom:20px;">
           <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:10px;">
-            �x INTERCAMBIOS PENDIENTES
+            ðŸ”„ INTERCAMBIOS PENDIENTES
           </div>
           <div id="trades-pending-list"></div>
         </div>
@@ -758,17 +758,17 @@
         <!-- Pending requests -->
         <div id="friends-pending-section" style="display:none;margin-bottom:20px;">
           <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:10px;">
-            �x� SOLICITUDES PENDIENTES
+            ðŸ“¬ SOLICITUDES PENDIENTES
           </div>
           <div id="friends-pending-list"></div>
         </div>
 
         <!-- Friends list -->
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);margin-bottom:12px;">
-          �xx� MIS AMIGOS
+          ðŸŸ¢ MIS AMIGOS
         </div>
         <div id="friends-list">
-          <div class="empty-state"><span class="empty-icon">�x�</span>Todavía no tenés amigos agregados.<br>Buscá a tu
+          <div class="empty-state"><span class="empty-icon">ðŸ‘¥</span>TodavÃ­a no tenÃ©s amigos agregados.<br>BuscÃ¡ a tu
             entrenador favorito arriba.</div>
         </div>
       </div>
@@ -778,38 +778,38 @@
   <div id="tab-box" class="tab-content" style="display:none">
     <div class="team-section">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
-        <div class="section-title" style="margin:0;">�x� PC de Almacenamiento</div>
+        <div class="section-title" style="margin:0;">ðŸ“¦ PC de Almacenamiento</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <button id="btn-box-release-mode" onclick="toggleBoxReleaseMode()" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
                  border-radius:10px;border:1px solid rgba(255,100,100,0.4);
                  background:rgba(255,59,59,0.1);color:var(--red);cursor:pointer;transition:all .2s;">
-            �xR� SOLTAR
+            ðŸŒ¿ SOLTAR
           </button>
           <button id="btn-box-confirm-release" onclick="confirmBoxRelease()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
                  border-radius:10px;border:none;
                  background:linear-gradient(135deg,var(--red),#c0392b);color:#fff;cursor:pointer;">
-            �S CONFIRMAR
+            âœ“ CONFIRMAR
           </button>
           <button id="btn-box-cancel-release" onclick="toggleBoxReleaseMode()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
                  border-radius:10px;border:1px solid rgba(255,255,255,0.1);
                  background:transparent;color:var(--gray);cursor:pointer;">
-            �S" CANCELAR
+            âœ• CANCELAR
           </button>
           <!-- Botones Mercado Negro (Rocket) -->
           <button id="btn-box-rocket-mode" onclick="toggleBoxRocketMode()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
                  border-radius:10px;border:1px solid rgba(239,68,68,0.4);
                  background:rgba(239,68,68,0.1);color:#ef4444;cursor:pointer;transition:all .2s;">
-            �xa� VENTA MASIVA
+            ðŸš€ VENTA MASIVA
           </button>
           <button id="btn-box-confirm-rocket" onclick="confirmBoxRocketSell()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
                  border-radius:10px;border:none;
                  background:linear-gradient(135deg,#ef4444,#991b1b);color:#fff;cursor:pointer;box-shadow:0 0 15px rgba(239,68,68,0.4);">
-            �S VENDER SELECCI�N
+            âœ“ VENDER SELECCIÃ“N
           </button>
           <button id="btn-box-cancel-rocket" onclick="toggleBoxRocketMode()" style="display:none;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;
                  border-radius:10px;border:1px solid rgba(255,255,255,0.1);
                  background:transparent;color:var(--gray);cursor:pointer;">
-            �S" CANCELAR
+            âœ• CANCELAR
           </button>
         </div>
       </div>
@@ -823,15 +823,15 @@
       <div id="box-release-hint" style="display:none;font-size:11px;color:var(--red);margin-bottom:12px;
          background:rgba(255,59,59,0.08);border:1px solid rgba(255,59,59,0.2);
          border-radius:10px;padding:10px 14px;">
-        �a�️ Seleccioná los Pokémon que querés soltar de la caja.
+        âš ï¸ SeleccionÃ¡ los PokÃ©mon que querÃ©s soltar de la caja.
       </div>
       <div id="box-normal-hint" style="font-size:12px;color:var(--gray);margin-bottom:12px;">
-        Tocá un Pokémon para intercambiarlo con uno de tu equipo activo.
+        TocÃ¡ un PokÃ©mon para intercambiarlo con uno de tu equipo activo.
       </div>
       <div id="box-rocket-hint" style="display:none;font-size:11px;color:#ef4444;margin-bottom:12px;
          background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);
          border-radius:10px;padding:10px 14px;">
-        �a�️ Seleccioná los Pokémon que querés vender al Mercado Negro (�� + Crimen).
+        âš ï¸ SeleccionÃ¡ los PokÃ©mon que querÃ©s vender al Mercado Negro (â‚½ + Crimen).
       </div>
 
       <!-- FILTER PANEL -->
@@ -840,10 +840,10 @@
         <!-- Toggle header -->
         <div onclick="toggleBoxFilters()"
           style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
-          <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);">�x� FILTROS</span>
+          <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);">ðŸ” FILTROS</span>
           <div style="display:flex;align-items:center;gap:8px;">
             <span id="box-filter-summary" style="font-size:10px;color:var(--gray);"></span>
-            <span id="box-filter-chevron" style="color:var(--gray);font-size:14px;transition:transform .2s;">��</span>
+            <span id="box-filter-chevron" style="color:var(--gray);font-size:14px;transition:transform .2s;">â–¼</span>
           </div>
         </div>
         
@@ -870,7 +870,7 @@
               <button onclick="setBoxSort('type')" data-sort="type" class="box-filter-btn"
                 style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(107,203,119,0.4);border-radius:20px;cursor:pointer;background:rgba(107,203,119,0.12);color:var(--green);">Tipo</button>
               <button onclick="setBoxSort('pokedex')" data-sort="pokedex" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(199,125,255,0.4);border-radius:20px;cursor:pointer;background:rgba(199,125,255,0.12);color:var(--purple);">Pokédex</button>
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(199,125,255,0.4);border-radius:20px;cursor:pointer;background:rgba(199,125,255,0.12);color:var(--purple);">PokÃ©dex</button>
             </div>
           </div>
 
@@ -904,55 +904,55 @@
               <button onclick="setBoxFilter('type','all')" data-type="all" class="box-filter-btn box-filter-active"
                 style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:20px;cursor:pointer;background:rgba(255,255,255,0.1);color:#eee;">Todos</button>
               <button onclick="setBoxFilter('type','fire')" data-type="fire" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(255,59,59,0.35);border-radius:20px;cursor:pointer;background:rgba(255,59,59,0.1);color:var(--red);">�x�
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(255,59,59,0.35);border-radius:20px;cursor:pointer;background:rgba(255,59,59,0.1);color:var(--red);">ðŸ”¥
                 Fuego</button>
               <button onclick="setBoxFilter('type','water')" data-type="water" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(59,139,255,0.35);border-radius:20px;cursor:pointer;background:rgba(59,139,255,0.1);color:var(--blue);">�x�
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(59,139,255,0.35);border-radius:20px;cursor:pointer;background:rgba(59,139,255,0.1);color:var(--blue);">ðŸ’§
                 Agua</button>
               <button onclick="setBoxFilter('type','grass')" data-type="grass" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(107,203,119,0.35);border-radius:20px;cursor:pointer;background:rgba(107,203,119,0.1);color:var(--green);">�xR�
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(107,203,119,0.35);border-radius:20px;cursor:pointer;background:rgba(107,203,119,0.1);color:var(--green);">ðŸŒ¿
                 Planta</button>
               <button onclick="setBoxFilter('type','electric')" data-type="electric" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(255,217,61,0.35);border-radius:20px;cursor:pointer;background:rgba(255,217,61,0.1);color:var(--yellow);">�a�
-                Eléctrico</button>
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(255,217,61,0.35);border-radius:20px;cursor:pointer;background:rgba(255,217,61,0.1);color:var(--yellow);">âš¡
+                ElÃ©ctrico</button>
               <button onclick="setBoxFilter('type','psychic')" data-type="psychic" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(199,125,255,0.35);border-radius:20px;cursor:pointer;background:rgba(199,125,255,0.1);color:var(--purple);">�x�
-                Psíquico</button>
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(199,125,255,0.35);border-radius:20px;cursor:pointer;background:rgba(199,125,255,0.1);color:var(--purple);">ðŸ”®
+                PsÃ­quico</button>
               <button onclick="setBoxFilter('type','normal')" data-type="normal" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(200,200,200,0.25);border-radius:20px;cursor:pointer;background:rgba(200,200,200,0.07);color:#bbb;">�S
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(200,200,200,0.25);border-radius:20px;cursor:pointer;background:rgba(200,200,200,0.07);color:#bbb;">â¬œ
                 Normal</button>
               <button onclick="setBoxFilter('type','rock')" data-type="rock" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(200,160,96,0.35);border-radius:20px;cursor:pointer;background:rgba(200,160,96,0.1);color:#c8a060;">�x��
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(200,160,96,0.35);border-radius:20px;cursor:pointer;background:rgba(200,160,96,0.1);color:#c8a060;">ðŸª¨
                 Roca</button>
               <button onclick="setBoxFilter('type','ground')" data-type="ground" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(200,160,96,0.35);border-radius:20px;cursor:pointer;background:rgba(200,160,96,0.1);color:#c8a060;">�x�S️
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(200,160,96,0.35);border-radius:20px;cursor:pointer;background:rgba(200,160,96,0.1);color:#c8a060;">ðŸœï¸
                 Tierra</button>
               <button onclick="setBoxFilter('type','poison')" data-type="poison" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(199,125,255,0.35);border-radius:20px;cursor:pointer;background:rgba(199,125,255,0.1);color:var(--purple);">�ܠ️
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(199,125,255,0.35);border-radius:20px;cursor:pointer;background:rgba(199,125,255,0.1);color:var(--purple);">â˜ ï¸
                 Veneno</button>
               <button onclick="setBoxFilter('type','bug')" data-type="bug" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(139,195,74,0.35);border-radius:20px;cursor:pointer;background:rgba(139,195,74,0.1);color:#8BC34A;">�x�:
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(139,195,74,0.35);border-radius:20px;cursor:pointer;background:rgba(139,195,74,0.1);color:#8BC34A;">ðŸ›
                 Bicho</button>
               <button onclick="setBoxFilter('type','flying')" data-type="flying" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(137,207,240,0.35);border-radius:20px;cursor:pointer;background:rgba(137,207,240,0.1);color:#89CFF0;">�x��
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(137,207,240,0.35);border-radius:20px;cursor:pointer;background:rgba(137,207,240,0.1);color:#89CFF0;">ðŸª¶
                 Volador</button>
               <button onclick="setBoxFilter('type','ghost')" data-type="ghost" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(123,47,190,0.35);border-radius:20px;cursor:pointer;background:rgba(123,47,190,0.1);color:#9B59B6;">�x�
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(123,47,190,0.35);border-radius:20px;cursor:pointer;background:rgba(123,47,190,0.1);color:#9B59B6;">ðŸ‘»
                 Fantasma</button>
               <button onclick="setBoxFilter('type','ice')" data-type="ice" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(125,249,255,0.35);border-radius:20px;cursor:pointer;background:rgba(125,249,255,0.1);color:#7DF9FF;">�️
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(125,249,255,0.35);border-radius:20px;cursor:pointer;background:rgba(125,249,255,0.1);color:#7DF9FF;">â„ï¸
                 Hielo</button>
               <button onclick="setBoxFilter('type','dragon')" data-type="dragon" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(92,22,197,0.35);border-radius:20px;cursor:pointer;background:rgba(92,22,197,0.1);color:#8060FF;">�x�0
-                Dragón</button>
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(92,22,197,0.35);border-radius:20px;cursor:pointer;background:rgba(92,22,197,0.1);color:#8060FF;">ðŸ‰
+                DragÃ³n</button>
               <button onclick="setBoxFilter('type','fighting')" data-type="fighting" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(255,59,59,0.35);border-radius:20px;cursor:pointer;background:rgba(255,59,59,0.1);color:var(--red);">�x�`
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(255,59,59,0.35);border-radius:20px;cursor:pointer;background:rgba(255,59,59,0.1);color:var(--red);">ðŸ¥Š
                 Lucha</button>
               <button onclick="setBoxFilter('type','dark')" data-type="dark" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(100,100,100,0.35);border-radius:20px;cursor:pointer;background:rgba(100,100,100,0.1);color:#888;">�xR
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(100,100,100,0.35);border-radius:20px;cursor:pointer;background:rgba(100,100,100,0.1);color:#888;">ðŸŒ‘
                 Siniestro</button>
               <button onclick="setBoxFilter('type','steel')" data-type="steel" class="box-filter-btn"
-                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(158,158,158,0.35);border-radius:20px;cursor:pointer;background:rgba(158,158,158,0.1);color:#9E9E9E;">�a"️
+                style="font-family:'Press Start 2P',monospace;font-size:7px;padding:5px 10px;border:1px solid rgba(158,158,158,0.35);border-radius:20px;cursor:pointer;background:rgba(158,158,158,0.1);color:#9E9E9E;">âš™ï¸
                 Acero</button>
             </div>
           </div>
@@ -986,7 +986,7 @@
           <!-- Row 4: Level filter -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px;">
             <div>
-              <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">Nivel mínimo</div>
+              <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">Nivel mÃ­nimo</div>
               <div style="display:flex;align-items:center;gap:8px;">
                 <input type="range" id="box-level-min" min="1" max="100" value="1"
                   oninput="setBoxFilter('levelMin',+this.value)" style="flex:1;accent-color:var(--purple);">
@@ -995,7 +995,7 @@
               </div>
             </div>
             <div>
-              <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">Nivel máximo</div>
+              <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">Nivel mÃ¡ximo</div>
               <div style="display:flex;align-items:center;gap:8px;">
                 <input type="range" id="box-level-max" min="1" max="100" value="100"
                   oninput="setBoxFilter('levelMax',+this.value)" style="flex:1;accent-color:var(--purple);">
@@ -1007,7 +1007,7 @@
 
           <!-- Row 4: Specific IV stat filter -->
           <div style="margin-top:12px;">
-            <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">IV específico (stat mínimo)
+            <div style="font-size:10px;color:var(--gray);margin-bottom:6px;font-weight:700;">IV especÃ­fico (stat mÃ­nimo)
             </div>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="box-iv-filters">
               <div>
@@ -1064,14 +1064,14 @@
           <!-- Reset button -->
           <button onclick="resetBoxFilters()" style="width:100%;margin-top:12px;padding:8px;border:none;border-radius:10px;
             cursor:pointer;background:rgba(255,255,255,0.05);color:var(--gray);font-size:11px;">
-            � � Limpiar filtros
+            â†º Limpiar filtros
           </button>
         </div>
       </div>
 
       <div id="box-full-warning" style="display:none;background:rgba(255,59,59,0.12);border:1px solid rgba(255,59,59,0.3);
           border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--red);">
-        �a�️ <strong>¡Caja llena!</strong> No podés capturar más Pokémon. Soltá algunos desde la Caja o el Equipo.
+        âš ï¸ <strong>Â¡Caja llena!</strong> No podÃ©s capturar mÃ¡s PokÃ©mon. SoltÃ¡ algunos desde la Caja o el Equipo.
       </div>
       <div id="box-results-info" style="font-size:11px;color:var(--gray);margin-bottom:8px;"></div>
       <div id="box-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;"></div>
@@ -1081,12 +1081,12 @@
   <!-- DAYCARE TAB -->
   <div id="tab-daycare" class="tab-content" style="display:none;padding-bottom:100px;">
     <div class="team-section">
-      <div class="section-title">�x�a Guardería Pokémon</div>
+      <div class="section-title">ðŸ¥š GuarderÃ­a PokÃ©mon</div>
 
       <!-- Compatibility indicator -->
       <div id="daycare-compat-bar" style="text-align:center;padding:10px 16px;border-radius:999px;
         font-size:12px;font-weight:700;margin-bottom:16px;background:rgba(255,255,255,0.05);">
-        �x} Deposita 2 Pokémon para ver compatibilidad
+        ðŸ”Ž Deposita 2 PokÃ©mon para ver compatibilidad
       </div>
 
       <!-- Slots -->
@@ -1094,64 +1094,64 @@
         <!-- Slot A -->
         <div id="daycare-slot-a" class="daycare-slot-card">
           <div class="daycare-slot-label">Ranura A</div>
-          <div id="slot-a-sprite" class="daycare-slot-sprite">�</div>
-          <div id="slot-a-name" class="daycare-slot-name">� Vacía �</div>
+          <div id="slot-a-sprite" class="daycare-slot-sprite">â“</div>
+          <div id="slot-a-name" class="daycare-slot-name">â€” VacÃ­a â€”</div>
           <div id="slot-a-info" class="daycare-slot-info"></div>
           
           <div id="slot-a-item-container" style="display:none;margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
             <div id="slot-a-item-selector-wrap">
-              <div style="font-size:9px;color:var(--gray);margin-bottom:6px;font-family:'Press Start 2P';">EQUIPAR ÍTEM:</div>
+              <div style="font-size:9px;color:var(--gray);margin-bottom:6px;font-family:'Press Start 2P';">EQUIPAR ÃTEM:</div>
               <select id="slot-a-item" onchange="updateDaycareSummary()" style="width:100%;padding:8px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.1);outline:none;font-size:11px;margin-bottom:8px;">
-                <option value="">-- Sin Ítem --</option>
+                <option value="">-- Sin Ãtem --</option>
               </select>
-              <button onclick="confirmDaycareItem('a')" style="width:100%;padding:8px;border-radius:8px;background:rgba(107,203,119,0.15);color:var(--green);border:1px solid rgba(107,203,119,0.3);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">�S CONFIRMAR</button>
+              <button onclick="confirmDaycareItem('a')" style="width:100%;padding:8px;border-radius:8px;background:rgba(107,203,119,0.15);color:var(--green);border:1px solid rgba(107,203,119,0.3);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">âœ“ CONFIRMAR</button>
             </div>
             <div id="slot-a-confirmed-item-wrap" style="display:none;text-align:center;">
-              <div style="font-size:9px;color:var(--yellow);margin-bottom:6px;font-family:'Press Start 2P';">ÍTEM EQUIPADO:</div>
+              <div style="font-size:9px;color:var(--yellow);margin-bottom:6px;font-family:'Press Start 2P';">ÃTEM EQUIPADO:</div>
               <div id="slot-a-confirmed-item-name" style="font-size:12px;font-weight:800;color:#fff;margin-bottom:8px;"></div>
-              <button onclick="withdrawDaycareItem('a')" style="width:100%;padding:8px;border-radius:8px;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">� � RETIRAR</button>
+              <button onclick="withdrawDaycareItem('a')" style="width:100%;padding:8px;border-radius:8px;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">â†© RETIRAR</button>
             </div>
           </div>
 
           <button id="slot-a-deposit-btn" onclick="openDepositModal(0)" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 14px;border:none;
             border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#3b82f6,#2563eb);
-            color:#fff;margin-top:8px;">�x� Depositar</button>
+            color:#fff;margin-top:8px;">ðŸ“¥ Depositar</button>
           <button id="slot-a-withdraw-btn" onclick="withdrawFromDaycare(0)" style="display:none;
             font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 14px;border:none;
             border-radius:10px;cursor:pointer;background:rgba(220,38,38,0.1);color:#f87171;
-            margin-top:8px;border:1px solid rgba(220,38,38,0.2);">�xa� Retirar Pokémon</button>
+            margin-top:8px;border:1px solid rgba(220,38,38,0.2);">ðŸšª Retirar PokÃ©mon</button>
         </div>
         <div id="daycare-mid-card" class="daycare-mid-card"></div>
 
         <!-- Slot B -->
         <div id="daycare-slot-b" class="daycare-slot-card">
           <div class="daycare-slot-label">Ranura B</div>
-          <div id="slot-b-sprite" class="daycare-slot-sprite">�</div>
-          <div id="slot-b-name" class="daycare-slot-name">� Vacía �</div>
+          <div id="slot-b-sprite" class="daycare-slot-sprite">â“</div>
+          <div id="slot-b-name" class="daycare-slot-name">â€” VacÃ­a â€”</div>
           <div id="slot-b-info" class="daycare-slot-info"></div>
           
           <div id="slot-b-item-container" style="display:none;margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:12px;border:1px solid rgba(255,255,255,0.05);">
             <div id="slot-b-item-selector-wrap">
-              <div style="font-size:9px;color:var(--gray);margin-bottom:6px;font-family:'Press Start 2P';">EQUIPAR ÍTEM:</div>
+              <div style="font-size:9px;color:var(--gray);margin-bottom:6px;font-family:'Press Start 2P';">EQUIPAR ÃTEM:</div>
               <select id="slot-b-item" onchange="updateDaycareSummary()" style="width:100%;padding:8px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.1);outline:none;font-size:11px;margin-bottom:8px;">
-                <option value="">-- Sin Ítem --</option>
+                <option value="">-- Sin Ãtem --</option>
               </select>
-              <button onclick="confirmDaycareItem('b')" style="width:100%;padding:8px;border-radius:8px;background:rgba(107,203,119,0.15);color:var(--green);border:1px solid rgba(107,203,119,0.3);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">�S CONFIRMAR</button>
+              <button onclick="confirmDaycareItem('b')" style="width:100%;padding:8px;border-radius:8px;background:rgba(107,203,119,0.15);color:var(--green);border:1px solid rgba(107,203,119,0.3);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">âœ“ CONFIRMAR</button>
             </div>
             <div id="slot-b-confirmed-item-wrap" style="display:none;text-align:center;">
-              <div style="font-size:9px;color:var(--yellow);margin-bottom:6px;font-family:'Press Start 2P';">ÍTEM EQUIPADO:</div>
+              <div style="font-size:9px;color:var(--yellow);margin-bottom:6px;font-family:'Press Start 2P';">ÃTEM EQUIPADO:</div>
               <div id="slot-b-confirmed-item-name" style="font-size:12px;font-weight:800;color:#fff;margin-bottom:8px;"></div>
-              <button onclick="withdrawDaycareItem('b')" style="width:100%;padding:8px;border-radius:8px;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">� � RETIRAR</button>
+              <button onclick="withdrawDaycareItem('b')" style="width:100%;padding:8px;border-radius:8px;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);font-family:'Press Start 2P';font-size:8px;cursor:pointer;">â†© RETIRAR</button>
             </div>
           </div>
 
           <button id="slot-b-deposit-btn" onclick="openDepositModal(1)" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 14px;border:none;
             border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#3b82f6,#2563eb);
-            color:#fff;margin-top:8px;">�x� Depositar</button>
+            color:#fff;margin-top:8px;">ðŸ“¥ Depositar</button>
           <button id="slot-b-withdraw-btn" onclick="withdrawFromDaycare(1)" style="display:none;
             font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 14px;border:none;
             border-radius:10px;cursor:pointer;background:rgba(220,38,38,0.1);color:#f87171;
-            margin-top:8px;border:1px solid rgba(220,38,38,0.2);">�xa� Retirar Pokémon</button>
+            margin-top:8px;border:1px solid rgba(220,38,38,0.2);">ðŸšª Retirar PokÃ©mon</button>
         </div>
       </div>
 
@@ -1159,7 +1159,7 @@
       <div id="daycare-egg-timer" style="display:none;text-align:center;padding:14px;
         background:rgba(255,255,255,0.05);border-radius:14px;margin-bottom:16px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gray);margin-bottom:6px;">
-          PR�XIMO HUEVO EN
+          PRÃ“XIMO HUEVO EN
         </div>
         <div id="daycare-timer-countdown" style="font-family:'Press Start 2P',monospace;font-size:18px;color:#22c55e;">
           --:--
@@ -1179,14 +1179,14 @@
 
       <!-- Egg Storage -->
       <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-        <div class="section-title" style="margin:0;font-size:13px;">�x�a Almacén de Huevos</div>
+        <div class="section-title" style="margin:0;font-size:13px;">ðŸ¥š AlmacÃ©n de Huevos</div>
         <span style="font-size:11px;color:var(--gray);">
           <span id="daycare-egg-count">0</span>/<span id="daycare-egg-capacity">2</span>
         </span>
       </div>
       <div id="daycare-egg-grid"
         style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">
-        <div style="color:var(--gray);font-size:11px;padding:16px 0;">Sin huevos en almacén.</div>
+        <div style="color:var(--gray);font-size:11px;padding:16px 0;">Sin huevos en almacÃ©n.</div>
       </div>
     </div>
   </div>
@@ -1195,15 +1195,15 @@
   <div id="tab-bag" class="tab-content" style="display:none">
     <div class="team-section" style="min-height:50vh;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div class="section-title" style="margin:0;">�x} Mochila</div>
+        <div class="section-title" style="margin:0;">ðŸŽ’ Mochila</div>
         <div style="display:flex; gap:10px;">
           <button id="btn-bag-sell-mode" onclick="toggleBagSellMode()" 
             style="font-family:'Press Start 2P',monospace; font-size:8px; padding:10px 16px; background:linear-gradient(135deg, #4caf50, #388e3c); color:white; border:none; border-radius:12px; cursor:pointer; box-shadow:0 4px 12px rgba(76,175,80,0.3);">
-            �x� MODO VENTA
+            ðŸ’° MODO VENTA
           </button>
           <button id="btn-bag-confirm-sell" onclick="confirmBagSell()" 
             style="display:none; font-family:'Press Start 2P',monospace; font-size:8px; padding:10px 16px; background:linear-gradient(135deg, #ff9800, #f57c00); color:white; border:none; border-radius:12px; cursor:pointer; box-shadow:0 4px 12px rgba(255,152,0,0.3);">
-            �S& VENDER SELECCI�N
+            âœ… VENDER SELECCIÃ“N
           </button>
           <button id="btn-bag-cancel-sell" onclick="toggleBagSellMode()" 
             style="display:none; font-family:'Press Start 2P',monospace; font-size:8px; padding:10px 16px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:12px; cursor:pointer;">
@@ -1212,7 +1212,7 @@
         </div>
       </div>
       <div id="bag-sell-hint" style="display:none; background:rgba(76,175,80,0.1); border:1px solid rgba(76,175,80,0.3); border-radius:12px; padding:12px; margin-bottom:16px; font-size:11px; color:#81c784; text-align:center;">
-        Seleccioná los objetos que quieras vender. Recibirás el <strong>40% de su valor</strong>.
+        SeleccionÃ¡ los objetos que quieras vender. RecibirÃ¡s el <strong>40% de su valor</strong>.
       </div>
 
       <!-- Search Input -->
@@ -1225,13 +1225,13 @@
       <div id="bag-tabs" class="market-tab-bar" style="margin-bottom:16px;">
         <button onclick="renderBag('all')" class="market-tab-btn active" id="bag-tab-all">Todo</button>
         <button onclick="renderBag('potion')" class="market-tab-btn" id="bag-tab-potion">Pociones</button>
-        <button onclick="renderBag('ball')" class="market-tab-btn" id="bag-tab-ball">Pokéballs</button>
+        <button onclick="renderBag('ball')" class="market-tab-btn" id="bag-tab-ball">PokÃ©balls</button>
         <button onclick="renderBag('etc')" class="market-tab-btn" id="bag-tab-etc">Otros</button>
       </div>
       <div id="bag-empty-warning"
         style="display:none;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:32px;text-align:center;font-size:12px;color:var(--gray);">
-        <span class="empty-icon" style="font-size:48px;margin-bottom:12px;display:block;">�x}</span>
-        No tenés ningún objeto en esta categoría.
+        <span class="empty-icon" style="font-size:48px;margin-bottom:12px;display:block;">ðŸŽ’</span>
+        No tenÃ©s ningÃºn objeto en esta categorÃ­a.
       </div>
       <div id="bag-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
     </div>
@@ -1250,7 +1250,7 @@
             <img src="assets/war_banner.png" alt="Guerra" style="width: 100%; height: auto; display: block; border-radius: 16px;">
           </div>
 
-          <div class="section-title" style="margin-bottom: 20px; font-size: 16px;">�a️ Panel de Control de Guerra</div>
+          <div class="section-title" style="margin-bottom: 20px; font-size: 16px;">âš”ï¸ Panel de Control de Guerra</div>
           
           <!-- Estado de la semana -->
           <div id="war-phase-banner"></div>
@@ -1260,7 +1260,7 @@
             <div class="score-team union">
               <span class="team-dot"><img src="assets/factions/union.png" style="width:24px;height:24px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 0 5px rgba(59,130,246,0.5));"></span>
               <div class="team-info">
-                <span class="team-label">UNI�N</span>
+                <span class="team-label">UNIÃ“N</span>
                 <span id="union-maps" class="team-val">0</span>
               </div>
             </div>
@@ -1275,13 +1275,13 @@
           </div>
 
 
-          <!-- Estadísticas Personales -->
+          <!-- EstadÃ­sticas Personales -->
           <div class="war-stats-sidebar">
             <div class="war-stat-item">
               <span class="war-stat-icon"><i class="fa-solid fa-shield"></i></span>
               <div class="war-stat-details">
                 <span class="war-stat-label">Bando</span>
-                <span id="war-my-faction" class="war-stat-value">�</span>
+                <span id="war-my-faction" class="war-stat-value">â€”</span>
               </div>
             </div>
             <div class="war-stat-item">
@@ -1310,11 +1310,11 @@
 
           <!-- Reglas de la Guerra -->
           <div class="war-rules-compact">
-            <div class="rules-header">�xS REGLAS</div>
+            <div class="rules-header">ðŸ“œ REGLAS</div>
             <ul class="rules-list">
-              <li><span class="bullet">�a️</span> <b>Lun-Vie:</b> Sumá puntos ganando combates.</li>
-              <li><span class="bullet">�R:</span> <b>Sáb-Dom:</b> Bando líder toma control.</li>
-              <li><span class="bullet">�a�</span> <b>Bonos:</b> +30% Shiny, +30% EXP y +30% Mejores IVs en mapas controlados.</li>
+              <li><span class="bullet">âš”ï¸</span> <b>Lun-Vie:</b> SumÃ¡ puntos ganando combates.</li>
+              <li><span class="bullet">âŒ›</span> <b>SÃ¡b-Dom:</b> Bando lÃ­der toma control.</li>
+              <li><span class="bullet">âš¡</span> <b>Bonos:</b> +30% Shiny, +30% EXP y +30% Mejores IVs en mapas controlados.</li>
             </ul>
           </div>
         </aside>
@@ -1322,19 +1322,19 @@
         <!-- MAIN: Monitor -->
         <main class="war-main-content">
           <div class="war-monitor-header-premium">
-            <div class="monitor-title">�x:�️ MONITOR DE TERRITORIOS</div>
-            <div class="monitor-status">ACTUALIZACI�N EN VIVO</div>
+            <div class="monitor-title">ðŸ›°ï¸ MONITOR DE TERRITORIOS</div>
+            <div class="monitor-status">ACTUALIZACIÃ“N EN VIVO</div>
           </div>
           
           <div id="war-kanto-map" class="war-grid-premium">
-            <!-- Generado dinámicamente -->
+            <!-- Generado dinÃ¡micamente -->
           </div>
           
           <!-- Mis Defensores -->
           <div id="war-my-defenders-section" style="margin-top:30px; display:none;">
-            <div class="section-subtitle">�x:�️ MIS DEFENSORES :: RECOMPENSAS</div>
+            <div class="section-subtitle">ðŸ›¡ï¸ MIS DEFENSORES :: RECOMPENSAS</div>
             <div id="war-my-defenders-list" class="defenders-grid">
-              <!-- Generado dinámicamente -->
+              <!-- Generado dinÃ¡micamente -->
             </div>
           </div>
         </main>
@@ -1413,14 +1413,14 @@
       </div>
 
       <div class="battle-log" id="battle-log">
-        <div class="log-entry log-info">¡Un Pokémon salvaje apareció!</div>
+        <div class="log-entry log-info">Â¡Un PokÃ©mon salvaje apareciÃ³!</div>
       </div>
 
       <div id="move-panel">
         <div class="battle-actions" id="move-buttons"></div>
         <div class="action-row" id="battle-action-row">
           <button class="action-btn" id="btn-switch" onclick="showBattleSwitch()"
-            style="background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);color:var(--purple);">�x
+            style="background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);color:var(--purple);">ðŸ”„
             CAMBIAR</button>
           
           <div id="btn-catch-container">
@@ -1430,11 +1430,11 @@
           </div>
 
           <button class="action-btn" id="btn-bag" onclick="showBattleBag()"
-            style="background:rgba(107,203,119,0.15);border:1px solid rgba(107,203,119,0.3);color:var(--green);">�x}
+            style="background:rgba(107,203,119,0.15);border:1px solid rgba(107,203,119,0.3);color:var(--green);">ðŸŽ’
             MOCHILA</button>
 
           <button class="action-btn" id="btn-run" onclick="runFromBattle()"
-            style="background:rgba(255,255,255,0.05);color:var(--gray);">�x�� HUIR</button>
+            style="background:rgba(255,255,255,0.05);color:var(--gray);">ðŸƒ HUIR</button>
         </div>
       </div>
     </div>
@@ -1505,11 +1505,11 @@
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <span style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--purple);">MI PERFIL</span>
       <button onclick="toggleProfile()"
-        style="background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">�S"</button>
+        style="background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">âœ•</button>
     </div>
-    <div class="profile-avatar">�x��</div>
-    <div class="profile-username" id="profile-username">�</div>
-    <div class="profile-email" id="profile-email">�</div>
+    <div class="profile-avatar">ðŸ§¢</div>
+    <div class="profile-username" id="profile-username">â€”</div>
+    <div class="profile-email" id="profile-email">â€”</div>
     
     <div style="margin:12px 0;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;border:1px solid rgba(255,255,255,0.1);text-align:center;">
       <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin-bottom:8px;">BANDO</div>
@@ -1528,14 +1528,14 @@
         style="width:100%;padding:12px;border:1px solid rgba(245,158,11,0.4);border-radius:12px;cursor:pointer;
           background:rgba(245,158,11,0.1);color:#f59e0b;
           font-family:'Press Start 2P',monospace;font-size:9px;">
-        �x:�️ PANEL DE ADMIN
+        ðŸ›¡ï¸ PANEL DE ADMIN
       </button>
     </div>
 
     <button onclick="doLogout()" style="width:100%;padding:12px;border:1px solid rgba(255,59,59,0.3);border-radius:12px;cursor:pointer;
       background:rgba(255,59,59,0.1);color:var(--red);
       font-family:'Press Start 2P',monospace;font-size:9px;">
-      �xa� CERRAR SESI�N
+      ðŸšª CERRAR SESIÃ“N
     </button>
   </div>
 
@@ -1545,9 +1545,9 @@
 
       <!-- Header -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);">�x INTERCAMBIO</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);">ðŸ”„ INTERCAMBIO</div>
         <button onclick="closeTradeModal()"
-          style="background:none;border:none;color:var(--gray);font-size:22px;cursor:pointer;line-height:1;">�S"</button>
+          style="background:none;border:none;color:var(--gray);font-size:22px;cursor:pointer;line-height:1;">âœ•</button>
       </div>
       <div id="trade-recipient" style="font-size:12px;color:var(--gray);margin-bottom:14px;"></div>
 
@@ -1556,22 +1556,22 @@
         style="display:flex;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
         <button id="trade-tab-offer" onclick="switchTradeTab('offer')" style="flex:1;padding:10px;font-family:'Press Start 2P',monospace;font-size:7px;border:none;cursor:pointer;
                  background:var(--purple);color:#fff;transition:all .2s;">
-          �x� LO QUE OFREC�0S
+          ðŸ“¦ LO QUE OFRECÃ‰S
         </button>
         <button id="trade-tab-request" onclick="switchTradeTab('request')" style="flex:1;padding:10px;font-family:'Press Start 2P',monospace;font-size:7px;border:none;cursor:pointer;
                  background:rgba(255,255,255,0.05);color:var(--gray);transition:all .2s;">
-          �x}� LO QUE PEDÍS
+          ðŸŽ¯ LO QUE PEDÃS
         </button>
       </div>
 
       <!-- OFFER PANEL -->
       <div id="trade-panel-offer">
-        <div style="font-size:11px;color:var(--gray);margin-bottom:8px;">Seleccioná un Pokémon para ofrecer (tocá para
+        <div style="font-size:11px;color:var(--gray);margin-bottom:8px;">SeleccionÃ¡ un PokÃ©mon para ofrecer (tocÃ¡ para
           ver detalles, mantenelo para seleccionar):</div>
         <div class="trade-pokemon-grid" id="trade-offer-pokemon" style="max-height:200px;overflow-y:auto;"></div>
-        <div style="font-size:11px;color:var(--gray);margin:12px 0 6px;">Ítems:</div>
+        <div style="font-size:11px;color:var(--gray);margin:12px 0 6px;">Ãtems:</div>
         <div id="trade-offer-items" style="max-height:160px;overflow-y:auto;"></div>
-        <div style="font-size:11px;color:var(--gray);margin:10px 0 6px;">Dinero (tenés ��<span
+        <div style="font-size:11px;color:var(--gray);margin:10px 0 6px;">Dinero (tenÃ©s â‚½<span
             id="trade-my-money">0</span>):</div>
         <input class="trade-money-input" id="trade-offer-money" type="number" min="0" placeholder="0"
           oninput="clampMoney(this,'offer')">
@@ -1587,11 +1587,11 @@
           Enviar como regalo (sin pedir nada)
         </label>
         <div id="trade-request-inner">
-          <div style="font-size:11px;color:var(--gray);margin-bottom:8px;">Pokémon del amigo:</div>
+          <div style="font-size:11px;color:var(--gray);margin-bottom:8px;">PokÃ©mon del amigo:</div>
           <div class="trade-pokemon-grid" id="trade-request-pokemon" style="max-height:200px;overflow-y:auto;"></div>
-          <div style="font-size:11px;color:var(--gray);margin:12px 0 6px;">Ítems del amigo:</div>
+          <div style="font-size:11px;color:var(--gray);margin:12px 0 6px;">Ãtems del amigo:</div>
           <div id="trade-request-items" style="max-height:160px;overflow-y:auto;"></div>
-          <div style="font-size:11px;color:var(--gray);margin:10px 0 6px;">Dinero del amigo (tiene ��<span
+          <div style="font-size:11px;color:var(--gray);margin:10px 0 6px;">Dinero del amigo (tiene â‚½<span
               id="trade-friend-money">0</span>):</div>
           <input class="trade-money-input" id="trade-request-money" type="number" min="0" placeholder="0"
             oninput="clampMoney(this,'request')">
@@ -1610,7 +1610,7 @@
       <button onclick="sendTradeOffer()" style="width:100%;margin-top:12px;padding:14px;border:none;border-radius:12px;
                background:linear-gradient(135deg,var(--yellow),#f0a500);color:#111;
                font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;font-weight:900;">
-        �x ENVIAR OFERTA
+        ðŸ”„ ENVIAR OFERTA
       </button>
     </div>
   </div>
@@ -1621,7 +1621,7 @@
     <div style="background:var(--card);border-radius:20px;padding:24px;max-width:340px;width:100%;
                 border:1px solid rgba(199,125,255,0.3);position:relative;max-height:80vh;overflow-y:auto;">
       <button onclick="document.getElementById('trade-poke-detail').style.display='none'"
-        style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">�S"</button>
+        style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">âœ•</button>
       <div id="trade-poke-detail-content"></div>
     </div>
   </div>
@@ -1636,7 +1636,7 @@
       </div>
       <div class="buff-tooltip">
         <div class="buff-tooltip-name">Repelente</div>
-        <div class="buff-tooltip-desc">Aleja Pokémon salvajes de nivel inferior al tuyo.</div>
+        <div class="buff-tooltip-desc">Aleja PokÃ©mon salvajes de nivel inferior al tuyo.</div>
         <div class="buff-tooltip-time" id="buff-repel-time2"></div>
       </div>
     </div>
@@ -1647,8 +1647,8 @@
         <div class="buff-timer-badge" id="buff-shiny-time">--:--</div>
       </div>
       <div class="buff-tooltip">
-        <div class="buff-tooltip-name">�S� Ticket Shiny</div>
-        <div class="buff-tooltip-desc">Aumenta la probabilidad de encontrar Pokémon shiny.</div>
+        <div class="buff-tooltip-name">âœ¨ Ticket Shiny</div>
+        <div class="buff-tooltip-desc">Aumenta la probabilidad de encontrar PokÃ©mon shiny.</div>
         <div class="buff-tooltip-time" id="buff-shiny-time2"></div>
       </div>
     </div>
@@ -1659,7 +1659,7 @@
         <div class="buff-timer-badge" id="buff-amulet-time">--:--</div>
       </div>
       <div class="buff-tooltip">
-        <div class="buff-tooltip-name">�x� Moneda Amuleto</div>
+        <div class="buff-tooltip-name">ðŸ’° Moneda Amuleto</div>
         <div class="buff-tooltip-desc">Duplica el dinero ganado en combate.</div>
         <div class="buff-tooltip-time" id="buff-amulet-time2"></div>
       </div>
@@ -1667,11 +1667,11 @@
     <div class="buff-item" id="buff-lucky-egg" style="display:none;">
       <div class="buff-collapsed">
         <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucky-egg.png"
-          class="buff-sprite" alt="Huevo Suerte Pequeño">
+          class="buff-sprite" alt="Huevo Suerte PequeÃ±o">
         <div class="buff-timer-badge" id="buff-lucky-egg-time">--:--</div>
       </div>
       <div class="buff-tooltip">
-        <div class="buff-tooltip-name">�x�a Huevo Suerte Pequeño</div>
+        <div class="buff-tooltip-name">ðŸ¥š Huevo Suerte PequeÃ±o</div>
         <div class="buff-tooltip-desc">Aumenta la EXP ganada en un 50% durante 30 minutos.</div>
         <div class="buff-tooltip-time" id="buff-lucky-egg-time2"></div>
       </div>
@@ -1679,12 +1679,12 @@
     <div class="buff-item" id="buff-iv-scanner" style="display:none;">
       <div class="buff-collapsed">
         <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-radar.png"
-          class="buff-sprite" alt="Escáner de IVs">
+          class="buff-sprite" alt="EscÃ¡ner de IVs">
         <div class="buff-timer-badge" id="buff-iv-scanner-time">--:--</div>
       </div>
       <div class="buff-tooltip">
-        <div class="buff-tooltip-name">�x� Escáner de IVs</div>
-        <div class="buff-tooltip-desc">Muestra los IVs totales de Pokémon salvajes durante 1 hora.</div>
+        <div class="buff-tooltip-name">ðŸ” EscÃ¡ner de IVs</div>
+        <div class="buff-tooltip-desc">Muestra los IVs totales de PokÃ©mon salvajes durante 1 hora.</div>
         <div class="buff-tooltip-time" id="buff-iv-scanner-time2"></div>
       </div>
     </div>
@@ -1695,7 +1695,7 @@
         <div class="buff-timer-badge" id="buff-safari-time">--:--</div>
       </div>
       <div class="buff-tooltip">
-        <div class="buff-tooltip-name">�x}� Ticket Safari</div>
+        <div class="buff-tooltip-name">ðŸŽ« Ticket Safari</div>
         <div class="buff-tooltip-desc">Permite entrar a la Zona Safari por 30 minutos.</div>
         <div class="buff-tooltip-time" id="buff-safari-time2"></div>
       </div>
@@ -1707,7 +1707,7 @@
         <div class="buff-timer-badge" id="buff-cerulean-time">--:--</div>
       </div>
       <div class="buff-tooltip">
-        <div class="buff-tooltip-name">�xR� Ticket Cueva Celeste</div>
+        <div class="buff-tooltip-name">ðŸŒ€ Ticket Cueva Celeste</div>
         <div class="buff-tooltip-desc">Permite entrar a la Cueva Celeste por 30 minutos.</div>
         <div class="buff-tooltip-time" id="buff-cerulean-time2"></div>
       </div>
@@ -1719,7 +1719,7 @@
         <div class="buff-timer-badge" id="buff-articuno-time">--:--</div>
       </div>
       <div class="buff-tooltip">
-        <div class="buff-tooltip-name">�️ Ticket Articuno</div>
+        <div class="buff-tooltip-name">â„ï¸ Ticket Articuno</div>
         <div class="buff-tooltip-desc">Permite entrar a las Islas Espuma por 30 minutos.</div>
         <div class="buff-tooltip-time" id="buff-articuno-time2"></div>
       </div>
@@ -1731,7 +1731,7 @@
         <div class="buff-timer-badge" id="buff-mewtwo-time">--:--</div>
       </div>
       <div class="buff-tooltip">
-        <div class="buff-tooltip-name">�x�� Ticket Mewtwo</div>
+        <div class="buff-tooltip-name">ðŸ§¬ Ticket Mewtwo</div>
         <div class="buff-tooltip-desc">Permite entrar a la Cueva Celeste (Mewtwo) por 30 minutos.</div>
         <div class="buff-tooltip-time" id="buff-mewtwo-time2"></div>
       </div>
@@ -1743,28 +1743,28 @@
         <div class="buff-timer-badge" id="buff-incense-time">--:--</div>
       </div>
       <div class="buff-tooltip">
-        <div class="buff-tooltip-name">�x� Incienso Activo</div>
-        <div class="buff-tooltip-desc">Atrae Pokémon de un tipo específico.</div>
+        <div class="buff-tooltip-name">ðŸ’¨ Incienso Activo</div>
+        <div class="buff-tooltip-desc">Atrae PokÃ©mon de un tipo especÃ­fico.</div>
         <div class="buff-tooltip-time" id="buff-incense-time2"></div>
       </div>
     </div>
   </div>
 
   <!-- SAVE INDICATOR -->
-  <div class="save-indicator" id="save-indicator">�S Partida guardada</div>
+  <div class="save-indicator" id="save-indicator">âœ“ Partida guardada</div>
 
   <!-- EVENT DETAIL MODAL -->
   <div id="event-detail-modal" onclick="if(event.target === this) this.style.display='none'">
     <div class="event-detail-card" onclick="event.stopPropagation()">
       <button onclick="document.getElementById('event-detail-modal').style.display='none'" 
-              style="position:absolute;top:20px;right:20px;background:none;border:none;color:var(--gray);font-size:24px;cursor:pointer;">�S"</button>
+              style="position:absolute;top:20px;right:20px;background:none;border:none;color:var(--gray);font-size:24px;cursor:pointer;">âœ•</button>
       <div id="event-detail-content">
         <!-- Injected via JS -->
       </div>
       <button onclick="document.getElementById('event-detail-modal').style.display='none'" 
               style="width:100%;margin-top:10px;padding:14px;border:none;border-radius:14px;cursor:pointer;
                      font-family:'Press Start 2P',monospace;font-size:9px;background:var(--yellow);color:#111;font-weight:900;">
-        ¡ENTENDIDO!
+        Â¡ENTENDIDO!
       </button>
     </div>
   </div>
@@ -1773,18 +1773,18 @@
   <div id="faction-choice-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9000;align-items:center;justify-content:center;padding:20px;">
     <div style="background:#111;border:2px solid var(--gray);border-radius:16px;padding:24px;max-width:400px;text-align:center;position:relative;">
       <button onclick="document.getElementById('faction-choice-modal').style.display='none'" 
-        style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">�S"</button>
-      <h2 style="font-family:'Press Start 2P',monospace;font-size:14px;color:var(--yellow);margin-bottom:16px;">¡ELIGE TU BANDO!</h2>
+        style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">âœ•</button>
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:14px;color:var(--yellow);margin-bottom:16px;">Â¡ELIGE TU BANDO!</h2>
       <p id="faction-modal-desc" style="font-size:11px;color:#ccc;margin-bottom:20px;line-height:1.4;">
-        Tu bando determina con quién disputás el control de Kanto.<br>
-        <span style="color:var(--yellow);font-weight:bold;">Cambiar de bando cuesta �x�"25,000 y resetea tus puntos semanales.</span>
+        Tu bando determina con quiÃ©n disputÃ¡s el control de Kanto.<br>
+        <span style="color:var(--yellow);font-weight:bold;">Cambiar de bando cuesta ðŸª™25,000 y resetea tus puntos semanales.</span>
       </p>
       
       <div style="display:flex;gap:16px;flex-direction:column;">
         <button onclick="chooseFaction('union')" style="background:#0f172a;border:3px solid #3b82f6;border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;transition:transform 0.2s;">
           <img src="assets/factions/union.png" style="width:64px;height:64px;object-fit:contain;margin-bottom:8px;filter:drop-shadow(0 0 10px rgba(59,130,246,0.6));">
-          <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#3b82f6;margin-bottom:8px;">Team Unión</span>
-          <span style="font-size:10px;color:#cbd5e1;">Amistad. Armonía. Compañerismo.</span>
+          <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#3b82f6;margin-bottom:8px;">Team UniÃ³n</span>
+          <span style="font-size:10px;color:#cbd5e1;">Amistad. ArmonÃ­a. CompaÃ±erismo.</span>
         </button>
         
         <button onclick="chooseFaction('poder')" style="background:#2a0f0f;border:3px solid #ef4444;border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;transition:transform 0.2s;">
@@ -1799,13 +1799,13 @@
   <!-- WAR SHOP MODAL -->
   <div id="war-shop-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9000;align-items:center;justify-content:center;padding:20px;">
     <div style="background:#111;border:2px solid var(--yellow);border-radius:16px;padding:24px;width:100%;max-width:400px;max-height:80vh;overflow-y:auto;position:relative;">
-      <button onclick="closeWarShop()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">�S"</button>
-      <h2 style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin-bottom:12px;">�x: Tienda de Guerra</h2>
+      <button onclick="closeWarShop()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer;">âœ•</button>
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin-bottom:12px;">ðŸ›’ Tienda de Guerra</h2>
       <div style="font-size:12px;color:white;margin-bottom:16px;background:rgba(255,255,255,0.05);padding:10px;border-radius:8px;">
         <i class="fa-solid fa-bolt-lightning"></i> Saldo: <strong id="war-shop-coins-modal" style="color:var(--yellow);">0</strong> monedas
       </div>
       <div id="war-shop-items">
-        <!-- Generado dinámicamente -->
+        <!-- Generado dinÃ¡micamente -->
       </div>
     </div>
   </div>
@@ -1813,11 +1813,11 @@
   <!-- SESSION BLOCKED MODAL -->
   <div id="session-blocked-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:20000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);">
     <div style="background:var(--card);border:2px solid var(--red);border-radius:24px;padding:40px 24px;width:100%;max-width:400px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.5);animation: scaleIn 0.3s ease;">
-      <div style="font-size:60px;margin-bottom:20px;filter:drop-shadow(0 0 15px rgba(255,59,59,0.4));">�a�️</div>
-      <h2 style="font-family:'Press Start 2P',monospace;font-size:14px;color:var(--red);margin-bottom:20px;line-height:1.6;">SESI�N ABIERTA EN OTRO LUGAR</h2>
-      <p style="font-size:14px;color:var(--gray);margin-bottom:32px;line-height:1.5;">Parece que abriste el juego en otra pestaña o navegador. Para jugar aquí, debés cerrar las otras instancias.</p>
-      <button onclick="location.reload()" style="width:100%;padding:18px;background:var(--red);color:white;border:none;border-radius:16px;font-family:'Press Start 2P',monospace;font-size:11px;cursor:pointer;font-weight:900;box-shadow:0 10px 20px rgba(255,59,59,0.2);transition:all 0.2s;">�� USAR AQUÍ</button>
-      <p style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:20px;font-family:'Press Start 2P',monospace;">ID de sesión: <span id="session-debug-id">...</span></p>
+      <div style="font-size:60px;margin-bottom:20px;filter:drop-shadow(0 0 15px rgba(255,59,59,0.4));">âš ï¸</div>
+      <h2 style="font-family:'Press Start 2P',monospace;font-size:14px;color:var(--red);margin-bottom:20px;line-height:1.6;">SESIÃ“N ABIERTA EN OTRO LUGAR</h2>
+      <p style="font-size:14px;color:var(--gray);margin-bottom:32px;line-height:1.5;">Parece que abriste el juego en otra pestaÃ±a o navegador. Para jugar aquÃ­, debÃ©s cerrar las otras instancias.</p>
+      <button onclick="location.reload()" style="width:100%;padding:18px;background:var(--red);color:white;border:none;border-radius:16px;font-family:'Press Start 2P',monospace;font-size:11px;cursor:pointer;font-weight:900;box-shadow:0 10px 20px rgba(255,59,59,0.2);transition:all 0.2s;">â–¶ USAR AQUÃ</button>
+      <p style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:20px;font-family:'Press Start 2P',monospace;">ID de sesiÃ³n: <span id="session-debug-id">...</span></p>
     </div>
   </div>
 

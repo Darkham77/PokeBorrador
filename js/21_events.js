@@ -4,26 +4,26 @@
 const ADMIN_EMAIL_EV = 'kodrol77@gmail.com';
 
 const ALL_PRIZE_ITEMS = [
-  'Poción', 'Super Poción', 'Hiper Poción', 'Poción Máxima',
-  'Revivir', 'Revivir Máximo', 'Elixir', 'Elixir Máximo',
-  'Antídoto', 'Cura Total', 'Repelente', 'Superrepelente', 'Máximo Repelente',
-  'Pokéball', 'Súper Ball', 'Ultra Ball', 'Red Ball', 'Ocaso Ball', 'Turno Ball', 'Master Ball',
+  'PociÃ³n', 'Super PociÃ³n', 'Hiper PociÃ³n', 'PociÃ³n MÃ¡xima',
+  'Revivir', 'Revivir MÃ¡ximo', 'Elixir', 'Elixir MÃ¡ximo',
+  'AntÃ­doto', 'Cura Total', 'Repelente', 'Superrepelente', 'MÃ¡ximo Repelente',
+  'PokÃ©ball', 'SÃºper Ball', 'Ultra Ball', 'Red Ball', 'Ocaso Ball', 'Turno Ball', 'Master Ball',
   'Piedra Eterna', 'Baya de Oro',
   'Pesa Recia', 'Brazal Recio', 'Cinto Recio', 'Lente Recia', 'Banda Recia', 'Franja Recia',
   'Restos', 'Cascabel Concha', 'Lente Zoom', 'Banda Focus',
-  'Compartir EXP', 'Subida PP', 'Caramelo Raro', 'Huevo Suerte Pequeño', 'Cinta Elegida',
-  'MT14 Ventisca', 'MT27 Retribución'
+  'Compartir EXP', 'Subida PP', 'Caramelo Raro', 'Huevo Suerte PequeÃ±o', 'Cinta Elegida',
+  'MT14 Ventisca', 'MT27 RetribuciÃ³n'
 ];
 
 const EV_NATURES = [
-  'Audaz', 'Firme', 'Pícaro', 'Manso', 'Serio', 'Osado', 'Plácido',
-  'Agitado', 'Jovial', 'Ingenuo', 'Modesto', 'Moderado', 'Raro', 'Dócil',
-  'Tímido', 'Activo', 'Alocado', 'Tranquilo', 'Grosero', 'Cauto'
+  'Audaz', 'Firme', 'PÃ­caro', 'Manso', 'Serio', 'Osado', 'PlÃ¡cido',
+  'Agitado', 'Jovial', 'Ingenuo', 'Modesto', 'Moderado', 'Raro', 'DÃ³cil',
+  'TÃ­mido', 'Activo', 'Alocado', 'Tranquilo', 'Grosero', 'Cauto'
 ];
 
-const EV_DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const EV_DAY_NAMES = ['Dom', 'Lun', 'Mar', 'MiÃ©', 'Jue', 'Vie', 'SÃ¡b'];
 
-// ���� Estado del motor ��������������������������������������������������������������������������������������������������������������������
+// â”€â”€ Estado del motor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _activeEvents = [];
 let _eventsLoaded = false;
 let _eventPollInterval = null;
@@ -34,14 +34,14 @@ let _adminEntries = [];
 let _currentPrizeRank = 'first';
 let _currentCompetitionId = 'hora_magikarp';
 window._currentCompetitionId = _currentCompetitionId; // Aseguramos acceso global
-const _prizeTemplate = () => ({ type: 'money', amount: 0, item: 'Pokéball', qty: 1, species: 'magikarp', level: 5, nature: 'Serio', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, shiny: false });
+const _prizeTemplate = () => ({ type: 'money', amount: 0, item: 'PokÃ©ball', qty: 1, species: 'magikarp', level: 5, nature: 'Serio', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, shiny: false });
 let _prizeStates = {
   first: _prizeTemplate(),
   second: _prizeTemplate(),
   third: _prizeTemplate()
 };
 
-// ���� Auth token ��������������������������������������������������������������������������������������������������������������������������������
+// â”€â”€ Auth token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function _evGetToken() {
   try {
     const { data: { session } } = await window.sb.auth.getSession();
@@ -236,7 +236,7 @@ function _renderAdminRankedTab() {
     </div>
   `;
 }
-// ���� Motor de eventos (Supabase) ������������������������������������������������������������������������������������������������
+// â”€â”€ Motor de eventos (Supabase) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function loadActiveEvents() {
   try {
     const { data: events, error } = await window.sb.from('events_config').select('*');
@@ -245,7 +245,7 @@ async function loadActiveEvents() {
     // 1. Eventos actualmente activos por horario
     const active = events.filter(ev => _isEventActiveNow(ev));
 
-    // 2. Buscar eventos terminados en las últimas 24hs que tengan resultados
+    // 2. Buscar eventos terminados en las Ãºltimas 24hs que tengan resultados
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { data: results } = await window.sb.from('competition_results')
       .select('*')
@@ -254,7 +254,7 @@ async function loadActiveEvents() {
 
     const finished = [];
     if (results && results.length > 0) {
-      // Evitar duplicados: si el evento está activo, no lo mostramos como terminado
+      // Evitar duplicados: si el evento estÃ¡ activo, no lo mostramos como terminado
       const activeIds = new Set(active.map(a => a.id));
       const processedIds = new Set();
 
@@ -279,7 +279,7 @@ async function loadActiveEvents() {
     _eventsLoaded = true;
     _updateEventBanner();
 
-    // Verificación automática de premios al cargar/actualizar
+    // VerificaciÃ³n automÃ¡tica de premios al cargar/actualizar
     checkAndDistributePrizes(events);
   } catch (e) {
     console.warn('[Events] Error:', e);
@@ -380,12 +380,12 @@ function _startEventPolling() {
   _eventPollInterval = setInterval(loadActiveEvents, 5 * 60 * 1000);
 }
 
-// ���� Banner de eventos activos ��������������������������������������������������������������������������������������������������
+// â”€â”€ Banner de eventos activos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _updateEventBanner() {
   // Ahora los eventos se muestran como Buffs dorados en el panel lateral
   if (typeof updateBuffPanel === 'function') updateBuffPanel();
   
-  // Refrescar la pestaña de Mapa si está abierta para actualizar el carrusel del HUD
+  // Refrescar la pestaÃ±a de Mapa si estÃ¡ abierta para actualizar el carrusel del HUD
   const mapTab = document.getElementById('tab-map');
   if (mapTab && mapTab.style.display !== 'none') {
     if (typeof renderMaps === 'function') renderMaps();
@@ -406,17 +406,17 @@ function showEventDetail(evId) {
 
   const cfg = ev.config || {};
 
-  // ���� Bonificaciones activas ����������������������������������������������������������������������������
+  // â”€â”€ Bonificaciones activas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const bonusMap = {
-    expMult:      { label: '�a� EXP', color: '#a78bfa' },
-    moneyMult:    { label: '�x� Dinero', color: '#fbbf24' },
-    bcMult:       { label: '�x�" Battle Coins', color: '#60a5fa' },
-    shinyMult:    { label: '�S� Shiny Rate (Salvaje)', color: '#f472b6' },
-    eggShinyMult: { label: '�S� Shiny Rate (Huevos)', color: '#f472b6' },
-    hatchMult:    { label: '�x�a Eclosión Rápida', color: '#34d399' },
-    rivalMult:    { label: '�x�� Aparición de Rival', color: '#ef4444' },
-    trainerMult:  { label: '�x} Aparición de Entrenadores', color: '#3b82f6' },
-    fishingMult:  { label: '�x}� Eventos de Pesca', color: '#0ea5e9' },
+    expMult:      { label: 'âš¡ EXP', color: '#a78bfa' },
+    moneyMult:    { label: 'ðŸ’° Dinero', color: '#fbbf24' },
+    bcMult:       { label: 'ðŸª™ Battle Coins', color: '#60a5fa' },
+    shinyMult:    { label: 'âœ¨ Shiny Rate (Salvaje)', color: '#f472b6' },
+    eggShinyMult: { label: 'âœ¨ Shiny Rate (Huevos)', color: '#f472b6' },
+    hatchMult:    { label: 'ðŸ¥š EclosiÃ³n RÃ¡pida', color: '#34d399' },
+    rivalMult:    { label: 'ðŸ˜ˆ ApariciÃ³n de Rival', color: '#ef4444' },
+    trainerMult:  { label: 'ðŸŽ’ ApariciÃ³n de Entrenadores', color: '#3b82f6' },
+    fishingMult:  { label: 'ðŸŽ£ Eventos de Pesca', color: '#0ea5e9' },
   };
 
 
@@ -436,35 +436,35 @@ function showEventDetail(evId) {
        </div>`
     : '';
 
-  // ���� Premios del podio ��������������������������������������������������������������������������������������
+  // â”€â”€ Premios del podio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let prizeHtml = '';
   if (cfg.hasCompetition !== false && cfg.prizes && (cfg.prizes.first || cfg.prizes.second || cfg.prizes.third)) {
     
     const getPrizeDesc = (p) => {
       if (!p) return null;
-      if (p.type === 'money') return `�x� ��${(p.amount || 0).toLocaleString()}`;
-      if (p.type === 'bc') return `�x�" ${(p.amount || 0).toLocaleString()} BC`;
-      if (p.type === 'item') return `�x� ${p.qty || 1}x ${p.item}`;
+      if (p.type === 'money') return `ðŸ’° â‚½${(p.amount || 0).toLocaleString()}`;
+      if (p.type === 'bc') return `ðŸª™ ${(p.amount || 0).toLocaleString()} BC`;
+      if (p.type === 'item') return `ðŸ“¦ ${p.qty || 1}x ${p.item}`;
       if (p.type === 'pokemon') {
         const name = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[p.species]?.name) || p.species;
-        return `�x�� ${name}${p.shiny ? ' �S�' : ''} Nv.${p.level}`;
+        return `ðŸ¾ ${name}${p.shiny ? ' âœ¨' : ''} Nv.${p.level}`;
       }
       return null;
     };
 
     let prizesList = '';
     const p1 = getPrizeDesc(cfg.prizes.first);
-    if (p1) prizesList += `<div style="font-size:13px;color:#fde68a;font-weight:700;margin-bottom:8px;">�x�! 1° � ${p1}</div>`;
+    if (p1) prizesList += `<div style="font-size:13px;color:#fde68a;font-weight:700;margin-bottom:8px;">ðŸ¥‡ 1Â° â€” ${p1}</div>`;
     
     const p2 = getPrizeDesc(cfg.prizes.second);
-    if (p2) prizesList += `<div style="font-size:11px;color:#cbd5e1;font-weight:600;margin-bottom:6px;">�x�� 2° � ${p2}</div>`;
+    if (p2) prizesList += `<div style="font-size:11px;color:#cbd5e1;font-weight:600;margin-bottom:6px;">ðŸ¥ˆ 2Â° â€” ${p2}</div>`;
     
     const p3 = getPrizeDesc(cfg.prizes.third);
-    if (p3) prizesList += `<div style="font-size:10px;color:#b45309;font-weight:600;">�x�0 3° � ${p3}</div>`;
+    if (p3) prizesList += `<div style="font-size:10px;color:#b45309;font-weight:600;">ðŸ¥‰ 3Â° â€” ${p3}</div>`;
 
     prizeHtml = `
       <div style="margin-bottom:16px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">�x�  PREMIOS DEL PODIO</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">ðŸ† PREMIOS DEL PODIO</div>
         <div style="background:linear-gradient(135deg,rgba(251,191,36,0.12),rgba(245,158,11,0.06));
                     border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:14px 16px;">
           ${prizesList}
@@ -472,15 +472,15 @@ function showEventDetail(evId) {
       </div>`;
   }
 
-  // ���� Métrica del concurso ����������������������������������������������������������������������������������
+  // â”€â”€ MÃ©trica del concurso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let metricHtml = '';
   if (cfg.hasCompetition !== false) {
     const sortBy = cfg.sortBy;
     if (sortBy) {
       const metricLabels = {
-        'data.total_ivs': '�x�� Mayor cantidad de IVs totales',
-        'data.level': '�x� Mayor Nivel',
-        'data.isShiny': '�S� Criterio Shiny',
+        'data.total_ivs': 'ðŸ§¬ Mayor cantidad de IVs totales',
+        'data.level': 'ðŸ“ˆ Mayor Nivel',
+        'data.isShiny': 'âœ¨ Criterio Shiny',
       };
       
       let metricText = metricLabels[sortBy] || sortBy;
@@ -500,17 +500,17 @@ function showEventDetail(evId) {
     }
   }
 
-  // ���� Horario ������������������������������������������������������������������������������������������������������������
+  // â”€â”€ Horario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let schedHtml = '';
   const sched = ev.schedule;
   if (sched?.type === 'weekly' && sched.days?.length) {
-    const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    const dayNames = ['Dom','Lun','Mar','MiÃ©','Jue','Vie','SÃ¡b'];
     const days = sched.days.map(d => dayNames[d]).join(', ');
     const hours = (sched.startHour !== undefined && sched.endHour !== undefined)
-      ? ` · ${sched.startHour}:00 � ${sched.endHour}:00 hs (ARG)` : '';
+      ? ` Â· ${sched.startHour}:00 â€“ ${sched.endHour}:00 hs (ARG)` : '';
     schedHtml = `
       <div style="margin-bottom:8px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">⏰ HORARIO</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#64748b;margin-bottom:8px;letter-spacing:1px;">â° HORARIO</div>
         <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 14px;font-size:12px;color:#94a3b8;">
           ${days}${hours}
         </div>
@@ -519,12 +519,12 @@ function showEventDetail(evId) {
     schedHtml = `
       <div style="margin-bottom:8px;">
         <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#4ade80;text-align:center;">
-          �xx� Evento activo ahora mismo
+          ðŸŸ¢ Evento activo ahora mismo
         </div>
       </div>`;
   }
 
-  // ���� Imagen / Banner ��������������������������������������������������������������������������������������������
+  // â”€â”€ Imagen / Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let bannerHtml = '';
   if (cfg.banner) {
     bannerHtml = `
@@ -536,10 +536,10 @@ function showEventDetail(evId) {
   content.innerHTML = `
     ${bannerHtml}
     <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:52px;margin-bottom:10px;">${ev.icon || '�x}�'}</div>
+      <div style="font-size:52px;margin-bottom:10px;">${ev.icon || 'ðŸŽ'}</div>
       <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fbbf24;
                   margin-bottom:10px;line-height:1.5;">${ev.name}</div>
-      <div style="font-size:13px;color:#94a3b8;line-height:1.6;">${ev.description || '¡Aprovechá este evento especial mientras esté activo!'}</div>
+      <div style="font-size:13px;color:#94a3b8;line-height:1.6;">${ev.description || 'Â¡AprovechÃ¡ este evento especial mientras estÃ© activo!'}</div>
     </div>
     <div style="height:1px;background:rgba(255,255,255,0.08);margin-bottom:16px;"></div>
     ${bonusHtml}${prizeHtml}${metricHtml}${schedHtml}
@@ -549,7 +549,7 @@ function showEventDetail(evId) {
 }
 
 
-// ���� Concursos � Registro genérico ������������������������������������������������������������������������������������������
+// â”€â”€ Concursos â€” Registro genÃ©rico â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function submitCompetitionEntry(pokemon, eventId) {
   if (!isEventActive(eventId) || !window.currentUser) return;
   const ev = _activeEvents.find(e => e.id === eventId);
@@ -565,7 +565,7 @@ async function submitCompetitionEntry(pokemon, eventId) {
       .select('id, data')
       .eq('event_id', eventId)
       .eq('player_id', window.currentUser.id)
-      .maybeSingle(); // maybeSingle es más limpio si puede no existir
+      .maybeSingle(); // maybeSingle es mÃ¡s limpio si puede no existir
 
     if (fetchErr && fetchErr.code !== 'PGRST116') {
       console.warn('[Events] Error al buscar registro previo:', fetchErr);
@@ -574,7 +574,7 @@ async function submitCompetitionEntry(pokemon, eventId) {
     if (existing) {
       const oldScore = existing.data?.total_ivs || 0;
       if (oldScore >= totalIvs) {
-        notify('Ya tenés una inscripción mejor en este concurso.', '�x� ');
+        notify('Ya tenÃ©s una inscripciÃ³n mejor en este concurso.', 'ðŸ†');
         return;
       }
     }
@@ -603,18 +603,18 @@ async function submitCompetitionEntry(pokemon, eventId) {
 
     if (upsertErr) throw upsertErr;
 
-    notify(`¡Registro exitoso en ${ev.name}! Puntuación: ${totalIvs}`, ev.icon || '�x� ');
+    notify(`Â¡Registro exitoso en ${ev.name}! PuntuaciÃ³n: ${totalIvs}`, ev.icon || 'ðŸ†');
   } catch (e) {
     console.error('[Events] Error detallado al inscribir:', e);
-    notify('Error al inscribir en el concurso.', '�R');
+    notify('Error al inscribir en el concurso.', 'âŒ');
   }
 }
 
-// ���� Aliases para compatibilidad con código viejo (si lo hubiera) ����������������������
+// â”€â”€ Aliases para compatibilidad con cÃ³digo viejo (si lo hubiera) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function submitMagikarpEntry(pokemon) { await submitCompetitionEntry(pokemon, 'hora_magikarp'); }
 
 
-// ���� Verificación de récords para todos los eventos activos ��������������������������������������
+// â”€â”€ VerificaciÃ³n de rÃ©cords para todos los eventos activos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function checkCompetitionsAndPrompt(pokemon) {
   if (!window.currentUser || _activeEvents.length === 0) return;
   
@@ -641,19 +641,19 @@ async function checkCompetitionsAndPrompt(pokemon) {
         .eq('player_id', window.currentUser.id)
         .single();
       
-      // Si existe un registro y el nuevo Pokémon no es mejor, ignorar
+      // Si existe un registro y el nuevo PokÃ©mon no es mejor, ignorar
       if (existing && (existing.data?.total_ivs || 0) >= totalIvs) continue;
       
-      // Si el nuevo es mejor, mostrar el diálogo específico para este evento
+      // Si el nuevo es mejor, mostrar el diÃ¡logo especÃ­fico para este evento
       promptCompetitionSubmit(pokemon, ev);
     } catch (e) {
-      console.warn(`[Events] Error verificando récord para ${ev.id}:`, e);
+      console.warn(`[Events] Error verificando rÃ©cord para ${ev.id}:`, e);
       promptCompetitionSubmit(pokemon, ev);
     }
   }
 }
 
-// Alias para compatibilidad con código viejo en js/07_battle.js
+// Alias para compatibilidad con cÃ³digo viejo en js/07_battle.js
 async function checkMagikarpAndPrompt(pokemon) { await checkCompetitionsAndPrompt(pokemon); }
 
 function promptCompetitionSubmit(pokemon, event) {
@@ -662,19 +662,19 @@ function promptCompetitionSubmit(pokemon, event) {
   ov.id = `comp-submit-overlay-${event.id}`;
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.2s;';
   
-  const icon = event.icon || '�x� ';
+  const icon = event.icon || 'ðŸ†';
   const name = event.name || 'Concurso';
 
   ov.innerHTML = `
     <div style="background:#1e293b;border-radius:20px;padding:24px;max-width:360px;width:100%;border:2px solid rgba(251,191,36,0.2);text-align:center;box-shadow:0 0 40px rgba(0,0,0,0.5);">
       <div style="font-size:40px;margin-bottom:12px;">${icon}</div>
       <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#fbbf24;margin-bottom:12px;">${name.toUpperCase()}</div>
-      <div style="font-size:12px;color:#e2e8f0;margin-bottom:8px;">¡Capturaste un ${pokemon.name} con <strong style="color:#f59e0b;">${totalIvs}/186 IVs</strong>!</div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:20px;">¿Querés inscribirlo en el concurso?${pokemon.isShiny ? ' <span style="color:#fbbf24;">�S� ¡Es Shiny!</span>' : ''}</div>
+      <div style="font-size:12px;color:#e2e8f0;margin-bottom:8px;">Â¡Capturaste un ${pokemon.name} con <strong style="color:#f59e0b;">${totalIvs}/186 IVs</strong>!</div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:20px;">Â¿QuerÃ©s inscribirlo en el concurso?${pokemon.isShiny ? ' <span style="color:#fbbf24;">âœ¨ Â¡Es Shiny!</span>' : ''}</div>
       <div style="display:flex;gap:10px;">
         <button id="btn-submit-comp-${event.id}"
           style="flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;font-weight:bold;">
-          �x�  INSCRIBIR
+          ðŸ† INSCRIBIR
         </button>
         <button onclick="this.closest('#comp-submit-overlay-${event.id}').remove()"
           style="flex:1;padding:12px;border:none;border-radius:12px;background:rgba(255,255,255,0.07);color:#9ca3af;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
@@ -692,7 +692,7 @@ function promptCompetitionSubmit(pokemon, event) {
 }
 
 
-// ���� Entrega de premios ����������������������������������������������������������������������������������������������������������������
+// â”€â”€ Entrega de premios â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function checkPendingAwards() {
   if (!window.currentUser) return;
   try {
@@ -705,13 +705,13 @@ async function checkPendingAwards() {
     
     if (error) throw error;
     state._pendingAwards = awards || [];
-    _renderPendingAwardBanner(); // Mostrar/ocultar banner según premios pendientes
+    _renderPendingAwardBanner(); // Mostrar/ocultar banner segÃºn premios pendientes
   } catch (e) {
     console.warn('[Events] Error al verificar premios pendientes:', e);
   }
 }
 
-// ���� Banner de premio pendiente ������������������������������������������������������������������������������������������������
+// â”€â”€ Banner de premio pendiente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _renderPendingAwardBanner() {
   const existing = document.getElementById('pending-award-banner');
   const awards = state._pendingAwards || [];
@@ -721,9 +721,9 @@ function _renderPendingAwardBanner() {
     return;
   }
 
-  if (existing) return; // Ya está visible, no duplicar
+  if (existing) return; // Ya estÃ¡ visible, no duplicar
 
-  // Agregar la animación de pulso si no existe
+  // Agregar la animaciÃ³n de pulso si no existe
   if (!document.getElementById('award-banner-style')) {
     const style = document.createElement('style');
     style.id = 'award-banner-style';
@@ -765,16 +765,16 @@ function _renderPendingAwardBanner() {
 
   const count = awards.length;
   banner.innerHTML = `
-    <span style="font-size:24px;">�x� </span>
+    <span style="font-size:24px;">ðŸ†</span>
     <div>
       <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fff;letter-spacing:1px;">
-        ${count > 1 ? `¡TEN�0S ${count} PREMIOS!` : '¡HAS GANADO!'}
+        ${count > 1 ? `Â¡TENÃ‰S ${count} PREMIOS!` : 'Â¡HAS GANADO!'}
       </div>
       <div style="font-size:10px;color:rgba(255,255,255,0.85);margin-top:3px;">
-        Tocá aquí para reclamar tus premios
+        TocÃ¡ aquÃ­ para reclamar tus premios
       </div>
     </div>
-    <span style="font-size:20px;">�x}�</span>
+    <span style="font-size:20px;">ðŸŽ</span>
   `;
 
   banner.onclick = () => _openPendingAwardsModal();
@@ -795,12 +795,12 @@ function _openPendingAwardsModal() {
   const rows = awards.map(a => {
     const prize = a.prize || {};
     let desc = '';
-    if (prize.type === 'money') desc = `�x� ��${(prize.amount || 0).toLocaleString()}`;
-    else if (prize.type === 'bc') desc = `�x�" ${(prize.amount || 0).toLocaleString()} Battle Coins`;
-    else if (prize.type === 'item') desc = `�x� ${prize.qty || 1}x ${prize.item}`;
+    if (prize.type === 'money') desc = `ðŸ’° â‚½${(prize.amount || 0).toLocaleString()}`;
+    else if (prize.type === 'bc') desc = `ðŸª™ ${(prize.amount || 0).toLocaleString()} Battle Coins`;
+    else if (prize.type === 'item') desc = `ðŸ“¦ ${prize.qty || 1}x ${prize.item}`;
     else if (prize.type === 'pokemon') {
       const name = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[prize.species]?.name) || prize.species;
-      desc = `�x�� ${name}${prize.shiny ? ' �S�' : ''} Nv.${prize.level}`;
+      desc = `ðŸ¾ ${name}${prize.shiny ? ' âœ¨' : ''} Nv.${prize.level}`;
     }
     const fecha = new Date(a.awarded_at).toLocaleDateString('es-AR');
     return `
@@ -811,7 +811,7 @@ function _openPendingAwardsModal() {
         </div>
         <button onclick="claimAward('${a.id}')" 
           style="padding:10px 14px;border:none;border-radius:12px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;white-space:nowrap;flex-shrink:0;">
-          ¡RECLAMAR!
+          Â¡RECLAMAR!
         </button>
       </div>`;
   }).join('');
@@ -819,9 +819,9 @@ function _openPendingAwardsModal() {
   ov.innerHTML = `
     <div style="background:#0f172a;border-radius:24px;padding:28px;width:100%;max-width:480px;border:2px solid rgba(251,191,36,0.4);box-shadow:0 0 60px rgba(251,191,36,0.15);">
       <div style="text-align:center;margin-bottom:24px;">
-        <div style="font-size:44px;margin-bottom:8px;">�x� </div>
-        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#fbbf24;margin-bottom:6px;">¡PREMIOS PENDIENTES!</div>
-        <div style="font-size:11px;color:#64748b;">Tenés ${awards.length} premio(s) esperándote</div>
+        <div style="font-size:44px;margin-bottom:8px;">ðŸ†</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#fbbf24;margin-bottom:6px;">Â¡PREMIOS PENDIENTES!</div>
+        <div style="font-size:11px;color:#64748b;">TenÃ©s ${awards.length} premio(s) esperÃ¡ndote</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">${rows}</div>
       <button onclick="document.getElementById('pending-awards-modal').remove()"
@@ -833,7 +833,7 @@ function _openPendingAwardsModal() {
   document.body.appendChild(ov);
 }
 
-// IDs de premios que están siendo procesados (evita doble-click)
+// IDs de premios que estÃ¡n siendo procesados (evita doble-click)
 const _claimingIds = new Set();
 
 async function claimAward(awardId) {
@@ -842,7 +842,7 @@ async function claimAward(awardId) {
   if (_claimingIds.has(awardId)) return;
   _claimingIds.add(awardId);
 
-  // Deshabilitar el botón correspondiente inmediatamente
+  // Deshabilitar el botÃ³n correspondiente inmediatamente
   document.querySelectorAll(`[onclick*="claimAward('${awardId}')"]`).forEach(btn => {
     btn.disabled = true;
     btn.textContent = '...';
@@ -853,12 +853,12 @@ async function claimAward(awardId) {
     const award = state._pendingAwards?.find(a => a.id === awardId);
     if (!award) { _claimingIds.delete(awardId); return; }
 
-    // Eliminar del array local ANTES de entregar (previene segunda ejecución)
+    // Eliminar del array local ANTES de entregar (previene segunda ejecuciÃ³n)
     state._pendingAwards = state._pendingAwards.filter(a => a.id !== awardId);
 
     const delivered = await _deliverAward(award);
     if (delivered) {
-      notify('¡Premio reclamado con éxito!', '�x}0');
+      notify('Â¡Premio reclamado con Ã©xito!', 'ðŸŽ‰');
       _renderPendingAwardBanner();
       const modal = document.getElementById('pending-awards-modal');
       if (modal) {
@@ -867,12 +867,12 @@ async function claimAward(awardId) {
       }
       if (typeof renderMaps === 'function') renderMaps();
     } else {
-      // Si falló la entrega, restaurar el award
+      // Si fallÃ³ la entrega, restaurar el award
       state._pendingAwards = [...(state._pendingAwards || []), award];
     }
   } catch (e) {
     console.warn('[Events] Error al reclamar premio:', e);
-    notify('Error al reclamar el premio.', '�R');
+    notify('Error al reclamar el premio.', 'âŒ');
   } finally {
     _claimingIds.delete(awardId);
   }
@@ -887,11 +887,11 @@ async function _deliverAward(award) {
     const { error: claimErr } = await window.sb.from('awards').update({
       claimed: true,
       claimed_at: new Date().toISOString()
-    }).eq('id', award.id).eq('claimed', false); // La condición .eq('claimed', false) es la segunda capa de protección
+    }).eq('id', award.id).eq('claimed', false); // La condiciÃ³n .eq('claimed', false) es la segunda capa de protecciÃ³n
 
     if (claimErr) {
       console.warn('[Events] Error al marcar claimed:', claimErr);
-      return false; // No continuar si falló el marqueo
+      return false; // No continuar si fallÃ³ el marqueo
     }
   } catch (e) {
     console.warn('[Events] Error actualizando award:', e);
@@ -903,16 +903,16 @@ async function _deliverAward(award) {
 
   if (prize.type === 'money') {
     state.money = (state.money || 0) + (prize.amount || 0);
-    notify(`�x�  Premio de torneo: ��${(prize.amount || 0).toLocaleString()}`, '�x}0');
+    notify(`ðŸ† Premio de torneo: â‚½${(prize.amount || 0).toLocaleString()}`, 'ðŸŽ‰');
     delivered = true;
   } else if (prize.type === 'bc') {
     state.battleCoins = (state.battleCoins || 0) + (prize.amount || 0);
-    notify(`�x�  Premio de torneo: ${(prize.amount || 0).toLocaleString()} Battle Coins`, '�x}0');
+    notify(`ðŸ† Premio de torneo: ${(prize.amount || 0).toLocaleString()} Battle Coins`, 'ðŸŽ‰');
     delivered = true;
   } else if (prize.type === 'item') {
     state.inventory = state.inventory || {};
     state.inventory[prize.item] = (state.inventory[prize.item] || 0) + (prize.qty || 1);
-    notify(`�x�  Premio de torneo: ${prize.qty || 1}x ${prize.item}`, '�x}0');
+    notify(`ðŸ† Premio de torneo: ${prize.qty || 1}x ${prize.item}`, 'ðŸŽ‰');
     delivered = true;
   } else if (prize.type === 'pokemon') {
     if (typeof makePokemon === 'function' && POKEMON_DB[prize.species]) {
@@ -927,8 +927,8 @@ async function _deliverAward(award) {
       poke.originalTrainer = 'EVENTO';
       state.box = state.box || [];
       state.box.push(poke);
-      const shinyTag = prize.shiny ? ' �S�' : '';
-      notify(`�x�  Premio de torneo: ${POKEMON_DB[prize.species]?.name || prize.species}${shinyTag} añadido a tu PC`, '�x}0');
+      const shinyTag = prize.shiny ? ' âœ¨' : '';
+      notify(`ðŸ† Premio de torneo: ${POKEMON_DB[prize.species]?.name || prize.species}${shinyTag} aÃ±adido a tu PC`, 'ðŸŽ‰');
       delivered = true;
     }
   }
@@ -941,9 +941,9 @@ async function _deliverAward(award) {
   return delivered;
 }
 
-// ���� Panel de Administrador ��������������������������������������������������������������������������������������������������������
+// â”€â”€ Panel de Administrador â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function openAdminPanel() {
-  if (!isAdminUser()) { notify('Sin acceso.', '�xa�'); return; }
+  if (!isAdminUser()) { notify('Sin acceso.', 'ðŸš«'); return; }
   const existing = document.getElementById('admin-panel-overlay');
   if (existing) existing.remove();
 
@@ -959,7 +959,7 @@ async function openAdminPanel() {
     await _evLoadEntries();
   } catch (e) {
     console.error('[Admin] Error:', e);
-    notify('Error: ' + e.message, '�R');
+    notify('Error: ' + e.message, 'âŒ');
   }
 }
 
@@ -984,25 +984,25 @@ function _renderAdminPanel() {
       <!-- Header -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:28px;">�x:�️</span>
+          <span style="font-size:28px;">ðŸ›¡ï¸</span>
           <div>
             <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#f59e0b;">ADMINISTRADOR</div>
             <div style="font-size:9px;color:#6b7280;margin-top:3px;">Solo visible para ti (Online)</div>
           </div>
         </div>
         <button onclick="document.getElementById('admin-panel-overlay').remove()"
-          style="background:none;border:none;color:#6b7280;font-size:24px;cursor:pointer;line-height:1;">�S"</button>
+          style="background:none;border:none;color:#6b7280;font-size:24px;cursor:pointer;line-height:1;">âœ•</button>
       </div>
 
       <!-- Tabs -->
       <div style="display:flex;background:rgba(255,255,255,0.05);border-radius:12px;padding:4px;margin-bottom:20px;gap:4px;">
         <button onclick="window._evAdminSwitchTab('events')"
           style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;background:${tab1Active ? '#f59e0b' : 'transparent'};color:${tab1Active ? '#000' : '#9ca3af'};">
-          �a"️ EVENTOS
+          âš™ï¸ EVENTOS
         </button>
         <button onclick="window._evAdminSwitchTab('competition')"
           style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;background:${tab2Active ? '#22c55e' : 'transparent'};color:${tab2Active ? '#000' : '#9ca3af'};">
-          �x}� CONCURSO
+          ðŸŽ£ CONCURSO
         </button>
               <button onclick="window._evAdminSwitchTab('ranked')"
           style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;background:${tab3Active ? '#60a5fa' : 'transparent'};color:${tab3Active ? '#000' : '#9ca3af'};">
@@ -1018,11 +1018,11 @@ function _renderAdminPanel() {
         <div style="display:flex;gap:10px;margin-top:16px;">
           <button onclick="window._evAdminAddEvent()"
             style="flex:1;padding:14px;border:none;border-radius:14px;background:rgba(255,255,255,0.08);color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">
-            �~" CREAR EVENTO
+            âž• CREAR EVENTO
           </button>
           <button onclick="window._evAdminSave()"
             style="flex:1;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">
-            �x� GUARDAR CAMBIOS
+            ðŸ’¾ GUARDAR CAMBIOS
           </button>
         </div>
       </div>
@@ -1043,7 +1043,7 @@ function _renderAdminPanel() {
   window._evAdminSwitchTab = (tab) => {
     _adminTab = tab;
     _renderAdminPanel();
-    // Cargamos los participantes con un pequeño delay para que el DOM esté listo
+    // Cargamos los participantes con un pequeÃ±o delay para que el DOM estÃ© listo
     if (tab === 'competition') {
       setTimeout(() => _evLoadEntriesGlobal(), 100);
     }
@@ -1096,8 +1096,8 @@ function _renderAdminPanel() {
     _adminConfig.events.push({
       id: newId,
       name: 'Nuevo Evento',
-      icon: '�x}�',
-      description: 'Descripción del evento',
+      icon: 'ðŸŽ',
+      description: 'DescripciÃ³n del evento',
       active: false,
       manual: false,
       schedule: { type: 'weekly', days: [], startHour: 0, endHour: 24 },
@@ -1132,7 +1132,7 @@ function _renderAdminPanel() {
   };
 
   window._evAdminDeleteEvent = async (idx) => {
-    if(!confirm('¿Eliminar este evento? Esta acción no se puede deshacer.')) return;
+    if(!confirm('Â¿Eliminar este evento? Esta acciÃ³n no se puede deshacer.')) return;
     
     // Guardamos una copia por si falla el borrado en el servidor
     const ev = _adminConfig.events[idx];
@@ -1147,19 +1147,19 @@ function _renderAdminPanel() {
       await window.sb.from('competition_entries').delete().eq('event_id', ev.id);
       await window.sb.from('competition_results').delete().eq('event_id', ev.id);
       
-      // 2. Borramos la configuración del evento
+      // 2. Borramos la configuraciÃ³n del evento
       const { error } = await window.sb.from('events_config').delete().eq('id', ev.id);
       
       if (error) throw error;
 
-      notify('Evento eliminado del servidor', '�x️');
+      notify('Evento eliminado del servidor', 'ðŸ—‘ï¸');
       await loadActiveEvents();
     } catch(e) {
        console.error('[Admin] Error al eliminar evento:', e);
-       notify('Error al borrar: ' + (e.message || 'Error de red o permisos'), '�R');
+       notify('Error al borrar: ' + (e.message || 'Error de red o permisos'), 'âŒ');
        
-       // Si falló en la DB, restauramos el evento a la lista local para que la UI diga la verdad
-       // Intentamos restaurarlo en su posición original si es posible
+       // Si fallÃ³ en la DB, restauramos el evento a la lista local para que la UI diga la verdad
+       // Intentamos restaurarlo en su posiciÃ³n original si es posible
        _adminConfig.events.splice(idx, 0, ev);
        _renderAdminPanel();
     }
@@ -1212,7 +1212,7 @@ function _renderEventCard(ev, idx) {
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;">ID INTERNO: ${ev.id}</div>
         <button onclick="window._evToggleCollapse(${idx})" style="background:none;border:none;color:#9ca3af;font-size:10px;font-family:'Press Start 2P',monospace;cursor:pointer;">
-          ${ev._collapsed ? '�x� DESPLEGAR' : '�x� OCULTAR'}
+          ${ev._collapsed ? 'ðŸ”½ DESPLEGAR' : 'ðŸ”¼ OCULTAR'}
         </button>
       </div>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
@@ -1224,13 +1224,13 @@ function _renderEventCard(ev, idx) {
             <input type="text" value="${ev.name}" placeholder="Nombre del Evento"
               onchange="window._evPropChange(${idx}, 'name', this.value)"
               style="width:100%;font-size:11px;font-weight:700;color:#e2e8f0;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px;margin-bottom:4px;box-sizing:border-box;">
-            <input type="text" value="${ev.description}" placeholder="Descripción breve"
+            <input type="text" value="${ev.description}" placeholder="DescripciÃ³n breve"
               onchange="window._evPropChange(${idx}, 'description', this.value)"
               style="width:100%;font-size:9px;color:#6b7280;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px;box-sizing:border-box;">
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
-            <button onclick="window._evAdminDeleteEvent(${idx})" title="Eliminar Evento" style="background:none;border:none;color:#ef4444;font-size:14px;cursor:pointer;padding:4px;">�x️</button>
+            <button onclick="window._evAdminDeleteEvent(${idx})" title="Eliminar Evento" style="background:none;border:none;color:#ef4444;font-size:14px;cursor:pointer;padding:4px;">ðŸ—‘ï¸</button>
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;">
               <input type="checkbox" data-ev="${idx}" data-field="active" ${ev.active ? 'checked' : ''}
                 style="accent-color:#22c55e;width:16px;height:16px;cursor:pointer;" onchange="window._evFieldChange(${idx},'active',this.checked)">
@@ -1255,14 +1255,14 @@ function _renderEventCard(ev, idx) {
           <input type="checkbox" data-ev="${idx}" data-field="hasCompetition" ${ev.config?.hasCompetition !== false ? 'checked' : ''}
             style="accent-color:#22c55e;cursor:pointer;" onchange="window._evConfigToggle(${idx},'hasCompetition',this.checked)">
           <div>
-            <span style="font-size:9px;color:#22c55e;font-family:'Press Start 2P',monospace;">�x�  TIENE COMPETENCIA/PREMIOS</span>
+            <span style="font-size:9px;color:#22c55e;font-family:'Press Start 2P',monospace;">ðŸ† TIENE COMPETENCIA/PREMIOS</span>
             <div style="font-size:8px;color:#6b7280;margin-top:2px;">Desactivar para eventos solo de bonificaciones (EXP doble, etc.)</div>
           </div>
         </label>
       </div>
 
       <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;">
-        <span style="font-size:18px;">�x�️</span>
+        <span style="font-size:18px;">ðŸ–¼ï¸</span>
         <div style="flex:1;">
           <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">IMAGEN DE EVENTO (assets/eventos/...)</div>
           <input type="text" value="${ev.config?.banner || ''}" placeholder="ej: capturamagikarp.png"
@@ -1271,7 +1271,7 @@ function _renderEventCard(ev, idx) {
         </div>
       </div>
 
-      <div style="font-size:9px;color:#9ca3af;margin-bottom:8px;font-family:'Press Start 2P',monospace;">DÍAS DE LA SEMANA (ARG)</div>
+      <div style="font-size:9px;color:#9ca3af;margin-bottom:8px;font-family:'Press Start 2P',monospace;">DÃAS DE LA SEMANA (ARG)</div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">${daysHtml}</div>
 
       ${hasHours ? `
@@ -1283,7 +1283,7 @@ function _renderEventCard(ev, idx) {
             onchange="window._evHourChange(${idx},'startHour',this.value)"
             style="width:60px;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;text-align:center;font-size:13px;">
         </div>
-        <div style="color:#6b7280;padding-top:16px;">�</div>
+        <div style="color:#6b7280;padding-top:16px;">â€”</div>
         <div>
           <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">HORA FIN</div>
           <input type="number" min="0" max="24" value="${sched.endHour ?? 24}"
@@ -1293,38 +1293,38 @@ function _renderEventCard(ev, idx) {
         </div>
         <div style="font-size:8px;color:#4b5563;padding-top:14px;">hs. (ARG)</div>
       </div>` : `
-      <div style="font-size:9px;color:#4b5563;margin-bottom:12px;">⏰ Todo el día</div>`}
+      <div style="font-size:9px;color:#4b5563;margin-bottom:12px;">â° Todo el dÃ­a</div>`}
 
       <div style="background:rgba(239,68,68,0.06);border-radius:10px;padding:10px;margin-bottom:10px;border:1px solid rgba(239,68,68,0.15);">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
           <input type="checkbox" data-ev="${idx}" data-field="ignoreTimeRestrictions" ${ev.config?.ignoreTimeRestrictions ? 'checked' : ''}
             style="accent-color:#ef4444;cursor:pointer;" onchange="window._evConfigToggle(${idx},'ignoreTimeRestrictions',this.checked)">
           <div>
-            <span style="font-size:9px;color:#ef4444;font-family:'Press Start 2P',monospace;">⏰ IGNORAR HORARIOS</span>
-            <div style="font-size:8px;color:#6b7280;margin-top:2px;">El Pokémon del evento aparecerá en su mapa a cualquier hora (IGNORA DÍA/NOCHE)</div>
+            <span style="font-size:9px;color:#ef4444;font-family:'Press Start 2P',monospace;">â° IGNORAR HORARIOS</span>
+            <div style="font-size:8px;color:#6b7280;margin-top:2px;">El PokÃ©mon del evento aparecerÃ¡ en su mapa a cualquier hora (IGNORA DÃA/NOCHE)</div>
           </div>
         </label>
       </div>
 
-      <!-- Configuración de Competencia -->
+      <!-- ConfiguraciÃ³n de Competencia -->
       <div style="background:rgba(34,197,94,0.03); border:1px solid rgba(34,197,94,0.1); border-radius:10px; padding:10px;">
-        <div style="font-size:8px; color:#22c55e; font-family:'Press Start 2P',monospace; margin-bottom:10px;">�x}� CONFIG. COMPETENCIA</div>
+        <div style="font-size:8px; color:#22c55e; font-family:'Press Start 2P',monospace; margin-bottom:10px;">ðŸŽ¯ CONFIG. COMPETENCIA</div>
         
         <div style="margin-bottom:8px;">
-           <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">POK�0MON OBJETIVO (ID)</div>
+           <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">POKÃ‰MON OBJETIVO (ID)</div>
            <div style="display:flex;gap:8px;">
              <input type="text" value="${ev.config?.species || ''}" placeholder="ej: magikarp"
                onchange="window._evConfigFieldChange(${idx}, 'species', this.value)"
                style="flex:1;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;box-sizing:border-box;">
              <div style="display:flex;flex-direction:column;">
                <div style="font-size:6px;color:#9ca3af;margin-bottom:2px;">MAPA x</div>
-               <input type="number" step="0.1" value="${ev.config?.speciesRateMult || 1}" title="Multiplicador de aparición salvaje"
+               <input type="number" step="0.1" value="${ev.config?.speciesRateMult || 1}" title="Multiplicador de apariciÃ³n salvaje"
                  onchange="window._evConfigFieldChange(${idx}, 'speciesRateMult', parseFloat(this.value))"
                  style="width:50px;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
              </div>
              <div style="display:flex;flex-direction:column;">
                <div style="font-size:6px;color:#9ca3af;margin-bottom:2px;">SHINY x</div>
-               <input type="number" step="0.1" value="${ev.config?.speciesShinyMult || 1}" title="Multiplicador Shiny específico"
+               <input type="number" step="0.1" value="${ev.config?.speciesShinyMult || 1}" title="Multiplicador Shiny especÃ­fico"
                  onchange="window._evConfigFieldChange(${idx}, 'speciesShinyMult', parseFloat(this.value))"
                  style="width:50px;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
              </div>
@@ -1335,9 +1335,9 @@ function _renderEventCard(ev, idx) {
            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">CRITERIO (sortBy)</div>
            <select onchange="window._evConfigFieldChange(${idx}, 'sortBy', this.value)"
              style="width:100%;padding:8px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;box-sizing:border-box;">
-             <option value="data.total_ivs" ${ev.config?.sortBy==='data.total_ivs'?'selected':''}>�x�� IVs Totales</option>
-             <option value="data.level" ${ev.config?.sortBy==='data.level'?'selected':''}>�x� Nivel</option>
-             <option value="data.isShiny" ${ev.config?.sortBy==='data.isShiny'?'selected':''}>�S� Shiny</option>
+             <option value="data.total_ivs" ${ev.config?.sortBy==='data.total_ivs'?'selected':''}>ðŸ§¬ IVs Totales</option>
+             <option value="data.level" ${ev.config?.sortBy==='data.level'?'selected':''}>ðŸ“ˆ Nivel</option>
+             <option value="data.isShiny" ${ev.config?.sortBy==='data.isShiny'?'selected':''}>âœ¨ Shiny</option>
            </select>
         </div>
 
@@ -1375,7 +1375,7 @@ function _renderEventCard(ev, idx) {
               style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
           </div>
           <div>
-            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">ECLOSI�N x</div>
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">ECLOSIÃ“N x</div>
             <input type="number" step="0.1" value="${ev.config?.hatchMult || 1}"
               onchange="window._evConfigFieldChange(${idx}, 'hatchMult', parseFloat(this.value))"
               style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:11px;text-align:center;">
@@ -1423,9 +1423,9 @@ function _renderCompetitionTab() {
 
   const prizePreview = `
     <div style="font-size:10px;margin-top:4px;display:flex;flex-direction:column;gap:4px;">
-      <div style="color:#fbbf24;">�x�! 1°. ${p1}</div>
-      <div style="color:#94a3b8;">�x�� 2°. ${p2}</div>
-      <div style="color:#b45309;">�x�0 3°. ${p3}</div>
+      <div style="color:#fbbf24;">ðŸ¥‡ 1Â°. ${p1}</div>
+      <div style="color:#94a3b8;">ðŸ¥ˆ 2Â°. ${p2}</div>
+      <div style="color:#b45309;">ðŸ¥‰ 3Â°. ${p3}</div>
     </div>`;
 
   const state = _prizeStates[_currentPrizeRank];
@@ -1465,10 +1465,10 @@ function _renderCompetitionTab() {
 
     <!-- Constructor de premio -->
     <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;margin-bottom:16px;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#f59e0b;margin-bottom:14px;">�x�  CONFIGURAR PREMIO</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#f59e0b;margin-bottom:14px;">ðŸ† CONFIGURAR PREMIO</div>
 
       <div style="display:flex;gap:4px;margin-bottom:12px;">
-        ${[['first','�x�! 1ro'],['second','�x�� 2do'],['third','�x�0 3ro']].map(([v,l]) => `
+        ${[['first','ðŸ¥‡ 1ro'],['second','ðŸ¥ˆ 2do'],['third','ðŸ¥‰ 3ro']].map(([v,l]) => `
           <button onclick="window._evSwitchPrizeRank('${v}')"
             style="flex:1;padding:8px;border:none;border-radius:8px;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;background:${_currentPrizeRank===v?'#f59e0b':'rgba(255,255,255,0.05)'};color:${_currentPrizeRank===v?'#000':'#9ca3af'};">
             ${l}
@@ -1478,7 +1478,7 @@ function _renderCompetitionTab() {
       <div style="margin-bottom:12px;">
         <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">TIPO DE PREMIO</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          ${[['money','�x� Dinero (��)'],['bc','�x�" Battle Coins'],['item','�x� Ítem'],['pokemon','�x�� Pokémon']].map(([v,l]) => `
+          ${[['money','ðŸ’° Dinero (â‚½)'],['bc','ðŸª™ Battle Coins'],['item','ðŸ“¦ Ãtem'],['pokemon','ðŸ¾ PokÃ©mon']].map(([v,l]) => `
             <label style="display:flex;align-items:center;gap:5px;cursor:pointer;background:rgba(0,0,0,0.3);border-radius:8px;padding:6px 10px;border:1px solid ${state.type===v?'#f59e0b':'rgba(255,255,255,0.08)'};">
               <input type="radio" name="prize-type" value="${v}" ${state.type===v?'checked':''} onchange="window._evPrizeType('${v}')" style="accent-color:#f59e0b;">
               <span style="font-size:10px;color:${state.type===v?'#f59e0b':'#9ca3af'};">${l}</span>
@@ -1488,7 +1488,7 @@ function _renderCompetitionTab() {
 
       <!-- Money / BC -->
       <div id="prize-field-amount" style="display:${['money','bc'].includes(state.type)?'block':'none'};margin-bottom:12px;">
-        <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">CANTIDAD ${state.type === 'bc' ? 'BC' : '��'}</div>
+        <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">CANTIDAD ${state.type === 'bc' ? 'BC' : 'â‚½'}</div>
         <input type="number" min="0" id="prize-amount" value="${state.amount}"
           oninput="_prizeStates[_currentPrizeRank].amount=parseInt(this.value)||0"
           style="width:100%;padding:10px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:14px;box-sizing:border-box;">
@@ -1496,7 +1496,7 @@ function _renderCompetitionTab() {
 
       <!-- Item -->
       <div id="prize-field-item" style="display:${state.type==='item'?'block':'none'};margin-bottom:12px;">
-        <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">ÍTEM</div>
+        <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">ÃTEM</div>
         <select id="prize-item" onchange="_prizeStates[_currentPrizeRank].item=this.value"
           style="width:100%;padding:10px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:12px;margin-bottom:8px;box-sizing:border-box;">
           ${itemOptions}
@@ -1507,7 +1507,7 @@ function _renderCompetitionTab() {
           style="width:80px;padding:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;">
       </div>
 
-      <!-- Pokémon -->
+      <!-- PokÃ©mon -->
       <div id="prize-field-pokemon" style="display:${state.type==='pokemon'?'block':'none'};margin-bottom:12px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
           <div>
@@ -1532,29 +1532,29 @@ function _renderCompetitionTab() {
           </select>
         </div>
         <div style="margin-bottom:12px;">
-          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">GEN�0TICA (IVs)</div>
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">GENÃ‰TICA (IVs)</div>
           <div style="display:flex;justify-content:space-between;gap:4px;">${ivInputs}</div>
         </div>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
           <input type="checkbox" id="prize-shiny" ${state.shiny?'checked':''} onchange="_prizeStates[_currentPrizeRank].shiny=this.checked" style="accent-color:#f59e0b;width:16px;height:16px;">
-          <span style="font-size:10px;color:#f59e0b;">�S� ES SHINY</span>
+          <span style="font-size:10px;color:#f59e0b;">âœ¨ ES SHINY</span>
         </label>
       </div>
 
       <button onclick="window._evSavePrize()"
         style="width:100%;padding:12px;border:none;border-radius:12px;background:rgba(255,255,255,0.07);color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">
-        �x� GUARDAR PODIO
+        ðŸ’¾ GUARDAR PODIO
       </button>
     </div>
 
     <!-- Participantes -->
     <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#22c55e;">�x}� PARTICIPANTES (${_adminEntries.length})</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#22c55e;">ðŸŽ£ PARTICIPANTES (${_adminEntries.length})</div>
         <div style="display:flex;gap:12px;align-items:center;">
           <button onclick="window._evClearEntries(window._currentCompetitionId)" title="Reiniciar lista" 
-            style="background:none;border:none;color:#ef4444;font-size:16px;cursor:pointer;opacity:0.7;padding:4px;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">�x️</button>
-          <button onclick="window._evLoadEntriesGlobal()" style="background:none;border:none;color:#6b7280;font-size:16px;cursor:pointer;padding:4px;">�x</button>
+            style="background:none;border:none;color:#ef4444;font-size:16px;cursor:pointer;opacity:0.7;padding:4px;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">ðŸ—‘ï¸</button>
+          <button onclick="window._evLoadEntriesGlobal()" style="background:none;border:none;color:#6b7280;font-size:16px;cursor:pointer;padding:4px;">ðŸ”„</button>
         </div>
       </div>
       <div id="admin-entries-container">
@@ -1563,7 +1563,7 @@ function _renderCompetitionTab() {
 
       <button onclick="window._evAwardFullEvent(_currentCompetitionId)"
         style="width:100%;margin-top:16px;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;box-shadow:0 4px 15px rgba(34,197,94,0.3);">
-        �x�  CERRAR Y PREMIAR PODIO
+        ðŸ† CERRAR Y PREMIAR PODIO
       </button>
     </div>`;
 }
@@ -1596,7 +1596,7 @@ function _renderEntriesTable() {
   const container = document.getElementById('admin-entries-container');
   if (!container) return;
   if (_adminEntries.length === 0) {
-    container.innerHTML = '<div style="font-size:11px;color:#6b7280;text-align:center;padding:20px;">Sin participantes aún.</div>';
+    container.innerHTML = '<div style="font-size:11px;color:#6b7280;text-align:center;padding:20px;">Sin participantes aÃºn.</div>';
     return;
   }
   
@@ -1605,9 +1605,9 @@ function _renderEntriesTable() {
 
   const rows = _adminEntries.map((entry, rank) => {
     const d = entry.data || {};
-    const ivDetail = d.ivs ? Object.values(d.ivs).join('/') : '�';
-    const shinyTag = d.isShiny ? ' �S�' : '';
-    const medal = rank === 0 ? '�x�!' : rank === 1 ? '�x��' : rank === 2 ? '�x�0' : `${rank + 1}.`;
+    const ivDetail = d.ivs ? Object.values(d.ivs).join('/') : 'â€”';
+    const shinyTag = d.isShiny ? ' âœ¨' : '';
+    const medal = rank === 0 ? 'ðŸ¥‡' : rank === 1 ? 'ðŸ¥ˆ' : rank === 2 ? 'ðŸ¥‰' : `${rank + 1}.`;
     return `
       <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
         <span style="font-size:18px;flex-shrink:0;">${medal}</span>
@@ -1619,7 +1619,7 @@ function _renderEntriesTable() {
         </div>
         <button onclick="window._evAwardEntry('${entry.player_id}', '${entry.player_name.replace(/'/g,"\\\\'")}', '${entry.player_email}')"
           style="padding:8px 10px;border:none;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;flex-shrink:0;white-space:nowrap;">
-          �x�  PREMIAR
+          ðŸ† PREMIAR
         </button>
       </div>`;
   }).join('');
@@ -1665,11 +1665,11 @@ async function _evSavePrize() {
     }).eq('id', _currentCompetitionId);
     
     if (error) throw error;
-    notify('¡Podio guardado correctamente!', '�x� '); 
+    notify('Â¡Podio guardado correctamente!', 'ðŸ†'); 
     _renderAdminPanel();
   } catch (e) { 
     console.error(e);
-    notify('Error al guardar podio en Supabase.', '�R'); 
+    notify('Error al guardar podio en Supabase.', 'âŒ'); 
   }
 }
 
@@ -1693,12 +1693,12 @@ function _buildPrizeObject(state) {
 
 function _prizeSummary(prize) {
   if (!prize) return 'Sin configurar';
-  if (prize.type === 'money') return `��${(prize.amount || 0).toLocaleString()}`;
+  if (prize.type === 'money') return `â‚½${(prize.amount || 0).toLocaleString()}`;
   if (prize.type === 'bc') return `${(prize.amount || 0).toLocaleString()} Battle Coins`;
   if (prize.type === 'item') return `${prize.qty || 1}x ${prize.item}`;
   if (prize.type === 'pokemon') {
     const name = (typeof POKEMON_DB !== 'undefined' && POKEMON_DB[prize.species]?.name) || prize.species;
-    const shinyTag = prize.shiny ? ' �S�' : '';
+    const shinyTag = prize.shiny ? ' âœ¨' : '';
     const totalIvs = Object.values(prize.ivs || {}).reduce((a, b) => a + b, 0);
     return `${name}${shinyTag} Nv.${prize.level} ${prize.nature} [${totalIvs}/186 IVs]`;
   }
@@ -1706,26 +1706,26 @@ function _prizeSummary(prize) {
 }
 
 async function _evAwardEntry(playerId, playerName, playerEmail) {
-  if (!confirm(`¿Premiar directamente a ${playerName}? (Solo 1er puesto)`)) return;
+  if (!confirm(`Â¿Premiar directamente a ${playerName}? (Solo 1er puesto)`)) return;
   try {
     const evId = window._currentCompetitionId || 'hora_magikarp';
     const { data: ev, error: fetchErr } = await window.sb.from('events_config').select('config').eq('id', evId).single();
     if (fetchErr) throw fetchErr;
 
     const prize = ev?.config?.prizes?.first;
-    if (!prize) { alert('ERROR: El premio del 1er puesto no está configurado para este evento.'); return; }
+    if (!prize) { alert('ERROR: El premio del 1er puesto no estÃ¡ configurado para este evento.'); return; }
 
     const { error } = await window.sb.from('awards').insert({
       winner_id: playerId,
       winner_name: playerName,
-      winner_email: playerEmail || '�', // Garantizamos el email
+      winner_email: playerEmail || 'â€”', // Garantizamos el email
       event_id: evId,
       prize,
       awarded_at: new Date().toISOString()
     });
 
     if (error) throw error;
-    notify(`¡Recompensa enviada a ${playerName}!`, '�x}�');
+    notify(`Â¡Recompensa enviada a ${playerName}!`, 'ðŸŽ');
     if (typeof checkPendingAwards === 'function') checkPendingAwards();
   } catch (e) {
     console.error('[Admin] Error al premiar:', e);
@@ -1762,9 +1762,9 @@ window._evSwitchCompetition = (val) => {
 async function awardEvent(eventId, manual = false) {
   try {
     if (manual && !isAdminUser()) return;
-    if (manual) notify('Procesando premios...', '�x� ');
+    if (manual) notify('Procesando premios...', 'ðŸ†');
     
-    // Llamar a la función segura en el servidor (Supabase RPC)
+    // Llamar a la funciÃ³n segura en el servidor (Supabase RPC)
     const { data: res, error } = await window.sb.rpc('fn_award_event_automated', { 
       target_event_id: eventId 
     });
@@ -1775,15 +1775,15 @@ async function awardEvent(eventId, manual = false) {
       if (manual) {
         const winners = res.winners || [];
         const lista = winners.map(w => {
-          const num = w.rank === 'first' ? '1°' : w.rank === 'second' ? '2°' : '3°';
+          const num = w.rank === 'first' ? '1Â°' : w.rank === 'second' ? '2Â°' : '3Â°';
           return `${num} ${w.player_name}`;
         }).join('\n');
-        alert(`¡EVENTO PREMIADO!\n\nPremios entregados:\n${lista}\n\nLos jugadores recibirán sus premios al entrar al juego.`);
+        alert(`Â¡EVENTO PREMIADO!\n\nPremios entregados:\n${lista}\n\nLos jugadores recibirÃ¡n sus premios al entrar al juego.`);
       } else {
         console.log(`[Events] Auto: Evento ${eventId} premiado exitosamente.`);
       }
     } else {
-      // Si el error es "Ya premiado", no molestamos en automático
+      // Si el error es "Ya premiado", no molestamos en automÃ¡tico
       if (!manual && res.error?.includes('Ya premiado')) return;
       if (manual) alert('AVISO: ' + res.error);
     }
@@ -1795,13 +1795,13 @@ async function awardEvent(eventId, manual = false) {
     }
   } catch (e) {
     console.error('[Events] Error en awardEvent RPC:', e);
-    if (manual) alert('ERROR EN PREMIACI�N:\n' + (e.message || e));
+    if (manual) alert('ERROR EN PREMIACIÃ“N:\n' + (e.message || e));
   }
 }
 
 async function checkAndDistributePrizes(allEvents) {
-  // Ahora CUALQUIER jugador puede disparar la función segura de Supabase.
-  // La función misma en Postgres verifica si ya se premió para no duplicar.
+  // Ahora CUALQUIER jugador puede disparar la funciÃ³n segura de Supabase.
+  // La funciÃ³n misma en Postgres verifica si ya se premiÃ³ para no duplicar.
 
   for (const ev of allEvents) {
     if (ev.config?.hasCompetition === false) continue;
@@ -1810,7 +1810,7 @@ async function checkAndDistributePrizes(allEvents) {
     if (!isActive && ev.config?.prizes) {
       // Para eventos semanales/programados que terminaron
       if (ev.schedule && ev.schedule.type === 'weekly') {
-        // Solo intentamos premiar si no hay registro de premiación reciente en la tabla local o en el config
+        // Solo intentamos premiar si no hay registro de premiaciÃ³n reciente en la tabla local o en el config
         const lastAwarded = ev.last_awarded_at ? new Date(ev.last_awarded_at) : new Date(0);
         if (new Date() - lastAwarded > 10 * 60 * 1000) {
           awardEvent(ev.id, false);
@@ -1825,7 +1825,7 @@ async function showEventResultsModal(eventId) {
     // Buscar si el evento es uno de los terminados en la lista activa
     const ev = _activeEvents.find(e => e.id === eventId);
     if (!ev) {
-      // Si no lo encontramos en la lista local, pedimos los datos básicos
+      // Si no lo encontramos en la lista local, pedimos los datos bÃ¡sicos
       const { data: baseEv } = await window.sb.from('events_config').select('name, icon').eq('id', eventId).single();
       if (!baseEv) return;
       var eventData = baseEv;
@@ -1857,7 +1857,7 @@ async function showEventResultsModal(eventId) {
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s;';
 
     const rows = podium.map(w => {
-      const medal = w.rank === 'first' ? '�x�!' : w.rank === 'second' ? '�x��' : '�x�0';
+      const medal = w.rank === 'first' ? 'ðŸ¥‡' : w.rank === 'second' ? 'ðŸ¥ˆ' : 'ðŸ¥‰';
       const color = w.rank === 'first' ? '#fbbf24' : w.rank === 'second' ? '#94a3b8' : '#b45309';
       return `
         <div style="background:rgba(255,255,255,0.05); border:1px solid ${color}44; border-radius:16px; padding:16px; display:flex; align-items:center; gap:16px; margin-bottom:12px;">
@@ -1872,15 +1872,15 @@ async function showEventResultsModal(eventId) {
     modal.innerHTML = `
       <div style="background:#0f172a; width:100%; max-width:550px; border-radius:32px; border:2px solid #334155; padding:32px; position:relative; overflow:hidden; box-shadow: 0 0 50px rgba(0,0,0,0.5); animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
         <button onclick="document.getElementById('podium-modal-overlay').remove()" 
-          style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.05); border:none; color:#94a3b8; font-size:22px; cursor:pointer; z-index:10; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition: all 0.2s;">�S"</button>
+          style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.05); border:none; color:#94a3b8; font-size:22px; cursor:pointer; z-index:10; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition: all 0.2s;">âœ•</button>
 
         <div style="text-align:center; margin-bottom:28px;">
           ${eventData.config?.banner ? `
             <div style="width:100%; border-radius:20px; overflow:hidden; margin-bottom:24px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2);">
               <img src="assets/eventos/${eventData.config.banner}" style="width:100%; height:auto; max-height:280px; object-fit:cover; display:block;">
             </div>
-          ` : `<div style="font-size:48px; margin-bottom:12px;">${eventData.icon || '�x� '}</div>`}
-          <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#fbbf24; margin-bottom:8px; letter-spacing:1px;">¡PODIO FINAL!</div>
+          ` : `<div style="font-size:48px; margin-bottom:12px;">${eventData.icon || 'ðŸ†'}</div>`}
+          <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#fbbf24; margin-bottom:8px; letter-spacing:1px;">Â¡PODIO FINAL!</div>
           <div style="color:#64748b; font-size:12px;">${eventData.name}</div>
         </div>
 
@@ -1924,15 +1924,15 @@ async function showEventResultsModal(eventId) {
 window._evShowPodium = (eventId) => showEventResultsModal(eventId);
 
 window._evAwardFullEvent = async (eventId) => {
-  if (!confirm('¿Estás seguro de cerrar el concurso y repartir los premios del podio ahora? Esto eliminará a los participantes actuales.')) return;
+  if (!confirm('Â¿EstÃ¡s seguro de cerrar el concurso y repartir los premios del podio ahora? Esto eliminarÃ¡ a los participantes actuales.')) return;
   await awardEvent(eventId, true);
 };
 
 window._evClearEntries = async (eventId) => {
   const targetId = eventId || window._currentCompetitionId;
-  if (!targetId) { alert('Error: No se encontró el ID del evento.'); return; }
+  if (!targetId) { alert('Error: No se encontrÃ³ el ID del evento.'); return; }
   
-  if (!confirm(`¿Estás seguro de ELIMINAR a todos los participantes del evento [${targetId}]?\n\nEsta acción es irreversible.`)) return;
+  if (!confirm(`Â¿EstÃ¡s seguro de ELIMINAR a todos los participantes del evento [${targetId}]?\n\nEsta acciÃ³n es irreversible.`)) return;
   
   try {
     const { error, count } = await window.sb
@@ -1943,7 +1943,7 @@ window._evClearEntries = async (eventId) => {
     if (error) throw error;
     
     if (count === 0) {
-      // RLS no dejó borrar nada - intentar borrar solo la entrada propia
+      // RLS no dejÃ³ borrar nada - intentar borrar solo la entrada propia
       const myId = window.currentUser?.id;
       if (myId) {
         const { error: err2, count: cnt2 } = await window.sb
@@ -1954,7 +1954,7 @@ window._evClearEntries = async (eventId) => {
         
         if (err2) throw err2;
         if (cnt2 === 0) {
-          alert('AVISO: No se pudo borrar ningún participante.\n\nNecesitás agregar una política RLS en Supabase.\nAbrí la consola de Supabase �  SQL Editor y ejecutá la consulta que aparece en los pasos de configuración.');
+          alert('AVISO: No se pudo borrar ningÃºn participante.\n\nNecesitÃ¡s agregar una polÃ­tica RLS en Supabase.\nAbrÃ­ la consola de Supabase â†’ SQL Editor y ejecutÃ¡ la consulta que aparece en los pasos de configuraciÃ³n.');
           await _evLoadEntries();
           return;
         }
@@ -1962,7 +1962,7 @@ window._evClearEntries = async (eventId) => {
     }
 
     _adminEntries = [];
-    notify('¡Lista de participantes vaciada!', '�x️');
+    notify('Â¡Lista de participantes vaciada!', 'ðŸ—‘ï¸');
     _renderAdminPanel();
     await _evLoadEntries(); 
   } catch (e) {
@@ -2023,19 +2023,19 @@ window._evPropChange = (idx, field, val) => {
 };
 window._evLoadEntriesGlobal = _evLoadEntries;
 
-// Se renombra la función global para evitar colisión con la local y recursión infinita
+// Se renombra la funciÃ³n global para evitar colisiÃ³n con la local y recursiÃ³n infinita
 window._evLoadEntriesGlobal = async () => {
   await _evLoadEntries();
 };
 
 // Se elimina _evReadFormIntoConfig ya que ahora guardamos directamente del objeto _adminConfig modificado por los eventos de los inputs
 
-// ���� Init ��������������������������������������������������������������������������������������������������������������������������������������������
+// â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 (function _initEvents() {
   loadActiveEvents();
   _startEventPolling();
-  // Verificar premios pendientes al cargar la página
-  setTimeout(checkPendingAwards, 3000); // Esperar 3s a que el usuario esté logueado
+  // Verificar premios pendientes al cargar la pÃ¡gina
+  setTimeout(checkPendingAwards, 3000); // Esperar 3s a que el usuario estÃ© logueado
 })();
 
 
