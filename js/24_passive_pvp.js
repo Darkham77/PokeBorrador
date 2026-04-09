@@ -342,18 +342,17 @@ function _renderRankedRulesCard() {
   const summaryEl = document.getElementById('ranked-rules-summary');
   const typesEl = document.getElementById('ranked-rules-types');
   const bansEl = document.getElementById('ranked-rules-bans');
-  const activeStatusEl = document.getElementById('ranked-rules-active-team-status');
   const passiveStatusEl = document.getElementById('ranked-rules-passive-team-status');
 
   if (seasonEl) seasonEl.textContent = rules.seasonName;
 
   if (summaryEl) {
-    summaryEl.textContent = `M?ximo ${rules.maxPokemon} Pokemon ? Nivel maximo ${rules.levelCap}`;
+    summaryEl.textContent = `Máximo ${rules.maxPokemon} Pokémon • Nivel máximo ${rules.levelCap}`;
   }
 
   if (typesEl) {
     if (!rules.allowedTypes.length) {
-      typesEl.innerHTML = '<span style="font-size:11px;color:var(--gray);">Sin restricci?n de tipos.</span>';
+      typesEl.innerHTML = '<span style="font-size:11px;color:var(--gray);">Sin restricción de tipos.</span>';
     } else {
       typesEl.innerHTML = rules.allowedTypes.map((type) => {
         const meta = RANKED_TYPE_META[type] || { label: type, icon: '?' };
@@ -367,17 +366,18 @@ function _renderRankedRulesCard() {
       bansEl.innerHTML = '<span style="font-size:11px;color:var(--gray);">Sin baneos.</span>';
     } else {
       bansEl.innerHTML = rules.bannedPokemonIds.map((id) => {
-        const label = POKEMON_DB?.[id]?.name || id;
-        return `<span style="font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,59,59,0.35);background:rgba(255,59,59,0.14);color:#fecaca;">?? ${label}</span>`;
+        const pokemon = POKEMON_DB?.[id] || null;
+        const label = pokemon?.name || id;
+        const spriteKey = typeof pokemon?.id === 'string' ? pokemon.id : id;
+        const spriteFromKey = typeof getSpriteUrl === 'function' ? getSpriteUrl(spriteKey, false) : null;
+        const spriteDex = pokemon?.dexNum || window.POKEMON_SPRITE_IDS?.[spriteKey] || null;
+        const spriteUrl = spriteFromKey || (spriteDex ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteDex}.png` : null);
+        const spriteHtml = spriteUrl
+          ? `<img src="${spriteUrl}" alt="${label}" style="width:16px;height:16px;image-rendering:pixelated;" onerror="this.style.display='none'">`
+          : '';
+        return `<span style="font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,59,59,0.35);background:rgba(255,59,59,0.14);color:#fecaca;display:inline-flex;align-items:center;gap:6px;">${spriteHtml}<span>${label}</span></span>`;
       }).join('');
     }
-  }
-
-  if (activeStatusEl) {
-    const activeTeam = (state.team || []).filter(p => p && p.hp > 0 && !p.onMission);
-    const activeCheck = validateTeamForRanked(activeTeam, rules, 'equipo activo');
-    activeStatusEl.textContent = activeCheck.ok ? 'OK Equipo activo: cumple reglas.' : `Error equipo activo: ${activeCheck.reason}`;
-    activeStatusEl.style.color = activeCheck.ok ? 'var(--green)' : 'var(--red)';
   }
 
   if (passiveStatusEl) {
