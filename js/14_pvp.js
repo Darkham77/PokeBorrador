@@ -1,10 +1,10 @@
-﻿    // ===== PVP BATTLE SYSTEM =====
+    // ===== PVP BATTLE SYSTEM =====
 
     let _pvpState = null;
     let _pvpBattleInvitesCh = null;
     let _pvpLock = false;   // prevents double-clicking during animations
 
-    // â”€â”€ Subscribe (polling) for incoming invites â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Subscribe (polling) for incoming invites ──────────────
     function subscribeBattleInvites() {
       if (!currentUser || _pvpBattleInvitesCh) return;
       const _seenInvites = new Set();
@@ -22,28 +22,18 @@
         if (inv.status === 'ranked_match') {
           // Ghost Queue Protection: Si NO estamos buscando partida localmente, evadimos
           if (!window.isRankedSearching) {
-            // Rechazamos pacÃ­ficamente la invitaciÃ³n para no trabar al rival
+            // Rechazamos pacíficamente la invitación para no trabar al rival
             await sb.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id);
             // Purgamos toda presencia de nuestra ID de la cola ranked
             try { await sb.from('ranked_queue').delete().eq('user_id', currentUser.id); } catch(e){}
             return;
           }
 
-          // Validar reglas ranked antes de autoaceptar
-          if (typeof ensureRankedTeamEligibility === 'function') {
-            const rankedTeam = (typeof getRankedPlayableTeam === 'function') ? getRankedPlayableTeam() : [];
-            const gate = await ensureRankedTeamEligibility(rankedTeam, 'equipo ranked', true);
-            if (!gate.ok) {
-              await sb.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id);
-              try { await sb.from('ranked_queue').delete().eq('user_id', currentUser.id); } catch(e) {}
-              return;
-            }
-          }
-
           // Auto-accept and start directly
           document.getElementById('pvp-invite-popup')?.remove();
           await sb.from('battle_invites').update({ status: 'ranked_accepted' }).eq('id', inv.id);
-          // Ocultar modal matchmaking y detener bÃºsqueda
+          
+          // Ocultar modal matchmaking y detener búsqueda
           if (typeof cancelRankedMatchmaking === 'function') {
              await cancelRankedMatchmaking(true);
           } else {
@@ -67,15 +57,15 @@
         'background:var(--card);border-radius:16px;padding:20px 24px;max-width:340px;width:90%;' +
         'border:1px solid rgba(199,125,255,0.4);box-shadow:0 4px 24px rgba(0,0,0,0.6);text-align:center;';
       ov.innerHTML = `
-    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--purple);margin-bottom:10px;">âš”ï¸ Â¡DESAFÃO PvP!</div>
-    <div style="font-size:13px;margin-bottom:16px;"><strong>${challengerName}</strong><br>te desafÃ­a a una batalla</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--purple);margin-bottom:10px;">⚔️ ¡DESAFÍO PvP!</div>
+    <div style="font-size:13px;margin-bottom:16px;"><strong>${challengerName}</strong><br>te desafía a una batalla</div>
     <div style="display:flex;gap:10px;justify-content:center;">
       <button onclick="acceptPvpInvite('${invite.id}')"
         style="font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 16px;border:none;border-radius:10px;cursor:pointer;
-               background:rgba(107,203,119,0.2);color:var(--green);border:1px solid rgba(107,203,119,0.3);">âœ“ Aceptar</button>
+               background:rgba(107,203,119,0.2);color:var(--green);border:1px solid rgba(107,203,119,0.3);">✓ Aceptar</button>
       <button onclick="declinePvpInvite('${invite.id}')"
         style="font-family:'Press Start 2P',monospace;font-size:8px;padding:10px 16px;border:none;border-radius:10px;cursor:pointer;
-               background:rgba(255,59,59,0.15);color:var(--red);border:1px solid rgba(255,59,59,0.2);">âœ• Rechazar</button>
+               background:rgba(255,59,59,0.15);color:var(--red);border:1px solid rgba(255,59,59,0.2);">✕ Rechazar</button>
     </div>`;
       document.body.appendChild(ov);
       setTimeout(() => ov.remove(), 60000);
@@ -84,15 +74,15 @@
     async function sendBattleInvite(opponentId, opponentUsername) {
       if (!currentUser) return;
       if (state.team.filter(p => p.hp > 0 && !p.onMission).length === 0) {
-        notify('Â¡NecesitÃ¡s al menos 1 PokÃ©mon con HP!', 'âš ï¸'); return;
+        notify('¡Necesitás al menos 1 Pokémon con HP!', '⚠️'); return;
       }
       const { error } = await sb.from('battle_invites').insert({
         challenger_id: currentUser.id,
         opponent_id: opponentId,
         status: 'pending',
       });
-      if (error) { notify('Error al enviar desafÃ­o: ' + error.message, 'âŒ'); return; }
-      notify(`Â¡DesafÃ­o enviado a ${opponentUsername}! Esperando respuesta...`, 'âš”ï¸');
+      if (error) { notify('Error al enviar desafío: ' + error.message, '❌'); return; }
+      notify(`¡Desafío enviado a ${opponentUsername}! Esperando respuesta...`, '⚔️');
       const { data: rows } = await sb.from('battle_invites')
         .select('id').eq('challenger_id', currentUser.id).eq('status', 'pending')
         .order('created_at', { ascending: false }).limit(1);
@@ -107,7 +97,7 @@
         attempts++;
         if (attempts > 20) {
           clearInterval(poll);
-          notify('El desafÃ­o expirÃ³ sin respuesta.', 'â±ï¸');
+          notify('El desafío expiró sin respuesta.', '⏱️');
           await sb.from('battle_invites').update({ status: 'expired' }).eq('id', inviteId);
           return;
         }
@@ -118,7 +108,7 @@
           startPvpBattle(data, true);
         } else if (data.status === 'declined' || data.status === 'expired') {
           clearInterval(poll);
-          notify('El desafÃ­o fue rechazado.', 'âŒ');
+          notify('El desafío fue rechazado.', '❌');
         }
       }, 3000);
     }
@@ -136,15 +126,15 @@
       await sb.from('battle_invites').update({ status: 'declined' }).eq('id', inviteId);
     }
 
-    // â”€â”€ Core PvP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Core PvP ─────────────────────────────────────────────────
     // TURN SYSTEM: Both players choose simultaneously.
     // The HOST (challenger) is the "resolver": once both picks arrive,
     // host calculates the full turn and broadcasts pvp_turn_result.
     // The CLIENT applies the result received. Speed decides who attacks first.
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────
 
     async function startPvpBattle(invite, isHost, isRanked = false) {
-      // Al entrar en combate, forzamos detener cualquier bÃºsqueda de matchmaking
+      // Al entrar en combate, forzamos detener cualquier búsqueda de matchmaking
       if (typeof cancelRankedMatchmaking === 'function') {
         cancelRankedMatchmaking(true);
       } else {
@@ -152,25 +142,9 @@
         if (window._matchmakingInterval) { clearInterval(window._matchmakingInterval); window._matchmakingInterval = null; }
       }
 
-      const rankedBaseTeam = (isRanked && typeof getRankedPlayableTeam === 'function')
-        ? getRankedPlayableTeam()
-        : state.team.filter(p => p.hp > 0 && !p.onMission);
+      const myTeam = state.team.filter(p => p.hp > 0 && !p.onMission).map(p => JSON.parse(JSON.stringify(p)));
+      if (!myTeam.length) { notify('¡No tenés Pokémon disponibles!', '⚠️'); return; }
 
-      if (isRanked && typeof ensureRankedTeamEligibility === 'function') {
-        const gate = await ensureRankedTeamEligibility(rankedBaseTeam, 'equipo ranked', true);
-        if (!gate.ok) {
-          try {
-            if (invite?.id) await sb.from('battle_invites').update({ status: 'declined' }).eq('id', invite.id);
-          } catch (e) {}
-          return;
-        }
-      }
-
-      const myTeam = rankedBaseTeam.map(p => JSON.parse(JSON.stringify(p)));
-      if (!myTeam.length) {
-        notify(isRanked ? 'Tu equipo Ranked no tiene Pokémon disponibles.' : '¡No tenés Pokémon disponibles!', '⚠️');
-        return;
-      }
       const opponentId = isHost ? invite.opponent_id : invite.challenger_id;
       const { data: _oppProf } = await sb.from('profiles').select('username').eq('id', opponentId).single();
       const enemyUsername = _oppProf?.username || 'Rival';
@@ -242,7 +216,7 @@
       _pvpState.channel.subscribe(status => {
         if (status !== 'SUBSCRIBED') return;
         showPvpScreen();
-        addPvpLog('ðŸ”„ Sincronizando batalla...', 'log-info');
+        addPvpLog('🔄 Sincronizando batalla...', 'log-info');
         _pvpState.channel.send({ type: 'broadcast', event: 'pvp_sync_request', payload: {} });
         const syncRetry = setInterval(() => {
           if (!_pvpState || _pvpState.over || _pvpState.phase !== 'sync') {
@@ -266,7 +240,7 @@
           _pvpLoadSprites();
           
           if (!_pvpState._battleAnnounced) {
-            addPvpLog('Â¡Batalla iniciada!', 'log-info');
+            addPvpLog('¡Batalla iniciada!', 'log-info');
             _pvpState._battleAnnounced = true;
           }
           
@@ -346,7 +320,7 @@
           }
           _pvpState.phase = normalizedPhase || 'choosing';
           _pvpState._opponentDisconnected = false;
-          addPvpLog('âœ… Sincronizado.', 'log-info');
+          addPvpLog('✅ Sincronizado.', 'log-info');
           renderPvpBattle();
           _pvpLoadSprites();
         })
@@ -387,7 +361,7 @@
           if (_pvpState._opponentDisconnected) {
             _pvpState._opponentDisconnected = false;
             _pvpState.phase = 'choosing';
-            addPvpLog('ðŸ”„ Â¡Rival reconectado!', 'log-info');
+            addPvpLog('🔄 ¡Rival reconectado!', 'log-info');
             if (_pvpState._disconnectTimer) { clearTimeout(_pvpState._disconnectTimer); _pvpState._disconnectTimer = null; }
             renderPvpBattle();
           }
@@ -404,16 +378,16 @@
         if (!_pvpState || _pvpState.over) { clearInterval(cd); return; }
         const diff = Date.now() - _pvpState._lastActivityTime;
         
-        // Si hay desconexiÃ³n (mÃ¡s de 10s de silencio)
+        // Si hay desconexión (más de 10s de silencio)
         if (diff > 10000 && !_pvpState._opponentDisconnected) {
           _pvpState._opponentDisconnected = true;
           _pvpState.phase = 'opponent_disconnected';
           _pvpState._disconnectSecondsLeft = 60; // Iniciamos en 60s
           
-          addPvpLog('âš ï¸ Rival desconectado...', 'log-enemy');
+          addPvpLog('⚠️ Rival desconectado...', 'log-enemy');
           renderPvpBattle();
 
-          // CronÃ³metro de cuenta regresiva
+          // Cronómetro de cuenta regresiva
           _pvpState._disconnectInterval = setInterval(() => {
             if (!_pvpState || _pvpState.over || !_pvpState._opponentDisconnected) {
               clearInterval(_pvpState._disconnectInterval);
@@ -425,12 +399,12 @@
             // Actualizar solo el texto del status sin re-renderizar todo para rendimiento
             const statusEl = document.getElementById('pvp-status-msg');
             if (statusEl) {
-              statusEl.textContent = `âš ï¸ Rival desconectado (${_pvpState._disconnectSecondsLeft}s)`;
+              statusEl.textContent = `⚠️ Rival desconectado (${_pvpState._disconnectSecondsLeft}s)`;
             }
 
             if (_pvpState._disconnectSecondsLeft <= 0) {
               clearInterval(_pvpState._disconnectInterval);
-              addPvpLog('ðŸ³ï¸ Victoria por abandono.', 'log-info');
+              addPvpLog('🏳️ Victoria por abandono.', 'log-info');
               pvpEnd(true);
             }
           }, 1000);
@@ -438,7 +412,7 @@
       }, 2000);
     }
 
-    // â”€â”€ PvP Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── PvP Screen ───────────────────────────────────────────────
     function showPvpScreen() {
       let ov = document.getElementById('pvp-overlay');
       if (!ov) {
@@ -450,7 +424,7 @@
       const me = _pvpState.myTeam[_pvpState.myActive];
       const enemy = _pvpState.enemyTeam?.[_pvpState.enemyActive];
 
-      // Usamos las clases oficiales .battle-container para asegurar responsividad mÃ³vil automÃ¡tica
+      // Usamos las clases oficiales .battle-container para asegurar responsividad móvil automática
       ov.innerHTML = `
       <div class="battle-container">
         <!-- Arena -->
@@ -460,9 +434,9 @@
           <!-- Ranked Overlay Indicator -->
           <div style="position:absolute; top:8px; right:8px; z-index:20; pointer-events:none; display:flex; flex-direction:column; align-items:flex-end; gap:4px; opacity:0.8;">
              <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:#fff; background:rgba(199,125,255,0.4); padding:4px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(4px);">
-                âš”ï¸ ${_pvpState.isRanked ? 'RANKED' : 'AMISTOSO'}
+                ⚔️ ${_pvpState.isRanked ? 'RANKED' : 'AMISTOSO'}
              </div>
-             <div id="pvp-status-msg" style="font-size:8px; color:var(--yellow); font-weight:700; background:rgba(0,0,0,0.4); padding:3px 6px; border-radius:4px; display:inline-block;">â³ Conectando...</div>
+             <div id="pvp-status-msg" style="font-size:8px; color:var(--yellow); font-weight:700; background:rgba(0,0,0,0.4); padding:3px 6px; border-radius:4px; display:inline-block;">⏳ Conectando...</div>
           </div>
 
           <div class="battle-combatants">
@@ -511,10 +485,10 @@
           <div id="pvp-move-buttons" class="battle-actions"></div>
           <div class="action-row no-catch">
             <button class="action-btn" id="btn-switch" onclick="pvpShowSwitch()" style="background:rgba(199,125,255,0.15); border:1px solid rgba(199,125,255,0.3); color:var(--purple);">
-              ðŸ”„ CAMBIAR
+              🔄 CAMBIAR
             </button>
             <button class="action-btn" id="btn-run" onclick="pvpForfeit()" style="background:rgba(255,59,59,0.1); border:1px solid rgba(255,59,59,0.3); color:var(--red);">
-              ðŸ³ï¸ RENDIRSE
+              🏳️ RENDIRSE
             </button>
           </div>
         </div>
@@ -523,7 +497,7 @@
       _pvpLoadSprites();
       _pvpRenderMoves();
 
-      // Damos un delay extra para asegurar que el contenedor Grid tenga su tamaÃ±o final en PC
+      // Damos un delay extra para asegurar que el contenedor Grid tenga su tamaño final en PC
       setTimeout(() => {
         const bgKey = _pvpState?.isRanked ? 'pvp_ranked' : 'pvp';
         drawBattleBackground(bgKey);
@@ -543,7 +517,7 @@
       }
     }
 
-    // â”€â”€ Move panel renderer (phase-aware) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Move panel renderer (phase-aware) ────────────────────────
     function _pvpRenderMoves() {
       const panel = document.getElementById('pvp-move-buttons');
       const status = document.getElementById('pvp-status-msg');
@@ -556,7 +530,7 @@
       if (status) {
         const msgs = {
           sync: '\u23f3 Conectando...',
-          choosing: '\u2694\ufe0f \u00a1ElegÃ­ tu movimiento!',
+          choosing: '\u2694\ufe0f \u00a1Elegí tu movimiento!',
           waiting: '\u23f3 Esperando al rival...',
           resolving: '\u26a1 Resolviendo turno...',
           faint_switch: '\ud83d\udcab Esperando cambio del rival...',
@@ -583,18 +557,18 @@
         ground: '#c8a060', flying: '#89CFF0', psychic: '#FF6EFF', bug: '#8BC34A',
         rock: '#c8a060', ghost: '#7B2FBE', dragon: '#5C16C5', dark: '#555', steel: '#9E9E9E'
       };
-      const CAT_ICO = { physical: 'âš”ï¸', special: 'âœ¨', status: 'ðŸ”®' };
+      const CAT_ICO = { physical: '⚔️', special: '✨', status: '🔮' };
       const waiting = phase === 'waiting' || phase === 'opponent_disconnected';
 
       panel.innerHTML = (me.moves || []).map((mv, i) => {
         const moveName = mv.name || 'Desconocido';
         const md = MOVE_DATA[moveName] || { power: mv.power || 40, type: 'normal', cat: 'physical' };
         const col = TYPE_COL[md.type] || '#aaa';
-        const ico = CAT_ICO[md.cat] || 'âš”ï¸';
+        const ico = CAT_ICO[md.cat] || '⚔️';
         
         const disabled = mv.pp <= 0 || waiting;
 
-        // Estructura idÃ©ntica a 07_battle.js para mantener fidelidad visual con .move-btn
+        // Estructura idéntica a 07_battle.js para mantener fidelidad visual con .move-btn
         return `
         <button class="move-btn" ${disabled ? 'disabled' : ''}
           style="--move-color: ${col}; opacity: ${waiting ? '0.4' : '1'}; cursor: ${disabled ? 'default' : 'pointer'};"
@@ -698,13 +672,13 @@
       _pvpRenderMoves();
     }
 
-    // â”€â”€ Commit action (both sides) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Commit action (both sides) ───────────────────────────────
     function pvpUseMove(moveIndex) {
       if (!_pvpState || _pvpState.over || _pvpState.phase !== 'choosing') return;
       const me = _pvpState.myTeam[_pvpState.myActive];
       const move = me?.moves?.[moveIndex];
       if (!move) return;
-      if (move.pp <= 0) { notify('Sin PP', 'âš ï¸'); return; }
+      if (move.pp <= 0) { notify('Sin PP', '⚠️'); return; }
 
       _pvpCommitPick({ type: 'move', moveIndex });
     }
@@ -716,7 +690,7 @@
       _pvpRenderMoves(); // Gray out buttons, show "waiting"
 
       if (_pvpState.isHost) {
-        // Host stores pick; if enemy already picked â†’ resolve immediately
+        // Host stores pick; if enemy already picked → resolve immediately
         if (_pvpState.enemyPick !== null) _pvpResolve();
       } else {
         // Client sends pick to host and waits for pvp_turn_result
@@ -724,7 +698,7 @@
       }
     }
 
-    // â”€â”€ Host: resolve the turn â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Host: resolve the turn ───────────────────────────────────
     function _pvpResolve() {
       if (!_pvpState?.isHost || _pvpState.over || _pvpState.phase === 'resolving') return;
       _pvpState.phase = 'resolving';
@@ -739,7 +713,7 @@
       const hostPick = s.myPick;
       const clientPick = s.enemyPick;
 
-      // â”€â”€ Determine who attacks first â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Determine who attacks first ───────────────────────────
       let firstIsHost;
       if (hostPick.type === 'switch') { firstIsHost = true; }
       else if (clientPick.type === 'switch') { firstIsHost = false; }
@@ -757,7 +731,7 @@
         }
       }
 
-      // â”€â”€ Calculate a single action (doesn't apply HP yet) â”€â”€â”€â”€â”€â”€
+      // ── Calculate a single action (doesn't apply HP yet) ──────
       function calcAction(actorIsHost) {
         var effectLog = [];
         const attacker = actorIsHost ? hostPoke : clientPoke;
@@ -793,9 +767,9 @@
         if (attacker.confused > 0) {
           attacker.confused--;
           if (attacker.confused === 0) {
-            effectLog.push(`Â¡${attacker.name} ya no estÃ¡ confundido!`);
+            effectLog.push(`¡${attacker.name} ya no está confundido!`);
           } else {
-            effectLog.push(`Â¡${attacker.name} estÃ¡ confundido!`);
+            effectLog.push(`¡${attacker.name} está confundido!`);
             if (Math.random() < 0.5) {
               const confDmg = Math.max(1, Math.floor(((2 * attacker.level / 5 + 2) * 40 * attacker.atk / attacker.def) / 50) + 2);
               const curHp = actorIsHost ? s.myHp[s.myActive] : s.enemyHp[s.enemyActive];
@@ -809,7 +783,7 @@
         if (attacker.status === 'freeze') {
           if (Math.random() < 0.8) return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'freeze', damage: 0, eff: 1, effectLog };
           attacker.status = null;
-          effectLog.push(`Â¡${attacker.name} se ha descongelado!`);
+          effectLog.push(`¡${attacker.name} se ha descongelado!`);
         }
         
         // Sleep
@@ -817,7 +791,7 @@
           attacker.sleepTurns = (attacker.sleepTurns || 1) - 1;
           if (attacker.sleepTurns > 0) return { type: 'move', moveName, actorIsHost, actorName, targName, statusBlocked: 'sleep', damage: 0, eff: 1, effectLog };
           attacker.status = null;
-          effectLog.push(`Â¡${attacker.name} se despertÃ³!`);
+          effectLog.push(`¡${attacker.name} se despertó!`);
         }
 
         // Paralysis
@@ -872,7 +846,7 @@
         };
       }
 
-      // â”€â”€ Run first action â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Run first action ─────────────────────────────────────
       const firstAction = calcAction(firstIsHost);
 
       // Apply first action's HP changes so second action sees correct state
@@ -885,7 +859,7 @@
         arr[idx] = firstAction.newDefHp;
       }
 
-      // â”€â”€ Run second action (unless first fainted the target) â”€â”€â”€
+      // ── Run second action (unless first fainted the target) ───
       let secondAction = null;
       if (!firstAction.faintedTarget) {
         secondAction = calcAction(!firstIsHost);
@@ -899,7 +873,7 @@
         }
       }
 
-      // Deduct PP for moves that were used (status blocks don't consume PP in real games either â€” but we do)
+      // Deduct PP for moves that were used (status blocks don't consume PP in real games either — but we do)
       function deductPp(actorIsHost, pick) {
         if (pick.type !== 'move') return;
         const poke = actorIsHost ? s.myTeam[s.myActive] : s.enemyTeam[s.enemyActive];
@@ -936,7 +910,7 @@
       _pvpApplyTurnResult(result);
     }
 
-    // â”€â”€ Apply turn result (both sides) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Apply turn result (both sides) ───────────────────────────
     // On HOST: HP already updated; this animates and logs.
     // On CLIENT: sets HP from authoritative values, then animates.
     function _pvpApplyTurnResult(result) {
@@ -945,7 +919,7 @@
 
       const isHost = _pvpState.isHost;
 
-      // â”€â”€ CLIENT: Apply authoritative HP + active indices â”€â”€â”€â”€â”€â”€â”€
+      // ── CLIENT: Apply authoritative HP + active indices ───────
       if (!isHost) {
         _pvpState.myActive = result.clientActiveIdx;
         _pvpState.enemyActive = result.hostActiveIdx;
@@ -969,7 +943,7 @@
         if (enPoke) { enPoke.status = result.hostPokeStatus; enPoke.sleepTurns = result.hostPokeSleepTurns || 0; }
       }
 
-      // â”€â”€ Animate + log each action sequentially â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Animate + log each action sequentially ────────────────
       const actions = [result.first, result.second].filter(Boolean);
       let delay = 0;
 
@@ -981,7 +955,7 @@
           if (_pvpState.over) return;
 
           if (action.type === 'switch') {
-            addPvpLog(`Â¡${action.pokeName} saliÃ³ a combatir!`, myAction ? 'log-player' : 'log-enemy');
+            addPvpLog(`¡${action.pokeName} salió a combatir!`, myAction ? 'log-player' : 'log-enemy');
             if (myAction) _pvpUpdateMyPokemon();
             else _pvpUpdateEnemy();
 
@@ -998,15 +972,15 @@
 
           } else if (action.statusBlocked) {
             const statusMsg = { 
-              sleep: 'estÃ¡ dormido', 
-              freeze: 'estÃ¡ congelado', 
-              paralyze: 'estÃ¡ paralizado',
+              sleep: 'está dormido', 
+              freeze: 'está congelado', 
+              paralyze: 'está paralizado',
               flinch: 'ha retrocedido y no puede moverse',
-              confused_self: 'estÃ¡ confundido y se ha herido a sÃ­ mismo'
+              confused_self: 'está confundido y se ha herido a sí mismo'
             };
             
             (action.effectLog || []).forEach(m => addPvpLog(m, 'log-info'));
-            addPvpLog(`Â¡${action.actorName} ${statusMsg[action.statusBlocked] || 'no pudo moverse'}!`,
+            addPvpLog(`¡${action.actorName} ${statusMsg[action.statusBlocked] || 'no pudo moverse'}!`,
               myAction ? 'log-player' : 'log-enemy');
             
             if (action.statusBlocked === 'confused_self') {
@@ -1016,24 +990,24 @@
             }
 
           } else if (action.missed) {
-            addPvpLog(`Â¡${action.actorName} usÃ³ ${action.moveName}... Â¡FallÃ³!`,
+            addPvpLog(`¡${action.actorName} usó ${action.moveName}... ¡Falló!`,
               myAction ? 'log-player' : 'log-enemy');
 
           } else if (action.isStatus) {
-            addPvpLog(`Â¡${action.actorName} usÃ³ ${action.moveName}!`,
+            addPvpLog(`¡${action.actorName} usó ${action.moveName}!`,
               myAction ? 'log-player' : 'log-enemy');
             (action.effectLog || []).forEach(m => addPvpLog(m, 'log-info'));
 
           } else {
             if (action.triggeredAbility) {
-              addPvpLog(`[Habilidad] Â¡${action.actorName} usÃ³ ${action.triggeredAbility}!`, myAction ? 'log-player' : 'log-enemy');
+              addPvpLog(`[Habilidad] ¡${action.actorName} usó ${action.triggeredAbility}!`, myAction ? 'log-player' : 'log-enemy');
             }
-            addPvpLog(`Â¡${action.actorName} usÃ³ ${action.moveName}!`,
+            addPvpLog(`¡${action.actorName} usó ${action.moveName}!`,
               myAction ? 'log-player' : 'log-enemy');
             if (action.defensiveAbility) {
-              addPvpLog(`[Habilidad] Â¡${action.defensiveAbility} de ${action.targName} redujo el daÃ±o!`, !myAction ? 'log-player' : 'log-enemy');
+              addPvpLog(`[Habilidad] ¡${action.defensiveAbility} de ${action.targName} redujo el daño!`, !myAction ? 'log-player' : 'log-enemy');
             }
-            const effTxt = action.eff >= 2 ? ' Â¡Muy eficaz!' : action.eff === 0 ? ' Â¡No afecta!' : action.eff <= 0.5 ? ' No muy eficaz...' : '';
+            const effTxt = action.eff >= 2 ? ' ¡Muy eficaz!' : action.eff === 0 ? ' ¡No afecta!' : action.eff <= 0.5 ? ' No muy eficaz...' : '';
             addPvpLog(`(-${action.damage} HP)${effTxt}`, myAction ? 'log-player' : 'log-enemy');
 
             // Log secondary effects if any
@@ -1058,7 +1032,7 @@
         delay += 1300;
       }
 
-      // â”€â”€ After all actions: check faints + next turn â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── After all actions: check faints + next turn ───────────
       setTimeout(() => {
         if (!_pvpState || _pvpState.over) return;
         renderPvpBattle();
@@ -1089,7 +1063,7 @@
         if (myHpNow <= 0) {
           const aliveIdx = _pvpState.myTeam.findIndex((p, i) => (_pvpState.myHp[i] ?? p.hp) > 0);
           if (aliveIdx === -1) { setTimeout(() => pvpEnd(false), 400); return; }
-          addPvpLog(`Â¡${_pvpState.myTeam[_pvpState.myActive].name} se desmayÃ³! CambiÃ¡ de PokÃ©mon.`, 'log-enemy');
+          addPvpLog(`¡${_pvpState.myTeam[_pvpState.myActive].name} se desmayó! Cambiá de Pokémon.`, 'log-enemy');
           pvpShowForcedSwitch();
           return;
         }
@@ -1097,7 +1071,7 @@
         if (enemyHpNow <= 0) {
           const aliveCount = _pvpState.enemyHp.filter(h => h > 0).length;
           if (aliveCount === 0) { setTimeout(() => pvpEnd(true), 400); return; }
-          addPvpLog(`Â¡${_pvpState.enemyTeam[_pvpState.enemyActive].name} se desmayÃ³! Esperando al rival...`, 'log-player');
+          addPvpLog(`¡${_pvpState.enemyTeam[_pvpState.enemyActive].name} se desmayó! Esperando al rival...`, 'log-player');
           _pvpState.phase = 'faint_switch';
           _pvpRenderMoves();
           return;
@@ -1108,22 +1082,22 @@
         _pvpState.myPick = null;
         if (_pvpState.isHost) _pvpState.enemyPick = null;
         _pvpRenderMoves();
-        addPvpLog('â”€â”€â”€ Nuevo turno â”€â”€â”€', 'log-info');
+        addPvpLog('─── Nuevo turno ───', 'log-info');
       }, delay + 300);
     }
 
-    // â”€â”€ Switch actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Switch actions ───────────────────────────────────────────
     // Voluntary switch (counts as your action for the turn)
     function pvpShowSwitch() {
       if (!_pvpState || _pvpState.over || _pvpState.phase !== 'choosing') return;
       const alive = _pvpState.myTeam
         .map((p, i) => ({ p, i }))
         .filter(({ i }) => i !== _pvpState.myActive && (_pvpState.myHp[i] ?? _pvpState.myTeam[i].hp) > 0);
-      if (!alive.length) { notify('No hay mÃ¡s PokÃ©mon disponibles', 'âš ï¸'); return; }
+      if (!alive.length) { notify('No hay más Pokémon disponibles', '⚠️'); return; }
 
       _pvpBuildSwitchOverlay(alive, i => {
         _pvpCommitPick({ type: 'switch', switchIndex: i });
-        addPvpLog(`Â¡Vas a cambiar a ${_pvpState.myTeam[i].name}!`, 'log-player');
+        addPvpLog(`¡Vas a cambiar a ${_pvpState.myTeam[i].name}!`, 'log-player');
       }, true);
     }
 
@@ -1138,7 +1112,7 @@
       _pvpBuildSwitchOverlay(alive, i => {
         _pvpState.myActive = i;
         const p = _pvpState.myTeam[i];
-        addPvpLog(`Â¡${p.name} saliÃ³ a combatir!`, 'log-player');
+        addPvpLog(`¡${p.name} salió a combatir!`, 'log-player');
         _pvpState.channel.send({ type: 'broadcast', event: 'pvp_forced_switch', payload: { index: i } });
         _pvpUpdateMyPokemon();
         // Resume next turn (only if not waiting for enemy's forced switch too)
@@ -1146,7 +1120,7 @@
         _pvpState.myPick = null;
         if (_pvpState.isHost) _pvpState.enemyPick = null;
         _pvpRenderMoves();
-        addPvpLog('â”€â”€â”€ Nuevo turno â”€â”€â”€', 'log-info');
+        addPvpLog('─── Nuevo turno ───', 'log-info');
       }, false);
     }
 
@@ -1156,7 +1130,7 @@
       ov.id = 'pvp-switch-overlay';
       ov.style.cssText = 'position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;padding:16px;';
       ov.innerHTML = `<div style="background:var(--card);border-radius:20px;padding:20px;width:100%;max-width:340px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);margin-bottom:14px;">ðŸ”„ ELEGÃ UN POKÃ‰MON</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);margin-bottom:14px;">🔄 ELEGÍ UN POKÉMON</div>
         ${alive.map(({ p, i }) => {
         const hp = _pvpState.myHp[i] ?? p.hp;
         return `<div onclick="(function(){document.getElementById('pvp-switch-overlay').remove();(${onPick.toString()})(${i});})()"
@@ -1168,7 +1142,7 @@
             </div>
             <div style="flex:1;">
               <div style="font-size:12px;font-weight:700;">${p.name}</div>
-              <div style="font-size:10px;color:var(--gray);">${hp}/${p.maxHp} HP Â· Nv.${p.level}</div>
+              <div style="font-size:10px;color:var(--gray);">${hp}/${p.maxHp} HP · Nv.${p.level}</div>
             </div>
           </div>`;
       }).join('')}
@@ -1182,7 +1156,7 @@
     // Legacy: pvpDoSwitch kept for compatibility but now unused internally
     function pvpDoSwitch(index) { pvpShowForcedSwitch(); }
 
-    // â”€â”€ Forfeit / End â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Forfeit / End ────────────────────────────────────────────
     function pvpForfeit() {
       if (!_pvpState || _pvpState.over) return;
       _pvpState.channel.send({ type: 'broadcast', event: 'pvp_forfeit', payload: {} });
@@ -1228,9 +1202,9 @@
         
         if (isRanked) {
           result.innerHTML = `
-            <div style="font-size:64px;margin-bottom:16px;">${won ? 'ðŸ…' : 'ðŸ’”'}</div>
+            <div style="font-size:64px;margin-bottom:16px;">${won ? '🏅' : '💔'}</div>
             <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${won ? 'var(--yellow)' : 'var(--red)'};margin-bottom:12px;">
-              ${won ? 'Â¡VICTORIA RANKED!' : 'Â¡DERROTA RANKED!'}
+              ${won ? '¡VICTORIA RANKED!' : '¡DERROTA RANKED!'}
             </div>
             <div style="font-size:11px;color:#aaa;margin-bottom:24px;text-align:center;padding:0 20px;">
               Tus puntuaciones de ELO han sido actualizadas.<br>Comprueba tu perfil.
@@ -1241,9 +1215,9 @@
             </button>`;
         } else {
           result.innerHTML = `
-            <div style="font-size:64px;margin-bottom:16px;">${won ? 'ðŸ†' : 'ðŸ¤'}</div>
+            <div style="font-size:64px;margin-bottom:16px;">${won ? '🏆' : '🤝'}</div>
             <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${won ? 'var(--yellow)' : 'var(--blue)'};margin-bottom:12px;">
-              ${won ? 'Â¡VICTORIA AMISTOSA!' : 'Â¡BUEN COMBATE!'}
+              ${won ? '¡VICTORIA AMISTOSA!' : '¡BUEN COMBATE!'}
             </div>
             <div style="font-size:11px;color:#aaa;margin-bottom:24px;text-align:center;padding:0 20px;">
               Las batallas entre amigos son para divertirse.<br>No se gana ni se pierde dinero/ELO.
@@ -1265,7 +1239,4 @@
       _pvpState = null;
       _pvpLock = false;
     }
-
-
-
 
