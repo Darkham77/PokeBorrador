@@ -4,6 +4,68 @@
     let _pvpBattleInvitesCh = null;
     let _pvpLock = false;   // prevents double-clicking during animations
 
+    const PVP_TURN_PICK_TIMEOUT_MS = 40000;
+    const PVP_TURN_WARN_SECONDS = 10;
+
+    function _pvpSetInputDeadline() {
+      if (!_pvpState || _pvpState.over) return;
+      _pvpState._inputDeadlineAt = Date.now() + PVP_TURN_PICK_TIMEOUT_MS;
+      _pvpState._afkWarned = false;
+    }
+
+    function _pvpClearInputDeadline() {
+      if (!_pvpState) return;
+      _pvpState._inputDeadlineAt = null;
+      _pvpState._afkWarned = false;
+    }
+    function _pvpNeedsPlayerInput() {
+      if (!_pvpState || _pvpState.over) return false;
+      if (_pvpState.phase === 'choosing') return _pvpState.myPick === null;
+      if (_pvpState.phase === 'faint_switch') {
+        const enemyHp = _pvpState.enemyHp?.[_pvpState.enemyActive] ?? 1;
+        return enemyHp > 0;
+      }
+      return false;
+    }
+
+    function _pvpHandleInputTimeout() {
+      if (!_pvpState || _pvpState.over) return;
+      const needsInput = _pvpNeedsPlayerInput();
+
+      if (!needsInput) {
+        _pvpClearInputDeadline();
+        return;
+      }
+
+      if (!_pvpState._inputDeadlineAt) {
+        _pvpSetInputDeadline();
+        return;
+      }
+
+      const msLeft = _pvpState._inputDeadlineAt - Date.now();
+      const warnMs = PVP_TURN_WARN_SECONDS * 1000;
+      if (msLeft > 0) {
+        if (msLeft <= warnMs) {
+          const secLeft = Math.max(1, Math.ceil(msLeft / 1000));
+          const statusEl = document.getElementById('pvp-status-msg');
+          if (statusEl) {
+            statusEl.textContent = `Tiempo para elegir: ${secLeft}s`;
+            statusEl.style.color = 'var(--red)';
+          }
+          if (!_pvpState._afkWarned) {
+            addPvpLog(`Tiempo bajo: te quedan ${PVP_TURN_WARN_SECONDS}s para elegir.`, 'log-info');
+            _pvpState._afkWarned = true;
+          }
+        }
+        return;
+      }
+
+      addPvpLog('Tiempo agotado: derrota por inactividad.', 'log-info');
+      try { _pvpState.channel?.send({ type: 'broadcast', event: 'pvp_forfeit', payload: {} }); } catch (e) {}
+      pvpEnd(false, false);
+    }
+
+
     // ── Subscribe (polling) for incoming invites ──────────────
     function subscribeBattleInvites() {
   if (!currentUser || _pvpBattleInvitesCh) return;
@@ -186,6 +248,8 @@ async function showPvpInvitePopup(invite) {
         _lastActivityTime: Date.now(),
         _disconnectTimer: null,
         _opponentDisconnected: false,
+        _inputDeadlineAt: null,
+        _afkWarned: false,
         _battleAnnounced: false, // Flag to prevent log spam
       };
       _pvpLock = false;
@@ -228,7 +292,9 @@ async function showPvpInvitePopup(invite) {
         enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 },
         _teamAcknowledged: true,
         _lastActivityTime: Date.now(),
-        _opponentDisconnected: false
+        _opponentDisconnected: false,
+        _inputDeadlineAt: null,
+        _afkWarned: false
       };
 
       const chName = 'pvp-' + ab.inviteId;
@@ -258,6 +324,7 @@ async function showPvpInvitePopup(invite) {
           _pvpState.enemyTeam = payload.team;
           _pvpState.enemyHp = payload.team.map(p => p.hp);
           _pvpState.phase = 'choosing';
+          _pvpSetInputDeadline();
           renderPvpBattle();
           _pvpLoadSprites();
           
@@ -341,6 +408,8 @@ async function showPvpInvitePopup(invite) {
             normalizedPhase = 'choosing';
           }
           _pvpState.phase = normalizedPhase || 'choosing';
+          if (_pvpNeedsPlayerInput()) _pvpSetInputDeadline();
+          else _pvpClearInputDeadline();
           _pvpState._opponentDisconnected = false;
           addPvpLog('✅ Sincronizado.', 'log-info');
           renderPvpBattle();
@@ -373,6 +442,7 @@ async function showPvpInvitePopup(invite) {
           if (_pvpState.phase === 'faint_switch') {
             _pvpState.phase = 'choosing'; _pvpState.myPick = null;
             if (_pvpState.isHost) _pvpState.enemyPick = null;
+            _pvpSetInputDeadline();
             _pvpRenderMoves();
           }
         })
@@ -383,6 +453,7 @@ async function showPvpInvitePopup(invite) {
           if (_pvpState._opponentDisconnected) {
             _pvpState._opponentDisconnected = false;
             _pvpState.phase = 'choosing';
+            _pvpSetInputDeadline();
             addPvpLog('🔄 ¡Rival reconectado!', 'log-info');
             if (_pvpState._disconnectTimer) { clearTimeout(_pvpState._disconnectTimer); _pvpState._disconnectTimer = null; }
             renderPvpBattle();
@@ -397,6 +468,8 @@ async function showPvpInvitePopup(invite) {
       }, 5000);
 
       const cd = setInterval(() => {
+        if (!_pvpState || _pvpState.over) { clearInterval(cd); return; }
+        _pvpHandleInputTimeout();
         if (!_pvpState || _pvpState.over) { clearInterval(cd); return; }
         const diff = Date.now() - _pvpState._lastActivityTime;
         
@@ -431,7 +504,7 @@ async function showPvpInvitePopup(invite) {
             }
           }, 1000);
         }
-      }, 2000);
+      }, 1000);
     }
 
     // ── PvP Screen ───────────────────────────────────────────────
@@ -539,11 +612,21 @@ async function showPvpInvitePopup(invite) {
       }
     }
 
+    function _pvpApplyMoveButtonsGridLayout() {
+      const panel = document.getElementById('pvp-move-buttons');
+      if (!panel) return;
+      panel.style.display = 'grid';
+      panel.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+      panel.style.gap = '8px';
+      panel.style.flexDirection = '';
+    }
+
     // ── Move panel renderer (phase-aware) ────────────────────────
     function _pvpRenderMoves() {
       const panel = document.getElementById('pvp-move-buttons');
       const status = document.getElementById('pvp-status-msg');
       if (!panel || !_pvpState) return;
+      _pvpApplyMoveButtonsGridLayout();
 
       const me = _pvpState.myTeam[_pvpState.myActive];
       const phase = _pvpState.phase;
@@ -560,6 +643,14 @@ async function showPvpInvitePopup(invite) {
         };
         status.textContent = msgs[phase] || '';
         status.style.color = phase === 'choosing' ? 'var(--green)' : phase === 'opponent_disconnected' ? 'var(--red)' : 'var(--yellow)';
+        if (_pvpNeedsPlayerInput() && _pvpState._inputDeadlineAt) {
+          const msLeft = _pvpState._inputDeadlineAt - Date.now();
+          if (msLeft > 0 && msLeft <= (PVP_TURN_WARN_SECONDS * 1000)) {
+            const secLeft = Math.max(1, Math.ceil(msLeft / 1000));
+            status.textContent = `Tiempo para elegir: ${secLeft}s`;
+            status.style.color = 'var(--red)';
+          }
+        }
       }
 
       if (_pvpState.over || phase === 'sync' || phase === 'resolving') {
@@ -709,6 +800,7 @@ async function showPvpInvitePopup(invite) {
       if (!_pvpState || _pvpState.phase !== 'choosing') return;
       _pvpState.myPick = pick;
       _pvpState.phase = 'waiting';
+      _pvpClearInputDeadline();
       _pvpRenderMoves(); // Gray out buttons, show "waiting"
 
       if (_pvpState.isHost) {
@@ -724,6 +816,7 @@ async function showPvpInvitePopup(invite) {
     function _pvpResolve() {
       if (!_pvpState?.isHost || _pvpState.over || _pvpState.phase === 'resolving') return;
       _pvpState.phase = 'resolving';
+      _pvpClearInputDeadline();
       _pvpRenderMoves();
 
       const s = _pvpState;
@@ -938,6 +1031,7 @@ async function showPvpInvitePopup(invite) {
     function _pvpApplyTurnResult(result) {
       if (!_pvpState) return;
       _pvpState.phase = 'resolving';
+      _pvpClearInputDeadline();
 
       const isHost = _pvpState.isHost;
 
@@ -1095,6 +1189,7 @@ async function showPvpInvitePopup(invite) {
           if (aliveCount === 0) { setTimeout(() => pvpEnd(true), 400); return; }
           addPvpLog(`¡${_pvpState.enemyTeam[_pvpState.enemyActive].name} se desmayó! Esperando al rival...`, 'log-player');
           _pvpState.phase = 'faint_switch';
+          _pvpClearInputDeadline();
           _pvpRenderMoves();
           return;
         }
@@ -1103,6 +1198,7 @@ async function showPvpInvitePopup(invite) {
         _pvpState.phase = 'choosing';
         _pvpState.myPick = null;
         if (_pvpState.isHost) _pvpState.enemyPick = null;
+        _pvpSetInputDeadline();
         _pvpRenderMoves();
         addPvpLog('─── Nuevo turno ───', 'log-info');
       }, delay + 300);
@@ -1126,6 +1222,7 @@ async function showPvpInvitePopup(invite) {
     // Forced switch after faint (no cancel button)
     function pvpShowForcedSwitch() {
       _pvpState.phase = 'faint_switch';
+      _pvpSetInputDeadline();
       const alive = _pvpState.myTeam
         .map((p, i) => ({ p, i }))
         .filter(({ i }) => (_pvpState.myHp[i] ?? _pvpState.myTeam[i].hp) > 0 && i !== _pvpState.myActive);
@@ -1141,6 +1238,7 @@ async function showPvpInvitePopup(invite) {
         _pvpState.phase = 'choosing';
         _pvpState.myPick = null;
         if (_pvpState.isHost) _pvpState.enemyPick = null;
+        _pvpSetInputDeadline();
         _pvpRenderMoves();
         addPvpLog('─── Nuevo turno ───', 'log-info');
       }, false);
@@ -1189,6 +1287,7 @@ async function showPvpInvitePopup(invite) {
       if (!_pvpState || _pvpState.over) return;
       _pvpState.over = true;
       _pvpState.phase = 'over';
+      _pvpClearInputDeadline();
       
       // Limpiar batalla activa del estado global para evitar reconexiones "zombie"
       state.activeBattle = null;
