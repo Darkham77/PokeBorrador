@@ -26,30 +26,30 @@ function restoreActiveBattle() {
     
     if (isTooOld) {
       ov.innerHTML = `
-        <div style="background:var(--card);border-radius:24px;padding:32px;max-width:380px;width:100%;border:2px solid var(--red);text-align:center;box-shadow:0 0 40px rgba(239,68,68,0.3);">
-          <div style="font-size:52px;margin-bottom:12px;">⚠️</div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--red);margin-bottom:12px;">BATALLA PvP EXPIRADA</div>
-          <div style="font-size:13px;color:#eee;margin:12px 0;line-height:1.7;">
+        <div style="background:rgba(15,23,42,0.95); border-radius:24px; padding:32px; max-width:380px; width:100%; border:2px solid var(--red); text-align:center; box-shadow:0 0 50px rgba(239,68,68,0.4); backdrop-filter:blur(10px); color:white;">
+          <div style="font-size:52px; margin-bottom:12px; filter:drop-shadow(0 0 10px rgba(239,68,68,0.5));">⚠️</div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:var(--red); margin-bottom:16px; line-height:1.5;">BATALLA PvP EXPIRADA</div>
+          <div style="font-size:13px; color:#cbd5e1; margin:12px 0; line-height:1.7;">
             La batalla contra <strong>${ab.enemyUsername || 'el rival'}</strong> ha expirado o fue abandonada.<br>
-            <span style="color:var(--red);font-weight:bold;">Se registró como derrota.</span>
+            <span style="color:var(--red); font-weight:bold;">Se registró como derrota.</span>
           </div>
-          <button id="restore-pvp-close-btn" class="action-btn" style="width:100%; background:var(--gray);">CONTINUAR</button>
+          <button id="restore-pvp-close-btn" class="action-btn" style="width:100%; border-radius:12px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-family:'Press Start 2P',monospace; font-size:9px; padding:15px; margin-top:20px; cursor:pointer;">CONTINUAR</button>
         </div>`;
     } else {
       ov.innerHTML = `
-        <div style="background:var(--card);border-radius:24px;padding:32px;max-width:400px;width:100%;border:2px solid var(--purple);text-align:center;box-shadow:0 0 40px rgba(199,125,255,0.2);">
-          <div style="font-size:52px;margin-bottom:12px;">⚡</div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--purple);margin-bottom:12px;">DETECCION DE DESCONEXION</div>
-          <div style="font-size:13px;color:#eee;margin:12px 0;line-height:1.7;">
-            Parece que te desconectaste de un combate contra <strong>${ab.enemyUsername || 'tu rival'}</strong>.<br>
-            ¡Tenés 60 segundos para volver antes de perder por abandono!
+        <div style="background:rgba(15,23,42,0.95); border-radius:30px; padding:40px 32px; max-width:420px; width:100%; border:2px solid #C77DFF; text-align:center; box-shadow:0 0 60px rgba(199,125,255,0.4); backdrop-filter:blur(15px); color:white; animation: scaleIn 0.3s ease-out;">
+          <div style="font-size:60px; margin-bottom:20px; animation: pulse 2s infinite;">⚡</div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#C77DFF; margin-bottom:16px; letter-spacing:1px;">¡COMBATE DETECTADO!</div>
+          <div style="font-size:14px; color:#e2e8f0; margin:16px 0; line-height:1.8;">
+            Parece que te desconectaste de un combate contra <strong style="color:var(--purple);">${ab.enemyUsername || 'tu rival'}</strong>.<br>
+            ¡Tienes <span style="color:var(--yellow); font-weight:800; font-family:'Press Start 2P',monospace; font-size:10px;">60</span> segundos para volver antes de perder por abandono!
           </div>
-          <div style="display:grid; grid-template-columns: 1fr; gap:12px; margin-top:20px;">
-            <button id="restore-pvp-reconnect-btn" class="action-btn" style="background:var(--purple); color:#fff; border-color:var(--purple-light);">
-              ⚡ RECONECTAR AL DUELO
+          <div style="display:grid; grid-template-columns: 1fr; gap:14px; margin-top:30px;">
+            <button id="restore-pvp-reconnect-btn" class="action-btn" style="width:100%; padding:18px; background:linear-gradient(135deg, #C77DFF, #9b4dca); border:none; border-radius:16px; color:white; font-family:'Press Start 2P',monospace; font-size:10px; cursor:pointer; font-weight:900; box-shadow:0 10px 20px rgba(199,125,255,0.3); transition: transform 0.2s;">
+              ▶ RECONECTAR AHORA
             </button>
-            <button id="restore-pvp-forfeit-btn" class="action-btn" style="background:rgba(255,59,59,0.1); color:var(--red); border-color:rgba(255,59,59,0.2);">
-              🏳️ ABANDONAR (DERROTA)
+            <button id="restore-pvp-forfeit-btn" class="action-btn" style="width:100%; padding:15px; background:transparent; border:1px solid rgba(255,59,59,0.3); border-radius:16px; color:var(--red); font-family:'Press Start 2P',monospace; font-size:8px; cursor:pointer;">
+              ✕ ABANDONAR (DERROTA)
             </button>
           </div>
         </div>`;

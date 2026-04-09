@@ -348,7 +348,7 @@
 
     // ── Save / Load ────────────────────────────────────────────────────────────
     function serializeState() {
-      // Guardar batalla activa solo si es contra entrenador o líder de gimnasio (no salvajes)
+      // Guardar batalla activa: Trainer/Gym o PvP
       let activeBattle = null;
       if (state.battle && !state.battle.over && (state.battle.isTrainer || state.battle.isGym)) {
         try {
@@ -377,6 +377,9 @@
           console.warn('[SAVE] Error serializando batalla activa:', e);
           activeBattle = null;
         }
+      } else if (state.activeBattle && state.activeBattle.isPvP) {
+        // Preservar metadatos de PvP para reconexión
+        activeBattle = { ...state.activeBattle };
       }
       return {
         trainer: state.trainer,

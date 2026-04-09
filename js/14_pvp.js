@@ -325,16 +325,37 @@
       const cd = setInterval(() => {
         if (!_pvpState || _pvpState.over) { clearInterval(cd); return; }
         const diff = Date.now() - _pvpState._lastActivityTime;
+        
+        // Si hay desconexión (más de 10s de silencio)
         if (diff > 10000 && !_pvpState._opponentDisconnected) {
           _pvpState._opponentDisconnected = true;
           _pvpState.phase = 'opponent_disconnected';
+          _pvpState._disconnectSecondsLeft = 60; // Iniciamos en 60s
+          
           addPvpLog('⚠️ Rival desconectado...', 'log-enemy');
           renderPvpBattle();
-          _pvpState._disconnectTimer = setTimeout(() => {
-            if (!_pvpState || _pvpState.over || !_pvpState._opponentDisconnected) return;
-            addPvpLog('🏳️ Victoria por abandono.', 'log-info');
-            pvpEnd(true);
-          }, 60000);
+
+          // Cronómetro de cuenta regresiva
+          _pvpState._disconnectInterval = setInterval(() => {
+            if (!_pvpState || _pvpState.over || !_pvpState._opponentDisconnected) {
+              clearInterval(_pvpState._disconnectInterval);
+              return;
+            }
+            
+            _pvpState._disconnectSecondsLeft--;
+            
+            // Actualizar solo el texto del status sin re-renderizar todo para rendimiento
+            const statusEl = document.getElementById('pvp-status-msg');
+            if (statusEl) {
+              statusEl.textContent = `⚠️ Rival desconectado (${_pvpState._disconnectSecondsLeft}s)`;
+            }
+
+            if (_pvpState._disconnectSecondsLeft <= 0) {
+              clearInterval(_pvpState._disconnectInterval);
+              addPvpLog('🏳️ Victoria por abandono.', 'log-info');
+              pvpEnd(true);
+            }
+          }, 1000);
         }
       }, 2000);
     }
@@ -1093,7 +1114,11 @@
     function pvpEnd(won, _unused) {
       if (!_pvpState || _pvpState.over) return;
       _pvpState.over = true;
-      _pvpLock = true;
+      _pvpState.phase = 'over';
+      
+      // Limpiar batalla activa del estado global para evitar reconexiones "zombie"
+      state.activeBattle = null;
+      if (typeof saveGame === 'function') saveGame(false);
 
       _pvpState.channel.unsubscribe();
 
