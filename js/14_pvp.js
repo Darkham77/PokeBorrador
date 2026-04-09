@@ -255,7 +255,8 @@
             type: 'broadcast', event: 'pvp_sync_data',
             payload: {
               enemyTeam: _pvpState.myTeam, enemyHp: _pvpState.myHp, enemyActive: _pvpState.myActive, enemyStages: _pvpState.myStages,
-              myHp: _pvpState.enemyHp, myActive: _pvpState.enemyActive, myStages: _pvpState.enemyStages, phase: _pvpState.phase
+              myHp: _pvpState.enemyHp, myActive: _pvpState.enemyActive, myStages: _pvpState.enemyStages, phase: _pvpState.phase,
+              opponentPick: _pvpState.myPick
             }
           });
         })
@@ -268,7 +269,15 @@
           _pvpState.myHp = payload.myHp;
           _pvpState.myActive = payload.myActive;
           _pvpState.myStages = payload.myStages;
-          _pvpState.phase = payload.phase;
+          if (_pvpState.isHost && payload.opponentPick && _pvpState.enemyPick === null) {
+            _pvpState.enemyPick = payload.opponentPick;
+          }
+          const syncedPhase = payload.phase;
+          const normalizedPhase = (syncedPhase === 'waiting' || syncedPhase === 'opponent_disconnected')
+            ? 'choosing'
+            : syncedPhase;
+          _pvpState.phase = normalizedPhase;
+          _pvpState._opponentDisconnected = false;
           addPvpLog('✅ Sincronizado.', 'log-info');
           renderPvpBattle();
           _pvpLoadSprites();
