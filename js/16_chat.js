@@ -701,7 +701,9 @@ function toggleGlobalChat(forceState) {
   if (shouldOpen) {
     _refreshGlobalChatComposerState();
     _renderGlobalChatMessages(true);
-    document.getElementById('global-chat-input')?.focus();
+    if (!_isMobileForGlobalChat()) {
+      document.getElementById('global-chat-input')?.focus();
+    }
   }
 }
 

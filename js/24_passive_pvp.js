@@ -763,7 +763,9 @@ function _renderPassiveEditor() {
     const isSelected = _tempEditingUids.includes(p.uid);
     const isPreviewing = _passiveEditorSelectedUid === p.uid;
     const poolSpriteUrl = typeof getSpriteUrl === 'function' ? getSpriteUrl(p.id, p.isShiny) : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.dexNum||p.id}.png`;
-    
+    const tierInfo = (typeof getPokemonTier === 'function') ? getPokemonTier(p) : { tier: '?', color: '#aaa', bg: 'rgba(255,255,255,0.1)' };
+    const tags = Array.isArray(p.tags) ? p.tags : [];
+
     let heldItemHtml = '';
     if (p.heldItem && typeof ITEM_DATA !== 'undefined' && ITEM_DATA[p.heldItem]) {
        if (ITEM_DATA[p.heldItem].sprite) {
@@ -773,12 +775,25 @@ function _renderPassiveEditor() {
        }
     }
 
+    const tagIconsHtml = tags.map(tag => {
+      if (tag === 'fav') return '<span style="font-size:8px;line-height:1;">&#11088;</span>';
+      if (tag === 'breed') return '<span style="font-size:8px;line-height:1;">&#10084;&#65039;</span>';
+      if (tag === 'iv31') return '<span style="font-size:8px;line-height:1;font-family:monospace;">31</span>';
+      return '';
+    }).join('');
+
+    const tagsBadgeHtml = tagIconsHtml
+      ? `<div style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:1px 3px;display:flex;align-items:center;gap:3px;">${tagIconsHtml}</div>`
+      : '';
+
     htmlPool += `
       <div onclick="if(typeof _selectPassiveEditorItem==='function')_selectPassiveEditorItem('${p.uid}')"
       style="border:1px solid ${isPreviewing ? 'var(--purple)' : (isSelected ? 'var(--green)' : 'rgba(255,255,255,0.1)')};border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;cursor:pointer;background:${isPreviewing ? 'rgba(199,125,255,0.2)' : (isSelected ? 'rgba(107,203,119,0.1)' : 'rgba(0,0,0,0.3)')};opacity:${!isPreviewing && isSelected ? '0.5' : '1'};position:relative;">
+        <div style="position:absolute;top:2px;left:2px;background:${tierInfo.bg};color:${tierInfo.color};font-family:'Press Start 2P',monospace;font-size:6px;padding:1px 3px;border-radius:5px;border:1px solid ${tierInfo.color}55;line-height:1.2;">${tierInfo.tier}</div>
         <img src="${poolSpriteUrl}" style="width:40px;height:40px;image-rendering:pixelated;" onerror="this.style.display='none'">
         <div style="font-family:'Press Start 2P',monospace;font-size:6px;margin-top:2px;text-align:center;word-break:break-all;">Lv${p.level}</div>
         ${heldItemHtml}
+        ${tagsBadgeHtml}
       </div>
     `;
   });
