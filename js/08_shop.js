@@ -658,7 +658,7 @@
       },
       {
         id: 'ticket_shiny', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png',
-        name: 'Ticket Shiny', icon: 'âœ¨', price: 0, market: false, trainerShop: true, bcPrice: 15000, unlockLv: 1, tier: 'epic', type: 'booster',
+        name: 'Ticket Shiny', icon: '�S�', price: 0, market: false, trainerShop: true, bcPrice: 15000, unlockLv: 1, tier: 'epic', type: 'booster',
         desc: 'Aumenta temporalmente la probabilidad de encontrar Pokemon Shiny durante 30 minutos.',
         effect: (qty) => { state.inventory['Ticket Shiny'] = (state.inventory['Ticket Shiny'] || 0) + qty; }
       },
