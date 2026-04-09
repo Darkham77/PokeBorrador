@@ -390,7 +390,7 @@
                 <img id="pvp-player-img" src="" alt="" style="image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
               </div>
             </div>
-            <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:10px;z-index:20;position:relative;">
+            <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:40px;z-index:20;position:relative;">
               <div class="battle-pokemon-info" id="pvp-player-info">
                 <div class="battle-name">
                   <span id="pvp-player-name">???</span> 
