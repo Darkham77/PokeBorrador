@@ -521,18 +521,15 @@ async function showPvpInvitePopup(invite) {
 
       // Usamos las clases oficiales .battle-container para asegurar responsividad móvil automática
       ov.innerHTML = `
-      <div class="battle-container">
+      <div class="battle-container" style="position:relative; overflow:visible;">
+        <div id="pvp-fight-header" style="position:absolute; top:-40px; right:0; z-index:30; pointer-events:none; display:flex; flex-direction:column; align-items:flex-end; gap:4px; opacity:0.9;">
+          <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:#fff; background:rgba(199,125,255,0.45); padding:4px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.25); backdrop-filter:blur(4px);">${_pvpState.isRanked ? 'RANKED' : 'AMISTOSO'}
+          </div>
+          <div id="pvp-status-msg" style="font-size:8px; color:var(--yellow); font-weight:700; background:rgba(0,0,0,0.48); padding:3px 6px; border-radius:4px; display:inline-block;">Conectando...</div>
+        </div>
         <!-- Arena -->
         <div class="battle-arena" id="pvp-arena" style="position:relative; overflow:hidden;">
           <canvas id="pvp-battle-bg-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;border-radius:18px;"></canvas>
-          
-          <!-- Ranked Overlay Indicator -->
-          <div style="position:absolute; top:8px; right:8px; z-index:20; pointer-events:none; display:flex; flex-direction:column; align-items:flex-end; gap:4px; opacity:0.8;">
-             <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:#fff; background:rgba(199,125,255,0.4); padding:4px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(4px);">
-                ⚔️ ${_pvpState.isRanked ? 'RANKED' : 'AMISTOSO'}
-             </div>
-             <div id="pvp-status-msg" style="font-size:8px; color:var(--yellow); font-weight:700; background:rgba(0,0,0,0.4); padding:3px 6px; border-radius:4px; display:inline-block;">⏳ Conectando...</div>
-          </div>
 
           <div class="battle-combatants">
             <div style="display:flex;align-items:flex-start;justify-content:flex-start;">
@@ -578,7 +575,7 @@ async function showPvpInvitePopup(invite) {
 
         <div id="pvp-move-panel" class="move-panel-wrapper">
           <div id="pvp-move-buttons" class="battle-actions"></div>
-          <div class="action-row no-catch">
+          <div class="action-row no-catch" style="grid-template-columns:1fr 1fr;grid-template-areas:'switch run';">
             <button class="action-btn" id="btn-switch" onclick="pvpShowSwitch()" style="background:rgba(199,125,255,0.15); border:1px solid rgba(199,125,255,0.3); color:var(--purple);">
               🔄 CAMBIAR
             </button>
