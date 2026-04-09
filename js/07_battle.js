@@ -196,7 +196,7 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   showScreen('battle-screen');
   updateBattleUI();
   renderMoveButtons();
-  document.getElementById('move-buttons').style.display = 'grid';
+  applyMoveButtonsGridLayout();
 
   let startMsg = `¡Un ${enemy.name} salvaje apareció!`;
   if (isGym) startMsg = `¡Un ${enemy.name} salvaje apareció! ¡Es un combate de Gimnasio!`;
@@ -556,6 +556,15 @@ function setBtns(enabled) {
   });
 }
 
+function applyMoveButtonsGridLayout() {
+  const mb = document.getElementById('move-buttons');
+  if (!mb) return;
+  mb.style.display = 'grid';
+  mb.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+  mb.style.gap = '8px';
+  mb.style.flexDirection = '';
+}
+
 function renderMoveButtons() {
   const b = state.battle;
   const container = document.getElementById('move-buttons');
@@ -601,9 +610,7 @@ function renderMoveButtons() {
 
 function showMoves() {
   renderMoveButtons();
-  const mb = document.getElementById('move-buttons');
-  mb.style.display = 'grid';
-  mb.style.flexDirection = ''; // Reset flex if it was set
+  applyMoveButtonsGridLayout();
 }
 
 // ── Official damage formula (Gen 4+) ──────────────────────
@@ -2577,8 +2584,7 @@ function _endEnemyTurn() {
     _battleLock = false;
     setBtns(true);
     renderMoveButtons();
-    const btnContainer = document.getElementById('move-buttons');
-    if (btnContainer) btnContainer.style.display = 'grid';
+    applyMoveButtonsGridLayout();
   }, 600);
 }
 
