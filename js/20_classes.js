@@ -1699,6 +1699,60 @@ function _launchMission(missionId, extraData = {}) {
   openClassMissionsPanel();
 }
 
+function _applyTrainerMissionProgress(pokemon, expAmount, bonusLevels = 0) {
+  const result = {
+    levelsFromExp: 0,
+    bonusLevels: 0,
+    blockedByEverstone: false,
+    pendingMoves: []
+  };
+  if (!pokemon || (pokemon.level || 1) >= 100) return result;
+
+  const safeExp = Math.max(0, Math.floor(expAmount || 0));
+  if (!Number.isFinite(pokemon.expNeeded) || pokemon.expNeeded <= 0) {
+    pokemon.expNeeded = (typeof getExpNeeded === 'function') ? getExpNeeded(pokemon.level || 1) : Infinity;
+  }
+
+  pokemon.exp = (pokemon.exp || 0) + safeExp;
+  let needed = pokemon.expNeeded;
+
+  while (pokemon.exp >= needed && pokemon.level < 100) {
+    if (typeof isLevelBlockedByEverstone === 'function' && isLevelBlockedByEverstone(pokemon)) {
+      result.blockedByEverstone = true;
+      break;
+    }
+    pokemon.exp -= needed;
+    const pending = levelUpPokemon(pokemon);
+    if (pending === null) {
+      result.blockedByEverstone = true;
+      break;
+    }
+    result.levelsFromExp++;
+    if (Array.isArray(pending) && pending.length > 0) {
+      pending.forEach(move => result.pendingMoves.push({ pokemon: pokemon, move: move }));
+    }
+    needed = pokemon.expNeeded;
+  }
+
+  for (let i = 0; i < bonusLevels && pokemon.level < 100; i++) {
+    if (typeof isLevelBlockedByEverstone === 'function' && isLevelBlockedByEverstone(pokemon)) {
+      result.blockedByEverstone = true;
+      break;
+    }
+    const pending = levelUpPokemon(pokemon);
+    if (pending === null) {
+      result.blockedByEverstone = true;
+      break;
+    }
+    result.bonusLevels++;
+    if (Array.isArray(pending) && pending.length > 0) {
+      pending.forEach(move => result.pendingMoves.push({ pokemon: pokemon, move: move }));
+    }
+  }
+
+  return result;
+}
+
 // ── collectClassMission: Cobrar recompensas al terminar ──────────────────
 function collectClassMission() {
   const cls = state.playerClass;
@@ -1738,14 +1792,25 @@ function collectClassMission() {
     if (p) {
       const expBlocks = info?.blocks || 1;
       const expGained = expBlocks * (25000 + (p.level * 1000));
-      p.exp = (p.exp || 0) + expGained;
-      // Si opción 24h, dar +1 nivel garantizado
-      if (am.id === 'mission_24h') {
-        p.level = Math.min((p.level || 1) + 1, 100);
-        notifMsg = `¡${am.pokeName} ganó +${expGained.toLocaleString()} EXP y subió un nivel!`;
+      const bonusLevels = am.id === 'mission_24h' ? 1 : 0;
+      const progress = _applyTrainerMissionProgress(p, expGained, bonusLevels);
+      const totalLevels = progress.levelsFromExp + progress.bonusLevels;
+      const pokeName = am.pokeName || p.name || p.id || 'Tu Pokemon';
+
+      if (totalLevels > 0) {
+        notifMsg = `¡${pokeName} ganó +${expGained.toLocaleString()} EXP y subió ${totalLevels} nivel${totalLevels !== 1 ? 'es' : ''}!`;
       } else {
-        notifMsg = `¡${am.pokeName} ganó +${expGained.toLocaleString()} EXP!`;
+        notifMsg = `¡${pokeName} ganó +${expGained.toLocaleString()} EXP!`;
       }
+
+      if (progress.blockedByEverstone) {
+        notifMsg += ' Tu Pokemon no subio de nivel porque lleva Piedra Eterna.';
+      }
+
+      if (progress.pendingMoves.length > 0 && typeof processLearnMoveQueue === 'function') {
+        setTimeout(() => processLearnMoveQueue(progress.pendingMoves, () => {}), 250);
+      }
+
       p.onMission = false;
     } else {
       notifMsg = '¡Entrenamiento completado!';
@@ -1805,7 +1870,6 @@ function collectClassMission() {
   openClassMissionsPanel();
 }
 
-// ── processOfflineClassMissions: Cobro automático offline ────────────────
 function processOfflineClassMissions() {
   const am = state.classData?.activeMission;
   if (!am || Date.now() < am.endsAt) return;
@@ -1838,9 +1902,24 @@ function processOfflineClassMissions() {
     if (p) {
       const expBlocks = info?.blocks || 1;
       const expGained = expBlocks * (15000 + (p.level * 500));
-      p.exp = (p.exp || 0) + expGained;
-      if (am.id === 'mission_24h') p.level = Math.min((p.level || 1) + 1, 100);
-      notifMsg = `📬 ${am.pokeName || 'Tu Pokémon'} ganó EXP mientras no estabas.`;
+      const bonusLevels = am.id === 'mission_24h' ? 1 : 0;
+      const progress = _applyTrainerMissionProgress(p, expGained, bonusLevels);
+      const totalLevels = progress.levelsFromExp + progress.bonusLevels;
+      const pokeName = am.pokeName || p.name || p.id || 'Tu Pokemon';
+
+      notifMsg = `📬 ${pokeName} ganó EXP mientras no estabas`;
+      if (totalLevels > 0) {
+        notifMsg += ` y subió ${totalLevels} nivel${totalLevels !== 1 ? 'es' : ''}`;
+      }
+      if (progress.blockedByEverstone) {
+        notifMsg += '. Tu Pokemon no subio de nivel porque lleva Piedra Eterna.';
+      } else {
+        notifMsg += '.';
+      }
+
+      if (progress.pendingMoves.length > 0 && typeof processLearnMoveQueue === 'function') {
+        setTimeout(() => processLearnMoveQueue(progress.pendingMoves, () => {}), 250);
+      }
     }
   } else if (cls === 'criador') {
     if (p) {

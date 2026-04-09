@@ -3059,8 +3059,16 @@ function awardBattleExperience(isCapture = false) {
     p.exp = (p.exp || 0) + pExp;
     let needed = p.expNeeded;
     while (p.exp >= needed && p.level < 100) {
+      if (typeof isLevelBlockedByEverstone === 'function' && isLevelBlockedByEverstone(p)) {
+        addLog(`¡${p.name} no sube de nivel porque lleva Piedra Eterna!`, 'log-info');
+        break;
+      }
       p.exp -= needed;
       const pending = levelUpPokemon(p);
+      if (pending === null) {
+        addLog(`¡${p.name} no sube de nivel porque lleva Piedra Eterna!`, 'log-info');
+        break;
+      }
       addLog(`¡${p.name} subió al <span style="color:#3b82f6;font-weight:bold;">nivel ${p.level}</span>!`, 'log-info');
       if (pending) pending.forEach(mv => b.learnQueue.push({ pokemon: p, move: mv }));
       needed = p.expNeeded;

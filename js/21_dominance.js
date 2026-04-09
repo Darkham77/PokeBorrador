@@ -1345,8 +1345,9 @@ async function claimDefenseRewards(recordId) {
     // 1. Dar monedas
     state.warCoins = (state.warCoins || 0) + coins;
     
-    // 2. Dar XP al Pokémon (buscamos el original en equipo/caja)
+        // 2. Dar XP al Pokémon (buscamos el original en equipo/caja)
     let found = false;
+    let blockedByEverstone = false;
     const allPokes = [...(state.team || []), ...(state.box || [])];
     const poke = allPokes.find(p => p.uid === def.pokemon_uid);
     
@@ -1354,8 +1355,16 @@ async function claimDefenseRewards(recordId) {
       if (poke.level < 100) {
         poke.exp = (poke.exp || 0) + xpToGive;
         while (poke.exp >= poke.expNeeded && poke.level < 100) {
+          if (typeof isLevelBlockedByEverstone === 'function' && isLevelBlockedByEverstone(poke)) {
+            blockedByEverstone = true;
+            break;
+          }
           poke.exp -= poke.expNeeded;
-          levelUpPokemon(poke);
+          const pending = levelUpPokemon(poke);
+          if (pending === null) {
+            blockedByEverstone = true;
+            break;
+          }
         }
       }
       poke.onDefense = false;
@@ -1365,7 +1374,8 @@ async function claimDefenseRewards(recordId) {
     // 3. Eliminar de la DB
     await window.sb.from('war_defenders').delete().eq('id', recordId);
     
-    notify(`¡Defensor retirado! Ganaste ⚡${coins} y ${xpToGive} EXP.`, '🛡️');
+    const blockMsg = blockedByEverstone ? ' No subio de nivel porque lleva Piedra Eterna.' : '';
+    notify(`¡Defensor retirado! Ganaste ⚡${coins} y ${xpToGive} EXP.${blockMsg}`, '🛡️');
     
     if (typeof saveGame === 'function') saveGame(false);
     renderMyDefenders();

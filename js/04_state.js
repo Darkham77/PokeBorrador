@@ -392,12 +392,19 @@
       return `<span class="gender-badge ${data.cls}">${data.text}</span>`;
     }
     // ── EXP System ────────────────────────────────────────────────────────────
+    
+
     function getExpNeeded(level) {
       if (level >= 100) return Infinity;
       // Medium Fast curve scaled for web game: (Lv+1)^3 - Lv^3
       return Math.floor(Math.pow(level + 1, 3) - Math.pow(level, 3));
     }
 
+    function isLevelBlockedByEverstone(pokemon) {
+      if (!pokemon) return false;
+      if ((pokemon.level || 1) >= 100) return false;
+      return pokemon.heldItem === 'Piedra Eterna';
+    }
     // --- AUTO-REPAIR & SANITIZATION ---
     function sanitizeMoves(p) {
       if (!p || !p.moves) return;
@@ -604,9 +611,11 @@
       p.spd = getStat(base.spd || base.def, p.ivs.spd, p.level, 'Def. Esp');
       p.spe = getStat(base.spe || 45, p.ivs.spe, p.level, 'Velocidad');
     }
-
     function levelUpPokemon(p) {
       if (p.level >= 100) return [];
+      if (typeof isLevelBlockedByEverstone === 'function' && isLevelBlockedByEverstone(p)) {
+        return null;
+      }
       p.level++;
       p.expNeeded = getExpNeeded(p.level);
       const oldMaxHp = p.maxHp;

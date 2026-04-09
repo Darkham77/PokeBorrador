@@ -37,7 +37,11 @@
       'Revivir': p => { if (p.hp > 0) return null; p.hp = Math.floor(p.maxHp / 2); return `fue revivido con ${p.hp} HP`; },
       'Caramelo Raro': p => {
         if (p.level >= 100) return null;
+        if (typeof isLevelBlockedByEverstone === 'function' && isLevelBlockedByEverstone(p)) {
+          return 'blocked_everstone';
+        }
         const pending = levelUpPokemon(p);
+        if (pending === null) return 'blocked_everstone';
         const lvResult = `subió al nivel ${p.level}`;
         if (pending && pending.length > 0) {
           const queue = pending.map(mv => ({ pokemon: p, move: mv }));
@@ -515,6 +519,10 @@
       } else {
         const result = fn(p);
         if (result === null) { notify('No hace efecto.', '⚠️'); return; }
+        if (result === 'blocked_everstone') {
+          notify('Tu Pokemon no subio de nivel porque lleva Piedra Eterna.', '🪨');
+          return;
+        }
         if (result === 'deferred') return;
 
         state.inventory[itemName]--;
