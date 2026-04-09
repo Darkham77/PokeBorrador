@@ -72,11 +72,11 @@ function _formatSeasonDate(dateObj) {
 
 // ── Tiers de ELO ─────────────────────────────────────────────────────
 function getEloTier(elo) {
-  if (elo >= 2000) return { name: 'Maestro',  icon: '👑', color: '#FFD700' };
-  if (elo >= 1600) return { name: 'Diamante', icon: '💎', color: '#89CFF0' };
-  if (elo >= 1300) return { name: 'Platino',  icon: '🔶', color: '#E5C100' };
-  if (elo >= 1100) return { name: 'Oro',      icon: '🥇', color: '#FFB800' };
-  if (elo >= 900)  return { name: 'Plata',    icon: '🥈', color: '#9E9E9E' };
+  if (elo >= 3400) return { name: 'Maestro',  icon: '👑', color: '#FFD700' };
+  if (elo >= 2700) return { name: 'Diamante', icon: '💎', color: '#89CFF0' };
+  if (elo >= 2100) return { name: 'Platino',  icon: '🔶', color: '#E5C100' };
+  if (elo >= 1600) return { name: 'Oro',      icon: '🥇', color: '#FFB800' };
+  if (elo >= 1200)  return { name: 'Plata',    icon: '🥈', color: '#9E9E9E' };
   return                   { name: 'Bronce',  icon: '🥉', color: '#c8a060' };
 }
 
@@ -886,22 +886,72 @@ function confirmPassiveTeamEdit() {
 
 
 // ── Buscar equipo pasivo para el fallback ─────────────────────────────
+function _rankedEloDistance(a, b) {
+  const aNum = Number(a);
+  const bNum = Number(b);
+  if (!Number.isFinite(aNum) || !Number.isFinite(bNum)) return Number.POSITIVE_INFINITY;
+  return Math.abs(aNum - bNum);
+}
+
+function _pickClosestByElo(candidates, myElo, topPool = 5) {
+  if (!Array.isArray(candidates) || !candidates.length) return null;
+  const sorted = [...candidates].sort((x, y) => _rankedEloDistance(x?.elo_rating, myElo) - _rankedEloDistance(y?.elo_rating, myElo));
+  const pool = sorted.slice(0, Math.max(1, Math.min(topPool, sorted.length)));
+  return pool[Math.floor(Math.random() * pool.length)] || null;
+}
+
+async function _tryFindPassiveOpponentQuery({ requireActive = true, useEloWindow = true, myElo = 1000, eloRange = 300 } = {}) {
+  let query = sb.from('passive_teams')
+    .select('user_id, team_data, elo_rating, is_active')
+    .neq('user_id', currentUser.id);
+
+  if (requireActive) query = query.eq('is_active', true);
+  if (useEloWindow) {
+    query = query
+      .gte('elo_rating', myElo - eloRange)
+      .lte('elo_rating', myElo + eloRange);
+  }
+
+  // Evita depender de columnas opcionales como updated_at.
+  query = query.limit(80);
+
+  const { data, error } = await query;
+  if (error) return { data: null, error };
+  return { data: Array.isArray(data) ? data : [], error: null };
+}
+
 async function findPassiveOpponent() {
-  if (!currentUser) return null;
+  if (!currentUser || !sb) return null;
   const myElo = state.eloRating || 1000;
-  const range  = 200;
 
-  const { data, error } = await sb.from('passive_teams')
-    .select('user_id, team_data, elo_rating')
-    .eq('is_active', true)
-    .neq('user_id', currentUser.id)
-    .gte('elo_rating', myElo - range)
-    .lte('elo_rating', myElo + range)
-    .order('updated_at', { ascending: false })
-    .limit(10);
+  const attempts = [
+    { requireActive: true, useEloWindow: true, myElo, eloRange: 300 },
+    { requireActive: true, useEloWindow: false, myElo, eloRange: 300 },
+    { requireActive: false, useEloWindow: false, myElo, eloRange: 300 }
+  ];
 
-  if (error || !data?.length) return null;
-  return data[Math.floor(Math.random() * data.length)];
+  for (const cfg of attempts) {
+    let rows = [];
+    try {
+      const { data, error } = await _tryFindPassiveOpponentQuery(cfg);
+      if (error) {
+        console.warn('[Ranked] findPassiveOpponent query error:', error);
+        continue;
+      }
+      rows = data || [];
+    } catch (e) {
+      console.warn('[Ranked] findPassiveOpponent query failed:', e);
+      continue;
+    }
+
+    const valid = rows.filter(r => r && r.user_id && Array.isArray(r.team_data) && r.team_data.length > 0);
+    if (!valid.length) continue;
+
+    const chosen = _pickClosestByElo(valid, myElo, 6);
+    if (chosen) return chosen;
+  }
+
+  return null;
 }
 
 // ── Estado de Matchmaking ─────────────────────────────────────────────
@@ -911,16 +961,97 @@ let _matchmakingTimeout  = null;
 let _matchmakingSeconds  = 60;
 let _matchmakingQueueId  = null;   // Row en la tabla ranked_queue
 
-// ── Entrada: Buscar Partida ───────────────────────────────────────────
+async function _clearOwnRankedQueueRow() {
+  if (!currentUser || !sb) return;
+  try {
+    await sb.from('ranked_queue').delete().eq('user_id', currentUser.id);
+  } catch (e) {
+    // noop: puede no existir la tabla en algunos entornos
+  }
+  _matchmakingQueueId = null;
+}
+
+async function _upsertRankedQueueEntry(myElo) {
+  if (!currentUser || !sb) return null;
+
+  const payloads = [
+    { user_id: currentUser.id, elo_rating: myElo, status: 'searching', updated_at: new Date().toISOString() },
+    { user_id: currentUser.id, elo_rating: myElo, status: 'searching' },
+    { user_id: currentUser.id, elo_rating: myElo },
+    { user_id: currentUser.id }
+  ];
+
+  for (const payload of payloads) {
+    try {
+      const upsertRes = await sb.from('ranked_queue').upsert(payload, { onConflict: 'user_id' }).select('id').single();
+      if (!upsertRes.error) return upsertRes.data?.id || null;
+    } catch (e) {}
+
+    try {
+      const insertRes = await sb.from('ranked_queue').insert(payload).select('id').single();
+      if (!insertRes.error) return insertRes.data?.id || null;
+    } catch (e) {}
+  }
+
+  return null;
+}
+
+async function _loadQueueCandidates(myElo) {
+  if (!currentUser || !sb) return [];
+
+  const queryBuilders = [
+    () => sb.from('ranked_queue')
+      .select('id, user_id, elo_rating, status')
+      .eq('status', 'searching')
+      .neq('user_id', currentUser.id)
+      .gte('elo_rating', myElo - 300)
+      .lte('elo_rating', myElo + 300)
+      .order('created_at', { ascending: true })
+      .limit(30),
+    () => sb.from('ranked_queue')
+      .select('id, user_id, elo_rating, status')
+      .eq('status', 'searching')
+      .neq('user_id', currentUser.id)
+      .gte('elo_rating', myElo - 300)
+      .lte('elo_rating', myElo + 300)
+      .limit(30),
+    () => sb.from('ranked_queue')
+      .select('id, user_id, elo_rating, status')
+      .neq('user_id', currentUser.id)
+      .limit(40),
+    () => sb.from('ranked_queue')
+      .select('id, user_id, elo_rating')
+      .neq('user_id', currentUser.id)
+      .limit(40),
+    () => sb.from('ranked_queue')
+      .select('user_id')
+      .neq('user_id', currentUser.id)
+      .limit(40)
+  ];
+
+  for (const build of queryBuilders) {
+    try {
+      const { data, error } = await build();
+      if (error) continue;
+      if (Array.isArray(data) && data.length) return data;
+    } catch (e) {
+      // try next shape
+    }
+  }
+
+  return [];
+}
+
+// ?? Entrada: Buscar Partida ???????????????????????????????????????????
 async function startRankedMatchmaking() {
-  if (!currentUser) { notify('Debes estar logueado', '\u26A0\uFE0F'); return; }
+  if (!currentUser) { notify('Debes estar logueado', '⚠️'); return; }
   if (_matchmakingInterval) return; // Ya buscando
 
   window.isRankedSearching = true;
 
   const myTeam = getRankedPlayableTeam();
   if (!myTeam.length) {
-    notify('Configura tu equipo ranked antes de buscar partida.', '\u26A0\uFE0F');
+    notify('Configura tu equipo ranked antes de buscar partida.', '⚠️');
     window.isRankedSearching = false;
     return;
   }
@@ -931,23 +1062,8 @@ async function startRankedMatchmaking() {
     return;
   }
 
-  // Registrar en la cola de matchmaking (tabla ranked_queue en Supabase)
-  // Si la tabla no existe aun, sigue igual pero el matchmaking funcionara solo por fallback
   const myElo = state.eloRating || 1000;
-  try {
-    const { data: qRow, error: qErr } = await sb.from('ranked_queue').insert({
-      user_id: currentUser.id,
-      elo_rating: myElo,
-      status: 'searching',
-    }).select('id').single();
-
-    if (!qErr && qRow?.id) {
-      _matchmakingQueueId = qRow.id;
-    }
-  } catch (e) {
-    // La tabla puede no existir aun ? el fallback a pasivo funciona igual
-    console.warn('[Matchmaking] ranked_queue no disponible, modo fallback activo.');
-  }
+  _matchmakingQueueId = await _upsertRankedQueueEntry(myElo);
 
   _matchmakingSeconds = 60;
   _showSearchingUI(true);
@@ -958,7 +1074,6 @@ async function startRankedMatchmaking() {
     const timerEl = document.getElementById('ranked-search-timer');
     if (timerEl) {
       timerEl.textContent = _matchmakingSeconds;
-      // Cambiar color cuando queda poco tiempo
       timerEl.style.color = _matchmakingSeconds <= 10 ? 'var(--red)' : 'var(--purple)';
     }
 
@@ -978,83 +1093,95 @@ async function _checkForHumanOpponent() {
   const myElo = state.eloRating || 1000;
 
   try {
-    const { data, error } = await sb.from('ranked_queue')
-      .select('id, user_id, elo_rating')
-      .eq('status', 'searching')
-      .neq('user_id', currentUser.id)
-      .gte('elo_rating', myElo - 300)
-      .lte('elo_rating', myElo + 300)
-      .order('created_at', { ascending: true })
-      .limit(1);
+    const rows = await _loadQueueCandidates(myElo);
+    if (!rows.length) return;
 
-    if (error || !data?.length) return;
+    const candidates = rows
+      .filter(r => r && r.user_id && r.user_id !== currentUser.id)
+      .filter(r => !r.status || r.status === 'searching');
+    if (!candidates.length) return;
 
-    const opponent = data[0];
-    // Intentar "tomar" ese slot atómicamente
-    const { error: matchErr } = await sb.from('ranked_queue')
-      .update({ status: 'matched' })
-      .eq('id', opponent.id)
-      .eq('status', 'searching'); // Solo actualizar si sigue buscando
+    const opponent = _pickClosestByElo(candidates, myElo, 4) || candidates[0];
+    if (!opponent?.user_id) return;
 
-    if (matchErr) return; // Otro jugador llegó primero
-
-    // Marcar el nuestro también
+    // Best effort: marcar matched si la columna existe
+    if (opponent.id) {
+      try {
+        await sb.from('ranked_queue')
+          .update({ status: 'matched' })
+          .eq('id', opponent.id)
+          .eq('status', 'searching');
+      } catch (e) {}
+    }
     if (_matchmakingQueueId) {
-      await sb.from('ranked_queue')
-        .update({ status: 'matched' })
-        .eq('id', _matchmakingQueueId);
+      try {
+        await sb.from('ranked_queue')
+          .update({ status: 'matched' })
+          .eq('id', _matchmakingQueueId);
+      } catch (e) {}
     }
 
-    // ¡Rival encontrado! Iniciar PvP normal vía invite
-    _matchmakingStop();
-    notify('¡Rival encontrado! Iniciando batalla...', '⚔️');
-    
-    // Crear invitación forzada de Ranked Match
-    if (typeof sb !== 'undefined') {
-      await sb.from('battle_invites').insert({
+    // Crear invitacion primero. Si falla, seguimos buscando en vez de cortar el matchmaking.
+    let inviteRow = null;
+    try {
+      const { data, error } = await sb.from('battle_invites').insert({
         challenger_id: currentUser.id,
         opponent_id: opponent.user_id,
         status: 'ranked_match',
-      });
-      // El jugador anfitrión espera confirmación (si el rival es un fantasma, devolverá declined o timeout)
-      const { data: rows } = await sb.from('battle_invites')
-        .select('*').eq('challenger_id', currentUser.id).eq('status', 'ranked_match')
-        .order('created_at', { ascending: false }).limit(1);
-        
-      if (rows && rows.length > 0) {
-        const inviteId = rows[0].id;
-        let checks = 0;
-        const waitInterval = setInterval(async () => {
-          checks++;
-          const { data: currentInv } = await sb.from('battle_invites').select('status').eq('id', inviteId).single();
-          
-          if (currentInv?.status === 'ranked_accepted') {
-            clearInterval(waitInterval);
-            if (typeof startPvpBattle === 'function') startPvpBattle(rows[0], true, true);
-          } else if (!currentInv || currentInv.status === 'declined' || checks > 10) {
-            // Fantasma detectado o TimeOut (8 segundos)
-            clearInterval(waitInterval);
-            // Purgar de la DB el fantasma del rival solo por si acaso
-            try { await sb.from('ranked_queue').delete().eq('user_id', opponent.user_id); } catch(e){}
-            notify('El rival no respondió. Buscando IA...', '⚠️');
-            _matchmakingFallbackToPassive();
-          }
-        }, 800);
+      }).select('*').single();
+      if (error || !data?.id) {
+        console.warn('[Ranked] No se pudo crear battle_invite ranked_match:', error);
+        return;
       }
+      inviteRow = data;
+    } catch (e) {
+      console.warn('[Ranked] Error creando battle_invite ranked_match:', e);
+      return;
     }
-  } catch(e) {
-    // La tabla puede no existir — ignorar silenciosamente
+
+    // Recien aca detenemos el countdown visual.
+    _matchmakingStop();
+    notify('Rival encontrado. Iniciando batalla...', '⚔️');
+
+    const inviteId = inviteRow.id;
+    let checks = 0;
+    const waitInterval = setInterval(async () => {
+      checks++;
+      let currentInv = null;
+      try {
+        const { data } = await sb.from('battle_invites').select('status').eq('id', inviteId).single();
+        currentInv = data;
+      } catch (e) {}
+
+      if (currentInv?.status === 'ranked_accepted') {
+        clearInterval(waitInterval);
+        await _clearOwnRankedQueueRow();
+        if (typeof startPvpBattle === 'function') startPvpBattle(inviteRow, true, true);
+        return;
+      }
+
+      if (!currentInv || currentInv.status === 'declined' || checks > 10) {
+        clearInterval(waitInterval);
+        try { await sb.from('ranked_queue').delete().eq('user_id', opponent.user_id); } catch (e) {}
+        notify('El rival no respondio. Buscando equipo pasivo...', '⚠️');
+        _matchmakingFallbackToPassive();
+      }
+    }, 800);
+  } catch (e) {
+    // Si falla cola humana, dejamos que siga el countdown y termine en fallback pasivo.
+    console.warn('[Ranked] _checkForHumanOpponent fallo:', e);
   }
 }
 
-// ── Fallback: luchar contra equipo pasivo ─────────────────────────────
+// ?? Fallback: luchar contra equipo pasivo ?????????????????????????????
 async function _matchmakingFallbackToPassive() {
   _matchmakingStop();
-  notify('No se encontro rival. Buscando un equipo pasivo...', '\u26A0\uFE0F');
+  await _clearOwnRankedQueueRow();
+  notify('No se encontro rival. Buscando un equipo pasivo...', '⚠️');
 
   const opponent = await findPassiveOpponent();
   if (!opponent) {
-    notify('No hay equipos pasivos disponibles ahora. Intenta mas tarde.', '\u26A0\uFE0F');
+    notify('No hay equipos pasivos disponibles ahora. Intenta mas tarde.', '⚠️');
     return;
   }
 
@@ -1062,26 +1189,31 @@ async function _matchmakingFallbackToPassive() {
     select('username').eq('id', opponent.user_id).single();
   const oppName = oppProfile?.username || 'Entrenador';
 
-  const enemyTeam = opponent.team_data.map(snap => ({
+  const enemyTeam = (opponent.team_data || []).map(snap => ({
     ...snap,
-    hp: snap.maxHp,
+    hp: snap.maxHp || snap.hp || 1,
     status: null,
     sleepTurns: 0,
   }));
 
+  if (!enemyTeam.length) {
+    notify('El rival pasivo no tiene equipo valido. Reintenta.', '⚠️');
+    return;
+  }
+
   const myTeam = getRankedPlayableTeam();
   if (!myTeam.length) {
-    notify('Tu equipo ranked no tiene Pokemon disponibles.', '\u26A0\uFE0F');
+    notify('Tu equipo ranked no tiene Pokemon disponibles.', '⚠️');
     return;
   }
 
   const gate = validateTeamForRanked(myTeam, getCurrentRankedRules(), 'equipo ranked');
   if (!gate.ok) {
-    notify(gate.reason, '\u26A0\uFE0F');
+    notify(gate.reason, '⚠️');
     return;
   }
 
-  notify('Desafiando al equipo de ' + oppName + ' (ELO: ' + opponent.elo_rating + ')', '??');
+  notify('Desafiando al equipo de ' + oppName + ' (ELO: ' + (opponent.elo_rating || 1000) + ')', '⚔️');
 
   state._passiveBattleOpponentId = opponent.user_id;
   state._passiveBattleOpponentName = oppName;
@@ -1093,17 +1225,10 @@ async function _matchmakingFallbackToPassive() {
 
 async function cancelRankedMatchmaking(silent = false) {
   _matchmakingStop();
-  // Limpiar TODA fila de la cola en Supabase bajo nuestro user_id (para matar el ghost queue)
-  if (currentUser) {
-    try {
-      await sb.from('ranked_queue').delete().eq('user_id', currentUser.id);
-    } catch(e) { /* ignorar */ }
-  }
-  _matchmakingQueueId = null;
-  if (!silent) notify('Búsqueda cancelada', '✖️');
+  await _clearOwnRankedQueueRow();
+  if (!silent) notify('Busqueda cancelada', '✖️');
 }
 
-// ── Limpieza interna ──────────────────────────────────────────────────
 function _matchmakingStop() {
   window.isRankedSearching = false;
   if (_matchmakingInterval) { clearInterval(_matchmakingInterval); _matchmakingInterval = null; }
