@@ -380,17 +380,17 @@
                 <div class="battle-hp-text" id="pvp-enemy-hp-text">HP: ?/?</div>
               </div>
             </div>
-            <div style="display:flex;align-items:flex-start;justify-content:flex-end;">
+            <div style="display:flex;align-items:flex-start;justify-content:flex-end;z-index:10;position:relative;">
               <div id="pvp-enemy-sprite-wrap" style="display:flex;align-items:flex-start;justify-content:flex-end;">
                 <img id="pvp-enemy-img" src="" alt="" style="image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
               </div>
             </div>
-            <div style="display:flex;align-items:flex-end;justify-content:flex-start;">
+            <div style="display:flex;align-items:flex-end;justify-content:flex-start;z-index:10;position:relative;">
               <div id="pvp-player-sprite-wrap" style="display:flex;align-items:flex-end;justify-content:flex-start;">
                 <img id="pvp-player-img" src="" alt="" style="image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
               </div>
             </div>
-            <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:10px;">
+            <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:10px;z-index:20;position:relative;">
               <div class="battle-pokemon-info" id="pvp-player-info">
                 <div class="battle-name">
                   <span id="pvp-player-name">???</span> 

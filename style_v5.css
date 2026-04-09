@@ -1856,9 +1856,9 @@
 
       /* Massive sprites in PvP on PC - Perspective parity with standard battle */
       #pvp-player-img {
-        height: 310px !important;
+        height: 290px !important;
         width: auto !important;
-        min-height: 310px !important;
+        min-height: 290px !important;
         z-index: 5;
         image-rendering: pixelated;
         transform: none !important; 
@@ -1882,7 +1882,7 @@
         background: rgba(15, 23, 42, 0.8) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
-        z-index: 20 !important; /* Always on top of sprites */
+        z-index: 50 !important; /* Extremely high priority */
         position: relative;
       }
 
