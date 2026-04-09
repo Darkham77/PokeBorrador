@@ -266,15 +266,15 @@
       weedle: ['Polvo escudo', 'Mudar'], kakuna: ['Mudar'], beedrill: ['Enjambre', 'Francotirador'],
       pidgey: ['Vista lince', 'Alboroto'], pidgeotto: ['Vista lince', 'Alboroto'], pidgeot: ['Vista lince', 'Alboroto'],
       rattata: ['Fuga', 'Fuga'], raticate: ['Fuga', 'Agallas'],
-      spearow: ['Vista lince', 'Francotirador'], fearow: ['Vista lince', 'Franconitador'],
+      spearow: ['Vista lince', 'Francotirador'], fearow: ['Vista lince', 'Francotirador'],
       ekans: ['Intimidación', 'Mudar'], arbok: ['Intimidación', 'Mudar'],
       pikachu: ['Electricidad estática', 'Pararrayos'], raichu: ['Electricidad estática', 'Pararrayos'],
       sandshrew: ['Velo arena'], sandslash: ['Velo arena'],
       nidoran_f: ['Punto tóxico'], nidorina: ['Punto tóxico'], nidoqueen: ['Punto tóxico', 'Rivalidad'],
       nidoran_m: ['Punto tóxico'], nidorino: ['Punto tóxico'], nidoking: ['Punto tóxico', 'Rivalidad'],
-      clefairy: ['Punto Cura', 'Muro Mágico'], clefable: ['Punto Cura', 'Muro Mágico'],
+      clefairy: ['Cura Natural', 'Muro Mágico'], clefable: ['Cura Natural', 'Muro Mágico'],
       vulpix: ['Absorbe Fuego'], ninetales: ['Absorbe Fuego'],
-      jigglypuff: ['Velo húmedo', 'Punto Cura'], wigglytuff: ['Velo húmedo', 'Punto Cura'],
+      jigglypuff: ['Velo húmedo', 'Cura Natural'], wigglytuff: ['Velo húmedo', 'Cura Natural'],
       zubat: ['Vista lince', 'Infiltrador'], golbat: ['Vista lince', 'Infiltrador'],
       oddish: ['Clorofila'], gloom: ['Clorofila'], vileplume: ['Clorofila'],
       paras: ['Efecto Espora'], parasect: ['Efecto Espora'],
@@ -312,8 +312,8 @@
       chansey: ['Cura Natural'],
       tangela: ['Clorofila'],
       kangaskhan: ['Madrugar'],
-      horsea: ['Nado Rápido'], seadra: ['Nado Rápido'],
-      goldeen: ['Nado Rápido'], seaking: ['Nado Rápido'],
+      horsea: ['Nado rápido'], seadra: ['Nado rápido'],
+      goldeen: ['Nado rápido'], seaking: ['Nado rápido'],
       staryu: ['Cura Natural'], starmie: ['Cura Natural'],
       mr_mime: ['Insonorizar'],
       scyther: ['Enjambre'],
@@ -325,9 +325,10 @@
       magikarp: ['Nado rápido', 'Ráfaga'], gyarados: ['Intimidación'],
       lapras: ['Absorbe Agua'],
       ditto: ['Flexibilidad'],
-      eevee: ['Fuga', 'Adaptable'], vaporeon: ['Absorbe agua'], jolteon: ['Absorbe voltio'], flareon: ['Absorbe fuego'],
+      eevee: ['Fuga', 'Adaptable'], vaporeon: ['Absorbe Agua'], jolteon: ['Absorbe Voltio'], flareon: ['Absorbe Fuego'],
       porygon: ['Rastro'],
       kabuto: ['Caparazón'], kabutops: ['Caparazón'],
+      omanyte: ['Nado rápido', 'Caparazón'], omastar: ['Nado rápido', 'Caparazón'],
       aerodactyl: ['Cabeza Roca'],
       snorlax: ['Inmunidad'],
       articuno: ['Presión'],
@@ -336,8 +337,8 @@
       dratini: ['Mudar'], dragonair: ['Mudar'], dragonite: ['Foco interno'],
       mewtwo: ['Presión'], mew: ['Sincronía'],
       // Babies
-      pichu: ['Electricidad estática'], magby: ['Cuerpo llama'], elekid: ['Electricidad estática'], 
-      cleffa: ['Punto Cura'], igglybuff: ['Punto Cura'], togepi: ['Foco Interno']
+      pichu: ['Electricidad estática'], magby: ['Cuerpo Llama'], elekid: ['Electricidad estática'], 
+      cleffa: ['Cura Natural'], igglybuff: ['Cura Natural'], togepi: ['Foco interno']
     };
 
     const WILD_HELD_ITEMS = {

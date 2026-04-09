@@ -449,6 +449,10 @@
         name: 'Rhydon', emoji: '🦏', type: 'ground', hp: 105, atk: 130, def: 120, spa: 45, spd: 45, spe: 40,
         learnset: [{ lv: 1, name: 'Cornada', pp: 25 }, { lv: 1, name: 'Látigo', pp: 30 }, { lv: 1, name: 'Pisotón', pp: 20 }, { lv: 1, name: 'Ataque Furia', pp: 20 }, { lv: 10, name: 'Pisotón', pp: 20 }, { lv: 15, name: 'Ataque Furia', pp: 20 }, { lv: 24, name: 'Cara Susto', pp: 10 }, { lv: 29, name: 'Pedrada', pp: 10 }, { lv: 38, name: 'Perforador', pp: 5 }, { lv: 46, name: 'Derribo', pp: 20 }, { lv: 58, name: 'Terremoto', pp: 10 }, { lv: 66, name: 'Megacuerno', pp: 10 }]
       },
+      chansey: {
+        name: 'Chansey', emoji: '🥚', type: 'normal', hp: 250, atk: 5, def: 5, spa: 35, spd: 105, spe: 50,
+        learnset: [{ lv: 1, name: 'Destructor', pp: 35 }, { lv: 5, name: 'Gruñido', pp: 40 }, { lv: 9, name: 'Látigo', pp: 30 }, { lv: 13, name: 'Doble Bofetón', pp: 10 }, { lv: 17, name: 'Canto', pp: 15 }, { lv: 23, name: 'Bomba Huevo', pp: 10 }, { lv: 29, name: 'Fortaleza', pp: 30 }, { lv: 35, name: 'Amortiguador', pp: 10 }]
+      },
       tangela: {
         name: 'Tangela', emoji: '🌿', type: 'grass', hp: 65, atk: 55, def: 115, spa: 100, spd: 40, spe: 60,
         learnset: [{ lv: 1, name: 'Arraigo', pp: 20 }, { lv: 1, name: 'Constricción', pp: 35 }, { lv: 4, name: 'Somnífera', pp: 15 }, { lv: 7, name: 'Absorber', pp: 25 }, { lv: 10, name: 'Látigo Cepa', pp: 25 }, { lv: 13, name: 'Polvo Veneno', pp: 35 }, { lv: 19, name: 'Paralizador', pp: 30 }, { lv: 22, name: 'Megaagotar', pp: 15 }, { lv: 28, name: 'Gigadrenado', pp: 10 }, { lv: 31, name: 'Poder Pasado', pp: 5 }, { lv: 37, name: 'Portazo', pp: 20 }, { lv: 40, name: 'Cosquillas', pp: 20 }]
