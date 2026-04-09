@@ -21,6 +21,148 @@ function getEloTier(elo) {
   return                   { name: 'Bronce',  icon: '🥉', color: '#c8a060' };
 }
 
+// Ranked rules (temporada actual)
+const RANKED_TYPES = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel'];
+const RANKED_TYPE_META = {
+  normal:   { label: 'Normal', icon: '?' },
+  fire:     { label: 'Fuego', icon: '\u26A0\uFE0F' },
+  water:    { label: 'Agua', icon: '\u26A0\uFE0F' },
+  electric: { label: 'El?ctrico', icon: '?' },
+  grass:    { label: 'Planta', icon: '\u26A0\uFE0F' },
+  ice:      { label: 'Hielo', icon: '\u26A0\uFE0F' },
+  fighting: { label: 'Lucha', icon: '\u26A0\uFE0F' },
+  poison:   { label: 'Veneno', icon: '\u26A0\uFE0F' },
+  ground:   { label: 'Tierra', icon: '\u26A0\uFE0F' },
+  flying:   { label: 'Volador', icon: '\u26A0\uFE0F' },
+  psychic:  { label: 'Ps?quico', icon: '\u26A0\uFE0F' },
+  bug:      { label: 'Bicho', icon: '\u26A0\uFE0F' },
+  rock:     { label: 'Roca', icon: '\u26A0\uFE0F' },
+  ghost:    { label: 'Fantasma', icon: '\u26A0\uFE0F' },
+  dragon:   { label: 'Drag?n', icon: '\u26A0\uFE0F' },
+  dark:     { label: 'Siniestro', icon: '\u26A0\uFE0F' },
+  steel:    { label: 'Acero', icon: '\u26A0\uFE0F' }
+};
+
+const DEFAULT_RANKED_RULES = {
+  seasonName: 'TEMPORADA ACTUAL',
+  maxPokemon: 6,
+  levelCap: 100,
+  allowedTypes: [],
+  bannedPokemonIds: []
+};
+
+let _currentRankedRules = { ...DEFAULT_RANKED_RULES };
+let _rankedRulesLoaded = false;
+
+function _normalizeRankedType(v) {
+  const key = String(v || '').trim().toLowerCase();
+  return RANKED_TYPES.includes(key) ? key : null;
+}
+
+function _normalizePokemonId(v) {
+  return String(v || '').trim().toLowerCase();
+}
+
+function _uniqueArray(values) {
+  return Array.from(new Set(values));
+}
+
+function normalizeRankedRules(rawConfig = {}, seasonNameRaw = DEFAULT_RANKED_RULES.seasonName) {
+  const maxPokemonNum = Number(rawConfig?.maxPokemon);
+  const levelCapNum = Number(rawConfig?.levelCap);
+  return {
+    seasonName: String(seasonNameRaw || DEFAULT_RANKED_RULES.seasonName).trim() || DEFAULT_RANKED_RULES.seasonName,
+    maxPokemon: Number.isFinite(maxPokemonNum) ? Math.max(1, Math.min(6, Math.floor(maxPokemonNum))) : DEFAULT_RANKED_RULES.maxPokemon,
+    levelCap: Number.isFinite(levelCapNum) ? Math.max(1, Math.min(100, Math.floor(levelCapNum))) : DEFAULT_RANKED_RULES.levelCap,
+    allowedTypes: _uniqueArray((rawConfig?.allowedTypes || []).map(_normalizeRankedType).filter(Boolean)),
+    bannedPokemonIds: _uniqueArray((rawConfig?.bannedPokemonIds || []).map(_normalizePokemonId).filter(Boolean))
+  };
+}
+
+async function loadRankedRules(force = false) {
+  if (!force && _rankedRulesLoaded) return _currentRankedRules;
+  _rankedRulesLoaded = true;
+  if (!sb) {
+    _currentRankedRules = { ...DEFAULT_RANKED_RULES };
+    return _currentRankedRules;
+  }
+
+  try {
+    const { data, error } = await sb.from('ranked_rules_config').select('season_name, config').eq('id', 'current').maybeSingle();
+    if (error) throw error;
+    _currentRankedRules = normalizeRankedRules(data?.config || {}, data?.season_name || DEFAULT_RANKED_RULES.seasonName);
+  } catch (e) {
+    _currentRankedRules = { ...DEFAULT_RANKED_RULES };
+  }
+  return _currentRankedRules;
+}
+
+function getCurrentRankedRules() {
+  return _currentRankedRules || { ...DEFAULT_RANKED_RULES };
+}
+
+function _getPokemonTypeTokens(pokemon) {
+  const raw = pokemon?.type;
+  if (Array.isArray(raw)) {
+    return _uniqueArray(raw.map(_normalizeRankedType).filter(Boolean));
+  }
+  const str = String(raw || '').toLowerCase();
+  if (!str) return [];
+  return _uniqueArray(str.split(/[^a-z]+/).map(_normalizeRankedType).filter(Boolean));
+}
+
+function validatePokemonForRanked(pokemon, rules = getCurrentRankedRules()) {
+  if (!pokemon) return { ok: false, reason: 'Hay un Pokemon invalido en el equipo.' };
+
+  const pokeId = _normalizePokemonId(pokemon.id || pokemon.name || '');
+  if (rules.bannedPokemonIds.includes(pokeId)) {
+    return { ok: false, reason: `${pokemon.name || pokeId || 'Un Pokemon'} esta baneado esta temporada.` };
+  }
+
+  const level = Number(pokemon.level || 1);
+  if (level > rules.levelCap) {
+    return { ok: false, reason: `${pokemon.name || 'Un Pokemon'} supera el nivel maximo (${rules.levelCap}).` };
+  }
+
+  if (rules.allowedTypes.length) {
+    const pokemonTypes = _getPokemonTypeTokens(pokemon);
+    const hasAllowedType = pokemonTypes.some(t => rules.allowedTypes.includes(t));
+    if (!hasAllowedType) {
+      return { ok: false, reason: `${pokemon.name || 'Un Pokemon'} no cumple los tipos permitidos de la temporada.` };
+    }
+  }
+
+  return { ok: true };
+}
+
+function validateTeamForRanked(team, rules = getCurrentRankedRules(), sourceLabel = 'equipo') {
+  const members = Array.isArray(team) ? team.filter(Boolean) : [];
+  if (!members.length) {
+    return { ok: false, reason: `Tu ${sourceLabel} no tiene Pokemon disponibles.` };
+  }
+
+  if (members.length > rules.maxPokemon) {
+    return { ok: false, reason: `Tu ${sourceLabel} supera el maximo permitido (${rules.maxPokemon}).` };
+  }
+
+  for (const pokemon of members) {
+    const check = validatePokemonForRanked(pokemon, rules);
+    if (!check.ok) return check;
+  }
+
+  return { ok: true };
+}
+
+async function ensureRankedTeamEligibility(team, sourceLabel = 'equipo', notifyOnFail = true) {
+  const rules = await loadRankedRules();
+  const validation = validateTeamForRanked(team, rules, sourceLabel);
+  if (!validation.ok && notifyOnFail) {
+    notify(validation.reason, '\u26A0\uFE0F');
+  }
+  return validation;
+}
+
+
 // ── Snapshot para equipo pasivo ───────────────────────────────────────
 function buildPassiveSnapshot(p) {
   return {
@@ -171,6 +313,12 @@ function renderRankedTab() {
   }
 
   renderPassiveTeamPreview();
+  _renderRankedRulesCard();
+
+  loadRankedRules().then(() => {
+    _renderRankedRulesCard();
+    _renderPassiveEditorRulesHint();
+  }).catch(() => {});
 
   // Si hay una búsqueda activa, restaurar el estado visual
   if (_matchmakingInterval) {
@@ -188,6 +336,81 @@ function getPokemonByUid(uid) {
 }
 
 // ── Preview de equipo pasivo ──────────────────────────────────────────
+function _renderRankedRulesCard() {
+  const rules = getCurrentRankedRules();
+  const seasonEl = document.getElementById('ranked-season-name');
+  const summaryEl = document.getElementById('ranked-rules-summary');
+  const typesEl = document.getElementById('ranked-rules-types');
+  const bansEl = document.getElementById('ranked-rules-bans');
+  const activeStatusEl = document.getElementById('ranked-rules-active-team-status');
+  const passiveStatusEl = document.getElementById('ranked-rules-passive-team-status');
+
+  if (seasonEl) seasonEl.textContent = rules.seasonName;
+
+  if (summaryEl) {
+    summaryEl.textContent = `M?ximo ${rules.maxPokemon} Pokemon ? Nivel maximo ${rules.levelCap}`;
+  }
+
+  if (typesEl) {
+    if (!rules.allowedTypes.length) {
+      typesEl.innerHTML = '<span style="font-size:11px;color:var(--gray);">Sin restricci?n de tipos.</span>';
+    } else {
+      typesEl.innerHTML = rules.allowedTypes.map((type) => {
+        const meta = RANKED_TYPE_META[type] || { label: type, icon: '?' };
+        return `<span style="font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);">${meta.icon} ${meta.label}</span>`;
+      }).join('');
+    }
+  }
+
+  if (bansEl) {
+    if (!rules.bannedPokemonIds.length) {
+      bansEl.innerHTML = '<span style="font-size:11px;color:var(--gray);">Sin baneos.</span>';
+    } else {
+      bansEl.innerHTML = rules.bannedPokemonIds.map((id) => {
+        const label = POKEMON_DB?.[id]?.name || id;
+        return `<span style="font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,59,59,0.35);background:rgba(255,59,59,0.14);color:#fecaca;">?? ${label}</span>`;
+      }).join('');
+    }
+  }
+
+  if (activeStatusEl) {
+    const activeTeam = (state.team || []).filter(p => p && p.hp > 0 && !p.onMission);
+    const activeCheck = validateTeamForRanked(activeTeam, rules, 'equipo activo');
+    activeStatusEl.textContent = activeCheck.ok ? 'OK Equipo activo: cumple reglas.' : `Error equipo activo: ${activeCheck.reason}`;
+    activeStatusEl.style.color = activeCheck.ok ? 'var(--green)' : 'var(--red)';
+  }
+
+  if (passiveStatusEl) {
+    const rankedTeam = getRankedPlayableTeam();
+    const passiveCheck = validateTeamForRanked(rankedTeam, rules, 'equipo ranked');
+    passiveStatusEl.textContent = passiveCheck.ok ? 'OK Equipo ranked: cumple reglas.' : `Error equipo ranked: ${passiveCheck.reason}`;
+    passiveStatusEl.style.color = passiveCheck.ok ? 'var(--green)' : 'var(--red)';
+  }
+}
+
+function _renderPassiveEditorRulesHint() {
+  const el = document.getElementById('passive-editor-rules-hint');
+  if (!el) return;
+
+  const rules = getCurrentRankedRules();
+  const typeText = rules.allowedTypes.length ? rules.allowedTypes.map(t => (RANKED_TYPE_META[t]?.label || t)).join(', ') : 'Todos los tipos';
+
+  el.textContent = `Reglas de temporada: maximo ${rules.maxPokemon} Pokemon, nivel maximo ${rules.levelCap}, tipos permitidos: ${typeText}.`;
+}
+
+function getRankedPlayableTeam() {
+  const uids = Array.isArray(state.passiveTeamUids) ? state.passiveTeamUids : [];
+  const picked = [];
+  const seen = new Set();
+  for (const uid of uids) {
+    if (!uid || seen.has(uid)) continue;
+    const p = getPokemonByUid(uid);
+    if (!p || p.hp <= 0 || p.onMission) continue;
+    seen.add(uid);
+    picked.push(p);
+  }
+  return picked;
+}
 function renderPassiveTeamPreview() {
   const el = document.getElementById('ranked-passive-team-preview');
   if (!el) return;
@@ -280,19 +503,36 @@ async function savePassiveTeam(active = true) {
     
     state.passiveTeamActive = false;
     renderPassiveTeamPreview();
+    _renderRankedRulesCard();
     notify('Equipo pasivo desactivado', '🔴');
     return;
   }
 
-  // Active is True, let's validate and snapshot
+  // Active is True, validate against current ranked rules
+  const rules = await loadRankedRules();
   const teamObjs = uids.map(uid => getPokemonByUid(uid));
   if (teamObjs.some(p => !p)) {
-    notify('Tu equipo contiene Pokémon que ya no existen. Editalo primero.', '⚠️');
+    notify('Tu equipo contiene Pokemon que ya no existen. Editalo primero.', '\u26A0\uFE0F');
     return;
   }
-  
+
+  const fullValidation = validateTeamForRanked(teamObjs, rules, 'equipo ranked');
+  if (!fullValidation.ok) {
+    notify(fullValidation.reason, '\u26A0\uFE0F');
+    return;
+  }
+
   const eligibleTeam = teamObjs.filter(p => p.hp > 0 && !p.onMission);
-  if (!eligibleTeam.length) { notify('Tus Pokémon designados no tienen HP.', '⚠️'); return; }
+  if (!eligibleTeam.length) {
+    notify('Tus Pokemon designados no tienen HP.', '\u26A0\uFE0F');
+    return;
+  }
+
+  const liveValidation = validateTeamForRanked(eligibleTeam, rules, 'equipo ranked');
+  if (!liveValidation.ok) {
+    notify(liveValidation.reason, '\u26A0\uFE0F');
+    return;
+  }
 
   const snapshot  = eligibleTeam.map(buildPassiveSnapshot);
   const eloRating = state.eloRating || 1000;
@@ -308,6 +548,7 @@ async function savePassiveTeam(active = true) {
   if (error) { notify('Error guardando equipo: ' + error.message, '❌'); return; }
   state.passiveTeamActive = active;
   renderPassiveTeamPreview();
+  _renderRankedRulesCard();
   notify(`Equipo pasivo ${active ? 'activado' : 'desactivado'} ✓`, '🤖');
 }
 
@@ -320,14 +561,16 @@ function openPassiveTeamEditor() {
   if (!modal) return;
   _tempEditingUids = [...(state.passiveTeamUids || [])];
   _passiveEditorSelectedUid = null;
-  
-  // Limpiar vacíos o perdidos de the DB original for default
+
+  // Limpiar slots con UIDs invalidos
   _tempEditingUids = _tempEditingUids.filter(uid => getPokemonByUid(uid) !== null);
+  const slotCap = Math.max(1, Math.min(6, Number(getCurrentRankedRules().maxPokemon) || 6));
+  _tempEditingUids = _tempEditingUids.slice(0, slotCap);
 
   modal.style.display = 'flex';
+  _renderPassiveEditorRulesHint();
   _renderPassiveEditor();
 }
-
 function closePassiveTeamEditor() {
   document.getElementById('passive-team-editor-modal').style.display = 'none';
 }
@@ -338,9 +581,12 @@ function _renderPassiveEditor() {
   const previewEl = document.getElementById('passive-editor-preview');
   if (!slotsEl || !poolEl || !previewEl) return;
   
-  // Render de los 6 Slots
+  const rules = getCurrentRankedRules();
+  const slotCap = Math.max(1, Math.min(6, Number(rules.maxPokemon) || 6));
+
+  // Render de slots segun reglas
   let htmlSlots = '';
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < slotCap; i++) {
     const uid = _tempEditingUids[i];
     const p = uid ? getPokemonByUid(uid) : null;
     
@@ -443,26 +689,45 @@ function _selectPassiveEditorItem(uid) {
 
 function _togglePassiveEditorSelection() {
   if (!_passiveEditorSelectedUid) return;
+
   if (_tempEditingUids.includes(_passiveEditorSelectedUid)) {
-    // Quitar
     _tempEditingUids = _tempEditingUids.filter(u => u !== _passiveEditorSelectedUid);
   } else {
-    // Agregar
-    if (_tempEditingUids.length < 6) {
-      _tempEditingUids.push(_passiveEditorSelectedUid);
-    } else {
-      notify('¡Tu equipo ya tiene 6 Pokémon!', '⚠️');
+    const rules = getCurrentRankedRules();
+    const slotCap = Math.max(1, Math.min(6, Number(rules.maxPokemon) || 6));
+
+    if (_tempEditingUids.length >= slotCap) {
+      notify(`Tu equipo ya tiene el maximo permitido (${slotCap}).`, '\u26A0\uFE0F');
+      return;
     }
+
+    const selectedPokemon = getPokemonByUid(_passiveEditorSelectedUid);
+    const check = validatePokemonForRanked(selectedPokemon, rules);
+    if (!check.ok) {
+      notify(check.reason, '\u26A0\uFE0F');
+      return;
+    }
+
+    _tempEditingUids.push(_passiveEditorSelectedUid);
   }
+
   _renderPassiveEditor();
 }
 
 function confirmPassiveTeamEdit() {
+  const candidateTeam = _tempEditingUids.map(uid => getPokemonByUid(uid)).filter(Boolean);
+  const validation = validateTeamForRanked(candidateTeam, getCurrentRankedRules(), 'equipo ranked');
+  if (!validation.ok) {
+    notify(validation.reason, '\u26A0\uFE0F');
+    return;
+  }
+
   state.passiveTeamUids = [..._tempEditingUids];
   scheduleSave();
   closePassiveTeamEditor();
   renderPassiveTeamPreview();
-  notify('Alineación guardada localmente.', '💾');
+  _renderRankedRulesCard();
+  notify('Alineacion ranked guardada localmente.', 'OK');
 }
 
 
@@ -494,29 +759,39 @@ let _matchmakingQueueId  = null;   // Row en la tabla ranked_queue
 
 // ── Entrada: Buscar Partida ───────────────────────────────────────────
 async function startRankedMatchmaking() {
-  if (!currentUser) { notify('Debés estar logueado', '⚠️'); return; }
+  if (!currentUser) { notify('Debes estar logueado', '\u26A0\uFE0F'); return; }
   if (_matchmakingInterval) return; // Ya buscando
 
   window.isRankedSearching = true;
 
-  const myTeam = (state.team || []).filter(p => p.hp > 0 && !p.onMission);
-  if (!myTeam.length) { notify('Necesitás al menos 1 Pokémon con HP para buscar partida', '⚠️'); return; }
+  const myTeam = getRankedPlayableTeam();
+  if (!myTeam.length) {
+    notify('Configura tu equipo ranked antes de buscar partida.', '\u26A0\uFE0F');
+    window.isRankedSearching = false;
+    return;
+  }
+
+  const gate = await ensureRankedTeamEligibility(myTeam, 'equipo ranked', true);
+  if (!gate.ok) {
+    window.isRankedSearching = false;
+    return;
+  }
 
   // Registrar en la cola de matchmaking (tabla ranked_queue en Supabase)
-  // Si la tabla no existe aún, sigue igual pero el matchmaking funcionará solo por fallback
+  // Si la tabla no existe aun, sigue igual pero el matchmaking funcionara solo por fallback
   const myElo = state.eloRating || 1000;
   try {
     const { data: qRow, error: qErr } = await sb.from('ranked_queue').insert({
-      user_id:    currentUser.id,
+      user_id: currentUser.id,
       elo_rating: myElo,
-      status:     'searching',
+      status: 'searching',
     }).select('id').single();
 
     if (!qErr && qRow?.id) {
       _matchmakingQueueId = qRow.id;
     }
-  } catch(e) {
-    // La tabla puede no existir aún — el fallback a pasivo funciona igual
+  } catch (e) {
+    // La tabla puede no existir aun ? el fallback a pasivo funciona igual
     console.warn('[Matchmaking] ranked_queue no disponible, modo fallback activo.');
   }
 
@@ -544,7 +819,6 @@ async function startRankedMatchmaking() {
   }, 1000);
 }
 
-// ── Buscar oponente humano en la cola ────────────────────────────────
 async function _checkForHumanOpponent() {
   if (!currentUser || !_matchmakingInterval) return;
   const myElo = state.eloRating || 1000;
@@ -622,31 +896,40 @@ async function _checkForHumanOpponent() {
 // ── Fallback: luchar contra equipo pasivo ─────────────────────────────
 async function _matchmakingFallbackToPassive() {
   _matchmakingStop();
-  notify('No se encontró rival. ¡Buscando un equipo pasivo...!', '🤖');
+  notify('No se encontro rival. Buscando un equipo pasivo...', '\u26A0\uFE0F');
 
   const opponent = await findPassiveOpponent();
   if (!opponent) {
-    notify('No hay equipos pasivos disponibles ahora. Intentá más tarde.', '😔');
+    notify('No hay equipos pasivos disponibles ahora. Intenta mas tarde.', '\u26A0\uFE0F');
     return;
   }
 
-  const { data: oppProfile } = await sb.from('profiles')
-    .select('username').eq('id', opponent.user_id).single();
+  const { data: oppProfile } = await sb.from('profiles').
+    select('username').eq('id', opponent.user_id).single();
   const oppName = oppProfile?.username || 'Entrenador';
 
   const enemyTeam = opponent.team_data.map(snap => ({
     ...snap,
-    hp:          snap.maxHp,
-    status:      null,
-    sleepTurns:  0,
+    hp: snap.maxHp,
+    status: null,
+    sleepTurns: 0,
   }));
 
-  const myTeam = (state.team || []).filter(p => p.hp > 0 && !p.onMission).slice(0, 6);
-  if (!myTeam.length) { notify('Tu equipo no tiene Pokémon disponibles', '⚠️'); return; }
+  const myTeam = getRankedPlayableTeam();
+  if (!myTeam.length) {
+    notify('Tu equipo ranked no tiene Pokemon disponibles.', '\u26A0\uFE0F');
+    return;
+  }
 
-  notify(`¡Desafiando al equipo de ${oppName}! (ELO: ${opponent.elo_rating})`, '⚔️');
+  const gate = validateTeamForRanked(myTeam, getCurrentRankedRules(), 'equipo ranked');
+  if (!gate.ok) {
+    notify(gate.reason, '\u26A0\uFE0F');
+    return;
+  }
 
-  state._passiveBattleOpponentId   = opponent.user_id;
+  notify('Desafiando al equipo de ' + oppName + ' (ELO: ' + opponent.elo_rating + ')', '??');
+
+  state._passiveBattleOpponentId = opponent.user_id;
   state._passiveBattleOpponentName = oppName;
 
   if (typeof startPassiveBattleMode === 'function') {
@@ -654,7 +937,6 @@ async function _matchmakingFallbackToPassive() {
   }
 }
 
-// ── Cancelar búsqueda ─────────────────────────────────────────────────
 async function cancelRankedMatchmaking(silent = false) {
   _matchmakingStop();
   // Limpiar TODA fila de la cola en Supabase bajo nuestro user_id (para matar el ghost queue)
@@ -709,6 +991,13 @@ async function reportPassiveBattleResult(opponentId, result) {
 }
 
 // ── Limpieza automática al cerrar pestaña (Antigosting) ───────────────
+window.loadRankedRules = loadRankedRules;
+window.getCurrentRankedRules = getCurrentRankedRules;
+window.getRankedPlayableTeam = getRankedPlayableTeam;
+window.normalizeRankedRules = normalizeRankedRules;
+window.validatePokemonForRanked = validatePokemonForRanked;
+window.validateTeamForRanked = validateTeamForRanked;
+window.ensureRankedTeamEligibility = ensureRankedTeamEligibility;
 window.addEventListener('beforeunload', () => {
     if (window.isRankedSearching) {
         cancelRankedMatchmaking(true);

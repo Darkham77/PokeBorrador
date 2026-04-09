@@ -52,6 +52,166 @@ async function _evGetToken() {
 function isAdminUser() {
   return window.currentUser?.email === ADMIN_EMAIL_EV;
 }
+const ADMIN_RANKED_TYPES = [
+  'normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel'
+];
+
+const ADMIN_RANKED_TYPE_META = {
+  normal: { label: 'Normal', icon: '?' },
+  fire: { label: 'Fuego', icon: '??' },
+  water: { label: 'Agua', icon: '??' },
+  electric: { label: 'Electrico', icon: '?' },
+  grass: { label: 'Planta', icon: '??' },
+  ice: { label: 'Hielo', icon: '??' },
+  fighting: { label: 'Lucha', icon: '??' },
+  poison: { label: 'Veneno', icon: '??' },
+  ground: { label: 'Tierra', icon: '??' },
+  flying: { label: 'Volador', icon: '??' },
+  psychic: { label: 'Psiquico', icon: '??' },
+  bug: { label: 'Bicho', icon: '??' },
+  rock: { label: 'Roca', icon: '??' },
+  ghost: { label: 'Fantasma', icon: '??' },
+  dragon: { label: 'Dragon', icon: '??' },
+  dark: { label: 'Siniestro', icon: '??' },
+  steel: { label: 'Acero', icon: '??' }
+};
+
+const DEFAULT_ADMIN_RANKED_RULES = {
+  seasonName: 'TEMPORADA ACTUAL',
+  maxPokemon: 6,
+  levelCap: 100,
+  allowedTypes: [],
+  bannedPokemonIds: []
+};
+
+let _adminRankedRules = { ...DEFAULT_ADMIN_RANKED_RULES };
+
+function _normalizeAdminType(v) {
+  const key = String(v || '').trim().toLowerCase();
+  return ADMIN_RANKED_TYPES.includes(key) ? key : null;
+}
+
+function _normalizeAdminPokemonId(v) {
+  return String(v || '').trim().toLowerCase();
+}
+
+function _uniqueAdminArray(values) {
+  return Array.from(new Set(values));
+}
+
+function _normalizeAdminRankedRules(rawConfig = {}, seasonNameRaw = DEFAULT_ADMIN_RANKED_RULES.seasonName) {
+  const maxPokemonNum = Number(rawConfig?.maxPokemon);
+  const levelCapNum = Number(rawConfig?.levelCap);
+  return {
+    seasonName: String(seasonNameRaw || DEFAULT_ADMIN_RANKED_RULES.seasonName).trim() || DEFAULT_ADMIN_RANKED_RULES.seasonName,
+    maxPokemon: Number.isFinite(maxPokemonNum) ? Math.max(1, Math.min(6, Math.floor(maxPokemonNum))) : DEFAULT_ADMIN_RANKED_RULES.maxPokemon,
+    levelCap: Number.isFinite(levelCapNum) ? Math.max(1, Math.min(100, Math.floor(levelCapNum))) : DEFAULT_ADMIN_RANKED_RULES.levelCap,
+    allowedTypes: _uniqueAdminArray((rawConfig?.allowedTypes || []).map(_normalizeAdminType).filter(Boolean)),
+    bannedPokemonIds: _uniqueAdminArray((rawConfig?.bannedPokemonIds || []).map(_normalizeAdminPokemonId).filter(Boolean))
+  };
+}
+
+function _getAdminPokemonOptions() {
+  if (typeof POKEMON_DB === 'undefined') return [];
+  return Object.entries(POKEMON_DB)
+    .map(([id, data]) => ({ id, name: data?.name || id }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function _loadAdminRankedRules() {
+  try {
+    const { data, error } = await window.sb
+      .from('ranked_rules_config')
+      .select('season_name, config')
+      .eq('id', 'current')
+      .maybeSingle();
+    if (error) throw error;
+    _adminRankedRules = _normalizeAdminRankedRules(data?.config || {}, data?.season_name || DEFAULT_ADMIN_RANKED_RULES.seasonName);
+  } catch (e) {
+    _adminRankedRules = { ...DEFAULT_ADMIN_RANKED_RULES };
+  }
+  return _adminRankedRules;
+}
+
+async function _saveAdminRankedRules() {
+  const payload = _normalizeAdminRankedRules(_adminRankedRules, _adminRankedRules?.seasonName);
+  const { error } = await window.sb.from('ranked_rules_config').upsert({
+    id: 'current',
+    season_name: payload.seasonName,
+    config: {
+      maxPokemon: payload.maxPokemon,
+      levelCap: payload.levelCap,
+      allowedTypes: payload.allowedTypes,
+      bannedPokemonIds: payload.bannedPokemonIds
+    },
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'id' });
+  if (error) throw error;
+  _adminRankedRules = payload;
+  notify('Reglas ranked guardadas.', '?');
+
+  if (typeof loadRankedRules === 'function') {
+    await loadRankedRules(true);
+  }
+  const tab = document.getElementById('tab-ranked');
+  if (tab && tab.style.display !== 'none' && typeof renderRankedTab === 'function') {
+    renderRankedTab();
+  }
+}
+
+function _renderAdminRankedTab() {
+  const rules = _normalizeAdminRankedRules(_adminRankedRules, _adminRankedRules?.seasonName);
+  const typeButtons = ADMIN_RANKED_TYPES.map(type => {
+    const active = rules.allowedTypes.includes(type);
+    const meta = ADMIN_RANKED_TYPE_META[type] || { label: type, icon: '?' };
+    return `<button onclick="window._rankedToggleType('${type}')" style="padding:8px 10px;border-radius:10px;border:1px solid ${active ? '#60a5fa' : 'rgba(255,255,255,0.14)'};background:${active ? 'rgba(96,165,250,0.22)' : 'rgba(0,0,0,0.25)'};color:${active ? '#dbeafe' : '#9ca3af'};font-size:11px;cursor:pointer;">${meta.icon} ${meta.label}</button>`;
+  }).join('');
+
+  const allPokemon = _getAdminPokemonOptions();
+  const selectOptions = allPokemon
+    .map(p => `<option value="${p.id}">${p.name}</option>`)
+    .join('');
+
+  const bannedCards = rules.bannedPokemonIds.length
+    ? rules.bannedPokemonIds.map((id) => {
+        const label = POKEMON_DB?.[id]?.name || id;
+        return `<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,59,59,0.08);border:1px solid rgba(255,59,59,0.2);border-radius:10px;padding:8px 10px;gap:10px;"><span style="font-size:11px;color:#fecaca;">${label}</span><button onclick="window._rankedRemoveBan('${id}')" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:12px;">x</button></div>`;
+      }).join('')
+    : '<div style="font-size:11px;color:#9ca3af;">Sin baneos.</div>';
+
+  return `
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="font-size:11px;color:#9ca3af;line-height:1.5;">Configura reglas globales de la temporada Ranked.</div>
+      <div>
+        <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">NOMBRE DE TEMPORADA</div>
+        <input value="${rules.seasonName}" onchange="window._rankedSetSeasonName(this.value)" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(0,0,0,0.3);color:#fff;font-size:12px;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">MAX POKEMON</div>
+          <input type="number" min="1" max="6" value="${rules.maxPokemon}" onchange="window._rankedSetMaxPokemon(this.value)" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(0,0,0,0.3);color:#fff;font-size:12px;">
+        </div>
+        <div>
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;">NIVEL MAXIMO</div>
+          <input type="number" min="1" max="100" value="${rules.levelCap}" onchange="window._rankedSetLevelCap(this.value)" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(0,0,0,0.3);color:#fff;font-size:12px;">
+        </div>
+      </div>
+      <div>
+        <div style="font-size:9px;color:#9ca3af;margin-bottom:8px;">TIPOS PERMITIDOS (vac?o = todos)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">${typeButtons}</div>
+      </div>
+      <div>
+        <div style="font-size:9px;color:#9ca3af;margin-bottom:8px;">POKEMON BANEADOS</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <select id="admin-ranked-ban-select" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(0,0,0,0.3);color:#fff;font-size:11px;">${selectOptions}</select>
+          <button onclick="window._rankedAddBanFromSelect()" style="padding:10px 12px;border:none;border-radius:10px;background:rgba(248,113,113,0.2);color:#fecaca;cursor:pointer;font-size:11px;">+ Ban</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">${bannedCards}</div>
+      </div>
+      <button onclick="window._evAdminSave()" style="padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#60a5fa,#2563eb);color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">GUARDAR REGLAS RANKED</button>
+    </div>`;
+}
+
 
 // ── Motor de eventos (Supabase) ────────────────────────────────────────────────
 async function loadActiveEvents() {
@@ -768,6 +928,7 @@ async function openAdminPanel() {
     const { data: events, error } = await window.sb.from('events_config').select('*').order('id');
     if (error) throw error;
     
+    await _loadAdminRankedRules();
     _adminConfig = { events };
     _renderAdminPanel();
     
@@ -789,9 +950,11 @@ function _renderAdminPanel() {
 
   const tab1Active = _adminTab === 'events';
   const tab2Active = _adminTab === 'competition';
+  const tab3Active = _adminTab === 'ranked';
 
   const eventsHtml = (_adminConfig?.events || []).map((ev, i) => _renderEventCard(ev, i)).join('');
   const compHtml = _renderCompetitionTab();
+  const rankedHtml = _renderAdminRankedTab();
 
   ov.innerHTML = `
     <div style="background:#0f172a;border-radius:20px;padding:24px;width:100%;max-width:560px;border:2px solid #f59e0b44;box-shadow:0 8px 60px rgba(0,0,0,0.8);margin:auto;">
@@ -818,6 +981,10 @@ function _renderAdminPanel() {
           style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;background:${tab2Active ? '#22c55e' : 'transparent'};color:${tab2Active ? '#000' : '#9ca3af'};">
           🎣 CONCURSO
         </button>
+        <button onclick="window._evAdminSwitchTab('ranked')"
+          style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;background:${tab3Active ? '#60a5fa' : 'transparent'};color:${tab3Active ? '#000' : '#9ca3af'};">
+          RANKED
+        </button>
       </div>
 
       <!-- Events Tab -->
@@ -841,6 +1008,11 @@ function _renderAdminPanel() {
       <div id="admin-tab-competition" style="display:${tab2Active ? 'block' : 'none'};">
         ${compHtml}
       </div>
+
+      <!-- Ranked Tab -->
+      <div id="admin-tab-ranked" style="display:${tab3Active ? 'block' : 'none'};">
+        ${rankedHtml}
+      </div>
     </div>`;
 
   document.body.appendChild(ov);
@@ -854,6 +1026,47 @@ function _renderAdminPanel() {
     }
   };
 
+  window._rankedSetSeasonName = (value) => {
+    _adminRankedRules = _normalizeAdminRankedRules(_adminRankedRules, value);
+    _renderAdminPanel();
+  };
+
+  window._rankedSetMaxPokemon = (value) => {
+    _adminRankedRules = _normalizeAdminRankedRules({ ..._adminRankedRules, maxPokemon: Number(value) }, _adminRankedRules?.seasonName);
+    _renderAdminPanel();
+  };
+
+  window._rankedSetLevelCap = (value) => {
+    _adminRankedRules = _normalizeAdminRankedRules({ ..._adminRankedRules, levelCap: Number(value) }, _adminRankedRules?.seasonName);
+    _renderAdminPanel();
+  };
+
+  window._rankedToggleType = (typeKey) => {
+    const rules = _normalizeAdminRankedRules(_adminRankedRules, _adminRankedRules?.seasonName);
+    const allowed = new Set(rules.allowedTypes);
+    if (allowed.has(typeKey)) allowed.delete(typeKey); else allowed.add(typeKey);
+    _adminRankedRules = _normalizeAdminRankedRules({ ...rules, allowedTypes: Array.from(allowed) }, rules.seasonName);
+    _renderAdminPanel();
+  };
+
+  window._rankedAddBanFromSelect = () => {
+    const select = document.getElementById('admin-ranked-ban-select');
+    if (!select || !select.value) return;
+    const rules = _normalizeAdminRankedRules(_adminRankedRules, _adminRankedRules?.seasonName);
+    const bans = new Set(rules.bannedPokemonIds);
+    bans.add(select.value);
+    _adminRankedRules = _normalizeAdminRankedRules({ ...rules, bannedPokemonIds: Array.from(bans) }, rules.seasonName);
+    _renderAdminPanel();
+  };
+
+  window._rankedRemoveBan = (pokemonId) => {
+    const rules = _normalizeAdminRankedRules(_adminRankedRules, _adminRankedRules?.seasonName);
+    _adminRankedRules = _normalizeAdminRankedRules({
+      ...rules,
+      bannedPokemonIds: rules.bannedPokemonIds.filter(id => id !== pokemonId)
+    }, rules.seasonName);
+    _renderAdminPanel();
+  };
   window._evAdminAddEvent = () => {
     const newId = 'custom_' + Date.now();
     _adminConfig.events.push({
@@ -931,6 +1144,11 @@ function _renderAdminPanel() {
 
   window._evAdminSave = async () => {
     try {
+      if (_adminTab === 'ranked') {
+        await _saveAdminRankedRules();
+        return;
+      }
+
       for (const ev of (_adminConfig?.events || [])) {
         const { error } = await window.sb.from('events_config').upsert({
           id: ev.id,
@@ -944,11 +1162,11 @@ function _renderAdminPanel() {
         }, { onConflict: 'id' });
         if (error) throw error;
       }
-      notify('¡Cambios guardados!', '✅');
+      notify('Cambios guardados.', '?');
       await loadActiveEvents();
-    } catch (e) { 
+    } catch (e) {
       console.error(e);
-      notify('Error al guardar en Supabase.', '❌'); 
+      notify('Error al guardar en Supabase.', '?');
     }
   };
 }

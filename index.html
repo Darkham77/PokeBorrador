@@ -444,12 +444,20 @@
           <div style="background:rgba(255,217,61,0.06);border:1px solid rgba(255,217,61,0.2);border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
             <div style="font-size:28px;">⏳</div>
             <div style="flex:1;">
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:4px;">TEMPORADA 1</div>
+              <div id="ranked-season-name" style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:4px;">TEMPORADA ACTUAL</div>
               <div id="ranked-season-timer" style="font-size:12px;color:var(--gray);">Cargando...</div>
               <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">Las temporadas duran 3 meses. Al finalizar se otorgan premios y se reinicia el ranking.</div>
             </div>
           </div>
 
+          <div style="background:rgba(59,139,255,0.06);border:1px solid rgba(59,139,255,0.22);border-radius:16px;padding:14px;margin-bottom:16px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--blue);margin-bottom:8px;">REGLAS DE TEMPORADA</div>
+            <div id="ranked-rules-summary" style="font-size:11px;color:var(--gray);margin-bottom:10px;">Cargando reglas...</div>
+            <div id="ranked-rules-types" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+            <div id="ranked-rules-bans" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+            <div id="ranked-rules-active-team-status" style="font-size:11px;margin-bottom:6px;color:var(--gray);">Revisando equipo activo...</div>
+            <div id="ranked-rules-passive-team-status" style="font-size:11px;color:var(--gray);">Revisando equipo ranked...</div>
+          </div>
           <!-- Matchmaking -->
           <div style="margin-bottom:16px;">
             <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--purple);margin-bottom:10px;">⚔️ BUSCAR PARTIDA</div>
@@ -513,6 +521,7 @@
               <div style="font-size:11px;color:var(--gray);margin-bottom:16px;text-align:center;line-height:1.4;">
                 Elegí 6 Pokémon para tu equipo Rankeds. Los IVs, Movimientos y Objetos Equipados en este momento quedarán guardados en esta "fotografía" incluso si después los alterás en tu mochila. ¡Pero cuidado! Si vendés o perdés un Pokémon el equipo fallará.
               </div>
+              <div id="passive-editor-rules-hint" style="font-size:10px;color:#c7d2fe;margin-bottom:10px;text-align:center;line-height:1.4;">Cargando reglas de temporada...</div>
               <div id="passive-editor-slots" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:12px;min-height:50px;background:rgba(255,255,255,0.05);padding:10px;border-radius:12px;">
                 <!-- Slots (max 6) -->
               </div>

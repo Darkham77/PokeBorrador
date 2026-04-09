@@ -6,48 +6,56 @@
 
     // ── Subscribe (polling) for incoming invites ──────────────
     function subscribeBattleInvites() {
-      if (!currentUser || _pvpBattleInvitesCh) return;
-      const _seenInvites = new Set();
-      _pvpBattleInvitesCh = setInterval(async () => {
-        if (!currentUser) return;
-        const { data } = await sb.from('battle_invites')
-          .select('*').eq('opponent_id', currentUser.id).in('status', ['pending', 'ranked_match'])
-          .order('created_at', { ascending: false }).limit(1);
-        if (!data?.length) return;
-        const inv = data[0];
-        if (_seenInvites.has(inv.id)) return;
-        if (Date.now() - new Date(inv.created_at).getTime() > 60000) return;
-        _seenInvites.add(inv.id);
-        
-        if (inv.status === 'ranked_match') {
-          // Ghost Queue Protection: Si NO estamos buscando partida localmente, evadimos
-          if (!window.isRankedSearching) {
-            // Rechazamos pacíficamente la invitación para no trabar al rival
-            await sb.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id);
-            // Purgamos toda presencia de nuestra ID de la cola ranked
-            try { await sb.from('ranked_queue').delete().eq('user_id', currentUser.id); } catch(e){}
-            return;
-          }
+  if (!currentUser || _pvpBattleInvitesCh) return;
+  const _seenInvites = new Set();
+  _pvpBattleInvitesCh = setInterval(async () => {
+    if (!currentUser) return;
+    const { data } = await sb.from('battle_invites')
+      .select('*').eq('opponent_id', currentUser.id).in('status', ['pending', 'ranked_match'])
+      .order('created_at', { ascending: false }).limit(1);
+    if (!data?.length) return;
+    const inv = data[0];
+    if (_seenInvites.has(inv.id)) return;
+    if (Date.now() - new Date(inv.created_at).getTime() > 60000) return;
+    _seenInvites.add(inv.id);
 
-          // Auto-accept and start directly
-          document.getElementById('pvp-invite-popup')?.remove();
-          await sb.from('battle_invites').update({ status: 'ranked_accepted' }).eq('id', inv.id);
-          
-          // Ocultar modal matchmaking y detener búsqueda
-          if (typeof cancelRankedMatchmaking === 'function') {
-             await cancelRankedMatchmaking(true);
-          } else {
-             if (window._matchmakingInterval) { clearInterval(window._matchmakingInterval); window._matchmakingInterval = null; }
-             window.isRankedSearching = false;
-          }
-          startPvpBattle(inv, false, true);
-        } else {
-          showPvpInvitePopup(inv);
+    if (inv.status === 'ranked_match') {
+      // Ghost Queue Protection: si NO estamos buscando, rechazamos
+      if (!window.isRankedSearching) {
+        await sb.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id);
+        try { await sb.from('ranked_queue').delete().eq('user_id', currentUser.id); } catch (e) {}
+        return;
+      }
+
+      const rankedTeam = (typeof getRankedPlayableTeam === 'function') ? getRankedPlayableTeam() : [];
+      if (typeof ensureRankedTeamEligibility === 'function') {
+        const gate = await ensureRankedTeamEligibility(rankedTeam, 'equipo ranked', true);
+        if (!gate.ok) {
+          await sb.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id);
+          try { await sb.from('ranked_queue').delete().eq('user_id', currentUser.id); } catch (e) {}
+          return;
         }
-      }, 4000);
-    }
+      }
 
-    async function showPvpInvitePopup(invite) {
+      // Auto-accept and start directly
+      document.getElementById('pvp-invite-popup')?.remove();
+      await sb.from('battle_invites').update({ status: 'ranked_accepted' }).eq('id', inv.id);
+
+      // Ocultar matchmaking y detener b?squeda local
+      if (typeof cancelRankedMatchmaking === 'function') {
+        await cancelRankedMatchmaking(true);
+      } else {
+        if (window._matchmakingInterval) { clearInterval(window._matchmakingInterval); window._matchmakingInterval = null; }
+        window.isRankedSearching = false;
+      }
+      startPvpBattle(inv, false, true);
+    } else {
+      showPvpInvitePopup(inv);
+    }
+  }, 4000);
+}
+
+async function showPvpInvitePopup(invite) {
       document.getElementById('pvp-invite-popup')?.remove();
       const { data: prof } = await sb.from('profiles').select('username').eq('id', invite.challenger_id).single();
       const challengerName = prof?.username || 'Un entrenador';
@@ -134,19 +142,33 @@
     // ─────────────────────────────────────────────────────────────
 
     async function startPvpBattle(invite, isHost, isRanked = false) {
-      // Al entrar en combate, forzamos detener cualquier búsqueda de matchmaking
-      if (typeof cancelRankedMatchmaking === 'function') {
-        cancelRankedMatchmaking(true);
-      } else {
-        window.isRankedSearching = false;
-        if (window._matchmakingInterval) { clearInterval(window._matchmakingInterval); window._matchmakingInterval = null; }
-      }
+  // Al entrar en combate, forzamos detener cualquier busqueda de matchmaking
+  if (typeof cancelRankedMatchmaking === 'function') {
+    cancelRankedMatchmaking(true);
+  } else {
+    window.isRankedSearching = false;
+    if (window._matchmakingInterval) { clearInterval(window._matchmakingInterval); window._matchmakingInterval = null; }
+  }
 
-      const myTeam = state.team.filter(p => p.hp > 0 && !p.onMission).map(p => JSON.parse(JSON.stringify(p)));
-      if (!myTeam.length) { notify('¡No tenés Pokémon disponibles!', '⚠️'); return; }
+  const rankedBaseTeam = (isRanked && typeof getRankedPlayableTeam === 'function')
+    ? getRankedPlayableTeam()
+    : state.team.filter(p => p.hp > 0 && !p.onMission);
 
-      const opponentId = isHost ? invite.opponent_id : invite.challenger_id;
-      const { data: _oppProf } = await sb.from('profiles').select('username').eq('id', opponentId).single();
+  if (isRanked && typeof ensureRankedTeamEligibility === 'function') {
+    const gate = await ensureRankedTeamEligibility(rankedBaseTeam, 'equipo ranked', true);
+    if (!gate.ok) {
+      try {
+        if (invite?.id) await sb.from('battle_invites').update({ status: 'declined' }).eq('id', invite.id);
+      } catch (e) {}
+      return;
+    }
+  }
+
+  const myTeam = rankedBaseTeam.map(p => JSON.parse(JSON.stringify(p)));
+  if (!myTeam.length) { notify('No tenes Pokemon disponibles.', '\u26A0\uFE0F'); return; }
+
+  const opponentId = isHost ? invite.opponent_id : invite.challenger_id;
+  const { data: _oppProf } = await sb.from('profiles').select('username').eq('id', opponentId).single();
       const enemyUsername = _oppProf?.username || 'Rival';
 
       _pvpState = {
