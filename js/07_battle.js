@@ -2137,6 +2137,7 @@ function enemyTurn(opts = {}) {
           
           addLog(`¡${b.trainerName || 'El entrenador'} retira a ${oldPoke.name}!`, 'log-enemy');
           setTimeout(() => {
+            b.enemyRecharging = false;
             b.enemy = newPoke;
             newPoke._revealed = true;
             addLog(`¡${b.trainerName || 'El entrenador'} envía a ${newPoke.name}!`, 'log-enemy');
@@ -2224,7 +2225,8 @@ function enemyTurn(opts = {}) {
       const newPoke = aiTeam[decision.pokemonIndex];
       addLog(`¡El Equipo Defensor retira a ${b.enemy.name}!`, 'log-enemy');
       setTimeout(() => {
-        b.enemy = newPoke;
+            b.enemyRecharging = false;
+            b.enemy = newPoke;
         newPoke._revealed = true;
         addLog(`¡El Equipo Defensor envía a ${newPoke.name}!`, 'log-enemy');
         updateBattleUI();
@@ -2381,8 +2383,8 @@ function enemyTurn(opts = {}) {
     const prevPlayerHp = b.player.hp;
     b.player.hp = Math.max(0, b.player.hp - finalDmg);
     if (b.player.rageActive && finalDmg > 0 && b.player.hp > 0) {
-      addLogFn(`¡La Furia de ${b.player.name} está creciendo!`, 'log-info');
-      applyMoveEffect('stat_up_self_atk', b.player, b.enemy, b.playerStages, b.enemyStages, addLogFn);
+      addLog(`¡La Furia de ${b.player.name} está creciendo!`, 'log-info');
+      applyMoveEffect('stat_up_self_atk', b.player, b.enemy, b.playerStages, b.enemyStages, addLog);
     }
     
     // Ability Effects (Reactive/Defensive)
@@ -3154,6 +3156,7 @@ function endBattle(won) {
         awardBattleExperience();
         setTimeout(() => {
           nextP._revealed = true;
+          b.enemyRecharging = false;
           b.enemy = nextP;
           b.enemy.confused = 0; b.enemy.flinched = false;
           b.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 };

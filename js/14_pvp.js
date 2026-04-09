@@ -218,6 +218,13 @@
         showPvpScreen();
         addPvpLog('🔄 Sincronizando batalla...', 'log-info');
         _pvpState.channel.send({ type: 'broadcast', event: 'pvp_sync_request', payload: {} });
+        const syncRetry = setInterval(() => {
+          if (!_pvpState || _pvpState.over || _pvpState.phase !== 'sync') {
+            clearInterval(syncRetry);
+            return;
+          }
+          _pvpState.channel.send({ type: 'broadcast', event: 'pvp_sync_request', payload: { retry: true } });
+        }, 2000);
         _pvpStartHeartbeatLoop();
       });
     }
@@ -250,33 +257,68 @@
         })
         .on('broadcast', { event: 'pvp_team_ack' }, () => { _pvpState._teamAcknowledged = true; })
         .on('broadcast', { event: 'pvp_sync_request' }, () => {
-          if (_pvpState.over || _pvpState.phase === 'sync') return;
+          if (_pvpState.over) return;
           ch.send({
             type: 'broadcast', event: 'pvp_sync_data',
             payload: {
               enemyTeam: _pvpState.myTeam, enemyHp: _pvpState.myHp, enemyActive: _pvpState.myActive, enemyStages: _pvpState.myStages,
-              myHp: _pvpState.enemyHp, myActive: _pvpState.enemyActive, myStages: _pvpState.enemyStages, phase: _pvpState.phase,
+              myHp: Array.isArray(_pvpState.enemyHp) ? _pvpState.enemyHp : [],
+              myActive: Number.isInteger(_pvpState.enemyActive) ? _pvpState.enemyActive : 0,
+              myStages: _pvpState.enemyStages || { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 },
+              phase: _pvpState.phase,
               opponentPick: _pvpState.myPick
             }
           });
         })
         .on('broadcast', { event: 'pvp_sync_data' }, ({ payload }) => {
           if (_pvpState.phase !== 'sync' || _pvpState.over) return;
-          _pvpState.enemyTeam = payload.enemyTeam;
-          _pvpState.enemyHp = payload.enemyHp;
-          _pvpState.enemyActive = payload.enemyActive;
-          _pvpState.enemyStages = payload.enemyStages;
-          _pvpState.myHp = payload.myHp;
-          _pvpState.myActive = payload.myActive;
-          _pvpState.myStages = payload.myStages;
+          if (!payload || typeof payload !== 'object') return;
+
+          const localTeamLen = _pvpState.myTeam.length;
+          const incomingEnemyTeam = Array.isArray(payload.enemyTeam) ? payload.enemyTeam : null;
+          if (incomingEnemyTeam && incomingEnemyTeam.length) {
+            _pvpState.enemyTeam = incomingEnemyTeam;
+          }
+
+          const enemyTeamLen = Array.isArray(_pvpState.enemyTeam) ? _pvpState.enemyTeam.length : 0;
+          const incomingEnemyHp = Array.isArray(payload.enemyHp) ? payload.enemyHp : null;
+          if (incomingEnemyHp && incomingEnemyHp.length) {
+            _pvpState.enemyHp = incomingEnemyHp;
+          } else if ((!_pvpState.enemyHp || !_pvpState.enemyHp.length) && enemyTeamLen > 0) {
+            _pvpState.enemyHp = _pvpState.enemyTeam.map(p => p.hp);
+          }
+
+          if (Number.isInteger(payload.enemyActive) && payload.enemyActive >= 0 && payload.enemyActive < Math.max(1, enemyTeamLen)) {
+            _pvpState.enemyActive = payload.enemyActive;
+          }
+          if (payload.enemyStages && typeof payload.enemyStages === 'object') {
+            _pvpState.enemyStages = { ..._pvpState.enemyStages, ...payload.enemyStages };
+          }
+
+          const incomingMyHp = Array.isArray(payload.myHp) ? payload.myHp : null;
+          if (incomingMyHp && incomingMyHp.length === localTeamLen) {
+            _pvpState.myHp = incomingMyHp;
+          } else if (!Array.isArray(_pvpState.myHp) || _pvpState.myHp.length !== localTeamLen) {
+            _pvpState.myHp = _pvpState.myTeam.map(p => p.hp);
+          }
+
+          if (Number.isInteger(payload.myActive) && payload.myActive >= 0 && payload.myActive < localTeamLen) {
+            _pvpState.myActive = payload.myActive;
+          }
+          if (payload.myStages && typeof payload.myStages === 'object') {
+            _pvpState.myStages = { ..._pvpState.myStages, ...payload.myStages };
+          }
+
           if (_pvpState.isHost && payload.opponentPick && _pvpState.enemyPick === null) {
             _pvpState.enemyPick = payload.opponentPick;
           }
+
           const syncedPhase = payload.phase;
-          const normalizedPhase = (syncedPhase === 'waiting' || syncedPhase === 'opponent_disconnected')
-            ? 'choosing'
-            : syncedPhase;
-          _pvpState.phase = normalizedPhase;
+          let normalizedPhase = syncedPhase;
+          if (normalizedPhase === 'waiting' || normalizedPhase === 'opponent_disconnected' || normalizedPhase === 'sync') {
+            normalizedPhase = 'choosing';
+          }
+          _pvpState.phase = normalizedPhase || 'choosing';
           _pvpState._opponentDisconnected = false;
           addPvpLog('✅ Sincronizado.', 'log-info');
           renderPvpBattle();

@@ -784,7 +784,10 @@
 
 
       // Usar referencia al Pokémon del equipo (evita desync de PP)
+      // Recharge belongs to the outgoing battler and should not carry after a switch.
+      b.recharging = false;
       b.player = teamRef;
+
       
       // TRACK participation for experience distribution
       if (b.participants && !b.participants.includes(teamRef.uid)) {
