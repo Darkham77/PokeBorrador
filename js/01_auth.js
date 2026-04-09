@@ -117,6 +117,7 @@
       await saveGame(false);
       _saveLoaded = false;
       if (window.currentServer !== LOCAL_URL) await window.sb.auth.signOut();
+      if (typeof cleanupChats === 'function') cleanupChats();
       window.currentUser = null;
       // Reset state using central function
       resetGameState();
