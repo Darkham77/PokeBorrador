@@ -158,7 +158,7 @@ function restoreActiveBattle() {
   };
 }
 
-function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trainerName) {
+function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trainerName, battleOptions = {}) {
   if (enemy) enemy._revealed = true;
   _battleLock = false;
   const player = state.team.find(p => p.hp > 0 && !p.onMission);
@@ -169,10 +169,19 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   if (!isGym && locationId && !isTrainer) state.lastWildLocId = locationId;
   if (isTrainer) state.trainerChance = 5; // Reset pity on trainer encounter start
 
+  const isRankedBattle = battleOptions.isRanked === true || locationId === 'pvp_ranked';
+  const isPvPBattle = battleOptions.isPvP === true || isRankedBattle;
+  const isPassivePvPBattle = battleOptions.isPassivePvP === true;
+  const disableClassAbilities = battleOptions.disableClassAbilities === true || isRankedBattle;
+
   state.battle = {
     enemy, player, isGym, gymId, isTrainer, enemyTeam, trainerName,
     playerTeamIndex: state.team.indexOf(player),
     locationId: locationId || (isGym ? 'gym' : 'plains'),
+    isPvP: isPvPBattle,
+    isRanked: isRankedBattle,
+    isPassivePvP: isPassivePvPBattle,
+    disableClassAbilities: disableClassAbilities,
     turn: 'player', over: false,
     recharging: false, // for Hiperrayo etc
     playerStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 },
@@ -189,7 +198,7 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   }
 
   // Robo Rápido del Equipo Rocket al inicio de batalla vs entrenador
-  if (isTrainer && !isGym && typeof tryRocketSteal === 'function') {
+  if (isTrainer && !isGym && !disableClassAbilities && typeof tryRocketSteal === 'function') {
     tryRocketSteal();
   }
 
@@ -201,7 +210,7 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
   let startMsg = `¡Un ${enemy.name} salvaje apareció!`;
   if (isGym) startMsg = `¡Un ${enemy.name} salvaje apareció! ¡Es un combate de Gimnasio!`;
   if (isTrainer) {
-    const criminality = (state.playerClass === 'rocket' && state.classData?.criminality >= 100);
+    const criminality = (!disableClassAbilities && state.playerClass === 'rocket' && state.classData?.criminality >= 100);
     if (criminality && !isGym) {
       startMsg = `¡${trainerName || 'El entrenador'} te desafía! <br><span style="color:#ef4444;font-weight:bold;">"Tu cabeza vale mucho. ¡Ya no robarás más Pokémon!"</span>`;
     } else {
@@ -2104,7 +2113,7 @@ function enemyTurn(opts = {}) {
     // Use preDecidedItem if available to avoid "prediction" bug
     let itemToUse = preDecidedItem;
     
-    const isPolice = (state.playerClass === 'rocket' && state.classData?.criminality >= 100);
+    const isPolice = (!b.disableClassAbilities && state.playerClass === 'rocket' && state.classData?.criminality >= 100);
     const canUseItem = (b.isGym || isPolice) && !b.enemyUsedItem;
 
     if (!itemToUse && canUseItem) {
@@ -3476,7 +3485,7 @@ function endBattle(won) {
       // All fainted — true defeat
       
       // Penalización por Criminalidad Máxima (Equipo Rocket)
-      if (state.playerClass === 'rocket' && state.classData?.criminality >= 100) {
+      if (!b.disableClassAbilities && state.playerClass === 'rocket' && state.classData?.criminality >= 100) {
         const strongest = [...state.team].sort((a, b) => b.level - a.level)[0];
         const penalty = (strongest?.level || 1) * 100;
         state.money = Math.max(0, (state.money || 0) - penalty);
@@ -3771,10 +3780,11 @@ function startPassiveBattleMode(playerTeam, aiTeam, opponentName, opponentId) {
     enemy,          // enemy
     false,          // isGym
     null,           // gymId
-    'ranked_arena', // locationId
+    'pvp_ranked', // locationId
     true,           // isTrainer
     aiTeam,         // enemyTeam
-    opponentName    // trainerName
+    opponentName,    // trainerName
+    { isPvP: true, isRanked: true, isPassivePvP: true, disableClassAbilities: true }
   );
 
   // Marcar como Ranked

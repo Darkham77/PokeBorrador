@@ -72,12 +72,28 @@ function _formatSeasonDate(dateObj) {
 
 // ── Tiers de ELO ─────────────────────────────────────────────────────
 function getEloTier(elo) {
-  if (elo >= 3400) return { name: 'Maestro',  icon: '👑', color: '#FFD700' };
-  if (elo >= 2700) return { name: 'Diamante', icon: '💎', color: '#89CFF0' };
-  if (elo >= 2100) return { name: 'Platino',  icon: '🔶', color: '#E5C100' };
-  if (elo >= 1600) return { name: 'Oro',      icon: '🥇', color: '#FFB800' };
-  if (elo >= 1200)  return { name: 'Plata',    icon: '🥈', color: '#9E9E9E' };
-  return                   { name: 'Bronce',  icon: '🥉', color: '#c8a060' };
+  if (elo >= 3400) return { name: 'Maestro',  icon: '\uD83D\uDC51', color: '#FFD700' };
+  if (elo >= 2700) return { name: 'Diamante', icon: '\uD83D\uDC8E', color: '#89CFF0' };
+  if (elo >= 2100) return { name: 'Platino',  icon: '\uD83D\uDD36', color: '#E5C100' };
+  if (elo >= 1600) return { name: 'Oro',      icon: '\uD83E\uDD47', color: '#FFB800' };
+  if (elo >= 1200) return { name: 'Plata',    icon: '\uD83E\uDD48', color: '#9E9E9E' };
+  return                  { name: 'Bronce',   icon: '\uD83E\uDD49', color: '#c8a060' };
+}
+
+const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'];
+const RANKED_MAX_TIER_GAP = 1; // No emparejar con diferencia de 2 o mas rangos
+
+function getEloTierIndex(elo) {
+  const tierName = getEloTier(Number(elo) || 0).name;
+  const idx = RANKED_TIER_ORDER.indexOf(tierName);
+  return idx >= 0 ? idx : 0;
+}
+
+function isAllowedRankGap(myElo, opponentElo, maxGap = RANKED_MAX_TIER_GAP) {
+  const opp = Number(opponentElo);
+  if (!Number.isFinite(opp)) return false;
+  const mine = Number(myElo) || 0;
+  return Math.abs(getEloTierIndex(mine) - getEloTierIndex(opp)) <= maxGap;
 }
 
 // Ranked rules (temporada actual)
@@ -925,9 +941,9 @@ async function findPassiveOpponent() {
   const myElo = state.eloRating || 1000;
 
   const attempts = [
-    { requireActive: true, useEloWindow: true, myElo, eloRange: 300 },
-    { requireActive: true, useEloWindow: false, myElo, eloRange: 300 },
-    { requireActive: false, useEloWindow: false, myElo, eloRange: 300 }
+    { requireActive: true, useEloWindow: true, myElo, eloRange: 200 },
+    { requireActive: true, useEloWindow: false, myElo, eloRange: 200 },
+    { requireActive: false, useEloWindow: false, myElo, eloRange: 200 }
   ];
 
   for (const cfg of attempts) {
@@ -944,10 +960,12 @@ async function findPassiveOpponent() {
       continue;
     }
 
-    const valid = rows.filter(r => r && r.user_id && Array.isArray(r.team_data) && r.team_data.length > 0);
+    const valid = rows
+      .filter(r => r && r.user_id && Array.isArray(r.team_data) && r.team_data.length > 0)
+      .filter(r => isAllowedRankGap(myElo, r.elo_rating));
     if (!valid.length) continue;
 
-    const chosen = _pickClosestByElo(valid, myElo, 6);
+    const chosen = valid[Math.floor(Math.random() * valid.length)] || null;
     if (chosen) return chosen;
   }
 
@@ -1098,7 +1116,8 @@ async function _checkForHumanOpponent() {
 
     const candidates = rows
       .filter(r => r && r.user_id && r.user_id !== currentUser.id)
-      .filter(r => !r.status || r.status === 'searching');
+      .filter(r => !r.status || r.status === 'searching')
+      .filter(r => isAllowedRankGap(myElo, r.elo_rating));
     if (!candidates.length) return;
 
     const opponent = _pickClosestByElo(candidates, myElo, 4) || candidates[0];
@@ -1176,7 +1195,6 @@ async function _checkForHumanOpponent() {
 // ?? Fallback: luchar contra equipo pasivo ?????????????????????????????
 async function _matchmakingFallbackToPassive() {
   _matchmakingStop();
-  await _clearOwnRankedQueueRow();
   notify('No se encontro rival. Buscando un equipo pasivo...', '⚠️');
 
   const opponent = await findPassiveOpponent();
@@ -1217,6 +1235,8 @@ async function _matchmakingFallbackToPassive() {
 
   state._passiveBattleOpponentId = opponent.user_id;
   state._passiveBattleOpponentName = oppName;
+
+  await _clearOwnRankedQueueRow();
 
   if (typeof startPassiveBattleMode === 'function') {
     startPassiveBattleMode(myTeam, enemyTeam, oppName, opponent.user_id);

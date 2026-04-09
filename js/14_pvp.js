@@ -6,11 +6,19 @@
 
     const PVP_TURN_PICK_TIMEOUT_MS = 40000;
     const PVP_TURN_WARN_SECONDS = 10;
+    const PVP_AFK_FORFEIT_GRACE_MS = 2500;
 
     function _pvpSetInputDeadline() {
       if (!_pvpState || _pvpState.over) return;
       _pvpState._inputDeadlineAt = Date.now() + PVP_TURN_PICK_TIMEOUT_MS;
       _pvpState._afkWarned = false;
+      _pvpState._selfTimedOut = false;
+      _pvpState._selfTimeoutAt = null;
+      _pvpState._opponentTimedOutAt = null;
+      if (_pvpState._afkGraceTimer) {
+        clearTimeout(_pvpState._afkGraceTimer);
+        _pvpState._afkGraceTimer = null;
+      }
     }
 
     function _pvpClearInputDeadline() {
@@ -18,6 +26,49 @@
       _pvpState._inputDeadlineAt = null;
       _pvpState._afkWarned = false;
     }
+
+    function _pvpStartAfkForfeitFlow() {
+      if (!_pvpState || _pvpState.over) return;
+      if (_pvpState._selfTimedOut) return;
+
+      _pvpState._selfTimedOut = true;
+      _pvpState._selfTimeoutAt = Date.now();
+      _pvpState.phase = 'afk_timeout';
+      _pvpClearInputDeadline();
+      _pvpRenderMoves();
+
+      const statusEl = document.getElementById('pvp-status-msg');
+      if (statusEl) {
+        statusEl.textContent = 'Tiempo agotado. Verificando AFK rival...';
+        statusEl.style.color = 'var(--red)';
+      }
+
+      addPvpLog('Tiempo agotado: no elegiste movimiento.', 'log-info');
+      try {
+        _pvpState.channel?.send({
+          type: 'broadcast',
+          event: 'pvp_afk_timeout',
+          payload: { at: _pvpState._selfTimeoutAt }
+        });
+      } catch (e) {}
+
+      if (_pvpState._opponentTimedOutAt) {
+        pvpEnd(false, { reason: 'mutual_afk' });
+        return;
+      }
+
+      _pvpState._afkGraceTimer = setTimeout(() => {
+        if (!_pvpState || _pvpState.over) return;
+        if (_pvpState._opponentTimedOutAt) {
+          pvpEnd(false, { reason: 'mutual_afk' });
+          return;
+        }
+        addPvpLog('Derrota por inactividad.', 'log-info');
+        try { _pvpState.channel?.send({ type: 'broadcast', event: 'pvp_forfeit', payload: {} }); } catch (e) {}
+        pvpEnd(false, { reason: 'timeout_forfeit' });
+      }, PVP_AFK_FORFEIT_GRACE_MS);
+    }
+
     function _pvpNeedsPlayerInput() {
       if (!_pvpState || _pvpState.over) return false;
       if (_pvpState.phase === 'choosing') return _pvpState.myPick === null;
@@ -60,9 +111,7 @@
         return;
       }
 
-      addPvpLog('Tiempo agotado: derrota por inactividad.', 'log-info');
-      try { _pvpState.channel?.send({ type: 'broadcast', event: 'pvp_forfeit', payload: {} }); } catch (e) {}
-      pvpEnd(false, false);
+      _pvpStartAfkForfeitFlow();
     }
 
 
@@ -250,6 +299,10 @@ async function showPvpInvitePopup(invite) {
         _opponentDisconnected: false,
         _inputDeadlineAt: null,
         _afkWarned: false,
+        _selfTimedOut: false,
+        _selfTimeoutAt: null,
+        _opponentTimedOutAt: null,
+        _afkGraceTimer: null,
         _battleAnnounced: false, // Flag to prevent log spam
       };
       _pvpLock = false;
@@ -294,7 +347,11 @@ async function showPvpInvitePopup(invite) {
         _lastActivityTime: Date.now(),
         _opponentDisconnected: false,
         _inputDeadlineAt: null,
-        _afkWarned: false
+        _afkWarned: false,
+        _selfTimedOut: false,
+        _selfTimeoutAt: null,
+        _opponentTimedOutAt: null,
+        _afkGraceTimer: null
       };
 
       const chName = 'pvp-' + ab.inviteId;
@@ -446,7 +503,25 @@ async function showPvpInvitePopup(invite) {
             _pvpRenderMoves();
           }
         })
-        .on('broadcast', { event: 'pvp_forfeit' }, () => { if (!_pvpState.over) pvpEnd(true); })
+        .on('broadcast', { event: 'pvp_afk_timeout' }, ({ payload }) => {
+          if (_pvpState.over) return;
+          _pvpState._opponentTimedOutAt = Number(payload?.at) || Date.now();
+          if (_pvpState._selfTimedOut) {
+            if (_pvpState._afkGraceTimer) {
+              clearTimeout(_pvpState._afkGraceTimer);
+              _pvpState._afkGraceTimer = null;
+            }
+            pvpEnd(false, { reason: 'mutual_afk' });
+          }
+        })
+        .on('broadcast', { event: 'pvp_forfeit' }, () => {
+          if (_pvpState.over) return;
+          if (_pvpState._selfTimedOut) {
+            pvpEnd(false, { reason: 'mutual_afk' });
+            return;
+          }
+          pvpEnd(true);
+        })
         .on('broadcast', { event: 'pvp_heartbeat' }, () => {
           if (_pvpState.over) return;
           _pvpState._lastActivityTime = Date.now();
@@ -1276,15 +1351,25 @@ async function showPvpInvitePopup(invite) {
     // ── Forfeit / End ────────────────────────────────────────────
     function pvpForfeit() {
       if (!_pvpState || _pvpState.over) return;
+      if (_pvpState._afkGraceTimer) {
+        clearTimeout(_pvpState._afkGraceTimer);
+        _pvpState._afkGraceTimer = null;
+      }
       _pvpState.channel.send({ type: 'broadcast', event: 'pvp_forfeit', payload: {} });
       pvpEnd(false, false);
     }
 
-    function pvpEnd(won, _unused) {
+    function pvpEnd(won, endOptions = null) {
       if (!_pvpState || _pvpState.over) return;
+      const opts = (endOptions && typeof endOptions === 'object') ? endOptions : {};
+      const isMutualAfk = opts.reason === 'mutual_afk';
       _pvpState.over = true;
       _pvpState.phase = 'over';
       _pvpClearInputDeadline();
+      if (_pvpState._afkGraceTimer) {
+        clearTimeout(_pvpState._afkGraceTimer);
+        _pvpState._afkGraceTimer = null;
+      }
       
       // Limpiar batalla activa del estado global para evitar reconexiones "zombie"
       state.activeBattle = null;
@@ -1303,7 +1388,7 @@ async function showPvpInvitePopup(invite) {
       } else {
         // Enviar el resultado al RPC para batallas activas (usar el mismo RPC o un endpoint central)
         if (typeof reportPassiveBattleResult === 'function') {
-           const resultStr = won ? 'win' : 'loss';
+           const resultStr = isMutualAfk ? 'loss' : (won ? 'win' : 'loss');
            reportPassiveBattleResult(_pvpState.opponentId, resultStr);
         }
       }
@@ -1325,7 +1410,7 @@ async function showPvpInvitePopup(invite) {
               ${won ? '¡VICTORIA RANKED!' : '¡DERROTA RANKED!'}
             </div>
             <div style="font-size:11px;color:#aaa;margin-bottom:24px;text-align:center;padding:0 20px;">
-              Tus puntuaciones de ELO han sido actualizadas.<br>Comprueba tu perfil.
+              ${isMutualAfk ? 'Ninguno eligio movimiento a tiempo.<br>Se desconto ELO a ambos jugadores.' : 'Tus puntuaciones de ELO han sido actualizadas.<br>Comprueba tu perfil.'}
             </div>
             <button onclick="closePvpOverlay()" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 24px;
               border:none;border-radius:14px;cursor:pointer;background:var(--purple);color:#fff;">
