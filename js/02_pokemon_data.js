@@ -1532,6 +1532,8 @@
         'poison_30': "Puede envenenar al objetivo (30%).",
         'poison': "Envenena al objetivo de forma garantizada.",
         'freeze_10': "Puede congelar al objetivo (10%).",
+        'flinch_10': "Puede hacer retroceder al objetivo (10%).",
+        'flinch_20': "Puede hacer retroceder al objetivo (20%).",
         'flinch_30': "Puede hacer retroceder al objetivo (30%).",
         'confuse_10': "Puede confundir al objetivo (10%).",
         'confuse_20': "Puede confundir al objetivo (20%).",
