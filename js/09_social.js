@@ -134,22 +134,18 @@
         const chatUnreadBadge = unreadCount > 0 ? `<div style="position:absolute;top:-6px;right:-6px;background:#ff4757;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:bold;box-shadow:0 2px 5px rgba(0,0,0,0.4);z-index:10;">${unreadCount}</div>` : '';
 
         const clsId = save?.playerClass;
-        let avatarHtml = `<div style="font-size:24px;">🧢</div>`;
-        if (typeof getAvatarHtml === 'function') {
-          const cls = (clsId && typeof PLAYER_CLASSES !== 'undefined') ? PLAYER_CLASSES[clsId] : null;
-          let borderColor = '#cd7f32';
-          if (level >= 20) borderColor = '#ffd700';
-          else if (level >= 10) borderColor = '#c0c0c0';
-          avatarHtml = getAvatarHtml(cls, borderColor, 40);
-        }
+        const cls = (clsId && typeof PLAYER_CLASSES !== 'undefined') ? PLAYER_CLASSES[clsId] : null;
+        let borderColor = '#cd7f32';
+        if (level >= 20) borderColor = '#ffd700';
+        else if (level >= 10) borderColor = '#c0c0c0';
 
         return `<div class="friend-card">
       <div class="friend-avatar" style="border:none;background:transparent;">
-        ${avatarHtml}
+        ${(typeof getAvatarHtml === 'function') ? getAvatarHtml(cls, borderColor, 56, save?.avatar_style) : '<div style="font-size:32px;">🧢</div>'}
         <div class="online-dot ${isOnline ? '' : 'offline-dot'}"></div>
       </div>
       <div class="friend-info">
-        <div class="friend-name">${p.username}</div>
+        <div class="friend-name ${save?.nick_style || ''}">${p.username}</div>
         <div class="friend-meta">Nv. ${level} &nbsp;·&nbsp; ${badges} medallas</div>
       </div>
       <div class="friend-actions">
@@ -189,20 +185,20 @@
         const level = save.trainerLevel || 1;
         const clsId = save.playerClass;
         
-        let avatarHtml = `<div style="font-size:24px;">🧢</div>`;
+        let avatarHtml = `<div style="font-size:20px;">🧢</div>`;
         if (typeof getAvatarHtml === 'function') {
           const cls = (clsId && typeof PLAYER_CLASSES !== 'undefined') ? PLAYER_CLASSES[clsId] : null;
           let borderColor = '#cd7f32';
           if (level >= 20) borderColor = '#ffd700';
           else if (level >= 10) borderColor = '#c0c0c0';
-          avatarHtml = getAvatarHtml(cls, borderColor, 40);
+          avatarHtml = getAvatarHtml(cls, borderColor, 36, save.avatar_style);
         }
 
         return `
     <div class="friend-card">
       <div class="friend-avatar" style="border:none;background:transparent;">${avatarHtml}</div>
       <div class="friend-info">
-        <div class="friend-name">${profile?.username || '?'}</div>
+        <div class="friend-name ${save.nick_style || ''}">${profile?.username || '?'}</div>
         <div class="friend-meta">Quiere ser tu amigo</div>
       </div>
       <div class="friend-actions">

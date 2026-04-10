@@ -1,4 +1,4 @@
-﻿// ===== CHAT SYSTEM =====
+// ===== CHAT SYSTEM =====
 // Friend chat (realtime inbox/outbox) + Global chat (DB persisted, max 50)
 
 let _chatInboxChannel = null;
@@ -578,7 +578,7 @@ function _globalChatAvatarHtml(msg) {
   if (typeof getAvatarHtml === 'function' && typeof PLAYER_CLASSES !== 'undefined') {
     const clsId = msg?.player_class || null;
     const cls = clsId ? PLAYER_CLASSES[clsId] : null;
-    return getAvatarHtml(cls, borderColor, 26);
+    return getAvatarHtml(cls, borderColor, 26, msg.avatar_style);
   }
 
   return '<div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);font-size:13px;">👤</div>';
@@ -628,7 +628,7 @@ function _renderGlobalChatMessages(forceBottom) {
     line.className = 'gc-line';
 
     const nickBtn = document.createElement('button');
-    nickBtn.className = 'gc-nick';
+    nickBtn.className = 'gc-nick' + (msg.nick_style ? ' ' + msg.nick_style : '');
     nickBtn.type = 'button';
     nickBtn.textContent = msg.username || 'Entrenador';
     nickBtn.addEventListener('click', () => {
@@ -735,7 +735,9 @@ async function sendGlobalChatMessage() {
       username: state?.trainer || currentUser?.user_metadata?.username || 'Entrenador',
       message,
       player_class: state?.playerClass || null,
-      trainer_level: level
+      trainer_level: level,
+      nick_style: state.nick_style || null,
+      avatar_style: state.avatar_style || null
     };
 
     const { data, error } = await sb

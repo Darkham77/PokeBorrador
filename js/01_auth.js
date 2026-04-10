@@ -635,7 +635,25 @@
 
     function updateProfilePanel(user, profile) {
       if (user && profile) {
-        document.getElementById('profile-username').textContent = profile?.username || '—';
+        const nameEl = document.getElementById('profile-username');
+        if (nameEl) {
+          nameEl.textContent = profile?.username || '—';
+          nameEl.className = state.nick_style || '';
+          
+          // Add Edit Button if it's the current user
+          const existingEdit = document.getElementById('profile-edit-btn');
+          if (existingEdit) existingEdit.remove();
+          
+          const editBtn = document.createElement('button');
+          editBtn.id = 'profile-edit-btn';
+          editBtn.innerHTML = '✏️ Editar';
+          editBtn.style.cssText = 'font-size:10px; padding:4px 8px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:6px; color:var(--gray); cursor:pointer; margin-left:10px; font-family:"Press Start 2P",monospace;';
+          editBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (typeof openProfileEditor === 'function') openProfileEditor();
+          };
+          nameEl.parentNode.appendChild(editBtn);
+        }
         document.getElementById('profile-email').textContent = user.email;
         const adminSection = document.getElementById('profile-admin-section');
         if (adminSection) adminSection.style.display = user.email === 'kodrol77@gmail.com' ? 'block' : 'none';

@@ -174,8 +174,9 @@ const PLAYER_CLASSES = {
 };
 
 // ── HELPER: Generar HTML del Avatar ───────────────────────────────────────
-function getAvatarHtml(cls, borderColor, sizePx = 40) {
-  const avatarClass = state.avatar_style ? ` ${state.avatar_style}` : '';
+function getAvatarHtml(cls, borderColor, sizePx = 40, customAvatarStyle = undefined) {
+  const style = (customAvatarStyle !== undefined) ? customAvatarStyle : (state.avatar_style || '');
+  const avatarClass = style ? ` ${style}` : '';
   if (!cls) {
     return `<div class="player-avatar-container${avatarClass}" style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background:#1e293b; display:flex; align-items:center; justify-content:center; font-size:${sizePx/2}px; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66;">🧢</div>`;
   }
