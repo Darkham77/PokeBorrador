@@ -359,12 +359,166 @@ async function loadPlayerElo() {
   } else {
     state.passiveTeamActive = false;
   }
+
+  initGlobalRankedLeaderboardWatcher();
 }
 
 // ── Watcher de ELO en segundo plano ──────────────────────────────────
 let _eloWatcherInterval = null;
 let _offlineEloSummaryShown = false;
 let _offlineEloSummaryUserId = null;
+
+const RANKED_LEADERBOARD_LIMIT = 100;
+const RANKED_LEADERBOARD_REFRESH_MS = 30 * 60 * 1000;
+let _rankedLeaderboardRefreshTimer = null;
+let _rankedLeaderboardRows = [];
+let _rankedLeaderboardLastSyncAt = 0;
+let _rankedLeaderboardPending = null;
+let _rankedLeaderboardError = '';
+
+function _rankedEscHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (ch) => {
+    if (ch === '&') return '&amp;';
+    if (ch === '<') return '&lt;';
+    if (ch === '>') return '&gt;';
+    if (ch === '"') return '&quot;';
+    return '&#39;';
+  });
+}
+
+function _formatRankedLeaderboardDate(ts) {
+  if (!ts) return '-';
+  return new Date(ts).toLocaleString('es-AR', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
+}
+
+function _rankedLeaderboardMsUntilNextSync() {
+  if (!_rankedLeaderboardLastSyncAt) return 0;
+  return Math.max(0, (_rankedLeaderboardLastSyncAt + RANKED_LEADERBOARD_REFRESH_MS) - Date.now());
+}
+
+function _renderRankedLeaderboardRows(rows = _rankedLeaderboardRows) {
+  const listEl = document.getElementById('ranked-global-list');
+  if (!listEl) return;
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    listEl.innerHTML = '<div style="font-size:11px;color:var(--gray);padding:10px;">Aun no hay datos de ranking global.</div>';
+    return;
+  }
+
+  const meId = currentUser?.id || null;
+  listEl.innerHTML = rows.map((row, idx) => {
+    const elo = Number(row?.elo_rating || 1000);
+    const tier = getEloTier(elo);
+    const nick = _rankedEscHtml(row?.username || 'Entrenador');
+    const isMe = !!meId && row?.id === meId;
+    const meBadge = isMe
+      ? '<span style="font-size:7px;padding:2px 4px;border-radius:6px;background:rgba(107,203,119,0.18);color:#86efac;border:1px solid rgba(134,239,172,0.35);">TU</span>'
+      : '';
+
+    return `
+      <div style="display:grid;grid-template-columns:62px minmax(0,1fr) 124px 88px;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;border:1px solid ${isMe ? 'rgba(107,203,119,0.45)' : 'rgba(255,255,255,0.08)'};background:${isMe ? 'rgba(107,203,119,0.08)' : 'rgba(0,0,0,0.16)'};">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);">#${idx + 1}</div>
+        <div style="font-size:11px;color:#fff;display:flex;align-items:center;gap:6px;min-width:0;">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nick}</span>${meBadge}
+        </div>
+        <div style="font-size:10px;color:${tier.color};font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tier.icon} ${_rankedEscHtml(tier.name)}</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#e2e8f0;text-align:right;">${elo}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function _renderRankedLeaderboardStatus(isLoading = false) {
+  const statusEl = document.getElementById('ranked-global-status');
+  const btn = document.getElementById('ranked-global-refresh-btn');
+  if (btn) btn.disabled = isLoading;
+  if (!statusEl) return;
+
+  if (isLoading) {
+    statusEl.textContent = 'Actualizando ranking global...';
+    statusEl.style.color = 'var(--gray)';
+    return;
+  }
+
+  if (_rankedLeaderboardError) {
+    statusEl.textContent = _rankedLeaderboardError;
+    statusEl.style.color = 'var(--red)';
+    return;
+  }
+
+  const syncText = _rankedLeaderboardLastSyncAt
+    ? `Ultima actualizacion: ${_formatRankedLeaderboardDate(_rankedLeaderboardLastSyncAt)}`
+    : 'Sin sincronizar todavia.';
+
+  const minsLeft = Math.max(1, Math.ceil(((_rankedLeaderboardMsUntilNextSync() || RANKED_LEADERBOARD_REFRESH_MS)) / 60000));
+  statusEl.textContent = `${syncText} - Proxima revision en ${minsLeft} min.`;
+  statusEl.style.color = 'var(--gray)';
+}
+
+async function refreshGlobalRankedLeaderboard(force = false) {
+  if (!currentUser || !sb) return [];
+
+  const isStale = !_rankedLeaderboardLastSyncAt || (Date.now() - _rankedLeaderboardLastSyncAt) >= RANKED_LEADERBOARD_REFRESH_MS;
+  if (!force && !isStale) {
+    _renderRankedLeaderboardRows();
+    _renderRankedLeaderboardStatus(false);
+    return _rankedLeaderboardRows;
+  }
+
+  if (_rankedLeaderboardPending) return _rankedLeaderboardPending;
+
+  _rankedLeaderboardError = '';
+  _renderRankedLeaderboardRows();
+  _renderRankedLeaderboardStatus(true);
+
+  _rankedLeaderboardPending = (async () => {
+    try {
+      const { data, error } = await sb.from('profiles')
+        .select('id,username,elo_rating')
+        .not('username', 'is', null)
+        .order('elo_rating', { ascending: false, nullsFirst: false })
+        .order('username', { ascending: true })
+        .limit(RANKED_LEADERBOARD_LIMIT);
+
+      if (error) throw error;
+
+      _rankedLeaderboardRows = Array.isArray(data) ? data.map((row) => ({
+        id: row.id,
+        username: row.username || 'Entrenador',
+        elo_rating: Number(row.elo_rating || 1000)
+      })) : [];
+
+      _rankedLeaderboardLastSyncAt = Date.now();
+      _rankedLeaderboardError = '';
+      _renderRankedLeaderboardRows();
+      _renderRankedLeaderboardStatus(false);
+      return _rankedLeaderboardRows;
+    } catch (e) {
+      console.warn('[Ranked] No se pudo cargar leaderboard global:', e);
+      _rankedLeaderboardError = 'No se pudo cargar el ranking global. Reintenta en unos minutos.';
+      _renderRankedLeaderboardRows();
+      _renderRankedLeaderboardStatus(false);
+      return [];
+    } finally {
+      _rankedLeaderboardPending = null;
+    }
+  })();
+
+  return _rankedLeaderboardPending;
+}
+
+function initGlobalRankedLeaderboardWatcher() {
+  if (_rankedLeaderboardRefreshTimer || !currentUser) return;
+
+  refreshGlobalRankedLeaderboard(true).catch(() => {});
+  _rankedLeaderboardRefreshTimer = setInterval(() => {
+    if (!currentUser) return;
+    refreshGlobalRankedLeaderboard(true).catch(() => {});
+  }, RANKED_LEADERBOARD_REFRESH_MS);
+}
 
 function initEloWatcher() {
   if (_eloWatcherInterval || !currentUser) return;
@@ -468,6 +622,11 @@ function renderRankedTab() {
     _renderRankedRulesCard();
     _renderPassiveEditorRulesHint();
   }).catch(() => {});
+
+  _renderRankedLeaderboardRows();
+  _renderRankedLeaderboardStatus(false);
+  initGlobalRankedLeaderboardWatcher();
+  refreshGlobalRankedLeaderboard(false).catch(() => {});
 
   // Si hay una búsqueda activa, restaurar el estado visual
   if (_matchmakingInterval) {
@@ -1290,6 +1449,7 @@ async function reportPassiveBattleResult(opponentId, result) {
 
   const sign = delta >= 0 ? '+' : '';
   notify(`Resultado registrado. ELO: ${sign}${delta} → ${state.eloRating}`, '📊');
+  refreshGlobalRankedLeaderboard(true).catch(() => {});
 }
 
 // ── Limpieza automática al cerrar pestaña (Antigosting) ───────────────
@@ -1300,8 +1460,13 @@ window.normalizeRankedRules = normalizeRankedRules;
 window.validatePokemonForRanked = validatePokemonForRanked;
 window.validateTeamForRanked = validateTeamForRanked;
 window.ensureRankedTeamEligibility = ensureRankedTeamEligibility;
+window.refreshGlobalRankedLeaderboard = refreshGlobalRankedLeaderboard;
 window.addEventListener('beforeunload', () => {
     if (window.isRankedSearching) {
         cancelRankedMatchmaking(true);
+    }
+    if (_rankedLeaderboardRefreshTimer) {
+        clearInterval(_rankedLeaderboardRefreshTimer);
+        _rankedLeaderboardRefreshTimer = null;
     }
 });

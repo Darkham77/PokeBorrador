@@ -544,14 +544,28 @@
               <div style="font-size:11px;color:var(--gray);line-height:1.5;">Al finalizar cada temporada, los jugadores recibirán premios exclusivos según su rango final. ¡Prepárate!</div>
             </div>
           </div>
-
-          <!-- Leaderboard (en desarrollo) -->
+          <!-- Leaderboard global -->
           <div>
             <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--blue);margin-bottom:10px;">🌍 RANKING GLOBAL</div>
-            <div style="background:rgba(59,139,255,0.04);border:1px solid rgba(59,139,255,0.15);border-radius:14px;padding:16px;text-align:center;">
-              <div style="font-size:28px;margin-bottom:8px;">🚧</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--blue);margin-bottom:6px;">EN DESARROLLO</div>
-              <div style="font-size:11px;color:var(--gray);line-height:1.5;">Pronto podrás ver el ranking de los mejores entrenadores del servidor.</div>
+            <div style="background:rgba(59,139,255,0.04);border:1px solid rgba(59,139,255,0.15);border-radius:14px;padding:12px;">
+              <div style="display:grid;grid-template-columns:62px minmax(0,1fr) 124px 88px;gap:8px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.04);font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gray);margin-bottom:8px;">
+                <div>#</div>
+                <div>NICK</div>
+                <div>RANGO</div>
+                <div style="text-align:right;">ELO</div>
+              </div>
+              <div id="ranked-global-list" style="display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding-right:4px;">
+                <div style="font-size:11px;color:var(--gray);padding:10px;">Cargando ranking global...</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;">
+                <div id="ranked-global-status" style="font-size:10px;color:var(--gray);">Sin sincronizar todavia.</div>
+                <button id="ranked-global-refresh-btn" onclick="refreshGlobalRankedLeaderboard(true)" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 10px;border:none;border-radius:10px;background:rgba(59,139,255,0.18);color:#93c5fd;cursor:pointer;">
+                  ACTUALIZAR
+                </button>
+              </div>
+              <div style="font-size:10px;color:var(--gray);margin-top:8px;line-height:1.4;">
+                Top 100 por ELO en orden descendente. Refresco automatico cada 30 minutos.
+              </div>
             </div>
           </div>
 
@@ -722,8 +736,8 @@
                 <input type="number" id="om-publish-price" placeholder="Precio en ₽" style="flex:1; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:var(--yellow); font-size:14px; font-weight:bold; font-family:'Nunito',sans-serif; outline:none;" min="1" max="999999999">
                 <button onclick="publishToMarket()" class="title-btn" style="padding: 12px 20px; font-size: 10px; margin-top:0;">PUBLICAR</button>
              </div>
-          </div>
 
+          </div>
         </div>
       </div>
 
