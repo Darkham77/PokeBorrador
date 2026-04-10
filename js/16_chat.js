@@ -627,14 +627,15 @@ function _renderGlobalChatMessages(forceBottom) {
     const line = document.createElement('div');
     line.className = 'gc-line';
 
-    const nickBtn = document.createElement('button');
+    const nickText = (msg.username || 'Entrenador').trim() || 'Entrenador';
+    const nickBtn = document.createElement('span');
     nickBtn.className = 'gc-nick' + (msg.nick_style ? ' ' + msg.nick_style : '');
-    nickBtn.type = 'button';
-    nickBtn.textContent = msg.username || 'Entrenador';
+    nickBtn.style.cursor = 'pointer';
+    nickBtn.textContent = nickText;
     nickBtn.addEventListener('click', () => {
       openGlobalChatProfile(
         msg.user_id,
-        msg.username || 'Entrenador',
+        nickText,
         msg.player_class || null,
         Number(msg.trainer_level || 1)
       );
