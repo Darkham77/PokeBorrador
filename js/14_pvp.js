@@ -650,11 +650,11 @@ async function showPvpInvitePopup(invite) {
 
         <div id="pvp-move-panel" class="move-panel-wrapper">
           <div id="pvp-move-buttons" class="battle-actions"></div>
-          <div class="action-row no-catch" style="grid-template-columns:1fr 1fr;grid-template-areas:'switch run';">
-            <button class="action-btn" id="btn-switch" onclick="pvpShowSwitch()" style="background:rgba(199,125,255,0.15); border:1px solid rgba(199,125,255,0.3); color:var(--purple);">
+          <div class="action-row no-catch" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+            <button class="action-btn" id="btn-switch" onclick="pvpShowSwitch()" style="width:100%;background:rgba(199,125,255,0.15); border:1px solid rgba(199,125,255,0.3); color:var(--purple);">
               🔄 CAMBIAR
             </button>
-            <button class="action-btn" id="btn-run" onclick="pvpForfeit()" style="background:rgba(255,59,59,0.1); border:1px solid rgba(255,59,59,0.3); color:var(--red);">
+            <button class="action-btn" id="btn-run" onclick="pvpForfeit()" style="width:100%;background:rgba(255,59,59,0.1); border:1px solid rgba(255,59,59,0.3); color:var(--red);">
               🏳️ RENDIRSE
             </button>
           </div>

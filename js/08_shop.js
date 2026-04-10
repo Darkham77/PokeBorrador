@@ -1413,13 +1413,15 @@ function _marketSetQty(itemId, raw) {
     _preloadBgs();
 
     function drawBattleBackground(locationId, cycleOverride) {
-      const isPvp = locationId === 'pvp' || locationId === 'pvp_ranked';
-      const canvasId = isPvp ? 'pvp-battle-bg-canvas' : 'battle-bg-canvas';
-      const canvas = document.getElementById(canvasId);
+      const pvpOverlayOpen = !!document.getElementById('pvp-overlay');
+      const pvpCanvas = document.getElementById('pvp-battle-bg-canvas');
+      const pvpArena = document.getElementById('pvp-arena');
+      const usePvpCanvas = !!(pvpOverlayOpen && pvpCanvas && pvpArena);
+
+      const canvas = usePvpCanvas ? pvpCanvas : document.getElementById('battle-bg-canvas');
       if (!canvas) return;
 
-      const arenaId = isPvp ? 'pvp-arena' : 'battle-arena';
-      const arena = document.getElementById(arenaId);
+      const arena = usePvpCanvas ? pvpArena : document.getElementById('battle-arena');
       if (!arena) return;
 
       const W = arena.offsetWidth || 600;

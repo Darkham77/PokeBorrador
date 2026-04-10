@@ -3325,8 +3325,7 @@ function endBattle(won) {
 
       // Egg system (only for random trainers, not gyms)
       if (b.isTrainer && !b.isRival && Math.random() < 0.05) {
-        const eggPool = ['pichu', 'magby', 'elekid', 'cleffa', 'igglybuff', 'togepi', 'eevee'];
-        const pId = eggPool[Math.floor(Math.random() * eggPool.length)];
+        const pId = pickTrainerEggSpecies();
         addEgg(pId, 'encounter');
       }
 
@@ -3554,6 +3553,36 @@ function runFromBattle() {
   }, 1000);
 }
 
+const TRAINER_EGG_POOL = ['pichu', 'magby', 'elekid', 'cleffa', 'igglybuff', 'togepi', 'eevee'];
+
+function _shuffleInPlace(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function pickTrainerEggSpecies() {
+  if (!state.stats || typeof state.stats !== 'object') state.stats = {};
+  let bag = Array.isArray(state.stats.encounterEggBag)
+    ? state.stats.encounterEggBag.filter(id => TRAINER_EGG_POOL.includes(id))
+    : [];
+
+  // Anti-streak bag: each species appears once per cycle, in random order.
+  if (bag.length === 0) bag = _shuffleInPlace([...TRAINER_EGG_POOL]);
+
+  const selected = bag.pop();
+  state.stats.encounterEggBag = bag;
+
+  const bySpecies = (state.stats.encounterEggBySpecies && typeof state.stats.encounterEggBySpecies === 'object')
+    ? state.stats.encounterEggBySpecies
+    : {};
+  bySpecies[selected] = (bySpecies[selected] || 0) + 1;
+  state.stats.encounterEggBySpecies = bySpecies;
+
+  return selected;
+}
 function addEgg(pokemonId, origin = 'encounter', extraData = {}) {
   if (!state.eggs) state.eggs = [];
 
