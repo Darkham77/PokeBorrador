@@ -265,8 +265,43 @@ function _renderAdminRankedTab() {
         <div style="display:flex;flex-direction:column;gap:6px;">${bannedCards}</div>
       </div>
       <button onclick="window._evAdminSave()" style="padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#60a5fa,#2563eb);color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">GUARDAR REGLAS RANKED</button>
+      
+      <div style="height:1px;background:rgba(255,255,255,0.1);margin:10px 0;"></div>
+      
+      <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:14px;padding:14px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fbbf24;margin-bottom:8px;">ZONA DE PELIGRO</div>
+        <div style="font-size:10px;color:#9ca3af;line-height:1.5;margin-bottom:12px;">Al cerrar la temporada se entregarán los premios automáticamente al Top 50 según el ELO actual y se registrará el podio histórico.</div>
+        <button onclick="window._rankedCloseSeason()" style="width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#b45309,#78350f);color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">CERRAR TEMPORADA Y PREMIAR</button>
+      </div>
     </div>`;
 }
+
+window._rankedCloseSeason = async () => {
+  const rules = _normalizeAdminRankedRules(_adminRankedRules, _adminRankedRules?.seasonName);
+  const sName = rules.seasonName || 'TEMPORADA ACTUAL';
+  
+  if (!confirm(`¿Estás seguro de cerrar la temporada "${sName}"? \n\nSe entregarán premios al Top 50 y se guardará el registro histórico. Esta acción no se puede deshacer.`)) return;
+
+  try {
+    notify('Procesando cierre de temporada...', '⏳');
+    
+    // Llamar al RPC de Supabase
+    const { data, error } = await window.sb.rpc('fn_award_ranked_season_automated', {
+      target_season_name: sName
+    });
+
+    if (error) throw error;
+
+    if (data && data.ok) {
+      notify(`¡Temporada cerrada! Se entregaron ${data.awarded_count} premios a ${data.players_count} jugadores.`, '🏆');
+    } else {
+      throw new Error(data?.error || 'Error desconocido en el servidor');
+    }
+  } catch (e) {
+    console.error('[Admin] Error al cerrar temporada:', e);
+    notify('Error: ' + e.message, '❌');
+  }
+};
 
 
 // ── Motor de eventos (Supabase) ────────────────────────────────────────────────
