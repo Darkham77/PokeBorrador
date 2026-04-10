@@ -722,22 +722,22 @@
         effect: (qty) => { state.inventory['Recordador de Movimientos'] = (state.inventory['Recordador de Movimientos'] || 0) + qty; }
       },
       {
-        id: 'ability_change_pill', cat: 'utility', sprite: '',
-        name: 'P\u00edldora de cambio de habilidad', icon: 'P', price: 0, unlockLv: 1, tier: 'epic', market: false, trainerShop: false,
+        id: 'ability_change_pill', cat: 'utility', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ability-capsule.png',
+        name: 'P\u00edldora de cambio de habilidad', icon: '💊', price: 0, unlockLv: 1, tier: 'epic', market: false, trainerShop: false,
         desc: 'Permite cambiar la habilidad de un Pokemon por otra disponible de su especie.',
         type: 'usable',
         effect: (qty) => { state.inventory['P\u00edldora de cambio de habilidad'] = (state.inventory['P\u00edldora de cambio de habilidad'] || 0) + qty; }
       },
       {
-        id: 'nature_patch', cat: 'utility', sprite: '',
-        name: 'Parche de naturaleza', icon: 'N', price: 0, unlockLv: 1, tier: 'epic', market: false, trainerShop: false,
+        id: 'nature_patch', cat: 'utility', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ability-patch.png',
+        name: 'Parche de naturaleza', icon: '📜', price: 0, unlockLv: 1, tier: 'epic', market: false, trainerShop: false,
         desc: 'Reemplaza al azar la naturaleza de un Pokemon por otra diferente.',
         type: 'usable',
         effect: (qty) => { state.inventory['Parche de naturaleza'] = (state.inventory['Parche de naturaleza'] || 0) + qty; }
       },
       {
-        id: 'vigor_candy', cat: 'utility', sprite: '',
-        name: 'Caramelo de vigor', icon: 'V', price: 0, unlockLv: 1, tier: 'rare', market: false, trainerShop: false,
+        id: 'vigor_candy', cat: 'utility', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png',
+        name: 'Caramelo de vigor', icon: '🍬', price: 0, unlockLv: 1, tier: 'rare', market: false, trainerShop: false,
         desc: 'Recupera 1 punto de vigor al Pokemon seleccionado.',
         type: 'usable',
         effect: (qty) => { state.inventory['Caramelo de vigor'] = (state.inventory['Caramelo de vigor'] || 0) + qty; }
