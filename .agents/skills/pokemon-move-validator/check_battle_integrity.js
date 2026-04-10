@@ -30,12 +30,20 @@ function run() {
         implementedEffects.add(match[1]);
     }
 
+    const PVP_FILE = path.resolve(__dirname, '../../../js/14_pvp.js');
+    const pvpContent = fs.existsSync(PVP_FILE) ? fs.readFileSync(PVP_FILE, 'utf8') : '';
+
     // 3. Extraer propiedades booleanas especiales (halfHP, ohko, fixedDmg, etc.)
-    const specialProps = ['halfHP', 'ohko', 'fixedDmg', 'levelDmg', 'counter', 'drain', 'recoil', 'selfKO'];
+    const specialProps = ['halfHP', 'ohko', 'fixedDmg', 'levelDmg', 'drain', 'recoil', 'selfKO', 'endeavor', 'hits'];
     const missingProps = [];
+    const missingPvpProps = [];
+    
     specialProps.forEach(prop => {
         if (!battleContent.includes(`md.${prop}`)) {
             missingProps.push(prop);
+        }
+        if (pvpContent && !pvpContent.includes(`md.${prop}`)) {
+            missingPvpProps.push(prop);
         }
     });
 
@@ -63,9 +71,14 @@ function run() {
     }
 
     if (missingProps.length > 0) {
-        console.log("⚠️ POTENTIALLY UNIMPLEMENTED SPECIAL PROPERTIES:");
+        console.log("⚠️ POTENTIALLY UNIMPLEMENTED SPECIAL PROPERTIES (PvE):");
         missingProps.forEach(p => console.log(`- ${p}`));
-        // No marcamos como error crítico a menos que sea vital
+    }
+
+    if (missingPvpProps.length > 0) {
+        console.log("❌ DESYNC PvP ERROR: The following special properties are missing in 14_pvp.js:");
+        missingPvpProps.forEach(p => console.log(`- ${p}`));
+        hasErrors = true;
     }
 
     if (!hasErrors) {
