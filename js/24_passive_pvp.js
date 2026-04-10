@@ -346,7 +346,36 @@ async function loadPlayerElo() {
     .eq('id', currentUser.id)
     .single();
 
+  const rules = await loadRankedRules();
+  const currentSeason = rules.seasonName || 'TEMPORADA ACTUAL';
+
   if (data) {
+    // REVISAR SI CAMBIÓ LA TEMPORADA (RESET)
+    // El estado local state.lastRankedSeason persiste los cambios entre sesiones.
+    if (state.lastRankedSeason && state.lastRankedSeason !== currentSeason) {
+      console.log(`[Ranked] Detectada nueva temporada: ${currentSeason}. Reseteando stats...`);
+      
+      // Realizar reset local
+      state.eloRating = 1000;
+      state.pvpStats = { wins: 0, losses: 0, draws: 0 };
+      state.rankedMaxElo = 1000;
+      state.rankedRewardsClaimed = [];
+      state.lastRankedSeason = currentSeason;
+
+      // Actualizar DB de inmediato para que no se repita el reset
+      await sb.from('profiles').update({
+        elo_rating: 1000,
+        pvp_wins: 0,
+        pvp_losses: 0,
+        pvp_draws: 0
+      }).eq('id', currentUser.id);
+
+      notify(`¡Bienvenido a la ${currentSeason}! Tu ELO ha sido reiniciado.`, '🏅');
+    } else if (!state.lastRankedSeason) {
+      // Primera vez entrando al sistema en este formato
+      state.lastRankedSeason = currentSeason;
+    }
+
     const nextElo = data.elo_rating || 1000;
     const nextWins = data.pvp_wins || 0;
     const nextLosses = data.pvp_losses || 0;
@@ -870,8 +899,30 @@ function renderRankedTab() {
   refreshGlobalRankedLeaderboard(false).catch(() => {});
 
   // Si hay una búsqueda activa, restaurar el estado visual
-  if (_matchmakingInterval) {
     _showSearchingUI(true);
+  }
+
+  // --- SEASON GATING UI ---
+  const rules = getCurrentRankedRules();
+  const nowTs = Date.now();
+  const range = getRankedSeasonDateRange(rules);
+  const isSeasonActive = nowTs >= range.startDate.getTime() && nowTs <= range.endDate.getTime();
+  const btnSearch = document.getElementById('btn-ranked-search');
+  
+  if (btnSearch) {
+    if (!isSeasonActive) {
+      btnSearch.disabled = true;
+      btnSearch.style.opacity = '0.6';
+      btnSearch.style.cursor = 'not-allowed';
+      btnSearch.style.filter = 'grayscale(1)';
+      btnSearch.innerHTML = '🚫 TEMPORADA INACTIVA';
+    } else {
+      btnSearch.disabled = false;
+      btnSearch.style.opacity = '1';
+      btnSearch.style.cursor = 'pointer';
+      btnSearch.style.filter = 'none';
+      btnSearch.innerHTML = '🔍 BUSCAR PARTIDA';
+    }
   }
 }
 
@@ -1464,6 +1515,20 @@ async function _loadQueueCandidates(myElo) {
 async function startRankedMatchmaking() {
   if (!currentUser) { notify('Debes estar logueado', '⚠️'); return; }
   if (_matchmakingInterval) return; // Ya buscando
+
+  // Gating de Temporada
+  const rules = await loadRankedRules();
+  const now = Date.now();
+  const range = getRankedSeasonDateRange(rules);
+
+  if (now < range.startDate.getTime()) {
+    notify(`La temporada todavía no comienza. Inicia el ${_formatSeasonDate(range.startDate)}.`, '⏳');
+    return;
+  }
+  if (now > range.endDate.getTime()) {
+    notify('La temporada ha finalizado. Espera a que se programe la próxima.', '🛑');
+    return;
+  }
 
   window.isRankedSearching = true;
 

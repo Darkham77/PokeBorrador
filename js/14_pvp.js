@@ -23,9 +23,10 @@
 
     function _pvpTrainerSprite(classId) {
       const cls = _pvpTrainerClassDef(classId);
+      // Preferimos el sprite de cuerpo completo. 
+      // Si no existe la clase, usamos el sprite de Red como default de cuerpo completo en lugar de un avatar.
       if (cls?.sprite) return cls.sprite;
-      if (cls?.avatarSprite) return cls.avatarSprite;
-      return 'assets/sprites/trainers/entrenador.png';
+      return 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png';
     }
 
     function _pvpBuildTrainerSideHtml(meta, isEnemy) {
@@ -39,14 +40,29 @@
 
       return `
         <div class="pvp-trainer-card ${isEnemy ? 'enemy' : 'ally'}">
-          <div class="pvp-trainer-head">${isEnemy ? 'RIVAL' : 'JUGADOR'}</div>
+          <div class="pvp-trainer-head">
+            <i class="fas ${isEnemy ? 'fa-crosshairs' : 'fa-user-shield'}"></i> 
+            ${isEnemy ? 'RIVAL' : 'JUGADOR'}
+          </div>
           <div class="pvp-trainer-sprite-wrap">
             <img class="pvp-trainer-sprite" src="${sprite}" alt="Trainer ${safeName}" loading="lazy">
           </div>
-          <div class="pvp-trainer-name">${safeName}</div>
-          <div class="pvp-trainer-row"><span>Nivel</span><strong>${lvl}</strong></div>
-          <div class="pvp-trainer-row"><span>ELO</span><strong style="color:${tierColor};">${elo}</strong></div>
-          <div class="pvp-trainer-tier" style="border-color:${tierColor};color:${tierColor};">${tierName}</div>
+          <div class="pvp-trainer-info-group">
+            <div class="pvp-trainer-name">${safeName}</div>
+            <div class="pvp-trainer-stats">
+              <div class="pvp-trainer-row">
+                <span>Nivel</span>
+                <strong>${lvl}</strong>
+              </div>
+              <div class="pvp-trainer-row">
+                <span>Puntos ELO</span>
+                <strong style="color:${tierColor};">${elo}</strong>
+              </div>
+            </div>
+            <div class="pvp-trainer-tier" style="border-color:${tierColor}; color:${tierColor}; background: ${tierColor}15;">
+              <i class="fas fa-medal" style="margin-right:6px;"></i>${tierName}
+            </div>
+          </div>
         </div>`;
     }
 
@@ -67,105 +83,149 @@
         }
 
         #pvp-overlay .pvp-trainer-card {
-          background: linear-gradient(180deg, rgba(19, 28, 44, 0.96), rgba(12, 18, 30, 0.96));
-          border: 1px solid rgba(148, 163, 184, 0.26);
-          border-radius: 18px;
-          padding: 14px;
-          box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+          background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(8, 12, 21, 0.98));
+          border: none;
+          border-radius: 24px;
+          padding: 20px;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
           display: flex;
           flex-direction: column;
-          gap: 8px;
-          min-height: 320px;
+          gap: 16px;
+          min-height: 480px;
+          backdrop-filter: blur(12px);
+          position: relative;
+          overflow: hidden;
+        }
+
+        #pvp-overlay .pvp-trainer-card::before {
+          content: "";
+          position: absolute;
+          top: 0; left: 0; right: 0; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
         }
 
         #pvp-overlay .pvp-trainer-head {
           font-family: 'Press Start 2P', monospace;
           font-size: 8px;
-          color: #93c5fd;
-          opacity: 0.9;
-          letter-spacing: 0.6px;
+          color: #94a3b8;
+          opacity: 0.8;
+          letter-spacing: 1px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         #pvp-overlay .pvp-trainer-sprite-wrap {
-          height: 170px;
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.18), rgba(0, 0, 0, 0.2));
+          height: 240px;
+          border-radius: 20px;
+          background: radial-gradient(circle at 50% 40%, rgba(59, 130, 246, 0.12), transparent 70%);
           display: flex;
           align-items: flex-end;
           justify-content: center;
-          overflow: hidden;
+          overflow: visible;
+          position: relative;
         }
 
         #pvp-overlay .pvp-trainer-sprite {
-          max-height: 165px;
-          max-width: 100%;
+          max-height: 230px;
+          max-width: 130%;
           object-fit: contain;
           image-rendering: pixelated;
-          filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.5));
+          filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.8));
+          transition: transform 0.3s ease;
+        }
+        
+        #pvp-overlay .pvp-trainer-card:hover .pvp-trainer-sprite {
+          transform: translateY(-5px) scale(1.02);
+        }
+
+        #pvp-overlay .pvp-trainer-info-group {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          flex: 1;
         }
 
         #pvp-overlay .pvp-trainer-name {
           font-family: 'Press Start 2P', monospace;
-          font-size: 10px;
-          line-height: 1.25;
+          font-size: 13px;
+          line-height: 1.4;
           color: #f8fafc;
           word-break: break-word;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #pvp-overlay .pvp-trainer-stats {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          background: rgba(0,0,0,0.25);
+          padding: 12px;
+          border-radius: 16px;
+          border: 1px solid rgba(255,255,255,0.03);
         }
 
         #pvp-overlay .pvp-trainer-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          font-size: 12px;
-          color: #cbd5e1;
-          border-top: 1px dashed rgba(148, 163, 184, 0.24);
-          padding-top: 6px;
+          font-size: 11px;
+          color: #94a3b8;
         }
 
         #pvp-overlay .pvp-trainer-row strong {
           font-family: 'Press Start 2P', monospace;
-          font-size: 10px;
-          color: #e2e8f0;
+          font-size: 9px;
+          color: #f1f5f9;
         }
 
         #pvp-overlay .pvp-trainer-tier {
           margin-top: auto;
           align-self: flex-start;
           border: 1px solid;
-          border-radius: 999px;
-          padding: 4px 10px;
+          border-radius: 12px;
+          padding: 8px 14px;
           font-size: 10px;
           font-weight: 800;
-          background: rgba(0, 0, 0, 0.25);
+          font-family: 'Press Start 2P', monospace;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         #pvp-overlay .pvp-trainer-side-right .pvp-trainer-card {
           text-align: right;
         }
 
+        #pvp-overlay .pvp-trainer-side-right .pvp-trainer-head {
+          justify-content: flex-end;
+          flex-direction: row-reverse;
+        }
+
         #pvp-overlay .pvp-trainer-side-right .pvp-trainer-tier {
           align-self: flex-end;
         }
 
-        @media (min-width: 1320px) {
+        @media (min-width: 1400px) {
           #pvp-overlay .pvp-ranked-shell.ranked {
-            width: min(1700px, 98vw);
+            width: min(1800px, 98vw);
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 220px minmax(900px, 1100px) 220px;
-            gap: 18px;
-            align-items: stretch;
+            grid-template-columns: 280px minmax(800px, 1150px) 280px;
+            gap: 24px;
+            align-items: center;
           }
 
           #pvp-overlay .pvp-ranked-shell.ranked .pvp-trainer-side {
             display: flex;
-            align-items: stretch;
+            align-items: center;
+            justify-content: center;
           }
 
           #pvp-overlay .pvp-ranked-shell.ranked .battle-container {
             width: 100%;
-            max-width: 1100px;
+            max-width: 1150px;
             margin: 0;
           }
         }
