@@ -478,12 +478,12 @@ function _renderRankedLeaderboardRows(rows = _rankedLeaderboardRows) {
       : '';
 
     return `
-      <div style="display:grid;grid-template-columns:62px minmax(0,1fr) 124px 88px;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;border:1px solid ${isMe ? 'rgba(107,203,119,0.45)' : 'rgba(255,255,255,0.08)'};background:${isMe ? 'rgba(107,203,119,0.08)' : 'rgba(0,0,0,0.16)'};">
+      <div class="ranked-global-grid" style="padding:8px 10px;border-radius:10px;border:1px solid ${isMe ? 'rgba(107,203,119,0.45)' : 'rgba(255,255,255,0.08)'};background:${isMe ? 'rgba(107,203,119,0.08)' : 'rgba(0,0,0,0.16)'};">
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);">#${idx + 1}</div>
         <div style="font-size:11px;color:#fff;display:flex;align-items:center;gap:6px;min-width:0;">
           <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nick}</span>${meBadge}
         </div>
-        <div style="font-size:10px;color:${tier.color};font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tier.icon} ${_rankedEscHtml(tier.name)}</div>
+        <div class="ranked-global-tier-cell" style="font-size:10px;color:${tier.color};font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tier.icon} ${_rankedEscHtml(tier.name)}</div>
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#e2e8f0;text-align:right;">${elo}</div>
       </div>
     `;

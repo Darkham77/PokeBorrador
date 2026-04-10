@@ -6846,6 +6846,7 @@
     .ranked-header-card {
         grid-template-columns: 1fr auto;
         padding: 24px;
+        gap: 20px;
     }
     .rank-badge-container {
         display: none;
@@ -6856,6 +6857,71 @@
     .season-banner-side {
         border-right: none;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+}
+
+/* New Responsive rules for smaller screens */
+@media (max-width: 768px) {
+    .ranked-header-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+    }
+    .rank-stats-side {
+        padding-left: 0;
+        border-left: none;
+        width: 100%;
+        margin-top: 10px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .rank-elo-wrapper {
+        justify-content: center;
+    }
+    .rank-progress-container {
+        max-width: none;
+    }
+}
+
+/* Global Ranking Grid - Unified Class */
+.ranked-global-grid {
+    display: grid;
+    grid-template-columns: 62px minmax(0, 1fr) 124px 88px;
+    gap: 8px;
+    align-items: center;
+}
+
+@media (max-width: 600px) {
+    .ranked-global-grid {
+        grid-template-columns: 40px minmax(0, 1fr) 90px 70px;
+        font-size: 7px !important;
+    }
+    .stat-mini-card {
+        padding: 10px;
+    }
+    .stat-mini-value {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ranked-global-grid {
+        /* Hide Tier on very small screens to give space to Nick */
+        grid-template-columns: 35px minmax(0, 1fr) 65px;
+    }
+    .ranked-global-tier-cell {
+        display: none;
+    }
+    .rank-elo-value {
+        font-size: 32px;
+    }
+    .season-hero-img {
+        max-width: 100%;
+    }
+    .ranked-data-season-name {
+        font-size: 18px !important;
     }
 }
 
