@@ -663,9 +663,8 @@ function _renderRankedRewardsCard() {
 
   const marksHtml = RANKED_REWARD_TIER_MARKS.map((mark) => {
     const markPct = _rankedRewardProgressPct(mark.elo);
-    return `<div style="position:absolute;left:${markPct}%;top:-8px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;">
-      <div style="width:10px;height:10px;border-radius:999px;border:2px solid ${mark.color};background:rgba(0,0,0,0.65);"></div>
-      <div style="font-size:8px;color:${mark.color};font-family:'Press Start 2P',monospace;white-space:nowrap;">${mark.name}</div>
+    return `<div style="position:absolute;left:${markPct}%;top:-8px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;z-index:2;">
+      <div style="width:12px;height:12px;border-radius:999px;border:2px solid ${mark.color};background:rgba(0,0,0,0.85);box-shadow:0 0 8px ${mark.color}44;"></div>
     </div>`;
   }).join('');
 
@@ -707,8 +706,8 @@ function _renderRankedRewardsCard() {
       <div style="font-size:10px;color:var(--gray);">${nextMilestone ? `Proximo hito: ELO ${nextMilestone.elo}` : 'Todos los hitos desbloqueados'}</div>
     </div>
 
-    <div style="position:relative;margin:16px 2px 14px;height:30px;">
-      <div style="position:absolute;left:0;right:0;top:8px;height:8px;border-radius:999px;background:rgba(255,255,255,0.12);overflow:hidden;border:1px solid rgba(255,255,255,0.16);">
+    <div style="position:relative;margin:20px 10px 20px;height:12px;">
+      <div style="position:absolute;left:0;right:0;top:2px;height:8px;border-radius:999px;background:rgba(255,255,255,0.12);overflow:hidden;border:1px solid rgba(255,255,255,0.16);">
         <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#c8a060,#9E9E9E,#FFB800,#E5C100,#89CFF0,#FFD700);"></div>
       </div>
       ${marksHtml}
