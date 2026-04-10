@@ -791,7 +791,7 @@ async function openGlobalChatProfile(userId, fallbackUsername, fallbackClass, fa
   document.body.appendChild(overlay);
 
   const [profileRes, saveRes] = await Promise.all([
-    sb.from('profiles').select('id,username').eq('id', userId).maybeSingle(),
+    sb.from('profiles').select('id,username,nick_style,avatar_style').eq('id', userId).maybeSingle(),
     sb.from('game_saves').select('save_data').eq('user_id', userId).maybeSingle()
   ]);
 
@@ -801,6 +801,8 @@ async function openGlobalChatProfile(userId, fallbackUsername, fallbackClass, fa
   const username = profile?.username || fallbackUsername || 'Entrenador';
   const playerClass = save?.playerClass || fallbackClass || null;
   const trainerLevel = Number(save?.trainerLevel || fallbackLevel || 1);
+  const nickStyle = profile?.nick_style || null;
+  const avatarStyle = profile?.avatar_style || null;
 
   let relation = null;
   if (currentUser && userId !== currentUser.id) {
@@ -813,10 +815,15 @@ async function openGlobalChatProfile(userId, fallbackUsername, fallbackClass, fa
 
   const avatarWrap = document.createElement('div');
   avatarWrap.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-bottom:12px;';
-  avatarWrap.innerHTML = _globalChatAvatarHtml({ player_class: playerClass, trainer_level: trainerLevel });
+  avatarWrap.innerHTML = _globalChatAvatarHtml({ 
+    player_class: playerClass, 
+    trainer_level: trainerLevel,
+    avatar_style: avatarStyle
+  });
 
   const nameEl = document.createElement('div');
-  nameEl.style.cssText = 'font-size:14px;font-weight:700;margin-bottom:6px;text-align:center;';
+  nameEl.className = nickStyle ? nickStyle : '';
+  nameEl.style.cssText = 'font-size:16px;font-weight:700;margin-bottom:6px;text-align:center;';
   nameEl.textContent = username;
 
   const classLabel = (typeof PLAYER_CLASSES !== 'undefined' && playerClass && PLAYER_CLASSES[playerClass])

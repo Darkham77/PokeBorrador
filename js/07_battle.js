@@ -407,7 +407,12 @@ function updateBattleUI() {
 
   const playerName = b.player.name + (b.player.isShiny ? ' ✨' : '') + (_pSt ? ' ' + _pSt : '');
   const playerNameEl = document.getElementById('player-name');
-  if (playerNameEl) playerNameEl.textContent = playerName;
+  if (playerNameEl) {
+    playerNameEl.textContent = playerName;
+    // Aplicar estilo de nick del jugador
+    playerNameEl.className = state.nick_style || '';
+  }
+
   const playerGenderEl = document.getElementById('player-gender');
   if (playerGenderEl) {
     const data = genderBadgeData(b.player.gender);

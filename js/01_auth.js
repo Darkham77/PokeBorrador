@@ -529,8 +529,7 @@
       try {
         const nowIso = new Date().toISOString();
         
-        // Usamos upsert con onConflict 'user_id' para que sea atómico.
-        // Esto asume que la tabla tiene un índice único en user_id.
+        // Use upsert with onConflict 'user_id' for atomic operation.
         const { error } = await sb.from('game_saves').upsert({
           user_id: currentUser.id,
           save_data,
@@ -538,6 +537,20 @@
         }, { onConflict: 'user_id' });
 
         if (error) throw error;
+
+        // --- SINCRONIZACIÓN DE COSMÉTICOS CON PROFILES ---
+        // Esto permite que otros jugadores vean tu estética en Rankings/Social/Chat sin cargar todo el blob
+        try {
+          await sb.from('profiles').update({
+            nick_style: state.nick_style || null,
+            avatar_style: state.avatar_style || null,
+            trainer_level: Number(state.trainerLevel || 1),
+            player_class: state.playerClass || null
+          }).eq('id', currentUser.id);
+        } catch (syncErr) {
+          console.warn('[SAVE] Error sincronizando perfiles:', syncErr);
+        }
+        // -------------------------------------------------
 
         if (showNotif) flashSaveIndicator();
         const el = document.getElementById('profile-last-save');

@@ -251,7 +251,9 @@
             let borderColor = '#cd7f32';
             if (level >= 20) borderColor = '#ffd700';
             else if (level >= 10) borderColor = '#c0c0c0';
-            avatarHtml = getAvatarHtml(cls, borderColor, 40);
+            
+            // Usar avatar_style del perfil si existe
+            avatarHtml = getAvatarHtml(cls, borderColor, 40, p.avatar_style);
           }
 
           let actionBtn = `<button class="friend-btn" style="background:rgba(199,125,255,0.2);color:var(--purple);border:1px solid rgba(199,125,255,0.3);"
@@ -267,7 +269,7 @@
           return `<div class="search-result-card">
         <div class="friend-avatar" style="width:auto;height:auto;border:none;background:transparent;">${avatarHtml}</div>
         <div class="friend-info">
-          <div class="friend-name">${p.username}</div>
+          <div class="friend-name ${p.nick_style || ''}">${p.username}</div>
         </div>
         ${actionBtn}
       </div>`;

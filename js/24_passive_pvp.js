@@ -477,11 +477,33 @@ function _renderRankedLeaderboardRows(rows = _rankedLeaderboardRows) {
       ? '<span style="font-size:7px;padding:2px 4px;border-radius:6px;background:rgba(107,203,119,0.18);color:#86efac;border:1px solid rgba(134,239,172,0.35);">TU</span>'
       : '';
 
+    const rowLevel = Number(row?.trainer_level || 1);
+    const rowClass = row?.player_class || null;
+    const nickStyle = row?.nick_style || '';
+    const avatarStyle = row?.avatar_style || null;
+
+    let avatarHtml = '';
+    if (typeof getAvatarHtml === 'function') {
+      const cls = (rowClass && typeof PLAYER_CLASSES !== 'undefined') ? PLAYER_CLASSES[rowClass] : null;
+      // Border color by ELO tier or level? Usually level for consistency
+      let borderColor = '#cd7f32';
+      if (rowLevel >= 20) borderColor = '#ffd700';
+      else if (rowLevel >= 10) borderColor = '#c0c0c0';
+      
+      avatarHtml = getAvatarHtml(cls, borderColor, 28, avatarStyle);
+    }
+
     return `
-      <div class="ranked-global-grid" style="padding:8px 10px;border-radius:10px;border:1px solid ${isMe ? 'rgba(107,203,119,0.45)' : 'rgba(255,255,255,0.08)'};background:${isMe ? 'rgba(107,203,119,0.08)' : 'rgba(0,0,0,0.16)'};">
+      <div class="ranked-global-grid" style="padding:10px;border-radius:12px;border:1px solid ${isMe ? 'rgba(107,203,119,0.45)' : 'rgba(255,255,255,0.08)'};background:${isMe ? 'rgba(107,203,119,0.08)' : 'rgba(0,0,0,0.16)'};">
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);">#${idx + 1}</div>
-        <div style="font-size:11px;color:#fff;display:flex;align-items:center;gap:6px;min-width:0;">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nick}</span>${meBadge}
+        <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+          <div style="flex-shrink:0;">${avatarHtml}</div>
+          <div style="font-size:11px;color:#fff;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="${nickStyle}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;">${nick}</span>${meBadge}
+            </div>
+            <div style="font-size:9px;color:var(--gray);">Nv.${rowLevel}</div>
+          </div>
         </div>
         <div class="ranked-global-tier-cell" style="font-size:10px;color:${tier.color};font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tier.icon} ${_rankedEscHtml(tier.name)}</div>
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#e2e8f0;text-align:right;">${elo}</div>
@@ -538,7 +560,7 @@ async function refreshGlobalRankedLeaderboard(force = false) {
   _rankedLeaderboardPending = (async () => {
     try {
       const { data, error } = await sb.from('profiles')
-        .select('id,username,elo_rating')
+        .select('id,username,elo_rating,trainer_level,player_class,nick_style,avatar_style')
         .not('username', 'is', null)
         .order('elo_rating', { ascending: false, nullsFirst: false })
         .order('username', { ascending: true })
