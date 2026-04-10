@@ -388,25 +388,19 @@ function _ensureGlobalChatStyles() {
       padding: 0;
       margin: 0;
       cursor: pointer;
-      font-size: 13px; /* Aumentado para visibilidad de efectos */
-      transition: filter 0.2s, transform 0.2s;
-      vertical-align: middle;
-      display: inline-block;
+      font-size: 13px;
+      font-family: inherit;
+      transition: filter 0.2s;
     }
-    .gc-nick:hover { filter: brightness(1.2); transform: translateY(-1px); }
-    
-    /* Fuente pixel solo para nicks normales */
+    .gc-nick:hover { filter: brightness(1.2); }
+    /* Estilo por defecto si no hay clase cosmética */
     .gc-nick:not([class*="nt-"]) {
       font-family: 'Press Start 2P', monospace;
-      font-size: 11px; /* Mantener pequeño si es fuente pixel */
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      font-size: 11px;
     }
-
-    /* Fix para estilos cosméticos: heredar fuente y asegurar transparencia */
     .gc-nick[class*="nt-"] { 
       color: transparent !important;
       -webkit-text-fill-color: transparent !important;
-      font-weight: 900;
     }
 
     .gc-colon { color: #9ca3af; font-weight: 700; margin-right: 3px; }
@@ -568,7 +562,7 @@ async function _initGlobalChat() {
 async function _loadGlobalChatHistory() {
   const { data, error } = await sb
     .from('global_chat_messages')
-    .select('*, profiles:user_id(username, nick_style, avatar_style, trainer_level, player_class)')
+    .select('*')
     .order('created_at', { ascending: false })
     .limit(GLOBAL_CHAT_MAX_MESSAGES);
 
@@ -642,14 +636,10 @@ function _renderGlobalChatMessages(forceBottom) {
     const avatar = document.createElement('div');
     avatar.className = 'gc-avatar';
     
-    // Fallback data from profile if message is old/incomplete
+    // Fallback data if row is missing metadata
     const msgCopy = { ...msg };
-    if (!msgCopy.username && msg.profiles?.username) msgCopy.username = msg.profiles.username;
-    if (!msgCopy.nick_style && msg.profiles?.nick_style) msgCopy.nick_style = msg.profiles.nick_style;
-    if (!msgCopy.avatar_style && msg.profiles?.avatar_style) msgCopy.avatar_style = msg.profiles.avatar_style;
-    if (!msgCopy.trainer_level && msg.profiles?.trainer_level) msgCopy.trainer_level = msg.profiles.trainer_level;
-    if (!msgCopy.player_class && msg.profiles?.player_class) msgCopy.player_class = msg.profiles.player_class;
-
+    if (!msgCopy.username) msgCopy.username = 'Entrenador';
+    
     avatar.innerHTML = _globalChatAvatarHtml(msgCopy);
 
     const body = document.createElement('div');
