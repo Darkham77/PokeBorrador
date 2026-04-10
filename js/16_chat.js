@@ -384,13 +384,20 @@ function _ensureGlobalChatStyles() {
     .gc-nick {
       border: none;
       background: transparent;
-      color: #93c5fd;
-      font-weight: 700;
+      color: #93c5fd; /* Fallback azul claro */
+      font-family: 'Press Start 2P', monospace;
+      font-weight: 400; /* La fuente pixel ya es gruesa */
       padding: 0;
       margin: 0;
       cursor: pointer;
-      font-size: 11px;
+      font-size: 11px; /* Base 11px pero con fuente pixel */
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: filter 0.2s;
+      vertical-align: middle;
     }
+    .gc-nick:hover { filter: brightness(1.2); }
+    /* Fix para que los estilos cosméticos (nt-*) no sean tapados por el color base */
+    .gc-nick[class*="nt-"] { color: transparent !important; }
 
     .gc-colon { color: #9ca3af; font-weight: 700; margin-right: 3px; }
     .gc-time { color: #6b7280; font-size: 9px; margin-top: 2px; }
@@ -534,7 +541,12 @@ async function _initGlobalChat() {
       event: 'INSERT',
       schema: 'public',
       table: 'global_chat_messages'
-    }, ({ new: row }) => {
+    }, async ({ new: row }) => {
+      // If row is missing metadata, try to fetch it from profiles immediately
+      if (!row.username || !row.nick_style) {
+        const { data: prof } = await sb.from('profiles').select('*').eq('id', row.user_id).single();
+        if (prof) row.profiles = prof;
+      }
       _appendGlobalChatMessage(row, false);
     })
     .subscribe();
@@ -546,7 +558,7 @@ async function _initGlobalChat() {
 async function _loadGlobalChatHistory() {
   const { data, error } = await sb
     .from('global_chat_messages')
-    .select('*')
+    .select('*, profiles:user_id(username, nick_style, avatar_style, trainer_level, player_class)')
     .order('created_at', { ascending: false })
     .limit(GLOBAL_CHAT_MAX_MESSAGES);
 
@@ -619,7 +631,16 @@ function _renderGlobalChatMessages(forceBottom) {
 
     const avatar = document.createElement('div');
     avatar.className = 'gc-avatar';
-    avatar.innerHTML = _globalChatAvatarHtml(msg);
+    
+    // Fallback data from profile if message is old/incomplete
+    const msgCopy = { ...msg };
+    if (!msgCopy.username && msg.profiles?.username) msgCopy.username = msg.profiles.username;
+    if (!msgCopy.nick_style && msg.profiles?.nick_style) msgCopy.nick_style = msg.profiles.nick_style;
+    if (!msgCopy.avatar_style && msg.profiles?.avatar_style) msgCopy.avatar_style = msg.profiles.avatar_style;
+    if (!msgCopy.trainer_level && msg.profiles?.trainer_level) msgCopy.trainer_level = msg.profiles.trainer_level;
+    if (!msgCopy.player_class && msg.profiles?.player_class) msgCopy.player_class = msg.profiles.player_class;
+
+    avatar.innerHTML = _globalChatAvatarHtml(msgCopy);
 
     const body = document.createElement('div');
     body.className = 'gc-msg';
@@ -627,17 +648,17 @@ function _renderGlobalChatMessages(forceBottom) {
     const line = document.createElement('div');
     line.className = 'gc-line';
 
-    const nickText = (msg.username || 'Entrenador').trim() || 'Entrenador';
+    const nickText = (msgCopy.username || 'Entrenador').trim() || 'Entrenador';
     const nickBtn = document.createElement('span');
-    nickBtn.className = 'gc-nick' + (msg.nick_style ? ' ' + msg.nick_style : '');
+    nickBtn.className = 'gc-nick' + (msgCopy.nick_style ? ' ' + msgCopy.nick_style : '');
     nickBtn.style.cursor = 'pointer';
     nickBtn.textContent = nickText;
     nickBtn.addEventListener('click', () => {
       openGlobalChatProfile(
-        msg.user_id,
+        msgCopy.user_id,
         nickText,
-        msg.player_class || null,
-        Number(msg.trainer_level || 1)
+        msgCopy.player_class || null,
+        Number(msgCopy.trainer_level || 1)
       );
     });
 
