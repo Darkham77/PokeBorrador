@@ -186,6 +186,8 @@
       battle: null,
       starterChosen: false,
       lastRankedSeason: null,
+      nick_style: null,
+      avatar_style: null,
       stats: {},
       eloRating: 1000,
       pvpStats: { wins: 0, losses: 0, draws: 0 },

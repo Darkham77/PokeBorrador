@@ -175,8 +175,9 @@ const PLAYER_CLASSES = {
 
 // ── HELPER: Generar HTML del Avatar ───────────────────────────────────────
 function getAvatarHtml(cls, borderColor, sizePx = 40) {
+  const avatarClass = state.avatar_style ? ` ${state.avatar_style}` : '';
   if (!cls) {
-    return `<div style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background:#1e293b; display:flex; align-items:center; justify-content:center; font-size:${sizePx/2}px; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66;">🧢</div>`;
+    return `<div class="player-avatar-container${avatarClass}" style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background:#1e293b; display:flex; align-items:center; justify-content:center; font-size:${sizePx/2}px; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66;">🧢</div>`;
   }
   
   const bgSize = cls.faceScale || 'cover';
@@ -184,7 +185,7 @@ function getAvatarHtml(cls, borderColor, sizePx = 40) {
   const displayUrl = cls.avatarSprite || cls.sprite;
   
   return `
-    <div style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background-color: #1e293b; background-image: radial-gradient(circle, ${cls.color}44 0%, transparent 80%), url('${displayUrl}'); background-size: cover, ${bgSize}; background-position: center, ${bgPos}; background-repeat: no-repeat; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66; image-rendering: pixelated; transition: background-position 0.2s;">
+    <div class="player-avatar-container${avatarClass}" style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background-color: #1e293b; background-image: radial-gradient(circle, ${cls.color}44 0%, transparent 80%), url('${displayUrl}'); background-size: cover, ${bgSize}; background-position: center, ${bgPos}; background-repeat: no-repeat; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66; image-rendering: pixelated; transition: background-position 0.2s;">
     </div>`;
 }
 

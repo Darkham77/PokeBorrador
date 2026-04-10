@@ -429,6 +429,9 @@
         lastGymWins: state.lastGymWins || {},
         lastGymAttempts: state.lastGymAttempts || {},
         starterChosen: state.starterChosen || false,
+        lastRankedSeason: state.lastRankedSeason || null,
+        nick_style: state.nick_style || null,
+        avatar_style: state.avatar_style || null,
         stats: state.stats || {},
         eloRating: Number.isFinite(Number(state.eloRating)) ? Number(state.eloRating) : 1000,
         pvpStats: {
@@ -935,4 +938,3 @@
         
       console.log("[SESSION] Monitoreo iniciado para el usuario:", userId);
     }
-

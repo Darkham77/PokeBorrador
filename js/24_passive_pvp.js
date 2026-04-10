@@ -899,6 +899,7 @@ function renderRankedTab() {
   refreshGlobalRankedLeaderboard(false).catch(() => {});
 
   // Si hay una búsqueda activa, restaurar el estado visual
+  if (window.isRankedSearching) {
     _showSearchingUI(true);
   }
 
