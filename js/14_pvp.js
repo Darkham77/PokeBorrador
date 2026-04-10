@@ -1287,23 +1287,81 @@ async function showPvpInvitePopup(invite) {
 
         const { dmg, eff, triggeredAbility, defensiveAbility } = calcDamage(attacker, defender, move, atkS.atk || 0, defS.def || 0, pvpCtx);
         
+        let finalDmg = dmg;
+        let hits = 1;
+        
+        // Multi-hit logic
+        if (md.hits) {
+          hits = Math.floor(Math.random() * (md.hits[1] - md.hits[0] + 1)) + md.hits[0];
+          effectLog.push(`¡Golpeó ${hits} veces!`);
+        } else if (md.effect === 'double_hit') {
+          hits = 2;
+          effectLog.push(`¡Golpeó 2 veces!`);
+        }
+        finalDmg *= hits;
+
+        // Current HPs
+        const defHpArr = actorIsHost ? s.enemyHp : s.myHp;
+        const defActIdx = actorIsHost ? s.enemyActive : s.myActive;
+        const atkHpArr = actorIsHost ? s.myHp : s.enemyHp;
+        const atkActIdx = actorIsHost ? s.myActive : s.enemyActive;
+        
+        const curDefHp = defHpArr[defActIdx] ?? defender.hp;
+        const curAtkHp = atkHpArr[atkActIdx] ?? attacker.hp;
+
+        // Damage Overrides
+        if (md.halfHP) finalDmg = Math.max(1, Math.floor(curDefHp / 2));
+        if (md.fixedDmg) finalDmg = md.fixedDmg;
+        if (md.levelDmg) finalDmg = attacker.level;
+        if (md.ohko) {
+          // Si el atacante tiene menos nivel, o si la prec. fija (ej. Guillotina 30) falla
+          if (attacker.level < defender.level) {
+             finalDmg = 0; effectLog.push(`¡Pero falló!`);
+          } else {
+             finalDmg = curDefHp; effectLog.push(`¡Un golpe fulminante!`);
+          }
+        }
+        if (md.endeavor) {
+          if (curAtkHp < curDefHp) finalDmg = curDefHp - curAtkHp;
+          else { finalDmg = 0; effectLog.push(`¡Pero falló!`); }
+        }
+
         // Secondary effects for damage moves
-        if (md.effect && md.effect !== 'none') {
+        if (md.effect && md.effect !== 'none' && finalDmg > 0) {
           applyMoveEffect(md.effect, attacker, defender, atkS, defS, m => effectLog.push(m), pvpCtx);
         }
 
-        // Tentative new HP
-        const defHpArr = actorIsHost ? s.enemyHp : s.myHp;
-        const defActIdx = actorIsHost ? s.enemyActive : s.myActive;
-        const curHp = defHpArr[defActIdx] ?? defender.hp;
-        const newHp = Math.max(0, curHp - dmg);
+        const newDefHp = Math.max(0, curDefHp - finalDmg);
         
-        return { 
+        // Reactive Attacker Damage/Heal
+        let newAtkHp = undefined;
+        let faintedSelf = false;
+        if (finalDmg > 0 && md.drain) {
+           const healed = Math.floor(Math.min(curDefHp, finalDmg) / 2);
+           newAtkHp = Math.min(attacker.maxHp, curAtkHp + healed);
+           effectLog.push(`¡${defender.name} vio su energía drenada!`);
+        }
+        if (finalDmg > 0 && md.recoil) {
+           const recoilDmg = Math.max(1, Math.floor(Math.min(curDefHp, finalDmg) / (md.recoil || 4)));
+           newAtkHp = Math.max(0, curAtkHp - recoilDmg);
+           effectLog.push(`¡${attacker.name} recibe daño de retroceso!`);
+           if (newAtkHp <= 0) faintedSelf = true;
+        }
+        if (md.selfKO) {
+           newAtkHp = 0;
+           effectLog.push(`¡${attacker.name} se inmoló!`);
+           faintedSelf = true;
+        }
+
+        let ret = { 
           type: 'move', moveName, actorIsHost, actorName, targName, 
-          missed: false, damage: dmg, eff, newDefHp: newHp, 
-          faintedTarget: newHp <= 0, triggeredAbility, defensiveAbility, 
+          missed: false, damage: finalDmg, eff, newDefHp: newDefHp, 
+          faintedTarget: newDefHp <= 0, faintedSelf, triggeredAbility, defensiveAbility, 
           effectLog 
         };
+        if (newAtkHp !== undefined) ret.newAtkHp = newAtkHp;
+        
+        return ret;
       }
 
       // ── Run first action ─────────────────────────────────────
@@ -1313,23 +1371,37 @@ async function showPvpInvitePopup(invite) {
       if (firstAction.type === 'switch') {
         if (firstIsHost) s.myActive = firstAction.switchIndex;
         else s.enemyActive = firstAction.switchIndex;
-      } else if (firstAction.newDefHp !== undefined) {
-        const arr = firstIsHost ? s.enemyHp : s.myHp;
-        const idx = firstIsHost ? s.enemyActive : s.myActive;
-        arr[idx] = firstAction.newDefHp;
+      } else {
+        if (firstAction.newDefHp !== undefined) {
+          const arr = firstIsHost ? s.enemyHp : s.myHp;
+          const idx = firstIsHost ? s.enemyActive : s.myActive;
+          arr[idx] = firstAction.newDefHp;
+        }
+        if (firstAction.newAtkHp !== undefined) {
+          const arr = firstIsHost ? s.myHp : s.enemyHp;
+          const idx = firstIsHost ? s.myActive : s.enemyActive;
+          arr[idx] = firstAction.newAtkHp;
+        }
       }
 
-      // ── Run second action (unless first fainted the target) ───
+      // ── Run second action (unless someone died from first move) ───
       let secondAction = null;
-      if (!firstAction.faintedTarget) {
+      if (!firstAction.faintedTarget && !firstAction.faintedSelf) {
         secondAction = calcAction(!firstIsHost);
         if (secondAction.type === 'switch') {
           if (!firstIsHost) s.myActive = secondAction.switchIndex;
           else s.enemyActive = secondAction.switchIndex;
-        } else if (secondAction.newDefHp !== undefined) {
-          const arr = !firstIsHost ? s.enemyHp : s.myHp;
-          const idx = !firstIsHost ? s.enemyActive : s.myActive;
-          arr[idx] = secondAction.newDefHp;
+        } else {
+          if (secondAction.newDefHp !== undefined) {
+            const arr = !firstIsHost ? s.enemyHp : s.myHp;
+            const idx = !firstIsHost ? s.enemyActive : s.myActive;
+            arr[idx] = secondAction.newDefHp;
+          }
+          if (secondAction.newAtkHp !== undefined) {
+            const arr = !firstIsHost ? s.myHp : s.enemyHp;
+            const idx = !firstIsHost ? s.myActive : s.enemyActive;
+            arr[idx] = secondAction.newAtkHp;
+          }
         }
       }
 
@@ -1446,8 +1518,14 @@ async function showPvpInvitePopup(invite) {
             
             if (action.statusBlocked === 'confused_self') {
                addPvpLog(`(-${action.damage} HP)`, myAction ? 'log-player' : 'log-enemy');
-               if (myAction) _pvpUpdateMyHP(action.newAtkHp);
-               else _pvpUpdateEnemyHP(action.newAtkHp);
+               if (myAction) {
+                 _pvpState.myHp[_pvpState.myActive] = action.newAtkHp;
+                 _pvpState.myTeam[_pvpState.myActive].hp = action.newAtkHp;
+               } else {
+                 _pvpState.enemyHp[_pvpState.enemyActive] = action.newAtkHp;
+                 _pvpState.enemyTeam[_pvpState.enemyActive].hp = action.newAtkHp;
+               }
+               renderPvpBattle();
             }
 
           } else if (action.missed) {
@@ -1473,6 +1551,13 @@ async function showPvpInvitePopup(invite) {
 
             // Log secondary effects if any
             (action.effectLog || []).forEach(m => addPvpLog(m, 'log-info'));
+
+            // Handle reactionary HP modifiers (recoil, drain, selfKOs)
+            if (action.newAtkHp !== undefined) {
+               if (myAction) _pvpState.myHp[_pvpState.myActive] = action.newAtkHp;
+               else _pvpState.enemyHp[_pvpState.enemyActive] = action.newAtkHp;
+               renderPvpBattle();
+            }
 
             // Animate sprites
             const pImg = document.getElementById('pvp-player-img');
