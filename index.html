@@ -460,24 +460,34 @@
           <div class="season-hero-container">
             <div class="season-banner-side">
               <img src="assets/eventos/pvp.png" alt="PVP Ranked" class="season-hero-img">
-              <div id="ranked-season-timer" style="margin-top:10px; font-family:'Press Start 2P',monospace; font-size:8px; color:var(--purple); background:rgba(0,0,0,0.4); padding:6px 12px; border-radius:10px; border:1px solid rgba(199,125,255,0.2);">60d 12h</div>
+              <div id="ranked-season-timer" class="ranked-data-season-timer" style="margin-top:10px; font-family:'Press Start 2P',monospace; font-size:8px; color:var(--purple); background:rgba(0,0,0,0.4); padding:6px 12px; border-radius:10px; border:1px solid rgba(199,125,255,0.2);">60d 12h</div>
             </div>
             
             <div class="season-info-side">
               <div class="season-title-mini">TEMPORADA ACTUAL</div>
-              <h2 style="margin:0; font-size:22px; color:#fff;">Kanto League</h2>
+              <h2 class="ranked-data-season-name" style="margin:0; font-size:22px; color:#fff;">Kanto League</h2>
               
               <div style="margin-top:10px;">
                 <div style="font-size:10px; color:var(--gray); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Reglas Activas</div>
-                <div style="font-size:13px; color:#fff; font-weight:800; margin-bottom:12px;">Máximo 6 Pokémon • Nivel 100</div>
+                <div class="ranked-data-rules-summary" style="font-size:13px; color:#fff; font-weight:800; margin-bottom:12px;">Máximo 6 Pokémon • Nivel 100</div>
                 
-                <div class="season-rules-chips">
-                  <!-- Chips genéricos -->
+                <div class="ranked-data-rules-types season-rules-chips">
+                  <!-- Chips dinámicos -->
                 </div>
               </div>
 
-              <div class="season-dates-bar">
+              <div style="margin-top:10px;">
+                <div style="font-size:10px; color:var(--red); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Pokémon Baneados</div>
+                <div class="ranked-data-rules-bans season-rules-chips">
+                  <!-- Chips dinámicos -->
+                </div>
+              </div>
+
+              <div class="ranked-data-season-dates season-dates-bar">
                 Cargando fechas de temporada...
+              </div>
+              <div class="ranked-data-rules-passive-team-status" style="font-size:10px; margin-top:5px;">
+                Revisando equipo ranked...
               </div>
 
             </div>
@@ -490,12 +500,12 @@
             <!-- Left Column: Info and Search -->
             <div class="ranked-grid-col">
           <div style="background:rgba(59,139,255,0.06);border:1px solid rgba(59,139,255,0.22);border-radius:16px;padding:14px;margin-bottom:16px;">
-            <div id="ranked-season-name" style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--blue);margin-bottom:8px;">REGLAS DE TEMPORADA</div>
-            <div id="ranked-rules-summary" style="font-size:11px;color:var(--gray);margin-bottom:10px;">Cargando reglas...</div>
-            <div id="ranked-rules-types" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
-            <div id="ranked-rules-bans" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
-            <div id="ranked-season-dates" style="font-size:10px;color:var(--gray);margin-bottom:10px;"></div>
-            <div id="ranked-rules-passive-team-status" style="font-size:11px;color:var(--gray);">Revisando equipo ranked...</div>
+            <div id="ranked-season-name" class="ranked-data-season-name" style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--blue);margin-bottom:8px;">REGLAS DE TEMPORADA</div>
+            <div id="ranked-rules-summary" class="ranked-data-rules-summary" style="font-size:11px;color:var(--gray);margin-bottom:10px;">Cargando reglas...</div>
+            <div id="ranked-rules-types" class="ranked-data-rules-types" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+            <div id="ranked-rules-bans" class="ranked-data-rules-bans" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+            <div id="ranked-season-dates" class="ranked-data-season-dates" style="font-size:10px;color:var(--gray);margin-bottom:10px;"></div>
+            <div id="ranked-rules-passive-team-status" class="ranked-data-rules-passive-team-status" style="font-size:11px;color:var(--gray);">Revisando equipo ranked...</div>
           </div>
               
           <div style="margin-bottom:16px;">

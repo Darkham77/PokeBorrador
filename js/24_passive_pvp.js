@@ -869,19 +869,18 @@ function renderRankedTab() {
   if (wrEl) wrEl.textContent = total > 0 ? Math.round((stats.wins / total) * 100) + '%' : '—';
 
   // Season timer
-  const timerEl = document.getElementById('ranked-season-timer');
-  if (timerEl) {
-    const now  = new Date();
-    const end  = getSeasonEndDate();
-    const diff = end - now;
-    if (diff <= 0) {
-      timerEl.textContent = 'La temporada ha finalizado.';
-    } else {
-      const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      timerEl.textContent = `Termina en ${days}d ${hours}h`;
-    }
+  const now  = new Date();
+  const end  = getSeasonEndDate();
+  const diff = end - now;
+  let timerText = '';
+  if (diff <= 0) {
+    timerText = 'La temporada ha finalizado.';
+  } else {
+    const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    timerText = `Termina en ${days}d ${hours}h`;
   }
+  _updateRankedFields('.ranked-data-season-timer', timerText);
 
   renderPassiveTeamPreview();
   _renderRankedRulesCard();
@@ -937,62 +936,67 @@ function getPokemonByUid(uid) {
 }
 
 // ── Preview de equipo pasivo ──────────────────────────────────────────
+function _updateRankedFields(selector, content, isHtml = false, color = null) {
+  const elements = document.querySelectorAll(selector);
+  elements.forEach(el => {
+    if (isHtml) el.innerHTML = content;
+    else el.textContent = content;
+    if (color) el.style.color = color;
+  });
+}
+
 function _renderRankedRulesCard() {
   const rules = getCurrentRankedRules();
-  const seasonEl = document.getElementById('ranked-season-name');
-  const seasonDatesEl = document.getElementById('ranked-season-dates');
-  const summaryEl = document.getElementById('ranked-rules-summary');
-  const typesEl = document.getElementById('ranked-rules-types');
-  const bansEl = document.getElementById('ranked-rules-bans');
-  const passiveStatusEl = document.getElementById('ranked-rules-passive-team-status');
+  
+  // Season Name
+  _updateRankedFields('.ranked-data-season-name', rules.seasonName);
 
-  if (seasonEl) seasonEl.textContent = rules.seasonName;
+  // Season Dates
+  const range = getRankedSeasonDateRange(rules);
+  const datesText = `Inicio: ${_formatSeasonDate(range.startDate)} • Fin: ${_formatSeasonDate(range.endDate)}`;
+  _updateRankedFields('.ranked-data-season-dates', datesText);
 
-  if (seasonDatesEl) {
-    const range = getRankedSeasonDateRange(rules);
-    seasonDatesEl.textContent = `Inicio: ${_formatSeasonDate(range.startDate)} • Fin: ${_formatSeasonDate(range.endDate)}`;
+  // Summary
+  _updateRankedFields('.ranked-data-rules-summary', `Máximo ${rules.maxPokemon} Pokémon • Nivel máximo ${rules.levelCap}`);
+
+  // Allowed Types
+  let typesHtml = '';
+  if (!rules.allowedTypes.length) {
+    typesHtml = '<span style="font-size:11px;color:var(--gray);">Sin restricción de tipos.</span>';
+  } else {
+    typesHtml = rules.allowedTypes.map((type) => {
+      const meta = RANKED_TYPE_META[type] || { label: type, icon: '?' };
+      return `<span style="font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);">${meta.icon} ${meta.label}</span>`;
+    }).join('');
   }
+  _updateRankedFields('.ranked-data-rules-types', typesHtml, true);
 
-  if (summaryEl) {
-    summaryEl.textContent = `Máximo ${rules.maxPokemon} Pokémon • Nivel máximo ${rules.levelCap}`;
+  // Banned Pokemon
+  let bansHtml = '';
+  if (!rules.bannedPokemonIds.length) {
+    bansHtml = '<span style="font-size:11px;color:var(--gray);">Sin baneos.</span>';
+  } else {
+    bansHtml = rules.bannedPokemonIds.map((id) => {
+      const pokemon = POKEMON_DB?.[id] || null;
+      const label = pokemon?.name || id;
+      const spriteKey = typeof pokemon?.id === 'string' ? pokemon.id : id;
+      const spriteFromKey = typeof getSpriteUrl === 'function' ? getSpriteUrl(spriteKey, false) : null;
+      const spriteDex = pokemon?.dexNum || window.POKEMON_SPRITE_IDS?.[spriteKey] || null;
+      const spriteUrl = spriteFromKey || (spriteDex ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteDex}.png` : null);
+      const spriteHtml = spriteUrl
+        ? `<img src="${spriteUrl}" alt="${label}" style="width:16px;height:16px;image-rendering:pixelated;" onerror="this.style.display='none'">`
+        : '';
+      return `<span style="font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,59,59,0.35);background:rgba(255,59,59,0.14);color:#fecaca;display:inline-flex;align-items:center;gap:6px;">${spriteHtml}<span>${label}</span></span>`;
+    }).join('');
   }
+  _updateRankedFields('.ranked-data-rules-bans', bansHtml, true);
 
-  if (typesEl) {
-    if (!rules.allowedTypes.length) {
-      typesEl.innerHTML = '<span style="font-size:11px;color:var(--gray);">Sin restricción de tipos.</span>';
-    } else {
-      typesEl.innerHTML = rules.allowedTypes.map((type) => {
-        const meta = RANKED_TYPE_META[type] || { label: type, icon: '?' };
-        return `<span style="font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);">${meta.icon} ${meta.label}</span>`;
-      }).join('');
-    }
-  }
-
-  if (bansEl) {
-    if (!rules.bannedPokemonIds.length) {
-      bansEl.innerHTML = '<span style="font-size:11px;color:var(--gray);">Sin baneos.</span>';
-    } else {
-      bansEl.innerHTML = rules.bannedPokemonIds.map((id) => {
-        const pokemon = POKEMON_DB?.[id] || null;
-        const label = pokemon?.name || id;
-        const spriteKey = typeof pokemon?.id === 'string' ? pokemon.id : id;
-        const spriteFromKey = typeof getSpriteUrl === 'function' ? getSpriteUrl(spriteKey, false) : null;
-        const spriteDex = pokemon?.dexNum || window.POKEMON_SPRITE_IDS?.[spriteKey] || null;
-        const spriteUrl = spriteFromKey || (spriteDex ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteDex}.png` : null);
-        const spriteHtml = spriteUrl
-          ? `<img src="${spriteUrl}" alt="${label}" style="width:16px;height:16px;image-rendering:pixelated;" onerror="this.style.display='none'">`
-          : '';
-        return `<span style="font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,59,59,0.35);background:rgba(255,59,59,0.14);color:#fecaca;display:inline-flex;align-items:center;gap:6px;">${spriteHtml}<span>${label}</span></span>`;
-      }).join('');
-    }
-  }
-
-  if (passiveStatusEl) {
-    const rankedTeam = getRankedPlayableTeam();
-    const passiveCheck = validateTeamForRanked(rankedTeam, rules, 'equipo ranked');
-    passiveStatusEl.textContent = passiveCheck.ok ? 'OK Equipo ranked: cumple reglas.' : `Error equipo ranked: ${passiveCheck.reason}`;
-    passiveStatusEl.style.color = passiveCheck.ok ? 'var(--green)' : 'var(--red)';
-  }
+  // Passive Team Status
+  const rankedTeam = getRankedPlayableTeam();
+  const passiveCheck = validateTeamForRanked(rankedTeam, rules, 'equipo ranked');
+  const statusElContent = passiveCheck.ok ? 'OK Equipo ranked: cumple reglas.' : `Error equipo ranked: ${passiveCheck.reason}`;
+  const statusColor = passiveCheck.ok ? 'var(--green)' : 'var(--red)';
+  _updateRankedFields('.ranked-data-rules-passive-team-status', statusElContent, false, statusColor);
 }
 
 function _renderPassiveEditorRulesHint() {
