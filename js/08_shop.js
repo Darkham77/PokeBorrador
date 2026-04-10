@@ -756,7 +756,7 @@
       },
       {
         id: 'oran_berry', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/oran-berry.png',
-        name: 'Baya Aranja', icon: '🫐', price: 500, market: false, trainerShop: false, tier: 'common',
+        name: 'Baya Aranja', icon: '🫐', price: 500, market: false, trainerShop: false, tier: 'common', type: 'held',
         desc: 'Una baya que restaura 10 HP al Pokémon que la lleva si su salud baja.',
         effect: (qty) => { state.inventory['Baya Aranja'] = (state.inventory['Baya Aranja'] || 0) + qty; }
       },
@@ -914,13 +914,13 @@
       { id: 'tm49', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-dark.png', name: 'MT49 Robo', icon: '📀', price: 0, unlockLv: 22, tier: 'epic', market: false, trainerShop: true, bcPrice: 2500, desc: 'Enseña Robo. Roba el efecto positivo.', effect: (qty) => { state.inventory['MT49 Robo'] = (state.inventory['MT49 Robo'] || 0) + qty; } },
       { id: 'tm50', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-fire.png', name: 'MT50 Sofoco', icon: '📀', price: 0, unlockLv: 25, tier: 'legend', market: false, trainerShop: true, bcPrice: 5000, desc: 'Enseña Sofoco. Máximo poder, baja At. Esp.', effect: (qty) => { state.inventory['MT50 Sofoco'] = (state.inventory['MT50 Sofoco'] || 0) + qty; } },
       {
-        id: 'soda_pop', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/soda-pop.png',
+        id: 'soda_pop', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/soda-pop.png',
         name: 'Refresco', icon: '🥤', price: 300, unlockLv: 2, tier: 'common',
         desc: 'Restaura 60 HP a un Pokémon. Mejor que la Poción.',
         effect: (qty) => { state.inventory['Refresco'] = (state.inventory['Refresco'] || 0) + qty; }
       },
       {
-        id: 'lemonade', cat: 'especial', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lemonade.png',
+        id: 'lemonade', cat: 'pociones', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lemonade.png',
         name: 'Limonada', icon: '🍋', price: 350, unlockLv: 2, tier: 'common',
         desc: 'Restaura 80 HP a un Pokémon.',
         effect: (qty) => { state.inventory['Limonada'] = (state.inventory['Limonada'] || 0) + qty; }

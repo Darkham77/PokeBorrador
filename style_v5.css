@@ -6573,3 +6573,24 @@
 .type-badge.type-dark { background: rgba(85, 85, 85, 0.13); border-color: #555; color: #555; }
 .type-badge.type-steel { background: rgba(158, 158, 158, 0.13); border-color: #9E9E9E; color: #9E9E9E; }
 .type-badge.type-fairy { background: rgba(255, 192, 203, 0.13); border-color: #ffc0cb; color: #ffc0cb; }
+
+/* Ranked Tab Desktop Grid */
+.ranked-desktop-grid {
+  display: block; /* Mobile default */
+}
+
+@media (min-width: 1025px) {
+  .ranked-desktop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 20px;
+  }
+}
+
+.ranked-grid-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

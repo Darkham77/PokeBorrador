@@ -182,7 +182,7 @@ function startBattle(enemy, isGym, gymId, locationId, isTrainer, enemyTeam, trai
     isRanked: isRankedBattle,
     isPassivePvP: isPassivePvPBattle,
     disableClassAbilities: disableClassAbilities,
-    turn: 'player', over: false,
+    turn: 'player', turnCount: 1, over: false,
     recharging: false, // for Hiperrayo etc
     playerStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 },
     enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 },
@@ -2614,6 +2614,7 @@ function _endEnemyTurn() {
   }
   setTimeout(() => {
     if (!state.battle || state.battle.over) return;
+    state.battle.turnCount++;
     state.battle.turn = 'player';
     _battleLock = false;
     setBtns(true);
@@ -2778,24 +2779,26 @@ function executeCatch(ballName) {
   else if (ballName === 'Ultra Ball') { ballMult = 2; }
   else if (ballName === 'Súper Ball' || ballName === 'Ball Especial') { ballMult = 1.5; }
   else if (ballName === 'Red Ball') {
-    ballMult = (b.enemy.type === 'water' || b.enemy.type === 'bug') ? 3.5 : 1;
+    const isWater = b.enemy.type === 'water' || (b.enemy.type2 || POKE_TYPE2[b.enemy.id]) === 'water';
+    const isBug = b.enemy.type === 'bug' || (b.enemy.type2 || POKE_TYPE2[b.enemy.id]) === 'bug';
+    ballMult = (isWater || isBug) ? 3.5 : 1;
   }
   else if (ballName === 'Ocaso Ball') {
     const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
     const locId = b.locationId;
-    const isCave = ['cave', 'mt_moon', 'rock_tunnel', 'cerulean_cave', 'victory_road', 'diglett_cave'].includes(locId);
+    const isCave = ['cave', 'mt_moon', 'rock_tunnel', 'cerulean_cave', 'victory_road', 'diglett_cave', 'seafoam_islands', 'pokemon_tower'].includes(locId);
     ballMult = (cycle === 'night' || isCave) ? 3 : 1;
   }
   else if (ballName === 'Turno Ball') {
-    ballMult = Math.min(4, 1 + (b.turn || 1) * 0.3);
+    ballMult = Math.min(4, 1 + (b.turnCount || 1) * 0.3);
   }
 
   const selectedItem = SHOP_ITEMS.find(i => i.name === ballName);
   state.activeBallSrc = selectedItem ? selectedItem.sprite : 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
 
   const statusBonus = (b.enemy.status === 'sleep' || b.enemy.status === 'freeze') ? 2 : (b.enemy.status ? 1.5 : 1);
-
-  // Official Formula Factors + configurable multiplier
+  
+  // Official Formula Factors (Gen 3/4) + configurable multiplier
   let a = (((3 * b.enemy.maxHp - 2 * b.enemy.hp) * baseRate * ballMult * (window.GAME_RATIOS ? GAME_RATIOS.battle.catchFormulaParams.catchBaseMultiplier : 1.0)) / (3 * b.enemy.maxHp)) * statusBonus;
 
   // Dificultad especial para Guardianes: 4 veces más difíciles de capturar

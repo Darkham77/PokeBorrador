@@ -62,6 +62,8 @@
       'Cura Total': p => { if (!p.status && p.hp === p.maxHp) return null; p.hp = p.maxHp; p.status = null; p.sleepTurns = 0; return `fue curado completamente (Max HP + curado)`; },
       'Éter': p => { p.moves.forEach(m => { const cap = (m.maxPP > 0) ? m.maxPP : (MOVE_DATA[m.name]?.pp || 35); if (!m.maxPP || m.maxPP <= 0) m.maxPP = cap; m.pp = Math.min(cap, (isNaN(m.pp) ? 0 : m.pp) + 10); }); return `recuperó PP`; },
       'Elixir Máximo': p => { p.moves.forEach(m => { const cap = (m.maxPP > 0) ? m.maxPP : (MOVE_DATA[m.name]?.pp || 35); if (!m.maxPP || m.maxPP <= 0) m.maxPP = cap; m.pp = cap; }); return `recuperó todos los PP`; },
+      'Refresco': p => { if (p.hp === p.maxHp) return null; const h = Math.min(p.maxHp, p.hp + 60); p.hp = h; return `restauró 60 HP`; },
+      'Limonada': p => { if (p.hp === p.maxHp) return null; const h = Math.min(p.maxHp, p.hp + 80); p.hp = h; return `restauró 80 HP`; },
       'Subida de PP': p => {
         if (!p.moves || p.moves.length === 0) return null;
         
