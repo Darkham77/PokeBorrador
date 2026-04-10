@@ -29,6 +29,12 @@
       return `aprendió ${moveName}`;
     };
 
+    function _getAlternativeAbilitiesForPokemon(pokemon) {
+      if (!pokemon) return [];
+      const pool = (typeof ABILITIES !== 'undefined' && Array.isArray(ABILITIES[pokemon.id])) ? ABILITIES[pokemon.id] : [];
+      const unique = [...new Set(pool.filter(Boolean))];
+      return unique.filter(ab => ab !== pokemon.ability);
+    }
     const HEALING_ITEMS = {
       'Poción': p => { if (p.hp === p.maxHp) return null; const h = Math.min(p.maxHp, p.hp + 20); const g = h - p.hp; p.hp = h; return `restauró 20 HP (ahora ${p.hp}/${p.maxHp})`; },
       'Super Poción': p => { if (p.hp === p.maxHp) return null; const h = Math.min(p.maxHp, p.hp + 50); const g = h - p.hp; p.hp = h; return `restauró 50 HP`; },
@@ -107,6 +113,60 @@
         ov.innerHTML = html;
         document.body.appendChild(ov);
         return 'deferred';
+      },
+      'P\u00edldora de cambio de habilidad': p => {
+        const alternatives = _getAlternativeAbilitiesForPokemon(p);
+        if (!alternatives.length) return null;
+
+        const ov = document.createElement('div');
+        ov.id = 'ability-pill-selector';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:720;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);';
+
+        let html = `<div style="background:var(--card);border-radius:24px;padding:24px;width:100%;max-width:420px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 20px 50px rgba(0,0,0,0.55);">
+          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--yellow);margin-bottom:18px;text-align:center;line-height:1.6;">CAMBIO DE HABILIDAD</div>
+          <div style="font-size:12px;color:var(--gray);margin-bottom:10px;">${p.name} tiene actualmente <b style="color:#fff;">${p.ability || 'Ninguna'}</b>.</div>
+          <div style="font-size:12px;color:var(--gray);margin-bottom:14px;">Elegí la habilidad nueva:</div>
+          <div style="display:grid;gap:10px;">`;
+
+        alternatives.forEach(ab => {
+          const encodedAbility = encodeURIComponent(ab);
+          html += `<button onclick="applyAbilityPillToPokemon('${p.uid}', '${encodedAbility}')"
+            style="padding:12px;border-radius:12px;border:1px solid rgba(155,77,255,0.35);background:rgba(155,77,255,0.12);color:#fff;font-weight:700;cursor:pointer;transition:all .2s;"
+            onmouseover="this.style.background='rgba(155,77,255,0.2)';this.style.transform='translateY(-1px)'"
+            onmouseout="this.style.background='rgba(155,77,255,0.12)';this.style.transform='translateY(0)'">${ab}</button>`;
+        });
+
+        html += `</div>
+          <button onclick="document.getElementById('ability-pill-selector').remove()"
+            style="margin-top:14px;width:100%;padding:12px;border:none;border-radius:12px;background:rgba(255,255,255,0.06);color:var(--gray);cursor:pointer;font-weight:700;">CANCELAR</button>
+        </div>`;
+
+        ov.innerHTML = html;
+        ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+        document.body.appendChild(ov);
+        return 'deferred';
+      },
+      'Parche de naturaleza': p => {
+        const availableNatures = Array.isArray(NATURES) && NATURES.length
+          ? [...new Set(NATURES.filter(Boolean))]
+          : (typeof NATURE_DATA !== 'undefined' ? Object.keys(NATURE_DATA) : []);
+        const currentNature = p.nature || 'Serio';
+        const options = availableNatures.filter(n => n !== currentNature);
+        if (!options.length) return null;
+
+        const newNature = options[Math.floor(Math.random() * options.length)];
+        p.nature = newNature;
+        if (typeof recalcPokemonStats === 'function') recalcPokemonStats(p);
+        return `cambió su naturaleza de ${currentNature} a ${newNature}`;
+      },
+      'Caramelo de vigor': p => {
+        if (typeof ensureVigor === 'function') ensureVigor(p);
+        const maxVigor = 10;
+        const currentVigor = Number.isFinite(Number(p.vigor)) ? Number(p.vigor) : 0;
+        if (currentVigor >= maxVigor) return null;
+
+        p.vigor = Math.min(maxVigor, currentVigor + 1);
+        return `recuperó 1 de vigor (${p.vigor}/${maxVigor})`;
       },
       'MT01 Puño Certero': p => teachTM(p, 'TM01', 'Puño Certero'),
       'MT02 Garra Dragón': p => teachTM(p, 'TM02', 'Garra Dragón'),
@@ -238,7 +298,7 @@
 
           // 2. Explicitly non-combat items from HEALING_ITEMS
           const nonCombat = [
-            'Recordador de Movimientos', 'Caramelo Raro', 'Subida de PP',
+            'Recordador de Movimientos', 'Caramelo Raro', 'Subida de PP', 'P\u00edldora de cambio de habilidad', 'Parche de naturaleza', 'Caramelo de vigor',
             'Repelente', 'Superrepelente', 'Máximo Repelente',
             'Ticket Shiny', 'Moneda Amuleto', 'Huevo Suerte Pequeño',
             'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo',
@@ -473,6 +533,38 @@
       }
     }
 
+    window.applyAbilityPillToPokemon = function(pokemonUid, encodedAbility) {
+      const decodedAbility = decodeURIComponent(encodedAbility || '');
+      const itemName = 'P\u00edldora de cambio de habilidad';
+      if (!state.inventory[itemName] || state.inventory[itemName] <= 0) {
+        notify(`No tenés ${itemName}.`, '⚠️');
+        return;
+      }
+
+      const allPokemon = [...(state.team || []), ...(state.box || [])];
+      const p = allPokemon.find(x => x && x.uid === pokemonUid);
+      if (!p || !decodedAbility) return;
+
+      const alternatives = _getAlternativeAbilitiesForPokemon(p);
+      if (!alternatives.includes(decodedAbility)) {
+        notify('Ese Pokémon no tiene esa habilidad disponible.', '⚠️');
+        return;
+      }
+
+      const previousAbility = p.ability || 'Ninguna';
+      p.ability = decodedAbility;
+
+      state.inventory[itemName]--;
+      if (state.inventory[itemName] <= 0) delete state.inventory[itemName];
+
+      document.getElementById('ability-pill-selector')?.remove();
+      notify(`¡${p.name} cambió ${previousAbility} por ${decodedAbility}!`, '✨');
+
+      if (typeof renderTeam === 'function') renderTeam();
+      if (typeof renderBox === 'function') renderBox();
+      if (document.getElementById('tab-bag')?.style.display !== 'none' && typeof renderBag === 'function') renderBag();
+      if (typeof scheduleSave === 'function') scheduleSave();
+    };
     window.applyPPUpToMove = function(pIdx, mIdx) {
       const p = state.team[pIdx];
       if (!p || !p.moves[mIdx]) return;
@@ -556,8 +648,8 @@
         const hpPct = Math.round(p.hp / p.maxHp * 100);
         const hpCol = hpPct > 50 ? 'var(--green)' : hpPct > 20 ? 'var(--yellow)' : 'var(--red)';
         
-        let tmInfoHtml = '';
-        let canLearnTm = true;
+        let itemInfoHtml = '';
+        let canUseItem = true;
         let isTm = itemName.startsWith('MT');
         if (isTm) {
           const tmMatch = itemName.match(/MT(\d+)\s*(.*)/);
@@ -565,20 +657,45 @@
             const tmId = 'TM' + tmMatch[1];
             const moveName = tmMatch[2];
             if (!TM_COMPAT[p.id]?.includes(tmId)) {
-              canLearnTm = false;
-              tmInfoHtml = `<div style="font-size:9px;color:var(--red);margin-top:4px;font-weight:700;">No compatible</div>`;
+              canUseItem = false;
+              itemInfoHtml = `<div style="font-size:9px;color:var(--red);margin-top:4px;font-weight:700;">No compatible</div>`;
             } else if (p.moves && p.moves.some(m => m.name === moveName)) {
-              canLearnTm = false;
-              tmInfoHtml = `<div style="font-size:9px;color:var(--yellow);margin-top:4px;font-weight:700;">Ya conoce el movimiento</div>`;
+              canUseItem = false;
+              itemInfoHtml = `<div style="font-size:9px;color:var(--yellow);margin-top:4px;font-weight:700;">Ya conoce el movimiento</div>`;
             } else {
-              tmInfoHtml = `<div style="font-size:9px;color:var(--blue);margin-top:4px;font-weight:700;">¡Puede aprenderlo!</div>`;
+              itemInfoHtml = `<div style="font-size:9px;color:var(--blue);margin-top:4px;font-weight:700;">¡Puede aprenderlo!</div>`;
             }
           }
         }
 
-        return `<div ${canLearnTm ? `onclick="document.getElementById('bag-item-target-overlay').remove();useItemOutsideBattle('${itemName}', 'team', ${i})"` : ''} 
-          style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border-radius:16px;padding:12px;margin-bottom:10px;cursor:${canLearnTm ? 'pointer' : 'not-allowed'};border:1px solid rgba(255,255,255,0.06);transition:all 0.2s; ${!canLearnTm ? 'opacity:0.6;filter:grayscale(0.8);' : ''}"
-          ${canLearnTm ? `onmouseover="this.style.background='rgba(155,77,255,0.1)';this.style.borderColor='rgba(155,77,255,0.3)';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='rgba(255,255,255,0.06)';this.style.transform='translateY(0)'"` : ''}>
+        if (itemName === 'P\u00edldora de cambio de habilidad') {
+          const alternatives = _getAlternativeAbilitiesForPokemon(p);
+          if (!alternatives.length) {
+            canUseItem = false;
+            itemInfoHtml = `<div style="font-size:9px;color:var(--red);margin-top:4px;font-weight:700;">No tiene habilidad alternativa</div>`;
+          } else {
+            itemInfoHtml = `<div style="font-size:9px;color:var(--blue);margin-top:4px;font-weight:700;">Alternativa: ${alternatives.join(' / ')}</div>`;
+          }
+        }
+
+        if (itemName === 'Parche de naturaleza') {
+          itemInfoHtml = `<div style="font-size:9px;color:var(--yellow);margin-top:4px;font-weight:700;">Naturaleza actual: ${p.nature || 'Serio'}</div>`;
+        }
+
+        if (itemName === 'Caramelo de vigor') {
+          const maxVigor = 10;
+          const hasNumericVigor = Number.isFinite(Number(p.vigor));
+          const currentVigor = hasNumericVigor ? Number(p.vigor) : null;
+          if (hasNumericVigor && currentVigor >= maxVigor) {
+            canUseItem = false;
+            itemInfoHtml = `<div style="font-size:9px;color:var(--red);margin-top:4px;font-weight:700;">Vigor al máximo</div>`;
+          } else {
+            itemInfoHtml = `<div style="font-size:9px;color:var(--blue);margin-top:4px;font-weight:700;">Vigor: ${hasNumericVigor ? currentVigor : '?'} / ${maxVigor}</div>`;
+          }
+        }
+        return `<div ${canUseItem ? `onclick="document.getElementById('bag-item-target-overlay').remove();useItemOutsideBattle('${itemName}', 'team', ${i})"` : ''} 
+          style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border-radius:16px;padding:12px;margin-bottom:10px;cursor:${canUseItem ? 'pointer' : 'not-allowed'};border:1px solid rgba(255,255,255,0.06);transition:all 0.2s; ${!canUseItem ? 'opacity:0.6;filter:grayscale(0.8);' : ''}"
+          ${canUseItem ? `onmouseover="this.style.background='rgba(155,77,255,0.1)';this.style.borderColor='rgba(155,77,255,0.3)';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(255,255,255,0.03)';this.style.borderColor='rgba(255,255,255,0.06)';this.style.transform='translateY(0)'"` : ''}>
           <img src="${getSpriteUrl(p.id)}" width="44" height="44" style="image-rendering:pixelated;">
           <div style="flex:1;">
             <div style="font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;">
@@ -589,7 +706,7 @@
               <div style="width:${hpPct}%;height:100%;background:${hpCol};box-shadow:0 0 10px ${hpCol}55;"></div>
             </div>
             <div style="font-size:10px;color:var(--gray);margin-top:4px;">${p.hp} / ${p.maxHp} HP</div>
-            ${tmInfoHtml}
+            ${itemInfoHtml}
           </div>
         </div>`;
       }).join('');
