@@ -411,42 +411,87 @@
             </div>
           </div>
 
-          <!-- ELO + Stats card -->
-          <div style="background:linear-gradient(135deg,rgba(199,125,255,0.12),rgba(59,139,255,0.08));border:1px solid rgba(199,125,255,0.25);border-radius:20px;padding:20px;margin-bottom:16px;">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center;">
-              <div style="text-align:center;">
-                <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gray);margin-bottom:6px;">TU ELO</div>
-                <div id="ranked-elo-display" style="font-family:'Press Start 2P',monospace;font-size:24px;color:var(--purple);text-shadow:0 0 20px rgba(199,125,255,0.5);">1000</div>
-                <div id="ranked-tier-label" style="font-size:11px;color:var(--gray);margin-top:4px;">🥉 Bronce</div>
+          <!-- NEW Rank Header Card -->
+          <div class="ranked-header-card">
+            <div class="rank-badge-container">
+              <span id="ranked-badge-img" class="rank-badge-img">🥉</span>
+            </div>
+
+            <div class="rank-info-main">
+              <div class="rank-elo-wrapper">
+                <div id="ranked-elo-display" class="rank-elo-value">1000</div>
+                <div class="rank-elo-label">Puntos ELO</div>
               </div>
-              <div style="display:flex;flex-direction:column;gap:8px;">
-                <div style="display:flex;justify-content:space-between;font-size:12px;">
-                  <span style="color:var(--green);">✅ Victorias</span>
-                  <span id="ranked-wins" style="font-weight:700;">0</span>
+              
+              <div id="ranked-tier-label" style="font-family:'Press Start 2P',monospace; font-size:12px; color:var(--purple); margin-bottom:4px;">Bronce</div>
+
+              <div class="rank-progress-container">
+                <div class="rank-progress-bar-wrap">
+                  <div id="ranked-progress-fill" class="rank-progress-bar-fill" style="width: 0%;"></div>
                 </div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;">
-                  <span style="color:var(--red);">❌ Derrotas</span>
-                  <span id="ranked-losses" style="font-weight:700;">0</span>
+                <div class="rank-next-info">
+                  <span id="ranked-next-tier-label">Próximo: Plata</span>
+                  <span id="ranked-next-tier-elo">1200 ELO</span>
                 </div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;">
-                  <span style="color:var(--gray);">🤝 Empates</span>
-                  <span id="ranked-draws" style="font-weight:700;">0</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;">
-                  <span style="color:var(--yellow);">📊 Winrate</span>
-                  <span id="ranked-winrate" style="font-weight:700;color:var(--yellow);">—</span>
-                </div>
+              </div>
+            </div>
+
+            <div class="rank-stats-side">
+              <div class="stat-mini-card">
+                <span class="stat-mini-label">Victorias</span>
+                <span id="ranked-wins" class="stat-mini-value" style="color:var(--green);">0</span>
+              </div>
+              <div class="stat-mini-card">
+                <span class="stat-mini-label">Derrotas</span>
+                <span id="ranked-losses" class="stat-mini-value" style="color:var(--red);">0</span>
+              </div>
+              <div class="stat-mini-card">
+                <span class="stat-mini-label">Empates</span>
+                <span id="ranked-draws" class="stat-mini-value" style="color:var(--gray);">0</span>
+              </div>
+              <div class="stat-mini-card">
+                <span class="stat-mini-label">Winrate</span>
+                <span id="ranked-winrate" class="stat-mini-value" style="color:var(--yellow);">0%</span>
               </div>
             </div>
           </div>
 
-          <!-- Season banner card -->
-          <div style="background:rgba(255,217,61,0.06);border:1px solid rgba(255,217,61,0.2);border-radius:16px;padding:12px;margin-bottom:16px;">
-            <img src="assets/eventos/pvp.png" alt="PVP Ranked" style="display:block;width:min(100%,520px);height:auto;margin:0 auto;object-fit:contain;">
-            <div id="ranked-season-dates" style="margin-top:10px;text-align:center;font-size:11px;color:var(--gray);line-height:1.45;">Cargando fechas de temporada...</div>
-            <div id="ranked-season-name" style="display:none;"></div>
-            <div id="ranked-season-timer" style="display:none;"></div>
+          <!-- NEW Season Hero Section -->
+          <div class="season-hero-container">
+            <div class="season-banner-side">
+              <img src="assets/eventos/pvp.png" alt="PVP Ranked" class="season-hero-img">
+              <div id="ranked-season-timer" style="margin-top:10px; font-family:'Press Start 2P',monospace; font-size:8px; color:var(--purple); background:rgba(0,0,0,0.4); padding:6px 12px; border-radius:10px; border:1px solid rgba(199,125,255,0.2);">60d 12h</div>
+            </div>
+            
+            <div class="season-info-side">
+              <div class="season-title-mini">TEMPORADA ACTUAL</div>
+              <h2 id="ranked-season-name" style="margin:0; font-size:22px; color:#fff;">Kanto League</h2>
+              
+              <div style="margin-top:10px;">
+                <div style="font-size:10px; color:var(--gray); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Reglas Activas</div>
+                <div id="ranked-rules-summary" style="font-size:13px; color:#fff; font-weight:800; margin-bottom:12px;">Máximo 6 Pokémon • Nivel 100</div>
+                
+                <div id="ranked-rules-types" class="season-rules-chips">
+                  <!-- Chips de tipos permitidos -->
+                </div>
+              </div>
+
+              <div style="margin-top:10px;">
+                <div style="font-size:10px; color:var(--red); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Pokémon Baneados</div>
+                <div id="ranked-rules-bans" class="season-rules-chips">
+                  <!-- Chips de baneos -->
+                </div>
+              </div>
+
+              <div id="ranked-season-dates" class="season-dates-bar">
+                Cargando fechas de temporada...
+              </div>
+              <div id="ranked-rules-passive-team-status" style="font-size:10px; margin-top:5px;">
+                Revisando equipo ranked...
+              </div>
+            </div>
           </div>
+
 
           <!-- Desktop Grid Wrapper -->
           <div class="ranked-desktop-grid">

@@ -806,10 +806,29 @@ function renderRankedTab() {
   if (eloEl) {
     eloEl.textContent = elo;
     eloEl.style.color = tier.color;
-    eloEl.style.textShadow = `0 0 20px ${tier.color}88`;
+    eloEl.style.textShadow = `0 0 25px ${tier.color}88`;
   }
   const tierEl = document.getElementById('ranked-tier-label');
-  if (tierEl) tierEl.textContent = tier.icon + ' ' + tier.name;
+  if (tierEl) {
+    tierEl.textContent = tier.name;
+    tierEl.style.color = tier.color;
+  }
+
+  // Rank Badge
+  const badgeImgEl = document.getElementById('ranked-badge-img');
+  if (badgeImgEl) badgeImgEl.textContent = tier.icon;
+
+  // Rank Progress Calculation
+  const nextTierInfo = _calculateNextTierInfo(elo);
+  const progressFillEl = document.getElementById('ranked-progress-fill');
+  if (progressFillEl) {
+    progressFillEl.style.width = nextTierInfo.progress + '%';
+    progressFillEl.style.background = `linear-gradient(90deg, ${tier.color}, #3b8bff)`;
+  }
+  const nextTierLabelEl = document.getElementById('ranked-next-tier-label');
+  if (nextTierLabelEl) nextTierLabelEl.textContent = nextTierInfo.label;
+  const nextTierEloEl = document.getElementById('ranked-next-tier-elo');
+  if (nextTierEloEl) nextTierEloEl.textContent = nextTierInfo.eloGoal + ' ELO';
 
   // Stats
   const wEl = document.getElementById('ranked-wins');   if (wEl) wEl.textContent = stats.wins;
@@ -1698,3 +1717,39 @@ window.addEventListener('beforeunload', () => {
         _rankedLeaderboardRefreshTimer = null;
     }
 });
+function _calculateNextTierInfo(elo) {
+  const milestones = [
+    { name: 'Plata',    elo: 1200, icon: '🥈' },
+    { name: 'Oro',      elo: 1600, icon: '🥇' },
+    { name: 'Platino',  elo: 2100, icon: '💠' },
+    { name: 'Diamante', elo: 2700, icon: '💎' },
+    { name: 'Maestro',  elo: 3400, icon: '👑' }
+  ];
+
+  const currentTier = getEloTier(elo);
+  const next = milestones.find(m => m.elo > elo);
+
+  if (!next) {
+    return { progress: 100, label: 'Rango Máximo', eloGoal: elo };
+  }
+
+  // Find the base ELO of the current tier to calculate percentage
+  // Bronze starts at 0 (or 1000 in this game's context, but let's use the actual step)
+  let baseElo = 0;
+  if (elo >= 2700) baseElo = 2700;
+  else if (elo >= 2100) baseElo = 2100;
+  else if (elo >= 1600) baseElo = 1600;
+  else if (elo >= 1200) baseElo = 1200;
+  else if (elo >= 1000) baseElo = 1000;
+  else baseElo = 0;
+
+  const totalRange = next.elo - baseElo;
+  const currentDiff = elo - baseElo;
+  const progress = Math.max(0, Math.min(100, (currentDiff / totalRange) * 100));
+
+  return {
+    progress: progress,
+    label: `Siguiente: ${next.name}`,
+    eloGoal: next.elo
+  };
+}
