@@ -384,20 +384,30 @@ function _ensureGlobalChatStyles() {
     .gc-nick {
       border: none;
       background: transparent;
-      color: #93c5fd; /* Fallback azul claro */
-      font-family: 'Press Start 2P', monospace;
-      font-weight: 400; /* La fuente pixel ya es gruesa */
+      color: #93c5fd; 
       padding: 0;
       margin: 0;
       cursor: pointer;
-      font-size: 11px; /* Base 11px pero con fuente pixel */
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      transition: filter 0.2s;
+      font-size: 13px; /* Aumentado para visibilidad de efectos */
+      transition: filter 0.2s, transform 0.2s;
       vertical-align: middle;
+      display: inline-block;
     }
-    .gc-nick:hover { filter: brightness(1.2); }
-    /* Fix para que los estilos cosméticos (nt-*) no sean tapados por el color base */
-    .gc-nick[class*="nt-"] { color: transparent !important; }
+    .gc-nick:hover { filter: brightness(1.2); transform: translateY(-1px); }
+    
+    /* Fuente pixel solo para nicks normales */
+    .gc-nick:not([class*="nt-"]) {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px; /* Mantener pequeño si es fuente pixel */
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Fix para estilos cosméticos: heredar fuente y asegurar transparencia */
+    .gc-nick[class*="nt-"] { 
+      color: transparent !important;
+      -webkit-text-fill-color: transparent !important;
+      font-weight: 900;
+    }
 
     .gc-colon { color: #9ca3af; font-weight: 700; margin-right: 3px; }
     .gc-time { color: #6b7280; font-size: 9px; margin-top: 2px; }
