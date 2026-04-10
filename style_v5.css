@@ -1,4 +1,4 @@
-﻿:root {
+:root {
       --red: #ff453a;
       --blue: #0a84ff;
       --yellow: #ffd60a;
@@ -4093,10 +4093,12 @@
 
     .profile-username {
       font-family: 'Press Start 2P', monospace;
-      font-size: 10px;
-      text-align: center;
+      font-size: 14px;
+      text-align: center !important;
       color: var(--yellow);
       margin-top: 8px;
+      width: 100%;
+      display: block;
     }
 
     .profile-email {

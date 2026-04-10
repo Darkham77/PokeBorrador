@@ -119,7 +119,7 @@ function previewCosmetic(type, id) {
         
         const playerClassId = state.playerClass || null;
         const playerClass = PLAYER_CLASSES[playerClassId] || null;
-        document.getElementById('preview-avatar-container').innerHTML = getAvatarHtml(playerClass, '#3b82f6', 64);
+        document.getElementById('preview-avatar-container').innerHTML = getAvatarHtml(playerClass, '#3b82f6', 64, idVal);
         
         state.avatar_style = old; // Restore state
     }
