@@ -1802,6 +1802,16 @@ function useMove(moveIndex) {
         finalDmg = Math.max(1, Math.floor(b.enemy.hp / 2));
       }
 
+      // Endeavor
+      if (md.endeavor) {
+        if (b.enemy.hp > b.player.hp) {
+          finalDmg = b.enemy.hp - b.player.hp;
+        } else {
+          finalDmg = 0;
+          addLog("¡Pero no afectó al oponente!", 'log-info');
+        }
+      }
+
       // Fixed damage moves (Dragon Rage, Sonic Boom)
       if (md.fixedDmg && eff > 0) {
         finalDmg = md.fixedDmg;
@@ -2386,6 +2396,16 @@ function enemyTurn(opts = {}) {
     // Super Fang (halfHP)
     if (md.halfHP) {
       finalDmg = Math.max(1, Math.floor(b.player.hp / 2));
+    }
+
+    // Endeavor
+    if (md.endeavor) {
+      if (b.player.hp > b.enemy.hp) {
+        finalDmg = b.player.hp - b.enemy.hp;
+      } else {
+        finalDmg = 0;
+        addLog("¡Pero no afectó al oponente!", 'log-info');
+      }
     }
 
     // Counter: deal 2× last physical damage taken from player

@@ -74,13 +74,29 @@ try {
     }
 
     // Check for fixed damage moves (Dragon Rage)
-    if (name === 'Furia Dragón' && !content.includes('fixedDmg')) {
+    if (name === 'Furia Dragón' && !content.includes('fixedDmg: 40')) {
       semanticIssues.push(`- ${name} (Line: ${data.line}): Missing 'fixedDmg: 40'.`);
     }
 
     // Check for Super Fang (Súper Colmillo)
-    if (name === 'Súper Colmillo' && !content.includes('halfHP')) {
+    if (name === 'Súper Colmillo' && !content.includes('halfHP: true')) {
       semanticIssues.push(`- ${name} (Line: ${data.line}): Missing 'halfHP: true'.`);
+    }
+
+    // Check for Esfuerzo (Endeavor)
+    if (name === 'Esfuerzo' && !content.includes('endeavor: true')) {
+      semanticIssues.push(`- ${name} (Line: ${data.line}): Missing 'endeavor: true'.`);
+    }
+
+    // Anti effect pseudo-boolean misuse
+    const boolProps = ['halfHP', 'ohko', 'selfKO', 'endeavor'];
+    boolProps.forEach(prop => {
+      if (content.includes(`effect: '${prop}'`)) {
+         semanticIssues.push(`- ${name} (Line: ${data.line}): Uses "effect: '${prop}'" instead of the required schema "${prop}: true".`);
+      }
+    });
+    if (content.includes(`effect: 'fixedDmg'`)) {
+         semanticIssues.push(`- ${name} (Line: ${data.line}): Uses "effect: 'fixedDmg'" instead of the required schema "fixedDmg: X".`);
     }
   });
 

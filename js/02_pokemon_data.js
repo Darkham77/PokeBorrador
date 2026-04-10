@@ -1032,7 +1032,7 @@
         'Gruñido': { power: 0, acc: 100, type: 'normal', cat: 'status', pp: 40, effect: 'stat_down_enemy_atk' },
         'Dulce Aroma': { power: 0, acc: 100, type: 'normal', cat: 'status', pp: 20, effect: 'stat_down_enemy_eva' },
         'Ataque Furia': { power: 15, acc: 85, type: 'normal', cat: 'physical', pp: 20, hits: '2-5' },
-        'Esfuerzo': { power: 1, acc: 100, type: 'normal', cat: 'physical', pp: 5 },
+        'Esfuerzo': { power: 1, acc: 100, type: 'normal', cat: 'physical', pp: 5, endeavor: true },
         'Persecución': { power: 40, acc: 100, type: 'dark', cat: 'physical', pp: 20 },
         'Espejo': { power: 0, acc: 100, type: 'flying', cat: 'status', pp: 20, effect: 'mirror_move' },
         'Paralizador': { power: 0, acc: 75, type: 'grass', cat: 'status', pp: 30, effect: 'paralyze' },
@@ -1136,11 +1136,11 @@
         'Arañazo': { power: 40, acc: 100, type: 'normal', cat: 'physical', pp: 35 },
         'Garra Metal': { power: 50, acc: 95, type: 'steel', cat: 'physical', pp: 35, effect: 'stat_up_self_atk_10' },
         'Pantalla Humo': { power: 0, acc: 100, type: 'normal', cat: 'status', pp: 20, effect: 'stat_down_enemy_acc' },
-        'Furia Dragón': { power: 1, acc: 100, type: 'dragon', cat: 'special', pp: 10, effect: 'fixedDmg' },
+        'Furia Dragón': { power: 1, acc: 100, type: 'dragon', cat: 'special', pp: 10, fixedDmg: 40 },
         'Cara Susto': { power: 0, acc: 100, type: 'normal', cat: 'status', pp: 10, effect: 'stat_down_enemy_spe_2' },
         'Ataque Ala': { power: 60, acc: 100, type: 'flying', cat: 'physical', pp: 35 },
         'Remolino': { power: 0, acc: 1000, type: 'normal', cat: 'status', pp: 20, effect: 'roar' },
-        'Súper Colmillo': { power: 1, acc: 90, type: 'normal', cat: 'physical', pp: 10, effect: 'halfHP' },
+        'Súper Colmillo': { power: 1, acc: 90, type: 'normal', cat: 'physical', pp: 10, halfHP: true },
         'Envolver': { power: 15, acc: 90, type: 'normal', cat: 'physical', pp: 20, effect: 'bind' },
         'Ácido': { power: 40, acc: 100, type: 'poison', cat: 'special', pp: 30, effect: 'stat_down_enemy_spd_10' },
         'Rizo Defensa': { power: 0, acc: 1000, type: 'normal', cat: 'status', pp: 40, effect: 'stat_up_self_def' },
@@ -1178,7 +1178,7 @@
         'Alivio': { power: 0, acc: 1000, type: 'normal', cat: 'status', pp: 5 },
         'Pozo Venenoso': { power: 0, acc: 90, type: 'poison', cat: 'status', pp: 40, effect: 'poison' },
         'Polución': { power: 20, acc: 70, type: 'poison', cat: 'special', pp: 20, effect: 'poison_30' },
-        'Legado': { power: 0, acc: 1000, type: 'dark', cat: 'status', pp: 10, effect: 'selfKO' },
+        'Legado': { power: 0, acc: 1000, type: 'dark', cat: 'status', pp: 10, selfKO: true },
         'Pedrada': { power: 25, acc: 90, type: 'rock', cat: 'physical', pp: 15, hits: '2-5' },
         'Poder Pasado': { power: 60, acc: 100, type: 'rock', cat: 'special', pp: 5, effect: 'stat_up_self_all_10' },
         'Hidrochorro': { power: 0, acc: 1000, type: 'water', cat: 'status', pp: 15 },
@@ -1513,6 +1513,7 @@
       
       if (md.ohko) return "Fulmina al enemigo de un solo golpe si acierta.";
       if (md.halfHP) return "Reduce a la mitad los PS actuales del oponente.";
+      if (md.endeavor) return "Iguala los PS actuales del objetivo con los del usuario. Falla si tiene menos.";
       if (md.recoil) return "El usuario recibe daño por retroceso al golpear.";
       if (md.drain && md.cat !== 'status') return "Restaura PS al usuario según el daño causado."; // Added non-status check
       if (md.selfKO) return "El usuario se debilita para causar un daño masivo.";
