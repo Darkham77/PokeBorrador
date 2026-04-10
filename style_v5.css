@@ -1,4 +1,4 @@
-:root {
+﻿:root {
       --red: #ff453a;
       --blue: #0a84ff;
       --yellow: #ffd60a;
@@ -28,7 +28,7 @@
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
-      user-select: none; /* Desactivar selección de texto */
+      user-select: none; /* Desactivar selecciÃ³n de texto */
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
@@ -218,11 +218,11 @@
     }
     
     .aura-black {
-      /* Sombra negra intensa con una ligera aura púrpura oscura para visibilidad en fondos negros */
+      /* Sombra negra intensa con una ligera aura pÃºrpura oscura para visibilidad en fondos negros */
       filter: drop-shadow(0 0 6px #000) drop-shadow(0 0 10px rgba(0,0,0,0.8)) drop-shadow(0 0 2px rgba(100,0,255,0.2)) !important;
     }
     
-    /* Para miniaturas y elementos pequeños */
+    /* Para miniaturas y elementos pequeÃ±os */
     .aura-white-mini {
       filter: drop-shadow(0 0 3px #fff) !important;
     }
@@ -505,11 +505,11 @@
         justify-content: space-between;
       }
       .hud-nav {
-        display: none !important; /* Ocultar menú del HUD en móvil */
+        display: none !important; /* Ocultar menÃº del HUD en mÃ³vil */
       }
     }
 
-    /* Menú dentro del HUD (PC) */
+    /* MenÃº dentro del HUD (PC) */
     .hud-nav {
       display: flex;
       gap: 10px;
@@ -531,7 +531,7 @@
       letter-spacing: 0.5px;
     }
 
-    /* Agrupación y Submenús */
+    /* AgrupaciÃ³n y SubmenÃºs */
     .hud-group {
       position: relative;
     }
@@ -557,7 +557,7 @@
       min-width: 160px;
     }
 
-    /* Flecha decorativa del submenú (ahora hacia arriba) */
+    /* Flecha decorativa del submenÃº (ahora hacia arriba) */
     .hud-submenu::after {
       content: '';
       position: absolute;
@@ -804,7 +804,7 @@
       transform: translateY(0) translateX(-50%);
     }
 
-    /* Variantes de posición */
+    /* Variantes de posiciÃ³n */
     .pv-to-right .pv-tooltip {
       left: calc(100% + 10px);
       bottom: auto;
@@ -890,7 +890,7 @@
       gap: 12px;
       min-width: 200px;
       flex: 1 1 0; /* Forzar a que todas las tarjetas crezcan igual */
-      max-width: none; /* Eliminar el límite para que ocupen todo el ancho */
+      max-width: none; /* Eliminar el lÃ­mite para que ocupen todo el ancho */
       animation: fadeIn 0.3s ease;
       box-sizing: border-box;
     }
@@ -1898,13 +1898,13 @@
       width: 100%;
     }
 
-    /* .action-row definida más abajo */
+    /* .action-row definida mÃ¡s abajo */
 
 
 
     /* battle bg drawn on canvas */
 
-    /* ── Sprite animations ── */
+    /* â”€â”€ Sprite animations â”€â”€ */
     @keyframes attackRight {
       0% {
         transform: translateX(0)
@@ -2231,7 +2231,7 @@
       margin: 0;
     }
 
-    /* Layout cuando no hay botón de captura */
+    /* Layout cuando no hay botÃ³n de captura */
     .action-row.no-catch {
       grid-template-columns: 1fr 1fr;
       grid-template-areas: 
@@ -2360,7 +2360,7 @@
       margin: 0;
     }
 
-    /* Layout cuando no hay botón de captura */
+    /* Layout cuando no hay botÃ³n de captura */
     .action-row.no-catch {
       grid-template-columns: 1fr 1fr;
       grid-template-areas: 
@@ -2652,7 +2652,7 @@
 
     /* ===== NAV ===== */
     .nav {
-      display: none; /* Ocultar por defecto (se mostrará en móvil vía media query) */
+      display: none; /* Ocultar por defecto (se mostrarÃ¡ en mÃ³vil vÃ­a media query) */
       gap: 10px;
       margin-bottom: 16px;
       flex-wrap: wrap;
@@ -2687,7 +2687,7 @@
         font-size: 20px;
       }
       
-      /* Ajuste para que el contenido no quede debajo del menú móvil */
+      /* Ajuste para que el contenido no quede debajo del menÃº mÃ³vil */
       #app {
         padding-bottom: 80px !important;
       }
@@ -2752,7 +2752,7 @@
       border-top-color: rgba(15, 15, 25, 0.98);
     }
 
-    /* Mostrar con clase .is-open (Mobile/Táctil) o hover (Desktop) */
+    /* Mostrar con clase .is-open (Mobile/TÃ¡ctil) o hover (Desktop) */
     @media (hover: hover) {
       .nav-group:hover .nav-submenu {
         opacity: 1;
@@ -2769,7 +2769,7 @@
       display: flex !important;
     }
 
-    /* Regla de seguridad: Si NO tiene is-open, forzar ocultación total */
+    /* Regla de seguridad: Si NO tiene is-open, forzar ocultaciÃ³n total */
     .nav-group:not(.is-open) .nav-submenu,
     .hud-group:not(.is-open) .hud-submenu {
       opacity: 0 !important;
@@ -2800,7 +2800,7 @@
       box-shadow: 0 -2px 10px rgba(255, 255, 255, 0.05);
     }
 
-    /* Prevención contra desbordamiento en ítems de los extremos */
+    /* PrevenciÃ³n contra desbordamiento en Ã­tems de los extremos */
     .hud-group:last-child .hud-submenu,
     .nav-group:last-child .nav-submenu {
       left: auto !important;
@@ -2850,7 +2850,7 @@
       box-sizing: border-box;
     }
 
-    /* Centro Pokémon ocupa todo el ancho siempre */
+    /* Centro PokÃ©mon ocupa todo el ancho siempre */
     .location-card-center {
       grid-column: 1 / -1;
     }
@@ -2858,12 +2858,12 @@
     /* ===== MOBILE ===== */
     @media (max-width: 600px) {
 
-      /* ── App padding bottom para nav fija ── */
+      /* â”€â”€ App padding bottom para nav fija â”€â”€ */
       #app {
         padding: 10px 10px 90px;
       }
 
-      /* ── HUD ── */
+      /* â”€â”€ HUD â”€â”€ */
       .hud {
         padding: 10px 12px;
         gap: 6px;
@@ -2896,7 +2896,7 @@
         width: 90px !important;
       }
 
-      /* ── Nav barra fija inferior ── */
+      /* â”€â”€ Nav barra fija inferior â”€â”€ */
       .nav {
         position: fixed;
         bottom: 0;
@@ -2948,7 +2948,7 @@
         color: var(--yellow);
       }
 
-      /* ── Mapa ── */
+      /* â”€â”€ Mapa â”€â”€ */
       .starter-grid {
         grid-template-columns: 1fr;
       }
@@ -3002,14 +3002,14 @@
         right: 10px;
       }
 
-      /* ── Sprites en móvil: quitar posición absoluta y fluir dentro del card ── */
+      /* â”€â”€ Sprites en mÃ³vil: quitar posiciÃ³n absoluta y fluir dentro del card â”€â”€ */
       .location-card {
         min-height: 190px;
       }
 
       .location-spawns {
         position: static !important;
-        /* Desacoplar del fondo absoluto; se convierte en el último item del flexbox */
+        /* Desacoplar del fondo absoluto; se convierte en el Ãºltimo item del flexbox */
         margin-top: auto;
         padding-top: 6px;
         width: 100%;
@@ -3023,7 +3023,7 @@
         justify-content: flex-end;
       }
 
-      /* Sprites más pequeños en móvil para que quepan sin invadir */
+      /* Sprites mÃ¡s pequeÃ±os en mÃ³vil para que quepan sin invadir */
       .spawn-row img,
       .location-spawns img {
         width: 38px !important;
@@ -3031,13 +3031,13 @@
       }
 
       .fishing-rod {
-        /* El icono de caña de pesca queda absoluto pero más arriba para no chocar */
+        /* El icono de caÃ±a de pesca queda absoluto pero mÃ¡s arriba para no chocar */
         bottom: auto;
         top: 10px;
         left: 10px;
       }
 
-      /* ── Batalla ── */
+      /* â”€â”€ Batalla â”€â”€ */
       #battle-screen {
         padding-bottom: 0;
       }
@@ -3167,9 +3167,9 @@
         border-radius: 10px;
       }
 
-      /* ── Pokédex ── */
+      /* â”€â”€ PokÃ©dex â”€â”€ */
 
-      /* ── Equipo ── */
+      /* â”€â”€ Equipo â”€â”€ */
       .team-grid {
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 10px;
@@ -3179,7 +3179,7 @@
         padding: 14px;
       }
 
-      /* ── Market ── */
+      /* â”€â”€ Market â”€â”€ */
       .market-card {
         padding: 12px;
       }
@@ -3197,17 +3197,17 @@
         padding: 8px;
       }
 
-      /* ── Gimnasios ── */
+      /* â”€â”€ Gimnasios â”€â”€ */
       .gym-card {
         padding: 12px;
       }
 
-      /* ── Perfil ── */
+      /* â”€â”€ Perfil â”€â”€ */
       #profile-panel {
         width: 100vw;
       }
 
-      /* ── Auth ── */
+      /* â”€â”€ Auth â”€â”€ */
       .auth-card {
         padding: 28px 18px;
       }
@@ -3220,7 +3220,7 @@
         font-size: 7px;
       }
 
-      /* ── Starter screen ── */
+      /* â”€â”€ Starter screen â”€â”€ */
       .title-logo {
         font-size: 26px;
       }
@@ -3348,7 +3348,7 @@
       }
     }
 
-    /* Mobile: 3 por fila máximo, texto más chico */
+    /* Mobile: 3 por fila mÃ¡ximo, texto mÃ¡s chico */
     @media (max-width: 600px) {
       .market-tab-bar {
         gap: 4px;
@@ -4561,7 +4561,7 @@
     }
 
     .btn-fight { box-shadow: 0 10px 24px rgba(255, 59, 59, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
-    /* .btn-catch ya tiene sus estilos específicos arriba */
+    /* .btn-catch ya tiene sus estilos especÃ­ficos arriba */
     .btn-run { box-shadow: 0 10px 24px rgba(200, 200, 200, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1); }
 
     .hp-bar-wrap,
@@ -4659,7 +4659,7 @@
       position: absolute;
       left: 10%;
       width: 80%;
-      height: 80px; /* Será variable por dificultad */
+      height: 80px; /* SerÃ¡ variable por dificultad */
       background: rgba(50, 215, 75, 0.4);
       border: 2px solid var(--green);
       border-radius: 12px;
@@ -4708,7 +4708,7 @@
       color: var(--blue);
     }
 
-    /* ===== POKÉDEX GRID ===== */
+    /* ===== POKÃ‰DEX GRID ===== */
     .pdex-cell {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.07);
@@ -5008,11 +5008,11 @@
 
 
 /* ============================================================
-   RESPONSIVE MOBILE & TABLET — Agregado por Manus
-   Afecta SOLO pantallas ≤ 1024px; no modifica la vista PC.
+   RESPONSIVE MOBILE & TABLET â€” Agregado por Manus
+   Afecta SOLO pantallas â‰¤ 1024px; no modifica la vista PC.
    ============================================================ */
 
-/* ── Tablet general (601px – 1024px) ── */
+/* â”€â”€ Tablet general (601px â€“ 1024px) â”€â”€ */
 @media (max-width: 1024px) and (min-width: 601px) {
 
   /* HUD: permitir wrap para que las pills no se salgan */
@@ -5033,7 +5033,7 @@
     justify-content: flex-end;
   }
 
-  /* Pills más compactas en tablet */
+  /* Pills mÃ¡s compactas en tablet */
   .hud-pill {
     min-width: 52px;
     height: 52px;
@@ -5046,7 +5046,7 @@
     font-size: 15px;
   }
 
-  /* Barra de navegación inferior en tablet */
+  /* Barra de navegaciÃ³n inferior en tablet */
   .nav {
     display: flex;
     position: fixed;
@@ -5130,13 +5130,13 @@
     width: 300px;
   }
 
-  /* Starter grid: 2 columnas en tablet pequeño */
+  /* Starter grid: 2 columnas en tablet pequeÃ±o */
   .starter-grid {
     grid-template-columns: repeat(2, 1fr);
     max-width: 500px;
   }
 
-  /* Daycare: columna única en tablet pequeño */
+  /* Daycare: columna Ãºnica en tablet pequeÃ±o */
   .daycare-slots-grid > .daycare-slot-card {
     flex-basis: calc(50% - 6px);
   }
@@ -5152,7 +5152,7 @@
     overflow-y: auto;
   }
 
-  /* Pokédex modal: ancho completo */
+  /* PokÃ©dex modal: ancho completo */
   #pokedex-modal {
     padding: 12px;
   }
@@ -5184,10 +5184,10 @@
   }
 }
 
-/* ── Móvil (≤ 600px) — Complemento y correcciones ── */
+/* â”€â”€ MÃ³vil (â‰¤ 600px) â€” Complemento y correcciones â”€â”€ */
 @media (max-width: 600px) {
 
-  /* Mapa: 1 columna en móvil, evita overflow horizontal */
+  /* Mapa: 1 columna en mÃ³vil, evita overflow horizontal */
   .map-list {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -5206,7 +5206,7 @@
     min-width: 0;
   }
 
-  /* Ocultar la barra de exp del entrenador en móvil muy pequeño para ahorrar espacio */
+  /* Ocultar la barra de exp del entrenador en mÃ³vil muy pequeÃ±o para ahorrar espacio */
   @media (max-width: 380px) {
     .hud-trainer > div > div[style*="width:140px"],
     .hud-trainer > div > div[style*="width: 140px"] {
@@ -5221,7 +5221,7 @@
     flex: 1 1 auto;
   }
 
-  /* Pills más pequeñas */
+  /* Pills mÃ¡s pequeÃ±as */
   .hud-pill {
     min-width: 44px;
     height: 44px;
@@ -5257,7 +5257,7 @@
     padding: 6px 12px;
   }
 
-  /* Notificaciones: arriba a la derecha en móvil */
+  /* Notificaciones: arriba a la derecha en mÃ³vil */
   #notification-stack {
     top: calc(10px + env(safe-area-inset-top));
     bottom: auto;
@@ -5310,7 +5310,7 @@
     border-radius: 16px 16px 0 0 !important;
   }
 
-  /* Pokédex modal */
+  /* PokÃ©dex modal */
   #pokedex-modal {
     padding: 8px;
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
@@ -5325,13 +5325,13 @@
     max-width: 100% !important;
   }
 
-  /* Perfil: ancho completo en móvil */
+  /* Perfil: ancho completo en mÃ³vil */
   #profile-panel {
     width: 100vw;
     padding: 16px;
   }
 
-  /* Fishing game: compacto en móvil */
+  /* Fishing game: compacto en mÃ³vil */
   .fishing-game-container {
     padding: 20px 12px;
     border-radius: 20px;
@@ -5348,23 +5348,23 @@
     margin-bottom: 16px;
   }
 
-  /* Gym list: columna única en móvil */
+  /* Gym list: columna Ãºnica en mÃ³vil */
   .gym-list {
     grid-template-columns: 1fr;
   }
 
-  /* Team grid: 2 columnas mínimo en móvil */
+  /* Team grid: 2 columnas mÃ­nimo en mÃ³vil */
   .team-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
 
-  /* Pokédex grid: más compacto */
+  /* PokÃ©dex grid: mÃ¡s compacto */
   #pokedex-grid {
     grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)) !important;
     gap: 6px !important;
   }
 
-  /* Starter screen: columna única */
+  /* Starter screen: columna Ãºnica */
   .starter-grid {
     grid-template-columns: 1fr;
     max-width: 280px;
@@ -5375,7 +5375,7 @@
     padding: 14px 12px;
   }
 
-  /* Buff panel: ajuste de posición para que no tape contenido */
+  /* Buff panel: ajuste de posiciÃ³n para que no tape contenido */
   #buff-panel {
     top: 120px;
   }
@@ -5387,7 +5387,7 @@
     font-size: 10px;
   }
 
-  /* Daycare slots: columna única en móvil */
+  /* Daycare slots: columna Ãºnica en mÃ³vil */
   .daycare-slots-grid > .daycare-slot-card,
   .daycare-slots-grid > .daycare-mid-card {
     flex-basis: 100%;
@@ -5421,7 +5421,7 @@
     justify-content: center;
   }
 
-  /* Market: 2 columnas en móvil */
+  /* Market: 2 columnas en mÃ³vil */
   .market-grid,
   [id^="market-items-"] {
     display: grid !important;
@@ -5444,7 +5444,7 @@
     font-size: 11px;
   }
 
-  /* Pokeball botón de captura: un poco más pequeño en móvil */
+  /* Pokeball botÃ³n de captura: un poco mÃ¡s pequeÃ±o en mÃ³vil */
   .btn-catch {
     width: 68px !important;
     height: 68px !important;
@@ -5468,7 +5468,7 @@
     flex-wrap: wrap;
   }
 
-  /* Tooltips: re-habilitados para móvil con soporte táctil */
+  /* Tooltips: re-habilitados para mÃ³vil con soporte tÃ¡ctil */
   .tooltip-wrap .tooltip-box {
     display: none;
   }
@@ -5481,13 +5481,13 @@
     z-index: 30000;
   }
 
-  /* Buff tooltip: también se oculta en móvil */
+  /* Buff tooltip: tambiÃ©n se oculta en mÃ³vil */
   .buff-item:hover .buff-tooltip {
     opacity: 0;
     pointer-events: none;
   }
 
-  /* Chat flotante: reposicionar en móvil */
+  /* Chat flotante: reposicionar en mÃ³vil */
   [id^="chat-modal-"] {
     bottom: 80px !important;
     right: 8px !important;
@@ -5496,13 +5496,13 @@
     left: auto !important;
   }
 
-  /* Pokédex detail modal: full screen en móvil */
+  /* PokÃ©dex detail modal: full screen en mÃ³vil */
   #pokedex-modal[style*="flex"] {
     align-items: flex-end !important;
   }
 }
 
-/* ── Pantallas muy pequeñas (≤ 380px) ── */
+/* â”€â”€ Pantallas muy pequeÃ±as (â‰¤ 380px) â”€â”€ */
 @media (max-width: 380px) {
 
   .hud-pill {
@@ -5571,10 +5571,10 @@
   }
 }
 
-/* ── Tablet landscape y pantallas medianas (768px – 1024px) ── */
+/* â”€â”€ Tablet landscape y pantallas medianas (768px â€“ 1024px) â”€â”€ */
 @media (max-width: 1024px) and (min-width: 768px) {
 
-  /* Mapa: 2 columnas cómodas */
+  /* Mapa: 2 columnas cÃ³modas */
   .map-list {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -5584,7 +5584,7 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  /* Team grid: columnas más anchas */
+  /* Team grid: columnas mÃ¡s anchas */
   .team-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
@@ -5595,7 +5595,7 @@
     max-width: 600px;
   }
 
-  /* Pokédex: más columnas */
+  /* PokÃ©dex: mÃ¡s columnas */
   #pokedex-grid {
     grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)) !important;
   }
@@ -5606,7 +5606,7 @@
   }
 }
 
-/* ── Safe area para dispositivos con notch ── */
+/* â”€â”€ Safe area para dispositivos con notch â”€â”€ */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   @media (max-width: 1024px) {
     .nav {
@@ -5619,10 +5619,10 @@
   }
 }
 
-/* ── Overlays inline generados por JS: asegurar responsive en móvil ── */
+/* â”€â”€ Overlays inline generados por JS: asegurar responsive en mÃ³vil â”€â”€ */
 @media (max-width: 600px) {
 
-  /* Overlays de encuentro con entrenador, rival, restauración de batalla, evolución, etc. */
+  /* Overlays de encuentro con entrenador, rival, restauraciÃ³n de batalla, evoluciÃ³n, etc. */
   #trainer-intro-overlay > div,
   #rival-intro-overlay > div,
   #restore-battle-overlay > div,
@@ -5641,7 +5641,7 @@
     width: auto !important;
   }
 
-  /* Texto de intro: tamaño legible */
+  /* Texto de intro: tamaÃ±o legible */
   #rival-intro-overlay [style*="font-size:14px"],
   #trainer-intro-overlay [style*="font-size:13px"] {
     font-size: 12px !important;
@@ -6089,7 +6089,7 @@
       }
     }
 
-    /* ── Ajuste de filtros de IV para móvil ── */
+    /* â”€â”€ Ajuste de filtros de IV para mÃ³vil â”€â”€ */
     @media (max-width: 768px) {
       #box-iv-filters {
         grid-template-columns: repeat(2, 1fr) !important;
@@ -6107,8 +6107,8 @@
 
 /* ===== PANEL DE GUERRA - DASHBOARD PREMIUM 2026 ===== */
 :root {
-  --union-color: #3b82f6;   /* Azul - Unión */
-  --union-secondary: #ffffff; /* Blanco - Unión */
+  --union-color: #3b82f6;   /* Azul - UniÃ³n */
+  --union-secondary: #ffffff; /* Blanco - UniÃ³n */
   --poder-color: #ef4444;   /* Rojo - Poder */
   --poder-secondary: #0a0a0a; /* Negro - Poder */
   --war-bg: #0a0a0f;
@@ -6266,7 +6266,7 @@
   gap: 20px;
 }
 
-/* Rediseño de Tarjeta de Mapa */
+/* RediseÃ±o de Tarjeta de Mapa */
 .war-map-card {
   position: relative;
   height: 200px;
@@ -7142,10 +7142,10 @@
 .av-fire::before {
   content: ''; position: absolute; inset: -6px; border-radius: 50%;
   background: conic-gradient(#ff0000,#ff8800,#ffcc00,#ff4400,#ff0000);
-  z-index: 1; animation: spin-slow 2s linear infinite;
+  z-index: -2; animation: spin-slow 2s linear infinite;
 }
 .av-fire::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: 2;
+  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: -1;
 }
 
 .av-water .avatar-img {
@@ -7154,10 +7154,10 @@
 .av-water::before {
   content: ''; position: absolute; inset: -7px; border-radius: 50%;
   background: conic-gradient(#0033cc,#00aaff,#44eeff,#0066ff,#0033cc);
-  z-index: 1; animation: spin-slow 4s linear infinite;
+  z-index: -2; animation: spin-slow 4s linear infinite;
 }
 .av-water::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: 2;
+  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: -1;
 }
 
 .av-electric .avatar-img {
@@ -7167,10 +7167,10 @@
 .av-electric::before {
   content: ''; position: absolute; inset: -7px; border-radius: 50%;
   background: conic-gradient(#ffe000,#ffffff,#ffe000,#ff9900,#ffe000);
-  z-index: 1; animation: elec-spin 0.4s steps(4) infinite;
+  z-index: -2; animation: elec-spin 0.4s steps(4) infinite;
 }
 .av-electric::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: 2;
+  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: -1;
 }
 @keyframes elec-avatar { 0%,100%{box-shadow:0 0 0 3px #ffe040,0 0 14px #ffcc0080} 50%{box-shadow:0 0 0 3px #ffffff,0 0 20px #ffee0090} }
 @keyframes elec-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
@@ -7181,10 +7181,10 @@
 .av-psychic::before {
   content: ''; position: absolute; inset: -7px; border-radius: 50%;
   background: conic-gradient(#ff00cc,#9900ff,#6600cc,#ff44ff,#ff00cc);
-  z-index: 1; animation: spin-slow 3s linear infinite reverse;
+  z-index: -2; animation: spin-slow 3s linear infinite reverse;
 }
 .av-psychic::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: 2;
+  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: -1;
 }
 
 .av-dark .avatar-img {
@@ -7194,10 +7194,10 @@
 .av-dark::before {
   content: ''; position: absolute; inset: -7px; border-radius: 50%;
   background: conic-gradient(#2a0044,#7700bb,#330066,#9900cc,#2a0044);
-  z-index: 1; animation: spin-slow 5s linear infinite;
+  z-index: -2; animation: spin-slow 5s linear infinite;
 }
 .av-dark::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: 2;
+  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: -1;
 }
 
 .av-ghost .avatar-img {
@@ -7207,10 +7207,10 @@
 .av-ghost::before {
   content: ''; position: absolute; inset: -7px; border-radius: 50%;
   background: conic-gradient(#440088,#cc88ff,#6622aa,#aa66ff,#440088);
-  z-index: 1; animation: spin-slow 4s ease-in-out infinite; opacity: 0.85;
+  z-index: -2; animation: spin-slow 4s ease-in-out infinite; opacity: 0.85;
 }
 .av-ghost::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: 2;
+  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: -1;
 }
 @keyframes ghost-av-phase { 0%,100%{opacity:1} 50%{opacity:0.78} }
 
@@ -7221,10 +7221,10 @@
 .av-ice::before {
   content: ''; position: absolute; inset: -7px; border-radius: 50%;
   background: conic-gradient(#aaf0ff,#0088cc,#ddfaff,#44aaff,#aaf0ff);
-  z-index: 1; animation: spin-slow 6s linear infinite reverse;
+  z-index: -2; animation: spin-slow 6s linear infinite reverse;
 }
 .av-ice::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: 2;
+  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: -1;
 }
 
 .av-dragon .avatar-img {
@@ -7233,10 +7233,10 @@
 .av-dragon::before {
   content: ''; position: absolute; inset: -7px; border-radius: 50%;
   background: conic-gradient(#4466ff,#ff4400,#6688ff,#ff6600,#4466ff);
-  z-index: 1; animation: spin-slow 1.8s linear infinite;
+  z-index: -2; animation: spin-slow 1.8s linear infinite;
 }
 .av-dragon::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: 2;
+  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: -1;
 }
 
 .av-legend .avatar-img {
@@ -7246,10 +7246,10 @@
 .av-legend::before {
   content: ''; position: absolute; inset: -8px; border-radius: 50%;
   background: conic-gradient(#ff0000,#ff8800,#ffff00,#00ff88,#00ffff,#0088ff,#ff00ff,#ff0000);
-  z-index: 1; animation: spin-slow 2s linear infinite;
+  z-index: -2; animation: spin-slow 2s linear infinite;
 }
 .av-legend::after {
-  content: ''; position: absolute; inset: -5px; border-radius: 50%; background: #0a0a0a; z-index: 2;
+  content: ''; position: absolute; inset: -5px; border-radius: 50%; background: #0a0a0a; z-index: -1;
 }
 @keyframes legend-av-pulse { 0%,100%{box-shadow:0 0 0 3px #ffdd00,0 0 18px #ffaa0080} 50%{box-shadow:0 0 0 3px #ffffff,0 0 28px #ffdd00,0 0 44px #ff880040} }
 
@@ -7260,10 +7260,10 @@
 .av-master::before {
   content: ''; position: absolute; inset: -7px; border-radius: 50%;
   background: conic-gradient(#888888,#ffffff,#aaaaaa,#eeeeee,#888888);
-  z-index: 1; animation: spin-slow 5s linear infinite;
+  z-index: -2; animation: spin-slow 5s linear infinite;
 }
 .av-master::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: 2;
+  content: ''; position: absolute; inset: -4px; border-radius: 50%; background: #0a0a0a; z-index: -1;
 }
 
 @keyframes spin-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }

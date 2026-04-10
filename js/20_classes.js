@@ -186,7 +186,7 @@ function getAvatarHtml(cls, borderColor, sizePx = 40, customAvatarStyle = undefi
   const displayUrl = cls.avatarSprite || cls.sprite;
   
   return `
-    <div class="player-avatar-container${avatarClass}" style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background-color: #1e293b; background-image: radial-gradient(circle, ${cls.color}44 0%, transparent 80%), url('${displayUrl}'); background-size: cover, ${bgSize}; background-position: center, ${bgPos}; background-repeat: no-repeat; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66; image-rendering: pixelated; transition: background-position 0.2s;">
+    <div class="player-avatar-container${avatarClass}" style="width:${sizePx}px; height:${sizePx}px; border-radius:50%; border:2px solid ${borderColor}; background-color: transparent; background-image: radial-gradient(circle, ${cls.color}44 0%, transparent 80%), url('${displayUrl}'); background-size: cover, ${bgSize}; background-position: center, ${bgPos}; background-repeat: no-repeat; box-shadow: 0 0 ${sizePx/4}px ${borderColor}66; image-rendering: pixelated; transition: background-position 0.2s;">
     </div>`;
 }
 

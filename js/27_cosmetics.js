@@ -53,9 +53,9 @@ function openProfileEditor() {
                     <div id="preview-avatar-container">
                         ${getAvatarHtml(playerClass, borderColor, 64)}
                     </div>
-                    <div style="flex:1;">
-                        <div id="preview-nick" class="${state.nick_style || ''}" style="font-family:'Press Start 2P',monospace; font-size:14px; margin-bottom:5px;">${currentNick}</div>
-                        <div style="font-size:10px; color:var(--gray);">Nivel ${state.trainerLevel} - ${playerClass?.name || 'Clase'}</div>
+                    <div style="flex:1; text-align:center;">
+                        <div id="preview-nick" class="${state.nick_style || ''}" style="font-family:'Press Start 2P',monospace; font-size:14px; margin-bottom:5px; text-align:center;">${currentNick}</div>
+                        <div style="font-size:10px; color:var(--gray); text-align:center;">Nivel ${state.trainerLevel} - ${playerClass?.name || 'Clase'}</div>
                     </div>
                 </div>
             </div>

@@ -638,7 +638,7 @@
         const nameEl = document.getElementById('profile-username');
         if (nameEl) {
           nameEl.textContent = profile?.username || '—';
-          nameEl.className = state.nick_style || '';
+          nameEl.className = 'profile-username ' + (state.nick_style || '');
           
           // Add Edit Button if it's the current user
           const existingEdit = document.getElementById('profile-edit-btn');
