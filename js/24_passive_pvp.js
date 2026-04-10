@@ -83,6 +83,34 @@ function getEloTier(elo) {
 const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'];
 const RANKED_MAX_TIER_GAP = 1; // No emparejar con diferencia de 2 o mas rangos
 
+const RANKED_REWARD_TRACK_MIN_ELO = 1000;
+const RANKED_REWARD_TRACK_MAX_ELO = 3400;
+
+const RANKED_REWARD_TIER_MARKS = [
+  { name: 'Bronce', elo: 1000, color: '#c8a060' },
+  { name: 'Plata', elo: 1200, color: '#9E9E9E' },
+  { name: 'Oro', elo: 1600, color: '#FFB800' },
+  { name: 'Platino', elo: 2100, color: '#E5C100' },
+  { name: 'Diamante', elo: 2700, color: '#89CFF0' },
+  { name: 'Maestro', elo: 3400, color: '#FFD700' }
+];
+
+const RANKED_REWARD_MILESTONES = [
+  { id: 'bronce_1000', tier: 'Bronce', elo: 1000, rewards: { 'Parche de naturaleza': 1 } },
+  { id: 'bronce_1100', tier: 'Bronce', elo: 1100, rewards: { 'Parche de naturaleza': 1 } },
+  { id: 'plata_1200', tier: 'Plata', elo: 1200, rewards: { 'Parche de naturaleza': 1, 'Caramelo de vigor': 1 } },
+  { id: 'plata_1400', tier: 'Plata', elo: 1400, rewards: { 'Parche de naturaleza': 2 } },
+  { id: 'oro_1600', tier: 'Oro', elo: 1600, rewards: { 'Caramelo de vigor': 2 } },
+  { id: 'oro_1800', tier: 'Oro', elo: 1800, rewards: { 'Parche de naturaleza': 2, 'Caramelo de vigor': 1 } },
+  { id: 'oro_2000', tier: 'Oro', elo: 2000, rewards: { 'Parche de naturaleza': 2 } },
+  { id: 'platino_2100', tier: 'Platino', elo: 2100, rewards: { 'Parche de naturaleza': 1, 'Caramelo de vigor': 2 } },
+  { id: 'platino_2400', tier: 'Platino', elo: 2400, rewards: { 'Parche de naturaleza': 2, 'Caramelo de vigor': 2 } },
+  { id: 'diamante_2700', tier: 'Diamante', elo: 2700, rewards: { 'P\u00edldora de cambio de habilidad': 1, 'Caramelo de vigor': 2 } },
+  { id: 'diamante_3000', tier: 'Diamante', elo: 3000, rewards: { 'Parche de naturaleza': 3, 'Caramelo de vigor': 2 } },
+  { id: 'diamante_3300', tier: 'Diamante', elo: 3300, rewards: { 'P\u00edldora de cambio de habilidad': 1 } },
+  { id: 'maestro_3400', tier: 'Maestro', elo: 3400, rewards: { 'P\u00edldora de cambio de habilidad': 2, 'Parche de naturaleza': 3, 'Caramelo de vigor': 3 } }
+];
+
 function getEloTierIndex(elo) {
   const tierName = getEloTier(Number(elo) || 0).name;
   const idx = RANKED_TIER_ORDER.indexOf(tierName);
@@ -331,6 +359,7 @@ async function loadPlayerElo() {
       draws: nextDraws
     };
 
+    const maxEloChanged = _ensureRankedRewardProgress();
     const delta = nextElo - previousElo;
     const totalBattlesDelta = (nextWins - previousWins) + (nextLosses - previousLosses) + (nextDraws - previousDraws);
     if (!_offlineEloSummaryShown && delta !== 0 && totalBattlesDelta > 0) {
@@ -343,7 +372,7 @@ async function loadPlayerElo() {
       _offlineEloSummaryShown = true;
     }
 
-    if (delta !== 0 && typeof scheduleSave === 'function') {
+    if ((delta !== 0 || maxEloChanged) && typeof scheduleSave === 'function') {
       scheduleSave();
     }
   }
@@ -405,6 +434,7 @@ function _renderRankedLeaderboardRows(rows = _rankedLeaderboardRows) {
 
   if (!Array.isArray(rows) || rows.length === 0) {
     listEl.innerHTML = '<div style="font-size:11px;color:var(--gray);padding:10px;">Aun no hay datos de ranking global.</div>';
+    _renderSeasonFinalRewardsCard();
     return;
   }
 
@@ -429,6 +459,8 @@ function _renderRankedLeaderboardRows(rows = _rankedLeaderboardRows) {
       </div>
     `;
   }).join('');
+
+  _renderSeasonFinalRewardsCard();
 }
 
 function _renderRankedLeaderboardStatus(isLoading = false) {
@@ -565,6 +597,9 @@ function initEloWatcher() {
           draws:  data.pvp_draws  || 0
         };
 
+        const maxEloChanged = _ensureRankedRewardProgress();
+        if (maxEloChanged && typeof scheduleSave === 'function') scheduleSave();
+
         // Si la pestaña de Ranked está visible, refrescar UI
         const tab = document.getElementById('tab-ranked');
         if (tab && tab.style.display !== 'none') {
@@ -576,7 +611,193 @@ function initEloWatcher() {
 }
 
 // ── Renderizar el tab Rankeds ─────────────────────────────────────────
+function _ensureRankedRewardProgress() {
+  let changed = false;
+
+  if (!Array.isArray(state.rankedRewardsClaimed)) {
+    if (state.rankedRewardsClaimed && typeof state.rankedRewardsClaimed === 'object') {
+      state.rankedRewardsClaimed = Object.keys(state.rankedRewardsClaimed).filter((k) => !!state.rankedRewardsClaimed[k]);
+    } else {
+      state.rankedRewardsClaimed = [];
+    }
+    changed = true;
+  }
+
+  const currentElo = Number(state.eloRating) || RANKED_REWARD_TRACK_MIN_ELO;
+  const savedMax = Number(state.rankedMaxElo);
+  const normalizedSavedMax = Number.isFinite(savedMax)
+    ? Math.max(RANKED_REWARD_TRACK_MIN_ELO, Math.floor(savedMax))
+    : RANKED_REWARD_TRACK_MIN_ELO;
+
+  if (state.rankedMaxElo !== normalizedSavedMax) {
+    state.rankedMaxElo = normalizedSavedMax;
+    changed = true;
+  }
+
+  const nextMax = Math.max(state.rankedMaxElo, Math.floor(currentElo));
+  if (nextMax !== state.rankedMaxElo) {
+    state.rankedMaxElo = nextMax;
+    changed = true;
+  }
+
+  return changed;
+}
+
+function _rankedRewardProgressPct(eloValue) {
+  const clamped = Math.max(RANKED_REWARD_TRACK_MIN_ELO, Math.min(RANKED_REWARD_TRACK_MAX_ELO, Number(eloValue) || RANKED_REWARD_TRACK_MIN_ELO));
+  const span = RANKED_REWARD_TRACK_MAX_ELO - RANKED_REWARD_TRACK_MIN_ELO;
+  if (span <= 0) return 0;
+  return ((clamped - RANKED_REWARD_TRACK_MIN_ELO) / span) * 100;
+}
+
+function _renderRankedRewardsCard() {
+  const root = document.getElementById('ranked-rewards-track');
+  if (!root) return;
+
+  _ensureRankedRewardProgress();
+
+  const maxElo = Number(state.rankedMaxElo) || RANKED_REWARD_TRACK_MIN_ELO;
+  const claimed = new Set(Array.isArray(state.rankedRewardsClaimed) ? state.rankedRewardsClaimed : []);
+  const progress = _rankedRewardProgressPct(maxElo);
+  const nextMilestone = RANKED_REWARD_MILESTONES.find((m) => maxElo < m.elo) || null;
+
+  const marksHtml = RANKED_REWARD_TIER_MARKS.map((mark) => {
+    const markPct = _rankedRewardProgressPct(mark.elo);
+    return `<div style="position:absolute;left:${markPct}%;top:-8px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div style="width:10px;height:10px;border-radius:999px;border:2px solid ${mark.color};background:rgba(0,0,0,0.65);"></div>
+      <div style="font-size:8px;color:${mark.color};font-family:'Press Start 2P',monospace;white-space:nowrap;">${mark.name}</div>
+    </div>`;
+  }).join('');
+
+  const cardsHtml = RANKED_REWARD_MILESTONES.map((milestone) => {
+    const unlocked = maxElo >= milestone.elo;
+    const isClaimed = claimed.has(milestone.id);
+    const tier = getEloTier(milestone.elo);
+    const rewardText = Object.entries(milestone.rewards).map(([itemName, qty]) => {
+      const itemMeta = (typeof SHOP_ITEMS !== 'undefined' && Array.isArray(SHOP_ITEMS))
+        ? SHOP_ITEMS.find((it) => it.name === itemName)
+        : null;
+      const icon = itemMeta?.icon || '🎁';
+      return `${icon} ${itemName} x${qty}`;
+    }).join(' • ');
+
+    let actionHtml = `<div style="font-size:9px;color:var(--gray);font-family:'Press Start 2P',monospace;">BLOQUEADO</div>`;
+    if (isClaimed) {
+      actionHtml = `<div style="font-size:9px;color:var(--green);font-family:'Press Start 2P',monospace;">RECLAMADO</div>`;
+    } else if (unlocked) {
+      actionHtml = `<button onclick="claimRankedMilestoneReward('${milestone.id}')" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:8px 10px;border:none;border-radius:10px;cursor:pointer;background:rgba(107,203,119,0.2);color:var(--green);border:1px solid rgba(107,203,119,0.35);">RECLAMAR</button>`;
+    }
+
+    return `<div style="border:1px solid ${unlocked ? 'rgba(107,203,119,0.35)' : 'rgba(255,255,255,0.1)'};background:${isClaimed ? 'rgba(107,203,119,0.08)' : unlocked ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.25)'};border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:240px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div style="font-size:10px;color:${tier.color};font-weight:700;">${tier.icon} ${milestone.tier}</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);">ELO ${milestone.elo}</div>
+      </div>
+      <div style="font-size:11px;color:#fff;line-height:1.5;">${rewardText}</div>
+      <div>${actionHtml}</div>
+    </div>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px;">
+      <div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:6px;">PROGRESO DE TEMPORADA</div>
+        <div style="font-size:11px;color:var(--gray);">Tu maximo ELO alcanzado: <span style="color:#fff;font-weight:700;">${maxElo}</span></div>
+      </div>
+      <div style="font-size:10px;color:var(--gray);">${nextMilestone ? `Proximo hito: ELO ${nextMilestone.elo}` : 'Todos los hitos desbloqueados'}</div>
+    </div>
+
+    <div style="position:relative;margin:16px 2px 14px;height:30px;">
+      <div style="position:absolute;left:0;right:0;top:8px;height:8px;border-radius:999px;background:rgba(255,255,255,0.12);overflow:hidden;border:1px solid rgba(255,255,255,0.16);">
+        <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#c8a060,#9E9E9E,#FFB800,#E5C100,#89CFF0,#FFD700);"></div>
+      </div>
+      ${marksHtml}
+    </div>
+
+    <div style="display:flex;gap:10px;overflow-x:auto;padding:4px 2px 2px;">${cardsHtml}</div>
+  `;
+}
+
+function _getMyLeaderboardRank(rows = _rankedLeaderboardRows) {
+  if (!currentUser || !Array.isArray(rows)) return null;
+  const idx = rows.findIndex((row) => row?.id === currentUser.id);
+  return idx >= 0 ? (idx + 1) : null;
+}
+
+function _renderSeasonFinalRewardsCard() {
+  const root = document.getElementById('ranked-season-final-rewards');
+  if (!root) return;
+
+  const myRank = _getMyLeaderboardRank();
+  let statusText = 'Aun no estas rankeado en el top global.';
+  let statusColor = 'var(--gray)';
+
+  if (myRank) {
+    if (myRank <= 10) {
+      statusText = `Tu posicion actual (#${myRank}) esta en rango TOP 10.`;
+      statusColor = 'var(--yellow)';
+    } else if (myRank <= 50) {
+      statusText = `Tu posicion actual (#${myRank}) esta en rango TOP 11-50.`;
+      statusColor = '#93c5fd';
+    } else {
+      statusText = `Tu posicion actual es #${myRank}.`;
+      statusColor = 'var(--gray)';
+    }
+  }
+
+  root.innerHTML = `
+    <div style="display:grid;gap:10px;">
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fde68a;margin-bottom:6px;">TOP 1 A TOP 10</div>
+        <div style="font-size:11px;color:#fff;line-height:1.6;">Eevee shiny perfecto (naturaleza aleatoria) + 2 Ticket Cueva Celeste + 2 Ticket Islas Espumas.</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#bfdbfe;margin-bottom:6px;">TOP 11 A TOP 50</div>
+        <div style="font-size:11px;color:#fff;line-height:1.6;">2 Ticket Cueva Celeste + 2 Ticket Islas Espumas.</div>
+      </div>
+      <div style="font-size:10px;color:${statusColor};line-height:1.5;">${statusText}</div>
+      <div style="font-size:10px;color:var(--gray);line-height:1.5;">Los premios se entregan al cerrar la temporada con el ranking oficial final.</div>
+    </div>
+  `;
+}
+
+window.claimRankedMilestoneReward = function(milestoneId) {
+  _ensureRankedRewardProgress();
+
+  const milestone = RANKED_REWARD_MILESTONES.find((m) => m.id === milestoneId);
+  if (!milestone) {
+    notify('No se encontro ese hito de premio.', '⚠️');
+    return;
+  }
+
+  const maxElo = Number(state.rankedMaxElo) || RANKED_REWARD_TRACK_MIN_ELO;
+  if (maxElo < milestone.elo) {
+    notify('Todavia no alcanzaste el ELO requerido para este premio.', '⚠️');
+    return;
+  }
+
+  const claimed = Array.isArray(state.rankedRewardsClaimed) ? state.rankedRewardsClaimed : [];
+  if (claimed.includes(milestone.id)) {
+    notify('Ese premio ya fue reclamado.', 'ℹ️');
+    return;
+  }
+
+  Object.entries(milestone.rewards).forEach(([itemName, qty]) => {
+    const amount = Math.max(1, Number(qty) || 1);
+    state.inventory[itemName] = (state.inventory[itemName] || 0) + amount;
+  });
+
+  state.rankedRewardsClaimed.push(milestone.id);
+
+  const rewardSummary = Object.entries(milestone.rewards).map(([itemName, qty]) => `${itemName} x${qty}`).join(', ');
+  notify(`Premio reclamado: ${rewardSummary}.`, '🎁');
+
+  _renderRankedRewardsCard();
+  if (typeof renderBag === 'function' && document.getElementById('tab-bag')?.style.display !== 'none') renderBag();
+  if (typeof scheduleSave === 'function') scheduleSave();
+};
 function renderRankedTab() {
+  _ensureRankedRewardProgress();
   const elo   = state.eloRating || 1000;
   const stats = state.pvpStats  || { wins: 0, losses: 0, draws: 0 };
   const tier  = getEloTier(elo);
@@ -623,6 +844,8 @@ function renderRankedTab() {
     _renderPassiveEditorRulesHint();
   }).catch(() => {});
 
+  _renderRankedRewardsCard();
+  _renderSeasonFinalRewardsCard();
   _renderRankedLeaderboardRows();
   _renderRankedLeaderboardStatus(false);
   initGlobalRankedLeaderboardWatcher();
@@ -1446,6 +1669,12 @@ async function reportPassiveBattleResult(opponentId, result) {
   if (result === 'win')  state.pvpStats.wins++;
   if (result === 'loss') state.pvpStats.losses++;
   if (result === 'draw') state.pvpStats.draws++;
+
+  const maxEloChanged = _ensureRankedRewardProgress();
+  if (maxEloChanged && typeof scheduleSave === 'function') scheduleSave();
+
+  const tab = document.getElementById('tab-ranked');
+  if (tab && tab.style.display !== 'none') renderRankedTab();
 
   const sign = delta >= 0 ? '+' : '';
   notify(`Resultado registrado. ELO: ${sign}${delta} → ${state.eloRating}`, '📊');

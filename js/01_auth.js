@@ -436,6 +436,12 @@
           losses: Number(state.pvpStats?.losses) || 0,
           draws: Number(state.pvpStats?.draws) || 0
         },
+        rankedMaxElo: Number.isFinite(Number(state.rankedMaxElo))
+          ? Math.max(1000, Math.floor(Number(state.rankedMaxElo)))
+          : Math.max(1000, Number(state.eloRating) || 1000),
+        rankedRewardsClaimed: Array.isArray(state.rankedRewardsClaimed)
+          ? Array.from(new Set(state.rankedRewardsClaimed.map(id => String(id))))
+          : [],
         passiveTeamUids: state.passiveTeamUids || [],
         passiveTeamActive: state.passiveTeamActive,
         activeBattle,
