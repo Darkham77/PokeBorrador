@@ -7,6 +7,265 @@
     const PVP_TURN_PICK_TIMEOUT_MS = 40000;
     const PVP_TURN_WARN_SECONDS = 10;
     const PVP_AFK_FORFEIT_GRACE_MS = 2500;
+    function _pvpEscHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function _pvpTrainerClassDef(classId) {
+      if (typeof PLAYER_CLASSES === 'undefined' || !classId) return null;
+      return PLAYER_CLASSES[classId] || null;
+    }
+
+    function _pvpTrainerSprite(classId) {
+      const cls = _pvpTrainerClassDef(classId);
+      if (cls?.sprite) return cls.sprite;
+      if (cls?.avatarSprite) return cls.avatarSprite;
+      return 'assets/sprites/trainers/entrenador.png';
+    }
+
+    function _pvpBuildTrainerSideHtml(meta, isEnemy) {
+      const safeName = _pvpEscHtml(meta?.username || (isEnemy ? 'Rival' : 'Tu perfil'));
+      const lvl = Math.max(1, Number(meta?.trainerLevel || 1));
+      const elo = Math.max(0, Number(meta?.elo || 1000));
+      const sprite = _pvpEscHtml(_pvpTrainerSprite(meta?.playerClass));
+      const tier = (typeof getEloTier === 'function') ? getEloTier(elo) : null;
+      const tierName = _pvpEscHtml(tier?.name || 'Bronce');
+      const tierColor = _pvpEscHtml(tier?.color || '#d6a36a');
+
+      return `
+        <div class="pvp-trainer-card ${isEnemy ? 'enemy' : 'ally'}">
+          <div class="pvp-trainer-head">${isEnemy ? 'RIVAL' : 'JUGADOR'}</div>
+          <div class="pvp-trainer-sprite-wrap">
+            <img class="pvp-trainer-sprite" src="${sprite}" alt="Trainer ${safeName}" loading="lazy">
+          </div>
+          <div class="pvp-trainer-name">${safeName}</div>
+          <div class="pvp-trainer-row"><span>Nivel</span><strong>${lvl}</strong></div>
+          <div class="pvp-trainer-row"><span>ELO</span><strong style="color:${tierColor};">${elo}</strong></div>
+          <div class="pvp-trainer-tier" style="border-color:${tierColor};color:${tierColor};">${tierName}</div>
+        </div>`;
+    }
+
+    function _pvpEnsureRankedSidebarStyles() {
+      if (document.getElementById('pvp-ranked-sidebar-style')) return;
+      const st = document.createElement('style');
+      st.id = 'pvp-ranked-sidebar-style';
+      st.textContent = `
+        #pvp-overlay .pvp-ranked-shell {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: stretch;
+        }
+
+        #pvp-overlay .pvp-ranked-shell .pvp-trainer-side {
+          display: none;
+        }
+
+        #pvp-overlay .pvp-trainer-card {
+          background: linear-gradient(180deg, rgba(19, 28, 44, 0.96), rgba(12, 18, 30, 0.96));
+          border: 1px solid rgba(148, 163, 184, 0.26);
+          border-radius: 18px;
+          padding: 14px;
+          box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          min-height: 320px;
+        }
+
+        #pvp-overlay .pvp-trainer-head {
+          font-family: 'Press Start 2P', monospace;
+          font-size: 8px;
+          color: #93c5fd;
+          opacity: 0.9;
+          letter-spacing: 0.6px;
+        }
+
+        #pvp-overlay .pvp-trainer-sprite-wrap {
+          height: 170px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.18), rgba(0, 0, 0, 0.2));
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          overflow: hidden;
+        }
+
+        #pvp-overlay .pvp-trainer-sprite {
+          max-height: 165px;
+          max-width: 100%;
+          object-fit: contain;
+          image-rendering: pixelated;
+          filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.5));
+        }
+
+        #pvp-overlay .pvp-trainer-name {
+          font-family: 'Press Start 2P', monospace;
+          font-size: 10px;
+          line-height: 1.25;
+          color: #f8fafc;
+          word-break: break-word;
+        }
+
+        #pvp-overlay .pvp-trainer-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 12px;
+          color: #cbd5e1;
+          border-top: 1px dashed rgba(148, 163, 184, 0.24);
+          padding-top: 6px;
+        }
+
+        #pvp-overlay .pvp-trainer-row strong {
+          font-family: 'Press Start 2P', monospace;
+          font-size: 10px;
+          color: #e2e8f0;
+        }
+
+        #pvp-overlay .pvp-trainer-tier {
+          margin-top: auto;
+          align-self: flex-start;
+          border: 1px solid;
+          border-radius: 999px;
+          padding: 4px 10px;
+          font-size: 10px;
+          font-weight: 800;
+          background: rgba(0, 0, 0, 0.25);
+        }
+
+        #pvp-overlay .pvp-trainer-side-right .pvp-trainer-card {
+          text-align: right;
+        }
+
+        #pvp-overlay .pvp-trainer-side-right .pvp-trainer-tier {
+          align-self: flex-end;
+        }
+
+        @media (min-width: 1320px) {
+          #pvp-overlay .pvp-ranked-shell.ranked {
+            width: min(1700px, 98vw);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 220px minmax(900px, 1100px) 220px;
+            gap: 18px;
+            align-items: stretch;
+          }
+
+          #pvp-overlay .pvp-ranked-shell.ranked .pvp-trainer-side {
+            display: flex;
+            align-items: stretch;
+          }
+
+          #pvp-overlay .pvp-ranked-shell.ranked .battle-container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0;
+          }
+        }
+      `;
+      document.head.appendChild(st);
+    }
+
+    function _pvpRenderRankedSidebars() {
+      const left = document.getElementById('pvp-side-left');
+      const right = document.getElementById('pvp-side-right');
+      if (!left || !right) return;
+
+      if (!_pvpState || !_pvpState.isRanked) {
+        left.innerHTML = '';
+        right.innerHTML = '';
+        return;
+      }
+
+      const fallbackMe = {
+        username: state?.trainer || 'Jugador',
+        trainerLevel: Number(state?.trainerLevel || 1),
+        elo: Number(state?.eloRating || 1000),
+        playerClass: state?.playerClass || null
+      };
+      const fallbackEnemy = {
+        username: _pvpState.enemyUsername || 'Rival',
+        trainerLevel: 1,
+        elo: Number(_pvpState.enemyElo || 1000),
+        playerClass: null
+      };
+
+      const meMeta = _pvpState._sideMeta?.me || fallbackMe;
+      const enemyMeta = _pvpState._sideMeta?.enemy || fallbackEnemy;
+
+      left.innerHTML = _pvpBuildTrainerSideHtml(meMeta, false);
+      right.innerHTML = _pvpBuildTrainerSideHtml(enemyMeta, true);
+    }
+
+    async function _pvpLoadRankedSidebarMeta() {
+      if (!_pvpState || !_pvpState.isRanked || !currentUser?.id || !_pvpState.opponentId) return;
+
+      const meBase = {
+        username: state?.trainer || currentUser?.user_metadata?.username || 'Jugador',
+        trainerLevel: Number(state?.trainerLevel || 1),
+        elo: Number(state?.eloRating || _pvpState.enemyElo || 1000),
+        playerClass: state?.playerClass || null
+      };
+
+      const enemyBase = {
+        username: _pvpState.enemyUsername || 'Rival',
+        trainerLevel: 1,
+        elo: Number(_pvpState.enemyElo || 1000),
+        playerClass: null
+      };
+
+      _pvpState._sideMeta = { me: meBase, enemy: enemyBase };
+      _pvpRenderRankedSidebars();
+
+      try {
+        const ids = [currentUser.id, _pvpState.opponentId];
+        const [pRes, sRes] = await Promise.all([
+          sb.from('profiles').select('id,username,elo_rating').in('id', ids),
+          sb.from('game_saves').select('user_id,save_data').in('user_id', ids)
+        ]);
+
+        const profiles = Array.isArray(pRes?.data) ? pRes.data : [];
+        const saves = Array.isArray(sRes?.data) ? sRes.data : [];
+
+        const pMap = new Map(profiles.map(r => [r.id, r]));
+        const sMap = new Map(saves.map(r => [r.user_id, r.save_data || {}]));
+
+        const meProfile = pMap.get(currentUser.id) || {};
+        const enemyProfile = pMap.get(_pvpState.opponentId) || {};
+        const meSave = sMap.get(currentUser.id) || {};
+        const enemySave = sMap.get(_pvpState.opponentId) || {};
+
+        if (enemyProfile?.username) _pvpState.enemyUsername = enemyProfile.username;
+        if (Number.isFinite(Number(enemyProfile?.elo_rating))) _pvpState.enemyElo = Number(enemyProfile.elo_rating);
+
+        _pvpState._sideMeta = {
+          me: {
+            username: meProfile?.username || meBase.username,
+            trainerLevel: Number(state?.trainerLevel || meSave?.trainerLevel || meBase.trainerLevel || 1),
+            elo: Number(state?.eloRating || meProfile?.elo_rating || meBase.elo || 1000),
+            playerClass: state?.playerClass || meSave?.playerClass || meBase.playerClass || null
+          },
+          enemy: {
+            username: _pvpState.enemyUsername || enemyProfile?.username || enemyBase.username,
+            trainerLevel: Number(enemySave?.trainerLevel || enemyBase.trainerLevel || 1),
+            elo: Number(_pvpState.enemyElo || enemyProfile?.elo_rating || enemyBase.elo || 1000),
+            playerClass: enemySave?.playerClass || enemyBase.playerClass || null
+          }
+        };
+      } catch (e) {
+        console.warn('[PvP] sidebar metadata load failed:', e);
+      }
+
+      _pvpRenderRankedSidebars();
+    }
+
 
     function _pvpSetInputDeadline() {
       if (!_pvpState || _pvpState.over) return;
@@ -279,7 +538,7 @@ async function showPvpInvitePopup(invite) {
   if (!myTeam.length) { notify('No tenes Pokemon disponibles.', '\u26A0\uFE0F'); return; }
 
   const opponentId = isHost ? invite.opponent_id : invite.challenger_id;
-  const { data: _oppProf } = await sb.from('profiles').select('username').eq('id', opponentId).single();
+  const { data: _oppProf } = await sb.from('profiles').select('username,elo_rating').eq('id', opponentId).single();
       const enemyUsername = _oppProf?.username || 'Rival';
 
       _pvpState = {
@@ -287,7 +546,7 @@ async function showPvpInvitePopup(invite) {
         myActive: 0, enemyActive: 0,
         myTeam, enemyTeam: null,
         myHp: myTeam.map(p => p.hp), enemyHp: [],
-        over: false, channel: null, enemyUsername,
+        over: false, channel: null, enemyUsername, enemyElo: Number(_oppProf?.elo_rating || 1000), _sideMeta: null,
         phase: 'sync',
         myPick: null, enemyPick: null,
         myStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 },
@@ -306,6 +565,7 @@ async function showPvpInvitePopup(invite) {
         _battleAnnounced: false, // Flag to prevent log spam
       };
       _pvpLock = false;
+      _pvpLoadRankedSidebarMeta();
 
       const chName = 'pvp-' + invite.id;
       _pvpState.channel = sb.channel(chName, { config: { broadcast: { self: false } } });
@@ -314,7 +574,7 @@ async function showPvpInvitePopup(invite) {
       _pvpState.channel.subscribe(status => {
         if (status !== 'SUBSCRIBED') return;
         showPvpScreen();
-        state.activeBattle = { isPvP: true, inviteId: invite.id, isHost, isRanked, opponentId, enemyUsername, timestamp: Date.now() };
+        state.activeBattle = { isPvP: true, inviteId: invite.id, isHost, isRanked, opponentId, enemyUsername, enemyElo: _pvpState.enemyElo, timestamp: Date.now() };
         saveGame(false);
         _pvpStartHeartbeatLoop();
 
@@ -334,6 +594,8 @@ async function showPvpInvitePopup(invite) {
         isRanked: ab.isRanked === true, // Restaurar flag de Ranked
         opponentId: ab.opponentId,
         enemyUsername: ab.enemyUsername,
+        enemyElo: Number(ab.enemyElo || 1000),
+        _sideMeta: null,
         myActive: 0, enemyActive: 0,
         myTeam: state.team.map(p => JSON.parse(JSON.stringify(p))),
         enemyTeam: null,
@@ -353,6 +615,8 @@ async function showPvpInvitePopup(invite) {
         _opponentTimedOutAt: null,
         _afkGraceTimer: null
       };
+
+      _pvpLoadRankedSidebarMeta();
 
       const chName = 'pvp-' + ab.inviteId;
       _pvpState.channel = sb.channel(chName, { config: { broadcast: { self: false } } });
@@ -383,6 +647,8 @@ async function showPvpInvitePopup(invite) {
           _pvpState.phase = 'choosing';
           _pvpSetInputDeadline();
           renderPvpBattle();
+          _pvpEnsureRankedSidebarStyles();
+          _pvpRenderRankedSidebars();
           _pvpLoadSprites();
           
           if (!_pvpState._battleAnnounced) {
@@ -596,7 +862,9 @@ async function showPvpInvitePopup(invite) {
 
       // Usamos las clases oficiales .battle-container para asegurar responsividad móvil automática
       ov.innerHTML = `
-      <div class="battle-container" style="position:relative; overflow:visible;">
+      <div class="pvp-ranked-shell${_pvpState.isRanked ? ' ranked' : ''}">
+        <aside id="pvp-side-left" class="pvp-trainer-side pvp-trainer-side-left"></aside>
+        <div class="battle-container" style="position:relative; overflow:visible;">
         <div id="pvp-fight-header" style="position:absolute; top:-40px; right:0; z-index:30; pointer-events:none; display:flex; flex-direction:column; align-items:flex-end; gap:4px; opacity:0.9;">
           <div style="font-family:'Press Start 2P',monospace; font-size:6px; color:#fff; background:rgba(199,125,255,0.45); padding:4px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.25); backdrop-filter:blur(4px);">${_pvpState.isRanked ? 'RANKED' : 'AMISTOSO'}
           </div>
@@ -659,8 +927,12 @@ async function showPvpInvitePopup(invite) {
             </button>
           </div>
         </div>
+      </div>
+      <aside id="pvp-side-right" class="pvp-trainer-side pvp-trainer-side-right"></aside>
       </div>`;
 
+      _pvpEnsureRankedSidebarStyles();
+      _pvpRenderRankedSidebars();
       _pvpLoadSprites();
       _pvpRenderMoves();
 
@@ -778,6 +1050,7 @@ async function showPvpInvitePopup(invite) {
 
     function renderPvpBattle() {
       if (!_pvpState) return;
+      _pvpRenderRankedSidebars();
       const me = _pvpState.myTeam[_pvpState.myActive];
       const enemy = _pvpState.enemyTeam?.[_pvpState.enemyActive];
       const myHp = _pvpState.myHp[_pvpState.myActive] ?? me?.hp ?? 0;

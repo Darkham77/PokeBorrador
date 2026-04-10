@@ -3203,8 +3203,28 @@ function endBattle(won) {
     setLog(`¡${b.enemy.name} fue derrotado!`, 'log-player');
     if (!b.isPvP) awardBattleExperience();
 
-    // No material rewards or territory points in PVP
-    if (b.isPvP) return;
+    // No material rewards or territory points in PVP.
+    // Passive ranked battles still need the end-of-battle confirmation to exit cleanly.
+    if (b.isPvP) {
+      if (b.isPassivePvP) {
+        if (!state.stats) state.stats = {};
+        state.stats.battles = (state.stats.battles || 0) + 1;
+        state.stats.wins = (state.stats.wins || 0) + 1;
+        state.activeBattle = null;
+        if (typeof saveGame === 'function') saveGame(false);
+        else scheduleSave();
+        updateProfilePanel();
+        setBtns(false);
+        processLearnMoveQueue(b.learnQueue || [], () => {
+          showBattleEndUI(() => {
+            state.battle = null;
+            showScreen('game-screen');
+            showTab('map');
+          });
+        });
+      }
+      return;
+    }
 
     // Lógica de LOOT de Fósiles (5% chance en batallas de defensor)
     if (b.isDefenderBattle) {

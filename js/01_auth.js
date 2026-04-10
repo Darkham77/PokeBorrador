@@ -430,6 +430,12 @@
         lastGymAttempts: state.lastGymAttempts || {},
         starterChosen: state.starterChosen || false,
         stats: state.stats || {},
+        eloRating: Number.isFinite(Number(state.eloRating)) ? Number(state.eloRating) : 1000,
+        pvpStats: {
+          wins: Number(state.pvpStats?.wins) || 0,
+          losses: Number(state.pvpStats?.losses) || 0,
+          draws: Number(state.pvpStats?.draws) || 0
+        },
         passiveTeamUids: state.passiveTeamUids || [],
         passiveTeamActive: state.passiveTeamActive,
         activeBattle,
