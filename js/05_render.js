@@ -1042,6 +1042,12 @@ function updateHud() {
   document.getElementById('ball-count').textContent = state.balls;
   document.getElementById('trainer-level').textContent = state.trainerLevel;
 
+  const nameEl = document.getElementById('hud-name');
+  if (nameEl) {
+    nameEl.textContent = state.trainer || 'Entrenador';
+    nameEl.className = 'trainer-name' + (state.nick_style ? ' ' + state.nick_style : '');
+  }
+
   const moneyEl = document.getElementById('hud-money');
   if (moneyEl) moneyEl.textContent = (state.money || 0).toLocaleString();
 

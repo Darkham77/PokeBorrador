@@ -116,27 +116,29 @@
         }
 
         #pvp-overlay .pvp-trainer-sprite-wrap {
-          height: 240px;
-          border-radius: 20px;
-          background: radial-gradient(circle at 50% 40%, rgba(59, 130, 246, 0.12), transparent 70%);
+          height: 320px;
+          border-radius: 24px;
+          background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15), transparent 75%);
           display: flex;
-          align-items: flex-end;
+          align-items: center;
           justify-content: center;
           overflow: visible;
           position: relative;
         }
 
         #pvp-overlay .pvp-trainer-sprite {
-          max-height: 230px;
-          max-width: 130%;
+          max-height: 310px;
+          max-width: 150%;
           object-fit: contain;
           image-rendering: pixelated;
-          filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.8));
+          filter: drop-shadow(0 15px 45px rgba(0, 0, 0, 0.9));
           transition: transform 0.3s ease;
+          transform: scale(2.2);
+          transform-origin: center;
         }
         
         #pvp-overlay .pvp-trainer-card:hover .pvp-trainer-sprite {
-          transform: translateY(-5px) scale(1.02);
+          transform: scale(2.3) translateY(-5px);
         }
 
         #pvp-overlay .pvp-trainer-info-group {
