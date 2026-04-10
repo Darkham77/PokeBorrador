@@ -100,6 +100,31 @@ try {
     }
   });
 
+  // 4. Validate that all used 'effect: \'...\'' exist in getMoveDescription's effects dictionary
+  const effectsDictRegex = /const effects = {([^}]+)};/;
+  const effMatch = fileContent.match(effectsDictRegex);
+  if (effMatch) {
+    const effStr = effMatch[1];
+    const registeredEffs = new Set();
+    const effKeyRegex = /'([^']+)':/g;
+    let k;
+    while ((k = effKeyRegex.exec(effStr)) !== null) {
+      registeredEffs.add(k[1]);
+    }
+    
+    definedMoves.forEach((data, name) => {
+      const eMatch = data.content.match(/effect:\s*'([^']+)'/);
+      if (eMatch) {
+         const effectName = eMatch[1];
+         if (!registeredEffs.has(effectName)) {
+           semanticIssues.push(`- ${name} (Line: ${data.line}): Uses effect '${effectName}' which has no UI description in getMoveDescription.`);
+         }
+      }
+    });
+  } else {
+     semanticIssues.push(`- FATAL: Could not find 'const effects = {' block in getMoveDescription.`);
+  }
+
   if (semanticIssues.length > 0) {
     console.log("❌ SEMANTIC ISSUES FOUND:");
     semanticIssues.forEach(issue => console.log(issue));
