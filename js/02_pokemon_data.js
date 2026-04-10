@@ -1002,7 +1002,7 @@
         'Cuerpo Pesado': { power: 85, acc: 100, type: 'normal', cat: 'physical', pp: 15 },
         'Explosión': { power: 250, acc: 100, type: 'normal', cat: 'physical', pp: 5, selfKO: true },
         'Autodestrucción': { power: 200, acc: 100, type: 'normal', cat: 'physical', pp: 5, selfKO: true },
-        'Hiper Colmillo': { power: 65, acc: 95, type: 'normal', cat: 'physical', pp: 15 },
+        'Hiper Colmillo': { power: 65, acc: 95, type: 'normal', cat: 'physical', pp: 15, effect: 'flinch_10' },
         'Mordisco': { power: 60, acc: 100, type: 'dark', cat: 'physical', pp: 25, effect: 'flinch_30' },
         'Cuchillada': { power: 70, acc: 100, type: 'normal', cat: 'physical', pp: 30 },
         'Bofetón Lodo': { power: 20, acc: 100, type: 'ground', cat: 'special', pp: 20, effect: 'stat_down_enemy_acc' },

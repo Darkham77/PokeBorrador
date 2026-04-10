@@ -1,5 +1,5 @@
 ---
-description: Validates Pokémon move databases and battle logic
+description: Validates Pokémon move databases and battle logic with semantic and functional checks
 ---
 # Pokemon Move Validator Skill
 
@@ -7,13 +7,25 @@ This skill provides a mandatory checklist and reference for adding new Pokémon 
 
 ## Automated Validation
 
-When working with moves, you **MUST** run the automated validation script to ensure no Pokémon is assigned a move that isn't defined in the database:
+When working with moves, you **MUST** run the automated validation scripts to ensure no Pokémon is assigned a move that isn't defined in the database and that the logic is consistent:
 
+### 1. Structural & Semantic Check
 ```bash
 node .agents/skills/pokemon-move-validator/validator.js
 ```
+Checks for missing moves in `MOVE_DATA`, duplicates, and common semantic errors (e.g., status moves with power).
 
-If the script outputs missing moves, you must add them to the `MOVE_DATA` block in `js/02_pokemon_data.js` and, if they have unique effects, update `js/07_battle.js` and `getMoveDescription`.
+### 2. PokeAPI Semantic Sync
+```bash
+node .agents/skills/pokemon-move-validator/pokeapi_sync.js
+```
+Compares local `MOVE_DATA` with PokeAPI to detect missing effects, category mismatches, or incorrect `effect_chance`.
+
+### 3. Battle Integrity Check
+```bash
+node .agents/skills/pokemon-move-validator/check_battle_integrity.js
+```
+Ensures every `effect` string in `MOVE_DATA` has a corresponding `case` in `js/07_battle.js`.
 
 ## Core Schema for MOVE_DATA
 
@@ -37,35 +49,28 @@ Every entry in `MOVE_DATA` must follow this structure:
 }
 ```
 
-## Implementation Rules
+## Implementation Protocol
 
 ### 1. Category-Stat Alignment
 > [!IMPORTANT]
 > The battle engine automates stat selection based on the `cat` property.
 > - `cat: "special"`: Uses `spa` (Attacker) vs `spd` (Defender).
 > - `cat: "physical"`: Uses `atk` (Attacker) vs `def` (Defender).
-> If a move is Special but defined as `physical` (or vice-versa), it will result in incorrect damage.
 
 ### 2. Effect String Registry
-Before adding an `effect` string, verify it exists in `applyMoveEffect` (js/07_battle.js). Supported effects include:
-- **Status**: `burn`, `paralyze`, `poison`, `bad_poison`, `sleep`, `confuse`, `freeze`.
-- **Stat Buffs/Debuffs**: `stat_up_self_atk`, `stat_up_self_spa_2`, `stat_up_self_def_spd`, `stat_down_enemy_def`, `stat_down_enemy_spe_2`, etc.
-- **Healing**: `heal_50`, `heal_weather`, `rest`.
-- **Field**: `sun`, `rain`, `sandstorm`, `hail`, `reflect`, `light_screen`, `safeguard`.
-- **Protection & Evasion**: `protect`, `roar`.
-- **Trapping**: `bind`, `trap`, `curse` (Ghost-type version).
-- **Special Mechanics**: `always_hits` (Swift), `fixedDmg` (Dragon Rage), `magnitude` (Magnitude), `tri_attack` (Tri Attack).
+Before adding an `effect` string, verify it exists in `applyMoveEffect` (js/07_battle.js).
 
-### 3. Accuracy & Evasion
-> [!NOTE]
-> The game uses a 3/N scale (33% to 300%) for accuracy. Neutral is `acc * 1`.
-> To make a move **always hit** (e.g. Swift), set `acc: 1000` and `effect: "always_hits"`.
+### 3. Verification Protocol
+Before considering a move implemented, the agent **MUST**:
+1. Run `node unit_test_battle.js` to verify general battle logic.
+2. Verify that if a move is fixed damage (e.g., `halfHP`), the final damage variable is not overwritten by the standard formula.
+3. Check that `getMoveDescription` in `js/02_pokemon_data.js` properly describes the new effect.
 
 ## Audit Checklist (Zero Defect Integration)
 
-1. `[ ]` Have you run `node .agents/skills/pokemon-move-validator/validator.js` and confirmed 0 missing moves?
-2. `[ ]` Is the `cat` correct for the move's type? (e.g. Electric is Special in Gen 1-3).
-3. `[ ]` Does the `effect` string match an existing case in `js/07_battle.js` (`applyMoveEffect` or the battle switch flow)?
+1. `[ ]` Have you run `node .agents/skills/pokemon-move-validator/validator.js` and confirmed 0 errors?
+2. `[ ]` Have you run `node .agents/skills/pokemon-move-validator/pokeapi_sync.js` and verified effect consistency?
+3. `[ ]` Have you run `node .agents/skills/pokemon-move-validator/check_battle_integrity.js` to ensure no orphan effects?
 4. `[ ]` If the move is multi-hit, is `hits: 2` or `hits: '2-5'` set?
-5. `[ ]` If adding a new Pokémon, do its moves exist in `MOVE_DATA`?
-6. `[ ]` Are the descriptions for new effects properly translated in `getMoveDescription`?
+5. `[ ]` Are the descriptions for new effects properly translated in `getMoveDescription`?
+6. `[ ]` **Unit Test**: Have you simulated the move in `unit_test_battle.js`?
