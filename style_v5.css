@@ -6955,7 +6955,7 @@
 }
 @keyframes shimmer { from{background-position:0%} to{background-position:400%} }
 
-.nt-electric {
+.nt-spark, .nt-electric {
   font-family: 'Orbitron', monospace;
   font-weight: 900;
   color: #ffe040;
@@ -6971,6 +6971,50 @@
   96%  { text-shadow:-1px 0 #ff0040, 1px 0 #00ffcc; transform:translate(1px,-1px); }
   97%  { text-shadow:0 0 8px #ffe040; transform:translate(0); }
 }
+
+.nt-silver {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  background: linear-gradient(135deg, #e2e8f0 0%, #ffffff 50%, #94a3b8 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: silver-shine 3s ease infinite;
+  filter: drop-shadow(0 0 3px rgba(255,255,255,0.4));
+}
+@keyframes silver-shine { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+
+.nt-bronze {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  background: linear-gradient(135deg, #a85d38 0%, #fcd34d 50%, #78350f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+.nt-royal {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  background: linear-gradient(90deg, #d4af37, #fde68a, #d4af37);
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+  filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5));
+}
+
+.nt-ghost {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #a5f3fc;
+  text-shadow: 0 0 5px #22d3ee, 0 0 15px #0891b2;
+  animation: ghost-fade 2s ease-in-out infinite;
+}
+@keyframes ghost-fade { 0%,100%{opacity:1; transform:translateY(0)} 50%{opacity:0.4; transform:translateY(-2px)} }
 
 .nt-grass {
   font-family: 'Rajdhani', sans-serif;
@@ -7071,12 +7115,26 @@
 }
 
 /* --- Avatar Borders --- */
-.avatar-wrap {
+.player-avatar-container, .avatar-wrap {
   position: relative;
   display: flex; align-items: center; justify-content: center;
   transition: transform 0.25s ease;
 }
-.avatar-wrap:hover { transform: scale(1.06); }
+.player-avatar-container:hover, .avatar-wrap:hover { transform: scale(1.06); }
+
+/* Modal Overlay Fix */
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000 !important;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(10px);
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.3s ease;
+}
 
 .av-fire .avatar-img {
   box-shadow: 0 0 0 3px #ff4400, 0 0 0 5px #ff880060, 0 0 16px #ff440080;
