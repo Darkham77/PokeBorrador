@@ -1898,6 +1898,11 @@ function useMove(moveIndex) {
       animateDamage('enemy', b.enemy.hp <= 0);
       updateBattleUI();
 
+      if (b.player.hp <= 0) {
+        setTimeout(() => { endBattle(false); _battleLock = false; }, 900);
+        return;
+      }
+
       if (b.enemy.hp <= 0) {
         setTimeout(() => { endBattle(true); _battleLock = false; }, 900);
         return;

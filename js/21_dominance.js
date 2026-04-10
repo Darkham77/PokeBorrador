@@ -666,6 +666,11 @@ async function recordGuardianDefeat(mapId, ptsAwarded) {
     });
 
   await addWarPoints(mapId, 'guardian', true, Math.floor(ptsAwarded * 0.7));
+  
+  // Marcar localmente para evitar re-encuentros el mismo día
+  if (!state.dailyGuardianCaptures) state.dailyGuardianCaptures = [];
+  if (!state.dailyGuardianCaptures.includes(mapId)) state.dailyGuardianCaptures.push(mapId);
+  
   notify(`¡Guardián Derrotado! +${Math.floor(ptsAwarded * 0.7)} PT.`, '⚔️');
 }
 
