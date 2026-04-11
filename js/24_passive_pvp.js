@@ -1320,12 +1320,25 @@ function _renderPassiveEditor() {
 
     htmlPool += `
       <div onclick="if(typeof _selectPassiveEditorItem==='function')_selectPassiveEditorItem('${p.uid}')"
-      style="border:1px solid ${isPreviewing ? 'var(--purple)' : (isSelected ? 'var(--green)' : 'rgba(255,255,255,0.1)')};border-radius:8px;padding:4px;display:flex;flex-direction:column;align-items:center;cursor:pointer;background:${isPreviewing ? 'rgba(199,125,255,0.2)' : (isSelected ? 'rgba(107,203,119,0.1)' : 'rgba(0,0,0,0.3)')};opacity:${!isPreviewing && isSelected ? '0.5' : '1'};position:relative;">
-        <div style="position:absolute;top:2px;left:2px;background:${tierInfo.bg};color:${tierInfo.color};font-family:'Press Start 2P',monospace;font-size:6px;padding:1px 3px;border-radius:5px;border:1px solid ${tierInfo.color}55;line-height:1.2;">${tierInfo.tier}</div>
-        <img src="${poolSpriteUrl}" style="width:40px;height:40px;image-rendering:pixelated;" onerror="this.style.display='none'">
-        <div style="font-family:'Press Start 2P',monospace;font-size:6px;margin-top:2px;text-align:center;word-break:break-all;">Lv${p.level}</div>
+      style="border:1px solid ${isPreviewing ? 'var(--purple)' : (isSelected ? 'var(--green)' : 'rgba(255,255,255,0.08)')};
+             border-radius:12px;padding:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+             cursor:pointer;background:${isPreviewing ? 'rgba(199,125,255,0.15)' : (isSelected ? 'rgba(107,203,119,0.08)' : 'rgba(255,255,255,0.02)')};
+             transition:all 0.2s;position:relative;min-height:70px;box-sizing:border-box;">
+        
+        <div style="position:absolute;top:4px;left:4px;background:${tierInfo.bg};color:${tierInfo.color};font-family:'Press Start 2P',monospace;font-size:5px;padding:2px 4px;border-radius:4px;border:1px solid ${tierInfo.color}44;line-height:1;z-index:2;">${tierInfo.tier}</div>
+        
+        <div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;">
+          <img src="${poolSpriteUrl}" style="width:100%;height:100%;image-rendering:pixelated;object-fit:contain;filter:${isSelected && !isPreviewing ? 'grayscale(0.8)' : 'none'};" onerror="this.style.display='none'">
+        </div>
+        
+        <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:${isSelected ? 'var(--green)' : 'var(--gray)'};text-align:center;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+           Lv${p.level}
+        </div>
+
         ${heldItemHtml}
         ${tagsBadgeHtml}
+
+        ${isSelected ? `<div style="position:absolute;top:-4px;right:-4px;background:var(--green);border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;border:2px solid var(--card);box-shadow:0 2px 5px rgba(0,0,0,0.3);"><span style="color:#000;font-size:8px;font-weight:bold;">✓</span></div>` : ''}
       </div>
     `;
   });

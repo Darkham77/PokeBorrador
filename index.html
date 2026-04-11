@@ -593,26 +593,45 @@
 
           <!-- PASSIVE TEAM EDITOR MODAL -->
           <div id="passive-team-editor-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:900;align-items:center;justify-content:center;padding:16px;">
-            <div style="background:var(--card);max-width:400px;width:100%;border-radius:24px;border:1px solid rgba(107,203,119,0.3);padding:24px;max-height:85vh;overflow-y:auto;position:relative;">
-              <button onclick="closePassiveTeamEditor()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--red);font-size:24px;cursor:pointer;">✕</button>
-              <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);margin-bottom:16px;text-align:center;">ARMADOR PASIVO</div>
-              <div style="font-size:11px;color:var(--gray);margin-bottom:16px;text-align:center;line-height:1.4;">
-                Elegí 6 Pokémon para tu equipo Rankeds. Los IVs, Movimientos y Objetos Equipados en este momento quedarán guardados en esta "fotografía" incluso si después los alterás en tu mochila. ¡Pero cuidado! Si vendés o perdés un Pokémon el equipo fallará.
+            <div style="background:var(--card);max-width:440px;width:100%;border-radius:24px;border:1px solid rgba(107,203,119,0.3);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;position:relative;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+              
+              <!-- Header Part -->
+              <div style="padding:24px;padding-bottom:12px;position:relative;flex-shrink:0;">
+                <button onclick="closePassiveTeamEditor()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--red);font-size:24px;cursor:pointer;z-index:10;">✕</button>
+                <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--green);margin-bottom:12px;text-align:center;letter-spacing:1px;">ARMADOR PASIVO</div>
+                <div style="font-size:10px;color:rgba(255,255,255,0.6);margin-bottom:14px;text-align:center;line-height:1.4;padding:0 10px;">
+                  Tu equipo para Rankeds. Esta es una "fotografía" que se guarda con tus stats y objetos actuales.
+                </div>
+                <div id="passive-editor-rules-hint" style="font-size:9px;color:var(--blue);margin-bottom:12px;text-align:center;line-height:1.4;background:rgba(59,139,255,0.1);padding:8px;border-radius:10px;">Cargando reglas...</div>
+                
+                <div id="passive-editor-slots" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:12px;min-height:50px;background:rgba(255,255,255,0.03);padding:10px;border-radius:12px;border:1px dashed rgba(255,255,255,0.1);">
+                  <!-- Slots (max 6) -->
+                </div>
+                
+                <div id="passive-editor-preview" style="display:none;flex-direction:column;align-items:center;background:rgba(199,125,255,0.08);border:1px solid rgba(199,125,255,0.3);border-radius:14px;padding:12px;margin-bottom:8px;">
+                  <!-- Pokémon Info Preview -->
+                </div>
               </div>
-              <div id="passive-editor-rules-hint" style="font-size:10px;color:#c7d2fe;margin-bottom:10px;text-align:center;line-height:1.4;">Cargando reglas de temporada...</div>
-              <div id="passive-editor-slots" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:12px;min-height:50px;background:rgba(255,255,255,0.05);padding:10px;border-radius:12px;">
-                <!-- Slots (max 6) -->
+
+              <!-- Scrollable Body (Pool) -->
+              <div style="flex:1;overflow-y:auto;padding:0 24px;margin-bottom:16px;scrollbar-width: thin;scrollbar-color: var(--purple) transparent;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+                  <span style="width:12px;height:1px;background:var(--yellow);flex:1;"></span>
+                  TU EQUIPO / CAJA
+                  <span style="width:12px;height:1px;background:var(--yellow);flex:1;"></span>
+                </div>
+                <div id="passive-editor-pool" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(62px, 1fr));gap:8px;padding-bottom:10px;">
+                  <!-- Pool de Pokemons -->
+                </div>
               </div>
-              <div id="passive-editor-preview" style="display:none;flex-direction:column;align-items:center;background:rgba(0,0,0,0.5);border:1px solid var(--purple);border-radius:12px;padding:12px;margin-bottom:16px;">
-                <!-- Pokémon Info Preview -->
+
+              <!-- Footer (Fixed Action) -->
+              <div style="padding:0 24px 24px 24px;flex-shrink:0;">
+                <button onclick="confirmPassiveTeamEdit()" style="width:100%;font-family:'Press Start 2P',monospace;font-size:9px;padding:16px;border:none;border-radius:16px;cursor:pointer;background:var(--green);color:#000;box-shadow:0 4px 15px rgba(107,203,119,0.3);font-weight:900;">
+                  💾 GUARDAR EQUIPO RANKED
+                </button>
               </div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--yellow);margin-bottom:8px;">TU EQUIPO / CAJA</div>
-              <div id="passive-editor-pool" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-height:200px;overflow-y:auto;padding-right:4px;">
-                <!-- Pool de Pokemons -->
-              </div>
-              <button onclick="confirmPassiveTeamEdit()" style="width:100%;font-family:'Press Start 2P',monospace;font-size:9px;padding:14px;border:none;border-radius:14px;cursor:pointer;background:var(--green);color:#000;margin-top:20px;">
-                💾 GUARDAR EQUIPO RANKED
-              </button>
+
             </div>
           </div>
 
