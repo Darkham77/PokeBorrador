@@ -469,6 +469,37 @@ async function calculateUserWeeklyContribution(weekId) {
   return total;
 }
 
+// ── SISTEMA DE RECUPERACIÓN PROTEGIDA (CAP DE 3000 PT) ──
+async function syncLocalWarPointsToServer() {
+  const userId = window.currentUser?.id;
+  if (!userId) return;
+  const current = getCurrentWeekId();
+  if (current !== '2026-W14' && current !== '2026-04-06') return;
+
+  const localPts = (state.warMyPtsLocal?.[current]) || 0;
+  if (localPts <= 0) return;
+
+  const dbPts = await calculateUserWeeklyContribution();
+  const diff = localPts - dbPts;
+
+  if (diff > 1) {
+    const cappedDiff = Math.min(diff, 3000); 
+    console.log(`[WAR] Sincronización Protegida: Subiendo ${cappedDiff} PT...`);
+    
+    const { error } = await window.sb.from('war_user_points').insert({
+      user_id: userId,
+      week_id: current,
+      map_id: 'emergency_recovery_sync',
+      points: cappedDiff
+    });
+    
+    if (!error) {
+      console.log('[WAR] Sincronización completada.');
+      renderWarPanel();
+    }
+  }
+}
+
 function getDefenseSlots(totalPoints) {
   // 1 Slot cada 700 puntos
   return Math.floor(totalPoints / 700);
@@ -887,6 +918,18 @@ async function renderWarPanel() {
       if (myContrDisp) {
         const finalPts = Math.max(myContr, localPts);
         myContrDisp.textContent = finalPts.toLocaleString() + ' PT';
+        
+        // Lógica de Sincronización Protegida
+        if (localPts > myContr && localPts > 0) {
+          // Si hay una discrepancia, intentamos una sincronización una sola vez
+          if (!window._warSyncing) {
+            window._warSyncing = true;
+            syncLocalWarPointsToServer().finally(() => {
+              window._warSyncing = false;
+            });
+          }
+        }
+
         // Sincronizar local si la BD tiene más (ej. sesión anterior)
         if (myContr > localPts) {
           if (!state.warMyPtsLocal) state.warMyPtsLocal = {};
@@ -1085,7 +1128,10 @@ function renderKantoWarGrid(ptsData, domData) {
 // ── SISTEMA DE DEFENSA DE FIN DE SEMANA ──
 
 async function openSelectDefensePokeModal(mapId) {
-  const myContr = await calculateUserWeeklyContribution();
+  // Mi contribución (Sincronizada con UI para permitir uso de puntos recuperados)
+  const dbContr = await calculateUserWeeklyContribution();
+  const localPts = (state.warMyPtsLocal?.[getCurrentWeekId()]) || 0;
+  const myContr = Math.max(dbContr, localPts);
   const maxSlots = getDefenseSlots(myContr);
   
   // Contar cuántos mapas ya estamos defendiendo esta semana (Reconciliado)
