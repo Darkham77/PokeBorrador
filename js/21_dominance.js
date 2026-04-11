@@ -861,10 +861,17 @@ async function renderWarPanel() {
         }
       }
 
-      // Slots de defensa (1 cada 4000 PT)
-      const slots = getDefenseSlots(myContr);
+      // Slots de defensa (1 cada 700 PT - Sincronizado con UI)
+      const finalPtsForSlots = Math.max(myContr, localPts);
+      const slots = getDefenseSlots(finalPtsForSlots);
       const slotsDisp = document.getElementById('war-defense-slots');
-      if (slotsDisp) slotsDisp.textContent = slots;
+      if (slotsDisp) {
+        let slotsHtml = slots.toString();
+        if (localPts > myContr) {
+          slotsHtml += ' <span style="font-size:7px; color:var(--yellow); vertical-align:middle;">(Sincronizando...)</span>';
+        }
+        slotsDisp.innerHTML = slotsHtml;
+      }
 
       // 5. Mostrar mis defensores si no es fase de disputa
       const defSection = document.getElementById('war-my-defenders-section');
@@ -1128,7 +1135,24 @@ async function confirmDefense(mapId, pokemonUid) {
   
   if (!confirm(`¿Estás seguro de enviar a ${p.name} a proteger ${mapName}? Quedará asignado allí hasta el lunes.`)) return;
   
-  try {
+    // ── SEGURIDAD ANTI-CHEAT ──
+    // Validamos que el usuario realmente tenga los puntos en la DB antes de insertar.
+    const dbContr = await calculateUserWeeklyContribution();
+    const dbSlots = getDefenseSlots(dbContr);
+    
+    const { data: activeDefenses } = await window.sb
+      .from('war_defenders')
+      .select('id')
+      .eq('user_id', window.currentUser.id)
+      .eq('week_id', getCurrentWeekId());
+    const currentUsed = activeDefenses?.length || 0;
+
+    if (currentUsed >= dbSlots) {
+      notify('Tus puntos están sincronizándose con el servidor. Por favor, espera unos segundos e intenta de nuevo.', '⏳');
+      return;
+    }
+    // ───────────────────────────
+
     // Adjuntar nivel del entrenador al objeto del Pokémon (evita errores de columna)
     const pWithLevel = JSON.parse(JSON.stringify(p));
     pWithLevel.trainer_level = state.trainerLevel || 1;
