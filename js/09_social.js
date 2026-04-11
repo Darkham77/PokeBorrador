@@ -140,8 +140,8 @@
         else if (level >= 10) borderColor = '#c0c0c0';
 
         return `<div class="friend-card">
-      <div class="friend-avatar" style="border:none;background:transparent;">
-        ${(typeof getAvatarHtml === 'function') ? getAvatarHtml(cls, borderColor, 56, save?.avatar_style) : '<div style="font-size:32px;">🧢</div>'}
+        <div class="friend-avatar" style="border:none;background:transparent;">
+        ${(typeof getAvatarHtml === 'function') ? getAvatarHtml(cls, borderColor, 44, null) : '<div style="font-size:32px;">🧢</div>'}
         <div class="online-dot ${isOnline ? '' : 'offline-dot'}"></div>
       </div>
       <div class="friend-info">
@@ -191,7 +191,7 @@
           let borderColor = '#cd7f32';
           if (level >= 20) borderColor = '#ffd700';
           else if (level >= 10) borderColor = '#c0c0c0';
-          avatarHtml = getAvatarHtml(cls, borderColor, 36, save.avatar_style);
+          avatarHtml = getAvatarHtml(cls, borderColor, 36, null);
         }
 
         return `
@@ -252,8 +252,8 @@
             if (level >= 20) borderColor = '#ffd700';
             else if (level >= 10) borderColor = '#c0c0c0';
             
-            // Usar avatar_style del perfil si existe
-            avatarHtml = getAvatarHtml(cls, borderColor, 40, p.avatar_style);
+            // Ignorar avatar_style por ahora (bloqueado)
+            avatarHtml = getAvatarHtml(cls, borderColor, 40, null);
           }
 
           let actionBtn = `<button class="friend-btn" style="background:rgba(199,125,255,0.2);color:var(--purple);border:1px solid rgba(199,125,255,0.3);"

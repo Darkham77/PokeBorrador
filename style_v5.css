@@ -7121,6 +7121,8 @@
   position: relative;
   display: flex; align-items: center; justify-content: center;
   transition: transform 0.25s ease;
+  aspect-ratio: 1/1;
+  flex-shrink: 0;
 }
 .player-avatar-container:hover, .avatar-wrap:hover { transform: scale(1.06); }
 
