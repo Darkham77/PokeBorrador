@@ -510,7 +510,7 @@ function addLog(msg, cls = '') {
 }
 
 // Shows "Continue" and "Return to city" buttons after battle and expands log
-function showBattleEndUI(callback, locId) {
+function showBattleEndUI(callback, locId, isDraw = false) {
   const log = document.getElementById('battle-log');
   const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
   if (!isDesktop) {
@@ -537,7 +537,15 @@ function showBattleEndUI(callback, locId) {
     if (actionRow) actionRow.style.display = '';
   };
 
-  if (locId) {
+  if (isDraw) {
+    mb.style.display = 'flex';
+    mb.style.flexDirection = 'column';
+    mb.innerHTML = '<button id="battle-continue-btn" class="battle-continue-btn-full" style="padding:14px;margin-top:4px;background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);border:none;border-radius:14px;color:#fff;font-family:inherit;font-size:12px;font-weight:bold;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(59,130,246,0.3);">▶ CONTINUAR (EMPATE)</button>';
+    document.getElementById('battle-continue-btn').onclick = () => {
+      resetLog();
+      callback(false);
+    };
+  } else if (locId) {
     mb.style.display = 'flex';
     mb.style.flexDirection = 'column';
     mb.innerHTML = `
@@ -1537,6 +1545,31 @@ function useMove(moveIndex) {
   }
 
   const playerFirst = playerActsFirst(b, move, eMove, enemyWillUseItem);
+
+  // --- DRAW CONDITION: No offensive moves left on both sides ---
+  const playerHasOffensive = b.player.moves.some(m => m.pp > 0 && MOVE_DATA[m.name]?.cat !== 'status') || 
+                             state.team.some(p => p.hp > 0 && p.moves.some(m => m.pp > 0 && MOVE_DATA[m.name]?.cat !== 'status'));
+  
+  const enemyHasOffensive = b.enemy.moves.some(m => m.pp > 0 && MOVE_DATA[m.name]?.cat !== 'status') || 
+                            (b.enemyTeam && b.enemyTeam.some(p => p.hp > 0 && p.moves.some(m => m.pp > 0 && MOVE_DATA[m.name]?.cat !== 'status')));
+
+  if (!playerHasOffensive && !enemyHasOffensive) {
+    addLog("¡Ambos equipos se quedaron sin movimientos ofensivos!", "log-info");
+    addLog("El combate termina en empate.", "log-info");
+    _battleLock = true;
+    setBtns(false);
+    setTimeout(() => {
+      if (b.isPassivePvP && b.passiveOpponentId && typeof reportPassiveBattleResult === 'function') {
+        reportPassiveBattleResult(b.passiveOpponentId, 'draw');
+      }
+      showBattleEndUI(() => {
+        state.battle = null;
+        showScreen('game-screen');
+        showTab('map');
+      }, true); // true for draw
+    }, 2000);
+    return;
+  }
 
   const runPlayerAction = (enemyAlreadyActed) => {
     // Check flinch

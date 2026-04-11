@@ -842,15 +842,21 @@ async function showPvpInvitePopup(invite) {
             pvpEnd(false, { reason: 'mutual_afk' });
           }
         })
-        .on('broadcast', { event: 'pvp_forfeit' }, () => {
+         .on('broadcast', { event: 'pvp_forfeit' }, () => {
           if (_pvpState.over) return;
           if (_pvpState._selfTimedOut) {
             pvpEnd(false, { reason: 'mutual_afk' });
             return;
           }
+          addPvpLog('¡El rival se ha rendido!', 'log-enemy');
           pvpEnd(true);
         })
-        .on('broadcast', { event: 'pvp_heartbeat' }, () => {
+        .on('broadcast', { event: 'pvp_draw' }, () => {
+          if (_pvpState.over) return;
+          addPvpLog('¡Combate terminado en empate por falta de movimientos!', 'log-info');
+          pvpEnd(false, { reason: 'draw_no_moves' });
+        })
+        .on('presence', { event: 'join' }, () => {
           if (_pvpState.over) return;
           _pvpState._lastActivityTime = Date.now();
           if (_pvpState._opponentDisconnected) {
@@ -1222,13 +1228,27 @@ async function showPvpInvitePopup(invite) {
     // ── Host: resolve the turn ───────────────────────────────────
     function _pvpResolve() {
       if (!_pvpState?.isHost || _pvpState.over || _pvpState.phase === 'resolving') return;
-      _pvpState.phase = 'resolving';
-      _pvpClearInputDeadline();
-      _pvpRenderMoves();
 
       const s = _pvpState;
       const hostPoke = s.myTeam[s.myActive];
       const clientPoke = s.enemyTeam[s.enemyActive];
+
+      // --- DRAW CONDITION: No offensive moves left on both sides ---
+      const hostHasOffensive = hostPoke.moves.some(m => m.pp > 0 && MOVE_DATA[m.name]?.cat !== 'status') || 
+                               s.myTeam.some((p, i) => i !== s.myActive && (s.myHp[i] ?? p.hp) > 0 && p.moves.some(m => m.pp > 0 && MOVE_DATA[m.name]?.cat !== 'status'));
+      
+      const clientHasOffensive = clientPoke.moves.some(m => m.pp > 0 && MOVE_DATA[m.name]?.cat !== 'status') || 
+                                 s.enemyTeam.some((p, i) => i !== s.enemyActive && (s.enemyHp[i] ?? p.hp) > 0 && p.moves.some(m => m.pp > 0 && MOVE_DATA[m.name]?.cat !== 'status'));
+
+      if (!hostHasOffensive && !clientHasOffensive) {
+        _pvpState.channel.send({ type: 'broadcast', event: 'pvp_draw', payload: { reason: 'no_offensive_moves' } });
+        pvpEnd(false, { reason: 'draw_no_moves' });
+        return;
+      }
+
+      _pvpState.phase = 'resolving';
+      _pvpClearInputDeadline();
+      _pvpRenderMoves();
       if (!s.myStages) s.myStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 };
       if (!s.enemyStages) s.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 };
 
@@ -1798,6 +1818,7 @@ async function showPvpInvitePopup(invite) {
       _pvpState.channel.unsubscribe();
 
       const isRanked = _pvpState.isRanked === true;
+      const isDraw = opts.reason === 'draw_no_moves';
       const reward = 0;
       state.money += reward;
       if (!state.stats) state.stats = {};
@@ -1805,10 +1826,15 @@ async function showPvpInvitePopup(invite) {
       if (!isRanked) {
         state.stats.pvpBattles = (state.stats.pvpBattles || 0) + 1;
         if (won) state.stats.pvpWins = (state.stats.pvpWins || 0) + 1;
+        if (isDraw) state.stats.pvpDraws = (state.stats.pvpDraws || 0) + 1;
       } else {
         // Enviar el resultado al RPC para batallas activas (usar el mismo RPC o un endpoint central)
         if (typeof reportPassiveBattleResult === 'function') {
-           const resultStr = isMutualAfk ? 'loss' : (won ? 'win' : 'loss');
+           let resultStr = 'loss';
+           if (isDraw) resultStr = 'draw';
+           else if (won) resultStr = 'win';
+           else if (isMutualAfk) resultStr = 'loss';
+
            reportPassiveBattleResult(_pvpState.opponentId, resultStr);
         }
       }
@@ -1824,26 +1850,48 @@ async function showPvpInvitePopup(invite) {
         result.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;';
         
         if (isRanked) {
+          let title = won ? '¡VICTORIA RANKED!' : '¡DERROTA RANKED!';
+          let icon = won ? '🏅' : '💔';
+          let color = won ? 'var(--yellow)' : 'var(--red)';
+          let subtext = isMutualAfk ? 'Ninguno eligio movimiento a tiempo.<br>Se desconto ELO a ambos jugadores.' : 'Tus puntuaciones de ELO han sido actualizadas.<br>Comprueba tu perfil.';
+
+          if (isDraw) {
+            title = '¡EMPATE RANKED!';
+            icon = '🤝';
+            color = 'var(--blue)';
+            subtext = 'Ambos equipos se quedaron sin movimientos ofensivos.<br>El combate termina en empate.';
+          }
+
           result.innerHTML = `
-            <div style="font-size:64px;margin-bottom:16px;">${won ? '🏅' : '💔'}</div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${won ? 'var(--yellow)' : 'var(--red)'};margin-bottom:12px;">
-              ${won ? '¡VICTORIA RANKED!' : '¡DERROTA RANKED!'}
+            <div style="font-size:64px;margin-bottom:16px;">${icon}</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${color};margin-bottom:12px;">
+              ${title}
             </div>
             <div style="font-size:11px;color:#aaa;margin-bottom:24px;text-align:center;padding:0 20px;">
-              ${isMutualAfk ? 'Ninguno eligio movimiento a tiempo.<br>Se desconto ELO a ambos jugadores.' : 'Tus puntuaciones de ELO han sido actualizadas.<br>Comprueba tu perfil.'}
+              ${subtext}
             </div>
             <button onclick="closePvpOverlay()" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 24px;
               border:none;border-radius:14px;cursor:pointer;background:var(--purple);color:#fff;">
               CONTINUAR
             </button>`;
         } else {
+          let title = won ? '¡VICTORIA AMISTOSA!' : '¡BUEN COMBATE!';
+          let icon = won ? '🏆' : '🤝';
+          let color = won ? 'var(--yellow)' : 'var(--blue)';
+          let subtext = 'Las batallas entre amigos son para divertirse.<br>No se gana ni se pierde dinero/ELO.';
+
+          if (isDraw) {
+            title = '¡EMPATE AMISTOSO!';
+            subtext = 'Ambos equipos se quedaron sin movimientos ofensivos.<br>No hay ganador.';
+          }
+
           result.innerHTML = `
-            <div style="font-size:64px;margin-bottom:16px;">${won ? '🏆' : '🤝'}</div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${won ? 'var(--yellow)' : 'var(--blue)'};margin-bottom:12px;">
-              ${won ? '¡VICTORIA AMISTOSA!' : '¡BUEN COMBATE!'}
+            <div style="font-size:64px;margin-bottom:16px;">${icon}</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${color};margin-bottom:12px;">
+              ${title}
             </div>
             <div style="font-size:11px;color:#aaa;margin-bottom:24px;text-align:center;padding:0 20px;">
-              Las batallas entre amigos son para divertirse.<br>No se gana ni se pierde dinero/ELO.
+              ${subtext}
             </div>
             <button onclick="closePvpOverlay()" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:14px 24px;
               border:none;border-radius:14px;cursor:pointer;background:var(--purple);color:#fff;">
