@@ -764,6 +764,8 @@ function renderWarTab() {
 async function renderWarPanel() {
   await resolveWeekIfNeeded();
   const ids = getAllCurrentWeekIds();
+  const dispute = isDisputePhase();
+  const userId = window.currentUser?.id;
 
   // 1. Banner de Fase y Countdown
   const banner = document.getElementById('war-phase-banner');
