@@ -1,4 +1,4 @@
-// ===== CHAT SYSTEM =====
+﻿// ===== CHAT SYSTEM =====
 // Friend chat (realtime inbox/outbox) + Global chat (DB persisted, max 50)
 
 let _chatInboxChannel = null;
@@ -384,23 +384,12 @@ function _ensureGlobalChatStyles() {
     .gc-nick {
       border: none;
       background: transparent;
-      color: #93c5fd; 
+      color: #93c5fd;
+      font-weight: 700;
       padding: 0;
       margin: 0;
       cursor: pointer;
-      font-size: 13px;
-      font-family: inherit;
-      transition: filter 0.2s;
-    }
-    .gc-nick:hover { filter: brightness(1.2); }
-    /* Estilo por defecto si no hay clase cosmética */
-    .gc-nick:not([class*="nt-"]) {
-      font-family: 'Press Start 2P', monospace;
       font-size: 11px;
-    }
-    .gc-nick[class*="nt-"] { 
-      color: transparent !important;
-      -webkit-text-fill-color: transparent !important;
     }
 
     .gc-colon { color: #9ca3af; font-weight: 700; margin-right: 3px; }
@@ -545,12 +534,7 @@ async function _initGlobalChat() {
       event: 'INSERT',
       schema: 'public',
       table: 'global_chat_messages'
-    }, async ({ new: row }) => {
-      // If row is missing metadata, try to fetch it from profiles immediately
-      if (!row.username || !row.nick_style) {
-        const { data: prof } = await sb.from('profiles').select('*').eq('id', row.user_id).single();
-        if (prof) row.profiles = prof;
-      }
+    }, ({ new: row }) => {
       _appendGlobalChatMessage(row, false);
     })
     .subscribe();
@@ -594,7 +578,7 @@ function _globalChatAvatarHtml(msg) {
   if (typeof getAvatarHtml === 'function' && typeof PLAYER_CLASSES !== 'undefined') {
     const clsId = msg?.player_class || null;
     const cls = clsId ? PLAYER_CLASSES[clsId] : null;
-    return getAvatarHtml(cls, borderColor, 26, msg.avatar_style);
+    return getAvatarHtml(cls, borderColor, 26);
   }
 
   return '<div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.15);font-size:13px;">👤</div>';
@@ -635,12 +619,7 @@ function _renderGlobalChatMessages(forceBottom) {
 
     const avatar = document.createElement('div');
     avatar.className = 'gc-avatar';
-    
-    // Fallback data if row is missing metadata
-    const msgCopy = { ...msg };
-    if (!msgCopy.username) msgCopy.username = 'Entrenador';
-    
-    avatar.innerHTML = _globalChatAvatarHtml(msgCopy);
+    avatar.innerHTML = _globalChatAvatarHtml(msg);
 
     const body = document.createElement('div');
     body.className = 'gc-msg';
@@ -648,17 +627,16 @@ function _renderGlobalChatMessages(forceBottom) {
     const line = document.createElement('div');
     line.className = 'gc-line';
 
-    const nickText = (msgCopy.username || 'Entrenador').trim() || 'Entrenador';
-    const nickBtn = document.createElement('span');
-    nickBtn.className = 'gc-nick' + (msgCopy.nick_style ? ' ' + msgCopy.nick_style : '');
-    nickBtn.style.cursor = 'pointer';
-    nickBtn.textContent = nickText;
+    const nickBtn = document.createElement('button');
+    nickBtn.className = 'gc-nick';
+    nickBtn.type = 'button';
+    nickBtn.textContent = msg.username || 'Entrenador';
     nickBtn.addEventListener('click', () => {
       openGlobalChatProfile(
-        msgCopy.user_id,
-        nickText,
-        msgCopy.player_class || null,
-        Number(msgCopy.trainer_level || 1)
+        msg.user_id,
+        msg.username || 'Entrenador',
+        msg.player_class || null,
+        Number(msg.trainer_level || 1)
       );
     });
 
@@ -723,9 +701,7 @@ function toggleGlobalChat(forceState) {
   if (shouldOpen) {
     _refreshGlobalChatComposerState();
     _renderGlobalChatMessages(true);
-    if (!_isMobileForGlobalChat()) {
-      document.getElementById('global-chat-input')?.focus();
-    }
+    document.getElementById('global-chat-input')?.focus();
   }
 }
 
@@ -757,9 +733,7 @@ async function sendGlobalChatMessage() {
       username: state?.trainer || currentUser?.user_metadata?.username || 'Entrenador',
       message,
       player_class: state?.playerClass || null,
-      trainer_level: level,
-      nick_style: state.nick_style || null,
-      avatar_style: state.avatar_style || null
+      trainer_level: level
     };
 
     const { data, error } = await sb
@@ -813,7 +787,7 @@ async function openGlobalChatProfile(userId, fallbackUsername, fallbackClass, fa
   document.body.appendChild(overlay);
 
   const [profileRes, saveRes] = await Promise.all([
-    sb.from('profiles').select('id,username,nick_style,avatar_style').eq('id', userId).maybeSingle(),
+    sb.from('profiles').select('id,username').eq('id', userId).maybeSingle(),
     sb.from('game_saves').select('save_data').eq('user_id', userId).maybeSingle()
   ]);
 
@@ -823,8 +797,6 @@ async function openGlobalChatProfile(userId, fallbackUsername, fallbackClass, fa
   const username = profile?.username || fallbackUsername || 'Entrenador';
   const playerClass = save?.playerClass || fallbackClass || null;
   const trainerLevel = Number(save?.trainerLevel || fallbackLevel || 1);
-  const nickStyle = profile?.nick_style || null;
-  const avatarStyle = profile?.avatar_style || null;
 
   let relation = null;
   if (currentUser && userId !== currentUser.id) {
@@ -837,15 +809,10 @@ async function openGlobalChatProfile(userId, fallbackUsername, fallbackClass, fa
 
   const avatarWrap = document.createElement('div');
   avatarWrap.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-bottom:12px;';
-  avatarWrap.innerHTML = _globalChatAvatarHtml({ 
-    player_class: playerClass, 
-    trainer_level: trainerLevel,
-    avatar_style: avatarStyle
-  });
+  avatarWrap.innerHTML = _globalChatAvatarHtml({ player_class: playerClass, trainer_level: trainerLevel });
 
   const nameEl = document.createElement('div');
-  nameEl.className = nickStyle ? nickStyle : '';
-  nameEl.style.cssText = 'font-size:16px;font-weight:700;margin-bottom:6px;text-align:center;';
+  nameEl.style.cssText = 'font-size:14px;font-weight:700;margin-bottom:6px;text-align:center;';
   nameEl.textContent = username;
 
   const classLabel = (typeof PLAYER_CLASSES !== 'undefined' && playerClass && PLAYER_CLASSES[playerClass])

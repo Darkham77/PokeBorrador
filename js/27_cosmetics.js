@@ -28,76 +28,37 @@ const AVATAR_STYLES = [
 ];
 
 function openProfileEditor() {
-    const ov = document.createElement('div');
-    ov.id = 'profile-editor-overlay';
-    ov.className = 'custom-modal-overlay';
-    ov.style.zIndex = '10005';
-    
-    // Preview state template
-    const currentNick = state.trainer || 'Entrenador';
-    const playerClassId = state.playerClass || null;
-    const playerClass = PLAYER_CLASSES[playerClassId] || null;
-    const borderColor = '#3b82f6'; // Default if no level logic etc
+    if (document.getElementById('profile-editor-overlay')) return;
 
-    ov.innerHTML = `
-        <div class="custom-modal-content" style="max-width: 500px; padding: 25px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <h2 style="font-family:'Press Start 2P',monospace; font-size:12px; color:var(--yellow); margin:0;">EDITAR PERFIL</h2>
-                <button onclick="this.closest('#profile-editor-overlay').remove()" style="background:none; border:none; color:var(--gray); cursor:pointer; font-size:20px;">&times;</button>
-            </div>
+    const overlay = document.createElement('div');
+    overlay.id = 'profile-editor-overlay';
+    overlay.className = 'custom-modal-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(10px);';
 
-            <!-- PREVIEW AREA -->
-            <div style="background:rgba(0,0,0,0.3); border-radius:18px; padding:20px; margin-bottom:25px; display:flex; flex-direction:column; align-items:center; gap:15px; border:1px solid rgba(255,255,255,0.05);">
-                <div style="font-size:8px; color:var(--gray); text-transform:uppercase; font-family:'Press Start 2P',monospace;">Vista Previa</div>
-                <div id="cosmetic-preview" style="display:flex; align-items:center; gap:20px; padding:15px; background:rgba(255,255,255,0.02); border-radius:14px; width:100\%; box-sizing:border-box;">
-                    <div id="preview-avatar-container">
-                        ${getAvatarHtml(playerClass, borderColor, 64)}
-                    </div>
-                    <div style="flex:1; text-align:center;">
-                        <div id="preview-nick" class="${state.nick_style || ''}" style="font-family:'Press Start 2P',monospace; font-size:14px; margin-bottom:5px; text-align:center;">${currentNick}</div>
-                        <div style="font-size:10px; color:var(--gray); text-align:center;">Nivel ${state.trainerLevel} - ${playerClass?.name || 'Clase'}</div>
-                    </div>
-                </div>
-            </div>
+    const modal = document.createElement('div');
+    modal.style.cssText = 'width:min(450px,95vw);background:#1a2235;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:24px;position:relative;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);';
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                <!-- NICK STYLES -->
-                <div>
-                    <label style="display:block; font-size:10px; color:var(--gray); margin-bottom:10px; font-weight:bold;">ESTILO DE NOMBRE</label>
-                    <div style="display:flex; flex-direction:column; gap:8px; max-height: 250px; overflow-y:auto; padding-right:5px;">
-                        ${NICK_STYLES.map(s => `
-                            <div onclick="previewCosmetic('nick', '${s.id}')" style="background:${state.nick_style === s.id ? 'rgba(255,217,61,0.1)' : 'rgba(255,255,255,0.05)'}; border:1px solid ${state.nick_style === s.id ? 'var(--yellow)' : 'rgba(255,255,255,0.1)'}; padding:10px; border-radius:10px; cursor:pointer; transition:all 0.2s;" class="cosmetic-option ${state.nick_style === s.id ? 'active' : ''}" data-type="nick" data-id="${s.id}">
-                                <div class="${s.class}" style="font-size:11px; font-weight:bold;">${s.name}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-
-                <!-- AVATAR STYLES -->
-                <div>
-                    <label style="display:block; font-size:10px; color:var(--gray); margin-bottom:10px; font-weight:bold;">BORDE DE AVATAR</label>
-                    <div style="display:flex; flex-direction:column; gap:8px; max-height: 250px; overflow-y:auto; padding-right:5px;">
-                        ${AVATAR_STYLES.map(s => `
-                            <div onclick="previewCosmetic('avatar', '${s.id}')" style="background:${state.avatar_style === s.id ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)'}; border:1px solid ${state.avatar_style === s.id ? 'var(--blue)' : 'rgba(255,255,255,0.1)'}; padding:10px; border-radius:10px; cursor:pointer; transition:all 0.2s;" class="cosmetic-option ${state.avatar_style === s.id ? 'active' : ''}" data-type="avatar" data-id="${s.id}">
-                                <div style="font-size:11px; color:#fff;">${s.name}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top:30px; display:flex; gap:10px;">
-                <button onclick="this.closest('#profile-editor-overlay').remove()" style="flex:1; padding:15px; border-radius:14px; background:rgba(255,255,255,0.05); color:var(--gray); border:none; font-family:'Press Start 2P',monospace; font-size:9px; cursor:pointer;">CANCELAR</button>
-                <button onclick="saveCosmeticProfile()" style="flex:2; padding:15px; border-radius:14px; background:var(--yellow); color:var(--darker); border:none; font-family:'Press Start 2P',monospace; font-size:9px; cursor:pointer; font-weight:bold;">GUARDAR CAMBIOS</button>
-            </div>
+    modal.innerHTML = `
+        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--yellow);margin-bottom:24px;text-align:center;">CONFIGURACIÓN DE PERFIL</div>
+        
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:16px;padding:20px;text-align:center;">
+            <div style="font-size:32px;margin-bottom:12px;">✨</div>
+            <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:8px;">Estilos Personalizados</div>
+            <p style="color:#94a3b8;font-size:12px;Line-height:1.6;margin:0;">
+                ¡PRÓXIMAMENTE!<br>
+                Estamos preparando nicks brillantes y bordes legendarios para futuras actualizaciones.
+            </p>
         </div>
+
+        <button id="close-profile-editor" style="margin-top:24px;width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(90deg, #3b82f6, #2563eb);color:#fff;font-weight:700;cursor:pointer;font-size:13px;transition:transform 0.2s;">
+            Aceptar
+        </button>
     `;
 
-    document.body.appendChild(ov);
-    
-    // Store temp selections for preview
-    ov._tempNick = state.nick_style;
-    ov._tempAvatar = state.avatar_style;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    document.getElementById('close-profile-editor').onclick = () => overlay.remove();
 }
 
 function previewCosmetic(type, id) {
