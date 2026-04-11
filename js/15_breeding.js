@@ -703,7 +703,7 @@ function _renderDaycarePicker() {
   const slotLabel = _depositingSlot === 1 ? 'Ranura A' : 'Ranura B';
   const compareHint = compareTo ? `<div style="font-size:10px;color:var(--gray);text-align:center;margin:-6px 0 12px;">Compatibilidad vs <b style="color:var(--text);">${compareTo.name}</b></div>` : '';
   
-  let allPoks = [...state.team, ...(state.box || [])].filter(p => !_activeDaycareSlots.some(s => s.pokemon_id === p.uid));
+  let allPoks = [...state.team, ...(state.box || [])].filter(p => !p.onDefense && !_activeDaycareSlots.some(s => s.pokemon_id === p.uid));
   
   if (compareTo) {
     allPoks.sort((a, b) => {
@@ -794,10 +794,12 @@ function _pickerHtml(p, compareTo) {
   const isExhausted = p.vigor <= 0;
   const inOtherSlot = _activeDaycareSlots.some(s => s.pokemon_id === p.uid);
   const onMission = p.onMission || false;
+  const onDefense = p.onDefense || false;
   
   let clickAction = isExhausted ? `notify('Este Pokémon está agotado (Vigor 0). No puede criar más.', '💤')` : `confirmDeposit('${p.uid}')`;
   if (inOtherSlot) clickAction = `notify('Este Pokémon ya está en la otra ranura.', '⚠️')`;
   if (onMission) clickAction = `notify('Este Pokémon está en una misión.', '📋')`;
+  if (onDefense) clickAction = `notify('Este Pokémon está defendiendo una ruta.', '🛡️')`;
 
   if (isExhausted || inOtherSlot || onMission) {
       borderStyle = `border:1px solid rgba(255,69,58,0.4); background:rgba(255,69,58,0.05); filter: grayscale(0.5); opacity: 0.8;`;

@@ -625,6 +625,9 @@
       <!-- Daycare badge -->
       ${p.inDaycare ? `<div style="position:absolute;inset:0;border-radius:12px;background:rgba(59,130,246,0.07);pointer-events:none;z-index:1;"></div>
         <div style="position:absolute;top:30px;left:5px;background:#3b82f6;color:#fff;border-radius:6px;font-size:7px;font-weight:bold;padding:2px 5px;z-index:3;letter-spacing:0.5px;">🏡 GUARDERÍA</div>` : ''}
+      <!-- Defense badge -->
+      ${p.onDefense ? `<div style="position:absolute;inset:0;border-radius:12px;background:rgba(34,197,94,0.07);pointer-events:none;z-index:1;"></div>
+        <div style="position:absolute;top:55px;left:5px;background:#22c55e;color:#fff;border-radius:6px;font-size:7px;font-weight:bold;padding:2px 5px;z-index:3;letter-spacing:0.5px;">🛡️ DEFENSA</div>` : ''}
       <!-- Tier and Held Item badges -->
       ${badgesHtml}
       <div style="position:absolute;top:5px;right:5px;background:${tierInfo.bg};color:${tierInfo.color};
@@ -770,6 +773,7 @@
       const boxPoke = state.box[boxIndex];
       if (boxPoke?.onMission) { notify(`¡${boxPoke.name} está en una misión idle! Cobrá la recompensa primero.`, '📋'); return; }
       if (boxPoke?.inDaycare) { notify(`¡${boxPoke.name} está en la Guardería! Retiralo primero.`, '🏡'); return; }
+      if (boxPoke?.onDefense) { notify(`¡${boxPoke.name} está defendiendo una ruta! Retiralo desde el panel de Guerra primero.`, '🛡️'); return; }
       state.box.splice(boxIndex, 1);
       state.team.push(boxPoke);
       renderBox();
@@ -782,6 +786,7 @@
       const boxPoke = state.box[boxIndex];
       if (boxPoke?.onMission) { notify(`¡${boxPoke.name} está en una misión idle! No se puede intercambiar.`, '📋'); return; }
       if (boxPoke?.inDaycare) { notify(`¡${boxPoke.name} está en la Guardería! No se puede intercambiar.`, '🏡'); return; }
+      if (boxPoke?.onDefense) { notify(`¡${boxPoke.name} está defendiendo una ruta! No se puede intercambiar.`, '🛡️'); return; }
       state.box.splice(boxIndex, 1);
       const teamPoke = state.team.splice(teamIndex, 1, boxPoke)[0];
       // El que va a la caja se cura completamente
@@ -800,6 +805,7 @@
       const p = state.box[boxIndex];
       if (p?.onMission) { notify(`¡${p.name} está en una misión idle! No se puede soltar.`, '📋'); return; }
       if (p?.inDaycare) { notify(`¡${p.name} está en la Guardería! No se puede soltar.`, '🏡'); return; }
+      if (p?.onDefense) { notify(`¡${p.name} está defendiendo una ruta! No se puede soltar.`, '🛡️'); return; }
       if (!confirm(`¿Soltar a ${p.name} definitivamente?`)) return;
       document.getElementById('box-menu-overlay')?.remove();
       returnHeldItem(p);

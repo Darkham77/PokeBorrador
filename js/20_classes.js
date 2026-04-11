@@ -1479,8 +1479,8 @@ function _openPokemonSelectModal(missionId, info, cls) {
     if (!p.uid && typeof getUidStr === 'function') p.uid = getUidStr();
   });
   
-  const availTeam = (state.team || []).filter(p => !p.onMission && !p.inDaycare);
-  const availBox = (state.box || []).filter(p => !p.onMission && !p.inDaycare);
+  const availTeam = (state.team || []).filter(p => !p.onMission && !p.inDaycare && !p.onDefense);
+  const availBox = (state.box || []).filter(p => !p.onMission && !p.inDaycare && !p.onDefense);
   const availPokes = [...availTeam, ...availBox];
 
   const costHtml = cls === 'criador'
@@ -1649,6 +1649,10 @@ function _openPokemonSelectModal(missionId, info, cls) {
   window._confirmPokemonSelect = (uid, mid) => {
     const p = (state.team || []).find(x => x.uid === uid) || (state.box || []).find(x => x.uid === uid);
     if (!p) return;
+    if (p.onDefense) {
+      notify('Este Pokémon está defendiendo una ruta y no puede ir de misión.', '⚠️');
+      return;
+    }
     const info2 = getMissionCostInfo(mid);
 
     if (cls === 'entrenador') {

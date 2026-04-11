@@ -1209,6 +1209,12 @@ function renderDefensePokeList(mapId) {
 async function confirmDefense(mapId, pokemonUid) {
   const p = [...(state.team || []), ...(state.box || [])].find(x => x.uid === pokemonUid);
   if (!p) return;
+
+  // ── SEGURIDAD ADICIONAL ──
+  if (p.onMission || p.onDefense) {
+    notify('Este Pokémon ya está ocupado en una misión o defensa.', '⚠️');
+    return;
+  }
   
   const mapName = FIRE_RED_MAPS.find(m => m.id === mapId)?.name || mapId;
   
@@ -1249,9 +1255,14 @@ async function confirmDefense(mapId, pokemonUid) {
     });
     
     if (error) throw error;
+
+    // Bloquear al Pokémon localmente
+    p.onDefense = true;
     
     notify(`¡${p.name} ahora está protegiendo ${mapName}! 🛡️`, '✅');
     document.getElementById('defense-selector-modal')?.remove();
+    
+    if (typeof scheduleSave === 'function') scheduleSave();
     renderWarPanel();
   } catch (err) {
     console.error("Error al desplegar defensa:", err);
