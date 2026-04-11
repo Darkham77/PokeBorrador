@@ -48,7 +48,14 @@ function getLegacyWeekId(date = new Date()) {
 }
 
 function getAllCurrentWeekIds() {
-  return [getCurrentWeekId(), getLegacyWeekId()];
+  const current = getCurrentWeekId();
+  // El ID '2026-W15' se incluyó porque la fórmula anterior saltó erróneamente a la semana 15 hoy sábado.
+  // El ID '2026-04-06' se incluyó por la fase de transición de formatos.
+  // Esta reconciliación es dinámica y solo se activará durante la Semana 14 real.
+  if (current === '2026-W14' || current === '2026-04-06') {
+    return [current, '2026-W15', '2026-04-06'];
+  }
+  return [current];
 }
 
 function isDisputePhase() {
