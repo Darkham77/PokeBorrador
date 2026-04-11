@@ -1135,6 +1135,7 @@ async function confirmDefense(mapId, pokemonUid) {
   
   if (!confirm(`¿Estás seguro de enviar a ${p.name} a proteger ${mapName}? Quedará asignado allí hasta el lunes.`)) return;
   
+  try {
     // ── SEGURIDAD ANTI-CHEAT ──
     // Validamos que el usuario realmente tenga los puntos en la DB antes de insertar.
     const dbContr = await calculateUserWeeklyContribution();
