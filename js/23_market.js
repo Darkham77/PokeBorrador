@@ -369,8 +369,8 @@ async function renderOnlineMarket() {
         let icon = '🎒';
         if (window.SHOP_ITEMS) {
           const si = window.SHOP_ITEMS.find(x => x.name === i.name);
-          if (si?.sprite) icon = `<img src="${si.sprite}" width="40" style="image-rendering:pixelated;">`;
-          else if (si?.icon) icon = `<span style="font-size:32px;">${si.icon}</span>`;
+          if (si?.sprite) icon = `<img src="${si.sprite}" width="40" style="image-rendering:pixelated;" onerror="this.onerror=null; this.outerHTML='<span style=&quot;font-size:32px&quot;>${si.icon || '🎒'}</span>';">`;
+          else if (si?.icon) icon = `<span style="font-size:32px">${si.icon}</span>`;
         }
         innerContent = `
           <div style="font-size:9px;color:var(--gray);margin-bottom:6px;font-family:'Press Start 2P';opacity:0.8;">👤 ${(offer.seller_name||'Anon').substring(0,10)}</div>
@@ -521,7 +521,7 @@ function renderPublishTab() {
     filteredInv.forEach(item => {
       const isSelected = _omSelectedData?.name === item.name;
       const si = window.SHOP_ITEMS?.find(x => x.name === item.name);
-      const icon = si?.sprite ? `<img src="${si.sprite}" style="width:32px;height:32px;">` : `<span style="font-size:24px;">🎒</span>`;
+      const icon = si?.sprite ? `<img src="${si.sprite}" style="width:32px;height:32px;" onerror="this.onerror=null; this.outerHTML='<span style=&quot;font-size:24px&quot;>${si.icon || '🎒'}</span>';">` : `<span style="font-size:24px;">${si?.icon || '🎒'}</span>`;
       const btn = document.createElement('button');
       btn.style.cssText = `width:100%;height:50px;background:${isSelected?'rgba(59,139,255,0.25)':'rgba(255,255,255,0.06)'};border:${isSelected?'2px solid var(--blue)':'1px solid rgba(255,255,255,0.1)'};border-radius:10px;cursor:pointer;`;
       btn.innerHTML = icon;

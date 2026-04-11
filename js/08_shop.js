@@ -723,10 +723,10 @@
       },
       {
         id: 'ability_change_pill', cat: 'utility', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ability-capsule.png',
-        name: 'P\u00edldora de cambio de habilidad', icon: '💊', price: 0, unlockLv: 1, tier: 'epic', market: false, trainerShop: false,
+        name: 'Píldora de cambio de habilidad', icon: '💊', price: 0, unlockLv: 1, tier: 'epic', market: false, trainerShop: false,
         desc: 'Permite cambiar la habilidad de un Pokemon por otra disponible de su especie.',
         type: 'usable',
-        effect: (qty) => { state.inventory['P\u00edldora de cambio de habilidad'] = (state.inventory['P\u00edldora de cambio de habilidad'] || 0) + qty; }
+        effect: (qty) => { state.inventory['Píldora de cambio de habilidad'] = (state.inventory['Píldora de cambio de habilidad'] || 0) + qty; }
       },
       {
         id: 'nature_patch', cat: 'utility', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ability-patch.png',
@@ -744,7 +744,7 @@
       },
       {
         id: 'ticket_shiny', cat: 'booster', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eon-ticket.png',
-        name: 'Ticket Shiny', icon: 'âœ¨', price: 0, market: false, trainerShop: true, bcPrice: 15000, unlockLv: 1, tier: 'epic', type: 'booster',
+        name: 'Ticket Shiny', icon: '✨', price: 0, market: false, trainerShop: true, bcPrice: 15000, unlockLv: 1, tier: 'epic', type: 'booster',
         desc: 'Aumenta temporalmente la probabilidad de encontrar Pokemon Shiny durante 30 minutos.',
         effect: (qty) => { state.inventory['Ticket Shiny'] = (state.inventory['Ticket Shiny'] || 0) + qty; }
       },

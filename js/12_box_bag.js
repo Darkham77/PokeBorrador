@@ -947,7 +947,7 @@
         const typeTag = `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:${typeTagColors[type] || '#666'}22;color:${typeTagColors[type] || '#aaa'};border:1px solid ${typeTagColors[type] || '#666'}44;">${typeTagLabels[type] || type}</span>`;
 
         const iconHtml = sprite 
-          ? `<img src="${sprite}" width="40" height="40" style="image-rendering:pixelated;" onerror="this.style.display='none'">`
+          ? `<img src="${sprite}" width="40" height="40" style="image-rendering:pixelated;" onerror="this.onerror=null; this.outerHTML='<span style=&quot;font-size:32px&quot;>${icon}</span>';">`
           : `<span style="font-size:32px">${icon}</span>`;
 
         if (_bagSellMode) {
