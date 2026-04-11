@@ -1,19 +1,41 @@
 // ===== SISTEMA DE DOMINANCIA DE MAPAS (GUERRA DE FACCIONES) =====
 
 function getCurrentWeekId() {
-  // Calculamos el Lunes de la semana actual para que sea la ID.
-  // Esto asegura que de Lunes a Domingo tengamos la misma identificación de guerra.
+  // 1. Encontrar el Lunes de esta semana para anclar el cálculo
   const now = new Date();
-  const day = now.getDay(); // 0(Dom), 1(Lun)... 6(Sab)
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1); 
-  const monday = new Date(now.setDate(diff));
-  return monday.toISOString().split('T')[0];
+  const d = new Date(now);
+  d.setHours(0,0,0,0);
+  const day = d.getDay(); // 0(Dom), 1(Lun)... 6(Sab)
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(d.setDate(diff));
+  
+  // 2. Aplicar la fórmula original al Lunes para mantener compatibilidad con records previos (W14, etc)
+  // De Lunes a Domingo, este bloque siempre devolverá la misma ID.
+  const jan4 = new Date(monday.getFullYear(), 0, 4);
+  const days = Math.floor((monday - jan4) / 86400000);
+  const week = Math.ceil((days + jan4.getDay() + 1) / 7);
+  return `${monday.getFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 
 function getPreviousWeekId() {
-  const currentMonday = new Date(getCurrentWeekId());
-  currentMonday.setDate(currentMonday.getDate() - 7);
-  return currentMonday.toISOString().split('T')[0];
+  const now = new Date();
+  const d = new Date(now);
+  d.setDate(d.getDate() - 7); // Retroceder una semana
+  // Re-utilizamos getCurrentWeekId pasándole la fecha de la semana pasada
+  return getCurrentWeekIdStatic(d);
+}
+
+// Función auxiliar para calcular ID de cualquier fecha sin depender del tiempo actual
+function getCurrentWeekIdStatic(date) {
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(d.setDate(diff));
+  const jan4 = new Date(monday.getFullYear(), 0, 4);
+  const days = Math.floor((monday - jan4) / 86400000);
+  const week = Math.ceil((days + jan4.getDay() + 1) / 7);
+  return `${monday.getFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 
 function isDisputePhase() {
