@@ -76,7 +76,9 @@ const POKEMON_SPRITE_IDS = {
   snorlax: 143,
   articuno: 144, zapdos: 145, moltres: 146,
   dratini: 147, dragonair: 148, dragonite: 149,
-  mewtwo: 150, mew: 151
+  mewtwo: 150, mew: 151,
+  // Babies & Gen 2 basics
+  pichu: 172, cleffa: 173, igglybuff: 174, togepi: 175, togetic: 176, tyrogue: 236, smoochum: 238, elekid: 239, magby: 240
 };
 
 const PDEX_ORDER = [
@@ -156,6 +158,23 @@ const PDEX_ORDER = [
   'dratini','dragonair','dragonite',
   'mewtwo','mew'
 ];
+
+const GEN2_PDEX_ORDER = [
+  'chikorita', 'bayleef', 'meganium', 'cyndaquil', 'quilava', 'typhlosion', 'totodile', 'croconaw', 'feraligatr',
+  'sentret', 'furret', 'hoothoot', 'noctowl', 'ledyba', 'ledian', 'spinarak', 'ariados', 'crobat',
+  'chinchou', 'lanturn', 'pichu', 'cleffa', 'igglybuff', 'togepi', 'togetic', 'natu', 'xatu',
+  'mareep', 'flaaffy', 'ampharos', 'bellossom', 'marill', 'azumarill', 'sudowoodo', 'politoed',
+  'hoppip', 'skiploom', 'jumpluff', 'aipom', 'sunkern', 'sunflora', 'yanma', 'wooper', 'quagsire',
+  'espeon', 'umbreon', 'murkrow', 'slowking', 'misdreavus', 'unown', 'wobbuffet', 'girafarig', 
+  'pineco', 'forretress', 'dunsparce', 'gligar', 'steelix', 'snubbull', 'granbull', 'qwilfish',
+  'scizor', 'shuckle', 'heracross', 'sneasel', 'teddiursa', 'ursaring', 'slugma', 'magcargo',
+  'swinub', 'piloswine', 'corsola', 'remoraid', 'octillery', 'delibird', 'mantine', 'skarmory',
+  'houndour', 'houndoom', 'kingdra', 'phanpy', 'donphan', 'porygon2', 'stantler', 'smeargle',
+  'tyrogue', 'hitmontop', 'smoochum', 'elekid', 'magby', 'miltank', 'blissey', 'raikou', 'entei',
+  'suicune', 'larvitar', 'pupitar', 'tyranitar', 'lugia', 'ho-oh', 'celebi'
+];
+
+let currentPdexCategory = 'gen1';
 
 // Type colors mapping for badges
 const PDEX_TYPE_COLORS = {
@@ -371,6 +390,43 @@ const TM_COMPAT = {
   mew: ['TM01','TM02','TM03','TM04','TM05','TM06','TM07','TM08','TM09','TM10','TM11','TM12','TM13','TM14','TM15','TM16','TM17','TM18','TM19','TM20','TM21','TM22','TM23','TM24','TM25','TM26','TM27','TM28','TM29','TM30','TM31','TM32','TM33','TM34','TM35','TM36','TM37','TM38','TM39','TM40','TM41','TM42','TM43','TM44','TM45','TM46','TM47','TM48','TM49','TM50']
 };
 
+window.switchPdexCategory = function(cat) {
+  currentPdexCategory = cat;
+  
+  // UI update
+  const totalCountEl = document.getElementById('pdex-total-count');
+  if (totalCountEl) totalCountEl.textContent = (cat === 'gen1' ? '151' : '100');
+  
+  const gen1Btn = document.getElementById('pdex-cat-gen1');
+  const gen2Btn = document.getElementById('pdex-cat-gen2');
+  
+  if (gen1Btn) {
+    if (cat === 'gen1') {
+      gen1Btn.classList.add('active');
+      gen1Btn.style.background = 'var(--yellow)';
+      gen1Btn.style.color = '#000';
+    } else {
+      gen1Btn.classList.remove('active');
+      gen1Btn.style.background = 'transparent';
+      gen1Btn.style.color = 'var(--gray)';
+    }
+  }
+  
+  if (gen2Btn) {
+    if (cat === 'gen2') {
+      gen2Btn.classList.add('active');
+      gen2Btn.style.background = 'var(--yellow)';
+      gen2Btn.style.color = '#000';
+    } else {
+      gen2Btn.classList.remove('active');
+      gen2Btn.style.background = 'transparent';
+      gen2Btn.style.color = 'var(--gray)';
+    }
+  }
+  
+  renderPokedex();
+};
+
 window.switchPdexTab = function(tabName, pokemonId) {
   const tabs = ['info', 'learnset', 'tms', 'evo'];
   tabs.forEach(t => {
@@ -388,38 +444,48 @@ window.renderPokedex = function() {
   const caught = state.pokedex || [];
   const seen = state.seenPokedex || [];
   
-  // Update counts
+  // Update counts based on current category
+  const order = (currentPdexCategory === 'gen1' ? PDEX_ORDER : GEN2_PDEX_ORDER);
+  const totalSeen = seen.filter(id => order.includes(id));
+  const totalCaught = caught.filter(id => order.includes(id));
+
   const seenEl = document.getElementById('pokedex-seen-count');
   const caughtEl = document.getElementById('pokedex-caught-count');
-  if (seenEl) seenEl.textContent = seen.length;
-  if (caughtEl) caughtEl.textContent = caught.length;
+  if (seenEl) seenEl.textContent = totalSeen.length;
+  if (caughtEl) caughtEl.textContent = totalCaught.length;
 
-  container.innerHTML = PDEX_ORDER.map(id => {
+  container.innerHTML = order.map((id, index) => {
     const isCaught = caught.includes(id);
     const isSeen = seen.includes(id) || isCaught;
-    const pData = POKEMON_DB[id];
-    if (!pData) return '';
-
-    const num = String(POKEMON_SPRITE_IDS[id] || '???').padStart(3, '0');
-    const spriteId = POKEMON_SPRITE_IDS[id];
+    const pData = (typeof POKEMON_DB !== 'undefined' ? POKEMON_DB[id] : null);
+    
+    // Dex number calculation
+    const numValue = (currentPdexCategory === 'gen1' ? index + 1 : index + 152);
+    const num = String(numValue).padStart(3, '0');
+    
+    // Resolve sprite using the registries
+    const spriteId = window.POKEMON_SPRITE_IDS[id] || POKEMON_SPRITE_IDS[id];
     const spriteUrl = spriteId 
       ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteId}.png` 
-      : '';
+      : (isSeen ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${numValue}.png` : '');
 
-    // If not seen, show silhouette or placeholder
-    const spriteHtml = isSeen 
-      ? `<img src="${spriteUrl}" style="width:50px;height:50px;image-rendering:pixelated;${isCaught ? '' : 'filter:brightness(0) opacity(0.5);'}" alt="${pData.name}">`
+    // If not seen or not even in DB yet, show placeholder
+    const spriteHtml = (isSeen && spriteUrl)
+      ? `<img src="${spriteUrl}" style="width:50px;height:50px;image-rendering:pixelated;${isCaught ? '' : 'filter:brightness(0) opacity(0.5);'}" alt="${id}">`
       : `<div style="width:50px;height:50px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#333;">?</div>`;
 
+    const displayName = (isSeen && pData) ? pData.name : id.charAt(0).toUpperCase() + id.slice(1);
+    const nameToShow = isSeen ? displayName : '???';
+
     return `
-      <div class="pokedex-card" onclick="${isSeen ? `showPokedexDetail('${id}')` : ''}" 
-        style="background:rgba(255,255,255,0.03);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;border:1px solid ${isCaught ? 'rgba(255,214,10,0.2)' : 'rgba(255,255,255,0.05)'};cursor:${isSeen ? 'pointer' : 'default'};">
+      <div class="pokedex-card" onclick="${(isSeen && pData) ? `showPokedexDetail('${id}')` : ''}" 
+        style="background:rgba(255,255,255,0.03);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;border:1px solid ${isCaught ? 'rgba(255,214,10,0.2)' : 'rgba(255,255,255,0.05)'};cursor:${(isSeen && pData) ? 'pointer' : 'default'};">
         <div style="font-size:8px;color:#555;margin-bottom:4px;font-family:'Press Start 2P',monospace;">#${num}</div>
         <div style="height:50px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;">
           ${spriteHtml}
         </div>
         <div style="font-size:9px;font-weight:700;color:${isCaught ? 'var(--yellow)' : (isSeen ? '#aaa' : '#444')};text-align:center;text-transform:capitalize;">
-          ${isSeen ? pData.name : '???'}
+          ${nameToShow}
         </div>
       </div>
     `;

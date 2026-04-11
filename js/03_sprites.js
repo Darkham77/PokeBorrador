@@ -58,7 +58,7 @@ window.POKEMON_SPRITE_IDS = {
   snorlax: 143, articuno: 144, zapdos: 145, moltres: 146,
   dratini: 147, dragonair: 148, dragonite: 149,
   mewtwo: 150, mew: 151,
-  pichu: 172, cleffa: 173, igglybuff: 174, togepi: 175, elekid: 239, magby: 240
+  pichu: 172, cleffa: 173, igglybuff: 174, togepi: 175, tyrogue: 236, smoochum: 238, elekid: 239, magby: 240
 };
 
 window.checkSpritesReady = function() {
@@ -73,7 +73,11 @@ const spriteCache = {};
 
 function getSpriteUrl(id, isShiny = false) {
   const num = window.POKEMON_SPRITE_IDS[id];
-  if (!num) return null;
+  if (!num) {
+    // Fallback: Si no tiene ID y es un huevo, retornamos sprite de huevo. Si no, null.
+    if (id && id.includes('egg')) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.png";
+    return null;
+  }
   if (isShiny) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${num}.png`;
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png`;
 }

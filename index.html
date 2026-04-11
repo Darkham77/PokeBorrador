@@ -651,9 +651,15 @@
       <div id="tab-pokedex" class="tab-content" style="display:none;padding-bottom:100px;">
         <div class="team-section">
           <div class="section-title">📖 Pokédex Nacional</div>
-          <div style="font-size:11px;color:var(--gray);margin-bottom:14px;display:flex;justify-content:space-between;">
-            <span>Vistos: <span id="pokedex-seen-count" style="color:#fff;">0</span></span>
-            <span>Capturados: <span id="pokedex-caught-count" style="color:var(--yellow);">0</span>/151</span>
+          <div style="font-size:11px;color:var(--gray);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <div style="display:flex;gap:6px;background:rgba(255,255,255,0.05);padding:4px;border-radius:12px;">
+              <button id="pdex-cat-gen1" onclick="switchPdexCategory('gen1')" class="pdex-filter-btn active" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:var(--yellow);color:#000;">GEN 1</button>
+              <button id="pdex-cat-gen2" onclick="switchPdexCategory('gen2')" class="pdex-filter-btn" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 12px;border:none;border-radius:8px;cursor:pointer;background:transparent;color:var(--gray);">GEN 2</button>
+            </div>
+            <div style="display:flex;gap:15px;">
+              <span>Vistos: <span id="pokedex-seen-count" style="color:#fff;">0</span></span>
+              <span>Capturados: <span id="pokedex-caught-count" style="color:var(--yellow);">0</span>/<span id="pdex-total-count">151</span></span>
+            </div>
           </div>
           <div id="pokedex-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:10px;">
             <!-- Dynamically rendered -->

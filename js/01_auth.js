@@ -857,7 +857,7 @@
         light.style.opacity = '0.5';
         setTimeout(() => light.style.opacity = '0', 1000);
         
-        const spriteUrl = getSpriteUrl(p.id, p.isShiny);
+        const spriteUrl = getSpriteUrl(p.id, p.isShiny) || getSpriteUrl('egg');
         ov.querySelector('#pokemon-sprite-container').innerHTML = `
           <img src="${spriteUrl}" style="width:200px; height:200px; image-rendering:pixelated; filter:drop-shadow(0 0 30px ${p.isShiny ? 'var(--yellow)' : 'rgba(255,255,255,0.3)'});">
           ${p.isShiny ? '<div style="position:absolute; top:0; right:0; font-size:30px; animation: bounce 1s infinite;">✨</div>' : ''}

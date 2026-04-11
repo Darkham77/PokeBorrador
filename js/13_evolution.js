@@ -67,6 +67,7 @@
       machop:  { level: 28, to: 'machoke' },
       // ── Fire ─────────────────────────────────────────────────────
       magby:    { level: 30, to: 'magmar' },
+      smoochum: { level: 30, to: 'jynx' },
       ponyta:    { level: 40, to: 'rapidash' },
       // ── Dragon ───────────────────────────────────────────────────
       dratini:   { level: 30, to: 'dragonair' },
@@ -105,6 +106,13 @@
 
     // ── Level-up evolution check ──────────────────────────────────
     function checkLevelUpEvolution(pokemon, onComplete) {
+      if (pokemon.id === 'tyrogue' && pokemon.level >= 20) {
+        const toId = pokemon.atk > pokemon.def ? 'hitmonlee' : 
+                     (pokemon.def > pokemon.atk ? 'hitmonchan' : 
+                     (Math.random() < 0.5 ? 'hitmonlee' : 'hitmonchan'));
+        showEvolutionScene(pokemon, toId, onComplete);
+        return;
+      }
       const evo = EVOLUTION_TABLE[pokemon.id];
       if (!evo || pokemon.level < evo.level) { if (onComplete) onComplete(); return; }
       if (evo.to === pokemon.id) { if (onComplete) onComplete(); return; } // Avoid self-evolution loop if placeholder

@@ -631,6 +631,16 @@
         hp: 35, atk: 20, def: 65, spa: 40, spd: 65, spe: 20, 
         learnset: [{ lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Encanto', pp: 20 }, { lv: 7, name: 'Metrónomo', pp: 10 }, { lv: 18, name: 'Beso Dulce', pp: 10 }] 
       },
+      tyrogue: {
+        name: 'Tyrogue', emoji: '🥋', type: 'fighting', 
+        hp: 35, atk: 35, def: 35, spa: 35, spd: 35, spe: 35,
+        learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Refuerzo', pp: 20 }, { lv: 7, name: 'Sorpresa', pp: 10 }]
+      },
+      smoochum: {
+        name: 'Smoochum', emoji: '😚', type: 'ice',
+        hp: 45, atk: 30, def: 15, spa: 85, spd: 65, spe: 65,
+        learnset: [{ lv: 1, name: 'Destructor', pp: 35 }, { lv: 1, name: 'Lengüetazo', pp: 30 }, { lv: 9, name: 'Beso Dulce', pp: 10 }, { lv: 13, name: 'Nieve Polvo', pp: 25 }]
+      },
       eevee: {
         name: 'Eevee', emoji: '🦊', type: 'normal',
         hp: 55, atk: 55, def: 50, spa: 45, spd: 65, spe: 55,
