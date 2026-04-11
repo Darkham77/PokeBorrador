@@ -2625,6 +2625,11 @@ function _endEnemyTurn() {
     setBtns(true);
     renderMoveButtons();
     applyMoveButtonsGridLayout();
+    
+    // Feedback opcional para desarrollo
+    if (state.battle && (state.battle.turnCount % 5 === 0 || state.battle.enemy.isGuardian)) {
+      console.log(`[BATTLE] Turno avanzado a: ${state.battle.turnCount}`);
+    }
   }, 600);
 }
 
@@ -2794,9 +2799,14 @@ function executeCatch(ballName) {
     const isCave = ['cave', 'mt_moon', 'rock_tunnel', 'cerulean_cave', 'victory_road', 'diglett_cave', 'seafoam_islands', 'pokemon_tower'].includes(locId);
     ballMult = (cycle === 'night' || isCave) ? 3 : 1;
   }
-  else if (ballName === 'Turno Ball') {
-    ballMult = Math.min(4, 1 + (b.turnCount || 1) * 0.3);
-  }
+    else if (ballName === 'Turno Ball') {
+      const turns = state.battle.turnCount || 1;
+      // Formula base: 1 + T*0.3 (Max 4 a turno 10)
+      ballMult = Math.min(4, 1 + (turns * 0.3));
+      // Especial para combates largos (ej: Guardianes difíciles)
+      if (turns >= 20) ballMult = 6;
+      if (turns >= 30) ballMult = 10;
+    }
 
   const selectedItem = SHOP_ITEMS.find(i => i.name === ballName);
   state.activeBallSrc = selectedItem ? selectedItem.sprite : 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';

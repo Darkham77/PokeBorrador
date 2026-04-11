@@ -318,7 +318,8 @@ async function addWarPoints(mapId, eventType, success, overridePts = null) {
     
     // Refrescar panel si está abierto
     renderWarPanel();
-  } catch(e) { console.error("Error sumando PT", e); }
+    return allowedPts;
+  } catch(e) { console.error("Error sumando PT", e); return 0; }
 }
 
 async function getMapDominanceStatus(mapId) {
@@ -484,18 +485,18 @@ const GUARDIAN_POOL = {
     { id: 'hypno',      lv: 42, pts: 150 }
   ],
   rare: [
-    { id: 'gyarados',   lv: 50, pts: 300 }, { id: 'alakazam',   lv: 48, pts: 300 },
-    { id: 'machamp',    lv: 48, pts: 300 }, { id: 'gengar',     lv: 48, pts: 300 },
-    { id: 'exeggutor',  lv: 46, pts: 300 }, { id: 'pinsir',     lv: 47, pts: 300 },
-    { id: 'scyther',    lv: 47, pts: 300 }, { id: 'kangaskhan', lv: 45, pts: 300 },
-    { id: 'tauros',     lv: 45, pts: 300 }, { id: 'slowbro',    lv: 46, pts: 300 }, 
-    { id: 'jolteon',    lv: 48, pts: 300 }, { id: 'vaporeon',   lv: 48, pts: 300 }, 
-    { id: 'flareon',    lv: 48, pts: 300 }
+    { id: 'gyarados',   lv: 50, pts: 150 }, { id: 'alakazam',   lv: 48, pts: 150 },
+    { id: 'machamp',    lv: 48, pts: 150 }, { id: 'gengar',     lv: 48, pts: 150 },
+    { id: 'exeggutor',  lv: 46, pts: 150 }, { id: 'pinsir',     lv: 47, pts: 150 },
+    { id: 'scyther',    lv: 47, pts: 150 }, { id: 'kangaskhan', lv: 45, pts: 150 },
+    { id: 'tauros',     lv: 45, pts: 150 }, { id: 'slowbro',    lv: 46, pts: 150 }, 
+    { id: 'jolteon',    lv: 48, pts: 150 }, { id: 'vaporeon',   lv: 48, pts: 150 }, 
+    { id: 'flareon',    lv: 48, pts: 150 }
   ],
   elite: [
-    { id: 'dragonite',  lv: 60, pts: 750 }, { id: 'snorlax',    lv: 55, pts: 750 },
-    { id: 'lapras',     lv: 55, pts: 750 }, { id: 'chansey',    lv: 50, pts: 750 },
-    { id: 'cloyster',   lv: 52, pts: 750 }
+    { id: 'dragonite',  lv: 60, pts: 150 }, { id: 'snorlax',    lv: 55, pts: 150 },
+    { id: 'lapras',     lv: 55, pts: 150 }, { id: 'chansey',    lv: 50, pts: 150 },
+    { id: 'cloyster',   lv: 52, pts: 150 }
   ]
 };
 
@@ -645,9 +646,9 @@ async function claimGuardianCapture(mapId, pokemon) {
   pokemon.aura = state.faction === 'poder' ? 'white' : 'black';
   
   // Usar addWarPoints con override para centralizar monedas y guardado
-  await addWarPoints(mapId, 'guardian', true, ptsAwarded);
+  const actualPts = await addWarPoints(mapId, 'guardian', true, ptsAwarded);
   
-  notify(`¡Capturaste al Guardián! Has reclamado ${ptsAwarded} PT para Team ${state.faction === 'union' ? 'Unión' : 'Poder'}.`, '🏆');
+  notify(`¡Capturaste al Guardián! Has reclamado ${actualPts || 0} PT para Team ${state.faction === 'union' ? 'Unión' : 'Poder'}.`, '🏆');
   return true;
 }
 
@@ -665,13 +666,13 @@ async function recordGuardianDefeat(mapId, ptsAwarded) {
       pts_awarded: Math.floor(ptsAwarded * 0.7) // 70% de puntos por derrota vs captura
     });
 
-  await addWarPoints(mapId, 'guardian', true, Math.floor(ptsAwarded * 0.7));
+  const actualPts = await addWarPoints(mapId, 'guardian', true, Math.floor(ptsAwarded * 0.7));
   
   // Marcar localmente para evitar re-encuentros el mismo día
   if (!state.dailyGuardianCaptures) state.dailyGuardianCaptures = [];
   if (!state.dailyGuardianCaptures.includes(mapId)) state.dailyGuardianCaptures.push(mapId);
   
-  notify(`¡Guardián Derrotado! +${Math.floor(ptsAwarded * 0.7)} PT.`, '⚔️');
+  notify(`¡Guardián Derrotado! +${actualPts || 0} PT.`, '⚔️');
 }
 
 // ── BONOS ──
