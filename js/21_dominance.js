@@ -1,18 +1,19 @@
 // ===== SISTEMA DE DOMINANCIA DE MAPAS (GUERRA DE FACCIONES) =====
 
 function getCurrentWeekId() {
+  // Calculamos el Lunes de la semana actual para que sea la ID.
+  // Esto asegura que de Lunes a Domingo tengamos la misma identificación de guerra.
   const now = new Date();
-  const jan4 = new Date(now.getFullYear(), 0, 4);
-  const week = Math.ceil(((now - jan4) / 86400000 + jan4.getDay() + 1) / 7);
-  return `${now.getFullYear()}-W${String(week).padStart(2, '0')}`;
+  const day = now.getDay(); // 0(Dom), 1(Lun)... 6(Sab)
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1); 
+  const monday = new Date(now.setDate(diff));
+  return monday.toISOString().split('T')[0];
 }
 
 function getPreviousWeekId() {
-  const now = new Date();
-  now.setDate(now.getDate() - 7);
-  const jan4 = new Date(now.getFullYear(), 0, 4);
-  const week = Math.ceil(((now - jan4) / 86400000 + jan4.getDay() + 1) / 7);
-  return `${now.getFullYear()}-W${String(week).padStart(2, '0')}`;
+  const currentMonday = new Date(getCurrentWeekId());
+  currentMonday.setDate(currentMonday.getDate() - 7);
+  return currentMonday.toISOString().split('T')[0];
 }
 
 function isDisputePhase() {
