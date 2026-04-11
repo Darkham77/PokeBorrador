@@ -366,6 +366,8 @@
         // Cargar ELO de PvP
         if (typeof loadPlayerElo === 'function') setTimeout(() => loadPlayerElo(), 2000);
         if (typeof initEloWatcher === 'function') setTimeout(() => initEloWatcher(), 3000);
+        // Sincronización inmediata de perfil para reflejar nivel/estética en rankings
+        if (typeof saveGame === 'function') setTimeout(() => saveGame(false), 5000);
       } catch (e) {
         setAuthLoading(false);
         currentUser = null;
@@ -541,12 +543,24 @@
         // --- SINCRONIZACIÓN DE COSMÉTICOS CON PROFILES ---
         // Esto permite que otros jugadores vean tu estética en Rankings/Social/Chat sin cargar todo el blob
         try {
-          await sb.from('profiles').update({
+          console.log("[Ranked Sync] Syncing profile to Supabase:", {
+            nick_style: state.nick_style,
+            avatar_style: state.avatar_style,
+            trainer_level: Number(state.trainerLevel || 1),
+            player_class: state.playerClass
+          });
+          const { error: syncError } = await sb.from('profiles').update({
             nick_style: state.nick_style || null,
             avatar_style: state.avatar_style || null,
             trainer_level: Number(state.trainerLevel || 1),
             player_class: state.playerClass || null
           }).eq('id', currentUser.id);
+
+          if (syncError) {
+            console.error("[Ranked Sync] Error updating profile:", syncError);
+          } else {
+            console.log("[Ranked Sync] Profile synced successfully.");
+          }
         } catch (syncErr) {
           console.warn('[SAVE] Error sincronizando perfiles:', syncErr);
         }

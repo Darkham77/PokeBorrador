@@ -476,11 +476,10 @@ function _renderRankedLeaderboardRows(rows = _rankedLeaderboardRows) {
     const meBadge = isMe
       ? '<span style="font-size:7px;padding:2px 4px;border-radius:6px;background:rgba(107,203,119,0.18);color:#86efac;border:1px solid rgba(134,239,172,0.35);">TU</span>'
       : '';
-
-    const rowLevel = Number(row?.trainer_level || 1);
-    const rowClass = row?.player_class || null;
-    const nickStyle = row?.nick_style || '';
-    const avatarStyle = row?.avatar_style || null;
+    const rowLevel = isMe ? Number(state.trainerLevel || 1) : Number(row?.trainer_level || 1);
+    const rowClass = isMe ? state.playerClass : (row?.player_class || null);
+    const nickStyle = isMe ? (state.nick_style || '') : (row?.nick_style || '');
+    const avatarStyle = isMe ? (state.avatar_style || null) : (row?.avatar_style || null);
 
     let avatarHtml = '';
     if (typeof getAvatarHtml === 'function') {
@@ -567,11 +566,16 @@ async function refreshGlobalRankedLeaderboard(force = false) {
         .limit(RANKED_LEADERBOARD_LIMIT);
 
       if (error) throw error;
+      console.log("[Ranked Debug] Leaderboard data fetched:", data);
 
       _rankedLeaderboardRows = Array.isArray(data) ? data.map((row) => ({
         id: row.id,
         username: row.username || 'Entrenador',
-        elo_rating: Number(row.elo_rating || 1000)
+        elo_rating: Number(row.elo_rating || 1000),
+        trainer_level: Number(row.trainer_level || 1),
+        player_class: row.player_class || null,
+        nick_style: row.nick_style || '',
+        avatar_style: row.avatar_style || null
       })) : [];
 
       _rankedLeaderboardLastSyncAt = Date.now();
