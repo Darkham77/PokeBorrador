@@ -450,6 +450,7 @@ function _startEventPolling() {
 
 // ── Banner de eventos activos ─────────────────────────────────────────────────
 function _updateEventBanner() {
+  if (state.battle) return;
   // Ahora los eventos se muestran como Buffs dorados en el panel lateral
   if (typeof updateBuffPanel === 'function') updateBuffPanel();
   

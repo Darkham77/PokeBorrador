@@ -930,6 +930,9 @@ function updateBuffPanel() {
   const panel = document.getElementById('buff-panel');
   if (!panel) return;
 
+  // Evitar actualizaciones de DOM pesadas si estamos en combate para prevenir flickering
+  if (state.battle) return;
+
   const buffs = [
     { id: 'repel', secs: state.repelSecs },
     { id: 'shiny', secs: state.shinyBoostSecs },

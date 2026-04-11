@@ -5,6 +5,7 @@ let _carouselInterval = null;
 function _startCarouselTimer() {
   if (_carouselInterval) return;
   _carouselInterval = setInterval(() => {
+    if (state.battle) return;
     const activeEvents = (typeof _activeEvents !== 'undefined') ? _activeEvents : [];
     const finishedEvents = (typeof _finishedEvents !== 'undefined') ? _finishedEvents : [];
     const totalSlides = activeEvents.length + finishedEvents.length;
@@ -94,6 +95,7 @@ function renderEventCarouselSlides() {
 }
 
 async function renderMaps() {
+  if (state.battle) return;
   console.log("[renderMaps] Iniciando renderizado...");
   _startCarouselTimer();
   try {
