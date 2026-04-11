@@ -397,11 +397,11 @@ async function resolveWeekIfNeeded() {
   // Solo resolvemos los resultados durante el fin de semana (fase de descanso)
   if (isDisputePhase()) return;
 
-  // Buscamos todos los puntos acumulados por todos los jugadores en esta semana
+  // Buscamos todos los puntos acumulados por todos los jugadores en esta semana (Reconciliado)
   const { data: allPoints } = await window.sb
     .from('war_points')
     .select('map_id, faction, points')
-    .eq('week_id', currentWeekId);
+    .in('week_id', getAllCurrentWeekIds());
 
   if (!allPoints || allPoints.length === 0) {
     state.lastResolvedWeek = currentWeekId;
@@ -703,11 +703,11 @@ async function loadActiveBonuses() {
   if (isDisputePhase()) { state.activeBonuses = {}; return; }
   if (!state.faction) return;
 
-  const weekId = getCurrentWeekId();
+  const ids = getAllCurrentWeekIds();
   const { data } = await window.sb
     .from('war_dominance')
     .select('map_id, winner_faction')
-    .eq('week_id', weekId);
+    .in('week_id', ids);
 
   state.activeBonuses = {};
   data?.forEach(row => {
@@ -750,9 +750,7 @@ function renderWarTab() {
 
 async function renderWarPanel() {
   await resolveWeekIfNeeded();
-  const weekId = getCurrentWeekId();
-  const dispute = isDisputePhase();
-  const userId = window.currentUser?.id;
+  const ids = getAllCurrentWeekIds();
 
   // 1. Banner de Fase y Countdown
   const banner = document.getElementById('war-phase-banner');
@@ -769,10 +767,11 @@ async function renderWarPanel() {
   }
 
   // 2. Datos de Dominancia (para el fin de semana)
+  // Nota: Buscamos en ambos IDs para reconciliar si la resolución ocurrió bajo el formato viejo
   const { data: domData } = await window.sb
     .from('war_dominance')
     .select('map_id, winner_faction')
-    .eq('week_id', weekId);
+    .in('week_id', ids);
 
   let unionMaps = 0, poderMaps = 0;
   
@@ -782,7 +781,7 @@ async function renderWarPanel() {
     const { data: ptsDataForScore } = await window.sb
       .from('war_points')
       .select('map_id, faction, points')
-      .eq('week_id', weekId);
+      .in('week_id', ids);
       
     if (ptsDataForScore) {
       const proy = {};
@@ -814,11 +813,23 @@ async function renderWarPanel() {
   if (domU) domU.textContent = unionMaps;
   if (domP) domP.textContent = poderMaps;
   
-  // 3. Datos de Puntos en Vivo (para la semana)
-  const { data: ptsData } = await window.sb
+  // 3. Datos de Puntos en Vivo (para la semana - Reconciliado)
+  const { data: ptsDataQueryResult } = await window.sb
     .from('war_points')
     .select('map_id, faction, points')
-    .eq('week_id', weekId);
+    .in('week_id', ids);
+
+  // Mezclar puntos de diferentes IDs de la misma semana en un solo array
+  const ptsData = [];
+  if (ptsDataQueryResult) {
+    const mapAgg = {};
+    ptsDataQueryResult.forEach(p => {
+      const key = `${p.map_id}-${p.faction}`;
+      if (!mapAgg[key]) mapAgg[key] = { map_id: p.map_id, faction: p.faction, points: 0 };
+      mapAgg[key].points += p.points;
+    });
+    Object.values(mapAgg).forEach(v => ptsData.push(v));
+  }
 
   // 4. Estadísticas Personales (Blindaje anti-errores)
   try {
@@ -1055,12 +1066,12 @@ async function openSelectDefensePokeModal(mapId) {
   const myContr = await calculateUserWeeklyContribution();
   const maxSlots = getDefenseSlots(myContr);
   
-  // Contar cuántos mapas ya estamos defendiendo esta semana
+  // Contar cuántos mapas ya estamos defendiendo esta semana (Reconciliado)
   const { data: activeDefenses } = await window.sb
     .from('war_defenders')
     .select('id')
     .eq('user_id', window.currentUser.id)
-    .eq('week_id', getCurrentWeekId());
+    .in('week_id', getAllCurrentWeekIds());
   
   const currentUsed = activeDefenses?.length || 0;
   
@@ -1145,7 +1156,7 @@ async function confirmDefense(mapId, pokemonUid) {
       .from('war_defenders')
       .select('id')
       .eq('user_id', window.currentUser.id)
-      .eq('week_id', getCurrentWeekId());
+      .in('week_id', getAllCurrentWeekIds());
     const currentUsed = activeDefenses?.length || 0;
 
     if (currentUsed >= dbSlots) {
@@ -1194,16 +1205,12 @@ async function tryTriggerDefenderBattle(mapId) {
   if (!mapWinner || mapWinner === state.faction) return false;
   
   try {
-    const query = window.sb
+    const { data: defenders } = await window.sb
       .from('war_defenders')
       .select('*')
       .eq('map_id', mapId)
-      .eq('week_id', getCurrentWeekId());
-      
-    // No queremos encontrarnos a nosotros mismos
-    query.neq('user_id', window.currentUser.id);
-
-    const { data: defenders } = await query.limit(5);
+      .in('week_id', getAllCurrentWeekIds())
+      .neq('user_id', window.currentUser?.id);
     console.log("[WAR] Defensores encontrados en " + mapId, defenders);
       
     if (!defenders || defenders.length === 0) return false;
@@ -1332,7 +1339,7 @@ async function renderMyDefenders() {
       .from('war_defenders')
       .select('*')
       .eq('user_id', currentUser.id)
-      .eq('week_id', getCurrentWeekId());
+      .in('week_id', getAllCurrentWeekIds());
       
     if (error) throw error;
     
