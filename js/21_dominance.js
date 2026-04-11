@@ -38,6 +38,19 @@ function getCurrentWeekIdStatic(date) {
   return `${monday.getFullYear()}-W${String(week).padStart(2, '0')}`;
 }
 
+function getLegacyWeekId(date = new Date()) {
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
+  const monday = new Date(d.setDate(diff));
+  return monday.toISOString().split('T')[0];
+}
+
+function getAllCurrentWeekIds() {
+  return [getCurrentWeekId(), getLegacyWeekId()];
+}
+
 function isDisputePhase() {
   const day = new Date().getDay();
   // Lunes (1) a Viernes (5) es Fase de Disputa.
@@ -436,13 +449,13 @@ async function resolveWeekIfNeeded() {
 async function calculateUserWeeklyContribution(weekId) {
   const userId = window.currentUser?.id;
   if (!userId) return 0;
-  const targetWeekId = weekId || getCurrentWeekId();
+  const ids = weekId ? [weekId] : getAllCurrentWeekIds();
   
   const { data } = await window.sb
     .from('war_user_points')
     .select('points')
     .eq('user_id', userId)
-    .eq('week_id', targetWeekId);
+    .in('week_id', ids);
     
   let total = 0;
   data?.forEach(r => total += (r.points || 0));
