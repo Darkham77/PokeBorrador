@@ -1558,7 +1558,10 @@ async function _loadQueueCandidates(myElo) {
 // ?? Entrada: Buscar Partida ???????????????????????????????????????????
 async function startRankedMatchmaking() {
   if (!currentUser) { notify('Debes estar logueado', '⚠️'); return; }
-  if (_matchmakingInterval) return; // Ya buscando
+  if (window.isRankedSearching || _matchmakingInterval) {
+    console.warn("[Ranked] Ya hay una búsqueda en curso.");
+    return;
+  }
 
   // Gating de Temporada
   const rules = await loadRankedRules();
@@ -1575,6 +1578,8 @@ async function startRankedMatchmaking() {
   }
 
   window.isRankedSearching = true;
+  _matchmakingStop(); // Limpieza preventiva de cualquier residuo anterior
+  window.isRankedSearching = true; // Aseguramos el flag tras el stop
 
   const myTeam = getRankedPlayableTeam();
   if (!myTeam.length) {
@@ -1709,6 +1714,7 @@ async function _matchmakingFallbackToPassive() {
   const opponent = await findPassiveOpponent();
   if (!opponent) {
     notify('No hay equipos pasivos disponibles ahora. Intenta mas tarde.', '⚠️');
+    window.isRankedSearching = false;
     return;
   }
 
