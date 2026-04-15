@@ -1,0 +1,19 @@
+{
+  "skill_name": "populate-tester-inventory",
+  "evals": [
+    {
+      "id": 1,
+      "name": "full-population-test",
+      "prompt": "Agrega 20 pokemones al azar a mi cuenta para probar las cajas.",
+      "expected_output": "20 Pokémon should be added to state.box and the game should be saved.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "diverse-species-test",
+      "prompt": "puebla mi cuenta con 20 pokemones de diversas especies.",
+      "expected_output": "The box should contain 20 new Pokémon from different species.",
+      "files": []
+    }
+  ]
+}

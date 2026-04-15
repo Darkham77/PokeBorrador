@@ -1,0 +1,74 @@
+﻿<div id="battle-screen" class="screen">
+    <div class="battle-container">
+      <div class="battle-arena" id="battle-arena" style="position:relative;overflow:hidden;">
+        <canvas id="battle-bg-canvas"
+          style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;border-radius:18px;"></canvas>
+        <div class="battle-combatants">
+          <!-- TOP-LEFT: Enemy HP info -->
+          <div style="display:flex;align-items:flex-start;justify-content:flex-start;">
+            <div class="battle-pokemon-info">
+              <div class="battle-name-container">
+                <div id="enemy-guardian-tag" style="display:none; margin-bottom:4px;"></div>
+                <div class="battle-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                  <span id="enemy-name">???</span><span id="enemy-gender" class="gender-badge"
+                    style="margin-left:4px;"></span>
+                  <img id="enemy-caught-icon"
+                    src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" width="14"
+                    height="14" alt="Capturado" style="image-rendering:pixelated;display:none;opacity:0.9;">
+                </div>
+                <div id="enemy-nature-display" class="battle-nature" style="display:none;"></div>
+              </div>
+              <div class="battle-level" id="enemy-level">Nv. 1</div>
+              <div class="hp-bar-wrap">
+                <div class="hp-bar hp-high" id="enemy-hp-bar" style="width:100%"></div>
+              </div>
+              <div id="enemy-team-status" style="margin-top:2px;display:flex;gap:3px;font-size:10px;"></div>
+              <div class="battle-hp-text" id="enemy-hp-text">HP: ?/?</div>
+              <div id="enemy-iv-total" style="display:none;font-size:9px;color:#a855f7;margin-top:2px;font-family:'Press Start 2P',monospace;letter-spacing:0.5px;"></div>
+            </div>
+          </div>
+
+          <!-- TOP-RIGHT: Enemy sprite -->
+          <div style="display:flex;align-items:flex-start;justify-content:flex-end;">
+            <div id="enemy-sprite-wrap"
+              style="height:100%;width:100%;display:flex;align-items:flex-start;justify-content:flex-end;">
+              <img id="enemy-sprite-img" src="" alt=""
+                style="height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
+
+            </div>
+          </div>
+
+          <!-- BOTTOM-LEFT: Player sprite -->
+          <div style="display:flex;align-items:flex-end;justify-content:flex-start;">
+            <div id="player-sprite-wrap"
+              style="height:100%;width:100%;display:flex;align-items:flex-end;justify-content:flex-start;">
+              <img id="player-sprite-img" src="" alt=""
+                style="height:100%;width:auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.9));display:none;">
+
+            </div>
+          </div>
+
+          <!-- BOTTOM-RIGHT: Player HP info -->
+          <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-bottom:10px;">
+            <div class="battle-pokemon-info" style="text-align:right;">
+              <div class="battle-name"><span id="player-name">???</span> <span id="player-gender"
+                  class="gender-badge"></span></div>
+              <div class="battle-level" id="player-battle-level">Nv. 1</div>
+              <div class="hp-bar-wrap">
+                <div class="hp-bar hp-high" id="player-hp-bar" style="width:100%"></div>
+              </div>
+              <div class="exp-bar-wrap">
+                <div class="exp-bar" id="player-exp-bar" style="width:0%"></div>
+              </div>
+              <div class="battle-hp-text" id="player-hp-text">HP: ?/?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="battle-log" id="battle-log">
+        <div class="log-entry log-info">┬íUn Pok├®mon salvaje apareci├│!</div>
+      </div>
+
+      <div id="move-panel">
+        <div class="battle-actions" id="move-buttons"></div>
