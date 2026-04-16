@@ -1,0 +1,117 @@
+// src/styles/core/_base.scss
+@use 'tools' as *;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  color: $text;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  user-select: none;
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(59, 139, 255, 0.05) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(199, 125, 255, 0.05) 0%, transparent 60%),
+    linear-gradient(180deg, #0c0f1a 0%, #000 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  animation: none; // Removing shift to prioritize premium stillness as per original
+
+  // Custom Scrollbar Parity
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    &:hover { background: rgba(255, 255, 255, 0.22); background-clip: content-box; }
+  }
+}
+
+@keyframes bgShift {
+  0%, 100% { background-position: 50% 50%; }
+  50% { background-position: 60% 60%; }
+}
+
+// Global Dark Mode Base
+input, select, textarea, button {
+  font-family: inherit;
+  &:focus { outline: none; }
+}
+
+input[type="text"], input[type="password"], select, textarea {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  padding: 10px 14px;
+  transition: all 0.2s;
+  &:focus {
+    border-color: var(--blue);
+    background: rgba(0, 0, 0, 0.45);
+    box-shadow: 0 0 10px rgba(10, 132, 255, 0.25);
+  }
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 135px 12px 12px 12px; // 135px top to clear the HUD
+  box-sizing: border-box;
+  overflow: visible !important;
+  scrollbar-width: none;
+  
+  @media (min-width: 1200px) {
+    padding: 135px 40px 20px 40px;
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(59, 139, 255, 0.03) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(199, 125, 255, 0.03) 0%, transparent 60%);
+  animation: starsFloat 60s linear infinite;
+}
+
+// Global premium shadows for main containers
+.hud,
+.team-section,
+.battle-log,
+.battle-pokemon-info,
+.friend-card,
+.market-card,
+.gym-card,
+.location-card,
+.starter-card,
+.team-card,
+#battle-screen .battle-container {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.18));
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 $edge-light;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+}

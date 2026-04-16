@@ -140,6 +140,63 @@
           .filter((id) => typeof id === 'string' && id.trim().length > 0)
       )].slice(-250);
     }
+    
+    function hideAuthLoadingTemporarily() {
+      const loading = document.getElementById('auth-loading');
+      if (loading) loading.style.display = 'none';
+      const indicator = document.getElementById('auth-loading-msg');
+      if (indicator) indicator.textContent = 'Error de conexión...';
+    }
+
+    function showSyncRetryOverlay(err, retryFn) {
+        let overlay = document.getElementById('sync-error-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'sync-error-overlay';
+            overlay.className = 'sync-overlay';
+            document.body.appendChild(overlay);
+        }
+        overlay.innerHTML = `
+            <div class="sync-modal">
+                <div class="sync-icon">⚠️</div>
+                <h2>Problema de Conexión</h2>
+                <p>No pudimos verificar tu progreso en la nube de forma segura.</p>
+                <div class="sync-error-detail">${err.message || 'Error de red desconocido'}</div>
+                <button class="sync-retry-btn" id="sync-retry-trigger">REINTENTAR CONEXIÓN</button>
+            </div>
+        `;
+        overlay.style.display = 'flex';
+        document.getElementById('sync-retry-trigger').onclick = () => {
+            overlay.style.display = 'none';
+            setAuthLoading(true);
+            retryFn();
+        };
+    }
+
+    function showResyncOverlay() {
+        let overlay = document.getElementById('resync-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'resync-overlay';
+            overlay.className = 'sync-overlay resync-mode';
+            document.body.appendChild(overlay);
+        }
+        overlay.innerHTML = `
+            <div class="sync-modal">
+                <div class="sync-icon">🔄</div>
+                <h2>¡Resincronizando!</h2>
+                <p>Se detectó progreso más nuevo en otro dispositivo.</p>
+                <p>Recargando los datos más recientes para evitar pérdida de progreso...</p>
+                <div class="sync-spinner"></div>
+            </div>
+        `;
+        overlay.style.display = 'flex';
+        // Forzar recarga después de 3 segundos
+        setTimeout(() => {
+            location.reload();
+        }, 3000);
+    }
+
     async function doLogin() {
       const email = document.getElementById('login-email').value.trim();
       const password = document.getElementById('login-password').value;
@@ -267,6 +324,7 @@
       else console.warn("[AUTH] resetGameState not available (yet?)");
 
       setAuthLoading(true);
+      if (typeof window.showLoading === 'function') window.showLoading('Sincronizando partida...');
       try {
         const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
         const username = profile?.username || user.user_metadata?.username || user.email.split('@')[0];
@@ -282,7 +340,8 @@
             monitorSession(user.id);
         }
         
-        // 1. Obtener Guardado (El Router decidirá si Nube o SQLite)
+        // 1. Obtener Guardado (Prioridad Absoluta según Modo)
+        const isOnlineMode = !sb.isOffline && user.id.indexOf('local_') === -1;
         const { data: saves, error: saveError } = await sb
           .from('game_saves')
           .select('*')
@@ -291,23 +350,38 @@
           .limit(1);
         
         const saveRow = Array.isArray(saves) ? saves[0] : (saves || null);
-        if (LoginGuard.shouldAbortSaveLoad(saveError)) throw saveError;
-        
-        let finalSaveData = saveRow?.save_data;
 
-        // 2. Obtener Guardado Local (Failsafe Sync)
-        const localSaveKey = 'pokemon_local_save_' + user.id;
-        const localRaw = localStorage.getItem(localSaveKey);
-        if (localRaw) {
-          try {
-            const localData = JSON.parse(localRaw);
-            const cloudTime = saveRow?.updated_at ? new Date(saveRow.updated_at).getTime() : 0;
-            const localTime = localData._last_updated || 0;
-            if (localTime > cloudTime + 3000) {
+        // Si falló la carga inicial en Modo Online/Local, NO continuar. Mostrar error.
+        if (saveError) {
+            console.error("[AUTH] Error cargando partida prioritaria:", saveError);
+            if (typeof window.hideLoading === 'function') window.hideLoading();
+            hideAuthLoadingTemporarily();
+            showSyncRetryOverlay(saveError, () => onLogin(user));
+            return;
+        }
+
+        let finalSaveData = saveRow?.save_data;
+        window.lastLoadTime = saveRow?.updated_at ? new Date(saveRow.updated_at).getTime() : 0;
+
+        // 2. Manejo de Respaldo (Backup del Navegador / Failsafe)
+        // La Fuente de Verdad (Nube o Base Local) es LEY. Solo usamos el navegador si la DB está VACÍA.
+        if (!finalSaveData) {
+          const localSaveKey = 'pokemon_local_save_' + user.id;
+          const localRaw = localStorage.getItem(localSaveKey);
+          if (localRaw) {
+            try {
+              const localData = JSON.parse(localRaw);
               finalSaveData = localData;
-              notify('Se restauró tu progreso local más reciente.', '🔄');
-            }
-          } catch(e) { console.warn('[SAVE] Error comparando guardado local:', e); }
+              // Notificar restauración silenciosamente
+              console.log("[AUTH] Se restauró un respaldo del navegador (Base de Datos vacía).");
+              // notify('Se restauró un respaldo del navegador (Base de Datos vacía).', '🔄');
+              // Forzar guardado inmediato en la Base Local para que deje de estar vacía
+              setTimeout(() => {
+                console.log("[AUTH] Promocionando respaldo a Base Local...");
+                saveGame(false);
+              }, 1000);
+            } catch(e) { console.warn('[SAVE] Error restaurando respaldo:', e); }
+          }
         }
 
         if (finalSaveData) {
@@ -376,9 +450,22 @@
             }
           } catch (initErr) {
             console.error("[AUTH] Error crítico durante inicialización visual legacy:", initErr);
+          } finally {
+            if (typeof window.hideLoading === 'function') window.hideLoading();
           }
           
-          notify(`¡Bienvenido de vuelta, ${username}! ${state.eggs && state.eggs.length > 0 ? '(🥚 '+state.eggs.length+' huevos)' : ''}`, '👋');
+          // Notificar origen oficial consolidado
+          if (username !== 'guest') {
+            const isActuallyOnline = !sb.isOffline && user.id.indexOf('local_') === -1;
+            if (isActuallyOnline) {
+              notify(`✅ Sesión iniciada: Nube (Supabase)`, '🌐');
+            } else {
+              const label = window.isNewDatabase ? '🆕 Nueva base de datos creada' : '✅ Sesión iniciada: Base Local';
+              notify(label, '💾');
+            }
+          }
+
+          // notify(`¡Bienvenido de vuelta, ${username}! ${state.eggs && state.eggs.length > 0 ? '(🥚 '+state.eggs.length+' huevos)' : ''}`, '👋');
         } else {
           // No save found
           state.trainer = username;
@@ -581,14 +668,27 @@
       }
 
       if (currentServer === LOCAL_URL) {
-        if (showNotif) flashSaveIndicator();
+        if (showNotif) notify('Juego Guardado (Base Local)', '💾');
         return;
       }
 
       _isSaving = true;
       try {
         const nowIso = new Date().toISOString();
-        
+        const isOnline = currentServer !== LOCAL_URL;
+
+        // SEGURIDAD EXTRA: Antes de guardar Online, verificar si hay algo más nuevo
+        if (isOnline) {
+            const { data: checkData } = await sb.from('game_saves').select('updated_at').eq('user_id', currentUser.id).maybeSingle();
+            const remoteTime = checkData?.updated_at ? new Date(checkData.updated_at).getTime() : 0;
+            
+            if (remoteTime > window.lastLoadTime + 1000) {
+                console.warn("[SAVE] Conflicto de versiones detectado. La Nube tiene datos más nuevos.");
+                showResyncOverlay();
+                return;
+            }
+        }
+
         // El Router se encarga de dirigir esto a Supabase o SQLite
         const { error } = await sb.from('game_saves').upsert({
           user_id: currentUser.id,
@@ -597,6 +697,9 @@
         }, { onConflict: 'user_id' });
 
         if (error) throw error;
+        
+        // Actualizar marca de tiempo local para el próximo guardado
+        window.lastLoadTime = new Date(nowIso).getTime();
 
         // Sincronización de perfil (El Router fallará silenciosamente o irá a SQLite si no hay conexión)
         try {
@@ -612,7 +715,7 @@
             .match({ id: currentUser.id });
         } catch (syncErr) {}
 
-        if (showNotif) flashSaveIndicator();
+        if (showNotif) notify('Juego Guardado (Nube)', '☁️');
         const el = document.getElementById('profile-last-save');
         if (el) el.textContent = 'Guardado: ' + new Date().toLocaleTimeString();
       } catch (e) {
@@ -638,13 +741,6 @@
       }
     });
 
-    function flashSaveIndicator() {
-      const el = document.getElementById('save-indicator');
-      if (el) {
-        el.classList.add('show');
-        setTimeout(() => el.classList.remove('show'), 2500);
-      }
-    }
 
     // ── Profile Panel ──────────────────────────────────────────────────────────
     function _normalizeProfileNotificationHistory() {
@@ -913,6 +1009,7 @@
         setTimeout(() => {
           ov.querySelector('#close-hatch').style.display = 'inline-block';
           ov.querySelector('#close-hatch').onclick = () => {
+            if (typeof window.showLoading === 'function') window.showLoading('Sincronizando con la Nube...');
             ov.remove();
             renderTeam();
             updateProfilePanel();
@@ -958,6 +1055,10 @@
       }
 
       try {
+        // 0. Asegurar que la Base de Datos esté lista antes de cualquier consulta
+        if (typeof initSQLite === 'function') await initSQLite();
+        else if (window.DBRouter && typeof window.DBRouter.initSQLite === 'function') await window.DBRouter.initSQLite();
+
         // 1. Intentar sesión en la nube (si no estamos forzando local)
         const isLocalChoice = window.currentServer === LOCAL_URL;
         let session = null;

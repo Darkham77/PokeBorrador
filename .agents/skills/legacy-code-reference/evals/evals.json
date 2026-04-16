@@ -1,0 +1,17 @@
+{
+  "skill_name": "legacy-code-reference",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Quiero comparar cómo se manejaban los diálogos en el código viejo antes de Vue. ¿Qué archivos debería mirar en el backup?",
+      "expected_output": "The agent should identify relevant files in backup_legacy_code/js/ (like battle.js or a dialogue script) and list them without modifying anything.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "Busca en el backup pre-vue si existía alguna lógica para el 'pokerus' en los archivos de datos.",
+      "expected_output": "The agent should search for 'pokerus' in the backup_legacy_code/ directory and report findings.",
+      "files": []
+    }
+  ]
+}

@@ -11,13 +11,23 @@ const gameStore = useGameStore()
       <p>{{ gameStore.state.team.length }} / 6 Pokémon</p>
     </div>
 
-    <div v-if="gameStore.state.team.length === 0" class="empty-state">
+    <div
+      v-if="gameStore.state.team.length === 0"
+      class="empty-state"
+    >
       <span class="empty-icon">🎒</span>
       <p>No tenés Pokémon en tu equipo todavía.</p>
     </div>
 
-    <div v-else class="team-grid">
-      <div v-for="(p, i) in gameStore.state.team" :key="i" class="pokemon-card">
+    <div
+      v-else
+      class="team-grid"
+    >
+      <div
+        v-for="(p, i) in gameStore.state.team"
+        :key="i"
+        class="pokemon-card"
+      >
         <!-- Contenido de la carta -->
         <p>{{ p.name }}</p>
       </div>

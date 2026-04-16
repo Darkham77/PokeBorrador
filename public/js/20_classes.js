@@ -950,7 +950,8 @@ function sellPokemonBlackMarket(pokemon, boxIndex) {
 
   const ivs = pokemon.ivs || {};
   const totalIv = Object.values(ivs).reduce((s, v) => s + (v || 0), 0);
-  const price = Math.floor((pokemon.level * 100 + (totalIv / 186) * 1000) * 1.5);
+  const pLevel = pokemon.level || 1;
+  const price = Math.floor((pLevel * 100 + (totalIv / 186) * 1000) * 1.5);
 
   const ov = document.createElement('div');
   ov.id = 'black-market-sell-modal';
@@ -966,7 +967,7 @@ function sellPokemonBlackMarket(pokemon, boxIndex) {
         </div>
         <div style="font-size:20px;color:#22c55e;font-weight:bold;">₽${price.toLocaleString()}</div>
         <div style="font-size:10px;color:#9ca3af;margin-top:4px;">
-          Nv.${pokemon.level} · IV Total: ${totalIv}/186
+          Nv.${pokemon.level || 1} · IV Total: ${totalIv}/186
         </div>
         <div style="font-size:10px;color:#f87171;margin-top:8px;">⚠️ Esta acción es irreversible.</div>
       </div>
@@ -1216,7 +1217,8 @@ function generateBugNetPokemon(ivFloor, shinyDivisor) {
 function calcRocketMissionMoney(pokeList, mult) {
   const subtotal = pokeList.reduce((acc, p) => {
     const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
-    const val = 2000 + (p.level * 200) + (totalIvs * 50);
+    const pLevel = p.level || 1;
+    const val = 2000 + (pLevel * 200) + (totalIvs * 50);
     return acc + val;
   }, 0);
   return Math.floor(subtotal * mult);
@@ -1289,13 +1291,14 @@ function _openRocketSacrificeModal(missionId, info) {
     el.innerHTML = selected.length === 0
       ? `<div style="color:#6b7280;font-size:11px;text-align:center;padding:12px;border:1px dashed #ef444444;border-radius:12px;background:rgba(239,68,68,0.02);">Aún no seleccionaste ningún Pokémon</div>`
       : `<div style="display:flex;flex-direction:column;gap:6px;">` + selected.map((p, i) => {
-          const projected = 1000 + (p.level * 100) + (Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0) * 25);
+          const pLevel = p.level || 1;
+          const projected = 1000 + (pLevel * 100) + (Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0) * 25);
           return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(239,68,68,0.1);border-radius:10px;padding:8px 12px;border:1px solid rgba(239,68,68,0.3);">
             <div style="display:flex;align-items:center;gap:8px;">
               <span></span>
               <div>
                 <div style="font-size:11px;font-weight:bold;color:#e2e8f0;">${p.name || p.id}</div>
-                <div style="font-size:9px;color:#9ca3af;">Nv.${p.level} · <strong style="color:#22c55e;">≈₽${projected.toLocaleString()}</strong></div>
+                <div style="font-size:9px;color:#9ca3af;">Nv.${p.level || 1} · <strong style="color:#22c55e;">≈₽${projected.toLocaleString()}</strong></div>
               </div>
             </div>
             <button onclick="_rocketDeselect(${i})" style="background:rgba(239,68,68,0.2);border:none;border-radius:6px;width:24px;height:24px;color:#ef4444;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:0.1s;" onmouseover="this.style.background='rgba(239,68,68,0.4)'" onmouseout="this.style.background='rgba(239,68,68,0.2)'">✕</button>
@@ -1334,7 +1337,8 @@ function _openRocketSacrificeModal(missionId, info) {
     const totalIvs = Object.values(p.ivs || {}).reduce((s, v) => s + (v || 0), 0);
     const tags = p.tags || [];
     const spriteUrl = (typeof getSpriteUrl === 'function') ? getSpriteUrl(p.id, p.isShiny) : '';
-    const projected = 1000 + (p.level * 100) + (totalIvs * 25);
+    const pLevel = p.level || 1;
+    const projected = 1000 + (pLevel * 100) + (totalIvs * 25);
 
     const tagsHtml = tags.length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;">
       ${tags.includes('fav')   ? '<span style="background:rgba(251,191,36,0.2);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);border-radius:6px;padding:1px 6px;font-size:10px;">⭐ Fav</span>' : ''}
@@ -1368,7 +1372,7 @@ function _openRocketSacrificeModal(missionId, info) {
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:12px;font-weight:bold;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name || p.id}${shinyBadge}</div>
-          <div style="font-size:10px;color:#9ca3af;">Nv.${p.level} · ${p.nature || '—'}</div>
+          <div style="font-size:10px;color:#9ca3af;">Nv.${p.level || 1} · ${p.nature || '—'}</div>
           ${tagsHtml}
         </div>
       </div>
@@ -1525,7 +1529,7 @@ function _openPokemonSelectModal(missionId, info, cls) {
           <span style="margin:0 4px;color:#374151;">|</span>
           <span style="font-size:10px;color:#6b7280;">IV Total: <strong style="color:#e2e8f0;">${totalIvs}/186</strong></span>
         </div>`
-      : `<div style="font-size:10px;color:#3b82f6;margin-top:6px;">⚡ ~${(25000 + p.level * 1000) * info.blocks} EXP totales</div>`;
+      : `<div style="font-size:10px;color:#3b82f6;margin-top:6px;">⚡ ~${(25000 + (p.level || 1) * 1000) * info.blocks} EXP totales</div>`;
 
     const shinyBadge = p.isShiny ? '<span style="font-size:11px;margin-left:4px;">✨</span>' : '';
 
@@ -1540,7 +1544,7 @@ function _openPokemonSelectModal(missionId, info, cls) {
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:12px;font-weight:bold;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name || p.id}${shinyBadge}</div>
-          <div style="font-size:10px;color:#9ca3af;">Nv.${p.level} · ${p.nature || '—'}</div>
+          <div style="font-size:10px;color:#9ca3af;">Nv.${p.level || 1} · ${p.nature || '—'}</div>
           ${tagsHtml}
         </div>
       </div>

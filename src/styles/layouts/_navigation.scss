@@ -1,0 +1,149 @@
+// src/styles/layouts/_navigation.scss
+@use '../core/tools' as *;
+
+// Desktop Navigation (Top - Inside HUD)
+.hud-nav {
+  display: flex;
+  gap: spacing(2);
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+  
+  @include responsive(1250px) {
+    display: none !important;
+  }
+}
+
+.hud-nav-btn {
+  background: #1a1a20;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: spacing(2) spacing(3.5);
+  color: #fff;
+  font-family: $font-ui;
+  font-weight: 700;
+  font-size: 13px;
+  @include flex-center;
+  gap: spacing(1.5);
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  &:hover {
+    transform: translate3d(0, -2px, 0);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 255, 255, 0.12);
+    filter: brightness(1.05);
+  }
+
+  &.active {
+    background: rgba($yellow, 0.15);
+    color: $yellow;
+    border-color: $yellow;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 18px rgba($yellow, 0.35);
+  }
+}
+
+// Mobile/Tablet Navigation (Bottom Bar)
+.nav {
+  display: none; // Hidden on PC
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(20px);
+  margin-bottom: 0;
+  padding: 8px 12px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  z-index: 5000;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  justify-content: space-around;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+  flex-wrap: nowrap;
+  gap: 4px;
+
+  @include responsive(1250px) {
+    display: flex !important;
+  }
+}
+
+.nav-btn {
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  border: none !important;
+  background: transparent !important;
+  padding: 6px 4px !important;
+  font-size: 7px !important;
+  gap: 4px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: $gray;
+  transition: all 0.2s;
+
+  span:first-child {
+    font-size: 20px;
+    line-height: 1;
+    @media (max-width: 380px) { font-size: 16px; }
+  }
+
+  span:last-child {
+    display: block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
+    font-family: $font-pixel;
+  }
+
+  &:hover {
+    color: #fff;
+  }
+
+  &.active {
+    color: $yellow;
+    text-shadow: 0 0 8px rgba($yellow, 0.3);
+  }
+
+  @media (max-width: 380px) {
+    font-size: 5px !important;
+  }
+}
+
+// Submenus common logic
+.hud-submenu,
+.nav-submenu {
+  position: absolute;
+  @include glass($card, 12px);
+  border-radius: 12px;
+  padding: spacing(2);
+  display: none;
+  flex-direction: column;
+  gap: spacing(1);
+  z-index: z(modal);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  min-width: 160px;
+  
+  &.active,
+  .hud-group.is-open &,
+  .nav-group.is-open & {
+    display: flex;
+  }
+}
+
+// Suppress tooltips when menu is open
+.hud-group.is-open .pv-tooltip {
+  display: none !important;
+}
+
+// Safe area for notch devices
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (max-width: 1024px) {
+    .nav {
+      padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    }
+  }
+}

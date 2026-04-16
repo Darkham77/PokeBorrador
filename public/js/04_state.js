@@ -777,3 +777,34 @@ function processLearnMoveQueue(queue, onAllDone) {
   const { pokemon, move } = queue.shift();
   showLearnMoveMenu(pokemon, move, () => processLearnMoveQueue(queue, onAllDone));
 }
+
+/**
+ * Helper global para inyectar Pokémon de forma consistente (Realismo + Persistencia).
+ * Usado por Skills y Scripts de prueba.
+ */
+window.injectPokemonToBox = async function(p, silent = false) {
+  if (!p || !p.id) return { success: false, error: 'Pokémon inválido' };
+  
+  // 1. Asegurar Pokedex
+  if (!state.pokedex.includes(p.id)) state.pokedex.push(p.id);
+  if (!state.seenPokedex.includes(p.id)) state.seenPokedex.push(p.id);
+  
+  // 2. Inyectar en Caja
+  state.box = state.box || [];
+  state.box.push(p);
+  
+  // 3. Persistencia
+  if (typeof saveGame === 'function') {
+    await saveGame(false); // Guardado inmediato
+  } else if (typeof scheduleSave === 'function') {
+    scheduleSave();
+  }
+  
+  // 4. Feedback
+  if (!silent) {
+    if (typeof notify === 'function') notify(`¡${p.name} añadido a la caja!`, '📥');
+    if (typeof updateHud === 'function') updateHud();
+  }
+  
+  return { success: true, pokemon: p };
+};

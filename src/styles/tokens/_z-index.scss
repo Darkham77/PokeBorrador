@@ -1,0 +1,13 @@
+// src/styles/tokens/_z-index.scss
+
+$z-layers: (
+  background:   0,
+  content:      1,
+  hud:          8000,
+  navigation:   5000,
+  modal:        11000,
+  tooltip:      12000,
+  rival-effect: 13000,
+  buff-panel:   10000,
+  loading:      99999,
+);

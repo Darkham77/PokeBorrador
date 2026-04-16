@@ -1,0 +1,83 @@
+// src/styles/components/_buffs.scss
+@use '../core/tools' as *;
+
+#buff-panel {
+  position: fixed;
+  left: 0;
+  top: 160px;
+  z-index: z(buff-panel);
+  display: flex;
+  flex-direction: column;
+  gap: spacing(1.5);
+  pointer-events: none;
+}
+
+.buff-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+  cursor: default;
+  
+  &:hover .buff-tooltip {
+    opacity: 1;
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+.buff-collapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  @include glass(rgba(10, 10, 20, 0.92), 6px);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  padding: 6px spacing(2) 5px 6px;
+  gap: 3px;
+  min-width: 44px;
+  box-shadow: 3px 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.buff-sprite {
+  @include sprite-render;
+  width: 28px;
+  height: 28px;
+}
+
+.buff-timer-badge {
+  font-size: 9px;
+  font-family: $font-pixel;
+  color: $yellow;
+  white-space: nowrap;
+}
+
+.buff-tooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  @include glass(rgba(10, 10, 20, 0.96), 8px);
+  border: 1px solid rgba($yellow, 0.3);
+  border-radius: 0 10px 10px 0;
+  padding: spacing(2) spacing(3);
+  min-width: 180px;
+  max-width: 220px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-10px, -50%, 0);
+  transition: all 0.2s ease;
+  box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+// Event specialized styling
+.buff-item.event {
+  .buff-collapsed {
+    border: 1px solid $yellow;
+    box-shadow: 0 0 12px rgba($yellow, 0.4);
+    background: rgba(25, 20, 5, 0.95);
+  }
+  .buff-timer-badge {
+    color: #fff;
+    text-shadow: 0 0 5px $yellow;
+  }
+}

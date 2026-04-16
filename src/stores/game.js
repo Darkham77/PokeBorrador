@@ -28,7 +28,19 @@ export const useGameStore = defineStore('game', () => {
     avatar_style: null,
     classData: {},
     missions: [],
-    isReady: false
+    isReady: false,
+    uiSelection: {
+      teamRocketMode: false,
+      teamRocketSelected: [],
+      teamReleaseMode: false,
+      teamReleaseSelected: [],
+      boxRocketMode: false,
+      boxRocketSelected: [],
+      boxReleaseMode: false,
+      boxReleaseSelected: [],
+      isOverlayLoading: false,
+      overlayMessage: 'Cargando...'
+    }
   })
 
   function updateState(newData) {
@@ -53,7 +65,14 @@ export const useGameStore = defineStore('game', () => {
     
     props.forEach(prop => {
       if (legacyState[prop] !== undefined) {
-        state[prop] = legacyState[prop]
+        const val = legacyState[prop];
+        if (Array.isArray(val)) {
+          state[prop] = [...val];
+        } else if (val !== null && typeof val === 'object') {
+          state[prop] = { ...val };
+        } else {
+          state[prop] = val;
+        }
       }
     })
 

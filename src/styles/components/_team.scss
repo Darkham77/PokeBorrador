@@ -1,0 +1,111 @@
+// src/styles/components/_team.scss
+@use '../core/tools' as *;
+@use 'sass:color';
+
+.team-section {
+  @include card-premium;
+  padding: spacing(4);
+  margin-bottom: spacing(4);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: spacing(3);
+  overflow: visible !important; 
+}
+
+.team-card {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible; 
+  cursor: pointer;
+  @include gpu-layer;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+
+  &:hover {
+    border-color: rgba($yellow, 0.3);
+    transform: scale3d(1.05, 1.05, 1) translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+    z-index: 10;
+  }
+}
+
+.team-pokemon-name {
+  font-family: $font-pixel;
+  font-size: 8px;
+  margin-bottom: spacing(2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.team-pokemon-level {
+  font-size: 11px;
+  color: $yellow;
+  font-weight: 700;
+  margin-bottom: spacing(2);
+}
+
+// Top Row Badges Container
+.card-badges-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+  pointer-events: none;
+}
+
+.tier-badge {
+  font-family: $font-pixel;
+  font-size: 6px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  line-height: 1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+
+  &.tier-s-plus { color: #FFD700; background: rgba(255, 215, 0, 0.18); border-color: rgba(255, 215, 0, 0.3); }
+  &.tier-s { color: #FFA500; background: rgba(255, 165, 0, 0.15); border-color: rgba(255, 165, 0, 0.3); }
+  &.tier-a { color: #bf5af2; background: rgba(191, 90, 242, 0.15); border-color: rgba(191, 90, 242, 0.3); }
+  &.tier-b { color: #0a84ff; background: rgba(10, 132, 255, 0.15); border-color: rgba(10, 132, 255, 0.3); }
+  &.tier-c { color: #32d74b; background: rgba(50, 215, 75, 0.15); border-color: rgba(50, 215, 75, 0.3); }
+}
+
+.level-badge {
+  background: rgba(255, 255, 255, 0.05);
+  color: $yellow;
+  border: 1px solid rgba(255, 217, 61, 0.2);
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.gender-badge {
+  display: inline-flex;
+  @include flex-center;
+  font-size: 10px;
+  line-height: 1;
+  vertical-align: middle;
+  padding: 2px;
+  border-radius: 4px;
+  
+  &.male, &.gender-male { color: #59a6ff; }
+  &.female, &.gender-female { color: #ff7eb9; }
+}
+
+.shiny-badge-mini {
+  display: inline-flex;
+  font-size: 10px;
+  filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4));
+}

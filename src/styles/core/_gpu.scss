@@ -1,0 +1,29 @@
+// src/styles/core/_gpu.scss
+
+/// Promueve un elemento a su propia capa GPU (compositing layer)
+@mixin gpu-layer {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/// Declara qué propiedades van a cambiar para que el browser las pre-optimice
+@mixin will-animate($properties...) {
+  will-change: $properties;
+}
+
+/// Contenedor optimizado para scroll suave (listas de Pokémon, PC Box)
+@mixin smooth-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  @include gpu-layer;
+}
+
+/// Imágenes de sprites Pokémon siempre en capa GPU para evitar flicker y mejorar render
+@mixin sprite-render {
+  image-rendering: pixelated;
+  @include gpu-layer;
+  contain: layout style paint;
+}

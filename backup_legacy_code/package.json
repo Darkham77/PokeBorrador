@@ -1,0 +1,13 @@
+{
+  "name": "@workspace/poke-vicio",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.100.1",
+    "finalhandler": "^1.2.0",
+    "serve-static": "^1.15.0"
+  }
+}

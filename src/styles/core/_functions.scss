@@ -1,0 +1,20 @@
+@use 'sass:map';
+@use '../tokens/z-index' as *;
+
+@function spacing($n) {
+  @return $n * 4px;
+}
+
+@function cl-alpha($color, $opacity) {
+  @return rgba($color, $opacity);
+}
+
+// Z-index helper using the planned map in tokens
+@function z($layer) {
+  @if map.has-key($z-layers, $layer) {
+    @return map.get($z-layers, $layer);
+  } @else {
+    @warn "Unknown z-index layer #{$layer}";
+    @return 100; // Safe content fallback
+  }
+}

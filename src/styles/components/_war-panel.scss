@@ -1,0 +1,121 @@
+// src/styles/components/_war-panel.scss
+@use '../core/tools' as *;
+
+// War Panel Specific Tokens (Defined here if scoped, or used from variables)
+$union-color: #3b82f6;
+$poder-color: #ef4444;
+
+.war-dashboard-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 80vh;
+
+  @media (min-width: 1025px) {
+    display: grid;
+    grid-template-columns: 480px 1fr;
+    align-items: start;
+    gap: 40px;
+  }
+}
+
+.war-sidebar {
+  background: rgba(15, 15, 23, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 24px;
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.war-score-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  .score-team {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    &.union .team-val { color: $union-color; text-shadow: 0 0 10px rgba($union-color, 0.4); }
+    &.poder .team-val { color: $poder-color; text-shadow: 0 0 10px rgba($poder-color, 0.4); }
+  }
+
+  .team-label { color: $gray; font-size: 7px; font-family: $font-pixel; margin-bottom: 4px; display: block; }
+  .team-val { color: #fff; font-weight: 900; font-size: 16px; }
+}
+
+.war-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(5px);
+  }
+
+  .war-stat-label { font-size: 9px; color: $gray; margin-bottom: 2px; display: block; }
+  .war-stat-value { font-size: 13px; font-weight: 800; color: #fff; font-family: $font-pixel; }
+}
+
+.war-grid-premium {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.war-map-card {
+  position: relative;
+  height: 200px;
+  border-radius: 28px;
+  overflow: hidden;
+  background-size: 180%;
+  background-position: center bottom;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:hover {
+    transform: translateY(-8px) scale3d(1.02, 1.02, 1);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+    z-index: 5;
+  }
+}
+
+.war-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.7) 100%);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.war-central-bar {
+  height: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+  display: flex;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+
+  .bar-union { height: 100%; transition: width 0.5s ease; background: $union-color; box-shadow: 0 0 10px $union-color; }
+  .bar-poder { height: 100%; transition: width 0.5s ease; background: $poder-color; box-shadow: 0 0 10px $poder-color; }
+}

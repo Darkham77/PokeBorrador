@@ -42,6 +42,15 @@ onMounted(async () => {
       console.error('[App] Failed to initialize StateBridge:', e)
     }
   }, 300)
+
+  // 4. Global Loading Hooks para el motor Legacy
+  window.showLoading = (msg = 'Preparando aventura...') => {
+    gameStore.state.overlayMessage = msg
+    gameStore.state.isOverlayLoading = true
+  }
+  window.hideLoading = () => {
+    gameStore.state.isOverlayLoading = false
+  }
 })
 </script>
 
@@ -53,8 +62,11 @@ onMounted(async () => {
         <LegacyInterface v-if="gameStore.state.isReady" />
         
         <!-- Pantalla de carga mientras el motor lee archivos locales -->
-        <div v-else class="loading-overlay">
-          <div class="loader"></div>
+        <div
+          v-else
+          class="loading-overlay"
+        >
+          <div class="loader" />
           <p>Escribiendo tu historia...</p>
         </div>
       </template>
@@ -62,14 +74,35 @@ onMounted(async () => {
       <router-view v-else />
     </template>
     
-    <div v-show="authStore.loading" class="loading-overlay">
-      <div class="loader"></div>
+    <div
+      v-show="authStore.loading"
+      class="loading-overlay"
+    >
+      <div class="loader" />
       <p>Cargando Poké Vicio...</p>
+    </div>
+
+    <!-- Overlay Global para Sincronización y Procesos Largos -->
+    <div
+      v-if="gameStore.state.isOverlayLoading"
+      class="loading-overlay global-overlay"
+    >
+      <div class="loader" />
+      <p>{{ gameStore.state.overlayMessage }}</p>
+      <span class="sub-text">Por favor, no cierres la ventana</span>
     </div>
   </div>
 </template>
 
 <style>
+#vue-app {
+  min-height: 100vh;
+}
+
+.zoom-target {
+  zoom: var(--app-zoom, 1);
+}
+
 .loading-overlay {
   position: fixed;
   inset: 0;
@@ -84,6 +117,23 @@ onMounted(async () => {
   color: var(--yellow);
   font-family: 'Press Start 2P', monospace;
   font-size: 12px;
+  text-align: center;
+}
+
+.loading-overlay p {
+  margin-top: 25px;
+  margin-bottom: 10px;
+}
+
+.loading-overlay .sub-text {
+  font-size: 8px;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+
+.loading-overlay.global-overlay {
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(8px);
 }
 
 .loader {

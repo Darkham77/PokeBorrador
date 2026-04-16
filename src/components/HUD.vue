@@ -15,13 +15,17 @@ async function handleLogout() {
     <div class="hud-trainer">
       <span class="trainer-avatar">🧢</span>
       <div>
-        <div class="trainer-name">{{ gameStore.state.name }}</div>
-        <div class="trainer-info">Entrenador Nv. <span>{{ gameStore.state.level }}</span></div>
+        <div class="trainer-name">
+          {{ gameStore.state.name }}
+        </div>
+        <div class="trainer-info">
+          Entrenador Nv. <span>{{ gameStore.state.level }}</span>
+        </div>
         <div class="exp-bar-container">
           <div 
             class="exp-bar-fill"
             :style="{ width: (gameStore.state.exp / gameStore.state.expNeeded * 100) + '%' }"
-          ></div>
+          />
         </div>
       </div>
     </div>
@@ -32,10 +36,15 @@ async function handleLogout() {
         <span>{{ gameStore.state.money }}</span>
       </div>
       <div class="hud-pill money-pill">
-        <i class="fas fa-coins"></i>
+        <i class="fas fa-coins" />
         <span>{{ gameStore.state.bc }}</span>
       </div>
-      <button class="logout-btn" @click="handleLogout">✕</button>
+      <button
+        class="logout-btn"
+        @click="handleLogout"
+      >
+        ✕
+      </button>
     </div>
   </div>
 </template>

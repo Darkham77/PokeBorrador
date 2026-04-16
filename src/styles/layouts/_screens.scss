@@ -1,0 +1,269 @@
+@use 'sass:string';
+@use '../core/tools' as *;
+
+#app {
+  @media (max-width: 1024px) {
+    padding-bottom: 80px !important;
+  }
+}
+
+// Safe area support for #app
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (max-width: 1024px) {
+    #app {
+      padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+    }
+  }
+}
+
+.screen {
+  display: none;
+  animation: fadeIn 0.4s ease;
+  overflow: visible !important;
+  @include gpu-layer;
+  
+  &.active {
+    display: block;
+    
+    &#auth-screen,
+    &#title-screen {
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+  }
+}
+
+#auth-screen {
+  display: none !important;
+  &.active {
+    display: flex !important;
+  }
+}
+
+#title-screen {
+  &.active {
+    text-align: center;
+    padding: spacing(10) spacing(5);
+  }
+}
+
+#game-screen {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// Map Layout (New Premium 2026)
+.map-grid {
+  display: block; // Ensures it doesn't grid other items
+}
+
+.map-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: spacing(5);
+  margin-top: spacing(3);
+  margin-bottom: spacing(10);
+  overflow: visible !important;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: spacing(4);
+  }
+}
+
+// Pokemon Center & Banner Split Layout
+.pc-split-container {
+  display: flex !important;
+  gap: 16px;
+  margin-bottom: 25px;
+  width: 100%;
+  align-items: stretch;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.pc-left {
+  flex: 1.5;
+  min-width: 0;
+}
+
+.pc-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pc-banner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  align-content: stretch;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pc-banner {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+
+  &:hover {
+    transform: translate3d(4px, 0, 0);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .pc-banner-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+  }
+
+  .pc-banner-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .pc-banner-title {
+    font-family: $font-pixel;
+    font-size: 8px;
+    color: $gray;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .pc-banner-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    span {
+      color: $yellow;
+    }
+  }
+
+  .pc-banner-spawns {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-top: 4px;
+
+    img {
+      width: 32px;
+      height: 32px;
+      image-rendering: pixelated;
+    }
+  }
+
+  .pc-banner-action {
+    margin-left: auto;
+    font-size: 14px;
+    color: $gray;
+    opacity: 0.5;
+  }
+
+  /* Resaltado Dorado para el Banner de Eventos (Literal 1919) */
+  &.event-active {
+    border: 1px solid $yellow !important;
+    background: rgba(255, 215, 0, 0.08) !important;
+    box-shadow: 0 0 16px rgba(255, 215, 0, 0.25) !important;
+    animation: pulseGoldBanner 3s infinite ease-in-out;
+  }
+}
+
+/* Carrusel de Eventos (Literal 1883) */
+.pc-banner-carousel {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.1) !important;
+    border-color: rgba(255, 215, 0, 0.4) !important;
+    transform: string.unquote("scale(1.02)");
+  }
+}
+
+.pc-carousel-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(10px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  pointer-events: none;
+
+  &.active {
+    opacity: 1;
+    z-index: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+}
+
+.pc-carousel-dots {
+  position: absolute;
+  bottom: 0px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 2;
+}
+
+.pc-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+
+  &.active {
+    background: $yellow;
+    width: 10px;
+    border-radius: 4px;
+    box-shadow: 0 0 5px $yellow;
+  }
+}
+
+@keyframes pulseGoldBanner {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+}

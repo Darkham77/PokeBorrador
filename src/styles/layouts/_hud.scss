@@ -1,0 +1,464 @@
+// src/styles/layouts/_hud.scss
+@use 'sass:color';
+@use '../core/tools' as *;
+
+.hud-container {
+  position: fixed;
+  top: 15px;
+  left: 50%;
+  @include gpu-layer;
+  transform: translateX(-50%) translate3d(0, 0, 0); // Consolidate centering + GPU
+  width: min(1800px, 98vw);
+  margin: 0; // Explicitly no margins
+  z-index: z(hud);
+  pointer-events: none;
+  container-type: inline-size;
+}
+
+.hud {
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(5, 5, 5, 0.80);
+  backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 10px 24px;
+  gap: 15px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 10px 60px rgba(0, 0, 0, 1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+
+  @media (max-width: 1024px) {
+    padding: 8px 16px;
+    gap: 10px;
+    white-space: normal;
+  }
+
+  @media (max-width: 850px) {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 12px;
+    justify-content: center;
+    gap: 10px;
+    white-space: normal;
+  }
+}
+
+/* PC COMPACT MODES (Container Queries - Literal from Backup) */
+
+/* 1. Compact: Icons only for nav, preserved labels for others */
+@container (max-width: 1720px) {
+  .hud {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+  .hud-nav { gap: 6px; }
+  .hud-items { gap: 8px; }
+
+  /* Transform main nav buttons to mobile-like stacked style */
+  .hud-nav-btn span:not(:first-child) {
+    display: block !important;
+    font-size: 7px !important;
+    margin-top: 4px;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+  .hud-nav-btn {
+    flex-direction: column !important;
+    padding: 6px 4px !important;
+    gap: 2px !important;
+    height: auto !important;
+    min-width: 50px;
+  }
+  .library-btn span {
+    display: none !important;
+  }
+}
+
+/* 2. Reduced: Hide nav text labels Completely & Show Mobile Nav at the same bound */
+@media (max-width: 1360px) {
+  .hud-nav {
+    display: none !important;
+  }
+}
+
+/* 3. Tailored: Shrink avatar but KEEP trainer info on small screens */
+@container (max-width: 900px) {
+  .hud-trainer .trainer-avatar {
+    width: 38px;
+    height: 38px;
+    font-size: 24px;
+  }
+  .hud-trainer { min-width: auto; }
+}
+
+// ALL HUD BUTTONS, PILLS AND ACTIONS: SOLID DARK OPAQUE STYLE (Literal 707)
+.hud-nav-btn,
+.hud-pill,
+.library-btn,
+.hud-action-btn,
+.time-pill,
+.money-pill,
+.bc-pill,
+.badge-pill,
+.ball-pill,
+.egg-pill {
+  background: #1a1a20 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  opacity: 1 !important;
+  color: white !important;
+}
+
+.hud-nav-btn:hover,
+.hud-pill:hover,
+.hud-action-btn:hover {
+  background: #252530 !important;
+  transform: translateY(-2px);
+}
+
+// Trainer Section
+.hud-trainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: 220px;
+  height: 100%;
+  
+  .trainer-avatar { 
+    font-size: 32px;
+    width: 48px;
+    height: 48px;
+    @include flex-center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    img { width: 32px; height: 32px; image-rendering: pixelated; }
+  }
+  
+  .trainer-info {
+    display: flex;
+    flex-direction: row; // Horizontal line
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+  }
+
+  .trainer-name {
+    font-family: $font-pixel;
+    font-size: 10px;
+    color: $yellow;
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+  }
+
+  .trainer-lv {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    span { color: white; font-weight: 700; }
+  }
+}
+
+// HUD Navigation
+.hud-nav {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+// Indicator Panel (Right)
+.hud-items {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+
+  @media (max-width: 1360px) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+.hud-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 75px;
+  border-radius: 12px;
+  background: rgba(26, 26, 32, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: white !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 4px;
+  padding: 8px 4px;
+
+  i, span:first-child { 
+    font-size: 20px;
+    margin-bottom: 2px;
+    @include flex-center;
+    height: 28px;
+  }
+
+  .pill-value {
+    font-size: 11px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  &:hover {
+    background: #252530 !important;
+    transform: translateY(-3px);
+  }
+
+  &.time-pill { 
+    background: rgba(155, 77, 202, 0.12) !important;
+    border-color: rgba(155, 77, 202, 0.3) !important;
+    .pill-value { color: #C77DFF; }
+  }
+
+  &.money-pill { 
+    background: rgba(107, 203, 119, 0.12) !important;
+    border-color: rgba(107, 203, 119, 0.3) !important;
+    span:first-child { color: $green; font-weight: 900; }
+    .pill-value { color: $green; }
+  }
+
+  &.bc-pill { 
+    background: rgba(191, 90, 242, 0.12) !important;
+    border-color: rgba(191, 90, 242, 0.3) !important;
+    i { color: #bf5af2; }
+    .pill-value { color: #bf5af2; }
+  }
+
+  &.badge-pill {
+    background: rgba(255, 214, 10, 0.12) !important;
+    border-color: rgba(255, 214, 10, 0.3) !important;
+    i { color: #ffd60a; }
+    .pill-value { color: #ffd60a; }
+  }
+
+  &.ball-pill {
+    background: rgba(255, 69, 58, 0.12) !important;
+    border-color: rgba(255, 69, 58, 0.3) !important;
+    .pill-value { color: #ff453a; }
+    .ball-icon-wrap { transform: scale3d(0.9, 0.9, 1); }
+  }
+
+  &.egg-pill {
+    background: rgba(188, 142, 100, 0.12) !important;
+    border-color: rgba(188, 142, 100, 0.3) !important;
+    i { color: #bc8e64; }
+    .pill-value { color: #bc8e64; }
+  }
+}
+
+// Side Actions (Circular Buttons & Biblioteca)
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 5px;
+}
+
+.hud-action-btn {
+  @include flex-center;
+  background: rgba(26, 26, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-size: 16px;
+
+  &:hover {
+    background: #252530;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  &.profile-btn {
+    background: rgba(155, 77, 202, 0.2);
+    border-color: rgba(155, 77, 202, 0.4);
+    color: #C77DFF;
+  }
+
+  &.library-btn {
+    width: auto;
+    height: 48px;
+    border-radius: 14px;
+    padding: 0 18px;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-left: 4px;
+
+    span { 
+      font-size: 13px;
+      font-family: inherit;
+    }
+  }
+}
+
+.hud-nav-btn {
+  @extend .hud-pill;
+  flex-direction: row;
+  width: auto;
+  height: 48px;
+  padding: 0 18px;
+  border-radius: 14px;
+  gap: 10px;
+  
+  i, span:first-child {
+    font-size: 16px;
+    margin-bottom: 0;
+    height: auto;
+  }
+
+  .pill-value {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  &.active {
+    border-color: $yellow !important;
+    box-shadow: 0 0 15px rgba($yellow, 0.2);
+    color: $yellow !important;
+    i, span:first-child { color: $yellow !important; }
+  }
+}
+
+// Egg Progress Section (Literal migration from line 1403)
+#hud-eggs-progress {
+  width: 100%;
+  margin-top: -10px; // Pin closer to the HUD as seen in screenshots
+  margin-bottom: 20px;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
+
+.hud-egg-bar-bg {
+  background: rgba(255, 255, 255, 0.1);
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.hud-egg-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $yellow, #f39c12);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.hud-egg-time {
+  font-size: 9px;
+  color: $gray;
+  margin-top: 3px;
+  text-align: right;
+  font-weight: 700;
+}
+
+// Mobile Bottom Navigation
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
+  backdrop-filter: blur(15px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: z(modal) - 10;
+  padding: 0 2px;
+  box-sizing: border-box;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+
+  @media (max-width: 1360px) {
+    display: flex;
+  }
+}
+
+.mobile-nav-btn {
+  @include flex-center;
+  flex-direction: column;
+  flex: 1;
+  height: 65px;
+  margin: 0;
+  background: none;
+  border: 1px solid transparent;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.5;
+  gap: 4px;
+  border-radius: 12px;
+
+  .nav-icon {
+    font-size: 20px;
+    display: block;
+    transition: transform 0.2s;
+    
+    @media (max-width: 400px) {
+      font-size: 18px;
+    }
+  }
+
+  .nav-label {
+    font-family: $font-pixel;
+    font-size: 7px;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    white-space: nowrap;
+    
+    @media (max-width: 450px) {
+      font-size: 6px;
+      transform: scale3d(0.9, 0.9, 1);
+    }
+    
+    @media (max-width: 380px) {
+      font-size: 5.5px;
+      transform: scale3d(0.85, 0.85, 1);
+    }
+
+    @media (max-width: 340px) {
+      display: none; // Last resort for extremely narrow screens
+    }
+  }
+
+  &.active {
+    opacity: 1;
+    background: rgba(255, 214, 10, 0.05);
+    border: 1px solid rgba(255, 214, 10, 0.3) !important;
+    box-shadow: 0 0 15px rgba(255, 214, 10, 0.1);
+    
+    .nav-icon {
+        transform: scale3d(1.1, 1.1, 1);
+        filter: drop-shadow(0 0 5px rgba(255, 214, 10, 0.4));
+    }
+
+    .nav-label {
+      color: #ffd60a;
+      text-shadow: 0 0 5px rgba(255, 214, 10, 0.3);
+    }
+  }
+
+  &:active {
+    transform: scale3d(0.92, 0.92, 1);
+  }
+}

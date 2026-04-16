@@ -1,0 +1,53 @@
+// src/styles/core/_responsive.scss
+@use 'tools' as *;
+
+/* Overlays inline generados por JS: asegurar responsive en móvil */
+@media (max-width: 600px) {
+  #trainer-intro-overlay > div,
+  #rival-intro-overlay > div,
+  #restore-battle-overlay > div,
+  #evo-overlay > div,
+  #stone-overlay > div,
+  #pvp-invite-popup {
+    max-width: calc(100vw - 32px) !important;
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+  }
+
+  /* Imagen del entrenador rival: no se desborde */
+  #rival-intro-overlay img,
+  #trainer-intro-overlay img {
+    max-height: 100px !important;
+    width: auto !important;
+  }
+
+  /* Botones de intro: ancho completo */
+  #trainer-intro-btn,
+  #rival-intro-btn {
+    width: 100% !important;
+    padding: 12px 16px !important;
+    font-size: 8px !important;
+  }
+}
+
+// Global Grid Adjustments
+.map-list, .gym-list, .market-grid {
+  display: grid;
+  gap: spacing(4);
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+// Ensure the game doesn't overflow on small devices
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+  position: relative;
+}

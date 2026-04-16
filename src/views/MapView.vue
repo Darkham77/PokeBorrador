@@ -15,7 +15,9 @@ const currentRoute = ref('Pueblo Inicial')
       <div class="placeholder-text">
         <span class="icon">🌿</span>
         <p>El mapa interactivo se está migrando...</p>
-        <button class="action-btn">BUSCAR POKÉMON</button>
+        <button class="action-btn">
+          BUSCAR POKÉMON
+        </button>
       </div>
     </div>
   </div>

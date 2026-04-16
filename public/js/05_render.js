@@ -10,14 +10,10 @@ function toggleGroupMenu(event, btnEl) {
     if (g !== group) g.classList.remove('is-open');
   });
 
-  // Alternar el actual (Solo en dispositivos que NO soportan hover, como móviles)
-  // En PC, el CSS :hover ya se encarga de mostrarlo y desaparece al mover el mouse.
-  const isTouch = !window.matchMedia('(hover: hover)').matches;
-  if (isTouch || event.pointerType === 'touch') {
-    if (isOpen) group.classList.remove('is-open');
-    else group.classList.add('is-open');
-  } else if (!isOpen) {
-    // En desktop, si por alguna razón no se abre con hover, permitimos el click
+  // Alternar el actual (Modificado para Premium 2026: Siempre por click)
+  if (isOpen) {
+    group.classList.remove('is-open');
+  } else {
     group.classList.add('is-open');
   }
 
@@ -151,6 +147,7 @@ function getHpClass(pct) {
 }
 
 function renderTeam() {
+  if (typeof window.triggerVueSync === 'function') window.triggerVueSync();
   const grid = document.getElementById('team-grid');
   if (!grid) return; // Vue manages this now
   if (state.team.length === 0) {
@@ -158,12 +155,24 @@ function renderTeam() {
     return;
   }
   const releasing = grid.dataset.releaseMode === 'true';
+  const rocketSelling = grid.dataset.rocketMode === 'true';
+  const isSelectMode = releasing || rocketSelling;
+  const ui = window.uiSelectionState || {};
+
   grid.innerHTML = state.team.map((p, i) => {
     const pct = p.hp / p.maxHp;
-    const selected = _releaseSelected.has(i);
-    const selClass = releasing ? (selected ? 'release-selected' : 'release-selectable') : '';
-    const checkMark = releasing && selected ? '<div class="release-check">✓</div>' : '';
-    let clickFn = releasing ? `toggleReleaseSelect(${i})` : `openPokemonDetail(${i})`;
+    const isSelected = releasing ? (window._releaseSelected?.includes?.(i)) : (rocketSelling ? ui.teamRocketSelected?.includes?.(i) : false);
+    
+    let selClass = '';
+    if (releasing) selClass = isSelected ? 'release-selected' : 'release-selectable';
+    else if (rocketSelling) selClass = isSelected ? 'rocket-selected' : 'rocket-selectable';
+
+    const checkMark = isSelectMode && isSelected ? `<div class="${releasing ? 'release-check' : 'rocket-check'}">✓</div>` : '';
+    
+    let clickFn = `openPokemonDetail(${i})`;
+    if (releasing) clickFn = `toggleReleaseSelect(${i})`;
+    else if (rocketSelling) clickFn = `window.toggleTeamRocketSelect(${i})`;
+
     if (p.onMission) clickFn = `notify('¡Este Pokémon está en una misión!', '📋')`;
     const tierInfo = getPokemonTier(p);
     
@@ -191,7 +200,7 @@ function renderTeam() {
           </div>`;
     }
 
-    return `<div class="team-card ${selClass}" onclick="${clickFn}" style="cursor:${p.onMission ? 'not-allowed' : 'pointer'};position:relative;${p.onMission ? 'opacity:0.6;' : ''}" draggable="${!releasing && !p.onMission}" ondragstart="handleDragStart(event, ${i})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${i})">
+    return `<div class="team-card ${selClass}" onclick="${clickFn}" style="cursor:${p.onMission ? 'not-allowed' : 'pointer'};position:relative;${p.onMission ? 'opacity:0.6;' : ''}" draggable="${!isSelectMode && !p.onMission}" ondragstart="handleDragStart(event, ${i})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${i})">
       ${checkMark}
       ${badgesHtml}
       ${obedienceTag}
@@ -204,7 +213,7 @@ function renderTeam() {
       <div class="team-pokemon-level">Nv. ${p.level}</div>
       <div class="hp-bar-wrap"><div class="hp-bar ${getHpClass(pct)}" style="width:${pct * 100}%"></div></div>
       <div style="font-size:11px;color:var(--gray);margin-top:4px">${p.hp}/${p.maxHp} HP</div>
-      ${releasing ? '' : `<div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;">
+      ${isSelectMode ? '' : `<div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;">
         <button onclick="event.stopPropagation(); openTeamItemMenu(${i})" style="flex:1;min-width:40%;font-family:'Press Start 2P',monospace;font-size:6px;color:var(--green);background:rgba(107,203,119,0.15);border:1px solid rgba(107,203,119,0.3);border-radius:6px;padding:6px;cursor:pointer;">🎒 OBJETO</button>
         <button onclick="event.stopPropagation(); openPokemonDetail(${i})" style="flex:1;min-width:40%;font-family:'Press Start 2P',monospace;font-size:6px;color:var(--purple);background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.3);border-radius:6px;padding:6px;cursor:pointer;">👁️ DATOS</button>
         <button onclick="event.stopPropagation(); sendToBox(${i})" style="flex:1;min-width:100%;font-family:'Press Start 2P',monospace;font-size:6px;color:var(--blue);background:rgba(59,139,255,0.15);border:1px solid rgba(59,139,255,0.3);border-radius:6px;padding:6px;cursor:pointer;">📦 CAJA</button>
@@ -900,6 +909,7 @@ function getDayCycle() {
   if (hour >= 18 && hour < 21) return 'dusk';
   return 'night';
 }
+window.getDayCycle = getDayCycle; // Fix for "getDayCycle is not defined" error in modules
 
 let _lastDayCycle = null;
 
@@ -1060,6 +1070,7 @@ function updateBuffPanel() {
 }
 
 function updateHud() {
+  if (typeof window.triggerVueSync === 'function') window.triggerVueSync();
   updateBuffPanel(); // Actualizar timers al refrescar HUD
   updateEggProgressHud(); // Actualizar progreso de huevos debajo del HUD
   // Robust badge count check (handles legacy array format)

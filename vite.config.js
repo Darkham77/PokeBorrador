@@ -10,6 +10,16 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  css: {
+    devSourcemap: true,
+    preprocessorOptions: {
+      scss: {
+        additionalData: `
+          @use "@/styles/core/tools" as *;
+        `
+      }
+    }
+  },
   server: {
     port: 5173,
     proxy: {

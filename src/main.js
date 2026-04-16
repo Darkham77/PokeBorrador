@@ -2,8 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import './assets/main.css'
-import './assets/guardian_fix.css'
+import '@/styles/_index.scss'
 
 const app = createApp(App)
 const pinia = createPinia()

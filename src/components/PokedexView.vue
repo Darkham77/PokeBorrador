@@ -104,20 +104,22 @@ const handleImageError = (e) => {
 
 <template>
   <div class="team-section">
-    <div class="section-title">📖 Pokédex Nacional</div>
+    <div class="section-title">
+      📖 Pokédex Nacional
+    </div>
     
     <!-- FILTROS Y CONTADORES -->
     <div class="pokedex-header">
       <div class="pokedex-filters">
         <button 
-          @click="switchCategory('gen1')"
           :class="['pdex-filter-btn', { active: currentCategory === 'gen1' }]"
+          @click="switchCategory('gen1')"
         >
           GEN 1
         </button>
         <button 
-          @click="switchCategory('gen2')"
           :class="['pdex-filter-btn', { active: currentCategory === 'gen2' }]"
+          @click="switchCategory('gen2')"
         >
           GEN 2
         </button>
@@ -130,7 +132,10 @@ const handleImageError = (e) => {
     </div>
 
     <!-- GRID DE POKEMON -->
-    <div id="pokedex-grid" class="pokedex-grid-container">
+    <div
+      id="pokedex-grid"
+      class="pokedex-grid-container"
+    >
       <div 
         v-for="p in pokemonList" 
         :key="p.id"
@@ -138,20 +143,30 @@ const handleImageError = (e) => {
         :class="{ 'is-caught': p.isCaught, 'is-seen': p.isSeen }"
         @click="handleShowDetail(p)"
       >
-        <div class="pdex-num">#{{ p.dexNum }}</div>
+        <div class="pdex-num">
+          #{{ p.dexNum }}
+        </div>
         
         <div class="pdex-sprite-box">
           <img 
             v-if="p.isSeen && p.spriteUrl" 
             :src="p.spriteUrl" 
             :alt="p.id"
-            @error="handleImageError"
             :class="{ 'sprite-silhouette': !p.isCaught }"
+            @error="handleImageError"
           >
-          <div v-else class="pdex-placeholder">?</div>
+          <div
+            v-else
+            class="pdex-placeholder"
+          >
+            ?
+          </div>
         </div>
         
-        <div class="pdex-name" :class="{ 'name-unknown': !p.isSeen }">
+        <div
+          class="pdex-name"
+          :class="{ 'name-unknown': !p.isSeen }"
+        >
           {{ p.name }}
         </div>
       </div>

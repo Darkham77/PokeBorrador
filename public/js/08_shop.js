@@ -137,13 +137,6 @@ function notify(msg, icon = '✨', options = {}) {
 
   const el = document.createElement('div');
   el.className = 'notification';
-  el.style.cssText = [
-    'position:relative',
-    'opacity:0',
-    'transform:translateX(30px)',
-    'transition:opacity 0.25s ease, transform 0.25s ease',
-    'pointer-events:all'
-  ].join(';');
   el.innerHTML = `${icon} ${msg}`;
   container.appendChild(el);
 
@@ -247,6 +240,7 @@ function confirmHeal() {
     state.money -= extraCost;
     const cls = state.playerClass === 'rocket' ? '🚀 Equipo Rocket' : '🧬 Criador';
     notify(`${cls}: ₽${extraCost} cobrados por la curación.`, '🏥');
+    if (typeof window.triggerVueSync === 'function') window.triggerVueSync();
   }
   _doHeal();
 }

@@ -47,9 +47,7 @@
     };
     let _boxFiltersOpen = false;
     let _boxReleaseMode = false;
-    let _boxReleaseSelected = new Set();
     let _boxRocketMode = false;
-    let _boxRocketSelected = new Set();
     let _bagSellMode = false;
     let _bagSellSelected = {}; // { itemName: quantityToSell }
     let _currentBoxIndex = 0; // Caja actual visualizada (0 a state.boxCount-1)
@@ -129,27 +127,36 @@
 
     // ── Box Release Mode ─────────────────────────────────────────
     function toggleBoxReleaseMode() {
-      // UI handled by Vue
-      _boxReleaseMode = !_boxReleaseMode;
-      _boxReleaseSelected.clear();
+      if (!window.uiSelectionState) return;
+      window.uiSelectionState.boxReleaseMode = !window.uiSelectionState.boxReleaseMode;
+      window.uiSelectionState.boxReleaseSelected.clear();
+      if (window.uiSelectionState.boxReleaseMode) {
+        window.uiSelectionState.boxRocketMode = false;
+        window.uiSelectionState.boxRocketSelected.clear();
+      }
       renderBox();
     }
 
     function toggleBoxReleaseSelect(index) {
-      if (_boxReleaseSelected.has(index)) {
-        _boxReleaseSelected.delete(index);
+      const ui = window.uiSelectionState;
+      if (!ui) return;
+      
+      const idx = ui.boxReleaseSelected.indexOf(index);
+      if (idx > -1) {
+        ui.boxReleaseSelected.splice(idx, 1);
       } else {
-        _boxReleaseSelected.add(index);
+        ui.boxReleaseSelected.push(index);
       }
       renderBox();
     }
 
     function confirmBoxRelease() {
-      if (_boxReleaseSelected.size === 0) {
+      const ui = window.uiSelectionState;
+      if (!ui || !ui.boxReleaseSelected || ui.boxReleaseSelected.length === 0) {
         notify('No seleccionaste ningún Pokémon.', '❓');
         return;
       }
-      const names = [..._boxReleaseSelected].map(i => state.box[i].name).join(', ');
+      const names = ui.boxReleaseSelected.map(i => state.box[i]?.name || 'Unknown').join(', ');
 
       const overlay = document.createElement('div');
       overlay.id = 'box-release-confirm-overlay';
@@ -181,7 +188,11 @@
 
     function doBoxRelease() {
       document.getElementById('box-release-confirm-overlay')?.remove();
-      const indices = [..._boxReleaseSelected].sort((a, b) => b - a);
+      const ui = window.uiSelectionState;
+      const selected = ui?.boxReleaseSelected;
+      if (!selected) return;
+
+      const indices = [...selected].sort((a, b) => b - a);
       const releasedNames = [];
       indices.forEach(i => {
         const p = state.box[i];
@@ -201,37 +212,53 @@
     }
 
     // ── Rocket Box Sell Mode ─────────────────────────────────────
-    function toggleBoxRocketMode() {
-      // UI handled by Vue
+    window.toggleBoxRocketMode = function() {
       if (state.playerClass !== 'rocket') return;
-      _boxRocketMode = !_boxRocketMode;
-      _boxRocketSelected.clear();
-      renderBox();
-    }
-
-    function toggleBoxRocketSelect(index) {
-      if (_boxRocketSelected.has(index)) {
-        _boxRocketSelected.delete(index);
-      } else {
-        _boxRocketSelected.add(index);
+      const ui = window.uiSelectionState;
+      if (!ui) return;
+      
+      ui.boxRocketMode = !ui.boxRocketMode;
+      ui.boxRocketSelected = [];
+      
+      if (ui.boxRocketMode) {
+        ui.boxReleaseMode = false;
+        ui.boxReleaseSelected = [];
       }
       renderBox();
-    }
+    };
 
-    function confirmBoxRocketSell() {
-      if (_boxRocketSelected.size === 0) {
-        notify('No seleccionaste ningún Pokémon.', '❓');
+    window.toggleBoxRocketSelect = function(index) {
+      const ui = window.uiSelectionState;
+      if (!ui) return;
+      
+      const idx = ui.boxRocketSelected.indexOf(index);
+      if (idx > -1) {
+        ui.boxRocketSelected.splice(idx, 1);
+      } else {
+        ui.boxRocketSelected.push(index);
+      }
+      renderBox();
+    };
+
+    window.confirmBoxRocketSell = function() {
+      const ui = window.uiSelectionState;
+      if (!ui || !ui.boxRocketSelected || ui.boxRocketSelected.length === 0) {
+        notify("No seleccionaste ningún Pokémon.", "❓");
         return;
       }
-      
+
       let totalPrice = 0;
-      _boxRocketSelected.forEach(i => {
+      ui.boxRocketSelected.forEach(i => {
         const p = state.box[i];
+        if (!p) return;
         const ivs = p.ivs || {};
         const totalIv = Object.values(ivs).reduce((s, v) => s + (v || 0), 0);
-        const price = Math.floor((p.level * 50 + (totalIv / 186) * 500) * 0.8);
+        const level = p.level || 1;
+        const price = Math.floor((level * 100 + (totalIv / 186) * 1000) * 1.5);
         totalPrice += price;
       });
+
+      const pokemonCount = ui.boxRocketSelected.length;
 
       const overlay = document.createElement('div');
       overlay.id = 'box-rocket-confirm-overlay';
@@ -241,9 +268,9 @@
           <div style="font-size:48px;margin-bottom:12px;">🚀</div>
           <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;margin-bottom:16px;">¿VENDER AL MERCADO NEGRO?</div>
           <div style="font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:24px;">
-            Vas a vender <strong>${_boxRocketSelected.size} Pokémon</strong>.<br><br>
+            Vas a vender <strong>${pokemonCount} Pokémon</strong>.<br><br>
             Ganancia total: <strong style="color:#22c55e;">₽${totalPrice.toLocaleString()}</strong><br>
-            Criminalidad: <strong style="color:#ef4444;">+${_boxRocketSelected.size * 15}</strong><br><br>
+            Criminalidad: <strong style="color:#ef4444;">+${pokemonCount * 15}</strong><br><br>
             Esta acción es <strong style="color:#ef4444;">irreversible</strong>.
           </div>
           <div style="display:flex;gap:12px;justify-content:center;">
@@ -264,7 +291,9 @@
 
     function doBoxRocketSell(totalPrice) {
       document.getElementById('box-rocket-confirm-overlay')?.remove();
-      const indices = [..._boxRocketSelected].sort((a, b) => b - a);
+      const selected = window.uiSelectionState?.boxRocketSelected;
+      if (!selected) return;
+      const indices = [...selected].sort((a, b) => b - a);
       const count = indices.length;
       
       indices.forEach(i => {
@@ -345,11 +374,12 @@
     }
 
     function renderBox() {
+      if (typeof window.triggerVueSync === 'function') window.triggerVueSync();
       // UI now handled by Vue (BoxView.vue)
     }
 
 
-    function openBoxPokemonMenu(boxIndex) {
+    window.openBoxPokemonMenu = function(boxIndex) {
       const p = state.box[boxIndex];
       if (!p) return;
       const sid = getSpriteId(p.id);

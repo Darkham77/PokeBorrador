@@ -1,4 +1,4 @@
-import { initSQLite, queryLocal, execLocal, insertLocal } from './sqliteHandler';
+import { initSQLite, queryLocal, execLocal, insertLocal } from './sqliteIDBHandler';
 
 /**
  * Supabase Proxy Logic
@@ -61,9 +61,35 @@ class SupabaseProxy {
 
   async rpc(name, params) {
     if (this.isOffline) {
-      console.warn(`[Proxy] Offline: RPC ${name} not supported locally.`);
-      // If it's the execute_trade RPC, we might want to simulate success for local-only players
-      // but that requires complex logic. For now, we report error.
+      console.log(`[Proxy] Offline RPC: ${name}`, params);
+      await initSQLite();
+
+      if (name === 'add_war_points') {
+        const { p_week_id, p_map_id, p_faction, p_points } = params;
+        const current = await queryLocal(`SELECT points FROM war_points WHERE week_id = ? AND map_id = ? AND faction = ?`, [p_week_id, p_map_id, p_faction]);
+        const newPts = (current[0]?.points || 0) + p_points;
+        await execLocal(`INSERT OR REPLACE INTO war_points (week_id, map_id, faction, points) VALUES (?, ?, ?, ?)`, [p_week_id, p_map_id, p_faction, newPts]);
+        return { data: null, error: null };
+      }
+
+      if (name === 'fn_report_passive_battle') {
+        const { p_opponent_id, p_result, p_report_data } = params;
+        const userId = window.state?.currentUser?.id || 'local_user';
+        await execLocal(`INSERT INTO passive_battle_reports (user_id, opponent_id, result, report_data) VALUES (?, ?, ?, ?)`, 
+          [userId, p_opponent_id, p_result, JSON.stringify(p_report_data)]);
+        return { data: { success: true }, error: null };
+      }
+
+      if (name === 'fn_award_ranked_season_automated' || name === 'fn_award_event_automated') {
+        console.log(`[Proxy] Simulating reward claim for ${name}`);
+        return { data: { success: true, message: 'Recompensa reclamada localmente' }, error: null };
+      }
+
+      if (name === 'execute_trade') {
+        console.log("[Proxy] Simulating local trade execution");
+        return { data: { success: true }, error: null };
+      }
+
       return { data: null, error: { message: 'Offline mode' } };
     }
     return this.realClient.rpc(name, params);
@@ -75,6 +101,9 @@ class ProxyQuery {
     this.proxy = proxy;
     this.table = table;
     this.queryChain = []; // { type, args }
+    this.action = 'select';
+    this.actionData = null;
+    this.actionOptions = null;
   }
 
   get client() { return this.proxy.realClient; }
@@ -161,6 +190,17 @@ class ProxyQuery {
     if (!this.isOffline) {
       try {
         let q = this.client.from(this.table);
+        if (this.action === 'insert') return await q.insert(this.actionData);
+        if (this.action === 'upsert') return await q.upsert(this.actionData, this.actionOptions);
+        if (this.action === 'update') {
+          for (const step of this.queryChain) q = q[step.type](...step.args);
+          return await q.update(this.actionData);
+        }
+        if (this.action === 'delete') {
+          for (const step of this.queryChain) q = q[step.type](...step.args);
+          return await q.delete();
+        }
+
         for (const step of this.queryChain) {
           q = q[step.type](...step.args);
         }
@@ -174,6 +214,10 @@ class ProxyQuery {
         window.isOfflineMode = true; 
       }
     }
+    if (this.action === 'insert') return this._executeInsert(this.actionData);
+    if (this.action === 'upsert') return this._executeUpsert(this.actionData, this.actionOptions);
+    if (this.action === 'update') return this._executeUpdate(this.actionData);
+    if (this.action === 'delete') return this._executeDelete();
     return this.executeLocal(finalMethod);
   }
 
@@ -211,11 +255,12 @@ class ProxyQuery {
           where.push(`${step.args[0]} <= ?`);
           params.push(step.args[1]);
           break;
-        case 'in':
+        case 'in': {
           const placeholders = step.args[1].map(() => '?').join(', ');
           where.push(`${step.args[0]} IN (${placeholders})`);
           params.push(...step.args[1]);
           break;
+        }
         case 'ilike':
           where.push(`${step.args[0]} LIKE ?`);
           params.push(step.args[1].replace(/%/g, '%').replace(/\*/g, '%'));
@@ -241,13 +286,13 @@ class ProxyQuery {
     if (selectOptions.count) {
       let countSql = `SELECT COUNT(*) as count FROM ${this.table}`;
       if (where.length > 0) countSql += ` WHERE ${where.join(' AND ')}`;
-      const countRes = queryLocal(countSql, params);
+      const countRes = await queryLocal(countSql, params);
       count = countRes[0]?.count || 0;
     }
 
     let data = [];
     if (!selectOptions.head) {
-      data = queryLocal(sql, params);
+      data = await queryLocal(sql, params);
       data = data.map(row => {
         const newRow = { ...row };
         const jsonCols = [
@@ -258,7 +303,9 @@ class ProxyQuery {
         ];
         jsonCols.forEach(k => {
           if (newRow[k] && typeof newRow[k] === 'string') {
-            try { newRow[k] = JSON.parse(newRow[k]); } catch(e) {}
+            try { newRow[k] = JSON.parse(newRow[k]); } catch(e) {
+            // Ignore parse errors for non-JSON content
+          }
           }
         });
         return newRow;
@@ -280,7 +327,31 @@ class ProxyQuery {
     };
   }
 
-  async insert(values) {
+  insert(values) {
+    this.action = 'insert';
+    this.actionData = values;
+    return this;
+  }
+
+  upsert(values, options = {}) {
+    this.action = 'upsert';
+    this.actionData = values;
+    this.actionOptions = options;
+    return this;
+  }
+
+  update(values) {
+    this.action = 'update';
+    this.actionData = values;
+    return this;
+  }
+
+  delete() {
+    this.action = 'delete';
+    return this;
+  }
+
+  async _executeInsert(values) {
     if (!this.isOffline) {
       try {
         const res = await this.client.from(this.table).insert(values);
@@ -293,7 +364,7 @@ class ProxyQuery {
       }
     }
 
-    const data = insertLocal(this.table, values);
+    const data = await insertLocal(this.table, values);
     localEvents.dispatchEvent(new CustomEvent('broadcast', { detail: { table: this.table, data } }));
 
     return {
@@ -305,7 +376,7 @@ class ProxyQuery {
     };
   }
 
-  async upsert(values, options = {}) {
+  async _executeUpsert(values, options = {}) {
     if (!this.isOffline) {
       try {
         const res = await this.client.from(this.table).upsert(values, options);
@@ -319,19 +390,19 @@ class ProxyQuery {
       }
     }
 
-    // Local Upsert (handled via insertLocal which uses INSERT OR REPLACE)
-    const data = insertLocal(this.table, values);
+    // Local Upsert
+    const data = await insertLocal(this.table, values);
     return { data, error: null };
   }
 
-  async update(values) {
+  async _executeUpdate(values) {
     if (!this.isOffline) {
       try {
-        const res = await this.client.from(this.table).update(values);
+        let q = this.client.from(this.table).update(values);
         for (const step of this.queryChain) {
-          res[step.type](...step.args);
+          q = q[step.type](...step.args);
         }
-        const result = await res;
+        const result = await q;
         if (result.error) throw result.error;
         return result;
       } catch (e) {
@@ -341,7 +412,7 @@ class ProxyQuery {
       }
     }
 
-    // Local update fallback: for now we use a generic SQL update if where is simple
+    // Local update fallback
     let sql = `UPDATE ${this.table} SET `;
     const setClause = [];
     const params = [];
@@ -362,19 +433,19 @@ class ProxyQuery {
     }
     if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
 
-    execLocal(sql, params);
+    await execLocal(sql, params);
 
     return { data: null, error: null };
   }
 
-  async delete() {
+  async _executeDelete() {
     if (!this.isOffline) {
       try {
-        const res = await this.client.from(this.table).delete();
+        let q = this.client.from(this.table).delete();
         for (const step of this.queryChain) {
-          res[step.type](...step.args);
+          q = q[step.type](...step.args);
         }
-        const result = await res;
+        const result = await q;
         if (result.error) throw result.error;
         return result;
       } catch (e) {
@@ -395,7 +466,7 @@ class ProxyQuery {
     }
     if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
     
-    execLocal(sql, params);
+    await execLocal(sql, params);
     return { error: null };
   }
 }

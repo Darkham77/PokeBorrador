@@ -235,6 +235,36 @@ Antes de dar por terminado, verificar cada ítem:
 - `[ ]` Validator de movimientos ejecutado sin errores (ni movimientos faltantes ni duplicados)
 - `[ ]` Validator de habilidades ejecutado sin errores nuevos
 - `[ ]` Nombres de movimientos e ítems verificados contra el estándar (ej. "Subida de PP")
+- `[ ]` **Persistencia verificada**: El Pokémon inyectado sobrevive a un refresco de página (F5)
+
+---
+
+## Paso 9: Inyección y Prueba (REAL vs TEST)
+
+Una vez insertado el código en los archivos del proyecto, puedes probar el Pokémon inmediatamente inyectándolo en tu caja. 
+
+El script `fetch_pokemon.js` genera dos snippets en el archivo `_code.txt`:
+
+1.  **OPCIÓN A (REAL):** Crea un Pokémon con **stats naturales** (IVs aleatorios, Naturaleza aleatoria, movimientos según nivel). Recomendado para balanceo y gameplay.
+    ```js
+    injectPokemonToBox(makePokemon('nombre', 50));
+    ```
+2.  **OPCIÓN B (TEST):** Crea un Pokémon con **datos ficticios** (IVs perfectos, stats personalizados, shiny). Recomendado para pruebas visuales o de depuración.
+
+> [!CAUTION]
+> Asegúrate de estar logueado en el juego antes de ejecutar los snippets en la consola.
+
+---
+
+## Paso 10: Verificación de Persistencia
+
+El sistema utiliza un nuevo `DBRouter` que sincroniza con Supabase y SQLite. Para confirmar que el Pokémon es persistente:
+1. Inyecta el Pokémon usando el snippet.
+2. Espera a que aparezca la notificación 📥.
+3. **Refresca la página (F5)**.
+4. Entra a la Caja PC. Si el Pokémon sigue ahí, la persistencia es correcta.
+
+Si desaparece, significa que el guardado falló o que el "Conflicto de Versiones" sobreescribió tu progreso local. Verifica que `window.lastLoadTime` se esté actualizando correctamente en `01_auth.js`.
 
 ---
 

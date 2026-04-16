@@ -1,0 +1,48 @@
+// src/styles/tokens/_colors.scss
+@use 'sass:color';
+@use '../core/tools' as *;
+
+$type-colors: (
+  "normal":   #cccccc,
+  "fire":     $red,
+  "water":    $blue,
+  "grass":    $green,
+  "electric": $yellow,
+  "ice":      #afeafd,
+  "fighting": #d56723,
+  "poison":   $purple,
+  "ground":   #e2bf65,
+  "flying":   #a98ff3,
+  "psychic":  #f95587,
+  "bug":      #a6b91a,
+  "rock":     #b6a136,
+  "ghost":    #735797,
+  "dragon":   #6f35fc,
+  "dark":     #705746,
+  "steel":    #b7b7ce,
+  "fairy":    #d685ad
+);
+
+// Global UI Palette
+$ui-colors: (
+  "red":    $red,
+  "blue":   $blue,
+  "yellow": $yellow,
+  "green":  $green,
+  "purple": $purple,
+  "gray":   $gray,
+  "gold":   $coin-gold
+);
+
+// Auto-generate type classes
+@each $name, $color in $type-colors {
+  .type-#{$name} {
+    background: color.scale($color, $lightness: -60%, $alpha: -80%);
+    color: $color;
+    &.badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+  }
+}

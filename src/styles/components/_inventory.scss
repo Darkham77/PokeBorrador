@@ -1,0 +1,42 @@
+// src/styles/components/_inventory.scss
+@use 'sass:color';
+@use '../core/tools' as *;
+
+/* Note: Team grid and card styles moved to _team.scss to centralize source of truth */
+
+.inventory-section {
+  @include card-premium;
+  padding: spacing(5);
+  margin-bottom: spacing(4);
+}
+
+.section-title {
+  font-family: $font-pixel;
+  font-size: 10px;
+  color: $purple;
+  margin-bottom: spacing(4);
+  @include flex-center;
+  justify-content: flex-start;
+  gap: spacing(2);
+}
+
+// Item specific styles
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: spacing(3);
+}
+
+.item-card {
+  @include card-premium(12px);
+  padding: spacing(3);
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba($yellow, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  }
+}

@@ -1,0 +1,26 @@
+// src/styles/tokens/_typography.scss
+@use 'sass:map';
+
+$font-pixel:   'Press Start 2P', monospace;
+$font-ui:      'Nunito', sans-serif;
+$font-future:  'Orbitron', sans-serif;
+$font-classic: 'Cinzel', serif;
+$font-display: 'Rajdhani', sans-serif;
+
+$font-sizes: (
+  "xs": 10px,
+  "sm": 12px,
+  "md": 14px,
+  "lg": 18px,
+  "xl": 24px,
+  "xxl": 32px,
+  "huge": clamp(24px, 5vw, 48px)
+);
+
+@mixin font-size($size) {
+  @if map.has-key($font-sizes, $size) {
+    font-size: map.get($font-sizes, $size);
+  } @else {
+    font-size: $size;
+  }
+}

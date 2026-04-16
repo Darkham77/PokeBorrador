@@ -1,0 +1,52 @@
+// src/styles/components/_notifications.scss
+@use '../core/tools' as *;
+
+#notification-stack {
+  position: fixed;
+  top: 20px;
+  right: 16px;
+  z-index: z(loading); // Very high priority
+  display: flex;
+  flex-direction: column;
+  gap: spacing(2);
+  align-items: flex-end;
+  pointer-events: none;
+  max-width: 320px;
+}
+
+.notification {
+  @include card-premium(16px);
+  width: 280px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  pointer-events: all;
+  border-left: 3px solid $green;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  animation: slideIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+  @include gpu-layer;
+  
+  &.error { border-left-color: $red; }
+  &.warning { border-left-color: $yellow; }
+  &.info { border-left-color: $blue; }
+
+  i, span:first-child {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translate3d(100%, 0, 0);
+    opacity: 0;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}

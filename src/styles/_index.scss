@@ -1,0 +1,43 @@
+// src/styles/_index.scss
+
+// Core (no genera CSS, solo herramientas)
+@use 'core/variables' as *;
+@use 'tokens/z-index' as *; 
+@use 'core/functions' as *;
+@use 'core/mixins' as *;
+@use 'core/gpu' as *;
+
+// Reset + Base (genera CSS global mínimo)
+@use 'core/reset';
+@use 'core/base';
+
+// Tokens
+@use 'tokens/colors';
+@use 'tokens/typography';
+
+// Animaciones globales
+@use 'animations/keyframes';
+
+// Componentes globales  
+@use 'components/modals';
+@use 'components/tooltips';
+@use 'components/buffs';
+@use 'components/inventory';
+@use 'components/cards';
+@use 'components/map-cards';
+@use 'components/battle';
+@use 'components/team';
+@use 'components/guardian';
+@use 'components/notifications';
+@use 'components/auth';
+@use 'components/daycare';
+@use 'components/library';
+@use 'components/war-panel';
+
+// Layouts globales
+@use 'layouts/hud';
+@use 'layouts/navigation';
+@use 'layouts/screens';
+
+// Global Responsive & Overrides
+@use 'core/responsive';

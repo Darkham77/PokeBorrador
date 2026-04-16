@@ -21,7 +21,7 @@ for (const rule in configSchema.properties) {
     if (Object.keys(subproperties).length > 0) {
       /** @type {import("markdownlint").Configuration} */
       const ruleExample = {};
-      // eslint-disable-next-line guard-for-in
+       
       for (const property in subproperties) {
         const ruleProperties = subproperties[property];
         ruleExample[property + "-sub-description"] = ruleProperties.description;

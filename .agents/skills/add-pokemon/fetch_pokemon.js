@@ -362,6 +362,33 @@ ${machineMoves.map(m => `   ${m.en} → ${m.es || '⚠️ TRADUCIR'}`).join('\n'
 ES: ${result.flavor_text.es}
 EN: ${result.flavor_text.en}
 
+-----------------------------------------------------------------
+9. SNIPPETS DE INYECCIÓN (Para probar inmediatamente)
+   (Copiar y pegar en la consola del navegador una vez insertado el código)
+-----------------------------------------------------------------
+
+// OPCIÓN A: Pokémon REAL (Naturaleza, IVs y Movimientos naturales)
+injectPokemonToBox(makePokemon('${name}', 50));
+
+// OPCIÓN B: Pokémon de PRUEBA (Para validar visualmente variantes)
+injectPokemonToBox({
+  uid: crypto.randomUUID(),
+  id: '${name}',
+  name: '${nameEs}',
+  level: 50,
+  hp: 150, maxHp: 150,
+  atk: 100, def: 100, spa: 100, spd: 100, spe: 100,
+  ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+  nature: 'Seria',
+  ability: '${abilities[0].es || 'Espesura'}',
+  moves: [
+    { name: '${sortedLearnset[0]?.es || 'Placaje'}', pp: 35, maxPP: 35 },
+    { name: '${sortedLearnset[1]?.es || 'Gruñido'}', pp: 40, maxPP: 40 }
+  ],
+  isShiny: true, // Forzamos shiny para prueba visual
+  exp: 0, expNeeded: 100, friendship: 70
+});
+
 =================================================================
 ¡VERIFICAR CON SKILL.md ANTES DE INSERTAR EN EL JUEGO!
 =================================================================

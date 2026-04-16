@@ -5,28 +5,43 @@ import LegacyInterface from '@/components/LegacyInterface.vue'
 
 <template>
   <div class="game-view">
-    <div class="stars"></div>
+    <div class="stars" />
     <div class="game-container">
       <HUD />
       
       <main class="content-area">
         <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
+          <transition
+            name="fade"
+            mode="out-in"
+          >
             <component :is="Component" />
           </transition>
         </router-view>
       </main>
 
       <nav class="bottom-nav">
-        <router-link to="/" class="nav-item" active-class="active">
+        <router-link
+          to="/"
+          class="nav-item"
+          active-class="active"
+        >
           <span>🗺️</span>
           <span>Mapa</span>
         </router-link>
-        <router-link to="/team" class="nav-item" active-class="active">
+        <router-link
+          to="/team"
+          class="nav-item"
+          active-class="active"
+        >
           <span>🐾</span>
           <span>Equipo</span>
         </router-link>
-        <router-link to="/pokedex" class="nav-item" active-class="active">
+        <router-link
+          to="/pokedex"
+          class="nav-item"
+          active-class="active"
+        >
           <span>📖</span>
           <span>Pokedex</span>
         </router-link>

@@ -1,73 +1,51 @@
 /**
- * Script de apoyo para la habilidad populate-tester-inventory (v3 - Robust Session).
- * Este script se ejecuta en el contexto del navegador para añadir 20 Pokémon.
- * Maneja la persistencia automática detectando el usuario actual.
+ * Script de apoyo para la habilidad populate-tester-inventory (v4 - Reality & Persistence).
+ * Genera 20 Pokémon con stats REALES y asegura la persistencia mediante el nuevo router.
  */
 (async () => {
-  if (typeof state === 'undefined' || typeof saveGame !== 'function') {
-    console.error('No se detectó el motor del juego en esta página.');
+  if (typeof state === 'undefined' || typeof makePokemon !== 'function') {
+    console.error('No se detectó el motor del juego o la función makePokemon.');
     return;
   }
 
-  // --- NUEVA LÓGICA DE ROBUSTEZ DE SESIÓN ---
-  // Si currentUser es null, intentamos reconstruirlo desde el HUD para asegurar persistencia local
-  if (!window.currentUser) {
-    const hudName = document.getElementById('hud-name')?.textContent?.trim().toLowerCase() || 'ash';
-    console.warn(`[Populate] window.currentUser es null. Derivando sesión de HUD: ${hudName}`);
-    window.currentUser = {
-      id: 'local_' + hudName,
-      email: hudName + '@local',
-      user_metadata: { username: hudName }
-    };
-    // Sincronizamos con el motor legacy
-    state.trainer = hudName;
+  // 1. Detección de sesión robusta
+  const user = window.currentUser;
+  if (!user) {
+    alert('❌ Error: Debes estar logueado para poblar el inventario persistente.');
+    return;
   }
 
   const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-  const generateIVs = () => ({
-    hp: randomInt(0, 31), atk: randomInt(0, 31), def: randomInt(0, 31),
-    spa: randomInt(0, 31), spd: randomInt(0, 31), spe: randomInt(0, 31)
-  });
-
   const count = 20;
-  console.log(`[Populate] Generando ${count} Pokémon para el usuario: ${window.currentUser.id}`);
 
+  console.log(`[Populate] Generando ${count} Pokémon REALES para: ${user.id}`);
+
+  let successCount = 0;
   for (let i = 0; i < count; i++) {
-    const pokeId = randomInt(1, 386); 
-    const level = randomInt(30, 50);
-    const ivs = generateIVs();
+    // IDs del 1 al 386 (Gen 1-3)
+    const pokeId = randomInt(1, 386);
+    // Traducir ID a slug de POKEMON_DB si es necesario (el motor a veces usa slugs)
+    const slug = Object.keys(POKEMON_DB)[pokeId - 1] || 'pidgey';
     
-    const newPoke = {
-      uid: crypto.randomUUID(),
-      id: pokeId,
-      name: `Test_${pokeId}`,
-      level: level,
-      hp: 100, maxHp: 100,
-      atk: 50, def: 50, spa: 50, spd: 50, spe: 50,
-      ivs: ivs,
-      nature: 'Hardy',
-      ability: 'None',
-      moves: [1, 33, 45],
-      isShiny: Math.random() < 0.2, // 20% shiny para facilitar pruebas visuales
-      exp: 0,
-      expNeeded: 100,
-      friendship: 70
-    };
-
-    state.box.push(newPoke);
+    const level = randomInt(5, 55);
     
-    if (!state.pokedex.includes(pokeId)) state.pokedex.push(pokeId);
-    if (!state.seenPokedex.includes(pokeId)) state.seenPokedex.push(pokeId);
+    // GENERACIÓN REAL: Usa la lógica del juego (IVs, Naturaleza, Movimientos por nivel)
+    const p = makePokemon(slug, level);
+    
+    // Inyectar usando el helper global (maneja Pokedex, Caja y Persistencia)
+    const res = await window.injectPokemonToBox(p, true); // true = silent para no spamear notificaciones
+    if (res.success) successCount++;
   }
 
-  console.log(`[Populate] ¡Éxito! 20 Pokémon añadidos a la caja.`);
+  // 2. Guardado Final y Feedback
+  if (typeof saveGame === 'function') {
+    await saveGame(true); // Ver el indicador de guardado final
+  }
+
+  console.log(`[Populate] ¡Éxito! ${successCount} Pokémon inyectados con stats reales.`);
   
-  // Guardar cambios formalmente
-  await saveGame(true);
-  
-  // Sincronizar con Vue (StateBridge) y UI
   if (typeof updateHud === 'function') updateHud();
-  if (typeof updateProfilePanel === 'function') updateProfilePanel(window.currentUser, { username: state.trainer });
-  
-  alert(`Se han añadido 20 Pokémon a tu caja (Usuario: ${window.currentUser.id}).\n\nRECUERDA: Si refrescas la página, los Pokémon se mantendrán guardados en tu navegador, pero deberás entrar de nuevo en la pestaña LOCAL con el nombre "${state.trainer}" para cargarlos.`);
+  if (typeof renderBox === 'function') renderBox(); // Refrescar vista de caja si está abierta
+
+  alert(`✅ Se han añadido ${successCount} Pokémon REALES a tu caja.\n\nStats: Calculados según Gen 3.\nPersistencia: Sincronizada con ${user.id}.\n\nRefresca la página para verificar.`);
 })();

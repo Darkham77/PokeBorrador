@@ -88,7 +88,7 @@ for (const rule of rules) {
     }
   };
   scheme.oneOf.push(subscheme);
-  /* eslint-disable camelcase */
+   
   switch (ruleName) {
     case "MD001":
       // @ts-ignore
@@ -655,7 +655,7 @@ for (const rule of rules) {
     default:
       break;
   }
-  /* eslint-enable camelcase */
+   
   for (const name of rule.names) {
     schema.properties[name] = scheme;
     // Using $ref causes rule aliases not to get JSDoc comments

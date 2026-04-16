@@ -28,18 +28,36 @@ onMounted(() => {
 
 <template>
   <Transition name="fade">
-    <div v-if="isVisible" id="pokemon-center-overlay" class="center-overlay">
+    <div
+      v-if="isVisible"
+      id="pokemon-center-overlay"
+      class="center-overlay"
+    >
       <!-- image-only container -->
-      <div id="center-image-container" class="center-card">
-        <img id="center-nurse-img" src="/assets/pokecenter_heal.png" class="nurse-img">
+      <div
+        id="center-image-container"
+        class="center-card"
+      >
+        <img
+          id="center-nurse-img"
+          src="/assets/pokecenter_heal.png"
+          class="nurse-img"
+        >
         
         <!-- Healing Effect Layer -->
         <Transition name="flash">
-          <div v-if="showEffect" id="healing-effect" class="heal-flash"></div>
+          <div
+            v-if="showEffect"
+            id="healing-effect"
+            class="heal-flash"
+          />
         </Transition>
 
         <!-- Status Text (Optional but good for feedback) -->
-        <div class="nurse-msg" v-if="showEffect">
+        <div
+          v-if="showEffect"
+          class="nurse-msg"
+        >
           PROCESANDO CURACIÓN...
         </div>
       </div>
@@ -47,15 +65,18 @@ onMounted(() => {
   </Transition>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use '@/styles/core/tools' as *;
+
 .center-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 9999;
+  @include glass(rgba(0, 0, 0, 0.92), 15px);
+  z-index: 999999; // Ensure it's on top of everything
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
 }
 
 .center-card {
@@ -64,11 +85,9 @@ onMounted(() => {
   position: relative;
   display: flex;
   justify-content: center;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-  border-radius: 24px;
+  @include card-premium(24px);
   overflow: hidden;
-  background: #000;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.9), 0 0 30px rgba(59, 139, 255, 0.1);
 }
 
 .nurse-img {
@@ -76,34 +95,37 @@ onMounted(() => {
   height: auto;
   image-rendering: pixelated;
   object-fit: contain;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
 }
 
 .heal-flash {
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: rgba(0, 255, 100, 0.2);
-  box-shadow: inset 0 0 100px rgba(0, 255, 100, 0.5);
+  background: radial-gradient(circle, rgba(107, 203, 119, 0.3) 0%, rgba(0, 0, 0, 0) 80%);
+  box-shadow: inset 0 0 100px rgba(107, 203, 119, 0.5);
   pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 .nurse-msg {
   position: absolute;
-  bottom: 20px;
+  bottom: 24px;
   left: 0;
   right: 0;
   text-align: center;
-  color: #00ff66;
+  color: var(--green);
   font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  font-size: 11px;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 1), 0 0 10px rgba(107, 203, 119, 0.8);
   letter-spacing: 1px;
+  animation: glowText 1s infinite alternate;
 }
 
 /* Transitions */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fade-enter-from,
@@ -112,11 +134,16 @@ onMounted(() => {
 }
 
 .flash-enter-active {
-  animation: pulse 0.5s infinite alternate;
+  animation: pulseHeal 0.6s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes pulse {
-  from { opacity: 0.2; }
-  to { opacity: 0.6; }
+@keyframes pulseHeal {
+  from { opacity: 0.1; transform: scale3d(0.95, 0.95, 1); }
+  to { opacity: 0.8; transform: scale3d(1.05, 1.05, 1); }
+}
+
+@keyframes glowText {
+  from { text-shadow: 0 2px 4px rgba(0,0,0,1), 0 0 5px rgba(107, 203, 119, 0.4); }
+  to { text-shadow: 0 4px 8px rgba(0,0,0,1), 0 0 15px rgba(107, 203, 119, 1); }
 }
 </style>

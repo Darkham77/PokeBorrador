@@ -96,15 +96,25 @@ async function handleSignup() {
 
 <template>
   <div class="auth-screen-container">
-    <div class="stars"></div>
+    <div class="stars" />
     
-    <div id="auth-screen" class="screen active">
+    <div
+      id="auth-screen"
+      class="screen active"
+    >
       <div class="auth-card">
-        <div class="auth-logo">Poké Vicio</div>
-        <div class="auth-sub">Te reto a dejar de jugarlo</div>
+        <div class="auth-logo">
+          Poké Vicio
+        </div>
+        <div class="auth-sub">
+          Te reto a dejar de jugarlo
+        </div>
         
         <!-- Tabs de Acción (Solo para modo Online) -->
-        <div v-if="serverType === 'online'" class="auth-tabs">
+        <div
+          v-if="serverType === 'online'"
+          class="auth-tabs"
+        >
           <button 
             :class="['auth-tab', { active: activeTab === 'login' }]" 
             @click="switchTab('login')"
@@ -120,12 +130,24 @@ async function handleSignup() {
         </div>
 
         <!-- Mensajes -->
-        <div v-if="error" class="auth-error show">{{ error }}</div>
-        <div v-if="success" class="auth-success show">{{ success }}</div>
+        <div
+          v-if="error"
+          class="auth-error show"
+        >
+          {{ error }}
+        </div>
+        <div
+          v-if="success"
+          class="auth-success show"
+        >
+          {{ success }}
+        </div>
 
         <!-- Selector de Servidor -->
         <div class="server-selector">
-          <div class="server-selector-label">Servidor</div>
+          <div class="server-selector-label">
+            Servidor
+          </div>
           <div class="server-tabs">
             <button 
               :class="['server-tab', { active: serverType === 'online' }]" 
@@ -143,7 +165,10 @@ async function handleSignup() {
         </div>
 
         <!-- Formulario Login Online -->
-        <div v-if="serverType === 'online' && activeTab === 'login'" class="form-container">
+        <div
+          v-if="serverType === 'online' && activeTab === 'login'"
+          class="form-container"
+        >
           <input 
             v-model="email"
             class="auth-input" 
@@ -158,14 +183,21 @@ async function handleSignup() {
             placeholder="Contraseña"
             @keyup.enter="handleLogin"
           >
-          <button class="auth-btn" :disabled="loading" @click="handleLogin">
+          <button
+            class="auth-btn"
+            :disabled="loading"
+            @click="handleLogin"
+          >
             <span v-if="loading">...</span>
             <span v-else>▶ ENTRAR</span>
           </button>
         </div>
 
         <!-- Formulario Login Local -->
-        <div v-if="serverType === 'local'" class="form-container">
+        <div
+          v-if="serverType === 'local'"
+          class="form-container"
+        >
           <input 
             v-model="username"
             class="auth-input" 
@@ -174,14 +206,21 @@ async function handleSignup() {
             maxlength="20"
             @keyup.enter="handleLocalLogin"
           >
-          <button class="auth-btn" :disabled="loading" @click="handleLocalLogin">
+          <button
+            class="auth-btn"
+            :disabled="loading"
+            @click="handleLocalLogin"
+          >
             <span v-if="loading">...</span>
             <span v-else>▶ JUGAR LOCAL</span>
           </button>
         </div>
 
         <!-- Formulario Registro -->
-        <div v-if="serverType === 'online' && activeTab === 'signup'" class="form-container">
+        <div
+          v-if="serverType === 'online' && activeTab === 'signup'"
+          class="form-container"
+        >
           <input 
             v-model="username"
             class="auth-input" 
@@ -201,12 +240,19 @@ async function handleSignup() {
             type="password" 
             placeholder="Contraseña (mín. 6 caracteres)"
           >
-          <button class="auth-btn" :disabled="loading" @click="handleSignup">
+          <button
+            class="auth-btn"
+            :disabled="loading"
+            @click="handleSignup"
+          >
             ▶ CREAR CUENTA
           </button>
         </div>
 
-        <div v-if="loading" class="auth-loading-msg">
+        <div
+          v-if="loading"
+          class="auth-loading-msg"
+        >
           Cargando partida... ⌛
         </div>
       </div>

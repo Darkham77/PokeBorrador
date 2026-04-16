@@ -9,7 +9,9 @@
     </div>
     
     <div class="pokedex-placeholder">
-      <div class="icon">📖</div>
+      <div class="icon">
+        📖
+      </div>
       <p>Base de datos en proceso de sincronización...</p>
     </div>
   </div>
