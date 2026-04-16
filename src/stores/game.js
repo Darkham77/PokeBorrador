@@ -28,6 +28,10 @@ export const useGameStore = defineStore('game', () => {
     avatar_style: null,
     classData: {},
     missions: [],
+    safariTicketSecs: 0,
+    ceruleanTicketSecs: 0,
+    articunoTicketSecs: 0,
+    mewtwoTicketSecs: 0,
     isReady: false,
     uiSelection: {
       teamRocketMode: false,
@@ -60,6 +64,7 @@ export const useGameStore = defineStore('game', () => {
       'inventory', 'team', 'box', 'boxCount', 'pokedex', 'seenPokedex',
       'defeatedGyms', 'gymProgress', 'starterChosen',
       'playerClass', 'classLevel', 'classXP', 'classData', 'missions', 
+      'safariTicketSecs', 'ceruleanTicketSecs', 'articunoTicketSecs', 'mewtwoTicketSecs',
       'nick_style', 'avatar_style'
     ]
     

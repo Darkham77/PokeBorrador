@@ -3,7 +3,7 @@ import { onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGameStateBridge } from '@/logic/stateBridge'
-import LegacyInterface from '@/components/LegacyInterface.vue'
+import MainGameView from '@/views/MainGameView.vue'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -56,10 +56,13 @@ onMounted(async () => {
 
 <template>
   <div id="vue-app">
+    <!-- RESTORE LEGACY BACKGROUND -->
+    <div class="stars" />
+
     <template v-if="!authStore.loading">
       <template v-if="authStore.user">
         <!-- Solo mostramos la interfaz si el motor legacy terminó su carga inicial -->
-        <LegacyInterface v-if="gameStore.state.isReady" />
+        <MainGameView v-if="gameStore.state.isReady" />
         
         <!-- Pantalla de carga mientras el motor lee archivos locales -->
         <div

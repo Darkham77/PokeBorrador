@@ -7,7 +7,7 @@ export const useAuthStore = defineStore('auth', () => {
   const session = ref(null)
   const loading = ref(true)
 
-  const SUPABASE_URL = 'https://wakrkvizmoqdlrtnxcth.supabase.co'
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
   const LOCAL_URL = 'http://localhost:3000'
 
   async function checkSession() {

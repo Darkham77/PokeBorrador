@@ -2,8 +2,8 @@
     window.mySessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
     // ===== SUPABASE =====
-    const SUPABASE_URL = 'https://wakrkvizmoqdlrtnxcth.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indha3Jrdml6bW9xZGxydG54Y3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMDA3MjYsImV4cCI6MjA4ODg3NjcyNn0.l_NYYNPDFOAr5CRqbuVf3jLv_TRnOw6shw9j9GzhQsA';
+    const SUPABASE_URL = window.VITE_SUPABASE_URL;
+    const SUPABASE_KEY = window.VITE_SUPABASE_KEY;
     const LOCAL_URL = 'http://localhost:3000';
 
     // Servidor activo: 'online' apunta a Supabase, 'local' apunta a localhost:3000

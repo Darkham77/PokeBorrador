@@ -1,0 +1,139 @@
+// src/styles/components/_battle-hud.scss
+@use '../core/tools' as *;
+@use '../core/variables' as *;
+
+.battle-pokemon-info {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  padding: 10px 14px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  @media (max-width: 480px) {
+    padding: 6px 10px;
+    min-width: 140px;
+  }
+
+  @media (max-width: 400px) {
+    padding: 4px 8px;
+    min-width: 110px;
+    max-width: 130px;
+    border-radius: 8px;
+    transform: scale3d(0.85, 0.85, 1); 
+    transform-origin: left center;
+  }
+
+  // Right side info (Player) scale origin
+  &[style*="text-align:right"] {
+    transform-origin: right center !important;
+  }
+
+  @media (min-width: 1360px) {
+    min-width: 180px;
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+    z-index: 50 !important;
+    position: relative;
+  }
+}
+
+.battle-name {
+  font-family: inherit; // Usually $font-pixel from parent
+  font-size: 10px;
+  color: #fff;
+  margin-bottom: 6px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+
+  @media (max-width: 480px) {
+    font-size: 8px;
+    margin-bottom: 1px;
+    gap: 4px;
+  }
+
+  // Align to right if container is right-aligned (Player side)
+  .battle-pokemon-info[style*="text-align:right"] & {
+    justify-content: flex-end;
+  }
+
+  .gender-badge {
+    margin-left: 4px;
+    font-size: 11px;
+    
+    &.male, &.gender-male { color: #59a6ff; }
+    &.female, &.gender-female { color: #ff7eb9; }
+  }
+}
+
+.battle-level {
+  font-size: 11px;
+  color: $yellow;
+  margin-bottom: 8px;
+
+  @media (max-width: 480px) {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+}
+
+// HP & EXP Bars
+.hp-bar-wrap, .exp-bar-wrap {
+  position: relative;
+  @include gpu-layer;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 20px;
+  height: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 8px;
+  box-shadow: 
+    inset 0 2px 8px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+}
+
+.hp-bar {
+  height: 100%;
+  border-radius: 20px;
+  transition: width 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  position: relative;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 100%);
+    border-radius: inherit;
+  }
+  
+  &.hp-high { background: linear-gradient(90deg, #10b981, #34d399); filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6)); }
+  &.hp-mid  { background: linear-gradient(90deg, #f59e0b, #fbbf24); filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6)); }
+  &.hp-low  { background: linear-gradient(90deg, #ef4444, #f87171); filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6)); }
+}
+
+.exp-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  border-radius: 20px;
+  transition: width 0.6s ease;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+    border-radius: inherit;
+  }
+}
+
+.battle-hp-text {
+  font-size: 11px;
+  color: $gray;
+  margin-top: 4px;
+}

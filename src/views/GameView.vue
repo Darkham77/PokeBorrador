@@ -1,13 +1,14 @@
 <script setup>
-import HUD from '@/components/HUD.vue'
-import LegacyInterface from '@/components/LegacyInterface.vue'
+import MainGameView from '@/views/MainGameView.vue'
 </script>
 
 <template>
   <div class="game-view">
     <div class="stars" />
     <div class="game-container">
-      <HUD />
+      <div class="placeholder-hud">
+        HUD (Migrada a LegacyInterface)
+      </div>
       
       <main class="content-area">
         <router-view v-slot="{ Component }">

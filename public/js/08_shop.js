@@ -225,6 +225,7 @@ function openPokemonCenter() {
 function cancelHealConfirm() {
   const modal = document.getElementById('heal-confirm-modal');
   if (modal) modal.style.display = 'none';
+  if (typeof window.closePokemonCenter === 'function') window.closePokemonCenter();
 }
 
 function confirmHeal() {
@@ -247,8 +248,12 @@ function confirmHeal() {
 
 function _doHeal() {
   // Mostrar overlay con la enfermera
-  const overlay = document.getElementById('pokemon-center-overlay');
-  if (overlay) overlay.style.display = 'flex';
+  if (typeof window.showHealEffect === 'function') {
+    window.showHealEffect(true);
+  } else {
+    const overlay = document.getElementById('pokemon-center-overlay');
+    if (overlay) overlay.style.display = 'flex';
+  }
 
   // Curar el equipo
   state.team.forEach(p => {
@@ -260,6 +265,11 @@ function _doHeal() {
 
   // Cerrar tras 2.8s y actualizar UI + guardar
   setTimeout(() => {
+    // Apagar efecto visual un poco antes de cerrar
+    if (typeof window.showHealEffect === 'function') {
+      setTimeout(() => window.showHealEffect(false), 500);
+    }
+
     setTimeout(() => {
       closePokemonCenter();
       notify('¡Tu equipo ha sido curado!', '💊');

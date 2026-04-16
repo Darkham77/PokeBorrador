@@ -8,6 +8,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     
+    <style>
+      /* Eliminate FOUC (Flash of Unstyled Content) */
+      html, body {
+        background-color: #0a0a0a !important;
+        background: #0a0a0a !important;
+        color: #fff;
+        margin: 0;
+        padding: 0;
+      }
+      #app { background: #0a0a0a; }
+    </style>
+    
+    <!-- CONFIG INJECTION -->
+    <script>
+      window.VITE_SUPABASE_URL = "%VITE_SUPABASE_URL%";
+      window.VITE_SUPABASE_KEY = "%VITE_SUPABASE_KEY%";
+    </script>
+
     <!-- LEGACY DEPENDENCIES -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
