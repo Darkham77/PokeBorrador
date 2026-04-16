@@ -1,0 +1,40 @@
+import { useTradeStore } from '@/stores/trade'
+import { useMarketStore } from '@/stores/market'
+import { useUIStore } from '@/stores/ui'
+import * as marketLogic from '@/logic/market'
+import * as marketUI from '@/logic/marketUI'
+
+export function initEconomyBridge() {
+  const tradeStore = useTradeStore()
+  const marketStore = useMarketStore()
+  const uiStore = useUIStore()
+
+  // Market Logic Bindings
+  window.applyMarketFilters = marketLogic.applyMarketFilters;
+  window.buyFromMarket = marketLogic.buyFromMarket;
+  window.ensureMarketSoldSeenState = marketLogic.ensureMarketSoldSeenState;
+  window.isMarketSoldSeen = marketLogic.isMarketSoldSeen;
+  window.markMarketSoldSeen = marketLogic.markMarketSoldSeen;
+  window.buildMarketSaleLabel = marketLogic.buildMarketSaleLabel;
+  window.getOMFilterHTML = marketUI.getOMFilterHTML;
+
+  // Trade Store Bindings
+  window.openTradeModal = async (friendId, friendUsername) => {
+    await tradeStore.openTradeModal(friendId, friendUsername)
+    uiStore.isTradeOpen = true
+  }
+
+  window.openMarket = () => { uiStore.activeTab = 'market' }
+  
+  window.openTrainerShop = (level) => {
+    uiStore.currentView = 'shop'
+    marketStore.selectedTab = 'trainer'
+    marketStore.loadMarketData()
+  }
+
+  // Realtime Subscriptions
+  tradeStore.subscribeToTrades()
+  tradeStore.refreshPendingTrades()
+  
+  console.log('[EconomyBridge] Market and Trade bindings initialized.')
+}

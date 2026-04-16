@@ -6,7 +6,30 @@ export const useUIStore = defineStore('ui', () => {
   const isSettingsOpen = ref(false)
   const isHistoryOpen = ref(false)
   const isLibraryOpen = ref(false)
+  const libraryTab = ref('gimnasios')
   const activeTab = ref('map')
+  const isTradeOpen = ref(false)
+  const isEggScannerOpen = ref(false)
+  const isHatchModalOpen = ref(false)
+  const hatchedPokemon = ref(null)
+  
+  // Modales de Clase
+  const isClassSelectionOpen = ref(false)
+  const isClassMissionsOpen = ref(false)
+  const isRepShopOpen = ref(false)
+
+
+
+  
+  // Modals de detalle
+  const isPokemonDetailOpen = ref(false)
+  const selectedPokemon = ref(null)
+  const pokemonDetailContext = ref('team') // 'team', 'box', 'market'
+  const pokemonDetailIndex = ref(-1)
+  const pokemonDetailExtra = ref(null)
+
+  const isMoveDetailOpen = ref(false)
+  const selectedMove = ref(null)
 
   const profileData = ref({
     username: '—',
@@ -26,18 +49,16 @@ export const useUIStore = defineStore('ui', () => {
     lastSave: 'Sin datos'
   })
 
+  const isSocialOpen = ref(false)
+
   function toggleProfile() { isProfileOpen.value = !isProfileOpen.value }
   function toggleSettings() { isSettingsOpen.value = !isSettingsOpen.value }
   function toggleHistory() { isHistoryOpen.value = !isHistoryOpen.value }
+  function toggleSocial() { isSocialOpen.value = !isSocialOpen.value }
   
-  function toggleLibrary() {
+  function toggleLibrary(tabId = null) {
+    if (tabId) libraryTab.value = tabId
     isLibraryOpen.value = !isLibraryOpen.value
-    if (isLibraryOpen.value && typeof window.switchLibraryTab === 'function') {
-      setTimeout(() => {
-        const firstTab = document.querySelector('.library-nav-item')
-        if (firstTab) window.switchLibraryTab('gimnasios', firstTab)
-      }, 50)
-    }
   }
 
   function closeAll() {
@@ -45,10 +66,45 @@ export const useUIStore = defineStore('ui', () => {
     isSettingsOpen.value = false
     isHistoryOpen.value = false
     isLibraryOpen.value = false
+    isSocialOpen.value = false
   }
 
   function updateProfile(data) {
     profileData.value = { ...profileData.value, ...data }
+  }
+
+  function notify(msg, icon = '🔔') {
+    if (typeof window.notify === 'function') {
+      window.notify(msg, icon)
+    } else {
+      console.log(`[UIStore] Notification: ${icon} ${msg}`)
+    }
+  }
+
+  function toggleTrade() { isTradeOpen.value = !isTradeOpen.value }
+
+
+  function openPokemonDetail(pokemon, index, context = 'team', extra = null) {
+    selectedPokemon.value = pokemon
+    pokemonDetailIndex.value = index
+    pokemonDetailContext.value = context
+    pokemonDetailExtra.value = extra
+    isPokemonDetailOpen.value = true
+  }
+
+  function closePokemonDetail() {
+    isPokemonDetailOpen.value = false
+    selectedPokemon.value = null
+  }
+
+  function openMoveDetail(moveName) {
+    selectedMove.value = moveName
+    isMoveDetailOpen.value = true
+  }
+
+  function closeMoveDetail() {
+    isMoveDetailOpen.value = false
+    selectedMove.value = null
   }
 
   return {
@@ -56,13 +112,38 @@ export const useUIStore = defineStore('ui', () => {
     isSettingsOpen,
     isHistoryOpen,
     isLibraryOpen,
+    libraryTab,
+    isTradeOpen,
+    isSocialOpen,
+    isEggScannerOpen,
+    isHatchModalOpen,
+    hatchedPokemon,
+    isClassSelectionOpen,
+    isClassMissionsOpen,
+    isRepShopOpen,
+    isPokemonDetailOpen,
+
+    selectedPokemon,
+    pokemonDetailContext,
+    pokemonDetailIndex,
+    pokemonDetailExtra,
+    isMoveDetailOpen,
+    selectedMove,
     activeTab,
     profileData,
+    toggleTrade,
+    toggleSocial,
+    updateProfile,
+    notify,
     toggleProfile,
     toggleSettings,
     toggleHistory,
     toggleLibrary,
     closeAll,
-    updateProfile
+    openPokemonDetail,
+    closePokemonDetail,
+    openMoveDetail,
+    closeMoveDetail
   }
 })
+

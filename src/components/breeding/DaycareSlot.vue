@@ -4,93 +4,104 @@ import { computed } from 'vue'
 const props = defineProps({
   slotId: { type: String, required: true },
   pokemon: { type: Object, default: null },
-  item: { type: String, default: null },
-  isDepositing: { type: Boolean, default: false }
+  item: { type: String, default: null }
 })
 
-const emit = defineEmits(['deposit', 'withdraw', 'setItem'])
+const emit = defineEmits(['deposit', 'withdraw'])
 
 const genderIcon = computed(() => {
   if (!props.pokemon?.gender) return ''
   return props.pokemon.gender === 'M' ? '♂' : '♀'
 })
+
+const getSprite = (id, shiny) => {
+  return window.getSpriteUrl?.(id, shiny) || ''
+}
 </script>
 
 <template>
   <div
-    class="daycare-slot"
+    class="daycare-slot-legacy"
     :class="{ empty: !pokemon }"
+    @click="!pokemon ? emit('deposit') : null"
   >
-    <div class="slot-header">
+    <div class="slot-marker">
       RANURA {{ slotId.toUpperCase() }}
     </div>
 
     <!-- Empty State -->
     <div
       v-if="!pokemon"
-      class="slot-empty-body"
+      class="slot-empty"
     >
-      <div class="empty-icon">
-        🥚
+      <div class="plus-icon">
+        +
       </div>
-      <button
-        class="deposit-btn"
-        @click="emit('deposit')"
-      >
-        DEPOSITAR
-      </button>
+      <div class="hint">
+        DEPOSITAR POKÉMON
+      </div>
     </div>
 
     <!-- Occupied State -->
     <div
       v-else
-      class="slot-filled-body"
+      class="slot-filled"
     >
-      <div class="pokemon-main">
-        <div class="sprite-wrap">
+      <div class="poke-header">
+        <div class="sprite-box">
           <img
-            :src="`https://play.pokemonshowdown.com/sprites/ani/${pokemon.id}.gif`"
-            class="pokemon-sprite"
+            :src="getSprite(pokemon.id, pokemon.isShiny)"
+            class="pixel-sprite"
           >
         </div>
-        <div class="pokemon-meta">
-          <div class="pokemon-name">
-            {{ pokemon.name }} <span class="lv">Nv.{{ pokemon.level }}</span>
+        <div class="poke-info">
+          <div class="name-line">
+            <span class="name">{{ pokemon.name.toUpperCase() }}</span>
+            <span class="lv">LVL.{{ pokemon.level }}</span>
           </div>
-          <div class="pokemon-stats">
-            {{ pokemon.ivs.hp }}/{{ pokemon.ivs.atk }}/{{ pokemon.ivs.def }}/{{ pokemon.ivs.spa }}/{{ pokemon.ivs.spd }}/{{ pokemon.ivs.spe }}
-            <span class="sep">•</span>
-            {{ pokemon.nature }}
+          <div class="stats-line">
+            IVS: {{ pokemon.ivs.hp }}/{{ pokemon.ivs.atk }}/{{ pokemon.ivs.def }}/{{ pokemon.ivs.spa }}/{{ pokemon.ivs.spd }}/{{ pokemon.ivs.spe }}
             <span
               class="gender"
               :class="pokemon.gender"
             >{{ genderIcon }}</span>
           </div>
+          <div class="nature-line">
+            {{ pokemon.nature.toUpperCase() }}
+          </div>
         </div>
       </div>
 
-      <div class="item-section">
-        <div class="section-label">
-          ÍTEM EQUIPADO
+      <div class="vigor-status">
+        <div class="label">
+          VIGOR: {{ pokemon.vigor || 0 }}/10
         </div>
+        <div class="vigor-bar-bg">
+          <div
+            class="vigor-fill"
+            :style="{ width: ((pokemon.vigor || 0) * 10) + '%', background: (pokemon.vigor <= 2 ? '#ef4444' : '#22c55e') }"
+          />
+        </div>
+      </div>
+
+      <div class="item-status">
         <div
-          v-if="item"
-          class="confirmed-item"
+          v-if="pokemon.heldItem"
+          class="item-badge active"
         >
-          <span>📦</span> {{ item }}
+          📦 {{ pokemon.heldItem.toUpperCase() }}
         </div>
         <div
           v-else
-          class="item-picker-placeholder"
-          @click="emit('setItem')"
+          class="item-badge none"
         >
-          Seleccionar Ítem de Herencia...
+          SIN OBJETO
         </div>
       </div>
 
       <button
-        class="withdraw-btn"
-        @click="emit('withdraw')"
+        class="withdraw-btn-retro"
+        @click.stop="emit('withdraw')"
       >
         RETIRAR
       </button>
@@ -99,138 +110,105 @@ const genderIcon = computed(() => {
 </template>
 
 <style scoped lang="scss">
-.daycare-slot {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.daycare-slot-legacy {
+  background: #1c2128;
+  border: 2px solid rgba(255,255,255,0.06);
   border-radius: 16px;
-  padding: 16px;
+  padding: 20px;
+  min-height: 250px;
   display: flex;
   flex-direction: column;
-  min-height: 200px;
-  transition: all 0.3s;
-
-  &:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.05);
-  }
+  position: relative;
+  transition: all 0.2s;
 
   &.empty {
     border-style: dashed;
+    cursor: pointer;
     justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.2);
+    &:hover { border-color: #ffd700; .plus-icon { color: #ffd700; transform: #{'scale(1.1)'}; } }
+  }
+
+  &:not(.empty):hover { border-color: rgba(255,255,255,0.15); }
+}
+
+.slot-marker {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.slot-empty {
+  text-align: center;
+  .plus-icon { font-size: 30px; color: #334155; margin-bottom: 10px; transition: all 0.2s; }
+  .hint { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #475569; }
+}
+
+.slot-filled {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.poke-header {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.sprite-box {
+  width: 64px; height: 64px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  .pixel-sprite { width: 56px; height: 56px; image-rendering: pixelated; }
+}
+
+.poke-info {
+  flex: 1;
+  .name-line {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+    .name { font-size: 13px; font-weight: 900; color: #fff; }
+    .lv { font-family: 'Press Start 2P', monospace; font-size: 8px; color: #ffd700; }
+  }
+  .stats-line {
+    font-size: 10px; color: #94a3b8; font-family: monospace;
+    .gender { margin-left: 8px; font-weight: bold; }
+    .M { color: #38bdf8; }
+    .F { color: #fb7185; }
+  }
+  .nature-line { font-size: 10px; color: #ffd700; margin-top: 4px; font-weight: bold; }
+}
+
+.vigor-status {
+  margin-bottom: 15px;
+  .label { font-size: 9px; font-weight: bold; color: #64748b; margin-bottom: 6px; }
+  .vigor-bar-bg { height: 4px; background: rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; }
+  .vigor-fill { height: 100%; transition: width 0.3s; }
+}
+
+.item-status {
+  margin-bottom: 20px;
+  .item-badge {
+    padding: 8px 12px; border-radius: 10px; font-size: 10px;
+    &.active { background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); color: #fff; }
+    &.none { background: rgba(0,0,0,0.2); color: #475569; font-style: italic; border: 1px dashed rgba(255,255,255,0.05); }
   }
 }
 
-.slot-header {
+.withdraw-btn-retro {
+  margin-top: auto;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  color: #94a3b8;
   font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  color: var(--gray);
-  margin-bottom: 16px;
-}
-
-.slot-empty-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.empty-icon {
-  font-size: 40px;
-  opacity: 0.2;
-}
-
-.deposit-btn {
-  background: var(--yellow);
-  color: #000;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
+  font-size: 7px;
   cursor: pointer;
-  font-weight: 900;
-}
-
-.slot-filled-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.pokemon-main {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.sprite-wrap {
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pokemon-sprite {
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.pokemon-name {
-  font-size: 14px;
-  font-weight: 800;
-  color: #fff;
-  .lv { font-size: 10px; color: var(--yellow); margin-left: 4px; }
-}
-
-.pokemon-stats {
-  font-size: 10px;
-  color: var(--gray);
-  margin-top: 4px;
-  .sep { margin: 0 4px; opacity: 0.3; }
-  .gender { margin-left: 6px; font-weight: 900; }
-  .M { color: var(--blue); }
-  .F { color: var(--red); }
-}
-
-.item-section {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.section-label {
-  font-size: 9px;
-  color: var(--gray);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  font-weight: 800;
-}
-
-.confirmed-item {
-  font-size: 12px;
-  color: var(--yellow);
-  font-weight: 700;
-}
-
-.item-picker-placeholder {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  font-style: italic;
-  &:hover { color: #fff; }
-}
-
-.withdraw-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border: none;
-  padding: 8px;
-  border-radius: 8px;
-  font-size: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  &:hover { background: var(--red); color: #000; font-weight: 800; }
+  
+  &:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
 }
 </style>

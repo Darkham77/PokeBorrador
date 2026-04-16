@@ -19,18 +19,18 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="gyms-view">
-    <div class="gyms-header">
+  <div class="gyms-view-legacy custom-scrollbar">
+    <div class="gyms-header-legacy">
       <div class="header-left">
-        <div class="view-title">
+        <h1 class="view-title">
           🏆 LÍDERES DE GIMNASIO
-        </div>
-        <div class="view-desc">
+        </h1>
+        <p class="view-desc">
           Derrota a los 8 líderes de Kanto para acceder a la Liga Pokémon. Cada líder otorga una medalla única y una MT especial.
-        </div>
+        </p>
       </div>
       
-      <div class="badge-summary">
+      <div class="badge-summary-legacy">
         <div class="badge-title">
           TUS MEDALLAS
         </div>
@@ -38,17 +38,17 @@ onMounted(async () => {
           <div
             v-for="gym in gymsStore.gyms"
             :key="gym.id"
-            class="badge-item"
+            class="badge-item-retro"
             :class="{ active: gymsStore.isGymDefeated(gym.id) }"
             :title="gym.badgeName"
           >
-            {{ gymsStore.isGymDefeated(gym.id) ? gym.badge : '❓' }}
+            {{ gymsStore.isGymDefeated(gym.id) ? gym.badge : '?' }}
           </div>
         </div>
       </div>
     </div>
 
-    <div class="gyms-grid">
+    <div class="gyms-grid-legacy">
       <GymCard
         v-for="gym in gymsStore.gyms"
         :key="gym.id"
@@ -62,101 +62,99 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-.gyms-view {
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
-  animation: fadeIn 0.5s ease;
+.gyms-view-legacy {
+  padding: 30px;
+  background: #0d1117;
+  height: 100%;
+  overflow-y: auto;
 }
 
-.gyms-header {
+.gyms-header-legacy {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 32px;
-  gap: 40px;
+  margin-bottom: 40px;
+  gap: 30px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 20px;
   
   @media (max-width: 1024px) {
     flex-direction: column;
-    gap: 20px;
   }
-}
-
-.header-left {
-  flex: 1;
 }
 
 .view-title {
   font-family: 'Press Start 2P', monospace;
-  font-size: 18px;
-  color: #fff;
-  margin-bottom: 12px;
-  text-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
+  font-size: 14px;
+  color: #ffd700;
+  margin: 0 0 10px 0;
+  text-shadow: 0 2px 0 #000;
 }
 
 .view-desc {
-  font-size: 14px;
-  color: var(--gray);
+  font-size: 10px;
+  color: #888;
   line-height: 1.6;
-  max-width: 600px;
+  max-width: 500px;
 }
 
-.badge-summary {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 16px;
-  border-radius: 16px;
-  min-width: 320px;
+.badge-summary-legacy {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 20px;
+  min-width: 300px;
 }
 
 .badge-title {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
-  color: var(--yellow);
-  margin-bottom: 16px;
+  color: #ffd700;
+  margin-bottom: 20px;
   text-align: center;
 }
 
 .badge-list {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.badge-item {
-  width: 32px;
-  height: 32px;
-  background: rgba(0, 0, 0, 0.3);
+.badge-item-retro {
+  width: 35px;
+  height: 35px;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   transition: all 0.3s;
-  filter: #{'grayscale(1)'};
-  opacity: 0.3;
+  &.beaten {
+    filter: unquote("grayscale(1)");
+    opacity: 0.6;
+    &:hover { filter: unquote("grayscale(0)"); opacity: 1; }
+  }
 
   &.active {
-    filter: #{'grayscale(0)'};
     opacity: 1;
-    background: rgba(234, 179, 8, 0.1);
-    border-color: var(--yellow);
-    box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
+    filter: grayscale(0);
+    background: rgba(255, 215, 0, 0.1);
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
     transform: #{'scale(1.1)'};
   }
 }
 
-.gyms-grid {
+.gyms-grid-legacy {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 24px;
-  padding-bottom: 40px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  padding-bottom: 60px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

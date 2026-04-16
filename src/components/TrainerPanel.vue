@@ -21,8 +21,7 @@ const handlePanelClick = () => {
 <template>
   <div
     id="hud-trainer-panel"
-    class="hud-trainer"
-    style="cursor:pointer;"
+    class="hud-trainer pointer-cursor"
     @click="handlePanelClick"
   >
     <span
@@ -80,4 +79,5 @@ const handlePanelClick = () => {
   font-size: 8px;
   font-family: 'Press Start 2P', monospace;
 }
+.pointer-cursor { cursor: pointer; }
 </style>

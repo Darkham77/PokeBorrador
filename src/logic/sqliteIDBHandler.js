@@ -34,7 +34,7 @@ async function getFromIDB(key) {
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
-  } catch (e) { return null; }
+  } catch { return null; }
 }
 
 async function setToIDB(key, value) {
@@ -112,15 +112,15 @@ export async function initSQLite() {
         "chat_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_id TEXT, sender_name TEXT, message TEXT, type TEXT, created_at TEXT DEFAULT (datetime('now')))",
         "market_listings (id INTEGER PRIMARY KEY AUTOINCREMENT, seller_id TEXT, seller_name TEXT, listing_type TEXT, data TEXT, price INTEGER, status TEXT, buyer_id TEXT, created_at TEXT DEFAULT (datetime('now')))",
         "ranked_rules_config (id TEXT PRIMARY KEY, season_name TEXT, config TEXT)",
-        "war_dominance (id TEXT PRIMARY KEY, map_id TEXT, week_id TEXT, winner_faction TEXT, faction TEXT, updated_at TEXT)",
-        "war_points (map_id TEXT, week_id TEXT, faction TEXT, points INTEGER DEFAULT 0, updated_at TEXT, PRIMARY KEY (map_id, week_id, faction))",
+        "war_dominance (week_id TEXT, map_id TEXT, winner_faction TEXT, union_points INTEGER DEFAULT 0, poder_points INTEGER DEFAULT 0, resolved_at TEXT DEFAULT (datetime('now')), PRIMARY KEY (week_id, map_id))",
+        "war_points (id INTEGER PRIMARY KEY AUTOINCREMENT, week_id TEXT, map_id TEXT, faction TEXT, points INTEGER DEFAULT 0, updated_at TEXT DEFAULT (datetime('now')), UNIQUE (week_id, map_id, faction))",
         "war_user_points (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, map_id TEXT, week_id TEXT, points INTEGER DEFAULT 0, faction TEXT, updated_at TEXT)",
-        "guardian_captures (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, map_id TEXT, capture_date TEXT, created_at TEXT DEFAULT (datetime('now')))",
+        "guardian_captures (capture_date TEXT, map_id TEXT, user_id TEXT, winner_faction TEXT, pts_awarded INTEGER DEFAULT 150, captured_at TEXT DEFAULT (datetime('now')), PRIMARY KEY (capture_date, map_id, user_id))",
         "eggs (id INTEGER PRIMARY KEY AUTOINCREMENT, player_id TEXT, egg_id TEXT, steps_remaining INTEGER DEFAULT 1000, created_at TEXT DEFAULT (datetime('now')))",
-        "awards (id INTEGER PRIMARY KEY AUTOINCREMENT, winner_id TEXT, event_id INTEGER, award_type TEXT, data TEXT, claimed BOOLEAN DEFAULT 0, awarded_at TEXT DEFAULT (datetime('now')), created_at TEXT DEFAULT (datetime('now')))",
-        "competition_entries (id INTEGER PRIMARY KEY AUTOINCREMENT, event_id INTEGER, user_id TEXT, score INTEGER, data TEXT, updated_at TEXT DEFAULT (datetime('now')))",
-        "competition_results (id INTEGER PRIMARY KEY AUTOINCREMENT, event_id INTEGER, winner_id TEXT, winners TEXT, ended_at TEXT, data TEXT, created_at TEXT DEFAULT (datetime('now')))",
-        "war_factions (user_id TEXT PRIMARY KEY, faction TEXT, updated_at TEXT DEFAULT (datetime('now')))",
+        "awards (id TEXT PRIMARY KEY, event_id TEXT, winner_email TEXT, winner_name TEXT, prize TEXT, awarded_at TEXT DEFAULT (datetime('now')), claimed BOOLEAN DEFAULT 0, claimed_at TEXT)",
+        "competition_entries (id TEXT PRIMARY KEY, event_id TEXT, player_email TEXT, player_name TEXT, data TEXT, submitted_at TEXT DEFAULT (datetime('now')))",
+        "competition_results (id TEXT PRIMARY KEY, event_id TEXT, winners TEXT, ended_at TEXT DEFAULT (datetime('now')))",
+        "war_factions (user_id TEXT PRIMARY KEY, email TEXT, faction TEXT, created_at TEXT DEFAULT (datetime('now')))",
         "war_defenders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, map_id TEXT, pokemon_uid TEXT, pokemon_data TEXT, wins_count INTEGER DEFAULT 0, week_id TEXT, created_at TEXT DEFAULT (datetime('now')))",
         "config (key TEXT PRIMARY KEY, value TEXT)"
       ];
@@ -133,7 +133,15 @@ export async function initSQLite() {
         }
       });
 
-      ensureSchemaMigrations(db);
+      // Nuevo Sistema de Migraciones Estructuradas
+      db.run(`CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')));`);
+      
+      const DATABASE_MIGRATIONS = [
+        // Migrations start from here. Baseline is handled by the tables array + 20240416000000_baseline_schema.sql
+      ];
+
+      runMigrations(db, DATABASE_MIGRATIONS);
+      
       seedSQLite();
       await persistSQLite();
 
@@ -155,30 +163,36 @@ export async function initSQLite() {
 }
 
 /**
- * Ensures that existing local databases get new columns without data loss.
+ * Runs sequential migrations and tracks them in _migrations table.
  */
-function ensureSchemaMigrations(db) {
-  const migrations = [
-    { table: 'awards', column: 'winner_id', type: 'TEXT' },
-    { table: 'awards', column: 'awarded_at', type: 'TEXT' },
-    { table: 'guardian_captures', column: 'capture_date', type: 'TEXT' },
-    { table: 'war_dominance', column: 'week_id', type: 'TEXT' },
-    { table: 'war_dominance', column: 'winner_faction', type: 'TEXT' },
-    { table: 'war_points', column: 'week_id', type: 'TEXT' },
-    { table: 'competition_results', column: 'ended_at', type: 'TEXT' },
-    { table: 'competition_results', column: 'winners', type: 'TEXT' }
-  ];
-
+function runMigrations(db, migrations) {
   migrations.forEach(m => {
     try {
-      const info = db.exec(`PRAGMA table_info(${m.table})`);
-      const exists = info[0].values.some(row => row[1] === m.column);
-      if (!exists) {
-        console.log(`[SQLite Migration] Adding column ${m.column} to ${m.table}`);
-        db.run(`ALTER TABLE ${m.table} ADD COLUMN ${m.column} ${m.type}`);
+      // 1. Check if already applied via _migrations table
+      const applied = db.exec(`SELECT 1 FROM _migrations WHERE id = '${m.id}'`);
+      if (applied.length > 0) return;
+
+      // 2. Double check via schema info (Check-then-Apply) if defined
+      if (m.check) {
+        const info = db.exec(`PRAGMA table_info(${m.check.table})`);
+        const exists = info[0] && info[0].values.some(row => row[1] === m.check.column);
+        if (exists) {
+          db.run(`INSERT OR IGNORE INTO _migrations (id) VALUES ('${m.id}')`);
+          return;
+        }
       }
+
+      // 3. Apply migration
+      console.log(`[SQLite Migration] Applying: ${m.id}`);
+      // Split by semicolon and execute individually to avoid multiple statement issues in some environments
+      m.sql.split(';').filter(s => s.trim()).forEach(stmt => {
+        db.run(stmt);
+      });
+
+      // 4. Mark as applied
+      db.run(`INSERT INTO _migrations (id) VALUES ('${m.id}')`);
     } catch (e) {
-      console.warn(`[SQLite Migration] Failed to migrate ${m.table}.${m.column}:`, e);
+      console.warn(`[SQLite Migration] Failed to apply ${m.id}:`, e);
     }
   });
 }
@@ -262,7 +276,7 @@ export async function insertLocal(table, values) {
   let lastId;
   try {
     lastId = db.exec("SELECT last_insert_rowid()")[0].values[0][0];
-  } catch(e) { lastId = values.id || values.user_id; }
+  } catch { lastId = values.id || values.user_id; }
   
   persistSQLite();
   return { id: lastId, ...values };

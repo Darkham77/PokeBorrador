@@ -28,6 +28,21 @@ const router = createRouter({
           path: 'pokedex',
           name: 'pokedex',
           component: () => import('@/views/PokedexView.vue'),
+        },
+        {
+          path: 'social',
+          name: 'social',
+          component: () => import('@/views/SocialView.vue'),
+        },
+        {
+          path: 'events',
+          name: 'events',
+          component: () => import('@/views/EventsView.vue'),
+        },
+        {
+          path: 'war',
+          name: 'war',
+          component: () => import('@/views/WarView.vue'),
         }
       ]
     }

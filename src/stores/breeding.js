@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useGameStore } from './game'
+import { useUIStore } from './ui'
 import { supabase } from '@/logic/supabase'
 
 export const useBreedingStore = defineStore('breeding', {
@@ -72,7 +73,14 @@ export const useBreedingStore = defineStore('breeding', {
       1: { label: '😐 Poco interés', color: '#ffb142' },
       2: { label: '🙂 Compatibles', color: '#33d9b2' },
       3: { label: '❤️ Muy compatibles', color: '#ff793f' }
+    },
+    
+    EGG_SPAWN_INTERVAL_MS: {
+      1: 12 * 60 * 60 * 1000, 
+      2: 9 * 60 * 60 * 1000, 
+      3: 6 * 60 * 60 * 1000 
     }
+
   }),
   
   getters: {
@@ -224,6 +232,191 @@ export const useBreedingStore = defineStore('breeding', {
       if (perfectCount <= 8) return 12000
       if (perfectCount <= 11) return 25000
       return 50000
+    },
+
+    async depositPokemon(slotIdx, pokemonUid) {
+      const gameStore = useGameStore()
+      const userId = gameStore.user?.id
+      if (!userId) return
+
+      // Find pokemon in team or box
+      let pIdx = gameStore.state.team.findIndex(p => p.uid === pokemonUid)
+      let p = pIdx !== -1 ? gameStore.state.team[pIdx] : gameStore.state.box?.find(p => p.uid === pokemonUid)
+      
+      if (!p) return
+
+      // Pre-check for last alive pokemon if in team
+      if (pIdx !== -1) {
+        const aliveCount = gameStore.state.team.filter(x => x.hp > 0).length
+        if (aliveCount <= 1 && p.hp > 0) {
+          const uiStore = useUIStore()
+          uiStore.notify('No podés depositar a tu único Pokémon sano.', '⚠️')
+          return
+        }
+      }
+
+      try {
+        // Delete any existing entry for this slot
+        await supabase.from('daycare_slots').delete().eq('player_id', userId).eq('slot_index', slotIdx + 1)
+        
+        // Insert new entry
+        const nowIso = new Date().toISOString()
+        const { error } = await supabase.from('daycare_slots').insert({
+          player_id: userId,
+          pokemon_id: pokemonUid,
+          slot_index: slotIdx + 1,
+          deposited_at: nowIso
+        })
+
+        if (error) throw error
+
+        // Update deposited_at for all slots to reset timer
+        await supabase.from('daycare_slots').update({ deposited_at: nowIso }).eq('player_id', userId)
+
+        // If in team, move to box and heal
+        if (pIdx !== -1) {
+          const removed = gameStore.state.team.splice(pIdx, 1)[0]
+          removed.hp = removed.maxHp
+          removed.status = null
+          removed.moves?.forEach(m => { m.pp = m.maxPP })
+          if (!gameStore.state.box) gameStore.state.box = []
+          gameStore.state.box.push(removed)
+        }
+
+        const uiStore = useUIStore()
+        uiStore.notify('Pokémon depositado.', '🏡')
+        await gameStore.saveGame(true)
+        await this.loadDaycareData()
+      } catch (err) {
+        console.error('Deposit error:', err)
+        const uiStore = useUIStore()
+        uiStore.notify('Error al depositar: ' + err.message, '❌')
+      }
+    },
+
+    async withdrawPokemon(slotId) {
+      const gameStore = useGameStore()
+      const userId = gameStore.user?.id
+      if (!userId) return
+      
+      const slotIdx = slotId === 'a' ? 1 : 2
+
+      try {
+        const { error } = await supabase.from('daycare_slots').delete().eq('player_id', userId).eq('slot_index', slotIdx)
+        if (error) throw error
+
+        const nowIso = new Date().toISOString()
+        await supabase.from('daycare_slots').update({ deposited_at: nowIso }).eq('player_id', userId)
+        
+        const uiStore = useUIStore()
+        uiStore.notify('Pokémon retirado.', '🏡')
+        await gameStore.saveGame(true)
+        await this.loadDaycareData()
+      } catch (err) {
+        console.error('Withdraw error:', err)
+        const uiStore = useUIStore()
+        uiStore.notify('Error al retirar: ' + err.message, '❌')
+      }
+    },
+
+    async collectEgg(egg) {
+      const gameStore = useGameStore()
+      const userId = gameStore.user?.id
+      if (!userId) return
+
+      const cost = egg.inherited_ivs?._cost || 0
+      if (gameStore.state.money < cost) {
+        const uiStore = useUIStore()
+        uiStore.notify(`No tienes suficiente dinero ($${cost.toLocaleString()}).`, '💰')
+        return
+      }
+
+      // Logical call to stateBridge/legacy addEgg for now until fully migrated
+      if (window.addEgg) {
+        const extra = {
+          origin: 'breeding',
+          isShiny: egg.shiny_roll,
+          inherited_ivs: egg.inherited_ivs
+        }
+        const newPoke = window.addEgg(egg.species, 'breeding', extra)
+        if (newPoke) {
+          // Remove egg, add to box, save
+          const { error: delErr } = await supabase.from('eggs').delete().eq('egg_id', egg.egg_id)
+          if (delErr) throw delErr
+
+          gameStore.state.box.push(newPoke)
+          
+          // Modal Reveal
+          const uiStore = useUIStore()
+          uiStore.hatchedPokemon = newPoke
+          uiStore.isHatchModalOpen = true
+
+          uiStore.notify(`¡Se ha eclosionado el huevo de ${newPoke.name}!`, '🎉')
+          await gameStore.saveGame(true)
+          await this.loadDaycareData()
+        }
+      }
+    },
+
+    async updateEggIvs(eggId, newIvs) {
+      try {
+        const { error } = await supabase.from('eggs').update({ inherited_ivs: newIvs }).eq('egg_id', eggId)
+        if (error) throw error
+        await this.loadDaycareData()
+      } catch (err) {
+        console.error('Update egg error:', err)
+      }
+    },
+
+    async deleteEgg(eggId) {
+      try {
+        const { error } = await supabase.from('eggs').delete().eq('egg_id', eggId)
+        if (error) throw error
+        await this.loadDaycareData()
+      } catch (err) {
+        console.error('Delete egg error:', err)
+      }
+    },
+
+    async deliverMission(missionIdx, pokemonUid) {
+      const gameStore = useGameStore()
+      if (!gameStore.state.daycare_missions) return
+
+      const m = gameStore.state.daycare_missions[missionIdx]
+      if (!m) return
+
+      // Find pokemon
+      let pIdx = gameStore.state.team.findIndex(p => p.uid === pokemonUid)
+      let p = pIdx !== -1 ? gameStore.state.team[pIdx] : gameStore.state.box?.find(p => p.uid === pokemonUid)
+      if (!p) return
+
+      if (!confirm(`¿Seguro que quieres entregar a ${p.name}? Se irá para siempre.`)) return
+
+      // Remove pokemon
+      if (pIdx !== -1) {
+        if (gameStore.state.team.length <= 1) {
+          const uiStore = useUIStore()
+          uiStore.notify('No puedes entregar tu único Pokémon.', '❌')
+          return
+        }
+        gameStore.state.team.splice(pIdx, 1)
+      } else {
+        const boxIdx = gameStore.state.box.findIndex(x => x.uid === pokemonUid)
+        if (boxIdx !== -1) gameStore.state.box.splice(boxIdx, 1)
+      }
+
+      // Complete mission
+      m.completed = true
+      
+      // Award prize
+      const itemName = m.reward.name
+      gameStore.state.inventory[itemName] = (gameStore.state.inventory[itemName] || 0) + m.reward.qty
+      
+      const uiStore = useUIStore()
+      uiStore.notify(`¡Misión completada! Recibiste ${itemName} x${m.reward.qty}`, m.reward.icon)
+      await gameStore.saveGame(true)
+      if (window.updateHud) window.updateHud()
     }
   }
-})
+}
+)

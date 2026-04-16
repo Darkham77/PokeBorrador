@@ -3,7 +3,10 @@ import { onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGameStateBridge } from '@/logic/stateBridge'
+import { initGlobalErrorHandlers } from '@/logic/errorHandler'
 import MainGameView from '@/views/MainGameView.vue'
+import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
+import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -14,6 +17,9 @@ watch(() => authStore.user, (newVal) => {
 }, { immediate: true })
 
 onMounted(async () => {
+  // 0. Init Global Error Handlers (Vue Bridge)
+  initGlobalErrorHandlers()
+
   await authStore.checkSession()
   
   // Sincronizar usuario con el motor legacy
@@ -94,6 +100,10 @@ onMounted(async () => {
       <p>{{ gameStore.state.overlayMessage }}</p>
       <span class="sub-text">Por favor, no cierres la ventana</span>
     </div>
+
+    <!-- Error Global UI -->
+    <ErrorOverlay />
+    <ConnectionWarning />
   </div>
 </template>
 

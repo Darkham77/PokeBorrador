@@ -29,13 +29,12 @@ const missionSprites = computed(() => {
 })
 
 const gymSprites = computed(() => {
-  // En el futuro esto vendrá de un store de gimnasios
   return []
 })
 </script>
 
 <template>
-  <div class="map-view-container">
+  <div class="map-view-container legacy-ui">
     <!-- Header de Eventos -->
     <MapEventCarousel
       v-if="ms.activeEvents.length > 0 || ms.pendingAwards.length > 0"
@@ -56,7 +55,7 @@ const gymSprites = computed(() => {
     />
 
     <!-- Localizaciones (Grilla de Mapas) -->
-    <div class="section-divider">
+    <div class="legacy-divider">
       <span class="divider-text">REGIÓN DE KANTO</span>
     </div>
 
@@ -77,42 +76,35 @@ const gymSprites = computed(() => {
 
 <style scoped>
 .map-view-container {
-  padding: 20px 0;
+  padding: 10px 0;
   width: 100%;
-  animation: fadeIn 0.5s ease-out;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.section-divider {
+.legacy-divider {
   display: flex;
   align-items: center;
-  gap: 24px;
-  margin: 48px 0 32px;
+  gap: 20px;
+  margin: 40px 0 20px;
 }
 
-.section-divider::before,
-.section-divider::after {
+.legacy-divider::before,
+.legacy-divider::after {
   content: '';
   flex: 1;
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+  height: 4px;
+  background: #333;
 }
 
 .divider-text {
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
-  color: #555;
-  letter-spacing: 3px;
-  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+  color: #666;
+  letter-spacing: 2px;
 }
 
 @media (max-width: 768px) {
   .map-view-container {
-    padding: 16px;
+    padding: 10px;
   }
 }
 </style>

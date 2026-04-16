@@ -1,0 +1,19 @@
+{
+  "skill_name": "migrator-legacy-vue",
+  "evals": [
+    {
+      "id": 0,
+      "name": "migrate-time-logic",
+      "prompt": "Migra el sistema de tiempo de la API vieja (api/time.js en el backup) a un Composable de Vue en src/composables/useTime.js. Asegúrate de que las reglas de zona horaria se mantengan exactamente igual.",
+      "expected_output": "Un nuevo archivo src/composables/useTime.js que encapsule la lógica de la API vieja usando la Composition API, siguiendo el límite de 500 líneas y los estándares de Vue.",
+      "files": ["backup_legacy_code/api/time.js"]
+    },
+    {
+      "id": 1,
+      "name": "restore-ui-parity",
+      "prompt": "Restaura la estética original de las tarjetas de los líderes de gimnasio basándote en los selectores de estilo de backup_legacy_code/style_v5.css. Debes actualizar src/components/gyms/GymCard.vue para que se vea 1:1 con la versión original, permitiendo solo mejoras en las transiciones de hover usando transformaciones de GPU.",
+      "expected_output": "Actualización de GymCard.vue con estilos SCSS que replican la apariencia legacy sin modificar colores ni tamaños básicos, pero optimizando las animaciones.",
+      "files": ["backup_legacy_code/style_v5.css", "src/components/gyms/GymCard.vue"]
+    }
+  ]
+}

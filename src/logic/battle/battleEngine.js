@@ -81,14 +81,14 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
   // Base Damage Formula
   const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
 
-  // Effectiveness
-  const eff = getCombinedEffectiveness(move.type, defender);
+  // Ability & STAB modifiers
+  const { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplier(attacker, defender, move);
   
   // STAB
   let stab = (move.type === attacker.type || move.type === attacker.type2) ? 1.5 : 1;
   if (attacker.ability === 'Adaptable' && stab > 1) stab = 2;
 
-  // Weather
+  // Weather Multiplier
   let weatherMult = 1;
   if (weather && weather.turns > 0) {
     if (weather.type === 'sun') {
@@ -100,7 +100,7 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
     }
   }
 
-  // Critical Hit
+  // Critical Hit logic
   let critRate = (attacker.heldItem === 'Lente Zoom') ? 0.12 : 0.06;
   if (attacker.focusEnergy) critRate = 0.25;
   
@@ -112,9 +112,12 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
   // Random factor
   const random = 0.85 + Math.random() * 0.15;
 
-  // Final Damage
+  // Effectiveness
+  const eff = getCombinedEffectiveness(move.type, defender);
+
+  // Final Damage calculation
   const finalDmg = eff > 0 
-    ? Math.max(1, Math.floor(baseDamage * stab * eff * random * critMult * weatherMult)) 
+    ? Math.max(1, Math.floor(baseDamage * stab * finalAbilityMult * eff * random * critMult * weatherMult)) 
     : 0;
 
   return {
@@ -124,8 +127,61 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
     isCrit,
     isSuperEffective: eff > 1,
     isNotVeryEffective: eff < 1 && eff > 0,
-    isNoEffect: eff === 0
+    isNoEffect: eff === 0,
+    triggeredAbility
   };
+}
+
+export function getAbilityMultiplier(attacker, defender, move) {
+  let mult = 1;
+  let triggeredAbility = null;
+  const ab = attacker.ability;
+  const power = move.power || 0;
+
+  // Damage boosters at low HP (1/3)
+  const isLowHp = attacker.hp <= (attacker.maxHp / 3);
+  if (isLowHp) {
+    if (ab === 'Mar llamas' && move.type === 'fire') { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Torrente' && move.type === 'water') { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Espesura' && move.type === 'grass') { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Enjambre' && move.type === 'bug') { mult *= 1.5; triggeredAbility = ab; }
+  }
+
+  // Agallas (Guts)
+  if (ab === 'Agallas' && attacker.status && move.cat === 'physical') {
+    mult *= 1.5;
+    triggeredAbility = ab;
+  }
+
+  // Experto (Technician)
+  if (ab === 'Experto' && power > 0 && power <= 60) {
+    mult *= 1.5;
+    triggeredAbility = ab;
+  }
+
+  return { mult, triggeredAbility };
+}
+
+export function getEffectiveSpeed(pokemon, stages, options = {}) {
+  const { getStatMultiplier, getDayCycle } = options;
+  const baseSpe = pokemon.spe || 40;
+  const stage = stages?.spe || 0;
+  let spe = Math.max(1, Math.floor(baseSpe * getStatMultiplier(stage)));
+  
+  if (pokemon.ability === 'Fuga' && pokemon.status) {
+    spe *= 2;
+  }
+  
+  const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
+  if (pokemon.ability === 'Clorofila' && (cycle === 'day' || cycle === 'morning')) {
+    spe *= 2;
+  }
+  if (pokemon.ability === 'Nado rápido' && (cycle === 'dusk' || cycle === 'night')) {
+    spe *= 2;
+  }
+
+  if (pokemon.status === 'paralyze') spe = Math.max(1, Math.floor(spe * 0.5));
+  return spe;
 }
 
 export function calculateCatchRate(pokemon, ballType = 'poke-ball') {

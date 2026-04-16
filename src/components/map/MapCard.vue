@@ -50,13 +50,11 @@ const imgPath = computed(() => {
 })
 
 const cycleLabel = computed(() => {
-  const icons = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
   const labels = { morning: 'AMANECER', day: 'DÍA', dusk: 'ATARDECER', night: 'NOCHE' }
-  return `${icons[props.cycle] || '☀️'} ${labels[props.cycle] || 'DÍA'}`
+  return labels[props.cycle] || 'DÍA'
 })
 
 const getPokemonSprite = (id) => {
-  // En una migración ideal, esto vendría de una utilidad o store
   const spriteIds = window.POKEMON_SPRITE_IDS || {}
   const num = spriteIds[id]
   return num ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png` : null
@@ -65,23 +63,24 @@ const getPokemonSprite = (id) => {
 
 <template>
   <div
-    :class="['location-card map-card', { locked: isLocked, 'safari-locked': isSafariLocked }]"
+    :class="['location-card map-card legacy-panel', { locked: isLocked, 'safari-locked': isSafariLocked }]"
     :style="{ '--bg-image': `url('${imgPath}')` }"
     @click="!isLocked && emit('navigate', map.id)"
   >
+    <!-- Header Tag -->
     <span :class="['location-tag', isLocked ? 'tag-locked' : 'tag-wild']">
       <template v-if="isLocked">
-        {{ isSafariLocked ? '🔒 Ticket Safari' : `🔒 ${map.badges} Medallas` }}
+        {{ isSafariLocked ? '🔒 TICKET SAFARI' : `🔒 ${map.badges} MEDALLAS` }}
       </template>
       <template v-else>
-        {{ cycleLabel }}
+        {{ cycle === 'night' ? '🌙' : '☀️' }} {{ cycleLabel }}
       </template>
     </span>
 
     <span
       v-if="map.fishing"
       class="fishing-rod"
-      title="Zona de pesca disponible"
+      title="Zona de pesca"
     >🎣</span>
 
     <!-- Dominancia / Guardianes -->
@@ -92,7 +91,7 @@ const getPokemonSprite = (id) => {
       <img
         :src="`/assets/factions/${dominance.winner}.png`"
         class="faction-logo pulse"
-        :title="`Controlado por la ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
+        :title="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
       >
     </div>
 
@@ -109,53 +108,54 @@ const getPokemonSprite = (id) => {
       </span>
     </div>
 
-    <div class="location-name">
-      {{ map.name }}
-      <span
-        v-if="isRocketExtorted"
-        class="extorted-tag"
-        title="Ruta Extorsionada (x1.5 ₽)"
-      >[R]</span>
-    </div>
-    
-    <div class="location-desc">
-      {{ map.desc }}
-    </div>
-
-    <div
-      v-if="isSafariLocked"
-      class="safari-lock-msg"
-    >
-      Necesitas un Ticket Safari
-    </div>
-
-    <div
-      v-if="!isLocked"
-      class="location-spawns"
-    >
-      <!-- Spawns Genéricos -->
-      <div class="spawn-row">
-        <img
-          v-for="id in spawnPool.generic"
-          :key="id"
-          :src="getPokemonSprite(id)"
-          :title="id"
-          loading="lazy"
-        >
+    <!-- Location Info -->
+    <div class="card-content">
+      <div class="location-name">
+        {{ map.name }}
+        <span
+          v-if="isRocketExtorted"
+          class="extorted-tag"
+          title="Extorsionada"
+        >[R]</span>
       </div>
-      <!-- Spawns Específicos del Ciclo -->
+      
+      <div class="location-desc">
+        {{ map.desc }}
+      </div>
+
       <div
-        v-if="spawnPool.specific.length > 0"
-        class="spawn-row cycle-specific-spawns"
+        v-if="isSafariLocked"
+        class="safari-lock-msg"
       >
-        <span class="cycle-emoji-label">{{ cycle === 'night' ? '🌙' : '☀️' }}</span>
-        <img
-          v-for="id in spawnPool.specific"
-          :key="id"
-          :src="getPokemonSprite(id)"
-          :title="id"
-          loading="lazy"
+        Necesitas un Ticket Safari
+      </div>
+
+      <div
+        v-if="!isLocked"
+        class="location-spawns"
+      >
+        <div class="spawn-row">
+          <img
+            v-for="id in spawnPool.generic"
+            :key="id"
+            :src="getPokemonSprite(id)"
+            class="pixelated"
+            loading="lazy"
+          >
+        </div>
+        <div
+          v-if="spawnPool.specific.length > 0"
+          class="spawn-row cycle-specific-spawns"
         >
+          <span class="cycle-emoji-label">{{ cycle === 'night' ? '🌙' : '☀️' }}</span>
+          <img
+            v-for="id in spawnPool.specific"
+            :key="id"
+            :src="getPokemonSprite(id)"
+            class="pixelated"
+            loading="lazy"
+          >
+        </div>
       </div>
     </div>
   </div>
@@ -164,70 +164,72 @@ const getPokemonSprite = (id) => {
 <style scoped>
 .map-card {
   position: relative;
-  height: 190px;
-  background-image: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.85) 100%), var(--bg-image);
+  height: 200px;
+  background-image: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4)), var(--bg-image);
   background-size: cover;
   background-position: center;
-  border-radius: 18px;
-  padding: 16px;
+  border: 4px solid #333;
+  box-shadow: 0 0 0 4px #000;
+  padding: 15px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  background-color: var(--dark);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.1s;
+  overflow: hidden;
 }
 
 .map-card:hover:not(.locked) {
-  transform: translateY(-4px);
-  border-color: var(--yellow);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  border-color: #666;
+  transform: translateY(-2px);
 }
 
 .map-card.locked {
-  filter: grayscale(1) brightness(0.7);
+  filter: grayscale(1) brightness(0.6);
   cursor: not-allowed;
 }
 
 .location-tag {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 10px;
+  right: 10px;
   font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  z-index: 2;
+  font-size: 6px;
+  padding: 4px 8px;
+  border: 2px solid #333;
+  z-index: 5;
 }
 
-.tag-wild { background: rgba(0,0,0,0.6); color: var(--yellow); }
-.tag-locked { background: rgba(18,18,18,0.9); color: var(--red); }
+.tag-wild { background: #000; color: #ffcc00; }
+.tag-locked { background: #111; color: #ff3b3b; }
 
 .fishing-rod {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 10px;
+  left: 10px;
   font-size: 16px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  z-index: 5;
+}
+
+.card-content {
+  position: relative;
+  z-index: 2;
 }
 
 .location-name {
   font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
+  font-size: 9px;
   color: #fff;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
+  text-shadow: 2px 2px #000;
 }
 
 .location-desc {
-  font-size: 11px;
-  color: var(--gray);
-  margin-bottom: 12px;
+  font-size: 10px;
+  color: #aaa;
+  margin-bottom: 10px;
   line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  height: 28px;
   overflow: hidden;
 }
 
@@ -246,31 +248,30 @@ const getPokemonSprite = (id) => {
 .spawn-row img {
   width: 32px;
   height: 32px;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
 }
 
 .cycle-specific-spawns {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 2px 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 2px 5px;
   align-items: center;
 }
 
-.cycle-emoji-label { font-size: 10px; margin-right: 4px; }
+.cycle-emoji-label { font-size: 10px; margin-right: 5px; }
 
-.extorted-tag { color: var(--red); text-shadow: 0 0 5px var(--red); margin-left: 4px; }
+.extorted-tag { color: #ff3b3b; text-shadow: 0 0 5px #ff3b3b; margin-left: 5px; }
 
 .faction-dominance {
   position: absolute;
   top: 45px;
   left: 10px;
-  z-index: 5;
+  z-index: 10;
 }
 
 .faction-logo {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 
@@ -289,19 +290,34 @@ const getPokemonSprite = (id) => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  z-index: 10;
 }
 
-.guardian-sprite { width: 40px; height: 40px; image-rendering: pixelated; }
-.guardian-sprite.captured { opacity: 0.5; filter: grayscale(1); }
+.guardian-sprite { width: 42px; height: 42px; image-rendering: pixelated; }
+.guardian-sprite.captured { opacity: 0.4; filter: grayscale(1); }
 
 .guardian-label {
   font-family: 'Press Start 2P', monospace;
   font-size: 5px;
   padding: 2px 4px;
-  background: var(--yellow);
+  background: #ffcc00;
   color: #000;
-  border-radius: 4px;
+  border: 1px solid #000;
 }
 
-.guardian-label.captured { background: var(--gray); }
+.guardian-label.captured { background: #555; color: #ccc; }
+
+.safari-lock-msg {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  color: #ff3b3b;
+  margin-top: 5px;
+}
+
+.pixelated {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: pixelated;
+  image-rendering: optimize-speed;
+}
 </style>

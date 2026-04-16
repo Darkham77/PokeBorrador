@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { createResilientClient } from './supabaseProxy'
+import { DBRouter } from './dbRouter'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
@@ -23,9 +23,13 @@ if (!supabaseUrl || !supabaseKey) {
   }
 }
 
-export const supabase = createResilientClient(rawClient)
+// Export the Unified DB Router as 'supabase' for backward compatibility
+export const supabase = new DBRouter(rawClient)
 
-// Ensure legacy scripts always use the resilient proxy
+// Ensure legacy scripts always use the resilient proxy / router
 if (typeof window !== 'undefined') {
   window.sb = supabase
+  window.DBRouterInstance = supabase // Use this to differentiate from the class
 }
+
+export default supabase

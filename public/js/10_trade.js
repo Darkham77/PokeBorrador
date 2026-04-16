@@ -51,6 +51,7 @@
     }
 
     // ── Open modal ────────────────────────────────────
+    window._openTradeModalLegacy = openTradeModal;
     async function openTradeModal(friendId, friendUsername) {
       _tradeTarget = { id: friendId, username: friendUsername };
       _tradeOfferPoke = null; _tradeRequestPoke = null;

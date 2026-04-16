@@ -26,7 +26,7 @@ Use this skill when:
 2. **Search and Compare**:
    - Use `grep_search` or `list_dir` to find relevant legacy files.
    - Use `view_file` to read the legacy implementation.
-   - Compare the legacy logic with the current implementation in `src/`.
+   - Compare the legacy logic with the current implementation.
 3. **Presenting Findings**:
    - When explaining differences, clearly label snippets as `[LEGACY]` and `[CURRENT]`.
    - Focus on logic changes, state management shifts, or CSS regressions.

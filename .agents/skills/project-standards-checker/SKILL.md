@@ -1,6 +1,6 @@
 ---
 name: project-standards-checker
-description: MANDATORY skill for verifying code quality, build stability, styling standards, and modularization. Use this BEFORE starting browser tests, after significant changes, or when creating/modifying files in src/. Ensures No Monolithic Files (>500 lines) and strict SCSS usage over inline styles.
+description: MANDATORY skill for verifying code quality, build stability, styling standards, and modularization. Use this BEFORE starting browser tests or after significant changes. Ensures No Monolithic Files (>500 lines), strict SCSS usage, Unified DB Router compliance, Cache Sync Integrity, Single Session Enforcement, Inheritance & Code Reuse Mandate, and Database Schema & Migration Mandate.
 ---
 
 # Project Standards Checker
@@ -13,10 +13,13 @@ To maintain a healthy, readable codebase, we follow a strict **Modularization Po
 
 ### 1. The 500-Line Rule
 
-Any `.vue`, `.js`, or `.scss` file inside the `src/` directory **MUST NOT** exceed 500 lines.
+Any `.vue`, `.js`, or `.scss` file inside the project **MUST NOT** exceed 500 lines, with the following **MANDATORY EXCEPTIONS**:
 
-- **Maintenance**: If you touch a file that is already over 500 lines, you **MUST** refactor it into smaller modules as part of your task.
-- **New Code**: Never create a monolithic file from scratch. Plan the architecture to be modular from the start.
+- **External Dependencies & Legacy Backups**: Files in `node_modules/` or `backup_legacy_code/`.
+- **Data-Heavy Definition Files ("Pseudo-Databases")**: Files used strictly for data storage/definitions that are not yet in Supabase/SQLite (e.g., `schedules`, `conflict routes`, `game constants`, `coordinate maps`).
+  - **Optimization Requirement**: These large files **MUST** be optimized for Vue. Use `shallowRef` or `readonly` for static data to prevent excessive reactivity overhead, and ensure they are imported as ES Modules to take advantage of treeshaking if possible.
+
+- **Maintenance**: If you touch a logic or component file that is already over 500 lines and is NOT a data-heavy file, you **MUST** refactor it into smaller modules.
 
 ### 2. Refactoring Strategies
 
@@ -39,6 +42,115 @@ To maintain visual consistency and leverage the full power of our UI framework, 
 - **Prioritize SCSS**: Always extract styles to SCSS files/blocks and use the project's CSS/SCSS design tokens. If a unique style is needed, create the appropriate class in the component's `<style lang="scss">` or the global partials.
 - **Critical Cases ONLY**: Inline styles are only acceptable when calculating elements dynamically via Javascript where there is literally no other option.
 
+## Database & Context Architecture
+
+To ensure the application can handle both Online and Offline modes seamlessly, we follow a strictly decoupled data access pattern.
+
+### 1. Unified DB Router Mandate
+
+All components, services, and logic modules **MUST** interact with the database through the **Unified DB Router** (typically `window.DBRouter` or a dedicated logic bridge).
+
+- **FORBIDDEN**: Direct calls to `supabase.from()` or `sqlDb.run()` inside UI components or feature services.
+- **Reasoning**: The DB Router contextually decides whether to use Supabase (Cloud) or SQLite (Local) based on the user's session. Bypassing it breaks the application's ability to sync and route data correctly.
+- **Pattern**:
+  - *Wrong*: `await supabase.from('inventory').select('*')`
+  - *Correct*: `await DBRouter.from('inventory').select('*')`
+
+### 3. Persistence Isolation Policy (Strict Session Isolation)
+
+The application **MUST NOT** automatically switch between Online and Offline modes during an active session.
+
+- **Online Stay-Online**: If a user logs in via Supabase, the application remains in Online mode for the entire session. If the internet connection is lost, the UI **MUST** display a "Connection Lost" modal or banner and suspend database operations. It **MUST NEVER** automatically fallback to the local SQLite database.
+- **Offline Stay-Offline**: If a user logs in via Local/Offline mode, it remains in that mode until logout. It **MUST NOT** attempt to connect to Supabase or sync data in the background.
+- **Reasoning**: This prevents data bifurcation and ensures that the user is always aware of which "world" they are interacting with.
+
+### 2. Database Schema & Migration Mandate
+
+When introducing or modifying database tables or columns, we follow a strict **Versioned Migration Pattern**.
+
+- **Automatic Local Migrations**:
+  - The application must include logic to automatically update the local database (SQLite/IndexedDB).
+  - Use the `DATABASE_MIGRATIONS` array in `src/logic/sqliteIDBHandler.js`.
+  - **MANDATORY PARITY**: Every new SQL file created in `database/migrations/` **MUST** have a corresponding entry in the `DATABASE_MIGRATIONS` array with the exact same ID.
+- **Remote SQL Communication**:
+  - For every schema change, the AI **MUST** provide the user with the exact SQL code to execute in the remote database (e.g., Supabase SQL Editor).
+  - This SQL **MUST** match the contents of the latest file in `database/migrations/`.
+- **Naming Convention**:
+  - Migration files must be stored in `database/migrations/`.
+  - Use the format: `YYYYMMDDHHMMSS_description_of_change.sql`.
+  - Example: `20240416193000_add_session_id_to_profiles.sql`.
+- **Workflow**:
+  1. Create a new timestamped `.sql` file in `database/migrations/`.
+  2. Implement the same SQL logic in the `DATABASE_MIGRATIONS` array in `sqliteIDBHandler.js`.
+  3. Display the **"REMOTE SQL MIGRATION"** block for the user, referencing the new file.
+
+
+## Cache & Synchronization Integrity
+
+To prevent data loss and ensure a consistent cross-device experience, we strictly manage local state caches.
+
+### 1. The "60-Second" Sync Principle
+
+The 60-second synchronization cycle is a **throttling mechanism** design to minimize server load. It is **NOT** a persistent reliable storage for long-term state.
+
+### 2. Mandatory Cache Invalidation
+
+Caches used for throttling updates **MUST** be discarded in the following scenarios:
+
+- **On Login**: Clear any existing save-data cache before performing the initial "Pull" from the database.
+- **On Tab Init**: Whenever the application is opened in a new tab, force a fresh download from the cloud/local DB instead of using a potentially stale 1-minute-old throttle cache.
+
+**Technical Reference (Discard Strategy)**:
+When implementing login or application hydration:
+
+```javascript
+// Ensure stale throttle data is wiped
+localStorage.removeItem('save_throttle_cache'); 
+// Force absolute source-of-truth fetch
+const { data } = await DBRouter.from('game_saves').select('*').single();
+```
+
+## Session & Concurrency Standards
+
+To prevent world-state corruption and ensure account security, we strictly enforce a unique session policy across all platforms.
+
+### 1. Single Session Access (Last-In-Wins)
+
+Only one active browser tab or application instance is allowed per account.
+
+- **Workflow**:
+  1. **UUID Core**: Generate a unique `SessionID` (UUID) upon every fresh application load.
+  2. **DB Lock**: On login, update the user profile's `current_session_id` in the database with the local `SessionID`.
+  3. **Continuous Monitoring**: Subscribe to database changes (Realtime) on the user's profile to detect if the session ID has been updated by another instance.
+  4. **Wake-up Validation**: On `visibilitychange` (returning to tab) or `focus`, explicitly fetch the latest `current_session_id` from the DB.
+  5. **Invalidation Response**: If a mismatch is detected (local ID != DB ID):
+     - **Block Access**: Display the "Session Expired" overlay immediately.
+     - **Kill Write-Access**: Disconnect all saving logic and background syncs.
+
+- **Reasoning**: This "Last-In-Wins" strategy ensures the most recently opened tab has exclusive control, preventing older tabs from accidentally overwriting newer progress.
+
+## Code Reuse & Inheritance Mandate
+
+To maintain a clean and maintainable codebase, we strictly follow the **DRY (Don't Repeat Yourself)** principle through inheritance and abstraction.
+
+### 1. Inheritance-First Approach
+
+Prioritize inheritance over code duplication in all layers of the application.
+
+- **Styles (SCSS)**:
+  - Use `@extend %placeholder` or parent classes for shared UI patterns (e.g., `.battle-btn`, `.modal-card`).
+  - Extract repeating numeric values or shared effects to SCSS mixins or design tokens.
+- **Logic (JS/TS)**:
+  - Use shared **Composables** or utility functions for repeating logic blocks.
+  - If multiple logic sets share a common structure, refactor them into a shared base file.
+- **Components (Vue)**:
+  - Favor generic base components that can be customized via `props` and `slots`.
+  - Do not create two components that share 80% of their template; instead, create a parent component and use slots for specific parts.
+
+### 2. The "Rule of Three"
+
+If you find the same logic or style block in **more than 2 places**, you **MUST** refactor it into a shared upstream dependency (Partial, Mixin, Composable, or Base Component) before proceeding.
+
 ## Dev Server Management
 
 To avoid port conflicts and resource waste, we must ensure only one instance of the development server is running.
@@ -53,7 +165,11 @@ To avoid port conflicts and resource waste, we must ensure only one instance of 
 Before finalizing, verify that no touched files violate the length standard:
 
 ```bash
-find src -type f \( -name "*.vue" -o -name "*.js" -o -name "*.scss" \) -exec wc -l {} + | awk '$1 > 500 && $2 != "total"'
+# In Bash-like environments:
+find . -maxdepth 4 -type f \( -name "*.vue" -o -name "*.js" -o -name "*.scss" \) -not -path "./node_modules/*" -not -path "./.agents/*" -not -path "./backup_legacy_code/*" -not -path "./dist/*" -exec wc -l {} + | awk '$1 > 500 && $2 != "total"'
+
+# In PowerShell:
+Get-ChildItem -Recurse -File -Include *.vue, *.js, *.scss | Where-Object { $_.FullName -notmatch "node_modules|\.agents|backup_legacy_code|dist" } | ForEach-Object { $lines = (Get-Content $_.FullName | Measure-Object -Line).Lines; if ($lines -gt 500) { "$lines`t$($_.FullName)" } }
 ```
 
 > [!IMPORTANT]
@@ -92,7 +208,7 @@ pgrep -af vite || echo "No vite instances running"
 
 ## Audit Checklist
 
-1. `[ ]` Run length audit: No violator files in `src/`.
+1. `[ ]` Run length audit: No violator files in project (excluding node_modules/backups).
 2. `[ ]` `npm run lint`: Execution success (0 errors).
 3. `[ ]` `npm run build`: Execution success.
 4. `[ ]` Dev Server Check: No duplicate instances or reused existing one.

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 const props = defineProps({
   events: { type: Array, default: () => [] },
@@ -22,7 +22,7 @@ const slides = computed(() => {
       icon: ev.icon || '🎁',
       title: ev.name,
       content: ev.description || '¡Evento especial activo ahora!',
-      color: '#fbbf24'
+      color: '#ffcc00'
     })
   })
 
@@ -34,7 +34,7 @@ const slides = computed(() => {
        icon: '🏆',
        title: '¡HAS GANADO!',
        content: `¡Reclamá tus premios de ${aw.event_name}!`,
-       color: '#22c55e'
+       color: '#00ff00'
      })
   })
 
@@ -60,26 +60,26 @@ const handleAction = (slide) => {
 <template>
   <div
     v-if="slides.length > 0"
-    class="pc-banner pc-banner-carousel"
+    class="legacy-carousel legacy-panel"
     :class="{ 'event-active': slides.length > 0 }"
   >
     <div
       v-for="(slide, i) in slides"
       :key="i"
-      :class="['pc-carousel-slide', { active: currentIndex === i }]"
+      :class="['carousel-slide', { active: currentIndex === i }]"
       @click="handleAction(slide)"
     >
-      <div class="pc-banner-icon">
+      <div class="slide-icon">
         {{ slide.icon }}
       </div>
-      <div class="pc-banner-content">
+      <div class="slide-content">
         <div
-          class="pc-banner-title"
+          class="slide-title"
           :style="{ color: slide.color }"
         >
           {{ slide.title }}
         </div>
-        <div class="pc-banner-text">
+        <div class="slide-text">
           {{ slide.content }}
         </div>
       </div>
@@ -88,83 +88,81 @@ const handleAction = (slide) => {
     <!-- Dots -->
     <div
       v-if="slides.length > 1"
-      class="pc-carousel-dots"
+      class="carousel-dots"
     >
       <div
         v-for="(_, i) in slides"
         :key="i"
-        :class="['pc-dot', { active: currentIndex === i }]"
+        :class="['carousel-dot', { active: currentIndex === i }]"
       />
     </div>
   </div>
 </template>
 
 <style scoped>
-.pc-banner-carousel {
+.legacy-carousel {
   position: relative;
   min-height: 80px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  background: #111;
+  border: 4px solid #333;
+  box-shadow: 0 0 0 4px #000;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 
-.pc-banner-carousel.event-active {
-  border-color: rgba(251, 191, 36, 0.3);
-  box-shadow: 0 0 15px rgba(251, 191, 36, 0.1);
+.legacy-carousel.event-active {
+  border-color: #ffcc00;
 }
 
-.pc-carousel-slide {
+.carousel-slide {
   position: absolute;
   inset: 0;
   display: flex;
-  gap: 14px;
-  padding: 14px;
+  gap: 15px;
+  padding: 15px;
   opacity: 0;
-  transition: opacity 0.5s ease;
   pointer-events: none;
   cursor: pointer;
 }
 
-.pc-carousel-slide.active {
+.carousel-slide.active {
   opacity: 1;
   pointer-events: auto;
 }
 
-.pc-banner-icon { font-size: 24px; }
+.slide-icon { font-size: 24px; display: flex; align-items: center; }
 
-.pc-banner-title {
+.slide-content { display: flex; flex-direction: column; justify-content: center; }
+
+.slide-title {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px #000;
 }
 
-.pc-banner-text {
+.slide-text {
   font-size: 11px;
-  color: #aaa;
+  color: #888;
   line-height: 1.4;
 }
 
-.pc-carousel-dots {
+.carousel-dots {
   position: absolute;
-  bottom: 8px;
-  right: 14px;
+  bottom: 10px;
+  right: 15px;
   display: flex;
-  gap: 4px;
+  gap: 5px;
 }
 
-.pc-dot {
+.carousel-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transition: all 0.3s;
+  background: #444;
+  border: 1px solid #000;
 }
 
-.pc-dot.active {
-  background: var(--yellow);
-  width: 12px;
-  border-radius: 4px;
+.carousel-dot.active {
+  background: #ffcc00;
 }
 </style>

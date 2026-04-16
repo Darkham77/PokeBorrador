@@ -1,37 +1,29 @@
 <script setup>
+import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
+import TeamHeader from '@/components/team/TeamHeader.vue'
+import TeamGrid from '@/components/team/TeamGrid.vue'
 
 const gameStore = useGameStore()
+const team = computed(() => gameStore.state.team)
 </script>
 
 <template>
-  <div class="team-view">
-    <div class="header">
-      <h2>Mi Equipo</h2>
-      <p>{{ gameStore.state.team.length }} / 6 Pokémon</p>
-    </div>
-
+  <div class="team-page">
+    <TeamHeader />
+    
     <div
-      v-if="gameStore.state.team.length === 0"
+      v-if="team.length === 0"
       class="empty-state"
     >
-      <span class="empty-icon">🎒</span>
-      <p>No tenés Pokémon en tu equipo todavía.</p>
+      <span class="empty-icon">🦗</span>
+      <p>Tu equipo está vacío. ¡Captura algunos Pokémon!</p>
     </div>
-
-    <div
+    
+    <TeamGrid
       v-else
-      class="team-grid"
-    >
-      <div
-        v-for="(p, i) in gameStore.state.team"
-        :key="i"
-        class="pokemon-card"
-      >
-        <!-- Contenido de la carta -->
-        <p>{{ p.name }}</p>
-      </div>
-    </div>
+      :team="team"
+    />
   </div>
 </template>
 

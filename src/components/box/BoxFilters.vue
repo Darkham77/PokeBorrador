@@ -7,7 +7,7 @@ const props = defineProps({
   resultsCount: { type: Number, required: true }
 })
 
-const emit = defineEmits(['update:isFiltersOpen', 'update:sortMode', 'reset'])
+const emit = defineEmits(['update:isFiltersOpen', 'update:sortMode', 'update:filters', 'reset'])
 
 const toggleFilters = () => emit('update:isFiltersOpen', !props.isFiltersOpen)
 const setSortMode = (val) => emit('update:sortMode', val)
@@ -35,10 +35,11 @@ const setSortMode = (val) => emit('update:sortMode', val)
     <!-- Buscador -->
     <div class="search-container">
       <input
-        v-model="filters.search"
+        :value="filters.search"
         type="text"
         placeholder="Buscar por nombre..."
         class="search-input"
+        @input="emit('update:filters', { ...filters, search: $event.target.value })"
       >
     </div>
 
@@ -91,7 +92,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
         <div class="button-row">
           <button
             :class="['box-filter-btn', { active: filters.tier === 'all' }]"
-            @click="filters.tier = 'all'"
+            @click="emit('update:filters', { ...filters, tier: 'all' })"
           >
             Todos
           </button>
@@ -100,7 +101,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
             :key="t[0]"
             :class="['box-filter-btn', { active: filters.tier === t[0] }]"
             :style="{ color: t[1], background: filters.tier === t[0] ? t[2] : 'rgba(255,255,255,0.1)', borderColor: t[3] }"
-            @click="filters.tier = t[0]"
+            @click="emit('update:filters', { ...filters, tier: t[0] })"
           >
             {{ t[0] }}
           </button>
@@ -115,7 +116,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
         <div class="button-row large-gap">
           <button
             :class="['box-filter-btn', { active: filters.type === 'all' }]"
-            @click="filters.type = 'all'"
+            @click="emit('update:filters', { ...filters, type: 'all' })"
           >
             Todos
           </button>
@@ -131,21 +132,23 @@ const setSortMode = (val) => emit('update:sortMode', val)
           </div>
           <div class="range-row">
             <input
-              v-model.number="props.filters.ivTotalMin"
+              :value="filters.ivTotalMin"
               type="range"
               min="0"
               max="186"
               class="custom-range range-yellow"
+              @input="emit('update:filters', { ...filters, ivTotalMin: Number($event.target.value) })"
             >
             <span class="range-val">{{ filters.ivTotalMin }}</span>
           </div>
           <div class="range-row">
             <input
-              v-model.number="props.filters.ivTotalMax"
+              :value="filters.ivTotalMax"
               type="range"
               min="0"
               max="186"
               class="custom-range range-yellow"
+              @input="emit('update:filters', { ...filters, ivTotalMax: Number($event.target.value) })"
             >
             <span class="range-val">{{ filters.ivTotalMax }}</span>
           </div>
@@ -156,7 +159,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
           </div>
           <button
             :class="['special-btn', { active: filters.ivAny31 }]"
-            @click="filters.ivAny31 = !filters.ivAny31"
+            @click="emit('update:filters', { ...filters, ivAny31: !filters.ivAny31 })"
           >
             {{ filters.ivAny31 ? '[★] IV 31 DETECTADO' : 'Cualquier IV en 31' }}
           </button>

@@ -27,259 +27,274 @@ const typeIcon = computed(() => {
 
 <template>
   <div
-    class="gym-card"
+    class="gym-card-legacy"
     :class="{ defeated: isDefeated, locked: isLocked }"
     :style="{ '--gym-color': gym.typeColor }"
   >
-    <!-- Badge & Leader Header -->
-    <div class="gym-header">
-      <div class="badge-icon">
-        {{ gym.badge }}
-      </div>
-      <div class="gym-info">
-        <div class="gym-name">
-          {{ gym.name }}
+    <!-- LEGACY HEADER: Gradient + Info -->
+    <div
+      class="card-header-legacy"
+      :style="{ background: `linear-gradient(135deg, ${gym.typeColor}22, ${gym.typeColor}08)` }"
+    >
+      <div class="header-main">
+        <div class="leader-info">
+          <div class="type-row">
+            <span class="type-icon">{{ typeIcon }}</span>
+            <span
+              class="gym-tag"
+              :style="{ color: gym.typeColor }"
+            >{{ gym.name }}</span>
+          </div>
+          <div class="location">
+            📍 {{ gym.city }}
+          </div>
+          <div class="leader-title">
+            Líder: <span>{{ gym.leader }}</span>
+          </div>
+          <div class="badges-row">
+            <span class="type-badge">{{ gym.type.toUpperCase() }}</span>
+            <span class="medal-name">{{ gym.badge }} {{ gym.badgeName }}</span>
+          </div>
         </div>
-        <div class="gym-city">
-          {{ gym.city }}
+        <div class="leader-sprite-box">
+          <img
+            :src="gym.sprite"
+            :alt="gym.name"
+            class="pixel-sprite"
+          >
         </div>
-      </div>
-      <div
-        v-if="isDefeated"
-        class="defeat-badge"
-      >
-        DEFROTADO ✓
       </div>
     </div>
 
-    <!-- Leader Sprite & Quote -->
-    <div class="gym-body">
-      <div class="leader-wrap">
-        <img
-          :src="gym.sprite"
-          :alt="gym.leader"
-          class="leader-sprite"
+    <!-- LEGACY FOOTER: Preview + Action -->
+    <div class="card-footer-legacy">
+      <div class="preview-box">
+        <div class="progress-txt">
+          PROGRESOS: {{ gymsStore.isGymDefeated(gym.id) ? '1/1' : '0/1' }}
+        </div>
+        <!-- Team preview logic could go here if we had it, but following legacy 21_events.js style -->
+      </div>
+
+      <div class="action-box">
+        <div
+          v-if="isLocked"
+          class="locked-tag"
         >
-        <div class="leader-name">
-          Líder {{ gym.leader }}
+          🔒 Requiere {{ gym.badgesRequired }} medallas
+        </div>
+        <div
+          v-else-if="isDefeated && !isReaffirming"
+          class="won-tag"
+        >
+          ✅ GANADO HOY
+        </div>
+        <div
+          v-else
+          class="challenge-group"
+        >
+          <!-- Difficulty Tiny Buttons -->
+          <div class="diff-selector">
+            <button 
+              v-for="d in ['easy', 'normal', 'hard']" 
+              :key="d"
+              class="diff-btn-retro"
+              :class="{ active: selectedDifficulty === d, [d]: true }"
+              @click="selectedDifficulty = d"
+            >
+              {{ d === 'easy' ? 'FÁCIL' : d === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
+            </button>
+          </div>
+          <button
+            class="retro-challenge-btn"
+            :style="{ background: `linear-gradient(135deg, ${gym.typeColor}, ${gym.typeColor}cc)`, boxShadow: `0 4px 14px ${gym.typeColor}66` }"
+            @click="handleChallenge"
+          >
+            ⚔️ {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR' }}
+          </button>
         </div>
       </div>
-      <div class="gym-quote">
-        "{{ isDefeated ? gym.victoryQuote : gym.quote }}"
-      </div>
-    </div>
-
-    <!-- Difficulty & Action -->
-    <div class="gym-footer">
-      <div class="difficulty-selector">
-        <button
-          v-for="d in ['easy', 'normal', 'hard']"
-          :key="d"
-          class="diff-btn"
-          :class="{ active: selectedDifficulty === d, [d]: true }"
-          @click="selectedDifficulty = d"
-        >
-          {{ d === 'easy' ? 'Fácil' : d === 'normal' ? 'Normal' : 'Difícil' }}
-        </button>
-      </div>
-      
-      <button
-        class="challenge-btn"
-        :disabled="isLocked"
-        @click="handleChallenge"
-      >
-        {{ isLocked ? `Requiere ${gym.badgesRequired} Medallas` : (isDefeated ? 'REAFIRMAR' : 'DESAFIAR') }}
-      </button>
-    </div>
-    
-    <div class="gym-type-tag">
-      {{ typeIcon }} {{ gym.type.toUpperCase() }}
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.gym-card {
-  background: var(--bg-card);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.gym-card-legacy {
+  background: #1c2128;
   border-radius: 20px;
   overflow: hidden;
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-
-  &:hover {
-    transform: translateY(-5px);
-    border-color: var(--gym-color);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-  }
 
   &.defeated {
-    border-color: var(--green);
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, transparent, rgba(var(--green-rgb), 0.05));
-      pointer-events: none;
-    }
+    border-color: rgba(107, 203, 119, 0.5);
   }
 
   &.locked {
-    filter: #{'grayscale(0.8)'};
-    opacity: 0.7;
-    cursor: not-allowed;
+    filter: unquote("grayscale(1)");
+    opacity: 0.6;
+  }
+
+  &:hover:not(.locked) {
+    border-color: var(--gym-color);
+    transform: translateY(-3px);
   }
 }
 
-.gym-header {
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent);
+.card-header-legacy {
+  padding: 16px 20px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.badge-icon {
-  font-size: 28px;
-  filter: drop-shadow(0 0 10px var(--gym-color));
-}
-
-.gym-name {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: #fff;
-}
-
-.gym-city {
-  font-size: 11px;
-  color: var(--gray);
-  margin-top: 4px;
-}
-
-.defeat-badge {
-  margin-left: auto;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  background: var(--green);
-  color: #000;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 900;
-}
-
-.gym-body {
-  padding: 12px 16px;
+.header-main {
   display: flex;
   gap: 16px;
+  align-items: flex-start;
+}
+
+.leader-info {
   flex: 1;
+  min-width: 0;
 }
 
-.leader-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 80px;
-}
-
-.leader-sprite {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
-}
-
-.leader-name {
-  font-size: 10px;
-  font-weight: 800;
-  margin-top: 8px;
-  color: var(--gym-color);
-}
-
-.gym-quote {
-  font-size: 13px;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
+.type-row {
   display: flex;
   align-items: center;
-}
+  gap: 8px;
+  margin-bottom: 4px;
 
-.gym-footer {
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.difficulty-selector {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 4px;
-  border-radius: 10px;
-}
-
-.diff-btn {
-  border: none;
-  background: transparent;
-  color: var(--gray);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 6px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &.active {
-    background: #fff;
-    color: #000;
-    &.easy { background: var(--green); }
-    &.normal { background: var(--yellow); }
-    &.hard { background: var(--red); }
+  .type-icon { font-size: 18px; }
+  .gym-tag {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
   }
 }
 
-.challenge-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--gym-color);
-  background: transparent;
-  color: var(--gym-color);
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
+.location { font-size: 11px; color: #888; margin-bottom: 2px; }
+.leader-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  span { color: #eee; }
+}
 
-  &:hover:not(:disabled) {
+.badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+
+  .type-badge {
     background: var(--gym-color);
     color: #fff;
-    box-shadow: 0 0 20px var(--gym-color);
+    font-size: 9px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 700;
   }
-  
-  &:disabled {
-    border-color: var(--gray);
-    color: var(--gray);
-    opacity: 0.5;
-    cursor: not-allowed;
+  .medal-name {
+    font-size: 11px;
+    color: #ffd700;
   }
 }
 
-.gym-type-tag {
-  position: absolute;
-  top: 10px;
-  right: -30px;
-  background: var(--gym-color);
-  color: #fff;
+.leader-sprite-box {
+  flex-shrink: 0;
+  width: 90px;
+  text-align: center;
+
+  .pixel-sprite {
+    height: 90px;
+    width: auto;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+  }
+}
+
+.card-footer-legacy {
+  padding: 12px 20px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.progress-txt {
+  font-size: 9px;
+  color: #888;
+  font-weight: 700;
+}
+
+.action-box {
+  margin-left: auto;
+}
+
+.locked-tag {
+  color: #ef4444;
+  font-size: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.won-tag {
+  color: #22c55e;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.challenge-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.diff-selector {
+  display: flex;
+  gap: 4px;
+}
+
+.diff-btn-retro {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+
+  &.active {
+    border-color: var(--gym-color);
+    background: rgba(var(--gym-color), 0.2);
+    color: #fff;
+    
+    &.easy { color: #22c55e; }
+    &.normal { color: #ffd700; }
+    &.hard { color: #ef4444; }
+  }
+}
+
+.retro-challenge-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 20px;
+  font-family: 'Press Start 2P', monospace;
   font-size: 8px;
+  color: #fff;
   font-weight: 900;
-  padding: 4px 40px;
-  transform: rotate(45deg);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { transform: #{'scale(1.05)'}; }
 }
 </style>

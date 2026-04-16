@@ -20,7 +20,10 @@ watch(logs, () => {
 </script>
 
 <template>
-  <div ref="logContainer" class="battle-log">
+  <div
+    ref="logContainer"
+    class="battle-log"
+  >
     <!-- Reversing logs to show oldest first if using unshift, 
          or just keep as is if we want new ones at the bottom -->
     <div 
@@ -29,8 +32,7 @@ watch(logs, () => {
       class="log-entry"
       :class="log.type"
       v-html="log.msg"
-    >
-    </div>
+    />
   </div>
 </template>
 

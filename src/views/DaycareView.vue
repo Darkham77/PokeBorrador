@@ -1,317 +1,283 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useBreedingStore } from '@/stores/breeding'
+import { useGameStore } from '@/stores/game'
+
+// Components
 import DaycareSlot from '@/components/breeding/DaycareSlot.vue'
+import CompatibilityPanel from '@/components/breeding/CompatibilityPanel.vue'
+import EggCard from '@/components/breeding/EggCard.vue'
+import DaycareMissionCard from '@/components/breeding/DaycareMissionCard.vue'
+
+// Modals
+import BreedingPickerModal from '@/components/BreedingPickerModal.vue'
+import EggScannerModal from '@/components/EggScannerModal.vue'
 
 const breedingStore = useBreedingStore()
+const gameStore = useGameStore()
+
+const isPickerOpen = ref(false)
+const isScannerOpen = ref(false)
+const pickerMode = ref('daycare')
+const pickerSlotIdx = ref(0)
+const pickerMissionIdx = ref(-1)
 
 const compat = computed(() => breedingStore.compatibility)
-const compatStyle = computed(() => breedingStore.COMPAT_TEXT[compat.value.level] || breedingStore.COMPAT_TEXT[0])
+const missions = computed(() => gameStore.state.daycare_missions || [])
 
 onMounted(async () => {
   await breedingStore.loadDaycareData()
 })
 
-const handleDeposit = (slotId) => {
-  // For now, call legacy deposit UI if available, or trigger a placeholder
-  if (typeof window.showDaycarePicker === 'function') {
-    window.showDaycarePicker(slotId)
-  }
+const openPicker = (slotIdx) => {
+  pickerMode.value = 'daycare'
+  pickerSlotIdx.value = slotIdx
+  isPickerOpen.value = true
+}
+
+const openMissionPicker = (mIdx) => {
+  pickerMode.value = 'mission'
+  pickerMissionIdx.value = mIdx
+  isPickerOpen.value = true
 }
 
 const handleWithdraw = async (slotId) => {
-  // For now, call legacy withdraw
-  if (typeof window.withdrawFromDaycare === 'function') {
-    await window.withdrawFromDaycare(slotId)
-    await breedingStore.loadDaycareData()
-  }
+  await breedingStore.withdrawPokemon(slotId)
+}
+
+const collectEgg = async (egg) => {
+  await breedingStore.collectEgg(egg)
 }
 </script>
 
 <template>
-  <div class="daycare-view">
-    <div class="daycare-header">
-      <div class="view-title">
+  <div class="daycare-view-legacy custom-scrollbar">
+    <!-- HEADER -->
+    <div class="daycare-header-retro">
+      <h1 class="view-title">
         🥚 CENTRO DE CRIANZA
-      </div>
+      </h1>
       <p class="view-desc">
         Deja dos Pokémon compatibles para obtener un huevo. Transmitirán sus genes, movimientos y naturalezas a su descendencia.
       </p>
     </div>
 
-    <!-- Compatibility Bar -->
-    <div
-      class="compat-panel"
-      :style="{ '--compat-color': compatStyle.color }"
-    >
-      <div class="compat-status">
-        <span class="icon">{{ compat.level > 0 ? '🧬' : '🔎' }}</span>
-        <span class="label">{{ compatStyle.label }}</span>
-        <span
-          v-if="compat.reason"
-          class="reason"
-        >({{ compat.reason }})</span>
-      </div>
-      <div class="compat-bar">
-        <div
-          class="fill"
-          :style="{ width: (compat.level / 3 * 100) + '%' }"
-        />
-      </div>
-    </div>
+    <!-- COMPATIBILITY PANEL -->
+    <CompatibilityPanel 
+      :compatibility="compat" 
+      :compat-text="breedingStore.COMPAT_TEXT" 
+    />
 
-    <!-- Main Slots Grid -->
-    <div class="slots-container">
+    <!-- MAIN SLOTS -->
+    <div class="slots-layout">
       <DaycareSlot
         slot-id="a"
         :pokemon="breedingStore.slots[0].pokemon"
-        :item="breedingStore.slots[0].item"
-        @deposit="handleDeposit('a')"
+        :item="breedingStore.slots[0].pokemon?.heldItem"
+        @deposit="openPicker(0)"
         @withdraw="handleWithdraw('a')"
       />
 
-      <div class="breeding-arrow">
+      <div class="heart-divider">
         ❤️
       </div>
 
       <DaycareSlot
         slot-id="b"
         :pokemon="breedingStore.slots[1].pokemon"
-        :item="breedingStore.slots[1].item"
-        @deposit="handleDeposit('b')"
+        :item="breedingStore.slots[1].pokemon?.heldItem"
+        @deposit="openPicker(1)"
         @withdraw="handleWithdraw('b')"
       />
     </div>
 
-    <!-- Breeding Forecast -->
+    <!-- FORECAST PANEL -->
     <div
       v-if="compat.level > 0"
-      class="forecast-panel"
+      class="forecast-panel-retro"
     >
-      <div class="panel-header">
-        PREDICCIÓN GENÉTICA
+      <div class="panel-tag">
+        PRONÓSTICO DE CRÍA
       </div>
-      <div class="forecast-grid">
-        <div class="forecast-item">
-          <div class="label">
-            ESPECIE
+      <div class="forecast-grid-retro">
+        <div class="forecast-box">
+          <div class="box-label">
+            ESPECIE RESULTANTE
           </div>
-          <div class="value">
-            {{ compat.eggSpecies ? compat.eggSpecies.toUpperCase() : '???' }}
-          </div>
-        </div>
-        <div class="forecast-item">
-          <div class="label">
-            COSTO
-          </div>
-          <div class="value cost">
-            ₽{{ breedingStore.calculateBreedingCost(breedingStore.slots[0].pokemon, breedingStore.slots[1].pokemon) }}
+          <div class="box-value species">
+            {{ compat.eggSpecies ? compat.eggSpecies.toUpperCase().replace('_', ' ') : '???' }}
           </div>
         </div>
-        <div class="forecast-item full">
-          <div class="label">
-            HERENCIA
+        <div class="forecast-box">
+          <div class="box-label">
+            COSTO DE RECOLECCIÓN
           </div>
-          <p class="desc">
-            3 IVs serán heredados al azar. Equipar una <b>Piedra Eterna</b> garantiza la naturaleza. Los <b>Objetos Recio</b> garantizan un IV específico.
+          <div class="box-value cost">
+            ₽{{ breedingStore.calculateBreedingCost(breedingStore.slots[0].pokemon, breedingStore.slots[1].pokemon).toLocaleString() }}
+          </div>
+        </div>
+        <div class="forecast-box full">
+          <div class="box-label">
+            REGLAS DE HERENCIA
+          </div>
+          <p class="box-desc">
+            Se transmitirán 3 IVs aleatorios. El Pokémon nacido heredará la especie de la madre. 
+            <span class="highlight">Piedra Eterna</span> asegura naturaleza. <span class="highlight">Objetos Recio</span> aseguran IVs específicos.
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Egg Grid (Incubator) -->
-    <div class="egg-section">
-      <div class="section-title">
-        🥚 INCUBADORA DE LA GUARDERÍA
+    <!-- INCUBATOR SECTION -->
+    <div class="egg-incubator-retro">
+      <div class="incubator-header">
+        <h2 class="section-title">
+          🥚 INCUBADORA DE LA GUARDERÍA
+        </h2>
+        <button
+          v-if="gameStore.state.playerClass === 'criador'"
+          class="scanner-btn-retro"
+          @click="isScannerOpen = true"
+        >
+          🔍 ESCÁNER GENÉTICO
+        </button>
       </div>
+      
       <div
         v-if="breedingStore.eggs.length === 0"
-        class="empty-eggs"
+        class="empty-egg-state"
       >
-        No hay huevos esperando en este momento.
+        <div class="empty-icon-egg">
+          ⏳
+        </div>
+        <p>No hay huevos esperando. Sigue caminando para generar nuevas crías.</p>
       </div>
+      
       <div
         v-else
-        class="egg-grid"
+        class="egg-grid-retro"
       >
-        <div
-          v-for="egg in breedingStore.eggs"
-          :key="egg.egg_id"
-          class="egg-card"
-        >
-          <div class="egg-sprite">
-            🥚
-          </div>
-          <div class="egg-info">
-            <div class="egg-name">
-              Huevo de {{ egg.species }}
-            </div>
-            <div class="egg-timer">
-              Listo en: {{ Math.ceil((new Date(egg.hatch_ready_time) - new Date()) / 60000) }} min
-            </div>
-          </div>
-        </div>
+        <EggCard 
+          v-for="egg in breedingStore.eggs" 
+          :key="egg.egg_id" 
+          :egg="egg" 
+          @collect="collectEgg"
+        />
       </div>
     </div>
+
+    <!-- DAILY MISSIONS -->
+    <div class="missions-retro">
+      <h2 class="section-title">
+        📅 ENCARGOS DEL DÍA
+      </h2>
+      <div class="mission-grid-retro">
+        <DaycareMissionCard 
+          v-for="(m, idx) in missions" 
+          :key="idx" 
+          :mission="m" 
+          @deliver="openMissionPicker(idx)"
+        />
+      </div>
+    </div>
+
+    <!-- Modals -->
+    <BreedingPickerModal 
+      :is-open="isPickerOpen"
+      :mode="pickerMode"
+      :slot-idx="pickerSlotIdx"
+      :mission-idx="pickerMissionIdx"
+      @close="isPickerOpen = false"
+    />
+
+    <EggScannerModal 
+      :is-open="isScannerOpen"
+      @close="isScannerOpen = false"
+    />
   </div>
 </template>
 
 <style scoped lang="scss">
-.daycare-view {
-  padding: 24px;
-  max-width: 1000px;
-  margin: 0 auto;
-  animation: fadeIn 0.4s ease;
+.daycare-view-legacy {
+  padding: 30px;
+  background: #0d1117;
+  height: 100%;
+  overflow-y: auto;
 }
 
-.daycare-header {
-  margin-bottom: 32px;
+.daycare-header-retro {
   text-align: center;
-}
-
-.view-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 18px;
-  color: #fff;
-  margin-bottom: 12px;
-}
-
-.view-desc {
-  font-size: 14px;
-  color: var(--gray);
-  max-width: 600px;
-  margin: 0 auto;
-  line-height: 1.5;
-}
-
-.compat-panel {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 20px;
-  border-radius: 20px;
-  margin-bottom: 24px;
-}
-
-.compat-status {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-  font-weight: 800;
-  
-  .icon { font-size: 20px; }
-  .label { color: var(--compat-color); font-family: 'Press Start 2P', monospace; font-size: 10px; }
-  .reason { color: var(--gray); font-size: 11px; font-weight: 400; }
-}
-
-.compat-bar {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  overflow: hidden;
-  
-  .fill {
-    height: 100%;
-    background: var(--compat-color);
-    box-shadow: 0 0 10px var(--compat-color);
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 35px;
+  .view-title { 
+    font-family: 'Press Start 2P', monospace; 
+    font-size: 14px; color: #fff; margin-bottom: 15px; 
+    text-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
   }
+  .view-desc { font-size: 11px; color: #64748b; max-width: 600px; margin: 0 auto; line-height: 1.6; }
 }
 
-.slots-container {
+.slots-layout {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: 20px;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 40px;
+  
+  .heart-divider { font-size: 24px; opacity: 0.8; filter: drop-shadow(0 0 10px #ef4444); }
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    .breeding-arrow { transform: rotate(90deg); }
+    .heart-divider { transform: rotate(90deg); margin: 0 auto; }
   }
 }
 
-.breeding-arrow {
-  font-size: 24px;
-  filter: drop-shadow(0 0 10px var(--red));
-}
-
-.forecast-panel {
-  background: linear-gradient(135deg, rgba(var(--purple-rgb), 0.1), rgba(0, 0, 0, 0.4));
-  border: 1px solid rgba(var(--purple-rgb), 0.2);
+.forecast-panel-retro {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(0, 0, 0, 0.4));
+  border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 32px;
+  padding: 25px;
+  margin-bottom: 40px;
+
+  .panel-tag { font-family: 'Press Start 2P', monospace; font-size: 8px; color: #a855f7; margin-bottom: 20px; }
 }
 
-.panel-header {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
-  color: var(--purple);
-  margin-bottom: 16px;
-}
-
-.forecast-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.forecast-item {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 12px;
-  border-radius: 12px;
-  
+.forecast-grid-retro { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.forecast-box {
+  background: rgba(0,0,0,0.2); padding: 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);
   &.full { grid-column: span 2; }
-  
-  .label { font-size: 9px; color: var(--gray); font-weight: 800; margin-bottom: 4px; }
-  .value { font-size: 16px; font-weight: 900; color: #fff; }
-  .cost { color: var(--yellow); }
-  .desc { font-size: 11px; color: var(--gray); line-height: 1.4; margin: 4px 0 0; }
+  .box-label { font-size: 9px; color: #64748b; font-weight: bold; margin-bottom: 10px; }
+  .box-value { font-size: 18px; font-weight: 900; color: #fff; }
+  .species { color: #a855f7; }
+  .cost { color: #ffd700; }
+  .box-desc { font-size: 11px; color: #64748b; line-height: 1.5; margin-top: 10px; }
+  .highlight { color: #fff; font-weight: bold; }
 }
 
-.egg-section {
-  background: rgba(255, 255, 255, 0.02);
-  padding: 24px;
-  border-radius: 24px;
+.egg-incubator-retro {
+  background: rgba(0,0,0,0.2); padding: 30px; border-radius: 24px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.04);
+  .incubator-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+  .section-title { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #94a3b8; }
+  .scanner-btn-retro { 
+    background: rgba(168, 85, 247, 0.1); border: 1px solid #a855f7; color: #a855f7; 
+    padding: 10px 18px; border-radius: 12px; font-size: 9px; font-weight: bold; cursor: pointer;
+    &:hover { background: #a855f7; color: #fff; }
+  }
 }
 
-.section-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: var(--gray);
-  margin-bottom: 20px;
+.empty-egg-state {
+  text-align: center; color: #334155; padding: 40px;
+  .empty-icon-egg { font-size: 40px; margin-bottom: 15px; opacity: 0.3; }
+  p { font-size: 11px; }
 }
 
-.empty-eggs {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.2);
-  font-style: italic;
-  padding: 20px;
+.egg-grid-retro { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+
+.missions-retro {
+  .section-title { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #94a3b8; margin-bottom: 30px; }
 }
 
-.egg-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-}
+.mission-grid-retro { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
 
-.egg-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 16px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.egg-sprite { font-size: 32px; }
-.egg-name { font-size: 14px; font-weight: 800; color: #fff; }
-.egg-timer { font-size: 11px; color: var(--gray); margin-top: 4px; }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

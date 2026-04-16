@@ -2,9 +2,18 @@
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
+import { useTradeStore } from '@/stores/trade'
+import { onMounted } from 'vue'
+
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
+const tradeStore = useTradeStore()
+
+onMounted(() => {
+  tradeStore.refreshPendingTrades()
+})
+
 
 const gs = computed(() => gameStore.state)
 const profileData = computed(() => uiStore.profileData)
@@ -54,8 +63,8 @@ const handleFactionChoice = () => {
   >
     <div class="modal-scrollable-content">
       <!-- Header -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <span style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--purple);">MI PERFIL</span>
+      <div class="modal-header-row">
+        <span class="modal-title">MI PERFIL</span>
         <button
           class="modal-close-btn"
           @click="closeProfile"
@@ -65,7 +74,7 @@ const handleFactionChoice = () => {
       </div>
 
       <!-- User Identity -->
-      <div style="text-align:center; margin-bottom:24px;">
+      <div class="user-identity-section">
         <div
           id="profile-avatar-container"
           class="profile-avatar"
@@ -91,7 +100,7 @@ const handleFactionChoice = () => {
         <div class="section-label">
           MI BANDO
         </div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:12px;">
+        <div class="faction-row">
           <div
             id="player-faction-badge"
             class="faction-badge"
@@ -150,7 +159,7 @@ const handleFactionChoice = () => {
       </div>
 
       <!-- Encounter Reset -->
-      <div style="margin-top:15px; text-align:center;">
+      <div class="reset-section">
         <button
           class="reset-btn"
           @click="handleResetEncounter"
@@ -163,7 +172,7 @@ const handleFactionChoice = () => {
       </div>
 
       <!-- Save Time -->
-      <div style="margin-top:20px; text-align:center;">
+      <div class="save-info-section">
         <div class="save-label">
           ÚLTIMO GUARDADO
         </div>
@@ -176,8 +185,8 @@ const handleFactionChoice = () => {
       </div>
 
       <!-- Notifications -->
-      <div style="margin-top:24px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="notifications-section">
+        <div class="notifications-header">
           <div class="notifications-label">
             NOTIFICACIONES
           </div>
@@ -198,8 +207,8 @@ const handleFactionChoice = () => {
             :key="i"
             class="notification-entry"
           >
-            <span style="font-size:12px;">{{ n.icon || '🔔' }}</span>
-            <div style="flex:1;">
+            <span class="notif-icon-wrap">{{ n.icon || '🔔' }}</span>
+            <div class="notif-content-wrap">
               <div class="notification-msg">
                 {{ n.msg }}
               </div>
@@ -217,7 +226,69 @@ const handleFactionChoice = () => {
         </div>
       </div>
 
+      <!-- Trade Notifications -->
+      <div
+        v-if="tradeStore.pendingIncoming.length > 0 || tradeStore.pendingAccepted.length > 0"
+        class="trade-notifs-section"
+      >
+        <div class="notifications-label">
+          INTERCAMBIOS PENDIENTES
+        </div>
+        
+        <!-- Accepted trades (Success alerts) -->
+        <div
+          v-for="t in tradeStore.pendingAccepted"
+          :key="t.id"
+          class="trade-notif-card accepted"
+        >
+          <div class="notif-header">
+            ✅ ¡TU OFERTA FUE ACEPTADA!
+          </div>
+          <div class="notif-details">
+            Recibiste tus ítems/Pokémon correctamente.
+          </div>
+          <button
+            class="notif-action-btn"
+            @click="tradeStore.claimTrade(t.id)"
+          >
+            ENTENDIDO
+          </button>
+        </div>
+
+        <!-- Incoming offers -->
+        <div
+          v-for="t in tradeStore.pendingIncoming"
+          :key="t.id"
+          class="trade-notif-card pending"
+        >
+          <div class="notif-header">
+            🔄 NUEVA OFERTA RECIBIDA
+          </div>
+          <div
+            class="notif-details"
+          >
+            Te ofrecen: {{ t.offer_pokemon ? t.offer_pokemon.name : '' }} 
+            {{ Object.keys(t.offer_items).length ? ' + ítems' : '' }}
+          </div>
+          <div class="notif-actions">
+            <button
+              class="notif-btn accept"
+              @click="tradeStore.acceptTrade(t.id)"
+            >
+              ACEPTAR
+            </button>
+            <button
+              class="notif-btn reject"
+              @click="tradeStore.rejectTrade(t.id)"
+            >
+              RECHAZAR
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Action Buttons -->
+
       <div
         id="profile-actions-container"
         class="profile-actions"
@@ -407,4 +478,85 @@ const handleFactionChoice = () => {
   font-size: 9px;
   transition: all 0.2s;
 }
+
+.trade-notifs-section {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trade-notif-card {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.trade-notif-card.accepted {
+  background: rgba(107, 203, 119, 0.08);
+  border-color: rgba(107, 203, 119, 0.3);
+}
+
+.trade-notif-card.pending {
+  background: rgba(199, 125, 255, 0.08);
+  border-color: rgba(199, 125, 255, 0.3);
+}
+
+.notif-header {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  margin-bottom: 8px;
+}
+
+.trade-notif-card.accepted .notif-header { color: var(--green); }
+.trade-notif-card.pending .notif-header { color: var(--purple); }
+
+.notif-details {
+  font-size: 11px;
+  color: var(--gray);
+  margin-bottom: 12px;
+}
+
+.notif-action-btn {
+  width: 100%;
+  padding: 8px;
+  background: var(--green);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  cursor: pointer;
+}
+
+.notif-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.notif-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  cursor: pointer;
+}
+
+.notif-btn.accept { background: var(--green); color: #000; }
+.notif-btn.reject { background: #333; color: #fff; }
+
+/* New classes from inline cleanup */
+.modal-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-title { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--purple); }
+.user-identity-section { text-align: center; margin-bottom: 24px; }
+.faction-row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.reset-section, .save-info-section { text-align: center; margin-top: 15px; }
+.save-info-section { margin-top: 20px; }
+.notifications-section { margin-top: 24px; }
+.notifications-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.notif-icon-wrap { font-size: 12px; }
+.notif-content-wrap { flex: 1; }
 </style>
+

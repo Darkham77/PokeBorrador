@@ -85,7 +85,6 @@ const onDrop = (e, targetIndex) => {
   if (typeof window.reorderTeam === 'function') {
      window.reorderTeam(draggedIndex, targetIndex)
   } else {
-    // Fallback if legacy doesn't have it yet (but it usually does in 05_render)
     const newTeam = [...gameStore.state.team]
     const [moved] = newTeam.splice(draggedIndex, 1)
     newTeam.splice(targetIndex, 0, moved)
@@ -95,9 +94,14 @@ const onDrop = (e, targetIndex) => {
 </script>
 
 <template>
-  <div v-if="team.length === 0" class="empty-state">
-    <span class="empty-icon">🎒</span>
-    No tenés Pokémon en tu equipo todavía.
+  <div
+    v-if="team.length === 0"
+    class="empty-state legacy-panel"
+  >
+    <div class="empty-icon">
+      🎒
+    </div>
+    <p>No tenés Pokémon en tu equipo todavía.</p>
   </div>
   
   <div 
@@ -127,8 +131,9 @@ const onDrop = (e, targetIndex) => {
 <style scoped>
 .team-grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 25px;
+  padding: 10px;
 }
 
 .empty-state {
@@ -136,26 +141,25 @@ const onDrop = (e, targetIndex) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
-  background: rgba(255,255,255,0.02);
-  border: 1px dashed rgba(255,255,255,0.05);
-  border-radius: 24px;
-  color: var(--gray);
+  padding: 60px 20px;
+  background: #111;
+  border: 4px solid #333;
+  box-shadow: 0 0 0 4px #000;
+  color: #888;
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
-  line-height: 2;
   text-align: center;
+  gap: 20px;
 }
 
 .empty-icon {
-  font-size: 48px;
-  margin-bottom: 24px;
-  display: block;
+  font-size: 40px;
 }
 
 @media (max-width: 640px) {
   .team-grid-container {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 }
 </style>

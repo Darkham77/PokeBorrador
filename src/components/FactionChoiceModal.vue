@@ -1,7 +1,12 @@
 <script setup>
+import { useUIStore } from '@/stores/ui'
+
+const uiStore = useUIStore()
+
 const closeFactionModal = () => {
-  const modal = document.getElementById('faction-choice-modal')
-  if (modal) modal.style.display = 'none'
+  if (typeof window.closeFactionChoice === 'function') {
+    window.closeFactionChoice()
+  }
 }
 
 const chooseFaction = (faction) => {
@@ -17,20 +22,17 @@ const chooseFaction = (faction) => {
       id="faction-choice-modal"
       class="modal-overlay"
     >
-      <div
-        class="modal-content-premium"
-        style="padding:24px;max-width:400px;text-align:center;"
-      >
+      <div class="modal-content-premium faction-card">
         <button
           class="modal-close-btn"
           @click="closeFactionModal"
         >
           ✕
         </button>
-        <h2 style="font-family:'Press Start 2P',monospace;font-size:14px;color:var(--yellow);margin-bottom:16px;">
+        <h2 class="faction-title">
           ¡ELIGE TU BANDO!
         </h2>
-        <div style="display:flex;gap:16px;flex-direction:column;">
+        <div class="faction-options">
           <button
             class="faction-btn union-btn"
             @click="chooseFaction('union')"
@@ -57,7 +59,7 @@ const chooseFaction = (faction) => {
   </Teleport>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .modal-close-btn {
   position: absolute;
   top: 10px;
@@ -80,7 +82,7 @@ const chooseFaction = (faction) => {
 }
 
 .faction-btn:hover {
-  transform: scale(1.02);
+  transform: #{'scale(1.02)'};
 }
 
 .union-btn {
@@ -107,4 +109,9 @@ const chooseFaction = (faction) => {
 
 .union-text { color: #3b82f6; }
 .poder-text { color: #ef4444; }
+
+/* New classes from inline cleanup */
+.faction-card { padding: 24px; max-width: 400px; text-align: center; }
+.faction-title { font-family: 'Press Start 2P', monospace; font-size: 14px; color: var(--yellow); margin-bottom: 16px; }
+.faction-options { display: flex; gap: 16px; flex-direction: column; }
 </style>

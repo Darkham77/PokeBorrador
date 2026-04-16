@@ -20,20 +20,35 @@ import PassiveTeamEditorModal from '@/components/PassiveTeamEditorModal.vue'
 import MobileNavigation from '@/components/MobileNavigation.vue'
 import TeamHeader from '@/components/team/TeamHeader.vue'
 import TeamGrid from '@/components/team/TeamGrid.vue'
+import PokemonDetailModal from '@/components/PokemonDetailModal.vue'
+import MoveDetailModal from '@/components/MoveDetailModal.vue'
+import TradeView from '@/components/TradeView.vue'
+import ClassSelectionModal from '@/components/modals/ClassSelectionModal.vue'
+import ClassMissionsModal from '@/components/modals/ClassMissionsModal.vue'
+import PokemonSelectionModal from '@/components/modals/PokemonSelectionModal.vue'
+import CriminalityBar from '@/components/ui/CriminalityBar.vue'
+
 
 // Tab components
 import BackpackView from '@/components/BackpackView.vue'
 import BoxView from '@/components/BoxView.vue'
-import PokedexView from '@/components/PokedexView.vue'
+import PokedexView from '@/views/PokedexView.vue'
 import HealOverlay from '@/components/HealOverlay.vue'
 import MapView from '@/views/MapView.vue'
 import GymsView from '@/views/GymsView.vue'
 import DaycareView from '@/views/DaycareView.vue'
 import ShopView from '@/views/ShopView.vue'
+import GlobalChat from '@/components/social/GlobalChat.vue'
+import SocialCenterModal from '@/components/social/SocialCenterModal.vue'
+import DirectChatWindow from '@/components/social/DirectChatWindow.vue'
+import { useChatStore } from '@/stores/chat'
+import HatchAnimationModal from '@/components/breeding/HatchAnimationModal.vue'
+
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const battleStore = useBattleStore()
+const chatStore = useChatStore()
 
 const hudRef = ref(null)
 const hudHeight = ref(85)
@@ -134,7 +149,10 @@ const handleTabChange = (tab, event) => {
     :class="{ active: gs.starterChosen }"
   >
     <!-- HUD PRINCIPAL (RESTAURADO) -->
-    <div ref="hudRef" class="hud-container">
+    <div
+      ref="hudRef"
+      class="hud-container"
+    >
       <div class="hud">
         <!-- Trainer HUD Left -->
         <TrainerPanel />
@@ -211,7 +229,7 @@ const handleTabChange = (tab, event) => {
         class="tab-content"
         :style="{ display: activeTab === 'daycare' ? 'block' : 'none' }"
       >
-        <DaycareView />
+        <DaycareView v-if="activeTab === 'daycare'" />
       </div>
 
       <div
@@ -241,6 +259,32 @@ const handleTabChange = (tab, event) => {
     <WarShopModal />
     <PassiveTeamEditorModal />
     <HealOverlay />
+    <PokemonDetailModal />
+    <MoveDetailModal />
+    <TradeView />
+    <ClassSelectionModal />
+    <ClassMissionsModal />
+    <PokemonSelectionModal />
+    <CriminalityBar />
+
+    <!-- MODAL SOCIAL (Phase 24) -->
+    <SocialCenterModal 
+      v-if="uiStore.isSocialOpen" 
+      @close="uiStore.isSocialOpen = false"
+    />
+
+    <!-- CHAT GLOBAL (Phase 24) -->
+    <GlobalChat />
+
+    <!-- VENTANAS DE CHAT PRIVADO (Phase 24) -->
+    <div class="private-chats-container">
+      <DirectChatWindow 
+        v-for="(chat, friendId) in chatStore.privateChats" 
+        :key="friendId"
+        :friend-id="friendId"
+      />
+    </div>
+
 
     <!-- LEGACY ESQUELETO (Oculto) -->
     <div style="display:none;">
@@ -305,5 +349,20 @@ const handleTabChange = (tab, event) => {
   align-items: center;
   justify-content: center;
   padding: 0;
+}
+
+.private-chats-container {
+  position: fixed;
+  right: 20px;
+  bottom: 0;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 1000;
+  
+  & > * {
+    pointer-events: auto;
+  }
 }
 </style>

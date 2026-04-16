@@ -10,15 +10,13 @@ const props = defineProps({
   classData: { type: Object, default: () => ({}) },
   safariTicketSecs: { type: Number, default: 0 },
   ceruleanTicketSecs: { type: Number, default: 0 },
-  dominanceData: { type: Object, default: () => ({}) }, // mapId -> data
+  dominanceData: { type: Object, default: () => ({}) },
   dailyGuardianCaptures: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits(['navigate'])
 
-// Helpers de lógica de negocio (migrados de legacy a Vue-style)
 const getEncounterPool = (loc, cycle) => {
-  // En el futuro esto debería estar en un store o utilidad compartida
   if (typeof window.getEncounterPool === 'function') {
     return window.getEncounterPool(loc, cycle)
   }
@@ -38,7 +36,6 @@ const getMapData = (loc) => {
     else specific.push(id)
   })
 
-  // Agregar pesca si existe
   if (loc.fishing) {
     loc.fishing.pool.forEach(id => {
       if (!generic.includes(id) && !specific.includes(id)) generic.push(id)
@@ -62,7 +59,6 @@ const getDominanceForMap = (mapId) => {
   const data = props.dominanceData[mapId] || {}
   const captured = props.dailyGuardianCaptures.includes(mapId)
   
-  // Guardián
   let guardian = null
   if (typeof window.getGuardianForMap === 'function') {
      const g = window.getGuardianForMap(mapId)
@@ -97,20 +93,9 @@ const getDominanceForMap = (mapId) => {
 <style scoped>
 .map-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-
-@media (max-width: 1280px) {
-  .map-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
-  .map-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+  padding: 5px;
 }
 
 @media (max-width: 600px) {

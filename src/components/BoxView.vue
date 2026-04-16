@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { useInventoryStore } from '@/stores/inventoryStore'
 import { useBoxFilters } from '@/composables/useBoxFilters'
 
 // Sub-componentes
@@ -10,10 +11,10 @@ import BoxFilters from './box/BoxFilters.vue'
 import BoxGrid from './box/BoxGrid.vue'
 
 const gameStore = useGameStore()
+const invStore = useInventoryStore()
 const gs = computed(() => gameStore.state)
 
 // ----- ESTADO Y FILTROS -----
-const currentBoxIndex = ref(0)
 const { 
   filters, 
   isFiltersOpen, 
@@ -23,10 +24,10 @@ const {
   resetFilters 
 } = useBoxFilters(computed(() => gs.value.box))
 
-// Bridge al estado global (Legacy <-> Vue)
-const uiState = computed(() => gameStore.state.uiSelection)
-const isRocketMode = computed(() => uiState.value?.teamRocketMode || uiState.value?.boxRocketMode || false)
-const rocketSelection = computed(() => uiState.value?.boxRocketSelected || [])
+// Store-bound state
+const currentBoxIndex = computed(() => invStore.currentBoxIndex)
+const isRocketMode = computed(() => invStore.boxRocketMode)
+const rocketSelection = computed(() => invStore.boxRocketSelected)
 
 const maxCapacity = computed(() => (gs.value.boxCount || 4) * 50)
 
@@ -42,43 +43,41 @@ const displayList = computed(() => {
 
 // ----- ACCIONES -----
 const switchBox = (i) => {
-  currentBoxIndex.value = i
-  if (uiState.value) {
-    uiState.value.boxRocketMode = false
-    uiState.value.boxRocketSelected = []
-  }
+  invStore.switchBox(i)
 }
 
 const toggleRocketMode = () => {
-  if (typeof window.toggleBoxRocketMode === 'function') {
-    window.toggleBoxRocketMode()
-  }
+  invStore.toggleBoxRocketMode()
 }
 
-const getBoxBuyCost = () => {
-  const count = gs.value.boxCount || 4
-  if (count < 4) return 500000
-  if (count === 4) return 500000
-  if (count === 5) return 1000000
-  return 1000000 * Math.pow(2, count - 5)
-}
+const getBoxBuyCost = () => invStore.getBoxBuyCost()
 
 const buyNewBox = () => {
   const cost = getBoxBuyCost()
   if (gs.value.boxCount >= 10) return
   if (window.confirm(`¿Querés gastar ₱${cost.toLocaleString()} para comprar la Caja ${(gs.value.boxCount || 4) + 1}?`)) {
-    if (typeof window.buyNewBox === 'function') window.buyNewBox()
+    const res = invStore.buyNewBox()
+    if (res.success) {
+      if (window.notify) window.notify(`¡Compraste la Caja ${res.boxNum}!`, '💰')
+    } else {
+      if (window.notify) window.notify(res.msg, '❌')
+    }
   }
 }
 
 const handleConfirmRocketSell = () => {
-  if (rocketSelection.value.length === 0) return
-  if (typeof window.confirmBoxRocketSell === 'function') window.confirmBoxRocketSell()
+  const value = invStore.getRocketSellValue()
+  const count = invStore.boxRocketSelected.length
+  if (count === 0) return
+  if (window.confirm(`¿Vender ${count} Pokémon por ₽${value.toLocaleString()} al Team Rocket?`)) {
+    const res = invStore.doBoxRocketSell()
+    if (window.notify) window.notify(`¡${res.count} Pokémon vendidos por ₽${res.value.toLocaleString()}! 🚀`, '🚀')
+  }
 }
 
 const handlePokemonClick = (index) => {
   if (isRocketMode.value) {
-    if (typeof window.toggleBoxRocketSelect === 'function') window.toggleBoxRocketSelect(index)
+    invStore.toggleBoxRocketSelect(index)
   } else {
     if (typeof window.openBoxPokemonMenu === 'function') window.openBoxPokemonMenu(index)
   }

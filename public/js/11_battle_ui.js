@@ -631,6 +631,7 @@
       scheduleSave();
     }
 
+    window._openBagItemMenuLegacy = openBagItemMenu;
     function openBagItemMenu(itemName) {
       const isGlobal = ['Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto', 'Repelente', 'Superrepelente', 'Máximo Repelente', 'Ticket Safari', 'Ticket Cueva Celeste', 'Ticket Articuno', 'Ticket Mewtwo', 'Escáner de IVs', 'Incienso Fuego', 'Incienso Agua', 'Incienso Planta', 'Incienso Normal', 'Incienso Fantasma', 'Incienso Psíquico', 'Fósil Hélix', 'Fósil Domo', 'Ámbar Viejo'].includes(itemName);
       
@@ -725,6 +726,7 @@
       document.body.appendChild(ov);
     }
 
+    window._openBagStoneMenuLegacy = openBagStoneMenu;
     function openBagStoneMenu(stoneName) {
       if (!state.inventory[stoneName] || state.inventory[stoneName] <= 0) {
         notify(`No tenés ${stoneName}.`, '❌');

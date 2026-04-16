@@ -511,6 +511,7 @@ async function showPvpInvitePopup(invite) {
       setTimeout(() => ov.remove(), 60000);
     }
 
+    window._sendBattleInviteLegacy = sendBattleInvite;
     async function sendBattleInvite(opponentId, opponentUsername) {
       if (!currentUser) return;
       if (state.team.filter(p => p.hp > 0 && !p.onMission).length === 0) {
