@@ -1,5 +1,3 @@
-import { supabase } from '@/logic/supabase';
-
 /**
  * Serializes the current state into a format suitable for database storage.
  * Matches the legacy 01_auth.js structure exactly for backward compatibility.
@@ -111,14 +109,75 @@ export function serializeState(state) {
 }
 
 /**
- * Validates the state before saving.
+ * Validates the state before saving to prevent cache hacking or data corruption.
  */
+export function validateAndSanitize(data) {
+  if (!data) return { valid: false, error: 'No data' };
+  
+  const issues = [];
+  
+  // 1. Basic numeric validation
+  if (data.money < 0) { data.money = 0; issues.push('Dinero negativo corregido'); }
+  if (data.battleCoins < 0) { data.battleCoins = 0; issues.push('BattleCoins negativos corregidos'); }
+  if (data.trainerLevel < 1) { data.trainerLevel = 1; issues.push('Nivel inválido corregido'); }
+  
+  // 2. Inventory sanity
+  if (data.inventory) {
+    Object.keys(data.inventory).forEach(item => {
+      if (data.inventory[item] < 0) {
+        data.inventory[item] = 0;
+        issues.push(`Cantidad negativa de ${item} corregida`);
+      }
+    });
+  }
+
+  // 3. Unique ID (UID) integrity for Pokemon
+  const uids = new Set();
+  const duplicateUids = new Set();
+  
+  const checkPoke = (p, listName) => {
+    if (!p.uid) return;
+    if (uids.has(p.uid)) {
+      duplicateUids.add(p.uid);
+      issues.push(`Duplicado de UID detectado: ${p.uid} (${p.name}) en ${listName}`);
+    }
+    uids.add(p.uid);
+  };
+
+  if (Array.isArray(data.team)) data.team.forEach(p => checkPoke(p, 'equipo'));
+  if (Array.isArray(data.box)) data.box.forEach(p => checkPoke(p, 'caja'));
+
+  if (duplicateUids.size > 0) {
+    // We sanitize by removing subsequent duplicates
+    const finalUids = new Set();
+    if (Array.isArray(data.team)) {
+      data.team = data.team.filter(p => {
+        if (!p.uid) return true;
+        if (finalUids.has(p.uid)) return false;
+        finalUids.add(p.uid);
+        return true;
+      });
+    }
+    if (Array.isArray(data.box)) {
+      data.box = data.box.filter(p => {
+        if (!p.uid) return true;
+        if (finalUids.has(p.uid)) return false;
+        finalUids.add(p.uid);
+        return true;
+      });
+    }
+  }
+
+  return { 
+    valid: true, 
+    data, 
+    hadDuplicates: duplicateUids.size > 0,
+    issues 
+  };
+}
+
 export function isValidState(data) {
-  if (!data) return false;
-  if (data.money < 0 || data.battleCoins < 0) return false;
-  if (data.trainerLevel < 1 || data.trainerLevel > 100) return false;
-  if (!Array.isArray(data.team)) return false;
-  return true;
+  return validateAndSanitize(data).valid;
 }
 
 /**
@@ -126,13 +185,29 @@ export function isValidState(data) {
  */
 let _isSaving = false;
 export async function saveGame(state, user, options = {}) {
-  const { showNotif = true, notifyFn } = options;
-  if (!user || _isSaving) return;
+  const { showNotif = true, notifyFn, db } = options;
+  if (!user || _isSaving) return null;
 
-  const save_data = serializeState(state);
-  if (!isValidState(save_data)) {
-    console.error('[SAVE] Estado inválido detectado. Abortando guardado.');
-    return;
+  const raw_data = serializeState(state);
+  const { data: save_data, hadDuplicates, issues } = validateAndSanitize(raw_data);
+
+  // VERSIONED SECURITY LOGIC
+  const currentVersion = options.userVersion || 1;
+  const isLegacy = currentVersion < 2;
+
+  // IF Duplicates found AND we are ONLINE AND NOT LEGACY -> Protocol ROLLBACK
+  // Legacy accounts (v1) get a "graceful cleanup" on their first save
+  if (hadDuplicates && db && db.mode === 'online' && !isLegacy) {
+    console.error('[SAVE] Duplicados críticos detectados en v2+. Iniciando ROLLBACK.', issues);
+    try {
+      const { data: serverSave } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
+      if (serverSave?.save_data) {
+        return { rollback: true, serverData: serverSave.save_data };
+      }
+    } catch(e) {
+      console.error('[SAVE] Error durante rollback:', e);
+    }
+    return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
   }
 
   save_data._last_updated = Date.now();
@@ -145,19 +220,52 @@ export async function saveGame(state, user, options = {}) {
   }
 
   // 2. Database
+  if (!db) {
+    console.warn('[SAVE] No se proporcionó instancia de DBRouter. Omitiendo guardado en base de datos.');
+    return null;
+  }
+
   _isSaving = true;
   try {
-    const nowIso = new Date().toISOString();
-    const { error } = await supabase.from('game_saves').upsert({
-      user_id: user.id,
-      save_data,
-      updated_at: nowIso,
+    const { data: res, error } = await db.rpc('save_game_trusted', {
+      p_save_data: save_data,
+      p_expected_id: options.lastSaveId || null
     });
 
     if (error) throw error;
-    if (showNotif && notifyFn) notifyFn('Juego Guardado', '💾');
+    
+    if (res && res.success === false && res.error === 'OUT_OF_SYNC') {
+      console.warn('[SAVE] Concurrencia detectada. El servidor tiene una versión más nueva.');
+      return { rollback: true, outOfSync: true };
+    }
+
+    // IF successful migration save, we MUST update the user's version to v2
+    let migrated = false;
+    if (isLegacy) {
+      try {
+        await db.from('profiles').update({ db_version: 2 }).eq('id', user.id);
+        migrated = true;
+        console.log('[SAVE] Account migrated to db_version v2');
+      } catch(e) {
+        console.warn('[SAVE] Migration update failed:', e);
+      }
+    }
+
+    if (showNotif && notifyFn) {
+      if (migrated) notifyFn('¡Cuenta migrada a Seguridad v2!', '✨');
+      else if (hadDuplicates) notifyFn('Cache saneada (duplicados eliminados)', '🛡️');
+      else notifyFn('Juego Guardado', '💾');
+    }
+    
+    return { 
+      success: true, 
+      sanitized: hadDuplicates, 
+      migrated,
+      lastSaveId: res.last_save_id 
+    };
   } catch (e) {
-    console.warn('[SAVE] Error en Supabase:', e);
+    console.warn('[SAVE] Error en DB Persistente:', e);
+    return { success: false, error: e.message };
   } finally {
     _isSaving = false;
   }

@@ -1,4 +1,4 @@
-import { POKEMON_DB } from '@/data/pokemonDB';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { STONE_EVOLUTIONS } from '@/data/evolutionData';
 import { evolvePokemonData } from '@/logic/evolutionLogic';
 
@@ -9,7 +9,7 @@ import { evolvePokemonData } from '@/logic/evolutionLogic';
  * @param {Function} onComplete - Callback al finalizar.
  */
 export function showEvolutionScene(pokemon, toId, onComplete) {
-  const toData = POKEMON_DB[toId];
+  const toData = pokemonDataProvider.getPokemonData(toId);
   if (!toData) {
     evolvePokemonData(pokemon, toId);
     if (onComplete) onComplete();
@@ -18,8 +18,8 @@ export function showEvolutionScene(pokemon, toId, onComplete) {
 
   // Helper para sprites (inyectado o global)
   const getSpriteId = (id) => (typeof window !== 'undefined' && window.getSpriteId) ? window.getSpriteId(id) : id;
-  const fromSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getSpriteId(pokemon.id)}.png`;
-  const toSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getSpriteId(toId)}.png`;
+  const fromSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getSpriteId(pokemon.id)}.webp`;
+  const toSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getSpriteId(toId)}.webp`;
 
   const ov = document.createElement('div');
   ov.id = 'evo-overlay';
@@ -122,7 +122,7 @@ export function showStonePicker(teamIndex) {
   options.forEach(o => {
     const stoneName = o.stone;
     const qty = state.inventory?.[stoneName] || 0;
-    const toData = POKEMON_DB[o.to];
+    const toData = pokemonDataProvider.getPokemonData(o.to);
     const disabled = qty <= 0;
     
     // Inyectar referencias globales para el botón onclick
@@ -181,7 +181,7 @@ export function useStoneOnPokemon(stoneName, teamIndex) {
     toId = (evo && evo.stone === stoneName) ? evo.to : null;
   }
 
-  if (!toId || !POKEMON_DB[toId]) { 
+  if (!toId || !pokemonDataProvider.getPokemonData(toId)) { 
     if (window.notify) window.notify(`${p.name} no puede evolucionar con ${stoneName}.`, '💎'); 
     return; 
   }

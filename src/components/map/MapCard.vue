@@ -17,36 +17,36 @@ const emit = defineEmits(['navigate', 'setOfficial'])
 
 const imgPath = computed(() => {
   const mapping = {
-    route1: 'ruta 1.png',
-    route2: 'ruta 2.png',
-    forest: 'bosque viridian.png',
-    route22: 'ruta 22.png',
-    route3: 'ruta 3.png',
-    mt_moon: 'mt. moon.png',
-    route4: 'ruta 4.png',
-    route24: 'ruta 24.png',
-    route25: 'ruta 25.png',
-    route5: 'ruta 5.png',
-    route6: 'ruta 6.png',
-    route11: 'ruta 11.png',
-    diglett_cave: 'cueva diglett.png',
-    route9: 'ruta 9.png',
-    rock_tunnel: 'tunel roca.png',
-    route10: 'ruta 10.png',
-    power_plant: 'central de energia.png',
-    route8: 'ruta 8.png',
-    pokemon_tower: 'torre pokemon.png',
-    route12: 'ruta 12.png',
-    route13: 'ruta 13.png',
-    safari_zone: 'zona safari.png',
-    seafoam_islands: 'islas espuma.png',
-    fishing_island: 'islas espuma.png',
-    mansion: 'mansion pokemon.png',
-    route23: 'ruta 23.png',
-    victory_road: 'calle victoria.png',
-    cerulean_cave: 'cueva celeste.png'
+    route1: 'ruta 1.webp',
+    route2: 'ruta 2.webp',
+    forest: 'bosque viridian.webp',
+    route22: 'ruta 22.webp',
+    route3: 'ruta 3.webp',
+    mt_moon: 'mt. moon.webp',
+    route4: 'ruta 4.webp',
+    route24: 'ruta 24.webp',
+    route25: 'ruta 25.webp',
+    route5: 'ruta 5.webp',
+    route6: 'ruta 6.webp',
+    route11: 'ruta 11.webp',
+    diglett_cave: 'cueva diglett.webp',
+    route9: 'ruta 9.webp',
+    rock_tunnel: 'tunel roca.webp',
+    route10: 'ruta 10.webp',
+    power_plant: 'central de energia.webp',
+    route8: 'ruta 8.webp',
+    pokemon_tower: 'torre pokemon.webp',
+    route12: 'ruta 12.webp',
+    route13: 'ruta 13.webp',
+    safari_zone: 'zona safari.webp',
+    seafoam_islands: 'islas espuma.webp',
+    fishing_island: 'islas espuma.webp',
+    mansion: 'mansion pokemon.webp',
+    route23: 'ruta 23.webp',
+    victory_road: 'calle victoria.webp',
+    cerulean_cave: 'cueva celeste.webp'
   }
-  return `/maps/${mapping[props.map.id] || 'default.png'}`
+  return `/maps/${mapping[props.map.id] || 'default.webp'}`
 })
 
 const cycleLabel = computed(() => {
@@ -57,7 +57,12 @@ const cycleLabel = computed(() => {
 const getPokemonSprite = (id) => {
   const spriteIds = window.POKEMON_SPRITE_IDS || {}
   const num = spriteIds[id]
-  return num ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png` : null
+  return num ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.webp` : null
+}
+
+const getFactionIcon = (faction) => {
+  if (!faction) return ''
+  return new URL(`../../assets/ui/factions/${faction}.webp`, import.meta.url).href
 }
 </script>
 
@@ -89,7 +94,7 @@ const getPokemonSprite = (id) => {
       class="faction-dominance"
     >
       <img
-        :src="`/assets/factions/${dominance.winner}.png`"
+        :src="getFactionIcon(dominance.winner)"
         class="faction-logo pulse"
         :title="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
       >
@@ -161,7 +166,7 @@ const getPokemonSprite = (id) => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .map-card {
   position: relative;
   height: 200px;
@@ -185,7 +190,7 @@ const getPokemonSprite = (id) => {
 }
 
 .map-card.locked {
-  filter: grayscale(1) brightness(0.6);
+  filter: grayscale(#{1}) brightness(0.6);
   cursor: not-allowed;
 }
 
@@ -278,9 +283,9 @@ const getPokemonSprite = (id) => {
 .pulse { animation: pulse 2s infinite; }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.8; }
+  0% { transform: scale(#{1}); opacity: 0.8; }
+  50% { transform: scale(#{1.1}); opacity: 1; }
+  100% { transform: scale(#{1}); opacity: 0.8; }
 }
 
 .guardian-badge {
@@ -294,7 +299,7 @@ const getPokemonSprite = (id) => {
 }
 
 .guardian-sprite { width: 42px; height: 42px; image-rendering: pixelated; }
-.guardian-sprite.captured { opacity: 0.4; filter: grayscale(1); }
+.guardian-sprite.captured { opacity: 0.4; filter: grayscale(#{1}); }
 
 .guardian-label {
   font-family: 'Press Start 2P', monospace;

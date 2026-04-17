@@ -1,6 +1,5 @@
-import { POKEMON_DB } from '@/data/pokemonDB';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData';
-import { MOVE_DATA } from '@/data/moves';
 import { TYPE_CHART } from '@/data/types';
 
 /**
@@ -41,7 +40,7 @@ export const getSpriteUrl = (id, isShiny) => {
   if (typeof window !== 'undefined' && typeof window.getSpriteUrl === 'function') {
     return window.getSpriteUrl(id, isShiny)
   }
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon${isShiny ? '/shiny' : ''}/${id}.png`
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon${isShiny ? '/shiny' : ''}/${id}.webp`
 }
 
 /**
@@ -82,7 +81,7 @@ export function getMovesAtLevel(id, level) {
   const seenNames = new Set();
 
   history.forEach(spId => {
-    const db = POKEMON_DB[spId];
+    const db = pokemonDataProvider.getPokemonData(spId);
     if (db && db.learnset) {
       db.learnset.forEach(m => {
         if (m.lv <= level) {
@@ -105,7 +104,7 @@ export function getMovesAtLevel(id, level) {
 
   const last4 = uniqueMoves.slice(-4);
   return last4.map(m => {
-    const moveData = MOVE_DATA[m.name] || {};
+    const moveData = pokemonDataProvider.getMoveData(m.name) || {};
     return { 
       name: m.name, 
       pp: m.pp || moveData.pp || 35, 
@@ -138,7 +137,7 @@ export function getTypeEffectivenessMsg(eff) {
  * Get display description for a move based on its effect
  */
 export function getMoveDescription(name, md) {
-  if (!md) md = MOVE_DATA[name];
+  if (!md) md = pokemonDataProvider.getMoveData(name);
   if (!md) return "Causa daño al oponente sin efectos secundarios adicionales.";
   
   if (md.ohko) return "Fulmina al enemigo de un solo golpe si acierta.";
@@ -263,8 +262,26 @@ export function getMoveDescription(name, md) {
   };
   
   if (effects[md.effect]) return effects[md.effect];
-  
   if (md.cat === 'status') return "Un movimiento que causa un efecto de estado o alteración.";
-  
   return "Causa daño al oponente sin efectos secundarios adicionales.";
+}
+
+// Stat stage multipliers (2/N to N/2)
+const STAGE_MULT = [0.25, 0.28, 0.33, 0.40, 0.50, 0.66, 1, 1.5, 2, 2.5, 3, 3.5, 4];
+// Accuracy/Evasion multipliers (3/N to N/3)
+const ACC_STAGE_MULT = [0.33, 0.37, 0.43, 0.50, 0.60, 0.75, 1, 1.33, 1.66, 2, 2.33, 2.66, 3];
+
+/**
+ * Get the multiplier for a stat stage (-6 to +6).
+ * Index 6 is stage 0 (neutral).
+ */
+export function getStageMultiplier(stage) {
+  return STAGE_MULT[Math.max(0, Math.min(12, (stage || 0) + 6))];
+}
+
+/**
+ * Get the multiplier for an accuracy/evasion stage (-6 to +6).
+ */
+export function getAccStageMultiplier(stage) {
+  return ACC_STAGE_MULT[Math.max(0, Math.min(12, (stage || 0) + 6))];
 }

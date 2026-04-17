@@ -67,18 +67,18 @@ export const POKEMON_SPRITE_IDS = {
 export function getSpriteUrl(id, isShiny = false) {
   const num = POKEMON_SPRITE_IDS[id];
   if (!num) {
-    if (id && id.includes('egg')) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.png";
+    if (id && id.includes('egg')) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.webp";
     return null;
   }
-  if (isShiny) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${num}.png`;
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png`;
+  if (isShiny) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${num}.webp`;
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.webp`;
 }
 
 export function getBackSpriteUrl(id, isShiny = false) {
   const num = POKEMON_SPRITE_IDS[id];
   if (!num) return null;
-  if (isShiny) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/shiny/${num}.png`;
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${num}.png`;
+  if (isShiny) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/shiny/${num}.webp`;
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${num}.webp`;
 }
 
 /**

@@ -84,7 +84,7 @@ const handleCancel = () => {
           <!-- Nurse Image (Blurred during confirmation) -->
           <img
             id="center-nurse-img"
-            src="/assets/pokecenter_heal.png"
+            src="@/assets/ui/banners/pokecenter_heal.webp"
             class="nurse-img"
             :class="{ 'is-blurred': isConfirming }"
           >
@@ -167,9 +167,9 @@ const handleCancel = () => {
   transition: all 0.5s ease;
 
   &.is-blurred {
-    filter: blur(15px) #{"grayscale(0.5)"};
+    filter: blur(15px) #{"grayscale(#{0.5})"};
     opacity: 0.4;
-    transform: #{"scale(1.05)"};
+    transform: #{"scale(#{1.05})"};
   }
 }
 

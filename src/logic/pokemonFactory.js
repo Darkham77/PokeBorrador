@@ -1,9 +1,7 @@
-import { POKEMON_DB } from '@/data/pokemonDB';
-import { POKEMON_ABILITIES } from '@/data/abilities';
-import { NATURES, NATURE_DATA } from '@/data/natures';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { NATURES } from '@/data/natures';
 import { GAME_RATIOS } from '@/data/constants';
 import { getMovesAtLevel } from '@/logic/pokemonUtils';
-import { MOVE_DATA } from '@/data/moves';
 
 /**
  * Probabilidades de items equipados en estado salvaje
@@ -57,9 +55,9 @@ export function getExpNeeded(level) {
 export function recalcPokemonStats(p) {
   if (!p) return;
   
-  const base = POKEMON_DB[p.id];
+  const base = pokemonDataProvider.getPokemonData(p.id);
   if (!base) return;
-  const natureData = NATURE_DATA[p.nature] || { up: null, down: null };
+  const natureData = pokemonDataProvider.getNatureData(p.nature) || { up: null, down: null };
 
   const getStat = (baseVal, iv, level, statName) => {
     let val = Math.floor((baseVal * 2 + iv) * level / 100 + 5);
@@ -85,10 +83,10 @@ export function recalcPokemonStats(p) {
  */
 export function makePokemon(id, level, options = {}) {
   if (level > 100) level = 100;
-  let base = POKEMON_DB[id];
+  let base = pokemonDataProvider.getPokemonData(id);
   if (!base) {
     console.error("Missing Pokémon in DB:", id);
-    base = POKEMON_DB['pidgey'];
+    base = pokemonDataProvider.getPokemonData('pidgey');
     id = 'pidgey';
   }
 
@@ -122,7 +120,7 @@ export function makePokemon(id, level, options = {}) {
   };
   
   const nature = options.nature || NATURES[Math.floor(Math.random() * NATURES.length)];
-  const abilityList = POKEMON_ABILITIES[id] || ['Espesura'];
+  const abilityList = pokemonDataProvider.getSpeciesAbilities(id);
   const ability = options.ability || abilityList[Math.floor(Math.random() * abilityList.length)];
   const gender = options.gender !== undefined ? options.gender : assignGender(id);
 
@@ -185,13 +183,13 @@ export function levelUpPokemon(p) {
   p.hp = Math.min(p.hp, p.maxHp);
 
   // Learn moves
-  const base = POKEMON_DB[p.id];
+  const base = pokemonDataProvider.getPokemonData(p.id);
   const pendingMoves = [];
-  if (base.learnset) {
+  if (base && base.learnset) {
     base.learnset.filter(m => m.lv === p.level).forEach(m => {
       // Check if already knows the move
       if (!p.moves.find(em => em.name === m.name)) {
-        const moveData = MOVE_DATA[m.name] || {};
+        const moveData = pokemonDataProvider.getMoveData(m.name) || {};
         const moveObj = { name: m.name, pp: m.pp || moveData.pp || 35, maxPP: m.pp || moveData.pp || 35 };
         if (p.moves.length < 4) {
           p.moves.push(moveObj);

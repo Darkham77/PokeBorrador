@@ -1,11 +1,61 @@
 ---
 name: project-standards-checker
-description: MANDATORY skill for verifying code quality, build stability, styling standards, and modularization. Use this BEFORE starting browser tests or after significant changes. Ensures No Monolithic Files (>500 lines), strict SCSS usage, Unified DB Router compliance, Cache Sync Integrity, Single Session Enforcement, Inheritance & Code Reuse Mandate, and Database Schema & Migration Mandate.
+description: MANDATORY skill for verifying code quality, GPU efficiency, mobile optimizations, Phaser standards, SASS Technical Protection, and Unit Tests. Use this BEFORE starting browser tests. Ensures Texture Atlases, Object Pooling, Phaser+Vue decoupling, No Monolithic Files (>500 lines), Unit Test completion, SASS trap prevention, and Unified DB Router compliance.
 ---
 
 # Project Standards Checker
 
-Goal: Ensure that every piece of code delivered is syntactically correct, doesn't break the build, and remains modular for optimal AI and human readability.
+Goal: Ensure that every piece of code delivered is syntactically correct, optimized for mobile GPU (Phaser), and remains modular for optimal AI and human readability.
+
+## GPU Efficiency & Phaser Rendering Standards
+
+To maintain 60FPS on mobile devices, we follow strict rendering rules. Global "draw calls" are the primary enemy.
+
+### 1. Texture Atlas Mandate
+
+- **FORBIDDEN**: Loading individual sprite images (e.g., `scene.load.image('ball', '...')`) for frequently used entities.
+- **REQUIRED**: All game assets (UI, NPCs, FX) **MUST** be packed into **Texture Atlases** (using TexturePacker or similar).
+- **Reasoning**: This allows Phaser to batch draw calls into a single operation, drastically reducing GPU overhead.
+
+### 2. Culling & Batching
+
+- **Auto-Culling**: Surfaces or objects outside the camera view **MUST** have their `active` and `visible` properties set to `false` or be managed by Phaser's internal culling.
+- **Layering**: Group sprites by texture atlas in the scene rendering order to maximize batching efficiency.
+
+## Assets & Optimization Standards
+
+To ensure minimal data transfer and optimal load times, all visual assets must be optimized.
+
+### 1. WebP Mandate
+
+- **MANDATORY**: All images stored in the project (`src/assets/`, `public/assets/`, etc.) **MUST** be in **WebP** format.
+- **FORBIDDEN**: Storing raw `.png`, `.jpg`, or `.jpeg` files in the repository.
+- **Auto-Conversion**: If a non-recommended format is detected during development or migration, you **MUST** execute the conversion script (`.agents/skills/project-standards-checker/scripts/convert_to_webp.py`) to transform it into WebP.
+- **Quality Settings**:
+  - **Pixel Art**: Use lossless WebP to preserve pixel-perfect clarity.
+  - **Large Assets**: Use lossy WebP (Quality 80) for maximum compression.
+
+## Mobile Optimization & Memory Mandate
+
+Mobile browsers have limited memory and aggressive garbage collection.
+
+### 1. Object Pooling
+
+- **MANDATORY**: Any entity that is frequently created/destroyed (bullets, particles, floating text, wild pokemon encounters) **MUST** use an **Object Pool**.
+- **Implementation**: Use `Phaser.GameObjects.Group` with `classType` and `runChildUpdate: true`. Reclaim objects using `killAndHide()`.
+
+### 2. Adaptive Resolution & Input
+
+- **DPR Scaling**: Use `window.devicePixelRatio` to set the game resolution. Avoid scaling a tiny canvas to a giant screen; use Phaser's `ScaleManager` with `RESIZE` or `FIT`.
+- **Touch-First UI**: Interactive elements **MUST** have a minimum hit area of 44x44px. Use `pointerup` instead of `pointerdown` for primary actions to allow for scroll cancellation.
+
+## Phaser + Vue Integration Rules
+
+To avoid performance death by a thousand reactivity "checks":
+
+- **Store Decoupling**: DO NOT store large Phaser objects (Scenes, GameObjects, Sprites) inside reactive Vue refs or Pinia state.
+- **The Bridge Pattern**: Use an event bus or a non-reactive "Game Instance Router" to pass data from Vue to Phaser.
+- **Shallow Refs**: If you must store the Phaser Game instance in a Vue component, use `shallowRef()`.
 
 ## Modularization & File Length Standards
 
@@ -40,7 +90,13 @@ To maintain visual consistency and leverage the full power of our UI framework, 
 
 - **NO Hardcoded Styles**: You **MUST NEVER** use inline styles (`style="..."` in HTML/Vue) or hardcoded CSS values directly in components unless absolutely necessary (e.g., dynamic calculation in JS).
 - **Prioritize SCSS**: Always extract styles to SCSS files/blocks and use the project's CSS/SCSS design tokens. If a unique style is needed, create the appropriate class in the component's `<style lang="scss">` or the global partials.
-- **Critical Cases ONLY**: Inline styles are only acceptable when calculating elements dynamically via Javascript where there is literally no other option.
+- **Critical Cases ONLY**: Inline styles are only acceptable when calculating elements dynamics via Javascript where there is literally no other option.
+
+### 2. SASS Technical Protection
+
+- **MANDATORY**: You **MUST** use interpolation `#{}` for CSS functions that collide with Sass built-ins (e.g., `scale()`, `invert()`).
+- **Validation**: Execute the SASS check script (`.agents/skills/sass-styling-protection/scripts/check_sass_traps.py`) to verify compliance. Failure to use interpolation on `scale()` is considered a build-blocking error.
+- **Architecture**: Always prefer `@use` over the deprecated `@import`. Define variables in tokens and access them via namespaces.
 
 ## Database & Context Architecture
 
@@ -50,19 +106,26 @@ To ensure the application can handle both Online and Offline modes seamlessly, w
 
 All components, services, and logic modules **MUST** interact with the database through the **Unified DB Router** (typically `window.DBRouter` or a dedicated logic bridge).
 
-- **FORBIDDEN**: Direct calls to `supabase.from()` or `sqlDb.run()` inside UI components or feature services.
-- **Reasoning**: The DB Router contextually decides whether to use Supabase (Cloud) or SQLite (Local) based on the user's session. Bypassing it breaks the application's ability to sync and route data correctly.
+- **FORBIDDEN**: Direct calls to `supabase.from()`, `sqlDb.run()`, or any specific provider adapter inside UI components or feature services.
+- **Reasoning**: The DB Router contextually decides whether to use a Global Instance (Supabase/Others) or a Local Instance (SQLite) based on the user's session. Bypassing it breaks the application's ability to sync and route data correctly and violates the isolation principle.
 - **Pattern**:
   - *Wrong*: `await supabase.from('inventory').select('*')`
   - *Correct*: `await DBRouter.from('inventory').select('*')`
 
-### 3. Persistence Isolation Policy (Strict Session Isolation)
+### 3. Strict Server & Session Isolation Mandate
 
-The application **MUST NOT** automatically switch between Online and Offline modes during an active session.
+The application **MUST** maintain absolute isolation between server contexts (Global vs. Local). A session initiated in one context **MUST NEVER** bridge data, interactions, or world-states from another.
 
-- **Online Stay-Online**: If a user logs in via Supabase, the application remains in Online mode for the entire session. If the internet connection is lost, the UI **MUST** display a "Connection Lost" modal or banner and suspend database operations. It **MUST NEVER** automatically fallback to the local SQLite database.
-- **Offline Stay-Offline**: If a user logs in via Local/Offline mode, it remains in that mode until logout. It **MUST NOT** attempt to connect to Supabase or sync data in the background.
-- **Reasoning**: This prevents data bifurcation and ensures that the user is always aware of which "world" they are interacting with.
+- **Global Instance (Online / External Server)**: Any instance connected to a shared server (e.g., Supabase, Beta Server, Private Cloud).
+  - The user interacts in a shared world with other humans.
+  - Persistence is 100% remote.
+  - The **Realtime** system is vital for synchronizing competitive events (War, Chat, Trade).
+  - **Global Stay-Global**: No access or synchronization with browser data (SQLite) is permitted.
+- **Local Instance (Client / In-Browser Processed)**: A private instance running entirely via SQLite/IndexedDB.
+  - The user interacts in their own private world.
+  - No external connectivity exists; all social mechanics must be **locally simulated**.
+  - **Local Stay-Local**: No reporting data to servers or receiving real-time updates is permitted.
+- **Reasoning**: This prevents critical data corruption, ensures world-state integrity, and maintains the boundary between a shared global world and a private local environment. Any attempt to bridge these worlds is considered a CRITICAL architectural violation.
 
 ### 2. Database Schema & Migration Mandate
 
@@ -72,6 +135,12 @@ When introducing or modifying database tables or columns, we follow a strict **V
   - The application must include logic to automatically update the local database (SQLite/IndexedDB).
   - Use the `DATABASE_MIGRATIONS` array in `src/logic/sqliteIDBHandler.js`.
   - **MANDATORY PARITY**: Every new SQL file created in `database/migrations/` **MUST** have a corresponding entry in the `DATABASE_MIGRATIONS` array with the exact same ID.
+- **Official Migration System (@/database)**:
+  - **Dual Source of Truth Mandate**: We use both `migrations/` and `schemas/` to balance deployment history and architectural visibility.
+    - **Migrations (`database/migrations/`)**: Mandatory for tracking deltas, deployment history, and cross-team synchronization.
+    - **Schemas (`database/schemas/`)**: Mandatory baseline reference representing the CURRENT absolute state. Primarily used for documentation and fresh-install clarity.
+  - **MANDATORY SYNCHRONIZATION**: For every new timestamped `.sql` file created in `database/migrations/`, you **MUST** update the corresponding baseline file in `database/schemas/` (or create a new one) to ensure they are 100% in sync. Fresh installs must rely on `schemas/`.
+  - **REMOTE SQL VISIBILITY**: You **MUST** always show the user the exact SQL code to be executed in Supabase for every migration performed.
 - **Remote SQL Communication**:
   - For every schema change, the AI **MUST** provide the user with the exact SQL code to execute in the remote database (e.g., Supabase SQL Editor).
   - This SQL **MUST** match the contents of the latest file in `database/migrations/`.
@@ -83,7 +152,6 @@ When introducing or modifying database tables or columns, we follow a strict **V
   1. Create a new timestamped `.sql` file in `database/migrations/`.
   2. Implement the same SQL logic in the `DATABASE_MIGRATIONS` array in `sqliteIDBHandler.js`.
   3. Display the **"REMOTE SQL MIGRATION"** block for the user, referencing the new file.
-
 
 ## Cache & Synchronization Integrity
 
@@ -175,12 +243,22 @@ Get-ChildItem -Recurse -File -Include *.vue, *.js, *.scss | Where-Object { $_.Fu
 > [!IMPORTANT]
 > If any files appear in the output (especially those you modified), you **MUST** refactor them before presenting the results.
 
-### 2. Build & Lint Verification
+### 2. Python Environment Check
+
+Verify that Python dependencies are installed for the optimization scripts:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Build, Lint & Test Verification
 
 Execute the official validation scripts:
 
 ```bash
-npm run lint && npm run build
+npm run lint
+npm run test
+npm run build
 ```
 
 ### 3. Dev Server Instance Check
@@ -188,13 +266,25 @@ npm run lint && npm run build
 Before starting a new development server, verify if one is already active:
 
 ```bash
+# In Bash-like environments:
 pgrep -af vite || echo "No vite instances running"
+
+# In PowerShell:
+Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match "vite" } | Select-Object ProcessId, CommandLine
 ```
 
 > [!WARNING]
 > If the command above returns existing processes, **do NOT** run `npm run dev`. Reuse the existing session to avoid port clashing and high CPU usage.
 
-### 4. Analyze & Response
+### 4. Phaser Performance Audit
+
+If the changes involve any game scenes or entities, verify:
+
+- `[ ]` **Asset Check**: Are all new sprites part of a Texture Atlas?
+- `[ ]` **Memory Check**: If spawning entities, is an Object Pool being used?
+- `[ ]` **Reactivity Check**: Are Phaser objects kept out of Vue's reactive state (refs/Pinia)?
+
+### 5. Analyze & Response
 
 - **Lint Failed**: Review and fix errors immediately.
 - **Build Failed**: Dig into the build log to find structural errors (missing imports, Vite config issues).
@@ -209,6 +299,11 @@ pgrep -af vite || echo "No vite instances running"
 ## Audit Checklist
 
 1. `[ ]` Run length audit: No violator files in project (excluding node_modules/backups).
-2. `[ ]` `npm run lint`: Execution success (0 errors).
-3. `[ ]` `npm run build`: Execution success.
-4. `[ ]` Dev Server Check: No duplicate instances or reused existing one.
+2. `[ ]` **Phaser Performance**: Texture Atlases, Object Pooling, and Vue decoupling verified.
+3. `[ ]` `npm run lint`: Execution success (0 errors).
+4. `[ ]` `npm run test`: Execution success (0 failures).
+5. `[ ]` `npm run build`: Execution success.
+6. `[ ]` **Python Deps**: `pip install -r requirements.txt` executed/verified.
+7. `[ ]` **SASS Protection**: Running `python3 .agents/skills/sass-styling-protection/scripts/check_sass_traps.py` returns success.
+8. `[ ]` **Premium Aesthetics**: Hover effects, Glassmorphism, and HSL palettes verified (@/sass-styling-protection).
+9. `[ ]` Dev Server Check: No duplicate instances or reused existing one.

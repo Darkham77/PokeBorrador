@@ -20,6 +20,7 @@ export const useTradeStore = defineStore('trade', () => {
   const tradeRequestItems = reactive({})
   
   const pendingIncoming = ref([])
+  const pendingOutgoing = ref([])
   const pendingAccepted = ref([])
 
   let tradeChannel = null
@@ -29,7 +30,7 @@ export const useTradeStore = defineStore('trade', () => {
     if (tradeChannel) tradeChannel.unsubscribe()
 
     const db = gameStore.db
-    tradeChannel = db.router.client.channel('trade-notifs-' + authStore.user.id)
+    tradeChannel = db.channel('trade-notifs-' + authStore.user.id)
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'trade_offers',
         filter: `receiver_id=eq.${authStore.user.id}`
@@ -60,12 +61,14 @@ export const useTradeStore = defineStore('trade', () => {
     if (!authStore.user || authStore.sessionMode === 'offline') return
 
     const db = gameStore.db
-    const [incomingRes, acceptedRes] = await Promise.all([
+    const [incomingRes, outgoingRes, acceptedRes] = await Promise.all([
       db.from('trade_offers').select('*').eq('receiver_id', authStore.user.id).eq('status', 'pending'),
+      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'pending'),
       db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'accepted')
     ])
 
     pendingIncoming.value = incomingRes.data || []
+    pendingOutgoing.value = outgoingRes.data || []
     pendingAccepted.value = acceptedRes.data || []
     
     // Sincronizar contador en socialStore
@@ -105,6 +108,12 @@ export const useTradeStore = defineStore('trade', () => {
       return false
     }
 
+    // Anti-Duplicate check
+    if (tradeOfferPoke.value && lockedUids.value.has(tradeOfferPoke.value.uid)) {
+      uiStore.notify('Este Pokémon ya está en otra oferta pendiente.', '⚠️')
+      return false
+    }
+
     const { error } = await gameStore.db.from('trade_offers').insert({
       sender_id: authStore.user.id,
       receiver_id: tradeTarget.value.id,
@@ -134,7 +143,7 @@ export const useTradeStore = defineStore('trade', () => {
       if (window.setAuthLoading) window.setAuthLoading(true)
       
       const db = gameStore.db
-      const { error: rpcErr } = await db.router.client.rpc('execute_trade', {
+      const { error: rpcErr } = await db.rpc('execute_trade', {
         p_trade_id: tradeId
       })
     
@@ -180,6 +189,17 @@ export const useTradeStore = defineStore('trade', () => {
     if (!error) await refreshPendingTrades()
   }
 
+  const lockedUids = computed(() => {
+    const locked = new Set()
+    pendingIncoming.value.forEach(t => {
+      if (t.request_pokemon?.uid) locked.add(t.request_pokemon.uid)
+    })
+    pendingOutgoing.value.forEach(t => {
+      if (t.offer_pokemon?.uid) locked.add(t.offer_pokemon.uid)
+    })
+    return locked
+  })
+
   return {
     tradeTarget,
     tradeFriendSave,
@@ -188,7 +208,9 @@ export const useTradeStore = defineStore('trade', () => {
     tradeOfferItems,
     tradeRequestItems,
     pendingIncoming,
+    pendingOutgoing,
     pendingAccepted,
+    lockedUids,
     subscribeTradeNotifs,
     refreshPendingTrades,
     openTradeModal,

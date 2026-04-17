@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
@@ -27,6 +27,7 @@ import ClassSelectionModal from '@/components/modals/ClassSelectionModal.vue'
 import ClassMissionsModal from '@/components/modals/ClassMissionsModal.vue'
 import PokemonSelectionModal from '@/components/modals/PokemonSelectionModal.vue'
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
+import ItemTargetModal from '@/components/modals/ItemTargetModal.vue'
 
 
 // Tab components
@@ -42,13 +43,29 @@ import GlobalChat from '@/components/social/GlobalChat.vue'
 import SocialCenterModal from '@/components/social/SocialCenterModal.vue'
 import DirectChatWindow from '@/components/social/DirectChatWindow.vue'
 import { useChatStore } from '@/stores/chat'
-import HatchAnimationModal from '@/components/breeding/HatchAnimationModal.vue'
+import GlobalMarket from '@/components/market/GlobalMarket.vue'
+import RankedArena from '@/components/social/RankedArena.vue'
+import GlobalRanking from '@/components/social/GlobalRanking.vue'
+
+
+import PhaserGame from '@/components/game/PhaserGame.vue'
+
+
+import { phaserBridge } from '@/logic/phaserBridge'
 
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const battleStore = useBattleStore()
 const chatStore = useChatStore()
+
+// Sync Weather & Day/Night Cycle with Phaser
+watch(() => gameStore.state.dayCycle, (cycle) => {
+  phaserBridge.sendCommand('WeatherScene', 'SET_WEATHER', {
+    cycle: cycle,
+    weather: 'clear' // Expandable to rain/sand later
+  })
+}, { immediate: true })
 
 const hudRef = ref(null)
 const hudHeight = ref(85)
@@ -127,9 +144,6 @@ onUnmounted(() => {
   if (resizeObserver) resizeObserver.disconnect()
 })
 
-const toggleProfile = () => uiStore.toggleProfile()
-const toggleSettings = () => uiStore.toggleSettings()
-const toggleLibrary = () => uiStore.toggleLibrary()
 
 const handleTabChange = (tab, event) => {
   uiStore.activeTab = tab
@@ -142,6 +156,8 @@ const handleTabChange = (tab, event) => {
 
 <template>
   <TitleScreen />
+  
+  <PhaserGame class="phaser-container" />
 
   <div
     id="game-screen"
@@ -168,14 +184,14 @@ const handleTabChange = (tab, event) => {
     <!-- MAIN CONTENT -->
     <div
       id="zoomable-content"
-      class="zoom-target"
-      :style="{ paddingTop: hudHeight + 'px', flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }"
+      class="zoom-target content-area"
+      :style="{ paddingTop: hudHeight + 'px' }"
     >
       <!-- TAB CONTENTS -->
       <div
         id="tab-map"
         class="tab-content"
-        :style="{ display: activeTab === 'map' ? 'block' : 'none' }"
+        v-show="activeTab === 'map'"
       >
         <MapView />
       </div>
@@ -183,7 +199,7 @@ const handleTabChange = (tab, event) => {
       <div
         id="tab-team"
         class="tab-content"
-        :style="{ display: activeTab === 'team' ? 'block' : 'none' }"
+        v-show="activeTab === 'team'"
       >
         <div class="team-section">
           <TeamHeader />
@@ -195,7 +211,7 @@ const handleTabChange = (tab, event) => {
       <div
         id="tab-box"
         class="tab-content"
-        :style="{ display: activeTab === 'box' ? 'block' : 'none' }"
+        v-show="activeTab === 'box'"
       >
         <BoxView />
       </div>
@@ -203,7 +219,7 @@ const handleTabChange = (tab, event) => {
       <div
         id="tab-pokedex"
         class="tab-content"
-        :style="{ display: activeTab === 'pokedex' ? 'block' : 'none' }"
+        v-show="activeTab === 'pokedex'"
       >
         <PokedexView />
       </div>
@@ -211,7 +227,7 @@ const handleTabChange = (tab, event) => {
       <div
         id="tab-bag"
         class="tab-content"
-        :style="{ display: activeTab === 'bag' ? 'block' : 'none' }"
+        v-show="activeTab === 'bag'"
       >
         <BackpackView />
       </div>
@@ -219,7 +235,7 @@ const handleTabChange = (tab, event) => {
       <div
         id="tab-gyms"
         class="tab-content"
-        :style="{ display: activeTab === 'gyms' ? 'block' : 'none' }"
+        v-show="activeTab === 'gyms'"
       >
         <GymsView />
       </div>
@@ -227,7 +243,7 @@ const handleTabChange = (tab, event) => {
       <div
         id="tab-daycare"
         class="tab-content"
-        :style="{ display: activeTab === 'daycare' ? 'block' : 'none' }"
+        v-show="activeTab === 'daycare'"
       >
         <DaycareView v-if="activeTab === 'daycare'" />
       </div>
@@ -235,7 +251,7 @@ const handleTabChange = (tab, event) => {
       <div
         id="tab-market"
         class="tab-content"
-        :style="{ display: activeTab === 'market' ? 'block' : 'none' }"
+        v-show="activeTab === 'market'"
       >
         <ShopView />
       </div>
@@ -243,9 +259,33 @@ const handleTabChange = (tab, event) => {
       <div
         id="tab-trainer-shop"
         class="tab-content"
-        :style="{ display: activeTab === 'trainer-shop' ? 'block' : 'none' }"
+        v-show="activeTab === 'trainer-shop'"
       >
         <ShopView />
+      </div>
+
+      <div
+        id="tab-online-market"
+        class="tab-content"
+        v-show="activeTab === 'online-market'"
+      >
+        <GlobalMarket v-if="activeTab === 'online-market'" />
+      </div>
+
+      <div
+        id="tab-arena"
+        class="tab-content"
+        v-show="activeTab === 'arena'"
+      >
+        <RankedArena v-if="activeTab === 'arena'" />
+      </div>
+
+      <div
+        id="tab-ranking"
+        class="tab-content"
+        v-show="activeTab === 'ranking'"
+      >
+        <GlobalRanking v-if="activeTab === 'ranking'" />
       </div>
 
       <BattleArena v-show="battleStore.isBattleActive" />
@@ -266,6 +306,7 @@ const handleTabChange = (tab, event) => {
     <ClassMissionsModal />
     <PokemonSelectionModal />
     <CriminalityBar />
+    <ItemTargetModal />
 
     <!-- MODAL SOCIAL (Phase 24) -->
     <SocialCenterModal 
@@ -287,43 +328,34 @@ const handleTabChange = (tab, event) => {
 
 
     <!-- LEGACY ESQUELETO (Oculto) -->
-    <div style="display:none;">
-      <div id="form-login" /><div id="form-signup" /><div id="form-local" /><div id="auth-tabs" /><div id="tab-server-online" />
-      <div id="tab-server-local" /><div id="tab-login" /><div id="tab-signup" /><div id="auth-error" /><div id="auth-success" />
-      <div id="auth-loading" /><button id="btn-login" /><button id="btn-signup" /><input id="login-email"><input id="login-password">
-      <input id="signup-username"><input id="signup-email"><input id="signup-password"><input id="local-username">
-    </div>
-
-    <!-- SHARED OVERLAYS (HANDLED BY VUE COMPONENTS) -->
-    <div
-      id="bag-overlay"
-      class="overlay-fixed"
-      style="display:none;"
-    >
-      <div
-        id="bag-modal"
-        class="overlay-modal-box"
-      />
-    </div>
-    <div
-      id="pokedex-modal"
-      class="overlay-fixed"
-      style="display:none;"
-    />
-    <div
-      id="trade-modal"
-      class="overlay-fixed"
-      style="display:none;"
-    >
-      <div class="trade-modal-box" />
+      <div id="trade-modal" class="overlay-fixed hidden-system">
+        <div class="trade-modal-box" />
+      </div>
     </div>
   </div>
 
   <MobileNavigation />
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 /* Scoped styles for the main container or specific integrated elements */
+.phaser-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hidden-system {
+  display: none !important;
+}
 .hint-banner {
   font-size: 11px;
   margin-bottom: 12px;

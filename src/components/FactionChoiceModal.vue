@@ -38,7 +38,7 @@ const chooseFaction = (faction) => {
             @click="chooseFaction('union')"
           >
             <img
-              src="/assets/factions/union.png"
+              src="@/assets/ui/factions/union.webp"
               class="faction-icon-large"
             >
             <span class="faction-name union-text">Team Unión</span>
@@ -48,7 +48,7 @@ const chooseFaction = (faction) => {
             @click="chooseFaction('poder')"
           >
             <img
-              src="/assets/factions/poder.png"
+              src="@/assets/ui/factions/poder.webp"
               class="faction-icon-large"
             >
             <span class="faction-name poder-text">Team Poder</span>
@@ -82,7 +82,7 @@ const chooseFaction = (faction) => {
 }
 
 .faction-btn:hover {
-  transform: #{'scale(1.02)'};
+  transform: #{'scale(#{1.02})'};
 }
 
 .union-btn {

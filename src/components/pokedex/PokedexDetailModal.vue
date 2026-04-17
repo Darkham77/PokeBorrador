@@ -1,8 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted } from 'vue'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { PDEX_TYPE_COLORS, GAME_TMS, TM_COMPAT, POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants'
-import { POKEMON_DB } from '@/logic/pokemonData'
-import { ABILITY_DATA, POKEMON_ABILITIES } from '@/data/abilities'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
 import { useUIStore } from '@/stores/ui'
 
@@ -21,7 +20,7 @@ const emit = defineEmits(['close'])
 
 const uiStore = useUIStore()
 
-const p = computed(() => POKEMON_DB[props.speciesId] || { name: props.speciesId, learnset: [] })
+const p = computed(() => pokemonDataProvider.getPokemonData(props.speciesId) || { name: props.speciesId, learnset: [] })
 
 const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || '#94a3b8'
 
@@ -54,8 +53,8 @@ const tmList = computed(() => {
 
 const getSpriteUrl = (id) => {
   const sid = POKEMON_SPRITE_IDS[id] || 0
-  if (sid === 0) return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sid}.png`
+  if (sid === 0) return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.webp'
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sid}.webp`
 }
 
 // LÓGICA DE EVOLUCIONES
@@ -86,7 +85,7 @@ const evolutionChain = computed(() => {
 
   const nodes = []
   const traverse = (id, depth = 0) => {
-    const pkmn = POKEMON_DB[id] || { name: id }
+    const pkmn = pokemonDataProvider.getPokemonData(id) || { name: id }
     const node = { id, name: pkmn.name, depth, evos: [] }
     
     // Buscar evoluciones directas
@@ -112,10 +111,10 @@ const evolutionChain = computed(() => {
 })
 
 const abilities = computed(() => {
-  const list = POKEMON_ABILITIES[props.speciesId] || []
+  const list = pokemonDataProvider.getSpeciesAbilities(props.speciesId)
   return list.map(name => ({
     name,
-    desc: ABILITY_DATA[name]?.desc || 'Sin descripción disponible.'
+    desc: pokemonDataProvider.getAbilityData(name)?.desc || 'Sin descripción disponible.'
   }))
 })
 
@@ -619,7 +618,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleEsc))
   }
 
   &:hover:not(.incompatible) {
-    transform: #{"scale(1.1)"};
+    transform: #{"scale(#{1.1})"};
     box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
     z-index: 2;
   }
@@ -752,7 +751,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleEsc))
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
-  .pdex-modal-container { transform: #{"scale(0.9)"} translateY(20px); }
+  .pdex-modal-container { transform: #{"scale(#{0.9})"} translateY(20px); }
 }
 
 /* Utilities */

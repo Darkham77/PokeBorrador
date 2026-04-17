@@ -1,8 +1,9 @@
-import { FIRE_RED_MAPS } from '@/data/maps';
-import { POKEMON_DB } from '@/data/pokemonDB';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { GAME_RATIOS } from '@/data/constants';
 import { makePokemon } from '@/logic/pokemonFactory';
 import { getDayCycle } from '@/logic/timeUtils';
+import { isDisputePhase } from '@/logic/war/warEngine';
+import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
 
 /**
  * Gets the valid pool of Pokémon for a location and time cycle.
@@ -62,13 +63,42 @@ export function selectFromPool(pool, rates) {
  * Handles repellent, incense, fishing, and specialty spawns.
  */
 export async function generateEncounter(locId, state, options = {}) {
-  const loc = FIRE_RED_MAPS.find(l => l.id === locId);
+  const loc = pokemonDataProvider.getMaps().find(l => l.id === locId);
   if (!loc) return null;
 
   const cycle = getDayCycle();
   const activeEvents = options.activeEvents || (typeof window !== 'undefined' ? window._activeEvents : []) || [];
+  const maps = pokemonDataProvider.getMaps();
+  const allMapIds = maps.map(m => m.id);
   
-  // 1. Repellent Logic
+  // 1. Especial: Fase de Dominancia (Finde) - Batallas de Defensores
+  if (!isDisputePhase()) {
+    // Chance de encontrar defensor (20% normal)
+    if (Math.random() < 0.20 && state.faction) {
+      // Determinamos si el mapa está dominado por el enemigo
+      // Nota: Esto requiere que el store MAP pase la información de ganadores
+      const winner = (options.dominanceData || {})[locId];
+      if (winner && winner !== state.faction) {
+        return { type: 'defender', faction: winner };
+      }
+    }
+  }
+
+  // 2. Especial: Guardianes (Pokémon Alfa)
+  const guardian = getGuardianData(locId, allMapIds);
+  if (guardian) {
+    // Verificar si ya fue capturado hoy
+    const capturedToday = (state.dailyGuardianCaptures || []).includes(locId);
+    if (!capturedToday && Math.random() < GUARDIAN_CHANCE) {
+      return { 
+        type: 'guardian', 
+        pokemon: makePokemon(guardian.id, guardian.lv),
+        pts: guardian.pts
+      };
+    }
+  }
+
+  // 3. Repellent Logic
   const repellentActive = (state.repelSecs || 0) > 0;
   const firstPokemon = state.team?.[0];
   
@@ -118,7 +148,7 @@ export async function generateEncounter(locId, state, options = {}) {
   // 5. Incense Effect
   if (state.incenseSecs > 0 && state.incenseType) {
     const typeIndices = pool.map((id, idx) => {
-      const pData = POKEMON_DB[id];
+      const pData = pokemonDataProvider.getPokemonData(id);
       return (pData && pData.type === state.incenseType) ? idx : -1;
     }).filter(idx => idx !== -1);
 

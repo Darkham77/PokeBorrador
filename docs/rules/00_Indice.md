@@ -25,6 +25,7 @@ Este directorio contiene la documentación técnica completa del juego **Pokémo
 | `13_pvp.md` | Sistema PvP online, turnos simultáneos, protocolo |
 | `14_social.md` | Amigos, intercambios, notificaciones en tiempo real |
 | `15_balance_y_probabilidades.md` | Análisis de balance, probabilidades, recomendaciones |
+| `17_clases.md` | Sistema de especialidades (Rocket, Cazabichos, etc.) |
 
 ---
 

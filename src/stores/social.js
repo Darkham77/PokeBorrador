@@ -229,6 +229,60 @@ export const useSocialStore = defineStore('social', () => {
     presenceInterval = null
   }
 
+  const leaderboard = ref([])
+  const leaderboardLoading = ref(false)
+
+  /**
+   * Obtiene el Top 100 mundial basado en ELO.
+   */
+  async function fetchLeaderboard() {
+    if (authStore.sessionMode === 'offline') {
+      leaderboard.value = []
+      return
+    }
+
+    leaderboardLoading.value = true
+    try {
+      const db = gameStore.db
+      const { data, error } = await db
+        .from('profiles')
+        .select('*')
+        .order('elo_rating', { ascending: false })
+        .limit(100)
+
+      if (error) throw error
+
+      if (data && data.length > 0) {
+        const ids = data.map(p => p.id)
+        const { data: saves } = await db
+          .from('game_saves')
+          .select('user_id, updated_at')
+          .in('user_id', ids)
+
+        leaderboard.value = data.map(p => {
+          const saveRow = saves?.find(s => s.user_id === p.id)
+          const lastSeen = saveRow?.updated_at ? new Date(saveRow.updated_at) : null
+          const isOnline = lastSeen && (Date.now() - lastSeen.getTime()) < 5 * 60 * 1000
+
+          return {
+            id: p.id,
+            username: p.username,
+            elo: p.elo_rating || 1000,
+            level: p.trainer_level || 1,
+            playerClass: p.player_class,
+            faction: p.faction,
+            nick_style: p.nick_style,
+            isOnline
+          }
+        })
+      }
+    } catch (err) {
+      console.error('[SocialStore] Leaderboard error:', err)
+    } finally {
+      leaderboardLoading.value = false
+    }
+  }
+
   return {
     friends,
     pendingRequests,
@@ -236,6 +290,8 @@ export const useSocialStore = defineStore('social', () => {
     searchLoading,
     loading,
     notifications,
+    leaderboard,
+    leaderboardLoading,
     loadSocialData,
     searchPlayers,
     sendFriendRequest,
@@ -243,6 +299,7 @@ export const useSocialStore = defineStore('social', () => {
     removeFriend,
     startPresence,
     stopPresence,
-    refreshNotificationCount
+    refreshNotificationCount,
+    fetchLeaderboard
   }
 })

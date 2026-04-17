@@ -77,7 +77,7 @@ const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') wi
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .moves-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -105,7 +105,7 @@ const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') wi
 .move-button-card:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  filter: grayscale(0.8);
+  filter: grayscale(#{0.8});
 }
 
 .move-name-txt {

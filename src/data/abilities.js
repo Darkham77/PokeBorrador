@@ -1,7 +1,7 @@
 export const ABILITY_DATA = {
   'Espesura': { desc: 'Cuando el HP baja a 1/3 o menos, los movimientos de tipo Planta aumentan su poder un 50%.' },
   'Clorofila': { desc: 'Bajo el sol o durante el día, la Velocidad del Pokémon se duplica.' },
-  'Mar flames': { desc: 'Cuando el HP baja a 1/3 o menos, los movimientos de tipo Fuego aumentan su poder un 50%.' },
+  'Mar llamas': { desc: 'Cuando el HP baja a 1/3 o menos, los movimientos de tipo Fuego aumentan su poder un 50%.' },
   'Poder Solar': { desc: 'Bajo el sol, el At. Especial sube un 50%, pero pierde HP cada turno.' },
   'Torrente': { desc: 'Cuando el HP baja a 1/3 o menos, los movimientos de tipo Agua aumentan su poder un 50%.' },
   'Lluvia Ligera': { desc: 'Bajo la lluvia o durante la noche, la Velocidad del Pokémon se duplica.' },

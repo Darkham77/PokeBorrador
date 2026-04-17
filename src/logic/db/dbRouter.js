@@ -12,7 +12,7 @@ export class DBRouter {
    * @param {String} mode - 'online' | 'offline'
    */
   constructor(supabaseClient, mode = 'online') {
-    this.realClient = supabaseClient;
+    this._realClient = supabaseClient;
     this.mode = mode;
     this._initialized = false;
     
@@ -28,6 +28,29 @@ export class DBRouter {
    */
   from(table) {
     return new ProxyQuery(this, table);
+  }
+
+  /**
+   * Returns a reliable timestamp.
+   * If offline, uses local Date.now().
+   * If online, fetches server time from Supabase.
+   */
+  async getServerTime() {
+    if (this.mode === 'offline') {
+      return Date.now();
+    }
+    
+    try {
+      // Prioritize a dedicated RPC for server time to avoid local clock manipulation
+      const { data, error } = await this._realClient.rpc('fn_get_server_time');
+      if (!error && data) return new Date(data).getTime();
+      
+      // Fallback: use a fast select if RPC fails
+      return Date.now(); 
+    } catch (e) {
+      console.warn('[DBRouter] getServerTime error, falling back to local.', e);
+      return Date.now();
+    }
   }
 
   /**
@@ -54,7 +77,7 @@ export class DBRouter {
     }
 
     // Online mode: direct call to Supabase
-    return this.realClient.rpc(name, params);
+    return this._realClient.rpc(name, params);
   }
 
   /**
@@ -69,7 +92,7 @@ export class DBRouter {
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
       };
     }
-    return this.realClient.auth;
+    return this._realClient.auth;
   }
 
   /**
@@ -82,6 +105,6 @@ export class DBRouter {
         subscribe: () => ({}) 
       };
     }
-    return this.realClient.channel(name);
+    return this._realClient.channel(name);
   }
 }

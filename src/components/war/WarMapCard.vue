@@ -31,7 +31,7 @@ const getWinnerLabel = (winner) => {
 <template>
   <div 
     class="war-map-card"
-    :style="{ backgroundImage: `url('/maps/${imageName || 'default.png'}')` }"
+    :style="{ backgroundImage: `url('/maps/${imageName || 'default.webp'}')` }"
     :class="[
       !warStore.isDisputePhase ? (mapData.winner === 'union' ? 'dom-union' : mapData.winner === 'poder' ? 'dom-poder' : '') : '',
       warStore.isDisputePhase ? (mapData.leading === 'union' ? 'glow-union' : mapData.leading === 'poder' ? 'glow-poder' : '') : ''
@@ -116,7 +116,7 @@ const getWinnerLabel = (winner) => {
   overflow: hidden;
   transition: transform 0.2s;
 
-  &:hover { transform: #{'scale(1.03)'}; z-index: 5; }
+  &:hover { transform: #{'scale(#{1.03})'}; z-index: 5; }
   
   &.glow-union { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); border-color: #3b82f6; }
   &.glow-poder { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); border-color: #ef4444; }

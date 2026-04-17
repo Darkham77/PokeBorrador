@@ -1,3 +1,8 @@
+import teamrocketAvatar from '@/assets/sprites/trainers/teamrocket.webp';
+import cazabichosAvatar from '@/assets/sprites/trainers/cazabichos.webp';
+import entrenadorAvatar from '@/assets/sprites/trainers/entrenador.webp';
+import criadorAvatar from '@/assets/sprites/trainers/criador.webp';
+
 export const PLAYER_CLASSES = {
   rocket: {
     id: 'rocket',
@@ -39,8 +44,8 @@ export const PLAYER_CLASSES = {
       "Tus patrocinadores te dan un 10% menos de Battle Coins por batalla debido a tu mala reputación.",
       "Los PokéMart oficiales detectan tu afiliación y aplican un recargo del +20% en todos los precios."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.png',
-    avatarSprite: "/assets/sprites/trainers/teamrocket.png"
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.webp',
+    avatarSprite: teamrocketAvatar
   },
   cazabichos: {
     id: 'cazabichos',
@@ -82,8 +87,8 @@ export const PLAYER_CLASSES = {
       "Los premios en metálico se reducen un 15% debido a tu falta de patrocinio oficial.",
       "La infraestructura de la guardería no está adaptada para tus métodos de crianza rústicos (x1.50 costo)."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.png',
-    avatarSprite: "/assets/sprites/trainers/cazabichos.png"
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.webp',
+    avatarSprite: cazabichosAvatar
   },
   entrenador: {
     id: 'entrenador',
@@ -125,8 +130,8 @@ export const PLAYER_CLASSES = {
       "Prefieres el entrenamiento en campo; el mantenimiento en guardería te resulta más costoso (x1.50).",
       "Como figura pública, no puedes ser visto operando en mercados de dudosa legalidad."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
-    avatarSprite: "/assets/sprites/trainers/entrenador.png"
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.webp',
+    avatarSprite: entrenadorAvatar
   },
   criador: {
     id: 'criador',
@@ -165,7 +170,7 @@ export const PLAYER_CLASSES = {
       "Tu enfoque en la genética te aleja del fragor de la batalla (x0.90 EXP global).",
       "Como científico respetable, no posees los contactos necesarios para entrar al Mercado Negro."
     ],
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.png',
-    avatarSprite: "/assets/sprites/trainers/criador.png"
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.webp',
+    avatarSprite: criadorAvatar
   }
 };

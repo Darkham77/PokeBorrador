@@ -9,6 +9,8 @@ export const useInventoryStore = defineStore('inventory', () => {
   // --- BAG STATE ---
   const bagSellMode = ref(false)
   const bagSellSelected = ref({}) // { itemName: quantity }
+  const isItemTargetModalOpen = ref(false)
+  const activeItemToUse = ref(null)
 
   // --- BOX STATE ---
   const currentBoxIndex = ref(0)
@@ -172,41 +174,34 @@ export const useInventoryStore = defineStore('inventory', () => {
   function useItem(itemName, context, index) {
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box
     const pokemon = list[index]
-    if (!pokemon) return null
-
-    // This is where we'll implement item usage logic (healing, etc.)
-    // For now, we delegate to the existing HEALING_ITEMS if they exist globally
-    // But we should start moving them here.
     
-    // Legacy mapping for simple items (potions, ethers, etc.)
-    const effects = {
-      'Poción': p => { if (p.hp === p.maxHp) return null; p.hp = Math.min(p.maxHp, p.hp + 20); return 'restauró 20 HP'; },
-      'Super Poción': p => { if (p.hp === p.maxHp) return null; p.hp = Math.min(p.maxHp, p.hp + 50); return 'restauró 50 HP'; },
-      'Hiper Poción': p => { if (p.hp === p.maxHp) return null; p.hp = Math.min(p.maxHp, p.hp + 2100); return 'restauró 200 HP'; }, // Legacy had 200, but logic was p.hp + 200
-      'Poción Máxima': p => { if (p.hp === p.maxHp) return null; p.hp = p.maxHp; return 'restauró todo el HP'; },
-      'Revivir': p => { if (p.hp > 0) return null; p.hp = Math.floor(p.maxHp / 2); return 'fue revivido'; },
-      'Revivir Máximo': p => { if (p.hp > 0) return null; p.hp = p.maxHp; return 'fue revivido al máximo'; },
-      'Antídoto': p => { if (p.status !== 'poison') return null; p.status = null; return 'curó el veneno'; },
-      'Cura Quemadura': p => { if (p.status !== 'burn') return null; p.status = null; return 'curó la quemadura'; },
-      'Despertar': p => { if (p.status !== 'sleep') return null; p.status = null; p.sleepTurns = 0; return 'se despertó'; },
-      'Cura Total': p => { if (!p.status && p.hp === p.maxHp) return null; p.hp = p.maxHp; p.status = null; p.sleepTurns = 0; return 'se curó completamente'; },
-      'Repelente': _ => { gameStore.state.repelSecs = (gameStore.state.repelSecs || 0) + 600; return 'activó Repelente (10m)'; },
-      'Superrepelente': _ => { gameStore.state.repelSecs = (gameStore.state.repelSecs || 0) + 1200; return 'activó Superrepelente (20m)'; },
-      'Máximo Repelente': _ => { gameStore.state.repelSecs = (gameStore.state.repelSecs || 0) + 1800; return 'activó Máximo Repelente (30m)'; }
+    // Global items (Repels, etc.)
+    if (isGlobalItem(itemName)) {
+      const effectFn = ITEM_EFFECTS[itemName]
+      if (!effectFn) return { success: false, msg: 'Efecto global no implementado.' }
+      
+      const result = effectFn(gameStore.state)
+      consumeItem(itemName)
+      return { success: true, msg: result }
     }
 
-    const effort = effects[itemName]
-    if (!effort) return { success: false, msg: 'Objeto no implementado o no utilizable.' }
+    if (!pokemon) return { success: false, msg: 'Seleccioná un Pokémon.' }
 
-    const result = effort(pokemon)
+    const result = useItemOnPokemon(itemName, pokemon)
     if (result === null) return { success: false, msg: 'No tiene efecto.' }
 
-    // Consume item
-    gameStore.state.inventory[itemName]--
-    if (gameStore.state.inventory[itemName] <= 0) delete gameStore.state.inventory[itemName]
-
+    consumeItem(itemName)
     gameStore.save()
     return { success: true, msg: result }
+  }
+
+  function consumeItem(itemName) {
+    if (gameStore.state.inventory[itemName]) {
+      gameStore.state.inventory[itemName]--
+      if (gameStore.state.inventory[itemName] <= 0) {
+        delete gameStore.state.inventory[itemName]
+      }
+    }
   }
 
   function equipItem(itemName, context, index) {
@@ -242,19 +237,18 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   function openStoneMenu(stoneName) {
-    if (typeof window.openBagStoneMenu === 'function') {
-      window.openBagStoneMenu(stoneName)
-    } else {
-      console.warn('[InventoryStore] openBagStoneMenu bridge not found')
-    }
+    activeItemToUse.value = stoneName
+    isItemTargetModalOpen.value = true
   }
 
   function openItemMenu(itemName) {
-    if (typeof window.openBagItemMenu === 'function') {
-      window.openBagItemMenu(itemName)
-    } else {
-      console.warn('[InventoryStore] openBagItemMenu bridge not found')
-    }
+    activeItemToUse.value = itemName
+    isItemTargetModalOpen.value = true
+  }
+
+  function closeItemTargetModal() {
+    isItemTargetModalOpen.value = false
+    activeItemToUse.value = null
   }
 
   return {
@@ -288,6 +282,9 @@ export const useInventoryStore = defineStore('inventory', () => {
     unequipItem,
     openStoneMenu,
     openItemMenu,
+    closeItemTargetModal,
+    isItemTargetModalOpen,
+    activeItemToUse,
     // Utils
     returnHeldItem,
     getBoxBuyCost,

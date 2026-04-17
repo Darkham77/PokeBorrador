@@ -227,7 +227,7 @@
   &:hover {
     background: rgba(255, 215, 0, 0.1) !important;
     border-color: rgba(255, 215, 0, 0.4) !important;
-    transform: string.unquote("scale(1.02)");
+    transform: string.unquote("scale(#{1.02})");
   }
 }
 

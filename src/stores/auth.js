@@ -11,6 +11,9 @@ export const useAuthStore = defineStore('auth', () => {
   const sessionMode = ref(localStorage.getItem('pokevicio_session_mode') || 'online') // 'online' | 'offline'
   const isOnline = ref(navigator.onLine)
   const connectionLost = ref(false)
+  const sessionCheckInterval = ref(null)
+
+  // Monitoreo de Conectividad (Solo para modo Online)
 
   // Monitoreo de Conectividad (Solo para modo Online)
   if (typeof window !== 'undefined') {
@@ -48,22 +51,28 @@ export const useAuthStore = defineStore('auth', () => {
 
     loading.value = true
     try {
-      // 1. Verificar sesión de Supabase
+      // 1. Verificar sesión pulsando el router
       const { data } = await supabase.auth.getSession()
       
       if (data.session?.user) {
         session.value = data.session
         user.value = data.session.user
         sessionMode.value = 'online'
-        if (typeof supabase.initSession === 'function') {
-          await supabase.initSession(user.value.id, sessionId.value)
-        }
+        
+        // Registrar sesión en DB para unicidad
+        await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value.id)
+        startSessionMonitoring()
+        
+        // Fetch profile meta
+        const { data: profile } = await supabase.from('profiles').select('db_version').eq('id', user.value.id).single()
+        if (profile) user.value.db_version = profile.db_version || 1
       } else {
         // 2. Si no hay sesión online, buscar local
         const localUser = localStorage.getItem('pokevicio_local_user')
         if (localUser) {
           user.value = JSON.parse(localUser)
           sessionMode.value = 'offline'
+          if (!user.value.db_version) user.value.db_version = 1
         }
       }
     } catch (e) {
@@ -74,21 +83,20 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function login(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     
     session.value = data.session
     user.value = data.user
     sessionMode.value = 'online'
-    connectionLost.value = !navigator.onLine
+    
+    // Registrar sesión
+    await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id)
+    startSessionMonitoring()
 
-    if (typeof supabase.initSession === 'function' && data.user) {
-      await supabase.initSession(data.user.id, sessionId.value)
-    }
-
+    const { data: profile } = await supabase.from('profiles').select('db_version').eq('id', data.user.id).single()
+    if (profile) user.value.db_version = profile.db_version || 1
+    
     return data
   }
 
@@ -122,6 +130,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('pokevicio_local_user')
     localStorage.removeItem('pokevicio_session_mode')
     
+    if (sessionCheckInterval.value) clearInterval(sessionCheckInterval.value)
+    
     user.value = null
     session.value = null
     sessionMode.value = 'online'
@@ -142,6 +152,7 @@ export const useAuthStore = defineStore('auth', () => {
     connectionLost,
     checkSession,
     login,
+    signup,
     logout,
     localLogin
   }

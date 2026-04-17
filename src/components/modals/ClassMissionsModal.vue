@@ -12,7 +12,7 @@ const gameStore = useGameStore()
 const isOpen = computed(() => uiStore.isClassMissionsOpen)
 const currentClass = computed(() => classStore.currentClassDef)
 const activeMission = computed(() => classStore.activeMission)
-const trainerLevel = computed(() => gameStore.state.level || 1)
+const trainerLevel = computed(() => gameStore.state.trainerLevel || 1)
 
 const now = ref(Date.now())
 let timer = null
@@ -51,13 +51,10 @@ const timeRemainingLabel = computed(() => {
 
 function getMissionDesc(id) {
   const cls = classStore.playerClass
-  if (cls === 'cazabichos') return 'Captura 3 Pokémon Bicho con IVs garantizados y mayor probabilidad de Shiny.'
-  if (cls === 'rocket') {
-    const mults = { mission_6h: '1.0', mission_12h: '1.3', mission_24h: '1.8' }
-    return `Vende Pokémon Veneno con multiplicador de ₽ x${mults[id] || '1'}.`
-  }
-  if (cls === 'entrenador') return `Entrena un Pokémon para que gane mucha EXP${id === 'mission_24h' ? ' y un +1 nivel extra' : ''}.`
-  if (cls === 'criador') return 'Aumenta IVs aleatorios del Pokémon enviado a cambio de Vigor.'
+  if (cls === 'cazabichos') return 'Recolecta néctar y captura especímenes con IVs garantizados.'
+  if (cls === 'rocket') return 'Exportación de especímenes al mercado negro por altos dividendos.'
+  if (cls === 'entrenador') return 'Gimnasio de alto rendimiento para potenciar la experiencia.'
+  if (cls === 'criador') return 'Entrenamiento genético intensivo para mejorar estadísticas base.'
   return 'Realiza tareas especiales de clase.'
 }
 
@@ -77,8 +74,6 @@ async function startMission(missionId) {
       onConfirm: (indices) => {
         const p = gameStore.state.box[indices[0]]
         const val = 1000 + ((p.level || 1) * 100) + (Object.values(p.ivs || {}).reduce((a, b) => a + (b || 0), 0) * 25)
-        
-        // Ejecutar sacrificio (esto debería estar en una acción en classStore)
         classStore.startMission(missionId, { 
           targetPokemonIdx: indices[0], 
           projectedReward: val 
@@ -86,7 +81,6 @@ async function startMission(missionId) {
       }
     })
   } else if (cls === 'cazabichos') {
-    // Cazabichos no requiere sacrificar ni seleccionar (es captura salvaje)
     classStore.startMission(missionId)
   } else {
     window._openPokemonSelectionModal({
@@ -120,9 +114,7 @@ function collectReward() {
         <header class="modal-header">
           <div class="header-title">
             <span class="class-icon">{{ currentClass?.icon }}</span>
-            <h2 class="press-start">
-              MISIONES {{ currentClass?.name.toUpperCase() }}
-            </h2>
+            <h2>MISIONES {{ currentClass?.name.toUpperCase() }}</h2>
           </div>
           <button
             class="close-btn"
@@ -133,90 +125,102 @@ function collectReward() {
         </header>
 
         <main class="modal-body">
-          <!-- Active Mission Section -->
+          <!-- Active Mission Card (Premium) -->
           <section
             v-if="activeMission"
             class="active-mission-card"
           >
-            <div class="mission-header">
-              <span
-                class="mission-status-label"
-                :class="{ done: isMissionDone }"
+            <div
+              class="mission-glow"
+              :style="{ background: currentClass?.color }"
+            />
+            <div class="card-content">
+              <div class="mission-header">
+                <span
+                  class="mission-status-label"
+                  :class="{ done: isMissionDone }"
+                >
+                  {{ isMissionDone ? 'OPERACIÓN FINALIZADA' : 'OPERACIÓN EN CURSO' }}
+                </span>
+                <span class="timer-text">{{ timeRemainingLabel }}</span>
+              </div>
+              
+              <div class="progress-wrapper">
+                <div class="progress-base">
+                  <div
+                    class="progress-fill"
+                    :style="{ width: missionProgress + '%', background: currentClass?.color }"
+                  >
+                    <div class="progress-pulse" />
+                  </div>
+                </div>
+              </div>
+
+              <p class="mission-name">
+                <span
+                  class="pulse-dot"
+                  :style="{ background: isMissionDone ? '#22c55e' : '#eab308' }"
+                />
+                {{ CLASS_MISSIONS.find(m => m.id === activeMission.id)?.name }}
+              </p>
+
+              <button 
+                v-if="isMissionDone" 
+                class="collect-btn"
+                @click="collectReward"
               >
-                {{ isMissionDone ? 'Misión Completada' : 'Misión en Curso' }}
-              </span>
-              <span class="timer-text">{{ timeRemainingLabel }}</span>
+                RECLAMAR RECOMPENSAS
+              </button>
+              <div
+                v-else
+                class="working-indicator"
+              >
+                <div class="dots">
+                  <span /><span /><span />
+                </div>
+                <p>Procesando datos de campo...</p>
+              </div>
             </div>
-            
-            <div class="progress-container">
-              <div 
-                class="progress-bar" 
-                :style="{ width: missionProgress + '%', background: currentClass?.color }"
-              />
-            </div>
-
-            <p class="mission-name">
-              📍 {{ CLASS_MISSIONS.find(m => m.id === activeMission.id)?.name }}
-            </p>
-
-            <button 
-              v-if="isMissionDone" 
-              class="collect-btn" 
-              :style="{ background: currentClass?.color, boxShadow: `0 4px 0 ${currentClass?.colorDark}` }"
-              @click="collectReward"
-            >
-              RECOLECTAR RECOMPENSA
-            </button>
-            <p
-              v-else
-              class="working-msg"
-            >
-              Tus Pokémon están trabajando arduamente...
-            </p>
           </section>
 
-          <!-- Available Missions List -->
+          <!-- List Header -->
           <div class="list-label">
-            DISPONIBLES
+            DESPLIEGUES DISPONIBLES
           </div>
-          <div class="missions-list">
+          
+          <div class="missions-grid">
             <div 
               v-for="m in CLASS_MISSIONS" 
               :key="m.id" 
-              class="mission-row"
+              class="mission-item"
               :class="{ locked: trainerLevel < m.reqLv, active: activeMission?.id === m.id }"
             >
-              <div class="row-header">
-                <div class="name-group">
-                  <span class="clock-icon">⏳</span>
-                  <span
-                    class="row-name"
-                    :style="{ color: trainerLevel >= m.reqLv ? m.color : '#6b7280' }"
-                  >
-                    {{ m.name }}
-                  </span>
-                </div>
-                <span class="level-badge">Lv.{{ m.reqLv }}</span>
+              <div class="item-header">
+                <span class="m-duration">{{ m.durationHs }}H</span>
+                <span class="m-req">LVL {{ m.reqLv }}</span>
               </div>
               
-              <p class="row-desc">
+              <h3 class="m-title">
+                {{ m.name }}
+              </h3>
+              <p class="m-desc">
                 {{ getMissionDesc(m.id) }}
               </p>
 
               <button 
-                class="start-btn"
+                class="start-button"
                 :disabled="trainerLevel < m.reqLv || !!activeMission"
                 @click="startMission(m.id)"
               >
-                {{ activeMission?.id === m.id ? 'EN CURSO' : (activeMission ? 'OCUPADO' : (trainerLevel >= m.reqLv ? 'INICIAR' : 'BLOQUEADO')) }}
+                {{ activeMission?.id === m.id ? 'EN CURSO' : (activeMission ? 'BLOQUEADO' : 'DESPLEGAR') }}
               </button>
             </div>
           </div>
         </main>
 
         <footer class="modal-footer">
-          <p class="footer-warning">
-            <span class="warning-tag">⚠️ ATENCIÓN:</span> Solo puedes tener 1 misión activa a la vez.
+          <p class="footer-hint">
+            Las bonificaciones de clase se aplican automáticamente tras la recolección.
           </p>
         </footer>
       </div>
@@ -224,235 +228,176 @@ function collectReward() {
   </Transition>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 9500;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
-  backdrop-filter: blur(4px);
+  padding: 20px;
 }
 
 .modal-container {
+  width: 100%;
+  max-width: 500px;
   background: #0f172a;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  width: 100%;
-  max-width: 440px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+  border-radius: 24px;
   overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .modal-header {
-  padding: 20px 24px;
+  padding: 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
 
-.header-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.press-start {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 11px;
-  color: var(--cls-color);
-  margin: 0;
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    h2 { font-family: 'Press Start 2P', cursive; font-size: 12px; color: var(--cls-color); text-shadow: 0 0 10px var(--cls-color); margin: 0; }
+    .class-icon { font-size: 20px; }
+  }
 }
 
 .close-btn {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  font-size: 20px;
-  cursor: pointer;
+  background: none; border: none; color: #64748b; font-size: 20px; cursor: pointer;
+  &:hover { color: #fff; }
 }
 
-.modal-body {
-  padding: 24px;
-  overflow-y: auto;
-}
+.modal-body { padding: 24px; }
 
 .active-mission-card {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  background: #1e293b;
+  border-radius: 20px;
+  padding: 2px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .mission-glow {
+    position: absolute;
+    inset: -20px;
+    filter: blur(40px);
+    opacity: 0.15;
+  }
+
+  .card-content {
+    position: relative;
+    background: #1e293b;
+    border-radius: 18px;
+    padding: 24px;
+    z-index: 1;
+  }
 }
 
 .mission-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.mission-status-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #94a3b8;
-}
-
-.mission-status-label.done {
-  color: #4ade80;
-}
-
-.timer-text {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 9px;
-  color: #fff;
-}
-
-.progress-container {
-  height: 8px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 4px;
-  overflow: hidden;
   margin-bottom: 16px;
+  .mission-status-label { font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 1px; }
+  .mission-status-label.done { color: #22c55e; }
+  .timer-text { font-family: 'Press Start 2P', cursive; font-size: 10px; color: #fff; }
 }
 
-.progress-bar {
-  height: 100%;
-  transition: width 0.3s ease;
+.progress-wrapper {
+  margin-bottom: 20px;
+  .progress-base { height: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; overflow: hidden; }
+  .progress-fill { height: 100%; position: relative; transition: width 0.3s ease; }
+  .progress-pulse { position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: sweep 2s infinite; }
 }
 
 .mission-name {
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+
+  .pulse-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 1.5s infinite; }
 }
 
 .collect-btn {
   width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
+  padding: 16px;
+  background: var(--cls-color);
   color: #fff;
+  border: none;
+  border-radius: 12px;
   font-family: 'Press Start 2P', cursive;
-  font-size: 9px;
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-
-.collect-btn:active { transform: translateY(2px); }
-
-.working-msg {
-  text-align: center;
-  font-size: 11px;
-  color: #64748b;
-  margin: 0;
-}
-
-.list-label {
   font-size: 10px;
-  font-weight: 800;
-  color: #64748b;
-  letter-spacing: 1px;
-  margin-bottom: 12px;
+  cursor: pointer;
+  box-shadow: 0 10px 20px -5px var(--cls-color);
+  &:hover { transform: translateY(-2px); filter: brightness(1.1); }
 }
 
-.missions-list {
+.working-indicator {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 12px;
+  p { font-size: 12px; color: #64748b; margin: 0; }
+  .dots {
+    display: flex; gap: 4px;
+    span { width: 6px; height: 6px; background: var(--cls-color); border-radius: 50%; animation: dots 1.4s infinite; }
+    span:nth-child(2) { animation-delay: 0.2s; }
+    span:nth-child(3) { animation-delay: 0.4s; }
+  }
 }
 
-.mission-row {
-  background: rgba(255, 255, 255, 0.02);
+.list-label { font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 1.5px; margin-bottom: 16px; }
+
+.missions-grid { display: flex; flex-direction: column; gap: 16px; }
+
+.mission-item {
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 16px;
-  transition: opacity 0.3s;
+  transition: all 0.2s;
+
+  .item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    .m-duration { font-family: 'Press Start 2P', cursive; font-size: 8px; color: #94a3b8; }
+    .m-req { font-size: 10px; font-weight: 700; color: #64748b; }
+  }
+
+  .m-title { font-size: 14px; font-weight: 700; color: #f1f5f9; margin: 0 0 8px 0; }
+  .m-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0 0 16px 0; }
+
+  .start-button {
+    width: 100%;
+    padding: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #cbd5e1;
+    font-weight: 700;
+    font-size: 11px;
+    cursor: pointer;
+    &:hover:not(:disabled) { background: var(--cls-color); border-color: transparent; color: #fff; }
+  }
+
+  &.locked { opacity: 0.4; }
 }
 
-.mission-row.locked { opacity: 0.5; }
-.mission-row.active { border-color: var(--cls-color); }
+.modal-footer { padding: 16px 24px; background: rgba(0,0,0,0.2); text-align: center; .footer-hint { font-size: 11px; color: #475569; margin: 0; } }
 
-.row-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.name-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.row-name {
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.level-badge {
-  font-size: 9px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: #94a3b8;
-}
-
-.row-desc {
-  font-size: 11px;
-  color: #94a3b8;
-  line-height: 1.5;
-  margin-bottom: 12px;
-}
-
-.start-btn {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.start-btn:not(:disabled):hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.start-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.modal-footer {
-  padding: 16px 24px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.footer-warning {
-  font-size: 10px;
-  color: #fca5a5;
-  line-height: 1.4;
-  margin: 0;
-}
-
-.warning-tag {
-  color: #ef4444;
-  font-weight: 800;
-}
-
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+@keyframes sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+@keyframes pulse { 0% { transform: scale(#{0.95}); opacity: 0.5; } 50% { transform: scale(#{1.05}); opacity: 1; } 100% { transform: scale(#{0.95}); opacity: 0.5; } }
+@keyframes dots { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

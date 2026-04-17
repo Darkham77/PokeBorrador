@@ -1,6 +1,9 @@
+import { supabase } from './supabase';
+
 /**
- * Time Synchronization Utility
- * Provides helpers for synchronized time and GMT-3 (Argentina) time.
+ * Time Synchronization Utility (Pure Vue version)
+ * Syncs the local system clock with the server time using Supabase RPC.
+ * Provides helpers for GMT-3 (Argentina) time and Day/Night cycles.
  */
 
 let _serverTimeOffset = 0;
@@ -10,11 +13,23 @@ let _timeSynced = false;
  * Fetches the current time from the server and calculates the offset.
  */
 export async function syncServerTime() {
-  // En la versión Online, usamos la hora local.
-  // Podríamos expandir esto para usar un RPC de Supabase.
-  _serverTimeOffset = 0;
-  _timeSynced = true;
-  console.log('[TIME] Usando hora del dispositivo (Sincronización local).');
+  try {
+    const { data: serverTime, error } = await supabase.rpc('fn_get_server_time');
+    
+    if (error) throw error;
+
+    const serverMs = new Date(serverTime).getTime();
+    const localMs = Date.now();
+    
+    _serverTimeOffset = serverMs - localMs;
+    _timeSynced = true;
+    
+    console.log(`[TIME] Server Sync Completed. Offset: ${_serverTimeOffset}ms`);
+  } catch (err) {
+    console.error('[TIME] Failed to sync with server, using local time as fallback:', err);
+    _serverTimeOffset = 0;
+    _timeSynced = true;
+  }
 }
 
 /**
@@ -39,6 +54,7 @@ export function getGMT3Date() {
  */
 export function getDayCycle() {
   const hour = getGMT3Date().getHours();
+  // Standard Gen 3-like cycles
   if (hour >= 6 && hour < 12) return 'morning';
   if (hour >= 12 && hour < 18) return 'day';
   if (hour >= 18 && hour < 21) return 'dusk';
@@ -48,5 +64,5 @@ export function getDayCycle() {
 // Initial sync on module load
 syncServerTime();
 
-// Re-sync every 5 minutes
+// Re-sync every 5 minutes to stay accurate
 setInterval(syncServerTime, 300000);

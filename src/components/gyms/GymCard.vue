@@ -132,7 +132,7 @@ const typeIcon = computed(() => {
   }
 
   &.locked {
-    filter: unquote("grayscale(1)");
+    filter: unquote("grayscale(#{1})");
     opacity: 0.6;
   }
 
@@ -295,6 +295,6 @@ const typeIcon = computed(() => {
   cursor: pointer;
   transition: all 0.2s;
 
-  &:hover { transform: #{'scale(1.05)'}; }
+  &:hover { transform: #{'scale(#{1.05})'}; }
 }
 </style>

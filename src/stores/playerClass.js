@@ -1,12 +1,16 @@
 import { defineStore } from 'pinia'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/playerClasses'
+import { DBRouter } from '@/logic/db/dbRouter'
+import { supabase } from '@/logic/supabase'
 
 export const usePlayerClassStore = defineStore('playerClass', () => {
   const gameStore = useGameStore()
   const uiStore = useUIStore()
+  
+  const db = new DBRouter(supabase, localStorage.getItem('pokevicio_session_mode') || 'online')
 
   // --- Getters ---
   const playerClass = computed(() => gameStore.state.playerClass)
@@ -53,6 +57,26 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
         return 1.0
     }
   }
+
+  /**
+   * Sincroniza las variables CSS globales con el tema de la clase activa.
+   */
+  function syncTheme() {
+    if (typeof document === 'undefined') return
+    const root = document.documentElement
+    const cls = currentClassDef.value
+    
+    if (!cls) {
+      root.style.setProperty('--class-primary', '#3b82f6')
+      root.style.setProperty('--class-dark', '#1e40af')
+      return
+    }
+
+    root.style.setProperty('--class-primary', cls.color)
+    root.style.setProperty('--class-dark', cls.colorDark)
+  }
+
+  watch(playerClass, () => syncTheme())
 
   // --- Actions ---
 
@@ -126,7 +150,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   }
 
   /**
-   * Inicia una misión idle.
+   * Inicia una misión idle con validación de tiempo del servidor.
    */
   async function startMission(missionId, extraData = {}) {
     const m = CLASS_MISSIONS.find(x => x.id === missionId)
@@ -138,10 +162,12 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       if (p) p.onMission = true
     }
 
+    const now = await db.getServerTime()
+
     gameStore.state.classData.activeMission = {
       id: missionId,
-      startedAt: Date.now(),
-      endsAt: Date.now() + (m.durationHs * 3600 * 1000),
+      startedAt: now,
+      endsAt: now + (m.durationHs * 3600 * 1000),
       ...extraData
     }
     
@@ -155,6 +181,12 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   async function collectMission() {
     const mission = activeMission.value
     if (!mission) return
+
+    const now = await db.getServerTime()
+    if (now < mission.endsAt) {
+      uiStore.notify('La misión aún no ha terminado.', '⏳')
+      return;
+    }
 
     const cls = playerClass.value
     let msg = 'Misión completada. '
@@ -233,6 +265,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     addXP,
     addCriminality,
     startMission,
-    clearMission
+    collectMission,
+    syncTheme
   }
 })

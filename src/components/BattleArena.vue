@@ -1,51 +1,77 @@
 <script setup>
-import { computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { computed, watch, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
+import { phaserBridge } from '@/logic/phaserBridge'
 
 // Sub-components
 import BattleLog from './battle/BattleLog.vue'
 import BattleInfoCard from './battle/BattleInfoCard.vue'
 import BattleMovesGrid from './battle/BattleMovesGrid.vue'
 import BattleActionButtons from './battle/BattleActionButtons.vue'
+import BattleInventoryModal from './battle/BattleInventoryModal.vue'
+import BattleSwitchModal from './battle/BattleSwitchModal.vue'
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
-const { 
-  canvasRef, getSprite, redrawBackground,
-  getHpPct, getHpClass 
-} = useBattleVisuals()
+const { getHpPct, getHpClass } = useBattleVisuals()
 
 const gs = computed(() => gameStore.state)
 const battle = computed(() => battleStore.activeBattle)
 const enemy = computed(() => battle.value?.enemy)
 const player = computed(() => battle.value?.player)
 
-// Render logic bridge
-watch(() => battleStore.isBattleActive, async (active) => {
-  if (active) {
-    await nextTick()
-    redrawBackground(true, battle.value?.locationId, battle.value?.cycle)
+// Render logic bridge (Phaser Sync)
+const syncBattleToPhaser = () => {
+  if (battleStore.isBattleActive && battle.value) {
+    phaserBridge.sendCommand('BattleScene', 'SYNC_BATTLE', {
+      locationId: battle.value.locationId,
+      cycle: battle.value.cycle,
+      player: battle.value.player,
+      enemy: battle.value.enemy
+    })
   }
+}
+
+watch(() => battleStore.isBattleActive, (active) => {
+  if (active) syncBattleToPhaser()
+}, { immediate: true })
+
+// Sync on HP changes (for lifebars/animations in Phaser)
+watch(() => [player.value?.hp, enemy.value?.hp], () => {
+  if (battleStore.isBattleActive) syncBattleToPhaser()
 })
 
-let resizeObserver = null
 onMounted(() => {
-  const arena = document.getElementById('battle-arena')
-  if (arena) {
-    resizeObserver = new ResizeObserver(() => redrawBackground(battleStore.isBattleActive, battle.value?.locationId, battle.value?.cycle))
-    resizeObserver.observe(arena)
-  }
-  if (battleStore.isBattleActive) nextTick(() => redrawBackground(true, battle.value?.locationId, battle.value?.cycle))
+  if (battleStore.isBattleActive) syncBattleToPhaser()
 })
-
-onUnmounted(() => { if (resizeObserver) resizeObserver.disconnect() })
 
 // Actions
-const execShowBattleSwitch = () => { if (typeof window.showBattleSwitch === 'function') window.showBattleSwitch() }
-const execTryCatch = () => { if (typeof window.tryCatch === 'function') window.tryCatch() }
-const execShowBattleBag = () => { if (typeof window.showBattleBag === 'function') window.showBattleBag() }
+const execShowBattleSwitch = () => { 
+  uiStore.isBattleSwitchForced = false
+  uiStore.isBattleSwitchOpen = true 
+}
+const execTryCatch = () => { 
+  // Locate best ball or show inventory
+  const balls = Object.keys(gs.value.inventory).filter(n => n.toLowerCase().includes('ball'))
+  if (balls.length === 1) {
+    battleStore.useItemInBattle(balls[0])
+  } else {
+    uiStore.isBattleInventoryOpen = true
+  }
+}
+const execShowBattleBag = () => { 
+  uiStore.isBattleInventoryOpen = true 
+}
+
+// Watch for forced switch (when player pokemon faints)
+watch(() => player.value?.hp, (newHp) => {
+  if (newHp <= 0 && battleStore.isBattleActive && !battleStore.isFinishing) {
+    uiStore.isBattleSwitchForced = true
+    uiStore.isBattleSwitchOpen = true
+  }
+})
 </script>
 
 <template>
@@ -63,31 +89,14 @@ const execShowBattleBag = () => { if (typeof window.showBattleBag === 'function'
         id="battle-arena"
         class="battle-arena"
       >
-        <canvas
-          id="battle-bg-canvas"
-          ref="canvasRef"
-          class="battle-bg-canvas"
-        />
-        
+        <!-- The legacy canvas and sprites are now handled by the global Phaser layer -->
         <div class="battle-combatants">
-          <!-- Enemy Side -->
+          <!-- Enemy Side INFO -->
           <div class="combatant-info-wrap enemy-side">
             <BattleInfoCard :pokemon="enemy" />
           </div>
-          <div class="sprite-wrap enemy-sprite">
-            <img
-              :src="getSprite(enemy.id, enemy.isShiny)"
-              class="pokemon-sprite"
-            >
-          </div>
 
-          <!-- Player Side -->
-          <div class="sprite-wrap player-sprite">
-            <img
-              :src="getSprite(player.id, player.isShiny, true)"
-              class="pokemon-sprite back"
-            >
-          </div>
+          <!-- Player Side INFO -->
           <div class="combatant-info-wrap player-side">
             <BattleInfoCard
               :pokemon="player"
@@ -129,6 +138,9 @@ const execShowBattleBag = () => { if (typeof window.showBattleBag === 'function'
             CONTINUAR ➔
           </button>
         </div>
+        <!-- Modals -->
+        <BattleInventoryModal />
+        <BattleSwitchModal />
       </div>
     </div>
   </div>
@@ -142,19 +154,12 @@ const execShowBattleBag = () => { if (typeof window.showBattleBag === 'function'
   border: 1px solid rgba(255,255,255,0.05);
 }
 
-.battle-bg-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-
 .battle-arena {
   position: relative;
   height: 350px; /* Base height for arena */
   overflow: hidden;
   border-radius: 24px 24px 0 0;
+  background: transparent; /* Allow Phaser background to show */
 }
 
 .battle-combatants {
@@ -167,33 +172,8 @@ const execShowBattleBag = () => { if (typeof window.showBattleBag === 'function'
   justify-content: space-between;
 }
 
-.sprite-wrap {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 150px;
-}
-
 .enemy-side { align-self: flex-start; }
 .player-side { align-self: flex-end; }
-
-.enemy-sprite { align-items: flex-start; justify-content: flex-end; }
-.player-sprite { align-items: flex-end; justify-content: flex-start; }
-
-.pokemon-sprite {
-  height: 140px;
-  width: auto;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 15px 15px rgba(0,0,0,0.5));
-  animation: idle 3s infinite ease-in-out;
-}
-
-.pokemon-sprite.back { height: 180px; }
-
-@keyframes idle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
 
 #move-panel {
   padding: 20px;

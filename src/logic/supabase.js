@@ -1,3 +1,8 @@
+/** 
+ * SUPABASE CLIENT - REMOTE PERSISTENCE LAYER
+ * IMPORTANT: If you modify the remote schema or RPC calls here, 
+ * you MUST update the DBRouter (src/logic/dbRouter.js) to keep Online/Offline parity.
+ */
 import { createClient } from '@supabase/supabase-js'
 import { DBRouter } from './dbRouter'
 

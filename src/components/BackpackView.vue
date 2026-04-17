@@ -2,12 +2,12 @@
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventoryStore'
-import { useMarketStore } from '@/stores/market'
+import { useShopStore } from '@/stores/shopStore'
 import { useUIStore } from '@/stores/ui'
 
 const gameStore = useGameStore()
 const invStore = useInventoryStore()
-const marketStore = useMarketStore()
+const shopStore = useShopStore()
 const uiStore = useUIStore()
 
 const gs = computed(() => gameStore.state)
@@ -318,7 +318,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .backpack-view-root {
   min-height: 50vh;
 }
@@ -391,7 +391,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   gap: 14px;
 }
 
-.market-card.disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+.market-card.disabled { opacity: 0.5; filter: grayscale(#{1}); cursor: not-allowed; }
 .market-card.selected { border: 2px solid #4caf50; background: rgba(76,175,80,0.05); }
 
 .market-item-icon { margin-bottom: 8px; text-align: center; }

@@ -116,7 +116,7 @@
   &[disabled] {
     opacity: 0.3;
     cursor: not-allowed;
-    filter: #{"grayscale(1)"};
+    filter: #{"grayscale(#{1})"};
     box-shadow: none;
   }
 }

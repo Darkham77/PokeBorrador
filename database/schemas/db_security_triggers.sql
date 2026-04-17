@@ -1,5 +1,6 @@
 -- Security Triggers for Poké Vicio
 -- This script adds basic sanity checks to the game_saves table.
+-- Consolidated 2026-04-17 for Integrity v2.
 
 -- Function to validate the integrity of save_data
 CREATE OR REPLACE FUNCTION validate_game_save()
@@ -45,7 +46,7 @@ BEGIN
     END LOOP;
   END IF;
 
-  -- Update timestamp automatically if not provided
+  -- 5. Auto-update timestamp
   NEW.updated_at := NOW();
 
   RETURN NEW;

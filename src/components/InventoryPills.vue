@@ -79,10 +79,7 @@ const dayCycle = computed(() => {
 
     <!-- BALLS -->
     <div class="hud-pill ball-pill pv-tooltip-container pv-to-bottom">
-      <div
-        class="ball-icon-wrap"
-        style="height: 24px; display: flex; align-items: center;"
-      >
+      <div class="ball-icon-wrap">
         <img
           src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'><circle cx='20' cy='20' r='19' fill='%23222' stroke='%23111' stroke-width='1.5'/><path d='M1 20 A19 19 0 0 1 39 20 Z' fill='%23e63030'/><path d='M1 20 A19 19 0 0 0 39 20 Z' fill='%23f5f5f5'/><rect x='1' y='18' width='38' height='4' fill='%23111'/><circle cx='20' cy='20' r='6' fill='%23111'/><circle cx='20' cy='20' r='4' fill='%23f5f5f5'/><circle cx='18' cy='18' r='1.2' fill='%23ffffff' opacity='0.7'/></svg>"
           width="24"
@@ -112,7 +109,7 @@ const dayCycle = computed(() => {
     </div>
 
     <!-- BOTONES DE ACCIÓN (Unificados con etiquetas) -->
-    <div style="display:flex; gap:8px; margin-left:8px;">
+    <div class="action-buttons">
       <button
         id="hud-profile-btn"
         class="hud-sq-btn"
@@ -139,3 +136,46 @@ const dayCycle = computed(() => {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+.hud-items {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ball-icon-wrap {
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.hud-pill {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.hud-sq-btn {
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:hover {
+    transform: scale(#{1.08}) translateY(-2px);
+    filter: brightness(1.15);
+  }
+
+  &:active {
+    transform: scale(#{0.95});
+  }
+}
+</style>

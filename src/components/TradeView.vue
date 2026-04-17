@@ -18,6 +18,8 @@ const isGift = ref(false)
 const offerMoney = ref(0)
 const requestMoney = ref(0)
 const message = ref('')
+const activeTab = ref('team') // 'team' or 'box'
+const friendTab = ref('team') // 'team' or 'box'
 
 const closeTrade = () => {
   uiStore.isTradeOpen = false
@@ -120,13 +122,31 @@ const requestSummary = computed(() => {
               Mi Equipo / Mochila
             </div>
             
-            <div class="poke-selection-list">
+            <div class="side-tabs">
+              <button
+                :class="{ active: activeTab === 'team' }"
+                @click="activeTab = 'team'"
+              >
+                EQUIPO
+              </button>
+              <button
+                :class="{ active: activeTab === 'box' }"
+                @click="activeTab = 'box'"
+              >
+                CAJA
+              </button>
+            </div>
+            
+            <div class="poke-selection-list scrollbar">
               <div 
-                v-for="(poke, idx) in gs.team" 
+                v-for="(poke, idx) in (activeTab === 'team' ? gs.team : gs.box)" 
                 :key="poke.uid || idx"
                 class="trade-poke-card"
-                :class="{ selected: tradeStore.tradeOfferPoke?.uid === poke.uid }"
-                @click="selectOfferPoke(poke)"
+                :class="{ 
+                  selected: tradeStore.tradeOfferPoke?.uid === poke.uid,
+                  locked: tradeStore.lockedUids.has(poke.uid)
+                }"
+                @click="!tradeStore.lockedUids.has(poke.uid) && selectOfferPoke(poke)"
               >
                 <img
                   :src="window.getSpriteUrl?.(poke.id)"
@@ -174,10 +194,28 @@ const requestSummary = computed(() => {
 
             <div
               v-if="!isGift"
-              class="poke-selection-list"
+              class="side-tabs"
+            >
+              <button
+                :class="{ active: friendTab === 'team' }"
+                @click="friendTab = 'team'"
+              >
+                EQUIPO
+              </button>
+              <button
+                :class="{ active: friendTab === 'box' }"
+                @click="friendTab = 'box'"
+              >
+                CAJA
+              </button>
+            </div>
+
+            <div
+              v-if="!isGift"
+              class="poke-selection-list scrollbar"
             >
               <div 
-                v-for="(poke, idx) in friendSave.team" 
+                v-for="(poke, idx) in (friendTab === 'team' ? friendSave.team : friendSave.box)" 
                 :key="poke.uid || idx"
                 class="trade-poke-card"
                 :class="{ selected: tradeStore.tradeRequestPoke?.uid === poke.uid }"
@@ -266,7 +304,7 @@ const requestSummary = computed(() => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .trade-modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -354,10 +392,37 @@ const requestSummary = computed(() => {
   letter-spacing: 1px;
 }
 
+.side-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.side-tabs button {
+  flex: 1;
+  padding: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  color: #666;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  cursor: pointer;
+}
+
+.side-tabs button.active {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: var(--purple);
+  color: #fff;
+}
+
 .poke-selection-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 5px;
 }
 
 .trade-poke-card {
@@ -374,6 +439,7 @@ const requestSummary = computed(() => {
 
 .trade-poke-card:hover { background: rgba(255,255,255,0.08); }
 .trade-poke-card.selected { border-color: var(--purple); background: rgba(199, 125, 255, 0.1); }
+.trade-poke-card.locked { opacity: 0.4; cursor: not-allowed; filter: grayscale(#{1}); }
 
 .poke-sprite { width: 32px; height: 32px; image-rendering: pixelated; }
 .poke-info .name { font-size: 10px; font-weight: 700; color: #fff; }

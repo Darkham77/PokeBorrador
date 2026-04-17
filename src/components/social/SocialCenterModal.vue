@@ -499,7 +499,7 @@ onMounted(() => {
     background: rgba(255, 255, 255, 0.05);
     color: #fff;
 
-    &:hover { transform: unquote("scale(1.1)"); }
+    &:hover { transform: unquote("scale(#{1.1})"); }
     &.chat:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
     &.trade:hover { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
     &.battle:hover { background: rgba(168, 85, 247, 0.2); color: #c084fc; }

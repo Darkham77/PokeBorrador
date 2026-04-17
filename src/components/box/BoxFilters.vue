@@ -61,22 +61,19 @@ const setSortMode = (val) => emit('update:sortMode', val)
             Captura
           </button>
           <button
-            :class="['box-filter-btn', { active: sortMode === 'level' }]"
-            style="color: var(--blue); border-color: rgba(59,139,255,0.4);"
+            :class="['box-filter-btn btn-blue', { active: sortMode === 'level' }]"
             @click="setSortMode('level')"
           >
             Nivel
           </button>
           <button
-            :class="['box-filter-btn', { active: sortMode === 'tier' }]"
-            style="color: #FFD700; border-color: rgba(255,215,0,0.4);"
+            :class="['box-filter-btn btn-gold', { active: sortMode === 'tier' }]"
             @click="setSortMode('tier')"
           >
             Tier
           </button>
           <button
-            :class="['box-filter-btn', { active: sortMode === 'type' }]"
-            style="color: var(--green); border-color: rgba(107,203,119,0.4);"
+            :class="['box-filter-btn btn-green', { active: sortMode === 'type' }]"
             @click="setSortMode('type')"
           >
             Tipo
@@ -97,13 +94,13 @@ const setSortMode = (val) => emit('update:sortMode', val)
             Todos
           </button>
           <button
-            v-for="t in [['S+', '#FFD700', 'rgba(255,215,0,0.12)', 'rgba(255,215,0,0.4)'], ['S', '#FFB800', 'rgba(255,180,0,0.12)', 'rgba(255,180,0,0.4)'], ['A', 'var(--green)', 'rgba(107,203,119,0.12)', 'rgba(107,203,119,0.4)'], ['B', 'var(--blue)', 'rgba(59,139,255,0.12)', 'rgba(59,139,255,0.4)'], ['C', 'var(--purple)', 'rgba(199,125,255,0.12)', 'rgba(199,125,255,0.4)'], ['D', '#FF9632', 'rgba(255,150,50,0.12)', 'rgba(255,150,50,0.4)'], ['F', 'var(--red)', 'rgba(255,59,59,0.12)', 'rgba(255,59,59,0.4)']]"
-            :key="t[0]"
-            :class="['box-filter-btn', { active: filters.tier === t[0] }]"
-            :style="{ color: t[1], background: filters.tier === t[0] ? t[2] : 'rgba(255,255,255,0.1)', borderColor: t[3] }"
-            @click="emit('update:filters', { ...filters, tier: t[0] })"
+            v-for="(cfg, tierKey) in BOX_TIER_CONFIG"
+            :key="tierKey"
+            :class="['box-filter-btn', { active: filters.tier === tierKey }]"
+            :style="{ color: cfg.color, background: filters.tier === tierKey ? cfg.bg : 'rgba(255,255,255,0.1)', borderColor: cfg.color + '44' }"
+            @click="emit('update:filters', { ...filters, tier: tierKey })"
           >
-            {{ t[0] }}
+            {{ tierKey }}
           </button>
         </div>
       </div>
@@ -176,7 +173,27 @@ const setSortMode = (val) => emit('update:sortMode', val)
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+.box-filter-btn {
+  &.btn-blue {
+    color: var(--blue);
+    border-color: rgba(59, 139, 255, 0.4);
+  }
+  &.btn-gold {
+    color: var(--coin-gold);
+    border-color: rgba(255, 215, 0, 0.4);
+  }
+  &.btn-green {
+    color: var(--green);
+    border-color: rgba(107, 203, 119, 0.4);
+  }
+
+  &:hover {
+    transform: scale(#{1.05});
+    filter: brightness(1.2);
+  }
+}
+
 .box-filter-panel {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);

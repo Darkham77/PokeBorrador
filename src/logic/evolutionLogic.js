@@ -1,6 +1,5 @@
-import { POKEMON_DB } from '@/data/pokemonDB';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData';
-import { POKEMON_ABILITIES } from '@/data/abilities';
 import { recalcPokemonStats } from '@/logic/pokemonFactory';
 
 /**
@@ -8,7 +7,7 @@ import { recalcPokemonStats } from '@/logic/pokemonFactory';
  * @returns {Object} { pendingMoves, fromId, toId }
  */
 export function evolvePokemonData(pokemon, toId) {
-  const toData = POKEMON_DB[toId];
+  const toData = pokemonDataProvider.getPokemonData(toId);
   if (!toData) return null;
   
   const fromId = pokemon.id;
@@ -21,7 +20,7 @@ export function evolvePokemonData(pokemon, toId) {
   pokemon.type = toData.type;
   
   // Actualizar habilidad si no es compatible
-  const abilityList = POKEMON_ABILITIES[toId] || [pokemon.ability];
+  const abilityList = pokemonDataProvider.getSpeciesAbilities(toId);
   if (!abilityList.includes(pokemon.ability)) {
     pokemon.ability = abilityList[Math.floor(Math.random() * abilityList.length)];
   }
@@ -60,7 +59,7 @@ export function checkLevelUpEvolution(pokemon) {
   if (!evo || pokemon.level < evo.level) return null;
   if (evo.to === pokemon.id) return null;
   
-  if (!POKEMON_DB[evo.to]) return null;
+  if (!pokemonDataProvider.getPokemonData(evo.to)) return null;
   return evo.to;
 }
 
@@ -69,7 +68,7 @@ export function checkLevelUpEvolution(pokemon) {
  */
 export function checkTradeEvolution(pokemon) {
   const toId = TRADE_EVOLUTIONS[pokemon.id];
-  if (!toId || !POKEMON_DB[toId]) return null;
+  if (!toId || !pokemonDataProvider.getPokemonData(toId)) return null;
   return toId;
 }
 
@@ -135,4 +134,23 @@ export function getEvolvedForm(id, level) {
     if (!changed) canEvolve = false;
   }
   return evolved;
+}
+
+/**
+ * Comprueba si un Pokémon puede evolucionar con una piedra específica.
+ */
+export function checkStoneEvolution(pokemon, stoneName) {
+  const evo = STONE_EVOLUTIONS[pokemon.id];
+  if (!evo) {
+    // Eevee special handling in evolutionData keys?
+    // eevee_water, eevee_thunder, eevee_fire
+    if (pokemon.id === 'eevee') {
+      if (stoneName === 'Piedra Agua') return 'vaporeon';
+      if (stoneName === 'Piedra Trueno') return 'jolteon';
+      if (stoneName === 'Piedra Fuego') return 'flareon';
+    }
+    return null;
+  }
+
+  return (evo.stone === stoneName) ? evo.to : null;
 }

@@ -16,7 +16,7 @@ export function useBattleVisuals() {
     const base = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'
     const path = isBack ? 'back/' : ''
     const shinyPath = isShiny ? 'shiny/' : ''
-    return `${base}${path}${shinyPath}${num}.png`
+    return `${base}${path}${shinyPath}${num}.webp`
   }
 
   const redrawBackground = (isBattleActive, locationId, cycle) => {

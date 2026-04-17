@@ -7,7 +7,7 @@ let _sqliteDb = null;
 let _initPromise = null;
 
 const TABLES_SCHEMA = [
-  "profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT)",
+  "profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT, db_version INTEGER DEFAULT 1)",
   "game_saves (user_id TEXT PRIMARY KEY, save_data TEXT, updated_at TEXT)",
   "friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, requester_id TEXT, addressee_id TEXT, status TEXT, created_at TEXT DEFAULT (datetime('now')))",
   "battle_invites (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_id TEXT, opponent_id TEXT, status TEXT, created_at TEXT DEFAULT (datetime('now')))",

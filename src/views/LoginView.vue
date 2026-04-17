@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
 
 // Sub-componentes
 import ServerSelector from '@/components/auth/ServerSelector.vue'
@@ -8,6 +11,9 @@ import LoginForm from '@/components/auth/LoginForm.vue'
 import SignupForm from '@/components/auth/SignupForm.vue'
 
 const authStore = useAuthStore()
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const router = useRouter()
 
 // UI State
 const serverType = ref('online') // 'online' | 'local'
@@ -40,9 +46,11 @@ async function handleLogin({ email, password }) {
   clearMessages()
   try {
     await authStore.login(email, password)
-    window.location.href = '/?auth=success'
+    await gameStore.loadGame()
+    router.push('/')
   } catch (err) {
-    error.value = 'Credenciales inválidas o error de servidor'
+    console.error(err)
+    error.value = err.message || 'Credenciales inválidas o error de servidor'
   } finally {
     loading.value = false
   }
@@ -57,9 +65,9 @@ async function handleLocalLogin(username) {
   loading.value = true
   clearMessages()
   try {
-    await new Promise(resolve => setTimeout(resolve, 800))
     await authStore.localLogin(name)
-    window.location.href = '/?auth=success'
+    await gameStore.loadGame()
+    router.push('/')
   } catch (err) {
     error.value = 'Error al iniciar sesión local'
   } finally {
@@ -67,11 +75,23 @@ async function handleLocalLogin(username) {
   }
 }
 
-async function handleSignup(data) {
+async function handleSignup({ email, password, username }) {
+  if (!email || !password || !username) {
+    error.value = 'Por favor completa todos los campos'
+    return
+  }
   loading.value = true
   clearMessages()
   try {
-    error.value = 'El registro no está habilitado en esta versión'
+    await authStore.signup(email, password, username)
+    success.value = '¡Cuenta creada! Iniciando sesión...'
+    setTimeout(async () => {
+      await authStore.login(email, password)
+      await gameStore.loadGame()
+      router.push('/')
+    }, 1500)
+  } catch (err) {
+    error.value = err.message || 'Error al crear la cuenta'
   } finally {
     loading.value = false
   }
@@ -155,7 +175,7 @@ async function handleSignup(data) {
 .auth-screen-container {
   position: fixed;
   inset: 0;
-  background: url('/assets/fondo/WALLPAPER.png') center/cover no-repeat;
+  background: url('@/assets/ui/backgrounds/WALLPAPER.webp') center/cover no-repeat;
   overflow-y: auto;
   z-index: 2000;
   display: flex;

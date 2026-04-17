@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import { POKEMON_DB } from '@/logic/pokemonData'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants'
 
 export function usePokedex(gs, currentOrder, currentGen) {
@@ -14,7 +14,7 @@ export function usePokedex(gs, currentOrder, currentGen) {
     const list = currentOrder.value.map((id) => {
       const isCaught = caught.includes(id)
       const isSeen = seen.includes(id) || isCaught
-      const data = POKEMON_DB[id] || { name: id }
+      const data = pokemonDataProvider.getPokemonData(id) || { name: id }
       
       // Use POKEMON_SPRITE_IDS as the authority for the national number
       const nationalNum = POKEMON_SPRITE_IDS[id] || 0
@@ -26,7 +26,7 @@ export function usePokedex(gs, currentOrder, currentGen) {
         name: isSeen ? data.name : '???',
         isSeen,
         isCaught,
-        spriteUrl: isSeen ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${nationalNum}.png` : null
+        spriteUrl: isSeen ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${nationalNum}.webp` : null
       }
     })
 

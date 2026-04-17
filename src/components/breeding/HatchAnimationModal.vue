@@ -48,7 +48,7 @@ onMounted(() => {
         class="egg-visual"
       >
         <img
-          src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.png"
+          src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.webp"
           class="egg-sprite"
           :class="{ shake: stage === 'crack' }"
         >
@@ -219,18 +219,18 @@ onMounted(() => {
 }
 
 @keyframes pulse-ring {
-  0% { transform: translate(-50%, -50%) #{'scale(0.8)'}; opacity: 0.8; }
-  100% { transform: translate(-50%, -50%) #{'scale(1.5)'}; opacity: 0; }
+  0% { transform: translate(-50%, -50%) #{'scale(#{0.8})'}; opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) #{'scale(#{1.5})'}; opacity: 0; }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: #{'scale(0.9)'}; }
-  to { opacity: 1; transform: #{'scale(1)'}; }
+  from { opacity: 0; transform: #{'scale(#{0.9})'}; }
+  to { opacity: 1; transform: #{'scale(#{1})'}; }
 }
 
 @keyframes pop-in {
-  from { transform: #{'scale(0)'}; }
-  to { transform: #{'scale(1.2)'}; }
+  from { transform: #{'scale(#{0})'}; }
+  to { transform: #{'scale(#{1.2})'}; }
 }
 
 /* Particles */

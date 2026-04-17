@@ -1,8 +1,11 @@
-<script setup>
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
+import { usePlayerClassStore } from '@/stores/playerClass'
 
 const gameStore = useGameStore()
+const uiStore = useUIStore()
+const classStore = usePlayerClassStore()
 const gs = computed(() => gameStore.state)
 
 // Experience bar logic
@@ -12,8 +15,10 @@ const trainerExpPct = computed(() => {
 })
 
 const handlePanelClick = () => {
-  if (typeof window.openClassInfoPanel === 'function') {
-    window.openClassInfoPanel()
+  if (!classStore.playerClass) {
+    uiStore.isClassSelectionOpen = true
+  } else {
+    uiStore.isClassMissionsOpen = true
   }
 }
 </script>
@@ -27,7 +32,7 @@ const handlePanelClick = () => {
     <span
       id="hud-class-avatar"
       class="trainer-avatar"
-      v-html="gs.avatar_style || '👤'"
+      v-html="classStore.currentClassDef?.icon || gs.avatar_style || '👤'"
     />
     <div>
       <div
@@ -51,7 +56,10 @@ const handlePanelClick = () => {
       <div
         id="hud-class-label"
         class="class-label"
-      />
+        :style="{ display: classStore.playerClass ? 'block' : 'none', color: classStore.currentClassDef?.color }"
+      >
+        {{ classStore.currentClassDef?.name }}
+      </div>
     </div>
   </div>
 </template>

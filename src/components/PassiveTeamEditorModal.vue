@@ -18,10 +18,7 @@ const confirmPassiveTeamEdit = () => {
       id="passive-team-editor-modal"
       class="modal-overlay"
     >
-      <div
-        class="modal-content-premium"
-        style="max-width:440px;width:100%;max-height:90vh;display:flex;flex-direction:column;"
-      >
+      <div class="modal-content-premium passive-editor-modal">
         <button
           class="modal-close-btn"
           @click="closePassiveTeamEditor"
@@ -52,7 +49,15 @@ const confirmPassiveTeamEdit = () => {
   </Teleport>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+.passive-editor-modal {
+  max-width: 440px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .modal-close-btn {
   position: absolute;
   top: 16px;
@@ -63,6 +68,11 @@ const confirmPassiveTeamEdit = () => {
   font-size: 22px;
   cursor: pointer;
   z-index: 10;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(#{1.1});
+  }
 }
 
 .modal-header {
@@ -99,5 +109,16 @@ const confirmPassiveTeamEdit = () => {
   font-size: 9px;
   color: #000;
   cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(50, 215, 75, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
 </style>

@@ -38,7 +38,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
       >{{ getGenderText(p.gender) }}</span>
       <img
         v-if="!isPlayer && p.caught"
-        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.webp"
         class="caught-icon"
       >
     </div>

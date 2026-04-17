@@ -45,7 +45,7 @@ export const useChatStore = defineStore('chat', () => {
     await loadGlobalHistory()
 
     const db = gameStore.db
-    globalChannel = db.router.client.channel('global-chat-room')
+    globalChannel = db.channel('global-chat-room')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -69,7 +69,7 @@ export const useChatStore = defineStore('chat', () => {
     if (!authStore.user || inboxChannel) return
 
     const db = gameStore.db
-    inboxChannel = db.router.client.channel(`chat-inbox-${authStore.user.id}`)
+    inboxChannel = db.channel(`chat-inbox-${authStore.user.id}`)
       .on('broadcast', { event: 'chat_msg' }, ({ payload }) => {
         handleIncomingPrivate(payload)
         window.SFX?.receivedMsg(); // Sonido al recibir mensaje privado
@@ -145,7 +145,7 @@ export const useChatStore = defineStore('chat', () => {
     const db = gameStore.db
     // 1. Enviar vía broadcast
     if (!outboxChannels[friendId]) {
-      outboxChannels[friendId] = db.router.client.channel(`chat-inbox-${friendId}`).subscribe((status) => {
+      outboxChannels[friendId] = db.channel(`chat-inbox-${friendId}`).subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           outboxChannels[friendId].send({ type: 'broadcast', event: 'chat_msg', payload })
         }

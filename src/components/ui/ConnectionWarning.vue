@@ -96,7 +96,7 @@ const retry = () => {
   align-items: center;
   justify-content: center;
   
-  .wifi-icon { filter: grayscale(1); opacity: 0.5; }
+  .wifi-icon { filter: grayscale(#{1}); opacity: 0.5; }
   .cross-mark {
     position: absolute;
     color: #ef4444;

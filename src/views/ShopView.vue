@@ -2,29 +2,29 @@
 import { computed, ref, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-import { useMarketStore } from '@/stores/market'
+import { useShopStore } from '@/stores/shopStore'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
-const marketStore = useMarketStore()
+const shopStore = useShopStore()
 
 const activeTab = computed(() => uiStore.activeTab)
 const gs = computed(() => gameStore.state)
 
-const currentRank = computed(() => marketStore.getTrainerRank)
+const currentRank = computed(() => shopStore.getTrainerRank)
 
 const displayItems = computed(() => {
   const isTrainerShop = activeTab.value === 'trainer-shop'
   
-  return marketStore.SHOP_ITEMS.filter(item => {
+  return shopStore.SHOP_ITEMS.filter(item => {
     if (isTrainerShop) {
       if (!item.trainerShop) return false
     } else {
       if (item.market === false) return false
     }
 
-    if (marketStore.marketCategory !== 'todos' && item.cat !== marketStore.marketCategory) return false
-    if (marketStore.searchQuery && !item.name.toLowerCase().includes(marketStore.searchQuery.toLowerCase())) return false
+    if (shopStore.marketCategory !== 'todos' && item.cat !== shopStore.marketCategory) return false
+    if (shopStore.searchQuery && !item.name.toLowerCase().includes(shopStore.searchQuery.toLowerCase())) return false
 
     return true
   }).sort((a, b) => {
@@ -46,9 +46,9 @@ const getPrice = (item) => {
 
 const handleBuy = (item) => {
   if (activeTab.value === 'trainer-shop') {
-    marketStore.buyItemBC(item.id)
+    shopStore.buyItemBC(item.id)
   } else {
-    marketStore.buyItem(item.id)
+    shopStore.buyItem(item.id)
   }
 }
 
@@ -90,20 +90,20 @@ onMounted(() => {
     <!-- TABS BAR (Legacy Navigation) -->
     <div class="category-tabs">
       <button 
-        v-for="cat in marketStore.ITEM_CATEGORIES" 
+        v-for="cat in shopStore.ITEM_CATEGORIES" 
         :key="cat"
         class="tab-btn-retro"
-        :class="{ active: marketStore.marketCategory === cat }"
-        @click="marketStore.marketCategory = cat"
+        :class="{ active: shopStore.marketCategory === cat }"
+        @click="shopStore.marketCategory = cat"
       >
-        {{ marketStore.CATEGORY_LABELS[cat] }}
+        {{ shopStore.CATEGORY_LABELS[cat] }}
       </button>
     </div>
 
     <!-- SEARCH BAR -->
     <div class="search-box">
       <input 
-        v-model="marketStore.searchQuery"
+        v-model="shopStore.searchQuery"
         type="text" 
         class="retro-input" 
         placeholder="BUSCAR ÍTEM..."
@@ -183,9 +183,9 @@ onMounted(() => {
             type="number"
             min="1"
             max="999" 
-            :value="marketStore.getQuantity(item.id)"
+            :value="shopStore.getQuantity(item.id)"
             class="qty-input"
-            @input="e => marketStore.setQuantity(item.id, e.target.value)"
+            @input="e => shopStore.setQuantity(item.id, e.target.value)"
           >
         </div>
 
@@ -193,18 +193,18 @@ onMounted(() => {
           v-if="gs.level >= item.unlockLv && activeTab === 'market'"
           class="item-total"
         >
-          TOTAL: ₽<span>{{ (getPrice(item) * marketStore.getQuantity(item.id)).toLocaleString() }}</span>
+          TOTAL: ₽<span>{{ (getPrice(item) * shopStore.getQuantity(item.id)).toLocaleString() }}</span>
         </div>
 
         <button 
           class="buy-btn-retro"
-          :disabled="gs.level < item.unlockLv || (activeTab === 'market' ? gs.money < (getPrice(item) * marketStore.getQuantity(item.id)) : (gs.battleCoins || 0) < item.bcPrice)"
+          :disabled="gs.level < item.unlockLv || (activeTab === 'market' ? gs.money < (getPrice(item) * shopStore.getQuantity(item.id)) : (gs.battleCoins || 0) < item.bcPrice)"
           @click="handleBuy(item)"
         >
           <template v-if="gs.level < item.unlockLv">
             BLOQUEADO
           </template>
-          <template v-else-if="activeTab === 'market' && gs.money < (getPrice(item) * marketStore.getQuantity(item.id))">
+          <template v-else-if="activeTab === 'market' && gs.money < (getPrice(item) * shopStore.getQuantity(item.id))">
             SIN FONDOS
           </template>
           <template v-else-if="activeTab === 'trainer-shop' && (gs.battleCoins || 0) < item.bcPrice">
@@ -423,7 +423,7 @@ onMounted(() => {
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover:not(:disabled) { transform: #{'scale(1.03)'}; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
+    &:hover:not(:disabled) { transform: #{'scale(#{1.03})'}; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
     &:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
   }
 }

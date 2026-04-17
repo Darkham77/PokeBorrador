@@ -2,6 +2,11 @@
  * PLAYER_CLASSES: Definiciones estáticas de las clases de jugador.
  * Incluye bonos, penalizaciones, modificadores de batalla y sprites.
  */
+import teamrocketAvatar from '@/assets/sprites/trainers/teamrocket.webp';
+import cazabichosAvatar from '@/assets/sprites/trainers/cazabichos.webp';
+import entrenadorAvatar from '@/assets/sprites/trainers/entrenador.webp';
+import criadorAvatar from '@/assets/sprites/trainers/criador.webp';
+
 export const PLAYER_CLASSES = {
   rocket: {
     id: 'rocket',
@@ -31,8 +36,8 @@ export const PLAYER_CLASSES = {
       catchMult: 1.0,
       shopDiscount: 0.20
     },
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.png',
-    avatarSprite: "/assets/sprites/trainers/teamrocket.png"
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.webp',
+    avatarSprite: teamrocketAvatar
   },
   cazabichos: {
     id: 'cazabichos',
@@ -62,8 +67,8 @@ export const PLAYER_CLASSES = {
       daycareCostMult: 1.5,
       catchMult: 1.0
     },
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.png',
-    avatarSprite: "/assets/sprites/trainers/cazabichos.png"
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.webp',
+    avatarSprite: cazabichosAvatar
   },
   entrenador: {
     id: 'entrenador',
@@ -93,8 +98,8 @@ export const PLAYER_CLASSES = {
       daycareCostMult: 1.5,
       catchMult: 1.0
     },
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.png',
-    avatarSprite: "/assets/sprites/trainers/entrenador.png"
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.webp',
+    avatarSprite: entrenadorAvatar
   },
   criador: {
     id: 'criador',
@@ -122,8 +127,8 @@ export const PLAYER_CLASSES = {
       daycareCostMult: 1.0,
       catchMult: 1.0
     },
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.png',
-    avatarSprite: "/assets/sprites/trainers/criador.png"
+    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.webp',
+    avatarSprite: criadorAvatar
   }
 };
 

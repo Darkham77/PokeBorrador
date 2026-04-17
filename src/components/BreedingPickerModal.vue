@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useBreedingStore } from '@/stores/breeding'
+import { useBreedingStore } from '@/stores/breedingStore'
+import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
+import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 
 const props = defineProps({
   isOpen: Boolean,
@@ -21,7 +23,7 @@ const allPokemon = computed(() => {
   const team = gameStore.state.team || []
   const box = gameStore.state.box || []
   // Filter out pokemon already in daycare
-  return [...team, ...box].filter(p => !breedingStore.slots.some(s => s.pokemon_id === p.uid))
+  return [...team, ...box].filter(p => !breedingStore.daycareSlots.some(s => s.pokemon_id === p.uid))
 })
 
 const filteredPokemon = computed(() => {
@@ -58,7 +60,7 @@ const filteredPokemon = computed(() => {
 
 const selectPokemon = (p) => {
   if (props.mode === 'daycare') {
-    breedingStore.depositPokemon(props.slotIdx, p.uid)
+    breedingStore.depositPokemon(p, props.slotIdx)
   } else {
     // Mission delivery logic handled in store eventually
     breedingStore.deliverMission(props.missionIdx, p.uid)
@@ -66,13 +68,13 @@ const selectPokemon = (p) => {
   emit('close')
 }
 
-const getCompatibility = (p) => {
+const getListCompatibility = (p) => {
   if (props.mode !== 'daycare') return null
-  const otherSlotIdx = props.slotIdx === 0 ? 1 : 0
-  const otherPoke = breedingStore.slots[otherSlotIdx]?.pokemon
+  const otherSlotIdx = props.slotIdx === 1 ? 2 : 1
+  const otherSlot = breedingStore.daycareSlots.find(s => s.slot_index === otherSlotIdx)
+  const otherPoke = otherSlot?.pokemon
   if (!otherPoke) return null
-  
-  return breedingStore.checkCompatibility(p, otherPoke)
+  return checkCompatibility(p, otherPoke)
 }
 
 const getSprite = (id, shiny) => {
@@ -135,19 +137,19 @@ const getSprite = (id, shiny) => {
               v-if="mode === 'daycare'"
               class="compat-status"
             >
-              <template v-if="getCompatibility(p)">
-                <span :style="{ color: breedingStore.COMPAT_TEXT[getCompatibility(p).level].color }">
-                  {{ breedingStore.COMPAT_TEXT[getCompatibility(p).level].label }}
+              <template v-if="getListCompatibility(p)">
+                <span :style="{ color: COMPAT_TEXT[getListCompatibility(p).level].color }">
+                  {{ COMPAT_TEXT[getListCompatibility(p).level].label }}
                 </span>
                 <span
-                  v-if="getCompatibility(p).eggSpecies"
+                  v-if="getListCompatibility(p).eggSpecies"
                   class="egg-hint"
                 >
-                  🥚 {{ getCompatibility(p).eggSpecies }}
+                  🥚 {{ getListCompatibility(p).eggSpecies }}
                 </span>
               </template>
               <template v-else>
-                <span style="color: var(--gray)">Pendiente de pareja</span>
+                <span class="waiting-status">Pendiente de pareja</span>
               </template>
             </div>
           </div>
@@ -179,7 +181,7 @@ const getSprite = (id, shiny) => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .picker-overlay {
   position: fixed;
   inset: 0;
@@ -210,29 +212,46 @@ const getSprite = (id, shiny) => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid rgba(255,255,255,0.05);
+  
+  h3 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--yellow);
+    margin: 0;
+  }
 }
 
-.picker-header h3 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: var(--yellow);
-  margin: 0;
+.close-btn { 
+  background: none; 
+  border: none; 
+  color: var(--gray); 
+  font-size: 20px; 
+  cursor: pointer;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: var(--red);
+  }
 }
-
-.close-btn { background: none; border: none; color: var(--gray); font-size: 20px; cursor: pointer; }
 
 .picker-search {
   padding: 15px 20px;
-}
-
-.picker-search input {
-  width: 100%;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 12px;
-  border-radius: 12px;
-  color: #fff;
-  font-size: 12px;
+  
+  input {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 12px;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    
+    &:focus {
+      border-color: var(--blue);
+    }
+  }
 }
 
 .pokemon-grid {
@@ -253,13 +272,14 @@ const getSprite = (id, shiny) => {
   align-items: center;
   gap: 15px;
   cursor: pointer;
-  transition: transform 0.1s, background 0.2s;
+  transition: all 0.2s ease;
   position: relative;
-}
 
-.poke-card:hover {
-  background: rgba(255,255,255,0.08);
-  transform: translateX(4px);
+  &:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateX(4px);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
 }
 
 .sprite-box {
@@ -275,7 +295,13 @@ const getSprite = (id, shiny) => {
 
 .poke-sprite { width: 44px; height: 44px; image-rendering: pixelated; }
 
-.poke-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.poke-info { 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 4px; 
+}
+
 .top-row { display: flex; justify-content: space-between; align-items: center; }
 .name { font-weight: 800; color: #fff; font-size: 13px; }
 .lv { font-size: 10px; color: var(--gray); }
@@ -286,6 +312,10 @@ const getSprite = (id, shiny) => {
   font-weight: 700;
   display: flex;
   justify-content: space-between;
+}
+
+.waiting-status {
+  color: #64748b;
 }
 
 .egg-hint { color: var(--purple); font-style: italic; }
@@ -300,12 +330,12 @@ const getSprite = (id, shiny) => {
   background: rgba(34, 197, 94, 0.1);
   color: #22c55e;
   border: 1px solid rgba(34, 197, 94, 0.2);
-}
 
-.vigor-badge.low {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.2);
+  &.low {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+  }
 }
 
 .empty-state {
@@ -330,5 +360,11 @@ const getSprite = (id, shiny) => {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
 }
 </style>

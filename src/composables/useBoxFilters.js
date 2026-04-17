@@ -1,11 +1,8 @@
-import { ref, computed } from 'vue'
-import { getPokemonTier } from '@/logic/pokemonUtils'
+import { reactive, computed, ref } from 'vue';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 
-export function useBoxFilters(boxSource) {
-  const isFiltersOpen = ref(false)
-  const sortMode = ref('none')
-  
-  const filters = ref({
+export function useBoxFilters(boxArray, currentBoxIndex) {
+  const filters = reactive({
     tier: 'all',
     type: 'all',
     levelMin: 1,
@@ -20,78 +17,102 @@ export function useBoxFilters(boxSource) {
     ivTotalMin: 0,
     ivTotalMax: 186,
     search: ''
-  })
+  });
+
+  const sortMode = ref('none'); // 'none', 'level', 'tier', 'type', 'pokedex'
 
   const hasActiveFilters = computed(() => {
-    const f = filters.value
-    return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < 100 ||
-           f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 || f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 ||
-           f.ivAny31 || f.ivTotalMin > 0 || f.ivTotalMax < 186 || f.search !== ''
-  })
+    return filters.tier !== 'all' || 
+           filters.type !== 'all' || 
+           filters.levelMin > 1 || 
+           filters.levelMax < 100 ||
+           filters.ivHP > 0 || filters.ivATK > 0 || filters.ivDEF > 0 || 
+           filters.ivSPA > 0 || filters.ivSPD > 0 || filters.ivSPE > 0 ||
+           filters.ivAny31 || 
+           filters.ivTotalMin > 0 || 
+           filters.ivTotalMax < 186 ||
+           filters.search !== '';
+  });
 
-  const processedBoxList = computed(() => {
-    const box = boxSource.value || []
-    let list = box.map((p, index) => ({ p, index }))
+  const displayList = computed(() => {
+    const isFiltered = hasActiveFilters.value;
+    const isSorted = sortMode.value !== 'none';
+    
+    let result = [];
 
-    // Aplicar filtros
-    if (hasActiveFilters.value) {
-      const f = filters.value
-      list = list.filter(({ p }) => {
-        const searchStr = f.search.toLowerCase()
-        const matchesId = String(p.id).toLowerCase().includes(searchStr)
-        const matchesName = p.name && p.name.toLowerCase().includes(searchStr)
-        if (f.search && !matchesId && !matchesName) return false
-        
-        if (f.tier !== 'all' && getPokemonTier(p).tier !== f.tier) return false
-        if (f.type !== 'all' && p.type !== f.type && p.type2 !== f.type) return false
-        if (p.level < f.levelMin || p.level > f.levelMax) return false
-        
-        const ivs = p.ivs || {}
-        if ((ivs.hp || 0) < f.ivHP) return false
-        if ((ivs.atk || 0) < f.ivATK) return false
-        if ((ivs.def || 0) < f.ivDEF) return false
-        if ((ivs.spa || 0) < f.ivSPA) return false
-        if ((ivs.spd || 0) < f.ivSPD) return false
-        if ((ivs.spe || 0) < f.ivSPE) return false
-        
-        const tierInfo = getPokemonTier(p)
-        if (tierInfo.total < f.ivTotalMin || tierInfo.total > f.ivTotalMax) return false
-        if (f.ivAny31 && !Object.values(ivs).some(v => v === 31)) return false
+    if (isFiltered || isSorted) {
+      // Process entire box when filtering/sorting
+      result = boxArray.value.map((p, i) => ({ p, i }));
 
-        return true
-      })
+      if (isFiltered) {
+        result = result.filter(({ p }) => {
+          const tierInfo = getPokemonTier(p);
+          const ivs = p.ivs || {};
+          const totalIv = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + 
+                          (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
+
+          if (filters.tier !== 'all' && tierInfo.tier !== filters.tier) return false;
+          if (filters.type !== 'all' && p.type !== filters.type && p.type2 !== filters.type) return false;
+          if (p.level < filters.levelMin || p.level > filters.levelMax) return false;
+
+          if (filters.ivAny31 && !Object.values(ivs).some(v => v === 31)) return false;
+          if (totalIv < filters.ivTotalMin || totalIv > filters.ivTotalMax) return false;
+
+          if ((ivs.hp || 0) < filters.ivHP) return false;
+          if ((ivs.atk || 0) < filters.ivATK) return false;
+          if ((ivs.def || 0) < filters.ivDEF) return false;
+          if ((ivs.spa || 0) < filters.ivSPA) return false;
+          if ((ivs.spd || 0) < filters.ivSPD) return false;
+          if ((ivs.spe || 0) < filters.ivSPE) return false;
+
+          if (filters.search && !p.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
+
+          return true;
+        });
+      }
+
+      if (isSorted) {
+        result.sort((a, b) => {
+          if (sortMode.value === 'level') return b.p.level - a.p.level;
+          if (sortMode.value === 'tier') return getPokemonTier(b.p).total - getPokemonTier(a.p).total;
+          if (sortMode.value === 'type') return a.p.type.localeCompare(b.p.type);
+          if (sortMode.value === 'pokedex') return (a.p.pokedexId || 999) - (b.p.pokedexId || 999);
+          return 0;
+        });
+      }
+
+      // If just sorted but NOT filtered, we still might want to paginate by box
+      if (!isFiltered && isSorted) {
+        const start = currentBoxIndex.value * 50;
+        return result.slice(start, start + 50);
+      }
+    } else {
+      // Normal pagination by box index
+      const start = currentBoxIndex.value * 50;
+      const end = Math.min(start + 50, boxArray.value.length);
+      for (let i = start; i < end; i++) {
+        result.push({ p: boxArray.value[i], i: i });
+      }
     }
 
-    // Aplicar ordenamiento
-    if (sortMode.value !== 'none') {
-      list.sort((a, b) => {
-        if (sortMode.value === 'level') return b.p.level - a.p.level
-        if (sortMode.value === 'tier') return getPokemonTier(b.p).total - getPokemonTier(a.p).total
-        if (sortMode.value === 'type') return (a.p.type || '').localeCompare(b.p.type || '')
-        if (sortMode.value === 'pokedex') return (a.p.id || 0) - (b.p.id || 0)
-        return 0
-      })
-    }
+    return result;
+  });
 
-    return list
-  })
-
-  const resetFilters = () => {
-    filters.value = {
+  function resetFilters() {
+    Object.assign(filters, {
       tier: 'all', type: 'all', levelMin: 1, levelMax: 100,
       ivHP: 0, ivATK: 0, ivDEF: 0, ivSPA: 0, ivSPD: 0, ivSPE: 0,
       ivAny31: false, ivTotalMin: 0, ivTotalMax: 186,
       search: ''
-    }
-    sortMode.value = 'none'
+    });
+    sortMode.value = 'none';
   }
 
   return {
     filters,
-    isFiltersOpen,
     sortMode,
     hasActiveFilters,
-    processedBoxList,
+    displayList,
     resetFilters
-  }
+  };
 }

@@ -16,7 +16,7 @@ import {
   getPokemonTier
 } from '@/logic/pokemonUtils'
 import { getSpriteUrl, getBackSpriteUrl } from '@/logic/sprites';
-import { getGMT3Date, getTimePeriod } from '@/logic/time';
+import { getGMT3Date, getDayCycle } from '@/logic/timeUtils';
 import { GAME_RATIOS } from '@/logic/ratios';
 
 import { generateEncounter } from '@/logic/encounters';
@@ -50,8 +50,8 @@ export function initBaseBridge() {
   
   // Time Utils
   window.getGMT3Date = getGMT3Date;
-  window.getTimePeriod = getTimePeriod;
-  window.getDayCycle = getTimePeriod; // Legacy alias
+  window.getTimePeriod = getDayCycle;
+  window.getDayCycle = getDayCycle; 
 
   // Encounters
   window.generateEncounter = generateEncounter;

@@ -62,7 +62,7 @@ export class ProxyQuery {
     // If router is Online, use Supabase
     if (this.router.mode === 'online') {
       try {
-        let q = this.router.realClient.from(this.table);
+        let q = this.router._realClient.from(this.table);
         
         if (this.action === 'upsert') return await q.upsert(this.actionData, this.actionOpts);
         

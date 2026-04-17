@@ -6,6 +6,7 @@
 -- 1. Agregar columna de sesión activa a la tabla de perfiles
 -- Esta columna almacenará el ID único de la pestaña/navegador actual.
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS current_session_id TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS db_version INTEGER DEFAULT 1;
 
 -- 2. Asegurar que Realtime esté habilitado para la tabla profiles
 -- Esto permite que las pestañas "viejas" detecten cambios al instante.

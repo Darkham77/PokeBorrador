@@ -7,9 +7,16 @@ import { initGlobalErrorHandlers } from '@/logic/errorHandler'
 import MainGameView from '@/views/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
+import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue'
+import LivePvPArena from '@/components/battle/LivePvPArena.vue'
+import EvolutionScene from '@/components/evolution/EvolutionScene.vue'
+import { useLivePvPStore } from '@/stores/livePvP'
+import { usePlayerClassStore } from '@/stores/playerClass'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
+const livePvP = useLivePvPStore()
+const classStore = usePlayerClassStore()
 
 // Sincronizar usuario con el motor legacy reactivamente
 watch(() => authStore.user, (newVal) => {
@@ -31,13 +38,19 @@ onMounted(async () => {
   window.addEventListener('game-state-ready', (e) => {
     console.log('[App] Game State Ready Event received:', e.detail?.state);
     gameStore.state.isReady = true;
+    classStore.syncTheme();
   });
 
   // Comprobar si ya estaba listo (Race Condition Guard)
   if (window.legacyGameReady) {
     console.log('[App] Engine was already ready on mount');
     gameStore.state.isReady = true;
+    livePvP.initInvitePoller()
   }
+
+  window.addEventListener('game-state-ready', () => {
+    livePvP.initInvitePoller()
+  })
 
   // 3. Inicializar el puente de estado una vez que Vue está listo
   setTimeout(() => {
@@ -104,6 +117,9 @@ onMounted(async () => {
     <!-- Error Global UI -->
     <ErrorOverlay />
     <ConnectionWarning />
+    <LocalDebugPanel />
+    <LivePvPArena />
+    <EvolutionScene />
   </div>
 </template>
 

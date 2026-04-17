@@ -44,7 +44,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .actions-container {
   display: flex;
   flex-direction: column;
@@ -116,7 +116,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
 }
 
 .btn-catch-ball:hover {
-  transform: scale(1.15) rotate(15deg);
+  transform: scale(#{1.15}) rotate(15deg);
   box-shadow: 0 15px 30px rgba(0,0,0,0.5);
 }
 

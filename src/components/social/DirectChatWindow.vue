@@ -308,14 +308,14 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0% { transform: unquote("scale(1)"); opacity: 0.8; }
-  50% { transform: unquote("scale(1.3)"); opacity: 1; }
-  100% { transform: unquote("scale(1)"); opacity: 0.8; }
+  0% { transform: unquote("scale(#{1})"); opacity: 0.8; }
+  50% { transform: unquote("scale(#{1.3})"); opacity: 1; }
+  100% { transform: unquote("scale(#{1})"); opacity: 0.8; }
 }
 
 @keyframes pop {
-  0% { transform: unquote("scale(0.8)"); opacity: 0; }
-  100% { transform: unquote("scale(1)"); opacity: 1; }
+  0% { transform: unquote("scale(#{0.8})"); opacity: 0; }
+  100% { transform: unquote("scale(#{1})"); opacity: 1; }
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 3px; }

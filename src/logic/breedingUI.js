@@ -1,5 +1,5 @@
 import { COMPAT_TEXT, EGG_GROUP_TRANSLATIONS, EGG_SPAWN_INTERVAL_MS } from '@/data/breedingData';
-import { POKEMON_DB } from '@/data/pokemonDB';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { calculateBreedingCost, checkCompatibility } from '@/logic/breeding';
 
 /**
@@ -12,7 +12,7 @@ export function renderDaycareBreedingSummary(pA, pB, compat, itemA = '', itemB =
   const intervalTxt = ms ? `${Math.round(ms / 3600000)}h` : '—';
   
   const motherId = compat && compat.eggSpecies ? compat.eggSpecies : null;
-  let motherName = motherId ? (POKEMON_DB[motherId]?.name || motherId) : '—';
+  let motherName = motherId ? (pokemonDataProvider.getPokemonData(motherId)?.name || motherId) : '—';
   if (motherId === 'nidoran_f' || motherId === 'nidoran_m') motherName = 'Nidoran ♀/♂';
   
   const powerMap = {
@@ -101,7 +101,7 @@ export function renderPickerHtml(p, compareTo, options = {}) {
     const every = ms ? `${Math.round(ms / 3600000)}h` : '—';
     
     let motherId = cp.eggSpecies || '—';
-    let motherName = motherId ? (POKEMON_DB[motherId]?.name || motherId) : '—';
+    let motherName = motherId ? (pokemonDataProvider.getPokemonData(motherId)?.name || motherId) : '—';
     if (motherId === 'nidoran_f' || motherId === 'nidoran_m') motherName = 'Nidoran ♀/♂';
     const translatedGroups = (cp.sharedGroups || []).map(g => EGG_GROUP_TRANSLATIONS[g] || g);
     const shared = translatedGroups.length ? translatedGroups.join(', ') : '—';

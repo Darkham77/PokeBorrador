@@ -13,7 +13,7 @@ const getSprite = (id, isShiny) => {
   if (typeof window.getSpriteUrl === 'function') return window.getSpriteUrl(id, isShiny)
   const num = window.POKEMON_SPRITE_IDS?.[id.toLowerCase()] || id
   const base = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'
-  return `${base}${isShiny ? 'shiny/' : ''}${num}.png`
+  return `${base}${isShiny ? 'shiny/' : ''}${num}.webp`
 }
 </script>
 
@@ -86,7 +86,7 @@ const getSprite = (id, isShiny) => {
   </header>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -162,7 +162,7 @@ const getSprite = (id, isShiny) => {
   background: rgba(255, 215, 0, 0.2);
   border-color: gold;
   color: #fff;
-  filter: grayscale(0);
+  filter: grayscale(#{0});
 }
 
 .close-btn {

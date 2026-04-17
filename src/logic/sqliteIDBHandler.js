@@ -2,6 +2,9 @@
  * SQLite Handler for Browser-Side Emulation
  * Uses sql.js (WebAssembly) to provide a local SQL database.
  * Persists to IndexedDB to survive page refreshes.
+ * 
+ * IMPORTANT: If you modify the local schema (tables array) or CRUD methods here, 
+ * you MUST update the DBRouter (src/logic/dbRouter.js) to keep Online/Offline parity.
  */
 
 let db = null;
@@ -96,7 +99,7 @@ export async function initSQLite() {
       }
 
       const tables = [
-        "profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT, nick_style TEXT, avatar_style TEXT, created_at TEXT, current_session_id TEXT)",
+        "profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT, nick_style TEXT, avatar_style TEXT, role TEXT DEFAULT 'user', created_at TEXT, current_session_id TEXT)",
         "game_saves (user_id TEXT PRIMARY KEY, save_data TEXT, updated_at TEXT)",
         "friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, requester_id TEXT, addressee_id TEXT, status TEXT, created_at TEXT DEFAULT (datetime('now')))",
         "battle_invites (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_id TEXT, opponent_id TEXT, status TEXT, created_at TEXT DEFAULT (datetime('now')))",
@@ -137,7 +140,11 @@ export async function initSQLite() {
       db.run(`CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')));`);
       
       const DATABASE_MIGRATIONS = [
-        // Migrations start from here. Baseline is handled by the tables array + 20240416000000_baseline_schema.sql
+        {
+          id: '202604170835_add_role_to_profiles',
+          sql: "ALTER TABLE profiles ADD COLUMN role TEXT DEFAULT 'user';",
+          check: { table: 'profiles', column: 'role' }
+        }
       ];
 
       runMigrations(db, DATABASE_MIGRATIONS);
@@ -208,7 +215,7 @@ function seedSQLite() {
       'Doble Experiencia', '✨', 'exp_boost', 1, JSON.stringify({ multiplier: 2 })
     ]);
     db.run("INSERT OR IGNORE INTO ranked_rules_config (id, season_name, config) VALUES (?, ?, ?)", [
-      'current', 'Temporada Local 1', JSON.stringify({ min_level: 5, max_level: 100 })
+      'current', 'Temporada Local 1', JSON.stringify({ min_level: 5, max_level: 50 })
     ]);
     // Seeding events and maps only
 

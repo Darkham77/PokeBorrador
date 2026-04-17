@@ -18,6 +18,12 @@ export const useUIStore = defineStore('ui', () => {
   const isClassMissionsOpen = ref(false)
   const isRepShopOpen = ref(false)
 
+  // Modales de Combate (Full Vue)
+  const isBattleInventoryOpen = ref(false)
+  const isBattleSwitchOpen = ref(false)
+  const isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
+  const isPokemonCenterOpen = ref(false)
+
 
 
   
@@ -130,6 +136,7 @@ export const useUIStore = defineStore('ui', () => {
     isMoveDetailOpen,
     selectedMove,
     activeTab,
+    isPokemonCenterOpen,
     profileData,
     toggleTrade,
     toggleSocial,

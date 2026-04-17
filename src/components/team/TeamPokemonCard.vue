@@ -185,7 +185,7 @@ const handleClick = () => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .team-card {
   background: #1a1a1a;
   border: 4px solid #333;
@@ -374,9 +374,9 @@ const handleClick = () => {
 .rocket-selected { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.05); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.8; }
+  0% { transform: scale(#{1}); opacity: 0.8; }
+  50% { transform: scale(#{1.05}); opacity: 1; }
+  100% { transform: scale(#{1}); opacity: 0.8; }
 }
 
 .pixelated {

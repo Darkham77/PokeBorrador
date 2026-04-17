@@ -1,3 +1,5 @@
+import { getPokemonTier } from '@/logic/pokemon/tierEngine.js';
+
 /**
  * Core business logic for the Online Market (GTS).
  */

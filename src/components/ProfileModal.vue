@@ -109,13 +109,13 @@ const handleFactionChoice = () => {
           >
             <template v-if="profileData.faction === 'union'">
               <img
-                src="/assets/factions/union.png"
+                src="@/assets/ui/factions/union.webp"
                 class="faction-img"
               > Team Unión
             </template>
             <template v-else-if="profileData.faction === 'poder'">
               <img
-                src="/assets/factions/poder.png"
+                src="@/assets/ui/factions/poder.webp"
                 class="faction-img"
               > Team Poder
             </template>

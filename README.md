@@ -1,6 +1,6 @@
-# Manual de Desarrollo: Pokémon Online (Vue 3 Edition)
+# Manual de Desarrollo: Pokémon Online (Vue 3 + Phaser 4)
 
-Este manual detalla los comandos y configuraciones necesarios para trabajar en la nueva versión del juego usando Vue 3, Vite y Vercel.
+Este manual detalla los comandos y configuraciones necesarios para trabajar en la nueva versión del juego usando **Vue 3**, **Phaser 4**, **Vite** y **Supabase**.
 
 ## 🛠️ Entorno de Desarrollo
 
@@ -14,15 +14,17 @@ Para iniciar el servidor de desarrollo local:
 
 2. **Configurar Variables de Entorno**:
     Copia el archivo `.env.example` y renómbralo a `.env`, luego completa los valores de Supabase:
-
     ```bash
     cp .env.example .env
     ```
 
-    *Puedes encontrar las credenciales en el panel de [Supabase](https://supabase.com) (Settings -> API).*
+3. **Configurar Entorno Python (Optimizador)**:
+    Instala las dependencias necesarias para los scripts de optimización (conversión a WebP, etc.):
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-3. **Iniciar Vite**:
-
+4. **Iniciar Vite**:
     ```bash
     npm run dev
     ```
@@ -71,11 +73,33 @@ Para probar las funciones de la carpeta `api/` localmente:
 vercel dev
 ```
 
+## 🛡️ Estándares de Calidad y Auditoría
+
+Antes de realizar una entrega o desplegar cambios, es **MANDATORIO** que el código pase los siguientes controles:
+
+1. **Linting**: El código debe estar libre de errores de sintaxis y seguir el estilo del proyecto.
+2. **Testing**: Todos los unit tests deben pasar exitosamente.
+3. **Build**: La aplicación debe compilar correctamente para producción.
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
+
+### Reglas de Oro
+- **Eficiencia GPU**: Usa siempre Texture Atlases y Object Pooling en Phaser.
+- **Assets WebP**: Prohibido usar PNG/JPG raw; usa el script de conversión a WebP.
+- **Ley de 500 Líneas**: Ningún archivo de lógica o componente debe exceder las 500 líneas.
+- **Aislamiento de Servidores**: No mezcles datos de instancias Global (Supabase) con Local (SQLite).
+
+---
+
 ## 📂 Estructura del Proyecto
 
 - `/src`: Código fuente de la aplicación (Componentes, Stores, Vistas).
 - `/public`: Activos estáticos (Assets, Mapas).
 - `/api`: Funciones serverless para el backend.
 - `/database`: Esquemas SQL y migraciones.
-- `/tests`: Suite de pruebas.
-- `/docs`: Documentación y reglas del juego.
+- `/tests`: Suite de pruebas (Vitest).
+- `/docs`: Documentación técnica y reglas del juego.

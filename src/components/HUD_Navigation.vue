@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useSocialStore } from '@/stores/social.js'
-import { useRouter } from 'vue-router'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
@@ -26,10 +25,6 @@ const handleTabChange = (tab, event) => {
     return
   }
 
-  // Navigate if it's a route
-  if (['team', 'pokedex', 'events', 'war'].includes(tab)) {
-    router.push({ name: tab })
-  }
 
   // Only call legacy showTab for non-migrated tabs to avoid DOM crashes
   if (!migratedTabs.includes(tab) && typeof window.showTab === 'function') {
@@ -201,7 +196,25 @@ const toggleGroupMenu = (event, btn) => {
 
         <button
           class="hud-nav-btn"
-          :class="{ active: activeTab === 'war' }"
+          :class="{ active: activeTab === 'arena' }"
+          data-tab="arena"
+          @click="handleTabChange('arena', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
+        >
+          <span>⚔️</span><span>Arena</span>
+        </button>
+
+        <button
+          class="hud-nav-btn"
+          :class="{ active: activeTab === 'ranking' }"
+          data-tab="ranking"
+          @click="handleTabChange('ranking', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
+        >
+          <span>🏅</span><span>Ranking</span>
+        </button>
+
+        <button
+          class="hud-nav-btn"
+          :class="{ active: activeTab = 'war' }"
           data-tab="war"
           @click="handleTabChange('war', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >

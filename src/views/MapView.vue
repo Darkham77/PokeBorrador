@@ -5,9 +5,11 @@ import { useMapStore } from '@/stores/map'
 import MapEventCarousel from '@/components/map/MapEventCarousel.vue'
 import MapStatusSummary from '@/components/map/MapStatusSummary.vue'
 import MapGrid from '@/components/map/MapGrid.vue'
+import { useUIStore } from '@/stores/ui'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
+const uiStore = useUIStore()
 
 const gs = computed(() => gameStore.state)
 const ms = computed(() => mapStore)
@@ -15,11 +17,11 @@ const ms = computed(() => mapStore)
 const navigateToMap = (mapId) => mapStore.navigate(mapId)
 
 const openTab = (tab) => {
-  if (typeof window.showTab === 'function') window.showTab(tab)
+  uiStore.activeTab = tab
 }
 
 const openCenter = () => {
-  if (typeof window.openPokemonCenter === 'function') window.openPokemonCenter()
+  uiStore.isPokemonCenterOpen = true
 }
 
 // Mapeo de misiones para los sprites

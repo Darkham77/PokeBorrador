@@ -125,7 +125,7 @@ const emit = defineEmits(['openTab', 'openCenter'])
 .pc-right { flex: 1; }
 
 .pokecenter-banner {
-  background-image: linear-gradient(to top, rgba(0,0,0,0.8), transparent), url('/assets/pokecenter_banner.png');
+  background-image: linear-gradient(to top, rgba(0,0,0,0.8), transparent), url('@/assets/ui/banners/pokecenter_banner.webp');
   background-size: cover;
   background-position: center;
   border: 4px solid #f69;

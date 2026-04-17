@@ -26,11 +26,11 @@ export function initSocialBridge() {
 
   // War & Faction Logic
   window.warStore = warStore
-  window.addWarPoints = (mapId, eventType, success, overridePts = null) => {
-    const PTS_TABLE = { capture: 5, trainer_win: 8, wild_win: 1, shiny_capture: 40 };
-    const pts = overridePts !== null ? overridePts : (PTS_TABLE[eventType] || 1);
-    warStore.addPoints(mapId, pts);
-  };
+  window.addWarPoints = (mapId, eventType, success = true) => {
+    // Re-route to the new engine-based store method
+    // eventType must now be one of: 'capture', 'trainer_win', 'wild_win', etc.
+    warStore.addPoints(mapId, eventType, success)
+  }
 
   // Events
   window.eventStore = eventStore

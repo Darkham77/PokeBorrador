@@ -5,6 +5,7 @@ import { useAuthStore } from './auth'
 import { useUIStore } from './ui'
 import { supabase } from '@/logic/supabase'
 import { DBRouter } from '@/logic/db/dbRouter'
+import { loadBestSave } from '@/logic/auth/loadService'
 
 const INITIAL_STATE = {
   trainer: '',
@@ -131,6 +132,42 @@ export const useGameStore = defineStore('game', () => {
     if (legacyState.trainerExpNeeded !== undefined) state.expNeeded = legacyState.trainerExpNeeded
   }
 
+  async function loadGame() {
+    if (!authStore.user) return
+    
+    const uiStore = useUIStore()
+    const { data, issues, lastSaveId, isNewerThanCloud } = await loadBestSave(authStore.user, db.value)
+    
+    if (data) {
+      updateState(data)
+      authStore.user.last_save_id = lastSaveId
+      
+      if (issues && issues.length > 0) {
+        console.warn('[LOAD] Saneamiento realizado:', issues)
+        uiStore.notify('Partida saneada y cargada', '🛡️')
+      } else {
+        uiStore.notify(`¡Bienvenido, ${state.trainer || authStore.user.user_metadata?.username}!`, '👋')
+      }
+
+      // Notificar migración V2 si aplica
+      if (authStore.user.db_version < 2) {
+        uiStore.notify('Cuenta actualizada a Seguridad v2', '✨')
+        // El guardado se encargará de actualizar la db_version en el próximo ciclo
+      }
+
+      if (isNewerThanCloud) {
+        uiStore.notify('Sincronizando progreso local más reciente...', '🔄')
+        setTimeout(() => save(false), 3000)
+      }
+
+      state.isReady = true
+      if (window.updateHud) window.updateHud()
+    } else {
+      loading.value = false
+      state.isReady = true // Consider as ready even if empty for new users
+    }
+  }
+
   async function save(showNotif = true) {
     if (!authStore.user) return
     
@@ -142,7 +179,54 @@ export const useGameStore = defineStore('game', () => {
 
     const uiStore = useUIStore()
     const notifyFn = uiStore.notify
-    await performSave(state, authStore.user, { showNotif, notifyFn, db: db.value })
+    const result = await performSave(state, authStore.user, { 
+      showNotif, 
+      notifyFn, 
+      db: db.value,
+      userVersion: authStore.user.db_version,
+      lastSaveId: authStore.user.last_save_id
+    })
+
+    if (result && result.migrated) {
+      authStore.user.db_version = 2
+    }
+
+    if (result && result.lastSaveId) {
+      authStore.user.last_save_id = result.lastSaveId
+    }
+
+    if (result && result.rollback) {
+      if (result.outOfSync) {
+        notifyFn('Desincronización detectada. Restaurando...', '🔄')
+      }
+      
+      // Reload everything from server
+      const { data: freshSave } = await db.value.from('game_saves').select('save_data, last_save_id').eq('user_id', authStore.user.id).single()
+      if (freshSave) {
+        updateState(freshSave.save_data)
+        authStore.user.last_save_id = freshSave.last_save_id
+        if (window.updateHud) window.updateHud()
+      }
+    }
+  }
+
+  function hatchEggs() {
+    if (!state.eggs || state.eggs.length === 0) return false
+    let anyReady = false
+    const hatchMult = 1 // TODO: Integrar con multiplicadores de eventos/clases
+    
+    state.eggs.forEach(egg => {
+      if (!egg.ready && typeof egg.steps === 'number' && egg.steps > 0) {
+        egg.steps -= hatchMult
+        if (egg.steps <= 0) {
+          egg.steps = 0
+          egg.ready = true
+          anyReady = true
+          useUIStore().notify('¡Un Huevo Pokémon está listo para eclosionar!', '🥚')
+        }
+      }
+    })
+    return anyReady
   }
 
   return {
@@ -151,6 +235,8 @@ export const useGameStore = defineStore('game', () => {
     updateState,
     resetToInitial,
     syncFromLegacy,
+    hatchEggs,
+    loadGame,
     save
   }
 })

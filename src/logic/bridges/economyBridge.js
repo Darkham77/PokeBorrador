@@ -1,12 +1,12 @@
 import { useTradeStore } from '@/stores/trade'
-import { useMarketStore } from '@/stores/market'
+import { useShopStore } from '@/stores/shopStore'
 import { useUIStore } from '@/stores/ui'
 import * as marketLogic from '@/logic/market'
 import * as marketUI from '@/logic/marketUI'
 
 export function initEconomyBridge() {
   const tradeStore = useTradeStore()
-  const marketStore = useMarketStore()
+  const shopStore = useShopStore()
   const uiStore = useUIStore()
 
   // Market Logic Bindings

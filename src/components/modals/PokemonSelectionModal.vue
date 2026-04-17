@@ -134,7 +134,7 @@ function getProjectedValue(p) {
             
             <div class="poke-sprite">
               <img
-                :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id_num || 1}.png`"
+                :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id_num || 1}.webp`"
                 alt=""
               >
             </div>

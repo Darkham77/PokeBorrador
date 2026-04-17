@@ -1,6 +1,6 @@
 ---
 name: migrator-legacy-vue
-description: MANDATORY skill for migrating legacy code from `backup_legacy_code/` to Vue 3. triggers when user asks to "migrar", "modernizar", or "restaurar" legacy features. Guarantees 1:1 visual parity and strict project standards.
+description: MANDATORY skill for migrating legacy code from `backup_legacy_code/` to Vue 3. triggers when user asks to "migrar", "modernizar", or "restaurar" legacy features. Guarantees 1:1 visual parity, strict project standards, and mandatory unit testing.
 ---
 
 # Migrator Legacy Vue
@@ -21,8 +21,10 @@ Every migration task **MUST** follow these phases. Do not skip any phase.
 ### Phase 1: Deep Audit & Comparison
 
 1. Locate the legacy source in `backup_legacy_code/`.
-2. Compare with the current state in `src/` using `@/legacy-code-reference`.
-3. Identify missing logic, styles, or assets.
+2. **Read the Tracker**: Consult [migration_tracker.md](docs/migration_tracker.md) to understand the current progress and pending items.
+   - **IMPORTANT**: Use it as a **GUIDE**, not as absolute truth. Always verify the actual codebase state.
+3. Compare with the current state in `src/` using `@/legacy-code-reference`.
+4. Identify missing logic, styles, or assets.
 
 ### Phase 2: Architectural Plan
 
@@ -37,21 +39,33 @@ Every migration task **MUST** follow these phases. Do not skip any phase.
 1. Migrate styles to SCSS partials, using `@/project-standards-checker` to ensure modularity.
 2. Implement components using the **Composition API** (`<script setup>`).
 3. Ensure no single file exceeds **500 lines** (strictly enforced by `@/project-standards-checker`). If needed, extract logic into separate files in `src/logic/` or `src/composables/`.
+4. **Unit Test Creation**: Every migrated logic module (composable, store, or utility) **MUST** be accompanied by a corresponding unit test file in `tests/` to verify functional parity with the legacy source.
 
 ### Phase 4: Verification
 
-1. Run `npm run lint` and `npm run build` to ensure project stability.
+1. Run `npm run lint`, `npm run test`, and `npm run build` to ensure project stability and logic correctness.
 2. Use `@/vue-debug-guides` if you encounter reactivity or lifecycle issues.
 3. Validate visual parity against the legacy CSS/HTML using `@/testing-best-practices`.
+
+### Phase 5: Documentation Tracking
+
+1. **Update Tracker**: You **MUST** update (or create if missing) the [migration_tracker.md](docs/migration_tracker.md) file.
+2. **Details**: Record the original file name, the new Vue module/composable path, and the migration coverage (0-100%).
 
 ## Standards Compliance
 
 Legacy code **MUST** be modified during migration to comply with all current project standards. Migrating non-compliant code without updates is **FORBIDDEN**.
 
 - **Modern Patterns**: Replace direct `supabase.from` calls with `DBRouter.from`, implement session uniqueness, and follow cache invalidation rules defined in `@/project-standards-checker`.
+- **Database Parity**: Any legacy logic that introduces or modifies data structures **MUST** follow the versioned migration pattern in `@/database` and update the `DATABASE_MIGRATIONS` array in `sqliteIDBHandler.js`.
+  - **REMOTE SQL VISIBILITY**: Always present the user with the SQL code intended for Supabase to ensure parity.
 - **No Hardcoded Styles**: Use SCSS tokens. If the code is being migrated to a Vue component, implement styles using Vue standards (scoped `<style lang="scss">`, reactive classes `:class`, or computed `:style` for dynamic values). If it's not a component yet, extract all legacy inline styles to modular SCSS partials.
 - **Modularity**: Every new file must pass the 500-line audit. If a legacy script is too large, it **MUST** be split into multiple logic modules or composables.
 - **Type Safety**: Use TypeScript where possible or JSDoc if the project is JS-only.
+- **Mandatory Unit Testing**: No logic-heavy migration is complete without verified unit tests. If the migrated code handles mechanics (battle logic, calculations, data transformations), you **MUST** provide a test suite that covers edge cases and confirms parity with the original legacy behavior.
+- **Migration Tracking Mandate**: To prevent logic loss and maintain project oversight, every file migrated from `backup_legacy_code/` **MUST** be registered in the **Migration Tracker Table** (`docs/migration_tracker.md`).
+  - **Required Columns**: `Original File`, `Vue Module/Composable`, `Status/Coverage`, `Notes`.
+  - **Status**: Flag as "100%" only when all logic, styles, and assets are fully verified and tested. If legacy features are missing (e.g., "Trading not yet implemented"), they **MUST** be noted in the table.
 
 ## Example Invocations
 

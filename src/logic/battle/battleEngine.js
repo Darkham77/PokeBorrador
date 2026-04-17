@@ -36,17 +36,23 @@ export function getAccuracyMultiplier(stage) {
   return ACC_STAGE_MULT[Math.max(0, Math.min(12, stage + 6))];
 }
 
-export function getTypeEffectiveness(moveType, defType) {
+export function getTypeEffectiveness(moveType, defType, attacker = null) {
   if (!moveType || !defType) return 1;
+  
+  // Scrappy (Intrépido) logic: Normal/Fighting can hit Ghost
+  if (attacker?.ability === 'Intrépido' && defType.toLowerCase() === 'ghost' && (moveType.toLowerCase() === 'normal' || moveType.toLowerCase() === 'fighting')) {
+    return 1;
+  }
+
   const row = TYPE_CHART[moveType.toLowerCase()];
   if (!row) return 1;
   return row[defType.toLowerCase()] ?? 1;
 }
 
-export function getCombinedEffectiveness(moveType, defender) {
-  let eff = getTypeEffectiveness(moveType, defender.type);
+export function getCombinedEffectiveness(moveType, defender, attacker = null) {
+  let eff = getTypeEffectiveness(moveType, defender.type, attacker);
   if (defender.type2) {
-    eff *= getTypeEffectiveness(moveType, defender.type2);
+    eff *= getTypeEffectiveness(moveType, defender.type2, attacker);
   }
   return eff;
 }
@@ -82,8 +88,26 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
   const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
 
   // Ability & STAB modifiers
-  const { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplier(attacker, defender, move);
+  let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplier(attacker, defender, move);
   
+  // Thick Fat (Sebo)
+  if (defender.ability === 'Sebo' && (move.type === 'fire' || move.type === 'ice')) {
+    finalAbilityMult *= 0.5;
+    triggeredAbility = 'Sebo';
+  }
+
+  // Held Items
+  let itemMult = 1;
+  if (attacker.heldItem) {
+    const h = attacker.heldItem;
+    // Type boosters (20%)
+    const typeBoosters = { 'Carbón': 'fire', 'Imán': 'electric', 'Agua Mística': 'water', 'Semilla Milagro': 'grass', 'Cinturón Negro': 'fighting', 'Cuchara Torcida': 'psychic', 'Hechizo': 'ghost', 'Polvo Plata': 'bug', 'Flecha Venenosa': 'poison' };
+    if (typeBoosters[h] === move.type) itemMult = 1.2;
+    
+    // Global Power Items
+    if (h === 'Cinta Elegida' && move.cat === 'physical') itemMult = 1.5;
+  }
+
   // STAB
   let stab = (move.type === attacker.type || move.type === attacker.type2) ? 1.5 : 1;
   if (attacker.ability === 'Adaptable' && stab > 1) stab = 2;
@@ -113,11 +137,11 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
   const random = 0.85 + Math.random() * 0.15;
 
   // Effectiveness
-  const eff = getCombinedEffectiveness(move.type, defender);
+  const eff = getCombinedEffectiveness(move.type, defender, attacker);
 
   // Final Damage calculation
   const finalDmg = eff > 0 
-    ? Math.max(1, Math.floor(baseDamage * stab * finalAbilityMult * eff * random * critMult * weatherMult)) 
+    ? Math.max(1, Math.floor(baseDamage * stab * finalAbilityMult * eff * random * critMult * weatherMult * itemMult)) 
     : 0;
 
   return {

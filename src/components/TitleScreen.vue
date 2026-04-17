@@ -43,7 +43,7 @@ const handleLogout = () => {
         <div class="starter-img-container">
           <img
             id="starter-img-bulbasaur"
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.webp"
             alt="Bulbasaur"
             class="starter-sprite"
           >
@@ -77,7 +77,7 @@ const handleLogout = () => {
         <div class="starter-img-container">
           <img
             id="starter-img-charmander"
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
+            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.webp"
             alt="Charmander"
             class="starter-sprite"
           >
@@ -111,7 +111,7 @@ const handleLogout = () => {
         <div class="starter-img-container">
           <img
             id="starter-img-squirtle"
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
+            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.webp"
             alt="Squirtle"
             class="starter-sprite"
           >

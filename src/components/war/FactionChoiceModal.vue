@@ -15,7 +15,7 @@ const warStore = useWarStore()
           @click="warStore.chooseFaction('union')"
         >
           <img
-            src="/assets/factions/union.png"
+            src="@/assets/ui/factions/union.webp"
             alt="Union"
           >
           <h3>TEAM UNIÓN</h3>
@@ -28,7 +28,7 @@ const warStore = useWarStore()
           @click="warStore.chooseFaction('poder')"
         >
           <img
-            src="/assets/factions/poder.png"
+            src="@/assets/ui/factions/poder.webp"
             alt="Poder"
           >
           <h3>TEAM PODER</h3>

@@ -1,4 +1,5 @@
 import { initSQLite, queryLocal, execLocal, insertLocal } from './sqliteIDBHandler'
+import { supabase } from '../supabase'
 
 /**
  * DBRouter - Unified Data Persistence Layer
@@ -101,6 +102,13 @@ export class DBRouter {
         await execLocal(`INSERT INTO passive_battle_reports (user_id, opponent_id, result, report_data) VALUES (?, ?, ?, ?)`, 
           [userId, p_opponent_id, p_result, JSON.stringify(p_report_data)])
         return { data: { success: true }, error: null }
+      }
+
+      if (name === 'claim_award') {
+        const { p_award_id } = params
+        await execLocal(`UPDATE awards SET claimed = 1, claimed_at = ? WHERE id = ?`, [new Date().toISOString(), p_award_id])
+        const award = await queryLocal(`SELECT prize FROM awards WHERE id = ?`, [p_award_id])
+        return { data: { ok: true, prize: JSON.parse(award[0]?.prize || '{}') }, error: null }
       }
 
       return { data: null, error: { message: `Offline RPC ${name} not implemented` } }
