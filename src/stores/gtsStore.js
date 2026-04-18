@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
+import { useAudioStore } from './audio'
 import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen } from '@/logic/market'
 import { SHOP_ITEMS } from '@/data/items'
 
@@ -10,6 +11,7 @@ export const useGTSStore = defineStore('gts', () => {
   const auth = useAuthStore()
   const game = useGameStore()
   const ui = useUIStore()
+  const audio = useAudioStore()
 
   // State
   const listings = ref([])
@@ -113,7 +115,7 @@ export const useGTSStore = defineStore('gts', () => {
       }, (payload) => {
         if (payload.new.status === 'sold' && payload.old.status !== 'sold') {
           ui.notify('¡ Venta realizada en el GTS !', '💰')
-          if (window.SFX) window.SFX.play('money')
+          audio.money()
           fetchUserData()
         }
       })
@@ -148,7 +150,6 @@ export const useGTSStore = defineStore('gts', () => {
 
       if (newSave) {
         game.updateState(newSave)
-        if (window.updateHud) window.updateHud()
         
         ui.notify('¡ Compra exitosa ! Objeto enviado a tus Reclamos.', '✅')
         await game.fetchClaimQueue()

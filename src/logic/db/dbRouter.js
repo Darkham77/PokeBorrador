@@ -5,6 +5,7 @@
  */
 import { ProxyQuery } from './proxyQuery';
 import { initSQLite, persistSQLite, queryLocal, getRawSqlite } from './sqliteEngine';
+import { DATABASE_MIGRATIONS } from './migrations_data';
 
 export class DBRouter {
   /**
@@ -21,10 +22,6 @@ export class DBRouter {
     this.userSubscription = null;
     
     console.log(`[DBRouter] Initialized in STRICT ${mode.toUpperCase()} mode.`);
-    
-    if (mode === 'offline') {
-      initSQLite(options);
-    }
   }
 
   /**
@@ -145,10 +142,13 @@ export class DBRouter {
    */
   get auth() {
     if (this.mode === 'offline') {
+      const localUser = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('pokevicio_local_user') || 'null') : null;
+      const user = localUser || { id: 'local_user', email: 'offline@pkv.io' };
+      
       return {
         signOut: async () => ({ error: null }),
-        signInWithPassword: async () => ({ data: { user: { id: 'local_user', email: 'offline@pkv.io' } }, error: null }),
-        getUser: async () => ({ data: { user: { id: 'local_user' } }, error: null }),
+        signInWithPassword: async () => ({ data: { user }, error: null }),
+        getUser: async () => ({ data: { user }, error: null }),
         getSession: async () => ({ data: { session: null }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
       };
@@ -174,7 +174,10 @@ export class DBRouter {
  * DB Compatibility Check
  * Ensures the client version is not greater than the DB version.
  */
-export const CLIENT_DB_VERSION = 202604180100;
+// Use the last migration ID as the client version (Automated)
+export const CLIENT_DB_VERSION = DATABASE_MIGRATIONS.length > 0 
+  ? parseInt(DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1].id.split('_')[0]) 
+  : 0;
 
 export async function checkDBCompatibility(router) {
   try {

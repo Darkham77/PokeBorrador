@@ -2,9 +2,28 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
+import { generateMigrations } from './scripts/generate_migrations.js'
+
+function migrationsPlugin() {
+  return {
+    name: 'migrations-generator',
+    configResolved() {
+      generateMigrations()
+    },
+    handleHotUpdate({ file }) {
+      if (file.includes('database/migrations')) {
+        generateMigrations()
+      }
+    }
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    migrationsPlugin()
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

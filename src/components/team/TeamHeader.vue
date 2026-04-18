@@ -1,34 +1,27 @@
 <script setup>
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { useBoxStore } from '@/stores/boxStore'
 
 const gameStore = useGameStore()
+const boxStore = useBoxStore()
 
-const ui = computed(() => gameStore.state.uiSelection)
 const playerClass = computed(() => gameStore.state.playerClass)
 
 const toggleRocket = () => {
-  if (typeof window.toggleTeamRocketMode === 'function') {
-    window.toggleTeamRocketMode()
-  }
+  boxStore.toggleTeamRocketMode()
 }
 
 const confirmRocket = () => {
-  if (typeof window.confirmTeamRocketSell === 'function') {
-    window.confirmTeamRocketSell()
-  }
+  boxStore.confirmTeamRocketSell()
 }
 
 const toggleRelease = () => {
-  if (typeof window.toggleReleaseMode === 'function') {
-    window.toggleReleaseMode()
-  }
+  boxStore.toggleTeamReleaseMode()
 }
 
 const confirmRelease = () => {
-  if (typeof window.confirmRelease === 'function') {
-    window.confirmRelease()
-  }
+  boxStore.confirmTeamRelease()
 }
 </script>
 
@@ -42,7 +35,7 @@ const confirmRelease = () => {
       <div class="header-actions">
         <!-- Modo Rocket -->
         <template v-if="playerClass === 'rocket'">
-          <template v-if="!ui.teamRocketMode">
+          <template v-if="!boxStore.teamRocketMode">
             <button
               class="legacy-btn rocket-btn"
               @click="toggleRocket"
@@ -67,8 +60,8 @@ const confirmRelease = () => {
         </template>
 
         <!-- Modo Liberación -->
-        <template v-if="!ui.teamRocketMode">
-          <template v-if="!ui.teamReleaseMode">
+        <template v-if="!boxStore.teamRocketMode">
+          <template v-if="!boxStore.teamReleaseMode">
             <button
               class="legacy-btn release-btn"
               @click="toggleRelease"
@@ -97,7 +90,7 @@ const confirmRelease = () => {
     <!-- Hint Banners -->
     <Transition name="pixel-slide">
       <div
-        v-if="ui.teamRocketMode"
+        v-if="boxStore.teamRocketMode"
         class="hint-banner rocket-hint legacy-panel"
       >
         <span class="hint-icon">🚀</span>
@@ -107,7 +100,7 @@ const confirmRelease = () => {
 
     <Transition name="pixel-slide">
       <div
-        v-if="ui.teamReleaseMode"
+        v-if="boxStore.teamReleaseMode"
         class="hint-banner release-hint legacy-panel"
       >
         <span class="hint-icon">⚠️</span>

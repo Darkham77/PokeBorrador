@@ -4,12 +4,14 @@ import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { useSocialStore } from './social'
+import { useAudioStore } from './audio'
 
 export const useTradeStore = defineStore('trade', () => {
   const authStore = useAuthStore()
   const gameStore = useGameStore()
   const uiStore = useUIStore()
   const socialStore = useSocialStore()
+  const audioStore = useAudioStore()
 
   const tradeTarget = ref(null)
   const tradeFriendSave = ref(null)
@@ -43,7 +45,7 @@ export const useTradeStore = defineStore('trade', () => {
         filter: `receiver_id=eq.${authStore.user.id}`
       }, () => {
         uiStore.notify('¡Has recibido una nueva oferta de intercambio!', '🔄')
-        window.SFX?.notif?.()
+        audioStore.notif()
         refreshPendingTrades()
       })
       .subscribe()
@@ -123,7 +125,7 @@ export const useTradeStore = defineStore('trade', () => {
 
     if (!error && tradeId) {
       uiStore.notify(`¡Oferta enviada a ${tradeTarget.value.username}!`, '🔄')
-      window.SFX?.sentMsg?.() 
+      audioStore.sentMsg() 
       refreshPendingTrades()
       return true
     }
@@ -136,7 +138,8 @@ export const useTradeStore = defineStore('trade', () => {
     if (authStore.sessionMode === 'offline') return false
     
     try {
-      if (window.setAuthLoading) window.setAuthLoading(true)
+      gameStore.state.overlayMessage = 'Procesando intercambio...'
+      gameStore.state.isOverlayLoading = true
       
       // MANDATORY: Pre-Action Flush
       uiStore.notify('Sincronizando inventario...', '🔄')
@@ -152,11 +155,11 @@ export const useTradeStore = defineStore('trade', () => {
       uiStore.notify('¡Intercambio aceptado! Los activos están en tu cola de reclamo.', '🎉')
       await gameStore.fetchClaimQueue()
       
-      if (window.setAuthLoading) window.setAuthLoading(false)
+      gameStore.state.isOverlayLoading = false
       await refreshPendingTrades()
       return true
     } catch (err) {
-      if (window.setAuthLoading) window.setAuthLoading(false)
+      gameStore.state.isOverlayLoading = false
       console.error('[TRADE ERROR]', err)
       uiStore.notify('Error en el intercambio: ' + err.message, '❌')
       return false

@@ -6,6 +6,8 @@ import { GYMS } from '@/data/gyms';
 import { FIRE_RED_MAPS } from '@/data/maps';
 import { NATURE_DATA } from '@/data/natures';
 
+import { POKEMON_SPRITE_IDS, getSpriteUrl, getBackSpriteUrl } from '@/data/spriteMapping';
+
 /**
  * PokemonDataProvider
  * 
@@ -91,6 +93,20 @@ export const pokemonDataProvider = {
     getNatureData(name) {
         const data = NATURE_DATA[name];
         return data ? deepClone(data) : null;
+    },
+
+    /**
+     * Obtiene la URL del sprite.
+     */
+    getSpriteUrl(id, isShiny = false) {
+        return getSpriteUrl(id, isShiny);
+    },
+
+    /**
+     * Obtiene la URL del sprite de espalda.
+     */
+    getBackSpriteUrl(id, isShiny = false) {
+        return getBackSpriteUrl(id, isShiny);
     },
 
     /**

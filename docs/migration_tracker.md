@@ -29,6 +29,15 @@ This document tracks the progress of migrating legacy JavaScript/CSS/HTML code f
 | `14_pvp.js` | `src/stores/pvpStore.js` | 100% | Real-time PvP Battles, Invite System, and Turn Resolution. |
 | `24_passive_pvp.js` | `src/stores/rankedStore.js` | 100% | Seasonal Rules, ELO Tiers, Leaderboards, and Passive Defense. |
 | `gyms.js` | `src/stores/gyms.js` | 100% | Desafío a Líderes nativo, registro de medallas y entrega de MTs. |
+| `17_sounds.js` | `src/stores/audio.js` | 100% | Motor de síntesis 8-bit nativo Web Audio API (window.SFX eliminado). |
+| `03_sprites.js` | `src/data/spriteMapping.js` | 100% | Mapeo de sprites PokeAPI desacoplado del motor legacy. |
+| `27_cosmetics.js` | `src/data/cosmeticsData.js` | 100% | Datos de personalización (Nicks/Bordes) migrados a ESM. |
+| `21_dominance.js` | `src/stores/war.js` | 100% | Guerra de Facciones, control de mapas, bonos de dominancia y guardianes. |
+| `22_library.js` | `src/stores/library.js` | 100% | Sistema de ayuda y tutoriales (Biblioteca) con visual parity. |
+| `19_error_handler.js` | `src/logic/errorHandler.js`| 100% | Captura de errores global y overlay de reporte de bugs. |
+| `00_ratios.js` | `src/data/constants.js` | 100% | Constantes de juego y ratios de captura/batalla. |
+| `10_trade_enhanced.js` | `src/components/social/TradePokemonSelector.vue` | 100% | Selector avanzado de Pokémon para intercambios con filtros. |
+| `08_shop.js` | `src/data/items.js` | 90% | Datos de items migrados. Lógica de subida de rango pendiente. |
 
 ## Legend
 

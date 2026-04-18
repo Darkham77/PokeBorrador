@@ -74,7 +74,7 @@ All game-specific content **MUST** be strictly Pixel Art to preserve the game's 
 - **Icons**: Only use pixel-art icons. **FORBIDDEN**: Modern SVG icons, FontAwesome, or high-res Material icons.
 - **Typography (Game Data)**: Primary game interaction text (Stats, Dialogs, Battle log) **MUST** use Pixel Art fonts.
   - **MANDATORY Fonts**: `Press Start 2P`, `VT323`, or `Silkscreen` (Google Fonts).
-  - **Restriction**: Smooth fonts like `Outfit` or `Inter` are reserved ONLY for administrative headers or meta-UI that is secondary to the game experience.
+  - **Restriction**: Smooth fonts like `Outfit` or `Inter` are reserved ONLY for administrative headers or meta-UI that is secondary to the game experience (e.g., Settings menus, Credits, Trade history logs, Debug consoles).
 
 ---
 

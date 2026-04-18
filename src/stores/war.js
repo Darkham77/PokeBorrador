@@ -106,6 +106,7 @@ export const useWarStore = defineStore('war', () => {
 
   /**
    * Progressively awards War Coins based on points earned.
+   * Cap: 50 coins per day (Legacy Parity).
    */
   function handleWarCoins(pts) {
     const today = new Date().toDateString()
@@ -113,8 +114,7 @@ export const useWarStore = defineStore('war', () => {
     if (!gameStore.state.warDailyCoins[today]) gameStore.state.warDailyCoins[today] = 0
     if (!gameStore.state.warPointsAccumulator) gameStore.state.warPointsAccumulator = 0
 
-    // TODO: Define DAILY_COIN_CAP in constants or engine
-    const DAILY_COIN_CAP = 100 
+    const DAILY_COIN_CAP = 50 
     if (gameStore.state.warDailyCoins[today] >= DAILY_COIN_CAP) return
 
     gameStore.state.warPointsAccumulator += pts
@@ -129,6 +129,71 @@ export const useWarStore = defineStore('war', () => {
         uiStore.notify(`¡Ganaste ${allowedCoins} Moneda${allowedCoins > 1 ? 's' : ''} de Guerra!`, '⚡')
       }
       gameStore.state.warPointsAccumulator %= 10
+    }
+  }
+
+  /**
+   * Assigns or changes the player's faction.
+   * Cost: 25k for changes.
+   */
+  async function chooseFaction(newFaction) {
+    if (!authStore.user) return false
+    
+    const isChange = !!faction.value
+    if (isChange) {
+      if (faction.value === newFaction) return true
+      if (gameStore.state.money < FACTION_CHANGE_COST) {
+        uiStore.notify(`Necesitás 🪙${FACTION_CHANGE_COST.toLocaleString()} para cambiar de bando.`, '⛔')
+        return false
+      }
+      
+      // Legacy rule: Reset points on faction change
+      gameStore.state.money -= FACTION_CHANGE_COST
+      await gameStore.db.from('war_user_points').delete()
+        .eq('user_id', authStore.user.id)
+        .eq('week_id', currentWeekId.value)
+      
+      weeklyPoints.value = 0
+    }
+
+    const { error } = await gameStore.db.from('war_factions')
+      .upsert({ user_id: authStore.user.id, faction: newFaction })
+    
+    if (!error) {
+      faction.value = newFaction
+      gameStore.state.faction = newFaction
+      uiStore.notify(`¡Ahora eres parte del Team ${newFaction === 'union' ? 'Unión' : 'Poder'}!`, '⚔️')
+      return true
+    }
+    return false
+  }
+
+  /**
+   * Records a guardian capture or defeat.
+   */
+  async function claimGuardian(mapId, isDefeat = false) {
+    if (!authStore.user || !faction.value) return
+    
+    const today = getArgDateString()
+    const guardian = getGuardianData(mapId, []) // In real use we pass map list
+    if (!guardian) return
+
+    const ptsAwarded = isDefeat ? Math.floor(guardian.pts * 0.7) : guardian.pts
+
+    const { error } = await gameStore.db.from('guardian_captures').insert({
+      capture_date: today,
+      map_id: mapId,
+      user_id: authStore.user.id,
+      winner_faction: faction.value,
+      pts_awarded: ptsAwarded
+    })
+
+    if (!error) {
+      if (!dailyGuardianCaptures.value.includes(mapId)) {
+        dailyGuardianCaptures.value.push(mapId)
+      }
+      await addPoints(mapId, 'GUARDIAN', true) // Points logic handles Coins/State
+      uiStore.notify(`¡Guardián ${isDefeat ? 'Derrotado' : 'Capturado'}! +${ptsAwarded} PT.`, '🏆')
     }
   }
 
@@ -179,6 +244,45 @@ export const useWarStore = defineStore('war', () => {
     return getGuardianData(mapId, allMapIds)
   }
 
+  /**
+   * Settles the weekly results and distributes coins.
+   * This is typically called during the dominance phase transition.
+   */
+  async function resolveWeeklySeason() {
+    if (isDisputeActive.value) return
+    if (gameStore.state.lastResolvedWeek === currentWeekId.value) return
+
+    // Calculate contribution coins based on milestones
+    let totalCoins = 0
+    const milestones = [...WEEKLY_REWARD_MILESTONES].reverse()
+    const match = milestones.find(m => weeklyPoints.value >= m.pt)
+    if (match) totalCoins = match.coins
+
+    // Winner bonus
+    const { data: winners } = await gameStore.db.from('war_dominance')
+      .select('winner_faction')
+      .eq('week_id', currentWeekId.value)
+    
+    let unionWins = 0, poderWins = 0
+    winners?.forEach(w => {
+      if (w.winner_faction === 'union') unionWins++
+      else poderWins++
+    })
+
+    const isWinner = (faction.value === 'union' && unionWins >= poderWins) ||
+                     (faction.value === 'poder' && poderWins > unionWins)
+    
+    if (isWinner) totalCoins += WEEKLY_WIN_BONUS_COINS
+
+    if (totalCoins > 0) {
+      warCoins.value += totalCoins
+      gameStore.state.warCoins = (gameStore.state.warCoins || 0) + totalCoins
+      uiStore.notify(`Fin de guerra. ¡Recibiste ${totalCoins} Monedas de Guerra!`, '⚡')
+    }
+
+    gameStore.state.lastResolvedWeek = currentWeekId.value
+  }
+
   return {
     faction,
     warCoins,
@@ -191,6 +295,9 @@ export const useWarStore = defineStore('war', () => {
     loadWarData,
     addPoints,
     fetchMapDominance,
-    checkGuardian
+    checkGuardian,
+    chooseFaction,
+    claimGuardian,
+    resolveWeeklySeason
   }
 })

@@ -4,6 +4,7 @@ import { makePokemon } from '@/logic/pokemonFactory';
 import { getDayCycle } from '@/logic/timeUtils';
 import { isDisputePhase } from '@/logic/war/warEngine';
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
+import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
 
 /**
  * Gets the valid pool of Pokémon for a location and time cycle.
@@ -162,5 +163,11 @@ export async function generateEncounter(locId, state, options = {}) {
   const selectedId = selectFromPool(pool, rates);
   const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
   
-  return { type: 'wild', pokemon: makePokemon(selectedId, level) };
+  const pokemon = makePokemon(selectedId, level);
+
+  // 7. Apply War Dominance Bonuses
+  return { 
+    type: 'wild', 
+    pokemon: applyEncounterBonuses(pokemon, locId, state.faction, options.dominanceData) 
+  };
 }

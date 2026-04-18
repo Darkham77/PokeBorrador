@@ -159,9 +159,8 @@ export const useBoxStore = defineStore('box', () => {
     gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + indices.length;
     
     // Criminalidad (15 por cada uno)
-    if (typeof window.addCriminality === 'function') {
-      window.addCriminality(indices.length * 15);
-    }
+    const classStore = (await import('./playerClass')).usePlayerClassStore()
+    classStore.addCriminality(indices.length * 15)
 
     uiStore.notify(`¡Venta realizada por ₽${totalGain.toLocaleString()}! 💰`, '🚀');
     rocketMode.value = false;

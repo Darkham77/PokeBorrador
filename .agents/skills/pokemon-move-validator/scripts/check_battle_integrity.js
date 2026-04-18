@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const DATA_FILE = path.resolve(__dirname, '../../../js/02_pokemon_data.js');
-const BATTLE_FILE = path.resolve(__dirname, '../../../js/07_battle.js');
+const DATA_FILE = 'src/data/moves.js';
+const BATTLE_FILE = 'src/logic/battle/battleMoves.js';
+const PVP_FILE = 'src/logic/pvp/rankedEngine.js';
 
 function run() {
     console.log("Checking Battle Integrity...");
@@ -30,7 +31,6 @@ function run() {
         implementedEffects.add(match[1]);
     }
 
-    const PVP_FILE = path.resolve(__dirname, '../../../js/14_pvp.js');
     const pvpContent = fs.existsSync(PVP_FILE) ? fs.readFileSync(PVP_FILE, 'utf8') : '';
 
     // 3. Extraer propiedades booleanas especiales (halfHP, ohko, fixedDmg, etc.)
@@ -65,7 +65,7 @@ function run() {
     let hasErrors = false;
 
     if (orphanEffects.length > 0) {
-        console.log("❌ ORPHAN EFFECTS FOUND (Defined in MOVE_DATA but not implemented in 07_battle.js):");
+        console.log("❌ ORPHAN EFFECTS FOUND (Defined in MOVE_DATA but not implemented in battleMoves.js):");
         orphanEffects.forEach(e => console.log(`- ${e}`));
         hasErrors = true;
     }
@@ -76,7 +76,7 @@ function run() {
     }
 
     if (missingPvpProps.length > 0) {
-        console.log("❌ DESYNC PvP ERROR: The following special properties are missing in 14_pvp.js:");
+        console.log("❌ DESYNC PvP ERROR: The following special properties are missing in rankedEngine.js:");
         missingPvpProps.forEach(p => console.log(`- ${p}`));
         hasErrors = true;
     }

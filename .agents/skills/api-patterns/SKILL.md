@@ -1,17 +1,12 @@
 ---
 name: api-patterns
 description: API design principles and decision-making. REST vs GraphQL vs tRPC selection, response formats, versioning, pagination.
-allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
-# API Patterns
+# API Design Patterns
 
 > API design principles and decision-making for 2025.
 > **Learn to THINK, not copy fixed patterns.**
-
-## 🎯 Selective Reading Rule
-
-**Read ONLY files relevant to the request!** Inspect the content map to find what you need.
 
 ---
 
@@ -36,47 +31,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 | Need | Skill |
 | :--- | :--- |
-| API implementation | [backend-development](../backend-development/SKILL.md) |
 | Data structure | [database-design](../database-design/SKILL.md) |
-| Security details | [security-hardening](../security-hardening/SKILL.md) |
 
 ---
-
-## ✅ Decision Checklist
-
-Before designing an API:
-
-- [ ] **Ask user about API consumers.**
-- [ ] **Choose API style for THIS context.** (REST/GraphQL/tRPC)
-- [ ] **Define consistent response format.**
-- [ ] **Plan versioning strategy.**
-- [ ] **Consider authentication needs.**
-- [ ] **Plan rate limiting.**
-- [ ] **Define documentation approach.**
-
----
-
-## ❌ Anti-Patterns
-
-**DON'T:**
-
-- Default to REST for everything.
-- Use verbs in REST endpoints (/getUsers).
-- Return inconsistent response formats.
-- Expose internal errors to clients.
-- Skip rate limiting.
-
-**DO:**
-
-- Choose API style based on context.
-- Ask about client requirements.
-- Document thoroughly.
-- Use appropriate status codes.
-
----
-
-## Script
-
-| Script | Purpose | Command |
-| :--- | :--- | :--- |
-| `scripts/api_validator.py` | Run API endpoint validation | `python scripts/api_validator.py <project_path>` |

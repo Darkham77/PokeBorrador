@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
-import { reactive, watch, computed } from 'vue'
+import { reactive, watch, computed, ref } from 'vue'
 import { saveGame as performSave } from '@/logic/auth/saveService'
 import { useAuthStore } from './auth'
 import { useUIStore } from './ui'
 import { supabase } from '@/logic/supabase'
 import { DBRouter } from '@/logic/db/dbRouter'
 import { loadBestSave } from '@/logic/auth/loadService'
-import { makePokemon } from '@/logic/pokemonFactory'
+import { makePokemon, levelUpPokemon } from '@/logic/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
 
@@ -76,19 +76,9 @@ const INITIAL_STATE = {
   notificationHistory: [],
   marketSoldSeenIds: [],
   claimQueue: [],
-  isReady: (typeof localStorage !== 'undefined' && !!localStorage.getItem('pokevicio_save_v3_ash')), // Pre-ready if save exists
-  uiSelection: {
-    teamRocketMode: false,
-    teamRocketSelected: [],
-    teamReleaseMode: false,
-    teamReleaseSelected: [],
-    boxRocketMode: false,
-    boxRocketSelected: [],
-    boxReleaseMode: false,
-    boxReleaseSelected: [],
-    isOverlayLoading: false,
-    overlayMessage: 'Cargando...'
-  }
+  isOverlayLoading: false,
+  overlayMessage: 'Cargando...',
+  isReady: (typeof localStorage !== 'undefined' && !!localStorage.getItem('pokevicio_save_v3_ash'))
 }
 
 export const useGameStore = defineStore('game', () => {
@@ -96,14 +86,7 @@ export const useGameStore = defineStore('game', () => {
   const state = reactive(JSON.parse(JSON.stringify(INITIAL_STATE)))
   
   // Instancia UNIFICADA de base de datos con ruteo inteligente
-  const db = computed(() => supabase)
-
-  // Sincronizar window.DBRouter con la instancia global y el modo actual
-  watch(() => authStore.sessionMode, (mode) => {
-    if (typeof window !== 'undefined') {
-      window.DBRouter = supabase
-    }
-  }, { immediate: true })
+  const db = ref(supabase)
 
   function updateState(newData) {
     Object.assign(state, newData)
@@ -112,33 +95,6 @@ export const useGameStore = defineStore('game', () => {
   function resetToInitial() {
     Object.keys(state).forEach(key => delete state[key])
     Object.assign(state, JSON.parse(JSON.stringify(INITIAL_STATE)))
-  }
-
-  /**
-   * Sincroniza el store global de Vue con el estado interno del motor legacy.
-   */
-  function syncFromLegacy(legacyState) {
-    if (!legacyState) return
-    
-    const props = Object.keys(INITIAL_STATE)
-    
-    props.forEach(prop => {
-      if (legacyState[prop] !== undefined) {
-        const val = legacyState[prop]
-        if (Array.isArray(val)) {
-          state[prop] = [...val]
-        } else if (val !== null && typeof val === 'object') {
-          state[prop] = { ...val }
-        } else {
-          state[prop] = val
-        }
-      }
-    })
-
-    if (legacyState.trainer) state.trainer = legacyState.trainer
-    if (legacyState.trainerLevel !== undefined) state.trainerLevel = legacyState.trainerLevel
-    if (legacyState.trainerExp !== undefined) state.trainerExp = legacyState.trainerExp
-    if (legacyState.trainerExpNeeded !== undefined) state.trainerExpNeeded = legacyState.trainerExpNeeded
   }
 
   async function loadGame() {
@@ -171,7 +127,6 @@ export const useGameStore = defineStore('game', () => {
       }
 
       state.isReady = true
-      if (window.updateHud) window.updateHud()
     } else {
       state.isOverlayLoading = false
       state.isReady = true // Consider as ready even if empty for new users
@@ -215,7 +170,6 @@ export const useGameStore = defineStore('game', () => {
       if (freshSave) {
         updateState(freshSave.save_data)
         authStore.user.last_save_id = freshSave.last_save_id
-        if (window.updateHud) window.updateHud()
       }
     }
   }
@@ -284,9 +238,41 @@ export const useGameStore = defineStore('game', () => {
 
     if (leveledUp) {
       // Logic to check class unlocks could go here
-      if (window.updateHud) window.updateHud()
     }
     
+    scheduleSave()
+  }
+
+  /**
+   * Checks if a pokemon should level up and processes the increase.
+   * @param {Object} pokemon - The pokemon instance.
+   */
+  function checkLevelUp(pokemon) {
+    const uiStore = useUIStore()
+    const learnQueue = []
+
+    while (pokemon.exp >= pokemon.expNeeded && pokemon.level < 100) {
+      pokemon.exp -= pokemon.expNeeded
+      const pendingMoves = levelUpPokemon(pokemon)
+      
+      if (pendingMoves === null) break // Blocked by Everstone
+
+      uiStore.notify(`¡${pokemon.name} subió al nivel ${pokemon.level}!`, '📈')
+      
+      if (pendingMoves.length > 0) {
+        pendingMoves.forEach(m => learnQueue.push({ pokemon, move: m }))
+      }
+
+      // Trigger evolution check if needed
+      // (Legacy did this inside levelUpPokemon, but we might want to defer it to EvolutionScene)
+    }
+
+    if (learnQueue.length > 0) {
+      // In a pure Vue way, we should have a MoveLearningModal
+      // For now, we'll notify or handle it via uiStore
+      uiStore.addToLearnQueue(learnQueue)
+    }
+
     scheduleSave()
   }
 
@@ -321,7 +307,6 @@ export const useGameStore = defineStore('game', () => {
       
       if (data) {
         updateState(data)
-        if (window.updateHud) window.updateHud()
         
         // Remove from local queue
         state.claimQueue = state.claimQueue.filter(c => c.id !== claimId)
@@ -347,12 +332,53 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  function getMaxObeyLevel() {
+    const badges = state.defeatedGyms?.length || 0
+    if (badges >= 8) return 100
+    if (badges >= 7) return 75
+    if (badges >= 6) return 65
+    if (badges >= 5) return 55
+    if (badges >= 4) return 45
+    if (badges >= 3) return 35
+    if (badges >= 2) return 30
+    if (badges >= 1) return 25
+    return 20
+  }
+
+  function reorderTeam(draggedIndex, targetIndex) {
+    if (draggedIndex === targetIndex) return
+    const newTeam = [...state.team]
+    const [moved] = newTeam.splice(draggedIndex, 1)
+    newTeam.splice(targetIndex, 0, moved)
+    state.team = newTeam
+    save(false)
+  }
+
+  function sendToBox(index) {
+    if (state.team.length <= 1) {
+      useUIStore().notify('No puedes quedarte sin Pokémon en el equipo.', '⚠️')
+      return false
+    }
+    const p = state.team[index]
+    
+    // Heal on storage
+    p.hp = p.maxHp
+    p.status = null
+    p.sleepTurns = 0
+    p.moves?.forEach(m => { m.pp = m.maxPP })
+
+    state.team.splice(index, 1)
+    state.box.push(p)
+    useUIStore().notify(`¡${p.name} fue enviado a la Caja PC!`, '📦')
+    save(false)
+    return true
+  }
+
   return {
     state,
     db,
     updateState,
     resetToInitial,
-    syncFromLegacy,
     registerPokedex,
     scheduleSave,
     hatchEggs,
@@ -362,6 +388,10 @@ export const useGameStore = defineStore('game', () => {
     save,
     chooseStarter,
     addTrainerExp,
-    getTrainerRank
+    checkLevelUp,
+    getTrainerRank,
+    getMaxObeyLevel,
+    reorderTeam,
+    sendToBox
   }
 })

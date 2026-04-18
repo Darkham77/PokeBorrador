@@ -8,6 +8,7 @@ import { TRAINER_RANKS } from '@/data/trainer'
 
 export const useShopStore = defineStore('shop', () => {
   const gameStore = useGameStore()
+  const uiStore = useUIStore()
   
   const marketCategory = ref('todos')
   const searchQuery = ref('')
@@ -50,7 +51,6 @@ export const useShopStore = defineStore('shop', () => {
     if (!item) return
     
     if (gameStore.state.trainerLevel < (item.unlockLv || 1)) {
-      const uiStore = useUIStore()
       uiStore.notify('¡Item bloqueado!', '🔒')
       return
     }
@@ -62,7 +62,6 @@ export const useShopStore = defineStore('shop', () => {
     const total = unitPrice * qty
 
     if (gameStore.state.money < total) {
-      const uiStore = useUIStore()
       uiStore.notify('¡No tenés suficiente dinero!', '💸')
       return
     }
@@ -77,10 +76,8 @@ export const useShopStore = defineStore('shop', () => {
        gameStore.state.balls = (gameStore.state.balls || 0) + Math.floor(qty * mult)
     }
 
-    const uiStore = useUIStore()
     uiStore.notify(`¡Compraste x${qty} ${item.name}!`, item.icon)
     gameStore.scheduleSave()
-    if (window.updateHud) window.updateHud()
   }
 
   function buyItemBC(itemId) {
@@ -88,13 +85,11 @@ export const useShopStore = defineStore('shop', () => {
     if (!item || !item.trainerShop) return
 
     if (gameStore.state.trainerLevel < (item.unlockLv || 1)) {
-      const uiStore = useUIStore()
       uiStore.notify('¡Ítem bloqueado!', '🔒')
       return
     }
 
     if ((gameStore.state.battleCoins || 0) < item.bcPrice) {
-      const uiStore = useUIStore()
       uiStore.notify('¡No tenés suficientes Battle Coins!', '💰')
       return
     }
@@ -110,7 +105,6 @@ export const useShopStore = defineStore('shop', () => {
     const uiStore = useUIStore()
     uiStore.notify(`¡Compraste ${item.name}!`, '🏅')
     gameStore.scheduleSave()
-    if (window.updateHud) window.updateHud()
   }
 
   // ── POKÉMON CENTER HEALING ─────────────────────────────────────────────────
@@ -156,7 +150,6 @@ export const useShopStore = defineStore('shop', () => {
 
     useUIStore().notify('¡Tus Pokémon están totalmente recuperados!', '🏥')
     gameStore.scheduleSave()
-    if (window.updateHud) window.updateHud()
     return true
   }
 
@@ -214,7 +207,6 @@ export const useShopStore = defineStore('shop', () => {
     
     useUIStore().notify(`¡Compraste ${item.name} en el Mercado Negro! 🚀`, '💰')
     gameStore.scheduleSave()
-    if (window.updateHud) window.updateHud()
   }
 
   return {

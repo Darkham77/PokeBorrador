@@ -3,7 +3,9 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
-import { initLegacyBindings } from '@/logic/stateBridge'
+import { useWarStore } from '@/stores/war'
+import { useEventStore } from '@/stores/events'
+import { useAudioStore } from '@/stores/audio'
 
 // Sub-components
 import TitleScreen from '@/components/TitleScreen.vue'
@@ -31,6 +33,7 @@ import EvolutionScene from '@/components/evolution/EvolutionScene.vue'
 import MoveRelearnerModal from '@/components/modals/MoveRelearnerModal.vue'
 import SessionConflictModal from '@/components/auth/SessionConflictModal.vue'
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
+import ToastNotification from '@/components/ui/ToastNotification.vue'
 import { useAuthStore } from '@/stores/auth'
 
 
@@ -62,6 +65,9 @@ const uiStore = useUIStore()
 const authStore = useAuthStore()
 const battleStore = useBattleStore()
 const chatStore = useChatStore()
+const warStore = useWarStore()
+const eventStore = useEventStore()
+const audioStore = useAudioStore()
 
 // Sync Weather & Day/Night Cycle with Phaser
 watch(() => gameStore.state.dayCycle, (cycle) => {
@@ -103,21 +109,10 @@ onMounted(() => {
     resizeObserver.observe(hudRef.value)
   }
 
-  // 2. Initialize all legacy window bindings centralized in stateBridge.js
-  initLegacyBindings()
-  
-  // Watchdog sync: ensuring legacy state and Vue store stay aligned during initial load
-  const syncFunc = () => {
-    if (typeof window.triggerVueSync === 'function') {
-      window.triggerVueSync()
-    } else if (window.state && typeof gameStore.syncFromLegacy === 'function') {
-      gameStore.syncFromLegacy(window.state)
-    }
-  }
-  
-  syncFunc()
-  watchdog = setInterval(syncFunc, 1000)
-  setTimeout(() => clearInterval(watchdog), 10000)
+  // 2. Load essential game data
+  warStore.loadWarData()
+  eventStore.fetchEvents()
+  eventStore.checkPendingAwards()
 
   // Initial UI state setup
   setTimeout(() => {
@@ -133,13 +128,18 @@ onMounted(() => {
         document.body.classList.add('is-battle-active')
       }
     }
-
-    if (typeof window.updateFactionBadge === 'function') {
-      window.updateFactionBadge()
-    }
   }, 1200)
 
   document.addEventListener('click', handleOutsideClick)
+
+  // Initialize audio context on first user interaction
+  const initAudio = () => {
+    audioStore.init()
+    document.removeEventListener('click', initAudio)
+    document.removeEventListener('keydown', initAudio)
+  }
+  document.addEventListener('click', initAudio, { once: true })
+  document.addEventListener('keydown', initAudio, { once: true })
 })
 
 onUnmounted(() => {
@@ -316,6 +316,8 @@ onUnmounted(() => {
       v-if="uiStore.isSocialOpen" 
       @close="uiStore.isSocialOpen = false"
     />
+
+    <ToastNotification />
 
     <!-- CHAT GLOBAL (Phase 24) -->
     <GlobalChat />

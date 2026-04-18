@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventoryStore'
+import { useBoxStore } from '@/stores/boxStore'
+import { useUIStore } from '@/stores/ui'
 import { useBoxFilters } from '@/composables/useBoxFilters'
 
 // Sub-componentes
@@ -9,15 +11,19 @@ import BoxHeader from './box/BoxHeader.vue'
 import BoxTabs from './box/BoxTabs.vue'
 import BoxFilters from './box/BoxFilters.vue'
 import BoxGrid from './box/BoxGrid.vue'
+import BoxPokemonMenu from './box/BoxPokemonMenu.vue'
 
 const gameStore = useGameStore()
-const invStore = useInventoryStore()
+const boxStore = useBoxStore()
+const uiStore = useUIStore()
 const gs = computed(() => gameStore.state)
 
 // Store-bound state
-const currentBoxIndex = computed(() => invStore.currentBoxIndex)
-const isRocketMode = computed(() => invStore.boxRocketMode)
-const rocketSelection = computed(() => invStore.boxRocketSelected)
+const currentBoxIndex = computed(() => boxStore.currentBoxIndex)
+const isRocketMode = computed(() => boxStore.boxRocketMode)
+const rocketSelection = computed(() => boxStore.boxRocketSelected)
+const isBoxMenuOpen = computed(() => uiStore.isBoxMenuOpen)
+const selectedBoxIndex = computed(() => uiStore.selectedBoxIndex)
 
 // ----- ESTADO Y FILTROS -----
 const { 
@@ -32,57 +38,66 @@ const {
 const maxCapacity = computed(() => (gs.value.boxCount || 4) * 50)
 
 const displayList = computed(() => {
-  const start = currentBoxIndex.value * 50
-  const end = start + 50
+  const list = processedBoxList.value || []
   
-  // Si hay filtros o sort, usamos la lista procesada completa (que ya mapea {p, i})
-  if (hasActiveFilters.value || sortMode.value !== 'none') {
-    return (processedBoxList.value || []).slice(start, end)
+  if (hasActiveFilters.value) {
+    return list // Show all matches when searching/filtering
   } else {
-    // Si no hay filtros, el composable ya devuelve la página actual o podemos filtrarla aquí por 'index'
-    return (processedBoxList.value || []).filter(item => item.index >= start && item.index < end)
+    const start = currentBoxIndex.value * 50
+    return list.slice(start, start + 50)
   }
 })
 
 // ----- ACCIONES -----
 const switchBox = (i) => {
-  invStore.switchBox(i)
+  boxStore.switchBox(i)
 }
 
 const toggleRocketMode = () => {
-  invStore.toggleBoxRocketMode()
+  boxStore.toggleBoxRocketMode()
 }
 
-const getBoxBuyCost = () => invStore.getBoxBuyCost()
+const getBoxBuyCost = () => boxStore.getBoxBuyCost()
 
 const buyNewBox = () => {
   const cost = getBoxBuyCost()
   if (gs.value.boxCount >= 10) return
-  if (window.confirm(`¿Querés gastar ₱${cost.toLocaleString()} para comprar la Caja ${(gs.value.boxCount || 4) + 1}?`)) {
-    const res = invStore.buyNewBox()
-    if (res.success) {
-      if (window.notify) window.notify(`¡Compraste la Caja ${res.boxNum}!`, '💰')
-    } else {
-      if (window.notify) window.notify(res.msg, '❌')
+  
+  uiStore.openConfirm({
+    title: 'Comprar Caja',
+    message: `¿Querés gastar ₱${cost.toLocaleString()} para comprar la Caja ${(gs.value.boxCount || 4) + 1}?`,
+    onConfirm: () => {
+      const res = boxStore.buyNewBox()
+      if (res.success) {
+        uiStore.notify(`¡Compraste la Caja ${res.boxNum}!`, '💰')
+      } else {
+        uiStore.notify(res.msg, '❌')
+      }
     }
-  }
+  })
 }
 
 const handleConfirmRocketSell = () => {
-  const value = invStore.getRocketSellValue()
-  const count = invStore.boxRocketSelected.length
+  const value = boxStore.getRocketSellValue()
+  const count = boxStore.boxRocketSelected.length
   if (count === 0) return
-  if (window.confirm(`¿Vender ${count} Pokémon por ₽${value.toLocaleString()} al Team Rocket?`)) {
-    const res = invStore.doBoxRocketSell()
-    if (window.notify) window.notify(`¡${res.count} Pokémon vendidos por ₽${res.value.toLocaleString()}! 🚀`, '🚀')
-  }
+  
+  uiStore.openConfirm({
+    title: 'Vender al Team Rocket',
+    message: `¿Vender ${count} Pokémon por ₽${value.toLocaleString()} al Team Rocket?`,
+    onConfirm: () => {
+      const res = boxStore.doBoxRocketSell()
+      uiStore.notify(`¡${res.count} Pokémon vendidos por ₽${res.value.toLocaleString()}! 🚀`, '🚀')
+    }
+  })
 }
 
 const handlePokemonClick = (index) => {
   if (isRocketMode.value) {
-    invStore.toggleBoxRocketSelect(index)
+    boxStore.toggleBoxRocketSelect(index)
   } else {
-    if (typeof window.openBoxPokemonMenu === 'function') window.openBoxPokemonMenu(index)
+    uiStore.selectedBoxIndex = index
+    uiStore.isBoxMenuOpen = true
   }
 }
 </script>
@@ -138,6 +153,12 @@ const handlePokemonClick = (index) => {
       :is-rocket-mode="isRocketMode"
       :is-box-empty="!gs.box || gs.box.length === 0"
       @pokemon-click="handlePokemonClick"
+    />
+
+    <BoxPokemonMenu
+      v-if="isBoxMenuOpen"
+      :box-index="selectedBoxIndex"
+      @close="uiStore.isBoxMenuOpen = false"
     />
   </div>
 </template>

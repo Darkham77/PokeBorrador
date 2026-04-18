@@ -1,6 +1,6 @@
 ---
 name: pokemon-move-validator
-description: MANDATORY skill for validating Pokémon move databases and battle logic implementation. Use this skill whenever a move is added, modified, or when troubleshooting battle mechanics in js/07_battle.js or js/02_pokemon_data.js. You MUST run the validation scripts even if the user doesn't explicitly ask for verification to ensure data integrity and avoid calculation bugs.
+description: MANDATORY skill for validating Pokémon move databases and battle logic implementation. Use this skill whenever a move is added, modified, or when troubleshooting battle mechanics in src/logic/battle/ or src/data/moves.js. You MUST run the validation scripts even if the user doesn't explicitly ask for verification to ensure data integrity and avoid calculation bugs.
 ---
 
 # Pokemon Move Validator Skill
@@ -14,7 +14,7 @@ When working with moves, you **MUST** run the following automated validation scr
 ### 1. Structural & Semantic Check
 
 ```bash
-node .agents/skills/pokemon-move-validator/validator.js
+node .agents/skills/pokemon-move-validator/scripts/validator.js
 ```
 
 Checks for missing moves in `MOVE_DATA`, duplicates, and common semantic errors (e.g., status moves with power).
@@ -22,7 +22,7 @@ Checks for missing moves in `MOVE_DATA`, duplicates, and common semantic errors 
 ### 2. PokeAPI Semantic Sync
 
 ```bash
-node .agents/skills/pokemon-move-validator/pokeapi_sync.js
+node .agents/skills/pokemon-move-validator/scripts/pokeapi_sync.js
 ```
 
 Compares local `MOVE_DATA` with PokeAPI to detect missing effects, category mismatches, or incorrect `effect_chance`.
@@ -30,10 +30,10 @@ Compares local `MOVE_DATA` with PokeAPI to detect missing effects, category mism
 ### 3. Battle Integrity Check
 
 ```bash
-node .agents/skills/pokemon-move-validator/check_battle_integrity.js
+node .agents/skills/pokemon-move-validator/scripts/check_battle_integrity.js
 ```
 
-Ensures every `effect` string in `MOVE_DATA` has a corresponding `case` in `js/07_battle.js`.
+Ensures every `effect` string in `MOVE_DATA` has a corresponding implementation in `src/logic/battle/battleMoves.js`.
 
 ## Core Schema for MOVE_DATA
 
@@ -65,17 +65,17 @@ Every entry in `MOVE_DATA` must follow this mandatory structure:
    > - `special`: Uses `spa` (Attacker) vs `spd` (Defender).
    > - `physical`: Uses `atk` (Attacker) vs `def` (Defender).
 
-2. **Effect String Registry**: Before adding an `effect` string to `MOVE_DATA`, verify it exists in `applyMoveEffect` (js/07_battle.js).
+2. **Effect String Registry**: Before adding an `effect` string to `MOVE_DATA`, verify it exists in `applyMoveEffect` (src/logic/battle/battleMoves.js).
 
 3. **Verification**: After implementation, you **MUST**:
-   - Run `node unit_test_battle.js` to verify general logic.
-   - Check that `getMoveDescription` in `js/02_pokemon_data.js` properly describes the new effect.
+   - Run `node backup_legacy_code/unit_test_battle.js` to verify general logic.
+   - Check that `getMoveDescription` in `src/data/moves.js` properly describes the new effect.
 
 ## Audit Checklist (Zero Defect Integration)
 
-1. `[x]` Run `node .agents/skills/pokemon-move-validator/validator.js` (0 errors).
-2. `[x]` Run `node .agents/skills/pokemon-move-validator/pokeapi_sync.js` (verified consistency).
-3. `[x]` Run `node .agents/skills/pokemon-move-validator/check_battle_integrity.js` (no orphan effects).
+1. `[x]` Run `node .agents/skills/pokemon-move-validator/scripts/validator.js` (0 errors).
+2. `[x]` Run `node .agents/skills/pokemon-move-validator/scripts/pokeapi_sync.js` (verified consistency).
+3. `[x]` Run `node .agents/skills/pokemon-move-validator/scripts/check_battle_integrity.js` (no orphan effects).
 4. `[ ]` For multi-hit moves: is `hits: 2` or `hits: '2-5'` set correctly?
 5. `[ ]` Are the descriptions properly translated in `getMoveDescription`?
-6. `[ ]` **Unit Test**: Have you simulated the move in `unit_test_battle.js`?
+6. `[ ]` **Unit Test**: Have you simulated the move in `backup_legacy_code/unit_test_battle.js`?

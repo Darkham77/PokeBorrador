@@ -4,6 +4,7 @@ import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useGameStore } from '@/stores/game'
 import { CLASS_MISSIONS } from '@/data/playerClasses'
+import PokemonPickerModal from '../common/PokemonPickerModal.vue'
 
 const uiStore = useUIStore()
 const classStore = usePlayerClassStore()
@@ -13,6 +14,16 @@ const isOpen = computed(() => uiStore.isClassMissionsOpen)
 const currentClass = computed(() => classStore.currentClassDef)
 const activeMission = computed(() => classStore.activeMission)
 const trainerLevel = computed(() => gameStore.state.trainerLevel || 1)
+
+// Picker State
+const isPickerOpen = ref(false)
+const pickerConfig = ref({
+  title: '',
+  subtitle: '',
+  maxSelect: 1,
+  typeFilter: null,
+  missionId: null
+})
 
 const now = ref(Date.now())
 let timer = null
@@ -65,34 +76,44 @@ async function startMission(missionId) {
   const cls = classStore.playerClass
   
   if (cls === 'rocket') {
-    window._openPokemonSelectionModal({
+    pickerConfig.value = {
       title: '💀 SACRIFICIO ROCKET',
       subtitle: `Selecciona 1 Pokémon tipo VENENO para el mercado negro.`,
       maxSelect: 1,
       typeFilter: 'poison',
-      context: 'rocket',
-      onConfirm: (indices) => {
-        const p = gameStore.state.box[indices[0]]
-        const val = 1000 + ((p.level || 1) * 100) + (Object.values(p.ivs || {}).reduce((a, b) => a + (b || 0), 0) * 25)
-        classStore.startMission(missionId, { 
-          targetPokemonIdx: indices[0], 
-          projectedReward: val 
-        })
-      }
-    })
+      missionId: missionId
+    }
+    isPickerOpen.value = true
   } else if (cls === 'cazabichos') {
     classStore.startMission(missionId)
   } else {
-    window._openPokemonSelectionModal({
+    pickerConfig.value = {
       title: '📍 ENVIAR POKÉMON',
       subtitle: 'Selecciona al Pokémon que realizará la misión.',
       maxSelect: 1,
-      context: cls,
-      onConfirm: (indices) => {
-        classStore.startMission(missionId, { targetPokemonIdx: indices[0] })
-      }
-    })
+      typeFilter: null,
+      missionId: missionId
+    }
+    isPickerOpen.value = true
   }
+}
+
+function handlePickerConfirm(indices) {
+  const mId = pickerConfig.value.missionId
+  const cls = classStore.playerClass
+  
+  if (cls === 'rocket') {
+    const p = gameStore.state.box[indices[0]]
+    const val = 1000 + ((p.level || 1) * 100) + (Object.values(p.ivs || {}).reduce((a, b) => a + (b || 0), 0) * 25)
+    classStore.startMission(mId, { 
+      targetPokemonIdx: indices[0], 
+      projectedReward: val 
+    })
+  } else {
+    classStore.startMission(mId, { targetPokemonIdx: indices[0] })
+  }
+  
+  isPickerOpen.value = false
 }
 
 function collectReward() {
@@ -226,6 +247,17 @@ function collectReward() {
       </div>
     </div>
   </Transition>
+
+  <PokemonPickerModal
+    v-if="isPickerOpen"
+    :title="pickerConfig.title"
+    :subtitle="pickerConfig.subtitle"
+    :max-select="pickerConfig.maxSelect"
+    :type-filter="pickerConfig.typeFilter"
+    context="box"
+    @confirm="handlePickerConfirm"
+    @close="isPickerOpen = false"
+  />
 </template>
 
 <style scoped lang="scss">

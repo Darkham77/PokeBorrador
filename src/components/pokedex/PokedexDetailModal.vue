@@ -1,781 +1,528 @@
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { PDEX_TYPE_COLORS, GAME_TMS, TM_COMPAT, POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants'
+import { PDEX_TYPE_COLORS, GAME_TMS, TM_COMPAT, POKEMON_SPRITE_IDS } from '@/data/pokedex'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
-import { useUIStore } from '@/stores/ui'
 
 const props = defineProps({
-  speciesId: {
-    type: String,
-    required: true
-  },
-  isOpen: {
-    type: Boolean,
-    default: false
-  }
+  pokemonId: { type: String, required: true }
 })
 
 const emit = defineEmits(['close'])
 
-const uiStore = useUIStore()
+const activeTab = ref('summary')
+const species = computed(() => pokemonDataProvider.getPokemonData(props.pokemonId))
 
-const p = computed(() => pokemonDataProvider.getPokemonData(props.speciesId) || { name: props.speciesId, learnset: [] })
-
-const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || '#94a3b8'
-
-const getStatWidth = (val) => `${Math.min((val / 150) * 100, 100)}%`
-
-const getStatColor = (val) => {
-  if (val < 50) return '#ef4444' // Red
-  if (val < 80) return '#f59e0b' // Amber
-  if (val < 120) return '#10b981' // Emerald
-  return '#06b6d4' // Cyan
-}
-
-const statsFields = [
-  { key: 'hp', label: 'HP' },
-  { key: 'atk', label: 'ATK' },
-  { key: 'def', label: 'DEF' },
-  { key: 'spa', label: 'SPA' },
-  { key: 'spd', label: 'SPD' },
-  { key: 'spe', label: 'SPE' }
+const tabs = [
+  { id: 'summary', label: 'RESUMEN', icon: '📝' },
+  { id: 'stats', label: 'STATS', icon: '📊' },
+  { id: 'moves', label: 'NIVELES', icon: '⚔️' },
+  { id: 'tms', label: 'MTs', icon: '💿' },
+  { id: 'evolve', label: 'EVOL.', icon: '✨' }
 ]
 
-const tmList = computed(() => {
-  if (!props.speciesId || !TM_COMPAT[props.speciesId]) return []
-  const compat = TM_COMPAT[props.speciesId]
+const getSprite = (id) => {
+  const spriteId = POKEMON_SPRITE_IDS[id]
+  if (!spriteId) return ''
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteId}.png`
+}
+
+const baseStats = computed(() => {
+  if (!species.value) return []
+  const s = species.value.stats
+  return [
+    { label: 'HP', value: s.hp, max: 255, color: '#ff5959' },
+    { label: 'ATK', value: s.attack, max: 190, color: '#f5ac78' },
+    { label: 'DEF', value: s.defense, max: 230, color: '#fae078' },
+    { label: 'SPA', value: s.spAttack, max: 194, color: '#9db7f5' },
+    { label: 'SPD', value: s.spDefense, max: 230, color: '#a7db8d' },
+    { label: 'SPE', value: s.speed, max: 180, color: '#fa92b2' }
+  ]
+})
+
+const tms = computed(() => {
+  const compat = TM_COMPAT[props.pokemonId] || []
   return GAME_TMS.map(tm => ({
     ...tm,
     isCompatible: compat.includes(tm.id)
   }))
 })
 
-const getSpriteUrl = (id) => {
-  const sid = POKEMON_SPRITE_IDS[id] || 0
-  if (sid === 0) return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sid}.png`
-}
-
-// LÓGICA DE EVOLUCIONES
-const evolutionChain = computed(() => {
-  if (!props.speciesId) return []
+const evolutions = computed(() => {
+  const list = []
   
-  // Encontrar la base de la cadena (el primer Pokémon)
-  let start = props.speciesId
-  let foundBase = true
-  while (foundBase) {
-    let base = null
-    // Buscar en evoluciones por nivel
-    for (const [from, data] of Object.entries(EVOLUTION_TABLE)) {
-      if (data.to === start) base = from
-    }
-    // Buscar en evoluciones por piedra
-    for (const [from, data] of Object.entries(STONE_EVOLUTIONS)) {
-      if (data.to === start) base = from
-    }
-    // Buscar en evoluciones por intercambio
-    for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {
-      if (to === start) base = from
-    }
-    
-    if (base && base !== start) start = base
-    else foundBase = false
+  // Normal level evolution
+  if (EVOLUTION_TABLE[props.pokemonId]) {
+    const ev = EVOLUTION_TABLE[props.pokemonId]
+    list.push({ type: 'level', requirement: `Nv. ${ev.level}`, to: ev.to })
+  }
+  
+  // Stone evolution
+  if (STONE_EVOLUTIONS[props.pokemonId]) {
+    const ev = STONE_EVOLUTIONS[props.pokemonId]
+    list.push({ type: 'stone', requirement: ev.stone, to: ev.to })
+  }
+  
+  // Trade evolution
+  if (TRADE_EVOLUTIONS[props.pokemonId]) {
+    list.push({ type: 'trade', requirement: 'Intercambio', to: TRADE_EVOLUTIONS[props.pokemonId] })
   }
 
-  const nodes = []
-  const traverse = (id, depth = 0) => {
-    const pkmn = pokemonDataProvider.getPokemonData(id) || { name: id }
-    const node = { id, name: pkmn.name, depth, evos: [] }
-    
-    // Buscar evoluciones directas
-    // Nivel
-    if (EVOLUTION_TABLE[id]) {
-      node.evos.push({ to: EVOLUTION_TABLE[id].to, method: `LV ${EVOLUTION_TABLE[id].level}` })
-    }
-    // Piedras
-    if (STONE_EVOLUTIONS[id]) {
-      node.evos.push({ to: STONE_EVOLUTIONS[id].to, method: STONE_EVOLUTIONS[id].stone })
-    }
-    // Intercambio
-    if (TRADE_EVOLUTIONS[id]) {
-      node.evos.push({ to: TRADE_EVOLUTIONS[id], method: 'Intercambio' })
-    }
-    
-    nodes.push(node)
-    node.evos.forEach(e => traverse(e.to, depth + 1))
-  }
-
-  traverse(start)
-  return nodes
+  // Handle special Eevee cases if needed, but the current structure covers them partially
+  
+  return list
 })
-
-const abilities = computed(() => {
-  const list = pokemonDataProvider.getSpeciesAbilities(props.speciesId)
-  return list.map(name => ({
-    name,
-    desc: pokemonDataProvider.getAbilityData(name)?.desc || 'Sin descripción disponible.'
-  }))
-})
-
-const openMove = (moveName) => {
-  uiStore.openMoveDetail(moveName)
-}
-
-const close = () => emit('close')
-
-const handleEsc = (e) => {
-  if (e.key === 'Escape' && props.isOpen) close()
-}
-
-onMounted(() => window.addEventListener('keydown', handleEsc))
-onUnmounted(() => window.removeEventListener('keydown', handleEsc))
 </script>
 
 <template>
-  <Transition name="modal-fade">
+  <div
+    class="pdex-detail-overlay"
+    @click.self="emit('close')"
+  >
     <div
-      v-if="isOpen"
-      class="pdex-modal-overlay"
-      @click.self="close"
+      v-if="species"
+      class="pdex-detail-card animate-pop"
     >
-      <div class="pdex-modal-container glass-morphism">
-        <!-- HEADER SECTION -->
-        <header class="modal-header">
-          <div class="pokemon-summary">
-            <div class="sprite-wrapper">
-              <div class="sprite-bg" />
-              <img 
-                :src="getSpriteUrl(props.speciesId)" 
-                :alt="p.name"
-                class="pokemon-sprite pixelated"
+      <header
+        class="detail-header"
+        :style="{ '--type-color': PDEX_TYPE_COLORS[species.type[0].toLowerCase()] }"
+      >
+        <div class="header-main">
+          <div class="species-meta">
+            <span class="number">#{{ species.id.padStart(3, '0') }}</span>
+            <div class="types">
+              <span 
+                v-for="t in species.type" 
+                :key="t"
+                class="type-pill"
+                :style="{ background: PDEX_TYPE_COLORS[t.toLowerCase()] }"
               >
+                {{ t }}
+              </span>
             </div>
-            
-            <div class="name-type-group">
-              <div class="name-row">
-                <span class="dex-num">#{{ String(POKEMON_SPRITE_IDS[props.speciesId] || 0).padStart(3, '0') }}</span>
-                <h2 class="pokemon-name">
-                  {{ p.name }}
-                </h2>
+          </div>
+          <h2 class="name">
+            {{ species.name }}
+          </h2>
+        </div>
+        <button
+          class="close-btn"
+          @click="emit('close')"
+        >
+          ✕
+        </button>
+      </header>
+
+      <div class="main-display">
+        <div class="sprite-container">
+          <img
+            :src="getSprite(props.pokemonId)"
+            class="main-sprite"
+          >
+          <div
+            class="sprite-glow"
+            :style="{ background: PDEX_TYPE_COLORS[species.type[0].toLowerCase()] }"
+          />
+        </div>
+      </div>
+
+      <nav class="detail-tabs">
+        <button 
+          v-for="tab in tabs" 
+          :key="tab.id"
+          class="tab-btn"
+          :class="{ active: activeTab === tab.id }"
+          @click="activeTab = tab.id"
+        >
+          <span class="tab-icon">{{ tab.icon }}</span>
+          <span class="tab-label">{{ tab.label }}</span>
+        </button>
+      </nav>
+
+      <div class="detail-body scrollbar">
+        <!-- SUMMARY TAB -->
+        <div
+          v-if="activeTab === 'summary'"
+          class="tab-pane summary-pane"
+        >
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">CATEGORÍA</span>
+              <span class="value">{{ species.category || 'Pokémon Desconocido' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">ALTURA</span>
+              <span class="value">{{ species.height || '???' }} m</span>
+            </div>
+            <div class="info-item">
+              <span class="label">PESO</span>
+              <span class="value">{{ species.weight || '???' }} kg</span>
+            </div>
+          </div>
+          <p class="description">
+            {{ species.description || 'No hay datos disponibles en la Pokédex.' }}
+          </p>
+        </div>
+
+        <!-- STATS TAB -->
+        <div
+          v-if="activeTab === 'stats'"
+          class="tab-pane stats-pane"
+        >
+          <div
+            v-for="s in baseStats"
+            :key="s.label"
+            class="stat-row"
+          >
+            <span class="stat-label">{{ s.label }}</span>
+            <span class="stat-value">{{ s.value }}</span>
+            <div class="stat-bar-bg">
+              <div
+                class="stat-bar-fill"
+                :style="{ width: (s.value/s.max*100) + '%', background: s.color }"
+              />
+            </div>
+          </div>
+          <div class="stat-total">
+            <span class="label">TOTAL:</span>
+            <span class="value">{{ species.stats.hp + species.stats.attack + species.stats.defense + species.stats.spAttack + species.stats.spDefense + species.stats.speed }}</span>
+          </div>
+        </div>
+
+        <!-- MOVES TAB -->
+        <div
+          v-if="activeTab === 'moves'"
+          class="tab-pane moves-pane"
+        >
+          <div class="move-list">
+            <div
+              v-for="m in species.learnset"
+              :key="m.move"
+              class="move-item"
+            >
+              <span class="move-lv">Nv. {{ m.level }}</span>
+              <span class="move-name">{{ m.move }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TMS TAB -->
+        <div
+          v-if="activeTab === 'tms'"
+          class="tab-pane tms-pane"
+        >
+          <div class="tm-grid">
+            <div 
+              v-for="tm in tms" 
+              :key="tm.id" 
+              class="tm-item"
+              :class="{ incompatible: !tm.isCompatible }"
+            >
+              <div
+                class="tm-id"
+                :style="{ background: PDEX_TYPE_COLORS[tm.type.toLowerCase()] }"
+              >
+                {{ tm.id }}
               </div>
-              
-              <div class="type-badges">
-                <span 
-                  class="type-badge"
-                  :style="{ backgroundColor: getTypeColor(p.type), boxShadow: `0 4px 12px ${getTypeColor(p.type)}44` }"
-                >
-                  {{ p.type?.toUpperCase() }}
-                </span>
-                <span 
-                  v-if="p.type2"
-                  class="type-badge"
-                  :style="{ backgroundColor: getTypeColor(p.type2), boxShadow: `0 4px 12px ${getTypeColor(p.type2)}44` }"
-                >
-                  {{ p.type2?.toUpperCase() }}
-                </span>
+              <div class="tm-info">
+                <span class="tm-name">{{ tm.name }}</span>
+                <span class="tm-type">{{ tm.type }}</span>
+              </div>
+              <div class="tm-check">
+                {{ tm.isCompatible ? '✓' : '✕' }}
               </div>
             </div>
           </div>
-          
-          <button
-            class="close-btn"
-            aria-label="Cerrar"
-            @click="close"
+        </div>
+
+        <!-- EVOLUTION TAB -->
+        <div
+          v-if="activeTab === 'evolve'"
+          class="tab-pane evolve-pane"
+        >
+          <div
+            v-if="evolutions.length > 0"
+            class="evo-chain"
           >
-            <span class="icon">×</span>
-          </button>
-        </header>
-
-        <main class="modal-body custom-scrollbar">
-          <!-- STATS SECTION -->
-          <section class="info-section">
-            <h3 class="section-title">
-              BASE STATS
-            </h3>
-            <div class="stats-container">
-              <div
-                v-for="stat in statsFields"
-                :key="stat.key"
-                class="stat-row"
-              >
-                <div class="stat-meta">
-                  <span class="label">{{ stat.label }}</span>
-                  <span class="value">{{ p[stat.key] || 0 }}</span>
-                </div>
-                <div class="bar-container">
-                  <div 
-                    class="bar-fill" 
-                    :style="{ 
-                      width: getStatWidth(p[stat.key]), 
-                      backgroundColor: getStatColor(p[stat.key]),
-                      boxShadow: `0 0 10px ${getStatColor(p[stat.key])}aa`
-                    }"
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- ABILITIES SECTION -->
-          <section class="info-section">
-            <h3 class="section-title">
-              HABILIDADES
-            </h3>
-            <div class="abilities-list">
-              <div 
-                v-for="ability in abilities" 
-                :key="ability.name"
-                class="ability-card"
-              >
-                <span class="ability-name">{{ ability.name }}</span>
-                <p class="ability-desc">
-                  {{ ability.desc }}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <!-- EVOLUTIONS SECTION -->
-          <section class="info-section">
-            <h3 class="section-title">
-              LÍNEA EVOLUTIVA
-            </h3>
-            <div class="evo-chain-container">
-              <div 
-                v-for="(node, idx) in evolutionChain" 
-                :key="node.id"
-                class="evo-node-wrapper"
-              >
-                <div 
-                  class="evo-node" 
-                  :class="{ 'is-current': node.id === props.speciesId }"
-                  @click="node.id !== props.speciesId && $emit('update:speciesId', node.id)"
+            <div
+              v-for="evo in evolutions"
+              :key="evo.to"
+              class="evo-step"
+            >
+              <div class="evo-from">
+                <img
+                  :src="getSprite(props.pokemonId)"
+                  class="evo-sprite"
                 >
-                  <img
-                    :src="getSpriteUrl(node.id)"
-                    class="evo-sprite pixelated"
-                  >
-                  <span class="evo-name">{{ node.name }}</span>
-                </div>
-                <div
-                  v-if="node.evos.length > 0"
-                  class="evo-arrows"
+              </div>
+              <div class="evo-arrow">
+                <span class="method">{{ evo.requirement }}</span>
+                <span class="arrow">➞</span>
+              </div>
+              <div class="evo-to">
+                <img
+                  :src="getSprite(evo.to)"
+                  class="evo-sprite"
                 >
-                  <div
-                    v-for="evo in node.evos"
-                    :key="evo.to"
-                    class="evo-arrow"
-                  >
-                    <span class="arrow-icon">→</span>
-                    <span class="arrow-method">{{ evo.method }}</span>
-                  </div>
-                </div>
+                <span class="target-name">{{ evo.to }}</span>
               </div>
             </div>
-          </section>
-
-          <!-- LEARNSET SECTION -->
-          <section class="info-section">
-            <h3 class="section-title">
-              APRENDIZAJE POR NIVEL
-            </h3>
-            <div class="moves-table-wrapper">
-              <table class="moves-table">
-                <thead>
-                  <tr>
-                    <th class="col-lvl">
-                      LVL
-                    </th>
-                    <th class="col-name">
-                      MOVIMIENTO
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="m in p.learnset"
-                    :key="m.name"
-                    class="move-row"
-                    @click="openMove(m.name)"
-                  >
-                    <td class="lvl-cell">
-                      {{ m.lv === 1 ? '—' : m.lv }}
-                    </td>
-                    <td class="name-cell">
-                      {{ m.name }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <!-- TM SECTION -->
-          <section class="info-section">
-            <h3 class="section-title">
-              COMPATIBILIDAD MT
-            </h3>
-            <div class="tm-grid">
-              <div 
-                v-for="tm in tmList" 
-                :key="tm.id" 
-                class="tm-cell"
-                :class="{ 'incompatible': !tm.isCompatible }"
-                @click="tm.isCompatible && openMove(tm.name)"
-              >
-                <span class="tm-id">{{ tm.id.replace('TM', '') }}</span>
-                <div
-                  v-if="tm.isCompatible"
-                  class="compatible-marker"
-                />
-              </div>
-            </div>
-          </section>
-        </main>
+          </div>
+          <div
+            v-else
+            class="no-evo"
+          >
+            <span>Este Pokémon no evoluciona.</span>
+          </div>
+        </div>
       </div>
     </div>
-  </Transition>
+  </div>
 </template>
 
-<style lang="scss" scoped>
-.pdex-modal-overlay {
-  position: fixed;
+<style scoped lang="scss">
+.pdex-detail-overlay {
+  position: absolute;
   inset: 0;
-  background: rgba(2, 6, 23, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
-  padding: 24px;
+  padding: 20px;
 }
 
-.pdex-modal-container {
+.pdex-detail-card {
   width: 100%;
   max-width: 480px;
-  max-height: 85vh;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
-  border-radius: 24px;
+  height: 80vh;
+  background: #1a1a1a;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.8);
 }
 
-.modal-header {
-  padding: 32px;
+.detail-header {
+  padding: 24px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 4px solid var(--type-color);
 
-  .pokemon-summary {
-    display: flex;
-    gap: 24px;
-    align-items: center;
-  }
-
-  .sprite-wrapper {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .sprite-bg {
-      position: absolute;
-      inset: 10px;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    .pokemon-sprite {
-      width: 120%;
-      height: 120%;
-      z-index: 2;
-      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
-    }
-  }
-
-  .name-type-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-
-    .name-row {
+  .header-main {
+    .species-meta {
       display: flex;
-      flex-direction: column;
-      
-      .dex-num {
-        font-family: 'Press Start 2P', monospace;
-        font-size: 10px;
-        color: #475569;
-        margin-bottom: 4px;
-      }
-      
-      .pokemon-name {
-        margin: 0;
-        font-family: 'Press Start 2P', monospace;
-        font-size: 20px;
-        color: #fff;
-        text-transform: uppercase;
-        letter-spacing: -0.02em;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      .number { font-family: 'Press Start 2P', cursive; font-size: 10px; color: #555; }
+      .types { display: flex; gap: 6px; }
+      .type-pill { 
+        font-size: 9px; 
+        font-weight: 900; 
+        padding: 2px 8px; 
+        border-radius: 6px; 
+        color: #000; 
+        text-transform: uppercase; 
       }
     }
-
-    .type-badges {
-      display: flex;
-      gap: 8px;
-    }
-
-    .type-badge {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
-      padding: 6px 12px;
-      border-radius: 6px;
-      color: #fff;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
+    .name { font-size: 24px; font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
   }
 
   .close-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #94a3b8;
+    background: rgba(255,255,255,0.05);
+    border: none;
+    color: #444;
     width: 36px;
     height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 50%;
     cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      background: rgba(239, 68, 68, 0.2);
-      color: #ef4444;
-      border-color: rgba(239, 68, 68, 0.3);
-    }
-
-    .icon { font-size: 24px; line-height: 0; }
+    &:hover { color: #fff; background: rgba(255,255,255,0.1); }
   }
 }
 
-.modal-body {
-  padding: 32px;
-  overflow-y: auto;
-  flex: 1;
+.main-display {
+  padding: 20px;
   display: flex;
-  flex-direction: column;
-  gap: 40px;
-}
-
-.section-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: #64748b;
-  margin-bottom: 20px;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-  }
-}
-
-/* Stats */
-.stats-container {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.stat-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  .stat-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    
-    .label {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
-      color: #94a3b8;
-    }
-    .value {
-      font-family: 'Press Start 1P', monospace;
-      font-size: 11px;
-      font-weight: bold;
-      color: #fff;
-    }
-  }
-
-  .bar-container {
-    height: 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.03);
-  }
-
-  .bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-}
-
-/* Moves Table */
-.moves-table-wrapper {
-  background: rgba(0,0,0,0.2);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-.moves-table {
-  width: 100%;
-  border-collapse: collapse;
-
-  th {
-    text-align: left;
-    background: rgba(255,255,255,0.02);
-    padding: 12px 16px;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px;
-    color: #475569;
-  }
-
-  td {
-    padding: 12px 16px;
-    border-top: 1px solid rgba(255,255,255,0.03);
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    color: #e2e8f0;
-  }
-
-  .lvl-cell {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 9px;
-    color: #64748b;
-    width: 60px;
-  }
-}
-
-/* TM Grid */
-.tm-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-  gap: 8px;
-}
-
-.tm-cell {
-  aspect-ratio: 1;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
   position: relative;
-  transition: all 0.2s;
-  border: 1px solid rgba(255,255,255,0.1);
-
-  .tm-id {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
-    color: #fff;
-    font-weight: bold;
+  
+  .sprite-container {
+    position: relative;
+    z-index: 1;
+    .main-sprite { width: 140px; height: 140px; image-rendering: pixelated; position: relative; z-index: 2; }
+    .sprite-glow {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.3;
+      z-index: 1;
+    }
   }
+}
 
-  .compatible-marker {
-    position: absolute;
-    bottom: 4px;
-    width: 4px;
-    height: 4px;
-    background: #fff;
-    border-radius: 50%;
-    box-shadow: 0 0 8px #fff;
-  }
+.detail-tabs {
+  display: flex;
+  background: rgba(0,0,0,0.2);
+  padding: 0 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 
-  &.incompatible {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.05);
+  .tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
     
-    .tm-id { color: #334155; }
-  }
-
-  &:hover:not(.incompatible) {
-    transform: #{"Scale(1.1)"};
-    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
-    z-index: 2;
-  }
-}
-
-/* Abilities */
-.abilities-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.ability-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 16px;
-  transition: all 0.2s;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .ability-name {
-    display: block;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 9px;
-    color: #3b82f6;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-  }
-
-  .ability-desc {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    line-height: 1.5;
-    color: #94a3b8;
+    .tab-icon { font-size: 14px; }
+    .tab-label { font-size: 8px; font-weight: 800; }
+    
+    &:hover { color: #888; }
+    &.active {
+      color: var(--yellow);
+      background: rgba(255, 214, 10, 0.05);
+      .tab-label { font-weight: 900; }
+    }
   }
 }
 
-/* Evolution Chain */
-.evo-chain-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-items: center;
+.detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
 }
 
-.evo-node-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+/* Tab Panes */
+.summary-pane {
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+    
+    .info-item {
+      background: rgba(255,255,255,0.03);
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      .label { display: block; font-size: 8px; color: #555; margin-bottom: 4px; font-weight: 800; }
+      .value { font-size: 11px; font-weight: 900; color: #ddd; }
+    }
+  }
+  .description { font-size: 13px; line-height: 1.6; color: #94a3b8; font-style: italic; }
 }
 
-.evo-node {
-  background: rgba(0, 0, 0, 0.2);
-  border: 2px solid transparent;
-  border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: 100px;
-
-  &.is-current {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.3);
-    cursor: default;
+.stats-pane {
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    
+    .stat-label { width: 40px; font-size: 10px; font-weight: 900; color: #555; }
+    .stat-value { width: 30px; font-size: 12px; font-weight: 900; color: #fff; text-align: right; }
+    .stat-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
+    .stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease-out; }
   }
-
-  &:hover:not(.is-current) {
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateY(-4px);
-  }
-
-  .evo-sprite {
-    width: 64px;
-    height: 64px;
-  }
-
-  .evo-name {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 7px;
-    color: #fff;
-    text-transform: uppercase;
-    text-align: center;
+  .stat-total {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    align-items: center;
+    .label { font-size: 10px; font-weight: 900; color: #555; }
+    .value { font-family: 'Press Start 2P', cursive; font-size: 14px; color: var(--yellow); }
   }
 }
 
-.evo-arrows {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.evo-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #475569;
-
-  .arrow-icon { font-size: 20px; }
-  .arrow-method {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 6px;
-    text-transform: uppercase;
+.moves-pane {
+  .move-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    .move-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      .move-lv { color: var(--yellow); font-family: 'Press Start 2P', cursive; font-size: 8px; }
+      .move-name { color: #fff; text-transform: uppercase; }
+    }
   }
 }
 
-.move-row {
-  cursor: pointer;
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
+.tms-pane {
+  .tm-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    .tm-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      &.incompatible { opacity: 0.3; }
+      .tm-id { width: 40px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 9px; font-weight: 900; color: #000; }
+      .tm-info { flex: 1; display: flex; flex-direction: column; .tm-name { font-size: 12px; font-weight: 800; color: #fff; } .tm-type { font-size: 9px; color: #555; text-transform: uppercase; } }
+      .tm-check { font-size: 14px; font-weight: 900; }
+    }
   }
 }
 
-/* Transitions */
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.3s ease;
-  .pdex-modal-container { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-  .pdex-modal-container { transform: #{"Scale(0.9)"} translateY(20px); }
-}
-
-/* Utilities */
-.pixelated {
-  image-rendering: -moz-crisp-edges;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: pixelated;
-  image-rendering: optimize-speed;
-}
-
-.glass-morphism {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.custom-scrollbar {
-  &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    &:hover { background: rgba(255, 255, 255, 0.1); }
+.evolve-pane {
+  .evo-chain {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    .evo-step {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      background: rgba(255,255,255,0.02);
+      padding: 16px;
+      border-radius: 20px;
+      .evo-sprite { width: 64px; height: 64px; image-rendering: pixelated; }
+      .evo-arrow {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        .method { font-size: 8px; font-weight: 800; color: var(--yellow); text-transform: uppercase; }
+        .arrow { font-size: 20px; color: #444; }
+      }
+      .evo-to {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        .target-name { font-size: 10px; font-weight: 900; color: #fff; text-transform: uppercase; margin-top: 4px; }
+      }
+    }
   }
+  .no-evo { text-align: center; padding: 40px; color: #444; font-weight: 800; font-size: 14px; }
 }
+
+.scrollbar::-webkit-scrollbar { width: 4px; }
+.scrollbar::-webkit-scrollbar-track { background: transparent; }
+.scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>
-

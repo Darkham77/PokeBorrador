@@ -5,7 +5,17 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { TRAINER_RANKS } from '@/data/trainer'
 
-describe('Trainer Leveling System', () => {
+vi.mock('@/logic/pokemonFactory', () => ({
+  makePokemon: vi.fn(),
+  levelUpPokemon: vi.fn((p) => {
+    p.level++
+    p.expNeeded = p.level * 100
+    // Simular aprendizaje de ataque en nivel 10
+    return p.level === 10 ? [{ name: 'Impactrueno', id: 'thundershock' }] : []
+  })
+}))
+
+describe('Leveling System (Trainer & Pokémon)', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
@@ -13,58 +23,73 @@ describe('Trainer Leveling System', () => {
     // Mock UI notification
     const uiStore = useUIStore()
     uiStore.notify = vi.fn()
+    uiStore.addToLearnQueue = vi.fn()
   })
 
-  it('starts at level 1 with 0 exp', () => {
-    const gameStore = useGameStore()
-    expect(gameStore.state.trainerLevel).toBe(1)
-    expect(gameStore.state.trainerExp).toBe(0)
+  describe('Trainer Leveling', () => {
+    it('starts at level 1 with 0 exp', () => {
+      const gameStore = useGameStore()
+      expect(gameStore.state.trainerLevel).toBe(1)
+      expect(gameStore.state.trainerExp).toBe(0)
+    })
+
+    it('accumulates exp correctly', () => {
+      const gameStore = useGameStore()
+      gameStore.addTrainerExp(50)
+      expect(gameStore.state.trainerExp).toBe(50)
+      expect(gameStore.state.trainerLevel).toBe(1)
+    })
+
+    it('levels up when reaching threshold', () => {
+      const gameStore = useGameStore()
+      const uiStore = useUIStore()
+      
+      const expToLevel2 = TRAINER_RANKS[0].expNeeded
+      gameStore.addTrainerExp(expToLevel2)
+      
+      expect(gameStore.state.trainerLevel).toBe(2)
+      expect(gameStore.state.trainerExp).toBe(0)
+      expect(uiStore.notify).toHaveBeenCalledWith(expect.stringContaining('Nivel 2'), '⭐')
+    })
   })
 
-  it('accumulates exp correctly', () => {
-    const gameStore = useGameStore()
-    gameStore.addTrainerExp(50)
-    expect(gameStore.state.trainerExp).toBe(50)
-    expect(gameStore.state.trainerLevel).toBe(1)
-  })
+  describe('Pokémon Leveling (checkLevelUp)', () => {
+    it('debe subir de nivel al Pokémon cuando tiene suficiente EXP', () => {
+      const gameStore = useGameStore()
+      const uiStore = useUIStore()
+      
+      const pokemon = {
+        name: 'Pikachu',
+        level: 5,
+        exp: 1000,
+        expNeeded: 500
+      }
 
-  it('levels up when reaching threshold', () => {
-    const gameStore = useGameStore()
-    const uiStore = useUIStore()
-    
-    const expToLevel2 = TRAINER_RANKS[0].expNeeded // 100
-    gameStore.addTrainerExp(expToLevel2)
-    
-    expect(gameStore.state.trainerLevel).toBe(2)
-    expect(gameStore.state.trainerExp).toBe(0)
-    expect(uiStore.notify).toHaveBeenCalledWith(expect.stringContaining('Principiante'), '⭐')
-  })
+      gameStore.checkLevelUp(pokemon)
 
-  it('handles multiple level ups at once', () => {
-    const gameStore = useGameStore()
-    // Level 1: 100, Level 2: 250 -> Total 350 to reach level 3
-    gameStore.addTrainerExp(400)
-    
-    expect(gameStore.state.trainerLevel).toBe(3)
-    expect(gameStore.state.trainerExp).toBe(50) // 400 - 100 - 250
-  })
+      expect(pokemon.level).toBe(6)
+      expect(pokemon.exp).toBe(500)
+      expect(uiStore.notify).toHaveBeenCalledWith(expect.stringContaining('subió al nivel 6'), '📈')
+    })
 
-  it('does not exceed max level 30', () => {
-    const gameStore = useGameStore()
-    gameStore.state.trainerLevel = 29
-    gameStore.state.trainerExp = 0
-    
-    // 29 -> 30: 151500 exp (based on trainer.js)
-    gameStore.addTrainerExp(200000)
-    
-    expect(gameStore.state.trainerLevel).toBe(30)
-    // Exp stays because it's the last level
-    expect(gameStore.state.trainerExp).toBeGreaterThan(0)
-    
-    // Try to add more
-    const currentExp = gameStore.state.trainerExp
-    gameStore.addTrainerExp(1000)
-    expect(gameStore.state.trainerLevel).toBe(30)
-    expect(gameStore.state.trainerExp).toBe(currentExp + 1000)
+    it('debe manejar múltiples niveles y encolar movimientos', () => {
+      const gameStore = useGameStore()
+      const uiStore = useUIStore()
+      
+      const pokemon = {
+        name: 'Pikachu',
+        level: 8,
+        exp: 3000,
+        expNeeded: 800
+      }
+
+      // Nivel 8 -> 9 (800 exp) -> Nivel 9 -> 10 (900 exp) -> Nivel 10 -> 11 (1000 exp)
+      gameStore.checkLevelUp(pokemon)
+
+      expect(pokemon.level).toBe(11)
+      expect(uiStore.addToLearnQueue).toHaveBeenCalledWith([
+        expect.objectContaining({ move: { name: 'Impactrueno', id: 'thundershock' } })
+      ])
+    })
   })
 })

@@ -202,5 +202,4 @@ CREATE TRIGGER trg_trim_global_chat_messages
 AFTER INSERT ON public.global_chat_messages
 FOR EACH STATEMENT EXECUTE FUNCTION public.trim_global_chat_messages();
 
--- Establish version 20240416000000
-INSERT INTO public.system_config (key, value) VALUES ('db_version', '20240416000000'::jsonb) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+

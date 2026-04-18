@@ -13,6 +13,14 @@ export const useUIStore = defineStore('ui', () => {
   const isEggScannerOpen = ref(false)
   const isHatchModalOpen = ref(false)
   const hatchedPokemon = ref(null)
+  const isShopOpen = ref(false)
+  const isInventoryOpen = ref(false)
+  const isPokedexOpen = ref(false)
+  const isBoxMenuOpen = ref(false)
+  const selectedBoxIndex = ref(-1)
+  
+  // Notifications
+  const notifications = ref([])
   
   // Modales de Clase
   const isClassSelectionOpen = ref(false)
@@ -31,6 +39,41 @@ export const useUIStore = defineStore('ui', () => {
   
   const isEvolutionOpen = ref(false)
   const evolutionData = ref(null) // { pokemon, targetId, itemName }
+
+  const isMoveLearningOpen = ref(false)
+  const currentMoveToLearn = ref(null) // { pokemon, move }
+  const learnQueue = ref([])
+
+  // Specialized Modals
+  const isNaturePatchOpen = ref(false)
+  const activePokemonForNature = ref(null)
+  
+  const isPPUpOpen = ref(false)
+  const activePokemonForPPUp = ref(null)
+
+  const isAbilityPillOpen = ref(false)
+  const activePokemonForAbility = ref(null)
+  
+  // Confirmation Dialog
+  const confirmDialog = ref({
+    open: false,
+    title: 'Confirmar',
+    message: '',
+    confirmText: 'SÍ',
+    cancelText: 'NO',
+    onConfirm: null,
+    onCancel: null
+  })
+
+  // Prompt Dialog
+  const promptDialog = ref({
+    open: false,
+    title: 'Ingresar valor',
+    message: '',
+    value: '',
+    type: 'text',
+    onConfirm: null
+  })
 
 
 
@@ -88,11 +131,13 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   function notify(msg, icon = '🔔') {
-    if (typeof window.notify === 'function') {
-      window.notify(msg, icon)
-    } else {
-      console.log(`[UIStore] Notification: ${icon} ${msg}`)
-    }
+    const id = Date.now() + Math.random().toString(36).substr(2, 9)
+    notifications.value.push({ id, msg, icon })
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      notifications.value = notifications.value.filter(n => n.id !== id)
+    }, 4000)
   }
 
   function toggleTrade() { isTradeOpen.value = !isTradeOpen.value }
@@ -137,6 +182,27 @@ export const useUIStore = defineStore('ui', () => {
     evolutionData.value = null
   }
 
+  function addToLearnQueue(items) {
+    if (Array.isArray(items)) {
+      learnQueue.value.push(...items)
+    } else {
+      learnQueue.value.push(items)
+    }
+    checkLearnQueue()
+  }
+
+  function checkLearnQueue() {
+    if (isMoveLearningOpen.value || learnQueue.value.length === 0) return
+    currentMoveToLearn.value = learnQueue.value.shift()
+    isMoveLearningOpen.value = true
+  }
+
+  function finishMoveLearning() {
+    isMoveLearningOpen.value = false
+    currentMoveToLearn.value = null
+    checkLearnQueue()
+  }
+
   return {
     isProfileOpen,
     isSettingsOpen,
@@ -161,16 +227,31 @@ export const useUIStore = defineStore('ui', () => {
     selectedMove,
     activeTab,
     isPokemonCenterOpen,
+    isShopOpen,
     profileData,
     toggleTrade,
     toggleSocial,
     updateProfile,
     notify,
+    notifications,
     toggleProfile,
     toggleSettings,
     toggleHistory,
     toggleLibrary,
     closeAll,
+    closeModal: () => {
+      isPokemonCenterOpen.value = false
+      isInventoryOpen.value = false
+      isPokedexOpen.value = false
+      isShopOpen.value = false
+      isTradeOpen.value = false
+      isSocialOpen.value = false
+      isLibraryOpen.value = false
+      isHistoryOpen.value = false
+      isSettingsOpen.value = false
+      isProfileOpen.value = false
+      isBoxMenuOpen.value = false
+    },
     openPokemonDetail,
     closePokemonDetail,
     openMoveDetail,
@@ -185,11 +266,59 @@ export const useUIStore = defineStore('ui', () => {
     evolutionData,
     startEvolution,
     closeEvolution,
+    
+    // Move Learning
+    isMoveLearningOpen,
+    currentMoveToLearn,
+    learnQueue,
+    addToLearnQueue,
+    finishMoveLearning,
 
-    // PvP & Ranked
+    isNaturePatchOpen,
+    activePokemonForNature,
+    isPPUpOpen,
+    activePokemonForPPUp,
+    isAbilityPillOpen,
+    activePokemonForAbility,
+
+    isInventoryOpen,
+    isPokedexOpen,
     isPvPBattleOpen: ref(false),
     isRankedMenuOpen: ref(false),
-    currentPvPInvite: ref(null)
+    currentPvPInvite: ref(null),
+
+    // Confirmation
+    confirmDialog,
+    openConfirm: (options) => {
+      confirmDialog.value = {
+        open: true,
+        title: options.title || 'Confirmar',
+        message: options.message || '¿Estás seguro?',
+        confirmText: options.confirmText || 'SÍ',
+        cancelText: options.cancelText || 'NO',
+        onConfirm: options.onConfirm || null,
+        onCancel: options.onCancel || null
+      }
+    },
+    closeConfirm: (success = false) => {
+      if (success && confirmDialog.value.onConfirm) confirmDialog.value.onConfirm()
+      if (!success && confirmDialog.value.onCancel) confirmDialog.value.onCancel()
+      confirmDialog.value.open = false
+    },
+    openPrompt: (options) => {
+      promptDialog.value = {
+        open: true,
+        title: options.title || 'Ingresar valor',
+        message: options.message || '',
+        value: options.initialValue || '',
+        type: options.type || 'text',
+        onConfirm: options.onConfirm || null
+      }
+    },
+    closePrompt: (success = false) => {
+      if (success && promptDialog.value.onConfirm) promptDialog.value.onConfirm(promptDialog.value.value)
+      promptDialog.value.open = false
+    }
   }
 })
 

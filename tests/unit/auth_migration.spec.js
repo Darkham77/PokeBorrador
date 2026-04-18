@@ -48,7 +48,7 @@ describe('Auth Load Service (Migration v2)', () => {
 
     // Force online mode and mock the internal Supabase client
     db.mode = 'online';
-    vi.spyOn(db._realClient, 'from').mockReturnValue({
+    vi.spyOn(db.realClient, 'from').mockReturnValue({
       select: () => ({
         eq: () => ({
           single: async () => ({ data: cloudSave, error: null })

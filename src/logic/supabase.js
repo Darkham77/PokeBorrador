@@ -36,10 +36,4 @@ const initialMode = (typeof localStorage !== 'undefined' && supabaseUrl && supab
 // Export the Unified DB Router as 'supabase' for backward compatibility
 export const supabase = new DBRouter(rawClient, initialMode)
 
-// Ensure legacy scripts always use the resilient proxy / router
-if (typeof window !== 'undefined') {
-  window.sb = supabase
-  window.DBRouterInstance = supabase // Use this to differentiate from the class
-}
-
 export default supabase

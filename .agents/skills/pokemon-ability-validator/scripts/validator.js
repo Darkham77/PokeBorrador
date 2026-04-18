@@ -4,7 +4,7 @@ const path = require('path');
 
 /**
  * POKEMON ABILITY VALIDATOR
- * Compares the abilities assigned in js/04_state.js and described in js/02_pokemon_data.js
+ * Compares the abilities assigned in src/data/abilities.js and described in src/data/pokemonDB.js
  * against the official PokeAPI database to find mechanical discrepancies (like Natural Cure).
  */
 
@@ -53,15 +53,12 @@ async function getPokeApiAbilities() {
 async function runValidator() {
   try {
     // 1. Read files
-    const statePath = fs.existsSync('js/04_state.js') ? 'js/04_state.js' : '../../../../js/04_state.js';
-    const dataPath = fs.existsSync('js/02_pokemon_data.js') ? 'js/02_pokemon_data.js' : '../../../../js/02_pokemon_data.js';
-
+    const statePath = 'src/data/abilities.js';
     const stateContent = fs.readFileSync(statePath, 'utf8');
-    const dataContent = fs.readFileSync(dataPath, 'utf8');
 
     // 2. Extract in-game abilities dynamically
-    // Look specifically for the ABILITIES object block
-    const abilitiesBlockMatch = stateContent.match(/const ABILITIES = {([\s\S]+?)\n\s+};/);
+    // Look specifically for the POKEMON_ABILITIES object block
+    const abilitiesBlockMatch = stateContent.match(/export const POKEMON_ABILITIES = {([\s\S]+?)\n};/);
     const gameAbilities = new Set();
     if (abilitiesBlockMatch) {
       const blockContent = abilitiesBlockMatch[1];
@@ -76,18 +73,16 @@ async function runValidator() {
       }
     }
     
-    // 3. Extract descriptions from js/02_pokemon_data.js
+    // 3. Extract descriptions from src/data/abilities.js
     const abilityData = {};
-    const dataMatches = dataContent.match(/'([^']+)':\s*'([^']+(?:\.\s*)*[^']*)'/g);
-    if (dataMatches) {
-      dataMatches.forEach(match => {
-         const parts = match.split("': '");
-         if (parts.length === 2) {
-            const name = parts[0].replace(/^'/, '');
-            const desc = parts[1].replace(/'$/, '');
-            abilityData[name] = desc;
-         }
-      });
+    const abilityDataMatch = stateContent.match(/export const ABILITY_DATA = {([\s\S]+?)\n};/);
+    if (abilityDataMatch) {
+      const block = abilityDataMatch[1];
+      const entryRegex = /'([^']+)':\s*{\s*desc:\s*'([^']+)'\s*}/g;
+      let em;
+      while ((em = entryRegex.exec(block)) !== null) {
+        abilityData[em[1]] = em[2];
+      }
     }
 
     console.log(`Found ${gameAbilities.size} unique abilities assigned to Pokémon in the code.`);

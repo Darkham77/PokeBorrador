@@ -3,6 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useTradeStore } from '@/stores/trade'
+import TradePokemonSelector from './social/TradePokemonSelector.vue'
+import { getSpriteUrl } from '@/data/spriteMapping'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
@@ -19,8 +21,39 @@ const isGift = ref(false)
 const offerMoney = ref(0)
 const requestMoney = ref(0)
 const message = ref('')
-const activeTab = ref('team') // 'team' or 'box'
-const friendTab = ref('team') // 'team' or 'box'
+
+const selectorState = reactive({
+  show: false,
+  side: 'offer', // 'offer' or 'request'
+  title: '',
+  list: []
+})
+
+const openSelector = (side) => {
+  selectorState.side = side
+  selectorState.show = true
+  
+  if (side === 'offer') {
+    selectorState.title = 'SELECCIONA TU POKÉMON'
+    const team = gs.value.team.map(p => ({ ...p, _source: 'team' }))
+    const box = gs.value.box.map(p => ({ ...p, _source: 'box' }))
+    selectorState.list = [...team, ...box]
+  } else {
+    selectorState.title = `POKÉMON DE ${target.value?.username}`
+    const team = friendSave.value.team.map(p => ({ ...p, _source: 'team' }))
+    const box = (friendSave.value.box || []).map(p => ({ ...p, _source: 'box' }))
+    selectorState.list = [...team, ...box]
+  }
+}
+
+const handleSelectorSelect = (poke) => {
+  if (selectorState.side === 'offer') {
+    tradeStore.tradeOfferPoke = poke
+  } else {
+    tradeStore.tradeRequestPoke = poke
+  }
+  selectorState.show = false
+}
 
 const closeTrade = () => {
   if (isSending.value) return
@@ -129,45 +162,35 @@ const requestSummary = computed(() => {
               Mi Equipo / Mochila
             </div>
             
-            <div class="side-tabs">
-              <button
-                :class="{ active: activeTab === 'team' }"
-                @click="activeTab = 'team'"
-              >
-                EQUIPO
-              </button>
-              <button
-                :class="{ active: activeTab === 'box' }"
-                @click="activeTab = 'box'"
-              >
-                CAJA
-              </button>
-            </div>
-            
-            <div class="poke-selection-list scrollbar">
-              <div 
-                v-for="(poke, idx) in (activeTab === 'team' ? gs.team : gs.box)" 
-                :key="poke.uid || idx"
-                class="trade-poke-card"
-                :class="{ 
-                  selected: tradeStore.tradeOfferPoke?.uid === poke.uid,
-                  locked: tradeStore.lockedUids.has(poke.uid)
-                }"
-                @click="!tradeStore.lockedUids.has(poke.uid) && selectOfferPoke(poke)"
+            <div class="selected-poke-display">
+              <div
+                v-if="tradeStore.tradeOfferPoke"
+                class="poke-preview"
+                @click="openSelector('offer')"
               >
                 <img
-                  :src="window.getSpriteUrl?.(poke.id)"
-                  class="poke-sprite"
+                  :src="getSpriteUrl(tradeStore.tradeOfferPoke.id, tradeStore.tradeOfferPoke.isShiny)"
+                  class="preview-sprite"
                 >
-                <div class="poke-info">
+                <div class="preview-info">
                   <div class="name">
-                    {{ poke.name }}
+                    {{ tradeStore.tradeOfferPoke.name }}
                   </div>
-                  <div class="lv">
-                    Nv. {{ poke.level }}
+                  <div class="meta">
+                    Nv. {{ tradeStore.tradeOfferPoke.level }}
                   </div>
                 </div>
+                <div class="change-hint">
+                  CAMBIAR
+                </div>
               </div>
+              <button
+                v-else
+                class="btn-open-selector"
+                @click="openSelector('offer')"
+              >
+                + SELECCIONAR POKÉMON
+              </button>
             </div>
 
             <div class="item-selection-grid">
@@ -201,46 +224,36 @@ const requestSummary = computed(() => {
 
             <div
               v-if="!isGift"
-              class="side-tabs"
+              class="selected-poke-display"
             >
-              <button
-                :class="{ active: friendTab === 'team' }"
-                @click="friendTab = 'team'"
-              >
-                EQUIPO
-              </button>
-              <button
-                :class="{ active: friendTab === 'box' }"
-                @click="friendTab = 'box'"
-              >
-                CAJA
-              </button>
-            </div>
-
-            <div
-              v-if="!isGift"
-              class="poke-selection-list scrollbar"
-            >
-              <div 
-                v-for="(poke, idx) in (friendTab === 'team' ? friendSave.team : friendSave.box)" 
-                :key="poke.uid || idx"
-                class="trade-poke-card"
-                :class="{ selected: tradeStore.tradeRequestPoke?.uid === poke.uid }"
-                @click="selectRequestPoke(poke)"
+              <div
+                v-if="tradeStore.tradeRequestPoke"
+                class="poke-preview"
+                @click="openSelector('request')"
               >
                 <img
-                  :src="window.getSpriteUrl?.(poke.id)"
-                  class="poke-sprite"
+                  :src="getSpriteUrl(tradeStore.tradeRequestPoke.id, tradeStore.tradeRequestPoke.isShiny)"
+                  class="preview-sprite"
                 >
-                <div class="poke-info">
+                <div class="preview-info">
                   <div class="name">
-                    {{ poke.name }}
+                    {{ tradeStore.tradeRequestPoke.name }}
                   </div>
-                  <div class="lv">
-                    Nv. {{ poke.level }}
+                  <div class="meta">
+                    Nv. {{ tradeStore.tradeRequestPoke.level }}
                   </div>
                 </div>
+                <div class="change-hint">
+                  CAMBIAR
+                </div>
               </div>
+              <button
+                v-else
+                class="btn-open-selector"
+                @click="openSelector('request')"
+              >
+                + PEDIR POKÉMON
+              </button>
             </div>
 
             <div
@@ -310,6 +323,17 @@ const requestSummary = computed(() => {
         </div>
       </div>
     </div>
+
+    <!-- Enhanced Pokémon Selector -->
+    <TradePokemonSelector 
+      :show="selectorState.show"
+      :side="selectorState.side"
+      :title="selectorState.title"
+      :pokemon-list="selectorState.list"
+      :locked-uids="tradeStore.lockedUids"
+      @close="selectorState.show = false"
+      @select="handleSelectorSelect"
+    />
   </div>
 </template>
 
@@ -401,54 +425,68 @@ const requestSummary = computed(() => {
   letter-spacing: 1px;
 }
 
-.side-tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 5px;
+.selected-poke-display {
+  margin-bottom: 10px;
 }
 
-.side-tabs button {
-  flex: 1;
-  padding: 8px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 8px;
-  color: #666;
+.btn-open-selector {
+  width: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  color: #888;
   font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  cursor: pointer;
-}
-
-.side-tabs button.active {
-  background: rgba(168, 85, 247, 0.1);
-  border-color: var(--purple);
-  color: #fff;
-}
-
-.poke-selection-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  max-height: 200px;
-  overflow-y: auto;
-  padding-right: 5px;
-}
-
-.trade-poke-card {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--purple);
+    color: #fff;
+  }
 }
 
-.trade-poke-card:hover { background: rgba(255,255,255,0.08); }
-.trade-poke-card.selected { border-color: var(--purple); background: rgba(199, 125, 255, 0.1); }
-.trade-poke-card.locked { opacity: 0.4; cursor: not-allowed; filter: grayScale(100%); }
+.poke-preview {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid var(--purple);
+  padding: 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(168, 85, 247, 0.15);
+    .change-hint { opacity: 1; }
+  }
+
+  .preview-sprite {
+    width: 48px;
+    height: 48px;
+    image-rendering: pixelated;
+  }
+
+  .preview-info {
+    flex: 1;
+    .name { font-weight: 800; font-size: 14px; color: #fff; }
+    .meta { font-size: 11px; color: #888; }
+  }
+
+  .change-hint {
+    position: absolute;
+    right: 15px;
+    font-size: 8px;
+    font-family: 'Press Start 2P', monospace;
+    color: var(--purple);
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+}
 
 .poke-sprite { width: 32px; height: 32px; image-rendering: pixelated; }
 .poke-info .name { font-size: 10px; font-weight: 700; color: #fff; }

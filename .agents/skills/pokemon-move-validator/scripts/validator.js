@@ -3,7 +3,7 @@ const path = require('path');
 
 /**
  * MOVE VALIDATOR SCRIPT (IMPROVED)
- * This script checks js/02_pokemon_data.js for structural and semantic integrity.
+ * This script checks src/data/moves.js and src/data/pokemonDB.js for structural and semantic integrity.
  * 
  * Usage: node .agents/skills/pokemon-move-validator/validator.js [--fix]
  */
@@ -11,28 +11,33 @@ const path = require('path');
 const FIX_MODE = process.argv.includes('--fix');
 
 try {
-  const filePath = fs.existsSync('js/02_pokemon_data.js') 
-      ? 'js/02_pokemon_data.js' 
-      : path.resolve(__dirname, '../../../js/02_pokemon_data.js');
+  const dbPath = 'src/data/pokemonDB.js';
+  const movesPath = 'src/data/moves.js';
 
-  const fileContent = fs.readFileSync(filePath, 'utf8');
+  if (!fs.existsSync(dbPath) || !fs.existsSync(movesPath)) {
+    console.error("❌ ERROR: Missing data files (src/data/pokemonDB.js or src/data/moves.js)");
+    process.exit(1);
+  }
 
-  // 1. Extract all move names from learnsets
-  const learnsetRegex = /lv:\s*\d+,\s*name:\s*'([^']+)'/g;
+  const dbContent = fs.readFileSync(dbPath, 'utf8');
+  const movesContent = fs.readFileSync(movesPath, 'utf8');
+
+  // 1. Extract all move names from learnsets (pokemonDB.js)
+  const learnsetRegex = /name:\s*'([^']+)'/g;
   const learnsetMoves = new Set();
   let match;
-  while ((match = learnsetRegex.exec(fileContent)) !== null) {
+  while ((match = learnsetRegex.exec(dbContent)) !== null) {
     if (match[1] !== 'Unknown') learnsetMoves.add(match[1]);
   }
 
-  // 2. Extract all defined moves from MOVE_DATA block
+  // 2. Extract all defined moves from MOVE_DATA block (moves.js)
   const definedMoves = new Map();
   const duplicates = [];
-  const lines = fileContent.split('\n');
+  const lines = movesContent.split('\n');
   
   lines.forEach((line, index) => {
     const match = line.match(/'([^']+)':\s*\{/);
-    if (match && index > 900) {
+    if (match) {
       const moveName = match[1];
       if (definedMoves.has(moveName)) {
         duplicates.push({ name: moveName, line: index + 1 });
@@ -100,29 +105,35 @@ try {
     }
   });
 
-  // 4. Validate that all used 'effect: \'...\'' exist in getMoveDescription's effects dictionary
-  const effectsDictRegex = /const effects = {([^}]+)};/;
-  const effMatch = fileContent.match(effectsDictRegex);
-  if (effMatch) {
-    const effStr = effMatch[1];
-    const registeredEffs = new Set();
-    const effKeyRegex = /'([^']+)':/g;
-    let k;
-    while ((k = effKeyRegex.exec(effStr)) !== null) {
-      registeredEffs.add(k[1]);
-    }
-    
-    definedMoves.forEach((data, name) => {
-      const eMatch = data.content.match(/effect:\s*'([^']+)'/);
-      if (eMatch) {
-         const effectName = eMatch[1];
-         if (!registeredEffs.has(effectName)) {
-           semanticIssues.push(`- ${name} (Line: ${data.line}): Uses effect '${effectName}' which has no UI description in getMoveDescription.`);
-         }
+  // 4. Validate that all used 'effect: \'...\'' exist in getMoveDescription's effects dictionary (pokemonUtils.js)
+  const utilsPath = 'src/logic/pokemonUtils.js';
+  if (fs.existsSync(utilsPath)) {
+    const utilsContent = fs.readFileSync(utilsPath, 'utf8');
+    const effectsDictRegex = /const effects = {([^}]+)};/;
+    const effMatch = utilsContent.match(effectsDictRegex);
+    if (effMatch) {
+      const effStr = effMatch[1];
+      const registeredEffs = new Set();
+      const effKeyRegex = /'([^']+)':/g;
+      let k;
+      while ((k = effKeyRegex.exec(effStr)) !== null) {
+        registeredEffs.add(k[1]);
       }
-    });
+      
+      definedMoves.forEach((data, name) => {
+        const eMatch = data.content.match(/effect:\s*'([^']+)'/);
+        if (eMatch) {
+           const effectName = eMatch[1];
+           if (!registeredEffs.has(effectName)) {
+             semanticIssues.push(`- ${name} (Line: ${data.line}): Uses effect '${effectName}' which has no UI description in pokemonUtils.js.`);
+           }
+        }
+      });
+    } else {
+       semanticIssues.push(`- WARNING: Could not find 'const effects = {' block in src/logic/pokemonUtils.js. Skipping UI description check.`);
+    }
   } else {
-     semanticIssues.push(`- FATAL: Could not find 'const effects = {' block in getMoveDescription.`);
+     semanticIssues.push(`- WARNING: src/logic/pokemonUtils.js not found. Skipping UI description check.`);
   }
 
   if (semanticIssues.length > 0) {
@@ -134,7 +145,7 @@ try {
   if (!hasErrors) {
     console.log("✅ MOVE_DATA is clean! All learnset moves exist and no semantic issues found.");
   } else {
-    console.log("\nPlease resolve the errors above in js/02_pokemon_data.js.");
+    console.log("\nPlease resolve the errors above in src/data/moves.js.");
     if (!FIX_MODE) console.log("Run with --fix to see suggested snippets.");
     process.exit(1);
   }

@@ -1,6 +1,7 @@
 -- =====================================================
 -- MODERN TRADE SYSTEM (v2) — ESCROW & CLAIM QUEUE
 -- Fecha: 2026-04-17
+-- check: { "table": "claim_queue", "column": "id" }
 -- =====================================================
 
 -- 1. Tablas de Soporte

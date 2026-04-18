@@ -42,27 +42,7 @@ let _dbName = 'pokevicio_idb';
 let _sqliteKey = 'pokevicio_sqlite_v2';
 let _isInMemory = false;
 
-const DATABASE_MIGRATIONS = [
-  {
-    id: '202604170835_add_role_to_profiles',
-    sql: "ALTER TABLE profiles ADD COLUMN role TEXT DEFAULT 'user'; UPDATE config SET value = '202604170835' WHERE key = 'db_version';",
-    check: { table: 'profiles', column: 'role' }
-  },
-  {
-    id: '202604172000_create_claim_queue',
-    sql: "CREATE TABLE IF NOT EXISTS claim_queue (id TEXT PRIMARY KEY, user_id TEXT, source_type TEXT, source_id TEXT, asset_data TEXT, status TEXT DEFAULT 'pending', created_at TEXT DEFAULT (datetime('now'))); UPDATE config SET value = '202604172000' WHERE key = 'db_version';",
-    check: { table: 'claim_queue', column: 'id' }
-  },
-  {
-    id: '202604180100_add_db_version',
-    sql: "INSERT OR IGNORE INTO config (key, value) VALUES ('db_version', '202604180100'); UPDATE config SET value = '202604180100' WHERE key = 'db_version';"
-  },
-  {
-    id: '202604180450_fix_events_and_awards',
-    sql: "ALTER TABLE events_config RENAME COLUMN is_active TO active; ALTER TABLE awards ADD COLUMN received_at TEXT; ALTER TABLE awards ADD COLUMN winner_id TEXT; UPDATE config SET value = '202604180450' WHERE key = 'db_version';",
-    check: { table: 'events_config', column: 'active' }
-  }
-];
+import { DATABASE_MIGRATIONS } from './migrations_data';
 
 async function openIDB() {
   if (_isInMemory) return null;

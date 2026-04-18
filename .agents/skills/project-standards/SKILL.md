@@ -77,7 +77,7 @@ To maintain a healthy, readable codebase, we follow a strict **Modularization Po
 Any `.vue`, `.js`, or `.scss` file inside the project **MUST NOT** exceed 500 lines, with the following **MANDATORY EXCEPTIONS**:
 
 - **External Dependencies & Legacy Backups**: Files in `node_modules/` or `backup_legacy_code/`.
-- **Data-Heavy Definition Files ("Pseudo-Databases")**: Files used strictly for data storage/definitions that are not yet in Supabase/SQLite (e.g., `schedules`, `conflict routes`, `game constants`, `coordinate maps`).
+- **Data-Heavy Definition Files ("Pseudo-Databases")**: Files used strictly for data storage/definitions that are not yet in Supabase/SQLite (e.g., `schedules`, `conflict routes`, `game constants`, `coordinate maps`, `migrations_data.js`).
   - **Optimization Requirement**: These large files **MUST** be optimized for Vue. Use `shallowRef` or `readonly` for static data to prevent excessive reactivity overhead, and ensure they are imported as ES Modules to take advantage of treeshaking if possible.
 
 - **Maintenance**: If you touch a logic or component file that is already over 500 lines and is NOT a data-heavy file, you **MUST** refactor it into smaller modules.
@@ -126,6 +126,11 @@ All database interactions **MUST** go through the **Unified DB Router** to ensur
 - **Principle**: The DBRouter contextually routes requests to Global (Supabase) or Local (SQLite) instances based on the session.
 - **Reference**: See [references/dbrouter_manual.md](./references/dbrouter_manual.md) for context routing logic, the ProxyQuery pattern, and implementation examples.
 
+### Modular Import Mandate
+
+- **REQUIRED**: All database interactions **MUST** use modular imports from `@/logic/db/dbRouter`.
+- **FORBIDDEN**: Accessing the database via `window.DBRouter`. This is part of the final Vue 3 migration to eliminate global namespace pollution.
+
 ### Strict Server & Session Isolation
 
 The application **MUST** maintain absolute isolation between server contexts. A session initiated in one context (Global/Online) **MUST NEVER** bridge data or world-states with another (Local).
@@ -137,10 +142,10 @@ The application **MUST** maintain absolute isolation between server contexts. A 
 Strict versioned migration patterns are mandatory. You **MUST** maintain **Triple Sincronización** parity for every schema change across three locations:
 
 1. **SQL Migration**: A timestamped file in `database/migrations/` (e.g., `YYYYMMDDHHMMSS_description.sql`).
-2. **Migration Array**: The exact SQL code added to the `DATABASE_MIGRATIONS` array in `src/logic/db/sqliteIDBHandler.js`.
+2. **Automated Parity**: The logic layer is synchronized automatically via the **Vite Migration Plugin**, which generates `src/logic/db/migrations_data.js`. Manual updates to this array are **FORBIDDEN**.
 3. **Absolute Schemas**: The corresponding table definition(s) updated in `database/schemas/` to reflect the new state.
 
-- **Triple Source of Truth**: We maintain timestamped deltas (migrations), baseline schemas, and the JS logic layer. None must ever be out of sync.
+- **Automated Source of Truth**: We maintain timestamped deltas (migrations) as the primary source. The Vite plugin ensures the JS layer (SQLite) matches these files on every save.
 - **Remote Transparency**: You **MUST** always provide the user with the exact SQL code to be executed in the remote database (Supabase) for every schema change.
 - **Reference**: See [references/dbrouter_manual.md](./references/dbrouter_manual.md) for naming conventions and the migration workflow.
 
@@ -153,7 +158,7 @@ To prevent data corruption and ensure security, the application enforces strict 
 - **Migration Version Mandate**: Every SQL migration file **MUST** conclude with a statement that **sets** the `db_version` to the migration's unique timestamp ID.
   - **Supabase (JSONB)**: `UPDATE public.system_config SET value = jsonb_build_object('db_version', 'YYYYMMDDHHMMSS') WHERE key = 'db_version';`
   - **SQLite (TEXT)**: `UPDATE config SET value = 'YYYYMMDDHHMMSS' WHERE key = 'db_version';`
-- **Triple Synchronization**: Every time a migration is added, the `CLIENT_DB_VERSION` in `dbRouter.js` must be updated to match the timestamp ID of the latest migration.
+- **Triple Synchronization (Fully Automated)**: Every time a migration is added, the Vite plugin regenerates the data and the `CLIENT_DB_VERSION` in `dbRouter.js` is automatically updated to match the timestamp ID of the latest migration. No manual code updates are required.
 
 ## Logic Testing Mandate & Database Isolation Policy
 
@@ -236,9 +241,9 @@ To prevent build warnings and future-proof the application, you **MUST** use the
 - **REQUIRED**:
   - `random(...)` -> `math.random(...)`
   - `unquote(...)` -> `string.unquote(...)`
-  - `scale(...)` -> `string.unquote("scale(...)")` (Avoids color function collision)
-  - `grayscale(...)` -> `string.unquote("grayscale(...)")`
-  - `invert(...)` -> `string.unquote("invert(...)")`
+  - `scale(...)` -> `string.unquote("scale(#{...})")` (Avoids color function collision)
+  - `grayscale(...)` -> `string.unquote("grayscale(#{...})")`
+  - `invert(...)` -> `string.unquote("invert(#{...})")`
   - `unit(...)` -> `math.unit(...)`
   - `percentage(...)` -> `math.percentage(...)`
   - `abs(...)` -> `math.abs(...)`
@@ -265,10 +270,10 @@ Before finalizing, verify that no touched files violate the length standard:
 
 ```bash
 # In Bash-like environments:
-find . -maxdepth 4 -type f \( -name "*.vue" -o -name "*.js" -o -name "*.scss" \) -not -path "./node_modules/*" -not -path "./.agents/*" -not -path "./backup_legacy_code/*" -not -path "./dist/*" -exec wc -l {} + | awk '$1 > 500 && $2 != "total"'
+find . -maxdepth 4 -type f \( -name "*.vue" -o -name "*.js" -o -name "*.scss" \) -not -path "./node_modules/*" -not -path "./.agents/*" -not -path "./backup_legacy_code/*" -not -path "./dist/*" -not -name "migrations_data.js" -exec wc -l {} + | awk '$1 > 500 && $2 != "total"'
 
 # In PowerShell:
-Get-ChildItem -Recurse -File -Include *.vue, *.js, *.scss | Where-Object { $_.FullName -notmatch "node_modules|\.agents|backup_legacy_code|dist" } | ForEach-Object { $lines = (Get-Content $_.FullName | Measure-Object -Line).Lines; if ($lines -gt 500) { "$lines`t$($_.FullName)" } }
+Get-ChildItem -Recurse -File -Include *.vue, *.js, *.scss | Where-Object { $_.FullName -notmatch "node_modules|\.agents|backup_legacy_code|dist|migrations_data\.js" } | ForEach-Object { $lines = (Get-Content $_.FullName | Measure-Object -Line).Lines; if ($lines -gt 500) { "$lines`t$($_.FullName)" } }
 ```
 
 > [!IMPORTANT]

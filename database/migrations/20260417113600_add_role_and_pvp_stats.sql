@@ -2,6 +2,7 @@
 -- POKÉ VICIO — MIGRATION: ADD ROLE AND PVP STATS
 -- Fecha: 2026-04-17
 -- Descripción: Añade soporte para roles administrativos y estadísticas de PvP en perfiles.
+-- check: { "table": "profiles", "column": "role" }
 -- =====================================================
 
 -- 1. Añadir columna de rol a perfiles (por defecto 'user')

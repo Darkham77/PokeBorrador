@@ -111,18 +111,43 @@ const setSortMode = (val) => emit('update:sortMode', val)
         <div class="group-label">
           Tipo
         </div>
-        <div class="button-row large-gap">
-          <button
-            :class="['box-filter-btn', { active: filters.type === 'all' }]"
-            @click="emit('update:filters', { ...filters, type: 'all' })"
-          >
-            Todos
-          </button>
-          <!-- Se podrían agregar más tipos aquí o hacer un loop si se tiene la data -->
+          <div class="button-row type-row">
+            <button
+              :class="['box-filter-btn', { active: filters.type === 'all' }]"
+              @click="emit('update:filters', { ...filters, type: 'all' })"
+            >
+              Todos
+            </button>
+            <button
+              v-for="type in ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel']"
+              :key="type"
+              :class="['box-filter-btn', 'type-btn', type, { active: filters.type === type }]"
+              @click="emit('update:filters', { ...filters, type: type })"
+            >
+              {{ type }}
+            </button>
+          </div>
+      </div>
+
+      <!-- Detalles de IVs -->
+      <div class="filter-group">
+        <div class="group-label">IVs Individuales (Mínimos)</div>
+        <div class="iv-sliders-grid">
+          <div v-for="stat in ['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE']" :key="stat" class="iv-slider-box">
+            <span class="iv-label">{{ stat }}</span>
+            <input
+              :value="filters['iv' + stat]"
+              type="range"
+              min="0"
+              max="31"
+              class="custom-range range-purple"
+              @input="emit('update:filters', { ...filters, ['iv' + stat]: Number($event.target.value) })"
+            >
+            <span class="iv-val">{{ filters['iv' + stat] }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- Totales + Especial -->
       <div class="filter-split">
         <div class="split-side">
           <div class="group-label">
@@ -343,6 +368,56 @@ const setSortMode = (val) => emit('update:sortMode', val)
   background: rgba(255, 184, 0, 0.12);
   color: var(--yellow);
 }
+
+.type-row {
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.type-btn {
+  text-transform: uppercase;
+  font-size: 6px !important;
+  opacity: 0.8;
+  
+  &.active {
+    opacity: 1;
+    filter: brightness(1.2);
+    box-shadow: 0 0 8px currentColor;
+  }
+}
+
+.iv-sliders-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.iv-slider-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iv-label {
+  font-size: 8px;
+  font-family: 'Press Start 2P', monospace;
+  color: var(--gray);
+  width: 28px;
+}
+
+.iv-val {
+  font-size: 10px;
+  color: var(--purple-light);
+  width: 15px;
+  text-align: right;
+  font-weight: 700;
+}
+
+.range-purple { accent-color: var(--purple-light); }
 
 .reset-btn {
   width: 100%;

@@ -62,7 +62,7 @@ To minimize server load and optimize performance on mobile devices, the project 
 * **Resource Savings**: Minor changes are not sent instantly to the cloud. They accumulate in a local cache that syncs periodically.
 * **Critical Events**: Certain actions (winning a badge, catching a legendary, performing a trade) force an immediate save, ignoring the 60-second interval.
 * **Cache Invalidation**: Upon login or opening a new tab, the system **MUST** invalidate any local cache and force a complete cloud download.
-  * **Technical Action**: Execute `localStorage.removeItem('save_throttle_cache')` to remove pending sync data and ensure the starting point is the absolute "Source of Truth".
+  * **Technical Action**: Ensure `authStore` initializes with `loading: true` and fetches the latest "Source of Truth" from the DBRouter.
 * **Pre-Action Flush Protocol**: Before any social action other than chat (sending a trade, GTS listing, etc.), the system triggers a forced atomic save to ensure synchronization integrity.
 * **Mandatory Claim Sync**: When using the "Receive All" function or claiming an individual asset, the system forces a prior save to prevent the local state from overwriting the incoming data.
 

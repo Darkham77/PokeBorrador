@@ -13,12 +13,15 @@ import { useEventStore } from './events'
 import { GuardianService } from '@/logic/providers/GuardianService'
 import { usePlayerClassStore } from './playerClass'
 import { useUIStore } from './ui'
+import { useAudioStore } from './audio'
+import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 
 export const useBattleStore = defineStore('battle', () => {
   const gs = useGameStore()
   const warStore = useWarStore()
   const eventStore = useEventStore()
   const classStore = usePlayerClassStore()
+  const audio = useAudioStore()
   
   const activeBattle = ref(null)
   const isBattleActive = ref(false)
@@ -105,6 +108,12 @@ export const useBattleStore = defineStore('battle', () => {
       enemy: enemyPoke,
       locationId
     })
+
+    if (enemyPoke.isShiny) {
+      audio.shiny()
+    } else if (isTrainer || isGym) {
+      audio.rival()
+    }
 
     const startMsg = isTrainer 
       ? `¡${trainerName} te desafía!` 
@@ -408,6 +417,7 @@ export const useBattleStore = defineStore('battle', () => {
       await new Promise(r => setTimeout(r, 1500))
 
       if (caught) {
+        audio.caught()
         addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch')
         consumeItem(itemName)
         // Add to box/team logic would go here, for now end battle
@@ -446,6 +456,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   const flee = async () => {
     if (isProcessing.value) return
+    audio.flee()
     addLog('¡Huiste del combate!', 'log-info')
     await endBattle(false, true)
   }
@@ -508,12 +519,19 @@ export const useBattleStore = defineStore('battle', () => {
     const e = activeBattle.value.enemy
     const baseExp = Math.floor(e.level * 4) // Simplified baseline
     
+    // War Dominance Modifiers
+    const warMods = getBattleRewardModifiers(
+      activeBattle.value.locationId, 
+      gs.state.faction, 
+      warStore.mapDominance
+    )
+
     // Award exp to participants
     gs.state.team.forEach(p => {
       if (participants.value.has(p.uid) || p.heldItem === 'Compartir EXP') {
         const share = (p.uid === activeBattle.value.player.uid) ? 1 : 0.5
         const classMult = classStore.getModifier('expMult', { isTrainer: activeBattle.value.isTrainer })
-        const gained = Math.floor(baseExp * share * classMult)
+        const gained = Math.floor(baseExp * share * classMult * warMods.expMult)
         p.exp += gained
         addLog(`${p.name} ganó ${gained} EXP.`, 'log-player')
         
@@ -522,13 +540,16 @@ export const useBattleStore = defineStore('battle', () => {
           p.level++
           p.exp -= p.expNeeded
           p.expNeeded = Math.floor(p.expNeeded * 1.2)
+          audio.levelUp()
           addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info')
         }
       }
     })
 
-    const moneyGained = Math.floor(e.level * 10 * classStore.getModifier('bcMult', { isGym: activeBattle.value.isGym }))
+    const baseMoney = e.level * 10 * classStore.getModifier('bcMult', { isGym: activeBattle.value.isGym })
+    const moneyGained = Math.floor(baseMoney * warMods.moneyMult)
     gs.state.money += moneyGained
+    if (moneyGained > 0) audio.money()
     addLog(`¡Ganaste ₽${moneyGained}!`, 'log-info')
   }
 

@@ -15,9 +15,18 @@ const activeTab = computed({
   set: (val) => { uiStore.activeTab = val }
 })
 
-const migratedTabs = ['gyms', 'daycare', 'team', 'box', 'pokedex', 'bag', 'market', 'trainer-shop', 'social', 'friends', 'events', 'war']
+const migratedTabs = ['gyms', 'daycare', 'team', 'box', 'pokedex', 'bag', 'market', 'trainer-shop', 'social', 'friends', 'events', 'war', 'arena', 'ranking']
 
 const handleTabChange = (tab, event) => {
+  // Navigation blocks
+  if (tab === 'bag') {
+    uiStore.isInventoryOpen = true
+    return
+  }
+  if (tab === 'pokedex') {
+    activeTab.value = 'pokedex'
+    return
+  }
   activeTab.value = tab
   
   // Social Center Modal (Phase 24)

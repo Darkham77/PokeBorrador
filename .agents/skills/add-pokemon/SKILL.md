@@ -28,14 +28,14 @@ Antes de agregar cualquier dato nuevo, recuerda:
 Ejecutar el script de fetch pasando el nombre en inglés del Pokémon:
 
 ```bash
-node .agents/skills/add-pokemon/fetch_pokemon.js houndour
+node .agents/skills/add-pokemon/scripts/fetch_pokemon.js houndour
 ```
 
 Esto genera un archivo `_output/<pokemon>.json` con todos los datos necesarios.
 
 ---
 
-## Paso 1: Agregar a `POKEMON_DB` en `js/02_pokemon_data.js`
+## Paso 1: Agregar a `POKEMON_DB` en `src/data/pokemonDB.js`
 
 ### Formato exacto del proyecto
 
@@ -78,8 +78,7 @@ houndoom: {
 - Stats base tomados de PokeAPI Gen 3 (o Bulbapedia).
 - El learnset usa **nombres en español** tal como están en `MOVE_DATA`.
 
-> [!IMPORTANT]
-> Los movimientos del learnset DEBEN existir en `MOVE_DATA` (en `js/02_pokemon_data.js`). Antes de agregar el Pokémon, verificar cada movimiento. Si alguno falta, agrégalo a `MOVE_DATA` primero.
+> Los movimientos del learnset DEBEN existir en `MOVE_DATA` (en `src/data/moves.js`). Antes de agregar el Pokémon, verificar cada movimiento. Si alguno falta, agrégalo a `MOVE_DATA` primero.
 
 ---
 
@@ -88,7 +87,7 @@ houndoom: {
 Buscar la constante `POKE_TYPE2` en el proyecto:
 
 ```bash
-grep -n "POKE_TYPE2" js/02_pokemon_data.js
+grep -n "POKE_TYPE2" src/data/pokemonDB.js
 ```
 
 Si el Pokémon tiene dos tipos, agregar la entrada:
@@ -100,7 +99,7 @@ houndoom: 'dark',
 
 ---
 
-## Paso 3: Agregar habilidades en `ABILITIES` en `js/04_state.js`
+## Paso 3: Agregar habilidades en `ABILITIES` en `src/data/pokemonDB.js`
 
 ### Formato exacto
 
@@ -114,25 +113,25 @@ houndoom: ['Espíritu Vital', 'Inicio Rápido'],
 - Los nombres de habilidades están en **español**, exactamente como en `ABILITY_DATA`.
 - Si es una habilidad **nueva** que no está en `ABILITY_DATA`, hay que agregarla:
 
-#### 3a. Agregar descripción en `ABILITY_DATA` (`js/02_pokemon_data.js`)
+#### 3a. Agregar descripción en `ABILITY_DATA` (`src/data/abilities.js`)
 
 ```js
 'Inicio Rápido': 'Duplica la Velocidad cuando el Pokémon tiene un estado alterado.',
 ```
 
-#### 3b. Si la habilidad tiene efecto en batalla, implementarla en `js/07_battle.js`
+#### 3b. Si la habilidad tiene efecto en batalla, implementarla en `src/logic/battle/battleAbilities.js`
 
 Usar el validator de habilidades para verificar que esté correctamente implementada:
 
 ```bash
 # Eliminar caché para refrescar con la nueva habilidad
-del .agents\skills\pokemon-ability-validator\pokeapi_ability_cache.json
-node .agents/skills/pokemon-ability-validator/validator.js
+del .agents\skills\pokemon-ability-validator\assets\pokeapi_ability_cache.json
+node .agents/skills/pokemon-ability-validator/scripts/validator.js
 ```
 
 ---
 
-## Paso 4: Agregar evolución en `js/13_evolution.js`
+## Paso 4: Agregar evolución en `src/data/evolutionData.js`
 
 ### Para evolución por nivel
 
@@ -160,7 +159,7 @@ nombrePokemon: 'nombreEvolución',
 
 ---
 
-## Paso 5: Agregar número de sprite y orden en Pokédex (`js/18_pokedex.js`)
+## Paso 5: Agregar número de sprite y orden en Pokédex (`src/logic/pokedexConstants.js`)
 
 ### 5a. Agregar en `POKEMON_SPRITE_IDS`
 
@@ -182,7 +181,7 @@ El número es el **ID nacional de la Pokédex** oficial.
 
 ---
 
-## Paso 6: Agregar compatibilidad de MTs en `TM_COMPAT` (`js/18_pokedex.js`)
+## Paso 6: Agregar compatibilidad de MTs en `TM_COMPAT` (`src/logic/pokedexConstants.js`)
 
 Consultar la compatibilidad oficial en PokeAPI o Bulbapedia Gen 3 y agregar:
 
@@ -200,10 +199,10 @@ El ID de la MT debe estar en `GAME_TMS`. Si la MT no existe en el juego, **no ag
 Ejecutar el validator de movimientos:
 
 ```bash
-node .agents/skills/pokemon-move-validator/validator.js
+node .agents/skills/pokemon-move-validator/scripts/validator.js
 ```
 
-Si aparece algún movimiento del learnset que no tiene implementación (`❌`), agregarlo a `MOVE_DATA` en `js/02_pokemon_data.js`.
+Si aparece algún movimiento del learnset que no tiene implementación (`❌`), agregarlo a `MOVE_DATA` en `src/data/moves.js`.
 
 Formato de un movimiento en `MOVE_DATA`:
 
@@ -219,7 +218,7 @@ Formato de un movimiento en `MOVE_DATA`:
 Si el Pokémon debe poder encontrarse salvaje, buscarlo en los archivos de ubicaciones:
 
 ```bash
-grep -rn "encounters\|wildPokemon\|LOCATION" js/ --include="*.js" | head -20
+grep -rn "encounters\|wildPokemon\|LOCATION" src/data/maps.js | head -20
 ```
 
 Agregar el Pokémon a la ubicación que corresponda según el lore del juego.
@@ -234,7 +233,7 @@ Antes de dar por terminado, verificar cada ítem:
 - `[ ]` Tipo secundario en `POKE_TYPE2` (si aplica)
 - `[ ]` Habilidades en `ABILITIES` con nombres correctos en español
 - `[ ]` Descripción de habilidades nuevas en `ABILITY_DATA`
-- `[ ]` Lógica de batalla de habilidades nuevas en `07_battle.js`
+- `[ ]` Lógica de batalla de habilidades nuevas en `src/logic/battle/battleAbilities.js`
 - `[ ]` Evolución en `EVOLUTION_TABLE`, `STONE_EVOLUTIONS` o `TRADE_EVOLUTIONS`
 - `[ ]` Número sprite en `POKEMON_SPRITE_IDS`
 - `[ ]` Posición en `PDEX_ORDER`
@@ -275,7 +274,7 @@ El sistema utiliza un nuevo `DBRouter` que sincroniza con Supabase y SQLite. Par
 3. **Refresca la página (F5)**.
 4. Entra a la Caja PC. Si el Pokémon sigue ahí, la persistencia es correcta.
 
-Si desaparece, significa que el guardado falló o que el "Conflicto de Versiones" sobreescribió tu progreso local. Verifica que `window.lastLoadTime` se esté actualizando correctamente en `01_auth.js`.
+Si desaparece, significa que el guardado falló o que el "Conflicto de Versiones" sobreescribió tu progreso local. Verifica que el `authStore` esté manejando correctamente la sesión.
 
 ---
 

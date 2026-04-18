@@ -64,7 +64,7 @@ Every migration task **MUST** follow these phases. Do not skip any phase.
 Legacy code **MUST** be modified during migration to comply with all current project standards. Migrating non-compliant code without updates is **FORBIDDEN**.
 
 - **Modern Patterns**: Replace direct `supabase.from` calls with `DBRouter.from`, implement session uniqueness, and follow cache invalidation rules defined in `@/project-standards`.
-- **Database Parity**: Any legacy logic that introduces or modifies data structures **MUST** follow the versioned migration pattern in `@/database` and update the `DATABASE_MIGRATIONS` array in `sqliteIDBHandler.js`.
+- **Database Parity**: Any legacy logic that introduces or modifies data structures **MUST** follow the versioned migration pattern in `database/migrations/`. The **Vite Migration Plugin** will automatically synchronize the local engine. Manual updates are **FORBIDDEN**.
   - **REMOTE SQL VISIBILITY**: Always present the user with the SQL code intended for Supabase to ensure parity.
 - **No Hardcoded Styles**: Use SCSS tokens. If the code is being migrated to a Vue component, implement styles using Vue standards (scoped `<style lang="scss">`, reactive classes `:class`, or computed `:style` for dynamic values). If it's not a component yet, extract all legacy inline styles to modular SCSS partials.
 - **Modularity**: Every new file must pass the 500-line audit. If a legacy script is too large, it **MUST** be split into multiple logic modules or composables.

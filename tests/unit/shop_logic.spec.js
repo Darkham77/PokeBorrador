@@ -95,14 +95,14 @@ describe('Shop & Healing Logic', () => {
       const shopStore = useShopStore()
       
       gameStore.state.playerClass = 'rocket'
-      gameStore.state.money = 100000
+      gameStore.state.money = 1000000
       
       const items = shopStore.getBlackMarketItems()
       const item = items[0]
       
       // Formula: (bcPrice * 50) * (1 - 0.20)
       const expectedPrice = Math.floor((item.bcPrice * 50) * (1 - 0.20))
-      const expectedMoney = 100000 - expectedPrice
+      const expectedMoney = 1000000 - expectedPrice
       
       shopStore.buyBlackMarketItem(item.id)
       

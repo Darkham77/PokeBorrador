@@ -8,6 +8,8 @@ allowed-tools: Read, Glob, Grep
 
 > "Requirements drive architecture. Trade-offs inform decisions. ADRs capture rationale."
 
+---
+
 ## 🎯 Selective Reading Rule
 
 **Read ONLY files relevant to the request!** Check the content map, find what you need.
@@ -28,7 +30,6 @@ allowed-tools: Read, Glob, Grep
 | :--- | :--- |
 | [database-design](../database-design/SKILL.md) | Database schema design |
 | [api-patterns](../api-patterns/SKILL.md) | API design patterns |
-| [deployment-procedures](../deployment-procedures/SKILL.md) | Deployment architecture |
 
 ---
 

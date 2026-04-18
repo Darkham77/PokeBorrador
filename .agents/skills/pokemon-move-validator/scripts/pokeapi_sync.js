@@ -2,8 +2,8 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 
-const FILE_PATH = path.resolve(__dirname, '../../../js/02_pokemon_data.js');
-const CACHE_FILE = path.resolve(__dirname, '../../../../tmp/pokeapi_moves.json');
+const FILE_PATH = path.resolve(__dirname, '../../../src/data/moves.js');
+const CACHE_FILE = path.resolve(__dirname, '../../../_tmp/pokeapi_moves.json');
 
 // Mapeo de categorías de PokeAPI a efectos internos
 const CATEGORY_MAP = {

@@ -18,6 +18,28 @@ export const WAR_PTS_TABLE = {
 export const DAILY_MAP_CAP = 300
 export const FACTION_CHANGE_COST = 25000
 
+export const WEEKLY_REWARD_MILESTONES = [
+  { pt: 1, coins: 10 },
+  { pt: 101, coins: 35 },
+  { pt: 501, coins: 75 },
+  { pt: 1501, coins: 150 }
+]
+
+export const WEEKLY_WIN_BONUS_COINS = 50
+
+/**
+ * Gets a clean date string for Argentina Time (UTC-3).
+ * @param {Date} date 
+ * @returns {string} YYYY-MM-DD
+ */
+export function getArgDateString(date = new Date()) {
+  const argTime = new Date(date.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }))
+  const y = argTime.getFullYear()
+  const m = String(argTime.getMonth() + 1).padStart(2, '0')
+  const d = String(argTime.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 /**
  * Calculates the current week ID based on the legacy anchor (Monday).
  * Format: YYYY-WXX

@@ -3,11 +3,13 @@ import { ref, reactive, watch } from 'vue'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
+import { useAudioStore } from './audio'
 
 export const useChatStore = defineStore('chat', () => {
   const authStore = useAuthStore()
   const gameStore = useGameStore()
   const uiStore = useUIStore()
+  const audioStore = useAudioStore()
 
   const globalMessages = ref([])
   const activeChatId = ref('global') // 'global' or userId
@@ -57,7 +59,7 @@ export const useChatStore = defineStore('chat', () => {
           
           // Sonido si el mensaje no es mío
           if (row.user_id !== authStore.user?.id) {
-            window.SFX?.receivedMsg();
+            audioStore.receivedMsg();
           }
         }
       })
@@ -72,7 +74,7 @@ export const useChatStore = defineStore('chat', () => {
     inboxChannel = db.channel(`chat-inbox-${authStore.user.id}`)
       .on('broadcast', { event: 'chat_msg' }, ({ payload }) => {
         handleIncomingPrivate(payload)
-        window.SFX?.receivedMsg(); // Sonido al recibir mensaje privado
+        audioStore.receivedMsg(); // Sonido al recibir mensaje privado
       })
       .subscribe()
   }
@@ -127,7 +129,7 @@ export const useChatStore = defineStore('chat', () => {
     if (error) {
       console.error('[ChatStore] Global message error:', error)
     } else {
-      window.SFX?.sentMsg(); // Sonido al enviar satisfactoriamente
+      audioStore.sentMsg(); // Sonido al enviar satisfactoriamente
     }
   }
 
@@ -156,7 +158,7 @@ export const useChatStore = defineStore('chat', () => {
 
     // 2. Agregar a historial propio y persistir
     handleIncomingPrivate({ ...payload, senderId: authStore.user.id })
-    window.SFX?.sentMsg(); // Sonido al enviar privado
+    audioStore.sentMsg(); // Sonido al enviar privado
   }
 
   function openChat(friendId, username) {

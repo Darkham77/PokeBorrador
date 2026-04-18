@@ -2,7 +2,6 @@
 import { onMounted, watch, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
-import { initLegacyBindings } from '@/logic/stateBridge'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
 import { checkDBCompatibility } from '@/logic/db/dbRouter'
 import MainGameView from '@/views/MainGameView.vue'
@@ -11,38 +10,35 @@ import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
 import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue'
 import LivePvPArena from '@/components/battle/LivePvPArena.vue'
 import EvolutionScene from '@/components/evolution/EvolutionScene.vue'
+import LibraryModal from '@/components/ui/LibraryModal.vue'
+import ShopView from '@/components/ShopView.vue'
+import PokemonCenterView from '@/components/PokemonCenterView.vue'
+import InventoryModal from '@/components/inventory/InventoryModal.vue'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { usePlayerClassStore } from '@/stores/playerClass'
+import MoveLearningModal from '@/components/modals/MoveLearningModal.vue'
 import PhaserGame from '@/components/game/PhaserGame.vue'
+import { useUIStore } from '@/stores/ui'
+import ConfirmModal from '@/components/modals/ConfirmModal.vue'
+import PromptModal from '@/components/modals/PromptModal.vue'
+import SpecialItemModals from '@/components/modals/SpecialItemModals.vue'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
+const uiStore = useUIStore()
 const livePvP = useLivePvPStore()
 const classStore = usePlayerClassStore()
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref(null)
 
-// Sincronizar usuario con el motor legacy reactivamente
-watch(() => authStore.user, (newVal) => {
-  window.currentUser = newVal
-}, { immediate: true })
-
 onMounted(async () => {
-  // 1. Inicializar el puente de estado INMEDIATAMENTE para evitar race conditions con Phaser
-  try {
-    initLegacyBindings()
-    console.log('[App] Legacy Bindings initialized early')
-  } catch (e) {
-    console.error('[App] Failed to initialize Legacy Bindings:', e)
-  }
-
-  // 2. Init Global Error Handlers (Vue Bridge)
+  // 1. Init Global Error Handlers (Vue Bridge)
   initGlobalErrorHandlers()
 
-  // 3. Recuperar sesión (Autologin)
+  // 2. Recuperar sesión (Autologin)
   await authStore.checkSession()
 
-  // 2. Check DB Compatibility & Load Game
+  // 3. Check DB Compatibility & Load Game
   if (authStore.user) {
     const comp = await checkDBCompatibility(gameStore.db)
     if (!comp.compatible) {
@@ -54,37 +50,19 @@ onMounted(async () => {
     // Si la DB es compatible, cargar la partida
     await gameStore.loadGame()
   }
-
-  // Sincronizar usuario con el motor legacy
-  if (authStore.user) {
-    window.currentUser = authStore.user
-  }
   
-  // Escuchar la señal de listo del motor legacy
+  // Escuchar la señal de listo del motor legacy (Mantenido solo para Phaser si es necesario, pero desacoplado de stores)
   window.addEventListener('game-state-ready', (e) => {
-    console.log('[App] Game State Ready Event received:', e.detail?.state);
+    console.log('[App] Game State Ready Event received');
     gameStore.state.isReady = true;
     classStore.syncTheme();
+    livePvP.initInvitePoller()
   });
 
   // Comprobar si ya estaba listo (Race Condition Guard)
   if (window.legacyGameReady) {
-    console.log('[App] Engine was already ready on mount');
     gameStore.state.isReady = true;
     livePvP.initInvitePoller()
-  }
-
-  window.addEventListener('game-state-ready', () => {
-    livePvP.initInvitePoller()
-  })
-
-  // 4. Global Loading Hooks para el motor Legacy
-  window.showLoading = (msg = 'Preparando aventura...') => {
-    gameStore.state.overlayMessage = msg
-    gameStore.state.isOverlayLoading = true
-  }
-  window.hideLoading = () => {
-    gameStore.state.isOverlayLoading = false
   }
 })
 
@@ -163,6 +141,14 @@ const handleRetry = () => {
     <LocalDebugPanel />
     <LivePvPArena />
     <EvolutionScene />
+    <LibraryModal />
+    <ShopView v-if="uiStore.isShopOpen" />
+    <PokemonCenterView v-if="uiStore.isPokemonCenterOpen" />
+    <InventoryModal v-if="uiStore.isInventoryOpen" />
+    <MoveLearningModal v-if="uiStore.isMoveLearningOpen" />
+    <ConfirmModal />
+    <PromptModal />
+    <SpecialItemModals />
   </div>
 </template>
 

@@ -41,18 +41,12 @@ If no files specified, ASK the user which files to review.
 
 ---
 
-## Related Skills
-
-| Skill | When to Use |
-| :--- | :--- |
-| **[frontend-design](../frontend-design/SKILL.md)** | **BEFORE** coding - Learn design principles (color, typography, UX psychology) |
-| **web-design-guidelines** (this) | **AFTER** coding - Audit for accessibility, performance, and best practices |
+---
 
 ## Design Workflow
 
 ```text
-1. DESIGN   → Read frontend-design principles
-2. CODE     → Implement the design
-3. AUDIT    → Run web-design-guidelines review ← YOU ARE HERE
-4. FIX      → Address findings from audit
+1. CODE     → Implement the design
+2. AUDIT    → Run web-design-guidelines review ← YOU ARE HERE
+3. FIX      → Address findings from audit
 ```

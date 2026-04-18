@@ -1,77 +1,31 @@
 ---
 name: pokemon-ability-validator
-description: Valida la base de datos de habilidades Pokémon del juego comparándola contra PokeAPI y verifica que las mecánicas en batalla sean correctas según la Generación 3.
+description: MANDATORY skill for validating Pokémon ability implementations and descriptions against PokeAPI standards.
 ---
 
-# Pokémon Ability Validator Skill
+# Pokémon Ability Validator
 
-## Descripción
-Esta skill valida que todas las habilidades implementadas en el juego correspondan con las mecánicas oficiales de PokeAPI (Generación 3). Detecta discrepancias en descripciones y comportamiento en batalla.
+> Ensures game abilities match official PokeAPI mechanical and descriptive standards.
 
-## Archivos del Skill
-- **`validator.js`** — Script Node.js que consulta PokeAPI y compara contra los datos del juego.
-- **`pokeapi_ability_cache.json`** — Caché local de las habilidades de PokeAPI (se genera automáticamente).
+## Usage
 
-## Cómo Ejecutar
-
-Desde la raíz del proyecto:
+Run the validator to compare local ability data with official PokeAPI entries:
 
 ```bash
-node .agents/skills/pokemon-ability-validator/validator.js
+node .agents/skills/pokemon-ability-validator/scripts/validator.js
 ```
 
-El validador:
-1. Busca las habilidades asignadas a Pokémon en `js/04_state.js`
-2. Busca las descripciones en `js/02_pokemon_data.js`
-3. Descarga (o carga desde caché) todas las habilidades de PokeAPI
-4. Mapea los nombres en Español a los identificadores ingleses de PokeAPI
-5. Imprime una tabla comparativa con las diferencias
+### What it checks:
+1. **Presence**: Verifies that abilities assigned to Pokémon in `src/data/pokemonDB.js` exist in `src/data/abilities.js`.
+2. **Descriptions**: Compares local descriptions in `ABILITY_DATA` against official Spanish flavor text from PokeAPI.
+3. **Mechanics**: Surfaces technical effect descriptions (in English) to help developers ensure battle logic in `src/logic/battle/battleAbilities.js` is correct.
 
-## Fuentes de Datos del Juego
-- **`js/02_pokemon_data.js`** → `ABILITY_DATA` — Descripciones en español de cada habilidad
-- **`js/04_state.js`** → `ABILITIES` — Mapeo de Pokémon a sus habilidades
-- **`js/07_battle.js`** → Lógica de combate donde se ejecutan las habilidades
+### Assets
+The skill uses a local cache to avoid hitting the API rate limits:
+- `assets/pokeapi_ability_cache.json`: Cached ability data from PokeAPI.
 
-## Checklist de Auditoría
-
-### Habilidades Verificadas ✅ (correctas)
-| Habilidad        | PokeAPI          | Estado |
-|-----------------|-----------------|--------|
-| Espesura        | overgrow        | ✅ OK  |
-| Hedor           | stench          | ✅ OK  |
-| Caparazón       | shell-armor     | ✅ OK  |
-| Levitación      | levitate        | ✅ OK  |
-| Cabeza Roca     | rock-head       | ✅ OK  |
-| Insomnio        | insomnia        | ✅ OK  |
-| Corte Fuerte    | hyper-cutter    | ✅ OK  |
-| Insonorizar     | soundproof      | ✅ OK  |
-| Madrugar        | early-bird      | ✅ OK  |
-| Nado Rápido     | swift-swim      | ✅ OK  |
-| Cuerpo Llama    | flame-body      | ✅ OK  |
-| Adaptable       | adaptability    | ✅ OK  |
-| Inmunidad       | immunity        | ✅ OK  |
-| Presión         | pressure        | ✅ OK  |
-| Foco Interno    | inner-focus     | ✅ OK  |
-
-### Habilidades Corregidas 🔧
-| Habilidad        | Problema                                              | Corrección                         |
-|-----------------|------------------------------------------------------|------------------------------------|
-| Cura Natural    | Curaba al final del turno (comportamiento incorrecto) | Ahora cura al retirar/fin combate  |
-| Punto Cura      | Unificado incorrectamente con Cura Natural            | Ahora aplica 30% de probabilidad   |
-
-### Habilidades Sin Mapeo Automático ⚠️
-Las siguientes habilidades del juego son customizadas o no tienen traducción directa en PokeAPI:
-- `Escurridizo`, `Ráfaga`, `Absorbe Voltio`, `Calco`
-
-## Mecánicas Oficiales Gen 3 Clave
-
-### Cura Natural (natural-cure)
-> **Oficial:** "Cures any major status ailment upon switching out."
-
-- ✅ **Correcto:** Se cura al **retirar** el Pokémon del combate o al **finalizar** el combate.
-- ❌ **Incorrecto (antes):** Se curaba al final de cada turno.
-
-### Mudar / Punto Cura (shed-skin / natural-cure variant)
-> **Oficial:** "Has a 30% chance of curing any major status ailment each turn."
-
-- ✅ **Correcto:** 30% de probabilidad por turno de curar el estado.
+### Troubleshooting
+If a new ability is added to PokeAPI and not found in the cache, delete the cache file and re-run the script:
+```bash
+rm .agents/skills/pokemon-ability-validator/assets/pokeapi_ability_cache.json
+```

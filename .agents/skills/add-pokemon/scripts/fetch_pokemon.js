@@ -207,40 +207,40 @@ ${sortedLearnset.filter(m => m.es.includes('TRADUCIR')).map(m => `   - Traduce m
 ${abilities.filter(a => !a.es).map(a => `   - Habilidad sin traducción: ${a.en}`).join('\n') || ''}
 
 -----------------------------------------------------------------
-1. POKEMON_DB en js/02_pokemon_data.js
+1. POKEMON_DB en src/data/pokemonDB.js
    (Agregar antes del cierre del objeto POKEMON_DB)
 -----------------------------------------------------------------
 ${pokemonDbCode}
 
 -----------------------------------------------------------------
-2. TIPO SECUNDARIO en POKE_TYPE2 en js/02_pokemon_data.js
+2. TIPO SECUNDARIO en SECONDARY_TYPES en src/data/types.js
 -----------------------------------------------------------------
 ${type2Code || `// ${nameEs} no tiene tipo secundario, no agregar nada.`}
 
 -----------------------------------------------------------------
-3. ABILITIES en js/04_state.js
+3. ABILITIES en POKEMON_ABILITIES en src/data/abilities.js
 -----------------------------------------------------------------
 ${abilitiesCode}
 
 -----------------------------------------------------------------
-4. EVOLUCIÓN en js/13_evolution.js
+4. EVOLUCIÓN en src/data/evolutionData.js
    (Revisar la cadena completa abajo y agregar en el objeto correcto)
 -----------------------------------------------------------------
 // Cadena de evolución completa:
 ${result.evolution_chain}
 
 -----------------------------------------------------------------
-5. POKEMON_SPRITE_IDS en js/18_pokedex.js
+5. POKEMON_SPRITE_IDS en src/logic/pokedexConstants.js
 -----------------------------------------------------------------
 ${pokedexSpriteCode}
 
 -----------------------------------------------------------------
-6. PDEX_ORDER en js/18_pokedex.js
+6. PDEX_ORDER en src/logic/pokedexConstants.js
 -----------------------------------------------------------------
 ${pdexOrderNote}
 
 -----------------------------------------------------------------
-7. TM_COMPAT en js/18_pokedex.js
+7. TM_COMPAT en src/logic/pokedexConstants.js
    (Lista de movimientos aprendibles por MT - traducir TM ids manualmente)
    Movimientos por MQ en Gen 3: 
 ${machineMoves.map(m => `   ${m.en} → ${m.es || '⚠️ TRADUCIR'}`).join('\n')}

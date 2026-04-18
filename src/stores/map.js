@@ -14,7 +14,7 @@ export const useMapStore = defineStore('map', () => {
   })
   const region = computed(() => gs.state.map?.region || 'kanto')
 
-  const currentCycle = ref('day')
+  const currentCycle = computed(() => gs.state.dayCycle || 'day')
   const maps = ref(FIRE_RED_MAPS)
   const activeEvents = ref([])
   const lastNavigateTime = ref(0)
@@ -22,18 +22,6 @@ export const useMapStore = defineStore('map', () => {
   const mapWinners = ref({}) // locId -> winner
   const pendingAwards = ref([])
   
-  const syncFromLegacy = (legacyState) => {
-    if (typeof window.getDayCycle === 'function') {
-      currentCycle.value = window.getDayCycle()
-    }
-    
-    // Dynamic data sync from legacy (if available)
-    activeEvents.value = window._activeEvents || legacyState?._activeEvents || activeEvents.value
-    pendingAwards.value = legacyState?._pendingAwards || pendingAwards.value
-    
-    // Process map winners (dominance) if available
-    // This is usually populated by loadDailyGuardianCaptures in legacy
-  }
 
   const navigate = (locId) => {
     const now = Date.now()
@@ -95,7 +83,6 @@ export const useMapStore = defineStore('map', () => {
     pendingAwards,
     dailyGuardianCaptures,
     mapWinners,
-    syncFromLegacy,
     navigate
   }
 })

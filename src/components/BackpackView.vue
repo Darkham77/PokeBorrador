@@ -100,10 +100,21 @@ const handleUse = (item) => {
 }
 
 const handleConfirmSell = () => {
-  const gain = invStore.confirmBagSell()
-  if (gain !== false) {
-    uiStore.notify(`¡Vendiste los objetos por ₱${gain.toLocaleString()}!`, '💰')
-  }
+  const selectedEntries = Object.entries(invStore.bagSellSelected)
+  if (selectedEntries.length === 0) return
+
+  const totalGain = invStore.getBagSellTotalGain()
+  
+  uiStore.openConfirm({
+    title: 'Vender Objetos',
+    message: `¿Vender los objetos seleccionados por ₱${totalGain.toLocaleString()}?`,
+    onConfirm: () => {
+      const gain = invStore.confirmBagSell()
+      if (gain !== false) {
+        uiStore.notify(`¡Vendiste los objetos por ₱${gain.toLocaleString()}!`, '💰')
+      }
+    }
+  })
 }
 
 const onQtyInputChange = (itemName, event, maxQty) => {

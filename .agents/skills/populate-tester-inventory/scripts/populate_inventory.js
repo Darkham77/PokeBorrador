@@ -1,51 +1,59 @@
+const fs = require('fs');
+const path = require('path');
+
 /**
- * Script de apoyo para la habilidad populate-tester-inventory (v4 - Reality & Persistence).
- * Genera 20 Pokémon con stats REALES y asegura la persistencia mediante el nuevo router.
+ * POPULATE TESTER INVENTORY
+ * Quick script to add a set of common testing items to the player's inventory.
+ * Usage: node .agents/skills/populate-tester-inventory/scripts/populate_inventory.js
  */
-(async () => {
-  if (typeof state === 'undefined' || typeof makePokemon !== 'function') {
-    console.error('No se detectó el motor del juego o la función makePokemon.');
-    return;
-  }
 
-  // 1. Detección de sesión robusta
-  const user = window.currentUser;
-  if (!user) {
-    alert('❌ Error: Debes estar logueado para poblar el inventario persistente.');
-    return;
-  }
+const SAVE_PATH = path.join(__dirname, '../../../../src/data/state.json'); // Legacy local state if used
 
-  const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-  const count = 20;
-
-  console.log(`[Populate] Generando ${count} Pokémon REALES para: ${user.id}`);
-
-  let successCount = 0;
-  for (let i = 0; i < count; i++) {
-    // IDs del 1 al 386 (Gen 1-3)
-    const pokeId = randomInt(1, 386);
-    // Traducir ID a slug de POKEMON_DB si es necesario (el motor a veces usa slugs)
-    const slug = Object.keys(POKEMON_DB)[pokeId - 1] || 'pidgey';
+function populateInventory() {
+    console.log("Populating tester inventory...");
     
-    const level = randomInt(5, 55);
+    // In a real scenario, this would interact with the DBRouter or the gameStore
+    // But as a skill script, it can generate a snippet for the browser console.
     
-    // GENERACIÓN REAL: Usa la lógica del juego (IVs, Naturaleza, Movimientos por nivel)
-    const p = makePokemon(slug, level);
-    
-    // Inyectar usando el helper global (maneja Pokedex, Caja y Persistencia)
-    const res = await window.injectPokemonToBox(p, true); // true = silent para no spamear notificaciones
-    if (res.success) successCount++;
-  }
+    const items = {
+        'Poción': 99,
+        'Superpoción': 99,
+        'Hiperpoción': 99,
+        'Restaurar Todo': 99,
+        'Revivir': 99,
+        'Antídoto': 99,
+        'Despertar': 99,
+        ' antiquemar': 99,
+        'Antihielo': 99,
+        'Cura Total': 99,
+        'Éter': 99,
+        'Éter Máximo': 99,
+        'Elixir': 99,
+        'Elixir Máximo': 99,
+        'Piedra Fuego': 10,
+        'Piedra Agua': 10,
+        'Piedra Trueno': 10,
+        'Piedra Hoja': 10,
+        'Piedra Lunar': 10,
+        'Piedra Solar': 10,
+        'Caramelo Raro': 99,
+        'Subida de PP': 50,
+        'PP Máximo': 10,
+        'Repelente': 20,
+        'Superrepelente': 20,
+        'Máximo Repelente': 20
+    };
 
-  // 2. Guardado Final y Feedback
-  if (typeof saveGame === 'function') {
-    await saveGame(true); // Ver el indicador de guardado final
-  }
+    const snippet = `
+Object.entries(${JSON.stringify(items)}).forEach(([name, qty]) => {
+    window.gameStore.state.inventory[name] = (window.gameStore.state.inventory[name] || 0) + qty;
+});
+window.gameStore.save();
+console.log('✅ Tester inventory populated!');
+    `;
 
-  console.log(`[Populate] ¡Éxito! ${successCount} Pokémon inyectados con stats reales.`);
-  
-  if (typeof updateHud === 'function') updateHud();
-  if (typeof renderBox === 'function') renderBox(); // Refrescar vista de caja si está abierta
+    console.log("\nCopy and paste this into the browser console:\n");
+    console.log(snippet);
+}
 
-  alert(`✅ Se han añadido ${successCount} Pokémon REALES a tu caja.\n\nStats: Calculados según Gen 3.\nPersistencia: Sincronizada con ${user.id}.\n\nRefresca la página para verificar.`);
-})();
+populateInventory();

@@ -64,11 +64,13 @@ It is **strictly forbidden** for a local session to read data from the cloud or 
 ## 🛠️ Initialization Workflow
 
 1. **AuthStore**: Determines the session mode during login (`authStore.sessionMode`).
-2. **GameStore**: Instantiates the `DBRouter` using the detected mode and exposes it globally as `window.DBRouter`.
-3. **Components**: Access the database agnostically:
+2. **GameStore**: Instantiates the `DBRouter` using the detected mode.
+3. **Components**: Access the database agnostically via modular imports:
 
     ```javascript
-    const { data } = await window.DBRouter.from('inventory').select('*');
+    import { DBRouter } from '@/logic/db/dbRouter';
+    
+    const { data } = await DBRouter.from('inventory').select('*');
     ```
 
 ---
@@ -105,16 +107,48 @@ const { data } = await DBRouter.rpc('fn_add_bonus_exp', { amount: 100 });
 
 ---
 
+## 🧪 Testing & Isolated Environments
+
+To ensure unit tests do not corrupt production or local save data, the `DBRouter` supports a **Test Mode**.
+
+### Initialization Options
+
+When initializing the router in a test environment (e.g., Vitest), use the following configuration:
+
+```javascript
+import { DBRouter } from '@/logic/db/dbRouter';
+
+// Initialize in-memory for volatile tests
+await DBRouter.init({ 
+  mode: 'local', 
+  inMemory: true 
+});
+
+// OR initialize with a specific test database name
+await DBRouter.init({ 
+  mode: 'local', 
+  dbName: 'pokevicio_test_db' 
+});
+```
+
+### Mandate
+
+* **FORBIDDEN**: Running tests against the default `pokevicio_idb` or Supabase production.
+
+* **REQUIRED**: Always use `inMemory: true` for pure logic tests.
+
+---
+
 ## 🛠️ Schema & Migration Management
 
 The project follows a strict **Triple Source of Truth** pattern to ensure absolute integrity between the production server, local databases, and the codebase.
 
-### 1. Mandatory Triple Parity (SQL + JS + Schema)
+### 1. Mandatory Triple Parity (Automated)
 
-Every change to the database structure **MUST** be documented in three places simultaneously:
+Every change to the database structure **MUST** be documented in two manual places and one automated place:
 
-* **SQL Migration File**: Located in `database/migrations/` with the format `YYYYMMDDHHMMSS_description.sql`. This is the delta.
-* **Migration Array**: The same SQL code must be added to the `DATABASE_MIGRATIONS` array in `src/logic/db/sqliteIDBHandler.js` for automatic offline updates.
+* **SQL Migration File**: Located in `database/migrations/` with the format `YYYYMMDDHHMMSS_description.sql`. This is the primary delta.
+* **Automated Logic Sync**: The **Vite Migration Plugin** automatically reads the migration folder and synchronizes the local engine via `src/logic/db/migrations_data.js`. Manual editing of the migration array is **strictly forbidden**.
 * **Absolute Schema File**: The corresponding file in `database/schemas/` MUST be updated to reflect the table's new absolute state.
 
 ### 2. Migration Workflow
@@ -150,13 +184,13 @@ Every migration SQL script **MUST** end with a command that sets the version to 
 * **Supabase**:
 
   ```sql
-  UPDATE public.system_config SET value = jsonb_build_object('db_version', '202604180100') WHERE key = 'db_version';
+  UPDATE public.system_config SET value = jsonb_build_object('db_version', '20260418120000') WHERE key = 'db_version';
   ```
 
 * **SQLite**:
 
   ```sql
-  UPDATE config SET value = '202604180100' WHERE key = 'db_version';
+  UPDATE config SET value = '20260418120000' WHERE key = 'db_version';
   ```
 
 > [!CAUTION]

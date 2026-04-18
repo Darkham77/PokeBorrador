@@ -1,71 +1,64 @@
 <script setup>
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { useBoxStore } from '@/stores/boxStore'
 import { useUIStore } from '@/stores/ui'
+import { useInventoryStore } from '@/stores/inventoryStore'
 import TeamPokemonCard from './TeamPokemonCard.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+const invStore = useInventoryStore()
+const boxStore = useBoxStore()
 
 const props = defineProps({
   team: { type: Array, required: true }
 })
 
-const maxObeyLv = computed(() => {
-  if (typeof window.getMaxObeyLevel === 'function') {
-    return window.getMaxObeyLevel()
-  }
-  return 100
-})
+const maxObeyLv = computed(() => gameStore.getMaxObeyLevel())
 
 const isSelectMode = computed(() => 
-  gameStore.state.uiSelection.teamReleaseMode || 
-  gameStore.state.uiSelection.teamRocketMode
+  boxStore.teamReleaseMode || 
+  boxStore.teamRocketMode
 )
 
 const selectType = computed(() => {
-  if (gameStore.state.uiSelection.teamReleaseMode) return 'release'
-  if (gameStore.state.uiSelection.teamRocketMode) return 'rocket'
+  if (boxStore.teamReleaseMode) return 'release'
+  if (boxStore.teamRocketMode) return 'rocket'
   return null
 })
 
 const isSelected = (index) => {
   if (selectType.value === 'release') {
-    return gameStore.state.uiSelection.teamReleaseSelected.includes(index)
+    return boxStore.teamReleaseSelected.includes(index)
   }
   if (selectType.value === 'rocket') {
-    return gameStore.state.uiSelection.teamRocketSelected.includes(index)
+    return boxStore.teamRocketSelected.includes(index)
   }
   return false
 }
 
-// Acciones Legacy
 const handleCardClick = (index) => {
   if (selectType.value === 'release') {
-    if (typeof window.toggleReleaseSelect === 'function') {
-      window.toggleReleaseSelect(index)
-    }
+    boxStore.toggleTeamReleaseSelect(index)
   } else if (selectType.value === 'rocket') {
-    if (typeof window.toggleTeamRocketSelect === 'function') {
-      window.toggleTeamRocketSelect(index)
-    }
+    boxStore.toggleTeamRocketSelect(index)
   } else {
-    if (typeof window.openPokemonDetail === 'function') {
-      window.openPokemonDetail(index)
-    }
+    uiStore.openPokemonDetail(gameStore.state.team[index], index, 'team')
   }
 }
 
 const openItem = (index) => {
-  if (typeof window.openTeamItemMenu === 'function') {
-    window.openTeamItemMenu(index)
+  const p = gameStore.state.team[index]
+  if (p && p.heldItem) {
+    invStore.unequipItem('team', index)
+  } else {
+    invStore.openItemMenu(null)
   }
 }
 
 const sendToBox = (index) => {
-  if (typeof window.sendToBox === 'function') {
-    window.sendToBox(index)
-  }
+  gameStore.sendToBox(index)
 }
 
 // Drag & Drop
@@ -82,14 +75,7 @@ const onDrop = (e, targetIndex) => {
   const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'), 10)
   if (draggedIndex === targetIndex || isNaN(draggedIndex)) return
   
-  if (typeof window.reorderTeam === 'function') {
-     window.reorderTeam(draggedIndex, targetIndex)
-  } else {
-    const newTeam = [...gameStore.state.team]
-    const [moved] = newTeam.splice(draggedIndex, 1)
-    newTeam.splice(targetIndex, 0, moved)
-    gameStore.updateState({ team: newTeam })
-  }
+  gameStore.reorderTeam(draggedIndex, targetIndex)
 }
 </script>
 

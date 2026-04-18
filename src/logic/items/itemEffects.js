@@ -1,4 +1,5 @@
 import { checkStoneEvolution } from '../evolutionLogic';
+import { TM_COMPAT, GAME_TMS } from '../../data/pokedex';
 
 /**
  * Item Effects Core Logic
@@ -49,11 +50,48 @@ export const itemEffects = {
     // This item is special as it opens a menu
     return { success: true, message: 'abriendo menú de movimientos', resultType: 'relearner', deferred: true };
   },
-  'Parche de naturaleza': (p, options = {}) => {
-    // This is semi-deferred in legacy, but we can treat it as instant if RNG handled externally
-    return { success: true, message: 'iniciando cambio de naturaleza', deferred: true };
+  'Parche de naturaleza': (p) => {
+    return { success: true, message: 'iniciando cambio de naturaleza', deferred: true, resultType: 'nature_patch' };
+  },
+  'Píldora de cambio de habilidad': (p) => {
+    return { success: true, message: 'iniciando cambio de habilidad', deferred: true, resultType: 'ability_pill' };
+  },
+  'Subida de PP': (p) => {
+    return { success: true, message: 'selecciona un movimiento para mejorar', deferred: true, resultType: 'pp_up' };
   }
 };
+
+/**
+ * Gets effect for TMs and other dynamic items not in the main list
+ */
+export const getDynamicItemEffect = (itemName, p) => {
+  // Catch TMs (handles both TM01 and MT01 prefixes)
+  const tmMatch = itemName.match(/M[Tt](\d+)/i);
+  if (tmMatch) {
+    const tmId = `TM${tmMatch[1]}`;
+    const species = p.id;
+    const compatList = TM_COMPAT[species] || [];
+    if (!compatList.includes(tmId)) {
+      return { success: false, message: 'Incompatible.' };
+    }
+    const tmData = GAME_TMS.find(t => t.id === tmId);
+    if (!tmData) return { success: false, message: 'MT inválida.' };
+    
+    // Check if pokemon already knows the move
+    if (p.moves.some(m => m.name === tmData.name)) {
+      return { success: false, message: 'Ya conoce este movimiento.' };
+    }
+
+    return { 
+      success: true, 
+      message: `aprenderá ${tmData.name}`, 
+      deferred: true, 
+      resultType: 'learn_move', 
+      moveName: tmData.name 
+    };
+  }
+  return null;
+}
 
 // Helper Functions
 function healHp(p, amount) {

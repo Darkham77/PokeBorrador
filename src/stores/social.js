@@ -3,11 +3,13 @@ import { ref, reactive } from 'vue'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
+import { useAudioStore } from './audio'
 
 export const useSocialStore = defineStore('social', () => {
   const authStore = useAuthStore()
   const gameStore = useGameStore()
   const uiStore = useUIStore()
+  const audioStore = useAudioStore()
 
   const friends = ref([])
   const pendingRequests = ref([])
@@ -159,7 +161,7 @@ export const useSocialStore = defineStore('social', () => {
       uiStore.notify('Error al enviar solicitud', '❌')
     } else {
       uiStore.notify('Solicitud enviada correctamente', '👥')
-      window.SFX?.sentMsg() // Sonido al enviar solicitud
+      audioStore.sentMsg() // Sonido al enviar solicitud
       const res = searchResults.value.find(p => p.id === targetId)
       if (res) { 
         res.status = 'pending'

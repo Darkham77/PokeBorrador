@@ -13,9 +13,9 @@ description: >
 Este skill verifica que cada ítem del juego esté **correctamente definido y funcional**
 en los tres sistemas principales:
 
-1. **`js/08_shop.js`** → `SHOP_ITEMS[]` (catálogo, nombre, precio, sprite, descripción)
-2. **`js/11_battle_ui.js`** → `HEALING_ITEMS{}` (efecto en mochila y combate)
-3. **`js/12_box_bag.js`** → lógica de mochila exterior y equipamiento
+1. **`src/data/items.js`** → `SHOP_ITEMS[]` (catálogo, nombre, precio, sprite, descripción)
+2. **`src/data/items.js`** → `HEALING_ITEMS{}` (efecto en mochila y combate)
+3. **`src/stores/inventoryStore.js`** → lógica de mochila exterior y equipamiento
 
 ---
 
@@ -53,7 +53,7 @@ Todo ítem en `SHOP_ITEMS` **debe** tener los siguientes campos:
 }
 ```
 
-### Categorías válidas de `cat`:
+### Categorías válidas de `cat`
 
 | cat       | Significado                                     |
 |-----------|-------------------------------------------------|
@@ -76,7 +76,8 @@ Todo ítem usable **fuera de combate o dentro de combate** debe tener una entrad
 }
 ```
 
-### Reglas del retorno:
+### Reglas del retorno
+
 - **`null`** → condición no cumplida (p.e. HP ya está lleno), NO consume el ítem
 - **`'deferred'`** → abre un modal, el ítem se consume dentro del modal o callback
 - **`string`** → éxito, el ítem se consume automáticamente
@@ -93,7 +94,7 @@ Todo ítem usable **fuera de combate o dentro de combate** debe tener una entrad
 | price > 0       | ✅      | ✅    | ✅    | ✅       | ✅      | ✅    |
 | HEALING_ITEMS   | ✅      | ❌    | ✅    | ❌       | ✅      | ❌    |
 | type='held'     | ❌      | ✅    | ❌    | ❌       | ❌      | ❌    |
-| usable combate  | ✅ *    | ❌    | ❌    | ❌       | ❌**   | ❌    |
+| usable combate  | ✅ *    | ❌    | ❌    | ❌       | ❌**    | ❌    |
 | usable exterior | ✅      | ❌    | ✅    | ❌       | ✅      | ✅    |
 | equipable       | ❌      | ✅    | ❌    | ❌       | ❌      | ❌    |
 | se consume      | ✅      | ❌    | ✅    | ✅       | ✅      | ✅    |
@@ -105,7 +106,7 @@ Todo ítem usable **fuera de combate o dentro de combate** debe tener una entrad
 
 ## Pasos para Agregar un Nuevo Ítem
 
-### 1. Agregar entrada en `SHOP_ITEMS` (js/08_shop.js)
+### 1. Agregar entrada en `SHOP_ITEMS` (src/data/items.js)
 
 ```js
 {
@@ -120,11 +121,11 @@ Todo ítem usable **fuera de combate o dentro de combate** debe tener una entrad
   market: true,
   trainerShop: false,
   desc: 'Descripción clara del efecto del ítem.',
-  effect: (qty) => { state.inventory['Mi Ítem'] = (state.inventory['Mi Ítem'] || 0) + qty; }
+  effect: (qty) => { inventoryStore.addItem('Mi Ítem', qty); }
 },
 ```
 
-### 2. Si es usable → agregar en `HEALING_ITEMS` (js/11_battle_ui.js)
+### 2. Si es usable → agregar en `HEALING_ITEMS` (src/data/items.js)
 
 ```js
 'Mi Ítem': p => {
@@ -134,14 +135,14 @@ Todo ítem usable **fuera de combate o dentro de combate** debe tener una entrad
 },
 ```
 
-### 3. Si NO es usable en combate → agregarlo a la lista `nonCombat` (js/11_battle_ui.js línea ~300)
+### 3. Si NO es usable en combate → agregarlo a la lista `nonCombat` (src/data/items.js)
 
 ### 4. Si es equipable → asegurarse de que `type: 'held'` esté en `SHOP_ITEMS`
 
 ### 5. Correr el validador
 
 ```bash
-node .agents/skills/item-validator/validate_items.js
+node .agents/skills/item-validator/scripts/validate_items.js
 ```
 
 ---
@@ -164,11 +165,13 @@ El script verifica:
 ## Criterios de Aprobación
 
 Un ítem está **COMPLETO Y CORRECTO** si:
+
 1. Tiene todos los campos obligatorios del schema
 2. Su comportamiento en mochila (combate y exterior) coincide con su categoría
 3. Pasa sin errores el script `validate_items.js`
 
 Un ítem está **ROTO** si:
+
 - Está en `HEALING_ITEMS` pero no en `SHOP_ITEMS` (ítem fantasma)
 - Está en `SHOP_ITEMS` como `healing` pero no en `HEALING_ITEMS` (inutilizable)
 - Le falta `sprite` o `icon` (se verá vacío en la UI)

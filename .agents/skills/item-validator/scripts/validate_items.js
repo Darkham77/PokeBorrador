@@ -1,8 +1,8 @@
 /**
  * ITEM VALIDATOR SCRIPT
  * Validates integrity of SHOP_ITEMS and HEALING_ITEMS across:
- *   - js/08_shop.js      -> SHOP_ITEMS[]
- *   - js/11_battle_ui.js -> HEALING_ITEMS{}
+ *   - src/data/items.js            -> SHOP_ITEMS[]
+ *   - src/logic/items/itemEffects.js -> HEALING_ITEMS{}
  *
  * Usage: node .agents/skills/item-validator/validate_items.js
  */
@@ -10,11 +10,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const SHOP_FILE   = path.resolve(__dirname, '../../../js/08_shop.js');
-const BATTLE_FILE = path.resolve(__dirname, '../../../js/11_battle_ui.js');
+const SHOP_FILE   = path.resolve(__dirname, '../../../src/data/items.js');
+const BATTLE_FILE = path.resolve(__dirname, '../../../src/logic/items/itemEffects.js');
 
 if (!fs.existsSync(SHOP_FILE) || !fs.existsSync(BATTLE_FILE)) {
-  console.error('❌ Required files not found. Run from project root.');
+  console.error(`❌ Required files not found.\n   - ${SHOP_FILE}\n   - ${BATTLE_FILE}`);
   process.exit(1);
 }
 
@@ -63,8 +63,8 @@ if (current && current.name && current.cat) shopItems.push(current);
 
 // ─── 2. Extract HEALING_ITEMS keys ───────────────────────────────────────────
 const healingItems = new Set();
-// Match lines like:  'Nombre': p => {   OR   'Nombre': _ => {
-const healingRegex = /^\s+'([^']+)':\s*(?:p\s*=>|_\s*=>)/gm;
+// Match lines like:  'Nombre': (p) => {   OR   'Nombre': p => {
+const healingRegex = /^\s+'([^']+)':\s*\(?(?:p|_)?\)?\s*=>/gm;
 let m;
 while ((m = healingRegex.exec(battleContent)) !== null) {
   healingItems.add(m[1]);
@@ -136,7 +136,7 @@ shopItems.forEach(item => {
 
   // 3e. If held → must have type: 'held'
   if (item.cat === 'held' && item.type !== 'held') {
-    errors.push(`${tag} cat='held' but missing 'type: held' → won't appear in equip menu (js/11_battle_ui.js).`);
+    errors.push(`${tag} cat='held' but missing 'type: held' → won't appear in equip menu (item effects logic).`);
   }
 
   // 3f. TM entries (MT prefix) should have a matching HEALING_ITEMS entry

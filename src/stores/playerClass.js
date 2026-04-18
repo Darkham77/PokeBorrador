@@ -125,15 +125,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
    */
   function addXP(amount) {
     if (!playerClass.value || amount <= 0) return
-    // Nota: en PokeBorrador, addClassXP llamaba a addTrainerExp
-    // Mantendremos esa coherencia llamando a una futura acción de gameStore si existe,
-    // o simplemente sumando a classXP si queremos que sean independientes.
-    // El legacy hacía: window.addTrainerExp(amount)
-    if (typeof window.addTrainerExp === 'function') {
-      window.addTrainerExp(amount)
-    } else {
-      gameStore.state.classXP = (gameStore.state.classXP || 0) + amount
-    }
+    gameStore.addTrainerExp(amount)
   }
 
   /**
@@ -201,9 +193,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       if (mission.targetPokemonIdx !== undefined) {
         const p = gameStore.state.box[mission.targetPokemonIdx]
         if (p) {
-          // Devolver el objeto que llevaba
           if (p.heldItem) {
-            const invStore = (await import('./inventoryStore')).useInventoryStore()
+            const invStore = (await import('@/stores/inventoryStore')).useInventoryStore()
             invStore.addItem(p.heldItem, 1)
           }
           gameStore.state.box.splice(mission.targetPokemonIdx, 1)
@@ -220,7 +211,10 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
           const blocks = (mission.endsAt - mission.startedAt) / (3600000 * 6) // bloques de 6h
           const expGain = (25000 + (p.level || 1) * 1000) * blocks
           p.exp = (p.exp || 0) + expGain
-          if (typeof window.checkLevelUp === 'function') window.checkLevelUp(p)
+          
+          // Logic for checkLevelUp (stub until implemented in Vue)
+          // if (typeof window.checkLevelUp === 'function') window.checkLevelUp(p)
+          
           p.onMission = false
           msg += `¡${p.name} ganó ${expGain.toLocaleString()} EXP! 🏅`
         }

@@ -169,113 +169,127 @@ const openDetail = (p) => {
 <style lang="scss" scoped>
 .pokedex-view {
   height: 100%;
-  padding: 24px;
-  background: #0f172a;
+  padding: 32px;
+  background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 .pokedex-header {
-  padding: 32px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.7) 100%);
+  padding: 40px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   
   .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 24px;
+    gap: 32px;
   }
 
   .title-group {
     h1 {
       font-family: 'Press Start 2P', monospace;
-      font-size: 20px;
+      font-size: 24px;
       color: #fff;
-      margin: 0 0 8px 0;
-      text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      margin: 0 0 12px 0;
+      background: linear-gradient(to bottom, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
     .subtitle {
       color: #64748b;
-      font-size: 12px;
-      letter-spacing: 2px;
+      font-size: 13px;
+      letter-spacing: 4px;
       margin: 0;
+      text-transform: uppercase;
+      font-weight: 700;
     }
   }
 }
 
 .stats-grid {
   display: flex;
-  gap: 16px;
+  gap: 20px;
 
   .stat-card {
-    background: rgba(255, 255, 255, 0.03);
-    padding: 16px 24px;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 20px 32px;
+    border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 120px;
+    min-width: 140px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+      transform: translateY(-2px);
+    }
 
     .stat-label {
-      font-size: 10px;
-      color: #94a3b8;
-      margin-bottom: 4px;
+      font-size: 9px;
+      color: #475569;
+      margin-bottom: 8px;
       font-family: 'Press Start 2P', monospace;
     }
     .stat-value {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 700;
       color: #f8fafc;
       font-family: 'Press Start 2P', monospace;
       
-      small { font-size: 12px; color: #64748b; }
+      small { font-size: 12px; color: #475569; margin-left: 4px; }
     }
 
     &.highlight {
-      background: rgba(234, 179, 8, 0.05);
-      border-color: rgba(234, 179, 8, 0.2);
-      .stat-value { color: #facc15; }
+      background: rgba(234, 179, 8, 0.03);
+      border-color: rgba(234, 179, 8, 0.15);
+      .stat-value { color: #facc15; text-shadow: 0 0 15px rgba(234, 179, 8, 0.3); }
     }
   }
 }
 
 .pokedex-controls {
-  padding: 16px;
-  border-radius: 12px;
+  padding: 20px;
+  border-radius: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
 .gen-tabs {
   display: flex;
   background: rgba(0,0,0,0.2);
-  padding: 4px;
-  border-radius: 8px;
+  padding: 6px;
+  border-radius: 12px;
   
   .tab-btn {
-    padding: 8px 20px;
+    padding: 10px 24px;
     border: none;
     background: none;
     color: #64748b;
     font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
+    font-size: 9px;
     cursor: pointer;
-    border-radius: 6px;
-    transition: all 0.2s;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover { color: #fff; }
     &.active {
       background: #334155;
       color: #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transform: scale(1.05);
     }
   }
 }
@@ -283,7 +297,7 @@ const openDetail = (p) => {
 .controls-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   flex: 1;
   justify-content: flex-end;
 }
@@ -291,10 +305,10 @@ const openDetail = (p) => {
 .sort-group {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(0,0,0,0.2);
-  padding: 4px 8px;
-  border-radius: 8px;
+  gap: 10px;
+  background: rgba(0,0,0,0.15);
+  padding: 6px 12px;
+  border-radius: 12px;
 
   .sort-label {
     font-size: 8px;
@@ -303,19 +317,19 @@ const openDetail = (p) => {
   }
 
   .sort-btn {
-    padding: 6px 10px;
+    padding: 8px 12px;
     background: none;
     border: 1px solid transparent;
-    color: #64748b;
+    color: #475569;
     font-family: 'Press Start 2P', monospace;
     font-size: 8px;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 6px;
     transition: all 0.2s;
 
-    &:hover { color: #fff; }
+    &:hover { color: #94a3b8; }
     &.active {
-      background: #334155;
+      background: rgba(255,255,255,0.05);
       color: #fff;
       border-color: rgba(255,255,255,0.1);
     }
@@ -324,118 +338,133 @@ const openDetail = (p) => {
 
 .search-wrapper {
   position: relative;
-  width: 240px;
+  width: 280px;
   
   .search-icon {
     position: absolute;
-    left: 12px;
+    left: 16px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 14px;
-    opacity: 0.5;
+    font-size: 16px;
+    opacity: 0.3;
+    transition: opacity 0.2s;
   }
   
   .search-input {
     width: 100%;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.15);
     border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 8px;
-    padding: 10px 10px 10px 36px;
+    border-radius: 12px;
+    padding: 12px 16px 12px 44px;
     color: #fff;
-    font-size: 12px;
+    font-size: 14px;
     font-family: 'Inter', sans-serif;
     outline: none;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 
     &:focus {
-      background: rgba(0,0,0,0.3);
-      border-color: rgba(59, 130, 246, 0.5);
+      background: rgba(0,0,0,0.25);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      
+      & + .search-icon { opacity: 0.6; }
     }
   }
 }
 
 .pokedex-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 20px;
-  padding-bottom: 40px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 24px;
+  padding-bottom: 60px;
 }
 
 .pokemon-card {
   position: relative;
-  background: rgba(30, 41, 59, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 20px;
+  background: rgba(30, 41, 59, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  padding: 24px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow: hidden;
 
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
   &:hover {
-    transform: translateY(-5px);
-    background: rgba(30, 41, 59, 0.6);
+    transform: translateY(-8px);
+    background: rgba(30, 41, 59, 0.4);
     border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     
-    .pokemon-sprite { transform: #{"Scale(1.1)"}; }
+    &::before { opacity: 1; }
+    .pokemon-sprite { transform: scale(1.15) rotate(5deg); }
+    .pokemon-name { color: #fff; }
   }
 
   &.is-unseen {
-    opacity: 0.5;
+    opacity: 0.3;
     cursor: default;
-    filter: grayScale(100%);
-    &:hover { transform: none; box-shadow: none; }
+    filter: grayscale(100%);
+    &:hover { transform: none; box-shadow: none; &::before { opacity: 0; } }
   }
 
   &.is-caught {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
-    border-color: rgba(234, 179, 8, 0.2);
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
+    border-color: rgba(234, 179, 8, 0.1);
     
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(circle at center, rgba(234, 179, 8, 0.05) 0%, transparent 70%);
-      pointer-events: none;
+    .caught-badge {
+      animation: pulse-gold 2s infinite;
     }
   }
 
   .dex-number {
     position: absolute;
-    top: 12px;
-    left: 12px;
-    font-size: 10px;
-    color: #475569;
+    top: 16px;
+    left: 16px;
+    font-size: 9px;
+    color: #334155;
     font-family: 'Press Start 2P', monospace;
+    font-weight: 700;
   }
 
   .sprite-container {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     z-index: 2;
+    position: relative;
 
     .pokemon-sprite {
       width: 100%;
       height: 100%;
       image-rendering: pixelated;
-      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
       
       &.silhouette {
-        filter: Brightness(0) Opacity(0.2);
+        filter: brightness(0) opacity(0.15);
       }
     }
 
     .unknown-placeholder {
-      font-size: 32px;
-      color: #334155;
+      font-size: 40px;
+      color: #1e293b;
       font-family: 'Press Start 2P', monospace;
+      opacity: 0.5;
     }
   }
 
@@ -444,51 +473,58 @@ const openDetail = (p) => {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     z-index: 2;
 
     .pokemon-name {
-      color: #94a3b8;
-      font-size: 9px;
+      color: #64748b;
+      font-size: 10px;
       font-family: 'Press Start 2P', monospace;
       text-transform: uppercase;
       text-align: center;
-      transition: color 0.2s;
+      transition: color 0.3s;
+      letter-spacing: 1px;
     }
 
     .caught-badge {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 16px;
-      height: 16px;
-      background: rgba(234, 179, 8, 0.2);
+      width: 18px;
+      height: 18px;
+      background: rgba(234, 179, 8, 0.15);
       border-radius: 50%;
+      box-shadow: 0 0 10px rgba(234, 179, 8, 0.2);
       
       .star {
-        font-size: 10px;
+        font-size: 11px;
         color: #facc15;
       }
     }
   }
+}
 
-  &:hover .pokemon-name { color: #fff; }
+@keyframes pulse-gold {
+  0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(234, 179, 8, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
 }
 
 .glass-morphism {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .custom-scrollbar {
-  &::-webkit-scrollbar { width: 8px; }
-  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar { width: 10px; }
+  &::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    &:hover { background: rgba(255, 255, 255, 0.1); }
+    border-radius: 20px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    &:hover { background: rgba(255, 255, 255, 0.1); background-clip: padding-box; }
   }
 }
 </style>
