@@ -17,6 +17,7 @@ tags: [vue3, slots, scoped-slots, reserved-props, naming]
 - [ ] Remember only explicitly bound attributes become slot props
 
 **Incorrect Expectation:**
+
 ```vue
 <!-- ChildComponent.vue -->
 <template>
@@ -39,6 +40,7 @@ tags: [vue3, slots, scoped-slots, reserved-props, naming]
 ```
 
 **If You Need to Pass a "Name" Value:**
+
 ```vue
 <!-- ChildComponent.vue -->
 <template>
@@ -106,4 +108,5 @@ const activeTab = ref(1)
 ```
 
 ## Reference
+
 - [Vue.js Slots - Scoped Slots](https://vuejs.org/guide/components/slots.html#scoped-slots)

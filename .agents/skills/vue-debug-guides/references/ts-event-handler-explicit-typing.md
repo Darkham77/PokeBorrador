@@ -208,6 +208,7 @@ function handleClick(event: MouseEvent) {
 ```
 
 ## Reference
+
 - [Vue.js TypeScript with Composition API - Event Handlers](https://vuejs.org/guide/typescript/composition-api.html#typing-event-handlers)
 - [MDN Event Reference](https://developer.mozilla.org/en-US/docs/Web/Events)
 - [TypeScript DOM Types](https://github.com/microsoft/TypeScript/blob/main/lib/lib.dom.d.ts)

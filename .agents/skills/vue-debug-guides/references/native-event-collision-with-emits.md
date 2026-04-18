@@ -22,6 +22,7 @@ This can cause unexpected behavior where clicks seem to stop working on your com
 ## The Problem
 
 **Incorrect - Declaring but not emitting:**
+
 ```vue
 <!-- ClickableCard.vue -->
 <script setup>
@@ -47,6 +48,7 @@ const emit = defineEmits(['click', 'select'])
 ```
 
 **Why it fails:**
+
 1. `click` is declared in `emits`
 2. Vue treats `@click` as a component event listener
 3. Native click on the `<div>` doesn't trigger component event
@@ -55,6 +57,7 @@ const emit = defineEmits(['click', 'select'])
 ## The Solution
 
 **Option 1: Emit the event explicitly:**
+
 ```vue
 <!-- ClickableCard.vue -->
 <script setup>
@@ -70,6 +73,7 @@ const emit = defineEmits(['click', 'select'])
 ```
 
 **Option 2: Don't declare native events (use fallthrough):**
+
 ```vue
 <!-- ClickableCard.vue -->
 <script setup>
@@ -158,5 +162,6 @@ function handleClick(event) {
 ```
 
 ## Reference
+
 - [Vue.js Component Events](https://vuejs.org/guide/components/events.html)
 - [Vue.js Fallthrough Attributes](https://vuejs.org/guide/components/attrs.html)

@@ -10,7 +10,7 @@ This document tracks the progress of migrating legacy JavaScript/CSS/HTML code f
 | `public/js/04_state.js` | `src/stores/game.js` | 100% | Migrado chooseStarter y lógica de guardado inicial a Pinia. |
 | `public/js/07_battle.js` | `src/logic/battle/` | 100% | Modularized into actions/abilities with functional parity. |
 | `public/js/21_events.js` | `src/components/admin/EventAdminPanel.vue` | 100% | Migrated Ranked Rules Admin and Season Closure logic. |
-| `public/js/02_pokemon_data.js`| `src/logic/data/` | 100% | Normalized and moved to optimized pseudo-DB. |
+| `public/js/02_pokemon_data.js` | `src/logic/data/` | 100% | Normalized and moved to optimized pseudo-DB. |
 | `inventory.js` | `src/stores/inventoryStore.js` | 100% | Moved to Pinia store. |
 | `public/login_guard.js` | `src/logic/auth/loginGuard.js` | 100% | Migrated to ESM; integrated with existing login flow. |
 | `public/assets/` | `src/assets/` | 100% | Migrated to Vite-managed assets. All images converted to WebP. |
@@ -34,7 +34,7 @@ This document tracks the progress of migrating legacy JavaScript/CSS/HTML code f
 | `27_cosmetics.js` | `src/data/cosmeticsData.js` | 100% | Datos de personalización (Nicks/Bordes) migrados a ESM. |
 | `21_dominance.js` | `src/stores/war.js` | 100% | Guerra de Facciones, control de mapas, bonos de dominancia y guardianes. |
 | `22_library.js` | `src/stores/library.js` | 100% | Sistema de ayuda y tutoriales (Biblioteca) con visual parity. |
-| `19_error_handler.js` | `src/logic/errorHandler.js`| 100% | Captura de errores global y overlay de reporte de bugs. |
+| `19_error_handler.js` | `src/logic/errorHandler.js` | 100% | Captura de errores global y overlay de reporte de bugs. |
 | `00_ratios.js` | `src/data/constants.js` | 100% | Constantes de juego y ratios de captura/batalla. |
 | `10_trade_enhanced.js` | `src/components/social/TradePokemonSelector.vue` | 100% | Selector avanzado de Pokémon para intercambios con filtros. |
 | `08_shop.js` | `src/data/items.js` | 90% | Datos de items migrados. Lógica de subida de rango pendiente. |

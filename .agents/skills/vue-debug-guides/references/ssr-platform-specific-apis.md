@@ -36,6 +36,7 @@ Universal/isomorphic code must guard platform-specific API access or use librari
 | `ResizeObserver` | `ReferenceError` |
 
 **Incorrect - Crashes on Server:**
+
 ```javascript
 // WRONG: These run during setup/SSR - crashes in Node.js
 const width = ref(window.innerWidth)
@@ -56,6 +57,7 @@ document.title = 'My Page'
 ```
 
 **Correct - Use onMounted:**
+
 ```vue
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
@@ -92,6 +94,7 @@ function handleScroll() {
 ```
 
 **Correct - Guard with typeof:**
+
 ```javascript
 // When you need to check outside lifecycle hooks
 function getStoredValue(key, defaultValue) {
@@ -185,6 +188,7 @@ const token = useCookie('auth-token')
 | `require()` | Undefined in ES modules |
 
 **Incorrect:**
+
 ```javascript
 // WRONG: Node.js APIs in universal code
 import fs from 'fs'
@@ -192,6 +196,7 @@ const config = JSON.parse(fs.readFileSync('./config.json'))
 ```
 
 **Correct - Separate Server Code:**
+
 ```javascript
 // server/utils.js - Server-only file
 import fs from 'fs'
@@ -233,6 +238,7 @@ import SomeChartLibrary from 'some-chart-library'
 ```
 
 **Correct - Dynamic Import:**
+
 ```vue
 <script setup>
 import { defineAsyncComponent } from 'vue'
@@ -251,6 +257,7 @@ const Chart = defineAsyncComponent(() =>
 ```
 
 ## Reference
+
 - [Vue.js SSR - Platform-Specific APIs](https://vuejs.org/guide/scaling-up/ssr.html#access-to-platform-specific-apis)
 - [Nuxt ClientOnly Component](https://nuxt.com/docs/api/components/client-only)
 - [MDN: Web APIs](https://developer.mozilla.org/en-US/docs/Web/API)

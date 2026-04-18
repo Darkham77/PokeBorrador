@@ -20,6 +20,7 @@ Move comparison logic to the parent and pass the boolean result instead. This is
 - [ ] Consider this pattern especially critical for large lists
 
 **Incorrect:**
+
 ```vue
 <template>
   <!-- BAD: activeId changes -> ALL 100 ListItems re-render -->
@@ -61,6 +62,7 @@ defineProps({
 ```
 
 **Correct:**
+
 ```vue
 <template>
   <!-- GOOD: Only items whose :active actually changed will re-render -->
@@ -137,4 +139,5 @@ defineProps({
 | 1000 items, pass `:active` boolean | 2 | 2 (only changed) |
 
 ## Reference
+
 - [Vue.js Performance - Props Stability](https://vuejs.org/guide/best-practices/performance.html#props-stability)

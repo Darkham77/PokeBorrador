@@ -7,6 +7,7 @@
 ## Why This Matters
 
 In SSR applications, hydration mismatches cause:
+
 - Visual flickering as the client re-renders
 - Loss of state in affected components
 - Console warnings in development (silent failures in production)

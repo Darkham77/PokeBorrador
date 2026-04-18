@@ -193,11 +193,13 @@ If you find yourself needing extensive debugging for state:
 | Plugin configuration | State that needs time-travel debugging |
 
 Pinia provides excellent DevTools integration with:
+
 - State inspection
 - Time-travel debugging
 - Action logging
 - Hot module replacement
 
 ## Reference
+
 - [Vue DevTools](https://devtools.vuejs.org/)
 - [Pinia DevTools](https://pinia.vuejs.org/core-concepts/index.html#devtools)

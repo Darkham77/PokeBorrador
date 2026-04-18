@@ -17,6 +17,7 @@ tags: [vue3, slots, named-slots, default-slot, implicit-behavior]
 - [ ] Keep slot content organization intentional
 
 **The Implicit Behavior:**
+
 ```vue
 <script setup>
 import BaseLayout from './BaseLayout.vue'
@@ -42,6 +43,7 @@ import BaseLayout from './BaseLayout.vue'
 The two `<p>` elements are automatically placed in `<slot>` (the default slot) in the child component.
 
 **Equivalent Explicit Version:**
+
 ```vue
 <template>
   <BaseLayout>
@@ -65,6 +67,7 @@ The two `<p>` elements are automatically placed in `<slot>` (the default slot) i
 ## When Implicit Behavior Causes Confusion
 
 **Scattered Content:**
+
 ```vue
 <template>
   <BaseLayout>
@@ -92,6 +95,7 @@ The two `<p>` elements are automatically placed in `<slot>` (the default slot) i
 All three `<p>` elements end up in the default slot together, which may not be the intended order or grouping.
 
 **Clearer with Explicit Default:**
+
 ```vue
 <template>
   <BaseLayout>
@@ -152,4 +156,5 @@ All three `<p>` elements end up in the default slot together, which may not be t
 ```
 
 ## Reference
+
 - [Vue.js Slots - Named Slots](https://vuejs.org/guide/components/slots.html#named-slots)
