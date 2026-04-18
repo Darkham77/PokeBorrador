@@ -1,9 +1,10 @@
 <script setup>
-import { onMounted, watch } from 'vue'
+import { onMounted, watch, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGameStateBridge } from '@/logic/stateBridge'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
+import { checkDBCompatibility } from '@/logic/db/dbRouter'
 import MainGameView from '@/views/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
@@ -17,6 +18,8 @@ const authStore = useAuthStore()
 const gameStore = useGameStore()
 const livePvP = useLivePvPStore()
 const classStore = usePlayerClassStore()
+const dbIncompatible = ref(false)
+const dbVersionInfo = ref(null)
 
 // Sincronizar usuario con el motor legacy reactivamente
 watch(() => authStore.user, (newVal) => {
@@ -27,8 +30,16 @@ onMounted(async () => {
   // 0. Init Global Error Handlers (Vue Bridge)
   initGlobalErrorHandlers()
 
-  await authStore.checkSession()
-  
+  // 1. Check DB Compatibility
+  if (authStore.user) {
+    const comp = await checkDBCompatibility(gameStore.db)
+    if (!comp.compatible) {
+      dbIncompatible.value = true
+      dbVersionInfo.value = comp
+      return // Stop initialization
+    }
+  }
+
   // Sincronizar usuario con el motor legacy
   if (authStore.user) {
     window.currentUser = authStore.user
@@ -71,6 +82,10 @@ onMounted(async () => {
     gameStore.state.isOverlayLoading = false
   }
 })
+
+const handleRetry = () => {
+  window.location.reload()
+}
 </script>
 
 <template>
@@ -90,6 +105,15 @@ onMounted(async () => {
         >
           <div class="loader" />
           <p>Escribiendo tu historia...</p>
+        </div>
+
+        <!-- Bloqueo por Versión Outdated -->
+        <div v-if="dbIncompatible" class="loading-overlay version-lock">
+          <div class="lock-icon">⚠️</div>
+          <h2>SERVIDOR DESACTUALIZADO</h2>
+          <p>Tu cliente (v{{ dbVersionInfo.client }}) es más moderno que el servidor (v{{ dbVersionInfo.db }}).</p>
+          <p class="admin-note">Por favor, contacta al administrador para que actualice la base de datos.</p>
+          <div class="retry-btn" @click="handleRetry">REINTENTAR</div>
         </div>
       </template>
       <!-- El LoginView se renderiza aquí si no hay sesión -->
@@ -176,5 +200,42 @@ onMounted(async () => {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+.version-lock .lock-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.version-lock h2 {
+  color: #ff3333;
+  margin-bottom: 15px;
+}
+
+.version-lock p {
+  margin-top: 5px;
+  color: #fff;
+}
+
+.version-lock .admin-note {
+  color: var(--yellow);
+  opacity: 0.8;
+  font-size: 10px;
+}
+
+.retry-btn {
+  margin-top: 30px;
+  padding: 10px 20px;
+  background: #ff3333;
+  color: #fff;
+  cursor: pointer;
+  border: 2px solid #fff;
+  transition: all 0.2s;
+}
+
+.retry-btn:hover {
+  transform: scale(1.1);
+  background: #fff;
+  color: #ff3333;
 }
 </style>

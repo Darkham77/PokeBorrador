@@ -73,3 +73,55 @@ export function applyAbilityEffects(attacker, defender, move, damageResult, MOVE
     }
   }
 }
+
+/**
+ * Checks for ability-based immunities (Absorb, Levitate, etc.)
+ */
+export function checkAbilityImmunity(attacker, defender, move, MOVE_DATA, addLogFn, ctx = {}) {
+  const ab = defender.ability;
+  const md = MOVE_DATA[move.name] || {};
+
+  if (ab === 'Pararrayos' && md.type === 'electric') {
+    addLogFn(`¡El Pararrayos de ${defender.name} absorbió el ataque!`, 'log-info');
+    const b = ctx.b;
+    const stages = (b && b.enemy === defender) ? ctx.enemyStages : (b ? ctx.playerStages : null);
+    if (stages) {
+      stages.spa = Math.min(6, (stages.spa || 0) + 1);
+      addLogFn(`¡Subió el At. Esp de ${defender.name}!`, 'log-info');
+    }
+    return true;
+  }
+  
+  if (ab === 'Absorbe Agua' && md.type === 'water') {
+    addLogFn(`¡El Absorbe Agua de ${defender.name} absorbió el ataque!`, 'log-info');
+    const heal = Math.floor(defender.maxHp / 4);
+    defender.hp = Math.min(defender.maxHp, defender.hp + heal);
+    addLogFn(`¡${defender.name} recuperó HP!`, 'log-info');
+    return true;
+  }
+
+  if (ab === 'Absorbe Voltio' && md.type === 'electric') {
+    addLogFn(`¡El Absorbe Voltio de ${defender.name} absorbió el ataque!`, 'log-info');
+    const heal = Math.floor(defender.maxHp / 4);
+    defender.hp = Math.min(defender.maxHp, defender.hp + heal);
+    addLogFn(`¡${defender.name} recuperó HP!`, 'log-info');
+    return true;
+  }
+
+  if (ab === 'Absorbe Fuego' && md.type === 'fire') {
+    addLogFn(`¡El Absorbe Fuego de ${defender.name} absorbió el ataque!`, 'log-info');
+    return true;
+  }
+
+  if (ab === 'Insonorizar' && md.sound) {
+    addLogFn(`¡El Insonorizar de ${defender.name} bloqueó el ataque de sonido!`, 'log-info');
+    return true;
+  }
+
+  if (ab === 'Levitación' && md.type === 'ground' && md.cat !== 'status') {
+    addLogFn(`¡${defender.name} levita y evita el ataque!`, 'log-info');
+    return true;
+  }
+
+  return false;
+}

@@ -10,12 +10,12 @@ import {
 } from '@/logic/battle/battleEngine.js';
 import { 
   tickStatus, 
-  tickLeechSeed, 
-  checkAbilityImmunity 
+  tickLeechSeed 
 } from '@/logic/battle/battleStatus.js';
 import { 
   handleEntryAbilities, 
-  applyAbilityEffects 
+  applyAbilityEffects,
+  checkAbilityImmunity
 } from '@/logic/battle/battleAbilities.js';
 import { applyMoveEffect } from '@/logic/battle/battleMoves.js';
 import { getBestEnemyMove } from '@/logic/battle/battleAI.js';

@@ -35,7 +35,7 @@
     background-image: var(--bg-image);
     background-size: 175%;
     background-position: center 35%;
-    filter: brightness(0.48) contrast(1.1);
+    filter: Brightness(0.48) Contrast(1.1);
     z-index: 0;
     transition: transform 0.6s ease, filter 0.4s ease;
   }
@@ -44,7 +44,7 @@
 
   &:hover::before {
     transform: scale3d(1.1, 1.1, 1);
-    filter: brightness(0.6) contrast(1.2);
+    filter: Brightness(0.6) Contrast(1.2);
   }
 
   &:hover {
@@ -61,9 +61,9 @@
   
   &.locked {
     opacity: 0.6;
-    filter: string.unquote("grayscale(100%)");
+    filter: string.unquote("grayScale(100%)");
     cursor: not-allowed;
-    &::before { filter: brightness(0.2) string.unquote("grayscale(100%)"); }
+    &::before { filter: Brightness(0.2) string.unquote("grayScale(100%)"); }
   }
 }
 
@@ -154,7 +154,7 @@
 
   &::before {
     background-position: center 10%;
-    filter: brightness(0.65) contrast(1.1);
+    filter: Brightness(0.65) Contrast(1.1);
   }
 
   .location-name {
@@ -209,7 +209,7 @@
     
     &:hover {
       transform: scale3d(1.5, 1.5, 1) translateY(-8px);
-      filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.6)) brightness(1.2);
+      filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.6)) Brightness(1.2);
       z-index: 100 !important;
       pointer-events: auto;
     }

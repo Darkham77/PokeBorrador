@@ -391,7 +391,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   gap: 14px;
 }
 
-.market-card.disabled { opacity: 0.5; filter: grayscale(#{1}); cursor: not-allowed; }
+.market-card.disabled { opacity: 0.5; filter: grayScale(100%); cursor: not-allowed; }
 .market-card.selected { border: 2px solid #4caf50; background: rgba(76,175,80,0.05); }
 
 .market-item-icon { margin-bottom: 8px; text-align: center; }

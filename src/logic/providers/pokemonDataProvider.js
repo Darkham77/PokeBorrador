@@ -1,10 +1,10 @@
 import { shallowRef, readonly } from 'vue';
-import { POKEMON_DB } from '../data/pokemonDB';
-import { ABILITY_DATA, POKEMON_ABILITIES } from '../data/abilities';
-import { MOVE_DATA } from '../data/moves';
-import { GYMS } from '../data/gyms';
-import { FIRE_RED_MAPS } from '../data/maps';
-import { NATURE_DATA } from '../data/natures';
+import { POKEMON_DB } from '@/data/pokemonDB';
+import { ABILITY_DATA, POKEMON_ABILITIES } from '@/data/abilities';
+import { MOVE_DATA } from '@/data/moves';
+import { GYMS } from '@/data/gyms';
+import { FIRE_RED_MAPS } from '@/data/maps';
+import { NATURE_DATA } from '@/data/natures';
 
 /**
  * PokemonDataProvider

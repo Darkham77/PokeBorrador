@@ -36,10 +36,10 @@ export async function loadBestSave(user, db) {
   // 2. Fetch Local Save
   const localSaveKey = 'pokemon_local_save_' + user.id;
   const localRaw = localStorage.getItem(localSaveKey);
+  const localData = localRaw ? JSON.parse(localRaw) : null;
   
-  if (localRaw) {
+  if (localData) {
     try {
-      const localData = JSON.parse(localRaw);
       const cloudTime = cloudSaveRow?.updated_at ? new Date(cloudSaveRow.updated_at).getTime() : 0;
       const localTime = localData._last_updated || 0;
 
@@ -65,7 +65,7 @@ export async function loadBestSave(user, db) {
     data: normalized,
     issues,
     lastSaveId: cloudSaveRow?.last_save_id || null,
-    isNewerThanCloud: finalSaveData === (localRaw ? JSON.parse(localRaw) : null) && cloudSaveRow
+    isNewerThanCloud: !!(localData && finalSaveData === localData && cloudSaveRow)
   };
 }
 

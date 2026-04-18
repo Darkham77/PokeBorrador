@@ -1,0 +1,17 @@
+{
+  "skill_name": "project-browser-testing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "abre el navegador y fijate si el login de ASH funciona",
+      "expected_output": "The model should check if the server is running, start it if not, then use browser_subagent to test the login flow.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "chequea si la nueva pantalla de combate se ve bien en mobile",
+      "expected_output": "The model should trigger project-testing, ensure server readiness, and use browser_subagent with mobile viewport settings.",
+      "files": []
+    }
+  ]
+}

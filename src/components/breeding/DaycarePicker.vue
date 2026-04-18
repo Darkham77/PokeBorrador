@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useBreedingStore } from '@/stores/breeding';
 import { getSpriteUrl, getPokemonTier } from '@/logic/pokemonUtils';
-import { checkCompatibility } from '@/logic/pokemon/breedingEngine';
+import { checkCompatibility } from '@/logic/breeding/breedingEngine';
 import { validateMissionPokemon } from '@/logic/breeding/missionEngine';
 
 const props = defineProps({

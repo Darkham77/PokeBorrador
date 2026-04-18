@@ -125,6 +125,7 @@ export async function initSQLite() {
         "competition_results (id TEXT PRIMARY KEY, event_id TEXT, winners TEXT, ended_at TEXT DEFAULT (datetime('now')))",
         "war_factions (user_id TEXT PRIMARY KEY, email TEXT, faction TEXT, created_at TEXT DEFAULT (datetime('now')))",
         "war_defenders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, map_id TEXT, pokemon_uid TEXT, pokemon_data TEXT, wins_count INTEGER DEFAULT 0, week_id TEXT, created_at TEXT DEFAULT (datetime('now')))",
+        "claim_queue (id TEXT PRIMARY KEY, user_id TEXT, source_type TEXT, source_id TEXT, asset_data TEXT, status TEXT DEFAULT 'pending', created_at TEXT DEFAULT (datetime('now')))",
         "config (key TEXT PRIMARY KEY, value TEXT)"
       ];
 
@@ -142,13 +143,33 @@ export async function initSQLite() {
       const DATABASE_MIGRATIONS = [
         {
           id: '202604170835_add_role_to_profiles',
-          sql: "ALTER TABLE profiles ADD COLUMN role TEXT DEFAULT 'user';",
+          sql: "ALTER TABLE profiles ADD COLUMN role TEXT DEFAULT 'user'; UPDATE config SET value = '202604170835' WHERE key = 'db_version';",
           check: { table: 'profiles', column: 'role' }
+        },
+        {
+          id: '202604172000_create_claim_queue',
+          sql: "CREATE TABLE IF NOT EXISTS claim_queue (id TEXT PRIMARY KEY, user_id TEXT, source_type TEXT, source_id TEXT, asset_data TEXT, status TEXT DEFAULT 'pending', created_at TEXT DEFAULT (datetime('now'))); UPDATE config SET value = '202604172000' WHERE key = 'db_version';",
+          check: { table: 'claim_queue', column: 'id' }
+        },
+        {
+          id: '202604180100_add_db_version',
+          sql: "INSERT OR IGNORE INTO config (key, value) VALUES ('db_version', '202604180100'); UPDATE config SET value = '202604180100' WHERE key = 'db_version';"
         }
       ];
 
+      console.log('[SQLite] Running migrations...');
       runMigrations(db, DATABASE_MIGRATIONS);
       
+      // Force Version Sync: Ensure local DB matches the latest client-defined migration
+      try {
+        const latestMig = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1];
+        const latestVer = latestMig.id.split('_')[0];
+        db.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${latestVer}')`);
+        console.log(`[SQLite] Local DB Version synchronized to: ${latestVer}`);
+      } catch (e) {
+        console.error('[SQLite] Failed to sync db_version:', e);
+      }
+
       seedSQLite();
       await persistSQLite();
 
@@ -198,6 +219,12 @@ function runMigrations(db, migrations) {
 
       // 4. Mark as applied
       db.run(`INSERT INTO _migrations (id) VALUES ('${m.id}')`);
+
+      // 5. Auto-establish version (Safety Guard)
+      const version = m.id.split('_')[0];
+      if (/^\d+$/.test(version)) {
+        db.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${version}')`);
+      }
     } catch (e) {
       console.warn(`[SQLite Migration] Failed to apply ${m.id}:`, e);
     }
@@ -256,6 +283,7 @@ export async function queryLocal(sql, params = []) {
     return results;
   } catch (e) {
     console.error(`[SQLite Error] Query: ${sql}`, e);
+    // If it's a version mismatch or table missing, we might need to handle it
     return [];
   }
 }

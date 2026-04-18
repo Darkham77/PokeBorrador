@@ -2,6 +2,38 @@
 
 Este manual detalla los comandos y configuraciones necesarios para trabajar en la nueva versión del juego usando **Vue 3**, **Phaser 4**, **Vite** y **Supabase**.
 
+## 📋 Requisitos Previos
+
+Antes de comenzar, asegúrate de tener instalado **Node.js (NPM)** y **Python** en tu sistema.
+
+### 🌐 Instalación de Node.js y NPM
+
+- **Windows (Terminal/PowerShell)**:
+
+    ```bash
+    winget install OpenJS.NodeJS
+    ```
+
+- **Linux (Ubuntu/Debian)**:
+
+    ```bash
+    sudo apt update && sudo apt install nodejs npm
+    ```
+
+### 🐍 Instalación de Python y Pip
+
+- **Windows (Terminal/PowerShell)**:
+
+    ```bash
+    winget install Python.Python.3.12
+    ```
+
+- **Linux (Ubuntu/Debian)**:
+
+    ```bash
+    sudo apt update && sudo apt install python3 python3-pip
+    ```
+
 ## 🛠️ Entorno de Desarrollo
 
 Para iniciar el servidor de desarrollo local:
@@ -12,19 +44,28 @@ Para iniciar el servidor de desarrollo local:
     npm install
     ```
 
-2. **Configurar Variables de Entorno**:
+2. **Actualizar dependencias** (Si hay nuevas versiones o warnings de seguridad):
+
+    ```bash
+    npm update
+    ```
+
+3. **Configurar Variables de Entorno**:
     Copia el archivo `.env.example` y renómbralo a `.env`, luego completa los valores de Supabase:
+
     ```bash
     cp .env.example .env
     ```
 
-3. **Configurar Entorno Python (Optimizador)**:
+4. **Configurar Entorno Python (Optimizador)**:
     Instala las dependencias necesarias para los scripts de optimización (conversión a WebP, etc.):
+
     ```bash
     pip install -r requirements.txt
     ```
 
-4. **Iniciar Vite**:
+5. **Iniciar Vite**:
+
     ```bash
     npm run dev
     ```
@@ -88,6 +129,7 @@ npm run build
 ```
 
 ### Reglas de Oro
+
 - **Eficiencia GPU**: Usa siempre Texture Atlases y Object Pooling en Phaser.
 - **Assets WebP**: Prohibido usar PNG/JPG raw; usa el script de conversión a WebP.
 - **Ley de 500 Líneas**: Ningún archivo de lógica o componente debe exceder las 500 líneas.

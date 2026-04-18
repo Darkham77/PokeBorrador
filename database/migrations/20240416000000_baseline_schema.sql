@@ -1,3 +1,13 @@
+
+-- =====================================================
+-- CONFIGURACIÓN DEL SISTEMA (SYSTEM) — Poké Vicio
+-- =====================================================
+CREATE TABLE IF NOT EXISTS public.system_config (
+  key TEXT PRIMARY KEY,
+  value JSONB,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- =====================================================
 -- POKÉ VICIO — BASELINE SCHEMA (v1.1.0)
 -- Fecha: 2024-04-16
@@ -191,3 +201,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER trg_trim_global_chat_messages
 AFTER INSERT ON public.global_chat_messages
 FOR EACH STATEMENT EXECUTE FUNCTION public.trim_global_chat_messages();
+
+-- Establish version 20240416000000
+INSERT INTO public.system_config (key, value) VALUES ('db_version', '20240416000000'::jsonb) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

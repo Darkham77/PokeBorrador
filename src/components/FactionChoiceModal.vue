@@ -82,7 +82,7 @@ const chooseFaction = (faction) => {
 }
 
 .faction-btn:hover {
-  transform: #{'scale(#{1.02})'};
+  transform: #{'Scale(1.02)'};
 }
 
 .union-btn {

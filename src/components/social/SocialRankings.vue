@@ -194,7 +194,7 @@ const getFactionColor = (faction) => {
 
   &:hover {
     background: rgba(255, 255, 255, 0.05);
-    transform: scale(#{1.01});
+    transform: Scale(1.01);
   }
 
   &.rank-1 { background: linear-gradient(90deg, rgba(251, 191, 36, 0.15), rgba(0,0,0,0)); border-color: rgba(251, 191, 36, 0.4); }

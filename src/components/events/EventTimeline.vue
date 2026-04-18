@@ -186,7 +186,7 @@ const formatBonus = (key, val) => {
   padding: 20px;
   transition: transform 0.2s;
 
-  &:hover { transform: scale(#{1.01}); border-color: rgba(251, 191, 36, 0.4); }
+  &:hover { transform: Scale(1.01); border-color: rgba(251, 191, 36, 0.4); }
 
   .ev-header {
     display: flex;

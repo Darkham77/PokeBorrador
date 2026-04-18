@@ -310,7 +310,7 @@ const handleSelect = async (id) => {
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    filter: brightness(1.2);
+    filter: Brightness(1.2);
   }
 
   &:disabled {

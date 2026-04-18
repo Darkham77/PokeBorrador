@@ -6,6 +6,8 @@ import { useUIStore } from './ui'
 import { supabase } from '@/logic/supabase'
 import { DBRouter } from '@/logic/db/dbRouter'
 import { loadBestSave } from '@/logic/auth/loadService'
+import { makePokemon } from '@/logic/pokemonFactory'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const INITIAL_STATE = {
   trainer: '',
@@ -67,6 +69,7 @@ const INITIAL_STATE = {
   warMyPtsLocal: {},
   notificationHistory: [],
   marketSoldSeenIds: [],
+  claimQueue: [],
   isReady: false,
   uiSelection: {
     teamRocketMode: false,
@@ -210,6 +213,26 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  async function chooseStarter(id) {
+    const uiStore = useUIStore()
+    const starter = makePokemon(id, 5)
+    
+    state.team = [starter]
+    
+    // Registrar en Pokedex
+    if (!state.pokedex.includes(id)) state.pokedex.push(id)
+    if (!state.seenPokedex.includes(id)) state.seenPokedex.push(id)
+    
+    state.starterChosen = true
+    uiStore.activeTab = 'team'
+    
+    const speciesData = pokemonDataProvider.getPokemonData(id)
+    uiStore.notify(`¡${speciesData.name} es tu compañero! ¡Buena suerte!`, '🎉')
+    
+    // Guardado inmediato
+    await save(false)
+  }
+
   function hatchEggs() {
     if (!state.eggs || state.eggs.length === 0) return false
     let anyReady = false
@@ -229,6 +252,44 @@ export const useGameStore = defineStore('game', () => {
     return anyReady
   }
 
+  async function claimAsset(claimId) {
+    if (!authStore.user) return false
+    
+    try {
+      const { data, error } = await db.value.rpc('claim_asset_v2', {
+        p_claim_id: claimId
+      })
+      
+      if (error) throw error
+      
+      if (data) {
+        updateState(data)
+        if (window.updateHud) window.updateHud()
+        
+        // Remove from local queue
+        state.claimQueue = state.claimQueue.filter(c => c.id !== claimId)
+        return true
+      }
+    } catch (e) {
+      console.error('[CLAIM ERROR]', e)
+      useUIStore().notify('Error al reclamar activo', '❌')
+      return false
+    }
+  }
+
+  async function fetchClaimQueue() {
+    if (!authStore.user || authStore.sessionMode === 'offline') return
+    
+    const { data, error } = await db.value.from('claim_queue')
+      .select('*')
+      .eq('user_id', authStore.user.id)
+      .order('created_at', { ascending: true })
+      
+    if (!error) {
+      state.claimQueue = data || []
+    }
+  }
+
   return {
     state,
     db,
@@ -236,7 +297,10 @@ export const useGameStore = defineStore('game', () => {
     resetToInitial,
     syncFromLegacy,
     hatchEggs,
+    claimAsset,
+    fetchClaimQueue,
     loadGame,
-    save
+    save,
+    chooseStarter
   }
 })

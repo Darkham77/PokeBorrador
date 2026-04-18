@@ -79,8 +79,11 @@ const getTypeEmoji = (type) => {
         </div>
         <div class="range-inputs">
           <input 
-            type="range" min="0" max="1000000" step="1000" 
             v-model.number="gtsStore.filters.priceMax"
+            type="range"
+            min="0"
+            max="1000000" 
+            step="1000"
             class="retro-range"
           >
         </div>
@@ -89,10 +92,13 @@ const getTypeEmoji = (type) => {
       <template v-if="filters.mode === 'pokemon'">
         <!-- Tier Filter -->
         <div class="filter-group">
-          <div class="group-label">Tier</div>
+          <div class="group-label">
+            Tier
+          </div>
           <div class="btn-grid tiers">
             <button 
-              v-for="t in TIERS" :key="t"
+              v-for="t in TIERS"
+              :key="t"
               :class="{ active: filters.tier === t }"
               @click="setFilter('tier', t)"
             >
@@ -103,19 +109,36 @@ const getTypeEmoji = (type) => {
 
         <!-- Level Range -->
         <div class="filter-group">
-          <div class="group-label">Nivel: {{ filters.levelMin }} - {{ filters.levelMax }}</div>
+          <div class="group-label">
+            Nivel: {{ filters.levelMin }} - {{ filters.levelMax }}
+          </div>
           <div class="range-inputs dual">
-             <input type="range" min="1" max="100" v-model.number="gtsStore.filters.levelMin" class="half">
-             <input type="range" min="1" max="100" v-model.number="gtsStore.filters.levelMax" class="half">
+            <input
+              v-model.number="gtsStore.filters.levelMin"
+              type="range"
+              min="1"
+              max="100"
+              class="half"
+            >
+            <input
+              v-model.number="gtsStore.filters.levelMax"
+              type="range"
+              min="1"
+              max="100"
+              class="half"
+            >
           </div>
         </div>
 
         <!-- Type Filter -->
         <div class="filter-group full-width">
-          <div class="group-label">Tipo</div>
+          <div class="group-label">
+            Tipo
+          </div>
           <div class="btn-grid types">
             <button 
-              v-for="t in TYPES" :key="t"
+              v-for="t in TYPES"
+              :key="t"
               :class="{ active: filters.type === t }"
               :title="t"
               @click="setFilter('type', t)"
@@ -127,20 +150,26 @@ const getTypeEmoji = (type) => {
 
         <!-- IVs Checkbox -->
         <div class="filter-group compact">
-           <label class="checkbox-label">
-             <input type="checkbox" v-model="gtsStore.filters.ivAny31">
-             <span>Algún IV 31 ✨</span>
-           </label>
+          <label class="checkbox-label">
+            <input
+              v-model="gtsStore.filters.ivAny31"
+              type="checkbox"
+            >
+            <span>Algún IV 31 ✨</span>
+          </label>
         </div>
       </template>
 
       <template v-else>
         <!-- Item Categories -->
         <div class="filter-group full-width">
-          <div class="group-label">Categoría</div>
+          <div class="group-label">
+            Categoría
+          </div>
           <div class="btn-grid categories">
             <button 
-              v-for="c in ITEM_CATS" :key="c"
+              v-for="c in ITEM_CATS"
+              :key="c"
               :class="{ active: filters.itemCat === c }"
               @click="setFilter('itemCat', c)"
             >
@@ -151,7 +180,12 @@ const getTypeEmoji = (type) => {
       </template>
     </div>
 
-    <button class="reset-btn" @click="resetFilters">LIMPIAR FILTROS</button>
+    <button
+      class="reset-btn"
+      @click="resetFilters"
+    >
+      LIMPIAR FILTROS
+    </button>
   </div>
 </template>
 

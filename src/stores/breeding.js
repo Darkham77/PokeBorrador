@@ -13,12 +13,12 @@ import {
 import { generateMission, validateMissionPokemon } from '@/logic/breeding/missionEngine';
 import { EGG_SPAWN_INTERVAL_MS, BREEDING_CONSTANTS } from '@/logic/breeding/breedingData';
 import { POKEMON_DB } from '@/data/pokemonDB';
-import { useClassStore } from './classStore'; // Asumiendo que existe
+import { usePlayerClassStore } from './playerClass';
 
 export const useBreedingStore = defineStore('breeding', () => {
   const gameStore = useGameStore();
   const uiStore = useUIStore();
-  const classStore = useClassStore();
+  const classStore = usePlayerClassStore();
 
   // --- STATE ---
   const slots = ref([]); // [{ pokemon, slot_index, deposited_at }]

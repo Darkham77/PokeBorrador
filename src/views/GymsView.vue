@@ -62,6 +62,8 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
+@use "sass:string";
+
 .gyms-view-legacy {
   padding: 30px;
   background: #0d1117;
@@ -133,18 +135,18 @@ onMounted(async () => {
   font-size: 20px;
   transition: all 0.3s;
   &.beaten {
-    filter: unquote("grayscale(#{1})");
+    filter: string.unquote("grayScale(100%)");
     opacity: 0.6;
-    &:hover { filter: unquote("grayscale(#{0})"); opacity: 1; }
+    &:hover { filter: string.unquote("grayScale(100%)"); opacity: 1; }
   }
 
   &.active {
     opacity: 1;
-    filter: grayscale(#{0});
+    filter: grayScale(100%);
     background: rgba(255, 215, 0, 0.1);
     border-color: #ffd700;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-    transform: #{'scale(#{1.1})'};
+    transform: string.unquote("scale(#{1.1})");
   }
 }
 

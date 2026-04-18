@@ -71,7 +71,7 @@ const confirmPassiveTeamEdit = () => {
   transition: transform 0.2s ease;
 
   &:hover {
-    transform: scale(#{1.1});
+    transform: Scale(1.1);
   }
 }
 
@@ -112,7 +112,7 @@ const confirmPassiveTeamEdit = () => {
   transition: all 0.2s ease;
 
   &:hover {
-    filter: brightness(1.2);
+    filter: Brightness(1.2);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(50, 215, 75, 0.3);
   }

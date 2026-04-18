@@ -170,12 +170,12 @@ const dayCycle = computed(() => {
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   &:hover {
-    transform: scale(#{1.08}) translateY(-2px);
-    filter: brightness(1.15);
+    transform: Scale(1.08) translateY(-2px);
+    filter: Brightness(1.15);
   }
 
   &:active {
-    transform: scale(#{0.95});
+    transform: Scale(0.95);
   }
 }
 </style>

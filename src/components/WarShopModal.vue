@@ -56,7 +56,7 @@ const closeWarShop = () => {
   transition: transform 0.2s ease;
 
   &:hover {
-    transform: scale(#{1.1});
+    transform: Scale(1.1);
     color: var(--red);
   }
 }

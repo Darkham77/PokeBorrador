@@ -9,7 +9,7 @@ import EggWarehouse from '@/components/breeding/EggWarehouse.vue';
 import { getSpriteUrl } from '@/logic/pokemonUtils';
 import { COMPAT_TEXT } from '@/data/breeding/breedingConstants';
 import { getGeneticsForecast } from '@/logic/breeding/breedingEngine';
-import { useClassStore } from '@/stores/classStore';
+import { usePlayerClassStore } from '@/stores/playerClass';
 
 const breedingStore = useBreedingStore();
 const gameStore = useGameStore();
@@ -49,7 +49,7 @@ const formatTime = (ms) => {
   return `${m}:${s}`;
 };
 
-const classStore = useClassStore();
+const classStore = usePlayerClassStore();
 
 const forecast = computed(() => {
   if (!breedingStore.isBreeding) return null;
@@ -192,22 +192,34 @@ const forecast = computed(() => {
           </div>
           
           <div class="forecast-grid">
-            <div class="forecast-item" :class="{ positive: forecast.ivsInherited >= 5 }">
+            <div
+              class="forecast-item"
+              :class="{ positive: forecast.ivsInherited >= 5 }"
+            >
               <span class="label">IVs heredados:</span>
               <span class="value">{{ forecast.ivsInherited }} de 6</span>
             </div>
             
-            <div class="forecast-item" :class="{ active: forecast.natureGuaranteed }">
+            <div
+              class="forecast-item"
+              :class="{ active: forecast.natureGuaranteed }"
+            >
               <span class="label">Naturaleza:</span>
               <span class="value">{{ forecast.natureGuaranteed ? 'GARANTIZADA' : 'Aleatoria' }}</span>
             </div>
 
-            <div class="forecast-item" :class="{ active: forecast.masudaActive }">
+            <div
+              class="forecast-item"
+              :class="{ active: forecast.masudaActive }"
+            >
               <span class="label">Método Masuda:</span>
               <span class="value">{{ forecast.masudaActive ? `ACTIVO (x${forecast.shinyMultiplier})` : 'Inactivo' }}</span>
             </div>
 
-            <div class="forecast-item" :class="{ positive: forecast.eggMovesCount > 0 }">
+            <div
+              class="forecast-item"
+              :class="{ positive: forecast.eggMovesCount > 0 }"
+            >
               <span class="label">Movimientos Huevo:</span>
               <span class="value">{{ forecast.eggMovesCount > 0 ? 'DETECTADOS ✨' : 'Ninguno' }}</span>
             </div>
@@ -425,20 +437,20 @@ const forecast = computed(() => {
 .heart-fx {
   font-size: 32px;
   opacity: 0.1;
-  filter: grayscale(#{1});
+  filter: grayScale(100%);
   transition: all 0.5s;
   
   &.active {
     opacity: 1;
-    filter: grayscale(#{0});
+    filter: grayScale(100%);
     animation: pulse 2s infinite;
   }
 }
 
 @keyframes pulse {
-  0% { transform: scale(#{1}); filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0)); }
-  50% { transform: scale(#{1.2}); filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.6)); }
-  100% { transform: scale(#{1}); filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0)); }
+  0% { transform: Scale(1.0); filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0)); }
+  50% { transform: Scale(1.2); filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.6)); }
+  100% { transform: Scale(1.0); filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0)); }
 }
 
 .breeding-forecast {

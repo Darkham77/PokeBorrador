@@ -34,3 +34,6 @@ UPDATE public.profiles
 SET role = 'admin' 
 WHERE email = 'kodrol77@gmail.com';
 */
+
+-- Establish version 20260417113600
+INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260417113600'::jsonb) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

@@ -26,8 +26,11 @@ import TradeView from '@/components/TradeView.vue'
 import ClassSelectionModal from '@/components/modals/ClassSelectionModal.vue'
 import ClassMissionsModal from '@/components/modals/ClassMissionsModal.vue'
 import PokemonSelectionModal from '@/components/modals/PokemonSelectionModal.vue'
-import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import ItemTargetModal from '@/components/modals/ItemTargetModal.vue'
+import EvolutionScene from '@/components/evolution/EvolutionScene.vue'
+import MoveRelearnerModal from '@/components/modals/MoveRelearnerModal.vue'
+import SessionConflictModal from '@/components/auth/SessionConflictModal.vue'
+import { useAuthStore } from '@/stores/auth'
 
 
 // Tab components
@@ -56,6 +59,7 @@ import { phaserBridge } from '@/logic/phaserBridge'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+const authStore = useAuthStore()
 const battleStore = useBattleStore()
 const chatStore = useChatStore()
 
@@ -143,15 +147,6 @@ onUnmounted(() => {
   if (watchdog) clearInterval(watchdog)
   if (resizeObserver) resizeObserver.disconnect()
 })
-
-
-const handleTabChange = (tab, event) => {
-  uiStore.activeTab = tab
-  if (typeof window.showTab === 'function') {
-    const btn = event?.target?.closest('.hud-nav-btn') || document.querySelector(`[data-tab="${tab}"]`);
-    window.showTab(tab, btn)
-  }
-}
 </script>
 
 <template>
@@ -189,17 +184,17 @@ const handleTabChange = (tab, event) => {
     >
       <!-- TAB CONTENTS -->
       <div
+        v-show="activeTab === 'map'"
         id="tab-map"
         class="tab-content"
-        v-show="activeTab === 'map'"
       >
         <MapView />
       </div>
 
       <div
+        v-show="activeTab === 'team'"
         id="tab-team"
         class="tab-content"
-        v-show="activeTab === 'team'"
       >
         <div class="team-section">
           <TeamHeader />
@@ -209,81 +204,81 @@ const handleTabChange = (tab, event) => {
 
 
       <div
+        v-show="activeTab === 'box'"
         id="tab-box"
         class="tab-content"
-        v-show="activeTab === 'box'"
       >
         <BoxView />
       </div>
 
       <div
+        v-show="activeTab === 'pokedex'"
         id="tab-pokedex"
         class="tab-content"
-        v-show="activeTab === 'pokedex'"
       >
         <PokedexView />
       </div>
 
       <div
+        v-show="activeTab === 'bag'"
         id="tab-bag"
         class="tab-content"
-        v-show="activeTab === 'bag'"
       >
         <BackpackView />
       </div>
 
       <div
+        v-show="activeTab === 'gyms'"
         id="tab-gyms"
         class="tab-content"
-        v-show="activeTab === 'gyms'"
       >
         <GymsView />
       </div>
 
       <div
+        v-show="activeTab === 'daycare'"
         id="tab-daycare"
         class="tab-content"
-        v-show="activeTab === 'daycare'"
       >
         <DaycareView v-if="activeTab === 'daycare'" />
       </div>
 
       <div
+        v-show="activeTab === 'market'"
         id="tab-market"
         class="tab-content"
-        v-show="activeTab === 'market'"
       >
         <ShopView />
       </div>
 
       <div
+        v-show="activeTab === 'trainer-shop'"
         id="tab-trainer-shop"
         class="tab-content"
-        v-show="activeTab === 'trainer-shop'"
       >
         <ShopView />
       </div>
 
       <div
+        v-show="activeTab === 'online-market'"
         id="tab-online-market"
         class="tab-content"
-        v-show="activeTab === 'online-market'"
       >
         <GlobalMarket v-if="activeTab === 'online-market'" />
       </div>
 
       <div
+        v-show="activeTab === 'arena'"
         id="tab-arena"
         class="tab-content"
-        v-show="activeTab === 'arena'"
       >
         <RankedArena v-if="activeTab === 'arena'" />
       </div>
 
       <div
+        v-show="activeTab === 'ranking'"
         id="tab-ranking"
         class="tab-content"
-        v-show="activeTab === 'ranking'"
       >
         <GlobalRanking v-if="activeTab === 'ranking'" />
       </div>
@@ -307,6 +302,15 @@ const handleTabChange = (tab, event) => {
     <PokemonSelectionModal />
     <CriminalityBar />
     <ItemTargetModal />
+    
+    <EvolutionScene v-if="uiStore.isEvolutionOpen" />
+
+    <MoveRelearnerModal 
+      v-if="uiStore.isMoveRelearnerOpen"
+      :pokemon="uiStore.activePokemonForRelearner"
+      @close="uiStore.isMoveRelearnerOpen = false"
+      @learned="() => {}"
+    />
 
     <!-- MODAL SOCIAL (Phase 24) -->
     <SocialCenterModal 
@@ -327,10 +331,15 @@ const handleTabChange = (tab, event) => {
     </div>
 
 
+    <!-- SESSION MANAGEMENT -->
+    <SessionConflictModal v-if="authStore.sessionConflict" />
+
     <!-- LEGACY ESQUELETO (Oculto) -->
-      <div id="trade-modal" class="overlay-fixed hidden-system">
-        <div class="trade-modal-box" />
-      </div>
+    <div
+      id="trade-modal"
+      class="overlay-fixed hidden-system"
+    >
+      <div class="trade-modal-box" />
     </div>
   </div>
 

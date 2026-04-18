@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, shallowRef } from 'vue';
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { phaserConfig } from '@/phaser/config';
 import { phaserBridge } from '@/logic/phaserBridge';
 

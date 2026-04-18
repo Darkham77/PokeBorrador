@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useEvolutionStore } from './evolution'
 
 export const useUIStore = defineStore('ui', () => {
   const isProfileOpen = ref(false)
@@ -23,6 +24,13 @@ export const useUIStore = defineStore('ui', () => {
   const isBattleSwitchOpen = ref(false)
   const isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
   const isPokemonCenterOpen = ref(false)
+  
+  // Relearner & Evolution
+  const isMoveRelearnerOpen = ref(false)
+  const activePokemonForRelearner = ref(null)
+  
+  const isEvolutionOpen = ref(false)
+  const evolutionData = ref(null) // { pokemon, targetId, itemName }
 
 
 
@@ -113,6 +121,22 @@ export const useUIStore = defineStore('ui', () => {
     selectedMove.value = null
   }
 
+  function startEvolution(pokemon, targetId, itemName) {
+    evolutionData.value = { pokemon, targetId, itemName }
+    isEvolutionOpen.value = true
+    
+    // Trigger the evolution store
+    const evolutionStore = useEvolutionStore()
+    evolutionStore.startEvolution(pokemon, targetId, () => {
+      closeEvolution()
+    })
+  }
+
+  function closeEvolution() {
+    isEvolutionOpen.value = false
+    evolutionData.value = null
+  }
+
   return {
     isProfileOpen,
     isSettingsOpen,
@@ -150,7 +174,17 @@ export const useUIStore = defineStore('ui', () => {
     openPokemonDetail,
     closePokemonDetail,
     openMoveDetail,
-    closeMoveDetail
+    closeMoveDetail,
+    
+    // Relearner
+    isMoveRelearnerOpen,
+    activePokemonForRelearner,
+    
+    // Evolution
+    isEvolutionOpen,
+    evolutionData,
+    startEvolution,
+    closeEvolution
   }
 })
 

@@ -127,7 +127,7 @@ const getSprite = (id, shiny) => {
     justify-content: center;
     align-items: center;
     background: rgba(0,0,0,0.2);
-    &:hover { border-color: #ffd700; .plus-icon { color: #ffd700; transform: #{'scale(#{1.1})'}; } }
+    &:hover { border-color: #ffd700; .plus-icon { color: #ffd700; transform: #{'Scale(1.1)'}; } }
   }
 
   &:not(.empty):hover { border-color: rgba(255,255,255,0.15); }

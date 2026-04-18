@@ -46,7 +46,9 @@ async function refresh() {
       <div class="header-main">
         <div class="title-group">
           <h1>GLOBAL TRADE STATION</h1>
-          <p class="subtitle">Intercambio Pokémon Mundial</p>
+          <p class="subtitle">
+            Intercambio Pokémon Mundial
+          </p>
         </div>
         
         <div class="header-stats">
@@ -54,7 +56,11 @@ async function refresh() {
             <span class="label">SALDO:</span>
             <span class="val">₽ {{ game.state.money.toLocaleString() }}</span>
           </div>
-          <button class="refresh-btn" @click="refresh" :disabled="gtsStore.loading">
+          <button
+            class="refresh-btn"
+            :disabled="gtsStore.loading"
+            @click="refresh"
+          >
             {{ gtsStore.loading ? '...' : '🔄' }}
           </button>
         </div>
@@ -62,7 +68,8 @@ async function refresh() {
 
       <nav class="gts-tabs">
         <button 
-          v-for="tab in TABS" :key="tab.id"
+          v-for="tab in TABS"
+          :key="tab.id"
           class="tab-btn"
           :class="{ active: activeTab === tab.id }"
           @click="activeTab = tab.id"
@@ -73,28 +80,45 @@ async function refresh() {
       </nav>
     </header>
 
-    <div v-if="auth.sessionMode === 'offline'" class="offline-mask">
+    <div
+      v-if="auth.sessionMode === 'offline'"
+      class="offline-mask"
+    >
       <div class="offline-card">
-         <span class="icon">🛰️</span>
-         <h2>SIN CONEXIÓN</h2>
-         <p>El GTS requiere conexión a la Red Satelital de Kanto para sincronizar ofertas con otros entrenadores.</p>
-         <button @click="$emit('close')">VOLVER</button>
+        <span class="icon">🛰️</span>
+        <h2>SIN CONEXIÓN</h2>
+        <p>El GTS requiere conexión a la Red Satelital de Kanto para sincronizar ofertas con otros entrenadores.</p>
+        <button @click="$emit('close')">
+          VOLVER
+        </button>
       </div>
     </div>
 
-    <main v-else class="gts-content">
-      <div v-if="activeTab === 'explore'" class="tab-pane explore">
+    <main
+      v-else
+      class="gts-content"
+    >
+      <div
+        v-if="activeTab === 'explore'"
+        class="tab-pane explore"
+      >
         <MarketFilters />
         <div class="explorer-wrap scrollable">
           <MarketExplorer />
         </div>
       </div>
 
-      <div v-else-if="activeTab === 'publish'" class="tab-pane publish">
+      <div
+        v-else-if="activeTab === 'publish'"
+        class="tab-pane publish"
+      >
         <MarketPublish />
       </div>
 
-      <div v-else-if="activeTab === 'my_items'" class="tab-pane my-items">
+      <div
+        v-else-if="activeTab === 'my_items'"
+        class="tab-pane my-items"
+      >
         <MarketMyItems />
       </div>
     </main>
@@ -244,7 +268,7 @@ async function refresh() {
     border-radius: 30px;
     border: 1px solid rgba(255, 255, 255, 0.08);
 
-    .icon { font-size: 64px; margin-bottom: 20px; display: block; filter: grayscale(#{1}) opacity(#{0.3}); }
+    .icon { font-size: 64px; margin-bottom: 20px; display: block; filter: grayScale(100%) Opacity(0.3); }
     h2 { font-family: 'Press Start 2P', monospace; font-size: 14px; color: #fff; margin-bottom: 20px; }
     p { font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 30px; }
     

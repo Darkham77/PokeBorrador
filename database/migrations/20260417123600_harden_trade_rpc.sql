@@ -141,3 +141,6 @@ BEGIN
   RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Establish version 20260417123600
+INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260417123600'::jsonb) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

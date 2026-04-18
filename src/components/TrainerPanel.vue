@@ -1,3 +1,4 @@
+<script setup>
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'

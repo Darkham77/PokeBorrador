@@ -10,16 +10,18 @@ export class DBRouter {
   /**
    * @param {Object} supabaseClient - The initialized Supabase client.
    * @param {String} mode - 'online' | 'offline'
+   * @param {Object} options - Options for local DB (e.g., { inMemory: true })
    */
-  constructor(supabaseClient, mode = 'online') {
+  constructor(supabaseClient, mode = 'online', options = {}) {
     this._realClient = supabaseClient;
     this.mode = mode;
+    this.options = options;
     this._initialized = false;
     
     console.log(`[DBRouter] Initialized in STRICT ${mode.toUpperCase()} mode.`);
     
     if (mode === 'offline') {
-      initSQLite();
+      initSQLite(options);
     }
   }
 
@@ -106,5 +108,48 @@ export class DBRouter {
       };
     }
     return this._realClient.channel(name);
+  }
+}
+
+/**
+ * DB Compatibility Check
+ * Ensures the client version is not greater than the DB version.
+ */
+export const CLIENT_DB_VERSION = 202604180100;
+
+export async function checkDBCompatibility(router) {
+  try {
+    let dbVersion = 0;
+
+    if (router.mode === 'offline') {
+      const results = await queryLocal("SELECT value FROM config WHERE key = 'db_version'");
+      if (results.length > 0) dbVersion = parseInt(results[0].value);
+    } else {
+      const { data, error } = await router._realClient
+        .from('system_config')
+        .select('value')
+        .eq('key', 'db_version')
+        .single();
+      
+      if (!error && data) {
+        dbVersion = typeof data.value === 'object' ? data.value.db_version : parseInt(data.value);
+      }
+    }
+
+    console.log(`[DBRouter] Compatibility Check: Client v${CLIENT_DB_VERSION} | DB v${dbVersion}`);
+
+    if (router.mode !== 'offline' && CLIENT_DB_VERSION > dbVersion) {
+      return { 
+        compatible: false, 
+        error: 'OUTDATED_SERVER', 
+        client: CLIENT_DB_VERSION, 
+        db: dbVersion 
+      };
+    }
+
+    return { compatible: true };
+  } catch (e) {
+    console.warn('[DBRouter] Compatibility check failed, assuming compatible.', e);
+    return { compatible: true };
   }
 }

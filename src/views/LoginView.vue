@@ -210,7 +210,7 @@ async function handleSignup({ email, password, username }) {
 
 .auth-card {
   --auth-blur: blur(20px);
-  --auth-sat: saturate(1.8);
+  --auth-sat: #{"Saturate(1.8)"};
   background: rgba(18, 18, 18, 0.75);
   backdrop-filter: var(--auth-blur) var(--auth-sat);
   -webkit-backdrop-filter: var(--auth-blur) var(--auth-sat);
@@ -234,6 +234,7 @@ async function handleSignup({ email, password, username }) {
   color: #ff453a;
   margin-bottom: 8px;
   text-shadow: 0 0 20px rgba(255, 69, 58, 0.5);
+  animation: slideDown 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   @media (max-width: 480px) {
     font-size: 20px;
@@ -247,6 +248,8 @@ async function handleSignup({ email, password, username }) {
   margin-bottom: 32px;
   letter-spacing: 2px;
   line-height: 1.4;
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards 0.3s;
 
   @media (max-width: 480px) {
     font-size: 8px;
@@ -308,6 +311,11 @@ async function handleSignup({ email, password, username }) {
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 </style>

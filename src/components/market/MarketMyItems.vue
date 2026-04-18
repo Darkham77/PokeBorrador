@@ -18,33 +18,51 @@ async function handleCancel(id) {
 <template>
   <div class="market-my-items">
     <section class="listings-section">
-      <h3 class="section-title">PUBLICACIONES ACTIVAS ({{ activeListings.length }}/{{ gtsStore.MAX_LISTINGS }})</h3>
+      <h3 class="section-title">
+        PUBLICACIONES ACTIVAS ({{ activeListings.length }}/{{ gtsStore.MAX_LISTINGS }})
+      </h3>
       
-      <div v-if="activeListings.length === 0" class="empty-state">
+      <div
+        v-if="activeListings.length === 0"
+        class="empty-state"
+      >
         <p>No tienes publicaciones activas en este momento.</p>
       </div>
 
-      <div v-else class="my-listings-grid">
+      <div
+        v-else
+        class="my-listings-grid"
+      >
         <div 
-          v-for="item in activeListings" :key="item.id"
+          v-for="item in activeListings"
+          :key="item.id"
           class="my-listing-card"
         >
           <div class="card-visual">
-             <template v-if="item.listing_type === 'pokemon'">
-               <div class="tier-mark" :style="{ background: getPokemonTier(item.data).bg }"></div>
-               <img :src="`/assets/sprites/pokemon/${item.data.id}.webp`" class="p-sprite pixelated">
-             </template>
-             <template v-else>
-               <span class="i-icon">📦</span>
-             </template>
+            <template v-if="item.listing_type === 'pokemon'">
+              <div
+                class="tier-mark"
+                :style="{ background: getPokemonTier(item.data).bg }"
+              />
+              <img
+                :src="`/assets/sprites/pokemon/${item.data.id}.webp`"
+                class="p-sprite pixelated"
+              >
+            </template>
+            <template v-else>
+              <span class="i-icon">📦</span>
+            </template>
           </div>
 
           <div class="card-info">
-             <span class="name">{{ item.data.name }}</span>
-             <span class="price">₽{{ item.price.toLocaleString() }}</span>
+            <span class="name">{{ item.data.name }}</span>
+            <span class="price">₽{{ item.price.toLocaleString() }}</span>
           </div>
 
-          <button class="cancel-btn" @click="handleCancel(item.id)">
+          <button
+            class="cancel-btn"
+            @click="handleCancel(item.id)"
+          >
             CANCELAR
           </button>
         </div>
@@ -52,22 +70,34 @@ async function handleCancel(id) {
     </section>
 
     <section class="history-section">
-      <h3 class="section-title">HISTORIAL DE VENTAS</h3>
+      <h3 class="section-title">
+        HISTORIAL DE VENTAS
+      </h3>
       
-      <div v-if="history.length === 0" class="empty-state">
+      <div
+        v-if="history.length === 0"
+        class="empty-state"
+      >
         <p>No hay ventas registradas recientemente.</p>
       </div>
 
-      <div v-else class="history-list custom-scrollbar">
-        <div v-for="sale in history" :key="sale.id" class="history-row">
-           <div class="sale-info">
-             <span class="date">{{ new Date(sale.created_at).toLocaleDateString() }}</span>
-             <span class="item-name">Vendido: <strong>{{ sale.data.name }}</strong></span>
-           </div>
-           <div class="sale-value">
-             <span class="net-gain">+ ₽{{ (sale.price * (1 - gtsStore.MARKET_FEE)).toLocaleString() }}</span>
-             <span class="gross-price">PVP: ₽{{ sale.price.toLocaleString() }}</span>
-           </div>
+      <div
+        v-else
+        class="history-list custom-scrollbar"
+      >
+        <div
+          v-for="sale in history"
+          :key="sale.id"
+          class="history-row"
+        >
+          <div class="sale-info">
+            <span class="date">{{ new Date(sale.created_at).toLocaleDateString() }}</span>
+            <span class="item-name">Vendido: <strong>{{ sale.data.name }}</strong></span>
+          </div>
+          <div class="sale-value">
+            <span class="net-gain">+ ₽{{ (sale.price * (1 - gtsStore.MARKET_FEE)).toLocaleString() }}</span>
+            <span class="gross-price">PVP: ₽{{ sale.price.toLocaleString() }}</span>
+          </div>
         </div>
       </div>
     </section>

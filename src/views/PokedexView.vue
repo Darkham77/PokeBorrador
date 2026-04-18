@@ -380,13 +380,13 @@ const openDetail = (p) => {
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow: 0 12px 24px rgba(0,0,0,0.3);
     
-    .pokemon-sprite { transform: #{"scale(#{1.1})"}; }
+    .pokemon-sprite { transform: #{"Scale(1.1)"}; }
   }
 
   &.is-unseen {
     opacity: 0.5;
     cursor: default;
-    filter: grayscale(#{1});
+    filter: grayScale(100%);
     &:hover { transform: none; box-shadow: none; }
   }
 
@@ -428,7 +428,7 @@ const openDetail = (p) => {
       transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
       
       &.silhouette {
-        filter: brightness(0) opacity(#{0.2});
+        filter: Brightness(0) Opacity(0.2);
       }
     }
 

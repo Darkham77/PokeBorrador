@@ -189,8 +189,8 @@ const setSortMode = (val) => emit('update:sortMode', val)
   }
 
   &:hover {
-    transform: scale(#{1.05});
-    filter: brightness(1.2);
+    transform: Scale(1.05);
+    filter: Brightness(1.2);
   }
 }
 

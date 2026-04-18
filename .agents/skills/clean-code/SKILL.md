@@ -98,7 +98,7 @@ priority: CRITICAL
 
 **Quick Check:**
 
-```
+```text
 File to edit: UserService.ts
 └── Who imports this? → UserController.ts, AuthController.ts
 └── Do they need changes too? → Check function signatures

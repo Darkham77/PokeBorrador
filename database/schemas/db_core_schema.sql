@@ -1,3 +1,13 @@
+
+-- =====================================================
+-- CONFIGURACIÓN DEL SISTEMA (SYSTEM) — Poké Vicio
+-- =====================================================
+CREATE TABLE IF NOT EXISTS public.system_config (
+  key TEXT PRIMARY KEY,
+  value JSONB,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- =====================================================
 -- ESTRUCTURA CENTRAL (CORE) — Poké Vicio
 -- Fecha: 2026-04-17 (Sincronizado v2)

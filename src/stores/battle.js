@@ -435,35 +435,6 @@ export const useBattleStore = defineStore('battle', () => {
     isProcessing.value = false
   }
 
-  const runEnemyTurn = async () => {
-    const p = activeBattle.value.player
-    const e = activeBattle.value.enemy
-    if (e.hp <= 0) return
-
-    const enemyMove = e.moves[Math.floor(Math.random() * e.moves.length)]
-    addLog(`¡${e.name} usó ${enemyMove.name}!`, 'log-enemy')
-
-    const eResult = calculateDamage(e, p, enemyMove, {
-      atkStages: enemyStages.value.atk,
-      defStages: playerStages.value.def,
-      weather: activeBattle.value.weather
-    })
-
-    if (eResult.isNoEffect) {
-      addLog('¡No afecta!', 'log-player')
-    } else {
-      p.hp = Math.max(0, p.hp - eResult.dmg)
-      if (eResult.isCrit) addLog('¡Un golpe crítico!', 'log-enemy')
-      if (eResult.isSuperEffective) addLog('¡Es muy eficaz!', 'log-enemy')
-      if (eResult.isNotVeryEffective) addLog('No es muy eficaz...', 'log-enemy')
-    }
-
-    if (p.hp <= 0) {
-      addLog(`¡${p.name} cayó debilitado!`, 'log-player')
-      await endBattle(false)
-    }
-  }
-
   const consumeItem = (itemName) => {
     if (gs.state.inventory[itemName]) {
       gs.state.inventory[itemName]--

@@ -134,34 +134,34 @@ export const useGTSStore = defineStore('gts', () => {
     }
 
     try {
-      const { data, error } = await game.db.from('market_listings')
-        .update({ status: 'sold', buyer_id: auth.user.id })
-        .eq('id', listing.id)
-        .eq('status', 'active')
-        .select()
-
-      if (error || !data?.length) {
-        ui.notify('La oferta ya no está disponible', '⚠️')
-        fetchListings()
-        return false
-      }
-
-      game.state.money -= listing.price
+      ui.setLoading(true)
       
-      if (listing.listing_type === 'pokemon') {
-        game.state.box.push(data[0].data)
-      } else {
-        const item = data[0].data
-        game.state.inventory[item.name] = (game.state.inventory[item.name] || 0) + item.qty
-      }
+      // MANDATORY: Pre-Action Flush
+      ui.notify('Sincronizando fondos...', '🔄')
+      await game.save(false)
 
-      ui.notify('¡ Compra exitosa !', '✅')
-      await game.saveGame(false)
-      fetchListings()
-      return true
-    } catch (e) {
-      console.error(e)
+      const { data: newSave, error } = await game.db.rpc('buy_listing_v2', {
+        p_listing_id: listing.id
+      })
+
+      if (error) throw error
+
+      if (newSave) {
+        game.updateState(newSave)
+        if (window.updateHud) window.updateHud()
+        
+        ui.notify('¡ Compra exitosa ! Objeto enviado a tus Reclamos.', '✅')
+        await game.fetchClaimQueue()
+        fetchListings()
+        return true
+      }
       return false
+    } catch (e) {
+      console.error('[GTS BUY ERROR]', e)
+      ui.notify(e.message || 'Error en la compra', '❌')
+      return false
+    } finally {
+      ui.setLoading(false)
     }
   }
 
@@ -173,33 +173,30 @@ export const useGTSStore = defineStore('gts', () => {
 
     publishing.value = true
     try {
-      const { error } = await game.db.from('market_listings').insert([{
-        seller_id: auth.user.id,
-        seller_name: game.state.trainer,
-        listing_type: type,
-        data: type === 'pokemon' ? selection : { name: selection.name, qty: 1 },
-        price: Math.floor(price),
-        status: 'active'
-      }])
+      // MANDATORY: Pre-Action Flush
+      ui.notify('Sincronizando inventario...', '🔄')
+      await game.save(false)
+
+      const { data: listingId, error } = await game.db.rpc('publish_listing_v2', {
+        p_listing_type: type,
+        p_asset_data: type === 'pokemon' ? selection : { name: selection.name, qty: 1 },
+        p_price: Math.floor(price)
+      })
 
       if (error) throw error
 
-      // Remove from player inventory
-      if (type === 'pokemon') {
-        const idx = game.state.box.findIndex(p => p.uid === selection.uid)
-        if (idx !== -1) game.state.box.splice(idx, 1)
-      } else {
-        game.state.inventory[selection.name]--
-        if (game.state.inventory[selection.name] <= 0) delete game.state.inventory[selection.name]
+      // Refresh state to confirm removal
+      const { data: save } = await game.db.from('game_saves').select('save_data').eq('user_id', auth.user.id).single()
+      if (save?.save_data) {
+        game.updateState(save.save_data)
       }
 
-      ui.notify('¡ Publicación exitosa !', '🚀')
-      await game.saveGame(false)
+      ui.notify('¡ Publicación exitosa ! Objeto en custodia.', '🚀')
       fetchUserData()
       return true
     } catch (e) {
-      console.error(e)
-      ui.notify('Error al publicar', '❌')
+      console.error('[GTS PUB ERROR]', e)
+      ui.notify(e.message || 'Error al publicar', '❌')
       return false
     } finally {
       publishing.value = false
@@ -208,28 +205,20 @@ export const useGTSStore = defineStore('gts', () => {
 
   async function cancelListing(listingId) {
     try {
-      const { data, error } = await game.db.from('market_listings')
-        .update({ status: 'cancelled' })
-        .eq('id', listingId)
-        .eq('seller_id', auth.user.id)
-        .eq('status', 'active')
-        .select()
+      ui.notify('Retirando publicación...', '🔄')
+      const { error } = await game.db.rpc('cancel_listing_v2', {
+        p_listing_id: listingId
+      })
 
-      if (error || !data?.length) return false
+      if (error) throw error
 
-      const listing = data[0]
-      if (listing.listing_type === 'pokemon') {
-        game.state.box.push(listing.data)
-      } else {
-        game.state.inventory[listing.data.name] = (game.state.inventory[listing.data.name] || 0) + listing.data.qty
-      }
-
-      ui.notify('Publicación cancelada', '↩️')
-      await game.saveGame(false)
+      ui.notify('Publicación retirada. Reclámala en tus Reclamos.', '↩️')
+      await game.fetchClaimQueue()
       fetchUserData()
       return true
     } catch (e) {
-      console.error(e)
+      console.error('[GTS CANCEL ERROR]', e)
+      ui.notify(e.message || 'Error al retirar', '❌')
       return false
     }
   }

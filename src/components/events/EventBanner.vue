@@ -110,9 +110,9 @@ const activeDisplayEvents = computed(() => {
 }
 
 @keyframes pulse {
-  0% { transform: scale(#{1}); opacity: 1; }
-  50% { transform: scale(#{1.1}); opacity: 0.8; }
-  100% { transform: scale(#{1}); opacity: 1; }
+  0% { transform: Scale(1.0); opacity: 1; }
+  50% { transform: Scale(1.1); opacity: 0.8; }
+  100% { transform: Scale(1.0); opacity: 1; }
 }
 
 .banner-slide-enter-active,

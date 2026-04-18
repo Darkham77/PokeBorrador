@@ -118,6 +118,8 @@ const typeIcon = computed(() => {
 </template>
 
 <style scoped lang="scss">
+@use "sass:string";
+
 .gym-card-legacy {
   background: #1c2128;
   border-radius: 20px;
@@ -132,7 +134,7 @@ const typeIcon = computed(() => {
   }
 
   &.locked {
-    filter: unquote("grayscale(#{1})");
+    filter: string.unquote("grayScale(100%)");
     opacity: 0.6;
   }
 
@@ -295,6 +297,6 @@ const typeIcon = computed(() => {
   cursor: pointer;
   transition: all 0.2s;
 
-  &:hover { transform: #{'scale(#{1.05})'}; }
+  &:hover { transform: string.unquote("scale(#{1.05})"); }
 }
 </style>

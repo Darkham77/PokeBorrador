@@ -162,7 +162,7 @@ const getSprite = (id, isShiny) => {
   background: rgba(255, 215, 0, 0.2);
   border-color: gold;
   color: #fff;
-  filter: grayscale(#{0});
+  filter: grayScale(100%);
 }
 
 .close-btn {

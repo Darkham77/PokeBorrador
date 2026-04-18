@@ -167,9 +167,9 @@ const handleCancel = () => {
   transition: all 0.5s ease;
 
   &.is-blurred {
-    filter: blur(15px) #{"grayscale(#{0.5})"};
+    filter: blur(15px) #{"grayScale(100%)"};
     opacity: 0.4;
-    transform: #{"scale(#{1.05})"};
+    transform: #{"Scale(1.05)"};
   }
 }
 

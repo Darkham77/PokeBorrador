@@ -1,0 +1,23 @@
+{
+  "skill_name": "project-standards",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "He terminado de arreglar el bug en el sistema de combate. ¿Puedes verificar que todo esté bien antes de cerrar?",
+      "expected_output": "The model should trigger the project-standards skill, run the verification script, and report the results.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "He añadido un nuevo componente Vue. Verifica si compila correctamente.",
+      "expected_output": "The model should run npm run build (via the skill) and confirm if it passes.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Revisa si hay errores de sintaxis en el proyecto.",
+      "expected_output": "The model should run npm run lint (via the skill) and report results.",
+      "files": []
+    }
+  ]
+}

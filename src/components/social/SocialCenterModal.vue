@@ -5,13 +5,16 @@ import { useChatStore } from '@/stores/chat';
 import { useTradeStore } from '@/stores/trade';
 import { useAuthStore } from '@/stores/auth';
 import TrainerAvatar from '@/components/TrainerAvatar.vue';
+import TradeClaimStatus from '@/components/social/TradeClaimStatus.vue';
+import { useGameStore } from '@/stores/game';
 
 const socialStore = useSocialStore();
 const chatStore = useChatStore();
 const tradeStore = useTradeStore();
 const authStore = useAuthStore();
+const gameStore = useGameStore();
 
-const activeTab = ref('friends'); // 'friends', 'requests', 'search'
+const activeTab = ref('friends'); // 'friends', 'requests', 'search', 'claims'
 const searchQuery = ref('');
 
 const filteredFriends = computed(() => {
@@ -84,6 +87,16 @@ onMounted(() => {
           @click="activeTab = 'search'"
         >
           BUSCAR
+        </button>
+        <button 
+          :class="{ active: activeTab === 'claims' }" 
+          @click="activeTab = 'claims'"
+        >
+          RECLAMOS
+          <span
+            v-if="gameStore.state.claimQueue.length > 0"
+            class="badge-notif"
+          >{{ gameStore.state.claimQueue.length }}</span>
         </button>
       </nav>
 
@@ -293,12 +306,32 @@ onMounted(() => {
             </div>
           </div>
         </div>
+
+        <!-- TABS: CLAIMS -->
+        <div
+          v-if="activeTab === 'claims'"
+          class="tab-content"
+        >
+          <TradeClaimStatus />
+          
+          <div
+            v-if="gameStore.state.claimQueue.length === 0"
+            class="empty-state"
+          >
+            <div class="icon">
+              📦
+            </div>
+            <p>No tenés reclamos pendientes.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
+@use "sass:string";
+
 .social-modal-overlay {
   position: fixed;
   inset: 0;
@@ -499,7 +532,7 @@ onMounted(() => {
     background: rgba(255, 255, 255, 0.05);
     color: #fff;
 
-    &:hover { transform: unquote("scale(#{1.1})"); }
+    &:hover { transform: string.unquote("scale(#{1.1})"); }
     &.chat:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
     &.trade:hover { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
     &.battle:hover { background: rgba(168, 85, 247, 0.2); color: #c084fc; }

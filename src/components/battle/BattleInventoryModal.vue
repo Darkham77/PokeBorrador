@@ -36,7 +36,7 @@ const usableItems = computed(() => {
       if (nonCombat.includes(name)) return false
 
       // Only battle-relevant categories
-      return ['pokeballs', 'pociones'].includes(itemData.cat)
+      return ['pokeballs', 'pociones', 'cura_estado', 'held'].includes(itemData.cat)
     })
     .map(([name, qty]) => {
       const data = SHOP_ITEMS.find(i => i.name === name)
@@ -50,14 +50,11 @@ const close = () => {
 
 const handleUse = (item) => {
   if (item.cat === 'pokeballs') {
-    // Pokéballs act on the enemy automatically
     battleStore.useItemInBattle(item.name)
     close()
   } else {
-    // Potions need a target
     invStore.activeItemToUse = item.name
     invStore.isItemTargetModalOpen = true
-    // We don't close the inventory yet, the TargetModal will overlap correctly
   }
 }
 </script>
@@ -197,7 +194,7 @@ p { color: var(--gray); font-size: 11px; margin: 0; }
 .item-row:hover {
   background: rgba(255, 217, 61, 0.1);
   border-color: rgba(255, 217, 61, 0.3);
-  transform: scale(#{1.02});
+  transform: Scale(1.02);
 }
 
 .item-sprite img {

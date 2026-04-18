@@ -230,10 +230,10 @@
   100% { transform: translateX(0) }
 }
 @keyframes takeDamage {
-  0% { filter: brightness(1) drop-shadow(0 0 0 red) }
-  20% { filter: brightness(3) drop-shadow(0 0 2cqi red) }
-  40% { filter: brightness(0.3) drop-shadow(0 0 1.5cqi red) }
-  100% { filter: brightness(1) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7)) }
+  0% { filter: Brightness(1) drop-shadow(0 0 0 red) }
+  20% { filter: Brightness(3) drop-shadow(0 0 2cqi red) }
+  40% { filter: Brightness(0.3) drop-shadow(0 0 1.5cqi red) }
+  100% { filter: Brightness(1) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7)) }
 }
 @keyframes faintAnim {
   0% { transform: translateY(0); opacity: 1 }

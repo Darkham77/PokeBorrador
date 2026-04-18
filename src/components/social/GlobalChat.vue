@@ -166,6 +166,8 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "sass:string";
+
 .global-chat-root {
   position: fixed;
   bottom: 20px;
@@ -341,7 +343,7 @@ onMounted(() => {
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover:not(:disabled) { background: #9d4edd; transform: unquote("scale(#{1.05})"); }
+    &:hover:not(:disabled) { background: #9d4edd; transform: string.unquote("scale(#{1.05})"); }
     &:disabled { opacity: 0.3; }
   }
 
@@ -368,8 +370,8 @@ onMounted(() => {
 }
 
 @keyframes pop {
-  0% { transform: unquote("scale(#{0.9})"); opacity: 0; }
-  100% { transform: unquote("scale(#{1})"); opacity: 1; }
+  0% { transform: string.unquote("scale(#{0.9})"); opacity: 0; }
+  100% { transform: string.unquote("scale(#{1.0})"); opacity: 1; }
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }

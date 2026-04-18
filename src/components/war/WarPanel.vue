@@ -306,7 +306,7 @@ const handleFactionChoice = async (f) => {
       &:hover {
         background: rgba(255, 255, 255, 0.07);
         transform: translateY(-5px);
-        img { transform: scale(#{1.1}); }
+        img { transform: Scale(1.1); }
       }
 
       &.union {

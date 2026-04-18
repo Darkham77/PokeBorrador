@@ -231,7 +231,7 @@ const genderSymbol = (g) => {
     cursor: pointer;
     transition: transform 0.1s;
 
-    &:active { transform: scale(#{0.95}); }
+    &:active { transform: Scale(0.95); }
 
     &.withdraw {
       background: rgba(239, 68, 68, 0.1);
@@ -249,7 +249,7 @@ const genderSymbol = (g) => {
     text-align: center;
     .empty-icon {
       font-size: 40px;
-      filter: grayscale(#{1}) opacity(#{0.2});
+      filter: grayScale(100%) Opacity(0.2);
       margin-bottom: 12px;
     }
     .empty-text {

@@ -7,6 +7,7 @@ This document tracks the progress of migrating legacy JavaScript/CSS/HTML code f
 | Original File (Legacy) | Vue Module / Composable | Status / Coverage | Notes |
 | :--- | :--- | :--- | :--- |
 | `public/js/01_auth.js` | `src/logic/auth/` | 100% | Migración completa: DBRouter, Registro, Unicidad de Sesión y Carga Fusionada Cloud/Local. |
+| `public/js/04_state.js` | `src/stores/game.js` | 100% | Migrado chooseStarter y lógica de guardado inicial a Pinia. |
 | `public/js/07_battle.js` | `src/logic/battle/` | In Progress | Modularizing into specific composables. |
 | `public/js/02_pokemon_data.js`| `src/logic/data/` | 100% | Normalized and moved to optimized pseudo-DB. |
 | `inventory.js` | `src/stores/inventoryStore.js` | 100% | Moved to Pinia store. |

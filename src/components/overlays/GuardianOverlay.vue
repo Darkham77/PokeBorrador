@@ -118,12 +118,12 @@ h3 {
   transition: transform 0.2s, box-shadow 0.2s;
 
   &:hover {
-    transform: scale(#{1.02});
+    transform: Scale(1.02);
     box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
   }
 
   &:active {
-    transform: scale(#{0.98});
+    transform: Scale(0.98);
   }
 }
 
@@ -138,8 +138,8 @@ h3 {
 }
 
 @keyframes pulse {
-  0% { transform: scale(#{1}); }
-  50% { transform: scale(#{1.1}); }
-  100% { transform: scale(#{1}); }
+  0% { transform: Scale(1.0); }
+  50% { transform: Scale(1.1); }
+  100% { transform: Scale(1.0); }
 }
 </style>

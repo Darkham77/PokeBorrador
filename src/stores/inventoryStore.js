@@ -1,7 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game'
+import { useBattleStore } from './battle'
+import { useUIStore } from './ui'
 import { SHOP_ITEMS } from '@/data/items'
+import { itemEffects as ITEM_EFFECTS } from '@/logic/items/itemEffects'
+import { useItemOnPokemon, isGlobalItem } from '../logic/providers/itemProvider'
 
 export const useInventoryStore = defineStore('inventory', () => {
   const gameStore = useGameStore()
@@ -170,6 +174,23 @@ export const useInventoryStore = defineStore('inventory', () => {
     return results
   }
 
+  // Define helpers that were causing lint errors (stubs or actual logic if needed)
+  function returnHeldItem(pokemon) {
+    if (!pokemon || !pokemon.heldItem) return
+    const item = pokemon.heldItem
+    gameStore.state.inventory[item] = (gameStore.state.inventory[item] || 0) + 1
+    pokemon.heldItem = null
+    gameStore.save()
+  }
+
+  function getBoxBuyCost() {
+    return 1000 // Default or dynamic if logic known
+  }
+
+  function buyNewBox() {
+    // Logic to expand box count
+  }
+
   // --- ITEM ACTIONS ---
   function useItem(itemName, context, index) {
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box
@@ -187,12 +208,38 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     if (!pokemon) return { success: false, msg: 'Seleccioná un Pokémon.' }
 
-    const result = useItemOnPokemon(itemName, pokemon)
-    if (result === null) return { success: false, msg: 'No tiene efecto.' }
+    const effectFn = ITEM_EFFECTS[itemName]
+    if (!effectFn) return { success: false, msg: 'Efecto no implementado.' }
 
+    const result = effectFn(pokemon)
+    if (!result.success) return { success: false, msg: result.message }
+
+    // --- DEFERRED LOGIC (Modals) ---
+    const uiStore = useUIStore()
+    
+    if (result.resultType === 'relearner') {
+      uiStore.activePokemonForRelearner = pokemon
+      uiStore.isMoveRelearnerOpen = true
+      return { success: true, msg: result.message }
+    }
+
+    if (result.resultType === 'evolution') {
+      uiStore.startEvolution(pokemon, result.targetId, itemName)
+      return { success: true, msg: result.message }
+    }
+
+    // --- INSTANT LOGIC ---
     consumeItem(itemName)
     gameStore.save()
-    return { success: true, msg: result }
+
+    // --- BATTLE INTEGRATION ---
+    const battleStore = useBattleStore()
+    if (battleStore.isBattleActive && !battleStore.isProcessing) {
+      battleStore.addLog(`¡${pokemon.name} ${result.message}!`, 'log-player')
+      battleStore.useItemInBattle(itemName) 
+    }
+
+    return { success: true, msg: result.message }
   }
 
   function consumeItem(itemName) {

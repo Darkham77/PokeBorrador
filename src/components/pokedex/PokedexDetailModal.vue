@@ -618,7 +618,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleEsc))
   }
 
   &:hover:not(.incompatible) {
-    transform: #{"scale(#{1.1})"};
+    transform: #{"Scale(1.1)"};
     box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
     z-index: 2;
   }
@@ -751,7 +751,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleEsc))
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
-  .pdex-modal-container { transform: #{"scale(#{0.9})"} translateY(20px); }
+  .pdex-modal-container { transform: #{"Scale(0.9)"} translateY(20px); }
 }
 
 /* Utilities */

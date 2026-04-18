@@ -13,6 +13,13 @@ let _timeSynced = false;
  * Fetches the current time from the server and calculates the offset.
  */
 export async function syncServerTime() {
+  // Prevent sync in offline mode or if connection is lost
+  if (typeof window !== 'undefined' && localStorage.getItem('pokevicio_session_mode') === 'offline') {
+    _serverTimeOffset = 0;
+    _timeSynced = true;
+    return;
+  }
+
   try {
     const { data: serverTime, error } = await supabase.rpc('fn_get_server_time');
     
@@ -26,7 +33,10 @@ export async function syncServerTime() {
     
     console.log(`[TIME] Server Sync Completed. Offset: ${_serverTimeOffset}ms`);
   } catch (err) {
-    console.error('[TIME] Failed to sync with server, using local time as fallback:', err);
+    // Only log error if not in local/offline mode to avoid console noise
+    if (typeof window !== 'undefined' && localStorage.getItem('pokevicio_session_mode') !== 'offline') {
+      console.warn('[TIME] Failed to sync with server, using local time as fallback.');
+    }
     _serverTimeOffset = 0;
     _timeSynced = true;
   }
@@ -61,8 +71,12 @@ export function getDayCycle() {
   return 'night';
 }
 
-// Initial sync on module load
-syncServerTime();
+// Initial sync on module load REMOVED to avoid errors before login
+// syncServerTime();
 
-// Re-sync every 5 minutes to stay accurate
-setInterval(syncServerTime, 300000);
+// Re-sync every 5 minutes to stay accurate (only if synced once)
+setInterval(() => {
+  if (_timeSynced && typeof window !== 'undefined' && localStorage.getItem('pokevicio_session_mode') === 'online') {
+    syncServerTime();
+  }
+}, 300000);

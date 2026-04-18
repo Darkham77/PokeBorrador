@@ -24,17 +24,28 @@ function getSprite(pokemon) {
 
 <template>
   <div class="market-explorer">
-    <div v-if="gtsStore.loading" class="loading-state">
-      <div class="loader"></div>
+    <div
+      v-if="gtsStore.loading"
+      class="loading-state"
+    >
+      <div class="loader" />
       <p>Sincronizando ofertas...</p>
     </div>
 
-    <div v-else-if="listings.length === 0" class="empty-state">
-      <div class="empty-icon">📂</div>
+    <div
+      v-else-if="listings.length === 0"
+      class="empty-state"
+    >
+      <div class="empty-icon">
+        📂
+      </div>
       <p>No se encontraron ofertas que coincidan con los filtros.</p>
     </div>
 
-    <div v-else class="listings-grid custom-scrollbar">
+    <div
+      v-else
+      class="listings-grid custom-scrollbar"
+    >
       <div 
         v-for="item in listings" 
         :key="item.id"
@@ -42,33 +53,54 @@ function getSprite(pokemon) {
         :class="[item.listing_type]"
       >
         <div class="seller-header">
-           <span class="seller-name">👤 {{ item.seller_name }}</span>
-           <span class="time">{{ new Date(item.created_at).toLocaleDateString() }}</span>
+          <span class="seller-name">👤 {{ item.seller_name }}</span>
+          <span class="time">{{ new Date(item.created_at).toLocaleDateString() }}</span>
         </div>
 
         <div class="card-body">
           <div class="visual-area">
             <template v-if="item.listing_type === 'pokemon'">
-              <div class="tier-badge" :style="{ background: getTierData(item.data).bg }">
+              <div
+                class="tier-badge"
+                :style="{ background: getTierData(item.data).bg }"
+              >
                 {{ getTierData(item.data).tier }}
               </div>
-              <img :src="getSprite(item.data)" class="pokemon-sprite pixelated">
+              <img
+                :src="getSprite(item.data)"
+                class="pokemon-sprite pixelated"
+              >
             </template>
             <template v-else>
-               <span class="item-icon">{{ item.data.icon || '📦' }}</span>
+              <span class="item-icon">{{ item.data.icon || '📦' }}</span>
             </template>
           </div>
 
           <div class="info-area">
-            <h3 class="name">{{ item.data.name }}</h3>
-            <div v-if="item.listing_type === 'pokemon'" class="meta">
+            <h3 class="name">
+              {{ item.data.name }}
+            </h3>
+            <div
+              v-if="item.listing_type === 'pokemon'"
+              class="meta"
+            >
               <span class="lvl">Nv. {{ item.data.level }}</span>
               <span class="types">
-                <span class="type-tag" :class="item.data.type">{{ item.data.type }}</span>
-                <span v-if="item.data.type2" class="type-tag" :class="item.data.type2">{{ item.data.type2 }}</span>
+                <span
+                  class="type-tag"
+                  :class="item.data.type"
+                >{{ item.data.type }}</span>
+                <span
+                  v-if="item.data.type2"
+                  class="type-tag"
+                  :class="item.data.type2"
+                >{{ item.data.type2 }}</span>
               </span>
             </div>
-            <div v-else class="meta">
+            <div
+              v-else
+              class="meta"
+            >
               <span class="qty">Cantidad: x{{ item.data.qty || 1 }}</span>
             </div>
             

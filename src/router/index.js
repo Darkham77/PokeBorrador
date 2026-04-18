@@ -66,12 +66,19 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+  
   if (authStore.loading) await authStore.checkSession()
+  
+  // MANDATO: Si se accede a /login, forzar deslogueo para nueva sesión
+  // Se hace después de checkSession para detectar usuarios autologueados
+  if (to.path === '/login' && authStore.user) {
+    console.log('[Router] Forzando deslogueo por acceso a /login');
+    await authStore.logout();
+    return;
+  }
   
   if (to.meta.requiresAuth && !authStore.user) {
     next('/login')
-  } else if (to.path === '/login' && authStore.user) {
-    next('/')
   } else {
     next()
   }

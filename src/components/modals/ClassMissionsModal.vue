@@ -338,7 +338,7 @@ function collectReward() {
   font-size: 10px;
   cursor: pointer;
   box-shadow: 0 10px 20px -5px var(--cls-color);
-  &:hover { transform: translateY(-2px); filter: brightness(1.1); }
+  &:hover { transform: translateY(-2px); filter: Brightness(1.1); }
 }
 
 .working-indicator {
@@ -396,7 +396,7 @@ function collectReward() {
 .modal-footer { padding: 16px 24px; background: rgba(0,0,0,0.2); text-align: center; .footer-hint { font-size: 11px; color: #475569; margin: 0; } }
 
 @keyframes sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-@keyframes pulse { 0% { transform: scale(#{0.95}); opacity: 0.5; } 50% { transform: scale(#{1.05}); opacity: 1; } 100% { transform: scale(#{0.95}); opacity: 0.5; } }
+@keyframes pulse { 0% { transform: Scale(0.95); opacity: 0.5; } 50% { transform: Scale(1.05); opacity: 1; } 100% { transform: Scale(0.95); opacity: 0.5; } }
 @keyframes dots { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }

@@ -130,7 +130,7 @@ export class ProxyQuery {
       if (s.type === 'limit') sql += ` LIMIT ${s.args[0]}`;
     });
 
-    const data = queryLocal(sql, params);
+    const data = await queryLocal(sql, params);
     
     // Auto-parse JSON fields (known to be JSON in this project)
     data.forEach(row => {

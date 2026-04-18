@@ -123,7 +123,7 @@ const handleDelivery = (pokemon) => {
   cursor: pointer;
   transition: all 0.2s;
   
-  &:hover:not(:disabled) { background: rgba(59, 130, 246, 0.2); transform: scale(#{1.05}); }
+  &:hover:not(:disabled) { background: rgba(59, 130, 246, 0.2); transform: Scale(1.05); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 

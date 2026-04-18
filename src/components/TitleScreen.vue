@@ -3,18 +3,17 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { computed } from 'vue'
 
+const uiStore = useUIStore()
 const gameStore = useGameStore()
 const authStore = useAuthStore()
 const gs = computed(() => gameStore.state)
 
+const handleChooseStarter = async (id) => {
+  await gameStore.chooseStarter(id)
+}
+
 const handleLogout = () => {
-  if (window.authStore) {
-    window.authStore.logout()
-  } else if (window.doLogout) {
-    window.doLogout()
-  } else {
-    authStore.logout()
-  }
+  authStore.logout()
 }
 </script>
 
@@ -22,7 +21,7 @@ const handleLogout = () => {
   <div
     id="title-screen"
     class="screen zoom-target"
-    :class="{ active: !gs.starterChosen }"
+    :class="{ active: !gs.starterChosen && gs.isReady }"
   >
     <div class="title-logo">
       Poké Vicio
@@ -38,7 +37,7 @@ const handleLogout = () => {
       <!-- Bulbasaur -->
       <div
         class="starter-card grass"
-        onclick="chooseStarter('bulbasaur')"
+        @click="handleChooseStarter('bulbasaur')"
       >
         <div class="starter-img-container">
           <img
@@ -72,7 +71,7 @@ const handleLogout = () => {
       <!-- Charmander -->
       <div
         class="starter-card fire"
-        onclick="chooseStarter('charmander')"
+        @click="handleChooseStarter('charmander')"
       >
         <div class="starter-img-container">
           <img
@@ -106,7 +105,7 @@ const handleLogout = () => {
       <!-- Squirtle -->
       <div
         class="starter-card water"
-        onclick="chooseStarter('squirtle')"
+        @click="handleChooseStarter('squirtle')"
       >
         <div class="starter-img-container">
           <img

@@ -140,7 +140,7 @@ const emit = defineEmits(['openTab', 'openCenter'])
 }
 
 .pokecenter-banner:hover {
-  filter: brightness(1.1);
+  filter: Brightness(1.1);
 }
 
 .banner-overlay {

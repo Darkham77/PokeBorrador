@@ -57,7 +57,9 @@ const net = computed(() => price.value - fee.value)
           OBJETOS
         </button>
       </div>
-      <p class="limit-info">Publicaciones: {{ gtsStore.activeMyListings.length }} / {{ gtsStore.MAX_LISTINGS }}</p>
+      <p class="limit-info">
+        Publicaciones: {{ gtsStore.activeMyListings.length }} / {{ gtsStore.MAX_LISTINGS }}
+      </p>
     </div>
 
     <div class="main-split">
@@ -65,44 +67,65 @@ const net = computed(() => price.value - fee.value)
       <div class="selection-list custom-scrollbar">
         <template v-if="activeMode === 'pokemon'">
           <div 
-            v-for="p in box" :key="p.uid"
+            v-for="p in box"
+            :key="p.uid"
             class="selectable-card pokemon"
             :class="{ selected: selection?.uid === p.uid }"
             @click="selectItem(p)"
           >
-             <div class="tier-mark" :style="{ background: getPokemonTier(p).bg }"></div>
-             <img :src="`/assets/sprites/pokemon/${p.id}.webp`" class="p-sprite pixelated">
-             <div class="p-info">
-               <span class="p-name">{{ p.name }}</span>
-               <span class="p-lvl">Nv. {{ p.level }}</span>
-             </div>
+            <div
+              class="tier-mark"
+              :style="{ background: getPokemonTier(p).bg }"
+            />
+            <img
+              :src="`/assets/sprites/pokemon/${p.id}.webp`"
+              class="p-sprite pixelated"
+            >
+            <div class="p-info">
+              <span class="p-name">{{ p.name }}</span>
+              <span class="p-lvl">Nv. {{ p.level }}</span>
+            </div>
           </div>
-          <div v-if="box.length === 0" class="empty-list">Tu PC está vacía.</div>
+          <div
+            v-if="box.length === 0"
+            class="empty-list"
+          >
+            Tu PC está vacía.
+          </div>
         </template>
 
         <template v-else>
           <div 
-            v-for="i in inventory" :key="i.name"
+            v-for="i in inventory"
+            :key="i.name"
             class="selectable-card item"
             :class="{ selected: selection?.name === i.name }"
             @click="selectItem(i)"
           >
-             <span class="i-icon">📦</span>
-             <div class="i-info">
-               <span class="i-name">{{ i.name }}</span>
-               <span class="i-qty">Posees: {{ i.qty }}</span>
-             </div>
+            <span class="i-icon">📦</span>
+            <div class="i-info">
+              <span class="i-name">{{ i.name }}</span>
+              <span class="i-qty">Posees: {{ i.qty }}</span>
+            </div>
           </div>
-          <div v-if="inventory.length === 0" class="empty-list">No tienes objetos para vender.</div>
+          <div
+            v-if="inventory.length === 0"
+            class="empty-list"
+          >
+            No tienes objetos para vender.
+          </div>
         </template>
       </div>
 
       <!-- Price & Confirm -->
       <div class="publish-panel">
-        <div v-if="selection" class="form-container">
+        <div
+          v-if="selection"
+          class="form-container"
+        >
           <div class="selected-summary">
-             <span class="label">VAS A VENDER:</span>
-             <span class="val">{{ selection.name }}</span>
+            <span class="label">VAS A VENDER:</span>
+            <span class="val">{{ selection.name }}</span>
           </div>
 
           <div class="input-group">
@@ -116,14 +139,14 @@ const net = computed(() => price.value - fee.value)
           </div>
 
           <div class="financials">
-             <div class="row">
-               <span>Comisión GTS (5%):</span>
-               <span class="neg">- ₽{{ fee.toLocaleString() }}</span>
-             </div>
-             <div class="row total">
-               <span>Tú recibes:</span>
-               <span class="pos">₽{{ net.toLocaleString() }}</span>
-             </div>
+            <div class="row">
+              <span>Comisión GTS (5%):</span>
+              <span class="neg">- ₽{{ fee.toLocaleString() }}</span>
+            </div>
+            <div class="row total">
+              <span>Tú recibes:</span>
+              <span class="pos">₽{{ net.toLocaleString() }}</span>
+            </div>
           </div>
 
           <button 
@@ -134,9 +157,14 @@ const net = computed(() => price.value - fee.value)
             {{ gtsStore.publishing ? 'PROCESANDO...' : 'PUBLICAR OFERTA' }}
           </button>
         </div>
-        <div v-else class="selection-hint">
-            <div class="hint-icon">👈</div>
-            <p>Selecciona un Pokémon u objeto para venderlo en el mercado mundial.</p>
+        <div
+          v-else
+          class="selection-hint"
+        >
+          <div class="hint-icon">
+            👈
+          </div>
+          <p>Selecciona un Pokémon u objeto para venderlo en el mercado mundial.</p>
         </div>
       </div>
     </div>

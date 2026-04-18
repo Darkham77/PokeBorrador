@@ -96,7 +96,7 @@ const emit = defineEmits(['deliver'])
     padding: 14px; background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff; border: none; border-radius: 12px;
     font-family: 'Press Start 2P', monospace; font-size: 7px; cursor: pointer;
     box-shadow: 0 4px 0 #6d28d9;
-    &:hover { filter: brightness(1.1); }
+    &:hover { filter: Brightness(1.1); }
   }
   .completed-banner { text-align: center; color: #22c55e; font-family: 'Press Start 2P', monospace; font-size: 7px; padding: 14px; }
 }

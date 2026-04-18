@@ -13,3 +13,6 @@ ADD COLUMN IF NOT EXISTS db_version INTEGER DEFAULT 1;
 -- (Opcionalmente podrías poner DEFAULT 2 si confías en el estado inicial de nuevos).
 
 COMMENT ON COLUMN public.profiles.db_version IS 'Nivel de integridad de la cuenta. v2 incluye blindaje anti-duplicates.';
+
+-- Establish version 20260417130000
+INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260417130000'::jsonb) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

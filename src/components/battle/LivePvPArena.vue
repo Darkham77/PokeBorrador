@@ -255,7 +255,7 @@ function handleForfeit() {
 
 .trainer-img {
   max-height: 250px;
-  transform: scale(#{1.5});
+  transform: Scale(1.5);
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
 }
 

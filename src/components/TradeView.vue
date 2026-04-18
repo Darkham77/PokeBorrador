@@ -14,6 +14,7 @@ const target = computed(() => tradeStore.tradeTarget)
 const friendSave = computed(() => tradeStore.tradeFriendSave || { team: [], inventory: {}, money: 0 })
 
 // Local state for the form
+const isSending = ref(false)
 const isGift = ref(false)
 const offerMoney = ref(0)
 const requestMoney = ref(0)
@@ -22,6 +23,7 @@ const activeTab = ref('team') // 'team' or 'box'
 const friendTab = ref('team') // 'team' or 'box'
 
 const closeTrade = () => {
+  if (isSending.value) return
   uiStore.isTradeOpen = false
 }
 
@@ -50,15 +52,20 @@ const toggleRequestItem = (itemName) => {
 }
 
 const handleSend = async () => {
+  if (isSending.value) return
+  isSending.value = true
+  
   const success = await tradeStore.sendTradeOffer({
     isGift: isGift.value,
     offerMoney: offerMoney.value,
     requestMoney: requestMoney.value,
     message: message.value
   })
+  
   if (success) {
     closeTrade()
   }
+  isSending.value = false
 }
 
 // Summary helpers
@@ -294,9 +301,11 @@ const requestSummary = computed(() => {
 
           <button
             class="send-offer-btn"
+            :disabled="isSending"
             @click="handleSend"
           >
-            ENVIAR OFERTA DE INTERCAMBIO
+            <span v-if="isSending">PROCESANDO...</span>
+            <span v-else>ENVIAR OFERTA DE INTERCAMBIO</span>
           </button>
         </div>
       </div>
@@ -439,7 +448,7 @@ const requestSummary = computed(() => {
 
 .trade-poke-card:hover { background: rgba(255,255,255,0.08); }
 .trade-poke-card.selected { border-color: var(--purple); background: rgba(199, 125, 255, 0.1); }
-.trade-poke-card.locked { opacity: 0.4; cursor: not-allowed; filter: grayscale(#{1}); }
+.trade-poke-card.locked { opacity: 0.4; cursor: not-allowed; filter: grayScale(100%); }
 
 .poke-sprite { width: 32px; height: 32px; image-rendering: pixelated; }
 .poke-info .name { font-size: 10px; font-weight: 700; color: #fff; }

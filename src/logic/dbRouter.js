@@ -1,5 +1,4 @@
-import { initSQLite, queryLocal, execLocal, insertLocal } from './sqliteIDBHandler'
-import { supabase } from '../supabase'
+import { supabase } from './supabase'
 
 /**
  * DBRouter - Unified Data Persistence Layer

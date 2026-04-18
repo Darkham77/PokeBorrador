@@ -105,7 +105,7 @@ const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') wi
 .move-button-card:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  filter: grayscale(#{0.8});
+  filter: #{"grayScale(0.8)"};
 }
 
 .move-name-txt {

@@ -190,7 +190,7 @@ const getFactionIcon = (faction) => {
 }
 
 .map-card.locked {
-  filter: grayscale(#{1}) brightness(0.6);
+  filter: grayScale(100%) Brightness(0.6);
   cursor: not-allowed;
 }
 
@@ -283,9 +283,9 @@ const getFactionIcon = (faction) => {
 .pulse { animation: pulse 2s infinite; }
 
 @keyframes pulse {
-  0% { transform: scale(#{1}); opacity: 0.8; }
-  50% { transform: scale(#{1.1}); opacity: 1; }
-  100% { transform: scale(#{1}); opacity: 0.8; }
+  0% { transform: Scale(1.0); opacity: 0.8; }
+  50% { transform: Scale(1.1); opacity: 1; }
+  100% { transform: Scale(1.0); opacity: 0.8; }
 }
 
 .guardian-badge {
@@ -299,7 +299,7 @@ const getFactionIcon = (faction) => {
 }
 
 .guardian-sprite { width: 42px; height: 42px; image-rendering: pixelated; }
-.guardian-sprite.captured { opacity: 0.4; filter: grayscale(#{1}); }
+.guardian-sprite.captured { opacity: 0.4; filter: grayScale(100%); }
 
 .guardian-label {
   font-family: 'Press Start 2P', monospace;

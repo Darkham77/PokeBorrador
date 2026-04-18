@@ -46,3 +46,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 3. Actualizar execute_trade para refrescar el last_save_id atómicamente
 -- (Esto asegura que el trade invalide cualquier save viejo que tenga el cliente)
 -- Nota: Se debe aplicar a la versión actual de execute_trade.
+
+-- Establish version 20260417140000
+INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260417140000'::jsonb) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

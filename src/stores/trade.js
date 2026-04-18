@@ -32,27 +32,11 @@ export const useTradeStore = defineStore('trade', () => {
     const db = gameStore.db
     tradeChannel = db.channel('trade-notifs-' + authStore.user.id)
       .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'trade_offers',
-        filter: `receiver_id=eq.${authStore.user.id}`
+        event: 'INSERT', schema: 'public', table: 'claim_queue',
+        filter: `user_id=eq.${authStore.user.id}`
       }, () => {
-        uiStore.notify(' ¡Recibiste una oferta de intercambio!', '🔄')
-        window.SFX?.tradeInvite() // Sonido de oferta recibida
-        refreshPendingTrades()
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'trade_offers',
-        filter: `sender_id=eq.${authStore.user.id}`
-      }, async ({ new: row }) => {
-        if (row?.status === 'accepted') {
-          // Sync state automatically using DBRouter
-          const { data: save } = await db.from('game_saves').select('save_data').eq('user_id', authStore.user.id).single()
-          if (save?.save_data) {
-            gameStore.updateState(save.save_data)
-            if (window.updateHud) window.updateHud()
-            refreshPendingTrades()
-            uiStore.notify(' ¡Tu oferta de intercambio fue aceptada y procesada!', '🎉')
-          }
-        }
+        uiStore.notify(' ¡Nuevos activos disponibles para reclamar!', '🎁')
+        gameStore.fetchClaimQueue()
       })
       .subscribe()
   }
@@ -114,25 +98,29 @@ export const useTradeStore = defineStore('trade', () => {
       return false
     }
 
-    const { error } = await gameStore.db.from('trade_offers').insert({
-      sender_id: authStore.user.id,
-      receiver_id: tradeTarget.value.id,
-      offer_pokemon: tradeOfferPoke.value,
-      offer_items: { ...tradeOfferItems },
-      offer_money: offerMoney,
-      request_pokemon: isGift ? null : tradeRequestPoke.value,
-      request_items: isGift ? {} : { ...tradeRequestItems },
-      request_money: isGift ? 0 : requestMoney,
-      message,
+    // MANDATORY: Pre-Action Flush (Always save before social actions with assets)
+    uiStore.notify('Sincronizando inventario...', '🔄')
+    await gameStore.save(false)
+
+    const { data: tradeId, error } = await gameStore.db.rpc('send_trade_offer_v2', {
+      p_receiver_id: tradeTarget.value.id,
+      p_offer_pokemon: tradeOfferPoke.value,
+      p_offer_items: { ...tradeOfferItems },
+      p_offer_money: offerMoney,
+      p_request_pokemon: isGift ? null : tradeRequestPoke.value,
+      p_request_items: isGift ? {} : { ...tradeRequestItems },
+      p_request_money: isGift ? 0 : requestMoney,
+      p_message: message || ''
     })
 
-    if (!error) {
+    if (!error && tradeId) {
       uiStore.notify(`¡Oferta enviada a ${tradeTarget.value.username}!`, '🔄')
-      window.SFX?.sentMsg() // Sonido de oferta enviada
+      window.SFX?.sentMsg?.() 
+      refreshPendingTrades()
       return true
     }
     
-    uiStore.notify('Error al enviar: ' + error.message, '❌')
+    uiStore.notify('Error al enviar: ' + (error?.message || 'Error desconocido'), '❌')
     return false
   }
 
@@ -142,30 +130,19 @@ export const useTradeStore = defineStore('trade', () => {
     try {
       if (window.setAuthLoading) window.setAuthLoading(true)
       
+      // MANDATORY: Pre-Action Flush
+      uiStore.notify('Sincronizando inventario...', '🔄')
+      await gameStore.save(false)
+
       const db = gameStore.db
-      const { error: rpcErr } = await db.rpc('execute_trade', {
+      const { error: rpcErr } = await db.rpc('accept_trade_v2', {
         p_trade_id: tradeId
       })
     
       if (rpcErr) throw new Error(rpcErr.message)
 
-      const [tradeRes, saveRes] = await Promise.all([
-        db.from('trade_offers').select('*').eq('id', tradeId).single(),
-        db.from('game_saves').select('save_data').eq('user_id', authStore.user.id).single()
-      ])
-      
-      if (saveRes.data?.save_data) {
-        gameStore.updateState(saveRes.data.save_data)
-        if (window.updateHud) window.updateHud()
-        
-        const trade = tradeRes.data
-        if (trade && trade.offer_pokemon && window.checkTradeEvolution) {
-          const receivedPokemon = gameStore.state.team.find(p => p.uid === trade.offer_pokemon.uid)
-          if (receivedPokemon) window.checkTradeEvolution(receivedPokemon)
-        }
-        
-        uiStore.notify('¡Intercambio realizado con éxito!', '🎉')
-      }
+      uiStore.notify('¡Intercambio aceptado! Los activos están en tu cola de reclamo.', '🎉')
+      await gameStore.fetchClaimQueue()
       
       if (window.setAuthLoading) window.setAuthLoading(false)
       await refreshPendingTrades()

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { supabase } from '@/logic/supabase'
+import { syncServerTime } from '@/logic/timeUtils'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -51,10 +52,13 @@ export const useAuthStore = defineStore('auth', () => {
 
     loading.value = true
     try {
-      // 1. Verificar sesión pulsando el router
-      const { data } = await supabase.auth.getSession()
+      // 1. Verificar sesión con timeout de seguridad (3s) para evitar bloqueos infinitos
+      const sessionPromise = supabase.auth.getSession();
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000));
       
-      if (data.session?.user) {
+      const { data } = await Promise.race([sessionPromise, timeoutPromise]);
+      
+      if (data?.session?.user) {
         session.value = data.session
         user.value = data.session.user
         sessionMode.value = 'online'
@@ -66,6 +70,9 @@ export const useAuthStore = defineStore('auth', () => {
         // Fetch profile meta
         const { data: profile } = await supabase.from('profiles').select('db_version').eq('id', user.value.id).single()
         if (profile) user.value.db_version = profile.db_version || 1
+
+        // Sync time only for online session
+        syncServerTime()
       } else {
         // 2. Si no hay sesión online, buscar local
         const localUser = localStorage.getItem('pokevicio_local_user')
@@ -76,7 +83,13 @@ export const useAuthStore = defineStore('auth', () => {
         }
       }
     } catch (e) {
-      console.warn('CheckSession error:', e)
+      console.warn('[Auth] CheckSession failed or timed out:', e)
+      // En caso de error/timeout, si hay usuario local, lo mantenemos como fallback
+      const localUser = localStorage.getItem('pokevicio_local_user')
+      if (localUser && !user.value) {
+        user.value = JSON.parse(localUser)
+        sessionMode.value = 'offline'
+      }
     } finally {
       loading.value = false
     }
@@ -97,7 +110,49 @@ export const useAuthStore = defineStore('auth', () => {
     const { data: profile } = await supabase.from('profiles').select('db_version').eq('id', data.user.id).single()
     if (profile) user.value.db_version = profile.db_version || 1
     
+    syncServerTime()
     return data
+  }
+
+  async function signup(email, password, username) {
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password, 
+      options: { data: { username } } 
+    })
+    if (error) throw error
+    
+    // Crear perfil inicial
+    await supabase.from('profiles').upsert({ 
+      id: data.user.id, 
+      username, 
+      email, 
+      created_at: new Date().toISOString() 
+    })
+    
+    return data
+  }
+
+  function startSessionMonitoring() {
+    if (!user.value || sessionMode.value === 'offline') return
+    
+    // Suscribirse a cambios en el perfil del usuario actual
+    const channel = supabase.channel(`session_check_${user.value.id}`)
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'profiles', 
+        filter: `id=eq.${user.value.id}` 
+      }, payload => {
+        const newSessionId = payload.new.current_session_id
+        if (newSessionId && newSessionId !== sessionId.value) {
+          console.warn('[SESSION] Nueva sesión detectada en otro lugar. Bloqueando esta pestaña.')
+          sessionConflict.value = true
+          // Disparar evento global para componentes que no usen el store
+          window.dispatchEvent(new CustomEvent('session-conflict'))
+        }
+      })
+      .subscribe()
   }
 
   async function localLogin(name) {
@@ -110,8 +165,15 @@ export const useAuthStore = defineStore('auth', () => {
       }
       user.value = userData
       sessionMode.value = 'offline'
-      connectionLost.value = false // En offline no importa el estado de red
+      localStorage.setItem('pokevicio_session_mode', 'offline')
+      connectionLost.value = false 
       localStorage.setItem('pokevicio_local_user', JSON.stringify(userData))
+      
+      // Sync time will handle offline state internally
+      syncServerTime()
+
+      // En modo local no hay monitoreo de sesión online
+      sessionConflict.value = false
     } finally {
       loading.value = false
     }
@@ -136,9 +198,10 @@ export const useAuthStore = defineStore('auth', () => {
     session.value = null
     sessionMode.value = 'online'
     connectionLost.value = false
+    sessionConflict.value = false
     
     sessionStorage.setItem('block_autologin', 'true')
-    window.location.href = '/?logout=' + Date.now()
+    window.location.href = '/login?logout=' + Date.now()
   }
 
   return {
@@ -154,6 +217,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     signup,
     logout,
-    localLogin
+    localLogin,
+    startSessionMonitoring
   }
 })
