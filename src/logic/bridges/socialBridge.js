@@ -154,14 +154,6 @@ export function initSocialBridge() {
     }
   }
 
-  window.openTradeModal = (friendId, friendUsername) => {
-    if (typeof window._openTradeModalLegacy === 'function') {
-      window._openTradeModalLegacy(friendId, friendUsername)
-    } else {
-      console.warn('[SocialBridge] Legacy openTradeModal not found')
-    }
-  }
-
   window.openChat = (friendId, friendUsername) => {
     chatStore.openChat(friendId, friendUsername)
   }

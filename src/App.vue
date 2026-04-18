@@ -2,7 +2,7 @@
 import { onMounted, watch, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
-import { initGameStateBridge } from '@/logic/stateBridge'
+import { initLegacyBindings } from '@/logic/stateBridge'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
 import { checkDBCompatibility } from '@/logic/db/dbRouter'
 import MainGameView from '@/views/MainGameView.vue'
@@ -13,6 +13,7 @@ import LivePvPArena from '@/components/battle/LivePvPArena.vue'
 import EvolutionScene from '@/components/evolution/EvolutionScene.vue'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { usePlayerClassStore } from '@/stores/playerClass'
+import PhaserGame from '@/components/game/PhaserGame.vue'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -27,10 +28,21 @@ watch(() => authStore.user, (newVal) => {
 }, { immediate: true })
 
 onMounted(async () => {
-  // 0. Init Global Error Handlers (Vue Bridge)
+  // 1. Inicializar el puente de estado INMEDIATAMENTE para evitar race conditions con Phaser
+  try {
+    initLegacyBindings()
+    console.log('[App] Legacy Bindings initialized early')
+  } catch (e) {
+    console.error('[App] Failed to initialize Legacy Bindings:', e)
+  }
+
+  // 2. Init Global Error Handlers (Vue Bridge)
   initGlobalErrorHandlers()
 
-  // 1. Check DB Compatibility
+  // 3. Recuperar sesión (Autologin)
+  await authStore.checkSession()
+
+  // 2. Check DB Compatibility & Load Game
   if (authStore.user) {
     const comp = await checkDBCompatibility(gameStore.db)
     if (!comp.compatible) {
@@ -38,6 +50,9 @@ onMounted(async () => {
       dbVersionInfo.value = comp
       return // Stop initialization
     }
+    
+    // Si la DB es compatible, cargar la partida
+    await gameStore.loadGame()
   }
 
   // Sincronizar usuario con el motor legacy
@@ -63,16 +78,6 @@ onMounted(async () => {
     livePvP.initInvitePoller()
   })
 
-  // 3. Inicializar el puente de estado una vez que Vue está listo
-  setTimeout(() => {
-    try {
-      initGameStateBridge()
-      console.log('[App] StateBridge initialized successfully')
-    } catch (e) {
-      console.error('[App] Failed to initialize StateBridge:', e)
-    }
-  }, 300)
-
   // 4. Global Loading Hooks para el motor Legacy
   window.showLoading = (msg = 'Preparando aventura...') => {
     gameStore.state.overlayMessage = msg
@@ -95,6 +100,8 @@ const handleRetry = () => {
 
     <template v-if="!authStore.loading">
       <template v-if="authStore.user">
+        <PhaserGame class="phaser-background" />
+        
         <!-- Solo mostramos la interfaz si el motor legacy terminó su carga inicial -->
         <MainGameView v-if="gameStore.state.isReady" />
         
@@ -249,5 +256,11 @@ const handleRetry = () => {
   transform: scale(1.1);
   background: #fff;
   color: #ff3333;
+}
+
+.phaser-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
 }
 </style>

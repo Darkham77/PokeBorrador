@@ -45,7 +45,8 @@ export const useAuthStore = defineStore('auth', () => {
   async function checkSession() {
     if (sessionStorage.getItem('block_autologin') === 'true') {
       sessionStorage.removeItem('block_autologin')
-      await logout()
+      user.value = null
+      session.value = null
       loading.value = false
       return
     }
@@ -62,6 +63,9 @@ export const useAuthStore = defineStore('auth', () => {
         session.value = data.session
         user.value = data.session.user
         sessionMode.value = 'online'
+        if (supabase && typeof supabase.setMode === 'function') {
+          supabase.setMode('online')
+        }
         
         // Registrar sesión en DB para unicidad
         await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value.id)
@@ -79,6 +83,9 @@ export const useAuthStore = defineStore('auth', () => {
         if (localUser) {
           user.value = JSON.parse(localUser)
           sessionMode.value = 'offline'
+          if (supabase && typeof supabase.setMode === 'function') {
+            supabase.setMode('offline')
+          }
           if (!user.value.db_version) user.value.db_version = 1
         }
       }
@@ -102,6 +109,9 @@ export const useAuthStore = defineStore('auth', () => {
     session.value = data.session
     user.value = data.user
     sessionMode.value = 'online'
+    if (supabase && typeof supabase.setMode === 'function') {
+      supabase.setMode('online')
+    }
     
     // Registrar sesión
     await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id)
@@ -166,6 +176,9 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = userData
       sessionMode.value = 'offline'
       localStorage.setItem('pokevicio_session_mode', 'offline')
+      if (supabase && typeof supabase.setMode === 'function') {
+        supabase.setMode('offline')
+      }
       connectionLost.value = false 
       localStorage.setItem('pokevicio_local_user', JSON.stringify(userData))
       

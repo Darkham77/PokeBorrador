@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
@@ -37,6 +37,14 @@ export const useTradeStore = defineStore('trade', () => {
       }, () => {
         uiStore.notify(' ¡Nuevos activos disponibles para reclamar!', '🎁')
         gameStore.fetchClaimQueue()
+      })
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'trade_offers',
+        filter: `receiver_id=eq.${authStore.user.id}`
+      }, () => {
+        uiStore.notify('¡Has recibido una nueva oferta de intercambio!', '🔄')
+        window.SFX?.notif?.()
+        refreshPendingTrades()
       })
       .subscribe()
   }

@@ -13,15 +13,73 @@ export class DBRouter {
    * @param {Object} options - Options for local DB (e.g., { inMemory: true })
    */
   constructor(supabaseClient, mode = 'online', options = {}) {
-    this._realClient = supabaseClient;
+    this.realClient = supabaseClient;
     this.mode = mode;
     this.options = options;
     this._initialized = false;
+    this.currentSessionId = null;
+    this.userSubscription = null;
     
     console.log(`[DBRouter] Initialized in STRICT ${mode.toUpperCase()} mode.`);
     
     if (mode === 'offline') {
       initSQLite(options);
+    }
+  }
+
+  /**
+   * Initializes session monitoring for Last-In-Wins logic.
+   */
+  async initSession(userId, sessionId) {
+    this.currentSessionId = sessionId;
+    
+    if (this.mode === 'offline' || !this.realClient) return;
+
+    try {
+      await this.realClient
+        .from('profiles')
+        .update({ current_session_id: sessionId })
+        .eq('id', userId);
+    } catch (err) {
+      console.error('[DBRouter] Failed to set session ID:', err);
+    }
+
+    if (this.userSubscription) this.userSubscription.unsubscribe();
+    
+    this.userSubscription = this.realClient
+      .channel(`session_lock:${userId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${userId}`
+      }, (payload) => {
+        const newSessionId = payload.new.current_session_id;
+        if (newSessionId && newSessionId !== this.currentSessionId) {
+          this.handleSessionConflict();
+        }
+      })
+      .subscribe();
+  }
+
+  handleSessionConflict() {
+    console.warn('[DBRouter] SESSION CONFLICT DETECTED!');
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('session-conflict'));
+    }
+  }
+
+  /**
+   * Dynamically switches the router mode.
+   * @param {String} mode - 'online' | 'offline'
+   */
+  setMode(mode) {
+    if (this.mode === mode) return;
+    console.log(`[DBRouter] Switching mode from ${this.mode} to ${mode.toUpperCase()}`);
+    this.mode = mode;
+    
+    if (mode === 'offline') {
+      initSQLite(this.options);
     }
   }
 
@@ -44,7 +102,7 @@ export class DBRouter {
     
     try {
       // Prioritize a dedicated RPC for server time to avoid local clock manipulation
-      const { data, error } = await this._realClient.rpc('fn_get_server_time');
+      const { data, error } = await this.realClient.rpc('fn_get_server_time');
       if (!error && data) return new Date(data).getTime();
       
       // Fallback: use a fast select if RPC fails
@@ -79,7 +137,7 @@ export class DBRouter {
     }
 
     // Online mode: direct call to Supabase
-    return this._realClient.rpc(name, params);
+    return this.realClient.rpc(name, params);
   }
 
   /**
@@ -91,10 +149,11 @@ export class DBRouter {
         signOut: async () => ({ error: null }),
         signInWithPassword: async () => ({ data: { user: { id: 'local_user', email: 'offline@pkv.io' } }, error: null }),
         getUser: async () => ({ data: { user: { id: 'local_user' } }, error: null }),
+        getSession: async () => ({ data: { session: null }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
       };
     }
-    return this._realClient.auth;
+    return this.realClient.auth;
   }
 
   /**
@@ -107,7 +166,7 @@ export class DBRouter {
         subscribe: () => ({}) 
       };
     }
-    return this._realClient.channel(name);
+    return this.realClient.channel(name);
   }
 }
 
@@ -121,11 +180,11 @@ export async function checkDBCompatibility(router) {
   try {
     let dbVersion = 0;
 
-    if (router.mode === 'offline') {
+    if (router.mode === 'offline' || !router.realClient) {
       const results = await queryLocal("SELECT value FROM config WHERE key = 'db_version'");
       if (results.length > 0) dbVersion = parseInt(results[0].value);
     } else {
-      const { data, error } = await router._realClient
+      const { data, error } = await router.realClient
         .from('system_config')
         .select('value')
         .eq('key', 'db_version')

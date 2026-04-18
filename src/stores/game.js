@@ -22,6 +22,11 @@ const INITIAL_STATE = {
   trainerExp: 0,
   trainerExpNeeded: 100,
   inventory: { 'Poción': 3, 'Pokéball': 10 },
+  map: {
+    currentMap: 'route1',
+    region: 'kanto',
+    lastNavigateAt: 0
+  },
   team: [],
   box: [],
   pokedex: [],
@@ -71,7 +76,7 @@ const INITIAL_STATE = {
   notificationHistory: [],
   marketSoldSeenIds: [],
   claimQueue: [],
-  isReady: false,
+  isReady: (typeof localStorage !== 'undefined' && !!localStorage.getItem('pokevicio_save_v3_ash')), // Pre-ready if save exists
   uiSelection: {
     teamRocketMode: false,
     teamRocketSelected: [],
@@ -91,14 +96,14 @@ export const useGameStore = defineStore('game', () => {
   const state = reactive(JSON.parse(JSON.stringify(INITIAL_STATE)))
   
   // Instancia UNIFICADA de base de datos con ruteo inteligente
-  const db = computed(() => {
-    return new DBRouter(supabase, authStore.sessionMode)
-  })
+  const db = computed(() => supabase)
 
-  // Exponer db globalmente para compatibilidad con scripts legacy si es necesario
-  if (typeof window !== 'undefined') {
-    window.DBRouter = db.value
-  }
+  // Sincronizar window.DBRouter con la instancia global y el modo actual
+  watch(() => authStore.sessionMode, (mode) => {
+    if (typeof window !== 'undefined') {
+      window.DBRouter = supabase
+    }
+  }, { immediate: true })
 
   function updateState(newData) {
     Object.assign(state, newData)
@@ -144,6 +149,7 @@ export const useGameStore = defineStore('game', () => {
     
     if (data) {
       updateState(data)
+      state.isReady = true; // Force ready as soon as data is in
       authStore.user.last_save_id = lastSaveId
       
       if (issues && issues.length > 0) {
@@ -167,7 +173,7 @@ export const useGameStore = defineStore('game', () => {
       state.isReady = true
       if (window.updateHud) window.updateHud()
     } else {
-      loading.value = false
+      state.isOverlayLoading = false
       state.isReady = true // Consider as ready even if empty for new users
     }
   }

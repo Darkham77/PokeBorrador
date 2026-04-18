@@ -15,8 +15,8 @@ const getSpriteUrl = (id, shiny) => {
   if (!id) return ''
   // Asumiendo estructura de proyecto:
   const sub = id.toString(); // PokeAPI no siempre necesita padding de 3, pero los IDs son numéricos.
-  if (shiny) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${sub}.webp`;
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sub}.webp`;
+  if (shiny) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${sub}.png`;
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sub}.png`;
 }
 
 const genderSymbol = (g) => {

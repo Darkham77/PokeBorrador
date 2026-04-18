@@ -27,13 +27,12 @@ export function initEconomyBridge() {
   window.openMarket = () => { uiStore.activeTab = 'market' }
   
   window.openTrainerShop = (level) => {
-    uiStore.currentView = 'shop'
-    marketStore.selectedTab = 'trainer'
-    marketStore.loadMarketData()
+    uiStore.activeTab = 'market'
+    shopStore.marketCategory = 'trainer'
   }
 
   // Realtime Subscriptions
-  tradeStore.subscribeToTrades()
+  tradeStore.subscribeTradeNotifs()
   tradeStore.refreshPendingTrades()
   
   console.log('[EconomyBridge] Market and Trade bindings initialized.')

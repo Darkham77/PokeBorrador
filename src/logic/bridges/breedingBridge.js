@@ -41,8 +41,7 @@ export function initBreedingBridge() {
     console.log(`[BreedingBridge] Reducing hatch timer: ${activity}`)
   }
 
-  // Realtime Subscriptions
-  breedingStore.subscribeToEggs()
+  // Realtime Subscriptions (Optional/Not implemented in Pinia yet)
   
   console.log('[BreedingBridge] Breeding and Daycare bindings initialized.')
 }

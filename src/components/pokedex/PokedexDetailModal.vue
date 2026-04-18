@@ -53,8 +53,8 @@ const tmList = computed(() => {
 
 const getSpriteUrl = (id) => {
   const sid = POKEMON_SPRITE_IDS[id] || 0
-  if (sid === 0) return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.webp'
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sid}.webp`
+  if (sid === 0) return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sid}.png`
 }
 
 // LÓGICA DE EVOLUCIONES

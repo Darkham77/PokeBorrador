@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useSocialStore } from '@/stores/social.js'

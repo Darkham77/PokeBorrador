@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { useGameStore } from './game'
+import { useBattleStore } from './battle'
+import { makePokemon } from '@/logic/pokemonFactory'
 
 export const useGymsStore = defineStore('gyms', {
   state: () => ({
@@ -136,15 +138,27 @@ export const useGymsStore = defineStore('gyms', {
       return this.defeatedGyms.includes(gymId)
     },
     async challengeGym(gymId, difficulty = 'easy') {
+      const battleStore = useBattleStore()
+      
       const gym = this.gyms.find(g => g.id === gymId)
       if (!gym) return
+
+      const diffData = gym.difficulties[difficulty] || gym.difficulties.easy
+      const enemyTeam = diffData.pokemon.map((id, idx) => makePokemon(id, diffData.levels[idx]))
       
-      // For now, call the legacy battle engine
-      if (typeof window.startGymBattle === 'function') {
-        window.startGymBattle(gym, difficulty)
-      } else {
-        console.warn('Legacy startGymBattle not found')
-      }
+      const mainEnemy = enemyTeam[enemyTeam.length - 1] // The ace
+
+      await battleStore.startBattle(mainEnemy, {
+        isGym: true,
+        gymId: gym.id,
+        trainerName: `Líder ${gym.leader}`,
+        enemyTeam: enemyTeam,
+        locationId: 'gym',
+        battleOptions: {
+          difficulty,
+          rewardTM: gym.rewardTM
+        }
+      })
     }
   }
 })

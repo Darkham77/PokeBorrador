@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game'
+import { makePokemon } from '@/logic/pokemonFactory'
 import { calculateDamage, getTypeEffectiveness, calculateCatchRate, getEffectiveSpeed } from '../logic/battle/battleEngine'
 import { useItemOnPokemon } from '../logic/providers/itemProvider'
 import { dispatchMoveEffect } from '../logic/battle/actions/actionRegistry'
@@ -11,6 +12,7 @@ import { useWarStore } from './war'
 import { useEventStore } from './events'
 import { GuardianService } from '@/logic/providers/GuardianService'
 import { usePlayerClassStore } from './playerClass'
+import { useUIStore } from './ui'
 
 export const useBattleStore = defineStore('battle', () => {
   const gs = useGameStore()
@@ -468,8 +470,6 @@ export const useBattleStore = defineStore('battle', () => {
       
       // 1. War Points / Guardian Logic
       if (activeBattle.value.enemy.isGuardian) {
-        // Points already handled by claimGuardianCapture or similarly in battle engine logic
-        // But we ensure the record is updated
         await warStore.addPoints(locationId, 'guardian', true)
       } else {
         const warType = isTrainer ? 'trainer_win' : 'wild_win'
@@ -477,10 +477,29 @@ export const useBattleStore = defineStore('battle', () => {
       }
 
       // 2. Events / Competition Logic
-      // Check if this was a capture (isCapture flag set when using ball)
       if (activeBattle.value.isCapture) {
-        // EventStore will internally check for active competitions
         await eventStore.submitCompetitionEntry(activeBattle.value.enemy, 'hourly_competition')
+      }
+
+      // 3. Gym Progress Logic (NEW)
+      if (activeBattle.value.isGym && activeBattle.value.gymId) {
+        const gymId = activeBattle.value.gymId
+        if (!gs.state.defeatedGyms.includes(gymId)) {
+          gs.state.defeatedGyms.push(gymId)
+          gs.state.badges++
+          
+          const rewardTM = activeBattle.value.rewardTM
+          if (rewardTM) {
+            gs.state.inventory[rewardTM] = (gs.state.inventory[rewardTM] || 0) + 1
+            addLog(`¡Recibiste la ${rewardTM} como recompensa!`, 'log-info')
+          }
+          
+          const uiStore = useUIStore()
+          uiStore.notify(`¡Ganaste la medalla del Gimnasio ${gymId}!`, '🏆')
+          
+          // Auto-save progress
+          await gs.save(false)
+        }
       }
     }
   }

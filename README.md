@@ -131,7 +131,7 @@ npm run build
 ### Reglas de Oro
 
 - **Eficiencia GPU**: Usa siempre Texture Atlases y Object Pooling en Phaser.
-- **Assets WebP**: Prohibido usar PNG/JPG raw; usa el script de conversión a WebP.
+- **Assets WebP**: Prohibido usar PNG/JPG raw; usa el script de conversión a WebP. (Excepción: Assets de PokeAPI deben ser PNG).
 - **Ley de 500 Líneas**: Ningún archivo de lógica o componente debe exceder las 500 líneas.
 - **Aislamiento de Servidores**: No mezcles datos de instancias Global (Supabase) con Local (SQLite).
 

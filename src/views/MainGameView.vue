@@ -30,6 +30,7 @@ import ItemTargetModal from '@/components/modals/ItemTargetModal.vue'
 import EvolutionScene from '@/components/evolution/EvolutionScene.vue'
 import MoveRelearnerModal from '@/components/modals/MoveRelearnerModal.vue'
 import SessionConflictModal from '@/components/auth/SessionConflictModal.vue'
+import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import { useAuthStore } from '@/stores/auth'
 
 
@@ -51,7 +52,6 @@ import RankedArena from '@/components/social/RankedArena.vue'
 import GlobalRanking from '@/components/social/GlobalRanking.vue'
 
 
-import PhaserGame from '@/components/game/PhaserGame.vue'
 
 
 import { phaserBridge } from '@/logic/phaserBridge'
@@ -152,7 +152,6 @@ onUnmounted(() => {
 <template>
   <TitleScreen />
   
-  <PhaserGame class="phaser-container" />
 
   <div
     id="game-screen"
@@ -348,12 +347,6 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 /* Scoped styles for the main container or specific integrated elements */
-.phaser-container {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
 
 .content-area {
   flex: 1;

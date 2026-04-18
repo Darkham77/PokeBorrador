@@ -4,7 +4,7 @@
  * you MUST update the DBRouter (src/logic/dbRouter.js) to keep Online/Offline parity.
  */
 import { createClient } from '@supabase/supabase-js'
-import { DBRouter } from './dbRouter'
+import { DBRouter } from './db/dbRouter'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
@@ -28,8 +28,13 @@ if (!supabaseUrl || !supabaseKey) {
   }
 }
 
+// Determine initial mode explicitly from session context
+const initialMode = (typeof localStorage !== 'undefined' && supabaseUrl && supabaseKey) 
+  ? (localStorage.getItem('pokevicio_session_mode') || 'online') 
+  : 'offline';
+
 // Export the Unified DB Router as 'supabase' for backward compatibility
-export const supabase = new DBRouter(rawClient)
+export const supabase = new DBRouter(rawClient, initialMode)
 
 // Ensure legacy scripts always use the resilient proxy / router
 if (typeof window !== 'undefined') {

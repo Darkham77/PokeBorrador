@@ -22,6 +22,7 @@ export class ProxyQuery {
   gte(c, v) { this.chain.push({ type: 'gte', args: [c, v] }); return this; }
   lte(c, v) { this.chain.push({ type: 'lte', args: [c, v] }); return this; }
   in(c, arr) { this.chain.push({ type: 'in', args: [c, arr] }); return this; }
+  is(c, v) { this.chain.push({ type: 'is', args: [c, v] }); return this; }
   order(c, { ascending = false } = {}) { this.chain.push({ type: 'order', args: [c, { ascending }] }); return this; }
   limit(n) { this.chain.push({ type: 'limit', args: [n] }); return this; }
   match(obj) { this.chain.push({ type: 'match', args: [obj] }); return this; }
@@ -62,7 +63,7 @@ export class ProxyQuery {
     // If router is Online, use Supabase
     if (this.router.mode === 'online') {
       try {
-        let q = this.router._realClient.from(this.table);
+        let q = this.router.realClient.from(this.table);
         
         if (this.action === 'upsert') return await q.upsert(this.actionData, this.actionOpts);
         
@@ -113,6 +114,10 @@ export class ProxyQuery {
         const marks = s.args[1].map(() => '?').join(',');
         where.push(`${s.args[0]} IN (${marks})`);
         params.push(...s.args[1]);
+      }
+      if (s.type === 'is') {
+        if (s.args[1] === null) where.push(`${s.args[0]} IS NULL`);
+        else { where.push(`${s.args[0]} IS ?`); params.push(s.args[1]); }
       }
       if (s.type === 'match') {
         Object.entries(s.args[0]).forEach(([k, v]) => {

@@ -1,14 +1,22 @@
 <script setup>
-import { onMounted } from 'vue';
-import { useRankedStore } from '@/stores/rankedStore';
+import { useSocialStore } from '@/stores/social';
 import { useAuthStore } from '@/stores/auth';
+import { useRankedStore } from '@/stores/rankedStore';
 import PlayerAvatar from '@/components/player/PlayerAvatar.vue';
+import { ref, onMounted, watch } from 'vue';
 
-const rankedStore = useRankedStore();
+const socialStore = useSocialStore();
 const authStore = useAuthStore();
+const rankedStore = useRankedStore();
+
+const activeSort = ref('elo_rating');
 
 onMounted(() => {
-  rankedStore.fetchLeaderboard();
+  socialStore.fetchLeaderboard(activeSort.value);
+});
+
+watch(activeSort, (newVal) => {
+  socialStore.fetchLeaderboard(newVal);
 });
 
 const formatRank = (index) => `#${index + 1}`;
@@ -20,12 +28,27 @@ const formatRank = (index) => `#${index + 1}`;
       <h2 class="press-start">
         RANKING GLOBAL
       </h2>
+      <div class="sort-selector">
+        <button 
+          v-for="opt in [
+            { id: 'elo_rating', label: '🏆 ELO' },
+            { id: 'trainer_level', label: '⭐ NIVEL' },
+            { id: 'badges', label: '🏅 MEDALLAS' }
+          ]"
+          :key="opt.id"
+          class="sort-btn"
+          :class="{ active: activeSort === opt.id }"
+          @click="activeSort = opt.id"
+        >
+          {{ opt.label }}
+        </button>
+      </div>
       <button 
         class="refresh-btn" 
-        :disabled="rankedStore.isLoading"
-        @click="rankedStore.fetchLeaderboard(true)"
+        :disabled="socialStore.leaderboardLoading"
+        @click="socialStore.fetchLeaderboard(activeSort)"
       >
-        {{ rankedStore.isLoading ? '...' : '🔄' }}
+        {{ socialStore.leaderboardLoading ? '...' : '🔄' }}
       </button>
     </div>
 
@@ -38,7 +61,7 @@ const formatRank = (index) => `#${index + 1}`;
 
     <div class="leaderboard-list custom-scrollbar">
       <div 
-        v-for="(row, index) in rankedStore.leaderboard" 
+        v-for="(row, index) in socialStore.leaderboard" 
         :key="row.id"
         class="leaderboard-row"
         :class="{ 'is-me': row.id === authStore.user?.id }"
@@ -49,8 +72,8 @@ const formatRank = (index) => `#${index + 1}`;
         
         <div class="trainer-info">
           <PlayerAvatar 
-            :player-class="row.player_class" 
-            :level="row.trainer_level"
+            :player-class="row.playerClass" 
+            :level="row.level"
             :size="32"
           />
           <div class="name-group">
@@ -58,28 +81,29 @@ const formatRank = (index) => `#${index + 1}`;
               class="trainer-name"
               :class="row.nick_style"
             >{{ row.username }}</span>
-            <span class="trainer-level">Nv. {{ row.trainer_level }}</span>
+            <span class="trainer-level">Nv. {{ row.level }} • {{ row.badges }} 🏅</span>
           </div>
         </div>
 
         <div
+          v-if="activeSort === 'elo_rating'"
           class="tier-info"
-          :style="{ color: rankedStore.currentTier(row.elo_rating).color }"
+          :style="{ color: rankedStore.currentTier(row.elo).color }"
         >
-          <span class="tier-icon">{{ rankedStore.currentTier(row.elo_rating).icon }}</span>
-          <span class="tier-name">{{ rankedStore.currentTier(row.elo_rating).name }}</span>
+          <span class="tier-icon">{{ rankedStore.currentTier(row.elo).icon }}</span>
+          <span class="tier-name">{{ rankedStore.currentTier(row.elo).name }}</span>
         </div>
 
-        <div class="elo-val press-start">
-          {{ row.elo_rating }}
+        <div class="val-display press-start">
+          {{ activeSort === 'elo_rating' ? row.elo : activeSort === 'trainer_level' ? `Nv.${row.level}` : `${row.badges}🏅` }}
         </div>
       </div>
 
       <div
-        v-if="rankedStore.leaderboard.length === 0 && !rankedStore.isLoading"
+        v-if="socialStore.leaderboard.length === 0 && !socialStore.leaderboardLoading"
         class="empty-msg"
       >
-        Aún no hay datos de ranking global.
+        Aún no hay datos de ranking global para esta categoría.
       </div>
     </div>
   </div>
@@ -97,11 +121,45 @@ const formatRank = (index) => `#${index + 1}`;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   
   h2 {
     font-size: 10px;
     color: var(--yellow);
     margin: 0;
+  }
+}
+
+.sort-selector {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sort-btn {
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #888;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &.active {
+    background: var(--yellow);
+    color: #000;
+    box-shadow: 0 0 10px rgba(255, 184, 0, 0.3);
   }
 }
 
@@ -200,10 +258,11 @@ const formatRank = (index) => `#${index + 1}`;
   font-size: 12px;
 }
 
-.elo-val {
+.val-display {
   font-size: 9px;
   color: #fff;
   text-align: right;
+  white-space: nowrap;
 }
 
 .empty-msg, .error-msg {

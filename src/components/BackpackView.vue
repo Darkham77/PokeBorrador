@@ -27,7 +27,7 @@ const CATEGORIES = [
 // Listado filtrado de objetos
 const filteredItems = computed(() => {
   const inventory = gs.value.inventory || {}
-  const shopItems = marketStore.SHOP_ITEMS
+  const shopItems = shopStore.SHOP_ITEMS
 
   return Object.entries(inventory)
     .filter(([name, qty]) => {

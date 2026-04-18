@@ -32,6 +32,8 @@ function initLegacyBindings() {
   if (typeof window === 'undefined') return
 
   // 1. Core Stores accessibility
+  initGameStateBridge() // Initialize the Proxy first!
+  
   window.gameStore = gameStore
   window.authStore = authStore
   window.uiStore = uiStore

@@ -56,12 +56,19 @@ function close() {
 </script>
 
 <template>
-  <div class="pokemon-center-overlay" @click.self="close">
+  <div
+    class="pokemon-center-overlay"
+    @click.self="close"
+  >
     <div class="center-card glass">
       <div class="header">
-        <div class="icon-circle">🏥</div>
+        <div class="icon-circle">
+          🏥
+        </div>
         <h2>Centro Pokémon</h2>
-        <p class="subtitle">Enfermería Oficial de Kanto</p>
+        <p class="subtitle">
+          Enfermería Oficial de Kanto
+        </p>
       </div>
 
       <div class="status-section">
@@ -76,22 +83,42 @@ function close() {
               'empty': i > team.length
             }"
           >
-            <div class="ball-icon">🔴</div>
+            <div class="ball-icon">
+              🔴
+            </div>
           </div>
         </div>
         
-        <div v-if="isHealing" class="progress-container">
+        <div
+          v-if="isHealing"
+          class="progress-container"
+        >
           <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+            <div
+              class="progress-fill"
+              :style="{ width: progress + '%' }"
+            />
           </div>
-          <p class="healing-text">Restaurando HP/PP...</p>
+          <p class="healing-text">
+            Restaurando HP/PP...
+          </p>
         </div>
         
-        <div v-else class="info-text">
-          <p v-if="cost === 0">¡El servicio es gratuito para entrenadores registrados!</p>
-          <div v-else class="cost-notice">
+        <div
+          v-else
+          class="info-text"
+        >
+          <p v-if="cost === 0">
+            ¡El servicio es gratuito para entrenadores registrados!
+          </p>
+          <div
+            v-else
+            class="cost-notice"
+          >
             <p>Servicio con recargo especial</p>
-            <div class="price-tag">₽ {{ cost.toLocaleString() }}</div>
+            <div class="price-tag">
+              ₽ {{ cost.toLocaleString() }}
+            </div>
             <small v-if="gameStore.state.playerClass === 'rocket'">Penalización: Miembro del Equipo Rocket (2x)</small>
           </div>
         </div>
@@ -105,7 +132,11 @@ function close() {
         >
           {{ isHealing ? 'CURANDO...' : 'RESTAURAR EQUIPO' }}
         </button>
-        <button class="btn-cancel" :disabled="isHealing" @click="close">
+        <button
+          class="btn-cancel"
+          :disabled="isHealing"
+          @click="close"
+        >
           VOLVER
         </button>
       </div>

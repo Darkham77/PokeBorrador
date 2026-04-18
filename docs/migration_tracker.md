@@ -19,7 +19,8 @@ This document tracks the progress of migrating legacy JavaScript/CSS/HTML code f
 | `06_encounters_v5.js` | `src/stores/map.js` | 100% | Motor de navegación y huevos 100% nativo. |
 | `13_evolution.js` | `src/stores/evolutionStore.js` | 100% | Migrated to EvolutionStore, EvolutionScene.vue and StonePicker.vue. |
 | `20_classes.js` | `src/stores/playerClassStore.js` | 100% | Migrated to PlayerClassStore, useClassModifiers and Vue components. |
-| `09_social.js` | `src/stores/social.js` | 100% | Hub Social Modular, Presence y Rankings Globales. |
+| `09_social.js` | `src/stores/social.js` | 100% | Hub Social Modular, Presence y Rankings Globales (ELO, Nivel, Medallas). |
+| `10_trade.js` | `src/stores/trade.js` | 100% | Intercambios Real-time con notificaciones de ofertas entrantes. |
 | `16_chat.js` | `src/stores/chat.js` | 100% | Chat Global y Privado persistente en save_data. |
 | `23_market.js` | `src/stores/gtsStore.js` | 100% | GTS Modular con visual parity 1:1 y tiempo real. |
 | `market.js` (NPC) | `src/stores/shopStore.js` | 100% | Tienda NPC modernizada y separada del GTS. |
@@ -27,6 +28,7 @@ This document tracks the progress of migrating legacy JavaScript/CSS/HTML code f
 | `18_pokedex.js` | `src/stores/pokedex.js` | 100% | Recompensas por captura + Visualizador Stats (vía social updates). |
 | `14_pvp.js` | `src/stores/pvpStore.js` | 100% | Real-time PvP Battles, Invite System, and Turn Resolution. |
 | `24_passive_pvp.js` | `src/stores/rankedStore.js` | 100% | Seasonal Rules, ELO Tiers, Leaderboards, and Passive Defense. |
+| `gyms.js` | `src/stores/gyms.js` | 100% | Desafío a Líderes nativo, registro de medallas y entrega de MTs. |
 
 ## Legend
 

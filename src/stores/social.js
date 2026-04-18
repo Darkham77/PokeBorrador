@@ -233,9 +233,10 @@ export const useSocialStore = defineStore('social', () => {
   const leaderboardLoading = ref(false)
 
   /**
-   * Obtiene el Top 100 mundial basado en ELO.
+   * Obtiene el Top 100 mundial basado en el criterio especificado.
+   * @param {string} sortBy - 'elo_rating' | 'trainer_level' | 'badges'
    */
-  async function fetchLeaderboard() {
+  async function fetchLeaderboard(sortBy = 'elo_rating') {
     if (authStore.sessionMode === 'offline') {
       leaderboard.value = []
       return
@@ -247,7 +248,7 @@ export const useSocialStore = defineStore('social', () => {
       const { data, error } = await db
         .from('profiles')
         .select('*')
-        .order('elo_rating', { ascending: false })
+        .order(sortBy, { ascending: false })
         .limit(100)
 
       if (error) throw error
@@ -269,6 +270,7 @@ export const useSocialStore = defineStore('social', () => {
             username: p.username,
             elo: p.elo_rating || 1000,
             level: p.trainer_level || 1,
+            badges: p.badges || 0,
             playerClass: p.player_class,
             faction: p.faction,
             nick_style: p.nick_style,

@@ -58,7 +58,8 @@ CREATE TABLE IF NOT EXISTS public.awards (
     prize JSONB NOT NULL,
     awarded_at TIMESTAMPTZ DEFAULT NOW(),
     claimed BOOLEAN DEFAULT false,
-    claimed_at TIMESTAMPTZ
+    claimed_at TIMESTAMPTZ,
+    received_at TIMESTAMPTZ
 );
 
 -- Enable RLS for Awards

@@ -74,12 +74,20 @@ onMounted(() => {
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="isVisible" class="pokemon-center-overlay" @click.self="close">
+      <div
+        v-if="isVisible"
+        class="pokemon-center-overlay"
+        @click.self="close"
+      >
         <div class="center-card glass">
           <div class="header">
-            <div class="icon-circle">🏥</div>
+            <div class="icon-circle">
+              🏥
+            </div>
             <h2>CENTRO POKÉMON</h2>
-            <p class="subtitle">Servicio de Salud para Entrenadores</p>
+            <p class="subtitle">
+              Servicio de Salud para Entrenadores
+            </p>
           </div>
 
           <div class="status-section">
@@ -94,24 +102,47 @@ onMounted(() => {
                   'empty': i > team.length
                 }"
               >
-                <div class="ball-icon">🔴</div>
+                <div class="ball-icon">
+                  🔴
+                </div>
               </div>
             </div>
             
-            <div v-if="isHealing" class="progress-container">
+            <div
+              v-if="isHealing"
+              class="progress-container"
+            >
               <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+                <div
+                  class="progress-fill"
+                  :style="{ width: progress + '%' }"
+                />
               </div>
-              <p class="healing-text">RESTAURANDO EQUIPO...</p>
+              <p class="healing-text">
+                RESTAURANDO EQUIPO...
+              </p>
             </div>
             
-            <div v-else class="info-text">
-              <div v-if="cost > 0" class="cost-notice">
+            <div
+              v-else
+              class="info-text"
+            >
+              <div
+                v-if="cost > 0"
+                class="cost-notice"
+              >
                 <p>COSTO DE SERVICIO</p>
-                <div class="price-tag">₽ {{ cost.toLocaleString() }}</div>
+                <div class="price-tag">
+                  ₽ {{ cost.toLocaleString() }}
+                </div>
                 <small v-if="gameStore.state.playerClass === 'rocket'">Recargo: Team Rocket (2x)</small>
               </div>
-              <p v-else class="free-msg">¡Hola! Restauraremos a tus Pokémon al instante.</p>
+              <p
+                v-else
+                class="free-msg"
+              >
+                ¡Hola! Restauraremos a tus Pokémon al instante.
+              </p>
             </div>
           </div>
 
@@ -123,7 +154,11 @@ onMounted(() => {
             >
               {{ isHealing ? 'CURANDO...' : 'CURAR EQUIPO' }}
             </button>
-            <button class="btn-cancel" :disabled="isHealing" @click="close">
+            <button
+              class="btn-cancel"
+              :disabled="isHealing"
+              @click="close"
+            >
               VOLVER
             </button>
           </div>
@@ -134,6 +169,7 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "sass:string";
 .pokemon-center-overlay {
   position: fixed;
   inset: 0;
@@ -217,16 +253,16 @@ h2 {
   background: rgba(34, 197, 94, 0.08);
   border-color: rgba(34, 197, 94, 0.4);
   box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
-  transform: scale(1.08);
+  transform: string.unquote("scale(1.08)");
 }
 
 .ball-icon {
   font-size: 20px;
-  filter: grayscale(1);
+  filter: string.unquote("grayscale(1)");
 }
 
 .slot.active .ball-icon {
-  filter: grayscale(0);
+  filter: string.unquote("grayscale(0)");
 }
 
 .slot.healing .ball-icon {
@@ -234,8 +270,8 @@ h2 {
 }
 
 @keyframes pulse-ball {
-  from { transform: scale(1); filter: brightness(1); }
-  to { transform: scale(1.2); filter: brightness(1.4) drop-shadow(0 0 5px #ff4444); }
+  from { transform: string.unquote("scale(1)"); filter: brightness(1); }
+  to { transform: string.unquote("scale(1.2)"); filter: brightness(1.4) drop-shadow(0 0 5px #ff4444); }
 }
 
 .progress-container {

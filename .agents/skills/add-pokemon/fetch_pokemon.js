@@ -11,138 +11,11 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-// ── Mapeo de nombres de movimientos inglés → español (ampliable) ──────────────
-// Este mapeo es parcial. Para movimientos no mapeados se usa el nombre en inglés
-// con una advertencia para que se traduzca manualmente.
-const MOVE_NAME_ES = {
-  'tackle': 'Placaje', 'scratch': 'Arañazo', 'growl': 'Gruñido', 'tail-whip': 'Látigo',
-  'ember': 'Ascuas', 'water-gun': 'Pistola Agua', 'vine-whip': 'Látigo Cepa',
-  'bite': 'Mordisco', 'roar': 'Rugido', 'smog': 'Pantalla Humo',
-  'flamethrower': 'Lanzallamas', 'fire-blast': 'Llamarada', 'inferno': 'Infierno',
-  'leer': 'Cara Susto', 'thunder-wave': 'Onda Trueno', 'thunderbolt': 'Rayo',
-  'thunder': 'Trueno', 'psychic': 'Psíquico', 'shadow-ball': 'Bola Sombra',
-  'dark-pulse': 'Pulso Umbrío', 'flare-blitz': 'Envite Ígneo',
-  'fire-fang': 'Colmillo Ígneo', 'thunder-fang': 'Colmillo Rayo',
-  'ice-fang': 'Colmillo Hielo', 'pursuit': 'Persecución', 'smog': 'Pantalla Humo',
-  'sunny-day': 'Día Soleado', 'rain-dance': 'Danza Lluvia', 'overheat': 'Sofoco',
-  'will-o-wisp': 'Fuego Fatuo', 'nasty-plot': 'Maquinación',
-  'crunch': 'Triturar', 'hyper-fang': 'Hiper Colmillo', 'super-fang': 'Súper Colmillo',
-  'quick-attack': 'Ataque Rápido', 'double-team': 'Doble Equipo', 'attract': 'Atracción',
-  'protect': 'Protección', 'rest': 'Descanso', 'sleep-talk': 'Hablar Dormido',
-  'endure': 'Aguante', 'facade': 'Imagen', 'return': 'Retribución',
-  'frustration': 'Frustración', 'earthquake': 'Terremoto', 'rock-slide': 'Tumba Rocas',
-  'dig': 'Excavar', 'toxic': 'Tóxico', 'poison-gas': 'Polvo Veneno',
-  'sludge-bomb': 'Bomba Lodo', 'taunt': 'Mofa', 'torment': 'Tormento',
-  'mean-look': 'Mal de Ojo', 'destiny-bond': 'Señal Trampa', 'spite': 'Rencor',
-  'knock-off': 'Golpe Bajo', 'beat-up': 'Acoso', 'swagger': 'Fanfarria',
-  'thief': 'Ladrón', 'snatch': 'Robo', 'faint-attack': 'Golpe Vacío',
-  'night-shade': 'Sombra Nocturnna', 'body-slam': 'Golpe Cuerpo',
-  'mega-drain': 'Gigadrenado', 'solar-beam': 'Rayo Solar', 'hyper-beam': 'Hiperrayo',
-  'cut': 'Corte', 'strength': 'Fuerza', 'surf': 'Surf', 'waterfall': 'Cascada',
-  'fly': 'Vuelo', 'flash': 'Flash', 'rock-smash': 'Romperroca', 'whirlpool': 'Torbellino',
-  'headbutt': 'Cabezazo', 'smokescreen': 'Pantalla Humo', 'confuse-ray': 'Rayo Confuso',
-  'agility': 'Agilidad', 'amnesia': 'Amnesia', 'barrier': 'Barrera',
-  'baton-pass': 'Relevo', 'belly-drum': 'Bombo', 'blizzard': 'Ventisca',
-  'brine': 'Salmuera', 'bubble': 'Burbuja', 'bubble-beam': 'Pistola Agua',
-  'calm-mind': 'Paz Mental', 'charge': 'Carga', 'clamp': 'Tenaza',
-  'close-combat': 'Combate Cerrado', 'comet-punch': 'Puño Cometa',
-  'confuse-ray': 'Rayo Confuso', 'counter': 'Contraataque', 'cross-chop': 'Golpe Karate',
-  'cut': 'Corte', 'defense-curl': 'Refugio', 'destiny-bond': 'Señal Trampa',
-  'disable': 'Anulación', 'double-edge': 'Doble Filo', 'doubleslap': 'Doble Bofetón',
-  'dragon-rage': 'Furia Dragón', 'dream-eater': 'Comeosueños', 'drill-peck': 'Picotazo',
-  'egg-bomb': 'Bomba Huevo', 'encore': 'Otra Vez', 'explosion': 'Explosión',
-  'extremespeed': 'Aturde Sonido', 'feint-attack': 'Golpe Vacío',
-  'fire-punch': 'Puño Fuego', 'fire-spin': 'Giro Fuego', 'fissure': 'Fisura',
-  'focus-energy': 'Foco Energía', 'fury-attack': 'Ataque Furia', 'fury-swipes': 'Zarpazo',
-  'glare': 'Mirada Feroz', 'growl': 'Gruñido', 'guillotine': 'Guillotina',
-  'gust': 'Tornado', 'harden': 'Fortaleza', 'haze': 'Vaho', 'hi-jump-kick': 'Salto Brusco',
-  'horn-attack': 'Ataque Cuerno', 'horn-drill': 'Taladrador', 'hydro-pump': 'Hidrobomba',
-  'hypnosis': 'Hipnosis', 'ice-beam': 'Rayo Hielo', 'ice-punch': 'Puño Hielo',
-  'jump-kick': 'Pataleta', 'karate-chop': 'Kárate', 'kinesis': 'Confusión',
-  'leech-life': 'Picadura', 'leech-seed': 'Drenadoras', 'lick': 'Lametón',
-  'light-screen': 'Pantalla de Luz', 'lock-on': 'Bloqueo', 'lovely-kiss': 'Beso Dulce',
-  'low-kick': 'Patada Baja', 'mega-kick': 'Patada Brutal', 'mega-punch': 'Megapiñón',
-  'metronome': 'Metrónomo', 'mimic': 'Mímesis', 'minimize': 'Minimizar',
-  'mirror-move': 'Espejo', 'mist': 'Velo', 'night-shade': 'Sombra Nocturnna',
-  'pay-day': 'Monedas', 'petal-dance': 'Danza Pétalo', 'pin-missile': 'Pin Misil',
-  'poison-sting': 'Picotazo Veneno', 'pound': 'Destructor', 'powder-snow': 'Nieve Polvo',
-  'psybeam': 'Psicorrayo', 'psychic': 'Psíquico', 'psywave': 'Psicoonda',
-  'rage': 'Furia', 'razor-leaf': 'Hoja Afilada', 'razor-wind': 'Viento Navaja',
-  'recover': 'Recuperación', 'reflect': 'Reflejo', 'rock-throw': 'Lanzarrocas',
-  'rolling-kick': 'Patada Giro', 'sand-attack': 'Ataque Arena', 'screech': 'Chirrido',
-  'seismic-toss': 'Lanzamiento', 'self-destruct': 'Autodestrucción', 'sharpen': 'Afilar',
-  'sing': 'Canción Mortal', 'skull-bash': 'Cabezazo', 'slam': 'Golpe',
-  'slash': 'Cuchillada', 'sleep-powder': 'Somnífera', 'slush-rush': 'Nado Rápido',
-  'smokescreen': 'Pantalla Humo', 'softboiled': 'Puesta', 'sonicboom': 'Onda Sónica',
-  'spike-cannon': 'Cañón Puas', 'spore': 'Espora', 'stomp': 'Pisotón',
-  'string-shot': 'Disparo Demora', 'struggle': 'Forcejeo', 'stun-spore': 'Paralizador',
-  'submission': 'Sometimiento', 'substitute': 'Subterfugio', 'super-fang': 'Súper Colmillo',
-  'supersonic': 'Supersónico', 'swift': 'Rapidez', 'swords-dance': 'Danza Espada',
-  'take-down': 'Derribo', 'teleport': 'Teletransporte', 'thunder-punch': 'Puñopuño',
-  'thunder-shock': 'Impactrueno', 'toxic': 'Tóxico', 'transform': 'Transformación',
-  'tri-attack': 'Triple Ataque', 'twineedle': 'Doble Aguijón', 'vice-grip': 'Apretón',
-  'vine-whip': 'Látigo Cepa', 'waterfall': 'Cascada', 'water-gun': 'Pistola Agua',
-  'whirlwind': 'Remolino', 'wing-attack': 'Ataque Ala', 'withdraw': 'Refugio',
-  'wrap': 'Constricción', 'struggle': 'Forcejeo', 'swift': 'Rapidez',
-  'metal-claw': 'Garra Metal', 'detect': 'Detección', 'false-swipe': 'Golpe Falso',
-  'foresight': 'Ojo Certero', 'hex': 'Maleficio', 'reversal': 'Inversión',
-  'thunder-wave': 'Onda Trueno', 'hidden-power': 'Poder Oculto', 'rollout': 'Rueda',
-  'magnitude': 'Magnitud', 'megahorn': 'Gigacuerno', 'minimize': 'Minimizar',
-  'payback': 'Venganza', 'sucker-punch': 'Golpe Bajo', 'u-turn': 'Cambio Drástico',
-  'shadow-claw': 'Garra Umbría', 'fire-pledge': 'Promesa Fuego',
-  'heat-wave': 'Ola Cálida', 'howl': 'Aullido', 'smelling-salts': 'Sales Aromáticas',
-  'beat-up': 'Acoso', 'faint-attack': 'Golpe Vacío', 'sweet-scent': 'Dulce Aroma',
-  'feint': 'Treta', 'outrage': 'Enfado', 'hyper-voice': 'Hiperfonía',
-};
-
-// ── Mapeo de habilidades inglés → español ─────────────────────────────────────
-const ABILITY_NAME_ES = {
-  'flash-fire': 'Absorbe Fuego', 'flash-fire': 'Absorbe Fuego',
-  'early-bird': 'Madrugar', 'intimidate': 'Intimidación', 'run-away': 'Escape',
-  'keen-eye': 'Vista Lince', 'technician': 'Tecnología', 'hustle': 'Entusiasmo',
-  'vital-spirit': 'Espíritu Vital', 'speed-boost': 'Impulso', 'compound-eyes': 'Ojo Compuesto',
-  'shield-dust': 'Escudo Polvo', 'shed-skin': 'Mudar', 'swarm': 'Enjambre',
-  'stench': 'Hedor', 'thick-fat': 'Sebo', 'battle-armor': 'Caparazón',
-  'rock-head': 'Cabeza Roca', 'solar-power': 'Poder Solar', 'chlorophyll': 'Clorofila',
-  'static': 'Electricidad Estática', 'lightning-rod': 'Pararrayos',
-  'water-absorb': 'Absorbe Agua', 'volt-absorb': 'Absorbe Voltio',
-  'sand-veil': 'Velo Arena', 'trace': 'Calco', 'adaptability': 'Adaptable',
-  'skill-link': 'Encadenado', 'color-change': 'Mutar', 'immunity': 'Inmunidad',
-  'levitate': 'Levitación', 'poison-point': 'Punto Tóxico', 'synchronize': 'Sincronía',
-  'clear-body': 'Cuerpo Puro', 'oblivious': 'Despiste', 'cloud-nine': 'Velo Húmedo',
-  'natural-cure': 'Cura Natural', 'magnet-pull': 'Imán', 'flame-body': 'Cuerpo Llama',
-  'cute-charm': 'Engatuse', 'inner-focus': 'Foco Interno', 'insomnia': 'Insomnio',
-  'sturdy': 'Robustez', 'own-tempo': 'Ritmo Propio', 'swift-swim': 'Nado Rápido',
-  'damp': 'Humedad', 'pressure': 'Presión', 'pickup': 'Recogida',
-  'guts': 'Agallas', 'hustle': 'Entusiasmo', 'rough-skin': 'Piel Tosca',
-  'wonder-guard': 'Escudo Mágico', 'truant': 'Flojera', 'super-luck': 'Suerte Extra',
-  'effect-spore': 'Efecto Espora', 'pure-power': 'Poder Latente',
-  'shell-armor': 'Caparazón', 'air-lock': 'Cielo Limpio',
-  'blaze': 'Mar Llamas', 'overgrow': 'Espesura', 'torrent': 'Torrente',
-  'drought': 'Pertinaz', 'drizzle': 'Llovizna', 'sand-stream': 'Chorro Arena',
-  'snow-warning': 'Nevada', 'arena-trap': 'Trampa Arena', 'shadow-tag': 'Sombra Umbrál',
-  'frisk': 'Inspección', 'rough-skin': 'Piel Tosca', 'hyper-cutter': 'Corte Fuerte',
-  'scrappy': 'Revoltoso', 'anger-point': 'Punto Ira', 'lightningrod': 'Pararrayos',
-  'soundproof': 'Insonorizar', 'magic-guard': 'Muro Mágico', 'immunity': 'Inmunidad',
-  'wonder-skin': 'Piel Mágica', 'infiltrator': 'Infiltrador', 'super-luck': 'Suerte Extra',
-  'serene-grace': 'Dicha', 'normalize': 'Normaliza', 'sniper': 'Francotirador',
-  'rivalry': 'Rivalidad', 'mold-breaker': 'Rompemoldes', 'forewarn': 'Presciencia',
-  'tangle-feet': 'Soleado', 'big-pecks': 'Gran Ala', 'unnerve': 'Nerviosismo',
-  'pickup': 'Recogida', 'moody': 'Temperamental', 'healer': 'Sanador',
-  'regenerator': 'Regeneración', 'klutz': 'Torpe', 'anger-point': 'Punto Ira',
-  'download': 'Descarga', 'analytic': 'Analítico', 'multitype': 'Multitipo',
-  'slow-start': 'Inicio Lento', 'poison-touch': 'Toque Tóxico',
-  'unaware': 'Ignorante', 'unburden': 'Alivio', 'no-guard': 'Sin Guardia',
-  'steadfast': 'Tenacidad', 'cute-charm': 'Engatuse', 'dry-skin': 'Piel Seca',
-  'leaf-guard': 'Follaje', 'wind-rider': 'Correcaminos',
-  'flash-fire': 'Absorbe Fuego', 'water-veil': 'Velo Agua',
-  'reckless': 'Atrevido', 'multiscale': 'Multiscala', 'ice-body': 'Cuerpo Hielo',
-  'rain-dish': 'Plato Lluvia', 'snow-cloak': 'Manto Nieve', 'simple': 'Sencillo',
-  'illuminate': 'Iluminar', 'cute-charm': 'Engatuse', 'liquid-ooze': 'Babas',
-  'overgrow': 'Espesura', 'blaze': 'Mar Llamas', 'torrent': 'Torrente',
-  'swarm': 'Enjambre', 'run-away': 'Escape', 'guts': 'Agallas',
-  'anticipation': 'Intuición', 'bad-dreams': 'Pesadilla',
-  'quick-feet': 'Inicio Rápido',
+// ── Caché de nombres para evitar redundancia ─────────────────────────────────
+const NAME_CACHE = {
+  moves: {},
+  abilities: {},
+  species: {}
 };
 
 // ── Versión target para learnset ──────────────────────────────────────────────
@@ -157,13 +30,33 @@ const httpsGet = (url) => new Promise((resolve, reject) => {
   }).on('error', reject);
 });
 
-function translateMove(enName) {
-  return MOVE_NAME_ES[enName] || null;
+async function getSpanishName(url, type) {
+  if (NAME_CACHE[type][url]) return NAME_CACHE[type][url];
+  
+  try {
+    const data = await httpsGet(url);
+    const esEntry = data.names.find(n => n.language.name === 'es');
+    const name = esEntry ? esEntry.name : null;
+    if (name) NAME_CACHE[type][url] = name;
+    return name;
+  } catch (e) {
+    return null;
+  }
 }
 
-function translateAbility(enName) {
-  return ABILITY_NAME_ES[enName] || null;
-}
+// ── Versión target para learnset ──────────────────────────────────────────────
+const TARGET_VERSIONS = ['firered-leafgreen', 'ruby-sapphire', 'emerald', 'heartgold-soulsilver'];
+
+const httpsGet = (url) => new Promise((resolve, reject) => {
+  https.get(url, { headers: { 'User-Agent': 'PokeBorrador-AddPokemon/1.0' } }, (res) => {
+    if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode} for ${url}`));
+    let data = '';
+    res.on('data', c => data += c);
+    res.on('end', () => { try { resolve(JSON.parse(data)); } catch(e) { reject(e); } });
+  }).on('error', reject);
+});
+
+// Las traducciones ahora se obtienen dinámicamente de PokeAPI.
 
 async function fetchPokemon(pokemonName) {
   const name = pokemonName.toLowerCase().trim();
@@ -185,11 +78,11 @@ async function fetchPokemon(pokemonName) {
   const type2 = types[1] || null;
 
   // Abilities
-  const abilities = pokemon.abilities.map(a => {
+  const abilities = await Promise.all(pokemon.abilities.map(async (a) => {
     const enName = a.ability.name;
-    const esName = translateAbility(enName);
+    const esName = await getSpanishName(a.ability.url, 'abilities');
     return { en: enName, es: esName, isHidden: a.is_hidden };
-  });
+  }));
 
   // 2. Learnset from Gen 3 version groups
   const levelMoves = [];
@@ -198,15 +91,14 @@ async function fetchPokemon(pokemonName) {
   const seenLevelMoves = new Set();
   const seenMachineMoves = new Set();
 
-  pokemon.moves.forEach(moveEntry => {
-    moveEntry.version_group_details.forEach(vgd => {
+  for (const moveEntry of pokemon.moves) {
+    for (const vgd of moveEntry.version_group_details) {
       if (TARGET_VERSIONS.includes(vgd.version_group.name)) {
         const enName = moveEntry.move.name;
         if (vgd.move_learn_method.name === 'level-up') {
-          const key = `${enName}_${vgd.level_learned_at}`;
           if (!seenLevelMoves.has(enName)) {
             seenLevelMoves.add(enName);
-            const esName = translateMove(enName);
+            const esName = await getSpanishName(moveEntry.move.url, 'moves');
             levelMoves.push({
               lv: vgd.level_learned_at,
               en: enName,
@@ -217,13 +109,13 @@ async function fetchPokemon(pokemonName) {
         } else if (vgd.move_learn_method.name === 'machine') {
           if (!seenMachineMoves.has(enName)) {
             seenMachineMoves.add(enName);
-            const esName = translateMove(enName);
+            const esName = await getSpanishName(moveEntry.move.url, 'moves');
             machineMoves.push({ en: enName, es: esName });
           }
         }
       }
-    });
-  });
+    }
+  }
 
   // Remove duplicates keeping lowest level, then sort
   const uniqueMovesMap = {};

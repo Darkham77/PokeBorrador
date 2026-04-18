@@ -48,7 +48,7 @@ onMounted(() => {
         class="egg-visual"
       >
         <img
-          src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.webp"
+          src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.png"
           class="egg-sprite"
           :class="{ shake: stage === 'crack' }"
         >

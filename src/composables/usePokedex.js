@@ -26,7 +26,7 @@ export function usePokedex(gs, currentOrder, currentGen) {
         name: isSeen ? data.name : '???',
         isSeen,
         isCaught,
-        spriteUrl: isSeen ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${nationalNum}.webp` : null
+        spriteUrl: isSeen ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${nationalNum}.png` : null
       }
     })
 

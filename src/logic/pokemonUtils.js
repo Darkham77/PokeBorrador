@@ -40,7 +40,7 @@ export const getSpriteUrl = (id, isShiny) => {
   if (typeof window !== 'undefined' && typeof window.getSpriteUrl === 'function') {
     return window.getSpriteUrl(id, isShiny)
   }
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon${isShiny ? '/shiny' : ''}/${id}.webp`
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon${isShiny ? '/shiny' : ''}/${id}.png`
 }
 
 /**

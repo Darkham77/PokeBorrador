@@ -41,6 +41,7 @@ To ensure minimal data transfer and optimal load times, all visual assets must b
 - **MANDATORY**: All images stored in the project (`src/assets/`, `public/assets/`, etc.) **MUST** be in **WebP** format.
 - **FORBIDDEN**: Storing raw `.png`, `.jpg`, or `.jpeg` files in the repository.
 - **Auto-Conversion**: If a non-recommended format is detected during development or migration, you **MUST** execute the conversion script (`.agents/skills/project-standards/scripts/convert_to_webp.py`) to transform it into WebP.
+- **EXCEPTION: PokeAPI Assets**: Data fetched dynamically or stored as references from PokeAPI **MUST** use **PNG** format, as PokeAPI does not support WebP for its sprites.
 - **Quality Settings**:
   - **Pixel Art**: Use lossless WebP to preserve pixel-perfect clarity.
   - **Large Assets**: Use lossy WebP (Quality 80) for maximum compression.

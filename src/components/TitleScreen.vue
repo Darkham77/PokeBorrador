@@ -1,6 +1,7 @@
 <script setup>
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
+import { useUIStore } from '@/stores/ui'
 import { computed } from 'vue'
 
 const uiStore = useUIStore()
@@ -42,7 +43,7 @@ const handleLogout = () => {
         <div class="starter-img-container">
           <img
             id="starter-img-bulbasaur"
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.webp"
+            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
             alt="Bulbasaur"
             class="starter-sprite"
           >
@@ -76,7 +77,7 @@ const handleLogout = () => {
         <div class="starter-img-container">
           <img
             id="starter-img-charmander"
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.webp"
+            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
             alt="Charmander"
             class="starter-sprite"
           >
@@ -110,7 +111,7 @@ const handleLogout = () => {
         <div class="starter-img-container">
           <img
             id="starter-img-squirtle"
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.webp"
+            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
             alt="Squirtle"
             class="starter-sprite"
           >

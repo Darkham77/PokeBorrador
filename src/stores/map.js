@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { FIRE_RED_MAPS } from '@/data/maps'
 import { generateEncounter } from '@/logic/encounters'
 import { useGameStore } from './game'
@@ -7,21 +7,29 @@ import { useBattleStore } from './battle'
 import { useUIStore } from './ui'
 
 export const useMapStore = defineStore('map', () => {
+  const gs = useGameStore()
+  const currentMap = computed({
+    get: () => gs.state.map?.currentMap || 'route1',
+    set: (val) => { if (gs.state.map) gs.state.map.currentMap = val }
+  })
+  const region = computed(() => gs.state.map?.region || 'kanto')
+
   const currentCycle = ref('day')
   const maps = ref(FIRE_RED_MAPS)
   const activeEvents = ref([])
   const lastNavigateTime = ref(0)
   const dailyGuardianCaptures = ref([])
   const mapWinners = ref({}) // locId -> winner
+  const pendingAwards = ref([])
   
   const syncFromLegacy = (legacyState) => {
     if (typeof window.getDayCycle === 'function') {
       currentCycle.value = window.getDayCycle()
     }
     
-    maps.value = window.FIRE_RED_MAPS || []
-    activeEvents.value = window._activeEvents || []
-    pendingAwards.value = window.state?._pendingAwards || []
+    // Dynamic data sync from legacy (if available)
+    activeEvents.value = window._activeEvents || legacyState?._activeEvents || activeEvents.value
+    pendingAwards.value = legacyState?._pendingAwards || pendingAwards.value
     
     // Process map winners (dominance) if available
     // This is usually populated by loadDailyGuardianCaptures in legacy
@@ -42,6 +50,9 @@ export const useMapStore = defineStore('map', () => {
       uiStore.notify('Todos tus Pokémon están debilitados. ¡Ve al Centro Pokémon!', '🏥')
       return
     }
+
+    // Actualizar ubicación actual
+    currentMap.value = locId
 
     // 2. Progreso de eclosión
     gs.hatchEggs()
@@ -76,6 +87,8 @@ export const useMapStore = defineStore('map', () => {
   }
 
   return {
+    currentMap,
+    region,
     currentCycle,
     maps,
     activeEvents,

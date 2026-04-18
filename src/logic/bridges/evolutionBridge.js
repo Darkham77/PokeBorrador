@@ -12,6 +12,7 @@ import {
   evolvePokemonData,
   getEvolvedForm
 } from '@/logic/evolutionLogic'
+import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
 import { useUIStore } from '@/stores/ui'
 import { useInventoryStore } from '@/stores/inventoryStore'
 

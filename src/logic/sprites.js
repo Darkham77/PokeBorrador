@@ -71,12 +71,12 @@ export const POKEMON_SPRITE_IDS = {
 export function getSpriteUrl(id, isShiny = false) {
   const num = POKEMON_SPRITE_IDS[id];
   if (!num) {
-    if (id && id.includes('egg')) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.webp";
+    if (id && id.includes('egg')) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.png";
     return null;
   }
   const folder = isShiny ? 'shiny' : '';
   const prefix = folder ? folder + '/' : '';
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${prefix}${num}.webp`;
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${prefix}${num}.png`;
 }
 
 /**
@@ -87,7 +87,7 @@ export function getBackSpriteUrl(id, isShiny = false) {
   if (!num) return null;
   const folder = isShiny ? 'shiny' : '';
   const prefix = folder ? folder + '/' : '';
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${prefix}${num}.webp`;
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${prefix}${num}.png`;
 }
 
 /**

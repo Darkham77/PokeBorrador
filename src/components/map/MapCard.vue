@@ -57,7 +57,7 @@ const cycleLabel = computed(() => {
 const getPokemonSprite = (id) => {
   const spriteIds = window.POKEMON_SPRITE_IDS || {}
   const num = spriteIds[id]
-  return num ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.webp` : null
+  return num ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png` : null
 }
 
 const getFactionIcon = (faction) => {

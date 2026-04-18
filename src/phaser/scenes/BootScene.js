@@ -23,7 +23,7 @@ export default class BootScene extends Phaser.Scene {
     // this.load.atlas('vfx', 'assets/vfx.webp', 'assets/vfx.json');
     
     // Placeholder for common sprites
-    this.load.image('platform', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.webp');
+    this.load.image('platform', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png');
   }
 
   create() {
@@ -48,7 +48,7 @@ export default class BootScene extends Phaser.Scene {
     if (this.textures.exists(key)) return key;
 
     return new Promise((resolve) => {
-      const url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isBack ? 'back/' : ''}${isShiny ? 'shiny/' : ''}${id}.webp`;
+      const url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isBack ? 'back/' : ''}${isShiny ? 'shiny/' : ''}${id}.png`;
       
       this.load.image(key, url);
       this.load.once('complete', () => resolve(key));

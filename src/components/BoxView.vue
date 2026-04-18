@@ -14,6 +14,11 @@ const gameStore = useGameStore()
 const invStore = useInventoryStore()
 const gs = computed(() => gameStore.state)
 
+// Store-bound state
+const currentBoxIndex = computed(() => invStore.currentBoxIndex)
+const isRocketMode = computed(() => invStore.boxRocketMode)
+const rocketSelection = computed(() => invStore.boxRocketSelected)
+
 // ----- ESTADO Y FILTROS -----
 const { 
   filters, 
@@ -22,22 +27,20 @@ const {
   hasActiveFilters, 
   processedBoxList, 
   resetFilters 
-} = useBoxFilters(computed(() => gs.value.box))
-
-// Store-bound state
-const currentBoxIndex = computed(() => invStore.currentBoxIndex)
-const isRocketMode = computed(() => invStore.boxRocketMode)
-const rocketSelection = computed(() => invStore.boxRocketSelected)
+} = useBoxFilters(computed(() => gs.value.box), currentBoxIndex)
 
 const maxCapacity = computed(() => (gs.value.boxCount || 4) * 50)
 
 const displayList = computed(() => {
+  const start = currentBoxIndex.value * 50
+  const end = start + 50
+  
+  // Si hay filtros o sort, usamos la lista procesada completa (que ya mapea {p, i})
   if (hasActiveFilters.value || sortMode.value !== 'none') {
-    return processedBoxList.value
+    return (processedBoxList.value || []).slice(start, end)
   } else {
-    const start = currentBoxIndex.value * 50
-    const end = start + 50
-    return processedBoxList.value.filter(item => item.index >= start && item.index < end)
+    // Si no hay filtros, el composable ya devuelve la página actual o podemos filtrarla aquí por 'index'
+    return (processedBoxList.value || []).filter(item => item.index >= start && item.index < end)
   }
 })
 
@@ -125,7 +128,7 @@ const handlePokemonClick = (index) => {
       v-model:is-filters-open="isFiltersOpen"
       v-model:sort-mode="sortMode"
       :has-active-filters="hasActiveFilters"
-      :results-count="processedBoxList.length"
+      :results-count="(processedBoxList || []).length"
       @reset="resetFilters"
     />
 

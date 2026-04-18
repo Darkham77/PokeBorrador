@@ -20,6 +20,7 @@ export function useBoxFilters(boxArray, currentBoxIndex) {
   });
 
   const sortMode = ref('none'); // 'none', 'level', 'tier', 'type', 'pokedex'
+  const isFiltersOpen = ref(false);
 
   const hasActiveFilters = computed(() => {
     return filters.tier !== 'all' || 
@@ -42,7 +43,7 @@ export function useBoxFilters(boxArray, currentBoxIndex) {
 
     if (isFiltered || isSorted) {
       // Process entire box when filtering/sorting
-      result = boxArray.value.map((p, i) => ({ p, i }));
+      result = boxArray.value.map((p, index) => ({ p, index }));
 
       if (isFiltered) {
         result = result.filter(({ p }) => {
@@ -90,8 +91,8 @@ export function useBoxFilters(boxArray, currentBoxIndex) {
       // Normal pagination by box index
       const start = currentBoxIndex.value * 50;
       const end = Math.min(start + 50, boxArray.value.length);
-      for (let i = start; i < end; i++) {
-        result.push({ p: boxArray.value[i], i: i });
+      for (let index = start; index < end; index++) {
+        result.push({ p: boxArray.value[index], index: index });
       }
     }
 
@@ -110,9 +111,10 @@ export function useBoxFilters(boxArray, currentBoxIndex) {
 
   return {
     filters,
+    isFiltersOpen,
     sortMode,
     hasActiveFilters,
-    displayList,
+    processedBoxList: displayList,
     resetFilters
   };
 }

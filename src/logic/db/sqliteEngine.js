@@ -20,7 +20,7 @@ const TABLES_SCHEMA = [
   "daycare_upgrades (player_id TEXT PRIMARY KEY, egg_capacity INTEGER DEFAULT 1, slot_boost INTEGER DEFAULT 0, updated_at TEXT DEFAULT (datetime('now')))",
   "pokedex_entries (id INTEGER PRIMARY KEY AUTOINCREMENT, player_id TEXT, pokemon_id INTEGER, status TEXT, created_at TEXT DEFAULT (datetime('now')))",
   "trade_offers (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_id TEXT, receiver_id TEXT, offer_pokemon TEXT, offer_items TEXT, offer_money INTEGER DEFAULT 0, request_pokemon TEXT, request_items TEXT, request_money INTEGER DEFAULT 0, message TEXT, status TEXT DEFAULT 'pending', created_at TEXT DEFAULT (datetime('now')))",
-  "events_config (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, icon TEXT, type TEXT, config TEXT, is_active BOOLEAN, start_date TEXT, end_date TEXT)",
+  "events_config (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, icon TEXT, type TEXT, config TEXT, active BOOLEAN, start_date TEXT, end_date TEXT)",
   "chat_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_id TEXT, sender_name TEXT, message TEXT, type TEXT, created_at TEXT DEFAULT (datetime('now')))",
   "market_listings (id INTEGER PRIMARY KEY AUTOINCREMENT, seller_id TEXT, seller_name TEXT, listing_type TEXT, data TEXT, price INTEGER, status TEXT, buyer_id TEXT, created_at TEXT DEFAULT (datetime('now')))",
   "ranked_rules_config (id TEXT PRIMARY KEY, season_name TEXT, config TEXT)",
@@ -29,7 +29,7 @@ const TABLES_SCHEMA = [
   "war_user_points (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, map_id TEXT, week_id TEXT, points INTEGER DEFAULT 0, faction TEXT, updated_at TEXT)",
   "guardian_captures (capture_date TEXT, map_id TEXT, user_id TEXT, winner_faction TEXT, pts_awarded INTEGER DEFAULT 150, captured_at TEXT DEFAULT (datetime('now')), PRIMARY KEY (capture_date, map_id, user_id))",
   "eggs (id INTEGER PRIMARY KEY AUTOINCREMENT, player_id TEXT, egg_id TEXT, steps_remaining INTEGER DEFAULT 1000, created_at TEXT DEFAULT (datetime('now')))",
-  "awards (id TEXT PRIMARY KEY, event_id TEXT, winner_email TEXT, winner_name TEXT, prize TEXT, awarded_at TEXT DEFAULT (datetime('now')), claimed BOOLEAN DEFAULT 0, claimed_at TEXT)",
+  "awards (id TEXT PRIMARY KEY, event_id TEXT, winner_id TEXT, winner_email TEXT, winner_name TEXT, prize TEXT, awarded_at TEXT DEFAULT (datetime('now')), claimed BOOLEAN DEFAULT 0, claimed_at TEXT, received_at TEXT)",
   "competition_entries (id TEXT PRIMARY KEY, event_id TEXT, player_email TEXT, player_name TEXT, data TEXT, submitted_at TEXT DEFAULT (datetime('now')))",
   "competition_results (id TEXT PRIMARY KEY, event_id TEXT, winners TEXT, ended_at TEXT DEFAULT (datetime('now')))",
   "war_factions (user_id TEXT PRIMARY KEY, email TEXT, faction TEXT, created_at TEXT DEFAULT (datetime('now')))",
@@ -56,6 +56,11 @@ const DATABASE_MIGRATIONS = [
   {
     id: '202604180100_add_db_version',
     sql: "INSERT OR IGNORE INTO config (key, value) VALUES ('db_version', '202604180100'); UPDATE config SET value = '202604180100' WHERE key = 'db_version';"
+  },
+  {
+    id: '202604180450_fix_events_and_awards',
+    sql: "ALTER TABLE events_config RENAME COLUMN is_active TO active; ALTER TABLE awards ADD COLUMN received_at TEXT; ALTER TABLE awards ADD COLUMN winner_id TEXT; UPDATE config SET value = '202604180450' WHERE key = 'db_version';",
+    check: { table: 'events_config', column: 'active' }
   }
 ];
 
@@ -126,7 +131,7 @@ export async function initSQLite(options = {}) {
       }
 
       const SQL = await window.initSqlJs({
-        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}`
+        locateFile: file => `/sql-wasm.wasm`
       });
 
       const binaryData = _isInMemory ? null : await getFromIDB(_sqliteKey);
@@ -152,7 +157,7 @@ export async function initSQLite(options = {}) {
       _sqliteDb.run(`CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')));`);
 
       // 3. Run migrations
-      console.log('[SQLite] Running migrations...');
+      console.log('[SQLite] [2026-04-18 04:55] Running migrations...');
       runMigrationsInternal(_sqliteDb, DATABASE_MIGRATIONS);
 
       // 4. Force Version Sync
@@ -180,27 +185,35 @@ function runMigrationsInternal(db, migrations) {
   migrations.forEach(m => {
     try {
       const applied = db.exec(`SELECT 1 FROM _migrations WHERE id = '${m.id}'`);
-      if (applied.length > 0) return;
+      if (applied.length > 0) {
+        console.log(`[SQLite Migration] Already applied: ${m.id}`);
+        return;
+      }
 
       if (m.check) {
         const info = db.exec(`PRAGMA table_info(${m.check.table})`);
         const exists = info[0] && info[0].values.some(row => row[1] === m.check.column);
         if (exists) {
+          console.log(`[SQLite Migration] Column ${m.check.column} already exists in ${m.check.table}, skipping: ${m.id}`);
           db.run(`INSERT OR IGNORE INTO _migrations (id) VALUES ('${m.id}')`);
           return;
         }
       }
 
-      console.log(`[SQLite Migration] Applying: ${m.id}`);
-      m.sql.split(';').filter(s => s.trim()).forEach(stmt => db.run(stmt));
+      console.log(`[SQLite Migration] APPLYING: ${m.id}`);
+      m.sql.split(';').filter(s => s.trim()).forEach(stmt => {
+        console.log(`[SQLite Migration] Executing: ${stmt.trim()}`);
+        db.run(stmt);
+      });
       db.run(`INSERT INTO _migrations (id) VALUES ('${m.id}')`);
 
       const version = m.id.split('_')[0];
       if (/^\d+$/.test(version)) {
         db.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${version}')`);
       }
+      console.log(`[SQLite Migration] SUCCESS: ${m.id}`);
     } catch (e) {
-      console.warn(`[SQLite Migration] Failed to apply ${m.id}:`, e);
+      console.error(`[SQLite Migration] CRITICAL FAILURE applying ${m.id}:`, e);
     }
   });
 }

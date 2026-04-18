@@ -45,7 +45,7 @@ export function getItemSpriteUrl(itemId) {
   };
   
   const mappedId = mapping[itemId] || itemId.replace(/_/g, '-');
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${mappedId}.webp`;
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${mappedId}.png`;
 }
 
 /**

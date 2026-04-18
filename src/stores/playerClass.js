@@ -10,7 +10,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   const gameStore = useGameStore()
   const uiStore = useUIStore()
   
-  const db = new DBRouter(supabase, localStorage.getItem('pokevicio_session_mode') || 'online')
+  const db = supabase
 
   // --- Getters ---
   const playerClass = computed(() => gameStore.state.playerClass)

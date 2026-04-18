@@ -1,4 +1,5 @@
 <script setup>
+import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
 const props = defineProps({
   filters: { type: Object, required: true },
   isFiltersOpen: { type: Boolean, required: true },

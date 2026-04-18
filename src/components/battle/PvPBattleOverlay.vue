@@ -167,6 +167,7 @@ const handleMoveSelection = (moveIdx) => {
 </template>
 
 <style lang="scss" scoped>
+@use "sass:string";
 .pvp-screen-wrapper {
   position: fixed;
   inset: 0;
@@ -237,7 +238,7 @@ const handleMoveSelection = (moveIdx) => {
 
   .trainer-sprite {
     image-rendering: pixelated;
-    transform: scale(1.5);
+    transform: string.unquote("scale(1.5)");
     margin: 20px 0;
   }
 
@@ -310,9 +311,9 @@ const handleMoveSelection = (moveIdx) => {
 }
 
 @keyframes pulse {
-  0% { transform: translateX(-50%) scale(1); }
-  50% { transform: translateX(-50%) scale(1.1); }
-  100% { transform: translateX(-50%) scale(1); }
+  0% { transform: string.unquote("translateX(-50%) scale(1)"); }
+  50% { transform: string.unquote("translateX(-50%) scale(1.1)"); }
+  100% { transform: string.unquote("translateX(-50%) scale(1)"); }
 }
 
 @keyframes spin {

@@ -3,13 +3,16 @@ import sys
 from PIL import Image
 from pathlib import Path
 
-def convert_to_webp(directory, quality=80, lossless_patterns=None):
+def convert_to_webp(directory, quality=80, lossless_patterns=None, exclude_patterns=None):
     """
     Recorre el directorio buscando .png, .jpg, .jpeg y los convierte a .webp.
     - lossless_patterns: lista de strings. Si el path contiene alguno, usa modo lossless.
+    - exclude_patterns: lista de strings. Si el path contiene alguno, se ignora (ej. PokeAPI).
     """
     if lossless_patterns is None:
         lossless_patterns = ['sprites', 'icons', 'badges', 'items']
+    if exclude_patterns is None:
+        exclude_patterns = ['pokeapi', 'node_modules', '.agents']
     
     converted_count = 0
     skipped_count = 0
@@ -21,6 +24,9 @@ def convert_to_webp(directory, quality=80, lossless_patterns=None):
     for root, dirs, files in os.walk(directory):
         for file in files:
             file_path = Path(root) / file
+            if any(p in str(file_path).lower() for p in exclude_patterns):
+                continue
+
             if file_path.suffix.lower() in target_exts:
                 output_path = file_path.with_suffix('.webp')
                 

@@ -34,7 +34,9 @@ onMounted(() => {
         <span class="rocket-icon">🚀</span>
         <h3>MERCADO NEGRO</h3>
       </div>
-      <p class="desc">Solo para miembros del Equipo Rocket. Rotación diaria de objetos raros a precios de contrabando.</p>
+      <p class="desc">
+        Solo para miembros del Equipo Rocket. Rotación diaria de objetos raros a precios de contrabando.
+      </p>
     </div>
 
     <div class="items-grid">
@@ -44,14 +46,20 @@ onMounted(() => {
         class="market-card"
         :class="{ 'sold-out': isPurchased(item.id) }"
       >
-        <div class="sold-overlay" v-if="isPurchased(item.id)">
+        <div
+          v-if="isPurchased(item.id)"
+          class="sold-overlay"
+        >
           AGOTADO
         </div>
         
         <div class="card-content">
           <div class="item-visual">
-            <img :src="item.sprite" class="pixel-sprite" />
-            <div class="glow"></div>
+            <img
+              :src="item.sprite"
+              class="pixel-sprite"
+            >
+            <div class="glow" />
           </div>
           
           <div class="item-info">
@@ -73,6 +81,7 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "sass:string";
 .black-market-section {
   background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
   border-radius: 20px;
@@ -129,7 +138,7 @@ onMounted(() => {
   
   &.sold-out {
     opacity: 0.6;
-    filter: grayscale(0.8);
+    filter: string.unquote("grayscale(0.8)");
   }
 }
 

@@ -149,6 +149,7 @@ const claimReward = async (milestone) => {
 </template>
 
 <style lang="scss" scoped>
+@use "sass:string";
 .rewards-track {
   display: flex;
   flex-direction: column;
@@ -302,7 +303,7 @@ h3 {
 
   &:hover:not(:disabled) {
     background: rgba(107, 203, 119, 0.3);
-    transform: scale(1.02);
+    transform: string.unquote("scale(1.02)");
   }
 
   &:disabled {

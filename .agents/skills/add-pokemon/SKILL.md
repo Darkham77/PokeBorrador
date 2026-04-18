@@ -19,6 +19,7 @@ Antes de agregar cualquier dato nuevo, recuerda:
 1. **Nombres de Objetos**: Usa siempre los nombres oficiales completos. Ejemplo: **"Subida de PP"** (NO "Subida PP"). Una discrepancia romperá la lógica de uso.
 2. **Deduplicación**: Nunca agregues un movimiento a `MOVE_DATA` que ya exista. El validador ahora detecta duplicados automáticamente.
 3. **Sincronización de PP**: Al inicializar un movimiento para un Pokémon, `maxPP` debe ser igual a su `pp` base inicial.
+4. **Formato de Imagen (PokeAPI)**: Todas las imágenes externas provenientes de PokeAPI **DEBEN** mantenerse en formato **PNG**. PokeAPI no ofrece sprites en WebP, por lo que intentar forzar WebP para estos assets resultará en errores de carga (404).
 
 ---
 
