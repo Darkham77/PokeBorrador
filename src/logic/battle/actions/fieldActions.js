@@ -33,5 +33,13 @@ export const FIELD_ACTIONS = {
       battleCtx.weather = { type: 'hail', turns: 5 };
       addLogFn("¡Empezó a granizar!", 'log-info');
     }
+  },
+  'spikes': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    tgtStages.spikes = Math.min(3, (tgtStages.spikes || 0) + 1);
+    addLogFn(`¡${src.name} lanzó púas alrededor de su rival!`, 'log-info');
+  },
+  'mist': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    srcStages.mist = 5;
+    addLogFn(`¡Una neblina protectora rodea a ${src.name}!`, 'log-info');
   }
 };

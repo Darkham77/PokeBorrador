@@ -122,6 +122,27 @@ export function checkAbilityImmunity(attacker, defender, move, MOVE_DATA, addLog
     addLogFn(`¡${defender.name} levita y evita el ataque!`, 'log-info');
     return true;
   }
+  
+  if (ab === 'Foco Interno' && move.flinch) {
+    addLogFn(`¡El Foco Interno de ${defender.name} evitó el retroceso!`, 'log-info');
+    return true;
+  }
 
   return false;
+}
+
+export function handleOnSwitchOut(pokemon, addLogFn) {
+  if (pokemon.ability === 'Cura Natural' && pokemon.status) {
+    pokemon.status = null;
+    addLogFn(`¡La Cura Natural de ${pokemon.name} sanó sus problemas de estado!`, 'log-info');
+  }
+}
+
+export function handleStatusSync(attacker, defender, status, addLogFn) {
+  if (defender.ability === 'Sincronía' && status) {
+    if (!attacker.status) {
+      attacker.status = status;
+      addLogFn(`¡La Sincronía de ${defender.name} pasó el estado a ${attacker.name}!`, 'log-info');
+    }
+  }
 }

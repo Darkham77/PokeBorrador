@@ -6,16 +6,20 @@ description: Guía paso a paso para agregar un Pokémon completamente nuevo al j
 # Skill: Agregar un Pokémon Nuevo al Juego
 
 ## Prerequisitos
+
 - Tener Node.js disponible para ejecutar el script de fetch.
 - Los validators de movimientos y habilidades ya deben existir en `.agents/skills/`.
 
 ---
 
 ## 🚨 REGLA DE ORO: INTEGRIDAD DE DATOS
+
 Antes de agregar cualquier dato nuevo, recuerda:
+
 1. **Nombres de Objetos**: Usa siempre los nombres oficiales completos. Ejemplo: **"Subida de PP"** (NO "Subida PP"). Una discrepancia romperá la lógica de uso.
 2. **Deduplicación**: Nunca agregues un movimiento a `MOVE_DATA` que ya exista. El validador ahora detecta duplicados automáticamente.
 3. **Sincronización de PP**: Al inicializar un movimiento para un Pokémon, `maxPP` debe ser igual a su `pp` base inicial.
+
 ---
 
 ## Paso 0: Obtener todos los datos desde PokeAPI
@@ -32,7 +36,7 @@ Esto genera un archivo `_output/<pokemon>.json` con todos los datos necesarios.
 
 ## Paso 1: Agregar a `POKEMON_DB` en `js/02_pokemon_data.js`
 
-### Formato exacto del proyecto:
+### Formato exacto del proyecto
 
 ```js
 houndour: {
@@ -64,7 +68,8 @@ houndoom: {
 },
 ```
 
-### Reglas:
+### Reglas
+
 - La key es siempre en **inglés en minúsculas** (ej. `houndour`, `mr_mime`).
 - El `name` es en **español** o nombre oficial del juego.
 - El `emoji` es decorativo, elegir el más representativo del tipo.
@@ -96,24 +101,26 @@ houndoom: 'dark',
 
 ## Paso 3: Agregar habilidades en `ABILITIES` en `js/04_state.js`
 
-### Formato exacto:
+### Formato exacto
 
 ```js
 houndour: ['Espíritu Vital', 'Inicio Rápido'],
 houndoom: ['Espíritu Vital', 'Inicio Rápido'],
 ```
 
-### Reglas:
+### Reglas
+
 - Los nombres de habilidades están en **español**, exactamente como en `ABILITY_DATA`.
 - Si es una habilidad **nueva** que no está en `ABILITY_DATA`, hay que agregarla:
 
-#### 3a. Agregar descripción en `ABILITY_DATA` (`js/02_pokemon_data.js`):
+#### 3a. Agregar descripción en `ABILITY_DATA` (`js/02_pokemon_data.js`)
 
 ```js
 'Inicio Rápido': 'Duplica la Velocidad cuando el Pokémon tiene un estado alterado.',
 ```
 
-#### 3b. Si la habilidad tiene efecto en batalla, implementarla en `js/07_battle.js`.
+#### 3b. Si la habilidad tiene efecto en batalla, implementarla en `js/07_battle.js`
+
 Usar el validator de habilidades para verificar que esté correctamente implementada:
 
 ```bash
@@ -126,7 +133,7 @@ node .agents/skills/pokemon-ability-validator/validator.js
 
 ## Paso 4: Agregar evolución en `js/13_evolution.js`
 
-### Para evolución por nivel:
+### Para evolución por nivel
 
 Agregar en `EVOLUTION_TABLE`:
 
@@ -134,7 +141,7 @@ Agregar en `EVOLUTION_TABLE`:
 houndour: { level: 24, to: 'houndoom' },
 ```
 
-### Para evolución por piedra:
+### Para evolución por piedra
 
 Agregar en `STONE_EVOLUTIONS`:
 
@@ -142,7 +149,7 @@ Agregar en `STONE_EVOLUTIONS`:
 nombrePokemon: { stone: 'Piedra Fuego', to: 'nombreEvolución' },
 ```
 
-### Para evolución por intercambio:
+### Para evolución por intercambio
 
 Agregar en `TRADE_EVOLUTIONS`:
 
@@ -154,7 +161,7 @@ nombrePokemon: 'nombreEvolución',
 
 ## Paso 5: Agregar número de sprite y orden en Pokédex (`js/18_pokedex.js`)
 
-### 5a. Agregar en `POKEMON_SPRITE_IDS`:
+### 5a. Agregar en `POKEMON_SPRITE_IDS`
 
 ```js
 houndour: 228, houndoom: 229,
@@ -162,7 +169,7 @@ houndour: 228, houndoom: 229,
 
 El número es el **ID nacional de la Pokédex** oficial.
 
-### 5b. Agregar en `PDEX_ORDER` (el array de orden de visualización):
+### 5b. Agregar en `PDEX_ORDER` (el array de orden de visualización)
 
 ```js
 // Agregar en la posición correcta según el número nacional
@@ -241,15 +248,17 @@ Antes de dar por terminado, verificar cada ítem:
 
 ## Paso 9: Inyección y Prueba (REAL vs TEST)
 
-Una vez insertado el código en los archivos del proyecto, puedes probar el Pokémon inmediatamente inyectándolo en tu caja. 
+Una vez insertado el código en los archivos del proyecto, puedes probar el Pokémon inmediatamente inyectándolo en tu caja.
 
 El script `fetch_pokemon.js` genera dos snippets en el archivo `_code.txt`:
 
-1.  **OPCIÓN A (REAL):** Crea un Pokémon con **stats naturales** (IVs aleatorios, Naturaleza aleatoria, movimientos según nivel). Recomendado para balanceo y gameplay.
+1. **OPCIÓN A (REAL):** Crea un Pokémon con **stats naturales** (IVs aleatorios, Naturaleza aleatoria, movimientos según nivel). Recomendado para balanceo y gameplay.
+
     ```js
     injectPokemonToBox(makePokemon('nombre', 50));
     ```
-2.  **OPCIÓN B (TEST):** Crea un Pokémon con **datos ficticios** (IVs perfectos, stats personalizados, shiny). Recomendado para pruebas visuales o de depuración.
+
+2. **OPCIÓN B (TEST):** Crea un Pokémon con **datos ficticios** (IVs perfectos, stats personalizados, shiny). Recomendado para pruebas visuales o de depuración.
 
 > [!CAUTION]
 > Asegúrate de estar logueado en el juego antes de ejecutar los snippets en la consola.
@@ -259,6 +268,7 @@ El script `fetch_pokemon.js` genera dos snippets en el archivo `_code.txt`:
 ## Paso 10: Verificación de Persistencia
 
 El sistema utiliza un nuevo `DBRouter` que sincroniza con Supabase y SQLite. Para confirmar que el Pokémon es persistente:
+
 1. Inyecta el Pokémon usando el snippet.
 2. Espera a que aparezca la notificación 📥.
 3. **Refresca la página (F5)**.

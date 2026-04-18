@@ -184,7 +184,12 @@ export const useUIStore = defineStore('ui', () => {
     isEvolutionOpen,
     evolutionData,
     startEvolution,
-    closeEvolution
+    closeEvolution,
+
+    // PvP & Ranked
+    isPvPBattleOpen: ref(false),
+    isRankedMenuOpen: ref(false),
+    currentPvPInvite: ref(null)
   }
 })
 

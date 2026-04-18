@@ -82,5 +82,22 @@ export const STATUS_ACTIONS = {
     }
     tgt.confused = 2 + Math.floor(Math.random() * 4);
     addLogFn(`¡${tgt.name} está confundido!`, 'log-info');
+  },
+  
+  'attract': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    if (tgt.attracted) return;
+    if (tgt.ability === 'Despiste') {
+      addLogFn(`¡El Despiste de ${tgt.name} evitó la atracción!`, 'log-info');
+      return;
+    }
+    tgt.attracted = true;
+    addLogFn(`¡${tgt.name} se ha enamorado de ${src.name}!`, 'log-info');
+  },
+  
+  'ghost_curse': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    if (tgt.cursed) return;
+    tgt.cursed = true;
+    src.hp -= Math.floor(src.maxHp / 2);
+    addLogFn(`¡${src.name} se sacrificó para maldecir a ${tgt.name}!`, 'log-info');
   }
 };

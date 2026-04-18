@@ -108,12 +108,24 @@ const handleRetry = () => {
         </div>
 
         <!-- Bloqueo por Versión Outdated -->
-        <div v-if="dbIncompatible" class="loading-overlay version-lock">
-          <div class="lock-icon">⚠️</div>
+        <div
+          v-if="dbIncompatible"
+          class="loading-overlay version-lock"
+        >
+          <div class="lock-icon">
+            ⚠️
+          </div>
           <h2>SERVIDOR DESACTUALIZADO</h2>
           <p>Tu cliente (v{{ dbVersionInfo.client }}) es más moderno que el servidor (v{{ dbVersionInfo.db }}).</p>
-          <p class="admin-note">Por favor, contacta al administrador para que actualice la base de datos.</p>
-          <div class="retry-btn" @click="handleRetry">REINTENTAR</div>
+          <p class="admin-note">
+            Por favor, contacta al administrador para que actualice la base de datos.
+          </p>
+          <div
+            class="retry-btn"
+            @click="handleRetry"
+          >
+            REINTENTAR
+          </div>
         </div>
       </template>
       <!-- El LoginView se renderiza aquí si no hay sesión -->

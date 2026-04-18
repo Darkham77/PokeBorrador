@@ -28,10 +28,16 @@ async function handleLogout() {
       </p>
 
       <div class="actions">
-        <button class="btn-primary" @click="handleReconnect">
+        <button
+          class="btn-primary"
+          @click="handleReconnect"
+        >
           USAR AQUÍ
         </button>
-        <button class="btn-secondary" @click="handleLogout">
+        <button
+          class="btn-secondary"
+          @click="handleLogout"
+        >
           CERRAR SESIÓN
         </button>
       </div>

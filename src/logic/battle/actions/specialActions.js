@@ -53,6 +53,15 @@ export const SPECIAL_ACTIONS = {
       // but we can try basic swap here if battleCtx allows it.
     }
   },
+  'destiny_bond': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    src.destinyBond = true;
+    addLogFn(`¡${src.name} intenta llevarse a su rival al destino común!`, 'log-info');
+  },
+  'perish_song': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (src.perishSongCount === undefined) src.perishSongCount = 3;
+    if (tgt.perishSongCount === undefined) tgt.perishSongCount = 3;
+    addLogFn('¡Todos los que escucharon el canto morirán en 3 turnos!', 'log-info');
+  },
   'transform': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
     const originalName = src.name;
     if (!src.isTransformed) {

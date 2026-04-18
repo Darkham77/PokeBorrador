@@ -1,132 +1,132 @@
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useShopStore } from '@/stores/shopStore'
 import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
 
+const shopStore = useShopStore()
 const gameStore = useGameStore()
+const uiStore = useUIStore()
+
 const isVisible = ref(false)
-const isConfirming = ref(false)
-const showEffect = ref(false)
-const healCost = ref(0)
+const isHealing = ref(false)
+const progress = ref(0)
+const healedCount = ref(0)
 
-const gs = computed(() => gameStore.state)
+const cost = computed(() => shopStore.getHealCost())
+const team = computed(() => gameStore.state.team || [])
 
-// Expose state to legacy engine
-onMounted(() => {
-  window.openPokemonCenter = async () => {
-    isVisible.value = true
-    isConfirming.value = false
-    
-    if (typeof window.getHealCost === 'function') {
-      healCost.value = window.getHealCost()
+async function handleHeal() {
+  if (team.value.length === 0) return
+  
+  if (cost.value > 0 && gameStore.state.money < cost.value) {
+    uiStore.notify('No tenés suficiente dinero para la enfermería.', '💸')
+    return
+  }
+
+  isHealing.value = true
+  progress.value = 0
+  healedCount.value = 0
+
+  const interval = setInterval(() => {
+    progress.value += 4
+    if (progress.value % 16 === 0 && healedCount.value < team.value.length) {
+      healedCount.value++
     }
     
-    if (healCost.value > 0) {
-      isConfirming.value = true
-    } else {
-      await nextTick()
-      if (typeof window._doHeal === 'function') {
-        window._doHeal()
+    if (progress.value >= 100) {
+      clearInterval(interval)
+      const success = shopStore.healAllPokemon()
+      if (success) {
+        setTimeout(() => {
+          isHealing.value = false
+          isVisible.value = false
+        }, 800)
+      } else {
+        isHealing.value = false
       }
     }
-  }
+  }, 80)
+}
 
+function close() {
+  if (isHealing.value) return
+  isVisible.value = false
+}
+
+// ── LEGACY COMPATIBILITY ─────────────────────────────────────────────────────
+onMounted(() => {
+  window.openPokemonCenter = () => {
+    isVisible.value = true
+  }
   window.closePokemonCenter = () => {
     isVisible.value = false
-    isConfirming.value = false
   }
-  
   window.showHealEffect = (active) => {
-    showEffect.value = active
-    if (active) isVisible.value = true
-  }
-
-  // Handle legacy direct overlay display calls
-  const originalDoHeal = window._doHeal
-  if (typeof originalDoHeal === 'function') {
-    window._doHeal = () => {
+    if (active) {
       isVisible.value = true
-      originalDoHeal()
+      handleHeal()
     }
   }
 })
-
-const handleConfirm = () => {
-  isConfirming.value = false
-  if (typeof window.confirmHeal === 'function') {
-    window.confirmHeal()
-  } else if (typeof window._doHeal === 'function') {
-    // Fallback if confirmHeal isn't there
-    window._doHeal()
-  }
-}
-
-const handleCancel = () => {
-  isConfirming.value = false
-  isVisible.value = false
-  if (typeof window.cancelHealConfirm === 'function') {
-    window.cancelHealConfirm()
-  }
-}
 </script>
 
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div
-        v-if="isVisible"
-        id="pokemon-center-overlay"
-        class="center-overlay"
-      >
-        <div
-          class="center-card"
-          :class="{ 'with-confirm': isConfirming }"
-        >
-          <!-- Nurse Image (Blurred during confirmation) -->
-          <img
-            id="center-nurse-img"
-            src="@/assets/ui/banners/pokecenter_heal.webp"
-            class="nurse-img"
-            :class="{ 'is-blurred': isConfirming }"
-          >
-          
-          <!-- Healing Effect Layer -->
-          <Transition name="flash">
-            <div
-              v-if="showEffect"
-              id="healing-effect"
-              class="heal-flash"
-            />
-          </Transition>
+      <div v-if="isVisible" class="pokemon-center-overlay" @click.self="close">
+        <div class="center-card glass">
+          <div class="header">
+            <div class="icon-circle">🏥</div>
+            <h2>CENTRO POKÉMON</h2>
+            <p class="subtitle">Servicio de Salud para Entrenadores</p>
+          </div>
 
-          <!-- GBA Style Dialogue (For Confirmation) -->
-          <Transition name="slide-up">
-            <div
-              v-if="isConfirming"
-              class="gba-dialogue-container"
-            >
-              <div class="gba-dialogue-box">
-                <div class="gba-dialogue-content">
-                  <p class="gba-text">
-                    La curación tiene un costo de <span class="cost">₽{{ healCost.toLocaleString() }}</span>. ¿Continuar?
-                  </p>
-                  <div class="gba-actions">
-                    <button
-                      class="gba-btn confirm"
-                      @click="handleConfirm"
-                    >
-                      SÍ
-                    </button>
-                    <button
-                      class="gba-btn cancel"
-                      @click="handleCancel"
-                    >
-                      NO
-                    </button>
-                  </div>
-                </div>
+          <div class="status-section">
+            <div class="team-slots">
+              <div 
+                v-for="i in 6" 
+                :key="i" 
+                class="slot"
+                :class="{ 
+                  'active': i <= team.length, 
+                  'healing': isHealing && i <= healedCount,
+                  'empty': i > team.length
+                }"
+              >
+                <div class="ball-icon">🔴</div>
               </div>
             </div>
-          </Transition>
+            
+            <div v-if="isHealing" class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+              </div>
+              <p class="healing-text">RESTAURANDO EQUIPO...</p>
+            </div>
+            
+            <div v-else class="info-text">
+              <div v-if="cost > 0" class="cost-notice">
+                <p>COSTO DE SERVICIO</p>
+                <div class="price-tag">₽ {{ cost.toLocaleString() }}</div>
+                <small v-if="gameStore.state.playerClass === 'rocket'">Recargo: Team Rocket (2x)</small>
+              </div>
+              <p v-else class="free-msg">¡Hola! Restauraremos a tus Pokémon al instante.</p>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button 
+              class="btn-heal" 
+              :disabled="isHealing || team.length === 0 || (cost > 0 && gameStore.state.money < cost)"
+              @click="handleHeal"
+            >
+              {{ isHealing ? 'CURANDO...' : 'CURAR EQUIPO' }}
+            </button>
+            <button class="btn-cancel" :disabled="isHealing" @click="close">
+              VOLVER
+            </button>
+          </div>
         </div>
       </div>
     </Transition>
@@ -134,172 +134,216 @@ const handleCancel = () => {
 </template>
 
 <style scoped lang="scss">
-@use '@/styles/core/tools' as *;
-
-.center-overlay {
+.pokemon-center-overlay {
   position: fixed;
   inset: 0;
-  @include glass(rgba(0, 0, 0, 0.92), 15px);
-  z-index: 999999;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  z-index: 999999;
+  padding: 20px;
 }
 
 .center-card {
   width: 100%;
-  max-width: 600px;
-  position: relative;
+  max-width: 420px;
+  padding: 40px 30px;
+  border-radius: 24px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(20, 20, 25, 0.8);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+}
+
+.header {
+  margin-bottom: 30px;
+}
+
+.icon-circle {
+  font-size: 36px;
+  width: 70px;
+  height: 70px;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 50%;
   display: flex;
+  align-items: center;
   justify-content: center;
-  @include card-premium(24px);
+  margin: 0 auto 15px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+h2 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: #fff;
+  margin: 0;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 10px;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.team-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.slot {
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.2;
+}
+
+.slot.active {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.slot.healing {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+  transform: scale(1.08);
+}
+
+.ball-icon {
+  font-size: 20px;
+  filter: grayscale(1);
+}
+
+.slot.active .ball-icon {
+  filter: grayscale(0);
+}
+
+.slot.healing .ball-icon {
+  animation: pulse-ball 0.6s infinite alternate;
+}
+
+@keyframes pulse-ball {
+  from { transform: scale(1); filter: brightness(1); }
+  to { transform: scale(1.2); filter: brightness(1.4) drop-shadow(0 0 5px #ff4444); }
+}
+
+.progress-container {
+  margin-top: 20px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
   overflow: hidden;
-  box-shadow: 0 0 80px rgba(0, 0, 0, 0.9), 0 0 30px rgba(59, 139, 255, 0.1);
+  margin-bottom: 12px;
 }
 
-.nurse-img {
-  width: 100%;
-  height: auto;
-  image-rendering: pixelated;
-  object-fit: contain;
-  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
-  transition: all 0.5s ease;
-
-  &.is-blurred {
-    filter: blur(15px) #{"grayScale(100%)"};
-    opacity: 0.4;
-    transform: #{"Scale(1.05)"};
-  }
+.progress-fill {
+  height: 100%;
+  background: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+  transition: width 0.1s linear;
 }
 
-.heal-flash {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: radial-gradient(circle, rgba(107, 203, 119, 0.3) 0%, rgba(0, 0, 0, 0) 80%);
-  box-shadow: inset 0 0 100px rgba(107, 203, 119, 0.5);
-  pointer-events: none;
-  mix-blend-mode: screen;
+.healing-text {
+  color: #22c55e;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
 }
 
-.gba-dialogue-container {
-  position: absolute;
-  bottom: 0px;
-  left: 0;
-  right: 0;
-  padding: 12px;
-  z-index: 10;
-  display: flex;
-  justify-content: center;
+.free-msg {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
-.gba-dialogue-box {
-  width: 100%;
-  background: white;
-  border: 3px solid #111;
-  border-radius: 8px;
-  padding: 2px; // Inner border offset
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+.cost-notice {
+  background: rgba(239, 68, 68, 0.05);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.15);
   
-  // The iconic white inner line of GBA boxes
-  &::before {
-    content: '';
+  p {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: #ef4444;
+    margin-bottom: 8px;
+  }
+  
+  .price-tag {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    color: #fff;
+  }
+  
+  small {
     display: block;
-    position: absolute;
-    inset: 4px;
-    border: 2px solid white;
-    border-radius: 6px;
-    pointer-events: none;
+    margin-top: 6px;
+    color: rgba(239, 68, 68, 0.5);
+    font-size: 9px;
   }
 }
 
-.gba-dialogue-content {
-  padding: 16px 20px;
-  position: relative;
-  min-height: 80px;
+.actions {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
 }
 
-.gba-text {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 11px;
-  line-height: 1.8;
-  color: #333;
-  margin: 0;
-  text-transform: none;
-  
-  .cost {
-    color: #c53030; // Dark red for cost
-    font-weight: bold;
-  }
-}
-
-.gba-actions {
-  margin-top: 12px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 20px;
-}
-
-.gba-btn {
-  background: transparent;
+.btn-heal {
+  background: #ef4444;
+  color: #fff;
   border: none;
+  padding: 18px;
+  border-radius: 12px;
   font-family: 'Press Start 2P', monospace;
-  font-size: 12px;
-  color: #333;
+  font-size: 10px;
   cursor: pointer;
-  padding: 4px 8px;
-  position: relative;
-  transition: all 0.1s;
-
-  &::before {
-    content: '▶';
-    position: absolute;
-    left: -12px;
-    opacity: 0;
-    font-size: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+  
+  &:hover:not(:disabled) {
+    background: #dc2626;
+    transform: translateY(-2px);
   }
-
-  &:hover {
-    color: #000;
-    &::before { opacity: 1; }
-  }
-
-  &.confirm {
-    color: #2b6cb0; // Blueish for confirm
-    &:hover { color: #2c5282; }
+  
+  &:disabled {
+    background: #27272a;
+    color: #52525b;
+    box-shadow: none;
+    cursor: not-allowed;
   }
 }
 
-/* Transitions */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+.btn-cancel {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  cursor: pointer;
+  
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+  }
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.flash-enter-active {
-  animation: pulseHeal 0.6s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.slide-up-enter-active, .slide-up-leave-active {
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.slide-up-enter-from, .slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-@keyframes pulseHeal {
-  from { opacity: 0.1; transform: scale3d(0.95, 0.95, 1); }
-  to { opacity: 0.8; transform: scale3d(1.05, 1.05, 1); }
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

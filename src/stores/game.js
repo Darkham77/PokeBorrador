@@ -8,6 +8,7 @@ import { DBRouter } from '@/logic/db/dbRouter'
 import { loadBestSave } from '@/logic/auth/loadService'
 import { makePokemon } from '@/logic/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
 
 const INITIAL_STATE = {
   trainer: '',
@@ -130,9 +131,9 @@ export const useGameStore = defineStore('game', () => {
     })
 
     if (legacyState.trainer) state.trainer = legacyState.trainer
-    if (legacyState.trainerLevel !== undefined) state.level = legacyState.trainerLevel
-    if (legacyState.trainerExp !== undefined) state.exp = legacyState.trainerExp
-    if (legacyState.trainerExpNeeded !== undefined) state.expNeeded = legacyState.trainerExpNeeded
+    if (legacyState.trainerLevel !== undefined) state.trainerLevel = legacyState.trainerLevel
+    if (legacyState.trainerExp !== undefined) state.trainerExp = legacyState.trainerExp
+    if (legacyState.trainerExpNeeded !== undefined) state.trainerExpNeeded = legacyState.trainerExpNeeded
   }
 
   async function loadGame() {
@@ -213,6 +214,18 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  function registerPokedex(id, caught = false) {
+    if (!state.seenPokedex.includes(id)) state.seenPokedex.push(id)
+    if (caught && !state.pokedex.includes(id)) state.pokedex.push(id)
+  }
+
+  /**
+   * Schedules a save operation (deferred).
+   */
+  function scheduleSave() {
+    save(false) // For now, direct save without notification.
+  }
+
   async function chooseStarter(id) {
     const uiStore = useUIStore()
     const starter = makePokemon(id, 5)
@@ -220,8 +233,7 @@ export const useGameStore = defineStore('game', () => {
     state.team = [starter]
     
     // Registrar en Pokedex
-    if (!state.pokedex.includes(id)) state.pokedex.push(id)
-    if (!state.seenPokedex.includes(id)) state.seenPokedex.push(id)
+    registerPokedex(id, true)
     
     state.starterChosen = true
     uiStore.activeTab = 'team'
@@ -231,6 +243,45 @@ export const useGameStore = defineStore('game', () => {
     
     // Guardado inmediato
     await save(false)
+  }
+
+  function getTrainerRank() {
+    const idx = Math.min(state.trainerLevel - 1, TRAINER_RANKS.length - 1)
+    return TRAINER_RANKS[idx]
+  }
+
+  function addTrainerExp(amount) {
+    const uiStore = useUIStore()
+    // TODO: getEventBonus logic if available
+    const evBonus = 1 
+    if (evBonus > 1) amount = Math.round(amount * evBonus)
+    
+    state.trainerExp += amount
+    const MAX_LEVEL = 30
+    
+    let currentRank = getTrainerRank()
+    let leveledUp = false
+
+    while (state.trainerExp >= currentRank.expNeeded && state.trainerLevel < MAX_LEVEL) {
+      state.trainerExp -= currentRank.expNeeded
+      state.trainerLevel++
+      leveledUp = true
+      
+      currentRank = getTrainerRank()
+      uiStore.notify(`¡Subiste al rango ${currentRank.title}! Nivel ${state.trainerLevel}`, '⭐')
+      
+      const unlocks = MARKET_UNLOCKS[state.trainerLevel]
+      if (unlocks) {
+        setTimeout(() => uiStore.notify(`¡Nuevos items en el Poké Market!`, '🛒'), 1500)
+      }
+    }
+
+    if (leveledUp) {
+      // Logic to check class unlocks could go here
+      if (window.updateHud) window.updateHud()
+    }
+    
+    scheduleSave()
   }
 
   function hatchEggs() {
@@ -296,11 +347,15 @@ export const useGameStore = defineStore('game', () => {
     updateState,
     resetToInitial,
     syncFromLegacy,
+    registerPokedex,
+    scheduleSave,
     hatchEggs,
     claimAsset,
     fetchClaimQueue,
     loadGame,
     save,
-    chooseStarter
+    chooseStarter,
+    addTrainerExp,
+    getTrainerRank
   }
 })

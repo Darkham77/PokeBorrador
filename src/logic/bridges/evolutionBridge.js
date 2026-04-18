@@ -12,12 +12,8 @@ import {
   evolvePokemonData,
   getEvolvedForm
 } from '@/logic/evolutionLogic'
-import {
-  showEvolutionScene,
-  showStonePicker,
-  useStoneOnPokemon
-} from '@/logic/evolutionUI'
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
+import { useUIStore } from '@/stores/ui'
+import { useInventoryStore } from '@/stores/inventoryStore'
 
 export function initEvolutionBridge() {
   // Constant Bindings
@@ -39,10 +35,32 @@ export function initEvolutionBridge() {
   window.evolvePokemonData = evolvePokemonData
   window.getEvolvedForm = getEvolvedForm
 
-  // UI Bindings
-  window.showEvolutionScene = showEvolutionScene
-  window.showStonePicker = showStonePicker
-  window.useStoneOnPokemon = useStoneOnPokemon
+  // UI Bindings (Pinia redirection)
+  window.showEvolutionScene = (pokemon, targetId, onComplete) => {
+    const uiStore = useUIStore()
+    uiStore.startEvolution(pokemon, targetId, onComplete)
+  }
+
+  window.showStonePicker = (teamIndex) => {
+    // Legacy call passed teamIndex. We need to get the pokemon and then open the Vue modal.
+    if (typeof window.state === 'undefined') return
+    const p = window.state.team[teamIndex]
+    if (!p) return
+
+    const uiStore = useUIStore()
+    uiStore.selectedPokemon = p
+    
+    const inventoryStore = useInventoryStore()
+    // Triggering the stone picker by setting an active item (any stone, or the component logic handles it)
+    inventoryStore.activeItemToUse = 'Piedra' // Generic trigger for StonePicker.vue
+    inventoryStore.isItemTargetModalOpen = true
+  }
+
+  window.useStoneOnPokemon = (stoneName, teamIndex) => {
+    // This is handled by StonePicker.vue now, but for legacy compatibility:
+    const inventoryStore = useInventoryStore()
+    inventoryStore.useItem(stoneName, 'team', teamIndex)
+  }
   
-  console.log('[EvolutionBridge] Evolution and Factory bindings initialized.')
+  console.log('[EvolutionBridge] Evolution and Factory bindings initialized (Modern Redirects).')
 }

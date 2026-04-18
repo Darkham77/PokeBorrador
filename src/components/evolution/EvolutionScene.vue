@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useEvolutionStore } from '@/stores/evolution';
 import { getSpriteUrl } from '@/logic/pokemonUtils';
-import { POKEMON_DB } from '@/data/pokemonDB';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 const evolutionStore = useEvolutionStore();
 const step = ref('intro'); // intro | flashing | transformed | final
@@ -17,8 +17,10 @@ const flashesDone = ref(0);
 onMounted(() => {
   if (!evolutionStore.sourcePokemon || !evolutionStore.targetId) return;
 
+  const toData = pokemonDataProvider.getPokemonData(evolutionStore.targetId);
   oldName.value = evolutionStore.sourcePokemon.name;
-  newName.value = POKEMON_DB[evolutionStore.targetId]?.name || evolutionStore.targetId;
+  newName.value = toData?.name || evolutionStore.targetId;
+  
   fromSprite.value = getSpriteUrl(evolutionStore.sourcePokemon.id, evolutionStore.sourcePokemon.isShiny);
   toSprite.value = getSpriteUrl(evolutionStore.targetId, evolutionStore.sourcePokemon.isShiny);
 
