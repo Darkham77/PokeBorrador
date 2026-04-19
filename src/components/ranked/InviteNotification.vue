@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
-import { usePvPStore } from '@/stores/pvpStore';
+import { usePvPStore } from '@/stores/pvp';
 import { useUIStore } from '@/stores/ui';
 
 const props = defineProps({
@@ -12,7 +12,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 const pvpStore = usePvPStore();
-const uiStore = useUIStore();
+const _uiStore = useUIStore();
 
 let timer = null;
 

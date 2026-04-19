@@ -34,7 +34,7 @@ function handleClick() {
 ```
 
 Vue warns:
-```
+```text
 [Vue warn]: Component emitted event "select" but it is neither declared
 in the emits option nor as an "onSelect" prop.
 ```

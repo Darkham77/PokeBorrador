@@ -1,9 +1,7 @@
 import { 
   EGG_GROUPS, 
-  BABY_MAP, 
-  EGG_MOVES_DB 
+  BABY_MAP 
 } from '@/data/breedingData';
-import { POKEMON_DB } from '@/data/pokemonDB';
 
 /**
  * Normalizes species ID by removing gender suffixes.

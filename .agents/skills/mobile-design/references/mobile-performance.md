@@ -9,7 +9,7 @@
 
 ### Why Mobile Performance is Different
 
-```
+```text
 DESKTOP:                          MOBILE:
 ├── Unlimited power               ├── Battery matters
 ├── Abundant RAM                  ├── RAM is shared, limited
@@ -20,7 +20,7 @@ DESKTOP:                          MOBILE:
 
 ### Performance Budget Concept
 
-```
+```text
 Every frame must complete in:
 ├── 60fps → 16.67ms per frame
 ├── 120fps (ProMotion) → 8.33ms per frame
@@ -465,7 +465,7 @@ class _MyWidgetState extends State<MyWidget> {
 
 ### The 60fps Imperative
 
-```
+```text
 Human eye detects:
 ├── < 24 fps → "Slideshow" (broken)
 ├── 24-30 fps → "Choppy" (uncomfortable)
@@ -479,7 +479,7 @@ NEVER ship < 60fps animations.
 
 ### GPU vs CPU Animation
 
-```
+```text
 GPU-ACCELERATED (FAST):          CPU-BOUND (SLOW):
 ├── transform: translate          ├── width, height
 ├── transform: scale              ├── top, left, right, bottom
@@ -546,7 +546,7 @@ SpringSimulation(
 
 ### Image Memory
 
-```
+```text
 Image memory = width × height × 4 bytes (RGBA)
 
 1080p image = 1920 × 1080 × 4 = 8.3 MB
@@ -559,7 +559,7 @@ RULE: Always resize images to display size (or 2-3x for retina).
 
 ### Memory Profiling
 
-```
+```text
 React Native:
 ├── Flipper → Memory tab
 ├── Xcode Instruments (iOS)
@@ -588,7 +588,7 @@ Flutter:
 
 ### OLED Battery Saving
 
-```
+```text
 OLED screens: Black pixels = OFF = 0 power
 
 Dark mode savings:
@@ -602,7 +602,7 @@ RULE: On dark mode, use true black for backgrounds.
 
 ### Background Task Guidelines
 
-```
+```text
 iOS:
 ├── Background refresh: Limited, system-scheduled
 ├── Push notifications: Use for important updates
@@ -622,7 +622,7 @@ Android:
 
 ### Offline-First Architecture
 
-```
+```text
                     ┌──────────────┐
                     │     UI       │
                     └──────┬───────┘
@@ -644,7 +644,7 @@ Benefits:
 
 ### Request Optimization
 
-```
+```text
 BATCH: Combine multiple requests into one
 ├── 10 small requests → 1 batch request
 ├── Reduces connection overhead
@@ -678,7 +678,7 @@ COMPRESS: Reduce payload size
 
 ### Test on Real Devices
 
-```
+```text
 ⚠️ NEVER trust only:
 ├── Simulator/emulator (faster than real)
 ├── Dev mode (slower than release)
@@ -755,7 +755,7 @@ void dispose() {
 
 ### Animation Targets
 
-```
+```text
 Transform/Opacity only ← What to animate
 16.67ms per frame ← Time budget
 60fps minimum ← Target

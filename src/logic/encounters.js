@@ -5,6 +5,7 @@ import { getDayCycle } from '@/logic/timeUtils';
 import { isDisputePhase } from '@/logic/war/warEngine';
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
+import { useEventStore } from '@/stores/events';
 
 /**
  * Gets the valid pool of Pokémon for a location and time cycle.
@@ -68,7 +69,8 @@ export async function generateEncounter(locId, state, options = {}) {
   if (!loc) return null;
 
   const cycle = getDayCycle();
-  const activeEvents = options.activeEvents || (typeof window !== 'undefined' ? window._activeEvents : []) || [];
+  const eventStore = useEventStore();
+  const activeEvents = options.activeEvents || (eventStore.activeEvents || []) || [];
   const maps = pokemonDataProvider.getMaps();
   const allMapIds = maps.map(m => m.id);
   
@@ -93,7 +95,7 @@ export async function generateEncounter(locId, state, options = {}) {
     if (!capturedToday && Math.random() < GUARDIAN_CHANCE) {
       return { 
         type: 'guardian', 
-        pokemon: makePokemon(guardian.id, guardian.lv),
+        pokemon: makePokemon(guardian.id, guardian.lv, { shinyMultiplier: options.shinyMultiplier }),
         pts: guardian.pts
       };
     }
@@ -114,7 +116,7 @@ export async function generateEncounter(locId, state, options = {}) {
       const selectedId = selectFromPool(pool, rates);
       const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
       if (!firstPokemon || level >= firstPokemon.level) {
-        return { type: 'wild', pokemon: makePokemon(selectedId, level) };
+        return { type: 'wild', pokemon: makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) };
       }
     }
     return { type: 'trainer' }; // Fallback to trainer
@@ -138,7 +140,7 @@ export async function generateEncounter(locId, state, options = {}) {
     
     return { 
       type: 'fishing', 
-      pokemon: makePokemon(selectedId, level),
+      pokemon: makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }),
       rarity 
     };
   }
@@ -163,7 +165,7 @@ export async function generateEncounter(locId, state, options = {}) {
   const selectedId = selectFromPool(pool, rates);
   const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
   
-  const pokemon = makePokemon(selectedId, level);
+  const pokemon = makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier });
 
   // 7. Apply War Dominance Bonuses
   return { 

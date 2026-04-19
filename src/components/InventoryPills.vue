@@ -108,32 +108,6 @@ const dayCycle = computed(() => {
       </div>
     </div>
 
-    <!-- BOTONES DE ACCIÓN (Unificados con etiquetas) -->
-    <div class="action-buttons">
-      <button
-        id="hud-profile-btn"
-        class="hud-sq-btn"
-        @click="uiStore.toggleProfile()"
-      >
-        <span>👤</span><span>Perfil</span>
-      </button>
-
-      <button
-        id="hud-settings-btn"
-        class="hud-sq-btn"
-        @click="uiStore.toggleSettings()"
-      >
-        <span>⚙️</span><span>Ajustes</span>
-      </button>
-
-      <button
-        id="hud-library-btn"
-        class="hud-sq-btn"
-        @click="uiStore.toggleLibrary()"
-      >
-        <span>📖</span><span>Libro</span>
-      </button>
-    </div>
   </div>
 </template>
 

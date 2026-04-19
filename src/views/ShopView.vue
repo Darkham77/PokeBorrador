@@ -1,8 +1,8 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-import { useShopStore } from '@/stores/shopStore'
+import { useShopStore } from '@/stores/shop'
 import BlackMarket from '@/components/shop/BlackMarket.vue'
 
 const gameStore = useGameStore()
@@ -332,7 +332,7 @@ onMounted(() => {
   transition: all 0.2s;
 
   &:hover:not(.locked) { border-color: #ffd70088; transform: translateY(-3px); }
-  &.locked { opacity: 0.3; filter: grayScale(1.0); }
+  &.locked { opacity: 0.3; filter: Grayscale(1.0); }
 
   .tier-tag {
     position: absolute;
@@ -428,7 +428,7 @@ onMounted(() => {
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover:not(:disabled) { transform: #{'Scale(1.03)'}; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
+    &:hover:not(:disabled) { transform: Scale(1.03); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
     &:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
   }
 }

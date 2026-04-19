@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game'
-import { makePokemon } from '@/logic/pokemonFactory'
-import { calculateDamage, getTypeEffectiveness, calculateCatchRate, getEffectiveSpeed } from '../logic/battle/battleEngine'
+import { calculateDamage, calculateCatchRate, getEffectiveSpeed } from '../logic/battle/battleEngine'
 import { useItemOnPokemon } from '../logic/providers/itemProvider'
 import { dispatchMoveEffect } from '../logic/battle/actions/actionRegistry'
 import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from '../logic/battle/ai/battleAI'
@@ -10,7 +9,6 @@ import { tickStatus, tickLeechSeed } from '../logic/battle/battleStatus'
 import { phaserBridge } from '@/logic/phaserBridge'
 import { useWarStore } from './war'
 import { useEventStore } from './events'
-import { GuardianService } from '@/logic/providers/GuardianService'
 import { usePlayerClassStore } from './playerClass'
 import { useUIStore } from './ui'
 import { useAudioStore } from './audio'
@@ -48,7 +46,7 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
-  const startBattle = async (enemyPoke, options = {}) => {
+  const _startBattle = async (enemyPoke, options = {}) => {
     const { 
       isGym = false, 
       gymId = null, 
@@ -340,7 +338,7 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
-  const canAttack = (pokemon, role) => {
+  const canAttack = (pokemon, _role) => {
     if (pokemon.flinched) {
       addLog(`¡${pokemon.name} retrocedió!`, 'log-info')
       pokemon.flinched = false
@@ -411,7 +409,8 @@ export const useBattleStore = defineStore('battle', () => {
 
     if (itemName.toLowerCase().includes('ball')) {
       addLog(`¡Has lanzado una ${itemName}!`, 'log-info')
-      const caught = calculateCatchRate(itemName, e, activeBattle.value)
+      const eventCatchMult = eventStore.globalMultipliers?.catch || 1
+      const caught = calculateCatchRate(e, itemName, eventCatchMult)
       
       // Simulate ball animation delay
       await new Promise(r => setTimeout(r, 1500))
@@ -420,8 +419,12 @@ export const useBattleStore = defineStore('battle', () => {
         audio.caught()
         addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch')
         consumeItem(itemName)
-        // Add to box/team logic would go here, for now end battle
-        await endBattle(true, false, true) // isCapture = true
+        
+        // Use centralized addPokemon logic
+        activeBattle.value.isCapture = true
+        gs.addPokemon(e, { notify: true })
+        
+        await endBattle(true, false) 
         isProcessing.value = false
         return
       } else {
@@ -531,7 +534,10 @@ export const useBattleStore = defineStore('battle', () => {
       if (participants.value.has(p.uid) || p.heldItem === 'Compartir EXP') {
         const share = (p.uid === activeBattle.value.player.uid) ? 1 : 0.5
         const classMult = classStore.getModifier('expMult', { isTrainer: activeBattle.value.isTrainer })
-        const gained = Math.floor(baseExp * share * classMult * warMods.expMult)
+        const eventExpBonus = (eventStore.globalMultipliers?.exp || 1) - 1
+        const totalExpMult = warMods.expMult + eventExpBonus // Additive stacking
+        
+        const gained = Math.floor(baseExp * share * classMult * totalExpMult)
         p.exp += gained
         addLog(`${p.name} ganó ${gained} EXP.`, 'log-player')
         
@@ -547,7 +553,10 @@ export const useBattleStore = defineStore('battle', () => {
     })
 
     const baseMoney = e.level * 10 * classStore.getModifier('bcMult', { isGym: activeBattle.value.isGym })
-    const moneyGained = Math.floor(baseMoney * warMods.moneyMult)
+    const eventMoneyBonus = (eventStore.globalMultipliers?.money || 1) - 1
+    const totalMoneyMult = warMods.moneyMult + eventMoneyBonus // Additive stacking
+    
+    const moneyGained = Math.floor(baseMoney * totalMoneyMult)
     gs.state.money += moneyGained
     if (moneyGained > 0) audio.money()
     addLog(`¡Ganaste ₽${moneyGained}!`, 'log-info')
@@ -558,7 +567,7 @@ export const useBattleStore = defineStore('battle', () => {
     battleEndCallback.value = callback
   }
 
-  const executeSwitch = async (teamIndex, isForced = false) => {
+  const _executeSwitch = async (teamIndex, isForced = false) => {
     if (isProcessing.value && !isForced) return
     isProcessing.value = true
 

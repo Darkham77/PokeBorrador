@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useGymsStore } from '@/stores/gyms'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   gym: { type: Object, required: true },
@@ -22,6 +23,10 @@ const typeIcon = computed(() => {
     poison: '☠️', psychic: '🔮', fire: '🔥', ground: '🌍'
   }
   return icons[props.gym.type] || '🏆'
+})
+
+const leaderSpriteUrl = computed(() => {
+  return getAssetUrl(ASSET_TYPES.TRAINER, props.gym.leader.toLowerCase())
 })
 </script>
 
@@ -58,7 +63,7 @@ const typeIcon = computed(() => {
         </div>
         <div class="leader-sprite-box">
           <img
-            :src="gym.sprite"
+            :src="leaderSpriteUrl"
             :alt="gym.name"
             class="pixel-sprite"
           >
@@ -297,6 +302,6 @@ const typeIcon = computed(() => {
   cursor: pointer;
   transition: all 0.2s;
 
-  &:hover { transform: string.unquote("scale(#{1.05})"); }
+  &:hover { transform: string.unquote("Scale(1.05)"); }
 }
 </style>

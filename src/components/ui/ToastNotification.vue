@@ -75,7 +75,7 @@ const uiStore = useUIStore()
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(30px) scale(0.9);
+  transform: translateX(30px) Scale(0.9);
 }
 
 /* Responsive */

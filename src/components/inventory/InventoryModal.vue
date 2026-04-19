@@ -1,16 +1,16 @@
 <script setup>
-import { ref, computed, reactive, watch } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventoryStore'
+import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
 import { useEvolutionStore } from '@/stores/evolution'
 import { SHOP_ITEMS } from '@/data/items'
-import { getSpriteUrl } from '@/data/spriteMapping'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const gameStore = useGameStore()
 const inventoryStore = useInventoryStore()
 const uiStore = useUIStore()
-const evolutionStore = useEvolutionStore()
+const _evolutionStore = useEvolutionStore()
 
 const isOpen = computed(() => uiStore.isInventoryOpen)
 const bagCategory = computed(() => inventoryStore.bagCategory)
@@ -130,7 +130,7 @@ const totalItems = computed(() => {
   return Object.values(gameStore.state.inventory || {}).reduce((s, v) => s + v, 0)
 })
 
-const getCategoryIcon = (catId) => {
+const _getCategoryIcon = (catId) => {
   return categories.find(c => c.id === catId)?.icon || '📦'
 }
 </script>
@@ -213,7 +213,7 @@ const getCategoryIcon = (catId) => {
               >
                 <div class="item-icon-wrap">
                   <img
-                    :src="item.sprite"
+                    :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
                     :alt="item.name"
                     class="item-sprite"
                     onerror="this.style.display='none'"
@@ -311,7 +311,7 @@ const getCategoryIcon = (catId) => {
             <header class="target-header">
               <div class="item-preview">
                 <img
-                  :src="targetingItem.sprite"
+                  :src="getAssetUrl(ASSET_TYPES.ITEM, targetingItem.sprite)"
                   class="mini-sprite"
                 >
                 <div>
@@ -344,7 +344,7 @@ const getCategoryIcon = (catId) => {
               >
                 <div class="poke-sprite-wrap">
                   <img
-                    :src="getSpriteUrl(poke.id, poke.isShiny)"
+                    :src="getAssetUrl(ASSET_TYPES.POKEMON, poke.id, { isShiny: poke.isShiny })"
                     class="poke-sprite"
                   >
                 </div>
@@ -775,8 +775,8 @@ const getCategoryIcon = (catId) => {
 .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
 @keyframes popIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: Scale(0.9); }
+  to { opacity: 1; transform: Scale(1); }
 }
 .animate-pop { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 

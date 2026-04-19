@@ -4,7 +4,7 @@
 
 ## OpenAPI/Swagger Essentials
 
-```
+```text
 Include:
 ├── All endpoints with examples
 ├── Request/response schemas
@@ -15,7 +15,7 @@ Include:
 
 ## Good Documentation Has
 
-```
+```text
 Essentials:
 ├── Quick start / Getting started
 ├── Authentication guide

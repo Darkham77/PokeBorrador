@@ -1,11 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
-import { useGTSStore } from '@/stores/gtsStore'
+import { useGTSStore } from '@/stores/gts'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
-const auth = useAuthStore()
+const _auth = useAuthStore()
 const game = useGameStore()
 const gtsStore = useGTSStore()
 
@@ -16,7 +17,7 @@ const price = ref(1000)
 const box = computed(() => game.state.box)
 const inventory = computed(() => {
   return Object.entries(game.state.inventory)
-    .filter(([name, qty]) => qty > 0)
+    .filter(([_name, qty]) => qty > 0)
     .map(([name, qty]) => ({ name, qty }))
 })
 
@@ -78,7 +79,7 @@ const net = computed(() => price.value - fee.value)
               :style="{ background: getPokemonTier(p).bg }"
             />
             <img
-              :src="`/assets/sprites/pokemon/${p.id}.webp`"
+              :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id)"
               class="p-sprite pixelated"
             >
             <div class="p-info">

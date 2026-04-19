@@ -111,29 +111,35 @@ const setSortMode = (val) => emit('update:sortMode', val)
         <div class="group-label">
           Tipo
         </div>
-          <div class="button-row type-row">
-            <button
-              :class="['box-filter-btn', { active: filters.type === 'all' }]"
-              @click="emit('update:filters', { ...filters, type: 'all' })"
-            >
-              Todos
-            </button>
-            <button
-              v-for="type in ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel']"
-              :key="type"
-              :class="['box-filter-btn', 'type-btn', type, { active: filters.type === type }]"
-              @click="emit('update:filters', { ...filters, type: type })"
-            >
-              {{ type }}
-            </button>
-          </div>
+        <div class="button-row type-row">
+          <button
+            :class="['box-filter-btn', { active: filters.type === 'all' }]"
+            @click="emit('update:filters', { ...filters, type: 'all' })"
+          >
+            Todos
+          </button>
+          <button
+            v-for="type in ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel']"
+            :key="type"
+            :class="['box-filter-btn', 'type-btn', type, { active: filters.type === type }]"
+            @click="emit('update:filters', { ...filters, type: type })"
+          >
+            {{ type }}
+          </button>
+        </div>
       </div>
 
       <!-- Detalles de IVs -->
       <div class="filter-group">
-        <div class="group-label">IVs Individuales (Mínimos)</div>
+        <div class="group-label">
+          IVs Individuales (Mínimos)
+        </div>
         <div class="iv-sliders-grid">
-          <div v-for="stat in ['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE']" :key="stat" class="iv-slider-box">
+          <div
+            v-for="stat in ['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE']"
+            :key="stat"
+            class="iv-slider-box"
+          >
             <span class="iv-label">{{ stat }}</span>
             <input
               :value="filters['iv' + stat]"

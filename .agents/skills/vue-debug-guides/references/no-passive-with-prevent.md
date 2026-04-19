@@ -134,7 +134,7 @@ element.addEventListener('scroll', handler, { passive: true })
 
 When you combine `.passive` and `.prevent`, the browser console shows:
 
-```
+```text
 [Intervention] Unable to preventDefault inside passive event listener
 due to target being treated as passive.
 ```

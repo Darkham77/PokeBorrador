@@ -6,7 +6,7 @@ import { useGameStore } from '@/stores/game';
 import TrainerAvatar from '@/components/TrainerAvatar.vue';
 
 const chatStore = useChatStore();
-const authStore = useAuthStore();
+const _authStore = useAuthStore();
 const gameStore = useGameStore();
 
 const isOpen = ref(false);
@@ -343,7 +343,7 @@ onMounted(() => {
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover:not(:disabled) { background: #9d4edd; transform: string.unquote("scale(#{1.05})"); }
+    &:hover:not(:disabled) { background: #9d4edd; transform: string.unquote("Scale(1.05)"); }
     &:disabled { opacity: 0.3; }
   }
 
@@ -370,8 +370,8 @@ onMounted(() => {
 }
 
 @keyframes pop {
-  0% { transform: string.unquote("scale(#{0.9})"); opacity: 0; }
-  100% { transform: string.unquote("scale(#{1.0})"); opacity: 1; }
+  0% { transform: string.unquote("Scale(0.9)"); opacity: 0; }
+  100% { transform: string.unquote("Scale(1.0)"); opacity: 1; }
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }

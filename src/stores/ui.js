@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useEvolutionStore } from './evolution'
 
 export const useUIStore = defineStore('ui', () => {
@@ -14,10 +14,11 @@ export const useUIStore = defineStore('ui', () => {
   const isHatchModalOpen = ref(false)
   const hatchedPokemon = ref(null)
   const isShopOpen = ref(false)
+  const isCosmeticsModalOpen = ref(false)
   const isInventoryOpen = ref(false)
   const isPokedexOpen = ref(false)
   const isBoxMenuOpen = ref(false)
-  const selectedBoxIndex = ref(-1)
+  const _selectedBoxIndex = ref(-1)
   
   // Notifications
   const notifications = ref([])
@@ -28,9 +29,9 @@ export const useUIStore = defineStore('ui', () => {
   const isRepShopOpen = ref(false)
 
   // Modales de Combate (Full Vue)
-  const isBattleInventoryOpen = ref(false)
-  const isBattleSwitchOpen = ref(false)
-  const isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
+  const _isBattleInventoryOpen = ref(false)
+  const _isBattleSwitchOpen = ref(false)
+  const _isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
   const isPokemonCenterOpen = ref(false)
   
   // Relearner & Evolution
@@ -53,6 +54,9 @@ export const useUIStore = defineStore('ui', () => {
 
   const isAbilityPillOpen = ref(false)
   const activePokemonForAbility = ref(null)
+
+  const isFossilRevivalOpen = ref(false)
+  const activeFossil = ref(null) // { pokemonId, itemName }
   
   // Confirmation Dialog
   const confirmDialog = ref({
@@ -140,6 +144,11 @@ export const useUIStore = defineStore('ui', () => {
     }, 4000)
   }
 
+  const isLoading = ref(false)
+  function setLoading(val) {
+    isLoading.value = val
+  }
+
   function toggleTrade() { isTradeOpen.value = !isTradeOpen.value }
 
 
@@ -203,6 +212,11 @@ export const useUIStore = defineStore('ui', () => {
     checkLearnQueue()
   }
 
+  const isFishingGameOpen = ref(false)
+  const fishingPokemon = ref(null)
+  const fishingRarity = ref(0)
+  const fishingCallbacks = reactive({ onWin: null, onFail: null })
+
   return {
     isProfileOpen,
     isSettingsOpen,
@@ -234,6 +248,12 @@ export const useUIStore = defineStore('ui', () => {
     updateProfile,
     notify,
     notifications,
+    isLoading,
+    setLoading,
+    isFishingGameOpen,
+    fishingPokemon,
+    fishingRarity,
+    fishingCallbacks,
     toggleProfile,
     toggleSettings,
     toggleHistory,
@@ -247,6 +267,7 @@ export const useUIStore = defineStore('ui', () => {
       isTradeOpen.value = false
       isSocialOpen.value = false
       isLibraryOpen.value = false
+      isCosmeticsModalOpen.value = false
       isHistoryOpen.value = false
       isSettingsOpen.value = false
       isProfileOpen.value = false
@@ -280,8 +301,11 @@ export const useUIStore = defineStore('ui', () => {
     activePokemonForPPUp,
     isAbilityPillOpen,
     activePokemonForAbility,
+    isFossilRevivalOpen,
+    activeFossil,
 
     isInventoryOpen,
+    isCosmeticsModalOpen,
     isPokedexOpen,
     isPvPBattleOpen: ref(false),
     isRankedMenuOpen: ref(false),
@@ -289,6 +313,7 @@ export const useUIStore = defineStore('ui', () => {
 
     // Confirmation
     confirmDialog,
+    promptDialog,
     openConfirm: (options) => {
       confirmDialog.value = {
         open: true,

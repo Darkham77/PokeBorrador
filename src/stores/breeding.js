@@ -11,14 +11,16 @@ import {
   calculateShinyChance,
 } from '@/logic/breeding/breedingEngine';
 import { generateMission, validateMissionPokemon } from '@/logic/breeding/missionEngine';
-import { EGG_SPAWN_INTERVAL_MS, BREEDING_CONSTANTS } from '@/logic/breeding/breedingData';
+import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData';
 import { POKEMON_DB } from '@/data/pokemonDB';
 import { usePlayerClassStore } from './playerClass';
+import { useEventStore } from './events';
 
 export const useBreedingStore = defineStore('breeding', () => {
   const gameStore = useGameStore();
   const uiStore = useUIStore();
   const classStore = usePlayerClassStore();
+  const eventStore = useEventStore();
 
   // --- STATE ---
   const slots = ref([]); // [{ pokemon, slot_index, deposited_at }]
@@ -100,7 +102,7 @@ export const useBreedingStore = defineStore('breeding', () => {
    * Genera un huevo basado en los padres actuales.
    * Llama a breedingEngine para herencia compleja.
    */
-  async function checkAndGenerateEgg() {
+  async function _checkAndGenerateEgg() {
     if (!isBreeding.value || compatibility.value.level === 0) return;
     
     const now = Date.now();
@@ -137,7 +139,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       nature: inheritNature(pA, pB, itemA, itemB) || 'Serio', // Naturaleza aleatoria será el fallback real
       movesAtBirth: inheritMoves(pA, pB, eggSpecies),
       abilityIndex: inheritAbility(pA, pB),
-      isShiny: Math.random() < calculateShinyChance(pA, pB),
+      isShiny: Math.random() < calculateShinyChance(pA, pB, 1/4096, eventStore.globalMultipliers?.shiny || 1),
       
       cost: 5000 // Costo base por recoger
     };
@@ -270,18 +272,14 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
 
     // Remove from team or box
-    const teamIdx = gameStore.state.team.findIndex(p => p.uid === pokemonUid);
-    if (teamIdx !== -1) {
-      if (gameStore.state.team.length <= 1) {
-        uiStore.notify('No puedes entregar tu único Pokémon.', '⚠️');
-        return;
-      }
-      gameStore.state.team.splice(teamIdx,  teamIdx); // Wait, splice logic? Fixed below
-      // Fixing the splice:
-      gameStore.state.team.splice(teamIdx, 1);
-    } else {
-      const boxIdx = gameStore.state.box.findIndex(p => p.uid === pokemonUid);
-      if (boxIdx !== -1) gameStore.state.box.splice(boxIdx, 1);
+    if (gameStore.state.team.length <= 1 && gameStore.state.team.some(p => p.uid === pokemonUid)) {
+      uiStore.notify('No puedes entregar tu único Pokémon.', '⚠️');
+      return;
+    }
+
+    if (!gameStore.removePokemon(pokemonUid)) {
+      uiStore.notify('Error al procesar la entrega.', '❌');
+      return;
     }
 
     mission.completed = true;

@@ -1,0 +1,115 @@
+/** @vitest-environment jsdom */
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { setActivePinia, createPinia } from 'pinia'
+import { useGTSStore } from '@/stores/gts'
+import { useGameStore } from '@/stores/game'
+import { useAuthStore } from '@/stores/auth'
+import { useUIStore } from '@/stores/ui'
+
+describe('GTS Store', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    
+    const gs = useGameStore()
+    gs.updateState({
+      money: 10000,
+      inventory: {},
+      box: [],
+      claimQueue: []
+    })
+    
+    gs.db = {
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue({ data: [], error: null })
+            }),
+            neq: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue({ data: [], error: null })
+            }),
+            single: vi.fn().mockResolvedValue({ data: { save_data: {} }, error: null })
+          })
+        }),
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: null })
+        }),
+        upsert: vi.fn().mockResolvedValue({ error: null }),
+        insert: vi.fn().mockResolvedValue({ error: null })
+      }),
+      rpc: vi.fn(),
+      channel: vi.fn().mockReturnValue({
+        on: vi.fn().mockReturnThis(),
+        subscribe: vi.fn().mockReturnThis(),
+        unsubscribe: vi.fn()
+      })
+    }
+    gs.save = vi.fn().mockResolvedValue({ success: true })
+    
+    const ui = useUIStore()
+    ui.notify = vi.fn()
+    ui.setLoading = vi.fn()
+    
+    const auth = useAuthStore()
+    auth.user = { id: 'test_user' }
+    auth.sessionMode = 'online'
+  })
+
+  it('should fetch listings correctly', async () => {
+    const gts = useGTSStore()
+    const gs = useGameStore()
+    
+    gs.db.from().select().eq().order().limit.mockResolvedValue({
+      data: [{ id: 1, price: 1000, listing_type: 'item', data: { name: 'Poción' } }],
+      error: null
+    })
+    
+    await gts.fetchListings()
+    expect(gts.listings.length).toBe(1)
+    expect(gts.listings[0].price).toBe(1000)
+  })
+
+  it('should prevent buying if money is insufficient', async () => {
+    const gts = useGTSStore()
+    const gs = useGameStore()
+    gs.state.money = 100
+    
+    const listing = { id: 1, price: 1000 }
+    const result = await gts.buyListing(listing)
+    
+    expect(result).toBe(false)
+  })
+
+  it('should call buy_listing_v2 RPC on buy', async () => {
+    const gts = useGTSStore()
+    const gs = useGameStore()
+    gs.state.money = 5000
+    
+    gs.db.rpc.mockResolvedValue({ data: { money: 4000 }, error: null })
+    
+    const updateSpy = vi.spyOn(gs, 'updateState')
+    
+    const listing = { id: 'listing_123', price: 1000 }
+    await gts.buyListing(listing)
+    
+    expect(gs.db.rpc).toHaveBeenCalledWith('buy_listing_v2', { p_listing_id: 'listing_123' })
+    expect(updateSpy).toHaveBeenCalledWith({ money: 4000 })
+    expect(gs.state.money).toBe(4000)
+  })
+
+  it('should filter listings based on mode', () => {
+    const gts = useGTSStore()
+    gts.listings = [
+      { listing_type: 'pokemon', data: { name: 'Pikachu', type: 'electric' }, price: 500 },
+      { listing_type: 'item', data: { name: 'Poción' }, price: 200 }
+    ]
+    
+    gts.filters.mode = 'pokemon'
+    expect(gts.filteredListings.length).toBe(1)
+    expect(gts.filteredListings[0].data.name).toBe('Pikachu')
+    
+    gts.filters.mode = 'item'
+    expect(gts.filteredListings.length).toBe(1)
+    expect(gts.filteredListings[0].data.name).toBe('Poción')
+  })
+})

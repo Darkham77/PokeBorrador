@@ -2,19 +2,26 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
+import { useLivePvPStore } from '@/stores/livePvP'
 import { useUIStore } from '@/stores/ui'
 import { getSpriteUrl } from '@/logic/sprites'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
+const livePvP = useLivePvPStore()
 const uiStore = useUIStore()
 const { getHpColor } = useBattleVisuals()
 
 const isOpen = computed(() => uiStore.isBattleSwitchOpen)
-const isForced = computed(() => uiStore.isBattleSwitchForced)
+const isForced = computed(() => uiStore.isBattleSwitchForced || livePvP.battleState.phase === 'faint_switch')
 const team = computed(() => gameStore.state.team || [])
-const activePoke = computed(() => battleStore.activeBattle?.player)
+const activePoke = computed(() => {
+  if (livePvP.battleState.active) {
+    return livePvP.battleState.myTeam[livePvP.battleState.myActiveIdx]
+  }
+  return battleStore.activeBattle?.player
+})
 
 const close = () => {
   if (isForced.value) return // Cant close if forced to switch
@@ -22,7 +29,11 @@ const close = () => {
 }
 
 const handleSwitch = async (index) => {
-  await battleStore.executeSwitch(index, isForced.value)
+  if (livePvP.battleState.active) {
+    livePvP._commitPick({ type: 'switch', switchIndex: index })
+  } else {
+    await battleStore.executeSwitch(index, isForced.value)
+  }
   uiStore.isBattleSwitchOpen = false
   uiStore.isBattleSwitchForced = false
 }

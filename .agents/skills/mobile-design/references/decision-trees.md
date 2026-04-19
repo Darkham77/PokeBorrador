@@ -9,7 +9,7 @@
 
 ### Master Decision Tree
 
-```
+```text
 WHAT ARE YOU BUILDING?
         │
         ├── Need OTA updates without app store review?
@@ -68,7 +68,7 @@ WHAT ARE YOU BUILDING?
 
 ### When to Choose Native
 
-```
+```text
 CHOOSE NATIVE WHEN:
 ├── Maximum performance required (games, 3D)
 ├── Deep OS integration needed
@@ -91,7 +91,7 @@ AVOID NATIVE WHEN:
 
 ### React Native State Decision
 
-```
+```text
 WHAT'S YOUR STATE COMPLEXITY?
         │
         ├── Simple app, few screens, minimal shared state
@@ -125,7 +125,7 @@ WHAT'S YOUR STATE COMPLEXITY?
 
 ### Flutter State Decision
 
-```
+```text
 WHAT'S YOUR STATE COMPLEXITY?
         │
         ├── Simple app, learning Flutter
@@ -161,7 +161,7 @@ WHAT'S YOUR STATE COMPLEXITY?
 
 ### State Management Anti-Patterns
 
-```
+```text
 ❌ DON'T:
 ├── Use global state for everything
 ├── Mix state management approaches
@@ -182,7 +182,7 @@ WHAT'S YOUR STATE COMPLEXITY?
 
 ## 3. Navigation Pattern Selection
 
-```
+```text
 HOW MANY TOP-LEVEL DESTINATIONS?
         │
         ├── 2 destinations
@@ -220,7 +220,7 @@ HOW MANY TOP-LEVEL DESTINATIONS?
 
 ## 4. Storage Strategy Selection
 
-```
+```text
 WHAT TYPE OF DATA?
         │
         ├── Sensitive (tokens, passwords, keys)
@@ -273,7 +273,7 @@ WHAT TYPE OF DATA?
 
 ## 5. Offline Strategy Selection
 
-```
+```text
 HOW CRITICAL IS OFFLINE?
         │
         ├── Nice to have (works when possible)
@@ -301,7 +301,7 @@ HOW CRITICAL IS OFFLINE?
 
 ### Offline Implementation Patterns
 
-```
+```text
 1. CACHE-FIRST (Simple)
    Request → Check cache → If stale, fetch → Update cache
    
@@ -320,7 +320,7 @@ HOW CRITICAL IS OFFLINE?
 
 ## 6. Authentication Pattern Selection
 
-```
+```text
 WHAT AUTH TYPE NEEDED?
         │
         ├── Simple email/password
@@ -353,7 +353,7 @@ WHAT AUTH TYPE NEEDED?
 
 ### Auth Token Storage
 
-```
+```text
 ❌ NEVER store tokens in:
 ├── AsyncStorage (plain text)
 ├── Redux/state (not persisted correctly)
@@ -373,7 +373,7 @@ WHAT AUTH TYPE NEEDED?
 
 ### E-Commerce App
 
-```
+```text
 RECOMMENDED STACK:
 ├── Framework: React Native + Expo (OTA for pricing)
 ├── Navigation: Tab bar (Home, Search, Cart, Account)
@@ -391,7 +391,7 @@ KEY DECISIONS:
 
 ### Social/Content App
 
-```
+```text
 RECOMMENDED STACK:
 ├── Framework: React Native or Flutter
 ├── Navigation: Tab bar (Feed, Search, Create, Notifications, Profile)
@@ -409,7 +409,7 @@ KEY DECISIONS:
 
 ### Productivity/SaaS App
 
-```
+```text
 RECOMMENDED STACK:
 ├── Framework: Flutter (consistent UI) or RN
 ├── Navigation: Drawer or Tab bar
@@ -442,7 +442,7 @@ KEY DECISIONS:
 
 ### Questions to Ask User
 
-```
+```text
 If project details are vague, ASK:
 
 1. "Will this need OTA updates without app store review?"
@@ -485,7 +485,7 @@ If project details are vague, ASK:
 
 ### Framework Quick Pick
 
-```
+```text
 OTA needed?           → React Native + Expo
 Identical UI?         → Flutter
 Maximum performance?  → Native
@@ -495,7 +495,7 @@ Quick prototype?     → Expo
 
 ### State Quick Pick
 
-```
+```text
 Simple app?          → Zustand / Provider
 Server-heavy?        → TanStack Query / Riverpod
 Enterprise?          → Redux / BLoC
@@ -504,7 +504,7 @@ Atomic state?        → Jotai
 
 ### Storage Quick Pick
 
-```
+```text
 Secrets?             → SecureStore / Keychain
 Settings?            → AsyncStorage / UserDefaults
 Structured data?     → SQLite

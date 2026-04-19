@@ -10,7 +10,7 @@
 
 ### This Process is Mandatory Before Every Mobile Project
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                    DEEP MOBILE THINKING                         │
 ├─────────────────────────────────────────────────────────────────┤
@@ -47,7 +47,7 @@
 The following patterns are "defaults" that AIs learned from training data.
 Before using any of these, **QUESTION them and CONSIDER ALTERNATIVES!**
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                 🚫 AI MOBILE SAFE HARBOR                        │
 │           (Default Patterns - Never Use Without Questioning)    │
@@ -88,7 +88,7 @@ Before using any of these, **QUESTION them and CONSIDER ALTERNATIVES!**
 
 Before designing any screen, perform this analysis:
 
-```
+```text
 SCREEN: [Screen Name]
 ├── PRIMARY ACTION: [What is the main action?]
 │   └── Is it in thumb zone? [Yes/No → Why?]
@@ -170,7 +170,7 @@ Ask these questions for every default pattern:
 
 ### Ask Yourself Before Every Solution
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                    ANTI-MEMORIZATION CHECKLIST                  │
 ├─────────────────────────────────────────────────────────────────┤
@@ -205,7 +205,7 @@ Ask these questions for every default pattern:
 
 ### Think Differently Based on Project Type
 
-```
+```text
 DETERMINE PROJECT TYPE:
         │
         ├── E-Commerce App
@@ -252,7 +252,7 @@ DETERMINE PROJECT TYPE:
 
 Before adding any gesture:
 
-```
+```text
 GESTURE: [Gesture Type]
 ├── DISCOVERABILITY:
 │   └── How will users discover this gesture?
@@ -305,7 +305,7 @@ GESTURE: [Gesture Type]
 
 ### Fill This at the Start of Every Mobile Project
 
-```
+```text
 📱 MOBILE DESIGN COMMITMENT
 
 Project: _______________
@@ -335,7 +335,7 @@ Platform: iOS / Android / Both
 
 ## 🚨 MANDATORY: Before Every Mobile Work
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PRE-WORK VALIDATION                          │
 ├─────────────────────────────────────────────────────────────────┤

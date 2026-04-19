@@ -1,8 +1,7 @@
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useChatStore } from '@/stores/chat';
 import { useAuthStore } from '@/stores/auth';
-import TrainerAvatar from '@/components/TrainerAvatar.vue';
 
 const props = defineProps({
   friendId: {
@@ -310,14 +309,14 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0% { transform: string.unquote("scale(#{1.0})"); opacity: 0.8; }
-  50% { transform: string.unquote("scale(#{1.3})"); opacity: 1; }
-  100% { transform: string.unquote("scale(#{1.0})"); opacity: 0.8; }
+  0% { transform: string.unquote("Scale(1.0)"); opacity: 0.8; }
+  50% { transform: string.unquote("Scale(1.3)"); opacity: 1; }
+  100% { transform: string.unquote("Scale(1.0)"); opacity: 0.8; }
 }
 
 @keyframes pop {
-  0% { transform: string.unquote("scale(#{0.8})"); opacity: 0; }
-  100% { transform: string.unquote("scale(#{1.0})"); opacity: 1; }
+  0% { transform: string.unquote("Scale(0.8)"); opacity: 0; }
+  100% { transform: string.unquote("Scale(1.0)"); opacity: 1; }
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 3px; }

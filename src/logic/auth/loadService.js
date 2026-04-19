@@ -11,7 +11,7 @@ import { validateAndSanitize } from './saveService';
  * @param {DBRouter} db - Database router instance.
  */
 export async function loadBestSave(user, db) {
-  if (!user) return null;
+  if (!user) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
   let cloudSaveRow = null;
   let finalSaveData = null;
@@ -35,25 +35,55 @@ export async function loadBestSave(user, db) {
 
   // 2. Fetch Local Save
   const localSaveKey = 'pokemon_local_save_' + user.id;
-  const localRaw = localStorage.getItem(localSaveKey);
+  let localRaw = localStorage.getItem(localSaveKey);
+  
+  // Legacy Fallback (v1 -> v2 migration)
+  if (!localRaw) {
+    localRaw = localStorage.getItem('pokevicio_save_v3_ash');
+    if (localRaw) {
+      console.log('[LOAD] Legacy save found for migration:', localRaw.substring(0, 50) + '...');
+    }
+  }
+
   const localData = localRaw ? JSON.parse(localRaw) : null;
+  
+  // Set as initial fallback if cloud failed or was skipped
+  if (localData && !finalSaveData) {
+    finalSaveData = localData;
+  }
+  
+  // Force starterChosen to true if they already have a team (legacy fix)
+  if (localData && localData.team && localData.team.length > 0) {
+    localData.starterChosen = true;
+  }
+
+  if (localData) console.log('[LOAD] Local save state:', { starterChosen: localData.starterChosen, teamSize: localData.team?.length });
   
   if (localData) {
     try {
-      const cloudTime = cloudSaveRow?.updated_at ? new Date(cloudSaveRow.updated_at).getTime() : 0;
-      const localTime = localData._last_updated || 0;
+      if (cloudSaveRow) {
+        const cloudData = cloudSaveRow.save_data;
+        
+        // Legacy fix for cloud saves
+        if (cloudData.team && cloudData.team.length > 0) {
+          cloudData.starterChosen = true;
+        }
+        
+        const cloudTime = cloudSaveRow.updated_at ? new Date(cloudSaveRow.updated_at).getTime() : 0;
+        const localTime = localData._last_updated || 0;
 
-      // Legacy Rule: If local is at least 3s newer, prioritize it.
-      if (localTime > cloudTime + 3000) {
-        console.log('[LOAD] Local save is newer. Prioritizing Local.');
-        finalSaveData = localData;
+        // Legacy Rule: If local is at least 3s newer, prioritize it.
+        if (localTime > cloudTime + 3000) {
+          console.log('[LOAD] Local save is newer. Prioritizing Local.');
+          finalSaveData = localData;
+        }
       }
     } catch (e) {
       console.warn('[LOAD] Error parsing local save:', e);
     }
   }
 
-  if (!finalSaveData) return null;
+  if (!finalSaveData) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
   // 3. Sanitize and Normalize
   const { data: sanitized, issues } = validateAndSanitize(finalSaveData);

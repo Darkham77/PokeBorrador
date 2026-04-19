@@ -1,5 +1,5 @@
 <script setup>
-const props = defineProps({
+const _props = defineProps({
   serverType: { type: String, required: true }
 })
 

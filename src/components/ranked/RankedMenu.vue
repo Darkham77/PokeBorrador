@@ -1,15 +1,15 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useGameStore } from '@/stores/game';
-import { useRankedStore } from '@/stores/rankedStore';
-import { usePassivePvpStore } from '@/stores/passivePvpStore';
+import { usePvPStore } from '@/stores/pvp';
+import { usePassivePvpStore } from '@/stores/passivePvp';
 import { useRankedValidation } from '@/composables/useRankedValidation';
 import { useUIStore } from '@/stores/ui';
 import Leaderboard from './Leaderboard.vue';
 import RewardsTrack from './RewardsTrack.vue';
 
 const gameStore = useGameStore();
-const rankedStore = useRankedStore();
+const rankedStore = usePvPStore();
 const passivePvpStore = usePassivePvpStore();
 const uiStore = useUIStore();
 const { validateTeam } = useRankedValidation();

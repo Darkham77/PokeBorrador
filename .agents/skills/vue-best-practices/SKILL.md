@@ -138,7 +138,12 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - Over-abstraction in hot list paths -> [perf-avoid-component-abstraction-in-lists](references/perf-avoid-component-abstraction-in-lists.md)
 - Expensive updates triggered too often -> [updated-hook-performance](references/updated-hook-performance.md)
 
-## 5) Final self-check before finishing
+## 5) DOM & Event Quirks (Lessons Learned)
+
+- **Scroll Event Bubbling**: Native `scroll` events do not bubble in the DOM. If your app relies on internal scrollable containers (e.g., `.tab-content` with `overflow-y: auto`), a `window.addEventListener('scroll')` will never fire. You **must** use the capture phase: `window.addEventListener('scroll', handler, { capture: true })`.
+- **ResizeObserver on Fixed Containers**: `ResizeObserver` can report inaccurate heights (`0px`) when observing `position: fixed` elements, especially those using `container-type` or containing only absolute/percentage-based children. Always observe the true inner relative/static content wrapper to guarantee accurate dynamic height calculations.
+
+## 6) Final self-check before finishing
 
 - Core behavior works and matches requirements.
 - All must-read references were read and applied.

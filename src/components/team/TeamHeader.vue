@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useBoxStore } from '@/stores/boxStore'
+import { useBoxStore } from '@/stores/box'
 
 const gameStore = useGameStore()
 const boxStore = useBoxStore()

@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useShopStore } from '@/stores/shopStore'
+import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const shopStore = useShopStore()
 const gameStore = useGameStore()
@@ -71,7 +72,7 @@ const startHealing = () => {
         >
           <div class="nurse-joy-area">
             <img
-              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/113.png"
+              :src="getAssetUrl(ASSET_TYPES.POKEMON, 'chansey')"
               class="chansey"
             >
             <div class="tray">
@@ -241,7 +242,7 @@ const startHealing = () => {
   width: 100%; padding: 15px; border-radius: 12px; border: none;
   background: #f87171; color: white; font-family: 'Press Start 2P', cursive;
   font-size: 10px; cursor: pointer; transition: transform 0.2s;
-  &:hover { transform: scale(1.02); background: #ef4444; }
+  &:hover { transform: Scale(1.02); background: #ef4444; }
 }
 
 .confirm-overlay {
@@ -262,13 +263,13 @@ const startHealing = () => {
 }
 
 @keyframes pulse {
-  from { opacity: 0.5; transform: scale(0.9); box-shadow: 0 0 0 rgba(248, 113, 113, 0); }
-  to { opacity: 1; transform: scale(1.1); box-shadow: 0 0 10px rgba(248, 113, 113, 0.8); }
+  from { opacity: 0.5; transform: Scale(0.9); box-shadow: 0 0 0 rgba(248, 113, 113, 0); }
+  to { opacity: 1; transform: Scale(1.1); box-shadow: 0 0 10px rgba(248, 113, 113, 0.8); }
 }
 
 .animate-scale { animation: scaleIn 0.3s ease-out; }
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: Scale(0.9); }
+  to { opacity: 1; transform: Scale(1); }
 }
 </style>

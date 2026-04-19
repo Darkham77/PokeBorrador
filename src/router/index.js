@@ -64,15 +64,14 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach(async (to, from) => {
+router.beforeEach(async (to, _from) => {
   const authStore = useAuthStore()
   
   if (authStore.loading) await authStore.checkSession()
   
-  if (to.path === '/login' && authStore.user && !to.query.logout) {
-    console.log('[Router] Forzando deslogueo por acceso a /login');
-    await authStore.logout();
-    return false;
+  if (to.path === '/login' && authStore.user) {
+    console.log('[Router] Forzando limpieza de sesión por acceso a /login');
+    authStore.clearSessionLocal();
   }
   
   if (to.meta.requiresAuth && !authStore.user) {

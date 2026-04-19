@@ -6,10 +6,13 @@ import MapEventCarousel from '@/components/map/MapEventCarousel.vue'
 import MapStatusSummary from '@/components/map/MapStatusSummary.vue'
 import MapGrid from '@/components/map/MapGrid.vue'
 import { useUIStore } from '@/stores/ui'
+import { useEventStore } from '@/stores/events'
+import { GYMS } from '@/data/gyms'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
 const uiStore = useUIStore()
+const eventStore = useEventStore()
 
 const gs = computed(() => gameStore.state)
 const ms = computed(() => mapStore)
@@ -31,7 +34,19 @@ const missionSprites = computed(() => {
 })
 
 const gymSprites = computed(() => {
-  return []
+  const defeatedIds = gs.value.defeatedGyms || []
+  return GYMS.filter(g => !defeatedIds.includes(g.id))
+    .slice(0, 3)
+    .map(g => g.sprite)
+})
+
+const activeEventData = computed(() => {
+  const active = eventStore.activeEvents?.[0]
+  if (!active) return { active: false, text: 'No hay eventos activos en este momento' }
+  return {
+    active: true,
+    text: active.description || active.name
+  }
 })
 </script>
 
@@ -50,8 +65,11 @@ const gymSprites = computed(() => {
     <MapStatusSummary
       :missions-remaining="gs.daycare_missions?.length || 0"
       :mission-sprites="missionSprites"
-      :gym-rematches="gs.gym_rematches_count || 0" 
-      :egg-count="gs.eggs_count || 0"
+      :gym-rematches="8 - (gs.defeatedGyms?.length || 0)" 
+      :gym-sprites="gymSprites"
+      :egg-count="gs.eggs?.length || 0"
+      :rival-event-active="activeEventData.active"
+      :rival-event-text="activeEventData.text"
       @open-tab="openTab"
       @open-center="openCenter"
     />

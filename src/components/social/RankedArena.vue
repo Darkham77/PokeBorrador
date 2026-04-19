@@ -1,11 +1,14 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
+import { useLivePvPStore } from '@/stores/livePvP'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
-import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
+import { RANKED_REWARD_MILESTONES, RANKED_TYPE_META } from '@/data/rankedData'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const pvp = usePvPStore()
+const livePvP = useLivePvPStore()
 const auth = useAuthStore()
 const ui = useUIStore()
 
@@ -14,10 +17,10 @@ onMounted(() => {
 })
 
 const milestones = RANKED_REWARD_MILESTONES
+const allowedTypes = computed(() => pvp.currentSeasonRules?.allowedTypes || [])
 
 const getRankIcon = (tierId) => {
-  if (!tierId) return ''
-  return new URL(`../../assets/ui/ranks/${tierId}.webp`, import.meta.url).href
+  return getAssetUrl(ASSET_TYPES.UI, `ranks/${tierId}`)
 }
 
 const seasonActive = computed(() => {
@@ -38,7 +41,11 @@ function startSearch() {
     ui.notify('La temporada no está activa.', '🚫')
     return
   }
-  ui.notify('Buscando oponente...', '🔍')
+  if (livePvP.isSearching) {
+    livePvP.cancelSearch()
+  } else {
+    livePvP.startSearch()
+  }
 }
 </script>
 
@@ -201,8 +208,8 @@ function startSearch() {
           :disabled="!seasonActive"
           @click="startSearch"
         >
-          <span class="icon">🔍</span>
-          {{ seasonActive ? 'BUSCAR PARTIDA' : 'TEMPORADA CERRADA' }}
+          <span class="icon">{{ livePvP.isSearching ? '🛑' : '🔍' }}</span>
+          {{ seasonActive ? (livePvP.isSearching ? 'CANCELAR BÚSQUEDA' : 'BUSCAR PARTIDA') : 'TEMPORADA CERRADA' }}
         </button>
       </section>
     </main>

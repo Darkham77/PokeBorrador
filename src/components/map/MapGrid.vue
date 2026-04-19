@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from 'vue'
 import MapCard from './MapCard.vue'
 
 const props = defineProps({
@@ -93,9 +92,21 @@ const getDominanceForMap = (mapId) => {
 <style scoped>
 .map-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 15px;
   padding: 5px;
+}
+
+@media (max-width: 1200px) {
+  .map-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .map-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 600px) {

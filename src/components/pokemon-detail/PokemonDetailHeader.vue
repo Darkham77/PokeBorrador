@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   pokemon: { type: Object, required: true }
@@ -10,10 +11,7 @@ const emit = defineEmits(['close', 'toggle-tag'])
 const p = computed(() => props.pokemon)
 
 const getSprite = (id, isShiny) => {
-  if (typeof window.getSpriteUrl === 'function') return window.getSpriteUrl(id, isShiny)
-  const num = window.POKEMON_SPRITE_IDS?.[id.toLowerCase()] || id
-  const base = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'
-  return `${base}${isShiny ? 'shiny/' : ''}${num}.webp`
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 </script>
 

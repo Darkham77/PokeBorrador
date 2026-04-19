@@ -6,14 +6,14 @@ import { useUIStore } from '@/stores/ui';
 import DaycarePicker from '@/components/breeding/DaycarePicker.vue';
 import DaycareMissions from '@/components/breeding/DaycareMissions.vue';
 import EggWarehouse from '@/components/breeding/EggWarehouse.vue';
+import BreedingSummary from '@/components/breeding/BreedingSummary.vue';
 import { getSpriteUrl } from '@/logic/pokemonUtils';
-import { COMPAT_TEXT } from '@/data/breeding/breedingConstants';
 import { getGeneticsForecast } from '@/logic/breeding/breedingEngine';
 import { usePlayerClassStore } from '@/stores/playerClass';
 
 const breedingStore = useBreedingStore();
-const gameStore = useGameStore();
-const uiStore = useUIStore();
+const _gameStore = useGameStore();
+const _uiStore = useUIStore();
 
 const activeTab = ref('breeding'); // breeding | missions | eggs
 const isPickerOpen = ref(false);
@@ -126,29 +126,9 @@ const forecast = computed(() => {
             </button>
           </div>
 
-          <!-- Compatibility & Timer -->
-          <div class="compat-center">
-            <div
-              class="compat-indicator"
-              :style="{ color: COMPAT_TEXT[breedingStore.compatibility.level]?.color || '#94a3b8' }"
-            >
-              <div class="compat-label">
-                {{ breedingStore.compatibility.label || COMPAT_TEXT[breedingStore.compatibility.level]?.label }}
-              </div>
-              <div
-                v-if="breedingStore.isBreeding"
-                class="timer"
-              >
-                <span class="timer-icon">⏳</span>
-                {{ formatTime(breedingStore.nextEggTime) }}
-              </div>
-            </div>
-            <div
-              class="heart-fx"
-              :class="{ active: breedingStore.isBreeding }"
-            >
-              ❤️
-            </div>
+          <!-- Compatibility & Forecast -->
+          <div class="summary-column">
+            <BreedingSummary />
           </div>
 
           <!-- Slot B -->
@@ -179,59 +159,6 @@ const forecast = computed(() => {
               <span>+</span>
               DEPOSITAR
             </button>
-          </div>
-        </div>
-
-        <div
-          v-if="breedingStore.isBreeding && forecast"
-          class="breeding-forecast"
-        >
-          <div class="forecast-header">
-            <span class="icon">🧬</span>
-            <h4>Pronóstico de Herencia</h4>
-          </div>
-          
-          <div class="forecast-grid">
-            <div
-              class="forecast-item"
-              :class="{ positive: forecast.ivsInherited >= 5 }"
-            >
-              <span class="label">IVs heredados:</span>
-              <span class="value">{{ forecast.ivsInherited }} de 6</span>
-            </div>
-            
-            <div
-              class="forecast-item"
-              :class="{ active: forecast.natureGuaranteed }"
-            >
-              <span class="label">Naturaleza:</span>
-              <span class="value">{{ forecast.natureGuaranteed ? 'GARANTIZADA' : 'Aleatoria' }}</span>
-            </div>
-
-            <div
-              class="forecast-item"
-              :class="{ active: forecast.masudaActive }"
-            >
-              <span class="label">Método Masuda:</span>
-              <span class="value">{{ forecast.masudaActive ? `ACTIVO (x${forecast.shinyMultiplier})` : 'Inactivo' }}</span>
-            </div>
-
-            <div
-              class="forecast-item"
-              :class="{ positive: forecast.eggMovesCount > 0 }"
-            >
-              <span class="label">Movimientos Huevo:</span>
-              <span class="value">{{ forecast.eggMovesCount > 0 ? 'DETECTADOS ✨' : 'Ninguno' }}</span>
-            </div>
-            
-            <div class="forecast-item">
-              <span class="label">Habilidad (Madre):</span>
-              <span class="value">{{ forecast.hiddenAbilityChance }}% chance</span>
-            </div>
-          </div>
-
-          <div class="forecast-help">
-            <p>ℹ️ Usa Piedra Eterna para la Naturaleza y Lazo Destino para heredar más IVs.</p>
           </div>
         </div>
       </section>
@@ -437,12 +364,12 @@ const forecast = computed(() => {
 .heart-fx {
   font-size: 32px;
   opacity: 0.1;
-  filter: grayScale(100%);
+  filter: Grayscale(100%);
   transition: all 0.5s;
   
   &.active {
     opacity: 1;
-    filter: grayScale(100%);
+    filter: Grayscale(100%);
     animation: pulse 2s infinite;
   }
 }

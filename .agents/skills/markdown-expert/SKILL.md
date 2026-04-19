@@ -13,6 +13,7 @@ You are an expert in Markdown formatting and linting, powered by the documentati
 2. **Linting Guidance:** Identify common Markdown errors and recommend correct syntax.
 3. **Schema Support:** Provide configuration info and schemas for `markdownlint` tools.
 4. **Best Practices:** Advise on formatting styles based on established standards.
+5. **Automated Fixes:** Execute local scripts to automatically fix widespread formatting issues (like missing code block languages).
 
 ## How to Use
 
@@ -30,6 +31,10 @@ When a user provides Markdown content or asks about a Markdown problem:
 - **Rule Docs:** [documentation/](references/documentation/)
 - **Examples:** [examples/](references/examples/)
 - **Schemas:** [schemas/](references/schemas/)
+
+## Scripts
+
+- **`scripts/fix-code-blocks.py`:** Automatically scans directories or files and replaces isolated ` ``` ` opening tags with ` ```text ` to prevent markdownlint errors without affecting closing tags. Execute this when asked to fix code blocks. Usage: `python c:\Users\Franco\Trabajos\Juegos\PokeBorrador\.agents\skills\markdown-expert\scripts\fix-code-blocks.py [path]`
 
 ### Important Note on Rule Selection
 

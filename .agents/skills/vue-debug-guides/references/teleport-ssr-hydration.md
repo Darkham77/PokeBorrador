@@ -36,7 +36,7 @@ This is a critical issue for Nuxt, Quasar SSR, and custom Vue SSR setups.
 
 Common error messages:
 
-```
+```text
 [Vue warn]: Hydration children mismatch in <div>:
 server rendered element contains fewer child nodes than client vdom.
 ```

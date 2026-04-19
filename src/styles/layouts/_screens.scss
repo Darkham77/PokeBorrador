@@ -20,7 +20,6 @@
   display: none;
   animation: fadeIn 0.4s ease;
   overflow: visible !important;
-  @include gpu-layer;
   
   &.active {
     display: block;
@@ -62,11 +61,6 @@
   position: relative;
   width: 100%;
   box-sizing: border-box;
-  padding-top: 135px; // Relocated HUD offset here
-  
-  @media (max-width: 1024px) {
-    padding-top: 100px;
-  }
 }
 
 // Map Layout (New Premium 2026)

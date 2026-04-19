@@ -26,7 +26,7 @@ tags: [vue3, sfc, scoped-css, styles, build-tools, performance, template, v-html
 ## Colocate template, script, and styles
 
 **BAD:**
-```
+```text
 components/
 ├── UserCard.vue
 ├── UserCard.js

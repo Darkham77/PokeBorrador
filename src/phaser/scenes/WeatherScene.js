@@ -36,7 +36,7 @@ export default class WeatherScene extends Phaser.Scene {
   updateCycleOverlay(cycle) {
     if (!this.overlay) return;
 
-    let targetAlpha = 0;
+    let targetAlpha;
     let color = 0x000000;
 
     switch (cycle) {

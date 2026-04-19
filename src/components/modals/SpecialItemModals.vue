@@ -4,7 +4,6 @@ import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { NATURES } from '@/data/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { getSpriteUrl } from '@/logic/pokemonUtils'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
@@ -89,10 +88,16 @@ const closeAll = () => {
 </script>
 
 <template>
-  <div v-if="uiStore.isNaturePatchOpen || uiStore.isPPUpOpen || uiStore.isAbilityPillOpen" class="special-item-overlay" @click.self="closeAll">
-    
+  <div
+    v-if="uiStore.isNaturePatchOpen || uiStore.isPPUpOpen || uiStore.isAbilityPillOpen"
+    class="special-item-overlay"
+    @click.self="closeAll"
+  >
     <!-- NATURE PATCH MODAL -->
-    <div v-if="uiStore.isNaturePatchOpen && naturePokemon" class="modal-card animate-pop">
+    <div
+      v-if="uiStore.isNaturePatchOpen && naturePokemon"
+      class="modal-card animate-pop"
+    >
       <header>
         <h3>PARCHE DE NATURALEZA</h3>
         <p>Selecciona la nueva naturaleza para <strong>{{ naturePokemon.name }}</strong></p>
@@ -110,12 +115,20 @@ const closeAll = () => {
         </button>
       </div>
       <footer>
-        <button class="cancel-btn" @click="closeAll">CANCELAR</button>
+        <button
+          class="cancel-btn"
+          @click="closeAll"
+        >
+          CANCELAR
+        </button>
       </footer>
     </div>
 
     <!-- PP UP MODAL -->
-    <div v-if="uiStore.isPPUpOpen && ppPokemon" class="modal-card animate-pop">
+    <div
+      v-if="uiStore.isPPUpOpen && ppPokemon"
+      class="modal-card animate-pop"
+    >
       <header>
         <h3>SUBIDA DE PP</h3>
         <p>¿Qué movimiento de <strong>{{ ppPokemon.name }}</strong> quieres mejorar?</p>
@@ -132,17 +145,28 @@ const closeAll = () => {
             <span class="m-pp">{{ m.pp }}/{{ m.maxPP }} PP</span>
           </div>
           <div class="m-bar">
-            <div class="m-fill" :style="{ width: (m.maxPP / (pokemonDataProvider.getMoveData(m.name)?.pp * 1.6 || 64) * 100) + '%' }" />
+            <div
+              class="m-fill"
+              :style="{ width: (m.maxPP / (pokemonDataProvider.getMoveData(m.name)?.pp * 1.6 || 64) * 100) + '%' }"
+            />
           </div>
         </button>
       </div>
       <footer>
-        <button class="cancel-btn" @click="closeAll">CANCELAR</button>
+        <button
+          class="cancel-btn"
+          @click="closeAll"
+        >
+          CANCELAR
+        </button>
       </footer>
     </div>
 
     <!-- ABILITY PILL MODAL -->
-    <div v-if="uiStore.isAbilityPillOpen && abilityPokemon" class="modal-card animate-pop">
+    <div
+      v-if="uiStore.isAbilityPillOpen && abilityPokemon"
+      class="modal-card animate-pop"
+    >
       <header>
         <h3>PÍLDORA DE HABILIDAD</h3>
         <p>Cambia la habilidad de <strong>{{ abilityPokemon.name }}</strong></p>
@@ -156,17 +180,27 @@ const closeAll = () => {
           @click="handleApplyAbility(a)"
         >
           <span class="a-name">{{ a }}</span>
-          <span v-if="abilityPokemon.ability === a" class="a-current">(Actual)</span>
+          <span
+            v-if="abilityPokemon.ability === a"
+            class="a-current"
+          >(Actual)</span>
         </button>
-        <p v-if="availableAbilities.length <= 1" class="no-options">
+        <p
+          v-if="availableAbilities.length <= 1"
+          class="no-options"
+        >
           Este Pokémon no tiene habilidades alternativas disponibles.
         </p>
       </div>
       <footer>
-        <button class="cancel-btn" @click="closeAll">CANCELAR</button>
+        <button
+          class="cancel-btn"
+          @click="closeAll"
+        >
+          CANCELAR
+        </button>
       </footer>
     </div>
-
   </div>
 </template>
 
@@ -283,5 +317,5 @@ const closeAll = () => {
 .scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
 .animate-pop { animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-@keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes pop { from { transform: Scale(0.9); opacity: 0; } to { transform: Scale(1); opacity: 1; } }
 </style>

@@ -20,7 +20,7 @@ tags: [vue3, pinia, state-management, setup, initialization, error]
 
 ## The Error
 
-```
+```text
 [🍍]: "getActivePinia()" was called but there was no active Pinia.
 Did you forget to install pinia?
 ```

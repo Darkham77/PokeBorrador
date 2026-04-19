@@ -7,7 +7,7 @@
 
 ## 1. Navigation Selection Decision Tree
 
-```
+```text
 WHAT TYPE OF APP?
         │
         ├── 3-5 top-level sections (equal importance)
@@ -37,7 +37,7 @@ WHAT TYPE OF APP?
 
 ### When to Use
 
-```
+```text
 ✅ USE Tab Bar when:
 ├── 3-5 top-level destinations
 ├── Destinations are of equal importance
@@ -54,7 +54,7 @@ WHAT TYPE OF APP?
 
 ### Tab Bar Best Practices
 
-```
+```text
 iOS Tab Bar:
 ├── Height: 49pt (83pt with home indicator)
 ├── Max items: 5
@@ -72,7 +72,7 @@ Android Bottom Navigation:
 
 ### Tab State Preservation
 
-```
+```text
 RULE: Each tab maintains its own navigation stack.
 
 User journey:
@@ -93,7 +93,7 @@ Implementation:
 
 ### Core Concepts
 
-```
+```text
 Stack metaphor: Cards stacked on top of each other
 
 Push: Add screen on top
@@ -116,7 +116,7 @@ Back: Screen slides out to right
 
 ### Back Button Handling
 
-```
+```text
 iOS:
 ├── Edge swipe from left (system)
 ├── Back button in nav bar (optional)
@@ -142,7 +142,7 @@ Cross-Platform Rule:
 
 ### When to Use
 
-```
+```text
 ✅ USE Drawer when:
 ├── More than 5 top-level destinations
 ├── Less frequently accessed destinations
@@ -159,7 +159,7 @@ Cross-Platform Rule:
 
 ### Drawer Patterns
 
-```
+```text
 Modal Drawer:
 ├── Opens over content (scrim behind)
 ├── Swipe to open from edge
@@ -185,7 +185,7 @@ Navigation Rail (Android):
 
 ### Modal vs Push
 
-```
+```text
 PUSH (Stack):                    MODAL:
 ├── Horizontal slide             ├── Vertical slide up (sheet)
 ├── Part of hierarchy            ├── Separate task
@@ -212,7 +212,7 @@ USE MODAL for:
 
 ### Modal Dismissal
 
-```
+```text
 Users expect to dismiss modals by:
 ├── Tapping X / Close button
 ├── Swiping down (sheet)
@@ -229,7 +229,7 @@ RULE: Only block dismissal for unsaved data.
 
 ### Why Deep Links from Day One
 
-```
+```text
 Deep links enable:
 ├── Push notification navigation
 ├── Sharing content
@@ -247,7 +247,7 @@ Building later is HARD:
 
 ### URL Structure
 
-```
+```text
 Scheme://host/path?params
 
 Examples:
@@ -265,7 +265,7 @@ Hierarchy should match navigation:
 
 ### Deep Link Navigation Rules
 
-```
+```text
 1. FULL STACK CONSTRUCTION
    Deep link to myapp://product/123 should:
    ├── Put Home at root of stack
@@ -297,7 +297,7 @@ Hierarchy should match navigation:
 
 ### What to Persist
 
-```
+```text
 SHOULD persist:
 ├── Current tab selection
 ├── Scroll position in lists
@@ -344,7 +344,7 @@ const handleStateChange = (state) => {
 
 ### Platform Defaults
 
-```
+```text
 iOS Transitions:
 ├── Push: Slide from right
 ├── Modal: Slide from bottom (sheet) or fade
@@ -360,7 +360,7 @@ Android Transitions:
 
 ### Custom Transitions
 
-```
+```text
 When to custom:
 ├── Brand identity requires it
 ├── Shared element connections
@@ -376,7 +376,7 @@ When to use default:
 
 ### Shared Element Transitions
 
-```
+```text
 Connect elements between screens:
 
 Screen A: Product card with image
@@ -410,7 +410,7 @@ Implementation:
 
 ### ❌ AI Navigation Mistakes
 
-```
+```text
 AI tends to:
 ├── Use modals for everything (wrong)
 ├── Forget tab state preservation (wrong)

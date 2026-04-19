@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useSocialStore } from '@/stores/social'
 import { useAuthStore } from '@/stores/auth'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const social = useSocialStore()
 const auth = useAuthStore()
@@ -20,8 +21,7 @@ function getTierBadge(elo) {
 }
 
 const getRankIcon = (tierId) => {
-  if (!tierId) return ''
-  return new URL(`../../assets/ui/ranks/${tierId}.webp`, import.meta.url).href
+  return getAssetUrl(ASSET_TYPES.UI, `ranks/${tierId}`)
 }
 </script>
 

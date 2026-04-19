@@ -4,7 +4,7 @@
 
 ## Why Rate Limit
 
-```
+```text
 Protect against:
 ├── Brute force attacks
 ├── Resource exhaustion
@@ -22,7 +22,7 @@ Protect against:
 
 ## Response Headers
 
-```
+```text
 Include in headers:
 ├── X-RateLimit-Limit (max requests)
 ├── X-RateLimit-Remaining (requests left)

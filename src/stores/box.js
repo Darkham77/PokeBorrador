@@ -1,192 +1,443 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import { useGameStore } from './game';
-import { useUIStore } from './ui';
-import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { useGameStore } from './game'
+import { useUIStore } from './ui'
+import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
 export const useBoxStore = defineStore('box', () => {
-  const gameStore = useGameStore();
-  const uiStore = useUIStore();
+  const gameStore = useGameStore()
+  const uiStore = useUIStore()
 
-  // --- UI STATE ---
-  const currentBoxIndex = ref(0);
-  const releaseMode = ref(false);
-  const releaseSelected = ref(new Set());
-  const rocketMode = ref(false);
-  const rocketSelected = ref(new Set());
+  // --- BOX STATE ---
+  const currentBoxIndex = ref(0)
+  const boxSortMode = ref('none')
+  const boxReleaseMode = ref(false)
+  const boxReleaseSelected = ref([]) // Indices
+  const boxRocketMode = ref(false)
+  const boxRocketSelected = ref([]) // Indices
 
-  // --- GETTERS ---
-  const box = computed(() => gameStore.state.box || []);
-  const boxCount = computed(() => gameStore.state.boxCount || 4);
-  const boxCapacity = computed(() => boxCount.value * 50);
-  const isFull = computed(() => box.value.length >= boxCapacity.value);
+  // --- FILTER STATE ---
+  const filters = ref({
+    tier: 'all',
+    type: 'all',
+    levelMin: 1,
+    levelMax: 100,
+    ivTotalMin: 0,
+    ivTotalMax: 186,
+    ivAny31: false,
+    search: '',
+    isOpen: false
+  })
 
-  const getBoxBuyCost = computed(() => {
-    const count = boxCount.value;
-    if (count < 4) return 500000;
-    if (count === 4) return 500000;
-    if (count === 5) return 1000000;
-    return 1000000 * Math.pow(2, count - 5);
-  });
+  // --- TEAM STATE ---
+  const teamReleaseMode = ref(false)
+  const teamReleaseSelected = ref([]) // Indices
+  const teamRocketMode = ref(false)
+  const teamRocketSelected = ref([]) // Indices
+
+  // --- COMPUTED ---
+  const filteredBox = computed(() => {
+    if (!gameStore.state.box) return []
+    
+    let list = gameStore.state.box.map((p, i) => ({ p, i }))
+
+    // Apply Filters
+    list = list.filter(({ p }) => {
+      if (!p) return false // Skip empty slots
+      const f = filters.value
+      const ivs = p.ivs || {}
+      const totalIv = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + 
+                     (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
+      
+      if (f.tier !== 'all' && getPokemonTier(p).tier !== f.tier) return false
+      if (f.type !== 'all' && p.type !== f.type) return false
+      if (p.level < f.levelMin || p.level > f.levelMax) return false
+      if (totalIv < f.ivTotalMin || totalIv > f.ivTotalMax) return false
+      if (f.ivAny31 && !Object.values(ivs).some(v => v === 31)) return false
+      if (f.search && !p.name.toLowerCase().includes(f.search.toLowerCase())) return false
+      
+      return true
+    })
+
+    // Apply Sorting
+    if (boxSortMode.value !== 'none') {
+      list.sort((a, b) => {
+        if (boxSortMode.value === 'level') return b.p.level - a.p.level
+        if (boxSortMode.value === 'tier') return getPokemonTier(b.p).total - getPokemonTier(a.p).total
+        if (boxSortMode.value === 'type') return a.p.type.localeCompare(b.p.type)
+        // Pokedex sorting would need the order array, we'll keep it simple for now or import it
+        return 0
+      })
+    }
+
+    // Paginate by current box if no filters are active (optional, matching legacy behavior)
+    if (!hasActiveFilters.value && boxSortMode.value === 'none') {
+      const start = currentBoxIndex.value * 50
+      const end = start + 50
+      return list.slice(start, end)
+    }
+
+    return list
+  })
+
+  const hasActiveFilters = computed(() => {
+    const f = filters.value
+    return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < 100 ||
+           f.ivTotalMin > 0 || f.ivTotalMax < 186 || f.ivAny31 || f.search !== ''
+  })
 
   // --- ACTIONS ---
+  function toggleFilters() {
+    filters.value.isOpen = !filters.value.isOpen
+  }
+
+  function resetFilters() {
+    filters.value = {
+      tier: 'all',
+      type: 'all',
+      levelMin: 1,
+      levelMax: 100,
+      ivTotalMin: 0,
+      ivTotalMax: 186,
+      ivAny31: false,
+      search: '',
+      isOpen: filters.value.isOpen
+    }
+    boxSortMode.value = 'none'
+  }
+
   function switchBox(index) {
-    if (index >= 0 && index < boxCount.value) {
-      currentBoxIndex.value = index;
+    currentBoxIndex.value = index
+  }
+
+  function setBoxSort(mode) {
+    boxSortMode.value = mode
+  }
+
+  function toggleBoxReleaseMode() {
+    boxReleaseMode.value = !boxReleaseMode.value
+    boxReleaseSelected.value = []
+    if (boxReleaseMode.value) {
+      boxRocketMode.value = false
+      boxRocketSelected.value = []
     }
   }
 
-  async function buyNewBox() {
-    const cost = getBoxBuyCost.value;
-    const maxBoxes = 10;
-    
-    if (boxCount.value >= maxBoxes) {
-      uiStore.notify('Ya alcanzaste el máximo de 10 cajas.', '⚠️');
-      return false;
-    }
-    
-    if (gameStore.state.money < cost) {
-      uiStore.notify(`Dinero insuficiente. Necesitás ₽${cost.toLocaleString()}.`, '❌');
-      return false;
-    }
-
-    // Confirmation logic should be in UI, but action here
-    gameStore.state.money -= cost;
-    gameStore.state.boxCount = (gameStore.state.boxCount || 4) + 1;
-    
-    uiStore.notify(`¡Compraste la Caja ${gameStore.state.boxCount}! 📦`, '💰');
-    gameStore.save(false);
-    return true;
-  }
-
-  function toggleReleaseMode() {
-    releaseMode.value = !releaseMode.value;
-    releaseSelected.value.clear();
-    rocketMode.value = false; // Mutually exclusive
-  }
-
-  function toggleRocketMode() {
-    if (gameStore.state.playerClass !== 'rocket') return;
-    rocketMode.value = !rocketMode.value;
-    rocketSelected.value.clear();
-    releaseMode.value = false; // Mutually exclusive
-  }
-
-  function toggleSelection(index) {
-    const set = releaseMode.value ? releaseSelected.value : rocketSelected.value;
-    if (set.has(index)) {
-      set.delete(index);
+  function toggleBoxReleaseSelect(index) {
+    const idx = boxReleaseSelected.value.indexOf(index)
+    if (idx > -1) {
+      boxReleaseSelected.value.splice(idx, 1)
     } else {
-      set.add(index);
+      boxReleaseSelected.value.push(index)
     }
+  }
+
+  function doBoxRelease() {
+    const indices = [...boxReleaseSelected.value].sort((a, b) => b - a)
+    const releasedNames = []
+    
+    indices.forEach(i => {
+      const p = gameStore.state.box[i]
+      if (p) {
+        releasedNames.push(p.name)
+        returnHeldItem(p)
+        gameStore.state.box.splice(i, 1)
+      }
+    })
+
+    boxReleaseMode.value = false
+    boxReleaseSelected.value = []
+    gameStore.save()
+    return releasedNames
+  }
+
+  function toggleBoxRocketMode() {
+    if (gameStore.state.playerClass !== 'rocket') return
+    boxRocketMode.value = !boxRocketMode.value
+    boxRocketSelected.value = []
+    if (boxRocketMode.value) {
+      boxReleaseMode.value = false
+      boxReleaseSelected.value = []
+    }
+  }
+
+  function toggleBoxRocketSelect(index) {
+    const idx = boxRocketSelected.value.indexOf(index)
+    if (idx > -1) {
+      boxRocketSelected.value.splice(idx, 1)
+    } else {
+      boxRocketSelected.value.push(index)
+    }
+  }
+
+  function getRocketSellValue() {
+    let total = 0
+    boxRocketSelected.value.forEach(i => {
+      const p = gameStore.state.box[i]
+      if (!p) return
+      const ivs = p.ivs || {}
+      const totalIv = Object.values(ivs).reduce((s, v) => s + (v || 0), 0)
+      // Legacy formula: Math.floor((p.level * 50 + (totalIv / 186) * 500) * 0.8)
+      const price = Math.floor((p.level * 50 + (totalIv / 186) * 500) * 0.8)
+      total += price
+    })
+    return total
+  }
+
+  function doBoxRocketSell() {
+    const value = getRocketSellValue()
+    const count = boxRocketSelected.value.length
+    const indices = [...boxRocketSelected.value].sort((a, b) => b - a)
+
+    indices.forEach(i => {
+      const p = gameStore.state.box[i]
+      if (p) {
+        returnHeldItem(p)
+        gameStore.state.box.splice(i, 1)
+      }
+    })
+
+    gameStore.state.money += value
+    gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + count
+    
+    boxRocketMode.value = false
+    boxRocketSelected.value = []
+    gameStore.save()
+    return { value, count }
+  }
+
+  function movePokemonToBox(boxIndex, targetBoxIndex) {
+    const p = gameStore.state.box[boxIndex]
+    if (!p) return { success: false, msg: 'Pokémon no encontrado.' }
+    
+    const targetStart = targetBoxIndex * 50
+    gameStore.state.box.splice(boxIndex, 1)
+    
+    // Ensure array is large enough to reach target box
+    while (gameStore.state.box.length < targetStart) {
+      gameStore.state.box.push(null)
+    }
+    
+    gameStore.state.box.splice(targetStart, 0, p)
+    
+    gameStore.save()
+    return { success: true, msg: `¡${p.name} movido a la Caja ${targetBoxIndex + 1}!` }
+  }
+
+  function togglePokeTag(boxIndex, tag) {
+    const p = gameStore.state.box[boxIndex]
+    if (!p) return
+    
+    if (!p.tags) p.tags = []
+    const idx = p.tags.indexOf(tag)
+    if (idx > -1) {
+      p.tags.splice(idx, 1)
+    } else {
+      p.tags.push(tag)
+    }
+    gameStore.save()
+  }
+
+  // --- TEAM ACTIONS ---
+  function toggleTeamReleaseMode() {
+    teamReleaseMode.value = !teamReleaseMode.value
+    teamReleaseSelected.value = []
+    if (teamReleaseMode.value) {
+      teamRocketMode.value = false
+      teamRocketSelected.value = []
+    }
+  }
+
+  function toggleTeamReleaseSelect(index) {
+    const idx = teamReleaseSelected.value.indexOf(index)
+    if (idx > -1) {
+      teamReleaseSelected.value.splice(idx, 1)
+    } else {
+      teamReleaseSelected.value.push(index)
+    }
+  }
+
+  function confirmTeamRelease() {
+    if (teamReleaseSelected.value.length === 0) return
+
+    if (gameStore.state.team.length - teamReleaseSelected.value.length < 1) {
+      uiStore.notify('No puedes soltar a todos tus Pokémon.', '⚠️')
+      return
+    }
+
+    uiStore.openConfirm({
+      title: 'Soltar Pokémon',
+      message: `¿Estás seguro de que quieres soltar ${teamReleaseSelected.value.length} Pokémon?`,
+      onConfirm: () => {
+        const indices = [...teamReleaseSelected.value].sort((a, b) => b - a)
+        const names = []
+        
+        indices.forEach(i => {
+          const p = gameStore.state.team[i]
+          if (p) {
+            names.push(p.name)
+            returnHeldItem(p)
+            gameStore.state.team.splice(i, 1)
+          }
+        })
+
+        uiStore.notify(`¡${names.join(', ')} fueron soltados!`, '🌿')
+        teamReleaseMode.value = false
+        teamReleaseSelected.value = []
+        gameStore.save()
+      }
+    })
+  }
+
+  function toggleTeamRocketMode() {
+    if (gameStore.state.playerClass !== 'rocket') return
+    teamRocketMode.value = !teamRocketMode.value
+    teamRocketSelected.value = []
+    if (teamRocketMode.value) {
+      teamReleaseMode.value = false
+      teamReleaseSelected.value = []
+    }
+  }
+
+  function toggleTeamRocketSelect(index) {
+    const idx = teamRocketSelected.value.indexOf(index)
+    if (idx > -1) {
+      teamRocketSelected.value.splice(idx, 1)
+    } else {
+      teamRocketSelected.value.push(index)
+    }
+  }
+
+  function confirmTeamRocketSell() {
+    const count = teamRocketSelected.value.length
+    if (count === 0) return
+
+    const totalGain = count * 1500
+
+    uiStore.openConfirm({
+      title: 'Vender Pokémon (Team Rocket)',
+      message: `¿Vender ${count} Pokémon por ₽${totalGain.toLocaleString()}?`,
+      onConfirm: () => {
+        const indices = [...teamRocketSelected.value].sort((a, b) => b - a)
+        const names = []
+        
+        indices.forEach(i => {
+          const p = gameStore.state.team[i]
+          if (p) {
+            names.push(p.name)
+            returnHeldItem(p)
+            gameStore.state.team.splice(i, 1)
+          }
+        })
+
+        gameStore.state.money += totalGain
+        gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + count
+        
+        uiStore.notify(`¡${count} Pokémon vendidos por ₽${totalGain.toLocaleString()}! 🚀`, '🚀')
+        teamRocketMode.value = false
+        teamRocketSelected.value = []
+        gameStore.save()
+      }
+    })
+  }
+
+  // Helpers
+  function returnHeldItem(pokemon) {
+    if (!pokemon || !pokemon.heldItem) return
+    const item = pokemon.heldItem
+    gameStore.state.inventory[item] = (gameStore.state.inventory[item] || 0) + 1
+    pokemon.heldItem = null
+    // gameStore.save() // Not saving here to allow batch operations to save once
   }
 
   function moveBoxToTeam(boxIndex) {
-    if (gameStore.state.team.length >= 6) {
-      uiStore.notify('Tu equipo está lleno (máx. 6).', '⚠️');
-      return;
-    }
-
-    const p = box.value[boxIndex];
-    if (!p) return;
-
-    if (p.onMission) return uiStore.notify(`¡${p.name} está en misión!`, '📋');
-    if (p.inDaycare) return uiStore.notify(`¡${p.name} está en la Guardería!`, '🏡');
-    if (p.onDefense) return uiStore.notify(`¡${p.name} está defendiendo!`, '🛡️');
-
-    gameStore.state.box.splice(boxIndex, 1);
-    gameStore.state.team.push(p);
+    const boxPoke = gameStore.state.box[boxIndex]
+    if (!boxPoke) return { success: false, msg: 'Pokémon no encontrado.' }
+    if (gameStore.state.team.length >= 6) return { success: false, msg: 'Equipo lleno.' }
     
-    uiStore.notify(`¡${p.name} se unió a tu equipo!`, '➕');
-    gameStore.save(false);
+    if (boxPoke.onMission) return { success: false, msg: 'En misión idle.' }
+    if (boxPoke.inDaycare) return { success: false, msg: 'En la Guardería.' }
+    
+    gameStore.state.box.splice(boxIndex, 1)
+    gameStore.state.team.push(boxPoke)
+    gameStore.save()
+    return { success: true, msg: `${boxPoke.name} se unió al equipo.` }
   }
 
   function swapBoxWithTeam(boxIndex, teamIndex) {
-    const boxPoke = box.value[boxIndex];
-    const teamPoke = gameStore.state.team[teamIndex];
+    const boxPoke = gameStore.state.box[boxIndex]
+    const teamPoke = gameStore.state.team[teamIndex]
+    if (!boxPoke || !teamPoke) return { success: false, msg: 'Pokémon no encontrado.' }
     
-    if (!boxPoke || !teamPoke) return;
-    if (boxPoke.onMission || boxPoke.inDaycare || boxPoke.onDefense) {
-      uiStore.notify(`¡${boxPoke.name} no puede moverse ahora!`, '⚠️');
-      return;
-    }
-
-    // Curar al que va a la caja (legacy rule)
-    teamPoke.hp = teamPoke.maxHp;
-    teamPoke.status = null;
-    if (teamPoke.moves) {
-      teamPoke.moves.forEach(m => { m.pp = m.maxPP; });
-    }
-
-    gameStore.state.box.splice(boxIndex, 1, teamPoke);
-    gameStore.state.team.splice(teamIndex, 1, boxPoke);
-
-    uiStore.notify(`¡Intercambio realizado! 🔄`, '✨');
-    gameStore.save(false);
+    if (boxPoke.onMission || boxPoke.inDaycare) return { success: false, msg: 'Pokémon ocupado.' }
+    
+    gameStore.state.box.splice(boxIndex, 1)
+    const swapped = gameStore.state.team.splice(teamIndex, 1, boxPoke)[0]
+    
+    // Auto-heal on storage
+    swapped.hp = swapped.maxHp
+    swapped.status = null
+    swapped.moves?.forEach(m => { m.pp = m.maxPP })
+    
+    gameStore.state.box.splice(boxIndex, 0, swapped)
+    gameStore.save()
+    return { success: true, msg: 'Intercambio realizado.' }
   }
 
-  async function performMassRelease() {
-    if (releaseSelected.value.size === 0) return;
-    
-    const indices = [...releaseSelected.value].sort((a, b) => b - a);
-    indices.forEach(i => {
-      const p = gameStore.state.box[i];
-      // Return held item logic could be added here
-      gameStore.state.box.splice(i, 1);
-    });
-
-    uiStore.notify(`¡${indices.length} Pokémon liberados! 🌿`, '🌿');
-    releaseMode.value = false;
-    releaseSelected.value.clear();
-    gameStore.save();
+  function getBoxBuyCost() {
+    const count = gameStore.state.boxCount || 4
+    if (count < 4) return 500000
+    if (count === 4) return 500000
+    if (count === 5) return 1000000
+    return 1000000 * Math.pow(2, count - 5)
   }
 
-  async function performRocketSell() {
-    if (rocketSelected.value.size === 0) return;
-
-    let totalGain = 0;
-    const indices = [...rocketSelected.value].sort((a, b) => b - a);
+  function buyNewBox() {
+    const cost = getBoxBuyCost()
+    if (gameStore.state.money < cost) return { success: false, msg: 'Dinero insuficiente.' }
     
-    indices.forEach(i => {
-      const p = gameStore.state.box[i];
-      const tier = getPokemonTier(p);
-      const price = Math.floor((p.level * 50 + (tier.total / 186) * 500) * 0.8);
-      totalGain += price;
-      gameStore.state.box.splice(i, 1);
-    });
-
-    gameStore.state.money += totalGain;
-    gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + indices.length;
-    
-    // Criminalidad (15 por cada uno)
-    const classStore = (await import('./playerClass')).usePlayerClassStore()
-    classStore.addCriminality(indices.length * 15)
-
-    uiStore.notify(`¡Venta realizada por ₽${totalGain.toLocaleString()}! 💰`, '🚀');
-    rocketMode.value = false;
-    rocketSelected.value.clear();
-    gameStore.save();
+    gameStore.state.money -= cost
+    gameStore.state.boxCount = (gameStore.state.boxCount || 4) + 1
+    gameStore.save()
+    return { success: true, boxNum: gameStore.state.boxCount }
   }
 
   return {
     currentBoxIndex,
-    releaseMode,
-    releaseSelected,
-    rocketMode,
-    rocketSelected,
-    box,
-    boxCount,
-    boxCapacity,
-    isFull,
-    getBoxBuyCost,
+    boxSortMode,
+    boxReleaseMode,
+    boxReleaseSelected,
+    boxRocketMode,
+    boxRocketSelected,
+    filters,
+    filteredBox,
+    hasActiveFilters,
+    teamReleaseMode,
+    teamReleaseSelected,
+    teamRocketMode,
+    teamRocketSelected,
+    toggleFilters,
+    resetFilters,
     switchBox,
-    buyNewBox,
-    toggleReleaseMode,
-    toggleRocketMode,
-    toggleSelection,
+    setBoxSort,
+    toggleBoxReleaseMode,
+    toggleBoxReleaseSelect,
+    doBoxRelease,
+    toggleBoxRocketMode,
+    toggleBoxRocketSelect,
+    getRocketSellValue,
+    doBoxRocketSell,
+    movePokemonToBox,
+    toggleTeamReleaseMode,
+    toggleTeamReleaseSelect,
+    confirmTeamRelease,
+    toggleTeamRocketMode,
+    toggleTeamRocketSelect,
+    confirmTeamRocketSell,
     moveBoxToTeam,
     swapBoxWithTeam,
-    performMassRelease,
-    performRocketSell
-  };
-});
+    togglePokeTag,
+    getBoxBuyCost,
+    buyNewBox
+  }
+})

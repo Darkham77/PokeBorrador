@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { PLAYER_CLASSES } from '@/logic/playerClasses';
+import { PLAYER_CLASSES } from '@/data/playerClasses';
 import PlayerAvatar from './PlayerAvatar.vue';
 
 const gameStore = useGameStore();

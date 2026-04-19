@@ -14,7 +14,7 @@
 
 ## JWT Principles
 
-```
+```text
 Important:
 ├── Always verify signature
 ├── Check expiration

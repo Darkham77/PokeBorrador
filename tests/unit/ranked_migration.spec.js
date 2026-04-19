@@ -1,12 +1,13 @@
+/** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useRankedValidation } from '@/composables/useRankedValidation';
-import { useRankedStore } from '@/stores/rankedStore';
+import { usePvPStore } from '@/stores/pvp';
 
 describe('Ranked Migration (Pinia)', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
-    const rankedStore = useRankedStore();
+    const rankedStore = usePvPStore();
     rankedStore.rules = {
       seasonName: 'Test Season',
       levelCap: 50,
@@ -17,7 +18,7 @@ describe('Ranked Migration (Pinia)', () => {
   });
 
   it('debe calcular el tier correctamente en el store', () => {
-    const rankedStore = useRankedStore();
+    const rankedStore = usePvPStore();
     expect(rankedStore.currentTier(1000).name).toBe('Bronce');
     expect(rankedStore.currentTier(2800).name).toBe('Diamante');
   });

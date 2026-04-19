@@ -9,7 +9,7 @@
 
 ### Why Mobile Color is Different
 
-```
+```text
 DESKTOP:                           MOBILE:
 ├── LCD screens (backlit)          ├── OLED common (self-emissive)
 ├── Controlled lighting            ├── Outdoor, bright sun
@@ -34,7 +34,7 @@ DESKTOP:                           MOBILE:
 
 ### How OLED Differs
 
-```
+```text
 LCD (Liquid Crystal Display):
 ├── Backlight always on
 ├── Black = backlight through dark filter
@@ -50,7 +50,7 @@ OLED (Organic LED):
 
 ### Battery Savings with OLED
 
-```
+```text
 Color energy consumption (relative):
 
 #000000 (True Black)  ████░░░░░░  0%
@@ -68,7 +68,7 @@ Saturated colors also use significant power:
 
 ### True Black vs Near Black
 
-```
+```text
 #000000 (True Black):
 ├── Maximum battery savings
 ├── Can cause "black smear" on scroll
@@ -90,7 +90,7 @@ RECOMMENDATION: #000000 for backgrounds, #0D0D0D-#1A1A1A for surfaces
 
 ### Dark Mode Benefits
 
-```
+```text
 Users enable dark mode for:
 ├── Battery savings (OLED)
 ├── Reduced eye strain (low light)
@@ -101,7 +101,7 @@ Users enable dark mode for:
 
 ### Dark Mode Color Strategy
 
-```
+```text
 LIGHT MODE                      DARK MODE
 ──────────                      ─────────
 Background: #FFFFFF      →      #000000 or #121212
@@ -131,7 +131,7 @@ Elevation in dark mode:
 
 ### Color Inversion Rules
 
-```
+```text
 DON'T just invert colors:
 ├── Saturated colors become eye-burning
 ├── Semantic colors lose meaning
@@ -151,7 +151,7 @@ DO create intentional dark palette:
 
 ### The Sunlight Problem
 
-```
+```text
 Screen visibility outdoors:
 ├── Bright sun washes out low contrast
 ├── Glare reduces readability
@@ -167,7 +167,7 @@ Affected elements:
 
 ### High Contrast Strategies
 
-```
+```text
 For outdoor visibility:
 
 MINIMUM CONTRAST RATIOS:
@@ -203,7 +203,7 @@ DO:
 
 ### Semantic Color Rules
 
-```
+```text
 NEVER use semantic colors for:
 ├── Branding (confuses meaning)
 ├── Decoration (reduces impact)
@@ -219,7 +219,7 @@ ALWAYS:
 
 ### Error State Colors
 
-```
+```text
 Error states need:
 ├── Red-ish color (semantic)
 ├── High contrast against background
@@ -241,7 +241,7 @@ Android:
 
 ### Material You
 
-```
+```text
 Android 12+ Dynamic Color:
 
 User's wallpaper → Color extraction → App theme
@@ -269,7 +269,7 @@ MaterialTheme(
 
 ### Fallback Colors
 
-```
+```text
 When dynamic color unavailable:
 ├── Android < 12
 ├── User disabled
@@ -288,7 +288,7 @@ Provide static color scheme:
 
 ### Colorblind Considerations
 
-```
+```text
 ~8% of men, ~0.5% of women are colorblind
 
 Types:
@@ -306,7 +306,7 @@ Design rules:
 
 ### Contrast Testing Tools
 
-```
+```text
 Use these to verify:
 ├── Built-in accessibility inspector (Xcode)
 ├── Accessibility Scanner (Android)
@@ -317,7 +317,7 @@ Use these to verify:
 
 ### Sufficient Contrast
 
-```
+```text
 WCAG Guidelines:
 
 AA (Minimum)
@@ -349,7 +349,7 @@ Mobile recommendation: Meet AA, aim for AAA
 
 ### ❌ AI Color Mistakes
 
-```
+```text
 AI tends to:
 ├── Use same colors for light/dark
 ├── Ignore OLED battery implications
@@ -390,7 +390,7 @@ Test in bright sunlight, with colorblindness simulation.
 
 ### Dark Mode Backgrounds
 
-```
+```text
 True black (OLED max savings): #000000
 Near black (Material):         #121212
 Surface 1:                     #1E1E1E
@@ -400,7 +400,7 @@ Surface 3:                     #3C3C3C
 
 ### Text on Dark
 
-```
+```text
 Primary:   #E0E0E0 to #ECECEC
 Secondary: #A0A0A0 to #B0B0B0
 Disabled:  #606060 to #707070
@@ -408,7 +408,7 @@ Disabled:  #606060 to #707070
 
 ### Contrast Ratios
 
-```
+```text
 Small text:  4.5:1 (minimum)
 Large text:  3:1 (minimum)
 UI elements: 3:1 (minimum)

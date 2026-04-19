@@ -3,7 +3,8 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
-import { RANKED_REWARD_MILESTONES, RANKED_TIER_ORDER, RANKED_TYPES } from '@/data/rankedData'
+import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
+import { getEloTier } from '@/logic/pvp/rankedEngine'
 
 /**
  * usePvPStore - Gestor de Arena Clasificatoria y Defensa Pasiva.
@@ -20,16 +21,12 @@ export const usePvPStore = defineStore('pvp', () => {
   const rewardsClaimed = ref([])
   const passiveTeamActive = ref(false)
   const currentSeasonRules = ref(null)
+  const leaderboard = ref([])
+  const lastSyncAt = ref(0)
+  const isLoading = ref(false)
+  const error = ref('')
 
-  const eloTier = computed(() => {
-    const val = elo.value
-    if (val >= 3400) return { id: 'master', name: 'Maestro', icon: '👑', color: '#FFD700' }
-    if (val >= 2700) return { id: 'diamond', name: 'Diamante', icon: '💎', color: '#89CFF0' }
-    if (val >= 2100) return { id: 'platinum', name: 'Platino', icon: '🔶', color: '#E5C100' }
-    if (val >= 1600) return { id: 'gold', name: 'Oro', icon: '🥇', color: '#FFB800' }
-    if (val >= 1200) return { id: 'silver', name: 'Plata', icon: '🥈', color: '#9E9E9E' }
-    return { id: 'bronze', name: 'Bronce', icon: '🥉', color: '#c8a060' }
-  })
+  const eloTier = computed(() => getEloTier(elo.value))
 
   async function loadPvPData() {
     if (!authStore.user) return
@@ -74,6 +71,33 @@ export const usePvPStore = defineStore('pvp', () => {
         name: data.season_name,
         ...JSON.parse(data.config || '{}')
       }
+    }
+  }
+
+  async function fetchLeaderboard(force = false) {
+    if (!force && lastSyncAt.value && (Date.now() - lastSyncAt.value < 1800000)) {
+      return // 30 min cache
+    }
+
+    isLoading.value = true
+    error.value = ''
+
+    try {
+      const { data, error: err } = await gameStore.db
+        .from('profiles')
+        .select('id, username, elo_rating, trainer_level, player_class, nick_style, avatar_style')
+        .not('username', 'is', null)
+        .order('elo_rating', { ascending: false })
+        .limit(100)
+
+      if (err) throw err
+      leaderboard.value = data || []
+      lastSyncAt.value = Date.now()
+    } catch (e) {
+      error.value = 'No se pudo cargar el ranking global.'
+      console.error('[PvPStore] Leaderboard error:', e)
+    } finally {
+      isLoading.value = false
     }
   }
 
@@ -146,6 +170,33 @@ export const usePvPStore = defineStore('pvp', () => {
     }
   })
 
+  async function updateElo(won) {
+    if (!authStore.user) return 0
+    
+    const delta = won ? 15 + Math.floor(Math.random() * 5) : -(10 + Math.floor(Math.random() * 5))
+    elo.value = Math.max(0, elo.value + delta)
+    
+    if (won) {
+      stats.value.wins++
+      if (elo.value > maxElo.value) {
+        maxElo.value = elo.value
+        gameStore.state.rankedMaxElo = maxElo.value
+      }
+    } else {
+      stats.value.losses++
+    }
+    
+    // Save to DB
+    await gameStore.db.from('profiles').update({
+      elo_rating: elo.value,
+      pvp_wins: stats.value.wins,
+      pvp_losses: stats.value.losses
+    }).eq('id', authStore.user.id)
+    
+    gameStore.save(false)
+    return delta
+  }
+
   return {
     elo,
     stats,
@@ -157,6 +208,12 @@ export const usePvPStore = defineStore('pvp', () => {
     seasonRange,
     loadPvPData,
     togglePassiveTeam,
-    claimReward
+    claimReward,
+    updateElo,
+    fetchLeaderboard,
+    leaderboard,
+    isLoading,
+    error,
+    rules: currentSeasonRules
   }
 })

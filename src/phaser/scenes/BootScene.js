@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 /**
  * BootScene.js
@@ -12,7 +13,7 @@ export default class BootScene extends Phaser.Scene {
   preload() {
     // 1. Setup Loading UI (Simple text for now)
     const { width, height } = this.cameras.main;
-    const loadingText = this.add.text(width / 2, height / 2, 'Cargando Motor...', {
+    const _loadingText = this.add.text(width / 2, height / 2, 'Cargando Motor...', {
       fontFamily: '"Press Start 2P"',
       fontSize: '12px',
       fill: '#FFD93D'
@@ -23,11 +24,15 @@ export default class BootScene extends Phaser.Scene {
     // this.load.atlas('vfx', 'assets/vfx.webp', 'assets/vfx.json');
     
     // Placeholder for common sprites
-    this.load.image('platform', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png');
+    this.load.image('platform', getAssetUrl(ASSET_TYPES.ITEM, 'pokeball'));
   }
 
   create() {
     console.log('[BootScene] Engine Assets Loaded');
+    
+    // Notify Vue that the engine is ready
+    window.dispatchEvent(new CustomEvent('game-state-ready'));
+    window.legacyGameReady = true; // For race condition guard in App.vue
     
     // Transition to the first actual scene (e.g., WeatherScene or BattleScene when triggered)
     // For now, we launch the WeatherScene in the background if it exists
@@ -48,7 +53,7 @@ export default class BootScene extends Phaser.Scene {
     if (this.textures.exists(key)) return key;
 
     return new Promise((resolve) => {
-      const url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isBack ? 'back/' : ''}${isShiny ? 'shiny/' : ''}${id}.png`;
+      const url = getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack });
       
       this.load.image(key, url);
       this.load.once('complete', () => resolve(key));

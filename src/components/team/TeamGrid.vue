@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useBoxStore } from '@/stores/boxStore'
+import { useBoxStore } from '@/stores/box'
 import { useUIStore } from '@/stores/ui'
-import { useInventoryStore } from '@/stores/inventoryStore'
+import { useInventoryStore } from '@/stores/inventory'
 import TeamPokemonCard from './TeamPokemonCard.vue'
 
 const gameStore = useGameStore()
@@ -11,7 +11,7 @@ const uiStore = useUIStore()
 const invStore = useInventoryStore()
 const boxStore = useBoxStore()
 
-const props = defineProps({
+const _props = defineProps({
   team: { type: Array, required: true }
 })
 

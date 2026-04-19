@@ -4,6 +4,7 @@ import { useSocialStore } from '@/stores/social';
 import { useChatStore } from '@/stores/chat';
 import { useTradeStore } from '@/stores/trade';
 import { useAuthStore } from '@/stores/auth';
+import { useLivePvPStore } from '@/stores/livePvP';
 import TrainerAvatar from '@/components/TrainerAvatar.vue';
 import TradeClaimStatus from '@/components/social/TradeClaimStatus.vue';
 import { useGameStore } from '@/stores/game';
@@ -11,7 +12,8 @@ import { useGameStore } from '@/stores/game';
 const socialStore = useSocialStore();
 const chatStore = useChatStore();
 const tradeStore = useTradeStore();
-const authStore = useAuthStore();
+const _authStore = useAuthStore();
+const livePvP = useLivePvPStore();
 const gameStore = useGameStore();
 
 const activeTab = ref('friends'); // 'friends', 'requests', 'search', 'claims'
@@ -176,6 +178,7 @@ onMounted(() => {
                 <button
                   class="action-btn battle"
                   title="Desafío"
+                  @click="livePvP.sendInvite(friend.id, friend.username)"
                 >
                   ⚔️
                 </button>
@@ -532,7 +535,7 @@ onMounted(() => {
     background: rgba(255, 255, 255, 0.05);
     color: #fff;
 
-    &:hover { transform: string.unquote("scale(#{1.1})"); }
+    &:hover { transform: string.unquote("Scale(1.1)"); }
     &.chat:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
     &.trade:hover { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
     &.battle:hover { background: rgba(168, 85, 247, 0.2); color: #c084fc; }

@@ -60,7 +60,7 @@ const timeRemainingLabel = computed(() => {
   return h > 0 ? `${h}h ${min}m` : `${min}m ${sec}s`
 })
 
-function getMissionDesc(id) {
+function getMissionDesc(_id) {
   const cls = classStore.playerClass
   if (cls === 'cazabichos') return 'Recolecta néctar y captura especímenes con IVs garantizados.'
   if (cls === 'rocket') return 'Exportación de especímenes al mercado negro por altos dividendos.'

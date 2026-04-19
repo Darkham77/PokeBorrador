@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from './auth'
 import { useUIStore } from './ui'
 import { useGameStore } from './game'
-import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, isNewEntryBetter } from '@/logic/events/eventEngine'
+import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts } from '@/logic/events/eventEngine'
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()

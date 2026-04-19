@@ -39,11 +39,30 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
     </div>
 
     <!-- Tags & Held Item -->
-    <div v-if="hasTags || hasHeldItem" class="tags-container">
-      <span v-if="hasHeldItem" class="item-icon" :title="pokemon.heldItem">📦</span>
-      <span v-if="pokemon.tags?.includes('fav')" class="tag fav" title="Favorito">⭐</span>
-      <span v-if="pokemon.tags?.includes('breed')" class="tag breed" title="Crianza">❤️</span>
-      <span v-if="pokemon.tags?.includes('iv31')" class="tag iv31" title="IV 31">31</span>
+    <div
+      v-if="hasTags || hasHeldItem"
+      class="tags-container"
+    >
+      <span
+        v-if="hasHeldItem"
+        class="item-icon"
+        :title="pokemon.heldItem"
+      >📦</span>
+      <span
+        v-if="pokemon.tags?.includes('fav')"
+        class="tag fav"
+        title="Favorito"
+      >⭐</span>
+      <span
+        v-if="pokemon.tags?.includes('breed')"
+        class="tag breed"
+        title="Crianza"
+      >❤️</span>
+      <span
+        v-if="pokemon.tags?.includes('iv31')"
+        class="tag iv31"
+        title="IV 31"
+      >31</span>
     </div>
 
     <!-- Sprite -->

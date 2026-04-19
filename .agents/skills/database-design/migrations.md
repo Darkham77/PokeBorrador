@@ -4,7 +4,7 @@
 
 ## Safe Migration Strategy
 
-```
+```text
 For zero-downtime changes:
 │
 ├── Adding column

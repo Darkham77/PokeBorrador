@@ -4,7 +4,7 @@
  * Routes queries to Supabase (Cloud) OR SQLite (Local), NEVER both in the same session.
  */
 import { ProxyQuery } from './proxyQuery';
-import { initSQLite, persistSQLite, queryLocal, getRawSqlite } from './sqliteEngine';
+import { initSQLite, persistSQLite, queryLocal } from './sqliteEngine';
 import { DATABASE_MIGRATIONS } from './migrations_data';
 
 export class DBRouter {

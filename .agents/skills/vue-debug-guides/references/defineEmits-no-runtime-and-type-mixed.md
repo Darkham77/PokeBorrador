@@ -32,7 +32,7 @@ const emit = defineEmits<{
 ```
 
 **Compiler error:**
-```
+```text
 defineEmits() cannot accept both type and non-type arguments at the same time.
 Use one or the other.
 ```

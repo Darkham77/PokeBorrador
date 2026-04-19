@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch, ref, onMounted } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 
 const battleStore = useBattleStore()

@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+
 
 /**
  * Maps each location to a biome key.
@@ -51,12 +51,12 @@ export function useBattleBackground() {
    * @param {boolean} isFishing 
    */
   function getBackgroundUrl(locationId, cycle = 'day', isFishing = false) {
-    if (isFishing) return new URL('@/assets/sprites/battle/bg_fishing.webp', import.meta.url).href
+    if (isFishing) return getAssetUrl(ASSET_TYPES.BATTLE_BG, 'bg_fishing')
 
     const biome = BIOME_MAP[locationId] || 'ruta'
     const assetDef = BG_ASSETS[biome]
 
-    let fileName = ''
+    let fileName;
     if (Array.isArray(assetDef)) {
       // Check if the specific cycle exists for this biome, fallback to 'day'
       const variant = assetDef.includes(cycle) ? cycle : 'day'
@@ -66,8 +66,7 @@ export function useBattleBackground() {
       fileName = assetDef
     }
 
-    // Using Vite's dynamic asset import pattern
-    return new URL(`../assets/sprites/battle/${fileName}.webp`, import.meta.url).href
+    return getAssetUrl(ASSET_TYPES.BATTLE_BG, fileName)
   }
 
   return {

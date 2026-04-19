@@ -3,7 +3,7 @@
  */
 
 export function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn, options = {}) {
-  const { state, b } = options;
+  const { _state, b } = options;
   
   switch (effect) {
     case 'atk+1': 

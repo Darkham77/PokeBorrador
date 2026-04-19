@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 
-const props = defineProps({
+const _props = defineProps({
   serverType: { type: String, required: true },
   loading: { type: Boolean, default: false }
 })

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { POKEMON_DB } from '@/data/pokemonDB'
@@ -40,7 +40,7 @@ const forgottenMoves = computed(() => {
     }
     
     // Find previous stage
-    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([id, data]) => data.to === currentId)
+    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([_id, data]) => data.to === currentId)
     currentId = prevEntry ? prevEntry[0] : null
   }
   

@@ -4,7 +4,7 @@
 
 ## When to Create Indexes
 
-```
+```text
 Index these:
 ├── Columns in WHERE clauses
 ├── Columns in JOIN conditions
@@ -30,7 +30,7 @@ Don't over-index:
 
 ## Composite Index Principles
 
-```
+```text
 Order matters for composite indexes:
 ├── Equality columns first
 ├── Range columns last

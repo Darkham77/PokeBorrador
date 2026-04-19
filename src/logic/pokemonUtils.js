@@ -1,48 +1,16 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData';
-import { TYPE_CHART } from '@/data/types';
 import { getPokemonTier, BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine';
+import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine';
+import { getTypeEffectiveness } from '@/logic/pokemon/typeEngine';
+import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 
-// getPokemonTier imported from tierEngine.js
+export { getPokemonTier, BOX_TIER_CONFIG, getSpeciesHistory };
 
 /**
  * Genera la URL del sprite usando el sistema de PokeAPI o el motor legacy.
  */
-export const getSpriteUrl = (id, isShiny) => {
-  if (typeof window !== 'undefined' && typeof window.getSpriteUrl === 'function') {
-    return window.getSpriteUrl(id, isShiny)
-  }
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon${isShiny ? '/shiny' : ''}/${id}.png`
-}
-
-/**
- * Get species history from base form to the given id
- */
-export function getSpeciesHistory(id) {
-  const history = [id];
-  let current = id;
-  
-  const findPreEvo = (speciesId) => {
-    for (const [from, data] of Object.entries(EVOLUTION_TABLE)) {
-      if (data.to === speciesId) return from;
-    }
-    for (const [from, data] of Object.entries(STONE_EVOLUTIONS)) {
-      if (data.to === speciesId) return from;
-    }
-    for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {
-      if (to === speciesId) return from;
-    }
-    return null;
-  };
-
-  let pre;
-  while ((pre = findPreEvo(current))) {
-    if (history.includes(pre)) break; // Prevent loops
-    history.unshift(pre);
-    current = pre;
-  }
-  return history;
-}
+import { getSpriteUrl, getBackSpriteUrl } from '@/data/spriteMapping';
+export { getSpriteUrl, getBackSpriteUrl };
 
 /**
  * Get moves a pokemon knows at a given level (up to 4, most recent)
@@ -90,10 +58,7 @@ export function getMovesAtLevel(id, level) {
 /**
  * Get type effectiveness multiplier
  */
-export function getTypeEffectiveness(moveType, defType) {
-  const row = TYPE_CHART[moveType] || {};
-  return row[defType] ?? 1;
-}
+export { getTypeEffectiveness };
 
 /**
  * Get type effectiveness message
@@ -238,22 +203,17 @@ export function getMoveDescription(name, md) {
   return "Causa daño al oponente sin efectos secundarios adicionales.";
 }
 
-// Stat stage multipliers (2/N to N/2)
-const STAGE_MULT = [0.25, 0.28, 0.33, 0.40, 0.50, 0.66, 1, 1.5, 2, 2.5, 3, 3.5, 4];
-// Accuracy/Evasion multipliers (3/N to N/3)
-const ACC_STAGE_MULT = [0.33, 0.37, 0.43, 0.50, 0.60, 0.75, 1, 1.33, 1.66, 2, 2.33, 2.66, 3];
-
 /**
  * Get the multiplier for a stat stage (-6 to +6).
  * Index 6 is stage 0 (neutral).
  */
 export function getStageMultiplier(stage) {
-  return STAGE_MULT[Math.max(0, Math.min(12, (stage || 0) + 6))];
+  return getStatMultiplier(stage);
 }
 
 /**
  * Get the multiplier for an accuracy/evasion stage (-6 to +6).
  */
 export function getAccStageMultiplier(stage) {
-  return ACC_STAGE_MULT[Math.max(0, Math.min(12, (stage || 0) + 6))];
+  return getAccuracyMultiplier(stage);
 }

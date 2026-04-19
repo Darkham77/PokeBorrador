@@ -9,8 +9,8 @@ export function initBattleBridge() {
   if (typeof window === 'undefined') return
 
   const battleStore = useBattleStore()
-  const gameStore = useGameStore()
-  const uiStore = useUIStore()
+  const _gameStore = useGameStore()
+  const _uiStore = useUIStore()
 
   window.startBattle = (pokemon, isTrainer, trainerData, locationId) => {
     battleStore.initBattle({ pokemon, isTrainer, trainerData, locationId })

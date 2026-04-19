@@ -1,7 +1,8 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, reactive } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
@@ -40,13 +41,12 @@ const receiveAll = async () => {
 }
 
 const getAssetIcon = (asset) => {
-  if (asset.type === 'money') return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/nugget.png'
-  return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'
+  if (asset.type === 'money') return getAssetUrl(ASSET_TYPES.ITEM, 'nugget')
+  return getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')
 }
 
 const getSpriteUrl = (id) => {
-  if (window.getSpriteUrl) return window.getSpriteUrl(id)
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
+  return getAssetUrl(ASSET_TYPES.POKEMON, id)
 }
 </script>
 

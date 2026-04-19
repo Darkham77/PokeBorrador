@@ -2,6 +2,9 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { NATURES } from '@/data/natures';
 import { GAME_RATIOS } from '@/data/constants';
 import { getMovesAtLevel } from '@/logic/pokemonUtils';
+import { useEventStore } from '@/stores/events';
+import { usePlayerClassStore } from '@/stores/playerClass';
+import { useWarStore } from '@/stores/war';
 
 /**
  * Probabilidades de items equipados en estado salvaje
@@ -90,14 +93,13 @@ export function makePokemon(id, level, options = {}) {
     id = 'pidgey';
   }
 
-  // Helpers externos (Legacy bridge fallback)
-  const getStreakIvFloor = options.getStreakIvFloor || (typeof window !== 'undefined' && window.getStreakIvFloor) || (() => 0);
-  const getGuardianForMap = options.getGuardianForMap || (typeof window !== 'undefined' && window.getGuardianForMap);
-  const currentEncounterMapId = options.mapId || (typeof window !== 'undefined' && window.currentEncounterMapId);
-  const hasDominanceIvBonus = options.hasDominanceIvBonus || (typeof window !== 'undefined' && window.hasDominanceIvBonus);
-  const getActiveShinyRate = options.getActiveShinyRate || (typeof window !== 'undefined' && window.getActiveShinyRate);
-  
-  const _ivFloor = getStreakIvFloor();
+  // 1. IV Floor from Class (Cazabichos)
+  const classStore = usePlayerClassStore();
+  let _ivFloor = options.ivFloor || 0;
+  if (classStore.playerClass === 'cazabichos') {
+    _ivFloor = Math.max(_ivFloor, classStore.classData.captureStreak || 0);
+  }
+
   const _randIv = (forceReRoll = false, isGuardian = false) => {
     let val = Math.floor(Math.random() * 32);
     if (isGuardian || forceReRoll) {
@@ -107,8 +109,10 @@ export function makePokemon(id, level, options = {}) {
     return Math.max(_ivFloor, val);
   };
   
-  const isGuardianPotential = (getGuardianForMap && currentEncounterMapId && getGuardianForMap(currentEncounterMapId)?.id === id);
-  const appliedIvBonus = hasDominanceIvBonus && currentEncounterMapId && hasDominanceIvBonus(currentEncounterMapId) && (Math.random() < 0.30);
+  const warStore = useWarStore();
+  const currentMapId = options.mapId;
+  const isGuardianPotential = (currentMapId && warStore.getGuardianForMap && warStore.getGuardianForMap(currentMapId)?.id === id);
+  const appliedIvBonus = currentMapId && warStore.hasDominanceIvBonus && warStore.hasDominanceIvBonus(currentMapId) && (Math.random() < 0.30);
 
   const ivs = { 
     hp: _randIv(appliedIvBonus, isGuardianPotential), 
@@ -125,18 +129,30 @@ export function makePokemon(id, level, options = {}) {
   const gender = options.gender !== undefined ? options.gender : assignGender(id);
 
   // Shiny Calculation
+  const eventStore = useEventStore();
   let isShiny = options.isShiny;
   if (isShiny === undefined) {
-    const baseShinyRate = getActiveShinyRate ? getActiveShinyRate() : GAME_RATIOS.shinyRate;
-    let finalShinyRate = baseShinyRate;
-    if (typeof window !== 'undefined' && typeof window.getEventSpeciesShiny === 'function') {
-      const speciesShinyMult = window.getEventSpeciesShiny(id);
-      if (speciesShinyMult > 1) finalShinyRate = Math.floor(finalShinyRate / speciesShinyMult);
+    const baseShinyRate = GAME_RATIOS.shinyRate;
+    let totalBonusMult = 0;
+    
+    // Event Bonus
+    if (eventStore.getEventSpeciesShinyMultiplier) {
+      totalBonusMult += (eventStore.getEventSpeciesShinyMultiplier(id) - 1);
     }
-    if (typeof window !== 'undefined' && typeof window.getDominanceShinyMultiplier === 'function' && currentEncounterMapId) {
-      finalShinyRate = Math.floor(finalShinyRate / window.getDominanceShinyMultiplier(currentEncounterMapId));
+    
+    // Local Options Bonus
+    if (options.shinyMultiplier) {
+      totalBonusMult += (options.shinyMultiplier - 1);
     }
-    finalShinyRate = Math.max(1, finalShinyRate);
+
+    // War Dominance Bonus
+    if (warStore.getDominanceShinyMultiplier && currentMapId) {
+      totalBonusMult += (warStore.getDominanceShinyMultiplier(currentMapId) - 1);
+    }
+
+    const finalMult = Math.max(1, 1 + totalBonusMult);
+    const finalShinyRate = Math.max(1, Math.floor(baseShinyRate / (finalMult * (eventStore.globalMultipliers?.shiny || 1))));
+    
     isShiny = Math.random() < (1 / finalShinyRate);
   }
   

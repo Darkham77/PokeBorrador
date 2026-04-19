@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useInventoryStore } from '@/stores/inventoryStore'
+import { useInventoryStore } from '@/stores/inventory'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 

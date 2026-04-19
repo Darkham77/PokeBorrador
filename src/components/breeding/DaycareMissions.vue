@@ -5,7 +5,7 @@ import { ref } from 'vue';
 import DaycarePicker from './DaycarePicker.vue';
 
 const breedingStore = useBreedingStore();
-const uiStore = useUIStore();
+const _uiStore = useUIStore();
 
 const isDeliveryPickerOpen = ref(false);
 const activeMissionIndex = ref(-1);

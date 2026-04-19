@@ -8,7 +8,7 @@
 
 ## 🧠 MOBILE BACKEND MINDSET
 
-```
+```text
 Mobile clients are DIFFERENT from web clients:
 ├── Unreliable network (2G, subway, elevator)
 ├── Battery constraints (minimize wake-ups)
@@ -43,7 +43,7 @@ Mobile clients are DIFFERENT from web clients:
 
 ### Platform Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                    YOUR BACKEND                                  │
 ├─────────────────────────────────────────────────────────────────┤
@@ -82,7 +82,7 @@ Mobile clients are DIFFERENT from web clients:
 
 ### Token Management
 
-```
+```text
 TOKEN LIFECYCLE:
 ├── App registers → Get token → Send to backend
 ├── Token can change → App must re-register on start
@@ -97,7 +97,7 @@ TOKEN LIFECYCLE:
 
 ### Sync Strategy Selection
 
-```
+```text
 WHAT TYPE OF DATA?
         │
         ├── Read-only (news, catalog)
@@ -129,7 +129,7 @@ WHAT TYPE OF DATA?
 
 ### Sync Queue Pattern
 
-```
+```text
 CLIENT SIDE:
 ├── User makes change → Write to local DB
 ├── Add to sync queue → { action, data, timestamp, retries }
@@ -162,7 +162,7 @@ SERVER SIDE:
 
 ### Pagination: Cursor vs Offset
 
-```
+```text
 OFFSET (Bad for mobile):
 ├── Page 1: OFFSET 0 LIMIT 20
 ├── Page 2: OFFSET 20 LIMIT 20
@@ -179,7 +179,7 @@ CURSOR (Good for mobile):
 
 ### Batch Requests
 
-```
+```text
 Instead of:
 GET /users/1
 GET /users/2  
@@ -202,7 +202,7 @@ POST /batch
 
 ### Version Check Endpoint
 
-```
+```text
 GET /api/app-config
 Headers:
   X-App-Version: 2.1.0
@@ -226,7 +226,7 @@ Response:
 
 ### Version Comparison Logic
 
-```
+```text
 CLIENT VERSION vs MINIMUM VERSION:
 ├── client >= minimum → Continue normally
 ├── client < minimum → Show force update screen
@@ -245,7 +245,7 @@ FEATURE FLAGS:
 
 ### Token Strategy
 
-```
+```text
 ACCESS TOKEN:
 ├── Short-lived (15 min - 1 hour)
 ├── Stored in memory (not persistent)
@@ -267,7 +267,7 @@ DEVICE TOKEN:
 
 ### Silent Re-authentication
 
-```
+```text
 REQUEST FLOW:
 ├── Make request with access token
 ├── 401 Unauthorized?
@@ -324,7 +324,7 @@ REQUEST FLOW:
 
 ### Image Optimization
 
-```
+```text
 CLIENT REQUEST:
 GET /images/{id}?w=400&h=300&q=80&format=webp
 
@@ -338,7 +338,7 @@ SERVER RESPONSE:
 
 ### Chunked Upload (Large Files)
 
-```
+```text
 UPLOAD FLOW:
 1. POST /uploads/init
    { filename, size, mime_type }
@@ -355,7 +355,7 @@ UPLOAD FLOW:
 
 ### Streaming Audio/Video
 
-```
+```text
 REQUIREMENTS:
 ├── HLS (HTTP Live Streaming) for iOS
 ├── DASH or HLS for Android
@@ -375,7 +375,7 @@ GET /media/{id}/download       → Full file for offline
 
 ### Device Attestation
 
-```
+```text
 VERIFY REAL DEVICE (not emulator/bot):
 ├── iOS: DeviceCheck API
 │   └── Server verifies with Apple
@@ -386,7 +386,7 @@ VERIFY REAL DEVICE (not emulator/bot):
 
 ### Request Signing
 
-```
+```text
 CLIENT:
 ├── Create signature = HMAC(timestamp + path + body, secret)
 ├── Send: X-Signature: {signature}
@@ -402,7 +402,7 @@ SERVER:
 
 ### Rate Limiting
 
-```
+```text
 MOBILE-SPECIFIC LIMITS:
 ├── Per device (X-Device-ID)
 ├── Per user (after auth)
@@ -422,7 +422,7 @@ Retry-After: 60 (when 429)
 
 ### Required Headers from Mobile
 
-```
+```text
 Every mobile request should include:
 ├── X-App-Version: 2.1.0
 ├── X-Platform: ios | android
@@ -436,7 +436,7 @@ Every mobile request should include:
 
 ### What to Log
 
-```
+```text
 FOR EACH REQUEST:
 ├── All headers above
 ├── Endpoint, method, status

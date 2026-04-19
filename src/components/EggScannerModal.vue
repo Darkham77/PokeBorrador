@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBreedingStore } from '@/stores/breeding'
 
-const props = defineProps({
+const _props = defineProps({
   isOpen: Boolean
 })
 
@@ -95,7 +95,7 @@ const handleSell = async () => {
   scanningResult.value = null
 }
 
-const getSprite = (id, shiny) => {
+const _getSprite = (id, shiny) => {
   return window.getSpriteUrl?.(id, shiny) || ''
 }
 </script>

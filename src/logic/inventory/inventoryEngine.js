@@ -1,4 +1,5 @@
 import { SHOP_ITEMS } from '@/data/items';
+import { getAssetUrl, ASSET_TYPES } from '../services/assetService';
 
 /**
  * Inventory logic engine for non-battle interactions.
@@ -12,8 +13,6 @@ import { SHOP_ITEMS } from '@/data/items';
 export function getSellPrice(itemName) {
   const item = SHOP_ITEMS.find(i => i.name === itemName);
   if (!item) return 0;
-  // If market is false but it has a price, we still allow selling? 
-  // Legacy checked itemInfo.market !== false || (itemInfo.price && itemInfo.price > 0)
   if (item.market === false && (!item.price || item.price <= 0)) return 0;
   
   return Math.floor((item.price || 0) * 0.5);
@@ -25,27 +24,7 @@ export function getSellPrice(itemName) {
  * @returns {string}
  */
 export function getItemSpriteUrl(itemId) {
-  // Mapping some internal IDs to PokéAPI names if they differ
-  const mapping = {
-    'pocion': 'potion',
-    'super_pocion': 'super-potion',
-    'hiper_pocion': 'hyper-potion',
-    'pocion_max': 'max-potion',
-    'revivir_max': 'max-revive',
-    'quemadura': 'burn-heal',
-    'despertar': 'awakening',
-    'cura_total': 'full-heal',
-    'elixir': 'ether',
-    'elixir_max': 'max-elixir',
-    'piedra_fuego': 'fire-stone',
-    'piedra_agua': 'water-stone',
-    'piedra_trueno': 'thunder-stone',
-    'piedra_hoja': 'leaf-stone',
-    'piedra_luna': 'moon-stone'
-  };
-  
-  const mappedId = mapping[itemId] || itemId.replace(/_/g, '-');
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${mappedId}.png`;
+  return getAssetUrl(ASSET_TYPES.ITEM, itemId);
 }
 
 /**

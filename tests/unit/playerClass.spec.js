@@ -44,7 +44,7 @@ vi.mock('@/logic/auth/saveService', () => ({
 const inventoryMock = {
   addItem: vi.fn()
 }
-vi.mock('@/stores/inventoryStore', () => ({
+vi.mock('@/stores/inventory', () => ({
   useInventoryStore: vi.fn(() => inventoryMock)
 }))
 

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -38,7 +39,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
       >{{ getGenderText(p.gender) }}</span>
       <img
         v-if="!isPlayer && p.caught"
-        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+        :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
         class="caught-icon"
       >
     </div>

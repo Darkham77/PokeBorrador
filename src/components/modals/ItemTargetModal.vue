@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventoryStore'
+import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
 import { getSpriteUrl } from '@/logic/sprites'
 import { getStatusIcon } from '@/logic/battle/battleStatus'

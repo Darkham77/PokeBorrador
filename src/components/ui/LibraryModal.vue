@@ -184,7 +184,7 @@ const switchTab = (tabId) => {
 
   &:hover {
     background: var(--red, #ef4444);
-    transform: rotate(90deg) scale(1.1);
+    transform: rotate(90deg) Scale(1.1);
   }
 }
 
@@ -276,7 +276,7 @@ const switchTab = (tabId) => {
     transition: transform 0.2s;
 
     &:hover {
-      transform: scale(1.02);
+      transform: Scale(1.02);
       background: rgba(255, 255, 255, 0.05);
     }
 

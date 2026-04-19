@@ -12,10 +12,10 @@ Modern Sass built-ins often collide with standard CSS functions. You **MUST** us
 
 Apply interpolation to the following CSS functions to prevent "X is not a color" errors:
 
-- `transform: string.unquote("scale(#{1.5})");`
-- `filter: string.unquote("invert(#{100%})");`
-- `filter: string.unquote("grayscale(#{0.8})");`
-- `filter: string.unquote("opacity(#{0.5})");`
+- `transform: Scale(1.5);`
+- `filter: Invert(100%);`
+- `filter: Grayscale(0.8);`
+- `filter: Opacity(0.5);`
 
 > [!IMPORTANT]
 > **VUE COMPONENT RULE**: Interpolation `#{}` only works inside `<style lang="scss">`. If you apply this fix to a `.vue` file, you **MUST** ensure the style block has the `lang="scss"` attribute.

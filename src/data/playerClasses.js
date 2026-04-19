@@ -1,11 +1,8 @@
 /**
  * PLAYER_CLASSES: Definiciones estáticas de las clases de jugador.
  * Incluye bonos, penalizaciones, modificadores de batalla y sprites.
+ * Los sprites se resuelven dinámicamente mediante el AssetService.
  */
-import teamrocketAvatar from '@/assets/sprites/trainers/teamrocket.webp';
-import cazabichosAvatar from '@/assets/sprites/trainers/cazabichos.webp';
-import entrenadorAvatar from '@/assets/sprites/trainers/entrenador.webp';
-import criadorAvatar from '@/assets/sprites/trainers/criador.webp';
 
 export const PLAYER_CLASSES = {
   rocket: {
@@ -36,8 +33,7 @@ export const PLAYER_CLASSES = {
       catchMult: 1.0,
       shopDiscount: 0.20
     },
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/rainbowrocketgrunt.webp',
-    avatarSprite: teamrocketAvatar
+    avatarSpriteId: 'teamrocket'
   },
   cazabichos: {
     id: 'cazabichos',
@@ -67,8 +63,7 @@ export const PLAYER_CLASSES = {
       daycareCostMult: 1.5,
       catchMult: 1.0
     },
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/bugcatcher-gen6.webp',
-    avatarSprite: cazabichosAvatar
+    avatarSpriteId: 'cazabichos'
   },
   entrenador: {
     id: 'entrenador',
@@ -98,8 +93,7 @@ export const PLAYER_CLASSES = {
       daycareCostMult: 1.5,
       catchMult: 1.0
     },
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.webp',
-    avatarSprite: entrenadorAvatar
+    avatarSpriteId: 'entrenador'
   },
   criador: {
     id: 'criador',
@@ -127,8 +121,7 @@ export const PLAYER_CLASSES = {
       daycareCostMult: 1.0,
       catchMult: 1.0
     },
-    sprite: 'https://play.pokemonshowdown.com/sprites/trainers/jacq.webp',
-    avatarSprite: criadorAvatar
+    avatarSpriteId: 'criador'
   }
 };
 

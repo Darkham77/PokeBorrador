@@ -139,7 +139,7 @@ const routes = [
 
 Understanding when each guard type fires:
 
-```
+```text
 1. beforeRouteLeave (in-component, leaving component)
 2. beforeEach (global)
 3. beforeEnter (per-route, ONLY when entering from different route)

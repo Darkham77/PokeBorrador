@@ -71,16 +71,16 @@ const MISSION_DIALOGUES_BASE = {
 };
 
 const TRAINER_TYPES = {
-  'caza_bichos': { name: 'Cazabichos', sprite: 'trainer_bug.webp' },
-  'ornitologo': { name: 'Ornitólogo', sprite: 'trainer_bird.webp' },
-  'cientifico': { name: 'Científico', sprite: 'trainer_science.webp' },
-  'luchador': { name: 'Luchador', sprite: 'trainer_fighter.webp' },
-  'pescador': { name: 'Pescador', sprite: 'trainer_fish.webp' },
-  'nadador': { name: 'Nadador', sprite: 'trainer_swim.webp' },
-  'domador': { name: 'Domador', sprite: 'trainer_tamer.webp' },
-  'medium': { name: 'Medium', sprite: 'trainer_psychic.webp' },
-  'motorista': { name: 'Motorista', sprite: 'trainer_biker.webp' },
-  'montanero': { name: 'Montañero', sprite: 'trainer_hiker.webp' }
+  'caza_bichos': { name: 'Cazabichos', sprite: 'cazabichos' },
+  'ornitologo': { name: 'Ornitólogo', sprite: 'entrenador' },
+  'cientifico': { name: 'Científico', sprite: 'criador' },
+  'luchador': { name: 'Luchador', sprite: 'entrenador' },
+  'pescador': { name: 'Pescador', sprite: 'tamer' },
+  'nadador': { name: 'Nadador', sprite: 'tamer' },
+  'domador': { name: 'Domador', sprite: 'tamer' },
+  'medium': { name: 'Medium', sprite: 'entrenador' },
+  'motorista': { name: 'Motorista', sprite: 'teamrocket' },
+  'montanero': { name: 'Montañero', sprite: 'tamer' }
 };
 
 const NATURES = ['Audaz', 'Firme', 'Pícaro', 'Manso', 'Serio', 'Osado', 'Plácido', 'Agitado', 'Jovial', 'Ingenuo', 'Modesto', 'Moderado', 'Raro', 'Dócil', 'Tímido', 'Activo', 'Alocado', 'Tranquilo', 'Grosero', 'Cauto'];
@@ -163,7 +163,7 @@ export function generateMission(trainerLevel, dateStr) {
     completed: false,
     trainerType: tKey,
     trainerName: trainer.name,
-    trainerSprite: trainer.sprite,
+    trainerSprite: trainer.sprite, // This is now just an ID like 'cazabichos'
     dialogue
   };
 }

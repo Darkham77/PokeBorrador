@@ -372,7 +372,7 @@ const select = (poke) => {
   &.locked {
     opacity: 0.5;
     cursor: not-allowed;
-    filter: grayscale(1);
+    filter: grayScale(1);
   }
 }
 

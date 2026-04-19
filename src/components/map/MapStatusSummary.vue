@@ -1,4 +1,7 @@
 <script setup>
+import { computed } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+
 const props = defineProps({
   missionsRemaining: { type: Number, default: 0 },
   missionSprites: { type: Array, default: () => [] },
@@ -6,20 +9,33 @@ const props = defineProps({
   gymSprites: { type: Array, default: () => [] },
   eggCount: { type: Number, default: 0 },
   rivalEventActive: { type: Boolean, default: true },
-  rivalEventText: { type: String, default: 'Doble chance de encuentro con El Rival durante todo el día' }
+  rivalEventText: { type: String, default: 'Doble chance de encuentro con El Rival durante todo el día' },
+  isReady: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['openTab', 'openCenter'])
+
+const bannerUrl = computed(() => {
+  return getAssetUrl(ASSET_TYPES.BANNER, 'pokecenter_banner')
+})
+
+const bannerStyle = computed(() => ({
+  backgroundImage: `url('${bannerUrl.value}')`
+}))
 </script>
 
 <template>
   <div class="pc-split-container">
-    <!-- Carta Centro Pokémon (Izq: 65%) -->
+    <!-- Carta Centro Pokémon (Izq: 50%) -->
     <div class="pc-left">
       <div
         class="pokecenter-banner legacy-panel"
         @click="emit('openCenter')"
       >
+        <div 
+          class="banner-bg" 
+          :style="bannerStyle"
+        />
         <div class="banner-overlay">
           <div class="banner-title">
             CENTRO POKÉMON
@@ -32,20 +48,23 @@ const emit = defineEmits(['openTab', 'openCenter'])
       </div>
     </div>
 
-    <!-- Grilla de Status Banners (Der: 35%) -->
+    <!-- Grilla de Status Banners (Der: 50%) -->
     <div class="pc-right">
       <div class="pc-banner-grid">
-        <!-- 1. Rival Event -->
+        <!-- 1. Evento -->
         <div
-          class="pc-banner rival-banner legacy-panel"
+          class="pc-banner event-banner legacy-panel"
           :class="{ active: rivalEventActive }"
         >
           <div class="pc-banner-header">
-            <span class="pc-banner-icon">🚨</span>
+            <span class="pc-banner-icon">⚡</span>
             <span class="pc-banner-title">EVENTO</span>
           </div>
+          <div class="pc-banner-text-large">
+            {{ rivalEventActive ? rivalEventText.split(':')[0] : 'SIN EVENTOS' }}
+          </div>
           <div class="pc-banner-text">
-            {{ rivalEventText }}
+            {{ rivalEventActive ? (rivalEventText.split(':')[1] || rivalEventText) : 'No hay eventos activos en este momento' }}
           </div>
         </div>
 
@@ -59,13 +78,13 @@ const emit = defineEmits(['openTab', 'openCenter'])
             <span class="pc-banner-title">GUARDERÍA</span>
           </div>
           <div class="pc-banner-text">
-            Misiones: <span>{{ missionsRemaining }}</span>
+            ¡Tenés <span>{{ missionsRemaining }}</span> misiones por hacer!
           </div>
           <div class="pc-banner-spawns">
             <img
-              v-for="(src, i) in missionSprites"
+              v-for="(spriteId, i) in missionSprites"
               :key="i"
-              :src="src"
+              :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
               class="pixelated"
               onerror="this.style.display='none'"
             >
@@ -82,13 +101,13 @@ const emit = defineEmits(['openTab', 'openCenter'])
             <span class="pc-banner-title">GIMNASIOS</span>
           </div>
           <div class="pc-banner-text">
-            Rematches: <span>{{ gymRematches || 8 }}</span>
+            Tenés <span>{{ gymRematches }}</span> gimnasios por derrotar
           </div>
           <div class="pc-banner-spawns">
             <img
-              v-for="(src, i) in gymSprites"
+              v-for="(spriteId, i) in gymSprites"
               :key="i"
-              :src="src"
+              :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
               class="pixelated"
               onerror="this.style.display='none'"
             >
@@ -105,7 +124,7 @@ const emit = defineEmits(['openTab', 'openCenter'])
             <span class="pc-banner-title">CRIANZA</span>
           </div>
           <div class="pc-banner-text">
-            Huevos: <span>{{ eggCount }}</span>
+            Tenés <span>{{ eggCount }}</span> huevos esperando
           </div>
         </div>
       </div>
@@ -113,145 +132,216 @@ const emit = defineEmits(['openTab', 'openCenter'])
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+.map-view-container {
+  padding: 0 0 10px;
+  width: 100%;
+}
+
 .pc-split-container {
   display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  height: 240px;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: stretch;
+
+  @media (max-width: 1100px) {
+    flex-direction: column;
+  }
 }
 
-.pc-left { flex: 1.8; }
-.pc-right { flex: 1; }
-
-.pokecenter-banner {
-  background-image: linear-gradient(to top, rgba(0,0,0,0.8), transparent), url('@/assets/ui/banners/pokecenter_banner.webp');
-  background-size: cover;
-  background-position: center;
-  border: 4px solid #f69;
-  box-shadow: 0 0 0 4px #000;
-  height: 100%;
-  position: relative;
+.pc-left {
+  flex: 1;
+  min-width: 0;
+  min-height: 180px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  cursor: pointer;
-  transition: all 0.1s;
 }
 
-.pokecenter-banner:hover {
-  filter: Brightness(1.1);
+.pc-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.pokecenter-banner {
+  flex: 1;
+  width: 100%;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  border-bottom: 3px solid #000;
+  overflow: hidden; /* Back to overflow hidden for the background image */
+  
+  .banner-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center 20%;
+    z-index: 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -2px -2px 0; // Overlap slightly to prevent bleeding
+    background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.9) 45%, transparent 100%);
+    z-index: 1;
+    pointer-events: none;
+    border-radius: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    border-bottom-color: var(--yellow);
+  }
 }
 
 .banner-overlay {
-  padding: 20px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  text-align: left;
+  z-index: 2;
 }
 
 .banner-title {
   font-family: 'Press Start 2P', monospace;
-  font-size: 14px;
-  color: #f69;
-  margin-bottom: 10px;
-  text-shadow: 2px 2px #000;
+  font-size: 24px;
+  color: white;
+  margin-bottom: 4px;
+  text-shadow: 0 4px 12px rgba(0,0,0,1);
 }
 
 .banner-desc {
   font-size: 11px;
-  color: #ccc;
-  line-height: 1.5;
+  color: rgba(255,255,255,0.8);
+  max-width: 90%;
 }
 
 .banner-tag {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #f69;
-  color: #fff;
-  padding: 4px 8px;
+  top: 15px;
+  right: 15px;
+  background: #ff3333;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 10px;
   font-family: 'Press Start 2P', monospace;
-  font-size: 6px;
-  border: 2px solid #000;
+  font-size: 8px;
+  box-shadow: 0 4px 10px rgba(255,51,51,0.3);
+  z-index: 2;
 }
 
 .pc-banner-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
   height: 100%;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .pc-banner {
-  background: #111;
-  border: 4px solid #333;
-  box-shadow: 0 0 0 4px #000;
-  padding: 10px;
-  cursor: pointer;
+  background: rgba(255,255,255,0.03);
+  border-radius: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  transition: all 0.1s;
-}
+  position: relative;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.2s;
 
-.pc-banner:hover {
-  background: #1a1a1a;
-  border-color: #444;
-}
-
-.rival-banner.active {
-  border-color: #ffcc00;
-}
-
-.rival-banner.active .pc-banner-title {
-  color: #ffcc00;
+  &:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.2);
+  }
 }
 
 .pc-banner-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
-.pc-banner-icon { font-size: 16px; }
-
+.pc-banner-icon { font-size: 14px; }
 .pc-banner-title {
   font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  color: #fff;
+  font-size: 8px;
+  color: var(--gray);
+}
+
+.pc-banner-text-large {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  line-height: 1.4;
+  margin-bottom: 4px;
+  color: #ffcc00;
+  text-transform: uppercase;
 }
 
 .pc-banner-text {
   font-size: 9px;
-  color: #888;
-}
-
-.pc-banner-text span {
-  color: #fff;
-  font-weight: bold;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.7);
+  
+  span { color: var(--yellow); }
 }
 
 .pc-banner-spawns {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
   display: flex;
-  gap: 2px;
-  margin-top: 5px;
-}
+  gap: -8px;
 
-.pc-banner-spawns img {
-  width: 24px;
-  height: 24px;
-}
-
-.pixelated {
-  image-rendering: pixelated;
-}
-
-@media (max-width: 1280px) {
-  .pc-split-container { 
-    flex-direction: column; 
-    height: auto; 
+  img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    
+    &:not(:first-child) { margin-left: -10px; }
   }
-  .pokecenter-banner { min-height: 200px; }
-  .pc-banner-grid { height: auto; }
+}
+
+.event-banner {
+  &.active {
+    border: 1px solid rgba(255, 204, 0, 0.4);
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.1);
+    background: linear-gradient(135deg, rgba(255, 204, 0, 0.08) 0%, transparent 100%);
+    
+    .pc-banner-title { color: #ffcc00; opacity: 0.8; }
+    .pc-banner-icon { color: #ffcc00; }
+  }
+}
+
+.pixelated { image-rendering: pixelated; }
+
+@media (max-width: 1100px) {
+  /* Removed rogue global HUD overrides */
+}
+
+@media (max-width: 768px) {
+  .pc-split-container {
+    flex-direction: column;
+    height: auto;
+  }
+  .pc-left {
+    flex: 1;
+    min-height: 120px;
+  }
+  .pc-right {
+    flex: 1;
+  }
+  .pc-banner { height: 70px; }
 }
 </style>

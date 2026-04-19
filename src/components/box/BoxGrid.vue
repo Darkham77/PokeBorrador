@@ -1,7 +1,7 @@
 <script setup>
 import BoxPokemonCard from './BoxPokemonCard.vue'
 
-const props = defineProps({
+const _props = defineProps({
   displayList: { type: Array, required: true },
   rocketSelection: { type: Array, default: () => [] },
   isRocketMode: { type: Boolean, default: false },

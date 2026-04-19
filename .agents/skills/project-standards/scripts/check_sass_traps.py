@@ -4,7 +4,7 @@ import re
 import sys
 
 # Regex to find transform: scale(x) without interpolation #{x}
-SCALE_TRAP_REGEX = re.compile(r'scale\((?!\#\{)([\d\.]+)\)')
+SCALE_TRAP_REGEX = re.compile(r'(?<![a-zA-Z-])(?:scale|grayscale|invert|opacity)\((?!\#\{)([\d\.\%]+)\)', re.IGNORECASE)
 SCSS_INTERPOLATION_REGEX = re.compile(r'\#\{')
 LANG_SCSS_REGEX = re.compile(r'<style[^>]*lang=["\']scss["\'][^>]*>')
 

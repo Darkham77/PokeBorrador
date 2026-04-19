@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useTradeStore } from '@/stores/trade'
@@ -60,11 +60,11 @@ const closeTrade = () => {
   uiStore.isTradeOpen = false
 }
 
-const selectOfferPoke = (poke) => {
+const _selectOfferPoke = (poke) => {
   tradeStore.tradeOfferPoke = poke
 }
 
-const selectRequestPoke = (poke) => {
+const _selectRequestPoke = (poke) => {
   tradeStore.tradeRequestPoke = poke
 }
 

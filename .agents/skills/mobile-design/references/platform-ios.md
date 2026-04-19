@@ -9,7 +9,7 @@
 
 ### Core Apple Design Principles
 
-```
+```text
 CLARITY:
 ├── Text is legible at every size
 ├── Icons are precise and lucid
@@ -46,7 +46,7 @@ DEPTH:
 
 ### SF Pro Font Family
 
-```
+```text
 iOS System Fonts:
 ├── SF Pro Text: Body text (< 20pt)
 ├── SF Pro Display: Large titles (≥ 20pt)
@@ -103,7 +103,7 @@ Text("Hello")
 
 ### System Colors (Semantic)
 
-```
+```text
 Use semantic colors for automatic dark mode:
 
 Primary:
@@ -139,7 +139,7 @@ Fills:
 
 ### Dark Mode Considerations
 
-```
+```text
 iOS Dark Mode is not inverted light mode:
 
 LIGHT MODE:              DARK MODE:
@@ -157,7 +157,7 @@ RULE: Always use semantic colors for automatic adaptation.
 
 ### Safe Areas
 
-```
+```text
 ┌─────────────────────────────────────┐
 │░░░░░░░░░░░ Status Bar ░░░░░░░░░░░░░│ ← Top safe area inset
 ├─────────────────────────────────────┤
@@ -185,7 +185,7 @@ RULE: Never place interactive content in unsafe areas.
 
 ### iOS Grid System
 
-```
+```text
 iPhone Grid (Standard):
 ├── 16pt margins (left/right)
 ├── 8pt minimum spacing
@@ -215,7 +215,7 @@ iPad Grid:
 
 ### Tab Bar Guidelines
 
-```
+```text
 ┌─────────────────────────────────────┐
 │                                     │
 │         Content Area                │
@@ -235,7 +235,7 @@ Rules:
 
 ### Navigation Bar Guidelines
 
-```
+```text
 ┌─────────────────────────────────────┐
 │ < Back     Page Title      Edit    │ ← Navigation bar (44pt)
 ├─────────────────────────────────────┤
@@ -278,7 +278,7 @@ Rules:
 
 ### Buttons
 
-```
+```text
 Button Styles (UIKit/SwiftUI):
 
 ┌──────────────────────────────┐
@@ -298,7 +298,7 @@ Sizes:
 
 ### Lists & Tables
 
-```
+```text
 List Styles:
 
 .plain         → No separators, edge-to-edge
@@ -316,7 +316,7 @@ Cell Accessories:
 
 ### Text Fields
 
-```
+```text
 iOS Text Field Anatomy:
 
 ┌─────────────────────────────────────┐
@@ -333,7 +333,7 @@ Clear button: Appears when has text
 
 ### Segmented Controls
 
-```
+```text
 When to Use:
 ├── 2-5 related options
 ├── Filter content
@@ -356,7 +356,7 @@ Rules:
 
 ### Pull to Refresh
 
-```
+```text
 Native UIRefreshControl behavior:
 ├── Pull beyond threshold → Spinner appears
 ├── Release → Refresh action triggered
@@ -368,7 +368,7 @@ RULE: Always use native UIRefreshControl (don't custom build).
 
 ### Swipe Actions
 
-```
+```text
 iOS swipe actions:
 
 ← Swipe Left (Destructive)      Swipe Right (Constructive) →
@@ -384,7 +384,7 @@ Full swipe: Triggers first action
 
 ### Context Menus
 
-```
+```text
 Long press → Context menu appears
 
 ┌─────────────────────────────┐
@@ -406,7 +406,7 @@ Rules:
 
 ### Sheets & Half-Sheets
 
-```
+```text
 iOS 15+ Sheets:
 
 ┌─────────────────────────────────────┐
@@ -433,7 +433,7 @@ Detents:
 
 ### Usage Guidelines
 
-```
+```text
 SF Symbols: Apple's icon library (5000+ icons)
 
 Weights: Match text weight
@@ -479,7 +479,7 @@ Image(systemName: "checkmark.circle")
 
 ### VoiceOver Requirements
 
-```
+```text
 Every interactive element needs:
 ├── Accessibility label (what it is)
 ├── Accessibility hint (what it does) - optional
@@ -498,7 +498,7 @@ accessibilityRole="button"
 
 ### Dynamic Type Scaling
 
-```
+```text
 MANDATORY: Support Dynamic Type
 
 Users can set text size from:
@@ -516,7 +516,7 @@ Your app MUST scale gracefully at all sizes.
 
 ### Reduce Motion
 
-```
+```text
 Respect motion preferences:
 
 @Environment(\.accessibilityReduceMotion) var reduceMotion

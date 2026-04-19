@@ -32,7 +32,7 @@ export async function syncServerTime() {
     _timeSynced = true;
     
     console.log(`[TIME] Server Sync Completed. Offset: ${_serverTimeOffset}ms`);
-  } catch (err) {
+  } catch (_err) {
     // Only log error if not in local/offline mode to avoid console noise
     if (typeof window !== 'undefined' && localStorage.getItem('pokevicio_session_mode') !== 'offline') {
       console.warn('[TIME] Failed to sync with server, using local time as fallback.');

@@ -4,9 +4,10 @@ import { usePlayerClassStore } from '@/stores/playerClass';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 const classStore = usePlayerClassStore();
-const gameStore = useGameStore();
+const _gameStore = useGameStore();
 const uiStore = useUIStore();
 
 const isOpen = computed(() => uiStore.isClassSelectionOpen);
@@ -17,9 +18,9 @@ const selectedTab = ref(classStore.playerClass || Object.keys(PLAYER_CLASSES)[0]
 
 const currentPreview = computed(() => PLAYER_CLASSES[hoveredClassId.value || selectedTab.value]);
 
-// Local helper for sprites moved to src/assets
+// Resolved via AssetService
 const getTrainerSprite = (id) => {
-  return new URL(`../../assets/sprites/trainers/${id}.webp`, import.meta.url).href;
+  return getAssetUrl(ASSET_TYPES.TRAINER, id);
 };
 
 const handleSelect = async (id) => {
@@ -81,7 +82,7 @@ const handleSelect = async (id) => {
           >
             <div class="preview-bg">
               <img
-                :src="getTrainerSprite(currentPreview.id)"
+                :src="getTrainerSprite(currentPreview.avatarSpriteId || currentPreview.id)"
                 :alt="currentPreview.name"
                 class="trainer-img"
               >
@@ -318,6 +319,7 @@ const handleSelect = async (id) => {
     box-shadow: none;
     cursor: default;
     opacity: 0.5;
+    background: #1e293b;
   }
 }
 

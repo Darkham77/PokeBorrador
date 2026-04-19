@@ -9,7 +9,7 @@
 
 ### Why Mobile Type is Different
 
-```
+```text
 DESKTOP:                        MOBILE:
 ├── 20-30" viewing distance     ├── 12-15" viewing distance
 ├── Large viewport              ├── Small viewport, narrow
@@ -35,7 +35,7 @@ DESKTOP:                        MOBILE:
 
 ### iOS: SF Pro Family
 
-```
+```text
 San Francisco (SF) Family:
 ├── SF Pro Display: Large text (≥ 20pt)
 ├── SF Pro Text: Body text (< 20pt)
@@ -52,7 +52,7 @@ Features:
 
 ### Android: Roboto Family
 
-```
+```text
 Roboto Family:
 ├── Roboto: Default sans-serif
 ├── Roboto Flex: Variable font
@@ -69,7 +69,7 @@ Features:
 
 ### When to Use System Fonts
 
-```
+```text
 ✅ USE system fonts when:
 ├── Brand doesn't mandate custom font
 ├── Reading efficiency is priority
@@ -86,7 +86,7 @@ Features:
 
 ### Custom Font Considerations
 
-```
+```text
 If using custom fonts:
 ├── Include all weights needed
 ├── Subset for file size
@@ -138,7 +138,7 @@ If using custom fonts:
 
 ### Creating Custom Scale
 
-```
+```text
 If creating custom scale, use modular ratio:
 
 Recommended ratios:
@@ -181,7 +181,7 @@ Text("Hello")
 
 ### Android Text Scaling (MANDATORY)
 
-```
+```text
 ALWAYS use sp for text:
 ├── sp = Scale-independent pixels
 ├── Scales with user font preference
@@ -196,7 +196,7 @@ Test at 200%!
 
 ### Scaling Challenges
 
-```
+```text
 Problems at large text sizes:
 ├── Text overflows containers
 ├── Buttons become too tall
@@ -227,7 +227,7 @@ Solutions:
 
 ### Contrast Requirements (WCAG)
 
-```
+```text
 Normal text (< 18pt or < 14pt bold):
 ├── AA: 4.5:1 ratio minimum
 ├── AAA: 7:1 ratio recommended
@@ -241,7 +241,7 @@ Logos/decorative: No requirement
 
 ### Line Height for Accessibility
 
-```
+```text
 WCAG Success Criterion 1.4.12:
 
 Line height (line spacing): ≥ 1.5×
@@ -261,7 +261,7 @@ Mobile recommendation:
 
 ### Color Adjustments
 
-```
+```text
 Light Mode:               Dark Mode:
 ├── Black text (#000)     ├── White/light gray (#E0E0E0)
 ├── High contrast         ├── Slightly reduced contrast
@@ -283,7 +283,7 @@ Use off-white (#E0E0E0 to #F0F0F0) to reduce eye strain.
 
 ### Weight in Dark Mode
 
-```
+```text
 Dark mode text appears thinner due to halation
 (light bleeding into dark background)
 
@@ -313,7 +313,7 @@ Consider:
 
 ### ❌ AI Typography Mistakes
 
-```
+```text
 AI tends to:
 ├── Use fixed px values instead of pt/sp
 ├── Skip Dynamic Type support
@@ -333,7 +333,7 @@ Test at smallest and largest settings.
 
 ### Font File Optimization
 
-```
+```text
 Font file sizes matter on mobile:
 ├── Full font: 100-300KB per weight
 ├── Subset (Latin): 15-40KB per weight
@@ -349,7 +349,7 @@ Recommendations:
 
 ### Loading Strategy
 
-```
+```text
 1. SYSTEM FONT FALLBACK
    Show system font → swap when custom loads
    
@@ -391,7 +391,7 @@ Recommendations:
 
 ### Typography Tokens
 
-```
+```text
 // iOS
 .largeTitle  // 34pt, Bold
 .title       // 28pt, Bold
@@ -413,7 +413,7 @@ labelLarge     // 14sp
 
 ### Minimum Sizes
 
-```
+```text
 Body:       14-16pt/sp (16 preferred)
 Secondary:  12-13pt/sp
 Caption:    11-12pt/sp
@@ -422,7 +422,7 @@ Nothing:    < 11pt/sp
 
 ### Line Height
 
-```
+```text
 Headings:  1.1-1.3
 Body:      1.4-1.6
 Long text: 1.5-1.75

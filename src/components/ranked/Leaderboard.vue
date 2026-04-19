@@ -1,13 +1,13 @@
 <script setup>
 import { useSocialStore } from '@/stores/social';
 import { useAuthStore } from '@/stores/auth';
-import { useRankedStore } from '@/stores/rankedStore';
+import { usePvPStore } from '@/stores/pvp';
 import PlayerAvatar from '@/components/player/PlayerAvatar.vue';
 import { ref, onMounted, watch } from 'vue';
 
 const socialStore = useSocialStore();
 const authStore = useAuthStore();
-const rankedStore = useRankedStore();
+const rankedStore = usePvPStore();
 
 const activeSort = ref('elo_rating');
 

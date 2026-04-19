@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
-import { useGTSStore } from '@/stores/gtsStore'
+import { useGTSStore } from '@/stores/gts'
 import MarketExplorer from './MarketExplorer.vue'
 import MarketFilters from './MarketFilters.vue'
 import MarketPublish from './MarketPublish.vue'

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   map: { type: Object, required: true },
@@ -17,36 +18,37 @@ const emit = defineEmits(['navigate', 'setOfficial'])
 
 const imgPath = computed(() => {
   const mapping = {
-    route1: 'ruta 1.webp',
-    route2: 'ruta 2.webp',
-    forest: 'bosque viridian.webp',
-    route22: 'ruta 22.webp',
-    route3: 'ruta 3.webp',
-    mt_moon: 'mt. moon.webp',
-    route4: 'ruta 4.webp',
-    route24: 'ruta 24.webp',
-    route25: 'ruta 25.webp',
-    route5: 'ruta 5.webp',
-    route6: 'ruta 6.webp',
-    route11: 'ruta 11.webp',
-    diglett_cave: 'cueva diglett.webp',
-    route9: 'ruta 9.webp',
-    rock_tunnel: 'tunel roca.webp',
-    route10: 'ruta 10.webp',
-    power_plant: 'central de energia.webp',
-    route8: 'ruta 8.webp',
-    pokemon_tower: 'torre pokemon.webp',
-    route12: 'ruta 12.webp',
-    route13: 'ruta 13.webp',
-    safari_zone: 'zona safari.webp',
-    seafoam_islands: 'islas espuma.webp',
-    fishing_island: 'islas espuma.webp',
-    mansion: 'mansion pokemon.webp',
-    route23: 'ruta 23.webp',
-    victory_road: 'calle victoria.webp',
-    cerulean_cave: 'cueva celeste.webp'
+    route1: 'ruta 1',
+    route2: 'ruta 2',
+    forest: 'bosque viridian',
+    route22: 'ruta 22',
+    route3: 'ruta 3',
+    mt_moon: 'mt. moon',
+    route4: 'ruta 4',
+    route24: 'ruta 24',
+    route25: 'ruta 25',
+    route5: 'ruta 5',
+    route6: 'ruta 6',
+    route11: 'ruta 11',
+    diglett_cave: 'cueva diglett',
+    route9: 'ruta 9',
+    rock_tunnel: 'tunel roca',
+    route10: 'ruta 10',
+    power_plant: 'central de energia',
+    route8: 'ruta 8',
+    pokemon_tower: 'torre pokemon',
+    route12: 'ruta 12',
+    route13: 'ruta 13',
+    safari_zone: 'zona safari',
+    seafoam_islands: 'islas espuma',
+    fishing_island: 'islas espuma',
+    mansion: 'mansion pokemon',
+    route23: 'ruta 23',
+    victory_road: 'calle victoria',
+    cerulean_cave: 'cueva celeste'
   }
-  return `/maps/${mapping[props.map.id] || 'default.webp'}`
+  const fileName = mapping[props.map.id] || 'default'
+  return getAssetUrl(ASSET_TYPES.MAP, fileName)
 })
 
 const cycleLabel = computed(() => {
@@ -55,14 +57,11 @@ const cycleLabel = computed(() => {
 })
 
 const getPokemonSprite = (id) => {
-  const spriteIds = window.POKEMON_SPRITE_IDS || {}
-  const num = spriteIds[id]
-  return num ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png` : null
+  return getAssetUrl(ASSET_TYPES.POKEMON, id)
 }
 
 const getFactionIcon = (faction) => {
-  if (!faction) return ''
-  return new URL(`../../assets/ui/factions/${faction}.webp`, import.meta.url).href
+  return getAssetUrl(ASSET_TYPES.FACTION, faction)
 }
 </script>
 
@@ -182,6 +181,7 @@ const getFactionIcon = (faction) => {
   cursor: pointer;
   transition: all 0.1s;
   overflow: hidden;
+  image-rendering: pixelated;
 }
 
 .map-card:hover:not(.locked) {

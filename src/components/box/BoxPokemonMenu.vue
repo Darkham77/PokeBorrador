@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-import { useBoxStore } from '@/stores/boxStore'
+import { useBoxStore } from '@/stores/box'
 import { getSpriteUrl } from '@/data/spriteMapping'
 
 const props = defineProps({
@@ -338,7 +338,7 @@ const handleToggleTag = (tag) => {
         background: rgba(199, 125, 255, 0.2);
         border-color: var(--purple);
         color: #fff;
-        transform: scale(1.1);
+        transform: Scale(1.1);
       }
       &:hover { background: rgba(255, 255, 255, 0.1); }
     }

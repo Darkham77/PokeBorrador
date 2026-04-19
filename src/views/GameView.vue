@@ -1,5 +1,4 @@
 <script setup>
-import MainGameView from '@/views/MainGameView.vue'
 </script>
 
 <template>

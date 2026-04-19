@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { MARKET_UNLOCKS } from '@/data/items'

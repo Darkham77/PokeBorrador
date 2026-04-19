@@ -3,12 +3,13 @@ import { useWarStore } from '@/stores/war'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { computed, onMounted } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { WEEKLY_REWARD_MILESTONES } from '@/logic/war/warEngine'
 import MapControlList from './MapControlList.vue'
 
 const warStore = useWarStore()
-const gameStore = useGameStore()
-const authStore = useAuthStore()
+const _gameStore = useGameStore()
+const _authStore = useAuthStore()
 
 const dispute = computed(() => warStore.isDisputeActive)
 
@@ -60,7 +61,7 @@ onMounted(async () => {
     <div class="score-card">
       <div class="team union">
         <img
-          src="@/assets/factions/union.png"
+          :src="getAssetUrl(ASSET_TYPES.FACTION, 'union')"
           alt="Union"
         >
         <div class="count">
@@ -75,7 +76,7 @@ onMounted(async () => {
       </div>
       <div class="team poder">
         <img
-          src="@/assets/factions/poder.png"
+          :src="getAssetUrl(ASSET_TYPES.FACTION, 'poder')"
           alt="Poder"
         >
         <div class="count">

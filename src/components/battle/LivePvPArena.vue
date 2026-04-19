@@ -1,8 +1,10 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { PLAYER_CLASSES } from '@/data/playerClasses'
 
 const livePvP = useLivePvPStore()
 const auth = useAuthStore()
@@ -11,8 +13,15 @@ const ui = useUIStore()
 const battle = computed(() => livePvP.battleState)
 
 // Local animations/visual state
-const playerSprite = ref(null)
-const enemySprite = ref(null)
+const playerAvatarId = computed(() => {
+  const pClass = auth.user?.user_metadata?.playerClass
+  return PLAYER_CLASSES[pClass]?.avatarSpriteId || 'red-lgpe'
+})
+
+const opponentAvatarId = computed(() => {
+  // En PvP real, esto vendría del estado de la batalla
+  return battle.value.opponentAvatar || 'blue-gen3'
+})
 
 onMounted(() => {
   // Sync logic if needed
@@ -55,7 +64,7 @@ function handleForfeit() {
           <!-- Avatar dynamic -->
           <div class="trainer-sprite-wrap">
             <img
-              src="https://play.pokemonshowdown.com/sprites/trainers/red-lgpe.webp"
+              :src="getAssetUrl(ASSET_TYPES.TRAINER, playerAvatarId)"
               class="trainer-img"
             >
           </div>
@@ -185,7 +194,7 @@ function handleForfeit() {
           </div>
           <div class="trainer-sprite-wrap">
             <img
-              src="https://play.pokemonshowdown.com/sprites/trainers/blue-gen3.webp"
+              :src="getAssetUrl(ASSET_TYPES.TRAINER, opponentAvatarId)"
               class="trainer-img"
             >
           </div>

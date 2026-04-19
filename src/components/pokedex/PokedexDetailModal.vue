@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { PDEX_TYPE_COLORS, GAME_TMS, TM_COMPAT, POKEMON_SPRITE_IDS } from '@/data/pokedex'
+import { PDEX_TYPE_COLORS, GAME_TMS, TM_COMPAT } from '@/data/pokedex'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   pokemonId: { type: String, required: true }
@@ -22,9 +23,7 @@ const tabs = [
 ]
 
 const getSprite = (id) => {
-  const spriteId = POKEMON_SPRITE_IDS[id]
-  if (!spriteId) return ''
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${spriteId}.png`
+  return getAssetUrl(ASSET_TYPES.POKEMON, id)
 }
 
 const baseStats = computed(() => {

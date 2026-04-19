@@ -1,4 +1,3 @@
-import { getPokemonTier } from '@/logic/pokemon/tierEngine.js';
 
 /**
  * Core business logic for the Online Market (GTS).
@@ -85,33 +84,3 @@ export function applyMarketFilters(list, filters, context, options = {}) {
   });
 }
 
-/**
- * Validates and executes a purchase.
- */
-export async function buyFromMarket(sb, offerId, price, type, state, buyerId) {
-  if (!sb || !buyerId || state.money < price) return { success: false, reason: 'Invalido' };
-  
-  try {
-    const { data, error } = await sb
-      .from('market_listings')
-      .update({ status: 'sold', buyer_id: buyerId })
-      .eq('id', offerId)
-      .eq('status', 'active')
-      .select();
-
-    if (error || !data?.length) return { success: false, reason: 'No disponible' };
-
-    state.money -= price;
-    if (type === 'pokemon') {
-      state.box.push(data[0].data);
-    } else {
-      const i = data[0].data;
-      state.inventory[i.name] = (state.inventory[i.name] || 0) + i.qty;
-    }
-    
-    return { success: true, data: data[0] };
-  } catch (e) {
-    console.error(e);
-    return { success: false, reason: 'Error de servidor' };
-  }
-}

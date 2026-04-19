@@ -34,17 +34,54 @@ To maintain 60FPS on mobile devices, we follow strict rendering rules. Global "d
 
 ## Assets & Optimization Standards
 
-To ensure minimal data transfer and optimal load times, all visual assets must be optimized.
+To ensure minimal data transfer and optimal load times, all visual assets must be optimized via the **Zero-Config Asset Pipeline**.
 
-### 1. WebP Mandate
+### 1. The Zero-Config Asset Pipeline (WebP & LOD)
 
-- **MANDATORY**: All images stored in the project (`src/assets/`, `public/assets/`, etc.) **MUST** be in **WebP** format.
-- **FORBIDDEN**: Storing raw `.png`, `.jpg`, or `.jpeg` files in the repository.
-- **Auto-Conversion**: If a non-recommended format is detected during development or migration, you **MUST** execute the conversion script (`.agents/skills/project-standards/scripts/convert_to_webp.py`) to transform it into WebP.
-- **EXCEPTION: PokeAPI Assets**: Data fetched dynamically or stored as references from PokeAPI **MUST** use **PNG** format, as PokeAPI does not support WebP for its sprites.
-- **Quality Settings**:
-  - **Pixel Art**: Use lossless WebP to preserve pixel-perfect clarity.
-  - **Large Assets**: Use lossy WebP (Quality 80) for maximum compression.
+- **MANDATORY**: All final images used in the project (`src/assets/`, `public/assets/`) **MUST** be in **WebP** format.
+- **FORBIDDEN**: Storing raw `.png`, `.jpg`, or `.jpeg` files in the final destination directories.
+- **EXCEPTION: PokeAPI Assets**: Data fetched dynamically from PokeAPI **MUST** use **PNG** format.
+
+#### Folder Mirroring Architecture
+
+To process raw images (like PNGs), the project uses a "Mirroring" structure inside the root directory `_raw-assets/`. You **MUST** explain this to the user if they ask about adding new images.
+
+```text
+_raw-assets/
+├── lod/                           <-- Images here will generate multi-size LODs
+│   ├── public/assets/maps/        <-- Mirrors the exact destination in the project
+│   │   └── main_city.png          (Outputs WebP + LODs to public/assets/maps/)
+│   └── src/assets/ui/
+│       └── background.png         (Outputs WebP + LODs to src/assets/ui/)
+└── original/                      <-- Images here will NOT generate LODs (1:1 size only)
+    ├── public/assets/sprites/
+    │   └── hero.png               (Outputs 1:1 WebP to public/assets/sprites/)
+```
+
+#### Smart Dynamic Scaling (LOD Rules)
+
+When processing images in the `lod/` folder, the script applies smart breakpoints based on the original width:
+
+- **< 500px**: No LOD generated (100% size only).
+- **500px to 999px**: Generates `@1x` (100%) and `@0.5x` (50%).
+- **>= 1000px**: Generates `@1x` (100%), `@0.5x` (50%), and `@0.25x` (25%).
+
+- **Execution**: To process the `_raw-assets/` folder, you **MUST** execute the conversion script (`python3 .agents/skills/project-standards/scripts/convert_to_webp.py`).
+
+### 2. Quality Settings
+
+- **Pixel Art**: The script uses lossless WebP to preserve pixel-perfect clarity.
+- **Large Assets**: Use lossy WebP (Quality 80) for maximum compression.
+
+### 3. Unified Asset Management (AssetService)
+
+To ensure consistent asset pathing, dynamic source routing (PokeAPI/Showdown), and automatic LOD (Level of Detail) support, all image requests **MUST** pass through the `AssetService`.
+
+- **MANDATORY**: Use `getAssetUrl(type, id, options)` from `@/logic/services/assetService`.
+- **FORBIDDEN**: Hardcoding `https://...` URLs or manual `new URL('/assets/...')` in components or logic.
+- **LOD Support**: The service automatically integrates with the `assetResolver` to serve reduced-resolution assets (`@0.5x`, `@0.25x`) on mobile or low-end devices.
+
+- **Reference**: See [references/asset_service_manual.md](./references/asset_service_manual.md) for usage examples, asset types, and mapping rules.
 
 ## Mobile Optimization & Memory Mandate
 
@@ -117,6 +154,17 @@ To maintain a unique, high-end visual identity, the project follows a **Hybrid R
 - **Proactive Migration**: Always suggest and provide the SCSS/Asset path to migrate smooth elements to the Hybrid Retro-Modern standard.
 
 - **Reference**: See [references/sass_styling_manual.md](./references/sass_styling_manual.md) for technical setup, Pixel Art font families, and migration guides.
+
+## UI Interaction & Modal Standards
+
+To ensure a seamless and predictable user experience, all dialogs, modals, and interaction prompts must follow a strict **Interaction Stack** behavior.
+
+### 1. The Interaction Stack (LIFO) Mandate
+
+- **REQUIRED**: Any "window", "modal", or stack of user interactions/questions **MUST** behave as a strict **STACK** (Last-In-First-Out).
+- **Behavior**: The most recently opened interaction (the last one to enter visibility) is the **first** one that must be closed, accepted, or resolved.
+- **FORBIDDEN**: A new interaction, window, or modal must **NEVER** open behind an already existing one, preventing interaction with this new element. The top-most element must always be the active one.
+- **Test Mandate**: You **MUST** ensure this stack-based behavior is verified with **Unit Tests** for any modal manager, window component, or UI layering system.
 
 ## Database & Context Architecture
 
@@ -240,10 +288,11 @@ To prevent build warnings and future-proof the application, you **MUST** use the
 - **FORBIDDEN**: `random()`, `unquote()`, `unit()`, `percentage()`, `abs()`, `round()`, `ceil()`, `floor()`.
 - **REQUIRED**:
   - `random(...)` -> `math.random(...)`
-  - `unquote(...)` -> `string.unquote(...)`
-  - `scale(...)` -> `string.unquote("scale(#{...})")` (Avoids color function collision)
-  - `grayscale(...)` -> `string.unquote("grayscale(#{...})")`
-  - `invert(...)` -> `string.unquote("invert(#{...})")`
+  - `unquote(...)` -> `string.unquote(...)` (Must add `@use "sass:string";` to the block)
+  - `scale(...)` -> `Scale(...)` (Capitalize to bypass SASS color function collision. Case-insensitive: also covers `grayScale`, etc.)
+  - `grayscale(...)` -> `Grayscale(...)` (Capitalize to bypass SASS color function collision)
+  - `invert(...)` -> `Invert(...)` (Capitalize to bypass SASS color function collision)
+  - `opacity(...)` -> `Opacity(...)` (Capitalize to bypass SASS color function collision)
   - `unit(...)` -> `math.unit(...)`
   - `percentage(...)` -> `math.percentage(...)`
   - `abs(...)` -> `math.abs(...)`

@@ -2,7 +2,7 @@
  * src/logic/player/classEngine.js
  * Core engine for calculating class modifiers and mission validation.
  */
-import { PLAYER_CLASSES } from '@/data/player/classConstants';
+import { PLAYER_CLASSES } from '@/data/playerClasses';
 
 /**
  * Returns the processed modifier for a specific type and context.

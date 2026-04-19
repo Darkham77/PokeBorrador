@@ -5,10 +5,14 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useSocialStore } from '@/stores/social.js'
 
+const props = defineProps({
+  position: { type: String, default: 'top' } // 'top' or 'bottom'
+})
+
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const socialStore = useSocialStore()
-const router = useRouter()
+const _router = useRouter()
 
 const activeTab = computed({
   get: () => uiStore.activeTab,
@@ -23,47 +27,46 @@ const handleTabChange = (tab, event) => {
     uiStore.isInventoryOpen = true
     return
   }
-  if (tab === 'pokedex') {
-    activeTab.value = 'pokedex'
-    return
-  }
+  
   activeTab.value = tab
   
-  // Social Center Modal (Phase 24)
+  // Social Center Modal
   if (['social', 'friends'].includes(tab)) {
     uiStore.toggleSocial()
     return
   }
 
-
-  // Only call legacy showTab for non-migrated tabs to avoid DOM crashes
+  // Legacy tab sync
   if (!migratedTabs.includes(tab) && typeof window.showTab === 'function') {
-    const btn = event?.target?.closest('.hud-nav-btn') || document.querySelector(`[data-tab="${tab}"]`)
+    const btn = event?.target?.closest('.hud-nav-btn')
     window.showTab(tab, btn)
   }
   
   if (tab === 'map' && typeof window.renderMaps === 'function') {
     setTimeout(() => {
-      const mapList = document.getElementById('map-list')
-      if (mapList) {
-        window.renderMaps()
-        setTimeout(() => {
-          if (mapList.innerHTML === '') window.renderMaps()
-        }, 300)
-      }
+      if (document.getElementById('map-list')) window.renderMaps()
     }, 50)
   }
 }
 
-const toggleGroupMenu = (event, btn) => {
-  if (typeof window.toggleGroupMenu === 'function') {
-    window.toggleGroupMenu(event, btn)
-  }
+const toggleGroupMenu = (event) => {
+  const group = event.target.closest('.hud-group')
+  if (!group) return
+  
+  // Close others
+  document.querySelectorAll('.hud-group').forEach(el => {
+    if (el !== group) el.classList.remove('is-open')
+  })
+  
+  group.classList.toggle('is-open')
 }
 </script>
 
 <template>
-  <div class="hud-nav">
+  <div
+    class="hud-nav"
+    :class="[`pos-${position}`]"
+  >
     <!-- 1. MAPA -->
     <button
       class="hud-nav-btn map-btn"
@@ -71,119 +74,123 @@ const toggleGroupMenu = (event, btn) => {
       data-tab="map"
       @click="handleTabChange('map', $event)"
     >
-      <span>🗺️</span><span>Mapa</span>
+      <span class="icon">🗺️</span>
+      <span class="label">MAPA</span>
     </button>
 
     <!-- 2. POKÉMON (Grupo) -->
     <div class="hud-group">
       <button
         class="hud-nav-btn group-btn"
-        @click="toggleGroupMenu($event, $event.target)"
+        :class="{ active: ['team', 'box', 'pokedex'].includes(activeTab) }"
+        @click="toggleGroupMenu($event)"
       >
-        <span>🔋</span><span>Pokémon</span>
+        <span class="icon">🔋</span>
+        <span class="label">POKÉMON</span>
       </button>
       <div class="hud-submenu">
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'team' }"
-          data-tab="team"
           @click="handleTabChange('team', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🐛</span><span>Equipo</span>
+          <span>🐛</span><span>EQUIPO</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'box' }"
-          data-tab="box"
           @click="handleTabChange('box', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>📦</span><span>Caja PC</span>
+          <span>📦</span><span>CAJA PC</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'pokedex' }"
-          data-tab="pokedex"
           @click="handleTabChange('pokedex', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>📖</span><span>Pokédex</span>
+          <span>📖</span><span>POKÉDEX</span>
         </button>
       </div>
     </div>
 
-    <!-- 3. ACCESOS DIRECTOS -->
+    <!-- 3. MOCHILA -->
     <button
       class="hud-nav-btn"
       :class="{ active: activeTab === 'bag' }"
-      data-tab="bag"
       @click="handleTabChange('bag', $event)"
     >
-      <span>🎒</span><span>Mochila</span>
+      <span class="icon">🎒</span>
+      <span class="label">MOCHILA</span>
     </button>
     
+    <!-- 4. GIMS -->
     <button
       class="hud-nav-btn"
       :class="{ active: activeTab === 'gyms' }"
-      data-tab="gyms"
       @click="handleTabChange('gyms', $event)"
     >
-      <span>🏆</span><span>Gims</span>
+      <span class="icon">🏆</span>
+      <span class="label">GIMS</span>
     </button>
 
+    <!-- 5. CRIANZA -->
     <button
       class="hud-nav-btn relative-box"
-      data-tab="daycare"
+      :class="{ active: activeTab === 'daycare' }"
       @click="handleTabChange('daycare', $event)"
     >
-      <span>🥚</span><span>Crianza</span>
+      <span class="icon">🥚</span>
+      <span class="label">CRIANZA</span>
       <span
-        id="daycare-nav-badge"
-        class="nav-badge-legacy"
-      />
+        v-if="gameStore.state.eggs?.length"
+        class="badge-pill"
+      >{{ gameStore.state.eggs.length }}</span>
     </button>
 
-    <!-- 4. MARKET (Grupo) -->
+    <!-- 6. MARKET (Grupo) -->
     <div class="hud-group">
       <button
         class="hud-nav-btn group-btn"
-        @click="toggleGroupMenu($event, $event.target)"
+        :class="{ active: ['online-market', 'market', 'trainer-shop'].includes(activeTab) }"
+        @click="toggleGroupMenu($event)"
       >
-        <span>🏪</span><span>Market</span>
+        <span class="icon">🏪</span>
+        <span class="label">MARKET</span>
       </button>
       <div class="hud-submenu">
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'online-market' }"
-          data-tab="online-market"
           @click="handleTabChange('online-market', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🛒</span><span>Global</span>
+          <span>🛒</span><span>GLOBAL</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'market' }"
-          data-tab="market"
           @click="handleTabChange('market', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🏪</span><span>Tienda</span>
+          <span>🏪</span><span>TIENDA</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'trainer-shop' }"
-          data-tab="trainer-shop"
           @click="handleTabChange('trainer-shop', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🎖️</span><span>BC</span>
+          <span>🎖️</span><span>BC SHOP</span>
         </button>
       </div>
     </div>
 
-    <!-- 5. SOCIAL (Grupo) -->
+    <!-- 7. SOCIAL (Grupo) -->
     <div class="hud-group relative-box">
       <button
         class="hud-nav-btn group-btn"
-        @click="toggleGroupMenu($event, $event.target)"
+        :class="{ active: ['friends', 'arena', 'ranking', 'war', 'events'].includes(activeTab) }"
+        @click="toggleGroupMenu($event)"
       >
-        <span>👥</span><span>Social</span>
+        <span class="icon">👥</span>
+        <span class="label">SOCIAL</span>
         <span
           v-if="socialStore.notifications.total"
           class="badge-pill"
@@ -194,50 +201,37 @@ const toggleGroupMenu = (event, btn) => {
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'friends' }"
-          data-tab="friends"
           @click="handleTabChange('friends', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🤝</span><span>Amigos</span>
-          <span
-            v-if="socialStore.notifications.friends || socialStore.notifications.total"
-            class="dot"
-          />
+          <span>🤝</span><span>AMIGOS</span>
         </button>
-
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'arena' }"
-          data-tab="arena"
           @click="handleTabChange('arena', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>⚔️</span><span>Arena</span>
+          <span>⚔️</span><span>ARENA</span>
         </button>
-
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'ranking' }"
-          data-tab="ranking"
           @click="handleTabChange('ranking', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🏅</span><span>Ranking</span>
+          <span>🏅</span><span>RANKING</span>
         </button>
-
         <button
           class="hud-nav-btn"
-          :class="{ active: activeTab = 'war' }"
-          data-tab="war"
+          :class="{ active: activeTab === 'war' }"
           @click="handleTabChange('war', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>⚔️</span><span>Guerra</span>
+          <span>⚔️</span><span>GUERRA</span>
         </button>
-
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'events' }"
-          data-tab="events"
           @click="handleTabChange('events', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🏆</span><span>Eventos</span>
+          <span>🏆</span><span>EVENTOS</span>
         </button>
       </div>
     </div>
@@ -245,24 +239,119 @@ const toggleGroupMenu = (event, btn) => {
 </template>
 
 <style scoped lang="scss">
-.badge-pill {
-  position: absolute; top: 4px; right: 4px; border-radius: 50%;
-  background: #ef4444; color: #fff; font-size: 8px; font-weight: 900;
-  min-width: 14px; height: 14px; line-height: 14px; text-align: center;
-  font-family: 'Press Start 2P', monospace; z-index: 2;
-  box-shadow: 0 0 5px rgba(239, 68, 68, 0.4);
-}
-.dot {
-  width: 6px; height: 6px; background: #ef4444; border-radius: 50%;
-  margin-left: 8px; box-shadow: 0 0 4px #ef4444;
+.hud-nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  
+  &.pos-bottom {
+    justify-content: space-around;
+    width: 100%;
+    height: 70px;
+    padding: 0 10px;
+    background: linear-gradient(to top, rgba(10, 12, 20, 0.98), rgba(22, 26, 46, 0.95));
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+
+    .hud-nav-btn {
+      flex-direction: column;
+      gap: 4px;
+      min-width: 50px;
+    }
+  }
 }
 
-/* Cleanup classes */
+.hud-nav-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 8px 12px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-width: 60px;
+  transition: all 0.2s;
+  position: relative;
+
+  .icon { font-size: 16px; }
+  .label { font-family: 'Press Start 2P', monospace; font-size: 7px; opacity: 0.8; }
+
+  &:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--yellow);
+  }
+
+  &.active {
+    background: rgba(255, 204, 0, 0.1);
+    border-color: var(--yellow);
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+    .label { color: var(--yellow); opacity: 1; }
+  }
+}
+
+.hud-group {
+  position: relative;
+  
+  &.is-open .hud-submenu {
+    display: flex;
+  }
+}
+
+.hud-submenu {
+  display: none;
+  position: absolute;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(20,20,20,0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 8px;
+  z-index: 100;
+  min-width: 140px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+
+  .pos-top & { top: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+  .pos-bottom & { bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+
+  .hud-nav-btn {
+    flex-direction: row;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 10px 16px;
+    gap: 12px;
+    background: transparent;
+    border: none;
+    
+    &:hover { background: rgba(255,255,255,0.05); }
+    .label { font-size: 8px; }
+  }
+}
+
+.badge-pill {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: white;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
 .relative-box { position: relative; }
-.nav-badge-legacy {
-  display: none; position: absolute; top: 4px; right: 4px; 
-  background: #ef4444; color: #fff; font-size: 8px; font-weight: 900;
-  min-width: 14px; height: 14px; border-radius: 50%; padding: 0; 
-  line-height: 14px; text-align: center; font-family: 'Press Start 2P', monospace; z-index: 2;
+
+@media (max-width: 768px) {
+  .hud-nav-btn {
+    min-width: 50px;
+    padding: 6px 4px;
+    .label { font-size: 6px; }
+  }
 }
 </style>

@@ -162,7 +162,7 @@ const closeRankedSeason = async () => {
 
     <!-- Event List -->
     <div
-      v-if="!isEditing"
+      v-if="activeTab === 'events' && !isEditing"
       class="event-grid"
     >
       <div
@@ -188,7 +188,7 @@ const closeRankedSeason = async () => {
 
     <!-- Edit/Create Form -->
     <div
-      v-else
+      v-else-if="activeTab === 'events' && isEditing"
       class="event-form"
     >
       <div class="form-section">

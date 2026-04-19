@@ -1,8 +1,9 @@
 import { ref, computed } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-export function usePokedex(gs, currentOrder, currentGen) {
+export function usePokedex(gs, currentOrder, _currentGen) {
   const searchQuery = ref('')
   const sortBy = ref('number') // 'number' | 'name'
 
@@ -26,7 +27,7 @@ export function usePokedex(gs, currentOrder, currentGen) {
         name: isSeen ? data.name : '???',
         isSeen,
         isCaught,
-        spriteUrl: isSeen ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${nationalNum}.png` : null
+        spriteUrl: isSeen ? getAssetUrl(ASSET_TYPES.POKEMON, id) : null
       }
     })
 

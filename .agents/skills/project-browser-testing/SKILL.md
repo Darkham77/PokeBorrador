@@ -42,6 +42,17 @@ curl -I http://localhost:5173
 
 ## 3. Browser Testing Workflow (`browser_subagent`)
 
+### Anti-Lag Protection & Efficiency (CRITICAL)
+
+To prevent the `browser_subagent` from creating hundreds of redundant artifacts (screenshots, recordings, DOMs) that crash the IDE and lag the chat, you **MUST** follow these strict rules when writing the `Task` description:
+
+1. **NO RAW DOM**: Explicitly command the subagent: *"DO NOT return or attach the raw DOM in your report. Return ONLY a concise textual summary."*
+2. **ATOMIC SUCCESS CONDITIONS**: Define an exact exit point. Example: *"Stop immediately once the element with ID 'dashboard-loaded' is visible. Do not re-verify or capture further states."*
+3. **STEP LIMITS**: Always impose a logical limit. Example: *"Complete this verification in no more than 5 actions."*
+4. **ZERO-DELTA PREVENTION**: Instruct the subagent: *"If the page state has not changed after an action, STOP and report the current state instead of retrying."*
+
+### Execution Sequence
+
 When invoking the `browser_subagent`, follow this exact sequence:
 
 1. **Navigation**: Navigate to `http://localhost:5173/login`.
@@ -58,6 +69,12 @@ When invoking the `browser_subagent`, follow this exact sequence:
     - Modern frames (Glassmorphism, gradients)?
     - Pixel Art content (Sprites, text)?
     - No smooth vector icons in game content?
+
+### Example Task Prompt (Copy-Paste friendly)
+
+Use this template when invoking the subagent:
+
+> *"Navigate to URL. Login as ASH. Verify that the Dashboard is visible (ID: #dashboard). Stop immediately upon verification. DO NOT return the DOM. Report only: 1. Presence of #dashboard, 2. Any console errors, 3. Success/Fail summary. Limit: 4 actions."*
 
 ## 4. Dual-Log Monitoring (Diagnostics)
 

@@ -8,7 +8,7 @@
 
 ## 🧠 MOBILE DEBUGGING MINDSET
 
-```
+```text
 Web Debugging:      Mobile Debugging:
 ┌──────────────┐    ┌──────────────┐
 │  Browser     │    │  JS Bridge   │

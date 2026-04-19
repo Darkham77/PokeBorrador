@@ -1,6 +1,8 @@
 /**
  * Mapping of Pokemon internal IDs to PokeAPI sprite IDs.
  */
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+
 export const POKEMON_SPRITE_IDS = {
   bulbasaur: 1, ivysaur: 2, venusaur: 3,
   charmander: 4, charmeleon: 5, charizard: 6,
@@ -68,21 +70,13 @@ export const POKEMON_SPRITE_IDS = {
  * Gets the PokeAPI sprite URL for a given species ID.
  */
 export function getSpriteUrl(id, isShiny = false) {
-  const num = POKEMON_SPRITE_IDS[id];
-  if (!num) {
-    if (id && id.includes('egg')) return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.png";
-    return null;
-  }
-  if (isShiny) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${num}.png`;
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png`;
+  if (id && id.includes('egg')) return getAssetUrl(ASSET_TYPES.ITEM, 'egg');
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
 }
 
 /**
  * Gets the PokeAPI back sprite URL for a given species ID.
  */
 export function getBackSpriteUrl(id, isShiny = false) {
-  const num = POKEMON_SPRITE_IDS[id];
-  if (!num) return null;
-  if (isShiny) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/shiny/${num}.png`;
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/${num}.png`;
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack: true });
 }

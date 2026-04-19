@@ -1,8 +1,8 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useGameStore } from '@/stores/game';
-import { usePvPStore } from '@/stores/pvpStore';
-import { useRankedStore } from '@/stores/rankedStore';
+import { usePvPStore } from '@/stores/pvp';
+import { usePvPStore } from '@/stores/pvp';
 import { useBattleVisuals } from '@/composables/useBattleVisuals';
 
 // Sub-components
@@ -13,8 +13,8 @@ import PlayerAvatar from '@/components/player/PlayerAvatar.vue';
 
 const gameStore = useGameStore();
 const pvpStore = usePvPStore();
-const rankedStore = useRankedStore();
-const { getHpPct, getHpClass } = useBattleVisuals();
+const _rankedStore = usePvPStore();
+const { _getHpPct, _getHpClass } = useBattleVisuals();
 
 const timeRemaining = ref(40);
 let timer = null;
@@ -238,7 +238,7 @@ const handleMoveSelection = (moveIdx) => {
 
   .trainer-sprite {
     image-rendering: pixelated;
-    transform: string.unquote("scale(1.5)");
+    transform: Scale(1.5);
     margin: 20px 0;
   }
 
@@ -311,9 +311,9 @@ const handleMoveSelection = (moveIdx) => {
 }
 
 @keyframes pulse {
-  0% { transform: string.unquote("translateX(-50%) scale(1)"); }
-  50% { transform: string.unquote("translateX(-50%) scale(1.1)"); }
-  100% { transform: string.unquote("translateX(-50%) scale(1)"); }
+  0% { transform: string.unquote("translateX(-50%) Scale(1)"); }
+  50% { transform: string.unquote("translateX(-50%) Scale(1.1)"); }
+  100% { transform: string.unquote("translateX(-50%) Scale(1)"); }
 }
 
 @keyframes spin {

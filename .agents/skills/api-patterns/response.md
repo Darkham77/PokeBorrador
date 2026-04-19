@@ -4,7 +4,7 @@
 
 ## Common Patterns
 
-```
+```text
 Choose one:
 ├── Envelope pattern ({ success, data, error })
 ├── Direct data (just return the resource)
@@ -13,7 +13,7 @@ Choose one:
 
 ## Error Response
 
-```
+```text
 Include:
 ├── Error code (for programmatic handling)
 ├── User message (for display)

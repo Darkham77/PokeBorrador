@@ -1,15 +1,16 @@
 <script setup>
 import { useWarStore } from '@/stores/war'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGameStore } from '@/stores/game'
 import { ref } from 'vue'
 
-const props = defineProps({
+const _props = defineProps({
   show: Boolean
 })
 
 const emit = defineEmits(['close'])
 const warStore = useWarStore()
-const gameStore = useGameStore()
+const _gameStore = useGameStore()
 const isProcessing = ref(false)
 
 const FACTION_CHANGE_COST = 25000
@@ -59,7 +60,7 @@ const handleChoice = async (faction) => {
           >
             <div class="icon-wrapper">
               <img
-                src="@/assets/factions/union.png"
+                :src="getAssetUrl(ASSET_TYPES.FACTION, 'union')"
                 alt="Team Unión"
               >
             </div>
@@ -75,7 +76,7 @@ const handleChoice = async (faction) => {
           >
             <div class="icon-wrapper">
               <img
-                src="@/assets/factions/poder.png"
+                :src="getAssetUrl(ASSET_TYPES.FACTION, 'poder')"
                 alt="Team Poder"
               >
             </div>
@@ -205,7 +206,7 @@ const handleChoice = async (faction) => {
     &:hover:not(:disabled) {
       transform: translateY(-5px);
       box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
-      .icon-wrapper { transform: scale(1.1); }
+      .icon-wrapper { transform: Scale(1.1); }
     }
   }
 
@@ -219,7 +220,7 @@ const handleChoice = async (faction) => {
     &:hover:not(:disabled) {
       transform: translateY(-5px);
       box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2);
-      .icon-wrapper { transform: scale(1.1); }
+      .icon-wrapper { transform: Scale(1.1); }
     }
   }
 }
@@ -233,7 +234,7 @@ const handleChoice = async (faction) => {
 }
 
 @keyframes cardIn {
-  from { transform: scale(0.8) translateY(20px); opacity: 0; }
-  to { transform: scale(1) translateY(0); opacity: 1; }
+  from { transform: Scale(0.8) translateY(20px); opacity: 0; }
+  to { transform: Scale(1) translateY(0); opacity: 1; }
 }
 </style>

@@ -124,7 +124,7 @@ const handleCancel = () => {
     transition: all 0.2s;
     
     &:active {
-      transform: scale(0.95);
+      transform: Scale(0.95);
     }
   }
   
@@ -157,8 +157,8 @@ const handleCancel = () => {
 }
 
 @keyframes pop {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from { transform: Scale(0.8); opacity: 0; }
+  to { transform: Scale(1); opacity: 1; }
 }
 .animate-pop {
   animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);

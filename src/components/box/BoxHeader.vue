@@ -1,5 +1,5 @@
 <script setup>
-const props = defineProps({
+const _props = defineProps({
   playerClass: { type: String, default: null },
   isRocketMode: { type: Boolean, default: false }
 })

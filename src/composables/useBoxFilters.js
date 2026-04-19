@@ -1,7 +1,7 @@
 import { reactive, computed, ref } from 'vue';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 
-export function useBoxFilters(boxArray, currentBoxIndex) {
+export function useBoxFilters(boxArray, _currentBoxIndex) {
   const filters = reactive({
     tier: 'all',
     type: 'all',

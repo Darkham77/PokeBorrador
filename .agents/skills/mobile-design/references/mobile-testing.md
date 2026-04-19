@@ -8,7 +8,7 @@
 
 ## 🧠 MOBILE TESTING MINDSET
 
-```
+```text
 Mobile testing differs from web:
 ├── Real devices matter (emulators hide bugs)
 ├── Platform differences (iOS vs Android behavior)
@@ -41,7 +41,7 @@ Mobile testing differs from web:
 
 ### Decision Tree
 
-```
+```text
 WHAT ARE YOU TESTING?
         │
         ├── Pure functions, utilities, helpers
@@ -82,7 +82,7 @@ WHAT ARE YOU TESTING?
 
 ## 2. Testing Pyramid for Mobile
 
-```
+```text
                     ┌───────────────┐
                     │    E2E Tests  │  10%
                     │  (Real device) │  Slow, expensive, essential
@@ -115,7 +115,7 @@ WHAT ARE YOU TESTING?
 
 ### Unit Tests (Jest)
 
-```
+```text
 ✅ TEST:
 ├── Utility functions (formatDate, calculatePrice)
 ├── State reducers (Redux, Zustand stores)
@@ -132,7 +132,7 @@ WHAT ARE YOU TESTING?
 
 ### Component Tests (RNTL / flutter_test)
 
-```
+```text
 ✅ TEST:
 ├── Component renders correctly
 ├── User interactions (tap, type, swipe)
@@ -149,7 +149,7 @@ WHAT ARE YOU TESTING?
 
 ### Integration Tests
 
-```
+```text
 ✅ TEST:
 ├── Form submission flows
 ├── Navigation between screens
@@ -165,7 +165,7 @@ WHAT ARE YOU TESTING?
 
 ### E2E Tests
 
-```
+```text
 ✅ TEST:
 ├── Critical user journeys (login, purchase, signup)
 ├── Offline → online transitions
@@ -199,7 +199,7 @@ WHAT ARE YOU TESTING?
 
 ### Platform Testing Strategy
 
-```
+```text
 FOR EACH PLATFORM:
 ├── Run unit tests (same on both)
 ├── Run component tests (same on both)
@@ -225,7 +225,7 @@ FOR EACH PLATFORM:
 
 ### How to Test Network Conditions
 
-```
+```text
 APPROACH:
 ├── Unit tests: Mock NetInfo, test logic
 ├── Integration: Mock API responses, test UI
@@ -250,7 +250,7 @@ APPROACH:
 
 ### When to Performance Test
 
-```
+```text
 PERFORMANCE TEST:
 ├── Before release (required)
 ├── After adding heavy features
@@ -282,7 +282,7 @@ WHERE TO TEST:
 
 ### How to Test
 
-```
+```text
 AUTOMATED:
 ├── React Native: jest-axe
 ├── Flutter: Accessibility checker in tests

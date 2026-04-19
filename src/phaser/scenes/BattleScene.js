@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { phaserBridge } from '@/logic/phaserBridge';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 /**
  * BattleScene.js
@@ -134,7 +134,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   getBgUrl(key) {
-    return new URL(`../../assets/sprites/battle/${key}.webp`, import.meta.url).href;
+    return getAssetUrl(ASSET_TYPES.BATTLE_BG, key);
   }
 
   handleCommand(command, data) {

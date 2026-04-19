@@ -1,4 +1,4 @@
-import { getTypeEffectiveness, getCombinedEffectiveness } from '../battleEngine'
+import { getCombinedEffectiveness } from '../battleEngine'
 
 /**
  * Motor de Inteligencia Artificial para el Combate

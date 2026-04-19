@@ -473,7 +473,7 @@ python scripts/evaluation.py \
 
 ## Command-Line Options
 
-```
+```text
 usage: evaluation.py [-h] [-t {stdio,sse,http}] [-m MODEL] [-c COMMAND]
                      [-a ARGS [ARGS ...]] [-e ENV [ENV ...]] [-u URL]
                      [-H HEADERS [HEADERS ...]] [-o OUTPUT]

@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { useGTSStore } from '@/stores/gtsStore'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { useGTSStore } from '@/stores/gts'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
 const gtsStore = useGTSStore()
@@ -16,9 +17,7 @@ function getTierData(pokemon) {
 }
 
 function getSprite(pokemon) {
-  // Assuming standard sprite path if not provided in data
-  if (pokemon.sprite) return pokemon.sprite
-  return `/assets/sprites/pokemon/${pokemon.id}.webp`
+  return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id)
 }
 </script>
 

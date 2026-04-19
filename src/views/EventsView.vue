@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useEventStore } from '@/stores/events'
 import { storeToRefs } from 'pinia'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const eventStore = useEventStore()
 const { activeEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
@@ -12,11 +13,29 @@ onMounted(() => {
 })
 
 const formatTime = (isoTime) => {
+  if (!isoTime) return 'Indefinido'
   const diff = new Date(isoTime) - new Date()
   if (diff <= 0) return 'Terminando...'
   const min = Math.floor(diff / 60000)
   const sec = Math.floor((diff % 60000) / 1000)
   return `${min}m ${sec}s`
+}
+
+const openParticipationModal = (event) => {
+  window._openPokemonSelectionModal({
+    title: 'REGISTRO DE COMPETICIÓN',
+    subtitle: `Elige un Pokémon para inscribir en: ${event.name}`,
+    maxSelect: 1,
+    minSelect: 1,
+    includeTeam: true,
+    context: 'event',
+    onConfirm: async (selectedObjects) => {
+      const pokemon = selectedObjects[0];
+      if (pokemon) {
+        await eventStore.submitCompetitionEntry(pokemon, event.id);
+      }
+    }
+  })
 }
 </script>
 
@@ -89,7 +108,7 @@ const formatTime = (isoTime) => {
           class="banner-box"
         >
           <img
-            :src="`assets/eventos/${event.config.banner}`"
+            :src="getAssetUrl(ASSET_TYPES.BANNER, event.config.banner)"
             @error="e => e.target.style.display='none'"
           >
         </div>
@@ -117,9 +136,20 @@ const formatTime = (isoTime) => {
               <span class="label">FINALIZA EN:</span>
               <span class="value">{{ formatTime(event.ends_at) }}</span>
             </div>
-            <button class="retro-btn action">
+            
+            <button 
+              v-if="event.type === 'competition'" 
+              class="retro-btn action"
+              @click="openParticipationModal(event)"
+            >
               PARTICIPAR
             </button>
+            <div 
+              v-else 
+              class="active-badge"
+            >
+              ✨ ACTIVO
+            </div>
           </footer>
         </div>
       </div>
@@ -286,7 +316,25 @@ const formatTime = (isoTime) => {
       .label { display: block; font-size: 8px; color: #64748b; margin-bottom: 5px; }
       .value { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #f87171; }
     }
+    
+    .active-badge {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: rgba(74, 222, 128, 0.2);
+      border: 1px solid #4ade80;
+      color: #4ade80;
+      text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+      animation: pulseActive 2s infinite;
+    }
   }
+}
+
+@keyframes pulseActive {
+  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
 }
 
 .no-events {

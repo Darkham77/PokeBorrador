@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
-import { useInventoryStore } from '@/stores/inventoryStore'
+import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
 import { SHOP_ITEMS } from '@/data/items'
 

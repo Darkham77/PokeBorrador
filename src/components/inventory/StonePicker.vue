@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { useInventoryStore } from '@/stores/inventoryStore';
+import { useInventoryStore } from '@/stores/inventory';
 import { useEvolutionStore } from '@/stores/evolution';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { STONE_EVOLUTIONS } from '@/data/evolutionData';
@@ -22,7 +22,7 @@ const pokemon = computed(() => {
   return uiStore.selectedPokemon;
 });
 
-const stoneName = computed(() => inventoryStore.activeItemToUse);
+const _stoneName = computed(() => inventoryStore.activeItemToUse);
 
 const options = computed(() => {
   if (!pokemon.value) return [];

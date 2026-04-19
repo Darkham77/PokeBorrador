@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
-import { getWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP } from '@/logic/war/warEngine'
+import { getWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP, WEEKLY_REWARD_MILESTONES, WEEKLY_WIN_BONUS_COINS } from '@/logic/war/warEngine'
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine'
 
 export const useWarStore = defineStore('war', () => {
@@ -174,7 +174,7 @@ export const useWarStore = defineStore('war', () => {
   async function claimGuardian(mapId, isDefeat = false) {
     if (!authStore.user || !faction.value) return
     
-    const today = getArgDateString()
+    const today = new Date().toISOString().split('T')[0]
     const guardian = getGuardianData(mapId, []) // In real use we pass map list
     if (!guardian) return
 

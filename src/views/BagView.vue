@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from 'vue'
 import { useInventoryStore } from '@/stores/inventory'
 import { useGameStore } from '@/stores/game'
 import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine'
@@ -56,23 +55,23 @@ const onUseItem = (name) => {
 
       <!-- Sell Mode Overlay (Sticky) -->
       <div
-        v-if="inventoryStore.sellMode"
+        v-if="inventoryStore.bagSellMode"
         class="sell-actions"
       >
         <div class="sell-info">
-          MODO VENTA: <span class="text-green">Ganancia +₽{{ inventoryStore.totalSellGain.toLocaleString() }}</span>
+          MODO VENTA: <span class="text-green">Ganancia +₽{{ inventoryStore.getBagSellTotalGain().toLocaleString() }}</span>
         </div>
         <div class="sell-buttons">
           <button 
             class="btn btn-green" 
-            :disabled="Object.keys(inventoryStore.sellSelected).length === 0"
-            @click="inventoryStore.performSell"
+            :disabled="Object.keys(inventoryStore.bagSellSelected).length === 0"
+            @click="inventoryStore.confirmBagSell"
           >
             Confirmar Venta
           </button>
           <button
             class="btn btn-gray"
-            @click="inventoryStore.toggleSellMode"
+            @click="inventoryStore.toggleBagSellMode"
           >
             Cancelar
           </button>
@@ -82,7 +81,7 @@ const onUseItem = (name) => {
       <!-- Items Grid -->
       <div class="items-wrapper scroll-custom">
         <div
-          v-if="inventoryStore.filteredItems.length === 0"
+          v-if="inventoryStore.bagItems.length === 0"
           class="empty-state"
         >
           <span class="empty-icon">🔍</span>
@@ -94,33 +93,33 @@ const onUseItem = (name) => {
           class="items-grid"
         >
           <div 
-            v-for="[name, qty] in inventoryStore.filteredItems" 
-            :key="name"
-            :class="['item-card', { selected: !!inventoryStore.sellSelected[name] }]"
-            @click="inventoryStore.sellMode ? inventoryStore.toggleSellSelection(name) : null"
+            v-for="item in inventoryStore.bagItems" 
+            :key="item.name"
+            :class="['item-card', { selected: !!inventoryStore.bagSellSelected[item.name] }]"
+            @click="inventoryStore.bagSellMode ? inventoryStore.toggleBagSellSelect(item.name, item.qty) : null"
           >
             <div class="item-icon-container">
               <img
-                :src="getItemSpriteUrl(name)"
-                :alt="name"
+                :src="getItemSpriteUrl(item.name)"
+                :alt="item.name"
                 class="item-sprite"
               >
-              <span class="item-qty">x{{ qty }}</span>
+              <span class="item-qty">x{{ item.qty }}</span>
             </div>
             
             <div class="item-details">
               <div class="item-name">
-                {{ name }}
+                {{ item.name }}
               </div>
             </div>
 
             <div
-              v-if="!inventoryStore.sellMode"
+              v-if="!inventoryStore.bagSellMode"
               class="item-footer"
             >
               <button
                 class="use-btn"
-                @click.stop="onUseItem(name)"
+                @click.stop="onUseItem(item.name)"
               >
                 USAR
               </button>
@@ -128,19 +127,19 @@ const onUseItem = (name) => {
 
             <!-- Sell Qty Selector -->
             <div
-              v-else-if="inventoryStore.sellSelected[name]"
+              v-else-if="inventoryStore.bagSellSelected[item.name]"
               class="sell-qty-selector"
               @click.stop
             >
-              <button @click="inventoryStore.updateSellQty(name, inventoryStore.sellSelected[name] - 1)">
+              <button @click="inventoryStore.updateBagSellQty(item.name, inventoryStore.bagSellSelected[item.name] - 1, item.qty)">
                 -
               </button>
               <input 
                 type="number" 
-                :value="inventoryStore.sellSelected[name]" 
-                @input="inventoryStore.updateSellQty(name, $event.target.value)"
+                :value="inventoryStore.bagSellSelected[item.name]" 
+                @input="inventoryStore.updateBagSellQty(item.name, $event.target.value, item.qty)"
               >
-              <button @click="inventoryStore.updateSellQty(name, inventoryStore.sellSelected[name] + 1)">
+              <button @click="inventoryStore.updateBagSellQty(item.name, inventoryStore.bagSellSelected[item.name] + 1, item.qty)">
                 +
               </button>
             </div>
@@ -150,12 +149,12 @@ const onUseItem = (name) => {
 
       <!-- Footer -->
       <div
-        v-if="!inventoryStore.sellMode"
+        v-if="!inventoryStore.bagSellMode"
         class="bag-footer"
       >
         <button
           class="btn-sell-mode"
-          @click="inventoryStore.toggleSellMode"
+          @click="inventoryStore.toggleBagSellMode"
         >
           💰 Vender Objetos
         </button>

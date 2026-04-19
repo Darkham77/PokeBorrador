@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useShopStore } from '@/stores/shopStore'
+import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 
@@ -238,17 +238,17 @@ h2 {
   background: rgba(34, 197, 94, 0.1);
   border-color: rgba(34, 197, 94, 0.5);
   box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
-  transform: scale(1.05);
+  transform: Scale(1.05);
 }
 
 .ball-icon {
   font-size: 24px;
-  filter: grayscale(1);
+  filter: Grayscale(1);
   transition: all 0.3s ease;
 }
 
 .slot.active .ball-icon {
-  filter: grayscale(0);
+  filter: Grayscale(0);
 }
 
 .slot.healing .ball-icon {
@@ -256,8 +256,8 @@ h2 {
 }
 
 @keyframes pulse {
-  from { transform: scale(1); filter: brightness(1); }
-  to { transform: scale(1.2); filter: brightness(1.5) drop-shadow(0 0 5px #ff5555); }
+  from { transform: Scale(1); filter: brightness(1); }
+  to { transform: Scale(1.2); filter: brightness(1.5) drop-shadow(0 0 5px #ff5555); }
 }
 
 .progress-container {

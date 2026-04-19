@@ -4,7 +4,7 @@
 
 ## N+1 Problem
 
-```
+```text
 What is N+1?
 ├── 1 query to get parent records
 ├── N queries to get related records
@@ -19,7 +19,7 @@ Solutions:
 
 ## Query Analysis Mindset
 
-```
+```text
 Before optimizing:
 ├── EXPLAIN ANALYZE the query
 ├── Look for Seq Scan (full table scan)

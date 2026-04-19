@@ -4,6 +4,7 @@ import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useTradeStore } from '@/stores/trade'
 import { onMounted } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 
 const uiStore = useUIStore()
@@ -43,9 +44,7 @@ const handleLogout = () => {
 }
 
 const handleEditProfile = () => {
-  if (typeof window.openProfileEditor === 'function') {
-    window.openProfileEditor()
-  }
+  uiStore.isCosmeticsModalOpen = true
 }
 
 const handleFactionChoice = () => {
@@ -78,8 +77,10 @@ const handleFactionChoice = () => {
         <div
           id="profile-avatar-container"
           class="profile-avatar"
-          v-html="gs.avatar_style || '👤'"
-        />
+          :class="profileData.avatar_style"
+        >
+          👤
+        </div>
         <div
           id="profile-username"
           class="profile-username"
@@ -109,13 +110,13 @@ const handleFactionChoice = () => {
           >
             <template v-if="profileData.faction === 'union'">
               <img
-                src="@/assets/ui/factions/union.webp"
+                :src="getAssetUrl(ASSET_TYPES.FACTION, 'union')"
                 class="faction-img"
               > Team Unión
             </template>
             <template v-else-if="profileData.faction === 'poder'">
               <img
-                src="@/assets/ui/factions/poder.webp"
+                :src="getAssetUrl(ASSET_TYPES.FACTION, 'poder')"
                 class="faction-img"
               > Team Poder
             </template>

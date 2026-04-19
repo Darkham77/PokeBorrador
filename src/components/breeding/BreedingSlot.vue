@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   slotIndex: { type: Number, required: true },
@@ -11,12 +12,9 @@ const emit = defineEmits(['deposit', 'withdraw', 'setItem'])
 
 const pokemon = computed(() => props.slotData?.pokemon || null)
 
-const getSpriteUrl = (id, shiny) => {
+const getSpriteUrl = (id, isShiny) => {
   if (!id) return ''
-  // Asumiendo estructura de proyecto:
-  const sub = id.toString(); // PokeAPI no siempre necesita padding de 3, pero los IDs son numéricos.
-  if (shiny) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${sub}.png`;
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sub}.png`;
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 
 const genderSymbol = (g) => {

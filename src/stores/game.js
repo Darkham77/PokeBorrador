@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia'
-import { reactive, watch, computed, ref } from 'vue'
+import { reactive, ref, computed } from 'vue'
 import { saveGame as performSave } from '@/logic/auth/saveService'
 import { useAuthStore } from './auth'
 import { useUIStore } from './ui'
 import { supabase } from '@/logic/supabase'
-import { DBRouter } from '@/logic/db/dbRouter'
 import { loadBestSave } from '@/logic/auth/loadService'
 import { makePokemon, levelUpPokemon } from '@/logic/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
+import { useEventStore } from './events'
 
 const INITIAL_STATE = {
   trainer: '',
@@ -76,9 +76,7 @@ const INITIAL_STATE = {
   notificationHistory: [],
   marketSoldSeenIds: [],
   claimQueue: [],
-  isOverlayLoading: false,
-  overlayMessage: 'Cargando...',
-  isReady: (typeof localStorage !== 'undefined' && !!localStorage.getItem('pokevicio_save_v3_ash'))
+  isReady: false
 }
 
 export const useGameStore = defineStore('game', () => {
@@ -87,25 +85,41 @@ export const useGameStore = defineStore('game', () => {
   
   // Instancia UNIFICADA de base de datos con ruteo inteligente
   const db = ref(supabase)
+  const isDataLoaded = ref(false)
+  const isEngineReady = ref(false)
+  const isReady = computed(() => isDataLoaded.value && isEngineReady.value)
 
   function updateState(newData) {
+    // Legacy fix: if they have a team, they must have chosen a starter
+    if (newData.team && newData.team.length > 0) {
+      newData.starterChosen = true
+    }
+    
     Object.assign(state, newData)
+    console.log('[STORE] Game loaded successfully. Starter chosen:', state.starterChosen);
+    
+    // Force default tab to map on initial load
+    const uiStore = useUIStore()
+    uiStore.activeTab = 'map'
   }
 
   function resetToInitial() {
     Object.keys(state).forEach(key => delete state[key])
     Object.assign(state, JSON.parse(JSON.stringify(INITIAL_STATE)))
+    isDataLoaded.value = false
   }
 
   async function loadGame() {
-    if (!authStore.user) return
+    if (!authStore.user) {
+      isDataLoaded.value = true // Nothing to load for guests
+      return
+    }
     
     const uiStore = useUIStore()
     const { data, issues, lastSaveId, isNewerThanCloud } = await loadBestSave(authStore.user, db.value)
     
     if (data) {
       updateState(data)
-      state.isReady = true; // Force ready as soon as data is in
       authStore.user.last_save_id = lastSaveId
       
       if (issues && issues.length > 0) {
@@ -118,19 +132,19 @@ export const useGameStore = defineStore('game', () => {
       // Notificar migración V2 si aplica
       if (authStore.user.db_version < 2) {
         uiStore.notify('Cuenta actualizada a Seguridad v2', '✨')
-        // El guardado se encargará de actualizar la db_version en el próximo ciclo
+        authStore.user.db_version = 2
+        // El watcher en authStore persistirá esto en localStorage automáticamente en modo offline
       }
 
       if (isNewerThanCloud) {
         uiStore.notify('Sincronizando progreso local más reciente...', '🔄')
         setTimeout(() => save(false), 3000)
       }
-
-      state.isReady = true
     } else {
-      state.isOverlayLoading = false
-      state.isReady = true // Consider as ready even if empty for new users
+      console.log('[LOAD] No save found for user. Starting fresh.');
     }
+    
+    isDataLoaded.value = true
   }
 
   async function save(showNotif = true) {
@@ -190,10 +204,8 @@ export const useGameStore = defineStore('game', () => {
     const uiStore = useUIStore()
     const starter = makePokemon(id, 5)
     
-    state.team = [starter]
-    
-    // Registrar en Pokedex
-    registerPokedex(id, true)
+    // Use the new centralized addPokemon
+    addPokemon(starter, { notify: false })
     
     state.starterChosen = true
     uiStore.activeTab = 'team'
@@ -205,6 +217,57 @@ export const useGameStore = defineStore('game', () => {
     await save(false)
   }
 
+  /**
+   * Adds a pokemon to the player's collection (team or box).
+   * @param {Object} pokemon - The pokemon instance to add.
+   * @param {Object} options - { silent: boolean, notify: boolean }
+   */
+  function addPokemon(pokemon, options = { notify: true }) {
+    if (!pokemon) return false
+
+    // 1. Pokedex Registration
+    registerPokedex(pokemon.id, true)
+
+    // 2. Determine target (Team if < 6, else Box)
+    let target = 'team'
+    if (state.team.length < 6) {
+      state.team.push(pokemon)
+    } else {
+      state.box = state.box || []
+      state.box.push(pokemon)
+      target = 'box'
+    }
+
+    // 3. UI Notification
+    if (options.notify) {
+      const location = target === 'team' ? 'tu equipo' : 'la Caja PC'
+      useUIStore().notify(`¡${pokemon.name} se unió a ${location}!`, '✨')
+    }
+
+    scheduleSave()
+    return { success: true, target }
+  }
+
+  /**
+   * Removes a pokemon from the collection.
+   * @param {String} uid - The unique ID of the pokemon.
+   */
+  function removePokemon(uid) {
+    const teamIdx = state.team.findIndex(p => p.uid === uid)
+    if (teamIdx !== -1) {
+      state.team.splice(teamIdx, 1)
+      scheduleSave()
+      return true
+    }
+    const boxIdx = state.box.findIndex(p => p.uid === uid)
+    if (boxIdx !== -1) {
+      state.box.splice(boxIdx, 1)
+      scheduleSave()
+      return true
+    }
+    return false
+  }
+
   function getTrainerRank() {
     const idx = Math.min(state.trainerLevel - 1, TRAINER_RANKS.length - 1)
     return TRAINER_RANKS[idx]
@@ -212,9 +275,10 @@ export const useGameStore = defineStore('game', () => {
 
   function addTrainerExp(amount) {
     const uiStore = useUIStore()
-    // TODO: getEventBonus logic if available
-    const evBonus = 1 
-    if (evBonus > 1) amount = Math.round(amount * evBonus)
+    const eventStore = useEventStore()
+    const evBonus = (eventStore.globalMultipliers?.exp || 1) - 1
+    const totalMult = 1 + evBonus
+    if (totalMult > 1) amount = Math.round(amount * totalMult)
     
     state.trainerExp += amount
     const MAX_LEVEL = 30
@@ -279,7 +343,9 @@ export const useGameStore = defineStore('game', () => {
   function hatchEggs() {
     if (!state.eggs || state.eggs.length === 0) return false
     let anyReady = false
-    const hatchMult = 1 // TODO: Integrar con multiplicadores de eventos/clases
+    const eventStore = useEventStore()
+    const evHatchMult = (eventStore.globalMultipliers?.hatch || 1) - 1
+    const hatchMult = 1 + evHatchMult
     
     state.eggs.forEach(egg => {
       if (!egg.ready && typeof egg.steps === 'number' && egg.steps > 0) {
@@ -386,12 +452,17 @@ export const useGameStore = defineStore('game', () => {
     fetchClaimQueue,
     loadGame,
     save,
+    isDataLoaded,
+    isEngineReady,
+    isReady,
     chooseStarter,
     addTrainerExp,
     checkLevelUp,
     getTrainerRank,
     getMaxObeyLevel,
     reorderTeam,
-    sendToBox
+    sendToBox,
+    addPokemon,
+    removePokemon
   }
 })

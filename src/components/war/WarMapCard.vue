@@ -1,10 +1,10 @@
 <script setup>
 import { computed } from 'vue'
 import { useWarStore } from '@/stores/war'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
-  map: { type: Object, required: true },
-  imageName: { type: String, required: true }
+  map: { type: Object, required: true }
 })
 
 const warStore = useWarStore()
@@ -26,12 +26,47 @@ const getWinnerLabel = (winner) => {
   if (winner === 'poder') return 'PODER'
   return 'SIN CONQUISTAR'
 }
+
+const mapImageUrl = computed(() => {
+  const mapping = {
+    route1: 'ruta 1',
+    route2: 'ruta 2',
+    forest: 'bosque viridian',
+    route22: 'ruta 22',
+    route3: 'ruta 3',
+    mt_moon: 'mt. moon',
+    route4: 'ruta 4',
+    route24: 'ruta 24',
+    route25: 'ruta 25',
+    route5: 'ruta 5',
+    route6: 'ruta 6',
+    route11: 'ruta 11',
+    diglett_cave: 'cueva diglett',
+    route9: 'ruta 9',
+    rock_tunnel: 'tunel roca',
+    route10: 'ruta 10',
+    power_plant: 'central de energia',
+    route8: 'ruta 8',
+    pokemon_tower: 'torre pokemon',
+    route12: 'ruta 12',
+    route13: 'ruta 13',
+    safari_zone: 'zona safari',
+    seafoam_islands: 'islas espuma',
+    fishing_island: 'islas espuma',
+    mansion: 'mansion pokemon',
+    route23: 'ruta 23',
+    victory_road: 'calle victoria',
+    cerulean_cave: 'cueva celeste'
+  }
+  const fileName = mapping[props.map.id] || 'default'
+  return getAssetUrl(ASSET_TYPES.MAP, fileName)
+})
 </script>
 
 <template>
   <div 
     class="war-map-card"
-    :style="{ backgroundImage: `url('/maps/${imageName || 'default.webp'}')` }"
+    :style="{ backgroundImage: `url('${mapImageUrl}')` }"
     :class="[
       !warStore.isDisputePhase ? (mapData.winner === 'union' ? 'dom-union' : mapData.winner === 'poder' ? 'dom-poder' : '') : '',
       warStore.isDisputePhase ? (mapData.leading === 'union' ? 'glow-union' : mapData.leading === 'poder' ? 'glow-poder' : '') : ''

@@ -1,5 +1,9 @@
 import { checkStoneEvolution } from '../evolutionLogic';
 import { TM_COMPAT, GAME_TMS } from '../../data/pokedex';
+import { useUIStore } from '@/stores/ui';
+import { useGameStore } from '@/stores/game';
+import { useBuffsStore } from '@/stores/buffs';
+import { makePokemon } from '../pokemonFactory';
 
 /**
  * Item Effects Core Logic
@@ -46,20 +50,56 @@ export const itemEffects = {
     p.vigor = currentVigor + 1;
     return { success: true, message: `recuperó 1 de vigor (${p.vigor}/${maxVigor})` };
   },
-  'Recordador de Movimientos': (p) => {
+  'Recordador de Movimientos': (_p) => {
     // This item is special as it opens a menu
     return { success: true, message: 'abriendo menú de movimientos', resultType: 'relearner', deferred: true };
   },
-  'Parche de naturaleza': (p) => {
+  'Parche de naturaleza': (_p) => {
     return { success: true, message: 'iniciando cambio de naturaleza', deferred: true, resultType: 'nature_patch' };
   },
-  'Píldora de cambio de habilidad': (p) => {
+  'Píldora de cambio de habilidad': (_p) => {
     return { success: true, message: 'iniciando cambio de habilidad', deferred: true, resultType: 'ability_pill' };
   },
-  'Subida de PP': (p) => {
+  'Subida de PP': (_p) => {
     return { success: true, message: 'selecciona un movimiento para mejorar', deferred: true, resultType: 'pp_up' };
-  }
+  },
+
+  // --- Buffs Globales ---
+  'Repelente': (_state) => { useBuffsStore().addBuff('repel', 5 * 60); return `activó un Repelente (5 min)`; },
+  'Superrepelente': (_state) => { useBuffsStore().addBuff('repel', 15 * 60); return `activó un Superrepelente (15 min)`; },
+  'Máximo Repelente': (_state) => { useBuffsStore().addBuff('repel', 30 * 60); return `activó un Máximo Repelente (30 min)`; },
+  'Ticket Shiny': (_state) => { useBuffsStore().addBuff('shiny', 60 * 60); return `activó el Ticket Shiny (60 min)`; },
+  'Moneda Amuleto': (_state) => { useBuffsStore().addBuff('amulet', 60 * 60); return `activó la Moneda Amuleto (60 min)`; },
+  'Huevo Suerte Pequeño': (_state) => { useBuffsStore().addBuff('lucky-egg', 30 * 60); return `activó un Huevo Suerte (30 min)`; },
+  'Ticket Safari': (_state) => { useBuffsStore().addBuff('safari', 30 * 60); return `activó el Ticket Safari (30 min)`; },
+  'Ticket Cueva Celeste': (_state) => { useBuffsStore().addBuff('cerulean', 30 * 60); return `activó el Ticket Cueva Celeste (30 min)`; },
+  'Ticket Articuno': (_state) => { useBuffsStore().addBuff('articuno', 30 * 60); return `activó el Ticket Articuno (30 min)`; },
+  'Ticket Mewtwo': (_state) => { useBuffsStore().addBuff('mewtwo', 30 * 60); return `activó el Ticket Mewtwo (30 min)`; },
+  'Escáner de IVs': (_state) => { useBuffsStore().addBuff('iv-scanner', 60 * 60); return `activó el Escáner de IVs (60 min)`; },
+  'Incienso Fuego': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'fire'); return `activó el Incienso Fuego (30 min)`; },
+  'Incienso Agua': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'water'); return `activó el Incienso Agua (30 min)`; },
+  'Incienso Planta': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'grass'); return `activó el Incienso Planta (30 min)`; },
+  'Incienso Normal': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'normal'); return `activó el Incienso Normal (30 min)`; },
+  'Incienso Fantasma': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'ghost'); return `activó el Incienso Fantasma (30 min)`; },
+  'Incienso Psíquico': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'psychic'); return `activó el Incienso Psíquico (30 min)`; },
+
+  // --- Fósiles ---
+  'Fósil Hélix': (state) => reviveFossilTrigger('omanyte', 'Fósil Hélix', state),
+  'Fósil Domo': (state) => reviveFossilTrigger('kabuto', 'Fósil Domo', state),
+  'Ámbar Viejo': (state) => reviveFossilTrigger('aerodactyl', 'Ámbar Viejo', state)
 };
+
+function reviveFossilTrigger(pokemonId, itemName, state) {
+  const gameStore = useGameStore();
+  const uiStore = useUIStore();
+  
+  const p = makePokemon(pokemonId, 1);
+  const result = gameStore.addPokemon(p, { notify: false });
+  
+  uiStore.activeFossil = { pokemon: p, sentTo: result.target, itemName };
+  uiStore.isFossilRevivalOpen = true;
+  return 'iniciando restauración...';
+}
 
 /**
  * Gets effect for TMs and other dynamic items not in the main list

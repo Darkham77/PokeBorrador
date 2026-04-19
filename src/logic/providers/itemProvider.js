@@ -1,4 +1,3 @@
-import { SHOP_ITEMS } from '@/data/items';
 import { itemEffects } from '../items/itemEffects';
 
 /**
@@ -27,7 +26,11 @@ export function isGlobalItem(itemName) {
   const globalItems = [
     'Repelente', 'Superrepelente', 'Máximo Repelente',
     'Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto',
-    'Escáner de IVs', 'Moneda Amuleto'
+    'Escáner de IVs', 'Ticket Safari', 'Ticket Cueva Celeste',
+    'Ticket Articuno', 'Ticket Mewtwo', 'Incienso Fuego',
+    'Incienso Agua', 'Incienso Planta', 'Incienso Normal',
+    'Incienso Fantasma', 'Incienso Psíquico',
+    'Fósil Hélix', 'Fósil Domo', 'Ámbar Viejo'
   ];
   return globalItems.includes(itemName);
 }

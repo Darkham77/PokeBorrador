@@ -2,7 +2,7 @@
  * src/logic/db/proxyQuery.js
  * Chainable Query Builder for SQLite that mimics Supabase/PostgREST API.
  */
-import { initSQLite, queryLocal, getRawSqlite, persistSQLite } from './sqliteEngine';
+import { initSQLite, queryLocal, persistSQLite } from './sqliteEngine';
 
 export class ProxyQuery {
   constructor(router, table) {
@@ -139,9 +139,9 @@ export class ProxyQuery {
     
     // Auto-parse JSON fields (known to be JSON in this project)
     data.forEach(row => {
-      if (row.save_data && typeof row.save_data === 'string') try { row.save_data = JSON.parse(row.save_data); } catch(e){}
-      if (row.team_data && typeof row.team_data === 'string') try { row.team_data = JSON.parse(row.team_data); } catch(e){}
-      if (row.data && typeof row.data === 'string') try { row.data = JSON.parse(row.data); } catch(e){}
+      if (row.save_data && typeof row.save_data === 'string') try { row.save_data = JSON.parse(row.save_data); } catch(_e){ /* ignore */ }
+      if (row.team_data && typeof row.team_data === 'string') try { row.team_data = JSON.parse(row.team_data); } catch(_e){ /* ignore */ }
+      if (row.data && typeof row.data === 'string') try { row.data = JSON.parse(row.data); } catch(_e){ /* ignore */ }
     });
 
     if (final === 'single') return { data: data[0] || null, error: data.length === 0 ? { message: 'Not found' } : null };

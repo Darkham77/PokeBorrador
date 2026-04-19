@@ -4,7 +4,7 @@
  */
 
 export const FIELD_ACTIONS = {
-  'reflect': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  'reflect': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (srcStages.reflect) {
       addLogFn("¡Pero falló!", 'log-info');
     } else {
@@ -12,7 +12,7 @@ export const FIELD_ACTIONS = {
       addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques físicos!`, 'log-info');
     }
   },
-  'light_screen': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  'light_screen': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (srcStages.lightScreen) {
       addLogFn("¡Pero falló!", 'log-info');
     } else {
@@ -20,7 +20,7 @@ export const FIELD_ACTIONS = {
       addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques especiales!`, 'log-info');
     }
   },
-  'safeguard': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  'safeguard': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (srcStages.safeguard) {
       addLogFn("¡Pero falló!", 'log-info');
     } else {
@@ -34,11 +34,11 @@ export const FIELD_ACTIONS = {
       addLogFn("¡Empezó a granizar!", 'log-info');
     }
   },
-  'spikes': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  'spikes': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     tgtStages.spikes = Math.min(3, (tgtStages.spikes || 0) + 1);
     addLogFn(`¡${src.name} lanzó púas alrededor de su rival!`, 'log-info');
   },
-  'mist': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  'mist': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     srcStages.mist = 5;
     addLogFn(`¡Una neblina protectora rodea a ${src.name}!`, 'log-info');
   }

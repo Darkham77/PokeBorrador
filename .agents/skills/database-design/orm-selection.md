@@ -4,7 +4,7 @@
 
 ## Decision Tree
 
-```
+```text
 What's the context?
 │
 ├── Edge deployment / Bundle size matters

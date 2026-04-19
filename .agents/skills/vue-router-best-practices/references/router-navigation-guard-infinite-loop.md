@@ -39,7 +39,7 @@ router.beforeEach((to, from) => {
 ```
 
 **Error you'll see:**
-```
+```text
 [Vue Router warn]: Detected an infinite redirection in a navigation guard when going from "/" to "/login". Aborting to avoid a Stack Overflow.
 ```
 

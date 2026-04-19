@@ -3,8 +3,9 @@ import { computed, watch } from 'vue'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/playerClasses'
-import { DBRouter } from '@/logic/db/dbRouter'
 import { supabase } from '@/logic/supabase'
+import { useInventoryStore } from '@/stores/inventory'
+import { getClassModifier } from '@/logic/player/classEngine'
 
 export const usePlayerClassStore = defineStore('playerClass', () => {
   const gameStore = useGameStore()
@@ -30,32 +31,10 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
    * Centraliza la lógica de getClassModifier() de legacy.
    */
   function getModifier(type, context = {}) {
-    // PvP Balance: Sin modificadores en PvP
-    if (gameStore.state.activeBattle?.isPvP) {
-      return type === 'shopDiscount' ? 0 : 1.0
-    }
-
-    if (!playerClass.value || !currentClassDef.value) return 1.0
-    const m = currentClassDef.value.modifiers
-
-    switch (type) {
-      case 'expMult':
-        if (playerClass.value === 'cazabichos' && context.isTrainer) return m.expMultTrainer || 1.0
-        return m.expMult || 1.0
-      case 'bcMult':
-        if (playerClass.value === 'entrenador' && context.isGym) return m.bcGymMult || 1.0
-        return m.bcMult || 1.0
-      case 'healCostMult':
-        return m.healCostMult || 1.0
-      case 'daycareCostMult':
-        return m.daycareCostMult || 1.0
-      case 'catchMult':
-        return m.catchMult || 1.0
-      case 'shopDiscount':
-        return m.shopDiscount || 0
-      default:
-        return 1.0
-    }
+    return getClassModifier(playerClass.value, type, {
+      ...context,
+      isPvP: gameStore.state.activeBattle?.isPvP
+    })
   }
 
   /**
@@ -194,10 +173,10 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
         const p = gameStore.state.box[mission.targetPokemonIdx]
         if (p) {
           if (p.heldItem) {
-            const invStore = (await import('@/stores/inventoryStore')).useInventoryStore()
+            const invStore = useInventoryStore()
             invStore.addItem(p.heldItem, 1)
           }
-          gameStore.state.box.splice(mission.targetPokemonIdx, 1)
+          gameStore.removePokemon(p.uid)
         }
       }
     } else if (cls === 'cazabichos') {

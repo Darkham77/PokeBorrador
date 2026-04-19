@@ -4,7 +4,7 @@
 
 ## When to Use
 
-```
+```text
 ✅ Good fit:
 ├── Complex, interconnected data
 ├── Multiple frontend platforms
@@ -21,7 +21,7 @@
 
 ## Schema Design Principles
 
-```
+```text
 Principles:
 ├── Think in graphs, not endpoints
 ├── Design for evolvability (no versions)
@@ -32,7 +32,7 @@ Principles:
 
 ## Security Considerations
 
-```
+```text
 Protect against:
 ├── Query depth attacks → Set max depth
 ├── Query complexity → Calculate cost

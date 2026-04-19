@@ -41,7 +41,7 @@ function switchComponent() {
 ```
 
 **Console warning:**
-```
+```text
 [Vue warn]: Vue received a Component that was made a reactive object.
 This can lead to unnecessary performance overhead and should be avoided
 by marking the component with `markRaw` or using `shallowRef` instead of `ref`.

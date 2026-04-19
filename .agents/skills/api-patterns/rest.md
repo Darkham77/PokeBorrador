@@ -4,7 +4,7 @@
 
 ## Resource Naming Rules
 
-```
+```text
 Principles:
 ├── Use NOUNS, not verbs (resources, not actions)
 ├── Use PLURAL forms (/users not /user)

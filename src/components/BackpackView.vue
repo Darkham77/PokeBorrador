@@ -1,9 +1,10 @@
 <script setup lang="js">
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventoryStore'
-import { useShopStore } from '@/stores/shopStore'
+import { useInventoryStore } from '@/stores/inventory'
+import { useShopStore } from '@/stores/shop'
 import { useUIStore } from '@/stores/ui'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const gameStore = useGameStore()
 const invStore = useInventoryStore()
@@ -231,7 +232,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
         <div class="market-item-icon">
           <img
             v-if="item.info?.sprite"
-            :src="item.info.sprite"
+            :src="getAssetUrl(ASSET_TYPES.ITEM, item.info.sprite)"
             class="item-img"
           >
           <span

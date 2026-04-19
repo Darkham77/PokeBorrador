@@ -24,6 +24,10 @@ export default defineConfig({
     vue(),
     migrationsPlugin()
   ],
+  define: {
+    __BUILD_TIME__: JSON.stringify(new Date().getFullYear().toString()),
+    __APP_VERSION__: JSON.stringify('v' + new Date().getFullYear().toString() + '.' + (new Date().getMonth()+1).toString().padStart(2, '0') + '.' + new Date().getDate().toString().padStart(2, '0') + '.' + new Date().getHours().toString().padStart(2, '0') + new Date().getMinutes().toString().padStart(2, '0'))
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -48,4 +52,22 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1500, // Phaser pesa ~1.3MB, evitamos el warning
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/phaser')) {
+            return 'vendor-phaser';
+          }
+          if (id.includes('node_modules/vue') || id.includes('node_modules/pinia') || id.includes('node_modules/vue-router')) {
+            return 'vendor-vue';
+          }
+          if (id.includes('node_modules/@supabase')) {
+            return 'vendor-db';
+          }
+        }
+      }
+    }
+  }
 })

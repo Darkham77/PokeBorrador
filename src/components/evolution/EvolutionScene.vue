@@ -47,7 +47,7 @@ const runFlashes = () => {
 
 const completeEvolution = () => {
   // Actually mutate the data in the store
-  const result = evolutionStore.evolve();
+  const _result = evolutionStore.evolve();
   step.value = 'transformed';
   
   // Final message delay
@@ -170,13 +170,13 @@ const close = () => {
   &.flashing {
     background: #fff;
     opacity: 0.5;
-    transform: string.unquote("scale(#{1.5})");
+    transform: string.unquote("Scale(1.5)");
   }
   
   &.transformed, &.final {
     background: var(--yellow, #fbbf24);
     opacity: 0.6;
-    transform: string.unquote("scale(#{1.5})");
+    transform: string.unquote("Scale(1.5)");
     box-shadow: 0 0 60px rgba(251, 191, 36, 0.4);
   }
 }
@@ -273,8 +273,8 @@ const close = () => {
 }
 
 @keyframes bounceIn {
-  from { transform: string.unquote("scale(#{0})"); opacity: 0; }
-  to { transform: string.unquote("scale(#{1.0})"); opacity: 1; }
+  from { transform: string.unquote("Scale(0)"); opacity: 0; }
+  to { transform: string.unquote("Scale(1.0)"); opacity: 1; }
 }
 
 @keyframes fadeIn {
@@ -283,8 +283,8 @@ const close = () => {
 }
 
 @keyframes float {
-  0% { transform: translateY(0) string.unquote("scale(#{1.0})"); opacity: 0; }
+  0% { transform: translateY(0) string.unquote("Scale(1.0)"); opacity: 0; }
   50% { opacity: 0.8; }
-  100% { transform: translateY(-40px) string.unquote("scale(#{0})"); opacity: 0; }
+  100% { transform: translateY(-40px) string.unquote("Scale(0)"); opacity: 0; }
 }
 </style>

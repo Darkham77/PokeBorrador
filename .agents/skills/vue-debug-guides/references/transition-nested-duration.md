@@ -170,7 +170,7 @@ tags: [vue3, transition, animation, duration, nested, timing]
 
 Use this formula to calculate the correct duration:
 
-```
+```text
 duration = max(delay + animation_duration) for all nested elements
 ```
 

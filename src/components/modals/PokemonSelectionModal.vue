@@ -1,39 +1,51 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
-import { usePlayerClassStore } from '@/stores/playerClass'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const uiStore = useUIStore()
+// const uiStore = useUIStore()
 const gameStore = useGameStore()
-const classStore = usePlayerClassStore()
 
-// Props/Configuración del modal (se pasarán vía store o evento)
+// Props/Configuración del modal
 const config = ref({
   title: 'SELECCIONAR POKÉMON',
   subtitle: 'Elige un Pokémon para la tarea.',
   maxSelect: 1,
   minSelect: 1,
-  typeFilter: null, // 'poison', 'bug', etc.
+  typeFilter: null,
   onConfirm: null,
-  context: 'generic' // 'rocket', 'breeder', 'trainer'
+  context: 'generic', // 'rocket', 'breeder', 'event'
+  includeTeam: true
 })
 
 const isOpen = ref(false)
-const selectedIndices = ref([])
+const selectedUids = ref([]) // use UID instead of array index
 
 // Búsqueda y filtrado
 const searchQuery = ref('')
+
 const availablePokemon = computed(() => {
   const box = gameStore.state.box || []
-  return box.map((p, idx) => ({ ...p, originalIdx: idx })).filter(p => {
+  const team = gameStore.state.team || []
+  
+  let sourceList;
+  if (config.value.includeTeam) {
+    sourceList = [
+      ...team.map(p => ({ ...p, _source: 'team' })),
+      ...box.map(p => ({ ...p, _source: 'box' }))
+    ]
+  } else {
+    sourceList = box.map(p => ({ ...p, _source: 'box' }))
+  }
+
+  return sourceList.filter(p => {
     // Básicos: No en misión ni en guardería
     if (p.onMission || p.inDaycare) return false
     
     // Filtro de búsqueda
     if (searchQuery.value && !p.name.toLowerCase().includes(searchQuery.value.toLowerCase()) && !p.id.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
     
-    // Filtro de tipo (Rocket necesita Poison)
+    // Filtro de tipo
     if (config.value.typeFilter) {
       if (p.type !== config.value.typeFilter && p.type2 !== config.value.typeFilter) return false
     }
@@ -42,34 +54,37 @@ const availablePokemon = computed(() => {
   })
 })
 
-function toggleSelect(idx) {
-  const sIdx = selectedIndices.value.indexOf(idx)
+function toggleSelect(uid) {
+  const sIdx = selectedUids.value.indexOf(uid)
   if (sIdx > -1) {
-    selectedIndices.value.splice(sIdx, 1)
+    selectedUids.value.splice(sIdx, 1)
   } else {
-    if (selectedIndices.value.length < config.value.maxSelect) {
-      selectedIndices.value.push(idx)
+    if (selectedUids.value.length < config.value.maxSelect) {
+      selectedUids.value.push(uid)
     } else if (config.value.maxSelect === 1) {
-      selectedIndices.value = [idx]
+      selectedUids.value = [uid]
     }
   }
 }
 
 function confirm() {
-  if (selectedIndices.value.length < config.value.minSelect) return
-  if (config.value.onConfirm) config.value.onConfirm(selectedIndices.value)
+  if (selectedUids.value.length < config.value.minSelect) return
+  // Find the actual pokemon objects
+  const selectedObjects = selectedUids.value.map(uid => availablePokemon.value.find(p => p.uid === uid)).filter(Boolean)
+  
+  if (config.value.onConfirm) config.value.onConfirm(selectedObjects)
   close()
 }
 
 function close() {
   isOpen.value = false
-  selectedIndices.value = []
+  selectedUids.value = []
 }
 
-// Exponer para abrir desde bridges
+// Exponer para abrir desde cualquier lado
 window._openPokemonSelectionModal = (opts) => {
   config.value = { ...config.value, ...opts }
-  selectedIndices.value = []
+  selectedUids.value = []
   isOpen.value = true
 }
 
@@ -119,10 +134,10 @@ function getProjectedValue(p) {
         <div class="pokemon-grid">
           <div 
             v-for="p in availablePokemon" 
-            :key="p.originalIdx"
+            :key="p.uid"
             class="poke-card"
-            :class="{ selected: selectedIndices.includes(p.originalIdx) }"
-            @click="toggleSelect(p.originalIdx)"
+            :class="{ selected: selectedUids.includes(p.uid) }"
+            @click="toggleSelect(p.uid)"
           >
             <div class="card-header">
               <span class="lvl">Nv.{{ p.level }}</span>
@@ -130,11 +145,17 @@ function getProjectedValue(p) {
                 v-if="p.isShiny"
                 class="shiny"
               >✨</span>
+              <span
+                class="source-badge"
+                :class="p._source"
+              >
+                {{ p._source === 'team' ? 'Equipo' : 'PC' }}
+              </span>
             </div>
             
             <div class="poke-sprite">
               <img
-                :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id_num || 1}.png`"
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny })"
                 alt=""
               >
             </div>
@@ -155,7 +176,7 @@ function getProjectedValue(p) {
 
             <div class="selection-indicator">
               <div class="checkbox">
-                <span v-if="selectedIndices.includes(p.originalIdx)">✓</span>
+                <span v-if="selectedUids.includes(p.uid)">✓</span>
               </div>
             </div>
           </div>
@@ -170,11 +191,11 @@ function getProjectedValue(p) {
 
         <footer class="modal-footer">
           <div class="selection-info">
-            Seleccionados: {{ selectedIndices.length }} / {{ config.maxSelect }}
+            Seleccionados: {{ selectedUids.length }} / {{ config.maxSelect }}
           </div>
           <button 
             class="confirm-btn" 
-            :disabled="selectedIndices.length < config.minSelect"
+            :disabled="selectedUids.length < config.minSelect"
             @click="confirm"
           >
             CONFIRMAR SELECCIÓN
@@ -285,10 +306,21 @@ function getProjectedValue(p) {
 .card-header {
   width: 100%;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
   font-size: 10px;
   color: #64748b;
   margin-bottom: 4px;
+}
+
+.source-badge {
+  font-size: 7px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  margin-left: auto;
+  text-transform: uppercase;
+  &.team { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+  &.box { background: rgba(255, 255, 255, 0.05); color: #888; }
 }
 
 .poke-sprite img {

@@ -42,6 +42,13 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('pokevicio_session_mode', newMode)
   })
 
+  // Persistir cambios en el usuario local (como db_version) para evitar re-migraciones
+  watch(user, (newUser) => {
+    if (sessionMode.value === 'offline' && newUser) {
+      localStorage.setItem('pokevicio_local_user', JSON.stringify(newUser))
+    }
+  }, { deep: true })
+
   async function checkSession() {
     if (sessionStorage.getItem('block_autologin') === 'true') {
       sessionStorage.removeItem('block_autologin')
@@ -147,7 +154,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!user.value || sessionMode.value === 'offline') return
     
     // Suscribirse a cambios en el perfil del usuario actual
-    const channel = supabase.channel(`session_check_${user.value.id}`)
+    const _channel = supabase.channel(`session_check_${user.value.id}`)
       .on('postgres_changes', { 
         event: 'UPDATE', 
         schema: 'public', 
@@ -217,6 +224,16 @@ export const useAuthStore = defineStore('auth', () => {
     window.location.href = '/login?logout=' + Date.now()
   }
 
+  function clearSessionLocal() {
+    console.log('[AuthStore] Limpiando estado local sin recarga...')
+    localStorage.removeItem('pokevicio_local_user')
+    localStorage.removeItem('pokevicio_session_mode')
+    user.value = null
+    session.value = null
+    sessionConflict.value = false
+    sessionMode.value = 'online'
+  }
+
   return {
     user,
     session,
@@ -231,6 +248,7 @@ export const useAuthStore = defineStore('auth', () => {
     signup,
     logout,
     localLogin,
+    clearSessionLocal,
     startSessionMonitoring
   }
 })

@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
-import { PLAYER_CLASSES } from '@/logic/playerClasses.js';
+import { PLAYER_CLASSES } from '@/data/playerClasses';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 const props = defineProps({
   playerClass: {
@@ -71,7 +72,7 @@ const avatarStyles = computed(() => {
 
   const bgSize = cls.value.faceScale || 'cover';
   const bgPos = cls.value.facePos || 'center';
-  const displayUrl = cls.value.avatarSprite || cls.value.sprite;
+  const displayUrl = getAssetUrl(ASSET_TYPES.TRAINER, cls.value.avatarSpriteId || cls.value.id);
 
   return {
     ...baseStyles,

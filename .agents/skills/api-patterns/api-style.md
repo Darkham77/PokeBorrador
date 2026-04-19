@@ -4,7 +4,7 @@
 
 ## Decision Tree
 
-```
+```text
 Who are the API consumers?
 │
 ├── Public API / Multiple platforms

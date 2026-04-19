@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useUIStore } from '@/stores/ui'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const props = defineProps({
+const _props = defineProps({
   pokemon: { type: Object, required: true }
 })
 
@@ -11,8 +11,8 @@ const emit = defineEmits(['close'])
 const stage = ref('egg') // 'egg', 'crack', 'reveal'
 const showParticles = ref(false)
 
-const getSprite = (id, shiny) => {
-  return window.getSpriteUrl?.(id, shiny) || ''
+const getSprite = (id, isShiny) => {
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 
 const startSequence = () => {
@@ -48,7 +48,7 @@ onMounted(() => {
         class="egg-visual"
       >
         <img
-          src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.png"
+          :src="getAssetUrl(ASSET_TYPES.ITEM, 'egg')"
           class="egg-sprite"
           :class="{ shake: stage === 'crack' }"
         >

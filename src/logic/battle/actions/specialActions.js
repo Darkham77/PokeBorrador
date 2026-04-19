@@ -4,7 +4,7 @@
  */
 
 export const SPECIAL_ACTIONS = {
-  'leech_seed': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  'leech_seed': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (tgt.type === 'grass' || tgt.type2 === 'grass') {
       addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info');
     } else if (!tgt.seeded) {
@@ -53,16 +53,16 @@ export const SPECIAL_ACTIONS = {
       // but we can try basic swap here if battleCtx allows it.
     }
   },
-  'destiny_bond': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  'destiny_bond': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     src.destinyBond = true;
     addLogFn(`¡${src.name} intenta llevarse a su rival al destino común!`, 'log-info');
   },
-  'perish_song': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  'perish_song': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (src.perishSongCount === undefined) src.perishSongCount = 3;
     if (tgt.perishSongCount === undefined) tgt.perishSongCount = 3;
     addLogFn('¡Todos los que escucharon el canto morirán en 3 turnos!', 'log-info');
   },
-  'transform': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  'transform': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     const originalName = src.name;
     if (!src.isTransformed) {
       src.originalForm = JSON.parse(JSON.stringify(src));
@@ -85,7 +85,7 @@ export const SPECIAL_ACTIONS = {
     });
     addLogFn(`¡${originalName} se transformó en ${tgt.name}!`, 'log-info');
   },
-  'reflect': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+  'reflect': (_src, _tgt, _srcStages, _tgtStages, _addLogFn, _battleCtx) => {
      // Re-exported or moved to fieldActions, keeping consistency
   }
 };

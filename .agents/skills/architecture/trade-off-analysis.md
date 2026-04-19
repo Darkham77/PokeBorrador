@@ -68,7 +68,7 @@ Proposed | Accepted | Deprecated | Superseded by [ADR-YYY]
 
 ## ADR Storage
 
-```
+```text
 docs/
 └── architecture/
     ├── adr-001-use-nextjs.md

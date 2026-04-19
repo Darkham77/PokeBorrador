@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useShopStore } from '@/stores/shopStore'
+import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const shopStore = useShopStore()
 const gameStore = useGameStore()
@@ -94,7 +95,7 @@ const buy = (item) => {
           >
             <div class="item-visual">
               <img
-                :src="item.sprite"
+                :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
                 :alt="item.name"
               >
               <div
@@ -228,7 +229,7 @@ const buy = (item) => {
     transform: translateY(-4px);
   }
 
-  &.locked { opacity: 0.6; filter: grayscale(1); }
+  &.locked { opacity: 0.6; filter: Grayscale(1); }
 }
 
 .item-visual {

@@ -13,7 +13,7 @@
 
 ## Versioning Philosophy
 
-```
+```text
 Consider:
 ├── Public API? → Version in URI
 ├── Internal only? → May not need versioning

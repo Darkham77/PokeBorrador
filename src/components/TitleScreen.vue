@@ -3,8 +3,9 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { computed } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const uiStore = useUIStore()
+const _uiStore = useUIStore()
 const gameStore = useGameStore()
 const authStore = useAuthStore()
 const gs = computed(() => gameStore.state)
@@ -43,7 +44,7 @@ const handleLogout = () => {
         <div class="starter-img-container">
           <img
             id="starter-img-bulbasaur"
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+            :src="getAssetUrl(ASSET_TYPES.POKEMON, 'bulbasaur')"
             alt="Bulbasaur"
             class="starter-sprite"
           >
@@ -77,7 +78,7 @@ const handleLogout = () => {
         <div class="starter-img-container">
           <img
             id="starter-img-charmander"
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
+            :src="getAssetUrl(ASSET_TYPES.POKEMON, 'charmander')"
             alt="Charmander"
             class="starter-sprite"
           >
@@ -111,7 +112,7 @@ const handleLogout = () => {
         <div class="starter-img-container">
           <img
             id="starter-img-squirtle"
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
+            :src="getAssetUrl(ASSET_TYPES.POKEMON, 'squirtle')"
             alt="Squirtle"
             class="starter-sprite"
           >

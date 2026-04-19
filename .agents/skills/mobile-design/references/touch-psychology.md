@@ -9,7 +9,7 @@
 
 ### The Fundamental Difference
 
-```
+```text
 DESKTOP (Mouse/Trackpad):
 ├── Cursor size: 1 pixel (precision)
 ├── Visual feedback: Hover states
@@ -26,7 +26,7 @@ MOBILE (Finger):
 
 ### Fitts' Law Formula Adapted
 
-```
+```text
 Touch acquisition time = a + b × log₂(1 + D/W)
 
 Where:
@@ -46,7 +46,7 @@ Where:
 
 ### Visual Size vs Hit Area
 
-```
+```text
 ┌─────────────────────────────────────┐
 │                                     │
 │    ┌─────────────────────────┐      │
@@ -78,7 +78,7 @@ Where:
 
 ### One-Handed Phone Usage
 
-```
+```text
 Research shows: 49% of users hold phone one-handed.
 
 ┌─────────────────────────────────────┐
@@ -105,7 +105,7 @@ Research shows: 49% of users hold phone one-handed.
 
 ### Thumb Arc (Right-Handed User)
 
-```
+```text
 Right hand holding phone:
 
 ┌───────────────────────────────┐
@@ -136,7 +136,7 @@ Left hand is mirrored.
 
 ### Large Phone Considerations (>6")
 
-```
+```text
 On large phones, top 40% becomes "dead zone" for one-handed use.
 
 Solutions:
@@ -164,7 +164,7 @@ Solutions:
 
 ### Touch Feedback Requirements
 
-```
+```text
 Tap → Immediate visual change (< 50ms)
 ├── Highlight state (background color change)
 ├── Scale down slightly (0.95-0.98)
@@ -181,7 +181,7 @@ Loading → Show within 100ms
 
 ### The "Fat Finger" Problem
 
-```
+```text
 Problem: Finger occludes target during tap
 ├── User can't see exactly where they're tapping
 ├── Visual feedback appears UNDER finger
@@ -200,7 +200,7 @@ Solutions:
 
 ### Gesture Discoverability Problem
 
-```
+```text
 Problem: Gestures are INVISIBLE.
 ├── User must discover/remember them
 ├── No hover/visual hint
@@ -228,7 +228,7 @@ Solution: Always provide visible alternative
 
 ### Gesture Affordance Design
 
-```
+```text
 Swipe actions need visual hints:
 
 ┌─────────────────────────────────────────┐
@@ -259,7 +259,7 @@ Swipe actions need visual hints:
 
 ### Why Haptics Matter
 
-```
+```text
 Haptics provide:
 ├── Confirmation without looking
 ├── Richer, more premium feel
@@ -298,7 +298,7 @@ Without haptics:
 
 ### Haptic Usage Guidelines
 
-```
+```text
 ✅ DO use haptics for:
 ├── Button taps
 ├── Toggle switches
@@ -343,7 +343,7 @@ Without haptics:
 
 ### Reducing Mobile Cognitive Load
 
-```
+```text
 1. ONE PRIMARY ACTION per screen
    └── Clear what to do next
    
@@ -365,7 +365,7 @@ Without haptics:
 
 ### Miller's Law for Mobile
 
-```
+```text
 Desktop: 7±2 items in working memory
 Mobile: Reduce to 5±1 (more distractions)
 
@@ -376,7 +376,7 @@ Steps: Max 5 visible steps in progress
 
 ### Hick's Law for Mobile
 
-```
+```text
 More choices = slower decisions
 
 Mobile impact: Even worse than desktop
@@ -398,7 +398,7 @@ Solution: Progressive disclosure
 
 ### Motor Impairment Considerations
 
-```
+```text
 Users with motor impairments may:
 ├── Have tremors (need larger targets)
 ├── Use assistive devices (different input method)
@@ -416,7 +416,7 @@ Design responses:
 
 ### Touch Target Spacing (A11y)
 
-```
+```text
 WCAG 2.2 Success Criterion 2.5.8:
 
 Touch targets MUST have:
@@ -446,7 +446,7 @@ OR the target is:
 
 ### The Premium Feel
 
-```
+```text
 What makes touch feel "premium":
 ├── Instant response (< 50ms)
 ├── Appropriate haptic feedback
@@ -468,7 +468,7 @@ What makes touch feel "premium":
 
 ### Trust Building Through Touch
 
-```
+```text
 Trust signals in touch interactions:
 ├── Consistent behavior (same action = same response)
 ├── Reliable feedback (never fails silently)
@@ -506,7 +506,7 @@ Trust signals in touch interactions:
 
 ### Touch Target Sizes
 
-```
+```text
                      iOS        Android     WCAG
 Minimum:           44pt       48dp       44px
 Recommended:       48pt+      56dp+      -
@@ -515,7 +515,7 @@ Spacing:           8pt+       8dp+       8px+
 
 ### Thumb Zone Actions
 
-```
+```text
 TOP:      Navigation, settings, back (infrequent)
 MIDDLE:   Content, secondary actions
 BOTTOM:   Primary CTA, tab bar, FAB (frequent)
@@ -523,7 +523,7 @@ BOTTOM:   Primary CTA, tab bar, FAB (frequent)
 
 ### Haptic Selection
 
-```
+```text
 Light:    Selection, toggle, minor
 Medium:   Tap, standard action
 Heavy:    Confirm, complete, drop

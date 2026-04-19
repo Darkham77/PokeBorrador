@@ -5,8 +5,8 @@ import { useUIStore } from '@/stores/ui';
 import { POKEMON_DB } from '@/data/pokemonDB';
 
 const breedingStore = useBreedingStore();
-const gameStore = useGameStore();
-const uiStore = useUIStore();
+const _gameStore = useGameStore();
+const _uiStore = useUIStore();
 
 const getPokemonName = (id) => POKEMON_DB[id]?.name || 'Huevo';
 

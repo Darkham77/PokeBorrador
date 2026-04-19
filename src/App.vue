@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, watch, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
@@ -22,6 +22,9 @@ import { useUIStore } from '@/stores/ui'
 import ConfirmModal from '@/components/modals/ConfirmModal.vue'
 import PromptModal from '@/components/modals/PromptModal.vue'
 import SpecialItemModals from '@/components/modals/SpecialItemModals.vue'
+import FossilRevivalModal from '@/components/modals/FossilRevivalModal.vue'
+import CosmeticsModal from '@/components/modals/CosmeticsModal.vue'
+import FishingMinigame from '@/components/battle/FishingMinigame.vue'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -51,18 +54,16 @@ onMounted(async () => {
     await gameStore.loadGame()
   }
   
-  // Escuchar la señal de listo del motor legacy (Mantenido solo para Phaser si es necesario, pero desacoplado de stores)
-  window.addEventListener('game-state-ready', (e) => {
+  // Escuchar la señal de listo del motor legacy
+  window.addEventListener('game-state-ready', (_e) => {
     console.log('[App] Game State Ready Event received');
-    gameStore.state.isReady = true;
+    gameStore.isEngineReady = true;
     classStore.syncTheme();
-    livePvP.initInvitePoller()
   });
 
   // Comprobar si ya estaba listo (Race Condition Guard)
   if (window.legacyGameReady) {
-    gameStore.state.isReady = true;
-    livePvP.initInvitePoller()
+    gameStore.isEngineReady = true;
   }
 })
 
@@ -81,7 +82,7 @@ const handleRetry = () => {
         <PhaserGame class="phaser-background" />
         
         <!-- Solo mostramos la interfaz si el motor legacy terminó su carga inicial -->
-        <MainGameView v-if="gameStore.state.isReady" />
+        <MainGameView v-if="gameStore.isReady" />
         
         <!-- Pantalla de carga mientras el motor lee archivos locales -->
         <div
@@ -149,6 +150,15 @@ const handleRetry = () => {
     <ConfirmModal />
     <PromptModal />
     <SpecialItemModals />
+    <FossilRevivalModal v-if="uiStore.isFossilRevivalOpen" />
+    <CosmeticsModal />
+    <FishingMinigame
+      v-if="uiStore.isFishingGameOpen"
+      :pokemon="uiStore.fishingPokemon"
+      :rarity="uiStore.fishingRarity"
+      @win="uiStore.fishingCallbacks.onWin"
+      @fail="uiStore.fishingCallbacks.onFail"
+    />
   </div>
 </template>
 
@@ -239,7 +249,7 @@ const handleRetry = () => {
 }
 
 .retry-btn:hover {
-  transform: scale(1.1);
+  transform: Scale(1.1);
   background: #fff;
   color: #ff3333;
 }

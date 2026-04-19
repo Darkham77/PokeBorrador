@@ -5,6 +5,7 @@ import { generateEncounter } from '@/logic/encounters'
 import { useGameStore } from './game'
 import { useBattleStore } from './battle'
 import { useUIStore } from './ui'
+import { useEventStore } from './events'
 
 export const useMapStore = defineStore('map', () => {
   const gs = useGameStore()
@@ -46,9 +47,11 @@ export const useMapStore = defineStore('map', () => {
     gs.hatchEggs()
 
     // 3. Generar Encuentro
+    const eventStore = useEventStore()
     const encounter = generateEncounter(locId, gs.state, {
       activeEvents: activeEvents.value,
-      dominanceData: mapWinners.value
+      dominanceData: mapWinners.value,
+      shinyMultiplier: eventStore.globalMultipliers?.shiny || 1
     })
 
     if (!encounter) {

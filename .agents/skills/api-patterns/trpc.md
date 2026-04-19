@@ -4,7 +4,7 @@
 
 ## When to Use
 
-```
+```text
 ✅ Perfect fit:
 ├── TypeScript on both ends
 ├── Monorepo structure
@@ -21,7 +21,7 @@
 
 ## Key Benefits
 
-```
+```text
 Why tRPC:
 ├── Zero schema maintenance
 ├── End-to-end type inference
@@ -32,7 +32,7 @@ Why tRPC:
 
 ## Integration Patterns
 
-```
+```text
 Common setups:
 ├── Next.js + tRPC (most common)
 ├── Monorepo with shared types

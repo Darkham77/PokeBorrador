@@ -1,7 +1,7 @@
-import { useRankedStore } from '@/stores/rankedStore';
+import { usePvPStore } from '@/stores/pvp';
 
 export function useRankedValidation() {
-  const rankedStore = useRankedStore();
+  const rankedStore = usePvPStore();
 
   /**
    * Valida un único Pokémon contra las reglas actuales.

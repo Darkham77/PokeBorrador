@@ -69,7 +69,7 @@ export async function getFromIDB(key) {
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });
-  } catch (e) { return null; }
+  } catch (_e) { return null; }
 }
 
 export async function setToIDB(key, val) {
@@ -111,7 +111,7 @@ export async function initSQLite(options = {}) {
       }
 
       const SQL = await window.initSqlJs({
-        locateFile: file => `/sql-wasm.wasm`
+        locateFile: _file => `/sql-wasm.wasm`
       });
 
       const binaryData = _isInMemory ? null : await getFromIDB(_sqliteKey);
@@ -124,12 +124,40 @@ export async function initSQLite(options = {}) {
         console.log('[SQLite] New database created');
       }
 
-      // 1. Initialize schemas
+      // 1. Initialize schemas and ensure columns exist
       TABLES_SCHEMA.forEach(tableDef => {
         try {
+          const tableName = tableDef.split(' ')[0];
           _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${tableDef};`);
+          
+          // Basic auto-column-sync: ensure all defined columns exist
+          // Definición simplificada: sacamos solo los nombres de columnas
+          const colsStr = tableDef.substring(tableDef.indexOf('(') + 1, tableDef.lastIndexOf(')'));
+          const colDefs = colsStr.split(',').map(c => c.trim().split(' ')[0]);
+          
+          const info = _sqliteDb.exec(`PRAGMA table_info(${tableName})`);
+            const existingCols = info[0].values.map(row => row[1]);
+            
+            // Refined parsing: skip constraints and clean up names
+            const validCols = colDefs.filter(c => {
+              const upper = c.toUpperCase();
+              return c && 
+                     !['PRIMARY', 'FOREIGN', 'UNIQUE', 'CHECK', 'CONSTRAINT'].includes(upper) &&
+                     !c.includes('(') && !c.includes(')');
+            });
+
+            validCols.forEach(col => {
+              if (!existingCols.includes(col)) {
+                const fullDef = colsStr.split(',').find(c => c.trim().startsWith(col));
+                
+                if (fullDef && !fullDef.toUpperCase().includes('PRIMARY KEY')) {
+                  console.log(`[SQLite] Adding missing column ${col} to ${tableName}`);
+                  _sqliteDb.run(`ALTER TABLE ${tableName} ADD COLUMN ${fullDef}`);
+                }
+              }
+            });
         } catch (e) {
-          console.error(`[SQLite] Error creating table: ${tableDef.split(' ')[0]}`, e);
+          console.error(`[SQLite] Error syncing table schema: ${tableDef.split(' ')[0]}`, e);
         }
       });
 
@@ -137,7 +165,6 @@ export async function initSQLite(options = {}) {
       _sqliteDb.run(`CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')));`);
 
       // 3. Run migrations
-      console.log('[SQLite] [2026-04-18 04:55] Running migrations...');
       runMigrationsInternal(_sqliteDb, DATABASE_MIGRATIONS);
 
       // 4. Force Version Sync
@@ -166,7 +193,6 @@ function runMigrationsInternal(db, migrations) {
     try {
       const applied = db.exec(`SELECT 1 FROM _migrations WHERE id = '${m.id}'`);
       if (applied.length > 0) {
-        console.log(`[SQLite Migration] Already applied: ${m.id}`);
         return;
       }
 
@@ -174,18 +200,61 @@ function runMigrationsInternal(db, migrations) {
         const info = db.exec(`PRAGMA table_info(${m.check.table})`);
         const exists = info[0] && info[0].values.some(row => row[1] === m.check.column);
         if (exists) {
-          console.log(`[SQLite Migration] Column ${m.check.column} already exists in ${m.check.table}, skipping: ${m.id}`);
           db.run(`INSERT OR IGNORE INTO _migrations (id) VALUES ('${m.id}')`);
           return;
         }
       }
 
       console.log(`[SQLite Migration] APPLYING: ${m.id}`);
-      m.sql.split(';').filter(s => s.trim()).forEach(stmt => {
-        console.log(`[SQLite Migration] Executing: ${stmt.trim()}`);
-        db.run(stmt);
-      });
-      db.run(`INSERT INTO _migrations (id) VALUES ('${m.id}')`);
+    m.sql.split(';').filter(s => s.trim()).forEach(stmt => {
+      let cleaned = stmt.trim()
+        .replace(/public\./gi, '')
+        .replace(/TIMESTAMPTZ/gi, 'TEXT')
+        .replace(/JSONB/gi, 'TEXT')
+        .replace(/UUID/gi, 'TEXT')
+        .replace(/::[a-z0-9]+/gi, '') // Remove Postgres casting (e.g., ::TEXT)
+        .replace(/DEFAULT\s+NOW\(\)/gi, "DEFAULT (datetime('now'))")
+        .replace(/DEFAULT\s+gen_random_uuid\(\)/gi, "");
+
+      const upper = cleaned.toUpperCase();
+      
+      // Ignorar lógica incompatible de Postgres
+      if (upper.startsWith('CREATE OR REPLACE FUNCTION') || 
+          upper.startsWith('CREATE POLICY') ||
+          upper.startsWith('DROP POLICY') ||
+          upper.startsWith('CREATE TRIGGER') ||
+          upper.startsWith('DROP TRIGGER') ||
+          upper.startsWith('CREATE EXTENSION') ||
+          upper.startsWith('ALTER TABLE') && (upper.includes('ENABLE ROW LEVEL SECURITY') || upper.includes('OWNER TO')) ||
+          upper.includes('RETURNS TRIGGER') || 
+          upper.includes('LANGUAGE PLPGSQL') ||
+          upper.includes('RETURNS BOOLEAN AS $$') ||
+          upper.includes('RETURNS UUID AS $$') ||
+          upper.includes('RETURNS timestamptz') ||
+          upper.startsWith('SELECT cron.schedule') ||
+          upper.startsWith('SECURITY DEFINER')) {
+        console.warn(`[SQLite Migration] Skipping Postgres-specific logic: ${cleaned.substring(0, 60)}...`);
+        return;
+      }
+
+      // Evitar ejecutar ALTER TABLE que no sean ADD COLUMN básicos (SQLite no soporta mucho más)
+      if (upper.startsWith('ALTER TABLE') && !upper.includes('ADD COLUMN')) {
+         console.warn(`[SQLite Migration] Skipping complex ALTER TABLE: ${cleaned}`);
+         return;
+      }
+
+      console.log(`[SQLite Migration] Executing: ${cleaned}`);
+      try {
+        db.run(cleaned);
+      } catch (e) {
+        if (e.message.includes('duplicate column name') || e.message.includes('already exists')) {
+          console.warn(`[SQLite Migration] Column already exists, skipping statement in ${m.id}`);
+        } else {
+          console.error(`[SQLite Migration] Failed statement in ${m.id}:`, cleaned, e);
+        }
+      }
+    });
+    db.run(`INSERT INTO _migrations (id) VALUES ('${m.id}')`);
 
       const version = m.id.split('_')[0];
       if (/^\d+$/.test(version)) {

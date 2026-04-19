@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useShopStore } from '@/stores/shopStore'
+import { onMounted, ref } from 'vue'
+import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
-import { PLAYER_CLASSES } from '@/logic/playerClasses'
+import { PLAYER_CLASSES } from '@/data/playerClasses'
 
 const shopStore = useShopStore()
 const gameStore = useGameStore()
@@ -138,7 +138,7 @@ onMounted(() => {
   
   &.sold-out {
     opacity: 0.6;
-    filter: string.unquote("grayscale(0.8)");
+    filter: grayScale(0.8);
   }
 }
 

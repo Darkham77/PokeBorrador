@@ -1,4 +1,5 @@
-import { ref, nextTick } from 'vue'
+import { ref } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 export function useBattleVisuals() {
   const canvasRef = ref(null)
@@ -11,12 +12,7 @@ export function useBattleVisuals() {
   }
 
   const getSprite = (id, isShiny, isBack = false) => {
-    const num = window.POKEMON_SPRITE_IDS?.[id.toLowerCase()] || id
-    if (!num) return ''
-    const base = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'
-    const path = isBack ? 'back/' : ''
-    const shinyPath = isShiny ? 'shiny/' : ''
-    return `${base}${path}${shinyPath}${num}.png`
+    return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack })
   }
 
   const redrawBackground = (isBattleActive, locationId, cycle) => {

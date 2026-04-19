@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
-import { PLAYER_CLASSES } from '@/logic/playerClasses';
+import { PLAYER_CLASSES } from '@/data/playerClasses';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 const props = defineProps({
   classId: {
@@ -34,7 +35,8 @@ const borderColor = computed(() => {
 
 const avatarUrl = computed(() => {
   if (!cls.value) return null;
-  return cls.value.avatarSprite || cls.value.sprite;
+  const spriteId = cls.value.avatarSpriteId || cls.value.id;
+  return getAssetUrl(ASSET_TYPES.TRAINER, spriteId);
 });
 
 const containerStyle = computed(() => ({

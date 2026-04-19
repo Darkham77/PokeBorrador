@@ -30,7 +30,7 @@
 
 ## Project Classification Matrix
 
-```
+```text
                     MVP              SaaS           Enterprise
 ┌─────────────────────────────────────────────────────────────┐
 │ Scale        │ <1K           │ 1K-100K      │ 100K+        │

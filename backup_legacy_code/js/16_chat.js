@@ -1,4 +1,4 @@
-﻿// ===== CHAT SYSTEM =====
+// ===== CHAT SYSTEM =====
 // Friend chat (realtime inbox/outbox) + Global chat (DB persisted, max 50)
 
 let _chatInboxChannel = null;

@@ -1,6 +1,4 @@
-/**
- * Módulo de Acciones de Curación (Healing)
- */
+import { getDayCycle } from '@/logic/timeUtils';
 
 export const HEALING_ACTIONS = {
   'heal_50': (src, tgt, srcStages, tgtStages, addLogFn) => {
@@ -17,7 +15,7 @@ export const HEALING_ACTIONS = {
     if (src.hp >= src.maxHp) return;
     
     // El ciclo horario afecta la curación (Sintesis, Sol matinal, Luz lunar)
-    const cycle = (typeof window.getDayCycle === 'function') ? window.getDayCycle() : 'day';
+    const cycle = getDayCycle();
     let healPct = 0.5;
     if (cycle === 'day' || cycle === 'morning') healPct = 0.66;
     if (cycle === 'dusk') healPct = 0.33;

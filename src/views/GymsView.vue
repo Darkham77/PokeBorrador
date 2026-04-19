@@ -142,11 +142,11 @@ onMounted(async () => {
 
   &.active {
     opacity: 1;
-    filter: grayScale(100%);
+    filter: Grayscale(100%);
     background: rgba(255, 215, 0, 0.1);
     border-color: #ffd700;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-    transform: string.unquote("scale(#{1.1})");
+    transform: string.unquote("Scale(1.1)");
   }
 }
 

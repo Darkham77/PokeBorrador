@@ -1,69 +1,83 @@
 import { defineStore } from 'pinia';
-import { POKEMON_DB } from '@/data/pokemonDB';
-import { 
-  checkLevelUpEvolution,
-  checkStoneEvolution,
-  evolvePokemonData
-} from '@/logic/evolutionLogic';
+import { ref } from 'vue';
+import { evolvePokemonData } from '@/logic/evolutionLogic';
 import { useGameStore } from '@/stores/game';
 
-export const useEvolutionStore = defineStore('evolution', {
-  state: () => ({
-    isEvolving: false,
-    sourcePokemon: null,
-    targetId: null,
-    onComplete: null,
-    pendingMoves: []
-  }),
+export const useEvolutionStore = defineStore('evolution', () => {
+  const gameStore = useGameStore();
 
-  actions: {
-    /**
-     * Starts the evolution sequence.
-     * @param {Object} pokemon - The pokemon instance to evolve.
-     * @param {String} targetId - The ID of the target species.
-     * @param {Function} onComplete - Callback after the animation finishes.
-     */
-    startEvolution(pokemon, targetId, onComplete = null) {
-      this.sourcePokemon = pokemon;
-      this.targetId = targetId;
-      this.isEvolving = true;
-      this.onComplete = onComplete;
-      this.pendingMoves = [];
-    },
+  // --- STATE ---
+  const isEvolving = ref(false);
+  const sourcePokemon = ref(null);
+  const targetId = ref(null);
+  const onComplete = ref(null);
+  const pendingMoves = ref([]);
 
-    /**
-     * Performs the data transformation of the pokemon species.
-     * Mutates the sourcePokemon object.
-     */
-    evolve() {
-      if (!this.sourcePokemon || !this.targetId) return;
+  // --- ACTIONS ---
 
-      const result = evolvePokemonData(this.sourcePokemon, this.targetId);
-      if (!result) return;
-
-      this.pendingMoves = result.pendingMoves;
-
-      // 5. Pokédex registration
-      const gameStore = useGameStore();
-      gameStore.registerPokedex(this.targetId, true); // true = caught
-      
-      // 6. Persistence
-      gameStore.scheduleSave();
-      
-      return { oldName: result.oldName, newName: this.sourcePokemon.name };
-    },
-
-    finishEvolution() {
-      this.isEvolving = false;
-      if (this.onComplete) {
-        this.onComplete({
-          pokemon: this.sourcePokemon,
-          pendingMoves: this.pendingMoves
-        });
-      }
-      this.sourcePokemon = null;
-      this.targetId = null;
-      this.onComplete = null;
-    }
+  /**
+   * Starts the evolution sequence.
+   * @param {Object} pokemon - The pokemon instance to evolve.
+   * @param {String} targetSpeciesId - The ID of the target species.
+   * @param {Function} callback - Callback after the animation finishes.
+   */
+  function startEvolution(pokemon, targetSpeciesId, callback = null) {
+    sourcePokemon.value = pokemon;
+    targetId.value = targetSpeciesId;
+    isEvolving.value = true;
+    onComplete.value = callback;
+    pendingMoves.value = [];
   }
+
+  /**
+   * Performs the data transformation of the pokemon species.
+   * Mutates the sourcePokemon object.
+   */
+  function evolve() {
+    if (!sourcePokemon.value || !targetId.value) return;
+
+    const result = evolvePokemonData(sourcePokemon.value, targetId.value);
+    if (!result) return;
+
+    pendingMoves.value = result.pendingMoves;
+
+    // Pokédex registration
+    gameStore.registerPokedex(targetId.value, true); // true = caught
+    
+    // Persistence
+    gameStore.scheduleSave();
+    
+    return { 
+      oldName: result.oldName, 
+      newName: sourcePokemon.value.name,
+      fromId: result.fromId,
+      toId: result.toId
+    };
+  }
+
+  /**
+   * Resets the evolution state and triggers the callback.
+   */
+  function finishEvolution() {
+    isEvolving.value = false;
+    if (onComplete.value) {
+      onComplete.value({
+        pokemon: sourcePokemon.value,
+        pendingMoves: pendingMoves.value
+      });
+    }
+    sourcePokemon.value = null;
+    targetId.value = null;
+    onComplete.value = null;
+  }
+
+  return {
+    isEvolving,
+    sourcePokemon,
+    targetId,
+    pendingMoves,
+    startEvolution,
+    evolve,
+    finishEvolution
+  };
 });

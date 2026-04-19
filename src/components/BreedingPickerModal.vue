@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useBreedingStore } from '@/stores/breedingStore'
+import { useBreedingStore } from '@/stores/breeding'
 import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 

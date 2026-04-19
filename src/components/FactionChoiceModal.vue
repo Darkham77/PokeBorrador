@@ -1,7 +1,8 @@
 <script setup>
 import { useUIStore } from '@/stores/ui'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const uiStore = useUIStore()
+const _uiStore = useUIStore()
 
 const closeFactionModal = () => {
   if (typeof window.closeFactionChoice === 'function') {
@@ -38,7 +39,7 @@ const chooseFaction = (faction) => {
             @click="chooseFaction('union')"
           >
             <img
-              src="@/assets/ui/factions/union.webp"
+              :src="getAssetUrl(ASSET_TYPES.FACTION, 'union')"
               class="faction-icon-large"
             >
             <span class="faction-name union-text">Team Unión</span>
@@ -48,7 +49,7 @@ const chooseFaction = (faction) => {
             @click="chooseFaction('poder')"
           >
             <img
-              src="@/assets/ui/factions/poder.webp"
+              :src="getAssetUrl(ASSET_TYPES.FACTION, 'poder')"
               class="faction-icon-large"
             >
             <span class="faction-name poder-text">Team Poder</span>

@@ -1,8 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventoryStore'
-import { useBoxStore } from '@/stores/boxStore'
+import { useBoxStore } from '@/stores/box'
 import { useUIStore } from '@/stores/ui'
 import { useBoxFilters } from '@/composables/useBoxFilters'
 

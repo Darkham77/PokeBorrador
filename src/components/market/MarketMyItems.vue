@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { useGTSStore } from '@/stores/gtsStore'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { useGTSStore } from '@/stores/gts'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
 const gtsStore = useGTSStore()
@@ -45,7 +46,7 @@ async function handleCancel(id) {
                 :style="{ background: getPokemonTier(item.data).bg }"
               />
               <img
-                :src="`/assets/sprites/pokemon/${item.data.id}.webp`"
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, item.data.id)"
                 class="p-sprite pixelated"
               >
             </template>

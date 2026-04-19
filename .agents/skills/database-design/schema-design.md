@@ -4,7 +4,7 @@
 
 ## Normalization Decision
 
-```
+```text
 When to normalize (separate tables):
 ├── Data is repeated across rows
 ├── Updates would need multiple changes
@@ -29,7 +29,7 @@ When to denormalize (embed/duplicate):
 
 ## Timestamp Strategy
 
-```
+```text
 For every table:
 ├── created_at → When created
 ├── updated_at → Last modified
@@ -48,7 +48,7 @@ Use TIMESTAMPTZ (with timezone) not TIMESTAMP
 
 ## Foreign Key ON DELETE
 
-```
+```text
 ├── CASCADE → Delete children with parent
 ├── SET NULL → Children become orphans
 ├── RESTRICT → Prevent delete if children exist

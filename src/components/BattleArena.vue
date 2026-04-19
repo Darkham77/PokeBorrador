@@ -2,6 +2,7 @@
 import { computed, watch, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
+import { useUIStore } from '@/stores/ui'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
 import { phaserBridge } from '@/logic/phaserBridge'
 
@@ -15,7 +16,8 @@ import BattleSwitchModal from './battle/BattleSwitchModal.vue'
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
-const { getHpPct, getHpClass } = useBattleVisuals()
+const uiStore = useUIStore()
+const { _getHpPct, _getHpClass } = useBattleVisuals()
 
 const gs = computed(() => gameStore.state)
 const battle = computed(() => battleStore.activeBattle)

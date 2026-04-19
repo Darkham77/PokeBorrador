@@ -4,7 +4,7 @@
 
 ## Main Decision Tree
 
-```
+```text
 START: What's your MAIN concern?
 
 ┌─ Data Access Complexity?

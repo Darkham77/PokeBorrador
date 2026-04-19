@@ -289,7 +289,7 @@ const openDetail = (p) => {
       background: #334155;
       color: #fff;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      transform: scale(1.05);
+      transform: Scale(1.05);
     }
   }
 }
@@ -408,14 +408,14 @@ const openDetail = (p) => {
     box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     
     &::before { opacity: 1; }
-    .pokemon-sprite { transform: scale(1.15) rotate(5deg); }
+    .pokemon-sprite { transform: Scale(1.15) rotate(5deg); }
     .pokemon-name { color: #fff; }
   }
 
   &.is-unseen {
     opacity: 0.3;
     cursor: default;
-    filter: grayscale(100%);
+    filter: Grayscale(100%);
     &:hover { transform: none; box-shadow: none; &::before { opacity: 0; } }
   }
 
@@ -456,7 +456,7 @@ const openDetail = (p) => {
       filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
       
       &.silhouette {
-        filter: brightness(0) opacity(0.15);
+        filter: brightness(0) Opacity(0.15);
       }
     }
 

@@ -1,11 +1,11 @@
 <script setup>
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
-import { useRankedStore, RANKED_REWARD_MILESTONES, RANKED_REWARD_TIER_MARKS } from '@/stores/rankedStore';
+import { usePvPStore, RANKED_REWARD_MILESTONES, RANKED_REWARD_TIER_MARKS } from '@/stores/pvp';
 import { useUIStore } from '@/stores/ui';
 
 const gameStore = useGameStore();
-const rankedStore = useRankedStore();
+const rankedStore = usePvPStore();
 const uiStore = useUIStore();
 
 const MIN_ELO = 1000;
@@ -303,7 +303,7 @@ h3 {
 
   &:hover:not(:disabled) {
     background: rgba(107, 203, 119, 0.3);
-    transform: string.unquote("scale(1.02)");
+    transform: Scale(1.02);
   }
 
   &:disabled {

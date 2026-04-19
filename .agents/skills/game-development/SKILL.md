@@ -1,6 +1,6 @@
 ---
 name: game-development
-description: Game development orchestrator. Routes to platform-specific skills based on project needs.
+description: Game development orchestrator. YOU MUST use this skill whenever the user asks to build a game, mentions Phaser, game design, multiplayer networking, sprites, 2D/3D development, or anything related to game engines and mechanics. Routes to platform-specific references based on project needs.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -22,26 +22,26 @@ You are working on a game development project. This skill teaches the PRINCIPLES
 
 | If the game targets... | Use Sub-Skill |
 | :--- | :--- |
-| Web browsers (HTML5, WebGL) | `game-development/web-games` |
-| Mobile (iOS, Android) | `game-development/mobile-games` |
-| PC (Steam, Desktop) | `game-development/pc-games` |
-| VR/AR headsets | `game-development/vr-ar` |
+| Web browsers (HTML5, WebGL) | `references/web-games.md` |
+| Mobile (iOS, Android) | `references/mobile-games.md` |
+| PC (Steam, Desktop) | `references/pc-games.md` |
+| VR/AR headsets | `references/vr-ar.md` |
 
 ### Dimension Selection
 
 | If the game is... | Use Sub-Skill |
 | :--- | :--- |
-| 2D (sprites, tilemaps) | `game-development/2d-games` |
-| 3D (meshes, shaders) | `game-development/3d-games` |
+| 2D (sprites, tilemaps) | `references/2d-games.md` |
+| 3D (meshes, shaders) | `references/3d-games.md` |
 
 ### Specialty Areas
 
 | If you need... | Use Sub-Skill |
 | :--- | :--- |
-| GDD, balancing, player psychology | `game-development/game-design` |
-| Multiplayer, networking | `game-development/multiplayer` |
-| Visual style, asset pipeline, animation | `game-development/game-art` |
-| Sound design, music, adaptive audio | `game-development/game-audio` |
+| GDD, balancing, player psychology | `references/game-design.md` |
+| Multiplayer, networking | `references/multiplayer.md` |
+| Visual style, asset pipeline, animation | `references/game-art.md` |
+| Sound design, music, adaptive audio | `references/game-audio.md` |
 
 ---
 
@@ -152,20 +152,20 @@ Abstract input into ACTIONS, not raw keys:
 
 ### Example 1: "I want to make a browser-based 2D platformer"
 
-→ Start with `game-development/web-games` for framework selection
-→ Then `game-development/2d-games` for sprite/tilemap patterns
-→ Reference `game-development/game-design` for level design
+→ Start with `references/web-games.md` for framework selection
+→ Then `references/2d-games.md` for sprite/tilemap patterns
+→ Reference `references/game-design.md` for level design
 
 ### Example 2: "Mobile puzzle game for iOS and Android"
 
-→ Start with `game-development/mobile-games` for touch input and stores
-→ Use `game-development/game-design` for puzzle balancing
+→ Start with `references/mobile-games.md` for touch input and stores
+→ Use `references/game-design.md` for puzzle balancing
 
 ### Example 3: "Multiplayer VR shooter"
 
-→ `game-development/vr-ar` for comfort and immersion
-→ `game-development/3d-games` for rendering
-→ `game-development/multiplayer` for networking
+→ `references/vr-ar.md` for comfort and immersion
+→ `references/3d-games.md` for rendering
+→ `references/multiplayer.md` for networking
 
 ---
 

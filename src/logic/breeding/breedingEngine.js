@@ -1,5 +1,5 @@
 import { EGG_GROUPS, BABY_MAP, EGG_MOVES_DB, BREEDING_CONSTANTS } from './breedingData'
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '../../data/evolutionData'
+import { getFirstEvolution } from '@/logic/pokemon/evolutionEngine'
 
 /**
  * breedingEngine.js
@@ -15,51 +15,7 @@ export function getBreedingBaseId(id) {
   return id.endsWith('_m') || id.endsWith('_f') ? id.slice(0, -2) : id
 }
 
-/**
- * Encuentra la forma evolutiva más básica de un Pokémon.
- * Traversa la tabla de evoluciones hacia atrás.
- */
-export function getFirstEvolution(id) {
-  const baseId = getBreedingBaseId(id)
-  
-  // Buscar quién evoluciona a este Pokémon
-  let parent = null
-  
-  // 1. Buscar en tabla de niveles
-  for (const [key, val] of Object.entries(EVOLUTION_TABLE)) {
-    if (val.to === baseId) {
-      parent = key
-      break
-    }
-  }
-  
-  // 2. Buscar en piedras
-  if (!parent) {
-    for (const [key, val] of Object.entries(STONE_EVOLUTIONS)) {
-      if (val.to === baseId) {
-        parent = key
-        break
-      }
-    }
-  }
-  
-  // 3. Buscar en intercambios
-  if (!parent) {
-    for (const [key, val] of Object.entries(TRADE_EVOLUTIONS)) {
-      if (val === baseId) {
-        parent = key
-        break
-      }
-    }
-  }
-
-  // Si encontramos un padre, seguimos subiendo recursivamente
-  if (parent) {
-    return getFirstEvolution(parent)
-  }
-  
-  return baseId
-}
+export { getFirstEvolution };
 
 /**
  * Determina qué especie nacerá de un huevo.
@@ -203,7 +159,7 @@ export function inheritAbility(pA, pB) {
   const isADitto = getBreedingBaseId(pA.id) === 'ditto'
   const isBDitto = getBreedingBaseId(pB.id) === 'ditto'
   
-  let source = null
+  let source;
   if (isADitto) source = pB
   else if (isBDitto) source = pA
   else source = pA.gender === 'F' ? pA : pB // La madre manda
@@ -218,13 +174,16 @@ export function inheritAbility(pA, pB) {
 }
 
 /**
- * Calcula la probabilidad de Shiny considerando el Método Masuda.
+ * Calcula la probabilidad de Shiny considerando el Método Masuda y eventos.
  * standardRate suele ser 1/8192 o 1/4096.
  */
-export function calculateShinyChance(pA, pB, standardRate = 1/4096) {
+export function calculateShinyChance(pA, pB, standardRate = 1/4096, eventShinyMult = 1) {
   const isForeign = pA.region !== pB.region || pA.ot_id !== pB.ot_id // Simplificación Método Masuda
-  const multiplier = isForeign ? BREEDING_CONSTANTS.MASUDA_MULTIPLIER : 1
-  return standardRate * multiplier
+  const masudaBonus = isForeign ? (BREEDING_CONSTANTS.MASUDA_MULTIPLIER - 1) : 0
+  const eventBonus = eventShinyMult - 1
+  
+  const totalMult = 1 + masudaBonus + eventBonus // Additive stacking
+  return standardRate * totalMult
 }
 
 /**

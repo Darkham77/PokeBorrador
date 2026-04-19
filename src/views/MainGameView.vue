@@ -1,25 +1,27 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, defineAsyncComponent } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useWarStore } from '@/stores/war'
 import { useEventStore } from '@/stores/events'
 import { useAudioStore } from '@/stores/audio'
+import { useLivePvPStore } from '@/stores/livePvP'
 
 // Sub-components
 import TitleScreen from '@/components/TitleScreen.vue'
+import ActionButtons from '@/components/ActionButtons.vue'
 import TrainerPanel from '@/components/TrainerPanel.vue'
 import HUD_Navigation from '@/components/HUD_Navigation.vue'
 import InventoryPills from '@/components/InventoryPills.vue'
 import BattleArena from '@/components/BattleArena.vue'
+import PvPArena from '@/components/battle/PvPArena.vue'
 import ProfileModal from '@/components/ProfileModal.vue'
 import SettingsModal from '@/components/SettingsModal.vue'
 import LibraryModal from '@/components/LibraryModal.vue'
 import FactionChoiceModal from '@/components/FactionChoiceModal.vue'
 import WarShopModal from '@/components/WarShopModal.vue'
 import PassiveTeamEditorModal from '@/components/PassiveTeamEditorModal.vue'
-import MobileNavigation from '@/components/MobileNavigation.vue'
 import TeamHeader from '@/components/team/TeamHeader.vue'
 import TeamGrid from '@/components/team/TeamGrid.vue'
 import PokemonDetailModal from '@/components/PokemonDetailModal.vue'
@@ -34,18 +36,21 @@ import MoveRelearnerModal from '@/components/modals/MoveRelearnerModal.vue'
 import SessionConflictModal from '@/components/auth/SessionConflictModal.vue'
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
+import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
 import { useAuthStore } from '@/stores/auth'
 
 
 // Tab components
 import BackpackView from '@/components/BackpackView.vue'
 import BoxView from '@/components/BoxView.vue'
-import PokedexView from '@/views/PokedexView.vue'
 import HealOverlay from '@/components/HealOverlay.vue'
-import MapView from '@/views/MapView.vue'
-import GymsView from '@/views/GymsView.vue'
-import DaycareView from '@/views/DaycareView.vue'
-import ShopView from '@/views/ShopView.vue'
+
+// Lazy loaded views to fix code splitting warnings
+const PokedexView = defineAsyncComponent(() => import('@/views/PokedexView.vue'))
+const MapView = defineAsyncComponent(() => import('@/views/MapView.vue'))
+const GymsView = defineAsyncComponent(() => import('@/views/GymsView.vue'))
+const DaycareView = defineAsyncComponent(() => import('@/views/DaycareView.vue'))
+const ShopView = defineAsyncComponent(() => import('@/views/ShopView.vue'))
 import GlobalChat from '@/components/social/GlobalChat.vue'
 import SocialCenterModal from '@/components/social/SocialCenterModal.vue'
 import DirectChatWindow from '@/components/social/DirectChatWindow.vue'
@@ -68,6 +73,7 @@ const chatStore = useChatStore()
 const warStore = useWarStore()
 const eventStore = useEventStore()
 const audioStore = useAudioStore()
+const livePvP = useLivePvPStore()
 
 // Sync Weather & Day/Night Cycle with Phaser
 watch(() => gameStore.state.dayCycle, (cycle) => {
@@ -79,6 +85,7 @@ watch(() => gameStore.state.dayCycle, (cycle) => {
 
 const hudRef = ref(null)
 const hudHeight = ref(85)
+const isHudHidden = ref(false)
 
 const gs = computed(() => gameStore.state)
 const activeTab = computed(() => uiStore.activeTab)
@@ -97,22 +104,56 @@ function handleOutsideClick(e) {
   }
 }
 
+// Scroll listener for dynamic HUD visibility
+let lastScrollY = 0
+function handleScroll(e) {
+  let target = e.target
+  if (target === document || target === window) target = document.documentElement
+  
+  // Only hide/show if the main tab or document is scrolling (ignore inner tiny scrolls)
+  if (target.tagName !== 'HTML' && (!target.classList || !target.classList.contains('tab-content'))) {
+    return
+  }
+
+  const currentScrollY = target.scrollTop
+  
+  if (currentScrollY <= 50) {
+    isHudHidden.value = false
+    lastScrollY = currentScrollY
+    return
+  }
+
+  // Hide on scroll down, show on scroll up (with a 20px threshold)
+  if (currentScrollY > lastScrollY + 20) {
+    isHudHidden.value = true
+    lastScrollY = currentScrollY
+  } else if (currentScrollY < lastScrollY - 20) {
+    isHudHidden.value = false
+    lastScrollY = currentScrollY
+  }
+}
+
+function updateHudHeight() {
+  if (hudRef.value) {
+    const innerHud = hudRef.value.querySelector('.hud')
+    hudHeight.value = innerHud ? innerHud.offsetHeight : hudRef.value.offsetHeight
+  }
+}
+
 onMounted(() => {
   // 1. Dynamic HUD Height Tracking
   if (hudRef.value) {
-    resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const height = entry.borderBoxSize?.[0]?.blockSize || entry.contentRect.height
-        hudHeight.value = Math.floor(height + 15) // +15 for the 'top: 15px' in CSS
-      }
-    })
+    resizeObserver = new ResizeObserver(() => updateHudHeight())
     resizeObserver.observe(hudRef.value)
   }
+  window.addEventListener('resize', updateHudHeight, { passive: true })
+  setTimeout(updateHudHeight, 100) // Initial guarantee
 
   // 2. Load essential game data
   warStore.loadWarData()
   eventStore.fetchEvents()
   eventStore.checkPendingAwards()
+  livePvP.initInvitePoller()
 
   // Initial UI state setup
   setTimeout(() => {
@@ -131,6 +172,7 @@ onMounted(() => {
   }, 1200)
 
   document.addEventListener('click', handleOutsideClick)
+  window.addEventListener('scroll', handleScroll, { passive: true, capture: true })
 
   // Initialize audio context on first user interaction
   const initAudio = () => {
@@ -144,6 +186,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('click', handleOutsideClick)
+  window.removeEventListener('scroll', handleScroll, { capture: true })
+  window.removeEventListener('resize', updateHudHeight)
   if (watchdog) clearInterval(watchdog)
   if (resizeObserver) resizeObserver.disconnect()
 })
@@ -162,16 +206,20 @@ onUnmounted(() => {
     <div
       ref="hudRef"
       class="hud-container"
+      :class="{ 'hud-hidden': isHudHidden }"
     >
       <div class="hud">
-        <!-- Trainer HUD Left -->
-        <TrainerPanel />
+        <!-- 1. Entrenador (Siempre Arriba) -->
+        <TrainerPanel class="hud-left" />
 
-        <!-- Navigation HUD Center -->
-        <HUD_Navigation />
+        <!-- 2. Navegación (Se oculta < 1380px) -->
+        <HUD_Navigation class="hud-center" />
 
-        <!-- Action Pills Right -->
-        <InventoryPills />
+        <!-- 3. Botones Especiales (Suben < 670px) -->
+        <ActionButtons class="hud-actions" />
+
+        <!-- 4. Inventario (Baja < 670px) -->
+        <InventoryPills class="hud-right" />
       </div>
     </div>
 
@@ -179,7 +227,7 @@ onUnmounted(() => {
     <div
       id="zoomable-content"
       class="zoom-target content-area"
-      :style="{ paddingTop: hudHeight + 'px' }"
+      :style="{ paddingTop: Math.max(100, hudHeight + 20) + 'px' }"
     >
       <!-- TAB CONTENTS -->
       <div
@@ -283,6 +331,7 @@ onUnmounted(() => {
       </div>
 
       <BattleArena v-show="battleStore.isBattleActive" />
+      <PvPArena v-show="livePvP.battleState.active" />
     </div>
 
     <!-- MODALS & OVERLAYS -->
@@ -318,6 +367,7 @@ onUnmounted(() => {
     />
 
     <ToastNotification />
+    <BuffsOverlay />
 
     <!-- CHAT GLOBAL (Phase 24) -->
     <GlobalChat />
@@ -334,17 +384,13 @@ onUnmounted(() => {
 
     <!-- SESSION MANAGEMENT -->
     <SessionConflictModal v-if="authStore.sessionConflict" />
-
-    <!-- LEGACY ESQUELETO (Oculto) -->
-    <div
-      id="trade-modal"
-      class="overlay-fixed hidden-system"
-    >
-      <div class="trade-modal-box" />
-    </div>
   </div>
 
-  <MobileNavigation />
+  <HUD_Navigation 
+    v-if="gs.starterChosen"
+    class="mobile-only-nav"
+    position="bottom" 
+  />
 </template>
 
 <style scoped lang="scss">
@@ -390,7 +436,7 @@ onUnmounted(() => {
 .private-chats-container {
   position: fixed;
   right: 20px;
-  bottom: 0;
+  bottom: 80px; /* Space for bottom nav */
   display: flex;
   flex-direction: row-reverse;
   gap: 10px;
@@ -400,5 +446,37 @@ onUnmounted(() => {
   & > * {
     pointer-events: auto;
   }
+}
+
+.mobile-only-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 2000;
+}
+
+@media (max-width: 1380px) {
+  .mobile-only-nav { display: flex !important; }
+  .content-area { padding-bottom: 90px !important; }
+}
+
+/* Zoom-style shrink for extremely narrow screens (< 467px) */
+@media (max-width: 467px) {
+  .mobile-only-nav { zoom: 0.9; }
+}
+@media (max-width: 420px) {
+  .mobile-only-nav { zoom: 0.8; }
+}
+@media (max-width: 380px) {
+  .mobile-only-nav { zoom: 0.7; }
+}
+@media (max-width: 340px) {
+  .mobile-only-nav { zoom: 0.6; }
+}
+
+@media (min-width: 1381px) {
+  .mobile-only-nav { display: none; }
 }
 </style>
