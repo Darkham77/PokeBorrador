@@ -76,7 +76,13 @@ function unlockPokedex() {
       :class="{ active: isOpen }"
       @click="isOpen = !isOpen"
     >
-      <span v-if="!isOpen">🛠️ DEBUG</span>
+      <div
+        v-if="!isOpen"
+        class="btn-content"
+      >
+        <span class="icon">🛠️</span>
+        <span class="label">DEBUG</span>
+      </div>
       <span v-else>✕</span>
     </button>
 
@@ -207,8 +213,15 @@ function unlockPokedex() {
 .debug-trigger {
   position: fixed;
   bottom: 80px;
-  right: 20px;
-  z-index: 9999;
+  left: 20px;
+  z-index: 12000;
+  transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 1380px) {
+  .debug-trigger {
+    bottom: 170px;
+  }
 }
 
 .trigger-btn {
@@ -223,6 +236,19 @@ function unlockPokedex() {
   box-shadow: 0 4px 15px rgba(0,0,0,0.5);
   transition: all 0.2s;
   border: 2px solid rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-content .icon {
+  font-size: 18px;
 }
 
 .trigger-btn.active {
@@ -234,10 +260,28 @@ function unlockPokedex() {
   font-size: 14px;
 }
 
+@media (max-width: 600px) {
+  .btn-content {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .btn-content .icon {
+    font-size: 16px;
+  }
+  .trigger-btn:not(.active) {
+    padding: 8px;
+    min-width: 60px;
+    border-radius: 12px;
+  }
+  .trigger-btn .label {
+    font-size: 6px;
+  }
+}
+
 .debug-window {
   position: absolute;
   bottom: 50px;
-  right: 0;
+  left: 0;
   width: 320px;
   background: #1a1a1a;
   border: 1px solid rgba(255,255,255,0.1);

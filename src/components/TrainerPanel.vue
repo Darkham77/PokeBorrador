@@ -3,10 +3,13 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/playerClass'
+import { useTradeStore } from '@/stores/trade'
+import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const classStore = usePlayerClassStore()
+const tradeStore = useTradeStore()
 const gs = computed(() => gameStore.state)
 
 // Experience bar logic
@@ -16,11 +19,7 @@ const trainerExpPct = computed(() => {
 })
 
 const handlePanelClick = () => {
-  if (!classStore.playerClass) {
-    uiStore.isClassSelectionOpen = true
-  } else {
-    uiStore.isClassMissionsOpen = true
-  }
+  uiStore.isProfileOpen = true
 }
 </script>
 
@@ -30,12 +29,24 @@ const handlePanelClick = () => {
     class="hud-trainer pointer-cursor"
     @click="handlePanelClick"
   >
-    <span
+    <TrainerAvatar
       id="hud-class-avatar"
-      class="trainer-avatar"
-      v-html="classStore.currentClassDef?.icon || gs.avatar_style || '👤'"
-    />
-    <div>
+      :player-class="gs.playerClass"
+      :level="gs.level"
+      :size="48"
+    >
+      <template #overlay>
+        <div 
+          v-if="tradeStore.pendingCount > 0" 
+          class="alert-badge"
+          title="Intercambios pendientes"
+        >
+          !
+        </div>
+      </template>
+    </TrainerAvatar>
+    
+    <div class="trainer-content">
       <div
         id="hud-name"
         :class="['trainer-name', gs.nick_style]"
@@ -89,4 +100,36 @@ const handlePanelClick = () => {
   font-family: 'Press Start 2P', monospace;
 }
 .pointer-cursor { cursor: pointer; }
+
+.alert-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ef4444;
+  color: white;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  font-weight: bold;
+  border: 2px solid #fff;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+  animation: pulse-red 2s infinite;
+  z-index: 10;
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.trainer-content {
+  display: flex;
+  flex-direction: column;
+}
 </style>

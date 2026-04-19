@@ -5,13 +5,17 @@ import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import BaseModal from '@/components/common/BaseModal.vue';
 
 const classStore = usePlayerClassStore();
 const _gameStore = useGameStore();
 const uiStore = useUIStore();
 
-const isOpen = computed(() => uiStore.isClassSelectionOpen);
-const close = () => { uiStore.isClassSelectionOpen = false };
+const isOpen = computed({
+  get: () => uiStore.isClassSelectionOpen,
+  set: (val) => { uiStore.isClassSelectionOpen = val }
+});
+const close = () => { isOpen.value = false };
 
 const hoveredClassId = ref(null);
 const selectedTab = ref(classStore.playerClass || Object.keys(PLAYER_CLASSES)[0]);
@@ -30,171 +34,115 @@ const handleSelect = async (id) => {
 </script>
 
 <template>
-  <Transition name="fade">
-    <div
-      v-if="isOpen"
-      class="class-modal-overlay"
-      @click.self="close"
-    >
-      <div class="class-modal-container">
-        <header class="modal-header">
-          <div class="title-group">
-            <h1>ELEGIR PROFESIÓN</h1>
-            <p>Define tu camino en el mundo Pokémon</p>
+  <BaseModal
+    :show="isOpen"
+    title="PROFESIÓN"
+    max-width="1000px"
+    @close="close"
+  >
+    <div class="class-selection-inner">
+      <div class="modal-content">
+        <!-- Sidebar: selection -->
+        <aside class="class-sidebar">
+          <div 
+            v-for="cls in PLAYER_CLASSES" 
+            :key="cls.id"
+            class="class-item"
+            :class="{ active: selectedTab === cls.id, current: classStore.playerClass === cls.id }"
+            @mouseenter="hoveredClassId = cls.id"
+            @mouseleave="hoveredClassId = null"
+            @click="selectedTab = cls.id"
+          >
+            <div class="class-icon">
+              {{ cls.icon }}
+            </div>
+            <div class="class-meta">
+              <span class="name">{{ cls.name }}</span>
+              <span
+                v-if="classStore.playerClass === cls.id"
+                class="active-badge"
+              >ACTIVA</span>
+            </div>
           </div>
-          <button
-            class="close-btn"
-            @click="close"
-          >
-            ✕
-          </button>
-        </header>
+        </aside>
 
-        <div class="modal-content">
-          <!-- Sidebar: selection -->
-          <aside class="class-sidebar">
-            <div 
-              v-for="cls in PLAYER_CLASSES" 
-              :key="cls.id"
-              class="class-item"
-              :class="{ active: selectedTab === cls.id, current: classStore.playerClass === cls.id }"
-              @mouseenter="hoveredClassId = cls.id"
-              @mouseleave="hoveredClassId = null"
-              @click="selectedTab = cls.id"
+        <!-- Main: Preview -->
+        <main
+          class="class-preview"
+          :style="{ '--preview-color': currentPreview.color }"
+        >
+          <div class="preview-bg">
+            <img
+              :src="getTrainerSprite(currentPreview.avatarSpriteId || currentPreview.id)"
+              :alt="currentPreview.name"
+              class="trainer-img"
             >
-              <div class="class-icon">
-                {{ cls.icon }}
-              </div>
-              <div class="class-meta">
-                <span class="name">{{ cls.name }}</span>
-                <span
-                  v-if="classStore.playerClass === cls.id"
-                  class="active-badge"
-                >ACTIVA</span>
-              </div>
-            </div>
-          </aside>
+          </div>
 
-          <!-- Main: Preview -->
-          <main
-            class="class-preview"
-            :style="{ '--preview-color': currentPreview.color }"
-          >
-            <div class="preview-bg">
-              <img
-                :src="getTrainerSprite(currentPreview.avatarSpriteId || currentPreview.id)"
-                :alt="currentPreview.name"
-                class="trainer-img"
-              >
+          <div class="preview-info">
+            <div class="info-header">
+              <span class="preview-name">{{ currentPreview.name }}</span>
+              <p class="preview-desc">
+                {{ currentPreview.description }}
+              </p>
             </div>
 
-            <div class="preview-info">
-              <div class="info-header">
-                <span class="preview-name">{{ currentPreview.name }}</span>
-                <p class="preview-desc">
-                  {{ currentPreview.description }}
-                </p>
+            <div class="pros-cons">
+              <div class="section">
+                <h3>VIRTUDES</h3>
+                <ul>
+                  <li
+                    v-for="(bonus, idx) in currentPreview.bonuses"
+                    :key="idx"
+                  >
+                    <span class="bullet">✓</span> {{ bonus }}
+                  </li>
+                </ul>
               </div>
-
-              <div class="pros-cons">
-                <div class="section">
-                  <h3>VIRTUDES</h3>
-                  <ul>
-                    <li
-                      v-for="(bonus, idx) in currentPreview.bonuses"
-                      :key="idx"
-                    >
-                      <span class="bullet">✓</span> {{ bonus }}
-                    </li>
-                  </ul>
-                </div>
-                <div class="section">
-                  <h3>LIMITACIONES</h3>
-                  <ul>
-                    <li
-                      v-for="(penalty, idx) in currentPreview.penalties"
-                      :key="idx"
-                    >
-                      <span class="bullet">✕</span> {{ penalty }}
-                    </li>
-                  </ul>
-                </div>
+              <div class="section">
+                <h3>LIMITACIONES</h3>
+                <ul>
+                  <li
+                    v-for="(penalty, idx) in currentPreview.penalties"
+                    :key="idx"
+                  >
+                    <span class="bullet">✕</span> {{ penalty }}
+                  </li>
+                </ul>
               </div>
-
-              <button 
-                class="select-action-btn"
-                :disabled="classStore.playerClass === currentPreview.id"
-                @click="handleSelect(currentPreview.id)"
-              >
-                <template v-if="classStore.playerClass === currentPreview.id">
-                  PROFESIÓN ACTUAL
-                </template>
-                <template v-else-if="!classStore.playerClass">
-                  ELEGIR GRATIS
-                </template>
-                <template v-else>
-                  CAMBIAR (₽10,000)
-                </template>
-              </button>
             </div>
-          </main>
-        </div>
+
+            <button 
+              class="select-action-btn"
+              :disabled="classStore.playerClass === currentPreview.id"
+              @click="handleSelect(currentPreview.id)"
+            >
+              <template v-if="classStore.playerClass === currentPreview.id">
+                PROFESIÓN ACTUAL
+              </template>
+              <template v-else-if="!classStore.playerClass">
+                ELEGIR GRATIS
+              </template>
+              <template v-else>
+                CAMBIAR (₽10,000)
+              </template>
+            </button>
+          </div>
+        </main>
       </div>
     </div>
-  </Transition>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.class-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.class-modal-container {
-  width: 100%;
-  max-width: 1000px;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-header {
-  padding: 24px 32px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-
-  h1 { font-family: 'Press Start 2P', cursive; font-size: 14px; color: #f1f5f9; margin-bottom: 8px; }
-  p { font-size: 14px; color: #94a3b8; }
-}
-
-.close-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: none;
-  color: #94a3b8;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s;
-  &:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.class-selection-inner {
+  padding: 0;
+  margin: -24px; // Compensate BaseModal padding
 }
 
 .modal-content {
   display: flex;
-  height: min(600px, 80vh);
+  height: min(700px, 80vh);
 }
 
 .class-sidebar {
@@ -323,10 +271,7 @@ const handleSelect = async (id) => {
   }
 }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .modal-content { flex-direction: column; height: auto; }
   .class-sidebar { width: 100%; height: 200px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
 }

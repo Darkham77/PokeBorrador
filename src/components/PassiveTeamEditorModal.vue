@@ -1,124 +1,133 @@
 <script setup>
-const closePassiveTeamEditor = () => {
-  if (typeof window.closePassiveTeamEditor === 'function') {
-    window.closePassiveTeamEditor()
+import { computed } from 'vue'
+import { useUIStore } from '@/stores/ui'
+import BaseModal from '@/components/common/BaseModal.vue'
+
+const uiStore = useUIStore()
+
+const isOpen = computed({
+  get: () => uiStore.isPassiveTeamEditorOpen,
+  set: (val) => { uiStore.isPassiveTeamEditorOpen = val }
+})
+
+const closeEditor = () => {
+  isOpen.value = false
+}
+
+const confirmSave = () => {
+  if (typeof window.confirmPassiveTeamEdit === 'function') {
+    window.confirmPassiveTeamEdit()
   }
 }
 
-const confirmPassiveTeamEdit = () => {
-  if (typeof window.confirmPassiveTeamEdit === 'function') {
-    window.confirmPassiveTeamEdit()
+// Shim for legacy code
+if (typeof window !== 'undefined') {
+  window.openPassiveTeamEditor = () => {
+    isOpen.value = true
+  }
+  window.closePassiveTeamEditor = () => {
+    isOpen.value = false
   }
 }
 </script>
 
 <template>
-  <Teleport to="body">
-    <div
-      id="passive-team-editor-modal"
-      class="modal-overlay"
-    >
-      <div class="modal-content-premium passive-editor-modal">
-        <button
-          class="modal-close-btn"
-          @click="closePassiveTeamEditor"
-        >
-          ✕
-        </button>
-        <div class="modal-header">
-          <div class="header-title">
-            ARMADOR PASIVO
-          </div>
-        </div>
-        <div
-          id="passive-editor-body"
-          class="modal-body"
-        >
-          <!-- Contenido del editor inyectado por JS -->
-        </div>
-        <div class="modal-footer">
-          <button
-            class="save-btn"
-            @click="confirmPassiveTeamEdit"
-          >
-            💾 GUARDAR
-          </button>
+  <BaseModal
+    :show="isOpen"
+    title="🛡️ ARMADOR PASIVO"
+    max-width="440px"
+    @close="closeEditor"
+  >
+    <div class="passive-editor-inner">
+      <p class="editor-help-text">
+        Elegí tus mejores defensores. Estos Pokémon protegerán tus rutas conquistadas automáticamente.
+      </p>
+      
+      <div
+        id="passive-editor-body"
+        class="editor-body-container"
+      >
+        <!-- Contenido inyectado por el sistema de defensa legado -->
+        <div class="loading-placeholder">
+          Cargando configuración de defensa...
         </div>
       </div>
     </div>
-  </Teleport>
+
+    <template #footer>
+      <button
+        class="save-btn-primary"
+        @click="confirmSave"
+      >
+        💾 GUARDAR CONFIGURACIÓN
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.passive-editor-modal {
-  max-width: 440px;
-  width: 100%;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
+.passive-editor-inner {
+  padding: 8px 0;
 }
 
-.modal-close-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  color: var(--red);
-  font-size: 22px;
-  cursor: pointer;
-  z-index: 10;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: Scale(1.1);
-  }
+.editor-help-text {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+  margin-bottom: 24px;
 }
 
-.modal-header {
-  padding: 24px;
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+.editor-body-container {
+  min-height: 200px;
 }
 
-.header-title {
+.loading-placeholder {
+  text-align: center;
+  padding: 40px;
+  color: var(--gray);
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
-  color: var(--green);
-  text-align: center;
 }
 
-.modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px;
-}
-
-.modal-footer {
-  padding: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.save-btn {
+.save-btn-primary {
   width: 100%;
   padding: 16px;
-  background: var(--green);
-  border: none;
-  border-radius: 12px;
-  font-family: 'Press Start 2P';
-  font-size: 9px;
+  background: linear-gradient(135deg, var(--green), #059669);
   color: #000;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  font-weight: 900;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
 
   &:hover {
-    filter: Brightness(1.2);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(50, 215, 75, 0.3);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    filter: brightness(1.1);
   }
 
   &:active {
-    transform: translateY(0);
+    transform: translateY(0) Scale(0.98);
+  }
+}
+
+// Global injections styles (Legacy)
+:deep(.passive-poke-slot) {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  &.empty {
+    border-style: dashed;
+    opacity: 0.5;
   }
 }
 </style>

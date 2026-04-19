@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const gs = computed(() => gameStore.state)
@@ -41,7 +40,7 @@ const dayCycle = computed(() => {
 
     <!-- DINERO -->
     <div class="hud-pill money-pill pv-tooltip-container pv-to-bottom">
-      <span>₱</span>
+      <span class="currency-icon-money">₱</span>
       <span
         id="hud-money"
         class="pill-value"
@@ -52,9 +51,8 @@ const dayCycle = computed(() => {
       </div>
     </div>
 
-    <!-- BC -->
     <div class="hud-pill bc-pill pv-tooltip-container pv-to-bottom">
-      <i class="fas fa-coins" />
+      <i class="fas fa-coins currency-icon-bc" />
       <span
         id="hud-bc"
         class="pill-value"
@@ -107,7 +105,6 @@ const dayCycle = computed(() => {
         <span class="pv-tooltip-title">HUEVOS</span>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -137,6 +134,13 @@ const dayCycle = computed(() => {
     transform: translateY(-2px);
     background: rgba(255, 255, 255, 0.12);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .currency-icon-hud {
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    object-fit: contain;
   }
 }
 

@@ -5,17 +5,21 @@ import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
 import { getSpriteUrl } from '@/logic/sprites'
 import { getStatusIcon } from '@/logic/battle/battleStatus'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const gameStore = useGameStore()
 const invStore = useInventoryStore()
 const uiStore = useUIStore()
 
-const isOpen = computed(() => invStore.isItemTargetModalOpen)
+const isOpen = computed({
+  get: () => invStore.isItemTargetModalOpen,
+  set: (val) => { invStore.isItemTargetModalOpen = val }
+})
 const itemName = computed(() => invStore.activeItemToUse)
 const team = computed(() => gameStore.state.team || [])
 
 const close = () => {
-  invStore.closeItemTargetModal()
+  isOpen.value = false
 }
 
 const handleSelect = async (index) => {
@@ -37,234 +41,178 @@ const getHpColor = (p) => {
 </script>
 
 <template>
-  <Transition name="fade">
-    <div
-      v-if="isOpen"
-      class="modal-overlay"
-      @click.self="close"
-    >
-      <div class="target-modal-card">
-        <div class="modal-header">
-          <div class="item-icon-header">
-            🎒
-          </div>
-          <h2>USAR {{ itemName?.toUpperCase() }}</h2>
-          <p>¿Sobre qué Pokémon actuar?</p>
-        </div>
+  <BaseModal
+    :show="isOpen"
+    :title="`USAR ${itemName?.toUpperCase() || 'ÍTEM'}`"
+    max-width="400px"
+    @close="close"
+  >
+    <div class="item-target-inner">
+      <p class="target-help-text">
+        ¿Sobre qué Pokémon actuar?
+      </p>
 
-        <div class="team-list">
-          <div 
-            v-for="(p, index) in team" 
-            :key="p.uid || index"
-            class="target-row"
-            @click="handleSelect(index)"
-          >
-            <div class="poke-sprite">
-              <img
-                :src="getSpriteUrl(p.id, p.isShiny)"
-                :alt="p.name"
-              >
+      <div class="team-list">
+        <div 
+          v-for="(p, index) in team" 
+          :key="p.uid || index"
+          class="target-row"
+          @click="handleSelect(index)"
+        >
+          <div class="poke-sprite">
+            <img
+              :src="getSpriteUrl(p.id, p.isShiny)"
+              :alt="p.name"
+            >
+          </div>
+          
+          <div class="poke-info">
+            <div class="name-line">
+              <span class="p-name">{{ p.name }}</span>
+              <span class="p-lv">Nv.{{ p.level }}</span>
+              <span
+                v-if="p.status"
+                class="status-badge"
+              >{{ getStatusIcon(p.status) }}</span>
             </div>
             
-            <div class="poke-info">
-              <div class="name-line">
-                <span class="p-name">{{ p.name }}</span>
-                <span class="p-lv">Nv.{{ p.level }}</span>
-                <span
-                  v-if="p.status"
-                  class="status-badge"
-                >{{ getStatusIcon(p.status) }}</span>
-              </div>
-              
-              <div class="hp-bar-container">
-                <div 
-                  class="hp-bar-fill" 
-                  :style="{ 
-                    width: (p.hp / p.maxHp * 100) + '%',
-                    backgroundColor: getHpColor(p)
-                  }"
-                />
-              </div>
-              
-              <div class="hp-text">
-                {{ p.hp }} / {{ p.maxHp }} HP
-              </div>
+            <div class="hp-bar-container">
+              <div 
+                class="hp-bar-fill" 
+                :style="{ 
+                  width: (p.hp / p.maxHp * 100) + '%',
+                  backgroundColor: getHpColor(p)
+                }"
+              />
             </div>
-
-            <div class="select-hint">
-              ELEGIR
+            
+            <div class="hp-text">
+              {{ p.hp }} / {{ p.maxHp }} HP
             </div>
           </div>
-        </div>
 
-        <button
-          class="cancel-btn"
-          @click="close"
-        >
-          CANCELAR
-        </button>
+          <div class="select-hint">
+            ELEGIR
+          </div>
+        </div>
       </div>
     </div>
-  </Transition>
+
+    <template #footer>
+      <button
+        class="cancel-btn-primary"
+        @click="close"
+      >
+        CANCELAR
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+<style scoped lang="scss">
+.item-target-inner {
+  padding: 8px 0;
 }
 
-.target-modal-card {
-  background: #1a1a1a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  width: 100%;
-  max-width: 400px;
-  padding: 24px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  animation: slideUp 0.3s ease-out;
-}
-
-.modal-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.item-icon-header {
-  font-size: 32px;
-  margin-bottom: 8px;
-}
-
-h2 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: var(--yellow);
-  margin: 0 0 8px 0;
-}
-
-p {
-  color: var(--gray);
+.target-help-text {
   font-size: 11px;
-  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 .team-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 20px;
   max-height: 400px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding: 4px;
 }
 
 .target-row {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.08);
+    border-color: rgba(255, 215, 0, 0.3);
+    transform: translateX(4px);
+    .select-hint { opacity: 1; }
+  }
+
+  .poke-sprite img {
+    width: 48px;
+    height: 48px;
+    image-rendering: pixelated;
+  }
+
+  .poke-info {
+    flex: 1;
+  }
+
+  .name-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    .p-name { font-weight: 700; font-size: 14px; color: #fff; }
+    .p-lv { font-size: 10px; color: var(--gray); font-family: 'Press Start 2P', monospace; }
+  }
+
+  .hp-bar-container {
+    height: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .hp-bar-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+  }
+
+  .hp-text {
+    font-size: 10px;
+    color: var(--gray);
+    font-family: monospace;
+  }
+
+  .select-hint {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--yellow);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
 }
 
-.target-row:hover {
-  background: rgba(255, 217, 61, 0.1);
-  border-color: rgba(255, 217, 61, 0.3);
-  transform: translateX(4px);
-}
-
-.poke-sprite img {
-  width: 48px;
-  height: 48px;
-  image-rendering: pixelated;
-}
-
-.poke-info {
-  flex: 1;
-}
-
-.name-line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-.p-name {
-  font-weight: 700;
-  font-size: 14px;
-}
-
-.p-lv {
-  font-size: 10px;
-  color: var(--gray);
-}
-
-.hp-bar-container {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 4px;
-}
-
-.hp-bar-fill {
-  height: 100%;
-  transition: width 0.5s ease;
-}
-
-.hp-text {
-  font-size: 10px;
-  color: var(--gray);
-  font-family: monospace;
-}
-
-.select-hint {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 6px;
-  color: var(--yellow);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.target-row:hover .select-hint {
-  opacity: 1;
-}
-
-.cancel-btn {
+.cancel-btn-primary {
   width: 100%;
-  padding: 14px;
+  padding: 16px;
   background: rgba(255, 255, 255, 0.05);
-  border: none;
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
   color: var(--gray);
   font-family: 'Press Start 2P', monospace;
   font-size: 9px;
   cursor: pointer;
   transition: all 0.2s;
-}
 
-.cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateY(-2px);
+  }
 }
 </style>

@@ -442,9 +442,14 @@ onUnmounted(() => {
   gap: 10px;
   pointer-events: none;
   z-index: 1000;
+  transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   & > * {
     pointer-events: auto;
+  }
+
+  @media (max-width: 1380px) {
+    bottom: 170px;
   }
 }
 

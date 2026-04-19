@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 // Sub-components
 import PokemonDetailHeader from './pokemon-detail/PokemonDetailHeader.vue'
@@ -37,7 +38,7 @@ const handleToggleTag = (tag) => {
   if (typeof window.togglePokeTag === 'function') {
     window.togglePokeTag(location, index, tag)
     // Update local ref for reactivity balance with legacy
-    if (p.value.tags) {
+    if (p.value && p.value.tags) {
        const idx = p.value.tags.indexOf(tag)
        if (idx > -1) p.value.tags.splice(idx, 1)
        else p.value.tags.push(tag)
@@ -60,78 +61,65 @@ const handleEvolve = () => {
     window.showStonePicker(index)
   }
 }
+
+const closeDetail = () => {
+  uiStore.closePokemonDetail()
+}
 </script>
 
 <template>
-  <Transition name="fade">
+  <BaseModal
+    :show="isOpen && !!p"
+    :show-close-button="false"
+    max-width="480px"
+    @close="closeDetail"
+  >
     <div 
-      v-if="isOpen && p" 
-      class="modal-overlay"
-      @click.self="uiStore.closePokemonDetail()"
+      v-if="p"
+      class="pokemon-detail-container"
+      :style="{ '--accent-color': TYPE_COLORS[p.type.toLowerCase()] || '#aaa' }"
     >
-      <div 
-        class="modal-content glass-card"
-        :style="{ '--accent-color': TYPE_COLORS[p.type.toLowerCase()] || '#aaa' }"
+      <PokemonDetailHeader 
+        :pokemon="p" 
+        @close="closeDetail"
+        @toggle-tag="handleToggleTag"
+      />
+
+      <div
+        v-if="needsObedienceWarning"
+        class="obedience-warning"
       >
-        <PokemonDetailHeader 
-          :pokemon="p" 
-          @close="uiStore.closePokemonDetail()"
-          @toggle-tag="handleToggleTag"
-        />
-
-        <div
-          v-if="needsObedienceWarning"
-          class="obedience-warning"
-        >
-          ⚠️ ¡Nivel demasiado alto! Obediencia hasta Nv. {{ maxObey }}.
-        </div>
-
-        <PokemonStatusSection 
-          :pokemon="p" 
-          :context="uiStore.pokemonDetailContext" 
-        />
-
-        <PokemonStatsGrid :pokemon="p" />
-
-        <PokemonMovesGrid 
-          :pokemon="p" 
-          @show-move="(name) => uiStore.openMoveDetail(name)"
-        />
-
-        <PokemonActionFooter 
-          :context="uiStore.pokemonDetailContext"
-          :extra="uiStore.pokemonDetailExtra"
-          @buy="handleBuy"
-          @evolve="handleEvolve"
-        />
+        ⚠️ ¡Nivel demasiado alto! Obediencia hasta Nv. {{ maxObey }}.
       </div>
+
+      <PokemonStatusSection 
+        :pokemon="p" 
+        :context="uiStore.pokemonDetailContext" 
+      />
+
+      <PokemonStatsGrid :pokemon="p" />
+
+      <PokemonMovesGrid 
+        :pokemon="p" 
+        @show-move="(name) => uiStore.openMoveDetail(name)"
+      />
+
+      <PokemonActionFooter 
+        :context="uiStore.pokemonDetailContext"
+        :extra="uiStore.pokemonDetailExtra"
+        @buy="handleBuy"
+        @evolve="handleEvolve"
+      />
     </div>
-  </Transition>
+  </BaseModal>
 </template>
 
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  backdrop-filter: blur(10px);
-  z-index: 2000;
+<style scoped lang="scss">
+.pokemon-detail-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.modal-content {
-  width: 100%;
-  max-width: 480px;
-  max-height: 90vh;
-  overflow-y: auto;
-  border-radius: 32px;
-  padding: 28px;
-  border-top: 4px solid var(--accent-color);
-  box-shadow: 0 30px 60px rgba(0,0,0,0.7);
-  position: relative;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 4px;
 }
 
 .obedience-warning {
@@ -141,11 +129,13 @@ const handleEvolve = () => {
   border-radius: 12px;
   font-size: 11px;
   color: #fca5a5;
-  margin-bottom: 20px;
+  margin-bottom: 4px;
   font-weight: bold;
+  text-align: center;
 }
 
-/* Animations */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+// Remove original padding and border as it's handled by BaseModal
+:deep(.base-modal-card) {
+  border-top: 4px solid var(--accent-color) !important;
+}
 </style>

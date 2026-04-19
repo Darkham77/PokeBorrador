@@ -130,32 +130,51 @@ export async function initSQLite(options = {}) {
           const tableName = tableDef.split(' ')[0];
           _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${tableDef};`);
           
-          // Basic auto-column-sync: ensure all defined columns exist
-          // Definición simplificada: sacamos solo los nombres de columnas
           const colsStr = tableDef.substring(tableDef.indexOf('(') + 1, tableDef.lastIndexOf(')'));
-          const colDefs = colsStr.split(',').map(c => c.trim().split(' ')[0]);
+          
+          // Split columns while respecting nested parentheses (e.g., PRIMARY KEY (a, b))
+          const colDefs = [];
+          let current = '';
+          let depth = 0;
+          for (let i = 0; i < colsStr.length; i++) {
+            const char = colsStr[i];
+            if (char === '(') depth++;
+            if (char === ')') depth--;
+            if (char === ',' && depth === 0) {
+              colDefs.push(current.trim());
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          if (current.trim()) colDefs.push(current.trim());
           
           const info = _sqliteDb.exec(`PRAGMA table_info(${tableName})`);
-            const existingCols = info[0].values.map(row => row[1]);
+          const existingCols = info[0].values.map(row => row[1]);
+          
+          colDefs.forEach(def => {
+            const colName = def.split(/\s+/)[0];
+            const upper = colName.toUpperCase();
             
-            // Refined parsing: skip constraints and clean up names
-            const validCols = colDefs.filter(c => {
-              const upper = c.toUpperCase();
-              return c && 
-                     !['PRIMARY', 'FOREIGN', 'UNIQUE', 'CHECK', 'CONSTRAINT'].includes(upper) &&
-                     !c.includes('(') && !c.includes(')');
-            });
+            // Skip constraints and invalid column names
+            if (!colName || 
+                ['PRIMARY', 'FOREIGN', 'UNIQUE', 'CHECK', 'CONSTRAINT', 'REFERENCES'].includes(upper) || 
+                colName.includes('(') || 
+                colName.includes(')')) return;
 
-            validCols.forEach(col => {
-              if (!existingCols.includes(col)) {
-                const fullDef = colsStr.split(',').find(c => c.trim().startsWith(col));
-                
-                if (fullDef && !fullDef.toUpperCase().includes('PRIMARY KEY')) {
-                  console.log(`[SQLite] Adding missing column ${col} to ${tableName}`);
-                  _sqliteDb.run(`ALTER TABLE ${tableName} ADD COLUMN ${fullDef}`);
-                }
+            if (!existingCols.includes(colName)) {
+              console.log(`[SQLite] Adding missing column ${colName} to ${tableName}`);
+              let alterDef = def;
+              if (def.toUpperCase().includes('DEFAULT') && (def.includes('(') || def.toUpperCase().includes('NOW'))) {
+                console.warn(`[SQLite] Stripping non-constant default for ALTER TABLE: ${def}`);
+                alterDef = def.split(/DEFAULT/i)[0].trim();
               }
-            });
+              
+              if (!alterDef.toUpperCase().includes('PRIMARY KEY')) {
+                _sqliteDb.run(`ALTER TABLE ${tableName} ADD COLUMN ${alterDef}`);
+              }
+            }
+          });
         } catch (e) {
           console.error(`[SQLite] Error syncing table schema: ${tableDef.split(' ')[0]}`, e);
         }
@@ -192,9 +211,7 @@ function runMigrationsInternal(db, migrations) {
   migrations.forEach(m => {
     try {
       const applied = db.exec(`SELECT 1 FROM _migrations WHERE id = '${m.id}'`);
-      if (applied.length > 0) {
-        return;
-      }
+      if (applied.length > 0) return;
 
       if (m.check) {
         const info = db.exec(`PRAGMA table_info(${m.check.table})`);
@@ -206,56 +223,49 @@ function runMigrationsInternal(db, migrations) {
       }
 
       console.log(`[SQLite Migration] APPLYING: ${m.id}`);
-    m.sql.split(';').filter(s => s.trim()).forEach(stmt => {
-      let cleaned = stmt.trim()
-        .replace(/public\./gi, '')
-        .replace(/TIMESTAMPTZ/gi, 'TEXT')
-        .replace(/JSONB/gi, 'TEXT')
-        .replace(/UUID/gi, 'TEXT')
-        .replace(/::[a-z0-9]+/gi, '') // Remove Postgres casting (e.g., ::TEXT)
-        .replace(/DEFAULT\s+NOW\(\)/gi, "DEFAULT (datetime('now'))")
-        .replace(/DEFAULT\s+gen_random_uuid\(\)/gi, "");
-
-      const upper = cleaned.toUpperCase();
       
-      // Ignorar lógica incompatible de Postgres
-      if (upper.startsWith('CREATE OR REPLACE FUNCTION') || 
-          upper.startsWith('CREATE POLICY') ||
-          upper.startsWith('DROP POLICY') ||
-          upper.startsWith('CREATE TRIGGER') ||
-          upper.startsWith('DROP TRIGGER') ||
-          upper.startsWith('CREATE EXTENSION') ||
-          upper.startsWith('ALTER TABLE') && (upper.includes('ENABLE ROW LEVEL SECURITY') || upper.includes('OWNER TO')) ||
-          upper.includes('RETURNS TRIGGER') || 
-          upper.includes('LANGUAGE PLPGSQL') ||
-          upper.includes('RETURNS BOOLEAN AS $$') ||
-          upper.includes('RETURNS UUID AS $$') ||
-          upper.includes('RETURNS timestamptz') ||
-          upper.startsWith('SELECT cron.schedule') ||
-          upper.startsWith('SECURITY DEFINER')) {
-        console.warn(`[SQLite Migration] Skipping Postgres-specific logic: ${cleaned.substring(0, 60)}...`);
-        return;
-      }
+      const statements = splitSQLStatements(m.sql);
+      
+      statements.forEach(stmt => {
+        const cleaned = translatePostgresToSqlite(stmt);
+        if (!cleaned) return;
 
-      // Evitar ejecutar ALTER TABLE que no sean ADD COLUMN básicos (SQLite no soporta mucho más)
-      if (upper.startsWith('ALTER TABLE') && !upper.includes('ADD COLUMN')) {
-         console.warn(`[SQLite Migration] Skipping complex ALTER TABLE: ${cleaned}`);
-         return;
-      }
-
-      console.log(`[SQLite Migration] Executing: ${cleaned}`);
-      try {
-        db.run(cleaned);
-      } catch (e) {
-        if (e.message.includes('duplicate column name') || e.message.includes('already exists')) {
-          console.warn(`[SQLite Migration] Column already exists, skipping statement in ${m.id}`);
-        } else {
-          console.error(`[SQLite Migration] Failed statement in ${m.id}:`, cleaned, e);
+        const upper = cleaned.toUpperCase();
+        
+        // Ignorar lógica incompatible de Postgres
+        if (upper.startsWith('CREATE OR REPLACE FUNCTION') || 
+            upper.startsWith('CREATE POLICY') ||
+            upper.startsWith('DROP POLICY') ||
+            upper.startsWith('CREATE TRIGGER') ||
+            upper.startsWith('DROP TRIGGER') ||
+            upper.startsWith('CREATE EXTENSION') ||
+            (upper.startsWith('ALTER TABLE') && (upper.includes('ENABLE ROW LEVEL SECURITY') || upper.includes('OWNER TO'))) ||
+            upper.includes('RETURNS TRIGGER') || 
+            upper.includes('LANGUAGE PLPGSQL') ||
+            upper.includes('SECURITY DEFINER')) {
+          console.warn(`[SQLite Migration] Skipping Postgres-specific block: ${cleaned.substring(0, 80)}...`);
+          return;
         }
-      }
-    });
-    db.run(`INSERT INTO _migrations (id) VALUES ('${m.id}')`);
 
+        // Evitar ejecutar ALTER TABLE que no sean ADD COLUMN básicos
+        if (upper.startsWith('ALTER TABLE') && !upper.includes('ADD COLUMN')) {
+           console.warn(`[SQLite Migration] Skipping complex ALTER TABLE: ${cleaned}`);
+           return;
+        }
+
+        console.log(`[SQLite Migration] Executing: ${cleaned.substring(0, 100)}${cleaned.length > 100 ? '...' : ''}`);
+        try {
+          db.run(cleaned);
+        } catch (e) {
+          if (e.message.includes('duplicate column name') || e.message.includes('already exists')) {
+            console.warn(`[SQLite Migration] Object already exists, skipping in ${m.id}`);
+          } else {
+            console.error(`[SQLite Migration] Failed statement in ${m.id}:`, cleaned, e);
+          }
+        }
+      });
+
+      db.run(`INSERT INTO _migrations (id) VALUES ('${m.id}')`);
       const version = m.id.split('_')[0];
       if (/^\d+$/.test(version)) {
         db.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${version}')`);
@@ -265,6 +275,102 @@ function runMigrationsInternal(db, migrations) {
       console.error(`[SQLite Migration] CRITICAL FAILURE applying ${m.id}:`, e);
     }
   });
+}
+
+/**
+ * Splits SQL by semicolon, respecting $$ blocks and strings.
+ */
+export function splitSQLStatements(sql) {
+  const statements = [];
+  let current = '';
+  let inDollarQuote = false;
+  let inString = false;
+  
+  for (let i = 0; i < sql.length; i++) {
+    const char = sql[i];
+    const nextChar = sql[i + 1];
+    
+    if (!inDollarQuote && !inString) {
+      if (char === '$' && nextChar === '$') {
+        inDollarQuote = true;
+        current += '$$';
+        i++;
+        continue;
+      }
+      if (char === "'") {
+        inString = true;
+        current += "'";
+        continue;
+      }
+      if (char === ';') {
+        statements.push(current.trim());
+        current = '';
+        continue;
+      }
+    } else if (inDollarQuote) {
+      if (char === '$' && nextChar === '$') {
+        inDollarQuote = false;
+        current += '$$';
+        i++;
+        continue;
+      }
+    } else if (inString) {
+      if (char === "'" && sql[i-1] !== '\\') {
+        inString = false;
+        current += "'";
+        continue;
+      }
+    }
+    current += char;
+  }
+  
+  if (current.trim()) statements.push(current.trim());
+  return statements.filter(s => s.length > 0);
+}
+
+/**
+ * Translates common Postgres syntax to SQLite.
+ */
+export function translatePostgresToSqlite(sql) {
+  if (!sql) return '';
+  
+  return sql
+    .replace(/public\./gi, '')
+    // 1. Types & Casts
+    .replace(/\bJSONB\b/gi, 'TEXT')
+    .replace(/\bUUID\b/gi, 'TEXT')
+    .replace(/\bTIMESTAMPTZ\b/gi, 'TEXT')
+    .replace(/\bTIMESTAMP\b/gi, 'TEXT')
+    .replace(/\bBIGINT\b/gi, 'INTEGER')
+    .replace(/\b(BIGSERIAL|SERIAL)\s+PRIMARY\s+KEY\b/gi, 'INTEGER PRIMARY KEY AUTOINCREMENT')
+    .replace(/\b(BIGSERIAL|SERIAL)\b/gi, 'INTEGER')
+    .replace(/::[a-z0-9]+/gi, '')
+    // 2. Functions
+    .replace(/\bNOW\(\)/gi, "datetime('now')")
+    .replace(/\bgen_random_uuid\(\)/gi, "hex(randomblob(16))")
+    .replace(/\bEXTRACT\(epoch\s+FROM\s+([^)]+)\)/gi, "unixepoch($1)")
+    .replace(/\bARRAY_AGG\b/gi, "json_group_array")
+    .replace(/\bstring_agg\b/gi, "group_concat")
+    .replace(/\bjsonb_build_object\b/gi, "json_object")
+    .replace(/\bjsonb_set\b/gi, "json_set")
+    .replace(/\bjsonb_agg\b/gi, "json_group_array")
+    .replace(/\bjsonb_object_agg\b/gi, "json_group_object")
+    .replace(/\bjsonb_build_array\b/gi, "json_array")
+    .replace(/\bjsonb_array_elements\b/gi, "json_each")
+    .replace(/\bjsonb_array_length\b/gi, "json_array_length")
+    .replace(/\bto_jsonb\b/gi, "json")
+    .replace(/\bjsonb_(\w+)\b/gi, "json_$1")
+    .replace(/\bSUBSTRING\b/gi, "SUBSTR")
+    // 3. Operators & Constants
+    .replace(/\bTRUE\b/gi, '1')
+    .replace(/\bFALSE\b/gi, '0')
+    .replace(/->>/g, '->>')
+    .replace(/->/g, '->')
+    // 4. SQL Patterns
+    .replace(/FOR\s+UPDATE/gi, '')
+    .replace(/DEFAULT\s+datetime\('now'\)/gi, "DEFAULT (datetime('now'))")
+    .replace(/RAISE\s+EXCEPTION\s+'[^']*'/gi, 'SELECT 1')
+    .trim();
 }
 
 /**

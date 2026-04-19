@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useEvolutionStore } from './evolution'
 
 export const useUIStore = defineStore('ui', () => {
@@ -7,6 +7,7 @@ export const useUIStore = defineStore('ui', () => {
   const isSettingsOpen = ref(false)
   const isHistoryOpen = ref(false)
   const isLibraryOpen = ref(false)
+  const isChatOpen = ref(false)
   const libraryTab = ref('gimnasios')
   const activeTab = ref('map')
   const isTradeOpen = ref(false)
@@ -19,6 +20,12 @@ export const useUIStore = defineStore('ui', () => {
   const isPokedexOpen = ref(false)
   const isBoxMenuOpen = ref(false)
   const _selectedBoxIndex = ref(-1)
+  const isWarShopOpen = ref(false)
+  const isPassiveTeamEditorOpen = ref(false)
+  const isPokemonSelectionOpen = ref(false)
+  const pokemonSelectionConfig = ref({})
+  
+  const isFactionChoiceOpen = ref(false)
   
   // Notifications
   const notifications = ref([])
@@ -92,6 +99,8 @@ export const useUIStore = defineStore('ui', () => {
   const isMoveDetailOpen = ref(false)
   const selectedMove = ref(null)
 
+  const appZoom = ref(parseFloat(localStorage.getItem('app-zoom')) || 1)
+  
   const profileData = ref({
     username: '—',
     email: '—',
@@ -128,6 +137,9 @@ export const useUIStore = defineStore('ui', () => {
     isHistoryOpen.value = false
     isLibraryOpen.value = false
     isSocialOpen.value = false
+    isWarShopOpen.value = false
+    isPassiveTeamEditorOpen.value = false
+    isPokemonSelectionOpen.value = false
   }
 
   function updateProfile(data) {
@@ -217,11 +229,52 @@ export const useUIStore = defineStore('ui', () => {
   const fishingRarity = ref(0)
   const fishingCallbacks = reactive({ onWin: null, onFail: null })
 
+  const isAnyBlockingModalOpen = computed(() => {
+    return isSettingsOpen.value || 
+           isHistoryOpen.value ||
+           isLibraryOpen.value || 
+           isTradeOpen.value || 
+           isSocialOpen.value || 
+           isInventoryOpen.value || 
+           isPokedexOpen.value || 
+           isPokemonCenterOpen.value || 
+           isShopOpen.value || 
+           isPokemonDetailOpen.value || 
+           isMoveDetailOpen.value || 
+           isEvolutionOpen.value || 
+           isMoveLearningOpen.value || 
+           isClassSelectionOpen.value || 
+           isClassMissionsOpen.value || 
+           isRepShopOpen.value || 
+           isNaturePatchOpen.value ||
+           isPPUpOpen.value ||
+           isAbilityPillOpen.value ||
+           isFossilRevivalOpen.value ||
+           isBoxMenuOpen.value ||
+           isEggScannerOpen.value ||
+           isHatchModalOpen.value ||
+           isCosmeticsModalOpen.value ||
+           isWarShopOpen.value ||
+           isPassiveTeamEditorOpen.value ||
+           isPokemonSelectionOpen.value ||
+           confirmDialog.value.open || 
+           promptDialog.value.open
+  })
+
+  const isAnyModalOpen = computed(() => {
+    return isAnyBlockingModalOpen.value || 
+           isProfileOpen.value || 
+           isChatOpen.value
+  })
+
   return {
+    isAnyModalOpen,
+    isAnyBlockingModalOpen,
     isProfileOpen,
     isSettingsOpen,
     isHistoryOpen,
     isLibraryOpen,
+    isChatOpen,
     libraryTab,
     isTradeOpen,
     isSocialOpen,
@@ -242,6 +295,16 @@ export const useUIStore = defineStore('ui', () => {
     activeTab,
     isPokemonCenterOpen,
     isShopOpen,
+    isWarShopOpen,
+    isPassiveTeamEditorOpen,
+    isPokemonSelectionOpen,
+    pokemonSelectionConfig,
+    appZoom,
+    setZoom: (val) => {
+      appZoom.value = val
+      localStorage.setItem('app-zoom', val)
+      document.documentElement.style.setProperty('--app-zoom', val)
+    },
     profileData,
     toggleTrade,
     toggleSocial,
@@ -272,6 +335,9 @@ export const useUIStore = defineStore('ui', () => {
       isSettingsOpen.value = false
       isProfileOpen.value = false
       isBoxMenuOpen.value = false
+      isWarShopOpen.value = false
+      isPassiveTeamEditorOpen.value = false
+      isPokemonSelectionOpen.value = false
     },
     openPokemonDetail,
     closePokemonDetail,

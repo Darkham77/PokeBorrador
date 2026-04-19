@@ -2,13 +2,14 @@
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useCosmeticsStore } from '@/stores/cosmetics'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const uiStore = useUIStore()
 const cosmeticsStore = useCosmeticsStore()
 
 const isOpen = computed(() => uiStore.isCosmeticsModalOpen)
 
-const close = () => {
+const closeCosmetics = () => {
   uiStore.isCosmeticsModalOpen = false
 }
 
@@ -22,175 +23,103 @@ const selectAvatar = (id) => {
 </script>
 
 <template>
-  <Transition name="fade">
-    <div
-      v-if="isOpen"
-      class="cosmetics-overlay"
-      @click.self="close"
-    >
-      <div class="cosmetics-modal zoom-target">
-        <header class="modal-header">
-          <div class="title-group">
-            <span class="icon">✨</span>
-            <span class="title">VESTIDOR COSMÉTICO</span>
-          </div>
-          <button
-            class="close-btn"
-            @click="close"
-          >
-            &times;
-          </button>
-        </header>
-
-        <div class="modal-content scroll-custom">
-          <!-- Nick Styles -->
-          <section class="style-section">
-            <div class="section-header">
-              <h3>Estilos de Nick</h3>
-              <span class="badge">CHAT & PERFIL</span>
-            </div>
-            <p class="section-desc">
-              Personalizá cómo los demás ven tu nombre.
-            </p>
-            
-            <div class="styles-grid">
-              <div
-                v-for="style in cosmeticsStore.allNickStyles"
-                :key="style.id"
-                class="style-card"
-                :class="{ active: cosmeticsStore.equippedNickStyle === style.id }"
-                @click="selectNick(style.id)"
-              >
-                <div class="preview-area">
-                  <span
-                    class="preview-nick"
-                    :class="style.class"
-                  >{{ uiStore.profileData.username || 'Entrenador' }}</span>
-                </div>
-                <div class="style-meta">
-                  <span class="style-name">{{ style.name }}</span>
-                  <span
-                    v-if="cosmeticsStore.equippedNickStyle === style.id"
-                    class="status-tag"
-                  >EQUIPADO</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Avatar Styles -->
-          <section class="style-section">
-            <div class="section-header">
-              <h3>Bordes de Avatar</h3>
-              <span class="badge">FOTO DE PERFIL</span>
-            </div>
-            <p class="section-desc">
-              Marcos especiales para destacar tu presencia.
-            </p>
-            
-            <div class="styles-grid">
-              <div
-                v-for="style in cosmeticsStore.allAvatarStyles"
-                :key="style.id"
-                class="style-card avatar-item"
-                :class="{ active: cosmeticsStore.equippedAvatarStyle === style.id }"
-                @click="selectAvatar(style.id)"
-              >
-                <div class="avatar-preview-box">
-                  <div
-                    class="avatar-frame"
-                    :class="style.class"
-                  >
-                    <div class="placeholder">
-                      👤
-                    </div>
-                  </div>
-                </div>
-                <div class="style-meta">
-                  <span class="style-name">{{ style.name }}</span>
-                  <span
-                    v-if="cosmeticsStore.equippedAvatarStyle === style.id"
-                    class="status-tag"
-                  >EQUIPADO</span>
-                </div>
-              </div>
-            </div>
-          </section>
+  <BaseModal
+    :show="isOpen"
+    title="VESTIDOR COSMÉTICO"
+    max-width="650px"
+    :z-index="12000"
+    @close="closeCosmetics"
+  >
+    <div class="cosmetics-modal-internal">
+      <!-- Nick Styles -->
+      <section class="style-section">
+        <div class="section-header">
+          <h3>Estilos de Nick</h3>
+          <span class="badge">CHAT & PERFIL</span>
         </div>
+        <p class="section-desc">
+          Personalizá cómo los demás ven tu nombre.
+        </p>
+        
+        <div class="styles-grid">
+          <div
+            v-for="style in cosmeticsStore.allNickStyles"
+            :key="style.id"
+            class="style-card"
+            :class="{ active: cosmeticsStore.equippedNickStyle === style.id }"
+            @click="selectNick(style.id)"
+          >
+            <div class="preview-area">
+              <span
+                class="preview-nick"
+                :class="style.class"
+              >{{ uiStore.profileData.username || 'Entrenador' }}</span>
+            </div>
+            <div class="style-meta">
+              <span class="style-name">{{ style.name }}</span>
+              <span
+                v-if="cosmeticsStore.equippedNickStyle === style.id"
+                class="status-tag"
+              >EQUIPADO</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <footer class="modal-footer">
-          <p>Los cambios se guardan instantáneamente en tu perfil de Supabase.</p>
-        </footer>
-      </div>
+      <!-- Avatar Styles -->
+      <section class="style-section">
+        <div class="section-header">
+          <h3>Bordes de Avatar</h3>
+          <span class="badge">FOTO DE PERFIL</span>
+        </div>
+        <p class="section-desc">
+          Marcos especiales para destacar tu presencia.
+        </p>
+        
+        <div class="styles-grid">
+          <div
+            v-for="style in cosmeticsStore.allAvatarStyles"
+            :key="style.id"
+            class="style-card avatar-item"
+            :class="{ active: cosmeticsStore.equippedAvatarStyle === style.id }"
+            @click="selectAvatar(style.id)"
+          >
+            <div class="avatar-preview-box">
+              <div
+                class="avatar-frame"
+                :class="style.class"
+              >
+                <div class="placeholder">
+                  👤
+                </div>
+              </div>
+            </div>
+            <div class="style-meta">
+              <span class="style-name">{{ style.name }}</span>
+              <span
+                v-if="cosmeticsStore.equippedAvatarStyle === style.id"
+                class="status-tag"
+              >EQUIPADO</span>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-  </Transition>
+
+    <template #footer>
+      <div class="modal-footer-internal">
+        <p>Los cambios se guardan instantáneamente en tu perfil de Supabase.</p>
+      </div>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.cosmetics-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(12px);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.cosmetics-modal {
-  width: 100%;
-  max-width: 650px;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
+.cosmetics-modal-internal {
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  max-height: 85vh;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-  overflow: hidden;
-}
-
-.modal-header {
-  padding: 24px 32px;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  .title-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    .icon { font-size: 20px; }
-    .title {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 11px;
-      color: #fff;
-      letter-spacing: 1px;
-    }
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    color: #475569;
-    font-size: 32px;
-    cursor: pointer;
-    line-height: 1;
-    &:hover { color: #fff; }
-  }
-}
-
-.modal-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
+  gap: 40px;
 }
 
 .style-section {
@@ -218,7 +147,7 @@ const selectAvatar = (id) => {
 
 .styles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 16px;
 }
 
@@ -237,7 +166,7 @@ const selectAvatar = (id) => {
 
   &:hover {
     background: rgba(255, 255, 255, 0.06);
-    transform: translateY(-4px) Scale(1.02);
+    transform: translateY(-4px);
     border-color: rgba(255, 255, 255, 0.1);
   }
 
@@ -297,10 +226,7 @@ const selectAvatar = (id) => {
   .placeholder { font-size: 28px; opacity: 0.3; }
 }
 
-.modal-footer {
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+.modal-footer-internal {
   text-align: center;
   p { font-size: 11px; color: #475569; }
 }
@@ -321,7 +247,7 @@ const selectAvatar = (id) => {
 .av-fire { border-color: #f97316; box-shadow: 0 0 15px #f97316; animation: anim-pulse 2s infinite; }
 .av-ice { border-color: #7dd3fc; box-shadow: 0 0 15px #7dd3fc; border-style: double; }
 .av-dragon { border-color: #8b5cf6; box-shadow: 0 0 20px #8b5cf6; }
-.av-legend { border-color: #fbbf24; box-shadow: 0 0 25px #fbbf24; animation: anim-spin-border 4s infinite linear; }
+.av-legend { border-color: #fbbf24; box-shadow: 0 0 25px #fbbf24; }
 .av-master { border-color: #ef4444; box-shadow: 0 0 20px #ef4444; border-width: 4px; }
 .av-ghost { border-color: #64748b; opacity: 0.8; box-shadow: 0 0 10px #64748b; }
 
@@ -347,15 +273,4 @@ const selectAvatar = (id) => {
   50% { transform: Scale(1.05); }
   100% { transform: Scale(1); }
 }
-
-@keyframes anim-spin-border {
-  /* This is just a placeholder for a complex border animation if needed */
-}
-
-/* TRANSITIONS */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-
-.scroll-custom::-webkit-scrollbar { width: 6px; }
-.scroll-custom::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

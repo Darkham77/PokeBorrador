@@ -1,24 +1,20 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import BaseModal from '@/components/common/BaseModal.vue'
 
-// const uiStore = useUIStore()
+const uiStore = useUIStore()
 const gameStore = useGameStore()
 
-// Props/Configuración del modal
-const config = ref({
-  title: 'SELECCIONAR POKÉMON',
-  subtitle: 'Elige un Pokémon para la tarea.',
-  maxSelect: 1,
-  minSelect: 1,
-  typeFilter: null,
-  onConfirm: null,
-  context: 'generic', // 'rocket', 'breeder', 'event'
-  includeTeam: true
+// Props/Configuración del modal (vía uiStore)
+const config = computed(() => uiStore.pokemonSelectionConfig || {})
+const isOpen = computed({
+  get: () => uiStore.isPokemonSelectionOpen,
+  set: (val) => { uiStore.isPokemonSelectionOpen = val }
 })
 
-const isOpen = ref(false)
 const selectedUids = ref([]) // use UID instead of array index
 
 // Búsqueda y filtrado
@@ -29,7 +25,7 @@ const availablePokemon = computed(() => {
   const team = gameStore.state.team || []
   
   let sourceList;
-  if (config.value.includeTeam) {
+  if (config.value.includeTeam !== false) { // Default to true
     sourceList = [
       ...team.map(p => ({ ...p, _source: 'team' })),
       ...box.map(p => ({ ...p, _source: 'box' }))
@@ -59,16 +55,19 @@ function toggleSelect(uid) {
   if (sIdx > -1) {
     selectedUids.value.splice(sIdx, 1)
   } else {
-    if (selectedUids.value.length < config.value.maxSelect) {
+    const maxSelect = config.value.maxSelect || 1
+    if (selectedUids.value.length < maxSelect) {
       selectedUids.value.push(uid)
-    } else if (config.value.maxSelect === 1) {
+    } else if (maxSelect === 1) {
       selectedUids.value = [uid]
     }
   }
 }
 
 function confirm() {
-  if (selectedUids.value.length < config.value.minSelect) return
+  const minSelect = config.value.minSelect || 1
+  if (selectedUids.value.length < minSelect) return
+  
   // Find the actual pokemon objects
   const selectedObjects = selectedUids.value.map(uid => availablePokemon.value.find(p => p.uid === uid)).filter(Boolean)
   
@@ -81,11 +80,20 @@ function close() {
   selectedUids.value = []
 }
 
-// Exponer para abrir desde cualquier lado
-window._openPokemonSelectionModal = (opts) => {
-  config.value = { ...config.value, ...opts }
-  selectedUids.value = []
-  isOpen.value = true
+// Legacy bridge
+if (typeof window !== 'undefined') {
+  window._openPokemonSelectionModal = (opts) => {
+    uiStore.pokemonSelectionConfig = { 
+      title: 'SELECCIONAR POKÉMON',
+      subtitle: 'Elige un Pokémon para la tarea.',
+      maxSelect: 1,
+      minSelect: 1,
+      context: 'generic',
+      ...opts 
+    }
+    selectedUids.value = []
+    isOpen.value = true
+  }
 }
 
 function getProjectedValue(p) {
@@ -95,195 +103,144 @@ function getProjectedValue(p) {
 </script>
 
 <template>
-  <Transition name="fade">
+  <BaseModal
+    :show="isOpen"
+    :title="config.title || 'SELECCIÓN'"
+    max-width="500px"
+    @close="close"
+  >
     <div
-      v-if="isOpen"
-      class="modal-overlay"
-      @click.self="close"
+      class="pokemon-selection-inner"
+      :class="config.context"
     >
-      <div
-        class="modal-container"
-        :class="config.context"
-      >
-        <header class="modal-header">
-          <div class="header-info">
-            <h2 class="press-start">
-              {{ config.title }}
-            </h2>
-            <p class="subtitle">
-              {{ config.subtitle }}
-            </p>
+      <p class="selection-help-text">
+        {{ config.subtitle }}
+      </p>
+
+      <div class="search-section">
+        <input 
+          v-model="searchQuery" 
+          type="text" 
+          placeholder="Buscar por nombre o ID..."
+          class="search-input"
+        >
+      </div>
+
+      <div class="pokemon-grid">
+        <div 
+          v-for="p in availablePokemon" 
+          :key="p.uid"
+          class="poke-card"
+          :class="{ selected: selectedUids.includes(p.uid) }"
+          @click="toggleSelect(p.uid)"
+        >
+          <div class="card-header">
+            <span class="lvl">Nv.{{ p.level }}</span>
+            <span
+              v-if="p.isShiny"
+              class="shiny-icon"
+            >✨</span>
+            <span
+              class="source-tag"
+              :class="p._source"
+            >
+              {{ p._source === 'team' ? 'Equipo' : 'PC' }}
+            </span>
           </div>
-          <button
-            class="close-btn"
-            @click="close"
-          >
-            ✕
-          </button>
-        </header>
+          
+          <div class="poke-sprite">
+            <img
+              :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny })"
+              alt=""
+            >
+          </div>
 
-        <div class="search-bar">
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            placeholder="Buscar por nombre o ID..."
-            class="search-input"
-          >
-        </div>
-
-        <div class="pokemon-grid">
-          <div 
-            v-for="p in availablePokemon" 
-            :key="p.uid"
-            class="poke-card"
-            :class="{ selected: selectedUids.includes(p.uid) }"
-            @click="toggleSelect(p.uid)"
-          >
-            <div class="card-header">
-              <span class="lvl">Nv.{{ p.level }}</span>
-              <span
-                v-if="p.isShiny"
-                class="shiny"
-              >✨</span>
-              <span
-                class="source-badge"
-                :class="p._source"
-              >
-                {{ p._source === 'team' ? 'Equipo' : 'PC' }}
-              </span>
+          <div class="poke-info">
+            <span class="name">{{ p.name }}</span>
+            <div class="iv-total">
+              IVs: {{ Object.values(p.ivs || {}).reduce((a, b) => a + (b || 0), 0) }}
             </div>
             
-            <div class="poke-sprite">
-              <img
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny })"
-                alt=""
-              >
-            </div>
-
-            <div class="poke-info">
-              <span class="name">{{ p.name }}</span>
-              <div class="iv-total">
-                IVs: {{ Object.values(p.ivs || {}).reduce((a, b) => a + (b || 0), 0) }}
-              </div>
-              
-              <div
-                v-if="config.context === 'rocket'"
-                class="projected-value"
-              >
-                ₽{{ getProjectedValue(p).toLocaleString() }}
-              </div>
-            </div>
-
-            <div class="selection-indicator">
-              <div class="checkbox">
-                <span v-if="selectedUids.includes(p.uid)">✓</span>
-              </div>
+            <div
+              v-if="config.context === 'rocket'"
+              class="projected-value"
+            >
+              ₽{{ getProjectedValue(p).toLocaleString() }}
             </div>
           </div>
 
-          <div
-            v-if="availablePokemon.length === 0"
-            class="empty-msg"
-          >
-            No se encontraron Pokémon disponibles con estos filtros.
+          <div class="selection-indicator">
+            <div class="checkbox">
+              <span v-if="selectedUids.includes(p.uid)">✓</span>
+            </div>
           </div>
         </div>
 
-        <footer class="modal-footer">
-          <div class="selection-info">
-            Seleccionados: {{ selectedUids.length }} / {{ config.maxSelect }}
-          </div>
-          <button 
-            class="confirm-btn" 
-            :disabled="selectedUids.length < config.minSelect"
-            @click="confirm"
-          >
-            CONFIRMAR SELECCIÓN
-          </button>
-        </footer>
+        <div
+          v-if="availablePokemon.length === 0"
+          class="empty-msg"
+        >
+          No se encontraron Pokémon disponibles.
+        </div>
       </div>
     </div>
-  </Transition>
+
+    <template #footer>
+      <div class="selection-footer">
+        <div class="selection-count">
+          Seleccionados: {{ selectedUids.length }} / {{ config.maxSelect || 1 }}
+        </div>
+        <button 
+          class="confirm-btn-primary" 
+          :disabled="selectedUids.length < (config.minSelect || 1)"
+          @click="confirm"
+        >
+          CONFIRMAR SELECCIÓN
+        </button>
+      </div>
+    </template>
+  </BaseModal>
 </template>
 
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 9800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  backdrop-filter: blur(8px);
+<style scoped lang="scss">
+.pokemon-selection-inner {
+  padding: 8px 0;
 }
 
-.modal-container {
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-  overflow: hidden;
-}
-
-.modal-container.rocket { border-color: #ef444466; box-shadow: 0 0 30px #ef444422; }
-
-.modal-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.press-start {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 12px;
-  color: #fff;
-  margin: 0;
-}
-
-.subtitle {
+.selection-help-text {
   font-size: 11px;
-  color: #94a3b8;
-  margin: 6px 0 0 0;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-.close-btn {
-  background: none;
-  border: none;
-  color: #64748b;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.search-bar {
-  padding: 16px 24px;
+.search-section {
+  margin-bottom: 20px;
 }
 
 .search-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 12px 16px;
+  padding: 14px 16px;
   color: #fff;
   font-size: 13px;
+  outline: none;
+
+  &:focus {
+    border-color: var(--yellow);
+    background: rgba(255, 255, 255, 0.06);
+  }
 }
 
 .pokemon-grid {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 24px 24px 24px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 12px;
+  max-height: 45vh;
+  overflow-y: auto;
+  padding: 4px;
 }
 
 .poke-card {
@@ -292,33 +249,54 @@ function getProjectedValue(p) {
   border-radius: 16px;
   padding: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &.selected {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+  }
 }
 
-.poke-card:hover { border-color: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
-.poke-card.selected { background: rgba(59, 130, 246, 0.1); border-color: #3b82f6; }
-.rocket .poke-card.selected { background: rgba(239, 68, 68, 0.1); border-color: #ef4444; }
+.rocket .poke-card.selected {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+}
 
 .card-header {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  color: #64748b;
-  margin-bottom: 4px;
+  gap: 6px;
+  font-size: 9px;
+  font-family: 'Press Start 2P', monospace;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 8px;
 }
 
-.source-badge {
+.lvl { color: #fff; }
+.shiny-icon { color: var(--yellow); }
+
+.source-tag {
   font-size: 7px;
-  padding: 2px 4px;
+  padding: 2px 6px;
   border-radius: 4px;
   margin-left: auto;
   text-transform: uppercase;
+  font-family: sans-serif;
+  font-weight: 900;
+
   &.team { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
   &.box { background: rgba(255, 255, 255, 0.05); color: #888; }
 }
@@ -331,93 +309,110 @@ function getProjectedValue(p) {
 
 .poke-info {
   text-align: center;
-  margin-top: 4px;
-}
+  margin-top: 8px;
 
-.name {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  color: #f8fafc;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 110px;
-}
+  .name {
+    display: block;
+    font-size: 13px;
+    font-weight: 800;
+    color: #f8fafc;
+    margin-bottom: 2px;
+  }
 
-.iv-total { font-size: 9px; color: #64748b; margin-top: 2px; }
+  .iv-total { font-size: 9px; color: rgba(255, 255, 255, 0.3); }
+}
 
 .projected-value {
   font-size: 10px;
   color: #22c55e;
   font-weight: 800;
-  margin-top: 4px;
+  margin-top: 6px;
+  font-family: 'Press Start 2P', monospace;
 }
 
 .selection-indicator {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
 }
 
 .checkbox {
-  width: 18px;
-  height: 18px;
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
   color: #fff;
+  transition: all 0.2s;
 }
 
-.selected .checkbox { background: #3b82f6; border-color: #3b82f6; }
-.rocket .selected .checkbox { background: #ef4444; border-color: #ef4444; }
+.selected .checkbox {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
 
-.modal-footer {
-  padding: 20px 24px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+.rocket .selected .checkbox {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.selection-footer {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
-.selection-info {
-  font-size: 11px;
-  color: #94a3b8;
+.selection-count {
+  font-size: 10px;
+  font-family: 'Press Start 2P', monospace;
+  color: rgba(255, 255, 255, 0.4);
   text-align: center;
 }
 
-.confirm-btn {
-  background: #3b82f6;
-  border: none;
+.confirm-btn-primary {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   color: #fff;
-  padding: 14px;
-  border-radius: 12px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 10px;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  font-weight: 900;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 0 #1d4ed8;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+    filter: brightness(1.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
 }
 
-.rocket .confirm-btn { background: #ef4444; box-shadow: 0 4px 0 #991b1b; }
+.rocket .confirm-btn-primary {
+  background: linear-gradient(135deg, #ef4444, #991b1b);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
 
-.confirm-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 0 #1d4ed8; }
-.rocket .confirm-btn:not(:disabled):hover { box-shadow: 0 6px 0 #991b1b; }
-
-.confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+  &:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+  }
+}
 
 .empty-msg {
   grid-column: 1 / -1;
-  padding: 40px;
+  padding: 60px 20px;
   text-align: center;
-  color: #64748b;
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 11px;
+  font-family: 'Press Start 2P', monospace;
 }
-
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

@@ -100,6 +100,18 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   }
 
   /**
+   * Establece la facción del jugador (Unión o Poder).
+   */
+  async function setFaction(factionId) {
+    if (!['union', 'poder', 'rocket'].includes(factionId)) return { success: false }
+
+    gameStore.state.faction = factionId
+    uiStore.notify(`¡Te uniste al Equipo ${factionId.toUpperCase()}!`, '🚩')
+    await gameStore.save(false)
+    return { success: true }
+  }
+
+  /**
    * Incrementa XP de clase (se sincroniza con el nivel de entrenador por ahora, como en legacy).
    */
   function addXP(amount) {
@@ -239,6 +251,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     addCriminality,
     startMission,
     collectMission,
+    setFaction,
     syncTheme
   }
 })

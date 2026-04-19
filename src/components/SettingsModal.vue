@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const uiStore = useUIStore()
 
@@ -9,11 +10,19 @@ const isSettingsOpen = computed({
   set: (val) => { uiStore.isSettingsOpen = val }
 })
 
-const closeSettings = () => {
-  isSettingsOpen.value = false
+const currentZoom = computed(() => {
+  return Math.round(uiStore.appZoom * 100)
+})
+
+const toggleSettings = () => {
+  uiStore.isSettingsOpen = !uiStore.isSettingsOpen
 }
 
 const updateZoom = (val) => {
+  const zoomVal = val / 100
+  uiStore.setZoom(zoomVal)
+  
+  // Also call legacy if it exists
   if (typeof window.updateZoom === 'function') {
     window.updateZoom(val)
   }
@@ -21,85 +30,161 @@ const updateZoom = (val) => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <div
-      id="settings-modal"
-      class="modal-overlay"
-      :class="{ active: isSettingsOpen, open: isSettingsOpen }"
-    >
-      <div class="modal-content-premium settings-card">
-        <div class="modal-scrollable-content">
-          <div class="modal-header-row">
-            <h2 class="settings-title">
-              ⚙️ CONFIGURACIÓN
-            </h2>
-            <button
-              class="modal-close-btn"
-              @click="closeSettings"
-            >
-              ✕
-            </button>
-          </div>
-      
-          <div class="settings-group">
-            <label class="settings-label">
-              Zoom de la Interfaz: <span id="zoom-value">100%</span>
-            </label>
-            <input
-              id="zoom-slider"
-              type="range"
-              min="50"
-              max="150"
-              value="100"
-              step="5"
-              class="zoom-slider"
-              @input="updateZoom($event.target.value)"
-            >
-            <div class="zoom-labels">
-              <span>50%</span><span>100%</span><span>150%</span>
-            </div>
-          </div>
-
-          <button
-            class="close-btn-primary"
-            @click="closeSettings"
-          >
-            CERRAR
-          </button>
+  <BaseModal
+    :show="isSettingsOpen"
+    title="CONFIGURACIÓN"
+    max-width="440px"
+    custom-class="settings-modal-original"
+    padding="standard"
+    @close="toggleSettings"
+  >
+    <div class="settings-container">
+      <div class="zoom-section">
+        <label class="zoom-label">
+          Zoom de la Interfaz: <span class="zoom-value">{{ currentZoom }}%</span>
+        </label>
+        
+        <input 
+          type="range" 
+          :value="currentZoom" 
+          min="50" 
+          max="150" 
+          step="5"
+          class="zoom-slider"
+          @input="updateZoom($event.target.value)"
+        >
+        
+        <div class="zoom-labels">
+          <span>50%</span>
+          <span>100%</span>
+          <span>150%</span>
         </div>
       </div>
+
+      <div class="settings-actions">
+        <button 
+          class="close-btn-primary"
+          @click="toggleSettings"
+        >
+          GUARDAR Y CERRAR
+        </button>
+      </div>
     </div>
-  </Teleport>
+  </BaseModal>
 </template>
 
-<style scoped>
-.modal-close-btn {
-  background: none;
-  border: none;
-  color: var(--gray);
-  font-size: 24px;
+<style lang="scss">
+/* We use global selector to override BaseModal styles for this specific class */
+.modal-content-premium.settings-modal-original {
+  background: #110808 !important;
+  border: 2px solid #2a1515 !important;
+  border-radius: 32px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9) !important;
+
+  .modal-header-premium {
+    border-bottom: none;
+    padding: 32px 32px 16px;
+  }
+
+  .modal-title-text {
+    font-size: 14px;
+    color: var(--yellow);
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-close-btn-standard {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 24px;
+  }
+}
+</style>
+
+<style scoped lang="scss">
+.settings-container {
+  padding: 8px 16px 16px;
+}
+
+.zoom-section {
+  margin-bottom: 32px;
+}
+
+.zoom-label {
+  display: block;
+  font-size: 14px;
+  color: #fff;
+  margin-bottom: 20px;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+}
+
+.zoom-value {
+  color: #fff;
+}
+
+.zoom-slider {
+  width: 100%;
+  height: 8px;
+  -webkit-appearance: none;
+  background: #333;
+  border-radius: 4px;
+  outline: none;
   cursor: pointer;
+  position: relative;
+
+  &::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px;
+    background: #333;
+    border-radius: 4px;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--yellow);
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -6px;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    border: none;
+  }
+}
+
+/* Chrome/Safari specific logic for yellow progress bar if possible, 
+   but standard range is hard to style cross-browser with just CSS.
+   Using a simpler solid background for now to match the "clean" look. */
+
+.zoom-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 10px;
+  color: #666;
+  font-family: 'Press Start 2P', monospace;
 }
 
 .close-btn-primary {
   width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, var(--yellow), #f59e0b);
-  color: var(--darker);
+  padding: 18px;
+  background: var(--yellow);
+  color: #000;
   border: none;
-  border-radius: 14px;
+  border-radius: 18px;
   font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
-}
-.close-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4); }
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
 
-/* New classes from inline cleanup */
-.settings-card { width: 100%; max-width: 400px; }
-.modal-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.settings-title { font-family: 'Press Start 2P', monospace; font-size: 11px; color: var(--yellow); margin: 0; letter-spacing: 1px; }
-.settings-group { margin-bottom: 24px; }
-.settings-label { display: block; font-size: 14px; color: var(--text); margin-bottom: 12px; font-weight: 700; }
-.zoom-slider { width: 100%; accent-color: var(--yellow); cursor: pointer; }
-.zoom-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: var(--gray); font-family: 'Press Start 2P', monospace; }
+  &:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
 </style>

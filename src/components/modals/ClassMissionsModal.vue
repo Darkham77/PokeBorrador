@@ -5,12 +5,16 @@ import { usePlayerClassStore } from '@/stores/playerClass'
 import { useGameStore } from '@/stores/game'
 import { CLASS_MISSIONS } from '@/data/playerClasses'
 import PokemonPickerModal from '../common/PokemonPickerModal.vue'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const uiStore = useUIStore()
 const classStore = usePlayerClassStore()
 const gameStore = useGameStore()
 
-const isOpen = computed(() => uiStore.isClassMissionsOpen)
+const isOpen = computed({
+  get: () => uiStore.isClassMissionsOpen,
+  set: (val) => { uiStore.isClassMissionsOpen = val }
+})
 const currentClass = computed(() => classStore.currentClassDef)
 const activeMission = computed(() => classStore.activeMission)
 const trainerLevel = computed(() => gameStore.state.trainerLevel || 1)
@@ -36,7 +40,7 @@ onUnmounted(() => {
   if (timer) clearInterval(timer)
 })
 
-const close = () => { uiStore.isClassMissionsOpen = false }
+const close = () => { isOpen.value = false }
 
 const missionProgress = computed(() => {
   if (!activeMission.value) return 0
@@ -122,131 +126,115 @@ function collectReward() {
 </script>
 
 <template>
-  <Transition name="fade">
+  <BaseModal
+    :show="isOpen"
+    :title="`MISIONES ${currentClass?.name.toUpperCase() || 'DE CLASE'}`"
+    max-width="500px"
+    @close="close"
+  >
     <div
-      v-if="isOpen"
-      class="modal-overlay"
-      @click.self="close"
+      class="class-missions-inner"
+      :style="{ '--cls-color': currentClass?.color || '#3b82f6' }"
     >
-      <div
-        class="modal-container"
-        :style="{ '--cls-color': currentClass?.color || '#3b82f6' }"
+      <!-- Active Mission Card (Premium) -->
+      <section
+        v-if="activeMission"
+        class="active-mission-card"
       >
-        <header class="modal-header">
-          <div class="header-title">
-            <span class="class-icon">{{ currentClass?.icon }}</span>
-            <h2>MISIONES {{ currentClass?.name.toUpperCase() }}</h2>
-          </div>
-          <button
-            class="close-btn"
-            @click="close"
-          >
-            ✕
-          </button>
-        </header>
-
-        <main class="modal-body">
-          <!-- Active Mission Card (Premium) -->
-          <section
-            v-if="activeMission"
-            class="active-mission-card"
-          >
-            <div
-              class="mission-glow"
-              :style="{ background: currentClass?.color }"
-            />
-            <div class="card-content">
-              <div class="mission-header">
-                <span
-                  class="mission-status-label"
-                  :class="{ done: isMissionDone }"
-                >
-                  {{ isMissionDone ? 'OPERACIÓN FINALIZADA' : 'OPERACIÓN EN CURSO' }}
-                </span>
-                <span class="timer-text">{{ timeRemainingLabel }}</span>
-              </div>
-              
-              <div class="progress-wrapper">
-                <div class="progress-base">
-                  <div
-                    class="progress-fill"
-                    :style="{ width: missionProgress + '%', background: currentClass?.color }"
-                  >
-                    <div class="progress-pulse" />
-                  </div>
-                </div>
-              </div>
-
-              <p class="mission-name">
-                <span
-                  class="pulse-dot"
-                  :style="{ background: isMissionDone ? '#22c55e' : '#eab308' }"
-                />
-                {{ CLASS_MISSIONS.find(m => m.id === activeMission.id)?.name }}
-              </p>
-
-              <button 
-                v-if="isMissionDone" 
-                class="collect-btn"
-                @click="collectReward"
-              >
-                RECLAMAR RECOMPENSAS
-              </button>
-              <div
-                v-else
-                class="working-indicator"
-              >
-                <div class="dots">
-                  <span /><span /><span />
-                </div>
-                <p>Procesando datos de campo...</p>
-              </div>
-            </div>
-          </section>
-
-          <!-- List Header -->
-          <div class="list-label">
-            DESPLIEGUES DISPONIBLES
+        <div
+          class="mission-glow"
+          :style="{ background: currentClass?.color }"
+        />
+        <div class="card-content">
+          <div class="mission-header">
+            <span
+              class="mission-status-label"
+              :class="{ done: isMissionDone }"
+            >
+              {{ isMissionDone ? 'OPERACIÓN FINALIZADA' : 'OPERACIÓN EN CURSO' }}
+            </span>
+            <span class="timer-text">{{ timeRemainingLabel }}</span>
           </div>
           
-          <div class="missions-grid">
-            <div 
-              v-for="m in CLASS_MISSIONS" 
-              :key="m.id" 
-              class="mission-item"
-              :class="{ locked: trainerLevel < m.reqLv, active: activeMission?.id === m.id }"
-            >
-              <div class="item-header">
-                <span class="m-duration">{{ m.durationHs }}H</span>
-                <span class="m-req">LVL {{ m.reqLv }}</span>
-              </div>
-              
-              <h3 class="m-title">
-                {{ m.name }}
-              </h3>
-              <p class="m-desc">
-                {{ getMissionDesc(m.id) }}
-              </p>
-
-              <button 
-                class="start-button"
-                :disabled="trainerLevel < m.reqLv || !!activeMission"
-                @click="startMission(m.id)"
+          <div class="progress-wrapper">
+            <div class="progress-base">
+              <div
+                class="progress-fill"
+                :style="{ width: missionProgress + '%', background: currentClass?.color }"
               >
-                {{ activeMission?.id === m.id ? 'EN CURSO' : (activeMission ? 'BLOQUEADO' : 'DESPLEGAR') }}
-              </button>
+                <div class="progress-pulse" />
+              </div>
             </div>
           </div>
-        </main>
 
-        <footer class="modal-footer">
-          <p class="footer-hint">
-            Las bonificaciones de clase se aplican automáticamente tras la recolección.
+          <p class="mission-name">
+            <span
+              class="pulse-dot"
+              :style="{ background: isMissionDone ? '#22c55e' : '#eab308' }"
+            />
+            {{ CLASS_MISSIONS.find(m => m.id === activeMission.id)?.name }}
           </p>
-        </footer>
+
+          <button 
+            v-if="isMissionDone" 
+            class="collect-btn"
+            @click="collectReward"
+          >
+            RECLAMAR RECOMPENSAS
+          </button>
+          <div
+            v-else
+            class="working-indicator"
+          >
+            <div class="dots">
+              <span /><span /><span />
+            </div>
+            <p>Procesando datos de campo...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- List Header -->
+      <div class="list-label">
+        DESPLIEGUES DISPONIBLES
+      </div>
+      
+      <div class="missions-grid">
+        <div 
+          v-for="m in CLASS_MISSIONS" 
+          :key="m.id" 
+          class="mission-item"
+          :class="{ locked: trainerLevel < m.reqLv, active: activeMission?.id === m.id }"
+        >
+          <div class="item-header">
+            <span class="m-duration">{{ m.durationHs }}H</span>
+            <span class="m-req">LVL {{ m.reqLv }}</span>
+          </div>
+          
+          <h3 class="m-title">
+            {{ m.name }}
+          </h3>
+          <p class="m-desc">
+            {{ getMissionDesc(m.id) }}
+          </p>
+
+          <button 
+            class="start-button"
+            :disabled="trainerLevel < m.reqLv || !!activeMission"
+            @click="startMission(m.id)"
+          >
+            {{ activeMission?.id === m.id ? 'EN CURSO' : (activeMission ? 'BLOQUEADO' : 'DESPLEGAR') }}
+          </button>
+        </div>
       </div>
     </div>
-  </Transition>
+
+    <template #footer>
+      <p class="footer-hint">
+        Las bonificaciones de clase se aplican automáticamente tras la recolección.
+      </p>
+    </template>
+  </BaseModal>
 
   <PokemonPickerModal
     v-if="isPickerOpen"
@@ -261,54 +249,13 @@ function collectReward() {
 </template>
 
 <style scoped lang="scss">
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(10px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+.class-missions-inner {
+  padding: 8px 0;
 }
-
-.modal-container {
-  width: 100%;
-  max-width: 500px;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-.modal-header {
-  padding: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  .header-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    h2 { font-family: 'Press Start 2P', cursive; font-size: 12px; color: var(--cls-color); text-shadow: 0 0 10px var(--cls-color); margin: 0; }
-    .class-icon { font-size: 20px; }
-  }
-}
-
-.close-btn {
-  background: none; border: none; color: #64748b; font-size: 20px; cursor: pointer;
-  &:hover { color: #fff; }
-}
-
-.modal-body { padding: 24px; }
 
 .active-mission-card {
   position: relative;
-  background: #1e293b;
+  background: rgba(30, 41, 59, 0.5);
   border-radius: 20px;
   padding: 2px;
   overflow: hidden;
@@ -335,7 +282,13 @@ function collectReward() {
   display: flex;
   justify-content: space-between;
   margin-bottom: 16px;
-  .mission-status-label { font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 1px; }
+  .mission-status-label { 
+    font-size: 10px; 
+    font-weight: 800; 
+    color: #94a3b8; 
+    letter-spacing: 1px; 
+    font-family: 'Press Start 2P', monospace;
+  }
   .mission-status-label.done { color: #22c55e; }
   .timer-text { font-family: 'Press Start 2P', cursive; font-size: 10px; color: #fff; }
 }
@@ -370,7 +323,13 @@ function collectReward() {
   font-size: 10px;
   cursor: pointer;
   box-shadow: 0 10px 20px -5px var(--cls-color);
-  &:hover { transform: translateY(-2px); filter: Brightness(1.1); }
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:hover { 
+    transform: translateY(-2px); 
+    filter: Brightness(1.1); 
+    box-shadow: 0 15px 30px -5px var(--cls-color);
+  }
 }
 
 .working-indicator {
@@ -378,16 +337,23 @@ function collectReward() {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  p { font-size: 12px; color: #64748b; margin: 0; }
+  p { font-size: 11px; color: #64748b; margin: 0; font-family: 'Press Start 2P', monospace; }
   .dots {
-    display: flex; gap: 4px;
-    span { width: 6px; height: 6px; background: var(--cls-color); border-radius: 50%; animation: dots 1.4s infinite; }
+    display: flex; gap: 8px;
+    span { width: 8px; height: 8px; background: var(--cls-color); border-radius: 50%; animation: dots 1.4s infinite; }
     span:nth-child(2) { animation-delay: 0.2s; }
     span:nth-child(3) { animation-delay: 0.4s; }
   }
 }
 
-.list-label { font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 1.5px; margin-bottom: 16px; }
+.list-label { 
+  font-size: 10px; 
+  font-weight: 800; 
+  color: #64748b; 
+  letter-spacing: 1.5px; 
+  margin-bottom: 20px;
+  font-family: 'Press Start 2P', monospace;
+}
 
 .missions-grid { display: flex; flex-direction: column; gap: 16px; }
 
@@ -403,33 +369,45 @@ function collectReward() {
     justify-content: space-between;
     margin-bottom: 12px;
     .m-duration { font-family: 'Press Start 2P', cursive; font-size: 8px; color: #94a3b8; }
-    .m-req { font-size: 10px; font-weight: 700; color: #64748b; }
+    .m-req { font-size: 10px; font-weight: 700; color: #64748b; font-family: 'Press Start 2P', monospace; }
   }
 
-  .m-title { font-size: 14px; font-weight: 700; color: #f1f5f9; margin: 0 0 8px 0; }
-  .m-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0 0 16px 0; }
+  .m-title { font-size: 15px; font-weight: 800; color: #f1f5f9; margin: 0 0 8px 0; }
+  .m-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0 0 20px 0; }
 
   .start-button {
     width: 100%;
-    padding: 10px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
+    padding: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
     color: #cbd5e1;
     font-weight: 700;
-    font-size: 11px;
+    font-size: 10px;
+    font-family: 'Press Start 2P', monospace;
     cursor: pointer;
-    &:hover:not(:disabled) { background: var(--cls-color); border-color: transparent; color: #fff; }
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) { 
+      background: var(--cls-color); 
+      border-color: transparent; 
+      color: #fff; 
+      transform: translateY(-2px);
+    }
+    
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
   }
 
   &.locked { opacity: 0.4; }
+  &.active { border-color: var(--cls-color); background: rgba(var(--cls-color-rgb), 0.05); }
 }
 
-.modal-footer { padding: 16px 24px; background: rgba(0,0,0,0.2); text-align: center; .footer-hint { font-size: 11px; color: #475569; margin: 0; } }
+.footer-hint { font-size: 10px; color: #475569; margin: 0; text-align: center; }
 
 @keyframes sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 @keyframes pulse { 0% { transform: Scale(0.95); opacity: 0.5; } 50% { transform: Scale(1.05); opacity: 1; } 100% { transform: Scale(0.95); opacity: 0.5; } }
 @keyframes dots { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

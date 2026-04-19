@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { libraryContent, libraryCategories } from '@/data/libraryData'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const uiStore = useUIStore()
 const isLibraryOpen = computed({
@@ -41,97 +42,90 @@ onMounted(() => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <div
-      v-if="isLibraryOpen"
-      id="library-modal"
-      class="modal-overlay active"
-      @click.self="toggleLibrary"
-    >
-      <div class="library-container glass-morphism">
-        <aside class="library-sidebar">
-          <div class="sidebar-header">
-            <span class="book-icon">📖</span>
-            <h2>BIBLIOTECA</h2>
-          </div>
-          
-          <nav class="library-nav">
-            <div
-              v-for="cat in libraryCategories"
-              :key="cat.id"
-              class="library-nav-item"
-              :class="{ active: selectedTab === cat.id }"
-              @click="selectTab(cat.id)"
-            >
-              {{ cat.label }}
-            </div>
-          </nav>
-        </aside>
-
-        <main class="library-content">
-          <button
-            class="library-close"
-            title="Cerrar"
-            @click="toggleLibrary"
+  <BaseModal
+    :show="isLibraryOpen"
+    max-width="1200px"
+    hide-header
+    padding="raw"
+    no-scroll
+    @close="toggleLibrary"
+  >
+    <div class="library-container">
+      <aside class="library-sidebar">
+        <div class="sidebar-header">
+          <span class="book-icon">📖</span>
+          <h2>BIBLIOTECA</h2>
+        </div>
+        
+        <nav class="library-nav">
+          <div
+            v-for="cat in libraryCategories"
+            :key="cat.id"
+            class="library-nav-item"
+            :class="{ active: selectedTab === cat.id }"
+            @click="selectTab(cat.id)"
           >
-            ✕
-          </button>
+            {{ cat.label }}
+          </div>
+        </nav>
+      </aside>
 
-          <transition name="fade">
-            <div
-              v-if="contentFade"
-              id="library-article-content"
-              class="library-article"
-              v-html="currentContent"
-            />
-          </transition>
-        </main>
-      </div>
+      <main class="library-content">
+        <transition name="fade">
+          <div
+            v-if="contentFade"
+            id="library-article-content"
+            class="library-article"
+            v-html="currentContent"
+          />
+        </transition>
+      </main>
     </div>
-  </Teleport>
+  </BaseModal>
 </template>
 
 <style lang="scss" scoped>
 .fade-enter-active, .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: Opacity 0.2s ease;
 }
 .fade-enter-from, .fade-leave-to {
-  opacity: 0;
+  Opacity: 0;
 }
 
 .library-container {
   display: flex;
-  width: 900px;
-  height: 600px;
-  max-width: 95vw;
-  max-height: 85vh;
-  border-radius: 12px;
+  width: 100%;
+  height: 100%;
+  min-height: 0; /* Allow shrinking */
+  max-width: 1400px;
+  margin: 0 auto;
   overflow: hidden;
+  overflow-x: hidden;
   box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-  animation: modalScaleUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
 .library-sidebar {
-  width: 240px;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(5px);
+  width: 280px;
+  background: rgba(255, 255, 255, 0.03);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
+  padding: 40px 20px;
+  overflow-x: hidden;
 
   .sidebar-header {
-    padding: 24px;
+    padding-bottom: 24px;
     display: flex;
     align-items: center;
     gap: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 20px;
 
-    .book-icon { font-size: 24px; }
+    .book-icon { font-size: 20px; }
     h2 {
       margin: 0;
-      font-size: 16px;
+      font-size: 14px;
       font-family: 'Press Start 2P', monospace;
-      color: #fff;
+      color: var(--yellow);
       letter-spacing: 1px;
     }
   }
@@ -140,97 +134,130 @@ onMounted(() => {
 .library-nav {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  overflow-x: hidden;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   
   &::-webkit-scrollbar { width: 4px; }
   &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
   .library-nav-item {
-    padding: 12px 16px;
-    margin-bottom: 4px;
-    border-radius: 8px;
+    padding: 14px 20px;
+    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
+    font-weight: 700;
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+    gap: 12px;
 
     &:hover {
       background: rgba(255, 255, 255, 0.05);
       color: #fff;
-      transform: translateX(4px);
     }
 
     &.active {
-      background: var(--primary-color, #3b82f6);
-      color: #fff;
-      font-weight: 600;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      background: var(--yellow);
+      color: var(--darker);
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(255, 214, 10, 0.2);
     }
   }
 }
 
 .library-content {
   flex: 1;
-  background: #1a1a1a;
+  background: transparent;
   position: relative;
   overflow-y: auto;
-  padding: 40px;
+  padding: 60px;
   color: #eee;
 
   .library-close {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    background: none;
+    top: 30px;
+    right: 40px;
+    background: rgba(255, 255, 255, 0.1);
     border: none;
     color: #fff;
-    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     cursor: pointer;
-    opacity: 0.5;
-    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.2s;
     z-index: 10;
 
-    &:hover { opacity: 1; }
+    &:hover { 
+      background: var(--red);
+      transform: rotate(90deg);
+    }
   }
 }
 
 .library-article {
-  max-width: 700px;
+  max-width: 800px;
   margin: 0 auto;
-  line-height: 1.6;
+  line-height: 1.8;
 
   :deep(h1) {
     font-family: 'Press Start 2P', monospace;
-    font-size: 18px;
-    color: var(--primary-light, #60a5fa);
-    margin-bottom: 24px;
-    border-bottom: 2px solid rgba(255,255,255,0.05);
-    padding-bottom: 12px;
+    font-size: 24px;
+    color: var(--yellow);
+    margin-bottom: 40px;
   }
 
   :deep(h3) {
-    color: #fff;
-    margin: 24px 0 12px;
+    color: var(--purple);
+    margin: 30px 0 15px;
+    font-size: 20px;
+  }
+
+  :deep(p) {
+    margin-bottom: 25px;
+    color: #ccc;
+    font-size: 16px;
   }
 
   :deep(ul) {
+    margin-bottom: 25px;
     padding-left: 20px;
-    li { margin-bottom: 8px; }
+    li { 
+      margin-bottom: 10px; 
+      color: #bbb;
+    }
+  }
+
+  :deep(strong) {
+    color: #fff;
   }
 
   :deep(.library-table) {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
-    font-size: 13px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 12px;
+    overflow: hidden;
     
     th, td {
-      padding: 12px;
+      padding: 12px 15px;
       text-align: left;
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     
-    th { color: var(--gray, #9ca3af); font-weight: 600; }
+    th { 
+      background: rgba(255,255,255,0.05);
+      color: var(--yellow);
+      font-size: 14px;
+    }
   }
 
   :deep(.class-info-box) {
@@ -243,8 +270,35 @@ onMounted(() => {
 }
 
 @keyframes modalScaleUp {
-  from { opacity: 0; transform: #{"Scale(0.95)"}; }
-  to { opacity: 1; transform: #{"Scale(1.0)"}; }
+  from { Opacity: #{0}; transform: Scale(#{0.95}); }
+  to { Opacity: #{1}; transform: Scale(#{1.0}); }
+}
+
+@media (max-width: 768px) {
+  .library-container {
+    flex-direction: column;
+  }
+  .library-sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    padding: 20px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    
+    .sidebar-header { display: none; }
+  }
+  .library-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px;
+    .library-nav-item {
+      white-space: nowrap;
+    }
+  }
+  .library-content {
+    padding: 30px 20px;
+  }
 }
 </style>
 

@@ -114,7 +114,10 @@ Para probar las funciones de la carpeta `api/` localmente:
 vercel dev
 ```
 
-## 🛡️ Estándares de Calidad y Auditoría
+El desarrollo de este proyecto se rige por un sistema de reglas estrictas gestionadas por IA a través de Antigravity. Estas reglas están formalizadas en:
+
+- **[AGENTS.md](./AGENTS.md)**: El contrato maestro del proyecto (Nativo).
+- **Skill @/project-standards**: El motor de razonamiento técnico.
 
 Antes de realizar una entrega o desplegar cambios, es **MANDATORIO** que el código pase los siguientes controles:
 

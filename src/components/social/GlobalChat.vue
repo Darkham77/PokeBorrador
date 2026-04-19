@@ -1,15 +1,20 @@
 <script setup>
-import { ref, onMounted, nextTick, computed, watch } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue';
 import { useChatStore } from '@/stores/chat';
 import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/TrainerAvatar.vue';
 
 const chatStore = useChatStore();
 const _authStore = useAuthStore();
 const gameStore = useGameStore();
+const uiStore = useUIStore();
 
-const isOpen = ref(false);
+const isOpen = computed({
+  get: () => uiStore.isChatOpen,
+  set: (val) => { uiStore.isChatOpen = val }
+});
 const newMessage = ref('');
 const messagesContainer = ref(null);
 const inputField = ref(null);
@@ -57,8 +62,21 @@ watch(() => chatStore.globalMessages.length, () => {
   }
 });
 
+function handleOutsideClick(e) {
+  if (!isOpen.value) return;
+  const isInside = e.target.closest('.chat-panel') || e.target.closest('.chat-toggle-btn');
+  if (!isInside) {
+    isOpen.value = false;
+  }
+}
+
 onMounted(() => {
   chatStore.initGlobalChat();
+  document.addEventListener('click', handleOutsideClick);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleOutsideClick);
 });
 </script>
 
@@ -71,7 +89,7 @@ onMounted(() => {
       @click="toggleChat"
     >
       <span class="icon">💬</span>
-      <span class="label">Chat Global</span>
+      <span class="label">Chat</span>
     </button>
 
     <!-- Side Panel -->
@@ -79,6 +97,7 @@ onMounted(() => {
       <section
         v-if="isOpen"
         class="chat-panel"
+        @wheel.stop
       >
         <header class="chat-header">
           <div class="title">
@@ -171,8 +190,13 @@ onMounted(() => {
 .global-chat-root {
   position: fixed;
   bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+  left: 20px;
+  z-index: 12001;
+  transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 1380px) {
+    bottom: 110px;
+  }
 }
 
 .chat-toggle-btn {
@@ -201,20 +225,30 @@ onMounted(() => {
     font-size: 8px;
     letter-spacing: 0.5px;
   }
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    min-width: 60px;
+
+    .icon { font-size: 16px; }
+    .label { font-size: 6px; }
+  }
 }
 
 .chat-panel {
   position: fixed;
   top: 0;
-  right: 0;
+  left: 0;
   width: min(350px, 100vw);
   height: 100vh;
   background: rgba(13, 17, 23, 0.94);
   backdrop-filter: blur(12px);
-  border-left: 1px solid rgba(199, 125, 255, 0.2);
+  border-right: 1px solid rgba(199, 125, 255, 0.2);
   display: flex;
   flex-direction: column;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
 .chat-header {
@@ -362,7 +396,7 @@ onMounted(() => {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .slide-enter-from, .slide-leave-to {
-  transform: translateX(100%);
+  transform: translateX(-100%);
 }
 
 .animate-pop {

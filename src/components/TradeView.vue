@@ -5,12 +5,16 @@ import { useUIStore } from '@/stores/ui'
 import { useTradeStore } from '@/stores/trade'
 import TradePokemonSelector from './social/TradePokemonSelector.vue'
 import { getSpriteUrl } from '@/data/spriteMapping'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const tradeStore = useTradeStore()
 
-const isTradeOpen = computed(() => uiStore.isTradeOpen)
+const isTradeOpen = computed({
+  get: () => uiStore.isTradeOpen,
+  set: (val) => { uiStore.isTradeOpen = val }
+})
 const gs = computed(() => gameStore.state)
 const target = computed(() => tradeStore.tradeTarget)
 const friendSave = computed(() => tradeStore.tradeFriendSave || { team: [], inventory: {}, money: 0 })
@@ -57,15 +61,7 @@ const handleSelectorSelect = (poke) => {
 
 const closeTrade = () => {
   if (isSending.value) return
-  uiStore.isTradeOpen = false
-}
-
-const _selectOfferPoke = (poke) => {
-  tradeStore.tradeOfferPoke = poke
-}
-
-const _selectRequestPoke = (poke) => {
-  tradeStore.tradeRequestPoke = poke
+  isTradeOpen.value = false
 }
 
 const toggleOfferItem = (itemName) => {
@@ -121,195 +117,190 @@ const requestSummary = computed(() => {
 </script>
 
 <template>
-  <div
-    v-if="isTradeOpen"
-    class="trade-modal-overlay"
+  <BaseModal
+    :show="isTradeOpen"
+    :title="`INTERCAMBIO CON ${target?.username || 'JUGADOR'}`"
+    max-width="900px"
+    @close="closeTrade"
   >
-    <div class="trade-modal-container">
-      <!-- Header -->
-      <div class="trade-header">
-        <div class="trade-title">
-          INTERCAMBIO CON {{ target?.username }}
+    <div class="trade-modal-inner">
+      <!-- Summary split -->
+      <div class="trade-summary-bar">
+        <div class="summary-box offer">
+          <span class="label">TE OFREZCO:</span>
+          <span class="value">{{ offerSummary }}</span>
         </div>
-        <button
-          class="trade-close"
-          @click="closeTrade"
-        >
-          ✕
-        </button>
+        <div class="summary-icon">
+          🔄
+        </div>
+        <div class="summary-box request">
+          <span class="label">PIDO A CAMBIO:</span>
+          <span class="value">{{ requestSummary }}</span>
+        </div>
       </div>
 
-      <div class="trade-body">
-        <!-- Summary split -->
-        <div class="trade-summary-bar">
-          <div class="summary-box offer">
-            <span class="label">TE OFREZCO:</span>
-            <span class="value">{{ offerSummary }}</span>
+      <div class="trade-grid">
+        <!-- Left: My Side -->
+        <div class="trade-side">
+          <div class="side-title">
+            Mi Equipo / Mochila
           </div>
-          <div class="summary-icon">
-            🔄
+          
+          <div class="selected-poke-display">
+            <div
+              v-if="tradeStore.tradeOfferPoke"
+              class="poke-preview"
+              @click="openSelector('offer')"
+            >
+              <img
+                :src="getSpriteUrl(tradeStore.tradeOfferPoke.id, tradeStore.tradeOfferPoke.isShiny)"
+                class="preview-sprite"
+              >
+              <div class="preview-info">
+                <div class="name">
+                  {{ tradeStore.tradeOfferPoke.name }}
+                </div>
+                <div class="meta">
+                  Nv. {{ tradeStore.tradeOfferPoke.level }}
+                </div>
+              </div>
+              <div class="change-hint">
+                CAMBIAR
+              </div>
+            </div>
+            <button
+              v-else
+              class="btn-open-selector"
+              @click="openSelector('offer')"
+            >
+              + SELECCIONAR POKÉMON
+            </button>
           </div>
-          <div class="summary-box request">
-            <span class="label">PIDO A CAMBIO:</span>
-            <span class="value">{{ requestSummary }}</span>
+
+          <div class="item-selection-grid">
+            <div 
+              v-for="(qty, name) in gs.inventory" 
+              :key="name"
+              class="trade-item-pill"
+              :class="{ selected: tradeStore.tradeOfferItems[name] }"
+              @click="toggleOfferItem(name)"
+            >
+              {{ name }} ({{ qty }})
+            </div>
+          </div>
+
+          <div class="money-input-group">
+            <label>Ofrecer Dinero (₽):</label>
+            <input
+              v-model.number="offerMoney"
+              type="number"
+              min="0"
+              :max="gs.money"
+            >
           </div>
         </div>
 
-        <div class="trade-grid">
-          <!-- Left: My Side -->
-          <div class="trade-side">
-            <div class="side-title">
-              Mi Equipo / Mochila
-            </div>
-            
-            <div class="selected-poke-display">
-              <div
-                v-if="tradeStore.tradeOfferPoke"
-                class="poke-preview"
-                @click="openSelector('offer')"
+        <!-- Right: Friend's Side -->
+        <div class="trade-side friend-side">
+          <div class="side-title">
+            Equipo de {{ target?.username }}
+          </div>
+
+          <div
+            v-if="!isGift"
+            class="selected-poke-display"
+          >
+            <div
+              v-if="tradeStore.tradeRequestPoke"
+              class="poke-preview"
+              @click="openSelector('request')"
+            >
+              <img
+                :src="getSpriteUrl(tradeStore.tradeRequestPoke.id, tradeStore.tradeRequestPoke.isShiny)"
+                class="preview-sprite"
               >
-                <img
-                  :src="getSpriteUrl(tradeStore.tradeOfferPoke.id, tradeStore.tradeOfferPoke.isShiny)"
-                  class="preview-sprite"
-                >
-                <div class="preview-info">
-                  <div class="name">
-                    {{ tradeStore.tradeOfferPoke.name }}
-                  </div>
-                  <div class="meta">
-                    Nv. {{ tradeStore.tradeOfferPoke.level }}
-                  </div>
+              <div class="preview-info">
+                <div class="name">
+                  {{ tradeStore.tradeRequestPoke.name }}
                 </div>
-                <div class="change-hint">
-                  CAMBIAR
+                <div class="meta">
+                  Nv. {{ tradeStore.tradeRequestPoke.level }}
                 </div>
               </div>
-              <button
-                v-else
-                class="btn-open-selector"
-                @click="openSelector('offer')"
-              >
-                + SELECCIONAR POKÉMON
-              </button>
-            </div>
-
-            <div class="item-selection-grid">
-              <div 
-                v-for="(qty, name) in gs.inventory" 
-                :key="name"
-                class="trade-item-pill"
-                :class="{ selected: tradeStore.tradeOfferItems[name] }"
-                @click="toggleOfferItem(name)"
-              >
-                {{ name }} ({{ qty }})
+              <div class="change-hint">
+                CAMBIAR
               </div>
             </div>
+            <button
+              v-else
+              class="btn-open-selector"
+              @click="openSelector('request')"
+            >
+              + PEDIR POKÉMON
+            </button>
+          </div>
 
-            <div class="money-input-group">
-              <label>Ofrecer Dinero (₽):</label>
-              <input
-                v-model.number="offerMoney"
-                type="number"
-                min="0"
-                :max="gs.money"
-              >
+          <div
+            v-if="!isGift"
+            class="item-selection-grid"
+          >
+            <div 
+              v-for="(qty, name) in friendSave.inventory" 
+              :key="name"
+              class="trade-item-pill"
+              :class="{ selected: tradeStore.tradeRequestItems[name] }"
+              @click="toggleRequestItem(name)"
+            >
+              {{ name }} ({{ qty }})
             </div>
           </div>
 
-          <!-- Right: Friend's Side -->
-          <div class="trade-side friend-side">
-            <div class="side-title">
-              Equipo de {{ target?.username }}
-            </div>
-
-            <div
-              v-if="!isGift"
-              class="selected-poke-display"
+          <div
+            v-if="!isGift"
+            class="money-input-group"
+          >
+            <label>Pedir Dinero (₽):</label>
+            <input
+              v-model.number="requestMoney"
+              type="number"
+              min="0"
+              :max="friendSave.money || 999999"
             >
-              <div
-                v-if="tradeStore.tradeRequestPoke"
-                class="poke-preview"
-                @click="openSelector('request')"
-              >
-                <img
-                  :src="getSpriteUrl(tradeStore.tradeRequestPoke.id, tradeStore.tradeRequestPoke.isShiny)"
-                  class="preview-sprite"
-                >
-                <div class="preview-info">
-                  <div class="name">
-                    {{ tradeStore.tradeRequestPoke.name }}
-                  </div>
-                  <div class="meta">
-                    Nv. {{ tradeStore.tradeRequestPoke.level }}
-                  </div>
-                </div>
-                <div class="change-hint">
-                  CAMBIAR
-                </div>
-              </div>
-              <button
-                v-else
-                class="btn-open-selector"
-                @click="openSelector('request')"
-              >
-                + PEDIR POKÉMON
-              </button>
-            </div>
+          </div>
 
-            <div
-              v-if="!isGift"
-              class="item-selection-grid"
-            >
-              <div 
-                v-for="(qty, name) in friendSave.inventory" 
-                :key="name"
-                class="trade-item-pill"
-                :class="{ selected: tradeStore.tradeRequestItems[name] }"
-                @click="toggleRequestItem(name)"
-              >
-                {{ name }} ({{ qty }})
-              </div>
-            </div>
-
-            <div
-              v-if="!isGift"
-              class="money-input-group"
-            >
-              <label>Pedir Dinero (₽):</label>
-              <input
-                v-model.number="requestMoney"
-                type="number"
-                min="0"
-                :max="friendSave.money || 999999"
-              >
-            </div>
-
-            <div
-              v-if="isGift"
-              class="gift-overlay"
-            >
-              <span>🎁 ESTÁS ENVIANDO UN REGALO</span>
-              <p>No pedirás nada a cambio de tu oferta.</p>
+          <div
+            v-if="isGift"
+            class="gift-overlay"
+          >
+            <div class="gift-content">
+              <span class="gift-icon">🎁</span>
+              <span class="gift-title">ESTÁS ENVIANDO UN REGALO</span>
+              <p class="gift-text">
+                No pedirás nada a cambio de tu oferta.
+              </p>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Footer -->
-      <div class="trade-footer">
-        <textarea 
-          v-model="message" 
-          placeholder="Escribe un mensaje para tu oferta..." 
-          class="trade-message-input"
-        />
+    <template #footer>
+      <div class="trade-footer-controls">
+        <div class="message-section">
+          <textarea 
+            v-model="message" 
+            placeholder="Escribe un mensaje para tu oferta..." 
+            class="trade-message-input"
+          />
+        </div>
 
-        <div class="footer-controls">
+        <div class="action-section">
           <label class="gift-toggle">
             <input
               v-model="isGift"
               type="checkbox"
             >
-            <span>🎁 Es un regalo</span>
+            <span class="toggle-label">🎁 Es un regalo</span>
           </label>
 
           <button
@@ -318,13 +309,13 @@ const requestSummary = computed(() => {
             @click="handleSend"
           >
             <span v-if="isSending">PROCESANDO...</span>
-            <span v-else>ENVIAR OFERTA DE INTERCAMBIO</span>
+            <span v-else>ENVIAR OFERTA</span>
           </button>
         </div>
       </div>
-    </div>
+    </template>
 
-    <!-- Enhanced Pokémon Selector -->
+    <!-- Enhanced Pokémon Selector (Nested Modal) -->
     <TradePokemonSelector 
       :show="selectorState.show"
       :side="selectorState.side"
@@ -334,59 +325,12 @@ const requestSummary = computed(() => {
       @close="selectorState.show = false"
       @select="handleSelectorSelect"
     />
-  </div>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.trade-modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.85);
-  backdrop-filter: blur(5px);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.trade-modal-container {
-  background: #1a1a1a;
-  width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-}
-
-.trade-header {
-  padding: 20px;
-  background: rgba(255,255,255,0.03);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.trade-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: var(--purple);
-}
-
-.trade-close {
-  background: none; border: none; color: var(--gray);
-  font-size: 20px; cursor: pointer;
-}
-
-.trade-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
+.trade-modal-inner {
+  padding: 8px 0;
 }
 
 .trade-summary-bar {
@@ -395,38 +339,52 @@ const requestSummary = computed(() => {
   gap: 15px;
   margin-bottom: 24px;
   background: rgba(0,0,0,0.3);
-  padding: 15px;
-  border-radius: 14px;
+  padding: 16px;
+  border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.05);
-}
 
-.summary-box { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-.summary-box .label { font-size: 9px; font-weight: 700; color: var(--gray); text-transform: uppercase; }
-.summary-box .value { font-size: 11px; color: #fff; font-weight: 500; }
-.summary-icon { font-size: 24px; }
+  .summary-box { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px; 
+
+    .label { 
+      font-size: 8px; 
+      font-family: 'Press Start 2P', monospace;
+      color: var(--gray);
+    }
+    .value { 
+      font-size: 11px; 
+      color: #fff; 
+      font-weight: 700;
+    }
+  }
+
+  .summary-icon { font-size: 24px; }
+}
 
 .trade-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .trade-side {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-}
+  gap: 16px;
 
-.side-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--gray);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.selected-poke-display {
-  margin-bottom: 10px;
+  .side-title {
+    font-size: 10px;
+    font-family: 'Press Start 2P', monospace;
+    color: var(--gray);
+    letter-spacing: 1px;
+  }
 }
 
 .btn-open-selector {
@@ -488,68 +446,79 @@ const requestSummary = computed(() => {
   }
 }
 
-.poke-sprite { width: 32px; height: 32px; image-rendering: pixelated; }
-.poke-info .name { font-size: 10px; font-weight: 700; color: #fff; }
-.poke-info .lv { font-size: 9px; color: var(--gray); }
-
 .item-selection-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 4px;
 }
 
 .trade-item-pill {
   font-size: 9px;
-  padding: 6px 10px;
+  padding: 8px 12px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   color: var(--gray);
-}
+  transition: all 0.2s;
 
-.trade-item-pill.selected { background: var(--purple); color: #fff; border-color: var(--purple); }
+  &:hover {
+    background: rgba(255,255,255,0.08);
+  }
+
+  &.selected {
+    background: var(--purple);
+    color: #fff;
+    border-color: var(--purple);
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+  }
+}
 
 .money-input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
+  gap: 8px;
 
-.money-input-group label { font-size: 10px; color: var(--gray); }
-.money-input-group input {
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 10px;
-  border-radius: 8px;
-  color: var(--yellow);
-  font-weight: 900;
+  label { font-size: 9px; font-family: 'Press Start 2P', monospace; color: var(--gray); }
+  input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 12px;
+    border-radius: 12px;
+    color: var(--yellow);
+    font-weight: 900;
+    font-size: 14px;
+    outline: none;
+
+    &:focus {
+      border-color: var(--yellow);
+    }
+  }
 }
 
 .gift-overlay {
   flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
   background: rgba(107, 203, 119, 0.05);
   border: 2px dashed rgba(107, 203, 119, 0.2);
   border-radius: 20px;
-  padding: 20px;
-  color: var(--green);
+  padding: 30px;
+  text-align: center;
+
+  .gift-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+  .gift-title { font-weight: 900; font-size: 14px; color: var(--green); display: block; margin-bottom: 8px; }
+  .gift-text { font-size: 11px; color: rgba(255, 255, 255, 0.5); margin: 0; }
 }
 
-.gift-overlay span { font-weight: 900; font-size: 14px; margin-bottom: 10px; }
-.gift-overlay p { font-size: 11px; opacity: 0.7; }
-
-.trade-footer {
-  padding: 20px;
-  background: rgba(0,0,0,0.2);
-  border-top: 1px solid rgba(255,255,255,0.05);
+.trade-footer-controls {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
 .trade-message-input {
@@ -557,35 +526,63 @@ const requestSummary = computed(() => {
   height: 60px;
   background: rgba(0,0,0,0.3);
   border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 12px;
   color: #fff;
   font-size: 12px;
   resize: none;
+  outline: none;
+
+  &:focus {
+    border-color: var(--purple);
+  }
 }
 
-.footer-controls {
+.action-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
-.gift-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.gift-toggle input { width: 18px; height: 18px; cursor: pointer; }
-.gift-toggle span { font-size: 11px; color: #fff; }
+.gift-toggle { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  cursor: pointer;
+
+  input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--purple); }
+  .toggle-label { font-size: 10px; font-family: 'Press Start 2P', monospace; color: #fff; }
+}
 
 .send-offer-btn {
-  padding: 12px 24px;
+  padding: 16px 32px;
   background: linear-gradient(135deg, var(--purple), #8e24aa);
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   color: #fff;
   font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
+  font-size: 9px;
+  font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(199, 125, 255, 0.3);
-  transition: all 0.2s;
-}
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-.send-offer-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(199, 125, 255, 0.5); }
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+    filter: brightness(1.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
 </style>

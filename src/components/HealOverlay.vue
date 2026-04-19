@@ -3,12 +3,16 @@ import { ref, computed, onMounted } from 'vue'
 import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const shopStore = useShopStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 
-const isVisible = ref(false)
+const isVisible = computed({
+  get: () => uiStore.isHealOverlayOpen,
+  set: (val) => { uiStore.isHealOverlayOpen = val }
+})
 const isHealing = ref(false)
 const progress = ref(0)
 const healedCount = ref(0)
@@ -72,155 +76,111 @@ onMounted(() => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="fade">
-      <div
-        v-if="isVisible"
-        class="pokemon-center-overlay"
-        @click.self="close"
-      >
-        <div class="center-card glass">
-          <div class="header">
-            <div class="icon-circle">
-              🏥
-            </div>
-            <h2>CENTRO POKÉMON</h2>
-            <p class="subtitle">
-              Servicio de Salud para Entrenadores
-            </p>
-          </div>
+  <BaseModal
+    :show="isVisible"
+    title="🏥 CENTRO POKÉMON"
+    max-width="420px"
+    @close="close"
+  >
+    <div class="heal-modal-inner">
+      <p class="subtitle">
+        Servicio de Salud para Entrenadores
+      </p>
 
-          <div class="status-section">
-            <div class="team-slots">
-              <div 
-                v-for="i in 6" 
-                :key="i" 
-                class="slot"
-                :class="{ 
-                  'active': i <= team.length, 
-                  'healing': isHealing && i <= healedCount,
-                  'empty': i > team.length
-                }"
-              >
-                <div class="ball-icon">
-                  🔴
-                </div>
-              </div>
+      <div class="status-section">
+        <div class="team-slots">
+          <div 
+            v-for="i in 6" 
+            :key="i" 
+            class="slot"
+            :class="{ 
+              'active': i <= team.length, 
+              'healing': isHealing && i <= healedCount,
+              'empty': i > team.length
+            }"
+          >
+            <div class="ball-icon">
+              🔴
             </div>
-            
-            <div
-              v-if="isHealing"
-              class="progress-container"
-            >
-              <div class="progress-bar">
-                <div
-                  class="progress-fill"
-                  :style="{ width: progress + '%' }"
-                />
-              </div>
-              <p class="healing-text">
-                RESTAURANDO EQUIPO...
-              </p>
-            </div>
-            
-            <div
-              v-else
-              class="info-text"
-            >
-              <div
-                v-if="cost > 0"
-                class="cost-notice"
-              >
-                <p>COSTO DE SERVICIO</p>
-                <div class="price-tag">
-                  ₽ {{ cost.toLocaleString() }}
-                </div>
-                <small v-if="gameStore.state.playerClass === 'rocket'">Recargo: Team Rocket (2x)</small>
-              </div>
-              <p
-                v-else
-                class="free-msg"
-              >
-                ¡Hola! Restauraremos a tus Pokémon al instante.
-              </p>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button 
-              class="btn-heal" 
-              :disabled="isHealing || team.length === 0 || (cost > 0 && gameStore.state.money < cost)"
-              @click="handleHeal"
-            >
-              {{ isHealing ? 'CURANDO...' : 'CURAR EQUIPO' }}
-            </button>
-            <button
-              class="btn-cancel"
-              :disabled="isHealing"
-              @click="close"
-            >
-              VOLVER
-            </button>
           </div>
         </div>
+        
+        <div
+          v-if="isHealing"
+          class="progress-container"
+        >
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              :style="{ width: progress + '%' }"
+            />
+          </div>
+          <p class="healing-text">
+            RESTAURANDO EQUIPO...
+          </p>
+        </div>
+        
+        <div
+          v-else
+          class="info-text"
+        >
+          <div
+            v-if="cost > 0"
+            class="cost-notice"
+          >
+            <p class="cost-label">
+              COSTO DE SERVICIO
+            </p>
+            <div class="price-tag">
+              ₽ {{ cost.toLocaleString() }}
+            </div>
+            <small
+              v-if="gameStore.state.playerClass === 'rocket'"
+              class="rocket-surcharge"
+            >Recargo: Team Rocket (2x)</small>
+          </div>
+          <p
+            v-else
+            class="free-msg"
+          >
+            ¡Hola! Restauraremos a tus Pokémon al instante.
+          </p>
+        </div>
       </div>
-    </Transition>
-  </Teleport>
+    </div>
+
+    <template #footer>
+      <div class="heal-actions">
+        <button 
+          class="btn-heal-primary" 
+          :disabled="isHealing || team.length === 0 || (cost > 0 && gameStore.state.money < cost)"
+          @click="handleHeal"
+        >
+          {{ isHealing ? 'CURANDO...' : 'CURAR EQUIPO' }}
+        </button>
+        <button
+          class="btn-cancel-secondary"
+          :disabled="isHealing"
+          @click="close"
+        >
+          VOLVER
+        </button>
+      </div>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
-@use "sass:string";
-.pokemon-center-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999999;
-  padding: 20px;
-}
-
-.center-card {
-  width: 100%;
-  max-width: 420px;
-  padding: 40px 30px;
-  border-radius: 24px;
+.heal-modal-inner {
+  padding: 8px 0;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(20, 20, 25, 0.8);
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
-}
-
-.header {
-  margin-bottom: 30px;
-}
-
-.icon-circle {
-  font-size: 36px;
-  width: 70px;
-  height: 70px;
-  background: rgba(239, 68, 68, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 15px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-h2 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 14px;
-  color: #fff;
-  margin: 0;
 }
 
 .subtitle {
   color: rgba(255, 255, 255, 0.4);
-  font-size: 10px;
-  margin-top: 8px;
+  font-size: 9px;
+  font-family: 'Press Start 2P', monospace;
+  margin-bottom: 30px;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -228,36 +188,36 @@ h2 {
 .team-slots {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 30px;
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
 .slot {
   aspect-ratio: 1;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0.2;
-}
 
-.slot.active {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.06);
-}
+  &.active {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.06);
+  }
 
-.slot.healing {
-  background: rgba(34, 197, 94, 0.08);
-  border-color: rgba(34, 197, 94, 0.4);
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
-  transform: Scale(1.08);
+  &.healing {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+    transform: Scale(1.1);
+  }
 }
 
 .ball-icon {
-  font-size: 20px;
+  font-size: 24px;
   filter: grayScale(1);
 }
 
@@ -271,7 +231,7 @@ h2 {
 
 @keyframes pulse-ball {
   from { transform: Scale(1); filter: brightness(1); }
-  to { transform: Scale(1.2); filter: brightness(1.4) drop-shadow(0 0 5px #ff4444); }
+  to { transform: Scale(1.2); filter: brightness(1.4) drop-shadow(0 0 10px #ff4444); }
 }
 
 .progress-container {
@@ -279,17 +239,18 @@ h2 {
 }
 
 .progress-bar {
-  height: 6px;
+  height: 8px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .progress-fill {
   height: 100%;
-  background: #22c55e;
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
   transition: width 0.1s linear;
 }
 
@@ -297,6 +258,7 @@ h2 {
   color: #22c55e;
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
+  letter-spacing: 1px;
 }
 
 .free-msg {
@@ -307,53 +269,55 @@ h2 {
 
 .cost-notice {
   background: rgba(239, 68, 68, 0.05);
-  padding: 15px;
-  border-radius: 12px;
+  padding: 20px;
+  border-radius: 16px;
   border: 1px solid rgba(239, 68, 68, 0.15);
   
-  p {
+  .cost-label {
     font-family: 'Press Start 2P', monospace;
     font-size: 8px;
     color: #ef4444;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
   
   .price-tag {
     font-family: 'Press Start 2P', monospace;
-    font-size: 16px;
+    font-size: 18px;
     color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
   }
   
-  small {
+  .rocket-surcharge {
     display: block;
-    margin-top: 6px;
+    margin-top: 8px;
     color: rgba(239, 68, 68, 0.5);
     font-size: 9px;
   }
 }
 
-.actions {
+.heal-actions {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 20px;
 }
 
-.btn-heal {
-  background: #ef4444;
+.btn-heal-primary {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
   color: #fff;
   border: none;
   padding: 18px;
-  border-radius: 12px;
+  border-radius: 14px;
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
+  font-weight: 900;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
   
   &:hover:not(:disabled) {
-    background: #dc2626;
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+    filter: brightness(1.1);
   }
   
   &:disabled {
@@ -361,25 +325,34 @@ h2 {
     color: #52525b;
     box-shadow: none;
     cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0) Scale(0.98);
   }
 }
 
-.btn-cancel {
-  background: transparent;
+.btn-cancel-secondary {
+  background: rgba(255, 255, 255, 0.03);
   color: rgba(255, 255, 255, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 15px;
-  border-radius: 12px;
+  padding: 16px;
+  border-radius: 14px;
   font-family: 'Press Start 2P', monospace;
   font-size: 9px;
   cursor: pointer;
+  transition: all 0.2s;
   
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
     color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
-
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

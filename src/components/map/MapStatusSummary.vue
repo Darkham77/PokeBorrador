@@ -170,8 +170,8 @@ const bannerStyle = computed(() => ({
   cursor: pointer;
   transition: transform 0.2s;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  border-bottom: 3px solid #000;
-  overflow: hidden; /* Back to overflow hidden for the background image */
+  border: 2px solid var(--pokecenter-pink);
+  overflow: hidden; 
   
   .banner-bg {
     position: absolute;
@@ -184,8 +184,8 @@ const bannerStyle = computed(() => ({
   &::after {
     content: '';
     position: absolute;
-    inset: -2px -2px 0; // Overlap slightly to prevent bleeding
-    background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.9) 45%, transparent 100%);
+    inset: -1px; // Tiny overlap to kill the bleeding
+    background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.85) 30%, transparent 65%);
     z-index: 1;
     pointer-events: none;
     border-radius: 20px;
@@ -193,7 +193,8 @@ const bannerStyle = computed(() => ({
 
   &:hover {
     transform: translateY(-4px);
-    border-bottom-color: var(--yellow);
+    border-color: var(--yellow);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 214, 10, 0.5), 0 0 10px rgba(255, 214, 10, 0.3);
   }
 }
 
@@ -259,8 +260,10 @@ const bannerStyle = computed(() => ({
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
+    border-color: var(--yellow);
+    box-shadow: 0 0 20px rgba(255, 214, 10, 0.4), 0 0 10px rgba(255, 214, 10, 0.2);
+    transform: translateY(-2px);
   }
 }
 

@@ -1,5 +1,6 @@
-<script setup lang="js">
+<script setup>
 import { useUIStore } from '@/stores/ui'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const uiStore = useUIStore()
 
@@ -13,48 +14,43 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <Transition name="prompt-fade">
-    <div 
-      v-if="uiStore.promptDialog.open" 
-      class="prompt-overlay"
-      @click.self="handleCancel"
-    >
-      <div class="prompt-box glass-morphism animate-pop">
-        <header class="prompt-header">
-          <span class="prompt-icon">⌨️</span>
-          <h3>{{ uiStore.promptDialog.title }}</h3>
-        </header>
-        
-        <div class="prompt-body">
-          <p v-if="uiStore.promptDialog.message">
-            {{ uiStore.promptDialog.message }}
-          </p>
-          <input 
-            v-model="uiStore.promptDialog.value"
-            :type="uiStore.promptDialog.type"
-            class="prompt-input"
-            autofocus
-            @keyup.enter="handleConfirm"
-          >
-        </div>
-        
-        <footer class="prompt-footer">
-          <button 
-            class="btn-cancel" 
-            @click="handleCancel"
-          >
-            CANCELAR
-          </button>
-          <button 
-            class="btn-confirm" 
-            @click="handleConfirm"
-          >
-            CONFIRMAR
-          </button>
-        </footer>
-      </div>
+  <BaseModal
+    :show="uiStore.promptDialog.open"
+    :title="uiStore.promptDialog.title"
+    max-width="400px"
+    :z-index="20001"
+    @close="handleCancel"
+  >
+    <div class="prompt-body">
+      <p v-if="uiStore.promptDialog.message">
+        {{ uiStore.promptDialog.message }}
+      </p>
+      <input 
+        v-model="uiStore.promptDialog.value"
+        :type="uiStore.promptDialog.type"
+        class="prompt-input"
+        autofocus
+        @keyup.enter="handleConfirm"
+      >
     </div>
-  </Transition>
+    
+    <template #footer>
+      <div class="prompt-footer">
+        <button 
+          class="btn-cancel" 
+          @click="handleCancel"
+        >
+          CANCELAR
+        </button>
+        <button 
+          class="btn-confirm" 
+          @click="handleConfirm"
+        >
+          CONFIRMAR
+        </button>
+      </div>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">

@@ -44,6 +44,25 @@ class PhaserBridge {
       scene.handleCommand(command, data);
     }
   }
+
+  /**
+   * Enable or disable input for all active scenes.
+   */
+  setInputEnabled(enabled) {
+    if (!this.game || !this.game.scene) return;
+    
+    // Disable game-level input manager
+    if (this.game.input) {
+      this.game.input.enabled = enabled;
+    }
+
+    // Disable individual scenes
+    this.game.scene.scenes.forEach(scene => {
+      if (scene.input) {
+        scene.input.enabled = enabled;
+      }
+    });
+  }
 }
 
 export const phaserBridge = new PhaserBridge();

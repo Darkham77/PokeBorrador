@@ -1,5 +1,6 @@
-<script setup lang="js">
+<script setup>
 import { useUIStore } from '@/stores/ui'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const uiStore = useUIStore()
 
@@ -13,39 +14,34 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <Transition name="confirm-fade">
-    <div 
-      v-if="uiStore.confirmDialog.open" 
-      class="confirm-overlay"
-      @click.self="handleCancel"
-    >
-      <div class="confirm-box glass-morphism animate-pop">
-        <header class="confirm-header">
-          <span class="confirm-icon">❓</span>
-          <h3>{{ uiStore.confirmDialog.title }}</h3>
-        </header>
-        
-        <div class="confirm-body">
-          <p>{{ uiStore.confirmDialog.message }}</p>
-        </div>
-        
-        <footer class="confirm-footer">
-          <button 
-            class="btn-cancel" 
-            @click="handleCancel"
-          >
-            {{ uiStore.confirmDialog.cancelText }}
-          </button>
-          <button 
-            class="btn-confirm" 
-            @click="handleConfirm"
-          >
-            {{ uiStore.confirmDialog.confirmText }}
-          </button>
-        </footer>
-      </div>
+  <BaseModal
+    :show="uiStore.confirmDialog.open"
+    :title="uiStore.confirmDialog.title || '¿ESTÁS SEGURO?'"
+    max-width="400px"
+    :z-index="20000"
+    @close="handleCancel"
+  >
+    <div class="confirm-body">
+      <p>{{ uiStore.confirmDialog.message }}</p>
     </div>
-  </Transition>
+    
+    <template #footer>
+      <div class="confirm-footer">
+        <button 
+          class="btn-cancel" 
+          @click="handleCancel"
+        >
+          {{ uiStore.confirmDialog.cancelText || 'CANCELAR' }}
+        </button>
+        <button 
+          class="btn-confirm" 
+          @click="handleConfirm"
+        >
+          {{ uiStore.confirmDialog.confirmText || 'ACEPTAR' }}
+        </button>
+      </div>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">

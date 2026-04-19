@@ -40,17 +40,16 @@
     transition: transform 0.6s ease, filter 0.4s ease;
   }
 
-  box-shadow: none;
 
-  &:hover::before {
+  &:hover:not(.locked):not(.safari-locked)::before {
     transform: scale3d(1.1, 1.1, 1);
     filter: Brightness(0.6) Contrast(1.2);
   }
 
-  &:hover {
+  &:hover:not(.locked):not(.safari-locked) {
     transform: translateY(-8px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6) !important;
-    border-color: $yellow;
+    border-color: $yellow !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 214, 10, 0.5), 0 0 10px rgba(255, 214, 10, 0.3) !important;
     z-index: 100 !important;
   }
 
@@ -59,11 +58,28 @@
     z-index: 2;
   }
   
-  &.locked {
+    &.locked, &.safari-locked {
     opacity: 0.6;
-    filter: string.unquote("grayScale(100%)");
-    cursor: not-allowed;
-    &::before { filter: Brightness(0.2) string.unquote("grayScale(100%)"); }
+    filter: grayscale(100%) brightness(0.4);
+    cursor: not-allowed !important;
+    
+    &::before { 
+      filter: brightness(0.2) grayscale(100%) !important; 
+      transform: none !important;
+    }
+
+    &:hover {
+      transform: translateY(0) !important;
+      box-shadow: 0 0 0 4px #000 !important;
+      border-color: #333 !important;
+      z-index: 1 !important;
+      cursor: not-allowed !important;
+    }
+
+    // Hide spawns and other interactive hints for locked routes
+    .location-spawns, .location-power-badge {
+      display: none !important;
+    }
   }
 }
 

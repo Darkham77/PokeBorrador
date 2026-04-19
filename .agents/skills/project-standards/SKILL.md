@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: MANDATORY development philosophy for every stage of reasoning, design, and implementation. This is NOT a final check; it is the project's DNA. Enforces Hybrid Retro-Modern aesthetics, GPU efficiency, strict DB isolation, and modularity. MUST be active at all times.
+description: MANDATORY project standards. Use this skill for EVERY SINGLE turn in this repository. It governs GPU efficiency, Hybrid Retro-Modern aesthetics, DB isolation, and file modularity. NEVER perform any coding or design task without loading this skill first.
 ---
 
 # Project Standards & Philosophy
@@ -208,6 +208,15 @@ To prevent data corruption and ensure security, the application enforces strict 
   - **SQLite (TEXT)**: `UPDATE config SET value = 'YYYYMMDDHHMMSS' WHERE key = 'db_version';`
 - **Triple Synchronization (Fully Automated)**: Every time a migration is added, the Vite plugin regenerates the data and the `CLIENT_DB_VERSION` in `dbRouter.js` is automatically updated to match the timestamp ID of the latest migration. No manual code updates are required.
 
+### Database Dialect Compatibility & Translation Mandate
+
+To ensure seamless offline functionality, the application MUST automatically translate PostgreSQL-specific migrations into SQLite-compliant syntax. Failure to handle dialect differences causes critical initialization crashes.
+
+- **MANDATORY**: All migrations MUST pass through the `translatePostgresToSqlite` engine and be split using `splitSQLStatements`.
+- **Logic Skipping**: The engine MUST automatically skip Postgres-only blocks (Functions, Policies, Triggers).
+- **Mandatory Testing**: Any new SQL pattern MUST be added to the unit test suite in `tests/unit/db_translation.spec.js`.
+- **Reference**: See [references/db_translation_manual.md](./references/db_translation_manual.md) for the complete list of translation rules, type mappings, and SQLite limitations.
+
 ## Logic Testing Mandate & Database Isolation Policy
 
 To maintain a high-quality, stable codebase, we strictly enforce a policy of **Mandatory Testing** and **Data Isolation**.
@@ -389,7 +398,8 @@ If the changes involve any game scenes or entities, verify:
 4. `[ ]` `npm run test`: Execution success (0 failures).
 5. `[ ]` **Test Coverage**: New logic/algorithms have accompanying unit tests.
 6. `[ ]` **DB Isolation**: Tests use isolated/in-memory instances via DBRouter options.
-7. `[ ]` **Python Deps**: `pip install -r requirements.txt` executed/verified.
-8. `[ ]` **SASS Protection**: Running `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` returns success.
-9. `[ ]` **Hybrid Retro-Modern**: Verified Modern UI frames vs. Pixel Art content heart (@/references/sass_styling_manual.md).
-10. `[ ]` Dev Server Check: No duplicate instances or reused existing one.
+7. `[ ]` **DB Translation**: Verified that all Postgres migrations are translated via the intelligent engine and new patterns have unit tests.
+8. `[ ]` **Python Deps**: `pip install -r requirements.txt` executed/verified.
+9. `[ ]` **SASS Protection**: Running `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` returns success.
+10. `[ ]` **Hybrid Retro-Modern**: Verified Modern UI frames vs. Pixel Art content heart (@/references/sass_styling_manual.md).
+11. `[ ]` Dev Server Check: No duplicate instances or reused existing one.

@@ -1,16 +1,17 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
 import { checkDBCompatibility } from '@/logic/db/dbRouter'
+import { phaserBridge } from '@/logic/phaserBridge'
 import MainGameView from '@/views/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
 import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue'
 import LivePvPArena from '@/components/battle/LivePvPArena.vue'
 import EvolutionScene from '@/components/evolution/EvolutionScene.vue'
-import LibraryModal from '@/components/ui/LibraryModal.vue'
+import LibraryModal from '@/components/LibraryModal.vue'
 import ShopView from '@/components/ShopView.vue'
 import PokemonCenterView from '@/components/PokemonCenterView.vue'
 import InventoryModal from '@/components/inventory/InventoryModal.vue'
@@ -65,7 +66,55 @@ onMounted(async () => {
   if (window.legacyGameReady) {
     gameStore.isEngineReady = true;
   }
+
+  // Interceptar eventos de bajo nivel para evitar que lleguen a Phaser
+  const blockEvents = (e) => {
+    if (uiStore.isAnyBlockingModalOpen) {
+      // Si el evento no viene de dentro de un elemento con scroll permitido, pararlo
+      const isInsideScrollable = e.target.closest('.library-content, .library-sidebar, .modal-scrollable-content, .chat-panel, .chat-messages, .profile-content-scrollable')
+      
+      if (!isInsideScrollable) {
+        console.log('[App] Blocking event on:', e.target.className || e.target.id)
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      } else {
+        // Si estamos dentro, detenemos la propagación para que no llegue a window (donde escucha Phaser)
+        e.stopPropagation();
+      }
+    }
+  }
+
+  window.addEventListener('wheel', blockEvents, { capture: true, passive: false });
+  window.addEventListener('touchmove', blockEvents, { capture: true, passive: false });
+
+  // 4. Restore Zoom Level
+  uiStore.setZoom(uiStore.appZoom)
+
+  // ── PUENTE DE COMPATIBILIDAD LEGADO ─────────────────────────────────────────
+  // Estos shims aseguran que los llamados desde el código legado o atributos onclick
+  // actualicen el store de Vue en lugar de intentar manipular el DOM directamente.
+  window.toggleSettings = () => {
+    uiStore.isSettingsOpen = !uiStore.isSettingsOpen
+  }
+  window.toggleProfile = () => {
+    uiStore.isProfileOpen = !uiStore.isProfileOpen
+  }
+  window.toggleCosmetics = () => {
+    uiStore.isCosmeticsModalOpen = !uiStore.isCosmeticsModalOpen
+  }
 })
+
+// Bloqueo de Scroll Global para Modales
+watch(() => uiStore.isAnyBlockingModalOpen, (val) => {
+  console.log('[App] Blocking state changed:', val)
+  if (val) {
+    document.body.classList.add('modal-open')
+    phaserBridge.setInputEnabled(false)
+  } else {
+    document.body.classList.remove('modal-open')
+    phaserBridge.setInputEnabled(true)
+  }
+}, { immediate: true })
 
 const handleRetry = () => {
   window.location.reload()

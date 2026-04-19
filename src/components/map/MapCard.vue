@@ -184,15 +184,7 @@ const getFactionIcon = (faction) => {
   image-rendering: pixelated;
 }
 
-.map-card:hover:not(.locked) {
-  border-color: #666;
-  transform: translateY(-2px);
-}
-
-.map-card.locked {
-  filter: grayScale(100%) Brightness(0.6);
-  cursor: not-allowed;
-}
+/* Scoped hover/locked styles removed to favor global _map-cards.scss premium styling */
 
 .location-tag {
   position: absolute;
