@@ -195,7 +195,7 @@ const bannerStyle = computed(() => ({
   &:hover {
     transform: translateY(-4px);
     border-color: var(--yellow);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 214, 10, 0.5), 0 0 10px rgba(255, 214, 10, 0.3);
+    box-shadow: 0 0 0 2px var(--yellow), 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 214, 10, 0.5), 0 0 10px rgba(255, 214, 10, 0.3);
   }
 }
 
@@ -265,7 +265,7 @@ const bannerStyle = computed(() => ({
   &:hover {
     background: rgba(255,255,255,0.08);
     border-color: var(--yellow);
-    box-shadow: 0 0 20px rgba(255, 214, 10, 0.4), 0 0 10px rgba(255, 214, 10, 0.2);
+    box-shadow: 0 0 0 1px var(--yellow), 0 0 20px rgba(255, 214, 10, 0.4), 0 0 10px rgba(255, 214, 10, 0.2);
     transform: translateY(-2px);
   }
 }

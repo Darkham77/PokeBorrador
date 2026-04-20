@@ -70,6 +70,11 @@ describe('Database Translation Engine', () => {
     it('should suppress RAISE EXCEPTION', () => {
       expect(translatePostgresToSqlite("RAISE EXCEPTION 'Error message'")).toBe("SELECT 1");
     });
+
+    it('should translate ADD COLUMN IF NOT EXISTS', () => {
+      const sql = "ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT";
+      expect(translatePostgresToSqlite(sql)).toBe("ALTER TABLE users ADD COLUMN email TEXT");
+    });
   });
 
   describe('splitSQLStatements', () => {

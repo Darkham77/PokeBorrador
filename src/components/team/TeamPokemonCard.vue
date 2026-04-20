@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -30,10 +31,9 @@ const tierInfo = computed(() => {
 const disobeys = computed(() => props.pokemon.level > props.maxObeyLv)
 
 const spriteUrl = computed(() => {
-  if (typeof window.getSpriteUrl === 'function') {
-    return window.getSpriteUrl(props.pokemon.id, props.pokemon.isShiny)
-  }
-  return ''
+  return getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
+    isShiny: props.pokemon.isShiny 
+  })
 })
 
 const cardClasses = computed(() => {

@@ -1,10 +1,13 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth'
 
+const props = defineProps({
+  show: { type: Boolean, default: false }
+})
+
 const authStore = useAuthStore()
 
 function handleReconnect() {
-  // Simplemente recargamos para tomar el control de la sesión
   window.location.reload()
 }
 
@@ -14,48 +17,63 @@ async function handleLogout() {
 </script>
 
 <template>
-  <div class="session-blocked-overlay">
-    <div class="blocked-card">
-      <div class="icon-header">
-        <span class="warning-icon">⚠️</span>
-      </div>
-      
-      <h2>SESIÓN DUPLICADA</h2>
-      
-      <p class="msg">
-        Parece que has iniciado sesión en otra pestaña o dispositivo. 
-        Para proteger tus datos, esta sesión ha sido bloqueada.
-      </p>
+  <transition name="fade">
+    <div
+      v-if="show"
+      class="session-blocked-overlay"
+    >
+      <div class="blocked-card">
+        <div class="icon-header">
+          <span class="warning-icon">⚠️</span>
+        </div>
+        
+        <h2>SESIÓN DUPLICADA</h2>
+        
+        <p class="msg">
+          Parece que has iniciado sesión en otra pestaña o dispositivo. 
+          Para proteger tus datos, esta sesión ha sido bloqueada.
+        </p>
 
-      <div class="actions">
-        <button
-          class="btn-primary"
-          @click="handleReconnect"
-        >
-          USAR AQUÍ
-        </button>
-        <button
-          class="btn-secondary"
-          @click="handleLogout"
-        >
-          CERRAR SESIÓN
-        </button>
-      </div>
+        <div class="actions">
+          <button
+            class="btn-primary"
+            @click="handleReconnect"
+          >
+            USAR AQUÍ
+          </button>
+          <button
+            class="btn-secondary"
+            @click="handleLogout"
+          >
+            CERRAR SESIÓN
+          </button>
+        </div>
 
-      <p class="footer">
-        ID de sesión: <code>{{ authStore.sessionId.substring(0, 8) }}</code>
-      </p>
+        <p class="footer">
+          ID de sesión: <code>{{ authStore.sessionId.substring(0, 8) }}</code>
+        </p>
+      </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
 .session-blocked-overlay {
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(15px) Saturate(1.8);
+  background: rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(20px) Saturate(1.8);
+  backdrop-filter: blur(20px) Saturate(1.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,71 +81,72 @@ async function handleLogout() {
 }
 
 .blocked-card {
-  background: rgba(28, 28, 30, 0.95);
-  border: 1px solid rgba(255, 214, 10, 0.2);
-  border-radius: 28px;
+  background: rgba(20, 20, 22, 0.9);
+  border: 1px solid rgba(255, 214, 10, 0.3);
+  border-radius: 32px;
   width: 100%;
-  max-width: 400px;
-  padding: 40px;
+  max-width: 420px;
+  padding: 48px;
   text-align: center;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8),
-              0 0 20px rgba(255, 214, 10, 0.1);
-  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9),
+              0 0 40px rgba(255, 214, 10, 0.1);
 }
 
 .icon-header {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   .warning-icon {
-    font-size: 48px;
-    filter: drop-shadow(0 0 10px rgba(255, 214, 10, 0.5));
+    font-size: 56px;
+    filter: drop-shadow(0 0 20px rgba(255, 214, 10, 0.6));
   }
 }
 
 h2 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 16px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 14px;
   color: #ffd60a;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  @include pixelated;
 }
 
 .msg {
-  color: #86868b;
-  font-size: 13px;
-  line-height: 1.6;
-  margin-bottom: 32px;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 40px;
 }
 
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
 button {
-  padding: 16px;
-  border-radius: 14px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
+  padding: 20px;
+  border-radius: 18px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
   cursor: pointer;
   transition: all 0.2s;
   border: none;
+  @include pixelated;
 }
 
 .btn-primary {
   background: #ffd60a;
   color: #000;
+  font-weight: 900;
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(255, 214, 10, 0.3);
+    box-shadow: 0 10px 20px rgba(255, 214, 10, 0.4);
   }
 }
 
 .btn-secondary {
   background: rgba(255, 255, 255, 0.05);
-  color: #86868b;
+  color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   &:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
@@ -136,13 +155,9 @@ button {
 
 .footer {
   font-size: 8px;
-  color: #48484a;
-  font-family: 'Press Start 2P', monospace;
+  color: rgba(255, 255, 255, 0.2);
+  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   code { color: #bf5af2; }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: Scale(0.9); }
-  to { opacity: 1; transform: Scale(1.0); }
 }
 </style>

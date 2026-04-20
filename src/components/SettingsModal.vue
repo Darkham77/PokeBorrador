@@ -3,26 +3,22 @@ import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore()
-
-const isSettingsOpen = computed({
-  get: () => uiStore.isSettingsOpen,
-  set: (val) => { uiStore.isSettingsOpen = val }
+const props = defineProps({
+  show: { type: Boolean, default: false }
 })
+
+const emit = defineEmits(['close'])
+
+const uiStore = useUIStore()
 
 const currentZoom = computed(() => {
   return Math.round(uiStore.appZoom * 100)
 })
 
-const toggleSettings = () => {
-  uiStore.isSettingsOpen = !uiStore.isSettingsOpen
-}
-
 const updateZoom = (val) => {
   const zoomVal = val / 100
   uiStore.setZoom(zoomVal)
   
-  // Also call legacy if it exists
   if (typeof window.updateZoom === 'function') {
     window.updateZoom(val)
   }
@@ -31,12 +27,11 @@ const updateZoom = (val) => {
 
 <template>
   <BaseModal
-    :show="isSettingsOpen"
+    :show="show"
     title="CONFIGURACIÓN"
     max-width="440px"
-    custom-class="settings-modal-original"
     padding="standard"
-    @close="toggleSettings"
+    @close="emit('close')"
   >
     <div class="settings-container">
       <div class="zoom-section">
@@ -64,7 +59,7 @@ const updateZoom = (val) => {
       <div class="settings-actions">
         <button 
           class="close-btn-primary"
-          @click="toggleSettings"
+          @click="emit('close')"
         >
           GUARDAR Y CERRAR
         </button>
@@ -73,33 +68,9 @@ const updateZoom = (val) => {
   </BaseModal>
 </template>
 
-<style lang="scss">
-/* We use global selector to override BaseModal styles for this specific class */
-.modal-content-premium.settings-modal-original {
-  background: #110808 !important;
-  border: 2px solid #2a1515 !important;
-  border-radius: 32px !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9) !important;
-
-  .modal-header-premium {
-    border-bottom: none;
-    padding: 32px 32px 16px;
-  }
-
-  .modal-title-text {
-    font-size: 14px;
-    color: var(--yellow);
-    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
-  }
-
-  .modal-close-btn-standard {
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 24px;
-  }
-}
-</style>
-
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .settings-container {
   padding: 8px 16px 16px;
 }
@@ -114,54 +85,29 @@ const updateZoom = (val) => {
   color: #fff;
   margin-bottom: 20px;
   font-weight: 700;
-  font-family: 'Nunito', sans-serif;
 }
 
 .zoom-value {
-  color: #fff;
+  color: var(--yellow);
+  font-weight: 800;
 }
 
 .zoom-slider {
   width: 100%;
-  height: 8px;
-  -webkit-appearance: none;
-  background: #333;
-  border-radius: 4px;
-  outline: none;
+  height: 12px;
   cursor: pointer;
-  position: relative;
-
-  &::-webkit-slider-runnable-track {
-    width: 100%;
-    height: 8px;
-    background: #333;
-    border-radius: 4px;
-  }
-
-  &::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    background: var(--yellow);
-    border-radius: 50%;
-    cursor: pointer;
-    margin-top: -6px;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    border: none;
-  }
+  accent-color: var(--yellow);
+  margin: 10px 0;
 }
-
-/* Chrome/Safari specific logic for yellow progress bar if possible, 
-   but standard range is hard to style cross-browser with just CSS.
-   Using a simpler solid background for now to match the "clean" look. */
 
 .zoom-labels {
   display: flex;
   justify-content: space-between;
-  margin-top: 12px;
-  font-size: 10px;
-  color: #666;
-  font-family: 'Press Start 2P', monospace;
+  margin-top: 16px;
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.2);
+  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
 }
 
 .close-btn-primary {
@@ -170,17 +116,18 @@ const updateZoom = (val) => {
   background: var(--yellow);
   color: #000;
   border: none;
-  border-radius: 18px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 11px;
+  border-radius: 16px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
   font-weight: 900;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+  @include pixelated;
 
   &:hover {
     transform: translateY(-2px);
     filter: brightness(1.05);
+    box-shadow: 0 10px 20px rgba(250, 204, 21, 0.2);
   }
 
   &:active {

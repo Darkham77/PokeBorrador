@@ -128,6 +128,7 @@ Any `.vue`, `.js`, or `.scss` file inside the project **MUST NOT** exceed 500 li
 - **Styles (SCSS)**:
   - Split large stylesheets into feature-specific partials.
   - Example: `_battle.scss` -> `_battle-hud.scss`, `_battle-animations.scss`, `_battle-stats.scss`.
+  - **Nesting Safety**: When refactoring or moving SCSS blocks, ALWAYS verify that `@media` queries or nested rules are properly closed. Orphaned blocks cause build-breaking syntax errors (`expected "{"`).
 - **Logic (JS)**:
   - Extract utility functions to `src/logic/utils/`.
   - Use modular classes or function sets instead of monolithic bridges.
@@ -169,6 +170,13 @@ To ensure a cohesive and high-end feel across all HUD elements, follow these spe
 - **HUD Buttons & Sub-elements**: `rgba(15, 23, 42, 0.7)` with `backdrop-filter: blur(12px)`. This creates a lighter "stacked" effect that feels interactive.
 - **Borders**: Always use a subtle `1px solid rgba(255, 255, 255, 0.12)` to define the glass edges without being harsh.
 
+### 6. Readability Standards for Articles & Documents
+
+To ensure content-heavy modules (Library, Wiki, Mission Briefs) remain readable across devices:
+
+- **Max-Width**: Text-based articles **MUST** have a maximum width of `1000px` (not 720px) to balance focus and whitespace usage.
+- **Padding**: Use `32px` internal padding for the main article content to maximize screen utility while maintaining safe zones.
+
 ## UI Interaction & Modal Standards
 
 To ensure a seamless and predictable user experience, all dialogs, modals, and interaction prompts must follow a strict **Interaction Stack** behavior.
@@ -177,7 +185,10 @@ To ensure a seamless and predictable user experience, all dialogs, modals, and i
 
 - **REQUIRED**: Any "window", "modal", or stack of user interactions/questions **MUST** behave as a strict **STACK** (Last-In-First-Out).
 - **Behavior**: The most recently opened interaction (the last one to enter visibility) is the **first** one that must be closed, accepted, or resolved.
-- **FORBIDDEN**: A new interaction, window, or modal must **NEVER** open behind an already existing one, preventing interaction with this new element. The top-most element must always be the active one.
+- **Stacking Context (Hardware Acceleration)**:
+  - **MANDATORY**: Any component using `<Teleport to="body">` and containing `fixed` children (like an overlay and a card) **MUST** apply `transform: translateZ(0);` (or a hardware-accelerated transform) to the main wrapper.
+  - **Why**: This forces the browser to create a new local stacking context. This prevents internal z-indices (e.g., Overlay: 1, Card: 2) from being overridden by high-magnitude global styles (e.g., legacy styles with z-index: 11000).
+- **FORBIDDEN**: A new interaction, window, or modal must **NEVER** open behind an already existing one.
 - **Test Mandate**: You **MUST** ensure this stack-based behavior is verified with **Unit Tests** for any modal manager, window component, or UI layering system.
 
 ### 2. Interaction in Locked States (Teleport & Allowlist)
@@ -185,7 +196,18 @@ To ensure a seamless and predictable user experience, all dialogs, modals, and i
 When the game engine (Phaser) is in a "Locked" state (e.g., during complex animations or when inputs are globally captured), UI overlays **MUST** remain functional.
 
 - **Mandatory Teleport**: Use Vue's `<Teleport to="body">` for all global modals to ensure they exist outside the main game view's event-capture hierarchy.
-- **Allowlist Mandate**: Interactive elements that must remain clickable during a lock **MUST** be added to the project's global interaction allowlist (e.g., the `.modal-scrollable-content` class in `App.vue`). Failure to do this will result in "frozen" UI where the user cannot interact with critical menus.
+- **Background Interaction (Overlay: None)**:
+  - **REQUIRED**: When a modal is configured with no overlay (`overlay="none"`), the main wrapper **MUST** have `pointer-events: none` while the modal card retains `pointer-events: auto`.
+  - **Why**: This allows the user to scroll the game world or click on background HUD elements while the side panel remains visible.
+- **Allowlist Mandate**: Interactive elements that must remain clickable during a lock **MUST** be added to the project's global interaction allowlist (e.g., the `.modal-scrollable-content` class in `App.vue`).
+
+### 3. Notification & Toast Standards (Highest Layer Mandate)
+
+To ensure that critical system feedback (success, errors, or insufficient funds) is never missed by the user:
+
+- **MANDATORY**: Toast notifications **MUST** occupy the highest possible stacking layer.
+- **Implementation**: Set the `z-index` of the notification stack to **999,999**.
+- **Why**: High-priority modals (like Faction Choice) often use elevated `z-indices` (e.g., 13000) to ensure they sit above side panels. Toasts must remain visible on top of these modals to provide context for interaction failures.
 
 ## Database & Context Architecture
 
@@ -366,6 +388,7 @@ To avoid port conflicts and resource waste, we must ensure only one instance of 
 
 - **Instance Detection**: Always check for running `vite` processes before executing `npm run dev`.
 - **Reuse Policy**: If an instance is already running (usually on port 5173 or 5174), reuse it instead of starting a new one.
+- **Error Monitoring**: If a development server is active (typically in a terminal named `npm`), you **MUST** check its terminal output (buffer) using `command_status` to identify the most recent runtime errors or warnings. Static linting (`npm run lint`) captures codebase-wide issues, but the active dev terminal captures the "freshest" errors occurring during live execution.
 
 ## Workflow
 
@@ -429,6 +452,7 @@ If the changes involve any game scenes or entities, verify:
 
 - **Lint Failed**: Review and fix errors immediately.
 - **Build Failed**: Dig into the build log to find structural errors (missing imports, Vite config issues).
+- **Dev Terminal Errors**: If the active dev server terminal shows errors, prioritize fixing them as they represent the current state of the application in motion.
 - **Server Running**: Skip `npm run dev` and proceed with the existing instance.
 - **MANDATORY**: Do **NOT** proceed to browser testing or `browser_subagent` until these commands pass.
 
@@ -450,3 +474,4 @@ If the changes involve any game scenes or entities, verify:
 9. `[ ]` **SASS Protection**: Running `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` returns success.
 10. `[ ]` **Hybrid Retro-Modern**: Verified Modern UI frames vs. Pixel Art content heart (@/references/sass_styling_manual.md).
 11. `[ ]` Dev Server Check: No duplicate instances or reused existing one.
+12. `[ ]` **Dev Server Logs**: Active terminal buffer (typically named `npm`) checked for recent runtime errors or warnings.

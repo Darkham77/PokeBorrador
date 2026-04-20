@@ -75,8 +75,7 @@ const INITIAL_STATE = {
   warMyPtsLocal: {},
   notificationHistory: [],
   marketSoldSeenIds: [],
-  claimQueue: [],
-  isReady: false
+  claimQueue: []
 }
 
 export const useGameStore = defineStore('game', () => {
@@ -463,6 +462,7 @@ export const useGameStore = defineStore('game', () => {
     reorderTeam,
     sendToBox,
     addPokemon,
-    removePokemon
+    removePokemon,
+    saveGame: save // Alias for backward compatibility
   }
 })

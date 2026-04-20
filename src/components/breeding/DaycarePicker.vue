@@ -2,7 +2,8 @@
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useBreedingStore } from '@/stores/breeding';
-import { getSpriteUrl, getPokemonTier } from '@/logic/pokemonUtils';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { getPokemonTier } from '@/logic/pokemonUtils';
 import { checkCompatibility } from '@/logic/breeding/breedingEngine';
 import { validateMissionPokemon } from '@/logic/breeding/missionEngine';
 
@@ -83,7 +84,7 @@ const selectPokemon = (p) => {
           >
             <div class="sprite-wrap">
               <img
-                :src="getSpriteUrl(p.id, p.isShiny)"
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
                 :alt="p.name"
               >
             </div>

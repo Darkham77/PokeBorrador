@@ -254,6 +254,9 @@ function runMigrationsInternal(db, migrations) {
             upper.startsWith('CREATE TRIGGER') ||
             upper.startsWith('DROP TRIGGER') ||
             upper.startsWith('CREATE EXTENSION') ||
+            upper.startsWith('COMMENT ON') ||
+            upper.startsWith('DO ') ||
+            upper.startsWith('ALTER PUBLICATION') ||
             (upper.startsWith('ALTER TABLE') && (upper.includes('ENABLE ROW LEVEL SECURITY') || upper.includes('OWNER TO'))) ||
             upper.includes('RETURNS TRIGGER') || 
             upper.includes('LANGUAGE PLPGSQL') ||
@@ -385,6 +388,8 @@ export function translatePostgresToSqlite(sql) {
     .replace(/FOR\s+UPDATE/gi, '')
     .replace(/DEFAULT\s+datetime\('now'\)/gi, "DEFAULT (datetime('now'))")
     .replace(/RAISE\s+EXCEPTION\s+'[^']*'/gi, 'SELECT 1')
+    // 5. Dialect corrections
+    .replace(/ADD\s+COLUMN\s+IF\s+NOT\s+EXISTS/gi, 'ADD COLUMN')
     .trim();
 }
 

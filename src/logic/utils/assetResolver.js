@@ -34,9 +34,9 @@ export const resolveAsset = (url, isLodEnabled = true) => {
   if (!suffix) return url;
 
   // We only append the suffix if it's not already there
-  if (url.includes('@')) return url;
+  if (url.includes('@')) return encodeURI(url);
 
-  return url.replace('.webp', `${suffix}.webp`);
+  return encodeURI(url.replace('.webp', `${suffix}.webp`));
 };
 
 /**

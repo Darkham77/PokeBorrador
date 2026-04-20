@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
-import { getSpriteUrl } from '@/logic/pokemonUtils'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { SHOP_ITEMS } from '@/data/items'
 
 const uiStore = useUIStore()
@@ -14,12 +14,12 @@ const itemName = computed(() => fossilData.value?.itemName)
 
 const itemSprite = computed(() => {
   const item = SHOP_ITEMS.find(i => i.name === itemName.value)
-  return item ? item.sprite : ''
+  return item ? getAssetUrl(ASSET_TYPES.ITEM, item.sprite) : ''
 })
 
 const pokemonSprite = computed(() => {
   if (!pokemon.value) return ''
-  return getSpriteUrl(pokemon.value.id, pokemon.value.isShiny)
+  return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.value.id, { shiny: pokemon.value.isShiny })
 })
 
 onMounted(() => {

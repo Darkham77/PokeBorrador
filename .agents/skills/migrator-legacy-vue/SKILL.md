@@ -74,6 +74,15 @@ Legacy code **MUST** be modified during migration to comply with all current pro
 - **Migration Tracking Mandate**: To prevent logic loss and maintain project oversight, every file migrated from `backup_legacy_code/` **MUST** be registered in the **Migration Tracker Table** (`docs/migration_tracker.md`).
   - **Required Columns**: `Original File`, `Vue Module/Composable`, `Status/Coverage`, `Notes`.
   - **Status**: Flag as "100%" only when all logic, styles, and assets are fully verified and **TESTED** (with passing unit tests). If legacy features are missing, they **MUST** be noted.
+- **Prohibition of Hybrid Phases**:
+  - **MANDATORY**: When migrating a feature (e.g., Library), you **MUST** fully migrate its global SCSS rules into the Vue component's scoped styles or a modular partial.
+  - **CSS Leakage Prevention**: NEVER leave global classes (like `.library-container`) active if they conflict with the new modal shell. Either delete the legacy rules or restrict them to the legacy container ID (e.g., `#library-modal .library-container`).
+  - **Why**: "Hybrid" states where legacy global CSS pollutes modern Vue components create "modal-in-modal" artifacts and broken layouts.
+
+## Logic & Store Hardening
+
+- **Backward Compatibility Aliases**: When refactoring stores, maintain legacy method names as aliases (e.g., `saveGame` pointing to `save`) to prevent "is not a function" crashes in unmigrated legacy components or battle logic.
+- **State Property Consistency**: Explicitly verify that component bindings match the updated store property names (e.g., using `trainerLevel` instead of the legacy `level`) to ensure reactive synchronization.
 
 ## Example Invocations
 

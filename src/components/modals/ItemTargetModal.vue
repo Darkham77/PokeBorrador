@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
-import { getSpriteUrl } from '@/logic/sprites'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getStatusIcon } from '@/logic/battle/battleStatus'
 import BaseModal from '@/components/common/BaseModal.vue'
 
@@ -61,7 +61,7 @@ const getHpColor = (p) => {
         >
           <div class="poke-sprite">
             <img
-              :src="getSpriteUrl(p.id, p.isShiny)"
+              :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
               :alt="p.name"
             >
           </div>
@@ -145,6 +145,7 @@ const getHpColor = (p) => {
   &:hover {
     background: rgba(255, 215, 0, 0.08);
     border-color: rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.3);
     transform: translateX(4px);
     .select-hint { opacity: 1; }
   }

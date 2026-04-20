@@ -1,5 +1,5 @@
 
-import { useUIStore } from '@/stores/ui'
+import { useModalStore } from '@/stores/modals'
 
 /**
  * Triggers the flicker and exclamation animation for a rival encounter.
@@ -54,18 +54,12 @@ display:flex;align-items:center;justify-content:center;padding:20px;animation:fa
  * Starts the rhythm-based fishing minigame via Vue UI.
  */
 export function startFishingMinigame(enemy, rarity, onWin, onFail) {
-  const ui = useUIStore()
+  const modalStore = useModalStore()
   
-  ui.fishingPokemon = enemy
-  ui.fishingRarity = rarity
-  ui.fishingCallbacks.onWin = () => {
-    ui.isFishingGameOpen = false
-    if (onWin) onWin()
-  }
-  ui.fishingCallbacks.onFail = () => {
-    ui.isFishingGameOpen = false
-    if (onFail) onFail()
-  }
-  
-  ui.isFishingGameOpen = true
+  modalStore.open('Fishing', {
+    pokemon: enemy,
+    rarity: rarity,
+    onWin: onWin,
+    onFail: onFail
+  })
 }

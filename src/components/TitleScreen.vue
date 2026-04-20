@@ -23,7 +23,7 @@ const handleLogout = () => {
   <div
     id="title-screen"
     class="screen zoom-target"
-    :class="{ active: !gs.starterChosen && gs.isReady }"
+    :class="{ active: !gs.starterChosen && gameStore.isReady }"
   >
     <div class="title-logo">
       Poké Vicio

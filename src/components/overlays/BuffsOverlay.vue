@@ -74,6 +74,7 @@ const formatTime = (secs) => {
   &:hover {
     background: rgba(0, 0, 0, 0.8);
     border-color: var(--yellow, #ffd93d);
+    box-shadow: 0 0 0 1px var(--yellow, #ffd93d);
     transform: translateX(4px);
   }
 }

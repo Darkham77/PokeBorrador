@@ -1,5 +1,5 @@
 <script setup>
-import { getSpriteUrl } from '@/data/spriteMapping'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 defineProps({
   title: { type: String, required: true },
@@ -34,7 +34,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
         @click="$emit('open-selector')"
       >
         <img
-          :src="getSpriteUrl(pokemon.id, pokemon.isShiny)"
+          :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny })"
           class="preview-sprite"
         >
         <div class="preview-info">

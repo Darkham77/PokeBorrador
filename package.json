@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint . --fix",
-    "postinstall": "pip install -r requirements.txt --quiet || echo 'Warning: Python dependencies could not be installed automatically. Please run: pip install -r requirements.txt'"
+    "postinstall": "pip install -r requirements.txt --quiet --break-system-packages || echo 'Warning: Python dependencies could not be installed automatically. Please run: pip install -r requirements.txt'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",

@@ -1,5 +1,9 @@
 <script setup>
-import { onUnmounted, ref, watch } from 'vue'
+import { onUnmounted, ref, watch, computed } from 'vue'
+
+defineOptions({
+  inheritAttrs: false
+})
 
 const props = defineProps({
   show: {
@@ -46,10 +50,19 @@ const props = defineProps({
   noScroll: {
     type: Boolean,
     default: false
+  },
+  lockScroll: {
+    type: Boolean,
+    default: true
+  },
+  overlay: {
+    type: String,
+    default: 'dark', // 'dark' or 'none'
+    validator: (val) => ['dark', 'none'].includes(val)
   }
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
 
 const handleClose = () => {
   emit('close')
@@ -61,16 +74,22 @@ const handleOverlayClick = () => {
   }
 }
 
-// Manage body scroll lock and dynamic z-index
 const computedZIndex = ref(props.zIndex)
 
+const cardStyles = computed(() => {
+  if (props.type === 'center') {
+    return { maxWidth: props.maxWidth }
+  }
+  return {}
+})
+
 watch(() => props.show, (val) => {
-  if (val) {
+  if (val && props.lockScroll) {
     document.body.classList.add('modal-open')
     // Calculate z-index based on active modals count
     const activeModals = document.querySelectorAll('.modal-overlay.active').length
     computedZIndex.value = props.zIndex + (activeModals * 10)
-  } else {
+  } else if (!val && props.lockScroll) {
     // Check if there are other modals open before removing
     const otherModals = document.querySelectorAll('.modal-overlay.active').length
     if (otherModals <= 1) {
@@ -90,45 +109,28 @@ onUnmounted(() => {
 <template>
   <Teleport to="body">
     <Transition 
-      :name="type.startsWith('side') ? (type === 'side-left' ? 'slide-left' : 'slide-right') : 'modal-fade'"
+      :name="type.startsWith('side') ? (type === 'side-left' ? 'slide-left' : 'slide-right') : 'modal-zoom'"
       appear
     >
-      <div
-        v-if="show"
-        class="modal-overlay"
-        :class="[
-          `modal-type-${type}`,
-          { 
-            'active': show,
-            'no-overlay': type.startsWith('side')
-          }
-        ]"
+      <div 
+        v-if="show" 
+        class="base-modal-teleport-wrapper" 
+        :class="{ 'no-pointer-events': overlay === 'none' }"
         :style="{ zIndex: computedZIndex }"
-        @click.self="handleOverlayClick"
       >
-        <div
+        <div 
+          v-if="overlay === 'dark'" 
+          class="modal-overlay active" 
+          @click="handleOverlayClick" 
+        />
+        
+        <div 
           class="modal-content-premium base-modal-card"
-          :class="[`type-${type}`, customClass]"
-          :style="{ maxWidth: type === 'center' ? maxWidth : 'none' }"
+          :class="[`type-${type}`, padding === 'raw' ? 'padding-raw' : 'padding-standard', customClass]"
+          :style="cardStyles"
+          @click.stop
         >
-          <!-- Header -->
-          <header 
-            v-if="!hideHeader && (title || $slots.header || showCloseButton)"
-            class="modal-header-premium"
-          >
-            <slot name="header">
-              <span class="modal-title-text">{{ title }}</span>
-            </slot>
-            
-            <button
-              v-if="showCloseButton"
-              class="modal-close-btn-standard"
-              @click="handleClose"
-            >
-              &times;
-            </button>
-          </header>
-
+          <!-- Floating Close Button -->
           <button
             v-if="hideHeader && showCloseButton"
             class="modal-close-btn-floating"
@@ -137,20 +139,38 @@ onUnmounted(() => {
             &times;
           </button>
 
+          <!-- Header -->
+          <header
+            v-if="!hideHeader"
+            class="modal-header-premium"
+          >
+            <div class="modal-header-left">
+              <slot name="header-icon" />
+              <div class="modal-title-stack">
+                <h2 class="modal-title-text">
+                  {{ title }}
+                </h2>
+              </div>
+            </div>
+            <button
+              v-if="showCloseButton"
+              class="modal-close-btn"
+              @click="handleClose"
+            >
+              &times;
+            </button>
+          </header>
+
           <!-- Content -->
           <div 
             class="modal-scrollable-content"
-            :class="{ 
-              'no-padding': padding === 'raw',
-              'no-scroll': noScroll
-            }"
-            style="display: flex; flex-direction: column;"
+            :class="[padding === 'raw' ? 'padding-raw' : 'padding-standard']"
           >
             <slot />
           </div>
 
           <!-- Footer -->
-          <footer 
+          <footer
             v-if="$slots.footer"
             class="modal-footer-premium"
           >
@@ -164,13 +184,48 @@ onUnmounted(() => {
 
 <style lang="scss">
 /* Global modal styles are in _modals.scss, but base component specific ones here */
+.base-modal-teleport-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 15000;
+  // Forces a new stacking context for fixed children
+  transform: translateZ(0);
+  pointer-events: auto;
+
+  &.no-pointer-events {
+    pointer-events: none !important;
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  z-index: 1 !important;
+  pointer-events: auto;
+}
+
 .base-modal-card {
+  position: fixed;
+  z-index: 2 !important;
+  pointer-events: auto;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &.padding-raw {
+    // We keep the shell styles but let children reach the edges
+  }
+  
   &.type-center {
-    width: 90%;
-    max-height: 90vh;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 95%;
+    max-height: 94vh;
   }
   
   &.type-side, &.type-side-right {
@@ -192,16 +247,7 @@ onUnmounted(() => {
   }
 }
 
-.modal-overlay.no-overlay {
-  background: transparent !important;
-  backdrop-filter: none !important;
-  pointer-events: none;
 
-  .base-modal-card {
-    pointer-events: auto;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8);
-  }
-}
 
 .modal-header-premium {
   padding: 24px 32px 16px;
@@ -216,9 +262,10 @@ onUnmounted(() => {
   font-size: 12px;
   color: var(--yellow, #ffd700);
   letter-spacing: 1px;
+  @include pixelated;
 }
 
-.modal-close-btn-standard, .modal-close-btn-floating {
+.modal-close-btn, .modal-close-btn-floating {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.4);
@@ -247,57 +294,65 @@ onUnmounted(() => {
 }
 
 /* Transitions */
-.modal-fade-enter-active, .modal-fade-leave-active {
+.modal-zoom-enter-active, .modal-zoom-leave-active {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  
-  .modal-content-premium {
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
+  .modal-overlay { transition: opacity 0.4s ease; }
+  .modal-content-premium { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 }
 
-.modal-fade-enter-from, .modal-fade-leave-to {
+.modal-zoom-enter-from, .modal-zoom-leave-to {
   opacity: 0;
+  .modal-overlay { opacity: 0; }
   .modal-content-premium {
-    transform: Scale(0.9) translateY(20px);
+    transform: translate(-50%, -40%) Scale(0.8);
     opacity: 0;
   }
 }
 
-.slide-right-enter-active, .slide-right-leave-active {
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  .modal-overlay { transition: opacity 0.5s; }
+/* Side Sliding Transitions (Generalizing as requested) */
+.slide-right-enter-active, .slide-right-leave-active,
+.slide-left-enter-active, .slide-left-leave-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  .modal-overlay { transition: opacity 0.4s ease; }
+  .modal-content-premium { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 }
 
 .slide-right-enter-from, .slide-right-leave-to {
+  opacity: 0;
   .modal-overlay { opacity: 0; }
-  .modal-content-premium {
-    transform: translateX(100%);
-  }
-}
-
-.slide-left-enter-active, .slide-left-leave-active {
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  .modal-overlay { transition: opacity 0.5s; }
+  .modal-content-premium { transform: translateX(100%); }
 }
 
 .slide-left-enter-from, .slide-left-leave-to {
+  opacity: 0;
   .modal-overlay { opacity: 0; }
-  .modal-content-premium {
-    transform: translateX(-100%);
+  .modal-content-premium { transform: translateX(-100%); }
+}
+
+.modal-scrollable-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: relative;
+  
+  &.padding-standard { padding: 32px; }
+  &.padding-raw { 
+    padding: 0 !important; 
+    margin: 0 !important;
+    height: 100%;
   }
 }
 
-.no-padding {
-  padding: 0 !important;
-}
+.no-padding { padding: 0 !important; }
+.no-scroll { overflow-y: hidden !important; }
 
-.no-scroll {
-  overflow-y: hidden !important;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 
 /* Body lock */
 body.modal-open {
   overflow: hidden !important;
-  padding-right: var(--scrollbar-width, 0px);
 }
 </style>

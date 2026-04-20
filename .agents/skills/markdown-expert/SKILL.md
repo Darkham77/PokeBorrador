@@ -34,7 +34,8 @@ When a user provides Markdown content or asks about a Markdown problem:
 
 ## Scripts
 
-- **`scripts/fix-code-blocks.py`:** Automatically scans directories or files and replaces isolated ` ``` ` opening tags with ` ```text ` to prevent markdownlint errors without affecting closing tags. Execute this when asked to fix code blocks. Usage: `python c:\Users\Franco\Trabajos\Juegos\PokeBorrador\.agents\skills\markdown-expert\scripts\fix-code-blocks.py [path]`
+- **`scripts/fix-code-blocks.py`**: Automatically scans directories or files and replaces isolated ` ``` ` opening tags with ` ```text ` to prevent markdownlint errors without affecting closing tags. Execute this when asked to fix code blocks. Usage: `python "/home/franco/Insync/francogpellegrini@gmail.com/Google Drive/.agents/skills/markdown-expert/scripts/fix-code-blocks.py" [path]`
+- **`scripts/fix-tables.py`**: Repairs Markdown table formatting by ensuring separator rows use the `:---` alignment format. It processes files or directories recursively. Execute this when asked to fix table formatting or alignment. Usage: `python "/home/franco/Insync/francogpellegrini@gmail.com/Google Drive/.agents/skills/markdown-expert/scripts/fix-tables.py" [path]`
 
 ### Important Note on Rule Selection
 

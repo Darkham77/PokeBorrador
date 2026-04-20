@@ -21,7 +21,7 @@ function getTierBadge(elo) {
 }
 
 const getRankIcon = (tierId) => {
-  return getAssetUrl(ASSET_TYPES.UI, `ranks/${tierId}`)
+  return getAssetUrl(ASSET_TYPES.RANK, tierId)
 }
 </script>
 

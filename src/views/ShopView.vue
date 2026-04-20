@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useShopStore } from '@/stores/shop'
 import BlackMarket from '@/components/shop/BlackMarket.vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
@@ -133,7 +134,7 @@ onMounted(() => {
         <div class="item-visual">
           <img
             v-if="item.sprite"
-            :src="item.sprite"
+            :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
             class="pixel-sprite"
           >
           <span

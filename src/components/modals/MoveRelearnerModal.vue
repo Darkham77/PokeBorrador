@@ -137,6 +137,7 @@ const consumeItem = (name) => {
   inset: 0;
   z-index: 10000;
   background: rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;

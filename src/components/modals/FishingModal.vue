@@ -3,10 +3,12 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
-  rarity: { type: Number, default: 0 }
+  rarity: { type: Number, default: 0 },
+  onWin: { type: Function, default: null },
+  onFail: { type: Function, default: null }
 })
 
-const emit = defineEmits(['win', 'fail'])
+const emit = defineEmits(['win', 'fail', 'close'])
 
 // Game configuration
 const totalNotes = Math.min(22, 5 + Math.floor(props.rarity / 7))
@@ -73,14 +75,22 @@ const handleNoteClick = (note) => {
 
 const win = () => {
   gameActive.value = false
-  setTimeout(() => emit('win'), 500)
+  setTimeout(() => {
+    if (props.onWin) props.onWin()
+    emit('win')
+    emit('close')
+  }, 500)
 }
 
 const fail = () => {
   if (!gameActive.value) return
   gameActive.value = false
   isFailed.value = true
-  setTimeout(() => emit('fail'), 1000)
+  setTimeout(() => {
+    if (props.onFail) props.onFail()
+    emit('fail')
+    emit('close')
+  }, 1000)
 }
 
 onMounted(() => {

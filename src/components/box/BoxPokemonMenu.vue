@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBoxStore } from '@/stores/box'
-import { getSpriteUrl } from '@/data/spriteMapping'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   boxIndex: { type: Number, required: true }
@@ -133,7 +133,7 @@ const handleToggleTag = (tag) => {
           #{{ pokemon.id.toString().padStart(3, '0') }}
         </div>
         <img
-          :src="getSpriteUrl(pokemon.id, pokemon.isShiny)"
+          :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny })"
           class="menu-sprite"
         >
         <h3 class="pokemon-name">
@@ -198,7 +198,7 @@ const handleToggleTag = (tag) => {
             @click="handleSwap(i)"
           >
             <img
-              :src="getSpriteUrl(t.id, t.isShiny)"
+              :src="getAssetUrl(ASSET_TYPES.POKEMON, t.id, { isShiny: t.isShiny })"
               class="team-sprite"
             >
             <div class="team-info">

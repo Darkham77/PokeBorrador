@@ -16,24 +16,8 @@ import HUD_Navigation from '@/components/HUD_Navigation.vue'
 import InventoryPills from '@/components/InventoryPills.vue'
 import BattleArena from '@/components/BattleArena.vue'
 import PvPArena from '@/components/battle/PvPArena.vue'
-import ProfileModal from '@/components/ProfileModal.vue'
-import SettingsModal from '@/components/SettingsModal.vue'
-import LibraryModal from '@/components/LibraryModal.vue'
-import FactionChoiceModal from '@/components/FactionChoiceModal.vue'
-import WarShopModal from '@/components/WarShopModal.vue'
-import PassiveTeamEditorModal from '@/components/PassiveTeamEditorModal.vue'
 import TeamHeader from '@/components/team/TeamHeader.vue'
 import TeamGrid from '@/components/team/TeamGrid.vue'
-import PokemonDetailModal from '@/components/PokemonDetailModal.vue'
-import MoveDetailModal from '@/components/MoveDetailModal.vue'
-import TradeView from '@/components/TradeView.vue'
-import ClassSelectionModal from '@/components/modals/ClassSelectionModal.vue'
-import ClassMissionsModal from '@/components/modals/ClassMissionsModal.vue'
-import PokemonSelectionModal from '@/components/modals/PokemonSelectionModal.vue'
-import ItemTargetModal from '@/components/modals/ItemTargetModal.vue'
-import EvolutionScene from '@/components/evolution/EvolutionScene.vue'
-import MoveRelearnerModal from '@/components/modals/MoveRelearnerModal.vue'
-import SessionConflictModal from '@/components/auth/SessionConflictModal.vue'
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
 import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
@@ -41,9 +25,7 @@ import { useAuthStore } from '@/stores/auth'
 
 
 // Tab components
-import BackpackView from '@/components/BackpackView.vue'
 import BoxView from '@/components/BoxView.vue'
-import HealOverlay from '@/components/HealOverlay.vue'
 
 // Lazy loaded views to fix code splitting warnings
 const PokedexView = defineAsyncComponent(() => import('@/views/PokedexView.vue'))
@@ -52,7 +34,6 @@ const GymsView = defineAsyncComponent(() => import('@/views/GymsView.vue'))
 const DaycareView = defineAsyncComponent(() => import('@/views/DaycareView.vue'))
 const ShopView = defineAsyncComponent(() => import('@/views/ShopView.vue'))
 import GlobalChat from '@/components/social/GlobalChat.vue'
-import SocialCenterModal from '@/components/social/SocialCenterModal.vue'
 import DirectChatWindow from '@/components/social/DirectChatWindow.vue'
 import { useChatStore } from '@/stores/chat'
 import GlobalMarket from '@/components/market/GlobalMarket.vue'
@@ -328,36 +309,7 @@ onUnmounted(() => {
     </div>
 
     <!-- MODALS & OVERLAYS -->
-    <ProfileModal />
-    <SettingsModal />
-    <LibraryModal />
-    <FactionChoiceModal />
-    <WarShopModal />
-    <PassiveTeamEditorModal />
-    <HealOverlay />
-    <PokemonDetailModal />
-    <MoveDetailModal />
-    <TradeView />
-    <ClassSelectionModal />
-    <ClassMissionsModal />
-    <PokemonSelectionModal />
     <CriminalityBar />
-    <ItemTargetModal />
-    
-    <EvolutionScene v-if="uiStore.isEvolutionOpen" />
-
-    <MoveRelearnerModal 
-      v-if="uiStore.isMoveRelearnerOpen"
-      :pokemon="uiStore.activePokemonForRelearner"
-      @close="uiStore.isMoveRelearnerOpen = false"
-      @learned="() => {}"
-    />
-
-    <!-- MODAL SOCIAL (Phase 24) -->
-    <SocialCenterModal 
-      v-if="uiStore.isSocialOpen" 
-      @close="uiStore.isSocialOpen = false"
-    />
 
     <ToastNotification />
     <BuffsOverlay />
@@ -376,7 +328,6 @@ onUnmounted(() => {
 
 
     <!-- SESSION MANAGEMENT -->
-    <SessionConflictModal v-if="authStore.sessionConflict" />
   </div>
 
   <HUD_Navigation 

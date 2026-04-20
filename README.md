@@ -148,3 +148,49 @@ npm run build
 - `/database`: Esquemas SQL y migraciones.
 - `/tests`: Suite de pruebas (Vitest).
 - `/docs`: Documentación técnica y reglas del juego.
+
+---
+
+## 📖 Tutoriales y Tips del Proyecto
+
+### 1. 🛠️ Solución a errores de `npm run dev`
+
+Si bajas cambios del repositorio (git pull) y el comando `npm run dev` falla o tira errores inesperados, generalmente es porque se instalaron nuevas librerías que no tienes en tu entorno local.
+
+- **Solución**: Ejecutá `npm install` para sincronizar las dependencias.
+- **Tip**: Se recomienda ejecutar periódicamente `npm update` para mantener todas las librerías actualizadas.
+
+### 2. 🛡️ Auditoría de Estándares
+
+Para mantener la calidad y el orden del código, es una excelente práctica realizar una auditoría periódica (cada 2 o 3 días de trabajo).
+
+- **Instrucción**: Pedile a la IA: *"Hace una auditoría a todo el proyecto y revisá que cumpla con /project-standards"*.
+- **Resultado**: La IA detectará archivos que exceden las 500 líneas, errores de estilo o violaciones a la arquitectura.
+- **Acción**: Después del reporte, pedile que genere el *"plan de corrección"* para normalizar el código.
+
+### 3. 🖼️ Gestión de Imágenes (`_raw-assets`)
+
+El proyecto usa un sistema de espejado para optimizar imágenes automáticamente a WebP y generar diferentes niveles de detalle (LOD).
+
+- **Ubicación**:
+  - `_raw-assets/lod/`: Imágenes que requieren múltiples tamaños (ej. mapas). Genera `@1x`, `@0.5x`, `@0.25x`.
+  - `_raw-assets/original/`: Imágenes que solo necesitan conversión a WebP 1:1 (ej. sprites).
+- **Mirroring**: La estructura dentro de `_raw-assets` debe ser idéntica a la del proyecto (ej: `_raw-assets/lod/public/assets/maps/` se volcará en `public/assets/maps/`).
+- **Compilación**: Para procesar nuevas imágenes, pedile a la IA: *"recompila las imágenes"* o *"ejecutá el script de conversión a WebP"*.
+
+### 4. ✨ Renderizado: Pixelated vs Smooth
+
+Por identidad visual, el "corazón" del juego es pixelado, pero el "shell" (la interfaz exterior) es moderno.
+
+- **Por defecto**: Todos los assets se tratan como pixelados.
+- **Tipografía (Corazón)**: Nombres de Pokémon, Stats, Diálogos y Títulos de Modales **DEBEN** usar fuentes pixeladas (`Press Start 2P`, `VT323`) y el mixin `@include pixelated;` para evitar suavizados borrosos del navegador.
+- **Tipografía (Shell)**: Menús de configuración, logs técnicos y créditos pueden usar fuentes suaves (`Outfit`, `Inter`).
+- **Especificación**: Si necesitás asegurar que algo se vea pixel-perfect, usá el mixin `@include pixelated;` en el SCSS.
+- **Excepciones**: Para logos premium o elementos que deban verse suaves, usá `@include smooth;` (esto aplica `image-rendering: auto`).
+
+### 5. ⚠️ Precaución al actualizar Skills
+
+Cuando la IA actualiza una Skill (archivos `.md` en `.agents/skills/`):
+
+- **SIEMPRE LEELA**: A veces la IA tiene la mala costumbre de borrar secciones antiguas o útiles por error al reescribir.
+- **Revisión**: Mirá los cambios (los bloques rojos del diff) antes de confirmar que el cambio es correcto.

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { getSpriteUrl } from '@/data/spriteMapping'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   show: Boolean,
@@ -160,7 +160,7 @@ const select = (poke) => {
             <div class="poke-main">
               <div class="sprite-wrapper">
                 <img
-                  :src="getSpriteUrl(poke.id, poke.isShiny)"
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, poke.id, { isShiny: poke.isShiny })"
                   :class="{ shiny: poke.isShiny }"
                 >
                 <span

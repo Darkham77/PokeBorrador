@@ -31,8 +31,8 @@
 
   &:hover {
     border-color: rgba($yellow, 0.3);
+    box-shadow: 0 0 0 1px rgba($yellow, 0.3), 0 15px 35px rgba(0, 0, 0, 0.7);
     transform: scale3d(1.05, 1.05, 1) translateY(-4px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
     z-index: 10;
   }
 }

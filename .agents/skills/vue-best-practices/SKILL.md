@@ -148,6 +148,9 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **Why**: Prevents critical runtime `TypeError` crashes during the component mount/initialization cycle before the store data is ready.
 - **Teleport & Scoped Styles**: Components using `<Teleport to="body">` (like `BaseModal`) **MUST** use global SCSS (not `scoped`) for positioning and overlay styles. Scoped styles often fail to apply correctly once the element is moved out of its original DOM hierarchy.
 - **Dynamic Z-Index Stacking**: For components that can overlap (modals, overlays), use a `computedZIndex` based on the current number of active overlays. This ensures that the most recently opened element (e.g., an item selector) always appears on top of previous layers.
+- **Blocking vs. Non-Blocking Modals (Store Logic)**:
+  - **REQUIRED**: In the `uiStore`, when computing `isAnyBlockingModalOpen`, you **MUST** explicitly exclude side-panels (e.g., `'Chat'`, `'Profile'`) if they are intended to allow background interaction.
+  - **Why**: This prevents the global `body.modal-open` class from locking scroll and interaction when only a HUD-integrated panel is visible.
 
 ## 6) Final self-check before finishing
 

@@ -51,14 +51,32 @@
 @mixin pixelated {
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: pixelated; // Non-standard but helpful in some engines
   text-rendering: optimizeSpeed;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: pixelated;
+  image-rendering: crisp-edges;
   
-  // Force hardware acceleration and pixel-snapping
-  transform: translateZ(0);
-  backface-visibility: hidden;
+  // Prevent subpixel antialiasing
   font-variant-ligatures: none;
+  -webkit-text-stroke: 0;
+  
+  // Ensure crisp edges on transforms
+  transform-style: preserve-3d;
+}
+
+@mixin hover-neon-yellow($border-width: 1px) {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    border-color: var(--yellow) !important;
+    box-shadow: 
+      0 0 0 #{$border-width} var(--yellow),
+      0 0 20px rgba(255, 214, 10, 0.4),
+      0 0 40px rgba(255, 214, 10, 0.2),
+      inset 0 0 10px rgba(255, 214, 10, 0.1) !important;
+    z-index: 10;
+  }
 }
 
 @mixin smooth {

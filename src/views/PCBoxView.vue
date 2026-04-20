@@ -202,7 +202,7 @@ const onPokemonClick = (index) => {
 }
 
 .btn-release:hover { color: var(--red); border-color: rgba(255, 59, 59, 0.3); }
-.btn-rocket:hover { color: var(--yellow); border-color: rgba(255, 184, 0, 0.3); }
+.btn-rocket:hover { color: var(--yellow); border-color: rgba(255, 184, 0, 0.3); box-shadow: 0 0 0 1px rgba(255, 184, 0, 0.3); }
 
 .text-red { color: var(--red); }
 .text-yellow { color: var(--yellow); }

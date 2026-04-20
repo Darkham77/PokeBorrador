@@ -168,6 +168,14 @@ All spacing and sizing in multiples of 8:
   - **Safari/iOS/Edge**: Always include `image-rendering: -webkit-optimize-contrast;` before `pixelated` to prevent blurry scaling.
   - **Typography**: Always pair `font-smooth: never;` with `-webkit-font-smoothing: none;` and `-moz-osx-font-smoothing: grayscale;` to ensure pixel fonts snap to the grid on all OSs.
 
+## 3.1 Asynchronous Interaction Feedback
+
+- **REQUIRED**: Any UI element that triggers an asynchronous operation (RPC, Database Save, Auth) **MUST** provide immediate visual feedback.
+- **Patterns**:
+  - Show a loading spinner or "Processing..." state on the button itself.
+  - Display a toast notification *before* or *during* the save operation to signal that the interaction was registered ("Saving...").
+- **Why**: Instant feedback prevents users from feeling the UI is "stuck" and discourages double-clicking or refreshing while data is being committed.
+
 ---
 
 ## 4. Color Principles

@@ -1,77 +1,89 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
-import { useTradeStore } from '@/stores/trade'
+import { useAuthStore } from '@/stores/auth'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { PLAYER_CLASSES } from '@/data/playerClasses'
+import BaseModal from '@/components/common/BaseModal.vue'
+import TrainerAvatar from '@/components/TrainerAvatar.vue'
 import ProfileStatsGrid from './profile/ProfileStatsGrid.vue'
 import ProfileNotifications from './profile/ProfileNotifications.vue'
 import ProfileTradeNotifs from './profile/ProfileTradeNotifs.vue'
-import TrainerAvatar from './TrainerAvatar.vue'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
-const tradeStore = useTradeStore()
+const authStore = useAuthStore()
 
-onMounted(() => {
-  tradeStore.refreshPendingTrades()
-})
+defineOptions({ inheritAttrs: false })
+const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
 
 const gs = computed(() => gameStore.state)
-const profileData = computed(() => uiStore.profileData)
-const isProfileOpen = computed({
+
+const isOpen = computed({
   get: () => uiStore.isProfileOpen,
   set: (val) => { uiStore.isProfileOpen = val }
 })
-const isHistoryOpen = computed({
-  get: () => uiStore.isHistoryOpen,
-  set: (val) => { uiStore.isHistoryOpen = val }
+
+const profileData = computed(() => uiStore.profileData)
+
+const factionLabel = computed(() => {
+  const f = gs.value.faction
+  if (!f) return 'Sin Bando'
+  if (f === 'union') return 'Equipo Unión'
+  if (f === 'poder') return 'Equipo Poder'
+  if (f === 'rocket') return 'Equipo Rocket'
+  return f.toUpperCase()
 })
 
-const closeProfile = () => {
-  isProfileOpen.value = false
-}
-
-const handleResetEncounter = () => {
-  if (typeof window.resetEncounterPity === 'function') {
-    window.resetEncounterPity()
-  }
-}
-
-const handleLogout = () => {
-  if (typeof window.doLogout === 'function') {
-    window.doLogout()
-  }
-}
-
-const handleEditProfile = () => {
-  uiStore.isCosmeticsModalOpen = true
-}
-
-const handleFactionChoice = () => {
-  uiStore.isFactionChoiceOpen = true
-}
-
-const usernameColor = computed(() => {
-  if (gs.value.playerClass === 'rocket') return '#ef4444'
-  return '#ffca28'
+const factionColor = computed(() => {
+  const f = gs.value.faction
+  if (f === 'union') return '#3b82f6'
+  if (f === 'poder') return '#ef4444'
+  if (f === 'rocket') return '#94a3b8'
+  return '#94a3b8'
 })
 
-const panelStyle = computed(() => {
-  const cls = PLAYER_CLASSES[gs.value.playerClass]
-  if (!cls) return {}
-  return {
-    background: `linear-gradient(180deg, ${cls.colorDark}cc 0%, #0a0c14 100%)`
-  }
+const trainerName = computed(() => {
+  return gs.value.trainer || 'Entrenador'
 })
 
 const displayUsername = computed(() => {
   if (profileData.value.username && profileData.value.username !== '—') {
     return profileData.value.username
   }
-  return gs.value.trainer || 'Entrenador'
+  return trainerName.value
 })
+
+const lastSaveFormatted = computed(() => {
+  if (!gs.value._last_updated) return 'Sin datos'
+  const date = new Date(gs.value._last_updated)
+  return date.toLocaleString('es-ES', { 
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  })
+})
+
+const close = () => { isOpen.value = false }
+
+const handleLogout = () => {
+  authStore.logout()
+}
+
+const handleEditProfile = () => {
+  uiStore.open('Cosmetics')
+}
+
+const handleFactionChoice = () => {
+  uiStore.open('FactionChoice')
+}
+
+const handleResetEncounter = () => {
+  // Legacy logic: window.resetEncounters?.()
+  if (typeof window.resetEncounters === 'function') {
+    window.resetEncounters()
+    uiStore.notify('Encuentros reseteados', '⚠️')
+  }
+}
 
 // Expose to template
 const getAssetUrlLocal = getAssetUrl
@@ -79,40 +91,33 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 </script>
 
 <template>
-  <transition name="slide-right">
-    <section
-      v-if="isProfileOpen"
-      class="profile-panel-premium"
-      :style="panelStyle"
-    >
-      <header class="panel-header">
-        <div class="header-content">
-          <span class="panel-title-icon">👤</span>
-          <span class="panel-title-text">MI PERFIL</span>
-        </div>
-        <button
-          class="panel-close-btn"
-          @click="closeProfile"
-        >
-          &times;
-        </button>
-      </header>
-
-      <div class="profile-content-scrollable custom-scrollbar">
-        <!-- User Identity -->
-        <div class="user-identity-section">
-          <TrainerAvatar 
-            :player-class="gs.playerClass"
-            :level="profileData.level"
-            :size="110"
-            class="profile-avatar-premium"
-          />
-          
-          <div
+  <BaseModal
+    :show="isOpen"
+    title="MI PERFIL"
+    type="side-right"
+    max-width="420px"
+    :show-close-button="true"
+    padding="raw"
+    :custom-class="'profile-modal-legacy ' + (gs.playerClass || 'default')"
+    :lock-scroll="false"
+    overlay="none"
+    @close="close"
+  >
+    <section class="profile-panel-content custom-scrollbar">
+      <div class="profile-body-premium">
+        <!-- Identity Section -->
+        <div class="profile-identity-card">
+          <div class="avatar-wrap">
+            <TrainerAvatar
+              :player-class="gs.playerClass"
+              :level="gs.trainerLevel"
+              :avatar-style="gs.avatar_style"
+              :size="120"
+            />
+          </div>
+          <div 
             id="profile-username"
             class="profile-username"
-            :class="profileData.nick_style"
-            :style="{ color: usernameColor }"
           >
             {{ displayUsername }}
           </div>
@@ -133,29 +138,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             <div
               id="player-faction-badge"
               class="faction-badge"
-              :class="profileData.faction"
+              :style="{ color: factionColor }"
             >
-              <template v-if="profileData.faction === 'union'">
-                <img
-                  :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'union')"
-                  class="faction-img"
-                > Team Unión
-              </template>
-              <template v-else-if="profileData.faction === 'poder'">
-                <img
-                  :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'poder')"
-                  class="faction-img"
-                > Team Poder
-              </template>
-              <template v-else-if="profileData.faction === 'rocket'">
-                <img
-                  :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'rocket')"
-                  class="faction-img"
-                > Team Rocket
-              </template>
-              <template v-else>
-                Sin Bando
-              </template>
+              <img
+                v-if="gs.faction"
+                :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, gs.faction)"
+                class="faction-img"
+              >
+              {{ factionLabel }}
             </div>
             <a
               id="change-faction-btn"
@@ -163,7 +153,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
               class="change-link"
               @click.prevent="handleFactionChoice"
             >
-              🔗 {{ profileData.faction ? 'CAMBIAR' : 'ELEGIR' }}
+              🔗 {{ gs.faction ? 'CAMBIAR' : 'ELEGIR' }}
             </a>
           </div>
         </div>
@@ -171,10 +161,10 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         <!-- Stats Grid -->
         <ProfileStatsGrid 
           :stats="profileData.stats" 
-          :level="profileData.level"
-          :badges="profileData.badges"
-          :money="profileData.money"
-          :battle-coins="profileData.battleCoins"
+          :level="gs.trainerLevel || profileData.level"
+          :badges="gs.badges || profileData.badges"
+          :money="gs.money || profileData.money"
+          :battle-coins="gs.battleCoins || profileData.battleCoins"
         />
 
         <!-- Save Info -->
@@ -183,7 +173,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             GUARDADO
           </div>
           <div class="save-row">
-            <span class="save-status">{{ profileData.lastSave || 'Sin datos' }}</span>
+            <span class="save-status">{{ lastSaveFormatted }}</span>
           </div>
         </div>
 
@@ -221,228 +211,231 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         </div>
       </div>
     </section>
-  </transition>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.profile-panel-premium {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: min(420px, 100vw);
-  height: 100vh;
-  background: rgba(10, 12, 20, 0.95);
-  backdrop-filter: blur(12px);
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
+@use "@/styles/core/tools" as *;
+
+.profile-panel-content {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  z-index: 12000;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-}
-
-.panel-header {
-  padding: 24px 32px;
-  background: rgba(255, 255, 255, 0.03);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-
-  .header-content {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .panel-title-icon { font-size: 20px; }
-  .panel-title-text {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 11px;
-    color: var(--yellow);
-    letter-spacing: 1px;
-  }
-}
-
-.panel-close-btn {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 28px;
-  line-height: 1;
-  cursor: pointer;
-  transition: all 0.2s;
+  background: transparent;
+  backdrop-filter: blur(12px);
   
-  &:hover {
-    color: #fff;
-    transform: rotate(90deg);
-  }
+  // Custom backgrounds by class fading to transparent
+  .rocket & { background: linear-gradient(180deg, rgba(239, 68, 68, 0.15) 0%, transparent 60%); }
+  .cazabichos & { background: linear-gradient(180deg, rgba(34, 197, 94, 0.15) 0%, transparent 60%); }
+  .entrenador & { background: linear-gradient(180deg, rgba(59, 130, 246, 0.15) 0%, transparent 60%); }
+  .criador & { background: linear-gradient(180deg, rgba(168, 85, 247, 0.15) 0%, transparent 60%); }
 }
 
-.profile-content-scrollable {
+.profile-header-premium {
+  display: none;
+}
+
+.profile-body-premium {
+  padding: 0 24px 40px;
   flex: 1;
   overflow-y: auto;
-  min-height: 0; /* Critical for flex scroll */
-  padding: 32px;
-  @include smooth-scroll;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.user-identity-section {
+.profile-identity-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 30px;
-}
+  padding: 32px 0 20px;
+  background: transparent;
+  border: none;
 
-.profile-avatar-premium {
-  margin-bottom: 20px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
+  .avatar-wrap {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    
+    // Legacy Elemental Aura Restorations
+    :deep(.trainer-avatar-container) {
+      border: 2px solid var(--yellow) !important;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5) !important;
 
-.profile-username {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 16px;
-  color: #ffca28;
-  margin-bottom: 4px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  text-align: center;
-}
+      &.av-fire {
+        border-color: #ff4400 !important;
+        box-shadow: 0 0 0 3px #ff4400, 0 0 0 5px rgba(255, 136, 0, 0.4), 0 0 16px rgba(255, 68, 0, 0.5) !important;
+        &::before {
+          content: ''; position: absolute; inset: -8px; border-radius: 50%;
+          background: conic-gradient(#ff0000,#ff8800,#ffcc00,#ff4400,#ff0000);
+          z-index: -1; animation: spin-slow 2s linear infinite;
+        }
+      }
+      
+      &.av-water {
+        border-color: #0088ff !important;
+        box-shadow: 0 0 0 3px #0088ff, 0 0 0 5px rgba(0, 170, 255, 0.3), 0 0 14px rgba(0, 102, 255, 0.4) !important;
+        &::before {
+          content: ''; position: absolute; inset: -9px; border-radius: 50%;
+          background: conic-gradient(#0033cc,#00aaff,#44eeff,#0066ff,#0033cc);
+          z-index: -1; animation: spin-slow 4s linear infinite;
+        }
+      }
 
-.profile-email {
-  font-size: 11px;
-  color: #64748b;
-  margin-bottom: 10px;
-  text-align: center;
+      &.av-legend {
+        border-color: #ffdd00 !important;
+        box-shadow: 0 0 0 3px #ffdd00, 0 0 18px rgba(255, 170, 0, 0.5) !important;
+        &::before {
+          content: ''; position: absolute; inset: -10px; border-radius: 50%;
+          background: conic-gradient(#ff0000,#ff8800,#ffff00,#00ff88,#00ffff,#0088ff,#ff00ff,#ff0000);
+          z-index: -1; animation: spin-slow 2s linear infinite;
+        }
+      }
+    }
+  }
+
+  @keyframes spin-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+  .profile-username {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 16px;
+    color: var(--yellow);
+    margin-bottom: 12px;
+    @include pixelated;
+  }
+
+  .profile-email {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: 'Press Start 2P', monospace;
+  }
 }
 
 .profile-section-card {
+  padding: 20px;
   background: rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 20px;
-}
 
-.section-label {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.4);
-  margin-bottom: 12px;
-  text-align: center;
-  letter-spacing: 1px;
-}
-
-.save-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.save-status {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
-  color: #fff;
-  opacity: 0.8;
+  .section-label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+    @include pixelated;
+  }
 }
 
 .faction-row {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+
+  .faction-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 14px;
+
+    .faction-img {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .change-link {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8px;
+    color: var(--yellow);
+    text-decoration: none;
+    @include pixelated;
+    
+    &:hover { text-decoration: underline; }
+  }
 }
 
-.faction-badge {
-  font-size: 11px;
-  color: #f1f5f9;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  
-  &.rocket { color: #f87171; }
-  &.union { color: #60a5fa; }
-  &.poder { color: #facc15; }
-}
-
-.faction-img {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
-.change-link {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  color: #ffca28;
-  text-decoration: underline;
-  cursor: pointer;
-  opacity: 0.8;
-  &:hover { opacity: 1; }
+.save-row {
+  .save-status {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    color: #fff;
+    @include pixelated;
+  }
 }
 
 .profile-actions-legacy {
+  margin-top: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 32px;
+
+  button {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 9px;
+    cursor: pointer;
+    transition: all 0.2s;
+    @include pixelated;
+  }
+
+  .logout-btn-legacy {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    @include hover-neon-yellow(1px);
+    &:hover { background: #ef4444; color: #fff; }
+  }
+
+  .edit-btn-legacy {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    @include hover-neon-yellow(1px);
+    &:hover { background: rgba(255, 255, 255, 0.1); }
+  }
+
+  .reset-wrap-legacy {
+    margin-top: 12px;
+    text-align: center;
+    .reset-btn-legacy {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 8px;
+      &:hover { color: #f59e0b; }
+    }
+    .hint-text-legacy {
+      margin-top: 8px;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.2);
+    }
+  }
 }
 
-.logout-btn-legacy {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 14px;
-  padding: 16px;
-  color: #f87171;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  &:hover { background: rgba(239, 68, 68, 0.15); transform: translateY(-2px); }
-}
+.profile-modal-legacy {
+  border-left: 2px solid rgba(255, 255, 255, 0.05) !important;
+  
+  // Background logic moved to .profile-panel-content
 
-.edit-btn-legacy {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  padding: 14px;
-  color: #f1f5f9;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  cursor: pointer;
-  &:hover { background: rgba(255, 255, 255, 0.06); }
-}
+  :deep(.modal-header-premium) {
+    border-bottom: none !important;
+    padding-bottom: 0;
+    .modal-title-text { color: #f472b6; font-size: 14px; } // Legacy magenta title
+  }
 
-.reset-btn-legacy {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.1);
-  border-radius: 14px;
-  padding: 14px;
-  color: #ef4444;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  cursor: pointer;
-  &:hover { border-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
-}
-
-.hint-text-legacy {
-  font-size: 9px;
-  color: #475569;
-  text-align: center;
-  margin-top: 8px;
-}
-
-// Animations
-.slide-right-enter-active, .slide-right-leave-active {
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.slide-right-enter-from, .slide-right-leave-to {
-  transform: translateX(100%);
+  :deep(.modal-scrollable-content) {
+    background: transparent !important;
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 </style>
-

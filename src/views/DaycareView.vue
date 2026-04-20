@@ -7,7 +7,7 @@ import DaycarePicker from '@/components/breeding/DaycarePicker.vue';
 import DaycareMissions from '@/components/breeding/DaycareMissions.vue';
 import EggWarehouse from '@/components/breeding/EggWarehouse.vue';
 import BreedingSummary from '@/components/breeding/BreedingSummary.vue';
-import { getSpriteUrl } from '@/logic/pokemonUtils';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getGeneticsForecast } from '@/logic/breeding/breedingEngine';
 import { usePlayerClassStore } from '@/stores/playerClass';
 
@@ -104,7 +104,7 @@ const forecast = computed(() => {
             <template v-if="breedingStore.slots[0]?.pokemon">
               <div class="slot-info">
                 <img
-                  :src="getSpriteUrl(breedingStore.slots[0].pokemon.id, breedingStore.slots[0].pokemon.isShiny)"
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, breedingStore.slots[0].pokemon.id, { shiny: breedingStore.slots[0].pokemon.isShiny })"
                   alt="Parent A"
                 >
                 <h3>{{ breedingStore.slots[0].pokemon.name }}</h3>
@@ -139,7 +139,7 @@ const forecast = computed(() => {
             <template v-if="breedingStore.slots[1]?.pokemon">
               <div class="slot-info">
                 <img
-                  :src="getSpriteUrl(breedingStore.slots[1].pokemon.id, breedingStore.slots[1].pokemon.isShiny)"
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, breedingStore.slots[1].pokemon.id, { shiny: breedingStore.slots[1].pokemon.isShiny })"
                   alt="Parent B"
                 >
                 <h3>{{ breedingStore.slots[1].pokemon.name }}</h3>

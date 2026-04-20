@@ -4,7 +4,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 defineProps({
   item: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
-  multiSelectMode: { type: String, default: null }
+  multiSelectMode: { type: Boolean, default: false }
 })
 
 defineEmits(['click'])

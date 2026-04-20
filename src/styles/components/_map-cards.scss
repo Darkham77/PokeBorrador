@@ -46,12 +46,7 @@
     filter: Brightness(0.6) Contrast(1.2);
   }
 
-  &:hover:not(.locked):not(.safari-locked) {
-    transform: translateY(-8px);
-    border-color: $yellow !important;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 214, 10, 0.5), 0 0 10px rgba(255, 214, 10, 0.3) !important;
-    z-index: 100 !important;
-  }
+  @include hover-neon-yellow(1px);
 
   &>* {
     position: relative;

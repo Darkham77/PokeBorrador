@@ -141,7 +141,11 @@ defineEmits(['close', 'select'])
   cursor: pointer;
   transition: all 0.2s;
   
-  &:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--yellow); }
+  &:hover { 
+    background: rgba(255, 255, 255, 0.08); 
+    border-color: var(--yellow); 
+    box-shadow: 0 0 0 1px var(--yellow);
+  }
   
   .poke-sprite { width: 48px; height: 48px; image-rendering: pixelated; }
   

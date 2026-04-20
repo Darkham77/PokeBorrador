@@ -5,14 +5,16 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 
+const props = defineProps({
+  show: { type: Boolean, default: false }
+})
+
+const emit = defineEmits(['close'])
+
 const shopStore = useShopStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 
-const isVisible = computed({
-  get: () => uiStore.isHealOverlayOpen,
-  set: (val) => { uiStore.isHealOverlayOpen = val }
-})
 const isHealing = ref(false)
 const progress = ref(0)
 const healedCount = ref(0)
@@ -44,7 +46,7 @@ async function handleHeal() {
       if (success) {
         setTimeout(() => {
           isHealing.value = false
-          isVisible.value = false
+          emit('close')
         }, 800)
       } else {
         isHealing.value = false
@@ -53,23 +55,24 @@ async function handleHeal() {
   }, 80)
 }
 
-function close() {
+function handleClose() {
   if (isHealing.value) return
-  isVisible.value = false
+  emit('close')
 }
 
 // ── LEGACY COMPATIBILITY ─────────────────────────────────────────────────────
 onMounted(() => {
-  window.openPokemonCenter = () => {
-    isVisible.value = true
-  }
-  window.closePokemonCenter = () => {
-    isVisible.value = false
-  }
   window.showHealEffect = (active) => {
     if (active) {
-      isVisible.value = true
-      handleHeal()
+      // In dynamic system, we should ideally trigger through modalStore
+      // but for legacy events we can still use this if it's called from outside Vue
+      import('@/stores/modals').then(module => {
+        if (module && module.useModalStore) {
+          const modalStore = module.useModalStore()
+          modalStore.open('HealOverlay')
+          setTimeout(() => handleHeal(), 100)
+        }
+      })
     }
   }
 })
@@ -77,10 +80,10 @@ onMounted(() => {
 
 <template>
   <BaseModal
-    :show="isVisible"
+    :show="show"
     title="🏥 CENTRO POKÉMON"
     max-width="420px"
-    @close="close"
+    @close="handleClose"
   >
     <div class="heal-modal-inner">
       <p class="subtitle">
@@ -161,7 +164,7 @@ onMounted(() => {
         <button
           class="btn-cancel-secondary"
           :disabled="isHealing"
-          @click="close"
+          @click="handleClose"
         >
           VOLVER
         </button>
@@ -171,6 +174,8 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .heal-modal-inner {
   padding: 8px 0;
   text-align: center;
@@ -178,11 +183,12 @@ onMounted(() => {
 
 .subtitle {
   color: rgba(255, 255, 255, 0.4);
-  font-size: 9px;
-  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  font-family: 'Press Start 2P', cursive;
   margin-bottom: 30px;
   text-transform: uppercase;
   letter-spacing: 1px;
+  @include pixelated;
 }
 
 .team-slots {
@@ -218,11 +224,11 @@ onMounted(() => {
 
 .ball-icon {
   font-size: 24px;
-  filter: grayScale(1);
+  filter: Grayscale(1);
 }
 
 .slot.active .ball-icon {
-  filter: grayScale(0);
+  filter: Grayscale(0);
 }
 
 .slot.healing .ball-icon {
@@ -256,9 +262,10 @@ onMounted(() => {
 
 .healing-text {
   color: #22c55e;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 7px;
   letter-spacing: 1px;
+  @include pixelated;
 }
 
 .free-msg {
@@ -274,24 +281,27 @@ onMounted(() => {
   border: 1px solid rgba(239, 68, 68, 0.15);
   
   .cost-label {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 7px;
     color: #ef4444;
     margin-bottom: 12px;
+    @include pixelated;
   }
   
   .price-tag {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 18px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 16px;
     color: #fff;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    @include pixelated;
   }
   
   .rocket-surcharge {
     display: block;
     margin-top: 8px;
     color: rgba(239, 68, 68, 0.5);
-    font-size: 9px;
+    font-size: 8px;
+    @include pixelated;
   }
 }
 
@@ -307,12 +317,13 @@ onMounted(() => {
   border: none;
   padding: 18px;
   border-radius: 14px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 9px;
   font-weight: 900;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.2s;
   box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  @include pixelated;
   
   &:hover:not(:disabled) {
     transform: translateY(-2px);
@@ -339,10 +350,11 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 16px;
   border-radius: 14px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;
+  @include pixelated;
   
   &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.08);

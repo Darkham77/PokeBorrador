@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { getPokemonTier, getSpriteUrl } from '@/logic/pokemonUtils'
+import { getPokemonTier } from '@/logic/pokemonUtils'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -12,7 +13,9 @@ const props = defineProps({
 const emit = defineEmits(['click'])
 
 const tierInfo = computed(() => getPokemonTier(props.pokemon))
-const spriteUrl = computed(() => getSpriteUrl(props.pokemon.id, props.pokemon.isShiny))
+const spriteUrl = computed(() => getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
+  isShiny: props.pokemon.isShiny 
+}))
 
 const statColor = computed(() => {
   const ratio = props.pokemon.hp / props.pokemon.maxHp

@@ -4,7 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useUIStore } from '@/stores/ui'
-import { getSpriteUrl } from '@/logic/sprites'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
 
 const gameStore = useGameStore()
@@ -72,7 +72,7 @@ const handleSwitch = async (index) => {
             >
               <div class="poke-sprite">
                 <img
-                  :src="getSpriteUrl(p.id, p.isShiny)"
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
                   :alt="p.name"
                 >
               </div>

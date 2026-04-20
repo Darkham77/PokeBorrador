@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useEvolutionStore } from '@/stores/evolution';
-import { getSpriteUrl } from '@/logic/pokemonUtils';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 const evolutionStore = useEvolutionStore();
@@ -21,8 +21,8 @@ onMounted(() => {
   oldName.value = evolutionStore.sourcePokemon.name;
   newName.value = toData?.name || evolutionStore.targetId;
   
-  fromSprite.value = getSpriteUrl(evolutionStore.sourcePokemon.id, evolutionStore.sourcePokemon.isShiny);
-  toSprite.value = getSpriteUrl(evolutionStore.targetId, evolutionStore.sourcePokemon.isShiny);
+  fromSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.sourcePokemon.id, { shiny: evolutionStore.sourcePokemon.isShiny });
+  toSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.targetId, { shiny: evolutionStore.sourcePokemon.isShiny });
 
   startSequence();
 });

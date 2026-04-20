@@ -29,8 +29,8 @@
 
   &:hover {
     transform: translate3d(0, -8px, 0);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
     border-color: $yellow;
+    box-shadow: 0 0 0 1px $yellow, 0 12px 30px rgba(0, 0, 0, 0.5);
     z-index: 100;
     
     &::before {

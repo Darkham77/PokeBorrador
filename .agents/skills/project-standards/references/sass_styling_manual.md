@@ -72,9 +72,19 @@ All game-specific content **MUST** be strictly Pixel Art to preserve the game's 
 
 - **Rendering**: For all sprites and pixelated assets, always use `image-rendering: pixelated;`.
 - **Icons**: Only use pixel-art icons. **FORBIDDEN**: Modern SVG icons, FontAwesome, or high-res Material icons.
-- **Typography (Game Data)**: Primary game interaction text (Stats, Dialogs, Battle log) **MUST** use Pixel Art fonts.
-  - **MANDATORY Fonts**: `Press Start 2P`, `VT323`, or `Silkscreen` (Google Fonts).
-  - **Restriction**: Smooth fonts like `Outfit` or `Inter` are reserved ONLY for administrative headers or meta-UI that is secondary to the game experience (e.g., Settings menus, Credits, Trade history logs, Debug consoles).
+- **Typography (Game Data)**: We maintain a strict hierarchy between "Game Heart" and "Modern Shell" typography.
+  - **MANDATORY Pixel Fonts**: `Press Start 2P`, `VT323`, or `Silkscreen` (Google Fonts).
+  - **MANDATORY Mixin**: Any element using a pixel font **MUST** include `@include pixelated;` to disable browser font-smoothing and ensure sharp edges.
+
+| UI Level | Element Type | Style Requirement | Recommended Font |
+| :--- | :--- | :--- | :--- |
+| **Game Heart** | Pokémon Names, Stats, Level, Moves | **PIXELATED** (Sharp) | `Press Start 2P` |
+| **Game Heart** | Battle Log, Dialogs, NPC names | **PIXELATED** (Sharp) | `VT323` / `Silkscreen` |
+| **Game Heart** | Modal Headers (Titles), Tab Labels | **PIXELATED** (Sharp) | `Press Start 2P` |
+| **Modern Shell** | Secondary Info, Settings, Debug Consoles | **SMOOTH** (Antialiased) | `Outfit` / `Inter` |
+| **Modern Shell** | Technical Logs, Trade History, Credits | **SMOOTH** (Antialiased) | `Outfit` / `Inter` |
+
+- **Restriction**: Smooth fonts like `Outfit` or `Inter` are reserved ONLY for administrative headers or meta-UI that is secondary to the game experience. Any text that represents a "Game Object" or "Trainer HUD Action" **MUST** be pixelated.
 
 ---
 

@@ -54,37 +54,55 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
 }
 
 .legacy-stat-item {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
   padding: 16px 12px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
 
-  &.highlight .legacy-stat-val {
-    color: var(--yellow);
+  &:hover {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(255, 214, 10, 0.2);
+    box-shadow: 0 0 0 1px rgba(255, 214, 10, 0.2);
+    transform: translateY(-2px);
+  }
+
+  &.highlight {
+    background: linear-gradient(135deg, rgba(255, 214, 10, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%);
+    border-color: rgba(255, 214, 10, 0.1);
+    
+    .legacy-stat-val {
+      color: #ffd60a;
+      text-shadow: 0 0 10px rgba(255, 214, 10, 0.3);
+    }
   }
 }
 
 .legacy-stat-val {
   font-family: 'Press Start 2P', monospace;
   font-size: 14px;
-  color: #f1f5f9;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  @include pixelated;
 }
 
 .legacy-stat-lbl {
   font-family: 'Press Start 2P', monospace;
   font-size: 6px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.3);
   text-transform: uppercase;
   letter-spacing: 1px;
+  @include pixelated;
 }
 
-.currency-icon-money { color: var(--yellow); }
+.currency-icon-money { color: #ffd60a; }
+.currency-icon-bc { color: #bf5af2; }
 </style>

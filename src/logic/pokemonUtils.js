@@ -7,10 +7,17 @@ import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 export { getPokemonTier, BOX_TIER_CONFIG, getSpeciesHistory };
 
 /**
- * Genera la URL del sprite usando el sistema de PokeAPI o el motor legacy.
+ * Genera la URL del sprite usando el sistema centralizado de AssetService.
  */
-import { getSpriteUrl, getBackSpriteUrl } from '@/data/spriteMapping';
-export { getSpriteUrl, getBackSpriteUrl };
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
+export function getSpriteUrl(id, isShiny = false) {
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny });
+}
+
+export function getBackSpriteUrl(id, isShiny = false) {
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny, back: true });
+}
 
 /**
  * Get moves a pokemon knows at a given level (up to 4, most recent)

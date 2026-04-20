@@ -1,12 +1,13 @@
 <script setup>
 import { computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore()
+const props = defineProps({
+  show: { type: Boolean, default: false },
+  moveName: { type: String, default: '' }
+})
 
-const moveName = computed(() => uiStore.selectedMove)
-const isOpen = computed(() => uiStore.isMoveDetailOpen)
+const emit = defineEmits(['close'])
 
 const TYPE_COLORS = {
   normal: '#aaa', fire: '#FF6B35', water: '#3B8BFF', grass: '#6BCB77',
@@ -16,8 +17,8 @@ const TYPE_COLORS = {
 }
 
 const md = computed(() => {
-  if (!moveName.value) return null
-  return window.MOVE_DATA?.[moveName.value] || null
+  if (!props.moveName) return null
+  return window.MOVE_DATA?.[props.moveName] || null
 })
 
 const typeColor = computed(() => {
@@ -36,24 +37,20 @@ const catInfo = computed(() => {
 })
 
 const description = computed(() => {
-  if (!moveName.value || !md.value) return ''
+  if (!props.moveName || !md.value) return ''
   if (typeof window.getMoveDescription === 'function') {
-    return window.getMoveDescription(moveName.value, md.value)
+    return window.getMoveDescription(props.moveName, md.value)
   }
   return "Causa daño al oponente sin efectos secundarios adicionales."
 })
-
-const closeDetail = () => {
-  uiStore.closeMoveDetail()
-}
 </script>
 
 <template>
   <BaseModal
-    :show="isOpen && !!md"
+    :show="show && !!md"
     :title="moveName || 'DETALLE'"
     max-width="400px"
-    @close="closeDetail"
+    @close="emit('close')"
   >
     <div 
       v-if="md"
@@ -100,7 +97,7 @@ const closeDetail = () => {
     <template #footer>
       <button
         class="action-btn"
-        @click="closeDetail"
+        @click="emit('close')"
       >
         CERRAR
       </button>
@@ -109,6 +106,8 @@ const closeDetail = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .move-detail-container {
   display: flex;
   flex-direction: column;
@@ -186,7 +185,7 @@ const closeDetail = () => {
 }
 
 .desc-title {
-  font-family: 'Press Start 2P', monospace;
+  font-family: 'Press Start 2P', cursive;
   font-size: 7px;
   color: var(--move-accent);
   margin-bottom: 12px;
@@ -208,10 +207,11 @@ const closeDetail = () => {
   color: #888;
   border: none;
   border-radius: 14px;
-  font-family: 'Press Start 2P', monospace;
+  font-family: 'Press Start 2P', cursive;
   font-size: 9px;
   cursor: pointer;
   transition: all 0.2s;
+  @include pixelated;
 
   &:hover {
     background: rgba(255, 255, 255, 0.1);

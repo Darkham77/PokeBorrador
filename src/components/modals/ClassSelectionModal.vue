@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { usePlayerClassStore } from '@/stores/playerClass';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
@@ -8,8 +8,11 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import BaseModal from '@/components/common/BaseModal.vue';
 
 const classStore = usePlayerClassStore();
-const _gameStore = useGameStore();
+const gameStore = useGameStore();
 const uiStore = useUIStore();
+
+defineOptions({ inheritAttrs: false });
+const emit = defineEmits(['close', 'confirm', 'cancel', 'submit']);
 
 const isOpen = computed({
   get: () => uiStore.isClassSelectionOpen,
@@ -17,262 +20,303 @@ const isOpen = computed({
 });
 const close = () => { isOpen.value = false };
 
-const hoveredClassId = ref(null);
-const selectedTab = ref(classStore.playerClass || Object.keys(PLAYER_CLASSES)[0]);
-
-const currentPreview = computed(() => PLAYER_CLASSES[hoveredClassId.value || selectedTab.value]);
-
-// Resolved via AssetService
-const getTrainerSprite = (id) => {
-  return getAssetUrl(ASSET_TYPES.TRAINER, id);
-};
-
 const handleSelect = async (id) => {
   const res = await classStore.selectClass(id);
   if (res.success) close();
+};
+
+const getTrainerSprite = (id) => {
+  return getAssetUrl(ASSET_TYPES.TRAINER, id);
 };
 </script>
 
 <template>
   <BaseModal
     :show="isOpen"
-    title="PROFESIÓN"
-    max-width="1000px"
+    title="⚡ ELEGÍ TU CLASE ⚡"
+    max-width="95%"
     @close="close"
   >
-    <div class="class-selection-inner">
-      <div class="modal-content">
-        <!-- Sidebar: selection -->
-        <aside class="class-sidebar">
-          <div 
-            v-for="cls in PLAYER_CLASSES" 
-            :key="cls.id"
-            class="class-item"
-            :class="{ active: selectedTab === cls.id, current: classStore.playerClass === cls.id }"
-            @mouseenter="hoveredClassId = cls.id"
-            @mouseleave="hoveredClassId = null"
-            @click="selectedTab = cls.id"
-          >
-            <div class="class-icon">
-              {{ cls.icon }}
-            </div>
-            <div class="class-meta">
-              <span class="name">{{ cls.name }}</span>
-              <span
-                v-if="classStore.playerClass === cls.id"
-                class="active-badge"
-              >ACTIVA</span>
-            </div>
-          </div>
-        </aside>
+    <div class="class-selection-container">
+      <header class="selection-header">
+        <p class="selection-subtitle">
+          Esta elección define cómo jugás. Podés cambiar más adelante por 10,000 Battle Coins.
+        </p>
+      </header>
 
-        <!-- Main: Preview -->
-        <main
-          class="class-preview"
-          :style="{ '--preview-color': currentPreview.color }"
+      <div class="classes-grid">
+        <div 
+          v-for="cls in PLAYER_CLASSES" 
+          :key="cls.id"
+          class="class-card-premium"
+          :style="{ '--cls-color': cls.color }"
+          :class="{ 'is-current': classStore.playerClass === cls.id }"
         >
-          <div class="preview-bg">
-            <img
-              :src="getTrainerSprite(currentPreview.avatarSpriteId || currentPreview.id)"
-              :alt="currentPreview.name"
-              class="trainer-img"
-            >
+          <div class="card-glow" />
+          
+          <div class="avatar-circle-wrap">
+            <div class="avatar-circle">
+              <img 
+                :src="getTrainerSprite(cls.showdownSpriteId || cls.id)" 
+                class="trainer-pixel-art"
+              >
+            </div>
           </div>
 
-          <div class="preview-info">
-            <div class="info-header">
-              <span class="preview-name">{{ currentPreview.name }}</span>
-              <p class="preview-desc">
-                {{ currentPreview.description }}
-              </p>
+          <h2 class="class-title">
+            {{ cls.name }}
+          </h2>
+          <p class="class-desc">
+            {{ cls.description }}
+          </p>
+
+          <div class="stats-comparison">
+            <div class="stats-section pros">
+              <h3><span class="icon">✅</span> VENTAJAS</h3>
+              <ul>
+                <li
+                  v-for="(bonus, idx) in cls.bonuses"
+                  :key="idx"
+                >
+                  {{ bonus }}
+                </li>
+              </ul>
             </div>
 
-            <div class="pros-cons">
-              <div class="section">
-                <h3>VIRTUDES</h3>
-                <ul>
-                  <li
-                    v-for="(bonus, idx) in currentPreview.bonuses"
-                    :key="idx"
-                  >
-                    <span class="bullet">✓</span> {{ bonus }}
-                  </li>
-                </ul>
-              </div>
-              <div class="section">
-                <h3>LIMITACIONES</h3>
-                <ul>
-                  <li
-                    v-for="(penalty, idx) in currentPreview.penalties"
-                    :key="idx"
-                  >
-                    <span class="bullet">✕</span> {{ penalty }}
-                  </li>
-                </ul>
-              </div>
+            <div class="stats-section cons">
+              <h3><span class="icon">❌</span> PENALIZACIONES</h3>
+              <ul>
+                <li
+                  v-for="(penalty, idx) in cls.penalties"
+                  :key="idx"
+                >
+                  {{ penalty }}
+                </li>
+              </ul>
             </div>
-
-            <button 
-              class="select-action-btn"
-              :disabled="classStore.playerClass === currentPreview.id"
-              @click="handleSelect(currentPreview.id)"
-            >
-              <template v-if="classStore.playerClass === currentPreview.id">
-                PROFESIÓN ACTUAL
-              </template>
-              <template v-else-if="!classStore.playerClass">
-                ELEGIR GRATIS
-              </template>
-              <template v-else>
-                CAMBIAR (₽10,000)
-              </template>
-            </button>
           </div>
-        </main>
+
+          <button 
+            class="select-btn-premium"
+            :disabled="classStore.playerClass === cls.id"
+            @click="handleSelect(cls.id)"
+          >
+            <span class="btn-text">
+              {{ classStore.playerClass === cls.id ? 'CLASE ACTUAL' : (classStore.playerClass ? 'CAMBIAR' : 'ELEGIR') }}
+            </span>
+            <span
+              v-if="classStore.playerClass && classStore.playerClass !== cls.id"
+              class="btn-price"
+            >10,000 BC</span>
+          </button>
+        </div>
       </div>
     </div>
   </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.class-selection-inner {
-  padding: 0;
-  margin: -24px; // Compensate BaseModal padding
-}
+@use "@/styles/core/tools" as *;
 
-.modal-content {
-  display: flex;
-  height: min(700px, 80vh);
-}
-
-.class-sidebar {
-  width: 280px;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 16px;
-  background: rgba(0,0,0,0.2);
+.class-selection-container {
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
+  gap: 32px;
 }
 
-.class-item {
-  padding: 16px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  .class-icon { font-size: 24px; }
-  .class-meta {
-    display: flex;
-    flex-direction: column;
-    .name { font-weight: 700; color: #cbd5e1; font-size: 14px; }
-    .active-badge { font-size: 8px; font-family: 'Press Start 2P', cursive; color: #22c55e; margin-top: 4px; }
+.selection-header {
+  text-align: center;
+  .selection-subtitle {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'Press Start 2P', cursive;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+    @include pixelated;
   }
+}
+
+.classes-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  perspective: 1000px;
+}
+
+.class-card-premium {
+  position: relative;
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+
+  @include hover-neon-yellow(1px);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateX(4px);
+    transform: translateY(-10px) rotateX(2deg);
+    border-color: var(--yellow) !important;
+    
+    .card-glow { opacity: 0.2; }
+    .trainer-pixel-art { transform: Scale(1.1); }
   }
 
-  &.active {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.4);
-    .name { color: #fff; }
+  &.is-current {
+    border-color: #22c55e;
+    &::after {
+      content: 'ACTUAL';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 8px;
+      font-family: 'Press Start 2P', cursive;
+      color: #22c55e;
+    }
+  }
+
+  .card-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, var(--cls-color) 0%, transparent 70%);
+    opacity: 0.05;
+    transition: opacity 0.4s;
+    pointer-events: none;
   }
 }
 
-.class-preview {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: radial-gradient(circle at top right, var(--preview-color)0a, transparent 40%);
-  overflow-y: auto;
-}
-
-.preview-bg {
-  height: 240px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.4));
-  position: relative;
-  
-  .trainer-img {
-    height: 180px;
+.avatar-circle-wrap {
+  margin-bottom: 24px;
+  .avatar-circle {
+    width: 100px;
+    height: 100px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--cls-color);
+    box-shadow: 0 0 20px var(--cls-color)44;
+  }
+  .trainer-pixel-art {
+    width: 70px;
     image-rendering: pixelated;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+    transition: transform 0.4s;
   }
 }
 
-.preview-info {
-  padding: 32px;
-  flex: 1;
+.class-title {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 14px;
+  color: var(--cls-color);
+  margin-bottom: 16px;
+  text-shadow: 0 0 10px var(--cls-color)66;
+  @include pixelated;
+}
+
+.class-desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.stats-comparison {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
+  gap: 20px;
+  margin-bottom: 32px;
+  flex: 1;
 
-.info-header {
-  .preview-name { 
-    font-family: 'Press Start 2P', cursive; 
-    font-size: 18px; 
-    color: var(--preview-color);
-    text-shadow: 0 0 20px var(--preview-color);
-    margin-bottom: 12px;
-    display: block;
+  .stats-section {
+    h3 {
+      font-size: 9px;
+      font-family: 'Press Start 2P', cursive;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      @include pixelated;
+    }
+    
+    &.pros h3 { color: #22c55e; }
+    &.cons h3 { color: #ef4444; }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      li {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.4;
+        position: relative;
+        padding-left: 12px;
+        &::before {
+          content: '•';
+          position: absolute;
+          left: 0;
+          color: rgba(255, 255, 255, 0.3);
+        }
+      }
+    }
   }
-  .preview-desc { font-size: 15px; color: #94a3b8; line-height: 1.6; }
 }
 
-.pros-cons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-
-  h3 { font-family: 'Press Start 2P', cursive; font-size: 9px; margin-bottom: 16px; }
-  .section:first-child h3 { color: #22c55e; }
-  .section:last-child h3 { color: #ef4444; }
-
-  ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-  li { font-size: 13px; color: #cbd5e1; line-height: 1.4; display: flex; gap: 8px; }
-  .bullet { font-weight: 800; font-size: 12px; }
-}
-
-.select-action-btn {
-  margin-top: auto;
-  padding: 20px;
-  border: none;
-  border-radius: 16px;
-  background: var(--preview-color);
+.select-btn-premium {
+  width: 100%;
+  padding: 16px;
+  background: var(--cls-color);
   color: #fff;
+  border: none;
+  border-radius: 12px;
   font-family: 'Press Start 2P', cursive;
-  font-size: 11px;
+  font-size: 10px;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   transition: all 0.2s;
-  box-shadow: 0 10px 20px -10px var(--preview-color);
+  box-shadow: 0 10px 20px -5px var(--cls-color)88;
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    filter: Brightness(1.2);
+    transform: translateY(-2px) Scale(1.02);
+    filter: brightness(1.1);
+    box-shadow: 0 15px 30px -5px var(--cls-color);
   }
 
   &:disabled {
-    background: #475569;
-    box-shadow: none;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.2);
     cursor: default;
-    opacity: 0.5;
-    background: #1e293b;
+    box-shadow: none;
+  }
+
+  .btn-price {
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.7);
   }
 }
 
-@media (max-width: 768px) {
-  .modal-content { flex-direction: column; height: auto; }
-  .class-sidebar { width: 100%; height: 200px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
+@media (max-width: 1024px) {
+  .classes-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .classes-grid { grid-template-columns: 1fr; }
 }
 </style>

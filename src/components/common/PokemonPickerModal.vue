@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { getSpriteUrl } from '@/logic/pokemonUtils'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   title: { type: String, default: 'Seleccionar Pokémon' },
@@ -92,7 +92,7 @@ const handleConfirm = () => {
               <span v-if="selectedIndices.includes(p.originalIndex)">✓</span>
             </div>
             <img
-              :src="getSpriteUrl(p.id, p.isShiny)"
+              :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
               class="p-sprite"
             >
             <div class="p-info">

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   slotId: { type: String, required: true },
@@ -15,7 +16,7 @@ const genderIcon = computed(() => {
 })
 
 const getSprite = (id, shiny) => {
-  return window.getSpriteUrl?.(id, shiny) || ''
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny })
 }
 </script>
 

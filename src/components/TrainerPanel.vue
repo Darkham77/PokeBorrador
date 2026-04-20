@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/playerClass'
+import { useModalStore } from '@/stores/modals'
 import { useTradeStore } from '@/stores/trade'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
@@ -18,8 +19,20 @@ const trainerExpPct = computed(() => {
   return Math.min(100, (gs.value.exp / gs.value.expNeeded) * 100)
 })
 
-const handlePanelClick = () => {
-  uiStore.isProfileOpen = true
+const handlePanelClick = (event) => {
+  // If clicking specifically the avatar area, handle class logic
+  const isAvatar = event.target.closest('#hud-class-avatar')
+  
+  if (isAvatar) {
+    if (!gameStore.state.playerClass) {
+      useModalStore().open('ClassSelection')
+    } else {
+      useModalStore().open('ClassMissions')
+    }
+    return
+  }
+  
+  uiStore.toggleProfile()
 }
 </script>
 
@@ -32,7 +45,7 @@ const handlePanelClick = () => {
     <TrainerAvatar
       id="hud-class-avatar"
       :player-class="gs.playerClass"
-      :level="gs.level"
+      :level="gs.trainerLevel"
       :size="48"
     >
       <template #overlay>
@@ -55,7 +68,7 @@ const handlePanelClick = () => {
       </div>
       <div class="trainer-info">
         <div class="trainer-lv">
-          Entrenador Nv. <span>{{ gs.level }}</span>
+          Entrenador Nv. <span>{{ gs.trainerLevel }}</span>
         </div>
       </div>
       <div class="exp-bar-container">
@@ -123,9 +136,9 @@ const handlePanelClick = () => {
 }
 
 @keyframes pulse-red {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% { transform: Scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: Scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: Scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
 .trainer-content {

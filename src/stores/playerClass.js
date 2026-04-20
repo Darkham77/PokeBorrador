@@ -70,6 +70,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     if (isChange) {
       const cost = 10000
       if ((gameStore.state.battleCoins || 0) < cost) {
+        uiStore.notify(`Necesitas ${cost.toLocaleString()} Battle Coins para cambiar.`, '❌')
         return { success: false, msg: `Necesitas ${cost.toLocaleString()} Battle Coins para cambiar.` }
       }
       gameStore.state.battleCoins -= cost
@@ -104,6 +105,23 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
    */
   async function setFaction(factionId) {
     if (!['union', 'poder', 'rocket'].includes(factionId)) return { success: false }
+    
+    const currentFaction = gameStore.state.faction
+    if (currentFaction === factionId) {
+      uiStore.notify('Ya perteneces a este bando.', '⚠️')
+      return { success: false }
+    }
+
+    // Costo de cambio (si ya tenía uno)
+    if (currentFaction) {
+      const cost = 25000
+      if ((gameStore.state.money || 0) < cost) {
+        uiStore.notify(`Necesitas 🪙 ${cost.toLocaleString()} para cambiar de bando.`, '❌')
+        return { success: false }
+      }
+      gameStore.state.money -= cost
+      uiStore.notify(`Cambiaste de bando por 🪙 ${cost.toLocaleString()}`, '💸')
+    }
 
     gameStore.state.faction = factionId
     uiStore.notify(`¡Te uniste al Equipo ${factionId.toUpperCase()}!`, '🚩')

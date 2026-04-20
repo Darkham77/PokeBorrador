@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useBreedingStore } from '@/stores/breeding'
 import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   isOpen: Boolean,
@@ -78,7 +79,7 @@ const getListCompatibility = (p) => {
 }
 
 const getSprite = (id, shiny) => {
-  return window.getSpriteUrl?.(id, shiny) || ''
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny })
 }
 </script>
 

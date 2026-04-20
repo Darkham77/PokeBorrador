@@ -23,10 +23,7 @@ const loading = ref(false)
 const appVersion = __APP_VERSION__
 
 onMounted(async () => {
-  // Check if logout requested
-  if (router.currentRoute.value.query.logout) {
-    await authStore.logout()
-  }
+  // Session is cleared by router guard if entering /login while logged in
 })
 
 const switchAuthTab = (tab) => {

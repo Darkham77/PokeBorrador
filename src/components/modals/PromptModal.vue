@@ -1,33 +1,43 @@
 <script setup>
-import { useUIStore } from '@/stores/ui'
+import { ref } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore()
+const props = defineProps({
+  show: { type: Boolean, default: false },
+  title: { type: String, default: 'INGRESAR VALOR' },
+  message: { type: String, default: '' },
+  initialValue: { type: String, default: '' },
+  type: { type: String, default: 'text' }
+})
+
+const emit = defineEmits(['confirm', 'cancel', 'close'])
+const inputValue = ref(props.initialValue)
 
 const handleConfirm = () => {
-  uiStore.closePrompt(true)
+  emit('confirm', inputValue.value)
+  emit('close')
 }
 
 const handleCancel = () => {
-  uiStore.closePrompt(false)
+  emit('cancel')
+  emit('close')
 }
 </script>
 
 <template>
   <BaseModal
-    :show="uiStore.promptDialog.open"
-    :title="uiStore.promptDialog.title"
+    :show="show"
+    :title="title"
     max-width="400px"
-    :z-index="20001"
     @close="handleCancel"
   >
     <div class="prompt-body">
-      <p v-if="uiStore.promptDialog.message">
-        {{ uiStore.promptDialog.message }}
+      <p v-if="message">
+        {{ message }}
       </p>
       <input 
-        v-model="uiStore.promptDialog.value"
-        :type="uiStore.promptDialog.type"
+        v-model="inputValue"
+        :type="type"
         class="prompt-input"
         autofocus
         @keyup.enter="handleConfirm"
@@ -54,53 +64,16 @@ const handleCancel = () => {
 </template>
 
 <style scoped lang="scss">
-.prompt-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  z-index: 20001;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.prompt-box {
-  width: min(400px, 100%);
-  background: #111;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-}
-
-.glass-morphism {
-  background: rgba(20, 20, 20, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.prompt-header {
-  padding: 24px 24px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  
-  h3 {
-    margin: 0;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 12px;
-    color: var(--yellow);
-  }
-}
+@use "sass:math";
+@use "@/styles/core/tools" as *;
 
 .prompt-body {
-  padding: 0 24px 24px;
+  padding: 24px;
   
   p {
     margin: 0 0 16px;
     font-size: 14px;
-    color: #ccc;
+    color: rgba(255, 255, 255, 0.7);
     font-family: 'Inter', sans-serif;
   }
   
@@ -114,16 +87,16 @@ const handleCancel = () => {
     font-family: 'Inter', sans-serif;
     font-size: 16px;
     outline: none;
+    transition: all 0.2s;
     
     &:focus {
       border-color: var(--yellow);
-      box-shadow: 0 0 0 2px rgba(255, 214, 10, 0.2);
+      box-shadow: 0 0 12px rgba(255, 214, 10, 0.2);
     }
   }
 }
 
 .prompt-footer {
-  padding: 16px 24px 24px;
   display: flex;
   gap: 12px;
   
@@ -137,34 +110,29 @@ const handleCancel = () => {
     font-family: 'Press Start 2P', cursive;
     cursor: pointer;
     transition: all 0.2s;
+    @include pixelated;
+    
+    &:active {
+      transform: Scale(0.95);
+    }
   }
   
   .btn-cancel {
     background: rgba(255, 255, 255, 0.05);
-    color: #888;
-    &:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+    color: rgba(255, 255, 255, 0.5);
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
   }
   
   .btn-confirm {
     background: var(--yellow);
     color: #000;
-    &:hover { background: #ffd60a; }
+    box-shadow: 0 4px 15px rgba(255, 214, 10, 0.3);
+    &:hover {
+      background: #ffd60a;
+    }
   }
-}
-
-/* Animations */
-.prompt-fade-enter-active, .prompt-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.prompt-fade-enter-from, .prompt-fade-leave-to {
-  opacity: 0;
-}
-
-@keyframes pop {
-  from { transform: Scale(0.8); opacity: 0; }
-  to { transform: Scale(1); opacity: 1; }
-}
-.animate-pop {
-  animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 </style>

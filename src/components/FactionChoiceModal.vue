@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -14,10 +14,19 @@ const closeFactionModal = () => {
   uiStore.isFactionChoiceOpen = false
 }
 
+const isProcessing = ref(false)
+
 const chooseFaction = async (faction) => {
-  const res = await classStore.setFaction(faction)
-  if (res.success) {
-    uiStore.isFactionChoiceOpen = false
+  if (isProcessing.value) return
+  
+  isProcessing.value = true
+  try {
+    const res = await classStore.setFaction(faction)
+    if (res.success) {
+      uiStore.isFactionChoiceOpen = false
+    }
+  } finally {
+    isProcessing.value = false
   }
 }
 
@@ -37,8 +46,12 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   >
     <div class="faction-content">
       <div class="faction-intro">
-        <p class="intro-text">Tu bando determina con quién disputas el control de Kanto.</p>
-        <p class="cost-text">Cambiar cuesta <span class="coin">🪙 25.000</span> y resetea tus puntos actuales.</p>
+        <p class="intro-text">
+          Tu bando determina con quién disputas el control de Kanto.
+        </p>
+        <p class="cost-text">
+          Cambiar cuesta <span class="coin">🪙 25.000</span> y resetea tus puntos actuales.
+        </p>
       </div>
 
       <div class="faction-options">
@@ -88,15 +101,15 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   margin-bottom: 24px;
   
   .intro-text {
-    font-size: 11px;
+    font-size: 14px;
     color: #fff;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     line-height: 1.4;
   }
   
   .cost-text {
     font-family: 'Press Start 2P', monospace;
-    font-size: 7px;
+    font-size: 9px;
     color: #fff;
     
     .coin { color: var(--yellow, #ffd700); }
@@ -153,17 +166,17 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 .faction-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .faction-name {
   font-family: 'Press Start 2P', monospace;
-  font-size: 12px;
+  font-size: 16px;
   letter-spacing: 1px;
 }
 
 .faction-motto {
-  font-size: 10px;
+  font-size: 12px;
   color: #fff;
   opacity: 0.8;
 }

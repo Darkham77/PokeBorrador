@@ -10,10 +10,19 @@ import PokemonStatsGrid from './pokemon-detail/PokemonStatsGrid.vue'
 import PokemonMovesGrid from './pokemon-detail/PokemonMovesGrid.vue'
 import PokemonActionFooter from './pokemon-detail/PokemonActionFooter.vue'
 
+const props = defineProps({
+  show: { type: Boolean, default: false },
+  pokemon: { type: Object, default: null },
+  index: { type: Number, default: -1 },
+  context: { type: String, default: 'team' },
+  extra: { type: Object, default: null }
+})
+
+const emit = defineEmits(['close'])
+
 const uiStore = useUIStore()
 
-const p = computed(() => uiStore.selectedPokemon)
-const isOpen = computed(() => uiStore.isPokemonDetailOpen)
+const p = computed(() => props.pokemon)
 
 const TYPE_COLORS = {
   grass: '#6BCB77', fire: '#FF3B3B', water: '#3B8BFF', normal: '#aaa', 
@@ -29,12 +38,12 @@ const maxObey = computed(() => {
 })
 
 const needsObedienceWarning = computed(() => {
-  return uiStore.pokemonDetailContext === 'team' && p.value?.level > maxObey.value
+  return props.context === 'team' && p.value?.level > maxObey.value
 })
 
 const handleToggleTag = (tag) => {
-  const location = uiStore.pokemonDetailContext
-  const index = uiStore.pokemonDetailIndex
+  const location = props.context
+  const index = props.index
   if (typeof window.togglePokeTag === 'function') {
     window.togglePokeTag(location, index, tag)
     // Update local ref for reactivity balance with legacy
@@ -47,32 +56,28 @@ const handleToggleTag = (tag) => {
 }
 
 const handleBuy = () => {
-  const extra = uiStore.pokemonDetailExtra
+  const extra = props.extra
   if (extra && typeof window.buyFromMarket === 'function') {
     window.buyFromMarket(extra.offerId, extra.price, extra.type)
-    uiStore.closePokemonDetail()
+    emit('close')
   }
 }
 
 const handleEvolve = () => {
-  const index = uiStore.pokemonDetailIndex
+  const index = props.index
   if (typeof window.showStonePicker === 'function') {
-    uiStore.closePokemonDetail()
+    emit('close')
     window.showStonePicker(index)
   }
-}
-
-const closeDetail = () => {
-  uiStore.closePokemonDetail()
 }
 </script>
 
 <template>
   <BaseModal
-    :show="isOpen && !!p"
+    :show="show && !!p"
     :show-close-button="false"
     max-width="480px"
-    @close="closeDetail"
+    @close="emit('close')"
   >
     <div 
       v-if="p"
@@ -81,7 +86,7 @@ const closeDetail = () => {
     >
       <PokemonDetailHeader 
         :pokemon="p" 
-        @close="closeDetail"
+        @close="emit('close')"
         @toggle-tag="handleToggleTag"
       />
 
@@ -94,7 +99,7 @@ const closeDetail = () => {
 
       <PokemonStatusSection 
         :pokemon="p" 
-        :context="uiStore.pokemonDetailContext" 
+        :context="context" 
       />
 
       <PokemonStatsGrid :pokemon="p" />
@@ -105,8 +110,8 @@ const closeDetail = () => {
       />
 
       <PokemonActionFooter 
-        :context="uiStore.pokemonDetailContext"
-        :extra="uiStore.pokemonDetailExtra"
+        :context="context"
+        :extra="extra"
         @buy="handleBuy"
         @evolve="handleEvolve"
       />
@@ -115,6 +120,8 @@ const closeDetail = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .pokemon-detail-container {
   display: flex;
   flex-direction: column;
@@ -124,7 +131,7 @@ const closeDetail = () => {
 
 .obedience-warning {
   background: rgba(239, 68, 68, 0.15);
-  border: 1px solid var(--red);
+  border: 1px solid #ef4444;
   padding: 12px;
   border-radius: 12px;
   font-size: 11px;
@@ -134,8 +141,8 @@ const closeDetail = () => {
   text-align: center;
 }
 
-// Remove original padding and border as it's handled by BaseModal
 :deep(.base-modal-card) {
   border-top: 4px solid var(--accent-color) !important;
+  transition: border-color 0.3s ease;
 }
 </style>

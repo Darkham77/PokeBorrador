@@ -45,7 +45,6 @@ This document tracks the progress of migrating legacy JavaScript/CSS/HTML code f
 | `11_battle_ui.js (Fossils)`| `src/components/modals/FossilRevivalModal.vue` | 100% | Lógica de resurrección de fósiles de la mochila migrada a Vue. |
 | `06_encounters_v5.js (Pesca)` | `src/components/battle/FishingMinigame.vue` | 100% | Minijuego de pesca rítmico migrado a Vue. `encounterUI.js` modernizado. |
 | `missions.js` | `src/stores/playerClass.js` | 100% | Lógica de misiones de clase consolidada en el store. `missionUI.js` eliminado. |
-
 | [UNIFICACIÓN] | `src/stores/game.js` | 100% | Centralización de `addPokemon`/`removePokemon`. Motor de fósiles movido a `src/logic/items/fossilEngine.js`. |
 | [UNIFICACIÓN] | `src/logic/pokemonFactory.js`| 100% | Removidos hacks de `window`. Integración nativa con Stores. |
 

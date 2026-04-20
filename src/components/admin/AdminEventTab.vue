@@ -260,7 +260,7 @@ defineEmits(['toggle-editing'])
     &:hover { background: rgba(255, 255, 255, 0.05); border-color: #fbbf24; }
   }
 
-  &.inactive { opacity: 0.6; filter: grayscale(1); }
+  &.inactive { opacity: 0.6; filter: Grayscale(1); }
 }
 
 .event-form {

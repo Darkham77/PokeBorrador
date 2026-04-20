@@ -34,6 +34,16 @@ export const useAuthStore = defineStore('auth', () => {
     window.addEventListener('session-conflict', () => {
       console.warn('[AuthStore] Conflicto de sesión detectado. Bloqueando acceso.')
       sessionConflict.value = true
+      
+      // Auto-open modal via ModalStore
+      import('@/stores/modals').then(module => {
+        if (module && module.useModalStore) {
+          const modalStore = module.useModalStore()
+          modalStore.open('SessionConflict')
+        }
+      }).catch(e => {
+        console.error('[AuthStore] Failed to open SessionConflict modal:', e)
+      })
     })
   }
 
@@ -74,13 +84,25 @@ export const useAuthStore = defineStore('auth', () => {
           supabase.setMode('online')
         }
         
-        // Registrar sesión en DB para unicidad
-        await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value.id)
+        // Registrar sesión en DB para unicidad con timeout
+        try {
+          const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value.id)
+          await Promise.race([updatePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('UPDATE_TIMEOUT')), 3000))])
+        } catch (e) {
+          console.warn('[Auth] Session ID update failed or timed out:', e)
+        }
+
         startSessionMonitoring()
         
-        // Fetch profile meta
-        const { data: profile } = await supabase.from('profiles').select('db_version').eq('id', user.value.id).single()
-        if (profile) user.value.db_version = profile.db_version || 1
+        // Fetch profile meta con timeout
+        try {
+          const profilePromise = supabase.from('profiles').select('db_version').eq('id', user.value.id).single()
+          const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 3000))])
+          if (profile) user.value.db_version = profile.db_version || 1
+        } catch (e) {
+          console.warn('[Auth] Profile fetch failed or timed out:', e)
+          if (user.value && !user.value.db_version) user.value.db_version = 1
+        }
 
         // Sync time only for online session
         syncServerTime()
@@ -106,6 +128,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } finally {
       loading.value = false
+      console.log('[Auth] CheckSession finished. Loading:', loading.value)
     }
   }
 

@@ -119,6 +119,7 @@ const handleForget = () => {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.92);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   z-index: 10000;
   display: flex;

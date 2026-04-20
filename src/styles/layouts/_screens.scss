@@ -222,6 +222,7 @@
   &:hover {
     background: rgba(255, 215, 0, 0.1) !important;
     border-color: rgba(255, 215, 0, 0.4) !important;
+    box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.4) !important;
     transform: string.unquote("Scale(1.02)");
   }
 }

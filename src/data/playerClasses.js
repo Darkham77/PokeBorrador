@@ -33,7 +33,8 @@ export const PLAYER_CLASSES = {
       catchMult: 1.0,
       shopDiscount: 0.20
     },
-    avatarSpriteId: 'teamrocket'
+    avatarSpriteId: 'teamrocket',
+    showdownSpriteId: 'rainbowrocketgrunt'
   },
   cazabichos: {
     id: 'cazabichos',
@@ -63,7 +64,8 @@ export const PLAYER_CLASSES = {
       daycareCostMult: 1.5,
       catchMult: 1.0
     },
-    avatarSpriteId: 'cazabichos'
+    avatarSpriteId: 'cazabichos',
+    showdownSpriteId: 'bugcatcher-gen6'
   },
   entrenador: {
     id: 'entrenador',
@@ -93,7 +95,8 @@ export const PLAYER_CLASSES = {
       daycareCostMult: 1.5,
       catchMult: 1.0
     },
-    avatarSpriteId: 'entrenador'
+    avatarSpriteId: 'entrenador',
+    showdownSpriteId: 'red-lgpe'
   },
   criador: {
     id: 'criador',
@@ -121,7 +124,8 @@ export const PLAYER_CLASSES = {
       daycareCostMult: 1.0,
       catchMult: 1.0
     },
-    avatarSpriteId: 'criador'
+    avatarSpriteId: 'criador',
+    showdownSpriteId: 'jacq'
   }
 };
 

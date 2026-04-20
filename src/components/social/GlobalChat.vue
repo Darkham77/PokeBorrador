@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/TrainerAvatar.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 
 const chatStore = useChatStore();
 const _authStore = useAuthStore();
@@ -92,23 +93,22 @@ onUnmounted(() => {
       <span class="label">Chat</span>
     </button>
 
-    <!-- Side Panel -->
-    <transition name="slide">
-      <section
-        v-if="isOpen"
-        class="chat-panel"
-        @wheel.stop
-      >
+    <!-- Side Panel via BaseModal -->
+    <BaseModal
+      :show="isOpen"
+      type="side-left"
+      :lock-scroll="false"
+      overlay="none"
+      hide-header
+      :show-close-button="true"
+      padding="raw"
+      @close="toggleChat"
+    >
+      <section class="chat-panel">
         <header class="chat-header">
           <div class="title">
             MUNDO
           </div>
-          <button
-            class="close-btn"
-            @click="toggleChat"
-          >
-            ×
-          </button>
         </header>
 
         <div
@@ -180,7 +180,7 @@ onUnmounted(() => {
           </p>
         </footer>
       </section>
-    </transition>
+    </BaseModal>
   </div>
 </template>
 
@@ -238,17 +238,12 @@ onUnmounted(() => {
 }
 
 .chat-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: min(350px, 100vw);
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background: rgba(13, 17, 23, 0.94);
   backdrop-filter: blur(12px);
-  border-right: 1px solid rgba(199, 125, 255, 0.2);
   display: flex;
   flex-direction: column;
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
 .chat-header {
@@ -391,13 +386,7 @@ onUnmounted(() => {
   .hint-error { color: #f87171; font-weight: 700; }
 }
 
-// Animations
-.slide-enter-active, .slide-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.slide-enter-from, .slide-leave-to {
-  transform: translateX(-100%);
-}
+// Animations removed as BaseModal handles them
 
 .animate-pop {
   animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;

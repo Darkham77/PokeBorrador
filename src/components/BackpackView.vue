@@ -403,8 +403,20 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   gap: 14px;
 }
 
-.market-card.disabled { opacity: 0.5; filter: grayScale(100%); cursor: not-allowed; }
-.market-card.selected { border: 2px solid #4caf50; background: rgba(76,175,80,0.05); }
+.market-card {
+  @include card-premium(16px);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  @include hover-neon-yellow(1px);
+
+  &.disabled { opacity: 0.5; filter: grayScale(100%); cursor: not-allowed; }
+  &.selected { border: 2px solid #4caf50 !important; background: rgba(76,175,80,0.05); }
+}
 
 .market-item-icon { margin-bottom: 8px; text-align: center; }
 .item-img { width: 40px; height: 40px; image-rendering: pixelated; }

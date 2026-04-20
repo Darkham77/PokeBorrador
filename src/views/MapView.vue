@@ -8,6 +8,7 @@ import MapGrid from '@/components/map/MapGrid.vue'
 import { useUIStore } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
 import { GYMS } from '@/data/gyms'
+import { useModalStore } from '@/stores/modals'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
@@ -24,7 +25,8 @@ const openTab = (tab) => {
 }
 
 const openCenter = () => {
-  uiStore.isPokemonCenterOpen = true
+  const modalStore = useModalStore()
+  modalStore.open('PokemonCenter')
 }
 
 // Mapeo de misiones para los sprites

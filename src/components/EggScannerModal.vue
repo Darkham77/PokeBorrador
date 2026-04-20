@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBreedingStore } from '@/stores/breeding'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const _props = defineProps({
   isOpen: Boolean
@@ -96,7 +97,7 @@ const handleSell = async () => {
 }
 
 const _getSprite = (id, shiny) => {
-  return window.getSpriteUrl?.(id, shiny) || ''
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny })
 }
 </script>
 

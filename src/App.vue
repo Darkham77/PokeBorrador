@@ -7,25 +7,14 @@ import { checkDBCompatibility } from '@/logic/db/dbRouter'
 import { phaserBridge } from '@/logic/phaserBridge'
 import MainGameView from '@/views/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
+import ModalHost from '@/components/common/ModalHost.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
 import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue'
 import LivePvPArena from '@/components/battle/LivePvPArena.vue'
-import EvolutionScene from '@/components/evolution/EvolutionScene.vue'
-import LibraryModal from '@/components/LibraryModal.vue'
-import ShopView from '@/components/ShopView.vue'
-import PokemonCenterView from '@/components/PokemonCenterView.vue'
-import InventoryModal from '@/components/inventory/InventoryModal.vue'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { usePlayerClassStore } from '@/stores/playerClass'
-import MoveLearningModal from '@/components/modals/MoveLearningModal.vue'
 import PhaserGame from '@/components/game/PhaserGame.vue'
 import { useUIStore } from '@/stores/ui'
-import ConfirmModal from '@/components/modals/ConfirmModal.vue'
-import PromptModal from '@/components/modals/PromptModal.vue'
-import SpecialItemModals from '@/components/modals/SpecialItemModals.vue'
-import FossilRevivalModal from '@/components/modals/FossilRevivalModal.vue'
-import CosmeticsModal from '@/components/modals/CosmeticsModal.vue'
-import FishingMinigame from '@/components/battle/FishingMinigame.vue'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -187,27 +176,10 @@ const handleRetry = () => {
 
     <!-- Error Global UI -->
     <ErrorOverlay />
+    <ModalHost />
     <ConnectionWarning />
     <LocalDebugPanel />
     <LivePvPArena />
-    <EvolutionScene />
-    <LibraryModal />
-    <ShopView v-if="uiStore.isShopOpen" />
-    <PokemonCenterView v-if="uiStore.isPokemonCenterOpen" />
-    <InventoryModal />
-    <MoveLearningModal v-if="uiStore.isMoveLearningOpen" />
-    <ConfirmModal />
-    <PromptModal />
-    <SpecialItemModals />
-    <FossilRevivalModal v-if="uiStore.isFossilRevivalOpen" />
-    <CosmeticsModal />
-    <FishingMinigame
-      v-if="uiStore.isFishingGameOpen"
-      :pokemon="uiStore.fishingPokemon"
-      :rarity="uiStore.fishingRarity"
-      @win="uiStore.fishingCallbacks.onWin"
-      @fail="uiStore.fishingCallbacks.onFail"
-    />
   </div>
 </template>
 
@@ -250,6 +222,7 @@ const handleRetry = () => {
 
 .loading-overlay.global-overlay {
   background: rgba(0, 0, 0, 0.95);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 

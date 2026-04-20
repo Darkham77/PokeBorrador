@@ -65,13 +65,17 @@ input, select, textarea, button {
 }
 
 // Ensure pixel fonts are sharp and not blurry
+h1, h2, h3, h4, h5, h6,
 .label, 
 .pill-value, 
 .font-pixel, 
 [style*="Press Start 2P"],
 [style*="Silkscreen"],
 [style*="VT323"] {
-  @include pixelated;
+  // If font family contains a pixel font, apply pixelated mixin
+  & {
+    @include pixelated;
+  }
 }
 
 .screen {

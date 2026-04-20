@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useSocialStore } from '@/stores/social.js'
+import { useModalStore } from '@/stores/modals'
 
 const props = defineProps({
   position: { type: String, default: 'top' } // 'top' or 'bottom'
@@ -19,12 +20,18 @@ const activeTab = computed({
   set: (val) => { uiStore.activeTab = val }
 })
 
-const migratedTabs = ['gyms', 'daycare', 'team', 'box', 'pokedex', 'bag', 'market', 'trainer-shop', 'social', 'friends', 'events', 'war', 'arena', 'ranking']
+const migratedTabs = ['map', 'gyms', 'daycare', 'team', 'box', 'pokedex', 'bag', 'market', 'trainer-shop', 'social', 'friends', 'events', 'war', 'arena', 'ranking']
 
 const handleTabChange = (tab, event) => {
-  // Navigation blocks
+  const modalStore = useModalStore()
+  
   if (tab === 'bag') {
-    uiStore.isInventoryOpen = true
+    modalStore.open('Inventory')
+    return
+  }
+
+  if (tab === 'market') {
+    modalStore.open('Shop')
     return
   }
   
@@ -42,11 +49,6 @@ const handleTabChange = (tab, event) => {
     window.showTab(tab, btn)
   }
   
-  if (tab === 'map' && typeof window.renderMaps === 'function') {
-    setTimeout(() => {
-      if (document.getElementById('map-list')) window.renderMaps()
-    }, 50)
-  }
 }
 
 const toggleGroupMenu = (event) => {
@@ -290,15 +292,28 @@ const toggleGroupMenu = (event) => {
   }
 
   &:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.12);
     border-color: var(--yellow);
+    box-shadow: 
+      0 0 0 2px var(--yellow),
+      0 0 15px rgba(255, 214, 10, 0.4);
+    z-index: 2;
+    transform: translateY(-2px);
   }
-
+  
   &.active {
-    background: rgba(255, 204, 0, 0.1);
+    background: rgba(255, 204, 0, 0.15);
     border-color: var(--yellow);
-    box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
-    .label { color: var(--yellow); opacity: 1; }
+    box-shadow: 
+      0 0 0 2px var(--yellow),
+      0 0 30px rgba(255, 214, 10, 0.45),
+      inset 0 0 12px rgba(255, 214, 10, 0.1);
+    z-index: 3;
+    .label { 
+      color: var(--yellow); 
+      opacity: 1; 
+      text-shadow: 0 0 8px rgba(255, 214, 10, 0.5); 
+    }
   }
 }
 
@@ -314,18 +329,18 @@ const toggleGroupMenu = (event) => {
   display: none;
   position: absolute;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(25px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 14px;
-  padding: 4px;
+  padding: 8px;
   z-index: 100;
   width: max-content !important;
   min-width: 0 !important;
   align-items: stretch !important;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-  overflow: hidden;
+  overflow: visible;
 
   .hud-group.is-open & { display: flex !important; }
 
@@ -357,14 +372,22 @@ const toggleGroupMenu = (event) => {
     white-space: nowrap;
     
     &:hover { 
-      background: rgba(255, 255, 255, 0.04); 
-      border-color: rgba(255, 255, 255, 0.08);
-      transform: translateX(4px);
+      background: rgba(255, 255, 255, 0.1); 
+      border-color: var(--yellow);
+      box-shadow: 
+        0 0 0 2px var(--yellow), 
+        0 0 15px rgba(255, 214, 10, 0.3);
+      transform: translateX(6px);
+      z-index: 2;
     }
     
     &.active {
-      background: rgba(255, 204, 0, 0.08);
-      border-color: rgba(255, 204, 0, 0.2);
+      background: rgba(255, 204, 0, 0.12);
+      border-color: var(--yellow);
+      box-shadow: 
+        0 0 0 2px var(--yellow), 
+        0 0 25px rgba(255, 214, 10, 0.4),
+        inset 0 0 10px rgba(255, 214, 10, 0.1);
     }
 
     .icon { font-size: 14px; }

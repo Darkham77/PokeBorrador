@@ -1,28 +1,36 @@
 <script setup>
-import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore()
+const props = defineProps({
+  show: { type: Boolean, default: false },
+  title: { type: String, default: '¿ESTÁS SEGURO?' },
+  message: { type: String, default: '' },
+  confirmText: { type: String, default: 'ACEPTAR' },
+  cancelText: { type: String, default: 'CANCELAR' }
+})
+
+const emit = defineEmits(['confirm', 'cancel', 'close'])
 
 const handleConfirm = () => {
-  uiStore.closeConfirm(true)
+  emit('confirm')
+  emit('close')
 }
 
 const handleCancel = () => {
-  uiStore.closeConfirm(false)
+  emit('cancel')
+  emit('close')
 }
 </script>
 
 <template>
   <BaseModal
-    :show="uiStore.confirmDialog.open"
-    :title="uiStore.confirmDialog.title || '¿ESTÁS SEGURO?'"
+    :show="show"
+    :title="title"
     max-width="400px"
-    :z-index="20000"
     @close="handleCancel"
   >
     <div class="confirm-body">
-      <p>{{ uiStore.confirmDialog.message }}</p>
+      <p>{{ message }}</p>
     </div>
     
     <template #footer>
@@ -31,13 +39,13 @@ const handleCancel = () => {
           class="btn-cancel" 
           @click="handleCancel"
         >
-          {{ uiStore.confirmDialog.cancelText || 'CANCELAR' }}
+          {{ cancelText }}
         </button>
         <button 
           class="btn-confirm" 
           @click="handleConfirm"
         >
-          {{ uiStore.confirmDialog.confirmText || 'ACEPTAR' }}
+          {{ confirmText }}
         </button>
       </div>
     </template>
@@ -45,66 +53,23 @@ const handleCancel = () => {
 </template>
 
 <style scoped lang="scss">
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  z-index: 20000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.confirm-box {
-  width: min(400px, 100%);
-  background: #111;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-.glass-morphism {
-  background: rgba(20, 20, 20, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.confirm-header {
-  padding: 24px 24px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  
-  .confirm-icon {
-    font-size: 24px;
-  }
-  
-  h3 {
-    margin: 0;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 14px;
-    color: var(--yellow);
-    letter-spacing: 1px;
-  }
-}
+@use "sass:math";
+@use "@/styles/core/tools" as *;
 
 .confirm-body {
-  padding: 0 24px 24px;
+  padding: 24px;
   
   p {
     margin: 0;
     font-size: 14px;
     line-height: 1.6;
-    color: #ccc;
+    color: rgba(255, 255, 255, 0.8);
     font-family: 'Inter', sans-serif;
+    text-align: center;
   }
 }
 
 .confirm-footer {
-  padding: 16px 24px 24px;
   display: flex;
   gap: 12px;
   
@@ -113,11 +78,12 @@ const handleCancel = () => {
     padding: 14px;
     border: none;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     font-family: 'Press Start 2P', cursive;
     cursor: pointer;
     transition: all 0.2s;
+    @include pixelated;
     
     &:active {
       transform: Scale(0.95);
@@ -126,7 +92,7 @@ const handleCancel = () => {
   
   .btn-cancel {
     background: rgba(255, 255, 255, 0.05);
-    color: #888;
+    color: rgba(255, 255, 255, 0.5);
     &:hover {
       background: rgba(255, 255, 255, 0.1);
       color: #fff;
@@ -142,21 +108,5 @@ const handleCancel = () => {
       box-shadow: 0 6px 20px rgba(255, 214, 10, 0.4);
     }
   }
-}
-
-/* Animations */
-.confirm-fade-enter-active, .confirm-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.confirm-fade-enter-from, .confirm-fade-leave-to {
-  opacity: 0;
-}
-
-@keyframes pop {
-  from { transform: Scale(0.8); opacity: 0; }
-  to { transform: Scale(1); opacity: 1; }
-}
-.animate-pop {
-  animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 </style>

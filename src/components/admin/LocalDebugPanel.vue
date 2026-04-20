@@ -55,7 +55,7 @@ async function addItem(item, qty = 10) {
 }
 
 function setLevel() {
-  game.state.level = debugLevel.value
+  game.state.trainerLevel = debugLevel.value
   ui.notify(`Debug: Nivel fijado en ${debugLevel.value}`, '📈')
   game.saveGame(false)
 }
