@@ -133,13 +133,15 @@ const close = () => {
 .evolution-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-overlay);
   background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
   display: flex;
   align-items: center;
-  justify-content:center;
+  justify-content: center;
   font-family: 'Press Start 2P', cursive;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transform: translateZ(0);
 }
 
 .evolution-container {

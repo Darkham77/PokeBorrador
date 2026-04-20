@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue';
+import { ref, onMounted, nextTick, computed, watch } from 'vue';
+import { useDocumentListener } from '@/composables/useWindowListener';
 import { useChatStore } from '@/stores/chat';
 import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
@@ -19,6 +20,8 @@ const isOpen = computed({
 const newMessage = ref('');
 const messagesContainer = ref(null);
 const inputField = ref(null);
+const chatPanelRef = ref(null);
+const chatToggleRef = ref(null);
 
 const MIN_LEVEL = 10;
 const MAX_CHARS = 100;
@@ -64,27 +67,29 @@ watch(() => chatStore.globalMessages.length, () => {
 });
 
 function handleOutsideClick(e) {
-  if (!isOpen.value) return;
-  const isInside = e.target.closest('.chat-panel') || e.target.closest('.chat-toggle-btn');
-  if (!isInside) {
+  if (!isOpen.value || !chatPanelRef.value) return;
+  
+  // Check if click is outside the panel and the toggle button
+  const isInsidePanel = chatPanelRef.value.contains(e.target);
+  const isToggleButton = chatToggleRef.value?.contains(e.target);
+  
+  if (!isInsidePanel && !isToggleButton) {
     isOpen.value = false;
   }
 }
 
 onMounted(() => {
   chatStore.initGlobalChat();
-  document.addEventListener('click', handleOutsideClick);
 });
 
-onUnmounted(() => {
-  document.removeEventListener('click', handleOutsideClick);
-});
+useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 </script>
 
 <template>
   <div class="global-chat-root">
     <!-- Toggle Button -->
     <button 
+      ref="chatToggleRef"
       class="chat-toggle-btn" 
       :class="{ 'has-unread': !isOpen && chatStore.globalMessages.length > 0 }"
       @click="toggleChat"
@@ -104,7 +109,10 @@ onUnmounted(() => {
       padding="raw"
       @close="toggleChat"
     >
-      <section class="chat-panel">
+      <section 
+        ref="chatPanelRef"
+        class="chat-panel"
+      >
         <header class="chat-header">
           <div class="title">
             MUNDO
@@ -113,7 +121,7 @@ onUnmounted(() => {
 
         <div
           ref="messagesContainer"
-          class="messages-list custom-scrollbar"
+          class="messages-list custom-scrollbar-vicio"
         >
           <div
             v-if="chatStore.globalMessages.length === 0"
@@ -191,7 +199,7 @@ onUnmounted(() => {
   position: fixed;
   bottom: 20px;
   left: 20px;
-  z-index: 12001;
+  z-index: var(--z-max);
   transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (max-width: 1380px) {
@@ -258,7 +266,7 @@ onUnmounted(() => {
     font-family: 'Press Start 2P', cursive;
     font-size: 10px;
     color: var(--purple-light);
-    text-shadow: 0 0 10px rgba(157, 78, 221, 0.4);
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5); // Sharp shadow for pixel font
   }
 
   .close-btn {
@@ -289,6 +297,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0; // Fix flex collapse for scroll stability
 }
 
 .message-row {
@@ -397,7 +406,5 @@ onUnmounted(() => {
   100% { transform: string.unquote("Scale(1.0)"); opacity: 1; }
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(157, 78, 221, 0.2); border-radius: 10px; }
 </style>
+

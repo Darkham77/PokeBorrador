@@ -29,7 +29,7 @@ const bannerStyle = computed(() => ({
     <!-- Carta Centro Pokémon (Izq: 50%) -->
     <div class="pc-left">
       <div
-        class="pokecenter-banner legacy-panel"
+        class="pokecenter-banner"
         @click="emit('openCenter')"
       >
         <div 
@@ -53,78 +53,101 @@ const bannerStyle = computed(() => ({
       <div class="pc-banner-grid">
         <!-- 1. Evento -->
         <div
-          class="pc-banner event-banner legacy-panel"
+          class="pc-banner event-banner"
           :class="{ active: rivalEventActive }"
         >
-          <div class="pc-banner-header">
-            <span class="pc-banner-icon">⚡</span>
-            <span class="pc-banner-title">EVENTO</span>
+          <div class="pc-banner-icon">
+            ⚡
           </div>
-          <div class="pc-banner-text-large">
-            {{ rivalEventActive ? rivalEventText.split(':')[0] : 'SIN EVENTOS' }}
-          </div>
-          <div class="pc-banner-text">
-            {{ rivalEventActive ? (rivalEventText.split(':')[1] || rivalEventText) : 'No hay eventos activos en este momento' }}
+          <div class="pc-banner-content">
+            <div class="pc-banner-title">
+              EVENTO
+            </div>
+            <div class="pc-banner-text">
+              <span
+                v-if="rivalEventActive && rivalEventText.includes(':')"
+                class="text-highlight"
+              >
+                {{ rivalEventText.split(':')[0] }}
+              </span>
+              {{ rivalEventActive ? (rivalEventText.includes(':') ? rivalEventText.split(':')[1] : rivalEventText) : 'No hay eventos activos' }}
+            </div>
           </div>
         </div>
 
         <!-- 2. Guardería -->
         <div
-          class="pc-banner legacy-panel"
+          class="pc-banner"
           @click="emit('openTab', 'daycare')"
         >
-          <div class="pc-banner-header">
-            <span class="pc-banner-icon">📜</span>
-            <span class="pc-banner-title">GUARDERÍA</span>
+          <div class="pc-banner-icon">
+            📜
           </div>
-          <div class="pc-banner-text">
-            ¡Tenés <span>{{ missionsRemaining }}</span> misiones por hacer!
+          <div class="pc-banner-content">
+            <div class="pc-banner-title">
+              GUARDERÍA
+            </div>
+            <div class="pc-banner-text">
+              ¡Tenés <span>{{ missionsRemaining }}</span> misiones por hacer!
+            </div>
           </div>
-          <div class="pc-banner-spawns">
+          <div
+            v-if="missionSprites.length"
+            class="pc-banner-spawns"
+          >
             <img
               v-for="(spriteId, i) in missionSprites"
               :key="i"
               :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
               class="pixelated"
-              onerror="this.style.display='none'"
             >
           </div>
         </div>
 
         <!-- 3. Gimnasios -->
         <div
-          class="pc-banner legacy-panel"
+          class="pc-banner"
           @click="emit('openTab', 'gyms')"
         >
-          <div class="pc-banner-header">
-            <span class="pc-banner-icon">🏆</span>
-            <span class="pc-banner-title">GIMNASIOS</span>
+          <div class="pc-banner-icon">
+            🏆
           </div>
-          <div class="pc-banner-text">
-            Tenés <span>{{ gymRematches }}</span> gimnasios por derrotar
+          <div class="pc-banner-content">
+            <div class="pc-banner-title">
+              GIMNASIOS
+            </div>
+            <div class="pc-banner-text">
+              Tenés <span>{{ gymRematches }}</span> gimnasios por derrotar
+            </div>
           </div>
-          <div class="pc-banner-spawns">
+          <div
+            v-if="gymSprites.length"
+            class="pc-banner-spawns"
+          >
             <img
               v-for="(spriteId, i) in gymSprites"
               :key="i"
               :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
               class="pixelated"
-              onerror="this.style.display='none'"
             >
           </div>
         </div>
 
         <!-- 4. Crianza -->
         <div
-          class="pc-banner legacy-panel"
+          class="pc-banner"
           @click="emit('openTab', 'daycare')"
         >
-          <div class="pc-banner-header">
-            <span class="pc-banner-icon">🥚</span>
-            <span class="pc-banner-title">CRIANZA</span>
+          <div class="pc-banner-icon">
+            🥚
           </div>
-          <div class="pc-banner-text">
-            Tenés <span>{{ eggCount }}</span> huevos esperando
+          <div class="pc-banner-content">
+            <div class="pc-banner-title">
+              CRIANZA
+            </div>
+            <div class="pc-banner-text">
+              Tenés <span>{{ eggCount }}</span> huevos esperando
+            </div>
           </div>
         </div>
       </div>
@@ -150,9 +173,9 @@ const bannerStyle = computed(() => ({
 }
 
 .pc-left {
-  flex: 1;
+  flex: 1.5;
   min-width: 0;
-  min-height: 180px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
 }
@@ -160,6 +183,8 @@ const bannerStyle = computed(() => ({
 .pc-right {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .pokecenter-banner {
@@ -168,46 +193,50 @@ const bannerStyle = computed(() => ({
   border-radius: 20px;
   position: relative;
   cursor: pointer;
-  transition: transform 0.2s;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  border: 2px solid var(--pokecenter-pink);
-  /* overflow: hidden removed to allow neon glow */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,0,0,0.5);
+  border: 4px solid #ff007f !important;
+  overflow: hidden; // Crucial para que la imagen siga la curva
   
   .banner-bg {
     position: absolute;
-    inset: 0;
+    inset: -5px; // Sangrado profundo para asegurar que cubra debajo del marco
     background-size: cover;
     background-position: center 20%;
     z-index: 0;
-    border-radius: 18px; /* Match parent minus border */
+    border-radius: 16px; // Ajustado para curva interna (20px - 4px)
   }
+
 
   &::after {
     content: '';
     position: absolute;
-    inset: -1px; // Tiny overlap to kill the bleeding
-    background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.85) 30%, transparent 65%);
+    inset: -5px; // Sangrado profundo
+    background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.85) 35%, transparent 70%);
     z-index: 1;
     pointer-events: none;
-    border-radius: 20px;
+    border-radius: 16px;
   }
 
   &:hover {
-    transform: translateY(-4px);
-    border-color: var(--yellow);
-    box-shadow: 0 0 0 2px var(--yellow), 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 214, 10, 0.5), 0 0 10px rgba(255, 214, 10, 0.3);
+    transform: translateY(-6px);
+    border-color: var(--yellow) !important;
+    box-shadow: 
+      0 20px 50px rgba(0, 0, 0, 0.7), 
+      0 0 30px rgba(255, 214, 10, 0.5);
   }
 }
 
 .banner-overlay {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: -2px; // Sangrado leve hacia abajo
+  left: -2px;
+  right: -2px;
   padding: 24px;
   text-align: left;
   z-index: 2;
-  border-radius: 0 0 18px 18px;
+  border-radius: 0 0 16px 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
 }
 
 .banner-title {
@@ -250,83 +279,139 @@ const bannerStyle = computed(() => ({
 }
 
 .pc-banner {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(15px);
+  // GLASSMORPHISM ENHANCED
+  background: linear-gradient(180deg, 
+    rgba(30, 41, 59, 0.85) 0%, 
+    rgba(15, 23, 42, 0.75) 100%
+  );
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
   border-radius: 16px;
-  padding: 12px;
+  padding: 16px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  gap: 16px;
   position: relative;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 85px;
+  
+  // MULTI-LAYER REFLECTIONS & CONTRAST
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 30px rgba(0, 0, 0, 0.5), 
+    inset 0 1px 1px rgba(255, 255, 255, 0.12),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3);
 
   &:hover {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.12);
     border-color: var(--yellow);
-    box-shadow: 0 0 0 1px var(--yellow), 0 0 20px rgba(255, 214, 10, 0.4), 0 0 10px rgba(255, 214, 10, 0.2);
-    transform: translateY(-2px);
+    box-shadow: 
+      0 0 0 1px var(--yellow), 
+      0 12px 30px rgba(0, 0, 0, 0.6), 
+      0 0 20px rgba(255, 214, 10, 0.4);
+    transform: translateY(-4px);
+    z-index: 2;
+  }
+
+  // GLOW EFFECT ON THE CONTOUR
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.01));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
   }
 }
 
-.pc-banner-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+.pc-banner-icon {
+  width: 44px;
+  height: 44px;
+  @include flex-center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  font-size: 24px;
+  flex-shrink: 0;
 }
 
-.pc-banner-icon { font-size: 14px; }
+.pc-banner-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
 .pc-banner-title {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   color: var(--gray);
-}
-
-.pc-banner-text-large {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  line-height: 1.4;
-  margin-bottom: 4px;
-  color: #ffcc00;
   text-transform: uppercase;
+  @include pixelated;
 }
 
 .pc-banner-text {
-  font-size: 9px;
+  font-size: 13px; // Matched legacy size
   font-weight: 700;
   line-height: 1.2;
-  color: rgba(255, 255, 255, 0.7);
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   
   span { color: var(--yellow); }
+  .text-highlight { 
+    color: #ffcc00; 
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    display: block;
+    margin-bottom: 2px;
+    @include pixelated;
+  }
 }
 
 .pc-banner-spawns {
-  position: absolute;
-  right: 8px;
-  bottom: 6px;
   display: flex;
-  gap: -8px;
+  align-items: center;
+  margin-top: 4px;
+  min-height: 48px;
 
   img {
-    width: 24px;
-    height: 24px;
+    width: 48px; // Matched legacy size
+    height: 48px;
     object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+    @include pixelated;
     
-    &:not(:first-child) { margin-left: -10px; }
+    &:not(:first-child) { margin-left: -15px; } // Increased overlap
   }
 }
 
 .event-banner {
   &.active {
-    border: 1px solid rgba(255, 214, 10, 0.3);
-    box-shadow: 0 0 15px rgba(255, 214, 10, 0.1);
-    background: linear-gradient(135deg, rgba(255, 214, 10, 0.12) 0%, rgba(15, 23, 42, 0.7) 100%);
+    background: linear-gradient(135deg, 
+      rgba(255, 214, 10, 0.15) 0%, 
+      rgba(15, 23, 42, 0.9) 100%
+    );
+    border-color: rgba(255, 214, 10, 0.4);
+    backdrop-filter: blur(30px);
     
-    .pc-banner-title { color: #ffcc00; opacity: 0.8; }
-    .pc-banner-icon { color: #ffcc00; }
+    .pc-banner-title { color: #ffcc00; opacity: 1; }
+    .pc-banner-icon { 
+      background: rgba(255, 214, 10, 0.15);
+      color: #ffcc00; 
+      box-shadow: 0 0 15px rgba(255, 214, 10, 0.3);
+    }
+
+    &::after {
+      background: linear-gradient(180deg, rgba(255,214,10,0.2), rgba(255,214,10,0.02));
+    }
   }
 }
 

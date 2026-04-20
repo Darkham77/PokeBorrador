@@ -70,7 +70,7 @@ async function handleLogout() {
 .session-blocked-overlay {
   position: fixed;
   inset: 0;
-  z-index: 99999;
+  z-index: var(--z-critical);
   background: rgba(0, 0, 0, 0.9);
   -webkit-backdrop-filter: blur(20px) Saturate(1.8);
   backdrop-filter: blur(20px) Saturate(1.8);
@@ -78,6 +78,7 @@ async function handleLogout() {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  transform: translateZ(0);
 }
 
 .blocked-card {

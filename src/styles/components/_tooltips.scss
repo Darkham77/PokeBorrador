@@ -23,12 +23,13 @@
   max-width: min(350px, 90vw);
   white-space: normal;
   word-wrap: break-word;
-  z-index: 9999;
+  z-index: var(--z-tooltip);
   pointer-events: none;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(10px) translateX(-50%);
+  transform: translateY(10px) translateX(-50%) translateZ(0);
   left: 50%;
   bottom: 125%;
   
@@ -126,7 +127,8 @@
 /* FIXED MOVE TOOLTIP (Literal 1250) */
 .move-tooltip {
   position: fixed;
-  z-index: 100000;
+  z-index: var(--z-tooltip);
+  transform: translateZ(0);
   background: linear-gradient(180deg, rgba(20, 20, 35, 0.98) 0%, rgba(10, 10, 15, 0.98) 100%);
   border: 1px solid rgba(255, 217, 61, 0.4);
   color: #fff;
@@ -171,7 +173,8 @@
   border-radius: 12px;
   padding: 12px;
   width: 220px;
-  z-index: 1000;
+  z-index: var(--z-tooltip);
+  transform: translateX(-50%) translateY(10px) translateZ(0);
   opacity: 0;
   visibility: hidden;
   transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);

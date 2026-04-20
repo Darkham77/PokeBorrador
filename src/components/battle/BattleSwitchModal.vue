@@ -121,13 +121,15 @@ const handleSwitch = async (index) => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  transform: translateZ(0);
 }
 
 .switch-modal-card {

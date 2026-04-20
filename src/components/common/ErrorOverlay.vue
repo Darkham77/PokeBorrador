@@ -145,7 +145,7 @@ const reloadGame = () => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.9);
-  z-index: 99999;
+  z-index: var(--z-critical);
   display: flex;
   align-items: center;
   justify-content: center;

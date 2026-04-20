@@ -52,8 +52,9 @@ const activeDisplayEvents = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: 1000;
+  z-index: var(--z-hud);
   pointer-events: none;
+  transform: translateZ(0);
 }
 
 .event-banner {

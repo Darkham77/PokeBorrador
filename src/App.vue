@@ -15,6 +15,8 @@ import { useLivePvPStore } from '@/stores/livePvP'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import PhaserGame from '@/components/game/PhaserGame.vue'
 import { useUIStore } from '@/stores/ui'
+import { useBodyClass } from '@/composables/useBodyClass'
+import { useWindowListener } from '@/composables/useWindowListener'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -73,37 +75,20 @@ onMounted(async () => {
     }
   }
 
-  window.addEventListener('wheel', blockEvents, { capture: true, passive: false });
-  window.addEventListener('touchmove', blockEvents, { capture: true, passive: false });
+  useWindowListener('wheel', blockEvents, { capture: true, passive: false }); // [PureVue-Ignore]
+  useWindowListener('touchmove', blockEvents, { capture: true, passive: false }); // [PureVue-Ignore]
 
   // 4. Restore Zoom Level
   uiStore.setZoom(uiStore.appZoom)
-
-  // ── PUENTE DE COMPATIBILIDAD LEGADO ─────────────────────────────────────────
-  // Estos shims aseguran que los llamados desde el código legado o atributos onclick
-  // actualicen el store de Vue en lugar de intentar manipular el DOM directamente.
-  window.toggleSettings = () => {
-    uiStore.isSettingsOpen = !uiStore.isSettingsOpen
-  }
-  window.toggleProfile = () => {
-    uiStore.isProfileOpen = !uiStore.isProfileOpen
-  }
-  window.toggleCosmetics = () => {
-    uiStore.isCosmeticsModalOpen = !uiStore.isCosmeticsModalOpen
-  }
 })
 
-// Bloqueo de Scroll Global para Modales
+// Bloqueo de Scroll Global para Modales (Pure Vue Managed)
+useBodyClass('modal-open', () => uiStore.isAnyBlockingModalOpen)
+
+// Sync Phaser Input State
 watch(() => uiStore.isAnyBlockingModalOpen, (val) => {
-  console.log('[App] Blocking state changed:', val)
-  if (val) {
-    document.body.classList.add('modal-open')
-    phaserBridge.setInputEnabled(false)
-  } else {
-    document.body.classList.remove('modal-open')
-    phaserBridge.setInputEnabled(true)
-  }
-}, { immediate: true })
+  phaserBridge.setInputEnabled(!val)
+})
 
 const handleRetry = () => {
   window.location.reload()
@@ -202,7 +187,7 @@ const handleRetry = () => {
   justify-content: center;
   align-items: center;
   background: #000;
-  z-index: 99999;
+  z-index: var(--z-max);
   color: var(--yellow);
   font-family: 'Press Start 2P', monospace;
   font-size: 12px;

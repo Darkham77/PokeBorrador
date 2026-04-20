@@ -135,7 +135,7 @@ const consumeItem = (name) => {
 .relearner-overlay {
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.9);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
@@ -143,6 +143,7 @@ const consumeItem = (name) => {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  transform: translateZ(0);
 }
 
 .relearner-card {

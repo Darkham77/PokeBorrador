@@ -122,13 +122,15 @@ const selectPokemon = (p) => {
 .daycare-picker-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  transform: translateZ(0);
 }
 
 .daycare-picker {

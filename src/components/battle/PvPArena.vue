@@ -146,9 +146,10 @@ const handleSwitch = () => {
   position: fixed;
   inset: 0;
   background: var(--darker);
-  z-index: 2000;
+  z-index: var(--z-overlay);
   display: flex;
   flex-direction: column;
+  transform: translateZ(0);
 }
 
 .battle-arena {

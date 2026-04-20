@@ -69,12 +69,13 @@ const decline = async () => {
   position: fixed;
   top: 20px;
   left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
+  transform: translateX(-50%) translateZ(0);
+  z-index: var(--z-toast);
   width: 90%;
   max-width: 360px;
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(139, 92, 246, 0.4);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
   border-radius: 20px;

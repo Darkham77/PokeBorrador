@@ -1,5 +1,5 @@
 <script setup>
-import { onUnmounted, ref, watch, computed } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 defineOptions({
   inheritAttrs: false
@@ -84,26 +84,11 @@ const cardStyles = computed(() => {
 })
 
 watch(() => props.show, (val) => {
-  if (val && props.lockScroll) {
-    document.body.classList.add('modal-open')
-    // Calculate z-index based on active modals count
-    const activeModals = document.querySelectorAll('.modal-overlay.active').length
-    computedZIndex.value = props.zIndex + (activeModals * 10)
-  } else if (!val && props.lockScroll) {
-    // Check if there are other modals open before removing
-    const otherModals = document.querySelectorAll('.modal-overlay.active').length
-    if (otherModals <= 1) {
-      document.body.classList.remove('modal-open')
-    }
+  if (val) {
+    // Basic z-index handling if needed, but ModalHost renders in order
+    computedZIndex.value = props.zIndex
   }
 }, { immediate: true })
-
-onUnmounted(() => {
-  const otherModals = document.querySelectorAll('.modal-overlay.active').length
-  if (otherModals === 0) {
-    document.body.classList.remove('modal-open')
-  }
-})
 </script>
 
 <template>
@@ -164,7 +149,10 @@ onUnmounted(() => {
           <!-- Content -->
           <div 
             class="modal-scrollable-content"
-            :class="[padding === 'raw' ? 'padding-raw' : 'padding-standard']"
+            :class="[
+              padding === 'raw' ? 'padding-raw' : 'padding-standard',
+              { 'no-scroll': noScroll }
+            ]"
           >
             <slot />
           </div>
@@ -187,7 +175,7 @@ onUnmounted(() => {
 .base-modal-teleport-wrapper {
   position: fixed;
   inset: 0;
-  z-index: 15000;
+  z-index: var(--z-modal);
   // Forces a new stacking context for fixed children
   transform: translateZ(0);
   pointer-events: auto;
@@ -340,7 +328,7 @@ onUnmounted(() => {
   &.padding-raw { 
     padding: 0 !important; 
     margin: 0 !important;
-    height: 100%;
+    min-height: 0;
   }
 }
 

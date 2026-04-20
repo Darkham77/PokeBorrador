@@ -90,8 +90,10 @@
   padding: 8px 16px;
   display: flex;
   gap: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: var(--z-navigation);
+  -webkit-backdrop-filter: blur(10px);
+  transform: translateX(-50%) translateZ(0);
 }
 
 .nav-item {

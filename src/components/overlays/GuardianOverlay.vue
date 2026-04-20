@@ -46,13 +46,14 @@ const name = computed(() => props.guardian.id.toUpperCase());
 .guardian-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-overlay);
   background: rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
   animation: fadeIn 0.3s ease-out;
+  transform: translateZ(0);
 }
 
 .press-start {

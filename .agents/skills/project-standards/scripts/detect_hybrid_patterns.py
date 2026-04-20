@@ -1,0 +1,204 @@
+import os
+import re
+import sys
+
+# Patterns to detect hybrid/legacy code
+HYBRID_PATTERNS = [
+    {
+        "id": "direct_dom_query",
+        "regex": r"document\.(querySelector|getElementById|getElementsByClassName|getElementsByTagName)",
+        "message": "Direct DOM query detected. Use Vue refs or Pinia state instead.",
+        "severity": "high"
+    },
+    {
+        "id": "dom_manipulation",
+        "regex": r"document\.createElement|\.innerHTML\s*=|\.innerText\s*=|\.textContent\s*=|\.appendChild\(",
+        "message": "Direct DOM manipulation detected. Use Vue template and reactivity.",
+        "severity": "critical"
+    },
+    {
+        "id": "class_toggle",
+        "regex": r"\.classList\.(add|remove|toggle)",
+        "message": "Manual class manipulation. Use :class binding in Vue.",
+        "severity": "medium"
+    },
+    {
+        "id": "legacy_window_hook",
+        "regex": r"window\.(showTab|toggleSettings|toggleProfile|showInventory|showFishingIntro|triggerRivalSequence)",
+        "message": "Usage of legacy window hooks. Use uiStore or modalStore.",
+        "severity": "high"
+    },
+    {
+        "id": "mutation_observer",
+        "regex": r"new MutationObserver",
+        "message": "MutationObserver detected on UI elements. Use Vue watch or lifecycle hooks.",
+        "severity": "medium"
+    },
+    {
+        "id": "raw_event_listener",
+        "regex": r"\.addEventListener\((['\"])(click|scroll|resize|wheel|touchmove)\1",
+        "message": "Raw event listener detected. Ensure it's inside onMounted and cleaned up in onUnmounted, or use @click.",
+        "severity": "medium"
+    },
+    {
+        "id": "image_rendering_auto",
+        "regex": r"image-rendering:\s*auto",
+        "message": "Non-pixelated image rendering detected. Use 'pixelated' for game assets.",
+        "severity": "medium"
+    },
+    {
+        "id": "body_attribute_mutation",
+        "regex": r"document\.body\.(className|id)\s*=",
+        "message": "Direct body attribute manipulation detected. Use 'useBodyClass' composable.",
+        "severity": "high"
+    },
+    {
+        "id": "phaser_dom_injection",
+        "regex": r"\.add\.dom\(",
+        "message": "Phaser-DOM injection detected. Use Vue overlays instead.",
+        "severity": "critical"
+    },
+    {
+        "id": "extreme_z_index",
+        "regex": r"z-index:\s*[0-9]{4,}",
+        "message": "Extreme z-index detected (>999). Use Teleport or standardized layers.",
+        "severity": "medium"
+    },
+    {
+        "id": "blurry_pixel_text",
+        "regex": r"text-shadow:.*?\d+px\s+\d+px\s+[1-9]\d*px",
+        "message": "Blur detected in text-shadow. Use hard offsets (0px blur) for pixel fonts.",
+        "severity": "medium"
+    },
+    {
+        "id": "scoped_scrollbar_styling",
+        "regex": r"::-webkit-scrollbar",
+        "message": "Scrollbar styling detected. Ensure this is NOT in a <style scoped> block.",
+        "severity": "high"
+    },
+    {
+        "id": "flex_scroll_collapse",
+        "regex": r"overflow-y:\s*auto",
+        "message": "Overflow detected. Ensure the flex parent has 'min-height: 0' to avoid layout collapse.",
+        "severity": "medium"
+    }
+]
+
+# Files/Directories to ignore
+IGNORE_PATHS = [
+    "node_modules",
+    "backup_legacy_code",
+    "dist",
+    ".git",
+    "scripts",
+    "tests",           # Tests naturally use DOM
+    "assetService.js",
+    "phaserBridge.js",
+    "baseBridge.js",    # Authorized legacy bridge
+    "dbRouter.js",
+    "useWindowListener.js", # Authorized event manager
+    "useBodyClass.js"       # Authorized class manager
+]
+
+# Extensions to scan
+EXTENSIONS = [".vue", ".js", ".ts", ".scss", ".css"]
+
+def scan_file(filepath):
+    findings = []
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            for i, line in enumerate(lines):
+                # Heuristic to ignore comments or explicit ignores
+                if line.strip().startswith("//") or line.strip().startswith("/*") or line.strip().startswith("*"):
+                    continue
+                
+                if "[PureVue-Ignore]" in line:
+                    continue
+                
+                for pattern in HYBRID_PATTERNS:
+                    if re.search(pattern["regex"], line):
+                        # Specific exception for common safe uses
+                        if "canvas" in line.lower() or "getElementById('game-container')" in line:
+                            continue
+                        if "document.title =" in line:
+                            continue
+                        
+                        findings.append({
+                            "line": i + 1,
+                            "content": line.strip(),
+                            "message": pattern["message"],
+                            "severity": pattern["severity"],
+                            "id": pattern["id"]
+                        })
+    except Exception as e:
+        print(f"Error reading {filepath}: {e}")
+    
+    return findings
+
+import argparse
+
+def main():
+    parser = argparse.ArgumentParser(description="Scan for hybrid/legacy patterns in PokeVicio codebase.")
+    parser.add_argument("path", nargs="?", default=".", help="Path to a file or directory to scan.")
+    args = parser.parse_args()
+
+    root_dir = os.path.abspath(args.path)
+    total_findings = 0
+    files_scanned = 0
+    problematic_files = set()
+
+    if not os.path.exists(root_dir):
+        print(f"Error: Path {root_dir} does not exist.")
+        sys.exit(1)
+
+    print(f"\n[HYBRID PATTERN SCANNER] Scanning {root_dir}...")
+    print("-" * 60)
+    print("FORMAT: [SEVERITY] File:Line | TAG | Description")
+    print("-" * 60)
+
+    if os.path.isfile(root_dir):
+        findings = scan_file(root_dir)
+        if findings:
+            problematic_files.add(root_dir)
+            for f in findings:
+                print(f"[{f['severity'].upper()}] {os.path.basename(root_dir)}:{f['line']} | {f['id']} | {f['message']}")
+                total_findings += 1
+        files_scanned = 1
+    else:
+        for root, dirs, files in os.walk(root_dir):
+            # Filter directories
+            dirs[:] = [d for d in dirs if d not in IGNORE_PATHS]
+            
+            for file in files:
+                if any(file.endswith(ext) for ext in EXTENSIONS):
+                    filepath = os.path.join(root, file)
+                    rel_path = os.path.relpath(filepath, root_dir)
+                    
+                    # Double check path ignore
+                    if any(ignored in rel_path for ignored in IGNORE_PATHS):
+                        continue
+
+                    findings = scan_file(filepath)
+                    if findings:
+                        problematic_files.add(rel_path)
+                        for f in findings:
+                            print(f"[{f['severity'].upper()}] {rel_path}:{f['line']} | {f['id']} | {f['message']}")
+                            total_findings += 1
+                    files_scanned += 1
+
+    print("-" * 60)
+    print(f"Scan complete. Scanned {files_scanned} files.")
+    
+    if total_findings > 0:
+        print(f"\n[PLANNING SUMMARY] Found {total_findings} patterns in {len(problematic_files)} files:")
+        for pf in sorted(list(problematic_files)):
+            print(f" - {pf}")
+        print("\nACTION REQUIRED: Refactor the files above to comply with Pure Vue standards.")
+        sys.exit(1)
+    else:
+        print("No hybrid patterns detected. Code is looking Pure Vue! ✨")
+        sys.exit(0)
+
+if __name__ == "__main__":
+    main()

@@ -17,7 +17,7 @@
   position: absolute !important;
   top: 6px !important;
   left: 6px !important;
-  z-index: 9999 !important; /* Extremely high z-index */
+  z-index: var(--z-max) !important; /* Standardized Layer */
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -39,7 +39,7 @@
   min-width: 32px !important;
   min-height: 32px !important;
   object-fit: contain !important;
-  image-rendering: auto !important;
+  image-rendering: pixelated !important;
   filter: drop-shadow(0 0 5px rgba(255,255,255,0.4)) !important;
   margin: 0 !important;
   display: block !important;

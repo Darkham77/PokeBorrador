@@ -5,7 +5,8 @@
   position: fixed;
   left: 0;
   top: 160px;
-  z-index: z(buff-panel);
+  z-index: var(--z-hud);
+  transform: translateZ(0);
   display: flex;
   flex-direction: column;
   gap: spacing(1.5);

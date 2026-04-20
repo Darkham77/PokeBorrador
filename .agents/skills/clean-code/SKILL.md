@@ -67,6 +67,7 @@ priority: CRITICAL
 | User asks for feature | Write it directly |
 | User reports bug | Fix it, don't explain |
 | No clear requirement | Ask, don't assume |
+| Complex refactor / Tool failure | Prioritize `write_to_file` over partial edits to ensure 100% parity and avoid "phantom" bugs from silent mismatches |
 
 ---
 

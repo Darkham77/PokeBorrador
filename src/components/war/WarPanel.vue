@@ -117,13 +117,15 @@ const getFactionIcon = (faction) => {
 .war-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9000;
-  background: rgba(0,0,0,0.9);
+  z-index: var(--z-modal);
+  background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  transform: translateZ(0);
 }
 
 .war-panel-premium {

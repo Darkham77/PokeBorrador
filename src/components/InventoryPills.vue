@@ -2,17 +2,20 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { useMapStore } from '@/stores/map'
+
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+const mapStore = useMapStore()
 const gs = computed(() => gameStore.state)
 
-// Time cycle logic
+// Time cycle logic synced with Map/Logic
 const dayCycle = computed(() => {
-  const cycle = (typeof window.getDayCycle === 'function') ? window.getDayCycle() : 'day'
+  const cycle = mapStore.currentCycle
   const info = {
     morning: { icon: '🌅', label: 'Amanecer', color: '#FFD93D' },
     day: { icon: '☀️', label: 'Día', color: '#FFEEAD' },
-    dusk: { icon: '🌅', label: 'Atardecer', color: '#FF6B35' },
+    dusk: { icon: '🌇', label: 'Atardecer', color: '#FF6B35' },
     night: { icon: '🌙', label: 'Noche', color: '#9b4dca' }
   }
   return info[cycle] || { icon: '☀️', label: 'Día', color: '#FFEEAD' }

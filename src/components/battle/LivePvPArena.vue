@@ -215,10 +215,11 @@ function handleForfeit() {
   position: fixed;
   inset: 0;
   background: #0d1117;
-  z-index: 9999;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: translateZ(0);
 }
 
 .pvp-layout {

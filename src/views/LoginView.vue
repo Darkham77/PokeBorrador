@@ -261,7 +261,7 @@ const handleLocalLogin = async () => {
 #auth-screen {
   position: fixed !important;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--z-hud);
   /* Use the copied wallpaper */
   background: #000 url('/assets/fondo/WALLPAPER.webp') no-repeat center center;
   background-size: cover;
@@ -299,6 +299,7 @@ const handleLocalLogin = async () => {
   -webkit-backdrop-filter: blur(20px) Saturate(180%);
   animation: fadeIn 0.4s ease;
   z-index: 1;
+  transform: translateZ(0);
 }
 
 .auth-logo {

@@ -147,6 +147,8 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **Pattern**: `const filteredItems = computed(() => (search.value || '').toLowerCase())`.
   - **Why**: Prevents critical runtime `TypeError` crashes during the component mount/initialization cycle before the store data is ready.
 - **Teleport & Scoped Styles**: Components using `<Teleport to="body">` (like `BaseModal`) **MUST** use global SCSS (not `scoped`) for positioning and overlay styles. Scoped styles often fail to apply correctly once the element is moved out of its original DOM hierarchy.
+- **Scrollbar Styling in Scoped SFCs**: Styles like `::-webkit-scrollbar` often fail to apply correctly when inside a `<style scoped>` block because the browser doesn't correctly attribute them to the component's unique data-attribute. You **must** move these styles to a global `<style lang="scss">` block (without `scoped`) or a shared global utility file to ensure they apply to all targeted containers.
+
 - **Dynamic Z-Index Stacking**: For components that can overlap (modals, overlays), use a `computedZIndex` based on the current number of active overlays. This ensures that the most recently opened element (e.g., an item selector) always appears on top of previous layers.
 - **Blocking vs. Non-Blocking Modals (Store Logic)**:
   - **REQUIRED**: In the `uiStore`, when computing `isAnyBlockingModalOpen`, you **MUST** explicitly exclude side-panels (e.g., `'Chat'`, `'Profile'`) if they are intended to allow background interaction.

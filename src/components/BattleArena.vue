@@ -17,7 +17,7 @@ import BattleSwitchModal from './battle/BattleSwitchModal.vue'
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
-const { _getHpPct, _getHpClass } = useBattleVisuals()
+const { getHpPct, getHpClass } = useBattleVisuals()
 
 const gs = computed(() => gameStore.state)
 const battle = computed(() => battleStore.activeBattle)

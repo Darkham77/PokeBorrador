@@ -7,6 +7,7 @@ import { FIRE_RED_MAPS } from '@/data/maps'
 import { GYMS } from '@/data/gyms'
 import { STAGE_MULT, ACC_STAGE_MULT } from '@/data/constants'
 import { SHOP_ITEMS, ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
+import { useUIStore } from '@/stores/ui'
 
 import { 
   getSpeciesHistory, 
@@ -58,6 +59,12 @@ export function initBaseBridge() {
   window.triggerRivalSequence = triggerRivalSequence;
   window.showFishingIntro = showFishingIntro;
   window.startFishingMinigame = startFishingMinigame;
+
+  // UI Navigation Hooks
+  const uiStore = useUIStore()
+  window.toggleSettings = () => { uiStore.isSettingsOpen = !uiStore.isSettingsOpen }
+  window.toggleProfile = () => { uiStore.isProfileOpen = !uiStore.isProfileOpen }
+  window.toggleCosmetics = () => { uiStore.isCosmeticsModalOpen = !uiStore.isCosmeticsModalOpen }
 
   console.log('[BaseBridge] Static data and encounter helpers initialized.')
 }

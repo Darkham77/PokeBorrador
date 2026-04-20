@@ -138,7 +138,7 @@ const evolutions = computed(() => {
         </button>
       </nav>
 
-      <div class="detail-body scrollbar">
+      <div class="detail-body custom-scrollbar-vicio">
         <!-- SUMMARY TAB -->
         <div
           v-if="activeTab === 'summary'"
@@ -403,6 +403,7 @@ const evolutions = computed(() => {
   flex: 1;
   overflow-y: auto;
   padding: 24px;
+  min-height: 0; // Ensure flex child can shrink to enable scrolling
 }
 
 /* Tab Panes */
@@ -521,7 +522,5 @@ const evolutions = computed(() => {
   .no-evo { text-align: center; padding: 40px; color: #444; font-weight: 800; font-size: 14px; }
 }
 
-.scrollbar::-webkit-scrollbar { width: 4px; }
-.scrollbar::-webkit-scrollbar-track { background: transparent; }
-.scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>
+

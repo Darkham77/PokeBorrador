@@ -1,5 +1,9 @@
 <script setup>
 import MapCard from './MapCard.vue'
+import { getEncounterPool } from '@/logic/encounters'
+import { useEventStore } from '@/stores/events'
+import { getGuardianData } from '@/logic/war/guardianEngine'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const props = defineProps({
   maps: { type: Array, required: true },
@@ -14,34 +18,36 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['navigate'])
-
-const getEncounterPool = (loc, cycle) => {
-  if (typeof window.getEncounterPool === 'function') {
-    return window.getEncounterPool(loc, cycle)
-  }
-  return { pool: [], rates: [] }
-}
+const eventStore = useEventStore()
 
 const getMapData = (loc) => {
-  const encounterData = getEncounterPool(loc, props.cycle)
-  const currentCycleWild = encounterData.pool
-  const baseWild = loc.wild?.day || []
+  if (!loc.wild) return { generic: [], specific: [], rates: {} }
+
+  const activeEvents = eventStore.activeEvents || []
+  const { pool, rates } = getEncounterPool(loc, props.cycle, activeEvents)
   
+  const baseWild = loc.wild?.day || []
   const generic = []
   const specific = []
-  
-  currentCycleWild.forEach(id => {
+  const ratesMap = {}
+
+  pool.forEach((id, index) => {
+    ratesMap[id] = rates[index] || 10
     if (baseWild.includes(id)) generic.push(id)
     else specific.push(id)
   })
 
+  // Add fishing pool to generic if not already there
   if (loc.fishing) {
-    loc.fishing.pool.forEach(id => {
-      if (!generic.includes(id) && !specific.includes(id)) generic.push(id)
+    loc.fishing.pool.forEach((id, index) => {
+      if (!generic.includes(id) && !specific.includes(id)) {
+        generic.push(id)
+        ratesMap[id] = loc.fishing.rates[index] || 10
+      }
     })
   }
 
-  return { generic, specific }
+  return { generic, specific, rates: ratesMap }
 }
 
 const isMapLocked = (loc) => {
@@ -58,10 +64,12 @@ const getDominanceForMap = (mapId) => {
   const data = props.dominanceData[mapId] || {}
   const captured = props.dailyGuardianCaptures.includes(mapId)
   
+  const allMaps = pokemonDataProvider.getMaps()
+  const guardianData = getGuardianData(mapId, allMaps.map(m => m.id))
+  
   let guardian = null
-  if (typeof window.getGuardianForMap === 'function') {
-     const g = window.getGuardianForMap(mapId)
-     if (g) guardian = { id: g.id, captured }
+  if (guardianData) {
+    guardian = { id: guardianData.id, captured }
   }
 
   return {

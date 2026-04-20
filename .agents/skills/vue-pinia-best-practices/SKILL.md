@@ -23,6 +23,10 @@ Pinia best practices, common gotchas, and state management patterns.
 - Filters reset on refresh or can't be shared → See [state-url-for-ephemeral-filters](references/state-url-for-ephemeral-filters.md)
 - Building production app without DevTools or conventions → See [state-use-pinia-for-large-apps](references/state-use-pinia-for-large-apps.md)
 
+### Timers & Side Effects
+
+- **Guarded Intervals**: When using `setInterval` or timers within a store for reactive global cycles (e.g., game world time), always check for an existing active timer ID before starting a new one to prevent duplicates during HMR or re-initialization.
+
 ### API Stability & Store Proxies
 
 - **MANDATORY**: When delegating core store logic to a specialized sub-store (e.g., moving modal logic to `modalStore`), you **MUST** maintain proxy methods in the primary store (e.g., `uiStore.open()`).

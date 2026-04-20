@@ -5,7 +5,8 @@
   position: fixed;
   top: 20px;
   right: 16px;
-  z-index: z(loading); // Very high priority
+  z-index: var(--z-toast);
+  transform: translateZ(0);
   display: flex;
   flex-direction: column;
   gap: spacing(2);

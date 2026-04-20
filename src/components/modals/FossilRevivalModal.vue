@@ -175,15 +175,17 @@ function handleClose() {
 .fossil-overlay {
   position: fixed;
   inset: 0;
-  z-index: 12000;
-  background: rgba(0,0,0,0.96);
+  z-index: var(--z-modal);
+  background: rgba(0, 0, 0, 0.96);
   backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 20px;
   animation: fadeIn 0.5s ease;
+  transform: translateZ(0);
 }
 
 .fossil-stage {

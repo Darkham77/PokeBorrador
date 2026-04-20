@@ -136,9 +136,11 @@
 /* Move Tooltip Premium Style */
 .move-tooltip {
   position: fixed;
-  z-index: 10000;
+  z-index: var(--z-tooltip);
   background: rgba(10, 15, 25, 0.95);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform: translateZ(0);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-left: 4px solid var(--move-color, #fff);
   border-radius: 12px;

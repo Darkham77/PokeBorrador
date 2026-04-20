@@ -147,7 +147,7 @@ onUnmounted(() => {
 .fishing-game-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(10px);
   display: flex;

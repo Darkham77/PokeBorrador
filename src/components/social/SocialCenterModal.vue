@@ -126,11 +126,13 @@ onMounted(() => {
   inset: 0;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
-  z-index: 2000;
+  -webkit-backdrop-filter: blur(8px);
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  transform: translateZ(0);
 }
 
 .social-modal-content {

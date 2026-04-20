@@ -37,10 +37,20 @@ $legacy-glow:  rgba(255, 217, 61, 0.25);
   --coin-gold: #{$coin-gold};
   --pokecenter-pink: #{$pokecenter-pink};
 
-  // Legacy Gradients
   --bg-main: #{$legacy-bg};
   --bg-card: #{$legacy-card};
   --glow-yellow: #{$legacy-glow};
+
+  // Z-Index Layers (Standardized)
+  --z-base: 0;
+  --z-hud: 1000;
+  --z-navigation: 5000;
+  --z-overlay: 10000;
+  --z-modal: 13000;
+  --z-tooltip: 15000;
+  --z-toast: 20000;
+  --z-max: 100000;
+  --z-critical: 999999;
 }
 
 // Breakpoints

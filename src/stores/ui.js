@@ -62,6 +62,7 @@ export const useUIStore = defineStore('ui', () => {
   // Static flags for non-modal elements
   const isChatOpen = ref(false)
   const isHistoryOpen = ref(false)
+  const openHudGroup = ref(null) // Tracks which HUD menu group is open (e.g., 'POKEMON', 'MARKET')
 
   // ── MODAL TRIGGERS ─────────────────────────────────────────────────────────
   
@@ -103,6 +104,15 @@ export const useUIStore = defineStore('ui', () => {
     getModalStore().closeAll()
     isHistoryOpen.value = false
     isChatOpen.value = false
+    openHudGroup.value = null
+  }
+
+  function toggleHudGroup(name) {
+    if (openHudGroup.value === name) {
+      openHudGroup.value = null
+    } else {
+      openHudGroup.value = name
+    }
   }
 
   function updateProfile(data) {
@@ -261,6 +271,8 @@ export const useUIStore = defineStore('ui', () => {
     toggleSettings,
     toggleHistory,
     toggleLibrary,
+    toggleHudGroup,
+    openHudGroup,
     closeAll,
     open,
     close,

@@ -129,9 +129,34 @@ Any `.vue`, `.js`, or `.scss` file inside the project **MUST NOT** exceed 500 li
   - Split large stylesheets into feature-specific partials.
   - Example: `_battle.scss` -> `_battle-hud.scss`, `_battle-animations.scss`, `_battle-stats.scss`.
   - **Nesting Safety**: When refactoring or moving SCSS blocks, ALWAYS verify that `@media` queries or nested rules are properly closed. Orphaned blocks cause build-breaking syntax errors (`expected "{"`).
+  - **Relative Pathing**: When importing SASS partials/mixins from components in nested directories (e.g., `src/components/map/`), always use relative paths from the component's perspective (e.g., `../../styles/core/mixins`) rather than assuming a root-relative path or a single-level jump.
+  - **Scroll Inheritance (Flexbox/Grid)**: To ensure internal `overflow-y: auto` works in nested layouts, every flex parent in the hierarchy **MUST** have `min-height: 0` (or a fixed height). This allows the child to shrink below its content's natural size and trigger scrollbars. Alternatively, use `position: absolute; inset: 0` within a relative parent for maximum stability.
+
 - **Logic (JS)**:
   - Extract utility functions to `src/logic/utils/`.
   - Use modular classes or function sets instead of monolithic bridges.
+
+## Full Vue & Hybrid Code Standards
+
+To ensure the application remains stable and 100% reactive, we maintain a strict policy against "hybrid" DOM manipulation.
+
+### 1. Mandatory Pure Vue
+
+- **FORBIDDEN**: Using `document.querySelector`, `document.getElementById`, or any direct DOM query for UI elements that are managed by Vue.
+- **FORBIDDEN**: Imperative DOM manipulation (`document.createElement`, `innerHTML`, `appendChild`, `remove()`).
+- **REQUIRED**: All UI state must be managed via Vue templates, reactivity (refs/reactive), or Pinia stores.
+- **EXCEPTION**: Accessing the Phaser canvas container (`#game-container`) or specific non-Vue root elements is allowed only inside the `phaserBridge` or dedicated low-level services.
+
+### 2. Lifecycle & Global Listeners
+
+- **REQUIRED**: Any event listener added to `window` or `document` (scroll, resize, click) **MUST** be added inside `onMounted` and removed inside `onUnmounted` to prevent memory leaks and unexpected side effects.
+- **FORBIDDEN**: Manipulating `document.body.classList` manually. Use a centralized watcher in `App.vue` or a global Pinia state to bind body classes reactively.
+
+### 3. Hybrid Pattern Detection
+
+- **MANDATORY**: You **MUST** run the detection script after any logic or UI modification to ensure no legacy hybrid patterns were introduced.
+- **Execution (Full Project)**: `python3 .agents/skills/project-standards/scripts/detect_hybrid_patterns.py`
+- **Execution (Targeted)**: `python3 .agents/skills/project-standards/scripts/detect_hybrid_patterns.py src/components/battle/` or `python3 .agents/skills/project-standards/scripts/detect_hybrid_patterns.py src/App.vue`
 
 ## Styling & Aesthetic Standards: Hybrid Retro-Modern Mandate
 
@@ -157,6 +182,9 @@ To prevent blurriness and maintain the retro heart's integrity, all pixel fonts 
 - **Implementation**: Use `@include pixelated;` in SCSS. This mixin forces `-webkit-font-smoothing: none`, `-moz-osx-font-smoothing: grayscale`, and hardware acceleration (`transform: translateZ(0)`) to ensure characters are snapped to the pixel grid.
 - **Why**: Pixel fonts rely on sharp edges. Modern antialiasing makes them appear "fuzzy" or "dirty," violating the project's visual core.
 - **FORBIDDEN**: Relying on default browser antialiasing for game-world text. Blurry typography is considered a violation of the Hybrid Retro-Modern identity.
+- **Text-Shadow Standards**: To maintain sharpness, `text-shadow` for pixel fonts **MUST NOT** use blur radius. Use hard offsets (e.g., `2px 2px 0px rgba(0,0,0,0.5)`).
+- **Audit Mandate**: If a user reports "blurry" or "compacted" UI, first audit for missing `min-height: 0` on flex parents or legacy CSS padding overrides in `_modals.scss`.
+
 
 ### 4. Safari Compatibility (Prefix Mandate)
 
@@ -354,7 +382,9 @@ To prevent build warnings and future-proof the application, you **MUST** use the
 
 ### 3. Automatic Validation
 
-- **MANDATORY**: You **MUST** run `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` after any UI modification to ensure no deprecated globals were introduced.
+- **MANDATORY**: You **MUST** run the following validation scripts after any UI or logic modification:
+  - **SASS Traps**: `python3 .agents/skills/project-standards/scripts/check_sass_traps.py`
+  - **Hybrid Patterns**: `python3 .agents/skills/project-standards/scripts/detect_hybrid_patterns.py`
 
 ## Python Dependency & Skill Script Standards
 
@@ -472,6 +502,7 @@ If the changes involve any game scenes or entities, verify:
 7. `[ ]` **DB Translation**: Verified that all Postgres migrations are translated via the intelligent engine and new patterns have unit tests.
 8. `[ ]` **Python Deps**: `pip install -r requirements.txt` executed/verified.
 9. `[ ]` **SASS Protection**: Running `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` returns success.
-10. `[ ]` **Hybrid Retro-Modern**: Verified Modern UI frames vs. Pixel Art content heart (@/references/sass_styling_manual.md).
-11. `[ ]` Dev Server Check: No duplicate instances or reused existing one.
-12. `[ ]` **Dev Server Logs**: Active terminal buffer (typically named `npm`) checked for recent runtime errors or warnings.
+10. `[ ]` **Full Vue Check**: Running `python3 .agents/skills/project-standards/scripts/detect_hybrid_patterns.py` returns success.
+11. `[ ]` **Hybrid Retro-Modern**: Verified Modern UI frames vs. Pixel Art content heart (@/references/sass_styling_manual.md).
+12. `[ ]` Dev Server Check: No duplicate instances or reused existing one.
+13. `[ ]` **Dev Server Logs**: Active terminal buffer (typically named `npm`) checked for recent runtime errors or warnings.

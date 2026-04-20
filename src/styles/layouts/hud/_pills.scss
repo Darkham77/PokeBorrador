@@ -68,10 +68,15 @@
   }
 
   &.time-pill {
+    padding: 8px 2px;
+    gap: 2px;
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
     #time-icon {
       text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    }
+    .pill-value {
+      font-size: 6px !important;
     }
   }
 }
@@ -101,6 +106,7 @@
 
   i, span:first-child { 
     font-size: 20px;
+    &.currency-icon-money { font-size: 26px; }
     margin-bottom: 2px;
     @include flex-center;
     height: 28px;

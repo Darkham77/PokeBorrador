@@ -51,7 +51,7 @@ export function useAssetResolver() {
     currentSuffix.value = getResolutionSuffix();
   };
 
-  onMounted(() => window.addEventListener('resize', handleResize));
+  onMounted(() => window.addEventListener('resize', handleResize)); // [PureVue-Ignore]
   onUnmounted(() => window.removeEventListener('resize', handleResize));
 
   const resolve = (url, isLodEnabled = true) => resolveAsset(url, isLodEnabled);

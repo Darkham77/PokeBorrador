@@ -41,5 +41,6 @@ export const MODAL_REGISTRY = {
   PPUp: defineAsyncComponent(() => import('@/components/modals/PPUpModal.vue')),
   AbilityPill: defineAsyncComponent(() => import('@/components/modals/AbilityPillModal.vue')),
   StonePicker: defineAsyncComponent(() => import('@/components/modals/StonePickerModal.vue')),
-  Fishing: defineAsyncComponent(() => import('@/components/modals/FishingModal.vue'))
+  Fishing: defineAsyncComponent(() => import('@/components/modals/FishingModal.vue')),
+  EncounterSequence: defineAsyncComponent(() => import('@/components/game/EncounterSequence.vue'))
 }

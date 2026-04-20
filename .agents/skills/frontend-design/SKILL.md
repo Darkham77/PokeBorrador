@@ -164,7 +164,10 @@ All spacing and sizing in multiples of 8:
 - **`fit-content` vs Flexbox Wrap**: Using `width: 100%` or `flex-basis: 100%` to force line breaks in Flexbox will break `width: fit-content` on the parent, forcing it to stretch to the viewport. For multi-row `fit-content` containers, use **CSS Grid** (`display: grid`) instead of Flexbox wrap.
 - **Flex Column Collapse Bug**: In `flex-direction: column`, children with `flex: 1` evaluate their base height as `0px`. If their content relies on percentage heights (`height: 100%`) or absolute positioning, the child collapses to `0px` and disappears. Fix by using `min-height` on the child instead of `height`, or assigning `flex: 1` directly to the inner percentage-based content.
 - **`position: fixed` Conflicts**: Applying a `transform` (e.g., via GPU acceleration mixins like `translate3d(0,0,0)`) to an ancestor element creates a new containing block. This completely breaks `position: fixed` for all descendants, causing them to scroll with the document instead of staying pinned to the viewport.
+- **Absolute Inset for Scrolling**: If nested flex height inheritance fails or feels flaky, use a wrapper with `position: absolute; inset: 0` inside a relative parent. This forces the child to fill the container exactly and triggers `overflow: auto` reliably across all browsers.
+- **Card Header Offsets**: For absolute-positioned headers in cards/modals, use a standard `top: 15px` to `20px` offset. Placing headers at `0-10px` often causes visual clipping against container borders or overlap with corner badges/tags.
 - **Cross-Browser Sharpness (Prefix Mandate)**: To maintain the "Hybrid Retro-Modern" sharpness across all engines:
+
   - **Safari/iOS/Edge**: Always include `image-rendering: -webkit-optimize-contrast;` before `pixelated` to prevent blurry scaling.
   - **Typography**: Always pair `font-smooth: never;` with `-webkit-font-smoothing: none;` and `-moz-osx-font-smoothing: grayscale;` to ensure pixel fonts snap to the grid on all OSs.
 

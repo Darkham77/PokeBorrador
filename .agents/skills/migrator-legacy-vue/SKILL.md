@@ -77,7 +77,9 @@ Legacy code **MUST** be modified during migration to comply with all current pro
 - **Prohibition of Hybrid Phases**:
   - **MANDATORY**: When migrating a feature (e.g., Library), you **MUST** fully migrate its global SCSS rules into the Vue component's scoped styles or a modular partial.
   - **CSS Leakage Prevention**: NEVER leave global classes (like `.library-container`) active if they conflict with the new modal shell. Either delete the legacy rules or restrict them to the legacy container ID (e.g., `#library-modal .library-container`).
+  - **Audit Legacy Overrides**: During implementation, specifically audit `src/styles/components/_modals.scss` for legacy classes that match your new component. Legacy styles often contain hardcoded `padding` (e.g., `60px`) or `max-width` that will break modern responsive layouts.
   - **Why**: "Hybrid" states where legacy global CSS pollutes modern Vue components create "modal-in-modal" artifacts and broken layouts.
+
 
 ## Logic & Store Hardening
 

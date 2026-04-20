@@ -214,8 +214,9 @@ function unlockPokedex() {
   position: fixed;
   bottom: 80px;
   left: 20px;
-  z-index: 12000;
+  z-index: var(--z-max);
   transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
 }
 
 @media (max-width: 1380px) {

@@ -16,45 +16,24 @@
   }
 }
 
-.screen {
-  display: none;
-  animation: fadeIn 0.4s ease;
-  overflow: visible !important;
-  
-  &.active {
-    display: block;
-    
-    &#auth-screen,
-    &#title-screen {
-      display: flex !important;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-    }
-  }
-}
-
-#auth-screen {
-  // En Vue, el router controla la visibilidad. 
-  // Eliminamos el display: none legacy para permitir el renderizado normal.
+#auth-screen,
+#title-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  animation: fadeIn 0.4s ease;
 }
 
-#title-screen {
-  &.active {
-    text-align: center;
-    padding: spacing(5);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
+#auth-screen {
+  // Vue router controls visibility.
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #game-screen {

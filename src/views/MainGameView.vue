@@ -1,5 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch, defineAsyncComponent } from 'vue'
+import { useWindowListener, useDocumentListener } from '@/composables/useWindowListener'
+import { useBodyClass } from '@/composables/useBodyClass'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
@@ -64,7 +66,11 @@ watch(() => gameStore.state.dayCycle, (cycle) => {
   })
 }, { immediate: true })
 
+// Managed Body Classes
+useBodyClass('is-battle-active', () => battleStore.isBattleActive)
+
 const hudRef = ref(null)
+const innerHudRef = ref(null)
 const hudHeight = ref(85)
 const isHudHidden = ref(false)
 
@@ -77,11 +83,12 @@ let resizeObserver = null
 
 // Click-outside listener to close HUD menus
 function handleOutsideClick(e) {
-  const isNavClick = e.target.closest('.hud-group, .nav-group, .group-btn')
-  if (!isNavClick) {
-    document.querySelectorAll('.hud-group.is-open, .nav-group.is-open').forEach(g => {
-      g.classList.remove('is-open')
-    })
+  if (!hudRef.value || !uiStore.openHudGroup) return;
+  
+  // Use contains() on the hudRef to check if click is inside the HUD area
+  const isInsideHud = hudRef.value.contains(e.target);
+  if (!isInsideHud) {
+    uiStore.openHudGroup = null
   }
 }
 
@@ -115,9 +122,10 @@ function handleScroll(e) {
 }
 
 function updateHudHeight() {
-  if (hudRef.value) {
-    const innerHud = hudRef.value.querySelector('.hud')
-    hudHeight.value = innerHud ? innerHud.offsetHeight : hudRef.value.offsetHeight
+  if (innerHudRef.value) {
+    hudHeight.value = innerHudRef.value.offsetHeight
+  } else if (hudRef.value) {
+    hudHeight.value = hudRef.value.offsetHeight
   }
 }
 
@@ -127,7 +135,7 @@ onMounted(() => {
     resizeObserver = new ResizeObserver(() => updateHudHeight())
     resizeObserver.observe(hudRef.value)
   }
-  window.addEventListener('resize', updateHudHeight, { passive: true })
+  
   setTimeout(updateHudHeight, 100) // Initial guarantee
 
   // 2. Load essential game data
@@ -135,40 +143,23 @@ onMounted(() => {
   eventStore.fetchEvents()
   eventStore.checkPendingAwards()
   livePvP.initInvitePoller()
-
-  // Initial UI state setup
-  setTimeout(() => {
-    const battleScreen = document.getElementById('battle-screen')
-    if (battleScreen) {
-      const obs = new MutationObserver(() => {
-        const isActive = battleScreen.classList.contains('active')
-        document.body.classList.toggle('is-battle-active', isActive)
-      })
-      obs.observe(battleScreen, { attributes: true, attributeFilter: ['class'] })
-      
-      if (battleScreen.classList.contains('active')) {
-        document.body.classList.add('is-battle-active')
-      }
-    }
-  }, 1200)
-
-  document.addEventListener('click', handleOutsideClick)
-  window.addEventListener('scroll', handleScroll, { passive: true, capture: true })
-
-  // Initialize audio context on first user interaction
-  const initAudio = () => {
-    audioStore.init()
-    document.removeEventListener('click', initAudio)
-    document.removeEventListener('keydown', initAudio)
-  }
-  document.addEventListener('click', initAudio, { once: true })
-  document.addEventListener('keydown', initAudio, { once: true })
 })
 
+// REFACTORED: Use managed listeners
+useWindowListener('resize', updateHudHeight, { passive: true })
+useWindowListener('scroll', handleScroll, { passive: true, capture: true })
+useDocumentListener('click', handleOutsideClick)
+
+// Initialize audio context on first user interaction
+const initAudio = () => {
+  audioStore.init()
+  document.removeEventListener('click', initAudio)
+  document.removeEventListener('keydown', initAudio)
+}
+useDocumentListener('click', initAudio, { once: true })
+useDocumentListener('keydown', initAudio, { once: true })
+
 onUnmounted(() => {
-  document.removeEventListener('click', handleOutsideClick)
-  window.removeEventListener('scroll', handleScroll, { capture: true })
-  window.removeEventListener('resize', updateHudHeight)
   if (watchdog) clearInterval(watchdog)
   if (resizeObserver) resizeObserver.disconnect()
 })
@@ -179,9 +170,9 @@ onUnmounted(() => {
   
 
   <div
+    v-show="gs.starterChosen"
     id="game-screen"
     class="screen"
-    :class="{ active: gs.starterChosen }"
   >
     <!-- HUD PRINCIPAL (RESTAURADO) -->
     <div
@@ -189,7 +180,10 @@ onUnmounted(() => {
       class="hud-container"
       :class="{ 'hud-hidden': isHudHidden }"
     >
-      <div class="hud">
+      <div 
+        ref="innerHudRef"
+        class="hud"
+      >
         <!-- 1. Entrenador (Siempre Arriba) -->
         <TrainerPanel class="hud-left" />
 
@@ -372,11 +366,12 @@ onUnmounted(() => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.9);
-  z-index: 9999;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  transform: translateZ(0);
 }
 
 .private-chats-container {
@@ -387,7 +382,8 @@ onUnmounted(() => {
   flex-direction: row-reverse;
   gap: 10px;
   pointer-events: none;
-  z-index: 1000;
+  z-index: var(--z-hud);
+  transform: translateZ(0);
   transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   & > * {
@@ -405,7 +401,8 @@ onUnmounted(() => {
   bottom: 0;
   left: 0;
   width: 100%;
-  z-index: 2000;
+  z-index: var(--z-navigation);
+  transform: translateZ(0);
 }
 
 @media (max-width: 1380px) {

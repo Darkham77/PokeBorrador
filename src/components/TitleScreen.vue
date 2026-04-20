@@ -21,9 +21,9 @@ const handleLogout = () => {
 
 <template>
   <div
+    v-show="!gs.starterChosen && gameStore.isReady"
     id="title-screen"
     class="screen zoom-target"
-    :class="{ active: !gs.starterChosen && gameStore.isReady }"
   >
     <div class="title-logo">
       Poké Vicio

@@ -30,7 +30,7 @@ const uiStore = useUIStore()
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: 999999;
+  z-index: var(--z-toast);
   pointer-events: none;
   max-width: 300px;
 }

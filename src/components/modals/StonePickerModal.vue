@@ -137,14 +137,16 @@ const getPokemonName = (id) => {
 .stone-picker-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9500;
+  z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.88);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   animation: fadeIn 0.2s ease;
+  transform: translateZ(0);
 }
 
 .stone-modal {

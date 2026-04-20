@@ -45,7 +45,7 @@ const selectTab = (tabId) => {
   >
     <div class="library-container">
       <aside class="library-sidebar">
-        <nav class="library-nav custom-scrollbar">
+        <nav class="library-nav custom-scrollbar-vicio">
           <div
             v-for="cat in libraryCategories"
             :key="cat.id"
@@ -58,7 +58,7 @@ const selectTab = (tabId) => {
         </nav>
       </aside>
 
-      <main class="library-content custom-scrollbar">
+      <main class="library-content custom-scrollbar-vicio">
         <transition name="fade">
           <div
             v-if="contentFade"
@@ -83,9 +83,10 @@ const selectTab = (tabId) => {
 }
 
 .library-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 280px 1fr;
   width: 100%;
-  min-height: 650px;
+  height: 600px;
   max-height: 85vh;
   overflow: hidden;
   background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
@@ -93,6 +94,7 @@ const selectTab = (tabId) => {
   border-bottom-right-radius: 20px;
 
   @media (max-width: 900px) {
+    display: flex;
     flex-direction: column;
     height: 90vh;
     border-radius: 0;
@@ -100,40 +102,45 @@ const selectTab = (tabId) => {
 }
 
 .library-sidebar {
-  width: 280px;
   background: rgba(10, 10, 15, 0.4);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  flex-direction: column;
-  padding: 32px 16px;
-  gap: 8px;
+  overflow: hidden;
+  height: 100%;
+  position: relative;
 
   @media (max-width: 900px) {
     width: 100%;
     height: auto;
-    flex-direction: row;
-    padding: 16px;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 
 .library-nav {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-right: 4px;
-
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  min-height: 0; // Prevent flex collapse
+  padding: 8px; // Reducido al mínimo para maximizar espacio
+  display: block;
+  
   @media (max-width: 900px) {
+    position: relative;
+    display: flex;
     flex-direction: row;
-    padding-bottom: 8px;
+    padding: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .library-nav-item {
-    padding: 14px 20px;
-    border-radius: 12px;
+    margin-bottom: 6px;
+    padding: 12px 16px; // Ajustado
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: 'Press Start 2P', cursive;
@@ -145,6 +152,10 @@ const selectTab = (tabId) => {
     align-items: center;
     gap: 12px;
     border: 1px solid transparent;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
 
     &:hover {
       background: rgba(255, 255, 255, 0.04);
@@ -163,55 +174,57 @@ const selectTab = (tabId) => {
     @media (max-width: 900px) {
       white-space: nowrap;
       padding: 10px 14px;
+      margin-bottom: 0;
+      margin-right: 8px;
       transform: none !important;
     }
   }
 }
 
 .library-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0;
-  background: rgba(0, 0, 0, 0.15);
+  overflow-y: auto !important;
+  background: rgba(0, 0, 0, 0.08);
+  height: 100%;
+  min-height: 0; // Prevent flex collapse
   position: relative;
 }
 
 .library-article {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 60px 40px;
-  line-height: 1.8;
+  width: 100%;
+  padding: 24px 32px; // Reducido drásticamente el padding "terrible"
+  line-height: 1.6;
   color: #ddd;
 
   :deep(h1) {
     font-family: 'Press Start 2P', cursive;
-    font-size: 24px;
+    font-size: 20px;
     color: var(--yellow);
-    margin-bottom: 40px;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    margin-bottom: 24px;
+    text-shadow: 3px 3px 0px rgba(0,0,0,0.8);
     @include pixelated;
   }
 
   :deep(h3) {
     color: var(--purple, #bf5af2);
-    margin: 40px 0 20px;
-    font-size: 20px;
+    margin: 32px 0 16px;
+    font-size: 18px;
     font-weight: 800;
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
     @include pixelated;
   }
 
   :deep(p) {
-    margin-bottom: 25px;
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 20px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.85);
   }
 
   :deep(ul) {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     padding-left: 20px;
     li { 
-      margin-bottom: 12px; 
-      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 10px; 
+      color: rgba(255, 255, 255, 0.8);
     }
   }
 
@@ -224,14 +237,14 @@ const selectTab = (tabId) => {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    margin: 30px 0;
+    margin: 24px 0;
     background: rgba(255, 255, 255, 0.02);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.05);
     
     th, td {
-      padding: 16px 20px;
+      padding: 12px 16px;
       text-align: left;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
@@ -239,9 +252,10 @@ const selectTab = (tabId) => {
     th { 
       background: rgba(255, 255, 255, 0.05);
       color: var(--yellow);
-      font-size: 12px;
+      font-size: 10px;
       font-family: 'Press Start 2P', cursive;
       text-transform: uppercase;
+      @include pixelated;
     }
     
     tr:last-child td {
@@ -255,14 +269,14 @@ const selectTab = (tabId) => {
 
   :deep(.class-info-box) {
     background: rgba(255, 255, 255, 0.03);
-    border-radius: 16px;
-    padding: 32px;
-    margin-bottom: 32px;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 }
-
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 </style>
+
+
+
+

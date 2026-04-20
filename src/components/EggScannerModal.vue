@@ -234,12 +234,17 @@ const _getSprite = (id, shiny) => {
 
 <style scoped>
 .scanner-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.85);
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
-  z-index: 10002;
-  display: flex; align-items: center; justify-content: center;
+  -webkit-backdrop-filter: blur(8px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
+  transform: translateZ(0);
 }
 
 .scanner-container {

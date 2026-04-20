@@ -129,7 +129,7 @@ const select = (id) => {
 .class-selector-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9000;
+  z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.92);
   display: flex;
   align-items: flex-start;
@@ -137,7 +137,9 @@ const select = (id) => {
   padding: 40px 16px;
   overflow-y: auto;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   animation: fadeIn 0.3s ease;
+  transform: translateZ(0);
 }
 
 .modal-content {

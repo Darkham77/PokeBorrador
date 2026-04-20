@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed } from 'vue' // HMR Trigger
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import MapEventCarousel from '@/components/map/MapEventCarousel.vue'

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { FIRE_RED_MAPS } from '@/data/maps'
 import { generateEncounter } from '@/logic/encounters'
+import { getDayCycle, syncServerTime } from '@/logic/timeUtils'
 import { useGameStore } from './game'
 import { useBattleStore } from './battle'
 import { useUIStore } from './ui'
@@ -15,7 +16,16 @@ export const useMapStore = defineStore('map', () => {
   })
   const region = computed(() => gs.state.map?.region || 'kanto')
 
-  const currentCycle = computed(() => gs.state.dayCycle || 'day')
+  const cycle = ref(getDayCycle())
+  const currentCycle = computed(() => cycle.value)
+  
+  // Update cycle every minute
+  setInterval(() => {
+    cycle.value = getDayCycle()
+  }, 60000)
+
+  // Sync time on store init (safer than onMounted in a store)
+  syncServerTime()
   const maps = ref(FIRE_RED_MAPS)
   const activeEvents = ref([])
   const lastNavigateTime = ref(0)

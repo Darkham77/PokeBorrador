@@ -10,7 +10,7 @@
 #battle-screen {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--z-overlay);
   background: rgba(0, 0, 10, 0.7);
   backdrop-filter: blur(4px);
   display: none !important;
@@ -57,7 +57,7 @@ body:has(#battle-screen.active) {
 #btn-revive-overlay,
 #boss-intro-overlay,
 .catch-animation {
-  z-index: 12000 !important;
+  z-index: var(--z-max) !important;
 }
 
 .battle-container {

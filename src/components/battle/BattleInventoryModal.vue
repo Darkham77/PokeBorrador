@@ -126,13 +126,15 @@ const handleUse = (item) => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  transform: translateZ(0);
 }
 
 .inventory-modal-card {
@@ -200,7 +202,7 @@ p { color: var(--gray); font-size: 11px; margin: 0; }
 .item-sprite img {
   width: 40px;
   height: 40px;
-  image-rendering: auto;
+  image-rendering: pixelated;
 }
 
 .item-info { flex: 1; }
