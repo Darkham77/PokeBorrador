@@ -9,18 +9,18 @@ This document tracks the progress of migrating legacy JavaScript/CSS/HTML code f
 | `public/js/01_auth.js` | `src/logic/auth/` | 100% | Migración completa: DBRouter, Registro, Unicidad de Sesión y Carga Fusionada Cloud/Local. |
 | `public/js/04_state.js` | `src/stores/game.js` | 100% | Migrado chooseStarter y lógica de guardado inicial a Pinia. |
 | `public/js/07_battle.js` | `src/logic/battle/` | 100% | Modularized into actions/abilities with functional parity. |
-| `public/js/21_events.js` | `src/components/admin/EventAdminPanel.vue` | 100% | Migrated Ranked Rules Admin and Season Closure logic. |
+| `public/js/21_events.js` | `src/components/admin/` | 100% | Modularizado en `EventAdminPanel`, `AdminEventTab` y `AdminRankedTab`. |
 | `public/js/02_pokemon_data.js` | `src/logic/data/` | 100% | Normalized and moved to optimized pseudo-DB. |
 | `inventory.js` | `src/stores/inventory.js` | 100% | Moved to Pinia store. |
 | `public/login_guard.js` | `src/logic/auth/loginGuard.js` | 100% | Migrated to ESM; integrated with existing login flow. |
-| `public/assets/` | `src/assets/` | 100% | Migrated to Vite-managed assets. All images converted to WebP. |
+| `public/assets/` | `public/assets/` | 100% | Consolidación total. Eliminado `src/assets/`. WebP mandatorio con pipeline automatizado. |
 | `public/js/` (Legacy Dir) | `backup_legacy_code/js/` | 100% | Monolith removed from public/. |
 | `00_time.js` | `src/logic/timeUtils.js` | 100% | Sincronizado vía RPC de servidor. |
 | `06_encounters_v5.js` | `src/stores/map.js` | 100% | Motor de navegación y huevos 100% nativo. |
 | `13_evolution.js` | `src/stores/evolution.js` | 100% | Refactorizado a Composition API y unificado con EvolutionLogic. |
 | `20_classes.js` | `src/stores/playerClass.js` | 100% | Migrated to PlayerClassStore, useClassModifiers and Vue components. |
-| `09_social.js` | `src/stores/social.js` | 100% | Hub Social Modular, Presence y Rankings Globales (ELO, Nivel, Medallas). |
-| `10_trade.js` | `src/stores/trade.js` | 100% | Intercambios Real-time con notificaciones de ofertas entrantes. |
+| `09_social.js` | `src/stores/social.js` | 100% | Hub Social. `ProfileModal` modularizado en `ProfileBadges`, `ProfileStats` y `ProfileTeam`. |
+| `10_trade.js` | `src/stores/trade.js` | 100% | Intercambios Real-time. UI modularizada en `TradeView` y `TradeSidePanel`. |
 | `16_chat.js` | `src/stores/chat.js` | 100% | Chat Global y Privado persistente en save_data. |
 | `23_market.js` | `src/stores/gts.js` | 100% | GTS Modular con visual parity 1:1, filtros Vue y tiempo real. `marketUI.js` eliminado. |
 | `market.js` (NPC) | `src/stores/shop.js` | 100% | Tienda NPC modernizada, desacoplada de GTS y testeada al 100%. |
@@ -46,7 +46,7 @@ This document tracks the progress of migrating legacy JavaScript/CSS/HTML code f
 | `06_encounters_v5.js (Pesca)` | `src/components/battle/FishingMinigame.vue` | 100% | Minijuego de pesca rítmico migrado a Vue. `encounterUI.js` modernizado. |
 | `missions.js` | `src/stores/playerClass.js` | 100% | Lógica de misiones de clase consolidada en el store. `missionUI.js` eliminado. |
 
-| [UNIFICACIÓN] | `src/stores/game.js` | 100% | Centralización de `addPokemon` y `removePokemon`. Eliminado `fossilEngine.js`. |
+| [UNIFICACIÓN] | `src/stores/game.js` | 100% | Centralización de `addPokemon`/`removePokemon`. Motor de fósiles movido a `src/logic/items/fossilEngine.js`. |
 | [UNIFICACIÓN] | `src/logic/pokemonFactory.js`| 100% | Removidos hacks de `window`. Integración nativa con Stores. |
 
 ## Legend

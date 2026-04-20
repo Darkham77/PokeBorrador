@@ -30,174 +30,144 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   <BaseModal
     :show="isOpen"
     title="¡ELIGE TU BANDO!"
-    max-width="480px"
-    :z-index="12000"
+    max-width="420px"
+    :z-index="13000"
+    custom-class="faction-choice-modal"
     @close="closeFactionModal"
   >
-    <div class="faction-options">
-      <button
-        class="faction-btn union-btn"
-        @click="chooseFaction('union')"
-      >
-        <div class="faction-icon-wrap">
-          <img
-            :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'union')"
-            class="faction-icon-large"
-          >
-        </div>
-        <div class="faction-info">
-          <span class="faction-name union-text">TEAM UNIÓN</span>
-          <span class="faction-motto">Lealtad y Protección</span>
-        </div>
-      </button>
-
-      <button
-        class="faction-btn poder-btn"
-        @click="chooseFaction('poder')"
-      >
-        <div class="faction-icon-wrap">
-          <img
-            :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'poder')"
-            class="faction-icon-large"
-          >
-        </div>
-        <div class="faction-info">
-          <span class="faction-name poder-text">TEAM PODER</span>
-          <span class="faction-motto">Fuerza y Ambición</span>
-        </div>
-      </button>
-    </div>
-
-    <template #footer>
-      <div class="faction-modal-footer-text">
-        Podrás cambiar tu bando más tarde desde tu perfil.
+    <div class="faction-content">
+      <div class="faction-intro">
+        <p class="intro-text">Tu bando determina con quién disputas el control de Kanto.</p>
+        <p class="cost-text">Cambiar cuesta <span class="coin">🪙 25.000</span> y resetea tus puntos actuales.</p>
       </div>
-    </template>
+
+      <div class="faction-options">
+        <button
+          class="faction-btn union-btn"
+          @click="chooseFaction('union')"
+        >
+          <div class="faction-icon-wrap">
+            <img
+              :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'union')"
+              class="faction-icon-large"
+            >
+          </div>
+          <div class="faction-info">
+            <span class="faction-name union-text">Team Unión</span>
+            <span class="faction-motto">Amistad. Armonía. Compañerismo.</span>
+          </div>
+        </button>
+
+        <button
+          class="faction-btn poder-btn"
+          @click="chooseFaction('poder')"
+        >
+          <div class="faction-icon-wrap">
+            <img
+              :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'poder')"
+              class="faction-icon-large"
+            >
+          </div>
+          <div class="faction-info">
+            <span class="faction-name poder-text">Team Poder</span>
+            <span class="faction-motto">Poder. Herramientas. Eficiencia.</span>
+          </div>
+        </button>
+      </div>
+    </div>
   </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.faction-choice-overlay {
-  z-index: 12000; // Same as cosmetics, should be on top of profile
-  backdrop-filter: blur(8px);
+.faction-content {
+  padding: 8px 12px 20px;
 }
 
-.faction-card {
-  padding: 0;
-  max-width: 480px;
-  width: 90%;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-  border-radius: 24px;
-}
-
-.faction-modal-header {
-  padding: 32px 24px 20px;
+.faction-intro {
   text-align: center;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.faction-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 14px;
-  color: #ffd700;
-  margin-bottom: 12px;
-  letter-spacing: 1px;
-}
-
-.faction-subtitle {
-  font-size: 11px;
-  color: #64748b;
-  line-height: 1.5;
+  margin-bottom: 24px;
+  
+  .intro-text {
+    font-size: 11px;
+    color: #fff;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  
+  .cost-text {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: #fff;
+    
+    .coin { color: var(--yellow, #ffd700); }
+  }
 }
 
 .faction-options {
-  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .faction-btn {
   width: 100%;
-  padding: 20px;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.4);
   border-radius: 16px;
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 20px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: left;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 16px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
 
-  &:hover {
-    transform: translateY(-4px);
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.15);
+  &.union-btn {
+    border: 2px solid #3b82f6;
+    box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.1);
+    &:hover { background: rgba(59, 130, 246, 0.1); transform: Scale(1.02); }
   }
 
-  &.union-btn:hover { border-color: #3b82f6; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2); }
-  &.poder-btn:hover { border-color: #ef4444; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2); }
+  &.poder-btn {
+    border: 2px solid #ef4444;
+    box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.1);
+    &:hover { background: rgba(239, 68, 68, 0.1); transform: Scale(1.02); }
+  }
 }
 
 .faction-icon-wrap {
-  width: 60px;
-  height: 60px;
+  width: 100px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
+  margin-bottom: 8px;
 }
 
 .faction-icon-large {
-  width: 44px;
-  height: 44px;
+  width: 84px;
+  height: 84px;
   object-fit: contain;
 }
 
 .faction-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
 }
 
 .faction-name {
   font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
+  font-size: 12px;
+  letter-spacing: 1px;
 }
 
 .faction-motto {
   font-size: 10px;
-  color: #475569;
+  color: #fff;
+  opacity: 0.8;
 }
 
-.union-text { color: #3b82f6; }
-.poder-text { color: #ef4444; }
-
-.modal-close-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  color: #475569;
-  font-size: 24px;
-  cursor: pointer;
-  z-index: 10;
-  &:hover { color: #fff; }
-}
-
-.faction-modal-footer {
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.2);
-  text-align: center;
-  p { font-size: 10px; color: #475569; }
-}
-
-/* TRANSITIONS */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.union-text { color: #60a5fa; }
+.poder-text { color: #f87171; }
 </style>

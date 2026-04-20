@@ -12,6 +12,7 @@ metadata:
 Use this skill as an instruction set. Follow the workflow in order unless the user explicitly asks for a different order.
 
 ## Core Principles
+
 - **Keep state predictable:** one source of truth, derive everything else.
 - **Make data flow explicit:** Props down, Events up for most cases.
 - **Favor small, focused components:** easier to test, reuse, and maintain.
@@ -142,6 +143,11 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 
 - **Scroll Event Bubbling**: Native `scroll` events do not bubble in the DOM. If your app relies on internal scrollable containers (e.g., `.tab-content` with `overflow-y: auto`), a `window.addEventListener('scroll')` will never fire. You **must** use the capture phase: `window.addEventListener('scroll', handler, { capture: true })`.
 - **ResizeObserver on Fixed Containers**: `ResizeObserver` can report inaccurate heights (`0px`) when observing `position: fixed` elements, especially those using `container-type` or containing only absolute/percentage-based children. Always observe the true inner relative/static content wrapper to guarantee accurate dynamic height calculations.
+- **Defensive Computed Properties**: When deriving state from potentially uninitialized or asynchronous stores (e.g., a search filter or a dynamic inventory list), ALWAYS handle `null` or `undefined` values.
+  - **Pattern**: `const filteredItems = computed(() => (search.value || '').toLowerCase())`.
+  - **Why**: Prevents critical runtime `TypeError` crashes during the component mount/initialization cycle before the store data is ready.
+- **Teleport & Scoped Styles**: Components using `<Teleport to="body">` (like `BaseModal`) **MUST** use global SCSS (not `scoped`) for positioning and overlay styles. Scoped styles often fail to apply correctly once the element is moved out of its original DOM hierarchy.
+- **Dynamic Z-Index Stacking**: For components that can overlap (modals, overlays), use a `computedZIndex` based on the current number of active overlays. This ensures that the most recently opened element (e.g., an item selector) always appears on top of previous layers.
 
 ## 6) Final self-check before finishing
 

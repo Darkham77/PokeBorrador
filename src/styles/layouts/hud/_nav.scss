@@ -1,0 +1,58 @@
+@use '../../core/tools' as *;
+@use 'pills';
+
+.hud-nav {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+.hud-nav-btn {
+  @include pills.hud-pill-base;
+  flex-direction: row;
+  width: auto;
+  height: 48px;
+  padding: 0 18px;
+  border-radius: 14px;
+  gap: 10px;
+  
+  i, span:first-child {
+    font-size: 16px;
+    margin-bottom: 0;
+    height: auto;
+  }
+
+  .pill-value {
+    font-size: 8px;
+    font-weight: 600;
+  }
+
+  &.active {
+    border-color: $yellow !important;
+    box-shadow: 0 0 15px rgba($yellow, 0.2);
+    color: $yellow !important;
+    i, span:first-child { color: $yellow !important; }
+  }
+}
+
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.hud-items {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+
+  @media (max-width: 1360px) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

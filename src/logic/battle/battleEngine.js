@@ -7,7 +7,7 @@
 import { getStatMultiplier } from '../pokemon/statEngine';
 import { getTypeEffectiveness, getCombinedEffectiveness } from '../pokemon/typeEngine';
 
-export { getTypeEffectiveness, getCombinedEffectiveness };
+export { getTypeEffectiveness, getCombinedEffectiveness, getStatMultiplier };
 
 /**
  * Core Damage Calculation (Gen 4+ Based)

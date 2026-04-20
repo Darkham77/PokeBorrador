@@ -94,21 +94,21 @@ const toggleGroupMenu = (event) => {
           :class="{ active: activeTab === 'team' }"
           @click="handleTabChange('team', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🐛</span><span>EQUIPO</span>
+          <span class="icon">🐛</span><span class="label">EQUIPO</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'box' }"
           @click="handleTabChange('box', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>📦</span><span>CAJA PC</span>
+          <span class="icon">📦</span><span class="label">CAJA PC</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'pokedex' }"
           @click="handleTabChange('pokedex', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>📖</span><span>POKÉDEX</span>
+          <span class="icon">📖</span><span class="label">POKÉDEX</span>
         </button>
       </div>
     </div>
@@ -163,21 +163,21 @@ const toggleGroupMenu = (event) => {
           :class="{ active: activeTab === 'online-market' }"
           @click="handleTabChange('online-market', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🛒</span><span>GLOBAL</span>
+          <span class="icon">🛒</span><span class="label">GLOBAL</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'market' }"
           @click="handleTabChange('market', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🏪</span><span>TIENDA</span>
+          <span class="icon">🏪</span><span class="label">TIENDA</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'trainer-shop' }"
           @click="handleTabChange('trainer-shop', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🎖️</span><span>BC SHOP</span>
+          <span class="icon">🎖️</span><span class="label">BC SHOP</span>
         </button>
       </div>
     </div>
@@ -203,35 +203,35 @@ const toggleGroupMenu = (event) => {
           :class="{ active: activeTab === 'friends' }"
           @click="handleTabChange('friends', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🤝</span><span>AMIGOS</span>
+          <span class="icon">🤝</span><span class="label">AMIGOS</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'arena' }"
           @click="handleTabChange('arena', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>⚔️</span><span>ARENA</span>
+          <span class="icon">⚔️</span><span class="label">ARENA</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'ranking' }"
           @click="handleTabChange('ranking', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🏅</span><span>RANKING</span>
+          <span class="icon">🏅</span><span class="label">RANKING</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'war' }"
           @click="handleTabChange('war', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>⚔️</span><span>GUERRA</span>
+          <span class="icon">⚔️</span><span class="label">GUERRA</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'events' }"
           @click="handleTabChange('events', $event); $event.target.closest('.hud-group').classList.remove('is-open')"
         >
-          <span>🏆</span><span>EVENTOS</span>
+          <span class="icon">🏆</span><span class="label">EVENTOS</span>
         </button>
       </div>
     </div>
@@ -249,8 +249,8 @@ const toggleGroupMenu = (event) => {
     width: 100%;
     height: 70px;
     padding: 0 10px;
-    background: linear-gradient(to top, rgba(10, 12, 20, 0.98), rgba(22, 26, 46, 0.95));
-    backdrop-filter: blur(20px);
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(25px);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
 
@@ -277,8 +277,17 @@ const toggleGroupMenu = (event) => {
   transition: all 0.2s;
   position: relative;
 
+  padding: 8px 12px;
+  
   .icon { font-size: 16px; }
-  .label { font-family: 'Press Start 2P', monospace; font-size: 7px; opacity: 0.8; }
+  .label {
+    font-family: 'Press Start 2P', cursive;
+    font-weight: 400;
+    font-size: clamp(6px, 12cqw, 8px);
+    color: rgba(255, 255, 255, 0.75);
+    @include pixelated;
+    white-space: nowrap;
+  }
 
   &:hover {
     background: rgba(255,255,255,0.1);
@@ -305,31 +314,79 @@ const toggleGroupMenu = (event) => {
   display: none;
   position: absolute;
   flex-direction: column;
-  gap: 4px;
-  background: rgba(20,20,20,0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  padding: 8px;
+  gap: 2px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 4px;
   z-index: 100;
-  min-width: 140px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  width: max-content !important;
+  min-width: 0 !important;
+  align-items: stretch !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
 
-  .pos-top & { top: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
-  .pos-bottom & { bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+  .hud-group.is-open & { display: flex !important; }
+
+  .pos-top & { 
+    top: calc(100% + 10px); 
+    left: 50%; 
+    transform: translateX(-50%); 
+    animation: slideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .pos-bottom & { 
+    bottom: calc(100% + 10px); 
+    left: 50%; 
+    transform: translateX(-50%); 
+    animation: slideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
   .hud-nav-btn {
-    flex-direction: row;
-    justify-content: flex-start;
-    width: 100%;
-    padding: 10px 16px;
-    gap: 12px;
-    background: transparent;
-    border: none;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-width: unset !important;
+    padding: 10px 14px;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    white-space: nowrap;
     
-    &:hover { background: rgba(255,255,255,0.05); }
-    .label { font-size: 8px; }
+    &:hover { 
+      background: rgba(255, 255, 255, 0.04); 
+      border-color: rgba(255, 255, 255, 0.08);
+      transform: translateX(4px);
+    }
+    
+    &.active {
+      background: rgba(255, 204, 0, 0.08);
+      border-color: rgba(255, 204, 0, 0.2);
+    }
+
+    .icon { font-size: 14px; }
+    .label { 
+      font-size: 8px; 
+      color: #fff;
+      white-space: nowrap;
+      @include pixelated;
+    }
+    
+    &.active .label { color: var(--yellow); }
   }
+}
+
+@keyframes slideDown {
+  from { transform: translateX(-50%) translateY(-10px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateX(-50%) translateY(10px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
 
 .badge-pill {
@@ -351,7 +408,10 @@ const toggleGroupMenu = (event) => {
   .hud-nav-btn {
     min-width: 50px;
     padding: 6px 4px;
-    .label { font-size: 6px; }
+    .label { 
+      font-size: 8px; 
+      @include pixelated;
+    }
   }
 }
 </style>

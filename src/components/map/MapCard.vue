@@ -172,16 +172,23 @@ const getFactionIcon = (faction) => {
   background-image: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4)), var(--bg-image);
   background-size: cover;
   background-position: center;
-  border: 4px solid #333;
-  box-shadow: 0 0 0 4px #000;
+  border: 2px solid #333;
+  box-shadow: 0 0 0 2px #000;
   padding: 15px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   cursor: pointer;
-  transition: all 0.1s;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
   image-rendering: pixelated;
+
+  &:hover {
+    border: 4px solid #333;
+    box-shadow: 0 0 0 4px #000;
+    transform: translateY(-4px) Scale(1.02);
+    z-index: 10;
+  }
 }
 
 /* Scoped hover/locked styles removed to favor global _map-cards.scss premium styling */

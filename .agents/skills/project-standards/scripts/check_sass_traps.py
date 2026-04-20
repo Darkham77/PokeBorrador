@@ -1,10 +1,25 @@
 #!/usr/bin/env python3
-import os
-import re
-import sys
+try:
+    import os
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: os. Run 'pip install os' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import re
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: re. Run 'pip install re' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import sys
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
+    import sys
+    sys.exit(1)
 
 # Regex to find transform: scale(x) without interpolation #{x}
-SCALE_TRAP_REGEX = re.compile(r'(?<![a-zA-Z-])(?:scale|grayscale|invert|opacity)\((?!\#\{)([\d\.\%]+)\)', re.IGNORECASE)
+SCALE_TRAP_REGEX = re.compile(r'(?<![a-zA-Z-])(?:scale|grayscale|invert|opacity)\((?!\#\{)([\d\.\%]+)\)')
 SCSS_INTERPOLATION_REGEX = re.compile(r'\#\{')
 LANG_SCSS_REGEX = re.compile(r'<style[^>]*lang=["\']scss["\'][^>]*>')
 

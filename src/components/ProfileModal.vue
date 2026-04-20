@@ -4,8 +4,11 @@ import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useTradeStore } from '@/stores/trade'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
+import ProfileStatsGrid from './profile/ProfileStatsGrid.vue'
+import ProfileNotifications from './profile/ProfileNotifications.vue'
+import ProfileTradeNotifs from './profile/ProfileTradeNotifs.vue'
+import TrainerAvatar from './TrainerAvatar.vue'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
@@ -166,140 +169,29 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         </div>
 
         <!-- Stats Grid -->
-        <div class="profile-stat-grid-legacy">
-          <div class="legacy-stat-item">
-            <span class="legacy-stat-val">{{ profileData.level }}</span>
-            <span class="legacy-stat-lbl">Nivel</span>
-          </div>
-          <div class="legacy-stat-item">
-            <span class="legacy-stat-val">{{ profileData.badges }}</span>
-            <span class="legacy-stat-lbl">Medallas</span>
-          </div>
-          <div class="legacy-stat-item">
-            <span class="legacy-stat-val">{{ profileData.stats.wins }}</span>
-            <span class="legacy-stat-lbl">Vics. Salvaje</span>
-          </div>
-          <div class="legacy-stat-item">
-            <span class="legacy-stat-val">{{ profileData.stats.trainersDefeated }}</span>
-            <span class="legacy-stat-lbl">Entr. Derrotados</span>
-          </div>
-          <div class="legacy-stat-item highlight">
-            <span class="legacy-stat-val">
-              <span class="currency-icon-money">₱</span>
-              {{ (profileData.money || 0).toLocaleString().replace(/,/g, '.') }}
-            </span>
-            <span class="legacy-stat-lbl">Dinero</span>
-          </div>
-          <div class="legacy-stat-item highlight">
-            <span class="legacy-stat-val">
-              <i class="fas fa-coins currency-icon-bc" />
-              {{ (profileData.battleCoins || 0).toLocaleString().replace(/,/g, '.') }}
-            </span>
-            <span class="legacy-stat-lbl">Battle Coins</span>
-          </div>
-        </div>
+        <ProfileStatsGrid 
+          :stats="profileData.stats" 
+          :level="profileData.level"
+          :badges="profileData.badges"
+          :money="profileData.money"
+          :battle-coins="profileData.battleCoins"
+        />
 
         <!-- Save Info -->
-        <div class="legacy-info-row">
-          <div class="info-label">
+        <div class="profile-section-card save-card">
+          <div class="section-label">
             GUARDADO
           </div>
-          <div class="info-value">
-            Guardado: {{ profileData.lastSave || '00:00:00' }}
+          <div class="save-row">
+            <span class="save-status">{{ profileData.lastSave || 'Sin datos' }}</span>
           </div>
         </div>
 
         <!-- Notifications -->
-        <div class="legacy-info-row">
-          <div class="notifications-header-legacy">
-            <div class="info-label">
-              NOTIFICACIONES
-            </div>
-            <button
-              class="history-btn-legacy"
-              @click="isHistoryOpen = !isHistoryOpen"
-            >
-              Ver ultimas 10 ({{ (profileData.notificationHistory || []).length }})
-            </button>
-          </div>
-          
-          <div
-            v-show="isHistoryOpen"
-            class="history-container-legacy"
-          >
-            <div
-              v-for="(n, i) in (profileData.notificationHistory || []).slice().reverse()"
-              :key="i"
-              class="notification-entry-legacy"
-            >
-              <span class="notif-icon">{{ n.icon || '🔔' }}</span>
-              <div class="notif-body">
-                <div class="notif-text">
-                  {{ n.msg }}
-                </div>
-                <div class="notif-time">
-                  {{ new Date(n.ts).toLocaleTimeString() }}
-                </div>
-              </div>
-            </div>
-            <div
-              v-if="!(profileData.notificationHistory || []).length"
-              class="empty-notif-legacy"
-            >
-              Sin notificaciones recientes.
-            </div>
-          </div>
-        </div>
+        <ProfileNotifications :history="profileData.notificationHistory || []" />
 
         <!-- Trade Notifications -->
-        <div
-          v-if="tradeStore.pendingIncoming.length > 0 || tradeStore.pendingAccepted.length > 0"
-          class="trade-notifs-section-legacy"
-        >
-          <div class="info-label">
-            INTERCAMBIOS PENDIENTES
-          </div>
-          
-          <div
-            v-for="t in tradeStore.pendingAccepted"
-            :key="t.id"
-            class="trade-notif-card-legacy accepted"
-          >
-            <div class="notif-header">
-              ✅ ¡OFERTA ACEPTADA!
-            </div>
-            <button
-              class="notif-action-btn"
-              @click="tradeStore.claimTrade(t.id)"
-            >
-              ENTENDIDO
-            </button>
-          </div>
-
-          <div
-            v-for="t in tradeStore.pendingIncoming"
-            :key="t.id"
-            class="trade-notif-card-legacy pending"
-          >
-            <div class="notif-header">
-              🔄 NUEVA OFERTA
-            </div>
-            <div class="notif-actions">
-              <button
-                class="notif-btn accept"
-                @click="tradeStore.acceptTrade(t.id)"
-              >
-                ACEPTAR
-              </button>
-              <button
-                class="notif-btn reject"
-                @click="tradeStore.rejectTrade(t.id)"
-              >
-                RECHAZAR
-              </button>
-            </div>
-          </div>
-        </div>
+        <ProfileTradeNotifs />
 
         <!-- Action Buttons -->
         <div class="profile-actions-legacy">
@@ -427,16 +319,29 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .section-label {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
-  color: #fff;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  color: rgba(255, 255, 255, 0.4);
   margin-bottom: 12px;
   text-align: center;
+  letter-spacing: 1px;
+}
+
+.save-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.save-status {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #fff;
+  opacity: 0.8;
 }
 
 .faction-row {
@@ -476,107 +381,6 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   &:hover { opacity: 1; }
 }
 
-.profile-stat-grid-legacy {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.legacy-stat-item {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  border-radius: 14px;
-  padding: 16px 12px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  &.highlight .legacy-stat-val {
-    color: var(--yellow);
-  }
-}
-
-.legacy-stat-val {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 14px;
-  color: #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.legacy-stat-lbl {
-  font-size: 9px;
-  color: #fff;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-  text-transform: uppercase;
-  font-weight: 700;
-}
-
-
-.legacy-info-row {
-  margin-bottom: 24px;
-}
-
-.info-label {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
-  color: #fff;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-  margin-bottom: 12px;
-}
-
-.info-value {
-  font-size: 12px;
-  color: #94a3b8;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 10px 14px;
-  border-radius: 10px;
-}
-
-.notifications-header-legacy {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.history-btn-legacy {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 6px 12px;
-  color: #facc15;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 6px;
-  cursor: pointer;
-  &:hover { background: rgba(255, 255, 255, 0.08); }
-}
-
-.history-container-legacy {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  padding: 4px;
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-.notification-entry-legacy {
-  display: flex;
-  gap: 12px;
-  padding: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  &:last-child { border-bottom: none; }
-  
-  .notif-icon { font-size: 16px; }
-  .notif-body { flex: 1; }
-  .notif-text { font-size: 12px; color: #cbd5e1; line-height: 1.4; }
-  .notif-time { font-size: 9px; color: #475569; margin-top: 4px; }
-}
-
 .profile-actions-legacy {
   display: flex;
   flex-direction: column;
@@ -591,7 +395,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   padding: 16px;
   color: #f87171;
   font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
+  font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;
   &:hover { background: rgba(239, 68, 68, 0.15); transform: translateY(-2px); }
@@ -604,7 +408,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   padding: 14px;
   color: #f1f5f9;
   font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
+  font-size: 8px;
   cursor: pointer;
   &:hover { background: rgba(255, 255, 255, 0.06); }
 }

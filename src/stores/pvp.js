@@ -214,6 +214,7 @@ export const usePvPStore = defineStore('pvp', () => {
     leaderboard,
     isLoading,
     error,
-    rules: currentSeasonRules
+    rules: currentSeasonRules,
+    currentTier: getEloTier
   }
 })

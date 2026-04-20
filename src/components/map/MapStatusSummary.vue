@@ -171,7 +171,7 @@ const bannerStyle = computed(() => ({
   transition: transform 0.2s;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   border: 2px solid var(--pokecenter-pink);
-  overflow: hidden; 
+  /* overflow: hidden removed to allow neon glow */
   
   .banner-bg {
     position: absolute;
@@ -179,6 +179,7 @@ const bannerStyle = computed(() => ({
     background-size: cover;
     background-position: center 20%;
     z-index: 0;
+    border-radius: 18px; /* Match parent minus border */
   }
 
   &::after {
@@ -206,6 +207,7 @@ const bannerStyle = computed(() => ({
   padding: 24px;
   text-align: left;
   z-index: 2;
+  border-radius: 0 0 18px 18px;
 }
 
 .banner-title {
@@ -248,7 +250,8 @@ const bannerStyle = computed(() => ({
 }
 
 .pc-banner {
-  background: rgba(255,255,255,0.03);
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(15px);
   border-radius: 16px;
   padding: 12px;
   display: flex;
@@ -256,7 +259,7 @@ const bannerStyle = computed(() => ({
   justify-content: center;
   position: relative;
   cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   transition: all 0.2s;
 
   &:hover {
@@ -318,9 +321,9 @@ const bannerStyle = computed(() => ({
 
 .event-banner {
   &.active {
-    border: 1px solid rgba(255, 204, 0, 0.4);
-    box-shadow: 0 0 15px rgba(255, 204, 0, 0.1);
-    background: linear-gradient(135deg, rgba(255, 204, 0, 0.08) 0%, transparent 100%);
+    border: 1px solid rgba(255, 214, 10, 0.3);
+    box-shadow: 0 0 15px rgba(255, 214, 10, 0.1);
+    background: linear-gradient(135deg, rgba(255, 214, 10, 0.12) 0%, rgba(15, 23, 42, 0.7) 100%);
     
     .pc-banner-title { color: #ffcc00; opacity: 0.8; }
     .pc-banner-icon { color: #ffcc00; }

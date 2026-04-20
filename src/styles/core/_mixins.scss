@@ -4,12 +4,14 @@
 
 @mixin glass($bg: rgba(5, 5, 5, 0.8), $blur: 14px) {
   background: $bg;
+  -webkit-backdrop-filter: blur($blur);
   backdrop-filter: blur($blur);
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 @mixin card-premium($radius: 24px) {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.22));
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: $radius;
@@ -38,4 +40,30 @@
       @content;
     }
   }
+}
+@mixin responsive-zoom {
+  @media (max-width: 467px) { zoom: 0.9; }
+  @media (max-width: 420px) { zoom: 0.8; }
+  @media (max-width: 380px) { zoom: 0.7; }
+  @media (max-width: 340px) { zoom: 0.6; }
+}
+
+@mixin pixelated {
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: pixelated;
+  
+  // Force hardware acceleration and pixel-snapping
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  font-variant-ligatures: none;
+}
+
+@mixin smooth {
+  image-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }

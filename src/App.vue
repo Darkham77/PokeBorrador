@@ -71,7 +71,7 @@ onMounted(async () => {
   const blockEvents = (e) => {
     if (uiStore.isAnyBlockingModalOpen) {
       // Si el evento no viene de dentro de un elemento con scroll permitido, pararlo
-      const isInsideScrollable = e.target.closest('.library-content, .library-sidebar, .modal-scrollable-content, .chat-panel, .chat-messages, .profile-content-scrollable')
+      const isInsideScrollable = e.target.closest('.library-content, .library-sidebar, .modal-scrollable-content, .chat-panel, .chat-messages, .profile-content-scrollable, .error-overlay, .error-card, .error-stack')
       
       if (!isInsideScrollable) {
         console.log('[App] Blocking event on:', e.target.className || e.target.id)
@@ -194,7 +194,7 @@ const handleRetry = () => {
     <LibraryModal />
     <ShopView v-if="uiStore.isShopOpen" />
     <PokemonCenterView v-if="uiStore.isPokemonCenterOpen" />
-    <InventoryModal v-if="uiStore.isInventoryOpen" />
+    <InventoryModal />
     <MoveLearningModal v-if="uiStore.isMoveLearningOpen" />
     <ConfirmModal />
     <PromptModal />

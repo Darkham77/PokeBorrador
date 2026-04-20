@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game'
-import { calculateDamage, calculateCatchRate, getEffectiveSpeed } from '../logic/battle/battleEngine'
-import { useItemOnPokemon } from '../logic/providers/itemProvider'
+import { calculateDamage, getEffectiveSpeed } from '../logic/battle/battleEngine'
+import { handleEntryAbilities, canAttack, applyEndTurnWeather } from '../logic/battle/battleFlow'
+import { calculateBaseExp, processExpGain, calculateMoneyGain } from '../logic/battle/battleRewards'
+import { handleItemUsage } from '../logic/battle/battleItems'
 import { dispatchMoveEffect } from '../logic/battle/actions/actionRegistry'
 import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from '../logic/battle/ai/battleAI'
 import { tickStatus, tickLeechSeed } from '../logic/battle/battleStatus'
@@ -122,18 +124,7 @@ export const useBattleStore = defineStore('battle', () => {
     addLog(startMsg, 'log-info')
 
     // Entry Abilities
-    handleEntryAbilities(playerPoke, enemyPoke)
-  }
-
-  const handleEntryAbilities = (p, e) => {
-    if (p.ability === 'Intimidación') {
-      enemyStages.value.atk = Math.max(-6, enemyStages.value.atk - 1)
-      addLog(`¡La Intimidación de ${p.name} bajó el ataque de ${e.name}!`, 'log-info')
-    }
-    if (e.ability === 'Intimidación') {
-      playerStages.value.atk = Math.max(-6, playerStages.value.atk - 1)
-      addLog(`¡La Intimidación de ${e.name} bajó el ataque de ${p.name}!`, 'log-info')
-    }
+    handleEntryAbilities(playerPoke, enemyPoke, playerStages.value, enemyStages.value, addLog)
   }
 
   const addLog = (msg, type = 'log-info') => {
@@ -227,7 +218,7 @@ export const useBattleStore = defineStore('battle', () => {
     const move = p.moves[moveIndex]
     
     // Check Status (Sleep, Freeze, Flinch, Confuse)
-    if (!canAttack(p, 'player')) return
+    if (!canAttack(p, addLog)) return
 
     move.pp--
     addLog(`¡${p.name} usó ${move.name}!`, 'log-player')
@@ -268,7 +259,7 @@ export const useBattleStore = defineStore('battle', () => {
     const e = activeBattle.value.enemy
     if (e.hp <= 0) return
 
-    if (!canAttack(e, 'enemy')) return
+    if (!canAttack(e, addLog)) return
 
     // 1. AI Decision: Switch/Item/Move
     const isWild = !activeBattle.value.isTrainer && !activeBattle.value.isGym
@@ -338,114 +329,34 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
-  const canAttack = (pokemon, _role) => {
-    if (pokemon.flinched) {
-      addLog(`¡${pokemon.name} retrocedió!`, 'log-info')
-      pokemon.flinched = false
-      return false
-    }
-    if (pokemon.status === 'sleep') {
-      if (pokemon.sleepTurns > 0) {
-        pokemon.sleepTurns--
-        addLog(`¡${pokemon.name} está profundamente dormido!`, 'log-info')
-        return false
-      } else {
-        pokemon.status = null
-        addLog(`¡${pokemon.name} se despertó!`, 'log-info')
-      }
-    }
-    if (pokemon.status === 'freeze') {
-      if (Math.random() < 0.8) {
-        addLog(`¡${pokemon.name} está congelado!`, 'log-info')
-        return false
-      } else {
-        pokemon.status = null
-        addLog(`¡${pokemon.name} se descongeló!`, 'log-info')
-      }
-    }
-    return true
-  }
-
   const applyEndTurnEffects = async () => {
     const p = activeBattle.value.player
     const e = activeBattle.value.enemy
 
-    // Ticks
     tickStatus(p, addLog, 'player')
     tickStatus(e, addLog, 'enemy')
-    
     tickLeechSeed(p, e, addLog)
     tickLeechSeed(e, p, addLog)
     
-    // Weather ticks (Sandstorm)
-    if (activeBattle.value.weather?.type === 'sandstorm') {
-      const isSandImmune = (poke) => ['rock', 'ground', 'steel'].includes(poke.type) || ['rock', 'ground', 'steel'].includes(poke.type2)
-      if (!isSandImmune(p)) {
-        const dmg = Math.floor(p.maxHp / 16)
-        p.hp = Math.max(0, p.hp - dmg)
-        addLog(`¡La tormenta de arena alcanza a ${p.name}!`, 'log-player')
-      }
-      if (!isSandImmune(e)) {
-        const dmg = Math.floor(e.maxHp / 16)
-        e.hp = Math.max(0, e.hp - dmg)
-        addLog(`¡La tormenta de arena alcanza a ${e.name}!`, 'log-enemy')
-      }
-    }
+    applyEndTurnWeather(p, e, activeBattle.value.weather, addLog)
   }
 
   const useItemInBattle = async (itemName) => {
     if (isProcessing.value || !isBattleActive.value) return
     isProcessing.value = true
 
-    const p = activeBattle.value.player
-    const e = activeBattle.value.enemy
+    const result = await handleItemUsage(itemName, activeBattle.value.player, activeBattle.value.enemy, {
+      gs, eventStore, addLog, audio, consumeItem
+    })
 
-    // 1. Check if it's a Pokéball
-    const itemData = gs.state.inventory[itemName]
-    if (!itemData && gs.state.inventory[itemName] === undefined) {
-       isProcessing.value = false;
-       return;
+    if (result.action === 'capture') {
+      activeBattle.value.isCapture = true
+      gs.addPokemon(result.pokemon, { notify: true })
+      await endBattle(true, false)
+    } else if (result.action !== 'fail') {
+      await new Promise(r => setTimeout(r, 800))
+      await runEnemyTurn()
     }
-
-    if (itemName.toLowerCase().includes('ball')) {
-      addLog(`¡Has lanzado una ${itemName}!`, 'log-info')
-      const eventCatchMult = eventStore.globalMultipliers?.catch || 1
-      const caught = calculateCatchRate(e, itemName, eventCatchMult)
-      
-      // Simulate ball animation delay
-      await new Promise(r => setTimeout(r, 1500))
-
-      if (caught) {
-        audio.caught()
-        addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch')
-        consumeItem(itemName)
-        
-        // Use centralized addPokemon logic
-        activeBattle.value.isCapture = true
-        gs.addPokemon(e, { notify: true })
-        
-        await endBattle(true, false) 
-        isProcessing.value = false
-        return
-      } else {
-        addLog(`¡Oh, no! ¡El Pokémon se ha escapado!`, 'log-info')
-      }
-    } else {
-      // 2. Healing/Restoration
-      const result = useItemOnPokemon(itemName, p)
-      if (result) {
-        addLog(`Usaste ${itemName}. ¡${p.name} ${result}!`, 'log-player')
-        consumeItem(itemName)
-      } else {
-        addLog('No tuvo efecto.', 'log-info')
-        isProcessing.value = false
-        return
-      }
-    }
-
-    // 3. Enemy Turn after item use
-    await new Promise(r => setTimeout(r, 800))
-    await runEnemyTurn()
     
     isProcessing.value = false
   }
@@ -520,43 +431,34 @@ export const useBattleStore = defineStore('battle', () => {
 
   const calculateRewards = () => {
     const e = activeBattle.value.enemy
-    const baseExp = Math.floor(e.level * 4) // Simplified baseline
-    
-    // War Dominance Modifiers
-    const warMods = getBattleRewardModifiers(
-      activeBattle.value.locationId, 
-      gs.state.faction, 
-      warStore.mapDominance
-    )
+    const baseExp = calculateBaseExp(e)
+    const warMods = getBattleRewardModifiers(activeBattle.value.locationId, gs.state.faction, warStore.mapDominance)
+    const eventExpBonus = (eventStore.globalMultipliers?.exp || 1) - 1
+    const totalExpMult = warMods.expMult + eventExpBonus
 
-    // Award exp to participants
     gs.state.team.forEach(p => {
-      if (participants.value.has(p.uid) || p.heldItem === 'Compartir EXP') {
-        const share = (p.uid === activeBattle.value.player.uid) ? 1 : 0.5
-        const classMult = classStore.getModifier('expMult', { isTrainer: activeBattle.value.isTrainer })
-        const eventExpBonus = (eventStore.globalMultipliers?.exp || 1) - 1
-        const totalExpMult = warMods.expMult + eventExpBonus // Additive stacking
-        
-        const gained = Math.floor(baseExp * share * classMult * totalExpMult)
-        p.exp += gained
-        addLog(`${p.name} ganó ${gained} EXP.`, 'log-player')
-        
-        // Level up check
-        if (p.exp >= p.expNeeded) {
-          p.level++
-          p.exp -= p.expNeeded
-          p.expNeeded = Math.floor(p.expNeeded * 1.2)
+      const reward = processExpGain(p, baseExp, participants.value, {
+        isActive: p.uid === activeBattle.value.player.uid,
+        classMult: classStore.getModifier('expMult', { isTrainer: activeBattle.value.isTrainer }),
+        totalExpMult,
+        participantsSet: participants.value
+      })
+
+      if (reward) {
+        addLog(`${p.name} ganó ${reward.gained} EXP.`, 'log-player')
+        if (reward.levelUp) {
           audio.levelUp()
           addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info')
         }
       }
     })
 
-    const baseMoney = e.level * 10 * classStore.getModifier('bcMult', { isGym: activeBattle.value.isGym })
     const eventMoneyBonus = (eventStore.globalMultipliers?.money || 1) - 1
-    const totalMoneyMult = warMods.moneyMult + eventMoneyBonus // Additive stacking
+    const moneyGained = calculateMoneyGain(e, {
+      bcMult: classStore.getModifier('bcMult', { isGym: activeBattle.value.isGym }),
+      totalMoneyMult: warMods.moneyMult + eventMoneyBonus
+    })
     
-    const moneyGained = Math.floor(baseMoney * totalMoneyMult)
     gs.state.money += moneyGained
     if (moneyGained > 0) audio.money()
     addLog(`¡Ganaste ₽${moneyGained}!`, 'log-info')
@@ -599,7 +501,7 @@ export const useBattleStore = defineStore('battle', () => {
     await new Promise(r => setTimeout(r, 600))
 
     // Entry Abilities for the new poke
-    handleEntryAbilities(newPoke, activeBattle.value.enemy)
+    handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog)
 
     if (!isForced) {
       // Enemy gets a free turn if it was a voluntary switch

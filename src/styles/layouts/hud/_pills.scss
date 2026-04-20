@@ -1,0 +1,191 @@
+@use '../../core/tools' as *;
+
+@mixin hud-pill-base {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 65px;
+  width: auto;
+  height: 65px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 4px;
+  padding: 8px 12px;
+
+  &.money-pill {
+    background: rgba(107, 203, 119, 0.12);
+    border-color: rgba(107, 203, 119, 0.25);
+    .pill-value, .currency-icon-money {
+      color: #6bcb77 !important;
+      text-shadow: 0 0 8px rgba(107, 203, 119, 0.4);
+    }
+    .pill-value {
+      font-size: 6px;
+    }
+  }
+
+  &.bc-pill {
+    background: rgba(199, 125, 255, 0.12);
+    border-color: rgba(199, 125, 255, 0.25);
+    .pill-value, .currency-icon-bc, .fa-coins {
+      color: #c77dff !important;
+      text-shadow: 0 0 8px rgba(199, 125, 255, 0.5);
+    }
+  }
+
+  &.badge-pill {
+    background: rgba(255, 217, 61, 0.12);
+    border-color: rgba(255, 217, 61, 0.25);
+    .pill-value, .fa-medal {
+      color: #ffd93d !important;
+      text-shadow: 0 0 8px rgba(255, 217, 61, 0.5);
+    }
+  }
+
+  &.ball-pill {
+    background: rgba(255, 59, 59, 0.12);
+    border-color: rgba(255, 59, 59, 0.25);
+    .pill-value {
+      color: #ff3b3b !important;
+      text-shadow: 0 0 8px rgba(255, 59, 59, 0.4);
+    }
+    .ball-icon-wrap img {
+      filter: drop-shadow(0 0 5px rgba(255, 59, 59, 0.6));
+    }
+  }
+
+  &.egg-pill {
+    background: rgba(180, 140, 80, 0.12);
+    border-color: rgba(180, 140, 80, 0.25);
+    .pill-value, span:first-child {
+      color: #b48c50 !important;
+      text-shadow: 0 0 8px rgba(180, 140, 80, 0.5);
+    }
+  }
+
+  &.time-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    #time-icon {
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    }
+  }
+}
+
+.hud-pill,
+.hud-sq-btn,
+.time-pill,
+.money-pill,
+.bc-pill,
+.badge-pill,
+.ball-pill,
+.egg-pill {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  opacity: 1;
+  color: white;
+}
+
+.hud-pill:hover,
+.hud-sq-btn:hover {
+  background: #252530 !important;
+  transform: translateY(-2px);
+}
+
+.hud-pill {
+  @include hud-pill-base;
+
+  i, span:first-child { 
+    font-size: 20px;
+    margin-bottom: 2px;
+    @include flex-center;
+    height: 28px;
+  }
+
+  container-type: inline-size;
+
+  .pill-value {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    font-weight: 400;
+    display: block;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1.2;
+    @include pixelated;
+  }
+
+  &:hover {
+    background: #252530 !important;
+    transform: translateY(-3px);
+  }
+
+  &.badge-pill {
+    i { color: #ffd60a; }
+    .pill-value { color: #ffd60a; }
+  }
+
+  &.ball-pill {
+    .pill-value { color: #ff453a; }
+    .ball-icon-wrap { transform: scale3d(0.9, 0.9, 1); }
+  }
+
+  &.egg-pill {
+    i { color: #bc8e64; }
+    .pill-value { color: #bc8e64; }
+  }
+}
+
+.hud-sq-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.7) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  cursor: pointer;
+  padding: 4px;
+  gap: 2px;
+  container-type: inline-size;
+  
+  span:first-child {
+    font-size: 18px;
+  }
+
+  span:not(:first-child) {
+    font-family: 'Press Start 2P', cursive;
+    font-size: clamp(6px, 14cqw, 8px);
+    font-weight: 400;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0;
+    @include pixelated;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    background: #252530 !important;
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    
+    span:not(:first-child) { color: white; }
+  }
+
+  &.active {
+    border-color: $yellow !important;
+    color: $yellow;
+    span:not(:first-child) { color: $yellow; }
+  }
+}

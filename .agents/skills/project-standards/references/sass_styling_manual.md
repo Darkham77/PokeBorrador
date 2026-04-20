@@ -62,7 +62,7 @@ The project employs a high-contrast **Hybrid Retro-Modern** aesthetic. We combin
 
 All layouts and structural containers **MUST** follow premium modern web design principles.
 
-- **Glassmorphism**: Use `backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.05);` for cards and overlays.
+- **Glassmorphism**: Use `-webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.05);` for cards and overlays.
 - **Dynamic Depth**: Use soft, multi-layered HSL shadows and subtle linear gradients.
 - **Modern Rendering**: Do **NOT** use `image-rendering: pixelated` on the UI shell or background layouts. They must remain smooth and fluid.
 
@@ -111,3 +111,26 @@ When refactoring legacy or generic components:
   - Use **Native CSS Variables** (`var(--color)`) for UI-wide palettes that might change dynamically (e.g., Theme coloring).
   - Use **Sass Variables** (`$token`) for technical constraints, sizing, and static internal logic.
 - **Global Pollution**: Do not define variables or mixins directly in component styles; always centralize them in tokens/partials and `@use` them.
+
+---
+
+## 📱 Safari & Mobile Compatibility (Prefix Mandate)
+
+Safari (macOS/iOS) does NOT support `backdrop-filter` without the `-webkit-` prefix. Since this project relies heavily on Glassmorphism for its premium modern shell, you **MUST** always include the prefix.
+
+### 1. Correct Implementation Pattern
+
+```scss
+.premium-card {
+  // CORRECT: Prefix ALWAYS comes before the standard property
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  
+  background: rgba(var(--bg-rgb), 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+```
+
+### 2. Systematic Fix
+
+If you find a raw `backdrop-filter` during an audit, you **MUST** fix it immediately. This is not optional.

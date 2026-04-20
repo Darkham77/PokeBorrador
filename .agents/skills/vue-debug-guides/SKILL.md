@@ -41,8 +41,8 @@ For development best practices and common gotchas, use `vue-best-practices`.
 - Click listener doesn't fire on custom component → See [click-events-on-components](references/click-events-on-components.md)
 - Parent can't access child ref data in script setup → See [component-ref-requires-defineexpose](references/component-ref-requires-defineexpose.md)
 - HTML template parsing breaks Vue component syntax → See [in-dom-template-parsing-caveats](references/in-dom-template-parsing-caveats.md)
-- Wrong component renders due to naming collisions → See [component-naming-conflicts](references/component-naming-conflicts.md)
 - Parent styles don't apply to multi-root component → See [multi-root-component-class-attrs](references/multi-root-component-class-attrs.md)
+- **Component Resolution Failures**: If you see "Failed to resolve component" warnings in the console while using `<script setup>`, verify that the component is explicitly imported. Refactoring or code cleanup tools can sometimes accidentally remove imports that are still referenced in the template.
 
 ### Props & Emits
 

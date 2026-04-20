@@ -2,41 +2,222 @@
 @use 'sass:color';
 @use '../core/tools' as *;
 
-/* Note: Team grid and card styles moved to _team.scss to centralize source of truth */
+.inventory-modal {
+  width: 95%;
+  max-width: 700px;
+  height: 85vh;
+  background: rgba(15, 23, 42, 0.8) !important;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255,255,255,0.05);
+  animation: modalAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-.inventory-section {
-  @include card-premium;
-  padding: spacing(5);
-  margin-bottom: spacing(4);
-}
+  .header-main {
+    width: 100%;
+    padding: 24px 32px;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
-.section-title {
-  font-family: $font-pixel;
-  font-size: 10px;
-  color: $purple;
-  margin-bottom: spacing(4);
-  @include flex-center;
-  justify-content: flex-start;
-  gap: spacing(2);
-}
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      
+      .icon { font-size: 24px; }
+      h1 {
+        font-family: 'Press Start 2P', cursive;
+        font-size: 16px;
+        color: var(--yellow);
+        letter-spacing: 2px;
+        margin: 0;
+      }
+    }
 
-// Item specific styles
-.item-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: spacing(3);
-}
+    .stats {
+      display: flex;
+      gap: 12px;
+      
+      .stat-pill {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-size: 9px;
+        font-weight: 800;
+        display: flex;
+        gap: 6px;
+        
+        .label { color: #64748b; }
+        .value { color: #f1f5f9; }
+        
+        &.money .value { color: var(--yellow); }
+      }
+    }
+  }
 
-.item-card {
-  @include card-premium(12px);
-  padding: spacing(3);
-  text-align: center;
-  transition: all 0.2s ease;
-  cursor: pointer;
+  .inventory-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 32px;
+    overflow: hidden;
+  }
 
-  &:hover {
-    border-color: rgba($yellow, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  .top-controls {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .search-bar {
+      position: relative;
+      .search-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        font-size: 16px;
+      }
+      input {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 14px 14px 14px 48px;
+        border-radius: 16px;
+        color: white;
+        font-size: 14px;
+        transition: all 0.2s;
+        &:focus { border-color: var(--yellow); background: rgba(0, 0, 0, 0.3); outline: none; }
+      }
+    }
+
+    .category-tabs {
+      display: flex;
+      gap: 8px;
+      padding-bottom: 8px;
+      overflow-x: auto;
+      
+      .cat-tab {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 14px;
+        color: #64748b;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+        
+        .cat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        
+        &:hover { background: rgba(255, 255, 255, 0.06); color: #94a3b8; }
+        &.active {
+          background: rgba(255, 214, 10, 0.1);
+          border-color: var(--yellow);
+          color: var(--yellow);
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
+
+  .items-section {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
+  .item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .card-footer {
+    padding: 20px 32px;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    gap: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+
+    .action-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.03);
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      &:hover { background: rgba(255, 255, 255, 0.08); color: white; }
+      &.sell:hover { border-color: #ef4444; color: #ef4444; }
+    }
+
+    .multi-actions {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .selection-count { font-size: 11px; font-weight: 800; color: var(--yellow); }
+      
+      .btn-group {
+        display: flex;
+        gap: 10px;
+        
+        button {
+          padding: 8px 16px;
+          border-radius: 10px;
+          font-weight: 800;
+          font-size: 11px;
+          cursor: pointer;
+          border: none;
+        }
+        
+        .cancel-btn { background: rgba(255, 255, 255, 0.05); color: #64748b; }
+        .execute-btn {
+          background: var(--yellow);
+          color: #000;
+          &.sell { background: #ef4444; color: white; }
+          &:disabled { opacity: 0.3; cursor: not-allowed; }
+        }
+      }
+    }
+  }
+
+  .empty-bag {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #475569;
+    
+    .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+    p { font-size: 13px; font-weight: 600; }
   }
 }
+
+@keyframes modalAppear {
+  from { opacity: 0; transform: Scale(0.95) translateY(20px); }
+  to { opacity: 1; transform: Scale(1) translateY(0); }
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+.scrollbar-h::-webkit-scrollbar { height: 4px; }
+.scrollbar-h::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }

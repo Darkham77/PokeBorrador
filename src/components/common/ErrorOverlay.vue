@@ -46,95 +46,97 @@ const reloadGame = () => {
 </script>
 
 <template>
-  <div
-    v-if="errorStore.activeError"
-    class="error-overlay"
-  >
-    <div class="error-card">
-      <div class="error-header">
-        <span class="error-icon">⚠️</span>
-        <div class="error-title">
-          ERROR EN EL JUEGO
-        </div>
-      </div>
-
-      <div class="error-body">
-        <p class="error-intro">
-          ¡Uy! Algo salió mal. Pasale una captura de esto al desarrollador para que pueda arreglarlo.
-        </p>
-
-        <div class="error-message-box">
-          <strong>Mensaje:</strong> {{ errorStore.activeError.message }}
-        </div>
-
-        <div class="error-user-action-container">
-          <div class="error-sub-title">
-            ¿QUÉ ESTABAS HACIENDO?
-          </div>
-          <textarea
-            v-model="errorStore.activeError.userAction"
-            placeholder="Ej: Estaba por cambiar de Pokémon en batalla..."
-          />
-          <div class="sub-text">
-            Esta información nos ayuda a reproducir y arreglar el error más rápido.
+  <Teleport to="body">
+    <div
+      v-if="errorStore.activeError"
+      class="error-overlay"
+    >
+      <div class="error-card modal-scrollable-content">
+        <div class="error-header">
+          <span class="error-icon">⚠️</span>
+          <div class="error-title">
+            ERROR EN EL JUEGO
           </div>
         </div>
 
-        <div class="error-stack-wrap">
-          <div class="error-sub-title">
-            DETALLES TÉCNICOS:
+        <div class="error-content custom-scrollbar modal-scrollable-content">
+          <p class="error-intro">
+            ¡Uy! Algo salió mal. Pasale una captura de esto al desarrollador para que pueda arreglarlo.
+          </p>
+
+          <div class="error-message-box">
+            <strong>Mensaje:</strong> {{ errorStore.activeError.message }}
           </div>
-          <pre class="error-stack">{{ errorStore.activeError.stack }}</pre>
+
+          <div class="error-user-action-container">
+            <div class="error-sub-title">
+              ¿QUÉ ESTABAS HACIENDO?
+            </div>
+            <textarea
+              v-model="errorStore.activeError.userAction"
+              placeholder="Ej: Estaba por cambiar de Pokémon en batalla..."
+            />
+            <div class="sub-text">
+              Esta información nos ayuda a reproducir y arreglar el error más rápido.
+            </div>
+          </div>
+
+          <div class="error-stack-wrap">
+            <div class="error-sub-title">
+              DETALLES TÉCNICOS:
+            </div>
+            <pre class="error-stack modal-scrollable-content">{{ errorStore.activeError.stack }}</pre>
+          </div>
+
+          <div class="error-game-context">
+            <div class="error-sub-title">
+              ESTADO DEL JUEGO:
+            </div>
+            <div class="error-context-item">
+              <strong>Entrenador:</strong> {{ gameStore.state.trainer || 'N/A' }} (Nv. {{ gameStore.state.trainerLevel || 0 }})
+            </div>
+            <div class="error-context-item">
+              <strong>Medallas:</strong> {{ gameStore.state.badges || 0 }}
+            </div>
+            <div class="error-context-item">
+              <strong>Tipo:</strong> {{ errorStore.activeError.type }}
+            </div>
+            <div
+              v-if="errorStore.activeError.lineno"
+              class="error-context-item"
+            >
+              <strong>Línea:</strong> {{ errorStore.activeError.lineno }}:{{ errorStore.activeError.colno }}
+            </div>
+          </div>
         </div>
 
-        <div class="error-game-context">
-          <div class="error-sub-title">
-            ESTADO DEL JUEGO:
-          </div>
-          <div class="error-context-item">
-            <strong>Entrenador:</strong> {{ gameStore.state.trainer || 'N/A' }} (Nv. {{ gameStore.state.trainerLevel || 0 }})
-          </div>
-          <div class="error-context-item">
-            <strong>Medallas:</strong> {{ gameStore.state.badges || 0 }}
-          </div>
-          <div class="error-context-item">
-            <strong>Tipo:</strong> {{ errorStore.activeError.type }}
-          </div>
-          <div
-            v-if="errorStore.activeError.lineno"
-            class="error-context-item"
+        <div class="error-footer">
+          <button
+            class="error-btn copy-btn"
+            @click="copyError"
           >
-            <strong>Línea:</strong> {{ errorStore.activeError.lineno }}:{{ errorStore.activeError.colno }}
-          </div>
+            <i
+              class="fas"
+              :class="copied ? 'fa-check' : 'fa-copy'"
+            />
+            {{ copied ? '¡COPIADO!' : 'COPIAR ERROR' }}
+          </button>
+          <button
+            class="error-btn reload-btn"
+            @click="reloadGame"
+          >
+            <i class="fas fa-sync" /> REINICIAR JUEGO
+          </button>
+          <button
+            class="error-btn close-btn"
+            @click="errorStore.clearError"
+          >
+            ✕ CERRAR
+          </button>
         </div>
-      </div>
-
-      <div class="error-footer">
-        <button
-          class="error-btn copy-btn"
-          @click="copyError"
-        >
-          <i
-            class="fas"
-            :class="copied ? 'fa-check' : 'fa-copy'"
-          />
-          {{ copied ? '¡COPIADO!' : 'COPIAR ERROR' }}
-        </button>
-        <button
-          class="error-btn reload-btn"
-          @click="reloadGame"
-        >
-          <i class="fas fa-sync" /> REINICIAR JUEGO
-        </button>
-        <button
-          class="error-btn close-btn"
-          @click="errorStore.clearError"
-        >
-          ✕ CERRAR
-        </button>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">
@@ -160,19 +162,22 @@ const reloadGame = () => {
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
-  overflow-y: auto;
   box-shadow: 0 0 50px rgba(255, 59, 59, 0.3);
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* Scrollbars stay inside the border */
 }
 
 .error-header {
   background: linear-gradient(135deg, var(--red), #c0392b);
-  padding: 20px;
+  padding: 24px 20px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 15px;
   color: white;
+  min-height: 80px;
+  box-sizing: border-box;
 }
 
 .error-icon {
@@ -185,9 +190,24 @@ const reloadGame = () => {
   letter-spacing: 1px;
 }
 
-.error-body {
+.error-content {
+  flex: 1;
   padding: 24px;
   color: #eaeaea;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 20px 0;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--red);
+    border-radius: 10px;
+    border: 2px solid #1a1a2e;
+  }
 }
 
 .error-intro {

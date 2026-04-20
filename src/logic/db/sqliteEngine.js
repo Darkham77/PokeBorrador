@@ -124,79 +124,94 @@ export async function initSQLite(options = {}) {
         console.log('[SQLite] New database created');
       }
 
-      // 1. Initialize schemas and ensure columns exist
-      TABLES_SCHEMA.forEach(tableDef => {
-        try {
-          const tableName = tableDef.split(' ')[0];
-          _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${tableDef};`);
-          
-          const colsStr = tableDef.substring(tableDef.indexOf('(') + 1, tableDef.lastIndexOf(')'));
-          
-          // Split columns while respecting nested parentheses (e.g., PRIMARY KEY (a, b))
-          const colDefs = [];
-          let current = '';
-          let depth = 0;
-          for (let i = 0; i < colsStr.length; i++) {
-            const char = colsStr[i];
-            if (char === '(') depth++;
-            if (char === ')') depth--;
-            if (char === ',' && depth === 0) {
-              colDefs.push(current.trim());
-              current = '';
-            } else {
-              current += char;
-            }
-          }
-          if (current.trim()) colDefs.push(current.trim());
-          
-          const info = _sqliteDb.exec(`PRAGMA table_info(${tableName})`);
-          const existingCols = info[0].values.map(row => row[1]);
-          
-          colDefs.forEach(def => {
-            const colName = def.split(/\s+/)[0];
-            const upper = colName.toUpperCase();
-            
-            // Skip constraints and invalid column names
-            if (!colName || 
-                ['PRIMARY', 'FOREIGN', 'UNIQUE', 'CHECK', 'CONSTRAINT', 'REFERENCES'].includes(upper) || 
-                colName.includes('(') || 
-                colName.includes(')')) return;
-
-            if (!existingCols.includes(colName)) {
-              console.log(`[SQLite] Adding missing column ${colName} to ${tableName}`);
-              let alterDef = def;
-              if (def.toUpperCase().includes('DEFAULT') && (def.includes('(') || def.toUpperCase().includes('NOW'))) {
-                console.warn(`[SQLite] Stripping non-constant default for ALTER TABLE: ${def}`);
-                alterDef = def.split(/DEFAULT/i)[0].trim();
-              }
-              
-              if (!alterDef.toUpperCase().includes('PRIMARY KEY')) {
-                _sqliteDb.run(`ALTER TABLE ${tableName} ADD COLUMN ${alterDef}`);
-              }
-            }
-          });
-        } catch (e) {
-          console.error(`[SQLite] Error syncing table schema: ${tableDef.split(' ')[0]}`, e);
-        }
-      });
-
-      // 2. Initialize migrations table
-      _sqliteDb.run(`CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')));`);
-
-      // 3. Run migrations
-      runMigrationsInternal(_sqliteDb, DATABASE_MIGRATIONS);
-
-      // 4. Force Version Sync
+      // 1. Check current version to avoid redundant syncs
+      let currentVersion = '0';
       try {
-        const latestMig = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1];
-        const latestVer = latestMig.id.split('_')[0];
-        _sqliteDb.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${latestVer}')`);
-        console.log(`[SQLite] Local DB Version synchronized to: ${latestVer}`);
-      } catch (e) {
-        console.error('[SQLite] Failed to sync db_version:', e);
-      }
+        _sqliteDb.run(`CREATE TABLE IF NOT EXISTS config (key TEXT PRIMARY KEY, value TEXT)`);
+        const verResult = _sqliteDb.exec(`SELECT value FROM config WHERE key = 'db_version'`);
+        if (verResult.length > 0 && verResult[0].values.length > 0) {
+          currentVersion = verResult[0].values[0][0];
+        }
+      } catch (e) { console.warn('[SQLite] Could not read version:', e); }
 
-      if (!_isInMemory) await persistSQLite();
+      const latestMig = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1];
+      const targetVersion = latestMig.id.split('_')[0];
+      const needsSync = currentVersion !== targetVersion;
+
+      if (needsSync) {
+        console.log(`[SQLite] Version mismatch (${currentVersion} vs ${targetVersion}). Running sync...`);
+        
+        // A. Initialize schemas and ensure columns exist
+        TABLES_SCHEMA.forEach(tableDef => {
+          try {
+            const tableName = tableDef.split(' ')[0];
+            _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${tableDef};`);
+            
+            const colsStr = tableDef.substring(tableDef.indexOf('(') + 1, tableDef.lastIndexOf(')'));
+            const colDefs = [];
+            let current = '';
+            let depth = 0;
+            for (let i = 0; i < colsStr.length; i++) {
+              const char = colsStr[i];
+              if (char === '(') depth++;
+              if (char === ')') depth--;
+              if (char === ',' && depth === 0) {
+                colDefs.push(current.trim());
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            if (current.trim()) colDefs.push(current.trim());
+            
+            const info = _sqliteDb.exec(`PRAGMA table_info(${tableName})`);
+            const existingCols = info[0].values.map(row => row[1]);
+            
+            colDefs.forEach(def => {
+              const colName = def.split(/\s+/)[0];
+              const upper = colName.toUpperCase();
+              
+              if (!colName || 
+                  ['PRIMARY', 'FOREIGN', 'UNIQUE', 'CHECK', 'CONSTRAINT', 'REFERENCES'].includes(upper) || 
+                  colName.includes('(') || 
+                  colName.includes(')')) return;
+
+              if (!existingCols.includes(colName)) {
+                let alterDef = def;
+                if (def.toUpperCase().includes('DEFAULT') && (def.includes('(') || def.toUpperCase().includes('NOW'))) {
+                  alterDef = def.split(/DEFAULT/i)[0].trim();
+                }
+                
+                if (!alterDef.toUpperCase().includes('PRIMARY KEY')) {
+                  console.log(`[SQLite] Adding missing column ${colName} to ${tableName}`);
+                  _sqliteDb.run(`ALTER TABLE ${tableName} ADD COLUMN ${alterDef}`);
+                }
+              }
+            });
+          } catch (e) {
+            console.error(`[SQLite] Error syncing table schema: ${tableDef.split(' ')[0]}`, e);
+          }
+        });
+
+        // B. Initialize migrations table
+        _sqliteDb.run(`CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')));`);
+
+        // C. Run migrations
+        runMigrationsInternal(_sqliteDb, DATABASE_MIGRATIONS);
+
+        // D. Force Version Sync
+        try {
+          _sqliteDb.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${targetVersion}')`);
+          console.log(`[SQLite] Local DB Version synchronized to: ${targetVersion}`);
+        } catch (e) {
+          console.error('[SQLite] Failed to sync db_version:', e);
+        }
+
+        if (!_isInMemory) await persistSQLite();
+      } else {
+        console.log(`[SQLite] Database version is up to date (${currentVersion}). Skipping sync.`);
+      }
+      
       return _sqliteDb;
     } catch (err) {
       console.error('[SQLite] Initialization failed:', err);

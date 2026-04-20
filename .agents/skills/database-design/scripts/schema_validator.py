@@ -13,11 +13,36 @@ Checks:
     - Naming conventions
 """
 
-import sys
-import json
-import re
-from pathlib import Path
-from datetime import datetime
+try:
+    import sys
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import json
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: json. Run 'pip install json' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import re
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: re. Run 'pip install re' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    from pathlib import Path
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    from datetime import datetime
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: datetime. Run 'pip install datetime' to fix.")
+    import sys
+    sys.exit(1)
 
 # Fix Windows console encoding
 try:

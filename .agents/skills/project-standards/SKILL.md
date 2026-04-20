@@ -140,20 +140,34 @@ To maintain a unique, high-end visual identity, the project follows a **Hybrid R
 
 - **Modern UI Shell (Containers & Layouts)**:
   - **REQUIRED**: Use state-of-the-art UI techniques for layouts, cards, and backgrounds.
-  - **Techniques**: Glassmorphism (`backdrop-filter: blur`), subtle HSL gradients, smooth shadows, and fluid transitions.
+  - **Techniques**: Glassmorphism (`-webkit-backdrop-filter: blur; backdrop-filter: blur;`), subtle HSL gradients, smooth shadows, and fluid transitions.
   - **Goal**: The "frame" must feel premium, modern, and reactive.
 - **Pixel Art Content (The "Game Heart")**:
   - **MANDATORY**: All game-world elements **MUST** be Pixel Art. This includes **Sprites**, **Icons**, and **GAME TEXT** (Typography).
   - **FORBIDDEN**: Using modern high-res vector icons (SVG) or smooth modern fonts for primary game data/interaction.
-  - **Asset Rendering**: Use `image-rendering: pixelated;` strictly for these elements.
+  - **EXCEPTION: Premium Branding**: High-resolution logos, faction emblems, or specific premium UI decorations designed for high definition **SHOULD** use smooth rendering (`image-rendering: auto;`) to enhance the contrast with the pixelated heart.
+  - **Asset Rendering**: Use `image-rendering: pixelated;` strictly for pixel-art elements. Use `@include smooth;` for premium branding exceptions.
 
-### 2. Detection & Warning Policy
+### 3. Pixel-Perfect Typography (Sharpness Mandate)
 
-- **Audit Requirement**: You **MUST** audit every UI component and visual asset during development.
-- **Non-Compliance**: If you detect "smooth" modern icons, vector graphics, or non-pixelated fonts used for game content, you **MUST** warn the user.
-- **Proactive Migration**: Always suggest and provide the SCSS/Asset path to migrate smooth elements to the Hybrid Retro-Modern standard.
+To prevent blurriness and maintain the retro heart's integrity, all pixel fonts must be rendered with absolute sharpness, bypassing modern antialiasing.
 
-- **Reference**: See [references/sass_styling_manual.md](./references/sass_styling_manual.md) for technical setup, Pixel Art font families, and migration guides.
+- **MANDATORY**: Any text component using pixelated fonts (e.g., 'Press Start 2P', 'Silkscreen', 'VT323') **MUST** disable font smoothing.
+- **Implementation**: Use `@include pixelated;` in SCSS. This mixin forces `-webkit-font-smoothing: none`, `-moz-osx-font-smoothing: grayscale`, and hardware acceleration (`transform: translateZ(0)`) to ensure characters are snapped to the pixel grid.
+- **Why**: Pixel fonts rely on sharp edges. Modern antialiasing makes them appear "fuzzy" or "dirty," violating the project's visual core.
+- **FORBIDDEN**: Relying on default browser antialiasing for game-world text. Blurry typography is considered a violation of the Hybrid Retro-Modern identity.
+
+### 4. Safari Compatibility (Prefix Mandate)
+
+- **REQUIRED**: Any usage of `backdrop-filter` **MUST** be preceded by `-webkit-backdrop-filter` to ensure compatibility with Safari and Safari on iOS. Failure to do so is considered a critical UI regression.
+
+### 5. Premium HUD Glassmorphism Standards
+
+To ensure a cohesive and high-end feel across all HUD elements, follow these specific slate-blue glassmorphism tokens:
+
+- **HUD Headers/Containers**: `rgba(15, 23, 42, 0.92)` with `backdrop-filter: blur(25px)`. This provides a deep, readable base for status information.
+- **HUD Buttons & Sub-elements**: `rgba(15, 23, 42, 0.7)` with `backdrop-filter: blur(12px)`. This creates a lighter "stacked" effect that feels interactive.
+- **Borders**: Always use a subtle `1px solid rgba(255, 255, 255, 0.12)` to define the glass edges without being harsh.
 
 ## UI Interaction & Modal Standards
 
@@ -165,6 +179,13 @@ To ensure a seamless and predictable user experience, all dialogs, modals, and i
 - **Behavior**: The most recently opened interaction (the last one to enter visibility) is the **first** one that must be closed, accepted, or resolved.
 - **FORBIDDEN**: A new interaction, window, or modal must **NEVER** open behind an already existing one, preventing interaction with this new element. The top-most element must always be the active one.
 - **Test Mandate**: You **MUST** ensure this stack-based behavior is verified with **Unit Tests** for any modal manager, window component, or UI layering system.
+
+### 2. Interaction in Locked States (Teleport & Allowlist)
+
+When the game engine (Phaser) is in a "Locked" state (e.g., during complex animations or when inputs are globally captured), UI overlays **MUST** remain functional.
+
+- **Mandatory Teleport**: Use Vue's `<Teleport to="body">` for all global modals to ensure they exist outside the main game view's event-capture hierarchy.
+- **Allowlist Mandate**: Interactive elements that must remain clickable during a lock **MUST** be added to the project's global interaction allowlist (e.g., the `.modal-scrollable-content` class in `App.vue`). Failure to do this will result in "frozen" UI where the user cannot interact with critical menus.
 
 ## Database & Context Architecture
 
@@ -298,7 +319,7 @@ To prevent build warnings and future-proof the application, you **MUST** use the
 - **REQUIRED**:
   - `random(...)` -> `math.random(...)`
   - `unquote(...)` -> `string.unquote(...)` (Must add `@use "sass:string";` to the block)
-  - `scale(...)` -> `Scale(...)` (Capitalize to bypass SASS color function collision. Case-insensitive: also covers `grayScale`, etc.)
+  - `scale(...)` -> `Scale(...)` (Capitalize to bypass SASS color function collision. **WARNING**: SASS will throw `$color: 1.02 is not a color` if lowercase is used with unitless numbers in transforms.)
   - `grayscale(...)` -> `Grayscale(...)` (Capitalize to bypass SASS color function collision)
   - `invert(...)` -> `Invert(...)` (Capitalize to bypass SASS color function collision)
   - `opacity(...)` -> `Opacity(...)` (Capitalize to bypass SASS color function collision)
@@ -312,6 +333,32 @@ To prevent build warnings and future-proof the application, you **MUST** use the
 ### 3. Automatic Validation
 
 - **MANDATORY**: You **MUST** run `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` after any UI modification to ensure no deprecated globals were introduced.
+
+## Python Dependency & Skill Script Standards
+
+To ensure that Python-based automation scripts within skills are reliable and self-healing for AI agents, the following standards are mandatory.
+
+### 1. Robust Import Wrappers (Self-Healing Mandate)
+
+- **MANDATORY**: Every Python script located within a skill's `scripts/` directory **MUST** wrap all imports (including standard libraries to maintain consistency) in a `try/except ImportError` block.
+- **Recognizable Error Format**: The error message printed in the `except` block **MUST** include the tag `[PYTHON_DEPENDENCY_ERROR]` to allow AI agents to instantly identify and fix the missing dependency.
+- **Implementation Pattern**:
+
+  ```python
+  try:
+      import some_library
+  except ImportError:
+      print("[PYTHON_DEPENDENCY_ERROR] Missing library: some_package. Run 'pip install some_package' to fix.")
+      import sys
+      sys.exit(1)
+  ```
+  
+- **Why**: This allows the AI agent to immediately understand a script failure as a fixable dependency issue rather than a logic bug, enabling self-healing workflows.
+
+### 2. Centralized Dependency Tracking
+
+- **MANDATORY**: Any external Python library required by a skill script **MUST** be added to the project's root `requirements.txt`.
+- **Validation**: Before finishing a task involving Python scripts, you **MUST** ensure `requirements.txt` reflects all necessary packages.
 
 ## Dev Server Management
 

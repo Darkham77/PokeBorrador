@@ -17,6 +17,7 @@ const dayCycle = computed(() => {
   }
   return info[cycle] || { icon: '☀️', label: 'Día', color: '#FFEEAD' }
 })
+
 </script>
 
 <template>
@@ -116,7 +117,7 @@ const dayCycle = computed(() => {
 }
 
 .ball-icon-wrap {
-  height: 24px;
+  height: 28px;
   display: flex;
   align-items: center;
 }
@@ -129,6 +130,7 @@ const dayCycle = computed(() => {
 
 .hud-pill {
   transition: all 0.2s ease;
+  
   
   &:hover {
     transform: translateY(-2px);

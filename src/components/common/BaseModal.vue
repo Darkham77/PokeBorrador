@@ -103,7 +103,7 @@ onUnmounted(() => {
             'no-overlay': type.startsWith('side')
           }
         ]"
-        :style="{ zIndex: zIndex }"
+        :style="{ zIndex: computedZIndex }"
         @click.self="handleOverlayClick"
       >
         <div

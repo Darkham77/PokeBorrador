@@ -1,1 +1,10 @@
 Pillow>=10.0.0
+PyYAML
+mcp
+playwright
+libsass
+requests
+jsonschema
+rich
+typer
+python-dotenv

@@ -1,6 +1,11 @@
 import os
 import sys
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: Pillow. Run 'pip install Pillow' to fix.")
+    import sys
+    sys.exit(1)
 from pathlib import Path
 
 def process_assets(base_dir="_raw-assets"):

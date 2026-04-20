@@ -1,4 +1,9 @@
-import sass
+try:
+    import sass
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: libsass. Run 'pip install libsass' to fix.")
+    import sys
+    sys.exit(1)
 try:
     print("Testing scale(1):")
     result = sass.compile(string='.test { transform: scale(1); }')

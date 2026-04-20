@@ -6,16 +6,61 @@ and returning the best description found. Supports train/test split to prevent
 overfitting.
 """
 
-import argparse
-import json
-import random
-import sys
-import tempfile
-import time
-import webbrowser
-from pathlib import Path
+try:
+    import argparse
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: argparse. Run 'pip install argparse' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import json
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: json. Run 'pip install json' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import random
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: random. Run 'pip install random' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import sys
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import tempfile
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: tempfile. Run 'pip install tempfile' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import time
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: time. Run 'pip install time' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import webbrowser
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: webbrowser. Run 'pip install webbrowser' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    from pathlib import Path
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
+    import sys
+    sys.exit(1)
 
-from scripts.generate_report import generate_html
+try:
+    from scripts.generate_report import generate_html
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: scripts. Run 'pip install scripts' to fix.")
+    import sys
+    sys.exit(1)
 from scripts.improve_description import improve_description
 from scripts.run_eval import find_project_root, run_eval
 from scripts.utils import parse_skill_md

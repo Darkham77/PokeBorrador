@@ -212,11 +212,11 @@ onUnmounted(() => {
         <!-- 1. Entrenador (Siempre Arriba) -->
         <TrainerPanel class="hud-left" />
 
-        <!-- 2. Navegación (Se oculta < 1380px) -->
-        <HUD_Navigation class="hud-center" />
-
-        <!-- 3. Botones Especiales (Suben < 670px) -->
+        <!-- 2. Botones Especiales -->
         <ActionButtons class="hud-actions" />
+
+        <!-- 3. Navegación -->
+        <HUD_Navigation class="hud-center" />
 
         <!-- 4. Inventario (Baja < 670px) -->
         <InventoryPills class="hud-right" />
@@ -266,13 +266,6 @@ onUnmounted(() => {
         <PokedexView />
       </div>
 
-      <div
-        v-show="activeTab === 'bag'"
-        id="tab-bag"
-        class="tab-content"
-      >
-        <BackpackView />
-      </div>
 
       <div
         v-show="activeTab === 'gyms'"
@@ -400,7 +393,9 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible !important;
+  padding-left: clamp(10px, 3vw, 24px);
+  padding-right: clamp(10px, 3vw, 24px);
 }
 
 .hidden-system {

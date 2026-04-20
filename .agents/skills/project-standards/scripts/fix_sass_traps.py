@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
-import os
-import re
+try:
+    import os
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: os. Run 'pip install os' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import re
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: re. Run 'pip install re' to fix.")
+    import sys
+    sys.exit(1)
 
 # Regex to find scale(number), grayscale(number), opacity(number) NOT already interpolated
 TRAP_REGEX = re.compile(r'(scale|grayscale|opacity)\((?!\#\{)([\d\.]+)\)')

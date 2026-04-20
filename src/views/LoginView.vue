@@ -1,4 +1,5 @@
 <script setup>
+/* global __APP_VERSION__ */
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -265,7 +266,7 @@ const handleLocalLogin = async () => {
   inset: 0;
   z-index: 1000;
   /* Use the copied wallpaper */
-  background: #000 url('@/assets/fondo/WALLPAPER.webp') no-repeat center center;
+  background: #000 url('/assets/fondo/WALLPAPER.webp') no-repeat center center;
   background-size: cover;
   display: flex;
   flex-direction: column;

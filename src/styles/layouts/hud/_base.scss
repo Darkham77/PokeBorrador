@@ -1,0 +1,128 @@
+// src/styles/layouts/hud/_base.scss
+
+@use '../../core/tools' as *;
+
+.hud-container {
+  position: fixed;
+  top: 15px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  @include gpu-layer;
+  transform: translate3d(0, 0, 0);
+  width: min(1800px, 98vw);
+  margin: 0 auto;
+  z-index: z(hud);
+  pointer-events: none;
+  container-type: inline-size;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+
+  &.hud-hidden {
+    transform: translateY(calc(-100% - 20px)) translate3d(0, 0, 0) !important;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.hud {
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.92);
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
+  border-radius: 20px;
+  padding: 10px 24px;
+  gap: 15px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  
+  .hud-right {
+    margin-left: auto;
+  }
+
+  @media (max-width: 920px) {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
+    width: fit-content;
+    margin: 0 auto;
+    height: auto;
+    padding: 12px;
+    justify-content: center !important;
+    align-items: center;
+    gap: 16px;
+    white-space: normal;
+
+    .hud-left { 
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .hud-actions {
+      grid-column: 2;
+      grid-row: 1;
+      margin-right: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .hud-right { 
+      grid-column: 1 / -1;
+      grid-row: 2;
+      width: auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center !important;
+      margin-left: 0;
+      gap: 8px;
+      padding: 8px 0;
+    }
+    
+    & > * {
+      min-width: 0;
+    }
+
+    @include responsive-zoom;
+  }
+}
+
+/* PC COMPACT MODES */
+@container (max-width: 1775px) {
+  .hud {
+    padding: 8px 16px;
+    gap: 12px;
+  }
+  .hud-nav { gap: 6px; }
+
+  .hud-nav-btn {
+    flex-direction: column !important;
+    padding: 6px 4px !important;
+    gap: 2px !important;
+    min-width: 55px;
+  }
+  
+  .hud-nav-btn .label {
+    display: block !important;
+  }
+}
+
+@media (max-width: 1380px) {
+  .hud-nav:not(.pos-bottom) {
+    display: none !important;
+  }
+  
+  .hud {
+    justify-content: flex-start;
+    padding: 10px 20px;
+  }
+
+  .hud-right {
+    margin-left: auto;
+  }
+}

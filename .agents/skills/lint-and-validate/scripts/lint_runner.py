@@ -11,13 +11,48 @@ Supports:
     - Python: ruff check, mypy
 """
 
-import subprocess
-import sys
-import json
-import platform
-import shutil
-from pathlib import Path
-from datetime import datetime
+try:
+    import subprocess
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: subprocess. Run 'pip install subprocess' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import sys
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import json
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: json. Run 'pip install json' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import platform
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: platform. Run 'pip install platform' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import shutil
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: shutil. Run 'pip install shutil' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    from pathlib import Path
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    from datetime import datetime
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: datetime. Run 'pip install datetime' to fix.")
+    import sys
+    sys.exit(1)
 
 # Fix Windows console encoding
 try:

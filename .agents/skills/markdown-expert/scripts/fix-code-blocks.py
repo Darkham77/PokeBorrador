@@ -1,7 +1,27 @@
-import os
-import re
-import sys
-import argparse
+try:
+    import os
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: os. Run 'pip install os' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import re
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: re. Run 'pip install re' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import sys
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import argparse
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: argparse. Run 'pip install argparse' to fix.")
+    import sys
+    sys.exit(1)
 
 def process_file(filepath):
     try:

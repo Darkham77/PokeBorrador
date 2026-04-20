@@ -1,4 +1,4 @@
-
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 /**
  * Maps each location to a biome key.

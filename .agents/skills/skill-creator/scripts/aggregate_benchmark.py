@@ -34,12 +34,42 @@ The script supports two directory layouts:
                 └── run-1/grading.json
 """
 
-import argparse
-import json
-import math
-import sys
-from datetime import datetime, timezone
-from pathlib import Path
+try:
+    import argparse
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: argparse. Run 'pip install argparse' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import json
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: json. Run 'pip install json' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import math
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: math. Run 'pip install math' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import sys
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    from datetime import datetime, timezone
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: datetime. Run 'pip install datetime' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    from pathlib import Path
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
+    import sys
+    sys.exit(1)
 
 
 def calculate_stats(values: list[float]) -> dict:

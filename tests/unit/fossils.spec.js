@@ -2,10 +2,22 @@
  * tests/unit/fossils.spec.js
  * Unit tests for Fossil Restoration logic.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
 import { restoreFossil } from '@/logic/items/fossilEngine';
 
 describe('Fossil Engine', () => {
+  beforeEach(() => {
+    // Mock localStorage
+    const storage = {};
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn(key => storage[key] || null),
+      setItem: vi.fn((key, val) => { storage[key] = val.toString(); }),
+      clear: vi.fn(() => { for (let k in storage) delete storage[k]; })
+    });
+    
+    setActivePinia(createPinia());
+  });
   it('should restore a fossil and add it to the team if there is space', () => {
     const state = {
       team: [],

@@ -3,10 +3,30 @@
 Type Coverage Checker - Measures TypeScript/Python type coverage.
 Identifies untyped functions, any usage, and type safety issues.
 """
-import sys
-import re
-import subprocess
-from pathlib import Path
+try:
+    import sys
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import re
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: re. Run 'pip install re' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    import subprocess
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: subprocess. Run 'pip install subprocess' to fix.")
+    import sys
+    sys.exit(1)
+try:
+    from pathlib import Path
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
+    import sys
+    sys.exit(1)
 
 # Fix Windows console encoding for Unicode output
 try:

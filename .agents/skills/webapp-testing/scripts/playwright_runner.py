@@ -22,7 +22,12 @@ except AttributeError:
     pass  # Python < 3.7
 
 try:
-    from playwright.sync_api import sync_playwright
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("[PYTHON_DEPENDENCY_ERROR] Missing library: playwright. Run 'pip install playwright' to fix.")
+        import sys
+        sys.exit(1)
     PLAYWRIGHT_AVAILABLE = True
 except ImportError:
     PLAYWRIGHT_AVAILABLE = False

@@ -2,7 +2,6 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { usePvPStore } from '@/stores/pvp';
-import { usePvPStore } from '@/stores/pvp';
 import { useBattleVisuals } from '@/composables/useBattleVisuals';
 
 // Sub-components
@@ -13,7 +12,6 @@ import PlayerAvatar from '@/components/player/PlayerAvatar.vue';
 
 const gameStore = useGameStore();
 const pvpStore = usePvPStore();
-const _rankedStore = usePvPStore();
 const { _getHpPct, _getHpClass } = useBattleVisuals();
 
 const timeRemaining = ref(40);
