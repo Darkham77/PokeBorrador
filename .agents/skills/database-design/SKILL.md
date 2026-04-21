@@ -40,6 +40,16 @@ Before designing schema:
 - [ ] Considered deployment environment?
 - [ ] Planned index strategy?
 - [ ] Defined relationship types?
+- [ ] Verified local vs online schema parity?
+
+---
+
+## Local Engine Sync (SQLite/WASM)
+
+When modifying the database in a project with a local engine:
+
+- **Forced Sync**: To update an existing local SQLite database, always add a new SQL migration to `database/migrations/` and run the build script to regenerate the internal migrations data.
+- **Casing Parity**: SQLite column names MUST match the casing and property names of the JavaScript payloads (e.g., camelCase vs snake_case) to avoid insertion errors during property mapping.
 
 ---
 

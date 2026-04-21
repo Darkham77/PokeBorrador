@@ -61,6 +61,15 @@ priority: CRITICAL
 
 ---
 
+## Async Code
+
+| Rule | Description |
+| :--- | :--- |
+| **Await Rejections** | Always `await` async calls inside `try/catch` to ensure rejections are caught. |
+| **Fail-Safe** | Use try-catch boundaries to return standard objects (e.g., `{data, error}`) in logic layers. |
+
+---
+
 ## AI Coding Style
 
 | Situation | Action |

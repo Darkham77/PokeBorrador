@@ -34,6 +34,12 @@ export class ProxyQuery {
     return this;
   }
 
+  insert(data) {
+    this.action = 'insert';
+    this.actionData = data;
+    return this;
+  }
+
   update(data) {
     this.action = 'update';
     this.actionData = data;
@@ -66,6 +72,7 @@ export class ProxyQuery {
         let q = this.router.realClient.from(this.table);
         
         if (this.action === 'upsert') return await q.upsert(this.actionData, this.actionOpts);
+        if (this.action === 'insert') return await q.insert(this.actionData);
         
         if (this.action === 'update') {
           this.chain.forEach(s => { q = q[s.type](...s.args); });
@@ -92,14 +99,16 @@ export class ProxyQuery {
   }
 
   async executeLocal(final = null) {
-    const sqliteDb = await initSQLite();
-    
-    if (this.action === 'upsert') return this._executeLocalUpsert(sqliteDb);
-    if (this.action === 'update') return this._executeLocalUpdate(sqliteDb);
-    if (this.action === 'delete') return this._executeLocalDelete(sqliteDb);
+    try {
+      const sqliteDb = await initSQLite();
+      
+      if (this.action === 'upsert') return await this._executeLocalUpsert(sqliteDb);
+      if (this.action === 'insert') return await this._executeLocalUpsert(sqliteDb); // Reusing upsert for simplicity in local mode
+      if (this.action === 'update') return await this._executeLocalUpdate(sqliteDb);
+      if (this.action === 'delete') return await this._executeLocalDelete(sqliteDb);
 
-    // Default: select
-    let sql = `SELECT * FROM ${this.table}`; // Simplistic, cols not used yet
+      // Default: select
+      let sql = `SELECT * FROM ${this.table}`; // Simplistic, cols not used yet
     const where = [];
     const params = [];
 
@@ -147,52 +156,71 @@ export class ProxyQuery {
     if (final === 'single') return { data: data[0] || null, error: data.length === 0 ? { message: 'Not found' } : null };
     if (final === 'maybeSingle') return { data: data[0] || null, error: null };
     return { data, error: null };
+    } catch (e) {
+      console.error(`[ProxyQuery] executeLocal critical failure:`, e);
+      return { data: null, error: e };
+    }
   }
 
   async _executeLocalUpsert(sqliteDb) {
-    const values = Array.isArray(this.actionData) ? this.actionData : [this.actionData];
-    for (const row of values) {
-      const cols = Object.keys(row);
-      const marks = cols.map(() => '?').join(',');
-      const vals = cols.map(c => typeof row[c] === 'object' ? JSON.stringify(row[c]) : row[c]);
-      sqliteDb.run(`INSERT OR REPLACE INTO ${this.table} (${cols.join(',')}) VALUES (${marks})`, vals);
+    try {
+      const values = Array.isArray(this.actionData) ? this.actionData : [this.actionData];
+      for (const row of values) {
+        const cols = Object.keys(row);
+        const marks = cols.map(() => '?').join(',');
+        const vals = cols.map(c => typeof row[c] === 'object' ? JSON.stringify(row[c]) : row[c]);
+        sqliteDb.run(`INSERT OR REPLACE INTO ${this.table} (${cols.join(',')}) VALUES (${marks})`, vals);
+      }
+      await persistSQLite();
+      return { data: this.actionData, error: null };
+    } catch (e) {
+      console.error(`[ProxyQuery] Upsert/Insert failed for ${this.table}:`, e);
+      return { data: null, error: e };
     }
-    await persistSQLite();
-    return { data: this.actionData, error: null };
   }
 
   async _executeLocalUpdate(sqliteDb) {
-    const setClause = Object.keys(this.actionData).map(k => `${k} = ?`).join(',');
-    const params = Object.values(this.actionData).map(v => typeof v === 'object' ? JSON.stringify(v) : v);
-    
-    const where = [];
-    this.chain.forEach(s => {
-      if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
-      if (s.type === 'match') {
-        Object.entries(s.args[0]).forEach(([k, v]) => {
-          where.push(`${k} = ?`); params.push(v);
-        });
-      }
-    });
+    try {
+      const setClause = Object.keys(this.actionData).map(k => `${k} = ?`).join(',');
+      const params = Object.values(this.actionData).map(v => typeof v === 'object' ? JSON.stringify(v) : v);
+      
+      const where = [];
+      this.chain.forEach(s => {
+        if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
+        if (s.type === 'match') {
+          Object.entries(s.args[0]).forEach(([k, v]) => {
+            where.push(`${k} = ?`); params.push(v);
+          });
+        }
+      });
 
-    let sql = `UPDATE ${this.table} SET ${setClause}`;
-    if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
-    sqliteDb.run(sql, params);
-    await persistSQLite();
-    return { data: this.actionData, error: null };
+      let sql = `UPDATE ${this.table} SET ${setClause}`;
+      if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
+      sqliteDb.run(sql, params);
+      await persistSQLite();
+      return { data: this.actionData, error: null };
+    } catch (e) {
+      console.error(`[ProxyQuery] Update failed for ${this.table}:`, e);
+      return { data: null, error: e };
+    }
   }
 
   async _executeLocalDelete(sqliteDb) {
-    const params = [];
-    const where = [];
-    this.chain.forEach(s => {
-      if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
-    });
-    
-    let sql = `DELETE FROM ${this.table}`;
-    if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
-    sqliteDb.run(sql, params);
-    await persistSQLite();
-    return { error: null };
+    try {
+      const params = [];
+      const where = [];
+      this.chain.forEach(s => {
+        if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
+      });
+      
+      let sql = `DELETE FROM ${this.table}`;
+      if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
+      sqliteDb.run(sql, params);
+      await persistSQLite();
+      return { error: null };
+    } catch (e) {
+      console.error(`[ProxyQuery] Delete failed for ${this.table}:`, e);
+      return { error: e };
+    }
   }
 }

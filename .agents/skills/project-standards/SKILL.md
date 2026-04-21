@@ -58,6 +58,14 @@ Refer to these manuals for complex implementation specifications:
 
 ---
 
+## 🛰️ Realtime & Offline Simulation
+
+### 1. Offline Event Emulation
+- **REQUIRED**: In `offline` mode, features that normally rely on Realtime listeners (e.g., Chat, Battle events) MUST manually update the local store state after a successful DB operation to simulate the missing server broadcast.
+- **Fail-Safe**: Do not block features in offline mode unless they are strictly non-functional without a network.
+
+---
+
 ## ⚙️ Execution Governance
 
 ### 1. Dev Server Reuse

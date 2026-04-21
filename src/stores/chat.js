@@ -27,7 +27,7 @@ export const useChatStore = defineStore('chat', () => {
   }, { deep: true })
 
   async function loadGlobalHistory() {
-    if (authStore.sessionMode === 'offline') return
+    // If offline, ProxyQuery will handle the local SELECT
 
     const { data, error } = await gameStore.db
       .from('global_chat_messages')
@@ -41,7 +41,6 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function initGlobalChat() {
-    if (authStore.sessionMode === 'offline') return
     if (globalChannel) return
     
     await loadGlobalHistory()
@@ -67,7 +66,6 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function initPrivateInbox() {
-    if (authStore.sessionMode === 'offline') return
     if (!authStore.user || inboxChannel) return
 
     const db = gameStore.db
@@ -114,7 +112,6 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   async function sendGlobalMessage(text) {
-    if (authStore.sessionMode === 'offline') return
     if (!authStore.user || !text.trim()) return
 
     const payload = {
@@ -130,11 +127,21 @@ export const useChatStore = defineStore('chat', () => {
       console.error('[ChatStore] Global message error:', error)
     } else {
       audioStore.sentMsg(); // Sonido al enviar satisfactoriamente
+      
+      // En modo Offline, no hay disparador de Postgres Realtime, así que pusheamos manualmente
+      if (authStore.sessionMode === 'offline') {
+        const localRow = {
+          id: Date.now(),
+          ...payload,
+          created_at: new Date().toISOString()
+        }
+        globalMessages.value.push(localRow)
+        if (globalMessages.value.length > 50) globalMessages.value.shift()
+      }
     }
   }
 
   async function sendPrivateMessage(friendId, text) {
-    if (authStore.sessionMode === 'offline') return
     if (!authStore.user || !text.trim() || !privateChats[friendId]) return
 
     const payload = {

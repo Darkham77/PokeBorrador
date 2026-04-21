@@ -21,7 +21,9 @@ graph TD
     Start((START)) --> Planning[1. Planning & Task Initialization]
     Planning --> |"Dynamic task.md update"| Planning
     Planning --> GapAnalysis[2. Test Gap Analysis]
-    GapAnalysis --> Verification[3. Active Verification Cycle]
+    GapAnalysis --> |"Missing Tests Detected?"| CreateTests[2.1 Create Unit Tests SUB-TASK]
+    CreateTests --> Verification[3. Active Verification Cycle]
+    GapAnalysis --> Verification
     
     subgraph "The Zero-Warning Audit"
         Verification --> SASSCheck1[SASS Check]
@@ -70,7 +72,8 @@ Before writing any code or finalizing changes, analyze the work done.
 Review all modified files in `src/logic/`.
 
 - Identify any new logic (battle calculations, move effects, evolution logic) that lacks corresponding tests in `tests/unit/`.
-- **MANDATORY**: Create or update Vitest files to ensure logic is verified.
+- **MANDATORY SUB-TASK**: If a module or file lacks critical unit tests and it is "worthy" (worth the effort for stability), you MUST create a new unit test. Add this as a **SUB-TASK** in `task.md` immediately.
+- **NEVER FORGET**: While adding tests, the general objective of committing clean, verified code must remain the priority.
 
 ### 3. Active Verification Cycle (The "Zero-Warning" Audit)
 
@@ -102,7 +105,7 @@ If the database schema has changed:
 - > [!CAUTION]
   > **STOP ON FAILURE**: If something does not work or a test fails, you MUST fix it immediately. It is forbidden to proceed to the next step or attempt the commit if the verification cycle is not perfect.
 - > [!IMPORTANT]
-  > **WORKFLOW PROJECTION**: After any fix, you MUST explicitly update `task.md` and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks are completed.
+  > **WORKFLOW PROJECTION**: After any fix or test creation, you MUST explicitly update `task.md` and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks (including newly discovered sub-tasks) are completed.
 
 ### 6. Lessons Extraction (MANDATORY)
 

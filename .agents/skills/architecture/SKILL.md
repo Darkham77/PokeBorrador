@@ -44,6 +44,15 @@ allowed-tools: Read, Glob, Grep
 
 ---
 
+## 4. Hybrid Engine Parity (Mandatory)
+
+When maintaining the `DBRouter` or `ProxyQuery` logic:
+
+- **API Parity**: Ensure that `ProxyQuery` implements all methods used by the Supabase client (e.g., `insert`, `upsert`, `update`, `delete`, `select`, `single`, `maybeSingle`).
+- **Fail-Safe Execution**: Always `await` action handlers within try-catch blocks to return standard `{ data, error }` objects instead of crashing the UI.
+
+---
+
 ## Validation Checklist
 
 Before finalizing architecture:

@@ -161,10 +161,23 @@ export class DBRouter {
    */
   channel(name) {
     if (this.mode === 'offline') {
-      return { 
-        on: () => ({ subscribe: () => ({}) }), 
-        subscribe: () => ({}) 
+      const mockChannel = {
+        on: (type, config, callback) => {
+          // If only 2 args provided, config is the callback
+          const _cb = typeof config === 'function' ? config : callback;
+          console.log(`[DBRouter] Mock Channel '${name}' subscribed to:`, type);
+          return mockChannel; // Chainable
+        },
+        subscribe: (cb) => {
+          if (cb) setTimeout(() => cb('SUBSCRIBED'), 10);
+          return { unsubscribe: () => {} };
+        },
+        send: (payload) => {
+          console.log(`[DBRouter] Mock Channel '${name}' send:`, payload);
+          return Promise.resolve('ok');
+        }
       };
+      return mockChannel;
     }
     return this.realClient.channel(name);
   }
