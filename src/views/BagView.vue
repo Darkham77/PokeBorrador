@@ -389,5 +389,8 @@ const onUseItem = (name) => {
   cursor: pointer;
 }
 
+</style>
+
+<style>
 .scroll-hide::-webkit-scrollbar { display: none; }
 </style>

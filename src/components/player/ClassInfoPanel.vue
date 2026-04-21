@@ -249,6 +249,7 @@ const rankTitle = computed(() => {
   position: relative;
   max-height: 90vh;
   overflow-y: auto;
+  min-height: 0;
   border-color: rgba(var(--class-color), 0.2);
 }
 

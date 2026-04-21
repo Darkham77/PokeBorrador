@@ -127,6 +127,7 @@ const getHpColor = (p) => {
   gap: 12px;
   max-height: 400px;
   overflow-y: auto;
+  min-height: 0;
   padding: 4px;
 }
 

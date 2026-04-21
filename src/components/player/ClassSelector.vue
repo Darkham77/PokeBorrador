@@ -136,6 +136,7 @@ const select = (id) => {
   justify-content: center;
   padding: 40px 16px;
   overflow-y: auto;
+  min-height: 0;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   animation: fadeIn 0.3s ease;

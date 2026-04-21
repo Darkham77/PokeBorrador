@@ -154,6 +154,7 @@ const getSpriteUrl = (id) => {
 .claim-list {
   max-height: 200px;
   overflow-y: auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;

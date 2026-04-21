@@ -334,6 +334,7 @@ const cancelSearch = () => {
 .tab-content {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .overview-tab {

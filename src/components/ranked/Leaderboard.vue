@@ -115,6 +115,7 @@ const formatRank = (index) => `#${index + 1}`;
   flex-direction: column;
   gap: 16px;
   height: 100%;
+  min-height: 0;
 }
 
 .leaderboard-header {
@@ -192,6 +193,7 @@ const formatRank = (index) => `#${index + 1}`;
   flex-direction: column;
   gap: 8px;
   overflow-y: auto;
+  min-height: 0;
   padding-right: 4px;
 }
 

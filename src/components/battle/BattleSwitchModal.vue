@@ -167,6 +167,7 @@ p { color: var(--gray); font-size: 11px; margin: 0; }
   margin-bottom: 20px;
   max-height: 400px;
   overflow-y: auto;
+  min-height: 0;
   padding-right: 4px;
 }
 

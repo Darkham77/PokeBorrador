@@ -105,10 +105,16 @@ EXTENSIONS = [".vue", ".js", ".ts", ".scss", ".css"]
 
 def scan_file(filepath):
     findings = []
+    in_scoped_style = False
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             lines = f.readlines()
             for i, line in enumerate(lines):
+                if "<style" in line and "scoped" in line:
+                    in_scoped_style = True
+                if "</style>" in line:
+                    in_scoped_style = False
+                
                 # Heuristic to ignore comments or explicit ignores
                 if line.strip().startswith("//") or line.strip().startswith("/*") or line.strip().startswith("*"):
                     continue
@@ -124,13 +130,25 @@ def scan_file(filepath):
                         if "document.title =" in line:
                             continue
                         
-                        # Special case: scoped_scrollbar_styling should only trigger in .vue files
-                        if pattern["id"] == "scoped_scrollbar_styling" and not filepath.endswith(".vue"):
-                            continue
+                        # Special case: scoped_scrollbar_styling should ONLY trigger if inside <style scoped>
+                        if pattern["id"] == "scoped_scrollbar_styling":
+                            if not in_scoped_style:
+                                continue
                         
                         # Special case: flex_scroll_collapse is hard to detect correctly in scss/css files (mixins)
-                        if pattern["id"] == "flex_scroll_collapse" and (filepath.endswith(".scss") or filepath.endswith(".css")):
-                            continue
+                        if pattern["id"] == "flex_scroll_collapse":
+                            if filepath.endswith(".scss") or filepath.endswith(".css"):
+                                continue
+                            
+                            # Smart check: If min-height: 0 is in the same or surrounding lines, it's likely fixed
+                            is_fixed = False
+                            context_range = range(max(0, i-5), min(len(lines), i+6))
+                            for idx in context_range:
+                                if "min-height: 0" in lines[idx]:
+                                    is_fixed = True
+                                    break
+                            if is_fixed:
+                                continue
 
                         findings.append({
                             "line": i + 1,

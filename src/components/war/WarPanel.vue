@@ -237,6 +237,7 @@ const getFactionIcon = (faction) => {
   flex: 1;
   padding: 0 40px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .section-label {

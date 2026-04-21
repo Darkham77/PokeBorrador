@@ -240,6 +240,7 @@ function getProjectedValue(p) {
   gap: 12px;
   max-height: 45vh;
   overflow-y: auto;
+  min-height: 0;
   padding: 4px;
 }
 

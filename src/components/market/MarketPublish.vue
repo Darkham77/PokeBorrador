@@ -231,6 +231,7 @@ const net = computed(() => price.value - fee.value)
   border-radius: 20px;
   padding: 15px;
   overflow-y: auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;

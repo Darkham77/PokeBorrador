@@ -172,6 +172,7 @@ const selectPokemon = (p) => {
 .picker-content {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 16px;
   
   .empty { padding: 40px; text-align: center; color: #64748b; font-size: 14px; }

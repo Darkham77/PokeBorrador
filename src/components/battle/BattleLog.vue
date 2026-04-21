@@ -42,6 +42,7 @@ watch(logs, () => {
 .battle-log {
   height: 100%;
   overflow-y: auto;
+  min-height: 0;
   padding: 20px;
   background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(8px);

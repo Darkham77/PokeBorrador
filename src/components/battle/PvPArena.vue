@@ -172,6 +172,7 @@ const handleSwitch = () => {
   background: rgba(0,0,0,0.4);
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .pvp-status-bar {
@@ -190,6 +191,7 @@ const handleSwitch = () => {
   flex: 1;
   padding: 15px;
   overflow-y: auto;
+  min-height: 0;
   font-size: 13px;
   line-height: 1.6;
 }

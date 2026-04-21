@@ -254,6 +254,7 @@ function startSearch() {
   gap: 24px;
   height: 100%;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .rank-card {
@@ -386,6 +387,7 @@ function startSearch() {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-height: 0;
 }
 
 .milestone-card {

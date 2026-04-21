@@ -177,6 +177,7 @@ const consumeItem = (name) => {
   gap: 10px;
   max-height: 320px;
   overflow-y: auto;
+  min-height: 0;
   margin-bottom: 24px;
   padding-right: 6px;
 }

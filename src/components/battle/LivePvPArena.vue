@@ -297,6 +297,7 @@ function handleForfeit() {
   border-radius: 30px;
   padding: 20px;
   position: relative;
+  min-height: 0;
 }
 
 .arena-viewport {
@@ -315,6 +316,7 @@ function handleForfeit() {
   color: #ccc;
   border-radius: 12px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .battle-controls {

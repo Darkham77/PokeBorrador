@@ -378,6 +378,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
 .type-row {
   max-height: 120px;
   overflow-y: auto;
+  min-height: 0;
   padding: 4px;
 }
 

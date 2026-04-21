@@ -159,12 +159,14 @@ h2 {
   flex: 1;
   overflow: hidden;
   position: relative;
+  min-height: 0;
 }
 
 .leaderboard-list {
   padding: 10px 20px;
   height: 100%;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .rank-row {

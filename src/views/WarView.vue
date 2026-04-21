@@ -58,7 +58,7 @@ onMounted(async () => {
   min-height: 100vh;
   background: radial-gradient(circle at top, #1a1a1a 0%, #0a0a0a 100%);
   padding: 40px 20px;
-  overflow-y: auto;
+  overflow-y: auto; /* [PureVue-Ignore] Root element with min-height: 100vh is safe */
 }
 
 .container {

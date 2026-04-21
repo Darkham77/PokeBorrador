@@ -344,6 +344,7 @@ function unlockPokedex() {
   padding: 15px;
   max-height: 400px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .debug-grid {

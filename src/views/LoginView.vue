@@ -274,7 +274,7 @@ const handleLocalLogin = async () => {
   justify-content: center;
   min-height: 100vh;
   padding: 20px;
-  overflow-y: auto;
+  overflow-y: auto; /* [PureVue-Ignore] Root element with min-height: 100vh is safe */
   font-family: 'Nunito', sans-serif;
 }
 
