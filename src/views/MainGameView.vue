@@ -70,6 +70,7 @@ watch(() => gameStore.state.dayCycle, (cycle) => {
 useBodyClass('is-battle-active', () => battleStore.isBattleActive)
 
 const hudRef = ref(null)
+const hudBottomRef = ref(null)
 const innerHudRef = ref(null)
 const hudHeight = ref(85)
 const isHudHidden = ref(false)
@@ -83,11 +84,13 @@ let resizeObserver = null
 
 // Click-outside listener to close HUD menus
 function handleOutsideClick(e) {
-  if (!hudRef.value || !uiStore.openHudGroup) return;
+  if (!uiStore.openHudGroup) return;
+
+  // Check if click is inside EITHER the top HUD or the bottom HUD
+  const isInsideTopHud = hudRef.value?.contains(e.target);
+  const isInsideBottomHud = hudBottomRef.value?.$el ? hudBottomRef.value.$el.contains(e.target) : hudBottomRef.value?.contains?.(e.target);
   
-  // Use contains() on the hudRef to check if click is inside the HUD area
-  const isInsideHud = hudRef.value.contains(e.target);
-  if (!isInsideHud) {
+  if (!isInsideTopHud && !isInsideBottomHud) {
     uiStore.openHudGroup = null
   }
 }
@@ -326,6 +329,7 @@ onUnmounted(() => {
 
   <HUD_Navigation 
     v-if="gs.starterChosen"
+    ref="hudBottomRef"
     class="mobile-only-nav"
     position="bottom" 
   />

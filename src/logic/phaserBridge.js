@@ -66,3 +66,8 @@ class PhaserBridge {
 }
 
 export const phaserBridge = new PhaserBridge();
+
+// Global exposure for debugging
+if (typeof window !== 'undefined') {
+  window.phaserBridge = phaserBridge;
+}

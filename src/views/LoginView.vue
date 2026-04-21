@@ -1,9 +1,12 @@
 <script setup>
 /* global __APP_VERSION__ */
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+
+const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`)
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -262,8 +265,8 @@ const handleLocalLogin = async () => {
   position: fixed !important;
   inset: 0;
   z-index: var(--z-hud);
-  /* Use the copied wallpaper */
-  background: #000 url('/assets/fondo/WALLPAPER.webp') no-repeat center center;
+  /* Use the reactive wallpaperUrl from script */
+  background: #000 v-bind(wallpaperUrl) no-repeat center center;
   background-size: cover;
   display: flex;
   flex-direction: column;

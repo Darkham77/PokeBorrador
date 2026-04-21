@@ -16,6 +16,14 @@ export const phaserConfig = {
   pixelArt: true,    // Sharp pixels for Pokémon aesthetics
   powerPreference: 'high-performance', // Hint for GPU
   
+  fps: {
+    target: 60,
+    min: 30,
+    forceSetTimeOut: true,
+    deltaHistory: 10,
+    smoothStep: true
+  },
+
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,

@@ -63,7 +63,7 @@ Every migration task **MUST** follow these phases. Do not skip any phase.
 
 Legacy code **MUST** be modified during migration to comply with all current project standards. Migrating non-compliant code without updates is **FORBIDDEN**.
 
-- **Modern Patterns**: Replace direct `supabase.from` calls with `DBRouter.from`, implement session uniqueness, and follow cache invalidation rules defined in `@/project-standards`.
+- **Modern Patterns**: Replace direct `supabase.from` calls with `DBRouter.from`, implement session uniqueness, and follow cache invalidation rules.
 - **Database Parity**: Any legacy logic that introduces or modifies data structures **MUST** follow the versioned migration pattern in `database/migrations/`. The **Vite Migration Plugin** will automatically synchronize the local engine. Manual updates are **FORBIDDEN**.
   - **REMOTE SQL VISIBILITY**: Always present the user with the SQL code intended for Supabase to ensure parity.
 - **No Hardcoded Styles**: Use SCSS tokens. If the code is being migrated to a Vue component, implement styles using Vue standards (scoped `<style lang="scss">`, reactive classes `:class`, or computed `:style` for dynamic values). If it's not a component yet, extract all legacy inline styles to modular SCSS partials.
@@ -79,7 +79,6 @@ Legacy code **MUST** be modified during migration to comply with all current pro
   - **CSS Leakage Prevention**: NEVER leave global classes (like `.library-container`) active if they conflict with the new modal shell. Either delete the legacy rules or restrict them to the legacy container ID (e.g., `#library-modal .library-container`).
   - **Audit Legacy Overrides**: During implementation, specifically audit `src/styles/components/_modals.scss` for legacy classes that match your new component. Legacy styles often contain hardcoded `padding` (e.g., `60px`) or `max-width` that will break modern responsive layouts.
   - **Why**: "Hybrid" states where legacy global CSS pollutes modern Vue components create "modal-in-modal" artifacts and broken layouts.
-
 
 ## Logic & Store Hardening
 

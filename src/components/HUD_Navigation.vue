@@ -153,14 +153,14 @@ const toggleGroupMenu = (name) => {
           :class="{ active: activeTab === 'online-market' }"
           @click="handleTabChange('online-market'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🛒</span><span class="label">GLOBAL</span>
+          <span class="icon">🌎</span><span class="label">GLOBAL</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'market' }"
           @click="handleTabChange('market'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🏪</span><span class="label">TIENDA</span>
+          <span class="icon">🛒</span><span class="label">LOCAL</span>
         </button>
         <button
           class="hud-nav-btn"
@@ -203,7 +203,7 @@ const toggleGroupMenu = (name) => {
           :class="{ active: activeTab === 'arena' }"
           @click="handleTabChange('arena'); uiStore.openHudGroup = null"
         >
-          <span class="icon">⚔️</span><span class="label">ARENA</span>
+          <span class="icon">🏟️</span><span class="label">ARENA</span>
         </button>
         <button
           class="hud-nav-btn"
@@ -217,14 +217,14 @@ const toggleGroupMenu = (name) => {
           :class="{ active: activeTab === 'war' }"
           @click="handleTabChange('war'); uiStore.openHudGroup = null"
         >
-          <span class="icon">⚔️</span><span class="label">GUERRA</span>
+          <span class="icon">🚩</span><span class="label">GUERRA</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'events' }"
           @click="handleTabChange('events'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🏆</span><span class="label">EVENTOS</span>
+          <span class="icon">🎁</span><span class="label">EVENTOS</span>
         </button>
       </div>
     </div>
@@ -244,12 +244,7 @@ const toggleGroupMenu = (name) => {
     padding: 0 10px;
     
     // GLASSMORPHISM ENHANCED
-    background: linear-gradient(180deg, 
-      rgba(30, 41, 59, 0.98) 0%, 
-      rgba(15, 23, 42, 0.96) 100%
-    );
-    -webkit-backdrop-filter: blur(35px);
-    backdrop-filter: blur(35px);
+    @include glass-solid(rgba(13, 17, 23, 1));
     
     // MULTI-LAYER REFLECTIONS & CONTRAST
     border-top: 1px solid rgba(255, 255, 255, 0.18);
@@ -279,6 +274,9 @@ const toggleGroupMenu = (name) => {
       gap: 4px;
       min-width: 50px;
     }
+
+    /* CRITICAL: Ensure submenus are NOT clipped */
+    overflow: visible !important;
   }
 }
 
@@ -341,39 +339,59 @@ const toggleGroupMenu = (name) => {
   &.is-open .hud-submenu {
     display: flex;
   }
+
+  /* Ensure the group itself doesn't clip children */
+  overflow: visible !important;
 }
 
 .hud-submenu {
-  display: none;
+  /* Visibility management */
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  
   position: absolute;
   flex-direction: column;
   gap: 6px;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(25px);
+  @include glass-solid(rgba(13, 17, 23, 1));
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 14px;
   padding: 8px;
-  z-index: 100;
+  z-index: var(--z-modal); // Use modal-level z-index
   width: max-content !important;
   min-width: 0 !important;
   align-items: stretch !important;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
   overflow: visible;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.2s, transform 0.2s;
 
-  .hud-group.is-open & { display: flex !important; }
+  .hud-group.is-open & { 
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    display: flex; // Base layout
+  }
 
   .pos-top & { 
     top: calc(100% + 10px); 
+    bottom: auto !important;
     left: 50%; 
-    transform: translateX(-50%); 
-    animation: slideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(-50%) translateY(-10px); 
+  }
+  
+  .hud-group.is-open.pos-top & {
+    transform: translateX(-50%) translateY(0);
   }
   
   .pos-bottom & { 
-    bottom: calc(100% + 10px); 
+    bottom: calc(100% + 15px); 
+    top: auto !important;
     left: 50%; 
-    transform: translateX(-50%); 
-    animation: slideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(-50%) translateY(10px); 
+  }
+
+  .hud-group.is-open.pos-bottom & {
+    transform: translateX(-50%) translateY(0);
   }
 
   .hud-nav-btn {

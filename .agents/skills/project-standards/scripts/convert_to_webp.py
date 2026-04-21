@@ -8,6 +8,12 @@ except ImportError:
     sys.exit(1)
 from pathlib import Path
 
+# Ensure the script can import local dependencies when run from the project root
+import sys
+sys.path.append(str(Path(__file__).parent))
+
+from generate_atlas import generate_atlas
+
 def process_assets(base_dir="_raw-assets"):
     """
     Processes the Zero-Config Asset Pipeline.
@@ -60,7 +66,29 @@ def process_assets(base_dir="_raw-assets"):
         if not source_dir.exists():
             return
 
-        for root, _, files in os.walk(source_dir):
+        for root, dirs, files in os.walk(source_dir):
+            # Check for atlas directories
+            for d in list(dirs):
+                if d.endswith('.atlas'):
+                    atlas_path = Path(root) / d
+                    atlas_name = d.replace('.atlas', '')
+                    
+                    # Destination is mirrored to root
+                    rel_atlas_path = atlas_path.relative_to(source_dir)
+                    dest_atlas_path = Path.cwd() / rel_atlas_path.parent
+                    os.makedirs(dest_atlas_path, exist_ok=True)
+                    
+                    print(f"📦 [ATLAS] Compiling: {rel_atlas_path} -> {dest_atlas_path.relative_to(Path.cwd())}")
+                    
+                    lod_scales = [1.0, 0.5, 0.25] if use_lod else [1.0]
+                    success = generate_atlas(atlas_path, dest_atlas_path, atlas_name, lod_scales=lod_scales)
+                    
+                    if success:
+                        converted_count += len(lod_scales)
+                    
+                    # Remove from walk so we don't process internal files individually
+                    dirs.remove(d)
+
             for file in files:
                 file_path = Path(root) / file
                 
@@ -99,17 +127,26 @@ def process_assets(base_dir="_raw-assets"):
                         sizes_to_generate = [(1.0, f"{base_name}.webp")] # Default @1x
                         
                         if use_lod:
-                            # We always generate these to ensure the AssetResolver can safely predict paths
-                            sizes_to_generate.append((0.5, f"{base_name}@0.5x.webp"))
-                            sizes_to_generate.append((0.25, f"{base_name}@0.25x.webp"))
+                            # Apply Smart Scaling Breakpoints from project-standards:
+                            # < 500px: No LOD (always 100%)
+                            # 500-999px: @1x (100%), @0.5x (50%), @0.25x (now 50% to avoid extreme blur)
+                            # >= 1000px: @1x (100%), @0.5x (50%), @0.25x (25%)
+                            
+                            scale_05 = 0.5 if width >= 500 else 1.0
+                            scale_025 = 0.25 if width >= 1000 else (0.5 if width >= 500 else 1.0)
+                            
+                            sizes_to_generate.append((scale_05, f"{base_name}@0.5x.webp"))
+                            sizes_to_generate.append((scale_025, f"{base_name}@0.25x.webp"))
                         
                         for scale, out_name in sizes_to_generate:
                             out_file = dest_path / out_name
                             if scale == 1.0:
                                 img.save(out_file, 'WEBP', **save_kwargs)
                             else:
-                                new_size = (int(width * scale), int(height * scale))
-                                resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
+                                # Safe Resize: Ensure we don't shrink small images
+                                new_width = max(1, int(width * scale))
+                                new_height = max(1, int(height * scale))
+                                resized_img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
                                 resized_img.save(out_file, 'WEBP', **save_kwargs)
                             
                             print(f"✅ Generated: {out_file.relative_to(Path.cwd())} ({'Lossless' if is_lossless else 'Lossy'})")
@@ -122,7 +159,7 @@ def process_assets(base_dir="_raw-assets"):
     print("🚀 Initiating Zero-Config LOD Asset Pipeline...")
     
     # Clean destinations first to remove stale assets
-    cleanup_managed_folders()
+    # cleanup_managed_folders() 
     
     print("\n--- Processing /lod/ (Dynamic Scaling) ---")
     process_directory(lod_dir, use_lod=True)
@@ -136,17 +173,25 @@ def process_assets(base_dir="_raw-assets"):
     
     report_file = Path.cwd() / "lod_errors_report.txt"
     if errors:
-        print(f"\nError Details (also saved to {report_file.name}):")
+        print("\n" + "!" * 60)
+        print("!!! [CRITICAL_FAILURE] ASSET PIPELINE ENCOUNTERED ERRORS !!!")
+        print(f"!!! [ACTION_REQUIRED] Review {report_file.name} immediately.")
+        print("!" * 60 + "\n")
+        
         with open(report_file, "w", encoding="utf-8") as f:
             f.write("LOD Conversion Errors Report\n")
             f.write("============================\n\n")
             for err in errors:
-                print(f" - {err}")
                 f.write(f"- {err}\n")
+        
+        # Mandatory non-zero exit code for failures
+        sys.exit(1)
     else:
         # Si no hubo errores y el archivo existe de una ejecución anterior, lo limpiamos
         if report_file.exists():
             report_file.unlink()
+        print("\n✨ All assets processed successfully!")
+        sys.exit(0)
 
 if __name__ == "__main__":
     process_assets()

@@ -277,11 +277,10 @@ const isRare = (id) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(0,0,0,0.85);
-  border: 1px solid rgba(255,255,255,0.25);
+  @include glass-solid(rgba(0, 0, 0, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 8px;
   padding: 4px;
-  backdrop-filter: blur(4px);
   z-index: 10;
 }
 
@@ -316,9 +315,8 @@ const isRare = (id) => {
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
   padding: 6px 12px;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255,255,255,0.2);
+  @include glass-solid(rgba(0, 0, 0, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   color: #ffcc00;
   z-index: 10;
@@ -349,7 +347,6 @@ const isRare = (id) => {
   img {
     width: 54px;
     height: 54px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
     image-rendering: pixelated;
     
     &:not(:first-child) { margin-left: -12px; }
@@ -369,8 +366,8 @@ const isRare = (id) => {
 }
 
 @keyframes pulse-red {
-  0%, 100% { filter: drop-shadow(0 0 2px #ff3333) drop-shadow(0 0 5px rgba(255, 51, 51, 0.6)); }
-  50% { filter: drop-shadow(0 0 4px #ff3333) drop-shadow(0 0 10px rgba(255, 51, 51, 0.8)); }
+  0%, 100% { opacity: 1; transform: Scale(1); }
+  50% { opacity: 0.8; transform: Scale(1.1); }
 }
 
 /* Lock Overlay */
@@ -413,10 +410,8 @@ const isRare = (id) => {
   font-size: 9px;
   font-weight: 700;
   color: var(--yellow);
-  background: rgba(0,0,0,0.6);
-  padding: 4px 8px;
+  @include glass-solid(rgba(0, 0, 0, 0.8));
   border-radius: 8px;
-  backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 

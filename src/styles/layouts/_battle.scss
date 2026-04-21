@@ -7,10 +7,7 @@
   width: 100%;
   height: 100%;
   z-index: var(--z-overlay);
-  background: rgba(0, 0, 10, 0.7);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  transform: translateZ(0);
+  background: rgba(0, 0, 10, 0.9);
   display: none !important;
   align-items: center;
   justify-content: center;
@@ -24,6 +21,7 @@
     width: 95%;
     max-width: 800px;
     max-height: 96vh;
+    min-height: 0;
     background: #0a0e14;
     border-radius: 24px;
     padding: 16px;
@@ -32,8 +30,8 @@
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--purple) transparent;
+    // scrollbar-width: none;
+    // scrollbar-color: transparent transparent;
 
     &::-webkit-scrollbar {
       width: 6px;
@@ -51,20 +49,13 @@
       grid-template-columns: 280px 1fr;
       grid-template-rows: 1fr auto;
       grid-template-areas:
-        "arena log"
-        "arena panel";
+        "log arena"
+        "log panel";
       gap: 16px;
       max-width: 1100px;
       height: min(96vh, 850px);
       overflow: hidden;
       align-items: stretch;
-
-      /* Reverse user preference if they want log on left, 
-         but user's image shows log on LEFT in desktop. 
-         Wait, let's stick to user's reference: log on left. */
-      grid-template-areas:
-        "log arena"
-        "log panel";
     }
   }
 }
@@ -108,9 +99,7 @@
 
 /* Glass Cards (HP Boxes) - Proportional scaling */
 .glass-card {
-  background: rgba(15, 23, 42, 0.7);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  @include glass-solid(rgba(15, 23, 42, 0.95));
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 2cqi;
   padding: 2cqi 3cqi;

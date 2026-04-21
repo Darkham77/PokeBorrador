@@ -14,6 +14,7 @@ const containerRef = shallowRef(null);
 
 onMounted(() => {
   // Merge config with the container element
+  if (gameInstance.value) return;
   const config = {
     ...phaserConfig,
     parent: containerRef.value
@@ -66,5 +67,6 @@ defineExpose({
   height: 100% !important;
   object-fit: contain;
   image-rendering: pixelated;
+  /* Removed drop-shadow for performance in large lists */
 }
 </style>

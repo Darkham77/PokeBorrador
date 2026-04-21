@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { ASSET_TYPES } from '@/logic/services/assetService';
+import PhaserAssetService from '../services/PhaserAssetService';
 
 /**
  * BootScene.js
@@ -20,11 +21,10 @@ export default class BootScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // 2. Preload recurring UI/VFX Assets
-    // Note: Once the Texture Atlas is generated, load it here.
-    // this.load.atlas('vfx', 'assets/vfx.webp', 'assets/vfx.json');
+    PhaserAssetService.loadAtlas(this, 'vfx', 'vfx');
     
     // Placeholder for common sprites
-    this.load.image('platform', getAssetUrl(ASSET_TYPES.ITEM, 'pokeball'));
+    PhaserAssetService.loadTexture(this, 'platform', ASSET_TYPES.ITEM, 'pokeball');
   }
 
   create() {
@@ -35,8 +35,9 @@ export default class BootScene extends Phaser.Scene {
     window.legacyGameReady = true; // For race condition guard in App.vue
     
     // Transition to the first actual scene (e.g., WeatherScene or BattleScene when triggered)
-    // For now, we launch the WeatherScene in the background if it exists
-    if (this.scene.manager.getScene('WeatherScene')) {
+    // For now, we launch the WeatherScene in the background if it exists and isn't running
+    const weatherScene = this.scene.manager.getScene('WeatherScene');
+    if (weatherScene && !this.scene.isActive('WeatherScene')) {
       this.scene.launch('WeatherScene');
     }
 
@@ -53,9 +54,8 @@ export default class BootScene extends Phaser.Scene {
     if (this.textures.exists(key)) return key;
 
     return new Promise((resolve) => {
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack });
+      PhaserAssetService.loadPokemon(this, id, isShiny, isBack);
       
-      this.load.image(key, url);
       this.load.once('complete', () => resolve(key));
       this.load.start();
     });

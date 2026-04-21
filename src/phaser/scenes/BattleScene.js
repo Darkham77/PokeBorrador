@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { ASSET_TYPES } from '@/logic/services/assetService';
+import PhaserAssetService from '../services/PhaserAssetService';
 
 /**
  * BattleScene.js
@@ -19,7 +20,7 @@ export default class BattleScene extends Phaser.Scene {
     console.log('[BattleScene] Initialized');
     
     // Background layer
-    this.bg = this.add.image(0, 0, 'ruta_day').setOrigin(0);
+    this.bg = this.add.image(0, 0, 'platform').setOrigin(0); // Temporary placeholder
     
     // Vignette / Post-processing layer
     this.vignette = this.add.graphics();
@@ -63,37 +64,43 @@ export default class BattleScene extends Phaser.Scene {
     const { locationId, cycle, player, enemy } = this.currentBattleData;
 
     // 1. Update Background
-    await this.updateBackground(locationId, cycle);
+    const bgKey = this.getBgKey(locationId, cycle);
+    await this.updateBackground(bgKey);
 
     // 2. Update Sprites
     if (player) await this.updatePokemonSprite('player', player);
     if (enemy) await this.updatePokemonSprite('enemy', enemy);
   }
 
-  async updateBackground(locationId, cycle) {
-    // Ported logic from legacy 08_shop.js
-    const key = this.getBgKey(locationId, cycle);
-    const url = this.getBgUrl(key);
+  async updateBackground(key) {
+    if (!key) return;
 
     if (!this.textures.exists(key)) {
-      this.load.image(key, url);
-      this.load.once('complete', () => {
-        this.bg.setTexture(key);
-        this.rescaleBackground();
+      PhaserAssetService.loadTexture(this, key, ASSET_TYPES.BATTLE_BG, key);
+      
+      return new Promise((resolve) => {
+        this.load.once(`filecomplete-image-${key}`, () => {
+          if (this.bg) {
+            this.bg.setTexture(key);
+            this.rescaleBackground();
+          }
+          resolve();
+        });
+        this.load.start();
       });
-      this.load.start();
     } else {
-      this.bg.setTexture(key);
+      if (this.bg) this.bg.setTexture(key);
       this.rescaleBackground();
     }
   }
 
   async updatePokemonSprite(side, pokemon) {
-    const bootScene = this.scene.get('BootScene');
-    const textureKey = await bootScene.loadPokemonTexture(pokemon.id, pokemon.isShiny, side === 'player');
+    if (!pokemon) return;
+    
+    const isPlayer = side === 'player';
+    const textureKey = await PhaserAssetService.loadPokemonAsync(this, pokemon.id, pokemon.isShiny, isPlayer);
 
     const { width, height } = this.cameras.main;
-    const isPlayer = side === 'player';
     
     let sprite = isPlayer ? this.playerSprite : this.enemySprite;
 
@@ -103,13 +110,15 @@ export default class BattleScene extends Phaser.Scene {
       else this.enemySprite = sprite;
     } else {
       sprite.setTexture(textureKey);
+      sprite.setAlpha(1);
+      sprite.setScale(isPlayer ? 2.5 : 1.8);
     }
 
     // Initial positioning (Portrait/Mobile optimized)
     if (isPlayer) {
-      sprite.setPosition(width * 0.25, height * 0.7).setScale(2.5).setOrigin(0.5, 1);
+      sprite.setPosition(width * 0.25, height * 0.7).setOrigin(0.5, 1);
     } else {
-      sprite.setPosition(width * 0.75, height * 0.35).setScale(1.8).setOrigin(0.5, 1);
+      sprite.setPosition(width * 0.75, height * 0.35).setOrigin(0.5, 1);
     }
 
     // Refresh idle animation (simple float)
@@ -124,17 +133,12 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   getBgKey(locationId, cycle) {
-    // Simplified version of legacy _getBgKey
     const biomeMap = { 
       forest: 'bosque', cave: 'montana', water: 'playa', gym: 'pvp', pvp: 'pvp', power_plant: 'central'
     };
     const biome = biomeMap[locationId] || 'ruta';
     const cycleKey = { morning: 'dawn', day: 'day', dusk: 'dawn', night: 'night' }[cycle] || 'day';
     return `${biome}_${cycleKey}`;
-  }
-
-  getBgUrl(key) {
-    return getAssetUrl(ASSET_TYPES.BATTLE_BG, key);
   }
 
   handleCommand(command, data) {
@@ -175,10 +179,8 @@ export default class BattleScene extends Phaser.Scene {
     const sprite = side === 'player' ? this.playerSprite : this.enemySprite;
     if (!sprite) return;
 
-    // Shake camera
     this.cameras.main.shake(150, 0.015);
 
-    // Sprite flash and tint
     this.tweens.add({
       targets: sprite,
       alpha: 0.3,
@@ -212,27 +214,36 @@ export default class BattleScene extends Phaser.Scene {
     if (!targetSprite) return;
 
     const colors = {
-      fire: 0xff4f00,
-      water: 0x00aaff,
-      grass: 0x4caf50,
-      electric: 0xffeb3b,
-      ice: 0x00ffff,
-      poison: 0xa33ea1,
-      normal: 0xffffff
+      fire: 0xff4f00, water: 0x00aaff, grass: 0x4caf50,
+      electric: 0xffeb3b, ice: 0x00ffff, poison: 0xa33ea1, normal: 0xffffff
     };
 
     const color = colors[type] || colors.normal;
 
-    // Create a simple particle emitter for the move
-    const particles = this.add.particles(0, 0, 'pixel', {
-      speed: { min: 100, max: 200 },
-      scale: { start: 2, end: 0 },
-      alpha: { start: 1, end: 0 },
-      lifespan: 500,
-      tint: color,
-      blendMode: 'ADD',
-      gravityY: 100
-    });
+    // Use the 'vfx' atlas frame 'pixel' if available, fallback to graphics
+    let particles;
+    if (this.textures.exists('vfx')) {
+      particles = this.add.particles(0, 0, 'vfx', {
+        frame: 'pixel',
+        speed: { min: 100, max: 200 },
+        scale: { start: 2, end: 0 },
+        alpha: { start: 1, end: 0 },
+        lifespan: 500,
+        tint: color,
+        blendMode: 'ADD',
+        gravityY: 100
+      });
+    } else {
+      // Emergency fallback if atlas failed to load
+      particles = this.add.particles(0, 0, 'platform', {
+        speed: { min: 50, max: 100 },
+        scale: { start: 0.5, end: 0 },
+        alpha: { start: 1, end: 0 },
+        lifespan: 400,
+        tint: color,
+        blendMode: 'ADD'
+      });
+    }
 
     particles.setPosition(targetSprite.x, targetSprite.y - 40);
     particles.explode(20);

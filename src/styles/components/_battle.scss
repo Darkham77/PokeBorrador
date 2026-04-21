@@ -12,7 +12,8 @@
   inset: 0;
   z-index: var(--z-overlay);
   background: rgba(0, 0, 10, 0.7);
-  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   display: none !important;
   align-items: center;
   justify-content: center;
@@ -35,6 +36,7 @@ body.is-battle-active {
   // Disable background interaction
   #app, .game-view, .stars, #map-container, .bottom-nav {
     pointer-events: none !important;
+    -webkit-user-select: none;
     user-select: none !important;
   }
   
@@ -70,6 +72,7 @@ body:has(#battle-screen.active) {
   flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto;
+  min-height: 0;
   @include smooth-scroll;
   transform-origin: top center;
   margin: 0 auto; // Ensure centering
@@ -159,7 +162,8 @@ body:has(#battle-screen.active) {
   background: rgba(0, 0, 0, 0.45);
   padding: 14px;
   margin-bottom: 12px;
-  height: 100px;
+  flex: 1;
+  min-height: 0; // Standard fix for scroll inheritance
   overflow-y: auto;
   font-size: 11px;
   border: 1px solid rgba(255, 255, 255, 0.08);

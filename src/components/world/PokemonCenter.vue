@@ -148,9 +148,7 @@ function close() {
 .pokemon-center-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -170,8 +168,7 @@ function close() {
 }
 
 .glass {
-  background: rgba(30, 30, 35, 0.7);
-  backdrop-filter: blur(16px);
+  background: rgba(13, 17, 23, 0.98);
 }
 
 .header {

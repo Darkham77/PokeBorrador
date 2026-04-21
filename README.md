@@ -176,7 +176,10 @@ El proyecto usa un sistema de espejado para optimizar imágenes automáticamente
   - `_raw-assets/lod/`: Imágenes que requieren múltiples tamaños (ej. mapas). Genera `@1x`, `@0.5x`, `@0.25x`.
   - `_raw-assets/original/`: Imágenes que solo necesitan conversión a WebP 1:1 (ej. sprites).
 - **Mirroring**: La estructura dentro de `_raw-assets` debe ser idéntica a la del proyecto (ej: `_raw-assets/lod/public/assets/maps/` se volcará en `public/assets/maps/`).
-- **Compilación**: Para procesar nuevas imágenes, pedile a la IA: *"recompila las imágenes"* o *"ejecutá el script de conversión a WebP"*.
+- **Compilación**: Para procesar nuevas imágenes, pedile a la IA: *"recompila las imágenes"*. El script aplicará **Smart Scaling**:
+  - **< 500px**: Mantiene 100% de calidad en todos los niveles (LODs) para evitar que avatares o iconos se vean borrosos.
+  - **> 1000px**: Genera versiones reducidas al 50% y 25% para optimizar carga en móviles.
+- **Atlas de Phaser**: Si creas una carpeta que termine en `.atlas` (ej: `vfx.atlas/`), el script la compilará automáticamente en un Texture Atlas (JSON + WebP) para el motor de juego.
 
 ### 4. ✨ Renderizado: Pixelated vs Smooth
 
@@ -194,3 +197,11 @@ Cuando la IA actualiza una Skill (archivos `.md` en `.agents/skills/`):
 
 - **SIEMPRE LEELA**: A veces la IA tiene la mala costumbre de borrar secciones antiguas o útiles por error al reescribir.
 - **Revisión**: Mirá los cambios (los bloques rojos del diff) antes de confirmar que el cambio es correcto.
+
+### 6. 🔍 Debugging de Texturas (Phaser)
+
+Para verificar qué imágenes están cargadas en el motor de juego:
+
+- **Inspección**: Abrí la consola (`F12`) y escribí `phaserBridge.game.textures.list`.
+- **Atlas**: Para ver qué hay dentro de un atlas: `Object.keys(phaserBridge.game.textures.get('vfx').frames)`.
+- **LOD Check**: Para ver si cargó la versión optimizada: `phaserBridge.game.textures.get('vfx').source[0].image.src`.

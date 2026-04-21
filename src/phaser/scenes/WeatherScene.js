@@ -14,6 +14,8 @@ export default class WeatherScene extends Phaser.Scene {
   }
 
   create() {
+    if (this._isCreated) return;
+    this._isCreated = true;
     console.log('[WeatherScene] Initialized');
     
     // Day/Night Overlay (covers the entire screen with a tint)

@@ -280,12 +280,7 @@ const bannerStyle = computed(() => ({
 
 .pc-banner {
   // GLASSMORPHISM ENHANCED
-  background: linear-gradient(180deg, 
-    rgba(30, 41, 59, 0.85) 0%, 
-    rgba(15, 23, 42, 0.75) 100%
-  );
-  -webkit-backdrop-filter: blur(25px);
-  backdrop-filter: blur(25px);
+  @include glass-solid(rgba(15, 23, 42, 0.95));
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -400,7 +395,7 @@ const bannerStyle = computed(() => ({
       rgba(15, 23, 42, 0.9) 100%
     );
     border-color: rgba(255, 214, 10, 0.4);
-    backdrop-filter: blur(30px);
+    background: rgba(15, 23, 42, 0.95);
     
     .pc-banner-title { color: #ffcc00; opacity: 1; }
     .pc-banner-icon { 

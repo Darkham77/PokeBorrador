@@ -56,19 +56,34 @@ _raw-assets/
 └── original/                      <-- Images here will NOT generate LODs (1:1 size only)
     ├── public/assets/sprites/
     │   └── hero.png               (Outputs 1:1 WebP to public/assets/sprites/)
+    └── src/assets/vfx/
+        └── explosions.atlas/      <-- Folders ending in .atlas will be packed
+            ├── spark_1.png
+            └── spark_2.png        (Outputs explosions.json + explosions.webp)
 ```
 
 #### Smart Dynamic Scaling (LOD Rules)
 
-When processing images in the `lod/` folder, the script applies smart breakpoints based on the original width:
+When processing images in the `lod/` folder, the script applies smart breakpoints based on the original width to preserve pixel-perfect clarity for small assets:
 
-- **< 500px**: No LOD generated (100% size only).
-- **500px to 999px**: Generates `@1x` (100%) and `@0.5x` (50%).
+- **< 500px**: No downscaling. Generates `@1x`, `@0.5x`, and `@0.25x` all at **100% scale** (prevents blurriness in UI/Avatars).
+- **500px to 999px**: Generates `@1x` (100%), `@0.5x` (50%), and `@0.25x` (at 50% to avoid extreme pixel loss).
 - **>= 1000px**: Generates `@1x` (100%), `@0.5x` (50%), and `@0.25x` (25%).
+
+#### Texture Atlas vs. Individual Assets
+
+- **Individual Files**: Any file placed in `_raw-assets/lod/` or `original/` results in individual `.webp` files. Best for **Vue UI Banners**, **Backgrounds**, and **Large Portraits**.
+- **.atlas Folders**: Any folder ending in `.atlas` (e.g., `vfx.atlas/`) will be compiled into a **Texture Atlas** (JSON + WebP). Best for **Phaser FX**, **Animations**, and **Batched Sprites**.
 
 - **Execution**: To process the `_raw-assets/` folder, you **MUST** execute the conversion script (`python3 .agents/skills/project-standards/scripts/convert_to_webp.py`).
 
-### 2. Quality Settings
+### 2. Mandatory Script Error Reporting
+
+All automation scripts (asset pipelines, database migrations, validators) **MUST** implement high-visibility error reporting:
+
+- **REQUIRED**: Any script that encounters a partial or total failure **MUST** return a **non-zero exit code**.
+- **REQUIRED**: The script output **MUST** conclude with a clear summary block if errors occurred, using high-contrast identifiers (e.g., `[CRITICAL_FAILURE]`, `[ACTION_REQUIRED]`).
+- **Why**: Silent failures in long logs are easily missed by AI agents. Explicit error reporting forces immediate attention and prevents broken assets from entering the production build.
 
 - **Pixel Art**: The script uses lossless WebP to preserve pixel-perfect clarity.
 - **Large Assets**: Use lossy WebP (Quality 80) for maximum compression.
@@ -80,6 +95,8 @@ To ensure consistent asset pathing, dynamic source routing (PokeAPI/Showdown), a
 - **MANDATORY**: Use `getAssetUrl(type, id, options)` from `@/logic/services/assetService`.
 - **FORBIDDEN**: Hardcoding `https://...` URLs or manual `new URL('/assets/...')` in components or logic.
 - **LOD Support**: The service automatically integrates with the `assetResolver` to serve reduced-resolution assets (`@0.5x`, `@0.25x`) on mobile or low-end devices.
+- **Reactive Resolution**: The system **MUST** handle viewport resizing reactively. The `AssetResolver` listens to `resize` events to swap assets dynamically without requiring a manual page refresh.
+- **Zero-Fugitive Policy**: NO local images (e.g. background wallpapers, NPC portraits) should be referenced directly via static paths. Always resolve them through the AssetService. In Vue, use `v-bind` in CSS (e.g. `background: v-bind(wallpaperUrl)`) or in templates.
 
 - **Reference**: See [references/asset_service_manual.md](./references/asset_service_manual.md) for usage examples, asset types, and mapping rules.
 
@@ -104,6 +121,7 @@ To avoid performance death by a thousand reactivity "checks":
 - **Store Decoupling**: DO NOT store large Phaser objects (Scenes, GameObjects, Sprites) inside reactive Vue refs or Pinia state.
 - **The Bridge Pattern**: Use an event bus or a non-reactive "Game Instance Router" to pass data from Vue to Phaser.
 - **Shallow Refs**: If you must store the Phaser Game instance in a Vue component, use `shallowRef()`.
+- **Global Debugging Bridge**: To facilitate runtime auditing of textures, memory, and engine state, the `phaserBridge` **MUST** be exposed to the global `window` object in the development environment. Use `window.phaserBridge.game.textures.list` in the console to verify asset loading.
 
 ## Modularization & File Length Standards
 
@@ -184,7 +202,6 @@ To prevent blurriness and maintain the retro heart's integrity, all pixel fonts 
 - **FORBIDDEN**: Relying on default browser antialiasing for game-world text. Blurry typography is considered a violation of the Hybrid Retro-Modern identity.
 - **Text-Shadow Standards**: To maintain sharpness, `text-shadow` for pixel fonts **MUST NOT** use blur radius. Use hard offsets (e.g., `2px 2px 0px rgba(0,0,0,0.5)`).
 - **Audit Mandate**: If a user reports "blurry" or "compacted" UI, first audit for missing `min-height: 0` on flex parents or legacy CSS padding overrides in `_modals.scss`.
-
 
 ### 4. Safari Compatibility (Prefix Mandate)
 

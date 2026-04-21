@@ -73,9 +73,12 @@ export const ASSET_TYPES = {
   BANNER: 'banner',
   BATTLE_BG: 'battle_bg',
   UI: 'ui',
+  VFX: 'vfx',
+  ATLAS: 'atlas',
   FACTION: 'faction',
   RANK: 'rank',
-  ICON: 'icon'
+  ICON: 'icon',
+  DATA: 'data'
 };
 
 /**
@@ -96,8 +99,10 @@ export const getAssetUrl = (type, rawId, options = {}) => {
 
   // Clean ID: strip extensions if present (e.g., 'item.png' -> 'item')
   const id = typeof rawId === 'string' 
-    ? rawId.replace(/\.(png|webp|jpg|jpeg|gif|bmp)$/i, '') 
+    ? rawId.replace(/\.(png|webp|jpg|jpeg|gif|bmp|json)$/i, '') 
     : rawId;
+
+  const extension = (typeof rawId === 'string' && rawId.endsWith('.json')) ? '.json' : '.webp';
 
   switch (type) {
     case ASSET_TYPES.POKEMON: {
@@ -110,7 +115,7 @@ export const getAssetUrl = (type, rawId, options = {}) => {
     }
 
     case ASSET_TYPES.MAP: {
-      const mapPath = `/assets/maps/${id}.webp`;
+      const mapPath = `/assets/maps/${id}${extension}`;
       return resolveAsset(mapPath, true);
     }
 
@@ -128,26 +133,31 @@ export const getAssetUrl = (type, rawId, options = {}) => {
       if (id.startsWith('http')) return id;
       
       // Local assets
-      return resolveAsset(`/assets/sprites/trainers/${id}.webp`, true);
+      return resolveAsset(`/assets/sprites/trainers/${id}${extension}`, true);
     }
 
     case ASSET_TYPES.BANNER:
-      return resolveAsset(`/assets/ui/banners/${id}.webp`, true);
+      return resolveAsset(`/assets/ui/banners/${id}${extension}`, true);
 
     case ASSET_TYPES.BATTLE_BG:
-      return resolveAsset(`/assets/sprites/battle/${id}.webp`, true);
+      return resolveAsset(`/assets/sprites/battle/${id}${extension}`, true);
 
     case ASSET_TYPES.UI:
-      return resolveAsset(`/assets/ui/${id}.webp`, true);
+    case ASSET_TYPES.VFX:
+    case ASSET_TYPES.ATLAS:
+      return resolveAsset(`/assets/ui/${id}${extension}`, true);
 
     case ASSET_TYPES.FACTION:
-      return resolveAsset(`/assets/factions/${id}.webp`, true);
+      return resolveAsset(`/assets/factions/${id}${extension}`, true);
 
     case ASSET_TYPES.RANK:
-      return resolveAsset(`/assets/ui/ranks/${id}.webp`, true);
+      return resolveAsset(`/assets/ui/ranks/${id}${extension}`, true);
 
     case ASSET_TYPES.ICON:
-      return resolveAsset(`/assets/ui/icons/${id}.webp`, true);
+      return resolveAsset(`/assets/ui/icons/${id}${extension}`, true);
+
+    case ASSET_TYPES.DATA:
+      return resolveAsset(`/assets/data/${id}.json`, true);
 
     case ASSET_TYPES.ITEM: {
       const idStr = String(id).toLowerCase();
@@ -169,7 +179,7 @@ export const getAssetUrl = (type, rawId, options = {}) => {
       }
       
       // Local fallback
-      return resolveAsset(`/assets/items/${idStr}.png`, true);
+      return resolveAsset(`/assets/items/${idStr}${extension}`, true);
     }
 
     default:

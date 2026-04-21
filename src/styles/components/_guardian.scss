@@ -26,7 +26,8 @@
   border-radius: 8px !important;
   padding: 4px !important;
   border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
-  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(20px) !important;
   width: auto !important;
   height: auto !important;
   box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;

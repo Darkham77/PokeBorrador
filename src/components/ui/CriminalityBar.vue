@@ -55,6 +55,18 @@ const isMax = computed(() => criminality.value >= 100)
   align-items: center;
   z-index: 100;
   pointer-events: none;
+  padding: 15px 10px;
+}
+
+/* Simplified 'Black Neon' shadow for legibility */
+.criminality-container::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  background: #000000;
+  filter: blur(10px);
+  border-radius: 40px;
+  z-index: -1;
 }
 
 .label {
@@ -70,7 +82,7 @@ const isMax = computed(() => criminality.value >= 100)
 .bar-bg {
   width: 12px;
   height: 200px;
-  background: rgba(0, 0, 0, 0.6);
+  background: #000;
   border: 2px solid #333;
   border-radius: 10px;
   display: flex;

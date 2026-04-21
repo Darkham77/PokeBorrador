@@ -58,29 +58,30 @@ onMounted(async () => {
     gameStore.isEngineReady = true;
   }
 
-  // Interceptar eventos de bajo nivel para evitar que lleguen a Phaser
-  const blockEvents = (e) => {
-    if (uiStore.isAnyBlockingModalOpen) {
-      // Si el evento no viene de dentro de un elemento con scroll permitido, pararlo
-      const isInsideScrollable = e.target.closest('.library-content, .library-sidebar, .modal-scrollable-content, .chat-panel, .chat-messages, .profile-content-scrollable, .error-overlay, .error-card, .error-stack')
-      
-      if (!isInsideScrollable) {
-        console.log('[App] Blocking event on:', e.target.className || e.target.id)
-        e.preventDefault();
-        e.stopImmediatePropagation();
-      } else {
-        // Si estamos dentro, detenemos la propagación para que no llegue a window (donde escucha Phaser)
-        e.stopPropagation();
-      }
-    }
-  }
-
-  useWindowListener('wheel', blockEvents, { capture: true, passive: false }); // [PureVue-Ignore]
-  useWindowListener('touchmove', blockEvents, { capture: true, passive: false }); // [PureVue-Ignore]
-
   // 4. Restore Zoom Level
   uiStore.setZoom(uiStore.appZoom)
 })
+
+// Intercept low-level events to prevent them from reaching Phaser when modals are open
+const blockEvents = (e) => {
+  if (uiStore.isAnyBlockingModalOpen) {
+    // If the event doesn't come from inside an element with allowed scroll, stop it
+    const isInsideScrollable = e.target.closest('.library-content, .library-sidebar, .modal-scrollable-content, .chat-panel, .chat-messages, .profile-content-scrollable, .error-overlay, .error-card, .error-stack')
+    
+    if (!isInsideScrollable) {
+      console.log('[App] Blocking event on:', e.target.className || e.target.id)
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    } else {
+      // If we are inside, stop propagation so it doesn't reach window (where Phaser listens)
+      e.stopPropagation();
+    }
+  }
+}
+
+// Managed Window Listeners (Safe Lifecycle)
+useWindowListener('wheel', blockEvents, { capture: true, passive: false }); // [PureVue-Ignore]
+useWindowListener('touchmove', blockEvents, { capture: true, passive: false }); // [PureVue-Ignore]
 
 // Bloqueo de Scroll Global para Modales (Pure Vue Managed)
 useBodyClass('modal-open', () => uiStore.isAnyBlockingModalOpen)

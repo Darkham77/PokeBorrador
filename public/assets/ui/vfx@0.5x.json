@@ -1,0 +1,55 @@
+{
+  "frames": {
+    "bugcatcher": {
+      "frame": {
+        "x": 1,
+        "y": 1,
+        "w": 80,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 80,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 80,
+        "h": 80
+      }
+    },
+    "pixel": {
+      "frame": {
+        "x": 43,
+        "y": 1,
+        "w": 2,
+        "h": 2
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 2,
+        "h": 2
+      },
+      "sourceSize": {
+        "w": 2,
+        "h": 2
+      }
+    }
+  },
+  "meta": {
+    "app": "Pok\u00e9Vicio Atlas Gen",
+    "version": "1.0",
+    "image": "vfx@0.5x.webp",
+    "format": "RGBA8888",
+    "size": {
+      "w": 45,
+      "h": 42
+    },
+    "scale": "0.5"
+  }
+}

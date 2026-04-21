@@ -208,8 +208,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 }
 
 .chat-toggle-btn {
-  background: rgba(13, 17, 23, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(13, 17, 23, 0.98);
   border: 1px solid rgba(199, 125, 255, 0.3);
   border-radius: 12px;
   padding: 10px 16px;
@@ -248,8 +247,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 .chat-panel {
   width: 100%;
   height: 100%;
-  background: rgba(13, 17, 23, 0.94);
-  backdrop-filter: blur(12px);
+  background: rgba(13, 17, 23, 0.98);
   display: flex;
   flex-direction: column;
 }
