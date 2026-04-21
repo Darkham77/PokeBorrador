@@ -156,7 +156,7 @@ if (typeof window !== 'undefined') {
       &:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4);
-        filter: brightness(1.1);
+        filter: Brightness(1.1);
       }
 
       &:disabled {

@@ -218,6 +218,7 @@ onMounted(() => {
 .messages-container {
   height: 300px;
   overflow-y: auto;
+  min-height: 0;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -309,17 +310,14 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0% { transform: string.unquote("Scale(1.0)"); opacity: 0.8; }
-  50% { transform: string.unquote("Scale(1.3)"); opacity: 1; }
-  100% { transform: string.unquote("Scale(1.0)"); opacity: 0.8; }
+  0% { transform: Scale(1.0); opacity: 0.8; }
+  50% { transform: Scale(1.3); opacity: 1; }
+  100% { transform: Scale(1.0); opacity: 0.8; }
 }
 
 @keyframes pop {
-  0% { transform: string.unquote("Scale(0.8)"); opacity: 0; }
-  100% { transform: string.unquote("Scale(1.0)"); opacity: 1; }
+  0% { transform: Scale(0.8); opacity: 0; }
+  100% { transform: Scale(1.0); opacity: 1; }
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 3px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
 </style>

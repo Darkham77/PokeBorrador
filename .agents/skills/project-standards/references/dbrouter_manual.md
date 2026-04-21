@@ -73,6 +73,11 @@ It is **strictly forbidden** for a local session to read data from the cloud or 
     const { data } = await DBRouter.from('inventory').select('*');
     ```
 
+### Modular Import Mandate
+
+* **REQUIRED**: All database interactions **MUST** use modular imports from `@/logic/db/dbRouter`.
+* **FORBIDDEN**: Accessing the database via `window.DBRouter`. This is part of the final Vue 3 migration to eliminate global namespace pollution.
+
 ---
 
 ## 📖 Quick Usage Guide

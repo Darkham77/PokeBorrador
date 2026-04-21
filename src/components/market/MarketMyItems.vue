@@ -179,6 +179,7 @@ async function handleCancel(id) {
   border-radius: 16px;
   max-height: 250px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .history-row {
@@ -216,6 +217,4 @@ async function handleCancel(id) {
   border: 1px dashed rgba(255, 255, 255, 0.05);
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

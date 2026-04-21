@@ -152,6 +152,7 @@ const onPokemonClick = (index) => {
 .grid-wrapper {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding-right: 8px;
 }
 
@@ -226,8 +227,4 @@ const onPokemonClick = (index) => {
 }
 
 /* Custom Scrollbar */
-.scroll-custom::-webkit-scrollbar { width: 6px; }
-.scroll-custom::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
-.scroll-custom::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-.scroll-custom::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 </style>

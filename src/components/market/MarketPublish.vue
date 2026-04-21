@@ -372,6 +372,4 @@ const net = computed(() => price.value - fee.value)
 }
 
 .empty-list { text-align: center; padding: 40px; color: #64748b; font-size: 12px; }
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

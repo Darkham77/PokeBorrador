@@ -260,6 +260,7 @@ const getSprite = (id, shiny) => {
 .pokemon-grid {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 10px 20px;
   display: flex;
   flex-direction: column;

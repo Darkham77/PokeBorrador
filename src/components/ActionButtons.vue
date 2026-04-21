@@ -41,7 +41,7 @@ const uiStore = useUIStore()
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   &:hover {
     transform: Scale(1.08) translateY(-2px);
-    filter: brightness(1.15);
+    filter: Brightness(1.15);
   }
   &:active {
     transform: Scale(0.95);

@@ -388,7 +388,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
   
   &.active {
     opacity: 1;
-    filter: brightness(1.2);
+    filter: Brightness(1.2);
     box-shadow: 0 0 8px currentColor;
   }
 }

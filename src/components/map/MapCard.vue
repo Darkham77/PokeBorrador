@@ -209,7 +209,7 @@ const isRare = (id) => {
     background: inherit;
     background-size: 110%;
     background-position: center;
-    filter: brightness(0.7);
+    filter: Brightness(0.7);
     transition: transform 0.6s ease;
     z-index: 0;
     @include smooth;
@@ -220,7 +220,7 @@ const isRare = (id) => {
     box-shadow: 0 15px 35px rgba(0,0,0,0.6);
     border-color: var(--yellow) !important;
 
-    &::before { transform: Scale(1.1); filter: brightness(0.9); }
+    &::before { transform: Scale(1.1); filter: Brightness(0.9); }
   }
 
   &.locked, &.safari-locked {
@@ -228,11 +228,11 @@ const isRare = (id) => {
     opacity: 1 !important;
 
     &::before { 
-      filter: string.unquote("grayscale(1)") brightness(0.4) !important; 
+      filter: Grayscale(1) Brightness(0.4) !important; 
     }
     
     .location-header, .location-spawns, .guardian-status-badge, .faction-dominance {
-      filter: string.unquote("grayscale(1)") brightness(0.6);
+      filter: Grayscale(1) Brightness(0.6);
       opacity: 0.4;
     }
   }
@@ -292,7 +292,10 @@ const isRare = (id) => {
   filter: drop-shadow(0 0 5px rgba(255,255,255,0.3));
   image-rendering: pixelated;
 
-  &.captured { filter: string.unquote("grayscale(1)") opacity(0.5); }
+  &.captured { 
+    filter: Grayscale(1); 
+    opacity: 0.5; 
+  }
 }
 
 .guardian-label {

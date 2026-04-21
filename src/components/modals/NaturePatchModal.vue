@@ -85,6 +85,7 @@ const close = () => {
   gap: 10px;
   max-height: 400px;
   overflow-y: auto;
+  min-height: 0;
   padding-right: 8px;
 
   .nature-btn {
@@ -113,7 +114,4 @@ const close = () => {
   }
 }
 
-.scrollbar::-webkit-scrollbar { width: 4px; }
-.scrollbar::-webkit-scrollbar-track { background: transparent; }
-.scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

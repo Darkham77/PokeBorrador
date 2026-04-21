@@ -84,6 +84,7 @@ priority: CRITICAL
 | Deep nesting | Guard clauses |
 | Magic numbers | Named constants |
 | God functions | Split by responsibility |
+| Empty rulesets | Remove blocks containing only comments |
 
 ---
 

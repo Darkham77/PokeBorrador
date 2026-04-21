@@ -348,6 +348,7 @@ const select = (poke) => {
 .pokemon-list {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -480,7 +481,4 @@ const select = (poke) => {
 }
 .animate-slide-up { animation: slideUp 0.3s ease-out; }
 
-.scrollbar::-webkit-scrollbar { width: 4px; }
-.scrollbar::-webkit-scrollbar-track { background: transparent; }
-.scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 </style>

@@ -16,11 +16,31 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 - `filter: Invert(100%);`
 - `filter: Grayscale(0.8);`
 - `filter: Opacity(0.5);`
+- `filter: Brightness(1.2);`
+
+### 2. Preference: Capitalization vs. Unquote/Interpolation
+
+To bypass SASS color function collisions, we strictly follow a hierarchy of methods.
+
+- **PRIMARY (Mandatory)**: **Capitalization**. Case-insensitive in CSS, but case-sensitive in SASS. This is the cleanest method.
+  - ✅ `filter: Grayscale(1);`
+  - ❌ `filter: grayscale(1);` (Collision)
+  - ❌ `filter: string.unquote("grayscale(1)");` (Bloated)
+- **SECONDARY**: **Interpolation** `#{}`. Use ONLY for complex dynamic values.
+  - ✅ `transform: Scale(#{$factor});`
+- **FORBIDDEN**: **string.unquote()** for standard filters. It violates the "Zero-Warning" architecture and makes the code harder to read.
+
+### 3. GPU Optimization: Opacity property vs. filter
+
+- **REQUIRED**: Always use the `opacity: X` property instead of `filter: Opacity(X)`.
+- **Reasoning**: The property is hardware-accelerated and significantly more efficient for mobile GPUs than the filter function. It also avoids SASS deprecation warnings entirely.
+  - ✅ `opacity: 0.5;`
+  - ❌ `filter: Opacity(0.5);` (Inefficient)
 
 > [!IMPORTANT]
 > **VUE COMPONENT RULE**: Interpolation `#{}` only works inside `<style lang="scss">`. If you apply this fix to a `.vue` file, you **MUST** ensure the style block has the `lang="scss"` attribute.
 
-### 2. Modern Built-ins (math, string)
+### 4. Modern Built-ins (math, string)
 
 Global built-in functions are deprecated in Dart Sass 2.0+ and will be removed in 3.0.0. Using them generates loud build warnings.
 
@@ -28,6 +48,7 @@ Global built-in functions are deprecated in Dart Sass 2.0+ and will be removed i
 - **REQUIRED**:
   - Always add `@use "sass:math";` or `@use "sass:string";` at the top of the style block.
   - Use `math.random(...)`, `string.unquote(...)`, etc.
+  - **Note**: Only use `string.unquote` for non-standard strings. For CSS filters, use **Capitalization** instead.
 
 **Example:**
 

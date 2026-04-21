@@ -324,6 +324,7 @@ const getTrainerSprite = (id) => {
   flex-direction: column;
   gap: 40px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .details-section {
@@ -435,7 +436,7 @@ const getTrainerSprite = (id) => {
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
     @include pixelated;
-    &:hover { transform: translateY(-4px); box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); filter: brightness(1.1); }
+    &:hover { transform: translateY(-4px); box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); filter: Brightness(1.1); }
   }
 
   .action-footer {
@@ -493,7 +494,7 @@ const getTrainerSprite = (id) => {
         font-weight: bold;
       }
 
-      &:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); }
+      &:hover { transform: translateY(-3px); filter: Brightness(1.1); box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); }
     }
   }
 }
@@ -504,7 +505,4 @@ const getTrainerSprite = (id) => {
   100% { transform: Scale(1); opacity: 0.1; }
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 </style>

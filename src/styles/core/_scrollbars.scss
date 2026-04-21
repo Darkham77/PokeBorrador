@@ -1,0 +1,26 @@
+/* GLOBAL RETRO-MODERN SCROLLBARS */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      background-clip: padding-box;
+    }
+  }
+}

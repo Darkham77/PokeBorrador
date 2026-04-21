@@ -178,6 +178,7 @@ const onUseItem = (name) => {
   max-width: 800px;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   gap: 20px;
 }
 
@@ -389,6 +390,4 @@ const onUseItem = (name) => {
 }
 
 .scroll-hide::-webkit-scrollbar { display: none; }
-.scroll-custom::-webkit-scrollbar { width: 6px; }
-.scroll-custom::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

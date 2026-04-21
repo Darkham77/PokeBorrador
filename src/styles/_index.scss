@@ -10,6 +10,7 @@
 // Reset + Base (genera CSS global mínimo)
 @use 'core/reset';
 @use 'core/base';
+@use 'core/scrollbars';
 
 // Tokens
 @use 'tokens/colors';

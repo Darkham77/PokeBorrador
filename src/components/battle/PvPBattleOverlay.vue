@@ -309,9 +309,9 @@ const handleMoveSelection = (moveIdx) => {
 }
 
 @keyframes pulse {
-  0% { transform: string.unquote("translateX(-50%) Scale(1)"); }
-  50% { transform: string.unquote("translateX(-50%) Scale(1.1)"); }
-  100% { transform: string.unquote("translateX(-50%) Scale(1)"); }
+  0% { transform: translateX(-50%) Scale(1); }
+  50% { transform: translateX(-50%) Scale(1.1); }
+  100% { transform: translateX(-50%) Scale(1); }
 }
 
 @keyframes spin {

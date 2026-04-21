@@ -236,8 +236,8 @@ onMounted(() => {
 }
 
 @keyframes pulse-ball {
-  from { transform: Scale(1); filter: brightness(1); }
-  to { transform: Scale(1.2); filter: brightness(1.4) drop-shadow(0 0 10px #ff4444); }
+  from { transform: Scale(1); filter: Brightness(1); }
+  to { transform: Scale(1.2); filter: Brightness(1.4) drop-shadow(0 0 10px #ff4444); }
 }
 
 .progress-container {
@@ -328,7 +328,7 @@ onMounted(() => {
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
-    filter: brightness(1.1);
+    filter: Brightness(1.1);
   }
   
   &:disabled {

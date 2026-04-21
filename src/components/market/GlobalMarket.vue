@@ -249,6 +249,7 @@ async function refresh() {
      .explorer-wrap {
        flex: 1;
        overflow-y: auto;
+       min-height: 0;
      }
   }
 }
@@ -268,7 +269,7 @@ async function refresh() {
     border-radius: 30px;
     border: 1px solid rgba(255, 255, 255, 0.08);
 
-    .icon { font-size: 64px; margin-bottom: 20px; display: block; filter: grayScale(100%) Opacity(0.3); }
+    .icon { font-size: 64px; margin-bottom: 20px; display: block; filter: Grayscale(100%); opacity: 0.3; }
     h2 { font-family: 'Press Start 2P', monospace; font-size: 14px; color: #fff; margin-bottom: 20px; }
     p { font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 30px; }
     
@@ -285,9 +286,6 @@ async function refresh() {
 }
 
 .scrollable {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-  &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+  /* Global scrollbars apply via .custom-scrollbar */
 }
 </style>

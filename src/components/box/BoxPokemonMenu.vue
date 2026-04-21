@@ -350,6 +350,7 @@ const handleToggleTag = (tag) => {
 .menu-body {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -441,7 +442,4 @@ const handleToggleTag = (tag) => {
   }
 }
 
-.scrollbar::-webkit-scrollbar { width: 4px; }
-.scrollbar::-webkit-scrollbar-track { background: transparent; }
-.scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

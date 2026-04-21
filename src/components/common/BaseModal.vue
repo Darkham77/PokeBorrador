@@ -204,9 +204,7 @@ watch(() => props.show, (val) => {
   background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
 
-  &.padding-raw {
-    // We keep the shell styles but let children reach the edges
-  }
+
   
   &.type-center {
     top: 50%;
@@ -322,6 +320,7 @@ watch(() => props.show, (val) => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  min-height: 0;
   position: relative;
   
   &.padding-standard { padding: 32px; }
@@ -334,10 +333,6 @@ watch(() => props.show, (val) => {
 
 .no-padding { padding: 0 !important; }
 .no-scroll { overflow-y: hidden !important; }
-
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 
 /* Body lock */
 body.modal-open {

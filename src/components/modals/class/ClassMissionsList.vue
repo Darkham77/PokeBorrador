@@ -127,6 +127,7 @@ function getMissionDesc(mId, clsId) {
 .missions-content {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding-right: 12px;
 }
 
@@ -155,7 +156,7 @@ function getMissionDesc(mId, clsId) {
     padding: 14px 24px; background: #22c55e; color: #fff; border: none; border-radius: 12px;
     font-family: 'Press Start 2P', cursive; font-size: 10px; cursor: pointer;
     box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
-    &:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    &:hover { transform: translateY(-2px); filter: Brightness(1.1); }
   }
 }
 
@@ -199,7 +200,4 @@ function getMissionDesc(mId, clsId) {
   &.locked { opacity: 0.5; }
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 </style>

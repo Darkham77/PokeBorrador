@@ -106,7 +106,7 @@ if (typeof window !== 'undefined') {
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-    filter: brightness(1.1);
+    filter: Brightness(1.1);
   }
 
   &:active {

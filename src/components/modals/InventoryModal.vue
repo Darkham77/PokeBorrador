@@ -422,6 +422,7 @@ const handleItemClick = (item) => {
   flex: 1;
   padding: 16px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .item-grid {
@@ -512,7 +513,4 @@ const handleItemClick = (item) => {
   }
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 </style>

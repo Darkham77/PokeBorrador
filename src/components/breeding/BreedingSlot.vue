@@ -247,7 +247,8 @@ const genderSymbol = (g) => {
     text-align: center;
     .empty-icon {
       font-size: 40px;
-      filter: grayScale(100%) Opacity(0.2);
+      filter: Grayscale(100%);
+  opacity: 0.2;
       margin-bottom: 12px;
     }
     .empty-text {

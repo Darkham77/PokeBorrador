@@ -69,6 +69,7 @@ onMounted(async () => {
   background: #0d1117;
   height: 100%;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .gyms-header-legacy {
@@ -135,9 +136,9 @@ onMounted(async () => {
   font-size: 20px;
   transition: all 0.3s;
   &.beaten {
-    filter: string.unquote("grayScale(100%)");
+    filter: Grayscale(100%);
     opacity: 0.6;
-    &:hover { filter: string.unquote("grayScale(100%)"); opacity: 1; }
+    &:hover { filter: Grayscale(100%); opacity: 1; }
   }
 
   &.active {
@@ -146,7 +147,7 @@ onMounted(async () => {
     background: rgba(255, 215, 0, 0.1);
     border-color: #ffd700;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-    transform: string.unquote("Scale(1.1)");
+    transform: Scale(1.1);
   }
 }
 
@@ -157,6 +158,4 @@ onMounted(async () => {
   padding-bottom: 60px;
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

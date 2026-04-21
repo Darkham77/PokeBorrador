@@ -168,6 +168,7 @@ const handleConfirm = () => {
 .picker-body {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 15px;
 }
 
@@ -250,11 +251,8 @@ const handleConfirm = () => {
     font-weight: 700;
     cursor: pointer;
     &:disabled { opacity: 0.5; cursor: not-allowed; }
-    &:hover:not(:disabled) { filter: brightness(1.1); }
+    &:hover:not(:disabled) { filter: Brightness(1.1); }
   }
 }
 
-.scrollbar::-webkit-scrollbar { width: 4px; }
-.scrollbar::-webkit-scrollbar-track { background: transparent; }
-.scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 </style>

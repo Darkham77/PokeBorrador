@@ -195,19 +195,7 @@ const reloadGame = () => {
   padding: 24px;
   color: #eaeaea;
   overflow-y: auto;
-  
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  &::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 0 0 20px 0;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: var(--red);
-    border-radius: 10px;
-    border: 2px solid #1a1a2e;
-  }
+  min-height: 0;
 }
 
 .error-intro {
@@ -337,7 +325,7 @@ const reloadGame = () => {
 
 .error-btn:hover {
   transform: translateY(-2px);
-  filter: brightness(1.2);
+  filter: Brightness(1.2);
 }
 
 @media (max-width: 480px) {

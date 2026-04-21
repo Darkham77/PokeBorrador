@@ -249,6 +249,7 @@ const buy = (item) => {
 .items-grid {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 20px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -394,8 +395,4 @@ const buy = (item) => {
   font-size: 14px;
 }
 
-/* Animations */
-.scrollbar::-webkit-scrollbar { width: 4px; }
-.scrollbar::-webkit-scrollbar-track { background: transparent; }
-.scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 </style>

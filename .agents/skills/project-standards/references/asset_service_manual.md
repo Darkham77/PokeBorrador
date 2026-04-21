@@ -73,8 +73,45 @@ const url = `/assets/maps/${id}.webp`;
 const url = getAssetUrl(ASSET_TYPES.MAP, id);
 ```
 
-### 3. Adding New Assets
+### 3. Adding New Assets: The Zero-Config Pipeline
 
-1. Place raw files in `_raw-assets/lod/` (for scaling) or `_raw-assets/original/` (1:1).
-2. Run the conversion pipeline: `python .agents/skills/project-standards/scripts/convert_to_webp.py`.
-3. If it's a new category, add it to `ASSET_TYPES` in `assetService.js`.
+To ensure minimal data transfer and optimal load times, all visual assets must be optimized via the **Zero-Config Asset Pipeline**.
+
+#### Mandatory Formats
+
+- **MANDATORY**: All final images used in the project (`src/assets/`, `public/assets/`) **MUST** be in **WebP** format.
+- **FORBIDDEN**: Storing raw `.png`, `.jpg`, or `.jpeg` files in the final destination directories.
+- **EXCEPTION**: Data fetched dynamically from PokeAPI **MUST** use **PNG** format.
+
+#### Folder Mirroring Architecture
+
+To process raw images, place them in the root `_raw-assets/` directory:
+
+```text
+_raw-assets/
+├── lod/                           <-- Generates multi-size LODs (@1x, @0.5x, @0.25x)
+│   ├── public/assets/maps/        <-- Mirrors the exact destination in the project
+│   └── src/assets/ui/
+└── original/                      <-- Generates 1:1 size only (No LODs)
+    ├── public/assets/sprites/
+    └── src/assets/vfx/
+        └── explosions.atlas/      <-- Folders ending in .atlas will be packed
+```
+
+#### Smart Dynamic Scaling (LOD Rules)
+
+The pipeline applies smart breakpoints to preserve pixel-perfect clarity:
+
+- **< 500px**: No downscaling. Generates all LODs at **100% scale** (prevents blurriness).
+- **500px to 999px**: Generates `@1x` (100%), `@0.5x` (50%), and `@0.25x` (50%).
+- **>= 1000px**: Generates `@1x` (100%), `@0.5x` (50%), and `@0.25x` (25%).
+
+#### Texture Atlas Mandate
+
+- **Individual Files**: Use for Vue UI Banners, Backgrounds, and Large Portraits.
+- **.atlas Folders**: Any folder ending in `.atlas` (e.g., `vfx.atlas/`) will be compiled into a **Texture Atlas** (JSON + WebP). Best for **Phaser FX**, **Animations**, and **Batched Sprites**.
+
+#### Execution
+
+To process the `_raw-assets/` folder, execute:
+`python3 .agents/skills/project-standards/scripts/convert_to_webp.py`

@@ -235,6 +235,7 @@ onMounted(() => {
 .modal-body {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 20px;
 }
 
@@ -247,7 +248,4 @@ onMounted(() => {
   to { transform: translateY(0); opacity: 1; }
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 5px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

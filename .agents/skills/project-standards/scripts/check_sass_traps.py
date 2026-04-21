@@ -18,14 +18,21 @@ except ImportError:
     import sys
     sys.exit(1)
 
-# Regex to find transform: scale(x) without interpolation #{x}
-SCALE_TRAP_REGEX = re.compile(r'(?<![a-zA-Z-])(?:scale|grayscale|invert|opacity)\((?!\#\{)([\d\.\%]+)\)')
+# Regex to find lowercase filter/transform functions that collide with SASS built-ins
+# We specifically look for lowercase versions. Capitalized versions (Scale, Grayscale) are SAFE.
+# We exclude names prefixed by a dot (e.g., color.scale) to avoid false positives with built-in modules.
+FILTER_COLLISION_REGEX = re.compile(r'(?<![a-zA-Z-\.\$])(?:scale|grayscale|invert|opacity|brightness)\(')
+
+# Regex to find filter: ... opacity() which is inefficient compared to opacity: property
+OPACITY_FILTER_PROPERTY_REGEX = re.compile(r'filter:.*(?:opacity|Opacity)\(')
+
+# Regex to find string.unquote() being used for filters (bloated pattern)
+UNQUOTE_FILTER_REGEX = re.compile(r'string\.unquote\(["\'].*(?:scale|grayscale|invert|opacity|brightness).*["\']\)', re.I)
+
 SCSS_INTERPOLATION_REGEX = re.compile(r'\#\{')
 LANG_SCSS_REGEX = re.compile(r'<style[^>]*lang=["\']scss["\'][^>]*>')
 
 # Regex to find deprecated global functions (not prefixed by math. or string.)
-# We look for the function name preceded by whitespace, parenthesis, or start of line, 
-# and NOT preceded by "math." or "string."
 DEPRECATED_FUNCTIONS = {
     'random': 'math.random',
     'unquote': 'string.unquote',
@@ -50,11 +57,22 @@ def check_file(filepath):
         is_sass_context = filepath.endswith('.scss') or has_lang_scss
         
         for i, line in enumerate(lines, 1):
-            # Only check for naked scale() if we are in SASS
-            if is_sass_context and SCALE_TRAP_REGEX.search(line):
-                errors.append(f"L{i}: Naked scale() detected in SASS context: {line.strip()}")
+            if not is_sass_context:
+                continue
+
+            # 1. Lowercase collision check
+            if FILTER_COLLISION_REGEX.search(line):
+                errors.append(f"L{i}: Lowercase filter/transform collision detected: {line.strip()}. Use Capitalization (e.g., Grayscale(1)) instead.")
             
-            # Check for deprecated global functions (ALWAYS forbidden in this project)
+            # 2. Unquote misuse check
+            if UNQUOTE_FILTER_REGEX.search(line):
+                errors.append(f"L{i}: Bloated string.unquote() used for filter: {line.strip()}. Use Capitalization instead.")
+
+            # 3. Opacity optimization check
+            if OPACITY_FILTER_PROPERTY_REGEX.search(line):
+                errors.append(f"L{i}: Inefficient filter: opacity() detected: {line.strip()}. Use 'opacity: X' property instead for GPU efficiency.")
+            
+            # 4. Check for deprecated global functions
             for func, replacement in DEPRECATED_FUNCTIONS.items():
                 pattern = rf'(?<![\w\.])({func})\('
                 if re.search(pattern, line):

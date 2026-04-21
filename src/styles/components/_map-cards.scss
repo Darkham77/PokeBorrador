@@ -57,12 +57,12 @@
   
     &.locked, &.safari-locked {
     opacity: 0.6;
-      filter: Grayscale(100%) brightness(0.4);
+      filter: Grayscale(100%) Brightness(0.4);
       opacity: 0.7;
     }
     
     &.unlocked {
-      filter: brightness(0.2) Grayscale(100%) !important; 
+      filter: Brightness(0.2) Grayscale(100%) !important; 
       transform: none !important;
     }
 

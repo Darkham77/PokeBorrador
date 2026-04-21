@@ -379,7 +379,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover:not(:disabled) { background: #9d4edd; transform: string.unquote("Scale(1.05)"); }
+    &:hover:not(:disabled) { background: #9d4edd; transform: Scale(1.05); }
     &:disabled { opacity: 0.3; }
   }
 
@@ -400,8 +400,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 }
 
 @keyframes pop {
-  0% { transform: string.unquote("Scale(0.9)"); opacity: 0; }
-  100% { transform: string.unquote("Scale(1.0)"); opacity: 1; }
+  0% { transform: Scale(0.9); opacity: 0; }
+  100% { transform: Scale(1.0); opacity: 1; }
 }
 
 </style>

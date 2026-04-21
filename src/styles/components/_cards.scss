@@ -41,7 +41,7 @@
 
   &.locked {
     opacity: 0.6;
-    filter: string.unquote("grayScale(100%)");
+    filter: Grayscale(100%);
     cursor: not-allowed;
   }
 }

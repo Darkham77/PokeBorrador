@@ -172,13 +172,13 @@ const close = () => {
   &.flashing {
     background: #fff;
     opacity: 0.5;
-    transform: string.unquote("Scale(1.5)");
+    transform: Scale(1.5);
   }
   
   &.transformed, &.final {
     background: var(--yellow, #fbbf24);
     opacity: 0.6;
-    transform: string.unquote("Scale(1.5)");
+    transform: Scale(1.5);
     box-shadow: 0 0 60px rgba(251, 191, 36, 0.4);
   }
 }
@@ -195,7 +195,7 @@ const close = () => {
     transition: filter 0.1s;
     
     &.flash-on {
-      filter: Brightness(10) Contrast(10) grayScale(100%);
+      filter: Brightness(10) Contrast(10) Grayscale(100%);
     }
   }
   
@@ -275,8 +275,8 @@ const close = () => {
 }
 
 @keyframes bounceIn {
-  from { transform: string.unquote("Scale(0)"); opacity: 0; }
-  to { transform: string.unquote("Scale(1.0)"); opacity: 1; }
+  from { transform: Scale(0); opacity: 0; }
+  to { transform: Scale(1.0); opacity: 1; }
 }
 
 @keyframes fadeIn {
@@ -285,8 +285,8 @@ const close = () => {
 }
 
 @keyframes float {
-  0% { transform: translateY(0) string.unquote("Scale(1.0)"); opacity: 0; }
+  0% { transform: translateY(0) Scale(1.0); opacity: 0; }
   50% { opacity: 0.8; }
-  100% { transform: translateY(-40px) string.unquote("Scale(0)"); opacity: 0; }
+  100% { transform: translateY(-40px) Scale(0); opacity: 0; }
 }
 </style>

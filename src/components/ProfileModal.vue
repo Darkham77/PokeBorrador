@@ -240,6 +240,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   padding: 0 24px 40px;
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -435,7 +436,4 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   }
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 </style>

@@ -70,7 +70,8 @@
 }
 
 .guardian-mini-sprite.captured {
-  filter: string.unquote("grayScale(100%) Opacity(0.8)") !important;
+  filter: Grayscale(100%) !important;
+  opacity: 0.8 !important;
 }
 
 /* DISABLE THE OLD LARGE ICON COMPLETELY - NUCLEAR OPTION (Literal 72) */

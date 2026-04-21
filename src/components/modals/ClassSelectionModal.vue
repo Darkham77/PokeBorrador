@@ -295,7 +295,7 @@ const getTrainerSprite = (id) => {
 
   &:hover:not(:disabled) {
     transform: translateY(-2px) Scale(1.02);
-    filter: brightness(1.1);
+    filter: Brightness(1.1);
     box-shadow: 0 15px 30px -5px var(--cls-color);
   }
 

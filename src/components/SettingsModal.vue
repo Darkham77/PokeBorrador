@@ -126,7 +126,7 @@ const updateZoom = (val) => {
 
   &:hover {
     transform: translateY(-2px);
-    filter: brightness(1.05);
+    filter: Brightness(1.05);
     box-shadow: 0 10px 20px rgba(250, 204, 21, 0.2);
   }
 

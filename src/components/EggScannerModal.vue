@@ -274,7 +274,14 @@ const _getSprite = (id, shiny) => {
 
 .guide-text { font-size: 11px; color: var(--gray); margin-bottom: 20px; text-align: center; }
 
-.egg-list { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; }
+.egg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  min-height: 0;
+}
 
 .egg-item {
   background: rgba(255,255,255,0.04);

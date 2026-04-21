@@ -164,6 +164,7 @@ const openParticipationModal = (event) => {
   background: #0d1117;
   color: #fff;
   overflow-y: auto;
+  min-height: 0;
 }
 
 /* 1:1 LEGACY COMPONENT STYLES */
@@ -348,6 +349,4 @@ const openParticipationModal = (event) => {
   font-style: italic;
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

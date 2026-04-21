@@ -172,6 +172,7 @@ const openDetail = (p) => {
   padding: 32px;
   background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
   overflow-y: auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -456,7 +457,8 @@ const openDetail = (p) => {
       filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
       
       &.silhouette {
-        filter: brightness(0) Opacity(0.15);
+        filter: Brightness(0);
+    opacity: 0.15;
       }
     }
 
@@ -516,16 +518,5 @@ const openDetail = (p) => {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.custom-scrollbar {
-  &::-webkit-scrollbar { width: 10px; }
-  &::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-    border: 3px solid transparent;
-    background-clip: padding-box;
-    &:hover { background: rgba(255, 255, 255, 0.1); background-clip: padding-box; }
-  }
-}
 </style>
 

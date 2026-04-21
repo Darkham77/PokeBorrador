@@ -100,7 +100,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
-    filter: brightness(1.1);
+    filter: Brightness(1.1);
   }
 
   &:disabled {

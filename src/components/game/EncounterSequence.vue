@@ -168,7 +168,7 @@ const handleFishingStart = () => {
 
   &:hover {
     transform: translateY(-2px);
-    filter: brightness(1.1);
+    filter: Brightness(1.1);
   }
 }
 

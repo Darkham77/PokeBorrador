@@ -165,21 +165,9 @@ onMounted(() => {
 .tab-content {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 15px 20px;
   background: rgba(0,0,0,0.1);
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.02);
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-  &:hover {
-    background: rgba(255,255,255,0.2);
-  }
-}
 </style>

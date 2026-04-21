@@ -269,7 +269,7 @@ const cancelSearch = () => {
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-    filter: brightness(1.1);
+    filter: Brightness(1.1);
   }
 }
 

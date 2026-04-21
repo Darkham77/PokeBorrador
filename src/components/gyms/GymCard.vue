@@ -139,7 +139,7 @@ const leaderSpriteUrl = computed(() => {
   }
 
   &.locked {
-    filter: string.unquote("grayScale(100%)");
+    filter: Grayscale(100%);
     opacity: 0.6;
   }
 
@@ -302,6 +302,6 @@ const leaderSpriteUrl = computed(() => {
   cursor: pointer;
   transition: all 0.2s;
 
-  &:hover { transform: string.unquote("Scale(1.05)"); }
+  &:hover { transform: Scale(1.05); }
 }
 </style>

@@ -132,6 +132,7 @@ function getSprite(pokemon) {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
   overflow-y: auto;
+  min-height: 0;
   padding-right: 8px;
 }
 
@@ -304,6 +305,4 @@ function getSprite(pokemon) {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 </style>

@@ -209,6 +209,7 @@ const forecast = computed(() => {
     margin-bottom: 8px;
     background: linear-gradient(to right, #8b5cf6, #3b82f6);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   

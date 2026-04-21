@@ -109,7 +109,7 @@ defineEmits(['click'])
   .item-info {
     flex: 1;
     .item-name { font-weight: 800; font-size: 15px; color: #f1f5f9; margin-bottom: 4px; }
-    .item-desc { font-size: 11px; color: #64748b; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .item-desc { font-size: 11px; color: #64748b; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   }
 
   .selection-indicator {
