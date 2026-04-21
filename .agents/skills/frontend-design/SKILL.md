@@ -170,6 +170,7 @@ All spacing and sizing in multiples of 8:
 
   - **Safari/iOS/Edge**: Always include `image-rendering: -webkit-optimize-contrast;` before `pixelated` to prevent blurry scaling.
   - **Typography**: Always pair `font-smooth: never;` with `-webkit-font-smoothing: none;` and `-moz-osx-font-smoothing: grayscale;` to ensure pixel fonts snap to the grid on all OSs.
+- **SASS Function Collisions (Workaround)**: When using CSS transforms in `.vue` files or SCSS, always CAPITALIZE the functions (e.g., `transform: Scale(1.1)`, `filter: Grayscale(1)`) to prevent SASS from trying to evaluate them as its internal color/math functions. Lowercase functions with unitless numbers (e.g., `scale(1.2)`) cause build failures like `$color is not a color`.
 
 ## 3.1 Asynchronous Interaction Feedback
 

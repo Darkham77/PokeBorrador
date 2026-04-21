@@ -26,11 +26,13 @@ To maintain 60FPS on mobile devices, we follow strict rendering rules. Global "d
 - **FORBIDDEN**: Loading individual sprite images (e.g., `scene.load.image('ball', '...')`) for frequently used entities.
 - **REQUIRED**: All game assets (UI, NPCs, FX) **MUST** be packed into **Texture Atlases** (using TexturePacker or similar).
 - **Reasoning**: This allows Phaser to batch draw calls into a single operation, drastically reducing GPU overhead.
+- **FPS Capping**: Always cap Phaser at **60 FPS** in `phaser/config.js` with `forceSetTimeOut: true` to prevent CPU spikes and thermal throttling on high-refresh monitors.
 
 ### 2. Culling & Batching
 
 - **Auto-Culling**: Surfaces or objects outside the camera view **MUST** have their `active` and `visible` properties set to `false` or be managed by Phaser's internal culling.
 - **Layering**: Group sprites by texture atlas in the scene rendering order to maximize batching efficiency.
+- **Filter Cumulative Cost**: Avoid using expensive CSS filters like `backdrop-filter` or `drop-shadow` inside large loops (e.g., map grid icons). Use opacity transitions or pre-rendered assets instead.
 
 ## Assets & Optimization Standards
 
@@ -211,9 +213,9 @@ To prevent blurriness and maintain the retro heart's integrity, all pixel fonts 
 
 To ensure a cohesive and high-end feel across all HUD elements, follow these specific slate-blue glassmorphism tokens:
 
-- **HUD Headers/Containers**: `rgba(15, 23, 42, 0.92)` with `backdrop-filter: blur(25px)`. This provides a deep, readable base for status information.
-- **HUD Buttons & Sub-elements**: `rgba(15, 23, 42, 0.7)` with `backdrop-filter: blur(12px)`. This creates a lighter "stacked" effect that feels interactive.
-- **Borders**: Always use a subtle `1px solid rgba(255, 255, 255, 0.12)` to define the glass edges without being harsh.
+- **HUD Headers/Containers**: Use `@include glass-solid(rgba(13, 17, 23, 1))`. This ensures a solid, readable base that remains distinguishable from the game world without the performance cost of real-time blur.
+- **HUD Buttons & Sub-elements**: Use `@include glass-solid(rgba(13, 17, 23, 0.9))`.
+- **Borders**: Always use a subtle `1px solid rgba(255, 255, 255, 0.15)` to define edges and maintain the premium aesthetic.
 
 ### 6. Readability Standards for Articles & Documents
 
