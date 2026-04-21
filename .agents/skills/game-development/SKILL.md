@@ -75,7 +75,7 @@ RENDER → Draw the frame (interpolated)
 | **ECS** | Thousands of similar entities | RTS units, particles |
 | **Command** | Undo, replay, networking | Input recording |
 | **Behavior Tree** | Complex AI decisions | Enemy AI |
-| **Singleton Scene**| Prevent double-mount | Weather, Global FX |
+| **Singleton Scene** | Prevent double-mount | Weather, Global FX |
 
 **Decision Rule:** Start with State Machine. Add ECS only when performance demands. Use internal flags (e.g., `_isCreated`) and `scene.isActive` checks to prevent redundant scene initialization.
 

@@ -166,6 +166,7 @@ All spacing and sizing in multiples of 8:
 - **`position: fixed` Conflicts**: Applying a `transform` (e.g., via GPU acceleration mixins like `translate3d(0,0,0)`) to an ancestor element creates a new containing block. This completely breaks `position: fixed` for all descendants, causing them to scroll with the document instead of staying pinned to the viewport.
 - **Absolute Inset for Scrolling**: If nested flex height inheritance fails or feels flaky, use a wrapper with `position: absolute; inset: 0` inside a relative parent. This forces the child to fill the container exactly and triggers `overflow: auto` reliably across all browsers.
 - **Card Header Offsets**: For absolute-positioned headers in cards/modals, use a standard `top: 15px` to `20px` offset. Placing headers at `0-10px` often causes visual clipping against container borders or overlap with corner badges/tags.
+- **Explicit Pseudo-element Smoothing**: When using pseudo-elements (`::before`/`::after`) for backgrounds (especially with `background: inherit`), ALWAYS apply the `smooth` mixin directly to the pseudo-element. Browser inheritance for `image-rendering` can be inconsistent with inherited backgrounds, leading to unwanted pixelation.
 - **Cross-Browser Sharpness (Prefix Mandate)**: To maintain the "Hybrid Retro-Modern" sharpness across all engines:
 
   - **Safari/iOS/Edge**: Always include `image-rendering: -webkit-optimize-contrast;` before `pixelated` to prevent blurry scaling.
