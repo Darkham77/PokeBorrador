@@ -47,7 +47,7 @@ describe('AssetService & Resolver (LOD System)', () => {
 
     it('debe usar fallback local para ítems no mapeados o custom', () => {
       expect(getAssetUrl(ASSET_TYPES.ITEM, 'medalla_roca'))
-        .toBe('/assets/items/medalla_roca.png')
+        .toBe('/assets/items/medalla_roca.webp')
     })
   })
 
@@ -60,6 +60,7 @@ describe('AssetService & Resolver (LOD System)', () => {
     it('debe usar activos locales con LOD para otros entrenadores', () => {
       // Forzamos resolución móvil para ver el LOD en acción
       vi.stubGlobal('innerWidth', 400)
+      window.dispatchEvent(new Event('resize'))
       expect(getAssetUrl(ASSET_TYPES.TRAINER, 'hero'))
         .toBe('/assets/sprites/trainers/hero@0.25x.webp')
     })
@@ -68,27 +69,32 @@ describe('AssetService & Resolver (LOD System)', () => {
   describe('AssetResolver: LOD Logic', () => {
     it('debe devolver sufijo @0.25x en móviles (< 600px)', () => {
       vi.stubGlobal('innerWidth', 599)
+      window.dispatchEvent(new Event('resize'))
       expect(resolver.getResolutionSuffix()).toBe('@0.25x')
     })
 
     it('debe devolver sufijo @0.5x en tablets (600px - 1023px)', () => {
       vi.stubGlobal('innerWidth', 800)
+      window.dispatchEvent(new Event('resize'))
       expect(resolver.getResolutionSuffix()).toBe('@0.5x')
     })
 
     it('no debe devolver sufijo en pantallas grandes (>= 1024px)', () => {
       vi.stubGlobal('innerWidth', 1024)
+      window.dispatchEvent(new Event('resize'))
       expect(resolver.getResolutionSuffix()).toBe('')
     })
 
     it('no debe duplicar el sufijo si ya existe en la URL', () => {
       vi.stubGlobal('innerWidth', 400)
+      window.dispatchEvent(new Event('resize'))
       const url = '/assets/maps/city@0.5x.webp'
       expect(resolver.resolveAsset(url)).toBe(url)
     })
 
     it('no debe procesar archivos que no sean WebP', () => {
       vi.stubGlobal('innerWidth', 400)
+      window.dispatchEvent(new Event('resize'))
       const url = '/assets/items/potion.png'
       expect(resolver.resolveAsset(url)).toBe(url)
     })

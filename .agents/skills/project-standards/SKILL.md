@@ -211,10 +211,11 @@ To prevent blurriness and maintain the retro heart's integrity, all pixel fonts 
 
 ### 5. Premium HUD Glassmorphism Standards
 
-To ensure a cohesive and high-end feel across all HUD elements, follow these specific slate-blue glassmorphism tokens:
+To ensure a cohesive and high-end feel across all HUD elements, follow these specific navy-blue glassmorphism tokens (the "original" premium look):
 
-- **HUD Headers/Containers**: Use `@include glass-solid(rgba(13, 17, 23, 1))`. This ensures a solid, readable base that remains distinguishable from the game world without the performance cost of real-time blur.
-- **HUD Buttons & Sub-elements**: Use `@include glass-solid(rgba(13, 17, 23, 0.9))`.
+- **HUD Headers/Containers (Main Bars)**: Use `@include glass-solid(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%))`. This provides a premium bluish navy gradient that distinguishes the UI from the dark world content.
+- **HUD Buttons, Submenus & Pills**: Use the same navy-blue gradient for consistency across the top and bottom UI shells.
+- **Visual Parity**: HUD elements **MUST** share the same design tokens (gradients/colors) as Modals and Profile panels to maintain a unified UI identity.
 - **Borders**: Always use a subtle `1px solid rgba(255, 255, 255, 0.15)` to define edges and maintain the premium aesthetic.
 
 ### 6. Readability Standards for Articles & Documents

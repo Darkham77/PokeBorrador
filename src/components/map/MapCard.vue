@@ -200,6 +200,7 @@ const isRare = (id) => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  @include smooth;
 
   &::before {
     content: '';
@@ -211,6 +212,7 @@ const isRare = (id) => {
     filter: brightness(0.7);
     transition: transform 0.6s ease;
     z-index: 0;
+    @include smooth;
   }
 
   &:hover {

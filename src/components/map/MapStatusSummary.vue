@@ -205,6 +205,8 @@ const bannerStyle = computed(() => ({
     background-position: center 20%;
     z-index: 0;
     border-radius: 16px; // Ajustado para curva interna (20px - 4px)
+    @include pixelated;
+    image-rendering: pixelated;
   }
 
 

@@ -57,7 +57,7 @@ priority: CRITICAL
 | **Flat > Nested** | Avoid deep nesting (max 2 levels) |
 | **Composition** | Small functions composed together |
 | **Colocation** | Keep related code close |
-| **Mixin Integrity**| Verify smoothing mixins don't carry legacy pixelated rules |
+| **Mixin Integrity** | Verify smoothing mixins don't carry legacy pixelated rules |
 
 ---
 
