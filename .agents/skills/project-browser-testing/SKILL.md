@@ -102,3 +102,11 @@ If you encounter an unexpected behavior, a "roadblock," or a UI state that does 
 2. **DIAGNOSE**: Immediately check the `npm run dev` server logs (using `command_status`) AND the browser console logs.
 3. **REPAIR FIRST**: If the server or browser reports ANY error or warning (even if it seems minor), you **MUST** prioritize fixing it before proceeding.
 4. **NO WASTED TIME**: Continuing to test on a broken or warning-heavy environment is a waste of time. Fix the foundation first.
+
+## 7. Debug Menu State Simulation
+
+When testing complex conditional UI (like route badges or level-locked maps), do not rely solely on natural progression. Use the **Local Debug Panel** (🛠️ button) to simulate states:
+
+- **Badges**: Use the 'Medallas' input to rapidly unlock routes with different requirements.
+- **Dominance**: Use the 'Global Dominance' buttons (Poder/Unión/Neutral) to force territory control. This is the only reliable way to verify faction-specific banners and sprites across all map cards in a single view.
+- **Verification**: After a simulation toggle, verify that the UI reacts reactively without needing a page refresh.

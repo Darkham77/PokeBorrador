@@ -172,6 +172,10 @@ All spacing and sizing in multiples of 8:
   - **Safari/iOS/Edge**: Always include `image-rendering: -webkit-optimize-contrast;` before `pixelated` to prevent blurry scaling.
   - **Typography**: Always pair `font-smooth: never;` with `-webkit-font-smoothing: none;` and `-moz-osx-font-smoothing: grayscale;` to ensure pixel fonts snap to the grid on all OSs.
 - **SASS Function Collisions (Workaround)**: When using CSS transforms in `.vue` files or SCSS, always CAPITALIZE the functions (e.g., `transform: Scale(1.1)`, `filter: Grayscale(1)`) to prevent SASS from trying to evaluate them as its internal color/math functions. Lowercase functions with unitless numbers (e.g., `scale(1.2)`) cause build failures like `$color is not a color`.
+- **Smooth Gradient Transitions**: To transition between gradient intensities (e.g., subtle to dark on hover), use a separate pseudo-element (`::after`) for the gradient and transition its `opacity`. Transitioning `background-image` directly is not supported and will result in a "jump".
+- **Background Fitting (1:1 Logic)**: For reliable "adjusted to smallest size" (1:1 aspect) fitting without tiling, use `background-size: cover` combined with `background-repeat: no-repeat` and `background-position: center`. Avoid hardcoded large percentages like `175%` which are prone to tiling on large containers.
+- **Interactive Component Offsets**: Interactive elements in cards (like spawns or badges) may need significant vertical offsets (e.g., `bottom: 35px`) to ensure they remain accessible and visible after applying overlays or zoom effects to the container.
+- **Right-Aligned Overlapping Stacks**: When using `justify-content: flex-end` for a list of overlapping sprites (e.g., Pokémon spawns), apply negative margins via `margin-right: -12px` to the elements. This ensures that the natural DOM order correctly stacks elements from right-to-left, which is more intuitive for right-aligned grids.
 
 ## 3.1 Asynchronous Interaction Feedback
 

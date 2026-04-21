@@ -47,8 +47,8 @@ Refer to these manuals for complex implementation specifications:
 
 ### 1. Filter Collision (Dart Sass 2.0)
 
-- **MANDATORY**: Use **Capitalization** (e.g., `Grayscale(1)`, `Brightness(1.1)`) for all CSS filters.
-- **FORBIDDEN**: Lowercase filters with unitless numbers; they collide with SASS color functions.
+- **MANDATORY**: Use **Capitalization** (e.g., `Grayscale(1)`, `Brightness(1.1)`, `Scale(1.2)`) for all CSS filters and transform functions.
+- **FORBIDDEN**: Lowercase filters/transforms with unitless numbers; they collide with SASS color functions.
 - **GPU Tip**: Prefer `opacity: X` property over `filter: Opacity(X)`.
 
 ### 2. SASS Math & Strings
@@ -61,6 +61,7 @@ Refer to these manuals for complex implementation specifications:
 ## 🛰️ Realtime & Offline Simulation
 
 ### 1. Offline Event Emulation
+
 - **REQUIRED**: In `offline` mode, features that normally rely on Realtime listeners (e.g., Chat, Battle events) MUST manually update the local store state after a successful DB operation to simulate the missing server broadcast.
 - **Fail-Safe**: Do not block features in offline mode unless they are strictly non-functional without a network.
 

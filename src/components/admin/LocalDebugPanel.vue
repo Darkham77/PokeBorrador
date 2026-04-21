@@ -4,12 +4,14 @@ import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { usePvPStore } from '@/stores/pvp'
 import { useUIStore } from '@/stores/ui'
+import { useMapStore } from '@/stores/map'
 import { SHOP_ITEMS } from '@/data/items'
 
 const auth = useAuthStore()
 const game = useGameStore()
 const pvp = usePvPStore()
 const ui = useUIStore()
+const mapStore = useMapStore()
 
 // Guard de Seguridad solicitado por el usuario
 const canAccess = computed(() => {
@@ -24,6 +26,7 @@ const selectedCategory = ref('stats')
 const debugMoney = ref(10000)
 const debugElo = ref(1500)
 const debugLevel = ref(50)
+const debugBadges = ref(0)
 
 // Item search
 const searchQuery = ref('')
@@ -63,6 +66,23 @@ function setLevel() {
 function unlockPokedex() {
   // Logic to fill pokedex_entries for all pokemon up to Gen 3
   ui.notify('Debug: Pokedex desbloqueado (simulado)', '📖')
+}
+
+function setBadges() {
+  game.state.badges = debugBadges.value
+  ui.notify(`Debug: Medallas fijadas en ${debugBadges.value}`, '🎖️')
+  game.saveGame(false)
+}
+
+function forceDominance(faction) {
+  const winnerMap = {}
+  if (faction !== 'none') {
+    mapStore.maps.forEach(m => {
+      winnerMap[m.id] = { winner_faction: faction }
+    })
+  }
+  mapStore.mapWinners = winnerMap
+  ui.notify(`Debug: Dominio global fijado en ${faction === 'none' ? 'NEUTRAL' : faction.toUpperCase()}`, '🚩')
 }
 </script>
 
@@ -159,6 +179,45 @@ function unlockPokedex() {
                 >
                 <button @click="setLevel">
                   FIJAR
+                </button>
+              </div>
+            </div>
+
+            <div class="debug-card">
+              <label>Medallas</label>
+              <div class="input-group">
+                <input
+                  v-model="debugBadges"
+                  type="number"
+                  min="0"
+                  max="8"
+                >
+                <button @click="setBadges">
+                  FIJAR
+                </button>
+              </div>
+            </div>
+
+            <div class="debug-card">
+              <label>Dominio Global (Simulación)</label>
+              <div class="button-row">
+                <button 
+                  class="faction-btn power" 
+                  @click="forceDominance('poder')"
+                >
+                  PODER
+                </button>
+                <button 
+                  class="faction-btn union" 
+                  @click="forceDominance('union')"
+                >
+                  UNIÓN
+                </button>
+                <button 
+                  class="faction-btn neutral" 
+                  @click="forceDominance('none')"
+                >
+                  NEUTRAL
                 </button>
               </div>
             </div>
@@ -437,6 +496,30 @@ function unlockPokedex() {
   padding: 40px 20px;
   color: #555;
   font-size: 10px;
+}
+
+.button-row {
+  display: flex;
+  gap: 5px;
+}
+
+.faction-btn {
+  flex: 1;
+  padding: 8px;
+  font-size: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+}
+
+.faction-btn.power { background: rgba(239, 68, 68, 0.4); border-color: #ef4444; }
+.faction-btn.union { background: rgba(59, 130, 246, 0.4); border-color: #3b82f6; }
+.faction-btn.neutral { background: rgba(107, 114, 128, 0.4); border-color: #6b7280; }
+
+.faction-btn:hover {
+  filter: brightness(1.2);
 }
 
 .slide-up-enter-active, .slide-up-leave-active {

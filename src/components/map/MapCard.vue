@@ -142,20 +142,21 @@ const isRare = (id) => {
       class="fishing-rod"
     >🎣</span>
 
-    <!-- 7. Spawns (Bottom) -->
+    <!-- 7. Spawns (2-ROW GRID RESTORATION) -->
     <div
       v-if="!isLocked"
       class="location-spawns"
     >
-      <div class="spawn-row">
+      <div class="spawn-row generic-spawns">
         <img
           v-for="id in spawnPool.generic"
-          :key="id"
+          :key="'gen-' + id"
           :src="getPokemonSprite(id)"
           :class="['pixelated', { 'rare-spawn': isRare(id) }]"
-          loading="lazy"
+          :title="id"
         >
       </div>
+
       <div
         v-if="spawnPool.specific.length > 0"
         class="spawn-row cycle-specific-spawns"
@@ -163,10 +164,10 @@ const isRare = (id) => {
         <span class="cycle-emoji-label">{{ cycleEmoji }}</span>
         <img
           v-for="id in spawnPool.specific"
-          :key="id"
+          :key="'spec-' + id"
           :src="getPokemonSprite(id)"
           :class="['pixelated', { 'rare-spawn': isRare(id) }]"
-          loading="lazy"
+          :title="id"
         >
       </div>
     </div>
@@ -188,9 +189,10 @@ const isRare = (id) => {
 .map-card {
   position: relative;
   height: 220px;
-  background-image: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.8) 100%), var(--bg-image);
+  background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   border-radius: 20px;
   border: 2px solid #888 !important;
   padding: 15px;
@@ -207,12 +209,27 @@ const isRare = (id) => {
     position: absolute;
     inset: -1px;
     background: inherit;
-    background-size: 110%;
+    background-size: cover;
     background-position: center;
-    filter: Brightness(0.7);
-    transition: transform 0.6s ease;
+    background-repeat: no-repeat;
+    filter: Brightness(0.8);
+    transition: transform 0.6s ease, filter 0.3s ease;
     z-index: 0;
     @include smooth;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, 
+      rgba(0, 0, 0, 0.85) 0%, 
+      rgba(0, 0, 0, 0.2) 50%, 
+      rgba(0, 0, 0, 0.8) 100%
+    );
+    opacity: 0.35;
+    transition: opacity 0.3s ease;
+    z-index: 1;
   }
 
   &:hover {
@@ -220,7 +237,14 @@ const isRare = (id) => {
     box-shadow: 0 15px 35px rgba(0,0,0,0.6);
     border-color: var(--yellow) !important;
 
-    &::before { transform: Scale(1.1); filter: Brightness(0.9); }
+    &::before { 
+      transform: Scale(1.08); 
+      filter: Brightness(1.0); 
+    }
+
+    &::after {
+      opacity: 1;
+    }
   }
 
   &.locked, &.safari-locked {
@@ -329,50 +353,66 @@ const isRare = (id) => {
 
 .tag-locked { color: #ff6e6e; border-color: rgba(255, 110, 110, 0.3); }
 
-/* Spawns (Bottom) */
+/* Spawns (2-ROW GRID RESTORATION) */
 .location-spawns {
   position: absolute;
-  bottom: 10px;
-  left: 15px;
-  right: 15px;
+  bottom: 35px;
+  left: 12px;
+  right: 12px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
+  z-index: 10;
   pointer-events: none;
 }
 
 .spawn-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 2px;
   justify-content: flex-end;
   width: 100%;
+  align-items: center;
 
   img {
-    width: 54px;
-    height: 54px;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
     image-rendering: pixelated;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     
-    &:not(:first-child) { margin-left: -12px; }
+    &:not(:last-child) { margin-right: -12px; }
+
+    &.rare-spawn {
+      filter: drop-shadow(0 0 2px #ff3333) drop-shadow(0 0 6px rgba(255, 51, 51, 0.8));
+      animation: pulse-red-neon 2s infinite ease-in-out;
+    }
   }
 }
 
 .cycle-specific-spawns {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
   margin-top: 4px;
   padding-top: 4px;
-  border-top: 1px solid rgba(255,255,255,0.15);
 }
 
-.cycle-emoji-label { font-size: 14px; margin-right: 6px; align-self: center; }
-
-.rare-spawn {
-  animation: pulse-red 2s infinite ease-in-out;
+.cycle-emoji-label {
+  font-size: 14px;
+  margin-right: 4px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
-@keyframes pulse-red {
-  0%, 100% { opacity: 1; transform: Scale(1); }
-  50% { opacity: 0.8; transform: Scale(1.1); }
+@keyframes pulse-red-neon {
+  0%, 100% { 
+    filter: drop-shadow(0 0 2px #ff3333) drop-shadow(0 0 5px rgba(255, 51, 51, 0.6)); 
+    transform: Scale(1); 
+  }
+  50% { 
+    filter: drop-shadow(0 0 4px #ff3333) drop-shadow(0 0 10px rgba(255, 51, 51, 0.9)); 
+    transform: Scale(1.1); 
+  }
 }
 
 /* Lock Overlay */
@@ -418,6 +458,10 @@ const isRare = (id) => {
   @include glass-solid(rgba(0, 0, 0, 0.8));
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .faction-dominance {

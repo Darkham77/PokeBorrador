@@ -16,11 +16,11 @@ allowed-tools: Read, Glob, Grep
 
 | File | Description | When to Read |
 | :--- | :--- | :--- |
-| `context-discovery.md` | Questions to ask, project classification | Starting architecture design |
-| `trade-off-analysis.md` | ADR templates, trade-off framework | Documenting decisions |
-| `pattern-selection.md` | Decision trees, anti-patterns | Choosing patterns |
-| `examples.md` | MVP, SaaS, Enterprise examples | Reference implementations |
-| `patterns-reference.md` | Quick lookup for patterns | Pattern comparison |
+| `references/context-discovery.md` | Questions to ask, project classification | Starting architecture design |
+| `references/trade-off-analysis.md` | ADR templates, trade-off framework | Documenting decisions |
+| `references/pattern-selection.md` | Decision trees, anti-patterns | Choosing patterns |
+| `references/examples.md` | MVP, SaaS, Enterprise examples | Reference implementations |
+| `references/patterns-reference.md` | Quick lookup for patterns | Pattern comparison |
 
 ---
 
