@@ -519,7 +519,7 @@ function forceDominance(faction) {
 .faction-btn.neutral { background: rgba(107, 114, 128, 0.4); border-color: #6b7280; }
 
 .faction-btn:hover {
-  filter: brightness(1.2);
+  filter: Brightness(1.2);
 }
 
 .slide-up-enter-active, .slide-up-leave-active {

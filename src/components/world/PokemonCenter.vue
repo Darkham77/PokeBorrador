@@ -255,8 +255,8 @@ h2 {
 }
 
 @keyframes pulse {
-  from { transform: Scale(1); filter: brightness(1); }
-  to { transform: Scale(1.2); filter: brightness(1.5) drop-shadow(0 0 5px #ff5555); }
+  from { transform: Scale(1); filter: Brightness(1); }
+  to { transform: Scale(1.2); filter: Brightness(1.5) drop-shadow(0 0 5px #ff5555); }
 }
 
 .progress-container {
