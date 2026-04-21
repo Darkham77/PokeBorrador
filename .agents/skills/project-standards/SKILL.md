@@ -106,4 +106,5 @@ Refer to these manuals for complex implementation specifications:
 - [ ] **Aesthetics**: Hybrid contrast, Flexbox centering (no `translate(-50%, -50%)`), hard text-shadows, and Typography sharpness verified.
 - [ ] **Sync**: Database changes follow Triple Parity rules.
 - [ ] **Overlay Check**: Ensure modal overlays are siblings BEHIND the card, not parents, to avoid blurring content.
+- [ ] **Performance Mode**: Use `uiStore.isAnyBlockingModalOpen` and `battleStore.isBattleActive` to trigger a global lightweight rendering state. Background elements MUST simplify themselves during these states to prioritize core gameplay performance.
 - [ ] **DB Parity**: WASM versions in `sqliteEngine.js` match `index.html`.

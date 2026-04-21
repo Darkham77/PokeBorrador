@@ -1,8 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useModalStore } from '@/stores/modals'
+import { useUIStore } from '@/stores/ui'
 
 const modalStore = useModalStore()
+const uiStore = useUIStore()
 const modalCount = ref(5)
 const isTesting = ref(false)
 
@@ -53,6 +55,19 @@ async function startTest() {
       >
         CERRAR TODO
       </button>
+    </div>
+
+    <div class="debug-group">
+      <label>RENDIMIENTO MAPA</label>
+      <button
+        :class="uiStore.isDebugPerformanceMode ? 'btn-danger' : 'btn-primary'"
+        @click="uiStore.isDebugPerformanceMode = !uiStore.isDebugPerformanceMode"
+      >
+        {{ uiStore.isDebugPerformanceMode ? 'DESACTIVAR MODO RENDIMIENTO' : 'ACTIVAR MODO RENDIMIENTO' }}
+      </button>
+      <p class="hint">
+        Simula el renderizado ligero (oculta spawns y climas) sin tener que abrir modales.
+      </p>
     </div>
   </div>
 </template>

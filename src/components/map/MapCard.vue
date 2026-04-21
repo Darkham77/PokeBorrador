@@ -2,6 +2,8 @@
 import { computed, ref, watch, onUnmounted } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
+import { useUIStore } from '@/stores/ui'
+import { useBattleStore } from '@/stores/battle'
 
 const props = defineProps({
   map: { type: Object, required: true },
@@ -16,6 +18,13 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['navigate'])
+
+const uiStore = useUIStore()
+const battleStore = useBattleStore()
+
+const isPerformanceMode = computed(() => {
+  return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode
+})
 
 const imgPath = computed(() => {
   const fileName = MAP_ROUTE_MAPPING[props.map.id] || 'default'
@@ -118,8 +127,8 @@ function updateLightningPos() {
   lightningPos.value = { x1, x2 }
 }
 
-watch(() => props.weather, (newWeather) => {
-  if (newWeather === 'storm') {
+watch([() => props.weather, isPerformanceMode], ([newWeather, perfMode]) => {
+  if (newWeather === 'storm' && !perfMode) {
     updateLightningPos()
     if (!lightningInterval) {
       lightningInterval = setInterval(updateLightningPos, 7000)
@@ -154,11 +163,11 @@ const allSpawns = computed(() => [
   <div
     :class="['location-card map-card legacy-panel', { locked: isLocked, 'safari-locked': isSafariLocked }]"
     :style="atmosphereStyles"
-    @click="!isLocked && emit('navigate', map.id)"
+    @click="!isLocked && !isPerformanceMode && emit('navigate', map.id)"
   >
     <!-- Weather Layer -->
     <div
-      v-if="weather !== 'clear'"
+      v-if="weather !== 'clear' && !isPerformanceMode"
       :class="['weather-overlay', weather]"
     >
       <!-- Rain & Storm -->
@@ -190,14 +199,17 @@ const allSpawns = computed(() => [
       v-if="isLocked || isSafariLocked"
       class="lock-overlay"
     >
-      <span class="lock-text">
+      <span
+        v-if="!isPerformanceMode"
+        class="lock-text"
+      >
         {{ isSafariLocked ? '🎫 REQUIERE TICKET' : '🔒 BLOQUEADO' }}
       </span>
     </div>
 
     <!-- 1. Guardian (Top Left) -->
     <div
-      v-if="dominance?.guardian"
+      v-if="dominance?.guardian && !isPerformanceMode"
       class="guardian-status-badge"
     >
       <img
@@ -210,7 +222,10 @@ const allSpawns = computed(() => [
     </div>
 
     <!-- 2. Cycle Pill (Top Right) -->
-    <span :class="['location-tag', isLocked ? 'tag-locked' : 'tag-wild']">
+    <span
+      v-if="!isPerformanceMode"
+      :class="['location-tag', isLocked ? 'tag-locked' : 'tag-wild']"
+    >
       <template v-if="isLocked">
         {{ isSafariLocked ? '🔒 TICKET SAFARI' : `🔒 ${map.badges} MEDALLAS` }}
       </template>
@@ -221,7 +236,7 @@ const allSpawns = computed(() => [
 
     <!-- 3. Faction Dominance -->
     <div
-      v-if="dominance?.winner"
+      v-if="dominance?.winner && !isPerformanceMode"
       class="faction-dominance"
     >
       <img
@@ -232,7 +247,10 @@ const allSpawns = computed(() => [
     </div>
 
     <!-- 4. Location Info -->
-    <div class="location-header">
+    <div
+      v-if="!isPerformanceMode"
+      class="location-header"
+    >
       <div class="location-name">
         {{ map.name }}
       </div>
@@ -242,7 +260,10 @@ const allSpawns = computed(() => [
     </div>
 
     <!-- 5. Interactive Icons -->
-    <div class="interactive-pills-container">
+    <div
+      v-if="!isPerformanceMode"
+      class="interactive-pills-container"
+    >
       <div
         v-if="map.fishing"
         class="interactive-pill fishing-pill"
@@ -253,7 +274,7 @@ const allSpawns = computed(() => [
     </div>
 
     <div
-      v-if="!isLocked"
+      v-if="!isLocked && !isPerformanceMode"
       class="location-spawns"
     >
       <div class="spawn-row-grid">
@@ -269,7 +290,7 @@ const allSpawns = computed(() => [
 
     <!-- 8. Dominado Badge -->
     <span
-      v-if="dominance?.winner"
+      v-if="dominance?.winner && !isPerformanceMode"
       class="dom-badge dominance winning"
     >
       👑 Dominado <span class="bonus-icon">✨</span>

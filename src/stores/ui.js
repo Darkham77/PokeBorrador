@@ -16,6 +16,8 @@ export const useUIStore = defineStore('ui', () => {
   // Notifications
   const notifications = ref([])
   
+  const isDebugPerformanceMode = ref(false)
+  
   const _isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
   
   // Data for modals (still needed in the store if shared)
@@ -226,6 +228,7 @@ export const useUIStore = defineStore('ui', () => {
   return {
     isAnyModalOpen,
     isAnyBlockingModalOpen,
+    isDebugPerformanceMode,
     isProfileOpen,
     isSettingsOpen,
     isHistoryOpen,
