@@ -48,7 +48,7 @@ Refer to these manuals for complex implementation specifications:
 ### 1. Filter Collision (Dart Sass 2.0)
 
 - **MANDATORY**: Use **Capitalization** (e.g., `Grayscale(1)`, `Brightness(1.1)`, `Scale(1.2)`) for all CSS filters and transform functions.
-- **FORBIDDEN**: Lowercase filters/transforms with unitless numbers; they collide with SASS color functions.
+- **WHY**: Lowercase functions with unitless numbers (e.g., `scale(1.2)`) are intercepted by Dart Sass as color functions, causing build errors like `[sass] $color: 1.2 is not a color.`.
 - **GPU Tip**: Prefer `opacity: X` property over `filter: Opacity(X)`.
 
 ### 2. SASS Math & Strings
