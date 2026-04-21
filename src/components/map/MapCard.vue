@@ -68,6 +68,15 @@ const isRare = (id) => {
   const rate = props.spawnPool.rates[id] || 10
   return rate < 10
 }
+
+const allSpawns = computed(() => {
+  // We combine both pools. User wants bottom row filled first.
+  // In wrap-reverse, the first elements of the list are rendered in the bottom row.
+  return [
+    ...props.spawnPool.generic,
+    ...props.spawnPool.specific
+  ]
+})
 </script>
 
 <template>
@@ -136,35 +145,28 @@ const isRare = (id) => {
       </div>
     </div>
 
-    <!-- 5. Interactive Icons -->
-    <span
-      v-if="map.fishing"
-      class="fishing-rod"
-    >🎣</span>
+    <div class="interactive-pills-container">
+      <div
+        v-if="map.fishing"
+        class="interactive-pill fishing-pill"
+      >
+        <span class="pill-icon">🎣</span>
+        <span class="pill-text">PESCA</span>
+      </div>
+    </div>
 
-    <!-- 7. Spawns (2-ROW GRID RESTORATION) -->
     <div
       v-if="!isLocked"
       class="location-spawns"
     >
-      <div class="spawn-row generic-spawns">
+      <div class="spawn-row-grid">
+        <span
+          v-if="spawnPool.specific.length > 0"
+          class="cycle-emoji-label"
+        >{{ cycleEmoji }}</span>
         <img
-          v-for="id in spawnPool.generic"
-          :key="'gen-' + id"
-          :src="getPokemonSprite(id)"
-          :class="['pixelated', { 'rare-spawn': isRare(id) }]"
-          :title="id"
-        >
-      </div>
-
-      <div
-        v-if="spawnPool.specific.length > 0"
-        class="spawn-row cycle-specific-spawns"
-      >
-        <span class="cycle-emoji-label">{{ cycleEmoji }}</span>
-        <img
-          v-for="id in spawnPool.specific"
-          :key="'spec-' + id"
+          v-for="(id, index) in allSpawns"
+          :key="index + '-' + id"
           :src="getPokemonSprite(id)"
           :class="['pixelated', { 'rare-spawn': isRare(id) }]"
           :title="id"
@@ -182,303 +184,4 @@ const isRare = (id) => {
   </div>
 </template>
 
-<style scoped lang="scss">
-@use 'sass:string';
-@use '../../styles/core/mixins' as *;
 
-.map-card {
-  position: relative;
-  height: 220px;
-  background-image: var(--bg-image);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  border-radius: 20px;
-  border: 2px solid #888 !important;
-  padding: 15px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  @include smooth;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    background: inherit;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    filter: Brightness(0.8);
-    transition: transform 0.6s ease, filter 0.3s ease;
-    z-index: 0;
-    @include smooth;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, 
-      rgba(0, 0, 0, 0.85) 0%, 
-      rgba(0, 0, 0, 0.2) 50%, 
-      rgba(0, 0, 0, 0.8) 100%
-    );
-    opacity: 0.35;
-    transition: opacity 0.3s ease;
-    z-index: 1;
-  }
-
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-    border-color: var(--yellow) !important;
-
-    &::before { 
-      transform: Scale(1.08); 
-      filter: Brightness(1.0); 
-    }
-
-    &::after {
-      opacity: 1;
-    }
-  }
-
-  &.locked, &.safari-locked {
-    filter: none !important;
-    opacity: 1 !important;
-
-    &::before { 
-      filter: Grayscale(1) Brightness(0.4) !important; 
-    }
-    
-    .location-header, .location-spawns, .guardian-status-badge, .faction-dominance {
-      filter: Grayscale(1) Brightness(0.6);
-      opacity: 0.4;
-    }
-  }
-
-  & > * { position: relative; z-index: 2; }
-}
-
-/* Header & Info */
-.location-header {
-  position: absolute;
-  top: 18px;
-  left: 0;
-  right: 0;
-  padding: 0 45px;
-  text-align: center;
-  pointer-events: none;
-  z-index: 5;
-}
-
-.location-name {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 11px;
-  color: var(--yellow);
-  text-shadow: 0 2px 0 rgba(0,0,0,1);
-  margin-bottom: 4px;
-  width: 100%;
-}
-
-.location-desc {
-  font-size: 10px;
-  line-height: 1.2;
-  color: #ccc;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-  width: 100%;
-  margin: 0 auto;
-  text-align: center;
-}
-
-/* Guardian Badge (Top Left) */
-.guardian-status-badge {
-  position: absolute;
-  top: 15px;
-  left: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  @include glass-solid(rgba(0, 0, 0, 0.9));
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 8px;
-  padding: 4px;
-  z-index: 10;
-}
-
-.guardian-mini-sprite {
-  width: 40px;
-  height: 40px;
-  filter: drop-shadow(0 0 5px rgba(255,255,255,0.3));
-  image-rendering: pixelated;
-
-  &.captured { 
-    filter: Grayscale(1); 
-    opacity: 0.5; 
-  }
-}
-
-.guardian-label {
-  font-family: 'Nunito', sans-serif;
-  font-size: 8px;
-  font-weight: 900;
-  color: #fff;
-  background: #ff3e3e;
-  padding: 2px 5px;
-  border-radius: 4px;
-  margin-top: 2px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-
-  &.captured { background: #22c55e; }
-}
-
-/* Cycle Pill (Top Right) */
-.location-tag {
-  position: absolute;
-  top: 15px;
-  right: 10px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  padding: 6px 12px;
-  @include glass-solid(rgba(0, 0, 0, 0.85));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  color: #ffcc00;
-  z-index: 10;
-}
-
-.tag-locked { color: #ff6e6e; border-color: rgba(255, 110, 110, 0.3); }
-
-/* Spawns (2-ROW GRID RESTORATION) */
-.location-spawns {
-  position: absolute;
-  bottom: 35px;
-  left: 12px;
-  right: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.spawn-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  justify-content: flex-end;
-  width: 100%;
-  align-items: center;
-
-  img {
-    width: 44px;
-    height: 44px;
-    object-fit: contain;
-    image-rendering: pixelated;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    &:not(:last-child) { margin-right: -12px; }
-
-    &.rare-spawn {
-      filter: drop-shadow(0 0 2px #ff3333) drop-shadow(0 0 6px rgba(255, 51, 51, 0.8));
-      animation: pulse-red-neon 2s infinite ease-in-out;
-    }
-  }
-}
-
-.cycle-specific-spawns {
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  margin-top: 4px;
-  padding-top: 4px;
-}
-
-.cycle-emoji-label {
-  font-size: 14px;
-  margin-right: 4px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-}
-
-@keyframes pulse-red-neon {
-  0%, 100% { 
-    filter: drop-shadow(0 0 2px #ff3333) drop-shadow(0 0 5px rgba(255, 51, 51, 0.6)); 
-    transform: Scale(1); 
-  }
-  50% { 
-    filter: drop-shadow(0 0 4px #ff3333) drop-shadow(0 0 10px rgba(255, 51, 51, 0.9)); 
-    transform: Scale(1.1); 
-  }
-}
-
-/* Lock Overlay */
-.lock-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 15;
-  pointer-events: none;
-}
-
-.lock-text {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: #ff4747;
-  text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 2px 4px rgba(0,0,0,1);
-  letter-spacing: 1px;
-}
-
-.safari-locked .lock-text {
-  color: #ffa500;
-  text-shadow: 0 0 10px rgba(255, 165, 0, 0.8), 0 2px 4px rgba(0,0,0,1);
-}
-
-/* Miscellaneous */
-.fishing-rod {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  font-size: 20px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-}
-
-.dom-badge {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--yellow);
-  @include glass-solid(rgba(0, 0, 0, 0.8));
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 4px 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.faction-dominance {
-  position: absolute;
-  top: 65px;
-  left: 12px;
-}
-
-.faction-logo { width: 32px; height: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
-.pulse { animation: pulse 2s infinite; }
-
-@keyframes pulse {
-  0%, 100% { transform: Scale(1); opacity: 0.8; }
-  50% { transform: Scale(1.1); opacity: 1; }
-}
-
-.pixelated {
-  image-rendering: pixelated;
-}
-</style>

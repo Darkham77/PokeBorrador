@@ -27,6 +27,7 @@ const handleCancel = () => {
     :show="show"
     :title="title"
     max-width="400px"
+    variant="retro"
     @close="handleCancel"
   >
     <div class="confirm-body">

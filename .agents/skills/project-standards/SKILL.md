@@ -28,6 +28,8 @@ Refer to these manuals for complex implementation specifications:
 
 - **Modern UI Shell**: Use premium CSS (Glassmorphism, gradients) for layouts and containers.
 - **Retro Heart**: Use Pixel Art and Sharp Typography for all game-world content and data.
+- **UI Variants**: Leverage `BaseModal` variants (`modern` vs `retro`) to match the context. Gameplay/Config = `retro` (yellow border). Shell/Web = `modern`.
+- **UI Logic**: Always use parameterized props (`hide-header`, `variant`) instead of ad-hoc style overrides.
 
 ### 2. The 500-Line Threshold
 

@@ -107,6 +107,7 @@ function getProjectedValue(p) {
     :show="isOpen"
     :title="config.title || 'SELECCIÓN'"
     max-width="500px"
+    variant="retro"
     @close="close"
   >
     <div

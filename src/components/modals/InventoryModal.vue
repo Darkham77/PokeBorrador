@@ -66,6 +66,7 @@ const close = () => { emit('close'); multiSelectMode.value = null; selectedItems
   <BaseModal
     :show="show"
     max-width="800px"
+    variant="retro"
     padding="raw"
     @close="close"
   >

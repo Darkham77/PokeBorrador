@@ -83,6 +83,7 @@ onMounted(() => {
     :show="show"
     title="🏥 CENTRO POKÉMON"
     max-width="420px"
+    variant="retro"
     @close="handleClose"
   >
     <div class="heal-modal-inner">

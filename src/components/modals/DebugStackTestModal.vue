@@ -16,6 +16,7 @@ const emit = defineEmits(['close'])
     :show="true"
     :title="`MODAL TEST #${number}`"
     max-width="340px"
+    variant="retro"
     @close="emit('close')"
   >
     <div class="test-content">

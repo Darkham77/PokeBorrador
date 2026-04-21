@@ -30,7 +30,7 @@ const updateZoom = (val) => {
     :show="show"
     title="CONFIGURACIÓN"
     max-width="440px"
-    padding="standard"
+    variant="retro"
     @close="emit('close')"
   >
     <div class="settings-container">

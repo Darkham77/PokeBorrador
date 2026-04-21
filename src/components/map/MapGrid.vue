@@ -100,24 +100,18 @@ const getDominanceForMap = (mapId) => {
 <style scoped>
 .map-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 15px;
   padding: 5px;
 }
 
-@media (max-width: 1200px) {
-  .map-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
+@media (max-width: 940px) {
   .map-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 660px) {
   .map-grid {
     grid-template-columns: 1fr;
   }

@@ -44,6 +44,7 @@ const buy = (item) => {
     :show="show"
     title="POKÉ MARKET"
     max-width="900px"
+    variant="retro"
     padding="raw"
     @close="emit('close')"
   >

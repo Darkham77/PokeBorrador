@@ -14,7 +14,7 @@ defineProps({
   isReady: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['openTab', 'openCenter'])
+const emit = defineEmits(['openTab', 'openCenter', 'openEvent'])
 
 const bannerUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.BANNER, 'pokecenter_banner')
@@ -56,6 +56,7 @@ const bannerStyle = computed(() => ({
         <div
           class="pc-banner event-banner"
           :class="{ active: rivalEventActive }"
+          @click="rivalEventActive && emit('openEvent')"
         >
           <div class="pc-banner-icon">
             {{ rivalEventIcon }}
@@ -365,7 +366,7 @@ const bannerStyle = computed(() => ({
   
   span { color: var(--yellow); }
   .text-highlight { 
-    color: #ffcc00; 
+    color: var(--yellow); 
     font-family: 'Press Start 2P', monospace;
     font-size: 9px;
     display: block;
@@ -394,23 +395,35 @@ const bannerStyle = computed(() => ({
 .event-banner {
   &.active {
     background: linear-gradient(135deg, 
-      rgba(251, 191, 36, 0.15) 0%, 
+      rgba(255, 214, 10, 0.2) 0%, 
       rgba(15, 23, 42, 0.95) 100%
     ) !important;
-    border-color: rgba(251, 191, 36, 0.5) !important;
+    border-color: rgba(255, 214, 10, 0.8) !important;
     box-shadow: 
       0 10px 30px rgba(0, 0, 0, 0.6),
-      0 0 20px rgba(251, 191, 36, 0.15);
+      0 0 20px rgba(255, 214, 10, 0.25);
     
-    .pc-banner-title { color: #ffcc00; opacity: 1; }
+    .pc-banner-title { color: var(--yellow); opacity: 1; }
     .pc-banner-icon { 
-      background: rgba(251, 191, 36, 0.2);
-      color: #ffcc00; 
-      box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+      background: rgba(255, 214, 10, 0.3);
+      color: var(--yellow); 
+      box-shadow: 0 0 15px rgba(255, 214, 10, 0.4);
     }
 
     &::after {
-      background: linear-gradient(180deg, rgba(251,191,36,0.2), rgba(251,191,36,0.02));
+      background: linear-gradient(180deg, rgba(255, 214, 10, 0.3), rgba(255, 214, 10, 0.05));
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, 
+        rgba(255, 214, 10, 0.3) 0%, 
+        rgba(30, 41, 59, 0.95) 100%
+      ) !important;
+      border-color: var(--yellow) !important;
+      box-shadow: 
+        0 0 0 2px var(--yellow), 
+        0 15px 40px rgba(0, 0, 0, 0.7), 
+        0 0 35px rgba(255, 214, 10, 0.6);
     }
   }
 }

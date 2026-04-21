@@ -52,14 +52,78 @@ export async function initSQLite(options = {}) {
       await persistSQLite()
     }
 
+    await ensureSchemaIntegrity()
     await runMigrations()
     return _sqliteDb
   })()
   return _initPromise
 }
 
+/**
+ * Ensures all tables have all columns defined in TABLES_SCHEMA.
+ * Self-healing mechanism for local SQLite schema drift.
+ */
+async function ensureSchemaIntegrity() {
+  if (!_sqliteDb) return
+  console.log('[SQLite] Verifying schema integrity...')
+  
+  for (const schemaStr of TABLES_SCHEMA) {
+    try {
+      const tableName = schemaStr.split('(')[0].trim()
+      const info = _sqliteDb.exec(`PRAGMA table_info(${tableName})`)
+      
+      if (!info.length) {
+        console.warn(`[SQLite] Table "${tableName}" missing from DB, creating...`)
+        _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${schemaStr}`)
+        continue
+      }
+
+      const existingCols = info[0].values.map(v => v[1].toLowerCase())
+      const colPart = schemaStr.substring(schemaStr.indexOf('(') + 1, schemaStr.lastIndexOf(')'))
+      
+      const colDefs = []
+      let current = ''
+      let depth = 0
+      for (let i = 0; i < colPart.length; i++) {
+        if (colPart[i] === '(') depth++
+        else if (colPart[i] === ')') depth--
+        
+        if (colPart[i] === ',' && depth === 0) {
+          colDefs.push(current.trim())
+          current = ''
+        } else {
+          current += colPart[i]
+        }
+      }
+      if (current.trim()) colDefs.push(current.trim())
+
+      for (const def of colDefs) {
+        if (def.toUpperCase().startsWith('PRIMARY KEY') || def.toUpperCase().startsWith('FOREIGN KEY') || def.toUpperCase().startsWith('UNIQUE')) {
+          continue
+        }
+
+        const colName = def.split(/\s+/)[0].toLowerCase()
+        if (!existingCols.includes(colName)) {
+          console.log(`[SQLite] Auto-repair: Adding missing column "${colName}" to "${tableName}"`)
+          try {
+            const cleanDef = def.replace(/\s+PRIMARY\s+KEY/gi, '')
+            _sqliteDb.run(`ALTER TABLE ${tableName} ADD COLUMN ${cleanDef}`)
+          } catch (e) {
+            console.warn(`[SQLite] Auto-repair failed for ${tableName}.${colName}:`, e.message)
+          }
+        }
+      }
+    } catch (e) {
+      console.error(`[SQLite] Error during integrity check for: ${schemaStr}`, e)
+    }
+  }
+  console.log('[SQLite] Schema integrity check complete.')
+  await persistSQLite()
+}
+
 async function runMigrations() {
   if (!_sqliteDb) return
+  _sqliteDb.run("PRAGMA foreign_keys = OFF") // Disable FKs during structural changes
   _sqliteDb.run("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))")
   const applied = _sqliteDb.exec("SELECT id FROM _migrations")[0]?.values.map(v => v[0]) || []
 
@@ -70,13 +134,32 @@ async function runMigrations() {
         const statements = splitSQLStatements(m.sql)
         statements.forEach(stmt => {
           const sql = translatePostgresToSqlite(stmt)
-          if (sql) _sqliteDb.run(sql)
+          if (sql) {
+            try {
+              _sqliteDb.run(sql)
+            } catch (stmtErr) {
+              const msg = stmtErr.message.toLowerCase()
+              const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists')
+              const isMissing = msg.includes('no such column')
+              
+              if (isDuplicate || isMissing) {
+                console.warn(`[SQLite] Statement skipped (idempotent/safe): ${stmt}`)
+              } else {
+                console.error(`[SQLite] Statement failed: ${stmt}`)
+                throw stmtErr
+              }
+            }
+          }
         })
         _sqliteDb.run("INSERT OR IGNORE INTO _migrations (id) VALUES (?)", [m.id])
+        console.log(`[SQLite] Migration applied successfully: ${m.id}`)
         await persistSQLite()
-      } catch (e) { console.error(`[SQLite] Migration ${m.id} failed:`, e) }
+      } catch (e) { 
+        console.error(`[SQLite] Migration ${m.id} failed:`, e.message) 
+      }
     }
   }
+  _sqliteDb.run("PRAGMA foreign_keys = ON")
 }
 
 /**

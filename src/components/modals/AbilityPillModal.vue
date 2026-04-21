@@ -39,6 +39,7 @@ const close = () => {
     :show="true"
     title="PÍLDORA DE HABILIDAD"
     max-width="400px"
+    variant="retro"
     @close="close"
   >
     <div class="ability-modal-inner">

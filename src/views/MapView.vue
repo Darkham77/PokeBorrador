@@ -14,6 +14,7 @@ const gameStore = useGameStore()
 const mapStore = useMapStore()
 const uiStore = useUIStore()
 const eventStore = useEventStore()
+const modalStore = useModalStore()
 
 const gs = computed(() => gameStore.state)
 const ms = computed(() => mapStore)
@@ -25,7 +26,6 @@ const openTab = (tab) => {
 }
 
 const openCenter = () => {
-  const modalStore = useModalStore()
   modalStore.open('PokemonCenter')
 }
 
@@ -76,6 +76,7 @@ const activeEventData = computed(() => {
       :rival-event-icon="activeEventData.icon"
       @open-tab="openTab"
       @open-center="openCenter"
+      @open-event="modalStore.open('EventDetail', { event: eventStore.activeEvents[0] })"
     />
 
     <!-- Localizaciones (Grilla de Mapas) -->

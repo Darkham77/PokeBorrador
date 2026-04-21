@@ -33,6 +33,7 @@ const getTrainerSprite = (id) => {
     :show="isOpen"
     title="⚡ ELEGÍ TU CLASE ⚡"
     max-width="95%"
+    variant="retro"
     @close="close"
   >
     <div class="class-selection-container">

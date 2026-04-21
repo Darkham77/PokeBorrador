@@ -28,6 +28,7 @@ const selectAvatar = (id) => {
     title="VESTIDOR COSMÉTICO"
     max-width="650px"
     :z-index="12000"
+    variant="retro"
     @close="closeCosmetics"
   >
     <div class="cosmetics-modal-internal">

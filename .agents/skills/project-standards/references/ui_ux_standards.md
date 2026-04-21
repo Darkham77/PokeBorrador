@@ -42,6 +42,23 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **REQUIRED**: Always precede `backdrop-filter` with `-webkit-backdrop-filter`.
 - **Standard Parity**: Pair vendor prefixes with standard properties (e.g., `-webkit-line-clamp` + `line-clamp`).
 
+### 4. Interactive Pills & Badges
+
+- **High-Density Layouts**: When horizontal space is limited (e.g., within Grid cards), use **Vertical Pills**.
+- **Vertical Pill Standard**: Use `writing-mode: vertical-rl` and `text-orientation: upright` for the text, combined with a large icon (16-18px) positioned at the top.
+- **Glassmorphism**: Always apply `@include glass-solid` with a thin themed border (`rgba(79, 172, 254, 0.4)` for Fishing).
+
+---
+
+## 🎭 Animation & Motion Standards
+
+### 1. Thematic Bobbing (Buoy Effect)
+
+- **CONTEXT**: Use for maritime, fishing, or water-based UI elements.
+- **Implementation**: Combine subtle `TranslateY` (4px offset) with a slight `Rotate` (1-2 degrees).
+- **MANDATORY**: Use **Capitalized** `TranslateY()` and `Rotate()` for SASS compliance.
+- **Cycle**: A slow 4-second `infinite ease-in-out` loop is recommended for an organic feel.
+
 ---
 
 ## 🖱️ Interaction & Modal Standards
@@ -61,6 +78,19 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 ### 3. Notifications & Toasts
 
 - **MANDATORY**: Toasts must occupy the highest layer (`z-index: 999,999`).
+
+### 4. Modal Variants & Aesthetics
+
+The `BaseModal.vue` component supports parameterized aesthetics to maintain consistency:
+
+- **variant="modern" (Default)**: Sleek, glassmorphism-focused, subtle borders.
+- **variant="retro"**: High-contrast 2px yellow border (`var(--yellow)`), 30px corner radius, and 40px default internal padding. Use for gameplay, shops, and settings.
+- **hide-header**: Use to remove the header bar for content-focused modals. The close button (`X`) will automatically transition to a floating position (`modal-close-btn-floating`).
+- **padding="raw"**: Use for full-bleed content (e.g., Shop/Inventory grids). The `retro` variant respects this to avoid double-padding.
+
+> [!IMPORTANT]
+> **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.
+
 
 ---
 

@@ -59,6 +59,11 @@ const props = defineProps({
     type: String,
     default: 'dark', // 'dark' or 'none'
     validator: (val) => ['dark', 'none'].includes(val)
+  },
+  variant: {
+    type: String,
+    default: 'modern', // 'modern' or 'retro'
+    validator: (val) => ['modern', 'retro'].includes(val)
   }
 })
 
@@ -120,32 +125,30 @@ watch(() => props.show, (val) => {
         >
           <div 
             class="modal-content-premium base-modal-card"
-            :class="[padding === 'raw' ? 'padding-raw' : 'padding-standard', customClass]"
+            :class="[
+              padding === 'raw' ? 'padding-raw' : 'padding-standard', 
+              `variant-${variant}`,
+              customClass
+            ]"
             :style="cardStyles"
             @click.stop
           >
-            <!-- Floating Close Button -->
-            <button
-              v-if="hideHeader && showCloseButton"
-              class="modal-close-btn-floating"
-              @click="handleClose"
-            >
-              &times;
-            </button>
-
             <!-- Header -->
             <header
               v-if="!hideHeader"
               class="modal-header-premium"
             >
-              <div class="modal-header-left">
-                <slot name="header-icon" />
-                <div class="modal-title-stack">
-                  <h2 class="modal-title-text">
-                    {{ title }}
-                  </h2>
+              <slot name="header">
+                <div class="modal-header-left">
+                  <slot name="header-icon" />
+                  <div class="modal-title-stack">
+                    <h2 class="modal-title-text">
+                      {{ title }}
+                    </h2>
+                  </div>
                 </div>
-              </div>
+              </slot>
+              
               <button
                 v-if="showCloseButton"
                 class="modal-close-btn"
@@ -155,11 +158,21 @@ watch(() => props.show, (val) => {
               </button>
             </header>
 
+            <!-- Floating Close Button (Only if header is hidden) -->
+            <button
+              v-else-if="showCloseButton"
+              class="modal-close-btn-floating"
+              @click="handleClose"
+            >
+              &times;
+            </button>
+
             <!-- Content -->
             <div 
               class="modal-scrollable-content"
               :class="[
                 padding === 'raw' ? 'padding-raw' : 'padding-standard',
+                `variant-${variant}`,
                 { 'no-scroll': noScroll }
               ]"
             >
@@ -249,6 +262,13 @@ watch(() => props.show, (val) => {
     border-radius: 0;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
   }
+
+  /* Variants */
+  &.variant-retro {
+    border: 2px solid var(--yellow) !important;
+    border-radius: 30px !important;
+    background: #1a1c2e !important;
+  }
 }
 
 .modal-header-premium {
@@ -334,6 +354,10 @@ watch(() => props.show, (val) => {
   
   &.padding-standard { padding: 32px; }
   &.padding-raw { padding: 0 !important; }
+
+  &.variant-retro:not(.padding-raw) {
+    padding: 40px !important;
+  }
 }
 
 .no-scroll { overflow-y: hidden !important; }
