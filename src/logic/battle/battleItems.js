@@ -7,13 +7,10 @@ import { useItemOnPokemon } from '../providers/itemProvider'
 
 export async function handleItemUsage(itemName, p, e, options = {}) {
   const { 
-    gs, 
     eventStore, 
     addLog, 
     audio, 
-    consumeItem, 
-    endBattle, 
-    runEnemyTurn 
+    consumeItem 
   } = options
 
   if (itemName.toLowerCase().includes('ball')) {

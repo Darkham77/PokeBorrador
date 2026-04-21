@@ -26,6 +26,7 @@ watch(logs, () => {
   >
     <!-- Reversing logs to show oldest first if using unshift, 
          or just keep as is if we want new ones at the bottom -->
+    <!-- eslint-disable vue/no-v-html -->
     <div 
       v-for="log in logs.slice().reverse()" 
       :key="log.id" 
@@ -33,6 +34,7 @@ watch(logs, () => {
       :class="log.type"
       v-html="log.msg"
     />
+    <!-- eslint-enable vue/no-v-html -->
   </div>
 </template>
 

@@ -10,7 +10,7 @@ const props = defineProps({
 })
 
 const gymsStore = useGymsStore()
-const selectedDifficulty = defineModel('difficulty', { default: 'easy' })
+const selectedDifficulty = defineModel('difficulty', { type: String, default: 'easy' })
 
 const handleChallenge = () => {
   if (props.isLocked) return

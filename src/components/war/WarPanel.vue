@@ -1,13 +1,11 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useMapStore } from '@/stores/map'
-import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import WarMapCard from './WarMapCard.vue'
 
 const mapStore = useMapStore()
-const authStore = useAuthStore()
 const uiStore = useUIStore()
 
 onMounted(() => {

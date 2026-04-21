@@ -6,7 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { useSocialStore } from '@/stores/social.js'
 import { useModalStore } from '@/stores/modals'
 
-const props = defineProps({
+defineProps({
   position: { type: String, default: 'top' } // 'top' or 'bottom'
 })
 

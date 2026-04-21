@@ -1,12 +1,12 @@
 <script setup>
 
-const props = defineProps({
-  currentClass: Object,
-  activeMission: Object,
-  missions: Array,
-  trainerLevel: Number,
-  missionProgress: Number,
-  isMissionDone: Boolean
+defineProps({
+  currentClass: { type: Object, default: () => ({}) },
+  activeMission: { type: Object, default: null },
+  missions: { type: Array, default: () => [] },
+  trainerLevel: { type: Number, default: 1 },
+  missionProgress: { type: Number, default: 0 },
+  isMissionDone: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['back', 'startMission', 'collectReward'])

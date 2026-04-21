@@ -84,8 +84,6 @@
 }
 
 @mixin smooth {
-  image-rendering: auto;
-  image-rendering: optimizeQuality;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

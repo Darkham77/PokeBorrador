@@ -16,12 +16,11 @@ export const useMapStore = defineStore('map', () => {
   })
   const region = computed(() => gs.state.map?.region || 'kanto')
 
-  const cycle = ref(getDayCycle())
-  const currentCycle = computed(() => cycle.value)
+  const currentCycle = ref(getDayCycle())
   
   // Update cycle every minute
   setInterval(() => {
-    cycle.value = getDayCycle()
+    currentCycle.value = getDayCycle()
   }, 60000)
 
   // Sync time on store init (safer than onMounted in a store)

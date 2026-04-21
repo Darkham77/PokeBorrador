@@ -1,18 +1,16 @@
 <script setup>
 import { computed } from 'vue';
 import { usePlayerClassStore } from '@/stores/playerClass';
-import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import BaseModal from '@/components/common/BaseModal.vue';
 
 const classStore = usePlayerClassStore();
-const gameStore = useGameStore();
 const uiStore = useUIStore();
 
 defineOptions({ inheritAttrs: false });
-const emit = defineEmits(['close', 'confirm', 'cancel', 'submit']);
+defineEmits(['close', 'confirm', 'cancel', 'submit']);
 
 const isOpen = computed({
   get: () => uiStore.isClassSelectionOpen,

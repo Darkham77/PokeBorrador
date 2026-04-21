@@ -1,7 +1,7 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 

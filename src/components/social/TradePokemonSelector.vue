@@ -4,8 +4,8 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const props = defineProps({
   show: Boolean,
-  side: String, // 'offer' or 'request'
-  title: String,
+  side: { type: String, default: 'offer' }, 
+  title: { type: String, default: 'SELECCIONAR' },
   pokemonList: {
     type: Array,
     default: () => []

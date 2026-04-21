@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const props = defineProps({
+defineProps({
   missionsRemaining: { type: Number, default: 0 },
   missionSprites: { type: Array, default: () => [] },
   gymRematches: { type: Number, default: 0 },

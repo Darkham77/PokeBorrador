@@ -23,7 +23,6 @@ import TeamGrid from '@/components/team/TeamGrid.vue'
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
 import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
-import { useAuthStore } from '@/stores/auth'
 
 
 // Tab components
@@ -50,7 +49,6 @@ import { phaserBridge } from '@/logic/phaserBridge'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
-const authStore = useAuthStore()
 const battleStore = useBattleStore()
 const chatStore = useChatStore()
 const warStore = useWarStore()

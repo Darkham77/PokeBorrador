@@ -84,12 +84,12 @@ export const itemEffects = {
   'Incienso Psíquico': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'psychic'); return `activó el Incienso Psíquico (30 min)`; },
 
   // --- Fósiles ---
-  'Fósil Hélix': (state) => reviveFossilTrigger('omanyte', 'Fósil Hélix', state),
-  'Fósil Domo': (state) => reviveFossilTrigger('kabuto', 'Fósil Domo', state),
-  'Ámbar Viejo': (state) => reviveFossilTrigger('aerodactyl', 'Ámbar Viejo', state)
+  'Fósil Hélix': () => reviveFossilTrigger('omanyte', 'Fósil Hélix'),
+  'Fósil Domo': () => reviveFossilTrigger('kabuto', 'Fósil Domo'),
+  'Ámbar Viejo': () => reviveFossilTrigger('aerodactyl', 'Ámbar Viejo')
 };
 
-function reviveFossilTrigger(pokemonId, itemName, state) {
+function reviveFossilTrigger(pokemonId, itemName) {
   const gameStore = useGameStore();
   const uiStore = useUIStore();
   

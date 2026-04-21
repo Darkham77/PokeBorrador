@@ -211,7 +211,6 @@ export const useUIStore = defineStore('ui', () => {
   const isClassMissionsOpen = createModalRef('ClassMissions')
   const isRepShopOpen = createModalRef('Shop')
   const isPokemonDetailOpen = createModalRef('PokemonDetail')
-  const isMoveDetailOpen = createModalRef('MoveDetail')
   const isEvolutionOpen = createModalRef('Evolution')
   const isMoveLearningOpen = createModalRef('MoveLearning')
   const isMoveRelearnerOpen = createModalRef('MoveRelearner')

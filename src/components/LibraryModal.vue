@@ -60,12 +60,14 @@ const selectTab = (tabId) => {
 
       <main class="library-content custom-scrollbar-vicio">
         <transition name="fade">
+          <!-- eslint-disable vue/no-v-html -->
           <div
             v-if="contentFade"
             id="library-article-content"
             class="library-article"
             v-html="currentContent"
           />
+          <!-- eslint-enable vue/no-v-html -->
         </transition>
       </main>
     </div>

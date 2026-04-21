@@ -1,7 +1,7 @@
 <script setup>
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false },
   title: { type: String, default: '¿ESTÁS SEGURO?' },
   message: { type: String, default: '' },

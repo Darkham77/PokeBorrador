@@ -2,10 +2,10 @@
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
-const props = defineProps({
-  currentClass: Object,
-  trainerLevel: Number,
-  trainerRank: String
+defineProps({
+  currentClass: { type: Object, default: () => ({}) },
+  trainerLevel: { type: Number, default: 1 },
+  trainerRank: { type: String, default: 'Novato' }
 })
 
 const emit = defineEmits(['openMissions', 'changeClass', 'close'])

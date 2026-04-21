@@ -1,10 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useSocialStore } from '@/stores/social';
-import { useChatStore } from '@/stores/chat';
-import { useTradeStore } from '@/stores/trade';
 import { useAuthStore } from '@/stores/auth';
-import { useLivePvPStore } from '@/stores/livePvP';
 import TradeClaimStatus from '@/components/social/TradeClaimStatus.vue';
 import { useGameStore } from '@/stores/game';
 import SocialFriendsTab from './SocialFriendsTab.vue';
@@ -12,10 +9,7 @@ import SocialRequestsTab from './SocialRequestsTab.vue';
 import SocialSearchTab from './SocialSearchTab.vue';
 
 const socialStore = useSocialStore();
-const chatStore = useChatStore();
-const tradeStore = useTradeStore();
 const _authStore = useAuthStore();
-const livePvP = useLivePvPStore();
 const gameStore = useGameStore();
 
 const activeTab = ref('friends'); // 'friends', 'requests', 'search', 'claims'

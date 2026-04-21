@@ -11,7 +11,7 @@ const uiStore = useUIStore()
 const invStore = useInventoryStore()
 const boxStore = useBoxStore()
 
-const _props = defineProps({
+defineProps({
   team: { type: Array, required: true }
 })
 

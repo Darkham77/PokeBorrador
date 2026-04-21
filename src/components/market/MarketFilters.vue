@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useGTSStore } from '@/stores/gts'
 
-const props = defineProps({
+defineProps({
   context: {
     type: String,
     required: true // 'explore' or 'my-inventory'

@@ -12,7 +12,7 @@ import ClassDashboard from './class/ClassDashboard.vue'
 import ClassMissionsList from './class/ClassMissionsList.vue'
 
 defineOptions({ inheritAttrs: false })
-const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
+defineEmits(['close', 'confirm', 'cancel', 'submit'])
 
 const uiStore = useUIStore()
 const classStore = usePlayerClassStore()

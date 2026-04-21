@@ -11,7 +11,6 @@ import ModalHost from '@/components/common/ModalHost.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
 import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue'
 import LivePvPArena from '@/components/battle/LivePvPArena.vue'
-import { useLivePvPStore } from '@/stores/livePvP'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import PhaserGame from '@/components/game/PhaserGame.vue'
 import { useUIStore } from '@/stores/ui'
@@ -21,7 +20,6 @@ import { useWindowListener } from '@/composables/useWindowListener'
 const authStore = useAuthStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
-const livePvP = useLivePvPStore()
 const classStore = usePlayerClassStore()
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref(null)

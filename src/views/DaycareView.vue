@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useBreedingStore } from '@/stores/breeding';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
@@ -8,8 +8,6 @@ import DaycareMissions from '@/components/breeding/DaycareMissions.vue';
 import EggWarehouse from '@/components/breeding/EggWarehouse.vue';
 import BreedingSummary from '@/components/breeding/BreedingSummary.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getGeneticsForecast } from '@/logic/breeding/breedingEngine';
-import { usePlayerClassStore } from '@/stores/playerClass';
 
 const breedingStore = useBreedingStore();
 const _gameStore = useGameStore();
@@ -40,25 +38,6 @@ const getGenderClass = (gender) => {
   return '';
 };
 
-// Formatting timer
-const formatTime = (ms) => {
-  if (!ms) return '--:--';
-  const left = Math.max(0, Math.floor((ms - Date.now()) / 1000));
-  const m = String(Math.floor(left / 60)).padStart(2, '0');
-  const s = String(left % 60).padStart(2, '0');
-  return `${m}:${s}`;
-};
-
-const classStore = usePlayerClassStore();
-
-const forecast = computed(() => {
-  if (!breedingStore.isBreeding) return null;
-  return getGeneticsForecast(
-    breedingStore.slots[0].pokemon,
-    breedingStore.slots[1].pokemon,
-    classStore.activeClass
-  );
-});
 </script>
 
 <template>

@@ -6,7 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 

@@ -14,11 +14,55 @@ This skill ensures that NO BROKEN OR MESSY CODE is ever committed. It leverages 
 
 ## Execution Steps
 
+### Workflow Overview
+
+```mermaid
+graph TD
+    Start((START)) --> Planning[1. Planning & Task Initialization]
+    Planning --> |"Dynamic task.md update"| Planning
+    Planning --> GapAnalysis[2. Test Gap Analysis]
+    GapAnalysis --> Verification[3. Active Verification Cycle]
+    
+    subgraph "The Zero-Warning Audit"
+        Verification --> SASSCheck1[SASS Check]
+        SASSCheck1 --> SASSFix[SASS Fixer]
+        SASSFix --> SASSCheck2[SASS Final Check]
+        SASSCheck2 --> Hybrid[Hybrid Guard]
+        Hybrid --> Lint[Linting]
+        Lint --> Types[Type-Safety]
+        Types --> Build[Production Build]
+        Build --> UnitTests[Unit Tests]
+        UnitTests --> Modularity[500-Line Rule]
+        Modularity --> Global[Global Compliance]
+    end
+    
+    Global --> DBCheck{DB Changes?}
+    DBCheck -->|Yes| DBSync[4. Database Parity Sync]
+    DBCheck -->|No| Recovery[5. Failure Recovery]
+    DBSync --> Recovery
+    
+    Recovery -->|FAIL| Verification
+    Recovery -->|PASS| Lessons[6. Lessons Extraction]
+    
+    Lessons --> Commit[7. The Safe Commit]
+    Commit --> Push[8. Push & Close]
+    Push --> End((END))
+    
+    style Start fill:#f9f,stroke:#333,stroke-width:4px
+    style End fill:#f9f,stroke:#333,stroke-width:4px
+    style Recovery fill:#ff9,stroke:#333,stroke-width:2px
+    style Verification fill:#dfd,stroke:#333,stroke-width:2px
+```
+
+> [!IMPORTANT]
+> **IMMUTABLE STEPS**: You MUST follow every step in this diagram. You are allowed to add intermediate sub-tasks for complex features, but you are FORBIDDEN from deleting or skipping any original design steps.
+
 ### 1. Planning & Task Initialization
 
 Before writing any code or finalizing changes, analyze the work done.
 
-- Create or update `task.md` in the agent's private directory.
+- Create or update `task.md` in the agent's private directory. This file is your **source of truth**; use it to track every granular step.
+- **Dynamic Updates**: If you discover new complex problems during the process, you MUST immediately add them as new items to `task.md` to ensure no requirement is forgotten.
 - Verify that every change aligns with the **Hybrid Retro-Modern** identity.
 
 ### 2. Test Gap Analysis
@@ -32,7 +76,9 @@ Review all modified files in `src/logic/`.
 
 You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 
-- **SASS Integrity**: `python3 .agents/skills/project-standards/scripts/check_sass_traps.py`.
+- **SASS Integrity Check**: `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` (Identify existing traps).
+- **SASS Auto-Fix**: `python3 .agents/skills/project-standards/scripts/fix_sass_traps.py` (Run this to resolve common interpolation issues if the check fails).
+- **SASS Integrity Final**: `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` (Ensure 100% compliance after fixing).
 - **Hybrid Guard**: `python3 .agents/skills/project-standards/scripts/detect_hybrid_patterns.py`.
 - **Linting**: `npm run lint` (Must return 0 errors and 0 warnings).
 - **Type-Safety**: `npx vue-tsc --noEmit` (Crucial for detecting broken props or reactive refs).
@@ -56,7 +102,7 @@ If the database schema has changed:
 - > [!CAUTION]
   > **STOP ON FAILURE**: If something does not work or a test fails, you MUST fix it immediately. It is forbidden to proceed to the next step or attempt the commit if the verification cycle is not perfect.
 - > [!IMPORTANT]
-  > **WORKFLOW PROJECTION**: After any fix, you MUST explicitly list the REMAINING steps from your `task.md`. Do not stop until the verification cycle returns 100% success.
+  > **WORKFLOW PROJECTION**: After any fix, you MUST explicitly update `task.md` and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks are completed.
 
 ### 6. Lessons Extraction (MANDATORY)
 

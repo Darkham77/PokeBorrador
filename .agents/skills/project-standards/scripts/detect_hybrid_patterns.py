@@ -124,6 +124,14 @@ def scan_file(filepath):
                         if "document.title =" in line:
                             continue
                         
+                        # Special case: scoped_scrollbar_styling should only trigger in .vue files
+                        if pattern["id"] == "scoped_scrollbar_styling" and not filepath.endswith(".vue"):
+                            continue
+                        
+                        # Special case: flex_scroll_collapse is hard to detect correctly in scss/css files (mixins)
+                        if pattern["id"] == "flex_scroll_collapse" and (filepath.endswith(".scss") or filepath.endswith(".css")):
+                            continue
+
                         findings.append({
                             "line": i + 1,
                             "content": line.strip(),

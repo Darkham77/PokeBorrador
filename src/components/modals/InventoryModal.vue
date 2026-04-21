@@ -8,7 +8,7 @@ import { SHOP_ITEMS } from '@/data/items'
 import InventoryItemNode from './inventory/InventoryItemNode.vue'
 import InventoryTargetOverlay from './inventory/InventoryTargetOverlay.vue'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 

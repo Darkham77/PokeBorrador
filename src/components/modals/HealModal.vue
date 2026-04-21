@@ -5,7 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 

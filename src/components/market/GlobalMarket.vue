@@ -13,6 +13,7 @@ const game = useGameStore()
 const gtsStore = useGTSStore()
 
 const activeTab = ref('explore') // 'explore' | 'publish' | 'my_items'
+defineEmits(['close'])
 
 const TABS = [
   { id: 'explore', label: 'EXPLORAR', icon: '🔍' },

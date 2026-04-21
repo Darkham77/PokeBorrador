@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 

@@ -15,7 +15,7 @@ const gameStore = useGameStore()
 const authStore = useAuthStore()
 
 defineOptions({ inheritAttrs: false })
-const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
+defineEmits(['close', 'confirm', 'cancel', 'submit'])
 
 const gs = computed(() => gameStore.state)
 
