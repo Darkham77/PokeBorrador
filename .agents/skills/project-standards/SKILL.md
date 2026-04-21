@@ -47,8 +47,13 @@ Refer to these manuals for complex implementation specifications:
 
 ### 1. Filter Collision (Dart Sass 2.0)
 
-- **MANDATORY**: Use **Capitalization** (e.g., `Grayscale(1)`, `Brightness(1.1)`, `Scale(1.2)`) for all CSS filters and transform functions.
+- **MANDATORY**: Use **Capitalization** (e.g., `Grayscale(1)`, `Brightness(1.2);`, `transform: Scale(1.5);`) for all CSS filters and transform functions.
+
+> [!WARNING]
+> **Colisión de Filtros SASS**: Es obligatorio usar **Capitalización** para `Brightness()` y `Scale()` en archivos `.vue` y `.scss`. El uso de minúsculas (ej: `scale(1.1)`) provoca que Sass intente procesarlos como funciones de color propias, resultando en errores de compilación críticos.
+
 - **WHY**: Lowercase functions with unitless numbers (e.g., `scale(1.2)`) are intercepted by Dart Sass as color functions, causing build errors like `[sass] $color: 1.2 is not a color.`.
+- **REGRESIÓN DETECTADA**: Colisión de Filtros SASS: Reforzar la regla de capitalización obligatoria para `Brightness()` y `Scale()` en archivos `.vue` y `.scss` para evitar conflictos con las funciones de color de Sass 2.0.
 - **GPU Tip**: Prefer `opacity: X` property over `filter: Opacity(X)`.
 
 ### 2. SASS Math & Strings

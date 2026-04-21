@@ -17,6 +17,10 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 - `filter: Grayscale(0.8);`
 - `filter: Opacity(0.5);`
 - `filter: Brightness(1.2);`
+- `transform: Scale(1.5);`
+
+> [!WARNING]
+> **Colisión de Filtros SASS**: Es obligatorio usar **Capitalización** para `Brightness()` y `Scale()` en archivos `.vue` y `.scss`. El uso de minúsculas (ej: `scale(1.1)`) provoca que Sass intente procesarlos como funciones de color propias, resultando en errores de compilación críticos.
 
 ### 2. Preference: Capitalization vs. Unquote/Interpolation
 
