@@ -18,6 +18,14 @@ export const useMapStore = defineStore('map', () => {
 
   const currentCycle = ref(getDayCycle())
   
+  // React to debug time changes immediately
+  if (typeof window !== 'undefined') {
+    window.addEventListener('time-sync-update', () => {
+      console.log('[MapStore] Time sync detected, updating cycle...');
+      currentCycle.value = getDayCycle();
+    });
+  }
+
   // Update cycle every minute
   setInterval(() => {
     currentCycle.value = getDayCycle()

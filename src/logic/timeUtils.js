@@ -44,9 +44,14 @@ export async function syncServerTime() {
 
 /**
  * Returns the synchronized current timestamp (ms).
+ * Includes the debug offset if the router (supabase) is in mock mode.
  */
 export function getServerTime() {
-  return Date.now() + _serverTimeOffset;
+  const routerOffset = (supabase && typeof supabase.getTimeOffset === 'function') 
+    ? supabase.getTimeOffset() 
+    : 0;
+    
+  return Date.now() + _serverTimeOffset + routerOffset;
 }
 
 /**

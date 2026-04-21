@@ -13,6 +13,8 @@ export const useAuthStore = defineStore('auth', () => {
   const isOnline = ref(navigator.onLine)
   const connectionLost = ref(false)
   const sessionCheckInterval = ref(null)
+  const isBanned = ref(false)
+  const banReason = ref('')
 
   // Monitoreo de Conectividad (Solo para modo Online)
 
@@ -96,9 +98,18 @@ export const useAuthStore = defineStore('auth', () => {
         
         // Fetch profile meta con timeout
         try {
-          const profilePromise = supabase.from('profiles').select('db_version').eq('id', user.value.id).single()
+          const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value.id).single()
           const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 3000))])
-          if (profile) user.value.db_version = profile.db_version || 1
+          
+          if (profile) {
+            user.value.db_version = profile.db_version || 1
+            if (profile.is_banned) {
+              isBanned.value = true
+              banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
+              logout() // Force out
+              return
+            }
+          }
         } catch (e) {
           console.warn('[Auth] Profile fetch failed or timed out:', e)
           if (user.value && !user.value.db_version) user.value.db_version = 1
@@ -145,11 +156,21 @@ export const useAuthStore = defineStore('auth', () => {
     
     // Registrar sesión
     await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id)
-    startSessionMonitoring()
+    
+    const { data: profile } = await supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', data.user.id).single()
+    
+    if (profile?.is_banned) {
+      isBanned.value = true
+      banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
+      await supabase.auth.signOut()
+      user.value = null
+      session.value = null
+      throw new Error('BAN:' + banReason.value)
+    }
 
-    const { data: profile } = await supabase.from('profiles').select('db_version').eq('id', data.user.id).single()
     if (profile) user.value.db_version = profile.db_version || 1
     
+    startSessionMonitoring()
     syncServerTime()
     return data
   }
@@ -266,6 +287,8 @@ export const useAuthStore = defineStore('auth', () => {
     sessionMode,
     isOnline,
     connectionLost,
+    isBanned,
+    banReason,
     checkSession,
     login,
     signup,

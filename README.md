@@ -205,3 +205,77 @@ Para verificar qué imágenes están cargadas en el motor de juego:
 - **Inspección**: Abrí la consola (`F12`) y escribí `phaserBridge.game.textures.list`.
 - **Atlas**: Para ver qué hay dentro de un atlas: `Object.keys(phaserBridge.game.textures.get('vfx').frames)`.
 - **LOD Check**: Para ver si cargó la versión optimizada: `phaserBridge.game.textures.get('vfx').source[0].image.src`.
+
+### 7. 🛡️ Sistema de Seguridad y Moderación (Baneos)
+
+El proyecto incluye un sistema de protección automática (**"Ban Trap"**) para prevenir el uso indebido de herramientas de desarrollo en entornos de producción.
+
+- **Detección Automática**: Si un usuario con rol de `user` intenta invocar métodos de la API de depuración (`window.__VITE_DEBUG__`) o interactuar con el panel de desarrollo en modo **ONLINE**, el sistema:
+    1. Marca la cuenta como baneada (`is_banned: true`) en la base de datos.
+    2. Registra el motivo del baneo.
+    3. Fuerza el cierre inmediato de la sesión.
+- **Efecto Visual**: El usuario afectado verá una pantalla de **ACCESO DENEGADO** con estética retro-moderna al intentar iniciar sesión, indicando el motivo de la sanción.
+- **Restauración de Cuentas**: El baneo es permanente hasta que un administrador lo revierta manualmente desde el panel de control de Supabase.
+  - **Pasos para desbanear**:
+    1. Entrá al SQL Editor de Supabase.
+    2. Ejecutá la siguiente consulta:
+
+    ```sql
+    UPDATE profiles 
+    SET is_banned = false, ban_reason = NULL 
+    WHERE email = 'usuario@ejemplo.com';
+    ```
+
+- **Modo Local**: En modo `offline` (localhost), el sistema de baneo está deshabilitado para permitir el testing sin riesgos.
+
+### 8. 🛡️ Mantenimiento de Usuarios (Admin SQL)
+
+Comandos frecuentes para realizar mantenimiento manual sobre la base de datos de producción (Online).
+
+#### Cambiar Contraseña de un Usuario
+
+Para resetear la contraseña manualmente desde el SQL Editor:
+
+```sql
+UPDATE auth.users 
+SET encrypted_password = crypt('NUEVA_CONTRASEÑA', gen_salt('bf')) 
+WHERE email = 'usuario@ejemplo.com';
+```
+
+#### Cambiar Email de un Usuario
+
+Se debe actualizar tanto en la tabla de autenticación como en el perfil público para mantener la consistencia:
+
+```sql
+-- 1. Actualizar Auth (Requerido para login)
+UPDATE auth.users 
+SET email = 'nuevo@email.com', 
+    email_confirmed_at = NOW() 
+WHERE email = 'viejo@email.com';
+
+-- 2. Actualizar Perfil (Requerido para lógica de juego)
+UPDATE public.profiles 
+SET email = 'nuevo@email.com' 
+WHERE email = 'viejo@email.com';
+```
+
+#### Cambiar Nombre de Entrenador (Username)
+
+```sql
+UPDATE public.profiles 
+SET username = 'NuevoNombre' 
+WHERE email = 'usuario@ejemplo.com';
+```
+
+#### Promoción a Administrador (ADMIN Role)
+
+Para otorgar permisos de administrador a un usuario (acceso a paneles de debug en producción, bypass de ban-traps, etc.):
+
+```sql
+UPDATE public.profiles 
+SET role = 'admin' 
+WHERE email = 'usuario@ejemplo.com';
+```
+
+> [!IMPORTANT]
+> Los nombres de usuario deben ser únicos. Si el nombre ya existe, la consulta fallará debido a la restricción `UNIQUE`.

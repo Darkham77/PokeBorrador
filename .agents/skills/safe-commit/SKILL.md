@@ -44,10 +44,11 @@ graph TD
     DBSync --> Recovery
     
     Recovery -->|FAIL| Verification
-    Recovery -->|PASS| Lessons[6. Lessons Extraction]
+    Recovery -->|PASS| Cleanup[6. Workspace Cleanup]
+    Cleanup --> Lessons[7. Lessons Extraction]
     
-    Lessons --> Commit[7. The Safe Commit]
-    Commit --> Push[8. Push & Close]
+    Lessons --> Commit[8. The Safe Commit]
+    Commit --> Push[9. Push & Close]
     Push --> End((END))
     
     style Start fill:#f9f,stroke:#333,stroke-width:4px
@@ -107,19 +108,27 @@ If the database schema has changed:
 - > [!IMPORTANT]
   > **WORKFLOW PROJECTION**: After any fix or test creation, you MUST explicitly update `task.md` and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks (including newly discovered sub-tasks) are completed.
 
-### 6. Lessons Extraction (MANDATORY)
+### 6. Workspace Cleanup (MANDATORY)
+
+Before extracting lessons or committing, you MUST delete all temporary artifacts created during the development or verification process.
+
+- Delete files in `<appDataDir>/brain/<conversation-id>/scratch/` if they are no longer needed.
+- Delete any ad-hoc test files (e.g., `test_output.txt`, `tmp_log.json`) created in the root or subdirectories.
+- Ensure `git status` does not show untracked temporary files that should not be in the repository.
+
+### 7. Lessons Extraction (MANDATORY)
 
 Run @/extract-lessons to capture patterns (e.g., a new SASS trick or a Phaser optimization).
 
 - **Continuity Guard**: After analysis, proceed immediately to the commit phase.
 
-### 7. The Safe Commit
+### 8. The Safe Commit
 
 1. `git status` to verify all files (including docs and `.agents/skills/` updates) are staged.
 2. `git add .`
 3. Commit with a message following conventional standards (`feat:`, `fix:`, `refactor:`, `docs:`).
 
-### 8. Push & Close
+### 9. Push & Close
 
 Push changes and notify the user.
 
@@ -136,5 +145,7 @@ Push changes and notify the user.
 
 1. [ ] Re-run `check_sass_traps.py` (Step 3).
 2. [ ] Run `npm run build` to verify compilation.
-3. [ ] Extract lessons.
-4. [ ] Git commit & push."
+3. [ ] Workspace Cleanup (Step 6).
+4. [ ] Extract lessons (Step 7).
+5. [ ] Git commit & push (Step 8).
+"

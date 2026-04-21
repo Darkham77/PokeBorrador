@@ -11,7 +11,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 ### 1. Modern UI Shell (Containers & Layouts)
 
 - **REQUIRED**: Use state-of-the-art UI techniques for layouts, cards, and backgrounds.
-- **Techniques**: Glassmorphism (`-webkit-backdrop-filter: blur; backdrop-filter: blur;`), HSL gradients, smooth shadows, and fluid transitions.
+- **Techniques**: Glassmorphism (`-webkit-backdrop-filter: Blur(); backdrop-filter: Blur();`), HSL gradients, smooth shadows, and fluid transitions.
 - **Goal**: The "frame" must feel premium, modern, and reactive.
 
 ### 2. Pixel Art Content (The "Game Heart")
@@ -34,6 +34,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **MANDATORY**: Disable font smoothing for pixel fonts using `@include pixelated;`.
 - **FORBIDDEN**: Relying on default browser antialiasing for game-world text.
 - **Text-Shadow**: Use hard offsets (e.g., `2px 2px 0px rgba(0,0,0,0.5)`) with **zero** blur radius.
+- **Centering**: Use **Flexbox/Grid** for centering. Avoid `transform: translate(-50%, -50%)` as it causes subpixel blurring in Chrome.
+- **Font Size**: Prefer **12px or larger** for 'Press Start 2P' to ensure integer grid alignment.
 
 ### 3. Safari Compatibility (Prefix Mandate)
 
@@ -47,7 +49,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 ### 1. The Interaction Stack (LIFO)
 
 - **REQUIRED**: Interactions must behave as a strict **STACK** (Last-In-First-Out).
-- **Hardware Acceleration**: Apply `transform: translateZ(0);` to teleported wrappers to force a new stacking context.
+- **Hardware Acceleration**: Apply `transform: translateZ(0);` only when necessary for performance. **AVOID** it on text containers if it triggers interpolation blur.
+- **Stacking Order**: The modal overlay MUST be a sibling **BEHIND** the content.
+- **FORBIDDEN**: Applying `backdrop-filter` to a parent that contains the modal card, as it will blur the card content.
 
 ### 2. Interaction in Locked States
 

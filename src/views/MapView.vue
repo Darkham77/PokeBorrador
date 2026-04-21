@@ -44,10 +44,11 @@ const gymSprites = computed(() => {
 
 const activeEventData = computed(() => {
   const active = eventStore.activeEvents?.[0]
-  if (!active) return { active: false, text: 'No hay eventos activos en este momento' }
+  if (!active) return { active: false, text: 'No hay eventos activos en este momento', icon: '⚡' }
   return {
     active: true,
-    text: active.description || active.name
+    text: `${active.name}: ${active.description}`,
+    icon: active.icon || '⚡'
   }
 })
 </script>
@@ -72,6 +73,7 @@ const activeEventData = computed(() => {
       :egg-count="gs.eggs?.length || 0"
       :rival-event-active="activeEventData.active"
       :rival-event-text="activeEventData.text"
+      :rival-event-icon="activeEventData.icon"
       @open-tab="openTab"
       @open-center="openCenter"
     />

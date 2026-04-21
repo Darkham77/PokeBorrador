@@ -20,8 +20,38 @@ export class DBRouter {
     this._initialized = false;
     this.currentSessionId = null;
     this.userSubscription = null;
+    this._timeOffset = 0; // ms
     
     console.log(`[DBRouter] Initialized in STRICT ${mode.toUpperCase()} mode.`);
+  }
+
+  /**
+   * Time Mocking Methods (SECURITY: ONLY FOR OFFLINE MODE)
+   */
+  setTimeOffset(ms) {
+    if (this.mode === 'online') {
+      console.warn('[DBRouter] Security Block: Cannot mock time in ONLINE mode.');
+      return;
+    }
+    this._timeOffset = ms;
+    window.dispatchEvent(new CustomEvent('time-sync-update', { detail: { offset: ms } }));
+    console.log(`[DBRouter] Time offset set to: ${ms}ms`);
+  }
+
+  setMockTime(dateStr) {
+    if (this.mode === 'online') return;
+    const targetDate = new Date(dateStr);
+    if (isNaN(targetDate.getTime())) return;
+    const offset = targetDate.getTime() - Date.now();
+    this.setTimeOffset(offset);
+  }
+
+  resetTime() {
+    this.setTimeOffset(0);
+  }
+
+  getTimeOffset() {
+    return this.mode === 'offline' ? this._timeOffset : 0;
   }
 
   /**
@@ -93,6 +123,14 @@ export class DBRouter {
    * If online, fetches server time from Supabase.
    */
   async getServerTime() {
+    const baseTime = await this._getRawServerTime();
+    // SECURITY: Offset is strictly for local/offline testing
+    const offset = this.mode === 'offline' ? (this._timeOffset || 0) : 0;
+    return baseTime + offset;
+  }
+
+  /** @private */
+  async _getRawServerTime() {
     if (this.mode === 'offline') {
       return Date.now();
     }
@@ -197,7 +235,7 @@ export async function checkDBCompatibility(router) {
     let dbVersion = 0;
 
     if (router.mode === 'offline' || !router.realClient) {
-      const results = await queryLocal("SELECT value FROM config WHERE key = 'db_version'");
+      const results = await queryLocal("SELECT value FROM system_config WHERE key = 'db_version'");
       if (results.length > 0) dbVersion = parseInt(results[0].value);
     } else {
       const { data, error } = await router.realClient

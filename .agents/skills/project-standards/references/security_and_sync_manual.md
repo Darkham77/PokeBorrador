@@ -4,6 +4,13 @@ This manual describes the mechanisms designed to ensure player data integrity, p
 
 ---
 
+## 🔑 Security Context
+
+### Online vs Offline Isolation
+
+* **Online Mode**: Relies on **Row Level Security (RLS)** and server-side JWT verification. The client is untrusted; the server enforces boundaries.
+* **Offline Mode**: Relies on **Client Isolation**. Since the database is local to the user's browser, the user is the de-facto admin of their own SQLite instance. "Security through Locality" ensures that a local user cannot affect global state or other players.
+
 ## 🛡️ Anti-Cheat & Sanitization Logic
 
 The security system is based on continuous validation of the game state before every persistence event.
@@ -127,3 +134,16 @@ To keep the database optimized and prevent stale data accumulation:
 * [src/stores/trade.js](../../../../src/stores/trade.js): Escrow logic and server-centered physical isolation.
 * [src/stores/game.js](../../../../src/stores/game.js): Synchronization management, Delta Merge, and Claim Queue.
 * [src/logic/db/dbRouter.js](../../../../src/logic/db/dbRouter.js): Realtime channel abstraction.
+
+---
+
+## 🛠️ Debug & Administrative Security
+
+### 1. Debug Panel Access Control
+
+The **Local Debug Panel** (`LocalDebugPanel.vue`) is a sensitive administrative tool. Its visibility and instantiation are governed by strict security rules:
+
+* **Offline Mandate**: In `offline` mode, the user is the local environment's administrator. Access is granted by default.
+* **Online Restriction**: In `online` mode, access is strictly limited to accounts with the `admin` role.
+* **Conditional Rendering**: The panel **MUST NOT** be rendered in the DOM (`v-if`) if the access check fails. This prevents accidental exposure of debug triggers to standard players.
+* **Security Audit**: Any attempt to bypass this check in an online session triggers an automatic ban protocol (monitored by the `securityCheck` function).

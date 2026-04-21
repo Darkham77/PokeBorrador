@@ -53,4 +53,48 @@ describe('Event Engine Logic', () => {
     expect(bulbBoost.rate).toBe(10)
     expect(charmBoost.rate).toBe(1)
   })
+
+  it('handles robust parsing of stringified JSON config/schedule', () => {
+    const event = {
+      active: true,
+      schedule: JSON.stringify({ type: 'weekly', days: [1, 2, 3, 4, 5], startHour: 0, endHour: 23.99 }),
+      config: JSON.stringify({ expMult: 5 })
+    }
+    
+    // Check multiplier parsing
+    const mults = getGlobalMultipliers([event])
+    expect(mults.exp).toBe(5)
+
+    // Check schedule parsing (using a Monday as test date)
+    const monday = new Date('2026-04-20T12:00:00') // Monday
+    expect(isEventActiveNow(event, monday)).toBe(true)
+  })
+
+  it('correctly handles weekly schedules crossover (midnight)', () => {
+    const event = {
+      active: true,
+      schedule: {
+        type: 'weekly',
+        days: [1], // Monday
+        startHour: 22,
+        endHour: 2 // Ends at 02:00 next day (Tuesday)
+      }
+    }
+
+    // Monday 23:00 (Should be active)
+    const mondayNight = new Date('2026-04-20T23:00:00')
+    // Tuesday 01:00 (Should be active)
+    const tuesdayMorning = new Date('2026-04-21T01:00:00')
+    // Monday 21:00 (Should be inactive)
+    const mondayEvening = new Date('2026-04-20T21:00:00')
+
+    // Note: isEventActiveNow uses Argentina Time. 
+    // For unit tests, we mock the time or ensure the test date is interpreted correctly.
+    // The current implementation uses .toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' })
+    
+    expect(isEventActiveNow(event, mondayNight)).toBe(true)
+    expect(isEventActiveNow(event, tuesdayMorning)).toBe(true)
+    expect(isEventActiveNow(event, mondayEvening)).toBe(false)
+  })
 })
+

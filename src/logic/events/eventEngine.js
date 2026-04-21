@@ -5,6 +5,14 @@
  * Absolute isolation: This module does not store state or connect to DB.
  */
 
+const safeParse = (val) => {
+  if (typeof val === 'string') {
+    try { return JSON.parse(val); } catch (_e) { return {}; }
+  }
+  return val || {};
+};
+
+
 /**
  * Checks if an event is active based on current time (America/Argentina/Buenos_Aires).
  * @param {object} event 
@@ -23,7 +31,7 @@ export function isEventActiveNow(event, date = new Date()) {
   }
 
   // 2. Weekly schedule check (Argentina Time UTC-3)
-  const sched = event.schedule
+  const sched = safeParse(event.schedule)
   if (!sched || sched.type !== 'weekly' || !sched.days) return false
 
   // Convert current date to Argentina Time
@@ -31,21 +39,28 @@ export function isEventActiveNow(event, date = new Date()) {
   const day = argTime.getDay()
   const hour = argTime.getHours() + argTime.getMinutes() / 60
 
-  if (!sched.days.includes(day)) return false
+  // Check if today is one of the scheduled days
+  const isScheduledToday = sched.days.includes(day)
+  
+  // Check if yesterday was one of the scheduled days (for midnight crossover)
+  const yesterday = (day + 6) % 7
+  const isScheduledYesterday = sched.days.includes(yesterday)
 
-  if (sched.startHour !== undefined && sched.endHour !== undefined) {
-    const start = sched.startHour
-    const end = sched.endHour
-    if (start < end) {
-      // Normal range (e.g., 10 to 18)
-      if (hour < start || hour >= end) return false
-    } else {
-      // Midnight crossover (e.g., 23 to 01)
-      if (hour < start && hour >= end) return false
-    }
+  const start = sched.startHour ?? 0
+  const end = sched.endHour ?? 24
+
+  if (start < end) {
+    // Normal range (e.g., 10 to 18)
+    if (isScheduledToday && hour >= start && hour < end) return true
+  } else {
+    // Midnight crossover (e.g., 22 to 02)
+    // 1. Current day after start (e.g., Monday 23:00)
+    if (isScheduledToday && hour >= start) return true
+    // 2. Next day before end (e.g., Tuesday 01:00)
+    if (isScheduledYesterday && hour < end) return true
   }
 
-  return true
+  return false
 }
 
 /**
@@ -67,7 +82,7 @@ export function getGlobalMultipliers(activeEvents) {
   }
 
   for (const ev of activeEvents) {
-    const cfg = ev.config || {}
+    const cfg = safeParse(ev.config)
     multipliers.exp *= (cfg.expMult || 1)
     multipliers.money *= (cfg.moneyMult || 1)
     multipliers.bc *= (cfg.bcMult || 1)
@@ -94,7 +109,7 @@ export function getSpeciesBoosts(activeEvents, speciesId) {
   const sId = speciesId.toLowerCase()
 
   for (const ev of activeEvents) {
-    const cfg = ev.config || {}
+    const cfg = safeParse(ev.config)
     if (!cfg.species) continue
 
     const speciesList = cfg.species.split(',').map(s => s.trim().toLowerCase())

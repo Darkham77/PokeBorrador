@@ -9,7 +9,6 @@ import MainGameView from '@/views/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
 import ModalHost from '@/components/common/ModalHost.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
-import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue'
 import LivePvPArena from '@/components/battle/LivePvPArena.vue'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import PhaserGame from '@/components/game/PhaserGame.vue'
@@ -162,7 +161,6 @@ const handleRetry = () => {
     <ErrorOverlay />
     <ModalHost />
     <ConnectionWarning />
-    <LocalDebugPanel />
     <LivePvPArena />
   </div>
 </template>

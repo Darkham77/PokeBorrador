@@ -19,7 +19,7 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 - `filter: Brightness(1.2);`
 
 > [!WARNING]
-> **Colisión de Filtros SASS**: Es obligatorio usar **Capitalización** para `Brightness()` y `Scale()` en archivos `.vue` y `.scss`. El uso de minúsculas (ej: `scale(1.1)`) provoca que Sass intente procesarlos como funciones de color propias, resultando en errores de compilación críticos.
+> **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, and `Rotate()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
 
 ### 2. Preference: Capitalization vs. Unquote/Interpolation
 
@@ -57,12 +57,12 @@ Global built-in functions are deprecated in Dart Sass 2.0+ and will be removed i
 
 ```scss
 @use "sass:math";
-@use "sass:string";
 
 .card {
   width: math.percentage(0.5);
   animation-delay: #{math.random(2000)}ms;
-  transform: string.unquote("scale(#{1.05})");
+  // CORRECT: Using Capitalization for the transform
+  transform: Scale(1.05);
 }
 ```
 
@@ -86,7 +86,7 @@ The project employs a high-contrast **Hybrid Retro-Modern** aesthetic. We combin
 
 All layouts and structural containers **MUST** follow premium modern web design principles.
 
-- **Glassmorphism**: Use `-webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.05);` for cards and overlays.
+- **Glassmorphism**: Use `-webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px); background: rgba(255, 255, 255, 0.05);` for cards and overlays.
 - **Dynamic Depth**: Use soft, multi-layered HSL shadows and subtle linear gradients.
 - **Modern Rendering**: Do **NOT** use `image-rendering: pixelated` on the UI shell or background layouts. They must remain smooth and fluid.
 
@@ -157,8 +157,8 @@ Safari (macOS/iOS) does NOT support `backdrop-filter` without the `-webkit-` pre
 ```scss
 .premium-card {
   // CORRECT: Prefix ALWAYS comes before the standard property
-  -webkit-backdrop-filter: blur(15px);
-  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: Blur(15px);
+  backdrop-filter: Blur(15px);
   
   background: rgba(var(--bg-rgb), 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);

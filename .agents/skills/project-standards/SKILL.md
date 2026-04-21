@@ -50,10 +50,11 @@ Refer to these manuals for complex implementation specifications:
 - **MANDATORY**: Use **Capitalization** (e.g., `Grayscale(1)`, `Brightness(1.1)`, `Scale(1.2)`) for all CSS filters and transform functions.
 
 > [!WARNING]
-> **Colisión de Filtros SASS**: Es obligatorio usar **Capitalización** para `Brightness()` y `Scale()` en archivos `.vue` y `.scss`. El uso de minúsculas (ej: `scale(1.1)`) provoca que Sass intente procesarlos como funciones de color propias, resultando en errores de compilación críticos.
+> **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, and `Rotate()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
 
-- **WHY**: Lowercase functions with unitless numbers (e.g., `scale(1.2)`) are intercepted by Dart Sass as color functions, causing build errors like `[sass] $color: 1.2 is not a color.`.
-- **REGRESIÓN DETECTADA**: Colisión de Filtros SASS: Reforzar la regla de capitalización obligatoria para `Brightness()` y `Scale()` en archivos `.vue` y `.scss` para evitar conflictos con las funciones de color de Sass 2.0.
+- **WHY**: Lowercase functions with unitless numbers are misinterpreted by Dart Sass 2.0 as color functions, causing errors like `[sass] $color: 1.2 is not a color.`.
+- **MANDATORY**: Use **Capitalization** for `Scale()`, `Blur()`, `Rotate()`, `TranslateX()`, etc.
+- **DETECTED REGRESSION**: Lowercase usage in filters/transforms breaks production builds. Do NOT omit capitalization under any circumstances.
 - **GPU Tip**: Prefer `opacity: X` property over `filter: Opacity(X)`.
 
 ### 2. SASS Math & Strings
@@ -92,5 +93,7 @@ Refer to these manuals for complex implementation specifications:
 - [ ] **Linting**: `npm run lint` passes with 0 errors.
 - [ ] **Production Build**: `npm run build` passes without errors.
 - [ ] **Tests**: `npm run test` passes; new logic has unit tests.
-- [ ] **Aesthetics**: Hybrid contrast and Typography sharpness verified.
+- [ ] **Aesthetics**: Hybrid contrast, Flexbox centering (no `translate(-50%, -50%)`), hard text-shadows, and Typography sharpness verified.
 - [ ] **Sync**: Database changes follow Triple Parity rules.
+- [ ] **Overlay Check**: Ensure modal overlays are siblings BEHIND the card, not parents, to avoid blurring content.
+- [ ] **DB Parity**: WASM versions in `sqliteEngine.js` match `index.html`.

@@ -29,9 +29,10 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 // Determine initial mode explicitly from session context
-const initialMode = (typeof localStorage !== 'undefined' && supabaseUrl && supabaseKey) 
-  ? (localStorage.getItem('pokevicio_session_mode') || 'online') 
-  : 'offline';
+const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+const storedMode = typeof localStorage !== 'undefined' ? localStorage.getItem('pokevicio_session_mode') : null
+
+const initialMode = storedMode || (isLocalhost ? 'offline' : 'online')
 
 // Export the Unified DB Router as 'supabase' for backward compatibility
 export const supabase = new DBRouter(rawClient, initialMode)

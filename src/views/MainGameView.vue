@@ -23,6 +23,8 @@ import TeamGrid from '@/components/team/TeamGrid.vue'
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
 import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
+import HUD_SidebarLeft from '@/components/ui/HUD_SidebarLeft.vue'
+import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue'
 
 
 // Tab components
@@ -309,8 +311,11 @@ onUnmounted(() => {
     <ToastNotification />
     <BuffsOverlay />
 
-    <!-- CHAT GLOBAL (Phase 24) -->
-    <GlobalChat />
+    <!-- SIDEBAR IZQUIERDA (BARRA DE HERRAMIENTAS) -->
+    <HUD_SidebarLeft>
+      <GlobalChat />
+      <LocalDebugPanel />
+    </HUD_SidebarLeft>
 
     <!-- VENTANAS DE CHAT PRIVADO (Phase 24) -->
     <div class="private-chats-container">

@@ -4,6 +4,7 @@ import { useAuthStore } from './auth'
 import { useUIStore } from './ui'
 import { useGameStore } from './game'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts } from '@/logic/events/eventEngine'
+import { getServerTime } from '@/logic/timeUtils'
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()
@@ -33,8 +34,9 @@ export const useEventStore = defineStore('events', () => {
 
       allEvents.value = events || []
       
-      // 2. Filter using Engine logic
-      activeEvents.value = (events || []).filter(ev => isEventActiveNow(ev))
+      // 2. Filter using Engine logic with synchronized time
+      const synchronizedDate = new Date(getServerTime())
+      activeEvents.value = (events || []).filter(ev => isEventActiveNow(ev, synchronizedDate))
 
       // 3. Load finished competition results (Last 24h)
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
@@ -132,6 +134,14 @@ export const useEventStore = defineStore('events', () => {
    */
   function getSpeciesBonuses(speciesId) {
     return getSpeciesBoosts(activeEvents.value, speciesId)
+  }
+
+  // Listen for time-sync updates from DBRouter (Debug mode)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('time-sync-update', () => {
+      console.log('[Events] Time sync update received, refreshing events...');
+      fetchEvents();
+    });
   }
 
   return {

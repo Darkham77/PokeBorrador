@@ -196,15 +196,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 @use "sass:string";
 
 .global-chat-root {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
+  position: relative;
   z-index: var(--z-max);
-  transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  @media (max-width: 1380px) {
-    bottom: 110px;
-  }
 }
 
 .chat-toggle-btn {

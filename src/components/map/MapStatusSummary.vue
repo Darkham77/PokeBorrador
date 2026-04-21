@@ -10,6 +10,7 @@ defineProps({
   eggCount: { type: Number, default: 0 },
   rivalEventActive: { type: Boolean, default: true },
   rivalEventText: { type: String, default: 'Doble chance de encuentro con El Rival durante todo el día' },
+  rivalEventIcon: { type: String, default: '⚡' },
   isReady: { type: Boolean, default: false }
 })
 
@@ -57,7 +58,7 @@ const bannerStyle = computed(() => ({
           :class="{ active: rivalEventActive }"
         >
           <div class="pc-banner-icon">
-            ⚡
+            {{ rivalEventIcon }}
           </div>
           <div class="pc-banner-content">
             <div class="pc-banner-title">
@@ -393,21 +394,23 @@ const bannerStyle = computed(() => ({
 .event-banner {
   &.active {
     background: linear-gradient(135deg, 
-      rgba(255, 214, 10, 0.15) 0%, 
-      rgba(15, 23, 42, 0.9) 100%
-    );
-    border-color: rgba(255, 214, 10, 0.4);
-    background: rgba(15, 23, 42, 0.95);
+      rgba(251, 191, 36, 0.15) 0%, 
+      rgba(15, 23, 42, 0.95) 100%
+    ) !important;
+    border-color: rgba(251, 191, 36, 0.5) !important;
+    box-shadow: 
+      0 10px 30px rgba(0, 0, 0, 0.6),
+      0 0 20px rgba(251, 191, 36, 0.15);
     
     .pc-banner-title { color: #ffcc00; opacity: 1; }
     .pc-banner-icon { 
-      background: rgba(255, 214, 10, 0.15);
+      background: rgba(251, 191, 36, 0.2);
       color: #ffcc00; 
-      box-shadow: 0 0 15px rgba(255, 214, 10, 0.3);
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
     }
 
     &::after {
-      background: linear-gradient(180deg, rgba(255,214,10,0.2), rgba(255,214,10,0.02));
+      background: linear-gradient(180deg, rgba(251,191,36,0.2), rgba(251,191,36,0.02));
     }
   }
 }

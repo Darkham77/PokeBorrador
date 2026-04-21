@@ -151,6 +151,8 @@ export class ProxyQuery {
       if (row.save_data && typeof row.save_data === 'string') try { row.save_data = JSON.parse(row.save_data); } catch(_e){ /* ignore */ }
       if (row.team_data && typeof row.team_data === 'string') try { row.team_data = JSON.parse(row.team_data); } catch(_e){ /* ignore */ }
       if (row.data && typeof row.data === 'string') try { row.data = JSON.parse(row.data); } catch(_e){ /* ignore */ }
+      if (row.config && typeof row.config === 'string') try { row.config = JSON.parse(row.config); } catch(_e){ /* ignore */ }
+      if (row.schedule && typeof row.schedule === 'string') try { row.schedule = JSON.parse(row.schedule); } catch(_e){ /* ignore */ }
     });
 
     if (final === 'single') return { data: data[0] || null, error: data.length === 0 ? { message: 'Not found' } : null };

@@ -25,6 +25,7 @@ The DBRouter operates in two mutually exclusive modes, determined during the use
 * **Provider**: SQLite (WASM) + IndexedDB.
 * **Scope**: Private world processed entirely in the user's browser.
 * **Technology**: Uses `sql.js` for the SQL engine and `IndexedDB` for binary `.sqlite` file persistence.
+  * **WASM Parity**: The `initSqlJs` `locateFile` path **MUST** point to the exact same version/CDN as the main library script in `index.html` to avoid `LinkError`.
 
 ---
 
@@ -161,6 +162,8 @@ Every change to the database structure **MUST** be documented in two manual plac
 * **Schemas (`database/schemas/`)**: Represent the **current and absolute** state of the tables. Mandatory for clean installs and architectural reference.
 * **Migrations (`database/migrations/`)**: Represent the history of **deltas**. Mandatory for tracking changes and team deployments.
 * **Transparency**: When proposing a migration, the AI or developer **MUST** show the user the exact SQL code block to be executed in Supabase.
+* **SQLite Compatibility**: The local engine automatically strips the `public.` schema prefix. Ensure SQL migrations are written to be schema-agnostic or rely on this stripping logic.
+* **Migration ID Parity**: Always use `m.id` (not `m.name`) to match the generated `migrations_data.js` objects during the application loop.
 
 ---
 
@@ -173,7 +176,7 @@ To ensure the client is compatible with the database schema, `DBRouter` provides
 ### Client-DB Parity
 
 1. **`CLIENT_DB_VERSION`**: A constant defined in `src/logic/db/dbRouter.js`.
-2. **`system_config` / `config`**: Tables where the current database version is stored.
+2. **`system_config` / `config`**: Tables where the current database version is stored. (Local mode supports both for migration compatibility).
 
 ### Check Procedure
 

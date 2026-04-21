@@ -85,7 +85,6 @@ const cardStyles = computed(() => {
 
 watch(() => props.show, (val) => {
   if (val) {
-    // Basic z-index handling if needed, but ModalHost renders in order
     computedZIndex.value = props.zIndex
   }
 }, { immediate: true })
@@ -93,147 +92,164 @@ watch(() => props.show, (val) => {
 
 <template>
   <Teleport to="body">
-    <Transition 
-      :name="type.startsWith('side') ? (type === 'side-left' ? 'slide-left' : 'slide-right') : 'modal-zoom'"
-      appear
+    <div
+      v-if="show"
+      class="base-modal-root"
+      :style="{ zIndex: computedZIndex }"
     >
-      <div 
-        v-if="show" 
-        class="base-modal-teleport-wrapper" 
-        :class="{ 'no-pointer-events': overlay === 'none' }"
-        :style="{ zIndex: computedZIndex }"
+      <!-- Background Overlay (Always Fixed) -->
+      <Transition
+        name="fade-overlay"
+        appear
       >
         <div 
           v-if="overlay === 'dark'" 
-          class="modal-overlay active" 
+          class="modal-overlay" 
           @click="handleOverlayClick" 
         />
-        
+      </Transition>
+      
+      <!-- Content Wrapper (Flex Centered) -->
+      <Transition 
+        :name="type.startsWith('side') ? (type === 'side-left' ? 'slide-left' : 'slide-right') : 'modal-zoom'"
+        appear
+      >
         <div 
-          class="modal-content-premium base-modal-card"
-          :class="[`type-${type}`, padding === 'raw' ? 'padding-raw' : 'padding-standard', customClass]"
-          :style="cardStyles"
-          @click.stop
+          class="base-modal-teleport-wrapper" 
+          :class="[{ 'no-pointer-events': overlay === 'none' }, `type-${type}`]"
         >
-          <!-- Floating Close Button -->
-          <button
-            v-if="hideHeader && showCloseButton"
-            class="modal-close-btn-floating"
-            @click="handleClose"
+          <div 
+            class="modal-content-premium base-modal-card"
+            :class="[padding === 'raw' ? 'padding-raw' : 'padding-standard', customClass]"
+            :style="cardStyles"
+            @click.stop
           >
-            &times;
-          </button>
-
-          <!-- Header -->
-          <header
-            v-if="!hideHeader"
-            class="modal-header-premium"
-          >
-            <div class="modal-header-left">
-              <slot name="header-icon" />
-              <div class="modal-title-stack">
-                <h2 class="modal-title-text">
-                  {{ title }}
-                </h2>
-              </div>
-            </div>
+            <!-- Floating Close Button -->
             <button
-              v-if="showCloseButton"
-              class="modal-close-btn"
+              v-if="hideHeader && showCloseButton"
+              class="modal-close-btn-floating"
               @click="handleClose"
             >
               &times;
             </button>
-          </header>
 
-          <!-- Content -->
-          <div 
-            class="modal-scrollable-content"
-            :class="[
-              padding === 'raw' ? 'padding-raw' : 'padding-standard',
-              { 'no-scroll': noScroll }
-            ]"
-          >
-            <slot />
+            <!-- Header -->
+            <header
+              v-if="!hideHeader"
+              class="modal-header-premium"
+            >
+              <div class="modal-header-left">
+                <slot name="header-icon" />
+                <div class="modal-title-stack">
+                  <h2 class="modal-title-text">
+                    {{ title }}
+                  </h2>
+                </div>
+              </div>
+              <button
+                v-if="showCloseButton"
+                class="modal-close-btn"
+                @click="handleClose"
+              >
+                &times;
+              </button>
+            </header>
+
+            <!-- Content -->
+            <div 
+              class="modal-scrollable-content"
+              :class="[
+                padding === 'raw' ? 'padding-raw' : 'padding-standard',
+                { 'no-scroll': noScroll }
+              ]"
+            >
+              <slot />
+            </div>
+
+            <!-- Footer -->
+            <footer
+              v-if="$slots.footer"
+              class="modal-footer-premium"
+            >
+              <slot name="footer" />
+            </footer>
           </div>
-
-          <!-- Footer -->
-          <footer
-            v-if="$slots.footer"
-            class="modal-footer-premium"
-          >
-            <slot name="footer" />
-          </footer>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </div>
   </Teleport>
 </template>
 
 <style lang="scss">
-/* Global modal styles are in _modals.scss, but base component specific ones here */
-.base-modal-teleport-wrapper {
+@use "@/styles/core/tools" as *;
+
+.base-modal-root {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
-  // Forces a new stacking context for fixed children
-  transform: translateZ(0);
-  pointer-events: auto;
-
-  &.no-pointer-events {
-    pointer-events: none !important;
-  }
+  display: block;
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  z-index: 1 !important;
+  backdrop-filter: Blur(10px);
+  z-index: 1;
   pointer-events: auto;
 }
 
-.base-modal-card {
+.base-modal-teleport-wrapper {
   position: fixed;
-  z-index: 2 !important;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+
+  &.type-side, &.type-side-right {
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+
+  &.type-side-left {
+    justify-content: flex-start;
+    align-items: stretch;
+  }
+}
+
+.base-modal-card {
+  position: relative;
   pointer-events: auto;
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.9);
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
 
-
-  
-  &.type-center {
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  .type-center & {
     width: 95%;
     max-height: 94vh;
+    border-radius: 20px;
   }
   
-  &.type-side, &.type-side-right {
-    position: fixed;
-    top: 0;
-    right: 0;
+  .type-side &, .type-side-right & {
+    width: 440px;
+    max-width: 95vw;
     height: 100vh;
     border-radius: 0;
     border-left: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  &.type-side-left {
-    position: fixed;
-    top: 0;
-    left: 0;
+  .type-side-left & {
+    width: 440px;
+    max-width: 95vw;
     height: 100vh;
     border-radius: 0;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
-
-
 
 .modal-header-premium {
   padding: 24px 32px 16px;
@@ -263,7 +279,7 @@ watch(() => props.show, (val) => {
   
   &:hover {
     color: #fff;
-    transform: rotate(90deg);
+    transform: Rotate(90deg);
   }
 }
 
@@ -280,39 +296,32 @@ watch(() => props.show, (val) => {
 }
 
 /* Transitions */
-.modal-zoom-enter-active, .modal-zoom-leave-active {
+.fade-overlay-enter-active, .fade-overlay-leave-active {
+  transition: opacity 0.4s ease;
+}
+.fade-overlay-enter-from, .fade-overlay-leave-to {
+  opacity: 0;
+}
+
+.modal-zoom-enter-active, .modal-zoom-leave-active,
+.slide-right-enter-active, .slide-right-leave-active,
+.slide-left-enter-active, .slide-left-leave-active {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  .modal-overlay { transition: opacity 0.4s ease; }
-  .modal-content-premium { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 }
 
 .modal-zoom-enter-from, .modal-zoom-leave-to {
   opacity: 0;
-  .modal-overlay { opacity: 0; }
-  .modal-content-premium {
-    transform: translate(-50%, -40%) Scale(0.8);
-    opacity: 0;
-  }
-}
-
-/* Side Sliding Transitions (Generalizing as requested) */
-.slide-right-enter-active, .slide-right-leave-active,
-.slide-left-enter-active, .slide-left-leave-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  .modal-overlay { transition: opacity 0.4s ease; }
-  .modal-content-premium { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  transform: Scale(0.9);
 }
 
 .slide-right-enter-from, .slide-right-leave-to {
   opacity: 0;
-  .modal-overlay { opacity: 0; }
-  .modal-content-premium { transform: translateX(100%); }
+  transform: translateX(100%);
 }
 
 .slide-left-enter-from, .slide-left-leave-to {
   opacity: 0;
-  .modal-overlay { opacity: 0; }
-  .modal-content-premium { transform: translateX(-100%); }
+  transform: translateX(-100%);
 }
 
 .modal-scrollable-content {
@@ -324,17 +333,11 @@ watch(() => props.show, (val) => {
   position: relative;
   
   &.padding-standard { padding: 32px; }
-  &.padding-raw { 
-    padding: 0 !important; 
-    margin: 0 !important;
-    min-height: 0;
-  }
+  &.padding-raw { padding: 0 !important; }
 }
 
-.no-padding { padding: 0 !important; }
 .no-scroll { overflow-y: hidden !important; }
 
-/* Body lock */
 body.modal-open {
   overflow: hidden !important;
 }

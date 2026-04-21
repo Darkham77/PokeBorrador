@@ -146,7 +146,8 @@ const selectTab = (tabId) => {
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: 'Press Start 2P', cursive;
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 1.2;
     font-weight: 400;
     color: var(--gray, #94a3b8);
     @include pixelated;
@@ -162,7 +163,7 @@ const selectTab = (tabId) => {
     &:hover {
       background: rgba(255, 255, 255, 0.04);
       color: #fff;
-      transform: translateX(4px);
+      padding-left: 20px;
       border-color: rgba(250, 204, 21, 0.2);
     }
 
