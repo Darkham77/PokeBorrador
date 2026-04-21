@@ -339,6 +339,8 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 /* Scoped styles for the main container or specific integrated elements */
 
 .content-area {
@@ -397,7 +399,7 @@ onUnmounted(() => {
     pointer-events: auto;
   }
 
-  @media (max-width: 1380px) {
+  @include responsive(hud-mobile) {
     bottom: 170px;
   }
 }
@@ -412,7 +414,7 @@ onUnmounted(() => {
   transform: translateZ(0);
 }
 
-@media (max-width: 1380px) {
+@include responsive(hud-mobile) {
   .mobile-only-nav { display: flex !important; }
   .content-area { padding-bottom: 90px !important; }
 }
@@ -431,7 +433,7 @@ onUnmounted(() => {
   .mobile-only-nav { zoom: 0.6; }
 }
 
-@media (min-width: 1381px) {
+@media (min-width: 1411px) {
   .mobile-only-nav { display: none; }
 }
 </style>

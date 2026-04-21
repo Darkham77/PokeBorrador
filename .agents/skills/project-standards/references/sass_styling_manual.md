@@ -146,6 +146,16 @@ When refactoring legacy or generic components:
   - Use **Sass Variables** (`$token`) for technical constraints, sizing, and static internal logic.
 - **Global Pollution**: Do not define variables or mixins directly in component styles; always centralize them in tokens/partials and `@use` them.
 
+### 4. CSS Redundancy & "Single Source of Truth"
+
+Avoid spreading definitions for the same component across multiple files. This is the primary cause of "Visual Ghosts" where changes appear not to take effect.
+
+- **MANDATORY**: Each core component (`.map-card`, `.base-modal`, `.hud-bar`) must have ONE primary SCSS file.
+- **FORBIDDEN**: Redefining a root class in multiple stylesheets (e.g., having `.map-card` in `_render.scss`, `_items.scss`, and `_grid.scss`).
+- **Audit Requirement**: Before committing UI changes, you MUST run the redundancy audit:
+  `python3 .agents/skills/project-standards/scripts/detect_css_redundancy.py`
+- **Goal**: Maintain 0 redefinitions for critical game components.
+
 ---
 
 ## 📱 Safari & Mobile Compatibility (Prefix Mandate)

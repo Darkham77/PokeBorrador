@@ -68,12 +68,12 @@ const evolutions = computed(() => {
       class="pdex-detail-card animate-pop"
     >
       <header
-        class="detail-header"
+        class="pdex-detail-header"
         :style="{ '--type-color': PDEX_TYPE_COLORS[species.type[0].toLowerCase()] }"
       >
         <div class="header-main">
           <div class="species-meta">
-            <span class="number">#{{ species.id.padStart(3, '0') }}</span>
+            <span class="pdex-number">#{{ species.id.padStart(3, '0') }}</span>
             <div class="types">
               <span
                 v-for="t in species.type"
@@ -83,7 +83,7 @@ const evolutions = computed(() => {
               >{{ t }}</span>
             </div>
           </div>
-          <h2 class="name">
+          <h2 class="pdex-name">
             {{ species.name }}
           </h2>
         </div>
@@ -95,7 +95,7 @@ const evolutions = computed(() => {
         </button>
       </header>
 
-      <div class="main-display">
+      <div class="pdex-main-display">
         <div class="sprite-container">
           <img
             :src="getSprite(props.speciesId)"
@@ -108,11 +108,11 @@ const evolutions = computed(() => {
         </div>
       </div>
 
-      <nav class="detail-tabs">
+      <nav class="pdex-detail-tabs">
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          class="tab-btn"
+          class="pdex-tab-btn"
           :class="{ active: activeTab === tab.id }"
           @click="activeTab = tab.id"
         >
@@ -121,20 +121,20 @@ const evolutions = computed(() => {
         </button>
       </nav>
 
-      <div class="detail-body custom-scrollbar-vicio">
+      <div class="pdex-detail-body custom-scrollbar-vicio">
         <div
           v-if="activeTab === 'summary'"
-          class="tab-pane summary-pane"
+          class="pdex-summary-pane"
         >
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">CATEGORÍA</span><span class="value">{{ species.category || 'Pokémon Desconocido' }}</span>
+              <span class="pdex-label">CATEGORÍA</span><span class="pdex-value">{{ species.category || 'Pokémon Desconocido' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">ALTURA</span><span class="value">{{ species.height || '???' }} m</span>
+              <span class="pdex-label">ALTURA</span><span class="pdex-value">{{ species.height || '???' }} m</span>
             </div>
             <div class="info-item">
-              <span class="label">PESO</span><span class="value">{{ species.weight || '???' }} kg</span>
+              <span class="pdex-label">PESO</span><span class="pdex-value">{{ species.weight || '???' }} kg</span>
             </div>
           </div>
           <p class="description">
@@ -144,14 +144,14 @@ const evolutions = computed(() => {
 
         <div
           v-if="activeTab === 'stats'"
-          class="tab-pane stats-pane"
+          class="pdex-stats-pane"
         >
           <div
             v-for="s in baseStats"
             :key="s.label"
             class="stat-row"
           >
-            <span class="stat-label">{{ s.label }}</span><span class="stat-value">{{ s.value }}</span>
+            <span class="pdex-stat-label">{{ s.label }}</span><span class="pdex-stat-value">{{ s.value }}</span>
             <div class="stat-bar-bg">
               <div
                 class="stat-bar-fill"
@@ -160,13 +160,13 @@ const evolutions = computed(() => {
             </div>
           </div>
           <div class="stat-total">
-            <span class="label">TOTAL:</span><span class="value">{{ species.stats.hp + species.stats.attack + species.stats.defense + species.stats.spAttack + species.stats.spDefense + species.stats.speed }}</span>
+            <span class="pdex-label">TOTAL:</span><span class="pdex-value">{{ species.stats.hp + species.stats.attack + species.stats.defense + species.stats.spAttack + species.stats.spDefense + species.stats.speed }}</span>
           </div>
         </div>
 
         <div
           v-if="activeTab === 'moves'"
-          class="tab-pane moves-pane"
+          class="pdex-moves-pane"
         >
           <div class="move-list">
             <div

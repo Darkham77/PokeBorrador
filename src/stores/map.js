@@ -16,20 +16,21 @@ export const useMapStore = defineStore('map', () => {
   })
   const region = computed(() => gs.state.map?.region || 'kanto')
 
-  const currentCycle = ref(getDayCycle())
+  const globalWeather = ref('clear')
+  const forcedCycle = ref(null) // null, morning, day, dusk, night
+
+  const currentCycle = computed(() => {
+    if (forcedCycle.value) return forcedCycle.value
+    return getDayCycle()
+  })
   
   // React to debug time changes immediately
   if (typeof window !== 'undefined') {
     window.addEventListener('time-sync-update', () => {
-      console.log('[MapStore] Time sync detected, updating cycle...');
-      currentCycle.value = getDayCycle();
+      console.log('[MapStore] Time sync detected');
+      // No longer need to manually update currentCycle as it's computed
     });
   }
-
-  // Update cycle every minute
-  setInterval(() => {
-    currentCycle.value = getDayCycle()
-  }, 60000)
 
   // Sync time on store init (safer than onMounted in a store)
   syncServerTime()
@@ -40,6 +41,8 @@ export const useMapStore = defineStore('map', () => {
   const mapWinners = ref({}) // locId -> winner
   const pendingAwards = ref([])
   
+  const setGlobalWeather = (w) => { globalWeather.value = w }
+  const setGlobalCycle = (c) => { forcedCycle.value = c }
 
   const navigate = (locId) => {
     const now = Date.now()
@@ -98,11 +101,15 @@ export const useMapStore = defineStore('map', () => {
     currentMap,
     region,
     currentCycle,
+    globalWeather,
+    forcedCycle,
     maps,
     activeEvents,
     pendingAwards,
     dailyGuardianCaptures,
     mapWinners,
+    setGlobalWeather,
+    setGlobalCycle,
     navigate
   }
 })

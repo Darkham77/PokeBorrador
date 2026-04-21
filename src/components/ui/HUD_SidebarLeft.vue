@@ -13,6 +13,8 @@
 </script>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .hud-sidebar-left {
   position: fixed;
   bottom: 20px;
@@ -30,7 +32,7 @@
     pointer-events: auto;
   }
 
-  @media (max-width: 1380px) {
+  @include responsive(hud-mobile) {
     bottom: 110px;
   }
 }

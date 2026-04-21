@@ -1,3 +1,4 @@
+// src/styles/components/_pokedex-detail.scss
 @use "@/styles/core/tools" as *;
 
 .pdex-detail-overlay {
@@ -24,7 +25,7 @@
   box-shadow: 0 30px 60px rgba(0,0,0,0.8);
 }
 
-.detail-header {
+.pdex-detail-header {
   padding: 24px;
   background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
   border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -39,7 +40,7 @@
       align-items: center;
       gap: 12px;
       margin-bottom: 8px;
-      .number { font-family: 'Press Start 2P', cursive; font-size: 10px; color: #555; }
+      .pdex-number { font-family: 'Press Start 2P', cursive; font-size: 10px; color: #555; }
       .types { display: flex; gap: 6px; }
       .type-pill { 
         font-size: 9px; 
@@ -50,7 +51,7 @@
         text-transform: uppercase; 
       }
     }
-    .name { font-size: 24px; font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+    .pdex-name { font-size: 24px; font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
   }
 
   .close-btn {
@@ -65,7 +66,7 @@
   }
 }
 
-.main-display {
+.pdex-main-display {
   padding: 20px;
   display: flex;
   justify-content: center;
@@ -88,13 +89,13 @@
   }
 }
 
-.detail-tabs {
+.pdex-detail-tabs {
   display: flex;
   background: rgba(0,0,0,0.2);
   padding: 0 10px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 
-  .tab-btn {
+  .pdex-tab-btn {
     flex: 1;
     background: none;
     border: none;
@@ -119,7 +120,7 @@
   }
 }
 
-.detail-body {
+.pdex-detail-body {
   flex: 1;
   overflow-y: auto;
   padding: 24px;
@@ -127,7 +128,7 @@
 }
 
 /* Tab Panes */
-.summary-pane {
+.pdex-summary-pane {
   .info-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -139,22 +140,22 @@
       padding: 12px;
       border-radius: 12px;
       text-align: center;
-      .label { display: block; font-size: 8px; color: #555; margin-bottom: 4px; font-weight: 800; }
-      .value { font-size: 11px; font-weight: 900; color: #ddd; }
+      .pdex-label { display: block; font-size: 8px; color: #555; margin-bottom: 4px; font-weight: 800; }
+      .pdex-value { font-size: 11px; font-weight: 900; color: #ddd; }
     }
   }
   .description { font-size: 13px; line-height: 1.6; color: #94a3b8; font-style: italic; }
 }
 
-.stats-pane {
+.pdex-stats-pane {
   .stat-row {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 12px;
     
-    .stat-label { width: 40px; font-size: 10px; font-weight: 900; color: #555; }
-    .stat-value { width: 30px; font-size: 12px; font-weight: 900; color: #fff; text-align: right; }
+    .pdex-stat-label { width: 40px; font-size: 10px; font-weight: 900; color: #555; }
+    .pdex-stat-value { width: 30px; font-size: 12px; font-weight: 900; color: #fff; text-align: right; }
     .stat-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
     .stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease-out; }
   }
@@ -166,12 +167,12 @@
     justify-content: flex-end;
     gap: 10px;
     align-items: center;
-    .label { font-size: 10px; font-weight: 900; color: #555; }
-    .value { font-family: 'Press Start 2P', cursive; font-size: 14px; color: var(--yellow); }
+    .pdex-label { font-size: 10px; font-weight: 900; color: #555; }
+    .pdex-value { font-family: 'Press Start 2P', cursive; font-size: 14px; color: var(--yellow); }
   }
 }
 
-.moves-pane {
+.pdex-moves-pane {
   .move-list {
     display: flex;
     flex-direction: column;
@@ -188,56 +189,4 @@
       .move-name { color: #fff; text-transform: uppercase; }
     }
   }
-}
-
-.tms-pane {
-  .tm-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
-    .tm-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 12px;
-      &.incompatible { opacity: 0.3; }
-      .tm-id { width: 40px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 9px; font-weight: 900; color: #000; }
-      .tm-info { flex: 1; display: flex; flex-direction: column; .tm-name { font-size: 12px; font-weight: 800; color: #fff; } .tm-type { font-size: 9px; color: #555; text-transform: uppercase; } }
-      .tm-check { font-size: 14px; font-weight: 900; }
-    }
-  }
-}
-
-.evolve-pane {
-  .evo-chain {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    .evo-step {
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      background: rgba(255,255,255,0.02);
-      padding: 16px;
-      border-radius: 20px;
-      .evo-sprite { width: 64px; height: 64px; image-rendering: pixelated; }
-      .evo-arrow {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        .method { font-size: 8px; font-weight: 800; color: var(--yellow); text-transform: uppercase; }
-        .arrow { font-size: 20px; color: #444; }
-      }
-      .evo-to {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        .target-name { font-size: 10px; font-weight: 900; color: #fff; text-transform: uppercase; margin-top: 4px; }
-      }
-    }
-  }
-  .no-evo { text-align: center; padding: 40px; color: #444; font-weight: 800; font-size: 14px; }
 }

@@ -143,8 +143,9 @@ async function startTest() {
 }
 
 .hint {
-  font-size: 7px;
-  color: #64748b;
+  font-size: 10px;
+  color: #94a3b8;
   margin: 0;
+  line-height: 1.4;
 }
 </style>

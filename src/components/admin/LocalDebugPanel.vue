@@ -10,6 +10,8 @@ import DebugItemsTab from './debug/DebugItemsTab.vue'
 import DebugTimeTab from './debug/DebugTimeTab.vue'
 import DebugModalsTab from './debug/DebugModalsTab.vue'
 
+import BaseModal from '@/components/common/BaseModal.vue'
+
 const auth = useAuthStore()
 const game = useGameStore()
 const ui = useUIStore()
@@ -61,39 +63,47 @@ if (typeof window !== 'undefined') {
     <button
       class="trigger-btn"
       :class="{ active: isOpen }"
-      @click="isOpen = !isOpen"
+      @click="isOpen = true"
     >
-      <template v-if="!isOpen">
-        <span class="icon">🛠️</span>
-        <span class="label">DEBUG</span>
-      </template>
-      <span v-else>✕</span>
+      <span class="icon">🛠️</span>
+      <span class="label">DEBUG</span>
     </button>
 
-    <Transition name="slide-up">
+    <BaseModal
+      :show="isOpen"
+      title="ADMIN DEBUG TOOLS"
+      type="side-left"
+      max-width="460px"
+      padding="raw"
+      overlay="none"
+      :lock-scroll="false"
+      @close="isOpen = false"
+    >
+      <template #header-icon>
+        <span class="modal-header-emoji">🛠️</span>
+      </template>
+
       <div
-        v-if="isOpen"
-        class="debug-window"
+        class="debug-window-standard"
         @wheel.stop
         @touchstart.stop
         @touchmove.stop
         @mousedown.stop
       >
-        <header class="debug-header">
-          <h3>PANEL DE DESARROLLO</h3>
-          <p
+        <div class="debug-status-bar">
+          <span
             v-if="auth.sessionMode === 'offline'"
             class="badge offline"
           >
             MODO LOCAL
-          </p>
-          <p
+          </span>
+          <span
             v-else
             class="badge admin"
           >
-            MODO ADMIN ONLINE
-          </p>
-        </header>
+            ADMIN ONLINE
+          </span>
+        </div>
 
         <nav class="debug-nav">
           <button 
@@ -135,7 +145,7 @@ if (typeof window !== 'undefined') {
           </div>
         </main>
       </div>
-    </Transition>
+    </BaseModal>
   </div>
 </template>
 
@@ -168,52 +178,22 @@ if (typeof window !== 'undefined') {
     transform: translateY(-2px) Scale(1.05);
     box-shadow: 0 12px 30px rgba(124, 58, 237, 0.5);
   }
-
-  &.active {
-    background: #1f1f23;
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-  }
 }
 
-.debug-window {
-  position: absolute;
-  bottom: 60px;
-  left: 0;
-  width: max-content;
-  min-width: 340px;
-  max-width: 95vw;
-  @include glass-solid(rgba(15, 23, 42, 0.9));
-  -webkit-backdrop-filter: Blur(25px);
-  backdrop-filter: Blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.02);
+.debug-window-standard {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  background: transparent;
 }
 
-.debug-header {
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.03);
+.debug-status-bar {
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
-  justify-content: space-between;
   align-items: center;
-
-  h3 {
-    margin: 0;
-    font-family: 'Press Start 2P', monospace;
-    @include pixelated;
-    font-size: 10px;
-    color: #fff;
-    letter-spacing: 0.5px;
-  }
+  gap: 10px;
 }
 
 .badge {
@@ -224,16 +204,19 @@ if (typeof window !== 'undefined') {
   text-transform: uppercase;
   font-family: 'Press Start 2P', monospace;
   @include pixelated;
+  width: fit-content;
+  margin: 0;
 
-  &.offline { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
-  &.admin { background: rgba(248, 113, 113, 0.2); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+  &.offline { background: rgba(52, 211, 153, 0.1); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.2); }
+  &.admin { background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); }
 }
 
 .debug-nav {
   display: flex;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 4px;
   gap: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
   button {
     flex: 1;
@@ -243,9 +226,9 @@ if (typeof window !== 'undefined') {
     font-family: 'Press Start 2P', monospace;
     @include pixelated;
     font-size: 7px;
-    padding: 10px 4px;
+    padding: 14px 4px;
     cursor: pointer;
-    border-radius: 10px;
+    border-radius: 12px;
     transition: all 0.2s;
 
     &:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
@@ -258,11 +241,24 @@ if (typeof window !== 'undefined') {
 }
 
 .debug-content {
-  padding: 20px;
-  max-height: 450px;
+  flex: 1;
+  padding: 24px;
   overflow-y: auto;
   min-height: 0;
   overscroll-behavior: contain;
+
+  /* Custom scrollbar for debug panel */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    &:hover { background: rgba(255, 255, 255, 0.1); }
+  }
 }
 
 .empty-state {
@@ -273,13 +269,5 @@ if (typeof window !== 'undefined') {
   @include pixelated;
   font-size: 7px;
   line-height: 1.6;
-}
-
-.slide-up-enter-active, .slide-up-leave-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.slide-up-enter-from, .slide-up-leave-to {
-  transform: translateY(30px) Scale(0.95);
-  opacity: 0;
 }
 </style>

@@ -88,6 +88,7 @@ const activeEventData = computed(() => {
       :maps="ms.maps"
       :badge-count="gs.badges || 0"
       :cycle="ms.currentCycle"
+      :weather="ms.globalWeather"
       :player-class="gs.playerClass"
       :class-data="gs.classData"
       :safari-ticket-secs="gs.safariTicketSecs || 0"

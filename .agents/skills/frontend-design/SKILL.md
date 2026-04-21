@@ -176,6 +176,7 @@ All spacing and sizing in multiples of 8:
 - **Background Fitting (1:1 Logic)**: For reliable "adjusted to smallest size" (1:1 aspect) fitting without tiling, use `background-size: cover` combined with `background-repeat: no-repeat` and `background-position: center`. Avoid hardcoded large percentages like `175%` which are prone to tiling on large containers.
 - **Interactive Component Offsets**: Interactive elements in cards (like spawns or badges) may need significant vertical offsets (e.g., `bottom: 35px`) to ensure they remain accessible and visible after applying overlays or zoom effects to the container.
 - **Right-Aligned Overlapping Stacks**: When using `justify-content: flex-end` for a list of overlapping sprites (e.g., Pokémon spawns), apply negative margins via `margin-right: -12px` to the elements. This ensures that the natural DOM order correctly stacks elements from right-to-left, which is more intuitive for right-aligned grids.
+- **GPU Rendering Persistence**: Browsers often release hardware-accelerated layers after a CSS transition/animation ends, which can cause environmental backgrounds to "snap" from smooth to pixelated. Fix by using `will-change: filter, transform;` combined with `transform: TranslateZ(0);` to force the layer to stay on the GPU.
 
 ## 3.1 Asynchronous Interaction Feedback
 

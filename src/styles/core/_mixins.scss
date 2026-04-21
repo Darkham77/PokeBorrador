@@ -84,4 +84,5 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  image-rendering: auto; // Ensures smooth backgrounds
 }

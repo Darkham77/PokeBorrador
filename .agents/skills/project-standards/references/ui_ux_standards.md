@@ -19,6 +19,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **MANDATORY**: All game-world elements **MUST** be Pixel Art (Sprites, Icons, Typography).
 - **FORBIDDEN**: Modern high-res vector icons (SVG) or smooth fonts for primary game data.
 - **EXCEPTION: Premium Branding**: High-res logos or emblems **SHOULD** use smooth rendering (`image-rendering: auto;`) to enhance the contrast.
+- **GPU Persistence Rule**: To prevent "snapping" from smooth to pixelated after CSS transitions (especially on environmental backgrounds), use `image-rendering: auto` explicitly in `smooth` mixins and force GPU layer persistence with `will-change: filter, transform;` and `transform: TranslateZ(0);`.
 
 ---
 
@@ -58,6 +59,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Implementation**: Combine subtle `TranslateY` (4px offset) with a slight `Rotate` (1-2 degrees).
 - **MANDATORY**: Use **Capitalized** `TranslateY()` and `Rotate()` for SASS compliance.
 - **Cycle**: A slow 4-second `infinite ease-in-out` loop is recommended for an organic feel.
+- **Night Illumination Overrides**: Weather effects that use bright/white overlays (fog, snow, blizzard) MUST implement night-specific overrides using dark tints (`rgba(0,0,0,x)`) to prevent the atmosphere from unnaturally illuminating the night cycle.
 
 ---
 
@@ -90,7 +92,6 @@ The `BaseModal.vue` component supports parameterized aesthetics to maintain cons
 
 > [!IMPORTANT]
 > **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.
-
 
 ---
 

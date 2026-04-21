@@ -59,6 +59,12 @@ Refer to these manuals for complex implementation specifications:
 - **DETECTED REGRESSION**: Lowercase usage in filters/transforms breaks production builds. Do NOT omit capitalization under any circumstances.
 - **GPU Tip**: Prefer `opacity: X` property over `filter: Opacity(X)`.
 
+### 3. CSS Redundancy & Specificity
+
+- **REQUIRED**: Core components (Cards, Modals, HUD) MUST have a "Single Source of Truth" for their styles.
+- **FORBIDDEN**: Redefining the same class (e.g. `.map-card`) across multiple files, as it creates unpredictable visual regressions.
+- **Audit**: Run `python3 .agents/skills/project-standards/scripts/detect_css_redundancy.py` to identify overlaps and plan refactoring.
+
 ### 2. SASS Math & Strings
 
 - **REQUIRED**: Use namespaced functions (e.g., `math.random`, `string.unquote`).
@@ -91,6 +97,7 @@ Refer to these manuals for complex implementation specifications:
 ## 🏁 Final Audit Checklist
 
 - [ ] **File Length**: No violator files (excluding exceptions).
+- [ ] **Redundancy Audit**: `detect_css_redundancy.py` shows 0 critical overlaps for core components.
 - [ ] **Validations**: SASS Traps and Hybrid Patterns detection scripts pass.
 - [ ] **Linting**: `npm run lint` passes with 0 errors.
 - [ ] **Production Build**: `npm run build` passes without errors.

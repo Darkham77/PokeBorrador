@@ -41,6 +41,7 @@ You are working on a game development project. This skill teaches the PRINCIPLES
 | GDD, balancing, player psychology | `references/game-design.md` |
 | Multiplayer, networking | `references/multiplayer.md` |
 | Visual style, asset pipeline, animation | `references/game-art.md` |
+| Atmospheric & Weather Effects | `references/atmospheric_effects.md` |
 | Sound design, music, adaptive audio | `references/game-audio.md` |
 
 ---

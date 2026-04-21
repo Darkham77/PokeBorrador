@@ -1,6 +1,9 @@
 // src/styles/core/_variables.scss
 @use 'sass:color';
 
+// CONFIGURACIÓN DE BREAKPOINTS (Única Fuente de Verdad)
+$hud-mobile-breakpoint: 1410px;
+
 // Core UI colors
 $red:    #ff453a;
 $blue:   #0a84ff;
@@ -51,11 +54,13 @@ $legacy-glow:  rgba(255, 217, 61, 0.25);
   --z-toast: 20000;
   --z-max: 100000;
   --z-critical: 999999;
+  --z-max-value: 1000000;
 }
 
-// Breakpoints
+// Map de breakpoints para mixins
 $breakpoints: (
   mobile:  1100px, 
   tablet:  1250px,
+  hud-mobile: $hud-mobile-breakpoint,
   desktop: 1450px 
 );

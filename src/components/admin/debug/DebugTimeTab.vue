@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { useMapStore } from '@/stores/map'
 
 const props = defineProps({
   securityCheck: { type: Function, required: true }
@@ -9,6 +10,7 @@ const props = defineProps({
 
 const game = useGameStore()
 const ui = useUIStore()
+const mapStore = useMapStore()
 
 const debugDate = ref(new Date().toISOString().slice(0, 16))
 const timeOffsetLabel = ref(`${game.db.getTimeOffset()}ms`)
@@ -28,6 +30,7 @@ function resetTime() {
   debugDate.value = new Date().toISOString().slice(0, 16)
   ui.notify('Tiempo restablecido al real', '♻️')
   window.dispatchEvent(new CustomEvent('time-sync-update'))
+  mapStore.setGlobalCycle(null)
 }
 
 function addHours(h) {
@@ -37,6 +40,20 @@ function addHours(h) {
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
   ui.notify(`+${h} horas añadidas`, '⏩')
   window.dispatchEvent(new CustomEvent('time-sync-update'))
+}
+
+function toggleWeather(w) {
+  if (!props.securityCheck()) return
+  const next = mapStore.globalWeather === w ? 'clear' : w
+  mapStore.setGlobalWeather(next)
+  ui.notify(`Clima fijado: ${next.toUpperCase()}`, '🌥️')
+}
+
+function toggleCycle(c) {
+  if (!props.securityCheck()) return
+  const next = mapStore.forcedCycle === c ? null : c
+  mapStore.setGlobalCycle(next)
+  ui.notify(`Ciclo forzado: ${next ? next.toUpperCase() : 'REAL'}`, '⌛')
 }
 </script>
 
@@ -79,13 +96,113 @@ function addHours(h) {
       </div>
     </div>
 
+    <div class="debug-card">
+      <label>Ciclo Atmosférico (Manual)</label>
+      <div class="button-row">
+        <button
+          :class="{ active: mapStore.forcedCycle === 'morning' }"
+          @click="toggleCycle('morning')"
+        >
+          🌅 AM
+        </button>
+        <button
+          :class="{ active: mapStore.forcedCycle === 'day' }"
+          @click="toggleCycle('day')"
+        >
+          ☀️ DÍA
+        </button>
+        <button
+          :class="{ active: mapStore.forcedCycle === 'dusk' }"
+          @click="toggleCycle('dusk')"
+        >
+          🌇 AT
+        </button>
+        <button
+          :class="{ active: mapStore.forcedCycle === 'night' }"
+          @click="toggleCycle('night')"
+        >
+          🌙 NC
+        </button>
+      </div>
+    </div>
+
+    <div class="debug-card">
+      <label>Clima Global (Pruebas)</label>
+      <div class="button-row weather-grid">
+        <button
+          :class="{ active: mapStore.globalWeather === 'clear' }"
+          @click="toggleWeather('clear')"
+        >
+          ☀️ DESP
+        </button>
+        <button
+          :class="{ active: mapStore.globalWeather === 'rain' }"
+          @click="toggleWeather('rain')"
+        >
+          🌧️ LLUV
+        </button>
+        <button
+          :class="{ active: mapStore.globalWeather === 'storm' }"
+          @click="toggleWeather('storm')"
+        >
+          ⚡ TORM
+        </button>
+        <button
+          :class="{ active: mapStore.globalWeather === 'fog' }"
+          @click="toggleWeather('fog')"
+        >
+          🌫️ NIEB
+        </button>
+        <button
+          :class="{ active: mapStore.globalWeather === 'snow' }"
+          @click="toggleWeather('snow')"
+        >
+          🌨️ NIEV
+        </button>
+        <button
+          :class="{ active: mapStore.globalWeather === 'blizzard' }"
+          @click="toggleWeather('blizzard')"
+        >
+          ❄️ TOR-N
+        </button>
+        <button
+          :class="{ active: mapStore.globalWeather === 'sandstorm' }"
+          @click="toggleWeather('sandstorm')"
+        >
+          🏜️ AREN
+        </button>
+        <button
+          :class="{ active: mapStore.globalWeather === 'heatwave' }"
+          @click="toggleWeather('heatwave')"
+        >
+          🔥 CALO
+        </button>
+      </div>
+    </div>
+
     <div class="debug-info-box">
-      <span>Offset Actual:</span>
-      <strong>{{ timeOffsetLabel }}</strong>
+      <span>Estado:</span>
+      <strong>{{ mapStore.currentCycle.toUpperCase() }} | {{ mapStore.globalWeather.toUpperCase() }}</strong>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 @use "@/styles/components/debug";
+
+.weather-grid {
+  flex-wrap: wrap !important;
+  
+  button {
+    flex: 0 0 auto !important;
+    width: fit-content !important;
+    min-width: 70px;
+  }
+}
+
+button.active {
+  background: var(--yellow) !important;
+  color: #000 !important;
+  border-color: #000 !important;
+}
 </style>

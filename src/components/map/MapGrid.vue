@@ -9,6 +9,7 @@ const props = defineProps({
   maps: { type: Array, required: true },
   badgeCount: { type: Number, default: 0 },
   cycle: { type: String, default: 'day' },
+  weather: { type: String, default: 'clear' },
   playerClass: { type: String, default: 'trainer' },
   classData: { type: Object, default: () => ({}) },
   safariTicketSecs: { type: Number, default: 0 },
@@ -88,6 +89,7 @@ const getDominanceForMap = (mapId) => {
       :is-locked="isMapLocked(loc)"
       :is-safari-locked="loc.id === 'safari_zone' && safariTicketSecs <= 0"
       :cycle="cycle"
+      :weather="weather"
       :badge-count="badgeCount"
       :dominance="getDominanceForMap(loc.id)"
       :is-rocket-extorted="playerClass === 'rocket' && classData?.extortedRouteId === loc.id"

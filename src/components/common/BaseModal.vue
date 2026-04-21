@@ -279,6 +279,13 @@ watch(() => props.show, (val) => {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+
 .modal-title-text {
   font-family: 'Press Start 2P', cursive;
   font-size: 12px;

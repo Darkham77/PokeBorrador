@@ -1,42 +1,65 @@
+// src/styles/layouts/hud/_nav.scss
 @use '../../core/tools' as *;
 @use 'pills';
 
+/* ===== HUD NAVIGATION (SINGLE SOURCE OF TRUTH) ===== */
 .hud-nav {
   display: flex;
-  gap: 10px;
-  justify-content: center;
+  gap: spacing(2);
   align-items: center;
   flex: 1;
+  justify-content: center;
+  min-width: 0;
+
+  @include responsive(hud-mobile) {
+    display: none !important;
+  }
 }
 
 .hud-nav-btn {
-  @include pills.hud-pill-base;
-  flex-direction: row;
-  width: auto;
-  height: 48px;
-  padding: 0 18px;
-  border-radius: 14px;
-  gap: 10px;
+  @include pills.hud-pill-base; // Mantiene el alma del componente
   
+  // Valores estandarizados de la versión "ganadora" (navigation.scss)
+  background: #1a1a20;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: spacing(2) spacing(3.5);
+  color: #fff;
+  font-family: $font-ui;
+  font-weight: 700;
+  font-size: 13px;
+  gap: spacing(1.5);
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  height: auto; // Permite que el padding spacing() controle el tamaño
+
   i, span:first-child {
     font-size: 16px;
     margin-bottom: 0;
-    height: auto;
   }
 
-  .pill-value {
-    font-size: 8px;
-    font-weight: 600;
+  .label {
+    display: block;
+    line-height: 1;
+  }
+
+  &:hover {
+    transform: translate3d(0, -2px, 0);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 255, 255, 0.12);
+    filter: Brightness(1.05);
   }
 
   &.active {
-    border-color: $yellow !important;
-    box-shadow: 0 0 15px rgba($yellow, 0.2);
+    background: rgba($yellow, 0.15) !important;
     color: $yellow !important;
+    border-color: $yellow !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 18px rgba($yellow, 0.35) !important;
     i, span:first-child { color: $yellow !important; }
   }
 }
 
+/* ===== HUD ACTIONS & ITEMS ===== */
 .hud-actions {
   display: flex;
   align-items: center;

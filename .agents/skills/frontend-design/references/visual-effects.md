@@ -294,6 +294,25 @@ background:
 
 ---
 
+## 8. Atmospheric & Cycle Aesthetics
+
+Principles for creating dynamic, realistic environments (weather, day/night cycles).
+
+### 1. High-Contrast Particles (Weather)
+To keep weather particles (sand, snow, rain) visible against varying map backgrounds:
+- **Saturated Colors**: Use more intense hues in your SVGs than the map itself (e.g., golden orange for sand).
+- **Contour Definition**: Apply `Drop-shadow()` and `Contrast()` filters to particles. This creates a sharp "edge" that prevents them from blending into daytime backgrounds.
+
+### 2. Realistic Cycle Transitions
+Avoid "unnatural" color shifts during Dawn/Dusk:
+- **The Golden Hour Rule**: Use `Sepia()` for warmth and `Saturate()` for vibrancy.
+- **FORBIDDEN**: High `Hue-rotate()` values (e.g., >20deg) on full-color map images, as they shift blue spectra into green, making water look toxic/unnatural.
+- **Differentiation**:
+  - **Dawn**: Fresh, cool tones (low sepia, soft blue/violet hue shift).
+  - **Dusk**: Warm, dense tones (high sepia, high saturation, orange hue shift).
+
+---
+
 ## 8. Modern CSS Techniques
 
 ### Container Queries (Concept)

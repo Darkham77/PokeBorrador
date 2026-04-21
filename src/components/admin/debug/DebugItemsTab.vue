@@ -79,8 +79,7 @@ async function addItem(item, qty = 10) {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 300px;
-  overflow-y: auto;
+  flex: 1;
   min-height: 0;
   overscroll-behavior: contain;
 }

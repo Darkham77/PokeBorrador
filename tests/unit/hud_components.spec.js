@@ -98,7 +98,7 @@ describe('HUD Components', () => {
 
     it('displays correct day cycle info', () => {
       const mapStore = useMapStore()
-      mapStore.currentCycle = 'night'
+      mapStore.setGlobalCycle('night')
       
       const wrapper = mount(InventoryPills)
       expect(wrapper.text()).toContain('Noche')
