@@ -106,7 +106,7 @@ async function ensureSchemaIntegrity() {
         if (!existingCols.includes(colName)) {
           console.log(`[SQLite] Auto-repair: Adding missing column "${colName}" to "${tableName}"`)
           try {
-            const cleanDef = def.replace(/\s+PRIMARY\s+KEY/gi, '')
+            const cleanDef = def.replace(/\s+PRIMARY\s+KEY/gi, '').replace(/\s+AUTOINCREMENT/gi, '')
             _sqliteDb.run(`ALTER TABLE ${tableName} ADD COLUMN ${cleanDef}`)
           } catch (e) {
             console.warn(`[SQLite] Auto-repair failed for ${tableName}.${colName}:`, e.message)

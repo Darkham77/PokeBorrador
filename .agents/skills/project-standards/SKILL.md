@@ -87,6 +87,7 @@ Refer to these manuals for complex implementation specifications:
 
 - Check for existing `vite` processes before running `npm run dev`. Reuse existing sessions.
 - Monitor active terminal logs for runtime errors before declaring success.
+- **Windows PowerShell Syntax**: Use `;` instead of `&&` for command concatenation (e.g., `npm run lint; npm run build`). `&&` is not a valid separator in standard PowerShell.
 
 ### 2. Python Self-Healing
 

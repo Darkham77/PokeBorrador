@@ -124,7 +124,6 @@ const scheduleText = computed(() => {
             class="bonus-item"
           >
             <div class="bonus-left">
-              <span class="bonus-emoji">{{ event.icon }}</span>
               <span class="bonus-label">{{ bonus.label }}</span>
             </div>
             <span 
@@ -343,28 +342,8 @@ const scheduleText = computed(() => {
 }
 
 .legacy-confirm-btn {
-  margin-top: 10px;
+  margin: 20px 0 10px;
   width: 100%;
-  padding: 18px;
-  background: var(--yellow);
-  border: none;
-  border-radius: 15px;
-  color: #000;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 11px;
-  cursor: pointer;
-  transition: transform 0.1s, filter 0.2s;
-  box-shadow: 0 4px 0 #b45309;
-  @include pixelated;
-
-  &:hover {
-    filter: Brightness(1.1);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #b45309;
-  }
+  @include btn-vicio-primary;
 }
 </style>

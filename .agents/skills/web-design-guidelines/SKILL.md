@@ -50,3 +50,9 @@ If no files specified, ASK the user which files to review.
 2. AUDIT    → Run web-design-guidelines review ← YOU ARE HERE
 3. FIX      → Address findings from audit
 ```
+
+## 🏛️ Local Project Addendum
+
+### 1. Visual Content Integrity
+- **Emoji Duplication**: Check that dynamic icons (e.g. `{{ event.icon }}`) are not rendered alongside text labels that already contain hardcoded emojis. 
+- **Rule**: If a label contains its own emoji (e.g., "⚡ EXP"), suppress the general icon for that specific list item to avoid visual noise.

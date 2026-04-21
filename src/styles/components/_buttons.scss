@@ -1,0 +1,11 @@
+// src/styles/components/_buttons.scss
+@use "../core/tools" as *;
+
+.btn-vicio-primary {
+  @include btn-vicio-primary;
+}
+
+// Additional button variants can be added here
+.btn-vicio-secondary {
+  // To be implemented if needed
+}

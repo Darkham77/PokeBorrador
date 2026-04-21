@@ -41,7 +41,7 @@ const props = defineProps({
   },
   padding: {
     type: String,
-    default: 'raw' // 'standard' or 'raw'
+    default: 'standard' // 'standard' or 'raw'
   },
   customClass: {
     type: String,
@@ -359,12 +359,15 @@ watch(() => props.show, (val) => {
   min-height: 0;
   position: relative;
   
-  &.padding-standard { padding: 32px; }
-  &.padding-raw { padding: 0 !important; }
-
-  &.variant-retro:not(.padding-raw) {
-    padding: 40px !important;
+  &.padding-standard { 
+    padding: 16px; 
+    
+    &.variant-retro {
+      padding: 20px;
+    }
   }
+  
+  &.padding-raw { padding: 0 !important; }
 }
 
 .no-scroll { overflow-y: hidden !important; }

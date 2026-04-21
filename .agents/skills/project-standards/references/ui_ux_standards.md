@@ -86,9 +86,20 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 The `BaseModal.vue` component supports parameterized aesthetics to maintain consistency:
 
 - **variant="modern" (Default)**: Sleek, glassmorphism-focused, subtle borders.
-- **variant="retro"**: High-contrast 2px yellow border (`var(--yellow)`), 30px corner radius, and 40px default internal padding. Use for gameplay, shops, and settings.
+- **variant="retro"**: High-contrast 2px yellow border (`var(--yellow)`), 30px corner radius, and **20px** default internal padding. Use for gameplay, shops, and settings.
 - **hide-header**: Use to remove the header bar for content-focused modals. The close button (`X`) will automatically transition to a floating position (`modal-close-btn-floating`).
 - **padding="raw"**: Use for full-bleed content (e.g., Shop/Inventory grids). The `retro` variant respects this to avoid double-padding.
+
+### 5. Premium 3D Action Buttons
+
+Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
+
+- **Aesthetic**: Solid 3D depth using `box-shadow: 0 4px 0 #b45309` (not fuzzy/rgba shadows).
+- **Interaction**:
+  - **Hover**: 1px upward translation (`TranslateY(-1px)`) and subtle brightness boost.
+  - **Active**: 2px downward translation (`TranslateY(2px)`) with shadow reduction to 2px, simulating a physical press.
+- **Typography**: Must use `'Press Start 2P'` with `@include pixelated`.
+- **Constraint**: Primary action buttons (yellow) MUST follow this pattern to maintain visual parity.
 
 > [!IMPORTANT]
 > **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.

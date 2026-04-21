@@ -370,21 +370,9 @@ const buy = (item) => {
 
   .buy-btn {
     flex: 1;
+    @include btn-vicio-primary;
     padding: 8px;
     border-radius: 10px;
-    border: none;
-    background: var(--yellow);
-    color: #000;
-    font-weight: 700;
-    font-size: 11px;
-    font-family: 'Press Start 2P', cursive;
-    cursor: pointer;
-    @include pixelated;
-    
-    &:hover {
-      background: #ffd60a;
-      box-shadow: 0 0 15px rgba(250, 204, 21, 0.3);
-    }
   }
 }
 

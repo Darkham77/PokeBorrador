@@ -112,26 +112,6 @@ const updateZoom = (val) => {
 
 .close-btn-primary {
   width: 100%;
-  padding: 18px;
-  background: var(--yellow);
-  color: #000;
-  border: none;
-  border-radius: 16px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 10px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: all 0.2s;
-  @include pixelated;
-
-  &:hover {
-    transform: translateY(-2px);
-    filter: Brightness(1.05);
-    box-shadow: 0 10px 20px rgba(250, 204, 21, 0.2);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+  @include btn-vicio-primary;
 }
 </style>

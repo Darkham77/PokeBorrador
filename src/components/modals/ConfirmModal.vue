@@ -28,6 +28,7 @@ const handleCancel = () => {
     :title="title"
     max-width="400px"
     variant="retro"
+    padding="raw"
     @close="handleCancel"
   >
     <div class="confirm-body">
@@ -101,13 +102,8 @@ const handleCancel = () => {
   }
   
   .btn-confirm {
-    background: var(--yellow);
-    color: #000;
-    box-shadow: 0 4px 15px rgba(255, 214, 10, 0.3);
-    &:hover {
-      background: #ffd60a;
-      box-shadow: 0 6px 20px rgba(255, 214, 10, 0.4);
-    }
+    @include btn-vicio-primary;
+    padding: 14px; // Keep more compact for confirm modal
   }
 }
 </style>
