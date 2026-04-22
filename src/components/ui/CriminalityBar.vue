@@ -49,7 +49,9 @@ const isMax = computed(() => criminality.value >= 100)
   </Transition>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .criminality-container {
   position: fixed;
   right: 20px;
@@ -64,13 +66,13 @@ const isMax = computed(() => criminality.value >= 100)
   padding: 15px 10px;
 }
 
-/* Simplified 'Black Neon' shadow for legibility */
+/* Premium 'Black Neon' shadow */
 .criminality-container::before {
   content: '';
   position: absolute;
   inset: -5px;
-  background: $darker;
-  filter: Blur(10px);
+  background: rgba(0, 0, 0, 0.8);
+  filter: Blur(15px);
   border-radius: 40px;
   z-index: -1;
 }
@@ -81,20 +83,20 @@ const isMax = computed(() => criminality.value >= 100)
   font-size: 8px;
   color: #ef4444;
   margin-bottom: 8px;
-  text-shadow: 1px 1px $black;
+  text-shadow: 1px 1px #000, 0 0 5px rgba(239, 68, 68, 0.4);
   font-family: 'Press Start 2P', cursive;
 }
 
 .bar-bg {
   width: 12px;
   height: 200px;
-  background: $black;
+  background: #000;
   border: 2px solid #333;
   border-radius: 10px;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), inset 0 0 5px rgba(0, 0, 0, 0.8);
 }
 
 .bar-fill {
@@ -110,7 +112,7 @@ const isMax = computed(() => criminality.value >= 100)
   font-size: 10px;
   font-weight: 800;
   color: #ef4444;
-  text-shadow: 1px 1px $black;
+  text-shadow: 1px 1px #000, 0 0 5px rgba(239, 68, 68, 0.4);
 }
 
 .blinking {

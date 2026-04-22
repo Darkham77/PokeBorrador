@@ -105,7 +105,10 @@ const atmosphereStyles = computed(() => {
     }
   }
 
-  if (weatherAdjustments[props.weather]) {
+  // NO mostrar clima si la ruta está bloqueada
+  const showWeather = !props.isLocked && !props.isSafariLocked
+
+  if (showWeather && weatherAdjustments[props.weather]) {
     baseFilter += weatherAdjustments[props.weather].base
     hoverFilter += weatherAdjustments[props.weather].hover
   }
@@ -167,7 +170,7 @@ const allSpawns = computed(() => [
   >
     <!-- Weather Layer -->
     <div
-      v-if="weather !== 'clear' && !isPerformanceMode"
+      v-if="weather !== 'clear' && !isPerformanceMode && !isLocked && !isSafariLocked"
       :class="['weather-overlay', weather]"
     >
       <!-- Rain & Storm -->
@@ -231,7 +234,7 @@ const allSpawns = computed(() => [
         {{ isSafariLocked ? '🔒 TICKET SAFARI' : `🔒 ${map.badges} MEDALLAS` }}
       </template>
       <template v-else>
-        {{ cycleEmoji }}{{ weatherEmoji }} {{ cycleLabel }}
+        {{ cycleEmoji }}<template v-if="!isLocked && !isSafariLocked">{{ weatherEmoji }}</template> {{ cycleLabel }}
       </template>
     </span>
 

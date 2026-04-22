@@ -181,6 +181,7 @@ All spacing and sizing in multiples of 8:
 - **GPU Rendering Persistence**: Browsers often release hardware-accelerated layers after a CSS transition/animation ends, which can cause environmental backgrounds to "snap" from smooth to pixelated. Fix by using `will-change: filter, transform;` combined with `transform: TranslateZ(0);` to force the layer to stay on the GPU.
 - **Layered Sprite UI (Pop-out)**: For premium detail modals, create depth by allowing the main character sprite to overlap navigation elements (tabs/headers). Use `z-index` layering and negative margins (e.g., `margin-bottom: -60px`) on the sprite container. Ensure the container has `pointer-events: none` to keep the underlying tabs interactive.
 - **Vertical Centering in Sub-cards**: For info blocks with varying text lengths (e.g., "Category" vs "Pokémon Name"), use `display: flex; flex-direction: column; justify-content: center; align-items: center;` with a consistent `min-height` (e.g., `85px`). This prevents layout shifts and ensures multi-line text blocks remain balanced with single-line ones.
+- **Context-Aware Atmosphere**: Environmental effects (rain, snow, storm, weather emojis) and atmospheric filters (color tints) MUST be hidden for locked, restricted, or inaccessible UI components (e.g., locked map routes). This prevents visual distraction and maintains focus on playable areas.
 
 ## 3.1 Asynchronous Interaction Feedback
 

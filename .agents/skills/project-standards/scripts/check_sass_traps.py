@@ -44,6 +44,12 @@ DEPRECATED_FUNCTIONS = {
     'floor': 'math.floor'
 }
 
+# Regex to find legacy if() function calls
+LEGACY_IF_REGEX = re.compile(r'(?<![\w\.])if\(')
+
+# Regex to find SASS color functions processing CSS variables
+COLOR_VAR_COLLISION_REGEX = re.compile(r'(?:scale-color|color\.scale|lighten|darken|saturate|desaturate|adjust-hue|rgba|mix)\([^)]*var\(--')
+
 def check_file(filepath):
     errors = []
     
@@ -77,6 +83,16 @@ def check_file(filepath):
                 pattern = rf'(?<![\w\.])({func})\('
                 if re.search(pattern, line):
                     errors.append(f"L{i}: Deprecated global '{func}()' found. Use '{replacement}()' instead.")
+
+            # 5. Legacy if() check
+            if LEGACY_IF_REGEX.search(line):
+                # We skip @if, just looking for if() function
+                if not line.strip().startswith('@if'):
+                    errors.append(f"L{i}: Legacy if() function detected: {line.strip()}. Use modern @if / @else control blocks.")
+
+            # 6. SASS Color + CSS Var check
+            if COLOR_VAR_COLLISION_REGEX.search(line):
+                errors.append(f"L{i}: SASS color function cannot process CSS variables: {line.strip()}. Use a static SASS fallback for calculations.")
 
         # Check for interpolation in non-SCSS block (only for .vue)
         if filepath.endswith('.vue') and has_interpolation and not has_lang_scss:

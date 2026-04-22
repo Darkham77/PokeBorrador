@@ -8,12 +8,14 @@
 }
 
 .debug-card {
+  &.full-width { width: 100%; }
+  
   label {
     display: block;
     font-family: 'Press Start 2P', monospace;
     @include pixelated;
     font-size: 7px;
-    color: $muted;
+    color: #94a3b8;
     margin-bottom: 12px;
     text-transform: uppercase;
   }
@@ -22,9 +24,11 @@
 .input-group {
   display: flex;
   gap: 8px;
+  align-items: center;
 
   &.vertical {
     flex-direction: column;
+    align-items: stretch;
   }
 
   input {
@@ -32,9 +36,10 @@
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: $white;
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    height: 32px;
     transition: all 0.2s;
 
     &:focus {
@@ -45,68 +50,45 @@
   }
 
   button {
-    background: #4f46e5;
-    border: none;
-    color: white;
-    padding: 0 16px;
-    border-radius: 12px;
-    font-family: 'Press Start 2P', monospace;
-    @include pixelated;
-    font-size: 7px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover { background: #6366f1; transform: translateY(-1px); }
-    &:active { transform: translateY(1px); }
+    @include btn-vicio('primary', 'sm');
+    padding: 0 12px;
+    height: 32px;
+    min-width: 80px;
+    font-size: 8px;
   }
 }
 
 .button-row {
   display: flex;
+  flex-wrap: wrap; 
   gap: 8px;
   
   &.wrap {
-    flex-wrap: wrap;
+    button {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 60px;
+      padding: 0 16px;
+    }
   }
 
   button {
-    flex: 1;
-    padding: 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: #e2e8f0;
-    font-family: 'Press Start 2P', monospace;
-    @include pixelated;
-    font-size: 7px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); }
+    @include btn-vicio('secondary', 'sm');
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 60px;
+    padding: 0 12px;
+    height: 30px; // Slightly smaller
+    font-size: 8px;
     
     &.faction-btn {
-      &.power { color: #f87171; border-color: rgba(248, 113, 113, 0.3); &:hover { background: rgba(248, 113, 113, 0.1); } }
-      &.union { color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); &:hover { background: rgba(96, 165, 250, 0.1); } }
-      &.neutral { color: #94a3b8; border-color: rgba(148, 163, 184, 0.3); &:hover { background: rgba(148, 163, 184, 0.1); } }
-      &.active {
-        background: rgba(255, 255, 255, 0.1);
-        box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
-      }
+      &.power { @include btn-vicio('danger', 'sm'); }
+      &.union { @include btn-vicio('info', 'sm'); }
+      &.neutral { @include btn-vicio('neutral', 'sm'); }
     }
-
+    
     &.small-btn {
-      padding: 6px 10px !important;
-      font-size: 6px !important;
-      &.active {
-        background: #7c3aed !important;
-        color: white !important;
-      }
-    }
-
-    &.secondary {
-      background: rgba(0, 0, 0, 0.2);
-      border-color: rgba(255, 255, 255, 0.05);
-      color: #94a3b8;
+      @include btn-vicio('secondary', 'sm');
     }
   }
 }

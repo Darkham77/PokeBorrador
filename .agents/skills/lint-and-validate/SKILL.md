@@ -17,10 +17,14 @@ allowed-tools: Read, Glob, Grep, Bash
 3. **Audit Security:** Run `npm audit --audit-level=high`
 
 ### Python
-
 1. **Lint (Ruff):** Execute `ruff check "path" --fix` (Fast & Modern)
 2. **Audit Security (Bandit):** Run `bandit -r "path" -ll`
 3. **Type Check (MyPy):** Execute `mypy "path"`
+
+### SASS / CSS
+1. **Dart Sass 2.0 Compliance**: Ensure ALL CSS filter/transform functions are **Capitalized** (e.g., `Scale()`, `Blur()`) to prevent SASS internal collisions.
+2. **Deprecation Check**: Replace legacy SASS ternary `if()` with modern `@if / @else` control blocks.
+3. **Variable Safety**: Verify that SASS color functions do not attempt to process CSS `var()` tokens directly.
 
 ## The Quality Loop
 

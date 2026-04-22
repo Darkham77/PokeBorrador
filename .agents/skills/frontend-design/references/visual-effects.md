@@ -220,6 +220,12 @@ box-shadow:
 /* Each layer adds to the glow */
 ```
 
+### 6. Interactive Depth Preservation (3D Buttons)
+When animating or styling active states (`.active`) for 3D elements:
+- **Shadow Integrity**: DO NOT remove the bottom shadow ("dark surface") of a 3D button when selected.
+- **Selection Cues**: Use high-contrast borders (2px white) and outer glows (`box-shadow`) to signal activation while keeping the 3D volume intact.
+- **Transformation**: Match the physical press by reducing the shadow size (e.g. from 4px to 2px) and translating the element downward (`TranslateY(2px)`), but never flattening it completely.
+
 ---
 
 ## 6. Glow Effects Principles
@@ -302,6 +308,7 @@ Principles for creating dynamic, realistic environments (weather, day/night cycl
 To keep weather particles (sand, snow, rain) visible against varying map backgrounds:
 - **Saturated Colors**: Use more intense hues in your SVGs than the map itself (e.g., golden orange for sand).
 - **Contour Definition**: Apply `Drop-shadow()` and `Contrast()` filters to particles. This creates a sharp "edge" that prevents them from blending into daytime backgrounds.
+- **Context-Aware Visibility**: Environmental effects (weather particles, emojis, overlays) and atmospheric filters (color tints) MUST be hidden for locked or restricted UI components. Overloading locked content with complex atmosphere increases cognitive load and obscures the "locked" status.
 
 ### 2. Realistic Cycle Transitions
 Avoid "unnatural" color shifts during Dawn/Dusk:

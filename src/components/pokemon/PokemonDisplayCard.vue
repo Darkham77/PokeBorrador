@@ -11,7 +11,7 @@ const props = defineProps({
   actions: { type: Array, default: () => ['item', 'details', 'box'] }
 })
 
-const emit = defineEmits(['click', 'openDetail', 'openItem', 'sendToBox'])
+const emit = defineEmits(['click', 'openDetail', 'openItem', 'sendToBox', 'select'])
 
 const hpPct = computed(() => props.pokemon.hp / props.pokemon.maxHp)
 
@@ -185,6 +185,13 @@ const hasBadges = computed(() => {
         >
           <span class="emoji">📦</span> CAJA
         </button>
+        <button
+          v-if="isPvp"
+          class="footer-btn replace-btn"
+          @click.stop="emit('select', index)"
+        >
+          <span class="emoji">🔄</span> REEMPLAZAR
+        </button>
       </div>
     </div>
   </div>
@@ -254,8 +261,8 @@ const hasBadges = computed(() => {
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 
-  .item-badge .icon { font-size: 14px; }
-  .star-icon { font-size: 15px; color: var(--yellow); }
+  .item-badge .icon { font-size: 16px; }
+  .star-icon { font-size: 16px; color: var(--yellow); }
 }
 
 .badges-spacer { height: 24px; }
@@ -268,11 +275,14 @@ const hasBadges = computed(() => {
   align-items: center;
   justify-content: center;
   font-family: 'Press Start 2P', monospace;
-  font-size: 18px; // Larger tier letter
+  font-size: 16px; // 8px grid aligned
+  line-height: 1;
+  padding: 3px 0 0 2px; // Precise offset for Press Start 2P
   border: 1.5px solid;
   background: rgba(255, 255, 255, 0.05);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   transition: all 0.3s;
+  @include pixelated;
 
   &:hover { transform: Scale(1.1); filter: Brightness(1.2); }
 }
@@ -314,11 +324,12 @@ const hasBadges = computed(() => {
 
     .pokemon-name {
       font-family: 'Press Start 2P', monospace;
-      font-size: 11px;
+      font-size: 8px;
       color: $white;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0,0,0,0.5);
+      @include pixelated;
     }
 
     .gender-pill {
@@ -329,10 +340,11 @@ const hasBadges = computed(() => {
 
   .level-line {
     font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
+    font-size: 8px;
     color: var(--yellow);
     margin-bottom: 12px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    @include pixelated;
   }
 }
 
@@ -358,9 +370,10 @@ const hasBadges = computed(() => {
 
   .hp-stats {
     font-family: 'Press Start 2P', monospace;
-    font-size: 7px;
+    font-size: 8px;
     color: rgba(255, 255, 255, 0.4);
     margin-top: 6px;
+    @include pixelated;
   }
 }
 
@@ -372,12 +385,13 @@ const hasBadges = computed(() => {
 
   .status-tag {
     font-family: 'Press Start 2P', monospace;
-    font-size: 6px;
+    font-size: 8px;
     padding: 4px 6px;
     border-radius: 4px;
+    @include pixelated;
     
     &.obedience { background: var(--red); color: $white; }
-    &.mission { background: #fbbf24; color: $black; }
+    &.mission { background: var(--yellow); color: $black; }
   }
 }
 
@@ -392,7 +406,7 @@ const hasBadges = computed(() => {
     justify-content: center;
     gap: 6px;
     font-family: 'Press Start 2P', monospace;
-    font-size: 7px;
+    font-size: 8px;
     padding: 10px 4px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -400,8 +414,9 @@ const hasBadges = computed(() => {
     color: $white;
     cursor: pointer;
     transition: all 0.2s;
+    @include pixelated;
 
-    .emoji { font-size: 10px; }
+    .emoji { font-size: 8px; }
 
     &:hover {
       background: rgba(255, 255, 255, 0.12);
@@ -409,9 +424,10 @@ const hasBadges = computed(() => {
       transform: Scale(1.03);
     }
 
-    &.item-btn { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
-    &.data-btn { color: #c084fc; border-color: rgba(192, 132, 252, 0.3); }
-    &.box-btn { grid-column: span 2; color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); }
+    &.item-btn { color: var(--green); border-color: rgba(50, 215, 75, 0.3); }
+    &.data-btn { color: var(--purple); border-color: rgba(191, 90, 242, 0.3); }
+    &.box-btn, &.replace-btn { grid-column: span 2; color: var(--blue); border-color: rgba(10, 132, 255, 0.3); }
+    &.replace-btn { color: var(--purple-light, #c77dff); border-color: rgba(199, 125, 255, 0.3); }
   }
 }
 

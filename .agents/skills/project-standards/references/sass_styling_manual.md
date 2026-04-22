@@ -150,6 +150,8 @@ When refactoring legacy or generic components:
 - **Color Management**:
   - Use **Native CSS Variables** (`var(--color)`) for UI-wide palettes that might change dynamically (e.g., Theme coloring).
   - Use **Sass Variables** (`$token`) for technical constraints, sizing, and static internal logic.
+  - **SASS vs CSS Variables**: SASS color functions (like `color.scale`, `lighten()`, `darken()`) cannot process `var(--color)`. For interactive highlights/hovers, use static SASS fallbacks (e.g. `$yellow`) for calculations while maintaining the CSS variable for the main render to support dynamic themes.
+- **Modern Control Flow**: The legacy ternary `if()` function is deprecated in SASS 1.8+. Always use standard `@if / @else` blocks for conditional styling logic to ensure build-log cleanliness.
 - **Global Pollution**: Do not define variables or mixins directly in component styles; always centralize them in tokens/partials and `@use` them.
 
 ### 4. CSS Redundancy & "Single Source of Truth"

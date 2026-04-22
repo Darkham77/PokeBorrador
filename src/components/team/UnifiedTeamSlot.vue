@@ -38,6 +38,7 @@ const isEmpty = computed(() => !props.pokemon)
       @open-detail="emit('open-detail', index)"
       @open-item="emit('open-item', index)"
       @send-to-box="emit('send-to-box', index)"
+      @select="emit('select', index)"
     />
   </div>
 </template>

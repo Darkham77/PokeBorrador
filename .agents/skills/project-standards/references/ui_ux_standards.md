@@ -102,6 +102,8 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
   - **Active**: 2px downward translation (`TranslateY(2px)`) with shadow reduction to 2px, simulating a physical press.
 - **Typography**: Must use `'Press Start 2P'` with `@include pixelated`.
 - **Constraint**: Primary action buttons (yellow) MUST follow this pattern to maintain visual parity.
+- **Active State Unification**: Selected/Active buttons (`.active`) MUST preserve their 3D shadow depth. Use a 2px white solid border and a selection glow (`box-shadow`), but keep the dark bottom shadow to avoid a "flat" or "broken" look.
+- **Atmospheric Clarity**: Weather effects (rain, snow, storm), environmental emojis, and atmospheric filters MUST be hidden for locked or restricted UI components (e.g., locked map routes). This maintains focus on playable areas and reduces cognitive noise.
 
 > [!IMPORTANT]
 > **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.

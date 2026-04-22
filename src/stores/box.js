@@ -364,6 +364,7 @@ export const useBoxStore = defineStore('box', () => {
     
     gameStore.state.box.splice(boxIndex, 1)
     gameStore.state.team.push(boxPoke)
+    gameStore.autoFillPvpTeam()
     gameStore.save()
     return { success: true, msg: `${boxPoke.name} se unió al equipo.` }
   }
@@ -384,6 +385,7 @@ export const useBoxStore = defineStore('box', () => {
     swapped.moves?.forEach(m => { m.pp = m.maxPP })
     
     gameStore.state.box.splice(boxIndex, 0, swapped)
+    gameStore.autoFillPvpTeam()
     gameStore.save()
     return { success: true, msg: 'Intercambio realizado.' }
   }

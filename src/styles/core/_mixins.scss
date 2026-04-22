@@ -1,5 +1,6 @@
 // src/styles/core/_mixins.scss
 @use 'sass:map';
+@use 'sass:color';
 @use 'variables' as *;
 
 @mixin glass($bg: rgba(5, 5, 5, 0.8), $blur: 14px) {
@@ -87,31 +88,21 @@
   image-rendering: auto; // Ensures smooth backgrounds
 }
 
-// ── PREMIUM BUTTONS ──────────────────────────────────────────────────────────
-@mixin btn-vicio-primary {
-  padding: 18px;
-  background: var(--yellow, #ffcc00);
+// ── PREMIUM BUTTONS (Vicio Design System) ────────────────────────────────────
+
+// 1. BASE: The structural skeleton
+@mixin btn-vicio-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.5;
   border: none;
-  border-radius: 15px;
-  color: #000;
   font-family: 'Press Start 2P', monospace;
-  font-size: 11px;
   cursor: pointer;
   transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 0 #b45309;
   @include pixelated;
 
-  &:hover:not(:disabled) {
-    filter: Brightness(1.1);
-    transform: TranslateY(-1px);
-    box-shadow: 0 5px 0 #b45309;
-  }
-
-  &:active:not(:disabled) {
-    transform: TranslateY(2px);
-    box-shadow: 0 2px 0 #b45309;
-  }
-  
   &:disabled {
     filter: Grayscale(1);
     opacity: 0.6;
@@ -121,38 +112,106 @@
   }
 }
 
-@mixin btn-vicio-danger {
-  padding: 18px;
-  background: #ef4444; // Red 500
-  border: none;
-  border-radius: 15px;
-  color: #fff;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 11px;
-  cursor: pointer;
-  transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 0 #991b1b; // Dark Red
-  @include pixelated;
+// 2. SIZE: Dimensions and depth
+@mixin btn-vicio-size($size: 'md') {
+  $padding: 18px;
+  $font-size: 11px;
+  $radius: 15px;
+  $depth: 4px;
+
+  @if $size == 'sm' {
+    $padding: 8px 12px;
+    $font-size: 8px;
+    $radius: 8px;
+    $depth: 3px;
+  }
+
+  padding: $padding;
+  font-size: $font-size;
+  border-radius: $radius;
+  
+  // Set the depth variable for variants to consume
+  --v-depth: #{$depth};
+}
+
+// 3. VARIANT: Colors and 3D shadows
+@mixin btn-vicio-variant($variant: 'primary', $size: 'md') {
+  $base-color: $yellow;
+  $shadow: #b45309;
+  $text: #000;
+
+  @if $variant == 'secondary' {
+    $base-color: #7c3aed;
+    $shadow: #5b21b6;
+    $text: #fff;
+  } @else if $variant == 'danger' {
+    $base-color: #ef4444;
+    $shadow: #991b1b;
+    $text: #fff;
+  } @else if $variant == 'info' {
+    $base-color: #60a5fa;
+    $shadow: #2563eb;
+    $text: #fff;
+  } @else if $variant == 'neutral' {
+    $base-color: #94a3b8;
+    $shadow: #475569;
+    $text: #fff;
+  }
+
+  // Use the CSS variable for the main background to support dynamic themes,
+  // but use the SASS color for the active/hover manipulations.
+  $bg-render: $base-color;
+  @if $variant == 'primary' {
+    $bg-render: var(--yellow, #{$yellow});
+  }
+
+  background: $bg-render;
+  color: $text;
+  
+  $depth: 4px;
+  @if $size == 'sm' { $depth: 3px; }
+
+  box-shadow: 0 $depth 0 $shadow;
 
   &:hover:not(:disabled) {
     filter: Brightness(1.1);
     transform: TranslateY(-1px);
-    box-shadow: 0 5px 0 #991b1b;
+    box-shadow: 0 ($depth + 1px) 0 $shadow;
   }
 
   &:active:not(:disabled) {
     transform: TranslateY(2px);
-    box-shadow: 0 2px 0 #991b1b;
+    box-shadow: 0 (max(0px, $depth - 2px)) 0 $shadow;
   }
-  
-  &:disabled {
-    filter: Grayscale(1);
-    opacity: 0.6;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
+
+  &.active {
+    background: color.scale($base-color, $lightness: 15%);
+    box-shadow: 
+      0 $depth 0 $shadow,
+      0 0 15px rgba($base-color, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    transform: none !important;
+    
+    &:hover:not(:disabled) {
+      background: color.scale($base-color, $lightness: 20%);
+      transform: TranslateY(-1px) !important;
+      box-shadow: 0 ($depth + 1px) 0 $shadow, 0 0 20px rgba($base-color, 0.6);
+    }
   }
 }
+
+// 4. MASTER: The convenient bundle
+@mixin btn-vicio($variant: 'primary', $size: 'md', $fullWidth: false) {
+  @include btn-vicio-base;
+  @include btn-vicio-size($size);
+  @include btn-vicio-variant($variant, $size);
+  @if $fullWidth { width: 100%; } @else { width: auto; }
+}
+
+// Legacy aliases for backward compatibility
+@mixin btn-vicio-primary($size: 'md', $fullWidth: false) { @include btn-vicio('primary', $size, $fullWidth); }
+@mixin btn-vicio-secondary($size: 'md', $fullWidth: false) { @include btn-vicio('secondary', $size, $fullWidth); }
+@mixin btn-vicio-danger($size: 'md', $fullWidth: false) { @include btn-vicio('danger', $size, $fullWidth); }
 
 @mixin gender-badge($size: 24px, $font-size: 16px) {
   width: $size;

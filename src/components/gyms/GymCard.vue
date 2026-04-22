@@ -283,7 +283,7 @@ const leaderSpriteUrl = computed(() => {
 
   &.active {
     border-color: var(--gym-color);
-    background: rgba(var(--gym-color), 0.2);
+    background: Rgba(var(--gym-color), 0.2);
     color: $white;
     
     &.easy { color: #22c55e; }

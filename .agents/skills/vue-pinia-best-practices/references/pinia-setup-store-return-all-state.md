@@ -204,6 +204,15 @@ defineStore('example', () => {
 })
 ```
 
+## Refactor Safety: Clean Exports
+
+When moving, renaming, or deleting state variables/methods within a store, you **MUST** immediately synchronize the `return { ... }` object.
+
+1. **Dead Reference Check**: Ensure that no deleted variable remains in the `return` block.
+2. **Move Consistency**: If you move a variable to a different store (e.g., from `gameStore` to `uiStore`), remove it from the old `return` and add it to the new one.
+3. **ReferenceError Prevention**: Leaving an orphaned reference in the `return` block will cause the entire application to crash with a `ReferenceError` during boot, as the exported object attempts to reference a non-existent local variable.
+```
+
 ## Debugging: Verify All State is Returned
 
 ```javascript

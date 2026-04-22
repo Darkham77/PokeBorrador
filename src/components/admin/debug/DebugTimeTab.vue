@@ -191,18 +191,8 @@ function toggleCycle(c) {
 @use "@/styles/components/debug";
 
 .weather-grid {
-  flex-wrap: wrap !important;
-  
-  button {
-    flex: 0 0 auto !important;
-    width: fit-content !important;
-    min-width: 70px;
-  }
-}
-
-button.active {
-  background: var(--yellow) !important;
-  color: $black !important;
-  border-color: $black !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 </style>

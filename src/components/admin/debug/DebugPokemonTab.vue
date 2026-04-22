@@ -40,12 +40,9 @@ async function syncPokedexFromCollection() {
   if (!props.securityCheck()) return
   if (!confirm('Esto recalculará tu Pokedex basándose en los Pokémon que posees actualmente. ¿Continuar?')) return
   
-  // Start with current progress or empty?
-  // User says "recalculate", implying we should find everything they have.
   const caughtIds = new Set()
   const seenIds = new Set()
   
-  // Process Team
   game.state.team.forEach(p => {
     if (p && p.id) {
       caughtIds.add(p.id)
@@ -53,7 +50,6 @@ async function syncPokedexFromCollection() {
     }
   })
   
-  // Process Box
   if (game.state.box) {
     game.state.box.forEach(p => {
       if (p && p.id) {
@@ -67,7 +63,17 @@ async function syncPokedexFromCollection() {
   game.state.seenPokedex = Array.from(seenIds)
   
   await game.saveGame(false)
-  ui.notify('Pokedex sincronizada con tu colección', '🔄')
+  ui.notify('Pokedex sincronizada', '🔄')
+}
+
+async function clearPvpTeam() {
+  if (!props.securityCheck()) return
+  if (!confirm('¿Limpiar equipo PVP de forma permanente?')) return
+  
+  ui.pvpAutoFillDisabled = true
+  game.state.pvpTeam = []
+  await game.saveGame(false)
+  ui.notify('Equipo PVP limpiado y auto-rellenado desactivado (Temporal)', '🧹')
 }
 </script>
 
@@ -82,7 +88,7 @@ async function syncPokedexFromCollection() {
       <label>Override Visual Pokedex (No se guarda)</label>
       <div class="button-row wrap">
         <button
-          class="small-btn"
+          class="btn-vicio-neutral btn-vicio-sm"
           :class="{ active: ui.debugPokedexMode === 'caught' }"
           title="Atrapar todos"
           @click="setDebugPokedex('caught')"
@@ -90,7 +96,7 @@ async function syncPokedexFromCollection() {
           ATRAPAR
         </button>
         <button
-          class="small-btn"
+          class="btn-vicio-neutral btn-vicio-sm"
           :class="{ active: ui.debugPokedexMode === 'seen' }"
           title="Ver todos"
           @click="setDebugPokedex('seen')"
@@ -98,7 +104,7 @@ async function syncPokedexFromCollection() {
           VER
         </button>
         <button
-          class="small-btn accent"
+          class="btn-vicio-primary btn-vicio-sm"
           :class="{ active: !ui.debugPokedexMode }"
           title="Restaurar progreso real"
           @click="setDebugPokedex('real')"
@@ -111,18 +117,33 @@ async function syncPokedexFromCollection() {
         <label class="danger-label">Persistent Database Changes (SE GUARDA)</label>
         <div class="button-row wrap">
           <button
-            class="sync-btn"
+            class="btn-vicio-secondary btn-vicio-sm"
             title="Sincroniza la pokedex con lo que tienes en el equipo/caja"
             @click="syncPokedexFromCollection"
           >
-            RECALCULAR DESDE COLECCIÓN
+            RECALCULAR POKEDEX
           </button>
           <button
-            class="sync-btn danger"
+            class="btn-vicio-danger btn-vicio-sm"
             title="Borra todo el progreso de la pokedex"
             @click="resetPokedexDB"
           >
-            OLVIDAR TODO (RESET)
+            RESET POKEDEX
+          </button>
+          <button
+            class="btn-vicio-secondary btn-vicio-sm"
+            :class="{ active: ui.pvpAutoFillDisabled }"
+            title="Desactivar el rellenado automático de equipo PVP"
+            @click="ui.pvpAutoFillDisabled = !ui.pvpAutoFillDisabled"
+          >
+            {{ ui.pvpAutoFillDisabled ? 'HABILITAR AUTO-PVP' : 'DESHABILITAR AUTO-PVP' }}
+          </button>
+          <button
+            class="btn-vicio-danger btn-vicio-sm"
+            title="Limpia todos los slots del equipo PVP"
+            @click="clearPvpTeam"
+          >
+            LIMPIAR EQUIPO PVP
           </button>
         </div>
       </div>
@@ -144,7 +165,7 @@ async function syncPokedexFromCollection() {
 
 .debug-section-title {
   font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
+  font-size: 8px;
   color: var(--yellow);
   margin-bottom: 10px;
   @include pixelated;
@@ -183,47 +204,6 @@ async function syncPokedexFromCollection() {
   &.wrap { flex-wrap: wrap; }
 }
 
-.small-btn {
-  flex: 1;
-  min-width: 80px;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: $white;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  cursor: pointer;
-  transition: all 0.2s;
-  @include pixelated;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-
-  &.active {
-    background: rgba(124, 58, 237, 0.2);
-    border-color: #c084fc;
-    color: #c084fc;
-    box-shadow: inset 0 0 10px rgba(124, 58, 237, 0.1);
-  }
-
-  &.accent {
-    @include btn-vicio-primary;
-    padding: 8px;
-    font-size: 7px;
-    border-radius: 8px;
-    min-width: 80px;
-    box-shadow: 0 3px 0 #b45309;
-    
-    &:hover:not(:disabled) {
-      transform: TranslateY(-1px);
-      box-shadow: 0 4px 0 #b45309;
-    }
-  }
-}
-
 .debug-danger-zone {
   margin-top: 12px;
   padding-top: 12px;
@@ -238,33 +218,16 @@ async function syncPokedexFromCollection() {
   opacity: 0.8;
 }
 
-.sync-btn {
-  background: rgba(124, 58, 237, 0.1);
-  border: 1px solid rgba(124, 58, 237, 0.2);
-  color: #c084fc;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 6px;
-  cursor: pointer;
-  flex: 1;
-  min-width: 120px;
-  @include pixelated;
-
-  &:hover {
-    background: #7c3aed;
-    color: $white;
-  }
-
-  &.danger {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #f87171;
-
-    &:hover {
-      background: #ef4444;
-      color: $white;
-    }
+// Global button overrides if specific spacing is needed
+.button-row {
+  display: flex;
+  gap: 8px;
+  
+  &.wrap { flex-wrap: wrap; }
+  
+  button {
+    flex: 1;
+    min-width: 100px;
   }
 }
 </style>

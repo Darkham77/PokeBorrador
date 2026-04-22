@@ -91,7 +91,11 @@ Refer to these manuals for complex implementation specifications:
 - **MANDATORY REUSE**: All action buttons MUST use the standardized mixins:
   - `@include btn-vicio-primary;` (Yellow/Confirm/Primary)
   - `@include btn-vicio-danger;` (Red/Cancel/Danger)
-- **FORBIDDEN**: Redefining background/border styles for buttons manually when these mixins exist.
+  - `@include btn-vicio($variant, $size);` (Modular system for all UI)
+- **FORBIDDEN**: Redefining background/border styles for buttons manually or creating ad-hoc classes (e.g. `close-btn-primary`, `action-btn`).
+- **3D Depth Integrity**: Active states (`.active`) MUST NOT strip the button's bottom shadow. Maintain the "dark part" by calculating highlights only on the top surface.
+- **SASS vs CSS Variables**: SASS color functions (like `color.scale`) cannot process `var(--color)`. For interactive highlights, use static SASS fallbacks for calculations while maintaining the CSS variable for the main render to support dynamic theming.
+- **Debug Density**: Admin/Debug buttons should fit content (`flex: 0 0 auto`) to avoid horizontal stretching and text overlap in dense rows.
 - **Audit**: Run `python3 .agents/skills/project-standards/scripts/detect_css_redundancy.py` to identify overlaps and plan refactoring.
 
 ### 2. SASS Math & Strings

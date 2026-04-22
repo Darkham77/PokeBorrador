@@ -20,6 +20,7 @@ const debugMoney = ref(10000)
 const debugElo = ref(pvp.elo)
 const debugLevel = ref(game.state.trainerLevel)
 const debugBadges = ref(game.state.badges)
+const currentForcedFaction = ref('none')
 
 function addMoney() {
   if (!props.securityCheck()) return
@@ -58,6 +59,7 @@ function forceDominance(faction) {
     })
   }
   mapStore.mapWinners = winnerMap
+  currentForcedFaction.value = faction
   ui.notify(`Debug: Dominio global fijado en ${faction === 'none' ? 'NEUTRAL' : faction.toUpperCase()}`, '🚩')
 }
 
@@ -135,18 +137,21 @@ function setPlayerClass(c) {
       <div class="button-row">
         <button
           class="faction-btn power"
+          :class="{ active: currentForcedFaction === 'poder' }"
           @click="forceDominance('poder')"
         >
           PODER
         </button>
         <button
           class="faction-btn union"
+          :class="{ active: currentForcedFaction === 'union' }"
           @click="forceDominance('union')"
         >
           UNIÓN
         </button>
         <button
           class="faction-btn neutral"
+          :class="{ active: currentForcedFaction === 'none' }"
           @click="forceDominance('none')"
         >
           NEUTRAL

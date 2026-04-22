@@ -58,7 +58,7 @@ const updateZoom = (val) => {
 
       <div class="settings-actions">
         <button 
-          class="close-btn-primary"
+          class="btn-vicio-primary btn-vicio-full"
           @click="emit('close')"
         >
           GUARDAR Y CERRAR
@@ -108,10 +108,5 @@ const updateZoom = (val) => {
   color: rgba(255, 255, 255, 0.2);
   font-family: 'Press Start 2P', cursive;
   @include pixelated;
-}
-
-.close-btn-primary {
-  width: 100%;
-  @include btn-vicio-primary;
 }
 </style>

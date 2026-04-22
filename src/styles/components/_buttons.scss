@@ -1,11 +1,53 @@
 // src/styles/components/_buttons.scss
 @use "../core/tools" as *;
 
+/**
+ * Vicio Design System - Standardized Buttons
+ * Migrated to direct @include to avoid cross-file @extend limitations in scoped components.
+ */
+
+// Primary (Yellow)
 .btn-vicio-primary {
-  @include btn-vicio-primary;
+  @include btn-vicio('primary', 'md');
 }
 
-// Additional button variants can be added here
+// Secondary (Purple)
 .btn-vicio-secondary {
-  // To be implemented if needed
+  @include btn-vicio('secondary', 'md');
+}
+
+// Danger (Red)
+.btn-vicio-danger {
+  @include btn-vicio('danger', 'md');
+}
+
+// Info (Blue)
+.btn-vicio-info {
+  @include btn-vicio('info', 'md');
+}
+
+// Neutral (Gray)
+.btn-vicio-neutral {
+  @include btn-vicio('neutral', 'md');
+}
+
+// Size Modifiers - MUST BE USED WITH A VARIANT
+.btn-vicio-sm {
+  @include btn-vicio-size('sm');
+  
+  // Re-apply variants with small depth if detected
+  &.btn-vicio-primary { @include btn-vicio-variant('primary', 'sm'); }
+  &.btn-vicio-secondary { @include btn-vicio-variant('secondary', 'sm'); }
+  &.btn-vicio-danger { @include btn-vicio-variant('danger', 'sm'); }
+  &.btn-vicio-info { @include btn-vicio-variant('info', 'sm'); }
+  &.btn-vicio-neutral { @include btn-vicio-variant('neutral', 'sm'); }
+}
+
+.btn-vicio-full {
+  width: 100% !important;
+}
+
+// Legacy Aliases
+.close-btn-primary, .action-btn-primary {
+  @include btn-vicio('primary', 'md', true);
 }

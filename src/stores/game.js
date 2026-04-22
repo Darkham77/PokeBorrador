@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, watch } from 'vue'
 import { saveGame as performSave } from '@/logic/auth/saveService'
 import { useAuthStore } from './auth'
 import { useUIStore } from './ui'
@@ -182,6 +182,9 @@ export const useGameStore = defineStore('game', () => {
    * Automatically fills the PVP team (3 slots) using references from Team or Box.
    */
   function autoFillPvpTeam() {
+    const uiStore = useUIStore()
+    if (uiStore.pvpAutoFillDisabled) return
+    
     // Collect all available pokemons
     const allPokes = [...state.team, ...(state.box || [])]
     if (allPokes.length === 0) {
@@ -191,6 +194,7 @@ export const useGameStore = defineStore('game', () => {
 
     // Clean up pvpTeam from non-existent UIDs
     const existingUids = new Set(allPokes.map(p => p.uid))
+    const oldPvp = [...(state.pvpTeam || [])]
     state.pvpTeam = (state.pvpTeam || []).filter(uid => existingUids.has(uid))
 
     // If total count < 3, just add whatever we have
@@ -198,6 +202,7 @@ export const useGameStore = defineStore('game', () => {
     const targetCount = Math.min(3, allPokes.length)
 
     if (state.pvpTeam.length < targetCount) {
+      console.log('[PvP] Auto-filling slots...', { current: state.pvpTeam.length, target: targetCount })
       for (const p of allPokes) {
         if (state.pvpTeam.length >= targetCount) break
         if (!state.pvpTeam.includes(p.uid)) {
@@ -209,6 +214,10 @@ export const useGameStore = defineStore('game', () => {
     // Ensure no more than 3
     if (state.pvpTeam.length > 3) {
       state.pvpTeam = state.pvpTeam.slice(0, 3)
+    }
+
+    if (JSON.stringify(oldPvp) !== JSON.stringify(state.pvpTeam)) {
+      console.log('[PvP] Team updated:', state.pvpTeam)
     }
   }
 
@@ -420,6 +429,18 @@ export const useGameStore = defineStore('game', () => {
     save(false)
     return true
   }
+
+  // --- WATCHERS (Emergency Triggers) ---
+  watch(() => state.team.length, (newLen, oldLen) => {
+    // If a pokemon was added to the team, and there are empty PVP slots, fill them.
+    if (newLen > oldLen && state.pvpTeam.length < 3) {
+      autoFillPvpTeam()
+    }
+  })
+
+  watch(() => state.pvpTeam, (newTeam) => {
+    console.log('[PvP] state.pvpTeam mutation detected:', newTeam)
+  }, { deep: true })
 
   return {
     state,

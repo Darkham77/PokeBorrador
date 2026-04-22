@@ -196,7 +196,7 @@ if (typeof window !== 'undefined') {
 }
 
 .badge {
-  font-size: 7px;
+  font-size: 8px;
   padding: 4px 8px;
   border-radius: 6px;
   font-weight: 800;
@@ -224,7 +224,7 @@ if (typeof window !== 'undefined') {
     color: #94a3b8;
     font-family: 'Press Start 2P', monospace;
     @include pixelated;
-    font-size: 7px;
+    font-size: 8px;
     padding: 14px 4px;
     cursor: pointer;
     border-radius: 12px;
@@ -266,7 +266,7 @@ if (typeof window !== 'undefined') {
   color: $muted;
   font-family: 'Press Start 2P', monospace;
   @include pixelated;
-  font-size: 7px;
+  font-size: 8px;
   line-height: 1.6;
 }
 </style>

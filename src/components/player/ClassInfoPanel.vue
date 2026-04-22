@@ -251,7 +251,7 @@ const rankTitle = computed(() => {
   max-height: 90vh;
   overflow-y: auto;
   min-height: 0;
-  border-color: rgba(var(--class-color), 0.2);
+  border-color: Rgba(var(--class-color), 0.2);
 }
 
 .close-modal-btn {
@@ -288,13 +288,13 @@ const rankTitle = computed(() => {
   position: relative;
   width: 100%;
   max-width: 300px;
-  background: radial-gradient(circle, rgba(var(--class-color), 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, Rgba(var(--class-color), 0.15) 0%, transparent 70%);
   border-radius: 30px;
   padding: 20px;
   display: flex;
   justify-content: center;
   margin-bottom: 24px;
-  border: 1px solid rgba(var(--class-color), 0.1);
+  border: 1px solid Rgba(var(--class-color), 0.1);
 
   .class-sprite {
     width: 220px;
@@ -406,7 +406,7 @@ const rankTitle = computed(() => {
   color: #cbd5e1;
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid rgba(var(--class-color), 0.3);
+  border: 1px solid Rgba(var(--class-color), 0.3);
   font-size: 11px;
   line-height: 1.5;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
