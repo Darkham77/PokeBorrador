@@ -242,7 +242,7 @@ p { color: var(--gray); font-size: 11px; margin: 0; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 @keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: TranslateY(30px); opacity: 0; }
+  to { transform: TranslateY(0); opacity: 1; }
 }
 </style>

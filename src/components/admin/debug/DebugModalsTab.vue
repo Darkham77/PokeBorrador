@@ -45,7 +45,7 @@ function triggerSampleError() {
           max="20"
         >
         <button 
-          class="btn-primary" 
+          class="btn-vicio-primary" 
           :disabled="isTesting"
           @click="startTest"
         >
@@ -60,15 +60,14 @@ function triggerSampleError() {
     <div class="debug-group">
       <label>ACCIONES RÁPIDAS</label>
       <button
-        class="btn-danger"
+        class="btn-vicio-danger"
         @click="modalStore.closeAll"
       >
         CERRAR TODO
       </button>
 
       <button
-        class="btn-danger"
-        style="background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #fff;"
+        class="btn-vicio-danger"
         @click="triggerSampleError"
       >
         DISPARAR ERROR DE PRUEBA
@@ -78,7 +77,7 @@ function triggerSampleError() {
     <div class="debug-group">
       <label>RENDIMIENTO MAPA</label>
       <button
-        :class="uiStore.isDebugPerformanceMode ? 'btn-danger' : 'btn-primary'"
+        :class="uiStore.isDebugPerformanceMode ? 'btn-vicio-danger' : 'btn-vicio-primary'"
         @click="uiStore.isDebugPerformanceMode = !uiStore.isDebugPerformanceMode"
       >
         {{ uiStore.isDebugPerformanceMode ? 'DESACTIVAR MODO RENDIMIENTO' : 'ACTIVAR MODO RENDIMIENTO' }}
@@ -134,45 +133,16 @@ function triggerSampleError() {
   }
 }
 
-.btn-primary {
-  padding: 12px 20px;
-  background: #7c3aed;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-family: 'Press Start 2P', cursive;
+.btn-vicio-primary {
+  @include btn-vicio-primary;
+  padding: 10px 20px;
   font-size: 8px;
-  @include pixelated;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover:not(:disabled) {
-    background: #6d28d9;
-    transform: TranslateY(-2px);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
 }
 
-.btn-danger {
-  padding: 12px;
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 12px;
-  font-family: 'Press Start 2P', cursive;
+.btn-vicio-danger {
+  @include btn-vicio-danger;
+  padding: 10px;
   font-size: 8px;
-  @include pixelated;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: rgba(239, 68, 68, 0.2);
-    transform: TranslateY(-2px);
-  }
 }
 
 .hint {

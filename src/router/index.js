@@ -19,11 +19,11 @@ const router = createRouter({
           name: 'map',
           component: () => import('@/views/MapView.vue'),
         },
-        {
-          path: 'team',
-          name: 'team',
-          component: () => import('@/views/TeamView.vue'),
-        },
+        // {
+        //   path: 'team',
+        //   name: 'team',
+        //   component: () => import('@/views/TeamView.vue'),
+        // },
         {
           path: 'pokedex',
           name: 'pokedex',

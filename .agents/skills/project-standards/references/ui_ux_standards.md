@@ -111,6 +111,15 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Max-Width**: Articles must have a max-width of `1000px`.
 - **Padding**: Use `32px` internal padding for main article content.
 
+### 6. Modal Stack & Performance Synchronization
+
+To ensure a seamless transition between full-map exploration and focused modal interactions:
+
+- **Triggering Condition**: Only modals that obscure the background (those with overlays or full-screen) should trigger the "Simplified Map" mode.
+- **Entrance Timing**: Activate simplification **AFTER** the entrance animation of the first obscuring modal is complete. This avoids a visual "pop" during the fade-in.
+- **Exit Timing**: Restore the full-fidelity map **AS SOON AS** the closing animation of the last obscuring modal begins. This provides a premium feel by letting the user see the world return while the overlay disappears.
+- **Persistence**: The simplified state must remain active as long as any obscuring modal exists in the LIFO stack.
+
 ---
 
 ## 🛠️ Aesthetic Audit Checklist

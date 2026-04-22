@@ -133,7 +133,7 @@ defineEmits(['search-tab'])
   &:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(199, 125, 255, 0.2);
-    transform: translateX(4px);
+    transform: TranslateX(4px);
   }
 }
 
@@ -194,7 +194,11 @@ defineEmits(['search-tab'])
     &.chat:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
     &.trade:hover { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
     &.battle:hover { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
-    &.remove:hover { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    &.remove:hover { 
+      @include btn-vicio-danger;
+      width: 32px; height: 32px; // Keep same size
+      font-size: 14px;
+    }
   }
 }
 
@@ -216,6 +220,6 @@ defineEmits(['search-tab'])
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
-  &:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(157, 78, 221, 0.3); }
+  &:hover { transform: TranslateY(-2px); box-shadow: 0 4px 12px rgba(157, 78, 221, 0.3); }
 }
 </style>

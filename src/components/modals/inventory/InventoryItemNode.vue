@@ -71,7 +71,7 @@ defineEmits(['click'])
   &:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
-    transform: translateX(4px);
+    transform: TranslateX(4px);
   }
 
   &.selected {

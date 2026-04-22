@@ -180,13 +180,47 @@ export const useUIStore = defineStore('ui', () => {
   }
 
 
+  /**
+   * List of modals that do NOT obscure the background (e.g., side panels).
+   * These will NOT trigger "Simplified/Performance Mode" for the map.
+   */
+  const NON_OBSCURING_MODALS = ['Profile']
+
+  /**
+   * Returns true if there is any active modal that obscures the background
+   * and is NOT currently in its closing animation phase.
+   */
+  /**
+   * Returns true if there is any active modal that obscures the background.
+   * Logic:
+   * - TRUE if at least one obscuring modal has finished its opening animation.
+   * - FALSE if the last obscuring modal has started its closing animation.
+   * - Prevents flickers when opening a new modal while another is closing.
+   */
   const isAnyBlockingModalOpen = computed(() => {
-    // Some modals like 'Profile' are non-blocking side panels
-    const nonBlockingModals = ['Profile']
-    return getModalStore().stack.some(m => !nonBlockingModals.includes(m.name))
+    const modalStore = getModalStore()
+    const obscuringModals = modalStore.stack.filter(m => {
+      // Ignore modals that don't obscure the background
+      if (NON_OBSCURING_MODALS.includes(m.name)) return false
+      if (m.props?.overlay === 'none') return false
+      return true
+    })
+
+    if (obscuringModals.length === 0) return false
+
+    // We stay in "Blocking/Simplified" mode if:
+    // 1. At least one modal has already finished opening (prevents premature simplification)
+    // 2. AND at least one modal is NOT yet closing (allows early restoration on the last one)
+    const hasFullyOpen = obscuringModals.some(m => !m.opening)
+    const hasNotClosing = obscuringModals.some(m => !m.closing)
+
+    return hasFullyOpen && hasNotClosing
   })
   
-  const isAnyModalOpen = computed(() => isAnyBlockingModalOpen.value || isChatOpen.value || getModalStore().isOpen('Profile'))
+  const isAnyModalOpen = computed(() => {
+    const modalStore = getModalStore()
+    return modalStore.stack.length > 0 || isChatOpen.value || isHistoryOpen.value
+  })
 
   // ── DYNAMIC FLAGS FOR BACKWARD COMPATIBILITY (WRITABLE) ───────────────────
   const createModalRef = (name) => computed({
@@ -224,6 +258,7 @@ export const useUIStore = defineStore('ui', () => {
   const isHatchModalOpen = createModalRef('HatchModal')
   const isCosmeticsModalOpen = createModalRef('Cosmetics')
   const isFactionChoiceOpen = createModalRef('FactionChoice')
+  const isTeamManagementOpen = createModalRef('TeamManagement')
 
   return {
     isAnyModalOpen,
@@ -283,6 +318,13 @@ export const useUIStore = defineStore('ui', () => {
     closePokemonDetail,
     openMoveDetail,
     closeMoveDetail,
+    
+    toggleTeamManagement: () => {
+      const modalStore = getModalStore()
+      if (modalStore.isOpen('TeamManagement')) modalStore.close('TeamManagement')
+      else modalStore.open('TeamManagement')
+    },
+    isTeamManagementOpen,
     
     // Relearner
     isMoveRelearnerOpen,

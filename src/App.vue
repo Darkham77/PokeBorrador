@@ -8,6 +8,7 @@ import { phaserBridge } from '@/logic/phaserBridge'
 import MainGameView from '@/views/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
 import ModalHost from '@/components/common/ModalHost.vue'
+import ToastNotification from '@/components/ui/ToastNotification.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
 import LivePvPArena from '@/components/battle/LivePvPArena.vue'
 import { usePlayerClassStore } from '@/stores/playerClass'
@@ -153,6 +154,7 @@ const handleRetry = () => {
     <!-- Error Global UI -->
     <ErrorOverlay />
     <ModalHost />
+    <ToastNotification />
     <ConnectionWarning />
     <LivePvPArena />
   </div>
@@ -200,6 +202,7 @@ const handleRetry = () => {
   -webkit-backdrop-filter: Blur(8px);
   backdrop-filter: Blur(8px);
 }
+
 
 .loader {
   width: 50px;

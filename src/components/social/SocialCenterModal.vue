@@ -4,9 +4,14 @@ import { useSocialStore } from '@/stores/social';
 import { useAuthStore } from '@/stores/auth';
 import TradeClaimStatus from '@/components/social/TradeClaimStatus.vue';
 import { useGameStore } from '@/stores/game';
+import BaseModal from '@/components/common/BaseModal.vue';
 import SocialFriendsTab from './SocialFriendsTab.vue';
 import SocialRequestsTab from './SocialRequestsTab.vue';
 import SocialSearchTab from './SocialSearchTab.vue';
+
+defineProps({
+  show: { type: Boolean, default: false }
+});
 
 const socialStore = useSocialStore();
 const _authStore = useAuthStore();
@@ -21,23 +26,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    class="social-modal-overlay"
-    @click.self="emit('close')"
+  <BaseModal
+    :show="show"
+    title="CENTRO SOCIAL"
+    max-width="500px"
+    padding="raw"
+    @close="emit('close')"
   >
-    <div class="social-modal-content animate-slide-up">
-      <header class="modal-header">
-        <div class="title">
-          CENTRO SOCIAL
-        </div>
-        <button
-          class="close-btn"
-          @click="emit('close')"
-        >
-          ×
-        </button>
-      </header>
-
+    <div class="social-modal-content-inner">
       <nav class="modal-tabs">
         <button 
           :class="{ active: activeTab === 'friends' }" 
@@ -93,7 +89,7 @@ onMounted(() => {
         <!-- TABS: CLAIMS -->
         <div
           v-if="activeTab === 'claims'"
-          class="tab-content"
+          class="tab-content-inner"
         >
           <TradeClaimStatus />
           
@@ -109,69 +105,19 @@ onMounted(() => {
         </div>
       </div>
     </div>
-  </div>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
 @use "sass:string";
 
-.social-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: var(--z-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  transform: translateZ(0);
-}
-
-.social-modal-content {
-  width: min(500px, 100%);
-  background: #101822;
-  border: 1px solid rgba(199, 125, 255, 0.25);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+.social-modal-content-inner {
   display: flex;
   flex-direction: column;
-  max-height: 85vh;
-}
-
-.modal-header {
-  padding: 20px;
-  background: linear-gradient(90deg, #161e2e, #10172a);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  .title {
-    font-family: 'Press Start 2P', cursive;
-    font-size: 10px;
-    color: var(--purple-light);
-    letter-spacing: 1px;
-  }
-
-  .close-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: none;
-    color: #fff;
-    font-size: 24px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-
-    &:hover { background: rgba(239, 68, 68, 0.2); }
-  }
+  background: #101822;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  overflow: hidden;
 }
 
 .modal-tabs {
@@ -179,6 +125,7 @@ onMounted(() => {
   background: rgba(0, 0, 0, 0.2);
   padding: 4px;
   gap: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
   button {
     flex: 1;
@@ -211,7 +158,7 @@ onMounted(() => {
       position: absolute;
       top: 50%;
       right: 10px;
-      transform: translateY(-50%);
+      transform: TranslateY(-50%);
       background: #ef4444;
       color: #fff;
       font-size: 9px;
@@ -231,15 +178,6 @@ onMounted(() => {
   overflow-y: auto;
   min-height: 0;
   padding: 20px;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
 }
 
 </style>

@@ -314,36 +314,8 @@ onMounted(() => {
 }
 
 .btn-heal-primary {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
-  color: #fff;
-  border: none;
-  padding: 18px;
-  border-radius: 14px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 9px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-  @include pixelated;
-  
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
-    filter: Brightness(1.1);
-  }
-  
-  &:disabled {
-    background: #27272a;
-    color: #52525b;
-    box-shadow: none;
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0) Scale(0.98);
-  }
+  @include btn-vicio-danger;
+  width: 100%;
 }
 
 .btn-cancel-secondary {

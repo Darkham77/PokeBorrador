@@ -126,7 +126,7 @@ const handleForget = () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .learning-card {
@@ -202,9 +202,9 @@ const handleForget = () => {
   &:hover {
     background: rgba(255,255,255,0.06);
     border-color: var(--move-color);
-    transform: translateX(4px);
+    transform: TranslateX(4px);
     
-    .replace-label { opacity: 1; transform: translateX(0); }
+    .replace-label { opacity: 1; transform: TranslateX(0); }
   }
 
   &.is-new {
@@ -248,7 +248,7 @@ const handleForget = () => {
     font-size: 7px;
     color: #ef4444;
     opacity: 0;
-    transform: translateX(10px);
+    transform: TranslateX(10px);
     transition: all 0.2s;
   }
 }

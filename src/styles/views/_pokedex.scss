@@ -3,7 +3,7 @@
 .pokedex-view {
   height: 100%;
   padding: 32px;
-  background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+  background: transparent; // Let global stars show through
   overflow-y: auto;
   min-height: 0;
   display: flex;
@@ -12,11 +12,9 @@
 }
 
 .pokedex-header {
+  @include glass-solid(rgba(15, 23, 42, 0.95));
   padding: 40px;
   border-radius: 24px;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   
   .header-content {
     display: flex;
@@ -36,14 +34,16 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       text-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      @include pixelated;
     }
     .subtitle {
-      color: #64748b;
+      color: var(--gray);
       font-size: 13px;
       letter-spacing: 4px;
       margin: 0;
       text-transform: uppercase;
       font-weight: 700;
+      @include pixelated;
     }
   }
 }
@@ -53,7 +53,7 @@
   gap: 20px;
 
   .stat-card {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.03);
     padding: 20px 32px;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -64,34 +64,38 @@
     transition: all 0.3s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.04);
-      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.08);
+      transform: TranslateY(-2px);
+      border-color: rgba(255, 255, 255, 0.1);
     }
 
     .stat-label {
       font-size: 9px;
-      color: #475569;
+      color: var(--gray);
       margin-bottom: 8px;
       font-family: 'Press Start 2P', monospace;
+      @include pixelated;
     }
     .stat-value {
       font-size: 22px;
       font-weight: 700;
       color: #f8fafc;
       font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       
-      small { font-size: 12px; color: #475569; margin-left: 4px; }
+      small { font-size: 12px; color: var(--gray); margin-left: 4px; }
     }
 
     &.highlight {
-      background: rgba(234, 179, 8, 0.03);
-      border-color: rgba(234, 179, 8, 0.15);
-      .stat-value { color: #facc15; text-shadow: 0 0 15px rgba(234, 179, 8, 0.3); }
+      background: rgba(255, 214, 10, 0.05);
+      border-color: rgba(255, 214, 10, 0.2);
+      .stat-value { color: var(--yellow); text-shadow: 0 0 15px rgba(255, 214, 10, 0.3); }
     }
   }
 }
 
 .pokedex-controls {
+  @include glass-solid(rgba(15, 23, 42, 0.95));
   padding: 20px;
   border-radius: 20px;
   display: flex;
@@ -103,27 +107,30 @@
 
 .gen-tabs {
   display: flex;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.3);
   padding: 6px;
   border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   
   .tab-btn {
     padding: 10px 24px;
     border: none;
     background: none;
-    color: #64748b;
+    color: var(--gray);
     font-family: 'Press Start 2P', monospace;
     font-size: 9px;
     cursor: pointer;
     border-radius: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    @include pixelated;
 
     &:hover { color: #fff; }
     &.active {
-      background: #334155;
+      background: rgba(255, 255, 255, 0.1);
       color: #fff;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       transform: Scale(1.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
   }
 }
@@ -140,30 +147,33 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(0,0,0,0.15);
+  background: rgba(0,0,0,0.2);
   padding: 6px 12px;
   border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 
   .sort-label {
     font-size: 8px;
-    color: #475569;
+    color: var(--gray);
     font-family: 'Press Start 2P', monospace;
+    @include pixelated;
   }
 
   .sort-btn {
     padding: 8px 12px;
     background: none;
     border: 1px solid transparent;
-    color: #475569;
+    color: var(--gray);
     font-family: 'Press Start 2P', monospace;
     font-size: 8px;
     cursor: pointer;
     border-radius: 6px;
     transition: all 0.2s;
+    @include pixelated;
 
-    &:hover { color: #94a3b8; }
+    &:hover { color: #fff; }
     &.active {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.08);
       color: #fff;
       border-color: rgba(255,255,255,0.1);
     }
@@ -178,7 +188,7 @@
     position: absolute;
     left: 16px;
     top: 50%;
-    transform: translateY(-50%);
+    transform: TranslateY(-50%);
     font-size: 16px;
     opacity: 0.3;
     transition: opacity 0.2s;
@@ -186,8 +196,8 @@
   
   .search-input {
     width: 100%;
-    background: rgba(0,0,0,0.15);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.1);
     border-radius: 12px;
     padding: 12px 16px 12px 44px;
     color: #fff;
@@ -197,11 +207,11 @@
     transition: all 0.3s ease;
 
     &:focus {
-      background: rgba(0,0,0,0.25);
-      border-color: rgba(59, 130, 246, 0.4);
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      background: rgba(0,0,0,0.35);
+      border-color: var(--yellow);
+      box-shadow: 0 0 20px rgba(255, 214, 10, 0.15);
       
-      & + .search-icon { opacity: 0.6; }
+      & + .search-icon { opacity: 0.8; }
     }
   }
 }
@@ -215,8 +225,7 @@
 
 .pokemon-card {
   position: relative;
-  background: rgba(30, 41, 59, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  @include glass(rgba(30, 41, 59, 0.3), 12px);
   border-radius: 20px;
   padding: 24px;
   cursor: pointer;
@@ -225,41 +234,40 @@
   flex-direction: column;
   align-items: center;
   overflow: hidden;
+  height: 220px; // Fixed height to prevent resizing
+  width: 100%;
+  justify-content: space-between; // Push footer to bottom
 
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent 70%);
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent 70%);
     opacity: 0;
     transition: opacity 0.3s;
   }
 
-  &:hover {
-    transform: translateY(-8px);
-    background: rgba(30, 41, 59, 0.4);
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  &:hover:not(.is-unseen) {
+    transform: TranslateY(-8px);
+    background: rgba(30, 41, 59, 0.5);
+    border-color: var(--yellow);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 20px rgba(255, 214, 10, 0.2);
     
     &::before { opacity: 1; }
-    .pokemon-sprite { transform: Scale(1.15) rotate(5deg); }
+    .pokemon-sprite { transform: Scale(1.15) Rotate(5deg); }
     .pokemon-name { color: #fff; }
   }
 
   &.is-unseen {
-    opacity: 0.3;
+    opacity: 0.4;
     cursor: default;
     filter: Grayscale(100%);
     &:hover { transform: none; box-shadow: none; &::before { opacity: 0; } }
   }
 
   &.is-caught {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
-    border-color: rgba(234, 179, 8, 0.1);
-    
-    .caught-badge {
-      animation: pulse-gold 2s infinite;
-    }
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.7) 100%);
+    border-color: rgba(255, 214, 10, 0.3);
   }
 
   .dex-number {
@@ -267,9 +275,10 @@
     top: 16px;
     left: 16px;
     font-size: 9px;
-    color: #334155;
+    color: var(--gray);
     font-family: 'Press Start 2P', monospace;
     font-weight: 700;
+    @include pixelated;
   }
 
   .sprite-container {
@@ -287,11 +296,11 @@
       height: 100%;
       image-rendering: pixelated;
       transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+      filter: Drop-shadow(0 10px 15px rgba(0,0,0,0.3));
       
       &.silhouette {
         filter: Brightness(0);
-        opacity: 0.15;
+        opacity: 0.2;
       }
     }
 
@@ -308,45 +317,22 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    min-height: 24px; // Ensure consistent height
     z-index: 2;
 
     .pokemon-name {
-      color: #64748b;
+      color: var(--gray);
       font-size: 10px;
       font-family: 'Press Start 2P', monospace;
       text-transform: uppercase;
       text-align: center;
       transition: color 0.3s;
       letter-spacing: 1px;
-    }
-
-    .caught-badge {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      background: rgba(234, 179, 8, 0.15);
-      border-radius: 50%;
-      box-shadow: 0 0 10px rgba(234, 179, 8, 0.2);
-      
-      .star {
-        font-size: 11px;
-        color: #facc15;
-      }
+      @include pixelated;
     }
   }
 }
 
-@keyframes pulse-gold {
-  0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(234, 179, 8, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
-}
-
 .glass-morphism {
-  background: rgba(30, 41, 59, 0.5);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  @include glass(rgba(30, 41, 59, 0.5), 16px);
 }

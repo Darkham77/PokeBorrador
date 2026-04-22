@@ -5,6 +5,7 @@ import { MOVE_DATA } from '@/data/moves';
 import { GYMS } from '@/data/gyms';
 import { FIRE_RED_MAPS } from '@/data/maps';
 import { NATURE_DATA } from '@/data/natures';
+import { SPECIES_METADATA } from '@/data/speciesMetadata';
 
 import { getSpriteUrl, getBackSpriteUrl } from '@/data/spriteMapping';
 
@@ -20,6 +21,7 @@ import { getSpriteUrl, getBackSpriteUrl } from '@/data/spriteMapping';
 const _pokemonDb = shallowRef(POKEMON_DB);
 const _abilityData = shallowRef(ABILITY_DATA);
 const _moveData = shallowRef(MOVE_DATA);
+const _speciesMetadata = shallowRef(SPECIES_METADATA);
 
 /**
  * Realiza una copia profunda de un objeto para evitar mutaciones accidentales.
@@ -39,7 +41,19 @@ export const pokemonDataProvider = {
      */
     getPokemonData(id) {
         const data = _pokemonDb.value[id];
-        return data ? deepClone(data) : null;
+        if (!data) return null;
+        const cloned = deepClone(data);
+        cloned.id = id;
+
+        // Merge metadata if available
+        const metadata = _speciesMetadata.value[id] || {};
+        return {
+            ...cloned,
+            category: metadata.category || 'Pokémon Desconocido',
+            height: metadata.height || null,
+            weight: metadata.weight || null,
+            description: metadata.description || 'No hay datos disponibles en la Pokédex.'
+        };
     },
 
     /**

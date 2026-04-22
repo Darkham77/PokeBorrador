@@ -72,13 +72,13 @@ async function handleLogout() {
   inset: 0;
   z-index: var(--z-critical);
   background: rgba(0, 0, 0, 0.9);
-  -webkit-backdrop-filter: blur(20px) Saturate(1.8);
-  backdrop-filter: blur(20px) Saturate(1.8);
+  -webkit-backdrop-filter: Blur(20px) Saturate(1.8);
+  backdrop-filter: Blur(20px) Saturate(1.8);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .blocked-card {
@@ -135,13 +135,7 @@ button {
 }
 
 .btn-primary {
-  background: #ffd60a;
-  color: #000;
-  font-weight: 900;
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(255, 214, 10, 0.4);
-  }
+  @include btn-vicio-primary;
 }
 
 .btn-secondary {

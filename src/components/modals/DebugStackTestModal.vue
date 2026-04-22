@@ -56,25 +56,7 @@ const emit = defineEmits(['close'])
 
 .pixel-btn {
   width: 100%;
-  padding: 15px;
-  background: var(--yellow, #ffd700);
-  border: none;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 10px;
-  @include pixelated;
-  cursor: pointer;
-  color: #000;
-  box-shadow: 0 4px 0 #b39700;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: #ffeb3b;
-    transform: translateY(-2px);
-  }
-  
-  &:active {
-    transform: translateY(2px);
-    box-shadow: none;
-  }
+  @include btn-vicio-primary;
+  padding: 15px; // Custom padding for this modal
 }
 </style>

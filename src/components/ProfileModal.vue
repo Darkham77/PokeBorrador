@@ -388,11 +388,9 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   }
 
   .logout-btn-legacy {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    @include hover-neon-yellow(1px);
-    &:hover { background: #ef4444; color: #fff; }
+    @include btn-vicio-danger;
+    padding: 16px;
+    font-size: 9px;
   }
 
   .edit-btn-legacy {

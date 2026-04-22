@@ -17,7 +17,7 @@ priority: CRITICAL
 | Principle | Rule |
 | :--- | :--- |
 | **SRP** | Single Responsibility - each function/class does ONE thing |
-| **DRY** | Don't Repeat Yourself - extract duplicates, reuse |
+| **DRY** | Don't Repeat Yourself - reuse existing systems, classes, and patterns |
 | **KISS** | Keep It Simple - simplest solution that works |
 | **YAGNI** | You Aren't Gonna Need It - don't build unused features |
 | **Boy Scout** | Leave code cleaner than you found it |
@@ -58,6 +58,7 @@ priority: CRITICAL
 | **Composition** | Small functions composed together |
 | **Colocation** | Keep related code close |
 | **Mixin Integrity** | Verify smoothing mixins don't carry legacy pixelated rules |
+| **Layout Centering** | Use `display: flex` + `justify-content` + `align-items` for centering. Avoid `position: absolute` with `translate(-50%, -50%)` as it creates sub-pixel blurring and breaks layout flow. |
 
 ---
 
@@ -89,6 +90,7 @@ priority: CRITICAL
 | Helper for one-liner | Inline the code |
 | Factory for 2 objects | Direct instantiation |
 | utils.ts with 1 function | Put code where used |
+| Reinventing the wheel | Use existing systems (e.g. `BaseModal`) |
 | "First we import..." | Just write code |
 | Deep nesting | Guard clauses |
 | Magic numbers | Named constants |

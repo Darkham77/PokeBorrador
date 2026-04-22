@@ -18,10 +18,7 @@ import HUD_Navigation from '@/components/HUD_Navigation.vue'
 import InventoryPills from '@/components/InventoryPills.vue'
 import BattleArena from '@/components/BattleArena.vue'
 import PvPArena from '@/components/battle/PvPArena.vue'
-import TeamHeader from '@/components/team/TeamHeader.vue'
-import TeamGrid from '@/components/team/TeamGrid.vue'
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
-import ToastNotification from '@/components/ui/ToastNotification.vue'
 import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
 import HUD_SidebarLeft from '@/components/ui/HUD_SidebarLeft.vue'
 import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue'
@@ -133,6 +130,7 @@ function updateHudHeight() {
 }
 
 onMounted(() => {
+  console.log('[MainGameView] MOUNTED. activeTab:', activeTab.value)
   // 1. Dynamic HUD Height Tracking
   if (hudRef.value) {
     resizeObserver = new ResizeObserver(() => updateHudHeight())
@@ -146,6 +144,10 @@ onMounted(() => {
   eventStore.fetchEvents()
   eventStore.checkPendingAwards()
   livePvP.initInvitePoller()
+})
+
+onUnmounted(() => {
+  console.log('[MainGameView] UNMOUNTED.')
 })
 
 // REFACTORED: Use managed listeners
@@ -216,16 +218,6 @@ onUnmounted(() => {
         <MapView />
       </div>
 
-      <div
-        v-show="activeTab === 'team'"
-        id="tab-team"
-        class="tab-content"
-      >
-        <div class="team-section">
-          <TeamHeader />
-          <TeamGrid :team="gs.team" />
-        </div>
-      </div>
 
 
       <div
@@ -308,7 +300,6 @@ onUnmounted(() => {
     <!-- MODALS & OVERLAYS -->
     <CriminalityBar />
 
-    <ToastNotification />
     <BuffsOverlay />
 
     <!-- SIDEBAR IZQUIERDA (BARRA DE HERRAMIENTAS) -->

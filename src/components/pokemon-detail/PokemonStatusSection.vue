@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -7,6 +7,25 @@ const props = defineProps({
 })
 
 const p = computed(() => props.pokemon)
+
+const activeTooltip = ref(null) // 'nature', 'ability', null
+const tooltipPos = ref({ x: 0, y: 0 })
+
+const showTooltip = (type, event) => {
+  const rect = event.currentTarget.getBoundingClientRect()
+  activeTooltip.value = type
+  tooltipPos.value = {
+    x: rect.left + rect.width / 2,
+    y: rect.bottom + 8
+  }
+}
+
+const hideTooltip = () => {
+  activeTooltip.value = null
+}
+
+// Ensure cleanup
+onUnmounted(() => hideTooltip())
 
 const getHpPct = (cur, max) => (cur / max) * 100
 const getHpClass = (pct) => {
@@ -67,33 +86,24 @@ const getAbilityDesc = (ability) => {
 
     <!-- General Info Grid -->
     <div class="info-grid">
-      <div class="info-card nature-card">
+      <div
+        class="info-card nature-card"
+        @mouseenter="showTooltip('nature', $event)"
+        @mouseleave="hideTooltip"
+      >
         <span class="label">Naturaleza</span>
-        <div class="value-wrap tooltip-trigger">
+        <div class="value-wrap">
           <span class="val">{{ p.nature || 'Serio' }} ❓</span>
-          <div class="custom-tooltip">
-            <strong>{{ p.nature || 'Serio' }}</strong>
-            <p v-if="getNatureInfo(p.nature).up">
-              <span class="up">⬆ +10% {{ getNatureInfo(p.nature).up }}</span><br>
-              <span class="down">⬇ -10% {{ getNatureInfo(p.nature).down }}</span>
-            </p>
-            <p
-              v-else
-              class="neutral"
-            >
-              Sin efecto en estadísticas
-            </p>
-          </div>
         </div>
       </div>
-      <div class="info-card ability-card">
+      <div
+        class="info-card ability-card"
+        @mouseenter="showTooltip('ability', $event)"
+        @mouseleave="hideTooltip"
+      >
         <span class="label">Habilidad</span>
-        <div class="value-wrap tooltip-trigger">
+        <div class="value-wrap">
           <span class="val">{{ p.ability || '—' }} ❓</span>
-          <div class="custom-tooltip">
-            <strong>{{ p.ability || '—' }}</strong>
-            <p>{{ getAbilityDesc(p.ability) }}</p>
-          </div>
         </div>
       </div>
       <div class="info-card vigor-card">
@@ -101,98 +111,186 @@ const getAbilityDesc = (ability) => {
         <span class="val vigor-val">⚡{{ p.vigor || 0 }}</span>
       </div>
     </div>
+
+    <!-- GLOBAL TOOLTIP (Teleported to body to avoid clipping) -->
+    <Teleport to="body">
+      <Transition name="fade-v">
+        <div 
+          v-if="activeTooltip" 
+          class="vicio-global-tooltip"
+          :style="{ 
+            left: tooltipPos.x + 'px', 
+            top: tooltipPos.y + 'px'
+          }"
+        >
+          <template v-if="activeTooltip === 'nature'">
+            <div class="tooltip-content">
+              <strong>{{ p.nature || 'Serio' }}</strong>
+              <p v-if="getNatureInfo(p.nature).up">
+                <span class="up">⬆ +10% {{ getNatureInfo(p.nature).up }}</span><br>
+                <span class="down">⬇ -10% {{ getNatureInfo(p.nature).down }}</span>
+              </p>
+              <p
+                v-else
+                class="neutral"
+              >
+                Sin efecto en estadísticas
+              </p>
+            </div>
+          </template>
+          
+          <template v-if="activeTooltip === 'ability'">
+            <div class="tooltip-content">
+              <strong>{{ p.ability || '—' }}</strong>
+              <p>{{ getAbilityDesc(p.ability) }}</p>
+            </div>
+          </template>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .glass-inset {
-  background: rgba(0,0,0,0.3);
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 0; // Remove padding
+  margin-bottom: 40px; // More space
+  background: none; // Remove frame
+  border: none; // Remove frame
+  box-shadow: none; // Remove frame
 }
 
-.bar-group { margin-bottom: 4px; }
+.bar-group { margin-bottom: 12px; }
 
 .bar-header {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #ddd;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  margin-bottom: 12px;
+  color: #fff;
+  opacity: 0.9;
+  @include pixelated;
 }
 
 .progress-outer {
   height: 12px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(0,0,0,0.4);
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
 }
 
-.progress-inner { height: 100%; transition: width 0.6s ease-out; }
-.hp-high { background: linear-gradient(90deg, #10b981, #34d399); }
-.hp-mid { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.hp-low { background: linear-gradient(90deg, #ef4444, #f87171); }
+.progress-inner { 
+  height: 100%; 
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px currentColor;
+}
+.hp-high { background: linear-gradient(90deg, #10b981, #34d399); color: #10b981; }
+.hp-mid { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #f59e0b; }
+.hp-low { background: linear-gradient(90deg, #ef4444, #f87171); color: #ef4444; }
 
-.exp-fill { background: linear-gradient(90deg, var(--purple), #a855f7); }
+.exp-fill { 
+  background: linear-gradient(90deg, #8b5cf6, #a855f7); 
+  color: #8b5cf6;
+}
 
 .info-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 
 .info-card {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
-  padding: 12px;
+  padding: 16px 12px;
   text-align: center;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: TranslateY(-2px);
+  }
 }
 
 .info-card .label {
   display: block;
-  font-size: 9px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
   color: var(--gray);
   text-transform: uppercase;
-  margin-bottom: 6px;
-  font-weight: 900;
+  margin-bottom: 8px;
+  opacity: 0.6;
+  @include pixelated;
 }
 
 .info-card .val {
-  font-size: 12px;
-  font-weight: bold;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
   color: #fff;
+  text-shadow: 0 0 10px rgba(255,255,255,0.2);
+  @include pixelated;
 }
 
-.vigor-val { color: var(--yellow) !important; }
+.vigor-val { 
+  color: var(--yellow) !important; 
+  text-shadow: 0 0 10px rgba(255, 214, 10, 0.3) !important;
+}
 
-/* Tooltip System */
-.tooltip-trigger { position: relative; cursor: help; }
-.custom-tooltip {
-  visibility: hidden;
-  position: absolute;
-  bottom: 125%;
-  left: 50%;
+/* Tooltip System (Global Teleported) */
+.vicio-global-tooltip {
+  position: fixed;
   transform: translateX(-50%);
-  background: #1e293b;
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 12px;
-  border-radius: 12px;
-  width: 200px;
-  z-index: 100;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  background: rgba(10, 15, 30, 0.98); // Deep glass
+  backdrop-filter: Blur(20px);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 16px;
+  border-radius: 16px;
+  width: 220px;
+  z-index: 99999; // ABOVE EVERYTHING
+  box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+  pointer-events: none;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-bottom-color: rgba(255,255,255,0.15);
+  }
 }
 
-.tooltip-trigger:hover .custom-tooltip { visibility: visible; }
-.custom-tooltip strong { color: var(--yellow); display: block; margin-bottom: 8px; font-size: 11px; }
-.custom-tooltip p { font-size: 10px; color: #cbd5e1; line-height: 1.4; margin: 0; }
-.up { color: #34d399; } .down { color: #f87171; } .neutral { color: #94a3b8; }
+.tooltip-content strong { 
+  font-family: 'Press Start 2P', monospace;
+  color: var(--yellow); 
+  display: block; 
+  margin-bottom: 10px; 
+  font-size: 8px; 
+  @include pixelated;
+}
+.tooltip-content p { font-size: 11px; color: #ddd; line-height: 1.5; margin: 0; }
+.up { color: #34d399; font-weight: bold; } 
+.down { color: #f87171; font-weight: bold; } 
+.neutral { color: #94a3b8; }
+
+/* Transition */
+.fade-v-enter-active, .fade-v-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+.fade-v-enter-from, .fade-v-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px);
+}
 
 .mt-12 { margin-top: 12px; }
-.max-text { color: var(--yellow); font-size: 10px; }
-.exp-text { color: var(--purple-light); font-size: 10px; }
+.max-text { color: var(--yellow); font-size: 8px; }
+.exp-text { color: var(--purple-light); font-size: 8px; }
 </style>

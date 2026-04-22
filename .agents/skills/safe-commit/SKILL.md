@@ -46,8 +46,9 @@ graph TD
     Recovery -->|FAIL| Verification
     Recovery -->|PASS| Cleanup[6. Workspace Cleanup]
     Cleanup --> Lessons[7. Lessons Extraction]
+    Lessons --> Approval[7.1 User Approval]
     
-    Lessons --> Commit[8. The Safe Commit]
+    Approval --> Commit[8. The Safe Commit]
     Commit --> Push[9. Push & Close]
     Push --> End((END))
     
@@ -120,7 +121,8 @@ Before extracting lessons or committing, you MUST delete all temporary artifacts
 
 Run @/extract-lessons to capture patterns (e.g., a new SASS trick or a Phaser optimization).
 
-- **Continuity Guard**: After analysis, proceed immediately to the commit phase.
+- **Feedback Mandatory**: After @/extract-lessons presents the lesson mapping table, you MUST stop and wait for the user to approve the changes.
+- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 8 without explicit user confirmation of the extracted lessons.
 
 ### 8. The Safe Commit
 
@@ -147,5 +149,6 @@ Push changes and notify the user.
 2. [ ] Run `npm run build` to verify compilation.
 3. [ ] Workspace Cleanup (Step 6).
 4. [ ] Extract lessons (Step 7).
-5. [ ] Git commit & push (Step 8).
+5. [ ] **Wait for User Approval** (Step 7.1).
+6. [ ] Git commit & push (Step 8).
 "

@@ -358,7 +358,7 @@ function handleClose() {
   
   &:hover {
     background: #2563eb;
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
   }
 }
 
@@ -372,7 +372,7 @@ function handleClose() {
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes itemPulse { from { transform: Scale(1); filter: drop-shadow(0 0 15px rgba(255,217,61,0.5)); } to { transform: Scale(1.1); filter: drop-shadow(0 0 25px rgba(255,217,61,0.9)); } }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes bounce { 0%, 100% { transform: TranslateY(0); } 50% { transform: TranslateY(-10px); } }
 @keyframes flash { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideUp { from { transform: TranslateY(30px); opacity: 0; } to { transform: TranslateY(0); opacity: 1; } }
 </style>

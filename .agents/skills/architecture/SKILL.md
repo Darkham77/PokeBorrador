@@ -53,6 +53,18 @@ When maintaining the `DBRouter` or `ProxyQuery` logic:
 
 ---
 
+## 5. Unified Context Awareness
+
+When building components that serve both **Species** (Pokédex/Library) and **Instance** (Player-owned/Specific Entity) contexts:
+
+- **Single Source of Truth**: Use a single component (e.g., `UnifiedPokemonDetailModal`) that switches behavior based on a `pokemon` or `isInstance` prop.
+- **Data Parity Rules**:
+  - **Species Mode**: Show **Ranges** for physical attributes (height/weight) and generic descriptions.
+  - **Instance Mode**: Show **Specific Values** (calculated or unique) and custom attributes (IVs, Effort, Status).
+- **Mechanical Reuse**: Inherit generic sub-components (Moves list, Stats bars) and only inject instance-specific data (Current HP vs Base HP) via props to prevent logic duplication.
+
+---
+
 ## Validation Checklist
 
 Before finalizing architecture:

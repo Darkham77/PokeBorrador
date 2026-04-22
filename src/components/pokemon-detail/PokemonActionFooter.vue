@@ -50,54 +50,37 @@ const canBuy = computed(() => {
   </footer>
 </template>
 
-<style scoped>
-.modal-footer {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
 
-.action-btn {
-  width: 100%;
-  padding: 16px;
-  border-radius: 16px;
-  border: none;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
-  cursor: pointer;
-  transition: all 0.2s;
+.modal-footer {
+  padding: 24px 32px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.1);
 }
 
 .evolutionary {
-  background: rgba(255,217,61,0.1);
-  color: var(--yellow);
-  border: 1px solid rgba(255,217,61,0.2);
+  @include btn-vicio-primary;
+  width: 100%;
 }
 
-.evolutionary:hover { background: rgba(255,217,61,0.2); }
+.purchase-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 
-.purchase-zone .price {
-  font-size: 24px;
-  font-weight: 900;
-  color: var(--yellow);
-  text-align: center;
-  margin-bottom: 16px;
+  .price {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--yellow);
+    text-align: center;
+    text-shadow: 0 0 10px rgba(255, 214, 10, 0.3);
+  }
 }
 
 .buy-btn {
+  @include btn-vicio-primary;
   width: 100%;
-  padding: 18px;
-  background: var(--blue);
-  color: #fff;
-  border: none;
-  border-radius: 16px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.buy-btn:disabled { 
-  background: #333; 
-  cursor: not-allowed; 
-  color: #666;
 }
 </style>

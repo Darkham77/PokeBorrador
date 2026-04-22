@@ -109,6 +109,20 @@ Just Right → Flow → Engagement
 
 ---
 
+## 5.1 Discovery & Collection Mechanics
+
+To maintain engagement for **Explorer** and **Achiever** types, use a standardized "Fog of War" for all collectible systems (Bestiary, Item Gallery, Evolutions):
+
+| Discovery State | Visual Treatment | Information Level |
+| :--- | :--- | :--- |
+| **Unknown** | `?` Placeholder + Low Opacity | None (`???`) |
+| **Seen** | Silhouette (`Brightness(0)`) | Name + ID Only |
+| **Captured** | Full Colored Sprite | Full Stats + Description |
+
+**Design Tip:** Reveal evolutionary targets as silhouettes if the *next* stage has been seen in battle, but keep them as `?` if the entire evolutionary line is unknown. This creates a "prophetic" mystery that drives collection.
+
+---
+
 ## 6. Anti-Patterns
 
 | ❌ Don't | ✅ Do |

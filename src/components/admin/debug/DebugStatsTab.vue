@@ -72,10 +72,6 @@ function setPlayerClass(c) {
   ui.notify(`Debug: Clase cambiada a ${c.toUpperCase()}`, '🎓')
   game.saveGame(false)
 }
-
-function unlockPokedex() {
-  ui.notify('Debug: Pokedex desbloqueado (simulado)', '📖')
-}
 </script>
 
 <template>
@@ -205,13 +201,6 @@ function unlockPokedex() {
         </button>
       </div>
     </div>
-
-    <button
-      class="full-btn"
-      @click="unlockPokedex"
-    >
-      DESBLOQUEAR POKEDEX
-    </button>
   </div>
 </template>
 

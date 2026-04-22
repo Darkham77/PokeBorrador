@@ -147,6 +147,7 @@ export const useBoxStore = defineStore('box', () => {
 
     boxReleaseMode.value = false
     boxReleaseSelected.value = []
+    gameStore.autoFillPvpTeam()
     gameStore.save()
     return releasedNames
   }
@@ -202,6 +203,7 @@ export const useBoxStore = defineStore('box', () => {
     
     boxRocketMode.value = false
     boxRocketSelected.value = []
+    gameStore.autoFillPvpTeam()
     gameStore.save()
     return { value, count }
   }
@@ -284,6 +286,7 @@ export const useBoxStore = defineStore('box', () => {
         uiStore.notify(`¡${names.join(', ')} fueron soltados!`, '🌿')
         teamReleaseMode.value = false
         teamReleaseSelected.value = []
+        gameStore.autoFillPvpTeam()
         gameStore.save()
       }
     })
@@ -336,6 +339,7 @@ export const useBoxStore = defineStore('box', () => {
         uiStore.notify(`¡${count} Pokémon vendidos por ₽${totalGain.toLocaleString()}! 🚀`, '🚀')
         teamRocketMode.value = false
         teamRocketSelected.value = []
+        gameStore.autoFillPvpTeam()
         gameStore.save()
       }
     })

@@ -136,7 +136,7 @@ const dayCycle = computed(() => {
   
   
   &:hover {
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
     background: rgba(255, 255, 255, 0.12);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
@@ -153,7 +153,7 @@ const dayCycle = computed(() => {
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   &:hover {
-    transform: Scale(1.08) translateY(-2px);
+    transform: Scale(1.08) TranslateY(-2px);
     filter: Brightness(1.15);
   }
 

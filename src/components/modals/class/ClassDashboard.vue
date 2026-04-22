@@ -229,6 +229,7 @@ const getTrainerSprite = (id) => {
         filter: drop-shadow(0 20px 40px rgba(0,0,0,0.8));
         z-index: 1;
         transition: transform 0.3s ease;
+        &:hover { transform: Scale(1.05); }
       }
 
       .avatar-mini-circle {
@@ -298,7 +299,7 @@ const getTrainerSprite = (id) => {
     text-align: left;
     transition: all 0.2s;
 
-    &:hover { background: rgba(15, 23, 42, 0.6); transform: translateX(5px); }
+    &:hover { background: rgba(15, 23, 42, 0.6); transform: TranslateX(5px); }
 
     .card-icon { 
       width: 48px; height: 48px;
@@ -436,7 +437,7 @@ const getTrainerSprite = (id) => {
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
     @include pixelated;
-    &:hover { transform: translateY(-4px); box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); filter: Brightness(1.1); }
+    &:hover { transform: TranslateY(-4px); box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); filter: Brightness(1.1); }
   }
 
   .action-footer {
@@ -481,20 +482,10 @@ const getTrainerSprite = (id) => {
     }
 
     .btn-primary {
-      background: #ef4444;
-      color: #fff;
-      border: 2px solid rgba(255, 255, 255, 0.9);
-      box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+      @include btn-vicio-danger;
+      border: 2px solid rgba(255, 255, 255, 0.9); // Keep specific border if needed
       font-size: 10px;
-      
-      .check-icon {
-        color: #94a3b8;
-        font-size: 14px;
-        margin-right: 8px;
-        font-weight: bold;
-      }
-
-      &:hover { transform: translateY(-3px); filter: Brightness(1.1); box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); }
+      padding: 18px;
     }
   }
 }

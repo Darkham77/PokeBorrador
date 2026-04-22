@@ -167,7 +167,7 @@ const selectAvatar = (id) => {
 
   &:hover {
     background: rgba(255, 255, 255, 0.06);
-    transform: translateY(-4px);
+    transform: TranslateY(-4px);
     border-color: rgba(255, 255, 255, 0.1);
   }
 
@@ -259,9 +259,9 @@ const selectAvatar = (id) => {
 }
 
 @keyframes anim-water {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
-  100% { transform: translateY(0); }
+  0% { transform: TranslateY(0); }
+  50% { transform: TranslateY(-2px); }
+  100% { transform: TranslateY(0); }
 }
 
 @keyframes anim-spark {

@@ -10,73 +10,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
 import { useEventStore } from './events'
 
-const INITIAL_STATE = {
-  trainer: '',
-  badges: 0,
-  balls: 10,
-  money: 3000,
-  battleCoins: 0,
-  eggs: [],
-  trainerChance: 1,
-  trainerLevel: 1,
-  trainerExp: 0,
-  trainerExpNeeded: 100,
-  inventory: { 'Poción': 3, 'Pokéball': 10 },
-  map: {
-    currentMap: 'route1',
-    region: 'kanto',
-    lastNavigateAt: 0
-  },
-  team: [],
-  box: [],
-  pokedex: [],
-  seenPokedex: [],
-  defeatedGyms: [],
-  gymProgress: {},
-  lastGymWins: {},
-  lastGymAttempts: {},
-  battle: null,
-  starterChosen: false,
-  lastRankedSeason: null,
-  nick_style: null,
-  avatar_style: null,
-  stats: {},
-  eloRating: 1000,
-  pvpStats: { wins: 0, losses: 0, draws: 0 },
-  rankedMaxElo: 1000,
-  rankedRewardsClaimed: [],
-  activeBattle: null,
-  daycare_missions: [],
-  daycare_mission_refreshes: 3,
-  safariTicketSecs: 0,
-  ceruleanTicketSecs: 0,
-  articunoTicketSecs: 0,
-  mewtwoTicketSecs: 0,
-  incenseType: null,
-  incenseSecs: 0,
-  boxCount: 4,
-  chats: {},
-  playerClass: null,
-  classLevel: 1,
-  classXP: 0,
-  classData: {
-    captureStreak: 0,
-    longestStreak: 0,
-    reputation: 0,
-    blackMarketSales: 0,
-    criminality: 0,
-    blackMarketDaily: { date: '', items: [], purchased: [] }
-  },
-  faction: null,
-  warCoins: 0,
-  warCoinsSpent: 0,
-  warDailyCap: {},
-  warDailyCoins: {},
-  warMyPtsLocal: {},
-  notificationHistory: [],
-  marketSoldSeenIds: [],
-  claimQueue: []
-}
+import { INITIAL_STATE } from './gameInitialState'
 
 export const useGameStore = defineStore('game', () => {
   const authStore = useAuthStore()
@@ -96,10 +30,6 @@ export const useGameStore = defineStore('game', () => {
     
     Object.assign(state, newData)
     console.log('[STORE] Game loaded successfully. Starter chosen:', state.starterChosen);
-    
-    // Force default tab to map on initial load
-    const uiStore = useUIStore()
-    uiStore.activeTab = 'map'
   }
 
   function resetToInitial() {
@@ -244,7 +174,56 @@ export const useGameStore = defineStore('game', () => {
     }
 
     scheduleSave()
+    autoFillPvpTeam()
     return { success: true, target }
+  }
+
+  /**
+   * Automatically fills the PVP team (3 slots) using references from Team or Box.
+   */
+  function autoFillPvpTeam() {
+    // Collect all available pokemons
+    const allPokes = [...state.team, ...(state.box || [])]
+    if (allPokes.length === 0) {
+      state.pvpTeam = []
+      return
+    }
+
+    // Clean up pvpTeam from non-existent UIDs
+    const existingUids = new Set(allPokes.map(p => p.uid))
+    state.pvpTeam = (state.pvpTeam || []).filter(uid => existingUids.has(uid))
+
+    // If total count < 3, just add whatever we have
+    // If total count >= 3, ensure we have 3
+    const targetCount = Math.min(3, allPokes.length)
+
+    if (state.pvpTeam.length < targetCount) {
+      for (const p of allPokes) {
+        if (state.pvpTeam.length >= targetCount) break
+        if (!state.pvpTeam.includes(p.uid)) {
+          state.pvpTeam.push(p.uid)
+        }
+      }
+    }
+    
+    // Ensure no more than 3
+    if (state.pvpTeam.length > 3) {
+      state.pvpTeam = state.pvpTeam.slice(0, 3)
+    }
+  }
+
+  function swapPvpSlot(slotIndex, newPokemonUid) {
+    if (slotIndex < 0 || slotIndex >= 3) return
+    
+    // Check if pokemon exists and is not already in PVP team
+    const allPokes = [...state.team, ...(state.box || [])]
+    const exists = allPokes.some(p => p.uid === newPokemonUid)
+    const alreadyIn = state.pvpTeam.includes(newPokemonUid)
+
+    if (exists && !alreadyIn) {
+      state.pvpTeam[slotIndex] = newPokemonUid
+      save(false)
+    }
   }
 
   /**
@@ -255,12 +234,14 @@ export const useGameStore = defineStore('game', () => {
     const teamIdx = state.team.findIndex(p => p.uid === uid)
     if (teamIdx !== -1) {
       state.team.splice(teamIdx, 1)
+      autoFillPvpTeam()
       scheduleSave()
       return true
     }
     const boxIdx = state.box.findIndex(p => p.uid === uid)
     if (boxIdx !== -1) {
       state.box.splice(boxIdx, 1)
+      autoFillPvpTeam()
       scheduleSave()
       return true
     }
@@ -435,6 +416,7 @@ export const useGameStore = defineStore('game', () => {
     state.team.splice(index, 1)
     state.box.push(p)
     useUIStore().notify(`¡${p.name} fue enviado a la Caja PC!`, '📦')
+    autoFillPvpTeam()
     save(false)
     return true
   }
@@ -463,6 +445,8 @@ export const useGameStore = defineStore('game', () => {
     sendToBox,
     addPokemon,
     removePokemon,
+    autoFillPvpTeam,
+    swapPvpSlot,
     saveGame: save // Alias for backward compatibility
   }
 })

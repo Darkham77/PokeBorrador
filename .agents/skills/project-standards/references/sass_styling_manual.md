@@ -14,11 +14,15 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 
 - `transform: Scale(1.5);`
 - `transform: TranslateY(-10px);`
+- `transform: TranslateX(50%);`
+- `transform: TranslateZ(0);`
 - `filter: Invert(100%);`
 - `filter: Grayscale(0.8);`
 - `filter: Opacity(0.5);`
 - `filter: Brightness(1.2);`
 - `filter: Blur(5px);`
+- `filter: Saturate(1.5);`
+- `filter: Drop-shadow(0 4px 8px rgba(0,0,0,0.5));`
 
 > [!WARNING]
 > **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, `Rotate()`, `TranslateY()`, and `Grayscale()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
@@ -157,6 +161,18 @@ Avoid spreading definitions for the same component across multiple files. This i
 - **Audit Requirement**: Before committing UI changes, you MUST run the redundancy audit:
   `python3 .agents/skills/project-standards/scripts/detect_css_redundancy.py`
 - **Goal**: Maintain 0 redefinitions for critical game components.
+
+### 5. UI Button Standardization (Mandatory Mixins)
+
+To ensure visual consistency and prevent technical debt, all interactive buttons MUST use the core mixins instead of local styling.
+
+- **Confirm / Primary Action**: `@include btn-vicio-primary;`
+- **Cancel / Danger Action**: `@include btn-vicio-danger;`
+
+**Requirements**:
+
+- The component MUST use `lang="scss"`.
+- You MUST import core tools: `@use "@/styles/core/tools" as *;`.
 
 ---
 

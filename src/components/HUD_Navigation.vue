@@ -32,6 +32,11 @@ const handleTabChange = (tab) => {
     modalStore.open('Shop')
     return
   }
+
+  if (tab === 'team') {
+    modalStore.open('TeamManagement')
+    return
+  }
   
   activeTab.value = tab
   
@@ -314,7 +319,7 @@ const toggleGroupMenu = (name) => {
       0 0 0 2px var(--yellow),
       0 0 15px rgba(255, 214, 10, 0.4);
     z-index: 2;
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
   }
   
   &.active {
@@ -376,22 +381,22 @@ const toggleGroupMenu = (name) => {
     top: calc(100% + 10px); 
     bottom: auto !important;
     left: 50%; 
-    transform: translateX(-50%) translateY(-10px); 
+    transform: TranslateX(-50%) TranslateY(-10px); 
   }
   
   .hud-group.is-open.pos-top & {
-    transform: translateX(-50%) translateY(0);
+    transform: TranslateX(-50%) TranslateY(0);
   }
   
   .pos-bottom & { 
     bottom: calc(100% + 15px); 
     top: auto !important;
     left: 50%; 
-    transform: translateX(-50%) translateY(10px); 
+    transform: TranslateX(-50%) TranslateY(10px); 
   }
 
   .hud-group.is-open.pos-bottom & {
-    transform: translateX(-50%) translateY(0);
+    transform: TranslateX(-50%) TranslateY(0);
   }
 
   .hud-nav-btn {
@@ -413,7 +418,7 @@ const toggleGroupMenu = (name) => {
       box-shadow: 
         0 0 0 2px var(--yellow), 
         0 0 15px rgba(255, 214, 10, 0.3);
-      transform: translateX(6px);
+      transform: TranslateX(6px);
       z-index: 2;
     }
     
@@ -439,13 +444,13 @@ const toggleGroupMenu = (name) => {
 }
 
 @keyframes slideDown {
-  from { transform: translateX(-50%) translateY(-10px); opacity: 0; }
-  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+  from { transform: TranslateX(-50%) TranslateY(-10px); opacity: 0; }
+  to { transform: TranslateX(-50%) TranslateY(0); opacity: 1; }
 }
 
 @keyframes slideUp {
-  from { transform: translateX(-50%) translateY(10px); opacity: 0; }
-  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+  from { transform: TranslateX(-50%) TranslateY(10px); opacity: 0; }
+  to { transform: TranslateX(-50%) TranslateY(0); opacity: 1; }
 }
 
 .badge-pill {

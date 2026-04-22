@@ -8,14 +8,13 @@ import { usePokedex } from '@/composables/usePokedex'
 import PokedexHeader from '@/components/pokedex/PokedexHeader.vue'
 import PokedexControls from '@/components/pokedex/PokedexControls.vue'
 import PokedexPokemonCard from '@/components/pokedex/PokedexPokemonCard.vue'
-import PokedexDetailModal from '@/components/pokedex/PokedexDetailModal.vue'
+import { useUIStore } from '@/stores/ui'
 
 const gameStore = useGameStore()
+const uiStore = useUIStore()
 const gs = computed(() => gameStore.state)
 
 const currentGen = ref(1)
-const selectedSpeciesId = ref(null)
-const isModalOpen = ref(false)
 
 const currentOrder = computed(() => currentGen.value === 1 ? PDEX_ORDER : GEN2_PDEX_ORDER)
 const { searchQuery, sortBy, pokemonList } = usePokedex(gs, currentOrder, currentGen)
@@ -32,8 +31,7 @@ const stats = computed(() => {
 
 const openDetail = (p) => {
   if (!p.isSeen) return
-  selectedSpeciesId.value = p.id
-  isModalOpen.value = true
+  uiStore.open('PokedexDetail', { speciesId: p.id, context: 'pokedex' })
 }
 </script>
 
@@ -55,13 +53,6 @@ const openDetail = (p) => {
         @click="openDetail(p)"
       />
     </div>
-
-    <PokedexDetailModal 
-      v-if="selectedSpeciesId"
-      :species-id="selectedSpeciesId"
-      :is-open="isModalOpen"
-      @close="isModalOpen = false"
-    />
   </div>
 </template>
 

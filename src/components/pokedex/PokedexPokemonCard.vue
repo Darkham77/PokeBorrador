@@ -39,13 +39,6 @@ defineEmits(['click'])
 
     <div class="card-footer">
       <span class="pokemon-name">{{ p.name }}</span>
-      <div
-        v-if="p.isCaught"
-        class="caught-badge"
-        title="Capturado"
-      >
-        <span class="star">★</span>
-      </div>
     </div>
   </div>
 </template>

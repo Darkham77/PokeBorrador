@@ -214,7 +214,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 
   &:hover {
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
     border-color: var(--purple-light);
     background: rgba(13, 17, 23, 0.95);
   }

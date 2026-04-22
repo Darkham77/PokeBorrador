@@ -7,6 +7,7 @@ import { useUIStore } from '@/stores/ui'
 // Sub-components
 import DebugStatsTab from './debug/DebugStatsTab.vue'
 import DebugItemsTab from './debug/DebugItemsTab.vue'
+import DebugPokemonTab from './debug/DebugPokemonTab.vue'
 import DebugTimeTab from './debug/DebugTimeTab.vue'
 import DebugModalsTab from './debug/DebugModalsTab.vue'
 
@@ -137,12 +138,10 @@ if (typeof window !== 'undefined') {
             :security-check="securityCheck"
           />
           
-          <div
+          <DebugPokemonTab
             v-if="selectedCategory === 'pokes'"
-            class="empty-state"
-          >
-            <p>Selector de Pokémon Shiny/Legendarios próximamente...</p>
-          </div>
+            :security-check="securityCheck"
+          />
         </main>
       </div>
     </BaseModal>
@@ -175,7 +174,7 @@ if (typeof window !== 'undefined') {
   gap: 12px;
 
   &:hover {
-    transform: translateY(-2px) Scale(1.05);
+    transform: TranslateY(-2px) Scale(1.05);
     box-shadow: 0 12px 30px rgba(124, 58, 237, 0.5);
   }
 }

@@ -88,17 +88,35 @@ const cardStyles = computed(() => {
   return {}
 })
 
+const localShow = ref(props.show)
+
 watch(() => props.show, (val) => {
   if (val) {
+    localShow.value = true
     computedZIndex.value = props.zIndex
+  } else {
+    // Wait for animations to finish before removing root from DOM
+    // 500ms covers the 400ms CSS transitions comfortably
+    setTimeout(() => {
+      if (!props.show) {
+        localShow.value = false
+      }
+    }, 500)
   }
 }, { immediate: true })
+
+const onTransitionEnd = () => {
+  // Keeping this as a secondary safety, but the watch now handles the main logic
+  if (!props.show) {
+    localShow.value = false
+  }
+}
 </script>
 
 <template>
   <Teleport to="body">
     <div
-      v-if="show"
+      v-if="localShow"
       class="base-modal-root"
       :style="{ zIndex: computedZIndex }"
     >
@@ -106,9 +124,10 @@ watch(() => props.show, (val) => {
       <Transition
         name="fade-overlay"
         appear
+        @after-leave="onTransitionEnd"
       >
         <div 
-          v-if="overlay === 'dark'" 
+          v-if="show && overlay === 'dark'" 
           class="modal-overlay" 
           @click="handleOverlayClick" 
         />
@@ -118,8 +137,10 @@ watch(() => props.show, (val) => {
       <Transition 
         :name="type.startsWith('side') ? (type === 'side-left' ? 'slide-left' : 'slide-right') : 'modal-zoom'"
         appear
+        @after-leave="onTransitionEnd"
       >
         <div 
+          v-if="show"
           class="base-modal-teleport-wrapper" 
           :class="[{ 'no-pointer-events': overlay === 'none' }, `type-${type}`]"
         >
@@ -343,12 +364,12 @@ watch(() => props.show, (val) => {
 
 .slide-right-enter-from, .slide-right-leave-to {
   opacity: 0;
-  transform: translateX(100%);
+  transform: TranslateX(100%);
 }
 
 .slide-left-enter-from, .slide-left-leave-to {
   opacity: 0;
-  transform: translateX(-100%);
+  transform: TranslateX(-100%);
 }
 
 .modal-scrollable-content {

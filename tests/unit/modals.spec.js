@@ -29,27 +29,33 @@ describe('ModalStore Stacking (LIFO)', () => {
   })
 
   it('should close the top-most modal (LIFO)', () => {
+    vi.useFakeTimers()
     const store = useModalStore()
     
     store.open('TestA')
     store.open('TestB')
     
     store.closeTop()
+    vi.advanceTimersByTime(500)
     
     expect(store.stack.length).toBe(1)
     expect(store.stack[0].name).toBe('TestA')
+    vi.useRealTimers()
   })
 
   it('should close a specific modal by ID', () => {
+    vi.useFakeTimers()
     const store = useModalStore()
     
     const idA = store.open('TestA')
     store.open('TestB')
     
     store.close(idA)
+    vi.advanceTimersByTime(500)
     
     expect(store.stack.length).toBe(1)
     expect(store.stack[0].name).toBe('TestB')
+    vi.useRealTimers()
   })
 
   it('should close all modals', () => {

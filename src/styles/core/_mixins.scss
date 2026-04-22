@@ -103,12 +103,12 @@
 
   &:hover:not(:disabled) {
     filter: Brightness(1.1);
-    transform: translateY(-1px);
+    transform: TranslateY(-1px);
     box-shadow: 0 5px 0 #b45309;
   }
 
   &:active:not(:disabled) {
-    transform: translateY(2px);
+    transform: TranslateY(2px);
     box-shadow: 0 2px 0 #b45309;
   }
   
@@ -118,5 +118,62 @@
     cursor: not-allowed;
     box-shadow: none;
     transform: none;
+  }
+}
+
+@mixin btn-vicio-danger {
+  padding: 18px;
+  background: #ef4444; // Red 500
+  border: none;
+  border-radius: 15px;
+  color: #fff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 0 #991b1b; // Dark Red
+  @include pixelated;
+
+  &:hover:not(:disabled) {
+    filter: Brightness(1.1);
+    transform: TranslateY(-1px);
+    box-shadow: 0 5px 0 #991b1b;
+  }
+
+  &:active:not(:disabled) {
+    transform: TranslateY(2px);
+    box-shadow: 0 2px 0 #991b1b;
+  }
+  
+  &:disabled {
+    filter: Grayscale(1);
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+@mixin gender-badge($size: 24px, $font-size: 16px) {
+  width: $size;
+  height: $size;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s;
+
+  &.male, &.gender-male { 
+    color: #3b8bff; 
+    border-color: rgba(59, 139, 255, 0.4);
+    text-shadow: 0 0 8px rgba(59, 139, 255, 0.3);
+  }
+  &.female, &.gender-female { 
+    color: #ff6eff; 
+    border-color: rgba(255, 110, 255, 0.4);
+    text-shadow: 0 0 8px rgba(255, 110, 255, 0.3);
   }
 }
