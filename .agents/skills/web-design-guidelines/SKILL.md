@@ -54,5 +54,6 @@ If no files specified, ASK the user which files to review.
 ## 🏛️ Local Project Addendum
 
 ### 1. Visual Content Integrity
-- **Emoji Duplication**: Check that dynamic icons (e.g. `{{ event.icon }}`) are not rendered alongside text labels that already contain hardcoded emojis. 
+
+- **Emoji Duplication**: Check that dynamic icons (e.g. `{{ event.icon }}`) are not rendered alongside text labels that already contain hardcoded emojis.
 - **Rule**: If a label contains its own emoji (e.g., "⚡ EXP"), suppress the general icon for that specific list item to avoid visual noise.
