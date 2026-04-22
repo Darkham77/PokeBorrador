@@ -96,6 +96,7 @@ priority: CRITICAL
 | Magic numbers | Named constants |
 | God functions | Split by responsibility |
 | Empty rulesets | Remove blocks containing only comments |
+| **Lint Warnings** | Achieve **Zero-Warning** state: prefix unused variables with `_` (e.g., `_slotIndex`), provide default values for all optional props, and remove unused prop assignments in `<script setup>`. |
 
 ---
 

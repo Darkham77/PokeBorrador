@@ -20,6 +20,7 @@ Vue.js testing best practices, patterns, and common gotchas.
 - Tests need to verify computed styles or real DOM events → See [testing-browser-vs-node-runners](references/testing-browser-vs-node-runners.md)
 - Testing components created with defineAsyncComponent fails → See [async-component-testing](references/async-component-testing.md)
 - Teleported modal content can't be found in wrapper queries → See [teleport-testing-complexity](references/teleport-testing-complexity.md)
+- **Animation-Driven State**: If a store/component state change is delayed by a timeout (e.g., waiting for modal exit animation), use `vi.useFakeTimers()` and `vi.advanceTimersByTime(500)` in Vitest to advance time before making assertions.
 
 ## Reference
 

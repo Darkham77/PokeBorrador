@@ -59,6 +59,7 @@ These are essential, must-know foundations. Apply all of them in every Vue task 
 
 - Must-read reference from `1.1`: [sfc](references/sfc.md)
 - Keep SFC sections in this order: `<script>` → `<template>` → `<style>`.
+- **500-Line Threshold Compliance**: If a file exceeds 500 lines, extract independent UI sections (e.g., Tabs, complex Stat Bars) into child components and move large data definitions (e.g., `INITIAL_STATE`, `MAP_DATA`) into dedicated `.js` files.
 - Keep SFC responsibilities focused; split large components.
 - Keep templates declarative; move branching/derivation to script.
 - Apply Vue template safety rules (`v-html`, list rendering, conditional rendering choices).
