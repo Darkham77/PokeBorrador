@@ -32,11 +32,13 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 ### 2. Pixel-Perfect Typography (Sharpness Mandate)
 
-- **MANDATORY**: Disable font smoothing for pixel fonts using `@include pixelated;`.
-- **FORBIDDEN**: Relying on default browser antialiasing for game-world text.
-- **Text-Shadow**: Use hard offsets (e.g., `2px 2px 0px rgba(0,0,0,0.5)`) with **zero** blur radius.
+- **Grid Alignment**: Pixel fonts (especially `Press Start 2P`) MUST strictly use multiples of their native 8px design grid (**8px, 16px, 24px, 32px**).
+- **Anti-Alias Ban**: ALWAYS apply `@include pixelated;` to pixel fonts to force `-webkit-font-smoothing: none !important`.
+- **FORBIDDEN**: 
+  - Intermediate sizes (9px, 10px, 11px, 13px, 15px) as they trigger subpixel interpolation.
+  - Using `text-shadow` with any blur radius (must be 0px).
 - **Centering**: Use **Flexbox/Grid** for centering. Avoid `transform: translate(-50%, -50%)` as it causes subpixel blurring in Chrome.
-- **Font Size**: Prefer **12px or larger** for 'Press Start 2P' to ensure integer grid alignment.
+- **BST Aesthetics**: Game-world data (Stats, IVs, Levels) MUST prioritize these sharp pixelated tokens to reinforce the "Retro Heart".
 
 ### 3. Safari Compatibility (Prefix Mandate)
 

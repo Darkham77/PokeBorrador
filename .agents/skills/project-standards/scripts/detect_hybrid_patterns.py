@@ -99,6 +99,13 @@ HYBRID_PATTERNS = [
         "regex": r"url\(.*?\#\{.*?\}\)",
         "message": "SASS interpolation detected inside url() without unquote(). This may cause build errors.",
         "severity": "high"
+    },
+    {
+        "id": "blurry_pixel_font",
+        "regex": r"font-size:\s*(\d+)px",
+        "message": "Pixel font size detected that is NOT a multiple of 8. Use 8px, 16px, 24px, or 32px for pixel-perfect rendering.",
+        "severity": "medium",
+        "condition": "lambda size: int(size) % 8 != 0"
     }
 ]
 
@@ -167,6 +174,20 @@ def scan_file(filepath):
                                     break
                             if is_fixed:
                                 continue
+
+                        # General condition check (if regex matched)
+                        if "condition" in pattern:
+                            match = re.search(pattern["regex"], line)
+                            if match and match.groups():
+                                try:
+                                    # Use a simple lambda-like evaluation
+                                    val = match.group(1)
+                                    # We expect condition to be a string like "lambda x: int(x) % 8 != 0"
+                                    condition_fn = eval(pattern["condition"])
+                                    if not condition_fn(val):
+                                        continue
+                                except:
+                                    continue
 
                         findings.append({
                             "line": i + 1,

@@ -6,7 +6,8 @@ import sys
 # Functions to capitalize
 TRAPS = [
     'scale', 'grayscale', 'invert', 'opacity', 'brightness', 
-    'blur', 'rotate', 'translate', 'saturate', 'drop-shadow'
+    'blur', 'rotate', 'translate', 'saturate', 'drop-shadow',
+    'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix'
 ]
 
 # Regex explanation:
