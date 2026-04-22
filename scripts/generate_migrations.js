@@ -1,3 +1,19 @@
+/**
+ * @file generate_migrations.js
+ * @description Generador automático de manifiesto de migraciones SQL.
+ * 
+ * UTILIDAD: 
+ * Escanea el directorio 'database/migrations/' en busca de archivos .sql y los 
+ * empaqueta en un único archivo JavaScript ('src/logic/db/migrations_data.js').
+ * 
+ * IMPORTANCIA: 
+ * Este script es el puente entre el diseño de base de datos (SQL) y la lógica de ejecución (JS).
+ * Permite que el DBRouter ejecute actualizaciones de esquema de forma determinista tanto en 
+ * Supabase como en el SQLite local, manteniendo la "Triple Fuente de Verdad".
+ * 
+ * Se ejecuta automáticamente durante el proceso de build y en Hot Update mediante Vite.
+ */
+
 import fs from 'fs';
 import path from 'path';
 

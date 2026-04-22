@@ -24,7 +24,23 @@ const statColor = computed(() => {
   return 'var(--red)'
 })
 
-const hasTags = computed(() => props.pokemon.tags && props.pokemon.tags.length > 0)
+const ALL_TAGS_MAP = {
+  'fav': { icon: '⭐', color: '#ffcc00' },
+  'breed': { icon: '❤️', color: '#ff4d4d' },
+  'competitive': { icon: '🏆', color: '#32d74b' },
+  'box': { icon: '📦', color: '#0a84ff' },
+  'trade': { icon: '🔄', color: '#bf5af2' },
+  'iv31': { icon: '31', color: '#FFD93D' }
+}
+
+const activeTags = computed(() => {
+  if (!props.pokemon.tags) return []
+  return props.pokemon.tags.map(id => ({
+    id,
+    ...(ALL_TAGS_MAP[id] || { icon: '?', color: '#ccc' })
+  }))
+})
+
 const hasHeldItem = computed(() => !!props.pokemon.heldItem)
 </script>
 
@@ -43,7 +59,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
 
     <!-- Tags & Held Item -->
     <div
-      v-if="hasTags || hasHeldItem"
+      v-if="activeTags.length > 0 || hasHeldItem"
       class="tags-container"
     >
       <span
@@ -52,20 +68,12 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
         :title="pokemon.heldItem"
       >📦</span>
       <span
-        v-if="pokemon.tags?.includes('fav')"
-        class="tag fav"
-        title="Favorito"
-      >⭐</span>
-      <span
-        v-if="pokemon.tags?.includes('breed')"
-        class="tag breed"
-        title="Crianza"
-      >❤️</span>
-      <span
-        v-if="pokemon.tags?.includes('iv31')"
-        class="tag iv31"
-        title="IV 31"
-      >31</span>
+        v-for="tag in activeTags"
+        :key="tag.id"
+        class="tag"
+        :class="tag.id"
+        :style="{ color: tag.color }"
+      >{{ tag.icon }}</span>
     </div>
 
     <!-- Sprite -->
@@ -134,7 +142,9 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .box-pokemon-card {
   padding: 8px;
   border-radius: 12px;
@@ -174,21 +184,27 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   top: 4px;
   left: 4px;
   display: flex;
-  gap: 2px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 1px 4px;
-  border-radius: 4px;
-  z-index: 4;
+  flex-direction: column;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px 4px;
+  border-radius: 8px;
+  z-index: 10;
+  backdrop-filter: Blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 .tag, .item-icon {
-  font-size: 8px;
+  font-size: 11px;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .iv31 {
   font-weight: bold;
-  color: #FFD93D;
 }
 
 .sprite-container {
@@ -218,9 +234,9 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   text-transform: uppercase;
 }
 
-.mission-badge { top: 2px; background: #fbbf24; color: $black; }
-.daycare-badge { top: 12px; background: #3b82f6; color: $white; }
-.defense-badge { top: 22px; background: #22c55e; color: $white; }
+.mission-badge { top: 2px; background: #fbbf24; color: black; }
+.daycare-badge { top: 12px; background: #3b82f6; color: white; }
+.defense-badge { top: 22px; background: #22c55e; color: white; }
 
 .pokemon-name {
   font-size: 10px;
@@ -228,12 +244,14 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: $white;
+  color: white;
+  @include pixelated;
 }
 
 .pokemon-level {
   font-size: 9px;
   color: var(--gray);
+  @include pixelated;
 }
 
 .mini-hp-bar {

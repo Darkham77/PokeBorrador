@@ -28,8 +28,12 @@ def fix_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # We only fix .scss files or .vue files (which might have style blocks)
+    # 1. Standard capitalization fixes
     new_content = FIX_REGEX.sub(capitalize_match, content)
+    
+    # 2. Fix rgba(var(--...)) -> Rgba(...) to prevent SASS color collision
+    rgba_var_regex = re.compile(r'rgba\([^)]*var\(--')
+    new_content = rgba_var_regex.sub(lambda m: m.group(0).replace('rgba', 'Rgba'), new_content)
 
     if new_content != content:
         with open(filepath, 'w', encoding='utf-8') as f:

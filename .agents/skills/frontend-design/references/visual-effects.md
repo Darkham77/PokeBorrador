@@ -221,7 +221,9 @@ box-shadow:
 ```
 
 ### 6. Interactive Depth Preservation (3D Buttons)
+
 When animating or styling active states (`.active`) for 3D elements:
+
 - **Shadow Integrity**: DO NOT remove the bottom shadow ("dark surface") of a 3D button when selected.
 - **Selection Cues**: Use high-contrast borders (2px white) and outer glows (`box-shadow`) to signal activation while keeping the 3D volume intact.
 - **Transformation**: Match the physical press by reducing the shadow size (e.g. from 4px to 2px) and translating the element downward (`TranslateY(2px)`), but never flattening it completely.
@@ -305,13 +307,17 @@ background:
 Principles for creating dynamic, realistic environments (weather, day/night cycles).
 
 ### 1. High-Contrast Particles (Weather)
+
 To keep weather particles (sand, snow, rain) visible against varying map backgrounds:
+
 - **Saturated Colors**: Use more intense hues in your SVGs than the map itself (e.g., golden orange for sand).
 - **Contour Definition**: Apply `Drop-shadow()` and `Contrast()` filters to particles. This creates a sharp "edge" that prevents them from blending into daytime backgrounds.
 - **Context-Aware Visibility**: Environmental effects (weather particles, emojis, overlays) and atmospheric filters (color tints) MUST be hidden for locked or restricted UI components. Overloading locked content with complex atmosphere increases cognitive load and obscures the "locked" status.
 
 ### 2. Realistic Cycle Transitions
+
 Avoid "unnatural" color shifts during Dawn/Dusk:
+
 - **The Golden Hour Rule**: Use `Sepia()` for warmth and `Saturate()` for vibrancy.
 - **FORBIDDEN**: High `Hue-rotate()` values (e.g., >20deg) on full-color map images, as they shift blue spectra into green, making water look toxic/unnatural.
 - **Differentiation**:
@@ -408,6 +414,37 @@ Before applying any effect:
 - ❌ **Static/Flat designs with no depth (FAILED)**
 - ❌ Effects that hurt readability
 - ❌ Animations without purpose
+
+---
+
+## 11. Pixel-Perfect High-Contrast Outlines
+
+Technique for maintaining razor-sharp legibility on small pixelated text/icons against vibrant or busy backgrounds.
+
+### The 4-Direction Sharp Shadow
+
+Instead of using `blur`, use 4 directional offsets to create a solid 1px "border" around text. This is critical for the "Hybrid Retro-Modern" aesthetic.
+
+```css
+.pixel-outline {
+  /* 4-directional 1px offsets with 0 blur */
+  text-shadow: 
+    1px 1px 0 rgba(0,0,0,0.8), 
+    -1px -1px 0 rgba(0,0,0,0.8), 
+    1px -1px 0 rgba(0,0,0,0.8), 
+    -1px 1px 0 rgba(0,0,0,0.8);
+    
+  /* For dark backgrounds, use a light shadow or semi-transparent gray */
+}
+```
+
+### 12. Discovery & Silhouette Effects (Fog of War)
+
+For discovery-based UI (Pokedex, unlockables), use high-contrast filters to differentiate states:
+
+- **Silhouette (Seen)**: Use `filter: Brightness(0)` to black out the sprite. 
+- **Outline Enhancement**: Apply a subtle `Drop-shadow(0 0 1px rgba(255,255,255,0.2))` to the silhouette to keep the form defined against deep dark backgrounds.
+- **Placeholder Opacity**: "Unseen" cards should maintain a higher base opacity (0.7-0.8) to keep the grid structure visible, while using a bright `?` sign for maximum contrast.
 
 ---
 

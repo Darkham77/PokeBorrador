@@ -63,7 +63,7 @@ const hexToRgba = (hex, alpha) => {
     >
       <div class="type-cat-row">
         <span
-          class="type-badge pixelated"
+          class="m-type-tag pixelated"
           :style="{ background: typeColor }"
         >{{ md.type.toUpperCase() }}</span>
         <span class="cat-badge">
@@ -125,16 +125,6 @@ const hexToRgba = (hex, alpha) => {
   align-items: center;
 }
 
-.type-badge {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 900;
-  color: $white;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  @include pixelated;
-}
 
 .cat-badge {
   display: flex;

@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
 import { generateMigrations } from './scripts/generate_migrations.js'
+import { sassTrapsFixer } from './scripts/vite-plugin-sass-traps.js'
 
 function migrationsPlugin() {
   return {
@@ -22,7 +23,8 @@ function migrationsPlugin() {
 export default defineConfig({
   plugins: [
     vue(),
-    migrationsPlugin()
+    migrationsPlugin(),
+    sassTrapsFixer()
   ],
   define: {
     __BUILD_TIME__: JSON.stringify(new Date().getFullYear().toString()),

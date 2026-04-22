@@ -2,9 +2,11 @@
 import { ref } from 'vue'
 import { useErrorStore } from '@/stores/errorStore'
 import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
 
 const errorStore = useErrorStore()
 const gameStore = useGameStore()
+const uiStore = useUIStore()
 const copied = ref(false)
 
 const copyError = async () => {
@@ -42,6 +44,11 @@ const copyError = async () => {
 
 const reloadGame = () => {
   window.location.reload()
+}
+
+const closeError = () => {
+  errorStore.clearError()
+  uiStore.closeAll() // Restore background block by clearing the stack
 }
 </script>
 
@@ -129,7 +136,7 @@ const reloadGame = () => {
           </button>
           <button
             class="error-btn close-btn"
-            @click="errorStore.clearError"
+            @click="closeError"
           >
             ✕ CERRAR
           </button>

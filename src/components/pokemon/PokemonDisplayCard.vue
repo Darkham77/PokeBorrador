@@ -69,8 +69,25 @@ function getGenderClass(gender) {
   return 'gender-none'
 }
 
+const ALL_TAGS_MAP = {
+  'fav': { icon: '⭐', color: '#ffcc00' },
+  'breed': { icon: '❤️', color: '#ff4d4d' },
+  'competitive': { icon: '🏆', color: '#32d74b' },
+  'box': { icon: '📦', color: '#0a84ff' },
+  'trade': { icon: '🔄', color: '#bf5af2' },
+  'iv31': { icon: '31', color: '#FFD93D' }
+}
+
+const activeTags = computed(() => {
+  if (!props.pokemon.tags) return []
+  return props.pokemon.tags.map(id => ({
+    id,
+    ...(ALL_TAGS_MAP[id] || { icon: '?', color: '#ccc' })
+  }))
+})
+
 const hasBadges = computed(() => {
-  return props.pokemon.heldItem || props.pokemon.isShiny || props.pokemon.tags?.includes('fav')
+  return props.pokemon.heldItem || activeTags.value.length > 0 || props.pokemon.isShiny
 })
 </script>
 
@@ -85,17 +102,36 @@ const hasBadges = computed(() => {
         v-if="hasBadges"
         class="badges-area"
       >
-        <div
-          v-if="pokemon.heldItem"
-          class="item-badge"
-          title="Objeto Equipado"
-        >
-          <span class="icon">🎒</span>
+        <!-- Column 1: Dynamic Tags -->
+        <div class="tags-col">
+          <div
+            v-for="tag in activeTags"
+            :key="tag.id"
+            class="tag-badge"
+            :style="{ color: tag.color }"
+          >
+            {{ tag.icon }}
+          </div>
+
+          <!-- Shiny Indicator (if not in tags) -->
+          <span
+            v-if="pokemon.isShiny && !pokemon.tags?.includes('fav')"
+            class="shiny-icon"
+          >✨</span>
         </div>
-        <span
-          v-if="pokemon.isShiny || pokemon.tags?.includes('fav')"
-          class="star-icon"
-        >⭐</span>
+
+        <!-- Column 2: Held Item -->
+        <div 
+          v-if="pokemon.heldItem"
+          class="items-col"
+        >
+          <div
+            class="item-badge"
+            title="Objeto Equipado"
+          >
+            <span class="icon">🎒</span>
+          </div>
+        </div>
       </div>
       <div
         v-else
@@ -204,7 +240,7 @@ const hasBadges = computed(() => {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.7) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  padding: 16px;
+  padding: 14px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -245,24 +281,45 @@ const hasBadges = computed(() => {
 
 .top-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
+  justify-content: flex-end;
+  align-items: flex-start;
+  min-height: 36px;
   position: relative;
   z-index: 3;
 }
 
 .badges-area {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 4px 8px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 4px;
+  z-index: 10;
+  @include pixelated;
 
-  .item-badge .icon { font-size: 16px; }
-  .star-icon { font-size: 16px; color: var(--yellow); }
+  .tags-col, .items-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 6px 3px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: Blur(10px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  }
+
+  .item-badge .icon { font-size: 14px; }
+  .tag-badge { 
+    font-size: 14px; 
+    font-weight: 900;
+    text-shadow: 0 0 5px currentColor;
+    @include pixelated;
+  }
+  .shiny-icon { font-size: 14px; color: var(--yellow); }
 }
 
 .badges-spacer { height: 24px; }
@@ -275,9 +332,9 @@ const hasBadges = computed(() => {
   align-items: center;
   justify-content: center;
   font-family: 'Press Start 2P', monospace;
-  font-size: 16px; // 8px grid aligned
+  font-size: 16px; 
   line-height: 1;
-  padding: 3px 0 0 2px; // Precise offset for Press Start 2P
+  padding: 3px 0 0 2px;
   border: 1.5px solid;
   background: rgba(255, 255, 255, 0.05);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -288,32 +345,36 @@ const hasBadges = computed(() => {
 }
 
 .sprite-section {
-  height: 50px; // Very short to force overflow and collapse space
+  height: 50px; 
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 35px 0 0 0;
+  margin: 30px 0 0 0;
   position: relative;
   z-index: 1;
   pointer-events: none;
 
   .pokemon-sprite {
-    width: 180px; // Larger sprite
+    width: 180px; 
     height: 180px;
     image-rendering: pixelated;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     filter: Drop-shadow(0 10px 20px rgba(0,0,0,0.6));
-    transform: TranslateY(-20%); 
+    transform: TranslateY(-15%); 
     will-change: transform;
   }
 }
 
 .pokemon-info {
   text-align: center;
-  margin-bottom: 15px;
-  margin-top: -20px; // Pull up to collapse the transparent padding of the sprite
+  margin-bottom: 12px;
+  margin-top: -15px; 
   position: relative;
   z-index: 2;
+  width: 85%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 16px;
 
   .name-line {
     display: flex;
@@ -407,7 +468,7 @@ const hasBadges = computed(() => {
     gap: 6px;
     font-family: 'Press Start 2P', monospace;
     font-size: 8px;
-    padding: 10px 4px;
+    padding: 8px 4px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.05);

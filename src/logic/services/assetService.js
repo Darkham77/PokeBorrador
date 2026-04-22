@@ -107,7 +107,7 @@ export const getAssetUrl = (type, rawId, options = {}) => {
   switch (type) {
     case ASSET_TYPES.POKEMON: {
       const num = POKEMON_SPRITE_IDS[id.toLowerCase()] || id;
-      if (typeof id === 'string' && id.includes('egg')) return `${POKEAPI_ITEM_BASE}egg.png`;
+      if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return `${POKEAPI_ITEM_BASE}egg.png`;
       
       const folder = isShiny ? 'shiny/' : '';
       const back = isBack ? 'back/' : '';

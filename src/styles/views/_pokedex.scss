@@ -217,8 +217,8 @@
 
 .pokedex-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
   padding-bottom: 60px;
 }
 
@@ -226,16 +226,16 @@
   position: relative;
   @include glass(rgba(30, 41, 59, 0.3), 12px);
   border-radius: 20px;
-  padding: 24px;
+  padding: 10px; // Reduced padding
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  height: 220px; // Fixed height to prevent resizing
+  height: 170px; // Further reduced height
   width: 100%;
-  justify-content: space-between; // Push footer to bottom
+  justify-content: space-between;
 
   &::before {
     content: '';
@@ -258,7 +258,7 @@
   }
 
   &.is-unseen {
-    opacity: 0.4;
+    opacity: 0.7; // Increased from 0.4
     cursor: default;
     filter: Grayscale(100%);
     &:hover { transform: none; box-shadow: none; &::before { opacity: 0; } }
@@ -271,22 +271,21 @@
 
   .dex-number {
     position: absolute;
-    top: 16px;
-    left: 16px;
+    top: 8px;
+    left: 8px;
     font-size: 8px;
-    color: var(--gray);
+    color: rgba(255, 255, 255, 0.2);
     font-family: 'Press Start 2P', monospace;
-    font-weight: 700;
     @include pixelated;
   }
 
   .sprite-container {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: 8px; // Reduced margin
     z-index: 2;
     position: relative;
 
@@ -298,16 +297,16 @@
       filter: Drop-shadow(0 10px 15px rgba(0,0,0,0.3));
       
       &.silhouette {
-        filter: Brightness(0);
-        opacity: 0.2;
+        filter: Brightness(0) Drop-shadow(0 0 1px rgba(255,255,255,0.2));
+        opacity: 0.45; // Increased from 0.2
       }
     }
 
     .unknown-placeholder {
       font-size: 40px;
-      color: #1e293b;
+      color: rgba(255, 255, 255, 0.08); // Brighter than the card background
       font-family: 'Press Start 2P', monospace;
-      opacity: 0.5;
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
     }
   }
 

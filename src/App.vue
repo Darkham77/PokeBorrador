@@ -3,6 +3,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
+import { initBaseBridge } from '@/logic/bridges/baseBridge'
 import { checkDBCompatibility } from '@/logic/db/dbRouter'
 import { phaserBridge } from '@/logic/phaserBridge'
 import MainGameView from '@/views/MainGameView.vue'
@@ -27,6 +28,7 @@ const dbVersionInfo = ref(null)
 onMounted(async () => {
   // 1. Init Global Error Handlers (Vue Bridge)
   initGlobalErrorHandlers()
+  initBaseBridge()
 
   // 2. Recuperar sesión (Autologin)
   await authStore.checkSession()

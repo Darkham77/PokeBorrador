@@ -183,6 +183,11 @@ Mobile:  Finger is imprecise (~7mm contact area)
         [  HOME  ]
 ```
 
+### Responsive Content Adaptation
+
+- **Dense Grid Stability**: For complex data grids (e.g., move lists with PP/Accuracy), automatically switch to a **single-column layout** on small screens (<480px). This prevents text overlap and ensures that all metrics remain legible without horizontal scrolling.
+- **Vertical Tooltip Expansion**: On mobile, tooltips and popovers should expand vertically or occupy a dedicated "bottom sheet" area to avoid being clipped by narrow viewport edges.
+
 ### Mobile-Specific Cognitive Load
 
 | Desktop | Mobile Difference |

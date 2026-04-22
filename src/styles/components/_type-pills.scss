@@ -1,0 +1,27 @@
+// src/styles/components/_type-pills.scss
+@use "../core/tools" as *;
+
+/**
+ * MASTER TYPE PILL COMPONENT
+ * Unified design for all elemental type indicators in the project.
+ * Use class: .m-type-tag
+ */
+.m-type-tag {
+  @include type-pill(7px); // [PureVue-Ignore]
+  
+  &.sm {
+    font-size: 6px; // [PureVue-Ignore]
+    padding: 2px 10px;
+  }
+  
+  &.lg {
+    font-size: 9px; // [PureVue-Ignore]
+    padding: 6px 16px;
+  }
+}
+
+// LEGACY SUPPORT: Mapping old classes to the new standard
+// TODO: Refactor templates to use .m-type-tag and remove these
+.type-badge, .type-tag {
+  @extend .m-type-tag;
+}

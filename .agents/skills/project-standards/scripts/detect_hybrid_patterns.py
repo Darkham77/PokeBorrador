@@ -106,6 +106,12 @@ HYBRID_PATTERNS = [
         "message": "Pixel font size detected that is NOT a multiple of 8. Use 8px, 16px, 24px, or 32px for pixel-perfect rendering.",
         "severity": "medium",
         "condition": "lambda size: int(size) % 8 != 0"
+    },
+    {
+        "id": "button_depth_loss",
+        "regex": r"\.active|:active.*?box-shadow:\s*none",
+        "message": "Button depth loss detected. Active states MUST NOT strip bottom shadows. Maintain 3D volume.",
+        "severity": "medium"
     }
 ]
 

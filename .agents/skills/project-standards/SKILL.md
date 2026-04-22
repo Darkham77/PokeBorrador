@@ -30,10 +30,13 @@ Refer to these manuals for complex implementation specifications:
 - **Retro Heart**: Use Pixel Art and Sharp Typography for all game-world content and data.
 - **UI Variants**: Leverage `BaseModal` variants (`modern` vs `retro`) to match the context. Gameplay/Config = `retro` (yellow border). Shell/Web = `modern`.
 - **UI Logic**: Always use parameterized props (`hide-header`, `variant`) instead of ad-hoc style overrides.
-- **Fog of War (Discovery)**: Implement standard discovery states across all UI:
-  - **Unknown**: `?` placeholder, `???` label, 0.1 opacity.
-  - **Seen (Not Caught)**: Silhouette (`filter: Brightness(0)`), 0.2-0.3 opacity, name visible.
+- **Discovery States (Fog of War)**: Implement standard discovery states across all UI:
+  - **Unknown**: `?` placeholder, `???` label, 0.7 opacity, brighter question mark.
+  - **Seen (Not Caught)**: Silhouette (`filter: Brightness(0)`), 0.45 opacity, name visible. Add a subtle `Drop-shadow(0 0 1px rgba(255,255,255,0.2))` to the silhouette to define its outline against dark backgrounds.
   - **Caught**: Full color, 1.0 opacity.
+- **Unified Type Pill System**: All elemental indicators (moves, pokemon types, gym badges) MUST use the master class `.m-type-tag`.
+  - **Centralized Style**: Do not define local type styles. Always use the global `_type-pills.scss` module.
+  - **High-Contrast Outlines**: Type labels MUST use a 4-directional `text-shadow` (e.g. `1px 1px 0`, `-1px -1px 0`) with 0 blur to maintain sharp pixel-perfect legibility against colorful pill backgrounds.
 - **Visual Error Handling**: Every game content image (`<img>`) MUST implement an `@error` fallback. Hide the broken image and display a generic CSS-styled placeholder (e.g., a div with `👤`) to maintain a premium aesthetic even if an asset fails to load.
 - **UI Interaction Parity**: Interactive elements in similar contexts (e.g., TMs in the Pokedex vs Attacks in the team view) MUST provide consistent feedback and open the same specialized modals. Maintain user expectation by ensuring that if a Move name is clickable in one tab, it is clickable and functional in all others.
 - **Scroll Stability**: To prevent layout shifts ("scroll-jumps") when modals open/close, ALWAYS use `scrollbar-gutter: stable` on the `body` or main containers. This reserves space for the scrollbar even when not visible.
@@ -41,6 +44,7 @@ Refer to these manuals for complex implementation specifications:
 ### 2. Asset Integrity & Resolution
 
 - **Sanitization**: All dynamic asset IDs (especially from external APIs like PokeAPI or Showdown) MUST be sanitized: remove spaces and dots (e.g., `Lt. Surge` → `ltsurge`) and force `toLowerCase()` before URL construction.
+- **Routing Edge Cases**: When routing sprites for variants or special states (e.g., Manaphy Eggs), use `startsWith()` prefix matching (e.g. `id.startsWith('egg')`) instead of exact matches in the `assetService` to ensure all variant naming conventions map to the correct base asset.
 - **Prioritization**: Always prioritize local assets (`/public/assets/`) over remote APIs. Check for local existence or maintain an explicit "Local-Only" list to prevent unnecessary remote 404s for assets already in the repo.
 
 ### 3. The 500-Line Threshold
@@ -68,6 +72,19 @@ Refer to these manuals for complex implementation specifications:
 - **Anti-Alias Ban**: ALWAYS apply `@include pixelated` or `@include pixel-perfect($size)` to pixelated elements to force `-webkit-font-smoothing: none !important`.
 - **FORBIDDEN**: Using intermediate sizes (9px, 10px, 11px, 13px, 15px) or CSS `text-shadow` on small pixel fonts, as these trigger browser-level subpixel blurring.
 - **BST Aesthetics**: RPG statistics and totals MUST prioritize these sharp, high-contrast pixelated tokens over modern sans-serif fonts.
+
+### 7. Game Mechanics & Data Visualization
+
+- **Stat Dualism**: Always separate **Real Statistics** (calculated values used in battle) from **Genetic Potential (IVs)**. Use distinct sections or visual graphs to prevent cognitive overload and ensure the player understands what can be changed (EVs/Level) versus what is innate (IVs).
+- **Tag Persistence Protocol**: Any interaction that toggles a Pokemon state (like tags or favorites) MUST call the persistence layer immediately (e.g., `gameStore.save()`).
+  - **Bridge Signature**: The standard signature for tagging is `window.togglePokeTag(context, index, tagId)`, where context is `'team'` or `'box'`.
+- **Nature Visual Encoding**: Use consistent color coding for nature-influenced stats in all UI tooltips and text values:
+  - **Red**: Attack
+  - **Yellow**: Defense
+  - **Blue**: Sp. Attack
+  - **Green**: Sp. Defense
+  - **Purple**: Speed
+- **Mechanical Integrity (Vigor)**: Clearly define finite mechanics in tooltips. For example, **Vigor** MUST be documented as an absolute breeding limit that is consumed upon egg production and **NEVER** recovers. Avoid vague terms that imply rechargeable "energy".
 
 ---
 
@@ -102,8 +119,8 @@ Refer to these manuals for complex implementation specifications:
 
 - **REQUIRED**: Use namespaced functions (e.g., `math.random`, `string.unquote`).
 - **Audit & Fix**:
-  - Run `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` to detect traps.
-  - Run `python3 .agents/skills/project-standards/scripts/fix_sass_traps.py` to automatically fix capitalization traps.
+  - **AUTOMATED**: A Vite plugin (`sassTrapsFixer`) is now active in `vite.config.js`. It automatically capitalizes trap functions and fixes `rgba(var())` collisions during development and build.
+  - Run `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` to manually verify.
 
 ### 4. Specificity & Collision Control
 
@@ -153,6 +170,11 @@ Refer to these manuals for complex implementation specifications:
 - Skill scripts MUST use `try/except ImportError` blocks with the `[PYTHON_DEPENDENCY_ERROR]` tag.
 - **Unicode Compatibility**: NEVER use emojis or special Unicode characters (e.g., `✨`, `🔥`) in script output intended for terminal consoles on Windows (CP1252) to avoid `UnicodeEncodeError`.
 - **Grep on Windows**: Avoid raw `grep` in PowerShell. Use `Select-String` or the provided `grep_search` tool for reliable results across environments.
+
+### 3. Script Hygiene & Documentation
+
+- **MANDATORY**: Every active script in the `scripts/` directory MUST have a header comment explaining its **Utility** (what it does) and **Importance** (why it exists in the architecture).
+- **FORBIDDEN**: Keeping obsolete or legacy scripts that reference non-existent files or pre-migration paths. Purge these immediately to prevent workspace pollution.
 
 ### 6. Modal Stack & Performance Synchronization
 

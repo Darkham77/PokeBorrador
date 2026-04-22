@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onUnmounted } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -7,25 +7,6 @@ const props = defineProps({
 })
 
 const p = computed(() => props.pokemon)
-
-const activeTooltip = ref(null) // 'nature', 'ability', null
-const tooltipPos = ref({ x: 0, y: 0 })
-
-const showTooltip = (type, event) => {
-  const rect = event.currentTarget.getBoundingClientRect()
-  activeTooltip.value = type
-  tooltipPos.value = {
-    x: rect.left + rect.width / 2,
-    y: rect.bottom + 8
-  }
-}
-
-const hideTooltip = () => {
-  activeTooltip.value = null
-}
-
-// Ensure cleanup
-onUnmounted(() => hideTooltip())
 
 const getHpPct = (cur, max) => (cur / max) * 100
 const getHpClass = (pct) => {
@@ -39,8 +20,28 @@ const getNatureInfo = (nature) => {
 }
 
 const getAbilityDesc = (ability) => {
-  return window.ABILITY_DATA?.[ability] || 'Habilidad especial de este Pokémon.'
+  const data = window.ABILITY_DATA?.[ability]
+  if (!data) return 'Habilidad especial de este Pokémon.'
+  return typeof data === 'string' ? data : (data.desc || 'Habilidad especial de este Pokémon.')
 }
+
+const natureStyle = computed(() => {
+  const info = getNatureInfo(p.value.nature)
+  if (!info.up) return { color: '#86868b' } // Neutral gray
+  
+  const colors = {
+    'Ataque': '#ff453a',
+    'Defensa': '#ffd60a',
+    'At. Esp': '#3B8BFF',
+    'Def. Esp': '#32d74b',
+    'Velocidad': '#bf5af2'
+  }
+  return { color: colors[info.up] || '#fff' }
+})
+
+const abilityStyle = computed(() => ({
+  color: '#32d74b' // Special interactive green
+}))
 </script>
 
 <template>
@@ -86,68 +87,42 @@ const getAbilityDesc = (ability) => {
 
     <!-- General Info Grid -->
     <div class="info-grid">
-      <div
-        class="info-card nature-card"
-        @mouseenter="showTooltip('nature', $event)"
-        @mouseleave="hideTooltip"
-      >
+      <div class="info-card nature-card tooltip-wrap">
         <span class="label">Naturaleza</span>
         <div class="value-wrap">
-          <span class="val">{{ p.nature || 'Serio' }} ❓</span>
+          <span
+            class="val interactive-val"
+            :style="natureStyle"
+          >{{ p.nature || 'Serio' }}</span>
+        </div>
+        <div class="tooltip-box">
+          <span class="tooltip-title">NATURALEZA</span>
+          <p>{{ getNatureInfo(p.nature).desc }}</p>
         </div>
       </div>
-      <div
-        class="info-card ability-card"
-        @mouseenter="showTooltip('ability', $event)"
-        @mouseleave="hideTooltip"
-      >
+
+      <div class="info-card ability-card tooltip-wrap">
         <span class="label">Habilidad</span>
         <div class="value-wrap">
-          <span class="val">{{ p.ability || '—' }} ❓</span>
+          <span
+            class="val interactive-val"
+            :style="abilityStyle"
+          >{{ p.ability || '—' }}</span>
+        </div>
+        <div class="tooltip-box">
+          <span class="tooltip-title">HABILIDAD</span>
+          <p>{{ getAbilityDesc(p.ability) }}</p>
         </div>
       </div>
-      <div class="info-card vigor-card">
+      <div class="info-card vigor-card tooltip-wrap">
         <span class="label">Vigor</span>
         <span class="val vigor-val">⚡{{ p.vigor || 0 }}</span>
+        <div class="tooltip-box">
+          <span class="tooltip-title">VIGOR</span>
+          <p>Determina cuántas veces puede reproducirse este Pokémon en la Guardería. Se consume al criar y NO se recupera.</p>
+        </div>
       </div>
     </div>
-
-    <!-- GLOBAL TOOLTIP (Teleported to body to avoid clipping) -->
-    <Teleport to="body">
-      <Transition name="fade-v">
-        <div 
-          v-if="activeTooltip" 
-          class="vicio-global-tooltip"
-          :style="{ 
-            left: tooltipPos.x + 'px', 
-            top: tooltipPos.y + 'px'
-          }"
-        >
-          <template v-if="activeTooltip === 'nature'">
-            <div class="tooltip-content">
-              <strong>{{ p.nature || 'Serio' }}</strong>
-              <p v-if="getNatureInfo(p.nature).up">
-                <span class="up">⬆ +10% {{ getNatureInfo(p.nature).up }}</span><br>
-                <span class="down">⬇ -10% {{ getNatureInfo(p.nature).down }}</span>
-              </p>
-              <p
-                v-else
-                class="neutral"
-              >
-                Sin efecto en estadísticas
-              </p>
-            </div>
-          </template>
-          
-          <template v-if="activeTooltip === 'ability'">
-            <div class="tooltip-content">
-              <strong>{{ p.ability || '—' }}</strong>
-              <p>{{ getAbilityDesc(p.ability) }}</p>
-            </div>
-          </template>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
@@ -168,15 +143,15 @@ const getAbilityDesc = (ability) => {
   display: flex;
   justify-content: space-between;
   font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  margin-bottom: 12px;
+  font-size: 10px;
+  margin-bottom: 14px;
   color: $white;
   opacity: 0.9;
   @include pixelated;
 }
 
 .progress-outer {
-  height: 12px;
+  height: 16px;
   background: rgba(0,0,0,0.4);
   border-radius: 6px;
   overflow: hidden;
@@ -222,20 +197,24 @@ const getAbilityDesc = (ability) => {
 .info-card .label {
   display: block;
   font-family: 'Press Start 2P', monospace;
-  font-size: 8px; // 6px causes blur
+  font-size: 10px;
   color: var(--gray);
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   opacity: 0.8;
   @include pixelated;
 }
 
 .info-card .val {
   font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
+  font-size: 12px;
   color: $white;
-  text-shadow: none; // Shadows cause blur
   @include pixelated;
+  
+  &.interactive-val {
+    border-bottom: 2px dotted rgba(255,255,255,0.3);
+    padding-bottom: 2px;
+  }
 }
 
 .vigor-val { 
@@ -294,4 +273,15 @@ const getAbilityDesc = (ability) => {
 .mt-12 { margin-top: 12px; }
 .max-text { color: var(--yellow); font-size: 8px; }
 .exp-text { color: var(--purple-light); font-size: 8px; }
+
+@media (max-width: 480px) {
+  .glass-inset { margin-bottom: 24px; }
+  .bar-header { font-size: 8px; margin-bottom: 8px; }
+  .progress-outer { height: 10px; }
+  
+  .info-grid { gap: 8px; }
+  .info-card { padding: 12px 8px; }
+  .info-card .label { font-size: 8px; margin-bottom: 8px; }
+  .info-card .val { font-size: 10px; }
+}
 </style>

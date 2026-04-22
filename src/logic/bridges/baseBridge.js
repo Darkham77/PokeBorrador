@@ -8,6 +8,7 @@ import { GYMS } from '@/data/gyms'
 import { STAGE_MULT, ACC_STAGE_MULT } from '@/data/constants'
 import { SHOP_ITEMS, ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
 import { useUIStore } from '@/stores/ui'
+import { useGameStore } from '@/stores/game'
 
 import { 
   getSpeciesHistory, 
@@ -65,6 +66,24 @@ export function initBaseBridge() {
   window.toggleSettings = () => { uiStore.isSettingsOpen = !uiStore.isSettingsOpen }
   window.toggleProfile = () => { uiStore.isProfileOpen = !uiStore.isProfileOpen }
   window.toggleCosmetics = () => { uiStore.isCosmeticsModalOpen = !uiStore.isCosmeticsModalOpen }
+
+  const gameStore = useGameStore()
+  
+  window.togglePokeTag = (context, index, tag) => {
+    const p = context === 'team' ? gameStore.state.team[index] : gameStore.state.box[index]
+    
+    if (!p) return
+    
+    if (!p.tags) p.tags = []
+    const idx = p.tags.indexOf(tag)
+    if (idx > -1) {
+      p.tags.splice(idx, 1)
+    } else {
+      p.tags.push(tag)
+    }
+    gameStore.save()
+    console.log(`[Bridge] Tag ${tag} toggled for ${p.name} (${context})`)
+  }
 
   console.log('[BaseBridge] Static data and encounter helpers initialized.')
 }

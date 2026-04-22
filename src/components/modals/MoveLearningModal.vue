@@ -69,7 +69,7 @@ const handleForget = () => {
         >
           <div class="move-main">
             <span class="move-name">{{ newMove?.name }}</span>
-            <span class="move-type-tag">{{ getMoveType(newMove?.name) }}</span>
+            <span class="m-type-tag pixelated">{{ getMoveType(newMove?.name) }}</span>
           </div>
           <div class="move-stats">
             <span>POT: {{ getMovePower(newMove?.name) }}</span>
@@ -92,7 +92,7 @@ const handleForget = () => {
         >
           <div class="move-main">
             <span class="move-name">{{ m.name }}</span>
-            <span class="move-type-tag">{{ getMoveType(m.name) }}</span>
+            <span class="m-type-tag pixelated">{{ getMoveType(m.name) }}</span>
           </div>
           <div class="move-stats">
             <span>POT: {{ getMovePower(m.name) }}</span>
@@ -222,14 +222,6 @@ const handleForget = () => {
     margin-bottom: 6px;
 
     .move-name { font-size: 15px; font-weight: 800; color: $white; }
-    .move-type-tag {
-      font-size: 9px;
-      font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 6px;
-      background: var(--move-color);
-      color: $white;
-    }
   }
 
   .move-stats {

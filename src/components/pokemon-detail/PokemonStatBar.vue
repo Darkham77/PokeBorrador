@@ -1,11 +1,11 @@
 <script setup>
-
 defineProps({
   label: { type: String, required: true },
   value: { type: Number, required: true },
   max: { type: Number, default: 255 },
   color: { type: String, default: '$white' },
-  iv: { type: Number, default: null }
+  iv: { type: Number, default: null },
+  mode: { type: String, default: 'full' } // 'full', 'stat', 'iv'
 })
 
 const getIvColor = (val) => {
@@ -25,28 +25,31 @@ const getStatGrade = (iv) => {
 </script>
 
 <template>
-  <div class="vicio-stat-bar-row">
+  <div
+    class="vicio-stat-bar-row"
+    :class="['mode-' + mode]"
+  >
     <div class="stat-info">
       <span class="stat-label pixelated">{{ label }}</span>
       <span class="stat-value pixelated">{{ value }}</span>
     </div>
 
     <div class="stat-visuals">
-      <!-- Main Stat Bar (Real Value) -->
+      <!-- Main Stat Bar (Real Value or IV) -->
       <div class="track main-track">
         <div 
           class="fill main-fill" 
           :style="{ 
             width: Math.min((value/max*100), 100) + '%', 
-            background: color,
-            '--glow': color + '66'
+            background: mode === 'iv' ? getIvColor(value) : color,
+            '--glow': (mode === 'iv' ? getIvColor(value) : color) + '66'
           }"
         />
       </div>
 
-      <!-- IV Bar (Genetic Potential) -->
+      <!-- Secondary IV Bar (only in full mode) -->
       <div
-        v-if="iv !== null"
+        v-if="mode === 'full' && iv !== null"
         class="track iv-track"
       >
         <div 
@@ -61,14 +64,15 @@ const getStatGrade = (iv) => {
 
     <!-- Meta Info (Right Side) -->
     <div
-      v-if="iv !== null"
+      v-if="mode !== 'stat' && (iv !== null || mode === 'iv')"
       class="stat-meta"
     >
       <span
         class="grade"
-        :style="{ color: getStatGrade(iv).color }"
-      >{{ getStatGrade(iv).label }}</span>
+        :style="{ color: getStatGrade(mode === 'iv' ? value : iv).color }"
+      >{{ getStatGrade(mode === 'iv' ? value : iv).label }}</span>
       <span
+        v-if="mode === 'full'"
         class="iv-num"
         :style="{ color: getIvColor(iv) }"
       >{{ iv }} IV</span>
@@ -84,6 +88,13 @@ const getStatGrade = (iv) => {
   width: 100%;
   margin-bottom: 16px;
   position: relative;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
 }
 
 .stat-info {
@@ -92,12 +103,20 @@ const getStatGrade = (iv) => {
   gap: 15px;
   min-width: 130px;
 
+  @media (max-width: 480px) {
+    min-width: 0;
+    width: 100%;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
   .stat-label {
     font-family: 'Press Start 2P', monospace;
     font-size: 10px;
     color: #94a3b8;
     width: 55px;
     image-rendering: pixelated;
+    @media (max-width: 480px) { font-size: 8px; width: 45px; }
   }
   .stat-value {
     font-family: 'Press Start 2P', monospace;
@@ -107,6 +126,7 @@ const getStatGrade = (iv) => {
     min-width: 50px;
     text-align: right;
     image-rendering: pixelated;
+    @media (max-width: 480px) { font-size: 12px; min-width: 40px; }
   }
 }
 
@@ -118,6 +138,11 @@ const getStatGrade = (iv) => {
   position: relative;
   min-width: 0; 
   padding: 2px 0;
+
+  @media (max-width: 480px) {
+    width: 100%;
+    order: 3;
+  }
 }
 
 .track {
@@ -137,6 +162,7 @@ const getStatGrade = (iv) => {
 .main-track {
   height: 18px;
   border-radius: 9px;
+  @media (max-width: 480px) { height: 12px; }
 }
 .main-fill {
   box-shadow: 0 0 15px var(--glow);
@@ -145,6 +171,7 @@ const getStatGrade = (iv) => {
   height: 10px;
   border-radius: 5px;
   margin-top: 2px;
+  @media (max-width: 480px) { height: 8px; }
 }
 .iv-fill {
   box-shadow: inset 0 0 5px rgba(255,255,255,0.2);
@@ -157,18 +184,28 @@ const getStatGrade = (iv) => {
   min-width: 100px;
   justify-content: flex-end;
 
+  @media (max-width: 480px) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 0;
+    gap: 8px;
+  }
+
   .grade {
     font-family: 'Press Start 2P', monospace;
-    font-size: 12px; // Much larger grade
+    font-size: 12px;
     font-weight: bold;
     text-shadow: 0 0 5px currentColor;
     image-rendering: pixelated;
+    @media (max-width: 480px) { font-size: 10px; }
   }
   .iv-num {
     font-family: 'Press Start 2P', monospace;
-    font-size: 9px; // Larger IV label
+    font-size: 9px;
     opacity: 0.9;
     image-rendering: pixelated;
+    @media (max-width: 480px) { font-size: 8px; }
   }
 }
 

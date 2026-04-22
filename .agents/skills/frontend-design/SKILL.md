@@ -160,6 +160,7 @@ All spacing and sizing in multiples of 8:
 | **Reading width** | 45-75 characters optimal |
 | **System Reuse** | Always extend `BaseModal` or `UnifiedCard` instead of creating ad-hoc windows |
 | **Button Reuse** | ALWAYS use `@include btn-vicio-primary` or `btn-vicio-danger` mixins. Do NOT hardcode button backgrounds. |
+| **Admin UI Volume** | Administrative tools (Debug/Admin panels) MUST use the standardized 3D button mixins to maintain visual volume and consistent press feedback. |
 
 ### Layout & CSS Quirks (Lessons Learned)
 
@@ -181,7 +182,9 @@ All spacing and sizing in multiples of 8:
 - **GPU Rendering Persistence**: Browsers often release hardware-accelerated layers after a CSS transition/animation ends, which can cause environmental backgrounds to "snap" from smooth to pixelated. Fix by using `will-change: filter, transform;` combined with `transform: TranslateZ(0);` to force the layer to stay on the GPU.
 - **Layered Sprite UI (Pop-out)**: For premium detail modals, create depth by allowing the main character sprite to overlap navigation elements (tabs/headers). Use `z-index` layering and negative margins (e.g., `margin-bottom: -60px`) on the sprite container. Ensure the container has `pointer-events: none` to keep the underlying tabs interactive.
 - **Vertical Centering in Sub-cards**: For info blocks with varying text lengths (e.g., "Category" vs "Pokémon Name"), use `display: flex; flex-direction: column; justify-content: center; align-items: center;` with a consistent `min-height` (e.g., `85px`). This prevents layout shifts and ensures multi-line text blocks remain balanced with single-line ones.
-- **Context-Aware Atmosphere**: Environmental effects (rain, snow, storm, weather emojis) and atmospheric filters (color tints) MUST be hidden for locked, restricted, or inaccessible UI components (e.g., locked map routes). This prevents visual distraction and maintains focus on playable areas.
+- **Atmospheric Clarity**: Environmental effects (rain, snow, weather emojis) and atmospheric filters MUST be hidden for locked, restricted, or inaccessible components (e.g., locked map routes). This reduces cognitive noise and maintains focus on playable content.
+- **Vertical Floating Badges**: When dealing with variable lists of icons/tags in small containers (cards/tiles), align them in vertical columns with `position: absolute`. This prevents the "layout stretch" effect where a horizontal list would expand the container's height or cover critical centered content like sprites.
+- **Balanced Info Lanes (Clearance)**: To avoid collision between absolute-positioned side elements (like badges) and centered content (like HP bars or names), do not use unilateral padding. Instead, use a centered "lane" strategy: set a `width` (e.g., 85%) on the info container, apply `margin: 0 auto`, and add balanced horizontal padding. This ensures the content remains centered relative to the card while maintaining safe clearance on both sides.
 
 ## 3.1 Asynchronous Interaction Feedback
 

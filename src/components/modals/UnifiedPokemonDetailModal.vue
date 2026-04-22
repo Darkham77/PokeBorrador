@@ -10,7 +10,7 @@ import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evol
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-// Instance sub-components (reusing existing ones or adaptively including them)
+// Instance sub-components
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
 import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
 import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue'
@@ -18,7 +18,7 @@ import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue'
 import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsTab.vue'
 
 const props = defineProps({
-  show: { type: Boolean, default: false }, // Sync with uiStore.open
+  show: { type: Boolean, default: false },
   speciesId: { type: String, default: '' },
   pokemon: { type: Object, default: null },
   index: { type: Number, default: -1 },
@@ -70,8 +70,6 @@ const tabs = computed(() => {
     { id: 'moves', label: 'ATAQUES', icon: '⚔️' },
   ]
   
-  // Only show TMs and Evolutions for Pokedex or generic view
-  // Instance view has its own "Evolve" button in footer if applicable
   if (props.context === 'pokedex') {
     base.push({ id: 'tms', label: 'MTs', icon: '💿' })
     base.push({ id: 'evolve', label: 'EVOL.', icon: '✨' })
@@ -82,7 +80,7 @@ const tabs = computed(() => {
 
 const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 
-// Stats Calculation (Base vs Instance)
+// Stats Calculation
 const displayStats = computed(() => {
   if (!species.value) return []
   
@@ -92,7 +90,7 @@ const displayStats = computed(() => {
   return Object.keys(species.value.stats).map(key => {
     const base = species.value.stats[key]
     const current = isInstance.value ? (targetPokemon.value[key] || base) : base
-    const max = 255 // Reference max for bars
+    const max = 255
     
     return {
       id: key,
@@ -114,7 +112,9 @@ const moveDetails = computed(() => {
       level: m.lv,
       name: m.name,
       type: data.type || 'normal',
+      cat: data.cat || 'physical',
       power: data.power || '-',
+      acc: data.acc || '-',
       pp: data.pp || '-'
     }
   }).sort((a, b) => a.level - b.level)
@@ -127,7 +127,6 @@ const currentMoves = computed(() => {
     return { ...m, ...data }
   })
 })
-
 
 const evolutions = computed(() => {
   const list = []
@@ -166,39 +165,22 @@ const formatRange = (val, unit, factor = 0.15) => {
 
 const instancePhysicalData = computed(() => {
   if (!isInstance.value || !species.value) return null
-  
+  const p = props.pokemon
+  const uid = p.uid || 'def'
   const getRand = (seed, range) => {
     if (!range) return '0.0'
     const min = Array.isArray(range) ? range[0] : range * 0.85
     const max = Array.isArray(range) ? range[1] : range * 1.15
-    
     let hash = 0
     for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash)
     const normalized = (Math.abs(hash) % 100) / 100
     return (min + normalized * (max - min)).toFixed(1)
   }
-  
-  const p = props.pokemon
-  const uid = p.uid || 'def'
-  
   return {
     height: p.height || getRand(uid + 'h', species.value.height),
     weight: p.weight || getRand(uid + 'w', species.value.weight)
   }
 })
-
-
-// Actions ported from PokemonDetailModal
-const handleToggleTag = (tag) => {
-  if (typeof window.togglePokeTag === 'function') {
-    window.togglePokeTag(props.context, props.index, tag)
-    if (targetPokemon.value && targetPokemon.value.tags) {
-       const idx = targetPokemon.value.tags.indexOf(tag)
-       if (idx > -1) targetPokemon.value.tags.splice(idx, 1)
-       else targetPokemon.value.tags.push(tag)
-    }
-  }
-}
 
 const handleBuy = () => {
   if (props.extra && typeof window.buyFromMarket === 'function') {
@@ -214,13 +196,31 @@ const handleEvolve = () => {
   }
 }
 
-// UI Helpers
 const hexToRgb = (hex) => {
   if (!hex) return '255, 255, 255'
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
   return `${r}, ${g}, ${b}`
+}
+
+const ALL_TAGS = [
+  { id: 'fav', label: 'FAV', icon: '⭐', color: '#ffd60a' },
+  { id: 'breed', label: 'BREED', icon: '❤️', color: '#ff3b30' },
+  { id: 'competitive', label: 'COMP', icon: '🏆', color: '#32d74b' },
+  { id: 'iv31', label: 'IV', icon: '31', color: '#FFD93D' },
+  { id: 'box', label: 'BOX', icon: '📦', color: '#0a84ff' },
+  { id: 'trade', label: 'TRADE', icon: '🔄', color: '#bf5af2' }
+]
+
+const hasTag = (tagId) => {
+  return targetPokemon.value?.tags?.includes(tagId)
+}
+
+const handleToggleTag = (tagId) => {
+  if (isInstance.value && props.index > -1 && typeof window.togglePokeTag === 'function') {
+    window.togglePokeTag(props.context, props.index, tagId)
+  }
 }
 </script>
 
@@ -248,21 +248,35 @@ const hexToRgb = (hex) => {
         <div class="poke-identity">
           <span class="p-id">#{{ species.nationalId.padStart(3, '0') }}</span>
           <h2 class="p-name">
-            {{ isInstance ? targetPokemon.name : species.name }}
+            {{ species.name.toUpperCase() }}
           </h2>
         </div>
-        <button
-          class="close-vicio"
-          @click="emit('close')"
-        >
-          &times;
-        </button>
+
+        <div class="header-right">
+          <div class="p-types">
+            <span
+              v-for="t in species.type"
+              :key="t"
+              class="m-type-tag pixelated"
+              :style="{ background: PDEX_TYPE_COLORS[t.toLowerCase()] }"
+            >
+              {{ t.toUpperCase() }}
+            </span>
+          </div>
+
+          <button
+            class="close-vicio"
+            @click="emit('close')"
+          >
+            &times;
+          </button>
+        </div>
       </header>
 
-      <!-- BACKGROUND GLOW (Behind everything) -->
+      <!-- BACKGROUND GLOW -->
       <div class="pdex-bg-glow" />
 
-      <!-- TOP DISPLAY (Only Sprite) -->
+      <!-- TOP DISPLAY -->
       <div class="pdex-main-display">
         <div class="sprite-container">
           <img
@@ -323,47 +337,89 @@ const hexToRgb = (hex) => {
             />
           </div>
           
+          <!-- Interactive Tags -->
           <div
-            v-if="isInstance && targetPokemon.tags"
+            v-if="isInstance"
             class="tag-section"
           >
             <span class="pdex-label">ETIQUETAS:</span>
             <div class="tags-list">
-              <span
-                v-for="tag in targetPokemon.tags"
-                :key="tag"
-                class="tag-badge"
-              >{{ tag }}</span>
-              <span
-                v-if="targetPokemon.tags.length === 0"
-                class="no-tags"
-              >Sin etiquetas</span>
+              <button
+                v-for="t in ALL_TAGS"
+                :key="t.id"
+                class="tag-emoji-btn"
+                :class="{ active: hasTag(t.id) }"
+                :style="hasTag(t.id) ? { 
+                  background: `rgba(${hexToRgb(t.color)}, 0.15)`, 
+                  borderColor: `rgba(${hexToRgb(t.color)}, 0.4)`,
+                  color: t.color,
+                  boxShadow: `0 4px 15px rgba(${hexToRgb(t.color)}, 0.2)`
+                } : {}"
+                :title="t.label"
+                @click="handleToggleTag(t.id)"
+              >
+                <span class="t-icon">{{ t.icon }}</span>
+                <span class="t-label pixelated">{{ t.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- DB Info (UID) -->
+          <div
+            v-if="isInstance"
+            class="db-info-section"
+          >
+            <div class="uid-display">
+              <span class="pdex-label pixelated">ID ÚNICO DB:</span>
+              <span class="uid-value pixelated">{{ targetPokemon.uid }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Stats Tab (Enhanced for Instances) -->
+        <!-- Stats Tab -->
         <div
           v-if="activeTab === 'stats'"
           class="pdex-stats-pane"
         >
-          <PokemonStatBar
-            v-for="s in displayStats"
-            :key="s.id"
-            :label="s.label"
-            :value="s.value"
-            :max="s.max"
-            :color="s.color"
-            :iv="s.iv"
-          />
-          
-          <div class="stat-total">
+          <div class="stats-section">
+            <h4 class="section-title">
+              ESTADÍSTICAS REALES
+            </h4>
+            <PokemonStatBar
+              v-for="s in displayStats"
+              :key="'real-'+s.id"
+              :label="s.label"
+              :value="s.value"
+              :max="s.max"
+              :color="s.color"
+              mode="stat"
+            />
+          </div>
+
+          <div
+            v-if="isInstance"
+            class="stats-section mt-32"
+          >
+            <h4 class="section-title">
+              POTENCIAL GENÉTICO (IV)
+            </h4>
+            <PokemonStatBar
+              v-for="s in displayStats"
+              :key="'iv-'+s.id"
+              :label="s.label"
+              :value="s.iv"
+              :max="31"
+              mode="iv"
+            />
+          </div>
+
+          <div class="stat-total mt-32">
             <span class="pdex-label pixelated">BST TOTAL:</span>
             <span class="pdex-value pixelated">{{ species.stats.hp + species.stats.atk + species.stats.def + species.stats.spa + species.stats.spd + species.stats.spe }}</span>
           </div>
         </div>
 
-        <!-- Moves Tab (Enhanced for Instances) -->
+        <!-- Moves Tab -->
         <div
           v-if="activeTab === 'moves'"
           class="pdex-moves-pane"
@@ -380,14 +436,42 @@ const hexToRgb = (hex) => {
                 v-for="m in currentMoves"
                 :key="m.name"
                 class="move-card-vicio"
+                :style="{ 
+                  '--m-type-color': PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'],
+                  '--m-type-rgb': hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal']),
+                  background: `linear-gradient(135deg, rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%)`,
+                  borderColor: `rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.15)`
+                }"
                 @click="uiStore.openMoveDetail(m.name)"
               >
-                <span
-                  class="m-type"
-                  :style="{ background: PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'] }"
-                />
-                <span class="m-name pixelated">{{ m.name }}</span>
-                <span class="m-pp pixelated">{{ m.pp }}/{{ m.maxPP }}</span>
+                <div class="move-top">
+                  <span class="m-name pixelated">{{ m.name }}</span>
+                  <span
+                    class="m-type-tag pixelated"
+                    :style="{ background: PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'] }"
+                  >
+                    {{ (m.type || 'normal').toUpperCase() }}
+                  </span>
+                  <div class="m-pp-wrap">
+                    <span class="m-pp-label pixelated">PP</span>
+                    <span class="m-pp-val pixelated">{{ m.pp }}/{{ m.maxPP }}</span>
+                  </div>
+                </div>
+                
+                <div class="move-details-row">
+                  <div class="detail-item">
+                    <span class="d-label pixelated">PODER:</span>
+                    <span class="d-val pixelated">{{ m.power || '-' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="d-label pixelated">PREC:</span>
+                    <span class="d-val pixelated">{{ m.acc === 1000 ? '∞' : (m.acc || '-') }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="d-label pixelated">CAT:</span>
+                    <span class="d-val pixelated">{{ (m.cat || 'physical').toUpperCase() }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -401,7 +485,9 @@ const hexToRgb = (hex) => {
                 <th>NV</th>
                 <th>ATAQUE</th>
                 <th>TIPO</th>
+                <th>CAT</th>
                 <th>POT</th>
+                <th>PREC</th>
                 <th>PP</th>
               </tr>
             </thead>
@@ -420,14 +506,20 @@ const hexToRgb = (hex) => {
                 </td>
                 <td class="move-type">
                   <span
-                    class="type-tag pixelated"
+                    class="m-type-tag pixelated"
                     :style="{ background: PDEX_TYPE_COLORS[m.type.toLowerCase()] }"
                   >
                     {{ m.type.toUpperCase() }}
                   </span>
                 </td>
+                <td class="move-cat pixelated">
+                  {{ (m.cat || 'physical').substring(0, 4).toUpperCase() }}
+                </td>
                 <td class="move-power pixelated">
                   {{ m.power }}
+                </td>
+                <td class="move-acc pixelated">
+                  {{ m.acc === 1000 ? '∞' : m.acc }}
                 </td>
                 <td class="move-pp pixelated">
                   {{ m.pp }}
@@ -452,14 +544,12 @@ const hexToRgb = (hex) => {
         />
       </div>
 
-      <!-- ACTION FOOTER (Only for Instance Mode) -->
-      <PokemonActionFooter 
+      <PokemonActionFooter
         v-if="isInstance"
         :context="context"
         :extra="extra"
         @buy="handleBuy"
         @evolve="handleEvolve"
-        @toggle-tag="handleToggleTag"
       />
     </div>
   </BaseModal>

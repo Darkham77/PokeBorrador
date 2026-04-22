@@ -34,7 +34,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 - **Grid Alignment**: Pixel fonts (especially `Press Start 2P`) MUST strictly use multiples of their native 8px design grid (**8px, 16px, 24px, 32px**).
 - **Anti-Alias Ban**: ALWAYS apply `@include pixelated;` to pixel fonts to force `-webkit-font-smoothing: none !important`.
-- **FORBIDDEN**: 
+- **FORBIDDEN**:
   - Intermediate sizes (9px, 10px, 11px, 13px, 15px) as they trigger subpixel interpolation.
   - Using `text-shadow` with any blur radius (must be 0px).
 - **Centering**: Use **Flexbox/Grid** for centering. Avoid `transform: translate(-50%, -50%)` as it causes subpixel blurring in Chrome.

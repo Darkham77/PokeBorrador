@@ -37,28 +37,29 @@ const uiStore = useUIStore()
 
 .toast-item {
   pointer-events: all;
-  background: rgba(15, 15, 15, 0.85);
-  backdrop-filter: Blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 4px solid var(--yellow, #f1c40f);
-  padding: 12px 16px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  background: rgba(10, 12, 18, 0.9);
+  backdrop-filter: Blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-left: 3px solid var(--yellow, #f1c40f);
+  padding: 10px 14px;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-family: 'Nunito', sans-serif;
+  gap: 10px;
+  font-family: 'Inter', 'Nunito', sans-serif;
   color: white;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
   
   .toast-icon {
-    font-size: 18px;
+    font-size: 16px;
     flex-shrink: 0;
   }
   
   .toast-msg {
-    line-height: 1.4;
+    line-height: 1.3;
   }
 }
 
