@@ -164,7 +164,7 @@ Every change to the database structure **MUST** be documented in two manual plac
 * **Transparency**: When proposing a migration, the AI or developer **MUST** show the user the exact SQL code block to be executed in Supabase.
 * **SQLite Compatibility**: The local engine automatically strips the `public.` schema prefix. Ensure SQL migrations are written to be schema-agnostic or rely on this stripping logic.
 * **Migration ID Parity**: Always use `m.id` (not `m.name`) to match the generated `migrations_data.js` objects during the application loop.
-* **SQLite ALTER TABLE Limitations**: In SQLite, adding a column with `PRIMARY KEY` or `AUTOINCREMENT` constraints via `ALTER TABLE` is strictly **FORBIDDEN**. 
+* **SQLite ALTER TABLE Limitations**: In SQLite, adding a column with `PRIMARY KEY` or `AUTOINCREMENT` constraints via `ALTER TABLE` is strictly **FORBIDDEN**.
   * **Self-Healing**: The `sqliteEngine.js` automatically strips these keywords during auto-repair to prevent crashes, but manual migrations must avoid them to maintain structural integrity. Recreating the table is the only standard way to add a PK/AI column.
 
 ---

@@ -81,7 +81,7 @@ Refer to these manuals for complex implementation specifications:
 
 ### 2. Engine Initialization
 
-- **REQUIRED**: The `PhaserGame` component MUST be rendered in the DOM for the engine to initialize and fire the `game-state-ready` event. 
+- **REQUIRED**: The `PhaserGame` component MUST be rendered in the DOM for the engine to initialize and fire the `game-state-ready` event.
 - **CRITICAL**: Do NOT wrap `PhaserGame` in a `v-if` condition that depends on the engine being ready, as this creates a circular dependency that blocks the application indefinitely. Always render the engine in the background (e.g., behind a loading overlay) once the user session is identified.
 
 ---

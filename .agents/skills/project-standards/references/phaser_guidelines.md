@@ -53,8 +53,8 @@ To avoid performance death by a thousand reactivity "checks":
 
 ### 3. Initialization & Blocking
 
-- **CRITICAL**: The `PhaserGame` component MUST be rendered in the DOM for the engine to initialize and fire the `game-state-ready` event. 
-- **FORBIDDEN**: Wrapping `PhaserGame` in a `v-if` condition that depends on the engine being ready (circular dependency). This will block the application indefinitely in a loading state. 
+- **CRITICAL**: The `PhaserGame` component MUST be rendered in the DOM for the engine to initialize and fire the `game-state-ready` event.
+- **FORBIDDEN**: Wrapping `PhaserGame` in a `v-if` condition that depends on the engine being ready (circular dependency). This will block the application indefinitely in a loading state.
 - **PATTERN**: Always render the engine once the user is authenticated, and hide it behind a loading overlay until the `ready` signal is received.
 
 ---
