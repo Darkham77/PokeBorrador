@@ -51,6 +51,12 @@ To avoid performance death by a thousand reactivity "checks":
 - **Shallow Refs**: If you must store the Phaser Game instance in a Vue component, use `shallowRef()`.
 - **Global Debugging Bridge**: To facilitate runtime auditing of textures, memory, and engine state, the `phaserBridge` **MUST** be exposed to the global `window` object in the development environment. Use `window.phaserBridge.game.textures.list` in the console to verify asset loading.
 
+### 3. Initialization & Blocking
+
+- **CRITICAL**: The `PhaserGame` component MUST be rendered in the DOM for the engine to initialize and fire the `game-state-ready` event. 
+- **FORBIDDEN**: Wrapping `PhaserGame` in a `v-if` condition that depends on the engine being ready (circular dependency). This will block the application indefinitely in a loading state. 
+- **PATTERN**: Always render the engine once the user is authenticated, and hide it behind a loading overlay until the `ready` signal is received.
+
 ---
 
 ## 🛠️ Performance Audit Checklist

@@ -13,13 +13,15 @@ Modern Sass built-ins often collide with standard CSS functions. You **MUST** us
 Apply interpolation to the following CSS functions to prevent "X is not a color" errors:
 
 - `transform: Scale(1.5);`
+- `transform: TranslateY(-10px);`
 - `filter: Invert(100%);`
 - `filter: Grayscale(0.8);`
 - `filter: Opacity(0.5);`
 - `filter: Brightness(1.2);`
+- `filter: Blur(5px);`
 
 > [!WARNING]
-> **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, and `Rotate()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
+> **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, `Rotate()`, `TranslateY()`, and `Grayscale()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
 
 ### 2. Preference: Capitalization vs. Unquote/Interpolation
 
