@@ -202,7 +202,7 @@ function toggleCycle(c) {
 
 button.active {
   background: var(--yellow) !important;
-  color: #000 !important;
-  border-color: #000 !important;
+  color: $black !important;
+  border-color: $black !important;
 }
 </style>

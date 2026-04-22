@@ -38,7 +38,7 @@ const uiStore = useUIStore()
 .toast-item {
   pointer-events: all;
   background: rgba(15, 15, 15, 0.85);
-  backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-left: 4px solid var(--yellow, #f1c40f);
   padding: 12px 16px;

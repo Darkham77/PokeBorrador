@@ -80,7 +80,7 @@ const socialStore = useSocialStore()
     .text {
       font-size: 12px;
       color: #94a3b8;
-      .username { color: #fff; font-weight: 700; margin-right: 4px; }
+      .username { color: $white; font-weight: 700; margin-right: 4px; }
     }
   }
 
@@ -91,7 +91,7 @@ const socialStore = useSocialStore()
     .btn-accept {
       background: #22c55e;
       border: none;
-      color: #fff;
+      color: $white;
       padding: 8px 12px;
       border-radius: 8px;
       font-family: 'Press Start 2P', cursive;

@@ -192,7 +192,7 @@ function close() {
 h2 {
   font-size: 24px;
   font-weight: 800;
-  color: #fff;
+  color: $white;
   margin: 0;
   letter-spacing: 0.5px;
 }
@@ -256,7 +256,7 @@ h2 {
 
 @keyframes pulse {
   from { transform: Scale(1); filter: Brightness(1); }
-  to { transform: Scale(1.2); filter: Brightness(1.5) drop-shadow(0 0 5px #ff5555); }
+  to { transform: Scale(1.2); filter: Brightness(1.5) Drop-Shadow(0 0 5px #ff5555); }
 }
 
 .progress-container {
@@ -308,7 +308,7 @@ h2 {
 .price-tag {
   font-size: 24px;
   font-weight: 900;
-  color: #fff;
+  color: $white;
 }
 
 .cost-notice small {
@@ -327,7 +327,7 @@ h2 {
 
 .btn-heal {
   background: linear-gradient(135deg, #ef4444, #b91c1c);
-  color: #fff;
+  color: $white;
   border: none;
   padding: 16px;
   border-radius: 15px;
@@ -367,7 +367,7 @@ h2 {
 
 .btn-cancel:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  color: $white;
   border-color: rgba(255, 255, 255, 0.3);
 }
 </style>

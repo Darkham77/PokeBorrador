@@ -221,7 +221,7 @@ const requestSummary = computed(() => {
     }
     .value { 
       font-size: 11px; 
-      color: #fff; 
+      color: $white; 
       font-weight: 700;
     }
   }

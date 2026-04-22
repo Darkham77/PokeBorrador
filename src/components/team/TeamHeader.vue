@@ -122,7 +122,7 @@ const confirmRelease = () => {
   padding: 15px 20px;
   background: #1a1a1a;
   border: 4px solid #333;
-  box-shadow: 0 0 0 4px #000;
+  box-shadow: 0 0 0 4px $black;
   flex-wrap: wrap;
   gap: 15px;
 }
@@ -130,9 +130,9 @@ const confirmRelease = () => {
 .section-title {
   font-family: 'Press Start 2P', monospace;
   font-size: 14px;
-  color: #fff;
+  color: $white;
   margin: 0;
-  text-shadow: 2px 2px #000;
+  text-shadow: 2px 2px $black;
 }
 
 .header-actions {
@@ -147,7 +147,7 @@ const confirmRelease = () => {
   cursor: pointer;
   background: #222;
   border: 3px solid #444;
-  color: #fff;
+  color: $white;
   transition: all 0.1s;
 }
 
@@ -174,7 +174,7 @@ const confirmRelease = () => {
   line-height: 1.6;
   background: #111;
   border: 4px solid #333;
-  box-shadow: 0 0 0 4px #000;
+  box-shadow: 0 0 0 4px $black;
 }
 
 .hint-icon { font-size: 16px; }

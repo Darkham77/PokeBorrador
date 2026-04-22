@@ -96,6 +96,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
           pokemon.aura ? `aura-${pokemon.aura}-mini` : ''
         ]"
         alt="pokemon"
+        @error="e => e.target.style.display = 'none'"
       >
     </div>
     
@@ -217,9 +218,9 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   text-transform: uppercase;
 }
 
-.mission-badge { top: 2px; background: #fbbf24; color: #000; }
-.daycare-badge { top: 12px; background: #3b82f6; color: #fff; }
-.defense-badge { top: 22px; background: #22c55e; color: #fff; }
+.mission-badge { top: 2px; background: #fbbf24; color: $black; }
+.daycare-badge { top: 12px; background: #3b82f6; color: $white; }
+.defense-badge { top: 22px; background: #22c55e; color: $white; }
 
 .pokemon-name {
   font-size: 10px;
@@ -227,7 +228,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #fff;
+  color: $white;
 }
 
 .pokemon-level {

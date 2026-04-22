@@ -102,7 +102,7 @@ const close = () => {
   text-align: left;
   cursor: pointer;
   transition: all 0.2s;
-  color: #fff;
+  color: $white;
 
   &:hover { 
     background: rgba(255,255,255,0.08); 

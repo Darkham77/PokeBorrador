@@ -237,8 +237,8 @@ const _getSprite = (id, shiny) => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -296,10 +296,10 @@ const _getSprite = (id, shiny) => {
 
 .egg-icon { font-size: 24px; }
 .egg-info { flex: 1; }
-.egg-name { font-size: 12px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
+.egg-name { font-size: 12px; font-weight: 800; color: $white; display: flex; align-items: center; gap: 8px; }
 .egg-status { font-size: 9px; color: var(--gray); margin-top: 4px; }
 
-.badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; color: #fff; }
+.badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; color: $white; }
 .badge.inventory { background: var(--blue); }
 .badge.daycare { background: var(--purple); }
 
@@ -307,7 +307,7 @@ const _getSprite = (id, shiny) => {
 
 .result-header { text-align: center; }
 .big-egg { font-size: 48px; margin-bottom: 12px; }
-.result-title { font-size: 18px; font-weight: 900; color: #fff; }
+.result-title { font-size: 18px; font-weight: 900; color: $white; }
 
 .stats-card {
   background: rgba(0,0,0,0.3);
@@ -316,7 +316,7 @@ const _getSprite = (id, shiny) => {
 }
 
 .iv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.iv-item { font-size: 10px; color: #fff; font-family: monospace; }
+.iv-item { font-size: 10px; color: $white; font-family: monospace; }
 .iv-item span { color: var(--gray); }
 
 .total-bar {
@@ -330,7 +330,7 @@ const _getSprite = (id, shiny) => {
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .keep-btn {
-  padding: 14px; background: #22c55e; color: #000; border: none; border-radius: 12px;
+  padding: 14px; background: #22c55e; color: $black; border: none; border-radius: 12px;
   font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer;
 }
 
@@ -355,7 +355,7 @@ const _getSprite = (id, shiny) => {
   border-top: 4px solid #a855f7; border-radius: 50%; animation: spin 1s linear infinite;
 }
 
-@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes spin { 100% { transform: Rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 .empty-state { text-align: center; padding: 40px; color: var(--gray); font-size: 12px; }

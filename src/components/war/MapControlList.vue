@@ -127,7 +127,7 @@ const allMaps = computed(() => {
 
 .dominance-bar {
   height: 8px;
-  background: #000;
+  background: $black;
   border-radius: 4px;
   overflow: hidden;
   display: flex;

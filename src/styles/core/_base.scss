@@ -12,13 +12,13 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  scrollbar-gutter: stable; // Always reserve space to avoid jumps
   -webkit-user-select: none;
   user-select: none;
   background-color: var(--darker); // Pitch black backdrop
 
   &.modal-open {
     overflow: hidden !important;
-    height: 100vh;
     touch-action: none;
 
     #phaser-container,
@@ -69,13 +69,26 @@ h1, h2, h3, h4, h5, h6,
 .label, 
 .pill-value, 
 .font-pixel, 
+.pixelated,
 [style*="Press Start 2P"],
 [style*="Silkscreen"],
-[style*="VT323"] {
-  // If font family contains a pixel font, apply pixelated mixin
-  & {
+[style*="VT323"],
+th, td, span, div {
+  // If it's explicitly pixelated or uses a pixel font, force no smoothing
+  &.pixelated, 
+  &.font-pixel, 
+  &[style*="Press Start 2P"] {
     @include pixelated;
   }
+}
+
+// Ultra-aggressive global override for pixel fonts to prevent browser smoothing
+[style*="Press Start 2P"], 
+.font-pixel, 
+.pixelated {
+  -webkit-font-smoothing: none !important;
+  font-smooth: never !important;
+  text-rendering: optimizeSpeed !important;
 }
 
 .screen {

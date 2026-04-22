@@ -35,7 +35,17 @@ export function generateMigrations() {
 
     // Prepare SQL: remove comments and normalize newlines to keep it compact
     const sqlLines = content.split('\n')
-      .filter(line => !line.trim().startsWith('--'))
+      .map(line => {
+        // Strip inline comments starting with --
+        const commentIndex = line.indexOf('--');
+        if (commentIndex !== -1) {
+          // Keep part before comment, but only if it's not the 'check:' metadata line
+          if (line.includes('check:')) return ''; 
+          return line.substring(0, commentIndex);
+        }
+        return line;
+      })
+      .filter(line => line.trim().length > 0)
       .join(' ')
       .replace(/\s+/g, ' ')
       .trim();

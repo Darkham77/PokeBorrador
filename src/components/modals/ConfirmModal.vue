@@ -97,7 +97,7 @@ const handleCancel = () => {
     color: rgba(255, 255, 255, 0.5);
     &:hover {
       background: rgba(255, 255, 255, 0.1);
-      color: #fff;
+      color: $white;
     }
   }
   

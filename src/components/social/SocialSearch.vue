@@ -105,7 +105,7 @@ const handleSearch = () => {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  color: #fff;
+  color: $white;
   outline: none;
   font-size: 13px;
   font-family: inherit;
@@ -145,7 +145,7 @@ const handleSearch = () => {
   .friend-name {
     font-size: 14px;
     font-weight: 900;
-    color: #fff;
+    color: $white;
     margin-bottom: 4px;
   }
   .friend-meta {
@@ -167,7 +167,7 @@ const handleSearch = () => {
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  color: $white;
   transition: all 0.2s;
 
   &:hover {

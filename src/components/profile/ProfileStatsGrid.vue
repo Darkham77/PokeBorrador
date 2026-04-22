@@ -63,7 +63,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
   flex-direction: column;
   gap: 10px;
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
 
   &:hover {
     background: rgba(30, 41, 59, 0.5);
@@ -77,7 +77,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
     border-color: rgba(255, 214, 10, 0.1);
     
     .legacy-stat-val {
-      color: #ffd60a;
+      color: $yellow;
       text-shadow: 0 0 10px rgba(255, 214, 10, 0.3);
     }
   }
@@ -86,7 +86,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
 .legacy-stat-val {
   font-family: 'Press Start 2P', monospace;
   font-size: 14px;
-  color: #fff;
+  color: $white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -103,6 +103,6 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
   @include pixelated;
 }
 
-.currency-icon-money { color: #ffd60a; }
-.currency-icon-bc { color: #bf5af2; }
+.currency-icon-money { color: $yellow; }
+.currency-icon-bc { color: $purple; }
 </style>

@@ -37,6 +37,7 @@ const genderSymbol = (g) => {
         <img
           :src="getSpriteUrl(pokemon.id, pokemon.isShiny)"
           :alt="pokemon.name"
+          @error="e => e.target.style.display = 'none'"
         >
       </div>
       
@@ -149,7 +150,7 @@ const genderSymbol = (g) => {
     img {
       height: 80px;
       image-rendering: pixelated;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+      filter: Drop-Shadow(0 4px 8px rgba(0,0,0,0.5));
     }
   }
 
@@ -162,7 +163,7 @@ const genderSymbol = (g) => {
       .name {
         font-family: 'Press Start 2P', monospace;
         font-size: 10px;
-        color: #fff;
+        color: $white;
       }
       .level {
         font-size: 10px;
@@ -189,8 +190,8 @@ const genderSymbol = (g) => {
       background: rgba(0,0,0,0.3);
       padding: 4px 8px;
       border-radius: 4px;
-      .label { color: #64748b; margin-right: 4px; }
-      .values { color: #fff; letter-spacing: 1px; }
+      .label { color: $muted; margin-right: 4px; }
+      .values { color: $white; letter-spacing: 1px; }
     }
   }
 
@@ -201,7 +202,7 @@ const genderSymbol = (g) => {
       align-items: center;
       gap: 6px;
       font-size: 11px;
-      color: #fff;
+      color: $white;
       background: rgba(139, 92, 246, 0.2);
       padding: 6px;
       border-radius: 8px;
@@ -210,7 +211,7 @@ const genderSymbol = (g) => {
     select {
       width: 100%;
       background: #0f172a;
-      color: #fff;
+      color: $white;
       border: 1px solid #334155;
       padding: 6px;
       border-radius: 8px;
@@ -254,7 +255,7 @@ const genderSymbol = (g) => {
     .empty-text {
       display: block;
       font-size: 10px;
-      color: #64748b;
+      color: $muted;
       margin-bottom: 16px;
     }
   }

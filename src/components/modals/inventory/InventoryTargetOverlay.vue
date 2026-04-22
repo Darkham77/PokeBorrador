@@ -25,6 +25,7 @@ defineEmits(['close', 'select'])
             <img
               :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
               class="mini-sprite"
+              @error="e => e.target.style.display = 'none'"
             >
             <div>
               <div class="label">
@@ -58,6 +59,7 @@ defineEmits(['close', 'select'])
               <img
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, poke.id, { isShiny: poke.isShiny })"
                 class="poke-sprite"
+                @error="e => e.target.style.display = 'none'"
               >
             </div>
             <div class="poke-info">
@@ -115,7 +117,7 @@ defineEmits(['close', 'select'])
     gap: 12px;
     
     .mini-sprite { width: 32px; height: 32px; image-rendering: pixelated; }
-    .label { font-size: 8px; font-weight: 800; color: #64748b; }
+    .label { font-size: 8px; font-weight: 800; color: $muted; }
     .name { font-size: 14px; font-weight: 800; color: var(--yellow); }
   }
   
@@ -152,7 +154,7 @@ defineEmits(['close', 'select'])
   .poke-info {
     flex: 1;
     .poke-name { font-weight: 800; font-size: 14px; color: white; margin-bottom: 2px; }
-    .poke-meta { font-size: 10px; color: #64748b; margin-bottom: 4px; }
+    .poke-meta { font-size: 10px; color: $muted; margin-bottom: 4px; }
     
     .hp-bar {
       height: 4px;

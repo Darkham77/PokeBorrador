@@ -37,7 +37,7 @@ const activeTab = ref('events'); // 'events' | 'ranked'
 .admin-panel {
   padding: 30px;
   background: #0f172a;
-  color: #fff;
+  color: $white;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -56,14 +56,14 @@ const activeTab = ref('events'); // 'events' | 'ranked'
     button {
       background: transparent;
       border: none;
-      color: #64748b;
+      color: $muted;
       font-family: 'Press Start 2P', cursive;
       font-size: 10px;
       cursor: pointer;
       padding: 10px 0;
       border-bottom: 2px solid transparent;
       transition: all 0.2s;
-      &:hover { color: #fff; }
+      &:hover { color: $white; }
       &.active {
         color: #fbbf24;
         border-bottom-color: #fbbf24;

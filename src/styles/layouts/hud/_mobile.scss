@@ -80,11 +80,11 @@
     
     .nav-icon {
         transform: scale3d(1.1, 1.1, 1);
-        filter: drop-shadow(0 0 5px rgba(255, 214, 10, 0.4));
+        filter: Drop-Shadow(0 0 5px rgba(255, 214, 10, 0.4));
     }
 
     .nav-label {
-      color: #ffd60a;
+      color: $yellow;
       text-shadow: 0 0 5px rgba(255, 214, 10, 0.3);
     }
   }

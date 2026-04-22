@@ -178,12 +178,44 @@ export function splitSQLStatements(sql) {
   let current = '';
   let inDollarQuote = false;
   let inString = false;
+  let inBlockComment = false;
+  let inLineComment = false;
   
   for (let i = 0; i < sql.length; i++) {
     const char = sql[i];
     const nextChar = sql[i + 1];
     
+    // 1. Handle Line Comments (--)
+    if (inLineComment) {
+      if (char === '\n') inLineComment = false;
+      // If we reached the end of the string without a newline, close the comment
+      if (i === sql.length - 1) inLineComment = false; 
+      continue;
+    }
+    
+    // 2. Handle Block Comments (/* */)
+    if (inBlockComment) {
+      if (char === '*' && nextChar === '/') {
+        inBlockComment = false;
+        i++;
+      }
+      continue;
+    }
+
     if (!inDollarQuote && !inString) {
+      // Detect start of Line Comment
+      if (char === '-' && nextChar === '-') {
+        inLineComment = true;
+        i++;
+        continue;
+      }
+      // Detect start of Block Comment
+      if (char === '/' && nextChar === '*') {
+        inBlockComment = true;
+        i++;
+        continue;
+      }
+      
       if (char === '$' && nextChar === '$') {
         inDollarQuote = true;
         current += '$$';
@@ -196,7 +228,7 @@ export function splitSQLStatements(sql) {
         continue;
       }
       if (char === ';') {
-        statements.push(current.trim());
+        if (current.trim()) statements.push(current.trim());
         current = '';
         continue;
       }
@@ -226,8 +258,30 @@ export function splitSQLStatements(sql) {
  */
 export function translatePostgresToSqlite(sql) {
   if (!sql) return '';
+  const cleanSql = sql.trim();
+  const upperSql = cleanSql.toUpperCase();
   
-  return sql
+  // Logic Skipping for PostgreSQL-only constructs
+  const skipPatterns = [
+    'CREATE FUNCTION',
+    'CREATE OR REPLACE FUNCTION',
+    'DO $$',
+    'CREATE POLICY',
+    'DROP POLICY',
+    'ALTER PUBLICATION',
+    'COMMENT ON',
+    'CREATE TRIGGER',
+    'DROP TRIGGER',
+    'CREATE EXTENSION',
+    'ALTER TABLE PROFILES ENABLE ROW LEVEL SECURITY'
+  ];
+  
+  if (skipPatterns.some(pattern => upperSql.startsWith(pattern))) {
+    console.warn(`[SQLite] Skipping Postgres-only statement: ${cleanSql.substring(0, 50)}...`);
+    return '';
+  }
+
+  return cleanSql
     .replace(/public\./gi, '')
     // 1. Types & Casts
     .replace(/\bJSONB\b/gi, 'TEXT')
@@ -262,8 +316,11 @@ export function translatePostgresToSqlite(sql) {
     // 4. SQL Patterns
     .replace(/FOR\s+UPDATE/gi, '')
     .replace(/DEFAULT\s+datetime\('now'\)/gi, "DEFAULT (datetime('now'))")
+    .replace(/DEFAULT\s+hex\(randomblob\(16\)\)/gi, "DEFAULT (hex(randomblob(16)))")
     .replace(/RAISE\s+EXCEPTION\s+'[^']*'/gi, 'SELECT 1')
     .replace(/\bADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\b/gi, 'ADD COLUMN')
+    // 5. References & Schemas
+    .replace(/REFERENCES\s+auth\.users/gi, 'REFERENCES profiles')
     .trim();
 }
 

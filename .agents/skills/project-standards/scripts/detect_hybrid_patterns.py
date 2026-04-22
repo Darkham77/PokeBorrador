@@ -81,6 +81,24 @@ HYBRID_PATTERNS = [
         "regex": r"overflow-y:\s*auto",
         "message": "Overflow detected. Ensure the flex parent has 'min-height: 0' to avoid layout collapse.",
         "severity": "medium"
+    },
+    {
+        "id": "missing_img_fallback",
+        "regex": r"<img(?!.*?@error).*?>",
+        "message": "Image tag missing @error fallback handler. Every game asset MUST have a fallback.",
+        "severity": "high"
+    },
+    {
+        "id": "hardcoded_color",
+        "regex": r":\s*#(?:[0-9a-fA-F]{3,6})\b",
+        "message": "Hardcoded hex color detected. Use standardized SASS variables ($yellow) or CSS tokens.",
+        "severity": "medium"
+    },
+    {
+        "id": "sass_url_safety",
+        "regex": r"url\(.*?\#\{.*?\}\)",
+        "message": "SASS interpolation detected inside url() without unquote(). This may cause build errors.",
+        "severity": "high"
     }
 ]
 
@@ -223,7 +241,7 @@ def main():
         print("\nACTION REQUIRED: Refactor the files above to comply with Pure Vue standards.")
         sys.exit(1)
     else:
-        print("No hybrid patterns detected. Code is looking Pure Vue! ✨")
+        print("No hybrid patterns detected. Code is looking Pure Vue!")
         sys.exit(0)
 
 if __name__ == "__main__":

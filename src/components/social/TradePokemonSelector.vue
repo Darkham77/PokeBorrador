@@ -162,6 +162,7 @@ const select = (poke) => {
                 <img
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, poke.id, { isShiny: poke.isShiny })"
                   :class="{ shiny: poke.isShiny }"
+                  @error="e => e.target.style.display = 'none'"
                 >
                 <span
                   v-if="poke.isShiny"
@@ -246,8 +247,8 @@ const select = (poke) => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
   transform: translateZ(0);
 }
 
@@ -393,7 +394,7 @@ const select = (poke) => {
       width: 100%;
       height: 100%;
       image-rendering: pixelated;
-      &.shiny { filter: drop-shadow(0 0 5px rgba(255, 255, 0, 0.5)); }
+      &.shiny { filter: Drop-Shadow(0 0 5px rgba(255, 255, 0, 0.5)); }
     }
 
     .shiny-star {
@@ -451,7 +452,7 @@ const select = (poke) => {
   border-radius: 12px;
   border: none;
   background: var(--yellow, #facc15);
-  color: #000;
+  color: $black;
   font-family: 'Press Start 2P', cursive;
   font-size: 8px;
   font-weight: 900;

@@ -106,8 +106,8 @@ const getIvColor = (val) => {
   border: 1px solid rgba(255,255,255,0.03);
 }
 
-.stat-box span { display: block; font-size: 8px; color: #777; margin-bottom: 4px; }
-.stat-box strong { font-size: 15px; color: #efefef; }
+.stat-box span { display: block; font-size: 8px; color: #888; margin-bottom: 4px; @include pixelated; }
+.stat-box strong { font-size: 16px; color: #efefef; @include pixelated; }
 
 .glass-inset-dark {
   background: rgba(0,0,0,0.5);

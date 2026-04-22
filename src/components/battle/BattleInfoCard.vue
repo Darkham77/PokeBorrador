@@ -41,6 +41,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
         v-if="!isPlayer && p.caught"
         :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
         class="caught-icon"
+        @error="e => e.target.style.display = 'none'"
       >
     </div>
     
@@ -85,13 +86,13 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 <style scoped>
 .glass-card {
   background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(12px);
+  backdrop-filter: Blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 18px;
   padding: 15px;
   min-width: 200px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  color: #fff;
+  color: $white;
 }
 
 .card-header {

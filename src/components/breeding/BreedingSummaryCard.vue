@@ -155,18 +155,18 @@ const geneticsSummary = computed(() => {
     background: rgba(0, 0, 0, 0.4);
     padding: 12px;
     border-radius: 12px;
-    border-left: 4px solid #fff;
+    border-left: 4px solid $white;
 
     .label {
       font-family: 'Press Start 2P', monospace;
       font-size: 9px;
-      color: #64748b;
+      color: $muted;
     }
 
     .value {
       font-size: 13px;
       font-weight: 800;
-      color: #fff;
+      color: $white;
     }
 
     &.specie { border-left-color: #10b981; }
@@ -198,7 +198,7 @@ const geneticsSummary = computed(() => {
     display: flex;
     justify-content: space-between;
     font-size: 11px;
-    color: #64748b;
+    color: $muted;
 
     span {
       font-weight: 800;

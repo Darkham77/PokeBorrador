@@ -42,7 +42,7 @@ const emit = defineEmits(['update:serverType'])
 .server-selector-label {
   font-size: 9px;
   font-family: 'Press Start 2P', monospace;
-  color: #86868b;
+  color: $gray;
   margin-bottom: 12px;
   text-transform: uppercase;
 }
@@ -61,7 +61,7 @@ const emit = defineEmits(['update:serverType'])
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
-  color: #86868b;
+  color: $gray;
   border-radius: 10px;
   cursor: pointer;
   font-size: 10px;
@@ -76,8 +76,8 @@ const emit = defineEmits(['update:serverType'])
 }
 
 .server-tab.active {
-  background: #ffd60a;
-  color: #000;
-  border-color: #ffd60a;
+  background: $yellow;
+  color: $black;
+  border-color: $yellow;
 }
 </style>

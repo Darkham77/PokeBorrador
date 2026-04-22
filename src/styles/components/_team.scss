@@ -41,7 +41,7 @@
   font-family: $font-pixel;
   font-size: 8px;
   margin-bottom: spacing(2);
-  color: #fff;
+  color: $white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,9 +76,9 @@
 
   &.tier-s-plus { color: #FFD700; background: rgba(255, 215, 0, 0.18); border-color: rgba(255, 215, 0, 0.3); }
   &.tier-s { color: #FFA500; background: rgba(255, 165, 0, 0.15); border-color: rgba(255, 165, 0, 0.3); }
-  &.tier-a { color: #bf5af2; background: rgba(191, 90, 242, 0.15); border-color: rgba(191, 90, 242, 0.3); }
-  &.tier-b { color: #0a84ff; background: rgba(10, 132, 255, 0.15); border-color: rgba(10, 132, 255, 0.3); }
-  &.tier-c { color: #32d74b; background: rgba(50, 215, 75, 0.15); border-color: rgba(50, 215, 75, 0.3); }
+  &.tier-a { color: $purple; background: rgba(191, 90, 242, 0.15); border-color: rgba(191, 90, 242, 0.3); }
+  &.tier-b { color: $blue; background: rgba(10, 132, 255, 0.15); border-color: rgba(10, 132, 255, 0.3); }
+  &.tier-c { color: $green; background: rgba(50, 215, 75, 0.15); border-color: rgba(50, 215, 75, 0.3); }
 }
 
 .level-badge {
@@ -107,5 +107,5 @@
 .shiny-badge-mini {
   display: inline-flex;
   font-size: 10px;
-  filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4));
+  filter: Drop-Shadow(0 0 2px rgba(255, 215, 0, 0.4));
 }

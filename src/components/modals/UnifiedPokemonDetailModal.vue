@@ -268,6 +268,7 @@ const hexToRgb = (hex) => {
           <img
             :src="getSprite(targetSpeciesId)"
             class="main-sprite"
+            @error="e => e.target.style.display = 'none'"
           >
         </div>
       </div>
@@ -408,14 +409,13 @@ const hexToRgb = (hex) => {
               <tr
                 v-for="m in moveDetails"
                 :key="m.name"
+                class="clickable-row"
+                @click="uiStore.openMoveDetail(m.name)"
               >
                 <td class="move-lv pixelated">
                   {{ m.level }}
                 </td>
-                <td
-                  class="move-name pixelated"
-                  @click="uiStore.openMoveDetail(m.name)"
-                >
+                <td class="move-name pixelated">
                   {{ m.name }}
                 </td>
                 <td class="move-type">

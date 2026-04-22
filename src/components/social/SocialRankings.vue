@@ -164,7 +164,7 @@ const getFactionColor = (faction) => {
       }
       .rule-val {
         font-size: 11px;
-        color: #fff;
+        color: $white;
         font-weight: bold;
 
         &.shiny {
@@ -232,7 +232,7 @@ const getFactionColor = (faction) => {
   .player-name {
     font-size: 13px;
     font-weight: bold;
-    color: #fff;
+    color: $white;
     margin-bottom: 3px;
     display: flex;
     align-items: center;
@@ -280,7 +280,7 @@ const getFactionColor = (faction) => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to { transform: Rotate(360deg); }
 }
 
 .empty-state {

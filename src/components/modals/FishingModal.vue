@@ -149,7 +149,7 @@ onUnmounted(() => {
   inset: 0;
   z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -207,7 +207,7 @@ onUnmounted(() => {
   transform: translateX(-50%);
   font-family: 'Press Start 2P', monospace;
   font-size: 14px;
-  color: #fff;
+  color: $white;
   background: rgba(255, 255, 255, 0.05);
   padding: 12px 24px;
   border-radius: 99px;
@@ -218,7 +218,7 @@ onUnmounted(() => {
   position: absolute;
   width: 70px;
   height: 70px;
-  transform: translate(-50%, -50%);
+  transform: Translate(-50%, -50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -227,7 +227,7 @@ onUnmounted(() => {
   .note-number {
     font-family: 'Press Start 2P', monospace;
     font-size: 20px;
-    color: #fff;
+    color: $white;
     z-index: 2;
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
   }
@@ -245,14 +245,14 @@ onUnmounted(() => {
 @keyframes shrink {
   from { transform: Scale(1.8); opacity: 0; }
   20% { opacity: 1; }
-  to { transform: Scale(1); opacity: 1; border-color: #fff; }
+  to { transform: Scale(1); opacity: 1; border-color: $white; }
 }
 
 .note-leave-active {
   transition: all 0.2s ease;
 }
 .note-leave-to {
-  transform: translate(-50%, -50%) Scale(1.5);
+  transform: Translate(-50%, -50%) Scale(1.5);
   opacity: 0;
 }
 </style>

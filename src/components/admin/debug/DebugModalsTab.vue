@@ -120,7 +120,7 @@ function triggerSampleError() {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    color: #fff;
+    color: $white;
     padding: 12px 15px;
     height: 40px;
     font-family: 'Press Start 2P', cursive;

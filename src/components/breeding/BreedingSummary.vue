@@ -127,7 +127,7 @@ const formatTime = (ms) => {
   .timer {
     font-family: 'Press Start 2P', cursive;
     font-size: 10px;
-    color: #fff;
+    color: $white;
     margin-top: 8px;
   }
 }
@@ -146,9 +146,9 @@ const formatTime = (ms) => {
 }
 
 @keyframes pulse {
-  0% { transform: Scale(1.0); filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0)); }
-  50% { transform: Scale(1.2); filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.6)); }
-  100% { transform: Scale(1.0); filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0)); }
+  0% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 rgba(239, 68, 68, 0)); }
+  50% { transform: Scale(1.2); filter: Drop-Shadow(0 0 15px rgba(239, 68, 68, 0.6)); }
+  100% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 rgba(239, 68, 68, 0)); }
 }
 
 .forecast-card {
@@ -170,7 +170,7 @@ const formatTime = (ms) => {
     h4 {
       font-size: 14px;
       font-weight: 800;
-      color: #fff;
+      color: $white;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -196,13 +196,13 @@ const formatTime = (ms) => {
   
   .label {
     font-size: 10px;
-    color: #64748b;
+    color: $muted;
     font-weight: 600;
   }
   
   .value {
     font-size: 12px;
-    color: #fff;
+    color: $white;
     font-weight: 700;
   }
   

@@ -158,7 +158,7 @@ const closeRankedSeason = async () => {
       border: 1px solid rgba(255, 255, 255, 0.1);
       padding: 12px;
       border-radius: 12px;
-      color: #fff;
+      color: $white;
       font-size: 13px;
     }
   }
@@ -173,7 +173,7 @@ const closeRankedSeason = async () => {
   border-radius: 20px;
   h3 { color: #ef4444; margin-bottom: 10px; font-size: 10px; }
   p { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
-  .danger-btn { width: 100%; padding: 16px; background: #ef4444; color: #fff; border: none; border-radius: 12px; cursor: pointer; font-size: 9px; }
+  .danger-btn { width: 100%; padding: 16px; background: #ef4444; color: $white; border: none; border-radius: 12px; cursor: pointer; font-size: 9px; }
 }
 
 .save-btn {
@@ -182,7 +182,7 @@ const closeRankedSeason = async () => {
   background: linear-gradient(135deg, #fbbf24, #f59e0b);
   border: none;
   border-radius: 16px;
-  color: #000;
+  color: $black;
   cursor: pointer;
   font-size: 11px;
   font-weight: 800;

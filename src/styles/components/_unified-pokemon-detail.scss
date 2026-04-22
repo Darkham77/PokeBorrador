@@ -1,17 +1,15 @@
 // src/styles/components/_unified-pokemon-detail.scss
 @use "@/styles/core/tools" as *;
-
+@use "@/styles/components/pokemon-detail/core" as detail;
 
 .pdex-custom-header {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   padding: 24px 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 30; // ABOVE EVERYTHING
+  z-index: 30;
   pointer-events: none;
 
   .poke-identity {
@@ -22,7 +20,7 @@
     
     .p-id {
       background: var(--type-color);
-      color: #000;
+      color: $black;
       font-family: 'Press Start 2P', monospace;
       font-size: 8px;
       padding: 4px 8px;
@@ -33,7 +31,7 @@
     .p-name {
       font-family: 'Press Start 2P', monospace;
       font-size: 14px;
-      color: #fff;
+      color: $white;
       text-transform: uppercase;
       @include pixelated;
     }
@@ -48,7 +46,7 @@
     pointer-events: auto;
     transition: all 0.2s;
     
-    &:hover { color: #fff; transform: Rotate(90deg); }
+    &:hover { color: $white; transform: Rotate(90deg); }
   }
 }
 
@@ -58,47 +56,35 @@
   left: 50%;
   transform: TranslateX(-50%);
   width: 100%;
-  height: 300px; // Larger but softer
+  height: 300px;
   background: radial-gradient(circle at center 30%, rgba(var(--type-color-rgb), 0.2) 0%, transparent 70%);
   z-index: 1;
   pointer-events: none;
 }
 
+// Unified Display specialization
 .pdex-main-display {
-  height: 120px !important;
-  margin-bottom: 20px !important; // Positive margin to push down
-  display: flex;
-  justify-content: center;
-  align-items: flex-end; 
-  padding-bottom: 0;
-  overflow: visible !important;
-  position: relative;
-  z-index: 20; // OVER EVERYTHING
-  pointer-events: none;
+  @include detail.pokemon-main-display(
+    $height: 120px,
+    $margin-bottom: 30px, // Pushes tabs down to give room
+    $sprite-translate: -40px, // Lifts Charizard up
+    $sprite-size: 160px
+  );
+  
+  z-index: 5; 
+  overflow: visible;
 
   .sprite-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 200px;
     height: 200px;
-    position: relative;
-    background: none !important; // Remove any background glow
-    
-    .main-sprite {
-      width: 160px !important;
-      height: 160px !important;
-      position: relative;
-      z-index: 2;
-      transform: TranslateY(30px); // Pop out
-      filter: Drop-shadow(0 20px 40px rgba(0,0,0,0.6));
-    }
+    background: none !important;
   }
 }
 
 .pdex-detail-content {
   padding-top: 80px; 
   position: relative;
+  z-index: 10;
   
   &.instance-mode {
     padding-bottom: 0; 
@@ -112,38 +98,16 @@
   z-index: 5;
 }
 
-.pdex-stats-pane {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-bottom: 20px;
-}
-
-.pdex-detail-body {
-  background: #0a0c14; // Solid background to block glow
-  position: relative;
-  z-index: 10;
-  padding: 32px 32px 16px; // Reduced bottom padding
-}
-
+// Specialized components for Unified View
 .premium-tabs {
-  background: linear-gradient(180deg, rgba(10, 15, 30, 0.99) 0%, rgba(5, 10, 20, 1) 100%) !important;
-  backdrop-filter: Blur(50px) !important;
-  border-top: 1px solid rgba(255,255,255,0.15) !important;
-  padding: 4px 32px 0 !important; 
-  margin-top: -40px; // RE-PULL UP TO RESTORE ORIGINAL LOOK
+  @extend .pdex-detail-tabs;
+  margin-top: -40px; 
   position: relative;
-  z-index: 15; 
-  box-shadow: 0 -15px 40px rgba(0,0,0,0.6);
-  
-  // Block any glow from below strictly
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: #0a0c14;
-    z-index: -1;
-  }
+  z-index: 100; 
+  background: #0a0c14 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  backdrop-filter: Blur(10px) !important;
+  padding: 0 !important;
 
   .pdex-tab-btn {
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -174,7 +138,17 @@
     }
     
     &:hover:not(.active) {
-      background: rgba(255,255,255,0.05);
+      background: radial-gradient(circle at bottom, rgba(255,255,255,0.06) 0%, transparent 80%);
+      transform: TranslateY(-2px);
+      
+      .tab-icon {
+        filter: Drop-shadow(0 0 10px rgba(255,255,255,0.2));
+        opacity: 0.8;
+      }
+      
+      .tab-label {
+        opacity: 0.8;
+      }
     }
   }
 }
@@ -184,19 +158,9 @@
   @include pixelated;
 }
 
-.tag-section {
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
-
-.tags-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
+// ... existing minor styles ...
+.tag-section { margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+.tags-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .tag-badge {
   background: rgba(255,214,10,0.1);
   color: var(--yellow);
@@ -216,141 +180,193 @@
   opacity: 0.8;
 }
 
+.pdex-detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+  min-height: 0;
+  position: relative;
+  z-index: 90;
+  background: #0a0c14;
+  
+  &::-webkit-scrollbar { width: 8px; }
+  &::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+  &::-webkit-scrollbar-thumb { 
+    background: rgba(255, 255, 255, 0.1); 
+    border-radius: 4px;
+    &:hover { background: rgba(255, 255, 255, 0.15); }
+  }
+}
+
 .moves-grid-vicio {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .move-card-vicio {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.02);
   border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 14px;
+  padding: 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: rgba(255,255,255,0.08);
-    transform: TranslateX(4px);
-  }
-
-  .m-type { width: 4px; height: 24px; border-radius: 2px; }
-  .m-name { flex: 1; font-size: 11px; font-weight: bold; color: #fff; }
-  .m-pp { font-size: 10px; color: var(--gray); font-family: monospace; }
-}
-
-.stat-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
-.iv-value {
-  font-size: 10px;
-  font-weight: bold;
-}
-
-.stat-bar-group {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
-  height: 12px;
-  margin-bottom: 12px;
-}
-
-.iv-track {
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: rgba(0,0,0,0.3);
-  border-radius: 1px;
   overflow: hidden;
-}
-
-.iv-fill {
-  height: 100%;
-  border-radius: 1px;
-}
-
-.evo-sprite {
-  width: 80px;
-  height: 80px;
-  image-rendering: pixelated;
   
-  &.silhouette {
-    filter: Brightness(0) Contrast(100%);
-    opacity: 0.5;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  &:hover { 
+    background: rgba(255,255,255,0.04); 
+    border-color: rgba(255,255,255,0.15);
+    transform: TranslateY(-4px) TranslateX(2px); 
+    box-shadow: -10px 10px 30px rgba(0,0,0,0.5);
+
+    &::before { opacity: 1; }
+
+    .m-type {
+      transform: ScaleY(1.2);
+      box-shadow: 0 0 15px currentColor;
+    }
+  }
+
+  .m-type { 
+    width: 4px; 
+    height: 28px; 
+    border-radius: 4px; 
+    transition: all 0.3s ease;
+    color: inherit;
+  }
+
+  .m-name { 
+    flex: 1; 
+    font-size: 8px; 
+    font-weight: bold; 
+    color: $white;
+    letter-spacing: 0.5px;
+    @include pixelated;
+  }
+
+  .m-pp { 
+    font-size: 8px; 
+    color: var(--gray); 
+    opacity: 0.6;
+    @include pixelated;
   }
 }
 
-.sprite-wrap {
-  position: relative;
-  width: 80px;
-  height: 80px;
+.stat-total {
+  margin-top: 24px;
+  padding: 16px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 12px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-}
-
-.unknown-placeholder {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 24px;
-  color: rgba(255,255,255,0.2);
-}
-
-.evo-chain {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-  padding: 20px;
-}
-
-.evo-step {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
-  background: rgba(255,255,255,0.03);
-  padding: 20px;
-  border-radius: 24px;
   border: 1px solid rgba(255,255,255,0.05);
-}
-
-.evo-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
   
-  .method {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 7px;
-    color: var(--yellow);
-    text-transform: uppercase;
-  }
-  
-  .arrow {
-    font-size: 24px;
-    color: rgba(255,255,255,0.1);
-  }
-}
-
-.evo-from, .evo-to {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  
-  .target-name {
+  .pdex-label {
     font-family: 'Press Start 2P', monospace;
     font-size: 8px;
-    color: #fff;
+    color: var(--gray);
+    letter-spacing: 1px;
+    @include pixelated;
+  }
+  
+  .pdex-value {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    color: var(--yellow);
+    @include pixelated;
+  }
+}
+
+.moves-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+
+  th {
+    text-align: left;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: #94a3b8;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-weight: normal;
     text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  td {
+    padding: 16px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    
+    &.clickable-row {
+      cursor: pointer;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      
+      .move-name {
+        color: var(--yellow);
+        text-shadow: 0 0 10px rgba(255, 214, 10, 0.4);
+      }
+    }
+  }
+
+  .move-lv { 
+    font-size: 8px; 
+    color: var(--yellow); 
+    opacity: 0.9; 
+    text-align: center;
+    width: 50px;
+    font-weight: 900;
+  }
+
+  .move-name { 
+    font-size: 8px; 
+    color: $white; 
+    transition: all 0.3s ease;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    @include pixelated;
+  }
+  
+  .type-tag {
+    font-size: 8px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 900;
+    display: inline-block;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .move-power, .move-pp {
+    font-size: 8px;
+    color: $white;
+    text-align: center;
+    font-weight: 900;
+    @include pixelated;
   }
 }

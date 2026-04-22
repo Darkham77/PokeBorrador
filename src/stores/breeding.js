@@ -25,8 +25,14 @@ export const useBreedingStore = defineStore('breeding', () => {
   // --- STATE ---
   const slots = ref([]); // [{ pokemon, slot_index, deposited_at }]
   const warehouseEggs = ref([]); // Eggs waiting to be claimed
-  const dailyMissions = ref([]);
-  const missionRefreshes = ref(3);
+  const dailyMissions = computed({
+    get: () => gameStore.state.daycare_missions || [],
+    set: (val) => { gameStore.state.daycare_missions = val }
+  });
+  const missionRefreshes = computed({
+    get: () => gameStore.state.daycare_mission_refreshes || 0,
+    set: (val) => { gameStore.state.daycare_mission_refreshes = val }
+  });
   const loading = ref(false);
 
   // --- GETTERS ---

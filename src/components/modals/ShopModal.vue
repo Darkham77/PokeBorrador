@@ -92,6 +92,7 @@ const buy = (item) => {
               <img
                 :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
                 :alt="item.name"
+                @error="e => e.target.style.display = 'none'"
               >
               <div
                 v-if="!isUnlocked(item)"
@@ -188,7 +189,7 @@ const buy = (item) => {
       
       &:hover {
         background: rgba(255, 255, 255, 0.03);
-        color: #fff;
+        color: $white;
       }
       
       &.active {
@@ -206,7 +207,7 @@ const buy = (item) => {
     .money {
       font-size: 18px;
       font-weight: 800;
-      color: #fff;
+      color: $white;
       margin-bottom: 4px;
     }
     
@@ -310,7 +311,7 @@ const buy = (item) => {
     
     small {
       font-size: 9px;
-      color: #fff;
+      color: $white;
       margin-top: 4px;
     }
   }
@@ -321,7 +322,7 @@ const buy = (item) => {
   .name {
     font-weight: 700;
     font-size: 15px;
-    color: #fff;
+    color: $white;
     margin-bottom: 2px;
   }
   .price {

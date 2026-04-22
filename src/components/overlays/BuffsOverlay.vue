@@ -33,6 +33,7 @@ const formatTime = (secs) => {
           :src="buff.icon"
           :alt="buff.name"
           class="buff-icon"
+          @error="e => e.target.style.display = 'none'"
         >
         <div class="buff-info">
           <span class="buff-name">{{ buff.name }}</span>
@@ -66,7 +67,7 @@ const formatTime = (secs) => {
   border-radius: 12px;
   padding: 6px 10px;
   pointer-events: auto; /* Tooltip needs pointer */
-  backdrop-filter: blur(4px);
+  backdrop-filter: Blur(4px);
   box-shadow: 0 4px 6px rgba(0,0,0,0.3);
   transition: all 0.3s ease;
   cursor: help;
@@ -84,7 +85,7 @@ const formatTime = (secs) => {
   height: 24px;
   image-rendering: pixelated;
   margin-right: 8px;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+  filter: Drop-Shadow(0 2px 2px rgba(0,0,0,0.5));
 }
 
 .buff-info {
@@ -94,7 +95,7 @@ const formatTime = (secs) => {
 }
 
 .buff-name {
-  color: #fff;
+  color: $white;
   font-size: 10px;
   font-weight: 800;
   font-family: 'Press Start 2P', monospace;

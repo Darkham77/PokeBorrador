@@ -94,7 +94,7 @@ const handleClaim = (egg) => {
   margin-bottom: 24px;
   
   h3 { font-family: 'Press Start 2P', cursive; font-size: 10px; color: #a855f7; margin-bottom: 6px; }
-  p { font-size: 12px; color: #64748b; }
+  p { font-size: 12px; color: $muted; }
 }
 
 .count-badge {
@@ -109,7 +109,7 @@ const handleClaim = (egg) => {
   &.empty {
     background: rgba(148, 163, 184, 0.1);
     border-color: rgba(148, 163, 184, 0.2);
-    color: #64748b;
+    color: $muted;
   }
 }
 
@@ -169,7 +169,7 @@ const handleClaim = (egg) => {
   position: absolute;
   bottom: -4px;
   background: #a855f7;
-  color: #fff;
+  color: $white;
   font-size: 6px;
   font-family: 'Press Start 2P', cursive;
   padding: 2px 4px;
@@ -193,7 +193,7 @@ const handleClaim = (egg) => {
   left: 0;
   right: 0;
   background: #a855f7;
-  color: #fff;
+  color: $white;
   font-family: 'Press Start 2P', cursive;
   font-size: 8px;
   padding: 8px 0;

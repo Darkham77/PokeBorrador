@@ -85,7 +85,7 @@ const authStore = useAuthStore()
   .wifi-icon {
     display: inline-block;
     font-size: 48px;
-    filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.5));
+    filter: Drop-Shadow(0 0 15px rgba(239, 68, 68, 0.5));
   }
 }
 
@@ -131,8 +131,8 @@ h2 {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% { transform: Rotate(0deg); }
+  100% { transform: Rotate(360deg); }
 }
 
 .status-text {
@@ -147,7 +147,7 @@ h2 {
   font-family: 'Press Start 2P', cursive;
   @include pixelated;
   code { 
-    color: #ffd60a; 
+    color: $yellow; 
     &.offline { color: #ef4444; }
   }
 }

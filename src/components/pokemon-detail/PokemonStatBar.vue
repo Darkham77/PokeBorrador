@@ -4,7 +4,7 @@ defineProps({
   label: { type: String, required: true },
   value: { type: Number, required: true },
   max: { type: Number, default: 255 },
-  color: { type: String, default: '#fff' },
+  color: { type: String, default: '$white' },
   iv: { type: Number, default: null }
 })
 
@@ -102,7 +102,7 @@ const getStatGrade = (iv) => {
   .stat-value {
     font-family: 'Press Start 2P', monospace;
     font-size: 16px;
-    color: #fff;
+    color: $white;
     font-weight: bold;
     min-width: 50px;
     text-align: right;

@@ -56,7 +56,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 14px;
   padding: 12px;
-  color: #fff;
+  color: $white;
   font-size: 12px;
   resize: none;
   outline: none;
@@ -81,7 +81,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
   gap: 12px; 
   cursor: pointer;
   input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--purple); }
-  .toggle-label { font-size: 10px; font-family: 'Press Start 2P', monospace; color: #fff; }
+  .toggle-label { font-size: 10px; font-family: 'Press Start 2P', monospace; color: $white; }
 }
 
 .send-offer-btn {
@@ -89,7 +89,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
   background: linear-gradient(135deg, var(--purple), #8e24aa);
   border: none;
   border-radius: 14px;
-  color: #fff;
+  color: $white;
   font-family: 'Press Start 2P', monospace;
   font-size: 9px;
   font-weight: 900;

@@ -47,6 +47,7 @@ const handleLogout = () => {
             :src="getAssetUrl(ASSET_TYPES.POKEMON, 'bulbasaur')"
             alt="Bulbasaur"
             class="starter-sprite"
+            @error="e => e.target.style.display = 'none'"
           >
           <span
             id="starter-emo-bulbasaur"
@@ -81,6 +82,7 @@ const handleLogout = () => {
             :src="getAssetUrl(ASSET_TYPES.POKEMON, 'charmander')"
             alt="Charmander"
             class="starter-sprite"
+            @error="e => e.target.style.display = 'none'"
           >
           <span
             id="starter-emo-charmander"
@@ -115,6 +117,7 @@ const handleLogout = () => {
             :src="getAssetUrl(ASSET_TYPES.POKEMON, 'squirtle')"
             alt="Squirtle"
             class="starter-sprite"
+            @error="e => e.target.style.display = 'none'"
           >
           <span
             id="starter-emo-squirtle"

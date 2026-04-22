@@ -261,6 +261,11 @@ const onTransitionEnd = () => {
   background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
+  
+  // Prevent half-pixel blurring on centered modals
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-font-smoothing: none;
 
   .type-center & {
     width: 95%;
@@ -326,7 +331,7 @@ const onTransitionEnd = () => {
   z-index: 100;
   
   &:hover {
-    color: #fff;
+    color: $white;
     transform: Rotate(90deg);
   }
 }

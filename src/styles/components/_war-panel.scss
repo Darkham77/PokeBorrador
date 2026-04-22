@@ -47,7 +47,7 @@ $poder-color: #ef4444;
   }
 
   .team-label { color: $gray; font-size: 7px; font-family: $font-pixel; margin-bottom: 4px; display: block; }
-  .team-val { color: #fff; font-weight: 900; font-size: 16px; }
+  .team-val { color: $white; font-weight: 900; font-size: 16px; }
 }
 
 .war-stat-item {
@@ -67,7 +67,7 @@ $poder-color: #ef4444;
   }
 
   .war-stat-label { font-size: 9px; color: $gray; margin-bottom: 2px; display: block; }
-  .war-stat-value { font-size: 13px; font-weight: 800; color: #fff; font-family: $font-pixel; }
+  .war-stat-value { font-size: 13px; font-weight: 800; color: $white; font-family: $font-pixel; }
 }
 
 .war-grid-premium {

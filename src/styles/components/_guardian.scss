@@ -26,8 +26,8 @@
   border-radius: 8px !important;
   padding: 4px !important;
   border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: Blur(20px) !important;
+  backdrop-filter: Blur(20px) !important;
   width: auto !important;
   height: auto !important;
   box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
@@ -41,7 +41,7 @@
   min-height: 32px !important;
   object-fit: contain !important;
   image-rendering: pixelated !important;
-  filter: drop-shadow(0 0 5px rgba(255,255,255,0.4)) !important;
+  filter: Drop-Shadow(0 0 5px rgba(255,255,255,0.4)) !important;
   margin: 0 !important;
   display: block !important;
   @include gpu-layer;
@@ -52,7 +52,7 @@
   display: block !important;
   font-size: 8px !important;
   font-weight: 900 !important;
-  color: #fff !important;
+  color: $white !important;
   text-transform: uppercase !important;
   background: #ff3e3e !important; /* Red for pending */
   padding: 2px 5px !important;

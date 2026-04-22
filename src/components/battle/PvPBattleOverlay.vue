@@ -170,7 +170,7 @@ const handleMoveSelection = (moveIdx) => {
   position: fixed;
   inset: 0;
   z-index: 500;
-  background: #000;
+  background: $black;
   display: flex;
   padding: 20px;
   gap: 20px;
@@ -192,7 +192,7 @@ const handleMoveSelection = (moveIdx) => {
 
 .card-glass {
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
+  backdrop-filter: Blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 24px;
 }
@@ -243,7 +243,7 @@ const handleMoveSelection = (moveIdx) => {
   .name {
     font-size: 16px;
     font-weight: bold;
-    color: #fff;
+    color: $white;
   }
 
   .elo {
@@ -263,7 +263,7 @@ const handleMoveSelection = (moveIdx) => {
   padding: 10px 20px;
   border-radius: 20px;
   border: 1px solid var(--blue);
-  color: #fff;
+  color: $white;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -279,13 +279,13 @@ const handleMoveSelection = (moveIdx) => {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+  backdrop-filter: Blur(4px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 20px;
-  color: #fff;
+  color: $white;
   z-index: 20;
 
   span { font-size: 10px; }
@@ -315,7 +315,7 @@ const handleMoveSelection = (moveIdx) => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to { transform: Rotate(360deg); }
 }
 
 .pulse-loader {

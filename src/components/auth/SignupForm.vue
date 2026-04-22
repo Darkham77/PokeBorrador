@@ -60,7 +60,7 @@ const handleSignup = () => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 16px 20px;
   border-radius: 14px;
-  color: #fff;
+  color: $white;
   font-family: 'Nunito', sans-serif;
   font-size: 16px;
   outline: none;
@@ -70,12 +70,12 @@ const handleSignup = () => {
 }
 
 .auth-input:focus {
-  border-color: #ffd60a;
+  border-color: $yellow;
 }
 
 .auth-btn {
-  background: #ffd60a;
-  color: #000;
+  background: $yellow;
+  color: $black;
   border: none;
   padding: 18px;
   border-radius: 14px;

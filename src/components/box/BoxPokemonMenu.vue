@@ -135,6 +135,7 @@ const handleToggleTag = (tag) => {
         <img
           :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny })"
           class="menu-sprite"
+          @error="e => e.target.style.display = 'none'"
         >
         <h3 class="pokemon-name">
           {{ pokemon.name }} {{ pokemon.isShiny ? '✨' : '' }}
@@ -200,6 +201,7 @@ const handleToggleTag = (tag) => {
             <img
               :src="getAssetUrl(ASSET_TYPES.POKEMON, t.id, { isShiny: t.isShiny })"
               class="team-sprite"
+              @error="e => e.target.style.display = 'none'"
             >
             <div class="team-info">
               <div class="name">
@@ -261,8 +263,8 @@ const handleToggleTag = (tag) => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -301,7 +303,7 @@ const handleToggleTag = (tag) => {
     width: 80px;
     height: 80px;
     image-rendering: pixelated;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    filter: Drop-Shadow(0 4px 8px rgba(0,0,0,0.4));
   }
 
   .pokemon-name {
@@ -339,7 +341,7 @@ const handleToggleTag = (tag) => {
       &.active {
         background: rgba(199, 125, 255, 0.2);
         border-color: var(--purple);
-        color: #fff;
+        color: $white;
         transform: Scale(1.1);
       }
       &:hover { background: rgba(255, 255, 255, 0.1); }
@@ -370,7 +372,7 @@ const handleToggleTag = (tag) => {
   gap: 12px;
   transition: all 0.2s;
   background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  color: $white;
   border: 1px solid rgba(255, 255, 255, 0.08);
 
   .icon { font-size: 16px; width: 20px; text-align: center; }
@@ -417,7 +419,7 @@ const handleToggleTag = (tag) => {
   .team-sprite { width: 36px; height: 36px; image-rendering: pixelated; }
   .team-info {
     flex: 1;
-    .name { font-size: 13px; font-weight: 700; color: #fff; }
+    .name { font-size: 13px; font-weight: 700; color: $white; }
     .lv { font-size: 11px; color: var(--gray); }
   }
   .swap-icon { font-size: 14px; color: var(--purple); opacity: 0.6; }
@@ -438,7 +440,7 @@ const handleToggleTag = (tag) => {
     font-family: 'Press Start 2P', monospace;
     font-size: 9px;
     cursor: pointer;
-    &:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+    &:hover { background: rgba(255, 255, 255, 0.05); color: $white; }
   }
 }
 

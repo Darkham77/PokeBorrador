@@ -145,7 +145,7 @@ onMounted(() => {
 .direct-chat-window {
   width: 280px;
   background: rgba(13, 17, 23, 0.95);
-  backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
   border: 1px solid rgba(199, 125, 255, 0.2);
   border-radius: 12px 12px 0 0;
   display: flex;
@@ -178,16 +178,16 @@ onMounted(() => {
   .unread-dot {
     width: 8px;
     height: 8px;
-    background: #fff;
+    background: $white;
     border-radius: 50%;
-    box-shadow: 0 0 10px #fff;
+    box-shadow: 0 0 10px $white;
     animation: pulse 1.5s infinite;
   }
 
   .title {
     font-family: 'Press Start 2P', cursive;
     font-size: 7px;
-    color: #fff;
+    color: $white;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
@@ -199,7 +199,7 @@ onMounted(() => {
   .header-btn {
     background: rgba(0, 0, 0, 0.1);
     border: none;
-    color: #fff;
+    color: $white;
     width: 24px;
     height: 24px;
     border-radius: 6px;
@@ -228,7 +228,7 @@ onMounted(() => {
 
 .chat-start-hint {
   font-size: 9px;
-  color: #64748b;
+  color: $muted;
   text-align: center;
   margin-bottom: 5px;
   font-style: italic;
@@ -281,7 +281,7 @@ onMounted(() => {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 8px 10px;
-    color: #fff;
+    color: $white;
     font-size: 12px;
     outline: none;
 
@@ -294,7 +294,7 @@ onMounted(() => {
     border-radius: 8px;
     width: 32px;
     height: 32px;
-    color: #fff;
+    color: $white;
     cursor: pointer;
     display: flex;
     align-items: center;

@@ -63,6 +63,7 @@ const getHpColor = (p) => {
             <img
               :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
               :alt="p.name"
+              @error="e => e.target.style.display = 'none'"
             >
           </div>
           
@@ -166,7 +167,7 @@ const getHpColor = (p) => {
     align-items: center;
     gap: 8px;
     margin-bottom: 6px;
-    .p-name { font-weight: 700; font-size: 14px; color: #fff; }
+    .p-name { font-weight: 700; font-size: 14px; color: $white; }
     .p-lv { font-size: 10px; color: var(--gray); font-family: 'Press Start 2P', monospace; }
   }
 

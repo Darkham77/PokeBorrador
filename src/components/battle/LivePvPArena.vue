@@ -66,6 +66,7 @@ function handleForfeit() {
             <img
               :src="getAssetUrl(ASSET_TYPES.TRAINER, playerAvatarId)"
               class="trainer-img"
+              @error="e => e.target.style.display = 'none'"
             >
           </div>
           <div class="trainer-meta">
@@ -196,6 +197,7 @@ function handleForfeit() {
             <img
               :src="getAssetUrl(ASSET_TYPES.TRAINER, opponentAvatarId)"
               class="trainer-img"
+              @error="e => e.target.style.display = 'none'"
             >
           </div>
           <div class="trainer-meta">
@@ -266,7 +268,7 @@ function handleForfeit() {
 .trainer-img {
   max-height: 250px;
   transform: Scale(1.5);
-  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+  filter: Drop-Shadow(0 10px 20px rgba(0,0,0,0.5));
 }
 
 .trainer-meta {
@@ -276,7 +278,7 @@ function handleForfeit() {
 .trainer-meta .name {
   font-family: 'Press Start 2P', monospace;
   font-size: 11px;
-  color: #fff;
+  color: $white;
   display: block;
   margin-bottom: 10px;
 }
@@ -335,7 +337,7 @@ function handleForfeit() {
   border-radius: 12px;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
-  color: #fff;
+  color: $white;
   display: flex;
   flex-direction: column;
   align-items: center;

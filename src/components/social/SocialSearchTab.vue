@@ -84,7 +84,7 @@ async function handleSearch() {
     border: 1px solid rgba(199, 125, 255, 0.2);
     border-radius: 12px;
     padding: 12px 16px;
-    color: #fff;
+    color: $white;
     font-size: 14px;
     outline: none;
 
@@ -122,8 +122,8 @@ async function handleSearch() {
 
   .player-info {
     flex: 1;
-    .name { font-weight: 700; color: #fff; }
-    .meta { font-size: 11px; color: #64748b; }
+    .name { font-weight: 700; color: $white; }
+    .meta { font-size: 11px; color: $muted; }
   }
 }
 
@@ -138,7 +138,7 @@ async function handleSearch() {
   cursor: pointer;
   transition: all 0.2s;
 
-  &:hover { background: var(--purple); color: #fff; }
+  &:hover { background: var(--purple); color: $white; }
 }
 
 .status-badge {
@@ -151,5 +151,5 @@ async function handleSearch() {
   &.friend { background: rgba(34, 197, 94, 0.1); color: #4ade80; }
 }
 
-@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+@keyframes spin { to { transform: translateY(-50%) Rotate(360deg); } }
 </style>

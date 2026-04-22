@@ -23,10 +23,11 @@ defineEmits(['click'])
     <div class="sprite-container">
       <template v-if="p.isSeen">
         <img 
-          :src="p.spriteUrl" 
-          :alt="p.name"
+          :src="p.spriteUrl"
+          :alt="p.name" 
           class="pokemon-sprite"
           :class="{ 'silhouette': !p.isCaught }"
+          @error="e => e.target.style.display = 'none'"
         >
       </template>
       <div

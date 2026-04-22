@@ -85,8 +85,8 @@ const p = computed(() => props.pokemon)
 .move-pp { display: block; margin-top: 10px; font-size: 10px; color: #888; font-weight: bold; }
 
 /* Type Colors Utility (Normally in generic file, but scoped for safety here) */
-.type-grass { background: #6BCB77; color: #fff; }
-.type-fire { background: #FF3B3B; color: #fff; }
-.type-water { background: #3B8BFF; color: #fff; }
+.type-grass { background: #6BCB77; color: $white; }
+.type-fire { background: #FF3B3B; color: $white; }
+.type-water { background: #3B8BFF; color: $white; }
 /* ... (Add other types as needed or rely on global classes if available) */
 </style>

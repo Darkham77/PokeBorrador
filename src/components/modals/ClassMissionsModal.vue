@@ -163,7 +163,7 @@ const isMissionDone = computed(() => {
 .class-modal-shell {
   min-height: 600px;
   background: transparent;
-  color: #fff;
+  color: $white;
 }
 
 .fade-quick-enter-active, .fade-quick-leave-active {

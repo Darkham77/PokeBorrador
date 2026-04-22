@@ -63,8 +63,8 @@ const tradeStore = useTradeStore()
 .info-label {
   font-family: 'Press Start 2P', monospace;
   font-size: 9px;
-  color: #fff;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  color: $white;
+  text-shadow: 1px 1px 0 $black, -1px -1px 0 $black, 1px -1px 0 $black, -1px 1px 0 $black;
   margin-bottom: 12px;
 }
 
@@ -73,7 +73,7 @@ const tradeStore = useTradeStore()
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 10px;
-  border-left: 4px solid #64748b;
+  border-left: 4px solid $muted;
   
   &.accepted { border-left-color: #22c55e; }
   &.pending { border-left-color: #facc15; }
@@ -82,7 +82,7 @@ const tradeStore = useTradeStore()
 .notif-header {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
-  color: #fff;
+  color: $white;
   margin-bottom: 12px;
 }
 
@@ -100,8 +100,8 @@ const tradeStore = useTradeStore()
   font-size: 6px;
   cursor: pointer;
   
-  &.accept { background: #22c55e; color: #fff; }
-  &.reject { background: #ef4444; color: #fff; }
+  &.accept { background: #22c55e; color: $white; }
+  &.reject { background: #ef4444; color: $white; }
 }
 
 .notif-action-btn {
@@ -110,7 +110,7 @@ const tradeStore = useTradeStore()
   border: none;
   border-radius: 8px;
   padding: 10px;
-  color: #fff;
+  color: $white;
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   cursor: pointer;

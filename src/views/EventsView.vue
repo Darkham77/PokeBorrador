@@ -162,7 +162,7 @@ const openParticipationModal = (event) => {
   height: 100%;
   padding: 25px;
   background: #0d1117;
-  color: #fff;
+  color: $white;
   overflow-y: auto;
   min-height: 0;
 }
@@ -183,14 +183,14 @@ const openParticipationModal = (event) => {
     gap: 15px;
   }
 
-  .icon { font-size: 32px; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4)); }
+  .icon { font-size: 32px; filter: Drop-Shadow(0 0 10px rgba(255, 215, 0, 0.4)); }
 
   h1 {
     font-family: 'Press Start 2P', monospace;
     font-size: 14px;
     color: #ffd700;
     margin: 0 0 8px 0;
-    text-shadow: 0 2px 0 #000;
+    text-shadow: 0 2px 0 $black;
   }
   p { font-size: 10px; color: #888; margin: 0; }
 }
@@ -202,7 +202,7 @@ const openParticipationModal = (event) => {
   border-radius: 8px;
   border: 2px solid rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.05);
-  color: #fff;
+  color: $white;
   cursor: pointer;
   transition: all 0.2s;
 
@@ -212,8 +212,8 @@ const openParticipationModal = (event) => {
     border-color: rgba(255,255,255,0.2);
   }
 
-  &.claim { background: #22c55e; border-color: #4ade80; color: #fff; }
-  &.action { background: #ffd700; border-color: #fff; color: #000; text-shadow: none; }
+  &.claim { background: #22c55e; border-color: #4ade80; color: $white; }
+  &.action { background: #ffd700; border-color: $white; color: $black; text-shadow: none; }
 }
 
 /* REWARD BOX */
@@ -262,7 +262,7 @@ const openParticipationModal = (event) => {
 }
 
 .event-card {
-  background: #1c2128;
+  background: $card-dark;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 16px;
   overflow: hidden;
@@ -273,7 +273,7 @@ const openParticipationModal = (event) => {
 
   .banner-box {
     height: 150px;
-    background: #000;
+    background: $black;
     img { width: 100%; height: 100%; object-fit: cover; }
   }
 
@@ -314,7 +314,7 @@ const openParticipationModal = (event) => {
     align-items: flex-end;
 
     .timer-box {
-      .label { display: block; font-size: 8px; color: #64748b; margin-bottom: 5px; }
+      .label { display: block; font-size: 8px; color: $muted; margin-bottom: 5px; }
       .value { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #f87171; }
     }
     

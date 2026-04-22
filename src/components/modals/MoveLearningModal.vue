@@ -119,8 +119,8 @@ const handleForget = () => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.92);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -132,7 +132,7 @@ const handleForget = () => {
 .learning-card {
   width: 100%;
   max-width: 420px;
-  background: #0a0a0a;
+  background: $dark;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 28px;
   padding: 24px;
@@ -147,7 +147,7 @@ const handleForget = () => {
     display: inline-block;
     padding: 4px 12px;
     background: var(--yellow);
-    color: #000;
+    color: $black;
     font-family: 'Press Start 2P', cursive;
     font-size: 8px;
     border-radius: 8px;
@@ -157,7 +157,7 @@ const handleForget = () => {
   h2 {
     font-family: 'Press Start 2P', cursive;
     font-size: 14px;
-    color: #fff;
+    color: $white;
     margin: 0 0 12px 0;
   }
 
@@ -221,14 +221,14 @@ const handleForget = () => {
     align-items: center;
     margin-bottom: 6px;
 
-    .move-name { font-size: 15px; font-weight: 800; color: #fff; }
+    .move-name { font-size: 15px; font-weight: 800; color: $white; }
     .move-type-tag {
       font-size: 9px;
       font-weight: 800;
       padding: 2px 8px;
       border-radius: 6px;
       background: var(--move-color);
-      color: #fff;
+      color: $white;
     }
   }
 

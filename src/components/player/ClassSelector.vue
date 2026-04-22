@@ -137,8 +137,8 @@ const select = (id) => {
   padding: 40px 16px;
   overflow-y: auto;
   min-height: 0;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
   animation: fadeIn 0.3s ease;
   transform: translateZ(0);
 }
@@ -191,7 +191,7 @@ const select = (id) => {
   top: 16px;
   right: 16px;
   background: var(--class-color);
-  color: #fff;
+  color: $white;
   font-size: 10px;
   padding: 4px 10px;
   border-radius: 8px;
@@ -243,7 +243,7 @@ h3 { text-align: center; margin-bottom: 12px; font-size: 14px; }
   padding: 16px;
   border: none;
   border-radius: 16px;
-  color: #fff;
+  color: $white;
   font-size: 10px;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -266,7 +266,7 @@ h3 { text-align: center; margin-bottom: 12px; font-size: 14px; }
     border-radius: 12px;
     cursor: pointer;
     font-size: 14px;
-    &:hover { color: #fff; background: rgba(255, 255, 255, 0.12); }
+    &:hover { color: $white; background: rgba(255, 255, 255, 0.12); }
   }
 }
 

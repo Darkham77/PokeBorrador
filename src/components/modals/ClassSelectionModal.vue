@@ -56,8 +56,9 @@ const getTrainerSprite = (id) => {
           <div class="avatar-circle-wrap">
             <div class="avatar-circle">
               <img 
-                :src="getTrainerSprite(cls.showdownSpriteId || cls.id)" 
-                class="trainer-pixel-art"
+                :src="getTrainerSprite(cls.showdownSpriteId || cls.id)"
+                class="trainer-pixel-art" 
+                @error="e => e.target.style.display = 'none'"
               >
             </div>
           </div>
@@ -147,7 +148,7 @@ const getTrainerSprite = (id) => {
 .class-card-premium {
   position: relative;
   background: rgba(30, 41, 59, 0.4);
-  backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 32px 20px;
@@ -279,7 +280,7 @@ const getTrainerSprite = (id) => {
   width: 100%;
   padding: 16px;
   background: var(--cls-color);
-  color: #fff;
+  color: $white;
   border: none;
   border-radius: 12px;
   font-family: 'Press Start 2P', cursive;

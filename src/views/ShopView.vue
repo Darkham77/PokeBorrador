@@ -136,6 +136,7 @@ onMounted(() => {
             v-if="item.sprite"
             :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
             class="pixel-sprite"
+            @error="e => e.target.style.display = 'none'"
           >
           <span
             v-else
@@ -244,8 +245,8 @@ onMounted(() => {
   margin-bottom: 25px;
 
   .rank-txt { font-size: 11px; color: #a855f7; margin-right: 15px; }
-  .rank-name { color: #fff; text-shadow: 0 0 10px rgba(168, 85, 247, 0.4); }
-  .rank-hint { font-size: 10px; color: #64748b; }
+  .rank-name { color: $white; text-shadow: 0 0 10px rgba(168, 85, 247, 0.4); }
+  .rank-hint { font-size: 10px; color: $muted; }
 }
 
 /* MONEY COUNTERS */
@@ -261,7 +262,7 @@ onMounted(() => {
     align-items: center;
     gap: 8px;
 
-    .label { font-size: 9px; color: #64748b; font-weight: bold; }
+    .label { font-size: 9px; color: $muted; font-weight: bold; }
     .value { 
       font-family: 'Press Start 2P', monospace; 
       font-size: 12px; 
@@ -289,15 +290,15 @@ onMounted(() => {
   padding: 12px;
   border: none;
   background: transparent;
-  color: #64748b;
+  color: $muted;
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
   cursor: pointer;
   transition: all 0.2s;
   border-radius: 8px;
 
-  &:hover { background: rgba(255,255,255,0.05); color: #fff; }
-  &.active { background: #a855f7; color: #fff; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
+  &:hover { background: rgba(255,255,255,0.05); color: $white; }
+  &.active { background: #a855f7; color: $white; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
 }
 
 /* SEARCH */
@@ -308,7 +309,7 @@ onMounted(() => {
   border: 2px solid rgba(255,255,255,0.1);
   border-radius: 12px;
   padding: 14px 20px;
-  color: #fff;
+  color: $white;
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   outline: none;
@@ -324,7 +325,7 @@ onMounted(() => {
 }
 
 .item-card-legacy {
-  background: #1c2128;
+  background: $card-dark;
   border-radius: 16px;
   padding: 20px;
   border: 2px solid rgba(255,255,255,0.06);
@@ -357,7 +358,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     margin-bottom: 15px;
-    .pixel-sprite { width: 42px; height: 42px; image-rendering: pixelated; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+    .pixel-sprite { width: 42px; height: 42px; image-rendering: pixelated; filter: Drop-Shadow(0 2px 5px rgba(0,0,0,0.5)); }
     .item-emoji { font-size: 36px; }
   }
 
@@ -366,7 +367,7 @@ onMounted(() => {
     font-size: 8px;
     text-align: center;
     margin-bottom: 10px;
-    color: #fff;
+    color: $white;
     line-height: 1.4;
   }
 
@@ -396,14 +397,14 @@ onMounted(() => {
     gap: 10px;
     margin-bottom: 12px;
     font-size: 10px;
-    label { font-weight: bold; color: #64748b; }
+    label { font-weight: bold; color: $muted; }
     .qty-input {
       width: 60px;
       background: rgba(0,0,0,0.3);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 8px;
       padding: 5px;
-      color: #fff;
+      color: $white;
       text-align: center;
       outline: none;
     }
@@ -423,7 +424,7 @@ onMounted(() => {
     border: none;
     border-radius: 12px;
     background: linear-gradient(135deg, #ffd700, #f59e0b);
-    color: #000;
+    color: $black;
     font-family: 'Press Start 2P', monospace;
     font-size: 8px;
     font-weight: bold;
@@ -431,7 +432,7 @@ onMounted(() => {
     transition: all 0.2s;
 
     &:hover:not(:disabled) { transform: Scale(1.03); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
-    &:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+    &:disabled { background: #334155; color: $muted; cursor: not-allowed; }
   }
 }
 

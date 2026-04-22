@@ -103,6 +103,7 @@ const onUseItem = (name) => {
                 :src="getItemSpriteUrl(item.name)"
                 :alt="item.name"
                 class="item-sprite"
+                @error="e => e.target.style.display = 'none'"
               >
               <span class="item-qty">x{{ item.qty }}</span>
             </div>
@@ -197,7 +198,7 @@ const onUseItem = (name) => {
 .title-section h1 {
   font-family: 'Press Start 2P', monospace;
   font-size: 16px;
-  color: #fff;
+  color: $white;
   margin: 0;
 }
 
@@ -225,7 +226,7 @@ const onUseItem = (name) => {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  color: #fff;
+  color: $white;
   outline: none;
 }
 
@@ -250,7 +251,7 @@ const onUseItem = (name) => {
 
 .tab-btn.active {
   background: var(--purple);
-  color: #fff;
+  color: $white;
   border-color: var(--purple-light);
 }
 
@@ -302,7 +303,7 @@ const onUseItem = (name) => {
   bottom: -4px;
   right: -4px;
   background: var(--purple);
-  color: #fff;
+  color: $white;
   font-size: 9px;
   padding: 2px 6px;
   border-radius: 6px;
@@ -313,7 +314,7 @@ const onUseItem = (name) => {
   font-size: 12px;
   font-weight: bold;
   text-align: center;
-  color: #fff;
+  color: $white;
 }
 
 .use-btn {
@@ -321,7 +322,7 @@ const onUseItem = (name) => {
   border-radius: 8px;
   border: none;
   background: var(--purple);
-  color: #fff;
+  color: $white;
   font-size: 10px;
   font-weight: bold;
   cursor: pointer;
@@ -348,8 +349,8 @@ const onUseItem = (name) => {
   cursor: pointer;
 }
 
-.btn-green { background: #10b981; color: #fff; }
-.btn-gray { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.btn-green { background: #10b981; color: $white; }
+.btn-gray { background: rgba(255, 255, 255, 0.1); color: $white; }
 
 .btn-sell-mode {
   width: 100%;
@@ -357,7 +358,7 @@ const onUseItem = (name) => {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  color: $white;
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
   cursor: pointer;
@@ -374,7 +375,7 @@ const onUseItem = (name) => {
   width: 40px;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: $white;
   text-align: center;
   border-radius: 4px;
 }
@@ -382,7 +383,7 @@ const onUseItem = (name) => {
 .sell-qty-selector button {
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  color: #fff;
+  color: $white;
   width: 24px;
   height: 24px;
   border-radius: 4px;

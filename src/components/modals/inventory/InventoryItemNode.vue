@@ -25,6 +25,7 @@ defineEmits(['click'])
         :alt="item.name"
         class="item-sprite"
         onerror="this.style.display='none'"
+        @error="e => e.target.style.display = 'none'"
       >
       <span
         v-if="!item.sprite"
@@ -97,7 +98,7 @@ defineEmits(['click'])
       bottom: -4px;
       right: -4px;
       background: var(--yellow);
-      color: #000;
+      color: $black;
       font-size: 9px;
       font-family: 'Press Start 2P', cursive;
       padding: 2px 6px;
@@ -109,7 +110,7 @@ defineEmits(['click'])
   .item-info {
     flex: 1;
     .item-name { font-weight: 800; font-size: 15px; color: #f1f5f9; margin-bottom: 4px; }
-    .item-desc { font-size: 11px; color: #64748b; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .item-desc { font-size: 11px; color: $muted; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   }
 
   .selection-indicator {
@@ -126,7 +127,7 @@ defineEmits(['click'])
       &.checked {
         background: var(--yellow);
         border-color: var(--yellow);
-        span { color: #000; font-weight: 900; }
+        span { color: $black; font-weight: 900; }
       }
     }
   }

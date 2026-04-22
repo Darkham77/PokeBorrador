@@ -21,7 +21,7 @@ except ImportError:
 # Regex to find lowercase filter/transform functions that collide with SASS built-ins
 # We specifically look for lowercase versions. Capitalized versions (Scale, Grayscale) are SAFE.
 # We exclude names prefixed by a dot (e.g., color.scale) to avoid false positives with built-in modules.
-FILTER_COLLISION_REGEX = re.compile(r'(?<![a-zA-Z-\.\$])(?:scale|grayscale|invert|opacity|brightness)\(')
+FILTER_COLLISION_REGEX = re.compile(r'(?<![a-zA-Z-\.\$])(?:scale|grayscale|invert|opacity|brightness|blur|rotate|translate|saturate|drop-shadow)\(')
 
 # Regex to find filter: ... opacity() which is inefficient compared to opacity: property
 OPACITY_FILTER_PROPERTY_REGEX = re.compile(r'filter:.*(?:opacity|Opacity)\(')

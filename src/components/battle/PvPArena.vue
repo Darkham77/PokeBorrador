@@ -229,7 +229,7 @@ const handleSwitch = () => {
   
   &.switch {
     background: #334155;
-    color: #fff;
+    color: $white;
   }
   
   &.forfeit {

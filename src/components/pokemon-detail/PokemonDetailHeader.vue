@@ -26,6 +26,7 @@ const getSprite = (id, isShiny) => {
           :src="getSprite(p.id, p.isShiny)"
           :alt="p.name"
           class="main-sprite"
+          @error="e => e.target.style.display = 'none'"
         >
         <span
           v-if="p.isShiny"
@@ -120,7 +121,7 @@ const getSprite = (id, isShiny) => {
   top: -8px;
   right: -8px;
   font-size: 20px;
-  filter: drop-shadow(0 0 5px gold);
+  filter: Drop-Shadow(0 0 5px gold);
 }
 
 .poke-name {
@@ -137,7 +138,7 @@ const getSprite = (id, isShiny) => {
   margin-bottom: 12px;
 }
 
-.level-badge { font-weight: bold; color: #fff; font-size: 12px; }
+.level-badge { font-weight: bold; color: $white; font-size: 12px; }
 .id-badge { color: rgba(255,255,255,0.3); font-size: 11px; font-weight: bold; }
 
 .tags-row {
@@ -159,7 +160,7 @@ const getSprite = (id, isShiny) => {
 .tag-btn.active {
   background: rgba(255, 215, 0, 0.2);
   border-color: gold;
-  color: #fff;
+  color: $white;
   filter: grayScale(100%);
 }
 
@@ -169,7 +170,7 @@ const getSprite = (id, isShiny) => {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  color: #fff;
+  color: $white;
   cursor: pointer;
   font-size: 20px;
   transition: all 0.2s;

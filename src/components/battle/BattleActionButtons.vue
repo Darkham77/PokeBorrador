@@ -63,7 +63,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 14px;
   padding: 15px;
-  color: #fff;
+  color: $white;
   font-family: 'Press Start 2P', monospace;
   font-size: 9px;
   cursor: pointer;
@@ -79,7 +79,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   width: 80px;
   height: 80px;
   border-radius: 50% !important;
-  background: #fff !important;
+  background: $white !important;
   position: relative;
   border: 4px solid #333 !important;
   box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 -4px 0 rgba(0,0,0,0.1) !important;
@@ -105,18 +105,18 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: Translate(-50%, -50%);
   width: 24px;
   height: 24px;
-  background: #fff;
+  background: $white;
   border: 4px solid #333;
   border-radius: 50%;
   z-index: 10;
-  box-shadow: 0 0 0 4px #fff, 0 0 15px rgba(0,0,0,0.2);
+  box-shadow: 0 0 0 4px $white, 0 0 15px rgba(0,0,0,0.2);
 }
 
 .btn-catch-ball:hover {
-  transform: #{"Scale(1.15)"} rotate(15deg);
+  transform: #{"Scale(1.15)"} Rotate(15deg);
   box-shadow: 0 15px 30px rgba(0,0,0,0.5);
 }
 

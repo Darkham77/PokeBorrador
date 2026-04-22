@@ -84,7 +84,7 @@
   left: 50%;
   transform: translateX(-50%);
   background: rgba(18, 18, 20, 0.95);
-  backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   padding: 8px 16px;
@@ -92,7 +92,7 @@
   gap: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   z-index: var(--z-navigation);
-  -webkit-backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
   transform: translateX(-50%) translateZ(0);
 }
 

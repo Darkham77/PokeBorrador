@@ -66,6 +66,7 @@ const leaderSpriteUrl = computed(() => {
             :src="leaderSpriteUrl"
             :alt="gym.name"
             class="pixel-sprite"
+            @error="e => e.target.style.display = 'none'"
           >
         </div>
       </div>
@@ -126,7 +127,7 @@ const leaderSpriteUrl = computed(() => {
 @use "sass:string";
 
 .gym-card-legacy {
-  background: #1c2128;
+  background: $card-dark;
   border-radius: 20px;
   overflow: hidden;
   border: 2px solid rgba(255, 255, 255, 0.05);
@@ -195,7 +196,7 @@ const leaderSpriteUrl = computed(() => {
 
   .type-badge {
     background: var(--gym-color);
-    color: #fff;
+    color: $white;
     font-size: 9px;
     padding: 3px 10px;
     border-radius: 10px;
@@ -216,7 +217,7 @@ const leaderSpriteUrl = computed(() => {
     height: 90px;
     width: auto;
     image-rendering: pixelated;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+    filter: Drop-Shadow(0 2px 8px rgba(0,0,0,0.5));
   }
 }
 
@@ -283,7 +284,7 @@ const leaderSpriteUrl = computed(() => {
   &.active {
     border-color: var(--gym-color);
     background: rgba(var(--gym-color), 0.2);
-    color: #fff;
+    color: $white;
     
     &.easy { color: #22c55e; }
     &.normal { color: #ffd700; }
@@ -297,7 +298,7 @@ const leaderSpriteUrl = computed(() => {
   border-radius: 20px;
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
-  color: #fff;
+  color: $white;
   font-weight: 900;
   cursor: pointer;
   transition: all 0.2s;

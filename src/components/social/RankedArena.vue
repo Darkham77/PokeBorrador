@@ -70,6 +70,7 @@ function startSearch() {
               :src="getRankIcon(pvp.eloTier.id)"
               :alt="pvp.eloTier.name"
               class="tier-image"
+              @error="e => e.target.style.display = 'none'"
             >
           </div>
           <div class="tier-info">
@@ -231,7 +232,7 @@ function startSearch() {
   inset: 0;
   z-index: 10;
   background: rgba(0,0,0,0.8);
-  backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -244,7 +245,7 @@ function startSearch() {
 }
 
 .lock-card .icon { font-size: 48px; display: block; margin-bottom: 20px; }
-.lock-card h3 { font-family: 'Press Start 2P', monospace; font-size: 12px; color: #fff; margin-bottom: 15px; }
+.lock-card h3 { font-family: 'Press Start 2P', monospace; font-size: 12px; color: $white; margin-bottom: 15px; }
 .lock-card p { font-size: 12px; color: #888; line-height: 1.5; }
 
 .arena-main {
@@ -278,7 +279,7 @@ function startSearch() {
   align-items: center;
   justify-content: center;
   position: relative;
-  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.2));
+  filter: Drop-Shadow(0 0 15px rgba(255, 215, 0, 0.2));
   animation: float 4s ease-in-out infinite;
 }
 
@@ -327,7 +328,7 @@ function startSearch() {
 .stat-item .lab { font-size: 10px; color: #666; font-weight: bold; }
 
 .passive-defense {
-  background: #000;
+  background: $black;
   padding: 20px;
   border-radius: 20px;
   border: 1px solid #333;
@@ -357,13 +358,13 @@ function startSearch() {
 
 .toggle-btn.active {
   background: #30D158;
-  color: #000;
+  color: $black;
   box-shadow: 0 0 15px rgba(48, 209, 88, 0.4);
 }
 
 .def-status { font-size: 10px; padding: 10px; border-radius: 10px; text-align: center; font-weight: bold; }
 .def-status.active { background: rgba(48, 209, 88, 0.1); color: #30D158; }
-.def-status.inactive { background: rgba(255, 69, 58, 0.1); color: #FF453A; }
+.def-status.inactive { background: rgba(255, 69, 58, 0.1); color: $red; }
 
 .milestone-track .header-with-timer {
   display: flex;
@@ -375,7 +376,7 @@ function startSearch() {
 .season-timer {
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
-  color: var(--yellow, #FFD60A);
+  color: var(--yellow, $yellow);
   background: rgba(255, 214, 10, 0.1);
   padding: 4px 8px;
   border-radius: 6px;
@@ -409,7 +410,7 @@ function startSearch() {
 .m-prize { font-weight: 600; font-size: 13px; }
 
 .claim-btn {
-  background: var(--blue, #0A84FF);
+  background: var(--blue, $blue);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -471,7 +472,7 @@ function startSearch() {
   padding: 16px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, #0A84FF, #0056b3);
+  background: linear-gradient(135deg, $blue, #0056b3);
   color: white;
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;

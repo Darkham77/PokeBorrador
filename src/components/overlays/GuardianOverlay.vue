@@ -114,7 +114,7 @@ h3 {
   background: linear-gradient(135deg, #fbbf24, #f59e0b);
   border: none;
   border-radius: 16px;
-  color: #000;
+  color: $black;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
 

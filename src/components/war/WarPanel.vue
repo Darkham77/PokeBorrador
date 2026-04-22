@@ -52,6 +52,7 @@ const getFactionIcon = (faction) => {
               <img
                 :src="getFactionIcon('union')"
                 class="faction-icon"
+                @error="e => e.target.style.display = 'none'"
               >
               <span>TEAM UNIÓN</span>
               <span class="points">{{ dominance.union }} Puntos</span>
@@ -62,6 +63,7 @@ const getFactionIcon = (faction) => {
               <img
                 :src="getFactionIcon('poder')"
                 class="faction-icon"
+                @error="e => e.target.style.display = 'none'"
               >
             </div>
           </div>
@@ -117,8 +119,8 @@ const getFactionIcon = (faction) => {
   inset: 0;
   z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;

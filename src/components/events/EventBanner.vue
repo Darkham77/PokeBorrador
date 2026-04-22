@@ -60,7 +60,7 @@ const activeDisplayEvents = computed(() => {
 .event-banner {
   position: relative;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
   border-left: 4px solid var(--event-color);
   padding: 12px 20px;
   border-radius: 0 12px 12px 0;
@@ -90,7 +90,7 @@ const activeDisplayEvents = computed(() => {
     
     .icon {
       font-size: 1.5rem;
-      filter: drop-shadow(0 0 5px var(--event-color));
+      filter: Drop-Shadow(0 0 5px var(--event-color));
       animation: pulse 2s infinite;
     }
     

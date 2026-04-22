@@ -57,17 +57,17 @@ const weatherEmoji = computed(() => {
 
 const atmosphereStyles = computed(() => {
   const filters = {
-    morning: 'Brightness(0.6) contrast(1.2) saturate(1.2) hue-rotate(-15deg)',
-    day: 'Brightness(1.0) contrast(1.0) saturate(1.0)',
-    dusk: 'Brightness(0.6) contrast(1.4) saturate(1.8) sepia(0.5) hue-rotate(-25deg)',
-    night: 'Brightness(0.35) contrast(1.3) saturate(0.6) hue-rotate(210deg)'
+    morning: 'Brightness(0.6) contrast(1.2) Saturate(1.2) hue-rotate(-15deg)',
+    day: 'Brightness(1.0) contrast(1.0) Saturate(1.0)',
+    dusk: 'Brightness(0.6) contrast(1.4) Saturate(1.8) sepia(0.5) hue-rotate(-25deg)',
+    night: 'Brightness(0.35) contrast(1.3) Saturate(0.6) hue-rotate(210deg)'
   }
 
   const hoverFilters = {
-    morning: 'Brightness(0.7) contrast(1.3) saturate(1.4) hue-rotate(-15deg)',
-    day: 'Brightness(1.1) contrast(1.1) saturate(1.1)',
-    dusk: 'Brightness(0.7) contrast(1.5) saturate(2.0) sepia(0.4) hue-rotate(-25deg)',
-    night: 'Brightness(0.4) contrast(1.3) saturate(0.6) hue-rotate(220deg)'
+    morning: 'Brightness(0.7) contrast(1.3) Saturate(1.4) hue-rotate(-15deg)',
+    day: 'Brightness(1.1) contrast(1.1) Saturate(1.1)',
+    dusk: 'Brightness(0.7) contrast(1.5) Saturate(2.0) sepia(0.4) hue-rotate(-25deg)',
+    night: 'Brightness(0.4) contrast(1.3) Saturate(0.6) hue-rotate(220deg)'
   }
 
   let baseFilter = filters[props.cycle] || filters.day
@@ -215,6 +215,7 @@ const allSpawns = computed(() => [
       <img
         :src="getPokemonSprite(dominance.guardian.id)"
         :class="['guardian-mini-sprite', { captured: dominance.guardian.captured }]"
+        @error="e => e.target.style.display = 'none'"
       >
       <span :class="['guardian-label', { captured: dominance.guardian.captured }]">
         {{ dominance.guardian.captured ? 'DERROTADO' : 'GUARDIÁN' }}
@@ -243,6 +244,7 @@ const allSpawns = computed(() => [
         :src="getFactionIcon(dominance.winner)"
         class="faction-logo pulse"
         :title="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
+        @error="e => e.target.style.display = 'none'"
       >
     </div>
 
@@ -284,6 +286,7 @@ const allSpawns = computed(() => [
           :src="getPokemonSprite(id)"
           :class="['pixelated', { 'rare-spawn': isRare(id) }]"
           :title="id"
+          @error="e => e.target.style.display = 'none'"
         >
       </div>
     </div>

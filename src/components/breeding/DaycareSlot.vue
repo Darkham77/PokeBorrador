@@ -53,6 +53,7 @@ const getSprite = (id, shiny) => {
           <img
             :src="getSprite(pokemon.id, pokemon.isShiny)"
             class="pixel-sprite"
+            @error="e => e.target.style.display = 'none'"
           >
         </div>
         <div class="poke-info">
@@ -112,7 +113,7 @@ const getSprite = (id, shiny) => {
 
 <style scoped lang="scss">
 .daycare-slot-legacy {
-  background: #1c2128;
+  background: $card-dark;
   border: 2px solid rgba(255,255,255,0.06);
   border-radius: 16px;
   padding: 20px;
@@ -137,7 +138,7 @@ const getSprite = (id, shiny) => {
 .slot-marker {
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
-  color: #64748b;
+  color: $muted;
   margin-bottom: 20px;
 }
 
@@ -171,7 +172,7 @@ const getSprite = (id, shiny) => {
   flex: 1;
   .name-line {
     display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
-    .name { font-size: 13px; font-weight: 900; color: #fff; }
+    .name { font-size: 13px; font-weight: 900; color: $white; }
     .lv { font-family: 'Press Start 2P', monospace; font-size: 8px; color: #ffd700; }
   }
   .stats-line {
@@ -185,7 +186,7 @@ const getSprite = (id, shiny) => {
 
 .vigor-status {
   margin-bottom: 15px;
-  .label { font-size: 9px; font-weight: bold; color: #64748b; margin-bottom: 6px; }
+  .label { font-size: 9px; font-weight: bold; color: $muted; margin-bottom: 6px; }
   .vigor-bar-bg { height: 4px; background: rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; }
   .vigor-fill { height: 100%; transition: width 0.3s; }
 }
@@ -194,7 +195,7 @@ const getSprite = (id, shiny) => {
   margin-bottom: 20px;
   .item-badge {
     padding: 8px 12px; border-radius: 10px; font-size: 10px;
-    &.active { background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); color: #fff; }
+    &.active { background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); color: $white; }
     &.none { background: rgba(0,0,0,0.2); color: #475569; font-style: italic; border: 1px dashed rgba(255,255,255,0.05); }
   }
 }

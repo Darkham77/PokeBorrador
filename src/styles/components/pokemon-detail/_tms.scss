@@ -1,0 +1,120 @@
+// src/styles/components/pokemon-detail/_tms.scss
+@use "@/styles/core/tools" as *;
+
+.tms-pane {
+  .tm-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    background: rgba(0,0,0,0.2);
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+
+    .search-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      
+      .icon { font-size: 14px; opacity: 0.5; }
+      
+      .tm-search-input {
+        flex: 1;
+        background: none;
+        border: none;
+        color: $white;
+        font-size: 13px;
+        outline: none;
+        font-family: 'Inter', sans-serif;
+        
+        &::placeholder { color: rgba(255,255,255,0.2); }
+      }
+    }
+
+    .sort-box {
+      display: flex;
+      gap: 4px;
+      
+      .sort-btn {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.4);
+        font-size: 8px;
+        font-family: 'Press Start 2P', cursive;
+        padding: 6px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &.active {
+          background: var(--yellow);
+          color: $black;
+          border-color: var(--yellow);
+          box-shadow: 0 0 10px rgba(255, 214, 10, 0.3);
+        }
+      }
+    }
+  }
+
+  .tm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    
+    .tm-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.2s;
+      
+      &.incompatible {
+        opacity: 0.4;
+        filter: Grayscale(0.8);
+      }
+      
+      .tm-id {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 900;
+        color: $black;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      }
+      
+      .tm-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        
+        .tm-name { font-size: 11px; font-weight: 800; color: $white; margin-bottom: 2px; }
+        .tm-type { font-size: 8px; font-weight: 900; color: rgba(255,255,255,0.3); }
+      }
+      
+      .tm-check {
+        font-size: 12px;
+        font-weight: 900;
+        color: var(--yellow);
+      }
+      
+      &.clickable-item {
+        cursor: pointer;
+      }
+      
+      &:hover:not(.incompatible) {
+        background: rgba(255,255,255,0.08);
+        transform: TranslateY(-2px);
+      }
+    }
+  }
+}

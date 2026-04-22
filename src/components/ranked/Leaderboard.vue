@@ -153,13 +153,13 @@ const formatRank = (index) => `#${index + 1}`;
   transition: all 0.2s;
 
   &:hover {
-    color: #fff;
+    color: $white;
     background: rgba(255, 255, 255, 0.05);
   }
 
   &.active {
     background: var(--yellow);
-    color: #000;
+    color: $black;
     box-shadow: 0 0 10px rgba(255, 184, 0, 0.3);
   }
 }
@@ -168,7 +168,7 @@ const formatRank = (index) => `#${index + 1}`;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  color: #fff;
+  color: $white;
   width: 32px;
   height: 32px;
   cursor: pointer;
@@ -240,7 +240,7 @@ const formatRank = (index) => `#${index + 1}`;
 .trainer-name {
   font-size: 12px;
   font-weight: bold;
-  color: #fff;
+  color: $white;
 }
 
 .trainer-level {
@@ -262,7 +262,7 @@ const formatRank = (index) => `#${index + 1}`;
 
 .val-display {
   font-size: 9px;
-  color: #fff;
+  color: $white;
   text-align: right;
   white-space: nowrap;
 }

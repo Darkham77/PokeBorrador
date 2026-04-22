@@ -91,7 +91,7 @@ onMounted(async () => {
   font-size: 14px;
   color: #ffd700;
   margin: 0 0 10px 0;
-  text-shadow: 0 2px 0 #000;
+  text-shadow: 0 2px 0 $black;
 }
 
 .view-desc {

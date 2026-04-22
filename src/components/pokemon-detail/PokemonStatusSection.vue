@@ -170,7 +170,7 @@ const getAbilityDesc = (ability) => {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   margin-bottom: 12px;
-  color: #fff;
+  color: $white;
   opacity: 0.9;
   @include pixelated;
 }
@@ -222,19 +222,19 @@ const getAbilityDesc = (ability) => {
 .info-card .label {
   display: block;
   font-family: 'Press Start 2P', monospace;
-  font-size: 6px;
+  font-size: 8px; // 6px causes blur
   color: var(--gray);
   text-transform: uppercase;
   margin-bottom: 8px;
-  opacity: 0.6;
+  opacity: 0.8;
   @include pixelated;
 }
 
 .info-card .val {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
-  color: #fff;
-  text-shadow: 0 0 10px rgba(255,255,255,0.2);
+  color: $white;
+  text-shadow: none; // Shadows cause blur
   @include pixelated;
 }
 
@@ -250,10 +250,11 @@ const getAbilityDesc = (ability) => {
   background: rgba(10, 15, 30, 0.98); // Deep glass
   backdrop-filter: Blur(20px);
   border: 1px solid rgba(255,255,255,0.15);
-  padding: 16px;
-  border-radius: 16px;
-  width: 220px;
-  z-index: 99999; // ABOVE EVERYTHING
+  padding: 40px;
+  max-height: 85vh;
+  min-height: 0; // Prevent flex collapse
+  overflow-y: auto;
+  z-index: var(--z-tooltip); // Standardized layer
   box-shadow: 0 15px 40px rgba(0,0,0,0.8);
   pointer-events: none;
   

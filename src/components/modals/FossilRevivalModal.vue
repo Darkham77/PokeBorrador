@@ -63,17 +63,19 @@ function handleClose() {
         <!-- Sprite Layer -->
         <img 
           v-if="step < 3"
-          :src="itemSprite" 
-          class="fossil-img"
+          :src="itemSprite"
+          class="fossil-img" 
           :class="{ 'step-1': step >= 1 }"
           alt="Fossil"
+          @error="e => e.target.style.display = 'none'"
         >
         <img 
           v-else
-          :src="pokemonSprite" 
-          class="pokemon-img"
+          :src="pokemonSprite"
+          class="pokemon-img" 
           :class="{ 'is-shiny': pokemon?.isShiny }"
           alt="Pokemon"
+          @error="e => e.target.style.display = 'none'"
         >
       </div>
 
@@ -177,8 +179,8 @@ function handleClose() {
   inset: 0;
   z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.96);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: Blur(15px);
+  -webkit-backdrop-filter: Blur(15px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -224,7 +226,7 @@ function handleClose() {
   background: radial-gradient(circle, var(--yellow, #ffd93d) 0%, transparent 70%);
   opacity: 0;
   border-radius: 50%;
-  filter: blur(15px);
+  filter: Blur(15px);
   transition: all 2s ease-in-out;
   
   &.step-1 {
@@ -233,7 +235,7 @@ function handleClose() {
   }
   
   &.revealed {
-    background: radial-gradient(circle, #fff 0%, transparent 70%);
+    background: radial-gradient(circle, $white 0%, transparent 70%);
   }
   
   &.is-shiny {
@@ -248,7 +250,7 @@ function handleClose() {
   image-rendering: pixelated;
   position: relative;
   z-index: 2;
-  filter: drop-shadow(0 0 15px rgba(0,0,0,0.8));
+  filter: Drop-Shadow(0 0 15px rgba(0,0,0,0.8));
   transition: all 1s;
   
   &.step-1 {
@@ -263,16 +265,16 @@ function handleClose() {
   image-rendering: pixelated;
   position: relative;
   z-index: 2;
-  filter: drop-shadow(0 0 30px rgba(255,255,255,0.6));
+  filter: Drop-Shadow(0 0 30px rgba(255,255,255,0.6));
   animation: bounce 2s infinite;
   
   &.is-shiny {
-    filter: drop-shadow(0 0 30px gold);
+    filter: Drop-Shadow(0 0 30px gold);
   }
 }
 
 .fossil-text {
-  color: #fff;
+  color: $white;
   font-size: 15px;
   font-weight: 700;
   height: 60px;
@@ -302,7 +304,7 @@ function handleClose() {
   padding: 20px;
   width: 100%;
   animation: slideUp 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) backwards;
-  backdrop-filter: blur(5px);
+  backdrop-filter: Blur(5px);
 }
 
 .stat-row {
@@ -313,7 +315,7 @@ function handleClose() {
   padding-bottom: 10px;
   
   .label { color: var(--gray, #9ca3af); font-size: 10px; font-family: 'Press Start 2P'; }
-  .value { color: #fff; font-weight: 800; font-size: 14px; }
+  .value { color: $white; font-weight: 800; font-size: 14px; }
 }
 
 .ivs-grid {
@@ -332,7 +334,7 @@ function handleClose() {
   align-items: center;
   
   .iv-lbl { font-size: 9px; color: var(--gray); font-family: 'Press Start 2P'; margin-bottom: 4px; }
-  .iv-val { font-size: 14px; font-weight: 800; color: #fff; }
+  .iv-val { font-size: 14px; font-weight: 800; color: $white; }
   .perfect { color: #fbbf24; }
   .good { color: #60a5fa; }
 }
@@ -347,7 +349,7 @@ function handleClose() {
 .continue-btn {
   width: 100%;
   background: var(--blue, #3b82f6);
-  color: #fff;
+  color: $white;
   border: none;
   padding: 14px;
   border-radius: 12px;
@@ -365,13 +367,13 @@ function handleClose() {
 .flash-layer {
   position: absolute;
   inset: 0;
-  background: #fff;
+  background: $white;
   z-index: 10;
   animation: flash 0.4s ease-out forwards;
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes itemPulse { from { transform: Scale(1); filter: drop-shadow(0 0 15px rgba(255,217,61,0.5)); } to { transform: Scale(1.1); filter: drop-shadow(0 0 25px rgba(255,217,61,0.9)); } }
+@keyframes itemPulse { from { transform: Scale(1); filter: Drop-Shadow(0 0 15px rgba(255,217,61,0.5)); } to { transform: Scale(1.1); filter: Drop-Shadow(0 0 25px rgba(255,217,61,0.9)); } }
 @keyframes bounce { 0%, 100% { transform: TranslateY(0); } 50% { transform: TranslateY(-10px); } }
 @keyframes flash { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes slideUp { from { transform: TranslateY(30px); opacity: 0; } to { transform: TranslateY(0); opacity: 1; } }

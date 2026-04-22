@@ -81,7 +81,7 @@ onMounted(() => {
   display: flex;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(5px);
+  backdrop-filter: Blur(5px);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -108,7 +108,7 @@ onMounted(() => {
   }
 
   &.active {
-    color: #fff;
+    color: $white;
     &:after {
       content: '';
       position: absolute;
@@ -116,8 +116,8 @@ onMounted(() => {
       left: 10%;
       width: 80%;
       height: 2px;
-      background: #fff;
-      box-shadow: 0 0 10px #fff;
+      background: $white;
+      box-shadow: 0 0 10px $white;
     }
   }
 

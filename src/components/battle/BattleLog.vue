@@ -45,7 +45,7 @@ watch(logs, () => {
   min-height: 0;
   padding: 20px;
   background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -75,7 +75,7 @@ watch(logs, () => {
 }
 
 /* Color overrides mapping to global types */
-:deep(.log-info) { color: #fff; font-weight: 500; }
+:deep(.log-info) { color: $white; font-weight: 500; }
 :deep(.log-damage) { color: #f87171; }
 :deep(.log-heal) { color: #34d399; }
 :deep(.log-status) { color: #c084fc; }

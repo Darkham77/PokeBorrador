@@ -18,3 +18,12 @@
     @return 100; // Safe content fallback
   }
 }
+
+// Helper para outlines de sprites
+@function pokemon-outline-1px($color: #000000) {
+  @return Drop-Shadow(0 0 1px $color) Drop-Shadow(0 0 1px $color);
+}
+
+@function pokemon-outline-2px($color: #000000) {
+  @return Drop-Shadow(0 0 1.5px $color) Drop-Shadow(0 0 1.5px $color) Drop-Shadow(0 0 1.5px $color);
+}

@@ -159,6 +159,8 @@ El script verifica:
 - ✅ Ningún ítem `held` tiene entrada en `HEALING_ITEMS` (sería un error)
 - ✅ Los ítems equipables (`type: 'held'`) no están bloqueados de combate
 - ⚠️  Ítems con `price: 0` pero sin `market: false` (posible error de configuración)
+- **Robust Item Detection**: The item asset resolver uses keywords (ball, stone, potion, etc.) and a manual mapping to determine if an item belongs to PokeAPI. When adding items, ensure they are either in the mapping or contain a recognized keyword to avoid local 404s.
+- **Case-Sensitivity**: Item IDs and names are treated as case-insensitive in logic, but filesystem assets are usually lowercase. Always normalize to lowercase before asset resolution.
 
 ---
 

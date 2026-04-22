@@ -151,7 +151,7 @@ defineEmits(['search-tab'])
   height: 10px;
   border-radius: 50%;
   border: 2px solid #101822;
-  background: #64748b;
+  background: $muted;
 
   &.online {
     background: #22c55e;
@@ -168,7 +168,7 @@ defineEmits(['search-tab'])
   }
   .meta {
     font-size: 11px;
-    color: #64748b;
+    color: $muted;
   }
 }
 
@@ -188,7 +188,7 @@ defineEmits(['search-tab'])
     justify-content: center;
     transition: all 0.2s;
     background: rgba(255, 255, 255, 0.05);
-    color: #fff;
+    color: $white;
 
     &:hover { transform: Scale(1.1); }
     &.chat:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
@@ -212,7 +212,7 @@ defineEmits(['search-tab'])
 
 .btn-primary-retro {
   background: var(--purple-light);
-  color: #000;
+  color: $black;
   border: none;
   padding: 10px 20px;
   font-family: 'Press Start 2P', cursive;

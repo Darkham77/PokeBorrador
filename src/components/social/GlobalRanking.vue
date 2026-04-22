@@ -111,8 +111,9 @@ const getRankIcon = (tierId) => {
               :class="getTierBadge(p.elo).class"
             >
               <img 
-                :src="getRankIcon(getTierBadge(p.elo).id)" 
-                class="mini-badge"
+                :src="getRankIcon(getTierBadge(p.elo).id)"
+                class="mini-badge" 
+                @error="e => e.target.style.display = 'none'"
               >
               {{ getTierBadge(p.elo).name }}
             </div>
@@ -143,7 +144,7 @@ const getRankIcon = (tierId) => {
 .subtitle {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
-  color: var(--blue, #0A84FF);
+  color: var(--blue, $blue);
   display: block;
   margin-bottom: 8px;
 }
@@ -197,7 +198,7 @@ h2 {
   text-align: center;
 }
 
-.pos-1 { color: #FFD60A; font-size: 14px; }
+.pos-1 { color: $yellow; font-size: 14px; }
 .pos-2 { color: #AEAEB2; font-size: 12px; }
 .pos-3 { color: #A2845E; font-size: 11px; }
 
@@ -213,8 +214,8 @@ h2 {
   border: 2px solid rgba(255,255,255,0.1);
 }
 
-.avatar-circle.rocket { border-color: #ff453a; background: linear-gradient(45deg, #222, #ff453a44); }
-.avatar-circle.police { border-color: #0a84ff; background: linear-gradient(45deg, #222, #0a84ff44); }
+.avatar-circle.rocket { border-color: $red; background: linear-gradient(45deg, #222, $red44); }
+.avatar-circle.police { border-color: $blue; background: linear-gradient(45deg, #222, $blue44); }
 
 .player-info {
   flex: 1;
@@ -242,7 +243,7 @@ h2 {
 
 .me-badge {
   font-size: 7px;
-  background: var(--blue, #0A84FF);
+  background: var(--blue, $blue);
   color: white;
   padding: 2px 4px;
   border-radius: 4px;
@@ -257,8 +258,8 @@ h2 {
   font-weight: 500;
 }
 
-.faction.union { color: #0A84FF; }
-.faction.poder { color: #FF453A; }
+.faction.union { color: $blue; }
+.faction.poder { color: $red; }
 
 .rank-score {
   text-align: right;
@@ -268,7 +269,7 @@ h2 {
   display: block;
   font-family: 'Press Start 2P', monospace;
   font-size: 12px;
-  color: #fff;
+  color: $white;
   margin-bottom: 6px;
 }
 

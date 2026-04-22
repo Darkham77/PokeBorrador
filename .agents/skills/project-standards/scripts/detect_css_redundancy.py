@@ -42,10 +42,10 @@ def audit_css_redundancy():
     redundancies = {k: v for k, v in class_map.items() if len(v) > 1}
     
     if not redundancies:
-        print("\n✅ No se detectaron redefiniciones de clases críticas.")
+        print("\n[OK] No se detectaron redefiniciones de clases críticas.")
         return 0
 
-    print("\n⚠️ [AUDITORÍA DE REDUNDANCIA CSS] ⚠️")
+    print("\n[AUDIT: CSS REDUNDANCY]")
     print("| Clase | Archivo | Línea |")
     print("| :--- | :--- | :--- |")
     

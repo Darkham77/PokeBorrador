@@ -184,7 +184,7 @@ h3 {
   margin: 0;
 
   span {
-    color: #fff;
+    color: $white;
     font-weight: bold;
   }
 }
@@ -218,7 +218,7 @@ h3 {
 .tier-marker {
   position: absolute;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: Translate(-50%, -50%);
   z-index: 2;
 }
 
@@ -227,7 +227,7 @@ h3 {
   height: 12px;
   border-radius: 50%;
   border: 2px solid;
-  background: #000;
+  background: $black;
 }
 
 .milestones-scroll {
@@ -287,7 +287,7 @@ h3 {
 
 .reward-item {
   font-size: 11px;
-  color: #fff;
+  color: $white;
 }
 
 .claim-btn {

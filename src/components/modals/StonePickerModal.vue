@@ -93,9 +93,10 @@ const getPokemonName = (id) => {
           >
             <div class="stone-icon-wrapper">
               <img 
-                v-if="getStoneInfo(opt.stone).sprite" 
+                v-if="getStoneInfo(opt.stone).sprite"
                 :src="getStoneInfo(opt.stone).sprite" 
-                class="stone-sprite"
+                class="stone-sprite" 
+                @error="e => e.target.style.display = 'none'"
               >
               <span
                 v-else
@@ -143,8 +144,8 @@ const getPokemonName = (id) => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px);
   animation: fadeIn 0.2s ease;
   transform: translateZ(0);
 }
@@ -199,8 +200,8 @@ const getPokemonName = (id) => {
   .stone-details {
     flex: 1;
     min-width: 0;
-    .stone-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-    .evo-target { font-size: 11px; color: #64748b; }
+    .stone-name { font-size: 13px; font-weight: 700; color: $white; margin-bottom: 4px; }
+    .evo-target { font-size: 11px; color: $muted; }
   }
 
   .use-btn {
@@ -225,11 +226,11 @@ const getPokemonName = (id) => {
   color: #94a3b8;
   font-size: 13px;
   cursor: pointer;
-  &:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
+  &:hover { color: $white; background: rgba(255, 255, 255, 0.1); }
 }
 
 .yellow-text { color: #fbbf24; }
-.white-text { color: #fff; font-weight: bold; }
+.white-text { color: $white; font-weight: bold; }
 .press-start { font-family: 'Press Start 2P', cursive; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

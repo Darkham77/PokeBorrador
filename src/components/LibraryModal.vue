@@ -162,7 +162,7 @@ const selectTab = (tabId) => {
 
     &:hover {
       background: rgba(255, 255, 255, 0.04);
-      color: #fff;
+      color: $white;
       padding-left: 20px;
       border-color: rgba(250, 204, 21, 0.2);
     }
@@ -208,7 +208,7 @@ const selectTab = (tabId) => {
   }
 
   :deep(h3) {
-    color: var(--purple, #bf5af2);
+    color: var(--purple, $purple);
     margin: 32px 0 16px;
     font-size: 18px;
     font-weight: 800;
@@ -232,7 +232,7 @@ const selectTab = (tabId) => {
   }
 
   :deep(strong) {
-    color: #fff;
+    color: $white;
     font-weight: 700;
   }
 

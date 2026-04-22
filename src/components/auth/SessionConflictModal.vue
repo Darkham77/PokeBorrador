@@ -97,14 +97,14 @@ async function handleLogout() {
   margin-bottom: 32px;
   .warning-icon {
     font-size: 56px;
-    filter: drop-shadow(0 0 20px rgba(255, 214, 10, 0.6));
+    filter: Drop-Shadow(0 0 20px rgba(255, 214, 10, 0.6));
   }
 }
 
 h2 {
   font-family: 'Press Start 2P', cursive;
   font-size: 14px;
-  color: #ffd60a;
+  color: $yellow;
   margin-bottom: 24px;
   @include pixelated;
 }
@@ -144,7 +144,7 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.1);
   &:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: $white;
   }
 }
 
@@ -153,6 +153,6 @@ button {
   color: rgba(255, 255, 255, 0.2);
   font-family: 'Press Start 2P', cursive;
   @include pixelated;
-  code { color: #bf5af2; }
+  code { color: $purple; }
 }
 </style>

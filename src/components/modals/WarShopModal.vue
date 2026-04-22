@@ -76,7 +76,7 @@ if (typeof window !== 'undefined') {
   text-align: center;
   font-family: 'Press Start 2P', monospace;
   font-size: 9px;
-  color: #fff;
+  color: $white;
 
   .coins-count {
     color: var(--yellow);
@@ -129,7 +129,7 @@ if (typeof window !== 'undefined') {
       .item-name {
         font-weight: 800;
         font-size: 14px;
-        color: #fff;
+        color: $white;
         margin-bottom: 4px;
       }
 
@@ -142,7 +142,7 @@ if (typeof window !== 'undefined') {
 
     .buy-btn {
       background: linear-gradient(135deg, var(--yellow), #f59e0b);
-      color: #000;
+      color: $black;
       border: none;
       border-radius: 10px;
       padding: 10px 16px;

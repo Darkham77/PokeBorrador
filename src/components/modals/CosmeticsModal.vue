@@ -129,7 +129,7 @@ const selectAvatar = (id) => {
     align-items: center;
     gap: 12px;
     margin-bottom: 8px;
-    h3 { font-size: 18px; color: #fff; font-weight: 700; }
+    h3 { font-size: 18px; color: $white; font-weight: 700; }
     .badge {
       font-size: 9px;
       background: rgba(255, 255, 255, 0.05);
@@ -141,7 +141,7 @@ const selectAvatar = (id) => {
   }
   .section-desc {
     font-size: 13px;
-    color: #64748b;
+    color: $muted;
     margin-bottom: 24px;
   }
 }
@@ -241,7 +241,7 @@ const selectAvatar = (id) => {
 .nt-spark { color: #facc15; animation: anim-spark 0.5s infinite; }
 .nt-dark { color: #6d28d9; text-shadow: 0 0 10px #4c1d95; }
 .nt-royal { color: #ec4899; text-shadow: 0 0 10px #db2777; font-style: italic; }
-.nt-ghost { color: #94a3b8; opacity: 0.7; filter: blur(0.5px); }
+.nt-ghost { color: #94a3b8; opacity: 0.7; filter: Blur(0.5px); }
 
 /* --- AVATAR FRAME CLASSES --- */
 .av-water { border-color: #0ea5e9; box-shadow: 0 0 15px #0ea5e9; }
@@ -250,7 +250,7 @@ const selectAvatar = (id) => {
 .av-dragon { border-color: #8b5cf6; box-shadow: 0 0 20px #8b5cf6; }
 .av-legend { border-color: #fbbf24; box-shadow: 0 0 25px #fbbf24; }
 .av-master { border-color: #ef4444; box-shadow: 0 0 20px #ef4444; border-width: 4px; }
-.av-ghost { border-color: #64748b; opacity: 0.8; box-shadow: 0 0 10px #64748b; }
+.av-ghost { border-color: $muted; opacity: 0.8; box-shadow: 0 0 10px $muted; }
 
 /* --- ANIMATIONS --- */
 @keyframes anim-fire {

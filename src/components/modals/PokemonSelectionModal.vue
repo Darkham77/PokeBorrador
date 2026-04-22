@@ -218,6 +218,7 @@ if (typeof window !== 'undefined') {
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny })"
                 alt=""
                 class="pixelated"
+                @error="e => e.target.style.display = 'none'"
               >
               <span
                 v-if="p.isShiny"

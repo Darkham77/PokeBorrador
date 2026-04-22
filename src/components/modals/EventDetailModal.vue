@@ -250,7 +250,7 @@ const scheduleText = computed(() => {
   .section-tag {
     font-family: 'Press Start 2P', monospace;
     font-size: 9px;
-    color: #64748b;
+    color: $muted;
     margin-bottom: 15px;
     letter-spacing: 1px;
     display: inline-block;

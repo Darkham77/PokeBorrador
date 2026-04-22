@@ -55,7 +55,7 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
   margin: 0;
   font-family: 'Press Start 2P', monospace;
   font-size: 14px;
-  color: #fff;
+  color: $white;
 }
 
 .header-actions {
@@ -99,7 +99,7 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
   
   &:hover {
     background: rgba(255, 255, 255, 0.05);
-    color: #fff;
+    color: $white;
   }
 }
 </style>

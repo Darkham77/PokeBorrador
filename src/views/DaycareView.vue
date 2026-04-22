@@ -85,6 +85,7 @@ const getGenderClass = (gender) => {
                 <img
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, breedingStore.slots[0].pokemon.id, { shiny: breedingStore.slots[0].pokemon.isShiny })"
                   alt="Parent A"
+                  @error="e => e.target.style.display = 'none'"
                 >
                 <h3>{{ breedingStore.slots[0].pokemon.name }}</h3>
                 <span
@@ -120,6 +121,7 @@ const getGenderClass = (gender) => {
                 <img
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, breedingStore.slots[1].pokemon.id, { shiny: breedingStore.slots[1].pokemon.isShiny })"
                   alt="Parent B"
+                  @error="e => e.target.style.display = 'none'"
                 >
                 <h3>{{ breedingStore.slots[1].pokemon.name }}</h3>
                 <span
@@ -217,7 +219,7 @@ const getGenderClass = (gender) => {
     transition: color 0.2s;
     
     &.active {
-      color: #fff;
+      color: $white;
       &::after {
         content: '';
         position: absolute;
@@ -234,7 +236,7 @@ const getGenderClass = (gender) => {
       top: 4px;
       right: 4px;
       background: #ef4444;
-      color: #fff;
+      color: $white;
       font-size: 10px;
       padding: 2px 6px;
       border-radius: 99px;
@@ -300,7 +302,7 @@ const getGenderClass = (gender) => {
 .btn-deposit {
   background: none;
   border: none;
-  color: #64748b;
+  color: $muted;
   font-family: 'Press Start 2P', cursive;
   font-size: 8px;
   display: flex;
@@ -337,7 +339,7 @@ const getGenderClass = (gender) => {
   .timer {
     font-family: 'Press Start 2P', cursive;
     font-size: 10px;
-    color: #fff;
+    color: $white;
   }
 }
 
@@ -355,9 +357,9 @@ const getGenderClass = (gender) => {
 }
 
 @keyframes pulse {
-  0% { transform: Scale(1.0); filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0)); }
-  50% { transform: Scale(1.2); filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.6)); }
-  100% { transform: Scale(1.0); filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0)); }
+  0% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 rgba(239, 68, 68, 0)); }
+  50% { transform: Scale(1.2); filter: Drop-Shadow(0 0 15px rgba(239, 68, 68, 0.6)); }
+  100% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 rgba(239, 68, 68, 0)); }
 }
 
 .breeding-forecast {
@@ -379,7 +381,7 @@ const getGenderClass = (gender) => {
     h4 {
       font-size: 14px;
       font-weight: 800;
-      color: #fff;
+      color: $white;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -405,13 +407,13 @@ const getGenderClass = (gender) => {
   
   .label {
     font-size: 10px;
-    color: #64748b;
+    color: $muted;
     font-weight: 600;
   }
   
   .value {
     font-size: 12px;
-    color: #fff;
+    color: $white;
     font-weight: 700;
   }
   
@@ -441,7 +443,7 @@ const getGenderClass = (gender) => {
 .empty-state {
   text-align: center;
   padding: 60px 0;
-  color: #64748b;
+  color: $muted;
   .icon {
     font-size: 48px;
     margin-bottom: 16px;

@@ -205,7 +205,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   border: 1px solid rgba(199, 125, 255, 0.3);
   border-radius: 12px;
   padding: 10px 16px;
-  color: #fff;
+  color: $white;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -324,7 +324,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
   .time {
     font-size: 9px;
-    color: #64748b;
+    color: $muted;
   }
 }
 
@@ -353,7 +353,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     border: 1px solid rgba(199, 125, 255, 0.2);
     border-radius: 8px;
     padding: 10px 12px;
-    color: #fff;
+    color: $white;
     font-size: 13px;
     outline: none;
     transition: border-color 0.2s;
@@ -368,7 +368,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     border-radius: 8px;
     width: 38px;
     height: 38px;
-    color: #fff;
+    color: $white;
     cursor: pointer;
     transition: all 0.2s;
 
@@ -382,7 +382,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     text-align: right;
   }
 
-  .hint { color: #64748b; }
+  .hint { color: $muted; }
   .hint-error { color: #f87171; font-weight: 700; }
 }
 

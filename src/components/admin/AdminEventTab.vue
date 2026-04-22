@@ -222,7 +222,7 @@ defineEmits(['toggle-editing'])
 .press-start { font-family: 'Press Start 2P', cursive; font-size: 10px; letter-spacing: 1px; }
 .sub-title { margin: 30px 0 15px; color: #fbbf24; font-size: 8px; }
 
-.add-btn { background: #22c55e; color: #fff; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+.add-btn { background: #22c55e; color: $white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
 .back-btn { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px 16px; border-radius: 12px; cursor: pointer; }
 
 .event-grid {
@@ -245,14 +245,14 @@ defineEmits(['toggle-editing'])
     gap: 12px;
     align-items: center;
     .icon { font-size: 24px; }
-    .id-tag { font-size: 9px; color: #64748b; font-weight: 800; display: block; }
+    .id-tag { font-size: 9px; color: $muted; font-weight: 800; display: block; }
     h4 { margin: 4px 0 0; font-size: 13px; }
   }
 
   button {
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
+    color: $white;
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 11px;
@@ -280,7 +280,7 @@ defineEmits(['toggle-editing'])
       border: 1px solid rgba(255, 255, 255, 0.1);
       padding: 12px;
       border-radius: 12px;
-      color: #fff;
+      color: $white;
       font-size: 13px;
     }
   }
@@ -296,7 +296,7 @@ defineEmits(['toggle-editing'])
       display: flex;
       flex-direction: column;
       gap: 6px;
-      label { font-size: 10px; color: #64748b; }
+      label { font-size: 10px; color: $muted; }
       input { padding: 10px; text-align: center; }
     }
   }
@@ -307,7 +307,7 @@ defineEmits(['toggle-editing'])
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     border: none;
     border-radius: 16px;
-    color: #000;
+    color: $black;
     cursor: pointer;
     font-size: 11px;
     font-weight: 800;

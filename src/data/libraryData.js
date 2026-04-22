@@ -164,10 +164,6 @@ export const libraryContent = {
     <p>Pokémon Alfa que otorgan grandes recompensas al ser derrotados.</p>
   `,
 
-  pokedex: `
-    <h1>Pokédex Nacional</h1>
-    <p>Consulta estadísticas base, compatibilidad de MTs y cadenas evolutivas.</p>
-  `,
 
   eventos: `
     <h1>Sistema de Eventos</h1>
@@ -190,6 +186,5 @@ export const libraryCategories = [
   { id: 'shinys', label: '✨ Shinys' },
   { id: 'combate', label: '⚔️ Combate' },
   { id: 'guerra', label: '🛡️ Guerra' },
-  { id: 'pokedex', label: '📂 Pokédex' },
   { id: 'eventos', label: '📅 Eventos' }
 ]

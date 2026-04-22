@@ -185,7 +185,7 @@ const cancelSearch = () => {
 
 .card-glass {
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 16px;
@@ -209,7 +209,7 @@ const cancelSearch = () => {
 .season-name {
   margin: 0;
   font-size: 20px;
-  color: #fff;
+  color: $white;
 }
 
 .dates {
@@ -256,7 +256,7 @@ const cancelSearch = () => {
   background: linear-gradient(90deg, #3b82f6, #8b5cf6);
   border: none;
   border-radius: 12px;
-  color: #fff;
+  color: $white;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
   transition: all 0.2s;
@@ -327,7 +327,7 @@ const cancelSearch = () => {
   }
 
   &:hover:not(.active) {
-    color: #fff;
+    color: $white;
   }
 }
 
@@ -370,7 +370,7 @@ const cancelSearch = () => {
   .val {
     font-size: 14px;
     font-weight: bold;
-    color: #fff;
+    color: $white;
   }
 }
 
@@ -384,7 +384,7 @@ const cancelSearch = () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to { transform: Rotate(360deg); }
 }
 
 @keyframes pulse {

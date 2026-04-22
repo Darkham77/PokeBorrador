@@ -24,7 +24,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: spacing(2) spacing(3.5);
-  color: #fff;
+  color: $white;
   font-family: $font-ui;
   font-weight: 700;
   font-size: 13px;
@@ -45,18 +45,33 @@
   }
 
   &:hover {
-    transform: translate3d(0, -2px, 0);
+    transform: Translate3d(0, -2px, 0);
     box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 255, 255, 0.12);
     filter: Brightness(1.05);
   }
 
   &.active {
-    background: rgba($yellow, 0.15) !important;
-    color: $yellow !important;
-    border-color: $yellow !important;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 18px rgba($yellow, 0.35) !important;
-    i, span:first-child { color: $yellow !important; }
+    background: rgba($yellow, 0.15);
+    color: $yellow;
+    border-color: $yellow;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 18px rgba($yellow, 0.35);
+    i, span:first-child { color: $yellow; }
   }
+
+  /* COMPACT MODE FOR NAVIGATION */
+  @container (max-width: 1775px) {
+    flex-direction: column !important;
+    padding: 6px 4px !important;
+    gap: 2px !important;
+    min-width: 55px;
+    
+    i, span:first-child { font-size: 14px; }
+    .label { font-size: 10px; }
+  }
+}
+
+@container (max-width: 1775px) {
+  .hud-nav { gap: 6px; }
 }
 
 /* ===== HUD ACTIONS & ITEMS ===== */

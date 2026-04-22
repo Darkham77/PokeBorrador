@@ -116,6 +116,7 @@ const hasBadges = computed(() => {
         :src="spriteUrl"
         :alt="pokemon.name"
         class="pokemon-sprite"
+        @error="e => e.target.style.display = 'none'"
       >
     </div>
 
@@ -228,7 +229,7 @@ const hasBadges = computed(() => {
     }
 
     .pokemon-sprite {
-      transform: TranslateY(-25%) Scale(1.5); 
+      transform: TranslateY(-25%) Scale(1.2); 
       filter: Drop-shadow(0 25px 45px rgba(0,0,0,0.9));
       image-rendering: pixelated;
     }
@@ -254,7 +255,7 @@ const hasBadges = computed(() => {
   border: 1px solid rgba(255, 255, 255, 0.05);
 
   .item-badge .icon { font-size: 14px; }
-  .star-icon { font-size: 12px; color: var(--yellow); }
+  .star-icon { font-size: 15px; color: var(--yellow); }
 }
 
 .badges-spacer { height: 24px; }
@@ -314,14 +315,14 @@ const hasBadges = computed(() => {
     .pokemon-name {
       font-family: 'Press Start 2P', monospace;
       font-size: 11px;
-      color: #fff;
+      color: $white;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0,0,0,0.5);
     }
 
     .gender-pill {
-      @include gender-badge(32px, 24px);
+      @include gender-badge(20px, 15px);
       &:hover { transform: Scale(1.1); }
     }
   }
@@ -375,8 +376,8 @@ const hasBadges = computed(() => {
     padding: 4px 6px;
     border-radius: 4px;
     
-    &.obedience { background: var(--red); color: #fff; }
-    &.mission { background: #fbbf24; color: #000; }
+    &.obedience { background: var(--red); color: $white; }
+    &.mission { background: #fbbf24; color: $black; }
   }
 }
 
@@ -396,7 +397,7 @@ const hasBadges = computed(() => {
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.05);
-    color: #fff;
+    color: $white;
     cursor: pointer;
     transition: all 0.2s;
 

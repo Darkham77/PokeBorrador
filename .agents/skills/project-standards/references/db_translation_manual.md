@@ -19,6 +19,7 @@ The `translatePostgresToSqlite` function in `sqliteEngine.js` applies the follow
 
 - **`NOW()`** -> `datetime('now')`.
 - **`gen_random_uuid()`** -> `hex(randomblob(16))`.
+- **Mandate**: Function-based `DEFAULT` values MUST be enclosed in parentheses (e.g., `DEFAULT (hex(randomblob(16)))`) for SQLite compatibility.
 - **`jsonb_*`** -> `json_*` (General fallback: any function starting with `jsonb_` is mapped to its `json_` equivalent).
 - **`jsonb_build_object`** -> `json_object`.
 - **`jsonb_agg`** -> `json_group_array`.
@@ -39,8 +40,9 @@ The `translatePostgresToSqlite` function in `sqliteEngine.js` applies the follow
 ### 4. Cleanup & Optimization
 
 - **`FOR UPDATE`**: Removed (SQLite locks globally).
-- **`::type`**: Castings (e.g., `::TEXT`, `::BIGINT`) are removed.
+- **`::type`**: Castings (e.g., `::TEXT`, `::BIGINT`, `::JSONB`) are removed.
 - **`RAISE EXCEPTION`**: Suppressed (replaced with `SELECT 1`).
+- **Reference Mapping**: `REFERENCES auth.users(id)` is mapped to `REFERENCES profiles(id)` for local integrity.
 
 ## Migration Parsing Logic
 
@@ -48,6 +50,7 @@ The `translatePostgresToSqlite` function in `sqliteEngine.js` applies the follow
 
 SQL migration files are NOT split by simple semicolons. We use a parser that respects:
 
+- **Comments**: Both line (`--`) and block (`/* ... */`) to prevent splitting at internal semicolons.
 - **`$$` Blocks**: Essential for PL/pgSQL function bodies.
 - **Single Quotes**: Prevents splitting inside string literals.
 
@@ -56,9 +59,11 @@ SQL migration files are NOT split by simple semicolons. We use a parser that res
 The engine automatically skips blocks that cannot be translated to SQLite, such as:
 
 - `CREATE OR REPLACE FUNCTION`
+- `COMMENT ON`
 - `CREATE POLICY` / `DROP POLICY`
 - `CREATE TRIGGER` / `DROP TRIGGER`
 - `CREATE EXTENSION`
+- `ALTER PUBLICATION`
 - `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`
 
 ## Critical Limitations & Patterns

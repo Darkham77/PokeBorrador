@@ -144,6 +144,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
                 v-if="gs.faction"
                 :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, gs.faction)"
                 class="faction-img"
+                @error="e => e.target.style.display = 'none'"
               >
               {{ factionLabel }}
             </div>
@@ -223,7 +224,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   display: flex;
   flex-direction: column;
   background: transparent;
-  backdrop-filter: blur(12px);
+  backdrop-filter: Blur(12px);
   
   // Custom backgrounds by class fading to transparent
   .rocket & { background: linear-gradient(180deg, rgba(239, 68, 68, 0.15) 0%, transparent 60%); }
@@ -298,7 +299,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     }
   }
 
-  @keyframes spin-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @keyframes spin-slow { from{transform:Rotate(0deg)} to{transform:Rotate(360deg)} }
 
   .profile-username {
     font-family: 'Press Start 2P', cursive;
@@ -364,7 +365,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   .save-status {
     font-family: 'Press Start 2P', monospace;
     font-size: 12px;
-    color: #fff;
+    color: $white;
     @include pixelated;
   }
 }
@@ -395,7 +396,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
   .edit-btn-legacy {
     background: rgba(255, 255, 255, 0.05);
-    color: #fff;
+    color: $white;
     border: 1px solid rgba(255, 255, 255, 0.1);
     @include hover-neon-yellow(1px);
     &:hover { background: rgba(255, 255, 255, 0.1); }

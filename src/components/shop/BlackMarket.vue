@@ -58,6 +58,7 @@ onMounted(() => {
             <img
               :src="item.sprite"
               class="pixel-sprite"
+              @error="e => e.target.style.display = 'none'"
             >
             <div class="glow" />
           </div>
@@ -153,7 +154,7 @@ onMounted(() => {
   font-family: 'Press Start 2P', monospace;
   font-size: 12px;
   color: #ef4444;
-  transform: rotate(-15deg);
+  transform: Rotate(-15deg);
   pointer-events: none;
 }
 
@@ -178,7 +179,7 @@ onMounted(() => {
     height: 48px;
     image-rendering: pixelated;
     z-index: 1;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+    filter: Drop-Shadow(0 4px 8px rgba(0, 0, 0, 0.5));
   }
   
   .glow {
@@ -199,7 +200,7 @@ onMounted(() => {
   .item-name {
     font-family: 'Press Start 2P', monospace;
     font-size: 8px;
-    color: #fff;
+    color: $white;
   }
   
   .item-price {
@@ -215,7 +216,7 @@ onMounted(() => {
   border: none;
   border-radius: 10px;
   background: #ef4444;
-  color: #fff;
+  color: $white;
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   cursor: pointer;

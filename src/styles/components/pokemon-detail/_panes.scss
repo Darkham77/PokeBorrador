@@ -1,0 +1,170 @@
+// src/styles/components/pokemon-detail/_panes.scss
+@use "@/styles/core/tools" as *;
+
+.pdex-summary-pane {
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+    
+    .info-item {
+      background: rgba(255,255,255,0.04);
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 85px; 
+      text-align: center;
+      
+      .pdex-label { 
+        display: block; 
+        font-size: 8px; 
+        color: rgba(255,255,255,0.4); 
+        margin-bottom: 6px; 
+        font-weight: 800; 
+        line-height: 1.4;
+        @include pixelated;
+      }
+      .pdex-value { 
+        font-size: 16px; 
+        font-weight: 900; 
+        color: $white; 
+        line-height: 1.5;
+        @include pixelated;
+      }
+    }
+  }
+  
+  .description { 
+    font-size: 15px; 
+    line-height: 1.7; 
+    color: rgba(255,255,255,0.7); 
+    font-style: italic;
+    background: rgba(255,255,255,0.02);
+    padding: 20px;
+    border-radius: 16px;
+    border-left: 4px solid var(--type-color, var(--yellow));
+  }
+}
+
+.pdex-stats-pane {
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    
+    .pdex-stat-label { 
+      width: 45px; 
+      font-size: 8px; 
+      font-weight: 900; 
+      color: rgba(255,255,255,0.4); 
+      @include pixelated;
+    }
+    .pdex-stat-value { 
+      width: 40px; 
+      font-size: 16px; 
+      font-weight: 900; 
+      color: $white; 
+      text-align: right; 
+      @include pixelated;
+    }
+    .stat-bar-bg { 
+      flex: 1; 
+      height: 10px; 
+      background: rgba(255,255,255,0.05); 
+      border-radius: 5px; 
+      overflow: hidden; 
+      padding: 2px;
+    }
+    .stat-bar-fill { 
+      height: 100%; 
+      border-radius: 3px; 
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+  }
+  
+  .stat-total {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    align-items: center;
+    
+    .pdex-label { 
+      font-size: 8px; 
+      font-weight: 900; 
+      color: rgba(255,255,255,0.4); 
+      @include pixelated;
+    }
+    .pdex-value { 
+      font-family: 'Press Start 2P', monospace; 
+      font-size: 24px; 
+      font-weight: 900;
+      color: var(--yellow); 
+      @include pixelated;
+    }
+  }
+}
+
+.pdex-moves-pane {
+  .moves-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    
+    th {
+      text-align: left;
+      font-size: 9px;
+      color: rgba(255,255,255,0.3);
+      padding: 0 16px 8px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+    
+    td {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      font-size: 13px;
+      font-weight: 700;
+      
+      &:first-child { border-radius: 12px 0 0 12px; }
+      &:last-child { border-radius: 0 12px 12px 0; }
+    }
+    
+    .move-lv { 
+      font-family: 'Press Start 2P', cursive; 
+      font-size: 8px; 
+      color: var(--yellow);
+    }
+    
+    .move-name {
+      color: $white;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .move-type {
+      .type-tag {
+        font-size: 9px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        color: $black;
+        font-weight: 900;
+      }
+    }
+    
+    .move-power, .move-pp {
+      color: rgba(255,255,255,0.5);
+      font-family: 'Press Start 2P', cursive;
+      font-size: 8px;
+    }
+  }
+}

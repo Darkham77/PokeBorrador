@@ -129,7 +129,7 @@ const handlePanelClick = (event) => {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   font-weight: bold;
-  border: 2px solid #fff;
+  border: 2px solid $white;
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
   animation: pulse-red 2s infinite;
   z-index: 10;

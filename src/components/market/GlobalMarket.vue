@@ -163,7 +163,7 @@ async function refresh() {
   }
   .subtitle {
     font-size: 11px;
-    color: #64748b;
+    color: $muted;
     margin: 0;
   }
 }
@@ -182,7 +182,7 @@ async function refresh() {
     flex-direction: column;
     align-items: flex-end;
 
-    .label { font-size: 8px; color: #64748b; font-weight: bold; margin-bottom: 2px; }
+    .label { font-size: 8px; color: $muted; font-weight: bold; margin-bottom: 2px; }
     .val { font-family: 'Press Start 2P', monospace; font-size: 11px; color: #ffd700; }
   }
 }
@@ -190,7 +190,7 @@ async function refresh() {
 .refresh-btn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: $white;
   width: 40px;
   height: 40px;
   border-radius: 12px;
@@ -199,7 +199,7 @@ async function refresh() {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); transform: rotate(45deg); }
+  &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); transform: Rotate(45deg); }
   &:disabled { opacity: 0.5; cursor: wait; }
 }
 
@@ -213,7 +213,7 @@ async function refresh() {
   border: none;
   border-bottom: 2px solid transparent;
   padding: 12px 20px;
-  color: #64748b;
+  color: $muted;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -224,7 +224,7 @@ async function refresh() {
   .t-icon { font-size: 14px; }
   .t-label { font-size: 10px; font-weight: bold; }
 
-  &:hover { color: #fff; background: rgba(255, 255, 255, 0.03); }
+  &:hover { color: $white; background: rgba(255, 255, 255, 0.03); }
   &.active {
     color: #a855f7;
     background: rgba(168, 85, 247, 0.05);
@@ -271,14 +271,14 @@ async function refresh() {
     border: 1px solid rgba(255, 255, 255, 0.08);
 
     .icon { font-size: 64px; margin-bottom: 20px; display: block; filter: Grayscale(100%); opacity: 0.3; }
-    h2 { font-family: 'Press Start 2P', monospace; font-size: 14px; color: #fff; margin-bottom: 20px; }
-    p { font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 30px; }
+    h2 { font-family: 'Press Start 2P', monospace; font-size: 14px; color: $white; margin-bottom: 20px; }
+    p { font-size: 13px; color: $muted; line-height: 1.6; margin-bottom: 30px; }
     
     button {
       padding: 12px 30px;
       background: #a855f7;
       border: none;
-      color: #fff;
+      color: $white;
       border-radius: 12px;
       font-weight: bold;
       cursor: pointer;

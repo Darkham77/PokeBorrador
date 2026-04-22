@@ -239,7 +239,7 @@ onMounted(() => {
 
 @keyframes pulse-ball {
   from { transform: Scale(1); filter: Brightness(1); }
-  to { transform: Scale(1.2); filter: Brightness(1.4) drop-shadow(0 0 10px #ff4444); }
+  to { transform: Scale(1.2); filter: Brightness(1.4) Drop-Shadow(0 0 10px #ff4444); }
 }
 
 .progress-container {
@@ -293,7 +293,7 @@ onMounted(() => {
   .price-tag {
     font-family: 'Press Start 2P', cursive;
     font-size: 16px;
-    color: #fff;
+    color: $white;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     @include pixelated;
   }
@@ -332,7 +332,7 @@ onMounted(() => {
   
   &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    color: $white;
     border-color: rgba(255, 255, 255, 0.2);
   }
 

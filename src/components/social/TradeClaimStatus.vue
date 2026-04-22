@@ -76,14 +76,16 @@ const getSpriteUrl = (id) => {
       >
         <div class="asset-preview">
           <img 
-            v-if="claim.asset_data.type === 'pokemon'" 
+            v-if="claim.asset_data.type === 'pokemon'"
             :src="getSpriteUrl(claim.asset_data.data.id)" 
-            class="pixel-art pokemon-sprite"
+            class="pixel-art pokemon-sprite" 
+            @error="e => e.target.style.display = 'none'"
           >
           <img
             v-else
             :src="getAssetIcon(claim.asset_data)"
             class="pixel-art"
+            @error="e => e.target.style.display = 'none'"
           >
           
           <div class="asset-info">
@@ -123,7 +125,7 @@ const getSpriteUrl = (id) => {
   border-radius: 16px;
   padding: 16px;
   margin-top: 15px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
 }
 
 .claim-header {
@@ -141,7 +143,7 @@ const getSpriteUrl = (id) => {
 
 .receive-all-btn {
   background: var(--purple);
-  color: #fff;
+  color: $white;
   border: none;
   padding: 6px 12px;
   border-radius: 8px;
@@ -190,7 +192,7 @@ const getSpriteUrl = (id) => {
 .asset-name {
   font-size: 11px;
   font-weight: 700;
-  color: #fff;
+  color: $white;
 }
 
 .source {
@@ -202,7 +204,7 @@ const getSpriteUrl = (id) => {
 .claim-btn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: $white;
   padding: 6px 10px;
   border-radius: 8px;
   font-size: 9px;

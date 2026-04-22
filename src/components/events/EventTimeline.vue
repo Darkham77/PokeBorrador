@@ -139,7 +139,7 @@ const formatBonus = (key, val) => {
   padding: 24px;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: $white;
 }
 
 .press-start {
@@ -169,7 +169,7 @@ const formatBonus = (key, val) => {
 .empty-state {
   text-align: center;
   padding: 40px 0;
-  color: #64748b;
+  color: $muted;
   .icon { font-size: 40px; margin-bottom: 10px; opacity: 0.5; }
 }
 
@@ -197,7 +197,7 @@ const formatBonus = (key, val) => {
     .ev-icon { font-size: 32px; }
     .ev-title-group {
       flex: 1;
-      h4 { margin-bottom: 6px; color: #fff; }
+      h4 { margin-bottom: 6px; color: $white; }
       p { font-size: 11px; color: #94a3b8; line-height: 1.4; }
     }
 
@@ -230,7 +230,7 @@ const formatBonus = (key, val) => {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding-top: 20px;
 
-  .section-title { color: #64748b; margin-bottom: 16px; }
+  .section-title { color: $muted; margin-bottom: 16px; }
 
   .finished-list {
     display: flex;
@@ -248,7 +248,7 @@ const formatBonus = (key, val) => {
     border: 1px solid rgba(255, 255, 255, 0.03);
 
     .res-title { font-size: 7px; color: #cbd5e1; display: block; margin-bottom: 4px; }
-    p { font-size: 10px; color: #64748b; margin: 0; }
+    p { font-size: 10px; color: $muted; margin: 0; }
 
     .winner-preview {
       font-size: 11px;

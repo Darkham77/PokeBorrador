@@ -241,8 +241,8 @@ const mapImageUrl = computed(() => {
   letter-spacing: 2px;
   margin-bottom: 6px;
 
-  &.union { color: #3b82f6; text-shadow: 0 0 10px #3b82f6, 0 2px 4px #000; }
-  &.poder { color: #ef4444; text-shadow: 0 0 10px #ef4444, 0 2px 4px #000; }
+  &.union { color: #3b82f6; text-shadow: 0 0 10px #3b82f6, 0 2px 4px $black; }
+  &.poder { color: #ef4444; text-shadow: 0 0 10px #ef4444, 0 2px 4px $black; }
   &:not(.union):not(.poder) { color: #555; font-size: 8px; }
 }
 
@@ -259,7 +259,7 @@ const mapImageUrl = computed(() => {
   background: rgba(74, 222, 128, 0.8);
   border: 2px solid #4ade80;
   border-radius: 8px;
-  color: #fff;
+  color: $white;
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
   cursor: pointer;

@@ -74,8 +74,8 @@ const decline = async () => {
   width: 90%;
   max-width: 360px;
   background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px);
   border: 1px solid rgba(139, 92, 246, 0.4);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
   border-radius: 20px;
@@ -101,7 +101,7 @@ const decline = async () => {
   .challenger {
     font-size: 14px;
     font-weight: bold;
-    color: #fff;
+    color: $white;
     display: block;
     margin-bottom: 4px;
   }
@@ -153,11 +153,11 @@ button {
 
 @keyframes slideDown {
   from {
-    transform: translate(-50%, -100%);
+    transform: Translate(-50%, -100%);
     opacity: 0;
   }
   to {
-    transform: translate(-50%, 0);
+    transform: Translate(-50%, 0);
     opacity: 1;
   }
 }

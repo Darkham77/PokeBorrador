@@ -26,6 +26,7 @@ const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
           <img
             :src="getSprite(speciesId)"
             class="evo-sprite"
+            @error="e => e.target.style.display = 'none'"
           >
           <span class="target-name">{{ speciesName }}</span>
         </div>
@@ -40,6 +41,7 @@ const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
                 :src="getSprite(evo.to.toLowerCase())"
                 class="evo-sprite"
                 :class="{ 'silhouette': !evo.isCaught }"
+                @error="e => e.target.style.display = 'none'"
               >
             </template>
             <div

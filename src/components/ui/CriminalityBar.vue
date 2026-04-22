@@ -69,26 +69,26 @@ const isMax = computed(() => criminality.value >= 100)
   content: '';
   position: absolute;
   inset: -5px;
-  background: #000000;
-  filter: blur(10px);
+  background: $darker;
+  filter: Blur(10px);
   border-radius: 40px;
   z-index: -1;
 }
 
 .label {
   writing-mode: vertical-lr;
-  transform: rotate(180deg);
+  transform: Rotate(180deg);
   font-size: 8px;
   color: #ef4444;
   margin-bottom: 8px;
-  text-shadow: 1px 1px #000;
+  text-shadow: 1px 1px $black;
   font-family: 'Press Start 2P', cursive;
 }
 
 .bar-bg {
   width: 12px;
   height: 200px;
-  background: #000;
+  background: $black;
   border: 2px solid #333;
   border-radius: 10px;
   display: flex;
@@ -110,7 +110,7 @@ const isMax = computed(() => criminality.value >= 100)
   font-size: 10px;
   font-weight: 800;
   color: #ef4444;
-  text-shadow: 1px 1px #000;
+  text-shadow: 1px 1px $black;
 }
 
 .blinking {

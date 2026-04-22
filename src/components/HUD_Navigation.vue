@@ -290,7 +290,7 @@ const toggleGroupMenu = (name) => {
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 12px;
   padding: 8px 12px;
-  color: #fff;
+  color: $white;
   cursor: pointer;
   display: flex;
   flex-direction: row;
@@ -434,7 +434,7 @@ const toggleGroupMenu = (name) => {
     .icon { font-size: 14px; }
     .label { 
       font-size: 8px; 
-      color: #fff;
+      color: $white;
       white-space: nowrap;
       @include pixelated;
     }

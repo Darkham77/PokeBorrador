@@ -41,7 +41,7 @@ const formatDate = (dateStr) => {
 
 <style scoped lang="scss">
 .egg-card-retro {
-  background: #1c2128; 
+  background: $card-dark; 
   border: 1px solid rgba(255,255,255,0.06); 
   padding: 20px; 
   border-radius: 16px;
@@ -62,14 +62,14 @@ const formatDate = (dateStr) => {
     justify-content: center; 
   }
   
-  .egg-name { font-size: 12px; font-weight: 800; color: #fff; margin-bottom: 5px; }
-  .egg-time { font-size: 9px; color: #64748b; margin-bottom: 12px; }
+  .egg-name { font-size: 12px; font-weight: 800; color: $white; margin-bottom: 5px; }
+  .egg-time { font-size: 9px; color: $muted; margin-bottom: 12px; }
   
   .collect-btn-retro { 
     width: 100%; 
     padding: 10px; 
     background: #a855f7; 
-    color: #fff; 
+    color: $white; 
     border: none; 
     border-radius: 8px;
     font-family: 'Press Start 2P', monospace; 
@@ -84,7 +84,7 @@ const formatDate = (dateStr) => {
     position: absolute; 
     top: -10px; 
     right: -10px; 
-    background: #000; 
+    background: $black; 
     border: 1px solid #a855f7; 
     color: #a855f7; 
     padding: 4px 8px; 

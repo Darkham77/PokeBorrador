@@ -68,7 +68,7 @@ async function addItem(item, qty = 10) {
   padding: 12px 16px;
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: $white;
   border-radius: 12px;
   font-size: 13px;
   

@@ -36,6 +36,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
         <img
           :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny })"
           class="preview-sprite"
+          @error="e => e.target.style.display = 'none'"
         >
         <div class="preview-info">
           <div class="name">
@@ -131,7 +132,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   &:hover {
     background: rgba(255, 255, 255, 0.06);
     border-color: var(--purple);
-    color: #fff;
+    color: $white;
   }
 }
 
@@ -153,7 +154,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   }
 
   .preview-sprite { width: 48px; height: 48px; image-rendering: pixelated; }
-  .preview-info { flex: 1; .name { font-weight: 800; font-size: 14px; color: #fff; } .meta { font-size: 11px; color: #888; } }
+  .preview-info { flex: 1; .name { font-weight: 800; font-size: 14px; color: $white; } .meta { font-size: 11px; color: #888; } }
   .change-hint { position: absolute; right: 15px; font-size: 8px; font-family: 'Press Start 2P', monospace; color: var(--purple); opacity: 0.6; transition: opacity 0.2s; }
 }
 
@@ -178,7 +179,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   transition: all 0.2s;
 
   &:hover { background: rgba(255,255,255,0.08); }
-  &.selected { background: var(--purple); color: #fff; border-color: var(--purple); box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
+  &.selected { background: var(--purple); color: $white; border-color: var(--purple); box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
 }
 
 .money-input-group {

@@ -94,6 +94,7 @@ const handleConfirm = () => {
             <img
               :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
               class="p-sprite"
+              @error="e => e.target.style.display = 'none'"
             >
             <div class="p-info">
               <div class="p-name">
@@ -128,8 +129,8 @@ const handleConfirm = () => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -156,12 +157,12 @@ const handleConfirm = () => {
   position: relative;
   text-align: center;
 
-  h3 { margin: 0; font-size: 16px; color: #fff; }
+  h3 { margin: 0; font-size: 16px; color: $white; }
   .subtitle { font-size: 12px; color: var(--gray); margin: 4px 0 0; }
   .close-btn { 
     position: absolute; top: 15px; right: 15px; 
     background: none; border: none; color: #666; font-size: 18px; cursor: pointer;
-    &:hover { color: #fff; }
+    &:hover { color: $white; }
   }
 }
 
@@ -215,14 +216,14 @@ const handleConfirm = () => {
     .selected & {
       background: var(--purple);
       border-color: var(--purple);
-      color: #fff;
+      color: $white;
     }
   }
 
   .p-sprite { width: 48px; height: 48px; image-rendering: pixelated; }
   .p-info {
     flex: 1;
-    .p-name { font-size: 14px; font-weight: 700; color: #fff; }
+    .p-name { font-size: 14px; font-weight: 700; color: $white; }
     .p-lv { font-size: 11px; color: var(--gray); }
   }
 }
@@ -245,7 +246,7 @@ const handleConfirm = () => {
   .confirm-btn {
     padding: 10px 24px;
     background: var(--purple);
-    color: #fff;
+    color: $white;
     border: none;
     border-radius: 10px;
     font-weight: 700;

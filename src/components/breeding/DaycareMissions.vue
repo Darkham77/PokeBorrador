@@ -2,6 +2,7 @@
 import { useBreedingStore } from '@/stores/breeding';
 import { useUIStore } from '@/stores/ui';
 import { ref } from 'vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import DaycarePicker from './DaycarePicker.vue';
 
 const breedingStore = useBreedingStore();
@@ -55,8 +56,15 @@ const handleDelivery = (pokemon) => {
         
         <div class="trainer-section">
           <div class="trainer-avatar">
-            <!-- In a real app, these would be local assets or dynamic URLs -->
-            <span class="avatar-placeholder">👤</span>
+            <img 
+              :src="getAssetUrl(ASSET_TYPES.TRAINER, mission.trainerSprite)" 
+              class="pixelated"
+              @error="$event.target.style.display = 'none'; $event.target.nextSibling.style.display = 'flex'"
+            >
+            <span
+              class="avatar-placeholder"
+              style="display: none;"
+            >👤</span>
           </div>
           <div class="dialogue-box">
             <span class="trainer-name">{{ mission.trainerName }} dice:</span>
@@ -160,7 +168,7 @@ const handleDelivery = (pokemon) => {
   top: 8px;
   right: 8px;
   background: #22c55e;
-  color: #fff;
+  color: $white;
   font-size: 8px;
   font-family: 'Press Start 2P', cursive;
   padding: 4px 8px;
@@ -180,12 +188,21 @@ const handleDelivery = (pokemon) => {
     align-items: center;
     justify-content: center;
     font-size: 24px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      @include pixelated;
+    }
+
+    .pixelated { image-rendering: pixelated; }
   }
   
   .dialogue-box {
     flex: 1;
     .trainer-name { font-size: 10px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; display: block; }
-    .dialogue { font-size: 12px; color: #fff; line-height: 1.4; font-style: italic; }
+    .dialogue { font-size: 12px; color: $white; line-height: 1.4; font-style: italic; }
   }
 }
 
@@ -209,7 +226,7 @@ const handleDelivery = (pokemon) => {
   .reward-info {
     display: flex;
     flex-direction: column;
-    .label { font-size: 8px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .label { font-size: 8px; color: $muted; text-transform: uppercase; letter-spacing: 0.5px; }
     .val { font-size: 12px; color: #22c55e; font-weight: 800; }
   }
 }
@@ -219,7 +236,7 @@ const handleDelivery = (pokemon) => {
   padding: 12px;
   border-radius: 10px;
   background: linear-gradient(135deg, #8b5cf6, #6366f1);
-  color: #fff;
+  color: $white;
   border: none;
   font-family: 'Press Start 2P', cursive;
   font-size: 8px;

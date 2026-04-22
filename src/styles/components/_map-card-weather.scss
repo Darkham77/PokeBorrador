@@ -231,13 +231,13 @@
 }
 
 @keyframes sand-drift-back {
-  0% { transform: Rotate(-5deg) translate(0, 0); }
-  100% { transform: Rotate(-5deg) translate(-128px, 64px); }
+  0% { transform: Rotate(-5deg) Translate(0, 0); }
+  100% { transform: Rotate(-5deg) Translate(-128px, 64px); }
 }
 
 @keyframes sand-drift-front {
-  0% { transform: Rotate(-5deg) translate(0, 0); }
-  100% { transform: Rotate(-5deg) translate(-256px, 128px); }
+  0% { transform: Rotate(-5deg) Translate(0, 0); }
+  100% { transform: Rotate(-5deg) Translate(-256px, 128px); }
 }
 
 @keyframes fog-pulse {

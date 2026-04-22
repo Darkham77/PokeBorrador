@@ -89,7 +89,7 @@ const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') wi
   border-left: 5px solid var(--move-color);
   border-radius: 12px;
   padding: 15px;
-  color: #fff;
+  color: $white;
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;

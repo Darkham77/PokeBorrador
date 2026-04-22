@@ -230,7 +230,7 @@ if (typeof window !== 'undefined') {
     border-radius: 12px;
     transition: all 0.2s;
 
-    &:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    &:hover { color: $white; background: rgba(255, 255, 255, 0.05); }
     &.active {
       background: rgba(124, 58, 237, 0.15);
       color: #c084fc;
@@ -263,7 +263,7 @@ if (typeof window !== 'undefined') {
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #64748b;
+  color: $muted;
   font-family: 'Press Start 2P', monospace;
   @include pixelated;
   font-size: 7px;

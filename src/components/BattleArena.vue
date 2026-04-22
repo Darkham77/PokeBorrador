@@ -189,7 +189,7 @@ watch(() => player.value?.hp, (newHp) => {
   position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,7 +198,7 @@ watch(() => player.value?.hp, (newHp) => {
 
 .continue-btn-final {
   background: linear-gradient(135deg, var(--blue), #2563eb);
-  color: #fff;
+  color: $white;
   border: none;
   padding: 20px 50px;
   font-family: 'Press Start 2P', monospace;

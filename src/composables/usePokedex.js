@@ -1,15 +1,25 @@
 import { ref, computed } from 'vue'
+import { useUIStore } from '@/stores/ui'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 export function usePokedex(gs, currentOrder, _currentGen) {
+  const uiStore = useUIStore()
   const searchQuery = ref('')
   const sortBy = ref('number') // 'number' | 'name'
 
   const pokemonList = computed(() => {
-    const caught = gs.value.pokedex || []
-    const seen = gs.value.seenPokedex || []
+    let caught = gs.value.pokedex || []
+    let seen = gs.value.seenPokedex || []
+    
+    // Debug Overrides (Temporary)
+    if (uiStore.debugPokedexMode === 'caught') {
+      caught = [...currentOrder.value]
+      seen = [...currentOrder.value]
+    } else if (uiStore.debugPokedexMode === 'seen') {
+      seen = [...currentOrder.value]
+    }
     
     // 1. Prepare raw list with proper numbers
     const list = currentOrder.value.map((id) => {

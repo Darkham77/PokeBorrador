@@ -71,7 +71,7 @@ const isEmpty = computed(() => !props.pokemon)
     .plus-icon {
       transform: Scale(1.2) Rotate(90deg);
       filter: Drop-shadow(0 0 15px var(--yellow));
-      color: #fff;
+      color: $white;
     }
     
     .label {

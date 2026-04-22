@@ -123,6 +123,7 @@ const getSprite = (id, shiny) => {
             <img
               :src="getSprite(p.id, p.isShiny)"
               class="poke-sprite"
+              @error="e => e.target.style.display = 'none'"
             >
           </div>
           <div class="poke-info">
@@ -187,8 +188,8 @@ const getSprite = (id, shiny) => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -246,7 +247,7 @@ const getSprite = (id, shiny) => {
     border: 1px solid rgba(255,255,255,0.1);
     padding: 12px;
     border-radius: 12px;
-    color: #fff;
+    color: $white;
     font-size: 12px;
     outline: none;
     transition: border-color 0.2s;
@@ -307,7 +308,7 @@ const getSprite = (id, shiny) => {
 }
 
 .top-row { display: flex; justify-content: space-between; align-items: center; }
-.name { font-weight: 800; color: #fff; font-size: 13px; }
+.name { font-weight: 800; color: $white; font-size: 13px; }
 .lv { font-size: 10px; color: var(--gray); }
 .genetics { font-size: 9px; color: var(--gray); font-family: monospace; }
 
@@ -319,7 +320,7 @@ const getSprite = (id, shiny) => {
 }
 
 .waiting-status {
-  color: #64748b;
+  color: $muted;
 }
 
 .egg-hint { color: var(--purple); font-style: italic; }
@@ -368,7 +369,7 @@ const getSprite = (id, shiny) => {
 
   &:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: $white;
   }
 }
 </style>

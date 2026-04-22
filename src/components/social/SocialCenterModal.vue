@@ -132,7 +132,7 @@ onMounted(() => {
     background: transparent;
     border: none;
     padding: 12px;
-    color: #64748b;
+    color: $muted;
     font-family: 'Press Start 2P', cursive;
     font-size: 7px;
     cursor: pointer;
@@ -160,7 +160,7 @@ onMounted(() => {
       right: 10px;
       transform: TranslateY(-50%);
       background: #ef4444;
-      color: #fff;
+      color: $white;
       font-size: 9px;
       min-width: 16px;
       height: 16px;

@@ -86,6 +86,7 @@ const selectPokemon = (p) => {
               <img
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
                 :alt="p.name"
+                @error="e => e.target.style.display = 'none'"
               >
             </div>
             <div class="info">
@@ -124,8 +125,8 @@ const selectPokemon = (p) => {
   inset: 0;
   z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -152,7 +153,7 @@ const selectPokemon = (p) => {
     position: relative;
     text-align: center;
 
-    h3 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    h3 { font-size: 16px; font-weight: 700; color: $white; margin-bottom: 4px; }
     p { font-size: 12px; color: #94a3b8; }
     
     .btn-close {
@@ -164,7 +165,7 @@ const selectPokemon = (p) => {
       color: #94a3b8;
       font-size: 24px;
       cursor: pointer;
-      &:hover { color: #fff; }
+      &:hover { color: $white; }
     }
   }
 }
@@ -175,7 +176,7 @@ const selectPokemon = (p) => {
   min-height: 0;
   padding: 16px;
   
-  .empty { padding: 40px; text-align: center; color: #64748b; font-size: 14px; }
+  .empty { padding: 40px; text-align: center; color: $muted; font-size: 14px; }
 }
 
 .pokemon-grid {
@@ -220,7 +221,7 @@ const selectPokemon = (p) => {
     display: flex;
     justify-content: space-between;
     margin-bottom: 4px;
-    .name { font-size: 14px; font-weight: 700; color: #fff; }
+    .name { font-size: 14px; font-weight: 700; color: $white; }
     .lvl { font-size: 11px; color: #94a3b8; }
   }
   .stats {

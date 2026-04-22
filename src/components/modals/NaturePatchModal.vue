@@ -109,7 +109,7 @@ const close = () => {
       .n-name { color: var(--yellow); }
     }
 
-    .n-name { display: block; font-weight: 800; color: #fff; font-size: 14px; }
+    .n-name { display: block; font-weight: 800; color: $white; font-size: 14px; }
     .n-info { display: block; font-size: 10px; color: var(--gray); margin-top: 4px; }
   }
 }

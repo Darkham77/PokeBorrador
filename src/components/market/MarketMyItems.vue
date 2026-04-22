@@ -48,6 +48,7 @@ async function handleCancel(id) {
               <img
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, item.data.id)"
                 class="p-sprite pixelated"
+                @error="e => e.target.style.display = 'none'"
               >
             </template>
             <template v-else>
@@ -156,7 +157,7 @@ async function handleCancel(id) {
     flex: 1;
     display: flex;
     flex-direction: column;
-    .name { font-size: 13px; font-weight: bold; color: #fff; }
+    .name { font-size: 13px; font-weight: bold; color: $white; }
     .price { font-family: 'Press Start 2P', monospace; font-size: 8px; color: #ffd700; margin-top: 4px;}
   }
 
@@ -170,7 +171,7 @@ async function handleCancel(id) {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
-    &:hover { background: #f87171; color: #fff; }
+    &:hover { background: #f87171; color: $white; }
   }
 }
 
@@ -194,8 +195,8 @@ async function handleCancel(id) {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    .date { font-size: 10px; color: #64748b; }
-    .item-name { font-size: 13px; color: #fff; strong { color: #a855f7; } }
+    .date { font-size: 10px; color: $muted; }
+    .item-name { font-size: 13px; color: $white; strong { color: #a855f7; } }
   }
 
   .sale-value {
@@ -203,14 +204,14 @@ async function handleCancel(id) {
     display: flex;
     flex-direction: column;
     .net-gain { font-size: 14px; font-weight: bold; color: #22c55e; }
-    .gross-price { font-size: 9px; color: #64748b; }
+    .gross-price { font-size: 9px; color: $muted; }
   }
 }
 
 .empty-state {
   padding: 30px;
   text-align: center;
-  color: #64748b;
+  color: $muted;
   font-size: 12px;
   background: rgba(255, 255, 255, 0.01);
   border-radius: 12px;

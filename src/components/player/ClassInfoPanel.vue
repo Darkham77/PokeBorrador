@@ -66,6 +66,7 @@ const rankTitle = computed(() => {
                 :src="cls.sprite"
                 :alt="cls.name"
                 class="class-sprite"
+                @error="e => e.target.style.display = 'none'"
               >
               <div class="avatar-floating">
                 <PlayerAvatar :size="60" />
@@ -233,8 +234,8 @@ const rankTitle = computed(() => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px);
   animation: fadeIn 0.2s ease;
   transform: translateZ(0);
 }
@@ -265,7 +266,7 @@ const rankTitle = computed(() => {
   border-radius: 50%;
   cursor: pointer;
   z-index: 10;
-  &:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+  &:hover { background: rgba(255, 255, 255, 0.1); color: $white; }
 }
 
 .modal-layout {
@@ -299,7 +300,7 @@ const rankTitle = computed(() => {
     width: 220px;
     height: auto;
     image-rendering: pixelated;
-    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+    filter: Drop-Shadow(0 10px 20px rgba(0, 0, 0, 0.5));
   }
 
   .avatar-floating {
@@ -334,7 +335,7 @@ const rankTitle = computed(() => {
 
   .icon { font-size: 24px; }
   .stat-info {
-    label { font-size: 8px; color: #64748b; margin-bottom: 4px; display: block; }
+    label { font-size: 8px; color: $muted; margin-bottom: 4px; display: block; }
     .value { font-size: 22px; font-weight: 900; }
     .value.rank { font-size: 14px; color: #eab308; text-transform: uppercase; font-weight: 700; }
   }
@@ -374,14 +375,14 @@ const rankTitle = computed(() => {
   gap: 12px;
   align-items: center;
 
-  &.locked { opacity: 0.6; .bonus-text { color: #64748b; } }
+  &.locked { opacity: 0.6; .bonus-text { color: $muted; } }
   &.penalty { border-left-color: rgba(239, 68, 68, 0.4); }
 
   .status-icon { font-size: 16px; flex-shrink: 0; }
   .ability-content { flex: 1; min-width: 0; }
   .ability-top { display: flex; align-items: center; gap: 8px; }
   .bonus-text { font-size: 13px; color: #e2e8f0; line-height: 1.4; flex-grow: 1; }
-  .lv-req { font-size: 8px; background: rgba(255, 255, 255, 0.05); padding: 2px 6px; border-radius: 4px; color: #64748b; }
+  .lv-req { font-size: 8px; background: rgba(255, 255, 255, 0.05); padding: 2px 6px; border-radius: 4px; color: $muted; }
   .req-text { font-size: 10px; color: #475569; margin-top: 4px; }
 }
 
@@ -390,7 +391,7 @@ const rankTitle = computed(() => {
   cursor: help;
   color: #475569;
   font-size: 12px;
-  &:hover { color: #fff; .tooltip-content { visibility: visible; opacity: 1; transform: translateY(0); } }
+  &:hover { color: $white; .tooltip-content { visibility: visible; opacity: 1; transform: translateY(0); } }
 }
 
 .tooltip-content {
@@ -429,7 +430,7 @@ const rankTitle = computed(() => {
   padding: 14px;
   border: none;
   border-radius: 14px;
-  color: #fff;
+  color: $white;
   font-size: 9px;
   cursor: pointer;
   transition: all 0.2s;
@@ -456,7 +457,7 @@ const rankTitle = computed(() => {
     font-size: 8px;
     line-height: 1.4;
     .cost { color: #f59e0b; font-size: 7px; }
-    &:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+    &:hover { background: rgba(255, 255, 255, 0.05); color: $white; }
   }
 
   &.primary {

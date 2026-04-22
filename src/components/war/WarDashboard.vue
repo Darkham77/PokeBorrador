@@ -63,6 +63,7 @@ onMounted(async () => {
         <img
           :src="getAssetUrl(ASSET_TYPES.FACTION, 'union')"
           alt="Union"
+          @error="e => e.target.style.display = 'none'"
         >
         <div class="count">
           {{ globalScore.union }}
@@ -78,6 +79,7 @@ onMounted(async () => {
         <img
           :src="getAssetUrl(ASSET_TYPES.FACTION, 'poder')"
           alt="Poder"
+          @error="e => e.target.style.display = 'none'"
         >
         <div class="count">
           {{ globalScore.poder }}
@@ -257,7 +259,7 @@ onMounted(async () => {
 
   .progress-bar {
     height: 12px;
-    background: #000;
+    background: $black;
     border-radius: 6px;
     overflow: hidden;
     
@@ -287,7 +289,7 @@ onMounted(async () => {
         width: 20px;
         height: 20px;
         background: #333;
-        border: 2px solid #000;
+        border: 2px solid $black;
         border-radius: 50%;
         margin-bottom: 4px;
         transition: all 0.3s;
@@ -302,7 +304,7 @@ onMounted(async () => {
       &.achieved {
         .dot {
           background: #3b82f6;
-          border-color: #fff;
+          border-color: $white;
           box-shadow: 0 0 8px #3b82f6;
         }
         .pt-label { color: white; }

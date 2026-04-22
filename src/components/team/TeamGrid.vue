@@ -130,7 +130,7 @@ const onDrop = (e, targetIndex) => {
   padding: 60px 20px;
   background: #111;
   border: 4px solid #333;
-  box-shadow: 0 0 0 4px #000;
+  box-shadow: 0 0 0 4px $black;
   color: #888;
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;

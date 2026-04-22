@@ -63,6 +63,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             <img
               :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'union')"
               class="faction-icon-large"
+              @error="e => e.target.style.display = 'none'"
             >
           </div>
           <div class="faction-info">
@@ -79,6 +80,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             <img
               :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'poder')"
               class="faction-icon-large"
+              @error="e => e.target.style.display = 'none'"
             >
           </div>
           <div class="faction-info">
@@ -102,7 +104,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   
   .intro-text {
     font-size: 14px;
-    color: #fff;
+    color: $white;
     margin-bottom: 8px;
     line-height: 1.4;
   }
@@ -110,7 +112,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   .cost-text {
     font-family: 'Press Start 2P', monospace;
     font-size: 9px;
-    color: #fff;
+    color: $white;
     
     .coin { color: var(--yellow, #ffd700); }
   }
@@ -177,7 +179,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
 .faction-motto {
   font-size: 12px;
-  color: #fff;
+  color: $white;
   opacity: 0.8;
 }
 

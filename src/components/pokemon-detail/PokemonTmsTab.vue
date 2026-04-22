@@ -2,10 +2,13 @@
 import { ref, computed } from 'vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import { GAME_TMS, TM_COMPAT } from '@/data/pokedex'
+import { useUIStore } from '@/stores/ui'
 
 const props = defineProps({
   speciesId: { type: String, required: true }
 })
+
+const ui = useUIStore()
 
 const tmSearchQuery = ref('')
 const tmSortBy = ref('id')
@@ -68,8 +71,9 @@ const tms = computed(() => {
       <div
         v-for="tm in tms"
         :key="tm.id"
-        class="tm-item"
+        class="tm-item clickable-item"
         :class="{ incompatible: !tm.isCompatible }"
+        @click="ui.openMoveDetail(tm.name)"
       >
         <div
           class="tm-id"

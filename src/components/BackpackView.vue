@@ -234,6 +234,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
             v-if="item.info?.sprite"
             :src="getAssetUrl(ASSET_TYPES.ITEM, item.info.sprite)"
             class="item-img"
+            @error="e => e.target.style.display = 'none'"
           >
           <span
             v-else
@@ -378,7 +379,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 12px;
-  color: #fff;
+  color: $white;
   font-size: 13px;
   font-family: 'Nunito', sans-serif;
   outline: none;

@@ -86,16 +86,18 @@ const close = () => {
           
           <img 
             v-if="step !== 'transformed' && step !== 'final'"
-            :src="fromSprite" 
+            :src="fromSprite"
             class="pokemon-sprite from" 
-            :class="{ flashing: step === 'flashing', 'flash-on': flashesDone % 2 !== 0 }"
+            :class="{ flashing: step === 'flashing', 'flash-on': flashesDone % 2 !== 0 }" 
+            @error="e => e.target.style.display = 'none'"
           >
 
           <img 
             v-if="step === 'transformed' || step === 'final'"
-            :src="toSprite" 
-            class="pokemon-sprite to"
+            :src="toSprite"
+            class="pokemon-sprite to" 
             :class="{ 'scale-in': step === 'transformed' }"
+            @error="e => e.target.style.display = 'none'"
           >
         </div>
 
@@ -134,13 +136,13 @@ const close = () => {
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay);
-  background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
+  background: radial-gradient(circle at center, #1a1a2e 0%, $dark 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Press Start 2P', cursive;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
   transform: translateZ(0);
 }
 
@@ -165,12 +167,12 @@ const close = () => {
   height: 150px;
   border-radius: 50%;
   background: var(--blue, #3b82f6);
-  filter: blur(40px);
+  filter: Blur(40px);
   opacity: 0.2;
   transition: all 1s ease;
   
   &.flashing {
-    background: #fff;
+    background: $white;
     opacity: 0.5;
     transform: Scale(1.5);
   }
@@ -211,7 +213,7 @@ const close = () => {
 }
 
 .status-text {
-  color: #fff;
+  color: $white;
   font-size: 12px;
   line-height: 1.6;
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
@@ -220,7 +222,7 @@ const close = () => {
 .result-text {
   animation: fadeIn 0.5s ease;
   p {
-    color: #fff;
+    color: $white;
     font-size: 13px;
     margin-bottom: 24px;
     line-height: 1.8;
@@ -233,7 +235,7 @@ const close = () => {
 
 .btn-confirm {
   background: var(--blue, #3b82f6);
-  color: #fff;
+  color: $white;
   border: none;
   padding: 12px 24px;
   font-family: inherit;
@@ -260,7 +262,7 @@ const close = () => {
   position: absolute;
   width: 4px;
   height: 4px;
-  background: #fff;
+  background: $white;
   border-radius: 2px;
   opacity: 0;
   

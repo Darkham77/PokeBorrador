@@ -82,7 +82,7 @@ const updateZoom = (val) => {
 .zoom-label {
   display: block;
   font-size: 14px;
-  color: #fff;
+  color: $white;
   margin-bottom: 20px;
   font-weight: 700;
 }

@@ -97,12 +97,23 @@ const bannerStyle = computed(() => ({
             v-if="missionSprites.length"
             class="pc-banner-spawns"
           >
-            <img
+            <div
               v-for="(spriteId, i) in missionSprites"
               :key="i"
-              :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
-              class="pixelated"
+              class="sprite-container"
             >
+              <img
+                :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
+                class="pixelated"
+                @error="$event.target.style.display = 'none'; $event.target.nextSibling.style.display = 'flex'"
+              >
+              <div
+                class="sprite-fallback"
+                style="display: none;"
+              >
+                👤
+              </div>
+            </div>
           </div>
         </div>
 
@@ -131,6 +142,7 @@ const bannerStyle = computed(() => ({
               :key="i"
               :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
               class="pixelated"
+              @error="e => e.target.style.display = 'none'"
             >
           </div>
         </div>
@@ -216,7 +228,7 @@ const bannerStyle = computed(() => ({
     content: '';
     position: absolute;
     inset: -5px; // Sangrado profundo
-    background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.85) 35%, transparent 70%);
+    background: linear-gradient(to top, $black 0%, rgba(0,0,0,0.85) 35%, transparent 70%);
     z-index: 1;
     pointer-events: none;
     border-radius: 16px;
@@ -321,8 +333,8 @@ const bannerStyle = computed(() => ({
     border-radius: inherit;
     padding: 1px;
     background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.01));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient($white 0 0) content-box, linear-gradient($white 0 0);
+    mask: linear-gradient($white 0 0) content-box, linear-gradient($white 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -359,7 +371,7 @@ const bannerStyle = computed(() => ({
   font-size: 13px; // Matched legacy size
   font-weight: 700;
   line-height: 1.2;
-  color: #fff;
+  color: $white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -381,14 +393,35 @@ const bannerStyle = computed(() => ({
   margin-top: 4px;
   min-height: 48px;
 
+  .sprite-container {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:not(:first-child) { margin-left: -15px; }
+  }
+
   img {
-    width: 48px; // Matched legacy size
+    width: 48px; 
     height: 48px;
     object-fit: contain;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+    filter: Drop-Shadow(0 4px 6px rgba(0,0,0,0.4));
     @include pixelated;
-    
-    &:not(:first-child) { margin-left: -15px; } // Increased overlap
+  }
+
+  .sprite-fallback {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    color: $muted;
   }
 }
 

@@ -265,7 +265,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
 }
 
 .arrow.rotated {
-  transform: rotate(180deg);
+  transform: Rotate(180deg);
 }
 
 .search-container {
@@ -278,7 +278,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
-  color: #fff;
+  color: $white;
   font-size: 13px;
   font-family: 'Nunito', sans-serif;
   outline: none;
@@ -320,7 +320,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
 .box-filter-btn.active {
   border-color: var(--purple-light) !important;
   background: rgba(199, 125, 255, 0.2) !important;
-  color: #fff !important;
+  color: $white !important;
 }
 
 .filter-split {

@@ -120,7 +120,7 @@ function getMissionDesc(mId, clsId) {
     background: none; border: none; color: rgba(255,255,255,0.4);
     font-family: 'Press Start 2P', cursive; font-size: 9px; cursor: pointer;
     @include pixelated;
-    &:hover { color: #fff; }
+    &:hover { color: $white; }
   }
 }
 
@@ -144,7 +144,7 @@ function getMissionDesc(mId, clsId) {
   .banner-info {
     flex: 1;
     h3 { font-family: 'Press Start 2P', cursive; font-size: 10px; color: #22c55e; margin-bottom: 8px; }
-    .m-name { font-size: 14px; color: #fff; font-weight: 700; margin-bottom: 12px; }
+    .m-name { font-size: 14px; color: $white; font-weight: 700; margin-bottom: 12px; }
   }
 
   .mission-progress-bar {
@@ -153,7 +153,7 @@ function getMissionDesc(mId, clsId) {
   }
 
   .collect-btn {
-    padding: 14px 24px; background: #22c55e; color: #fff; border: none; border-radius: 12px;
+    padding: 14px 24px; background: #22c55e; color: $white; border: none; border-radius: 12px;
     font-family: 'Press Start 2P', cursive; font-size: 10px; cursor: pointer;
     box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
     &:hover { transform: translateY(-2px); filter: Brightness(1.1); }
@@ -183,7 +183,7 @@ function getMissionDesc(mId, clsId) {
     font-family: 'Press Start 2P', cursive; font-size: 8px; color: rgba(255,255,255,0.3); 
   }
   
-  .m-title { margin: 0; font-size: 16px; color: #fff; font-weight: 800; }
+  .m-title { margin: 0; font-size: 16px; color: $white; font-weight: 800; }
   .m-desc { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.5; margin-bottom: 8px; }
   
   .start-btn {
@@ -192,7 +192,7 @@ function getMissionDesc(mId, clsId) {
     background: rgba(255,255,255,0.05);
     color: #cbd5e1; font-family: 'Press Start 2P', cursive; font-size: 8px; cursor: pointer;
     transition: all 0.2s;
-    &:hover:not(:disabled) { background: var(--cls-color); color: #fff; }
+    &:hover:not(:disabled) { background: var(--cls-color); color: $white; }
     &:disabled { opacity: 0.3; cursor: not-allowed; }
   }
 

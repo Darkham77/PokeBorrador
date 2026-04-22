@@ -150,7 +150,7 @@ const reloadGame = () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
   animation: fadeIn 0.3s ease;
   font-family: 'Nunito', sans-serif;
 }
@@ -314,7 +314,7 @@ const reloadGame = () => {
 
 .reload-btn {
   background: var(--yellow);
-  color: #000;
+  color: $black;
 }
 
 .close-btn {

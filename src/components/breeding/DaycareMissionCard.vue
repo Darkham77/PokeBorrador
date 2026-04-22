@@ -62,7 +62,7 @@ const emit = defineEmits(['deliver'])
 
 <style scoped lang="scss">
 .mission-card-retro {
-  background: #1c2128; 
+  background: $card-dark; 
   border: 1px solid rgba(255,255,255,0.06); 
   padding: 20px; 
   border-radius: 20px;
@@ -75,25 +75,25 @@ const emit = defineEmits(['deliver'])
   .mission-head {
     display: flex; gap: 15px;
     .avatar-retro { font-size: 24px; width: 48px; height: 48px; background: rgba(0,0,0,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-    .t-name { font-size: 10px; color: #64748b; margin-bottom: 5px; font-weight: bold; }
-    .t-dialogue { font-size: 12px; color: #fff; font-style: italic; opacity: 0.8; }
+    .t-name { font-size: 10px; color: $muted; margin-bottom: 5px; font-weight: bold; }
+    .t-dialogue { font-size: 12px; color: $white; font-style: italic; opacity: 0.8; }
   }
   
   .mission-request {
     background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 10px;
-    .req-label { color: #64748b; font-weight: bold; margin-right: 10px; }
+    .req-label { color: $muted; font-weight: bold; margin-right: 10px; }
     .req-val { color: #ffd700; font-weight: 900; }
   }
 
   .mission-reward-retro {
     display: flex; align-items: center; gap: 12px;
     .rew-icon { font-size: 24px; }
-    .rew-label { font-size: 9px; color: #64748b; margin-bottom: 3px; }
+    .rew-label { font-size: 9px; color: $muted; margin-bottom: 3px; }
     .rew-val { font-size: 12px; color: #22c55e; font-weight: 900; }
   }
 
   .deliver-btn-retro {
-    padding: 14px; background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff; border: none; border-radius: 12px;
+    padding: 14px; background: linear-gradient(135deg, #a855f7, #7e22ce); color: $white; border: none; border-radius: 12px;
     font-family: 'Press Start 2P', monospace; font-size: 7px; cursor: pointer;
     box-shadow: 0 4px 0 #6d28d9;
     &:hover { filter: Brightness(1.1); }

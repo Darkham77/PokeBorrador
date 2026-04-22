@@ -68,6 +68,7 @@ function getSprite(pokemon) {
               <img
                 :src="getSprite(item.data)"
                 class="pokemon-sprite pixelated"
+                @error="e => e.target.style.display = 'none'"
               >
             </template>
             <template v-else>
@@ -156,7 +157,7 @@ function getSprite(pokemon) {
   display: flex;
   justify-content: space-between;
   font-size: 9px;
-  color: #64748b;
+  color: $muted;
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -195,7 +196,7 @@ function getSprite(pokemon) {
     font-weight: 900;
     padding: 2px 6px;
     border-radius: 8px;
-    color: #fff;
+    color: $white;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
   }
 }
@@ -207,7 +208,7 @@ function getSprite(pokemon) {
   .name {
     font-size: 13px;
     font-weight: bold;
-    color: #fff;
+    color: $white;
     margin: 0 0 4px 0;
     white-space: nowrap;
     overflow: hidden;
@@ -235,7 +236,7 @@ function getSprite(pokemon) {
   border-radius: 4px;
   font-size: 8px;
   text-transform: uppercase;
-  color: #fff;
+  color: $white;
   &.fire { background: #ff4422; }
   &.water { background: #3399ff; }
   &.grass { background: #77cc55; }
@@ -260,7 +261,7 @@ function getSprite(pokemon) {
   padding: 10px;
   border: none;
   background: #a855f7;
-  color: #fff;
+  color: $white;
   border-radius: 10px;
   font-size: 10px;
   font-weight: bold;
@@ -268,13 +269,13 @@ function getSprite(pokemon) {
   transition: all 0.2s;
   
   &:hover {
-    background: #bf5af2;
+    background: $purple;
     box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
   }
   
   &:disabled {
     background: #334155;
-    color: #64748b;
+    color: $muted;
     cursor: not-allowed;
   }
 }
@@ -285,7 +286,7 @@ function getSprite(pokemon) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #64748b;
+  color: $muted;
   text-align: center;
   padding: 40px;
   
@@ -303,6 +304,6 @@ function getSprite(pokemon) {
   margin-bottom: 16px;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin { to { transform: Rotate(360deg); } }
 
 </style>

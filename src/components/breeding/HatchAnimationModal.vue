@@ -51,6 +51,7 @@ onMounted(() => {
           :src="getAssetUrl(ASSET_TYPES.ITEM, 'egg')"
           class="egg-sprite"
           :class="{ shake: stage === 'crack' }"
+          @error="e => e.target.style.display = 'none'"
         >
         <div class="glow-ring" />
       </div>
@@ -65,6 +66,7 @@ onMounted(() => {
           <img
             :src="getSprite(pokemon.id, pokemon.isShiny)"
             class="pokemon-sprite"
+            @error="e => e.target.style.display = 'none'"
           >
           <div class="splash-text">
             ¡Ha nacido un {{ pokemon.name }}!
@@ -111,8 +113,8 @@ onMounted(() => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -134,7 +136,7 @@ onMounted(() => {
   .egg-sprite {
     width: 140px;
     image-rendering: pixelated;
-    filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
+    filter: Drop-Shadow(0 0 20px rgba(255,255,255,0.2));
     animation: bounce 2s infinite ease-in-out;
   }
   .egg-sprite.shake {
@@ -145,7 +147,7 @@ onMounted(() => {
 .glow-ring {
   position: absolute;
   top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
+  transform: Translate(-50%, -50%);
   width: 200px; height: 200px;
   border: 2px solid rgba(255,255,255,0.1);
   border-radius: 50%;
@@ -166,7 +168,7 @@ onMounted(() => {
   .pokemon-sprite {
     width: 180px;
     image-rendering: pixelated;
-    filter: drop-shadow(0 0 30px var(--yellow));
+    filter: Drop-Shadow(0 0 30px var(--yellow));
     animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 }
@@ -174,7 +176,7 @@ onMounted(() => {
 .splash-text {
   font-family: 'Press Start 2P', monospace;
   font-size: 14px;
-  color: #fff;
+  color: $white;
   margin-top: 30px;
   text-shadow: 0 4px 8px rgba(0,0,0,0.5);
 }
@@ -198,7 +200,7 @@ onMounted(() => {
   margin-top: 40px;
   padding: 14px 40px;
   background: var(--yellow);
-  color: #000;
+  color: $black;
   border: none;
   border-radius: 12px;
   font-family: 'Press Start 2P', monospace;
@@ -221,8 +223,8 @@ onMounted(() => {
 }
 
 @keyframes pulse-ring {
-  0% { transform: translate(-50%, -50%) #{'Scale(0.8)'}; opacity: 0.8; }
-  100% { transform: translate(-50%, -50%) #{'Scale(1.5)'}; opacity: 0; }
+  0% { transform: Translate(-50%, -50%) #{'Scale(0.8)'}; opacity: 0.8; }
+  100% { transform: Translate(-50%, -50%) #{'Scale(1.5)'}; opacity: 0; }
 }
 
 @keyframes fade-in {
@@ -252,8 +254,8 @@ onMounted(() => {
 }
 
 @keyframes explode {
-  0% { transform: translate(0, 0); opacity: 1; }
-  100% { transform: translate(var(--x), var(--y)); opacity: 0; }
+  0% { transform: Translate(0, 0); opacity: 1; }
+  100% { transform: Translate(var(--x), var(--y)); opacity: 0; }
 }
 
 .shimmer-bg {
@@ -264,7 +266,7 @@ onMounted(() => {
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from { transform: Rotate(0deg); }
+  to { transform: Rotate(360deg); }
 }
 </style>

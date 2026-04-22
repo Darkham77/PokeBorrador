@@ -81,6 +81,7 @@ const net = computed(() => price.value - fee.value)
             <img
               :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id)"
               class="p-sprite pixelated"
+              @error="e => e.target.style.display = 'none'"
             >
             <div class="p-info">
               <span class="p-name">{{ p.name }}</span>
@@ -187,7 +188,7 @@ const net = computed(() => price.value - fee.value)
 
   .limit-info {
     font-size: 10px;
-    color: #64748b;
+    color: $muted;
     font-weight: bold;
   }
 }
@@ -203,7 +204,7 @@ const net = computed(() => price.value - fee.value)
     padding: 8px 16px;
     border: none;
     background: transparent;
-    color: #64748b;
+    color: $muted;
     font-family: 'Press Start 2P', monospace;
     font-size: 8px;
     cursor: pointer;
@@ -212,7 +213,7 @@ const net = computed(() => price.value - fee.value)
 
     &.active {
       background: #a855f7;
-      color: #fff;
+      color: $white;
       box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
     }
   }
@@ -268,8 +269,8 @@ const net = computed(() => price.value - fee.value)
   .p-info, .i-info {
     display: flex;
     flex-direction: column;
-    .p-name, .i-name { font-size: 13px; font-weight: bold; color: #fff; }
-    .p-lvl, .i-qty { font-size: 10px; color: #64748b; }
+    .p-name, .i-name { font-size: 13px; font-weight: bold; color: $white; }
+    .p-lvl, .i-qty { font-size: 10px; color: $muted; }
   }
   
   .i-icon { font-size: 24px; }
@@ -287,7 +288,7 @@ const net = computed(() => price.value - fee.value)
 
 .selection-hint {
   text-align: center;
-  color: #64748b;
+  color: $muted;
   .hint-icon { font-size: 40px; margin-bottom: 15px; opacity: 0.2; }
   p { font-size: 13px; max-width: 200px; line-height: 1.6; }
 }
@@ -301,8 +302,8 @@ const net = computed(() => price.value - fee.value)
 
 .selected-summary {
   text-align: center;
-  .label { display: block; font-size: 9px; color: #64748b; margin-bottom: 5px; }
-  .val { font-size: 18px; font-weight: 900; color: #fff; text-transform: uppercase; }
+  .label { display: block; font-size: 9px; color: $muted; margin-bottom: 5px; }
+  .val { font-size: 18px; font-weight: 900; color: $white; text-transform: uppercase; }
 }
 
 .input-group {
@@ -316,7 +317,7 @@ const net = computed(() => price.value - fee.value)
   }
   .price-input {
     width: 100%;
-    background: #000;
+    background: $black;
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     padding: 16px;
@@ -348,7 +349,7 @@ const net = computed(() => price.value - fee.value)
        margin-top: 5px;
        font-weight: bold;
        font-size: 13px;
-       color: #fff;
+       color: $white;
     }
     .neg { color: #f87171; }
     .pos { color: #22c55e; }
@@ -359,7 +360,7 @@ const net = computed(() => price.value - fee.value)
   width: 100%;
   padding: 18px;
   background: linear-gradient(135deg, #a855f7, #7c3aed);
-  color: #fff;
+  color: $white;
   border: none;
   border-radius: 16px;
   font-family: 'Press Start 2P', monospace;
@@ -369,8 +370,8 @@ const net = computed(() => price.value - fee.value)
   transition: all 0.2s;
 
   &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(124, 58, 237, 0.5); }
-  &:disabled { background: #334155; color: #64748b; box-shadow: none; cursor: not-allowed; }
+  &:disabled { background: #334155; color: $muted; box-shadow: none; cursor: not-allowed; }
 }
 
-.empty-list { text-align: center; padding: 40px; color: #64748b; font-size: 12px; }
+.empty-list { text-align: center; padding: 40px; color: $muted; font-size: 12px; }
 </style>

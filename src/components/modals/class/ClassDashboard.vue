@@ -22,8 +22,9 @@ const getTrainerSprite = (id) => {
       <div class="avatar-box">
         <div class="avatar-glow" />
         <img 
-          :src="getTrainerSprite(currentClass?.showdownSpriteId || currentClass?.id)" 
-          class="trainer-big-img"
+          :src="getTrainerSprite(currentClass?.showdownSpriteId || currentClass?.id)"
+          class="trainer-big-img" 
+          @error="e => e.target.style.display = 'none'"
         >
         <div class="avatar-mini-circle">
           <TrainerAvatar
@@ -226,7 +227,7 @@ const getTrainerSprite = (id) => {
       .trainer-big-img {
         height: 220px;
         image-rendering: pixelated;
-        filter: drop-shadow(0 20px 40px rgba(0,0,0,0.8));
+        filter: Drop-Shadow(0 20px 40px rgba(0,0,0,0.8));
         z-index: 1;
         transition: transform 0.3s ease;
         &:hover { transform: Scale(1.05); }
@@ -312,7 +313,7 @@ const getTrainerSprite = (id) => {
       display: flex;
       flex-direction: column;
       .label { font-size: 8px; font-family: 'Press Start 2P', cursive; color: rgba(255,255,255,0.4); margin-bottom: 8px; }
-      .value { font-family: 'Press Start 2P', cursive; font-size: 14px; color: #fff; }
+      .value { font-family: 'Press Start 2P', cursive; font-size: 14px; color: $white; }
       .highlight { color: var(--yellow); }
     }
   }
@@ -347,7 +348,7 @@ const getTrainerSprite = (id) => {
     h2 {
       font-family: 'Press Start 2P', cursive;
       font-size: 11px;
-      color: #fff;
+      color: $white;
       letter-spacing: 1px;
       @include pixelated;
     }
@@ -395,7 +396,7 @@ const getTrainerSprite = (id) => {
     &.locked { 
       opacity: 0.7;
       .ability-checkbox { filter: #{"Grayscale(1)"}; opacity: 0.5; }
-      .ability-content p { color: #64748b; }
+      .ability-content p { color: $muted; }
     }
 
     .req-hint {
@@ -414,7 +415,7 @@ const getTrainerSprite = (id) => {
       color: #94a3b8;
     }
 
-    .text-locked { color: #64748b !important; }
+    .text-locked { color: $muted !important; }
   }
 }
 
@@ -430,7 +431,7 @@ const getTrainerSprite = (id) => {
     background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
     border: none;
     border-radius: 50px;
-    color: #fff;
+    color: $white;
     font-family: 'Press Start 2P', cursive;
     font-size: 11px;
     cursor: pointer;
@@ -462,7 +463,7 @@ const getTrainerSprite = (id) => {
     .btn-secondary {
       background: #1e293b;
       border: 1px solid rgba(255,255,255,0.1);
-      color: #fff;
+      color: $white;
       justify-content: flex-start;
       padding: 12px 20px;
       
@@ -478,7 +479,7 @@ const getTrainerSprite = (id) => {
       .price { color: var(--yellow); font-size: 9px; }
       .icon { font-size: 16px; opacity: 0.6; }
 
-      &:hover { background: #2d3748; color: #fff; .btn-label { color: #fff; } }
+      &:hover { background: #2d3748; color: $white; .btn-label { color: $white; } }
     }
 
     .btn-primary {

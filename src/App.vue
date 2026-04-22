@@ -178,7 +178,7 @@ const handleRetry = () => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #000;
+  background: $black;
   z-index: var(--z-max);
   color: var(--yellow);
   font-family: 'Press Start 2P', monospace;
@@ -214,7 +214,7 @@ const handleRetry = () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to { transform: Rotate(360deg); }
 }
 
 .version-lock .lock-icon {
@@ -229,7 +229,7 @@ const handleRetry = () => {
 
 .version-lock p {
   margin-top: 5px;
-  color: #fff;
+  color: $white;
 }
 
 .version-lock .admin-note {
@@ -242,15 +242,15 @@ const handleRetry = () => {
   margin-top: 30px;
   padding: 10px 20px;
   background: #ff3333;
-  color: #fff;
+  color: $white;
   cursor: pointer;
-  border: 2px solid #fff;
+  border: 2px solid $white;
   transition: all 0.2s;
 }
 
 .retry-btn:hover {
   transform: Scale(1.1);
-  background: #fff;
+  background: $white;
   color: #ff3333;
 }
 

@@ -105,7 +105,7 @@ const handleAction = (slide) => {
   min-height: 80px;
   background: #111;
   border: 4px solid #333;
-  box-shadow: 0 0 0 4px #000;
+  box-shadow: 0 0 0 4px $black;
   overflow: hidden;
   margin-bottom: 20px;
 }
@@ -138,7 +138,7 @@ const handleAction = (slide) => {
   font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   margin-bottom: 8px;
-  text-shadow: 2px 2px #000;
+  text-shadow: 2px 2px $black;
 }
 
 .slide-text {
@@ -159,7 +159,7 @@ const handleAction = (slide) => {
   width: 6px;
   height: 6px;
   background: #444;
-  border: 1px solid #000;
+  border: 1px solid $black;
 }
 
 .carousel-dot.active {

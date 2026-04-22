@@ -120,20 +120,43 @@ export const getAssetUrl = (type, rawId, options = {}) => {
     }
 
     case ASSET_TYPES.TRAINER: {
+      // Legacy mapping for mission keys (if trainerType was used as spriteId)
+      const LEGACY_MAPPING = {
+        'caza_bichos': 'cazabichos',
+        'ornitologo': 'entrenador',
+        'cientifico': 'criador',
+        'luchador': 'entrenador',
+        'pescador': 'tamer',
+        'nadador': 'tamer',
+        'domador': 'tamer',
+        'medium': 'entrenador',
+        'motorista': 'teamrocket',
+        'montanero': 'tamer'
+      };
+
+      // Sanitize ID: remove spaces and dots (e.g., "Lt. Surge" -> "ltsurge")
+      const sanitizedId = id.toLowerCase().replace(/[\s.]/g, '');
+      const finalId = LEGACY_MAPPING[sanitizedId] || sanitizedId;
+
       // Remote Showdown sprites mapping
       const showdownTrainers = [
         'brock', 'misty', 'ltsurge', 'erika', 'koga', 'sabrina', 'blaine', 'giovanni',
-        'rainbowrocketgrunt', 'bugcatcher-gen6', 'red-lgpe', 'jacq', 'blue-gen3'
+        'rainbowrocketgrunt', 'bugcatcher-gen6', 'red-lgpe', 'jacq', 'blue-gen3',
+        'biker', 'blackbelt', 'beauty', 'birdkeeper', 'burglar', 'channeler', 'cooltrainer',
+        'cueball', 'engineer', 'gentleman', 'hiker', 'juggler', 'lass', 'maniac', 
+        'psychic', 'rocker', 'roughneck', 'sailor', 'scientist', 'supernerd', 'swimmer',
+        'youngster'
       ];
-      if (showdownTrainers.includes(id.toLowerCase())) {
-        return `https://play.pokemonshowdown.com/sprites/trainers/${id.toLowerCase()}.png`;
+      if (showdownTrainers.includes(finalId)) {
+        return `https://play.pokemonshowdown.com/sprites/trainers/${finalId}.png`;
       }
       
       // Other remote URLs
       if (id.startsWith('http')) return id;
       
       // Local assets
-      return resolveAsset(`/assets/sprites/trainers/${id}${extension}`, true);
+      const localPath = `/assets/sprites/trainers/${finalId}${extension}`;
+      return resolveAsset(localPath, true);
     }
 
     case ASSET_TYPES.BANNER:
@@ -165,14 +188,14 @@ export const getAssetUrl = (type, rawId, options = {}) => {
       const mappedId = ITEM_MAPPING[idStr] || idStr.replace(/_/g, '-');
       
       // If it's in mapping, numeric, or a known PokeAPI slug pattern
-      const isPokeAPI = !isNaN(idStr) || 
-                       ITEM_MAPPING[idStr] || 
+      const isPokeAPI = (ITEM_MAPPING[idStr] !== undefined) || 
+                       !isNaN(idStr) || 
                        idStr.includes('-') || 
                        idStr.includes('ball') || 
                        idStr.includes('stone') ||
                        idStr.includes('repel') ||
                        idStr.includes('fossil') ||
-                       ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar'].some(k => mappedId.includes(k));
+                       ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar', 'awakening'].some(k => mappedId.includes(k));
 
       if (isPokeAPI) {
         return `${POKEAPI_ITEM_BASE}${mappedId}.png`;

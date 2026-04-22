@@ -193,7 +193,7 @@ function selectAdventure(_slotIndex) {
     .section-title {
       font-family: 'Press Start 2P', monospace;
       font-size: 12px;
-      color: #fff;
+      color: $white;
       margin: 0;
     }
 
@@ -251,14 +251,14 @@ function selectAdventure(_slotIndex) {
   .line {
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, #fff, transparent);
+    background: linear-gradient(90deg, transparent, $white, transparent);
   }
 
   .diamond {
     width: 10px;
     height: 10px;
-    background: #fff;
-    transform: rotate(45deg);
+    background: $white;
+    transform: Rotate(45deg);
   }
 }
 

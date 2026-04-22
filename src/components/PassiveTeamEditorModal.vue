@@ -93,7 +93,7 @@ if (typeof window !== 'undefined') {
   width: 100%;
   padding: 16px;
   background: linear-gradient(135deg, var(--green), #059669);
-  color: #000;
+  color: $black;
   border: none;
   border-radius: 14px;
   font-family: 'Press Start 2P', monospace;

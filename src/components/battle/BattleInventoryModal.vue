@@ -93,6 +93,7 @@ const handleUse = (item) => {
               <img
                 :src="item.sprite"
                 :alt="item.name"
+                @error="e => e.target.style.display = 'none'"
               >
             </div>
             
@@ -128,8 +129,8 @@ const handleUse = (item) => {
   inset: 0;
   z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -13,7 +13,7 @@
     font-family: 'Press Start 2P', monospace;
     @include pixelated;
     font-size: 7px;
-    color: #64748b;
+    color: $muted;
     margin-bottom: 12px;
     text-transform: uppercase;
   }
@@ -31,7 +31,7 @@
     flex: 1;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: $white;
     padding: 10px 14px;
     border-radius: 12px;
     font-size: 13px;
@@ -125,7 +125,7 @@
   margin-top: 10px;
   transition: all 0.2s;
 
-  &:hover { background: rgba(124, 58, 237, 0.1); border-style: solid; color: #fff; }
+  &:hover { background: rgba(124, 58, 237, 0.1); border-style: solid; color: $white; }
 }
 
 .debug-info-box {

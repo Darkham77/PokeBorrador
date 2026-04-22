@@ -253,7 +253,7 @@ const getTypeEmoji = (type) => {
 
 .mode-switch button.active {
   background: var(--purple);
-  color: #fff;
+  color: $white;
 }
 
 .context-label {
@@ -272,7 +272,7 @@ const getTypeEmoji = (type) => {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
-  color: #fff;
+  color: $white;
   font-size: 13px;
   outline: none;
 }
@@ -326,7 +326,7 @@ const getTypeEmoji = (type) => {
 .tag-btn.active {
   border-color: var(--purple);
   background: rgba(191, 90, 242, 0.2);
-  color: #fff;
+  color: $white;
 }
 
 .types-grid {
