@@ -442,7 +442,7 @@ Instead of using `blur`, use 4 directional offsets to create a solid 1px "border
 
 For discovery-based UI (Pokedex, unlockables), use high-contrast filters to differentiate states:
 
-- **Silhouette (Seen)**: Use `filter: Brightness(0)` to black out the sprite. 
+- **Silhouette (Seen)**: Use `filter: Brightness(0)` to black out the sprite.
 - **Outline Enhancement**: Apply a subtle `Drop-shadow(0 0 1px rgba(255,255,255,0.2))` to the silhouette to keep the form defined against deep dark backgrounds.
 - **Placeholder Opacity**: "Unseen" cards should maintain a higher base opacity (0.7-0.8) to keep the grid structure visible, while using a bright `?` sign for maximum contrast.
 
