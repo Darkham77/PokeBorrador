@@ -89,7 +89,15 @@ export class ProxyQuery {
         return final ? await q[final]() : await q;
       } catch (err) {
         console.error(`[DBRouter] Online query failed for table ${this.table}:`, err);
-        // Special case: if it's a network error, the AuthStore should handle a generic 'online_error' event
+        
+        // Detect network errors (fetch failures)
+        const errMsg = err.message?.toLowerCase() || '';
+        if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('failed to fetch')) {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('db-connection-error'));
+          }
+        }
+        
         throw err;
       }
     }

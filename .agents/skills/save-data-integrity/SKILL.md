@@ -31,6 +31,13 @@ We keep a local fallback via `DBRouter` (SQLite/IndexedDB) that races against Su
 - The client prefers the local state if its version or timestamp is newer.
 - If you accidentally trigger an early `saveGame()`, it will pollute the local database with a new timestamp and empty data, causing users to lose progress on the next load. Always defend the save logic against premature execution.
 
+## 3. SQLite System Config Parsing
+
+When reading values from the `system_config` table in SQLite (e.g., `db_version`), be aware that values might be stored as JSON strings due to Postgres translation.
+
+- **REQUIRED**: Always use a robust parser that handles both raw strings and JSON objects.
+- **PATTERN**: Check if the string starts with `{` or `[` and attempt `JSON.parse()` before using the value. (Ref: `src/logic/db/dbRouter.js`).
+
 ## 4. Required Migration Step
 
 If you change how a key piece of data is formatted (e.g. converting `badges` from an integer to an array), you MUST write a runtime migration block in the corresponding store initialization to convert the old data structure to the new one for existing players.

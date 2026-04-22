@@ -49,13 +49,13 @@ Refer to these manuals for complex implementation specifications:
 
 ### 1. Filter Collision (Dart Sass 2.0)
 
-- **MANDATORY**: Use **Capitalization** (e.g., `Grayscale(1)`, `Brightness(1.1)`, `Scale(1.2)`) for all CSS filters and transform functions.
+- **MANDATORY**: Use **Capitalization** (e.g., `Grayscale(1)`, `Brightness(1.1)`, `Scale(1.2)`, `Blur(5px)`) for all CSS filters and transform functions.
 
 > [!WARNING]
-> **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, and `Rotate()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
+> **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, `Rotate()`, and `Grayscale()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
 
 - **WHY**: Lowercase functions with unitless numbers are misinterpreted by Dart Sass 2.0 as color functions, causing errors like `[sass] $color: 1.2 is not a color.`.
-- **MANDATORY**: Use **Capitalization** for `Scale()`, `Blur()`, `Rotate()`, `TranslateX()`, etc.
+- **MANDATORY**: Use **Capitalization** for `Scale()`, `Blur()`, `Rotate()`, `TranslateX()`, `TranslateY()`, `Grayscale()`, etc.
 - **DETECTED REGRESSION**: Lowercase usage in filters/transforms breaks production builds. Do NOT omit capitalization under any circumstances.
 - **GPU Tip**: Prefer `opacity: X` property over `filter: Opacity(X)`.
 
@@ -78,6 +78,11 @@ Refer to these manuals for complex implementation specifications:
 
 - **REQUIRED**: In `offline` mode, features that normally rely on Realtime listeners (e.g., Chat, Battle events) MUST manually update the local store state after a successful DB operation to simulate the missing server broadcast.
 - **Fail-Safe**: Do not block features in offline mode unless they are strictly non-functional without a network.
+
+### 2. Engine Initialization
+
+- **REQUIRED**: The `PhaserGame` component MUST be rendered in the DOM for the engine to initialize and fire the `game-state-ready` event. 
+- **CRITICAL**: Do NOT wrap `PhaserGame` in a `v-if` condition that depends on the engine being ready, as this creates a circular dependency that blocks the application indefinitely. Always render the engine in the background (e.g., behind a loading overlay) once the user session is identified.
 
 ---
 

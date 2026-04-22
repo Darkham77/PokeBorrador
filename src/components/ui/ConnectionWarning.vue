@@ -2,58 +2,59 @@
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
-
-const retry = () => {
-  window.location.reload()
-}
 </script>
 
 <template>
-  <Transition name="fade">
+  <transition name="fade">
     <div
       v-if="authStore.connectionLost"
-      class="connection-warning-overlay"
+      class="connection-lost-overlay"
     >
-      <div class="warning-card">
-        <div class="icon-container">
-          <span class="wifi-icon">📶</span>
-          <span class="cross-mark">/</span>
+      <div class="lost-card">
+        <div class="icon-header">
+          <span class="wifi-icon pulse">📶</span>
         </div>
         
-        <h2>CONEXIÓN PERDIDA</h2>
+        <h2 class="press-start">
+          CONEXIÓN PERDIDA
+        </h2>
         
-        <p>
-          Se ha perdido la conexión con los servidores de <strong>Supabase</strong>.
-          Para proteger la integridad de tus datos en modo Online, el juego ha sido pausado.
+        <p class="msg">
+          Se ha perdido la conexión con el servidor. 
+          El juego se reanudará automáticamente en cuanto se restablezca el enlace.
         </p>
-        
-        <div class="info-box">
-          <p>⚠️ <strong>Aviso:</strong> El sistema no cambiará automáticamente al modo Offline para evitar la duplicación de datos.</p>
+
+        <div class="status-indicator">
+          <div class="spinner" />
+          <span class="status-text press-start">RECONECTANDO...</span>
         </div>
 
-        <button
-          class="retry-btn"
-          @click="retry"
-        >
-          REINTENTAR CONEXIÓN
-        </button>
-        
-        <p class="footer-note">
-          Si el problema persiste, verifica tu conexión a internet.
+        <p class="footer">
+          Modo: <code>{{ authStore.sessionMode.toUpperCase() }}</code> | 
+          Internet: <code :class="{ offline: !authStore.isOnline }">{{ authStore.isOnline ? 'CONECTADO' : 'DESCONECTADO' }}</code>
         </p>
       </div>
     </div>
-  </Transition>
+  </transition>
 </template>
 
-<style lang="scss" scoped>
-.connection-warning-overlay {
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.8s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.connection-lost-overlay {
   position: fixed;
   inset: 0;
   z-index: var(--z-critical);
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: Blur(15px) Grayscale(0.5);
+  backdrop-filter: Blur(15px) Grayscale(0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,101 +62,93 @@ const retry = () => {
   transform: translateZ(0);
 }
 
-.warning-card {
-  background: #1a1c23;
-  border: 2px solid #ef4444;
+.lost-card {
+  background: rgba(15, 15, 18, 0.95);
+  border: 2px solid rgba(239, 68, 68, 0.4);
   border-radius: 24px;
+  width: 100%;
   max-width: 400px;
-  width: 100%;
-  padding: 32px;
+  padding: 40px;
   text-align: center;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(239, 68, 68, 0.2);
-  
-  h2 {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 16px;
-    color: #ef4444;
-    margin: 20px 0;
-  }
-  
-  p {
-    color: #94a3b8;
-    font-size: 14px;
-    line-height: 1.6;
-    margin-bottom: 16px;
-    
-    strong {
-      color: #fff;
-    }
-  }
+  box-shadow: 0 0 50px rgba(239, 68, 68, 0.2),
+              inset 0 0 20px rgba(239, 68, 68, 0.1);
+  animation: glow-red 3s infinite ease-in-out;
 }
 
-.icon-container {
-  position: relative;
-  font-size: 48px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  .wifi-icon { filter: grayScale(100%); opacity: 0.5; }
-  .cross-mark {
-    position: absolute;
-    color: #ef4444;
-    font-weight: bold;
-    font-size: 64px;
-    transform: rotate(45deg);
-  }
+@keyframes glow-red {
+  0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 50px rgba(239, 68, 68, 0.2); }
+  50% { border-color: rgba(239, 68, 68, 0.8); box-shadow: 0 0 70px rgba(239, 68, 68, 0.4); }
 }
 
-.info-box {
-  background: rgba(239, 68, 68, 0.1);
-  border-radius: 12px;
-  padding: 12px;
+.icon-header {
   margin-bottom: 24px;
-  
-  p {
-    font-size: 12px;
-    margin: 0;
-    color: #f87171;
+  .wifi-icon {
+    display: inline-block;
+    font-size: 48px;
+    filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.5));
   }
 }
 
-.retry-btn {
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 14px;
-  background: #ef4444;
-  color: #fff;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
-  
-  &:hover {
-    background: #dc2626;
-    transform: translateY(-2px);
+.pulse {
+  animation: pulse-icon 2s infinite ease-in-out;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { transform: Scale(1); opacity: 1; }
+  50% { transform: Scale(1.1); opacity: 0.7; }
+}
+
+h2 {
+  font-size: 14px;
+  color: #ef4444;
+  margin-bottom: 20px;
+  @include pixelated;
+  letter-spacing: 1px;
+}
+
+.msg {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.status-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(239, 68, 68, 0.1);
+  border-top: 3px solid #ef4444;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.status-text {
+  font-size: 8px;
+  color: #ef4444;
+  @include pixelated;
+}
+
+.footer {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.3);
+  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
+  code { 
+    color: #ffd60a; 
+    &.offline { color: #ef4444; }
   }
-  
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-.footer-note {
-  font-size: 11px !important;
-  margin-top: 16px;
-  opacity: 0.6;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>

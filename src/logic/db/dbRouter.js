@@ -172,7 +172,17 @@ export class DBRouter {
     }
 
     // Online mode: direct call to Supabase
-    return this.realClient.rpc(name, params);
+    try {
+      return await this.realClient.rpc(name, params);
+    } catch (err) {
+      const errMsg = err.message?.toLowerCase() || '';
+      if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('failed to fetch')) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('db-connection-error'));
+        }
+      }
+      throw err;
+    }
   }
 
   /**
@@ -234,9 +244,11 @@ export async function checkDBCompatibility(router) {
   try {
     let dbVersion = 0;
 
+    let rawValue = null;
+
     if (router.mode === 'offline' || !router.realClient) {
       const results = await queryLocal("SELECT value FROM system_config WHERE key = 'db_version'");
-      if (results.length > 0) dbVersion = parseInt(results[0].value);
+      if (results.length > 0) rawValue = results[0].value;
     } else {
       const { data, error } = await router.realClient
         .from('system_config')
@@ -244,25 +256,36 @@ export async function checkDBCompatibility(router) {
         .eq('key', 'db_version')
         .single();
       
-      if (!error && data) {
-        dbVersion = typeof data.value === 'object' ? data.value.db_version : parseInt(data.value);
+      if (!error && data) rawValue = data.value;
+    }
+
+    if (rawValue) {
+      // Handle JSON strings (SQLite stores objects as JSON strings)
+      if (typeof rawValue === 'string' && (rawValue.startsWith('{') || rawValue.startsWith('['))) {
+        try { rawValue = JSON.parse(rawValue); } catch (_e) { /* ignore */ }
       }
+      
+      dbVersion = typeof rawValue === 'object' && rawValue !== null 
+        ? parseInt(rawValue.db_version || 0) 
+        : parseInt(rawValue || 0);
     }
 
     console.log(`[DBRouter] Compatibility Check: Client v${CLIENT_DB_VERSION} | DB v${dbVersion}`);
 
+    const response = {
+      compatible: true,
+      client: CLIENT_DB_VERSION,
+      db: dbVersion
+    };
+
     if (router.mode !== 'offline' && CLIENT_DB_VERSION > dbVersion) {
-      return { 
-        compatible: false, 
-        error: 'OUTDATED_SERVER', 
-        client: CLIENT_DB_VERSION, 
-        db: dbVersion 
-      };
+      response.compatible = false;
+      response.error = 'OUTDATED_SERVER';
     }
 
-    return { compatible: true };
+    return response;
   } catch (e) {
     console.warn('[DBRouter] Compatibility check failed, assuming compatible.', e);
-    return { compatible: true };
+    return { compatible: true, client: CLIENT_DB_VERSION, db: 0 };
   }
 }

@@ -47,6 +47,13 @@ export const useAuthStore = defineStore('auth', () => {
         console.error('[AuthStore] Failed to open SessionConflict modal:', e)
       })
     })
+    // Escuchar errores de conexión a la base de datos (Supabase unreachability)
+    window.addEventListener('db-connection-error', () => {
+      if (sessionMode.value === 'online') {
+        console.warn('[AuthStore] Error de conexión a DB detectado.')
+        connectionLost.value = true
+      }
+    })
   }
 
   // Guardar modo de sesión para persistencia en recarga
@@ -213,7 +220,17 @@ export const useAuthStore = defineStore('auth', () => {
           window.dispatchEvent(new CustomEvent('session-conflict'))
         }
       })
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          connectionLost.value = false
+        }
+        if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          if (sessionMode.value === 'online') {
+            console.warn('[SESSION] Conexión con el servidor perdida (Realtime).')
+            connectionLost.value = true
+          }
+        }
+      })
   }
 
   async function localLogin(name) {
@@ -278,6 +295,12 @@ export const useAuthStore = defineStore('auth', () => {
     sessionMode.value = 'online'
   }
 
+  function setConnectionLost(val) {
+    if (sessionMode.value === 'online') {
+      connectionLost.value = val
+    }
+  }
+
   return {
     user,
     session,
@@ -295,6 +318,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     localLogin,
     clearSessionLocal,
-    startSessionMonitoring
+    startSessionMonitoring,
+    setConnectionLost
   }
 })

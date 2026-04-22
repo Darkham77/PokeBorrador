@@ -2,8 +2,10 @@
 import { ref } from 'vue'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
+import { useErrorStore } from '@/stores/errorStore'
 
 const modalStore = useModalStore()
+const errorStore = useErrorStore()
 const uiStore = useUIStore()
 const modalCount = ref(5)
 const isTesting = ref(false)
@@ -20,6 +22,14 @@ async function startTest() {
   }
   
   isTesting.value = false
+}
+
+function triggerSampleError() {
+  errorStore.setError(new Error('Este es un error de prueba disparado desde el menú de Debug.'), {
+    type: 'Debug Test Error',
+    source: 'DebugModalsTab.vue',
+    lineno: 27
+  })
 }
 </script>
 
@@ -54,6 +64,14 @@ async function startTest() {
         @click="modalStore.closeAll"
       >
         CERRAR TODO
+      </button>
+
+      <button
+        class="btn-danger"
+        style="background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #fff;"
+        @click="triggerSampleError"
+      >
+        DISPARAR ERROR DE PRUEBA
       </button>
     </div>
 
@@ -130,7 +148,7 @@ async function startTest() {
 
   &:hover:not(:disabled) {
     background: #6d28d9;
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
   }
 
   &:disabled {
@@ -153,7 +171,7 @@ async function startTest() {
 
   &:hover {
     background: rgba(239, 68, 68, 0.2);
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
   }
 }
 

@@ -98,22 +98,22 @@ const handleRetry = () => {
     <!-- RESTORE LEGACY BACKGROUND -->
     <div class="stars" />
 
-    <template v-if="!authStore.loading">
-      <template v-if="authStore.user">
-        <PhaserGame class="phaser-background" />
-        
-        <!-- Solo mostramos la interfaz si el motor legacy terminó su carga inicial -->
-        <MainGameView v-if="gameStore.isReady" />
-        
-        <!-- Pantalla de carga mientras el motor lee archivos locales -->
-        <div
-          v-else
-          class="loading-overlay"
-        >
-          <div class="loader" />
-          <p>Escribiendo tu historia...</p>
-        </div>
+    <!-- Pantalla de carga unificada -->
+    <div
+      v-if="authStore.loading || (authStore.user && !gameStore.isReady)"
+      class="loading-overlay"
+    >
+      <div class="loader" />
+      <p>{{ authStore.loading ? 'Iniciando sesión...' : 'Escribiendo tu historia...' }}</p>
+    </div>
 
+    <!-- Capa de Juego (Phaser debe cargar en segundo plano para disparar isReady) -->
+    <template v-if="authStore.user">
+      <PhaserGame class="phaser-background" />
+      
+      <template v-if="gameStore.isReady">
+        <MainGameView />
+        
         <!-- Bloqueo por Versión Outdated -->
         <div
           v-if="dbIncompatible"
@@ -125,7 +125,7 @@ const handleRetry = () => {
           <h2>SERVIDOR DESACTUALIZADO</h2>
           <p>Tu cliente (v{{ dbVersionInfo.client }}) es más moderno que el servidor (v{{ dbVersionInfo.db }}).</p>
           <p class="admin-note">
-            Por favor, contacta al administrador para que actualice la base de datos.
+            Por favor, contacta al administrador para actualizar la base de datos.
           </p>
           <div
             class="retry-btn"
@@ -135,17 +135,10 @@ const handleRetry = () => {
           </div>
         </div>
       </template>
-      <!-- El LoginView se renderiza aquí si no hay sesión -->
-      <router-view v-else />
     </template>
-    
-    <div
-      v-show="authStore.loading"
-      class="loading-overlay"
-    >
-      <div class="loader" />
-      <p>Cargando Poké Vicio...</p>
-    </div>
+
+    <!-- El LoginView se renderiza aquí si no hay sesión y terminó de cargar auth -->
+    <router-view v-else-if="!authStore.loading" />
 
     <!-- Overlay Global para Sincronización y Procesos Largos -->
     <div
@@ -204,8 +197,8 @@ const handleRetry = () => {
 
 .loading-overlay.global-overlay {
   background: rgba(0, 0, 0, 0.95);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
+  backdrop-filter: Blur(8px);
 }
 
 .loader {

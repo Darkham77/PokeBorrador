@@ -151,9 +151,12 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - **Global Window Listeners (Context Rule)**: To avoid Vue lifecycle warnings and potential memory leaks during HMR, global window listeners (added via `useWindowListener` or native `addEventListener`) **MUST** be declared in the top-level `setup` context, not inside `onMounted`. Vue handles the teardown automatically if the composable is registered at the top level.
 
 - **Dynamic Z-Index Stacking**: For components that can overlap (modals, overlays), use a `computedZIndex` based on the current number of active overlays. This ensures that the most recently opened element (e.g., an item selector) always appears on top of previous layers.
-- **Blocking vs. Non-Blocking Modals (Store Logic)**:
   - **REQUIRED**: In the `uiStore`, when computing `isAnyBlockingModalOpen`, you **MUST** explicitly exclude side-panels (e.g., `'Chat'`, `'Profile'`) if they are intended to allow background interaction.
   - **Why**: This prevents the global `body.modal-open` class from locking scroll and interaction when only a HUD-integrated panel is visible.
+
+- **Continuous Loading Pattern (Initial Load)**:
+  - **REQUIRED**: For applications with multi-stage initialization (Auth → DB Migrations → Asset Loading), use a **Continuous Loading Overlay** that remains visible from the first frame of the app until the very end of the initialization sequence.
+  - **PATTERN**: Use a unified loading state (e.g. `authStore.loading || !gameStore.isReady`) to prevent the template from switching to intermediate views (like Login or Black Screen) during the process. This ensures a professional, flicker-free startup experience. (Ref: `src/App.vue`).
 
 ## 6) Final self-check before finishing
 

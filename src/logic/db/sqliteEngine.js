@@ -159,6 +159,14 @@ async function runMigrations() {
       }
     }
   }
+  // Update system_config.db_version to match the latest migration
+  if (DATABASE_MIGRATIONS.length > 0) {
+    const latestId = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1].id
+    const version = parseInt(latestId.split('_')[0])
+    console.log(`[SQLite] Updating system_config.db_version to ${version}`)
+    _sqliteDb.run("INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES ('db_version', ?, datetime('now'))", [version])
+  }
+
   _sqliteDb.run("PRAGMA foreign_keys = ON")
 }
 
