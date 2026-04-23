@@ -156,9 +156,9 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **REQUIRED**: In the `uiStore`, when computing `isAnyBlockingModalOpen`, you **MUST** explicitly exclude side-panels (e.g., `'Chat'`, `'Profile'`) if they are intended to allow background interaction.
   - **Why**: This prevents the global `body.modal-open` class from locking scroll and interaction when only a HUD-integrated panel is visible.
 
-- **Continuous Loading Pattern (Initial Load)**:
-  - **REQUIRED**: For applications with multi-stage initialization (Auth → DB Migrations → Asset Loading), use a **Continuous Loading Overlay** that remains visible from the first frame of the app until the very end of the initialization sequence.
   - **PATTERN**: Use a unified loading state (e.g. `authStore.loading || !gameStore.isReady`) to prevent the template from switching to intermediate views (like Login or Black Screen) during the process. This ensures a professional, flicker-free startup experience. (Ref: `src/App.vue`).
+- **Pinia Initialization Guard**: If a component accesses a store during `setup` (e.g., in a `computed` property), ensure that all required Vue utilities (like `computed`, `ref`) are correctly imported in the root component.
+  - **Why**: A missing import in a high-level component can cause a silent failure that prevents Pinia from being correctly associated with the application instance, leading to the "getActivePinia() was called but there was no active Pinia" error in child components.
 
 ## 6) Final self-check before finishing
 

@@ -1,8 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
 
 // Sub-components
 import DebugStatsTab from './debug/DebugStatsTab.vue'
@@ -11,50 +9,18 @@ import DebugPokemonTab from './debug/DebugPokemonTab.vue'
 import DebugTimeTab from './debug/DebugTimeTab.vue'
 import DebugModalsTab from './debug/DebugModalsTab.vue'
 import DebugMapTab from './debug/DebugMapTab.vue'
+import DebugMissionsTab from './debug/DebugMissionsTab.vue'
 
 import BaseModal from '@/components/common/BaseModal.vue'
 
+import { useDebugStore } from '@/stores/debug'
+
 const auth = useAuthStore()
-const game = useGameStore()
-const ui = useUIStore()
-
-const canAccess = computed(() => {
-  if (auth.sessionMode === 'offline') return true
-  return auth.user?.role === 'admin'
-})
-
-function securityCheck() {
-  if (auth.sessionMode === 'online' && auth.user?.role !== 'admin') {
-    console.error('[SECURITY] Unauthorized debug access detected. Banning user and force logout.')
-    const userId = auth.user?.id
-    if (userId) {
-      game.db.from('profiles').update({ 
-        is_banned: true, 
-        ban_reason: 'Intento de uso indebido de herramientas de debug' 
-      }).eq('id', userId).then(() => {
-        console.log('[SECURITY] DB Ban applied.')
-      })
-    }
-    auth.logout()
-    return false
-  }
-  return true
-}
+const debug = useDebugStore()
+const canAccess = computed(() => debug.canAccess)
 
 const isOpen = ref(false)
 const selectedCategory = ref('stats')
-
-// EXPOSE DEBUG TOOLS FOR UNIT TESTS (Secure Wrapped)
-if (typeof window !== 'undefined') {
-  window.__VITE_DEBUG__ = {
-    game,
-    ui,
-    setMoney: (val) => { if (securityCheck()) game.state.money = val },
-    setLevel: (val) => { if (securityCheck()) game.state.trainerLevel = val },
-    setMockTime: (d) => { if (securityCheck()) game.db.setMockTime(d) },
-    resetTime: () => { if (securityCheck()) game.db.resetTime() }
-  }
-}
 </script>
 
 <template>
@@ -109,7 +75,7 @@ if (typeof window !== 'undefined') {
 
         <nav class="debug-nav">
           <button 
-            v-for="cat in ['stats', 'items', 'pokes', 'map', 'time', 'modals']" 
+            v-for="cat in ['stats', 'items', 'pokes', 'map', 'missions', 'time', 'modals']" 
             :key="cat"
             :class="{ active: selectedCategory === cat }"
             @click="selectedCategory = cat"
@@ -124,28 +90,25 @@ if (typeof window !== 'undefined') {
         >
           <DebugStatsTab
             v-if="selectedCategory === 'stats'"
-            :security-check="securityCheck"
           />
           <DebugItemsTab
             v-if="selectedCategory === 'items'"
-            :security-check="securityCheck"
           />
           <DebugTimeTab
             v-if="selectedCategory === 'time'"
-            :security-check="securityCheck"
           />
           <DebugModalsTab
             v-if="selectedCategory === 'modals'"
-            :security-check="securityCheck"
           />
           
           <DebugPokemonTab
             v-if="selectedCategory === 'pokes'"
-            :security-check="securityCheck"
           />
           <DebugMapTab
             v-if="selectedCategory === 'map'"
-            :security-check="securityCheck"
+          />
+          <DebugMissionsTab
+            v-if="selectedCategory === 'missions'"
           />
         </main>
       </div>

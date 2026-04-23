@@ -9,6 +9,7 @@ description: Use for Vue.js testing. Covers Vitest, Vue Test Utils, component te
 Vue.js testing best practices, patterns, and common gotchas.
 
 ### Testing
+
 - Setting up test infrastructure for Vue 3 projects → See [testing-vitest-recommended-for-vue](references/testing-vitest-recommended-for-vue.md)
 - Tests keep breaking when refactoring component internals → See [testing-component-blackbox-approach](references/testing-component-blackbox-approach.md)
 - Tests fail intermittently with race conditions → See [testing-async-await-flushpromises](references/testing-async-await-flushpromises.md)
@@ -20,7 +21,7 @@ Vue.js testing best practices, patterns, and common gotchas.
 - Tests need to verify computed styles or real DOM events → See [testing-browser-vs-node-runners](references/testing-browser-vs-node-runners.md)
 - Testing components created with defineAsyncComponent fails → See [async-component-testing](references/async-component-testing.md)
 - Teleported modal content can't be found in wrapper queries → See [teleport-testing-complexity](references/teleport-testing-complexity.md)
-- **Animation-Driven State**: If a store/component state change is delayed by a timeout (e.g., waiting for modal exit animation), use `vi.useFakeTimers()` and `vi.advanceTimersByTime(500)` in Vitest to advance time before making assertions.
+- **Animation-Driven State**: If a store/component state change is delayed by a timeout (e.g., waiting for modal exit animation), use `vi.useFakeTimers()` and `vi.advanceTimersByTime(...)` in Vitest to advance time. **MANDATORY**: Ensure the advance time EXCEEDS the code's timeout (e.g., use 600ms if the code has a 550ms timeout) to account for any race conditions in the test runner's event loop.
 - **Logic Extraction for Testability**: Complex algorithms inside computed properties or methods in `.vue` files are hard to unit test. Extract core pure logic to external helper files (e.g., `mapCardHelper.js`) and test them in isolation using standard Vitest unit tests. This ensures the "brain" of the component is stable without the overhead of component mounting.
 
 ## Reference

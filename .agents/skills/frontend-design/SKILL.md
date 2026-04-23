@@ -193,6 +193,7 @@ All spacing and sizing in multiples of 8:
 - **Patterns**:
   - Show a loading spinner or "Processing..." state on the button itself.
   - Display a toast notification *before* or *during* the save operation to signal that the interaction was registered ("Saving...").
+- **Global Overlay Priority**: In stack-based loading systems, full-screen global overlays MUST take visual precedence over local or non-blocking progress messages. This ensures that critical state changes (like a major database commit or session check) are not obscured by less important background tasks.
 - **Why**: Instant feedback prevents users from feeling the UI is "stuck" and discourages double-clicking or refreshing while data is being committed.
 
 ---

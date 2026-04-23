@@ -24,6 +24,7 @@ Pinia best practices, common gotchas, and state management patterns.
 
 - Filters reset on refresh or can't be shared → See [state-url-for-ephemeral-filters](references/state-url-for-ephemeral-filters.md)
 - Building production app without DevTools or conventions → See [state-use-pinia-for-large-apps](references/state-use-pinia-for-large-apps.md)
+- **Centralized Loading Stack**: For complex apps with concurrent async processes, use a **stack-based** loading store. Instead of a single `isLoading` boolean, push loading objects `{ id, message, isGlobal }` to an array. The UI should render the top-most item (or prioritize `isGlobal` overlays). This prevents concurrent tasks from "clobbering" each other's messages and ensures the loader only disappears when the stack is empty.
 - **State Synchronization (Cross-Store)**: When a local store property must reflect and persist in a global state (e.g., `gameStore.state`), use a `computed` property with a getter and setter. This ensures 1:1 synchronization and avoids "ghost" local state that desyncs from the source of truth after persistence cycles.
 
 ## Timers & Side Effects

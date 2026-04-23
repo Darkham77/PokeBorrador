@@ -5,6 +5,7 @@ import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { useSocialStore } from './social'
 import { useAudioStore } from './audio'
+import { useLoadingStore } from './loading'
 
 export const useTradeStore = defineStore('trade', () => {
   const authStore = useAuthStore()
@@ -12,6 +13,7 @@ export const useTradeStore = defineStore('trade', () => {
   const uiStore = useUIStore()
   const socialStore = useSocialStore()
   const audioStore = useAudioStore()
+  const loadingStore = useLoadingStore()
 
   const tradeTarget = ref(null)
   const tradeFriendSave = ref(null)
@@ -138,8 +140,7 @@ export const useTradeStore = defineStore('trade', () => {
     if (authStore.sessionMode === 'offline') return false
     
     try {
-      gameStore.state.overlayMessage = 'Procesando intercambio...'
-      gameStore.state.isOverlayLoading = true
+      loadingStore.start('accept_trade', 'Procesando intercambio...', 'Sincronizando con el servidor')
       
       // MANDATORY: Pre-Action Flush
       uiStore.notify('Sincronizando inventario...', '🔄')
@@ -155,11 +156,11 @@ export const useTradeStore = defineStore('trade', () => {
       uiStore.notify('¡Intercambio aceptado! Los activos están en tu cola de reclamo.', '🎉')
       await gameStore.fetchClaimQueue()
       
-      gameStore.state.isOverlayLoading = false
+      loadingStore.finish('accept_trade')
       await refreshPendingTrades()
       return true
     } catch (err) {
-      gameStore.state.isOverlayLoading = false
+      loadingStore.finish('accept_trade')
       console.error('[TRADE ERROR]', err)
       uiStore.notify('Error en el intercambio: ' + err.message, '❌')
       return false

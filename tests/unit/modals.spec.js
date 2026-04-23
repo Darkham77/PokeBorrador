@@ -36,7 +36,7 @@ describe('ModalStore Stacking (LIFO)', () => {
     store.open('TestB')
     
     store.closeTop()
-    vi.advanceTimersByTime(500)
+    vi.advanceTimersByTime(600)
     
     expect(store.stack.length).toBe(1)
     expect(store.stack[0].name).toBe('TestA')
@@ -51,7 +51,7 @@ describe('ModalStore Stacking (LIFO)', () => {
     store.open('TestB')
     
     store.close(idA)
-    vi.advanceTimersByTime(500)
+    vi.advanceTimersByTime(600)
     
     expect(store.stack.length).toBe(1)
     expect(store.stack[0].name).toBe('TestB')

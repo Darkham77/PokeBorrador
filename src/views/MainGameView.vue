@@ -9,6 +9,7 @@ import { useWarStore } from '@/stores/war'
 import { useEventStore } from '@/stores/events'
 import { useAudioStore } from '@/stores/audio'
 import { useLivePvPStore } from '@/stores/livePvP'
+import { useBreedingStore } from '@/stores/breeding'
 
 // Sub-components
 import TitleScreen from '@/components/TitleScreen.vue'
@@ -54,6 +55,7 @@ const warStore = useWarStore()
 const eventStore = useEventStore()
 const audioStore = useAudioStore()
 const livePvP = useLivePvPStore()
+const breedingStore = useBreedingStore()
 
 // Sync Weather & Day/Night Cycle with Phaser
 watch(() => gameStore.state.dayCycle, (cycle) => {
@@ -144,6 +146,7 @@ onMounted(() => {
   eventStore.fetchEvents()
   eventStore.checkPendingAwards()
   livePvP.initInvitePoller()
+  breedingStore.checkDailyReset()
 })
 
 onUnmounted(() => {

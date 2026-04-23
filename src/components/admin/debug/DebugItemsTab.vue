@@ -4,12 +4,8 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { SHOP_ITEMS } from '@/data/items'
 
-const props = defineProps({
-  securityCheck: { type: Function, required: true }
-})
-
-const game = useGameStore()
-const ui = useUIStore()
+const _game = useGameStore()
+const _ui = useUIStore()
 
 const searchQuery = ref('')
 const filteredItems = computed(() => {
@@ -21,10 +17,7 @@ const filteredItems = computed(() => {
 })
 
 async function addItem(item, qty = 10) {
-  if (!props.securityCheck()) return
-  game.state.inventory[item.name] = (game.state.inventory[item.name] || 0) + qty
-  ui.notify(`Debug: +${qty} ${item.name}`, item.icon || '🎒')
-  await game.saveGame(false)
+  window.__VITE_DEBUG__.addItem(item.name, qty)
 }
 </script>
 

@@ -1,37 +1,8 @@
 // src/styles/components/_modals.scss
 @use '../core/tools' as *;
 
-.modal-overlay {
-  background: rgba(0, 0, 0, 0.85);
-  -webkit-backdrop-filter: Blur(8px);
-  backdrop-filter: Blur(8px);
-  
-  // Transitions are handled by Vue component
-  &.active {
-    pointer-events: auto;
-  }
-}
-
-.modal-content-premium {
-  @include card-premium;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-  overflow: hidden;
-
-  .modal-scrollable-content {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    width: 100%;
-    @include smooth-scroll;
-    padding: spacing(4);
-  }
-}
+// Core modal styles are now managed in BaseModal.vue
+// Use BaseModal component for all standard modals
 
 /* Shared Pixel Icons */
 .pixel-icon-money, .pixel-icon-coin {

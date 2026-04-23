@@ -2,74 +2,27 @@
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 
-const props = defineProps({
-  securityCheck: { type: Function, required: true }
-})
-
 const game = useGameStore()
 const ui = useUIStore()
 
 async function setDebugPokedex(mode) {
-  if (!props.securityCheck()) return
-  
-  if (mode === 'real') {
-    ui.debugPokedexMode = null
-    // Restore real progress from database just in case they modified it earlier
-    await game.loadGame()
-    ui.notify('Debug: Pokedex REAL RESTAURADA', '✅')
-  } else {
-    ui.debugPokedexMode = mode === 'none' ? null : mode
-    const msg = mode === 'caught' ? 'CAPTURADA' : mode === 'seen' ? 'VISTA' : 'RESET'
-    const icon = mode === 'caught' ? '🌟' : mode === 'seen' ? '👁️' : '👁️‍🗨️'
-    ui.notify(`Debug: Pokedex ${msg} (VISTA TEMPORAL)`, icon)
-  }
+  window.__VITE_DEBUG__.setPokedexMode(mode)
 }
 
 async function resetPokedexDB() {
-  if (!props.securityCheck()) return
   if (!confirm('⚠️ PELIGRO: Esto borrará TODO el progreso de tu Pokedex (Avistados y Capturados) de forma PERMANENTE. ¿Continuar?')) return
-  
   game.state.pokedex = []
   game.state.seenPokedex = []
-  
   await game.saveGame(false)
   ui.notify('Pokedex reseteada en la base de datos', '🧹')
 }
 
 async function syncPokedexFromCollection() {
-  if (!props.securityCheck()) return
-  if (!confirm('Esto recalculará tu Pokedex basándose en los Pokémon que posees actualmente. ¿Continuar?')) return
-  
-  const caughtIds = new Set()
-  const seenIds = new Set()
-  
-  game.state.team.forEach(p => {
-    if (p && p.id) {
-      caughtIds.add(p.id)
-      seenIds.add(p.id)
-    }
-  })
-  
-  if (game.state.box) {
-    game.state.box.forEach(p => {
-      if (p && p.id) {
-        caughtIds.add(p.id)
-        seenIds.add(p.id)
-      }
-    })
-  }
-  
-  game.state.pokedex = Array.from(caughtIds)
-  game.state.seenPokedex = Array.from(seenIds)
-  
-  await game.saveGame(false)
-  ui.notify('Pokedex sincronizada', '🔄')
+  window.__VITE_DEBUG__.syncPokedex()
 }
 
 async function clearPvpTeam() {
-  if (!props.securityCheck()) return
   if (!confirm('¿Limpiar equipo PVP de forma permanente?')) return
-  
   ui.pvpAutoFillDisabled = true
   game.state.pvpTeam = []
   await game.saveGame(false)

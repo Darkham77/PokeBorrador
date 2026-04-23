@@ -1,23 +1,14 @@
 <script setup>
 import { useUIStore } from '@/stores/ui'
-
-const props = defineProps({
-  securityCheck: { type: Function, required: true }
-})
+import { useDebugStore } from '@/stores/debug'
 
 const ui = useUIStore()
+const _debug = useDebugStore()
 
-function toggleGridDebug() {
-  if (!props.securityCheck()) return
-  ui.isDebugGridMode = !ui.isDebugGridMode
-  ui.notify(`Visualización de grilla: ${ui.isDebugGridMode ? 'ACTIVADA' : 'DESACTIVADA'}`, '🗺️')
-}
-
-function togglePerformanceMode() {
-  if (!props.securityCheck()) return
-  ui.isDebugPerformanceMode = !ui.isDebugPerformanceMode
-  ui.notify(`Modo simplificado: ${ui.isDebugPerformanceMode ? 'ACTIVADO' : 'DESACTIVADO'}`, '🚀')
-}
+// These tools are already registered in debugStore init()
+// But we can retrieve them to use in the template or just call them directly
+const toggleGrid = () => window.__VITE_DEBUG__.toggleGrid()
+const togglePerf = () => window.__VITE_DEBUG__.togglePerf()
 </script>
 
 <template>
@@ -28,7 +19,7 @@ function togglePerformanceMode() {
         <button
           class="small-btn"
           :class="{ active: ui.isDebugGridMode }"
-          @click="toggleGridDebug"
+          @click="toggleGrid"
         >
           MOSTRAR BORDES (ROSA)
         </button>
@@ -44,7 +35,7 @@ function togglePerformanceMode() {
         <button
           class="small-btn"
           :class="{ active: ui.isDebugPerformanceMode }"
-          @click="togglePerformanceMode"
+          @click="togglePerf"
         >
           SIMPLIFICAR MAPA (MODO PERF)
         </button>

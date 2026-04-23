@@ -6,15 +6,11 @@ import { usePvPStore } from '@/stores/pvp'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 
-const props = defineProps({
-  securityCheck: { type: Function, required: true }
-})
-
-const auth = useAuthStore()
+const _auth = useAuthStore()
 const game = useGameStore()
 const pvp = usePvPStore()
 const ui = useUIStore()
-const mapStore = useMapStore()
+const _mapStore = useMapStore()
 
 const debugMoney = ref(10000)
 const debugElo = ref(pvp.elo)
@@ -22,45 +18,17 @@ const debugLevel = ref(game.state.trainerLevel)
 const debugBadges = ref(game.state.badges)
 const currentForcedFaction = ref('none')
 
-function addMoney() {
-  if (!props.securityCheck()) return
-  game.state.money += debugMoney.value
-  ui.notify(`Debug: +₽${debugMoney.value}`, '💰')
-  game.saveGame(false)
+// Call console commands directly (they handle securityCheck internally)
+const addMoney = () => {
+  const current = game.state.money
+  window.__VITE_DEBUG__.setMoney(current + debugMoney.value)
 }
-
-function setElo() {
-  if (!props.securityCheck()) return
-  pvp.elo = debugElo.value
-  ui.notify(`Debug: ELO fijado en ${debugElo.value}`, '⚔️')
-  game.db.from('profiles').update({ elo_rating: pvp.elo }).eq('id', auth.user.id)
-}
-
-function setLevel() {
-  if (!props.securityCheck()) return
-  game.state.trainerLevel = debugLevel.value
-  ui.notify(`Debug: Nivel fijado en ${debugLevel.value}`, '📈')
-  game.saveGame(false)
-}
-
-function setBadges() {
-  if (!props.securityCheck()) return
-  game.state.badges = debugBadges.value
-  ui.notify(`Debug: Medallas fijadas en ${debugBadges.value}`, '🎖️')
-  game.saveGame(false)
-}
-
-function forceDominance(faction) {
-  if (!props.securityCheck()) return
-  const winnerMap = {}
-  if (faction !== 'none') {
-    mapStore.maps.forEach(m => {
-      winnerMap[m.id] = { winner_faction: faction }
-    })
-  }
-  mapStore.mapWinners = winnerMap
-  currentForcedFaction.value = faction
-  ui.notify(`Debug: Dominio global fijado en ${faction === 'none' ? 'NEUTRAL' : faction.toUpperCase()}`, '🚩')
+const setElo = () => window.__VITE_DEBUG__.setElo(debugElo.value)
+const setLevel = () => window.__VITE_DEBUG__.setLevel(debugLevel.value)
+const setBadges = () => window.__VITE_DEBUG__.setBadges(debugBadges.value)
+const forceDominance = (f) => {
+  window.__VITE_DEBUG__.setDominance(f)
+  currentForcedFaction.value = f
 }
 
 function setFaction(f) {

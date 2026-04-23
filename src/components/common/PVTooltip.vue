@@ -133,7 +133,9 @@ const hide = () => {
     color: $yellow;
     text-transform: uppercase;
     text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+    display: block;
   }
 
   .pv-tooltip-desc {

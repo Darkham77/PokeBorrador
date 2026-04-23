@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useEvolutionStore } from './evolution'
 import { useModalStore } from './modals'
+import { useLoadingStore } from './loading'
 
 export const useUIStore = defineStore('ui', () => {
   // Use lazy store access to avoid circular dependency issues during boot
@@ -132,7 +133,12 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   const isLoading = ref(false)
-  function setLoading(val) { isLoading.value = val }
+  function setLoading(val, msg = 'Procesando...', sub = 'Por favor espera') { 
+    isLoading.value = val 
+    const loadingStore = useLoadingStore()
+    if (val) loadingStore.start('ui_generic', msg, sub, true)
+    else loadingStore.finish('ui_generic')
+  }
 
   function toggleTrade() { getModalStore().open('SocialCenter') }
 

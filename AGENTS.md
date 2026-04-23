@@ -28,5 +28,11 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 - **Zero-Invention Policy**: Never create new "islands" of logic or styling if a generic system (e.g., `BaseModal`, `UnifiedCard`, `DBRouter`) already exists.
 - **Extend, Don't Duplicate**: Always prioritize parameterization and inheritance to adapt existing systems instead of starting from scratch.
 
+## 6. CLI-First Debugging
+
+- **Efficiency Over GUI**: When simulating game states or testing conditional UI (e.g., money, levels, map dominance), **ALWAYS** prioritize using the `window.__VITE_DEBUG__` console commands over manual GUI interaction.
+- **Speed & Reliability**: CLI-based state simulation is faster and more reliable for automated tests and subagent tasks.
+- **Standardized Execution**: Follow the exact simulation patterns and security protocols defined in the `@/project-browser-testing` skill.
+
 ---
 *Note: If you are an AI agent and haven't loaded `@/project-standards` yet, do it now.*

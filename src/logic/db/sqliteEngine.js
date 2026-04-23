@@ -5,6 +5,7 @@
 import { getFromIDB, setToIDB } from './idbHelper'
 import { TABLES_SCHEMA } from './schema'
 import { DATABASE_MIGRATIONS } from './migrations_data'
+import { useLoadingStore } from '@/stores/loading'
 
 let _sqliteDb = null
 let _initPromise = null
@@ -127,9 +128,12 @@ async function runMigrations() {
   _sqliteDb.run("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))")
   const applied = _sqliteDb.exec("SELECT id FROM _migrations")[0]?.values.map(v => v[0]) || []
 
+  const loadingStore = useLoadingStore()
+  
   for (const m of DATABASE_MIGRATIONS) {
     if (!applied.includes(m.id)) {
       console.log(`[SQLite] Applying migration: ${m.id}`)
+      loadingStore.start('db_migration', 'Actualizando Base de Datos...', `Aplicando: ${m.id}`, false)
       try {
         const statements = splitSQLStatements(m.sql)
         statements.forEach(stmt => {
@@ -154,7 +158,9 @@ async function runMigrations() {
         _sqliteDb.run("INSERT OR IGNORE INTO _migrations (id) VALUES (?)", [m.id])
         console.log(`[SQLite] Migration applied successfully: ${m.id}`)
         await persistSQLite()
+        loadingStore.finish('db_migration')
       } catch (e) { 
+        loadingStore.finish('db_migration')
         console.error(`[SQLite] Migration ${m.id} failed:`, e.message) 
       }
     }

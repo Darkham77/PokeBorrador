@@ -313,6 +313,10 @@ const bannerStyle = computed(() => ({
     0 8px 30px rgba(0, 0, 0, 0.5), 
     inset 0 1px 1px rgba(255, 255, 255, 0.12),
     inset 0 -1px 2px rgba(0, 0, 0, 0.3);
+  
+  transform: TranslateZ(0);
+  backface-visibility: hidden;
+  will-change: transform, background;
 
   &:hover {
     background: rgba(255, 255, 255, 0.12);
@@ -402,14 +406,16 @@ const bannerStyle = computed(() => ({
     justify-content: center;
     
     &:not(:first-child) { margin-left: -15px; }
+    filter: Drop-Shadow(0 4px 6px rgba(0,0,0,0.4));
   }
 
   img {
     width: 48px; 
     height: 48px;
     object-fit: contain;
-    filter: Drop-Shadow(0 4px 6px rgba(0,0,0,0.4));
     @include pixelated;
+    transition: none !important;
+    transform: TranslateZ(0);
   }
 
   .sprite-fallback {
@@ -461,7 +467,12 @@ const bannerStyle = computed(() => ({
   }
 }
 
-.pixelated { image-rendering: pixelated; }
+.pixelated { 
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  -ms-interpolation-mode: nearest-neighbor;
+}
 
 @media (max-width: 1100px) {
   /* Removed rogue global HUD overrides */

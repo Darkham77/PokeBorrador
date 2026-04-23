@@ -50,6 +50,7 @@ When maintaining the `DBRouter` or `ProxyQuery` logic:
 
 - **API Parity**: Ensure that `ProxyQuery` implements all methods used by the Supabase client (e.g., `insert`, `upsert`, `update`, `delete`, `select`, `single`, `maybeSingle`).
 - **Fail-Safe Execution**: Always `await` action handlers within try-catch blocks to return standard `{ data, error }` objects instead of crashing the UI.
+- **Boot Sequence Transparency**: Report individual steps of database initialization (e.g., "Verifying Compatibility", "Applying Migration 12/25") to the centralized loading stack. This improves observability and diagnostic speed if the boot sequence hangs.
 
 ---
 

@@ -103,10 +103,20 @@ If you encounter an unexpected behavior, a "roadblock," or a UI state that does 
 3. **REPAIR FIRST**: If the server or browser reports ANY error or warning (even if it seems minor), you **MUST** prioritize fixing it before proceeding.
 4. **NO WASTED TIME**: Continuing to test on a broken or warning-heavy environment is a waste of time. Fix the foundation first.
 
-## 7. Debug Menu State Simulation
+## 7. Debug Menu State Simulation (CLI-First)
 
-When testing complex conditional UI (like route badges or level-locked maps), do not rely solely on natural progression. Use the **Local Debug Panel** (🛠️ button) to simulate states:
+When testing complex conditional UI (like route badges or level-locked maps), **PRIORITIZE** using console commands over manual GUI interaction. This is faster and more reliable.
 
-- **Badges**: Use the 'Medallas' input to rapidly unlock routes with different requirements.
-- **Dominance**: Use the 'Global Dominance' buttons (Poder/Unión/Neutral) to force territory control. This is the only reliable way to verify faction-specific banners and sprites across all map cards in a single view.
-- **Verification**: After a simulation toggle, verify that the UI reacts reactively without needing a page refresh.
+- **Entry Point**: `window.__VITE_DEBUG__`
+- **Security**: These commands are only available if the user is logged in as `ASH` (local admin).
+- **Common Commands**:
+  - **Stats**: `window.__VITE_DEBUG__.setMoney(99999)`, `window.__VITE_DEBUG__.setLevel(50)`, `window.__VITE_DEBUG__.setElo(1500)`.
+  - **Map**: `window.__VITE_DEBUG__.setDominance('poder')`, `window.__VITE_DEBUG__.toggleGrid()`.
+  - **Time**: `window.__VITE_DEBUG__.setMockTime('2026-01-01T12:00')`, `window.__VITE_DEBUG__.setCycle('night')`.
+  - **Items**: `window.__VITE_DEBUG__.addItem('Master Ball', 10)`.
+
+### Execution Example (Subagent Task)
+
+> *"Navigate to URL. Login as ASH. Use evaluate to run 'window.__VITE_DEBUG__.setDominance(\"poder\")'. Verify that the map cards show the Power Faction banners. Stop immediately. DO NOT return the DOM."*
+
+- **Verification**: After a simulation command, verify that the UI reacts reactively without needing a page refresh. If a refresh is needed, the `browser_subagent` will report it as a bug.

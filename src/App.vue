@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
@@ -15,6 +15,7 @@ import LivePvPArena from '@/components/battle/LivePvPArena.vue'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import PhaserGame from '@/components/game/PhaserGame.vue'
 import { useUIStore } from '@/stores/ui'
+import { useLoadingStore } from '@/stores/loading'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useWindowListener } from '@/composables/useWindowListener'
 
@@ -22,8 +23,45 @@ const authStore = useAuthStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const classStore = usePlayerClassStore()
+const loadingStore = useLoadingStore()
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref(null)
+
+const loadingInfo = computed(() => {
+  // 1. Centralized Loading Store (Highest Priority)
+  if (loadingStore.isActive) {
+    const cur = loadingStore.current
+    return { 
+      active: true, 
+      msg: cur.message, 
+      sub: cur.subMessage,
+      global: cur.isGlobal 
+    }
+  }
+
+  // 2. Legacy/Automatic states (Backwards Compatibility)
+  if (authStore.loading) {
+    return { active: true, msg: 'Iniciando sesión...', sub: 'Conectando con el servidor', global: false }
+  }
+  
+  if (authStore.user && !gameStore.isReady) {
+    let msg = 'Escribiendo tu historia...'
+    if (!gameStore.isDataLoaded) msg = 'Cargando datos...'
+    else if (!gameStore.isEngineReady) msg = 'Cargando motor...'
+    return { active: true, msg, sub: 'Preparando entorno de juego', global: false }
+  }
+
+  if (gameStore.state.isOverlayLoading) {
+    return { 
+      active: true, 
+      msg: gameStore.state.overlayMessage || 'Procesando...', 
+      sub: 'Por favor, no cierres la ventana',
+      global: true 
+    }
+  }
+
+  return { active: false, msg: '', sub: '', global: false }
+})
 
 onMounted(async () => {
   // 1. Init Global Error Handlers (Vue Bridge)
@@ -103,11 +141,18 @@ const handleRetry = () => {
 
     <!-- Pantalla de carga unificada -->
     <div
-      v-if="authStore.loading || (authStore.user && !gameStore.isReady)"
+      v-if="loadingInfo.active"
       class="loading-overlay"
+      :class="{ 'global-overlay': loadingInfo.global }"
     >
       <div class="loader" />
-      <p>{{ authStore.loading ? 'Iniciando sesión...' : 'Escribiendo tu historia...' }}</p>
+      <p>{{ loadingInfo.msg }}</p>
+      <span 
+        v-if="loadingInfo.sub" 
+        class="sub-text"
+      >
+        {{ loadingInfo.sub }}
+      </span>
     </div>
 
     <!-- Capa de Juego (Phaser debe cargar en segundo plano para disparar isReady) -->
@@ -143,15 +188,6 @@ const handleRetry = () => {
     <!-- El LoginView se renderiza aquí si no hay sesión y terminó de cargar auth -->
     <router-view v-else-if="!authStore.loading" />
 
-    <!-- Overlay Global para Sincronización y Procesos Largos -->
-    <div
-      v-if="gameStore.state.isOverlayLoading"
-      class="loading-overlay global-overlay"
-    >
-      <div class="loader" />
-      <p>{{ gameStore.state.overlayMessage }}</p>
-      <span class="sub-text">Por favor, no cierres la ventana</span>
-    </div>
 
     <!-- Error Global UI -->
     <ErrorOverlay />

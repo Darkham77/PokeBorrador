@@ -4,10 +4,6 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 
-const props = defineProps({
-  securityCheck: { type: Function, required: true }
-})
-
 const game = useGameStore()
 const ui = useUIStore()
 const mapStore = useMapStore()
@@ -16,25 +12,20 @@ const debugDate = ref(new Date().toISOString().slice(0, 16))
 const timeOffsetLabel = ref(`${game.db.getTimeOffset()}ms`)
 
 function updateMockTime() {
-  if (!props.securityCheck()) return
-  game.db.setMockTime(debugDate.value)
+  window.__VITE_DEBUG__.setMockTime(debugDate.value)
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
-  ui.notify(`Tiempo fijado en: ${debugDate.value}`, '⏰')
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
 function resetTime() {
-  if (!props.securityCheck()) return
-  game.db.resetTime()
+  window.__VITE_DEBUG__.resetTime()
   timeOffsetLabel.value = '0ms'
   debugDate.value = new Date().toISOString().slice(0, 16)
-  ui.notify('Tiempo restablecido al real', '♻️')
   window.dispatchEvent(new CustomEvent('time-sync-update'))
   mapStore.setGlobalCycle(null)
 }
 
 function addHours(h) {
-  if (!props.securityCheck()) return
   const current = game.db.getTimeOffset()
   game.db.setTimeOffset(current + (h * 3600 * 1000))
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
@@ -43,17 +34,13 @@ function addHours(h) {
 }
 
 function toggleWeather(w) {
-  if (!props.securityCheck()) return
   const next = mapStore.globalWeather === w ? 'clear' : w
-  mapStore.setGlobalWeather(next)
-  ui.notify(`Clima fijado: ${next.toUpperCase()}`, '🌥️')
+  window.__VITE_DEBUG__.setWeather(next)
 }
 
 function toggleCycle(c) {
-  if (!props.securityCheck()) return
   const next = mapStore.forcedCycle === c ? null : c
-  mapStore.setGlobalCycle(next)
-  ui.notify(`Ciclo forzado: ${next ? next.toUpperCase() : 'REAL'}`, '⌛')
+  window.__VITE_DEBUG__.setCycle(next)
 }
 </script>
 

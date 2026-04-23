@@ -6,6 +6,7 @@
 import { ProxyQuery } from './proxyQuery';
 import { initSQLite, persistSQLite, queryLocal } from './sqliteEngine';
 import { DATABASE_MIGRATIONS } from './migrations_data';
+import { useLoadingStore } from '@/stores/loading';
 
 export class DBRouter {
   /**
@@ -241,6 +242,8 @@ export const CLIENT_DB_VERSION = DATABASE_MIGRATIONS.length > 0
   : 0;
 
 export async function checkDBCompatibility(router) {
+  const loadingStore = useLoadingStore()
+  loadingStore.start('db_compat', 'Verificando Versión...', 'Comprobando compatibilidad de DB', false)
   try {
     let dbVersion = 0;
 
@@ -283,8 +286,10 @@ export async function checkDBCompatibility(router) {
       response.error = 'OUTDATED_SERVER';
     }
 
+    loadingStore.finish('db_compat')
     return response;
   } catch (e) {
+    loadingStore.finish('db_compat')
     console.warn('[DBRouter] Compatibility check failed, assuming compatible.', e);
     return { compatible: true, client: CLIENT_DB_VERSION, db: 0 };
   }

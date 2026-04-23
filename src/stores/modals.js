@@ -60,13 +60,13 @@ export const useModalStore = defineStore('modals', () => {
       modal.closing = true
       
       // We wait for the animation to finish before removing from stack
-      // 400ms matches BaseModal.vue transitions
+      // 550ms ensures BaseModal.vue 500ms transitions finish first
       setTimeout(() => {
         const finalIndex = stack.value.findIndex(m => m.id === modal.id)
         if (finalIndex !== -1) {
           stack.value.splice(finalIndex, 1)
         }
-      }, 450)
+      }, 550)
     }
   }
 

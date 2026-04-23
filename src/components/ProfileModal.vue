@@ -422,14 +422,6 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 .profile-modal-legacy {
   border-left: 2px solid rgba(255, 255, 255, 0.05) !important;
   
-  // Background logic moved to .profile-panel-content
-
-  :deep(.modal-header-premium) {
-    border-bottom: none !important;
-    padding-bottom: 0;
-    .modal-title-text { color: #f472b6; font-size: 14px; } // Legacy magenta title
-  }
-
   :deep(.modal-scrollable-content) {
     background: transparent !important;
   }

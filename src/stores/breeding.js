@@ -339,6 +339,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     claimEgg,
     checkDailyReset,
     refreshMissions,
+    regenerateMissions,
     completeMission,
     reduceHatchTimers,
     scanEgg

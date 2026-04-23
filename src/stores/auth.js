@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { supabase } from '@/logic/supabase'
 import { syncServerTime } from '@/logic/timeUtils'
+import { useLoadingStore } from './loading'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -78,6 +79,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     loading.value = true
+    useLoadingStore().start('auth_init', 'Iniciando sesión...', 'Conectando con el servidor', false)
     try {
       // 1. Verificar sesión con timeout de seguridad (3s) para evitar bloqueos infinitos
       const sessionPromise = supabase.auth.getSession();
@@ -146,11 +148,15 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } finally {
       loading.value = false
+      useLoadingStore().finish('auth_init')
       console.log('[Auth] CheckSession finished. Loading:', loading.value)
     }
   }
 
   async function login(email, password) {
+    const loadingStore = useLoadingStore()
+    loadingStore.start('auth_action', 'Verificando credenciales...', 'Por favor espera', true)
+    
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     
@@ -179,6 +185,7 @@ export const useAuthStore = defineStore('auth', () => {
     
     startSessionMonitoring()
     syncServerTime()
+    loadingStore.finish('auth_action')
     return data
   }
 
@@ -235,6 +242,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function localLogin(name) {
     loading.value = true
+    const loadingStore = useLoadingStore()
+    loadingStore.start('auth_action', 'Entrando como invitado...', 'Preparando partida local', true)
     try {
       const userData = {
         id: 'local_' + name.toLowerCase().replace(/\s+/g, '_'),
@@ -257,6 +266,7 @@ export const useAuthStore = defineStore('auth', () => {
       sessionConflict.value = false
     } finally {
       loading.value = false
+      loadingStore.finish('auth_action')
     }
   }
 

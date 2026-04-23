@@ -9,6 +9,7 @@ import { makePokemon, levelUpPokemon } from '@/logic/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
 import { useEventStore } from './events'
+import { useLoadingStore } from './loading'
 
 import { INITIAL_STATE } from './gameInitialState'
 
@@ -39,6 +40,9 @@ export const useGameStore = defineStore('game', () => {
   }
 
   async function loadGame() {
+    const loadingStore = useLoadingStore()
+    loadingStore.start('game_data', 'Cargando datos...', 'Leyendo partida guardada', false)
+    
     if (!authStore.user) {
       isDataLoaded.value = true // Nothing to load for guests
       return
@@ -74,6 +78,7 @@ export const useGameStore = defineStore('game', () => {
     }
     
     isDataLoaded.value = true
+    loadingStore.finish('game_data')
   }
 
   async function save(showNotif = true) {
@@ -130,6 +135,9 @@ export const useGameStore = defineStore('game', () => {
   }
 
   async function chooseStarter(id) {
+    const loadingStore = useLoadingStore()
+    loadingStore.start('choose_starter', 'Preparando aventura...', 'Asignando primer compañero', true)
+    
     const uiStore = useUIStore()
     const starter = makePokemon(id, 5)
     
@@ -144,6 +152,7 @@ export const useGameStore = defineStore('game', () => {
     
     // Guardado inmediato
     await save(false)
+    loadingStore.finish('choose_starter')
   }
 
   /**

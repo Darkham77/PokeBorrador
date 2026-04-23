@@ -108,8 +108,8 @@ const isMissionDone = computed(() => {
 <template>
   <BaseModal
     :show="isOpen"
+    title="GESTIÓN DE CLASE"
     max-width="1000px"
-    hide-header
     :show-close-button="true"
     padding="raw"
     @close="close"

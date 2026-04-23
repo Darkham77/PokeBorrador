@@ -101,10 +101,10 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     <!-- Side Panel via BaseModal -->
     <BaseModal
       :show="isOpen"
+      title="MUNDO"
       type="side-left"
       :lock-scroll="false"
       overlay="none"
-      hide-header
       :show-close-button="true"
       padding="raw"
       @close="toggleChat"
@@ -113,12 +113,6 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
         ref="chatPanelRef"
         class="chat-panel"
       >
-        <header class="chat-header">
-          <div class="title">
-            MUNDO
-          </div>
-        </header>
-
         <div
           ref="messagesContainer"
           class="messages-list custom-scrollbar-vicio"

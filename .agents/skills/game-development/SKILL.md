@@ -64,6 +64,11 @@ RENDER → Draw the frame (interpolated)
 - Rendering: As fast as possible
 - Interpolate between states for smooth visuals
 
+**Asset Loading Progress**:
+
+- **Pattern**: In hybrid games (Vue + Phaser), connect the engine's loading events (`this.load.on('progress')`) to a centralized UI store.
+- **Why**: This provides real-time feedback to the user during heavy asset loads (e.g., textures, audio) and keeps the loading screen feeling responsive and "alive" instead of static.
+
 ---
 
 ### 2. Pattern Selection Matrix

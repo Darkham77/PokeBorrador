@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import { ASSET_TYPES } from '@/logic/services/assetService';
 import PhaserAssetService from '../services/PhaserAssetService';
+import { useLoadingStore } from '@/stores/loading';
 
 /**
  * BootScene.js
@@ -12,15 +13,16 @@ export default class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    // 1. Setup Loading UI (Simple text for now)
-    const { width, height } = this.cameras.main;
-    const _loadingText = this.add.text(width / 2, height / 2, 'Cargando Motor...', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '12px',
-      fill: '#FFD93D'
-    }).setOrigin(0.5);
+    // 1. Setup Loading UI
 
     // 2. Preload recurring UI/VFX Assets
+    const loadingStore = useLoadingStore()
+    loadingStore.start('phaser_boot', 'Iniciando Motor...', 'Cargando recursos base', false)
+    
+    this.load.on('progress', (value) => {
+      loadingStore.setProgress('phaser_boot', null, `Cargando recursos: ${Math.round(value * 100)}%`)
+    })
+
     PhaserAssetService.loadAtlas(this, 'vfx', 'vfx');
     
     // Placeholder for common sprites
@@ -29,6 +31,7 @@ export default class BootScene extends Phaser.Scene {
 
   create() {
     console.log('[BootScene] Engine Assets Loaded');
+    useLoadingStore().finish('phaser_boot')
     
     // Notify Vue that the engine is ready
     window.dispatchEvent(new CustomEvent('game-state-ready'));
