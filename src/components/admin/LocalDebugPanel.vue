@@ -10,6 +10,7 @@ import DebugItemsTab from './debug/DebugItemsTab.vue'
 import DebugPokemonTab from './debug/DebugPokemonTab.vue'
 import DebugTimeTab from './debug/DebugTimeTab.vue'
 import DebugModalsTab from './debug/DebugModalsTab.vue'
+import DebugMapTab from './debug/DebugMapTab.vue'
 
 import BaseModal from '@/components/common/BaseModal.vue'
 
@@ -108,7 +109,7 @@ if (typeof window !== 'undefined') {
 
         <nav class="debug-nav">
           <button 
-            v-for="cat in ['stats', 'items', 'pokes', 'time', 'modals']" 
+            v-for="cat in ['stats', 'items', 'pokes', 'map', 'time', 'modals']" 
             :key="cat"
             :class="{ active: selectedCategory === cat }"
             @click="selectedCategory = cat"
@@ -140,6 +141,10 @@ if (typeof window !== 'undefined') {
           
           <DebugPokemonTab
             v-if="selectedCategory === 'pokes'"
+            :security-check="securityCheck"
+          />
+          <DebugMapTab
+            v-if="selectedCategory === 'map'"
             :security-check="securityCheck"
           />
         </main>

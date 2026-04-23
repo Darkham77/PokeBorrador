@@ -17,6 +17,7 @@ export const useUIStore = defineStore('ui', () => {
   const notifications = ref([])
   
   const isDebugPerformanceMode = ref(false)
+  const isDebugGridMode = ref(false)
   const debugPokedexMode = ref(null) // 'caught' | 'seen' | null
   
   const _isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
@@ -265,6 +266,7 @@ export const useUIStore = defineStore('ui', () => {
     isAnyModalOpen,
     isAnyBlockingModalOpen,
     isDebugPerformanceMode,
+    isDebugGridMode,
     debugPokedexMode,
     isProfileOpen,
     isSettingsOpen,

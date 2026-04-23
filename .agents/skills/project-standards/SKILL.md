@@ -19,6 +19,7 @@ Refer to these manuals for complex implementation specifications:
 | **Database Architecture** | [dbrouter_manual.md](./references/dbrouter_manual.md) |
 | **Sync & Security** | [security_and_sync_manual.md](./references/security_and_sync_manual.md) |
 | **Asset Pipeline** | [asset_service_manual.md](./references/asset_service_manual.md) |
+| **Map & Spawns** | [spawn_grid_manual.md](./references/spawn_grid_manual.md) |
 
 ---
 
@@ -45,6 +46,7 @@ Refer to these manuals for complex implementation specifications:
 
 - **Sanitization**: All dynamic asset IDs (especially from external APIs like PokeAPI or Showdown) MUST be sanitized: remove spaces and dots (e.g., `Lt. Surge` → `ltsurge`) and force `toLowerCase()` before URL construction.
 - **Routing Edge Cases**: When routing sprites for variants or special states (e.g., Manaphy Eggs), use `startsWith()` prefix matching (e.g. `id.startsWith('egg')`) instead of exact matches in the `assetService` to ensure all variant naming conventions map to the correct base asset.
+- **Faction Normalization**: Faction names (Spanish 'poder'/'unión' and English 'power'/'union') MUST be normalized before comparison using centralized helpers (e.g., `normalizeFaction`). This prevents logic failures when comparing database strings with UI/Store states.
 - **Prioritization**: Always prioritize local assets (`/public/assets/`) over remote APIs. Check for local existence or maintain an explicit "Local-Only" list to prevent unnecessary remote 404s for assets already in the repo.
 
 ### 3. The 500-Line Threshold
@@ -175,6 +177,7 @@ Refer to these manuals for complex implementation specifications:
 
 - **MANDATORY**: Every active script in the `scripts/` directory MUST have a header comment explaining its **Utility** (what it does) and **Importance** (why it exists in the architecture).
 - **FORBIDDEN**: Keeping obsolete or legacy scripts that reference non-existent files or pre-migration paths. Purge these immediately to prevent workspace pollution.
+- **Game Performance Priority**: Every UI and logic implementation MUST prioritize GPU-accelerated rendering and FPS stability. Use optimized filter chains (e.g., `pokemon-outline-performance`) and object pooling to ensure maximum fluidity without compromising visual quality.
 
 ### 6. Modal Stack & Performance Synchronization
 

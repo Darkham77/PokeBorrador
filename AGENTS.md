@@ -13,6 +13,7 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 - **Pixel Art Heart**: All game content, sprites, and typography MUST be pixelated.
 - **SASS Integrity**: MANDATORY use of **Capitalized Filters** (e.g., `Blur()`, `Scale()`) to prevent Dart Sass 2.0 collisions.
 - **GPU Efficiency**: Strict use of Texture Atlases and Object Pooling (Phaser).
+- **Game Performance First**: This is a high-fidelity web video game. All UI and logic implementations MUST prioritize GPU-accelerated rendering and FPS stability. Optimize workflows and filter chains (e.g., `pokemon-outline-performance`) to ensure maximum fluidity without compromising visual quality.
 
 ## 3. Database Isolation
 

@@ -12,8 +12,13 @@
   padding: 15px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden; // Crítico para el recorte de esquinas
+  overflow: visible;
+  z-index: 1;
   display: flex;
+
+  &:hover {
+    z-index: 200; // Above all other cards and their contents
+  }
   flex-direction: column;
   align-items: center;
   @include smooth;
@@ -22,7 +27,8 @@
   &::before {
     content: '';
     position: absolute;
-    inset: 0; // Evita el bleeding de esquinas
+    inset: 0; 
+    border-radius: 18px; // Mantiene el recorte sin overflow:hidden
     background-image: var(--bg-image);
     background-size: cover;
     background-position: center;
@@ -40,6 +46,7 @@
     content: '';
     position: absolute;
     inset: 0;
+    border-radius: 18px;
     background: linear-gradient(to top, 
       rgba(0, 0, 0, 0.85) 0%, 
       rgba(0, 0, 0, 0.2) 50%, 
@@ -66,6 +73,11 @@
 
     &::after {
       opacity: 1;
+      background: linear-gradient(to top, 
+        rgba(0, 0, 0, 0.9) 0%, 
+        rgba(0, 0, 0, 0.4) 50%, 
+        rgba(0, 0, 0, 0.8) 100%
+      );
     }
   }
 
@@ -118,61 +130,90 @@
 }
 
 
-/* Cycle Pill (Top Right) */
-.location-tag {
-  position: absolute;
-  top: 15px;
-  right: 10px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
-  padding: 6px 12px;
+// Shared Map Pill Style (Standardized)
+.map-pill {
+  width: auto;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   @include glass-solid(rgba(0, 0, 0, 0.85));
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 10; // Above background, below spawns (z:20)
+  pointer-events: auto;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: Scale(1.05);
+    @include glass-solid(rgba(0, 0, 0, 0.95));
+    border-color: rgba(255, 255, 255, 0.4);
+    z-index: 100; // Above Pokémon (z-20)
+  }
+}
+
+.faction-status-pill {
+  @extend .map-pill;
+  position: absolute;
+  top: 65px;
+  left: 12px;
+  
+  .faction-emoji {
+    font-size: 16px;
+    filter: Drop-Shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Cycle Pill (Top Right) */
+.location-tag {
+  @extend .map-pill;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 18px;
   color: #ffcc00;
-  z-index: 10;
+
+  .tag-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: Drop-Shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  }
 }
 
 .tag-locked { color: #ff6e6e; border-color: rgba(255, 110, 110, 0.3); }
 
-/* Interactive Pills (Fishing, etc) */
-.interactive-pills-container {
+.faction-status-pill {
+  @extend .map-pill;
+  position: absolute;
+  top: 65px;
+  left: 12px;
+  z-index: 10;
+}
+
+.fishing-pill-standalone {
   position: absolute;
   bottom: 15px;
-  left: 10px;
-  display: flex;
-  gap: 8px;
+  left: 12px;
   z-index: 10;
 }
 
 .interactive-pill {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 5px;
-  padding: 2px 0;
-  @include glass-solid(rgba(0, 0, 0, 0.85));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: $white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  width: fit-content;
-  min-width: 0;
-  overflow: hidden;
+  @extend .map-pill;
   
   .pill-icon {
-    font-size: 16px;
+    font-size: 18px;
     filter: Drop-Shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-    width: 100%;
-    text-align: center;
   }
 
-  .pill-text {
-    writing-mode: vertical-rl;
-    text-orientation: upright;
-    letter-spacing: 1px;
+  &.faction-status-pill-inline {
+    // Shared styles for the inline faction indicator
   }
 
   &.fishing-pill {
@@ -184,68 +225,153 @@
 
 @keyframes buoyFloat {
   0%, 100% { transform: TranslateY(0) Rotate(0deg); }
-  33% { transform: TranslateY(-4px) Rotate(2deg); }
-  66% { transform: TranslateY(-1px) Rotate(-1deg); }
+  33% { transform: TranslateY(-8px) Rotate(5deg); }
+  66% { transform: TranslateY(2px) Rotate(-3deg); }
 }
+
+@keyframes pillGlow {
+  0%, 100% { filter: Brightness(1) Drop-Shadow(0 0 2px rgba(255, 204, 0, 0.4)); }
+  50% { filter: Brightness(1.2) Drop-Shadow(0 0 8px rgba(255, 204, 0, 0.6)); }
+}
+
+@keyframes pillDrift {
+  0%, 100% { transform: TranslateX(0); }
+  50% { transform: TranslateX(3px); }
+}
+
+@keyframes pillShake {
+  0%, 100% { transform: Rotate(0deg); }
+  25% { transform: Rotate(2deg); }
+  75% { transform: Rotate(-2deg); }
+}
+
+@keyframes powerThump {
+  0%, 100% { transform: Scale(1); }
+  15% { transform: Scale(1.1); }
+  30% { transform: Scale(1); }
+}
+
+@keyframes unionShine {
+  0%, 100% { transform: Rotate(0deg) Scale(1); filter: Brightness(1); }
+  50% { transform: Rotate(10deg) Scale(1.05); filter: Brightness(1.3); }
+}
+
+@keyframes crownFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes auraPulse {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(255, 204, 0, 0.4), inset 0 0 2px rgba(255, 204, 0, 0.2);
+    filter: Brightness(1);
+  }
+  50% { 
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.8), inset 0 0 6px rgba(255, 204, 0, 0.4);
+    filter: Brightness(1.3);
+  }
+}
+
+.anim-glow { animation: pillGlow 3s infinite ease-in-out; }
+.anim-drift { animation: pillDrift 4s infinite ease-in-out; }
+.anim-shake { animation: pillShake 0.5s infinite ease-in-out; }
+.anim-thump { animation: powerThump 2s infinite ease-in-out; }
+.anim-shine { animation: unionShine 5s infinite ease-in-out; }
+.anim-float { animation: crownFloat 3s infinite ease-in-out; }
+.anim-aura { animation: auraPulse 2s infinite ease-in-out; }
 
 /* Spawns */
 .location-spawns {
   position: absolute;
-  bottom: 15px;
+  top: 58px; // Just below the description
+  bottom: 15px; // Raised slightly to clear the badge
   left: 20px;
-  right: 30px;
+  right: 20px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  z-index: 10;
+  align-items: center;
+  justify-content: center;
+  z-index: 20; // On top of pills (z-10)
   pointer-events: none;
 }
 
-.spawn-row-grid {
-  display: flex;
-  flex-wrap: wrap-reverse;
-  justify-content: flex-end;
-  align-items: center;
+.spawn-grid-container {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--grid-rows), minmax(0, 1fr));
   width: 100%;
-  gap: 0;
-  padding-right: 25px;
+  max-width: 100%; // Fill available horizontal space
+  height: 100%;
+  margin: 0 auto;
+  pointer-events: none;
+  @include pixelated;
+  image-rendering: pixelated !important;
 
-  img {
-    width: 65px;
-    height: 65px;
-    padding: 6px;
-    object-fit: contain;
-    image-rendering: pixelated;
-    filter: pokemon-outline-2px($black);
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-right: -25px;
+  &.show-debug-grid .spawn-slot {
+    outline: 1px solid #ff00ff;
+    background: rgba(255, 0, 255, 0.05);
+  }
+}
 
-    &:hover {
-      transform: scale3d(1.2, 1.2, 1) translateY(-8px);
-      filter: Drop-Shadow(0 12px 24px rgba(0, 0, 0, 0.6)) Brightness(1.2);
-      z-index: 100 !important;
-      pointer-events: auto;
-    }
+.spawn-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: visible;
+
+  .sprite-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(100% * var(--sprite-scale));
+    height: calc(100% * var(--sprite-scale));
+    position: relative;
+    will-change: filter;
     
     &.rare-spawn {
-      filter: pokemon-outline-1px($black) 
-              Drop-Shadow(0 0 3px #ff0000) 
-              Drop-Shadow(0 0 8px rgba(255, 0, 0, 0.9));
+      filter: aura-red-classic(#ff0000);
       animation: pulse-red-neon 2s infinite ease-in-out;
+    }
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    object-fit: contain;
+    @include pixelated;
+    image-rendering: pixelated !important;
+    image-rendering: crisp-edges !important;
+    
+    // Core Black Border (Generalized for ALL)
+    filter: pokemon-outline-performance($black);
+    
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    transform: translateZ(0); 
+
+    &:hover {
+      transform: Scale(1.1) TranslateY(-2px);
+      z-index: 100 !important;
+      pointer-events: auto;
     }
   }
 }
 
 @keyframes pulse-red-neon {
   0%, 100% { 
-    filter: pokemon-outline-1px($black) Drop-Shadow(0 0 2px #ff0000); 
+    filter: aura-red-classic(rgba(255, 0, 0, 0.7));
     transform: Scale(1); 
   }
   50% { 
-    filter: pokemon-outline-1px($black) Drop-Shadow(0 0 8px #ff0000); 
-    transform: Scale(1.1); 
+    filter: aura-red-classic(rgba(255, 0, 0, 1));
+    transform: Scale(1.02); 
   }
+}
+
+@keyframes rare-glow {
+  0%, 100% { filter: aura-red-classic(rgba(255, 0, 0, 0.6)); }
+  50% { filter: aura-red-classic(rgba(255, 0, 0, 1)); }
 }
 
 /* Lock Overlay */
@@ -274,19 +400,16 @@
 
 /* Miscellaneous */
 .dom-badge {
+  @extend .map-pill;
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--yellow);
-  @include glass-solid(rgba(0, 0, 0, 0.8));
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 4px 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  bottom: 12px;
+  right: 12px;
+  font-size: 20px;
+  
+  &.winning {
+    color: var(--yellow);
+    border-color: rgba(255, 215, 0, 0.3);
+  }
 }
 
 .faction-dominance {

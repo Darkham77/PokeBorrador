@@ -99,14 +99,16 @@
 
 ---
 
-## 6. Anti-Patterns
+---
 
-| ❌ Don't | ✅ Do |
-| :--- | :--- |
-| Separate textures | Use atlases |
-| Complex collision shapes | Simplified collision |
-| Jittery camera | Smooth following |
-| Pixel-perfect on physics | Choose one approach |
+## 7. High-Performance Sprite Filters
+
+### Optimized Outlines
+- **GPU-Safe Borders**: In dense grids, avoid 4-way or 8-way `Drop-Shadow` filters. Use a 2-way diagonal cross-shadow (e.g., `1px 1px` and `-1px -1px`) to reduce processing by 50% while maintaining visual clarity.
+- **Aliasing**: Use a subtle `0.5px` blur on black outlines to simulate high-quality anti-aliasing without the performance hit of complex filter chains.
+
+### Consistency & Parity
+- **Static vs Animation**: Always ensure that static filters and `@keyframes` use the exact same filter functions (SASS helpers) to prevent visual flickering or "jumps" during transitions.
 
 ---
 

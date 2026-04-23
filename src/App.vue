@@ -169,6 +169,10 @@ const handleRetry = () => {
 
 .zoom-target {
   zoom: var(--app-zoom, 1);
+  transform: translateZ(0);
+  will-change: zoom, transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .loading-overlay {

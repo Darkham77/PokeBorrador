@@ -1,9 +1,12 @@
 <script setup>
 import { computed, ref, watch, onUnmounted } from 'vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
+import { useGameStore } from '@/stores/game'
+import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
 
 const props = defineProps({
   map: { type: Object, required: true },
@@ -31,14 +34,20 @@ const imgPath = computed(() => {
   return getAssetUrl(ASSET_TYPES.MAP, fileName)
 })
 
-const cycleLabel = computed(() => {
-  const labels = { morning: 'AMANECER', day: 'DÍA', dusk: 'ATARDECER', night: 'NOCHE' }
-  return labels[props.cycle] || 'DÍA'
-})
 
 const cycleEmoji = computed(() => {
   const emojis = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
   return emojis[props.cycle] || '☀️'
+})
+
+const cycleName = computed(() => {
+  const names = {
+    morning: 'Mañana',
+    day: 'Día',
+    afternoon: 'Tarde',
+    night: 'Noche'
+  }
+  return names[props.cycle] || 'Normal'
 })
 
 const weatherEmoji = computed(() => {
@@ -55,6 +64,21 @@ const weatherEmoji = computed(() => {
   return emojis[props.weather] || ''
 })
 
+const weatherName = computed(() => {
+  const names = {
+    clear: 'Despejado',
+    rain: 'Lluvia',
+    storm: 'Tormenta',
+    snow: 'Nieve',
+    blizzard: 'Ventisca',
+    sandstorm: 'Tormenta de Arena',
+    mist: 'Niebla',
+    fog: 'Niebla',
+    heatwave: 'Ola de Calor'
+  }
+  return names[props.weather] || 'Normal'
+})
+
 const atmosphereStyles = computed(() => {
   const filters = {
     morning: 'Brightness(0.6) contrast(1.2) Saturate(1.2) hue-rotate(-15deg)',
@@ -64,10 +88,10 @@ const atmosphereStyles = computed(() => {
   }
 
   const hoverFilters = {
-    morning: 'Brightness(0.7) contrast(1.3) Saturate(1.4) hue-rotate(-15deg)',
-    day: 'Brightness(1.1) contrast(1.1) Saturate(1.1)',
-    dusk: 'Brightness(0.7) contrast(1.5) Saturate(2.0) sepia(0.4) hue-rotate(-25deg)',
-    night: 'Brightness(0.4) contrast(1.3) Saturate(0.6) hue-rotate(220deg)'
+    morning: 'Brightness(0.5) contrast(1.2)',
+    day: 'Brightness(0.65) contrast(1.1)',
+    dusk: 'Brightness(0.5) contrast(1.4) sepia(0.3)',
+    night: 'Brightness(0.25) contrast(1.2)'
   }
 
   let baseFilter = filters[props.cycle] || filters.day
@@ -148,8 +172,31 @@ onUnmounted(() => {
   if (lightningInterval) clearInterval(lightningInterval)
 })
 
+const weatherAnimClass = computed(() => {
+  if (props.isLocked) return ''
+  const anims = {
+    clear: 'anim-glow',
+    heatwave: 'anim-glow',
+    mist: 'anim-drift',
+    fog: 'anim-drift',
+    rain: 'anim-shake',
+    storm: 'anim-shake'
+  }
+  return anims[props.weather] || ''
+})
+
+const factionAnimClass = computed(() => {
+  if (!props.dominance?.winner) return ''
+  return props.dominance.winner === 'union' ? 'anim-shine' : 'anim-thump'
+})
+
+const game = useGameStore()
+
+const isPlayerWinner = computed(() => {
+  return checkPlayerWinner(props.dominance?.winner, game.state.faction)
+})
+
 const getPokemonSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
-const getFactionIcon = (faction) => getAssetUrl(ASSET_TYPES.FACTION, faction)
 
 const isRare = (id) => {
   const rate = props.spawnPool.rates[id] || 10
@@ -160,6 +207,28 @@ const allSpawns = computed(() => [
   ...props.spawnPool.generic,
   ...props.spawnPool.specific
 ])
+
+// Dynamic Grid Logic
+const SPRITE_SCALE = 1.5 // Increased for better visibility as requested
+
+const spawnGrid = computed(() => {
+  const rawSpawns = allSpawns.value
+  const count = rawSpawns.length
+
+  const { rows, cols, totalSlots } = calculateSpawnGrid(count)
+  const grid = new Array(totalSlots).fill(null)
+
+  // Place pokemons from the end (bottom-right)
+  rawSpawns.forEach((id, index) => {
+    grid[totalSlots - 1 - index] = id
+  })
+
+  return {
+    slots: grid,
+    rows,
+    cols
+  }
+})
 </script>
 
 <template>
@@ -206,13 +275,13 @@ const allSpawns = computed(() => [
         v-if="!isPerformanceMode"
         class="lock-text"
       >
-        {{ isSafariLocked ? '🎫 REQUIERE TICKET' : '🔒 BLOQUEADO' }}
+        {{ isSafariLocked ? 'REQUIERE TICKET' : 'BLOQUEADO' }}
       </span>
     </div>
 
     <!-- 1. Guardian (Top Left) -->
     <div
-      v-if="dominance?.guardian && !isPerformanceMode"
+      v-if="dominance?.guardian && !isPerformanceMode && !isLocked && !isSafariLocked"
       class="guardian-status-badge"
     >
       <img
@@ -226,32 +295,25 @@ const allSpawns = computed(() => [
     </div>
 
     <!-- 2. Cycle Pill (Top Right) -->
-    <span
+    <PVTooltip
       v-if="!isPerformanceMode"
-      :class="['location-tag', isLocked ? 'tag-locked' : 'tag-wild']"
+      :class="['location-tag', isLocked ? 'tag-locked' : 'tag-wild', weatherAnimClass]"
+      :title="isLocked ? 'BLOQUEADO' : 'ESTADO AMBIENTAL'"
+      :description="isLocked ? 'Necesitas más medallas para entrar aquí.' : `Clima: ${weatherName} | Ciclo: ${cycleName}`"
+      position="top"
     >
-      <template v-if="isLocked">
-        {{ isSafariLocked ? '🔒 TICKET SAFARI' : `🔒 ${map.badges} MEDALLAS` }}
-      </template>
-      <template v-else>
-        {{ cycleEmoji }}<template v-if="!isLocked && !isSafariLocked">{{ weatherEmoji }}</template> {{ cycleLabel }}
-      </template>
-    </span>
+      <span class="pill-content">
+        <template v-if="isLocked">🔒</template>
+        <template v-else>
+          <span class="tag-icon">
+            {{ cycleEmoji }}{{ weatherEmoji }}
+          </span>
+        </template>
+      </span>
+    </PVTooltip>
 
-    <!-- 3. Faction Dominance -->
-    <div
-      v-if="dominance?.winner && !isPerformanceMode"
-      class="faction-dominance"
-    >
-      <img
-        :src="getFactionIcon(dominance.winner)"
-        class="faction-logo pulse"
-        :title="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
-        @error="e => e.target.style.display = 'none'"
-      >
-    </div>
 
-    <!-- 4. Location Info -->
+
     <div
       v-if="!isPerformanceMode"
       class="location-header"
@@ -264,43 +326,78 @@ const allSpawns = computed(() => [
       </div>
     </div>
 
-    <!-- 5. Interactive Icons -->
-    <div
-      v-if="!isPerformanceMode"
-      class="interactive-pills-container"
+    <!-- 3. Faction Status (Middle Left, below Guardian) -->
+    <PVTooltip
+      v-if="dominance?.winner && dominance?.winner !== 'none' && !isPerformanceMode && !isLocked && !isSafariLocked"
+      class="faction-status-pill"
+      title="DOMINIO FACCIÓN"
+      :description="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
+      position="top"
     >
-      <div
-        v-if="map.fishing"
-        class="interactive-pill fishing-pill"
-      >
-        <span class="pill-icon">🎣</span>
-        <span class="pill-text">PESCA</span>
+      <div :class="['pill-content', factionAnimClass]">
+        <span class="faction-emoji">
+          {{ dominance.winner === 'union' ? '⭐' : '✊' }}
+        </span>
       </div>
-    </div>
+    </PVTooltip>
+
+    <!-- 5. Fishing Icon (Bottom Left) -->
+    <PVTooltip
+      v-if="map.fishing && !isPerformanceMode && !isLocked && !isSafariLocked"
+      class="fishing-pill-standalone"
+      title="PESCA"
+      description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
+      position="top"
+    >
+      <div class="interactive-pill fishing-pill map-pill">
+        <span class="pill-icon">🎣</span>
+      </div>
+    </PVTooltip>
 
     <div
       v-if="!isLocked && !isPerformanceMode"
       class="location-spawns"
     >
-      <div class="spawn-row-grid">
-        <img
-          v-for="(id, index) in allSpawns"
-          :key="index + '-' + id"
-          :src="getPokemonSprite(id)"
-          :class="['pixelated', { 'rare-spawn': isRare(id) }]"
-          :title="id"
-          @error="e => e.target.style.display = 'none'"
+      <div 
+        class="spawn-grid-container"
+        :style="{ 
+          '--grid-cols': spawnGrid.cols,
+          '--grid-rows': spawnGrid.rows,
+          '--sprite-scale': SPRITE_SCALE 
+        }"
+        :class="{ 'show-debug-grid': uiStore.isDebugGridMode }"
+      >
+        <div 
+          v-for="(id, index) in spawnGrid.slots"
+          :key="index"
+          class="spawn-slot"
         >
+          <div
+            v-if="id"
+            :class="['sprite-wrapper', { 'rare-spawn': isRare(id) }]"
+          >
+            <img
+              :src="getPokemonSprite(id)"
+              class="pixelated"
+              :title="id"
+              @error="e => e.target.style.display = 'none'"
+            >
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- 8. Dominado Badge -->
-    <span
-      v-if="dominance?.winner && !isPerformanceMode"
-      class="dom-badge dominance winning"
+    <PVTooltip
+      v-if="isPlayerWinner && !isPerformanceMode && !isLocked && !isSafariLocked"
+      class="dom-badge winning anim-aura"
+      title="DOMINADO"
+      description="¡Bonus de captura activo por dominio de facción!"
+      position="top"
     >
-      👑 Dominado <span class="bonus-icon">✨</span>
-    </span>
+      <span class="pill-content">
+        👑
+      </span>
+    </PVTooltip>
   </div>
 </template>
 

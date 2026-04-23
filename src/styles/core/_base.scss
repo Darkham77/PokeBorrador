@@ -5,6 +5,12 @@
   color-scheme: dark;
 }
 
+html, body {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+}
+
 body {
   font-family: 'Nunito', sans-serif;
   color: $text;
@@ -36,6 +42,9 @@ body {
   width: 100%;
   box-sizing: border-box;
   overflow: visible !important;
+  image-rendering: pixelated; // Root-level enforcement
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
   
   // Only vertical padding, horizontal is managed by views to avoid clipping glows
   padding: 0 0 clamp(10px, 4vw, 40px) 0;

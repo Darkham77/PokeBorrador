@@ -185,6 +185,7 @@ All spacing and sizing in multiples of 8:
 - **Atmospheric Clarity**: Environmental effects (rain, snow, weather emojis) and atmospheric filters MUST be hidden for locked, restricted, or inaccessible components (e.g., locked map routes). This reduces cognitive noise and maintains focus on playable content.
 - **Vertical Floating Badges**: When dealing with variable lists of icons/tags in small containers (cards/tiles), align them in vertical columns with `position: absolute`. This prevents the "layout stretch" effect where a horizontal list would expand the container's height or cover critical centered content like sprites.
 - **Balanced Info Lanes (Clearance)**: To avoid collision between absolute-positioned side elements (like badges) and centered content (like HP bars or names), do not use unilateral padding. Instead, use a centered "lane" strategy: set a `width` (e.g., 85%) on the info container, apply `margin: 0 auto`, and add balanced horizontal padding. This ensures the content remains centered relative to the card while maintaining safe clearance on both sides.
+- **Decoupled Sprite Effects**: To prevent performance-killing filter stacks (10+ filters), separate the core black border (applied directly to the `img`) from decorative effects like glows or auras (applied to a parent `.sprite-wrapper`). This allows independent management of visual layers without exceeding GPU filter budgets.
 
 ## 3.1 Asynchronous Interaction Feedback
 

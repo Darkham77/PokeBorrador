@@ -21,6 +21,7 @@ Vue.js testing best practices, patterns, and common gotchas.
 - Testing components created with defineAsyncComponent fails → See [async-component-testing](references/async-component-testing.md)
 - Teleported modal content can't be found in wrapper queries → See [teleport-testing-complexity](references/teleport-testing-complexity.md)
 - **Animation-Driven State**: If a store/component state change is delayed by a timeout (e.g., waiting for modal exit animation), use `vi.useFakeTimers()` and `vi.advanceTimersByTime(500)` in Vitest to advance time before making assertions.
+- **Logic Extraction for Testability**: Complex algorithms inside computed properties or methods in `.vue` files are hard to unit test. Extract core pure logic to external helper files (e.g., `mapCardHelper.js`) and test them in isolation using standard Vitest unit tests. This ensures the "brain" of the component is stable without the overhead of component mounting.
 
 ## Reference
 
