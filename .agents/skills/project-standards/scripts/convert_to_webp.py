@@ -33,7 +33,7 @@ def process_assets(base_dir="_raw-assets"):
     errors = []
 
     def cleanup_managed_folders():
-        print("🧹 Cleaning managed asset folders...")
+        print("[CLEANUP] Cleaning managed asset folders...")
         import shutil
         
         folders_to_delete = set()
@@ -58,7 +58,7 @@ def process_assets(base_dir="_raw-assets"):
                     shutil.rmtree(folder)
                 except Exception as e:
                     print(f"      Error deleting {folder.name}: {e}")
-        print("✨ Cleanup complete.")
+        print("[CLEANUP] Cleanup complete.")
 
     # Processing function
     def process_directory(source_dir, use_lod):
@@ -78,7 +78,7 @@ def process_assets(base_dir="_raw-assets"):
                     dest_atlas_path = Path.cwd() / rel_atlas_path.parent
                     os.makedirs(dest_atlas_path, exist_ok=True)
                     
-                    print(f"📦 [ATLAS] Compiling: {rel_atlas_path} -> {dest_atlas_path.relative_to(Path.cwd())}")
+                    print(f"[ATLAS] Compiling: {rel_atlas_path} -> {dest_atlas_path.relative_to(Path.cwd())}")
                     
                     lod_scales = [1.0, 0.5, 0.25] if use_lod else [1.0]
                     success = generate_atlas(atlas_path, dest_atlas_path, atlas_name, lod_scales=lod_scales)
@@ -149,14 +149,14 @@ def process_assets(base_dir="_raw-assets"):
                                 resized_img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
                                 resized_img.save(out_file, 'WEBP', **save_kwargs)
                             
-                            print(f"✅ Generated: {out_file.relative_to(Path.cwd())} ({'Lossless' if is_lossless else 'Lossy'})")
+                            print(f"[OK] Generated: {out_file.relative_to(Path.cwd())} ({'Lossless' if is_lossless else 'Lossy'})")
                             converted_count += 1
                 
                 except Exception as e:
-                    print(f"❌ Error processing {file_path}: {e}")
+                    print(f"[ERROR] Error processing {file_path}: {e}")
                     errors.append(f"{file_path}: {e}")
 
-    print("🚀 Initiating Zero-Config LOD Asset Pipeline...")
+    print(">>> Initiating Zero-Config LOD Asset Pipeline...")
     
     # Clean destinations first to remove stale assets
     # cleanup_managed_folders() 
@@ -190,7 +190,7 @@ def process_assets(base_dir="_raw-assets"):
         # Si no hubo errores y el archivo existe de una ejecución anterior, lo limpiamos
         if report_file.exists():
             report_file.unlink()
-        print("\n✨ All assets processed successfully!")
+        print("\n[FINISH] All assets processed successfully!")
         sys.exit(0)
 
 if __name__ == "__main__":

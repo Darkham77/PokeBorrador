@@ -154,7 +154,7 @@ def generate_atlas(source_dir, output_base_path, atlas_name, lod_scales=[1.0, 0.
         with open(output_json_path, 'w', encoding='utf-8') as f:
             json.dump(atlas_data, f, indent=2)
             
-        print(f"✅ Generated Atlas LOD ({scale}x): {output_img_path.name}")
+        print(f"[OK] Generated Atlas LOD ({scale}x): {output_img_path.name}")
 
     return True
 
