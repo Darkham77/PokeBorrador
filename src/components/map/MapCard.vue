@@ -197,7 +197,7 @@ const getPokemonSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 const processedGuardian = computed(() => {
   if (!props.dominance?.guardian) return null
   const id = props.dominance.guardian.id
-  const seen = gameStore.state.seenPokedex?.includes(id) || gameStore.state.pokedex?.includes(id)
+  const seen = uiStore.debugPokedexMode ? true : (gameStore.state.seenPokedex?.includes(id) || gameStore.state.pokedex?.includes(id))
   const name = seen ? (pokemonDataProvider.getPokemonData(id)?.name || id.toUpperCase()) : '???'
   
   return {
@@ -220,11 +220,12 @@ const processedGrid = computed(() => {
   // Cache pokedex state to avoid repeated reactive lookups
   const seenPokedex = gameStore.state.seenPokedex || []
   const caughtPokedex = gameStore.state.pokedex || []
+  const debugMode = uiStore.debugPokedexMode
   
   return slots.map((id, index) => {
     if (!id) return { id: null, key: `empty-${index}` }
     
-    const seen = seenPokedex.includes(id) || caughtPokedex.includes(id)
+    const seen = debugMode ? true : (seenPokedex.includes(id) || caughtPokedex.includes(id))
     
     // Rare check
     const rate = props.spawnPool?.rates?.[id] || 10

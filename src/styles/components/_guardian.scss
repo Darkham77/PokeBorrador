@@ -57,8 +57,6 @@
 
   &.spawn-silhouette {
     @include pokemon-silhouette;
-    filter: Brightness(0) !important; // Absolute black
-    opacity: 1 !important;
     transform: none !important;
   }
 }
@@ -82,13 +80,6 @@
   
   &.captured {
     background: #22c55e !important; /* Vivid Green for captured */
-  }
-
-  .is-silhouette & {
-    background: #333 !important;
-    color: #666 !important;
-    box-shadow: none !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
   }
 }
 
