@@ -426,67 +426,23 @@ const getTrainerSprite = (id) => {
   gap: 20px;
 
   .missions-btn-wide {
-    width: 100%;
-    padding: 24px;
-    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
-    border: none;
-    border-radius: 50px;
-    color: $white;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
-    @include pixelated;
-    &:hover { transform: TranslateY(-4px); box-shadow: 0 0 30px rgba(239, 68, 68, 0.6); filter: Brightness(1.1); }
+    @include btn-vicio('danger', 'md', true);
   }
 
   .action-footer {
     display: flex;
     gap: 16px;
     
-    button {
-      flex: 1;
-      padding: 18px;
-      border-radius: 14px;
-      font-family: 'Press Start 2P', cursive;
-      font-size: 9px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      @include pixelated;
-    }
-
     .btn-secondary {
-      background: #1e293b;
-      border: 1px solid rgba(255,255,255,0.1);
-      color: $white;
-      justify-content: flex-start;
-      padding: 12px 20px;
+      @include btn-vicio('secondary', 'md', true);
       
-      .btn-label-stack {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-        text-align: left;
-      }
-      
-      .btn-label { font-size: 8px; color: #94a3b8; }
+      .btn-label { font-size: 8px; color: rgba(255, 255, 255, 0.7); }
       .price { color: var(--yellow); font-size: 9px; }
-      .icon { font-size: 16px; opacity: 0.6; }
-
-      &:hover { background: #2d3748; color: $white; .btn-label { color: $white; } }
+      .icon { opacity: 0.8; }
     }
 
     .btn-primary {
-      @include btn-vicio-danger;
-      border: 2px solid rgba(255, 255, 255, 0.9); // Keep specific border if needed
-      font-size: 10px;
-      padding: 18px;
+      @include btn-vicio('success', 'md', true);
     }
   }
 }

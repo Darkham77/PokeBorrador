@@ -5,21 +5,23 @@ const uiStore = useUIStore()
 </script>
 
 <template>
-  <div
-    id="notification-stack"
-    class="toast-stack"
-  >
-    <TransitionGroup name="toast">
-      <div 
-        v-for="n in uiStore.notifications" 
-        :key="n.id" 
-        class="toast-item"
-      >
-        <span class="toast-icon">{{ n.icon }}</span>
-        <span class="toast-msg">{{ n.msg }}</span>
-      </div>
-    </TransitionGroup>
-  </div>
+  <Teleport to="body">
+    <div
+      id="notification-stack"
+      class="toast-stack"
+    >
+      <TransitionGroup name="toast">
+        <div 
+          v-for="n in uiStore.notifications" 
+          :key="n.id" 
+          class="toast-item"
+        >
+          <span class="toast-icon">{{ n.icon }}</span>
+          <span class="toast-msg">{{ n.msg }}</span>
+        </div>
+      </TransitionGroup>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">

@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBoxStore } from '@/stores/box'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const props = defineProps({
   boxIndex: { type: Number, required: true }
@@ -80,13 +81,6 @@ const handleRelease = () => {
     title: 'Soltar Pokémon',
     message: `¿Estás seguro de que querés soltar a ${pokemon.value.name}? Esta acción es permanente.`,
     onConfirm: () => {
-      // Use the helper from boxStore if possible, or just splice here for simplicity since it's a single one
-      // But boxStore.returnHeldItem is private or needs to be exported.
-      // I'll use boxStore.toggleBoxReleaseSelect and doBoxRelease or just a new single method.
-      // I'll use a direct splice but call returnHeldItem if I exported it.
-      // Actually, I'll just add a single release method to boxStore to keep it DRY.
-      
-      // Let's assume I'll add it to boxStore or just use the batch one by selecting one.
       boxStore.boxReleaseSelected = [props.boxIndex]
       const names = boxStore.doBoxRelease()
       uiStore.notify(`¡${names[0]} fue soltado!`, '🌿')
@@ -96,7 +90,6 @@ const handleRelease = () => {
 }
 
 const handleRocketSell = () => {
-  // Use a temporary selection to get the value for THIS pokemon
   const originalSelection = [...boxStore.boxRocketSelected]
   boxStore.boxRocketSelected = [props.boxIndex]
   const price = boxStore.getRocketSellValue()
@@ -145,30 +138,42 @@ const handleToggleTag = (tag) => {
         </div>
         
         <div class="tag-row">
-          <button 
-            class="tag-btn" 
-            :class="{ active: pokemon.tags?.includes('fav') }"
-            title="Favorito"
-            @click="handleToggleTag('fav')"
+          <PVTooltip
+            title="FAVORITO"
+            description="Marca a este Pokémon como favorito."
           >
-            ⭐
-          </button>
-          <button 
-            class="tag-btn" 
-            :class="{ active: pokemon.tags?.includes('breed') }"
-            title="Crianza"
-            @click="handleToggleTag('breed')"
+            <button 
+              class="tag-btn" 
+              :class="{ active: pokemon.tags?.includes('fav') }"
+              @click="handleToggleTag('fav')"
+            >
+              ⭐
+            </button>
+          </PVTooltip>
+          <PVTooltip
+            title="CRIANZA"
+            description="Pokémon reservado para crianza en Guardería."
           >
-            ❤️
-          </button>
-          <button 
-            class="tag-btn" 
-            :class="{ active: pokemon.tags?.includes('iv31') }"
+            <button 
+              class="tag-btn" 
+              :class="{ active: pokemon.tags?.includes('breed') }"
+              @click="handleToggleTag('breed')"
+            >
+              ❤️
+            </button>
+          </PVTooltip>
+          <PVTooltip
             title="IV 31"
-            @click="handleToggleTag('iv31')"
+            description="Pokémon con al menos un IV al máximo."
           >
-            31
-          </button>
+            <button 
+              class="tag-btn" 
+              :class="{ active: pokemon.tags?.includes('iv31') }"
+              @click="handleToggleTag('iv31')"
+            >
+              31
+            </button>
+          </PVTooltip>
         </div>
       </header>
 
@@ -443,5 +448,4 @@ const handleToggleTag = (tag) => {
     &:hover { background: rgba(255, 255, 255, 0.05); color: $white; }
   }
 }
-
 </style>

@@ -31,7 +31,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
         class="poke-name" 
         :class="isPlayer ? nickStyle : ''"
       >
-        {{ p.name }} <span v-if="p.isShiny">✨</span>
+        {{ p.name }}&nbsp;<span v-if="p.isShiny">✨</span>
       </span>
       <span
         class="gender-badge"
@@ -83,7 +83,9 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .glass-card {
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: Blur(12px);
@@ -93,6 +95,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   min-width: 200px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   color: $white;
+  @include gpu-layer;
 }
 
 .card-header {
@@ -126,8 +129,17 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 }
 
 .exp-bar-outer { height: 4px; }
-.hp-bar-inner { height: 100%; transition: width 0.4s ease; }
-.exp-bar-inner { height: 100%; background: var(--blue); transition: width 0.4s ease; }
+.hp-bar-inner { 
+  height: 100%; 
+  transition: width 0.4s ease; 
+  @include will-animate(width);
+}
+.exp-bar-inner { 
+  height: 100%; 
+  background: var(--blue); 
+  transition: width 0.4s ease; 
+  @include will-animate(width);
+}
 
 .hp-high { background: linear-gradient(90deg, #10b981, #34d399); }
 .hp-mid { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
@@ -156,6 +168,6 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 .caught-icon {
   width: 16px;
   height: 16px;
-  image-rendering: pixelated;
+  @include sprite-render;
 }
 </style>

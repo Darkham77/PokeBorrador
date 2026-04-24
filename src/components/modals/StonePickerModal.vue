@@ -1,4 +1,8 @@
 <script setup>
+/**
+ * StonePickerModal
+ * Standardized modal for using evolution stones.
+ */
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
@@ -7,22 +11,20 @@ import { useEvolutionStore } from '@/stores/evolution';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { STONE_EVOLUTIONS } from '@/data/evolutionData';
 import { SHOP_ITEMS } from '@/data/items';
+import BaseModal from '@/components/common/BaseModal.vue';
+
+const props = defineProps({
+  show: { type: Boolean, default: false }
+});
+
+const emit = defineEmits(['close']);
 
 const gameStore = useGameStore();
 const uiStore = useUIStore();
 const inventoryStore = useInventoryStore();
 const evolutionStore = useEvolutionStore();
 
-const pokemon = computed(() => {
-  if (inventoryStore.isItemTargetModalOpen && inventoryStore.activeItemToUse) {
-    // In this context, the stone picker is opened FOR a specific item.
-    // But the legacy showStonePicker was opened for a team index.
-    // Modern inventoryStore uses a target modal.
-  }
-  return uiStore.selectedPokemon;
-});
-
-const _stoneName = computed(() => inventoryStore.activeItemToUse);
+const pokemon = computed(() => uiStore.selectedPokemon);
 
 const options = computed(() => {
   if (!pokemon.value) return [];
@@ -41,6 +43,7 @@ const options = computed(() => {
 });
 
 const close = () => {
+  emit('close');
   inventoryStore.closeItemTargetModal();
 };
 
@@ -70,168 +73,174 @@ const getPokemonName = (id) => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <div 
-      v-if="inventoryStore.isItemTargetModalOpen && options.length > 0"
-      class="stone-picker-overlay"
-      @click.self="close"
-    >
-      <div class="stone-modal">
-        <header class="modal-header">
-          <h3 class="press-start yellow-text">
-            💎 EVOLUCIONAR CON PIEDRA
-          </h3>
-          <p>¿Qué piedra usás en <span class="white-text">{{ pokemon.name }}</span>?</p>
-        </header>
+  <BaseModal
+    :show="show && options.length > 0"
+    title="EVOLUCIÓN POR PIEDRA"
+    title-color="var(--yellow)"
+    header-background="#1a1c2e"
+    max-width="380px"
+    variant="retro"
+    @close="close"
+  >
+    <div class="stone-picker-content">
+      <p class="stone-help">
+        ¿Qué piedra usás en <span class="accent-text">{{ pokemon?.name }}</span>?
+      </p>
 
-        <div class="options-list">
-          <div 
-            v-for="opt in options" 
-            :key="opt.stone"
-            class="stone-option"
-            :class="{ disabled: (gameStore.state.inventory[opt.stone] || 0) <= 0 }"
-          >
-            <div class="stone-icon-wrapper">
-              <img 
-                v-if="getStoneInfo(opt.stone).sprite"
-                :src="getStoneInfo(opt.stone).sprite" 
-                class="stone-sprite" 
-                @error="e => e.target.style.display = 'none'"
-              >
-              <span
-                v-else
-                class="fallback-icon"
-              >{{ getStoneInfo(opt.stone).icon }}</span>
-            </div>
-
-            <div class="stone-details">
-              <div class="stone-name">
-                {{ opt.stone }}
-              </div>
-              <div class="evo-target">
-                → {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[opt.stone] || 0 }}
-              </div>
-            </div>
-
-            <button 
-              class="use-btn press-start"
-              :disabled="(gameStore.state.inventory[opt.stone] || 0) <= 0"
-              @click="useStone(opt.stone, opt.to)"
-            >
-              USAR
-            </button>
-          </div>
-        </div>
-
-        <button
-          class="cancel-btn"
-          @click="close"
+      <div class="options-list">
+        <div 
+          v-for="opt in options" 
+          :key="opt.stone"
+          class="stone-option-vicio"
+          :class="{ disabled: (gameStore.state.inventory[opt.stone] || 0) <= 0 }"
         >
-          Cancelar
-        </button>
+          <div class="stone-sprite-box">
+            <img 
+              v-if="getStoneInfo(opt.stone).sprite"
+              :src="getStoneInfo(opt.stone).sprite" 
+              class="stone-sprite" 
+              @error="e => e.target.style.display = 'none'"
+            >
+            <span
+              v-else
+              class="fallback-icon"
+            >{{ getStoneInfo(opt.stone).icon }}</span>
+          </div>
+
+          <div class="stone-details">
+            <div class="stone-name">
+              {{ opt.stone }}
+            </div>
+            <div class="evo-target">
+              → {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[opt.stone] || 0 }}
+            </div>
+          </div>
+
+          <button 
+            class="use-btn-vicio"
+            :disabled="(gameStore.state.inventory[opt.stone] || 0) <= 0"
+            @click="useStone(opt.stone, opt.to)"
+          >
+            USAR
+          </button>
+        </div>
       </div>
     </div>
-  </Teleport>
+
+    <template #footer>
+      <button
+        class="btn-vicio-secondary btn-vicio-full"
+        @click="close"
+      >
+        CANCELAR
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.stone-picker-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
-  background: rgba(0, 0, 0, 0.88);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  backdrop-filter: Blur(4px);
-  -webkit-backdrop-filter: Blur(4px);
-  animation: fadeIn 0.2s ease;
-  transform: translateZ(0);
+@use "@/styles/core/tools" as *;
+
+.stone-picker-content {
+  padding: 8px 0;
 }
 
-.stone-modal {
-  background: #1e293b;
-  border-radius: 20px;
-  padding: 24px;
-  width: 100%;
-  max-width: 360px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.modal-header {
+.stone-help {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
   margin-bottom: 24px;
-  h3 { font-size: 9px; margin-bottom: 12px; }
-  p { font-size: 13px; color: #94a3b8; }
+  
+  .accent-text {
+    color: var(--yellow);
+    font-weight: bold;
+  }
 }
 
 .options-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 24px;
 }
 
-.stone-option {
+.stone-option-vicio {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.2s;
 
   &.disabled {
-    opacity: 0.4;
-    grayscale: 1;
+    opacity: 0.3;
+    filter: Grayscale(1);
   }
 
-  .stone-icon-wrapper {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    .stone-sprite { width: 32px; height: 32px; image-rendering: pixelated; }
-    .fallback-icon { font-size: 24px; }
-  }
-
-  .stone-details {
-    flex: 1;
-    min-width: 0;
-    .stone-name { font-size: 13px; font-weight: 700; color: $white; margin-bottom: 4px; }
-    .evo-target { font-size: 11px; color: $muted; }
-  }
-
-  .use-btn {
-    background: rgba(251, 191, 36, 0.15);
-    border: 1px solid rgba(251, 191, 36, 0.3);
-    color: #fbbf24;
-    font-size: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    &:hover:not(:disabled) { background: rgba(251, 191, 36, 0.25); }
-    &:disabled { cursor: not-allowed; }
+  &:not(.disabled):hover {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: var(--yellow);
+    transform: translateX(4px);
+    
+    .stone-name { color: var(--yellow); }
   }
 }
 
-.cancel-btn {
-  width: 100%;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: none;
-  border-radius: 12px;
-  color: #94a3b8;
-  font-size: 13px;
+.stone-sprite-box {
+  width: 44px;
+  height: 44px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .stone-sprite {
+    width: 36px;
+    height: 36px;
+    @include sprite-render;
+  }
+  
+  .fallback-icon { font-size: 24px; }
+}
+
+.stone-details {
+  flex: 1;
+  .stone-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: white;
+    transition: color 0.2s;
+  }
+  .evo-target {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 2px;
+  }
+}
+
+.use-btn-vicio {
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: var(--yellow);
+  font-family: 'Press Start 2P', cursive;
+  font-size: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
   cursor: pointer;
-  &:hover { color: $white; background: rgba(255, 255, 255, 0.1); }
+  transition: all 0.2s;
+  @include pixelated;
+
+  &:hover:not(:disabled) {
+    background: var(--yellow);
+    color: black;
+    transform: Scale(1.05);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 }
-
-.yellow-text { color: #fbbf24; }
-.white-text { color: $white; font-weight: bold; }
-.press-start { font-family: 'Press Start 2P', cursive; }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>

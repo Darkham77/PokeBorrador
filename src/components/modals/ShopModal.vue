@@ -43,6 +43,8 @@ const buy = (item) => {
   <BaseModal
     :show="show"
     title="POKÉ MARKET"
+    title-color="var(--yellow)"
+    header-background="#1a1c2e"
     max-width="900px"
     variant="retro"
     padding="raw"
@@ -384,5 +386,4 @@ const buy = (item) => {
   color: rgba(255, 255, 255, 0.2);
   font-size: 14px;
 }
-
 </style>

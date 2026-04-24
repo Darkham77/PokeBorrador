@@ -52,7 +52,7 @@ const togglePerf = () => window.__VITE_DEBUG__.togglePerf()
 
 .debug-help {
   font-size: 8px;
-  color: #64748b;
+  color: $muted;
   margin-top: 8px;
   line-height: 1.4;
 }

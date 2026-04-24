@@ -64,8 +64,8 @@ function handleClose() {
         <img 
           v-if="step < 3"
           :src="itemSprite"
-          class="fossil-img" 
-          :class="{ 'step-1': step >= 1 }"
+          class="fossil-img"
+          :class="{ 'step-1': step >= 1 }" 
           alt="Fossil"
           @error="e => e.target.style.display = 'none'"
         >
@@ -174,6 +174,8 @@ function handleClose() {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .fossil-overlay {
   position: fixed;
   inset: 0;
@@ -187,7 +189,8 @@ function handleClose() {
   justify-content: center;
   padding: 20px;
   animation: fadeIn 0.5s ease;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
+  @include gpu-layer;
 }
 
 .fossil-stage {
@@ -228,6 +231,7 @@ function handleClose() {
   border-radius: 50%;
   filter: Blur(15px);
   transition: all 2s ease-in-out;
+  @include will-animate(transform);
   
   &.step-1 {
     opacity: 1;
@@ -247,11 +251,12 @@ function handleClose() {
   width: 100px;
   height: 100px;
   object-fit: contain;
-  image-rendering: pixelated;
+  @include sprite-render;
   position: relative;
   z-index: 2;
   filter: Drop-Shadow(0 0 15px rgba(0,0,0,0.8));
   transition: all 1s;
+  @include will-animate(transform);
   
   &.step-1 {
     animation: itemPulse 1s infinite alternate;
@@ -262,11 +267,12 @@ function handleClose() {
   width: 180px;
   height: 180px;
   object-fit: contain;
-  image-rendering: pixelated;
+  @include sprite-render;
   position: relative;
   z-index: 2;
   filter: Drop-Shadow(0 0 30px rgba(255,255,255,0.6));
   animation: bounce 2s infinite;
+  @include will-animate(transform);
   
   &.is-shiny {
     filter: Drop-Shadow(0 0 30px gold);
@@ -305,6 +311,7 @@ function handleClose() {
   width: 100%;
   animation: slideUp 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) backwards;
   backdrop-filter: Blur(5px);
+  @include gpu-layer;
 }
 
 .stat-row {

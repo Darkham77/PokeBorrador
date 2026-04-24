@@ -1,21 +1,25 @@
 <script setup>
+/**
+ * TradeView
+ * Standardized modal for P2P trading.
+ */
 import { ref, reactive, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
 import { useTradeStore } from '@/stores/trade'
 import TradePokemonSelector from './social/TradePokemonSelector.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TradeSidePanel from './social/TradeSidePanel.vue'
 import TradeFooter from './social/TradeFooter.vue'
 
+const props = defineProps({
+  show: { type: Boolean, default: false }
+})
+
+const emit = defineEmits(['close'])
+
 const gameStore = useGameStore()
-const uiStore = useUIStore()
 const tradeStore = useTradeStore()
 
-const isTradeOpen = computed({
-  get: () => uiStore.isTradeOpen,
-  set: (val) => { uiStore.isTradeOpen = val }
-})
 const gs = computed(() => gameStore.state)
 const target = computed(() => tradeStore.tradeTarget)
 const friendSave = computed(() => tradeStore.tradeFriendSave || { team: [], inventory: {}, money: 0 })
@@ -62,7 +66,7 @@ const handleSelectorSelect = (poke) => {
 
 const closeTrade = () => {
   if (isSending.value) return
-  isTradeOpen.value = false
+  emit('close')
 }
 
 const toggleOfferItem = (itemName) => {
@@ -119,9 +123,13 @@ const requestSummary = computed(() => {
 
 <template>
   <BaseModal
-    :show="isTradeOpen"
+    :show="show"
     :title="`INTERCAMBIO CON ${target?.username || 'JUGADOR'}`"
+    title-color="var(--yellow)"
+    header-background="#161a2e"
     max-width="900px"
+    variant="modern"
+    :prevent-close="isSending"
     @close="closeTrade"
   >
     <div class="trade-modal-inner">
@@ -220,7 +228,7 @@ const requestSummary = computed(() => {
       color: var(--gray);
     }
     .value { 
-      font-size: 11px; 
+      font-size: 8px; 
       color: $white; 
       font-weight: 700;
     }

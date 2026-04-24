@@ -148,7 +148,9 @@ watch(() => player.value?.hp, (newHp) => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .battle-screen-grid {
   width: 100%;
   height: 100%;
@@ -194,6 +196,7 @@ watch(() => player.value?.hp, (newHp) => {
   align-items: center;
   justify-content: center;
   z-index: 100;
+  @include gpu-layer;
 }
 
 .continue-btn-final {

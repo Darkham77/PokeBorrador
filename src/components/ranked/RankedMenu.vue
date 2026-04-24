@@ -170,6 +170,8 @@ const cancelSearch = () => {
 </template>
 
 <style lang="scss" scoped>
+@use "@/styles/core/tools" as *;
+
 .ranked-menu {
   display: flex;
   flex-direction: column;
@@ -189,6 +191,7 @@ const cancelSearch = () => {
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 16px;
+  @include gpu-layer;
 }
 
 .season-header {
@@ -267,7 +270,7 @@ const cancelSearch = () => {
   font-size: 10px;
 
   &:hover {
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
     box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
     filter: Brightness(1.1);
   }
@@ -333,8 +336,8 @@ const cancelSearch = () => {
 
 .tab-content {
   flex: 1;
-  overflow-y: auto;
   min-height: 0;
+  @include smooth-scroll;
 }
 
 .overview-tab {

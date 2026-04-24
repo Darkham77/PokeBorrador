@@ -1,4 +1,5 @@
 <script setup>
+import PVTooltip from '@/components/common/PVTooltip.vue'
 const _props = defineProps({
   isFinishing: { type: Boolean, default: false }
 })
@@ -17,13 +18,18 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
       </button>
 
       <div class="catch-btn-wrapper">
-        <button
-          class="btn-catch-ball"
-          title="Capturar"
-          @click="emit('catch')"
+        <PVTooltip
+          title="CAPTURAR"
+          description="Intentar capturar al Pokémon salvaje."
+          position="top"
         >
-          <span>CAPTURAR</span>
-        </button>
+          <button
+            class="btn-catch-ball"
+            @click="emit('catch')"
+          >
+            <span>CAPTURAR</span>
+          </button>
+        </PVTooltip>
       </div>
 
       <button

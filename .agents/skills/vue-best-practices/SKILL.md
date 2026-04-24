@@ -52,6 +52,9 @@ These are essential, must-know foundations. Apply all of them in every Vue task 
 
 - Must-read reference from `1.1`: [reactivity](references/reactivity.md)
 - Keep source state minimal (`ref`/`reactive`), derive everything possible with `computed`.
+- **Avoid Object Cloning for Reactivity**: NEVER use object spreads (`{ ...p }`) to map store items in a `computed` list if those items need to remain reactive in sub-modals. Cloning breaks the live link to the Pinia/Game store.
+  - **PATTERN (Wrapper Pattern)**: Instead of mapping to a new object, wrap the original in a metadata container: `items.map((p, i) => ({ pokemon: p, index: i, context: 'box' }))`.
+  - **WHY**: This allows the UI to add metadata without modifying the original object, while ensuring that updates to `pokemon` are instantly visible across all components.
 - Use watchers for side effects if needed.
 - Avoid recomputing expensive logic in templates.
 
@@ -144,12 +147,17 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 
 - **Scroll Event Bubbling**: Native `scroll` events do not bubble in the DOM. If your app relies on internal scrollable containers (e.g., `.tab-content` with `overflow-y: auto`), a `window.addEventListener('scroll')` will never fire. You **must** use the capture phase: `window.addEventListener('scroll', handler, { capture: true })`.
 - **ResizeObserver on Fixed Containers**: `ResizeObserver` can report inaccurate heights (`0px`) when observing `position: fixed` elements, especially those using `container-type` or containing only absolute/percentage-based children. Always observe the true inner relative/static content wrapper to guarantee accurate dynamic height calculations.
+- **ResizeObserver for Responsive Components**: Use `ResizeObserver` instead of media queries or window resize events for components that need to adapt their layout (e.g., column count) based on their own container width rather than the viewport. This is essential for components inside dynamic grids (like `MapCard`).
 - **Defensive Computed Properties**: When deriving state from potentially uninitialized or asynchronous stores (e.g., a search filter or a dynamic inventory list), ALWAYS handle `null` or `undefined` values.
   - **Pattern**: `const filteredItems = computed(() => (search.value || '').toLowerCase())`.
   - **Why**: Prevents critical runtime `TypeError` crashes during the component mount/initialization cycle before the store data is ready.
+- **Explicit lockReason Pattern**: For complex UI states (like routes or buttons locked by multiple conditions), use a computed property `lockReason` to centralize the logic.
+  - **Pattern**: `const lockReason = computed(() => { if (isLockedByTicket) return 'Needs Ticket'; if (isLockedByMedals) return 'Needs 8 Medals'; return null; })`.
+  - **Why**: Keeps templates clean, ensures consistency between tooltips and overlays, and makes the logic easier to test and maintain compared to inline ternary operators.
 - **Teleport & Scoped Styles**: Components using `<Teleport to="body">` (like `BaseModal`) **MUST** use global SCSS (not `scoped`) for positioning and overlay styles. Scoped styles often fail to apply correctly once the element is moved out of its original DOM hierarchy.
 - **Scrollbar Styling in Scoped SFCs**: Styles like `::-webkit-scrollbar` often fail to apply correctly when inside a `<style scoped>` block because the browser doesn't correctly attribute them to the component's unique data-attribute. You **must** move these styles to a global `<style lang="scss">` block (without `scoped`) or a shared global utility file to ensure they apply to all targeted containers.
 - **Global Window Listeners (Context Rule)**: To avoid Vue lifecycle warnings and potential memory leaks during HMR, global window listeners (added via `useWindowListener` or native `addEventListener`) **MUST** be declared in the top-level `setup` context, not inside `onMounted`. Vue handles the teardown automatically if the composable is registered at the top level.
++- **Tooltip Teleportation Mandate**: Always use `<Teleport to="body">` for tooltips (e.g., `PVTooltip`) to avoid `z-index` collisions and `overflow: hidden` clipping from parent containers.
 - **Mandatory Mixin Environment**: When using project-standard mixins (e.g., `btn-vicio-primary`, `pixelated`), the `<style>` block **MUST** use `lang="scss"` and explicitly import tools: `@use "@/styles/core/tools" as *;`.
 
 - **Dynamic Z-Index Stacking**: For components that can overlap (modals, overlays), use a `computedZIndex` based on the current number of active overlays. This ensures that the most recently opened element (e.g., an item selector) always appears on top of previous layers.
@@ -159,6 +167,15 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **PATTERN**: Use a unified loading state (e.g. `authStore.loading || !gameStore.isReady`) to prevent the template from switching to intermediate views (like Login or Black Screen) during the process. This ensures a professional, flicker-free startup experience. (Ref: `src/App.vue`).
 - **Pinia Initialization Guard**: If a component accesses a store during `setup` (e.g., in a `computed` property), ensure that all required Vue utilities (like `computed`, `ref`) are correctly imported in the root component.
   - **Why**: A missing import in a high-level component can cause a silent failure that prevents Pinia from being correctly associated with the application instance, leading to the "getActivePinia() was called but there was no active Pinia" error in child components.
+- **Mandatory defineEmits in `<script setup>`**: When using `<script setup>`, any custom events MUST be explicitly declared via `const emit = defineEmits([...])`.
+  - **Why**: Accessing `emit` without declaration (common in Options API migration) will cause runtime errors (`ReferenceError: emit is not defined`) and block logic such as close animations in modals.
+- **Dynamic Contextual Styling**: When a component's theme depends on a dynamic state (e.g., player class or faction), apply the state as a class to a high-level wrapper and use nested SCSS or computed variables to adjust internal styles (backgrounds, border colors, shadows).
+  - **Pattern**: `<div :class="playerClass" class="modal-wrapper">`.
+  - **Ref**: Use this to dynamically theme modal headers or backgrounds based on the player's current identity.
+- **Fixed Header + Scrolling Body Pattern**:
+  - **Rule**: For complex modals or views with long lists, always separate the header and the body using flexbox to keep the header fixed.
+  - **Implementation**: Parent `.wrapper { display: flex; flex-direction: column; height: 100%; overflow: hidden; }`. Header `.header { flex: 0 0 auto; }`. Body `.body { flex: 1 1 auto; overflow-y: auto; @include smooth-scroll; }`.
+  - **Why**: This prevents the header from scrolling away and eliminates nested scroll conflicts.
 
 ## 6) Final self-check before finishing
 

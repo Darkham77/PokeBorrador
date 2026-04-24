@@ -61,7 +61,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="shop-view-legacy custom-scrollbar">
+  <div class="shop-view-legacy">
     <!-- RANK STATUS BAR (Legacy Style) -->
     <div class="rank-status-bar">
       <span class="rank-txt">
@@ -227,12 +227,11 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .shop-view-legacy {
-  padding: 30px;
+  padding: 0 0 40px;
   background: #0d1117;
-  height: 100%;
-  overflow-y: auto;
-  min-height: 0;
 }
 
 /* RANK BAR */
@@ -334,7 +333,7 @@ onMounted(() => {
   flex-direction: column;
   transition: all 0.2s;
 
-  &:hover:not(.locked) { border-color: #ffd70088; transform: translateY(-3px); }
+  &:hover:not(.locked) { border-color: #ffd70088; transform: TranslateY(-3px); }
   &.locked { opacity: 0.3; filter: Grayscale(1.0); }
 
   .tier-tag {
@@ -358,7 +357,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     margin-bottom: 15px;
-    .pixel-sprite { width: 42px; height: 42px; image-rendering: pixelated; filter: Drop-Shadow(0 2px 5px rgba(0,0,0,0.5)); }
+    .pixel-sprite { width: 42px; height: 42px; @include sprite-render; filter: Drop-Shadow(0 2px 5px rgba(0,0,0,0.5)); }
     .item-emoji { font-size: 36px; }
   }
 
@@ -435,5 +434,4 @@ onMounted(() => {
     &:disabled { background: #334155; color: $muted; cursor: not-allowed; }
   }
 }
-
 </style>

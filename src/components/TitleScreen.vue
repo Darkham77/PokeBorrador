@@ -157,7 +157,9 @@ const handleLogout = () => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .title-description {
   color: var(--gray);
   font-size: 14px;
@@ -190,32 +192,10 @@ const handleLogout = () => {
 }
 
 .logout-btn-trigger {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1.5px solid rgba(239, 68, 68, 0.35);
-  color: #ff7676;
+  @include btn-vicio('danger', 'md');
   padding: 14px 28px;
-  border-radius: 14px;
-  font-family: 'Press Start 2P', monospace;
   font-size: 9px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
   min-width: 220px;
-  transition: all 0.2s;
-  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.15);
-}
-
-.logout-btn-trigger:hover {
-  background: rgba(239, 68, 68, 0.2) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(239, 68, 68, 0.25) !important;
-  border-color: rgba(239, 68, 68, 0.5) !important;
-}
-
-.logout-btn-trigger:active {
-  transform: translateY(1px);
 }
 
 .logout-hint {

@@ -9,13 +9,15 @@ import { MOVE_DATA } from '@/data/moves'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
+import { POKEMON_TAGS, hasPokemonTag } from '@/logic/constants/tags'
 
-// Instance sub-components
-import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
-import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
-import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue'
 import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue'
 import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsTab.vue'
+import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue'
+import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
+import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
+import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -32,11 +34,25 @@ const gameStore = useGameStore()
 
 const activeTab = ref('summary')
 
-// Normalize data source
-const isInstance = computed(() => !!props.pokemon)
-const targetPokemon = computed(() => props.pokemon)
+// Normalize data source (Props or UI Store)
+const uiData = computed(() => uiStore.modals?.PokemonDetail?.data || {})
+const finalIndex = computed(() => props.index !== -1 ? props.index : (uiData.value.index ?? -1))
+const finalContext = computed(() => (props.context && props.context !== 'pokedex') ? props.context : (uiData.value.context || 'pokedex'))
+
+const targetPokemon = computed(() => {
+  // Try to resolve from store first for reactivity
+  if (finalIndex.value > -1) {
+    if (finalContext.value === 'team') return gameStore.state.team[finalIndex.value]
+    if (finalContext.value === 'box') return gameStore.state.box[finalIndex.value]
+  }
+  // Fallback to passed object (e.g. for markets or non-local sources)
+  return props.pokemon || uiData.value.pokemon
+})
+
+const isInstance = computed(() => !!targetPokemon.value)
+
 const targetSpeciesId = computed(() => {
-  const id = isInstance.value ? props.pokemon.id : props.speciesId
+  const id = isInstance.value ? targetPokemon.value.id : props.speciesId
   return String(id).toLowerCase()
 })
 
@@ -83,21 +99,17 @@ const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 // Stats Calculation
 const displayStats = computed(() => {
   if (!species.value) return []
-  
   const labels = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SPA', spd: 'SPD', spe: 'SPE' }
   const colors = { hp: '#ff5959', atk: '#f5ac78', def: '#fae078', spa: '#9db7f5', spd: '#a7db8d', spe: '#fa92b2' }
-  
   return Object.keys(species.value.stats).map(key => {
     const base = species.value.stats[key]
     const current = isInstance.value ? (targetPokemon.value[key] || base) : base
-    const max = 255
-    
     return {
       id: key,
       label: labels[key],
       value: current,
       baseValue: base,
-      max: max,
+      max: 255,
       color: colors[key],
       iv: isInstance.value ? targetPokemon.value.ivs?.[key] : null
     }
@@ -127,6 +139,7 @@ const currentMoves = computed(() => {
     return { ...m, ...data }
   })
 })
+
 
 const evolutions = computed(() => {
   const list = []
@@ -204,22 +217,17 @@ const hexToRgb = (hex) => {
   return `${r}, ${g}, ${b}`
 }
 
-const ALL_TAGS = [
-  { id: 'fav', label: 'FAV', icon: '⭐', color: '#ffd60a' },
-  { id: 'breed', label: 'BREED', icon: '❤️', color: '#ff3b30' },
-  { id: 'competitive', label: 'COMP', icon: '🏆', color: '#32d74b' },
-  { id: 'iv31', label: 'IV', icon: '31', color: '#FFD93D' },
-  { id: 'box', label: 'BOX', icon: '📦', color: '#0a84ff' },
-  { id: 'trade', label: 'TRADE', icon: '🔄', color: '#bf5af2' }
-]
-
 const hasTag = (tagId) => {
-  return targetPokemon.value?.tags?.includes(tagId)
+  return hasPokemonTag(targetPokemon.value, tagId)
 }
 
-const handleToggleTag = (tagId) => {
-  if (isInstance.value && props.index > -1 && typeof window.togglePokeTag === 'function') {
-    window.togglePokeTag(props.context, props.index, tagId)
+const handleToggleTag = (tag) => {
+  const dbId = tag.dbId || tag.id
+  console.log(`[Tag] Toggling ${dbId} for context: ${finalContext.value}, index: ${finalIndex.value}`)
+  if (isInstance.value && finalIndex.value > -1 && typeof window.togglePokeTag === 'function') {
+    window.togglePokeTag(finalContext.value, finalIndex.value, dbId)
+  } else {
+    console.warn('[Tag] Toggle conditions not met:', { isInstance: isInstance.value, index: finalIndex.value, hasBridge: typeof window.togglePokeTag === 'function' })
   }
 }
 </script>
@@ -230,7 +238,6 @@ const handleToggleTag = (tagId) => {
     max-width="750px"
     padding="raw"
     :hide-header="true"
-    :show-close-button="false"
     custom-class="pokedex-detail-modal"
     @close="emit('close')"
   >
@@ -263,13 +270,6 @@ const handleToggleTag = (tagId) => {
               {{ t.toUpperCase() }}
             </span>
           </div>
-
-          <button
-            class="close-vicio"
-            @click="emit('close')"
-          >
-            &times;
-          </button>
         </div>
       </header>
 
@@ -303,7 +303,7 @@ const handleToggleTag = (tagId) => {
       </nav>
 
       <!-- TAB BODY -->
-      <div class="pdex-detail-body custom-scrollbar-vicio">
+      <div class="pdex-detail-body">
         <!-- Summary Tab -->
         <div
           v-if="activeTab === 'summary'"
@@ -344,23 +344,28 @@ const handleToggleTag = (tagId) => {
           >
             <span class="pdex-label">ETIQUETAS:</span>
             <div class="tags-list">
-              <button
-                v-for="t in ALL_TAGS"
+              <PVTooltip
+                v-for="t in POKEMON_TAGS"
                 :key="t.id"
-                class="tag-emoji-btn"
-                :class="{ active: hasTag(t.id) }"
-                :style="hasTag(t.id) ? { 
-                  background: `rgba(${hexToRgb(t.color)}, 0.15)`, 
-                  borderColor: `rgba(${hexToRgb(t.color)}, 0.4)`,
-                  color: t.color,
-                  boxShadow: `0 4px 15px rgba(${hexToRgb(t.color)}, 0.2)`
-                } : {}"
                 :title="t.label"
-                @click="handleToggleTag(t.id)"
+                :description="t.desc"
+                position="top"
               >
-                <span class="t-icon">{{ t.icon }}</span>
-                <span class="t-label pixelated">{{ t.label }}</span>
-              </button>
+                <button
+                  class="tag-emoji-btn"
+                  :class="{ active: hasTag(t.id) }"
+                  :style="hasTag(t.id) ? { 
+                    background: `rgba(${hexToRgb(t.color)}, 0.15)`, 
+                    borderColor: `rgba(${hexToRgb(t.color)}, 0.4)`,
+                    color: t.color,
+                    boxShadow: `0 4px 15px rgba(${hexToRgb(t.color)}, 0.2)`
+                  } : {}"
+                  @click.stop="handleToggleTag(t)"
+                >
+                  <span class="t-icon">{{ t.icon }}</span>
+                  <span class="t-label pixelated">{{ t.shortLabel }}</span>
+                </button>
+              </PVTooltip>
             </div>
           </div>
 
@@ -377,157 +382,20 @@ const handleToggleTag = (tagId) => {
         </div>
 
         <!-- Stats Tab -->
-        <div
+        <PokemonStatsTab
           v-if="activeTab === 'stats'"
-          class="pdex-stats-pane"
-        >
-          <div class="stats-section">
-            <h4 class="section-title">
-              ESTADÍSTICAS REALES
-            </h4>
-            <PokemonStatBar
-              v-for="s in displayStats"
-              :key="'real-'+s.id"
-              :label="s.label"
-              :value="s.value"
-              :max="s.max"
-              :color="s.color"
-              mode="stat"
-            />
-          </div>
-
-          <div
-            v-if="isInstance"
-            class="stats-section mt-32"
-          >
-            <h4 class="section-title">
-              POTENCIAL GENÉTICO (IV)
-            </h4>
-            <PokemonStatBar
-              v-for="s in displayStats"
-              :key="'iv-'+s.id"
-              :label="s.label"
-              :value="s.iv"
-              :max="31"
-              mode="iv"
-            />
-          </div>
-
-          <div class="stat-total mt-32">
-            <span class="pdex-label pixelated">BST TOTAL:</span>
-            <span class="pdex-value pixelated">{{ species.stats.hp + species.stats.atk + species.stats.def + species.stats.spa + species.stats.spd + species.stats.spe }}</span>
-          </div>
-        </div>
+          :display-stats="displayStats"
+          :species="species"
+          :is-instance="isInstance"
+        />
 
         <!-- Moves Tab -->
-        <div
+        <PokemonMovesTab
           v-if="activeTab === 'moves'"
-          class="pdex-moves-pane"
-        >
-          <div
-            v-if="isInstance"
-            class="current-moves-section"
-          >
-            <h4 class="section-title">
-              MOVIMIENTOS ACTUALES
-            </h4>
-            <div class="moves-grid-vicio">
-              <div
-                v-for="m in currentMoves"
-                :key="m.name"
-                class="move-card-vicio"
-                :style="{ 
-                  '--m-type-color': PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'],
-                  '--m-type-rgb': hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal']),
-                  background: `linear-gradient(135deg, rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%)`,
-                  borderColor: `rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.15)`
-                }"
-                @click="uiStore.openMoveDetail(m.name)"
-              >
-                <div class="move-top">
-                  <span class="m-name pixelated">{{ m.name }}</span>
-                  <span
-                    class="m-type-tag pixelated"
-                    :style="{ background: PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'] }"
-                  >
-                    {{ (m.type || 'normal').toUpperCase() }}
-                  </span>
-                  <div class="m-pp-wrap">
-                    <span class="m-pp-label pixelated">PP</span>
-                    <span class="m-pp-val pixelated">{{ m.pp }}/{{ m.maxPP }}</span>
-                  </div>
-                </div>
-                
-                <div class="move-details-row">
-                  <div class="detail-item">
-                    <span class="d-label pixelated">PODER:</span>
-                    <span class="d-val pixelated">{{ m.power || '-' }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="d-label pixelated">PREC:</span>
-                    <span class="d-val pixelated">{{ m.acc === 1000 ? '∞' : (m.acc || '-') }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="d-label pixelated">CAT:</span>
-                    <span class="d-val pixelated">{{ (m.cat || 'physical').toUpperCase() }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <h4 class="section-title">
-            APRENDIZAJE POR NIVEL
-          </h4>
-          <table class="moves-table">
-            <thead>
-              <tr>
-                <th>NV</th>
-                <th>ATAQUE</th>
-                <th>TIPO</th>
-                <th>CAT</th>
-                <th>POT</th>
-                <th>PREC</th>
-                <th>PP</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="m in moveDetails"
-                :key="m.name"
-                class="clickable-row"
-                @click="uiStore.openMoveDetail(m.name)"
-              >
-                <td class="move-lv pixelated">
-                  {{ m.level }}
-                </td>
-                <td class="move-name pixelated">
-                  {{ m.name }}
-                </td>
-                <td class="move-type">
-                  <span
-                    class="m-type-tag pixelated"
-                    :style="{ background: PDEX_TYPE_COLORS[m.type.toLowerCase()] }"
-                  >
-                    {{ m.type.toUpperCase() }}
-                  </span>
-                </td>
-                <td class="move-cat pixelated">
-                  {{ (m.cat || 'physical').substring(0, 4).toUpperCase() }}
-                </td>
-                <td class="move-power pixelated">
-                  {{ m.power }}
-                </td>
-                <td class="move-acc pixelated">
-                  {{ m.acc === 1000 ? '∞' : m.acc }}
-                </td>
-                <td class="move-pp pixelated">
-                  {{ m.pp }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          :is-instance="isInstance"
+          :current-moves="currentMoves"
+          :move-details="moveDetails"
+        />
 
         <!-- TMs Tab -->
         <PokemonTmsTab

@@ -1,18 +1,19 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { useUIStore } from '@/stores/ui'
+/**
+ * FactionChoiceModal
+ * Standardized modal for faction selection.
+ */
+import { ref } from 'vue'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore()
+const props = defineProps({
+  show: { type: Boolean, default: false }
+})
+
+const emit = defineEmits(['close'])
 const classStore = usePlayerClassStore()
-
-const isOpen = computed(() => uiStore.isFactionChoiceOpen)
-
-const closeFactionModal = () => {
-  uiStore.isFactionChoiceOpen = false
-}
 
 const isProcessing = ref(false)
 
@@ -23,7 +24,7 @@ const chooseFaction = async (faction) => {
   try {
     const res = await classStore.setFaction(faction)
     if (res.success) {
-      uiStore.isFactionChoiceOpen = false
+      emit('close')
     }
   } finally {
     isProcessing.value = false
@@ -37,12 +38,16 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
 <template>
   <BaseModal
-    :show="isOpen"
+    :show="show"
     title="¡ELIGE TU BANDO!"
+    title-color="var(--yellow)"
+    header-background="#161a2e"
     max-width="420px"
     :z-index="13000"
+    variant="modern"
+    :prevent-close="isProcessing"
     custom-class="faction-choice-modal"
-    @close="closeFactionModal"
+    @close="emit('close')"
   >
     <div class="faction-content">
       <div class="faction-intro">
@@ -57,6 +62,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
       <div class="faction-options">
         <button
           class="faction-btn union-btn"
+          :disabled="isProcessing"
           @click="chooseFaction('union')"
         >
           <div class="faction-icon-wrap">
@@ -74,6 +80,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
         <button
           class="faction-btn poder-btn"
+          :disabled="isProcessing"
           @click="chooseFaction('poder')"
         >
           <div class="faction-icon-wrap">
@@ -140,13 +147,19 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   &.union-btn {
     border: 2px solid #3b82f6;
     box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.1);
-    &:hover { background: rgba(59, 130, 246, 0.1); transform: Scale(1.02); }
+    &:hover:not(:disabled) { background: rgba(59, 130, 246, 0.1); transform: Scale(1.02); }
   }
 
   &.poder-btn {
     border: 2px solid #ef4444;
     box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.1);
-    &:hover { background: rgba(239, 68, 68, 0.1); transform: Scale(1.02); }
+    &:hover:not(:disabled) { background: rgba(239, 68, 68, 0.1); transform: Scale(1.02); }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: Grayscale(0.8);
   }
 }
 

@@ -71,7 +71,8 @@ useBodyClass('is-battle-active', () => battleStore.isBattleActive)
 const hudRef = ref(null)
 const hudBottomRef = ref(null)
 const innerHudRef = ref(null)
-const hudHeight = ref(85)
+const hudHeight = ref(160)
+const hudBottomHeight = ref(gameStore.state.starterChosen ? 80 : 0)
 const isHudHidden = ref(false)
 
 const gs = computed(() => gameStore.state)
@@ -129,6 +130,14 @@ function updateHudHeight() {
   } else if (hudRef.value) {
     hudHeight.value = hudRef.value.offsetHeight
   }
+  
+  // Update bottom HUD height if it exists (mobile nav)
+  const bottomEl = hudBottomRef.value?.$el || hudBottomRef.value
+  if (bottomEl) {
+    hudBottomHeight.value = bottomEl.offsetHeight
+  } else {
+    hudBottomHeight.value = 0
+  }
 }
 
 onMounted(() => {
@@ -139,7 +148,12 @@ onMounted(() => {
     resizeObserver.observe(hudRef.value)
   }
   
-  setTimeout(updateHudHeight, 100) // Initial guarantee
+  if (hudBottomRef.value) {
+    const el = hudBottomRef.value?.$el || hudBottomRef.value
+    if (el) resizeObserver.observe(el)
+  }
+  
+  setTimeout(updateHudHeight, 300) // Initial guarantee with delay for transitions
 
   // 2. Load essential game data
   warStore.loadWarData()
@@ -147,6 +161,13 @@ onMounted(() => {
   eventStore.checkPendingAwards()
   livePvP.initInvitePoller()
   breedingStore.checkDailyReset()
+})
+
+watch(hudBottomRef, (newVal) => {
+  if (newVal) {
+    const el = newVal?.$el || newVal
+    if (el) resizeObserver.observe(el)
+  }
 })
 
 onUnmounted(() => {
@@ -210,7 +231,10 @@ onUnmounted(() => {
     <div
       id="zoomable-content"
       class="zoom-target content-area"
-      :style="{ paddingTop: Math.max(100, hudHeight + 20) + 'px' }"
+      :style="{ 
+        '--hud-top-padding': Math.max(100, hudHeight + 20) + 'px',
+        '--hud-bottom-padding': (hudBottomHeight > 0 ? (hudBottomHeight + 20) : 0) + 'px'
+      }"
     >
       <!-- TAB CONTENTS -->
       <div
@@ -219,16 +243,7 @@ onUnmounted(() => {
         class="tab-content"
       >
         <MapView />
-      </div>
-
-
-
-      <div
-        v-show="activeTab === 'box'"
-        id="tab-box"
-        class="tab-content"
-      >
-        <BoxView />
+        <div class="hud-spacer-bottom" />
       </div>
 
       <div
@@ -237,8 +252,26 @@ onUnmounted(() => {
         class="tab-content"
       >
         <PokedexView />
+        <div class="hud-spacer-bottom" />
       </div>
 
+      <div
+        v-show="activeTab === 'bag'"
+        id="tab-bag"
+        class="tab-content"
+      >
+        <BagView />
+        <div class="hud-spacer-bottom" />
+      </div>
+
+      <div
+        v-show="activeTab === 'box'"
+        id="tab-box"
+        class="tab-content"
+      >
+        <BoxView />
+        <div class="hud-spacer-bottom" />
+      </div>
 
       <div
         v-show="activeTab === 'gyms'"
@@ -246,6 +279,7 @@ onUnmounted(() => {
         class="tab-content"
       >
         <GymsView />
+        <div class="hud-spacer-bottom" />
       </div>
 
       <div
@@ -254,6 +288,7 @@ onUnmounted(() => {
         class="tab-content"
       >
         <DaycareView v-if="activeTab === 'daycare'" />
+        <div class="hud-spacer-bottom" />
       </div>
 
       <div
@@ -262,6 +297,7 @@ onUnmounted(() => {
         class="tab-content"
       >
         <ShopView />
+        <div class="hud-spacer-bottom" />
       </div>
 
       <div
@@ -270,6 +306,7 @@ onUnmounted(() => {
         class="tab-content"
       >
         <ShopView />
+        <div class="hud-spacer-bottom" />
       </div>
 
       <div
@@ -278,6 +315,25 @@ onUnmounted(() => {
         class="tab-content"
       >
         <GlobalMarket v-if="activeTab === 'online-market'" />
+        <div class="hud-spacer-bottom" />
+      </div>
+
+      <div
+        v-show="activeTab === 'events'"
+        id="tab-events"
+        class="tab-content"
+      >
+        <EventsView />
+        <div class="hud-spacer-bottom" />
+      </div>
+
+      <div
+        v-show="activeTab === 'social'"
+        id="tab-social"
+        class="tab-content"
+      >
+        <SocialView />
+        <div class="hud-spacer-bottom" />
       </div>
 
       <div
@@ -286,6 +342,7 @@ onUnmounted(() => {
         class="tab-content"
       >
         <RankedArena v-if="activeTab === 'arena'" />
+        <div class="hud-spacer-bottom" />
       </div>
 
       <div
@@ -294,6 +351,7 @@ onUnmounted(() => {
         class="tab-content"
       >
         <GlobalRanking v-if="activeTab === 'ranking'" />
+        <div class="hud-spacer-bottom" />
       </div>
 
       <BattleArena v-show="battleStore.isBattleActive" />
@@ -319,17 +377,18 @@ onUnmounted(() => {
         :friend-id="friendId"
       />
     </div>
-
-
-    <!-- SESSION MANAGEMENT -->
   </div>
 
-  <HUD_Navigation 
+  <div 
     v-if="gs.starterChosen"
     ref="hudBottomRef"
-    class="mobile-only-nav"
-    position="bottom" 
-  />
+    class="hud-bottom-wrapper"
+  >
+    <HUD_Navigation 
+      class="mobile-only-nav"
+      position="bottom" 
+    />
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -337,13 +396,54 @@ onUnmounted(() => {
 
 /* Scoped styles for the main container or specific integrated elements */
 
+#game-screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .content-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: visible !important;
-  padding-left: clamp(10px, 3vw, 24px);
-  padding-right: clamp(10px, 3vw, 24px);
+  overflow: visible !important; 
+  position: relative;
+  padding: 0; 
+}
+
+.tab-content {
+  position: absolute;
+  inset: 0;
+  display: block; // Switched to block to fix padding-bottom scroll issue
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: var(--hud-top-padding, 180px);
+  padding-bottom: var(--hud-bottom-padding, 100px);
+  padding-inline: var(--ui-h-padding);
+  box-sizing: border-box;
+  @include gpu-layer;
+}
+
+.hud-bottom-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: var(--z-navigation);
+  
+  & > * {
+    pointer-events: auto;
+  }
+}
+
+.hud-spacer-bottom {
+  height: var(--hud-bottom-padding, 80px);
+  min-height: 80px;
+  width: 100%;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
 .hidden-system {
@@ -410,7 +510,6 @@ onUnmounted(() => {
 
 @include responsive(hud-mobile) {
   .mobile-only-nav { display: flex !important; }
-  .content-area { padding-bottom: 90px !important; }
 }
 
 /* Zoom-style shrink for extremely narrow screens (< 467px) */

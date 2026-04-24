@@ -36,7 +36,7 @@ const openDetail = (p) => {
 </script>
 
 <template>
-  <div class="pokedex-view custom-scrollbar">
+  <div class="pokedex-view">
     <PokedexHeader :stats="stats" />
 
     <PokedexControls 

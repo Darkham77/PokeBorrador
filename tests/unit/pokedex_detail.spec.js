@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue'
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 describe('Pokedex Detail UI Components', () => {
   beforeEach(() => {
@@ -91,21 +92,26 @@ describe('Pokedex Detail UI Components', () => {
 
     it('contains Vigor description for breeding', () => {
       const wrapper = mount(PokemonStatusSection, {
-        props: { pokemon: mockPokemon }
+        props: { pokemon: mockPokemon },
+        global: { stubs: { PVTooltip: false } }
       })
       
-      const vigorTooltip = wrapper.find('.vigor-card .tooltip-box p')
-      expect(vigorTooltip.text()).toContain('cuántas veces puede reproducirse')
-      expect(vigorTooltip.text()).toContain('NO se recupera')
+      const vigorTooltip = wrapper.find('.vigor-card').getComponent(PVTooltip)
+      expect(vigorTooltip.props('description')).toContain('cuántas veces puede reproducirse')
+      expect(vigorTooltip.props('description')).toContain('NO se recupera')
     })
 
     it('renders nature and ability tooltips', () => {
       const wrapper = mount(PokemonStatusSection, {
-        props: { pokemon: mockPokemon }
+        props: { pokemon: mockPokemon },
+        global: { stubs: { PVTooltip: false } }
       })
       
-      expect(wrapper.find('.nature-card .tooltip-box p').text()).toBe('Naturaleza equilibrada.')
-      expect(wrapper.find('.ability-card .tooltip-box p').text()).toBe('Aumenta el consumo de PP del rival.')
+      const natureTooltip = wrapper.find('.nature-card').getComponent(PVTooltip)
+      const abilityTooltip = wrapper.find('.ability-card').getComponent(PVTooltip)
+      
+      expect(natureTooltip.props('description')).toBe('Naturaleza equilibrada.')
+      expect(abilityTooltip.props('description')).toBe('Aumenta el consumo de PP del rival.')
     })
   })
 })

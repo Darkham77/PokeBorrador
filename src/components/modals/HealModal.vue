@@ -82,6 +82,8 @@ onMounted(() => {
   <BaseModal
     :show="show"
     title="🏥 CENTRO POKÉMON"
+    title-color="#ef4444"
+    header-background="#1a1c2e"
     max-width="420px"
     variant="retro"
     padding="raw"

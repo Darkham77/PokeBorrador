@@ -38,6 +38,8 @@ const close = () => {
   <BaseModal
     :show="true"
     title="PÍLDORA DE HABILIDAD"
+    title-color="#f472b6"
+    header-background="#1a1c2e"
     max-width="400px"
     variant="retro"
     @close="close"

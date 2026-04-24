@@ -87,10 +87,14 @@ def detect_project_type(project_path: Path) -> dict:
             if "typescript" in deps or (project_path / "tsconfig.json").exists():
                 result["linters"].append({"name": "tsc", "cmd": ["npx", "tsc", "--noEmit"]})
                 
-            # Check for SASS Traps (Project Standard)
+            # Check for Project Standards & Paths
             sass_checker = project_path / ".agents" / "skills" / "project-standards" / "scripts" / "check_sass_traps.py"
             if sass_checker.exists():
                 result["linters"].append({"name": "sass-traps", "cmd": ["python", str(sass_checker)]})
+            
+            path_checker = project_path / ".agents" / "skills" / "lint-and-validate" / "scripts" / "check_import_paths.py"
+            if path_checker.exists():
+                result["linters"].append({"name": "import-paths", "cmd": ["python", str(path_checker)]})
                 
         except:
             pass

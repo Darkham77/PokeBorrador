@@ -43,6 +43,8 @@ const close = () => {
   <BaseModal
     :show="true"
     title="SUBIDA DE PP"
+    title-color="#60a5fa"
+    header-background="#161a2e"
     max-width="400px"
     @close="close"
   >

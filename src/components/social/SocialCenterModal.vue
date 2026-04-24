@@ -29,6 +29,8 @@ onMounted(() => {
   <BaseModal
     :show="show"
     title="CENTRO SOCIAL"
+    title-color="var(--purple-light)"
+    header-background="#101822"
     max-width="500px"
     padding="raw"
     @close="emit('close')"

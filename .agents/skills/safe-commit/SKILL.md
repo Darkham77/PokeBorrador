@@ -115,6 +115,7 @@ Before extracting lessons or committing, you MUST delete all temporary artifacts
 
 - Delete files in `<appDataDir>/brain/<conversation-id>/scratch/` if they are no longer needed.
 - Delete any ad-hoc test files (e.g., `test_output.txt`, `tmp_log.json`) created in the root or subdirectories.
+- **Audit Cleanup**: Delete all `.txt` files related to auditing (generally containing `_audit_` in the name, like `audit_results.txt` or `gpu_audit_results.txt`).
 - Ensure `git status` does not show untracked temporary files that should not be in the repository.
 
 ### 7. Lessons Extraction (MANDATORY)

@@ -29,6 +29,8 @@ if (typeof window !== 'undefined') {
   <BaseModal
     :show="isOpen"
     title="🛒 TIENDA DE GUERRA"
+    title-color="#ef4444"
+    header-background="#1a1c2e"
     max-width="440px"
     @close="closeWarShop"
   >

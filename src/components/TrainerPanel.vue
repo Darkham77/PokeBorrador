@@ -7,6 +7,8 @@ import { useModalStore } from '@/stores/modals'
 import { useTradeStore } from '@/stores/trade'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
+import PVTooltip from '@/components/common/PVTooltip.vue'
+
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const classStore = usePlayerClassStore()
@@ -49,13 +51,16 @@ const handlePanelClick = (event) => {
       :size="48"
     >
       <template #overlay>
-        <div 
-          v-if="tradeStore.pendingCount > 0" 
-          class="alert-badge"
-          title="Intercambios pendientes"
+        <PVTooltip
+          v-if="tradeStore.pendingCount > 0"
+          title="INTERCAMBIOS"
+          description="Tienes solicitudes de intercambio pendientes."
+          position="top"
         >
-          !
-        </div>
+          <div class="alert-badge">
+            !
+          </div>
+        </PVTooltip>
       </template>
     </TrainerAvatar>
     

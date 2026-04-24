@@ -98,7 +98,7 @@ const onPokemonClick = (index) => {
         </div>
       </div>
 
-      <div class="grid-wrapper scroll-custom">
+      <div class="grid-wrapper">
         <BoxGrid
           :display-list="displayList"
           :is-box-empty="boxStore.box.length === 0"
@@ -131,10 +131,11 @@ const onPokemonClick = (index) => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .pc-box-view {
-  height: 100%;
-  padding: 20px;
+  padding: 0;
   background: radial-gradient(circle at top right, rgba(147, 51, 234, 0.05), transparent),
               radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.05), transparent);
   display: flex;
@@ -150,10 +151,8 @@ const onPokemonClick = (index) => {
 }
 
 .grid-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
   padding-right: 8px;
+  @include gpu-layer;
 }
 
 .mode-actions {
@@ -165,6 +164,7 @@ const onPokemonClick = (index) => {
   justify-content: space-between;
   align-items: center;
   backdrop-filter: Blur(10px);
+  @include gpu-layer;
 }
 
 .mode-info {
@@ -199,7 +199,7 @@ const onPokemonClick = (index) => {
 
 .footer-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
+  transform: TranslateY(-2px);
 }
 
 .btn-release:hover { color: var(--red); border-color: rgba(255, 59, 59, 0.3); }
@@ -225,6 +225,4 @@ const onPokemonClick = (index) => {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
-/* Custom Scrollbar */
 </style>

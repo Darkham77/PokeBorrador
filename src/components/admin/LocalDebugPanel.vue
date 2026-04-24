@@ -213,8 +213,12 @@ const selectedCategory = ref('stats')
   overflow-y: auto;
   min-height: 0;
   overscroll-behavior: contain;
+}
+</style>
 
-  /* Custom scrollbar for debug panel */
+<style lang="scss">
+/* Global overrides for debug panel scrollbar (fix scoped violation) */
+.debug-content {
   &::-webkit-scrollbar {
     width: 6px;
   }

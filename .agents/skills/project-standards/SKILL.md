@@ -33,14 +33,32 @@ Refer to these manuals for complex implementation specifications:
 - **UI Logic**: Always use parameterized props (`hide-header`, `variant`) instead of ad-hoc style overrides.
 - **Discovery States (Fog of War)**: Implement standard discovery states across all UI:
   - **Unknown**: `?` placeholder, `???` label, 0.7 opacity, brighter question mark.
-  - **Seen (Not Caught)**: Silhouette (`filter: Brightness(0)`), 0.45 opacity, name visible. Add a subtle `Drop-shadow(0 0 1px rgba(255,255,255,0.2))` to the silhouette to define its outline against dark backgrounds.
+  - **Seen (Not Caught)**: Silhouette (`filter: Brightness(0)`), 1.0 opacity (SOLID BLACK), name visible. Add a subtle `Drop-shadow(0 0 1px rgba(255,255,255,0.2))` to the silhouette to define its outline against dark backgrounds.
   - **Caught**: Full color, 1.0 opacity.
+- **Solid Discovery Silhouettes**: Enforce absolute black silhouettes (`opacity: 1`, `brightness(0)`) for unregistered Pokémon in the Map, Pokédex, and Evolution Chain. Removing all transparency ensures high-contrast visibility against premium glassmorphism backgrounds.
 - **Unified Type Pill System**: All elemental indicators (moves, pokemon types, gym badges) MUST use the master class `.m-type-tag`.
   - **Centralized Style**: Do not define local type styles. Always use the global `_type-pills.scss` module.
   - **High-Contrast Outlines**: Type labels MUST use a 4-directional `text-shadow` (e.g. `1px 1px 0`, `-1px -1px 0`) with 0 blur to maintain sharp pixel-perfect legibility against colorful pill backgrounds.
 - **Visual Error Handling**: Every game content image (`<img>`) MUST implement an `@error` fallback. Hide the broken image and display a generic CSS-styled placeholder (e.g., a div with `👤`) to maintain a premium aesthetic even if an asset fails to load.
 - **UI Interaction Parity**: Interactive elements in similar contexts (e.g., TMs in the Pokedex vs Attacks in the team view) MUST provide consistent feedback and open the same specialized modals. Maintain user expectation by ensuring that if a Move name is clickable in one tab, it is clickable and functional in all others.
-- **Scroll Stability**: To prevent layout shifts ("scroll-jumps") when modals open/close, ALWAYS use `scrollbar-gutter: stable` on the `body` or main containers. This reserves space for the scrollbar even when not visible.
+- **Grid Consistency (Fixed Height)**: In layouts with fixed height constraints (like map route cards), forcing a minimum of 2 rows ensures that elements (sprites) maintain a consistent scale and professional aesthetic, even when the item count is low.
+- **Abbreviated Labels (shortLabel)**: In compact UI components (selection buttons, list badges), use the `shortLabel` property from `tags.js` to prevent text overflow, while keeping the full `label` in the tooltip.
+- **Badge Centralization**: All Pokémon status indicators (shiny, heldItem, tags) MUST have their metadata (icon, label, shortLabel, desc) centralized in `src/logic/constants/tags.js` to ensure application-wide parity.
+- **Decoupled Sprite Effects**: To prevent performance-killing filter stacks (10+ filters), separate the core black border (applied directly to the `img`) from decorative effects like glows or auras (applied to a parent `.sprite-wrapper`). This allows independent management of visual layers without exceeding GPU filter budgets.
+- **Hybrid Tooltip Engine**: Combine viewport flipping (e.g., top-to-bottom) with coordinate "nudging" to prevent off-screen rendering. Maintain a 10px safety margin from viewport edges.
+- **Anchor-Aware Arrows**: When a tooltip box is nudged, use dynamic CSS variables (`--arrow-x`, `--arrow-y`) to reposition the arrow so it remains pointing at the trigger element's center instead of floating in the middle of the box.
+- **Zero-Native-Title Policy**: Prohibit the use of native HTML `title` attributes. All tooltips MUST use the `PVTooltip` component to ensure visual consistency (pixelated fonts, glassmorphism, hybrid positioning) and cross-device reliability. (Verified by `detect_hybrid_patterns.py`).
+- **Modal Header Standardization**: Modals MUST NOT use the legacy hardcoded black header.
+  - **Themed Headers**: Use the `title-color` and `header-background` props of `BaseModal` to match the modal's internal content aesthetic.
+  - **Typical Palette**: Default to `var(--yellow)` for titles and navy shades (e.g., `#1a1c2e` or `#161a2e`) for backgrounds.
+  - **Dynamic Theming**: For player-centric modals (e.g., Profile), headers should dynamically change based on the player's class color.
+  - **Vertical Expansion (Side Modals)**: Modals of type `side-right` or `side-left` MUST fill the vertical viewport entirely (`height: 100vh`). Use `max-height: 100vh !important` to override shared component constraints (e.g. from `.type-center`) and ensure they are not cut off.
+- **State Purging & Header Hygiene**: To prevent "header leaks" (where old titles or subtitles persist between different modal triggers), components using shared store configurations (like `uiStore.pokemonSelectionConfig`) MUST explicitly clear those objects on `close()` or `onUnmounted()`.
+- **Deep-Stack Interaction**: In complex UI flows with 3+ stacked modal layers:
+  - **Event Isolation**: ALWAYS use `@click.stop` on interactive elements (buttons, inputs) to prevent events from bubbling into parent overlays.
+  - **Layer Penetration**: Explicitly set `pointer-events: auto !important` on interactive elements to ensure they remain clickable through transparent "ghost layers" of other active modals.
+  - **Scroll Penetration (Side Modals)**: Use `pointer-events: none` on transparent modal overlays and containers to allow background scroll/interaction (e.g., Phaser map navigation) while the modal is open.
+- **Animation Integrity**: ALWAYS verify that CSS transition names (e.g., `.slide-left-leave-active`) match the defined classes to prevent abrupt modal closures.
 
 ### 2. Asset Integrity & Resolution
 
@@ -87,6 +105,40 @@ Refer to these manuals for complex implementation specifications:
   - **Green**: Sp. Defense
   - **Purple**: Speed
 - **Mechanical Integrity (Vigor)**: Clearly define finite mechanics in tooltips. For example, **Vigor** MUST be documented as an absolute breeding limit that is consumed upon egg production and **NEVER** recovers. Avoid vague terms that imply rechargeable "energy".
+
+---
+
+## ⚡ GPU & Performance Optimization
+
+### 1. Hardware Acceleration (MANDATORY)
+
+- **Layer Promotion**: All heavy UI components (Modals, Overlays, Large Cards, PC Box) MUST be promoted to a GPU compositor layer using `@include gpu-layer`. This is critical for maintaining smooth 60fps during entry/exit transitions.
+- **Baseline GPU Rule**: Core UI wrappers (like `BaseModal.vue`) MUST include hardware acceleration by default in their base class to ensure all variants (center, side, retro) inherit fluid motion without redundant local overrides.
+- **Expensive Effects**: Any element using `backdrop-filter: Blur(...)` MUST implement `@include gpu-layer` to prevent composition stuttering.
+- **Optimization Strategy**: Use `transform: Translate3d(0, 0, 0)` or `TranslateZ(0)` instead of `top/left` for animations.
+- **Backface Visibility**: Apply `backface-visibility: hidden` to containers undergoing 3D transforms or scaling to prevent jitter and blurring.
+- **Will-Change Hint**: Use `@include will-animate(transform, opacity, ...)` on high-traffic UI elements (HUD buttons, cards) that animate frequently to help the browser pre-optimize.
+
+### 2. Accelerated Scrolling
+
+- **Standard**: All scrollable lists and containers MUST use `@include smooth-scroll` instead of raw `overflow-y: auto`. This ensures hardware-accelerated, inertial scrolling and a unified premium scrollbar aesthetic.
+- **Global Scrollbars**: NEVER use per-component scrollbar classes (e.g., `.custom-scrollbar-vicio`). All scrollbars MUST be styled globally in `_scrollbars.scss`.
+- **Padding Delegation**: NEVER apply global padding to `.content-area` or main layout containers. Always delegate padding to the innermost scrollable component to prevent clipping of special effects (glows, neons).
+- **Zero Scrollbar Gutter**: Prohibited use of `scrollbar-gutter: stable`. Layouts must be fluid and edge-to-edge.
+- **LOD (Level of Detail)**: For very long lists, ensure virtualization or lazy loading is considered to keep the DOM weight low.
+
+### 3. Sprite Rendering
+
+- **Standard**: All Pokémon sprites, item icons, and faction logos MUST use `@include sprite-render` instead of `image-rendering: pixelated`. This provides optimized texture rendering and prevents blur during GPU-accelerated scaling.
+- **Batching**: Prioritize the use of Texture Atlases (Phaser) for game objects to reduce draw calls.
+- **Rare Spawn Animations**: Use synchronized GPU-accelerated transformations (e.g., `pulse-sprite-zoom` applying both `Scale()` and `Opacity()` to the aura and sprite) for rare spawns. Syncing these properties prevents visual "drift" and maximizes discovery impact.
+- **Render Memoization**: Use `computed` memoization for complex UI data (e.g., `processedGrid` in `MapCard.vue`) to eliminate O(N) template-level processing bottlenecks, ensuring stable 60 FPS even with 100+ active spawns.
+
+### 4. Transition Integrity
+
+- **Pattern**: Transitions MUST use `Translate3d` and `Opacity` for maximum fluidity.
+- **FORBIDDEN**: Animating layout-triggering properties like `margin`, `padding`, `width`, or `height`.
+- **Audit**: Run `python3 .agents/skills/project-standards/scripts/detect_gpu_gaps.py` after implementing UI changes.
 
 ---
 
@@ -196,6 +248,8 @@ To ensure a seamless "Hybrid Retro-Modern" experience, the background (map/route
 - [ ] **Architectural Reuse**: Verified that no new "islands" were created and existing systems (Modals, Cards, DB) were reused/extended where possible.
 - [ ] **Redundancy Audit**: `detect_css_redundancy.py` shows 0 critical overlaps for core components.
 - [ ] **Validations**: SASS Traps and Hybrid Patterns detection scripts pass (0 errors).
+- [ ] **Tooltips**: All tooltips use `PVTooltip` component with `<Teleport to="body">`.
+- [ ] **Zero Native Titles**: Native `title=""` attributes prohibited on standard HTML elements (verified by `detect_hybrid_patterns.py`).
 - [ ] **Self-Healing**: Automated repair scripts (`fix_sass_traps.py`, `fix_hybrid_patterns.py`) have been executed to ensure compliance.
 - [ ] **Tokens**: Hardcoded hex colors replaced with variables; `$white` and `$black` used correctly.
 - [ ] **Z-Index**: All layers follow the standardized scale in `_variables.scss` (no values > 999 unless Teleported tooltips).
@@ -207,4 +261,5 @@ To ensure a seamless "Hybrid Retro-Modern" experience, the background (map/route
   - **Entrance**: Activate simplification AFTER the first obscuring modal finishes its opening animation.
   - **Exit**: Restore the full map AS SOON AS the last obscuring modal starts its closing animation.
   - **LIFO Persistence**: Maintain simplification as long as any obscuring modal remains in the stack.
+- [ ] **GPU Audit**: `detect_gpu_gaps.py` passes with 0 critical gaps for core UI.
 - [ ] **DB Parity**: WASM versions in `sqliteEngine.js` match `index.html`.

@@ -38,6 +38,8 @@ const selectTab = (tabId) => {
     :show="show"
     max-width="1200px"
     title="BIBLIOTECA"
+    title-color="var(--yellow)"
+    header-background="#161a2e"
     :show-close-button="true"
     padding="raw"
     no-scroll

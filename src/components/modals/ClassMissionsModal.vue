@@ -11,17 +11,18 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import ClassDashboard from './class/ClassDashboard.vue'
 import ClassMissionsList from './class/ClassMissionsList.vue'
 
+const props = defineProps({
+  show: { type: Boolean, default: false }
+})
+
 defineOptions({ inheritAttrs: false })
-defineEmits(['close', 'confirm', 'cancel', 'submit'])
+const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
 
 const uiStore = useUIStore()
 const classStore = usePlayerClassStore()
 const gameStore = useGameStore()
 
-const isOpen = computed({
-  get: () => uiStore.isClassMissionsOpen,
-  set: (val) => { uiStore.isClassMissionsOpen = val }
-})
+// Removed isOpen computed as we now use 'show' prop from host
 
 const currentClass = computed(() => classStore.currentClassDef)
 const activeMission = computed(() => classStore.activeMission)
@@ -41,7 +42,7 @@ onUnmounted(() => {
   if (timer) clearInterval(timer)
 })
 
-const close = () => { isOpen.value = false }
+const close = () => { emit('close') }
 
 const handleSelect = () => {
   uiStore.open('ClassSelection')
@@ -107,8 +108,10 @@ const isMissionDone = computed(() => {
 
 <template>
   <BaseModal
-    :show="isOpen"
+    :show="show"
     title="GESTIÓN DE CLASE"
+    :title-color="currentClass?.color || 'var(--yellow)'"
+    :header-background="currentClass ? (currentClass.color + '1A') : 'rgba(15, 23, 42, 0.8)'"
     max-width="1000px"
     :show-close-button="true"
     padding="raw"

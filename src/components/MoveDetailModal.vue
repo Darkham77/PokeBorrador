@@ -228,6 +228,7 @@ const hexToRgba = (hex, alpha) => {
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: Blur(5px);
+  @include gpu-layer;
 }
 
 .desc-title {

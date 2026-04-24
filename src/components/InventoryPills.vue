@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
@@ -26,90 +27,109 @@ const dayCycle = computed(() => {
 <template>
   <div class="hud-items">
     <!-- CICLO HORARIO REACTIVO -->
-    <div
-      id="time-cycle-display"
-      class="hud-pill time-pill pv-tooltip-container pv-to-bottom"
+    <PVTooltip
+      :title="dayCycle.label.toUpperCase()"
+      description="El mundo cambia cada 4 horas. ¡Diferentes Pokémon aparecen según la hora!"
+      position="bottom"
     >
-      <span id="time-icon">{{ dayCycle.icon }}</span>
-      <span
-        id="time-label"
-        class="pill-value"
-        :style="{ color: dayCycle.color }"
-      >{{ dayCycle.label }}</span>
-      <div class="pv-tooltip">
-        <span class="pv-tooltip-title">CICLO HORARIO</span>
-        <span class="pv-tooltip-desc">El mundo cambia cada 4 horas. ¡Diferentes Pokémon aparecen según la hora!</span>
+      <div
+        id="time-cycle-display"
+        class="hud-pill time-pill"
+      >
+        <span id="time-icon">{{ dayCycle.icon }}</span>
+        <span
+          id="time-label"
+          class="pill-value"
+          :style="{ color: dayCycle.color }"
+        >{{ dayCycle.label }}</span>
       </div>
-    </div>
+    </PVTooltip>
 
     <!-- DINERO -->
-    <div class="hud-pill money-pill pv-tooltip-container pv-to-bottom">
-      <span class="currency-icon-money">₱</span>
-      <span
-        id="hud-money"
-        class="pill-value"
-      >{{ (gs.money || 0).toLocaleString() }}</span>
-      <div class="pv-tooltip">
-        <span class="pv-tooltip-title">POKÉ-PESOS (₱)</span>
-        <span class="pv-tooltip-desc">Moneda principal.</span>
+    <PVTooltip
+      title="POKÉ-PESOS (₱)"
+      description="Moneda principal obtenida en combates y venta de objetos."
+      position="bottom"
+    >
+      <div class="hud-pill money-pill">
+        <span class="currency-icon-money">₱</span>
+        <span
+          id="hud-money"
+          class="pill-value"
+        >{{ (gs.money || 0).toLocaleString() }}</span>
       </div>
-    </div>
+    </PVTooltip>
 
-    <div class="hud-pill bc-pill pv-tooltip-container pv-to-bottom">
-      <i class="fas fa-coins currency-icon-bc" />
-      <span
-        id="hud-bc"
-        class="pill-value"
-      >{{ (gs.battleCoins || 0).toLocaleString() }}</span>
-      <div class="pv-tooltip">
-        <span class="pv-tooltip-title">BC</span>
-        <span class="pv-tooltip-desc">Moneda de élite.</span>
+    <!-- BC -->
+    <PVTooltip
+      title="BATTLE COINS (BC)"
+      description="Moneda de élite obtenida en eventos y misiones especiales."
+      position="bottom"
+    >
+      <div class="hud-pill bc-pill">
+        <i class="fas fa-coins currency-icon-bc" />
+        <span
+          id="hud-bc"
+          class="pill-value"
+        >{{ (gs.battleCoins || 0).toLocaleString() }}</span>
       </div>
-    </div>
+    </PVTooltip>
 
     <!-- MEDALLAS -->
-    <div class="hud-pill badge-pill pv-tooltip-container pv-to-bottom">
-      <i class="fas fa-medal" />
-      <span
-        id="badge-count"
-        class="pill-value"
-      >{{ gs.badges }}</span>
-      <div class="pv-tooltip">
-        <span class="pv-tooltip-title">MEDALLAS</span>
+    <PVTooltip
+      title="MEDALLAS"
+      description="Progreso de tu aventura. Desbloquean nuevas zonas y Pokémon."
+      position="bottom"
+    >
+      <div class="hud-pill badge-pill">
+        <i class="fas fa-medal" />
+        <span
+          id="badge-count"
+          class="pill-value"
+        >{{ gs.badges }}</span>
       </div>
-    </div>
+    </PVTooltip>
 
     <!-- BALLS -->
-    <div class="hud-pill ball-pill pv-tooltip-container pv-to-bottom">
-      <div class="ball-icon-wrap">
-        <img
-          src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'><circle cx='20' cy='20' r='19' fill='%23222' stroke='%23111' stroke-width='1.5'/><path d='M1 20 A19 19 0 0 1 39 20 Z' fill='%23e63030'/><path d='M1 20 A19 19 0 0 0 39 20 Z' fill='%23f5f5f5'/><rect x='1' y='18' width='38' height='4' fill='%23111'/><circle cx='20' cy='20' r='6' fill='%23111'/><circle cx='20' cy='20' r='4' fill='%23f5f5f5'/><circle cx='18' cy='18' r='1.2' fill='%23ffffff' opacity='0.7'/></svg>"
-          width="24"
-          height="24"
-          @error="e => e.target.style.display = 'none'"
-        >
+    <PVTooltip
+      title="POKÉ BALLS"
+      description="Cantidad total de Poké Balls disponibles en tu mochila."
+      position="bottom"
+    >
+      <div class="hud-pill ball-pill">
+        <div class="ball-icon-wrap">
+          <img
+            src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'><circle cx='20' cy='20' r='19' fill='%23222' stroke='%23111' stroke-width='1.5'/><path d='M1 20 A19 19 0 0 1 39 20 Z' fill='%23e63030'/><path d='M1 20 A19 19 0 0 0 39 20 Z' fill='%23f5f5f5'/><rect x='1' y='18' width='38' height='4' fill='%23111'/><circle cx='20' cy='20' r='6' fill='%23111'/><circle cx='20' cy='20' r='4' fill='%23f5f5f5'/><circle cx='18' cy='18' r='1.2' fill='%23ffffff' opacity='0.7'/></svg>"
+            width="24"
+            height="24"
+            @error="e => e.target.style.display = 'none'"
+          >
+        </div>
+        <span
+          id="ball-count"
+          class="pill-value"
+        >{{ gs.balls }}</span>
       </div>
-      <span
-        id="ball-count"
-        class="pill-value"
-      >{{ gs.balls }}</span>
-    </div>
+    </PVTooltip>
 
     <!-- HUEVOS -->
-    <div
-      id="hud-egg-container"
-      class="hud-pill egg-pill pv-tooltip-container pv-to-bottom"
-      @click="uiStore.toggleProfile()"
+    <PVTooltip
+      title="HUEVOS POKÉMON"
+      description="Huevos en proceso de incubación. Haz clic para ver detalles."
+      position="bottom"
     >
-      <span>🥚</span>
-      <span
-        id="egg-count"
-        class="pill-value"
-      >{{ (gs.eggs || []).length }}</span>
-      <div class="pv-tooltip">
-        <span class="pv-tooltip-title">HUEVOS</span>
+      <div
+        id="hud-egg-container"
+        class="hud-pill egg-pill"
+        @click="uiStore.toggleProfile()"
+      >
+        <span>🥚</span>
+        <span
+          id="egg-count"
+          class="pill-value"
+        >{{ (gs.eggs || []).length }}</span>
       </div>
-    </div>
+    </PVTooltip>
   </div>
 </template>
 
@@ -134,7 +154,6 @@ const dayCycle = computed(() => {
 
 .hud-pill {
   transition: all 0.2s ease;
-  
   
   &:hover {
     transform: TranslateY(-2px);

@@ -67,5 +67,7 @@ export const INITIAL_STATE = {
   notificationHistory: [],
   marketSoldSeenIds: [],
   claimQueue: [],
-  pvpTeam: []
+  pvpTeam: [],
+  warTeam: [],
+  warSlots: 6
 }

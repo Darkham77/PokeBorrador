@@ -41,6 +41,8 @@ const close = () => {
   <BaseModal
     :show="true"
     title="PARCHE DE NATURALEZA"
+    title-color="#4ade80"
+    header-background="#161a2e"
     max-width="400px"
     @close="close"
   >

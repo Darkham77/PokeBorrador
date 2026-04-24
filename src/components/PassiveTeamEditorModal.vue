@@ -1,17 +1,16 @@
 <script setup>
-import { computed } from 'vue'
-import { useUIStore } from '@/stores/ui'
-import BaseModal from '@/components/common/BaseModal.vue'
-
-const uiStore = useUIStore()
-
-const isOpen = computed({
-  get: () => uiStore.isPassiveTeamEditorOpen,
-  set: (val) => { uiStore.isPassiveTeamEditorOpen = val }
+/**
+ * PassiveTeamEditorModal
+ * Standardized modal for managing defense team.
+ */
+const props = defineProps({
+  show: { type: Boolean, default: false }
 })
 
+const emit = defineEmits(['close'])
+
 const closeEditor = () => {
-  isOpen.value = false
+  emit('close')
 }
 
 const confirmSave = () => {
@@ -20,22 +19,21 @@ const confirmSave = () => {
   }
 }
 
-// Shim for legacy code
+// Shim for legacy code - we keep this but use the prop as source of truth
 if (typeof window !== 'undefined') {
   window.openPassiveTeamEditor = () => {
-    isOpen.value = true
-  }
-  window.closePassiveTeamEditor = () => {
-    isOpen.value = false
+    // This is now managed by the store/host, but we keep the shim for event-based calls
+    import('@/stores/modals').then(m => m.useModalStore().open('PassiveTeamEditor'))
   }
 }
 </script>
 
 <template>
   <BaseModal
-    :show="isOpen"
+    :show="show"
     title="🛡️ ARMADOR PASIVO"
     max-width="440px"
+    variant="retro"
     @close="closeEditor"
   >
     <div class="passive-editor-inner">
@@ -56,7 +54,7 @@ if (typeof window !== 'undefined') {
 
     <template #footer>
       <button
-        class="save-btn-primary"
+        class="btn-vicio-success btn-vicio-full"
         @click="confirmSave"
       >
         💾 GUARDAR CONFIGURACIÓN
@@ -66,6 +64,8 @@ if (typeof window !== 'undefined') {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .passive-editor-inner {
   padding: 8px 0;
 }
@@ -87,31 +87,6 @@ if (typeof window !== 'undefined') {
   color: var(--gray);
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
-}
-
-.save-btn-primary {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, var(--green), #059669);
-  color: $black;
-  border: none;
-  border-radius: 14px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-    filter: Brightness(1.1);
-  }
-
-  &:active {
-    transform: translateY(0) Scale(0.98);
-  }
 }
 
 // Global injections styles (Legacy)

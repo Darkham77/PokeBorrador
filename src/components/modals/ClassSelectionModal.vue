@@ -1,22 +1,27 @@
 <script setup>
-import { computed } from 'vue';
 import { usePlayerClassStore } from '@/stores/playerClass';
 import { useUIStore } from '@/stores/ui';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import BaseModal from '@/components/common/BaseModal.vue';
 
+/**
+ * ClassSelectionModal
+ * Managed by ModalHost. Receives 'show' prop from the host.
+ */
+const props = defineProps({
+  show: { type: Boolean, default: false }
+});
+
+const emit = defineEmits(['close', 'confirm', 'cancel', 'submit']);
+defineOptions({ inheritAttrs: false });
+
 const classStore = usePlayerClassStore();
 const uiStore = useUIStore();
 
-defineOptions({ inheritAttrs: false });
-defineEmits(['close', 'confirm', 'cancel', 'submit']);
-
-const isOpen = computed({
-  get: () => uiStore.isClassSelectionOpen,
-  set: (val) => { uiStore.isClassSelectionOpen = val }
-});
-const close = () => { isOpen.value = false };
+const close = () => { 
+  emit('close');
+};
 
 const handleSelect = async (id) => {
   const res = await classStore.selectClass(id);
@@ -26,12 +31,24 @@ const handleSelect = async (id) => {
 const getTrainerSprite = (id) => {
   return getAssetUrl(ASSET_TYPES.TRAINER, id);
 };
+
+const getButtonVariant = (clsId) => {
+  switch (clsId) {
+    case 'rocket': return 'danger';
+    case 'cazabichos': return 'success';
+    case 'entrenador': return 'info';
+    case 'criador': return 'secondary';
+    default: return 'primary';
+  }
+};
 </script>
 
 <template>
   <BaseModal
-    :show="isOpen"
+    :show="show"
     title="⚡ ELEGÍ TU CLASE ⚡"
+    title-color="var(--yellow)"
+    header-background="#1a1c2e"
     max-width="95%"
     variant="retro"
     @close="close"
@@ -97,17 +114,19 @@ const getTrainerSprite = (id) => {
           </div>
 
           <button 
-            class="select-btn-premium"
+            :class="['btn-vicio-' + getButtonVariant(cls.id), 'btn-vicio-full']"
             :disabled="classStore.playerClass === cls.id"
             @click="handleSelect(cls.id)"
           >
-            <span class="btn-text">
-              {{ classStore.playerClass === cls.id ? 'CLASE ACTUAL' : (classStore.playerClass ? 'CAMBIAR' : 'ELEGIR') }}
-            </span>
-            <span
-              v-if="classStore.playerClass && classStore.playerClass !== cls.id"
-              class="btn-price"
-            >10,000 BC</span>
+            <div class="btn-label-stack">
+              <span class="btn-label">
+                {{ classStore.playerClass === cls.id ? 'CLASE ACTUAL' : (classStore.playerClass ? 'CAMBIAR' : 'ELEGIR') }}
+              </span>
+              <span
+                v-if="classStore.playerClass && classStore.playerClass !== cls.id"
+                class="btn-price"
+              >10,000 BC</span>
+            </div>
           </button>
         </div>
       </div>
@@ -157,11 +176,12 @@ const getTrainerSprite = (id) => {
   align-items: center;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
+  @include gpu-layer;
 
   @include hover-neon-yellow(1px);
 
   &:hover {
-    transform: translateY(-10px) rotateX(2deg);
+    transform: TranslateY(-10px) RotateX(2deg);
     border-color: var(--yellow) !important;
     
     .card-glow { opacity: 0.2; }
@@ -206,7 +226,7 @@ const getTrainerSprite = (id) => {
   }
   .trainer-pixel-art {
     width: 70px;
-    image-rendering: pixelated;
+    @include sprite-render;
     transition: transform 0.4s;
   }
 }
@@ -276,39 +296,13 @@ const getTrainerSprite = (id) => {
   }
 }
 
-.select-btn-premium {
+// Standardized Button Overrides for Price Labels
+[class^="btn-vicio-"] {
   width: 100%;
-  padding: 16px;
-  background: var(--cls-color);
-  color: $white;
-  border: none;
-  border-radius: 12px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 10px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-  box-shadow: 0 10px 20px -5px var(--cls-color)88;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-2px) Scale(1.02);
-    filter: Brightness(1.1);
-    box-shadow: 0 15px 30px -5px var(--cls-color);
-  }
-
-  &:disabled {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.2);
-    cursor: default;
-    box-shadow: none;
-  }
 
   .btn-price {
     font-size: 8px;
-    color: rgba(255, 255, 255, 0.7);
+    opacity: 0.8;
   }
 }
 

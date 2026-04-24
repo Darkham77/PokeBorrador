@@ -102,18 +102,39 @@ onMounted(async () => {
 
 // Intercept low-level events to prevent them from reaching Phaser when modals are open
 const blockEvents = (e) => {
-  if (uiStore.isAnyBlockingModalOpen) {
-    // If the event doesn't come from inside an element with allowed scroll, stop it
-    const isInsideScrollable = e.target.closest('.library-content, .library-sidebar, .modal-scrollable-content, .chat-panel, .chat-messages, .profile-content-scrollable, .error-overlay, .error-card, .error-stack')
-    
-    if (!isInsideScrollable) {
-      console.log('[App] Blocking event on:', e.target.className || e.target.id)
-      e.preventDefault();
-      e.stopImmediatePropagation();
-    } else {
-      // If we are inside, stop propagation so it doesn't reach window (where Phaser listens)
-      e.stopPropagation();
+  // 1. Determine if we are inside a Vue UI element (including modals and views)
+  // If we are inside ANY part of a modal or a scrollable view, we must stop propagation to Phaser
+  // but ALLOW the browser to handle the event (bubbling) unless it's a blocking area.
+  
+  const isInsideModal = e.target.closest('.base-modal-root, .base-modal-content, .modal-host')
+  const isScrollable = (el) => {
+    if (!el || el === document.body || el === document.documentElement) return false
+    const style = window.getComputedStyle(el)
+    const overflow = style.overflow + style.overflowY + style.overflowX
+    return /(auto|scroll)/.test(overflow)
+  }
+
+  // Find the nearest scrollable parent
+  let curr = e.target
+  let foundScrollable = null
+  while (curr && curr !== document.body && curr.id !== 'phaser-container') {
+    if (isScrollable(curr)) {
+      foundScrollable = curr
+      break
     }
+    curr = curr.parentElement
+  }
+
+  // CRITICAL: If we are inside a modal or a scrollable view, STOP propagation to Phaser
+  if (foundScrollable || isInsideModal) {
+    e.stopPropagation()
+    return
+  }
+
+  // 2. Only block the event entirely if a modal is open AND we are NOT inside it
+  if (uiStore.isAnyBlockingModalOpen) {
+    e.preventDefault()
+    e.stopImmediatePropagation()
   }
 }
 
@@ -198,17 +219,19 @@ const handleRetry = () => {
   </div>
 </template>
 
-<style>
+<style lang="scss">
+@use "@/styles/core/tools" as *;
+
 #vue-app {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
 }
 
 .zoom-target {
   zoom: var(--app-zoom, 1);
-  transform: translateZ(0);
+  @include gpu-layer;
   will-change: zoom, transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
 .loading-overlay {
@@ -243,6 +266,7 @@ const handleRetry = () => {
   background: rgba(0, 0, 0, 0.95);
   -webkit-backdrop-filter: Blur(8px);
   backdrop-filter: Blur(8px);
+  @include gpu-layer;
 }
 
 

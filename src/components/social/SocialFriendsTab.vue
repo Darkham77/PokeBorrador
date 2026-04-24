@@ -5,6 +5,7 @@ import { useChatStore } from '@/stores/chat'
 import { useTradeStore } from '@/stores/trade'
 import { useLivePvPStore } from '@/stores/livePvP'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const socialStore = useSocialStore()
 const chatStore = useChatStore()
@@ -35,7 +36,7 @@ defineEmits(['search-tab'])
       </div>
       <p>Aún no tenés amigos agregados.</p>
       <button
-        class="btn-primary-retro"
+        class="btn-vicio-secondary"
         @click="$emit('search-tab')"
       >
         Buscar Entrenadores
@@ -79,34 +80,57 @@ defineEmits(['search-tab'])
         </div>
 
         <div class="friend-actions">
-          <button
-            class="action-btn chat"
-            title="Chat"
-            @click="openChat(friend)"
+          <PVTooltip
+            title="CHAT"
+            description="Enviar mensaje privado."
+            position="top"
           >
-            💬
-          </button>
-          <button
-            class="action-btn trade"
-            title="Intercambio"
-            @click="openTrade(friend)"
+            <button
+              class="action-btn chat"
+              @click="openChat(friend)"
+            >
+              💬
+            </button>
+          </PVTooltip>
+
+          <PVTooltip
+            title="INTERCAMBIO"
+            description="Solicitar comercio Pokémon."
+            position="top"
           >
-            🔄
-          </button>
-          <button
-            class="action-btn battle"
-            title="Desafío"
-            @click="livePvP.sendInvite(friend.id, friend.username)"
+            <button
+              class="action-btn trade"
+              @click="openTrade(friend)"
+            >
+              🔄
+            </button>
+          </PVTooltip>
+
+          <PVTooltip
+            title="DESAFÍO"
+            description="Retar a un combate PvP en vivo."
+            position="top"
           >
-            ⚔️
-          </button>
-          <button
-            class="action-btn remove"
-            title="Eliminar"
-            @click="socialStore.removeFriend(friend.id)"
+            <button
+              class="action-btn battle"
+              @click="livePvP.sendInvite(friend.id, friend.username)"
+            >
+              ⚔️
+            </button>
+          </PVTooltip>
+
+          <PVTooltip
+            title="ELIMINAR"
+            description="Quitar de tu lista de amigos."
+            position="top"
           >
-            ×
-          </button>
+            <button
+              class="action-btn remove"
+              @click="socialStore.removeFriend(friend.id)"
+            >
+              ×
+            </button>
+          </PVTooltip>
         </div>
       </div>
     </div>
@@ -210,16 +234,4 @@ defineEmits(['search-tab'])
   p { font-size: 14px; margin-bottom: 20px; }
 }
 
-.btn-primary-retro {
-  background: var(--purple-light);
-  color: $black;
-  border: none;
-  padding: 10px 20px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  &:hover { transform: TranslateY(-2px); box-shadow: 0 4px 12px rgba(157, 78, 221, 0.3); }
-}
 </style>

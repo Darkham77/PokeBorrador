@@ -102,6 +102,29 @@
   cursor: pointer;
   transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
   @include pixelated;
+  gap: 12px;
+
+  // Icon Standardization
+  .icon, i, .fas, .far {
+    font-size: 1.4em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: transform 0.2s;
+    
+    // Fine-tune vertical alignment for pixel fonts/emojis
+    transform: translateY(-1px); 
+  }
+
+  // Handle multi-line stacks (e.g. Price + Label)
+  .btn-label-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
+  }
 
   &:disabled {
     filter: Grayscale(1);
@@ -151,6 +174,10 @@
   } @else if $variant == 'info' {
     $base-color: #60a5fa;
     $shadow: #2563eb;
+    $text: #fff;
+  } @else if $variant == 'success' {
+    $base-color: #22c55e;
+    $shadow: #15803d;
     $text: #fff;
   } @else if $variant == 'neutral' {
     $base-color: #94a3b8;
@@ -212,6 +239,7 @@
 @mixin btn-vicio-primary($size: 'md', $fullWidth: false) { @include btn-vicio('primary', $size, $fullWidth); }
 @mixin btn-vicio-secondary($size: 'md', $fullWidth: false) { @include btn-vicio('secondary', $size, $fullWidth); }
 @mixin btn-vicio-danger($size: 'md', $fullWidth: false) { @include btn-vicio('danger', $size, $fullWidth); }
+@mixin btn-vicio-success($size: 'md', $fullWidth: false) { @include btn-vicio('success', $size, $fullWidth); }
 
 @mixin gender-badge($size: 24px, $font-size: 16px) {
   width: $size;
@@ -253,4 +281,33 @@
   text-shadow: 1px 1px 0 rgba(0,0,0,0.8), -1px -1px 0 rgba(0,0,0,0.8), 1px -1px 0 rgba(0,0,0,0.8), -1px 1px 0 rgba(0,0,0,0.8);
   @include pixelated;
   transition: all 0.3s ease;
+}
+
+@mixin btn-close-premium {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  pointer-events: auto;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+    transform: Rotate(90deg) Scale(1.1);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+  }
+
+  &:active {
+    transform: Scale(0.9) Rotate(90deg);
+  }
 }

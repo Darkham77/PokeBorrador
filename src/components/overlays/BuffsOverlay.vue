@@ -45,6 +45,8 @@ const formatTime = (secs) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .buffs-overlay {
   position: absolute;
   top: 80px; /* Below user bar */
@@ -71,19 +73,20 @@ const formatTime = (secs) => {
   box-shadow: 0 4px 6px rgba(0,0,0,0.3);
   transition: all 0.3s ease;
   cursor: help;
+  @include gpu-layer;
 
   &:hover {
     background: rgba(0, 0, 0, 0.8);
     border-color: var(--yellow, #ffd93d);
     box-shadow: 0 0 0 1px var(--yellow, #ffd93d);
-    transform: translateX(4px);
+    transform: TranslateX(4px);
   }
 }
 
 .buff-icon {
   width: 24px;
   height: 24px;
-  image-rendering: pixelated;
+  @include sprite-render;
   margin-right: 8px;
   filter: Drop-Shadow(0 2px 2px rgba(0,0,0,0.5));
 }
@@ -118,6 +121,6 @@ const formatTime = (secs) => {
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
-  transform: translateX(-30px);
+  transform: TranslateX(-30px);
 }
 </style>

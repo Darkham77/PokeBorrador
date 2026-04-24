@@ -1,21 +1,30 @@
 <script setup>
+/**
+ * MoveRelearnerModal
+ * Standardized modal for relearning forgotten moves.
+ */
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { POKEMON_DB } from '@/data/pokemonDB'
 import { EVOLUTION_TABLE } from '@/data/evolutionData'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const props = defineProps({
+  show: { type: Boolean, default: false },
   pokemon: { type: Object, required: true },
-  onClose: { type: Function, required: true },
-  onLearned: { type: Function, required: true }
+  onLearned: { type: Function, default: () => {} }
 })
+
+const emit = defineEmits(['close'])
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 
 const forgottenMoves = computed(() => {
   const p = props.pokemon
+  if (!p) return []
+  
   const learnedMoves = p.moves.map(m => m.name)
   const possibleMoves = []
   const processedIds = new Set()
@@ -62,15 +71,14 @@ const handleRelearn = (move) => {
     consumeItem(itemName)
     uiStore.notify(`¡${p.name} recordó ${move.name.toUpperCase()}!`, '🧠')
     props.onLearned(true)
-    props.onClose()
+    emit('close')
   } else {
     // If moves == 4, we need to forget one
-    // We bridge to the existing LearnMoveMenu if available, or handle it here
     uiStore.openLearnMoveMenu(p, { name: move.name, pp: move.pp, maxPP: move.pp }, (success) => {
       if (success) {
         consumeItem(itemName)
         props.onLearned(true)
-        props.onClose()
+        emit('close')
       }
     })
   }
@@ -84,20 +92,19 @@ const consumeItem = (name) => {
 </script>
 
 <template>
-  <div
-    class="relearner-overlay"
-    @click.self="onClose"
+  <BaseModal
+    :show="show && !!pokemon"
+    title="RECORDADOR DE MOVIMIENTOS"
+    max-width="400px"
+    variant="retro"
+    @close="emit('close')"
   >
-    <div class="relearner-card">
-      <div class="header">
-        <div class="brain-icon">
-          🧠
-        </div>
-        <h3>RECORDADOR DE MOVIMIENTOS</h3>
-        <p>¿Qué movimiento debe recordar {{ pokemon.name }}?</p>
-      </div>
+    <div class="relearner-content">
+      <p class="relearner-help">
+        ¿Qué movimiento debe recordar {{ pokemon?.name }}?
+      </p>
 
-      <div class="moves-list custom-scroll">
+      <div class="moves-list custom-scrollbar-vicio">
         <div
           v-if="forgottenMoves.length === 0"
           class="empty-msg"
@@ -108,7 +115,7 @@ const consumeItem = (name) => {
         <button 
           v-for="mv in forgottenMoves" 
           :key="mv.name"
-          class="move-row"
+          class="move-row-vicio"
           @click="handleRelearn(mv)"
         >
           <div class="move-info">
@@ -120,75 +127,49 @@ const consumeItem = (name) => {
           </div>
         </button>
       </div>
+    </div>
 
+    <template #footer>
       <button
-        class="cancel-btn"
-        @click="onClose"
+        class="btn-vicio-secondary btn-vicio-full"
+        @click="emit('close')"
       >
         CANCELAR
       </button>
-    </div>
-  </div>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.relearner-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
-  background: rgba(0, 0, 0, 0.9);
-  -webkit-backdrop-filter: Blur(8px);
-  backdrop-filter: Blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  transform: translateZ(0);
+@use "@/styles/core/tools" as *;
+
+.relearner-content {
+  padding: 8px 0;
 }
 
-.relearner-card {
-  background: var(--card);
-  border: 2px solid var(--purple);
-  border-radius: 24px;
-  width: 100%;
-  max-width: 400px;
-  padding: 28px;
-  box-shadow: 0 0 40px rgba(155, 77, 255, 0.3);
-  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.header {
+.relearner-help {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
   text-align: center;
   margin-bottom: 24px;
-
-  .brain-icon { font-size: 32px; margin-bottom: 12px; }
-  h3 { 
-    font-family: 'Press Start 2P', monospace; 
-    font-size: 10px; 
-    color: var(--purple);
-    margin: 0 0 10px 0;
-  }
-  p { color: white; font-size: 14px; font-weight: 700; margin: 0; }
+  line-height: 1.4;
 }
 
 .moves-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: 320px;
-  overflow-y: auto;
-  min-height: 0;
-  margin-bottom: 24px;
-  padding-right: 6px;
+  gap: 8px;
+  max-height: 350px;
+  @include smooth-scroll;
 }
 
-.move-row {
+.move-row-vicio {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(155, 77, 255, 0.1);
-  border: 1px solid rgba(155, 77, 255, 0.2);
-  border-radius: 14px;
+  background: rgba(155, 77, 255, 0.05);
+  border: 1px solid rgba(155, 77, 255, 0.1);
+  border-radius: 12px;
   padding: 14px 18px;
   color: white;
   cursor: pointer;
@@ -196,41 +177,40 @@ const consumeItem = (name) => {
   text-align: left;
 
   &:hover {
-    background: rgba(155, 77, 255, 0.2);
-    transform: translateX(5px);
-    border-color: var(--purple);
+    background: rgba(155, 77, 255, 0.15);
+    border-color: var(--purple-light);
+    transform: translateX(4px);
+    
+    .move-name { color: var(--purple-light); }
   }
 
   .move-info {
     display: flex;
     flex-direction: column;
-    .move-name { font-weight: 800; font-size: 14px; }
-    .move-lv { font-size: 10px; color: var(--gray); margin-top: 2px; }
+    .move-name { 
+      font-family: 'Press Start 2P', cursive;
+      font-size: 9px;
+      margin-bottom: 4px;
+      @include gpu-layer;
+    }
+    .move-lv { 
+      font-size: 10px; 
+      color: rgba(255, 255, 255, 0.4);
+    }
   }
 
   .move-pp {
-    font-family: 'Press Start 2P', monospace;
+    font-family: 'Press Start 2P', cursive;
     font-size: 8px;
-    color: var(--purple);
+    color: var(--purple-light);
+    @include pixelated;
   }
 }
 
-.cancel-btn {
-  width: 100%;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: none;
-  border-radius: 14px;
-  color: var(--gray);
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover { background: rgba(255, 255, 255, 0.1); color: white; }
-}
-
-@keyframes scaleIn {
-  from { transform: Scale(0.9); opacity: 0; }
-  to { transform: Scale(1.0); opacity: 1; }
+.empty-msg {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 11px;
 }
 </style>

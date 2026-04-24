@@ -32,13 +32,13 @@ const openCenter = () => {
 // Mapeo de misiones para los sprites
 const missionSprites = computed(() => {
   const missions = gs.value.daycare_missions || []
-  return Array.from(new Set(missions.map(m => m?.trainerSprite).filter(Boolean))).slice(0, 2)
+  return Array.from(new Set(missions.map(m => m?.trainerSprite).filter(Boolean))).slice(0, 4)
 })
 
 const gymSprites = computed(() => {
   const defeatedIds = gs.value.defeatedGyms || []
   return GYMS.filter(g => !defeatedIds.includes(g.id))
-    .slice(0, 3)
+    .slice(0, 8)
     .map(g => g.sprite)
 })
 
@@ -102,8 +102,9 @@ const activeEventData = computed(() => {
 
 <style scoped>
 .map-view-container {
-  padding: 10px 0;
+  padding: 0 0 40px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .legacy-divider {
@@ -128,9 +129,4 @@ const activeEventData = computed(() => {
   letter-spacing: 2px;
 }
 
-@media (max-width: 768px) {
-  .map-view-container {
-    padding: 10px;
-  }
-}
 </style>

@@ -65,11 +65,13 @@ const decline = async () => {
 </template>
 
 <style lang="scss" scoped>
+@use "@/styles/core/tools" as *;
+
 .invite-notification {
   position: fixed;
   top: 20px;
   left: 50%;
-  transform: translateX(-50%) translateZ(0);
+  transform: TranslateX(-50%) TranslateZ(0);
   z-index: var(--z-toast);
   width: 90%;
   max-width: 360px;
@@ -82,6 +84,7 @@ const decline = async () => {
   padding: 20px;
   text-align: center;
   animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  @include gpu-layer;
 }
 
 .press-start {
@@ -127,7 +130,7 @@ button {
   border: 1px solid;
 
   &:hover {
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
   }
 }
 

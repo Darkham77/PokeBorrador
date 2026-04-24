@@ -28,12 +28,14 @@ const activeDisplayEvents = computed(() => {
         :style="{ '--event-color': event.color }"
       >
         <div class="glow" />
-        <div class="content">
-          <span class="icon">{{ event.icon }}</span>
-          <div class="text">
+        <div class="event-banner-content">
+          <div class="event-banner-header">
+            <span class="icon">{{ event.icon }}</span>
             <div class="name">
               {{ event.name }}
             </div>
+          </div>
+          <div class="event-banner-body">
             <div class="desc">
               {{ event.description }}
             </div>
@@ -45,6 +47,8 @@ const activeDisplayEvents = computed(() => {
 </template>
 
 <style lang="scss" scoped>
+@use "@/styles/core/tools" as *;
+
 .event-banner-container {
   position: fixed;
   bottom: 80px;
@@ -54,7 +58,7 @@ const activeDisplayEvents = computed(() => {
   gap: 10px;
   z-index: var(--z-hud);
   pointer-events: none;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .event-banner {
@@ -69,6 +73,7 @@ const activeDisplayEvents = computed(() => {
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   min-width: 280px;
+  @include gpu-layer;
   
   .glow {
     position: absolute;
@@ -81,30 +86,44 @@ const activeDisplayEvents = computed(() => {
     pointer-events: none;
   }
 
-  .content {
+  .event-banner-content {
     display: flex;
-    align-items: center;
-    gap: 15px;
+    flex-direction: column;
+    gap: 8px;
     position: relative;
     z-index: 1;
+    width: 100%;
     
-    .icon {
-      font-size: 1.5rem;
-      filter: Drop-Shadow(0 0 5px var(--event-color));
-      animation: pulse 2s infinite;
-    }
-    
-    .text {
+    .event-banner-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      
+      .icon {
+        font-size: 1.2rem;
+        filter: Drop-Shadow(0 0 5px var(--event-color));
+        animation: pulse 2s infinite;
+        flex-shrink: 0;
+      }
+      
       .name {
         font-weight: 800;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         letter-spacing: 0.5px;
         color: white;
+        text-transform: uppercase;
+        font-family: 'Press Start 2P', monospace;
+        @include pixelated;
       }
+    }
+
+    .event-banner-body {
       .desc {
         font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.6);
-        margin-top: 2px;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.4;
+        white-space: normal;
+        max-width: 100%;
       }
     }
   }
@@ -122,12 +141,12 @@ const activeDisplayEvents = computed(() => {
 }
 
 .banner-slide-enter-from {
-  transform: translateX(-100%);
+  transform: TranslateX(-100%);
   opacity: 0;
 }
 
 .banner-slide-leave-to {
-  transform: translateX(-20px);
+  transform: TranslateX(-20px);
   opacity: 0;
 }
 </style>

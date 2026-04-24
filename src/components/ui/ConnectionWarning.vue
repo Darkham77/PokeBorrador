@@ -5,37 +5,39 @@ const authStore = useAuthStore()
 </script>
 
 <template>
-  <transition name="fade">
-    <div
-      v-if="authStore.connectionLost"
-      class="connection-lost-overlay"
-    >
-      <div class="lost-card">
-        <div class="icon-header">
-          <span class="wifi-icon pulse">📶</span>
+  <Teleport to="body">
+    <transition name="fade">
+      <div
+        v-if="authStore.connectionLost"
+        class="connection-lost-overlay"
+      >
+        <div class="lost-card">
+          <div class="icon-header">
+            <span class="wifi-icon pulse">📶</span>
+          </div>
+          
+          <h2 class="press-start">
+            CONEXIÓN PERDIDA
+          </h2>
+          
+          <p class="msg">
+            Se ha perdido la conexión con el servidor. 
+            El juego se reanudará automáticamente en cuanto se restablezca el enlace.
+          </p>
+  
+          <div class="status-indicator">
+            <div class="spinner" />
+            <span class="status-text press-start">RECONECTANDO...</span>
+          </div>
+  
+          <p class="footer">
+            Modo: <code>{{ authStore.sessionMode.toUpperCase() }}</code> | 
+            Internet: <code :class="{ offline: !authStore.isOnline }">{{ authStore.isOnline ? 'CONECTADO' : 'DESCONECTADO' }}</code>
+          </p>
         </div>
-        
-        <h2 class="press-start">
-          CONEXIÓN PERDIDA
-        </h2>
-        
-        <p class="msg">
-          Se ha perdido la conexión con el servidor. 
-          El juego se reanudará automáticamente en cuanto se restablezca el enlace.
-        </p>
-
-        <div class="status-indicator">
-          <div class="spinner" />
-          <span class="status-text press-start">RECONECTANDO...</span>
-        </div>
-
-        <p class="footer">
-          Modo: <code>{{ authStore.sessionMode.toUpperCase() }}</code> | 
-          Internet: <code :class="{ offline: !authStore.isOnline }">{{ authStore.isOnline ? 'CONECTADO' : 'DESCONECTADO' }}</code>
-        </p>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">

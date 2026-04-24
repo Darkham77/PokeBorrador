@@ -38,10 +38,11 @@ watch(logs, () => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .battle-log {
   height: 100%;
-  overflow-y: auto;
   min-height: 0;
   padding: 20px;
   background: rgba(15, 23, 42, 0.5);
@@ -51,8 +52,8 @@ watch(logs, () => {
   display: flex;
   flex-direction: column-reverse; /* New ones at bottom, but we reverse slice in template */
   gap: 12px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.2) transparent;
+  @include smooth-scroll;
+  @include gpu-layer;
 }
 
 .log-entry {
@@ -70,8 +71,8 @@ watch(logs, () => {
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: TranslateX(-10px); }
+  to { opacity: 1; transform: TranslateX(0); }
 }
 
 /* Color overrides mapping to global types */

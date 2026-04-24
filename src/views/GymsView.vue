@@ -19,7 +19,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="gyms-view-legacy custom-scrollbar">
+  <div class="gyms-view-legacy">
     <div class="gyms-header-legacy">
       <div class="header-left">
         <h1 class="view-title">
@@ -62,14 +62,11 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-@use "sass:string";
+@use "@/styles/core/tools" as *;
 
 .gyms-view-legacy {
-  padding: 30px;
+  padding: 0 0 40px;
   background: #0d1117;
-  height: 100%;
-  overflow-y: auto;
-  min-height: 0;
 }
 
 .gyms-header-legacy {
@@ -157,5 +154,4 @@ onMounted(async () => {
   gap: 25px;
   padding-bottom: 60px;
 }
-
 </style>

@@ -1,14 +1,15 @@
 @use "@/styles/core/tools" as *;
 
 .pokedex-view {
-  height: 100%;
-  padding: 32px;
-  background: transparent; // Let global stars show through
-  overflow-y: auto;
+  padding: 0;
+  background: transparent;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--ui-v-gap);
+  @include gpu-layer;
+  pointer-events: auto !important;
+  z-index: 10;
 }
 
 .pokedex-header {
@@ -60,6 +61,7 @@
     flex-direction: column;
     align-items: center;
     min-width: 140px;
+    @include will-animate(transform, background-color);
     transition: all 0.3s ease;
 
     &:hover {
@@ -102,6 +104,13 @@
   align-items: center;
   gap: 24px;
   flex-wrap: wrap;
+
+  @include responsive(hud-mobile) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
 }
 
 .gen-tabs {
@@ -120,6 +129,7 @@
     font-size: 8px;
     cursor: pointer;
     border-radius: 8px;
+    @include will-animate(transform, background-color, color);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     @include pixelated;
 
@@ -140,6 +150,13 @@
   gap: 20px;
   flex: 1;
   justify-content: flex-end;
+
+  @include responsive(hud-mobile) {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 12px;
+  }
 }
 
 .sort-group {
@@ -150,6 +167,11 @@
   padding: 6px 12px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.05);
+
+  @include responsive(hud-mobile) {
+    width: 100%;
+    justify-content: center;
+  }
 
   .sort-label {
     font-size: 8px;
@@ -181,7 +203,14 @@
 
 .search-wrapper {
   position: relative;
-  width: 280px;
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+
+  @include responsive(hud-mobile) {
+    width: 100%;
+    max-width: none;
+  }
   
   .search-icon {
     position: absolute;
@@ -219,21 +248,22 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 16px;
-  padding-bottom: 60px;
+  padding-bottom: 20px;
 }
 
 .pokemon-card {
   position: relative;
   @include glass(rgba(30, 41, 59, 0.3), 12px);
   border-radius: 20px;
-  padding: 10px; // Reduced padding
+  padding: 6px 8px; // Reduced from 10px
   cursor: pointer;
+  @include will-animate(transform, box-shadow);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  height: 170px; // Further reduced height
+  height: 140px; // Reduced from 170px to eliminate dead space
   width: 100%;
   justify-content: space-between;
 
@@ -271,39 +301,40 @@
 
   .dex-number {
     position: absolute;
-    top: 8px;
-    left: 8px;
-    font-size: 8px;
+    top: 12px; // Increased to give more room from the corner
+    left: 12px; // Increased to give more room from the corner
+    font-size: 7px; // Slightly smaller
     color: rgba(255, 255, 255, 0.2);
     font-family: 'Press Start 2P', monospace;
     @include pixelated;
   }
 
   .sprite-container {
-    width: 80px;
-    height: 80px;
+    width: 75px; // Slightly smaller to fit better in tight space
+    height: 75px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 8px; // Reduced margin
+    margin-top: 4px; // Push slightly away from top edge
+    margin-bottom: 2px; // Reduced from 8px
     z-index: 2;
     position: relative;
 
     .pokemon-sprite {
       width: 100%;
       height: 100%;
-      image-rendering: pixelated;
+      @include sprite-render;
       transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      filter: Drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+      filter: Drop-Shadow(0 10px 15px rgba(0,0,0,0.3));
       
       &.silhouette {
-        filter: Brightness(0) Drop-shadow(0 0 1px rgba(255,255,255,0.2));
-        opacity: 0.45; // Increased from 0.2
+        filter: Brightness(0) Drop-Shadow(0 0 1px rgba(255,255,255,0.2));
+        opacity: 1; // Solid black as requested
       }
     }
 
     .unknown-placeholder {
-      font-size: 40px;
+      font-size: 32px; // Smaller to fit
       color: rgba(255, 255, 255, 0.08); // Brighter than the card background
       font-family: 'Press Start 2P', monospace;
       text-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
@@ -315,7 +346,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 24px; // Ensure consistent height
+    min-height: 20px; // Reduced from 24px
+    margin-bottom: 4px; // Close to bottom but not touching
     z-index: 2;
 
     .pokemon-name {
@@ -325,7 +357,7 @@
       text-transform: uppercase;
       text-align: center;
       transition: color 0.3s;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px; // Tighter
       @include pixelated;
     }
   }

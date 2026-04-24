@@ -98,6 +98,11 @@ Abstract input into ACTIONS, not raw keys:
 
 **Why:** Enables multi-platform, rebindable controls.
 
+**Event Interdiction (Vue + Phaser Hybrid):**
+
+- **Rule**: Standardize event blocking in `App.vue` to prevent Phaser from hijacking scroll/wheel events when the user is interacting with UI overlays (modals).
+- **Pattern**: Detect scrollable Vue containers dynamically (recursive search for `overflow: auto/scroll`). If the user is inside a modal or scrollable area, stop propagation to Phaser (`e.stopPropagation()`) but allow the browser to bubble the event for natural scrolling.
+
 ---
 
 ### 4. Performance Budget (60 FPS = 16.67ms)
@@ -114,10 +119,12 @@ Abstract input into ACTIONS, not raw keys:
 **Optimization Priority:**
 
 1. Algorithm (O(n²) → O(n log n))
-2. Batching (reduce draw calls)
-3. Pooling (avoid GC spikes)
-4. LOD (detail by distance)
-5. Culling (skip invisible)
+2. Batching (reduce draw calls via Texture Atlases)
+3. **Sprite Rendering**: Use `@include sprite-render` for all pixel-art game objects to ensure GPU-accelerated sharp scaling.
+4. **SASS Integrity**: Use Capitalized functions (e.g., `Scale()`, `Blur()`, `Translate3D()`) to prevent Dart Sass 2.0 compilation traps.
+5. Pooling (avoid GC spikes)
+6. LOD (detail by distance)
+7. Culling (skip invisible)
 
 ---
 

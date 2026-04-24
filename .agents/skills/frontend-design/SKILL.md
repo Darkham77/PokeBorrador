@@ -186,6 +186,17 @@ All spacing and sizing in multiples of 8:
 - **Vertical Floating Badges**: When dealing with variable lists of icons/tags in small containers (cards/tiles), align them in vertical columns with `position: absolute`. This prevents the "layout stretch" effect where a horizontal list would expand the container's height or cover critical centered content like sprites.
 - **Balanced Info Lanes (Clearance)**: To avoid collision between absolute-positioned side elements (like badges) and centered content (like HP bars or names), do not use unilateral padding. Instead, use a centered "lane" strategy: set a `width` (e.g., 85%) on the info container, apply `margin: 0 auto`, and add balanced horizontal padding. This ensures the content remains centered relative to the card while maintaining safe clearance on both sides.
 - **Decoupled Sprite Effects**: To prevent performance-killing filter stacks (10+ filters), separate the core black border (applied directly to the `img`) from decorative effects like glows or auras (applied to a parent `.sprite-wrapper`). This allows independent management of visual layers without exceeding GPU filter budgets.
+- **Dynamic Arrow Alignment**: When nudging tooltips, use CSS variables to reposition the arrow so it stays aligned with the trigger element's center.
+- **Scroll Architecture (Vicio Standard)**:
+  - **Single Scroll Layer**: NEVER use nested scrollable containers (`overflow-y: auto` inside another `overflow-y: auto`) in modals. This causes event hijacking and dead zones.
+  - **Fixed Header Pattern**: For custom list modals, use a fixed header (`flex: 0 0 auto`) and a scrolling body (`flex: 1 1 auto; overflow-y: auto`).
+  - **Safety Margins**: For absolute-positioned floating buttons (like close "X"), implement a minimum `margin-right: 60px` on adjacent dynamic content to prevent overlap.
+- **Padding Delegation**: Always delegate padding to the innermost scrollable component. Never apply padding to parent layout containers.
+- **Zero Gutter**: Prohibit `scrollbar-gutter: stable`.
+- **Layout Parity Mandate**: When refactoring or restoring components, ensure HTML classes exactly match the SCSS selectors (e.g., `list-item` vs `poke-card`). Inconsistency between template and style breaks layout fidelity.
+- **Dynamic Variable Binding**: Visual effects depending on context (e.g., type-based "glows" or "auras") MUST be implemented by binding dynamic CSS variables (e.g., `:style="{ '--type-color': color }"`) to the parent container.
+- **Anchored UI Context**: Absolute positioned elements (like `mini-badges` or floating status icons) MUST be nested within a `position: relative` container (e.g., `.poke-preview-container`) to prevent them from floating outside their visual target.
+- **Stacked Sprite Separation**: Avoid using negative margins for overlapping sprites with opaque backgrounds in banners (e.g., Daycare). Use `gap` or absolute positioning with clear offsets to maintain legibility.
 
 ## 3.1 Asynchronous Interaction Feedback
 

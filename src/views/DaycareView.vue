@@ -172,9 +172,9 @@ const getGenderClass = (gender) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .daycare-view {
-  min-height: 100vh;
-  background: #0f172a;
   color: #f8fafc;
   font-family: 'Inter', system-ui, sans-serif;
 }
@@ -245,7 +245,7 @@ const getGenderClass = (gender) => {
 }
 
 .daycare-main {
-  padding: 24px;
+  padding: var(--ui-v-gap) var(--ui-h-padding);
   max-width: 800px;
   margin: 0 auto;
 }
@@ -267,9 +267,10 @@ const getGenderClass = (gender) => {
   justify-content: center;
   border: 1px solid #334155;
   transition: all 0.2s;
+  @include will-animate(transform);
   
   &:not(.empty):hover {
-    transform: translateY(-4px);
+    transform: TranslateY(-4px);
     border-color: #475569;
   }
   
@@ -284,7 +285,7 @@ const getGenderClass = (gender) => {
   img {
     width: 96px;
     height: 96px;
-    image-rendering: pixelated;
+    @include sprite-render;
     margin-bottom: 12px;
   }
   h3 {
@@ -348,6 +349,7 @@ const getGenderClass = (gender) => {
   opacity: 0.1;
   filter: Grayscale(100%);
   transition: all 0.5s;
+  @include will-animate(transform);
   
   &.active {
     opacity: 1;

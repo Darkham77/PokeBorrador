@@ -45,7 +45,7 @@ For each lesson in the mapping table:
 
 #### UPDATE existing skill
 
-1. **Mandatory Editor**: ALWAYS use @/skill-creator** as the skill editor. NEVER edit the `SKILL.md` file directly with file-writing tools during this phase; let **@skill-creator manage the update process.
+1. **Mandatory Editor**: ALWAYS use **@/skill-creator** as the skill editor. NEVER edit the `SKILL.md` file directly with file-writing tools during this phase; let **@skill-creator** manage the update process.
 2. Read the target skill's `SKILL.md`.
 3. **Preserve Compatibility**: When adding the lesson, take extreme care NOT to remove or "summarize away" existing rules or lines unless they are explicitly incompatible with the new changes or were requested to be removed. Removing functionality for the sake of brevity is a regression.
 4. Add the lesson as a new rule, guideline, or pattern in the appropriate section.
@@ -53,10 +53,11 @@ For each lesson in the mapping table:
 6. **Optimize Triggering**: Evaluate if the current `description` in the YAML frontmatter still covers the new logic. If necessary, use @/skill-creator to refine the description to ensure proper triggering.
 7. **Never duplicate** information already in the skill or other skills. Use references: `see @/other-skill`.
 8. If the lesson fits better as a reference file or if `SKILL.md` is approaching 500 lines, add it to a `references/` directory.
+9. **Synchronized Updates**: ALWAYS verify and update any associated `references/`, `scripts/`, or diagnostic tools (e.g., Python check scripts) linked to the skill. Ensure all technical documentation and automated rules remain in parity with the new knowledge to avoid architectural contradictions.
 
 #### CREATE new skill
 
-1. **Mandatory Editor**: ALWAYS use @/skill-creator — follow its full process (init, edit, package).
+1. **Mandatory Editor**: ALWAYS use **@/skill-creator** — follow its full process (init, edit, package).
 2. Write "pushy" descriptions in the YAML frontmatter that detail both _what_ the skill does and _specific contexts for when to use it_ to ensure proper triggering.
 3. Use progressive disclosure: keep `SKILL.md` under 500 lines and use `references/` or `scripts/` for larger pieces.
 4. Reference existing skills instead of duplicating (e.g., `see @/add-error-handling`).
@@ -72,3 +73,4 @@ For each lesson in the mapping table:
 - **Cross-references**: Use `@/skill-name` to reference related skills instead of repeating their content.
 - **Preserve structure**: Follow the existing formatting conventions of each target skill (numbered lists, tables, code blocks).
 - **Present the plan**: Show the user the Lessons List and mapping table before executing Phase 3. Get approval first.
+- **Parity Mandate**: Every skill update MUST be reflected in its entire ecosystem. If a rule changes, the corresponding documentation in `references/` and validation logic in `scripts/` MUST be updated in the same turn.

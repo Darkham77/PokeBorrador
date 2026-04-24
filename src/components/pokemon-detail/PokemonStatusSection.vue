@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -27,20 +28,20 @@ const getAbilityDesc = (ability) => {
 
 const natureStyle = computed(() => {
   const info = getNatureInfo(p.value.nature)
-  if (!info.up) return { color: '#86868b' } // Neutral gray
+  if (!info.up) return { color: '$gray' } // Neutral gray
   
   const colors = {
-    'Ataque': '#ff453a',
-    'Defensa': '#ffd60a',
+    'Ataque': '$red',
+    'Defensa': '$yellow',
     'At. Esp': '#3B8BFF',
-    'Def. Esp': '#32d74b',
-    'Velocidad': '#bf5af2'
+    'Def. Esp': '$green',
+    'Velocidad': '$purple'
   }
-  return { color: colors[info.up] || '#fff' }
+  return { color: colors[info.up] || '$white' }
 })
 
 const abilityStyle = computed(() => ({
-  color: '#32d74b' // Special interactive green
+  color: '$green' // Special interactive green
 }))
 </script>
 
@@ -87,7 +88,12 @@ const abilityStyle = computed(() => ({
 
     <!-- General Info Grid -->
     <div class="info-grid">
-      <div class="info-card nature-card tooltip-wrap">
+      <PVTooltip
+        title="NATURALEZA"
+        :description="getNatureInfo(p.nature).desc"
+        position="top"
+        class="info-card nature-card"
+      >
         <span class="label">Naturaleza</span>
         <div class="value-wrap">
           <span
@@ -95,13 +101,14 @@ const abilityStyle = computed(() => ({
             :style="natureStyle"
           >{{ p.nature || 'Serio' }}</span>
         </div>
-        <div class="tooltip-box">
-          <span class="tooltip-title">NATURALEZA</span>
-          <p>{{ getNatureInfo(p.nature).desc }}</p>
-        </div>
-      </div>
+      </PVTooltip>
 
-      <div class="info-card ability-card tooltip-wrap">
+      <PVTooltip
+        title="HABILIDAD"
+        :description="getAbilityDesc(p.ability)"
+        position="top"
+        class="info-card ability-card"
+      >
         <span class="label">Habilidad</span>
         <div class="value-wrap">
           <span
@@ -109,19 +116,17 @@ const abilityStyle = computed(() => ({
             :style="abilityStyle"
           >{{ p.ability || '—' }}</span>
         </div>
-        <div class="tooltip-box">
-          <span class="tooltip-title">HABILIDAD</span>
-          <p>{{ getAbilityDesc(p.ability) }}</p>
-        </div>
-      </div>
-      <div class="info-card vigor-card tooltip-wrap">
+      </PVTooltip>
+
+      <PVTooltip
+        title="VIGOR"
+        description="Determina cuántas veces puede reproducirse este Pokémon en la Guardería. Se consume al criar y NO se recupera."
+        position="top"
+        class="info-card vigor-card"
+      >
         <span class="label">Vigor</span>
         <span class="val vigor-val">⚡{{ p.vigor || 0 }}</span>
-        <div class="tooltip-box">
-          <span class="tooltip-title">VIGOR</span>
-          <p>Determina cuántas veces puede reproducirse este Pokémon en la Guardería. Se consume al criar y NO se recupera.</p>
-        </div>
-      </div>
+      </PVTooltip>
     </div>
   </div>
 </template>
@@ -163,6 +168,7 @@ const abilityStyle = computed(() => ({
   height: 100%; 
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 10px currentColor;
+  @include will-animate(width);
 }
 .hp-high { background: linear-gradient(90deg, #10b981, #34d399); color: #10b981; }
 .hp-mid { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #f59e0b; }
@@ -171,6 +177,7 @@ const abilityStyle = computed(() => ({
 .exp-fill { 
   background: linear-gradient(90deg, #8b5cf6, #a855f7); 
   color: #8b5cf6;
+  @include will-animate(width);
 }
 
 .info-grid {
@@ -187,6 +194,7 @@ const abilityStyle = computed(() => ({
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: transform 0.2s;
+  cursor: help;
 
   &:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -220,54 +228,6 @@ const abilityStyle = computed(() => ({
 .vigor-val { 
   color: var(--yellow) !important; 
   text-shadow: 0 0 10px rgba(255, 214, 10, 0.3) !important;
-}
-
-/* Tooltip System (Global Teleported) */
-.vicio-global-tooltip {
-  position: fixed;
-  transform: translateX(-50%);
-  background: rgba(10, 15, 30, 0.98); // Deep glass
-  backdrop-filter: Blur(20px);
-  border: 1px solid rgba(255,255,255,0.15);
-  padding: 40px;
-  max-height: 85vh;
-  min-height: 0; // Prevent flex collapse
-  overflow-y: auto;
-  z-index: var(--z-tooltip); // Standardized layer
-  box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-  pointer-events: none;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 8px solid transparent;
-    border-bottom-color: rgba(255,255,255,0.15);
-  }
-}
-
-.tooltip-content strong { 
-  font-family: 'Press Start 2P', monospace;
-  color: var(--yellow); 
-  display: block; 
-  margin-bottom: 10px; 
-  font-size: 8px; 
-  @include pixelated;
-}
-.tooltip-content p { font-size: 11px; color: #ddd; line-height: 1.5; margin: 0; }
-.up { color: #34d399; font-weight: bold; } 
-.down { color: #f87171; font-weight: bold; } 
-.neutral { color: #94a3b8; }
-
-/* Transition */
-.fade-v-enter-active, .fade-v-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
-}
-.fade-v-enter-from, .fade-v-leave-to {
-  opacity: 0;
-  transform: translateX(-50%) translateY(-10px);
 }
 
 .mt-12 { margin-top: 12px; }

@@ -61,18 +61,20 @@ const bannerStyle = computed(() => ({
           <div class="pc-banner-icon">
             {{ rivalEventIcon }}
           </div>
-          <div class="pc-banner-content">
+          <div class="pc-banner-content-wrapper">
             <div class="pc-banner-title">
               EVENTO
             </div>
-            <div class="pc-banner-text">
-              <span
-                v-if="rivalEventActive && rivalEventText.includes(':')"
-                class="text-highlight"
-              >
-                {{ rivalEventText.split(':')[0] }}
-              </span>
-              {{ rivalEventActive ? (rivalEventText.includes(':') ? rivalEventText.split(':')[1] : rivalEventText) : 'No hay eventos activos' }}
+            <div class="pc-banner-inner-flex">
+              <div class="pc-banner-text">
+                <span
+                  v-if="rivalEventActive && rivalEventText.includes(':')"
+                  class="text-highlight"
+                >
+                  {{ rivalEventText.split(':')[0] }}
+                </span>
+                {{ rivalEventActive ? (rivalEventText.includes(':') ? rivalEventText.split(':')[1] : rivalEventText) : 'No hay eventos activos' }}
+              </div>
             </div>
           </div>
         </div>
@@ -85,33 +87,42 @@ const bannerStyle = computed(() => ({
           <div class="pc-banner-icon">
             📜
           </div>
-          <div class="pc-banner-content">
+          <div class="pc-banner-content-wrapper">
             <div class="pc-banner-title">
               GUARDERÍA
             </div>
-            <div class="pc-banner-text">
-              ¡Tenés <span>{{ missionsRemaining }}</span> misiones por hacer!
-            </div>
-          </div>
-          <div
-            v-if="missionSprites.length"
-            class="pc-banner-spawns"
-          >
-            <div
-              v-for="(spriteId, i) in missionSprites"
-              :key="i"
-              class="sprite-container"
-            >
-              <img
-                :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
-                class="pixelated"
-                @error="$event.target.style.display = 'none'; $event.target.nextSibling.style.display = 'flex'"
-              >
+            <div class="pc-banner-inner-flex">
+              <div class="pc-banner-text">
+                ¡Tenés <span>{{ missionsRemaining }}</span> misiones por hacer!
+              </div>
               <div
-                class="sprite-fallback"
-                style="display: none;"
+                v-if="missionSprites.length"
+                class="pc-banner-spawns"
               >
-                👤
+                <!-- Limit to 3 sprites + counter if more -->
+                <div
+                  v-for="(spriteId, i) in missionSprites.slice(0, 3)"
+                  :key="i"
+                  class="sprite-container"
+                >
+                  <img
+                    :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
+                    class="pixelated"
+                    @error="$event.target.style.display = 'none'; $event.target.nextSibling.style.display = 'flex'"
+                  >
+                  <div
+                    class="sprite-fallback"
+                    style="display: none;"
+                  >
+                    👤
+                  </div>
+                </div>
+                <div 
+                  v-if="missionSprites.length > 3" 
+                  class="sprite-counter"
+                >
+                  +{{ missionSprites.length - 3 }}
+                </div>
               </div>
             </div>
           </div>
@@ -125,25 +136,34 @@ const bannerStyle = computed(() => ({
           <div class="pc-banner-icon">
             🏆
           </div>
-          <div class="pc-banner-content">
+          <div class="pc-banner-content-wrapper">
             <div class="pc-banner-title">
               GIMNASIOS
             </div>
-            <div class="pc-banner-text">
-              Tenés <span>{{ gymRematches }}</span> gimnasios por derrotar
+            <div class="pc-banner-inner-flex">
+              <div class="pc-banner-text">
+                Tenés <span>{{ gymRematches }}</span> gimnasios por derrotar
+              </div>
+              <div
+                v-if="gymSprites.length"
+                class="pc-banner-spawns"
+              >
+                <!-- Limit to 4 sprites + counter -->
+                <img
+                  v-for="(spriteId, i) in gymSprites.slice(0, 4)"
+                  :key="i"
+                  :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
+                  class="pixelated"
+                  @error="e => e.target.style.display = 'none'"
+                >
+                <div 
+                  v-if="gymSprites.length > 4" 
+                  class="sprite-counter"
+                >
+                  +{{ gymSprites.length - 4 }}
+                </div>
+              </div>
             </div>
-          </div>
-          <div
-            v-if="gymSprites.length"
-            class="pc-banner-spawns"
-          >
-            <img
-              v-for="(spriteId, i) in gymSprites"
-              :key="i"
-              :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
-              class="pixelated"
-              @error="e => e.target.style.display = 'none'"
-            >
           </div>
         </div>
 
@@ -155,12 +175,14 @@ const bannerStyle = computed(() => ({
           <div class="pc-banner-icon">
             🥚
           </div>
-          <div class="pc-banner-content">
+          <div class="pc-banner-content-wrapper">
             <div class="pc-banner-title">
               CRIANZA
             </div>
-            <div class="pc-banner-text">
-              Tenés <span>{{ eggCount }}</span> huevos esperando
+            <div class="pc-banner-inner-flex">
+              <div class="pc-banner-text">
+                Tenés <span>{{ eggCount }}</span> huevos esperando
+              </div>
             </div>
           </div>
         </div>
@@ -170,6 +192,8 @@ const bannerStyle = computed(() => ({
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .map-view-container {
   padding: 0 0 10px;
   width: 100%;
@@ -295,10 +319,9 @@ const bannerStyle = computed(() => ({
 }
 
 .pc-banner {
-  // GLASSMORPHISM ENHANCED
   @include glass-solid(rgba(15, 23, 42, 0.95));
   border-radius: 16px;
-  padding: 16px;
+  padding: 12px 16px; // Reduced vertical padding
   display: flex;
   align-items: center;
   gap: 16px;
@@ -307,7 +330,6 @@ const bannerStyle = computed(() => ({
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 85px;
   
-  // MULTI-LAYER REFLECTIONS & CONTRAST
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 
     0 8px 30px rgba(0, 0, 0, 0.5), 
@@ -329,7 +351,6 @@ const bannerStyle = computed(() => ({
     z-index: 2;
   }
 
-  // GLOW EFFECT ON THE CONTOUR
   &::after {
     content: '';
     position: absolute;
@@ -353,9 +374,10 @@ const bannerStyle = computed(() => ({
   border-radius: 12px;
   font-size: 24px;
   flex-shrink: 0;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
 }
 
-.pc-banner-content {
+.pc-banner-content-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -369,16 +391,27 @@ const bannerStyle = computed(() => ({
   color: var(--gray);
   text-transform: uppercase;
   @include pixelated;
+  letter-spacing: 1px;
+  white-space: normal; // Allow wrapping if extremely tight
+}
+
+.pc-banner-inner-flex {
+  display: flex;
+  flex-wrap: wrap; // CRITICAL FOR FLUID LAYOUT
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 
 .pc-banner-text {
-  font-size: 13px; // Matched legacy size
+  font-size: 13px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.4;
   color: $white;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 1 1 180px; 
+  min-width: 0;
+  white-space: normal; // Ensure wrapping
+  word-break: break-word;
   
   span { color: var(--yellow); }
   .text-highlight { 
@@ -386,48 +419,65 @@ const bannerStyle = computed(() => ({
     font-family: 'Press Start 2P', monospace;
     font-size: 9px;
     display: block;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
     @include pixelated;
+    white-space: normal;
   }
 }
 
 .pc-banner-spawns {
   display: flex;
   align-items: center;
-  margin-top: 4px;
-  min-height: 48px;
+  margin-left: auto; // Push to right if sharing row
+  min-height: 32px;
+  flex-shrink: 0;
+  gap: 8px;
 
   .sprite-container {
     position: relative;
-    width: 48px;
-    height: 48px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    &:not(:first-child) { margin-left: -15px; }
     filter: Drop-Shadow(0 4px 6px rgba(0,0,0,0.4));
   }
 
   img {
-    width: 48px; 
-    height: 48px;
+    width: 32px; 
+    height: 32px;
     object-fit: contain;
-    @include pixelated;
+    @include sprite-render;
     transition: none !important;
     transform: TranslateZ(0);
   }
 
   .sprite-fallback {
-    width: 48px;
-    height: 48px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 14px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
+    border-radius: 6px;
     color: $muted;
+  }
+
+  .sprite-counter {
+    margin-left: 4px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--yellow);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 217, 61, 0.2);
+    @include pixelated;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
   }
 }
 

@@ -1,4 +1,6 @@
 <script setup>
+import PVTooltip from '@/components/common/PVTooltip.vue'
+
 defineProps({
   label: { type: String, required: true },
   value: { type: Number, required: true },
@@ -22,6 +24,18 @@ const getStatGrade = (iv) => {
   if (iv >= 5) return { label: 'C', color: '#f59e0b' }
   return { label: 'D', color: '#94a3b8' }
 }
+
+const getStatLabel = (key) => {
+  const map = {
+    'HP': { name: 'Puntos de Salud', desc: 'Determina cuánto daño puede recibir el Pokémon antes de debilitarse.' },
+    'ATK': { name: 'Ataque Físico', desc: 'Aumenta el daño de los movimientos de categoría Física.' },
+    'DEF': { name: 'Defensa Física', desc: 'Reduce el daño recibido por movimientos de categoría Física.' },
+    'SPA': { name: 'Ataque Especial', desc: 'Aumenta el daño de los movimientos de categoría Especial.' },
+    'SPD': { name: 'Defensa Especial', desc: 'Reduce el daño recibido por movimientos de categoría Especial.' },
+    'SPE': { name: 'Velocidad', desc: 'Determina qué Pokémon ataca primero en cada turno.' }
+  }
+  return map[key] || { name: key, desc: '' }
+}
 </script>
 
 <template>
@@ -30,7 +44,13 @@ const getStatGrade = (iv) => {
     :class="['mode-' + mode]"
   >
     <div class="stat-info">
-      <span class="stat-label pixelated">{{ label }}</span>
+      <PVTooltip
+        :title="getStatLabel(label).name"
+        :description="getStatLabel(label).desc"
+        position="left"
+      >
+        <span class="stat-label pixelated">{{ label }}</span>
+      </PVTooltip>
       <span class="stat-value pixelated">{{ value }}</span>
     </div>
 
@@ -84,7 +104,7 @@ const getStatGrade = (iv) => {
 .vicio-stat-bar-row {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   width: 100%;
   margin-bottom: 16px;
   position: relative;
@@ -181,8 +201,8 @@ const getStatGrade = (iv) => {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-width: 100px;
-  justify-content: flex-end;
+  min-width: 45px;
+  justify-content: center;
 
   @media (max-width: 480px) {
     position: absolute;

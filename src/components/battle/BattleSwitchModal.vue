@@ -1,4 +1,8 @@
 <script setup>
+/**
+ * BattleSwitchModal
+ * Standardized modal for switching pokemon during battle.
+ */
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
@@ -6,6 +10,13 @@ import { useLivePvPStore } from '@/stores/livePvP'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
+import BaseModal from '@/components/common/BaseModal.vue'
+
+const props = defineProps({
+  show: { type: Boolean, default: false }
+})
+
+const emit = defineEmits(['close'])
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
@@ -13,7 +24,6 @@ const livePvP = useLivePvPStore()
 const uiStore = useUIStore()
 const { getHpColor } = useBattleVisuals()
 
-const isOpen = computed(() => uiStore.isBattleSwitchOpen)
 const isForced = computed(() => uiStore.isBattleSwitchForced || livePvP.battleState.phase === 'faint_switch')
 const team = computed(() => gameStore.state.team || [])
 const activePoke = computed(() => {
@@ -25,7 +35,7 @@ const activePoke = computed(() => {
 
 const close = () => {
   if (isForced.value) return // Cant close if forced to switch
-  uiStore.isBattleSwitchOpen = false
+  emit('close')
 }
 
 const handleSwitch = async (index) => {
@@ -34,212 +44,199 @@ const handleSwitch = async (index) => {
   } else {
     await battleStore.executeSwitch(index, isForced.value)
   }
-  uiStore.isBattleSwitchOpen = false
+  emit('close')
   uiStore.isBattleSwitchForced = false
 }
 </script>
 
 <template>
-  <Transition name="fade">
-    <div
-      v-if="isOpen"
-      class="modal-overlay"
-      @click.self="close"
-    >
-      <div class="switch-modal-card">
-        <div class="modal-header">
-          <div class="icon-header">
-            🔄
-          </div>
-          <h2>{{ isForced ? '¡ELEGÍ UN POKÉMON!' : 'CAMBIAR POKÉMON' }}</h2>
-          <p v-if="!isForced">
-            ¿A quién quieres enviar al combate?
-          </p>
-          <p v-else>
-            Tu Pokémon ha caído. ¡Elige al siguiente!
-          </p>
-        </div>
+  <BaseModal
+    :show="show"
+    :title="isForced ? '¡ELIGE UN POKÉMON!' : 'CAMBIAR POKÉMON'"
+    title-color="var(--purple-light)"
+    header-background="#1a1c2e"
+    max-width="440px"
+    variant="retro"
+    :prevent-close="isForced"
+    :show-close-button="!isForced"
+    @close="close"
+  >
+    <div class="switch-modal-body">
+      <p class="switch-help">
+        {{ isForced ? 'Tu Pokémon ha caído. ¡Elige al siguiente!' : '¿A quién quieres enviar al combate?' }}
+      </p>
 
-        <div class="team-list">
-          <template
-            v-for="(p, index) in team"
-            :key="p.uid || index"
+      <div class="team-list custom-scrollbar-vicio">
+        <template
+          v-for="(p, index) in team"
+          :key="p.uid || index"
+        >
+          <div 
+            v-if="p.uid !== activePoke?.uid && p.hp > 0"
+            class="target-row-vicio"
+            @click="handleSwitch(index)"
           >
-            <div 
-              v-if="p.uid !== activePoke?.uid && p.hp > 0"
-              class="target-row"
-              @click="handleSwitch(index)"
-            >
-              <div class="poke-sprite">
-                <img
-                  :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
-                  :alt="p.name"
-                  @error="e => e.target.style.display = 'none'"
-                >
+            <div class="poke-sprite-box">
+              <img
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
+                :alt="p.name"
+                @error="e => e.target.style.display = 'none'"
+              >
+            </div>
+            
+            <div class="poke-info">
+              <div class="name-line">
+                <span class="p-name">{{ p.name }}</span>
+                <span class="p-lv">Nv.{{ p.level }}</span>
               </div>
               
-              <div class="poke-info">
-                <div class="name-line">
-                  <span class="p-name">{{ p.name }}</span>
-                  <span class="p-lv">Nv.{{ p.level }}</span>
-                </div>
-                
-                <div class="hp-bar-container">
-                  <div 
-                    class="hp-bar-fill" 
-                    :style="{ 
-                      width: (p.hp / p.maxHp * 100) + '%',
-                      backgroundColor: getHpColor(p.hp / p.maxHp * 100)
-                    }"
-                  />
-                </div>
-                
-                <div class="hp-text">
-                  {{ p.hp }} / {{ p.maxHp }} HP
-                </div>
+              <div class="hp-bar-container">
+                <div 
+                  class="hp-bar-fill" 
+                  :style="{ 
+                    width: (p.hp / p.maxHp * 100) + '%',
+                    backgroundColor: getHpColor(p.hp / p.maxHp * 100)
+                  }"
+                />
               </div>
-
-              <div class="select-hint">
-                ¡IR!
+              
+              <div class="hp-text">
+                {{ p.hp }} / {{ p.maxHp }} HP
               </div>
             </div>
-          </template>
-        </div>
 
-        <button
-          v-if="!isForced"
-          class="cancel-btn"
-          @click="close"
-        >
-          CANCELAR
-        </button>
+            <div class="select-hint">
+              ¡IR!
+            </div>
+          </div>
+        </template>
       </div>
     </div>
-  </Transition>
+
+    <template #footer>
+      <button
+        v-if="!isForced"
+        class="btn-vicio-secondary btn-vicio-full"
+        @click="close"
+      >
+        CANCELAR
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: Blur(8px);
-  -webkit-backdrop-filter: Blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  transform: translateZ(0);
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
+.switch-modal-body {
+  padding: 8px 0;
 }
 
-.switch-modal-card {
-  background: var(--card);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  width: 100%;
-  max-width: 420px;
-  padding: 24px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
-  animation: slideUp 0.3s ease-out;
-}
-
-.modal-header {
-  text-align: center;
+.switch-help {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  line-height: 1.5;
   margin-bottom: 24px;
 }
-
-.icon-header { font-size: 32px; margin-bottom: 8px; }
-
-h2 {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-  color: var(--purple);
-  margin: 0 0 10px 0;
-  line-height: 1.4;
-}
-
-p { color: var(--gray); font-size: 11px; margin: 0; }
 
 .team-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
   max-height: 400px;
-  overflow-y: auto;
-  min-height: 0;
   padding-right: 4px;
+  @include smooth-scroll;
 }
 
-.target-row {
+.target-row-vicio {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   padding: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  position: relative;
+
+  &:hover {
+    background: rgba(157, 78, 221, 0.1);
+    border-color: var(--purple-light);
+    transform: translateX(4px);
+    
+    .p-name { color: var(--purple-light); }
+    .select-hint { opacity: 1; }
+  }
 }
 
-.target-row:hover {
-  background: rgba(199, 125, 255, 0.1);
-  border-color: rgba(199, 125, 255, 0.3);
-  transform: translateX(4px);
-}
-
-.poke-sprite img {
+.poke-sprite-box {
   width: 52px;
   height: 52px;
-  image-rendering: pixelated;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  img {
+    width: 48px;
+    height: 48px;
+    @include sprite-render;
+  }
 }
 
 .poke-info { flex: 1; }
-.name-line { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.p-name { font-weight: 700; font-size: 15px; }
-.p-lv { font-size: 11px; color: var(--gray); }
+
+.name-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.p-name {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
+  color: $white;
+  transition: color 0.2s;
+  @include pixelated;
+}
+
+.p-lv {
+  font-size: 8px;
+  color: var(--gray);
+  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
+}
 
 .hp-bar-container {
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
-.hp-bar-fill { height: 100%; transition: width 0.5s ease; }
-.hp-text { font-size: 10px; color: var(--gray); font-family: monospace; }
+
+.hp-bar-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.hp-text {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.3);
+  font-family: monospace;
+}
 
 .select-hint {
-  font-family: 'Press Start 2P', monospace;
+  font-family: 'Press Start 2P', cursive;
   font-size: 7px;
-  color: var(--purple);
+  color: var(--purple-light);
   opacity: 0;
   transition: opacity 0.2s;
-}
-
-.target-row:hover .select-hint { opacity: 1; }
-
-.cancel-btn {
-  width: 100%;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: none;
-  border-radius: 16px;
-  color: var(--gray);
-  font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
-  cursor: pointer;
-}
-
-.cancel-btn:hover { background: rgba(255, 255, 255, 0.1); color: white; }
-
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-
-@keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  @include pixelated;
 }
 </style>

@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import PVTooltip from '@/components/common/PVTooltip.vue'
+import { TAG_DEFINITIONS, POKEMON_BADGES } from '@/logic/constants/tags'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -69,20 +71,11 @@ function getGenderClass(gender) {
   return 'gender-none'
 }
 
-const ALL_TAGS_MAP = {
-  'fav': { icon: '⭐', color: '#ffcc00' },
-  'breed': { icon: '❤️', color: '#ff4d4d' },
-  'competitive': { icon: '🏆', color: '#32d74b' },
-  'box': { icon: '📦', color: '#0a84ff' },
-  'trade': { icon: '🔄', color: '#bf5af2' },
-  'iv31': { icon: '31', color: '#FFD93D' }
-}
-
 const activeTags = computed(() => {
   if (!props.pokemon.tags) return []
   return props.pokemon.tags.map(id => ({
     id,
-    ...(ALL_TAGS_MAP[id] || { icon: '?', color: '#ccc' })
+    ...(TAG_DEFINITIONS[id] || TAG_DEFINITIONS[id === 'competitive' ? 'comp' : ''] || { icon: '?', color: '#ccc', label: 'TAG', desc: 'Etiqueta personalizada.' })
   }))
 })
 
@@ -104,20 +97,30 @@ const hasBadges = computed(() => {
       >
         <!-- Column 1: Dynamic Tags -->
         <div class="tags-col">
-          <div
+          <PVTooltip
             v-for="tag in activeTags"
             :key="tag.id"
-            class="tag-badge"
-            :style="{ color: tag.color }"
+            :title="tag.label"
+            :description="tag.desc"
+            position="top"
           >
-            {{ tag.icon }}
-          </div>
+            <div
+              class="tag-badge"
+              :style="{ color: tag.color }"
+            >
+              {{ tag.icon }}
+            </div>
+          </PVTooltip>
 
           <!-- Shiny Indicator (if not in tags) -->
-          <span
-            v-if="pokemon.isShiny && !pokemon.tags?.includes('fav')"
-            class="shiny-icon"
-          >✨</span>
+          <PVTooltip
+            v-if="pokemon.isShiny"
+            :title="POKEMON_BADGES.shiny.label"
+            :description="POKEMON_BADGES.shiny.desc"
+            position="top"
+          >
+            <span class="shiny-icon">{{ POKEMON_BADGES.shiny.icon }}</span>
+          </PVTooltip>
         </div>
 
         <!-- Column 2: Held Item -->
@@ -125,12 +128,15 @@ const hasBadges = computed(() => {
           v-if="pokemon.heldItem"
           class="items-col"
         >
-          <div
-            class="item-badge"
-            title="Objeto Equipado"
+          <PVTooltip
+            :title="POKEMON_BADGES.heldItem.label"
+            :description="`${POKEMON_BADGES.heldItem.desc} (${pokemon.heldItem})`"
+            position="top"
           >
-            <span class="icon">🎒</span>
-          </div>
+            <div class="item-badge">
+              <span class="icon">{{ POKEMON_BADGES.heldItem.icon }}</span>
+            </div>
+          </PVTooltip>
         </div>
       </div>
       <div
@@ -310,16 +316,26 @@ const hasBadges = computed(() => {
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: Blur(10px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    @include gpu-layer;
   }
 
-  .item-badge .icon { font-size: 14px; }
-  .tag-badge { 
-    font-size: 14px; 
-    font-weight: 900;
-    text-shadow: 0 0 5px currentColor;
+  .item-badge .icon, .tag-badge, .shiny-icon {
+    font-size: 14px;
+    transition: all 0.2s ease;
+    text-shadow: none;
     @include pixelated;
+
+    &:hover {
+      text-shadow: 0 0 8px currentColor;
+      transform: Scale(1.1);
+    }
   }
-  .shiny-icon { font-size: 14px; color: var(--yellow); }
+
+  .tag-badge { 
+    font-weight: 900;
+  }
+  
+  .shiny-icon { color: var(--yellow); }
 }
 
 .badges-spacer { height: 24px; }
@@ -423,6 +439,7 @@ const hasBadges = computed(() => {
   .hp-bar-inner {
     height: 100%;
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    @include will-animate(width);
     
     &.hp-high { background: linear-gradient(90deg, #22c55e, #86efac); }
     &.hp-mid { background: linear-gradient(90deg, #eab308, #fde047); }

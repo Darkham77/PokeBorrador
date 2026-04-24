@@ -4,7 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useBoxStore } from '@/stores/box'
 import { useUIStore } from '@/stores/ui'
 import { useInventoryStore } from '@/stores/inventory'
-import TeamPokemonCard from './TeamPokemonCard.vue'
+import UnifiedTeamSlot from './UnifiedTeamSlot.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
@@ -95,7 +95,7 @@ const onDrop = (e, targetIndex) => {
     class="team-grid-container"
     @dragover.prevent
   >
-    <TeamPokemonCard
+    <UnifiedTeamSlot
       v-for="(pokemon, i) in team"
       :key="i"
       :pokemon="pokemon"

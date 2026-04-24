@@ -166,6 +166,8 @@ const handleMoveSelection = (moveIdx) => {
 
 <style lang="scss" scoped>
 @use "sass:string";
+@use "@/styles/core/tools" as *;
+
 .pvp-screen-wrapper {
   position: fixed;
   inset: 0;
@@ -195,6 +197,7 @@ const handleMoveSelection = (moveIdx) => {
   backdrop-filter: Blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 24px;
+  @include gpu-layer;
 }
 
 .arena-container {
@@ -235,7 +238,7 @@ const handleMoveSelection = (moveIdx) => {
   }
 
   .trainer-sprite {
-    image-rendering: pixelated;
+    @include sprite-render;
     transform: Scale(1.5);
     margin: 20px 0;
   }
@@ -257,7 +260,7 @@ const handleMoveSelection = (moveIdx) => {
   position: absolute;
   top: 20px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: TranslateX(-50%);
   z-index: 10;
   background: rgba(0, 0, 0, 0.6);
   padding: 10px 20px;
@@ -287,6 +290,7 @@ const handleMoveSelection = (moveIdx) => {
   gap: 20px;
   color: $white;
   z-index: 20;
+  @include gpu-layer;
 
   span { font-size: 10px; }
 }
@@ -309,9 +313,9 @@ const handleMoveSelection = (moveIdx) => {
 }
 
 @keyframes pulse {
-  0% { transform: translateX(-50%) Scale(1); }
-  50% { transform: translateX(-50%) Scale(1.1); }
-  100% { transform: translateX(-50%) Scale(1); }
+  0% { transform: TranslateX(-50%) Scale(1); }
+  50% { transform: TranslateX(-50%) Scale(1.1); }
+  100% { transform: TranslateX(-50%) Scale(1); }
 }
 
 @keyframes spin {

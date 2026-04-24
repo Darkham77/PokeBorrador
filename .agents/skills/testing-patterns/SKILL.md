@@ -161,6 +161,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | Fast tests | Run frequently |
 | Descriptive names | Self-documenting |
 | Clean up | Avoid side effects |
+| **Prop-Based UI Testing** | For modern components (e.g., `PVTooltip`), verify **Props/Attributes** instead of searching for nested DOM elements. This avoids breakage when elements are **Teleported** or refactored internally. |
 
 ---
 

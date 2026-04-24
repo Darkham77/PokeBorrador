@@ -83,14 +83,14 @@ const isMax = computed(() => criminality.value >= 100)
   font-size: 8px;
   color: #ef4444;
   margin-bottom: 8px;
-  text-shadow: 1px 1px #000, 0 0 5px rgba(239, 68, 68, 0.4);
+  text-shadow: 1px 1px $black, 0 0 5px rgba(239, 68, 68, 0.4);
   font-family: 'Press Start 2P', cursive;
 }
 
 .bar-bg {
   width: 12px;
   height: 200px;
-  background: #000;
+  background: $black;
   border: 2px solid #333;
   border-radius: 10px;
   display: flex;
@@ -112,7 +112,7 @@ const isMax = computed(() => criminality.value >= 100)
   font-size: 10px;
   font-weight: 800;
   color: #ef4444;
-  text-shadow: 1px 1px #000, 0 0 5px rgba(239, 68, 68, 0.4);
+  text-shadow: 1px 1px $black, 0 0 5px rgba(239, 68, 68, 0.4);
 }
 
 .blinking {

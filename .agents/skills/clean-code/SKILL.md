@@ -97,6 +97,7 @@ priority: CRITICAL
 | God functions | Split by responsibility |
 | Empty rulesets | Remove blocks containing only comments |
 | **Lint Warnings** | Achieve **Zero-Warning** state: prefix unused variables with `_` (e.g., `_slotIndex`), provide default values for all optional props, and remove unused prop assignments in `<script setup>`. |
+| **Useless Assignments** | Avoid initializing a variable with a value that is immediately overwritten without being read. Combine initialization with the final calculation to satisfy `no-useless-assignment` lint rules. |
 
 ---
 
@@ -121,6 +122,8 @@ File to edit: UserService.ts
 
 > 🔴 **Rule:** Edit the file + all dependent files in the SAME task.
 > 🔴 **Never leave broken imports or missing updates.**
+> 🔴 **Structural Integrity**: When modifying `.vue` files, double-verify that `<script setup>` or closing tags are not accidentally truncated during partial replacements. If the file is complex, prefer a full `write_to_file`.
+> 🔴 **CSS Consolidation**: In shared/generic components (e.g., `BaseModal`, `UnifiedCard`), avoid using multiple classes that define overlapping properties (like `height`, `max-height`). Consolidate styles into a single master class and use context-based nesting (e.g., `.type-center &`) to prevent specificity wars and layout bugs.
 
 ---
 

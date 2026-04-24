@@ -1,13 +1,18 @@
 <script setup>
+/**
+ * BreedingPickerModal
+ * Standardized modal for selecting parents in daycare.
+ */
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBreedingStore } from '@/stores/breeding'
 import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const props = defineProps({
-  isOpen: Boolean,
+  show: { type: Boolean, default: false },
   mode: { type: String, default: 'daycare' }, // 'daycare' or 'mission'
   slotIdx: { type: Number, default: 0 },
   missionIdx: { type: Number, default: -1 }
@@ -84,39 +89,32 @@ const getSprite = (id, shiny) => {
 </script>
 
 <template>
-  <div
-    v-if="isOpen"
-    class="picker-overlay"
-    @click.self="emit('close')"
+  <BaseModal
+    :show="show"
+    :title="mode === 'daycare' ? `SLOT ${slotIdx + 1}` : 'MISIÓN GUARDERÍA'"
+    title-color="var(--purple-light)"
+    header-background="#1a1c2e"
+    max-width="500px"
+    variant="retro"
+    padding="raw"
+    @close="emit('close')"
   >
-    <div class="picker-container">
-      <div class="picker-header">
-        <h3 v-if="mode === 'daycare'">
-          SELECCIONAR PARA SLOT {{ slotIdx + 1 }}
-        </h3>
-        <h3 v-else>
-          ENTREGAR POKÉMON PARA MISIÓN
-        </h3>
-        <button
-          class="close-btn"
-          @click="emit('close')"
-        >
-          ✕
-        </button>
-      </div>
-
+    <div class="picker-content">
       <div class="picker-search">
-        <input
-          v-model="searchQuery"
-          placeholder="Buscar por nombre..."
-        >
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            v-model="searchQuery"
+            placeholder="Buscar por nombre..."
+          >
+        </div>
       </div>
 
-      <div class="pokemon-grid">
+      <div class="pokemon-grid custom-scrollbar-vicio">
         <div 
           v-for="p in filteredPokemon" 
           :key="p.uid" 
-          class="poke-card"
+          class="poke-card-vicio"
           @click="selectPokemon(p)"
         >
           <div class="sprite-box">
@@ -129,7 +127,7 @@ const getSprite = (id, shiny) => {
           <div class="poke-info">
             <div class="top-row">
               <span class="name">{{ p.name }}</span>
-              <span class="lv">Lvl.{{ p.level }}</span>
+              <span class="lv">Nv.{{ p.level }}</span>
             </div>
             <div class="genetics">
               IVs: {{ p.ivs.hp }}/{{ p.ivs.atk }}/{{ p.ivs.def }}/{{ p.ivs.spa }}/{{ p.ivs.spd }}/{{ p.ivs.spe }}
@@ -151,7 +149,7 @@ const getSprite = (id, shiny) => {
                 </span>
               </template>
               <template v-else>
-                <span class="waiting-status">Pendiente de pareja</span>
+                <span class="waiting-status">Sin pareja</span>
               </template>
             </div>
           </div>
@@ -163,178 +161,182 @@ const getSprite = (id, shiny) => {
             ⚡ {{ p.vigor }}
           </div>
         </div>
+        
         <div
           v-if="filteredPokemon.length === 0"
           class="empty-state"
         >
-          No hay Pokémon que coincidan.
+          <div class="empty-icon">
+            📭
+          </div>
+          <p>No hay Pokémon disponibles</p>
         </div>
       </div>
-
-      <div class="picker-footer">
-        <button
-          class="cancel-btn"
-          @click="emit('close')"
-        >
-          CANCELAR
-        </button>
-      </div>
     </div>
-  </div>
+
+    <template #footer>
+      <button
+        class="btn-vicio-secondary btn-vicio-full"
+        @click="emit('close')"
+      >
+        CANCELAR
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.picker-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: Blur(8px);
-  -webkit-backdrop-filter: Blur(8px);
-  z-index: var(--z-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  transform: translateZ(0);
-}
+@use "@/styles/core/tools" as *;
 
-.picker-container {
-  background: #12121e;
-  width: 100%;
-  max-width: 500px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.1);
+.picker-content {
   display: flex;
   flex-direction: column;
-  max-height: 80vh;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-}
-
-.picker-header {
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  
-  h3 {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
-    color: var(--yellow);
-    margin: 0;
-  }
-}
-
-.close-btn { 
-  background: none; 
-  border: none; 
-  color: var(--gray); 
-  font-size: 20px; 
-  cursor: pointer;
-  transition: color 0.2s ease;
-  
-  &:hover {
-    color: var(--red);
-  }
+  height: 500px;
+  max-height: 70vh;
 }
 
 .picker-search {
-  padding: 15px 20px;
-  
-  input {
-    width: 100%;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
-    padding: 12px;
-    border-radius: 12px;
-    color: $white;
-    font-size: 12px;
-    outline: none;
-    transition: border-color 0.2s;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  .search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
     
-    &:focus {
-      border-color: var(--blue);
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      font-size: 14px;
+      opacity: 0.5;
+    }
+    
+    input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 12px 12px 40px;
+      border-radius: 12px;
+      color: $white;
+      font-size: 12px;
+      font-family: 'Press Start 2P', cursive;
+      outline: none;
+      transition: all 0.2s;
+      @include pixelated;
+      
+      &:focus {
+        border-color: var(--yellow);
+        background: rgba(255, 255, 255, 0.05);
+      }
     }
   }
 }
 
 .pokemon-grid {
   flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 10px 20px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  @include smooth-scroll;
 }
 
-.poke-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 14px;
+.poke-card-vicio {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   padding: 12px;
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
   position: relative;
 
   &:hover {
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--yellow);
     transform: translateX(4px);
-    border-color: rgba(255, 255, 255, 0.2);
+    
+    .name { color: var(--yellow); }
   }
 }
 
 .sprite-box {
-  width: 50px;
-  height: 50px;
-  background: rgba(0,0,0,0.2);
-  border-radius: 10px;
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
-.poke-sprite { width: 44px; height: 44px; image-rendering: pixelated; }
-
-.poke-info { 
-  flex: 1; 
-  display: flex; 
-  flex-direction: column; 
-  gap: 4px; 
+.poke-sprite {
+  width: 40px;
+  height: 40px;
+  @include sprite-render;
 }
 
-.top-row { display: flex; justify-content: space-between; align-items: center; }
-.name { font-weight: 800; color: $white; font-size: 13px; }
-.lv { font-size: 10px; color: var(--gray); }
-.genetics { font-size: 9px; color: var(--gray); font-family: monospace; }
+.poke-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-.compat-status {
-  font-size: 10px;
-  font-weight: 700;
+.top-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  
+  .name {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    color: $white;
+    transition: color 0.2s;
+    @include pixelated;
+  }
+  
+  .lv {
+    font-size: 9px;
+    color: var(--gray);
+    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
+  }
 }
 
-.waiting-status {
-  color: $muted;
+.genetics {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: monospace;
 }
 
-.egg-hint { color: var(--purple); font-style: italic; }
+.compat-status {
+  font-size: 8px;
+  font-family: 'Press Start 2P', cursive;
+  margin-top: 4px;
+  display: flex;
+  justify-content: space-between;
+  @include pixelated;
+}
+
+.waiting-status { color: rgba(255, 255, 255, 0.2); }
+.egg-hint { color: var(--purple-light); }
 
 .vigor-badge {
   position: absolute;
   top: 8px;
   right: 8px;
-  font-size: 8px;
-  padding: 2px 6px;
+  font-size: 7px;
+  font-family: 'Press Start 2P', cursive;
+  padding: 4px 6px;
   border-radius: 4px;
   background: rgba(34, 197, 94, 0.1);
   color: #22c55e;
   border: 1px solid rgba(34, 197, 94, 0.2);
+  @include pixelated;
 
   &.low {
     background: rgba(239, 68, 68, 0.1);
@@ -345,31 +347,9 @@ const getSprite = (id, shiny) => {
 
 .empty-state {
   text-align: center;
-  padding: 40px;
-  color: var(--gray);
-  font-size: 12px;
-}
-
-.picker-footer {
-  padding: 20px;
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
-
-.cancel-btn {
-  width: 100%;
-  padding: 14px;
-  background: rgba(255,255,255,0.05);
-  border: none;
-  border-radius: 12px;
-  color: var(--gray);
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: $white;
-  }
+  padding: 60px 20px;
+  
+  .empty-icon { font-size: 32px; margin-bottom: 16px; opacity: 0.3; }
+  p { font-family: 'Press Start 2P', cursive; font-size: 8px; color: rgba(255, 255, 255, 0.2); @include pixelated; }
 }
 </style>

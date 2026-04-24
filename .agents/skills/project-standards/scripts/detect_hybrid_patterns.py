@@ -112,6 +112,24 @@ HYBRID_PATTERNS = [
         "regex": r"\.active|:active.*?box-shadow:\s*none",
         "message": "Button depth loss detected. Active states MUST NOT strip bottom shadows. Maintain 3D volume.",
         "severity": "medium"
+    },
+    {
+        "id": "native_title_attribute",
+        "regex": r'<(?!PVTooltip\b|BaseModal\b)\w+\b[^>]*?\btitle\s*=\s*["\'].*?["\']',
+        "message": "Native 'title' attribute detected on a non-tooltip component. Use PVTooltip component instead for consistent visual standards.",
+        "severity": "medium"
+    },
+    {
+        "id": "negative_margin_stacking",
+        "regex": r"margin-(left|right):\s*-\d+px",
+        "message": "Negative margin detected for stacking. Use Flexbox 'gap' or absolute positioning with relative containers to ensure responsive legibility.",
+        "severity": "medium"
+    },
+    {
+        "id": "missing_dynamic_variable",
+        "regex": r':style="\{.*?(color|background|glow).*?\}".*?(?!--[a-z\-]+)',
+        "message": "Dynamic style detected without CSS variable. Use dynamic variables (e.g., --type-color) to keep SCSS decoupled.",
+        "severity": "low"
     }
 ]
 
@@ -136,10 +154,13 @@ EXTENSIONS = [".vue", ".js", ".ts", ".scss", ".css"]
 
 def scan_file(filepath):
     findings = []
-    in_scoped_style = False
     try:
         with open(filepath, "r", encoding="utf-8") as f:
-            lines = f.readlines()
+            content = f.read()
+            lines = content.splitlines()
+            
+            # 1. Line-by-line checks (standard)
+            in_scoped_style = False
             for i, line in enumerate(lines):
                 if "<style" in line and "scoped" in line:
                     in_scoped_style = True
@@ -154,6 +175,10 @@ def scan_file(filepath):
                     continue
                 
                 for pattern in HYBRID_PATTERNS:
+                    # Skip multi-line patterns in line-by-line loop
+                    if pattern["id"] == "native_title_attribute":
+                        continue
+
                     if re.search(pattern["regex"], line):
                         # Specific exception for common safe uses
                         if "canvas" in line.lower() or "getElementById('game-container')" in line:
@@ -175,7 +200,7 @@ def scan_file(filepath):
                             is_fixed = False
                             context_range = range(max(0, i-5), min(len(lines), i+6))
                             for idx in context_range:
-                                if "min-height: 0" in lines[idx]:
+                                if idx < len(lines) and "min-height: 0" in lines[idx]:
                                     is_fixed = True
                                     break
                             if is_fixed:
@@ -186,9 +211,7 @@ def scan_file(filepath):
                             match = re.search(pattern["regex"], line)
                             if match and match.groups():
                                 try:
-                                    # Use a simple lambda-like evaluation
                                     val = match.group(1)
-                                    # We expect condition to be a string like "lambda x: int(x) % 8 != 0"
                                     condition_fn = eval(pattern["condition"])
                                     if not condition_fn(val):
                                         continue
@@ -202,6 +225,28 @@ def scan_file(filepath):
                             "severity": pattern["severity"],
                             "id": pattern["id"]
                         })
+
+            # 2. Multi-line checks (Native Title)
+            # Match entire tags to check for native title usage
+            title_matches = re.finditer(r'<([a-zA-Z0-9\-]+)\b[^>]*?(?<![:\-])\btitle\s*=\s*["\'](.*?)["\']', content, re.DOTALL)
+            for match in title_matches:
+                tag_name = match.group(1)
+                
+                # Exclude Vue components (PascalCase or explicitly allowed components)
+                # Native HTML tags are always lowercase.
+                if tag_name[0].isupper() or tag_name in ["BaseModal", "UnifiedCard"]:
+                    continue
+                
+                # Calculate line number
+                line_no = content.count('\n', 0, match.start()) + 1
+                findings.append({
+                    "line": line_no,
+                    "content": match.group(0).strip().split('\n')[0] + "...",
+                    "message": f"Native 'title' attribute detected on <{tag_name}>. Use PVTooltip instead.",
+                    "severity": "medium",
+                    "id": "native_title_attribute"
+                })
+
     except Exception as e:
         print(f"Error reading {filepath}: {e}")
     

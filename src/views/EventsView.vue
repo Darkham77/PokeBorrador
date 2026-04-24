@@ -23,7 +23,7 @@ const formatTime = (isoTime) => {
 
 const openParticipationModal = (event) => {
   window._openPokemonSelectionModal({
-    title: 'REGISTRO DE COMPETICIÓN',
+    title: 'SELECCIONAR POKÉMON',
     subtitle: `Elige un Pokémon para inscribir en: ${event.name}`,
     maxSelect: 1,
     minSelect: 1,
@@ -40,7 +40,7 @@ const openParticipationModal = (event) => {
 </script>
 
 <template>
-  <div class="events-view custom-scrollbar">
+  <div class="events-view">
     <!-- LEGACY HEADER -->
     <header class="events-header">
       <div class="header-left">
@@ -158,13 +158,12 @@ const openParticipationModal = (event) => {
 </template>
 
 <style lang="scss" scoped>
+@use "@/styles/core/tools" as *;
+
 .events-view {
-  height: 100%;
-  padding: 25px;
+  padding: 0 0 40px;
   background: #0d1117;
   color: $white;
-  overflow-y: auto;
-  min-height: 0;
 }
 
 /* 1:1 LEGACY COMPONENT STYLES */
@@ -208,7 +207,7 @@ const openParticipationModal = (event) => {
 
   &:hover:not(:disabled) {
     background: rgba(255,255,255,0.12);
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
     border-color: rgba(255,255,255,0.2);
   }
 
@@ -269,7 +268,7 @@ const openParticipationModal = (event) => {
   display: flex;
   flex-direction: column;
 
-  &:hover { border-color: #ffd70088; transform: translateY(-3px); }
+  &:hover { border-color: #ffd70088; transform: TranslateY(-3px); }
 
   .banner-box {
     height: 150px;
@@ -348,5 +347,4 @@ const openParticipationModal = (event) => {
   color: #555;
   font-style: italic;
 }
-
 </style>

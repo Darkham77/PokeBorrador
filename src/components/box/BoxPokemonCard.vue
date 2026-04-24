@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import { getPokemonTier } from '@/logic/pokemonUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import PVTooltip from '@/components/common/PVTooltip.vue'
+import { TAG_DEFINITIONS, POKEMON_BADGES } from '@/logic/constants/tags'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -24,20 +26,11 @@ const statColor = computed(() => {
   return 'var(--red)'
 })
 
-const ALL_TAGS_MAP = {
-  'fav': { icon: '⭐', color: '#ffcc00' },
-  'breed': { icon: '❤️', color: '#ff4d4d' },
-  'competitive': { icon: '🏆', color: '#32d74b' },
-  'box': { icon: '📦', color: '#0a84ff' },
-  'trade': { icon: '🔄', color: '#bf5af2' },
-  'iv31': { icon: '31', color: '#FFD93D' }
-}
-
 const activeTags = computed(() => {
   if (!props.pokemon.tags) return []
   return props.pokemon.tags.map(id => ({
     id,
-    ...(ALL_TAGS_MAP[id] || { icon: '?', color: '#ccc' })
+    ...(TAG_DEFINITIONS[id] || { icon: '?', color: '#ccc', label: 'TAG', desc: 'Etiqueta personalizada.' })
   }))
 })
 
@@ -59,21 +52,40 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
 
     <!-- Tags & Held Item -->
     <div
-      v-if="activeTags.length > 0 || hasHeldItem"
+      v-if="activeTags.length > 0 || hasHeldItem || pokemon.isShiny"
       class="tags-container"
     >
-      <span
+      <PVTooltip
         v-if="hasHeldItem"
-        class="item-icon"
-        :title="pokemon.heldItem"
-      >📦</span>
-      <span
+        :title="POKEMON_BADGES.heldItem.label"
+        :description="`${POKEMON_BADGES.heldItem.desc} (${pokemon.heldItem})`"
+        position="right"
+      >
+        <span class="item-icon">{{ POKEMON_BADGES.heldItem.icon }}</span>
+      </PVTooltip>
+      
+      <PVTooltip
+        v-if="pokemon.isShiny"
+        :title="POKEMON_BADGES.shiny.label"
+        :description="POKEMON_BADGES.shiny.desc"
+        position="right"
+      >
+        <span class="shiny-icon">{{ POKEMON_BADGES.shiny.icon }}</span>
+      </PVTooltip>
+
+      <PVTooltip
         v-for="tag in activeTags"
         :key="tag.id"
-        class="tag"
-        :class="tag.id"
-        :style="{ color: tag.color }"
-      >{{ tag.icon }}</span>
+        :title="tag.label"
+        :description="tag.desc"
+        position="right"
+      >
+        <span
+          class="tag"
+          :class="tag.id"
+          :style="{ color: tag.color }"
+        >{{ tag.icon }}</span>
+      </PVTooltip>
     </div>
 
     <!-- Sprite -->
@@ -193,15 +205,19 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   backdrop-filter: Blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  @include gpu-layer;
 }
 
-.tag, .item-icon {
+.tag, .item-icon, .shiny-icon {
   font-size: 11px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: help;
 }
+
+.shiny-icon { color: #FFD93D; }
 
 .iv31 {
   font-weight: bold;
@@ -216,7 +232,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
 .sprite-container img {
   width: 100%;
   height: 100%;
-  image-rendering: pixelated;
+  @include sprite-render;
   object-fit: contain;
   position: relative;
   z-index: 1;
@@ -265,6 +281,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
 .hp-fill {
   height: 100%;
   transition: width 0.3s ease;
+  @include will-animate(width);
 }
 
 .rocket-indicator {

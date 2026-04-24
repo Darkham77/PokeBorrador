@@ -2,14 +2,15 @@
 @use "@/styles/core/tools" as *;
 
 .selection-container {
-  padding: 10px 0;
+  padding: 20px 0 0 0; // Added top space since BaseModal is now padding="raw"
 }
 
 .filters-bar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 8px; // Reduced from 12px
+  margin-bottom: 5px; // Reduced from 10px
+  padding: 0 20px;
 }
 
 .search-box {
@@ -43,11 +44,17 @@
 }
 
 .sort-btns {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+
+  .sort-wrapper {
+    width: 100%;
+  }
 
   button {
-    flex: 1;
+    width: 100%;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
@@ -70,13 +77,79 @@
   }
 }
 
+.tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 5px;
+
+  .section-label {
+    text-align: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 1px;
+  }
+}
+
+.tags-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 0;
+
+  button {
+    height: 28px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    filter: Grayscale(1);
+    opacity: 0.6;
+
+    .icon {
+      font-size: 10px;
+    }
+
+    .label {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      color: var(--gray);
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: TranslateY(-2px);
+      opacity: 1;
+    }
+
+    &.active {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--yellow);
+      filter: Grayscale(0);
+      opacity: 1;
+      box-shadow: 0 0 10px rgba(255, 214, 10, 0.2);
+
+      .label {
+        color: var(--yellow);
+      }
+    }
+  }
+}
+
 .vertical-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: 400px;
+  gap: 15px;
+  max-height: 60vh;
   overflow-y: auto;
-  padding-right: 5px;
+  padding: 5px 20px 20px 20px;
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -99,6 +172,8 @@
   gap: 18px;
   position: relative;
   overflow: hidden;
+  flex-shrink: 0; // Essential to prevent row overlap/squashing
+  min-height: 100px;
 
   &::before {
     content: '';
@@ -138,16 +213,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: radial-gradient(circle at center, #2a2a2a 0%, #111111 100%);
-  overflow: hidden;
+  background: transparent;
+  overflow: visible;
   z-index: 1;
 
   .preview-bg {
     position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, var(--type-color) 0%, transparent 85%);
-    opacity: 0.6;
+    inset: 4px;
+    background: radial-gradient(circle at center, var(--type-color) 0%, transparent 70%);
+    opacity: 0.3;
     z-index: 0;
   }
 
@@ -176,18 +250,28 @@
   left: 50%;
   transform: TranslateX(-50%);
   display: flex;
+  align-items: center;
   gap: 3px;
   background: rgba(0, 0, 0, 0.6);
-  padding: 2px 5px;
-  border-radius: 6px;
+  padding: 3px 6px;
+  min-height: 14px;
+  border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: Blur(4px);
   z-index: 2;
+
+  .pv-tooltip-wrapper {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+  }
 
   .mini-icon {
     font-size: 8px;
     font-weight: bold;
     color: $white;
+    line-height: 1;
+    display: block;
   }
 }
 
@@ -243,35 +327,36 @@
     .types-row {
       display: flex;
       gap: 5px;
+
+      .type-pill {
+        font-size: 7px;
+        padding: 3px 6px;
+        border-radius: 4px;
+        color: white;
+        font-family: 'Press Start 2P', monospace;
+        background: rgba(255, 255, 255, 0.1);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
     }
 
-    .type-badge {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 6px;
-      padding: 3px 6px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      color: $white;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    .stats-summary {
+      display: flex;
+      gap: 8px;
+      margin-left: 10px;
 
-      &.type-normal { background: #A8A878; }
-      &.type-fire { background: #F08030; }
-      &.type-water { background: #6890F0; }
-      &.type-grass { background: #78C850; }
-      &.type-electric { background: #F8D030; color: $black; text-shadow: none; }
-      &.type-ice { background: #98D8D8; color: $black; text-shadow: none; }
-      &.type-fighting { background: #C03028; }
-      &.type-poison { background: #A040A0; }
-      &.type-ground { background: #E0C068; color: $black; text-shadow: none; }
-      &.type-flying { background: #A890F0; }
-      &.type-psychic { background: #F85888; }
-      &.type-bug { background: #A8B820; }
-      &.type-rock { background: #B8A038; }
-      &.type-ghost { background: #705898; }
-      &.type-dragon { background: #7038F8; }
-      &.type-dark { background: #705848; }
-      &.type-steel { background: #B8B8D0; color: $black; text-shadow: none; }
-      &.type-fairy { background: #EE99AC; }
+      .stat-badge {
+        font-size: 8px;
+        color: var(--gray);
+        font-family: 'Press Start 2P', monospace;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 3px 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+
+        &.ivs { color: #88ccff; }
+        &.bst { color: #ffcc88; }
+      }
     }
 
     .source-tag {

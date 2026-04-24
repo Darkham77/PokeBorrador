@@ -17,44 +17,46 @@ async function handleLogout() {
 </script>
 
 <template>
-  <transition name="fade">
-    <div
-      v-if="show"
-      class="session-blocked-overlay"
-    >
-      <div class="blocked-card">
-        <div class="icon-header">
-          <span class="warning-icon">⚠️</span>
+  <Teleport to="body">
+    <transition name="fade">
+      <div
+        v-if="show"
+        class="session-blocked-overlay"
+      >
+        <div class="blocked-card">
+          <div class="icon-header">
+            <span class="warning-icon">⚠️</span>
+          </div>
+          
+          <h2>SESIÓN DUPLICADA</h2>
+          
+          <p class="msg">
+            Parece que has iniciado sesión en otra pestaña o dispositivo. 
+            Para proteger tus datos, esta sesión ha sido bloqueada.
+          </p>
+  
+          <div class="actions">
+            <button
+              class="btn-vicio-primary"
+              @click="handleReconnect"
+            >
+              USAR AQUÍ
+            </button>
+            <button
+              class="btn-vicio-danger"
+              @click="handleLogout"
+            >
+              CERRAR SESIÓN
+            </button>
+          </div>
+  
+          <p class="footer">
+            ID de sesión: <code>{{ authStore.sessionId.substring(0, 8) }}</code>
+          </p>
         </div>
-        
-        <h2>SESIÓN DUPLICADA</h2>
-        
-        <p class="msg">
-          Parece que has iniciado sesión en otra pestaña o dispositivo. 
-          Para proteger tus datos, esta sesión ha sido bloqueada.
-        </p>
-
-        <div class="actions">
-          <button
-            class="btn-primary"
-            @click="handleReconnect"
-          >
-            USAR AQUÍ
-          </button>
-          <button
-            class="btn-secondary"
-            @click="handleLogout"
-          >
-            CERRAR SESIÓN
-          </button>
-        </div>
-
-        <p class="footer">
-          ID de sesión: <code>{{ authStore.sessionId.substring(0, 8) }}</code>
-        </p>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">
@@ -72,13 +74,12 @@ async function handleLogout() {
   inset: 0;
   z-index: var(--z-critical);
   background: rgba(0, 0, 0, 0.9);
-  -webkit-backdrop-filter: Blur(20px) Saturate(1.8);
   backdrop-filter: Blur(20px) Saturate(1.8);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: TranslateZ(0);
+  @include gpu-layer;
 }
 
 .blocked-card {
@@ -91,6 +92,7 @@ async function handleLogout() {
   text-align: center;
   box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9),
               0 0 40px rgba(255, 214, 10, 0.1);
+  @include gpu-layer;
 }
 
 .icon-header {
@@ -103,7 +105,7 @@ async function handleLogout() {
 
 h2 {
   font-family: 'Press Start 2P', cursive;
-  font-size: 14px;
+  font-size: 16px;
   color: $yellow;
   margin-bottom: 24px;
   @include pixelated;
@@ -111,7 +113,7 @@ h2 {
 
 .msg {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.7;
   margin-bottom: 40px;
 }
@@ -121,31 +123,6 @@ h2 {
   flex-direction: column;
   gap: 16px;
   margin-bottom: 32px;
-}
-
-button {
-  padding: 20px;
-  border-radius: 18px;
-  font-family: 'Press Start 2P', cursive;
-  font-size: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  @include pixelated;
-}
-
-.btn-primary {
-  @include btn-vicio-primary;
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: $white;
-  }
 }
 
 .footer {

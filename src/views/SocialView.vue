@@ -59,7 +59,7 @@ onMounted(() => {
     </div>
 
     <!-- Content Area -->
-    <div class="tab-content custom-scrollbar">
+    <div class="social-view-content">
       <SocialFriends v-if="activeTab === 'friends'" />
       <SocialRankings v-if="activeTab === 'rankings'" />
       <SocialSearch v-if="activeTab === 'search'" />
@@ -69,8 +69,10 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .social-view {
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   background: transparent;
@@ -85,6 +87,7 @@ onMounted(() => {
   position: sticky;
   top: 0;
   z-index: 10;
+  @include gpu-layer;
 }
 
 .tab-link {
@@ -162,12 +165,10 @@ onMounted(() => {
   }
 }
 
-.tab-content {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 15px 20px;
+.social-view-content {
+  padding: 15px var(--ui-h-padding);
   background: rgba(0,0,0,0.1);
+  @include gpu-layer;
 }
 
 </style>

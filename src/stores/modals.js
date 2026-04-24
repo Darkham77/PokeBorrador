@@ -85,7 +85,7 @@ export const useModalStore = defineStore('modals', () => {
   }
 
   const isOpen = (name) => {
-    return stack.value.some(m => m.name === name)
+    return stack.value.some(m => m.name === name && !m.closing)
   }
 
   return {

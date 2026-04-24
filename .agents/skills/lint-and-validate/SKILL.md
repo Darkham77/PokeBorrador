@@ -15,6 +15,7 @@ allowed-tools: Read, Glob, Grep, Bash
 1. **Lint/Fix:** Run `npm run lint` or `npx eslint "path" --fix`
 2. **Type Check:** Execute `npx tsc --noEmit`
 3. **Audit Security:** Run `npm audit --audit-level=high`
+4. **Production Build Integrity**: ALWAYS run `npm run build` after UI/SASS changes to catch syntax errors (like unmatched braces) that may not block development mode but will break the production bundle.
 
 ### Python
 
@@ -41,6 +42,7 @@ allowed-tools: Read, Glob, Grep, Bash
 
 - **Lint failure**: Fix style or syntax issues immediately.
 - **Type failure**: Correct type mismatches before proceeding.
+- **Import/Path failure**: Verify all dynamic import paths in `.vue` files after refactors. "Failed to fetch module" errors often indicate a path that was not updated to match the new project structure (e.g., `@/logic/services/`).
 - **No tool configured**: Verify project root for `.eslintrc`, `tsconfig.json`, or `pyproject.toml` and create one if missing.
 
 ---

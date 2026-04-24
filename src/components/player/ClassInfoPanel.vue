@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import PlayerAvatar from './PlayerAvatar.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
 const gameStore = useGameStore();
 const uiStore = useUIStore();
@@ -31,7 +32,6 @@ const openSelection = () => {
   uiStore.isClassSelectionOpen = true;
 };
 
-// Helper for Rank Title (Simplified or logic from social.js if needed)
 const rankTitle = computed(() => {
   if (trainerLevel.value >= 100) return 'MAESTRO POKÉMON';
   if (trainerLevel.value >= 50) return 'CAMPEÓN';
@@ -133,13 +133,16 @@ const rankTitle = computed(() => {
                         v-if="cls.bonusLevels?.[i] > 1"
                         class="lv-req press-start"
                       >Nv.{{ cls.bonusLevels[i] }}</span>
-                      <div class="tooltip-trigger">
-                        ❓
-                        <div class="tooltip-content">
-                          <strong>Mecánica:</strong><br>
-                          {{ cls.technicalBonuses?.[i] || 'Detalles no disponibles.' }}
+                      
+                      <PVTooltip
+                        title="MECÁNICA"
+                        :description="cls.technicalBonuses?.[i] || 'Detalles no disponibles.'"
+                        position="top"
+                      >
+                        <div class="tooltip-trigger-vicio">
+                          ❓
                         </div>
-                      </div>
+                      </PVTooltip>
                     </div>
                     <p
                       v-if="trainerLevel < (cls.bonusLevels?.[i] || 1)"
@@ -170,13 +173,16 @@ const rankTitle = computed(() => {
                   <div class="ability-content">
                     <div class="ability-top">
                       <span class="bonus-text">{{ penalty }}</span>
-                      <div class="tooltip-trigger">
-                        ❓
-                        <div class="tooltip-content red-border">
-                          <strong>Efecto Negativo:</strong><br>
-                          {{ cls.technicalPenalties?.[i] || 'Detalles no disponibles.' }}
+                      
+                      <PVTooltip
+                        title="EFECTO NEGATIVO"
+                        :description="cls.technicalPenalties?.[i] || 'Detalles no disponibles.'"
+                        position="top"
+                      >
+                        <div class="tooltip-trigger-vicio">
+                          ❓
                         </div>
-                      </div>
+                      </PVTooltip>
                     </div>
                   </div>
                 </div>
@@ -386,34 +392,12 @@ const rankTitle = computed(() => {
   .req-text { font-size: 10px; color: #475569; margin-top: 4px; }
 }
 
-.tooltip-trigger {
-  position: relative;
+.tooltip-trigger-vicio {
   cursor: help;
   color: #475569;
   font-size: 12px;
-  &:hover { color: $white; .tooltip-content { visibility: visible; opacity: 1; transform: translateY(0); } }
-}
-
-.tooltip-content {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%) translateY(10px);
-  width: 240px;
-  background: #0f172a;
-  color: #cbd5e1;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid Rgba(var(--class-color), 0.3);
-  font-size: 11px;
-  line-height: 1.5;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s;
-  z-index: 100;
-  pointer-events: none;
-  &.red-border { border-color: rgba(239, 68, 68, 0.3); }
+  transition: color 0.2s;
+  &:hover { color: $white; }
 }
 
 .info-footer {
@@ -479,6 +463,5 @@ const rankTitle = computed(() => {
 @media (max-width: 600px) {
   .modal-layout { padding: 24px; gap: 24px; }
   .left-col, .right-col { min-width: 100%; flex: none; }
-  .tooltip-content { width: 200px; left: auto; right: 0; transform: translateY(10px); }
 }
 </style>

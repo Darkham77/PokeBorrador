@@ -40,7 +40,8 @@
   -webkit-backdrop-filter: Blur(20px) Saturate(180%);
   animation: fadeIn 0.4s ease;
   z-index: 1;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
+  @include gpu-layer;
 }
 
 .auth-logo {
@@ -122,11 +123,12 @@
   background: linear-gradient(135deg, var(--purple), #9b4dca);
   color: $white;
   margin-top: 4px;
+  @include will-animate(transform, box-shadow);
   transition: all .2s;
   box-shadow: 0 4px 15px rgba(199, 125, 255, 0.3);
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
     box-shadow: 0 6px 20px rgba(199, 125, 255, 0.4);
   }
 

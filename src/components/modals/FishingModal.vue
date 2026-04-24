@@ -144,6 +144,8 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .fishing-game-overlay {
   position: fixed;
   inset: 0;
@@ -155,6 +157,7 @@ onUnmounted(() => {
   justify-content: center;
   cursor: crosshair;
   transition: background 0.5s;
+  @include gpu-layer;
 
   &.fail {
     background: rgba(153, 27, 27, 0.9);
@@ -174,7 +177,7 @@ onUnmounted(() => {
   position: absolute;
   top: 40px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: TranslateX(-50%);
   text-align: center;
   pointer-events: none;
   
@@ -204,7 +207,7 @@ onUnmounted(() => {
   position: absolute;
   bottom: 40px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: TranslateX(-50%);
   font-family: 'Press Start 2P', monospace;
   font-size: 14px;
   color: $white;

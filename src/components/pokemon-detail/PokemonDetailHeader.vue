@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const props = defineProps({
   pokemon: { type: Object, required: true }
@@ -35,8 +36,7 @@ const getSprite = (id, isShiny) => {
       </div>
       <div class="name-info">
         <h2 class="poke-name">
-          {{ p.name }} 
-          <span :class="'gender-' + (p.gender || 'none').toLowerCase()">
+          {{ p.name }}&nbsp;<span :class="'gender-' + (p.gender || 'none').toLowerCase()">
             {{ (p.gender === 'M' ? '♂' : p.gender === 'F' ? '♀' : '') }}
           </span>
         </h2>
@@ -49,30 +49,47 @@ const getSprite = (id, isShiny) => {
           <span class="id-badge">#{{ String(p.id).padStart(3, '0') }}</span>
         </div>
         <div class="tags-row">
-          <button 
-            class="tag-btn" 
-            :class="{ active: p.tags?.includes('fav') }"
-            title="Favorito"
-            @click="emit('toggle-tag', 'fav')"
+          <PVTooltip
+            title="FAVORITO"
+            description="Marcar como Pokémon favorito."
+            position="top"
           >
-            ⭐
-          </button>
-          <button 
-            class="tag-btn" 
-            :class="{ active: p.tags?.includes('breed') }"
-            title="Crianza"
-            @click="emit('toggle-tag', 'breed')"
+            <button 
+              class="tag-btn" 
+              :class="{ active: p.tags?.includes('fav') }"
+              @click="emit('toggle-tag', 'fav')"
+            >
+              ⭐
+            </button>
+          </PVTooltip>
+
+          <PVTooltip
+            title="CRIANZA"
+            description="Marcar para breeding en la guardería."
+            position="top"
           >
-            ❤️
-          </button>
-          <button 
-            class="tag-btn" 
-            :class="{ active: p.tags?.includes('iv31') }"
+            <button 
+              class="tag-btn" 
+              :class="{ active: p.tags?.includes('breed') }"
+              @click="emit('toggle-tag', 'breed')"
+            >
+              ❤️
+            </button>
+          </PVTooltip>
+
+          <PVTooltip
             title="IV 31"
-            @click="emit('toggle-tag', 'iv31')"
+            description="Pokémon con al menos un IV perfecto."
+            position="top"
           >
-            31
-          </button>
+            <button 
+              class="tag-btn" 
+              :class="{ active: p.tags?.includes('iv31') }"
+              @click="emit('toggle-tag', 'iv31')"
+            >
+              31
+            </button>
+          </PVTooltip>
         </div>
       </div>
     </div>

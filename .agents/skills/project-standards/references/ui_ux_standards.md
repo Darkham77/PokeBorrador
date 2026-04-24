@@ -20,6 +20,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **FORBIDDEN**: Modern high-res vector icons (SVG) or smooth fonts for primary game data.
 - **EXCEPTION: Premium Branding**: High-res logos or emblems **SHOULD** use smooth rendering (`image-rendering: auto;`) to enhance the contrast.
 - **GPU Persistence Rule**: To prevent "snapping" from smooth to pixelated after CSS transitions (especially on environmental backgrounds), use `image-rendering: auto` explicitly in `smooth` mixins and force GPU layer persistence with `will-change: filter, transform;` and `transform: TranslateZ(0);`.
+- **Dynamic Variable Binding**: Context-dependent visual effects (glows, auras) MUST use dynamic CSS variables (e.g., `:style="{ '--type-color': color }"`) injected from the template to allow SCSS to remain generic.
 
 ---
 
@@ -50,6 +51,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **High-Density Layouts**: When horizontal space is limited (e.g., within Grid cards), use **Vertical Pills**.
 - **Vertical Pill Standard**: Use `writing-mode: vertical-rl` and `text-orientation: upright` for the text, combined with a large icon (16-18px) positioned at the top.
 - **Glassmorphism**: Always apply `@include glass-solid` with a thin themed border (`rgba(79, 172, 254, 0.4)` for Fishing).
+- **Abbreviated Labels (shortLabel)**: In compact UI (list buttons, small cards), use the `shortLabel` property from `tags.js` to prevent text overflow. Maintain the full `label` in tooltips.
+- **Badge Centralization**: All Pokémon status indicators (shiny, items, tags) MUST have their icon and label metadata centralized in `src/logic/constants/tags.js`.
 
 ---
 
@@ -78,12 +81,23 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 - **Mandatory Teleport**: Use `<Teleport to="body">` for global modals.
 - **Overlay: None**: When no overlay is used, the main wrapper **MUST** have `pointer-events: none`.
+- **Layout Parity Mandate**: When refactoring or restoring legacy UI, ensure HTML classes exactly match the SCSS selectors (e.g., `.list-item` vs `.poke-card`). Mismatches break the intended design.
+- **Anchored UI Context**: Absolute elements (badges, floating icons) MUST be nested within a `position: relative` container (e.g., `.poke-preview-container`) to prevent layout drift.
+- **Stacked Sprite Separation**: Avoid negative margins for overlapping sprites with opaque backgrounds. Use `gap` or explicit offsets in relative containers to ensure legibility.
 
 ### 3. Notifications & Toasts
 
 - **MANDATORY**: Toasts must occupy the highest layer (`z-index: 999,999`).
 
-### 4. Modal Variants & Aesthetics
+### 4. Global Tooltip Architecture (PVTooltip)
+
+All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes are strictly FORBIDDEN.
+
+- **Hybrid Engine**: Uses a "Flip-then-Nudge" algorithm. It first attempts to flip the position (e.g., from top to bottom) if there's no space, then "nudges" the coordinates to stay within a 10px safety margin of the viewport edges.
+- **Anchor-Aware Arrows**: The tooltip arrow MUST remain aligned with the trigger element's center. When the box is nudged, use the `--arrow-x` and `--arrow-y` CSS variables to offset the arrow appropriately.
+- **Visual Standard**: Tooltips must use `'Press Start 2P'` for titles, glassmorphism (`Blur(10px)`), and a `$yellow` border.
+
+### 5. Modal Variants & Aesthetics
 
 The `BaseModal.vue` component supports parameterized aesthetics to maintain consistency:
 
@@ -92,7 +106,7 @@ The `BaseModal.vue` component supports parameterized aesthetics to maintain cons
 - **hide-header**: Use to remove the header bar for content-focused modals. The close button (`X`) will automatically transition to a floating position (`modal-close-btn-floating`).
 - **padding="raw"**: Use for full-bleed content (e.g., Shop/Inventory grids). The `retro` variant respects this to avoid double-padding.
 
-### 5. Premium 3D Action Buttons
+### 6. Premium 3D Action Buttons
 
 Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 
@@ -115,7 +129,7 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Max-Width**: Articles must have a max-width of `1000px`.
 - **Padding**: Use `32px` internal padding for main article content.
 
-### 6. Modal Stack & Performance Synchronization
+### 7. Modal Stack & Performance Synchronization
 
 To ensure a seamless transition between full-map exploration and focused modal interactions:
 

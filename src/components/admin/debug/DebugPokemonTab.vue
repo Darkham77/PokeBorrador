@@ -1,6 +1,7 @@
 <script setup>
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const game = useGameStore()
 const ui = useUIStore()
@@ -40,64 +41,71 @@ async function clearPvpTeam() {
     <div class="debug-card full-width">
       <label>Override Visual Pokedex (No se guarda)</label>
       <div class="button-row wrap">
-        <button
-          class="btn-vicio-neutral btn-vicio-sm"
-          :class="{ active: ui.debugPokedexMode === 'caught' }"
-          title="Atrapar todos"
-          @click="setDebugPokedex('caught')"
-        >
-          ATRAPAR
-        </button>
-        <button
-          class="btn-vicio-neutral btn-vicio-sm"
-          :class="{ active: ui.debugPokedexMode === 'seen' }"
-          title="Ver todos"
-          @click="setDebugPokedex('seen')"
-        >
-          VER
-        </button>
-        <button
-          class="btn-vicio-primary btn-vicio-sm"
-          :class="{ active: !ui.debugPokedexMode }"
-          title="Restaurar progreso real"
-          @click="setDebugPokedex('real')"
-        >
-          REAL
-        </button>
+        <PVTooltip title="Atrapar todos">
+          <button
+            class="btn-vicio-neutral btn-vicio-sm"
+            :class="{ active: ui.debugPokedexMode === 'caught' }"
+            @click="setDebugPokedex('caught')"
+          >
+            ATRAPAR
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Ver todos">
+          <button
+            class="btn-vicio-neutral btn-vicio-sm"
+            :class="{ active: ui.debugPokedexMode === 'seen' }"
+            @click="setDebugPokedex('seen')"
+          >
+            VER
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Restaurar progreso real">
+          <button
+            class="btn-vicio-primary btn-vicio-sm"
+            :class="{ active: !ui.debugPokedexMode }"
+            @click="setDebugPokedex('real')"
+          >
+            REAL
+          </button>
+        </PVTooltip>
       </div>
       
       <div class="debug-danger-zone">
         <label class="danger-label">Persistent Database Changes (SE GUARDA)</label>
         <div class="button-row wrap">
-          <button
-            class="btn-vicio-secondary btn-vicio-sm"
-            title="Sincroniza la pokedex con lo que tienes en el equipo/caja"
-            @click="syncPokedexFromCollection"
-          >
-            RECALCULAR POKEDEX
-          </button>
-          <button
-            class="btn-vicio-danger btn-vicio-sm"
-            title="Borra todo el progreso de la pokedex"
-            @click="resetPokedexDB"
-          >
-            RESET POKEDEX
-          </button>
-          <button
-            class="btn-vicio-secondary btn-vicio-sm"
-            :class="{ active: ui.pvpAutoFillDisabled }"
-            title="Desactivar el rellenado automático de equipo PVP"
-            @click="ui.pvpAutoFillDisabled = !ui.pvpAutoFillDisabled"
-          >
-            {{ ui.pvpAutoFillDisabled ? 'HABILITAR AUTO-PVP' : 'DESHABILITAR AUTO-PVP' }}
-          </button>
-          <button
-            class="btn-vicio-danger btn-vicio-sm"
-            title="Limpia todos los slots del equipo PVP"
-            @click="clearPvpTeam"
-          >
-            LIMPIAR EQUIPO PVP
-          </button>
+          <PVTooltip title="Sincroniza la pokedex con lo que tienes en el equipo/caja">
+            <button
+              class="btn-vicio-secondary btn-vicio-sm"
+              @click="syncPokedexFromCollection"
+            >
+              RECALCULAR POKEDEX
+            </button>
+          </PVTooltip>
+          <PVTooltip title="Borra todo el progreso de la pokedex">
+            <button
+              class="btn-vicio-danger btn-vicio-sm"
+              @click="resetPokedexDB"
+            >
+              RESET POKEDEX
+            </button>
+          </PVTooltip>
+          <PVTooltip title="Desactivar el rellenado automático de equipo PVP">
+            <button
+              class="btn-vicio-secondary btn-vicio-sm"
+              :class="{ active: ui.pvpAutoFillDisabled }"
+              @click="ui.pvpAutoFillDisabled = !ui.pvpAutoFillDisabled"
+            >
+              {{ ui.pvpAutoFillDisabled ? 'HABILITAR AUTO-PVP' : 'DESHABILITAR AUTO-PVP' }}
+            </button>
+          </PVTooltip>
+          <PVTooltip title="Limpia todos los slots del equipo PVP">
+            <button
+              class="btn-vicio-danger btn-vicio-sm"
+              @click="clearPvpTeam"
+            >
+              LIMPIAR EQUIPO PVP
+            </button>
+          </PVTooltip>
         </div>
       </div>
     </div>

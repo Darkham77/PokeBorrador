@@ -12,33 +12,96 @@ const isVisible = ref(false)
 const trigger = ref(null)
 const tooltip = ref(null)
 const coords = ref({ top: 0, left: 0 })
+const activePosition = ref(props.position)
+const arrowOffset = ref({ x: 0, y: 0 })
 
 let timeout = null
 
 const updatePosition = () => {
-  if (!trigger.value) return
+  if (!trigger.value || !tooltip.value) return
   
   const rect = trigger.value.getBoundingClientRect()
+  const tipRect = tooltip.value.getBoundingClientRect()
   const scrollY = window.scrollY
   const scrollX = window.scrollX
+  const viewportWidth = window.innerWidth
+  const viewportHeight = window.innerHeight
   
+  let pos = props.position
+  const gap = 12
+  const padding = 10 // Safety margin from edges
+
+  // --- 1. FLIPPING LOGIC ---
+  if (pos === 'top' && rect.top - tipRect.height - gap < padding) {
+    pos = 'bottom'
+  } else if (pos === 'bottom' && rect.bottom + tipRect.height + gap > viewportHeight - padding) {
+    pos = 'top'
+  } else if (pos === 'left' && rect.left - tipRect.width - gap < padding) {
+    pos = 'right'
+  } else if (pos === 'right' && rect.right + tipRect.width + gap > viewportWidth - padding) {
+    pos = 'left'
+  }
+  activePosition.value = pos
+
+  // --- 2. BASE COORDINATES ---
   let top = 0
   let left = 0
   
-  const gap = 12
-  
-  if (props.position === 'top') {
+  if (pos === 'top') {
     top = rect.top + scrollY - gap
     left = rect.left + scrollX + rect.width / 2
-  } else if (props.position === 'bottom') {
+  } else if (pos === 'bottom') {
     top = rect.bottom + scrollY + gap
     left = rect.left + scrollX + rect.width / 2
-  } else if (props.position === 'left') {
+  } else if (pos === 'left') {
     top = rect.top + scrollY + rect.height / 2
     left = rect.left + scrollX - gap
-  } else if (props.position === 'right') {
+  } else if (pos === 'right') {
     top = rect.top + scrollY + rect.height / 2
     left = rect.right + scrollX + gap
+  }
+
+  // --- 3. NUDGING LOGIC (Boundary Protection) ---
+  const anchorX = left
+  const anchorY = top
+  
+  const halfWidth = tipRect.width / 2
+  const halfHeight = tipRect.height / 2
+
+  if (pos === 'top' || pos === 'bottom') {
+    // Horizontal nudge
+    if (left - halfWidth < padding + scrollX) {
+      left = padding + scrollX + halfWidth
+    } else if (left + halfWidth > viewportWidth + scrollX - padding) {
+      left = viewportWidth + scrollX - padding - halfWidth
+    }
+    
+    // Vertical nudge (safety)
+    if (pos === 'top' && top - tipRect.height < padding + scrollY) {
+      top = padding + scrollY + tipRect.height
+    } else if (pos === 'bottom' && top + tipRect.height > viewportHeight + scrollY - padding) {
+      top = viewportHeight + scrollY - padding - tipRect.height
+    }
+    
+    // Arrow offset: difference between original anchor and new box center
+    arrowOffset.value = { x: anchorX - left, y: 0 }
+  } else {
+    // Left/Right nudge
+    // Vertical
+    if (top - halfHeight < padding + scrollY) {
+      top = padding + scrollY + halfHeight
+    } else if (top + halfHeight > viewportHeight + scrollY - padding) {
+      top = viewportHeight + scrollY - padding - halfHeight
+    }
+
+    // Horizontal (safety)
+    if (pos === 'left' && left - tipRect.width < padding + scrollX) {
+      left = padding + scrollX + tipRect.width
+    } else if (pos === 'right' && left + tipRect.width > viewportWidth + scrollX - padding) {
+      left = viewportWidth + scrollX - padding - tipRect.width
+    }
+    
+    arrowOffset.value = { x: 0, y: anchorY - top }
   }
   
   coords.value = { top, left }
@@ -48,6 +111,10 @@ const show = () => {
   if (timeout) clearTimeout(timeout)
   timeout = setTimeout(async () => {
     isVisible.value = true
+    await nextTick()
+    // Initial calculate to get tipRect
+    updatePosition()
+    // Second calculate in case flipping changed dimensions or layout
     await nextTick()
     updatePosition()
   }, props.delay)
@@ -60,7 +127,7 @@ const hide = () => {
 </script>
 
 <template>
-  <div 
+  <span 
     ref="trigger" 
     class="pv-tooltip-wrapper"
     @mouseenter="show" 
@@ -75,10 +142,12 @@ const hide = () => {
         <div 
           v-if="isVisible"
           ref="tooltip"
-          :class="['pv-tooltip-teleported', `pos-${position}`]"
+          :class="['pv-tooltip-teleported', `pos-${activePosition}`]"
           :style="{ 
             top: coords.top + 'px', 
-            left: coords.left + 'px' 
+            left: coords.left + 'px',
+            '--arrow-x': arrowOffset.x + 'px',
+            '--arrow-y': arrowOffset.y + 'px'
           }"
         >
           <div class="tooltip-content">
@@ -96,14 +165,16 @@ const hide = () => {
         </div>
       </Transition>
     </Teleport>
-  </div>
+  </span>
 </template>
 
 <style lang="scss">
 @use "@/styles/core/tools" as *;
 
 .pv-tooltip-wrapper {
-  // Transparent wrapper to allow absolute positioning from parent classes
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
 }
 
 .pv-tooltip-teleported {
@@ -119,6 +190,7 @@ const hide = () => {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
+  @include gpu-layer;
   
   .tooltip-content {
     display: flex;
@@ -149,13 +221,14 @@ const hide = () => {
     width: 0;
     height: 0;
     border: 6px solid transparent;
+    transition: left 0.1s, top 0.1s; // Smooth nudge
   }
 
   &.pos-top {
     transform: Translate(-50%, -100%);
     .tooltip-arrow {
       top: 100%;
-      left: 50%;
+      left: calc(50% + var(--arrow-x));
       transform: translateX(-50%);
       border-top-color: $yellow;
     }
@@ -165,7 +238,7 @@ const hide = () => {
     transform: Translate(-50%, 0);
     .tooltip-arrow {
       bottom: 100%;
-      left: 50%;
+      left: calc(50% + var(--arrow-x));
       transform: translateX(-50%);
       border-bottom-color: $yellow;
     }
@@ -175,7 +248,7 @@ const hide = () => {
     transform: Translate(-100%, -50%);
     .tooltip-arrow {
       left: 100%;
-      top: 50%;
+      top: calc(50% + var(--arrow-y));
       transform: translateY(-50%);
       border-left-color: $yellow;
     }
@@ -185,7 +258,7 @@ const hide = () => {
     transform: Translate(0, -50%);
     .tooltip-arrow {
       right: 100%;
-      top: 50%;
+      top: calc(50% + var(--arrow-y));
       transform: translateY(-50%);
       border-right-color: $yellow;
     }

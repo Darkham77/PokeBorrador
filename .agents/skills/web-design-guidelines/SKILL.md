@@ -57,3 +57,6 @@ If no files specified, ASK the user which files to review.
 
 - **Emoji Duplication**: Check that dynamic icons (e.g. `{{ event.icon }}`) are not rendered alongside text labels that already contain hardcoded emojis.
 - **Rule**: If a label contains its own emoji (e.g., "⚡ EXP"), suppress the general icon for that specific list item to avoid visual noise.
+- **Emoji Spacing**: Emojis in buttons or text labels MUST have adequate spacing (e.g., `gap: 8px` or `margin-right`) to avoid being visually cramped against the adjacent text.
+- **Action Tooltips**: All interactive buttons that use only icons (e.g., in Social Center or Inventories) MUST be wrapped in the `PVTooltip` component to provide clear contextual descriptions on hover.
+- **Informative Blocked States**: Locked UI elements (like routes, buttons, or areas) MUST explain the specific reason for the lock via tooltips. Avoid generic "Locked" or "Blocked" messages. If a specific requirement (e.g., medals, items, level) is missing, state it clearly to guide the user on how to unlock it.

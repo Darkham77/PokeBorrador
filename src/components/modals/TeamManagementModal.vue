@@ -29,6 +29,18 @@ const pvpTeam = computed(() => {
   return slots
 })
 
+const warTeam = computed(() => {
+  const warUids = gameStore.state.warTeam || []
+  const maxSlots = gameStore.state.warSlots || 6
+  const allPokes = [...gameStore.state.team, ...(gameStore.state.box || [])]
+  const slots = []
+  for (let i = 0; i < maxSlots; i++) {
+    const uid = warUids[i]
+    slots.push(allPokes.find(p => p.uid === uid) || null)
+  }
+  return slots
+})
+
 function openDetail(pokemon) {
   if (!pokemon) return
   const idx = gameStore.state.team.findIndex(p => p.uid === pokemon.uid)
@@ -52,8 +64,9 @@ function sendToBox(pokemon) {
 }
 
 function selectPvp(slotIndex) {
+  const pvpTeam = gameStore.state.pvpTeam || []
   const allPokes = [...gameStore.state.team, ...(gameStore.state.box || [])]
-  const available = allPokes.filter(p => p && !gameStore.state.pvpTeam.includes(p.uid))
+  const available = allPokes.filter(p => p && !pvpTeam.includes(p.uid))
   
   if (available.length === 0) {
     uiStore.notify('No tienes más Pokémon disponibles para asignar al equipo PVP.', '⚠️')
@@ -61,9 +74,9 @@ function selectPvp(slotIndex) {
   }
 
   uiStore.open('PokemonSelection', {
-    title: 'SELECCIONAR PARA PVP',
+    title: 'SELECCIONAR POKÉMON',
     subtitle: 'Elige un Pokémon para tu equipo de combate.',
-    excludeUids: gameStore.state.pvpTeam,
+    excludeUids: pvpTeam,
     callbackConfirm: (selected) => {
       if (selected && selected.length > 0) {
         gameStore.swapPvpSlot(slotIndex, selected[0].uid)
@@ -72,9 +85,31 @@ function selectPvp(slotIndex) {
   })
 }
 
+function selectWar(slotIndex) {
+  const warTeam = gameStore.state.warTeam || []
+  const allPokes = [...gameStore.state.team, ...(gameStore.state.box || [])]
+  const available = allPokes.filter(p => p && !warTeam.includes(p.uid))
+  
+  if (available.length === 0) {
+    uiStore.notify('No tienes más Pokémon disponibles para asignar al equipo de Guerra.', '⚠️')
+    return
+  }
+
+  uiStore.open('PokemonSelection', {
+    title: 'SELECCIONAR POKÉMON',
+    subtitle: 'Elige un Pokémon para tu equipo de guerra.',
+    excludeUids: warTeam,
+    callbackConfirm: (selected) => {
+      if (selected && selected.length > 0) {
+        gameStore.swapWarSlot(slotIndex, selected[0].uid)
+      }
+    }
+  })
+}
+
 function selectAdventure(_slotIndex) {
   uiStore.open('PokemonSelection', {
-    title: 'RETIRAR POKÉMON',
+    title: 'SELECCIONAR POKÉMON',
     subtitle: 'Selecciona un Pokémon de tu caja para añadir al equipo.',
     callbackConfirm: (selected) => {
       if (selected && selected.length > 0) {
@@ -93,10 +128,15 @@ function selectAdventure(_slotIndex) {
   <BaseModal
     show
     title="GESTIÓN DE EQUIPO"
+    title-color="var(--yellow)"
+    header-background="rgba(15, 23, 42, 0.8)"
     max-width="1000px"
     padding="raw"
     @close="uiStore.toggleTeamManagement"
   >
+    <template #header-icon>
+      <span class="header-team-icon">👥</span>
+    </template>
     <div class="team-modal-content glass scrollbar">
       <!-- SUBTITLE (Optional inside if desired, or just remove header) -->
 
@@ -136,7 +176,7 @@ function selectAdventure(_slotIndex) {
         <div class="section-header">
           <span class="section-icon">⚔️</span>
           <h2 class="section-title">
-            EQUIPO PVP / GUERRA
+            EQUIPO COMPETITIVO
           </h2>
           <span class="badge">RANKED</span>
         </div>
@@ -155,7 +195,42 @@ function selectAdventure(_slotIndex) {
         </div>
         
         <p class="pvp-hint">
-          * Tu equipo PVP se autocompleta con tus mejores Pokémon si hay espacios vacíos.
+          * Tu equipo PVP/Ranked se autocompleta con tus mejores Pokémon.
+        </p>
+      </section>
+
+      <!-- DIVIDER -->
+      <div class="panel-divider">
+        <div class="line" />
+        <div class="diamond" />
+        <div class="line" />
+      </div>
+
+      <!-- WAR SECTION -->
+      <section class="team-section war-section">
+        <div class="section-header">
+          <span class="section-icon">🛡️</span>
+          <h2 class="section-title">
+            EQUIPO DE GUERRA
+          </h2>
+          <span class="badge war-badge">EVENTO</span>
+        </div>
+
+        <div class="slots-grid war-grid">
+          <UnifiedTeamSlot
+            v-for="(p, i) in warTeam"
+            :key="'war-' + i"
+            :pokemon="p"
+            :index="i"
+            is-pvp
+            @open-detail="openDetail(p)"
+            @open-item="openItem(p)"
+            @select="selectWar(i)"
+          />
+        </div>
+        
+        <p class="pvp-hint">
+          * Este equipo se utiliza exclusivamente en eventos de Guerra de Facciones.
         </p>
       </section>
     </div>
@@ -163,6 +238,10 @@ function selectAdventure(_slotIndex) {
 </template>
 
 <style scoped lang="scss">
+.header-team-icon {
+  font-size: 20px;
+}
+
 .team-modal-content {
   padding: 40px;
   max-height: 85vh;
@@ -230,13 +309,22 @@ function selectAdventure(_slotIndex) {
   }
 }
 
-.pvp-grid {
+.pvp-grid, .war-grid {
   grid-template-columns: repeat(3, 1fr);
   max-width: 800px;
   margin: 0 auto;
 
   @media (max-width: 700px) {
     grid-template-columns: 1fr;
+  }
+}
+
+.war-grid {
+  // Can be adjusted if more than 6 slots are ever needed
+  grid-template-columns: repeat(3, 1fr);
+  
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -273,6 +361,18 @@ function selectAdventure(_slotIndex) {
 .pvp-section {
   .section-title {
     color: var(--purple-light) !important;
+  }
+}
+
+.war-section {
+  .section-title {
+    color: var(--red) !important;
+  }
+  
+  .war-badge {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--red);
+    border: 1px solid rgba(239, 68, 68, 0.2);
   }
 }
 </style>

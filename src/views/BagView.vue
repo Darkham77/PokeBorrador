@@ -164,10 +164,11 @@ const onUseItem = (name) => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .bag-view {
-  height: 100%;
-  padding: 20px;
+  padding: 0;
   background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.05), transparent),
               radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.05), transparent);
   display: flex;
@@ -255,6 +256,10 @@ const onUseItem = (name) => {
   border-color: var(--purple-light);
 }
 
+.items-wrapper {
+  @include gpu-layer;
+}
+
 .items-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -277,7 +282,7 @@ const onUseItem = (name) => {
 
 .item-card:hover {
   background: rgba(255, 255, 255, 0.06);
-  transform: translateY(-2px);
+  transform: TranslateY(-2px);
 }
 
 .item-card.selected {
@@ -294,7 +299,7 @@ const onUseItem = (name) => {
 .item-sprite {
   width: 100%;
   height: 100%;
-  image-rendering: pixelated;
+  @include sprite-render;
   object-fit: contain;
 }
 
@@ -392,6 +397,8 @@ const onUseItem = (name) => {
 
 </style>
 
-<style>
-.scroll-hide::-webkit-scrollbar { display: none; }
+<style lang="scss">
+.scroll-hide {
+  &::-webkit-scrollbar { display: none; }
+}
 </style>

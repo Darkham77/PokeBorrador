@@ -112,7 +112,7 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Arañazo', pp: 35 }, { lv: 1, name: 'Defensa Férrea', pp: 15 }, { lv: 1, name: 'Ataque Arena', pp: 15 }, { lv: 6, name: 'Rizo Defensa', pp: 40 }, { lv: 11, name: 'Ataque Arena', pp: 15 }, { lv: 17, name: 'Cuchillada', pp: 20 }, { lv: 24, name: 'Picotazo Veneno', pp: 35 }, { lv: 33, name: 'Ataque Rápido', pp: 30 }, { lv: 42, name: 'Golpes Furia', pp: 15 }, { lv: 52, name: 'Bucle Arena', pp: 15 }]
   },
   nidoran_f: {
-    name: 'Nidoran♀', emoji: '🐭', type: 'poison', hp: 55, atk: 47, def: 52, spa: 40, spd: 40, spe: 41,
+    name: 'Nidoran ♀', emoji: '🐭', type: 'poison', hp: 55, atk: 47, def: 52, spa: 40, spd: 40, spe: 41,
     learnset: [{ lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Arañazo', pp: 35 }, { lv: 8, name: 'Látigo', pp: 30 }, { lv: 12, name: 'Doble Patada', pp: 30 }, { lv: 17, name: 'Picotazo Veneno', pp: 35 }, { lv: 20, name: 'Mordisco', pp: 25 }, { lv: 23, name: 'Refuerzo', pp: 20 }, { lv: 30, name: 'Furia', pp: 20 }, { lv: 38, name: 'Colmillo Veneno', pp: 15 }]
   },
   nidorina: {
@@ -124,7 +124,7 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Picotazo Veneno', pp: 35 }, { lv: 1, name: 'Doble Patada', pp: 30 }, { lv: 1, name: 'Mordisco', pp: 25 }, { lv: 22, name: 'Colmillo Veneno', pp: 15 }, { lv: 43, name: 'Golpe Cuerpo', pp: 15 }]
   },
   nidoran_m: {
-    name: 'Nidoran♂', emoji: '🐭', type: 'poison', hp: 46, atk: 57, def: 40, spa: 40, spd: 40, spe: 50,
+    name: 'Nidoran ♂', emoji: '🐭', type: 'poison', hp: 46, atk: 57, def: 40, spa: 40, spd: 40, spe: 50,
     learnset: [{ lv: 1, name: 'Malicioso', pp: 30 }, { lv: 1, name: 'Picotazo Veneno', pp: 35 }, { lv: 8, name: 'Cornada', pp: 25 }, { lv: 12, name: 'Doble Patada', pp: 30 }, { lv: 17, name: 'Picotazo Veneno', pp: 35 }, { lv: 20, name: 'Foco Energía', pp: 30 }, { lv: 23, name: 'Refuerzo', pp: 20 }, { lv: 30, name: 'Furia', pp: 20 }, { lv: 38, name: 'Perforador', pp: 5 }]
   },
   nidorino: {

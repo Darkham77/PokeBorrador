@@ -184,6 +184,7 @@ export const useGameStore = defineStore('game', () => {
 
     scheduleSave()
     autoFillPvpTeam()
+    autoFillWarTeam()
     return { success: true, target }
   }
 
@@ -230,15 +231,65 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  /**
+   * Automatically fills the War team using references from Team or Box.
+   */
+  function autoFillWarTeam() {
+    const allPokes = [...state.team, ...(state.box || [])]
+    if (allPokes.length === 0) {
+      state.warTeam = []
+      return
+    }
+
+    // Clean up warTeam from non-existent UIDs
+    const existingUids = new Set(allPokes.map(p => p.uid))
+    state.warTeam = (state.warTeam || []).filter(uid => existingUids.has(uid))
+
+    // Target count is dynamic based on warSlots
+    const targetCount = Math.min(state.warSlots || 6, allPokes.length)
+
+    if (state.warTeam.length < targetCount) {
+      for (const p of allPokes) {
+        if (state.warTeam.length >= targetCount) break
+        if (!state.warTeam.includes(p.uid)) {
+          state.warTeam.push(p.uid)
+        }
+      }
+    }
+    
+    // Ensure no more than capacity
+    if (state.warTeam.length > (state.warSlots || 6)) {
+      state.warTeam = state.warTeam.slice(0, state.warSlots || 6)
+    }
+  }
+
+  function swapWarSlot(slotIndex, newPokemonUid) {
+    const maxSlots = state.warSlots || 6
+    if (slotIndex < 0 || slotIndex >= maxSlots) return
+    
+    const allPokes = [...state.team, ...(state.box || [])]
+    const exists = allPokes.some(p => p.uid === newPokemonUid)
+    const warTeam = state.warTeam || []
+    const alreadyIn = warTeam.includes(newPokemonUid)
+
+    if (exists && !alreadyIn) {
+      if (!state.warTeam) state.warTeam = []
+      state.warTeam[slotIndex] = newPokemonUid
+      save(false)
+    }
+  }
+
   function swapPvpSlot(slotIndex, newPokemonUid) {
     if (slotIndex < 0 || slotIndex >= 3) return
     
     // Check if pokemon exists and is not already in PVP team
     const allPokes = [...state.team, ...(state.box || [])]
     const exists = allPokes.some(p => p.uid === newPokemonUid)
-    const alreadyIn = state.pvpTeam.includes(newPokemonUid)
+    const pvpTeam = state.pvpTeam || []
+    const alreadyIn = pvpTeam.includes(newPokemonUid)
 
     if (exists && !alreadyIn) {
+      if (!state.pvpTeam) state.pvpTeam = []
       state.pvpTeam[slotIndex] = newPokemonUid
       save(false)
     }
@@ -260,6 +311,7 @@ export const useGameStore = defineStore('game', () => {
     if (boxIdx !== -1) {
       state.box.splice(boxIdx, 1)
       autoFillPvpTeam()
+      autoFillWarTeam()
       scheduleSave()
       return true
     }
@@ -435,6 +487,7 @@ export const useGameStore = defineStore('game', () => {
     state.box.push(p)
     useUIStore().notify(`¡${p.name} fue enviado a la Caja PC!`, '📦')
     autoFillPvpTeam()
+    autoFillWarTeam()
     save(false)
     return true
   }
@@ -477,6 +530,8 @@ export const useGameStore = defineStore('game', () => {
     removePokemon,
     autoFillPvpTeam,
     swapPvpSlot,
+    autoFillWarTeam,
+    swapWarSlot,
     saveGame: save // Alias for backward compatibility
   }
 })

@@ -46,12 +46,16 @@
             <header
               v-if="!hideHeader"
               class="modal-header-premium"
+              :style="{ background: headerBackground }"
             >
               <slot name="header">
                 <div class="modal-header-left">
                   <slot name="header-icon" />
                   <div class="modal-title-stack">
-                    <h2 class="modal-title-text">
+                    <h2 
+                      class="modal-title-text"
+                      :style="{ color: titleColor }"
+                    >
                       {{ title }}
                     </h2>
                   </div>
@@ -61,7 +65,7 @@
               <button
                 v-if="showCloseButton"
                 class="modal-close-btn"
-                title="Cerrar"
+                :disabled="preventClose"
                 @click="handleClose"
               >
                 <div class="close-icon-wrapper" />
@@ -72,7 +76,7 @@
             <button
               v-else-if="showCloseButton"
               class="modal-close-btn-floating"
-              title="Cerrar"
+              :disabled="preventClose"
               @click="handleClose"
             >
               <div class="close-icon-wrapper" />
@@ -137,13 +141,21 @@ const props = defineProps({
     type: String,
     default: 'modern',
     validator: (val) => ['modern', 'retro'].includes(val)
-  }
+  },
+  titleColor: { type: String, default: null },
+  headerBackground: { type: String, default: null },
+  preventClose: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
 
-const handleClose = () => emit('close')
-const handleOverlayClick = () => { if (props.closeOnClickOutside) handleClose() }
+const handleClose = () => {
+  if (props.preventClose) return
+  emit('close')
+}
+const handleOverlayClick = () => { 
+  if (props.closeOnClickOutside && !props.preventClose) handleClose() 
+}
 
 const computedZIndex = ref(props.zIndex)
 const localShow = ref(props.show)
@@ -152,8 +164,19 @@ watch(() => props.show, (val) => {
   if (val) {
     localShow.value = true
     computedZIndex.value = props.zIndex
+    if (props.lockScroll) document.body.classList.add('modal-open')
+  } else {
+    // We don't set localShow = false here to allow the leave transition to play
+    if (props.lockScroll) document.body.classList.remove('modal-open')
   }
 }, { immediate: true })
+
+import { onUnmounted } from 'vue'
+onUnmounted(() => {
+  if (props.lockScroll) {
+    document.body.classList.remove('modal-open')
+  }
+})
 
 const onContentLeave = () => {
   if (!props.show) {
@@ -174,6 +197,7 @@ const cardStyles = computed(() => {
   position: fixed;
   inset: 0;
   display: block;
+  pointer-events: none; // Ensure the root doesn't block clicks/scrolls
 }
 
 .modal-overlay {
@@ -183,10 +207,14 @@ const cardStyles = computed(() => {
   backdrop-filter: Blur(10px);
   z-index: 1;
   pointer-events: auto;
+  // GPU Acceleration
+  transform: TranslateZ(0);
+  will-change: opacity;
 
   &.transparent {
     background: transparent !important;
     backdrop-filter: none !important;
+    pointer-events: none !important;
   }
 }
 
@@ -208,12 +236,21 @@ const cardStyles = computed(() => {
     justify-content: flex-start;
     align-items: stretch;
   }
+
+  &.no-pointer-events {
+    pointer-events: none !important;
+    
+    // Ensure the card itself still catches events
+    .base-modal-card {
+      pointer-events: auto !important;
+    }
+  }
 }
 
 .base-modal-card {
   position: relative;
   pointer-events: auto;
-  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9);
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
@@ -225,16 +262,20 @@ const cardStyles = computed(() => {
   transform: Translate3d(0, 0, 0);
   will-change: transform, opacity;
 
+  // GPU Acceleration via mixin or direct property
+  @include gpu-layer;
+
   .type-center & {
     width: 95%;
-    max-height: 94vh;
-    border-radius: 20px;
+    max-height: 92vh;
+    border-radius: 24px;
   }
   
   .type-side &, .type-side-right & {
     width: 440px;
     max-width: 95vw;
     height: 100vh;
+    max-height: 100vh !important;
     border-radius: 0;
     border-left: 1px solid rgba(255, 255, 255, 0.1);
   }
@@ -243,14 +284,20 @@ const cardStyles = computed(() => {
     width: 440px;
     max-width: 95vw;
     height: 100vh;
+    max-height: 100vh !important;
     border-radius: 0;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   &.variant-retro {
-    border: 2px solid var(--yellow) !important;
-    border-radius: 30px !important;
     background: #1a1c2e !important;
+    border: 2px solid var(--yellow) !important;
+    border-radius: 4px !important;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(255, 217, 61, 0.1);
+
+    .type-center & {
+      border-radius: 30px !important;
+    }
   }
 }
 
@@ -364,7 +411,7 @@ const cardStyles = computed(() => {
 
 .modal-zoom-enter-from, .modal-zoom-leave-to {
   opacity: 0;
-  transform: Scale(0.95) Translate3d(0, 0, 0);
+  transform: Translate3d(0, 0, 0) Scale(0.95);
 }
 
 .slide-right-enter-from, .slide-right-leave-to {
@@ -381,9 +428,9 @@ const cardStyles = computed(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   min-height: 0;
   position: relative;
+  @include smooth-scroll;
   
   &.padding-standard { 
     padding: 16px; 

@@ -262,8 +262,22 @@ box-shadow:
   0%, 100% { box-shadow: 0 0 SMALL-BLUR COLOR; }
   50% { box-shadow: 0 0 LARGE-BLUR COLOR; }
 }
+```
 
-/* Easing and duration affect feel */
+### 4. Dynamic Variable Binding (Generic SCSS)
+
+To keep SCSS generic and reusable across different contexts (e.g., varying Pokémon types), bind dynamic variables in the template:
+
+```text
+<div :style="{ '--glow-color': getTypeColor(type) }" class="dynamic-glow">
+```
+
+In SCSS:
+
+```scss
+.dynamic-glow {
+  box-shadow: 0 0 15px var(--glow-color, $yellow);
+}
 ```
 
 ---
@@ -445,6 +459,14 @@ For discovery-based UI (Pokedex, unlockables), use high-contrast filters to diff
 - **Silhouette (Seen)**: Use `filter: Brightness(0)` to black out the sprite.
 - **Outline Enhancement**: Apply a subtle `Drop-shadow(0 0 1px rgba(255,255,255,0.2))` to the silhouette to keep the form defined against deep dark backgrounds.
 - **Placeholder Opacity**: "Unseen" cards should maintain a higher base opacity (0.7-0.8) to keep the grid structure visible, while using a bright `?` sign for maximum contrast.
+
+### 13. Decoupled Sprite Effects
+
+To prevent performance-killing filter stacks, separate the core "Game" look from decorative "Modern" effects:
+
+- **Core Layer**: Applied to `img` (pixelated rendering, black border).
+- **Decorative Layer**: Applied to a parent wrapper (glows, auras, scale animations).
+- **Benefit**: Allows independent management of visual layers and prevents filter composition overhead.
 
 ---
 

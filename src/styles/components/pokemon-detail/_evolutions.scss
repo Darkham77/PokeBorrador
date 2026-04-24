@@ -11,20 +11,23 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 32px;
+      gap: 16px;
       background: rgba(255,255,255,0.03);
-      padding: 24px 32px;
-      border-radius: 24px;
+      padding: 16px 20px;
+      border-radius: 20px;
       border: 1px solid rgba(255,255,255,0.05);
       width: fit-content;
+      max-width: 100%;
       margin: 0 auto;
+      @include will-animate(transform, box-shadow);
+      transition: all 0.3s ease;
       
       .evo-from, .evo-to {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
-        min-width: 100px;
+        gap: 8px;
+        min-width: 80px;
         text-align: center;
       }
 
@@ -70,7 +73,7 @@
 
         .silhouette {
           filter: Brightness(0) !important;
-          opacity: 0.2;
+          opacity: 1; // Solid black as requested
         }
 
         .unknown-placeholder {
@@ -98,5 +101,43 @@
     color: rgba(255,255,255,0.3);
     font-size: 14px;
     font-style: italic;
+  }
+}
+
+// Mobile Responsive Fix
+@media (max-width: 480px) {
+  .evolve-pane {
+    .evo-chain {
+      gap: 12px;
+      
+      .evo-step {
+        padding: 12px 10px;
+        gap: 8px;
+        border-radius: 16px;
+        
+        .evo-from, .evo-to {
+          min-width: 60px;
+          gap: 4px;
+        }
+        
+        .evo-sprite, .sprite-wrap {
+          width: 48px;
+          height: 48px;
+        }
+
+        .evo-arrow {
+          min-width: 40px;
+          .arrow { font-size: 16px; }
+          .method { font-size: 7px; }
+        }
+
+        .target-name {
+          font-size: 7px;
+          max-width: 60px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
   }
 }

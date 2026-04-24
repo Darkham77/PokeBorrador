@@ -16,16 +16,28 @@ export function checkPlayerWinner(routeWinner, playerFaction) {
   return normalizeFaction(routeWinner) === normalizeFaction(playerFaction)
 }
 
-export function calculateSpawnGrid(spawnsCount) {
+export function calculateSpawnGrid(spawnsCount, preferredCols = 3) {
   if (spawnsCount === 0) return { rows: 0, cols: 0, totalSlots: 0 }
   
-  let rows, cols
-  if (spawnsCount <= 6) {
+  let cols = Math.max(3, preferredCols)
+  
+  // For very small counts, we might want to stay with 3 columns to avoid 
+  // a single row of 5 if preferredCols is 5, but the user specifically 
+  // asked for 3-5 range flexibility. 
+  // However, we maintain a minimum of 3 cols for consistency.
+
+  // If spawnsCount is high and sqrt(count) > cols, we expand cols 
+  // to maintain a more balanced grid.
+  const idealCols = Math.ceil(Math.sqrt(spawnsCount))
+  if (idealCols > cols) {
+    cols = idealCols
+  }
+
+  let rows = Math.ceil(spawnsCount / cols)
+  
+  // To maintain size consistency, we always want at least 2 rows.
+  if (rows < 2 && spawnsCount > 0) {
     rows = 2
-    cols = 3
-  } else {
-    cols = Math.ceil(Math.sqrt(spawnsCount))
-    rows = Math.ceil(spawnsCount / cols)
   }
   
   return { rows, cols, totalSlots: rows * cols }

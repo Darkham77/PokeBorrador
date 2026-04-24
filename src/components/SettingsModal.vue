@@ -29,6 +29,8 @@ const updateZoom = (val) => {
   <BaseModal
     :show="show"
     title="CONFIGURACIÓN"
+    title-color="var(--yellow)"
+    header-background="#1a1c2e"
     max-width="440px"
     variant="retro"
     @close="emit('close')"

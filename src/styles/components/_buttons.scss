@@ -26,6 +26,11 @@
   @include btn-vicio('info', 'md');
 }
 
+// Success (Green)
+.btn-vicio-success {
+  @include btn-vicio('success', 'md');
+}
+
 // Neutral (Gray)
 .btn-vicio-neutral {
   @include btn-vicio('neutral', 'md');
@@ -40,11 +45,18 @@
   &.btn-vicio-secondary { @include btn-vicio-variant('secondary', 'sm'); }
   &.btn-vicio-danger { @include btn-vicio-variant('danger', 'sm'); }
   &.btn-vicio-info { @include btn-vicio-variant('info', 'sm'); }
+  &.btn-vicio-success { @include btn-vicio-variant('success', 'sm'); }
   &.btn-vicio-neutral { @include btn-vicio-variant('neutral', 'sm'); }
 }
 
 .btn-vicio-full {
   width: 100% !important;
+}
+
+.btn-vicio-start {
+  justify-content: flex-start !important;
+  text-align: left !important;
+  padding-left: 20px !important;
 }
 
 // Legacy Aliases

@@ -160,6 +160,7 @@ const closeError = () => {
   backdrop-filter: Blur(10px);
   animation: fadeIn 0.3s ease;
   font-family: 'Nunito', sans-serif;
+  @include gpu-layer;
 }
 
 .error-card {
@@ -201,8 +202,8 @@ const closeError = () => {
   flex: 1;
   padding: 24px;
   color: #eaeaea;
-  overflow-y: auto;
   min-height: 0;
+  @include smooth-scroll;
 }
 
 .error-intro {

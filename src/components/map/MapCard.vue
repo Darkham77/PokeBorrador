@@ -1,6 +1,7 @@
 <script setup>
-import { computed, ref, watch, onUnmounted } from 'vue'
+import { computed, ref, watch, onUnmounted, onMounted } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
 import { useUIStore } from '@/stores/ui'
@@ -198,24 +199,93 @@ const isPlayerWinner = computed(() => {
 
 const getPokemonSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 
-const isRare = (id) => {
-  const rate = props.spawnPool.rates[id] || 10
-  return rate < 10
-}
+// Optimized processed grid to avoid calling functions in template
+const processedGrid = computed(() => {
+  const gridData = spawnGrid.value
+  const slots = gridData.slots || []
+  
+  // Cache pokedex state to avoid repeated reactive lookups
+  const seenPokedex = game.state.seenPokedex || []
+  const caughtPokedex = game.state.pokedex || []
+  
+  return slots.map((id, index) => {
+    if (!id) return { id: null, key: `empty-${index}` }
+    
+    const seen = seenPokedex.includes(id) || caughtPokedex.includes(id)
+    
+    // Rare check
+    const rate = props.spawnPool?.rates?.[id] || 10
+    const rare = rate < 10
+
+    // Tooltip logic
+    let name = '???'
+    if (seen) {
+      name = pokemonDataProvider.getPokemonData(id)?.name || id.toUpperCase()
+    }
+
+    let tooltipDesc = 'Habitante común de esta ruta.'
+    if (rare) {
+      tooltipDesc = '¡Aparición Especial! Este Pokémon tiene un ratio de aparición muy bajo en esta ruta, por eso emite un aura roja de poder.'
+    }
+
+    return {
+      id,
+      key: `${id}-${index}`,
+      name,
+      sprite: getAssetUrl(ASSET_TYPES.POKEMON, id),
+      isSeen: seen,
+      isRare: rare,
+      tooltipDesc
+    }
+  })
+})
 
 const allSpawns = computed(() => [
   ...props.spawnPool.generic,
   ...props.spawnPool.specific
 ])
 
-// Dynamic Grid Logic
-const SPRITE_SCALE = 1.5 // Increased for better visibility as requested
+// Dynamic Grid & Responsiveness
+const cardRef = ref(null)
+const currentCols = ref(3)
+let resizeObserver = null
+
+onMounted(() => {
+  if (cardRef.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width || 0
+      if (width > 580) currentCols.value = 5
+      else if (width > 420) currentCols.value = 4
+      else currentCols.value = 3
+    })
+    resizeObserver.observe(cardRef.value)
+  }
+})
+
+onUnmounted(() => {
+  if (resizeObserver) resizeObserver.disconnect()
+})
+
+const lockReason = computed(() => {
+  if (props.isSafariLocked) return 'REQUIERE TICKET SAFARI'
+  if (!props.isLocked) return ''
+  if (props.map.id === 'cerulean_cave' && props.badgeCount < 8) return '8 MEDALLAS / TICKET'
+  if (props.badgeCount < props.map.badges) return `REQUIERE ${props.map.badges} MEDALLAS`
+  return 'BLOQUEADO'
+})
+
+const lockDescription = computed(() => {
+  if (props.isSafariLocked) return 'Necesitas un Ticket Safari para entrar a esta zona.'
+  if (!props.isLocked) return ''
+  if (props.map.id === 'cerulean_cave') return 'Necesitas 8 medallas o un Ticket Cueva Celeste.'
+  return `Consigue ${props.map.badges} medallas para acceder a esta zona.`
+})
 
 const spawnGrid = computed(() => {
   const rawSpawns = allSpawns.value
   const count = rawSpawns.length
 
-  const { rows, cols, totalSlots } = calculateSpawnGrid(count)
+  const { rows, cols, totalSlots } = calculateSpawnGrid(count, currentCols.value)
   const grid = new Array(totalSlots).fill(null)
 
   // Place pokemons from the end (bottom-right)
@@ -233,6 +303,7 @@ const spawnGrid = computed(() => {
 
 <template>
   <div
+    ref="cardRef"
     :class="['location-card map-card legacy-panel', { locked: isLocked, 'safari-locked': isSafariLocked }]"
     :style="atmosphereStyles"
     @click="!isLocked && !isPerformanceMode && emit('navigate', map.id)"
@@ -275,7 +346,7 @@ const spawnGrid = computed(() => {
         v-if="!isPerformanceMode"
         class="lock-text"
       >
-        {{ isSafariLocked ? 'REQUIERE TICKET' : 'BLOQUEADO' }}
+        {{ lockReason }}
       </span>
     </div>
 
@@ -297,13 +368,13 @@ const spawnGrid = computed(() => {
     <!-- 2. Cycle Pill (Top Right) -->
     <PVTooltip
       v-if="!isPerformanceMode"
-      :class="['location-tag', isLocked ? 'tag-locked' : 'tag-wild', weatherAnimClass]"
-      :title="isLocked ? 'BLOQUEADO' : 'ESTADO AMBIENTAL'"
-      :description="isLocked ? 'Necesitas más medallas para entrar aquí.' : `Clima: ${weatherName} | Ciclo: ${cycleName}`"
+      :class="['location-tag', (isLocked || isSafariLocked) ? 'tag-locked' : 'tag-wild', weatherAnimClass]"
+      :title="(isLocked || isSafariLocked) ? 'ZONA BLOQUEADA' : 'ESTADO AMBIENTAL'"
+      :description="(isLocked || isSafariLocked) ? lockDescription : `Clima: ${weatherName} | Ciclo: ${cycleName}`"
       position="top"
     >
       <span class="pill-content">
-        <template v-if="isLocked">🔒</template>
+        <template v-if="isLocked || isSafariLocked">🔒</template>
         <template v-else>
           <span class="tag-icon">
             {{ cycleEmoji }}{{ weatherEmoji }}
@@ -363,25 +434,34 @@ const spawnGrid = computed(() => {
         :style="{ 
           '--grid-cols': spawnGrid.cols,
           '--grid-rows': spawnGrid.rows,
-          '--sprite-scale': SPRITE_SCALE 
+          '--sprite-scale': 1 
         }"
         :class="{ 'show-debug-grid': uiStore.isDebugGridMode }"
       >
         <div 
-          v-for="(id, index) in spawnGrid.slots"
-          :key="index"
+          v-for="item in processedGrid" 
+          :key="item.key"
           class="spawn-slot"
         >
           <div
-            v-if="id"
-            :class="['sprite-wrapper', { 'rare-spawn': isRare(id) }]"
+            v-if="item.id"
+            class="spawn-content"
           >
-            <img
-              :src="getPokemonSprite(id)"
-              class="pixelated"
-              :title="id"
-              @error="e => e.target.style.display = 'none'"
-            >
+            <div :class="['sprite-wrapper', { 'rare-spawn': item.isRare }]">
+              <PVTooltip 
+                :title="item.name" 
+                :description="item.tooltipDesc"
+                position="top"
+                class="spawn-tooltip-trigger"
+              >
+                <img
+                  :src="item.sprite"
+                  class="pixelated"
+                  :class="{ 'spawn-silhouette': !item.isSeen }"
+                  @error="e => e.target.style.display = 'none'"
+                >
+              </PVTooltip>
+            </div>
           </div>
         </div>
       </div>
@@ -403,6 +483,15 @@ const spawnGrid = computed(() => {
 
 <style scoped lang="scss">
 @use "@/styles/components/map-card-weather" as *;
+
+.spawn-tooltip-trigger {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
 
 /* Note: Core styles moved to _map-card-render.scss to stay under 500 lines */
 </style>

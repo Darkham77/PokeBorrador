@@ -14,16 +14,14 @@ const uiStore = useUIStore()
 const gameStore = useGameStore()
 const authStore = useAuthStore()
 
-defineOptions({ inheritAttrs: false })
-defineEmits(['close', 'confirm', 'cancel', 'submit'])
-
-const gs = computed(() => gameStore.state)
-
-const isOpen = computed({
-  get: () => uiStore.isProfileOpen,
-  set: (val) => { uiStore.isProfileOpen = val }
+const props = defineProps({
+  show: { type: Boolean, default: false }
 })
 
+defineOptions({ inheritAttrs: false })
+const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
+
+const gs = computed(() => gameStore.state)
 const profileData = computed(() => uiStore.profileData)
 
 const factionLabel = computed(() => {
@@ -63,7 +61,7 @@ const lastSaveFormatted = computed(() => {
   })
 })
 
-const close = () => { isOpen.value = false }
+const close = () => { emit('close') }
 
 const handleLogout = () => {
   authStore.logout()
@@ -92,8 +90,10 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
 <template>
   <BaseModal
-    :show="isOpen"
+    :show="show"
     title="MI PERFIL"
+    title-color="var(--yellow)"
+    :header-background="gs.playerClass === 'rocket' ? 'rgba(239, 68, 68, 0.15)' : (gs.playerClass === 'cazabichos' ? 'rgba(34, 197, 94, 0.15)' : (gs.playerClass === 'entrenador' ? 'rgba(59, 130, 246, 0.15)' : (gs.playerClass === 'criador' ? 'rgba(168, 85, 247, 0.15)' : 'rgba(15, 23, 42, 0.8)')))"
     type="side-right"
     max-width="420px"
     :show-close-button="true"
@@ -225,6 +225,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   flex-direction: column;
   background: transparent;
   backdrop-filter: Blur(12px);
+  @include gpu-layer;
   
   // Custom backgrounds by class fading to transparent
   .rocket & { background: linear-gradient(180deg, rgba(239, 68, 68, 0.15) 0%, transparent 60%); }
@@ -240,11 +241,11 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 .profile-body-premium {
   padding: 0 24px 40px;
   flex: 1;
-  overflow-y: auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  @include smooth-scroll;
 }
 
 .profile-identity-card {
