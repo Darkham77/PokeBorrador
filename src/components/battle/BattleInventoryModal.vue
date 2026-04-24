@@ -7,11 +7,10 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
 import { useInventoryStore } from '@/stores/inventory'
-import { useUIStore } from '@/stores/ui'
 import { SHOP_ITEMS } from '@/data/items'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 
@@ -19,7 +18,6 @@ const emit = defineEmits(['close'])
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
-const uiStore = useUIStore()
 const invStore = useInventoryStore()
 
 const inventory = computed(() => gameStore.state.inventory || {})

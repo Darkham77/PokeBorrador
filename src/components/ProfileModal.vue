@@ -14,7 +14,7 @@ const uiStore = useUIStore()
 const gameStore = useGameStore()
 const authStore = useAuthStore()
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 

@@ -351,9 +351,14 @@ const spawnGrid = computed(() => {
     </div>
 
     <!-- 1. Guardian (Top Left) -->
-    <div
+    <PVTooltip
       v-if="dominance?.guardian && !isPerformanceMode && !isLocked && !isSafariLocked"
       class="guardian-status-badge"
+      :title="dominance.guardian.captured ? 'GUARDIÁN DERROTADO' : 'POKÉMON GUARDIÁN'"
+      :description="dominance.guardian.captured 
+        ? 'El protector de esta ruta ha sido vencido, permitiendo que una facción tome el control total.' 
+        : 'Un Pokémon poderoso que protege la ruta. Derrótalo para liberar la zona y permitir que tu facción la domine, activando bonus de captura.'"
+      position="top"
     >
       <img
         :src="getPokemonSprite(dominance.guardian.id)"
@@ -363,7 +368,7 @@ const spawnGrid = computed(() => {
       <span :class="['guardian-label', { captured: dominance.guardian.captured }]">
         {{ dominance.guardian.captured ? 'DERROTADO' : 'GUARDIÁN' }}
       </span>
-    </div>
+    </PVTooltip>
 
     <!-- 2. Cycle Pill (Top Right) -->
     <PVTooltip

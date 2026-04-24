@@ -11,7 +11,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import ClassDashboard from './class/ClassDashboard.vue'
 import ClassMissionsList from './class/ClassMissionsList.vue'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 

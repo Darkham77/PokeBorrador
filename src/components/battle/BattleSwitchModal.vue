@@ -12,7 +12,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 

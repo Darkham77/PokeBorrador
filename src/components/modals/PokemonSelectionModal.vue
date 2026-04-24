@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
@@ -24,11 +24,22 @@ const config = computed(() => {
   }
 })
 
-const searchQuery = ref('')
-const sortBy = ref('recent') // 'recent', 'level', 'ivs', 'bst'
-const sortOrder = ref('desc')
-const activeTags = ref([])
+const savedFilters = JSON.parse(localStorage.getItem('pv_selection_filters') || '{}')
+const searchQuery = ref(savedFilters.searchQuery || '')
+const sortBy = ref(savedFilters.sortBy || 'recent') // 'recent', 'level', 'ivs', 'bst'
+const sortOrder = ref(savedFilters.sortOrder || 'desc')
+const activeTags = ref(Array.isArray(savedFilters.activeTags) ? savedFilters.activeTags : [])
 const selectedUids = ref([])
+
+// Persist filters
+watch([sortBy, sortOrder, activeTags, searchQuery], () => {
+  localStorage.setItem('pv_selection_filters', JSON.stringify({
+    sortBy: sortBy.value,
+    sortOrder: sortOrder.value,
+    activeTags: activeTags.value,
+    searchQuery: searchQuery.value
+  }))
+}, { deep: true })
 
 const availablePokemon = computed(() => {
   const box = gameStore.state.box || []
@@ -153,6 +164,13 @@ function toggleTagFilter(tagId) {
   }
 }
 
+function clearFilters() {
+  searchQuery.value = ''
+  sortBy.value = 'recent'
+  sortOrder.value = 'desc'
+  activeTags.value = []
+}
+
 const getPokemonBst = (p) => {
   const getSpeciesKey = (name) => {
     if (!name) return ''
@@ -213,6 +231,13 @@ function openDetail(item) {
             placeholder="Buscar por nombre o ID..."
             class="search-input"
           >
+          <button
+            v-if="searchQuery"
+            class="clear-search"
+            @click="searchQuery = ''"
+          >
+            ✕
+          </button>
         </div>
         
         <div class="sort-btns">
@@ -271,8 +296,15 @@ function openDetail(item) {
         </div>
 
         <div class="tags-section">
-          <div class="section-label">
-            ETIQUETAS:
+          <div class="section-header">
+            <span class="section-label">ETIQUETAS:</span>
+            <button
+              v-if="activeTags.length > 0 || searchQuery || sortBy !== 'recent'"
+              class="clear-all-btn"
+              @click="clearFilters"
+            >
+              LIMPIAR FILTROS
+            </button>
           </div>
           <div class="tags-bar">
             <PVTooltip 

@@ -11,7 +11,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import TradeSidePanel from './social/TradeSidePanel.vue'
 import TradeFooter from './social/TradeFooter.vue'
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 

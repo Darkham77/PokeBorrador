@@ -1,6 +1,5 @@
 <script setup>
 import { usePlayerClassStore } from '@/stores/playerClass';
-import { useUIStore } from '@/stores/ui';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import BaseModal from '@/components/common/BaseModal.vue';
@@ -9,7 +8,7 @@ import BaseModal from '@/components/common/BaseModal.vue';
  * ClassSelectionModal
  * Managed by ModalHost. Receives 'show' prop from the host.
  */
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 });
 
@@ -17,7 +16,6 @@ const emit = defineEmits(['close', 'confirm', 'cancel', 'submit']);
 defineOptions({ inheritAttrs: false });
 
 const classStore = usePlayerClassStore();
-const uiStore = useUIStore();
 
 const close = () => { 
   emit('close');

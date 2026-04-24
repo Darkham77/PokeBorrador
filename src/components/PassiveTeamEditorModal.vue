@@ -3,7 +3,7 @@
  * PassiveTeamEditorModal
  * Standardized modal for managing defense team.
  */
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 })
 

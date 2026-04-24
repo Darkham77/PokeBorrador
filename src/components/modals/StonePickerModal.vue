@@ -13,7 +13,7 @@ import { STONE_EVOLUTIONS } from '@/data/evolutionData';
 import { SHOP_ITEMS } from '@/data/items';
 import BaseModal from '@/components/common/BaseModal.vue';
 
-const props = defineProps({
+defineProps({
   show: { type: Boolean, default: false }
 });
 
