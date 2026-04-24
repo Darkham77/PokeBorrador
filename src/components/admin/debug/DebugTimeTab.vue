@@ -1,12 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const game = useGameStore()
-const ui = useUIStore()
 const mapStore = useMapStore()
 
 const debugDate = ref(new Date().toISOString().slice(0, 16))

@@ -3,14 +3,12 @@ import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { usePvPStore } from '@/stores/pvp'
-import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const _auth = useAuthStore()
 const game = useGameStore()
 const pvp = usePvPStore()
-const ui = useUIStore()
 const _mapStore = useMapStore()
 
 const debugMoney = ref(10000)

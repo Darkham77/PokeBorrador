@@ -12,14 +12,15 @@ description: Guía paso a paso para agregar un Pokémon completamente nuevo al j
 
 ---
 
-## 🚨 REGLA DE ORO: INTEGRIDAD DE DATOS
+## 🚨 REGLA DE ORO: INTEGRIDAD DE DATOS Y ESTÁNDARES
 
-Antes de agregar cualquier dato nuevo, recuerda:
-
-1. **Nombres de Objetos**: Usa siempre los nombres oficiales completos. Ejemplo: **"Subida de PP"** (NO "Subida PP"). Una discrepancia romperá la lógica de uso.
+1. **Nombres de Objetos**: Usa siempre los nombres oficiales completos. Ejemplo: **"Subida de PP"** (NO "Subida PP").
 2. **Deduplicación**: Nunca agregues un movimiento a `MOVE_DATA` que ya exista. El validador ahora detecta duplicados automáticamente.
 3. **Sincronización de PP**: Al inicializar un movimiento para un Pokémon, `maxPP` debe ser igual a su `pp` base inicial.
-4. **Formato de Imagen (PokeAPI)**: Todas las imágenes externas provenientes de PokeAPI **DEBEN** mantenerse en formato **PNG**. PokeAPI no ofrece sprites en WebP, por lo que intentar forzar WebP para estos assets resultará en errores de carga (404).
+4. **Formato de Imagen**: Todas las imágenes externas de PokeAPI **DEBEN** ser **PNG**.
+5. **Cálculo de Tiers**: La clasificación (S+, S, A, etc.) es **DINÁMICA**. No la agregues a la DB; se calcula en la UI usando `src/logic/constants/tiers.js`.
+6. **Estilo SASS**: Si creas estilos para el nuevo Pokémon, las directivas `@use` deben ser las **primeras líneas** del archivo. Usa capitalización para filtros (ej. `Filter: Blur(2px)`).
+7. **CLI-First Verification**: Al terminar la implementación, **DEBES** usar los comandos de `window.__VITE_DEBUG__` vía subagente de navegador para verificar el Pokémon.
 
 ---
 
@@ -31,13 +32,13 @@ Ejecutar el script de fetch pasando el nombre en inglés del Pokémon:
 node .agents/skills/add-pokemon/scripts/fetch_pokemon.js houndour
 ```
 
-Esto genera un archivo `_output/<pokemon>.json` con todos los datos necesarios.
+Esto genera un archivo `_output/<pokemon>_code.txt` con todos los bloques listos para copiar.
 
 ---
 
 ## Paso 1: Agregar a `POKEMON_DB` en `src/data/pokemonDB.js`
 
-### Formato exacto del proyecto
+### Formato exacto
 
 ```js
 houndour: {
@@ -56,78 +57,40 @@ houndour: {
     { lv: 50, name: 'Llamarada', pp: 5 }
   ]
 },
-houndoom: {
-  name: 'Houndoom', emoji: '🔥', type: 'fire',
-  hp: 75, atk: 90, def: 50, spa: 110, spd: 80, spe: 95,
-  learnset: [
-    { lv: 1, name: 'Lanzamiento', pp: 35 },
-    { lv: 1, name: 'Gruñido', pp: 40 },
-    { lv: 1, name: 'Ascuas', pp: 25 },
-    { lv: 1, name: 'Mordisco', pp: 25 },
-    // ... continúa
-  ]
-},
 ```
 
-### Reglas
-
-- La key es siempre en **inglés en minúsculas** (ej. `houndour`, `mr_mime`).
-- El `name` es en **español** o nombre oficial del juego.
-- El `emoji` es decorativo, elegir el más representativo del tipo.
-- El `type` es en **inglés en minúsculas** (`fire`, `dark`, etc). Para tipo secundario, revisar si el proyecto usa `POKE_TYPE2` separado.
-- Stats base tomados de PokeAPI Gen 3 (o Bulbapedia).
-- El learnset usa **nombres en español** tal como están en `MOVE_DATA`.
-
-> Los movimientos del learnset DEBEN existir en `MOVE_DATA` (en `src/data/moves.js`). Antes de agregar el Pokémon, verificar cada movimiento. Si alguno falta, agrégalo a `MOVE_DATA` primero.
+> Los movimientos del learnset DEBEN existir en `MOVE_DATA` (en `src/data/moves.js`). Si alguno falta, agrégalo primero.
 
 ---
 
-## Paso 2: Agregar tipo secundario en `POKE_TYPE2` (si aplica)
+## Paso 2: Agregar tipo secundario en `SECONDARY_TYPES` (`src/data/types.js`)
 
-Buscar la constante `POKE_TYPE2` en el proyecto:
-
-```bash
-grep -n "POKE_TYPE2" src/data/pokemonDB.js
-```
-
-Si el Pokémon tiene dos tipos, agregar la entrada:
+Si el Pokémon tiene dos tipos, agrega la entrada en el objeto `SECONDARY_TYPES`:
 
 ```js
-houndour: 'dark',   // tipo secundario = dark
-houndoom: 'dark',
+houndour: 'dark',
 ```
 
 ---
 
-## Paso 3: Agregar habilidades en `ABILITIES` en `src/data/pokemonDB.js`
+## Paso 3: Agregar habilidades en `POKEMON_ABILITIES` (`src/data/abilities.js`)
 
-### Formato exacto
+### Formato
 
 ```js
-houndour: ['Espíritu Vital', 'Inicio Rápido'],
-houndoom: ['Espíritu Vital', 'Inicio Rápido'],
+houndour: ['Espíritu Vital', 'Madrugar'],
 ```
 
 ### Reglas
 
-- Los nombres de habilidades están en **español**, exactamente como en `ABILITY_DATA`.
-- Si es una habilidad **nueva** que no está en `ABILITY_DATA`, hay que agregarla:
+- Los nombres están en **español**, exactamente como en `ABILITY_DATA`.
+- Si la habilidad es nueva, agrégala a `ABILITY_DATA` en el mismo archivo:
 
-#### 3a. Agregar descripción en `ABILITY_DATA` (`src/data/abilities.js`)
+  ```js
+  'Inicio Rápido': 'Duplica la Velocidad cuando el Pokémon tiene un estado alterado.',
+  ```
 
-```js
-'Inicio Rápido': 'Duplica la Velocidad cuando el Pokémon tiene un estado alterado.',
-```
-
-#### 3b. Si la habilidad tiene efecto en batalla, implementarla en `src/logic/battle/battleAbilities.js`
-
-Usar el validator de habilidades para verificar que esté correctamente implementada:
-
-```bash
-# Eliminar caché para refrescar con la nueva habilidad
-del .agents\skills\pokemon-ability-validator\assets\pokeapi_ability_cache.json
-node .agents/skills/pokemon-ability-validator/scripts/validator.js
-```
+- Si tiene efecto en batalla, impleméntala en `src/logic/battle/battleAbilities.js`.
 
 ---
 
@@ -141,182 +104,124 @@ Agregar en `EVOLUTION_TABLE`:
 houndour: { level: 24, to: 'houndoom' },
 ```
 
-### Para evolución por piedra
+### Para evolución por piedra/intercambio
 
-Agregar en `STONE_EVOLUTIONS`:
-
-```js
-nombrePokemon: { stone: 'Piedra Fuego', to: 'nombreEvolución' },
-```
-
-### Para evolución por intercambio
-
-Agregar en `TRADE_EVOLUTIONS`:
-
-```js
-nombrePokemon: 'nombreEvolución',
-```
+Usa `STONE_EVOLUTIONS` o `TRADE_EVOLUTIONS` según corresponda.
 
 ---
 
-## Paso 5: Agregar número de sprite y orden en Pokédex (`src/logic/pokedexConstants.js`)
+## Paso 5: Registro en la Pokédex (`src/logic/pokedexConstants.js`)
 
 ### 5a. Agregar en `POKEMON_SPRITE_IDS`
 
 ```js
-houndour: 228, houndoom: 229,
+houndour: 228,
 ```
 
-El número es el **ID nacional de la Pokédex** oficial.
+Usa el **ID nacional** oficial.
 
-### 5b. Agregar en `PDEX_ORDER` (el array de orden de visualización)
+### 5b. Agregar en `PDEX_ORDER`
 
-```js
-// Agregar en la posición correcta según el número nacional
-'houndour', 'houndoom',
-```
+Inserta la key en el array en la posición nacional correcta.
 
-> [!WARNING]
-> Si el Pokémon es de Gen 2+ y el juego originalmente solo tenía Gen 1, insertar al final del array `PDEX_ORDER`, antes de los legendarios si corresponde.
+### 5c. Agregar compatibilidad de MTs en `TM_COMPAT`
+
+Consulta la compatibilidad oficial de Gen 3 y agrega la lista de IDs (`TM01`, `TM02`, etc.).
 
 ---
 
-## Paso 6: Agregar compatibilidad de MTs en `TM_COMPAT` (`src/logic/pokedexConstants.js`)
+## Paso 6: Validaciones Automáticas
 
-Consultar la compatibilidad oficial en PokeAPI o Bulbapedia Gen 3 y agregar:
-
-```js
-houndour: ['TM06','TM10','TM11','TM12','TM17','TM21','TM23','TM27','TM28','TM30','TM32','TM35','TM36','TM38','TM41','TM42','TM43','TM44','TM45','TM46','TM49','TM50'],
-houndoom: ['TM05','TM06','TM10','TM11','TM12','TM15','TM17','TM21','TM23','TM27','TM28','TM30','TM32','TM35','TM36','TM38','TM41','TM42','TM43','TM44','TM45','TM46','TM49','TM50'],
-```
-
-El ID de la MT debe estar en `GAME_TMS`. Si la MT no existe en el juego, **no agregarla**.
-
----
-
-## Paso 7: Verificar que todos los movimientos están implementados
-
-Ejecutar el validator de movimientos:
+Ejecuta los validadores para asegurar la integridad de los datos:
 
 ```bash
+# Validar movimientos
 node .agents/skills/pokemon-move-validator/scripts/validator.js
-```
 
-Si aparece algún movimiento del learnset que no tiene implementación (`❌`), agregarlo a `MOVE_DATA` en `src/data/moves.js`.
-
-Formato de un movimiento en `MOVE_DATA`:
-
-```js
-'Colmillo Ígneo': { type: 'fire', cat: 'physical', power: 65, acc: 95, pp: 15, effect: 'burn_10' },
-'Infierno':       { type: 'fire', cat: 'special',  power: 100, acc: 85, pp: 5, effect: 'burn' },
+# Validar habilidades
+node .agents/skills/pokemon-ability-validator/scripts/validator.js
 ```
 
 ---
 
-## Paso 8: Agregar al mapa/encuentros (opcional)
+## Paso 7: Agregar al mapa/encuentros (opcional)
 
-Si el Pokémon debe poder encontrarse salvaje, buscarlo en los archivos de ubicaciones:
+Si el Pokémon debe aparecer salvaje, búscalo en `src/data/maps.js` y agrégalo a la ubicación correspondiente:
 
 ```bash
-grep -rn "encounters\|wildPokemon\|LOCATION" src/data/maps.js | head -20
+grep -rn "encounters\|wildPokemon" src/data/maps.js | head -10
 ```
 
-Agregar el Pokémon a la ubicación que corresponda según el lore del juego.
-
 ---
 
-## Checklist Final
+## Paso 8: Verificación por Consola (CLI-First)
 
-Antes de dar por terminado, verificar cada ítem:
+Una vez insertado el código, **abre el navegador** y usa el subagente para ejecutar estos comandos en la consola:
 
-- `[ ]` Entrada en `POKEMON_DB` con stats, emoji, tipo y learnset completo
-- `[ ]` Tipo secundario en `POKE_TYPE2` (si aplica)
-- `[ ]` Habilidades en `ABILITIES` con nombres correctos en español
-- `[ ]` Descripción de habilidades nuevas en `ABILITY_DATA`
-- `[ ]` Lógica de batalla de habilidades nuevas en `src/logic/battle/battleAbilities.js`
-- `[ ]` Evolución en `EVOLUTION_TABLE`, `STONE_EVOLUTIONS` o `TRADE_EVOLUTIONS`
-- `[ ]` Número sprite en `POKEMON_SPRITE_IDS`
-- `[ ]` Posición en `PDEX_ORDER`
-- `[ ]` Compatibilidad de MTs en `TM_COMPAT`
-- `[ ]` Todos los movimientos del learnset existen en `MOVE_DATA`
-- `[ ]` Validator de movimientos ejecutado sin errores (ni movimientos faltantes ni duplicados)
-- `[ ]` Validator de habilidades ejecutado sin errores nuevos
-- `[ ]` Nombres de movimientos e ítems verificados contra el estándar (ej. "Subida de PP")
-- `[ ]` **Persistencia verificada**: El Pokémon inyectado sobrevive a un refresco de página (F5)
+### 1. Inyectar y Verificar Detalle
 
----
+```js
+// Crea e inyecta el Pokémon en la caja inmediatamente
+window.__VITE_DEBUG__.createPokemon({ id: 'houndour', level: 50, isShiny: true });
 
-## Paso 9: Inyección y Prueba (REAL vs TEST)
+// Abre el modal de detalle para verificar visualmente
+window.__VITE_DEBUG__.inspectPokemon(0, 'box'); 
+```
 
-Una vez insertado el código en los archivos del proyecto, puedes probar el Pokémon inmediatamente inyectándolo en tu caja.
+### 2. Probar Combate (Visualización y Stats)
 
-El script `fetch_pokemon.js` genera dos snippets en el archivo `_code.txt`:
+```js
+// Fuerza un encuentro salvaje para ver al Pokémon en escena de batalla
+window.__VITE_DEBUG__.spawnEncounter({ id: 'houndour', level: 50 });
+```
 
-1. **OPCIÓN A (REAL):** Crea un Pokémon con **stats naturales** (IVs aleatorios, Naturaleza aleatoria, movimientos según nivel). Recomendado para balanceo y gameplay.
+### 3. Verificar Persistencia
 
-    ```js
-    injectPokemonToBox(makePokemon('nombre', 50));
-    ```
+Refresca la página (`F5`) y verifica si el Pokémon sigue en la caja usando:
 
-2. **OPCIÓN B (TEST):** Crea un Pokémon con **datos ficticios** (IVs perfectos, stats personalizados, shiny). Recomendado para pruebas visuales o de depuración.
-
-> [!CAUTION]
-> Asegúrate de estar logueado en el juego antes de ejecutar los snippets en la consola.
-
----
-
-## Paso 10: Verificación de Persistencia
-
-El sistema utiliza un nuevo `DBRouter` que sincroniza con Supabase y SQLite. Para confirmar que el Pokémon es persistente:
-
-1. Inyecta el Pokémon usando el snippet.
-2. Espera a que aparezca la notificación 📥.
-3. **Refresca la página (F5)**.
-4. Entra a la Caja PC. Si el Pokémon sigue ahí, la persistencia es correcta.
-
-Si desaparece, significa que el guardado falló o que el "Conflicto de Versiones" sobreescribió tu progreso local. Verifica que el `authStore` esté manejando correctamente la sesión.
+```js
+window.__VITE_DEBUG__.navigate('pc');
+```
 
 ---
 
 ## 🥚 Sistema de Huevos y Eclosión
 
-El proyecto incluye un sistema de huevos que permite inyectar Pokémon en estado de gestación para ser eclosionados más tarde por el jugador.
+La eclosión se gestiona a través del `HatchAnimationModal.vue` y sigue un ciclo de vida interactivo de 3 fases:
 
-### 1. Inyección de Huevos (Debug/Events)
+1. **Fase de Huevo (Egg Phase)**: El huevo aparece flotando. Requiere un **clic manual** para progresar.
+2. **Fase de Ruptura (Crack Phase)**: Animación de vibración y partículas.
+3. **Fase de Revelación (Reveal Phase)**: Se dispara el sonido `evolution_complete` y se aplica el lift de `-85px` al sprite.
 
-Para agregar un huevo al inventario del jugador (sección "Objetos"), usa el comando de debug:
+### Comandos de Prueba para Huevos
 
 ```js
-// Inyecta un huevo de Mew nivel 1 (Shiny)
-window.__VITE_DEBUG__.addHatchableEgg({ 
-  id: 'mew', 
-  level: 1, 
-  isShiny: true 
-});
+// Inyectar huevo silencioso al inventario
+window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch' });
+
+// Lanzar animación de eclosión interactiva inmediatamente
+window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch_anim' });
 ```
 
-### 2. Lógica de Eclosión Interactiva (Vue 3)
+---
 
-La eclosión se gestiona a través del `HatchAnimationModal.vue` y sigue un ciclo de vida estricto de 3 fases:
+## Checklist Final
 
-1.  **Fase de Huevo (Egg Phase)**: El huevo aparece flotando. El sistema espera un **clic manual** del jugador para iniciar la secuencia. Sin clic, la eclosión no progresa (Inmersión).
-2.  **Fase de Ruptura (Crack Phase)**: Animación de vibración y partículas de cáscara.
-3.  **Fase de Revelación (Reveal Phase)**: Se dispara el `evolution_complete` sound, se aplica el lift de `-85px` al sprite y se muestran las estadísticas finales (IVs/Naturaleza).
-
-### 3. Cierre de Ciclo y Persistencia
-
-- **Ejecución Atómica**: El método `gameStore.executeHatch(egg)` es el ÚNICO responsable de:
-    - Generar el objeto Pokémon final con genes heredados.
-    - Eliminar el huevo del inventario.
-    - Guardar el estado global en la DB.
-- **Visualización Post-Hatch**: En el `UnifiedPokemonDetailModal`, los "Hatchlings" deben usar el estándar de **Elevación de Seguridad** (`-85px` y `z-index: 200`) para garantizar visibilidad total sobre las pestañas de navegación.
+- `[ ]` Entrada en `POKEMON_DB` con stats y learnset completo.
+- `[ ]` Tipo secundario en `SECONDARY_TYPES` (`types.js`).
+- `[ ]` Habilidades en `POKEMON_ABILITIES` (`abilities.js`).
+- `[ ]` Evolución en `EVOLUTION_TABLE` u otros.
+- `[ ]` Número sprite y orden en `pokedexConstants.js`.
+- `[ ]` Compatibilidad de MTs verificada contra Gen 3.
+- `[ ]` Todos los movimientos existen en `MOVE_DATA`.
+- `[ ]` Validadores automáticos pasados sin errores.
+- `[ ]` **CLI-First**: Verificado mediante consola (`createPokemon`, `inspectPokemon`).
+- `[ ]` **Persistencia**: El Pokémon sobrevive a un refresco de página (F5).
 
 ---
 
 ## Referencias
 
 - **PokeAPI:** `https://pokeapi.co/api/v2/pokemon/<id_o_nombre>`
-- **Learnset Gen 3:** `https://pokeapi.co/api/v2/pokemon/<id>/` → `moves[].version_group_details` donde `version_group.name = "firered-leafgreen"`
-- **Stats:** `https://pokeapi.co/api/v2/pokemon/<id>/` → `stats[]`
-- **Habilidades:** `https://pokeapi.co/api/v2/pokemon/<id>/` → `abilities[]`
-- **TM Compat Gen 3:** Bulbapedia o `https://pokeapi.co/api/v2/pokemon/<id>/` → `moves[]` donde `move_learn_method.name = "machine"`
+- **Learnset Gen 3:** `firered-leafgreen` en version_group_details.
+- **TM Compat Gen 3:** Bulbapedia o PokeAPI (move_learn_method: machine).

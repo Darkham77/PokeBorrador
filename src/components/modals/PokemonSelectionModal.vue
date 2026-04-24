@@ -10,8 +10,6 @@ import PokemonSelectionItem from './PokemonSelectionItem.vue'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
-const isOpen = ref(false)
-
 const props = defineProps({
   title: { type: String, default: 'SELECCIONAR POKÉMON' },
   subtitle: { type: String, default: '' },

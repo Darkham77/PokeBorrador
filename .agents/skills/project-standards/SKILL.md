@@ -71,6 +71,7 @@ Refer to these manuals for complex implementation specifications:
   - **UI-to-CLI Delegation**: Administrative UI components MUST NOT manipulate stores or databases directly. They must act as thin wrappers that invoke `window.__VITE_DEBUG__` commands.
   - **Fast Navigation & Inspection**: Expose commands for teleportation (`navigate`, `openModal`) and direct store inspection (`getGameStore`) to ensure agents can reach targets and verify state without DOM reliance.
   - **No-CLI Login Perimeter**: The login process MUST NOT support CLI shortcuts or automated triggers (e.g. `auth.login()`). AI agents and scripts MUST perform login exclusively via UI interaction (typing and clicking) to maintain authentication integrity. The `window.__VITE_DEBUG__` proxy MUST remain inactive/deleted until a successful admin session is established.
+  - **CLI-First Verification Protocol**: When adding new content (Pokemon, items, moves), it is MANDATORY to use `window.__VITE_DEBUG__` commands for automated verification (e.g., `createPokemon`, `spawnEncounter`). This protocol ensures that verification is fast, reproducible, and independent of UI state.
   - **CLI Limitations & UI Mandate**: While CLI is prioritized for navigation and state setup, agents MUST acknowledge that certain UI-specific behaviors (e.g., search filters, drag-and-drop, or complex modal-specific inputs) may NOT have CLI equivalents. In such cases, UI interaction (typing/clicking) is MANDATORY to verify visual feedback and functional correctness.
 - **Identity Fallback Protocol**: UI components (HUD, Profile, ErrorOverlay) MUST prioritize `gameStore.state.trainer` for identity, but MUST fallback to `authStore.user.user_metadata.username` (or `account_name`) if the game name is null or generic ("Entrenador") to ensure consistent identity persistence.
 
@@ -265,11 +266,23 @@ To ensure a seamless "Hybrid Retro-Modern" experience, the background (map/route
 
 ---
 
+## 📚 Technical Documentation Standards
+
+### 1. Balance of Detail
+- **Precision vs Brevity**: Maintain a 1:1 balance between technical precision and instructional clarity. When updating core paths, DO NOT "summarize away" existing reference sections or optional steps (e.g., Map Encounters, References) unless they are explicitly obsolete.
+- **Progressive Disclosure**: Keep `SKILL.md` under 500 lines by delegating complex datasets or legacy comparisons to the `references/` directory.
+
+### 2. Automation Parity
+- **Script Synchronization**: Automation scripts (e.g., `fetch_pokemon.js`) MUST be in absolute parity with the codebase constants (`SECONDARY_TYPES`, `POKEMON_ABILITIES`) and paths. Any update to the documentation MUST be reflected in the associated toolset.
+
+---
+
 ## 🛠️ Aesthetic Audit Checklist
 
 For a full verification, consult the centralized **[Aesthetic Audit Checklist](./references/audit_checklist.md)**.
 
 - [ ] **Architectural Reuse**: Verified that no new "islands" were created and existing systems (Modals, Cards, DB) were reused/extended where possible.
-- [ ] **CLI-First Admin**: All administrative actions in the UI are delegated to `window.__VITE_DEBUG__` commands.
+- [ ] **CLI-First Verification**: New content has been verified using `window.__VITE_DEBUG__` protocols.
 - [ ] **Admin Security**: All CLI commands are protected by `securityCheck()` with auto-ban protocols.
-- [ ] **Linting**: `npm run lint` passes with 0 errors.
+- [ ] **Zero-Warning State**: `npm run lint` and `npm run test` pass with 0 errors and 0 warnings. Verified even for pre-existing warnings in unrelated files.
+- [ ] **Modularity**: Every file touched complies with the 500-line rule.

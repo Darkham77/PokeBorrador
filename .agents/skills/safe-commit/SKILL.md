@@ -81,6 +81,9 @@ Review all modified files in `src/logic/`.
 
 You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 
+> [!IMPORTANT]
+> **Pre-existing Warnings**: If the audit (Lint, Types, SASS) reveals warnings or errors in files you did not modify, you ARE RESPONSIBLE for fixing them before committing. A "Safe Commit" means a 100% clean repository state, not just for your changes.
+
 - **SASS Integrity Check**: `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` (Identify existing traps).
 - **SASS Auto-Fix**: `python3 .agents/skills/project-standards/scripts/fix_sass_traps.py` (Run this to resolve common interpolation issues if the check fails).
 - **SASS Integrity Final**: `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` (Ensure 100% compliance after fixing).

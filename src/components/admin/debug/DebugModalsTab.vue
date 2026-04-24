@@ -2,11 +2,9 @@
 import { ref } from 'vue'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
-import { useErrorStore } from '@/stores/errorStore'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const modalStore = useModalStore()
-const errorStore = useErrorStore()
 const uiStore = useUIStore()
 const modalCount = ref(5)
 const isTesting = ref(false)
@@ -18,9 +16,6 @@ async function startTest() {
   isTesting.value = false
 }
 
-function closeAll() {
-  window.__VITE_DEBUG__.closeAllModals()
-}
 
 function triggerSampleError() {
   window.__VITE_DEBUG__.triggerTestError()

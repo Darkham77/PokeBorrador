@@ -1,13 +1,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useUIStore } from '@/stores/ui'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
 import { MOVE_DATA } from '@/data/moves'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const ui = useUIStore()
 const creatorRef = ref(null)
 
 // --- STATE ---

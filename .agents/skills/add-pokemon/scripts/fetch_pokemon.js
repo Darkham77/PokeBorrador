@@ -1,12 +1,3 @@
-/**
- * fetch_pokemon.js
- * Uso: node .agents/skills/add-pokemon/fetch_pokemon.js <nombre_en_ingles>
- * Ejemplo: node .agents/skills/add-pokemon/fetch_pokemon.js houndour
- *
- * Genera un archivo _output/<nombre>.json con todos los datos necesarios
- * para agregar el Pokémon al juego en formato listo para copiar.
- */
-
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
@@ -43,20 +34,6 @@ async function getSpanishName(url, type) {
     return null;
   }
 }
-
-// ── Versión target para learnset ──────────────────────────────────────────────
-const TARGET_VERSIONS = ['firered-leafgreen', 'ruby-sapphire', 'emerald', 'heartgold-soulsilver'];
-
-const httpsGet = (url) => new Promise((resolve, reject) => {
-  https.get(url, { headers: { 'User-Agent': 'PokeBorrador-AddPokemon/1.0' } }, (res) => {
-    if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode} for ${url}`));
-    let data = '';
-    res.on('data', c => data += c);
-    res.on('end', () => { try { resolve(JSON.parse(data)); } catch(e) { reject(e); } });
-  }).on('error', reject);
-});
-
-// Las traducciones ahora se obtienen dinámicamente de PokeAPI.
 
 async function fetchPokemon(pokemonName) {
   const name = pokemonName.toLowerCase().trim();
