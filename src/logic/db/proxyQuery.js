@@ -75,13 +75,15 @@ export class ProxyQuery {
         if (this.action === 'insert') return await q.insert(this.actionData);
         
         if (this.action === 'update') {
+          q = q.update(this.actionData);
           this.chain.forEach(s => { q = q[s.type](...s.args); });
-          return await q.update(this.actionData);
+          return await q;
         }
         
         if (this.action === 'delete') {
+          q = q.delete();
           this.chain.forEach(s => { q = q[s.type](...s.args); });
-          return await q.delete();
+          return await q;
         }
 
         // Default: select

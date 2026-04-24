@@ -42,6 +42,7 @@ const handleLogin = async () => {
   error.value = null
   try {
     await authStore.login(email.value, password.value)
+    await gameStore.loadGame()
     router.push('/')
   } catch (err) {
     error.value = err.message || 'Error al iniciar sesión'
