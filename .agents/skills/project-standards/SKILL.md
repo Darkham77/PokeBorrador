@@ -47,7 +47,8 @@ Refer to these manuals for complex implementation specifications:
 - **Decoupled Sprite Effects**: To prevent performance-killing filter stacks (10+ filters), separate the core black border (applied directly to the `img`) from decorative effects like glows or auras (applied to a parent `.sprite-wrapper`). This allows independent management of visual layers without exceeding GPU filter budgets.
 - **Hybrid Tooltip Engine**: Combine viewport flipping (e.g., top-to-bottom) with coordinate "nudging" to prevent off-screen rendering. Maintain a 10px safety margin from viewport edges.
 - **Anchor-Aware Arrows**: When a tooltip box is nudged, use dynamic CSS variables (`--arrow-x`, `--arrow-y`) to reposition the arrow so it remains pointing at the trigger element's center instead of floating in the middle of the box.
-- **Zero-Native-Title Policy**: Prohibit the use of native HTML `title` attributes. All tooltips MUST use the `PVTooltip` component to ensure visual consistency (pixelated fonts, glassmorphism, hybrid positioning) and cross-device reliability. (Verified by `detect_hybrid_patterns.py`).
+- **Zero-Native-Title Policy**: Prohibit the use of native HTML `title` attributes. All tooltips MUST use the `PVTooltip` component to ensure visual consistency (pixelated fonts, glassmorphism, hybrid positioning).
+- **Critical Tooltip Layer**: Tooltips inside high-index admin panels MUST use `z-index: var(--z-critical)` (999,999) to remain visible above the panel container.
 - **Modal Header Standardization**: Modals MUST NOT use the legacy hardcoded black header.
   - **Themed Headers**: Use the `title-color` and `header-background` props of `BaseModal` to match the modal's internal content aesthetic.
   - **Typical Palette**: Default to `var(--yellow)` for titles and navy shades (e.g., `#1a1c2e` or `#161a2e`) for backgrounds.
@@ -250,6 +251,9 @@ To ensure a seamless "Hybrid Retro-Modern" experience, the background (map/route
 - [ ] **Validations**: SASS Traps and Hybrid Patterns detection scripts pass (0 errors).
 - [ ] **Tooltips**: All tooltips use `PVTooltip` component with `<Teleport to="body">`.
 - [ ] **Zero Native Titles**: Native `title=""` attributes prohibited on standard HTML elements (verified by `detect_hybrid_patterns.py`).
+- [ ] **Tooltip Layers**: Tooltips in high-index layers (like Admin Panels) MUST use `var(--z-critical)` (999,999) via Teleport to ensure visibility.
+- [ ] **Debug Panel Standard**: All admin/debug navigation and utility buttons MUST implement `PVTooltip` and respect pixel-perfect font sizes (multiples of 8).
+- [ ] **Validation Script Integrity**: Regex patterns in audit scripts (e.g. `detect_hybrid_patterns.py`) MUST use capturing groups for OR branches to prevent false positives on partial string matches.
 - [ ] **Self-Healing**: Automated repair scripts (`fix_sass_traps.py`, `fix_hybrid_patterns.py`) have been executed to ensure compliance.
 - [ ] **Tokens**: Hardcoded hex colors replaced with variables; `$white` and `$black` used correctly.
 - [ ] **Z-Index**: All layers follow the standardized scale in `_variables.scss` (no values > 999 unless Teleported tooltips).

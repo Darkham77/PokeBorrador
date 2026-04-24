@@ -2,6 +2,7 @@
 import { useBreedingStore } from '@/stores/breeding'
 import { useGameStore } from '@/stores/game'
 import { useDebugStore } from '@/stores/debug'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const _breeding = useBreedingStore()
 const game = useGameStore()
@@ -39,18 +40,22 @@ const clear = () => {
       </div>
       
       <div class="button-row">
-        <button 
-          class="small-btn primary"
-          @click="regenerate"
-        >
-          REGENERAR AHORA
-        </button>
-        <button 
-          class="small-btn danger"
-          @click="clear"
-        >
-          LIMPIAR TODO
-        </button>
+        <PVTooltip title="Fuerza la regeneración de nuevas misiones de guardería.">
+          <button 
+            class="small-btn primary"
+            @click="regenerate"
+          >
+            REGENERAR AHORA
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Borra todas las misiones activas de la base de datos local.">
+          <button 
+            class="small-btn danger"
+            @click="clear"
+          >
+            LIMPIAR TODO
+          </button>
+        </PVTooltip>
       </div>
     </div>
 
@@ -65,19 +70,20 @@ const clear = () => {
 @use "@/styles/components/debug";
 
 .mission-status {
-  font-size: 11px;
-  color: #94a3b8;
+  font-size: 8px;
+  color: $muted;
   margin: 10px 0;
   span { color: var(--yellow); font-weight: bold; }
 }
 
 .debug-json {
-  font-size: 9px;
+  font-size: 8px;
   background: rgba(0,0,0,0.3);
   padding: 10px;
   border-radius: 8px;
-  color: #4ade80;
+  color: $green;
   max-height: 200px;
+  min-height: 0;
   overflow-y: auto;
   white-space: pre-wrap;
 }
@@ -87,7 +93,7 @@ const clear = () => {
 }
 
 .small-btn {
-  &.primary { border-color: #8b5cf6; color: #a78bfa; }
-  &.danger { border-color: #ef4444; color: #f87171; }
+  &.primary { border-color: $purple; color: $purple; }
+  &.danger { border-color: $red; color: $red; }
 }
 </style>

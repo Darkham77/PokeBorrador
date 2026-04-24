@@ -1,6 +1,7 @@
 <script setup>
 import { useUIStore } from '@/stores/ui'
 import { useDebugStore } from '@/stores/debug'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const ui = useUIStore()
 const _debug = useDebugStore()
@@ -16,33 +17,31 @@ const togglePerf = () => window.__VITE_DEBUG__.togglePerf()
     <div class="debug-card">
       <label>Visualización de Grilla (Rutas)</label>
       <div class="button-row">
-        <button
-          class="small-btn"
-          :class="{ active: ui.isDebugGridMode }"
-          @click="toggleGrid"
-        >
-          MOSTRAR BORDES (ROSA)
-        </button>
+        <PVTooltip title="Muestra los límites de cada celda de la grilla NxN en las rutas del mapa.">
+          <button
+            class="small-btn"
+            :class="{ active: ui.isDebugGridMode }"
+            @click="toggleGrid"
+          >
+            MOSTRAR BORDES (ROSA)
+          </button>
+        </PVTooltip>
       </div>
-      <p class="debug-help">
-        Muestra los límites de cada celda de la grilla NxN en las rutas del mapa.
-      </p>
     </div>
 
     <div class="debug-card">
       <label>Rendimiento / Simplificación</label>
       <div class="button-row">
-        <button
-          class="small-btn"
-          :class="{ active: ui.isDebugPerformanceMode }"
-          @click="togglePerf"
-        >
-          SIMPLIFICAR MAPA (MODO PERF)
-        </button>
+        <PVTooltip title="Fuerza el modo de alto rendimiento que simplifica el renderizado del mapa.">
+          <button
+            class="small-btn"
+            :class="{ active: ui.isDebugPerformanceMode }"
+            @click="togglePerf"
+          >
+            SIMPLIFICAR MAPA (MODO PERF)
+          </button>
+        </PVTooltip>
       </div>
-      <p class="debug-help">
-        Fuerza el modo de alto rendimiento que simplifica el renderizado del mapa.
-      </p>
     </div>
   </div>
 </template>

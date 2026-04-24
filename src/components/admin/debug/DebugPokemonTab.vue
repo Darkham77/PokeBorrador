@@ -6,8 +6,16 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 const game = useGameStore()
 const ui = useUIStore()
 
+// Direct store manipulation (avoids stale proxy closures from HMR)
 async function setDebugPokedex(mode) {
-  window.__VITE_DEBUG__.setPokedexMode(mode)
+  if (mode === 'real') {
+    ui.debugPokedexMode = null
+    await game.loadGame()
+    ui.notify('Pokedex REAL RESTAURADA', '✅')
+  } else {
+    ui.debugPokedexMode = mode // 'none' | 'seen' | 'caught'
+    ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️')
+  }
 }
 
 async function resetPokedexDB() {
@@ -50,19 +58,28 @@ async function clearPvpTeam() {
             ATRAPAR
           </button>
         </PVTooltip>
-        <PVTooltip title="Ver todos">
+        <PVTooltip title="Simular que no has visto nada (Misterio)">
+          <button
+            class="btn-vicio-neutral btn-vicio-sm"
+            :class="{ active: ui.debugPokedexMode === 'none' }"
+            @click="setDebugPokedex('none')"
+          >
+            NUNCA VISTO
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Ver todos los vistos (silueta si no capturado)">
           <button
             class="btn-vicio-neutral btn-vicio-sm"
             :class="{ active: ui.debugPokedexMode === 'seen' }"
             @click="setDebugPokedex('seen')"
           >
-            VER
+            VISTOS
           </button>
         </PVTooltip>
         <PVTooltip title="Restaurar progreso real">
           <button
             class="btn-vicio-primary btn-vicio-sm"
-            :class="{ active: !ui.debugPokedexMode }"
+            :class="{ active: ui.debugPokedexMode === null }"
             @click="setDebugPokedex('real')"
           >
             REAL
@@ -152,7 +169,7 @@ async function clearPvpTeam() {
     display: block;
     font-family: 'Press Start 2P', monospace;
     font-size: 8px;
-    color: #94a3b8;
+    color: $muted;
     margin-bottom: 12px;
     @include pixelated;
   }
@@ -173,7 +190,7 @@ async function clearPvpTeam() {
 }
 
 .danger-label {
-  color: #ef4444 !important;
+  color: $red !important;
   margin-top: 4px;
   margin-bottom: 8px !important;
   opacity: 0.8;

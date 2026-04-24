@@ -43,20 +43,20 @@ When reading values from the `system_config` table in SQLite (e.g., `db_version`
 If you change how a key piece of data is formatted (e.g. converting `badges` from an integer to an array), you MUST write a runtime migration block in the corresponding store initialization to convert the old data structure to the new one for existing players.
 
 ## 5. Centralized Registry & ID Mapping
- 
+
  When adding new classifications (like Pokémon Tags), ALWAYS use a centralized registry (e.g. `src/logic/constants/tags.js`) as the Single Source of Truth.
- 
- - **ID Normalization**: Maintain a clear mapping between UI identifiers (short, for buttons) and Database IDs (long, for persistence).
- - **Helper Usage**: ALWAYS use standardized helpers (e.g. `hasPokemonTag`) instead of manual array checks to ensure consistent logic across all entry points.
- 
- ## 6. Bridge Safety: Search-Based Indexing
- 
+
+- **ID Normalization**: Maintain a clear mapping between UI identifiers (short, for buttons) and Database IDs (long, for persistence).
+- **Helper Usage**: ALWAYS use standardized helpers (e.g. `hasPokemonTag`) instead of manual array checks to ensure consistent logic across all entry points.
+
+## 6. Bridge Safety: Search-Based Indexing
+
  When executing commands that modify a specific item in a list (e.g., tagging a Pokemon in the Box), DO NOT trust index properties passed from filtered or sorted UI views.
- 
- - **PATTERN**: Inside the action handler, calculate the "Real Index" by searching the original store array using a unique identifier (`UID`).
- - **WHY**: This prevents "Off-by-One" errors or data corruption when the UI list is out of sync with the underlying database array.
- 
- ## 7. Pre-Flight Checklist
+
+- **PATTERN**: Inside the action handler, calculate the "Real Index" by searching the original store array using a unique identifier (`UID`).
+- **WHY**: This prevents "Off-by-One" errors or data corruption when the UI list is out of sync with the underlying database array.
+
+## 7. Pre-Flight Checklist
 
 Before applying any change relating to data persistence:
 

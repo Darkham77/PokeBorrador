@@ -204,11 +204,11 @@ export const useDebugStore = defineStore('debug', () => {
           await game.loadGame()
           ui.notify('Pokedex REAL RESTAURADA', '✅')
         } else {
-          ui.debugPokedexMode = mode === 'none' ? null : mode
-          ui.notify(`Pokedex modo: ${mode}`, '👁️')
+          ui.debugPokedexMode = mode // 'none', 'seen', or 'caught'
+          ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️')
         }
       },
-      description: 'Cambia el modo de visualización de la pokedex (caught, seen, real).'
+      description: 'Cambia el modo de visualización de la pokedex (none, seen, caught, real).'
     })
 
     register({

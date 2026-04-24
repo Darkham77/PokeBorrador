@@ -109,7 +109,7 @@ HYBRID_PATTERNS = [
     },
     {
         "id": "button_depth_loss",
-        "regex": r"\.active|:active.*?box-shadow:\s*none",
+        "regex": r"(\.active|:active).*?box-shadow:\s*none",
         "message": "Button depth loss detected. Active states MUST NOT strip bottom shadows. Maintain 3D volume.",
         "severity": "medium"
     },

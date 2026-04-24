@@ -197,13 +197,32 @@ const getPokemonSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 const processedGuardian = computed(() => {
   if (!props.dominance?.guardian) return null
   const id = props.dominance.guardian.id
-  const seen = uiStore.debugPokedexMode ? true : (gameStore.state.seenPokedex?.includes(id) || gameStore.state.pokedex?.includes(id))
-  const name = seen ? (pokemonDataProvider.getPokemonData(id)?.name || id.toUpperCase()) : '???'
+  
+  let isSeen = gameStore.state.seenPokedex?.includes(id) || 
+               gameStore.state.pokedex?.includes(id)
+  let isCaught = gameStore.state.pokedex?.includes(id)
+
+  if (uiStore.debugPokedexMode === 'none') {
+    isSeen = false
+    isCaught = false
+  } else if (uiStore.debugPokedexMode === 'seen') {
+    isSeen = true
+    isCaught = false
+  } else if (uiStore.debugPokedexMode === 'caught') {
+    isSeen = true
+    isCaught = true
+  }
+  
+  const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
+  const name = isSeen ? (data?.name || id.toUpperCase()) : '???'
+  const typeInfo = (isSeen && data?.type) ? `Tipo: ${data.type.toUpperCase()}` : ''
   
   return {
     ...props.dominance.guardian,
-    isSeen: seen,
+    isSeen,
+    isCaught,
     name,
+    typeInfo,
     sprite: getPokemonSprite(id)
   }
 })
@@ -225,21 +244,36 @@ const processedGrid = computed(() => {
   return slots.map((id, index) => {
     if (!id) return { id: null, key: `empty-${index}` }
     
-    const seen = debugMode ? true : (seenPokedex.includes(id) || caughtPokedex.includes(id))
+    let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
+    let isCaught = caughtPokedex.includes(id)
+
+    if (debugMode === 'none') {
+      isSeen = false
+      isCaught = false
+    } else if (debugMode === 'seen') {
+      isSeen = true
+      isCaught = false
+    } else if (debugMode === 'caught') {
+      isSeen = true
+      isCaught = true
+    }
     
     // Rare check
     const rate = props.spawnPool?.rates?.[id] || 10
     const rare = rate < 10
 
     // Tooltip logic
-    let name = '???'
-    if (seen) {
-      name = pokemonDataProvider.getPokemonData(id)?.name || id.toUpperCase()
-    }
+    const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
+    const name = isSeen ? (data?.name || id.toUpperCase()) : '???'
+    const typeInfo = (isSeen && data?.type) ? `Tipo: ${data.type.toUpperCase()}` : ''
 
     let tooltipDesc = 'Habitante común de esta ruta.'
     if (rare) {
       tooltipDesc = '¡Aparición Especial! Este Pokémon tiene un ratio de aparición muy bajo en esta ruta, por eso emite un aura roja de poder.'
+    }
+
+    if (isSeen && typeInfo) {
+      tooltipDesc = `${typeInfo}. ${tooltipDesc}`
     }
 
     return {
@@ -247,8 +281,10 @@ const processedGrid = computed(() => {
       key: `${id}-${index}`,
       name,
       sprite: getAssetUrl(ASSET_TYPES.POKEMON, id),
-      isSeen: seen,
+      isSeen,
+      isCaught,
       isRare: rare,
+      tooltipTitle: name === '???' ? 'POKÉMON DESCONOCIDO' : name,
       tooltipDesc
     }
   })
@@ -368,16 +404,18 @@ const spawnGrid = computed(() => {
     <PVTooltip
       v-if="processedGuardian && !isPerformanceMode && !isLocked && !isSafariLocked"
       class="guardian-status-badge"
-      :class="{ 'is-silhouette': !processedGuardian.isSeen }"
+      :class="{ 
+        'is-silhouette': !processedGuardian.isCaught 
+      }"
       :title="!processedGuardian.isSeen ? 'POKÉMON ???' : (processedGuardian.captured ? 'GUARDIÁN DERROTADO' : 'POKÉMON GUARDIÁN')"
       :description="processedGuardian.captured 
         ? 'El protector de esta ruta ha sido vencido, permitiendo que una facción tome el control total.' 
-        : `Un Pokémon poderoso que protege la ruta. ${processedGuardian.isSeen ? 'Es un ' + processedGuardian.name + '. ' : ''}Derrótalo para liberar la zona y permitir que tu facción la domine, activando bonus de captura.`"
+        : `Un Pokémon poderoso que protege la ruta. ${processedGuardian.isSeen ? 'Es un ' + processedGuardian.name + ' (' + processedGuardian.typeInfo + '). ' : ''}Derrótalo para liberar la zona y permitir que tu facción la domine, activando bonus de captura.`"
       position="top"
     >
       <img
         :src="processedGuardian.sprite"
-        :class="['guardian-mini-sprite', { captured: processedGuardian.captured, 'spawn-silhouette': !processedGuardian.isSeen }]"
+        :class="['guardian-mini-sprite', { captured: processedGuardian.captured, 'spawn-silhouette': !processedGuardian.isCaught }]"
         @error="e => e.target.style.display = 'none'"
       >
       <span :class="['guardian-label', { captured: processedGuardian.captured }]">
@@ -469,7 +507,7 @@ const spawnGrid = computed(() => {
           >
             <div :class="['sprite-wrapper', { 'rare-spawn': item.isRare }]">
               <PVTooltip 
-                :title="item.name" 
+                :title="item.tooltipTitle || item.name" 
                 :description="item.tooltipDesc"
                 position="top"
                 class="spawn-tooltip-trigger"
@@ -477,7 +515,7 @@ const spawnGrid = computed(() => {
                 <img
                   :src="item.sprite"
                   class="pixelated"
-                  :class="{ 'spawn-silhouette': !item.isSeen }"
+                  :class="{ 'spawn-silhouette': !item.isCaught }"
                   @error="e => e.target.style.display = 'none'"
                 >
               </PVTooltip>

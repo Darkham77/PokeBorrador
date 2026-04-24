@@ -12,6 +12,7 @@ import DebugMapTab from './debug/DebugMapTab.vue'
 import DebugMissionsTab from './debug/DebugMissionsTab.vue'
 
 import BaseModal from '@/components/common/BaseModal.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 import { useDebugStore } from '@/stores/debug'
 
@@ -74,14 +75,26 @@ const selectedCategory = ref('stats')
         </div>
 
         <nav class="debug-nav">
-          <button 
-            v-for="cat in ['stats', 'items', 'pokes', 'map', 'missions', 'time', 'modals']" 
-            :key="cat"
-            :class="{ active: selectedCategory === cat }"
-            @click="selectedCategory = cat"
+          <PVTooltip
+            v-for="cat in [
+              { id: 'stats', label: 'STATS', desc: 'Atributos del jugador, dinero, elo y facción.' },
+              { id: 'items', label: 'ITEMS', desc: 'Añadir objetos al inventario.' },
+              { id: 'pokes', label: 'POKES', desc: 'Gestión de Pokedex y equipo.' },
+              { id: 'map', label: 'MAPA', desc: 'Visualización de grilla y rendimiento.' },
+              { id: 'missions', label: 'MISI', desc: 'Control de misiones de guardería.' },
+              { id: 'time', label: 'TIEMPO', desc: 'Simulación de ciclos y climas.' },
+              { id: 'modals', label: 'MODAL', desc: 'Tests de ventanas y errores.' }
+            ]" 
+            :key="cat.id"
+            :title="cat.desc"
           >
-            {{ cat.toUpperCase() }}
-          </button>
+            <button 
+              :class="{ active: selectedCategory === cat.id }"
+              @click="selectedCategory = cat.id"
+            >
+              {{ cat.label }}
+            </button>
+          </PVTooltip>
         </nav>
 
         <main 
@@ -174,8 +187,8 @@ const selectedCategory = ref('stats')
   width: fit-content;
   margin: 0;
 
-  &.offline { background: rgba(52, 211, 153, 0.1); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.2); }
-  &.admin { background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); }
+  &.offline { background: rgba(52, 211, 153, 0.1); color: $green; border: 1px solid rgba(52, 211, 153, 0.2); }
+  &.admin { background: rgba(248, 113, 113, 0.1); color: $red; border: 1px solid rgba(248, 113, 113, 0.2); }
 }
 
 .debug-nav {
@@ -189,7 +202,7 @@ const selectedCategory = ref('stats')
     flex: 1;
     background: transparent;
     border: none;
-    color: #94a3b8;
+    color: $muted;
     font-family: 'Press Start 2P', monospace;
     @include pixelated;
     font-size: 8px;
@@ -201,8 +214,8 @@ const selectedCategory = ref('stats')
     &:hover { color: $white; background: rgba(255, 255, 255, 0.05); }
     &.active {
       background: rgba(124, 58, 237, 0.15);
-      color: #c084fc;
-      box-shadow: inset 0 0 10px rgba(124, 58, 237, 0.1);
+      color: $purple;
+      box-shadow: inset 0 0 10px rgba(124, 58, 237, 0.1), 0 2px 0 rgba(0,0,0,0.2);
     }
   }
 }

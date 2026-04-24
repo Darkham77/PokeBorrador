@@ -19,7 +19,7 @@ export const useUIStore = defineStore('ui', () => {
   
   const isDebugPerformanceMode = ref(false)
   const isDebugGridMode = ref(false)
-  const debugPokedexMode = ref(null) // 'caught' | 'seen' | null
+  const debugPokedexMode = ref(null) // 'none' | 'seen' | 'caught' | null (real)
   
   const _isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
   
@@ -334,6 +334,9 @@ export const useUIStore = defineStore('ui', () => {
       if (modalStore.isOpen('TeamManagement')) modalStore.close('TeamManagement')
       else modalStore.open('TeamManagement')
     },
+    
+    setDebugPokedex: (mode) => { debugPokedexMode.value = mode },
+    
     isTeamManagementOpen,
     
     // Relearner

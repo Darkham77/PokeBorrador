@@ -179,7 +179,7 @@ const hide = () => {
 
 .pv-tooltip-teleported {
   position: absolute;
-  z-index: 20000; // Above everything (Modals are ~10000)
+  z-index: var(--z-critical); // Above everything (even Debug Panel at 100,000)
   pointer-events: none;
   background: rgba(10, 10, 20, 0.98);
   border: 1px solid $yellow;
@@ -211,8 +211,8 @@ const hide = () => {
   }
 
   .pv-tooltip-desc {
-    color: #ccc;
-    font-size: 11px;
+    color: $muted;
+    font-size: 8px;
     line-height: 1.4;
   }
 

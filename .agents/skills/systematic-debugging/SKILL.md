@@ -114,3 +114,4 @@ pm2 logs app-name --err --lines 100
 | **Assuming** | Wastes time on false trails without proof ("It must be X"). |
 | **Not reproducing first** | Makes it impossible to verify the fix properly (fixing blindly). |
 | **Stopping at symptoms** | Leaves the underlying issue to resurface later (not finding root cause). |
+| **Fixing code but testing via HMR proxy** | When a Pinia store registers actions at startup (e.g., `window.__VITE_DEBUG__`), HMR reloads the module but the store's registered closures are NOT refreshed. The "fixed" code never runs. Solution: bypass the proxy and manipulate the store directly from the component, or do a full page refresh to re-run `init()`. |

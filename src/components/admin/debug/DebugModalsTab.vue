@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
 import { useErrorStore } from '@/stores/errorStore'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const modalStore = useModalStore()
 const errorStore = useErrorStore()
@@ -44,47 +45,51 @@ function triggerSampleError() {
           min="1" 
           max="20"
         >
-        <button 
-          class="btn-vicio-primary" 
-          :disabled="isTesting"
-          @click="startTest"
-        >
-          {{ isTesting ? 'PROCESANDO...' : 'INICIAR TEST' }}
-        </button>
+        <PVTooltip :title="`Se abrirán ${modalCount} ventanas con 1s de desfase.`">
+          <button 
+            class="btn-vicio-primary" 
+            :disabled="isTesting"
+            @click="startTest"
+          >
+            {{ isTesting ? 'PROCESANDO...' : 'INICIAR TEST' }}
+          </button>
+        </PVTooltip>
       </div>
-      <p class="hint">
-        Se abrirán {{ modalCount }} ventanas con 1s de desfase.
-      </p>
     </div>
 
     <div class="debug-group">
       <label>ACCIONES RÁPIDAS</label>
-      <button
-        class="btn-vicio-danger"
-        @click="modalStore.closeAll"
-      >
-        CERRAR TODO
-      </button>
+      <div class="button-row">
+        <PVTooltip title="Cierra todas las ventanas modales abiertas actualmente.">
+          <button
+            class="btn-vicio-danger"
+            @click="modalStore.closeAll"
+          >
+            CERRAR TODO
+          </button>
+        </PVTooltip>
 
-      <button
-        class="btn-vicio-danger"
-        @click="triggerSampleError"
-      >
-        DISPARAR ERROR DE PRUEBA
-      </button>
+        <PVTooltip title="Dispara una notificación de error global para probar el sistema de logs.">
+          <button
+            class="btn-vicio-danger"
+            @click="triggerSampleError"
+          >
+            DISPARAR ERROR
+          </button>
+        </PVTooltip>
+      </div>
     </div>
 
     <div class="debug-group">
       <label>RENDIMIENTO MAPA</label>
-      <button
-        :class="uiStore.isDebugPerformanceMode ? 'btn-vicio-danger' : 'btn-vicio-primary'"
-        @click="uiStore.isDebugPerformanceMode = !uiStore.isDebugPerformanceMode"
-      >
-        {{ uiStore.isDebugPerformanceMode ? 'DESACTIVAR MODO RENDIMIENTO' : 'ACTIVAR MODO RENDIMIENTO' }}
-      </button>
-      <p class="hint">
-        Simula el renderizado ligero (oculta spawns y climas) sin tener que abrir modales.
-      </p>
+      <PVTooltip title="Simula el renderizado ligero (oculta spawns y climas) sin tener que abrir modales.">
+        <button
+          :class="uiStore.isDebugPerformanceMode ? 'btn-vicio-danger' : 'btn-vicio-primary'"
+          @click="uiStore.isDebugPerformanceMode = !uiStore.isDebugPerformanceMode"
+        >
+          {{ uiStore.isDebugPerformanceMode ? 'DESACTIVAR MODO RENDIMIENTO' : 'ACTIVAR MODO RENDIMIENTO' }}
+        </button>
+      </PVTooltip>
     </div>
   </div>
 </template>
@@ -106,7 +111,7 @@ function triggerSampleError() {
   label {
     font-family: 'Press Start 2P', cursive;
     font-size: 8px;
-    color: #94a3b8;
+    color: $muted;
     @include pixelated;
   }
 }
@@ -124,12 +129,12 @@ function triggerSampleError() {
     padding: 12px 15px;
     height: 40px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 10px;
+    font-size: 8px;
     @include pixelated;
     outline: none;
     line-height: 1;
 
-    &:focus { border-color: #7c3aed; }
+    &:focus { border-color: var(--purple); }
   }
 }
 
@@ -146,8 +151,8 @@ function triggerSampleError() {
 }
 
 .hint {
-  font-size: 10px;
-  color: #94a3b8;
+  font-size: 8px;
+  color: $muted;
   margin: 0;
   line-height: 1.4;
 }

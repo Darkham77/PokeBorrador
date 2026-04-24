@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { SHOP_ITEMS } from '@/data/items'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const _game = useGameStore()
 const _ui = useUIStore()
@@ -33,16 +34,20 @@ async function addItem(item, qty = 10) {
       class="items-grid scrollbar"
       @wheel.stop
     >
-      <div
+      <PVTooltip
         v-for="item in filteredItems"
         :key="item.id"
-        class="debug-item-card"
-        @click="addItem(item)"
+        title="Haz clic para añadir 10 unidades de este objeto a tu inventario."
       >
-        <span class="icon">{{ item.icon || '🎒' }}</span>
-        <span class="name">{{ item.name }}</span>
-        <span class="add">+10</span>
-      </div>
+        <div
+          class="debug-item-card"
+          @click="addItem(item)"
+        >
+          <span class="icon">{{ item.icon || '🎒' }}</span>
+          <span class="name">{{ item.name }}</span>
+          <span class="add">+10</span>
+        </div>
+      </PVTooltip>
     </div>
   </div>
 </template>
@@ -63,9 +68,9 @@ async function addItem(item, qty = 10) {
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: $white;
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 16px;
   
-  &:focus { outline: none; border-color: #7c3aed; }
+  &:focus { outline: none; border-color: var(--purple); }
 }
 
 .items-grid {
@@ -94,8 +99,8 @@ async function addItem(item, qty = 10) {
     transform: translateX(4px);
   }
 
-  .name { font-size: 12px; flex: 1; font-weight: 600; color: #e2e8f0; }
-  .add { font-size: 10px; color: #34d399; font-family: 'Press Start 2P', monospace; image-rendering: pixelated; }
+  .name { font-size: 16px; flex: 1; font-weight: 600; color: $text; }
+  .add { font-size: 8px; color: $green; font-family: 'Press Start 2P', monospace; image-rendering: pixelated; }
   .icon { font-size: 16px; }
 }
 </style>

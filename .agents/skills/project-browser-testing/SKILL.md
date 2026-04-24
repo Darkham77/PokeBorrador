@@ -114,9 +114,27 @@ When testing complex conditional UI (like route badges or level-locked maps), **
   - **Map**: `window.__VITE_DEBUG__.setDominance('poder')`, `window.__VITE_DEBUG__.toggleGrid()`.
   - **Time**: `window.__VITE_DEBUG__.setMockTime('2026-01-01T12:00')`, `window.__VITE_DEBUG__.setCycle('night')`.
   - **Items**: `window.__VITE_DEBUG__.addItem('Master Ball', 10)`.
+  - **Pokédex**: `window.__VITE_DEBUG__.setPokedexMode('none' | 'seen' | 'caught' | 'real')`.
 
 ### Execution Example (Subagent Task)
 
-> *"Navigate to URL. Login as ASH. Use evaluate to run 'window.__VITE_DEBUG__.setDominance(\"poder\")'. Verify that the map cards show the Power Faction banners. Stop immediately. DO NOT return the DOM."*
+> *"Navigate to URL. Login as ASH. Use evaluate to run 'window.**VITE_DEBUG**.setDominance(\"poder\")'. Verify that the map cards show the Power Faction banners. Stop immediately. DO NOT return the DOM."*
 
 - **Verification**: After a simulation command, verify that the UI reacts reactively without needing a page refresh. If a refresh is needed, the `browser_subagent` will report it as a bug.
+
+### Pokédex Discovery States
+
+The Pokédex system has **4 named states** in `uiStore.debugPokedexMode`. Use these to test the full discovery hierarchy without gameplay progression:
+
+| Mode | Value | Effect |
+| :--- | :--- | :--- |
+| REAL | `null` | Uses actual `game.state.pokedex` + `seenPokedex` |
+| NUNCA VISTO | `'none'` | Forces all Pokémon to unknown state (`???`, no sprite) |
+| VISTOS | `'seen'` | Forces all Pokémon to seen state (silhouette on map, name revealed) |
+| ATRAPAR | `'caught'` | Forces all Pokémon to caught state (full color) |
+
+> [!WARNING]
+> Never collapse a new mode to `null` with `mode === 'none' ? null : mode`. `null` is reserved for real/unset — the button toggle won't activate if the stored value equals the initial state.
+
+> [!NOTE]
+> `window.__VITE_DEBUG__.setPokedexMode()` can hold **stale closures** after HMR (Pinia doesn't reinitialize stores on hot reload). If the command has no effect, set the store directly: `uiStore.debugPokedexMode = 'none'` in the browser console, or do a full page refresh.

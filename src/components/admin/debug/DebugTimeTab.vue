@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const game = useGameStore()
 const ui = useUIStore()
@@ -55,15 +56,19 @@ function toggleCycle(c) {
           step="1"
         >
         <div class="button-row">
-          <button @click="updateMockTime">
-            APLICAR
-          </button>
-          <button
-            class="secondary"
-            @click="resetTime"
-          >
-            RESET
-          </button>
+          <PVTooltip title="Aplica la fecha y hora seleccionada al motor del juego.">
+            <button @click="updateMockTime">
+              APLICAR
+            </button>
+          </PVTooltip>
+          <PVTooltip title="Restaura la hora real del sistema.">
+            <button
+              class="secondary"
+              @click="resetTime"
+            >
+              RESET
+            </button>
+          </PVTooltip>
         </div>
       </div>
     </div>
@@ -71,99 +76,86 @@ function toggleCycle(c) {
     <div class="debug-card">
       <label>Atajos Rápidos</label>
       <div class="button-row">
-        <button @click="addHours(1)">
-          +1h
-        </button>
-        <button @click="addHours(6)">
-          +6h
-        </button>
-        <button @click="addHours(24)">
-          +24h
-        </button>
+        <PVTooltip title="Añadir 1 hora al tiempo actual.">
+          <button @click="addHours(1)">
+            +1h
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Añadir 6 horas al tiempo actual.">
+          <button @click="addHours(6)">
+            +6h
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Añadir 24 horas al tiempo actual.">
+          <button @click="addHours(24)">
+            +24h
+          </button>
+        </PVTooltip>
       </div>
     </div>
 
     <div class="debug-card">
       <label>Ciclo Atmosférico (Manual)</label>
       <div class="button-row">
-        <button
-          :class="{ active: mapStore.forcedCycle === 'morning' }"
-          @click="toggleCycle('morning')"
-        >
-          🌅 AM
-        </button>
-        <button
-          :class="{ active: mapStore.forcedCycle === 'day' }"
-          @click="toggleCycle('day')"
-        >
-          ☀️ DÍA
-        </button>
-        <button
-          :class="{ active: mapStore.forcedCycle === 'dusk' }"
-          @click="toggleCycle('dusk')"
-        >
-          🌇 AT
-        </button>
-        <button
-          :class="{ active: mapStore.forcedCycle === 'night' }"
-          @click="toggleCycle('night')"
-        >
-          🌙 NC
-        </button>
+        <PVTooltip title="Forzar amanecer.">
+          <button
+            :class="{ active: mapStore.forcedCycle === 'morning' }"
+            @click="toggleCycle('morning')"
+          >
+            🌅 AM
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Forzar día.">
+          <button
+            :class="{ active: mapStore.forcedCycle === 'day' }"
+            @click="toggleCycle('day')"
+          >
+            ☀️ DÍA
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Forzar atardecer.">
+          <button
+            :class="{ active: mapStore.forcedCycle === 'dusk' }"
+            @click="toggleCycle('dusk')"
+          >
+            🌇 AT
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Forzar noche.">
+          <button
+            :class="{ active: mapStore.forcedCycle === 'night' }"
+            @click="toggleCycle('night')"
+          >
+            🌙 NC
+          </button>
+        </PVTooltip>
       </div>
     </div>
 
     <div class="debug-card">
       <label>Clima Global (Pruebas)</label>
       <div class="button-row weather-grid">
-        <button
-          :class="{ active: mapStore.globalWeather === 'clear' }"
-          @click="toggleWeather('clear')"
+        <PVTooltip
+          v-for="w in [
+            { id: 'clear', label: '☀️ DESP', desc: 'Cielo despejado.' },
+            { id: 'rain', label: '🌧️ LLUV', desc: 'Lluvia constante.' },
+            { id: 'storm', label: '⚡ TORM', desc: 'Tormenta eléctrica.' },
+            { id: 'fog', label: '🌫️ NIEB', desc: 'Niebla espesa.' },
+            { id: 'snow', label: '🌨️ NIEV', desc: 'Nieve suave.' },
+            { id: 'blizzard', label: '❄️ TOR-N', desc: 'Tormenta de nieve.' },
+            { id: 'sandstorm', label: '🏜️ AREN', desc: 'Tormenta de arena.' },
+            { id: 'heatwave', label: '🔥 CALO', desc: 'Ola de calor.' }
+          ]"
+          :key="w.id"
+          :title="w.desc"
         >
-          ☀️ DESP
-        </button>
-        <button
-          :class="{ active: mapStore.globalWeather === 'rain' }"
-          @click="toggleWeather('rain')"
-        >
-          🌧️ LLUV
-        </button>
-        <button
-          :class="{ active: mapStore.globalWeather === 'storm' }"
-          @click="toggleWeather('storm')"
-        >
-          ⚡ TORM
-        </button>
-        <button
-          :class="{ active: mapStore.globalWeather === 'fog' }"
-          @click="toggleWeather('fog')"
-        >
-          🌫️ NIEB
-        </button>
-        <button
-          :class="{ active: mapStore.globalWeather === 'snow' }"
-          @click="toggleWeather('snow')"
-        >
-          🌨️ NIEV
-        </button>
-        <button
-          :class="{ active: mapStore.globalWeather === 'blizzard' }"
-          @click="toggleWeather('blizzard')"
-        >
-          ❄️ TOR-N
-        </button>
-        <button
-          :class="{ active: mapStore.globalWeather === 'sandstorm' }"
-          @click="toggleWeather('sandstorm')"
-        >
-          🏜️ AREN
-        </button>
-        <button
-          :class="{ active: mapStore.globalWeather === 'heatwave' }"
-          @click="toggleWeather('heatwave')"
-        >
-          🔥 CALO
-        </button>
+          <button
+            :class="{ active: mapStore.globalWeather === w.id }"
+            @click="toggleWeather(w.id)"
+          >
+            {{ w.label }}
+          </button>
+        </PVTooltip>
       </div>
     </div>
 

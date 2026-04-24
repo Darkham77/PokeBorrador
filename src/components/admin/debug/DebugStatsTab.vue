@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { usePvPStore } from '@/stores/pvp'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const _auth = useAuthStore()
 const game = useGameStore()
@@ -53,9 +54,11 @@ function setPlayerClass(c) {
           v-model="debugMoney"
           type="number"
         >
-        <button @click="addMoney">
-          AÑADIR
-        </button>
+        <PVTooltip title="Añade la cantidad de dinero especificada a tu cuenta.">
+          <button @click="addMoney">
+            AÑADIR
+          </button>
+        </PVTooltip>
       </div>
     </div>
 
@@ -66,9 +69,11 @@ function setPlayerClass(c) {
           v-model="debugElo"
           type="number"
         >
-        <button @click="setElo">
-          FIJAR
-        </button>
+        <PVTooltip title="Establece tu puntuación ELO de la Arena al valor indicado.">
+          <button @click="setElo">
+            FIJAR
+          </button>
+        </PVTooltip>
       </div>
     </div>
 
@@ -79,9 +84,11 @@ function setPlayerClass(c) {
           v-model="debugLevel"
           type="number"
         >
-        <button @click="setLevel">
-          FIJAR
-        </button>
+        <PVTooltip title="Establece tu nivel de entrenador.">
+          <button @click="setLevel">
+            FIJAR
+          </button>
+        </PVTooltip>
       </div>
     </div>
 
@@ -94,84 +101,104 @@ function setPlayerClass(c) {
           min="0"
           max="8"
         >
-        <button @click="setBadges">
-          FIJAR
-        </button>
+        <PVTooltip title="Actualiza el contador de medallas de gimnasio.">
+          <button @click="setBadges">
+            FIJAR
+          </button>
+        </PVTooltip>
       </div>
     </div>
 
     <div class="debug-card">
       <label>Dominio Global (Mapa)</label>
       <div class="button-row">
-        <button
-          class="faction-btn power"
-          :class="{ active: currentForcedFaction === 'poder' }"
-          @click="forceDominance('poder')"
-        >
-          PODER
-        </button>
-        <button
-          class="faction-btn union"
-          :class="{ active: currentForcedFaction === 'union' }"
-          @click="forceDominance('union')"
-        >
-          UNIÓN
-        </button>
-        <button
-          class="faction-btn neutral"
-          :class="{ active: currentForcedFaction === 'none' }"
-          @click="forceDominance('none')"
-        >
-          NEUTRAL
-        </button>
+        <PVTooltip title="Forzar que todo el mapa pertenezca al bando PODER.">
+          <button
+            class="faction-btn power"
+            :class="{ active: currentForcedFaction === 'poder' }"
+            @click="forceDominance('poder')"
+          >
+            PODER
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Forzar que todo el mapa pertenezca al bando UNIÓN.">
+          <button
+            class="faction-btn union"
+            :class="{ active: currentForcedFaction === 'union' }"
+            @click="forceDominance('union')"
+          >
+            UNIÓN
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Restaurar el dominio real del mapa basado en el servidor.">
+          <button
+            class="faction-btn neutral"
+            :class="{ active: currentForcedFaction === 'none' }"
+            @click="forceDominance('none')"
+          >
+            NEUTRAL
+          </button>
+        </PVTooltip>
       </div>
     </div>
 
     <div class="debug-card">
       <label>Bando Jugador</label>
       <div class="button-row">
-        <button
-          class="faction-btn power"
-          :class="{ active: game.state.faction === 'poder' }"
-          @click="setFaction('poder')"
-        >
-          PODER
-        </button>
-        <button
-          class="faction-btn union"
-          :class="{ active: game.state.faction === 'union' }"
-          @click="setFaction('union')"
-        >
-          UNIÓN
-        </button>
-        <button
-          class="faction-btn neutral"
-          :class="{ active: !game.state.faction }"
-          @click="setFaction('none')"
-        >
-          LIBRE
-        </button>
+        <PVTooltip title="Unirte al bando PODER.">
+          <button
+            class="faction-btn power"
+            :class="{ active: game.state.faction === 'poder' }"
+            @click="setFaction('poder')"
+          >
+            PODER
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Unirte al bando UNIÓN.">
+          <button
+            class="faction-btn union"
+            :class="{ active: game.state.faction === 'union' }"
+            @click="setFaction('union')"
+          >
+            UNIÓN
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Abandonar bando actual y quedar libre.">
+          <button
+            class="faction-btn neutral"
+            :class="{ active: !game.state.faction }"
+            @click="setFaction('none')"
+          >
+            LIBRE
+          </button>
+        </PVTooltip>
       </div>
     </div>
 
     <div class="debug-card">
       <label>Clase Jugador</label>
       <div class="button-row wrap">
-        <button
+        <PVTooltip
           v-for="c in ['entrenador', 'criador', 'cazabichos', 'rocket']"
           :key="c"
-          class="small-btn"
-          :class="{ active: game.state.playerClass === c }"
-          @click="setPlayerClass(c)"
+          :title="`Cambiar tu clase a ${c.toUpperCase()}.`"
         >
-          {{ c.toUpperCase() }}
-        </button>
-        <button
-          class="small-btn"
-          @click="setPlayerClass('none')"
-        >
-          RESETEAR
-        </button>
+          <button
+            class="small-btn"
+            :class="{ active: game.state.playerClass === c }"
+            @click="setPlayerClass(c)"
+          >
+            {{ c.toUpperCase() }}
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Resetear tu clase de jugador.">
+          <button
+            class="small-btn"
+            @click="setPlayerClass('none')"
+          >
+            RESETEAR
+          </button>
+        </PVTooltip>
       </div>
     </div>
   </div>

@@ -14,12 +14,16 @@ export function usePokedex(gs, currentOrder, _currentGen) {
     let seen = gs.value.seenPokedex || []
     
     // Debug Overrides (Temporary)
-    if (uiStore.debugPokedexMode === 'caught') {
+    if (uiStore.debugPokedexMode === 'none') {
+      caught = []
+      seen = []
+    } else if (uiStore.debugPokedexMode === 'caught') {
       caught = [...currentOrder.value]
       seen = [...currentOrder.value]
     } else if (uiStore.debugPokedexMode === 'seen') {
       seen = [...currentOrder.value]
     }
+
     
     // 1. Prepare raw list with proper numbers
     const list = currentOrder.value.map((id) => {
