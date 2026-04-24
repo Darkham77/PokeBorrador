@@ -24,7 +24,13 @@ const config = computed(() => {
   }
 })
 
-const savedFilters = JSON.parse(localStorage.getItem('pv_selection_filters') || '{}')
+let savedFilters = {}
+try {
+  savedFilters = JSON.parse(localStorage.getItem('pv_selection_filters') || '{}')
+} catch (e) {
+  console.warn('[PokemonSelectionModal] Error loading filters:', e)
+}
+
 const searchQuery = ref(savedFilters.searchQuery || '')
 const sortBy = ref(savedFilters.sortBy || 'recent') // 'recent', 'level', 'ivs', 'bst'
 const sortOrder = ref(savedFilters.sortOrder || 'desc')
