@@ -157,6 +157,9 @@ export const useAuthStore = defineStore('auth', () => {
     const loadingStore = useLoadingStore()
     loadingStore.start('auth_action', 'Verificando credenciales...', 'Por favor espera', true)
     
+    if (supabase && typeof supabase.setMode === 'function') {
+      supabase.setMode('online')
+    }
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     

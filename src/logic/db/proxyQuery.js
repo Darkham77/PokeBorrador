@@ -23,6 +23,7 @@ export class ProxyQuery {
   lte(c, v) { this.chain.push({ type: 'lte', args: [c, v] }); return this; }
   in(c, arr) { this.chain.push({ type: 'in', args: [c, arr] }); return this; }
   is(c, v) { this.chain.push({ type: 'is', args: [c, v] }); return this; }
+  or(c) { this.chain.push({ type: 'or', args: [c] }); return this; }
   order(c, { ascending = false } = {}) { this.chain.push({ type: 'order', args: [c, { ascending }] }); return this; }
   limit(n) { this.chain.push({ type: 'limit', args: [n] }); return this; }
   match(obj) { this.chain.push({ type: 'match', args: [obj] }); return this; }
