@@ -265,6 +265,11 @@
   }
 }
 
+@mixin pokemon-silhouette($outline-color: rgba(255, 255, 255, 0.6)) {
+  filter: Brightness(0) Drop-Shadow(0 0 2px $outline-color) !important;
+  opacity: 1 !important;
+}
+
 @mixin type-pill($size: 7px) {
   display: inline-flex;
   align-items: center;

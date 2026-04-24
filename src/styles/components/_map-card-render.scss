@@ -370,8 +370,7 @@
   }
 
   .spawn-silhouette {
-    filter: Brightness(0) Drop-Shadow(0 0 2px rgba(255, 255, 255, 0.6)) !important;
-    opacity: 1 !important; // Solid black as requested
+    @include pokemon-silhouette;
   }
 }
 

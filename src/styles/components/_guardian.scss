@@ -21,7 +21,7 @@
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  pointer-events: none !important;
+  pointer-events: auto !important;
   background: rgba(0, 0, 0, 0.85) !important;
   border-radius: 8px !important;
   padding: 4px !important;
@@ -31,6 +31,7 @@
   width: auto !important;
   height: auto !important;
   box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
+  cursor: help !important;
 }
 
 /* The small sprite icon - Force small size even on PC (Literal 33) */
@@ -41,10 +42,25 @@
   min-height: 32px !important;
   object-fit: contain !important;
   image-rendering: pixelated !important;
-  filter: Drop-Shadow(0 0 5px rgba(255,255,255,0.4)) !important;
   margin: 0 !important;
   display: block !important;
   @include gpu-layer;
+
+  &:not(.spawn-silhouette) {
+    filter: Drop-Shadow(0 0 5px rgba(255,255,255,0.4)) !important;
+    
+    &.captured {
+      filter: Grayscale(100%) !important;
+      opacity: 0.8 !important;
+    }
+  }
+
+  &.spawn-silhouette {
+    @include pokemon-silhouette;
+    filter: Brightness(0) !important; // Absolute black
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 /* Label styling (Literal 46) */
@@ -67,11 +83,13 @@
   &.captured {
     background: #22c55e !important; /* Vivid Green for captured */
   }
-}
 
-.guardian-mini-sprite.captured {
-  filter: Grayscale(100%) !important;
-  opacity: 0.8 !important;
+  .is-silhouette & {
+    background: #333 !important;
+    color: #666 !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+  }
 }
 
 /* DISABLE THE OLD LARGE ICON COMPLETELY - NUCLEAR OPTION (Literal 72) */

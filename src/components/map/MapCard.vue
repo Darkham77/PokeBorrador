@@ -191,13 +191,26 @@ const factionAnimClass = computed(() => {
   return props.dominance.winner === 'union' ? 'anim-shine' : 'anim-thump'
 })
 
-const game = useGameStore()
+const gameStore = useGameStore()
+const getPokemonSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 
-const isPlayerWinner = computed(() => {
-  return checkPlayerWinner(props.dominance?.winner, game.state.faction)
+const processedGuardian = computed(() => {
+  if (!props.dominance?.guardian) return null
+  const id = props.dominance.guardian.id
+  const seen = gameStore.state.seenPokedex?.includes(id) || gameStore.state.pokedex?.includes(id)
+  const name = seen ? (pokemonDataProvider.getPokemonData(id)?.name || id.toUpperCase()) : '???'
+  
+  return {
+    ...props.dominance.guardian,
+    isSeen: seen,
+    name,
+    sprite: getPokemonSprite(id)
+  }
 })
 
-const getPokemonSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
+const isPlayerWinner = computed(() => {
+  return checkPlayerWinner(props.dominance?.winner, gameStore.state.faction)
+})
 
 // Optimized processed grid to avoid calling functions in template
 const processedGrid = computed(() => {
@@ -205,8 +218,8 @@ const processedGrid = computed(() => {
   const slots = gridData.slots || []
   
   // Cache pokedex state to avoid repeated reactive lookups
-  const seenPokedex = game.state.seenPokedex || []
-  const caughtPokedex = game.state.pokedex || []
+  const seenPokedex = gameStore.state.seenPokedex || []
+  const caughtPokedex = gameStore.state.pokedex || []
   
   return slots.map((id, index) => {
     if (!id) return { id: null, key: `empty-${index}` }
@@ -352,21 +365,22 @@ const spawnGrid = computed(() => {
 
     <!-- 1. Guardian (Top Left) -->
     <PVTooltip
-      v-if="dominance?.guardian && !isPerformanceMode && !isLocked && !isSafariLocked"
+      v-if="processedGuardian && !isPerformanceMode && !isLocked && !isSafariLocked"
       class="guardian-status-badge"
-      :title="dominance.guardian.captured ? 'GUARDIÁN DERROTADO' : 'POKÉMON GUARDIÁN'"
-      :description="dominance.guardian.captured 
+      :class="{ 'is-silhouette': !processedGuardian.isSeen }"
+      :title="!processedGuardian.isSeen ? 'POKÉMON ???' : (processedGuardian.captured ? 'GUARDIÁN DERROTADO' : 'POKÉMON GUARDIÁN')"
+      :description="processedGuardian.captured 
         ? 'El protector de esta ruta ha sido vencido, permitiendo que una facción tome el control total.' 
-        : 'Un Pokémon poderoso que protege la ruta. Derrótalo para liberar la zona y permitir que tu facción la domine, activando bonus de captura.'"
+        : `Un Pokémon poderoso que protege la ruta. ${processedGuardian.isSeen ? 'Es un ' + processedGuardian.name + '. ' : ''}Derrótalo para liberar la zona y permitir que tu facción la domine, activando bonus de captura.`"
       position="top"
     >
       <img
-        :src="getPokemonSprite(dominance.guardian.id)"
-        :class="['guardian-mini-sprite', { captured: dominance.guardian.captured }]"
+        :src="processedGuardian.sprite"
+        :class="['guardian-mini-sprite', { captured: processedGuardian.captured, 'spawn-silhouette': !processedGuardian.isSeen }]"
         @error="e => e.target.style.display = 'none'"
       >
-      <span :class="['guardian-label', { captured: dominance.guardian.captured }]">
-        {{ dominance.guardian.captured ? 'DERROTADO' : 'GUARDIÁN' }}
+      <span :class="['guardian-label', { captured: processedGuardian.captured }]">
+        {{ processedGuardian.captured ? 'DERROTADO' : 'GUARDIÁN' }}
       </span>
     </PVTooltip>
 
