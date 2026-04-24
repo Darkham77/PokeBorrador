@@ -6,54 +6,90 @@
 import { ref, onMounted } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { useGameStore } from '@/stores/game'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
-  pokemon: { type: Object, required: true }
+  pokemon: { type: Object, default: null },
+  egg: { type: Object, default: null }
 })
 
 const emit = defineEmits(['close'])
 
 const stage = ref('egg') // 'egg', 'crack', 'reveal'
 const showParticles = ref(false)
+const resultPokemon = ref(null)
+
+const gameStore = useGameStore()
+
+const prepareResult = async () => {
+  if (props.pokemon) {
+    resultPokemon.value = props.pokemon
+    return
+  }
+  
+  if (props.egg) {
+    const { makePokemon, recalcPokemonStats } = await import('@/logic/pokemonFactory')
+    const p = makePokemon(props.egg.id, 1, {
+      isShiny: props.egg.isShiny,
+      isGuardian: props.egg.isGuardian,
+      nature: props.egg.nature
+    })
+    p.ivs = { ...p.ivs, ...props.egg.ivs }
+    recalcPokemonStats(p)
+    resultPokemon.value = p
+  }
+}
+
+const handleClose = async () => {
+  if (props.egg) {
+    await gameStore.executeHatch(props.egg)
+  }
+  emit('close')
+}
 
 const getSprite = (id, isShiny) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny })
 }
 
-const startSequence = () => {
+const handleEggClick = () => {
+  if (stage.value !== 'egg') return
+  
+  stage.value = 'crack'
+  window.playSound?.('egg_crack')
+  
+  // Final reveal after a short delay of cracking
   setTimeout(() => {
-    stage.value = 'crack'
-    window.playSound?.('egg_crack')
-    
-    setTimeout(() => {
-      stage.value = 'reveal'
-      showParticles.value = true
-      window.playSound?.('evolution_complete')
-    }, 1500)
-  }, 1000)
+    stage.value = 'reveal'
+    showParticles.value = true
+    window.playSound?.('evolution_complete')
+  }, 1200)
 }
 
-onMounted(() => {
-  if (props.show) startSequence()
+onMounted(async () => {
+  if (props.show) {
+    await prepareResult()
+    // No longer auto-starting sequence
+  }
 })
 </script>
 
 <template>
   <BaseModal
     :show="show"
-    max-width="100%"
+    max-width="100vw"
     padding="raw"
     variant="modern"
     overlay="dark"
     hide-header
-    :show-close-button="stage === 'reveal'"
+    :show-close-button="false"
     :prevent-close="stage !== 'reveal'"
-    @close="emit('close')"
+    @close="handleClose"
   >
     <div
       class="hatch-immersion-container"
       :class="stage"
+      @click="stage === 'egg' ? handleEggClick() : null"
     >
       <!-- Egg Phase -->
       <div
@@ -67,6 +103,9 @@ onMounted(() => {
           @error="e => e.target.style.display = 'none'"
         >
         <div class="glow-ring" />
+        <div class="hatch-hint">
+          ¡HAZ CLIC PARA ECLOSIONAR!
+        </div>
       </div>
 
       <!-- Result Phase -->
@@ -75,32 +114,50 @@ onMounted(() => {
         class="reveal-visual"
       >
         <div class="shimmer-bg" />
-        <div class="pokemon-display">
+        <div
+          class="pokemon-display"
+          :class="{ 'is-shiny': resultPokemon?.isShiny, 'is-guardian': resultPokemon?.isGuardian }"
+        >
           <img
-            :src="getSprite(pokemon.id, pokemon.isShiny)"
+            v-if="resultPokemon"
+            :src="getSprite(resultPokemon.id, resultPokemon.isShiny)"
             class="pokemon-sprite"
             @error="e => e.target.style.display = 'none'"
           >
+          <!-- Spectacular Shiny Reveal -->
+          <div
+            v-if="resultPokemon?.isShiny"
+            class="shiny-sparkles"
+          >
+            <div
+              v-for="i in 8"
+              :key="i"
+              class="sparkle"
+            />
+          </div>
           <div class="splash-text">
-            ¡Ha nacido un {{ pokemon.name }}!
+            ¡Ha nacido un {{ resultPokemon?.name }}!
           </div>
         </div>
         
-        <div class="stats-card">
+        <div
+          v-if="resultPokemon"
+          class="stats-card"
+        >
           <div class="stat-row">
             <span class="label">Naturaleza:</span>
-            <span class="val">{{ pokemon.nature }}</span>
+            <span class="val">{{ resultPokemon.nature }}</span>
           </div>
           <div class="stat-row">
             <span class="label">IVs:</span>
-            <span class="val">{{ pokemon.ivs.hp }}/{{ pokemon.ivs.atk }}/{{ pokemon.ivs.def }}/{{ pokemon.ivs.spa }}/{{ pokemon.ivs.spd }}/{{ pokemon.ivs.spe }}</span>
+            <span class="val">{{ resultPokemon.ivs.hp }}/{{ resultPokemon.ivs.atk }}/{{ resultPokemon.ivs.def }}/{{ resultPokemon.ivs.spa }}/{{ resultPokemon.ivs.spd }}/{{ resultPokemon.ivs.spe }}</span>
           </div>
         </div>
 
         <button
           class="btn-vicio-primary btn-vicio-full"
           style="max-width: 200px; margin-top: 40px;"
-          @click="emit('close')"
+          @click="handleClose"
         >
           CONTINUAR
         </button>
@@ -180,6 +237,16 @@ onMounted(() => {
     @include sprite-render;
     filter: Drop-Shadow(0 0 30px var(--yellow));
     animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    .is-guardian & { @include aura-guardian; }
+  }
+
+  .shiny-sparkles {
+    @include fx-shiny(8);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
   }
 }
 
@@ -272,9 +339,38 @@ onMounted(() => {
   to { transform: Rotate(360deg); }
 }
 
+.hatch-hint {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: TranslateX(-50%);
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
+  color: rgba(255,255,255,0.6);
+  white-space: nowrap;
+  animation: pulse-hint 1.5s infinite;
+  @include pixelated;
+}
+
+@keyframes pulse-hint {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
 :deep(.base-modal-card) {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+:deep(.base-modal-content) {
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+:deep(.base-modal-overlay) {
+  backdrop-filter: Blur(10px);
 }
 </style>

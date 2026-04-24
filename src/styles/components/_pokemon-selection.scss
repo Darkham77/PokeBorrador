@@ -114,7 +114,7 @@
 
   .section-label {
     font-family: 'Press Start 2P', monospace;
-    font-size: 7px;
+    font-size: 8px;
     color: rgba(255, 255, 255, 0.4);
     letter-spacing: 1px;
   }
@@ -126,7 +126,7 @@
     padding: 4px 8px;
     color: #ff453a;
     font-family: 'Press Start 2P', monospace;
-    font-size: 6px;
+    font-size: 8px;
     cursor: pointer;
     transition: all 0.2s;
     letter-spacing: 0.5px;
@@ -165,7 +165,7 @@
 
     .label {
       font-family: 'Press Start 2P', monospace;
-      font-size: 7px;
+      font-size: 8px;
       color: var(--gray);
     }
 
@@ -278,6 +278,11 @@
     position: relative;
     z-index: 1;
     filter: Drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    transition: transform 0.3s ease;
+  }
+
+  .sprite-container.is-guardian img {
+    @include aura-guardian;
   }
 
   .shiny-star {
@@ -339,10 +344,24 @@
 
       .name {
         font-weight: 800;
-        font-size: 14px;
         color: $white;
         font-family: 'Press Start 2P', monospace;
-        font-size: 10px;
+        font-size: 8px;
+      }
+
+      .name-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+
+      .species-subtitle {
+        font-family: 'Press Start 2P', monospace;
+        font-size: 8px;
+        color: rgba(255, 255, 255, 0.3);
+        text-transform: uppercase;
+        @include pixelated;
       }
 
       .gender-icon {
@@ -375,7 +394,7 @@
       gap: 5px;
 
       .type-pill {
-        font-size: 7px;
+        font-size: 8px;
         padding: 3px 6px;
         border-radius: 4px;
         color: white;
@@ -407,7 +426,7 @@
 
     .source-tag {
       margin-left: auto;
-      font-size: 7px;
+      font-size: 8px;
       padding: 2px 6px;
       border-radius: 4px;
       font-weight: 900;
@@ -466,5 +485,5 @@
   text-align: center;
   color: var(--gray);
   font-family: 'Press Start 2P', monospace;
-  font-size: 9px;
+  font-size: 8px;
 }

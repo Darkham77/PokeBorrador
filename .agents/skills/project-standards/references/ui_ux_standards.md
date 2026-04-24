@@ -140,7 +140,29 @@ To ensure a seamless transition between full-map exploration and focused modal i
 
 ---
 
+## 📏 Layering & Z-Index Governance
+
+To prevent "z-index wars" and ensure consistent interaction, all layers MUST follow the centralized scale defined in `_variables.scss`.
+
+### 1. Standard Layers (0-999)
+
+- **Base**: 0 (Map, Phaser Background).
+- **HUD**: 100-200.
+- **Standard Modals**: 300-500.
+- **Overlays/Blocking Modals**: 600-800.
+- **Global UI (Header/Menu)**: 900.
+
+### 2. Critical Layers (999,999)
+
+- **MANDATORY**: Only Tooltips, Toasts, and Emergency Overlays (like Error/Ban screens) are allowed to exceed the 999 threshold.
+- **Pattern**: Use `z-index: var(--z-critical)` (999,999) via `<Teleport to="body">`.
+- **Admin Panel Exception**: Tooltips spawned inside admin panels MUST use this critical layer to remain visible above the panel's high stacking context.
+
+---
+
 ## 🛠️ Aesthetic Audit Checklist
+
+For a full verification, consult the centralized **[Aesthetic Audit Checklist](./audit_checklist.md)**.
 
 1. `[ ]` **Hybrid Check**: Are modern frames combined with pixel-art content?
 2. `[ ]` **Typography**: Is `@include pixelated;` used for all pixel fonts?

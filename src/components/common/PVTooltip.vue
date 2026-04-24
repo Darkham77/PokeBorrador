@@ -203,7 +203,6 @@ const hide = () => {
     font-family: $font-pixel;
     font-size: 8px;
     color: $yellow;
-    text-transform: uppercase;
     text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
     margin-bottom: 6px;
     line-height: 1.4;
@@ -212,9 +211,10 @@ const hide = () => {
 
   .pv-tooltip-desc {
     color: $muted;
-    font-size: 8px;
-    line-height: 1.4;
+    font-size: 11px;
+    line-height: 1.5;
   }
+
 
   .tooltip-arrow {
     position: absolute;

@@ -20,6 +20,7 @@ Refer to these manuals for complex implementation specifications:
 | **Sync & Security** | [security_and_sync_manual.md](./references/security_and_sync_manual.md) |
 | **Asset Pipeline** | [asset_service_manual.md](./references/asset_service_manual.md) |
 | **Map & Spawns** | [spawn_grid_manual.md](./references/spawn_grid_manual.md) |
+| **Finalized Features** | [completed_features.md](../../../docs/completed_features.md) |
 
 ---
 
@@ -44,11 +45,16 @@ Refer to these manuals for complex implementation specifications:
 - **Grid Consistency (Fixed Height)**: In layouts with fixed height constraints (like map route cards), forcing a minimum of 2 rows ensures that elements (sprites) maintain a consistent scale and professional aesthetic, even when the item count is low.
 - **Abbreviated Labels (shortLabel)**: In compact UI components (selection buttons, list badges), use the `shortLabel` property from `tags.js` to prevent text overflow, while keeping the full `label` in the tooltip.
 - **Badge Centralization**: All Pokémon status indicators (shiny, heldItem, tags) MUST have their metadata (icon, label, shortLabel, desc) centralized in `src/logic/constants/tags.js` to ensure application-wide parity.
+- **Tier & IV Modularity**: Complex classification logic (e.g., S+ to F Tiering based on IVs) MUST be extracted to specialized constant files (e.g., `src/logic/constants/tiers.js`) and never defined locally inside components.
+- **Adventure Team Management**: The `isPvp` prop in `UnifiedTeamSlot` MUST be explicitly `false` for the Adventure Team context to enable the "Move to Box" functionality. Forcing PVP UI in management contexts is forbidden.
+- **Visual Parity for Sprite FX**: Special effects like "Guardian Aura" or "Shiny Sparkles" MUST be applied to the sprite's parent container rather than the `<img>` itself.
+  - **WHY**: Applying filters/transforms to the image itself often causes vertical shifts or clipping when the effect is toggled. Using a container ensures the sprite's base coordinates remain fixed while the decorative layer (aura) can animate independently. This maintains "Zero-Jitter" parity across different Pokémon states.
 - **Decoupled Sprite Effects**: To prevent performance-killing filter stacks (10+ filters), separate the core black border (applied directly to the `img`) from decorative effects like glows or auras (applied to a parent `.sprite-wrapper`). This allows independent management of visual layers without exceeding GPU filter budgets.
 - **Hybrid Tooltip Engine**: Combine viewport flipping (e.g., top-to-bottom) with coordinate "nudging" to prevent off-screen rendering. Maintain a 10px safety margin from viewport edges.
 - **Anchor-Aware Arrows**: When a tooltip box is nudged, use dynamic CSS variables (`--arrow-x`, `--arrow-y`) to reposition the arrow so it remains pointing at the trigger element's center instead of floating in the middle of the box.
 - **Zero-Native-Title Policy**: Prohibit the use of native HTML `title` attributes. All tooltips MUST use the `PVTooltip` component to ensure visual consistency (pixelated fonts, glassmorphism, hybrid positioning).
-- **Critical Tooltip Layer**: Tooltips inside high-index admin panels MUST use `z-index: var(--z-critical)` (999,999) to remain visible above the panel container.
+- **Legibility Standard**: Tooltip descriptions MUST use a minimum `font-size: 13px` for global classes and `11px` for compact teleported tooltips to ensure readability on lower-resolution screens (1k or less).
+- **Critical Tooltip Layer**: Tooltips inside high-index admin panels MUST use `z-index: var(--z-critical)` (999,999) to remain visible above the panel container. (Ref: [ui_ux_standards.md](./references/ui_ux_standards.md)).
 - **Modal Header Standardization**: Modals MUST NOT use the legacy hardcoded black header.
   - **Themed Headers**: Use the `title-color` and `header-background` props of `BaseModal` to match the modal's internal content aesthetic.
   - **Typical Palette**: Default to `var(--yellow)` for titles and navy shades (e.g., `#1a1c2e` or `#161a2e`) for backgrounds.
@@ -60,6 +66,15 @@ Refer to these manuals for complex implementation specifications:
   - **Layer Penetration**: Explicitly set `pointer-events: auto !important` on interactive elements to ensure they remain clickable through transparent "ghost layers" of other active modals.
   - **Scroll Penetration (Side Modals)**: Use `pointer-events: none` on transparent modal overlays and containers to allow background scroll/interaction (e.g., Phaser map navigation) while the modal is open.
 - **Animation Integrity**: ALWAYS verify that CSS transition names (e.g., `.slide-left-leave-active`) match the defined classes to prevent abrupt modal closures.
+- **CLI-First Admin Governance**: All administrative and debug tools (Stats, Items, Events, Map, etc.) MUST follow a CLI-first architecture.
+  - **Centralized logic**: All logic must reside in `src/stores/debug.js` and be exposed via the `window.__VITE_DEBUG__` proxy.
+  - **UI-to-CLI Delegation**: Administrative UI components MUST NOT manipulate stores or databases directly. They must act as thin wrappers that invoke `window.__VITE_DEBUG__` commands.
+  - **Fast Navigation & Inspection**: Expose commands for teleportation (`navigate`, `openModal`) and direct store inspection (`getGameStore`) to ensure agents can reach targets and verify state without DOM reliance.
+  - **No-CLI Login Perimeter**: The login process MUST NOT support CLI shortcuts or automated triggers (e.g. `auth.login()`). AI agents and scripts MUST perform login exclusively via UI interaction (typing and clicking) to maintain authentication integrity. The `window.__VITE_DEBUG__` proxy MUST remain inactive/deleted until a successful admin session is established.
+  - **CLI Limitations & UI Mandate**: While CLI is prioritized for navigation and state setup, agents MUST acknowledge that certain UI-specific behaviors (e.g., search filters, drag-and-drop, or complex modal-specific inputs) may NOT have CLI equivalents. In such cases, UI interaction (typing/clicking) is MANDATORY to verify visual feedback and functional correctness.
+- **Identity Fallback Protocol**: UI components (HUD, Profile, ErrorOverlay) MUST prioritize `gameStore.state.trainer` for identity, but MUST fallback to `authStore.user.user_metadata.username` (or `account_name`) if the game name is null or generic ("Entrenador") to ensure consistent identity persistence.
+
+- **Visual Audit Single Source of Truth**: Before finalizing any UI-related commit, agents MUST perform a verification pass using the [Aesthetic Audit Checklist](./references/audit_checklist.md).
 
 ### 2. Asset Integrity & Resolution
 
@@ -86,6 +101,7 @@ Refer to these manuals for complex implementation specifications:
 - **MANDATORY**: Before implementing any new UI container, layout, or logic system, search for existing generic implementations (e.g., `BaseModal`, `UnifiedCard`, `DBRouter`, `inventoryStore`).
 - **FORBIDDEN**: Creating "islands" of logic or styling that duplicate existing functionality (e.g., a custom window with hardcoded styles instead of extending `BaseModal`).
 - **REQUIRED**: Leverage Inheritance and Composition. If a feature is 90% similar to an existing one, extend or parameterize the existing system (using props like `variant`, `size`, `hide-header`) instead of starting from scratch.
+- **REFERENCE**: Consult [completed_features.md](../../../docs/completed_features.md) for a list of menus, tabs, and tools considered "finalized". Use these as a gold standard for implementation patterns and visual consistency.
 
 ### 6. Pixel-Perfect Typography (MANDATORY)
 
@@ -119,6 +135,8 @@ Refer to these manuals for complex implementation specifications:
 - **Optimization Strategy**: Use `transform: Translate3d(0, 0, 0)` or `TranslateZ(0)` instead of `top/left` for animations.
 - **Backface Visibility**: Apply `backface-visibility: hidden` to containers undergoing 3D transforms or scaling to prevent jitter and blurring.
 - **Will-Change Hint**: Use `@include will-animate(transform, opacity, ...)` on high-traffic UI elements (HUD buttons, cards) that animate frequently to help the browser pre-optimize.
+- **GPU Rendering Parity**: To avoid vertical shifts between normal and special states (Shiny/Guardian), ALWAYS apply hardware acceleration (`translate3d(0, 0, 0)`) to the base component even if it has no active FX. Rendering parity prevents the browser from changing the coordinate system when an effect is activated.
+- **Transform Specificity (FX)**: When using mixins that inject filters or transforms (like `aura-guardian`), use `!important` on local `transform` properties if you need to enforce a specific position. Mixins can override local styles via inherited GPU layers.
 
 ### 2. Accelerated Scrolling
 
@@ -153,6 +171,8 @@ Refer to these manuals for complex implementation specifications:
 > **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, `Rotate()`, and `Grayscale()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
 
 - **WHY**: Lowercase functions with unitless numbers (e.g., `scale(1.2)`) are misinterpreted by Dart Sass 2.0 as color functions, causing errors like `[sass] $color: 1.2 is not a color.`.
+- **SASS @use Position (CRITICAL)**: All `@use` declarations MUST be the very first lines of any `.scss` or `.vue` style block. Appending them to the end of a file causes catastrophic build failures.
+- **SFC Scoped @use**: When using `@use` inside a `<style scoped>` block to import rules (not just variables), ALWAYS use `as *` (e.g., `@use "path" as *;`) to ensure the styles are correctly namespaced within the Vue component scope.
 - **MANDATORY**: Use **Capitalization** for `Scale()`, `Blur()`, `Rotate()`, `TranslateX()`, `TranslateY()`, `TranslateZ()`, `Grayscale()`, `Brightness()`, `Saturate()`, `Drop-shadow()`, etc.
 - **GPU Tip**: Prefer `opacity: X` property over `filter: Opacity(X)` for better performance and to avoid SASS traps.
 - **SFC Scoped Isolation**: Scoped styles (`<style scoped>`) do NOT cascade to child component roots. When extracting sub-components (e.g., Tabs), either use non-scoped styles with central partial imports (`@use "@/styles/components/pokedex-detail"`) or inline critical styles to prevent "broken" aesthetics.
@@ -240,30 +260,16 @@ To ensure a seamless "Hybrid Retro-Modern" experience, the background (map/route
 - **Entrance Logic**: Activate simplification **AFTER** the first obscuring modal's entrance animation completes. This prevents the map from "disappearing" while still visible during the transition.
 - **Exit Logic**: Restore full map fidelity **AS SOON AS** the last obscuring modal starts its exit animation. This allows the user to see the full background through the fading overlay.
 - **Persistence**: The simplified mode must persist as long as the stack contains at least one obscuring modal.
+- **Full-Screen Immersion (FX)**: Modals designed for cinematic events (e.g., Hatching, Evolution) MUST use `overflow: visible !important` and transparent backgrounds in `BaseModal`. This allows particles and auras to extend beyond the modal's container without being clipped.
+- **Universal Baseline Lift**: In detail views where navigation tabs overlap the content area, use a significant universal lift (e.g., `TranslateY(-85px)`) and high `z-index` (200+) for the main sprite. Align sprites to the bottom (`flex-end`) to ensure a consistent baseline regardless of the species' height.
 
 ---
 
 ## 🛠️ Aesthetic Audit Checklist
 
-- [ ] **File Length**: No violator files (excluding exceptions).
+For a full verification, consult the centralized **[Aesthetic Audit Checklist](./references/audit_checklist.md)**.
+
 - [ ] **Architectural Reuse**: Verified that no new "islands" were created and existing systems (Modals, Cards, DB) were reused/extended where possible.
-- [ ] **Redundancy Audit**: `detect_css_redundancy.py` shows 0 critical overlaps for core components.
-- [ ] **Validations**: SASS Traps and Hybrid Patterns detection scripts pass (0 errors).
-- [ ] **Tooltips**: All tooltips use `PVTooltip` component with `<Teleport to="body">`.
-- [ ] **Zero Native Titles**: Native `title=""` attributes prohibited on standard HTML elements (verified by `detect_hybrid_patterns.py`).
-- [ ] **Tooltip Layers**: Tooltips in high-index layers (like Admin Panels) MUST use `var(--z-critical)` (999,999) via Teleport to ensure visibility.
-- [ ] **Debug Panel Standard**: All admin/debug navigation and utility buttons MUST implement `PVTooltip` and respect pixel-perfect font sizes (multiples of 8).
-- [ ] **Validation Script Integrity**: Regex patterns in audit scripts (e.g. `detect_hybrid_patterns.py`) MUST use capturing groups for OR branches to prevent false positives on partial string matches.
-- [ ] **Self-Healing**: Automated repair scripts (`fix_sass_traps.py`, `fix_hybrid_patterns.py`) have been executed to ensure compliance.
-- [ ] **Tokens**: Hardcoded hex colors replaced with variables; `$white` and `$black` used correctly.
-- [ ] **Z-Index**: All layers follow the standardized scale in `_variables.scss` (no values > 999 unless Teleported tooltips).
+- [ ] **CLI-First Admin**: All administrative actions in the UI are delegated to `window.__VITE_DEBUG__` commands.
+- [ ] **Admin Security**: All CLI commands are protected by `securityCheck()` with auto-ban protocols.
 - [ ] **Linting**: `npm run lint` passes with 0 errors.
-- [ ] **Discovery Logic**: Fog of War (Unknown/Seen/Caught) states follow standard opacities and filters.
-- [ ] **Sync**: Database changes follow Triple Parity rules.
-- [ ] **Overlay Check**: Ensure modal overlays are siblings BEHIND the card, not parents, to avoid blurring content.
-- [ ] **Performance Mode**: Use `uiStore.isAnyBlockingModalOpen` to trigger the map simplification mode.
-  - **Entrance**: Activate simplification AFTER the first obscuring modal finishes its opening animation.
-  - **Exit**: Restore the full map AS SOON AS the last obscuring modal starts its closing animation.
-  - **LIFO Persistence**: Maintain simplification as long as any obscuring modal remains in the stack.
-- [ ] **GPU Audit**: `detect_gpu_gaps.py` passes with 0 critical gaps for core UI.
-- [ ] **DB Parity**: WASM versions in `sqliteEngine.js` match `index.html`.

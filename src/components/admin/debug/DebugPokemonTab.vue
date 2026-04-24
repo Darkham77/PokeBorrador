@@ -1,29 +1,17 @@
 <script setup>
-import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import DebugPokemonCreator from './DebugPokemonCreator.vue'
 
-const game = useGameStore()
 const ui = useUIStore()
 
 // Direct store manipulation (avoids stale proxy closures from HMR)
 async function setDebugPokedex(mode) {
-  if (mode === 'real') {
-    ui.debugPokedexMode = null
-    await game.loadGame()
-    ui.notify('Pokedex REAL RESTAURADA', '✅')
-  } else {
-    ui.debugPokedexMode = mode // 'none' | 'seen' | 'caught'
-    ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️')
-  }
+  window.__VITE_DEBUG__.setPokedexMode(mode)
 }
 
 async function resetPokedexDB() {
-  if (!confirm('⚠️ PELIGRO: Esto borrará TODO el progreso de tu Pokedex (Avistados y Capturados) de forma PERMANENTE. ¿Continuar?')) return
-  game.state.pokedex = []
-  game.state.seenPokedex = []
-  await game.saveGame(false)
-  ui.notify('Pokedex reseteada en la base de datos', '🧹')
+  window.__VITE_DEBUG__.resetPokedexDB()
 }
 
 async function syncPokedexFromCollection() {
@@ -31,11 +19,7 @@ async function syncPokedexFromCollection() {
 }
 
 async function clearPvpTeam() {
-  if (!confirm('¿Limpiar equipo PVP de forma permanente?')) return
-  ui.pvpAutoFillDisabled = true
-  game.state.pvpTeam = []
-  await game.saveGame(false)
-  ui.notify('Equipo PVP limpiado y auto-rellenado desactivado (Temporal)', '🧹')
+  window.__VITE_DEBUG__.clearPvpTeam()
 }
 </script>
 
@@ -127,9 +111,9 @@ async function clearPvpTeam() {
       </div>
     </div>
 
-    <!-- Future Pokemon Tools -->
-    <div class="debug-card full-width empty">
-      <p>Selector de Shiny/Legendarios próximamente...</p>
+    <!-- Pokemon Creator -->
+    <div class="debug-card full-width">
+      <DebugPokemonCreator />
     </div>
   </div>
 </template>

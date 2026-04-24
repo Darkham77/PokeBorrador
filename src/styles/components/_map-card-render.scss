@@ -335,9 +335,9 @@
       &::after {
         content: '';
         position: absolute;
-        inset: -15%;
+        inset: -2%;
         background: radial-gradient(circle, rgba(255, 0, 0, 0.7) 0%, transparent 70%);
-        filter: Blur(4px);
+        filter: Blur(2px);
         z-index: -1;
         opacity: 0.6;
         animation: pulse-aura-modern 2s infinite ease-in-out;
@@ -420,7 +420,7 @@
   }
   50% { 
     opacity: 1;
-    transform: Scale(1.4); 
+    transform: Scale(1.05); 
   }
 }
 
@@ -429,7 +429,7 @@
     transform: Scale(1); 
   }
   50% { 
-    transform: Scale(1.15); 
+    transform: Scale(1.08); 
   }
 }
 

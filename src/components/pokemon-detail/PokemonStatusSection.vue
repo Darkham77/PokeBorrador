@@ -190,11 +190,16 @@ const abilityStyle = computed(() => ({
 .info-card {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
-  padding: 16px 12px;
+  padding: 16px 8px; // Slightly less horizontal padding to allow more space
+  display: flex !important; // Override PVTooltip inline-flex
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: transform 0.2s;
   cursor: help;
+  min-height: 70px; // Ensure consistent height
 
   &:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -205,24 +210,32 @@ const abilityStyle = computed(() => ({
 .info-card .label {
   display: block;
   font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
+  font-size: 8px; // Slightly smaller to prevent overlap
   color: var(--gray);
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 8px; // Good separation
   opacity: 0.8;
   @include pixelated;
 }
 
 .info-card .val {
+  display: block;
   font-family: 'Press Start 2P', monospace;
-  font-size: 12px;
+  font-size: 10px; // Standardized size for all values
   color: $white;
   @include pixelated;
   
   &.interactive-val {
+    display: inline-block; // To keep the dotted border tight
     border-bottom: 2px dotted rgba(255,255,255,0.3);
     padding-bottom: 2px;
   }
+}
+
+.value-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .vigor-val { 

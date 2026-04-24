@@ -23,6 +23,9 @@ Vue.js testing best practices, patterns, and common gotchas.
 - Teleported modal content can't be found in wrapper queries → See [teleport-testing-complexity](references/teleport-testing-complexity.md)
 - **Animation-Driven State**: If a store/component state change is delayed by a timeout (e.g., waiting for modal exit animation), use `vi.useFakeTimers()` and `vi.advanceTimersByTime(...)` in Vitest to advance time. **MANDATORY**: Ensure the advance time EXCEEDS the code's timeout (e.g., use 600ms if the code has a 550ms timeout) to account for any race conditions in the test runner's event loop.
 - **Logic Extraction for Testability**: Complex algorithms inside computed properties or methods in `.vue` files are hard to unit test. Extract core pure logic to external helper files (e.g., `mapCardHelper.js`) and test them in isolation using standard Vitest unit tests. This ensures the "brain" of the component is stable without the overhead of component mounting.
+- **CLI Debug Tool Testing**: When unit testing CLI-first debug tools (in `debugStore.js`), you MUST mock the `DBRouter` or `supabase` layer to prevent real database interactions.
+  - **Pattern**: Mock `rpc`, `upsert`, and `from().select()` chains to return predictable results.
+  - **MANDATORY**: Ensure the mock handles `getTimeOffset` and `setTimeOffset` correctly if testing time-manipulation tools.
 
 ## Reference
 

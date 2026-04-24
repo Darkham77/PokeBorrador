@@ -116,7 +116,7 @@ export const useChatStore = defineStore('chat', () => {
 
     const payload = {
       user_id: authStore.user.id,
-      username: gameStore.state.trainer || 'Entrenador',
+      username: gameStore.state.trainer || authStore.user?.user_metadata?.username || 'Entrenador',
       message: text.slice(0, 180),
       player_class: gameStore.state.playerClass,
       trainer_level: gameStore.state.trainerLevel || 1
@@ -146,7 +146,7 @@ export const useChatStore = defineStore('chat', () => {
 
     const payload = {
       senderId: authStore.user.id,
-      senderName: gameStore.state.trainer || 'Entrenador',
+      senderName: gameStore.state.trainer || authStore.user?.user_metadata?.username || 'Entrenador',
       text: text.slice(0, 250),
       timestamp: new Date().toISOString()
     }

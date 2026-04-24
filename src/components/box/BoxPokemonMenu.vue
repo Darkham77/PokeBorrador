@@ -131,8 +131,14 @@ const handleToggleTag = (tag) => {
           @error="e => e.target.style.display = 'none'"
         >
         <h3 class="pokemon-name">
-          {{ pokemon.name }} {{ pokemon.isShiny ? '✨' : '' }}
+          {{ pokemon.nickname || pokemon.name }} {{ pokemon.isShiny ? '✨' : '' }}
         </h3>
+        <div 
+          v-if="pokemon.nickname" 
+          class="species-subtitle"
+        >
+          {{ pokemon.name }}
+        </div>
         <div class="pokemon-meta">
           Nv. {{ pokemon.level }} · {{ pokemon.nature }} · {{ pokemon.ability }}
         </div>
@@ -210,7 +216,7 @@ const handleToggleTag = (tag) => {
             >
             <div class="team-info">
               <div class="name">
-                {{ t.name }}
+                {{ t.nickname || t.name }}
               </div>
               <div class="lv">
                 Nv. {{ t.level }}
@@ -316,6 +322,15 @@ const handleToggleTag = (tag) => {
     font-size: 10px;
     color: var(--yellow);
     margin: 12px 0 6px;
+    text-transform: uppercase;
+  }
+
+  .species-subtitle {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: -4px;
+    margin-bottom: 8px;
     text-transform: uppercase;
   }
 

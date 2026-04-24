@@ -52,9 +52,7 @@ const editEvent = (ev) => {
 
 const saveEvent = async () => {
   try {
-    const { error } = await gameStore.db.from('events_config').upsert(currentEvent)
-    if (error) throw error
-    uiStore.notify('Evento guardado correctamente', '✅')
+    await window.__VITE_DEBUG__.saveEvent(currentEvent)
     isEditing.value = false
     await loadEvents()
   } catch (e) {

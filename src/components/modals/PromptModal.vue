@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 const props = defineProps({
@@ -7,11 +7,19 @@ const props = defineProps({
   title: { type: String, default: 'INGRESAR VALOR' },
   message: { type: String, default: '' },
   initialValue: { type: String, default: '' },
+  placeholder: { type: String, default: '' },
+  confirmText: { type: String, default: 'CONFIRMAR' },
+  cancelText: { type: String, default: 'CANCELAR' },
   type: { type: String, default: 'text' }
 })
 
 const emit = defineEmits(['confirm', 'cancel', 'close'])
 const inputValue = ref(props.initialValue)
+
+// Update internal value when initialValue prop changes (e.g. modal reused)
+watch(() => props.initialValue, (newVal) => {
+  inputValue.value = newVal
+})
 
 const handleConfirm = () => {
   emit('confirm', inputValue.value)
@@ -38,6 +46,7 @@ const handleCancel = () => {
       <input 
         v-model="inputValue"
         :type="type"
+        :placeholder="placeholder"
         class="prompt-input"
         autofocus
         @keyup.enter="handleConfirm"
@@ -50,13 +59,13 @@ const handleCancel = () => {
           class="btn-cancel" 
           @click="handleCancel"
         >
-          CANCELAR
+          {{ cancelText }}
         </button>
         <button 
           class="btn-confirm" 
           @click="handleConfirm"
         >
-          CONFIRMAR
+          {{ confirmText }}
         </button>
       </div>
     </template>

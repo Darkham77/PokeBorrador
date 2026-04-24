@@ -33,15 +33,11 @@ const forceDominance = (f) => {
 }
 
 function setFaction(f) {
-  game.state.faction = f === 'none' ? null : f
-  ui.notify(`Debug: Bando cambiado a ${f.toUpperCase()}`, '🚩')
-  game.saveGame(false)
+  window.__VITE_DEBUG__.setFaction(f)
 }
 
 function setPlayerClass(c) {
-  game.state.playerClass = c === 'none' ? null : c
-  ui.notify(`Debug: Clase cambiada a ${c.toUpperCase()}`, '🎓')
-  game.saveGame(false)
+  window.__VITE_DEBUG__.setPlayerClass(c)
 }
 </script>
 

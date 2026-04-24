@@ -118,9 +118,9 @@ Before extracting lessons or committing, you MUST delete all temporary artifacts
 - **Audit Cleanup**: Delete all `.txt` files related to auditing (generally containing `_audit_` in the name, like `audit_results.txt` or `gpu_audit_results.txt`).
 - Ensure `git status` does not show untracked temporary files that should not be in the repository.
 
-### 7. Lessons Extraction (MANDATORY)
+### 7. Lessons Extraction (LOCAL)
 
-Run @/extract-lessons to capture patterns (e.g., a new SASS trick or a Phaser optimization).
+Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a Phaser optimization). This is a **local documentation task** and MUST NOT involve a browser subagent.
 
 - **Feedback Mandatory**: After @/extract-lessons presents the lesson mapping table, you MUST stop and wait for the user to approve the changes.
 - **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 8 without explicit user confirmation of the extracted lessons.

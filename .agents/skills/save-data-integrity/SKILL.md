@@ -56,6 +56,10 @@ If you change how a key piece of data is formatted (e.g. converting `badges` fro
 - **PATTERN**: Inside the action handler, calculate the "Real Index" by searching the original store array using a unique identifier (`UID`).
 - **WHY**: This prevents "Off-by-One" errors or data corruption when the UI list is out of sync with the underlying database array.
 
+- **Protocols for Storage Operations (Swap vs Move)**: When modifying the player's team via the storage system (Box), always distinguish between an addition (push) and an exchange (swap).
+  - **PATTERN**: If the target team slot is empty, use `moveBoxToTeam(boxIndex)`. If the slot is occupied, use `swapBoxWithTeam(boxIndex, teamIndex)`.
+  - **WHY**: Simple addition (push) will fail if the team is already at its maximum capacity (6 members). Implementing a dedicated swap mechanism ensures that team rotations are always possible regardless of current occupancy.
+
 ## 7. Pre-Flight Checklist
 
 Before applying any change relating to data persistence:

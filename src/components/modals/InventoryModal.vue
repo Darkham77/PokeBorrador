@@ -37,6 +37,18 @@ const handleItemClick = (item) => {
     selectedItems.has(item.name) ? selectedItems.delete(item.name) : selectedItems.add(item.name)
     return
   }
+
+  // --- EGG HANDLING ---
+  if (item.isEgg) {
+    if (item.ready) {
+      uiStore.open('HatchAnimation', { egg: item.eggData })
+      emit('close')
+    } else {
+      uiStore.notify(`Este huevo aún no está listo (${Math.ceil(item.steps)} pasos restantes)`, '🥚')
+    }
+    return
+  }
+
   const dbItem = SHOP_ITEMS.find(i => i.id === item.id)
   if (!dbItem) return
   if (['stones', 'pociones'].includes(dbItem.cat) || dbItem.id === 'rare_candy') {

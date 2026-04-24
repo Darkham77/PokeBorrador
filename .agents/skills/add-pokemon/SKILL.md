@@ -278,6 +278,41 @@ Si desaparece, significa que el guardado falló o que el "Conflicto de Versiones
 
 ---
 
+## 🥚 Sistema de Huevos y Eclosión
+
+El proyecto incluye un sistema de huevos que permite inyectar Pokémon en estado de gestación para ser eclosionados más tarde por el jugador.
+
+### 1. Inyección de Huevos (Debug/Events)
+
+Para agregar un huevo al inventario del jugador (sección "Objetos"), usa el comando de debug:
+
+```js
+// Inyecta un huevo de Mew nivel 1 (Shiny)
+window.__VITE_DEBUG__.addHatchableEgg({ 
+  id: 'mew', 
+  level: 1, 
+  isShiny: true 
+});
+```
+
+### 2. Lógica de Eclosión Interactiva (Vue 3)
+
+La eclosión se gestiona a través del `HatchAnimationModal.vue` y sigue un ciclo de vida estricto de 3 fases:
+
+1.  **Fase de Huevo (Egg Phase)**: El huevo aparece flotando. El sistema espera un **clic manual** del jugador para iniciar la secuencia. Sin clic, la eclosión no progresa (Inmersión).
+2.  **Fase de Ruptura (Crack Phase)**: Animación de vibración y partículas de cáscara.
+3.  **Fase de Revelación (Reveal Phase)**: Se dispara el `evolution_complete` sound, se aplica el lift de `-85px` al sprite y se muestran las estadísticas finales (IVs/Naturaleza).
+
+### 3. Cierre de Ciclo y Persistencia
+
+- **Ejecución Atómica**: El método `gameStore.executeHatch(egg)` es el ÚNICO responsable de:
+    - Generar el objeto Pokémon final con genes heredados.
+    - Eliminar el huevo del inventario.
+    - Guardar el estado global en la DB.
+- **Visualización Post-Hatch**: En el `UnifiedPokemonDetailModal`, los "Hatchlings" deben usar el estándar de **Elevación de Seguridad** (`-85px` y `z-index: 200`) para garantizar visibilidad total sobre las pestañas de navegación.
+
+---
+
 ## Referencias
 
 - **PokeAPI:** `https://pokeapi.co/api/v2/pokemon/<id_o_nombre>`

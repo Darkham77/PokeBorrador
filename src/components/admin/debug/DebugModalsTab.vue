@@ -14,23 +14,16 @@ const isTesting = ref(false)
 async function startTest() {
   if (isTesting.value) return
   isTesting.value = true
-  
-  for (let i = 1; i <= modalCount.value; i++) {
-    modalStore.open('DebugStackTest', { number: i })
-    if (i < modalCount.value) {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    }
-  }
-  
+  await window.__VITE_DEBUG__.testModalStack(modalCount.value)
   isTesting.value = false
 }
 
+function closeAll() {
+  window.__VITE_DEBUG__.closeAllModals()
+}
+
 function triggerSampleError() {
-  errorStore.setError(new Error('Este es un error de prueba disparado desde el menú de Debug.'), {
-    type: 'Debug Test Error',
-    source: 'DebugModalsTab.vue',
-    lineno: 27
-  })
+  window.__VITE_DEBUG__.triggerTestError()
 }
 </script>
 

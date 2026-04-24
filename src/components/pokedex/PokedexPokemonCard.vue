@@ -26,9 +26,23 @@ defineEmits(['click'])
           :src="p.spriteUrl"
           :alt="p.name" 
           class="pokemon-sprite"
-          :class="{ 'silhouette': !p.isCaught }"
+          :class="[
+            { 'silhouette': !p.isCaught, 'is-shiny': p.isShiny, 'is-guardian': p.isGuardian },
+            p.aura ? `aura-${p.aura}-mini` : ''
+          ]"
           @error="e => e.target.style.display = 'none'"
         >
+        <!-- Standardized Shiny FX (Mini) -->
+        <div
+          v-if="p.isShiny"
+          class="shiny-sparkles"
+        >
+          <div
+            v-for="i in 3"
+            :key="i"
+            class="sparkle"
+          />
+        </div>
       </template>
       <div
         v-else

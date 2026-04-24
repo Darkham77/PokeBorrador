@@ -57,8 +57,8 @@ priority: CRITICAL
 | **Flat > Nested** | Avoid deep nesting (max 2 levels) |
 | **Composition** | Small functions composed together |
 | **Colocation** | Keep related code close |
-| **Mixin Integrity** | Verify smoothing mixins don't carry legacy pixelated rules |
 | **Layout Centering** | Use `display: flex` + `justify-content` + `align-items` for centering. Avoid `position: absolute` with `translate(-50%, -50%)` as it creates sub-pixel blurring and breaks layout flow. |
+| **Stable Sorting** | When using `Array.prototype.sort()`, ensure the comparison function returns stable and predictable values (1, -1, 0). Use a unique identifier (like `uid`) as a final tie-breaker to prevent erratic behavior across browsers. |
 
 ---
 
@@ -96,8 +96,6 @@ priority: CRITICAL
 | Magic numbers | Named constants |
 | God functions | Split by responsibility |
 | Empty rulesets | Remove blocks containing only comments |
-| **Lint Warnings** | Achieve **Zero-Warning** state: prefix unused variables with `_` (e.g., `_slotIndex`), provide default values for all optional props, and remove unused prop assignments in `<script setup>`. |
-| **Useless Assignments** | Avoid initializing a variable with a value that is immediately overwritten without being read. Combine initialization with the final calculation to satisfy `no-useless-assignment` lint rules. |
 
 ---
 
@@ -123,6 +121,7 @@ File to edit: UserService.ts
 > 🔴 **Rule:** Edit the file + all dependent files in the SAME task.
 > 🔴 **Never leave broken imports or missing updates.**
 > 🔴 **Structural Integrity**: When modifying `.vue` files, double-verify that `<script setup>` or closing tags are not accidentally truncated during partial replacements. If the file is complex, prefer a full `write_to_file`.
+> 🔴 **Export Integrity**: When refactoring stores or components, ALWAYS verify that the `return` object (Pinia) or exported variables match the current definitions. Stale exports or missing definitions are a primary source of `ReferenceError` during boot.
 > 🔴 **CSS Consolidation**: In shared/generic components (e.g., `BaseModal`, `UnifiedCard`), avoid using multiple classes that define overlapping properties (like `height`, `max-height`). Consolidate styles into a single master class and use context-based nesting (e.g., `.type-center &`) to prevent specificity wars and layout bugs.
 
 ---

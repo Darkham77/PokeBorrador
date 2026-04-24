@@ -55,17 +55,31 @@ To prevent the `browser_subagent` from creating hundreds of redundant artifacts 
 
 When invoking the `browser_subagent`, follow this exact sequence:
 
-1. **Navigation**: Navigate to `http://localhost:5173/login`.
-2. **Login**:
-    - Type `ASH` in the username field.
-    - Click the Login button.
-3. **Verification**:
-    - Wait for the Dashboard or Game Scene to load.
-    - Verify that the `profiles` table in the local database has loaded correct data for `ASH`.
-4. **Active Monitoring**:
+1. **Check Session & Identity**: Before navigating to `/login`, verify the current state:
+    - **Condition A (Skip)**: If you are already logged in **AND** the current user is `ASH` (verify via `window.__VITE_DEBUG__.getGameStore().auth.user.username` or `#user-badge` text), proceed directly to Step 3.
+    - **Condition B (Login/Relogin)**: If you are NOT logged in **OR** the current user is NOT `ASH`, proceed to Step 2.
+
+2. **Login (UI-ONLY)**:
+    - **Navigation**: Navigate to `http://localhost:5173/login`.
+
+    - **No CLI Bypass**: You **MUST NOT** attempt to use `evaluate` to trigger login logic (e.g., `auth.login()`).
+    - **Step 1**: Type `ASH` in the username field.
+    - **Step 2**: Click the Login button.
+    - **Reasoning**: This ensures the authentication perimeter is correctly tested and that `window.__VITE_DEBUG__` is initialized only through valid UI-triggered state changes.
+
+3. **Fast Target Acquisition (CLI-First)**:
+    - Once logged in (or if session was resumed), if the UI is in an irrelevant state (e.g., old modals open, wrong tab), you **MUST** use CLI commands to clear the UI and teleport to the target.
+    - **Step 1 (Cleanup)**: Execute `window.__VITE_DEBUG__.closeAllModals()` to ensure a clean state.
+    - **Step 2 (Teleport)**: Use `window.__VITE_DEBUG__.navigate(tabId)` or `window.__VITE_DEBUG__.openModal(name)` to reach the target menu/tab immediately.
+    - **Reasoning**: This bypasses slow manual GUI interaction and ensures tests start from a deterministic state.
+
+4. **Verification**:
+    - Wait for the target Dashboard, Modal, or Scene to load.
+    - Verify that the internal state (via `window.__VITE_DEBUG__.getGameStore()`) matches the expected test conditions.
+5. **Active Monitoring**:
     - **Browser Logs**: Always request a summary of console logs (errors, warnings, custom debug messages) from the subagent.
     - **Server Logs**: Periodically check the terminal output of the `npm run dev` command using `command_status` to detect SSR errors, HMR failures, or database router warnings.
-5. **Audit**: During visual testing, perform a **Hybrid Retro-Modern Audit**:
+6. **Audit**: During visual testing, perform a **Hybrid Retro-Modern Audit**:
     - Modern frames (Glassmorphism, gradients)?
     - Pixel Art content (Sprites, text)?
     - No smooth vector icons in game content?
@@ -74,7 +88,7 @@ When invoking the `browser_subagent`, follow this exact sequence:
 
 Use this template when invoking the subagent:
 
-> *"Navigate to URL. Login as ASH. Verify that the Dashboard is visible (ID: #dashboard). Stop immediately upon verification. DO NOT return the DOM. Report only: 1. Presence of #dashboard, 2. Any console errors, 3. Success/Fail summary. Limit: 4 actions."*
+> *"Navigate to URL. Check if logged in as ASH; if not, login as ASH via UI. Clear UI using `closeAllModals()`, then navigate to #target using `window.__VITE_DEBUG__.navigate('target')`. Stop immediately upon verification of #target-loaded. DO NOT return the DOM. Report: 1. Success/Fail, 2. Console errors. Limit: 6 actions."*
 
 ## 4. Dual-Log Monitoring (Diagnostics)
 
@@ -108,33 +122,8 @@ If you encounter an unexpected behavior, a "roadblock," or a UI state that does 
 When testing complex conditional UI (like route badges or level-locked maps), **PRIORITIZE** using console commands over manual GUI interaction. This is faster and more reliable.
 
 - **Entry Point**: `window.__VITE_DEBUG__`
-- **Security**: These commands are only available if the user is logged in as `ASH` (local admin).
-- **Common Commands**:
-  - **Stats**: `window.__VITE_DEBUG__.setMoney(99999)`, `window.__VITE_DEBUG__.setLevel(50)`, `window.__VITE_DEBUG__.setElo(1500)`.
-  - **Map**: `window.__VITE_DEBUG__.setDominance('poder')`, `window.__VITE_DEBUG__.toggleGrid()`.
-  - **Time**: `window.__VITE_DEBUG__.setMockTime('2026-01-01T12:00')`, `window.__VITE_DEBUG__.setCycle('night')`.
-  - **Items**: `window.__VITE_DEBUG__.addItem('Master Ball', 10)`.
-  - **Pokédex**: `window.__VITE_DEBUG__.setPokedexMode('none' | 'seen' | 'caught' | 'real')`.
-
-### Execution Example (Subagent Task)
-
-> *"Navigate to URL. Login as ASH. Use evaluate to run 'window.**VITE_DEBUG**.setDominance(\"poder\")'. Verify that the map cards show the Power Faction banners. Stop immediately. DO NOT return the DOM."*
-
-- **Verification**: After a simulation command, verify that the UI reacts reactively without needing a page refresh. If a refresh is needed, the `browser_subagent` will report it as a bug.
-
-### Pokédex Discovery States
-
-The Pokédex system has **4 named states** in `uiStore.debugPokedexMode`. Use these to test the full discovery hierarchy without gameplay progression:
-
-| Mode | Value | Effect |
-| :--- | :--- | :--- |
-| REAL | `null` | Uses actual `game.state.pokedex` + `seenPokedex` |
-| NUNCA VISTO | `'none'` | Forces all Pokémon to unknown state (`???`, no sprite) |
-| VISTOS | `'seen'` | Forces all Pokémon to seen state (silhouette on map, name revealed) |
-| ATRAPAR | `'caught'` | Forces all Pokémon to caught state (full color) |
-
-> [!WARNING]
-> Never collapse a new mode to `null` with `mode === 'none' ? null : mode`. `null` is reserved for real/unset — the button toggle won't activate if the stored value equals the initial state.
-
-> [!NOTE]
-> `window.__VITE_DEBUG__.setPokedexMode()` can hold **stale closures** after HMR (Pinia doesn't reinitialize stores on hot reload). If the command has no effect, set the store directly: `uiStore.debugPokedexMode = 'none'` in the browser console, or do a full page refresh.
+- **Discovery (Source of Truth)**: To find the most current available commands and their arguments, you MUST read the command registration logic in `src/stores/debug.js`. Do not rely on static command lists in documentation.
+- **Fast Navigation Mandate**: To reach a specific testing target (e.g., the Pokedex or a specific Pokemon detail), you **MUST** prioritize using the navigation commands (`window.__VITE_DEBUG__.navigate`, `openModal`, `inspectPokemon`) over manual GUI interaction.
+- **Hybrid Interaction Rule**: Acknowledge that while CLI handles navigation and state, specific UI features (e.g., **search filters**, **sorting buttons**, or **drag-and-drop**) may not be exposed to the CLI. You MUST use standard `browser_subagent` UI actions (typing/clicking) to test these specific interactive elements.
+- **HMR Reliability**: `window.__VITE_DEBUG__` can hold **stale closures** after Hot Module Replacement. If a command has no effect or behaves unexpectedly, perform a full page refresh before diagnosing further.
+- **Verification**: After a simulation command, verify that the UI reacts reactively without needing a page refresh. If a refresh is needed to see changes (other than fixing HMR), the `browser_subagent` will report it as a bug.

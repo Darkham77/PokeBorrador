@@ -54,7 +54,13 @@ export const useBoxStore = defineStore('box', () => {
       if (p.level < f.levelMin || p.level > f.levelMax) return false
       if (totalIv < f.ivTotalMin || totalIv > f.ivTotalMax) return false
       if (f.ivAny31 && !Object.values(ivs).some(v => v === 31)) return false
-      if (f.search && !p.name.toLowerCase().includes(f.search.toLowerCase())) return false
+      
+      if (f.search) {
+        const query = f.search.toLowerCase()
+        const nameMatch = p.name.toLowerCase().includes(query)
+        const nickMatch = p.nickname?.toLowerCase().includes(query)
+        if (!nameMatch && !nickMatch) return false
+      }
       
       return true
     })

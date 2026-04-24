@@ -41,15 +41,7 @@ const loadRankedRules = async () => {
 
 const saveRankedRules = async () => {
   try {
-    const { error } = await gameStore.db.from('ranked_rules_config').upsert({
-      id: 'current',
-      season_name: rankedRules.seasonName,
-      config: { ...rankedRules },
-      updated_at: new Date().toISOString()
-    })
-    
-    if (error) throw error
-    uiStore.notify('Reglas Ranked guardadas', '🏆')
+    await window.__VITE_DEBUG__.saveRankedRules(rankedRules)
   } catch (e) {
     uiStore.notify('Error: ' + e.message, '❌')
   }
@@ -59,12 +51,7 @@ const closeRankedSeason = async () => {
   if (!confirm(`¿Estás seguro de cerrar la temporada "${rankedRules.seasonName}"?\nSe entregarán premios al Top 50 automáticamente.`)) return
   
   try {
-    const { data, error } = await gameStore.db.rpc('fn_award_ranked_season_automated', {
-      target_season_name: rankedRules.seasonName
-    })
-    
-    if (error) throw error
-    uiStore.notify(`¡Temporada cerrada! ${data.players_count} jugadores premiados.`, '🏆')
+    await window.__VITE_DEBUG__.closeRankedSeason(rankedRules.seasonName)
   } catch (e) {
     uiStore.notify('Error RPC: ' + e.message, '❌')
   }

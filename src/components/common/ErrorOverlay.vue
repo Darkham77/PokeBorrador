@@ -3,10 +3,12 @@ import { ref } from 'vue'
 import { useErrorStore } from '@/stores/errorStore'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { useAuthStore } from '@/stores/auth'
 
 const errorStore = useErrorStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+const authStore = useAuthStore()
 const copied = ref(false)
 
 const copyError = async () => {
@@ -22,7 +24,7 @@ const copyError = async () => {
     `MENSAJE: ${error.message}`,
     '',
     'CONTEXTO DEL JUEGO:',
-    `Entrenador: ${gameStore.state.trainer || 'N/A'} (Nv. ${gameStore.state.trainerLevel || 0})`,
+    `Entrenador: ${gameStore.state.trainer || authStore.user?.user_metadata?.username || 'N/A'} (Nv. ${gameStore.state.trainerLevel || 0})`,
     `Medallas: ${gameStore.state.badges || 0}`,
     `Tipo: ${error.type}`,
     `Origen: ${error.source || 'N/A'} (${error.lineno || '?'}:${error.colno || '?'})`,
@@ -100,7 +102,7 @@ const closeError = () => {
               ESTADO DEL JUEGO:
             </div>
             <div class="error-context-item">
-              <strong>Entrenador:</strong> {{ gameStore.state.trainer || 'N/A' }} (Nv. {{ gameStore.state.trainerLevel || 0 }})
+              <strong>Entrenador:</strong> {{ gameStore.state.trainer || authStore.user?.user_metadata?.username || 'N/A' }} (Nv. {{ gameStore.state.trainerLevel || 0 }})
             </div>
             <div class="error-context-item">
               <strong>Medallas:</strong> {{ gameStore.state.badges || 0 }}

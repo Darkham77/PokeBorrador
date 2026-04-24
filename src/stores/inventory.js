@@ -23,17 +23,35 @@ export const useInventoryStore = defineStore('inventory', () => {
   // --- GETTERS ---
   const bagItems = computed(() => {
     const inventory = gameStore.state.inventory || {}
-    return Object.entries(inventory)
+    const items = Object.entries(inventory)
       .map(([name, qty]) => {
         const item = SHOP_ITEMS.find(i => i.name === name)
         if (!item) return { name, qty, id: name, cat: 'otros', sprite: '', desc: 'Objeto desconocido' }
         return { ...item, qty }
       })
-      .filter(item => {
-        if (activeCategory.value !== 'todos' && item.cat !== activeCategory.value) return false
-        if (searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
-        return true
-      })
+
+    // Inject Eggs as virtual items
+    const eggs = (gameStore.state.eggs || []).map(egg => {
+      const speciesName = pokemonDataProvider.getPokemonData(egg.id)?.name || 'Pokémon'
+      return {
+        id: egg.uid,
+        name: `Huevo ${speciesName}`,
+        qty: 1,
+        cat: 'breeding',
+        sprite: 'egg',
+        isEgg: true,
+        ready: egg.ready || egg.steps <= 0,
+        steps: egg.steps,
+        desc: egg.steps > 0 ? `Le faltan ${Math.ceil(egg.steps)} pasos para eclosionar.` : '¡Está listo para eclosionar!',
+        eggData: egg
+      }
+    })
+
+    return [...items, ...eggs].filter(item => {
+      if (activeCategory.value !== 'todos' && item.cat !== activeCategory.value) return false
+      if (searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
+      return true
+    })
   })
 
   const CATEGORY_LABELS = {

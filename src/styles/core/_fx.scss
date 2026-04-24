@@ -1,0 +1,64 @@
+@use 'gpu' as *;
+
+/* ==========================================================================
+   GLOBAL SPECIAL EFFECTS SYSTEM
+   ========================================================================== */
+
+@mixin aura-guardian($color: rgba(255, 255, 255, 0.8)) {
+  filter: Drop-Shadow(0 0 10px $color) Drop-Shadow(0 0 5px $color);
+  animation: pulse-aura-vibrant 2s infinite ease-in-out;
+  @include gpu-layer;
+  will-change: filter;
+}
+
+@mixin fx-shiny($particle-count: 5) {
+  position: relative;
+  @include gpu-layer;
+
+  .sparkle {
+    &:nth-child(1) { @include shiny-sparkle(0s, 20%, 25%); }
+    &:nth-child(2) { @include shiny-sparkle(1.2s, 75%, 20%); }
+    &:nth-child(3) { @include shiny-sparkle(2.5s, 30%, 85%); }
+    &:nth-child(4) { @include shiny-sparkle(0.8s, 80%, 75%); }
+    &:nth-child(5) { @include shiny-sparkle(3.1s, 15%, 55%); }
+  }
+}
+
+@mixin shiny-sparkle($delay: 0s, $top: 0%, $left: 0%) {
+  position: absolute;
+  top: $top;
+  left: $left;
+  width: 16px;
+  height: 16px;
+  background: #ffd60a;
+  clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+  opacity: 0;
+  z-index: 5;
+  animation: sparkle-pop 4s infinite ease-in-out;
+  animation-delay: $delay;
+  @include gpu-layer;
+  will-change: transform, opacity;
+}
+
+/* Animations */
+@keyframes pulse-aura-vibrant {
+  0%, 100% { filter: Drop-Shadow(0 10px 20px rgba(0,0,0,0.6)) Drop-Shadow(0 0 8px rgba(255, 255, 255, 0.4)) Drop-Shadow(0 0 2px rgba(255, 255, 255, 0.2)); }
+  50% { filter: Drop-Shadow(0 10px 20px rgba(0,0,0,0.6)) Drop-Shadow(0 0 18px rgba(255, 255, 255, 0.9)) Drop-Shadow(0 0 8px rgba(255, 255, 255, 0.6)); }
+}
+
+@keyframes sparkle-pop {
+  0%, 80%, 100% { opacity: 0; transform: Scale(0) Rotate(0deg); }
+  85% { opacity: 1; transform: Scale(1.2) Rotate(45deg); }
+  90% { opacity: 1; transform: Scale(1) Rotate(90deg); }
+  95% { opacity: 0; transform: Scale(0.5) Rotate(135deg); }
+}
+
+@keyframes rotate-fx {
+  from { transform: Rotate(0deg); }
+  to { transform: Rotate(360deg); }
+}
+
+@keyframes float-fx {
+  from { transform: translateY(0px) Scale(1); }
+  to { transform: translateY(-5px) Scale(1.05); }
+}

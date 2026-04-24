@@ -94,7 +94,7 @@ const tabs = computed(() => {
   return base
 })
 
-const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
+const getSprite = (id, isShiny = false) => getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny })
 
 // Stats Calculation
 const displayStats = computed(() => {
@@ -230,6 +230,23 @@ const handleToggleTag = (tag) => {
     console.warn('[Tag] Toggle conditions not met:', { isInstance: isInstance.value, index: finalIndex.value, hasBridge: typeof window.togglePokeTag === 'function' })
   }
 }
+
+const handleEditNickname = () => {
+  if (!isInstance.value) return
+  
+  uiStore.openPrompt({
+    title: 'Cambiar Apodo',
+    message: `Introduce un nuevo nombre para tu ${species.value.name}:`,
+    initialValue: targetPokemon.value.nickname || species.value.name,
+    confirmText: 'Guardar',
+    onConfirm: (val) => {
+      const newNick = val?.trim() || null
+      targetPokemon.value.nickname = newNick
+      uiStore.notify(`¡Apodo cambiado a ${newNick || species.value.name}!`, '✨')
+      gameStore.save(false)
+    }
+  })
+}
 </script>
 
 <template>
@@ -252,11 +269,30 @@ const handleToggleTag = (tag) => {
     >
       <!-- Custom Content Header -->
       <header class="pdex-custom-header">
-        <div class="poke-identity">
+        <div
+          class="poke-identity"
+          :class="{ 'has-nickname': targetPokemon?.nickname }"
+        >
           <span class="p-id">#{{ species.nationalId.padStart(3, '0') }}</span>
-          <h2 class="p-name">
-            {{ species.name.toUpperCase() }}
-          </h2>
+          <div class="name-container">
+            <h2 class="p-name">
+              {{ (targetPokemon?.nickname || species.name).toUpperCase() }}
+              <button 
+                v-if="isInstance" 
+                class="edit-nick-btn" 
+                title="Cambiar apodo"
+                @click.stop="handleEditNickname"
+              >
+                ✏️
+              </button>
+            </h2>
+            <span
+              v-if="targetPokemon?.nickname"
+              class="p-species-subtitle"
+            >
+              {{ species.name.toUpperCase() }}
+            </span>
+          </div>
         </div>
 
         <div class="header-right">
@@ -278,12 +314,27 @@ const handleToggleTag = (tag) => {
 
       <!-- TOP DISPLAY -->
       <div class="pdex-main-display">
-        <div class="sprite-container">
+        <div 
+          class="sprite-container"
+          :class="{ 'is-guardian': targetPokemon?.isGuardian, 'is-shiny': targetPokemon?.isShiny }"
+        >
           <img
-            :src="getSprite(targetSpeciesId)"
+            :src="getSprite(targetSpeciesId, targetPokemon?.isShiny)"
             class="main-sprite"
             @error="e => e.target.style.display = 'none'"
           >
+          
+          <!-- Standardized Shiny FX -->
+          <div
+            v-if="targetPokemon?.isShiny"
+            class="shiny-sparkles"
+          >
+            <div
+              v-for="i in 5"
+              :key="i"
+              class="sparkle"
+            />
+          </div>
         </div>
       </div>
 
@@ -424,6 +475,6 @@ const handleToggleTag = (tag) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/pokedex-detail";
-@use "@/styles/components/unified-pokemon-detail";
+@use "@/styles/components/pokedex-detail" as *;
+@use "@/styles/components/unified-pokemon-detail" as *;
 </style>

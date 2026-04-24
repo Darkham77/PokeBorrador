@@ -83,4 +83,53 @@ describe('PokemonSelectionModal Persistence', () => {
     expect(wrapper.vm.sortOrder).toBe('desc')
     expect(wrapper.vm.activeTags).toEqual([])
   })
+
+  it('filters available pokemon by nickname', async () => {
+    const gameStore = {
+      state: {
+        team: [
+          { uid: 'u1', id: 'pikachu', name: 'Pikachu', nickname: 'Sparky', level: 10 },
+          { uid: 'u2', id: 'bulbasaur', name: 'Bulbasaur', nickname: 'Leafy 🌿', level: 5 }
+        ],
+        box: []
+      }
+    }
+
+    // Re-mocking useGameStore for this specific test
+    vi.mock('@/stores/game', () => ({
+      useGameStore: () => ({
+        state: {
+          team: [
+            { uid: 'u1', id: 'pikachu', name: 'Pikachu', nickname: 'Sparky', level: 10 },
+            { uid: 'u2', id: 'bulbasaur', name: 'Bulbasaur', nickname: 'Leafy 🌿', level: 5 }
+          ],
+          box: []
+        }
+      })
+    }))
+
+    const wrapper = mount(PokemonSelectionModal, {
+      global: {
+        stubs: {
+          BaseModal: true,
+          PVTooltip: true
+        }
+      }
+    })
+
+    // Filter by nickname
+    wrapper.vm.searchQuery = 'spark'
+    expect(wrapper.vm.availablePokemon).toHaveLength(1)
+    expect(wrapper.vm.availablePokemon[0].pokemon.nickname).toBe('Sparky')
+
+    // Filter by emoji
+    wrapper.vm.searchQuery = '🌿'
+    expect(wrapper.vm.availablePokemon).toHaveLength(1)
+    expect(wrapper.vm.availablePokemon[0].pokemon.nickname).toBe('Leafy 🌿')
+
+    // Filter by species name
+    wrapper.vm.searchQuery = 'bulba'
+    expect(wrapper.vm.availablePokemon).toHaveLength(1)
+    expect(wrapper.vm.availablePokemon[0].pokemon.name).toBe('Bulbasaur')
+  })
 })

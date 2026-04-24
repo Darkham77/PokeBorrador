@@ -72,6 +72,9 @@ To minimize server load and optimize performance on mobile devices, the project 
   * **Technical Action**: Ensure `authStore` initializes with `loading: true` and fetches the latest "Source of Truth" from the DBRouter.
 * **Pre-Action Flush Protocol**: Before any social action other than chat (sending a trade, GTS listing, etc.), the system triggers a forced atomic save to ensure synchronization integrity.
 * **Mandatory Claim Sync**: When using the "Receive All" function or claiming an individual asset, the system forces a prior save to prevent the local state from overwriting the incoming data.
+* **Identity Synchronization Protocol**: To ensure visual parity across sessions, the application MUST synchronize the account-level identity (`auth.users`) with the game-level profile.
+  * **Fallback Logic**: If `game.trainer` is missing or default, UI layers MUST display the `username` from the authentication metadata.
+  * **Store Isolation**: Use a dedicated `profileStore` to manage identity metadata, breaking potential circular dependencies between the core UI and Game stores.
 
 ---
 
@@ -146,4 +149,9 @@ The **Local Debug Panel** (`LocalDebugPanel.vue`) is a sensitive administrative 
 * **Offline Mandate**: In `offline` mode, the user is the local environment's administrator. Access is granted by default.
 * **Online Restriction**: In `online` mode, access is strictly limited to accounts with the `admin` role.
 * **Conditional Rendering**: The panel **MUST NOT** be rendered in the DOM (`v-if`) if the access check fails. This prevents accidental exposure of debug triggers to standard players.
-* **Security Audit**: Any attempt to bypass this check in an online session triggers an automatic ban protocol (monitored by the `securityCheck` function).
+* **CLI Proxy Security**: Every command exposed via `window.__VITE_DEBUG__` is protected by a centralized `securityCheck()`.
+* **Auto-Ban Protocol**: Any unauthorized call to an administrative CLI command in an `online` session triggers an immediate record update in the `profiles` table (`is_banned: true`) followed by a forced `auth.logout()`.
+* **Layering & Z-Index**: All administrative tools MUST respect the centralized z-index scale. Consult [ui_ux_standards.md](./ui_ux_standards.md) for layering and "Critical Layer" (999,999) protocols.
+* **Emergency Utility Set**: The debug system includes a standard set of "Emergency" commands for rapid recovery:
+  * `factoryResetLocal()`: Performs a total purge of local browser storage and session data.
+  * `forceSyncCloud()`: Bypasses standard synchronization throttles to force an immediate state push to the cloud.

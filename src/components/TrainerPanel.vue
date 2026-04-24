@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useModalStore } from '@/stores/modals'
+import { useAuthStore } from '@/stores/auth'
 import { useTradeStore } from '@/stores/trade'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
@@ -11,9 +12,14 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+const authStore = useAuthStore()
 const classStore = usePlayerClassStore()
 const tradeStore = useTradeStore()
 const gs = computed(() => gameStore.state)
+
+const displayName = computed(() => {
+  return gs.value.trainer || authStore.user?.user_metadata?.username || 'Entrenador'
+})
 
 // Experience bar logic
 const trainerExpPct = computed(() => {
@@ -69,7 +75,7 @@ const handlePanelClick = (event) => {
         id="hud-name"
         :class="['trainer-name', gs.nick_style]"
       >
-        {{ gs.trainer || 'Entrenador' }}
+        {{ displayName }}
       </div>
       <div class="trainer-info">
         <div class="trainer-lv">

@@ -111,13 +111,25 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
       
       <img
         :src="spriteUrl"
+        class="pokemon-sprite"
         :class="[
-          { 'shiny-anim': props.pokemon.isShiny },
+          { 'is-shiny': pokemon.isShiny, 'is-guardian': pokemon.isGuardian },
           pokemon.aura ? `aura-${pokemon.aura}-mini` : ''
         ]"
         alt="pokemon"
         @error="e => e.target.style.display = 'none'"
       >
+      <!-- Standardized Shiny FX (Compact) -->
+      <div
+        v-if="pokemon.isShiny"
+        class="shiny-sparkles"
+      >
+        <div
+          v-for="i in 3"
+          :key="i"
+          class="sparkle"
+        />
+      </div>
     </div>
     
     <!-- Info -->
@@ -236,6 +248,16 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   object-fit: contain;
   position: relative;
   z-index: 1;
+
+  &.is-guardian { @include aura-guardian; }
+}
+
+.shiny-sparkles {
+  @include fx-shiny(3);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .badge {

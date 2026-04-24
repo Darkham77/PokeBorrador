@@ -103,9 +103,13 @@ Abstract input into ACTIONS, not raw keys:
 - **Rule**: Standardize event blocking in `App.vue` to prevent Phaser from hijacking scroll/wheel events when the user is interacting with UI overlays (modals).
 - **Pattern**: Detect scrollable Vue containers dynamically (recursive search for `overflow: auto/scroll`). If the user is inside a modal or scrollable area, stop propagation to Phaser (`e.stopPropagation()`) but allow the browser to bubble the event for natural scrolling.
 
----
+### 4. Slot-Based Selection Parity
+In RPG/Team-based games, any UI slot that displays a current team member (Adventure, PVP, War) SHOULD provide a "REEMPLAZAR" (Swap/Replace) interaction even if it's not a competitive mode.
+- **Rule**: If a slot can be filled, it must also be replaceable without forcing the user to manually "remove" the existing item first.
+- **Pattern**: Provide a dedicated "Select/Replace" button (🔄) on the card that opens the inventory/box selector with a callback designed to handle the swap logic.
+- **Why**: Reduces friction in team management and ensures a consistent UX across all game modes.
 
-### 4. Performance Budget (60 FPS = 16.67ms)
+### 5. Performance Budget (60 FPS = 16.67ms)
 
 | System | Budget |
 | :--- | :--- |

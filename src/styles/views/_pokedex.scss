@@ -331,6 +331,16 @@
         filter: Brightness(0) Drop-Shadow(0 0 1px rgba(255,255,255,0.2));
         opacity: 1; // Solid black as requested
       }
+      
+      &.is-guardian { @include aura-guardian; }
+    }
+
+    .shiny-sparkles {
+      @include fx-shiny(3);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
     }
 
     .unknown-placeholder {

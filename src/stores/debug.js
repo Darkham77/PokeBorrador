@@ -6,6 +6,8 @@ import { useUIStore } from './ui'
 import { useMapStore } from './map'
 import { usePvPStore } from './pvp'
 import { useBreedingStore } from './breeding'
+import { useModalStore } from './modals'
+import { useErrorStore } from './errorStore'
 
 export const useDebugStore = defineStore('debug', () => {
   const auth = useAuthStore()
@@ -13,6 +15,8 @@ export const useDebugStore = defineStore('debug', () => {
   const ui = useUIStore()
   const map = useMapStore()
   const pvp = usePvPStore()
+  const modalStore = useModalStore()
+  const errorStore = useErrorStore()
 
   const tools = ref([])
 
@@ -127,6 +131,32 @@ export const useDebugStore = defineStore('debug', () => {
       description: 'Establece la cantidad de medallas (0-8).'
     })
 
+    register({
+      id: 'core-set-faction',
+      label: 'FIJAR BANDO',
+      command: 'setFaction',
+      category: 'stats',
+      action: (f) => {
+        game.state.faction = f === 'none' ? null : f
+        ui.notify(`Debug: Bando cambiado a ${f ? f.toUpperCase() : 'LIBRE'}`, '🚩')
+        game.saveGame(false)
+      },
+      description: 'Cambia el bando del jugador (poder, union, none).'
+    })
+
+    register({
+      id: 'core-set-class',
+      label: 'FIJAR CLASE',
+      command: 'setPlayerClass',
+      category: 'stats',
+      action: (c) => {
+        game.state.playerClass = c === 'none' ? null : c
+        ui.notify(`Debug: Clase cambiada a ${c ? c.toUpperCase() : 'RESETEADA'}`, '🎓')
+        game.saveGame(false)
+      },
+      description: 'Cambia la clase del entrenador (entrenador, criador, cazabichos, rocket, none).'
+    })
+
     // MAP
     register({
       id: 'map-toggle-grid',
@@ -233,6 +263,63 @@ export const useDebugStore = defineStore('debug', () => {
       description: 'Recalcula la pokedex según los pokemon poseídos.'
     })
 
+    register({
+      id: 'poke-reset-db',
+      label: 'RESET DB POKEDEX',
+      command: 'resetPokedexDB',
+      category: 'pokes',
+      action: async (force = false) => {
+        if (!force && !confirm('⚠️ PELIGRO: Esto borrará TODO el progreso de tu Pokedex (Avistados y Capturados) de forma PERMANENTE. ¿Continuar?')) return
+        game.state.pokedex = []
+        game.state.seenPokedex = []
+        await game.saveGame(false)
+        ui.notify('Pokedex reseteada en la base de datos', '🧹')
+      },
+      description: 'Borra todo el progreso persistente de la pokedex.'
+    })
+
+    register({
+      id: 'poke-create',
+      label: 'CREAR POKEMON (CLI)',
+      command: 'createPokemon',
+      category: 'pokes',
+      action: async (params = {}) => {
+        const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
+        const p = pokemonDebugService.generate(params)
+        await pokemonDebugService.executeProtocol(p, params.protocol || 'catch')
+        return p
+      },
+      description: 'Construye e inyecta un pokemon personalizado (protocolos: catch, hatch, hatch_anim).'
+    })
+
+    register({
+      id: 'poke-encounter',
+      label: 'FORZAR ENCUENTRO (CLI)',
+      command: 'spawnEncounter',
+      category: 'pokes',
+      action: async (params = {}) => {
+        const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
+        const p = pokemonDebugService.generate(params)
+        await pokemonDebugService.triggerEncounter(p, params.mapId || 'plains')
+      },
+      description: 'Inicia un combate contra un pokemon personalizado en la ruta especificada.'
+    })
+
+    register({
+      id: 'poke-clear-pvp',
+      label: 'LIMPIAR EQUIPO PVP',
+      command: 'clearPvpTeam',
+      category: 'pokes',
+      action: async (force = false) => {
+        if (!force && !confirm('¿Limpiar equipo PVP de forma permanente?')) return
+        ui.pvpAutoFillDisabled = true
+        game.state.pvpTeam = []
+        await game.saveGame(false)
+        ui.notify('Equipo PVP limpiado y auto-rellenado desactivado', '🧹')
+      },
+      description: 'Limpia los slots del equipo PVP y desactiva el auto-rellenado.'
+    })
+
     // TIME
     register({
       id: 'core-set-mock-time',
@@ -250,6 +337,20 @@ export const useDebugStore = defineStore('debug', () => {
       category: 'time',
       action: () => game.db.resetTime(),
       description: 'Restaura la hora real.'
+    })
+
+    register({
+      id: 'time-add-hours',
+      label: 'AÑADIR HORAS',
+      command: 'addHours',
+      category: 'time',
+      action: (h) => {
+        const current = game.db.getTimeOffset()
+        game.db.setTimeOffset(current + (h * 3600 * 1000))
+        ui.notify(`Debug: +${h} horas añadidas`, '⏩')
+        window.dispatchEvent(new CustomEvent('time-sync-update'))
+      },
+      description: 'Añade una cantidad de horas al offset de tiempo actual.'
     })
 
     // ITEMS
@@ -292,6 +393,204 @@ export const useDebugStore = defineStore('debug', () => {
         game.saveGame(false)
       },
       description: 'Elimina todas las misiones actuales de la guardería.'
+    })
+
+    // MODALS
+    register({
+      id: 'modal-test-stack',
+      label: 'TEST MODAL STACK',
+      command: 'testModalStack',
+      category: 'modals',
+      action: async (count = 5) => {
+        for (let i = 1; i <= count; i++) {
+          modalStore.open('DebugStackTest', { number: i })
+          if (i < count) await new Promise(resolve => setTimeout(resolve, 500))
+        }
+      },
+      description: 'Abre múltiples ventanas modales secuencialmente para probar el sistema de capas.'
+    })
+
+    register({
+      id: 'modal-close-all',
+      label: 'CERRAR TODO',
+      command: 'closeAllModals',
+      category: 'modals',
+      action: () => {
+        modalStore.closeAll()
+        ui.notify('Todas las ventanas cerradas', '🚪')
+      },
+      description: 'Cierra todas las ventanas modales activas.'
+    })
+
+    register({
+      id: 'core-trigger-error',
+      label: 'DISPARAR ERROR',
+      command: 'triggerTestError',
+      category: 'modals',
+      action: () => {
+        errorStore.setError(new Error('Error de prueba desde CLI Debug'), {
+          type: 'CLI Test Error',
+          source: 'debugStore.js'
+        })
+      },
+      description: 'Simula un error global para probar el sistema de logs y notificaciones.'
+    })
+
+    register({
+      id: 'admin-save-event',
+      label: 'SAVE EVENT',
+      command: 'saveEvent',
+      category: 'admin',
+      action: async (eventData) => {
+        const { error } = await game.db.from('events_config').upsert(eventData)
+        if (error) throw error
+        ui.notify('Evento guardado (CLI)', '✅')
+        const eventStoreModule = await import('./events')
+        if (eventStoreModule && eventStoreModule.useEventStore) {
+          const eventStore = eventStoreModule.useEventStore()
+          await eventStore.fetchEvents()
+        }
+      },
+      description: 'Guarda o actualiza la configuración de un evento.'
+    })
+
+    register({
+      id: 'admin-save-ranked-rules',
+      label: 'SAVE RANKED RULES',
+      command: 'saveRankedRules',
+      category: 'admin',
+      action: async (rules) => {
+        const { error } = await game.db.from('ranked_rules_config').upsert({
+          id: 'current',
+          season_name: rules.seasonName,
+          config: { ...rules },
+          updated_at: new Date().toISOString()
+        })
+        if (error) throw error
+        ui.notify('Reglas Ranked guardadas (CLI)', '🏆')
+      },
+      description: 'Guarda las reglas actuales de la temporada Ranked.'
+    })
+
+    register({
+      id: 'admin-close-season',
+      label: 'CLOSE RANKED SEASON',
+      command: 'closeRankedSeason',
+      category: 'admin',
+      action: async (seasonName) => {
+        const { data, error } = await game.db.rpc('fn_award_ranked_season_automated', {
+          target_season_name: seasonName
+        })
+        if (error) throw error
+        ui.notify(`Temporada cerrada: ${data.players_count} premiados`, '🏆')
+      },
+      description: 'Cierra la temporada Ranked actual y entrega premios automáticamente.'
+    })
+
+    register({
+      id: 'emergency-factory-reset',
+      label: 'FACTORY RESET LOCAL',
+      command: 'factoryResetLocal',
+      category: 'emergency',
+      action: () => {
+        localStorage.clear()
+        sessionStorage.clear()
+        window.location.reload()
+      },
+      description: 'Limpia todo el estado local (localStorage/sessionStorage) y reinicia la página.'
+    })
+
+    register({
+      id: 'emergency-force-sync',
+      label: 'FORCE SYNC CLOUD',
+      command: 'forceSyncCloud',
+      category: 'emergency',
+      action: async () => {
+        await game.save(true)
+        ui.notify('Sincronización forzada completada', '🔄')
+      },
+      description: 'Fuerza el guardado inmediato en la nube saltándose el debounce.'
+    })
+
+    // NAVIGATION
+    register({
+      id: 'nav-tab',
+      label: 'NAVEGAR A TABS',
+      command: 'navigate',
+      category: 'navigation',
+      action: (tabId) => {
+        ui.activeTab = tabId
+        ui.notify(`Navegando a: ${tabId.toUpperCase()}`, '🚀')
+      },
+      description: 'Cambia la pestaña principal activa (map, pc, battle, etc).'
+    })
+
+    register({
+      id: 'nav-modal-open',
+      label: 'ABRIR MODAL',
+      command: 'openModal',
+      category: 'navigation',
+      action: (name, props = {}) => {
+        ui.open(name, props)
+      },
+      description: 'Abre cualquier ventana modal por su nombre.'
+    })
+
+    register({
+      id: 'nav-modal-close',
+      label: 'CERRAR MODAL',
+      command: 'closeModal',
+      category: 'navigation',
+      action: (name) => {
+        if (name) ui.close(name)
+        else ui.closeModal()
+      },
+      description: 'Cierra una modal específica o la de más arriba.'
+    })
+
+    register({
+      id: 'nav-library-tab',
+      label: 'TABS DE LIBRERÍA',
+      command: 'setLibraryTab',
+      category: 'navigation',
+      action: (tabId) => {
+        ui.libraryTab = tabId
+      },
+      description: 'Cambia la pestaña activa dentro de la Librería/Pokedex.'
+    })
+
+    register({
+      id: 'nav-inspect-poke',
+      label: 'INSPECCIONAR POKE',
+      command: 'inspectPokemon',
+      category: 'navigation',
+      action: (index, context = 'team') => {
+        const pokes = context === 'team' ? game.state.team : game.state.box
+        const p = pokes[index]
+        if (p) ui.openPokemonDetail(p, index, context)
+        else console.warn(`[DEBUG] No hay pokemon en ${context}[${index}]`)
+      },
+      description: 'Abre el detalle de un pokemon específico por índice y contexto.'
+    })
+
+    register({
+      id: 'nav-hud-group',
+      label: 'TOGGLE HUD GROUP',
+      command: 'toggleHud',
+      category: 'navigation',
+      action: (group) => {
+        ui.toggleHudGroup(group)
+      },
+      description: 'Alterna la visibilidad de grupos del HUD (MARKET, POKEMON, etc).'
+    })
+
+    register({
+      id: 'core-get-game-store',
+      label: 'OBTENER GAME STORE',
+      command: 'getGameStore',
+      category: 'core',
+      action: () => game,
+      description: 'Retorna la instancia reactiva del game store para inspección.'
     })
 
     updateGlobalProxy()

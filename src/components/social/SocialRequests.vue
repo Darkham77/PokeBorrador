@@ -32,7 +32,7 @@ const socialStore = useSocialStore()
       
       <div class="friend-info">
         <div class="friend-name">
-          {{ req.profiles?.username || 'Entrenador' }}
+          {{ req.profiles?.username || req.profiles?.full_name || 'Entrenador' }}
         </div>
         <div class="friend-meta">
           Quiere ser tu amigo

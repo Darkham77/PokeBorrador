@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   pvp_losses INTEGER DEFAULT 0,
   pvp_draws INTEGER DEFAULT 0,
   current_session_id TEXT,
+  is_banned BOOLEAN DEFAULT FALSE,
+  ban_reason TEXT,
   db_version INTEGER DEFAULT 1,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()

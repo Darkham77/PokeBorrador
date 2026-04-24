@@ -27,11 +27,8 @@ function resetTime() {
 }
 
 function addHours(h) {
-  const current = game.db.getTimeOffset()
-  game.db.setTimeOffset(current + (h * 3600 * 1000))
+  window.__VITE_DEBUG__.addHours(h)
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
-  ui.notify(`+${h} horas añadidas`, '⏩')
-  window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
 function toggleWeather(w) {

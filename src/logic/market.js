@@ -55,7 +55,12 @@ export function applyMarketFilters(list, filters, context, options = {}) {
     }
 
     // Search
-    if (filters.search && !offer.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
+    if (filters.search) {
+      const query = filters.search.toLowerCase();
+      const nameMatch = offer.name.toLowerCase().includes(query);
+      const nickMatch = offer.nickname?.toLowerCase().includes(query);
+      if (!nameMatch && !nickMatch) return false;
+    }
 
     if (listingType === 'pokemon') {
       // Tier

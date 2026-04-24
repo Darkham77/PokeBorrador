@@ -63,7 +63,9 @@ export function useBoxFilters(boxArray, _currentBoxIndex) {
         if ((ivs.spd || 0) < filters.ivSPD) return false;
         if ((ivs.spe || 0) < filters.ivSPE) return false;
 
-        if (filters.search && !p.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
+        const matchesName = p.name.toLowerCase().includes(filters.search.toLowerCase());
+        const matchesNick = p.nickname?.toLowerCase().includes(filters.search.toLowerCase());
+        if (filters.search && !matchesName && !matchesNick) return false;
 
         return true;
       });

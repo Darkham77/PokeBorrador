@@ -411,6 +411,44 @@ export const useGameStore = defineStore('game', () => {
     return anyReady
   }
 
+  /**
+   * Formalizes the hatching of an egg into a real Pokémon.
+   * @param {Object} egg - The egg data from the inventory.
+   */
+  async function executeHatch(egg) {
+    const { recalcPokemonStats } = await import('@/logic/pokemonFactory')
+    
+    // 1. Transform egg genes into a real Pokémon
+    const p = makePokemon(egg.id, 1, {
+      isShiny: egg.isShiny,
+      isGuardian: egg.isGuardian,
+      nature: egg.nature,
+      abilitySlot: egg.abilitySlot,
+      gender: egg.gender // Inherited gender if exists
+    })
+
+    // 2. Apply inherited traits
+    p.ivs = { ...p.ivs, ...egg.ivs }
+    if (egg.movesAtBirth) {
+      p.moves = egg.movesAtBirth.map(mName => {
+        const mData = pokemonDataProvider.getMoveData(mName) || {}
+        return { name: mName, pp: mData.pp || 35, maxPP: mData.pp || 35 }
+      })
+    }
+    p.obtainedMethod = 'egg'
+    recalcPokemonStats(p)
+    p.hp = p.maxHp
+
+    // 3. Remove egg from inventory
+    state.eggs = state.eggs.filter(e => e.uid !== egg.uid)
+
+    // 4. Add new Pokemon to team/box
+    addPokemon(p, { notify: false })
+
+    await save(false)
+    return p
+  }
+
   async function claimAsset(claimId) {
     if (!authStore.user) return false
     
@@ -532,6 +570,7 @@ export const useGameStore = defineStore('game', () => {
     swapPvpSlot,
     autoFillWarTeam,
     swapWarSlot,
+    executeHatch,
     saveGame: save // Alias for backward compatibility
   }
 })

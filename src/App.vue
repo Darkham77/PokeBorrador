@@ -19,9 +19,12 @@ import { useLoadingStore } from '@/stores/loading'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useWindowListener } from '@/composables/useWindowListener'
 
+import { useProfileStore } from '@/stores/profile'
+
 const authStore = useAuthStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+const profileStore = useProfileStore()
 const classStore = usePlayerClassStore()
 const loadingStore = useLoadingStore()
 const dbIncompatible = ref(false)
@@ -82,6 +85,9 @@ onMounted(async () => {
     
     // Si la DB es compatible, cargar la partida
     await gameStore.loadGame()
+    
+    // Sincronizar datos del perfil
+    profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
   }
   
   // Escuchar la señal de listo del motor legacy

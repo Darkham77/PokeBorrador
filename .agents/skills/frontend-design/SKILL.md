@@ -107,6 +107,11 @@ Before any design work, ANSWER THESE or ASK USER:
 | **Miller's Law** | ~7 items in working memory | Chunk content into groups |
 | **Von Restorff** | Different = memorable | Make CTAs visually distinct |
 | **Serial Position** | First/last remembered most | Key info at start/end |
+| **Contextual Filter** | Filter active items from list | Hide already-assigned members in selectors |
+
+- **Contextual Filtering in Selection Lists**: To reduce cognitive load and prevent input errors (Hick's Law), selection lists SHOULD automatically filter out items that are already active in the target context.
+  - **PATTERN**: When selecting an item for a specific slot, calculate the `excludeIds` array from the current state and pass it to the selector to hide assigned members.
+  - **WHY**: This keeps the interface clean, prevents redundant actions, and ensures the user only sees valid choices for the current operation.
 
 ### Emotional Design Levels
 

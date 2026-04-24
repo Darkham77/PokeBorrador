@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
+import { useProfileStore } from '@/stores/profile'
+import { usePlayerClassStore } from '@/stores/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
@@ -13,6 +15,8 @@ import ProfileTradeNotifs from './profile/ProfileTradeNotifs.vue'
 const uiStore = useUIStore()
 const gameStore = useGameStore()
 const authStore = useAuthStore()
+const profileStore = useProfileStore()
+const classStore = usePlayerClassStore()
 
 defineProps({
   show: { type: Boolean, default: false }
@@ -22,7 +26,7 @@ defineOptions({ inheritAttrs: false })
 const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
 
 const gs = computed(() => gameStore.state)
-const profileData = computed(() => uiStore.profileData)
+const profileData = computed(() => profileStore.profileData)
 
 const factionLabel = computed(() => {
   const f = gs.value.faction
@@ -42,7 +46,7 @@ const factionColor = computed(() => {
 })
 
 const trainerName = computed(() => {
-  return gs.value.trainer || 'Entrenador'
+  return gs.value.trainer || authStore.user?.user_metadata?.username || 'Entrenador'
 })
 
 const displayUsername = computed(() => {
@@ -125,7 +129,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             id="profile-email"
             class="profile-email"
           >
-            {{ profileData.email }}
+            {{ authStore.user?.email || profileData.email }}
+          </div>
+          <div
+            v-if="classStore.currentClassDef"
+            class="profile-profession"
+            :style="{ color: classStore.currentClassDef.color }"
+          >
+            {{ classStore.currentClassDef.name }}
           </div>
         </div>
 
@@ -314,6 +325,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     font-size: 12px;
     color: rgba(255, 255, 255, 0.4);
     font-family: 'Press Start 2P', monospace;
+    margin-bottom: 8px;
+  }
+
+  .profile-profession {
+    font-size: 10px;
+    font-family: 'Press Start 2P', cursive;
+    text-transform: uppercase;
+    @include pixelated;
   }
 }
 

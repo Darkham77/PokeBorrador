@@ -17,9 +17,6 @@ const modalStore = useModalStore()
       v-bind="modal.props"
       :show="!modal.closing"
       @close="modalStore.close(modal.id)"
-      @confirm="modal.props.onConfirm?.()"
-      @cancel="modal.props.onCancel?.()"
-      @submit="modal.props.onSubmit?.($event)"
     />
   </div>
 </template>

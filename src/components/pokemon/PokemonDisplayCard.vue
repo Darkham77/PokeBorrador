@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { TAG_DEFINITIONS, POKEMON_BADGES } from '@/logic/constants/tags'
+import { getPokemonTier } from '@/logic/constants/tiers'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -23,26 +24,7 @@ const getHpClass = (pct) => {
   return 'hp-low'
 }
 
-const BOX_TIER_CONFIG = {
-  'S+': { min: 186, max: 186, color: '#FFD700', bg: 'rgba(255,215,0,0.25)', label: 'S+' },
-  'S': { min: 168, max: 185, color: '#FFB800', bg: 'rgba(255,184,0,0.18)', label: 'S' },
-  'A': { min: 140, max: 167, color: '#6BCB77', bg: 'rgba(107,203,119,0.18)', label: 'A' },
-  'B': { min: 112, max: 139, color: '#3B8BFF', bg: 'rgba(59,139,255,0.18)', label: 'B' },
-  'C': { min: 84, max: 111, color: '#C77DFF', bg: 'rgba(199,125,255,0.18)', label: 'C' },
-  'D': { min: 56, max: 83, color: '#FF9632', bg: 'rgba(255,150,50,0.18)', label: 'D' },
-  'F': { min: 0, max: 55, color: '#FF3B3B', bg: 'rgba(255,59,59,0.18)', label: 'F' },
-}
-
-const tierInfo = computed(() => {
-  const ivs = props.pokemon.ivs || {}
-  const total = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + 
-                (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
-  
-  for (const [tier, cfg] of Object.entries(BOX_TIER_CONFIG)) {
-    if (total >= cfg.min && total <= cfg.max) return { tier, total, ...cfg }
-  }
-  return { tier: 'F', total, ...BOX_TIER_CONFIG['F'] }
-})
+const tierInfo = computed(() => getPokemonTier(props.pokemon))
 
 const disobeys = computed(() => props.pokemon.level > props.maxObeyLv)
 
@@ -56,6 +38,8 @@ const cardClasses = computed(() => {
   const classes = ['pokemon-display-card']
   if (props.pokemon.onMission) classes.push('on-mission')
   if (props.pokemon.aura) classes.push(`aura-${props.pokemon.aura}-mini`)
+  if (props.pokemon.isShiny) classes.push('is-shiny')
+  if (props.pokemon.isGuardian) classes.push('is-guardian')
   return classes
 })
 
@@ -106,7 +90,7 @@ const hasBadges = computed(() => {
           >
             <div
               class="tag-badge"
-              :style="{ color: tag.color }"
+              :style="{ '--tag-color': tag.color }"
             >
               {{ tag.icon }}
             </div>
@@ -146,7 +130,7 @@ const hasBadges = computed(() => {
 
       <div
         class="tier-badge"
-        :style="{ background: tierInfo.bg, color: tierInfo.color, borderColor: tierInfo.color + '44' }"
+        :style="{ '--tier-bg': tierInfo.bg, '--tier-color': tierInfo.color }"
       >
         {{ tierInfo.tier }}
       </div>
@@ -160,12 +144,32 @@ const hasBadges = computed(() => {
         class="pokemon-sprite"
         @error="e => e.target.style.display = 'none'"
       >
+      <!-- Standardized Shiny FX -->
+      <div
+        v-if="pokemon.isShiny"
+        class="shiny-sparkles"
+      >
+        <div
+          v-for="i in 3"
+          :key="i"
+          class="sparkle"
+        />
+      </div>
     </div>
 
     <!-- Info Section -->
     <div class="pokemon-info">
-      <div class="name-line">
-        <span class="pokemon-name">{{ pokemon.name }}</span>
+      <div
+        class="name-line"
+        :class="{ 'has-nickname': pokemon.nickname }"
+      >
+        <div class="name-stack">
+          <span class="pokemon-name">{{ pokemon.nickname || pokemon.name }}</span>
+          <span
+            v-if="pokemon.nickname"
+            class="species-subtitle"
+          >{{ pokemon.name }}</span>
+        </div>
         <div
           v-if="pokemon.gender"
           :class="['gender-pill', getGenderClass(pokemon.gender)]"
@@ -240,274 +244,5 @@ const hasBadges = computed(() => {
 </template>
 
 <style scoped lang="scss">
-.pokemon-display-card {
-  width: 100%;
-  @include glass(rgba(30, 41, 59, 0.4), 12px);
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.7) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 14px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  overflow: hidden;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.5),
-    inset 0 1px 1px rgba(255, 255, 255, 0.05);
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  &:hover {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
-    border-color: rgba(255, 214, 10, 0.4);
-    transform: TranslateY(-6px);
-    box-shadow: 
-      0 20px 50px rgba(0, 0, 0, 0.8),
-      0 0 25px rgba(10, 132, 255, 0.1);
-
-    &::before {
-      background: radial-gradient(circle at 50% 0%, rgba(10, 132, 255, 0.1) 0%, transparent 70%);
-    }
-
-    .pokemon-sprite {
-      transform: TranslateY(-25%) Scale(1.2); 
-      filter: Drop-shadow(0 25px 45px rgba(0,0,0,0.9));
-      image-rendering: pixelated;
-    }
-  }
-}
-
-.top-row {
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
-  min-height: 36px;
-  position: relative;
-  z-index: 3;
-}
-
-.badges-area {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 4px;
-  z-index: 10;
-  @include pixelated;
-
-  .tags-col, .items-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 6px 3px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: Blur(10px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    @include gpu-layer;
-  }
-
-  .item-badge .icon, .tag-badge, .shiny-icon {
-    font-size: 14px;
-    transition: all 0.2s ease;
-    text-shadow: none;
-    @include pixelated;
-
-    &:hover {
-      text-shadow: 0 0 8px currentColor;
-      transform: Scale(1.1);
-    }
-  }
-
-  .tag-badge { 
-    font-weight: 900;
-  }
-  
-  .shiny-icon { color: var(--yellow); }
-}
-
-.badges-spacer { height: 24px; }
-
-.tier-badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 16px; 
-  line-height: 1;
-  padding: 3px 0 0 2px;
-  border: 1.5px solid;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s;
-  @include pixelated;
-
-  &:hover { transform: Scale(1.1); filter: Brightness(1.2); }
-}
-
-.sprite-section {
-  height: 50px; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 30px 0 0 0;
-  position: relative;
-  z-index: 1;
-  pointer-events: none;
-
-  .pokemon-sprite {
-    width: 180px; 
-    height: 180px;
-    image-rendering: pixelated;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    filter: Drop-shadow(0 10px 20px rgba(0,0,0,0.6));
-    transform: TranslateY(-15%); 
-    will-change: transform;
-  }
-}
-
-.pokemon-info {
-  text-align: center;
-  margin-bottom: 12px;
-  margin-top: -15px; 
-  position: relative;
-  z-index: 2;
-  width: 85%;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 16px;
-
-  .name-line {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 8px;
-
-    .pokemon-name {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
-      color: $white;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0,0,0,0.5);
-      @include pixelated;
-    }
-
-    .gender-pill {
-      @include gender-badge(20px, 15px);
-      &:hover { transform: Scale(1.1); }
-    }
-  }
-
-  .level-line {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px;
-    color: var(--yellow);
-    margin-bottom: 12px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-    @include pixelated;
-  }
-}
-
-.hp-container {
-  margin-top: 10px;
-
-  .hp-bar-outer {
-    height: 8px;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .hp-bar-inner {
-    height: 100%;
-    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    @include will-animate(width);
-    
-    &.hp-high { background: linear-gradient(90deg, #22c55e, #86efac); }
-    &.hp-mid { background: linear-gradient(90deg, #eab308, #fde047); }
-    &.hp-low { background: linear-gradient(90deg, #ef4444, #fca5a5); }
-  }
-
-  .hp-stats {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px;
-    color: rgba(255, 255, 255, 0.4);
-    margin-top: 6px;
-    @include pixelated;
-  }
-}
-
-.status-labels {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 10px;
-
-  .status-tag {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px;
-    padding: 4px 6px;
-    border-radius: 4px;
-    @include pixelated;
-    
-    &.obedience { background: var(--red); color: $white; }
-    &.mission { background: var(--yellow); color: $black; }
-  }
-}
-
-.action-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-
-  .footer-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px;
-    padding: 8px 4px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: $white;
-    cursor: pointer;
-    transition: all 0.2s;
-    @include pixelated;
-
-    .emoji { font-size: 8px; }
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 214, 10, 0.4);
-      transform: Scale(1.03);
-    }
-
-    &.item-btn { color: var(--green); border-color: rgba(50, 215, 75, 0.3); }
-    &.data-btn { color: var(--purple); border-color: rgba(191, 90, 242, 0.3); }
-    &.box-btn, &.replace-btn { grid-column: span 2; color: var(--blue); border-color: rgba(10, 132, 255, 0.3); }
-    &.replace-btn { color: var(--purple-light, #c77dff); border-color: rgba(199, 125, 255, 0.3); }
-  }
-}
-
-.on-mission { opacity: 0.6; filter: Grayscale(0.5); }
+@use "@/styles/components/pokemon-display-card" as *;
 </style>

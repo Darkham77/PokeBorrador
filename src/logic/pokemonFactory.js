@@ -177,7 +177,8 @@ export function makePokemon(id, level, options = {}) {
     ivs, nature, ability, gender, isShiny,
     moves: getMovesAtLevel(id, level),
     status: null, sleepTurns: 0, friendship: 70, vigor,
-    heldItem
+    heldItem,
+    nickname: null
   };
 
   recalcPokemonStats(p);

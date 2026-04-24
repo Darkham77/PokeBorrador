@@ -1,13 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useEvolutionStore } from './evolution'
-import { useModalStore } from './modals'
-import { useLoadingStore } from './loading'
+import { useModalStore } from '@/stores/modals'
+import { useLoadingStore } from '@/stores/loading'
 
 export const useUIStore = defineStore('ui', () => {
-  // Use lazy store access to avoid circular dependency issues during boot
-  const getModalStore = () => useModalStore()
-  
   const libraryTab = ref('gimnasios')
   const activeTab = ref('map')
   const hatchedPokemon = ref(null)
@@ -37,7 +33,6 @@ export const useUIStore = defineStore('ui', () => {
   const selectedPokemon = ref(null)
   const selectedMove = ref(null)
 
-  // Zoom
   // Zoom initialization
   const getInitialZoom = () => {
     const saved = localStorage.getItem('app-zoom')
@@ -49,21 +44,6 @@ export const useUIStore = defineStore('ui', () => {
   }
   const appZoom = ref(getInitialZoom())
   
-  const profileData = ref({
-    username: '—',
-    email: '—',
-    isAdmin: false,
-    level: 1,
-    badges: 0,
-    money: 0,
-    battleCoins: 0,
-    stats: { wins: 0, trainersDefeated: 0 },
-    faction: null,
-    nick_style: '',
-    notificationHistory: [],
-    lastSave: 'Sin datos'
-  })
-
   // Static flags for non-modal elements
   const isChatOpen = ref(false)
   const isHistoryOpen = ref(false)
@@ -72,13 +52,13 @@ export const useUIStore = defineStore('ui', () => {
   // ── MODAL TRIGGERS ─────────────────────────────────────────────────────────
   
   function toggleProfile() { 
-    const modalStore = getModalStore()
+    const modalStore = useModalStore()
     if (modalStore.isOpen('Profile')) modalStore.close('Profile')
     else modalStore.open('Profile')
   }
   
   function toggleSettings() { 
-    const modalStore = getModalStore()
+    const modalStore = useModalStore()
     if (modalStore.isOpen('Settings')) modalStore.close('Settings')
     else modalStore.open('Settings')
   }
@@ -86,27 +66,27 @@ export const useUIStore = defineStore('ui', () => {
   function toggleHistory() { isHistoryOpen.value = !isHistoryOpen.value }
   
   function toggleSocial() { 
-    const modalStore = getModalStore()
+    const modalStore = useModalStore()
     if (modalStore.isOpen('SocialCenter')) modalStore.close('SocialCenter')
     else modalStore.open('SocialCenter')
   }
 
   function toggleLibrary(tabId = null) { 
-    const modalStore = getModalStore()
+    const modalStore = useModalStore()
     if (modalStore.isOpen('Library')) modalStore.close('Library')
     else modalStore.open('Library', { initialTab: tabId })
   }
   
   function open(name, props = {}) {
-    getModalStore().open(name, props)
+    useModalStore().open(name, props)
   }
 
   function close(name) {
-    getModalStore().close(name)
+    useModalStore().close(name)
   }
 
   function closeAll() {
-    getModalStore().closeAll()
+    useModalStore().closeAll()
     isHistoryOpen.value = false
     isChatOpen.value = false
     openHudGroup.value = null
@@ -118,10 +98,6 @@ export const useUIStore = defineStore('ui', () => {
     } else {
       openHudGroup.value = name
     }
-  }
-
-  function updateProfile(data) {
-    profileData.value = { ...profileData.value, ...data }
   }
 
   function notify(msg, icon = '🔔') {
@@ -140,28 +116,32 @@ export const useUIStore = defineStore('ui', () => {
     else loadingStore.finish('ui_generic')
   }
 
-  function toggleTrade() { getModalStore().open('SocialCenter') }
+  function toggleTrade() { useModalStore().open('SocialCenter') }
 
   function openPokemonDetail(pokemon, index, context = 'team', extra = null) {
     selectedPokemon.value = pokemon
-    getModalStore().open('PokemonDetail', { pokemon, index, context, extra })
+    useModalStore().open('PokemonDetail', { pokemon, index, context, extra })
   }
 
-  function closePokemonDetail() { getModalStore().close('PokemonDetail') }
+  function closePokemonDetail() { useModalStore().close('PokemonDetail') }
 
   function openMoveDetail(moveName) {
     selectedMove.value = moveName
-    getModalStore().open('MoveDetail', { moveName })
+    useModalStore().open('MoveDetail', { moveName })
   }
 
-  function closeMoveDetail() { getModalStore().close('MoveDetail') }
+  function closeMoveDetail() { useModalStore().close('MoveDetail') }
 
   function startEvolution(pokemon, targetId, itemName) {
     evolutionData.value = { pokemon, targetId, itemName }
-    getModalStore().open('Evolution')
-    const evolutionStore = useEvolutionStore()
-    evolutionStore.startEvolution(pokemon, targetId, () => {
-      getModalStore().close('Evolution')
+    useModalStore().open('Evolution')
+    
+    // Dynamic import to break circular dependency: ui -> evolution -> game -> ui
+    import('@/stores/evolution').then(m => {
+      const evolutionStore = m.useEvolutionStore()
+      evolutionStore.startEvolution(pokemon, targetId, () => {
+        useModalStore().close('Evolution')
+      })
     })
   }
 
@@ -175,14 +155,14 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   function checkLearnQueue() {
-    const modalStore = getModalStore()
+    const modalStore = useModalStore()
     if (modalStore.isOpen('MoveLearning') || learnQueue.value.length === 0) return
     currentMoveToLearn.value = learnQueue.value.shift()
     modalStore.open('MoveLearning')
   }
 
   function finishMoveLearning() {
-    getModalStore().close('MoveLearning')
+    useModalStore().close('MoveLearning')
     currentMoveToLearn.value = null
     checkLearnQueue()
   }
@@ -195,20 +175,11 @@ export const useUIStore = defineStore('ui', () => {
   const NON_OBSCURING_MODALS = ['Profile']
 
   /**
-   * Returns true if there is any active modal that obscures the background
-   * and is NOT currently in its closing animation phase.
-   */
-  /**
    * Returns true if there is any active modal that obscures the background.
-   * Logic:
-   * - TRUE if at least one obscuring modal has finished its opening animation.
-   * - FALSE if the last obscuring modal has started its closing animation.
-   * - Prevents flickers when opening a new modal while another is closing.
    */
   const isAnyBlockingModalOpen = computed(() => {
-    const modalStore = getModalStore()
+    const modalStore = useModalStore()
     const obscuringModals = modalStore.stack.filter(m => {
-      // Ignore modals that don't obscure the background
       if (NON_OBSCURING_MODALS.includes(m.name)) return false
       if (m.props?.overlay === 'none') return false
       return true
@@ -216,9 +187,6 @@ export const useUIStore = defineStore('ui', () => {
 
     if (obscuringModals.length === 0) return false
 
-    // We stay in "Blocking/Simplified" mode if:
-    // 1. At least one modal has already finished opening (prevents premature simplification)
-    // 2. AND at least one modal is NOT yet closing (allows early restoration on the last one)
     const hasFullyOpen = obscuringModals.some(m => !m.opening)
     const hasNotClosing = obscuringModals.some(m => !m.closing)
 
@@ -226,16 +194,16 @@ export const useUIStore = defineStore('ui', () => {
   })
   
   const isAnyModalOpen = computed(() => {
-    const modalStore = getModalStore()
+    const modalStore = useModalStore()
     return modalStore.stack.length > 0 || isChatOpen.value || isHistoryOpen.value
   })
 
   // ── DYNAMIC FLAGS FOR BACKWARD COMPATIBILITY (WRITABLE) ───────────────────
   const createModalRef = (name) => computed({
-    get: () => getModalStore().isOpen(name),
+    get: () => useModalStore().isOpen(name),
     set: (val) => {
-      if (val) getModalStore().open(name)
-      else getModalStore().close(name)
+      if (val) useModalStore().open(name)
+      else useModalStore().close(name)
     }
   })
 
@@ -306,10 +274,8 @@ export const useUIStore = defineStore('ui', () => {
       localStorage.setItem('app-zoom', val)
       document.documentElement.style.setProperty('--app-zoom', val)
     },
-    profileData,
     toggleTrade,
     toggleSocial,
-    updateProfile,
     notify,
     notifications,
     isLoading,
@@ -323,14 +289,14 @@ export const useUIStore = defineStore('ui', () => {
     closeAll,
     open,
     close,
-    closeModal: () => getModalStore().closeTop(),
+    closeModal: () => useModalStore().closeTop(),
     openPokemonDetail,
     closePokemonDetail,
     openMoveDetail,
     closeMoveDetail,
     
     toggleTeamManagement: () => {
-      const modalStore = getModalStore()
+      const modalStore = useModalStore()
       if (modalStore.isOpen('TeamManagement')) modalStore.close('TeamManagement')
       else modalStore.open('TeamManagement')
     },
@@ -372,7 +338,7 @@ export const useUIStore = defineStore('ui', () => {
     currentPvPInvite: ref(null),
 
     // Confirmation
-    openConfirm: (options) => getModalStore().open('Confirm', options),
-    openPrompt: (options) => getModalStore().open('Prompt', options)
+    openConfirm: (options) => useModalStore().open('Confirm', options),
+    openPrompt: (options) => useModalStore().open('Prompt', options)
   }
 })

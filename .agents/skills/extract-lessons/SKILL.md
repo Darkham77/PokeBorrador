@@ -45,7 +45,7 @@ For each lesson in the mapping table:
 
 #### UPDATE existing skill
 
-1. **Mandatory Editor**: ALWAYS use **@/skill-creator** as the skill editor. NEVER edit the `SKILL.md` file directly with file-writing tools during this phase; let **@skill-creator** manage the update process.
+1. **Mandatory Editor**: ALWAYS use **@/skill-creator** as the skill editor. For simple knowledge updates (lessons), you **MUST** skip the evaluation/benchmarking phase. Never use a `browser_subagent` to extract lessons.
 2. Read the target skill's `SKILL.md`.
 3. **Preserve Compatibility**: When adding the lesson, take extreme care NOT to remove or "summarize away" existing rules or lines unless they are explicitly incompatible with the new changes or were requested to be removed. Removing functionality for the sake of brevity is a regression.
 4. Add the lesson as a new rule, guideline, or pattern in the appropriate section.

@@ -108,15 +108,33 @@ function selectWar(slotIndex) {
 }
 
 function selectAdventure(_slotIndex) {
+  const currentTeamUids = gameStore.state.team.map(p => p?.uid).filter(Boolean)
+  
   uiStore.open('PokemonSelection', {
     title: 'SELECCIONAR POKÉMON',
     subtitle: 'Selecciona un Pokémon de tu caja para añadir al equipo.',
+    excludeUids: currentTeamUids,
+    includeTeam: false,
     callbackConfirm: (selected) => {
       if (selected && selected.length > 0) {
-        const boxIdx = gameStore.state.box.findIndex(p => p && p.uid === selected[0].uid)
+        const selectedPoke = selected[0]
+        
+        const boxIdx = gameStore.state.box.findIndex(p => p && p.uid === selectedPoke.uid)
+        
         if (boxIdx > -1) {
           const boxStore = useBoxStore()
-          boxStore.moveBoxToTeam(boxIdx)
+          const currentTeamPoke = gameStore.state.team[_slotIndex]
+          
+          if (currentTeamPoke) {
+            boxStore.swapBoxWithTeam(boxIdx, _slotIndex)
+          } else {
+            boxStore.moveBoxToTeam(boxIdx)
+          }
+        } else {
+          const teamIdx = gameStore.state.team.findIndex(p => p && p.uid === selectedPoke.uid)
+          if (teamIdx > -1) {
+            uiStore.notify('Este Pokémon ya está en tu equipo.', '⚠️')
+          }
         }
       }
     }

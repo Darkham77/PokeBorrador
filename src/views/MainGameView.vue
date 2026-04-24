@@ -34,6 +34,10 @@ const MapView = defineAsyncComponent(() => import('@/views/MapView.vue'))
 const GymsView = defineAsyncComponent(() => import('@/views/GymsView.vue'))
 const DaycareView = defineAsyncComponent(() => import('@/views/DaycareView.vue'))
 const ShopView = defineAsyncComponent(() => import('@/views/ShopView.vue'))
+const BagView = defineAsyncComponent(() => import('@/views/BagView.vue'))
+const EventsView = defineAsyncComponent(() => import('@/views/EventsView.vue'))
+const SocialView = defineAsyncComponent(() => import('@/views/SocialView.vue'))
+
 import GlobalChat from '@/components/social/GlobalChat.vue'
 import DirectChatWindow from '@/components/social/DirectChatWindow.vue'
 import { useChatStore } from '@/stores/chat'

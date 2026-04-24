@@ -2,25 +2,33 @@
 import { ref, computed, watch } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
-import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_TAGS, POKEMON_BADGES, hasPokemonTag } from '@/logic/constants/tags'
-import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
+import PokemonSelectionItem from './PokemonSelectionItem.vue'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
 const isOpen = ref(false)
 
+const props = defineProps({
+  title: { type: String, default: 'SELECCIONAR POKÉMON' },
+  subtitle: { type: String, default: '' },
+  excludeUids: { type: Array, default: () => [] },
+  includeTeam: { type: Boolean, default: true },
+  multi: { type: Boolean, default: false },
+  maxSelect: { type: Number, default: 1 },
+  minSelect: { type: Number, default: 1 },
+  autoConfirm: { type: Boolean, default: false },
+  callbackConfirm: { type: Function, default: null },
+  onConfirm: { type: Function, default: null }
+})
+
 const config = computed(() => {
-  const base = { ...uiStore.pokemonSelectionConfig }
   return {
-    ...base,
-    title: base.title || 'SELECCIONAR POKÉMON',
-    subtitle: base.subtitle,
-    excludeUids: base.excludeUids,
-    onConfirm: base.callbackConfirm || base.onConfirm
+    ...props,
+    onConfirm: props.callbackConfirm || props.onConfirm
   }
 })
 
@@ -67,8 +75,9 @@ const availablePokemon = computed(() => {
     if (searchQuery.value) {
       const q = searchQuery.value.toLowerCase()
       const matchName = p.name?.toLowerCase().includes(q)
+      const matchNick = p.nickname?.toLowerCase().includes(q)
       const matchId = String(p.id).includes(q)
-      if (!matchName && !matchId) return false
+      if (!matchName && !matchNick && !matchId) return false
     }
 
     if (config.value.excludeUids && config.value.excludeUids.includes(p.uid)) return false
@@ -104,7 +113,9 @@ const availablePokemon = computed(() => {
       valB = getPokemonBst(pB)
     } else {
       // Recent (usar el orden original invertido o no)
-      return sortOrder.value === 'desc' ? -1 : 1
+      // Damos prioridad a los de la caja como "más recientes" si se concatenan después
+      valA = (a._source === 'box' ? 1000 : 0) + a.index
+      valB = (b._source === 'box' ? 1000 : 0) + b.index
     }
 
     if (valA === valB) {
@@ -132,13 +143,19 @@ function toggleSelection(item) {
 }
 
 function confirm() {
+  console.log('[DEBUG] PokemonSelection: confirm called', { selectedUids: selectedUids.value })
   const minSelect = config.value.minSelect || 1
-  if (selectedUids.value.length < minSelect) return
+  if (selectedUids.value.length < minSelect) {
+    console.warn('[DEBUG] PokemonSelection: Not enough items selected')
+    return
+  }
   
   const selectedObjects = selectedUids.value.map(uid => {
     const item = availablePokemon.value.find(it => it.pokemon.uid === uid)
     return item ? item.pokemon : null
   }).filter(Boolean)
+  
+  console.log('[DEBUG] PokemonSelection: selectedObjects to emit:', selectedObjects)
   
   const cb = config.value.onConfirm
   if (typeof cb === 'function') {
@@ -149,7 +166,6 @@ function confirm() {
 
 function close() {
   uiStore.close('PokemonSelection')
-  uiStore.pokemonSelectionConfig = {}
 }
 
 function setSort(type) {
@@ -192,19 +208,17 @@ const getPokemonBst = (p) => {
   return (s.hp || 0) + (s.atk || 0) + (s.def || 0) + (s.spa || 0) + (s.spd || 0) + (s.spe || 0)
 }
 
-const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || '#aaa'
 
 if (typeof window !== 'undefined') {
   window._openPokemonSelectionModal = (opts) => {
-    uiStore.pokemonSelectionConfig = { 
+    uiStore.open('PokemonSelection', { 
       title: 'SELECCIONAR POKÉMON',
       subtitle: 'Elige un Pokémon para la tarea.',
       maxSelect: 1,
       minSelect: 1,
       ...opts 
-    }
+    })
     selectedUids.value = []
-    isOpen.value = true
   }
 }
 
@@ -360,111 +374,15 @@ function openDetail(item) {
       </div>
 
       <div class="vertical-list scrollable-content">
-        <div 
+        <PokemonSelectionItem
           v-for="item in availablePokemon" 
           :key="item.pokemon.uid"
-          class="list-item"
-          :class="{ selected: selectedUids.includes(item.pokemon.uid) }"
-          :style="{ '--type-color': getTypeColor(item.pokemon.types?.[0] || item.pokemon.type) }"
-          @click="toggleSelection(item)"
-        >
-          <div class="poke-preview-container">
-            <PVTooltip
-              title="DETALLES"
-              description="Ver información completa de este Pokémon."
-              position="top"
-              class="poke-preview"
-              @click.stop="openDetail(item)"
-            >
-              <div class="preview-bg" />
-              <img
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, item.pokemon.id, { isShiny: item.pokemon.isShiny })"
-                alt=""
-                class="pixelated"
-                @error="e => e.target.style.display = 'none'"
-              >
-              <span
-                v-if="item.pokemon.isShiny"
-                class="shiny-star"
-              >✨</span>
-            </PVTooltip>
-
-            <!-- Action badges (Held Item + Tags) -->
-            <div
-              v-if="item.pokemon.heldItem || item.pokemon.tags?.length"
-              class="mini-badges"
-            >
-              <PVTooltip
-                v-if="item.pokemon.heldItem"
-                :title="POKEMON_BADGES.heldItem.label"
-                :description="`${POKEMON_BADGES.heldItem.desc} (${item.pokemon.heldItem})`"
-                position="top"
-              >
-                <span class="mini-icon">{{ POKEMON_BADGES.heldItem.icon }}</span>
-              </PVTooltip>
-
-              <template
-                v-for="t in POKEMON_TAGS"
-                :key="t.id"
-              >
-                <PVTooltip
-                  v-if="hasPokemonTag(item.pokemon, t.id)"
-                  :title="t.label"
-                  :description="t.desc"
-                  position="top"
-                >
-                  <span class="mini-icon">{{ t.icon }}</span>
-                </PVTooltip>
-              </template>
-            </div>
-          </div>
-
-          <div class="poke-details">
-            <div class="top-line">
-              <div class="name-group">
-                <span class="name">{{ item.pokemon.name?.replace(/[♂♀]/g, '').trim() || 'Desconocido' }}</span>
-                <span
-                  v-if="item.pokemon.gender"
-                  :class="['gender-icon', item.pokemon.gender === 'M' ? 'male' : 'female']"
-                >
-                  {{ item.pokemon.gender === 'M' ? '♂' : '♀' }}
-                </span>
-              </div>
-              <div class="actions-right">
-                <span class="lvl">Nv.{{ item.pokemon.level ?? 1 }}</span>
-              </div>
-            </div>
-            <div class="bottom-line">
-              <div class="types-row">
-                <span 
-                  v-for="t in item.pokemon.types || [item.pokemon.type]" 
-                  :key="t"
-                  class="type-pill"
-                  :style="{ background: getTypeColor(t) }"
-                >
-                  {{ t?.toUpperCase() }}
-                </span>
-              </div>
-              <div class="stats-summary">
-                <span
-                  v-if="item.pokemon.ivs"
-                  class="stat-badge ivs"
-                >IVs: {{ Object.values(item.pokemon.ivs).reduce((s,v)=>s+(v||0),0) }}</span>
-                <span class="stat-badge bst">BST: {{ getPokemonBst(item.pokemon) }}</span>
-              </div>
-              <span
-                class="source-tag"
-                :class="item._source"
-              >{{ item._source === 'team' ? 'EQUIPO' : 'CAJA' }}</span>
-            </div>
-          </div>
-
-          <div class="selection-indicator">
-            <div class="check-circle">
-              <span v-if="selectedUids.includes(item.pokemon.uid)">✓</span>
-            </div>
-          </div>
-        </div>
+          :item="item"
+          :is-selected="selectedUids.includes(item.pokemon.uid)"
+          :bst="getPokemonBst(item.pokemon)"
+          @select="toggleSelection"
+          @open-detail="openDetail"
+        />
 
         <div 
           v-if="availablePokemon.length === 0"

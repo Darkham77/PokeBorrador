@@ -2,6 +2,11 @@
 
 This file defines the immutable DNA of the Poké Vicio project. Every AI agent interacting with this repository MUST adhere to these rules.
 
+## 0. Efficient Thinking & Communication
+
+- **Internal Reasoning**: The agent should use the most efficient language for its internal processing (preferably English) when reasoning, planning, or analyzing code.
+- **User Interaction**: All direct communication with the user (responses, explanations, questions) MUST be conducted exclusively in Spanish, maintaining the tone and context of the project.
+
 ## 1. Mandatory Skill Invocation
 
 - Always load and follow the instructions in the `@/project-standards` skill.
