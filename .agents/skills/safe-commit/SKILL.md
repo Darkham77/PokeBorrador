@@ -181,7 +181,7 @@ docs(standards): modernize add-pokemon skill and enforce Zero-Warning culture
 "Fixed lowercase filter collision in `MapCard.vue`.
 **Workflow Projection**:
 
-1. [ ] Re-run `audit_project.py` (Step 3).
+1. [ ] 🔄 Re-run `audit_project.py` (Step 3).
 2. [ ] Run `npm run build` to verify compilation.
 3. [ ] Workspace Cleanup (Step 6).
 4. [ ] Extract lessons (Step 7).

@@ -5,7 +5,8 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
-import { TAG_DEFINITIONS, POKEMON_BADGES } from '@/logic/constants/tags'
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import { getPokemonVisualBadges } from '@/logic/constants/tags'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -16,6 +17,7 @@ const props = defineProps({
 
 const emit = defineEmits(['click'])
 
+const hasBadges = computed(() => getPokemonVisualBadges(props.pokemon).length > 0)
 const tierInfo = computed(() => getPokemonTier(props.pokemon))
 const spriteUrl = computed(() => getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
   isShiny: props.pokemon.isShiny 
@@ -28,88 +30,46 @@ const statColor = computed(() => {
   return 'var(--red)'
 })
 
-const activeTags = computed(() => {
-  if (!props.pokemon.tags) return []
-  return props.pokemon.tags.map(id => ({
-    id,
-    ...(TAG_DEFINITIONS[id] || { icon: '?', color: '#ccc', label: 'TAG', desc: 'Etiqueta personalizada.' })
-  }))
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+
+const totalIvs = computed(() => {
+  const ivs = props.pokemon.ivs || {}
+  return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + 
+         (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
 })
 
-const hasHeldItem = computed(() => !!props.pokemon.heldItem)
+const bst = computed(() => {
+  const baseData = pokemonDataProvider.getPokemonData(props.pokemon.id)
+  if (!baseData) return 0
+  return (baseData.hp || 0) + (baseData.atk || 0) + (baseData.def || 0) + 
+         (baseData.spa || 0) + (baseData.spd || 0) + (baseData.spe || 0)
+})
 </script>
 
 <template>
   <div
-    :class="['box-pokemon-card', { selected: isSelected }]"
+    :class="['box-pokemon-card', { selected: isSelected, 'with-badges': hasBadges }]"
     @click.stop="emit('click', index)"
   >
     <!-- Badge Tier -->
     <div
-      class="box-tier-badge"
+      class="tier-badge"
       :style="{ color: tierInfo.color, background: tierInfo.bg }"
     >
       {{ tierInfo.tier }}
     </div>
 
-    <!-- Tags & Held Item -->
-    <div
-      v-if="activeTags.length > 0 || hasHeldItem || pokemon.isShiny"
-      class="tags-container"
-    >
-      <PVTooltip
-        v-if="hasHeldItem"
-        :title="POKEMON_BADGES.heldItem.label"
-        :description="`${POKEMON_BADGES.heldItem.desc} (${pokemon.heldItem})`"
-        position="right"
-      >
-        <span class="item-icon">{{ POKEMON_BADGES.heldItem.icon }}</span>
-      </PVTooltip>
-      
-      <PVTooltip
-        v-if="pokemon.isShiny"
-        :title="POKEMON_BADGES.shiny.label"
-        :description="POKEMON_BADGES.shiny.desc"
-        position="right"
-      >
-        <span class="shiny-icon">{{ POKEMON_BADGES.shiny.icon }}</span>
-      </PVTooltip>
+    <!-- Píldora de Insignias Centralizada -->
+    <UnifiedBadgePill 
+      :pokemon="pokemon" 
+      size="sm"
+    />
 
-      <PVTooltip
-        v-for="tag in activeTags"
-        :key="tag.id"
-        :title="tag.label"
-        :description="tag.desc"
-        position="right"
-      >
-        <span
-          class="tag"
-          :class="tag.id"
-          :style="{ color: tag.color }"
-        >{{ tag.icon }}</span>
-      </PVTooltip>
-    </div>
-
-    <!-- Sprite -->
-    <div class="sprite-container">
-      <div
-        v-if="pokemon.onMission"
-        class="badge mission-badge"
-      >
-        MISIÓN
-      </div>
-      <div
-        v-if="pokemon.inDaycare"
-        class="badge daycare-badge"
-      >
-        GUARDERÍA
-      </div>
-      <div
-        v-if="pokemon.onDefense"
-        class="badge defense-badge"
-      >
-        DEFENSA
-      </div>
+    <!-- Sprite Section -->
+    <div class="box-sprite-wrapper">
+      <div v-if="pokemon.onMission" class="status-indicator mission">M</div>
+      <div v-if="pokemon.inDaycare" class="status-indicator daycare">G</div>
+      <div v-if="pokemon.onDefense" class="status-indicator defense">D</div>
       
       <PVSpriteFX
         :is-shiny="pokemon.isShiny"
@@ -119,198 +79,94 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
         <img
           :src="spriteUrl"
           class="pokemon-sprite"
-          :class="[
-            pokemon.aura ? `aura-${pokemon.aura}-mini` : ''
-          ]"
+          :class="[pokemon.aura ? `aura-${pokemon.aura}-mini` : '']"
           alt="pokemon"
           @error="e => e.target.style.display = 'none'"
         >
       </PVSpriteFX>
     </div>
 
-    
-    <!-- Info -->
-    <div class="pokemon-name">
-      {{ props.pokemon.name || props.pokemon.id }}
-    </div>
-    
-    <div class="pokemon-level">
-      Nv. {{ props.pokemon.level }}
-    </div>
-    
-    <!-- Barra HP mini -->
-    <div class="mini-hp-bar">
-      <div
-        class="hp-fill"
-        :style="{ width: (props.pokemon.hp / props.pokemon.maxHp * 100) + '%', background: statColor }"
-      />
+    <!-- Info Footer -->
+    <div class="card-info">
+      <div class="box-pokemon-name">
+        {{ props.pokemon.nickname || props.pokemon.name }}
+      </div>
+      <div class="stats-column">
+        <div class="level">NV. {{ props.pokemon.level }}</div>
+        <div class="mini-stat ivs">IV {{ totalIvs }}</div>
+        <div class="mini-stat bst">BST {{ bst }}</div>
+      </div>
+      
+      <!-- HP Mini Bar -->
+      <div class="hp-bar-mini">
+        <div
+          class="hp-fill"
+          :style="{ width: (props.pokemon.hp / props.pokemon.maxHp * 100) + '%', background: statColor }"
+        />
+      </div>
     </div>
 
-    <!-- Indicador Rocket Selection -->
+    <!-- Selection Indicator -->
     <div
       v-if="isRocketMode"
-      class="rocket-indicator"
+      class="selection-overlay"
     >
-      <span
-        v-if="isSelected"
-        class="rocket-icon"
-      >🚀</span>
-      <div
-        v-else
-        class="empty-circle"
-      />
+      <div class="selection-circle">
+        <span v-if="isSelected">🚀</span>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/views/box";
 @use "@/styles/core/tools" as *;
 
-.box-pokemon-card {
-  padding: 8px;
-  border-radius: 12px;
-  text-align: center;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  background: Rgba(255, 255, 255, 0.02);
-}
-
-.box-pokemon-card:hover {
-  background: Rgba(255, 255, 255, 0.05);
-  transform: translateY(-3px);
-  border-color: Rgba(199, 125, 255, 0.3);
-}
-
-.box-pokemon-card.selected {
-  border: 2px solid #ef4444 !important;
-  background: Rgba(239, 68, 68, 0.1) !important;
-  box-shadow: 0 0 15px Rgba(239, 68, 68, 0.2);
-}
-
-.box-tier-badge {
+.status-indicator {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  font-size: 8px;
-  padding: 2px 4px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
   border-radius: 4px;
-  font-weight: bold;
-  z-index: var(--z-base);
-}
-
-.tags-container {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  background: Rgba(0, 0, 0, 0.6);
-  padding: 6px 4px;
-  border-radius: 8px;
-  z-index: var(--z-base);
-  -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 10px Rgba(0,0,0,0.3);
-  @include gpu-layer;
-}
-
-.tag, .item-icon, .shiny-icon {
-  font-size: 11px;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: help;
-}
-
-.shiny-icon { color: Rgba(255, 217, 61, 1); }
-
-.iv31 {
-  font-weight: bold;
-}
-
-.sprite-container {
-  width: 50px;
-  height: 50px;
-  margin: 0 auto 4px;
-}
-
-.sprite-container img {
-  width: 100%;
-  height: 100%;
-  @include sprite-render;
-  object-fit: contain;
-  position: relative;
-  z-index: var(--z-base);
-}
-
-
-
-
-.badge {
-  position: absolute;
-  left: 2px;
-  font-size: 6px;
-  font-weight: 900;
-  padding: 2px 4px;
-  border-radius: 4px;
-  z-index: var(--z-base);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.mission-badge { top: 2px; background: Rgba(251, 191, 36, 1); color: black; }
-.daycare-badge { top: 12px; background: Rgba(59, 130, 246, 1); color: white; }
-.defense-badge { top: 22px; background: Rgba(34, 197, 94, 1); color: white; }
-
-.pokemon-name {
-  font-size: 10px;
-  font-weight: bold;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: white;
+  font-size: 8px;
   @include pixelated;
+  z-index: 5;
+  box-shadow: 0 2px 4px Rgba(0,0,0,0.3);
+  border: 1px solid Rgba(255,255,255,0.2);
+
+  &.mission { top: 0; background: var(--yellow); color: $black; }
+  &.daycare { top: 18px; background: var(--blue); color: $white; }
+  &.defense { top: 36px; background: var(--green); color: $white; }
 }
 
-.pokemon-level {
-  font-size: 9px;
-  color: var(--gray);
-  @include pixelated;
-}
-
-.mini-hp-bar {
-  height: 3px;
-  background: Rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  margin-top: 4px;
-  overflow: hidden;
-}
-
-.hp-fill {
-  height: 100%;
-  transition: width 0.3s ease;
-  @include will-animate(width);
-}
-
-.rocket-indicator {
+.selection-overlay {
   position: absolute;
-  bottom: 4px;
-  right: 4px;
+  inset: 0;
+  background: Rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+
+  .selection-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid Rgba(255, 255, 255, 0.3);
+    background: Rgba(0, 0, 0, 0.4);
+    @include flex-center;
+    font-size: 12px;
+  }
 }
 
-.rocket-icon {
-   color: Rgba(239, 68, 68, 1);
-  font-size: 12px;
-}
-
-.empty-circle {
-  width: 12px;
-  height: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+.selected .selection-circle {
+  border-color: var(--red);
+  background: var(--red);
+  box-shadow: 0 0 10px Rgba(239, 68, 68, 0.5);
 }
 </style>
+

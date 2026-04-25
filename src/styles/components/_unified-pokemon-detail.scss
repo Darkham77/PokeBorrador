@@ -87,6 +87,17 @@
 
 }
 
+.upd-core-container {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  z-index: var(--z-base);
+  background: Rgba(10, 12, 20, 1);
+  padding: 32px 32px 8px;
+  pointer-events: auto !important;
+
+}
+
 .pdex-detail-content {
   display: flex;
   flex-direction: column;
@@ -124,105 +135,53 @@
 }
 
 // ... existing minor styles ...
-// Interactive Tags
-.tag-section { 
-  margin-top: 32px; 
-  padding-top: 20px; 
-  border-top: 1px solid Rgba(255,255,255,0.05); 
-  
-    & .upd-info-label {
-    display: block;
-    text-align: center;
-    margin-bottom: 12px;
-    color: Rgba(255,255,255,0.5);
-    font-size: 8px;
-    letter-spacing: 1px;
-    @include pixelated;
-  }
-}
-
-.tags-list { 
-  display: flex; 
-  flex-wrap: wrap; 
+// Interactive Tags Global Position
+.upd-tags-central-container, .upd-floating-tags {
+  display: flex;
   justify-content: center;
-  gap: 12px; 
 }
 
-.db-info-section {
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+.upd-floating-tags {
+  position: absolute;
+  top: 40px;
+  right: 20px;
+  z-index: var(--z-low);
+  pointer-events: auto !important;
+}
 
-  .uid-display {
+  .db-info-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    padding-bottom: 0; 
+    border-top: 1px solid Rgba(255, 255, 255, 0.05);
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
     gap: 12px;
 
-    & .upd-info-label {
-      color: Rgba(255, 255, 255, 0.4);
-      font-size: 8px;
-      letter-spacing: 1px;
-      margin: 0;
+    .uid-display, .capture-date-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+
+      & .upd-info-label {
+        color: Rgba(255, 255, 255, 0.4);
+        font-size: 8px;
+        letter-spacing: 1px;
+        margin: 0;
+      }
+
+      .uid-value, .date-value {
+        font-size: 8px;
+        color: var(--type-color);
+        letter-spacing: 1px;
+        opacity: 0.8;
+        text-shadow: 0 0 10px Rgba(var(--type-color-rgb), 0.3);
+      }
     }
-
-    .uid-value {
-      font-size: 8px;
-      color: var(--type-color);
-      letter-spacing: 1px;
-      opacity: 0.8;
-      text-shadow: 0 0 10px Rgba(var(--type-color-rgb), 0.3);
-    }
-  }
-}
-
-.tag-emoji-btn {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 8px 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  color: Rgba(255, 255, 255, 0.4);
-  min-width: 85px;
-
-  @media (max-width: 480px) {
-    padding: 6px 10px;
-    gap: 6px;
-    min-width: 70px;
-    border-radius: 8px;
-  }
-  
-  .teb-icon {
-    font-size: 16px;
-    filter: Grayscale(1);
-    opacity: 0.5;
-    transition: all 0.3s;
-    @media (max-width: 480px) { font-size: 14px; }
   }
 
-  .teb-label {
-    font-size: 8px;
-    font-weight: 900;
-    @media (max-width: 480px) { font-size: 7px; }
-  }
-  
-  &:hover {
-    background: Rgba(255, 255, 255, 0.08);
-    transform: TranslateY(-2px);
-    color: Rgba(255, 255, 255, 0.8);
-    & .teb-icon { filter: Grayscale(0); opacity: 1; }
-  }
-
-  &.active i {
-    filter: Grayscale(0); 
-    opacity: 1;
-    transform: Scale(1.2);
-  }
-}
+// tag-emoji-btn removed in favor of tag-badge-interactive
 
 .upd-section-title {
   @include pixelated;

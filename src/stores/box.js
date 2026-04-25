@@ -1,8 +1,10 @@
+// [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 export const useBoxStore = defineStore('box', () => {
   const gameStore = useGameStore()
@@ -25,6 +27,16 @@ export const useBoxStore = defineStore('box', () => {
     ivTotalMin: 0,
     ivTotalMax: 186,
     ivAny31: false,
+    ivMin: 0,
+    ivMax: 31,
+    bstMin: 0,
+    bstMax: 800,
+    ivHP: 0,
+    ivATK: 0,
+    ivDEF: 0,
+    ivSPA: 0,
+    ivSPD: 0,
+    ivSPE: 0,
     search: '',
     isOpen: false
   })
@@ -55,6 +67,26 @@ export const useBoxStore = defineStore('box', () => {
       if (totalIv < f.ivTotalMin || totalIv > f.ivTotalMax) return false
       if (f.ivAny31 && !Object.values(ivs).some(v => v === 31)) return false
       
+      // Individual IV Range (All stats must be within range)
+      const allIvValues = [ivs.hp||0, ivs.atk||0, ivs.def||0, ivs.spa||0, ivs.spd||0, ivs.spe||0]
+      if (allIvValues.some(v => v < f.ivMin || v > f.ivMax)) return false
+
+      // Individual IV Filters (Specific stats)
+      if ((ivs.hp || 0) < f.ivHP) return false
+      if ((ivs.atk || 0) < f.ivATK) return false
+      if ((ivs.def || 0) < f.ivDEF) return false
+      if ((ivs.spa || 0) < f.ivSPA) return false
+      if ((ivs.spd || 0) < f.ivSPD) return false
+      if ((ivs.spe || 0) < f.ivSPE) return false
+
+      // BST Filter (Species Base Stats)
+      const species = pokemonDataProvider.getPokemonData(p.id)
+      if (species) {
+        const bst = (species.hp || 0) + (species.atk || 0) + (species.def || 0) +
+                    (species.spa || 0) + (species.spd || 0) + (species.spe || 0)
+        if (bst < f.bstMin || bst > f.bstMax) return false
+      }
+
       if (f.search) {
         const query = f.search.toLowerCase()
         const nameMatch = p.name.toLowerCase().includes(query)
@@ -70,6 +102,13 @@ export const useBoxStore = defineStore('box', () => {
       list.sort((a, b) => {
         if (boxSortMode.value === 'level') return b.p.level - a.p.level
         if (boxSortMode.value === 'tier') return getPokemonTier(b.p).total - getPokemonTier(a.p).total
+        if (boxSortMode.value === 'bst') {
+          const specA = pokemonDataProvider.getPokemonData(a.p.id)
+          const specB = pokemonDataProvider.getPokemonData(b.p.id)
+          const bstA = specA ? ((specA.hp||0)+(specA.atk||0)+(specA.def||0)+(specA.spa||0)+(specA.spd||0)+(specA.spe||0)) : 0
+          const bstB = specB ? ((specB.hp||0)+(specB.atk||0)+(specB.def||0)+(specB.spa||0)+(specB.spd||0)+(specB.spe||0)) : 0
+          return bstB - bstA
+        }
         if (boxSortMode.value === 'type') return a.p.type.localeCompare(b.p.type)
         // Pokedex sorting would need the order array, we'll keep it simple for now or import it
         return 0
@@ -89,7 +128,9 @@ export const useBoxStore = defineStore('box', () => {
   const hasActiveFilters = computed(() => {
     const f = filters.value
     return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < 100 ||
-           f.ivTotalMin > 0 || f.ivTotalMax < 186 || f.ivAny31 || f.search !== ''
+           f.ivTotalMin > 0 || f.ivTotalMax < 186 || f.ivAny31 || f.search !== '' ||
+           f.bstMin > 0 || f.bstMax < 800 || f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 ||
+           f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 || f.ivMin > 0 || f.ivMax < 31
   })
 
   // --- ACTIONS ---
@@ -106,6 +147,16 @@ export const useBoxStore = defineStore('box', () => {
       ivTotalMin: 0,
       ivTotalMax: 186,
       ivAny31: false,
+      ivMin: 0,
+      ivMax: 31,
+      bstMin: 0,
+      bstMax: 800,
+      ivHP: 0,
+      ivATK: 0,
+      ivDEF: 0,
+      ivSPA: 0,
+      ivSPD: 0,
+      ivSPE: 0,
       search: '',
       isOpen: filters.value.isOpen
     }

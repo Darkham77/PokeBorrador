@@ -29,6 +29,7 @@ const {
   filters, 
   isFiltersOpen, 
   sortMode, 
+  sortDirection,
   hasActiveFilters, 
   processedBoxList, 
   resetFilters 
@@ -63,7 +64,7 @@ const buyNewBox = () => {
   if (gs.value.boxCount >= 10) return
   
   uiStore.openConfirm({
-    title: 'Comprar Caja',
+    title: 'COMPRAR CAJA',
     message: `¿Querés gastar ₱${cost.toLocaleString()} para comprar la Caja ${(gs.value.boxCount || 4) + 1}?`,
     onConfirm: () => {
       const res = boxStore.buyNewBox()
@@ -82,7 +83,7 @@ const handleConfirmRocketSell = () => {
   if (count === 0) return
   
   uiStore.openConfirm({
-    title: 'Vender al Team Rocket',
+    title: 'VENDER AL TEAM ROCKET',
     message: `¿Vender ${count} Pokémon por ₽${value.toLocaleString()} al Team Rocket?`,
     onConfirm: () => {
       const res = boxStore.doBoxRocketSell()
@@ -102,18 +103,19 @@ const handlePokemonClick = (index) => {
 </script>
 
 <template>
-  <div class="team-section">
+  <div class="box-view">
     <BoxHeader
       :player-class="gs.playerClass"
       :is-rocket-mode="isRocketMode"
+      :count="gs.box?.length || 0"
+      :max="maxCapacity"
+      :hint="isRocketMode 
+        ? 'Venta en Mercado Negro activa.' 
+        : 'Intercambio con equipo disponible.'"
       @toggle-rocket="toggleRocketMode"
       @confirm-rocket="handleConfirmRocketSell"
       @cancel-rocket="toggleRocketMode"
     />
-
-    <div class="box-meta">
-      {{ gs.box?.length || 0 }}/{{ maxCapacity }} Pokémon
-    </div>
 
     <BoxTabs
       :box-count="gs.boxCount"
@@ -123,24 +125,11 @@ const handlePokemonClick = (index) => {
       @buy="buyNewBox"
     />
 
-    <!-- HINTS -->
-    <div
-      v-if="isRocketMode"
-      class="hint-banner rocket-hint"
-    >
-      ⚠️ Seleccioná los Pokémon que querés vender al Mercado Negro (₱ + Crimen).
-    </div>
-    <div
-      v-else
-      class="hint-banner normal-hint"
-    >
-      Tocá un Pokémon para intercambiarlo con uno de tu equipo activo.
-    </div>
-
     <BoxFilters
       v-model:filters="filters"
       v-model:is-filters-open="isFiltersOpen"
       v-model:sort-mode="sortMode"
+      v-model:sort-direction="sortDirection"
       :has-active-filters="hasActiveFilters"
       :results-count="(processedBoxList || []).length"
       @reset="resetFilters"
@@ -151,39 +140,19 @@ const handlePokemonClick = (index) => {
       :rocket-selection="rocketSelection"
       :is-rocket-mode="isRocketMode"
       :is-box-empty="!gs.box || gs.box.length === 0"
+      :has-active-filters="hasActiveFilters"
       @pokemon-click="handlePokemonClick"
     />
 
     <BoxPokemonMenu
-      v-if="isBoxMenuOpen"
+      :show="isBoxMenuOpen"
       :box-index="selectedBoxIndex"
       @close="uiStore.isBoxMenuOpen = false"
     />
   </div>
 </template>
 
-<style scoped>
-.box-meta {
-  font-size: 11px;
-  color: var(--gray);
-  margin-bottom: 8px;
-}
-
-.hint-banner {
-  font-size: 11px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  padding: 10px 14px;
-}
-
-.rocket-hint {
-  color: #ef4444;
-  background: Rgba(239, 68, 68, 0.08);
-  border: 1px solid Rgba(239, 68, 68, 0.2);
-}
-
-.normal-hint {
-  font-size: 12px;
-  color: var(--gray);
-}
+<style scoped lang="scss">
+@use "@/styles/views/box";
 </style>
+

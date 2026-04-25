@@ -1,442 +1,433 @@
 <script setup>
 import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
+
 const props = defineProps({
   filters: { type: Object, required: true },
   isFiltersOpen: { type: Boolean, required: true },
   sortMode: { type: String, required: true },
+  sortDirection: { type: String, default: 'desc' },
   hasActiveFilters: { type: Boolean, required: true },
   resultsCount: { type: Number, required: true }
 })
 
-const emit = defineEmits(['update:isFiltersOpen', 'update:sortMode', 'update:filters', 'reset'])
+const emit = defineEmits([
+  'update:isFiltersOpen', 
+  'update:sortMode', 
+  'update:sortDirection', 
+  'update:filters', 
+  'reset'
+])
 
 const toggleFilters = () => emit('update:isFiltersOpen', !props.isFiltersOpen)
 const setSortMode = (val) => emit('update:sortMode', val)
+const toggleSortDirection = () => emit('update:sortDirection', props.sortDirection === 'desc' ? 'asc' : 'desc')
+
+const updateFilter = (key, val) => {
+  emit('update:filters', { ...props.filters, [key]: val })
+}
+
+const toggleTag = (tag) => {
+  const currentTags = [...props.filters.tags]
+  const idx = currentTags.indexOf(tag)
+  if (idx > -1) currentTags.splice(idx, 1)
+  else currentTags.push(tag)
+  updateFilter('tags', currentTags)
+}
+
+// Colores de estadísticas estandarizados
+const STAT_COLORS = {
+  HP: '#4ade80',
+  ATK: '#f87171',
+  DEF: '#60a5fa',
+  SPA: '#c084fc',
+  SPD: '#2dd4bf',
+  SPE: '#fbbf24',
+  LEVEL: '$purple', // Púrpura para niveles
+  TOTAL: '$yellow', // Amarillo/Oro para totales
+  BST: '$blue'    // Azul brillante para BST
+}
+
+const getSliderStyle = (val, max, color) => {
+  const percentage = (val / max) * 100
+  return {
+    background: `linear-gradient(to right, ${color} 0%, ${color} ${percentage}%, Rgba(255,255,255,0.1) ${percentage}%, Rgba(255,255,255,0.1) 100%)`
+  }
+}
+
+const POKEMON_TYPES = [
+  'normal', 'fire', 'water', 'electric', 'grass', 'ice', 
+  'fighting', 'poison', 'ground', 'flying', 'psychic', 
+  'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel'
+]
+
+const AVAILABLE_TAGS = [
+  { id: 'fav', label: 'FAV', icon: '⭐' },
+  { id: 'breed', label: 'CRIA', icon: '❤️' },
+  { id: 'comp', label: 'COMP', icon: '🏆' },
+  { id: 'caja', label: 'CAJA', icon: '📦' },
+  { id: 'trade', label: 'TRADE', icon: '🔄' },
+  { id: 'iv31', label: 'IV', icon: '31' },
+  { id: 'shy', label: 'SHY', icon: '✨' },
+  { id: 'team', label: 'TEAM', icon: '👥' }
+]
 </script>
 
 <template>
-  <div class="box-filter-panel">
-    <div
-      class="filter-header"
-      @click.stop="toggleFilters"
-    >
-      <span class="filter-title">🔍 FILTROS</span>
-      <div class="filter-info">
-        <span
-          v-if="hasActiveFilters"
-          class="results-count"
-        >{{ resultsCount }} resultados</span>
-        <span
-          :class="{ rotated: isFiltersOpen }"
-          class="arrow"
-        >▼</span>
+  <div class="box-controls-wrapper">
+    <div class="box-controls-compact">
+      <!-- Renglón 1: Buscador + Filtros + Orden -->
+      <div class="search-row-integrated">
+        <div class="box-search-wrapper">
+          <span class="box-search-icon">🔍</span>
+          <input
+            :value="filters.search"
+            type="text"
+            placeholder="Buscar por nombre o ID..."
+            class="box-search-input"
+            @input="updateFilter('search', $event.target.value)"
+          >
+        </div>
+        
+        <button 
+          class="filter-toggle-btn-premium"
+          :class="{ active: isFiltersOpen }"
+          @click.stop="toggleFilters"
+        >
+          <span class="box-icon-ref">⚙️</span>
+          <span class="text">FILTROS</span>
+        </button>
+
+        <div class="sort-controls-integrated">
+          <div class="sort-group-mini">
+            <span class="mini-label">ORDEN:</span>
+            <button :class="['mini-sort-btn', { active: sortMode === 'none' }]" @click.stop="setSortMode('none')">REC</button>
+            <button :class="['mini-sort-btn', { active: sortMode === 'level' }]" @click.stop="setSortMode('level')">LVL</button>
+            <button :class="['mini-sort-btn', { active: sortMode === 'tier' }]" @click.stop="setSortMode('tier')">IVs</button>
+            <button :class="['mini-sort-btn', { active: sortMode === 'bst' }]" @click.stop="setSortMode('bst')">BST</button>
+            <button :class="['mini-sort-btn', { active: sortMode === 'pokedex' }]" @click.stop="setSortMode('pokedex')">PDEX</button>
+          </div>
+          
+          <button 
+            class="direction-toggle-btn" 
+            :title="sortDirection === 'desc' ? 'Orden Descendente' : 'Orden Ascendente'"
+            @click.stop="toggleSortDirection"
+          >
+            {{ sortDirection === 'desc' ? '▼' : '▲' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Renglón 2: Etiquetas -->
+      <div class="tags-row-compact">
+        <div class="tags-group-mini">
+          <span class="mini-label">ETIQUETAS:</span>
+          <div class="tags-scroll-container">
+            <button
+              v-for="tag in AVAILABLE_TAGS"
+              :key="tag.id"
+              :class="['mini-tag-btn', { active: filters.tags.includes(tag.id) }]"
+              @click.stop="toggleTag(tag.id)"
+            >
+              <span class="box-tag-icon-inner">{{ tag.icon }}</span>
+              <span class="tag-text-small">{{ tag.label }}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Buscador -->
-    <div class="search-container">
-      <input
-        :value="filters.search"
-        type="text"
-        placeholder="Buscar por nombre..."
-        class="search-input"
-        @input="emit('update:filters', { ...filters, search: $event.target.value })"
+    <!-- Panel Extendido de Filtros (Optimizado Mixto) -->
+    <Transition name="pixel-slide">
+      <div
+        v-if="isFiltersOpen"
+        class="filters-expanded-premium"
       >
-    </div>
-
-    <!-- Cuerpo de Filtros -->
-    <div
-      v-show="isFiltersOpen"
-      class="filter-body"
-    >
-      <!-- Ordenar -->
-      <div class="filter-group">
-        <div class="group-label">
-          Ordenar por
-        </div>
-        <div class="button-row">
-          <button
-            :class="['box-filter-btn', { active: sortMode === 'none' }]"
-            @click.stop="setSortMode('none')"
-          >
-            Captura
-          </button>
-          <button
-            :class="['box-filter-btn btn-blue', { active: sortMode === 'level' }]"
-            @click.stop="setSortMode('level')"
-          >
-            Nivel
-          </button>
-          <button
-            :class="['box-filter-btn btn-gold', { active: sortMode === 'tier' }]"
-            @click.stop="setSortMode('tier')"
-          >
-            Tier
-          </button>
-          <button
-            :class="['box-filter-btn btn-green', { active: sortMode === 'type' }]"
-            @click.stop="setSortMode('type')"
-          >
-            Tipo
-          </button>
-        </div>
-      </div>
-
-      <!-- Tiers -->
-      <div class="filter-group">
-        <div class="group-label">
-          Filtrar por Tier
-        </div>
-        <div class="button-row">
-          <button
-            :class="['box-filter-btn', { active: filters.tier === 'all' }]"
-            @click.stop="emit('update:filters', { ...filters, tier: 'all' })"
-          >
-            Todos
-          </button>
-          <button
-            v-for="(cfg, tierKey) in BOX_TIER_CONFIG"
-            :key="tierKey"
-            :class="['box-filter-btn', { active: filters.tier === tierKey }]"
-            :style="{ color: cfg.color, background: filters.tier === tierKey ? cfg.bg : 'Rgba(255,255,255,0.1)', borderColor: cfg.color + '44' }"
-            @click.stop="emit('update:filters', { ...filters, tier: tierKey })"
-          >
-            {{ tierKey }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Tipos (Simplificado para el template) -->
-      <div class="filter-group">
-        <div class="group-label">
-          Tipo
-        </div>
-        <div class="button-row type-row">
-          <button
-            :class="['box-filter-btn', { active: filters.type === 'all' }]"
-            @click.stop="emit('update:filters', { ...filters, type: 'all' })"
-          >
-            Todos
-          </button>
-          <button
-            v-for="type in ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel']"
-            :key="type"
-            :class="['box-filter-btn', 'type-btn', type, { active: filters.type === type }]"
-            @click.stop="emit('update:filters', { ...filters, type: type })"
-          >
-            {{ type }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Detalles de IVs -->
-      <div class="filter-group">
-        <div class="group-label">
-          IVs Individuales (Mínimos)
-        </div>
-        <div class="iv-sliders-grid">
-          <div
-            v-for="stat in ['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE']"
-            :key="stat"
-            class="iv-slider-box"
-          >
-            <span class="iv-label">{{ stat }}</span>
-            <input
-              :value="filters['iv' + stat]"
-              type="range"
-              min="0"
-              max="31"
-              class="custom-range range-purple"
-              @input="emit('update:filters', { ...filters, ['iv' + stat]: Number($event.target.value) })"
+        <!-- Fila Superior: Tipos (Ancho Completo) -->
+        <div class="compact-section full-width">
+          <h4 class="box-section-label">TIPOS ELEMENTALES</h4>
+          <div class="types-compact-grid">
+            <button
+              :class="['filter-pill', { active: filters.type === 'all' }]"
+              @click.stop="updateFilter('type', 'all')"
             >
-            <span class="iv-val">{{ filters['iv' + stat] }}</span>
+              TODOS
+            </button>
+            <button
+              v-for="type in POKEMON_TYPES"
+              :key="type"
+              :class="['filter-pill type-pill-btn', type, { active: filters.type === type }]"
+              @click.stop="updateFilter('type', type)"
+            >
+              {{ type }}
+            </button>
           </div>
         </div>
-      </div>
+        
+        <!-- Filtro por Tier -->
+        <div class="compact-section full-width margin-top">
+          <h4 class="box-section-label">FILTRAR POR TIER (POTENCIAL GENÉTICO)</h4>
+          <div class="tiers-compact-grid">
+            <button
+              :class="['filter-pill', { active: filters.tier === 'all' }]"
+              @click.stop="updateFilter('tier', 'all')"
+            >
+              TODOS
+            </button>
+            <button
+              v-for="(cfg, tier) in BOX_TIER_CONFIG"
+              :key="tier"
+              :class="['filter-pill tier-pill', { active: filters.tier === tier }]"
+              :style="{ 
+                '--tier-color': cfg.color,
+                '--tier-bg': cfg.bg
+              }"
+              @click.stop="updateFilter('tier', tier)"
+            >
+              {{ tier }}
+            </button>
+          </div>
+        </div>
 
-      <div class="filter-split">
-        <div class="split-side">
-          <div class="group-label">
-            IV Totales (Rango)
+        <!-- Fila Inferior: Grid de 2 Columnas -->
+        <div class="filters-grid-columns">
+          <!-- Columna 1: Rangos -->
+          <div class="filter-column">
+            <div class="compact-section">
+              <h4 class="box-section-label">RANGOS GENERALES</h4>
+              <div class="premium-slider-group compact">
+                <div class="slider-row-mini">
+                  <span class="label">NV. MÍN</span>
+                  <input
+                    :value="filters.levelMin"
+                    type="range"
+                    min="1"
+                    max="100"
+                    :style="[getSliderStyle(filters.levelMin, 100, STAT_COLORS.LEVEL), { '--stat-color': STAT_COLORS.LEVEL }]"
+                    @input="updateFilter('levelMin', Number($event.target.value))"
+                  >
+                  <span class="val">{{ filters.levelMin }}</span>
+                </div>
+                <div class="slider-row-mini">
+                  <span class="label">NV. MÁX</span>
+                  <input
+                    :value="filters.levelMax"
+                    type="range"
+                    min="1"
+                    max="100"
+                    :style="[getSliderStyle(filters.levelMax, 100, STAT_COLORS.LEVEL), { '--stat-color': STAT_COLORS.LEVEL }]"
+                    @input="updateFilter('levelMax', Number($event.target.value))"
+                  >
+                  <span class="val">{{ filters.levelMax }}</span>
+                </div>
+                <div class="slider-row-mini">
+                  <span class="label">IV MÍN.</span>
+                  <input
+                    :value="filters.ivMin"
+                    type="range"
+                    min="0"
+                    max="31"
+                    :style="[getSliderStyle(filters.ivMin, 31, STAT_COLORS.HP), { '--stat-color': STAT_COLORS.HP }]"
+                    @input="updateFilter('ivMin', Number($event.target.value))"
+                  >
+                  <span class="val">{{ filters.ivMin }}</span>
+                </div>
+                <div class="slider-row-mini">
+                  <span class="label">IV MÁX.</span>
+                  <input
+                    :value="filters.ivMax"
+                    type="range"
+                    min="0"
+                    max="31"
+                    :style="[getSliderStyle(filters.ivMax, 31, STAT_COLORS.SPE), { '--stat-color': STAT_COLORS.SPE }]"
+                    @input="updateFilter('ivMax', Number($event.target.value))"
+                  >
+                  <span class="val">{{ filters.ivMax }}</span>
+                </div>
+                <div class="slider-row-mini">
+                  <span class="label">BST MÍN.</span>
+                  <input
+                    :value="filters.bstMin"
+                    type="range"
+                    min="0"
+                    max="800"
+                    step="10"
+                    :style="[getSliderStyle(filters.bstMin, 800, STAT_COLORS.BST), { '--stat-color': STAT_COLORS.BST }]"
+                    @input="updateFilter('bstMin', Number($event.target.value))"
+                  >
+                  <span class="val">{{ filters.bstMin }}</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="range-row">
-            <input
-              :value="filters.ivTotalMin"
-              type="range"
-              min="0"
-              max="186"
-              class="custom-range range-yellow"
-              @input="emit('update:filters', { ...filters, ivTotalMin: Number($event.target.value) })"
-            >
-            <span class="range-val">{{ filters.ivTotalMin }}</span>
-          </div>
-          <div class="range-row">
-            <input
-              :value="filters.ivTotalMax"
-              type="range"
-              min="0"
-              max="186"
-              class="custom-range range-yellow"
-              @input="emit('update:filters', { ...filters, ivTotalMax: Number($event.target.value) })"
-            >
-            <span class="range-val">{{ filters.ivTotalMax }}</span>
+
+          <!-- Columna 2: IVs Stats -->
+          <div class="filter-column">
+            <div class="compact-section full-height">
+              <h4 class="box-section-label">IVs STATS INDIVIDUALES</h4>
+              <div class="iv-mini-grid">
+                <div
+                  v-for="stat in ['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE']"
+                  :key="stat"
+                  class="iv-slider-row-mini"
+                >
+                  <span class="stat-name">{{ stat }}</span>
+                  <input
+                    :value="filters['iv' + stat]"
+                    type="range"
+                    min="0"
+                    max="31"
+                    :style="[getSliderStyle(filters['iv' + stat], 31, STAT_COLORS[stat]), { '--stat-color': STAT_COLORS[stat] }]"
+                    @input="updateFilter('iv' + stat, Number($event.target.value))"
+                  >
+                  <span class="stat-val" :style="{ color: STAT_COLORS[stat] }">{{ filters['iv' + stat] }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="split-side centered">
-          <div class="group-label">
-            IV Especial
+
+        <div class="filter-footer-compact">
+          <div class="results-badge-mini">
+            <span class="box-icon-ref">🔍</span> {{ resultsCount }} POKÉMON ENCONTRADOS
           </div>
           <button
-            :class="['special-btn', { active: filters.ivAny31 }]"
-            @click.stop="emit('update:filters', { ...filters, ivAny31: !filters.ivAny31 })"
+            class="btn-vicio-danger btn-vicio-sm"
+            @click.stop="emit('reset')"
           >
-            {{ filters.ivAny31 ? '[★] IV 31 DETECTADO' : 'Cualquier IV en 31' }}
+            ↺ REINICIAR TODO
           </button>
         </div>
       </div>
-
-      <button
-        class="reset-btn"
-        @click.stop="emit('reset')"
-      >
-        ↺ Limpiar filtros
-      </button>
-    </div>
+    </Transition>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-.box-filter-btn {
-  &.btn-blue {
-    color: var(--blue);
-    border-color: Rgba(59, 139, 255, 0.4);
-  }
-  &.btn-gold {
-    color: var(--coin-gold);
-    border-color: Rgba(255, 215, 0, 0.4);
-  }
-  &.btn-green {
-    color: var(--green);
-    border-color: Rgba(107, 203, 119, 0.4);
-  }
+@use "@/styles/core/tools" as *;
 
-  &:hover {
-    transform: Scale(1.05);
-    filter: Brightness(1.2);
-  }
-}
-
-.box-filter-panel {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 14px;
-}
-
-.filter-header {
+.filters-expanded-premium {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-
-.filter-title {
-  @include pixelated;
-  font-size: 8px;
-  color: var(--purple);
-}
-
-.filter-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.results-count {
-  font-size: 10px;
-  color: var(--yellow);
-}
-
-.arrow {
-  color: var(--gray);
-  font-size: 14px;
-  transition: transform .2s;
-}
-
-.arrow.rotated {
-  transform: Rotate(180deg);
-}
-
-.search-container {
+  flex-direction: column;
+  gap: 20px;
   margin-top: 12px;
 }
 
-.search-input {
-  width: 100%;
-  padding: 10px 14px;
-  background: Rgba(255, 255, 255, 0.06);
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  color: $white;
-  font-size: 13px;
-  font-family: 'Nunito', sans-serif;
-  outline: none;
+.filters-grid-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-.filter-body {
-  margin-top: 14px;
-}
-
-.filter-group {
-  margin-bottom: 15px;
-}
-
-.group-label {
-  font-size: 10px;
-  color: var(--gray);
-  margin-bottom: 8px;
-  font-weight: 700;
-}
-
-.button-row {
+.filter-column {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.compact-section {
+  background: Rgba(0, 0, 0, 0.2);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  
+  &.full-width { grid-column: span 2; }
+  
+  @media (max-width: 900px) {
+    &.full-width { grid-column: span 1; }
+  }
+
+  .box-section-label {
+    @include pixelated;
+    font-size: 7px;
+    color: var(--gray);
+    margin-bottom: 16px;
+    opacity: 0.6;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, Rgba(255,255,255,0.05), transparent);
+    }
+  }
+}
+
+.iv-mini-grid {
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
-.box-filter-btn {
-  @include pixelated;
-  font-size: 7px;
-  padding: 5px 10px;
-  border-radius: 20px;
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  background: Rgba(255, 255, 255, 0.1);
-  color: Rgba(238, 238, 238, 1);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.box-filter-btn.active {
-  border-color: var(--purple-light) !important;
-  background: Rgba(199, 125, 255, 0.2) !important;
-  color: $white !important;
-}
-
-.filter-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.range-row {
+.slider-row-mini, .iv-slider-row-mini {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
+  gap: 12px;
+  padding: 2px 0;
 
-.range-val {
-  font-size: 11px;
-  color: var(--yellow);
-  width: 26px;
-  text-align: right;
-  font-weight: 700;
-}
+  .label, .stat-name {
+    @include pixelated;
+    font-size: 7px;
+    color: var(--gray);
+    width: 70px;
+    white-space: nowrap;
+    opacity: 0.8;
+  }
 
-.custom-range {
-  flex: 1;
-  -webkit-appearance: none;
-  appearance: none;
-  background: Rgba(255,255,255,0.1);
-  height: 4px;
-  border-radius: 5px;
-  outline: none;
-}
+  input[type="range"] {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    -webkit-appearance: none;
+    outline: none;
 
-.range-yellow { accent-color: var(--yellow); }
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--stat-color, var(--yellow));
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--stat-color);
+      border: 1px solid Rgba(0, 0, 0, 0.4);
+    }
+  }
 
-.special-btn {
-  width: 100%;
-  padding: 10px;
-  border-radius: 12px;
-  font-size: 7px;
-  @include pixelated;
-  cursor: pointer;
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  background: Rgba(255, 255, 255, 0.1);
-  color: Rgba(238, 238, 238, 1);
-  transition: all 0.2s;
-}
-
-.special-btn.active {
-  border: 1px solid var(--yellow);
-  background: Rgba(255, 184, 0, 0.12);
-  color: var(--yellow);
-}
-
-.type-row {
-  max-height: 120px;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 4px;
-}
-
-.type-btn {
-  text-transform: uppercase;
-  font-size: 6px !important;
-  opacity: 0.8;
-  
-  &.active {
-    opacity: 1;
-    filter: Brightness(1.2);
-    box-shadow: 0 0 8px currentColor;
+  .val, .stat-val {
+    @include pixelated;
+    font-size: 8px;
+    min-width: 25px;
+    text-align: right;
   }
 }
 
-.iv-sliders-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  background: Rgba(255, 255, 255, 0.02);
-  padding: 10px;
-  border-radius: 12px;
+.filter-footer-compact {
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.iv-slider-box {
+.results-badge-mini {
+  @include pixelated;
+  font-size: 8px;
+  color: var(--yellow);
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.iv-label {
-  font-size: 8px;
-  @include pixelated;
-  color: var(--gray);
-  width: 28px;
-}
-
-.iv-val {
-  font-size: 10px;
-  color: var(--purple-light);
-  width: 15px;
-  text-align: right;
-  font-weight: 700;
-}
-
-.range-purple { accent-color: var(--purple-light); }
-
-.reset-btn {
-  width: 100%;
-  margin-top: 12px;
-  padding: 10px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  background: Rgba(255, 255, 255, 0.05);
-  color: var(--gray);
-  font-size: 11px;
-  transition: all 0.2s;
+  background: Rgba(255, 214, 10, 0.05);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid Rgba(255, 214, 10, 0.1);
 }
 </style>

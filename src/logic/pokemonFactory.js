@@ -178,7 +178,8 @@ export function makePokemon(id, level, options = {}) {
     moves: getMovesAtLevel(id, level),
     status: null, sleepTurns: 0, friendship: 70, vigor,
     heldItem,
-    nickname: null
+    nickname: null,
+    obtainedAt: Date.now()
   };
 
   recalcPokemonStats(p);

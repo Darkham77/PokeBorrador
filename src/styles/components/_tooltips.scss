@@ -57,6 +57,10 @@
   display: block;
   text-transform: uppercase;
   text-shadow: 1px 1px 0px Rgba(0, 0, 0, 0.5);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .pv-tooltip-desc {

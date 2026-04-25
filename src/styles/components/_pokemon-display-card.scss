@@ -109,6 +109,10 @@
     transition: all 0.2s ease;
     text-shadow: none;
     @include pixelated;
+    @include flex-center;
+    width: auto;
+    min-width: 14px;
+    height: 14px;
 
     &:hover {
       text-shadow: 0 0 8px currentColor;
@@ -119,6 +123,8 @@
   .tag-badge { 
     font-weight: 900;
     color: var(--tag-color, Rgba(204, 204, 204, 1));
+    font-size: 7px;
+    letter-spacing: -1px;
   }
   
   .shiny-icon { color: var(--yellow); }

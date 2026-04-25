@@ -33,7 +33,7 @@
       margin: 0 0 12px 0;
       background: linear-gradient(to bottom, var(--white), var(--gray));
       -webkit-background-clip: text;
-      -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;
+      -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;
       -webkit-text-fill-color: transparent;
       @include pixelated;
     }
@@ -100,12 +100,11 @@
 
 .pokedex-controls {
   @include glass-solid(Rgba(15, 23, 42, 0.95));
-  padding: 10px 16px; // Reduced from 12px 20px
+  padding: 10px 20px;
   border-radius: 16px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
   flex-wrap: nowrap;
 
   @media (max-width: 1000px) {
@@ -117,58 +116,59 @@
 }
 
 .gen-tabs {
+  flex: 0 0 auto;
   display: flex;
-  background: Rgba(0, 0, 0, 0.3);
-  padding: 6px;
+  background: Rgba(0, 0, 0, 0.4);
+  padding: 4px;
   border-radius: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  gap: 4px;
   
   .tab-btn {
-    padding: 10px 24px;
+    padding: 8px 20px;
     border: none;
-    background: none;
+    background: transparent;
     color: var(--gray);
     @include pixelated;
     font-size: 8px;
     cursor: pointer;
     border-radius: 8px;
-    @include will-animate(transform, background-color, color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    @include will-animate(background-color, color, box-shadow);
+    transition: all 0.25s ease;
 
-    &:hover { color: var(--white); }
+    &:hover:not(.active) { 
+      background: Rgba(255, 255, 255, 0.05);
+      color: var(--white); 
+    }
+
     &.active {
       background: Rgba(255, 255, 255, 0.1);
       color: var(--white);
-      box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.3);
-      transform: Scale(1.05);
+      box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.2);
       border: 1px solid Rgba(255, 255, 255, 0.1);
     }
   }
 }
 
 .controls-right {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1;
-  justify-content: flex-end;
-  min-width: 0; // Allow shrinking
-
-  @media (max-width: 1000px) {
-    width: 100%;
-    justify-content: space-between;
-  }
+  gap: 20px;
+  min-width: 0;
 }
 
 .sort-group {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   background: Rgba(0, 0, 0, 0.2);
   padding: 6px 12px;
   border-radius: 12px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  flex: none; // Don't grow
+  flex: 1 1 auto;
+  min-width: 0;
 
   @include responsive(hud-mobile) {
     width: 100%;
@@ -207,8 +207,9 @@
 
 .search-wrapper {
   position: relative;
-  flex: 1; // Grow to take available space
-  max-width: 350px; // But not too much
+  flex: 0 0 220px; 
+  width: 220px;
+  max-width: 220px;
   min-width: 140px;
 
   @include responsive(hud-mobile) {
@@ -233,8 +234,8 @@
     border-radius: 12px;
     padding: 12px 16px 12px 44px;
     color: var(--white);
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    font-size: 8px;
+    @include pixelated;
     outline: none;
     transition: all 0.3s ease;
 
@@ -252,7 +253,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 16px;
-  padding-bottom: 20px;
+  padding-bottom: 250px;
 }
 
 .pokemon-card {

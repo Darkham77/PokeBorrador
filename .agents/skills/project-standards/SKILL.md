@@ -71,6 +71,13 @@ To ensure rigor and traceability, every complex task MUST follow the Artifact li
 2. **Execution**: Maintain `task.md` as the absolute source of truth for granular steps.
 3. **Closure**: Create `walkthrough.md` with evidence (screenshots, tests) of the task's success.
 
+### Clean Task Formatting (IDE Compatibility)
+To avoid "ugly" rendering in the IDE, always use GFM-compliant checkboxes:
+- `[ ]` **Pending**: Unstarted tasks.
+- `[ ] 🔄` **In Progress**: Active task (keeps the checkbox empty for the IDE, emoji shows action).
+- `[x]` **Completed**: Finished tasks.
+- **Avoid** `[/]` or other custom notations inside the brackets that break IDE rendering.
+
 ---
 
 ## 🛠️ Aesthetic Audit Checklist

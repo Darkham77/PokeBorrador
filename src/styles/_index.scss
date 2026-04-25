@@ -47,3 +47,8 @@
 
 // Global Responsive & Overrides
 @use 'core/responsive';
+
+// Vistas
+@use 'views/box';
+@use 'views/login';
+@use 'views/pokedex';

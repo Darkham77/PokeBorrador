@@ -9,67 +9,28 @@ const emit = defineEmits(['switch', 'buy'])
 </script>
 
 <template>
-  <div class="box-tabs-container">
+  <div class="box-tabs glass-morphism">
     <button
       v-for="i in props.boxCount"
       :key="i"
       :class="{ active: currentIndex === (i - 1) }"
-      class="tab-btn"
+      class="box-tab-btn"
       @click.stop="emit('switch', i - 1)"
     >
       CAJA {{ i }}
     </button>
+    
     <button
       v-if="props.boxCount < 10"
-      :title="'Comprar nueva caja (₱' + buyCost.toLocaleString() + ')'"
-      class="add-btn"
+      class="tab-btn buy-btn"
       @click.stop="emit('buy')"
     >
-      +
+      + ADQUIRIR (<span class="currency-symbol">₱</span>{{ buyCost.toLocaleString() }})
     </button>
   </div>
 </template>
 
-<style scoped>
-@use "@/styles/core/_mixins" as *;
-.box-tabs-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 16px;
-  align-items: center;
-}
-
-.tab-btn {
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(255, 255, 255, 0.05);
-  color: var(--gray);
-  @include pixelated;
-  font-size: 7px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tab-btn.active {
-  border: 1px solid var(--purple);
-  background: Rgba(199, 125, 255, 0.2);
-  color: var(--purple-light);
-}
-
-.add-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1px solid var(--green);
-  background: Rgba(107, 203, 119, 0.1);
-  color: var(--green);
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 4px;
-}
+<style scoped lang="scss">
+@use "@/styles/views/box";
 </style>
+

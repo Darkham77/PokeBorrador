@@ -131,6 +131,11 @@ function normalizeData(state) {
       delete p.ivs._nature;
     }
 
+    // Backfill capture date if missing
+    if (!p.obtainedAt && !p.created_at && !p.captureDate && !p.timestamp && !p.date) {
+      p.obtainedAt = Date.now();
+    }
+
     return p;
   };
 

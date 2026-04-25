@@ -7,8 +7,9 @@ import { useUIStore } from '@/stores/ui'
 import { useElementVisibility } from '@/composables/useElementVisibility'
 import { ref, inject } from 'vue'
 
-import { TAG_DEFINITIONS, POKEMON_BADGES } from '@/logic/constants/tags'
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/constants/tiers'
+import { getPokemonVisualBadges } from '@/logic/constants/tags'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -19,7 +20,7 @@ const props = defineProps({
   actions: { type: Array, default: () => ['item', 'details', 'box'] }
 })
 
-const emit = defineEmits(['click', 'openDetail', 'openItem', 'sendToBox', 'select'])
+const emit = defineEmits(['click', 'openDetail', 'openItem', 'sendToBox', 'select', 'toggle-tag'])
 
 const cardRef = ref(null)
 const { isVisible } = useElementVisibility(cardRef)
@@ -40,6 +41,7 @@ const getHpClass = (pct) => {
 }
 
 const tierInfo = computed(() => getPokemonTier(props.pokemon))
+const hasBadges = computed(() => getPokemonVisualBadges(props.pokemon).length > 0)
 
 const disobeys = computed(() => props.pokemon.level > props.maxObeyLv)
 
@@ -52,6 +54,7 @@ const spriteUrl = computed(() => {
 const cardClasses = computed(() => {
   const classes = ['pokemon-display-card']
   if (props.pokemon.onMission) classes.push('on-mission')
+  if (hasBadges.value) classes.push('with-badges')
   if (isPerformanceActive.value) {
     classes.push('is-performance-mode')
     return classes
@@ -74,19 +77,6 @@ function getGenderClass(gender) {
   if (gender === 'F') return 'gender-female'
   return 'gender-none'
 }
-
-const activeTags = computed(() => {
-  if (!props.pokemon.tags) return []
-  return props.pokemon.tags.map(id => ({
-    id,
-    ...(TAG_DEFINITIONS[id] || TAG_DEFINITIONS[id === 'competitive' ? 'comp' : ''] || { icon: '?', color: '#ccc', label: 'TAG', desc: 'Etiqueta personalizada.' })
-  }))
-})
-
-const hasBadges = computed(() => {
-  if (isPerformanceActive.value) return false
-  return props.pokemon.heldItem || activeTags.value.length > 0 || props.pokemon.isShiny
-})
 </script>
 
 <template>
@@ -97,58 +87,15 @@ const hasBadges = computed(() => {
   >
     <!-- Top Row: Items/Tags + Tier -->
     <div class="top-row">
-      <div
-        v-if="hasBadges"
-        class="badges-area"
-      >
-        <!-- Column 1: Dynamic Tags -->
-        <div class="tags-col">
-          <PVTooltip
-            v-for="tag in activeTags"
-            :key="tag.id"
-            :title="tag.label"
-            :description="tag.desc"
-            position="top"
-          >
-            <div
-              class="tag-badge"
-              :style="{ '--tag-color': tag.color }"
-            >
-              {{ tag.icon }}
-            </div>
-          </PVTooltip>
-
-          <!-- Shiny Indicator (if not in tags) -->
-          <PVTooltip
-            v-if="pokemon.isShiny"
-            :title="POKEMON_BADGES.shiny.label"
-            :description="POKEMON_BADGES.shiny.desc"
-            position="top"
-          >
-            <span class="shiny-icon">{{ POKEMON_BADGES.shiny.icon }}</span>
-          </PVTooltip>
-        </div>
-
-        <!-- Column 2: Held Item -->
-        <div 
-          v-if="pokemon.heldItem"
-          class="items-col"
-        >
-          <PVTooltip
-            :title="POKEMON_BADGES.heldItem.label"
-            :description="`${POKEMON_BADGES.heldItem.desc} (${pokemon.heldItem})`"
-            position="top"
-          >
-            <div class="item-badge">
-              <span class="icon">{{ POKEMON_BADGES.heldItem.icon }}</span>
-            </div>
-          </PVTooltip>
-        </div>
-      </div>
-      <div
-        v-else
-        class="badges-spacer"
+      <!-- Píldora de Insignias Centralizada -->
+      <UnifiedBadgePill 
+        v-if="!isPerformanceActive"
+        :pokemon="pokemon" 
+        size="lg"
+        editable
+        @toggle-tag="(tagId) => emit('toggle-tag', tagId)"
       />
+      <div v-else class="badges-spacer" />
 
       <div
         class="card-tier-badge"

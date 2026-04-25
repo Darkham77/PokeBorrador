@@ -207,6 +207,10 @@ const hide = () => {
     margin-bottom: 6px;
     line-height: 1.4;
     display: block;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 
   .pv-tooltip-desc {

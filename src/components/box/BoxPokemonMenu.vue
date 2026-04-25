@@ -4,9 +4,15 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBoxStore } from '@/stores/box'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { NATURE_DATA } from '@/data/natures'
+import { ABILITY_DATA } from '@/data/abilities'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import BaseModal from '@/components/common/BaseModal.vue'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 
 const props = defineProps({
+  show: { type: Boolean, default: false },
   boxIndex: { type: Number, required: true }
 })
 
@@ -41,7 +47,6 @@ const handleSwap = (teamIndex) => {
 
 const handleDetail = () => {
   uiStore.openPokemonDetail(pokemon.value, props.boxIndex, 'box')
-  emit('close')
 }
 
 const handleUseItem = () => {
@@ -51,7 +56,7 @@ const handleUseItem = () => {
 
 const handleMoveToBox = () => {
   uiStore.openPrompt({
-    title: 'Mover Pokémon',
+    title: 'MOVER POKÉMON',
     message: `¿A qué caja querés mover a ${pokemon.value.name}? (1 a ${gameStore.state.boxCount})`,
     initialValue: (boxStore.currentBoxIndex + 1).toString(),
     type: 'number',
@@ -78,7 +83,7 @@ const handleRelease = () => {
   }
   
   uiStore.openConfirm({
-    title: 'Soltar Pokémon',
+    title: 'SOLTAR POKÉMON',
     message: `¿Estás seguro de que querés soltar a ${pokemon.value.name}? Esta acción es permanente.`,
     onConfirm: () => {
       boxStore.boxReleaseSelected = [props.boxIndex]
@@ -93,10 +98,10 @@ const handleRocketSell = () => {
   const originalSelection = [...boxStore.boxRocketSelected]
   boxStore.boxRocketSelected = [props.boxIndex]
   const price = boxStore.getRocketSellValue()
-  boxStore.boxRocketSelected = originalSelection // Restore
+  boxStore.boxRocketSelected = originalSelection
 
   uiStore.openConfirm({
-    title: 'Vender Mercado Negro',
+    title: 'VENDER MERCADO NEGRO',
     message: `¿Vender ${pokemon.value.name} por ₽${price.toLocaleString()} al Team Rocket?`,
     onConfirm: () => {
       boxStore.boxRocketSelected = [props.boxIndex]
@@ -110,357 +115,355 @@ const handleRocketSell = () => {
 const handleToggleTag = (tag) => {
   boxStore.togglePokeTag(props.boxIndex, tag)
 }
+
+// Mobile detection for dynamic layout
+const isMobile = computed(() => uiStore.windowWidth < 400)
 </script>
 
 <template>
-  <div
-    class="box-menu-overlay"
-    @click.self="emit('close')"
+  <BaseModal
+    :show="show"
+    :title="pokemon?.nickname || pokemon?.name || 'POKÉMON'"
+    variant="retro"
+    @close="emit('close')"
   >
-    <div
-      v-if="pokemon"
-      class="box-menu-card animate-pop"
-    >
-      <header class="menu-header">
-        <div class="pokemon-id">
-          #{{ pokemon.id.toString().padStart(3, '0') }}
-        </div>
-        <img
-          :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny })"
-          class="menu-sprite"
-          @error="e => e.target.style.display = 'none'"
-        >
-        <h3 class="pokemon-name">
-          {{ pokemon.nickname || pokemon.name }} {{ pokemon.isShiny ? '✨' : '' }}
-        </h3>
-        <div 
-          v-if="pokemon.nickname" 
-          class="bm-species-subtitle"
-        >
-          {{ pokemon.name }}
-        </div>
-        <div class="pokemon-meta">
-          Nv. {{ pokemon.level }} · {{ pokemon.nature }} · {{ pokemon.ability }}
-        </div>
-        
-        <div class="tag-row">
-          <PVTooltip
-            title="FAVORITO"
-            description="Marca a este Pokémon como favorito."
-          >
-            <button 
-              class="tag-btn" 
-              :class="{ active: pokemon.tags?.includes('fav') }"
-              @click.stop="handleToggleTag('fav')"
+    <div v-if="pokemon" class="box-menu-content">
+      <!-- Pokémon Header (Clickable to detail) -->
+      <header 
+        class="pokemon-summary is-interactive" 
+        @click.stop="handleDetail"
+      >
+        <div class="summary-top">
+          <div class="sprite-box">
+            <PVSpriteFX
+              :is-shiny="pokemon.isShiny"
+              :is-guardian="pokemon.isGuardian"
             >
-              ⭐
-            </button>
-          </PVTooltip>
-          <PVTooltip
-            title="CRIANZA"
-            description="Pokémon reservado para crianza en Guardería."
-          >
-            <button 
-              class="tag-btn" 
-              :class="{ active: pokemon.tags?.includes('breed') }"
-              @click.stop="handleToggleTag('breed')"
-            >
-              ❤️
-            </button>
-          </PVTooltip>
-          <PVTooltip
-            title="IV 31"
-            description="Pokémon con al menos un IV al máximo."
-          >
-            <button 
-              class="tag-btn" 
-              :class="{ active: pokemon.tags?.includes('iv31') }"
-              @click.stop="handleToggleTag('iv31')"
-            >
-              31
-            </button>
-          </PVTooltip>
+              <img
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny })"
+                class="menu-sprite" @error="e => e.target.style.display = 'none'">
+            </PVSpriteFX>
+          </div>
+          <div class="meta-info">
+            <span class="level">NV. {{ pokemon.level }}</span>
+            <h3 class="p-name">{{ pokemon.nickname || pokemon.name }}</h3>
+            <span v-if="pokemon.nickname" class="p-species">#{{ pokemon.name }}</span>
+            <div class="details">
+              <PVTooltip :title="pokemon.nature" :description="NATURE_DATA[pokemon.nature]?.desc" position="top">
+                <span class="interactive-text">{{ pokemon.nature }}</span>
+              </PVTooltip>
+              <span class="sep"> · </span>
+              <PVTooltip :title="pokemon.ability" :description="ABILITY_DATA[pokemon.ability]?.desc" position="top">
+                <span class="interactive-text">{{ pokemon.ability }}</span>
+              </PVTooltip>
+            </div>
+          </div>
+
+          <!-- Badges at the right, vertical and symmetric (Horizontal on mobile) -->
+          <div class="header-badges">
+            <UnifiedBadgePill 
+              :pokemon="pokemon" 
+              size="lg" 
+              editable
+              show-all
+              :vertical="!isMobile"
+              inline
+              @toggle-tag="handleToggleTag"
+            />
+          </div>
         </div>
       </header>
 
-      <div class="menu-body scrollbar">
-        <button
-          class="action-btn detail-btn"
-          @click.stop="handleDetail"
-        >
-          <span class="icon">👁️</span> Ver Detalles
-        </button>
-
+      <div class="action-grid">
         <button 
           v-if="team.length < 6" 
-          class="action-btn add-btn" 
+          class="menu-action-btn secondary" 
           @click.stop="handleMoveToTeam"
         >
-          <span class="icon">➕</span> Agregar al equipo
+          <span class="icon">➕</span> AGREGAR AL EQUIPO
         </button>
 
+        <!-- Swap Section - Grid 3x2 -->
         <div class="swap-section">
-          <div class="bm-section-title">
-            INTERCAMBIAR POR:
-          </div>
-          <div
-            v-for="(t, i) in team"
-            :key="t.uid"
-            class="team-option"
-            @click.stop="handleSwap(i)"
-          >
-            <img
-              :src="getAssetUrl(ASSET_TYPES.POKEMON, t.id, { isShiny: t.isShiny })"
-              class="team-sprite"
-              @error="e => e.target.style.display = 'none'"
+          <h4 class="section-title">INTERCAMBIAR POR</h4>
+          <div class="team-swap-grid">
+            <div
+              v-for="(t, i) in team"
+              :key="t.uid"
+              class="team-swap-slot"
+              @click.stop="handleSwap(i)"
             >
-            <div class="team-info">
-              <div class="name">
-                {{ t.nickname || t.name }}
+              <div class="slot-badges">
+                <UnifiedBadgePill 
+                  :pokemon="t" 
+                  size="sm" 
+                  :vertical="false"
+                  inline
+                />
               </div>
-              <div class="lv">
-                Nv. {{ t.level }}
+              <div class="ts-sprite-container">
+                <PVSpriteFX
+                  :is-shiny="t.isShiny"
+                  :is-guardian="t.isGuardian"
+                >
+                  <img :src="getAssetUrl(ASSET_TYPES.POKEMON, t.id, { isShiny: t.isShiny })" class="ts-sprite" @error="e => e.target.style.display = 'none'">
+                </PVSpriteFX>
               </div>
+              <span class="ts-name">{{ t.nickname || t.name }}</span>
             </div>
-            <span class="swap-icon">↔️</span>
           </div>
         </div>
-
-        <button
-          class="action-btn item-btn"
-          @click.stop="handleUseItem"
-        >
-          <span class="icon">🎒</span> Usar Objeto
-        </button>
-
-        <button 
-          v-if="gameStore.state.playerClass === 'rocket'" 
-          class="action-btn rocket-btn" 
-          @click.stop="handleRocketSell"
-        >
-          <span class="icon">🚀</span> Vender Mercado Negro
-        </button>
-
-        <button
-          class="action-btn move-btn"
-          @click.stop="handleMoveToBox"
-        >
-          <span class="icon">📦</span> Mover a otra caja
-        </button>
-
-        <button 
-          class="action-btn release-btn" 
-          :disabled="pokemon.inDaycare"
-          @click.stop="handleRelease"
-        >
-          <span class="icon">🌿</span> Soltar Pokémon
-        </button>
       </div>
 
-      <footer class="menu-footer">
-        <button
-          class="close-btn"
-          @click.stop="emit('close')"
-        >
-          CERRAR
+      <!-- General Actions -->
+      <div class="footer-actions">
+        <button class="menu-action-btn warning" @click.stop="handleUseItem">
+          <span class="icon">🎒</span> USAR OBJETO
         </button>
-      </footer>
+        <button class="menu-action-btn warning" @click.stop="handleMoveToBox">
+          <span class="icon">📦</span> MOVER CAJA
+        </button>
+        <button class="menu-action-btn danger" @click.stop="handleRelease">
+          <span class="icon">🌿</span> SOLTAR
+        </button>
+      </div>
     </div>
-  </div>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-.box-menu-overlay {
-  position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.85);
-  -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
-  z-index: var(--z-modal);
+@use "@/styles/core/tools" as *;
+
+.box-menu-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 320px;
+  padding: 8px;
+}
+
+.pokemon-summary {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  transform: translateZ(0);
-}
-
-.box-menu-card {
-  width: 100%;
-  max-width: 380px;
-  background: $card2;
-  border-radius: 24px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  max-height: 85vh;
+  gap: 16px;
+  background: Rgba(255, 255, 255, 0.03);
+  padding: 12px 16px;
+  border-radius: 20px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  position: relative;
+  transition: all 0.2s;
   overflow: hidden;
-  box-shadow: 0 20px 50px Rgba(0,0,0,0.5);
+
+  @media (max-width: 400px) {
+    gap: 8px;
+    padding: 12px 8px;
+  }
+
+  &.is-interactive {
+    cursor: pointer;
+    &:hover {
+      background: Rgba(255, 255, 255, 0.06);
+      border-color: Rgba(255, 255, 255, 0.15);
+      transform: TranslateY(-2px);
+    }
+  }
+
+  .summary-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    
+    @media (max-width: 400px) {
+      gap: 10px;
+    }
+  }
+
+  .sprite-box {
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
+    @include flex-center;
+    background: radial-gradient(circle, Rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+    
+    .menu-sprite {
+      width: 100%;
+      height: 100%;
+      @include sprite-render;
+    }
+  }
+
+  .meta-info {
+    flex: 0 1 auto;
+
+    @media (max-width: 400px) {
+      text-align: center;
+    }
+
+    .level { @include pixelated; font-size: 9px; color: var(--yellow); display: block; margin-bottom: 4px; }
+    .p-name { @include pixelated; font-size: 18px; color: var(--white); text-transform: uppercase; margin: 2px 0; line-height: 1.2; }
+    .p-species { @include pixelated; font-size: 10px; color: var(--gray); text-transform: uppercase; opacity: 0.6; display: block; margin: 4px 0; }
+    .details { 
+      font-size: 11px; 
+      color: var(--gray); 
+      margin-top: 8px; 
+      opacity: 0.8;
+      line-height: 1.4;
+      
+      .interactive-text {
+        cursor: help;
+        border-bottom: 1px dotted Rgba(255, 255, 255, 0.3);
+        transition: all 0.2s;
+        &:hover {
+          color: var(--yellow);
+          border-bottom-color: var(--yellow);
+        }
+      }
+      .sep { opacity: 0.3; margin: 0 4px; }
+    }
+  }
+
+  .header-badges {
+    flex: 0 0 auto;
+    @include flex-center;
+  }
 }
 
-.menu-header {
-  padding: 24px;
-  text-align: center;
-  background: linear-gradient(to bottom, Rgba(255,255,255,0.03), transparent);
-  border-bottom: 1px solid Rgba(255,255,255,0.05);
+.menu-action-btn {
+  @include btn-vicio('neutral', 'sm', true);
+  margin-bottom: 8px;
+  
+  &.primary { @include btn-vicio-secondary('sm', true); }
+  &.secondary { @include btn-vicio-success('sm', true); }
+  &.danger { @include btn-vicio-danger('sm', true); margin-top: 12px; }
+  &.warning { @include btn-vicio('warning', 'sm', true); }
+  &.rocket { @include btn-vicio-danger('sm', true); }
+  &.flat { @include btn-vicio('neutral', 'sm', true); }
+}
 
-  .pokemon-id {
-    @include pixelated;
-    font-size: 8px;
-    color: Rgba(255, 255, 255, 0.3);
-    margin-bottom: 8px;
+.swap-section {
+  margin: 12px 0;
+  .section-title { @include pixelated; font-size: 7px; color: var(--gray); margin-bottom: 8px; opacity: 0.6; letter-spacing: 1px; text-align: center; }
+}
+
+.team-swap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 2px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .menu-sprite {
-    width: 80px;
-    height: 80px;
-    image-rendering: pixelated;
-    filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.team-swap-slot {
+  aspect-ratio: 1.2;
+  background: Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 10px;
+  @include flex-center;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: visible;
+
+  @media (max-width: 768px) {
+    aspect-ratio: auto;
+    padding: 8px 10px;
   }
 
-  .pokemon-name {
-    @include pixelated;
-    font-size: 10px;
-    color: var(--yellow);
-    margin: 12px 0 6px;
-    text-transform: uppercase;
+  @media (max-width: 500px) {
+    padding: 6px;
+    flex-direction: row;
+    gap: 12px;
+    justify-content: flex-start;
   }
 
-  .bm-species-subtitle {
-    @include pixelated;
-    font-size: 7px;
-    color: Rgba(255, 255, 255, 0.3);
-    margin-top: -4px;
-    margin-bottom: 8px;
-    text-transform: uppercase;
+  &:hover {
+    background: Rgba(199, 125, 255, 0.15);
+    border-color: var(--purple);
+    transform: TranslateY(-4px);
+    box-shadow: 0 8px 25px Rgba(0, 0, 0, 0.5);
+
+    @media (max-width: 480px) {
+      transform: none;
+    }
   }
 
-  .pokemon-meta {
-    font-size: 11px;
-    color: var(--gray);
-  }
-
-  .tag-row {
+  .slot-badges {
+    width: 100%;
     display: flex;
     justify-content: center;
-    gap: 12px;
-    margin-top: 16px;
+    margin-bottom: 6px;
+    min-height: 14px;
 
-    .tag-btn {
-      background: Rgba(255, 255, 255, 0.05);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
+    @media (max-width: 500px) {
+      position: absolute;
+      top: 4px;
+      right: 8px;
+      width: auto;
+      margin-bottom: 0;
+    }
+  }
+
+  .ts-sprite-container {
+    width: 48px;
+    height: 48px;
+    @include flex-center;
+
+    @media (max-width: 500px) {
       width: 32px;
       height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
+    }
+    
+    .ts-sprite { 
+      width: 100%; 
+      height: 100%; 
+      @include sprite-render;
+    }
+  }
 
-      &.active {
-        background: Rgba(199, 125, 255, 0.2);
-        border-color: var(--purple);
-        color: $white;
-        transform: Scale(1.1);
-      }
-      &:hover { background: Rgba(255, 255, 255, 0.1); }
+  .ts-name { 
+    font-size: 8px; 
+    @include pixelated; 
+    color: var(--white); 
+    margin-top: 6px; 
+    text-align: center; 
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 1px 1px 0 Rgba(0,0,0,0.8);
+
+    @media (max-width: 500px) {
+      margin-top: 0;
+      text-align: left;
+      font-size: 10px;
     }
   }
 }
 
-.menu-body {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.action-btn {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
+.footer-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  transition: all 0.2s;
-  background: Rgba(255, 255, 255, 0.05);
-  color: $white;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-
-  .icon { font-size: 16px; width: 20px; text-align: center; }
-
-  &:hover { background: Rgba(255, 255, 255, 0.08); transform: translateX(4px); }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  &.detail-btn { color: var(--purple-light); border-color: Rgba(199, 125, 255, 0.3); background: Rgba(199, 125, 255, 0.05); }
-  &.add-btn { color: var(--blue); border-color: Rgba(59, 139, 255, 0.3); background: Rgba(59, 139, 255, 0.05); }
-  &.item-btn { color: var(--green); border-color: Rgba(107, 203, 119, 0.3); background: Rgba(107, 203, 119, 0.05); }
-  &.rocket-btn { color: Rgba(239, 68, 68, 1); border-color: Rgba(239, 68, 68, 0.3); background: Rgba(239, 68, 68, 0.05); }
-  &.release-btn { color: Rgba(136, 136, 136, 1); font-size: 11px; margin-top: 10px; opacity: 0.6; }
-}
-
-.swap-section {
-  margin: 10px 0;
-  .bm-section-title {
-    @include pixelated;
-    font-size: 8px;
-    color: var(--purple);
-    margin-bottom: 12px;
-    padding-left: 4px;
-  }
-}
-
-.team-option {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  margin-bottom: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: Rgba(199, 125, 255, 0.05);
-    border-color: Rgba(199, 125, 255, 0.3);
-    transform: translateX(4px);
+  margin-top: 16px;
+  
+  @media (max-width: 400px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
-  .team-sprite { width: 36px; height: 36px; image-rendering: pixelated; }
-  .team-info {
-    flex: 1;
-    .name { font-size: 13px; font-weight: 700; color: $white; }
-    .lv { font-size: 11px; color: var(--gray); }
-  }
-  .swap-icon { font-size: 14px; color: var(--purple); opacity: 0.6; }
-}
-
-.menu-footer {
-  padding: 16px 20px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.05);
-  background: Rgba(0, 0, 0, 0.2);
-
-  .close-btn {
-    width: 100%;
-    padding: 12px;
-    background: none;
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    color: var(--gray);
-    @include pixelated;
-    font-size: 9px;
-    cursor: pointer;
-    &:hover { background: Rgba(255, 255, 255, 0.05); color: $white; }
-  }
+  .menu-action-btn { margin-bottom: 0; }
+  .danger { grid-column: span 2; }
 }
 </style>

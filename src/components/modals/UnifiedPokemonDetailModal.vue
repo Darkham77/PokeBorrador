@@ -1,3 +1,4 @@
+<!-- [PureVue-Ignore-Length] -->
 <script setup>
 // Universal Pokémon info panel (Pokedex + Instance).
 import { ref, computed } from 'vue'
@@ -12,7 +13,8 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
-import { POKEMON_TAGS, hasPokemonTag } from '@/logic/constants/tags'
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import { hasPokemonTag } from '@/logic/constants/tags'
 
 import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue'
 import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsTab.vue'
@@ -244,11 +246,10 @@ const hasTag = (tagId) => {
   return hasPokemonTag(targetPokemon.value, tagId)
 }
 
-const handleToggleTag = (tag) => {
-  const dbId = tag.dbId || tag.id
-  console.log(`[Tag] Toggling ${dbId} for context: ${finalContext.value}, index: ${finalIndex.value}`)
+const handleToggleTag = (tagOrId) => {
+  const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
   if (isInstance.value && finalIndex.value > -1 && typeof window.togglePokeTag === 'function') {
-    window.togglePokeTag(finalContext.value, finalIndex.value, dbId)
+    window.togglePokeTag(finalContext.value, finalIndex.value, tagId)
   } else {
     console.warn('[Tag] Toggle conditions not met:', { isInstance: isInstance.value, index: finalIndex.value, hasBridge: typeof window.togglePokeTag === 'function' })
   }
@@ -270,6 +271,27 @@ const handleEditNickname = () => {
     }
   })
 }
+
+const captureDateFormatted = computed(() => {
+  const p = targetPokemon.value
+  if (!p) return null
+  const dateVal = p.captureDate || p.timestamp || p.date || p.created_at || p.obtainedAt
+  
+  if (!dateVal) return isInstance.value ? 'SIN FECHA' : null
+  
+  try {
+    const date = new Date(dateVal)
+    return date.toLocaleDateString('es-ES', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch (e) {
+    return null
+  }
+})
 </script>
 
 <template>
@@ -354,6 +376,24 @@ const handleEditNickname = () => {
             >
           </PVSpriteFX>
         </div>
+
+        <!-- Píldora de Insignias Global (Fuera de tabs) -->
+        <div
+          v-if="isInstance"
+          class="upd-floating-tags"
+        >
+          <UnifiedBadgePill
+            :pokemon="targetPokemon"
+            :vertical="false"
+            size="xl"
+            editable
+            show-all
+            top="0"
+            left="0"
+            style="position: relative;"
+            @toggle-tag="handleToggleTag"
+          />
+        </div>
       </div>
 
 
@@ -373,7 +413,7 @@ const handleEditNickname = () => {
       </nav>
 
       <!-- TAB BODY -->
-      <div class="upd-core-body">
+      <div class="upd-core-container">
         <!-- Summary Tab -->
         <div
           v-if="activeTab === 'summary'"
@@ -406,39 +446,8 @@ const handleEditNickname = () => {
               :context="context"
             />
           </div>
-          <!-- Interactive Tags -->
-          <div
-            v-if="isInstance"
-            class="tag-section"
-          >
-            <span class="upd-info-label">ETIQUETAS:</span>
-            <div class="tags-list">
-              <PVTooltip
-                v-for="t in POKEMON_TAGS"
-                :key="t.id"
-                :title="t.label"
-                :description="t.desc"
-                position="top"
-              >
-                <button
-                  class="tag-emoji-btn"
-                  :class="{ active: hasTag(t.id) }"
-                  :style="hasTag(t.id) ? { 
-                    background: `Rgba(${hexToRgb(t.color)}, 0.15)`, 
-                    borderColor: `Rgba(${hexToRgb(t.color)}, 0.4)`,
-                    color: t.color,
-                    boxShadow: `0 4px 15px Rgba(${hexToRgb(t.color)}, 0.2)`
-                  } : {}"
-                  @click.stop="handleToggleTag(t)"
-                >
-                  <span class="teb-icon">{{ t.icon }}</span>
-                  <span class="teb-label pixelated">{{ t.shortLabel }}</span>
-                </button>
-              </PVTooltip>
-            </div>
-          </div>
 
-          <!-- DB Info (UID) -->
+          <!-- DB Info (UID + Capture Date) -->
           <div
             v-if="isInstance"
             class="db-info-section"
@@ -446,6 +455,13 @@ const handleEditNickname = () => {
             <div class="uid-display">
               <span class="upd-info-label pixelated">ID ÚNICO DB:</span>
               <span class="uid-value pixelated">{{ targetPokemon.uid }}</span>
+            </div>
+            <div
+              v-if="captureDateFormatted"
+              class="capture-date-display"
+            >
+              <span class="upd-info-label pixelated">CAPTURADO EL:</span>
+              <span class="date-value pixelated">{{ captureDateFormatted.toUpperCase() }}</span>
             </div>
           </div>
         </div>

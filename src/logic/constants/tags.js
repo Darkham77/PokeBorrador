@@ -67,14 +67,79 @@ export const POKEMON_BADGES = {
     color: '#FFD93D', 
     desc: 'Este Pokémon tiene una coloración especial extremadamente rara.' 
   },
-  heldItem: { 
-    id: 'heldItem', 
+  item: { 
+    id: 'item', 
     label: 'OBJETO EQUIPADO', 
     shortLabel: 'ITEM',
     icon: '🎒', 
     color: '#32D74B', 
     desc: 'Este Pokémon lleva un objeto que puede tener efectos en combate.' 
   }
+}
+
+/**
+ * Returns a unified array of all visual indicators for a pokemon.
+ * This is the SINGLE SOURCE OF TRUTH for badge rendering.
+ * @param {Object} pokemon 
+ * @returns {Array} Array of badge/tag objects
+ */
+export function getPokemonVisualBadges(pokemon) {
+  if (!pokemon) return []
+  const badges = []
+
+  // 1. Automatic: Shiny
+  if (pokemon.isShiny) {
+    badges.push({ ...POKEMON_BADGES.shiny, isAutomatic: true })
+  }
+
+  // 2. Automatic: IV 31 (Perfect)
+  const ivs = pokemon.ivs || {}
+  if (Object.values(ivs).some(v => v === 31)) {
+    badges.push({ ...TAG_DEFINITIONS.iv31, isAutomatic: true })
+  }
+
+  // 3. Automatic: Held Item
+  if (pokemon.heldItem || (pokemon.item && pokemon.item !== 'none')) {
+    badges.push({ ...POKEMON_BADGES.item, isAutomatic: true })
+  }
+
+  // 4. Manual Tags (From pokemon.tags array)
+  if (pokemon.tags && Array.isArray(pokemon.tags)) {
+    pokemon.tags.forEach(tagId => {
+      // Avoid duplicating iv31 if already added automatically
+      if (tagId === 'iv31') return 
+      
+      const def = TAG_DEFINITIONS[tagId]
+      if (def) badges.push({ ...def, isAutomatic: false })
+    })
+  }
+
+  return badges
+}
+
+/**
+ * Returns all manual tags with an 'isActive' flag.
+ * Used for the tag editor/detail view.
+ */
+export function getPokemonEditorBadges(pokemon) {
+  const pokemonTags = pokemon?.tags || []
+  const badges = []
+
+  // ONLY add manual definitions for the editor
+  Object.values(TAG_DEFINITIONS).forEach(def => {
+    // We skip 'iv31' and any other automatic-only tags in the editor
+    if (def.id === 'iv31') return
+
+    badges.push({
+      ...def,
+      desc: def.desc, // Explicitly pass description
+      label: def.label,
+      isActive: pokemonTags.includes(def.id),
+      isLocked: false
+    })
+  })
+
+  return badges
 }
 
 /**
