@@ -141,6 +141,7 @@ const mapImageUrl = computed(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .war-map-card {
   position: relative;
   height: 140px;
@@ -151,7 +152,7 @@ const mapImageUrl = computed(() => {
   overflow: hidden;
   transition: transform 0.2s;
 
-  &:hover { transform: #{'Scale(1.03)'}; z-index: 5; }
+  &:hover { transform: #{'Scale(1.03)'}; z-index: var(--z-base); }
   
   &.glow-union { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); border-color: #3b82f6; }
   &.glow-poder { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); border-color: #ef4444; }
@@ -169,7 +170,7 @@ const mapImageUrl = computed(() => {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    .map-name { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #eee; }
+    .map-name { @include pixelated; font-size: 7px; color: #eee; }
     .war-tag { font-size: 7px; color: #fbbf24; font-weight: bold; }
   }
 }
@@ -185,7 +186,7 @@ const mapImageUrl = computed(() => {
   display: flex;
   justify-content: space-between;
   font-size: 7px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   margin-bottom: 4px;
 
   &.pts { margin-top: 4px; opacity: 0.8; }
@@ -216,7 +217,7 @@ const mapImageUrl = computed(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--z-base);
 
   &.union { background: linear-gradient(0deg, rgba(59, 130, 246, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%); }
   &.poder { background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(80, 0, 0, 0.6) 100%); }
@@ -226,7 +227,7 @@ const mapImageUrl = computed(() => {
 .dom-content {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: var(--z-base);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -236,7 +237,7 @@ const mapImageUrl = computed(() => {
 }
 
 .winner-label {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 16px;
   letter-spacing: 2px;
   margin-bottom: 6px;
@@ -247,7 +248,7 @@ const mapImageUrl = computed(() => {
 }
 
 .map-subname {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 6px;
   color: rgba(255,255,255,0.6);
 }
@@ -260,7 +261,7 @@ const mapImageUrl = computed(() => {
   border: 2px solid #4ade80;
   border-radius: 8px;
   color: $white;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 7px;
   cursor: pointer;
   box-shadow: 0 0 10px rgba(74, 222, 128, 0.4);

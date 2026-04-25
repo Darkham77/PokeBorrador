@@ -51,7 +51,7 @@ const formatTime = (secs) => {
   position: absolute;
   top: 80px; /* Below user bar */
   left: 10px;
-  z-index: 100;
+  z-index: var(--z-base);
   pointer-events: none; /* Let clicks pass through */
 }
 
@@ -69,7 +69,7 @@ const formatTime = (secs) => {
   border-radius: 12px;
   padding: 6px 10px;
   pointer-events: auto; /* Tooltip needs pointer */
-  backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
   box-shadow: 0 4px 6px rgba(0,0,0,0.3);
   transition: all 0.3s ease;
   cursor: help;
@@ -101,7 +101,7 @@ const formatTime = (secs) => {
   color: $white;
   font-size: 10px;
   font-weight: 800;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   letter-spacing: -0.5px;
   white-space: nowrap;
 }

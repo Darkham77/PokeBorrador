@@ -5,6 +5,11 @@ import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
 import { MOVE_DATA } from '@/data/moves'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PokemonIVEditor from './PokemonIVEditor.vue'
+import PokemonBaseStats from './PokemonBaseStats.vue'
+import PokemonPreview from './PokemonPreview.vue'
+import PokemonMovePicker from './PokemonMovePicker.vue'
+
 
 const creatorRef = ref(null)
 
@@ -77,13 +82,6 @@ const speciesMoves = computed(() => {
   return [...new Set(data.learnset.map(m => m.name))]
 })
 
-const allMovesList = Object.keys(MOVE_DATA)
-const filteredMoves = computed(() => {
-  const s = moveSearch.value.toLowerCase()
-  if (!s) return speciesMoves.value
-  return allMovesList.filter(m => m.toLowerCase().includes(s)).slice(0, 30)
-})
-
 // --- ACTIONS ---
 const baseStats = computed(() => {
   const data = pokemonDataProvider.getPokemonData(config.value.id)
@@ -135,11 +133,6 @@ function selectMap(m) {
   showMapDropdown.value = false
 }
 
-function addMove(m, slotIndex) {
-  config.value.moves[slotIndex] = m
-  activeMoveSlot.value = null
-  moveSearch.value = ''
-}
 
 function autoFillMoves() {
   const data = pokemonDataProvider.getPokemonData(config.value.id)
@@ -147,12 +140,12 @@ function autoFillMoves() {
   
   // Filter moves learned at or below current level, sort by level desc
   const learnedMoves = data.learnset
-    .filter(m => m.level <= config.value.level)
-    .sort((a, b) => b.level - a.level)
-    .map(m => m.move)
+    .filter(m => m.lv <= config.value.level)
+    .sort((a, b) => b.lv - a.lv)
+    .map(m => m.name)
   
   // Get the 4 most recent unique moves
-  const uniqueMoves = [...new Set(learnedMoves)].slice(0, 4).reverse()
+  const uniqueMoves = [...new Set(learnedMoves)].slice(0, 4)
   
   // Ensure we keep 4 slots
   const finalMoves = [...uniqueMoves]
@@ -161,11 +154,7 @@ function autoFillMoves() {
   config.value.moves = finalMoves
 }
 
-// Watch level changes to auto-update moves
-watch(() => config.value.level, () => {
-  autoFillMoves()
-})
-
+// --- ACTIONS ---
 async function executeAction(protocol) {
   if (!window.__VITE_DEBUG__) return
   
@@ -252,7 +241,7 @@ onUnmounted(() => {
               @click="selectSpecies(p)"
             >
               <img
-                :src="pokemonDataProvider.getSpriteUrl(p.id)"
+                @error="e => e.target.style.display = 'none'" :src="pokemonDataProvider.getSpriteUrl(p.id)"
                 class="item-icon"
               >
               {{ p.name.toUpperCase() }}
@@ -275,44 +264,12 @@ onUnmounted(() => {
           </PVTooltip>
         </div>
 
-        <!-- Base Stats Visualization -->
-        <PVTooltip
-          title="Estadísticas base"
-          description="Valores originales de la especie en la base de datos."
-        >
-          <div class="base-stats-grid">
-            <div
-              v-for="(val, stat) in baseStats"
-              :key="stat"
-              class="stat-item"
-            >
-              <span class="s-label">{{ stat.toUpperCase() }}</span>
-              <span class="s-value">{{ val }}</span>
-            </div>
-          </div>
-        </PVTooltip>
-
-        <!-- IVs Grid -->
-        <PVTooltip
-          title="Valores individuales (IVs)"
-          description="Potencial genético de cada estadística (rango 0-31)."
-        >
-          <div class="iv-grid">
-            <div
-              v-for="(val, stat) in config.ivs"
-              :key="stat"
-              class="iv-item"
-            >
-              <label>{{ stat.toUpperCase() }}</label>
-              <input
-                v-model.number="config.ivs[stat]"
-                type="number"
-                min="0"
-                max="31"
-              >
-            </div>
-          </div>
-        </PVTooltip>
+        <PokemonBaseStats :stats="baseStats" />
+          
+        <PokemonIVEditor 
+          :ivs="config.ivs" 
+          @update:iv="(stat, val) => config.ivs[stat] = val" 
+        />
 
         <!-- Nature & Ability -->
         <div class="debug-input-group search-select-container">
@@ -378,194 +335,67 @@ onUnmounted(() => {
       <div class="creator-section">
         <h4>VISUALIZACIÓN & ATAQUES</h4>
         
-        <div class="preview-box">
-          <div
-            class="sprite-container"
-            :class="{ 'is-guardian': config.isGuardian, 'is-shiny': config.isShiny }"
+        <PokemonPreview
+          :sprite-url="currentSprite"
+          :is-shiny="config.isShiny"
+          :is-guardian="config.isGuardian"
+          :gender="config.gender"
+          @toggle-shiny="config.isShiny = !config.isShiny"
+          @toggle-guardian="config.isGuardian = !config.isGuardian"
+          @toggle-gender="config.gender = config.gender === 'M' ? 'F' : 'M'"
+        />
+
+        <PokemonMovePicker 
+          v-model="config.moves"
+          :species-moves="speciesMoves"
+          @auto-fill="autoFillMoves"
+        />
+      </div>
+
+      <!-- Bottom/Right: Extras & Action -->
+      <div class="creator-section">
+        <h4>EXTRAS & ACCIONES</h4>
+      
+        <div class="debug-input-group">
+          <label>APODO (NICKNAME)</label>
+          <PVTooltip
+            title="Apodo"
+            description="Asigna un nombre personalizado al Pokémon."
           >
-            <img
-              :src="currentSprite"
-              class="preview-sprite"
+            <input
+              v-model="config.nickname"
+              type="text"
+              placeholder="SIN APODO"
             >
-            <div
-              v-if="config.isShiny"
-              class="shiny-sparkles"
-            >
-              <div
-                v-for="i in 5"
-                :key="i"
-                class="sparkle"
-              />
-            </div>
-          </div>
-          <div class="preview-flags">
-            <PVTooltip
-              title="Alternar shiny"
-              description="Cambia entre la variante normal y la brillante."
-            >
-              <button
-                class="flag-btn shiny"
-                :class="{ active: config.isShiny }"
-                @click="config.isShiny = !config.isShiny"
-              >
-                ✨
-              </button>
-            </PVTooltip>
-            <PVTooltip
-              title="Marcar como guardián"
-              description="Aplica el aura blanca de poder especial."
-            >
-              <button
-                class="flag-btn guardian"
-                :class="{ active: config.isGuardian }"
-                @click="config.isGuardian = !config.isGuardian"
-              >
-                🛡️
-              </button>
-            </PVTooltip>
-            <PVTooltip
-              title="Género"
-              description="Cambia entre macho y hembra."
-            >
-              <button
-                class="flag-btn gender"
-                :class="[config.gender === 'M' ? 'male' : 'female']"
-                @click="config.gender = config.gender === 'M' ? 'F' : 'M'"
-              >
-                {{ config.gender === 'M' ? '♂️' : '♀️' }}
-              </button>
-            </PVTooltip>
-          </div>
+          </PVTooltip>
         </div>
-
-        <!-- Moves Hybrid Selector -->
-        <div class="moves-section">
-          <div class="section-header-row">
-            <label>ATAQUES (MODO HÍBRIDO)</label>
-            <PVTooltip
-              title="Autocompletar ataques"
-              description="Asigna automáticamente los últimos 4 ataques aprendidos por nivel."
+      
+        <!-- Origin Route Dropdown -->
+        <div class="debug-input-group search-select-container">
+          <label>ORIGEN</label>
+          <PVTooltip
+            title="Ruta de origen"
+            description="Lugar donde se registrará que fue encontrado el Pokémon."
+          >
+            <input 
+              v-model="mapSearch" 
+              type="text" 
+              placeholder="BUSCAR..."
+              @focus="showMapDropdown = true"
             >
-              <button
-                class="btn-magic-fill"
-                @click="autoFillMoves"
-              >
-                🪄
-              </button>
-            </PVTooltip>
-          </div>
-          <div class="move-slots">
-            <div
-              v-for="i in 4"
-              :key="i"
-              class="move-slot"
+          </PVTooltip>
+          <div
+            v-if="showMapDropdown"
+            class="options-dropdown custom-scrollbar"
+          >
+            <div 
+              v-for="m in filteredMaps" 
+              :key="m.id" 
+              class="option-item"
+              :class="{ active: config.mapId === m.id }"
+              @click="selectMap(m)"
             >
-              <div
-                v-if="config.moves[i-1]"
-                class="move-pill"
-                @click="activeMoveSlot = i"
-              >
-                <span class="m-name">{{ config.moves[i-1].toUpperCase() }}</span>
-                <button
-                  class="remove-move"
-                  @click.stop="config.moves.splice(i-1, 1)"
-                >
-                  ×
-                </button>
-              </div>
-              <div
-                v-else
-                class="move-pill empty"
-                @click="activeMoveSlot = i"
-              >
-                + SELECCIONAR
-              </div>
-              
-              <!-- Move Picker Dropdown -->
-              <div
-                v-if="activeMoveSlot === i"
-                class="move-picker custom-scrollbar"
-              >
-                <input
-                  v-model="moveSearch"
-                  type="text"
-                  placeholder="BUSCAR..."
-                  class="move-search-input"
-                  autofocus
-                >
-                
-                <div class="move-list">
-                  <div
-                    v-if="speciesMoves.length > 0 && !moveSearch"
-                    class="move-group-label"
-                  >
-                    LEARNSET
-                  </div>
-                  <div 
-                    v-for="m in filteredMoves" 
-                    :key="m" 
-                    class="move-item"
-                    @click="addMove(m, i-1)"
-                  >
-                    {{ m.toUpperCase() }}
-                  </div>
-                </div>
-                <button
-                  class="close-picker"
-                  @click="activeMoveSlot = null"
-                >
-                  CERRAR
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: Extras & Action -->
-        <div class="creator-section">
-          <h4>EXTRAS & ACCIONES</h4>
-        
-          <div class="debug-input-group">
-            <label>APODO (NICKNAME)</label>
-            <PVTooltip
-              title="Apodo"
-              description="Asigna un nombre personalizado al Pokémon."
-            >
-              <input
-                v-model="config.nickname"
-                type="text"
-                placeholder="SIN APODO"
-              >
-            </PVTooltip>
-          </div>
-        
-          <!-- Origin Route Dropdown -->
-          <div class="debug-input-group search-select-container">
-            <label>ORIGEN</label>
-            <PVTooltip
-              title="Ruta de origen"
-              description="Lugar donde se registrará que fue encontrado el Pokémon."
-            >
-              <input 
-                v-model="mapSearch" 
-                type="text" 
-                placeholder="BUSCAR..."
-                @focus="showMapDropdown = true"
-              >
-            </PVTooltip>
-            <div
-              v-if="showMapDropdown"
-              class="options-dropdown custom-scrollbar"
-            >
-              <div 
-                v-for="m in filteredMaps" 
-                :key="m.id" 
-                class="option-item"
-                :class="{ active: config.mapId === m.id }"
-                @click="selectMap(m)"
-              >
-                {{ m.name.toUpperCase() }}
-              </div>
+              {{ m.name.toUpperCase() }}
             </div>
           </div>
         </div>

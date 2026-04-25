@@ -44,7 +44,7 @@
   }
 
   .shake-count {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 11px;
     color: var(--gray);
     margin-top: 8px;
@@ -52,7 +52,7 @@
   }
 
   .catch-text {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 14px;
     color: var(--yellow);
     margin-top: 20px;
@@ -139,7 +139,7 @@
   z-index: var(--z-tooltip);
   background: rgba(10, 15, 25, 0.95);
   -webkit-backdrop-filter: Blur(12px);
-  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
   transform: translateZ(0);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-left: 4px solid var(--move-color, $white);
@@ -161,7 +161,7 @@
 }
 
 .move-tooltip-name {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   color: $white;
 }

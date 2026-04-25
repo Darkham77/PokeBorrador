@@ -84,9 +84,9 @@ onMounted(async () => {
 }
 
 .view-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 14px;
-  color: #ffd700;
+  color: $coin-gold;
   margin: 0 0 10px 0;
   text-shadow: 0 2px 0 $black;
 }
@@ -107,9 +107,9 @@ onMounted(async () => {
 }
 
 .badge-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
-  color: #ffd700;
+  color: $coin-gold;
   margin-bottom: 20px;
   text-align: center;
 }
@@ -142,7 +142,7 @@ onMounted(async () => {
     opacity: 1;
     filter: Grayscale(100%);
     background: rgba(255, 215, 0, 0.1);
-    border-color: #ffd700;
+    border-color: $coin-gold;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
     transform: Scale(1.1);
   }

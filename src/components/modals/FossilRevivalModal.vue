@@ -3,6 +3,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { SHOP_ITEMS } from '@/data/items'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+
 
 const uiStore = useUIStore()
 
@@ -62,21 +64,26 @@ function handleClose() {
         
         <!-- Sprite Layer -->
         <img 
-          v-if="step < 3"
+          @error="e => e.target.style.display = 'none'" v-if="step < 3"
           :src="itemSprite"
           class="fossil-img"
           :class="{ 'step-1': step >= 1 }" 
           alt="Fossil"
           @error="e => e.target.style.display = 'none'"
         >
-        <img 
+        <PVSpriteFX
           v-else
-          :src="pokemonSprite"
-          class="pokemon-img" 
-          :class="{ 'is-shiny': pokemon?.isShiny }"
-          alt="Pokemon"
-          @error="e => e.target.style.display = 'none'"
+          :is-shiny="pokemon?.isShiny"
+          :sparkle-count="5"
         >
+          <img 
+            :src="pokemonSprite"
+            class="pokemon-img" 
+            alt="Pokemon"
+            @error="e => e.target.style.display = 'none'"
+          >
+        </PVSpriteFX>
+
       </div>
 
       <!-- Text Status -->
@@ -181,8 +188,8 @@ function handleClose() {
   inset: 0;
   z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.96);
-  backdrop-filter: Blur(15px);
   -webkit-backdrop-filter: Blur(15px);
+  backdrop-filter: Blur(15px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -204,7 +211,7 @@ function handleClose() {
 }
 
 .header-text {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 12px;
   color: var(--yellow, #ffd93d);
   margin-bottom: 30px;
@@ -253,7 +260,7 @@ function handleClose() {
   object-fit: contain;
   @include sprite-render;
   position: relative;
-  z-index: 2;
+  z-index: var(--z-base);
   filter: Drop-Shadow(0 0 15px rgba(0,0,0,0.8));
   transition: all 1s;
   @include will-animate(transform);
@@ -269,15 +276,12 @@ function handleClose() {
   object-fit: contain;
   @include sprite-render;
   position: relative;
-  z-index: 2;
+  z-index: var(--z-base);
   filter: Drop-Shadow(0 0 30px rgba(255,255,255,0.6));
   animation: bounce 2s infinite;
   @include will-animate(transform);
-  
-  &.is-shiny {
-    filter: Drop-Shadow(0 0 30px gold);
-  }
 }
+
 
 .fossil-text {
   color: $white;
@@ -310,6 +314,7 @@ function handleClose() {
   padding: 20px;
   width: 100%;
   animation: slideUp 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) backwards;
+  -webkit-backdrop-filter: Blur(5px);
   backdrop-filter: Blur(5px);
   @include gpu-layer;
 }
@@ -321,7 +326,7 @@ function handleClose() {
   border-bottom: 1px solid rgba(255,255,255,0.1);
   padding-bottom: 10px;
   
-  .label { color: var(--gray, #9ca3af); font-size: 10px; font-family: 'Press Start 2P'; }
+  .label { color: var(--gray, #9ca3af); font-size: 10px; @include pixelated; }
   .value { color: $white; font-weight: 800; font-size: 14px; }
 }
 
@@ -340,7 +345,7 @@ function handleClose() {
   flex-direction: column;
   align-items: center;
   
-  .iv-lbl { font-size: 9px; color: var(--gray); font-family: 'Press Start 2P'; margin-bottom: 4px; }
+  .iv-lbl { font-size: 9px; color: var(--gray); @include pixelated; margin-bottom: 4px; }
   .iv-val { font-size: 14px; font-weight: 800; color: $white; }
   .perfect { color: #fbbf24; }
   .good { color: #60a5fa; }
@@ -360,7 +365,7 @@ function handleClose() {
   border: none;
   padding: 14px;
   border-radius: 12px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   cursor: pointer;
   transition: all 0.2s;
@@ -375,7 +380,7 @@ function handleClose() {
   position: absolute;
   inset: 0;
   background: $white;
-  z-index: 10;
+  z-index: var(--z-base);
   animation: flash 0.4s ease-out forwards;
 }
 

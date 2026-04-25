@@ -8,12 +8,12 @@
   display: flex;
   justify-content: center;
   position: relative;
-  z-index: 4; 
+  z-index: var(--z-base); 
   pointer-events: none;
   
   .sprite-container {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
     background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 80%);
     border-radius: 50%;
     
@@ -22,7 +22,7 @@
       height: $sprite-size; 
       image-rendering: pixelated; 
       position: relative; 
-      z-index: 2;
+      z-index: var(--z-base);
       filter: Drop-shadow(0 20px 40px rgba(0,0,0,0.7));
       transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       transform: TranslateY($sprite-translate); 
@@ -42,7 +42,7 @@
       border-radius: 50%;
       filter: Blur(50px);
       opacity: 0.25;
-      z-index: 1;
+      z-index: var(--z-base);
     }
   }
 }
@@ -56,11 +56,11 @@
 .pdex-detail-tabs {
   display: flex;
   background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   padding: 0 16px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
   position: relative;
-  z-index: 5;
+  z-index: var(--z-base);
   padding-top: 30px;
 
   .pdex-tab-btn {

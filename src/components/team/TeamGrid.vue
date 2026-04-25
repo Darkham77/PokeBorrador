@@ -115,6 +115,7 @@ const onDrop = (e, targetIndex) => {
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .team-grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -132,7 +133,7 @@ const onDrop = (e, targetIndex) => {
   border: 4px solid #333;
   box-shadow: 0 0 0 4px $black;
   color: #888;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   text-align: center;
   gap: 20px;

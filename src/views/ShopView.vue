@@ -263,11 +263,11 @@ onMounted(() => {
 
     .label { font-size: 9px; color: $muted; font-weight: bold; }
     .value { 
-      font-family: 'Press Start 2P', monospace; 
+      @include pixelated; 
       font-size: 12px; 
     }
 
-    &.money .value { color: #ffd700; text-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+    &.money .value { color: $coin-gold; text-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
     &.coins .value { color: #a855f7; text-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
   }
 }
@@ -290,7 +290,7 @@ onMounted(() => {
   border: none;
   background: transparent;
   color: $muted;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 7px;
   cursor: pointer;
   transition: all 0.2s;
@@ -309,7 +309,7 @@ onMounted(() => {
   border-radius: 12px;
   padding: 14px 20px;
   color: $white;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   outline: none;
   &:focus { border-color: #ffd70044; }
@@ -362,7 +362,7 @@ onMounted(() => {
   }
 
   .item-name {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     text-align: center;
     margin-bottom: 10px;
@@ -380,9 +380,9 @@ onMounted(() => {
   }
 
   .item-price {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 10px;
-    color: #ffd700;
+    color: $coin-gold;
     text-align: center;
     margin-bottom: 15px;
     &.rocket-tax { color: #f87171; }
@@ -422,9 +422,9 @@ onMounted(() => {
     padding: 12px;
     border: none;
     border-radius: 12px;
-    background: linear-gradient(135deg, #ffd700, #f59e0b);
+    background: linear-gradient(135deg, $coin-gold, #f59e0b);
     color: $black;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     font-weight: bold;
     cursor: pointer;

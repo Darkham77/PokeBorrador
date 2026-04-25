@@ -163,12 +163,12 @@ const onPokemonClick = (index) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   @include gpu-layer;
 }
 
 .mode-info {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
 }
 
@@ -191,7 +191,7 @@ const onPokemonClick = (index) => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
   color: $white;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -212,7 +212,7 @@ const onPokemonClick = (index) => {
   padding: 10px 16px;
   border-radius: 10px;
   border: none;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
 }

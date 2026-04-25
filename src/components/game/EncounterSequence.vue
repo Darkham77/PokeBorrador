@@ -85,7 +85,7 @@ const handleFishingStart = () => {
 
 .rival-exclamation {
   position: relative;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 80px;
   color: #ff3b30;
   text-shadow: 0 0 20px rgba(255, 59, 48, 0.6);
@@ -137,7 +137,7 @@ const handleFishingStart = () => {
 }
 
 .fishing-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 12px;
   color: var(--blue);
   margin-bottom: 16px;
@@ -152,7 +152,7 @@ const handleFishingStart = () => {
 }
 
 .fishing-btn {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   padding: 16px 32px;
   border: none;

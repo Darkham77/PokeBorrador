@@ -171,7 +171,7 @@ const handleMoveSelection = (moveIdx) => {
 .pvp-screen-wrapper {
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: var(--z-base);
   background: $black;
   display: flex;
   padding: 20px;
@@ -194,7 +194,7 @@ const handleMoveSelection = (moveIdx) => {
 
 .card-glass {
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 24px;
   @include gpu-layer;
@@ -261,7 +261,7 @@ const handleMoveSelection = (moveIdx) => {
   top: 20px;
   left: 50%;
   transform: TranslateX(-50%);
-  z-index: 10;
+  z-index: var(--z-base);
   background: rgba(0, 0, 0, 0.6);
   padding: 10px 20px;
   border-radius: 20px;
@@ -282,14 +282,14 @@ const handleMoveSelection = (moveIdx) => {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 20px;
   color: $white;
-  z-index: 20;
+  z-index: var(--z-base);
   @include gpu-layer;
 
   span { font-size: 10px; }
@@ -309,7 +309,7 @@ const handleMoveSelection = (moveIdx) => {
 }
 
 .press-start {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
 }
 
 @keyframes pulse {

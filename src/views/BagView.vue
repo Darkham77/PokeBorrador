@@ -197,7 +197,7 @@ const onUseItem = (name) => {
 }
 
 .title-section h1 {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 16px;
   color: $white;
   margin: 0;
@@ -211,7 +211,7 @@ const onUseItem = (name) => {
   padding: 8px 16px;
   border-radius: 20px;
   color: #22c55e;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
 }
 
@@ -349,7 +349,7 @@ const onUseItem = (name) => {
   padding: 8px 16px;
   border-radius: 10px;
   border: none;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
 }
@@ -364,7 +364,7 @@ const onUseItem = (name) => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
   color: $white;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   cursor: pointer;
   transition: all 0.2s;

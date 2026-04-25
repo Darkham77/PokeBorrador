@@ -28,7 +28,7 @@ const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
 
 const borderColor = computed(() => {
   if (props.customBorder) return props.customBorder;
-  if (trainerLevel.value >= 20) return '#ffd700'; // Gold
+  if (trainerLevel.value >= 20) return '$coin-gold'; // Gold
   if (trainerLevel.value >= 10) return '#c0c0c0'; // Silver
   return '#cd7f32'; // Bronze
 });

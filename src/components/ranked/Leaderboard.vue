@@ -110,6 +110,7 @@ const formatRank = (index) => `#${index + 1}`;
 </template>
 
 <style lang="scss" scoped>
+@use "@/styles/core/_mixins" as *;
 .leaderboard-container {
   display: flex;
   flex-direction: column;
@@ -146,7 +147,7 @@ const formatRank = (index) => `#${index + 1}`;
   border: none;
   border-radius: 6px;
   color: #888;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 6px;
   padding: 6px 10px;
   cursor: pointer;
@@ -220,7 +221,7 @@ const formatRank = (index) => `#${index + 1}`;
 }
 
 .rank {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: var(--yellow);
 }
@@ -281,6 +282,6 @@ const formatRank = (index) => `#${index + 1}`;
 }
 
 .press-start {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
 }
 </style>

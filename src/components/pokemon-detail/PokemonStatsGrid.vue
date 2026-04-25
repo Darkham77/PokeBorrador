@@ -81,10 +81,11 @@ const getIvColor = (val) => {
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .stats-container { margin-bottom: 24px; }
 
 .section-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: var(--purple-light);
   margin-bottom: 16px;

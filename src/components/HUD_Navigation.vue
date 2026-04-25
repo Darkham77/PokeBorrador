@@ -237,6 +237,7 @@ const toggleGroupMenu = (name) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .hud-nav {
   display: flex;
   gap: 8px;
@@ -318,7 +319,7 @@ const toggleGroupMenu = (name) => {
     box-shadow: 
       0 0 0 2px var(--yellow),
       0 0 15px rgba(255, 214, 10, 0.4);
-    z-index: 2;
+    z-index: var(--z-base);
     transform: TranslateY(-2px);
   }
   
@@ -329,7 +330,7 @@ const toggleGroupMenu = (name) => {
       0 0 0 2px var(--yellow),
       0 0 30px rgba(255, 214, 10, 0.45),
       inset 0 0 12px rgba(255, 214, 10, 0.1);
-    z-index: 3;
+    z-index: var(--z-base);
     .label { 
       color: var(--yellow); 
       opacity: 1; 
@@ -419,7 +420,7 @@ const toggleGroupMenu = (name) => {
         0 0 0 2px var(--yellow), 
         0 0 15px rgba(255, 214, 10, 0.3);
       transform: TranslateX(6px);
-      z-index: 2;
+      z-index: var(--z-base);
     }
     
     &.active {
@@ -459,7 +460,7 @@ const toggleGroupMenu = (name) => {
   right: -4px;
   background: #ef4444;
   color: white;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 7px;
   padding: 4px 6px;
   border-radius: 8px;

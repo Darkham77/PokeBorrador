@@ -74,7 +74,7 @@ async function handleLogout() {
   inset: 0;
   z-index: var(--z-critical);
   background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: Blur(20px) Saturate(1.8);
+  -webkit-backdrop-filter: Blur(20px) Saturate(1.8); -webkit-backdrop-filter: Blur(20px) Saturate(1.8); backdrop-filter: Blur(20px) Saturate(1.8);
   display: flex;
   align-items: center;
   justify-content: center;

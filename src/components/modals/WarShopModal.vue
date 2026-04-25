@@ -58,6 +58,7 @@ if (typeof window !== 'undefined') {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .war-shop-inner {
   padding: 8px 0;
 }
@@ -70,13 +71,13 @@ if (typeof window !== 'undefined') {
   text-align: center;
   padding: 40px;
   color: var(--gray);
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
 }
 
 .war-shop-footer-info {
   text-align: center;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 9px;
   color: $white;
 
@@ -148,7 +149,7 @@ if (typeof window !== 'undefined') {
       border: none;
       border-radius: 10px;
       padding: 10px 16px;
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 8px;
       font-weight: 900;
       cursor: pointer;

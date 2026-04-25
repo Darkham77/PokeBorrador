@@ -100,6 +100,7 @@ const handleAction = (slide) => {
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .legacy-carousel {
   position: relative;
   min-height: 80px;
@@ -135,7 +136,7 @@ const handleAction = (slide) => {
 .slide-content { display: flex; flex-direction: column; justify-content: center; }
 
 .slide-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   margin-bottom: 8px;
   text-shadow: 2px 2px $black;

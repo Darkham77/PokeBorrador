@@ -64,7 +64,7 @@ const activeDisplayEvents = computed(() => {
 .event-banner {
   position: relative;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   border-left: 4px solid var(--event-color);
   padding: 12px 20px;
   border-radius: 0 12px 12px 0;
@@ -91,7 +91,7 @@ const activeDisplayEvents = computed(() => {
     flex-direction: column;
     gap: 8px;
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
     width: 100%;
     
     .event-banner-header {
@@ -112,7 +112,7 @@ const activeDisplayEvents = computed(() => {
         letter-spacing: 0.5px;
         color: white;
         text-transform: uppercase;
-        font-family: 'Press Start 2P', monospace;
+        @include pixelated;
         @include pixelated;
       }
     }

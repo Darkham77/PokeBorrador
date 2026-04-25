@@ -332,6 +332,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .backpack-view-root {
   min-height: 50vh;
 }
@@ -349,7 +350,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   margin: 0;
 }
 .sell-mode-btn, .confirm-sell-btn, .cancel-sell-btn {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   padding: 10px 16px;
   border: none;

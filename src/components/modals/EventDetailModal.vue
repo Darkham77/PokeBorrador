@@ -227,7 +227,7 @@ const scheduleText = computed(() => {
   margin-bottom: 30px;
 
   .event-title {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 14px;
     color: var(--yellow);
     margin-bottom: 15px;
@@ -248,7 +248,7 @@ const scheduleText = computed(() => {
   text-align: center;
 
   .section-tag {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 9px;
     color: $muted;
     margin-bottom: 15px;
@@ -289,7 +289,7 @@ const scheduleText = computed(() => {
   }
 
   .bonus-value {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 11px;
     @include pixelated;
   }

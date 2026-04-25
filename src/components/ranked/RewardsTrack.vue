@@ -169,7 +169,7 @@ const claimReward = async (milestone) => {
 }
 
 .press-start {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
 }
 
@@ -210,7 +210,7 @@ h3 {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #c8a060, #9E9E9E, #FFB800, #E5C100, #89CFF0, #FFD700);
+  background: linear-gradient(90deg, #c8a060, #9E9E9E, #FFB800, #E5C100, #89CFF0, $coin-gold);
   border-radius: 999px;
   transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -219,7 +219,7 @@ h3 {
   position: absolute;
   top: 50%;
   transform: Translate(-50%, -50%);
-  z-index: 2;
+  z-index: var(--z-base);
 }
 
 .marker-dot {

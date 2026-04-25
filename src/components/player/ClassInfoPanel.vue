@@ -240,7 +240,7 @@ const rankTitle = computed(() => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
   -webkit-backdrop-filter: Blur(4px);
   animation: fadeIn 0.2s ease;
   transform: translateZ(0);
@@ -271,7 +271,7 @@ const rankTitle = computed(() => {
   height: 32px;
   border-radius: 50%;
   cursor: pointer;
-  z-index: 10;
+  z-index: var(--z-base);
   &:hover { background: rgba(255, 255, 255, 0.1); color: $white; }
 }
 

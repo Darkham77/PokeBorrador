@@ -31,6 +31,7 @@ const emit = defineEmits(['switch', 'buy'])
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .box-tabs-container {
   display: flex;
   flex-wrap: wrap;
@@ -45,7 +46,7 @@ const emit = defineEmits(['switch', 'buy'])
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
   color: var(--gray);
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 7px;
   cursor: pointer;
   transition: all 0.2s;

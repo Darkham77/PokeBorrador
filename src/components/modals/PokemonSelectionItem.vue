@@ -1,6 +1,8 @@
 <script setup>
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+
 import { POKEMON_TAGS, POKEMON_BADGES, hasPokemonTag } from '@/logic/constants/tags'
 import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
 
@@ -30,10 +32,12 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || '#aaa'
         class="poke-preview"
         @click.stop="emit('openDetail', item)"
       >
-        <div 
-          class="sprite-container"
-          :class="{ 'is-guardian': item.pokemon.isGuardian, 'is-shiny': item.pokemon.isShiny }"
+        <PVSpriteFX
+          :is-shiny="item.pokemon.isShiny"
+          :is-guardian="item.pokemon.isGuardian"
+          :sparkle-count="5"
         >
+
           <div class="preview-bg" />
           <img
             :src="getAssetUrl(ASSET_TYPES.POKEMON, item.pokemon.id, { isShiny: item.pokemon.isShiny })"
@@ -41,11 +45,8 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || '#aaa'
             class="pixelated"
             @error="e => e.target.style.display = 'none'"
           >
-          <span
-            v-if="item.pokemon.isShiny"
-            class="shiny-star"
-          >✨</span>
-        </div>
+        </PVSpriteFX>
+
       </PVTooltip>
 
       <!-- Action badges (Held Item + Tags) -->

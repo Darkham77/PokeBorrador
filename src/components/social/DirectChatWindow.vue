@@ -145,7 +145,7 @@ onMounted(() => {
 .direct-chat-window {
   width: 280px;
   background: rgba(13, 17, 23, 0.95);
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   border: 1px solid rgba(199, 125, 255, 0.2);
   border-radius: 12px 12px 0 0;
   display: flex;

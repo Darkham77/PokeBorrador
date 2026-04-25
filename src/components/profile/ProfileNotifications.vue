@@ -58,12 +58,13 @@ const isHistoryOpen = computed({
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .legacy-info-row {
   margin-bottom: 24px;
 }
 
 .info-label {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: rgba(255, 255, 255, 0.4);
   letter-spacing: 1px;
@@ -82,7 +83,7 @@ const isHistoryOpen = computed({
   border-radius: 8px;
   padding: 6px 12px;
   color: #facc15;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 6px;
   cursor: pointer;
   &:hover { background: rgba(255, 255, 255, 0.08); }

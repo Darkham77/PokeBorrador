@@ -151,7 +151,7 @@ onUnmounted(() => {
   inset: 0;
   z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -182,7 +182,7 @@ onUnmounted(() => {
   pointer-events: none;
   
   h3 {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 16px;
     color: #3b82f6;
     margin-bottom: 12px;
@@ -208,7 +208,7 @@ onUnmounted(() => {
   bottom: 40px;
   left: 50%;
   transform: TranslateX(-50%);
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 14px;
   color: $white;
   background: rgba(255, 255, 255, 0.05);
@@ -228,10 +228,10 @@ onUnmounted(() => {
   cursor: pointer;
 
   .note-number {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 20px;
     color: $white;
-    z-index: 2;
+    z-index: var(--z-base);
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
   }
 

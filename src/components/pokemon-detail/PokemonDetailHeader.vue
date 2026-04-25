@@ -103,6 +103,7 @@ const getSprite = (id, isShiny) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -142,7 +143,7 @@ const getSprite = (id, isShiny) => {
 }
 
 .poke-name {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 13px;
   color: var(--yellow);
   margin-bottom: 10px;

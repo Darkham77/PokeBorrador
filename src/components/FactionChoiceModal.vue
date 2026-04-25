@@ -101,6 +101,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .faction-content {
   padding: 8px 12px 20px;
 }
@@ -117,11 +118,11 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   }
   
   .cost-text {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 9px;
     color: $white;
     
-    .coin { color: var(--yellow, #ffd700); }
+    .coin { color: var(--yellow, $coin-gold); }
   }
 }
 
@@ -185,7 +186,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 }
 
 .faction-name {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 16px;
   letter-spacing: 1px;
 }

@@ -31,6 +31,7 @@ const emit = defineEmits(['update:serverType'])
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .server-selector {
   margin-bottom: 24px;
   background: rgba(0, 0, 0, 0.3);
@@ -41,7 +42,7 @@ const emit = defineEmits(['update:serverType'])
 
 .server-selector-label {
   font-size: 9px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   color: $gray;
   margin-bottom: 12px;
   text-transform: uppercase;
@@ -65,7 +66,7 @@ const emit = defineEmits(['update:serverType'])
   border-radius: 10px;
   cursor: pointer;
   font-size: 10px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   transition: all 0.2s;
   display: flex;
   align-items: center;

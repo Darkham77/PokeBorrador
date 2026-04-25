@@ -119,13 +119,14 @@ const getSpriteUrl = (id) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .claim-status-container {
   background: rgba(168, 85, 247, 0.05);
   border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 16px;
   padding: 16px;
   margin-top: 15px;
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
 }
 
 .claim-header {
@@ -136,7 +137,7 @@ const getSpriteUrl = (id) => {
 }
 
 .claim-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: var(--purple);
 }

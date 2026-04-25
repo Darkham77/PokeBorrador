@@ -101,6 +101,7 @@ const getStatLabel = (key) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .vicio-stat-bar-row {
   display: flex;
   align-items: center;
@@ -131,7 +132,7 @@ const getStatLabel = (key) => {
   }
 
   .stat-label {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 10px;
     color: #94a3b8;
     width: 55px;
@@ -139,7 +140,7 @@ const getStatLabel = (key) => {
     @media (max-width: 480px) { font-size: 8px; width: 45px; }
   }
   .stat-value {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 16px;
     color: $white;
     font-weight: bold;
@@ -213,7 +214,7 @@ const getStatLabel = (key) => {
   }
 
   .grade {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 12px;
     font-weight: bold;
     text-shadow: 0 0 5px currentColor;
@@ -221,7 +222,7 @@ const getStatLabel = (key) => {
     @media (max-width: 480px) { font-size: 10px; }
   }
   .iv-num {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 9px;
     opacity: 0.9;
     image-rendering: pixelated;

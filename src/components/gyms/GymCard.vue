@@ -174,7 +174,7 @@ const leaderSpriteUrl = computed(() => {
 
   .type-icon { font-size: 18px; }
   .gym-tag {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 9px;
   }
 }
@@ -204,7 +204,7 @@ const leaderSpriteUrl = computed(() => {
   }
   .medal-name {
     font-size: 11px;
-    color: #ffd700;
+    color: $coin-gold;
   }
 }
 
@@ -272,7 +272,7 @@ const leaderSpriteUrl = computed(() => {
 }
 
 .diff-btn-retro {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 6px;
   padding: 6px 8px;
   border-radius: 6px;
@@ -287,7 +287,7 @@ const leaderSpriteUrl = computed(() => {
     color: $white;
     
     &.easy { color: #22c55e; }
-    &.normal { color: #ffd700; }
+    &.normal { color: $coin-gold; }
     &.hard { color: #ef4444; }
   }
 }
@@ -296,7 +296,7 @@ const leaderSpriteUrl = computed(() => {
   padding: 10px 24px;
   border: none;
   border-radius: 20px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: $white;
   font-weight: 900;

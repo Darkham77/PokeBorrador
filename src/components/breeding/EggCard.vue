@@ -40,6 +40,7 @@ const formatDate = (dateStr) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .egg-card-retro {
   background: $card-dark; 
   border: 1px solid rgba(255,255,255,0.06); 
@@ -72,7 +73,7 @@ const formatDate = (dateStr) => {
     color: $white; 
     border: none; 
     border-radius: 8px;
-    font-family: 'Press Start 2P', monospace; 
+    @include pixelated; 
     font-size: 7px; 
     cursor: pointer;
     box-shadow: 0 4px 0 #7e22ce;

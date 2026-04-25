@@ -44,6 +44,7 @@ const isEmpty = computed(() => !props.pokemon)
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .team-slot {
   width: 100%;
   min-height: 220px;
@@ -87,7 +88,7 @@ const isEmpty = computed(() => !props.pokemon)
   }
 
   .label {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     color: var(--gray);
     transition: all 0.3s;

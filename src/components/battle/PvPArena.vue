@@ -162,7 +162,7 @@ const handleSwitch = () => {
   display: flex;
   justify-content: space-between;
   padding: 8px 16px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: #94a3b8;
 }
@@ -178,7 +178,7 @@ const handleSwitch = () => {
 .pvp-status-bar {
   padding: 10px;
   text-align: center;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   background: rgba(255,255,255,0.05);
   
@@ -222,7 +222,7 @@ const handleSwitch = () => {
   padding: 12px;
   border: none;
   border-radius: 12px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;

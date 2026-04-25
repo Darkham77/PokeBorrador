@@ -131,7 +131,7 @@ const getUnreadCount = (friendId) => {
   height: 10px;
   border-radius: 50%;
   background: #4b5563; // offline
-  border: 2px solid #1a1a1a;
+  border: 2px solid $card2;
   box-shadow: 0 0 5px rgba(0,0,0,0.5);
 
   &.online {

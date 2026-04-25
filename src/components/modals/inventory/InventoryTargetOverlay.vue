@@ -88,7 +88,7 @@ defineEmits(['close', 'select'])
   position: absolute;
   inset: 0;
   background: rgba(15, 23, 42, 0.95);
-  z-index: 100;
+  z-index: var(--z-base);
   display: flex;
   align-items: center;
   justify-content: center;

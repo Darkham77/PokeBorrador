@@ -53,7 +53,7 @@
           font-weight: 900; 
           color: var(--yellow); 
           text-transform: uppercase; 
-          font-family: 'Press Start 2P', monospace;
+          @include pixelated;
           @include pixelated;
         }
         .arrow { 
@@ -76,14 +76,14 @@
           opacity: 1; // Solid black as requested
         }
 
-        .unknown-placeholder {
-          font-family: 'Press Start 2P', monospace;
+        .evo-unknown-placeholder {
+          @include pixelated;
           font-size: 24px;
           color: rgba(255,255,255,0.1);
         }
       }
       
-      .target-name { 
+      .evo-target-name { 
         font-size: 8px; 
         font-weight: 900; 
         color: $white; 
@@ -131,7 +131,7 @@
           .method { font-size: 7px; }
         }
 
-        .target-name {
+        .evo-target-name {
           font-size: 7px;
           max-width: 60px;
           overflow: hidden;

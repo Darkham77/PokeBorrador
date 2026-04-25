@@ -53,7 +53,7 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
 
 .section-title {
   margin: 0;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 14px;
   color: $white;
 }
@@ -65,7 +65,7 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
 }
 
 .rocket-btn-toggle {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 7px;
   padding: 8px 12px;
   border-radius: 10px;
@@ -88,7 +88,7 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
 }
 
 .cancel-btn {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 7px;
   padding: 8px 12px;
   border-radius: 10px;

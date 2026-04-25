@@ -14,7 +14,7 @@
   z-index: var(--z-overlay);
   background: rgba(0, 0, 10, 0.85);
   -webkit-backdrop-filter: Blur(12px);
-  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
   display: none !important;
   align-items: center;
   justify-content: center;
@@ -120,7 +120,7 @@ body.is-battle-active {
 .battle-combatants {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-base);
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;

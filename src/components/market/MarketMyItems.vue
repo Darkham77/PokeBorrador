@@ -107,6 +107,7 @@ async function handleCancel(id) {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .market-my-items {
   height: 100%;
   display: flex;
@@ -115,7 +116,7 @@ async function handleCancel(id) {
 }
 
 .section-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: #a855f7;
   margin-bottom: 15px;
@@ -158,7 +159,7 @@ async function handleCancel(id) {
     display: flex;
     flex-direction: column;
     .name { font-size: 13px; font-weight: bold; color: $white; }
-    .price { font-family: 'Press Start 2P', monospace; font-size: 8px; color: #ffd700; margin-top: 4px;}
+    .price { @include pixelated; font-size: 8px; color: $coin-gold; margin-top: 4px;}
   }
 
   .cancel-btn {

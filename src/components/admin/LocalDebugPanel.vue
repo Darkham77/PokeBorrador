@@ -144,7 +144,7 @@ const selectedCategory = ref('stats')
   border: none;
   padding: 10px 20px;
   border-radius: 24px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
@@ -182,7 +182,7 @@ const selectedCategory = ref('stats')
   border-radius: 6px;
   font-weight: 800;
   text-transform: uppercase;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   @include pixelated;
   width: fit-content;
   margin: 0;
@@ -203,7 +203,7 @@ const selectedCategory = ref('stats')
     background: transparent;
     border: none;
     color: $muted;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     @include pixelated;
     font-size: 8px;
     padding: 14px 4px;
@@ -249,7 +249,7 @@ const selectedCategory = ref('stats')
   text-align: center;
   padding: 60px 20px;
   color: $muted;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   @include pixelated;
   font-size: 8px;
   line-height: 1.6;

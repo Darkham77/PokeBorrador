@@ -127,6 +127,7 @@ async function refresh() {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .gts-view {
   display: flex;
   flex-direction: column;
@@ -155,7 +156,7 @@ async function refresh() {
 
 .title-group {
   h1 {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 14px;
     color: #a855f7;
     margin: 0 0 8px 0;
@@ -183,7 +184,7 @@ async function refresh() {
     align-items: flex-end;
 
     .label { font-size: 8px; color: $muted; font-weight: bold; margin-bottom: 2px; }
-    .val { font-family: 'Press Start 2P', monospace; font-size: 11px; color: #ffd700; }
+    .val { @include pixelated; font-size: 11px; color: $coin-gold; }
   }
 }
 
@@ -271,7 +272,7 @@ async function refresh() {
     border: 1px solid rgba(255, 255, 255, 0.08);
 
     .icon { font-size: 64px; margin-bottom: 20px; display: block; filter: Grayscale(100%); opacity: 0.3; }
-    h2 { font-family: 'Press Start 2P', monospace; font-size: 14px; color: $white; margin-bottom: 20px; }
+    h2 { @include pixelated; font-size: 14px; color: $white; margin-bottom: 20px; }
     p { font-size: 13px; color: $muted; line-height: 1.6; margin-bottom: 30px; }
     
     button {

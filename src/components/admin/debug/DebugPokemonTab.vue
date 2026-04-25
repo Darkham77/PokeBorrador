@@ -119,6 +119,7 @@ async function clearPvpTeam() {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .debug-tab-content {
   display: flex;
   flex-direction: column;
@@ -126,7 +127,7 @@ async function clearPvpTeam() {
 }
 
 .debug-section-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: var(--yellow);
   margin-bottom: 10px;
@@ -145,13 +146,13 @@ async function clearPvpTeam() {
     text-align: center;
     color: $muted;
     font-size: 8px;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     @include pixelated;
   }
 
   label {
     display: block;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     color: $muted;
     margin-bottom: 12px;

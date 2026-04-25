@@ -11,7 +11,7 @@
   justify-content: center;
   width: 20px;
   height: 20px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   border-radius: 4px;
   image-rendering: pixelated;
@@ -82,7 +82,7 @@
 }
 
 .move-detail-card {
-  background: linear-gradient(180deg, #1a1a1a 0%, #121212 100%);
+  background: linear-gradient(180deg, $card2 0%, $card 100%);
   border-radius: 32px;
   width: 100%;
   max-width: 400px;

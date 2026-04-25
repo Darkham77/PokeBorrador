@@ -6,6 +6,8 @@
 import { ref, onMounted } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+
 import { useGameStore } from '@/stores/game'
 
 const props = defineProps({
@@ -116,29 +118,24 @@ onMounted(async () => {
         <div class="shimmer-bg" />
         <div
           class="pokemon-display"
-          :class="{ 'is-shiny': resultPokemon?.isShiny, 'is-guardian': resultPokemon?.isGuardian }"
         >
-          <img
-            v-if="resultPokemon"
-            :src="getSprite(resultPokemon.id, resultPokemon.isShiny)"
-            class="pokemon-sprite"
-            @error="e => e.target.style.display = 'none'"
+          <PVSpriteFX
+            :is-shiny="resultPokemon?.isShiny"
+            :is-guardian="resultPokemon?.isGuardian"
+            :sparkle-count="8"
           >
-          <!-- Spectacular Shiny Reveal -->
-          <div
-            v-if="resultPokemon?.isShiny"
-            class="shiny-sparkles"
-          >
-            <div
-              v-for="i in 8"
-              :key="i"
-              class="sparkle"
-            />
-          </div>
+            <img
+              v-if="resultPokemon"
+              :src="getSprite(resultPokemon.id, resultPokemon.isShiny)"
+              class="pokemon-sprite"
+              @error="e => e.target.style.display = 'none'"
+            >
+          </PVSpriteFX>
           <div class="splash-text">
             ¡Ha nacido un {{ resultPokemon?.name }}!
           </div>
         </div>
+
         
         <div
           v-if="resultPokemon"
@@ -237,17 +234,10 @@ onMounted(async () => {
     @include sprite-render;
     filter: Drop-Shadow(0 0 30px var(--yellow));
     animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    
-    .is-guardian & { @include aura-guardian; }
   }
 
-  .shiny-sparkles {
-    @include fx-shiny(8);
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 5;
-  }
+
+
 }
 
 .splash-text {
@@ -371,6 +361,6 @@ onMounted(async () => {
 }
 
 :deep(.base-modal-overlay) {
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
 }
 </style>

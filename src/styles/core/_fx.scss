@@ -13,14 +13,24 @@
 
 @mixin fx-shiny($particle-count: 5) {
   position: relative;
+  // Apply GPU acceleration to the container instead of individual particles
+  // to avoid creating too many compositor layers
   @include gpu-layer;
+  will-change: transform, opacity;
 
   .sparkle {
-    &:nth-child(1) { @include shiny-sparkle(0s, 20%, 25%); }
-    &:nth-child(2) { @include shiny-sparkle(1.2s, 75%, 20%); }
-    &:nth-child(3) { @include shiny-sparkle(2.5s, 30%, 85%); }
-    &:nth-child(4) { @include shiny-sparkle(0.8s, 80%, 75%); }
-    &:nth-child(5) { @include shiny-sparkle(3.1s, 15%, 55%); }
+    // 15-85% distribution range to keep them near the sprite
+    &:nth-child(1) { @include shiny-sparkle(0.1s, 25%, 30%); }
+    &:nth-child(2) { @include shiny-sparkle(0.5s, 75%, 25%); }
+    &:nth-child(3) { @include shiny-sparkle(0.9s, 30%, 75%); }
+    &:nth-child(4) { @include shiny-sparkle(1.3s, 70%, 70%); }
+    &:nth-child(5) { @include shiny-sparkle(1.7s, 20%, 50%); }
+    &:nth-child(6) { @include shiny-sparkle(0.3s, 50%, 20%); }
+    &:nth-child(7) { @include shiny-sparkle(0.7s, 50%, 80%); }
+    &:nth-child(8) { @include shiny-sparkle(1.1s, 45%, 45%); }
+
+    // Support for extra particles
+    &:nth-child(n+9) { @include shiny-sparkle(0.5s, 50%, 50%); }
   }
 }
 
@@ -28,16 +38,48 @@
   position: absolute;
   top: $top;
   left: $left;
-  width: 16px;
-  height: 16px;
-  background: #ffd60a;
-  clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+  width: 18px;
+  height: 18px;
   opacity: 0;
-  z-index: 5;
-  animation: sparkle-pop 4s infinite ease-in-out;
+  z-index: var(--z-base, 5);
+  transform-origin: center center;
+  animation: sparkle-pop 2.5s infinite ease-out;
   animation-delay: $delay;
-  @include gpu-layer;
-  will-change: transform, opacity;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #ffcc00;
+    clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+  }
+}
+
+/* ==========================================================================
+   STANDARD FX CLASSES (For PVSpriteFX component)
+   ========================================================================== */
+
+.pv-fx-wrapper {
+  position: relative;
+  display: inline-block; 
+  line-height: 0; 
+  
+  &.is-guardian {
+    img, .sprite-layer {
+      @include aura-guardian;
+    }
+  }
+}
+
+.pv-fx-shiny-overlay {
+  @include fx-shiny;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: var(--z-base, 5);
 }
 
 /* Animations */
@@ -47,10 +89,24 @@
 }
 
 @keyframes sparkle-pop {
-  0%, 80%, 100% { opacity: 0; transform: Scale(0) Rotate(0deg); }
-  85% { opacity: 1; transform: Scale(1.2) Rotate(45deg); }
-  90% { opacity: 1; transform: Scale(1) Rotate(90deg); }
-  95% { opacity: 0; transform: Scale(0.5) Rotate(135deg); }
+  0% { 
+    opacity: 0; 
+    transform: Translate(-50%, 0) Scale(0) Rotate(0deg); 
+  }
+  20% { 
+    opacity: 1; 
+    transform: Translate(-50%, -10px) Scale(1.2) Rotate(180deg); 
+    // Optimized: Only 2 drop-shadows instead of 5
+    filter: Drop-Shadow(0 0 2px rgba(0,0,0,1)) Drop-Shadow(0 0 4px gold);
+  }
+  50% { 
+    opacity: 0; 
+    transform: Translate(-50%, -20px) Scale(0) Rotate(360deg); 
+    filter: none;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes rotate-fx {

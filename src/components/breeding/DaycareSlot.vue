@@ -112,6 +112,7 @@ const getSprite = (id, shiny) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .daycare-slot-legacy {
   background: $card-dark;
   border: 2px solid rgba(255,255,255,0.06);
@@ -129,14 +130,14 @@ const getSprite = (id, shiny) => {
     justify-content: center;
     align-items: center;
     background: rgba(0,0,0,0.2);
-    &:hover { border-color: #ffd700; .plus-icon { color: #ffd700; transform: #{'Scale(1.1)'}; } }
+    &:hover { border-color: $coin-gold; .plus-icon { color: $coin-gold; transform: #{'Scale(1.1)'}; } }
   }
 
   &:not(.empty):hover { border-color: rgba(255,255,255,0.15); }
 }
 
 .slot-marker {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 7px;
   color: $muted;
   margin-bottom: 20px;
@@ -145,7 +146,7 @@ const getSprite = (id, shiny) => {
 .slot-empty {
   text-align: center;
   .plus-icon { font-size: 30px; color: #334155; margin-bottom: 10px; transition: all 0.2s; }
-  .hint { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #475569; }
+  .hint { @include pixelated; font-size: 7px; color: #475569; }
 }
 
 .slot-filled {
@@ -173,7 +174,7 @@ const getSprite = (id, shiny) => {
   .name-line {
     display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
     .name { font-size: 13px; font-weight: 900; color: $white; }
-    .lv { font-family: 'Press Start 2P', monospace; font-size: 8px; color: #ffd700; }
+    .lv { @include pixelated; font-size: 8px; color: $coin-gold; }
   }
   .stats-line {
     font-size: 10px; color: #94a3b8; font-family: monospace;
@@ -181,7 +182,7 @@ const getSprite = (id, shiny) => {
     .M { color: #38bdf8; }
     .F { color: #fb7185; }
   }
-  .nature-line { font-size: 10px; color: #ffd700; margin-top: 4px; font-weight: bold; }
+  .nature-line { font-size: 10px; color: $coin-gold; margin-top: 4px; font-weight: bold; }
 }
 
 .vigor-status {
@@ -207,7 +208,7 @@ const getSprite = (id, shiny) => {
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 12px;
   color: #94a3b8;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 7px;
   cursor: pointer;
   

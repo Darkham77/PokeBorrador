@@ -116,6 +116,7 @@ const genderSymbol = (g) => {
 </template>
 
 <style lang="scss" scoped>
+@use "@/styles/core/_mixins" as *;
 .breeding-slot {
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -161,7 +162,7 @@ const genderSymbol = (g) => {
       align-items: baseline;
       margin-bottom: 4px;
       .name {
-        font-family: 'Press Start 2P', monospace;
+        @include pixelated;
         font-size: 10px;
         color: $white;
       }
@@ -225,7 +226,7 @@ const genderSymbol = (g) => {
     padding: 10px;
     border: none;
     border-radius: 8px;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 9px;
     cursor: pointer;
     transition: transform 0.1s;

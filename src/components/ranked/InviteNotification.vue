@@ -76,7 +76,7 @@ const decline = async () => {
   width: 90%;
   max-width: 360px;
   background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
   -webkit-backdrop-filter: Blur(12px);
   border: 1px solid rgba(139, 92, 246, 0.4);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
@@ -88,7 +88,7 @@ const decline = async () => {
 }
 
 .press-start {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
 }
 

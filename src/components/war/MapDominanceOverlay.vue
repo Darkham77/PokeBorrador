@@ -60,12 +60,12 @@ const factionLabel = computed(() => {
   top: 10px;
   right: 10px;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   border-radius: 8px;
   padding: 8px 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   min-width: 120px;
-  z-index: 100;
+  z-index: var(--z-base);
   pointer-events: none;
 
   .header {

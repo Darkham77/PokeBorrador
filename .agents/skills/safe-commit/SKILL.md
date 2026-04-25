@@ -26,16 +26,14 @@ graph TD
     GapAnalysis --> Verification
     
     subgraph "The Zero-Warning Audit"
-        Verification --> SASSCheck1[SASS Check]
-        SASSCheck1 --> SASSFix[SASS Fixer]
-        SASSFix --> SASSCheck2[SASS Final Check]
-        SASSCheck2 --> Hybrid[Hybrid Guard]
-        Hybrid --> Lint[Linting]
+        Verification --> UnifiedAudit[Unified Project Audit]
+        UnifiedAudit --> UnifiedRepair[Unified Project Repair]
+        UnifiedRepair --> FinalAudit[Final Audit Pass]
+        FinalAudit --> Lint[Linting]
         Lint --> Types[Type-Safety]
         Types --> Build[Production Build]
         Build --> UnitTests[Unit Tests]
-        UnitTests --> Modularity[500-Line Rule]
-        Modularity --> Global[Global Compliance]
+        UnitTests --> Global[Global Compliance]
     end
     
     Global --> DBCheck{DB Changes?}
@@ -84,15 +82,12 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 > [!IMPORTANT]
 > **Pre-existing Warnings**: If the audit (Lint, Types, SASS) reveals warnings or errors in files you did not modify, you ARE RESPONSIBLE for fixing them before committing. A "Safe Commit" means a 100% clean repository state, not just for your changes.
 
-- **SASS Integrity Check**: `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` (Identify existing traps).
-- **SASS Auto-Fix**: `python3 .agents/skills/project-standards/scripts/fix_sass_traps.py` (Run this to resolve common interpolation issues if the check fails).
-- **SASS Integrity Final**: `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` (Ensure 100% compliance after fixing).
-- **Hybrid Guard**: `python3 .agents/skills/project-standards/scripts/detect_hybrid_patterns.py`.
+- **Unified Project Audit**: `python3 .agents/skills/project-standards/scripts/audit_project.py` (Runs SASS, Hybrid, GPU, Length, and Redundancy checks).
+- **Unified Project Repair**: `python3 .agents/skills/project-standards/scripts/repair_project.py` (Run this to resolve automated issues if the audit fails).
 - **Linting**: `npm run lint` (Must return 0 errors and 0 warnings).
 - **Type-Safety**: `npx vue-tsc --noEmit` (Crucial for detecting broken props or reactive refs).
 - **Production Build**: `npm run build` (Ensures Vite can compile the project).
-- **Unit Tests**: `npm run test` (MANDATORY: All tests must pass. If a single test fails, the commit process must stop).
-- **Modularity Check**: Audit files for the **500-line rule**. If any file you touched exceeds this limit, you MUST refactor it now (Exceptions: Data-heavy definition files/pseudo-databases).
+- **Unit Tests**: `npm run test` (MANDATORY: All tests must pass).
 - **Global Compliance**: Verify absolute adherence to all rules in @/project-standards, including Hybrid identity and Navigation Hub references.
 
 ### 4. Database Triple Parity Sync
@@ -149,7 +144,7 @@ Push changes and notify the user.
 "Fixed lowercase filter collision in `MapCard.vue`.
 **Workflow Projection**:
 
-1. [ ] Re-run `check_sass_traps.py` (Step 3).
+1. [ ] Re-run `audit_project.py` (Step 3).
 2. [ ] Run `npm run build` to verify compilation.
 3. [ ] Workspace Cleanup (Step 6).
 4. [ ] Extract lessons (Step 7).

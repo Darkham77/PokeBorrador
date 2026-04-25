@@ -235,7 +235,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   display: flex;
   flex-direction: column;
   background: transparent;
-  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
   @include gpu-layer;
   
   // Custom backgrounds by class fading to transparent
@@ -324,7 +324,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   .profile-email {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.4);
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     margin-bottom: 8px;
   }
 
@@ -383,7 +383,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
 .save-row {
   .save-status {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 12px;
     color: $white;
     @include pixelated;

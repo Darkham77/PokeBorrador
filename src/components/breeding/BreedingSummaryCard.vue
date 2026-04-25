@@ -109,6 +109,7 @@ const geneticsSummary = computed(() => {
 </template>
 
 <style lang="scss" scoped>
+@use "@/styles/core/_mixins" as *;
 .breeding-summary-card {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
   border: 1px solid rgba(139, 92, 246, 0.5);
@@ -125,24 +126,24 @@ const geneticsSummary = computed(() => {
     right: -20px;
     font-size: 100px;
     opacity: 0.05;
-    z-index: 0;
+    z-index: var(--z-base);
     pointer-events: none;
   }
 
   .title {
     text-align: center;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 10px;
     color: #a78bfa;
     margin-bottom: 20px;
     text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
   }
 
   .stats-grid {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -158,7 +159,7 @@ const geneticsSummary = computed(() => {
     border-left: 4px solid $white;
 
     .label {
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 9px;
       color: $muted;
     }
@@ -191,7 +192,7 @@ const geneticsSummary = computed(() => {
 
   .footer {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
     margin-top: 20px;
     padding-top: 15px;
     border-top: 1px dashed rgba(255, 255, 255, 0.1);

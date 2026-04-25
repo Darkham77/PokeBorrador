@@ -102,7 +102,7 @@ onMounted(() => {
     
     .rocket-icon { font-size: 24px; }
     h3 { 
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 14px;
       color: #ef4444;
       margin: 0;
@@ -150,8 +150,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
-  font-family: 'Press Start 2P', monospace;
+  z-index: var(--z-base);
+  @include pixelated;
   font-size: 12px;
   color: #ef4444;
   transform: Rotate(-15deg);
@@ -178,7 +178,7 @@ onMounted(() => {
     width: 48px;
     height: 48px;
     image-rendering: pixelated;
-    z-index: 1;
+    z-index: var(--z-base);
     filter: Drop-Shadow(0 4px 8px rgba(0, 0, 0, 0.5));
   }
   
@@ -198,13 +198,13 @@ onMounted(() => {
   gap: 5px;
   
   .item-name {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     color: $white;
   }
   
   .item-price {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 10px;
     color: #ef4444;
   }
@@ -217,7 +217,7 @@ onMounted(() => {
   border-radius: 10px;
   background: #ef4444;
   color: $white;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;

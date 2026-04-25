@@ -10,6 +10,8 @@ import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evol
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+
 import { POKEMON_TAGS, hasPokemonTag } from '@/logic/constants/tags'
 
 import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue'
@@ -314,29 +316,18 @@ const handleEditNickname = () => {
 
       <!-- TOP DISPLAY -->
       <div class="pdex-main-display">
-        <div 
-          class="sprite-container"
-          :class="{ 'is-guardian': targetPokemon?.isGuardian, 'is-shiny': targetPokemon?.isShiny }"
+        <PVSpriteFX
+          :is-shiny="targetPokemon?.isShiny"
+          :is-guardian="targetPokemon?.isGuardian"
         >
           <img
             :src="getSprite(targetSpeciesId, targetPokemon?.isShiny)"
             class="main-sprite"
             @error="e => e.target.style.display = 'none'"
           >
-          
-          <!-- Standardized Shiny FX -->
-          <div
-            v-if="targetPokemon?.isShiny"
-            class="shiny-sparkles"
-          >
-            <div
-              v-for="i in 5"
-              :key="i"
-              class="sparkle"
-            />
-          </div>
-        </div>
+        </PVSpriteFX>
       </div>
+
 
       <!-- TABS NAVIGATION -->
       <nav class="pdex-detail-tabs premium-tabs">

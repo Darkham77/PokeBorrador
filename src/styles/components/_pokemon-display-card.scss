@@ -56,7 +56,7 @@
   align-items: flex-start;
   min-height: 36px;
   position: relative;
-  z-index: 3;
+  z-index: var(--z-base);
 }
 
 .badges-area {
@@ -67,7 +67,7 @@
   flex-direction: row;
   align-items: flex-start;
   gap: 4px;
-  z-index: 10;
+  z-index: var(--z-base);
   @include pixelated;
 
   .tags-col, .items-col {
@@ -79,7 +79,7 @@
     padding: 6px 3px;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: Blur(10px);
+    -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     @include gpu-layer;
   }
@@ -106,14 +106,14 @@
 
 .badges-spacer { height: 24px; }
 
-.tier-badge {
+.card-tier-badge {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 16px; 
   line-height: 1;
   padding: 3px 0 0 2px;
@@ -135,7 +135,7 @@
   justify-content: center;
   margin: 20px 0 10px 0;
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
 
   .pokemon-sprite {
@@ -145,29 +145,16 @@
     transition: transform 0.3s ease-out;
     filter: Drop-shadow(0 10px 20px rgba(0,0,0,0.6));
     will-change: transform;
-
-    .is-guardian & {
-      @include aura-guardian;
-    }
-  }
-
-  // --- STANDARD FX INTEGRATION ---
-
-  .shiny-sparkles {
-    @include fx-shiny(4);
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 2;
   }
 }
+
 
 .pokemon-info {
   text-align: center;
   margin-bottom: 12px;
   margin-top: 5px; 
   position: relative;
-  z-index: 2;
+  z-index: var(--z-base);
   width: 85%;
   margin-left: auto;
   margin-right: auto;
@@ -192,7 +179,7 @@
     }
 
     .pokemon-name {
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 8px;
       color: white; // Replaced $white
       text-transform: uppercase;
@@ -202,7 +189,7 @@
     }
 
     .species-subtitle {
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 7px;
       color: rgba(255, 255, 255, 0.4);
       text-transform: uppercase;
@@ -216,7 +203,7 @@
   }
 
   .level-line {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     color: var(--yellow);
     margin-bottom: 6px;
@@ -247,7 +234,7 @@
   }
 
   .hp-stats {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     color: rgba(255, 255, 255, 0.4);
     margin-top: 6px;
@@ -262,7 +249,7 @@
   margin-bottom: 10px;
 
   .status-tag {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     padding: 4px 6px;
     border-radius: 4px;
@@ -283,7 +270,7 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     padding: 8px 4px;
     border-radius: 8px;

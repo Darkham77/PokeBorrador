@@ -88,7 +88,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 
 .glass-card {
   background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 18px;
   padding: 15px;
@@ -106,7 +106,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 }
 
 .poke-name {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   letter-spacing: 0.5px;
 }
@@ -146,7 +146,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 .hp-low { background: linear-gradient(90deg, #ef4444, #f87171); }
 
 .hp-values {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   text-align: right;
   opacity: 0.8;

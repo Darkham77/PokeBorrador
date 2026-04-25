@@ -55,7 +55,7 @@ def audit_css_redundancy():
             name_display = f"**{class_name}**" if i == 0 else ""
             print(f"| {name_display} | {loc['file']} | {loc['line']} |")
             
-    print(f"\nSe encontraron {len(redundancies)} clases con definiciones múltiples.")
+    print(f"\nFound {len(redundancies)} classes with multiple definitions.")
     return 1
 
 if __name__ == "__main__":

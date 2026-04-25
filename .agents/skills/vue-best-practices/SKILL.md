@@ -161,6 +161,9 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **WHY**: Using legacy global store refs (e.g., `uiStore.pokemonSelectionConfig`) for modal configuration causes synchronization issues if the ref is not manually cleared or if multiple modals are opened in sequence. Props ensure each modal instance has its own unique, immutable configuration.
 - **Tooltip Teleportation Mandate**: Always use `<Teleport to="body">` for tooltips (e.g., `PVTooltip`) to avoid `z-index` collisions and `overflow: hidden` clipping from parent containers.
 - **Mandatory Mixin Environment**: When using project-standard mixins (e.g., `btn-vicio-primary`, `pixelated`), the `<style>` block **MUST** use `lang="scss"` and explicitly import tools: `@use "@/styles/core/tools" as *;`.
+- **Mandatory Child Component Registration**: In Vue 3 `<script setup>`, sub-components (extracted for modularity) DO NOT inherit global component registration from parent modals unless they are registered in the main application instance.
+  - **REQUIRED**: Always explicitly import and register common components like `PVTooltip` or `BaseModal` inside the sub-component's `<script setup>` to prevent "undefined component" rendering errors.
+
 - **CLI-First Admin Delegation**: Administrative UI components (Debug panels, Event managers) MUST NOT manipulate stores or databases directly.
   - **Pattern**: `const save = () => window.__VITE_DEBUG__.saveEvent(data)`.
   - **Why**: Centralizes logic in `debugStore.js`, ensures security wrappers are applied, and makes all actions programmatically accessible.

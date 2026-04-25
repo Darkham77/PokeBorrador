@@ -62,7 +62,7 @@ const cancelSearch = () => {
       
       <div class="player-stat card-glass">
         <div
-          class="tier-badge"
+          class="ranked-tier-badge"
           :style="{ backgroundColor: currentTier.color + '22', borderColor: currentTier.color }"
         >
           <span class="tier-icon">{{ currentTier.icon }}</span>
@@ -181,13 +181,13 @@ const cancelSearch = () => {
 }
 
 .press-start {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
 }
 
 .card-glass {
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 16px;
@@ -221,7 +221,7 @@ const cancelSearch = () => {
   margin-top: 4px;
 }
 
-.tier-badge {
+.ranked-tier-badge {
   display: flex;
   align-items: center;
   gap: 12px;

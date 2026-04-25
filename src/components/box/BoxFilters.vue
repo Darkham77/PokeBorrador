@@ -206,6 +206,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .box-filter-btn {
   &.btn-blue {
     color: var(--blue);
@@ -242,7 +243,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
 }
 
 .filter-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: var(--purple);
 }
@@ -306,7 +307,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
 }
 
 .box-filter-btn {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 7px;
   padding: 5px 10px;
   border-radius: 20px;
@@ -361,7 +362,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
   padding: 10px;
   border-radius: 12px;
   font-size: 7px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.1);
@@ -411,7 +412,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
 
 .iv-label {
   font-size: 8px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   color: var(--gray);
   width: 28px;
 }

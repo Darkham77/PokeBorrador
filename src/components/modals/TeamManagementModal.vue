@@ -256,6 +256,7 @@ function selectAdventure(_slotIndex) {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .header-team-icon {
   font-size: 20px;
 }
@@ -288,14 +289,14 @@ function selectAdventure(_slotIndex) {
     .section-icon { font-size: 24px; }
     
     .section-title {
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 12px;
       color: $white;
       margin: 0;
     }
 
     .count, .badge {
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 8px;
       padding: 4px 8px;
       border-radius: 6px;

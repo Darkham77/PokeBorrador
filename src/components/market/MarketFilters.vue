@@ -199,6 +199,7 @@ const getTypeEmoji = (type) => {
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .market-filters {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -222,7 +223,7 @@ const getTypeEmoji = (type) => {
 }
 
 .label {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: var(--purple-light);
 }

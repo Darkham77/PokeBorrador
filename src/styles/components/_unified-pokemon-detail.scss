@@ -10,7 +10,7 @@
   align-items: center;
   padding: 24px 32px;
   position: relative;
-  z-index: 100;
+  z-index: var(--z-base);
   
   .close-vicio {
     @include btn-close-premium; // Use standardized close button style
@@ -28,7 +28,7 @@
     .p-id {
       background: var(--type-color);
       color: $black;
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 8px;
       padding: 4px 8px;
       border-radius: 4px;
@@ -36,7 +36,7 @@
     }
     
     .p-name {
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 16px;
       color: $white;
       text-transform: uppercase;
@@ -70,7 +70,7 @@
   width: 100%;
   height: 300px;
   background: radial-gradient(circle at center 30%, Rgba(var(--type-color-rgb), 0.2) 0%, transparent 70%);
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
 }
 
@@ -83,7 +83,7 @@
     $sprite-size: 160px
   );
   
-  z-index: 5; 
+  z-index: var(--z-base); 
   overflow: visible;
 
   .sprite-container {
@@ -112,7 +112,7 @@
   margin-top: 40px;
   margin-bottom: 20px;
   position: relative;
-  z-index: 5;
+  z-index: var(--z-base);
 }
 
 // Specialized components for Unified View
@@ -120,10 +120,10 @@
   @extend .pdex-detail-tabs;
   margin-top: -40px; 
   position: relative;
-  z-index: 100; 
+  z-index: var(--z-base); 
   background: #0a0c14 !important;
   border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-  backdrop-filter: Blur(10px) !important;
+  -webkit-backdrop-filter: Blur(10px) !important; -webkit-backdrop-filter: Blur(10px) !important; backdrop-filter: Blur(10px) !important;
   padding: 0 !important;
 
   .pdex-tab-btn {
@@ -171,7 +171,7 @@
 }
 
 .pixelated {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   @include pixelated;
 }
 
@@ -279,7 +279,7 @@
 }
 
 .section-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: var(--type-color);
   margin: 24px 0 16px;
@@ -290,7 +290,7 @@
   flex: 1;
   min-height: 0;
   position: relative;
-  z-index: 90;
+  z-index: var(--z-base);
   background: #0a0c14;
   padding: 32px;
   @include smooth-scroll;
@@ -321,7 +321,7 @@
   width: 100%;
   margin-bottom: 20px;
   overflow: visible !important;
-  z-index: 200; // Above tabs (z-index 100)
+  z-index: var(--z-base); // Above tabs (z-index 100)
 
   .main-sprite {
     width: 200px;
@@ -336,20 +336,8 @@
       transform: translate3d(0, -95px, 0) Scale(1.05) !important;
     }
   }
-
-  &.is-guardian .main-sprite {
-    @include aura-guardian;
-    transform: translate3d(0, -85px, 0) !important;
-  }
-
-  .shiny-sparkles {
-    @include fx-shiny(5);
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 10;
-  }
 }
+
 
 .name-container {
   display: flex;
@@ -359,7 +347,7 @@
 }
 
 .p-species-subtitle {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.5);
   letter-spacing: 1px;

@@ -38,8 +38,9 @@ const p = computed(() => props.pokemon)
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .section-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: var(--purple-light);
   margin-bottom: 16px;

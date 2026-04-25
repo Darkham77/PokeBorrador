@@ -213,6 +213,7 @@ function handleForfeit() {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .live-pvp-overlay {
   position: fixed;
   inset: 0;
@@ -252,7 +253,7 @@ function handleForfeit() {
 }
 
 .side-header {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: #94a3b8;
   margin-bottom: 15px;
@@ -276,7 +277,7 @@ function handleForfeit() {
 }
 
 .trainer-meta .name {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 11px;
   color: $white;
   display: block;
@@ -358,7 +359,7 @@ function handleForfeit() {
   padding: 10px;
   border-radius: 10px;
   border: none;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
 }

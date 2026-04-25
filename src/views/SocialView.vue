@@ -83,10 +83,10 @@ onMounted(() => {
   display: flex;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   background: rgba(0,0,0,0.4);
-  backdrop-filter: Blur(5px);
+  -webkit-backdrop-filter: Blur(5px); -webkit-backdrop-filter: Blur(5px); backdrop-filter: Blur(5px);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--z-base);
   @include gpu-layer;
 }
 
@@ -96,7 +96,7 @@ onMounted(() => {
   border: none;
   padding: 20px 10px;
   color: #888;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
   position: relative;
@@ -107,7 +107,7 @@ onMounted(() => {
 
   .tab-label {
     position: relative;
-    z-index: 2;
+    z-index: var(--z-base);
   }
 
   &.active {

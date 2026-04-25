@@ -185,9 +185,9 @@ const openParticipationModal = (event) => {
   .icon { font-size: 32px; filter: Drop-Shadow(0 0 10px rgba(255, 215, 0, 0.4)); }
 
   h1 {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 14px;
-    color: #ffd700;
+    color: $coin-gold;
     margin: 0 0 8px 0;
     text-shadow: 0 2px 0 $black;
   }
@@ -195,7 +195,7 @@ const openParticipationModal = (event) => {
 }
 
 .retro-btn {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   padding: 10px 16px;
   border-radius: 8px;
@@ -212,7 +212,7 @@ const openParticipationModal = (event) => {
   }
 
   &.claim { background: #22c55e; border-color: #4ade80; color: $white; }
-  &.action { background: #ffd700; border-color: $white; color: $black; text-shadow: none; }
+  &.action { background: $coin-gold; border-color: $white; color: $black; text-shadow: none; }
 }
 
 /* REWARD BOX */
@@ -231,7 +231,7 @@ const openParticipationModal = (event) => {
   }
 
   h3 {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 9px;
     color: #4ade80;
     margin-bottom: 15px;
@@ -314,11 +314,11 @@ const openParticipationModal = (event) => {
 
     .timer-box {
       .label { display: block; font-size: 8px; color: $muted; margin-bottom: 5px; }
-      .value { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #f87171; }
+      .value { @include pixelated; font-size: 9px; color: #f87171; }
     }
     
     .active-badge {
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 8px;
       padding: 10px 16px;
       border-radius: 8px;

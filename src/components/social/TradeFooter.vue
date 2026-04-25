@@ -42,6 +42,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .trade-footer-controls {
   display: flex;
   flex-direction: column;
@@ -81,7 +82,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
   gap: 12px; 
   cursor: pointer;
   input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--purple); }
-  .toggle-label { font-size: 10px; font-family: 'Press Start 2P', monospace; color: $white; }
+  .toggle-label { font-size: 10px; @include pixelated; color: $white; }
 }
 
 .send-offer-btn {
@@ -90,7 +91,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
   border: none;
   border-radius: 14px;
   color: $white;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 9px;
   font-weight: 900;
   cursor: pointer;

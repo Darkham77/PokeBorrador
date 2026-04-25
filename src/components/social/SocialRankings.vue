@@ -118,6 +118,7 @@ const getFactionColor = (faction) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .rankings-container {
   padding-top: 10px;
   display: flex;
@@ -140,7 +141,7 @@ const getFactionColor = (faction) => {
     
     .season-icon { font-size: 20px; }
     .season-name {
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 8px;
       color: #fbbf24;
       letter-spacing: 1px;
@@ -203,7 +204,7 @@ const getFactionColor = (faction) => {
 }
 
 .rank-number {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   width: 24px;
   color: #666;
@@ -221,7 +222,7 @@ const getFactionColor = (faction) => {
     height: 8px;
     background: #10b981;
     border-radius: 50%;
-    border: 1px solid #1a1a1a;
+    border: 1px solid $card2;
   }
 }
 
@@ -243,7 +244,7 @@ const getFactionColor = (faction) => {
       padding: 1px 4px;
       border-radius: 4px;
       text-transform: uppercase;
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       color: white;
     }
   }

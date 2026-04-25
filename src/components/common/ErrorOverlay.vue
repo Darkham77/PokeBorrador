@@ -149,6 +149,7 @@ const closeError = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 /* RESTORING EXACT LEGACY ERROR OVERLAY STYLES */
 .error-overlay {
   position: fixed;
@@ -159,7 +160,7 @@ const closeError = () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   animation: fadeIn 0.3s ease;
   font-family: 'Nunito', sans-serif;
   @include gpu-layer;
@@ -195,7 +196,7 @@ const closeError = () => {
 }
 
 .error-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 14px;
   letter-spacing: 1px;
 }
@@ -227,7 +228,7 @@ const closeError = () => {
 }
 
 .error-sub-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 9px;
   color: var(--yellow);
   margin-bottom: 10px;
@@ -307,7 +308,7 @@ const closeError = () => {
   padding: 12px 20px;
   border: none;
   border-radius: 10px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 9px;
   cursor: pointer;
   transition: all 0.2s;

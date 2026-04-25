@@ -130,6 +130,42 @@ HYBRID_PATTERNS = [
         "regex": r':style="\{.*?(color|background|glow).*?\}".*?(?!--[a-z\-]+)',
         "message": "Dynamic style detected without CSS variable. Use dynamic variables (e.g., --type-color) to keep SCSS decoupled.",
         "severity": "low"
+    },
+    {
+        "id": "safari_backdrop_prefix",
+        "regex": r"(?<!-webkit-)backdrop-filter:",
+        "message": "Missing -webkit- prefix for backdrop-filter. Mandatory for Safari compatibility.",
+        "severity": "high"
+    },
+    {
+        "id": "raw_rgba_color",
+        "regex": r"rgba\(\d+,\s*\d+,\s*\d+",
+        "message": "Raw RGBA color detected. Use standardized SASS variables or CSS tokens.",
+        "severity": "medium"
+    },
+    {
+        "id": "hardcoded_z_index",
+        "regex": r"z-index:\s*[0-9]+;",
+        "message": "Hardcoded z-index detected. Use CSS variables (e.g., var(--z-modal)) for consistent layering.",
+        "severity": "medium"
+    },
+    {
+        "id": "missing_webkit_clip",
+        "regex": r"background-clip:\s*text",
+        "message": "Verify background-clip: text has -webkit- prefix. Required for Safari compatibility.",
+        "severity": "high"
+    },
+    {
+        "id": "direct_store_state",
+        "regex": r"\w+Store\.state\.",
+        "message": "Direct Pinia state access detected. Use storeToRefs or the store instance directly for better reactivity.",
+        "severity": "low"
+    },
+    {
+        "id": "modal_click_propagation",
+        "regex": r"@click(?!\.stop)=\"[^\"]+\"",
+        "message": "Potential missing .stop modifier on click handler. Critical for deep-stacked modal interactions.",
+        "severity": "medium"
     }
 ]
 
@@ -161,11 +197,16 @@ def scan_file(filepath):
             
             # 1. Line-by-line checks (standard)
             in_scoped_style = False
+            has_pixel_font_context = False
             for i, line in enumerate(lines):
                 if "<style" in line and "scoped" in line:
                     in_scoped_style = True
                 if "</style>" in line:
                     in_scoped_style = False
+                
+                # Check for pixel font context in the current block or file
+                if "Press Start 2P" in line or "@include pixelated" in line or "pixel-perfect" in line:
+                    has_pixel_font_context = True
                 
                 # Heuristic to ignore comments or explicit ignores
                 if line.strip().startswith("//") or line.strip().startswith("/*") or line.strip().startswith("*"):
@@ -212,6 +253,11 @@ def scan_file(filepath):
                             if match and match.groups():
                                 try:
                                     val = match.group(1)
+                                    # Context-aware pixel font check
+                                    if pattern["id"] == "blurry_pixel_font" and not has_pixel_font_context:
+                                        # If not in pixel context, allow intermediate sizes (smooth fonts)
+                                        continue
+                                        
                                     condition_fn = eval(pattern["condition"])
                                     if not condition_fn(val):
                                         continue

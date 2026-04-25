@@ -114,12 +114,13 @@ const getFactionIcon = (faction) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .war-overlay {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   -webkit-backdrop-filter: Blur(10px);
   display: flex;
   align-items: center;
@@ -163,7 +164,7 @@ const getFactionIcon = (faction) => {
 
 .header-title {
   .glitch-text {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 24px;
     color: var(--yellow);
     display: block;
@@ -191,7 +192,7 @@ const getFactionIcon = (faction) => {
   display: flex;
   align-items: center;
   gap: 15px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
 
   &.union { color: #3b82f6; }
@@ -243,7 +244,7 @@ const getFactionIcon = (faction) => {
 }
 
 .section-label {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: var(--gray);
   margin-bottom: 20px;

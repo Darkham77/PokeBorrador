@@ -147,7 +147,7 @@ const abilityStyle = computed(() => ({
 .bar-header {
   display: flex;
   justify-content: space-between;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   margin-bottom: 14px;
   color: $white;
@@ -209,7 +209,7 @@ const abilityStyle = computed(() => ({
 
 .info-card .label {
   display: block;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px; // Slightly smaller to prevent overlap
   color: var(--gray);
   text-transform: uppercase;
@@ -220,7 +220,7 @@ const abilityStyle = computed(() => ({
 
 .info-card .val {
   display: block;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px; // Standardized size for all values
   color: $white;
   @include pixelated;

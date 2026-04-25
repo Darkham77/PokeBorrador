@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { getPokemonTier } from '@/logic/pokemonUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+
 import { TAG_DEFINITIONS, POKEMON_BADGES } from '@/logic/constants/tags'
 
 const props = defineProps({
@@ -44,7 +46,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   >
     <!-- Badge Tier -->
     <div
-      class="tier-badge"
+      class="box-tier-badge"
       :style="{ color: tierInfo.color, background: tierInfo.bg }"
     >
       {{ tierInfo.tier }}
@@ -109,28 +111,24 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
         DEFENSA
       </div>
       
-      <img
-        :src="spriteUrl"
-        class="pokemon-sprite"
-        :class="[
-          { 'is-shiny': pokemon.isShiny, 'is-guardian': pokemon.isGuardian },
-          pokemon.aura ? `aura-${pokemon.aura}-mini` : ''
-        ]"
-        alt="pokemon"
-        @error="e => e.target.style.display = 'none'"
+      <PVSpriteFX
+        :is-shiny="pokemon.isShiny"
+        :is-guardian="pokemon.isGuardian"
+        :sparkle-count="5"
       >
-      <!-- Standardized Shiny FX (Compact) -->
-      <div
-        v-if="pokemon.isShiny"
-        class="shiny-sparkles"
-      >
-        <div
-          v-for="i in 3"
-          :key="i"
-          class="sparkle"
-        />
-      </div>
+
+        <img
+          :src="spriteUrl"
+          class="pokemon-sprite"
+          :class="[
+            pokemon.aura ? `aura-${pokemon.aura}-mini` : ''
+          ]"
+          alt="pokemon"
+          @error="e => e.target.style.display = 'none'"
+        >
+      </PVSpriteFX>
     </div>
+
     
     <!-- Info -->
     <div class="pokemon-name">
@@ -192,7 +190,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
 }
 
-.tier-badge {
+.box-tier-badge {
   position: absolute;
   top: 4px;
   right: 4px;
@@ -200,7 +198,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   padding: 2px 4px;
   border-radius: 4px;
   font-weight: bold;
-  z-index: 2;
+  z-index: var(--z-base);
 }
 
 .tags-container {
@@ -213,8 +211,8 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   background: rgba(0, 0, 0, 0.6);
   padding: 6px 4px;
   border-radius: 8px;
-  z-index: 10;
-  backdrop-filter: Blur(8px);
+  z-index: var(--z-base);
+  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   @include gpu-layer;
@@ -247,18 +245,11 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   @include sprite-render;
   object-fit: contain;
   position: relative;
-  z-index: 1;
-
-  &.is-guardian { @include aura-guardian; }
+  z-index: var(--z-base);
 }
 
-.shiny-sparkles {
-  @include fx-shiny(3);
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-}
+
+
 
 .badge {
   position: absolute;
@@ -267,7 +258,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   font-weight: 900;
   padding: 2px 4px;
   border-radius: 4px;
-  z-index: 3;
+  z-index: var(--z-base);
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }

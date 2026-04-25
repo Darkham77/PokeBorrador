@@ -125,6 +125,7 @@ const getRankIcon = (tierId) => {
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .ranking-container {
   background: var(--card, #1c1c1e);
   border-radius: 24px;
@@ -142,7 +143,7 @@ const getRankIcon = (tierId) => {
 }
 
 .subtitle {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: var(--blue, $blue);
   display: block;
@@ -192,7 +193,7 @@ h2 {
 
 .rank-num {
   width: 32px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   color: #555;
   text-align: center;
@@ -247,7 +248,7 @@ h2 {
   color: white;
   padding: 2px 4px;
   border-radius: 4px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
 }
 
 .meta-row {
@@ -267,7 +268,7 @@ h2 {
 
 .elo {
   display: block;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 12px;
   color: $white;
   margin-bottom: 6px;
@@ -297,7 +298,7 @@ h2 {
 .tier-pill.gold { color: #FFB800; border: 1px solid #FFB80044; }
 .tier-pill.platinum { color: #E5C100; border: 1px solid #E5C10044; }
 .tier-pill.diamond { color: #89CFF0; border: 1px solid #89CFF044; }
-.tier-pill.master { color: #FFD700; border: 1px solid #FFD70044; box-shadow: 0 0 10px #FFD70044; }
+.tier-pill.master { color: $coin-gold; border: 1px solid #FFD70044; box-shadow: 0 0 10px #FFD70044; }
 
 .offline-placeholder {
   text-align: center;

@@ -229,7 +229,7 @@ onMounted(async () => {
 }
 
 .personal-card {
-  background: #1a1a1a;
+  background: $card2;
   padding: 20px;
   border-radius: 20px;
   border: 1px solid #333;

@@ -50,6 +50,9 @@ LEGACY_IF_REGEX = re.compile(r'(?<![\w\.])if\(')
 # Regex to find SASS color functions processing CSS variables
 COLOR_VAR_COLLISION_REGEX = re.compile(r'(?:scale-color|color\.scale|lighten|darken|saturate|desaturate|adjust-hue|rgba|mix)\([^)]*var\(--')
 
+# Regex to find deprecated @import (excluding CSS url imports)
+IMPORT_DEPRECATION_REGEX = re.compile(r'@import\s+(?!url\()["\']([^"\']+)["\'];?')
+
 def check_file(filepath):
     errors = []
     
@@ -94,6 +97,10 @@ def check_file(filepath):
             if COLOR_VAR_COLLISION_REGEX.search(line):
                 errors.append(f"L{i}: SASS color function cannot process CSS variables: {line.strip()}. Use a static SASS fallback for calculations.")
 
+            # 7. Deprecated @import check
+            if IMPORT_DEPRECATION_REGEX.search(line):
+                errors.append(f"L{i}: Deprecated @import detected: {line.strip()}. Use modern @use or @forward instead.")
+
         # Check for interpolation in non-SCSS block (only for .vue)
         if filepath.endswith('.vue') and has_interpolation and not has_lang_scss:
             errors.append("CRITICAL: SASS Interpolation #{...} detected in a Vue file missing lang=\"scss\"")
@@ -115,14 +122,14 @@ def main():
                         all_errors[path] = errors
 
     if all_errors:
-        print("\033[91m[SASS VALIDATION FAILED]\033[0m")
+        print("[SASS VALIDATION FAILED]")
         for path, errors in all_errors.items():
             print(f"File: {path}")
             for err in errors:
                 print(f"  - {err}")
         sys.exit(1)
     else:
-        print("\033[92m[SASS CHECK PASSED]\033[0m No technical SASS traps found.")
+        print("[SASS CHECK PASSED] No technical SASS traps found.")
         sys.exit(0)
 
 if __name__ == "__main__":

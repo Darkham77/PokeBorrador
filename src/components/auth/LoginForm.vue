@@ -88,6 +88,7 @@ const handleLocalLogin = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .form-container {
   display: flex;
   flex-direction: column;
@@ -118,7 +119,7 @@ const handleLocalLogin = () => {
   border: none;
   padding: 18px;
   border-radius: 14px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;

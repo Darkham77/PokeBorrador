@@ -56,7 +56,7 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .war-page {
   min-height: 100vh;
-  background: radial-gradient(circle at top, #1a1a1a 0%, $dark 100%);
+  background: radial-gradient(circle at top, $card2 0%, $dark 100%);
   padding: 40px 20px;
   overflow-y: auto; /* [PureVue-Ignore] Root element with min-height: 100vh is safe */
 }

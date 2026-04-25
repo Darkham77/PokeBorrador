@@ -126,9 +126,10 @@ In RPG/Team-based games, any UI slot that displays a current team member (Advent
 2. Batching (reduce draw calls via Texture Atlases)
 3. **Sprite Rendering**: Use `@include sprite-render` for all pixel-art game objects to ensure GPU-accelerated sharp scaling.
 4. **SASS Integrity**: Use Capitalized functions (e.g., `Scale()`, `Blur()`, `Translate3D()`) to prevent Dart Sass 2.0 compilation traps.
-5. Pooling (avoid GC spikes)
-6. LOD (detail by distance)
-7. Culling (skip invisible)
+5. **GPU Layer Throttling**: For high-density UI effects (like many sparkles or particles), avoid applying `@include gpu-layer` to every individual child element. Instead, promote the common parent container to a GPU layer to reduce compositor overhead and prevent browser rendering dropouts.
+6. Pooling (avoid GC spikes)
+7. LOD (detail by distance)
+8. Culling (skip invisible)
 
 ---
 

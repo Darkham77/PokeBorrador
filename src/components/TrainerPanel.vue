@@ -101,6 +101,7 @@ const handlePanelClick = (event) => {
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .exp-bar-container {
   margin-top: 5px;
   background: rgba(255, 255, 255, 0.1);
@@ -121,7 +122,7 @@ const handlePanelClick = (event) => {
   display: none;
   margin-top: 4px;
   font-size: 8px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
 }
 .pointer-cursor { cursor: pointer; }
 
@@ -137,13 +138,13 @@ const handlePanelClick = (event) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   font-weight: bold;
   border: 2px solid $white;
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
   animation: pulse-red 2s infinite;
-  z-index: 10;
+  z-index: var(--z-base);
 }
 
 @keyframes pulse-red {

@@ -82,6 +82,11 @@ The legacy `@import` directive is deprecated. This project strictly follows the 
 - **Aliases**: Use `@use 'variables' as v;` if the filename is long.
 - **Global Scope**: Avoid `@use '...' as *;` unless it is a core utility or function set intended to be ubiquitous.
 
+> [!WARNING]
+> **SASS @import Deprecation**: The use of `@import` for SASS files is strictly prohibited. It is deprecated and will be removed in Dart Sass 3.0.0.
+> **Detection**: Any warning in the console stating `Sass @import rules are deprecated` MUST be fixed immediately by migrating to `@use`.
+> **Fix**: Replace `@import "path";` with `@use "path" as *;` (if you need global members) or `@use "path";` (and access via namespace).
+
 ---
 
 ## ✨ Design Aesthetics: Hybrid Retro-Modern Standard
@@ -161,7 +166,7 @@ Avoid spreading definitions for the same component across multiple files. This i
 - **MANDATORY**: Each core component (`.map-card`, `.base-modal`, `.hud-bar`) must have ONE primary SCSS file.
 - **FORBIDDEN**: Redefining a root class in multiple stylesheets (e.g., having `.map-card` in `_render.scss`, `_items.scss`, and `_grid.scss`).
 - **Audit Requirement**: Before committing UI changes, you MUST run the redundancy audit:
-  `python3 .agents/skills/project-standards/scripts/detect_css_redundancy.py`
+  `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py`
 - **Goal**: Maintain 0 redefinitions for critical game components.
 
 ### 5. UI Button Standardization (Mandatory Mixins)

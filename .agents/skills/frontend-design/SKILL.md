@@ -190,7 +190,12 @@ All spacing and sizing in multiples of 8:
 - **Atmospheric Clarity**: Environmental effects (rain, snow, weather emojis) and atmospheric filters MUST be hidden for locked, restricted, or inaccessible components (e.g., locked map routes). This reduces cognitive noise and maintains focus on playable content.
 - **Vertical Floating Badges**: When dealing with variable lists of icons/tags in small containers (cards/tiles), align them in vertical columns with `position: absolute`. This prevents the "layout stretch" effect where a horizontal list would expand the container's height or cover critical centered content like sprites.
 - **Balanced Info Lanes (Clearance)**: To avoid collision between absolute-positioned side elements (like badges) and centered content (like HP bars or names), do not use unilateral padding. Instead, use a centered "lane" strategy: set a `width` (e.g., 85%) on the info container, apply `margin: 0 auto`, and add balanced horizontal padding. This ensures the content remains centered relative to the card while maintaining safe clearance on both sides.
+- **Absolute Centering Pattern**: When positioning floating elements (like sparkles or badges) relative to a center point, always use `left: 50%` combined with `transform: TranslateX(-50%)`. This ensures the element's own width doesn't cause a visual shift to the right.
+- **Image Wrapper Stability**: For wrappers around pixel-art sprites, use `display: inline-block` and `line-height: 0`. This ensures the container matches the image dimensions exactly, prevents 0x0 collapses, and eliminates extra whitespace below the image.
 - **Decoupled Sprite Effects**: To prevent performance-killing filter stacks (10+ filters), separate the core black border (applied directly to the `img`) from decorative effects like glows or auras (applied to a parent `.sprite-wrapper`). This allows independent management of visual layers without exceeding GPU filter budgets.
+- **CSS Filter Performance & Dropouts**: Stacking multiple `Drop-Shadow()` filters on many small animated elements can hit browser rendering limits (GPU thread saturation), causing the browser to stop rendering some layers or animations ("dropout"). Optimize by collapsing multiple shadows into a maximum of 2-3 combined filters.
+- **Animation Visibility Gap**: In looping animations with random delays (e.g. sparkles), ensure the "visible" portion of the cycle is long enough (at least 30-40% of duration) so the user perceives the intended density without flickering or "empty" states.
+- **GPU Layer Management (Container Rule)**: Avoid applying `@include gpu-layer` or `will-change` to every small child in a high-density effect (like 50+ sparkles). Instead, apply the GPU acceleration mixins to the parent container to reduce the number of compositor layers the browser must manage.
 - **Dynamic Arrow Alignment**: When nudging tooltips, use CSS variables to reposition the arrow so it stays aligned with the trigger element's center.
 - **Scroll Architecture (Vicio Standard)**:
   - **Single Scroll Layer**: NEVER use nested scrollable containers (`overflow-y: auto` inside another `overflow-y: auto`) in modals. This causes event hijacking and dead zones.
@@ -201,6 +206,11 @@ All spacing and sizing in multiples of 8:
 - **Layout Parity Mandate**: When refactoring or restoring components, ensure HTML classes exactly match the SCSS selectors (e.g., `list-item` vs `poke-card`). Inconsistency between template and style breaks layout fidelity.
 - **Dynamic Variable Binding**: Visual effects depending on context (e.g., type-based "glows" or "auras") MUST be implemented by binding dynamic CSS variables (e.g., `:style="{ '--type-color': color }"`) to the parent container.
 - **Anchored UI Context**: Absolute positioned elements (like `mini-badges` or floating status icons) MUST be nested within a `position: relative` container (e.g., `.poke-preview-container`) to prevent them from floating outside their visual target.
+### Admin & Debug UI Patterns
+
+- **Specific Class Naming**: To avoid global CSS collisions and satisfy standards audits, use component-prefixed class names for shared UI elements (e.g., `.card-tier-badge`, `.ranked-tier-badge`, `.market-tier-badge`) instead of generic names like `.tier-badge`.
+- **Dense Panel Ergonomics**: For administrative panels with complex data (e.g., Debug Creator), prioritize **Two-Column Grids** (`grid-template-columns: 1fr 1.2fr`) over vertical stacks. This layout maximizes vertical space and allows simultaneous inspection of character previews and management lists.
+
 - **Stacked Sprite Separation**: Avoid using negative margins for overlapping sprites with opaque backgrounds in banners (e.g., Daycare). Use `gap` or absolute positioning with clear offsets to maintain legibility.
 
 ## 3.1 Asynchronous Interaction Feedback

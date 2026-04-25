@@ -13,11 +13,11 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: visible;
-  z-index: 1;
+  z-index: var(--z-base);
   display: flex;
 
   &:hover {
-    z-index: 200; // Above all other cards and their contents
+    z-index: var(--z-base); // Above all other cards and their contents
   }
   flex-direction: column;
   align-items: center;
@@ -35,7 +35,7 @@
     background-repeat: no-repeat;
     filter: var(--atmosphere-filter, Brightness(0.8) Contrast(1.1));
     transition: transform 0.6s ease, filter 0.5s ease;
-    z-index: 0;
+    z-index: var(--z-base);
     will-change: filter, transform;
     transform: TranslateZ(0); 
     @include smooth;
@@ -54,7 +54,7 @@
     );
     opacity: 0.35;
     transition: opacity 0.3s ease;
-    z-index: 1;
+    z-index: var(--z-base);
   }
 
   &:hover {
@@ -95,7 +95,7 @@
     }
   }
 
-  & > * { position: relative; z-index: 2; }
+  & > * { position: relative; z-index: var(--z-base); }
 }
 
 /* Header & Info */
@@ -107,11 +107,11 @@
   padding: 0 45px;
   text-align: center;
   pointer-events: none;
-  z-index: 5;
+  z-index: var(--z-base);
 }
 
 .location-name {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 11px;
   color: var(--yellow);
   text-shadow: 0 2px 0 rgba(0,0,0,1);
@@ -143,7 +143,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  z-index: 10; // Above background, below spawns (z:20)
+  z-index: var(--z-base); // Above background, below spawns (z:20)
   pointer-events: auto;
   transition: all 0.2s ease;
 
@@ -151,7 +151,7 @@
     transform: Scale(1.05);
     @include glass-solid(rgba(0, 0, 0, 0.95));
     border-color: rgba(255, 255, 255, 0.4);
-    z-index: 100; // Above Pokémon (z-20)
+    z-index: var(--z-base); // Above Pokémon (z-20)
   }
 }
 
@@ -194,14 +194,14 @@
   position: absolute;
   top: 65px;
   left: 12px;
-  z-index: 10;
+  z-index: var(--z-base);
 }
 
 .fishing-pill-standalone {
   position: absolute;
   bottom: 15px;
   left: 12px;
-  z-index: 10;
+  z-index: var(--z-base);
 }
 
 .interactive-pill {
@@ -290,7 +290,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 20; // On top of pills (z-10)
+  z-index: var(--z-base); // On top of pills (z-10)
   pointer-events: none;
 }
 
@@ -355,7 +355,7 @@
       border: 1.5px solid $black;
       background: linear-gradient(to bottom, #ff4b4b 50%, white 50%);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-      z-index: 10;
+      z-index: var(--z-base);
       pointer-events: none;
       @include smooth;
 
@@ -445,12 +445,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 15;
+  z-index: var(--z-base);
   pointer-events: none;
 }
 
 .lock-text {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   color: #ff4747;
   text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 2px 4px rgba(0,0,0,1);

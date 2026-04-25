@@ -111,6 +111,7 @@ const confirmRelease = () => {
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .team-header-container {
   margin-bottom: 25px;
 }
@@ -120,7 +121,7 @@ const confirmRelease = () => {
   align-items: center;
   justify-content: space-between;
   padding: 15px 20px;
-  background: #1a1a1a;
+  background: $card2;
   border: 4px solid #333;
   box-shadow: 0 0 0 4px $black;
   flex-wrap: wrap;
@@ -128,7 +129,7 @@ const confirmRelease = () => {
 }
 
 .section-title {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 14px;
   color: $white;
   margin: 0;
@@ -141,7 +142,7 @@ const confirmRelease = () => {
 }
 
 .legacy-btn {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   padding: 10px 15px;
   cursor: pointer;
@@ -169,7 +170,7 @@ const confirmRelease = () => {
   display: flex;
   align-items: center;
   gap: 15px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   line-height: 1.6;
   background: #111;

@@ -33,7 +33,7 @@ const cls = computed(() => {
 
 const borderColor = computed(() => {
   if (props.borderOverride) return props.borderOverride;
-  if (props.level >= 20) return '#ffd700'; // Gold
+  if (props.level >= 20) return '$coin-gold'; // Gold
   if (props.level >= 10) return '#c0c0c0'; // Silver
   return '#cd7f32'; // Bronze
 });

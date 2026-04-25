@@ -1,5 +1,5 @@
 @use "@/styles/core/tools" as *;
-@import "./debug-creator";
+@use "./debug-creator" as *;
 
 // Shared styles for Debug Components
 .debug-grid {
@@ -13,7 +13,7 @@
   
   label {
     display: block;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     @include pixelated;
     font-size: 7px;
     color: #94a3b8;
@@ -101,7 +101,7 @@
   border: 1px dashed rgba(124, 58, 237, 0.3);
   color: #c084fc;
   border-radius: 16px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   @include pixelated;
   font-size: 7px;
   cursor: pointer;
@@ -123,5 +123,5 @@
   font-size: 11px;
   color: #94a3b8;
 
-  strong { color: #fbbf24; font-family: 'Press Start 2P', monospace; @include pixelated; font-size: 8px; }
+  strong { color: #fbbf24; @include pixelated; @include pixelated; font-size: 8px; }
 }

@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+
 import { TAG_DEFINITIONS, POKEMON_BADGES } from '@/logic/constants/tags'
 import { getPokemonTier } from '@/logic/constants/tiers'
 
@@ -129,7 +131,7 @@ const hasBadges = computed(() => {
       />
 
       <div
-        class="tier-badge"
+        class="card-tier-badge"
         :style="{ '--tier-bg': tierInfo.bg, '--tier-color': tierInfo.color }"
       >
         {{ tierInfo.tier }}
@@ -138,24 +140,21 @@ const hasBadges = computed(() => {
 
     <!-- Sprite Section -->
     <div class="sprite-section">
-      <img
-        :src="spriteUrl"
-        :alt="pokemon.name"
-        class="pokemon-sprite"
-        @error="e => e.target.style.display = 'none'"
+      <PVSpriteFX
+        :is-shiny="pokemon.isShiny"
+        :is-guardian="pokemon.isGuardian"
+        :sparkle-count="5"
       >
-      <!-- Standardized Shiny FX -->
-      <div
-        v-if="pokemon.isShiny"
-        class="shiny-sparkles"
-      >
-        <div
-          v-for="i in 3"
-          :key="i"
-          class="sparkle"
-        />
-      </div>
+
+        <img
+          :src="spriteUrl"
+          :alt="pokemon.name"
+          class="pokemon-sprite"
+          @error="e => e.target.style.display = 'none'"
+        >
+      </PVSpriteFX>
     </div>
+
 
     <!-- Info Section -->
     <div class="pokemon-info">

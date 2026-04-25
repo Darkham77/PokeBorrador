@@ -202,7 +202,7 @@ const getTrainerSprite = (id) => {
   align-items: center;
   text-align: center;
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
 
     .avatar-box {
       position: relative;
@@ -228,7 +228,7 @@ const getTrainerSprite = (id) => {
         height: 220px;
         image-rendering: pixelated;
         filter: Drop-Shadow(0 20px 40px rgba(0,0,0,0.8));
-        z-index: 1;
+        z-index: var(--z-base);
         transition: transform 0.3s ease;
         &:hover { transform: Scale(1.05); }
       }
@@ -246,7 +246,7 @@ const getTrainerSprite = (id) => {
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        z-index: 10;
+        z-index: var(--z-base);
         box-shadow: 0 8px 25px rgba(0,0,0,0.6), 0 0 15px var(--cls-color)44;
 
         .avatar-pixel {

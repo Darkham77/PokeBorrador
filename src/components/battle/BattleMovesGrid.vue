@@ -77,6 +77,7 @@ const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') wi
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .moves-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -108,7 +109,7 @@ const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') wi
 }
 
 .move-name-txt {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   display: block;
   margin-bottom: 10px;

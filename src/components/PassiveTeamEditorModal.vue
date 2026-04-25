@@ -85,7 +85,7 @@ if (typeof window !== 'undefined') {
   text-align: center;
   padding: 40px;
   color: var(--gray);
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
 }
 

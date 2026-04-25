@@ -28,7 +28,7 @@ const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
             class="evo-sprite"
             @error="e => e.target.style.display = 'none'"
           >
-          <span class="target-name">{{ speciesName }}</span>
+          <span class="evo-target-name">{{ speciesName }}</span>
         </div>
         <div class="evo-arrow">
           <span class="method">{{ evo.requirement }}</span>
@@ -46,12 +46,12 @@ const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
             </template>
             <div
               v-else
-              class="unknown-placeholder"
+              class="evo-unknown-placeholder"
             >
               ?
             </div>
           </div>
-          <span class="target-name">
+          <span class="evo-target-name">
             {{ evo.isSeen ? (pokemonDataProvider.getPokemonData(evo.to.toLowerCase())?.name || evo.to) : '???' }}
           </span>
         </div>

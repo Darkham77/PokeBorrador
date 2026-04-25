@@ -82,7 +82,7 @@
     border-radius: 8px;
     padding: 8px;
     color: var(--gray);
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     cursor: pointer;
     transition: all 0.2s;
@@ -113,7 +113,7 @@
   }
 
   .section-label {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     color: rgba(255, 255, 255, 0.4);
     letter-spacing: 1px;
@@ -124,8 +124,8 @@
     border: 1px solid rgba(255, 69, 58, 0.2);
     border-radius: 6px;
     padding: 4px 8px;
-    color: #ff453a;
-    font-family: 'Press Start 2P', monospace;
+    color: $red;
+    @include pixelated;
     font-size: 8px;
     cursor: pointer;
     transition: all 0.2s;
@@ -164,7 +164,7 @@
     }
 
     .label {
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 8px;
       color: var(--gray);
     }
@@ -261,14 +261,14 @@
   justify-content: center;
   background: transparent;
   overflow: visible;
-  z-index: 1;
+  z-index: var(--z-base);
 
   .preview-bg {
     position: absolute;
     inset: 4px;
     background: radial-gradient(circle at center, var(--type-color) 0%, transparent 70%);
     opacity: 0.3;
-    z-index: 0;
+    z-index: var(--z-base);
   }
 
   img {
@@ -276,23 +276,12 @@
     height: 56px;
     image-rendering: pixelated;
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
     filter: Drop-shadow(0 4px 8px rgba(0,0,0,0.5));
     transition: transform 0.3s ease;
   }
 
-  .sprite-container.is-guardian img {
-    @include aura-guardian;
-  }
 
-  .shiny-star {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    font-size: 12px;
-    filter: Drop-shadow(0 0 5px var(--yellow));
-    z-index: 2;
-  }
 }
 
 .mini-badges {
@@ -308,8 +297,8 @@
   min-height: 14px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: Blur(4px);
-  z-index: 2;
+  -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
+  z-index: var(--z-base);
 
   .pv-tooltip-wrapper {
     display: inline-flex;
@@ -345,7 +334,7 @@
       .name {
         font-weight: 800;
         color: $white;
-        font-family: 'Press Start 2P', monospace;
+        @include pixelated;
         font-size: 8px;
       }
 
@@ -357,7 +346,7 @@
       }
 
       .species-subtitle {
-        font-family: 'Press Start 2P', monospace;
+        @include pixelated;
         font-size: 8px;
         color: rgba(255, 255, 255, 0.3);
         text-transform: uppercase;
@@ -375,7 +364,7 @@
       gap: 10px;
 
       .lvl {
-        font-family: 'Press Start 2P', monospace;
+        @include pixelated;
         font-size: 8px;
         color: var(--yellow);
       }
@@ -398,7 +387,7 @@
         padding: 3px 6px;
         border-radius: 4px;
         color: white;
-        font-family: 'Press Start 2P', monospace;
+        @include pixelated;
         background: rgba(255, 255, 255, 0.1);
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -413,7 +402,7 @@
       .stat-badge {
         font-size: 8px;
         color: var(--gray);
-        font-family: 'Press Start 2P', monospace;
+        @include pixelated;
         background: rgba(255, 255, 255, 0.03);
         padding: 3px 6px;
         border-radius: 4px;
@@ -460,7 +449,7 @@
   gap: 15px;
 
   .count {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     color: var(--gray);
     text-align: center;
@@ -484,6 +473,6 @@
   padding: 40px;
   text-align: center;
   color: var(--gray);
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
 }

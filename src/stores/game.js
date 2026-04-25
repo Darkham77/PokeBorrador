@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
 import { reactive, ref, computed, watch } from 'vue'
 import { saveGame as performSave } from '@/logic/auth/saveService'

@@ -101,6 +101,7 @@ const activeEventData = computed(() => {
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .map-view-container {
   padding: 0 0 40px;
   width: 100%;
@@ -123,7 +124,7 @@ const activeEventData = computed(() => {
 }
 
 .divider-text {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   color: #666;
   letter-spacing: 2px;

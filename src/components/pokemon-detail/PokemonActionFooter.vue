@@ -70,7 +70,7 @@ const canBuy = computed(() => {
   gap: 16px;
 
   .price {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 14px;
     font-weight: 900;
     color: var(--yellow);

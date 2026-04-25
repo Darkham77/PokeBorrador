@@ -125,7 +125,7 @@ const selectPokemon = (p) => {
   inset: 0;
   z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
   -webkit-backdrop-filter: Blur(4px);
   display: flex;
   align-items: center;

@@ -56,7 +56,7 @@ const authStore = useAuthStore()
   z-index: var(--z-critical);
   background: rgba(0, 0, 0, 0.85);
   -webkit-backdrop-filter: Blur(15px) Grayscale(0.5);
-  backdrop-filter: Blur(15px) Grayscale(0.5);
+  -webkit-backdrop-filter: Blur(15px) Grayscale(0.5); -webkit-backdrop-filter: Blur(15px) Grayscale(0.5); backdrop-filter: Blur(15px) Grayscale(0.5);
   display: flex;
   align-items: center;
   justify-content: center;

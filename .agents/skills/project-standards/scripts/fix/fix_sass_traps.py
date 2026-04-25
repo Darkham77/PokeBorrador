@@ -35,6 +35,10 @@ def fix_file(filepath):
     rgba_var_regex = re.compile(r'rgba\([^)]*var\(--')
     new_content = rgba_var_regex.sub(lambda m: m.group(0).replace('rgba', 'Rgba'), new_content)
 
+    # 3. Fix @import -> @use as * (to preserve global visibility as a fallback)
+    import_regex = re.compile(r'@import\s+(?!url\()["\']([^"\']+)["\'];?')
+    new_content = import_regex.sub(r'@use "\1" as *;', new_content)
+
     if new_content != content:
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(new_content)

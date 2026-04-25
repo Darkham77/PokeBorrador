@@ -202,6 +202,7 @@ const requestSummary = computed(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .trade-modal-inner {
   padding: 8px 0;
 }
@@ -224,7 +225,7 @@ const requestSummary = computed(() => {
 
     .label { 
       font-size: 8px; 
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       color: var(--gray);
     }
     .value { 

@@ -61,7 +61,7 @@ const isMax = computed(() => criminality.value >= 100)
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 100;
+  z-index: var(--z-base);
   pointer-events: none;
   padding: 15px 10px;
 }

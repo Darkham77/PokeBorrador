@@ -9,7 +9,7 @@
   gap: var(--ui-v-gap);
   @include gpu-layer;
   pointer-events: auto !important;
-  z-index: 10;
+  z-index: var(--z-base);
 }
 
 .pokedex-header {
@@ -27,7 +27,7 @@
 
   .title-group {
     h1 {
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       font-size: 24px;
       color: $white;
       margin: 0 0 12px 0;
@@ -74,14 +74,14 @@
       font-size: 8px;
       color: var(--gray);
       margin-bottom: 8px;
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       @include pixelated;
     }
     .stat-value {
       font-size: 24px;
       font-weight: 700;
       color: #f8fafc;
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       @include pixelated;
       
       small { font-size: 8px; color: var(--gray); margin-left: 4px; }
@@ -125,7 +125,7 @@
     border: none;
     background: none;
     color: var(--gray);
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     cursor: pointer;
     border-radius: 8px;
@@ -176,7 +176,7 @@
   .sort-label {
     font-size: 8px;
     color: var(--gray);
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     @include pixelated;
   }
 
@@ -185,7 +185,7 @@
     background: none;
     border: 1px solid transparent;
     color: var(--gray);
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     cursor: pointer;
     border-radius: 6px;
@@ -305,7 +305,7 @@
     left: 12px; // Increased to give more room from the corner
     font-size: 7px; // Slightly smaller
     color: rgba(255, 255, 255, 0.2);
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     @include pixelated;
   }
 
@@ -317,7 +317,7 @@
     justify-content: center;
     margin-top: 4px; // Push slightly away from top edge
     margin-bottom: 2px; // Reduced from 8px
-    z-index: 2;
+    z-index: var(--z-base);
     position: relative;
 
     .pokemon-sprite {
@@ -331,22 +331,13 @@
         filter: Brightness(0) Drop-Shadow(0 0 1px rgba(255,255,255,0.2));
         opacity: 1; // Solid black as requested
       }
-      
-      &.is-guardian { @include aura-guardian; }
     }
 
-    .shiny-sparkles {
-      @include fx-shiny(3);
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 5;
-    }
 
     .unknown-placeholder {
       font-size: 32px; // Smaller to fit
       color: rgba(255, 255, 255, 0.08); // Brighter than the card background
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       text-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
     }
   }
@@ -358,12 +349,12 @@
     align-items: center;
     min-height: 20px; // Reduced from 24px
     margin-bottom: 4px; // Close to bottom but not touching
-    z-index: 2;
+    z-index: var(--z-base);
 
     .pokemon-name {
       color: var(--gray);
       font-size: 8px;
-      font-family: 'Press Start 2P', monospace;
+      @include pixelated;
       text-transform: uppercase;
       text-align: center;
       transition: color 0.3s;

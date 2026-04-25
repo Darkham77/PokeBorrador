@@ -24,7 +24,7 @@
     background-position: center;
     background-repeat: no-repeat;
     filter: var(--atmosphere-filter, Brightness(0.8) Contrast(1.1));
-    z-index: 0;
+    z-index: var(--z-base);
     transition: transform 0.6s ease, filter 0.4s ease;
   }
 
@@ -32,7 +32,7 @@
     transform: translate3d(0, -8px, 0);
     border-color: $yellow;
     box-shadow: 0 0 0 1px $yellow, 0 12px 30px rgba(0, 0, 0, 0.5);
-    z-index: 100;
+    z-index: var(--z-base);
     
     &::before {
       transform: scale3d(1.1, 1.1, 1);

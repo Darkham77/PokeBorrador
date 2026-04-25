@@ -46,6 +46,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .profile-stat-grid-legacy {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -63,7 +64,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
   flex-direction: column;
   gap: 10px;
   transition: all 0.2s ease;
-  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
 
   &:hover {
     background: rgba(30, 41, 59, 0.5);
@@ -84,7 +85,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
 }
 
 .legacy-stat-val {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 14px;
   color: $white;
   display: flex;
@@ -95,7 +96,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
 }
 
 .legacy-stat-lbl {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 6px;
   color: rgba(255, 255, 255, 0.3);
   text-transform: uppercase;

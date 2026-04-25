@@ -141,7 +141,7 @@ const close = () => {
   align-items: center;
   justify-content: center;
   font-family: 'Press Start 2P', cursive;
-  backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   -webkit-backdrop-filter: Blur(10px);
   transform: translateZ(0);
 }
@@ -190,7 +190,7 @@ const close = () => {
   height: 160px;
   image-rendering: pixelated;
   position: relative;
-  z-index: 2;
+  z-index: var(--z-base);
   
   &.from {
     filter: Brightness(1);

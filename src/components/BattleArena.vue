@@ -169,7 +169,7 @@ watch(() => player.value?.hp, (newHp) => {
 .battle-combatants {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-base);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -191,11 +191,11 @@ watch(() => player.value?.hp, (newHp) => {
   position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.6);
-  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: var(--z-base);
   @include gpu-layer;
 }
 
@@ -204,7 +204,7 @@ watch(() => player.value?.hp, (newHp) => {
   color: $white;
   border: none;
   padding: 20px 50px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 14px;
   border-radius: 16px;
   cursor: pointer;

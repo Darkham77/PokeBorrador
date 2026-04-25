@@ -51,6 +51,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .actions-container {
   display: flex;
   flex-direction: column;
@@ -70,7 +71,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   border-radius: 14px;
   padding: 15px;
   color: $white;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 9px;
   cursor: pointer;
   transition: all 0.2s;
@@ -117,7 +118,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   background: $white;
   border: 4px solid #333;
   border-radius: 50%;
-  z-index: 10;
+  z-index: var(--z-base);
   box-shadow: 0 0 0 4px $white, 0 0 15px rgba(0,0,0,0.2);
 }
 
@@ -135,7 +136,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   border-radius: 12px;
   padding: 10px;
   color: var(--orange);
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 9px;
   cursor: pointer;
 }

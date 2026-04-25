@@ -32,6 +32,7 @@ const compatStyle = computed(() => props.compatText[props.compatibility.level] |
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .compat-panel-retro {
   background: rgba(0,0,0,0.3);
   border: 1px solid rgba(255,255,255,0.05);
@@ -43,7 +44,7 @@ const compatStyle = computed(() => props.compatText[props.compatibility.level] |
     display: flex; align-items: center; gap: 12px; margin-bottom: 15px;
     .compat-icon { font-size: 20px; }
     .compat-label { 
-      font-family: 'Press Start 2P', monospace; font-size: 9px; 
+      @include pixelated; font-size: 9px; 
       color: var(--compat-color); text-shadow: 0 0 8px var(--compat-color);
     }
     .compat-reason { font-size: 10px; color: #475569; }

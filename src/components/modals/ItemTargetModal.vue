@@ -111,6 +111,7 @@ const getHpColor = (p) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .item-target-inner {
   padding: 8px 0;
 }
@@ -168,7 +169,7 @@ const getHpColor = (p) => {
     gap: 8px;
     margin-bottom: 6px;
     .p-name { font-weight: 700; font-size: 14px; color: $white; }
-    .p-lv { font-size: 10px; color: var(--gray); font-family: 'Press Start 2P', monospace; }
+    .p-lv { font-size: 10px; color: var(--gray); @include pixelated; }
   }
 
   .hp-bar-container {
@@ -192,7 +193,7 @@ const getHpColor = (p) => {
   }
 
   .select-hint {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 7px;
     color: var(--yellow);
     opacity: 0;
@@ -207,7 +208,7 @@ const getHpColor = (p) => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   color: var(--gray);
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 9px;
   cursor: pointer;
   transition: all 0.2s;

@@ -146,21 +146,6 @@
 }
 
 /* ===== MODAL TOOLTIPS (Natures/Abilities) ===== */
-.tooltip-wrap {
-  position: relative;
-  display: inline-block;
-  cursor: help;
-  
-  &:hover, &.touched {
-    .tooltip-box {
-      display: block;
-      opacity: 1;
-      visibility: visible;
-      transform: translateX(-50%) translateY(0);
-    }
-  }
-}
-
 .tooltip-box {
   display: none;
   position: absolute;
@@ -181,8 +166,14 @@
   text-align: left;
   white-space: normal;
   line-height: 1.5;
-  -webkit-backdrop-filter: Blur(12px);
-  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
+
+  .tooltip-wrap:hover &, .tooltip-wrap.touched & {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
 
   .tooltip-title {
     display: block;

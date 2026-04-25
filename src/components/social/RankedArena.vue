@@ -218,6 +218,7 @@ function startSearch() {
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .arena-container {
   height: 600px;
   position: relative;
@@ -230,9 +231,9 @@ function startSearch() {
 .offline-mask {
   position: absolute;
   inset: 0;
-  z-index: 10;
+  z-index: var(--z-base);
   background: rgba(0,0,0,0.8);
-  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -245,7 +246,7 @@ function startSearch() {
 }
 
 .lock-card .icon { font-size: 48px; display: block; margin-bottom: 20px; }
-.lock-card h3 { font-family: 'Press Start 2P', monospace; font-size: 12px; color: $white; margin-bottom: 15px; }
+.lock-card h3 { @include pixelated; font-size: 12px; color: $white; margin-bottom: 15px; }
 .lock-card p { font-size: 12px; color: #888; line-height: 1.5; }
 
 .arena-main {
@@ -303,7 +304,7 @@ function startSearch() {
 
 .tier-label {
   font-size: 9px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   color: #666;
 }
 
@@ -312,7 +313,7 @@ function startSearch() {
   background: rgba(255,255,255,0.1);
   padding: 4px 10px;
   border-radius: 10px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 9px;
 }
 
@@ -348,7 +349,7 @@ function startSearch() {
   padding: 8px 16px;
   border-radius: 12px;
   border: none;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
   background: #333;
@@ -374,7 +375,7 @@ function startSearch() {
 }
 
 .season-timer {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 7px;
   color: var(--yellow, $yellow);
   background: rgba(255, 214, 10, 0.1);
@@ -406,7 +407,7 @@ function startSearch() {
 
 .m-icon { font-size: 24px; }
 .m-info { flex: 1; }
-.m-elo { display: block; font-family: 'Press Start 2P', monospace; font-size: 8px; color: #888; margin-bottom: 4px; }
+.m-elo { display: block; @include pixelated; font-size: 8px; color: #888; margin-bottom: 4px; }
 .m-prize { font-weight: 600; font-size: 13px; }
 
 .claim-btn {
@@ -434,7 +435,7 @@ function startSearch() {
 }
 
 .rules-hint h4 {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: #666;
   margin-bottom: 12px;
@@ -474,7 +475,7 @@ function startSearch() {
   border-radius: 14px;
   background: linear-gradient(135deg, $blue, #0056b3);
   color: white;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   cursor: pointer;
   display: flex;

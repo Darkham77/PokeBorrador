@@ -270,11 +270,12 @@ const handleToggleTag = (tag) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .box-menu-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   -webkit-backdrop-filter: Blur(8px);
   z-index: var(--z-modal);
   display: flex;
@@ -287,7 +288,7 @@ const handleToggleTag = (tag) => {
 .box-menu-card {
   width: 100%;
   max-width: 380px;
-  background: #1a1a1a;
+  background: $card2;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -304,7 +305,7 @@ const handleToggleTag = (tag) => {
   border-bottom: 1px solid rgba(255,255,255,0.05);
 
   .pokemon-id {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     color: rgba(255, 255, 255, 0.3);
     margin-bottom: 8px;
@@ -318,7 +319,7 @@ const handleToggleTag = (tag) => {
   }
 
   .pokemon-name {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 10px;
     color: var(--yellow);
     margin: 12px 0 6px;
@@ -326,7 +327,7 @@ const handleToggleTag = (tag) => {
   }
 
   .species-subtitle {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 7px;
     color: rgba(255, 255, 255, 0.3);
     margin-top: -4px;
@@ -410,7 +411,7 @@ const handleToggleTag = (tag) => {
 .swap-section {
   margin: 10px 0;
   .section-title {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     color: var(--purple);
     margin-bottom: 12px;
@@ -457,7 +458,7 @@ const handleToggleTag = (tag) => {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     color: var(--gray);
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 9px;
     cursor: pointer;
     &:hover { background: rgba(255, 255, 255, 0.05); color: $white; }

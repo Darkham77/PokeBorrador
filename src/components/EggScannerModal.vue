@@ -233,11 +233,12 @@ const _getSprite = (id, shiny) => {
 </template>
 
 <style scoped>
+@use "@/styles/core/_mixins" as *;
 .scanner-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   -webkit-backdrop-filter: Blur(8px);
   z-index: var(--z-modal);
   display: flex;
@@ -264,7 +265,7 @@ const _getSprite = (id, shiny) => {
 }
 
 .scanner-header h3 {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 11px; color: #a855f7; margin: 0;
 }
 
@@ -331,13 +332,13 @@ const _getSprite = (id, shiny) => {
 
 .keep-btn {
   padding: 14px; background: #22c55e; color: $black; border: none; border-radius: 12px;
-  font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer;
+  @include pixelated; font-size: 8px; cursor: pointer;
 }
 
 .sell-btn {
   padding: 14px; background: rgba(234, 179, 8, 0.1); color: #eab308; 
   border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 12px;
-  font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer;
+  @include pixelated; font-size: 8px; cursor: pointer;
 }
 
 .back-link {

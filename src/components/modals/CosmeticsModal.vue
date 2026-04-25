@@ -235,7 +235,7 @@ const selectAvatar = (id) => {
 }
 
 /* --- NICK STYLE CLASSES --- */
-.nt-gold { color: #FFD700; text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
+.nt-gold { color: $coin-gold; text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
 .nt-silver { color: #E2E8F0; text-shadow: 0 0 8px rgba(226, 232, 240, 0.4); }
 .nt-bronze { color: #CD7F32; text-shadow: 0 0 5px rgba(205, 127, 50, 0.4); }
 .nt-fire { color: #FF4500; animation: anim-fire 2s infinite alternate; }

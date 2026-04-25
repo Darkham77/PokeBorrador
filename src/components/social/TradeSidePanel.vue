@@ -104,6 +104,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .trade-side {
   display: flex;
   flex-direction: column;
@@ -111,7 +112,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
 
   .side-title {
     font-size: 10px;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     color: var(--gray);
     letter-spacing: 1px;
   }
@@ -124,7 +125,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   border: 2px dashed rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   color: #888;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -155,7 +156,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
 
   .preview-sprite { width: 48px; height: 48px; image-rendering: pixelated; }
   .preview-info { flex: 1; .name { font-weight: 800; font-size: 14px; color: $white; } .meta { font-size: 11px; color: #888; } }
-  .change-hint { position: absolute; right: 15px; font-size: 8px; font-family: 'Press Start 2P', monospace; color: var(--purple); opacity: 0.6; transition: opacity 0.2s; }
+  .change-hint { position: absolute; right: 15px; font-size: 8px; @include pixelated; color: var(--purple); opacity: 0.6; transition: opacity 0.2s; }
 }
 
 .item-selection-grid {
@@ -186,7 +187,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   display: flex;
   flex-direction: column;
   gap: 8px;
-  label { font-size: 9px; font-family: 'Press Start 2P', monospace; color: var(--gray); }
+  label { font-size: 9px; @include pixelated; color: var(--gray); }
   input {
     background: rgba(0,0,0,0.3);
     border: 1px solid rgba(255,255,255,0.1);

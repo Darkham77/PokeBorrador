@@ -60,7 +60,7 @@ function getSprite(pokemon) {
           <div class="visual-area">
             <template v-if="item.listing_type === 'pokemon'">
               <div
-                class="tier-badge"
+                class="market-tier-badge"
                 :style="{ background: getTierData(item.data).bg }"
               >
                 {{ getTierData(item.data).tier }}
@@ -122,6 +122,7 @@ function getSprite(pokemon) {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .market-explorer {
   height: 100%;
   display: flex;
@@ -188,7 +189,7 @@ function getSprite(pokemon) {
   
   .item-icon { font-size: 32px; }
 
-  .tier-badge {
+  .market-tier-badge {
     position: absolute;
     top: -6px;
     right: -6px;
@@ -225,9 +226,9 @@ function getSprite(pokemon) {
   }
 
   .price-tag {
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 9px;
-    color: #ffd700;
+    color: $coin-gold;
   }
 }
 

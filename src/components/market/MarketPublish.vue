@@ -174,6 +174,7 @@ const net = computed(() => price.value - fee.value)
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .market-publish-wizard {
   height: 100%;
   display: flex;
@@ -205,7 +206,7 @@ const net = computed(() => price.value - fee.value)
     border: none;
     background: transparent;
     color: $muted;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     font-size: 8px;
     cursor: pointer;
     border-radius: 10px;
@@ -310,7 +311,7 @@ const net = computed(() => price.value - fee.value)
   label {
     display: block;
     font-size: 9px;
-    font-family: 'Press Start 2P', monospace;
+    @include pixelated;
     color: #a855f7;
     margin-bottom: 12px;
     text-align: center;
@@ -321,8 +322,8 @@ const net = computed(() => price.value - fee.value)
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     padding: 16px;
-    color: #ffd700;
-    font-family: 'Press Start 2P', monospace;
+    color: $coin-gold;
+    @include pixelated;
     font-size: 16px;
     text-align: center;
     outline: none;
@@ -363,7 +364,7 @@ const net = computed(() => price.value - fee.value)
   color: $white;
   border: none;
   border-radius: 16px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 10px;
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);

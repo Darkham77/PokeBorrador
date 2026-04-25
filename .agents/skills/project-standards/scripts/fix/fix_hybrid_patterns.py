@@ -3,29 +3,40 @@ import os
 import re
 import sys
 
-# Color Mapping: Hex -> SASS Variable
-COLOR_MAP = {
-    r'#ffd60a': '$yellow',
-    r'#ff453a': '$red',
-    r'#0a84ff': '$blue',
-    r'#32d74b': '$green',
-    r'#bf5af2': '$purple',
-    r'#0a0a0a': '$dark',
-    r'#000000': '$darker',
-    r'#f5f5f7': '$text',
-    r'#86868b': '$gray',
-    r'#64748b': '$muted',
-    r'#1c2128': '$card-dark',
-    r'#fff': '$white',
-    r'#ffffff': '$white',
-    r'#000': '$black',
-}
+def load_color_map():
+    vars_path = 'src/styles/core/_variables.scss'
+    color_map = {}
+    try:
+        if not os.path.exists(vars_path):
+            return {}
 
-# Regex for img tag without @error
-IMG_REGEX = re.compile(r'(<img\s+)(?![^>]*@error)([^>]*>)')
+        with open(vars_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            # Match $variable: #hex;
+            matches = re.findall(r'\$([a-zA-Z0-9_-]+):\s*(#(?:[0-9a-fA-F]{3,6}));', content)
+            for name, hex_code in matches:
+                # We prefer SASS variables in .scss files
+                color_map[hex_code.lower()] = f'${name}'
+            
+            # Special manual mappings for common aliases
+            color_map['#ffffff'] = '$white'
+            color_map['#fff'] = '$white'
+            color_map['#000000'] = '$black'
+            color_map['#000'] = '$black'
+            
+        return color_map
+    except Exception as e:
+        print(f"[WARNING] Error parsing colors: {e}")
+        return {}
 
-# Files to NEVER touch with color replacement
-EXCLUDE_FILES = ['_variables.scss', '_colors.scss', '_z-index.scss', '_mixins.scss']
+COLOR_MAP = load_color_map()
+
+# Regex for img tag without @error (Multi-line safe)
+IMG_REGEX = re.compile(r'(<img\s+)(?![^>]*?@error)(.*?>)', re.DOTALL | re.IGNORECASE)
+
+# Files and directories to NEVER touch with automated repair
+EXCLUDE_FILES = ['_variables.scss', '_colors.scss', '_z-index.scss', '_mixins.scss', '_typography.scss']
+IGNORE_PATHS = ['src/styles/core', 'src/styles/tokens']
 
 def fix_file(filepath):
     filename = os.path.basename(filepath)
@@ -81,6 +92,11 @@ def main():
             for file in files:
                 if any(file.endswith(ext) for ext in extensions):
                     path = os.path.join(root, file)
+                    # Convert backslashes to forward slashes for cross-platform matching
+                    normalized_path = path.replace('\\', '/')
+                    if any(normalized_path.startswith(p) for p in IGNORE_PATHS):
+                        continue
+                        
                     if fix_file(path):
                         print(f"FIXED: {path}")
                         fixed_count += 1

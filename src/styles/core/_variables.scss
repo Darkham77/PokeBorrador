@@ -48,6 +48,15 @@ $legacy-glow:  rgba(255, 217, 61, 0.25);
   --bg-card: #{$legacy-card};
   --glow-yellow: #{$legacy-glow};
 
+  // Glassmorphism System
+  --glass-bg: rgba(15, 18, 32, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-edge: rgba(255, 255, 255, 0.06);
+  
+  // Typography Source of Truth (CSS)
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-ui: 'Nunito', sans-serif;
+
   // Z-Index Layers (Standardized)
   --z-base: 0;
   --z-hud: 1000;

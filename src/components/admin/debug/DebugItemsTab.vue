@@ -100,7 +100,7 @@ async function addItem(item, qty = 10) {
   }
 
   .name { font-size: 16px; flex: 1; font-weight: 600; color: $text; }
-  .add { font-size: 8px; color: $green; font-family: 'Press Start 2P', monospace; image-rendering: pixelated; }
+  .add { font-size: 8px; color: $green; @include pixelated; image-rendering: pixelated; }
   .icon { font-size: 16px; }
 }
 </style>

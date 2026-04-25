@@ -68,7 +68,9 @@ Refer to these manuals for complex implementation specifications:
 - **Animation Integrity**: ALWAYS verify that CSS transition names (e.g., `.slide-left-leave-active`) match the defined classes to prevent abrupt modal closures.
 - **CLI-First Admin Governance**: All administrative and debug tools (Stats, Items, Events, Map, etc.) MUST follow a CLI-first architecture.
   - **Centralized logic**: All logic must reside in `src/stores/debug.js` and be exposed via the `window.__VITE_DEBUG__` proxy.
-  - **UI-to-CLI Delegation**: Administrative UI components MUST NOT manipulate stores or databases directly. They must act as thin wrappers that invoke `window.__VITE_DEBUG__` commands.
+  - **Mandatory Child Component Registration**: In Vue 3 `<script setup>`, sub-components (extracted for modularity) DO NOT inherit global component registration from parent modals unless they are registered in the main application instance.
+  - **REQUIRED**: Always explicitly import and register common components like `PVTooltip` or `BaseModal` inside the sub-component's `<script setup>` to prevent "undefined component" rendering errors.
+- **CLI-First Admin Delegation**: Administrative UI components (Debug panels, Event managers) MUST NOT manipulate stores or databases directly. They must act as thin wrappers that invoke `window.__VITE_DEBUG__` commands.
   - **Fast Navigation & Inspection**: Expose commands for teleportation (`navigate`, `openModal`) and direct store inspection (`getGameStore`) to ensure agents can reach targets and verify state without DOM reliance.
   - **No-CLI Login Perimeter**: The login process MUST NOT support CLI shortcuts or automated triggers (e.g. `auth.login()`). AI agents and scripts MUST perform login exclusively via UI interaction (typing and clicking) to maintain authentication integrity. The `window.__VITE_DEBUG__` proxy MUST remain inactive/deleted until a successful admin session is established.
   - **CLI-First Verification Protocol**: When adding new content (Pokemon, items, moves), it is MANDATORY to use `window.__VITE_DEBUG__` commands for automated verification (e.g., `createPokemon`, `spawnEncounter`). This protocol ensures that verification is fast, reproducible, and independent of UI state.
@@ -87,6 +89,7 @@ Refer to these manuals for complex implementation specifications:
 ### 3. The 500-Line Threshold
 
 - **MANDATORY**: No `.vue`, `.js`, or `.scss` file may exceed 500 lines (excepts "databases" style files).
+- **Refactoring Requirement**: When a component (e.g., a Debug Panel) exceeds this limit, it MUST be decomposed into independent sub-components (e.g., `PanelPreview.vue`, `PanelControls.vue`) to maintain architectural clarity and performance.
 - **Exception**: Data-only definition files and external/legacy backups.
 - **Action**: Refactor any violator file you touch before submitting.
 
@@ -95,7 +98,12 @@ Refer to these manuals for complex implementation specifications:
 - **FORBIDDEN**: Direct DOM manipulation (`querySelector`, `innerHTML`, etc.).
 - **REQUIRED**: All UI state MUST be reactive (Refs, Reactive, Pinia).
 - **Pinia Naming**: Always verify and match the exact capitalization of Pinia store exports (e.g., `useUIStore` vs `useUiStore`). Incorrect capitalization in imports will lead to silent failures or module resolution errors in Vite.
-- **Audit**: Run `python3 .agents/skills/project-standards/scripts/detect_hybrid_patterns.py` after UI changes.
+- **Audit**: Run `python3 .agents/skills/project-standards/scripts/audit_project.py` after UI changes to run a full health check.
+- **Repair**: Run `python3 .agents/skills/project-standards/scripts/repair_project.py` to automatically fix common SASS and Aesthetic violations.
+- **Engine Registration**: Any new audit or repair script created in the `scripts/audit/` or `scripts/fix/` directory MUST be registered in the corresponding unified engine (`audit_project.py` or `repair_project.py`) to ensure global compliance.
+- **Sync Mandate**: Whenever technical documentation or this Skill is modified, it is MANDATORY to review and update the audit scripts, repair scripts, and unified entry points to ensure that new rules or structural changes are reflected in the validation engine.
+- **Source of Truth (SoT) for Automation**: Automation scripts (Audit/Repair) MUST NOT hardcode values that are already defined in centralized configuration files (e.g., `_variables.scss`). Scripts must dynamically parse these files to ensure the governance engine remains synchronized with the project's architectural evolution.
+- **In-file Whitelisting**: To exempt a file from specific audit rules (like the 500-line limit), add a comment on the first line: `// [PureVue-Ignore-Length]`.
 
 ### 5. Architectural Reuse & Inheritance
 
@@ -158,7 +166,7 @@ Refer to these manuals for complex implementation specifications:
 
 - **Pattern**: Transitions MUST use `Translate3d` and `Opacity` for maximum fluidity.
 - **FORBIDDEN**: Animating layout-triggering properties like `margin`, `padding`, `width`, or `height`.
-- **Audit**: Run `python3 .agents/skills/project-standards/scripts/detect_gpu_gaps.py` after implementing UI changes.
+- **Audit**: Run `python3 .agents/skills/project-standards/scripts/audit/detect_gpu_gaps.py` after implementing UI changes.
 
 ---
 
@@ -175,7 +183,10 @@ Refer to these manuals for complex implementation specifications:
 - **SASS @use Position (CRITICAL)**: All `@use` declarations MUST be the very first lines of any `.scss` or `.vue` style block. Appending them to the end of a file causes catastrophic build failures.
 - **SFC Scoped @use**: When using `@use` inside a `<style scoped>` block to import rules (not just variables), ALWAYS use `as *` (e.g., `@use "path" as *;`) to ensure the styles are correctly namespaced within the Vue component scope.
 - **MANDATORY**: Use **Capitalization** for `Scale()`, `Blur()`, `Rotate()`, `TranslateX()`, `TranslateY()`, `TranslateZ()`, `Grayscale()`, `Brightness()`, `Saturate()`, `Drop-shadow()`, etc.
-- **GPU Tip**: Prefer `opacity: X` property over `filter: Opacity(X)` for better performance and to avoid SASS traps.
+- **GPU Tip**: Prefer `opacity: X` property over `filter: Opacity(X)` for better performance and to avoid SASS deprecation warnings entirely.
+- **SASS @import Deprecation (MANDATORY)**: The legacy `@import` directive is strictly forbidden for SASS files. You MUST use `@use` or `@forward`.
+  - **WHY**: `@import` is deprecated and will be removed in Dart Sass 3.0.0. It also causes namespace pollution and double-compilation issues.
+  - **Exception**: CSS imports (e.g., `@import url(...)`) are still permitted for external fonts.
 - **SFC Scoped Isolation**: Scoped styles (`<style scoped>`) do NOT cascade to child component roots. When extracting sub-components (e.g., Tabs), either use non-scoped styles with central partial imports (`@use "@/styles/components/pokedex-detail"`) or inline critical styles to prevent "broken" aesthetics.
 
 ### 3. CSS Redundancy & Specificity
@@ -189,14 +200,14 @@ Refer to these manuals for complex implementation specifications:
 - **3D Depth Integrity**: Active states (`.active`) MUST NOT strip the button's bottom shadow. Maintain the "dark part" by calculating highlights only on the top surface.
 - **SASS vs CSS Variables**: SASS color functions (like `color.scale`) cannot process `var(--color)`. For interactive highlights, use static SASS fallbacks for calculations while maintaining the CSS variable for the main render to support dynamic theming.
 - **Debug Density**: Admin/Debug buttons should fit content (`flex: 0 0 auto`) to avoid horizontal stretching and text overlap in dense rows.
-- **Audit**: Run `python3 .agents/skills/project-standards/scripts/detect_css_redundancy.py` to identify overlaps and plan refactoring.
+- **Audit**: Run `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py` to identify overlaps and plan refactoring.
 
 ### 2. SASS Math & Strings
 
 - **REQUIRED**: Use namespaced functions (e.g., `math.random`, `string.unquote`).
 - **Audit & Fix**:
   - **AUTOMATED**: A Vite plugin (`sassTrapsFixer`) is now active in `vite.config.js`. It automatically capitalizes trap functions and fixes `rgba(var())` collisions during development and build.
-  - Run `python3 .agents/skills/project-standards/scripts/check_sass_traps.py` to manually verify.
+  - Run `python3 .agents/skills/project-standards/scripts/audit/check_sass_traps.py` to manually verify.
 
 ### 4. Specificity & Collision Control
 
@@ -204,8 +215,8 @@ Refer to these manuals for complex implementation specifications:
 - **FORBIDDEN**: Duplicating complex layouts (like negative margins and absolute positioning) across multiple files. This leads to "Style Pollution" where one file overrides another unpredictably.
 - **REQUIRED**: Avoid `!important` in component styles. If you need to override a base style, use higher specificity or parameterize the base mixin.
 - **Audit & Repair**:
-  - Run `python3 .agents/skills/project-standards/scripts/detect_hybrid_patterns.py` to identify standards violations (Z-Index, DOM access, Hardcoded colors).
-  - Run `python3 .agents/skills/project-standards/scripts/fix_hybrid_patterns.py` to automatically inject image fallbacks and standardize core colors.
+  - Run `python3 .agents/skills/project-standards/scripts/audit/detect_hybrid_patterns.py` to identify standards violations (Z-Index, DOM access, Hardcoded colors).
+  - Run `python3 .agents/skills/project-standards/scripts/fix/fix_hybrid_patterns.py` to automatically inject image fallbacks and standardize core colors.
 - **Hex Replacement Safety**: Repair scripts MUST sort color patterns by length descending (e.g., `#ffffff` before `#fff`) and use negative lookaheads `(?![0-9a-fA-F])` to prevent partial/corrupted replacements (e.g., `#ffff00` becoming `$whitef00`).
 
 ### 5. Modular Partial Enforcement
@@ -230,6 +241,13 @@ Refer to these manuals for complex implementation specifications:
 
 - **REQUIRED**: The `PhaserGame` component MUST be rendered in the DOM for the engine to initialize and fire the `game-state-ready` event.
 - **CRITICAL**: Do NOT wrap `PhaserGame` in a `v-if` condition that depends on the engine being ready, as this creates a circular dependency that blocks the application indefinitely. Always render the engine in the background (e.g., behind a loading overlay) once the user session is identified.
+
+### Admin & Debug UI Patterns
+
+- **Specific Class Naming**: To avoid global CSS collisions and satisfy standards audits, use component-prefixed class names for shared UI elements (e.g., `.card-tier-badge`, `.ranked-tier-badge`, `.market-tier-badge`) instead of generic names like `.tier-badge`.
+- **Dense Panel Ergonomics**: For administrative panels with complex data (e.g., Debug Creator), prioritize **Two-Column Grids** (`grid-template-columns: 1fr 1.2fr`) over vertical stacks. This layout maximizes vertical space and allows simultaneous inspection of character previews and management lists.
+
+- **Stacked Sprite Separation**: Avoid using negative margins for overlapping sprites with opaque backgrounds in banners (e.g., Daycare). Use `gap` or absolute positioning with clear offsets to maintain legibility.
 
 ---
 
@@ -284,5 +302,5 @@ For a full verification, consult the centralized **[Aesthetic Audit Checklist](.
 - [ ] **Architectural Reuse**: Verified that no new "islands" were created and existing systems (Modals, Cards, DB) were reused/extended where possible.
 - [ ] **CLI-First Verification**: New content has been verified using `window.__VITE_DEBUG__` protocols.
 - [ ] **Admin Security**: All CLI commands are protected by `securityCheck()` with auto-ban protocols.
-- [ ] **Zero-Warning State**: `npm run lint` and `npm run test` pass with 0 errors and 0 warnings. Verified even for pre-existing warnings in unrelated files.
+- [ ] **Zero-Warning State**: `npm run lint` and `npm run test` pass with 0 errors and 0 warnings. Verified even for pre-existing warnings in unrelated files (especially SASS `@import` deprecations).
 - [ ] **Modularity**: Every file touched complies with the 500-line rule.

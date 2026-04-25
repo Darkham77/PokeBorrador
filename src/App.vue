@@ -252,7 +252,7 @@ const handleRetry = () => {
   background: $black;
   z-index: var(--z-max);
   color: var(--yellow);
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 12px;
   text-align: center;
 }
@@ -329,6 +329,6 @@ const handleRetry = () => {
 .phaser-background {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: var(--z-base);
 }
 </style>

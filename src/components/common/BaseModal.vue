@@ -204,8 +204,8 @@ const cardStyles = computed(() => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: Blur(10px);
-  z-index: 1;
+  -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  z-index: var(--z-base);
   pointer-events: auto;
   // GPU Acceleration
   transform: TranslateZ(0);
@@ -213,7 +213,7 @@ const cardStyles = computed(() => {
 
   &.transparent {
     background: transparent !important;
-    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
     pointer-events: none !important;
   }
 }
@@ -221,7 +221,7 @@ const cardStyles = computed(() => {
 .base-modal-teleport-wrapper {
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: var(--z-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -319,7 +319,7 @@ const cardStyles = computed(() => {
 .modal-title-text {
   font-family: 'Press Start 2P', cursive;
   font-size: 12px;
-  color: var(--yellow, #ffd700);
+  color: var(--yellow, $coin-gold);
   letter-spacing: 1px;
   @include pixelated;
 }
@@ -329,7 +329,7 @@ const cardStyles = computed(() => {
   border: none;
   padding: 0;
   cursor: pointer;
-  z-index: 100;
+  z-index: var(--z-base);
   display: flex;
   align-items: center;
   justify-content: center;

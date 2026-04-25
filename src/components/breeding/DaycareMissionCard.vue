@@ -61,6 +61,7 @@ const emit = defineEmits(['deliver'])
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .mission-card-retro {
   background: $card-dark; 
   border: 1px solid rgba(255,255,255,0.06); 
@@ -82,7 +83,7 @@ const emit = defineEmits(['deliver'])
   .mission-request {
     background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 10px;
     .req-label { color: $muted; font-weight: bold; margin-right: 10px; }
-    .req-val { color: #ffd700; font-weight: 900; }
+    .req-val { color: $coin-gold; font-weight: 900; }
   }
 
   .mission-reward-retro {
@@ -94,10 +95,10 @@ const emit = defineEmits(['deliver'])
 
   .deliver-btn-retro {
     padding: 14px; background: linear-gradient(135deg, #a855f7, #7e22ce); color: $white; border: none; border-radius: 12px;
-    font-family: 'Press Start 2P', monospace; font-size: 7px; cursor: pointer;
+    @include pixelated; font-size: 7px; cursor: pointer;
     box-shadow: 0 4px 0 #6d28d9;
     &:hover { filter: Brightness(1.1); }
   }
-  .completed-banner { text-align: center; color: #22c55e; font-family: 'Press Start 2P', monospace; font-size: 7px; padding: 14px; }
+  .completed-banner { text-align: center; color: #22c55e; @include pixelated; font-size: 7px; padding: 14px; }
 }
 </style>

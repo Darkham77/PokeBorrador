@@ -56,12 +56,13 @@ const tradeStore = useTradeStore()
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .trade-notifs-section-legacy {
   margin-bottom: 24px;
 }
 
 .info-label {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 9px;
   color: $white;
   text-shadow: 1px 1px 0 $black, -1px -1px 0 $black, 1px -1px 0 $black, -1px 1px 0 $black;
@@ -80,7 +81,7 @@ const tradeStore = useTradeStore()
 }
 
 .notif-header {
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   color: $white;
   margin-bottom: 12px;
@@ -96,7 +97,7 @@ const tradeStore = useTradeStore()
   border: none;
   border-radius: 8px;
   padding: 8px;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 6px;
   cursor: pointer;
   
@@ -111,7 +112,7 @@ const tradeStore = useTradeStore()
   border-radius: 8px;
   padding: 10px;
   color: $white;
-  font-family: 'Press Start 2P', monospace;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
 }

@@ -4,7 +4,7 @@
 .weather-overlay {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
   overflow: hidden;
 
@@ -38,7 +38,7 @@
   // Tormenta (Diagonal + Rayos)
   &.storm {
     background: rgba(0, 10, 25, 0.3);
-    backdrop-filter: Blur(1.2px);
+    -webkit-backdrop-filter: Blur(1.2px); -webkit-backdrop-filter: Blur(1.2px); backdrop-filter: Blur(1.2px);
     animation: storm-lightning-main 7s linear infinite;
     
     .rain-layer {
@@ -79,7 +79,7 @@
   // Nieve
   &.snow {
     background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: Blur(1.5px);
+    -webkit-backdrop-filter: Blur(1.5px); -webkit-backdrop-filter: Blur(1.5px); backdrop-filter: Blur(1.5px);
 
     &.night {
       background: rgba(0, 0, 0, 0.3) !important;
@@ -106,7 +106,7 @@
 
   &.blizzard {
     background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: Blur(2.5px);
+    -webkit-backdrop-filter: Blur(2.5px); -webkit-backdrop-filter: Blur(2.5px); backdrop-filter: Blur(2.5px);
 
     &.night {
       background: rgba(0, 0, 0, 0.4) !important;
@@ -167,7 +167,7 @@
   // Niebla
   &.fog {
     background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: Blur(1px);
+    -webkit-backdrop-filter: Blur(1px); -webkit-backdrop-filter: Blur(1px); backdrop-filter: Blur(1px);
     animation: fog-pulse 8s ease-in-out infinite;
   }
 

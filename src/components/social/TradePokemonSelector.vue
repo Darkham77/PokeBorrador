@@ -247,7 +247,7 @@ const select = (poke) => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   -webkit-backdrop-filter: Blur(8px);
   transform: translateZ(0);
 }
