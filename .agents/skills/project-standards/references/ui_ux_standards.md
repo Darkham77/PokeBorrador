@@ -14,7 +14,6 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Techniques**: Glassmorphism (`-webkit-backdrop-filter: Blur(); backdrop-filter: Blur();`), HSL gradients, smooth shadows, and fluid transitions.
 - **Goal**: The "frame" must feel premium, modern, and reactive.
 - **Dynamic Layout Balance**: Use `flex-wrap: wrap` with flexible bases (e.g., `flex: 1 1 650px`) to create organic responsive transitions that adapt to intermediate viewports (like 1360px) without rigid breakpoints.
-- **Dynamic Layout Balance**: Use `flex-wrap: wrap` with flexible bases (e.g., `flex: 1 1 650px`) to create organic responsive transitions that adapt to intermediate viewports (like 1360px) without rigid breakpoints.
 
 ### 2. Pixel Art Content (The "Game Heart")
 
@@ -65,7 +64,6 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Implementation**: Combine subtle `TranslateY` (4px offset) with a slight `Rotate` (1-2 degrees).
 - **MANDATORY**: Use **Capitalized** `TranslateY()` and `Rotate()` for SASS compliance.
 - **Cycle**: A slow 4-second `infinite ease-in-out` loop is recommended for an organic feel.
-- **Pixel Art Sharpness**: NEVER use non-integer `Scale()` transformations on pixel art elements (sprites, icons) as it causes interpolation blur. Prefer subtle `TranslateY()` for hover feedback.
 - **Pixel Art Sharpness**: NEVER use non-integer `Scale()` transformations on pixel art elements (sprites, icons) as it causes interpolation blur. Prefer subtle `TranslateY()` for hover feedback.
 - **Night Illumination Overrides**: Weather effects that use bright/white overlays (fog, snow, blizzard) MUST implement night-specific overrides using dark tints (`rgba(0,0,0,x)`) to prevent the atmosphere from unnaturally illuminating the night cycle.
 

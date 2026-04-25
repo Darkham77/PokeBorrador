@@ -58,7 +58,8 @@ priority: CRITICAL
 | **Composition** | Small functions composed together |
 | **Colocation** | Keep related code close |
 | **Layout Centering** | Use `display: flex` + `justify-content` + `align-items` for centering. Avoid `position: absolute` with `translate(-50%, -50%)` as it creates sub-pixel blurring and breaks layout flow. |
-| **Stable Sorting** | When using `Array.prototype.sort()`, ensure the comparison function returns stable and predictable values (1, -1, 0). Use a unique identifier (like `uid`) as a final tie-breaker to prevent erratic behavior across browsers. |
+| **Stable Sorting** | When using `Array.prototype.sort()`, ensure the comparison function returns stable and predictable values (1, -1, 0). Use a unique identifier (like `uid`) as a final tie-breaker. ALWAYS filter out null/undefined slots BEFORE sorting to prevent runtime type errors. |
+| **Reactive State** | Use `reactive()` for complex filter/form objects (5+ properties) instead of multiple `ref()` calls. This simplifies cross-property dependency logic (e.g., `hasActiveFilters`) and ensures consistent HMR and testing behavior. |
 
 ---
 

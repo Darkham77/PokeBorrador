@@ -38,7 +38,7 @@ try {
 }
 
 const searchQuery = ref(savedFilters.searchQuery || '')
-const sortBy = ref(savedFilters.sortBy || 'recent') // 'recent', 'level', 'ivs', 'bst'
+const sortBy = ref(savedFilters.sortBy || 'recent') // 'recent', 'level', 'ivs', 'total'
 const sortOrder = ref(savedFilters.sortOrder || 'desc')
 const activeTags = ref(Array.isArray(savedFilters.activeTags) ? savedFilters.activeTags : [])
 const selectedUids = ref([])
@@ -106,9 +106,9 @@ const availablePokemon = computed(() => {
       const sum = (ivs) => Object.values(ivs || {}).reduce((s, v) => s + (v || 0), 0)
       valA = sum(pA.ivs)
       valB = sum(pB.ivs)
-    } else if (sortBy.value === 'bst') {
-      valA = getPokemonBst(pA)
-      valB = getPokemonBst(pB)
+    } else if (sortBy.value === 'TOT') {
+      valA = getPokemonTotalPower(pA)
+      valB = getPokemonTotalPower(pB)
     } else {
       // Recent (usar el orden original invertido o no)
       // Damos prioridad a los de la caja como "más recientes" si se concatenan después
@@ -191,7 +191,7 @@ function clearFilters() {
   activeTags.value = []
 }
 
-const getPokemonBst = (p) => {
+const getPokemonTotalPower = (p) => {
   const getSpeciesKey = (name) => {
     if (!name) return ''
     const n = name.toLowerCase()
@@ -203,7 +203,10 @@ const getPokemonBst = (p) => {
   const speciesKey = getSpeciesKey(p.name)
   const base = pokemonDataProvider.getPokemonData(speciesKey)
   const s = base?.stats || base || {}
-  return (s.hp || 0) + (s.atk || 0) + (s.def || 0) + (s.spa || 0) + (s.spd || 0) + (s.spe || 0)
+  const TOT = (s.hp || 0) + (s.atk || 0) + (s.def || 0) + (s.spa || 0) + (s.spd || 0) + (s.spe || 0)
+  const ivs = p.ivs || {}
+  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
+  return TOT + totalIvs
 }
 
 
@@ -300,16 +303,16 @@ function openDetail(item) {
             </button>
           </PVTooltip>
           <PVTooltip
-            title="BST"
-            description="Poder base de la especie."
+            title="PODER TOTAL"
+            description="Suma de estadísticas base e IVs individuales."
             position="bottom"
             class="ps-sort-wrapper"
           >
             <button
-              :class="{ active: sortBy === 'bst' }"
-              @click.stop="setSort('bst')"
+              :class="{ active: sortBy === 'TOT' }"
+              @click.stop="setSort('TOT')"
             >
-              BST {{ sortBy === 'bst' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
+              TOTAL {{ sortBy === 'TOT' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
             </button>
           </PVTooltip>
         </div>
@@ -378,7 +381,7 @@ function openDetail(item) {
           :key="item.pokemon.uid"
           :item="item"
           :is-selected="selectedUids.includes(item.pokemon.uid)"
-          :bst="getPokemonBst(item.pokemon)"
+          :total="getPokemonTotalPower(item.pokemon)"
           @select="toggleSelection"
           @open-detail="openDetail"
         />

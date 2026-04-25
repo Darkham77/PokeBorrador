@@ -121,7 +121,7 @@ const closeError = () => {
 
         <div class="error-footer">
           <button
-            class="error-btn copy-btn"
+            class="btn-vicio-secondary btn-vicio-sm"
             @click.stop="copyError"
           >
             <i
@@ -131,13 +131,13 @@ const closeError = () => {
             {{ copied ? '¡COPIADO!' : 'COPIAR ERROR' }}
           </button>
           <button
-            class="error-btn reload-btn"
+            class="btn-vicio-primary btn-vicio-sm"
             @click.stop="reloadGame"
           >
             <i class="fas fa-sync" /> REINICIAR JUEGO
           </button>
           <button
-            class="error-btn close-btn"
+            class="btn-vicio-neutral btn-vicio-sm"
             @click.stop="closeError"
           >
             ✕ CERRAR
@@ -304,49 +304,9 @@ const closeError = () => {
   justify-content: flex-end;
 }
 
-.error-btn {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 10px;
-  @include pixelated;
-  font-size: 9px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
 
-.copy-btn {
-  background: var(--purple);
-  color: white;
-}
 
-.reload-btn {
-  background: var(--yellow);
-  color: $black;
-}
 
-.close-btn {
-  background: transparent;
-  border: 1px solid Rgba(255, 255, 255, 0.2);
-  color: Rgba(170, 170, 170, 1);
-}
-
-.error-btn:hover {
-  transform: translateY(-2px);
-  filter: Brightness(1.2);
-}
-
-@media (max-width: 480px) {
-  .error-footer {
-    flex-direction: column;
-  }
-  .error-btn {
-    width: 100%;
-  }
-}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: TranslateY(10px); }

@@ -417,7 +417,7 @@ body .selection-container {
         border: 1px solid Rgba(255, 255, 255, 0.05);
 
         &.ivs { color: Rgba(136, 204, 255, 1); }
-        &.bst { color: Rgba(255, 204, 136, 1); }
+        &.TOT { color: Rgba(255, 204, 136, 1); }
       }
     }
 
@@ -464,8 +464,10 @@ body .selection-container {
   }
 
   .btn-confirm {
-    width: 100%;
-    @include btn-vicio-primary;
+    width: auto;
+    min-width: 200px;
+    margin: 0 auto;
+    @include btn-vicio-primary('sm');
 
     &:disabled {
       filter: Grayscale(1);

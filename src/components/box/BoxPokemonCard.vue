@@ -113,7 +113,7 @@ const bst = computed(() => {
           IV {{ totalIvs }}
         </div>
         <div class="mini-stat bst">
-          BST {{ bst }}
+          TOT {{ bst + totalIvs }}
         </div>
       </div>
       

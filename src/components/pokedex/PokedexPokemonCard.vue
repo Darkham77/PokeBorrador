@@ -16,7 +16,7 @@ defineEmits(['click'])
       'is-unseen': !p.isSeen,
       'has-sprite': p.isSeen 
     }"
-    @click.stop="$emit('click')"
+    @click.stop="$emit('click', $event)"
   >
     <div class="card-bg" />
     <div class="dex-number">

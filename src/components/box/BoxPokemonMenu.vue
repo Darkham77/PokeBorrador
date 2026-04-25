@@ -95,24 +95,6 @@ const handleRelease = () => {
   })
 }
 
-const handleRocketSell = () => {
-  const originalSelection = [...boxStore.boxRocketSelected]
-  boxStore.boxRocketSelected = [props.boxIndex]
-  const price = boxStore.getRocketSellValue()
-  boxStore.boxRocketSelected = originalSelection
-
-  uiStore.openConfirm({
-    title: 'VENDER MERCADO NEGRO',
-    message: `¿Vender ${pokemon.value.name} por ₽${price.toLocaleString()} al Team Rocket?`,
-    onConfirm: () => {
-      boxStore.boxRocketSelected = [props.boxIndex]
-      const res = boxStore.doBoxRocketSell()
-      uiStore.notify(`¡Vendido por ₱${res.value.toLocaleString()}! 🚀`, '🚀')
-      emit('close')
-    }
-  })
-}
-
 const handleToggleTag = (tag) => {
   boxStore.togglePokeTag(props.boxIndex, tag)
 }

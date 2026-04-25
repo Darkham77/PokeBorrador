@@ -24,7 +24,9 @@ const emit = defineEmits(['switch', 'buy'])
       v-if="props.boxCount < 10"
       class="box-buy-new-btn"
       @click.stop="emit('buy')"
-    >+ ADQUIRIR(<span class="currency-symbol">₱</span>{{ buyCost.toLocaleString() }})</button>
+    >
+      + ADQUIRIR(<span class="currency-symbol">₱</span>{{ buyCost.toLocaleString() }})
+    </button>
   </div>
 </template>
 

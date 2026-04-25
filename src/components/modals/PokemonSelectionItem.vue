@@ -9,7 +9,7 @@ import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
 defineProps({
   item: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
-  bst: { type: Number, required: true }
+    total: { type: Number, required: true }
 })
 
 const emit = defineEmits(['select', 'openDetail'])
@@ -114,7 +114,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
             v-if="item.pokemon.ivs"
             class="stat-badge ivs"
           >IVs: {{ Object.values(item.pokemon.ivs).reduce((s,v)=>s+(v||0),0) }}</span>
-          <span class="stat-badge bst">BST: {{ bst }}</span>
+          <span class="stat-badge TOT">TOT: {{ total }}</span>
         </div>
         <span
           class="source-tag"

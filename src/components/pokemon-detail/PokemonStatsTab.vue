@@ -5,7 +5,8 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 defineProps({
   displayStats: { type: Array, required: true },
   species: { type: Object, required: true },
-  isInstance: { type: Boolean, default: false }
+  isInstance: { type: Boolean, default: false },
+  pokemon: { type: Object, default: null }
 })
 </script>
 
@@ -45,13 +46,18 @@ defineProps({
 
     <div class="vicio-stat-total mt-32">
       <PVTooltip
-        title="BASE STAT TOTAL (BST)"
-        description="La suma de todas las estadísticas base del Pokémon. Determina su poder bruto y su tier competitiva."
+        title="PODER TOTAL"
+        description="La suma de estadísticas base e IVs individuales. Representa el nivel de combate final del Pokémon."
         position="top"
       >
-        <span class="vp-pane-label pixelated">BST TOTAL:</span>
+        <span class="vp-pane-label pixelated">PODER TOTAL:</span>
       </PVTooltip>
-      <span class="vp-stat-value pixelated">{{ species.stats.hp + species.stats.atk + species.stats.def + species.stats.spa + species.stats.spd + species.stats.spe }}</span>
+      <span class="vp-stat-value pixelated">
+        {{ 
+          (species.stats.hp + species.stats.atk + species.stats.def + species.stats.spa + species.stats.spd + species.stats.spe) +
+            (isInstance && pokemon?.ivs ? Object.values(pokemon.ivs).reduce((s,v)=>s+(v||0),0) : 0)
+        }}
+      </span>
     </div>
   </div>
 </template>

@@ -50,6 +50,7 @@ const openDetail = (p) => {
         v-for="p in pokemonList" 
         :key="p.id" 
         :p="p"
+        data-ignore="[PureVue-Ignore]"
         @click.stop="openDetail(p)"
       />
     </div>

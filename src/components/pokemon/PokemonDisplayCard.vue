@@ -9,6 +9,7 @@ import { ref, inject } from 'vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/constants/tiers'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -48,6 +49,15 @@ const spriteUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
     isShiny: props.pokemon.isShiny 
   })
+})
+
+const totalPower = computed(() => {
+  const p = props.pokemon
+  const species = pokemonDataProvider.getPokemonData(p.id)
+  const bst = species ? ((species.hp || 0) + (species.atk || 0) + (species.def || 0) + (species.spa || 0) + (species.spd || 0) + (species.spe || 0)) : 0
+  const ivs = p.ivs || {}
+  const totalIvs = Object.values(ivs).reduce((s, v) => s + (v || 0), 0)
+  return bst + totalIvs
 })
 
 const cardClasses = computed(() => {
@@ -147,7 +157,8 @@ function getGenderClass(gender) {
       </div>
       
       <div class="level-line">
-        Nv. {{ pokemon.level }}
+        <span>Nv. {{ pokemon.level }}</span>
+        <span class="tot-badge">TOT {{ totalPower }}</span>
       </div>
 
       <!-- Status Labels (Floating) -->
@@ -213,4 +224,15 @@ function getGenderClass(gender) {
 
 <style scoped lang="scss">
 @use "@/styles/components/pokemon-display-card" as *;
+
+.tot-badge {
+  @include pixelated;
+  font-size: 8px;
+  color: var(--yellow);
+  background: Rgba(255, 214, 10, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid Rgba(255, 214, 10, 0.2);
+  margin-left: 8px;
+}
 </style>

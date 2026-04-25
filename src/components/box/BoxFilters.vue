@@ -1,5 +1,6 @@
 <script setup>
 import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const props = defineProps({
   filters: { type: Object, required: true },
@@ -43,8 +44,7 @@ const STAT_COLORS = {
   SPD: '#2dd4bf',
   SPE: '#fbbf24',
   LEVEL: '#a855f7',
-  TOTAL: '#fbbf24',
-  BST: '#3b82f6'
+  TOTAL: '#fbbf24'
 }
 
 const getSliderStyle = (val, max, color) => {
@@ -88,57 +88,98 @@ const AVAILABLE_TAGS = [
           >
         </div>
         
-        <button 
-          class="filter-toggle-btn-premium"
-          :class="{ active: isFiltersOpen }"
-          @click.stop="toggleFilters"
+        <PVTooltip
+          title="CONFIGURACIÓN DE FILTROS"
+          description="Abre el panel avanzado de búsqueda y tipos."
+          position="bottom"
         >
-          <span class="box-icon-ref">⚙️</span>
-          <span class="text">FILTROS</span>
-        </button>
+          <button 
+            class="filter-toggle-btn-premium"
+            :class="{ active: isFiltersOpen }"
+            @click.stop="toggleFilters"
+          >
+            <span class="box-icon-ref">⚙️</span>
+            <span class="text">FILTROS</span>
+          </button>
+        </PVTooltip>
 
         <div class="sort-controls-integrated">
           <div class="sort-group-mini">
             <span class="mini-label">ORDEN:</span>
-            <button
-              :class="['mini-sort-btn', { active: sortMode === 'none' }]"
-              @click.stop="setSortMode('none')"
+            <PVTooltip
+              title="MÁS RECIENTES"
+              description="Orden cronológico de captura."
+              position="bottom"
             >
-              REC
-            </button>
-            <button
-              :class="['mini-sort-btn', { active: sortMode === 'level' }]"
-              @click.stop="setSortMode('level')"
+              <button
+                :class="['mini-sort-btn', { active: sortMode === 'none' }]"
+                @click.stop="setSortMode('none')"
+              >
+                REC
+              </button>
+            </PVTooltip>
+            <PVTooltip
+              title="NIVEL"
+              description="Orden por nivel de combate."
+              position="bottom"
             >
-              LVL
-            </button>
-            <button
-              :class="['mini-sort-btn', { active: sortMode === 'tier' }]"
-              @click.stop="setSortMode('tier')"
+              <button
+                :class="['mini-sort-btn', { active: sortMode === 'level' }]"
+                @click.stop="setSortMode('level')"
+              >
+                LVL
+              </button>
+            </PVTooltip>
+            <PVTooltip
+              title="IVs TOTALES"
+              description="Potencial genético acumulado."
+              position="bottom"
             >
-              IVs
-            </button>
-            <button
-              :class="['mini-sort-btn', { active: sortMode === 'bst' }]"
-              @click.stop="setSortMode('bst')"
+              <button
+                :class="['mini-sort-btn', { active: sortMode === 'tier' }]"
+                @click.stop="setSortMode('tier')"
+              >
+                IVs
+              </button>
+            </PVTooltip>
+            <PVTooltip
+              title="PODER TOTAL"
+              description="Suma de estadísticas base e IVs individuales."
+              position="bottom"
             >
-              BST
-            </button>
-            <button
-              :class="['mini-sort-btn', { active: sortMode === 'pokedex' }]"
-              @click.stop="setSortMode('pokedex')"
+              <button
+                :class="['mini-sort-btn', { active: sortMode === 'bst' }]"
+                @click.stop="setSortMode('bst')"
+              >
+                TOTAL
+              </button>
+            </PVTooltip>
+            <PVTooltip
+              title="NÚMERO POKÉDEX"
+              description="Orden numérico oficial."
+              position="bottom"
             >
-              PDEX
-            </button>
+              <button
+                :class="['mini-sort-btn', { active: sortMode === 'pokedex' }]"
+                @click.stop="setSortMode('pokedex')"
+              >
+                PDEX
+              </button>
+            </PVTooltip>
           </div>
           
-          <button 
-            class="direction-toggle-btn" 
-            :title="sortDirection === 'desc' ? 'Orden Descendente' : 'Orden Ascendente'"
-            @click.stop="toggleSortDirection"
+          <PVTooltip
+            :title="sortDirection === 'desc' ? 'ORDEN DESCENDENTE' : 'ORDEN ASCENDENTE'"
+            description="Haz clic para invertir el sentido del orden."
+            position="bottom"
           >
-            {{ sortDirection === 'desc' ? '▼' : '▲' }}
-          </button>
+            <button 
+              class="direction-toggle-btn" 
+              @click.stop="toggleSortDirection"
+            >
+              {{ sortDirection === 'desc' ? '▼' : '▲' }}
+            </button>
+          </PVTooltip>
         </div>
       </div>
 
@@ -147,15 +188,28 @@ const AVAILABLE_TAGS = [
         <div class="tags-group-mini">
           <span class="mini-label">ETIQUETAS:</span>
           <div class="tags-scroll-container">
-            <button
-              v-for="tag in AVAILABLE_TAGS"
+            <PVTooltip 
+              v-for="tag in AVAILABLE_TAGS" 
               :key="tag.id"
-              :class="['mini-tag-btn', { active: filters.tags.includes(tag.id) }]"
-              @click.stop="toggleTag(tag.id)"
+              :title="tag.label"
+              :description="tag.id === 'fav' ? 'Pokémon marcados con estrella.' : 
+                tag.id === 'breed' ? 'Pokémon aptos para reproducirse.' :
+                tag.id === 'comp' ? 'Pokémon entrenados para torneos.' :
+                tag.id === 'caja' ? 'Pokémon que no están en el equipo.' :
+                tag.id === 'trade' ? 'Pokémon listos para intercambio.' :
+                tag.id === 'iv31' ? 'Pokémon con estadísticas perfectas (31 IV).' :
+                tag.id === 'shy' ? 'Pokémon Shiny con colores alternativos.' :
+                tag.id === 'team' ? 'Pokémon asignados a tu equipo actual.' : ''"
+              position="bottom"
             >
-              <span class="box-tag-icon-inner">{{ tag.icon }}</span>
-              <span class="tag-text-small">{{ tag.label }}</span>
-            </button>
+              <button
+                :class="['mini-tag-btn', { active: filters.tags.includes(tag.id) }]"
+                @click.stop="toggleTag(tag.id)"
+              >
+                <span class="box-tag-icon-inner">{{ tag.icon }}</span>
+                <span class="tag-text-small">{{ tag.label }}</span>
+              </button>
+            </PVTooltip>
           </div>
         </div>
       </div>
@@ -275,14 +329,14 @@ const AVAILABLE_TAGS = [
                   <span class="val">{{ filters.ivMax }}</span>
                 </div>
                 <div class="slider-row-mini">
-                  <span class="label">BST MÍN.</span>
+                  <span class="label">TOTAL MÍN.</span>
                   <input
                     :value="filters.bstMin"
                     type="range"
                     min="0"
-                    max="800"
+                    max="1000"
                     step="10"
-                    :style="[getSliderStyle(filters.bstMin, 800, STAT_COLORS.BST), { '--stat-color': STAT_COLORS.BST }]"
+                    :style="[getSliderStyle(filters.bstMin, 1000, STAT_COLORS.TOTAL), { '--stat-color': STAT_COLORS.TOTAL }]"
                     @input="updateFilter('bstMin', Number($event.target.value))"
                   >
                   <span class="val">{{ filters.bstMin }}</span>

@@ -38,7 +38,8 @@ const emit = defineEmits(['pokemonClick'])
       :index="item.index"
       :is-selected="rocketSelection.includes(item.index)"
       :is-rocket-mode="isRocketMode"
-      @click="emit('pokemonClick', item.index)" data-ignore="[PureVue-Ignore]"
+      data-ignore="[PureVue-Ignore]"
+      @click="emit('pokemonClick', item.index)"
     />
   </div>
 </template>

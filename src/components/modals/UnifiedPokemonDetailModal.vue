@@ -14,7 +14,6 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
-import { hasPokemonTag } from '@/logic/constants/tags'
 
 import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue'
 import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsTab.vue'
@@ -242,10 +241,6 @@ const hexToRgb = (hex) => {
   return `${r}, ${g}, ${b}`
 }
 
-const hasTag = (tagId) => {
-  return hasPokemonTag(targetPokemon.value, tagId)
-}
-
 const handleToggleTag = (tagOrId) => {
   const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
   if (isInstance.value && finalIndex.value > -1 && typeof window.togglePokeTag === 'function') {
@@ -288,7 +283,7 @@ const captureDateFormatted = computed(() => {
       hour: '2-digit',
       minute: '2-digit'
     })
-  } catch (e) {
+  } catch (_) {
     return null
   }
 })
@@ -472,6 +467,7 @@ const captureDateFormatted = computed(() => {
           :display-stats="displayStats"
           :species="species"
           :is-instance="isInstance"
+          :pokemon="targetPokemon"
         />
 
         <!-- Moves Tab -->

@@ -30,7 +30,7 @@ export const useBoxStore = defineStore('box', () => {
     ivMin: 0,
     ivMax: 31,
     bstMin: 0,
-    bstMax: 800,
+    bstMax: 1000,
     ivHP: 0,
     ivATK: 0,
     ivDEF: 0,
@@ -79,12 +79,13 @@ export const useBoxStore = defineStore('box', () => {
       if ((ivs.spd || 0) < f.ivSPD) return false
       if ((ivs.spe || 0) < f.ivSPE) return false
 
-      // BST Filter (Species Base Stats)
+      // TOTAL Filter (Species Base Stats + IVs)
       const species = pokemonDataProvider.getPokemonData(p.id)
       if (species) {
         const bst = (species.hp || 0) + (species.atk || 0) + (species.def || 0) +
                     (species.spa || 0) + (species.spd || 0) + (species.spe || 0)
-        if (bst < f.bstMin || bst > f.bstMax) return false
+        const totalPower = bst + totalIv
+        if (totalPower < f.bstMin || totalPower > f.bstMax) return false
       }
 
       if (f.search) {
@@ -107,7 +108,13 @@ export const useBoxStore = defineStore('box', () => {
           const specB = pokemonDataProvider.getPokemonData(b.p.id)
           const bstA = specA ? ((specA.hp||0)+(specA.atk||0)+(specA.def||0)+(specA.spa||0)+(specA.spd||0)+(specA.spe||0)) : 0
           const bstB = specB ? ((specB.hp||0)+(specB.atk||0)+(specB.def||0)+(specB.spa||0)+(specB.spd||0)+(specB.spe||0)) : 0
-          return bstB - bstA
+          
+          const ivsA = a.p.ivs || {}
+          const totalIvsA = Object.values(ivsA).reduce((s,v)=>s+(v||0),0)
+          const ivsB = b.p.ivs || {}
+          const totalIvsB = Object.values(ivsB).reduce((s,v)=>s+(v||0),0)
+          
+          return (bstB + totalIvsB) - (bstA + totalIvsA)
         }
         if (boxSortMode.value === 'type') return a.p.type.localeCompare(b.p.type)
         // Pokedex sorting would need the order array, we'll keep it simple for now or import it
@@ -129,7 +136,7 @@ export const useBoxStore = defineStore('box', () => {
     const f = filters.value
     return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < 100 ||
            f.ivTotalMin > 0 || f.ivTotalMax < 186 || f.ivAny31 || f.search !== '' ||
-           f.bstMin > 0 || f.bstMax < 800 || f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 ||
+           f.bstMin > 0 || f.bstMax < 1000 || f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 ||
            f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 || f.ivMin > 0 || f.ivMax < 31
   })
 
@@ -150,7 +157,7 @@ export const useBoxStore = defineStore('box', () => {
       ivMin: 0,
       ivMax: 31,
       bstMin: 0,
-      bstMax: 800,
+      bstMax: 1000,
       ivHP: 0,
       ivATK: 0,
       ivDEF: 0,

@@ -33,6 +33,7 @@ Refer to these manuals for complex implementation specifications:
 
 - **Modern Shell**: Glassmorphism, gradients, HSL shadows for containers.
 - **Retro Heart**: Pixel Art and Sharp typography (`Press Start 2P`) for game content.
+- **TOTAL Power (TOT)**: Defined as `Base Stats + Total IVs`. This is the primary metric for all Pokémon power displays. Sliders and filters must support ranges up to 1000.
 - **Discovery**: Solid black silhouettes for uncaught. Placeholder `?` for unknown.
 - **Pixel-Perfect**: Pixelated elements MUST use `@include pixelated`. Font size should prioritize readability and aesthetic balance.
 - **Sprite Over Emoji**: Native emojis are forbidden for items; always use the official pixelated sprite.
@@ -56,6 +57,7 @@ Refer to these manuals for complex implementation specifications:
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. Eliminate unused vars and computed properties immediately.
 - **Click Propagation**: Always use `@click.stop` for interactive elements in layered UIs (cards, lists, modals) to prevent accidental bubbling to background containers. If a numeric emit is required and `.stop` is incompatible, use `data-ignore="[PureVue-Ignore]"` on the SAME line as the handler.
+- **UI Interaction**: Use `@include btn-vicio-primary('sm')` for secondary modal buttons to avoid 100% width collisions. All interactive filter/sort controls MUST include a `PVTooltip`.
 - **Vue Template Integrity**: NEVER use JS-style (`//`) or HTML comments inside Vue tags or attributes. This causes Vite compilation errors ("Illegal '/' in tags").
 - **Z-Index Layering**: Hardcoded numbers are forbidden. Use system CSS variables (`--z-low`, `--z-base`, etc.) exclusively.
 
