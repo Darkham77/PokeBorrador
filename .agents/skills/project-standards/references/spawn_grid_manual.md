@@ -96,3 +96,28 @@ if (debugMode === 'none') {
   isCaught = pokedex.includes(id)
 }
 ```
+
+## 5. Map Card Rendering Layers
+
+To maintain visual clarity while applying atmospheric effects and hover states, MapCards use a strict layering system within an isolated stacking context.
+
+### 5.1 Stacking Context Isolation
+The `.map-card` component MUST use `isolation: isolate;`. This ensures that negative `z-index` values on pseudo-elements or overlays stay contained within the card and do not bleed behind the main application background.
+
+### 5.2 Standard Layer Hierarchy
+Layers are ordered from back to front using the following `z-index` standard:
+
+| Layer | Selector | Z-Index | Purpose |
+| :--- | :--- | :--- | :--- |
+| **0: Background** | `&::before` | `-3` | The route image with atmosphere filters. |
+| **1: Weather** | `.weather-overlay` | `-2 !important` | Particles/Emojis for rain, snow, etc. |
+| **2: Atmosphere** | `&::after` | `-1` | Dark vignette and hover contrast layers. |
+| **3: Content** | `& > *` | `var(--z-base)` (0) | Interactive sprites, headers, and pills. |
+
+### 5.3 Atmosphere & Hover Dynamics
+- **Default State**: Background (`::before`) uses `Brightness(0.8)` to ensure pills and sprites stand out.
+- **Hover State**: 
+  - Background scales up and brightens (`Brightness(1.0)`).
+  - Atmosphere (`::after`) opacity increases with a dark gradient to maintain text legibility against the brighter background.
+  - Interactive content MUST NOT have its opacity reduced; it remains at `1.0` to ensure interactivity.
+

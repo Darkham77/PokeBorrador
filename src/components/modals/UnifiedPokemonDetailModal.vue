@@ -81,6 +81,11 @@ const species = computed(() => {
   }
 })
 
+const cleanCategory = computed(() => {
+  if (!species.value?.category) return 'Desconocido'
+  return species.value.category.replace(/^Pokémon\s+/i, '')
+})
+
 const tabs = computed(() => {
   const base = [
     { id: 'summary', label: 'RESUMEN', icon: '📝' },
@@ -90,6 +95,9 @@ const tabs = computed(() => {
   
   if (props.context === 'pokedex') {
     base.push({ id: 'tms', label: 'MTs', icon: '💿' })
+  }
+
+  if (evolutions.value.length > 0) {
     base.push({ id: 'evolve', label: 'EVOL.', icon: '✨' })
   }
   
@@ -160,14 +168,22 @@ const evolutions = computed(() => {
     const ev = EVOLUTION_TABLE[id]
     list.push(enrichEvo({ type: 'level', requirement: `Nv. ${ev.level}`, to: ev.to }))
   }
-  if (STONE_EVOLUTIONS[id]) {
-    const ev = STONE_EVOLUTIONS[id]
-    list.push(enrichEvo({ type: 'stone', requirement: ev.stone, to: ev.to }))
-  }
+  // Handle single and multi-evolutions (like Eevee)
+  Object.keys(STONE_EVOLUTIONS).forEach(key => {
+    if (key === id || key.startsWith(`${id}_`)) {
+      const ev = STONE_EVOLUTIONS[key]
+      list.push(enrichEvo({ type: 'stone', requirement: ev.stone, to: ev.to }))
+    }
+  })
   if (TRADE_EVOLUTIONS[id]) {
     list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: TRADE_EVOLUTIONS[id] }))
   }
   return list
+})
+
+const canStoneEvolve = computed(() => {
+  const id = targetSpeciesId.value
+  return Object.keys(STONE_EVOLUTIONS).some(key => key === id || key.startsWith(`${id}_`))
 })
 
 const formatRange = (val, unit, factor = 0.15) => {
@@ -354,7 +370,7 @@ const handleEditNickname = () => {
           <div class="info-grid">
             <div class="info-item">
               <span class="pdex-label pixelated">CATEGORÍA</span>
-              <span class="pdex-value pixelated">{{ species.category || 'Pokémon Desconocido' }}</span>
+              <span class="pdex-value pixelated">{{ cleanCategory }}</span>
             </div>
             <div class="info-item">
               <span class="pdex-label pixelated">ALTURA</span>
@@ -458,6 +474,7 @@ const handleEditNickname = () => {
         v-if="isInstance"
         :context="context"
         :extra="extra"
+        :can-evolve-stone="canStoneEvolve"
         @buy="handleBuy"
         @evolve="handleEvolve"
       />

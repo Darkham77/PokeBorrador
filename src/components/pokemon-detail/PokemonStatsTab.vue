@@ -43,7 +43,7 @@ defineProps({
       />
     </div>
 
-    <div class="stat-total mt-32">
+    <div class="vicio-stat-total mt-32">
       <PVTooltip
         title="BASE STAT TOTAL (BST)"
         description="La suma de todas las estadísticas base del Pokémon. Determina su poder bruto y su tier competitiva."

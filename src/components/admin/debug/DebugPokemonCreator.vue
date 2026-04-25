@@ -3,7 +3,6 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
-import { MOVE_DATA } from '@/data/moves'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonIVEditor from './PokemonIVEditor.vue'
 import PokemonBaseStats from './PokemonBaseStats.vue'
@@ -36,7 +35,7 @@ const speciesSearch = ref('')
 const natureSearch = ref('')
 const abilitySearch = ref('')
 const mapSearch = ref('')
-const moveSearch = ref('')
+
 
 const showSpeciesDropdown = ref(false)
 const showNatureDropdown = ref(false)
@@ -241,8 +240,9 @@ onUnmounted(() => {
               @click="selectSpecies(p)"
             >
               <img
-                @error="e => e.target.style.display = 'none'" :src="pokemonDataProvider.getSpriteUrl(p.id)"
+                :src="pokemonDataProvider.getSpriteUrl(p.id)"
                 class="item-icon"
+                @error="e => e.target.style.display = 'none'"
               >
               {{ p.name.toUpperCase() }}
             </div>

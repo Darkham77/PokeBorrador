@@ -145,7 +145,6 @@ const hasBadges = computed(() => {
         :is-guardian="pokemon.isGuardian"
         :sparkle-count="5"
       >
-
         <img
           :src="spriteUrl"
           :alt="pokemon.name"

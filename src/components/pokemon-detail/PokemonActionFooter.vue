@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 
 const props = defineProps({
   context: { type: String, required: true },
+  canEvolveStone: { type: Boolean, default: false },
   extra: { type: Object, default: null }
 })
 
@@ -24,7 +25,7 @@ const canBuy = computed(() => {
   >
     <!-- Evolution Action -->
     <button
-      v-if="context === 'team'"
+      v-if="context === 'team' && canEvolveStone"
       class="action-btn evolutionary"
       @click="emit('evolve')"
     >

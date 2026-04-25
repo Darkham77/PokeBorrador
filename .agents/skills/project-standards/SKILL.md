@@ -74,7 +74,7 @@ Refer to these manuals for complex implementation specifications:
   - **Fast Navigation & Inspection**: Expose commands for teleportation (`navigate`, `openModal`) and direct store inspection (`getGameStore`) to ensure agents can reach targets and verify state without DOM reliance.
   - **No-CLI Login Perimeter**: The login process MUST NOT support CLI shortcuts or automated triggers (e.g. `auth.login()`). AI agents and scripts MUST perform login exclusively via UI interaction (typing and clicking) to maintain authentication integrity. The `window.__VITE_DEBUG__` proxy MUST remain inactive/deleted until a successful admin session is established.
   - **CLI-First Verification Protocol**: When adding new content (Pokemon, items, moves), it is MANDATORY to use `window.__VITE_DEBUG__` commands for automated verification (e.g., `createPokemon`, `spawnEncounter`). This protocol ensures that verification is fast, reproducible, and independent of UI state.
-  - **CLI Limitations & UI Mandate**: While CLI is prioritized for navigation and state setup, agents MUST acknowledge that certain UI-specific behaviors (e.g., search filters, drag-and-drop, or complex modal-specific inputs) may NOT have CLI equivalents. In such cases, UI interaction (typing/clicking) is MANDATORY to verify visual feedback and functional correctness.
+- **Multi-Evolution Logic Pattern**: For species with branching evoluciones (like Eevee), logic MUST NOT assume a 1:1 mapping. Always scan for all keys matching the pattern `id_*` in evolution data tables to display all available paths (stones, level, trade).
 - **Identity Fallback Protocol**: UI components (HUD, Profile, ErrorOverlay) MUST prioritize `gameStore.state.trainer` for identity, but MUST fallback to `authStore.user.user_metadata.username` (or `account_name`) if the game name is null or generic ("Entrenador") to ensure consistent identity persistence.
 
 - **Visual Audit Single Source of Truth**: Before finalizing any UI-related commit, agents MUST perform a verification pass using the [Aesthetic Audit Checklist](./references/audit_checklist.md).
@@ -100,6 +100,7 @@ Refer to these manuals for complex implementation specifications:
 - **Pinia Naming**: Always verify and match the exact capitalization of Pinia store exports (e.g., `useUIStore` vs `useUiStore`). Incorrect capitalization in imports will lead to silent failures or module resolution errors in Vite.
 - **Audit**: Run `python3 .agents/skills/project-standards/scripts/audit_project.py` after UI changes to run a full health check.
 - **Repair**: Run `python3 .agents/skills/project-standards/scripts/repair_project.py` to automatically fix common SASS and Aesthetic violations.
+  - **Z-Index Automation Guard**: Automated repair scripts MUST ignore values below 100. These are reserved for internal component stacking (micro-layers) and must not be flattened by global standardization.
 - **Engine Registration**: Any new audit or repair script created in the `scripts/audit/` or `scripts/fix/` directory MUST be registered in the corresponding unified engine (`audit_project.py` or `repair_project.py`) to ensure global compliance.
 - **Sync Mandate**: Whenever technical documentation or this Skill is modified, it is MANDATORY to review and update the audit scripts, repair scripts, and unified entry points to ensure that new rules or structural changes are reflected in the validation engine.
 - **Source of Truth (SoT) for Automation**: Automation scripts (Audit/Repair) MUST NOT hardcode values that are already defined in centralized configuration files (e.g., `_variables.scss`). Scripts must dynamically parse these files to ensure the governance engine remains synchronized with the project's architectural evolution.
@@ -287,10 +288,12 @@ To ensure a seamless "Hybrid Retro-Modern" experience, the background (map/route
 ## 📚 Technical Documentation Standards
 
 ### 1. Balance of Detail
+
 - **Precision vs Brevity**: Maintain a 1:1 balance between technical precision and instructional clarity. When updating core paths, DO NOT "summarize away" existing reference sections or optional steps (e.g., Map Encounters, References) unless they are explicitly obsolete.
 - **Progressive Disclosure**: Keep `SKILL.md` under 500 lines by delegating complex datasets or legacy comparisons to the `references/` directory.
 
 ### 2. Automation Parity
+
 - **Script Synchronization**: Automation scripts (e.g., `fetch_pokemon.js`) MUST be in absolute parity with the codebase constants (`SECONDARY_TYPES`, `POKEMON_ABILITIES`) and paths. Any update to the documentation MUST be reflected in the associated toolset.
 
 ---

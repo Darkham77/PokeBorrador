@@ -49,6 +49,10 @@ Z_STANDARDS = load_z_standards()
 def map_z_index(value):
     try:
         val = int(value)
+        # IGNORE small relative indices (likely for internal component stacking)
+        if val < 100:
+            return None
+            
         # Find the highest standard that is <= to the given value
         for std_val, var_name in Z_STANDARDS:
             if val >= std_val:

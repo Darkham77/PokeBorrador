@@ -31,12 +31,28 @@ def load_color_map():
 
 COLOR_MAP = load_color_map()
 
-# Regex for img tag without @error (Multi-line safe)
-IMG_REGEX = re.compile(r'(<img\s+)(?![^>]*?@error)(.*?>)', re.DOTALL | re.IGNORECASE)
-
 # Files and directories to NEVER touch with automated repair
 EXCLUDE_FILES = ['_variables.scss', '_colors.scss', '_z-index.scss', '_mixins.scss', '_typography.scss']
 IGNORE_PATHS = ['src/styles/core', 'src/styles/tokens']
+
+def inject_error_handler(match):
+    """
+    Injects @error handler into <img> tags that don't have it.
+    Uses a more robust check to handle multi-line tags and inline SVGs.
+    """
+    tag = match.group(0)
+    
+    # If it already has an @error handler (case insensitive), return as is
+    if '@error' in tag.lower():
+        return tag
+        
+    # Find the last closing bracket of the tag
+    # We look for the '>' that is NOT followed by another part of an attribute
+    # but since it's an <img> tag, we just find the last '>'
+    parts = tag.rsplit('>', 1)
+    if len(parts) == 2:
+        return parts[0].rstrip() + ' @error="e => e.target.style.display = \'none\'">' + parts[1]
+    return tag
 
 def fix_file(filepath):
     filename = os.path.basename(filepath)
@@ -50,8 +66,10 @@ def fix_file(filepath):
     
     # 1. Fix Image fallbacks (only in .vue)
     if filepath.endswith('.vue'):
-        # Inject @error handler. Clean single quotes.
-        content = IMG_REGEX.sub(r'\1@error="e => e.target.style.display = \'none\'" \2', content)
+        # Match <img ... > handling multi-line and quotes correctly
+        # We match from <img to the corresponding >
+        # This is a bit tricky with regex for all cases, but for Vue templates it's usually okay
+        content = re.sub(r'<img\s+[^>]*?>', inject_error_handler, content, flags=re.DOTALL | re.IGNORECASE)
         # Fix previous buggy injection if present
         content = content.replace(r"\'none\'", "'none'")
 
@@ -59,20 +77,14 @@ def fix_file(filepath):
     lines = content.split('\n')
     new_lines = []
     for line in lines:
-        # Don't replace if it's a variable definition (e.g. $red: #ff453a;)
         if line.strip().startswith('$') and ':' in line:
             new_lines.append(line)
             continue
-            
-        new_line = line
-        new_lines.append(new_line)
+        new_lines.append(line)
     
     content = '\n'.join(new_lines)
-    # Fix colors with safety: Sort by length descending to match #ffffff before #fff
     sorted_colors = sorted(COLOR_MAP.items(), key=lambda x: len(x[0]), reverse=True)
     for hex_code, var in sorted_colors:
-        # Strict hex regex: matches #hex only if not followed by more hex chars
-        # Using negative lookahead to ensure we don't match #fff inside #ffff00
         pattern = re.escape(hex_code) + r'(?![0-9a-fA-F])'
         content = re.sub(pattern, var, content, flags=re.IGNORECASE)
 
@@ -92,7 +104,6 @@ def main():
             for file in files:
                 if any(file.endswith(ext) for ext in extensions):
                     path = os.path.join(root, file)
-                    # Convert backslashes to forward slashes for cross-platform matching
                     normalized_path = path.replace('\\', '/')
                     if any(normalized_path.startswith(p) for p in IGNORE_PATHS):
                         continue

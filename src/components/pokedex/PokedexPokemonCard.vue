@@ -30,7 +30,6 @@ defineEmits(['click'])
           :is-guardian="p.isGuardian"
           :sparkle-count="5"
         >
-
           <img 
             :src="p.spriteUrl"
             :alt="p.name" 

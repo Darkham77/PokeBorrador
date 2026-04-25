@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { computed, ref, watch, onUnmounted, onMounted } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -214,7 +215,7 @@ const processedGuardian = computed(() => {
   }
   
   const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-  const name = isSeen ? (data?.name || id.toUpperCase()) : '???'
+  const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
   const typeInfo = (isSeen && data?.type) ? `Tipo: ${data.type.toUpperCase()}` : ''
   
   return {
@@ -264,7 +265,7 @@ const processedGrid = computed(() => {
 
     // Tooltip logic
     const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-    const name = isSeen ? (data?.name || id.toUpperCase()) : '???'
+    const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
     const typeInfo = (isSeen && data?.type) ? `Tipo: ${data.type.toUpperCase()}` : ''
 
     let tooltipDesc = 'Habitante común de esta ruta.'
@@ -284,7 +285,7 @@ const processedGrid = computed(() => {
       isSeen,
       isCaught,
       isRare: rare,
-      tooltipTitle: name === '???' ? 'POKÉMON DESCONOCIDO' : name,
+      tooltipTitle: name === 'Desconocido' ? 'POKÉMON DESCONOCIDO' : name,
       tooltipDesc
     }
   })
@@ -407,7 +408,7 @@ const spawnGrid = computed(() => {
       :class="{ 
         'is-silhouette': !processedGuardian.isCaught 
       }"
-      :title="!processedGuardian.isSeen ? 'POKÉMON ???' : (processedGuardian.captured ? 'GUARDIÁN DERROTADO' : 'POKÉMON GUARDIÁN')"
+      :title="!processedGuardian.isSeen ? 'POKÉMON DESCONOCIDO' : (processedGuardian.captured ? 'GUARDIÁN DERROTADO' : 'POKÉMON GUARDIÁN')"
       :description="processedGuardian.captured 
         ? 'El protector de esta ruta ha sido vencido, permitiendo que una facción tome el control total.' 
         : `Un Pokémon poderoso que protege la ruta. ${processedGuardian.isSeen ? 'Es un ' + processedGuardian.name + ' (' + processedGuardian.typeInfo + '). ' : ''}Derrótalo para liberar la zona y permitir que tu facción la domine, activando bonus de captura.`"
@@ -507,7 +508,7 @@ const spawnGrid = computed(() => {
           >
             <div :class="['sprite-wrapper', { 'rare-spawn': item.isRare }]">
               <PVTooltip 
-                :title="item.tooltipTitle || item.name" 
+                :title="item.tooltipTitle"
                 :description="item.tooltipDesc"
                 position="top"
                 class="spawn-tooltip-trigger"

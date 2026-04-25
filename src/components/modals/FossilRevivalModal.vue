@@ -67,9 +67,8 @@ function handleClose() {
           @error="e => e.target.style.display = 'none'" v-if="step < 3"
           :src="itemSprite"
           class="fossil-img"
-          :class="{ 'step-1': step >= 1 }" 
-          alt="Fossil"
-          @error="e => e.target.style.display = 'none'"
+          :class="{ 'step-1': step >= 1 }"
+          alt="Fossil" 
         >
         <PVSpriteFX
           v-else
@@ -83,7 +82,6 @@ function handleClose() {
             @error="e => e.target.style.display = 'none'"
           >
         </PVSpriteFX>
-
       </div>
 
       <!-- Text Status -->

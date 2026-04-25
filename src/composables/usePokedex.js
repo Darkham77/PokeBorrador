@@ -38,7 +38,7 @@ export function usePokedex(gs, currentOrder, _currentGen) {
         id,
         dexNum: String(nationalNum).padStart(3, '0'),
         rawDexNum: nationalNum,
-        name: isSeen ? data.name : '???',
+        name: isSeen ? data.name : 'Desconocido',
         isSeen,
         isCaught,
         spriteUrl: isSeen ? getAssetUrl(ASSET_TYPES.POKEMON, id) : null
@@ -60,8 +60,8 @@ export function usePokedex(gs, currentOrder, _currentGen) {
         // Unseen pokes at bottom when sorting by name? or by ID?
         // Usually, original Dexter keeps them in place. 
         // But if user asks to sort by name, they expect alphabetical.
-        if (a.name === '???' && b.name !== '???') return 1
-        if (a.name !== '???' && b.name === '???') return -1
+        if (a.name === 'Desconocido' && b.name !== 'Desconocido') return 1
+        if (a.name !== 'Desconocido' && b.name === 'Desconocido') return -1
         return a.name.localeCompare(b.name)
       }
       return a.rawDexNum - b.rawDexNum

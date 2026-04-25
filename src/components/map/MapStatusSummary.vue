@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'

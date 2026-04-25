@@ -3,10 +3,10 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 defineProps({
-  spriteUrl: String,
-  isShiny: Boolean,
-  isGuardian: Boolean,
-  gender: String
+  spriteUrl: { type: String, default: '' },
+  isShiny: { type: Boolean, default: false },
+  isGuardian: { type: Boolean, default: false },
+  gender: { type: String, default: 'M' }
 })
 
 defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
@@ -19,9 +19,9 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
       :is-guardian="isGuardian"
     >
       <img
-        @error="e => e.target.style.display = 'none'" 
-        :src="spriteUrl"
+        :src="spriteUrl" 
         class="preview-sprite"
+        @error="e => e.target.style.display = 'none'"
       >
     </PVSpriteFX>
 

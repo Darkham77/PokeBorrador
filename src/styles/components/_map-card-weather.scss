@@ -4,7 +4,7 @@
 .weather-overlay {
   position: absolute;
   inset: 0;
-  z-index: var(--z-base);
+  z-index: -2 !important;
   pointer-events: none;
   overflow: hidden;
 

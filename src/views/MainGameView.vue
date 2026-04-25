@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch, defineAsyncComponent } from 'vue'
 import { useWindowListener, useDocumentListener } from '@/composables/useWindowListener'

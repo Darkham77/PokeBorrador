@@ -52,7 +52,7 @@ const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
             </div>
           </div>
           <span class="evo-target-name">
-            {{ evo.isSeen ? (pokemonDataProvider.getPokemonData(evo.to.toLowerCase())?.name || evo.to) : '???' }}
+            {{ evo.isSeen ? (pokemonDataProvider.getPokemonData(evo.to.toLowerCase())?.name || evo.to) : 'Desconocido' }}
           </span>
         </div>
       </div>

@@ -116,7 +116,6 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
         :is-guardian="pokemon.isGuardian"
         :sparkle-count="5"
       >
-
         <img
           :src="spriteUrl"
           class="pokemon-sprite"

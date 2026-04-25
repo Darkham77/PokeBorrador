@@ -77,12 +77,12 @@
     transition: all 0.3s;
     position: relative;
     
-    .tab-icon { font-size: 18px; transition: transform 0.3s; }
+    i.tab-icon { font-size: 18px; transition: transform 0.3s; }
     .tab-label { font-size: 9px; font-weight: 800; letter-spacing: 0.5px; }
     
     &:hover { 
       color: rgba(255,255,255,0.7);
-      .tab-icon { transform: TranslateY(-2px); }
+      i.tab-icon { transform: TranslateY(-2px); }
     }
     
     &.active {

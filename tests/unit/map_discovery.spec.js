@@ -56,7 +56,7 @@ describe('MapCard Discovery Logic', () => {
     const guardianImg = wrapper.find('.guardian-mini-sprite')
     
     expect(guardianImg.classes()).toContain('spawn-silhouette')
-    expect(wrapper.vm.processedGuardian.name).toBe('???')
+    expect(wrapper.vm.processedGuardian.name).toBe('Desconocido')
   })
 
   it('reveals guardian name and sprite if seen in combat (but not caught)', async () => {
@@ -86,7 +86,7 @@ describe('MapCard Discovery Logic', () => {
     const wrapper = mount(MapCard, { props: defaultProps })
     
     expect(wrapper.vm.processedGuardian.isSeen).toBe(false)
-    expect(wrapper.vm.processedGuardian.name).toBe('???')
+    expect(wrapper.vm.processedGuardian.name).toBe('Desconocido')
   })
 
   it('reveals info but keeps silhouettes in "seen" debug mode', async () => {
@@ -102,7 +102,7 @@ describe('MapCard Discovery Logic', () => {
     const spawns = wrapper.vm.processedGrid.filter(s => s.id)
     expect(spawns[0].isSeen).toBe(true)
     expect(spawns[0].isCaught).toBe(false)
-    expect(spawns[0].name).not.toBe('???')
+    expect(spawns[0].name).not.toBe('Desconocido')
   })
 
   it('removes silhouettes and adds badges in "caught" debug mode', async () => {

@@ -104,6 +104,7 @@ The `BaseModal.vue` component supports parameterized aesthetics to maintain cons
 - **variant="modern" (Default)**: Sleek, glassmorphism-focused, subtle borders.
 - **variant="retro"**: High-contrast 2px yellow border (`var(--yellow)`), 30px corner radius, and **20px** default internal padding. Use for gameplay, shops, and settings.
 - **hide-header**: Use to remove the header bar for content-focused modals. The close button (`X`) will automatically transition to a floating position (`modal-close-btn-floating`).
+- **Close Button Hierarchy**: The close button MUST be the LAST element in the modal's DOM structure. This guarantees it sits above all slotted content regardless of internal component complexity.
 - **padding="raw"**: Use for full-bleed content (e.g., Shop/Inventory grids). The `retro` variant respects this to avoid double-padding.
 
 ### 6. Premium 3D Action Buttons
@@ -157,6 +158,12 @@ To prevent "z-index wars" and ensure consistent interaction, all layers MUST fol
 - **MANDATORY**: Only Tooltips, Toasts, and Emergency Overlays (like Error/Ban screens) are allowed to exceed the 999 threshold.
 - **Pattern**: Use `z-index: var(--z-critical)` (999,999) via `<Teleport to="body">`.
 - **Admin Panel Exception**: Tooltips spawned inside admin panels MUST use this critical layer to remain visible above the panel's high stacking context.
+- **Stacking Context Isolation**: Use `isolation: isolate;` on complex UI cards (like MapCards). This allows the use of negative `z-index` values for background/atmosphere layers that remain contained within the component, preventing them from bleeding behind the main layout.
+- **Standard Map Layers**: 
+  - Background: `z-index: -3`
+  - Weather: `z-index: -2`
+  - Atmosphere/Filters: `z-index: -1`
+  - Interactive Content: `z-index: var(--z-base)` (0)
 
 ---
 

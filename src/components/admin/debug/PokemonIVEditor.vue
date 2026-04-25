@@ -1,17 +1,13 @@
 <script setup>
 import PVTooltip from '@/components/common/PVTooltip.vue'
-const props = defineProps({
+defineProps({
   ivs: {
     type: Object,
     required: true
   }
 })
 
-const emit = defineEmits(['update:iv'])
-
-function updateIv(stat, val) {
-  emit('update:iv', stat, val)
-}
+defineEmits(['update:iv'])
 </script>
 
 <template>
@@ -63,14 +59,21 @@ function updateIv(stat, val) {
     
     input { 
       width: 100%;
-      padding: 8px;
+      padding: 6px 2px;
       background: rgba(0, 0, 0, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: var(--yellow);
       text-align: center;
-      font-size: 10px;
+      font-size: 11px;
       border-radius: 6px;
       outline: none;
+      -moz-appearance: textfield;
+      
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
       
       &:focus {
         border-color: var(--vicio-primary);

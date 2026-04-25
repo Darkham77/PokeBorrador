@@ -52,7 +52,7 @@
 }
 
 .pdex-stats-pane {
-  .stat-row {
+  .pdex-stat-row {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -89,26 +89,28 @@
     }
   }
   
-  .stat-total {
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid rgba(255,255,255,0.05);
+  .pdex-total-stat-value {
+    margin-top: 24px;
+    padding: 16px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 12px;
     display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+    justify-content: space-between;
     align-items: center;
+    border: 1px solid rgba(255,255,255,0.05);
     
-    .pdex-label { 
-      font-size: 8px; 
-      font-weight: 900; 
-      color: rgba(255,255,255,0.4); 
+    .pdex-label {
+      @include pixelated;
+      font-size: 8px;
+      color: var(--gray);
+      letter-spacing: 1px;
       @include pixelated;
     }
-    .pdex-value { 
-      @include pixelated; 
-      font-size: 24px; 
-      font-weight: 900;
-      color: var(--yellow); 
+    
+    .pdex-value {
+      @include pixelated;
+      font-size: 16px;
+      color: var(--yellow);
       @include pixelated;
     }
   }
@@ -205,7 +207,7 @@
   }
   
   .pdex-stats-pane {
-    .stat-row {
+    .pdex-stat-row {
       gap: 10px;
       margin-bottom: 12px;
       .pdex-stat-value { font-size: 12px; width: 30px; }

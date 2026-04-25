@@ -210,7 +210,7 @@ const hide = () => {
   }
 
   .pv-tooltip-desc {
-    color: $muted;
+    color: rgba(255, 255, 255, 0.9);
     font-size: 11px;
     line-height: 1.5;
   }

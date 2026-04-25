@@ -72,15 +72,7 @@
               </button>
             </header>
 
-            <!-- Floating Close Button -->
-            <button
-              v-else-if="showCloseButton"
-              class="modal-close-btn-floating"
-              :disabled="preventClose"
-              @click="handleClose"
-            >
-              <div class="close-icon-wrapper" />
-            </button>
+
 
             <!-- Content -->
             <div 
@@ -101,6 +93,16 @@
             >
               <slot name="footer" />
             </footer>
+
+            <!-- Floating Close Button -->
+            <button
+              v-if="hideHeader && showCloseButton"
+              class="modal-close-btn-floating"
+              :disabled="preventClose"
+              @click="handleClose"
+            >
+              <div class="close-icon-wrapper" />
+            </button>
           </div>
         </Transition>
       </div>
@@ -325,62 +327,7 @@ const cardStyles = computed(() => {
 }
 
 .modal-close-btn, .modal-close-btn-floating {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  z-index: var(--z-base);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-
-  .close-icon-wrapper {
-    position: relative;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
-    transition: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-
-    &::before, &::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 16px;
-      height: 2px;
-      background: rgba(255, 255, 255, 0.5);
-      border-radius: 2px;
-      transition: inherit;
-    }
-
-    &::before { transform: Translate(-50%, -50%) Rotate(45deg); }
-    &::after { transform: Translate(-50%, -50%) Rotate(-45deg); }
-  }
-  
-  &:hover {
-    transform: Scale(1.1);
-    transform-origin: center;
-    
-    .close-icon-wrapper {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: rgba(239, 68, 68, 0.3);
-      transform: Rotate(180deg);
-
-      &::before, &::after {
-        background: #ef4444;
-      }
-    }
-  }
-
-  &:active {
-    transform: Scale(0.9);
-  }
+  @include btn-close-premium;
 }
 
 .modal-close-btn-floating {

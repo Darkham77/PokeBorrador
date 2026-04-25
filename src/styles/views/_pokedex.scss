@@ -77,7 +77,7 @@
       @include pixelated;
       @include pixelated;
     }
-    .stat-value {
+    span.stat-value {
       font-size: 24px;
       font-weight: 700;
       color: #f8fafc;
@@ -90,7 +90,11 @@
     &.highlight {
       background: rgba(255, 214, 10, 0.05);
       border-color: rgba(255, 214, 10, 0.2);
-      .stat-value { color: var(--yellow); text-shadow: 0 0 15px rgba(255, 214, 10, 0.3); }
+      
+      span.stat-value { 
+        color: var(--yellow); 
+        text-shadow: 0 0 15px rgba(255, 214, 10, 0.3); 
+      }
     }
   }
 }

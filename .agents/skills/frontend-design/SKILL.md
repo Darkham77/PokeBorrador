@@ -163,6 +163,7 @@ All spacing and sizing in multiples of 8:
 | **Inputs** | Match button height for alignment |
 | **Cards** | Consistent padding, breathable |
 | **Reading width** | 45-75 characters optimal |
+| **Tab Persistence** | Active states (e.g. `TranslateY`, glow) MUST be permanent for selected items, not just hover-based. |
 | **System Reuse** | Always extend `BaseModal` or `UnifiedCard` instead of creating ad-hoc windows |
 | **Button Reuse** | ALWAYS use `@include btn-vicio-primary` or `btn-vicio-danger` mixins. Do NOT hardcode button backgrounds. |
 | **Admin UI Volume** | Administrative tools (Debug/Admin panels) MUST use the standardized 3D button mixins to maintain visual volume and consistent press feedback. |
@@ -206,6 +207,7 @@ All spacing and sizing in multiples of 8:
 - **Layout Parity Mandate**: When refactoring or restoring components, ensure HTML classes exactly match the SCSS selectors (e.g., `list-item` vs `poke-card`). Inconsistency between template and style breaks layout fidelity.
 - **Dynamic Variable Binding**: Visual effects depending on context (e.g., type-based "glows" or "auras") MUST be implemented by binding dynamic CSS variables (e.g., `:style="{ '--type-color': color }"`) to the parent container.
 - **Anchored UI Context**: Absolute positioned elements (like `mini-badges` or floating status icons) MUST be nested within a `position: relative` container (e.g., `.poke-preview-container`) to prevent them from floating outside their visual target.
+
 ### Admin & Debug UI Patterns
 
 - **Specific Class Naming**: To avoid global CSS collisions and satisfy standards audits, use component-prefixed class names for shared UI elements (e.g., `.card-tier-badge`, `.ranked-tier-badge`, `.market-tier-badge`) instead of generic names like `.tier-badge`.

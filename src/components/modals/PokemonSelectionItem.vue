@@ -37,7 +37,6 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || '#aaa'
           :is-guardian="item.pokemon.isGuardian"
           :sparkle-count="5"
         >
-
           <div class="preview-bg" />
           <img
             :src="getAssetUrl(ASSET_TYPES.POKEMON, item.pokemon.id, { isShiny: item.pokemon.isShiny })"
@@ -46,7 +45,6 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || '#aaa'
             @error="e => e.target.style.display = 'none'"
           >
         </PVSpriteFX>
-
       </PVTooltip>
 
       <!-- Action badges (Held Item + Tags) -->

@@ -106,14 +106,14 @@ const handleLocalLogin = async () => {
         <button
           class="auth-tab"
           :class="{ active: authTab === 'login' }"
-          @click="switchAuthTab('login')"
+          @click.stop="switchAuthTab('login')"
         >
           Iniciar Sesión
         </button>
         <button
           class="auth-tab"
           :class="{ active: authTab === 'signup' }"
-          @click="switchAuthTab('signup')"
+          @click.stop="switchAuthTab('signup')"
         >
           Registrarse
         </button>
@@ -173,7 +173,7 @@ const handleLocalLogin = async () => {
           <button
             class="auth-btn"
             :disabled="loading"
-            @click="handleLogin"
+            @click.stop="handleLogin"
           >
             ▶ ENTRAR
           </button>
@@ -192,7 +192,7 @@ const handleLocalLogin = async () => {
           <button
             class="auth-btn"
             :disabled="loading"
-            @click="handleLocalLogin"
+            @click.stop="handleLocalLogin"
           >
             ▶ JUGAR LOCAL
           </button>
@@ -225,7 +225,7 @@ const handleLocalLogin = async () => {
           <button
             class="auth-btn"
             :disabled="loading"
-            @click="handleSignup"
+            @click.stop="handleSignup"
           >
             ▶ CREAR CUENTA
           </button>

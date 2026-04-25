@@ -15,7 +15,9 @@ defineProps({
       class="stat-item"
     >
       <label>{{ stat.toUpperCase() }}</label>
-      <div class="stat-value">{{ val }}</div>
+      <div class="stat-value">
+        {{ val }}
+      </div>
     </div>
   </div>
 </template>
