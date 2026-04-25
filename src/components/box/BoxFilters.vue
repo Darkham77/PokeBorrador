@@ -34,7 +34,7 @@ const toggleTag = (tag) => {
   updateFilter('tags', currentTags)
 }
 
-// Colores de estadísticas estandarizados
+// Colores de estadísticas estandarizados (Corregidos con Hexadecimales)
 const STAT_COLORS = {
   HP: '#4ade80',
   ATK: '#f87171',
@@ -42,9 +42,9 @@ const STAT_COLORS = {
   SPA: '#c084fc',
   SPD: '#2dd4bf',
   SPE: '#fbbf24',
-  LEVEL: '$purple', // Púrpura para niveles
-  TOTAL: '$yellow', // Amarillo/Oro para totales
-  BST: '$blue'    // Azul brillante para BST
+  LEVEL: '#a855f7',
+  TOTAL: '#fbbf24',
+  BST: '#3b82f6'
 }
 
 const getSliderStyle = (val, max, color) => {
@@ -100,11 +100,36 @@ const AVAILABLE_TAGS = [
         <div class="sort-controls-integrated">
           <div class="sort-group-mini">
             <span class="mini-label">ORDEN:</span>
-            <button :class="['mini-sort-btn', { active: sortMode === 'none' }]" @click.stop="setSortMode('none')">REC</button>
-            <button :class="['mini-sort-btn', { active: sortMode === 'level' }]" @click.stop="setSortMode('level')">LVL</button>
-            <button :class="['mini-sort-btn', { active: sortMode === 'tier' }]" @click.stop="setSortMode('tier')">IVs</button>
-            <button :class="['mini-sort-btn', { active: sortMode === 'bst' }]" @click.stop="setSortMode('bst')">BST</button>
-            <button :class="['mini-sort-btn', { active: sortMode === 'pokedex' }]" @click.stop="setSortMode('pokedex')">PDEX</button>
+            <button
+              :class="['mini-sort-btn', { active: sortMode === 'none' }]"
+              @click.stop="setSortMode('none')"
+            >
+              REC
+            </button>
+            <button
+              :class="['mini-sort-btn', { active: sortMode === 'level' }]"
+              @click.stop="setSortMode('level')"
+            >
+              LVL
+            </button>
+            <button
+              :class="['mini-sort-btn', { active: sortMode === 'tier' }]"
+              @click.stop="setSortMode('tier')"
+            >
+              IVs
+            </button>
+            <button
+              :class="['mini-sort-btn', { active: sortMode === 'bst' }]"
+              @click.stop="setSortMode('bst')"
+            >
+              BST
+            </button>
+            <button
+              :class="['mini-sort-btn', { active: sortMode === 'pokedex' }]"
+              @click.stop="setSortMode('pokedex')"
+            >
+              PDEX
+            </button>
           </div>
           
           <button 
@@ -144,7 +169,9 @@ const AVAILABLE_TAGS = [
       >
         <!-- Fila Superior: Tipos (Ancho Completo) -->
         <div class="compact-section full-width">
-          <h4 class="box-section-label">TIPOS ELEMENTALES</h4>
+          <h4 class="box-section-label">
+            TIPOS ELEMENTALES
+          </h4>
           <div class="types-compact-grid">
             <button
               :class="['filter-pill', { active: filters.type === 'all' }]"
@@ -165,7 +192,9 @@ const AVAILABLE_TAGS = [
         
         <!-- Filtro por Tier -->
         <div class="compact-section full-width margin-top">
-          <h4 class="box-section-label">FILTRAR POR TIER (POTENCIAL GENÉTICO)</h4>
+          <h4 class="box-section-label">
+            FILTRAR POR TIER (POTENCIAL GENÉTICO)
+          </h4>
           <div class="tiers-compact-grid">
             <button
               :class="['filter-pill', { active: filters.tier === 'all' }]"
@@ -193,7 +222,9 @@ const AVAILABLE_TAGS = [
           <!-- Columna 1: Rangos -->
           <div class="filter-column">
             <div class="compact-section">
-              <h4 class="box-section-label">RANGOS GENERALES</h4>
+              <h4 class="box-section-label">
+                RANGOS GENERALES
+              </h4>
               <div class="premium-slider-group compact">
                 <div class="slider-row-mini">
                   <span class="label">NV. MÍN</span>
@@ -263,7 +294,9 @@ const AVAILABLE_TAGS = [
           <!-- Columna 2: IVs Stats -->
           <div class="filter-column">
             <div class="compact-section full-height">
-              <h4 class="box-section-label">IVs STATS INDIVIDUALES</h4>
+              <h4 class="box-section-label">
+                IVs STATS INDIVIDUALES
+              </h4>
               <div class="iv-mini-grid">
                 <div
                   v-for="stat in ['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE']"
@@ -279,7 +312,10 @@ const AVAILABLE_TAGS = [
                     :style="[getSliderStyle(filters['iv' + stat], 31, STAT_COLORS[stat]), { '--stat-color': STAT_COLORS[stat] }]"
                     @input="updateFilter('iv' + stat, Number($event.target.value))"
                   >
-                  <span class="stat-val" :style="{ color: STAT_COLORS[stat] }">{{ filters['iv' + stat] }}</span>
+                  <span
+                    class="stat-val"
+                    :style="{ color: STAT_COLORS[stat] }"
+                  >{{ filters['iv' + stat] }}</span>
                 </div>
               </div>
             </div>

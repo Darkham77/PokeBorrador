@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { useUIStore } from '@/stores/ui'
 import { useElementVisibility } from '@/composables/useElementVisibility'
@@ -95,7 +94,10 @@ function getGenderClass(gender) {
         editable
         @toggle-tag="(tagId) => emit('toggle-tag', tagId)"
       />
-      <div v-else class="badges-spacer" />
+      <div
+        v-else
+        class="badges-spacer"
+      />
 
       <div
         class="card-tier-badge"

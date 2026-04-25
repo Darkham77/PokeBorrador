@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { getPokemonTier } from '@/logic/pokemonUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
@@ -67,9 +66,24 @@ const bst = computed(() => {
 
     <!-- Sprite Section -->
     <div class="box-sprite-wrapper">
-      <div v-if="pokemon.onMission" class="status-indicator mission">M</div>
-      <div v-if="pokemon.inDaycare" class="status-indicator daycare">G</div>
-      <div v-if="pokemon.onDefense" class="status-indicator defense">D</div>
+      <div
+        v-if="pokemon.onMission"
+        class="status-indicator mission"
+      >
+        M
+      </div>
+      <div
+        v-if="pokemon.inDaycare"
+        class="status-indicator daycare"
+      >
+        G
+      </div>
+      <div
+        v-if="pokemon.onDefense"
+        class="status-indicator defense"
+      >
+        D
+      </div>
       
       <PVSpriteFX
         :is-shiny="pokemon.isShiny"
@@ -78,7 +92,7 @@ const bst = computed(() => {
       >
         <img
           :src="spriteUrl"
-          class="pokemon-sprite"
+          class="box-card-sprite"
           :class="[pokemon.aura ? `aura-${pokemon.aura}-mini` : '']"
           alt="pokemon"
           @error="e => e.target.style.display = 'none'"
@@ -92,9 +106,15 @@ const bst = computed(() => {
         {{ props.pokemon.nickname || props.pokemon.name }}
       </div>
       <div class="stats-column">
-        <div class="level">NV. {{ props.pokemon.level }}</div>
-        <div class="mini-stat ivs">IV {{ totalIvs }}</div>
-        <div class="mini-stat bst">BST {{ bst }}</div>
+        <div class="level">
+          NV. {{ props.pokemon.level }}
+        </div>
+        <div class="mini-stat ivs">
+          IV {{ totalIvs }}
+        </div>
+        <div class="mini-stat bst">
+          BST {{ bst }}
+        </div>
       </div>
       
       <!-- HP Mini Bar -->
@@ -133,7 +153,7 @@ const bst = computed(() => {
   justify-content: center;
   font-size: 8px;
   @include pixelated;
-  z-index: 5;
+  z-index: var(--z-low);
   box-shadow: 0 2px 4px Rgba(0,0,0,0.3);
   border: 1px solid Rgba(255,255,255,0.2);
 
@@ -150,7 +170,7 @@ const bst = computed(() => {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  z-index: 10;
+  z-index: calc(var(--z-low) + 1);
 
   .selection-circle {
     width: 24px;
@@ -169,4 +189,3 @@ const bst = computed(() => {
   box-shadow: 0 0 10px Rgba(239, 68, 68, 0.5);
 }
 </style>
-

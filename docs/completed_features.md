@@ -9,6 +9,7 @@ Este documento sirve como referencia de los componentes, menús y herramientas q
 | **MAPA** | Finalizado | `MapCard.vue`, `MapGrid.vue`, `map.js` (Store) |
 | **POKEMON -> EQUIPO** | Finalizado | `TeamList.vue`, `PokemonSelectionModal.vue`, `game.js` (Store) |
 | **POKEMON -> POKEDEX** | Finalizado | `PokedexControls.vue`, `UnifiedPokemonDetailModal.vue`, `game.js` (Store) |
+| **POKEMON -> CAJA PC** | Finalizado | `BoxView.vue`, `BoxGrid.vue`, `BoxFilters.vue`, `BoxTabs.vue`, `_box.scss` |
 | **HUDS** | Finalizado | `HUD_Navigation.vue`, `_hud.scss` |
 | **MODALS** | Finalizado | `BaseModal.vue`, `_modals.scss`, `modals.js` (Store) |
 | **TOOLTIPS** | Finalizado | `PVTooltip.vue`, `_tooltips.scss`, `ui.js` (Store) |

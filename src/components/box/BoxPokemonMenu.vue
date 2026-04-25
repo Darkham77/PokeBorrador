@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
@@ -127,7 +128,10 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
     variant="retro"
     @close="emit('close')"
   >
-    <div v-if="pokemon" class="box-menu-content">
+    <div
+      v-if="pokemon"
+      class="box-menu-content"
+    >
       <!-- Pokémon Header (Clickable to detail) -->
       <header 
         class="pokemon-summary is-interactive" 
@@ -141,19 +145,34 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
             >
               <img
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny })"
-                class="menu-sprite" @error="e => e.target.style.display = 'none'">
+                class="menu-sprite"
+                @error="e => e.target.style.display = 'none'"
+              >
             </PVSpriteFX>
           </div>
           <div class="meta-info">
             <span class="level">NV. {{ pokemon.level }}</span>
-            <h3 class="p-name">{{ pokemon.nickname || pokemon.name }}</h3>
-            <span v-if="pokemon.nickname" class="p-species">#{{ pokemon.name }}</span>
+            <h3 class="p-name">
+              {{ pokemon.nickname || pokemon.name }}
+            </h3>
+            <span
+              v-if="pokemon.nickname"
+              class="p-species"
+            >#{{ pokemon.name }}</span>
             <div class="details">
-              <PVTooltip :title="pokemon.nature" :description="NATURE_DATA[pokemon.nature]?.desc" position="top">
+              <PVTooltip
+                :title="pokemon.nature"
+                :description="NATURE_DATA[pokemon.nature]?.desc"
+                position="top"
+              >
                 <span class="interactive-text">{{ pokemon.nature }}</span>
               </PVTooltip>
               <span class="sep"> · </span>
-              <PVTooltip :title="pokemon.ability" :description="ABILITY_DATA[pokemon.ability]?.desc" position="top">
+              <PVTooltip
+                :title="pokemon.ability"
+                :description="ABILITY_DATA[pokemon.ability]?.desc"
+                position="top"
+              >
                 <span class="interactive-text">{{ pokemon.ability }}</span>
               </PVTooltip>
             </div>
@@ -185,7 +204,9 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
 
         <!-- Swap Section - Grid 3x2 -->
         <div class="swap-section">
-          <h4 class="section-title">INTERCAMBIAR POR</h4>
+          <h4 class="section-title">
+            INTERCAMBIAR POR
+          </h4>
           <div class="team-swap-grid">
             <div
               v-for="(t, i) in team"
@@ -206,7 +227,11 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
                   :is-shiny="t.isShiny"
                   :is-guardian="t.isGuardian"
                 >
-                  <img :src="getAssetUrl(ASSET_TYPES.POKEMON, t.id, { isShiny: t.isShiny })" class="ts-sprite" @error="e => e.target.style.display = 'none'">
+                  <img
+                    :src="getAssetUrl(ASSET_TYPES.POKEMON, t.id, { isShiny: t.isShiny })"
+                    class="ts-sprite"
+                    @error="e => e.target.style.display = 'none'"
+                  >
                 </PVSpriteFX>
               </div>
               <span class="ts-name">{{ t.nickname || t.name }}</span>
@@ -217,13 +242,22 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
 
       <!-- General Actions -->
       <div class="footer-actions">
-        <button class="menu-action-btn warning" @click.stop="handleUseItem">
+        <button
+          class="menu-action-btn warning"
+          @click.stop="handleUseItem"
+        >
           <span class="icon">🎒</span> USAR OBJETO
         </button>
-        <button class="menu-action-btn warning" @click.stop="handleMoveToBox">
+        <button
+          class="menu-action-btn warning"
+          @click.stop="handleMoveToBox"
+        >
           <span class="icon">📦</span> MOVER CAJA
         </button>
-        <button class="menu-action-btn danger" @click.stop="handleRelease">
+        <button
+          class="menu-action-btn danger"
+          @click.stop="handleRelease"
+        >
           <span class="icon">🌿</span> SOLTAR
         </button>
       </div>

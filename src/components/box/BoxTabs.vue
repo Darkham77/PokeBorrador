@@ -22,15 +22,13 @@ const emit = defineEmits(['switch', 'buy'])
     
     <button
       v-if="props.boxCount < 10"
-      class="tab-btn buy-btn"
+      class="box-buy-new-btn"
       @click.stop="emit('buy')"
-    >
-      + ADQUIRIR (<span class="currency-symbol">₱</span>{{ buyCost.toLocaleString() }})
-    </button>
+    >+ ADQUIRIR(<span class="currency-symbol">₱</span>{{ buyCost.toLocaleString() }})</button>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/views/box";
+// Estilos globales desde _box.scss
 </style>
 

@@ -64,7 +64,6 @@
   opacity: 0.6;
 }
 
-// ... (líneas 1-65)
 .box-controls-wrapper {
   margin-bottom: 20px;
   position: relative;
@@ -75,8 +74,8 @@
   padding: 12px 20px;
   border-radius: 20px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-wrap: wrap; 
+  gap: 16px 24px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
   box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.3);
   overflow: hidden;
@@ -85,14 +84,20 @@
     display: flex;
     gap: 16px;
     align-items: center;
-    width: 100%;
+    flex: 1 1 650px; 
+    min-width: 0;
   }
 
   .tags-row-compact {
     display: flex;
     align-items: center;
-    padding-top: 4px;
-    border-top: 1px solid Rgba(255, 255, 255, 0.03);
+    flex: 1 1 700px; 
+    min-width: 0;
+    
+    @media (max-width: 1360px) {
+      padding-top: 12px;
+      border-top: 1px solid Rgba(255, 255, 255, 0.03);
+    }
   }
 }
 
@@ -113,12 +118,14 @@
 
   .box-search-input {
     width: 100%;
+    height: 40px; 
     background: Rgba(0, 0, 0, 0.3);
     border: 1px solid Rgba(255, 255, 255, 0.1);
-    padding: 10px 16px 10px 44px;
-    border-radius: 10px;
+    padding: 0 16px 0 44px; 
+    border-radius: 12px;
     color: var(--white);
-    font-size: 7px;
+    font-size: 8px;
+    line-height: 40px; 
     @include pixelated;
     outline: none;
     transition: all 0.3s;
@@ -413,7 +420,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  z-index: 10;
+  z-index: var(--z-low);
 }
 
 .filters-grid-columns {
@@ -430,7 +437,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-width: 300px; // Evitar que sean demasiado estrechas
+  min-width: 300px; 
 }
 
 .compact-section {
@@ -592,8 +599,6 @@
   transform-origin: top;
 }
 
-// ... (resto del archivo)
-
 .box-tabs {
   display: flex;
   background: Rgba(0, 0, 0, 0.3);
@@ -624,19 +629,30 @@
       transform: Scale(1.05);
       border: 1px solid Rgba(255, 255, 255, 0.1);
     }
+  }
 
-    &.buy-btn {
-      color: var(--yellow);
-      border: 1px dashed Rgba(255, 214, 10, 0.3);
-      &:hover { background: Rgba(255, 214, 10, 0.1); }
+  .box-buy-new-btn {
+    @include btn-vicio('warning', 'sm', true);
+    margin-left: 12px;
+    width: fit-content; 
+    min-width: 160px;
+    flex: 0 0 auto;
+    height: 32px;
+    font-size: 7px;
+    border-radius: 8px;
 
-      .currency-symbol {
-        font-family: sans-serif;
-        font-size: 14px;
-        vertical-align: middle;
-        margin-right: 2px;
-        color: $coin-gold;
-      }
+    .currency-symbol {
+      font-family: sans-serif;
+      font-size: 11px;
+      vertical-align: baseline;
+      margin-right: -1px; // [PureVue-Ignore] - Micro-ajuste estético
+      margin-left: 2px; // Espacio con el paréntesis
+      letter-spacing: -1px;
+    }
+
+    &:hover {
+      transform: TranslateY(-2px) Scale(1.02);
+      box-shadow: 0 4px 15px Rgba(255, 184, 0, 0.2);
     }
   }
 }
@@ -678,7 +694,10 @@
     box-shadow: 0 15px 30px Rgba(0, 0, 0, 0.4), 0 0 15px Rgba(255, 184, 0, 0.15);
     
     &::before { opacity: 1; }
-    & .pokemon-sprite { transform: Scale(1.1) Rotate(3deg); }
+    & .box-card-sprite { 
+      transform: TranslateY(-4px);
+      filter: Brightness(1.1) Drop-Shadow(0 10px 15px Rgba(0, 0, 0, 0.4));
+    }
   }
 
   &.selected {
@@ -699,7 +718,7 @@
     border-radius: 4px;
     @include pixelated;
     line-height: 1;
-    z-index: 2;
+    z-index: var(--z-low);
   }
 
   .box-badges-area {
@@ -708,7 +727,7 @@
     left: 6px;
     display: flex;
     gap: 4px;
-    z-index: 2;
+    z-index: var(--z-low);
 
     .tags-col, .items-col {
       display: flex;
@@ -759,14 +778,14 @@
     transition: margin-left 0.3s ease;
 
     .with-badges & {
-      margin-left: 12px; // Dejar espacio a las etiquetas solo si existen
+      margin-left: 12px; 
     }
 
-    .box-pokemon-sprite {
+    .box-card-sprite { 
       width: 100%;
       height: 100%;
       @include sprite-render;
-      transition: transform 0.4s ease;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       filter: Drop-Shadow(0 8px 12px Rgba(0, 0, 0, 0.3));
     }
   }
@@ -778,7 +797,7 @@
     transition: padding-left 0.3s ease;
 
     .with-badges & {
-      padding-left: 12px; // Dejar espacio a las etiquetas solo si existen
+      padding-left: 12px; 
     }
 
     .box-pokemon-name {

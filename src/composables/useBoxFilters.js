@@ -1,4 +1,4 @@
-import { reactive, computed, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { PDEX_ORDER } from '@/data/pokedex';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';

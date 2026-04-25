@@ -145,6 +145,7 @@ const handlePokemonClick = (index) => {
     />
 
     <BoxPokemonMenu
+      v-if="isBoxMenuOpen"
       :show="isBoxMenuOpen"
       :box-index="selectedBoxIndex"
       @close="uiStore.isBoxMenuOpen = false"

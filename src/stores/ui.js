@@ -8,6 +8,11 @@ export const useUIStore = defineStore('ui', () => {
   const activeTab = ref('map')
   const hatchedPokemon = ref(null)
   const _selectedBoxIndex = ref(-1)
+  const isBoxMenuOpen = ref(false)
+  const selectedBoxIndex = computed({
+    get: () => _selectedBoxIndex.value,
+    set: (val) => { _selectedBoxIndex.value = val }
+  })
   const pokemonSelectionConfig = ref({})
   
   // Notifications
@@ -264,6 +269,8 @@ export const useUIStore = defineStore('ui', () => {
     selectedPokemon,
     selectedMove,
     activeTab,
+    isBoxMenuOpen,
+    selectedBoxIndex,
     isPokemonCenterOpen,
     isShopOpen,
     isWarShopOpen,

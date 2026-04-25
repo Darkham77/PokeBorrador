@@ -23,12 +23,12 @@ const badges = computed(() => {
 })
 
 const containerStyle = computed(() => {
-  if (props.inline) return { position: 'relative', top: 'auto', left: 'auto', zIndex: 10 }
+  if (props.inline) return { position: 'relative', top: 'auto', left: 'auto', zIndex: 'var(--z-low)' }
   return {
     position: 'absolute',
     top: props.top,
     left: props.left,
-    zIndex: 10
+    zIndex: 'var(--z-low)'
   }
 })
 
@@ -80,7 +80,7 @@ const handleBadgeClick = (badge) => {
 
 .unified-badge-pill {
   display: flex;
-  z-index: 10;
+  z-index: var(--z-low);
 
   .pill-container {
     display: flex;
@@ -201,7 +201,7 @@ const handleBadgeClick = (badge) => {
     &:hover {
       transform: Scale(1.3) !important;
       filter: Brightness(1.2);
-      z-index: 20;
+      z-index: calc(var(--z-low) + 1);
     }
 
     &.can-edit {

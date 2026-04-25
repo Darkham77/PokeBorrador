@@ -42,6 +42,7 @@ Refer to these manuals for complex implementation specifications:
 - **GPU First**: Prioritize GPU-accelerated rendering. See [gpu_optimization_manual.md](./references/gpu_optimization_manual.md).
 - **Sprite Standard**: Use `@include sprite-render` for all game assets.
 - **Organic Feel**: De-synchronize animations with seeds and vary speeds. See [animation_standards.md](./references/animation_standards.md).
+- **GPU Efficiency**: Use the native `opacity` property instead of `filter: Opacity()` to avoid unnecessary compositor layers.
 
 ### 3. Modularity & Hierarchy
 
@@ -54,7 +55,9 @@ Refer to these manuals for complex implementation specifications:
 - **Capitalization Mandate**: Use Capitalized Filters (`Scale()`, `Blur()`, `Brightness()`, `Rgba()`, `Rgb()`) to avoid Dart Sass 2.0 collisions. This applies to `.scss`, `.vue`, and constant files (`.js`, `.ts`).
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. Eliminate unused vars and computed properties immediately.
-- **Click Propagation**: Always use `@click.stop` for interactive elements in layered UIs (cards, lists, modals) to prevent accidental bubbling to background containers.
+- **Click Propagation**: Always use `@click.stop` for interactive elements in layered UIs (cards, lists, modals) to prevent accidental bubbling to background containers. If a numeric emit is required and `.stop` is incompatible, use `data-ignore="[PureVue-Ignore]"` on the SAME line as the handler.
+- **Vue Template Integrity**: NEVER use JS-style (`//`) or HTML comments inside Vue tags or attributes. This causes Vite compilation errors ("Illegal '/' in tags").
+- **Z-Index Layering**: Hardcoded numbers are forbidden. Use system CSS variables (`--z-low`, `--z-base`, etc.) exclusively.
 
 ### 5. CLI-First Debugging
 
@@ -70,13 +73,6 @@ To ensure rigor and traceability, every complex task MUST follow the Artifact li
 1. **Planning**: Create `implementation_plan.md`. Wait for user "ok".
 2. **Execution**: Maintain `task.md` as the absolute source of truth for granular steps.
 3. **Closure**: Create `walkthrough.md` with evidence (screenshots, tests) of the task's success.
-
-### Clean Task Formatting (IDE Compatibility)
-To avoid "ugly" rendering in the IDE, always use GFM-compliant checkboxes:
-- `[ ]` **Pending**: Unstarted tasks.
-- `[ ] 🔄` **In Progress**: Active task (keeps the checkbox empty for the IDE, emoji shows action).
-- `[x]` **Completed**: Finished tasks.
-- **Avoid** `[/]` or other custom notations inside the brackets that break IDE rendering.
 
 ---
 

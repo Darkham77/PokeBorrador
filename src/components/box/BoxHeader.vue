@@ -15,8 +15,12 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
     <div class="header-layout">
       <!-- Izquierda: Títulos apilados -->
       <div class="header-left">
-        <h1 class="header-main-title">CENTRO POKÉMON</h1>
-        <h2 class="header-sub-title">SISTEMA DE ALMACENAMIENTO — RED LAN</h2>
+        <h1 class="header-main-title">
+          CENTRO POKÉMON
+        </h1>
+        <h2 class="header-sub-title">
+          SISTEMA DE ALMACENAMIENTO — RED LAN
+        </h2>
       </div>
 
       <!-- Derecha: Info Integrada y Acciones -->
@@ -28,15 +32,24 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
             <span class="badge-value">{{ count }} / {{ max }}</span>
           </div>
           
-          <div v-if="hint" class="badge-divider" />
+          <div
+            v-if="hint"
+            class="badge-divider"
+          />
           
-          <div v-if="hint" class="hint-group">
+          <div
+            v-if="hint"
+            class="hint-group"
+          >
             <span class="hint-icon">💡</span>
             <span class="hint-text">{{ hint }}</span>
           </div>
         </div>
 
-        <div v-if="playerClass === 'rocket'" class="actions-group">
+        <div
+          v-if="playerClass === 'rocket'"
+          class="actions-group"
+        >
           <button
             v-if="!isRocketMode"
             class="rocket-action-btn"
@@ -44,9 +57,22 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
           >
             🚀 MERCADO NEGRO
           </button>
-          <div v-else class="rocket-confirm-group">
-            <button class="confirm-btn" @click.stop="emit('confirmRocket')">✓ VENDER</button>
-            <button class="cancel-btn" @click.stop="emit('cancelRocket')">✕</button>
+          <div
+            v-else
+            class="rocket-confirm-group"
+          >
+            <button
+              class="confirm-btn"
+              @click.stop="emit('confirmRocket')"
+            >
+              ✓ VENDER
+            </button>
+            <button
+              class="cancel-btn"
+              @click.stop="emit('cancelRocket')"
+            >
+              ✕
+            </button>
           </div>
         </div>
       </div>

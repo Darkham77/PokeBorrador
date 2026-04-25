@@ -13,6 +13,8 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 ## 2. Low-Cost Animations
 
 - **Allowed Properties**: `transform` (scale, translate, rotate) and `opacity`.
+- **Native Opacity**: NEVER use `filter: Opacity()` for static transparency; use the native `opacity` property to avoid redundant GPU layer creation.
+- **Native Opacity**: NEVER use `filter: Opacity()` for static transparency; use the native `opacity` property to avoid redundant GPU layer creation.
 - **Forbidden Properties**: `margin`, `padding`, `width`, `height`, `top`, `left`, `right`, `bottom`.
 - **Will-Change**: Use `@include will-animate(transform, opacity)` only on elements with constant animations (e.g., auras, Shiny pulses). Do not abuse, as it consumes video memory.
 

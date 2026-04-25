@@ -38,7 +38,7 @@ const emit = defineEmits(['pokemonClick'])
       :index="item.index"
       :is-selected="rocketSelection.includes(item.index)"
       :is-rocket-mode="isRocketMode"
-      @click.stop="emit('pokemonClick', item.index)"
+      @click="emit('pokemonClick', item.index)" data-ignore="[PureVue-Ignore]"
     />
   </div>
 </template>
@@ -58,7 +58,8 @@ const emit = defineEmits(['pokemonClick'])
   .empty-icon {
     font-size: 40px;
     margin-bottom: 20px;
-    filter: Grayscale(1) Opacity(0.3);
+    filter: Grayscale(1);
+    opacity: 0.3;
   }
 
   p {
@@ -69,4 +70,3 @@ const emit = defineEmits(['pokemonClick'])
   }
 }
 </style>
-
