@@ -8,6 +8,7 @@ import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
+import { useElementVisibility } from '@/composables/useElementVisibility'
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
 
 const props = defineProps({
@@ -27,9 +28,15 @@ const emit = defineEmits(['navigate'])
 const uiStore = useUIStore()
 const battleStore = useBattleStore()
 
+// Refs & Performance
+const cardRef = ref(null)
+const { isVisible } = useElementVisibility(cardRef)
+
 const isPerformanceMode = computed(() => {
   return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode
 })
+
+const isOffscreen = computed(() => isVisible.value === false)
 
 const imgPath = computed(() => {
   const fileName = MAP_ROUTE_MAPPING[props.map.id] || 'default'
@@ -297,7 +304,6 @@ const allSpawns = computed(() => [
 ])
 
 // Dynamic Grid & Responsiveness
-const cardRef = ref(null)
 const currentCols = ref(3)
 let resizeObserver = null
 
@@ -359,9 +365,17 @@ const spawnGrid = computed(() => {
     :style="atmosphereStyles"
     @click="!isLocked && !isPerformanceMode && emit('navigate', map.id)"
   >
+    <!-- Image Preloader (Forces immediate decode) -->
+    <img 
+      :src="imgPath" 
+      loading="eager" 
+      style="display: none;" 
+      @error="e => e.target.style.display = 'none'"
+    >
+
     <!-- Weather Layer -->
     <div
-      v-if="weather !== 'clear' && !isPerformanceMode && !isLocked && !isSafariLocked"
+      v-show="weather !== 'clear' && isVisible && !isPerformanceMode && !isLocked && !isSafariLocked"
       :class="['weather-overlay', weather]"
     >
       <!-- Rain & Storm -->
@@ -394,7 +408,6 @@ const spawnGrid = computed(() => {
       class="lock-overlay"
     >
       <span
-        v-if="!isPerformanceMode"
         class="lock-text"
       >
         {{ lockReason }}
@@ -403,7 +416,7 @@ const spawnGrid = computed(() => {
 
     <!-- 1. Guardian (Top Left) -->
     <PVTooltip
-      v-if="processedGuardian && !isPerformanceMode && !isLocked && !isSafariLocked"
+      v-if="processedGuardian && !isLocked && !isSafariLocked"
       class="guardian-status-badge"
       :class="{ 
         'is-silhouette': !processedGuardian.isCaught 
@@ -426,7 +439,6 @@ const spawnGrid = computed(() => {
 
     <!-- 2. Cycle Pill (Top Right) -->
     <PVTooltip
-      v-if="!isPerformanceMode"
       :class="['location-tag', (isLocked || isSafariLocked) ? 'tag-locked' : 'tag-wild', weatherAnimClass]"
       :title="(isLocked || isSafariLocked) ? 'ZONA BLOQUEADA' : 'ESTADO AMBIENTAL'"
       :description="(isLocked || isSafariLocked) ? lockDescription : `Clima: ${weatherName} | Ciclo: ${cycleName}`"

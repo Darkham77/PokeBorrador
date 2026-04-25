@@ -278,7 +278,7 @@ const handleEditNickname = () => {
   >
     <div
       v-if="species"
-      class="pdex-detail-content"
+      class="upd-core-content"
       :class="{ 'instance-mode': isInstance }"
       :style="{ 
         '--type-color': PDEX_TYPE_COLORS[species.type[0].toLowerCase()],
@@ -331,17 +331,19 @@ const handleEditNickname = () => {
       <div class="pdex-bg-glow" />
 
       <!-- TOP DISPLAY -->
-      <div class="pdex-main-display">
-        <PVSpriteFX
-          :is-shiny="targetPokemon?.isShiny"
-          :is-guardian="targetPokemon?.isGuardian"
-        >
-          <img
-            :src="getSprite(targetSpeciesId, targetPokemon?.isShiny)"
-            class="main-sprite"
-            @error="e => e.target.style.display = 'none'"
+      <div class="upd-main-display">
+        <div class="upd-sprite-container">
+          <PVSpriteFX
+            :is-shiny="targetPokemon?.isShiny"
+            :is-guardian="targetPokemon?.isGuardian"
           >
-        </PVSpriteFX>
+            <img
+              :src="getSprite(targetSpeciesId, targetPokemon?.isShiny)"
+              class="main-sprite"
+              @error="e => e.target.style.display = 'none'"
+            >
+          </PVSpriteFX>
+        </div>
       </div>
 
 
@@ -350,7 +352,7 @@ const handleEditNickname = () => {
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          class="pdex-tab-btn"
+          class="upd-tab-btn"
           :class="{ active: activeTab === tab.id }"
           :style="{ '--tab-color': activeTab === tab.id ? 'var(--type-color)' : 'rgba(255,255,255,0.4)' }"
           @click="activeTab = tab.id"
@@ -361,7 +363,7 @@ const handleEditNickname = () => {
       </nav>
 
       <!-- TAB BODY -->
-      <div class="pdex-detail-body">
+      <div class="upd-core-body">
         <!-- Summary Tab -->
         <div
           v-if="activeTab === 'summary'"
@@ -369,16 +371,16 @@ const handleEditNickname = () => {
         >
           <div class="info-grid">
             <div class="info-item">
-              <span class="pdex-label pixelated">CATEGORÍA</span>
-              <span class="pdex-value pixelated">{{ cleanCategory }}</span>
+              <span class="upd-info-label pixelated">CATEGORÍA</span>
+              <span class="ps-info-value pixelated">{{ cleanCategory }}</span>
             </div>
             <div class="info-item">
-              <span class="pdex-label pixelated">ALTURA</span>
-              <span class="pdex-value pixelated">{{ isInstance ? instancePhysicalData.height + 'm' : formatRange(species.height, 'm') }}</span>
+              <span class="upd-info-label pixelated">ALTURA</span>
+              <span class="ps-info-value pixelated">{{ isInstance ? instancePhysicalData.height + 'm' : formatRange(species.height, 'm') }}</span>
             </div>
             <div class="info-item">
-              <span class="pdex-label pixelated">PESO</span>
-              <span class="pdex-value pixelated">{{ isInstance ? instancePhysicalData.weight + 'kg' : formatRange(species.weight, 'kg') }}</span>
+              <span class="upd-info-label pixelated">PESO</span>
+              <span class="ps-info-value pixelated">{{ isInstance ? instancePhysicalData.weight + 'kg' : formatRange(species.weight, 'kg') }}</span>
             </div>
           </div>
           <p class="description">
@@ -400,7 +402,7 @@ const handleEditNickname = () => {
             v-if="isInstance"
             class="tag-section"
           >
-            <span class="pdex-label">ETIQUETAS:</span>
+            <span class="upd-info-label">ETIQUETAS:</span>
             <div class="tags-list">
               <PVTooltip
                 v-for="t in POKEMON_TAGS"
@@ -420,8 +422,8 @@ const handleEditNickname = () => {
                   } : {}"
                   @click.stop="handleToggleTag(t)"
                 >
-                  <span class="t-icon">{{ t.icon }}</span>
-                  <span class="t-label pixelated">{{ t.shortLabel }}</span>
+                  <span class="teb-icon">{{ t.icon }}</span>
+                  <span class="teb-label pixelated">{{ t.shortLabel }}</span>
                 </button>
               </PVTooltip>
             </div>
@@ -433,7 +435,7 @@ const handleEditNickname = () => {
             class="db-info-section"
           >
             <div class="uid-display">
-              <span class="pdex-label pixelated">ID ÚNICO DB:</span>
+              <span class="upd-info-label pixelated">ID ÚNICO DB:</span>
               <span class="uid-value pixelated">{{ targetPokemon.uid }}</span>
             </div>
           </div>

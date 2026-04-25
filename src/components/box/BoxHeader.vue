@@ -9,7 +9,7 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
 
 <template>
   <div class="box-header">
-    <div class="section-title">
+    <div class="bh-section-title">
       📦 PC de Almacenamiento
     </div>
     <div class="header-actions">
@@ -51,7 +51,7 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
   gap: 8px;
 }
 
-.section-title {
+.bh-section-title {
   margin: 0;
   @include pixelated;
   font-size: 14px;

@@ -162,7 +162,7 @@ function selectAdventure(_slotIndex) {
       <section class="team-section adventure-section">
         <div class="section-header">
           <span class="section-icon">🎒</span>
-          <h2 class="section-title">
+          <h2 class="tm-section-title">
             EQUIPO DE AVENTURA
           </h2>
           <span class="count">{{ gameStore.state.team.length }}/6</span>
@@ -193,7 +193,7 @@ function selectAdventure(_slotIndex) {
       <section class="team-section pvp-section">
         <div class="section-header">
           <span class="section-icon">⚔️</span>
-          <h2 class="section-title">
+          <h2 class="tm-section-title">
             EQUIPO COMPETITIVO
           </h2>
           <span class="badge">RANKED</span>
@@ -228,7 +228,7 @@ function selectAdventure(_slotIndex) {
       <section class="team-section war-section">
         <div class="section-header">
           <span class="section-icon">🛡️</span>
-          <h2 class="section-title">
+          <h2 class="tm-section-title">
             EQUIPO DE GUERRA
           </h2>
           <span class="badge war-badge">EVENTO</span>
@@ -288,7 +288,7 @@ function selectAdventure(_slotIndex) {
 
     .section-icon { font-size: 24px; }
     
-    .section-title {
+    .tm-section-title {
       @include pixelated;
       font-size: 12px;
       color: $white;

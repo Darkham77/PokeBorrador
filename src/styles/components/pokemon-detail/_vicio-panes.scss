@@ -43,10 +43,10 @@
 
   &:hover { 
     background: rgba(255,255,255,0.04); 
-    border-color: Rgba(var(--m-type-rgb), 0.4);
+    border-color: rgba(var(--m-type-rgb), 0.4);
     transform: TranslateY(-4px) TranslateX(2px); 
     box-shadow: -10px 10px 30px rgba(0,0,0,0.5), 
-                0 0 20px Rgba(var(--m-type-rgb), 0.1);
+                0 0 20px rgba(var(--m-type-rgb), 0.1);
 
     @media (max-width: 480px) {
       transform: translateY(-2px);
@@ -70,7 +70,7 @@
       @include pixelated;
     }
 
-    .m-type-tag {
+    & .m-type-tag {
       @include type-pill(6px);
       padding: 2px 10px;
     }
@@ -113,7 +113,7 @@
   align-items: center;
   border: 1px solid rgba(255,255,255,0.05);
   
-  .pdex-label {
+  .vp-pane-label {
     @include pixelated;
     font-size: 8px;
     color: var(--gray);
@@ -121,7 +121,7 @@
     @include pixelated;
   }
   
-  .pdex-value {
+  .vp-stat-value {
     @include pixelated;
     font-size: 16px;
     color: var(--yellow);
@@ -129,7 +129,7 @@
   }
 }
 
-.moves-table {
+.vp-moves-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
@@ -174,14 +174,14 @@
     &:hover {
       background: rgba(255, 255, 255, 0.05);
       
-      .move-name {
+      & .vp-move-name {
         color: var(--yellow);
         text-shadow: 0 0 10px rgba(255, 214, 10, 0.4);
       }
     }
   }
 
-  .move-lv { 
+  .vp-move-lv { 
     color: var(--yellow); 
     opacity: 0.9; 
     text-align: center;
@@ -189,7 +189,7 @@
     font-weight: 900;
   }
 
-  .move-name { 
+      & .vp-move-name { 
     color: $white; 
     transition: all 0.3s ease;
     font-weight: 900;
@@ -197,7 +197,7 @@
     @include pixelated;
   }
   
-  .m-type-tag {
+    & .m-type-tag {
     @include type-pill(7px);
   }
 
@@ -208,7 +208,7 @@
   }
 }
 
-.section-title {
+.vp-section-title {
   @include pixelated;
   font-size: 10px;
   color: var(--yellow);

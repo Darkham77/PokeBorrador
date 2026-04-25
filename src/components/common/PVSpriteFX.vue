@@ -4,7 +4,8 @@
  * Componente centralizado para efectos visuales en sprites de Pokémon.
  * Soporta: Shiny Sparkles, Guardian Aura y es fácilmente extensible.
  */
-import { computed } from 'vue'
+import { computed, inject, ref } from 'vue'
+import { useUIStore } from '@/stores/ui'
 
 const props = defineProps({
   // Estado base
@@ -14,13 +15,28 @@ const props = defineProps({
   // Configuración de brillo
   sparkleCount: { type: Number, default: 5 },
   
+  // Control de performance
+  enabled: { type: Boolean, default: true },
+  
   // Metadata para futuras herramientas de testing/debug
   metadata: { type: Object, default: () => ({}) }
 })
 
+const uiStore = useUIStore()
+const isModalBelow = inject('isModalPerformanceMode', ref(false))
+
+const isSimplified = computed(() => {
+  // Desactivado si: 
+  // 1. Se pasó enabled: false explícitamente
+  // 2. El modal está por debajo de otro
+  // 3. El modo debug de modales simplificados está activo
+  return !props.enabled || isModalBelow.value || uiStore.isSimplifiedModalsMode
+})
+
 const wrapperClasses = computed(() => ({
   'pv-fx-wrapper': true,
-  'is-guardian': props.isGuardian
+  'is-guardian': props.isGuardian && !isSimplified.value,
+  'is-simplified': isSimplified.value
 }))
 </script>
 
@@ -31,7 +47,7 @@ const wrapperClasses = computed(() => ({
 
     <!-- Capa de Brillos (Shiny) -->
     <div
-      v-if="isShiny"
+      v-if="isShiny && !isSimplified"
       class="pv-fx-shiny-overlay"
       data-fx-type="shiny"
     >

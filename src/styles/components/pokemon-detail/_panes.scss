@@ -2,13 +2,13 @@
 @use "@/styles/core/tools" as *;
 
 .pdex-summary-pane {
-  .info-grid {
+      & .info-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     margin-bottom: 32px;
     
-    .info-item {
+        & .info-item {
       background: rgba(255,255,255,0.04);
       padding: 16px;
       border-radius: 20px;
@@ -20,7 +20,7 @@
       min-height: 85px; 
       text-align: center;
       
-      .pdex-label { 
+      & .ps-card-label { 
         display: block; 
         font-size: 8px; 
         color: rgba(255,255,255,0.4); 
@@ -29,7 +29,7 @@
         line-height: 1.4;
         @include pixelated;
       }
-      .pdex-value { 
+      & .ps-info-value { 
         font-size: 16px; 
         font-weight: 900; 
         color: $white; 
@@ -39,7 +39,7 @@
     }
   }
   
-  .description { 
+      & .description { 
     font-size: 15px; 
     line-height: 1.7; 
     color: rgba(255,255,255,0.7); 
@@ -52,7 +52,7 @@
 }
 
 .pdex-stats-pane {
-  .pdex-stat-row {
+      & .pdex-stat-row {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -65,7 +65,7 @@
       color: rgba(255,255,255,0.4); 
       @include pixelated;
     }
-    .pdex-stat-value { 
+        & .pdex-stat-value { 
       width: 40px; 
       font-size: 16px; 
       font-weight: 900; 
@@ -99,7 +99,7 @@
     align-items: center;
     border: 1px solid rgba(255,255,255,0.05);
     
-    .pdex-label {
+      & .ps-card-label {
       @include pixelated;
       font-size: 8px;
       color: var(--gray);
@@ -107,7 +107,7 @@
       @include pixelated;
     }
     
-    .pdex-value {
+      & .ps-info-value {
       @include pixelated;
       font-size: 16px;
       color: var(--yellow);
@@ -117,7 +117,7 @@
 }
 
 .pdex-moves-pane {
-  .moves-table {
+  .ps-moves-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 8px;
@@ -151,13 +151,13 @@
       &:last-child { border-radius: 0 12px 12px 0; }
     }
     
-    .move-lv { 
+    .ps-move-lv { 
       font-family: 'Press Start 2P', cursive; 
       font-size: 8px; 
       color: var(--yellow);
     }
     
-    .move-name {
+    .ps-move-name {
       color: $white;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -188,30 +188,30 @@
 
 // Global mobile tweaks for panes
 @media (max-width: 480px) {
-  .pdex-summary-pane {
-    .info-grid {
+  body .pdex-summary-pane {
+      & .info-grid {
       gap: 8px;
       margin-bottom: 20px;
-      .info-item {
+        & .info-item {
         padding: 10px 4px;
         min-height: 60px;
         border-radius: 12px;
-        .pdex-value { font-size: 12px; }
+        & .ps-info-value { font-size: 12px; }
       }
     }
-    .description {
+      & .description {
       font-size: 12px;
       padding: 14px;
       line-height: 1.5;
     }
   }
   
-  .pdex-stats-pane {
-    .pdex-stat-row {
+  body .pdex-stats-pane {
+      & .pdex-stat-row {
       gap: 10px;
       margin-bottom: 12px;
-      .pdex-stat-value { font-size: 12px; width: 30px; }
+        & .pdex-stat-value { font-size: 12px; width: 30px; }
     }
-    .stat-total .pdex-value { font-size: 18px; }
+    .stat-total .ps-info-value { font-size: 18px; }
   }
 }

@@ -12,14 +12,14 @@ defineEmits(['update:modelValue'])
     </div>
     <div class="server-tabs">
       <button 
-        class="server-tab" 
+        class="login-server-tab" 
         :class="{ active: modelValue === 'online' }"
         @click="$emit('update:modelValue', 'online')"
       >
         🌐 Online
       </button>
       <button 
-        class="server-tab" 
+        class="login-server-tab" 
         :class="{ active: modelValue === 'local' }"
         @click="$emit('update:modelValue', 'local')"
       >

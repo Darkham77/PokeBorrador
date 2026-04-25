@@ -66,10 +66,9 @@ def fix_file(filepath):
     
     # 1. Fix Image fallbacks (only in .vue)
     if filepath.endswith('.vue'):
-        # Match <img ... > handling multi-line and quotes correctly
-        # We match from <img to the corresponding >
-        # This is a bit tricky with regex for all cases, but for Vue templates it's usually okay
-        content = re.sub(r'<img\s+[^>]*?>', inject_error_handler, content, flags=re.DOTALL | re.IGNORECASE)
+        # Match <img ... > but skip if it's inside a src="..." or similar complex case
+        # Also ensure we don't match if it contains "data:image/svg+xml" (inline SVGs)
+        content = re.sub(r'<img\s+(?![^>]*?data:image/svg\+xml)[^>]*?>', inject_error_handler, content, flags=re.DOTALL | re.IGNORECASE)
         # Fix previous buggy injection if present
         content = content.replace(r"\'none\'", "'none'")
 

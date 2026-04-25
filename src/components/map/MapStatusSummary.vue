@@ -242,7 +242,7 @@ const bannerStyle = computed(() => ({
     inset: -5px; // Sangrado profundo para asegurar que cubra debajo del marco
     background-size: cover;
     background-position: center 20%;
-    z-index: var(--z-base);
+    z-index: 1;
     border-radius: 16px; // Ajustado para curva interna (20px - 4px)
     @include pixelated;
     image-rendering: pixelated;
@@ -254,7 +254,7 @@ const bannerStyle = computed(() => ({
     position: absolute;
     inset: -5px; // Sangrado profundo
     background: linear-gradient(to top, $black 0%, rgba(0,0,0,0.85) 35%, transparent 70%);
-    z-index: var(--z-base);
+    z-index: 2;
     pointer-events: none;
     border-radius: 16px;
   }
@@ -275,7 +275,7 @@ const bannerStyle = computed(() => ({
   right: -2px;
   padding: 24px;
   text-align: left;
-  z-index: var(--z-base);
+  z-index: 3;
   border-radius: 0 0 16px 16px;
   background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
 }
@@ -305,7 +305,7 @@ const bannerStyle = computed(() => ({
   @include pixelated;
   font-size: 8px;
   box-shadow: 0 4px 10px rgba(255,51,51,0.3);
-  z-index: var(--z-base);
+  z-index: 4;
 }
 
 .pc-banner-grid {
@@ -349,7 +349,7 @@ const bannerStyle = computed(() => ({
       0 12px 30px rgba(0, 0, 0, 0.6), 
       0 0 20px rgba(255, 214, 10, 0.4);
     transform: translateY(-4px);
-    z-index: var(--z-base);
+    z-index: 5;
   }
 
   &::after {

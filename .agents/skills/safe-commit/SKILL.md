@@ -43,11 +43,12 @@ graph TD
     
     Recovery -->|FAIL| Verification
     Recovery -->|PASS| Cleanup[6. Workspace Cleanup]
-    Cleanup --> Lessons[7. Lessons Extraction]
-    Lessons --> Approval[7.1 User Approval]
+    Cleanup --> Walkthrough[7. Walkthrough Update]
+    Walkthrough --> Lessons[8. Lessons Extraction]
+    Lessons --> Approval[8.1 User Approval]
     
-    Approval --> Commit[8. The Safe Commit]
-    Commit --> Push[9. Push & Close]
+    Approval --> Commit[9. The Safe Commit]
+    Commit --> Push[10. Push & Close]
     Push --> End((END))
     
     style Start fill:#f9f,stroke:#333,stroke-width:4px
@@ -63,7 +64,8 @@ graph TD
 
 Before writing any code or finalizing changes, analyze the work done.
 
-- Create or update `task.md` in the agent's private directory. This file is your **source of truth**; use it to track every granular step.
+- **Mandatory Planning**: Create an `implementation_plan.md` artifact detailing the proposed changes and wait for user approval.
+- **Task Tracking**: Create or update `task.md` in the agent's private directory. This file is your **source of truth**; use it to track every granular step.
 - **Dynamic Updates**: If you discover new complex problems during the process, you MUST immediately add them as new items to `task.md` to ensure no requirement is forgotten.
 - Verify that every change aligns with the **Hybrid Retro-Modern** identity.
 
@@ -116,27 +118,57 @@ Before extracting lessons or committing, you MUST delete all temporary artifacts
 - **Audit Cleanup**: Delete all `.txt` files related to auditing (generally containing `_audit_` in the name, like `audit_results.txt` or `gpu_audit_results.txt`).
 - Ensure `git status` does not show untracked temporary files that should not be in the repository.
 
-### 7. Lessons Extraction (LOCAL)
+### 7. Walkthrough Generation (MANDATORY)
+
+Before extracting lessons, you MUST create or update the `walkthrough.md` artifact.
+
+- **Content**: Summarize the changes made, the files affected, and the verification results.
+- **Evidence**: Embed any relevant screenshots or recordings produced during the task.
+
+### 8. Lessons Extraction (LOCAL)
 
 Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a Phaser optimization). This is a **local documentation task** and MUST NOT involve a browser subagent.
 
 - **Feedback Mandatory**: After @/extract-lessons presents the lesson mapping table, you MUST stop and wait for the user to approve the changes.
-- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 8 without explicit user confirmation of the extracted lessons.
+- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the extracted lessons.
 
-### 8. The Safe Commit
+### 9. The Safe Commit
 
-1. `git status` to verify all files (including docs and `.agents/skills/` updates) are staged.
+1. `git status` to verify all files (including docs, `.agents/skills/` updates, and artifacts) are staged.
 2. `git add .`
 3. Commit with a message following conventional standards (`feat:`, `fix:`, `refactor:`, `docs:`).
 
-### 9. Push & Close
+### 10. Push & Close
 
 Push changes and notify the user.
 
-## Commit Message Standards
+## Commit Message Standards (The Elegant Protocol)
 
-- Be descriptive: `feat(battle): add burn effect calculation and unit tests`
-- Reference completed tasks from `task.md`.
+Commit messages MUST NOT be terse. They MUST provide a clear overview of the "what" and the "why" to maintain the project's high-rigor history.
+
+### 1. Structure Requirement
+
+- **Header**: Conventional Commit format (`type(scope): description`) in lowercase, summary of the main impact.
+- **Body**: A blank line followed by a bulleted list (`-`) of specific technical changes.
+- **Technical Detail**: Mention specific files, scripts, or metrics (e.g., "Verified via 240 unit tests").
+
+### 2. Master Example (The Gold Standard)
+
+```text
+docs(standards): modernize add-pokemon skill and enforce Zero-Warning culture
+
+- Updated add-pokemon SKILL.md with CLI-First protocols and interactive hatching details.
+- Refactored fetch_pokemon.js for path parity with SECONDARY_TYPES and POKEMON_ABILITIES.
+- Hardened safe-commit and project-standards with new governance rules.
+- Resolved pre-existing lint warnings in debug and modal components to achieve Zero-Warning state.
+- Verified system stability via full build and 240 unit tests (100% pass).
+```
+
+### 3. Forbidden Patterns
+
+- Single-word messages (e.g., `commit`, `update`, `fix`).
+- Messages without a bulleted list for changes involving 2+ files.
+- Omitting the verification results (build/tests).
 
 ## Example Recovery Strategy
 

@@ -19,7 +19,7 @@
 }
 
 // specialized Display for Pokedex
-.pdex-main-display {
+.pdx-detail-main-display {
   @include detail.pokemon-main-display(
     $height: 80px,
     $margin-bottom: -40px,

@@ -1,13 +1,13 @@
 // src/styles/components/pokemon-detail/_evolutions.scss
 @use "@/styles/core/tools" as *;
 
-.evolve-pane {
-  .evo-chain {
+body .evolve-pane {
+      & .evo-chain {
     display: flex;
     flex-direction: column;
     gap: 24px;
     
-    .evo-step {
+      & .evo-step {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -31,7 +31,7 @@
         text-align: center;
       }
 
-      .evo-sprite {
+      & .evo-sprite {
         width: 64px;
         height: 64px;
         image-rendering: pixelated;
@@ -41,14 +41,14 @@
         &:hover { transform: Scale(1.2); }
       }
       
-      .evo-arrow {
+      & .evo-arrow {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 4px;
         min-width: 60px;
         
-        .method { 
+    & .method { 
           font-size: 8px; 
           font-weight: 900; 
           color: var(--yellow); 
@@ -56,14 +56,14 @@
           @include pixelated;
           @include pixelated;
         }
-        .arrow { 
+          & .arrow { 
           font-size: 24px; 
           color: rgba(255,255,255,0.1); 
           line-height: 1;
         }
       }
       
-      .evo-sprite-wrap {
+      & .evo-sprite-wrap {
         width: 64px;
         height: 64px;
         display: flex;
@@ -76,14 +76,14 @@
           opacity: 1; // Solid black as requested
         }
 
-        .evo-unknown-placeholder {
+      & .evo-unknown-placeholder {
           @include pixelated;
           font-size: 24px;
           color: rgba(255,255,255,0.1);
         }
       }
       
-      .evo-target-name { 
+      & .evo-target-name { 
         font-size: 8px; 
         font-weight: 900; 
         color: $white; 
@@ -107,10 +107,10 @@
 // Mobile Responsive Fix
 @media (max-width: 480px) {
   .evolve-pane {
-    .evo-chain {
+      & .evo-chain {
       gap: 12px;
       
-      .evo-step {
+      & .evo-step {
         padding: 12px 10px;
         gap: 8px;
         border-radius: 16px;
@@ -125,13 +125,13 @@
           height: 48px;
         }
 
-        .evo-arrow {
+      & .evo-arrow {
           min-width: 40px;
-          .arrow { font-size: 16px; }
-          .method { font-size: 7px; }
+          & .arrow { font-size: 16px; }
+    & .method { font-size: 7px; }
         }
 
-        .evo-target-name {
+      & .evo-target-name {
           font-size: 7px;
           max-width: 60px;
           overflow: hidden;

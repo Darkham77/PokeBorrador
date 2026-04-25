@@ -3,6 +3,9 @@ import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+import { useUIStore } from '@/stores/ui'
+import { useElementVisibility } from '@/composables/useElementVisibility'
+import { ref, inject } from 'vue'
 
 import { TAG_DEFINITIONS, POKEMON_BADGES } from '@/logic/constants/tags'
 import { getPokemonTier } from '@/logic/constants/tiers'
@@ -17,6 +20,16 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['click', 'openDetail', 'openItem', 'sendToBox', 'select'])
+
+const cardRef = ref(null)
+const { isVisible } = useElementVisibility(cardRef)
+const uiStore = useUIStore()
+
+// Hierarchy & Performance Injections
+const isModalBelow = inject('isModalPerformanceMode', ref(false))
+const isPerformanceActive = computed(() => {
+  return isModalBelow.value || uiStore.isSimplifiedModalsMode
+})
 
 const hpPct = computed(() => props.pokemon.hp / props.pokemon.maxHp)
 
@@ -39,6 +52,11 @@ const spriteUrl = computed(() => {
 const cardClasses = computed(() => {
   const classes = ['pokemon-display-card']
   if (props.pokemon.onMission) classes.push('on-mission')
+  if (isPerformanceActive.value) {
+    classes.push('is-performance-mode')
+    return classes
+  }
+  
   if (props.pokemon.aura) classes.push(`aura-${props.pokemon.aura}-mini`)
   if (props.pokemon.isShiny) classes.push('is-shiny')
   if (props.pokemon.isGuardian) classes.push('is-guardian')
@@ -66,12 +84,14 @@ const activeTags = computed(() => {
 })
 
 const hasBadges = computed(() => {
+  if (isPerformanceActive.value) return false
   return props.pokemon.heldItem || activeTags.value.length > 0 || props.pokemon.isShiny
 })
 </script>
 
 <template>
   <div
+    ref="cardRef"
     :class="cardClasses"
     @click="emit('openDetail', index)"
   >
@@ -141,6 +161,7 @@ const hasBadges = computed(() => {
     <!-- Sprite Section -->
     <div class="sprite-section">
       <PVSpriteFX
+        :enabled="isVisible && !isPerformanceActive"
         :is-shiny="pokemon.isShiny"
         :is-guardian="pokemon.isGuardian"
         :sparkle-count="5"
@@ -161,11 +182,11 @@ const hasBadges = computed(() => {
         class="name-line"
         :class="{ 'has-nickname': pokemon.nickname }"
       >
-        <div class="name-stack">
-          <span class="pokemon-name">{{ pokemon.nickname || pokemon.name }}</span>
+        <div class="pdc-name-stack">
+          <span class="pdc-pokemon-name">{{ pokemon.nickname || pokemon.name }}</span>
           <span
             v-if="pokemon.nickname"
-            class="species-subtitle"
+            class="pdc-species-subtitle"
           >{{ pokemon.name }}</span>
         </div>
         <div

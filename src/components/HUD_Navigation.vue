@@ -64,7 +64,7 @@ const toggleGroupMenu = (name) => {
       @click="handleTabChange('map')"
     >
       <span class="icon">🗺️</span>
-      <span class="label">MAPA</span>
+      <span class="\&quot;nav-item-label\&quot;">MAPA</span>
     </button>
 
     <!-- 2. POKÉMON (Grupo) -->
@@ -78,7 +78,7 @@ const toggleGroupMenu = (name) => {
         @click="toggleGroupMenu('POKEMON')"
       >
         <span class="icon">🔋</span>
-        <span class="label">POKÉMON</span>
+        <span class="\&quot;nav-item-label\&quot;">POKÉMON</span>
       </button>
       <div class="hud-submenu">
         <button
@@ -86,21 +86,21 @@ const toggleGroupMenu = (name) => {
           :class="{ active: activeTab === 'team' }"
           @click="handleTabChange('team', $event); uiStore.openHudGroup = null"
         >
-          <span class="icon">🐛</span><span class="label">EQUIPO</span>
+          <span class="icon">🐛</span><span class="\&quot;nav-item-label\&quot;">EQUIPO</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'box' }"
           @click="handleTabChange('box', $event); uiStore.openHudGroup = null"
         >
-          <span class="icon">📦</span><span class="label">CAJA PC</span>
+          <span class="icon">📦</span><span class="\&quot;nav-item-label\&quot;">CAJA PC</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'pokedex' }"
           @click="handleTabChange('pokedex', $event); uiStore.openHudGroup = null"
         >
-          <span class="icon">📖</span><span class="label">POKÉDEX</span>
+          <span class="icon">📖</span><span class="\&quot;nav-item-label\&quot;">POKÉDEX</span>
         </button>
       </div>
     </div>
@@ -112,7 +112,7 @@ const toggleGroupMenu = (name) => {
       @click="handleTabChange('bag')"
     >
       <span class="icon">🎒</span>
-      <span class="label">MOCHILA</span>
+      <span class="\&quot;nav-item-label\&quot;">MOCHILA</span>
     </button>
     
     <!-- 4. GIMS -->
@@ -122,7 +122,7 @@ const toggleGroupMenu = (name) => {
       @click="handleTabChange('gyms')"
     >
       <span class="icon">🏆</span>
-      <span class="label">GIMS</span>
+      <span class="\&quot;nav-item-label\&quot;">GIMS</span>
     </button>
 
     <!-- 5. CRIANZA -->
@@ -132,7 +132,7 @@ const toggleGroupMenu = (name) => {
       @click="handleTabChange('daycare')"
     >
       <span class="icon">🥚</span>
-      <span class="label">CRIANZA</span>
+      <span class="\&quot;nav-item-label\&quot;">CRIANZA</span>
       <span
         v-if="gameStore.state.eggs?.length"
         class="badge-pill"
@@ -150,7 +150,7 @@ const toggleGroupMenu = (name) => {
         @click="toggleGroupMenu('MARKET')"
       >
         <span class="icon">🏪</span>
-        <span class="label">MARKET</span>
+        <span class="\&quot;nav-item-label\&quot;">MARKET</span>
       </button>
       <div class="hud-submenu">
         <button
@@ -158,21 +158,21 @@ const toggleGroupMenu = (name) => {
           :class="{ active: activeTab === 'online-market' }"
           @click="handleTabChange('online-market'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🌎</span><span class="label">GLOBAL</span>
+          <span class="icon">🌎</span><span class="\&quot;nav-item-label\&quot;">GLOBAL</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'market' }"
           @click="handleTabChange('market'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🛒</span><span class="label">LOCAL</span>
+          <span class="icon">🛒</span><span class="\&quot;nav-item-label\&quot;">LOCAL</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'trainer-shop' }"
           @click="handleTabChange('trainer-shop'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🎖️</span><span class="label">BC SHOP</span>
+          <span class="icon">🎖️</span><span class="\&quot;nav-item-label\&quot;">BC SHOP</span>
         </button>
       </div>
     </div>
@@ -188,7 +188,7 @@ const toggleGroupMenu = (name) => {
         @click="toggleGroupMenu('SOCIAL')"
       >
         <span class="icon">👥</span>
-        <span class="label">SOCIAL</span>
+        <span class="\&quot;nav-item-label\&quot;">SOCIAL</span>
         <span
           v-if="socialStore.notifications.total"
           class="badge-pill"
@@ -201,35 +201,35 @@ const toggleGroupMenu = (name) => {
           :class="{ active: activeTab === 'friends' }"
           @click="handleTabChange('friends'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🤝</span><span class="label">AMIGOS</span>
+          <span class="icon">🤝</span><span class="\&quot;nav-item-label\&quot;">AMIGOS</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'arena' }"
           @click="handleTabChange('arena'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🏟️</span><span class="label">ARENA</span>
+          <span class="icon">🏟️</span><span class="\&quot;nav-item-label\&quot;">ARENA</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'ranking' }"
           @click="handleTabChange('ranking'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🏅</span><span class="label">RANKING</span>
+          <span class="icon">🏅</span><span class="\&quot;nav-item-label\&quot;">RANKING</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'war' }"
           @click="handleTabChange('war'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🚩</span><span class="label">GUERRA</span>
+          <span class="icon">🚩</span><span class="\&quot;nav-item-label\&quot;">GUERRA</span>
         </button>
         <button
           class="hud-nav-btn"
           :class="{ active: activeTab === 'events' }"
           @click="handleTabChange('events'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🎁</span><span class="label">EVENTOS</span>
+          <span class="icon">🎁</span><span class="\&quot;nav-item-label\&quot;">EVENTOS</span>
         </button>
       </div>
     </div>
@@ -304,7 +304,7 @@ const toggleGroupMenu = (name) => {
   padding: 8px 12px;
   
   .icon { font-size: 16px; }
-  .label {
+  .nav-item-label {
     font-family: 'Press Start 2P', cursive;
     font-weight: 400;
     font-size: clamp(6px, 12cqw, 8px);
@@ -331,7 +331,7 @@ const toggleGroupMenu = (name) => {
       0 0 30px rgba(255, 214, 10, 0.45),
       inset 0 0 12px rgba(255, 214, 10, 0.1);
     z-index: var(--z-base);
-    .label { 
+    .nav-item-label { 
       color: var(--yellow); 
       opacity: 1; 
       text-shadow: 0 0 8px rgba(255, 214, 10, 0.5); 
@@ -433,14 +433,14 @@ const toggleGroupMenu = (name) => {
     }
 
     .icon { font-size: 14px; }
-    .label { 
+    .nav-item-label { 
       font-size: 8px; 
       color: $white;
       white-space: nowrap;
       @include pixelated;
     }
     
-    &.active .label { color: var(--yellow); }
+    &.active .nav-item-label { color: var(--yellow); }
   }
 }
 
@@ -473,7 +473,7 @@ const toggleGroupMenu = (name) => {
   .hud-nav-btn {
     min-width: 50px;
     padding: 6px 4px;
-    .label { 
+    .nav-item-label { 
       font-size: 8px; 
       @include pixelated;
     }

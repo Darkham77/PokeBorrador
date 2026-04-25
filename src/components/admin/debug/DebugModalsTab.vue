@@ -35,7 +35,7 @@ function triggerSampleError() {
         >
         <PVTooltip :title="`Se abrirán ${modalCount} ventanas con 1s de desfase.`">
           <button 
-            class="btn-vicio-primary" 
+            class="btn-vicio-primary btn-vicio-sm" 
             :disabled="isTesting"
             @click="startTest"
           >
@@ -50,7 +50,7 @@ function triggerSampleError() {
       <div class="button-row">
         <PVTooltip title="Cierra todas las ventanas modales abiertas actualmente.">
           <button
-            class="btn-vicio-danger"
+            class="btn-vicio-danger btn-vicio-sm"
             @click="modalStore.closeAll"
           >
             CERRAR TODO
@@ -59,7 +59,7 @@ function triggerSampleError() {
 
         <PVTooltip title="Dispara una notificación de error global para probar el sistema de logs.">
           <button
-            class="btn-vicio-danger"
+            class="btn-vicio-danger btn-vicio-sm"
             @click="triggerSampleError"
           >
             DISPARAR ERROR
@@ -69,15 +69,26 @@ function triggerSampleError() {
     </div>
 
     <div class="debug-group">
-      <label>RENDIMIENTO MAPA</label>
-      <PVTooltip title="Simula el renderizado ligero (oculta spawns y climas) sin tener que abrir modales.">
-        <button
-          :class="uiStore.isDebugPerformanceMode ? 'btn-vicio-danger' : 'btn-vicio-primary'"
-          @click="uiStore.isDebugPerformanceMode = !uiStore.isDebugPerformanceMode"
-        >
-          {{ uiStore.isDebugPerformanceMode ? 'DESACTIVAR MODO RENDIMIENTO' : 'ACTIVAR MODO RENDIMIENTO' }}
-        </button>
-      </PVTooltip>
+      <label>RENDIMIENTO GLOBALES</label>
+      <div class="button-column">
+        <PVTooltip title="Simula el renderizado ligero en el MAPA (oculta spawns y climas).">
+          <button
+            :class="uiStore.isDebugPerformanceMode ? 'btn-vicio-danger btn-vicio-sm' : 'btn-vicio-primary btn-vicio-sm'"
+            @click="uiStore.isDebugPerformanceMode = !uiStore.isDebugPerformanceMode"
+          >
+            {{ uiStore.isDebugPerformanceMode ? 'DESACTIVAR PERF. MAPA' : 'ACTIVAR PERF. MAPA' }}
+          </button>
+        </PVTooltip>
+
+        <PVTooltip title="Fuerza el modo simplificado en TODOS los MODALS (esconde FX de Pokémon, brillos y auras).">
+          <button
+            :class="uiStore.isSimplifiedModalsMode ? 'btn-vicio-danger btn-vicio-sm' : 'btn-vicio-primary btn-vicio-sm'"
+            @click="uiStore.isSimplifiedModalsMode = !uiStore.isSimplifiedModalsMode"
+          >
+            {{ uiStore.isSimplifiedModalsMode ? 'DESACTIVAR PERF. MODALS' : 'ACTIVAR PERF. MODALS' }}
+          </button>
+        </PVTooltip>
+      </div>
     </div>
   </div>
 </template>
@@ -104,6 +115,15 @@ function triggerSampleError() {
   }
 }
 
+.button-row, .button-column {
+  display: flex;
+  gap: 10px;
+}
+
+.button-column {
+  flex-direction: column;
+}
+
 .input-row {
   display: flex;
   gap: 10px;
@@ -126,17 +146,7 @@ function triggerSampleError() {
   }
 }
 
-.btn-vicio-primary {
-  @include btn-vicio-primary;
-  padding: 10px 20px;
-  font-size: 8px;
-}
 
-.btn-vicio-danger {
-  @include btn-vicio-danger;
-  padding: 10px;
-  font-size: 8px;
-}
 
 .hint {
   font-size: 8px;

@@ -135,7 +135,7 @@ const handleToggleTag = (tag) => {
         </h3>
         <div 
           v-if="pokemon.nickname" 
-          class="species-subtitle"
+          class="bm-species-subtitle"
         >
           {{ pokemon.name }}
         </div>
@@ -200,7 +200,7 @@ const handleToggleTag = (tag) => {
         </button>
 
         <div class="swap-section">
-          <div class="section-title">
+          <div class="bm-section-title">
             INTERCAMBIAR POR:
           </div>
           <div
@@ -326,7 +326,7 @@ const handleToggleTag = (tag) => {
     text-transform: uppercase;
   }
 
-  .species-subtitle {
+  .bm-species-subtitle {
     @include pixelated;
     font-size: 7px;
     color: rgba(255, 255, 255, 0.3);
@@ -410,7 +410,7 @@ const handleToggleTag = (tag) => {
 
 .swap-section {
   margin: 10px 0;
-  .section-title {
+  .bm-section-title {
     @include pixelated;
     font-size: 8px;
     color: var(--purple);

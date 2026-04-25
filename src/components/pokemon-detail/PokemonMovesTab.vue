@@ -26,7 +26,7 @@ const hexToRgb = (hex) => {
       v-if="isInstance"
       class="current-moves-section"
     >
-      <h4 class="section-title">
+      <h4 class="vp-section-title">
         MOVIMIENTOS ACTUALES
       </h4>
       <div class="moves-grid-vicio">
@@ -74,11 +74,11 @@ const hexToRgb = (hex) => {
       </div>
     </div>
 
-    <h4 class="section-title">
+    <h4 class="vp-section-title">
       APRENDIZAJE POR NIVEL
     </h4>
-    <div class="moves-table-wrapper">
-      <table class="moves-table">
+    <div class="vp-moves-table-wrapper">
+      <table class="vp-moves-table">
         <thead>
           <tr>
             <th>
@@ -153,10 +153,10 @@ const hexToRgb = (hex) => {
             class="clickable-row"
             @click="uiStore.openMoveDetail(m.name)"
           >
-            <td class="move-lv pixelated">
+            <td class="vp-move-lv pixelated">
               {{ m.level }}
             </td>
-            <td class="move-name pixelated">
+            <td class="vp-move-name pixelated">
               {{ m.name }}
             </td>
             <td class="move-type">

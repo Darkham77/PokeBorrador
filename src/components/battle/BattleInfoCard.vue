@@ -34,7 +34,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
         {{ p.name }}&nbsp;<span v-if="p.isShiny">✨</span>
       </span>
       <span
-        class="gender-badge"
+        class="\&quot;bh-gender-badge\&quot;"
         :class="getGenderCls(p.gender)"
       >{{ getGenderText(p.gender) }}</span>
       <img

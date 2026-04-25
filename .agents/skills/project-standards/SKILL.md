@@ -32,11 +32,12 @@ Refer to these manuals for complex implementation specifications:
 - **Retro Heart**: Use Pixel Art and Sharp Typography for all game-world content and data.
 - **UI Variants**: Leverage `BaseModal` variants (`modern` vs `retro`) to match the context. Gameplay/Config = `retro` (yellow border). Shell/Web = `modern`.
 - **UI Logic**: Always use parameterized props (`hide-header`, `variant`) instead of ad-hoc style overrides.
-- **Discovery States (Fog of War)**: Implement standard discovery states across all UI:
-  - **Unknown**: `?` placeholder, `???` label, 0.7 opacity, brighter question mark.
-  - **Seen (Not Caught)**: Silhouette (`filter: Brightness(0)`), 1.0 opacity (SOLID BLACK), name visible. Add a subtle `Drop-shadow(0 0 1px rgba(255,255,255,0.2))` to the silhouette to define its outline against dark backgrounds.
+- **Discovery States (Fog of War)**: Implement standard discovery states across all UI to ensure visual consistency:
+  - **Unknown**: Use `?` as placeholder and "Desconocido" or "POKÉMON DESCONOCIDO" as label (Prohibit `???`). Set 0.7 opacity for the container and a brighter question mark.
+  - **Seen (Not Caught)**: Use a solid black silhouette (`filter: Brightness(0)`, `opacity: 1`). Add a subtle `Drop-shadow(0 0 1px rgba(255,255,255,0.2))` to define its outline against dark backgrounds. The name must be visible.
   - **Caught**: Full color, 1.0 opacity.
-- **Solid Discovery Silhouettes**: Enforce absolute black silhouettes (`opacity: 1`, `brightness(0)`) for unregistered Pokémon in the Map, Pokédex, and Evolution Chain. Removing all transparency ensures high-contrast visibility against premium glassmorphism backgrounds.
+- **Solid Discovery Silhouettes**: Enforce absolute black silhouettes for unregistered Pokémon in the Map, Pokédex, and Evolution Chain. Removing all transparency ensures high-contrast visibility against premium glassmorphism backgrounds.
+- **Sprite over Emoji Consistency**: Any game-world item or state indicator (e.g., Poké Balls, Eggs, Medals) MUST use its official pixelated sprite asset instead of system emojis. Emojis are reserved only for UI-decorative text or notifications where sprites are not available.
 - **Unified Type Pill System**: All elemental indicators (moves, pokemon types, gym badges) MUST use the master class `.m-type-tag`.
   - **Centralized Style**: Do not define local type styles. Always use the global `_type-pills.scss` module.
   - **High-Contrast Outlines**: Type labels MUST use a 4-directional `text-shadow` (e.g. `1px 1px 0`, `-1px -1px 0`) with 0 blur to maintain sharp pixel-perfect legibility against colorful pill backgrounds.
@@ -99,8 +100,8 @@ Refer to these manuals for complex implementation specifications:
 - **REQUIRED**: All UI state MUST be reactive (Refs, Reactive, Pinia).
 - **Pinia Naming**: Always verify and match the exact capitalization of Pinia store exports (e.g., `useUIStore` vs `useUiStore`). Incorrect capitalization in imports will lead to silent failures or module resolution errors in Vite.
 - **Audit**: Run `python3 .agents/skills/project-standards/scripts/audit_project.py` after UI changes to run a full health check.
-- **Repair**: Run `python3 .agents/skills/project-standards/scripts/repair_project.py` to automatically fix common SASS and Aesthetic violations.
-  - **Z-Index Automation Guard**: Automated repair scripts MUST ignore values below 100. These are reserved for internal component stacking (micro-layers) and must not be flattened by global standardization.
+- **Repair Guard (Z-Index)**: Automated repair scripts (e.g., `fix_z_indexes.py`) MUST ignore values below 100. These are reserved for internal component stacking (micro-layers) and must not be flattened to global variables.
+- **Repair Guard (SVG Images)**: Automated scripts MUST NOT inject `@error` handlers or attempt to modify `<img>` tags that use inline `data:image/svg+xml` sources, as these are self-contained and don't require the same fallback logic as remote assets.
 - **Engine Registration**: Any new audit or repair script created in the `scripts/audit/` or `scripts/fix/` directory MUST be registered in the corresponding unified engine (`audit_project.py` or `repair_project.py`) to ensure global compliance.
 - **Sync Mandate**: Whenever technical documentation or this Skill is modified, it is MANDATORY to review and update the audit scripts, repair scripts, and unified entry points to ensure that new rules or structural changes are reflected in the validation engine.
 - **Source of Truth (SoT) for Automation**: Automation scripts (Audit/Repair) MUST NOT hardcode values that are already defined in centralized configuration files (e.g., `_variables.scss`). Scripts must dynamically parse these files to ensure the governance engine remains synchronized with the project's architectural evolution.
@@ -116,6 +117,7 @@ Refer to these manuals for complex implementation specifications:
 ### 6. Pixel-Perfect Typography (MANDATORY)
 
 - **Grid Alignment**: Pixel fonts (especially `Press Start 2P`) MUST strictly use multiples of their native 8px design grid (**8px, 16px, 24px, 32px**).
+  - **Exception**: Requirements text on map cards may use `13px` only if they are perfectly centered and using `line-height: 1.4` to ensure multiline legibility, but 8-grid multiples are always preferred.
 - **Anti-Alias Ban**: ALWAYS apply `@include pixelated` or `@include pixel-perfect($size)` to pixelated elements to force `-webkit-font-smoothing: none !important`.
 - **FORBIDDEN**: Using intermediate sizes (9px, 10px, 11px, 13px, 15px) or CSS `text-shadow` on small pixel fonts, as these trigger browser-level subpixel blurring.
 - **BST Aesthetics**: RPG statistics and totals MUST prioritize these sharp, high-contrast pixelated tokens over modern sans-serif fonts.
@@ -200,7 +202,8 @@ Refer to these manuals for complex implementation specifications:
 - **FORBIDDEN**: Redefining background/border styles for buttons manually or creating ad-hoc classes (e.g. `close-btn-primary`, `action-btn`).
 - **3D Depth Integrity**: Active states (`.active`) MUST NOT strip the button's bottom shadow. Maintain the "dark part" by calculating highlights only on the top surface.
 - **SASS vs CSS Variables**: SASS color functions (like `color.scale`) cannot process `var(--color)`. For interactive highlights, use static SASS fallbacks for calculations while maintaining the CSS variable for the main render to support dynamic theming.
-- **Debug Density**: Admin/Debug buttons should fit content (`flex: 0 0 auto`) to avoid horizontal stretching and text overlap in dense rows.
+- **Debug Density**: Admin/Debug buttons should fit content (`flex: 0 0 auto`) to avoid horizontal stretching.
+- **Button Size Parity**: Always use the global `.btn-vicio-sm` class for administration panels and debug tabs. Local overrides of `padding` or `font-size` are forbidden as they break the visual parity between different management tools.
 - **Audit**: Run `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py` to identify overlaps and plan refactoring.
 
 ### 2. SASS Math & Strings
@@ -249,6 +252,35 @@ Refer to these manuals for complex implementation specifications:
 - **Dense Panel Ergonomics**: For administrative panels with complex data (e.g., Debug Creator), prioritize **Two-Column Grids** (`grid-template-columns: 1fr 1.2fr`) over vertical stacks. This layout maximizes vertical space and allows simultaneous inspection of character previews and management lists.
 
 - **Stacked Sprite Separation**: Avoid using negative margins for overlapping sprites with opaque backgrounds in banners (e.g., Daycare). Use `gap` or absolute positioning with clear offsets to maintain legibility.
+
+---
+
+## 🏗️ Workflow & Artifact Governance (MANDATORY)
+
+To ensure maximum rigor and transparency, every complex task (multiple files, architectural changes, or significant logic) MUST follow the official Artifact Lifecycle.
+
+### 1. Planning: `implementation_plan.md`
+
+- **MANDATORY**: Before writing a single line of production code, you MUST create an `implementation_plan.md` artifact.
+- **Content**: Detail the architecture, affected files, and verification plan.
+- **Approval**: Stop and wait for the user's explicit "ok" or feedback before proceeding.
+
+### 2. Execution: `task.md`
+
+- **MANDATORY**: Create or update a `task.md` artifact as a living TODO list.
+- **Granularity**: Break down the implementation plan into actionable items.
+- **Persistence**: Update statuses (`[ ]`, `[/]`, `[x]`) after every significant sub-task.
+
+### 3. Closure: `walkthrough.md`
+
+- **MANDATORY**: Upon completion, create or update a `walkthrough.md` artifact.
+- **Evidence**: Summarize changes, embed test results, and provide recordings/screenshots of the new functionality.
+- **Sanity Check**: Ensure all goals from the original plan were met.
+
+### 4. Thinking & Temporary Data
+
+- Use the `scratch/` directory for one-off scripts, temporary logs, or data processing.
+- Use the `scratchpad` artifact for internal reasoning that doesn't belong in the final implementation plan.
 
 ---
 

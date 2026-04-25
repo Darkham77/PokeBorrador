@@ -27,7 +27,7 @@ const getIvColor = (val) => {
   <div class="stats-container">
     <!-- Base Stats -->
     <section class="stats-section">
-      <h3 class="section-title">
+      <h3 class="vp-section-title">
         📊 ESTADÍSTICAS
       </h3>
       <div class="stats-grid">
@@ -54,7 +54,7 @@ const getIvColor = (val) => {
 
     <!-- IVs -->
     <section class="iv-section glass-inset-dark">
-      <h3 class="section-title">
+      <h3 class="vp-section-title">
         🧬 POTENCIAL GENÉTICO (IVs)
       </h3>
       <div class="iv-bars">
@@ -84,7 +84,7 @@ const getIvColor = (val) => {
 @use "@/styles/core/_mixins" as *;
 .stats-container { margin-bottom: 24px; }
 
-.section-title {
+.vp-section-title {
   @include pixelated;
   font-size: 8px;
   color: var(--purple-light);

@@ -12,7 +12,7 @@ const p = computed(() => props.pokemon)
 
 <template>
   <section class="moves-section">
-    <h3 class="section-title">
+    <h3 class="vp-section-title">
       ⚔️ MOVIMIENTOS
     </h3>
     <div class="moves-grid">
@@ -23,7 +23,7 @@ const p = computed(() => props.pokemon)
         @click="emit('show-move', m.name)"
       >
         <div class="move-main">
-          <span class="move-name">{{ m.name }}</span>
+          <span class="mg-move-name">{{ m.name }}</span>
           <span
             class="move-type"
             :class="'type-' + (m.type || 'normal').toLowerCase()"
@@ -39,7 +39,7 @@ const p = computed(() => props.pokemon)
 
 <style scoped>
 @use "@/styles/core/_mixins" as *;
-.section-title {
+.vp-section-title {
   @include pixelated;
   font-size: 8px;
   color: var(--purple-light);
@@ -72,7 +72,7 @@ const p = computed(() => props.pokemon)
   border-color: var(--blue-light);
 }
 
-.move-name { display: block; font-size: 11px; font-weight: bold; margin-bottom: 6px; }
+.mg-move-name { display: block; font-size: 11px; font-weight: bold; margin-bottom: 6px; }
 
 .move-type { 
   font-size: 8px; 

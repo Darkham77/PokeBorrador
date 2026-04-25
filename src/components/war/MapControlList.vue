@@ -27,7 +27,7 @@ const allMaps = computed(() => {
 
 <template>
   <div class="map-control-list">
-    <h3 class="section-title">
+    <h3 class="wc-section-title">
       CONTROL TERRITORIAL
     </h3>
     
@@ -72,7 +72,7 @@ const allMaps = computed(() => {
   margin-top: 20px;
 }
 
-.section-title {
+.wc-section-title {
   font-family: 'Press Start 2P', cursive;
   font-size: 10px;
   color: #555;

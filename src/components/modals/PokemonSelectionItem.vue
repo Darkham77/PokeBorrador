@@ -80,11 +80,11 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || '#aaa'
     <div class="poke-details">
       <div class="top-line">
         <div class="name-group">
-          <div class="name-stack">
+          <div class="ps-name-stack">
             <span class="name">{{ item.pokemon.nickname || item.pokemon.name?.replace(/[♂♀]/g, '').trim() || 'Desconocido' }}</span>
             <span
               v-if="item.pokemon.nickname"
-              class="species-subtitle"
+              class="ps-species-subtitle"
             >{{ item.pokemon.name }}</span>
           </div>
           <span

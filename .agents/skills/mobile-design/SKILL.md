@@ -187,6 +187,11 @@ Mobile:  Finger is imprecise (~7mm contact area)
 
 - **Dense Grid Stability**: For complex data grids (e.g., move lists with PP/Accuracy), automatically switch to a **single-column layout** on small screens (<480px). This prevents text overlap and ensures that all metrics remain legible without horizontal scrolling.
 - **Vertical Tooltip Expansion**: On mobile, tooltips and popovers should expand vertically or occupy a dedicated "bottom sheet" area to avoid being clipped by narrow viewport edges.
+- **Ultra-Small Viewport (Micro-Viewport) Strategy**: For devices with extremely limited height (<400px), apply aggressive pruning:
+  - Hide non-essential modal headers and decorative elements.
+  - Collapse footers into a single row or use absolute positioning for critical actions.
+  - Minimize vertical paddings to maximize the content area (e.g., list items).
+  - Use `flex: 1; min-height: 0;` on the content area to ensure scrollbars appear correctly within the limited space.
 
 ### Mobile-Specific Cognitive Load
 

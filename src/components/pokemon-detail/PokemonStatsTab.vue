@@ -12,7 +12,7 @@ defineProps({
 <template>
   <div class="pdex-stats-pane">
     <div class="stats-section">
-      <h4 class="section-title">
+      <h4 class="vp-section-title">
         ESTADÍSTICAS REALES
       </h4>
       <PokemonStatBar
@@ -30,7 +30,7 @@ defineProps({
       v-if="isInstance"
       class="stats-section mt-32"
     >
-      <h4 class="section-title">
+      <h4 class="vp-section-title">
         POTENCIAL GENÉTICO (IV)
       </h4>
       <PokemonStatBar
@@ -49,9 +49,9 @@ defineProps({
         description="La suma de todas las estadísticas base del Pokémon. Determina su poder bruto y su tier competitiva."
         position="top"
       >
-        <span class="pdex-label pixelated">BST TOTAL:</span>
+        <span class="vp-pane-label pixelated">BST TOTAL:</span>
       </PVTooltip>
-      <span class="pdex-value pixelated">{{ species.stats.hp + species.stats.atk + species.stats.def + species.stats.spa + species.stats.spd + species.stats.spe }}</span>
+      <span class="vp-stat-value pixelated">{{ species.stats.hp + species.stats.atk + species.stats.def + species.stats.spa + species.stats.spd + species.stats.spe }}</span>
     </div>
   </div>
 </template>

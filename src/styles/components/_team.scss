@@ -91,7 +91,7 @@
   font-weight: 800;
 }
 
-.gender-badge {
+  & .gender-badge {
   display: inline-flex;
   @include flex-center;
   font-size: 10px;

@@ -237,17 +237,18 @@ function openDetail(item) {
     max-width="650px"
     variant="retro"
     padding="raw"
+    no-scroll
     @close="close"
   >
     <div class="selection-container">
       <div class="filters-bar">
-        <div class="search-box">
+        <div class="ps-search-box">
           <span class="search-icon">🔍</span>
           <input 
             v-model="searchQuery" 
             type="text" 
             placeholder="Buscar por nombre o ID..."
-            class="search-input"
+            class="ps-search-input"
           >
           <button
             v-if="searchQuery"
@@ -258,12 +259,12 @@ function openDetail(item) {
           </button>
         </div>
         
-        <div class="sort-btns">
+        <div class="ps-sort-btns">
           <PVTooltip
             title="MÁS RECIENTES"
             description="Orden cronológico de captura."
             position="bottom"
-            class="sort-wrapper"
+            class="ps-sort-wrapper"
           >
             <button
               :class="{ active: sortBy === 'recent' }"
@@ -276,7 +277,7 @@ function openDetail(item) {
             title="NIVEL"
             description="Orden por nivel de combate."
             position="bottom"
-            class="sort-wrapper"
+            class="ps-sort-wrapper"
           >
             <button
               :class="{ active: sortBy === 'level' }"
@@ -289,7 +290,7 @@ function openDetail(item) {
             title="IVs"
             description="Potencial genético total."
             position="bottom"
-            class="sort-wrapper"
+            class="ps-sort-wrapper"
           >
             <button
               :class="{ active: sortBy === 'ivs' }"
@@ -302,7 +303,7 @@ function openDetail(item) {
             title="BST"
             description="Poder base de la especie."
             position="bottom"
-            class="sort-wrapper"
+            class="ps-sort-wrapper"
           >
             <button
               :class="{ active: sortBy === 'bst' }"
@@ -313,7 +314,7 @@ function openDetail(item) {
           </PVTooltip>
         </div>
 
-        <div class="tags-section">
+        <div class="ps-tags-section">
           <div class="section-header">
             <span class="section-label">ETIQUETAS:</span>
             <button
@@ -324,7 +325,7 @@ function openDetail(item) {
               LIMPIAR FILTROS
             </button>
           </div>
-          <div class="tags-bar">
+          <div class="ps-tags-bar">
             <PVTooltip 
               v-for="t in POKEMON_TAGS" 
               :key="t.id"
@@ -371,7 +372,7 @@ function openDetail(item) {
         </div>
       </div>
 
-      <div class="vertical-list scrollable-content">
+      <div class="ps-vertical-list scrollable-content">
         <PokemonSelectionItem
           v-for="item in availablePokemon" 
           :key="item.pokemon.uid"

@@ -25,7 +25,7 @@ defineEmits(['update:currentGen', 'update:sortBy', 'update:searchQuery'])
       <div class="sort-group">
         <span class="sort-label">ORDEN:</span>
         <button 
-          class="sort-btn" 
+          class="pdex-sort-btn" 
           :class="{ active: sortBy === 'number' }"
           @click="$emit('update:sortBy', 'number')"
         >
@@ -41,12 +41,12 @@ defineEmits(['update:currentGen', 'update:sortBy', 'update:searchQuery'])
       </div>
 
       <div class="search-wrapper">
-        <i class="search-icon">🔍</i>
+        <i class="pdex-search-icon">🔍</i>
         <input 
           :value="searchQuery" 
           type="text" 
           placeholder="Buscar..."
-          class="search-input"
+          class="pdex-search-input"
           @input="$emit('update:searchQuery', $event.target.value)"
         >
       </div>

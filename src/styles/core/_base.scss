@@ -55,7 +55,7 @@ body {
   margin: 0;
 }
 
-.stars {
+.global-background-stars {
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -95,7 +95,7 @@ h1, h2, h3, h4, h5, h6,
 // Ultra-aggressive global override for pixel fonts to prevent browser smoothing
 [style*="Press Start 2P"], 
 .font-pixel, 
-.pixelated {
+body .pixelated {
   -webkit-font-smoothing: none !important;
   font-smooth: never !important;
   text-rendering: optimizeSpeed !important;

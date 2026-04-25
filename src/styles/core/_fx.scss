@@ -69,6 +69,19 @@
       @include aura-guardian;
     }
   }
+
+  &.is-simplified {
+    img, .sprite-layer, .pokemon-sprite {
+      filter: none !important;
+      -webkit-filter: none !important;
+      animation: none !important;
+      transform: none !important;
+    }
+    
+    & .pv-fx-shiny-overlay {
+       display: none !important;
+    }
+  }
 }
 
 .pv-fx-shiny-overlay {

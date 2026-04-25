@@ -26,7 +26,7 @@
   }
 }
 
-.buff-collapsed {
+    & .buff-collapsed {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -46,7 +46,7 @@
   height: 28px;
 }
 
-.buff-timer-badge {
+    & .buff-timer-badge {
   font-size: 9px;
   font-family: $font-pixel;
   color: $yellow;
@@ -72,12 +72,12 @@
 
 // Event specialized styling
 .buff-item.event {
-  .buff-collapsed {
+    & .buff-collapsed {
     border: 1px solid $yellow;
     box-shadow: 0 0 12px rgba($yellow, 0.4);
     background: rgba(25, 20, 5, 0.95);
   }
-  .buff-timer-badge {
+    & .buff-timer-badge {
     color: $white;
     text-shadow: 0 0 5px $yellow;
   }

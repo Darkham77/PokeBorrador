@@ -92,7 +92,7 @@ const handleLocalLogin = async () => {
 
 <template>
   <div id="auth-screen">
-    <div class="stars" />
+    <div class="login-background-stars" />
 
     <div class="auth-card">
       <div class="auth-logo">

@@ -23,7 +23,7 @@ defineEmits(['click'])
       #{{ p.dexNum }}
     </div>
     
-    <div class="sprite-container">
+    <div class="pdex-sprite-container">
       <template v-if="p.isSeen">
         <PVSpriteFX
           :is-shiny="p.isShiny"
@@ -33,7 +33,7 @@ defineEmits(['click'])
           <img 
             :src="p.spriteUrl"
             :alt="p.name" 
-            class="pokemon-sprite"
+            class="pdx-pokemon-sprite"
             :class="[
               { 'silhouette': !p.isCaught },
               p.aura ? `aura-${p.aura}-mini` : ''
@@ -52,7 +52,7 @@ defineEmits(['click'])
     </div>
 
     <div class="card-footer">
-      <span class="pokemon-name">{{ p.name }}</span>
+      <span class="pdx-pokemon-name">{{ p.name }}</span>
     </div>
   </div>
 </template>

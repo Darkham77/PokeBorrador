@@ -14,7 +14,7 @@
   z-index: var(--z-overlay);
   background: rgba(0, 0, 10, 0.85);
   -webkit-backdrop-filter: Blur(12px);
-  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
+  backdrop-filter: Blur(12px);
   display: none !important;
   align-items: center;
   justify-content: center;
@@ -167,7 +167,7 @@ body.is-battle-active {
   &.player-sprite { align-items: flex-end; justify-content: flex-start; }
 }
 
-.pokemon-sprite {
+.bat-pokemon-sprite {
   height: clamp(60px, 35cqi, 160px); // Escalado dinámico basado en el ancho de la arena
   width: auto;
   image-rendering: pixelated;

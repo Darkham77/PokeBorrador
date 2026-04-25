@@ -52,10 +52,11 @@
 
   button {
     @include btn-vicio('primary', 'sm');
-    padding: 0 12px;
     height: 32px;
     min-width: 80px;
-    font-size: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -78,9 +79,10 @@
     flex: 0 0 auto;
     width: auto;
     min-width: 60px;
-    padding: 0 12px;
-    height: 30px; // Slightly smaller
-    font-size: 8px;
+    height: 30px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
     
     &.faction-btn {
       &.power { @include btn-vicio('danger', 'sm'); }

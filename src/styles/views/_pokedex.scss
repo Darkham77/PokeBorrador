@@ -184,7 +184,7 @@
     @include pixelated;
   }
 
-  .sort-btn {
+  .pdex-sort-btn {
     padding: 8px 12px;
     background: none;
     border: 1px solid transparent;
@@ -216,7 +216,7 @@
     max-width: none;
   }
   
-  .search-icon {
+  .pdex-search-icon {
     position: absolute;
     left: 16px;
     top: 50%;
@@ -226,7 +226,7 @@
     transition: opacity 0.2s;
   }
   
-  .search-input {
+  .pdex-search-input {
     width: 100%;
     background: rgba(0,0,0,0.25);
     border: 1px solid rgba(255,255,255,0.1);
@@ -243,7 +243,7 @@
       border-color: var(--yellow);
       box-shadow: 0 0 20px rgba(255, 214, 10, 0.15);
       
-      & + .search-icon { opacity: 0.8; }
+      & + .pdex-search-icon { opacity: 0.8; }
     }
   }
 }
@@ -287,8 +287,8 @@
     box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 20px rgba(255, 214, 10, 0.2);
     
     &::before { opacity: 1; }
-    .pokemon-sprite { transform: Scale(1.15) Rotate(5deg); }
-    .pokemon-name { color: $white; }
+    & .pdx-pokemon-sprite { transform: Scale(1.15) Rotate(5deg); }
+    & .pdx-pokemon-name { color: $white; }
   }
 
   &.is-unseen {
@@ -313,7 +313,7 @@
     @include pixelated;
   }
 
-  .sprite-container {
+  .pdex-sprite-container {
     width: 75px; // Slightly smaller to fit better in tight space
     height: 75px;
     display: flex;
@@ -324,7 +324,7 @@
     z-index: var(--z-base);
     position: relative;
 
-    .pokemon-sprite {
+    .pdx-pokemon-sprite {
       width: 100%;
       height: 100%;
       @include sprite-render;
@@ -355,7 +355,7 @@
     margin-bottom: 4px; // Close to bottom but not touching
     z-index: var(--z-base);
 
-    .pokemon-name {
+    .pdx-pokemon-name {
       color: var(--gray);
       font-size: 8px;
       @include pixelated;

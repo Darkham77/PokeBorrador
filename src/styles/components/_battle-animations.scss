@@ -134,24 +134,24 @@
 .anim-faint        { animation: faintAnim 0.6s ease forwards !important; }
 
 /* Move Tooltip Premium Style */
-.move-tooltip {
+.bat-move-tooltip {
   position: fixed;
   z-index: var(--z-tooltip);
   background: rgba(10, 15, 25, 0.95);
   -webkit-backdrop-filter: Blur(12px);
-  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
+  backdrop-filter: Blur(12px);
   transform: translateZ(0);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-left: 4px solid var(--move-color, $white);
   border-radius: 12px;
   padding: 16px;
   width: 260px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px Rgba(var(--move-color-rgb, 255, 255, 255), 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(var(--move-color-rgb, 255, 255, 255), 0.1);
   pointer-events: none;
   display: none;
 }
 
-.move-tooltip-header {
+.bat-move-tooltip-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -160,13 +160,13 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.move-tooltip-name {
+.bat-move-tooltip-name {
   @include pixelated;
   font-size: 10px;
   color: $white;
 }
 
-.move-tooltip-type {
+.bat-move-tooltip-type {
   font-size: 9px;
   font-weight: 800;
   color: var(--move-color);
@@ -175,33 +175,33 @@
   border-radius: 6px;
 }
 
-.move-tooltip-stats {
+.bat-move-tooltip-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-bottom: 12px;
 }
 
-.move-tooltip-stat {
+.bat-move-tooltip-stat {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.move-tooltip-stat-label {
+.bat-move-tooltip-stat-label {
   font-size: 9px;
   color: rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.move-tooltip-stat-value {
+.bat-move-tooltip-stat-value {
   font-size: 11px;
   color: $white;
   font-weight: 700;
 }
 
-.move-tooltip-desc {
+.bat-move-tooltip-desc {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.4;

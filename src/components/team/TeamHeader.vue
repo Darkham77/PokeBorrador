@@ -28,7 +28,7 @@ const confirmRelease = () => {
 <template>
   <div class="team-header-container">
     <div class="team-header-main legacy-panel">
-      <h2 class="section-title">
+      <h2 class="th-section-title">
         ⚡ MI EQUIPO
       </h2>
       
@@ -128,7 +128,7 @@ const confirmRelease = () => {
   gap: 15px;
 }
 
-.section-title {
+.th-section-title {
   @include pixelated;
   font-size: 14px;
   color: $white;

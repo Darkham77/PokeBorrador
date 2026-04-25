@@ -19,7 +19,7 @@ async function handleCancel(id) {
 <template>
   <div class="market-my-items">
     <section class="listings-section">
-      <h3 class="section-title">
+      <h3 class="mkt-section-title">
         PUBLICACIONES ACTIVAS ({{ activeListings.length }}/{{ gtsStore.MAX_LISTINGS }})
       </h3>
       
@@ -72,7 +72,7 @@ async function handleCancel(id) {
     </section>
 
     <section class="history-section">
-      <h3 class="section-title">
+      <h3 class="mkt-section-title">
         HISTORIAL DE VENTAS
       </h3>
       
@@ -115,7 +115,7 @@ async function handleCancel(id) {
   gap: 30px;
 }
 
-.section-title {
+.mkt-section-title {
   @include pixelated;
   font-size: 8px;
   color: #a855f7;

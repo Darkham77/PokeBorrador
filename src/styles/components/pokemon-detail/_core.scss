@@ -11,13 +11,13 @@
   z-index: var(--z-base); 
   pointer-events: none;
   
-  .sprite-container {
+  & .sprite-container {
     position: relative;
     z-index: var(--z-base);
     background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 80%);
     border-radius: 50%;
     
-    .main-sprite { 
+        & .main-sprite { 
       width: $sprite-size; 
       height: $sprite-size; 
       image-rendering: pixelated; 
@@ -47,7 +47,7 @@
   }
 }
 
-.pdex-detail-content {
+.upd-core-content {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -63,7 +63,7 @@
   z-index: var(--z-base);
   padding-top: 30px;
 
-  .pdex-tab-btn {
+  .upd-tab-btn {
     flex: 1;
     background: none;
     border: none;
@@ -102,7 +102,7 @@
   }
 }
 
-.pdex-detail-body {
+.upd-core-body {
   flex: 1;
   overflow-y: auto;
   padding: 32px;

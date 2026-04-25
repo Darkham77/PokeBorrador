@@ -5,10 +5,12 @@ import { setActivePinia, createPinia } from 'pinia'
 import PokemonSelectionModal from '@/components/modals/PokemonSelectionModal.vue'
 
 // Mock dependencies
+// Dynamic mock for gameStore
+const mockGameStore = {
+  state: { team: [], box: [], pokedex: [] }
+}
 vi.mock('@/stores/game', () => ({
-  useGameStore: () => ({
-    state: { pokedex: [] }
-  })
+  useGameStore: () => mockGameStore
 }))
 
 describe('PokemonSelectionModal Persistence', () => {
@@ -85,28 +87,14 @@ describe('PokemonSelectionModal Persistence', () => {
   })
 
   it('filters available pokemon by nickname', async () => {
-    const gameStore = {
-      state: {
-        team: [
-          { uid: 'u1', id: 'pikachu', name: 'Pikachu', nickname: 'Sparky', level: 10 },
-          { uid: 'u2', id: 'bulbasaur', name: 'Bulbasaur', nickname: 'Leafy 🌿', level: 5 }
-        ],
-        box: []
-      }
+    // Update dynamic mock
+    mockGameStore.state = {
+      team: [
+        { uid: 'u1', id: 'pikachu', name: 'Pikachu', nickname: 'Sparky', level: 10 },
+        { uid: 'u2', id: 'bulbasaur', name: 'Bulbasaur', nickname: 'Leafy 🌿', level: 5 }
+      ],
+      box: []
     }
-
-    // Re-mocking useGameStore for this specific test
-    vi.mock('@/stores/game', () => ({
-      useGameStore: () => ({
-        state: {
-          team: [
-            { uid: 'u1', id: 'pikachu', name: 'Pikachu', nickname: 'Sparky', level: 10 },
-            { uid: 'u2', id: 'bulbasaur', name: 'Bulbasaur', nickname: 'Leafy 🌿', level: 5 }
-          ],
-          box: []
-        }
-      })
-    }))
 
     const wrapper = mount(PokemonSelectionModal, {
       global: {

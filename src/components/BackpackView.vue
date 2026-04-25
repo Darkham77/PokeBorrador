@@ -130,7 +130,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   <div class="team-section backpack-view-root">
     <!-- CABECERA -->
     <div class="backpack-header">
-      <div class="section-title">
+      <div class="bp-section-title">
         🎒 Mochila
       </div>
       <div class="header-actions">
@@ -346,7 +346,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   display: flex;
   gap: 10px;
 }
-.section-title {
+.bp-section-title {
   margin: 0;
 }
 .sell-mode-btn, .confirm-sell-btn, .cancel-sell-btn {

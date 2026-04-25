@@ -3,7 +3,7 @@
 @use 'pills';
 
 /* ===== HUD NAVIGATION (SINGLE SOURCE OF TRUTH) ===== */
-.hud-nav {
+    & .hud-nav {
   display: flex;
   gap: spacing(2);
   align-items: center;
@@ -40,7 +40,7 @@
     margin-bottom: 0;
   }
 
-  .label {
+    & .nav-item-label {
     display: block;
     line-height: 1;
   }
@@ -67,16 +67,16 @@
     min-width: 55px;
     
     i, span:first-child { font-size: 14px; }
-    .label { font-size: 10px; }
+    & .nav-item-label { font-size: 10px; }
   }
 }
 
 @container (max-width: 1775px) {
-  .hud-nav { gap: 6px; }
+    & .hud-nav { gap: 6px; }
 }
 
 /* ===== HUD ACTIONS & ITEMS ===== */
-.hud-actions {
+    & .hud-actions {
   display: flex;
   align-items: center;
   gap: 10px;

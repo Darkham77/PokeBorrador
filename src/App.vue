@@ -108,10 +108,8 @@ onMounted(async () => {
 
 // Intercept low-level events to prevent them from reaching Phaser when modals are open
 const blockEvents = (e) => {
-  // 1. Determine if we are inside a Vue UI element (including modals and views)
-  // If we are inside ANY part of a modal or a scrollable view, we must stop propagation to Phaser
-  // but ALLOW the browser to handle the event (bubbling) unless it's a blocking area.
-  
+  if (!e.target || typeof e.target.closest !== 'function') return
+
   const isInsideModal = e.target.closest('.base-modal-root, .base-modal-content, .modal-host')
   const isScrollable = (el) => {
     if (!el || el === document.body || el === document.documentElement) return false
@@ -164,7 +162,7 @@ const handleRetry = () => {
 <template>
   <div id="vue-app">
     <!-- RESTORE LEGACY BACKGROUND -->
-    <div class="stars" />
+    <div class="global-background-stars" />
 
     <!-- Pantalla de carga unificada -->
     <div

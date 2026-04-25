@@ -60,7 +60,7 @@
     gap: 6px;
   }
 
-  .move-name {
+  .ba-move-name {
     font-family: inherit; // Usually 'Press Start 2P'
     font-weight: normal;
     font-size: clamp(8px, 2vw, 11px);
@@ -116,7 +116,7 @@
   &[disabled] {
     opacity: 0.3;
     cursor: not-allowed;
-    filter: #{"grayScale(100%)"};
+    filter: grayscale(1);
     box-shadow: none;
   }
 }

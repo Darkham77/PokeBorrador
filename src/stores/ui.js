@@ -14,6 +14,7 @@ export const useUIStore = defineStore('ui', () => {
   const notifications = ref([])
   
   const isDebugPerformanceMode = ref(false)
+  const isSimplifiedModalsMode = ref(false) // Forzado vía debug
   const isDebugGridMode = ref(false)
   const debugPokedexMode = ref(null) // 'none' | 'seen' | 'caught' | null (real)
   
@@ -240,6 +241,7 @@ export const useUIStore = defineStore('ui', () => {
     isAnyModalOpen,
     isAnyBlockingModalOpen,
     isDebugPerformanceMode,
+    isSimplifiedModalsMode,
     isDebugGridMode,
     debugPokedexMode,
     isProfileOpen,
