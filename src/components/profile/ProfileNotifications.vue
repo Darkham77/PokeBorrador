@@ -22,7 +22,7 @@ const isHistoryOpen = computed({
       </div>
       <button
         class="history-btn-legacy"
-        @click="isHistoryOpen = !isHistoryOpen"
+        @click.stop="isHistoryOpen = !isHistoryOpen"
       >
         Ver ultimas 10 ({{ history.length }})
       </button>
@@ -66,7 +66,7 @@ const isHistoryOpen = computed({
 .info-label {
   @include pixelated;
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.4);
+  color: Rgba(255, 255, 255, 0.4);
   letter-spacing: 1px;
 }
 
@@ -78,19 +78,19 @@ const isHistoryOpen = computed({
 }
 
 .history-btn-legacy {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 6px 12px;
-  color: #facc15;
+  color: Rgba(250, 204, 21, 1);
   @include pixelated;
   font-size: 6px;
   cursor: pointer;
-  &:hover { background: rgba(255, 255, 255, 0.08); }
+  &:hover { background: Rgba(255, 255, 255, 0.08); }
 }
 
 .history-container-legacy {
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   padding: 4px;
   max-height: 240px;
@@ -102,20 +102,20 @@ const isHistoryOpen = computed({
   display: flex;
   gap: 12px;
   padding: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.03);
   &:last-child { border-bottom: none; }
   
   .notif-icon { font-size: 16px; }
   .notif-body { flex: 1; }
-  .notif-text { font-size: 12px; color: #cbd5e1; line-height: 1.4; }
-  .notif-time { font-size: 9px; color: #475569; margin-top: 4px; }
+  .notif-text { font-size: 12px; color: Rgba(203, 213, 225, 1); line-height: 1.4; }
+  .notif-time { font-size: 9px; color: Rgba(71, 85, 105, 1); margin-top: 4px; }
 }
 
 .empty-notif-legacy {
   padding: 20px;
   text-align: center;
   font-size: 11px;
-  color: #475569;
+  color: Rgba(71, 85, 105, 1);
 }
 
 </style>

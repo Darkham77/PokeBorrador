@@ -88,8 +88,8 @@
 }
 
 .pc-banner {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 12px 16px;
   display: flex;
@@ -103,8 +103,8 @@
 
   &:hover {
     transform: Translate3d(4px, 0, 0);
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: Rgba(255, 255, 255, 0.06);
+    border-color: Rgba(255, 255, 255, 0.2);
   }
 
   .pc-banner-icon {
@@ -114,7 +114,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     border-radius: 12px;
   }
 
@@ -168,9 +168,10 @@
   /* Resaltado Dorado para el Banner de Eventos (Literal 1919) */
   &.event-active {
     border: 1px solid $yellow !important;
-    background: rgba(255, 215, 0, 0.08) !important;
-    box-shadow: 0 0 16px rgba(255, 215, 0, 0.25) !important;
+    background: Rgba(255, 215, 0, 0.08) !important;
+    box-shadow: 0 0 16px Rgba(255, 215, 0, 0.25) !important;
     animation: pulseGoldBanner 3s infinite ease-in-out;
+    animation-delay: calc(var(--card-seed, 0) * -3s);
   }
 }
 
@@ -185,9 +186,9 @@
   transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 
   &:hover {
-    background: rgba(255, 215, 0, 0.1) !important;
-    border-color: rgba(255, 215, 0, 0.4) !important;
-    box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.4) !important;
+    background: Rgba(255, 215, 0, 0.1) !important;
+    border-color: Rgba(255, 215, 0, 0.4) !important;
+    box-shadow: 0 0 0 1px Rgba(255, 215, 0, 0.4) !important;
     transform: Scale(1.02);
   }
 }
@@ -225,7 +226,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
+  background: Rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease;
 
   &.active {
@@ -237,6 +238,6 @@
 }
 
 @keyframes pulseGoldBanner {
-  0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+  0%, 100% { box-shadow: 0 0 10px Rgba(255, 215, 0, 0.2); }
+  50% { box-shadow: 0 0 20px Rgba(255, 215, 0, 0.4); }
 }

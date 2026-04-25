@@ -11,18 +11,18 @@ defineProps({
 })
 
 const getIvColor = (val) => {
-  if (val >= 28) return '#6BCB77' 
-  if (val >= 15) return '#FFD93D' 
-  if (val >= 8) return '#FF9F43' 
-  return '#FF5959' 
+  if (val >= 28) return 'Rgba(107, 203, 119, 1)' 
+  if (val >= 15) return 'Rgba(255, 217, 61, 1)' 
+  if (val >= 8) return 'Rgba(255, 159, 67, 1)' 
+  return 'Rgba(255, 89, 89, 1)' 
 }
 
 const getStatGrade = (iv) => {
-  if (iv === 31) return { label: 'S', color: '#ffef3d' }
-  if (iv >= 25) return { label: 'A', color: '#34d399' }
-  if (iv >= 15) return { label: 'B', color: '#60a5fa' }
-  if (iv >= 5) return { label: 'C', color: '#f59e0b' }
-  return { label: 'D', color: '#94a3b8' }
+  if (iv === 31) return { label: 'S', color: 'Rgba(255, 239, 61, 1)' }
+  if (iv >= 25) return { label: 'A', color: 'Rgba(52, 211, 153, 1)' }
+  if (iv >= 15) return { label: 'B', color: 'Rgba(96, 165, 250, 1)' }
+  if (iv >= 5) return { label: 'C', color: 'Rgba(245, 158, 11, 1)' }
+  return { label: 'D', color: 'Rgba(148, 163, 184, 1)' }
 }
 
 const getStatLabel = (key) => {
@@ -134,7 +134,7 @@ const getStatLabel = (key) => {
   .stat-label {
     @include pixelated;
     font-size: 10px;
-    color: #94a3b8;
+    color: Rgba(148, 163, 184, 1);
     width: 55px;
     image-rendering: pixelated;
     @media (max-width: 480px) { font-size: 8px; width: 45px; }
@@ -142,7 +142,7 @@ const getStatLabel = (key) => {
   .stat-value {
     @include pixelated;
     font-size: 16px;
-    color: $white;
+    color: var(--white);
     font-weight: bold;
     min-width: 50px;
     text-align: right;
@@ -168,8 +168,8 @@ const getStatLabel = (key) => {
 
 .track {
   width: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   overflow: hidden;
   position: relative;
 }
@@ -195,7 +195,7 @@ const getStatLabel = (key) => {
   @media (max-width: 480px) { height: 8px; }
 }
 .iv-fill {
-  box-shadow: inset 0 0 5px rgba(255,255,255,0.2);
+  box-shadow: inset 0 0 5px Rgba(255,255,255,0.2);
 }
 
 .stat-meta {

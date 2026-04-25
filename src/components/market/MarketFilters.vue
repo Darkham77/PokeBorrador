@@ -64,7 +64,7 @@ const getTypeEmoji = (type) => {
     <div class="filter-header">
       <div
         class="toggle-btn"
-        @click="isExpanded = !isExpanded"
+        @click.stop="isExpanded = !isExpanded"
       >
         <span class="label">🔍 FILTROS GTS</span>
         <span class="arrow">{{ isExpanded ? '▲' : '▼' }}</span>
@@ -76,13 +76,13 @@ const getTypeEmoji = (type) => {
       >
         <button
           :class="{ active: filters.mode === 'pokemon' }"
-          @click="setFilter('mode', 'pokemon')"
+          @click.stop="setFilter('mode', 'pokemon')"
         >
           🐾 Pokes
         </button>
         <button
           :class="{ active: filters.mode === 'item' }"
-          @click="setFilter('mode', 'item')"
+          @click.stop="setFilter('mode', 'item')"
         >
           🎒 Objetos
         </button>
@@ -142,7 +142,7 @@ const getTypeEmoji = (type) => {
               :key="t"
               class="tag-btn"
               :class="{ active: filters.tier === t }"
-              @click="setFilter('tier', t)"
+              @click.stop="setFilter('tier', t)"
             >
               {{ t === 'all' ? 'X' : t }}
             </button>
@@ -160,7 +160,7 @@ const getTypeEmoji = (type) => {
               class="type-btn"
               :class="{ active: filters.type === t }"
               :title="t"
-              @click="setFilter('type', t)"
+              @click.stop="setFilter('type', t)"
             >
               {{ getTypeEmoji(t) }}
             </button>
@@ -180,7 +180,7 @@ const getTypeEmoji = (type) => {
               :key="c"
               class="tag-btn"
               :class="{ active: filters.itemCat === c }"
-              @click="setFilter('itemCat', c)"
+              @click.stop="setFilter('itemCat', c)"
             >
               {{ c === 'all' ? 'Todo' : c }}
             </button>
@@ -190,7 +190,7 @@ const getTypeEmoji = (type) => {
 
       <button
         class="reset-btn"
-        @click="resetFilters"
+        @click.stop="resetFilters"
       >
         Limpiar filtros
       </button>
@@ -201,8 +201,8 @@ const getTypeEmoji = (type) => {
 <style scoped>
 @use "@/styles/core/_mixins" as *;
 .market-filters {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 18px;
   padding: 14px;
   margin-bottom: 16px;
@@ -235,7 +235,7 @@ const getTypeEmoji = (type) => {
 
 .mode-switch {
   display: flex;
-  background: rgba(0, 0, 0, 0.3);
+  background: Rgba(0, 0, 0, 0.3);
   border-radius: 10px;
   padding: 3px;
   gap: 4px;
@@ -270,8 +270,8 @@ const getTypeEmoji = (type) => {
 .search-input {
   width: 100%;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   color: $white;
   font-size: 13px;
@@ -279,7 +279,7 @@ const getTypeEmoji = (type) => {
 }
 
 .filter-body {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid Rgba(255, 255, 255, 0.06);
   padding-top: 14px;
 }
 
@@ -316,8 +316,8 @@ const getTypeEmoji = (type) => {
 .tag-btn {
   padding: 6px 10px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.04);
   color: var(--gray);
   font-size: 8px;
   cursor: pointer;
@@ -326,7 +326,7 @@ const getTypeEmoji = (type) => {
 
 .tag-btn.active {
   border-color: var(--purple);
-  background: rgba(191, 90, 242, 0.2);
+  background: Rgba(191, 90, 242, 0.2);
   color: $white;
 }
 
@@ -340,8 +340,8 @@ const getTypeEmoji = (type) => {
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
+  background: Rgba(0, 0, 0, 0.2);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -351,7 +351,7 @@ const getTypeEmoji = (type) => {
 
 .type-btn.active {
   border-color: var(--blue);
-  background: rgba(0, 122, 255, 0.2);
+  background: Rgba(0, 122, 255, 0.2);
 }
 
 .reset-btn {
@@ -360,7 +360,7 @@ const getTypeEmoji = (type) => {
   padding: 10px;
   border: none;
   color: var(--gray);
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   font-size: 11px;
   cursor: pointer;

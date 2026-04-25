@@ -77,7 +77,7 @@ const onPokemonClick = (index) => {
             v-if="boxStore.releaseMode" 
             class="btn btn-red" 
             :disabled="boxStore.releaseSelected.size === 0"
-            @click="boxStore.performMassRelease"
+            @click.stop="boxStore.performMassRelease"
           >
             Confirmar Liberación
           </button>
@@ -85,13 +85,13 @@ const onPokemonClick = (index) => {
             v-else 
             class="btn btn-yellow" 
             :disabled="boxStore.rocketSelected.size === 0"
-            @click="boxStore.performRocketSell"
+            @click.stop="boxStore.performRocketSell"
           >
             Vender a Mercado Negro
           </button>
           <button
             class="btn btn-gray"
-            @click="boxStore.releaseMode ? boxStore.toggleReleaseMode() : boxStore.toggleRocketMode()"
+            @click.stop="boxStore.releaseMode ? boxStore.toggleReleaseMode() : boxStore.toggleRocketMode()"
           >
             Cancelar
           </button>
@@ -115,14 +115,14 @@ const onPokemonClick = (index) => {
       >
         <button
           class="footer-btn btn-release"
-          @click="boxStore.toggleReleaseMode"
+          @click.stop="boxStore.toggleReleaseMode"
         >
           🌿 Liberar Pokémon
         </button>
         <button 
           v-if="gameStore.state.playerClass === 'rocket'"
           class="footer-btn btn-rocket" 
-          @click="boxStore.toggleRocketMode"
+          @click.stop="boxStore.toggleRocketMode"
         >
           🚀 Modo Rocket
         </button>
@@ -136,8 +136,8 @@ const onPokemonClick = (index) => {
 
 .pc-box-view {
   padding: 0;
-  background: radial-gradient(circle at top right, rgba(147, 51, 234, 0.05), transparent),
-              radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.05), transparent);
+  background: radial-gradient(circle at top right, Rgba(147, 51, 234, 0.05), transparent),
+              radial-gradient(circle at bottom left, Rgba(59, 130, 246, 0.05), transparent);
   display: flex;
   justify-content: center;
 }
@@ -156,14 +156,13 @@ const onPokemonClick = (index) => {
 }
 
 .mode-actions {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   @include gpu-layer;
 }
 
@@ -188,9 +187,9 @@ const onPokemonClick = (index) => {
 .footer-btn {
   padding: 12px 24px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: $white;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
+  color: var(--white);
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
@@ -198,12 +197,12 @@ const onPokemonClick = (index) => {
 }
 
 .footer-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.1);
   transform: TranslateY(-2px);
 }
 
-.btn-release:hover { color: var(--red); border-color: rgba(255, 59, 59, 0.3); }
-.btn-rocket:hover { color: var(--yellow); border-color: rgba(255, 184, 0, 0.3); box-shadow: 0 0 0 1px rgba(255, 184, 0, 0.3); }
+.btn-release:hover { color: var(--red); border-color: Rgba(239, 68, 68, 0.3); }
+.btn-rocket:hover { color: var(--yellow); border-color: Rgba(255, 184, 0, 0.3); box-shadow: 0 0 0 1px Rgba(255, 184, 0, 0.3); }
 
 .text-red { color: var(--red); }
 .text-yellow { color: var(--yellow); }
@@ -217,9 +216,9 @@ const onPokemonClick = (index) => {
   cursor: pointer;
 }
 
-.btn-red { background: var(--red); color: $white; }
-.btn-yellow { background: var(--yellow); color: $black; }
-.btn-gray { background: rgba(255, 255, 255, 0.1); color: $white; }
+.btn-red { background: var(--red); color: var(--white); }
+.btn-yellow { background: var(--yellow); color: var(--black); }
+.btn-gray { background: Rgba(255, 255, 255, 0.1); color: var(--white); }
 
 .btn:disabled {
   opacity: 0.5;

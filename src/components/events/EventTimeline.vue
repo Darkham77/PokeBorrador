@@ -10,14 +10,14 @@ onMounted(() => {
 
 const getBonusColor = (key) => {
   const map = {
-    expMult: '#a78bfa',
-    moneyMult: '#fbbf24',
-    bcMult: '#60a5fa',
-    shinyMult: '#f472b6',
-    eggShinyMult: '#f472b6',
-    hatchMult: '#34d399'
+    expMult: 'Rgba(167, 139, 250, 1)',
+    moneyMult: 'Rgba(251, 191, 36, 1)',
+    bcMult: 'Rgba(96, 165, 250, 1)',
+    shinyMult: 'Rgba(244, 114, 182, 1)',
+    eggShinyMult: 'Rgba(244, 114, 182, 1)',
+    hatchMult: 'Rgba(52, 211, 153, 1)'
   };
-  return map[key] || '#94a3b8';
+  return map[key] || 'Rgba(148, 163, 184, 1)';
 };
 
 const formatBonus = (key, val) => {
@@ -42,7 +42,7 @@ const formatBonus = (key, val) => {
       <button
         class="refresh-btn"
         :disabled="eventStore.isLoading"
-        @click="eventStore.fetchEvents"
+        @click.stop="eventStore.fetchEvents"
       >
         <span v-if="eventStore.isLoading">...</span>
         <span v-else>🔄</span>
@@ -89,7 +89,7 @@ const formatBonus = (key, val) => {
             :key="key"
           >
             <div
-              v-if="val > 1 && getBonusColor(key) !== '#94a3b8'" 
+              v-if="val > 1 && getBonusColor(key) !== 'Rgba(148, 163, 184, 1)'" 
               class="bonus-pill" 
               :style="{ backgroundColor: getBonusColor(key) + '15', borderColor: getBonusColor(key) + '40', color: getBonusColor(key) }"
             >
@@ -131,19 +131,20 @@ const formatBonus = (key, val) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .event-timeline {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  background: rgba(15, 23, 42, 0.8);
+  background: Rgba(15, 23, 42, 0.8);
   padding: 24px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: $white;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  color: var(--white);
 }
 
 .press-start {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 8px;
   letter-spacing: 1px;
 }
@@ -154,7 +155,7 @@ const formatBonus = (key, val) => {
   align-items: center;
   margin-bottom: 10px;
 
-  h3 { color: #fbbf24; }
+  h3 { color: Rgba(251, 191, 36, 1); }
   .refresh-btn {
     background: none;
     border: none;
@@ -180,13 +181,13 @@ const formatBonus = (key, val) => {
 }
 
 .event-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, Rgba(255, 255, 255, 0.05), Rgba(255, 255, 255, 0.02));
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 20px;
   transition: transform 0.2s;
 
-  &:hover { transform: Scale(1.01); border-color: rgba(251, 191, 36, 0.4); }
+  &:hover { transform: Scale(1.01); border-color: Rgba(251, 191, 36, 0.4); }
 
   .ev-header {
     display: flex;
@@ -197,16 +198,16 @@ const formatBonus = (key, val) => {
     .ev-icon { font-size: 32px; }
     .ev-title-group {
       flex: 1;
-      h4 { margin-bottom: 6px; color: $white; }
-      p { font-size: 11px; color: #94a3b8; line-height: 1.4; }
+      h4 { margin-bottom: 6px; color: var(--white); }
+      p { font-size: 11px; color: Rgba(148, 163, 184, 1); line-height: 1.4; }
     }
 
     .competition-tag {
-      background: rgba(251, 191, 36, 0.1);
-      color: #fbbf24;
+      background: Rgba(251, 191, 36, 0.1);
+      color: Rgba(251, 191, 36, 1);
       padding: 6px 10px;
       border-radius: 8px;
-      border: 1px solid rgba(251, 191, 36, 0.2);
+      border: 1px solid Rgba(251, 191, 36, 0.2);
     }
   }
 
@@ -227,7 +228,7 @@ const formatBonus = (key, val) => {
 
 .finished-section {
   margin-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid Rgba(255, 255, 255, 0.05);
   padding-top: 20px;
 
   .section-title { color: $muted; margin-bottom: 16px; }
@@ -242,17 +243,17 @@ const formatBonus = (key, val) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.2);
+    background: Rgba(0, 0, 0, 0.2);
     padding: 12px 16px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.03);
 
-    .res-title { font-size: 7px; color: #cbd5e1; display: block; margin-bottom: 4px; }
+    .res-title { font-size: 7px; color: Rgba(203, 213, 225, 1); display: block; margin-bottom: 4px; }
     p { font-size: 10px; color: $muted; margin: 0; }
 
     .winner-preview {
       font-size: 11px;
-      color: #fbbf24;
+      color: Rgba(251, 191, 36, 1);
       font-weight: 600;
     }
   }

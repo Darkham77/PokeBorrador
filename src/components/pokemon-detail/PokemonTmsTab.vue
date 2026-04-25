@@ -53,14 +53,14 @@ const tms = computed(() => {
         <button
           class="sort-btn"
           :class="{ active: tmSortBy === 'id' }"
-          @click="tmSortBy = 'id'"
+          @click.stop="tmSortBy = 'id'"
         >
           ID
         </button>
         <button
           class="sort-btn"
           :class="{ active: tmSortBy === 'name' }"
-          @click="tmSortBy = 'name'"
+          @click.stop="tmSortBy = 'name'"
         >
           ABC
         </button>
@@ -73,7 +73,7 @@ const tms = computed(() => {
         :key="tm.id"
         class="tm-item clickable-item"
         :class="{ incompatible: !tm.isCompatible }"
-        @click="ui.openMoveDetail(tm.name)"
+        @click.stop="ui.openMoveDetail(tm.name)"
       >
         <div
           class="tm-id"

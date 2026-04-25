@@ -38,8 +38,8 @@ const close = () => {
   <BaseModal
     :show="true"
     title="PÍLDORA DE HABILIDAD"
-    title-color="#f472b6"
-    header-background="#1a1c2e"
+    title-color="Rgba(244, 114, 174, 1)"
+    header-background="Rgba(26, 28, 46, 1)"
     max-width="400px"
     variant="retro"
     @close="close"
@@ -55,7 +55,7 @@ const close = () => {
           :key="a" 
           class="ability-btn"
           :class="{ active: abilityPokemon?.ability === a }"
-          @click="handleApplyAbility(a)"
+          @click.stop="handleApplyAbility(a)"
         >
           <span class="a-name">{{ a }}</span>
           <span
@@ -76,6 +76,7 @@ const close = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .ability-modal-inner {
@@ -96,8 +97,8 @@ const close = () => {
 }
 
 .ability-btn {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: Rgba(255,255,255,0.03);
+  border: 1px solid Rgba(255,255,255,0.08);
   border-radius: 16px;
   padding: 18px 20px;
   display: flex;
@@ -105,34 +106,34 @@ const close = () => {
   align-items: center;
   cursor: pointer;
   transition: all 0.2s;
-  color: $white;
+  color: var(--white);
 
   &:hover { 
-    background: rgba(255,255,255,0.08); 
+    background: Rgba(255,255,255,0.08); 
     transform: translateX(4px);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: Rgba(255, 255, 255, 0.2);
   }
   
   &.active { 
     border-color: var(--yellow);
-    background: rgba(255, 214, 10, 0.05);
+    background: Rgba(255, 214, 10, 0.05);
   }
 
   .a-name { font-weight: 800; font-size: 15px; }
   .a-current { 
     font-size: 8px; 
     color: var(--yellow); 
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
   }
 }
 
 .no-options {
   text-align: center;
   font-size: 12px;
-  color: rgba(255,255,255,0.2);
+  color: Rgba(255,255,255,0.2);
   padding: 40px 20px;
-  background: rgba(0,0,0,0.2);
+  background: Rgba(0,0,0,0.2);
   border-radius: 16px;
-  border: 1px dashed rgba(255,255,255,0.05);
+  border: 1px dashed Rgba(255,255,255,0.05);
 }
 </style>

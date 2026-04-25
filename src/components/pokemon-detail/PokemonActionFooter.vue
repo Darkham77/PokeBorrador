@@ -27,7 +27,7 @@ const canBuy = computed(() => {
     <button
       v-if="context === 'team' && canEvolveStone"
       class="action-btn evolutionary"
-      @click="emit('evolve')"
+      @click.stop="emit('evolve')"
     >
       💎 EVOLUCIONAR CON PIEDRA
     </button>
@@ -43,7 +43,7 @@ const canBuy = computed(() => {
       <button 
         class="buy-btn" 
         :disabled="!canBuy"
-        @click="emit('buy')"
+        @click.stop="emit('buy')"
       >
         {{ !canBuy ? 'SALDO INSUFICIENTE' : 'COMPRAR POKÉMON' }}
       </button>
@@ -56,8 +56,8 @@ const canBuy = computed(() => {
 
 .modal-footer {
   padding: 24px 32px;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.1);
+  border-top: 1px solid Rgba(255,255,255,0.08);
+  background: Rgba(0,0,0,0.1);
 }
 
 .evolutionary {
@@ -76,7 +76,7 @@ const canBuy = computed(() => {
     font-weight: 900;
     color: var(--yellow);
     text-align: center;
-    text-shadow: 0 0 10px rgba(255, 214, 10, 0.3);
+    text-shadow: 0 0 10px Rgba(255, 214, 10, 0.3);
   }
 }
 

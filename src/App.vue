@@ -202,7 +202,7 @@ const handleRetry = () => {
           </p>
           <div
             class="retry-btn"
-            @click="handleRetry"
+            @click.stop="handleRetry"
           >
             REINTENTAR
           </div>
@@ -267,7 +267,7 @@ const handleRetry = () => {
 }
 
 .loading-overlay.global-overlay {
-  background: rgba(0, 0, 0, 0.95);
+  background: Rgba(0, 0, 0, 0.95);
   -webkit-backdrop-filter: Blur(8px);
   backdrop-filter: Blur(8px);
   @include gpu-layer;
@@ -277,7 +277,7 @@ const handleRetry = () => {
 .loader {
   width: 50px;
   height: 50px;
-  border: 5px solid rgba(255, 255, 255, 0.1);
+  border: 5px solid Rgba(255, 255, 255, 0.1);
   border-top-color: var(--yellow);
   border-radius: 50%;
   animation: spin 1s linear infinite;

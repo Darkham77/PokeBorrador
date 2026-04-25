@@ -82,8 +82,8 @@ onMounted(() => {
   <BaseModal
     :show="show"
     title="🏥 CENTRO POKÉMON"
-    title-color="#ef4444"
-    header-background="#1a1c2e"
+    title-color="Rgba(239, 68, 68, 1)"
+    header-background="Rgba(26, 28, 46, 1)"
     max-width="420px"
     variant="retro"
     padding="raw"
@@ -161,14 +161,14 @@ onMounted(() => {
         <button 
           class="btn-heal-primary" 
           :disabled="isHealing || team.length === 0 || (cost > 0 && gameStore.state.money < cost)"
-          @click="handleHeal"
+          @click.stop="handleHeal"
         >
           {{ isHealing ? 'CURANDO...' : 'CURAR EQUIPO' }}
         </button>
         <button
           class="btn-cancel-secondary"
           :disabled="isHealing"
-          @click="handleClose"
+          @click.stop="handleClose"
         >
           VOLVER
         </button>
@@ -186,9 +186,8 @@ onMounted(() => {
 }
 
 .subtitle {
-  color: rgba(255, 255, 255, 0.4);
+  color: Rgba(255, 255, 255, 0.4);
   font-size: 8px;
-  font-family: 'Press Start 2P', cursive;
   margin-bottom: 30px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -204,24 +203,24 @@ onMounted(() => {
 
 .slot {
   aspect-ratio: 1;
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0.2;
 
   &.active {
     opacity: 1;
-    background: rgba(255, 255, 255, 0.06);
+    background: Rgba(255, 255, 255, 0.06);
   }
 
   &.healing {
-    background: rgba(34, 197, 94, 0.08);
-    border-color: rgba(34, 197, 94, 0.4);
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+    background: Rgba(34, 197, 94, 0.08);
+    border-color: Rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 20px Rgba(34, 197, 94, 0.2);
     transform: Scale(1.1);
   }
 }
@@ -241,7 +240,7 @@ onMounted(() => {
 
 @keyframes pulse-ball {
   from { transform: Scale(1); filter: Brightness(1); }
-  to { transform: Scale(1.2); filter: Brightness(1.4) Drop-Shadow(0 0 10px #ff4444); }
+  to { transform: Scale(1.2); filter: Brightness(1.4) Drop-Shadow(0 0 10px Rgba(255, 68, 68, 1)); }
 }
 
 .progress-container {
@@ -250,60 +249,58 @@ onMounted(() => {
 
 .progress-bar {
   height: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #22c55e, #4ade80);
-  box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+  background: linear-gradient(90deg, Rgba(34, 197, 94, 1), Rgba(74, 222, 128, 1));
+  box-shadow: 0 0 15px Rgba(34, 197, 94, 0.5);
   transition: width 0.1s linear;
 }
 
 .healing-text {
-  color: #22c55e;
-  font-family: 'Press Start 2P', cursive;
+  color: Rgba(34, 197, 94, 1);
   font-size: 7px;
   letter-spacing: 1px;
   @include pixelated;
 }
 
 .free-msg {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 13px;
+  @include pixelated;
+  color: Rgba(255, 255, 255, 0.6);
+  font-size: 8px;
   line-height: 1.6;
 }
 
 .cost-notice {
-  background: rgba(239, 68, 68, 0.05);
+  background: Rgba(239, 68, 68, 0.05);
   padding: 20px;
   border-radius: 16px;
-  border: 1px solid rgba(239, 68, 68, 0.15);
+  border: 1px solid Rgba(239, 68, 68, 0.15);
   
   .cost-label {
-    font-family: 'Press Start 2P', cursive;
     font-size: 7px;
-    color: #ef4444;
+    color: Rgba(239, 68, 68, 1);
     margin-bottom: 12px;
     @include pixelated;
   }
   
   .price-tag {
-    font-family: 'Press Start 2P', cursive;
     font-size: 16px;
-    color: $white;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    color: var(--white);
+    text-shadow: 0 0 10px Rgba(255, 255, 255, 0.1);
     @include pixelated;
   }
   
   .rocket-surcharge {
     display: block;
     margin-top: 8px;
-    color: rgba(239, 68, 68, 0.5);
+    color: Rgba(239, 68, 68, 0.5);
     font-size: 8px;
     @include pixelated;
   }
@@ -321,21 +318,20 @@ onMounted(() => {
 }
 
 .btn-cancel-secondary {
-  background: rgba(255, 255, 255, 0.03);
-  color: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.03);
+  color: Rgba(255, 255, 255, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   padding: 16px;
   border-radius: 14px;
-  font-family: 'Press Start 2P', cursive;
   font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;
   @include pixelated;
   
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.08);
-    color: $white;
-    border-color: rgba(255, 255, 255, 0.2);
+    background: Rgba(255, 255, 255, 0.08);
+    color: var(--white);
+    border-color: Rgba(255, 255, 255, 0.2);
   }
 
   &:disabled {

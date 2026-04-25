@@ -38,11 +38,11 @@ const description = computed(() => {
 })
 
 const hexToRgba = (hex, alpha) => {
-  if (!hex || hex === '—') return `rgba(255, 255, 255, ${alpha})`
+  if (!hex || hex === '—') return `Rgba(255, 255, 255, ${alpha})`
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  return `Rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 </script>
 
@@ -101,7 +101,7 @@ const hexToRgba = (hex, alpha) => {
     <template #footer>
       <button
         class="action-btn pixelated"
-        @click="emit('close')"
+        @click.stop="emit('close')"
       >
         VOLVER
       </button>
@@ -130,10 +130,10 @@ const hexToRgba = (hex, alpha) => {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   padding: 8px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 
   .icon { font-size: 14px; }
   .text {
@@ -151,15 +151,15 @@ const hexToRgba = (hex, alpha) => {
 }
 
 .stat-item {
-  background: rgba(255, 255, 255, 0.02);
+  background: Rgba(255, 255, 255, 0.02);
   padding: 20px;
   border-radius: 18px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: Rgba(255, 255, 255, 0.04);
     border-color: var(--move-accent);
     transform: TranslateY(-2px);
   }
@@ -193,7 +193,7 @@ const hexToRgba = (hex, alpha) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
 
@@ -223,10 +223,10 @@ const hexToRgba = (hex, alpha) => {
 }
 
 .description-box {
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   padding: 24px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   -webkit-backdrop-filter: Blur(5px); -webkit-backdrop-filter: Blur(5px); backdrop-filter: Blur(5px);
   @include gpu-layer;
 }
@@ -251,9 +251,9 @@ const hexToRgba = (hex, alpha) => {
 .action-btn {
   width: 100%;
   padding: 18px;
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   color: #aaa;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   font-size: 10px;
   cursor: pointer;
@@ -264,7 +264,7 @@ const hexToRgba = (hex, alpha) => {
     color: $white;
     border-color: transparent;
     transform: TranslateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), 0 0 15px var(--move-accent-alpha);
+    box-shadow: 0 10px 20px Rgba(0, 0, 0, 0.4), 0 0 15px var(--move-accent-alpha);
   }
 }
 
@@ -287,6 +287,6 @@ const hexToRgba = (hex, alpha) => {
 
 // Glass inset helper
 .glass-inset {
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 10px Rgba(0, 0, 0, 0.2);
 }
 </style>

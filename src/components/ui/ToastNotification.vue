@@ -39,13 +39,13 @@ const uiStore = useUIStore()
 
 .toast-item {
   pointer-events: all;
-  background: rgba(10, 12, 18, 0.9);
+  background: Rgba(10, 12, 18, 0.9);
   -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-left: 3px solid var(--yellow, #f1c40f);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border-left: 3px solid var(--yellow, Rgba(241, 196, 15, 1));
   padding: 10px 14px;
   border-radius: 14px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 30px Rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   gap: 10px;

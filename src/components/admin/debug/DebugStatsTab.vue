@@ -49,7 +49,7 @@ function setPlayerClass(c) {
           type="number"
         >
         <PVTooltip title="Añade la cantidad de dinero especificada a tu cuenta.">
-          <button @click="addMoney">
+          <button @click.stop="addMoney">
             AÑADIR
           </button>
         </PVTooltip>
@@ -64,7 +64,7 @@ function setPlayerClass(c) {
           type="number"
         >
         <PVTooltip title="Establece tu puntuación ELO de la Arena al valor indicado.">
-          <button @click="setElo">
+          <button @click.stop="setElo">
             FIJAR
           </button>
         </PVTooltip>
@@ -79,7 +79,7 @@ function setPlayerClass(c) {
           type="number"
         >
         <PVTooltip title="Establece tu nivel de entrenador.">
-          <button @click="setLevel">
+          <button @click.stop="setLevel">
             FIJAR
           </button>
         </PVTooltip>
@@ -96,7 +96,7 @@ function setPlayerClass(c) {
           max="8"
         >
         <PVTooltip title="Actualiza el contador de medallas de gimnasio.">
-          <button @click="setBadges">
+          <button @click.stop="setBadges">
             FIJAR
           </button>
         </PVTooltip>
@@ -110,7 +110,7 @@ function setPlayerClass(c) {
           <button
             class="faction-btn power"
             :class="{ active: currentForcedFaction === 'poder' }"
-            @click="forceDominance('poder')"
+            @click.stop="forceDominance('poder')"
           >
             PODER
           </button>
@@ -119,7 +119,7 @@ function setPlayerClass(c) {
           <button
             class="faction-btn union"
             :class="{ active: currentForcedFaction === 'union' }"
-            @click="forceDominance('union')"
+            @click.stop="forceDominance('union')"
           >
             UNIÓN
           </button>
@@ -128,7 +128,7 @@ function setPlayerClass(c) {
           <button
             class="faction-btn neutral"
             :class="{ active: currentForcedFaction === 'none' }"
-            @click="forceDominance('none')"
+            @click.stop="forceDominance('none')"
           >
             NEUTRAL
           </button>
@@ -143,7 +143,7 @@ function setPlayerClass(c) {
           <button
             class="faction-btn power"
             :class="{ active: game.state.faction === 'poder' }"
-            @click="setFaction('poder')"
+            @click.stop="setFaction('poder')"
           >
             PODER
           </button>
@@ -152,7 +152,7 @@ function setPlayerClass(c) {
           <button
             class="faction-btn union"
             :class="{ active: game.state.faction === 'union' }"
-            @click="setFaction('union')"
+            @click.stop="setFaction('union')"
           >
             UNIÓN
           </button>
@@ -161,7 +161,7 @@ function setPlayerClass(c) {
           <button
             class="faction-btn neutral"
             :class="{ active: !game.state.faction }"
-            @click="setFaction('none')"
+            @click.stop="setFaction('none')"
           >
             LIBRE
           </button>
@@ -180,7 +180,7 @@ function setPlayerClass(c) {
           <button
             class="small-btn"
             :class="{ active: game.state.playerClass === c }"
-            @click="setPlayerClass(c)"
+            @click.stop="setPlayerClass(c)"
           >
             {{ c.toUpperCase() }}
           </button>
@@ -188,7 +188,7 @@ function setPlayerClass(c) {
         <PVTooltip title="Resetear tu clase de jugador.">
           <button
             class="small-btn"
-            @click="setPlayerClass('none')"
+            @click.stop="setPlayerClass('none')"
           >
             RESETEAR
           </button>

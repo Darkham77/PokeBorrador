@@ -138,7 +138,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
           v-show="!invStore.bagSellMode"
           id="btn-bag-sell-mode"
           class="sell-mode-btn"
-          @click="toggleSellMode"
+          @click.stop="toggleSellMode"
         >
           💰 MODO VENTA
         </button>
@@ -146,7 +146,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
           v-show="invStore.bagSellMode"
           id="btn-bag-confirm-sell"
           class="confirm-sell-btn"
-          @click="handleConfirmSell"
+          @click.stop="handleConfirmSell"
         >
           ✅ VENDER SELECCIÓN (₱{{ calculateTotalGain.toLocaleString() }})
         </button>
@@ -154,7 +154,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
           v-show="invStore.bagSellMode"
           id="btn-bag-cancel-sell"
           class="cancel-sell-btn"
-          @click="toggleSellMode"
+          @click.stop="toggleSellMode"
         >
           CANCELAR
         </button>
@@ -192,7 +192,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
         :key="cat.id"
         class="market-tab-btn"
         :class="{ active: activeCategory === cat.id }"
-        @click="activeCategory = cat.id"
+        @click.stop="activeCategory = cat.id"
       >
         {{ cat.label }}
       </button>
@@ -222,7 +222,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
           selected: invStore.bagSellSelected[item.name],
           disabled: !item.canSell && invStore.bagSellMode
         }"
-        @click="invStore.bagSellMode ? toggleItemSelection(item) : null"
+        @click.stop="invStore.bagSellMode ? toggleItemSelection(item) : null"
       >
         <span
           class="market-tier-badge"
@@ -297,7 +297,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
             >
               <button
                 class="qty-btn"
-                @click="updateSellQty(item.name, invStore.bagSellSelected[item.name] - 1, item.qty)"
+                @click.stop="updateSellQty(item.name, invStore.bagSellSelected[item.name] - 1, item.qty)"
               >
                 -
               </button>
@@ -311,7 +311,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
               >
               <button
                 class="qty-btn"
-                @click="updateSellQty(item.name, invStore.bagSellSelected[item.name] + 1, item.qty)"
+                @click.stop="updateSellQty(item.name, invStore.bagSellSelected[item.name] + 1, item.qty)"
               >
                 +
               </button>
@@ -360,11 +360,11 @@ const onQtyInputChange = (itemName, event, maxQty) => {
 }
 .sell-mode-btn { background: linear-gradient(135deg, #4caf50, #388e3c); }
 .confirm-sell-btn { background: linear-gradient(135deg, #ff9800, #f57c00); }
-.cancel-sell-btn { background: rgba(255,255,255,0.1); }
+.cancel-sell-btn { background: Rgba(255,255,255,0.1); }
 
 .sell-hint {
-  background: rgba(76,175,80,0.1);
-  border: 1px solid rgba(76,175,80,0.3);
+  background: Rgba(76,175,80,0.1);
+  border: 1px solid Rgba(76,175,80,0.3);
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 16px;
@@ -377,8 +377,8 @@ const onQtyInputChange = (itemName, event, maxQty) => {
 .retro-search-input {
   width: 100%;
   padding: 10px 14px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: Rgba(255,255,255,0.06);
+  border: 1px solid Rgba(255,255,255,0.12);
   border-radius: 12px;
   color: $white;
   font-size: 13px;
@@ -389,8 +389,8 @@ const onQtyInputChange = (itemName, event, maxQty) => {
 .tabs-container { margin-bottom: 16px; }
 
 .empty-warning {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.1);
   border-radius: 12px;
   padding: 32px;
   text-align: center;
@@ -412,12 +412,12 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   @include hover-neon-yellow(1px);
 
   &.disabled { opacity: 0.5; filter: grayScale(100%); cursor: not-allowed; }
-  &.selected { border: 2px solid #4caf50 !important; background: rgba(76,175,80,0.05); }
+  &.selected { border: 2px solid #4caf50 !important; background: Rgba(76,175,80,0.05); }
 }
 
 .market-item-icon { margin-bottom: 8px; text-align: center; }
@@ -449,7 +449,7 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   align-items: center;
   margin-top: auto;
   padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid Rgba(255,255,255,0.05);
 }
 
 .qty-txt { font-size: 11px; font-weight: 700; color: var(--purple-light); }
@@ -462,12 +462,12 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   cursor: pointer;
   background: var(--purple);
   color: white;
-  box-shadow: 0 2px 8px rgba(199,125,255,0.3);
+  box-shadow: 0 2px 8px Rgba(199,125,255,0.3);
 }
 .use-btn.stone-btn {
-  background: rgba(255,217,61,0.2);
+  background: Rgba(255,217,61,0.2);
   color: var(--yellow);
-  border: 1px solid rgba(255,217,61,0.3);
+  border: 1px solid Rgba(255,217,61,0.3);
 }
 
 .item-actions-sell {
@@ -480,15 +480,15 @@ const onQtyInputChange = (itemName, event, maxQty) => {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.2);
+  background: Rgba(255,255,255,0.05);
   color: white;
   cursor: pointer;
 }
 .qty-input {
   width: 40px;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(0,0,0,0.3);
+  border: 1px solid Rgba(255,255,255,0.1);
   border-radius: 6px;
   color: white;
   text-align: center;

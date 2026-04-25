@@ -150,7 +150,7 @@ onUnmounted(() => {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  background: rgba(0, 0, 0, 0.9);
+  background: Rgba(0, 0, 0, 0.9);
   -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   display: flex;
   align-items: center;
@@ -160,7 +160,7 @@ onUnmounted(() => {
   @include gpu-layer;
 
   &.fail {
-    background: rgba(153, 27, 27, 0.9);
+    background: Rgba(153, 27, 27, 0.9);
   }
 }
 
@@ -184,15 +184,15 @@ onUnmounted(() => {
   h3 {
     @include pixelated;
     font-size: 16px;
-    color: #3b82f6;
+    color: Rgba(59, 130, 246, 1);
     margin-bottom: 12px;
-    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    text-shadow: 0 0 10px Rgba(59, 130, 246, 0.5);
   }
 
   p {
     font-size: 14px;
-    color: #eee;
-    span { color: #facc15; font-weight: bold; }
+    color: Rgba(238, 238, 238, 1);
+    span { color: Rgba(250, 204, 21, 1); font-weight: bold; }
   }
 
   .secondary {
@@ -210,11 +210,11 @@ onUnmounted(() => {
   transform: TranslateX(-50%);
   @include pixelated;
   font-size: 14px;
-  color: $white;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--white);
+  background: Rgba(255, 255, 255, 0.05);
   padding: 12px 24px;
   border-radius: 99px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
 }
 
 .rhythm-note {
@@ -230,15 +230,15 @@ onUnmounted(() => {
   .note-number {
     @include pixelated;
     font-size: 20px;
-    color: $white;
+    color: var(--white);
     z-index: var(--z-base);
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    text-shadow: 0 2px 4px Rgba(0,0,0,0.5);
   }
 
   .rhythm-ring {
     position: absolute;
     inset: -10px;
-    border: 4px solid #3b82f6;
+    border: 4px solid Rgba(59, 130, 246, 1);
     border-radius: 50%;
     animation: shrink linear forwards;
     pointer-events: none;
@@ -248,7 +248,7 @@ onUnmounted(() => {
 @keyframes shrink {
   from { transform: Scale(1.8); opacity: 0; }
   20% { opacity: 1; }
-  to { transform: Scale(1); opacity: 1; border-color: $white; }
+  to { transform: Scale(1); opacity: 1; border-color: var(--white); }
 }
 
 .note-leave-active {

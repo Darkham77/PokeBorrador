@@ -116,7 +116,7 @@ const consumeItem = (name) => {
           v-for="mv in forgottenMoves" 
           :key="mv.name"
           class="move-row-vicio"
-          @click="handleRelearn(mv)"
+          @click.stop="handleRelearn(mv)"
         >
           <div class="move-info">
             <span class="move-name">{{ mv.name }}</span>
@@ -132,7 +132,7 @@ const consumeItem = (name) => {
     <template #footer>
       <button
         class="btn-vicio-secondary btn-vicio-full"
-        @click="emit('close')"
+        @click.stop="emit('close')"
       >
         CANCELAR
       </button>
@@ -141,6 +141,7 @@ const consumeItem = (name) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .relearner-content {
@@ -149,7 +150,7 @@ const consumeItem = (name) => {
 
 .relearner-help {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: Rgba(255, 255, 255, 0.6);
   text-align: center;
   margin-bottom: 24px;
   line-height: 1.4;
@@ -167,17 +168,17 @@ const consumeItem = (name) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(155, 77, 255, 0.05);
-  border: 1px solid rgba(155, 77, 255, 0.1);
+  background: Rgba(155, 77, 255, 0.05);
+  border: 1px solid Rgba(155, 77, 255, 0.1);
   border-radius: 12px;
   padding: 14px 18px;
-  color: white;
+  color: var(--white);
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
 
   &:hover {
-    background: rgba(155, 77, 255, 0.15);
+    background: Rgba(155, 77, 255, 0.15);
     border-color: var(--purple-light);
     transform: translateX(4px);
     
@@ -188,19 +189,19 @@ const consumeItem = (name) => {
     display: flex;
     flex-direction: column;
     .move-name { 
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       font-size: 9px;
       margin-bottom: 4px;
       @include gpu-layer;
     }
     .move-lv { 
       font-size: 10px; 
-      color: rgba(255, 255, 255, 0.4);
+      color: Rgba(255, 255, 255, 0.4);
     }
   }
 
   .move-pp {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 8px;
     color: var(--purple-light);
     @include pixelated;
@@ -210,7 +211,7 @@ const consumeItem = (name) => {
 .empty-msg {
   text-align: center;
   padding: 40px 20px;
-  color: rgba(255, 255, 255, 0.3);
+  color: Rgba(255, 255, 255, 0.3);
   font-size: 11px;
 }
 </style>

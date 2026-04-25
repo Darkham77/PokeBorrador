@@ -237,7 +237,7 @@ onUnmounted(() => {
               :key="p.id" 
               class="option-item"
               :class="{ active: config.id === p.id }"
-              @click="selectSpecies(p)"
+              @click.stop="selectSpecies(p)"
             >
               <img
                 :src="pokemonDataProvider.getSpriteUrl(p.id)"
@@ -294,7 +294,7 @@ onUnmounted(() => {
               :key="n" 
               class="option-item"
               :class="{ active: config.nature === n }"
-              @click="selectNature(n)"
+              @click.stop="selectNature(n)"
             >
               {{ n.toUpperCase() }}
             </div>
@@ -323,7 +323,7 @@ onUnmounted(() => {
               :key="a" 
               class="option-item"
               :class="{ active: config.ability === a }"
-              @click="selectAbility(a)"
+              @click.stop="selectAbility(a)"
             >
               {{ a.toUpperCase() }}
             </div>
@@ -393,7 +393,7 @@ onUnmounted(() => {
               :key="m.id" 
               class="option-item"
               :class="{ active: config.mapId === m.id }"
-              @click="selectMap(m)"
+              @click.stop="selectMap(m)"
             >
               {{ m.name.toUpperCase() }}
             </div>
@@ -411,7 +411,7 @@ onUnmounted(() => {
         >
           <button
             class="btn-vicio-primary"
-            @click="executeAction('catch')"
+            @click.stop="executeAction('catch')"
           >
             ATRAPAR
           </button>
@@ -423,7 +423,7 @@ onUnmounted(() => {
         >
           <button
             class="btn-vicio-primary secondary"
-            @click="executeAction('egg_silent')"
+            @click.stop="executeAction('egg_silent')"
           >
             AÑADIR HUEVO
           </button>
@@ -435,7 +435,7 @@ onUnmounted(() => {
         >
           <button
             class="btn-vicio-primary secondary"
-            @click="executeAction('egg_anim')"
+            @click.stop="executeAction('egg_anim')"
           >
             HUEVO ANIM.
           </button>
@@ -447,7 +447,7 @@ onUnmounted(() => {
         >
           <button
             class="btn-vicio-danger"
-            @click="executeAction('encounter')"
+            @click.stop="executeAction('encounter')"
           >
             ENCONTRAR
           </button>

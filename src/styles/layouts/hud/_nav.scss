@@ -20,8 +20,8 @@
   @include pills.hud-pill-base; // Mantiene el alma del componente
   
   // Valores estandarizados de la versión "ganadora" (navigation.scss)
-  background: #1a1a20;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(26, 26, 32, 1);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: spacing(2) spacing(3.5);
   color: $white;
@@ -32,7 +32,7 @@
   @include will-animate(transform, box-shadow, filter);
   transition: all 0.18s ease;
   white-space: nowrap;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 16px Rgba(0, 0, 0, 0.35), inset 0 1px 0 Rgba(255, 255, 255, 0.12);
   height: auto; // Permite que el padding spacing() controle el tamaño
 
   i, span:first-child {
@@ -47,15 +47,15 @@
 
   &:hover {
     transform: Translate3d(0, -2px, 0);
-    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 22px Rgba(0, 0, 0, 0.45), 0 0 12px Rgba(255, 255, 255, 0.12);
     filter: Brightness(1.05);
   }
 
   &.active {
-    background: rgba($yellow, 0.15);
+    background: Rgba($yellow, 0.15);
     color: $yellow;
     border-color: $yellow;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 18px rgba($yellow, 0.35);
+    box-shadow: 0 10px 24px Rgba(0, 0, 0, 0.45), 0 0 18px Rgba($yellow, 0.35);
     i, span:first-child { color: $yellow; }
   }
 

@@ -37,7 +37,7 @@ defineEmits(['search-tab'])
       <p>Aún no tenés amigos agregados.</p>
       <button
         class="btn-vicio-secondary"
-        @click="$emit('search-tab')"
+        @click.stop="$emit('search-tab')"
       >
         Buscar Entrenadores
       </button>
@@ -87,7 +87,7 @@ defineEmits(['search-tab'])
           >
             <button
               class="action-btn chat"
-              @click="openChat(friend)"
+              @click.stop="openChat(friend)"
             >
               💬
             </button>
@@ -100,7 +100,7 @@ defineEmits(['search-tab'])
           >
             <button
               class="action-btn trade"
-              @click="openTrade(friend)"
+              @click.stop="openTrade(friend)"
             >
               🔄
             </button>
@@ -113,7 +113,7 @@ defineEmits(['search-tab'])
           >
             <button
               class="action-btn battle"
-              @click="livePvP.sendInvite(friend.id, friend.username)"
+              @click.stop="livePvP.sendInvite(friend.id, friend.username)"
             >
               ⚔️
             </button>
@@ -126,7 +126,7 @@ defineEmits(['search-tab'])
           >
             <button
               class="action-btn remove"
-              @click="socialStore.removeFriend(friend.id)"
+              @click.stop="socialStore.removeFriend(friend.id)"
             >
               ×
             </button>
@@ -145,8 +145,8 @@ defineEmits(['search-tab'])
 }
 
 .friend-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 12px;
   display: flex;
@@ -155,8 +155,8 @@ defineEmits(['search-tab'])
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(199, 125, 255, 0.2);
+    background: Rgba(255, 255, 255, 0.05);
+    border-color: Rgba(199, 125, 255, 0.2);
     transform: TranslateX(4px);
   }
 }
@@ -174,12 +174,12 @@ defineEmits(['search-tab'])
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 2px solid #101822;
-  background: $muted;
+  border: 2px solid Rgba(16, 24, 34, 1);
+  background: Rgba(255, 255, 255, 0.5);
 
   &.online {
-    background: #22c55e;
-    box-shadow: 0 0 8px #22c55e;
+    background: Rgba(34, 197, 94, 1);
+    box-shadow: 0 0 8px Rgba(34, 197, 94, 1);
   }
 }
 
@@ -187,12 +187,12 @@ defineEmits(['search-tab'])
   .name {
     font-size: 14px;
     font-weight: 700;
-    color: #f1f5f9;
+    color: Rgba(241, 245, 249, 1);
     margin-bottom: 2px;
   }
   .meta {
     font-size: 11px;
-    color: $muted;
+    color: Rgba(255, 255, 255, 0.5);
   }
 }
 
@@ -211,13 +211,13 @@ defineEmits(['search-tab'])
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    background: rgba(255, 255, 255, 0.05);
-    color: $white;
+    background: Rgba(255, 255, 255, 0.05);
+    color: var(--white);
 
     &:hover { transform: Scale(1.1); }
-    &.chat:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-    &.trade:hover { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
-    &.battle:hover { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+    &.chat:hover { background: Rgba(59, 130, 246, 0.2); color: Rgba(96, 165, 250, 1); }
+    &.trade:hover { background: Rgba(34, 197, 94, 0.2); color: Rgba(74, 222, 128, 1); }
+    &.battle:hover { background: Rgba(168, 85, 247, 0.2); color: Rgba(192, 132, 252, 1); }
     &.remove:hover { 
       @include btn-vicio-danger;
       width: 32px; height: 32px; // Keep same size
@@ -229,7 +229,7 @@ defineEmits(['search-tab'])
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #94a3b8;
+  color: Rgba(148, 163, 184, 1);
   .icon { font-size: 40px; margin-bottom: 15px; opacity: 0.5; }
   p { font-size: 14px; margin-bottom: 20px; }
 }

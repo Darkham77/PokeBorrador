@@ -34,7 +34,7 @@ const handleDelivery = (pokemon) => {
       <button 
         class="btn-refresh" 
         :disabled="breedingStore.missionRefreshes <= 0"
-        @click="breedingStore.refreshMissions"
+        @click.stop="breedingStore.refreshMissions"
       >
         🔄 Refrescar
       </button>
@@ -85,7 +85,7 @@ const handleDelivery = (pokemon) => {
           <button 
             v-if="!mission.completed" 
             class="btn-deliver"
-            @click="openDelivery(index)"
+            @click.stop="openDelivery(index)"
           >
             ENTREGAR
           </button>
@@ -106,6 +106,7 @@ const handleDelivery = (pokemon) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .daycare-missions {
   padding: 10px 0;
 }
@@ -116,14 +117,14 @@ const handleDelivery = (pokemon) => {
   align-items: center;
   margin-bottom: 20px;
 
-  h3 { font-size: 14px; font-weight: 800; color: #f8fafc; font-family: 'Press Start 2P', cursive; font-size: 10px; color: #facc15; }
-  .refresh-count { font-size: 12px; color: #94a3b8; }
+  h3 { font-weight: 800; @include pixelated; font-size: 10px; color: Rgba(250, 204, 21, 1); }
+  .refresh-count { font-size: 12px; color: Rgba(148, 163, 184, 1); }
 }
 
 .btn-refresh {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #60a5fa;
+  background: Rgba(59, 130, 246, 0.1);
+  border: 1px solid Rgba(59, 130, 246, 0.3);
+  color: Rgba(96, 165, 250, 1);
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 11px;
@@ -131,7 +132,7 @@ const handleDelivery = (pokemon) => {
   cursor: pointer;
   transition: all 0.2s;
   
-  &:hover:not(:disabled) { background: rgba(59, 130, 246, 0.2); transform: Scale(1.05); }
+  &:hover:not(:disabled) { background: Rgba(59, 130, 246, 0.2); transform: Scale(1.05); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
@@ -146,8 +147,8 @@ const handleDelivery = (pokemon) => {
 }
 
 .mission-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 16px;
   position: relative;
@@ -158,8 +159,8 @@ const handleDelivery = (pokemon) => {
   transition: border-color 0.3s;
 
   &.completed {
-    border-color: rgba(34, 197, 94, 0.4);
-    background: rgba(34, 197, 94, 0.02);
+    border-color: Rgba(34, 197, 94, 0.4);
+    background: Rgba(34, 197, 94, 0.02);
   }
 }
 
@@ -167,10 +168,10 @@ const handleDelivery = (pokemon) => {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #22c55e;
+  background: Rgba(34, 197, 94, 1);
   color: $white;
   font-size: 8px;
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   padding: 4px 8px;
   border-radius: 4px;
 }
@@ -182,7 +183,7 @@ const handleDelivery = (pokemon) => {
   .trainer-avatar {
     width: 48px;
     height: 48px;
-    background: rgba(0, 0, 0, 0.2);
+    background: Rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -201,7 +202,7 @@ const handleDelivery = (pokemon) => {
   
   .dialogue-box {
     flex: 1;
-    .trainer-name { font-size: 10px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; display: block; }
+    .trainer-name { font-size: 10px; color: Rgba(148, 163, 184, 1); text-transform: uppercase; margin-bottom: 4px; display: block; }
     .dialogue { font-size: 12px; color: $white; line-height: 1.4; font-style: italic; }
   }
 }
@@ -214,8 +215,8 @@ const handleDelivery = (pokemon) => {
 }
 
 .reward-tag {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.2);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 8px 12px;
   display: flex;
@@ -227,7 +228,7 @@ const handleDelivery = (pokemon) => {
     display: flex;
     flex-direction: column;
     .label { font-size: 8px; color: $muted; text-transform: uppercase; letter-spacing: 0.5px; }
-    .val { font-size: 12px; color: #22c55e; font-weight: 800; }
+    .val { font-size: 12px; color: Rgba(34, 197, 94, 1); font-weight: 800; }
   }
 }
 
@@ -238,7 +239,7 @@ const handleDelivery = (pokemon) => {
   background: linear-gradient(135deg, #8b5cf6, #6366f1);
   color: $white;
   border: none;
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 8px;
   cursor: pointer;
   box-shadow: 0 4px 0 #4f46e5;

@@ -34,8 +34,8 @@ const compatStyle = computed(() => props.compatText[props.compatibility.level] |
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
 .compat-panel-retro {
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: Rgba(0,0,0,0.3);
+  border: 1px solid Rgba(255,255,255,0.05);
   padding: 20px;
   border-radius: 16px;
   margin-bottom: 30px;
@@ -47,10 +47,10 @@ const compatStyle = computed(() => props.compatText[props.compatibility.level] |
       @include pixelated; font-size: 9px; 
       color: var(--compat-color); text-shadow: 0 0 8px var(--compat-color);
     }
-    .compat-reason { font-size: 10px; color: #475569; }
+    .compat-reason { font-size: 10px; color: Rgba(71, 85, 105, 1); }
   }
 
-  .compat-bar-bg { height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; }
+  .compat-bar-bg { height: 6px; background: Rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; }
   .compat-fill { height: 100%; background: var(--compat-color); box-shadow: 0 0 15px var(--compat-color); transition: width 0.8s; }
 }
 </style>

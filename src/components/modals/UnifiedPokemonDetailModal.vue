@@ -1,5 +1,5 @@
 <script setup>
-// UnifiedPokemonDetailModal – Universal Pokémon info panel (Pokedex + Instance).
+// Universal Pokémon info panel (Pokedex + Instance).
 import { ref, computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
@@ -110,7 +110,14 @@ const getSprite = (id, isShiny = false) => getAssetUrl(ASSET_TYPES.POKEMON, id, 
 const displayStats = computed(() => {
   if (!species.value) return []
   const labels = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SPA', spd: 'SPD', spe: 'SPE' }
-  const colors = { hp: '#ff5959', atk: '#f5ac78', def: '#fae078', spa: '#9db7f5', spd: '#a7db8d', spe: '#fa92b2' }
+  const colors = { 
+    hp: 'Rgba(255, 89, 89, 1)', 
+    atk: 'Rgba(245, 172, 120, 1)', 
+    def: 'Rgba(250, 224, 120, 1)', 
+    spa: 'Rgba(157, 183, 245, 1)', 
+    spd: 'Rgba(167, 219, 141, 1)', 
+    spe: 'Rgba(250, 146, 178, 1)' 
+  }
   return Object.keys(species.value.stats).map(key => {
     const base = species.value.stats[key]
     const current = isInstance.value ? (targetPokemon.value[key] || base) : base
@@ -149,8 +156,6 @@ const currentMoves = computed(() => {
     return { ...m, ...data }
   })
 })
-
-
 const evolutions = computed(() => {
   const list = []
   const id = targetSpeciesId.value
@@ -295,14 +300,19 @@ const handleEditNickname = () => {
           <div class="name-container">
             <h2 class="p-name">
               {{ (targetPokemon?.nickname || species.name).toUpperCase() }}
-              <button 
-                v-if="isInstance" 
-                class="edit-nick-btn" 
-                title="Cambiar apodo"
-                @click.stop="handleEditNickname"
+              <PVTooltip
+                v-if="isInstance"
+                title="APODO"
+                description="Cambiar el nombre de este Pokémon."
+                position="top"
               >
-                ✏️
-              </button>
+                <button 
+                  class="edit-nick-btn" 
+                  @click.stop="handleEditNickname"
+                >
+                  ✏️
+                </button>
+              </PVTooltip>
             </h2>
             <span
               v-if="targetPokemon?.nickname"
@@ -354,8 +364,8 @@ const handleEditNickname = () => {
           :key="tab.id"
           class="upd-tab-btn"
           :class="{ active: activeTab === tab.id }"
-          :style="{ '--tab-color': activeTab === tab.id ? 'var(--type-color)' : 'rgba(255,255,255,0.4)' }"
-          @click="activeTab = tab.id"
+          :style="{ '--tab-color': activeTab === tab.id ? 'var(--type-color)' : 'Rgba(255,255,255,0.4)' }"
+          @click.stop="activeTab = tab.id"
         >
           <span class="tab-icon">{{ tab.icon }}</span>
           <span class="tab-label pixelated">{{ tab.label }}</span>
@@ -396,7 +406,6 @@ const handleEditNickname = () => {
               :context="context"
             />
           </div>
-          
           <!-- Interactive Tags -->
           <div
             v-if="isInstance"
@@ -415,10 +424,10 @@ const handleEditNickname = () => {
                   class="tag-emoji-btn"
                   :class="{ active: hasTag(t.id) }"
                   :style="hasTag(t.id) ? { 
-                    background: `rgba(${hexToRgb(t.color)}, 0.15)`, 
-                    borderColor: `rgba(${hexToRgb(t.color)}, 0.4)`,
+                    background: `Rgba(${hexToRgb(t.color)}, 0.15)`, 
+                    borderColor: `Rgba(${hexToRgb(t.color)}, 0.4)`,
                     color: t.color,
-                    boxShadow: `0 4px 15px rgba(${hexToRgb(t.color)}, 0.2)`
+                    boxShadow: `0 4px 15px Rgba(${hexToRgb(t.color)}, 0.2)`
                   } : {}"
                   @click.stop="handleToggleTag(t)"
                 >

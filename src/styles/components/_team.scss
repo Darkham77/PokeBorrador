@@ -6,7 +6,7 @@
   @include card-premium;
   padding: spacing(4);
   margin-bottom: spacing(4);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  background: linear-gradient(180deg, Rgba(255, 255, 255, 0.05) 0%, Rgba(0, 0, 0, 0.2) 100%) !important;
 }
 
 .team-grid {
@@ -21,17 +21,17 @@
   border-radius: 12px;
   padding: 12px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: visible; 
   cursor: pointer;
   @include gpu-layer;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 25px Rgba(0, 0, 0, 0.5);
 
   &:hover {
-    border-color: rgba($yellow, 0.3);
-    box-shadow: 0 0 0 1px rgba($yellow, 0.3), 0 15px 35px rgba(0, 0, 0, 0.7);
+    border-color: Rgba($yellow, 0.3);
+    box-shadow: 0 0 0 1px Rgba($yellow, 0.3), 0 15px 35px Rgba(0, 0, 0, 0.7);
     transform: scale3d(1.05, 1.05, 1) translateY(-4px);
     z-index: var(--z-base);
   }
@@ -71,20 +71,20 @@
   padding: 3px 6px;
   border-radius: 6px;
   line-height: 1;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 
-  &.tier-s-plus { color: $coin-gold; background: rgba(255, 215, 0, 0.18); border-color: rgba(255, 215, 0, 0.3); }
-  &.tier-s { color: #FFA500; background: rgba(255, 165, 0, 0.15); border-color: rgba(255, 165, 0, 0.3); }
-  &.tier-a { color: $purple; background: rgba(191, 90, 242, 0.15); border-color: rgba(191, 90, 242, 0.3); }
-  &.tier-b { color: $blue; background: rgba(10, 132, 255, 0.15); border-color: rgba(10, 132, 255, 0.3); }
-  &.tier-c { color: $green; background: rgba(50, 215, 75, 0.15); border-color: rgba(50, 215, 75, 0.3); }
+  &.tier-s-plus { color: $coin-gold; background: Rgba(255, 215, 0, 0.18); border-color: Rgba(255, 215, 0, 0.3); }
+  &.tier-s { color: Rgba(255, 165, 0, 1); background: Rgba(255, 165, 0, 0.15); border-color: Rgba(255, 165, 0, 0.3); }
+  &.tier-a { color: $purple; background: Rgba(191, 90, 242, 0.15); border-color: Rgba(191, 90, 242, 0.3); }
+  &.tier-b { color: $blue; background: Rgba(10, 132, 255, 0.15); border-color: Rgba(10, 132, 255, 0.3); }
+  &.tier-c { color: $green; background: Rgba(50, 215, 75, 0.15); border-color: Rgba(50, 215, 75, 0.3); }
 }
 
 .level-badge {
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   color: $yellow;
-  border: 1px solid rgba(255, 217, 61, 0.2);
+  border: 1px solid Rgba(255, 217, 61, 0.2);
   border-radius: 6px;
   padding: 3px 6px;
   font-size: 9px;
@@ -100,12 +100,12 @@
   padding: 2px;
   border-radius: 4px;
   
-  &.male, &.gender-male { color: #59a6ff; }
-  &.female, &.gender-female { color: #ff7eb9; }
+  &.male, &.gender-male { color: Rgba(89, 166, 255, 1); }
+  &.female, &.gender-female { color: Rgba(255, 126, 185, 1); }
 }
 
 .shiny-badge-mini {
   display: inline-flex;
   font-size: 10px;
-  filter: Drop-Shadow(0 0 2px rgba(255, 215, 0, 0.4));
+  filter: Drop-Shadow(0 0 2px Rgba(255, 215, 0, 0.4));
 }

@@ -111,7 +111,7 @@ const isMissionDone = computed(() => {
     :show="show"
     title="GESTIÓN DE CLASE"
     :title-color="currentClass?.color || 'var(--yellow)'"
-    :header-background="currentClass ? (currentClass.color + '1A') : 'rgba(15, 23, 42, 0.8)'"
+    :header-background="currentClass ? (currentClass.color + '1A') : 'Rgba(15, 23, 42, 0.8)'"
     max-width="1000px"
     :show-close-button="true"
     padding="raw"

@@ -25,7 +25,7 @@ function getMissionDesc(mId, clsId) {
     <header class="missions-header">
       <button
         class="back-btn"
-        @click="emit('back')"
+        @click.stop="emit('back')"
       >
         ← VOLVER
       </button>
@@ -53,7 +53,7 @@ function getMissionDesc(mId, clsId) {
         <button
           v-if="isMissionDone"
           class="collect-btn"
-          @click="emit('collectReward')"
+          @click.stop="emit('collectReward')"
         >
           RECLAMAR
         </button>
@@ -84,7 +84,7 @@ function getMissionDesc(mId, clsId) {
           <button 
             class="start-btn" 
             :disabled="trainerLevel < m.reqLv || !!activeMission"
-            @click="emit('startMission', m.id)"
+            @click.stop="emit('startMission', m.id)"
           >
             {{ activeMission?.id === m.id ? 'EN CURSO' : (activeMission ? 'BLOQUEADO' : 'DESPLEGAR') }}
           </button>
@@ -95,6 +95,7 @@ function getMissionDesc(mId, clsId) {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .missions-layout {
@@ -110,17 +111,17 @@ function getMissionDesc(mId, clsId) {
   align-items: center;
   gap: 24px;
   h1 { 
-    font-family: 'Press Start 2P', cursive; 
+    @include pixelated; 
     font-size: 16px; 
     color: var(--cls-color); 
     margin: 0;
     @include pixelated;
   }
   .back-btn {
-    background: none; border: none; color: rgba(255,255,255,0.4);
-    font-family: 'Press Start 2P', cursive; font-size: 9px; cursor: pointer;
+    background: none; border: none; color: Rgba(255,255,255,0.4);
+    @include pixelated; font-size: 9px; cursor: pointer;
     @include pixelated;
-    &:hover { color: $white; }
+    &:hover { color: var(--white); }
   }
 }
 
@@ -132,8 +133,8 @@ function getMissionDesc(mId, clsId) {
 }
 
 .active-mission-banner {
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: Rgba(34, 197, 94, 0.1);
+  border: 1px solid Rgba(34, 197, 94, 0.3);
   border-radius: 20px;
   padding: 24px;
   margin-bottom: 32px;
@@ -143,19 +144,19 @@ function getMissionDesc(mId, clsId) {
 
   .banner-info {
     flex: 1;
-    h3 { font-family: 'Press Start 2P', cursive; font-size: 10px; color: #22c55e; margin-bottom: 8px; }
-    .m-name { font-size: 14px; color: $white; font-weight: 700; margin-bottom: 12px; }
+    h3 { @include pixelated; font-size: 10px; color: Rgba(34, 197, 94, 1); margin-bottom: 8px; }
+    .m-name { font-size: 14px; color: var(--white); font-weight: 700; margin-bottom: 12px; }
   }
 
   .mission-progress-bar {
-    height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden;
-    .progress-fill { height: 100%; background: #22c55e; transition: width 0.3s; }
+    height: 8px; background: Rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden;
+    .progress-fill { height: 100%; background: Rgba(34, 197, 94, 1); transition: width 0.3s; }
   }
 
   .collect-btn {
-    padding: 14px 24px; background: #22c55e; color: $white; border: none; border-radius: 12px;
-    font-family: 'Press Start 2P', cursive; font-size: 10px; cursor: pointer;
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+    padding: 14px 24px; background: Rgba(34, 197, 94, 1); color: var(--white); border: none; border-radius: 12px;
+    @include pixelated; font-size: 10px; cursor: pointer;
+    box-shadow: 0 0 20px Rgba(34, 197, 94, 0.4);
     &:hover { transform: translateY(-2px); filter: Brightness(1.1); }
   }
 }
@@ -167,8 +168,8 @@ function getMissionDesc(mId, clsId) {
 }
 
 .mission-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: Rgba(255,255,255,0.03);
+  border: 1px solid Rgba(255,255,255,0.05);
   border-radius: 20px;
   padding: 24px;
   display: flex;
@@ -176,23 +177,23 @@ function getMissionDesc(mId, clsId) {
   gap: 12px;
   transition: all 0.2s;
 
-  &:hover:not(.locked) { border-color: var(--cls-color); background: rgba(255,255,255,0.05); }
+  &:hover:not(.locked) { border-color: var(--cls-color); background: Rgba(255,255,255,0.05); }
   
   .m-header { 
     display: flex; justify-content: space-between; 
-    font-family: 'Press Start 2P', cursive; font-size: 8px; color: rgba(255,255,255,0.3); 
+    @include pixelated; font-size: 8px; color: Rgba(255,255,255,0.3); 
   }
   
-  .m-title { margin: 0; font-size: 16px; color: $white; font-weight: 800; }
-  .m-desc { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.5; margin-bottom: 8px; }
+  .m-title { margin: 0; font-size: 16px; color: var(--white); font-weight: 800; }
+  .m-desc { font-size: 12px; color: Rgba(255,255,255,0.4); line-height: 1.5; margin-bottom: 8px; }
   
   .start-btn {
     margin-top: auto;
     padding: 14px; border-radius: 10px; border: none; 
-    background: rgba(255,255,255,0.05);
-    color: #cbd5e1; font-family: 'Press Start 2P', cursive; font-size: 8px; cursor: pointer;
+    background: Rgba(255,255,255,0.05);
+    color: Rgba(203, 213, 225, 1); @include pixelated; font-size: 8px; cursor: pointer;
     transition: all 0.2s;
-    &:hover:not(:disabled) { background: var(--cls-color); color: $white; }
+    &:hover:not(:disabled) { background: var(--cls-color); color: var(--white); }
     &:disabled { opacity: 0.3; cursor: not-allowed; }
   }
 

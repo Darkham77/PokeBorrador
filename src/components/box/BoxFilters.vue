@@ -18,7 +18,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
   <div class="box-filter-panel">
     <div
       class="filter-header"
-      @click="toggleFilters"
+      @click.stop="toggleFilters"
     >
       <span class="filter-title">🔍 FILTROS</span>
       <div class="filter-info">
@@ -57,25 +57,25 @@ const setSortMode = (val) => emit('update:sortMode', val)
         <div class="button-row">
           <button
             :class="['box-filter-btn', { active: sortMode === 'none' }]"
-            @click="setSortMode('none')"
+            @click.stop="setSortMode('none')"
           >
             Captura
           </button>
           <button
             :class="['box-filter-btn btn-blue', { active: sortMode === 'level' }]"
-            @click="setSortMode('level')"
+            @click.stop="setSortMode('level')"
           >
             Nivel
           </button>
           <button
             :class="['box-filter-btn btn-gold', { active: sortMode === 'tier' }]"
-            @click="setSortMode('tier')"
+            @click.stop="setSortMode('tier')"
           >
             Tier
           </button>
           <button
             :class="['box-filter-btn btn-green', { active: sortMode === 'type' }]"
-            @click="setSortMode('type')"
+            @click.stop="setSortMode('type')"
           >
             Tipo
           </button>
@@ -90,7 +90,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
         <div class="button-row">
           <button
             :class="['box-filter-btn', { active: filters.tier === 'all' }]"
-            @click="emit('update:filters', { ...filters, tier: 'all' })"
+            @click.stop="emit('update:filters', { ...filters, tier: 'all' })"
           >
             Todos
           </button>
@@ -98,8 +98,8 @@ const setSortMode = (val) => emit('update:sortMode', val)
             v-for="(cfg, tierKey) in BOX_TIER_CONFIG"
             :key="tierKey"
             :class="['box-filter-btn', { active: filters.tier === tierKey }]"
-            :style="{ color: cfg.color, background: filters.tier === tierKey ? cfg.bg : 'rgba(255,255,255,0.1)', borderColor: cfg.color + '44' }"
-            @click="emit('update:filters', { ...filters, tier: tierKey })"
+            :style="{ color: cfg.color, background: filters.tier === tierKey ? cfg.bg : 'Rgba(255,255,255,0.1)', borderColor: cfg.color + '44' }"
+            @click.stop="emit('update:filters', { ...filters, tier: tierKey })"
           >
             {{ tierKey }}
           </button>
@@ -114,7 +114,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
         <div class="button-row type-row">
           <button
             :class="['box-filter-btn', { active: filters.type === 'all' }]"
-            @click="emit('update:filters', { ...filters, type: 'all' })"
+            @click.stop="emit('update:filters', { ...filters, type: 'all' })"
           >
             Todos
           </button>
@@ -122,7 +122,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
             v-for="type in ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel']"
             :key="type"
             :class="['box-filter-btn', 'type-btn', type, { active: filters.type === type }]"
-            @click="emit('update:filters', { ...filters, type: type })"
+            @click.stop="emit('update:filters', { ...filters, type: type })"
           >
             {{ type }}
           </button>
@@ -188,7 +188,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
           </div>
           <button
             :class="['special-btn', { active: filters.ivAny31 }]"
-            @click="emit('update:filters', { ...filters, ivAny31: !filters.ivAny31 })"
+            @click.stop="emit('update:filters', { ...filters, ivAny31: !filters.ivAny31 })"
           >
             {{ filters.ivAny31 ? '[★] IV 31 DETECTADO' : 'Cualquier IV en 31' }}
           </button>
@@ -197,7 +197,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
 
       <button
         class="reset-btn"
-        @click="emit('reset')"
+        @click.stop="emit('reset')"
       >
         ↺ Limpiar filtros
       </button>
@@ -210,15 +210,15 @@ const setSortMode = (val) => emit('update:sortMode', val)
 .box-filter-btn {
   &.btn-blue {
     color: var(--blue);
-    border-color: rgba(59, 139, 255, 0.4);
+    border-color: Rgba(59, 139, 255, 0.4);
   }
   &.btn-gold {
     color: var(--coin-gold);
-    border-color: rgba(255, 215, 0, 0.4);
+    border-color: Rgba(255, 215, 0, 0.4);
   }
   &.btn-green {
     color: var(--green);
-    border-color: rgba(107, 203, 119, 0.4);
+    border-color: Rgba(107, 203, 119, 0.4);
   }
 
   &:hover {
@@ -228,8 +228,8 @@ const setSortMode = (val) => emit('update:sortMode', val)
 }
 
 .box-filter-panel {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 14px;
   margin-bottom: 14px;
@@ -276,8 +276,8 @@ const setSortMode = (val) => emit('update:sortMode', val)
 .search-input {
   width: 100%;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: Rgba(255, 255, 255, 0.06);
+  border: 1px solid Rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   color: $white;
   font-size: 13px;
@@ -311,16 +311,16 @@ const setSortMode = (val) => emit('update:sortMode', val)
   font-size: 7px;
   padding: 5px 10px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.1);
-  color: #eee;
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  background: Rgba(255, 255, 255, 0.1);
+  color: Rgba(238, 238, 238, 1);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .box-filter-btn.active {
   border-color: var(--purple-light) !important;
-  background: rgba(199, 125, 255, 0.2) !important;
+  background: Rgba(199, 125, 255, 0.2) !important;
   color: $white !important;
 }
 
@@ -349,7 +349,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
   flex: 1;
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(255,255,255,0.1);
+  background: Rgba(255,255,255,0.1);
   height: 4px;
   border-radius: 5px;
   outline: none;
@@ -364,15 +364,15 @@ const setSortMode = (val) => emit('update:sortMode', val)
   font-size: 7px;
   @include pixelated;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.1);
-  color: #eee;
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  background: Rgba(255, 255, 255, 0.1);
+  color: Rgba(238, 238, 238, 1);
   transition: all 0.2s;
 }
 
 .special-btn.active {
   border: 1px solid var(--yellow);
-  background: rgba(255, 184, 0, 0.12);
+  background: Rgba(255, 184, 0, 0.12);
   color: var(--yellow);
 }
 
@@ -399,7 +399,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: Rgba(255, 255, 255, 0.02);
   padding: 10px;
   border-radius: 12px;
 }
@@ -434,7 +434,7 @@ const setSortMode = (val) => emit('update:sortMode', val)
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   color: var(--gray);
   font-size: 11px;
   transition: all 0.2s;

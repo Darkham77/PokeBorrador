@@ -38,7 +38,7 @@ defineEmits(['close', 'select'])
           </div>
           <button
             class="close-target"
-            @click="$emit('close')"
+            @click.stop="$emit('close')"
           >
             ✕
           </button>
@@ -53,7 +53,7 @@ defineEmits(['close', 'select'])
             v-for="(poke, index) in gameStore.state.team" 
             :key="poke.uid"
             class="target-node"
-            @click="$emit('select', { pokemon: poke, index })"
+            @click.stop="$emit('select', { pokemon: poke, index })"
           >
             <div class="poke-sprite-wrap">
               <img
@@ -87,7 +87,7 @@ defineEmits(['close', 'select'])
 .target-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.95);
+  background: Rgba(15, 23, 42, 0.95);
   z-index: var(--z-base);
   display: flex;
   align-items: center;
@@ -98,11 +98,11 @@ defineEmits(['close', 'select'])
 .target-card {
   width: 100%;
   max-width: 400px;
-  background: #1e293b;
+  background: Rgba(30, 41, 59, 1);
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   padding: 24px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  box-shadow: 0 20px 50px Rgba(0,0,0,0.5);
 }
 
 .target-header {
@@ -121,10 +121,10 @@ defineEmits(['close', 'select'])
     .name { font-size: 14px; font-weight: 800; color: var(--yellow); }
   }
   
-  .close-target { background: none; border: none; color: #475569; font-size: 18px; cursor: pointer; }
+  .close-target { background: none; border: none; color: Rgba(71, 85, 105, 1); font-size: 18px; cursor: pointer; }
 }
 
-.target-hint { font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 16px; }
+.target-hint { font-size: 12px; font-weight: 700; color: Rgba(148, 163, 184, 1); margin-bottom: 16px; }
 
 .team-grid {
   display: flex;
@@ -133,8 +133,8 @@ defineEmits(['close', 'select'])
 }
 
 .target-node {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 12px;
   display: flex;
@@ -144,7 +144,7 @@ defineEmits(['close', 'select'])
   transition: all 0.2s;
   
   &:hover { 
-    background: rgba(255, 255, 255, 0.08); 
+    background: Rgba(255, 255, 255, 0.08); 
     border-color: var(--yellow); 
     box-shadow: 0 0 0 1px var(--yellow);
   }
@@ -153,15 +153,15 @@ defineEmits(['close', 'select'])
   
   .poke-info {
     flex: 1;
-    .poke-name { font-weight: 800; font-size: 14px; color: white; margin-bottom: 2px; }
+    .poke-name { font-weight: 800; font-size: 14px; color: var(--white); margin-bottom: 2px; }
     .poke-meta { font-size: 10px; color: $muted; margin-bottom: 4px; }
     
     .hp-bar {
       height: 4px;
-      background: rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.1);
       border-radius: 2px;
       overflow: hidden;
-      .hp-fill { height: 100%; background: #22c55e; }
+      .hp-fill { height: 100%; background: Rgba(34, 197, 94, 1); }
     }
   }
 }

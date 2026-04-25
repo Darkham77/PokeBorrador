@@ -51,7 +51,7 @@ const handleClaim = (egg) => {
         v-for="egg in breedingStore.warehouseEggs" 
         :key="egg.id" 
         class="egg-card"
-        @click="handleClaim(egg)"
+        @click.stop="handleClaim(egg)"
       >
         <div class="egg-visual">
           <div class="egg-sprite">
@@ -83,6 +83,7 @@ const handleClaim = (egg) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .egg-warehouse {
   padding: 10px 0;
 }
@@ -93,22 +94,22 @@ const handleClaim = (egg) => {
   align-items: center;
   margin-bottom: 24px;
   
-  h3 { font-family: 'Press Start 2P', cursive; font-size: 10px; color: #a855f7; margin-bottom: 6px; }
+  h3 { @include pixelated; font-size: 10px; color: Rgba(168, 85, 247, 1); margin-bottom: 6px; }
   p { font-size: 12px; color: $muted; }
 }
 
 .count-badge {
-  background: rgba(168, 85, 247, 0.1);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  color: #a855f7;
+  background: Rgba(168, 85, 247, 0.1);
+  border: 1px solid Rgba(168, 85, 247, 0.3);
+  color: Rgba(168, 85, 247, 1);
   padding: 6px 12px;
   border-radius: 99px;
   font-size: 12px;
   font-weight: 800;
   
   &.empty {
-    background: rgba(148, 163, 184, 0.1);
-    border-color: rgba(148, 163, 184, 0.2);
+    background: Rgba(148, 163, 184, 0.1);
+    border-color: Rgba(148, 163, 184, 0.2);
     color: $muted;
   }
 }
@@ -116,7 +117,7 @@ const handleClaim = (egg) => {
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #475569;
+  color: Rgba(71, 85, 105, 1);
   
   .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
   p { font-size: 14px; }
@@ -129,8 +130,8 @@ const handleClaim = (egg) => {
 }
 
 .egg-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -143,8 +144,8 @@ const handleClaim = (egg) => {
   overflow: hidden;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(168, 85, 247, 0.4);
+    background: Rgba(255, 255, 255, 0.06);
+    border-color: Rgba(168, 85, 247, 0.4);
     transform: translateY(-4px);
     
     .egg-hover-action {
@@ -156,7 +157,7 @@ const handleClaim = (egg) => {
 .egg-visual {
   width: 64px;
   height: 64px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -168,10 +169,10 @@ const handleClaim = (egg) => {
 .scanned-badge {
   position: absolute;
   bottom: -4px;
-  background: #a855f7;
+  background: Rgba(168, 85, 247, 1);
   color: $white;
   font-size: 6px;
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   padding: 2px 4px;
   border-radius: 4px;
   white-space: nowrap;
@@ -179,11 +180,11 @@ const handleClaim = (egg) => {
 
 .egg-info {
   text-align: center;
-  .name { font-size: 13px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+  .name { font-size: 13px; font-weight: 700; color: Rgba(241, 245, 249, 1); margin-bottom: 4px; }
   .cost {
     font-size: 10px;
-    color: #94a3b8;
-    span { color: #facc15; font-weight: 800; }
+    color: Rgba(148, 163, 184, 1);
+    span { color: Rgba(250, 204, 21, 1); font-weight: 800; }
   }
 }
 
@@ -192,9 +193,9 @@ const handleClaim = (egg) => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #a855f7;
+  background: Rgba(168, 85, 247, 1);
   color: $white;
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 8px;
   padding: 8px 0;
   text-align: center;

@@ -154,7 +154,9 @@ When refactoring legacy or generic components:
 - **Nesting Depth**: Never exceed **3 levels** of nesting in SCSS. Excessive nesting creates specificity wars and bloated CSS.
 - **Color Management**:
   - Use **Native CSS Variables** (`var(--color)`) for UI-wide palettes that might change dynamically (e.g., Theme coloring).
-  - Use **Sass Variables** (`$token`) for technical constraints, sizing, and static internal logic.
+  - Use **Sass Variables** (`$token`) for technical constraints, sizing, and shared internal logic.
+  - **MANDATORY Capitalization**: You **MUST** use **Rgba()** and **Rgb()** (Capitalized) instead of lowercase `rgba()`/`rgb()`. This prevents SASS from intercepting them as internal color functions and ensures literal CSS output.
+  - **Local/One-off Colors**: Capitalized Rgba/Rgb or Hex values ARE PERMITTED for local, non-recurring styles within a component's `<style scoped>` block.
   - **SASS vs CSS Variables**: SASS color functions (like `color.scale`, `lighten()`, `darken()`) cannot process `var(--color)`. For interactive highlights/hovers, use static SASS fallbacks (e.g. `$yellow`) for calculations while maintaining the CSS variable for the main render to support dynamic themes.
 - **Modern Control Flow**: The legacy ternary `if()` function is deprecated in SASS 1.8+. Always use standard `@if / @else` blocks for conditional styling logic to ensure build-log cleanliness.
 - **Global Pollution**: Do not define variables or mixins directly in component styles; always centralize them in tokens/partials and `@use` them.

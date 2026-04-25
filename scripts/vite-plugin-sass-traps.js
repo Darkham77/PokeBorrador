@@ -22,7 +22,8 @@ import fs from 'fs';
 const SASS_TRAPS = [
   'scale', 'grayscale', 'invert', 'opacity', 'brightness', 
   'blur', 'rotate', 'translate', 'saturate', 'drop-shadow',
-  'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix'
+  'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix',
+  'rgba', 'rgb'
 ];
 
 /**
@@ -31,8 +32,6 @@ const SASS_TRAPS = [
  */
 export function sassTrapsFixer() {
   const trapRegex = new RegExp(`(?<![a-zA-Z-\\.\\$])(${SASS_TRAPS.join('|')})\\(`, 'g');
-  const rgbaVarRegex = /rgba\([^)]*var\(--/g;
-
   const fixContent = (code) => {
     let newCode = code;
     // 1. Capitalize trap functions
@@ -42,8 +41,6 @@ export function sassTrapsFixer() {
       }
       return func.charAt(0).toUpperCase() + func.slice(1) + '(';
     });
-    // 2. Fix rgba(var(--...)) -> Rgba(...)
-    newCode = newCode.replace(rgbaVarRegex, (match) => match.replace('rgba', 'Rgba'));
     return newCode;
   };
 

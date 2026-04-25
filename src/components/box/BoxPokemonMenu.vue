@@ -151,7 +151,7 @@ const handleToggleTag = (tag) => {
             <button 
               class="tag-btn" 
               :class="{ active: pokemon.tags?.includes('fav') }"
-              @click="handleToggleTag('fav')"
+              @click.stop="handleToggleTag('fav')"
             >
               ⭐
             </button>
@@ -163,7 +163,7 @@ const handleToggleTag = (tag) => {
             <button 
               class="tag-btn" 
               :class="{ active: pokemon.tags?.includes('breed') }"
-              @click="handleToggleTag('breed')"
+              @click.stop="handleToggleTag('breed')"
             >
               ❤️
             </button>
@@ -175,7 +175,7 @@ const handleToggleTag = (tag) => {
             <button 
               class="tag-btn" 
               :class="{ active: pokemon.tags?.includes('iv31') }"
-              @click="handleToggleTag('iv31')"
+              @click.stop="handleToggleTag('iv31')"
             >
               31
             </button>
@@ -186,7 +186,7 @@ const handleToggleTag = (tag) => {
       <div class="menu-body scrollbar">
         <button
           class="action-btn detail-btn"
-          @click="handleDetail"
+          @click.stop="handleDetail"
         >
           <span class="icon">👁️</span> Ver Detalles
         </button>
@@ -194,7 +194,7 @@ const handleToggleTag = (tag) => {
         <button 
           v-if="team.length < 6" 
           class="action-btn add-btn" 
-          @click="handleMoveToTeam"
+          @click.stop="handleMoveToTeam"
         >
           <span class="icon">➕</span> Agregar al equipo
         </button>
@@ -207,7 +207,7 @@ const handleToggleTag = (tag) => {
             v-for="(t, i) in team"
             :key="t.uid"
             class="team-option"
-            @click="handleSwap(i)"
+            @click.stop="handleSwap(i)"
           >
             <img
               :src="getAssetUrl(ASSET_TYPES.POKEMON, t.id, { isShiny: t.isShiny })"
@@ -228,7 +228,7 @@ const handleToggleTag = (tag) => {
 
         <button
           class="action-btn item-btn"
-          @click="handleUseItem"
+          @click.stop="handleUseItem"
         >
           <span class="icon">🎒</span> Usar Objeto
         </button>
@@ -236,14 +236,14 @@ const handleToggleTag = (tag) => {
         <button 
           v-if="gameStore.state.playerClass === 'rocket'" 
           class="action-btn rocket-btn" 
-          @click="handleRocketSell"
+          @click.stop="handleRocketSell"
         >
           <span class="icon">🚀</span> Vender Mercado Negro
         </button>
 
         <button
           class="action-btn move-btn"
-          @click="handleMoveToBox"
+          @click.stop="handleMoveToBox"
         >
           <span class="icon">📦</span> Mover a otra caja
         </button>
@@ -251,7 +251,7 @@ const handleToggleTag = (tag) => {
         <button 
           class="action-btn release-btn" 
           :disabled="pokemon.inDaycare"
-          @click="handleRelease"
+          @click.stop="handleRelease"
         >
           <span class="icon">🌿</span> Soltar Pokémon
         </button>
@@ -260,7 +260,7 @@ const handleToggleTag = (tag) => {
       <footer class="menu-footer">
         <button
           class="close-btn"
-          @click="emit('close')"
+          @click.stop="emit('close')"
         >
           CERRAR
         </button>
@@ -274,9 +274,8 @@ const handleToggleTag = (tag) => {
 .box-menu-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
-  -webkit-backdrop-filter: Blur(8px);
+  background: Rgba(0, 0, 0, 0.85);
+  -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -290,24 +289,24 @@ const handleToggleTag = (tag) => {
   max-width: 380px;
   background: $card2;
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   max-height: 85vh;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  box-shadow: 0 20px 50px Rgba(0,0,0,0.5);
 }
 
 .menu-header {
   padding: 24px;
   text-align: center;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.03), transparent);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: linear-gradient(to bottom, Rgba(255,255,255,0.03), transparent);
+  border-bottom: 1px solid Rgba(255,255,255,0.05);
 
   .pokemon-id {
     @include pixelated;
     font-size: 8px;
-    color: rgba(255, 255, 255, 0.3);
+    color: Rgba(255, 255, 255, 0.3);
     margin-bottom: 8px;
   }
 
@@ -315,7 +314,7 @@ const handleToggleTag = (tag) => {
     width: 80px;
     height: 80px;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 4px 8px rgba(0,0,0,0.4));
+    filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
   }
 
   .pokemon-name {
@@ -329,7 +328,7 @@ const handleToggleTag = (tag) => {
   .bm-species-subtitle {
     @include pixelated;
     font-size: 7px;
-    color: rgba(255, 255, 255, 0.3);
+    color: Rgba(255, 255, 255, 0.3);
     margin-top: -4px;
     margin-bottom: 8px;
     text-transform: uppercase;
@@ -347,8 +346,8 @@ const handleToggleTag = (tag) => {
     margin-top: 16px;
 
     .tag-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
       width: 32px;
       height: 32px;
       border-radius: 8px;
@@ -360,12 +359,12 @@ const handleToggleTag = (tag) => {
       transition: all 0.2s;
 
       &.active {
-        background: rgba(199, 125, 255, 0.2);
+        background: Rgba(199, 125, 255, 0.2);
         border-color: var(--purple);
         color: $white;
         transform: Scale(1.1);
       }
-      &:hover { background: rgba(255, 255, 255, 0.1); }
+      &:hover { background: Rgba(255, 255, 255, 0.1); }
     }
   }
 }
@@ -392,20 +391,20 @@ const handleToggleTag = (tag) => {
   align-items: center;
   gap: 12px;
   transition: all 0.2s;
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   color: $white;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
 
   .icon { font-size: 16px; width: 20px; text-align: center; }
 
-  &:hover { background: rgba(255, 255, 255, 0.08); transform: translateX(4px); }
+  &:hover { background: Rgba(255, 255, 255, 0.08); transform: translateX(4px); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  &.detail-btn { color: var(--purple-light); border-color: rgba(199, 125, 255, 0.3); background: rgba(199, 125, 255, 0.05); }
-  &.add-btn { color: var(--blue); border-color: rgba(59, 139, 255, 0.3); background: rgba(59, 139, 255, 0.05); }
-  &.item-btn { color: var(--green); border-color: rgba(107, 203, 119, 0.3); background: rgba(107, 203, 119, 0.05); }
-  &.rocket-btn { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); }
-  &.release-btn { color: #888; font-size: 11px; margin-top: 10px; opacity: 0.6; }
+  &.detail-btn { color: var(--purple-light); border-color: Rgba(199, 125, 255, 0.3); background: Rgba(199, 125, 255, 0.05); }
+  &.add-btn { color: var(--blue); border-color: Rgba(59, 139, 255, 0.3); background: Rgba(59, 139, 255, 0.05); }
+  &.item-btn { color: var(--green); border-color: Rgba(107, 203, 119, 0.3); background: Rgba(107, 203, 119, 0.05); }
+  &.rocket-btn { color: Rgba(239, 68, 68, 1); border-color: Rgba(239, 68, 68, 0.3); background: Rgba(239, 68, 68, 0.05); }
+  &.release-btn { color: Rgba(136, 136, 136, 1); font-size: 11px; margin-top: 10px; opacity: 0.6; }
 }
 
 .swap-section {
@@ -424,16 +423,16 @@ const handleToggleTag = (tag) => {
   align-items: center;
   gap: 12px;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
   border-radius: 12px;
   margin-bottom: 6px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(199, 125, 255, 0.05);
-    border-color: rgba(199, 125, 255, 0.3);
+    background: Rgba(199, 125, 255, 0.05);
+    border-color: Rgba(199, 125, 255, 0.3);
     transform: translateX(4px);
   }
 
@@ -448,20 +447,20 @@ const handleToggleTag = (tag) => {
 
 .menu-footer {
   padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.2);
 
   .close-btn {
     width: 100%;
     padding: 12px;
     background: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     color: var(--gray);
     @include pixelated;
     font-size: 9px;
     cursor: pointer;
-    &:hover { background: rgba(255, 255, 255, 0.05); color: $white; }
+    &:hover { background: Rgba(255, 255, 255, 0.05); color: $white; }
   }
 }
 </style>

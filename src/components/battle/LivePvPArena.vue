@@ -155,7 +155,7 @@ function handleForfeit() {
               v-for="(move, i) in battle.myTeam[battle.myActiveIdx]?.moves" 
               :key="i"
               class="move-btn"
-              @click="handleMove(i)"
+              @click.stop="handleMove(i)"
             >
               <span class="move-name">{{ move.name }}</span>
               <span class="move-pp">{{ move.pp }}/{{ move.maxPP }}</span>
@@ -171,13 +171,13 @@ function handleForfeit() {
           <div class="extra-actions">
             <button
               class="action-btn switch"
-              @click="handleSwitch"
+              @click.stop="handleSwitch"
             >
               CAMBIAR
             </button>
             <button
               class="action-btn forfeit"
-              @click="handleForfeit"
+              @click.stop="handleForfeit"
             >
               RENDIRSE
             </button>
@@ -217,7 +217,7 @@ function handleForfeit() {
 .live-pvp-overlay {
   position: fixed;
   inset: 0;
-  background: #0d1117;
+  background: Rgba(13, 17, 23, 1);
   z-index: var(--z-overlay);
   display: flex;
   align-items: center;
@@ -242,12 +242,12 @@ function handleForfeit() {
 }
 
 .trainer-card {
-  background: rgba(15, 23, 42, 0.95);
+  background: Rgba(15, 23, 42, 0.95);
   border-radius: 24px;
   padding: 20px;
   width: 100%;
   min-height: 480px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.05);
   display: flex;
   flex-direction: column;
 }
@@ -255,7 +255,7 @@ function handleForfeit() {
 .side-header {
   @include pixelated;
   font-size: 8px;
-  color: #94a3b8;
+  color: Rgba(148, 163, 184, 1);
   margin-bottom: 15px;
 }
 
@@ -269,7 +269,7 @@ function handleForfeit() {
 .trainer-img {
   max-height: 250px;
   transform: Scale(1.5);
-  filter: Drop-Shadow(0 10px 20px rgba(0,0,0,0.5));
+  filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.5));
 }
 
 .trainer-meta {
@@ -288,7 +288,7 @@ function handleForfeit() {
   display: flex;
   justify-content: space-between;
   font-size: 11px;
-  color: #94a3b8;
+  color: Rgba(148, 163, 184, 1);
 }
 
 .battle-main {
@@ -296,7 +296,7 @@ function handleForfeit() {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  background: rgba(0,0,0,0.2);
+  background: Rgba(0,0,0,0.2);
   border-radius: 30px;
   padding: 20px;
   position: relative;
@@ -305,7 +305,7 @@ function handleForfeit() {
 
 .arena-viewport {
   flex: 1;
-  background: #222;
+  background: Rgba(34, 34, 34, 1);
   border-radius: 20px;
   position: relative;
   overflow: hidden;
@@ -313,10 +313,10 @@ function handleForfeit() {
 
 .battle-log {
   height: 100px;
-  background: rgba(0,0,0,0.4);
+  background: Rgba(0,0,0,0.4);
   padding: 10px;
   font-size: 11px;
-  color: #ccc;
+  color: Rgba(204, 204, 204, 1);
   border-radius: 12px;
   overflow-y: auto;
   min-height: 0;
@@ -336,8 +336,8 @@ function handleForfeit() {
 .move-btn {
   padding: 15px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.1);
   color: $white;
   display: flex;
   flex-direction: column;
@@ -347,7 +347,7 @@ function handleForfeit() {
 }
 
 .move-name { font-weight: bold; font-size: 12px; }
-.move-pp { font-size: 10px; color: #888; }
+.move-pp { font-size: 10px; color: Rgba(136, 136, 136, 1); }
 
 .extra-actions {
   display: flex;
@@ -364,20 +364,20 @@ function handleForfeit() {
   cursor: pointer;
 }
 
-.action-btn.switch { background: rgba(199,125,255,0.2); color: #c77dff; }
-.action-btn.forfeit { background: rgba(255,59,59,0.15); color: #ff3b3b; }
+.action-btn.switch { background: Rgba(199, 125, 255, 0.2); color: Rgba(199, 125, 255, 1); }
+.action-btn.forfeit { background: Rgba(255, 59, 59, 0.15); color: Rgba(255, 59, 59, 1); }
 
 .status-box {
-  background: rgba(0,0,0,0.7);
+  background: Rgba(0,0,0,0.7);
   padding: 10px;
   border-radius: 12px;
   width: 180px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid Rgba(255,255,255,0.1);
 }
 
 .hp-track {
   height: 6px;
-  background: #333;
+  background: Rgba(51, 51, 51, 1);
   border-radius: 3px;
   margin: 6px 0;
   overflow: hidden;
@@ -385,11 +385,11 @@ function handleForfeit() {
 
 .hp-fill {
   height: 100%;
-  background: #30D158;
+  background: Rgba(48, 209, 88, 1);
   transition: width 0.3s;
 }
 
-.hp-text { font-size: 10px; text-align: right; color: #888; }
+.hp-text { font-size: 10px; text-align: right; color: Rgba(136, 136, 136, 1); }
 
 .enemy-island { position: absolute; top: 10%; right: 10%; }
 .player-island { position: absolute; bottom: 10%; left: 10%; }

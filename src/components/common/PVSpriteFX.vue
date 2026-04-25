@@ -33,6 +33,9 @@ const isSimplified = computed(() => {
   return !props.enabled || isModalBelow.value || uiStore.isSimplifiedModalsMode
 })
 
+// Generar una semilla aleatoria para desincronizar animaciones
+const animSeed = Math.random()
+
 const wrapperClasses = computed(() => ({
   'pv-fx-wrapper': true,
   'is-guardian': props.isGuardian && !isSimplified.value,
@@ -41,7 +44,10 @@ const wrapperClasses = computed(() => ({
 </script>
 
 <template>
-  <div :class="wrapperClasses">
+  <div 
+    :class="wrapperClasses"
+    :style="{ '--fx-seed': animSeed }"
+  >
     <!-- El sprite real se inyecta aquí -->
     <slot />
 

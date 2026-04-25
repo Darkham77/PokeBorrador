@@ -42,7 +42,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
 <template>
   <div
     :class="['box-pokemon-card', { selected: isSelected }]"
-    @click="emit('click', index)"
+    @click.stop="emit('click', index)"
   >
     <!-- Badge Tier -->
     <div
@@ -173,20 +173,20 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   cursor: pointer;
   position: relative;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.02);
 }
 
 .box-pokemon-card:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   transform: translateY(-3px);
-  border-color: rgba(199, 125, 255, 0.3);
+  border-color: Rgba(199, 125, 255, 0.3);
 }
 
 .box-pokemon-card.selected {
   border: 2px solid #ef4444 !important;
-  background: rgba(239, 68, 68, 0.1) !important;
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+  background: Rgba(239, 68, 68, 0.1) !important;
+  box-shadow: 0 0 15px Rgba(239, 68, 68, 0.2);
 }
 
 .box-tier-badge {
@@ -207,13 +207,13 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   display: flex;
   flex-direction: column;
   gap: 3px;
-  background: rgba(0, 0, 0, 0.6);
+  background: Rgba(0, 0, 0, 0.6);
   padding: 6px 4px;
   border-radius: 8px;
   z-index: var(--z-base);
-  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px Rgba(0,0,0,0.3);
   @include gpu-layer;
 }
 
@@ -226,7 +226,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   cursor: help;
 }
 
-.shiny-icon { color: #FFD93D; }
+.shiny-icon { color: Rgba(255, 217, 61, 1); }
 
 .iv31 {
   font-weight: bold;
@@ -262,9 +262,9 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
   text-transform: uppercase;
 }
 
-.mission-badge { top: 2px; background: #fbbf24; color: black; }
-.daycare-badge { top: 12px; background: #3b82f6; color: white; }
-.defense-badge { top: 22px; background: #22c55e; color: white; }
+.mission-badge { top: 2px; background: Rgba(251, 191, 36, 1); color: black; }
+.daycare-badge { top: 12px; background: Rgba(59, 130, 246, 1); color: white; }
+.defense-badge { top: 22px; background: Rgba(34, 197, 94, 1); color: white; }
 
 .pokemon-name {
   font-size: 10px;
@@ -284,7 +284,7 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
 
 .mini-hp-bar {
   height: 3px;
-  background: rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.1);
   border-radius: 2px;
   margin-top: 4px;
   overflow: hidden;
@@ -303,14 +303,14 @@ const hasHeldItem = computed(() => !!props.pokemon.heldItem)
 }
 
 .rocket-icon {
-  color: #ef4444;
+   color: Rgba(239, 68, 68, 1);
   font-size: 12px;
 }
 
 .empty-circle {
   width: 12px;
   height: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid Rgba(255, 255, 255, 0.2);
   border-radius: 50%;
 }
 </style>

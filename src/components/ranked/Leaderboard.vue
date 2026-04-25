@@ -38,7 +38,7 @@ const formatRank = (index) => `#${index + 1}`;
           :key="opt.id"
           class="sort-btn"
           :class="{ active: activeSort === opt.id }"
-          @click="activeSort = opt.id"
+          @click.stop="activeSort = opt.id"
         >
           {{ opt.label }}
         </button>
@@ -46,7 +46,7 @@ const formatRank = (index) => `#${index + 1}`;
       <button 
         class="refresh-btn" 
         :disabled="socialStore.leaderboardLoading"
-        @click="socialStore.fetchLeaderboard(activeSort)"
+        @click.stop="socialStore.fetchLeaderboard(activeSort)"
       >
         {{ socialStore.leaderboardLoading ? '...' : '🔄' }}
       </button>
@@ -136,17 +136,17 @@ const formatRank = (index) => `#${index + 1}`;
 .sort-selector {
   display: flex;
   gap: 4px;
-  background: rgba(0, 0, 0, 0.3);
+  background: Rgba(0, 0, 0, 0.3);
   padding: 4px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .sort-btn {
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   @include pixelated;
   font-size: 6px;
   padding: 6px 10px;
@@ -154,22 +154,22 @@ const formatRank = (index) => `#${index + 1}`;
   transition: all 0.2s;
 
   &:hover {
-    color: $white;
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--white);
+    background: Rgba(255, 255, 255, 0.05);
   }
 
   &.active {
     background: var(--yellow);
-    color: $black;
-    box-shadow: 0 0 10px rgba(255, 184, 0, 0.3);
+    color: Rgba(0, 0, 0, 1);
+    box-shadow: 0 0 10px Rgba(255, 184, 0, 0.3);
   }
 }
 
 .refresh-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  color: $white;
+  color: var(--white);
   width: 32px;
   height: 32px;
   cursor: pointer;
@@ -179,8 +179,8 @@ const formatRank = (index) => `#${index + 1}`;
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: Rgba(255, 255, 255, 0.1);
+    border-color: Rgba(255, 255, 255, 0.2);
   }
 
   &:disabled {
@@ -203,20 +203,20 @@ const formatRank = (index) => `#${index + 1}`;
   grid-template-columns: 40px 1fr 100px 60px;
   align-items: center;
   padding: 10px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.2);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   transition: transform 0.2s;
 
   &.is-me {
-    background: rgba(107, 203, 119, 0.08);
-    border-color: rgba(107, 203, 119, 0.4);
-    box-shadow: 0 0 15px rgba(107, 203, 119, 0.1);
+    background: Rgba(107, 203, 119, 0.08);
+    border-color: Rgba(107, 203, 119, 0.4);
+    box-shadow: 0 0 15px Rgba(107, 203, 119, 0.1);
   }
 
   &:hover {
     transform: translateX(4px);
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -237,13 +237,11 @@ const formatRank = (index) => `#${index + 1}`;
   flex-direction: column;
   gap: 2px;
 }
-
 .trainer-name {
   font-size: 12px;
   font-weight: bold;
-  color: $white;
+  color: var(--white);
 }
-
 .trainer-level {
   font-size: 9px;
   color: var(--gray);
@@ -263,7 +261,7 @@ const formatRank = (index) => `#${index + 1}`;
 
 .val-display {
   font-size: 9px;
-  color: $white;
+  color: var(--white);
   text-align: right;
   white-space: nowrap;
 }
@@ -277,7 +275,7 @@ const formatRank = (index) => `#${index + 1}`;
 
 .error-msg {
   color: var(--red);
-  background: rgba(255, 59, 59, 0.05);
+  background: Rgba(255, 59, 59, 0.05);
   border-radius: 8px;
 }
 

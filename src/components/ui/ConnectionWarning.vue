@@ -41,6 +41,7 @@ const authStore = useAuthStore()
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .fade-enter-active, .fade-leave-active {
@@ -54,7 +55,7 @@ const authStore = useAuthStore()
   position: fixed;
   inset: 0;
   z-index: var(--z-critical);
-  background: rgba(0, 0, 0, 0.85);
+  background: Rgba(0, 0, 0, 0.85);
   -webkit-backdrop-filter: Blur(15px) Grayscale(0.5);
   -webkit-backdrop-filter: Blur(15px) Grayscale(0.5); -webkit-backdrop-filter: Blur(15px) Grayscale(0.5); backdrop-filter: Blur(15px) Grayscale(0.5);
   display: flex;
@@ -65,21 +66,21 @@ const authStore = useAuthStore()
 }
 
 .lost-card {
-  background: rgba(15, 15, 18, 0.95);
-  border: 2px solid rgba(239, 68, 68, 0.4);
+  background: Rgba(15, 15, 18, 0.95);
+  border: 2px solid Rgba(239, 68, 68, 0.4);
   border-radius: 24px;
   width: 100%;
   max-width: 400px;
   padding: 40px;
   text-align: center;
-  box-shadow: 0 0 50px rgba(239, 68, 68, 0.2),
-              inset 0 0 20px rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 50px Rgba(239, 68, 68, 0.2),
+              inset 0 0 20px Rgba(239, 68, 68, 0.1);
   animation: glow-red 3s infinite ease-in-out;
 }
 
 @keyframes glow-red {
-  0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 50px rgba(239, 68, 68, 0.2); }
-  50% { border-color: rgba(239, 68, 68, 0.8); box-shadow: 0 0 70px rgba(239, 68, 68, 0.4); }
+  0%, 100% { border-color: Rgba(239, 68, 68, 0.4); box-shadow: 0 0 50px Rgba(239, 68, 68, 0.2); }
+  50% { border-color: Rgba(239, 68, 68, 0.8); box-shadow: 0 0 70px Rgba(239, 68, 68, 0.4); }
 }
 
 .icon-header {
@@ -87,7 +88,7 @@ const authStore = useAuthStore()
   .wifi-icon {
     display: inline-block;
     font-size: 48px;
-    filter: Drop-Shadow(0 0 15px rgba(239, 68, 68, 0.5));
+    filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.5));
   }
 }
 
@@ -101,15 +102,14 @@ const authStore = useAuthStore()
 }
 
 h2 {
-  font-size: 14px;
-  color: #ef4444;
+  color: Rgba(239, 68, 68, 1);
   margin-bottom: 20px;
   @include pixelated;
   letter-spacing: 1px;
 }
 
 .msg {
-  color: rgba(255, 255, 255, 0.7);
+  color: Rgba(255, 255, 255, 0.7);
   font-size: 13px;
   line-height: 1.6;
   margin-bottom: 32px;
@@ -126,8 +126,8 @@ h2 {
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(239, 68, 68, 0.1);
-  border-top: 3px solid #ef4444;
+  border: 3px solid Rgba(239, 68, 68, 0.1);
+  border-top: 3px solid Rgba(239, 68, 68, 1);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -139,18 +139,17 @@ h2 {
 
 .status-text {
   font-size: 8px;
-  color: #ef4444;
+  color: Rgba(239, 68, 68, 1);
   @include pixelated;
 }
 
 .footer {
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.3);
-  font-family: 'Press Start 2P', cursive;
+  color: Rgba(255, 255, 255, 0.3);
   @include pixelated;
   code { 
-    color: $yellow; 
-    &.offline { color: #ef4444; }
+    color: var(--yellow); 
+    &.offline { color: Rgba(239, 68, 68, 1); }
   }
 }
 </style>

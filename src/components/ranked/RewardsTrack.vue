@@ -133,7 +133,7 @@ const claimReward = async (milestone) => {
           v-if="!isClaimed(m.id)"
           class="claim-btn press-start"
           :disabled="!canClaim(m)"
-          @click="claimReward(m)"
+          @click.stop="claimReward(m)"
         >
           {{ maxElo >= m.elo ? 'RECLAMAR' : 'BLOQUEADO' }}
         </button>
@@ -154,10 +154,10 @@ const claimReward = async (milestone) => {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 16px;
   padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .header {
@@ -184,14 +184,14 @@ h3 {
   margin: 0;
 
   span {
-    color: $white;
+    color: var(--white);
     font-weight: bold;
   }
 }
 
 .elo-now {
-  color: #94a3b8;
-  background: rgba(255, 255, 255, 0.05);
+  color: Rgba(148, 163, 184, 1);
+  background: Rgba(255, 255, 255, 0.05);
   padding: 6px 12px;
   border-radius: 8px;
 }
@@ -203,9 +203,9 @@ h3 {
 .progress-bar {
   position: relative;
   height: 8px;
-  background: rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.1);
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
 }
 
 .progress-fill {
@@ -227,7 +227,7 @@ h3 {
   height: 12px;
   border-radius: 50%;
   border: 2px solid;
-  background: $black;
+  background: Rgba(0, 0, 0, 1);
 }
 
 .milestones-scroll {
@@ -239,8 +239,8 @@ h3 {
 
 .milestone-card {
   min-width: 220px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 12px;
   display: flex;
@@ -249,13 +249,13 @@ h3 {
   transition: all 0.3s;
 
   &.unlocked {
-    border-color: rgba(107, 203, 119, 0.3);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: Rgba(107, 203, 119, 0.3);
+    background: Rgba(255, 255, 255, 0.05);
   }
 
   &.claimed {
-    background: rgba(107, 203, 119, 0.05);
-    border-color: rgba(107, 203, 119, 0.2);
+    background: Rgba(107, 203, 119, 0.05);
+    border-color: Rgba(107, 203, 119, 0.2);
   }
 
   &.locked {
@@ -287,7 +287,7 @@ h3 {
 
 .reward-item {
   font-size: 11px;
-  color: $white;
+  color: var(--white);
 }
 
 .claim-btn {
@@ -296,20 +296,20 @@ h3 {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background: rgba(107, 203, 119, 0.2);
+  background: Rgba(107, 203, 119, 0.2);
   color: var(--green);
-  border: 1px solid rgba(107, 203, 119, 0.3);
+  border: 1px solid Rgba(107, 203, 119, 0.3);
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
-    background: rgba(107, 203, 119, 0.3);
+    background: Rgba(107, 203, 119, 0.3);
     transform: Scale(1.02);
   }
 
   &:disabled {
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     color: var(--gray);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: Rgba(255, 255, 255, 0.1);
     cursor: not-allowed;
   }
 }

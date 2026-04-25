@@ -7,15 +7,15 @@
   left: 0;
   width: 100%;
   height: 80px;
-  @include glass-solid(rgba(10, 12, 20, 0.98));
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  @include glass-solid(Rgba(10, 12, 20, 0.98));
+  border-top: 1px solid Rgba(255, 255, 255, 0.1);
   z-index: var(--z-navigation);
   transform: translateZ(0);
   padding: 0 2px;
   box-sizing: border-box;
   justify-content: space-around;
   align-items: center;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 -10px 40px Rgba(0, 0, 0, 0.8);
 
   @media (max-width: 1360px) {
     display: flex;
@@ -74,18 +74,18 @@
 
   &.active {
     opacity: 1;
-    background: rgba(255, 214, 10, 0.05);
-    border: 1px solid rgba(255, 214, 10, 0.3) !important;
-    box-shadow: 0 0 15px rgba(255, 214, 10, 0.1);
+    background: Rgba(255, 214, 10, 0.05);
+    border: 1px solid Rgba(255, 214, 10, 0.3) !important;
+    box-shadow: 0 0 15px Rgba(255, 214, 10, 0.1);
     
     & .nav-icon {
         transform: scale3d(1.1, 1.1, 1);
-        filter: Drop-Shadow(0 0 5px rgba(255, 214, 10, 0.4));
+        filter: Drop-Shadow(0 0 5px Rgba(255, 214, 10, 0.4));
     }
 
     & .nav-label {
       color: $yellow;
-      text-shadow: 0 0 5px rgba(255, 214, 10, 0.3);
+      text-shadow: 0 0 5px Rgba(255, 214, 10, 0.3);
     }
   }
 

@@ -20,7 +20,7 @@ const p = computed(() => props.pokemon)
         v-for="(m, i) in p.moves" 
         :key="i" 
         class="move-slot"
-        @click="emit('show-move', m.name)"
+        @click.stop="emit('show-move', m.name)"
       >
         <div class="move-main">
           <span class="mg-move-name">{{ m.name }}</span>
@@ -37,8 +37,8 @@ const p = computed(() => props.pokemon)
   </section>
 </template>
 
-<style scoped>
-@use "@/styles/core/_mixins" as *;
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
 .vp-section-title {
   @include pixelated;
   font-size: 8px;
@@ -55,8 +55,8 @@ const p = computed(() => props.pokemon)
 }
 
 .move-slot {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.1);
   border-radius: 16px;
   padding: 14px;
   text-align: left;
@@ -68,7 +68,7 @@ const p = computed(() => props.pokemon)
 }
 
 .move-slot:hover { 
-  background: rgba(255,255,255,0.1); 
+  background: Rgba(255,255,255,0.1); 
   border-color: var(--blue-light);
 }
 
@@ -83,11 +83,11 @@ const p = computed(() => props.pokemon)
   display: inline-block;
 }
 
-.move-pp { display: block; margin-top: 10px; font-size: 10px; color: #888; font-weight: bold; }
+.move-pp { display: block; margin-top: 10px; font-size: 10px; color: Rgba(136, 136, 136, 1); font-weight: bold; }
 
 /* Type Colors Utility (Normally in generic file, but scoped for safety here) */
-.type-grass { background: #6BCB77; color: $white; }
-.type-fire { background: #FF3B3B; color: $white; }
-.type-water { background: #3B8BFF; color: $white; }
+.type-grass { background: Rgba(107, 203, 119, 1); color: var(--white); }
+.type-fire { background: Rgba(255, 59, 59, 1); color: var(--white); }
+.type-water { background: Rgba(59, 139, 255, 1); color: var(--white); }
 /* ... (Add other types as needed or rely on global classes if available) */
 </style>

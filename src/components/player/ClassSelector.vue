@@ -49,7 +49,7 @@ const select = (id) => {
             class="class-card"
             :class="{ active: currentClassId === cls.id }"
             :style="{ '--class-color': cls.color, '--class-glow': cls.color + '55' }"
-            @click="select(cls.id)"
+            @click.stop="select(cls.id)"
           >
             <div
               v-if="currentClassId === cls.id"
@@ -115,7 +115,7 @@ const select = (id) => {
         <footer class="modal-footer">
           <button
             class="close-btn"
-            @click="close"
+            @click.stop="close"
           >
             CERRAR
           </button>
@@ -126,11 +126,12 @@ const select = (id) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .class-selector-overlay {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  background: rgba(0, 0, 0, 0.92);
+  background: Rgba(0, 0, 0, 0.92);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -152,7 +153,7 @@ const select = (id) => {
   text-align: center;
   margin-bottom: 40px;
   h2 { font-size: 24px; margin-bottom: 12px; }
-  p { color: #94a3b8; font-size: 14px; }
+  p { color: Rgba(148, 163, 184, 1); font-size: 14px; }
 }
 
 .class-grid {
@@ -163,9 +164,9 @@ const select = (id) => {
 }
 
 .class-card {
-  background: #1e293b;
+  background: Rgba(30, 41, 59, 1);
   border-radius: 24px;
-  border: 2px solid rgba(255, 255, 255, 0.08);
+  border: 2px solid Rgba(255, 255, 255, 0.08);
   padding: 32px 24px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -206,7 +207,7 @@ const select = (id) => {
 h3 { text-align: center; margin-bottom: 12px; font-size: 14px; }
 .class-desc { 
   text-align: center; 
-  color: #94a3b8; 
+  color: Rgba(148, 163, 184, 1); 
   font-size: 12px; 
   line-height: 1.6; 
   margin-bottom: 24px;
@@ -234,8 +235,8 @@ h3 { text-align: center; margin-bottom: 12px; font-size: 14px; }
   }
 }
 
-.benefits li { color: #cbd5e1; }
-.penalties li { color: #f87171; }
+.benefits li { color: Rgba(203, 213, 225, 1); }
+.penalties li { color: Rgba(248, 113, 113, 1); }
 
 .select-btn {
   width: 100%;
@@ -250,23 +251,23 @@ h3 { text-align: center; margin-bottom: 12px; font-size: 14px; }
   &:hover { opacity: 0.9; }
 }
 
-.gold-text { color: #f59e0b; }
-.green-text { color: #22c55e; }
-.red-text { color: #ef4444; }
+.gold-text { color: Rgba(245, 158, 11, 1); }
+.green-text { color: Rgba(34, 197, 94, 1); }
+.red-text { color: Rgba(239, 68, 68, 1); }
 
-.press-start { font-family: 'Press Start 2P', cursive; }
+.press-start { @include pixelated; }
 
 .modal-footer {
   text-align: center;
   .close-btn {
-    background: rgba(255, 255, 255, 0.08);
+    background: Rgba(255, 255, 255, 0.08);
     border: none;
-    color: #94a3b8;
+    color: Rgba(148, 163, 184, 1);
     padding: 12px 32px;
     border-radius: 12px;
     cursor: pointer;
     font-size: 14px;
-    &:hover { color: $white; background: rgba(255, 255, 255, 0.12); }
+    &:hover { color: $white; background: Rgba(255, 255, 255, 0.12); }
   }
 }
 

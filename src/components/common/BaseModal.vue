@@ -14,7 +14,7 @@
           v-if="show" 
           class="modal-overlay" 
           :class="{ 'transparent': overlay === 'none' }"
-          @click="handleOverlayClick" 
+          @click.stop="handleOverlayClick" 
         />
       </Transition>
       
@@ -66,7 +66,7 @@
                 v-if="showCloseButton"
                 class="modal-close-btn"
                 :disabled="preventClose"
-                @click="handleClose"
+                @click.stop="handleClose"
               >
                 <div class="close-icon-wrapper" />
               </button>
@@ -99,7 +99,7 @@
               v-if="hideHeader && showCloseButton"
               class="modal-close-btn-floating"
               :disabled="preventClose"
-              @click="handleClose"
+              @click.stop="handleClose"
             >
               <div class="close-icon-wrapper" />
             </button>
@@ -112,6 +112,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { useBodyClass } from '@/composables/useBodyClass'
 
 defineOptions({
   inheritAttrs: false
@@ -162,23 +163,15 @@ const handleOverlayClick = () => {
 const computedZIndex = ref(props.zIndex)
 const localShow = ref(props.show)
 
+// Manage scroll locking reactively
+useBodyClass('modal-open', computed(() => props.show && props.lockScroll))
+
 watch(() => props.show, (val) => {
   if (val) {
     localShow.value = true
     computedZIndex.value = props.zIndex
-    if (props.lockScroll) document.body.classList.add('modal-open')
-  } else {
-    // We don't set localShow = false here to allow the leave transition to play
-    if (props.lockScroll) document.body.classList.remove('modal-open')
   }
 }, { immediate: true })
-
-import { onUnmounted } from 'vue'
-onUnmounted(() => {
-  if (props.lockScroll) {
-    document.body.classList.remove('modal-open')
-  }
-})
 
 const onContentLeave = () => {
   if (!props.show) {
@@ -193,6 +186,7 @@ const cardStyles = computed(() => {
 </script>
 
 <style lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .base-modal-root {
@@ -205,7 +199,7 @@ const cardStyles = computed(() => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: Rgba(0, 0, 0, 0.7);
   -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   z-index: var(--z-base);
   pointer-events: auto;
@@ -252,11 +246,11 @@ const cardStyles = computed(() => {
 .base-modal-card {
   position: relative;
   pointer-events: auto;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 40px 100px Rgba(0, 0, 0, 0.9);
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   overflow: hidden;
   backface-visibility: hidden;
   -webkit-font-smoothing: none;
@@ -279,7 +273,7 @@ const cardStyles = computed(() => {
     height: 100vh;
     max-height: 100vh !important;
     border-radius: 0;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 1px solid Rgba(255, 255, 255, 0.1);
   }
 
   .type-side-left & {
@@ -288,14 +282,14 @@ const cardStyles = computed(() => {
     height: 100vh;
     max-height: 100vh !important;
     border-radius: 0;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid Rgba(255, 255, 255, 0.1);
   }
 
   &.variant-retro {
-    background: #1a1c2e !important;
+    background: Rgba(26, 28, 46, 1) !important;
     border: 2px solid var(--yellow) !important;
     border-radius: 4px !important;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(255, 217, 61, 0.1);
+    box-shadow: 0 0 30px Rgba(0, 0, 0, 0.8), inset 0 0 20px Rgba(255, 217, 61, 0.1);
 
     .type-center & {
       border-radius: 30px !important;
@@ -309,7 +303,7 @@ const cardStyles = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .modal-header-left {
@@ -319,7 +313,7 @@ const cardStyles = computed(() => {
 }
 
 .modal-title-text {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 12px;
   color: var(--yellow, $coin-gold);
   letter-spacing: 1px;
@@ -338,8 +332,8 @@ const cardStyles = computed(() => {
 
 .modal-footer-premium {
   padding: 16px 32px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.2);
 }
 
 /* Transitions */

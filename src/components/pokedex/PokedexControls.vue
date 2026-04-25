@@ -15,7 +15,7 @@ defineEmits(['update:currentGen', 'update:sortBy', 'update:searchQuery'])
         :key="gen"
         class="tab-btn" 
         :class="{ active: currentGen === gen }"
-        @click="$emit('update:currentGen', gen)"
+        @click.stop="$emit('update:currentGen', gen)"
       >
         GEN {{ gen }}
       </button>
@@ -27,14 +27,14 @@ defineEmits(['update:currentGen', 'update:sortBy', 'update:searchQuery'])
         <button 
           class="pdex-sort-btn" 
           :class="{ active: sortBy === 'number' }"
-          @click="$emit('update:sortBy', 'number')"
+          @click.stop="$emit('update:sortBy', 'number')"
         >
           #
         </button>
         <button 
-          class="sort-btn" 
+          class="pdex-sort-btn" 
           :class="{ active: sortBy === 'name' }"
-          @click="$emit('update:sortBy', 'name')"
+          @click.stop="$emit('update:sortBy', 'name')"
         >
           A-Z
         </button>

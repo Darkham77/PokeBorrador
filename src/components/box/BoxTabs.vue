@@ -15,7 +15,7 @@ const emit = defineEmits(['switch', 'buy'])
       :key="i"
       :class="{ active: currentIndex === (i - 1) }"
       class="tab-btn"
-      @click="emit('switch', i - 1)"
+      @click.stop="emit('switch', i - 1)"
     >
       CAJA {{ i }}
     </button>
@@ -23,7 +23,7 @@ const emit = defineEmits(['switch', 'buy'])
       v-if="props.boxCount < 10"
       :title="'Comprar nueva caja (₱' + buyCost.toLocaleString() + ')'"
       class="add-btn"
-      @click="emit('buy')"
+      @click.stop="emit('buy')"
     >
       +
     </button>
@@ -43,8 +43,8 @@ const emit = defineEmits(['switch', 'buy'])
 .tab-btn {
   padding: 8px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
   color: var(--gray);
   @include pixelated;
   font-size: 7px;
@@ -54,7 +54,7 @@ const emit = defineEmits(['switch', 'buy'])
 
 .tab-btn.active {
   border: 1px solid var(--purple);
-  background: rgba(199, 125, 255, 0.2);
+  background: Rgba(199, 125, 255, 0.2);
   color: var(--purple-light);
 }
 
@@ -63,7 +63,7 @@ const emit = defineEmits(['switch', 'buy'])
   height: 30px;
   border-radius: 50%;
   border: 1px solid var(--green);
-  background: rgba(107, 203, 119, 0.1);
+  background: Rgba(107, 203, 119, 0.1);
   color: var(--green);
   font-size: 16px;
   cursor: pointer;

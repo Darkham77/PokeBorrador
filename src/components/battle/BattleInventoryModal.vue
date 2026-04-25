@@ -72,7 +72,7 @@ const handleUse = (item) => {
     :show="show"
     title="MOCHILA DE COMBATE"
     title-color="var(--yellow)"
-    header-background="#1a1c2e"
+    header-background="Rgba(26, 28, 46, 1)"
     max-width="440px"
     variant="retro"
     @close="close"
@@ -94,7 +94,7 @@ const handleUse = (item) => {
           v-for="item in usableItems" 
           :key="item.name"
           class="item-row-vicio"
-          @click="handleUse(item)"
+          @click.stop="handleUse(item)"
         >
           <div class="item-sprite-box">
             <img
@@ -123,7 +123,7 @@ const handleUse = (item) => {
     <template #footer>
       <button
         class="btn-vicio-secondary btn-vicio-full"
-        @click="close"
+        @click.stop="close"
       >
         CERRAR
       </button>
@@ -132,6 +132,7 @@ const handleUse = (item) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .battle-inv-content {
@@ -139,7 +140,7 @@ const handleUse = (item) => {
 }
 
 .battle-inv-help {
-  color: rgba(255, 255, 255, 0.5);
+  color: Rgba(255, 255, 255, 0.5);
   font-size: 11px;
   line-height: 1.5;
   margin-bottom: 24px;
@@ -156,8 +157,8 @@ const handleUse = (item) => {
 
 .empty-msg {
   text-align: center;
-  color: rgba(255, 255, 255, 0.2);
-  font-family: 'Press Start 2P', cursive;
+  color: Rgba(255, 255, 255, 0.2);
+  @include pixelated;
   font-size: 8px;
   padding: 60px 20px;
   @include pixelated;
@@ -167,8 +168,8 @@ const handleUse = (item) => {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   padding: 12px;
   cursor: pointer;
@@ -176,7 +177,7 @@ const handleUse = (item) => {
   position: relative;
 
   &:hover {
-    background: rgba(255, 217, 61, 0.1);
+    background: Rgba(255, 217, 61, 0.1);
     border-color: var(--yellow);
     transform: translateX(4px);
     
@@ -188,7 +189,7 @@ const handleUse = (item) => {
 .item-sprite-box {
   width: 44px;
   height: 44px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -212,13 +213,13 @@ const handleUse = (item) => {
 
 .item-qty {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
+  color: Rgba(255, 255, 255, 0.3);
   margin-top: 2px;
   font-family: monospace;
 }
 
 .use-hint {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 7px;
   color: var(--yellow);
   opacity: 0;

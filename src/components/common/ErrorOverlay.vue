@@ -122,7 +122,7 @@ const closeError = () => {
         <div class="error-footer">
           <button
             class="error-btn copy-btn"
-            @click="copyError"
+            @click.stop="copyError"
           >
             <i
               class="fas"
@@ -132,13 +132,13 @@ const closeError = () => {
           </button>
           <button
             class="error-btn reload-btn"
-            @click="reloadGame"
+            @click.stop="reloadGame"
           >
             <i class="fas fa-sync" /> REINICIAR JUEGO
           </button>
           <button
             class="error-btn close-btn"
-            @click="closeError"
+            @click.stop="closeError"
           >
             ✕ CERRAR
           </button>
@@ -154,7 +154,7 @@ const closeError = () => {
 .error-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: Rgba(0, 0, 0, 0.9);
   z-index: var(--z-critical);
   display: flex;
   align-items: center;
@@ -167,13 +167,13 @@ const closeError = () => {
 }
 
 .error-card {
-  background: #1a1a2e;
+  background: Rgba(26, 26, 46, 1);
   border: 3px solid var(--red);
   border-radius: 24px;
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
-  box-shadow: 0 0 50px rgba(255, 59, 59, 0.3);
+  box-shadow: 0 0 50px Rgba(255, 59, 59, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden; /* Scrollbars stay inside the border */
@@ -204,7 +204,7 @@ const closeError = () => {
 .error-content {
   flex: 1;
   padding: 24px;
-  color: #eaeaea;
+  color: Rgba(234, 234, 234, 1);
   min-height: 0;
   @include smooth-scroll;
 }
@@ -213,17 +213,17 @@ const closeError = () => {
   font-size: 14px;
   margin-bottom: 25px;
   line-height: 1.5;
-  color: #aaa;
+  color: Rgba(170, 170, 170, 1);
 }
 
 .error-message-box {
-  background: rgba(255, 59, 59, 0.1);
+  background: Rgba(255, 59, 59, 0.1);
   border-left: 4px solid var(--red);
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 25px;
   font-weight: 700;
-  color: #ff8080;
+  color: Rgba(255, 128, 128, 1);
   font-size: 13px;
 }
 
@@ -241,8 +241,8 @@ const closeError = () => {
   textarea {
     width: 100%;
     height: 60px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: Rgba(0, 0, 0, 0.3);
+    border: 1px solid Rgba(255, 255, 255, 0.2);
     color: white;
     padding: 8px;
     border-radius: 4px;
@@ -259,18 +259,18 @@ const closeError = () => {
 
   .sub-text {
     font-size: 0.8em;
-    color: #aaa;
+    color: Rgba(170, 170, 170, 1);
     margin-top: 4px;
   }
 }
 
 .error-stack {
-  background: rgba(0, 0, 0, 0.3);
+  background: Rgba(0, 0, 0, 0.3);
   padding: 15px;
   border-radius: 12px;
   font-family: 'Courier New', Courier, monospace;
   font-size: 12px;
-  color: #bbb;
+  color: Rgba(187, 187, 187, 1);
   overflow-x: auto;
   margin-bottom: 25px;
   max-height: 200px;
@@ -279,7 +279,7 @@ const closeError = () => {
 }
 
 .error-game-context {
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   padding: 15px;
   border-radius: 12px;
   margin-bottom: 24px;
@@ -288,7 +288,7 @@ const closeError = () => {
 .error-context-item {
   font-size: 13px;
   margin-bottom: 6px;
-  color: #ccc;
+  color: Rgba(204, 204, 204, 1);
 
   strong {
     color: var(--purple);
@@ -297,7 +297,7 @@ const closeError = () => {
 
 .error-footer {
   padding: 20px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
@@ -330,8 +330,8 @@ const closeError = () => {
 
 .close-btn {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #aaa;
+  border: 1px solid Rgba(255, 255, 255, 0.2);
+  color: Rgba(170, 170, 170, 1);
 }
 
 .error-btn:hover {

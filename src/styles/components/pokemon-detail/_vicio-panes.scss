@@ -18,8 +18,8 @@
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -36,17 +36,17 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+    background: linear-gradient(135deg, Rgba(255,255,255,0.05) 0%, transparent 100%);
     opacity: 0;
     transition: opacity 0.4s ease;
   }
 
   &:hover { 
-    background: rgba(255,255,255,0.04); 
-    border-color: rgba(var(--m-type-rgb), 0.4);
+    background: Rgba(255,255,255,0.04); 
+    border-color: RGBA(var(--m-type-rgb), 0.4);
     transform: TranslateY(-4px) TranslateX(2px); 
-    box-shadow: -10px 10px 30px rgba(0,0,0,0.5), 
-                0 0 20px rgba(var(--m-type-rgb), 0.1);
+    box-shadow: -10px 10px 30px Rgba(0,0,0,0.5), 
+                0 0 20px RGBA(var(--m-type-rgb), 0.1);
 
     @media (max-width: 480px) {
       transform: translateY(-2px);
@@ -89,7 +89,7 @@
   .move-details-row {
     display: flex;
     gap: 12px;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    border-top: 1px solid Rgba(255,255,255,0.05);
     padding-top: 10px;
 
     .detail-item {
@@ -106,12 +106,12 @@
 .vicio-stat-total {
   margin-top: 24px;
   padding: 16px;
-  background: rgba(255,255,255,0.02);
+  background: Rgba(255,255,255,0.02);
   border-radius: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.05);
   
   .vp-pane-label {
     @include pixelated;
@@ -138,15 +138,15 @@
     text-align: left;
     @include pixelated;
     font-size: 7px;
-    color: #94a3b8;
+    color: var(--gray);
     padding: 10px 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid Rgba(255,255,255,0.05);
     font-weight: normal;
     text-transform: uppercase;
     letter-spacing: 1px;
 
     .header-label {
-      border-bottom: 1px dotted rgba(255, 255, 255, 0.2);
+      border-bottom: 1px dotted Rgba(255, 255, 255, 0.2);
       padding-bottom: 2px;
       transition: all 0.3s ease;
     }
@@ -159,7 +159,7 @@
 
   td {
     padding: 12px 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
+    border-bottom: 1px solid Rgba(255,255,255,0.03);
     vertical-align: middle;
     font-size: 8px;
   }
@@ -172,11 +172,11 @@
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: Rgba(255, 255, 255, 0.05);
       
       & .vp-move-name {
         color: var(--yellow);
-        text-shadow: 0 0 10px rgba(255, 214, 10, 0.4);
+        text-shadow: 0 0 10px Rgba(255, 214, 10, 0.4);
       }
     }
   }
@@ -202,7 +202,7 @@
   }
 
   .move-cat, .move-power, .move-acc, .move-pp {
-    color: rgba(255,255,255,0.8);
+    color: Rgba(255,255,255,0.8);
     font-weight: 800;
     @include pixelated;
   }
@@ -222,6 +222,6 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(to right, rgba(255, 239, 61, 0.3), transparent);
+    background: linear-gradient(to right, Rgba(255, 239, 61, 0.3), transparent);
   }
 }

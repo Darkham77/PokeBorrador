@@ -147,7 +147,7 @@ function selectAdventure(_slotIndex) {
     show
     title="GESTIÓN DE EQUIPO"
     title-color="var(--yellow)"
-    header-background="rgba(15, 23, 42, 0.8)"
+    header-background="Rgba(15, 23, 42, 0.8)"
     max-width="1000px"
     padding="raw"
     @close="uiStore.toggleTeamManagement"
@@ -265,7 +265,8 @@ function selectAdventure(_slotIndex) {
   padding: 40px;
   max-height: 85vh;
   overflow-y: auto;
-  background: rgba(15, 23, 42, 0.8);
+  min-height: 0;
+  background: Rgba(15, 23, 42, 0.8);
 }
 
 .panel-intro {
@@ -291,7 +292,7 @@ function selectAdventure(_slotIndex) {
     .tm-section-title {
       @include pixelated;
       font-size: 12px;
-      color: $white;
+    color: var(--white);
       margin: 0;
     }
 
@@ -300,14 +301,14 @@ function selectAdventure(_slotIndex) {
       font-size: 8px;
       padding: 4px 8px;
       border-radius: 6px;
-      background: rgba(255, 255, 255, 0.05);
+      background: Rgba(255, 255, 255, 0.05);
       color: var(--gray);
     }
 
     .badge {
-      background: rgba(168, 85, 247, 0.1);
+      background: Rgba(168, 85, 247, 0.1);
       color: var(--purple-light);
-      border: 1px solid rgba(168, 85, 247, 0.2);
+      border: 1px solid Rgba(168, 85, 247, 0.2);
     }
   }
 }
@@ -358,13 +359,13 @@ function selectAdventure(_slotIndex) {
   .line {
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, $white, transparent);
+    background: linear-gradient(90deg, transparent, var(--white), transparent);
   }
 
   .diamond {
     width: 10px;
     height: 10px;
-    background: $white;
+    background: var(--white);
     transform: Rotate(45deg);
   }
 }
@@ -373,7 +374,7 @@ function selectAdventure(_slotIndex) {
   text-align: center;
   margin-top: 24px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.2);
+  color: Rgba(255, 255, 255, 0.2);
   font-style: italic;
 }
 
@@ -389,9 +390,9 @@ function selectAdventure(_slotIndex) {
   }
   
   .war-badge {
-    background: rgba(239, 68, 68, 0.1);
+    background: Rgba(239, 68, 68, 0.1);
     color: var(--red);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    border: 1px solid Rgba(239, 68, 68, 0.2);
   }
 }
 </style>

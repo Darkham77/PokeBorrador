@@ -22,7 +22,7 @@ const slides = computed(() => {
       icon: ev.icon || '🎁',
       title: ev.name,
       content: ev.description || '¡Evento especial activo ahora!',
-      color: '#ffcc00'
+      color: 'Rgba(255, 204, 0, 1)'
     })
   })
 
@@ -34,7 +34,7 @@ const slides = computed(() => {
        icon: '🏆',
        title: '¡HAS GANADO!',
        content: `¡Reclamá tus premios de ${aw.event_name}!`,
-       color: '#00ff00'
+        color: 'Rgba(34, 197, 94, 1)'
      })
   })
 
@@ -67,7 +67,7 @@ const handleAction = (slide) => {
       v-for="(slide, i) in slides"
       :key="i"
       :class="['carousel-slide', { active: currentIndex === i }]"
-      @click="handleAction(slide)"
+      @click.stop="handleAction(slide)"
     >
       <div class="slide-icon">
         {{ slide.icon }}
@@ -104,15 +104,15 @@ const handleAction = (slide) => {
 .legacy-carousel {
   position: relative;
   min-height: 80px;
-  background: #111;
-  border: 4px solid #333;
+  background: Rgba(17, 17, 17, 1);
+  border: 4px solid Rgba(51, 51, 51, 1);
   box-shadow: 0 0 0 4px $black;
   overflow: hidden;
   margin-bottom: 20px;
 }
 
 .legacy-carousel.event-active {
-  border-color: #ffcc00;
+  border-color: Rgba(255, 204, 0, 1);
 }
 
 .carousel-slide {
@@ -144,7 +144,7 @@ const handleAction = (slide) => {
 
 .slide-text {
   font-size: 11px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   line-height: 1.4;
 }
 
@@ -159,11 +159,11 @@ const handleAction = (slide) => {
 .carousel-dot {
   width: 6px;
   height: 6px;
-  background: #444;
+  background: Rgba(68, 68, 68, 1);
   border: 1px solid $black;
 }
 
 .carousel-dot.active {
-  background: #ffcc00;
+  background: Rgba(255, 204, 0, 1);
 }
 </style>

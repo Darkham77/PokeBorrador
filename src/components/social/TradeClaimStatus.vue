@@ -62,7 +62,7 @@ const getSpriteUrl = (id) => {
       <button
         class="receive-all-btn"
         :disabled="processingId"
-        @click="receiveAll"
+        @click.stop="receiveAll"
       >
         RECIBIR TODO
       </button>
@@ -109,7 +109,7 @@ const getSpriteUrl = (id) => {
         <button 
           class="claim-btn" 
           :disabled="processingId === claim.id" 
-          @click="claimAsset(claim.id)"
+          @click.stop="claimAsset(claim.id)"
         >
           {{ processingId === claim.id ? '...SINC' : 'RECIBIR' }}
         </button>
@@ -121,8 +121,8 @@ const getSpriteUrl = (id) => {
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
 .claim-status-container {
-  background: rgba(168, 85, 247, 0.05);
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: Rgba(168, 85, 247, 0.05);
+  border: 1px solid Rgba(168, 85, 247, 0.2);
   border-radius: 16px;
   padding: 16px;
   margin-top: 15px;
@@ -144,7 +144,7 @@ const getSpriteUrl = (id) => {
 
 .receive-all-btn {
   background: var(--purple);
-  color: $white;
+  color: var(--white);
   border: none;
   padding: 6px 12px;
   border-radius: 8px;
@@ -164,8 +164,8 @@ const getSpriteUrl = (id) => {
 }
 
 .claim-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 10px;
   display: flex;
@@ -193,7 +193,7 @@ const getSpriteUrl = (id) => {
 .asset-name {
   font-size: 11px;
   font-weight: 700;
-  color: $white;
+  color: var(--white);
 }
 
 .source {
@@ -203,14 +203,14 @@ const getSpriteUrl = (id) => {
 }
 
 .claim-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: $white;
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  color: var(--white);
   padding: 6px 10px;
   border-radius: 8px;
   font-size: 9px;
   cursor: pointer;
   transition: all 0.2s;
-  &:hover { background: rgba(168, 85, 247, 0.2); border-color: var(--purple); }
+  &:hover { background: Rgba(168, 85, 247, 0.2); border-color: var(--purple); }
 }
 </style>

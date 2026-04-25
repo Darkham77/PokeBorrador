@@ -37,7 +37,7 @@ function triggerSampleError() {
           <button 
             class="btn-vicio-primary btn-vicio-sm" 
             :disabled="isTesting"
-            @click="startTest"
+            @click.stop="startTest"
           >
             {{ isTesting ? 'PROCESANDO...' : 'INICIAR TEST' }}
           </button>
@@ -51,7 +51,7 @@ function triggerSampleError() {
         <PVTooltip title="Cierra todas las ventanas modales abiertas actualmente.">
           <button
             class="btn-vicio-danger btn-vicio-sm"
-            @click="modalStore.closeAll"
+            @click.stop="modalStore.closeAll"
           >
             CERRAR TODO
           </button>
@@ -60,7 +60,7 @@ function triggerSampleError() {
         <PVTooltip title="Dispara una notificación de error global para probar el sistema de logs.">
           <button
             class="btn-vicio-danger btn-vicio-sm"
-            @click="triggerSampleError"
+            @click.stop="triggerSampleError"
           >
             DISPARAR ERROR
           </button>
@@ -74,7 +74,7 @@ function triggerSampleError() {
         <PVTooltip title="Simula el renderizado ligero en el MAPA (oculta spawns y climas).">
           <button
             :class="uiStore.isDebugPerformanceMode ? 'btn-vicio-danger btn-vicio-sm' : 'btn-vicio-primary btn-vicio-sm'"
-            @click="uiStore.isDebugPerformanceMode = !uiStore.isDebugPerformanceMode"
+            @click.stop="uiStore.isDebugPerformanceMode = !uiStore.isDebugPerformanceMode"
           >
             {{ uiStore.isDebugPerformanceMode ? 'DESACTIVAR PERF. MAPA' : 'ACTIVAR PERF. MAPA' }}
           </button>
@@ -83,7 +83,7 @@ function triggerSampleError() {
         <PVTooltip title="Fuerza el modo simplificado en TODOS los MODALS (esconde FX de Pokémon, brillos y auras).">
           <button
             :class="uiStore.isSimplifiedModalsMode ? 'btn-vicio-danger btn-vicio-sm' : 'btn-vicio-primary btn-vicio-sm'"
-            @click="uiStore.isSimplifiedModalsMode = !uiStore.isSimplifiedModalsMode"
+            @click.stop="uiStore.isSimplifiedModalsMode = !uiStore.isSimplifiedModalsMode"
           >
             {{ uiStore.isSimplifiedModalsMode ? 'DESACTIVAR PERF. MODALS' : 'ACTIVAR PERF. MODALS' }}
           </button>
@@ -94,6 +94,7 @@ function triggerSampleError() {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .debug-tab {
@@ -108,7 +109,7 @@ function triggerSampleError() {
   gap: 12px;
 
   label {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 8px;
     color: $muted;
     @include pixelated;
@@ -130,13 +131,13 @@ function triggerSampleError() {
 
   input {
     flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(0, 0, 0, 0.3);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     color: $white;
     padding: 12px 15px;
     height: 40px;
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 8px;
     @include pixelated;
     outline: none;

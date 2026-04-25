@@ -38,7 +38,7 @@ const confirmRelease = () => {
           <template v-if="!boxStore.teamRocketMode">
             <button
               class="legacy-btn rocket-btn"
-              @click="toggleRocket"
+              @click.stop="toggleRocket"
             >
               🚀 VENTA MASIVA
             </button>
@@ -46,13 +46,13 @@ const confirmRelease = () => {
           <template v-else>
             <button
               class="legacy-btn confirm-btn"
-              @click="confirmRocket"
+              @click.stop="confirmRocket"
             >
               ✓ VENDER
             </button>
             <button
               class="legacy-btn cancel-btn"
-              @click="toggleRocket"
+              @click.stop="toggleRocket"
             >
               ✕ CANCELAR
             </button>
@@ -64,7 +64,7 @@ const confirmRelease = () => {
           <template v-if="!boxStore.teamReleaseMode">
             <button
               class="legacy-btn release-btn"
-              @click="toggleRelease"
+              @click.stop="toggleRelease"
             >
               🌿 SOLTAR
             </button>
@@ -72,13 +72,13 @@ const confirmRelease = () => {
           <template v-else>
             <button
               class="legacy-btn confirm-btn"
-              @click="confirmRelease"
+              @click.stop="confirmRelease"
             >
               ✓ CONFIRMAR
             </button>
             <button
               class="legacy-btn cancel-btn"
-              @click="toggleRelease"
+              @click.stop="toggleRelease"
             >
               ✕ CANCELAR
             </button>
@@ -122,8 +122,8 @@ const confirmRelease = () => {
   justify-content: space-between;
   padding: 15px 20px;
   background: $card2;
-  border: 4px solid #333;
-  box-shadow: 0 0 0 4px $black;
+  border: 4px solid Rgba(51, 51, 51, 1);
+  box-shadow: 0 0 0 4px var(--black);
   flex-wrap: wrap;
   gap: 15px;
 }
@@ -131,9 +131,9 @@ const confirmRelease = () => {
 .th-section-title {
   @include pixelated;
   font-size: 14px;
-  color: $white;
+  color: var(--white);
   margin: 0;
-  text-shadow: 2px 2px $black;
+  text-shadow: 2px 2px var(--black);
 }
 
 .header-actions {
@@ -146,22 +146,22 @@ const confirmRelease = () => {
   font-size: 8px;
   padding: 10px 15px;
   cursor: pointer;
-  background: #222;
-  border: 3px solid #444;
-  color: $white;
+  background: Rgba(34, 34, 34, 1);
+  border: 3px solid Rgba(68, 68, 68, 1);
+  color: var(--white);
   transition: all 0.1s;
 }
 
 .legacy-btn:hover {
-  background: #333;
-  border-color: #666;
+  background: Rgba(51, 51, 51, 1);
+  border-color: Rgba(102, 102, 102, 1);
   transform: translateY(-2px);
 }
 
-.rocket-btn { color: #ef4444; border-color: #ef444466; }
-.release-btn { color: #66ff66; border-color: #66ff6666; }
-.confirm-btn { background: #065f46; border-color: #10b981; }
-.cancel-btn { background: #7f1d1d; border-color: #ef4444; }
+.rocket-btn { color: Rgba(239, 68, 68, 1); border-color: Rgba(239, 68, 68, 0.4); }
+.release-btn { color: Rgba(102, 255, 102, 1); border-color: Rgba(102, 255, 102, 0.4); }
+.confirm-btn { background: Rgba(6, 95, 70, 1); border-color: Rgba(16, 185, 129, 1); }
+.cancel-btn { background: Rgba(127, 29, 29, 1); border-color: Rgba(239, 68, 68, 1); }
 
 /* Hint Banners */
 .hint-banner {
@@ -173,15 +173,15 @@ const confirmRelease = () => {
   @include pixelated;
   font-size: 8px;
   line-height: 1.6;
-  background: #111;
-  border: 4px solid #333;
-  box-shadow: 0 0 0 4px $black;
+  background: Rgba(17, 17, 17, 1);
+  border: 4px solid Rgba(51, 51, 51, 1);
+  box-shadow: 0 0 0 4px var(--black);
 }
 
 .hint-icon { font-size: 16px; }
 
-.rocket-hint { color: #ef4444; border-color: #ef4444; }
-.release-hint { color: #ffcc00; border-color: #ffcc00; }
+.rocket-hint { color: Rgba(239, 68, 68, 1); border-color: Rgba(239, 68, 68, 1); }
+.release-hint { color: Rgba(255, 204, 0, 1); border-color: Rgba(255, 204, 0, 1); }
 
 /* Transitions */
 .pixel-slide-enter-active, .pixel-slide-leave-active {

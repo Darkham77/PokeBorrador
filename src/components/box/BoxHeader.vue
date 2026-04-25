@@ -17,20 +17,20 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
       <button
         v-if="playerClass === 'rocket' && !isRocketMode"
         class="rocket-btn-toggle"
-        @click="emit('toggleRocket')"
+        @click.stop="emit('toggleRocket')"
       >
         🚀 VENTA MASIVA
       </button>
       <template v-if="isRocketMode">
         <button
           class="confirm-btn"
-          @click="emit('confirmRocket')"
+          @click.stop="emit('confirmRocket')"
         >
           ✓ VENDER SELECCIÓN
         </button>
         <button
           class="cancel-btn"
-          @click="emit('cancelRocket')"
+          @click.stop="emit('cancelRocket')"
         >
           ✕ CANCELAR
         </button>
@@ -69,14 +69,14 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
   font-size: 7px;
   padding: 8px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  border: 1px solid Rgba(239, 68, 68, 0.4);
+  background: Rgba(239, 68, 68, 0.1);
+  color: Rgba(239, 68, 68, 1);
   cursor: pointer;
   transition: all .2s;
   
   &:hover {
-    background: rgba(239, 68, 68, 0.2);
+    background: Rgba(239, 68, 68, 0.2);
     transform: TranslateY(-2px);
   }
 }
@@ -92,13 +92,13 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
   font-size: 7px;
   padding: 8px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   background: transparent;
-  color: #94a3b8;
+  color: Rgba(148, 163, 184, 1);
   cursor: pointer;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     color: $white;
   }
 }

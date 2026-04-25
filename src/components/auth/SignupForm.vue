@@ -40,7 +40,7 @@ const handleSignup = () => {
     <button
       class="auth-btn"
       :disabled="loading"
-      @click="handleSignup"
+      @click.stop="handleSignup"
     >
       <span class="btn-icon">▶</span>
       <span class="btn-text">CREAR CUENTA</span>
@@ -57,8 +57,8 @@ const handleSignup = () => {
 }
 
 .auth-input {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(0, 0, 0, 0.2);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   padding: 16px 20px;
   border-radius: 14px;
   color: $white;
@@ -95,6 +95,6 @@ const handleSignup = () => {
 
 .auth-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  background: #ffe04d;
+  background: Rgba(255, 224, 77, 1);
 }
 </style>

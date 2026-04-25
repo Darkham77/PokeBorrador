@@ -92,7 +92,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
       ref="chatToggleRef"
       class="chat-toggle-btn" 
       :class="{ 'has-unread': !isOpen && chatStore.globalMessages.length > 0 }"
-      @click="toggleChat"
+      @click.stop="toggleChat"
     >
       <span class="icon">💬</span>
       <span class="label">Chat</span>
@@ -163,7 +163,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
             <button 
               class="send-btn" 
               :disabled="!canWrite || !newMessage.trim()"
-              @click="handleSendMessage"
+              @click.stop="handleSendMessage"
             >
               ➤
             </button>
@@ -187,6 +187,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "sass:string";
 
 .global-chat-root {
@@ -195,8 +196,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 }
 
 .chat-toggle-btn {
-  background: rgba(13, 17, 23, 0.98);
-  border: 1px solid rgba(199, 125, 255, 0.3);
+  background: Rgba(13, 17, 23, 0.98);
+  border: 1px solid Rgba(199, 125, 255, 0.3);
   border-radius: 12px;
   padding: 10px 16px;
   color: $white;
@@ -205,17 +206,17 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   gap: 10px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.4);
 
   &:hover {
     transform: TranslateY(-2px);
     border-color: var(--purple-light);
-    background: rgba(13, 17, 23, 0.95);
+    background: Rgba(13, 17, 23, 0.95);
   }
 
   .icon { font-size: 18px; }
   .label { 
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 8px;
     letter-spacing: 0.5px;
   }
@@ -234,30 +235,30 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 .chat-panel {
   width: 100%;
   height: 100%;
-  background: rgba(13, 17, 23, 0.98);
+  background: Rgba(13, 17, 23, 0.98);
   display: flex;
   flex-direction: column;
 }
 
 .chat-header {
   padding: 20px;
-  background: linear-gradient(to bottom, rgba(157, 78, 221, 0.1), transparent);
+  background: linear-gradient(to bottom, Rgba(157, 78, 221, 0.1), transparent);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 
   .title {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 10px;
     color: var(--purple-light);
-    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5); // Sharp shadow for pixel font
+    text-shadow: 2px 2px 0px Rgba(0, 0, 0, 0.5); // Sharp shadow for pixel font
   }
 
   .close-btn {
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     border: none;
-    color: #94a3b8;
+    color: Rgba(148, 163, 184, 1);
     width: 28px;
     height: 28px;
     border-radius: 50%;
@@ -269,8 +270,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     transition: all 0.2s;
 
     &:hover {
-      background: rgba(239, 68, 68, 0.15);
-      color: #f87171;
+      background: Rgba(239, 68, 68, 0.15);
+      color: Rgba(248, 113, 113, 1);
     }
   }
 }
@@ -293,10 +294,10 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
 .message-content {
   flex: 1;
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   border-radius: 0 12px 12px 12px;
   padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .message-meta {
@@ -308,23 +309,23 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     .username {
       font-size: 11px;
       font-weight: 700;
-      color: #e2e8f0;
+      color: Rgba(226, 232, 240, 1);
 
-    &.rocket { color: #f87171; }
-    &.cazabichos { color: #4ade80; }
-    &.criador { color: #c084fc; }
-    &.entrenador { color: #60a5fa; }
+    &.rocket { color: Rgba(248, 113, 113, 1); }
+    &.cazabichos { color: Rgba(74, 222, 128, 1); }
+    &.criador { color: Rgba(192, 132, 252, 1); }
+    &.entrenador { color: Rgba(96, 165, 250, 1); }
   }
 
   .time {
     font-size: 9px;
-    color: $muted;
+    color: Rgba(255, 255, 255, 0.5);
   }
 }
 
 .text {
   font-size: 13px;
-  color: #cbd5e1;
+  color: Rgba(203, 213, 225, 1);
   line-height: 1.4;
   word-break: break-all;
   margin: 0;
@@ -332,8 +333,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
 .chat-footer {
   padding: 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.2);
+  border-top: 1px solid Rgba(255, 255, 255, 0.05);
 
   .input-container {
     display: flex;
@@ -343,8 +344,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
   input {
     flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(199, 125, 255, 0.2);
+    background: Rgba(0, 0, 0, 0.3);
+    border: 1px solid Rgba(199, 125, 255, 0.2);
     border-radius: 8px;
     padding: 10px 12px;
     color: $white;
@@ -366,7 +367,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover:not(:disabled) { background: #9d4edd; transform: Scale(1.05); }
+    &:hover:not(:disabled) { background: Rgba(157, 78, 221, 1); transform: Scale(1.05); }
     &:disabled { opacity: 0.3; }
   }
 
@@ -376,8 +377,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     text-align: right;
   }
 
-  .hint { color: $muted; }
-  .hint-error { color: #f87171; font-weight: 700; }
+  .hint { color: Rgba(255, 255, 255, 0.5); }
+  .hint-error { color: Rgba(248, 113, 113, 1); font-weight: 700; }
 }
 
 // Animations removed as BaseModal handles them

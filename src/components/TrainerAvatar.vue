@@ -82,7 +82,8 @@ const avatarStyles = computed(() => {
     backgroundPosition: `center, ${bgPos}`,
     backgroundRepeat: 'no-repeat',
     imageRendering: 'pixelated',
-    transition: 'background-position 0.2s'
+    transition: 'background-position 0.2s',
+    '--avatar-seed': Math.random()
   };
 });
 </script>
@@ -109,6 +110,7 @@ const avatarStyles = computed(() => {
 
   &.blink-red {
     animation: blinkRed 1.5s infinite;
+    animation-delay: calc(var(--avatar-seed, 0) * -1.5s);
   }
 }
 

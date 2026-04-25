@@ -1,4 +1,5 @@
  ---
+
 name: testing-patterns
 description: Master testing patterns and principles. YOU MUST apply these unit, integration, and mocking strategies to ensure rock-solid code quality. No excuses for untested behavior.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
@@ -102,6 +103,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | Time/random | Pure functions |
 | Network | In-memory stores |
 
+### Mock Isolation (CRITICAL)
+
+- **Avoid Multi-Mocking**: Do not call `vi.mock` for the same module multiple times in the same file; Vitest hoists them and the result is unpredictable.
+- **Dynamic State Mocks**: Use a single `vi.mock` that returns a shared mock object. Update the properties of this object within each `it` block to change behavior safely without polluting other tests.
+
 ### Mock Types
 
 | Type | Use |
@@ -161,6 +167,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | Fast tests | Run frequently |
 | Descriptive names | Self-documenting |
 | Clean up | Avoid side effects |
+| **JSDOM Safety Checks** | Browser APIs (e.g., `IntersectionObserver`, `localStorage`) may be undefined in tests. Always include safety checks (e.g., `if (typeof API === 'undefined') return`) in composables to prevent test crashes. |
 | **Prop-Based UI Testing** | For modern components (e.g., `PVTooltip`), verify **Props/Attributes** instead of searching for nested DOM elements. This avoids breakage when elements are **Teleported** or refactored internally. |
 
 ---

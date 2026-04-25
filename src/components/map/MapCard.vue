@@ -36,7 +36,6 @@ const isPerformanceMode = computed(() => {
   return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode
 })
 
-const isOffscreen = computed(() => isVisible.value === false)
 
 const imgPath = computed(() => {
   const fileName = MAP_ROUTE_MAPPING[props.map.id] || 'default'
@@ -149,9 +148,13 @@ const atmosphereStyles = computed(() => {
   return {
     '--atmosphere-filter': baseFilter,
     '--atmosphere-filter-hover': hoverFilter,
-    '--bg-image': `url('${imgPath.value}')`
+    '--bg-image': `url('${imgPath.value}')`,
+    '--card-seed': animSeed,
+    '--card-speed': 0.6 + (animSeed * 1.0) // Factor entre 0.6x y 1.6x
   }
 })
+
+const animSeed = Math.random()
 
 // Weather Logic: Lightning Randomization
 const lightningPos = ref({ x1: 20, x2: 60 })
@@ -167,7 +170,14 @@ watch([() => props.weather, isPerformanceMode], ([newWeather, perfMode]) => {
   if (newWeather === 'storm' && !perfMode) {
     updateLightningPos()
     if (!lightningInterval) {
-      lightningInterval = setInterval(updateLightningPos, 7000)
+      // Usar un delay inicial aleatorio para desincronizar los intervalos
+      const initialDelay = Math.random() * 7000
+      setTimeout(() => {
+        if (props.weather === 'storm' && !isPerformanceMode.value) {
+          updateLightningPos()
+          lightningInterval = setInterval(updateLightningPos, 7000)
+        }
+      }, initialDelay)
     }
   } else {
     if (lightningInterval) {
@@ -231,7 +241,8 @@ const processedGuardian = computed(() => {
     isCaught,
     name,
     typeInfo,
-    sprite: getPokemonSprite(id)
+    sprite: getPokemonSprite(id),
+    seed: Math.random()
   }
 })
 
@@ -293,7 +304,8 @@ const processedGrid = computed(() => {
       isCaught,
       isRare: rare,
       tooltipTitle: name === 'Desconocido' ? 'POKÉMON DESCONOCIDO' : name,
-      tooltipDesc
+      tooltipDesc,
+      seed: Math.random()
     }
   })
 })
@@ -363,7 +375,7 @@ const spawnGrid = computed(() => {
     ref="cardRef"
     :class="['location-card map-card legacy-panel', { locked: isLocked, 'safari-locked': isSafariLocked }]"
     :style="atmosphereStyles"
-    @click="!isLocked && !isPerformanceMode && emit('navigate', map.id)"
+    @click.stop="!isLocked && !isPerformanceMode && emit('navigate', map.id)"
   >
     <!-- Image Preloader (Forces immediate decode) -->
     <img 
@@ -430,6 +442,7 @@ const spawnGrid = computed(() => {
       <img
         :src="processedGuardian.sprite"
         :class="['guardian-mini-sprite', { captured: processedGuardian.captured, 'spawn-silhouette': !processedGuardian.isCaught }]"
+        :style="{ '--spawn-seed': processedGuardian.seed }"
         @error="e => e.target.style.display = 'none'"
       >
       <span :class="['guardian-label', { captured: processedGuardian.captured }]">
@@ -518,7 +531,10 @@ const spawnGrid = computed(() => {
             v-if="item.id"
             class="spawn-content"
           >
-            <div :class="['sprite-wrapper', { 'rare-spawn': item.isRare }]">
+            <div 
+              :class="['sprite-wrapper', { 'rare-spawn': item.isRare }]"
+              :style="{ '--spawn-seed': item.seed }"
+            >
               <PVTooltip 
                 :title="item.tooltipTitle"
                 :description="item.tooltipDesc"

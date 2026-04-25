@@ -57,7 +57,7 @@ const handleSearch = () => {
           <button 
             v-if="result.status === 'none'"
             class="friend-btn add" 
-            @click="socialStore.sendFriendRequest(result.id)"
+            @click.stop="socialStore.sendFriendRequest(result.id)"
           >
             ➕ AGREGAR
           </button>
@@ -68,7 +68,7 @@ const handleSearch = () => {
           <button 
             v-else-if="result.status === 'pending' && !result.isRequester"
             class="friend-btn accept" 
-            @click="socialStore.respondRequest(result.relId, 'accepted')"
+            @click.stop="socialStore.respondRequest(result.relId, 'accepted')"
           >
             ✓ ACEPTAR
           </button>
@@ -102,17 +102,17 @@ const handleSearch = () => {
 .search-input {
   width: 100%;
   padding: 12px 15px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  color: $white;
+  color: var(--white);
   outline: none;
   font-size: 13px;
   font-family: inherit;
 
   &:focus {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(0, 0, 0, 0.4);
+    border-color: Rgba(255, 255, 255, 0.3);
+    background: Rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -129,8 +129,8 @@ const handleSearch = () => {
   display: flex;
   align-items: center;
   gap: 15px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 12px 15px;
   margin-bottom: 12px;
@@ -145,12 +145,12 @@ const handleSearch = () => {
   .friend-name {
     font-size: 14px;
     font-weight: 900;
-    color: $white;
+    color: var(--white);
     margin-bottom: 4px;
   }
   .friend-meta {
     font-size: 11px;
-    color: #888;
+    color: Rgba(136, 136, 136, 1);
   }
 }
 
@@ -165,43 +165,43 @@ const handleSearch = () => {
   font-size: 10px;
   font-weight: bold;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
-  color: $white;
+  border: 1px solid Rgba(255, 255, 255, 0.2);
+  background: Rgba(255, 255, 255, 0.05);
+  color: var(--white);
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.1);
   }
 
   &.add {
-    background: rgba(199, 125, 255, 0.15);
-    color: #c77dff;
-    border-color: rgba(199, 125, 255, 0.3);
+    background: Rgba(199, 125, 255, 0.15);
+    color: Rgba(199, 125, 255, 1);
+    border-color: Rgba(199, 125, 255, 0.3);
   }
 
   &.accept {
-    background: rgba(107, 203, 119, 0.2);
-    color: #6bcb77;
-    border-color: rgba(107, 203, 119, 0.4);
+    background: Rgba(107, 203, 119, 0.2);
+    color: Rgba(107, 203, 119, 1);
+    border-color: Rgba(107, 203, 119, 0.4);
   }
 }
 
 .pending-badge {
   font-size: 10px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   font-weight: bold;
   padding: 6px;
 
   &.success {
-    color: #6bcb77;
+    color: Rgba(107, 203, 119, 1);
   }
 }
 
 .no-results {
   text-align: center;
   padding: 20px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   font-size: 12px;
 }
 </style>

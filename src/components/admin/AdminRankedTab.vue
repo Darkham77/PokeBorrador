@@ -110,7 +110,7 @@ const closeRankedSeason = async () => {
       <p>Al cerrar la temporada, se procesarán los premios y se reseteará el podio.</p>
       <button
         class="danger-btn press-start"
-        @click="closeRankedSeason"
+        @click.stop="closeRankedSeason"
       >
         CERRAR TEMPORADA Y PREMIAR
       </button>
@@ -118,7 +118,7 @@ const closeRankedSeason = async () => {
 
     <button
       class="save-btn press-start"
-      @click="saveRankedRules"
+      @click.stop="saveRankedRules"
     >
       GUARDAR REGLAS RANKED
     </button>
@@ -126,7 +126,8 @@ const closeRankedSeason = async () => {
 </template>
 
 <style scoped lang="scss">
-.press-start { font-family: 'Press Start 2P', cursive; font-size: 10px; letter-spacing: 1px; }
+@use "@/styles/core/_mixins" as *;
+.press-start { @include pixelated; font-size: 10px; letter-spacing: 1px; }
 
 .ranked-rules-form {
   display: flex;
@@ -141,8 +142,8 @@ const closeRankedSeason = async () => {
     gap: 8px;
     label { font-size: 11px; color: #94a3b8; font-weight: 700; }
     input {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: Rgba(0, 0, 0, 0.3);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
       padding: 12px;
       border-radius: 12px;
       color: $white;
@@ -155,8 +156,8 @@ const closeRankedSeason = async () => {
 .danger-zone {
   margin-top: 40px;
   padding: 24px;
-  background: rgba(239, 68, 68, 0.05);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: Rgba(239, 68, 68, 0.05);
+  border: 1px solid Rgba(239, 68, 68, 0.2);
   border-radius: 20px;
   h3 { color: #ef4444; margin-bottom: 10px; font-size: 10px; }
   p { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
@@ -173,6 +174,6 @@ const closeRankedSeason = async () => {
   cursor: pointer;
   font-size: 11px;
   font-weight: 800;
-  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+  box-shadow: 0 10px 20px Rgba(245, 158, 11, 0.2);
 }
 </style>

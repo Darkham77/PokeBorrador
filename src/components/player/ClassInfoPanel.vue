@@ -53,7 +53,7 @@ const rankTitle = computed(() => {
       >
         <button
           class="close-modal-btn"
-          @click="close"
+          @click.stop="close"
         >
           ✕
         </button>
@@ -193,7 +193,7 @@ const rankTitle = computed(() => {
             <footer class="info-footer">
               <button
                 class="action-btn main press-start"
-                @click="openMissions"
+                @click.stop="openMissions"
               >
                 <div class="shine" />
                 📋 MISIONES PASIVAS
@@ -202,7 +202,7 @@ const rankTitle = computed(() => {
               <button
                 v-if="classId === 'entrenador'"
                 class="action-btn rep press-start"
-                @click="openRepShop"
+                @click.stop="openRepShop"
               >
                 🏅 TIENDA DE REPUTACIÓN
               </button>
@@ -210,14 +210,14 @@ const rankTitle = computed(() => {
               <div class="footer-row">
                 <button
                   class="action-btn secondary press-start"
-                  @click="openSelection"
+                  @click.stop="openSelection"
                 >
                   🔄 CAMBIAR CLASE<br>
                   <span class="cost">10,000 BC</span>
                 </button>
                 <button
                   class="action-btn primary press-start"
-                  @click="close"
+                  @click.stop="close"
                 >
                   ✓ ENTENDIDO
                 </button>
@@ -231,11 +231,12 @@ const rankTitle = computed(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .class-info-overlay {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  background: rgba(0, 0, 0, 0.9);
+  background: Rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -247,12 +248,12 @@ const rankTitle = computed(() => {
 }
 
 .info-modal {
-  background: #111827;
+  background: Rgba(17, 24, 39, 1);
   border-radius: 24px;
   width: 95%;
   max-width: 900px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px Rgba(0, 0, 0, 0.8);
   position: relative;
   max-height: 90vh;
   overflow-y: auto;
@@ -264,15 +265,15 @@ const rankTitle = computed(() => {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   border: none;
-  color: #94a3b8;
+  color: Rgba(148, 163, 184, 1);
   width: 32px;
   height: 32px;
   border-radius: 50%;
   cursor: pointer;
   z-index: var(--z-base);
-  &:hover { background: rgba(255, 255, 255, 0.1); color: $white; }
+  &:hover { background: Rgba(255, 255, 255, 0.1); color: $white; }
 }
 
 .modal-layout {
@@ -306,7 +307,7 @@ const rankTitle = computed(() => {
     width: 220px;
     height: auto;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+    filter: Drop-Shadow(0 10px 20px Rgba(0, 0, 0, 0.5));
   }
 
   .avatar-floating {
@@ -319,7 +320,7 @@ const rankTitle = computed(() => {
 .class-title-block {
   text-align: center;
   h2 { font-size: 18px; color: var(--class-color); margin-bottom: 12px; letter-spacing: 1px; }
-  .quote { color: #94a3b8; font-size: 14px; font-style: italic; line-height: 1.6; }
+  .quote { color: Rgba(148, 163, 184, 1); font-size: 14px; font-style: italic; line-height: 1.6; }
 }
 
 .stats-cards {
@@ -331,8 +332,8 @@ const rankTitle = computed(() => {
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 20px;
   padding: 16px 20px;
   display: flex;
@@ -343,7 +344,7 @@ const rankTitle = computed(() => {
   .stat-info {
     label { font-size: 8px; color: $muted; margin-bottom: 4px; display: block; }
     .value { font-size: 22px; font-weight: 900; }
-    .value.rank { font-size: 14px; color: #eab308; text-transform: uppercase; font-weight: 700; }
+    .value.rank { font-size: 14px; color: Rgba(234, 179, 8, 1); text-transform: uppercase; font-weight: 700; }
   }
 }
 
@@ -361,8 +362,8 @@ const rankTitle = computed(() => {
   gap: 12px;
   margin-bottom: 20px;
   .bar { width: 6px; height: 20px; border-radius: 3px; }
-  .bar.green { background: #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.4); }
-  .bar.red { background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+  .bar.green { background: Rgba(34, 197, 94, 1); box-shadow: 0 0 10px Rgba(34, 197, 94, 0.4); }
+  .bar.red { background: Rgba(239, 68, 68, 1); box-shadow: 0 0 10px Rgba(239, 68, 68, 0.4); }
   h3 { font-size: 11px; letter-spacing: 1.5px; }
 }
 
@@ -373,7 +374,7 @@ const rankTitle = computed(() => {
 }
 
 .ability-item {
-  background: rgba(0, 0, 0, 0.4);
+  background: Rgba(0, 0, 0, 0.4);
   padding: 14px 16px;
   border-radius: 14px;
   border-left: 4px solid;
@@ -382,19 +383,19 @@ const rankTitle = computed(() => {
   align-items: center;
 
   &.locked { opacity: 0.6; .bonus-text { color: $muted; } }
-  &.penalty { border-left-color: rgba(239, 68, 68, 0.4); }
+  &.penalty { border-left-color: Rgba(239, 68, 68, 0.4); }
 
   .status-icon { font-size: 16px; flex-shrink: 0; }
   .ability-content { flex: 1; min-width: 0; }
   .ability-top { display: flex; align-items: center; gap: 8px; }
-  .bonus-text { font-size: 13px; color: #e2e8f0; line-height: 1.4; flex-grow: 1; }
-  .lv-req { font-size: 8px; background: rgba(255, 255, 255, 0.05); padding: 2px 6px; border-radius: 4px; color: $muted; }
-  .req-text { font-size: 10px; color: #475569; margin-top: 4px; }
+  .bonus-text { font-size: 13px; color: Rgba(226, 232, 240, 1); line-height: 1.4; flex-grow: 1; }
+  .lv-req { font-size: 8px; background: Rgba(255, 255, 255, 0.05); padding: 2px 6px; border-radius: 4px; color: $muted; }
+  .req-text { font-size: 10px; color: Rgba(71, 85, 105, 1); margin-top: 4px; }
 }
 
 .tooltip-trigger-vicio {
   cursor: help;
-  color: #475569;
+  color: Rgba(71, 85, 105, 1);
   font-size: 12px;
   transition: color 0.2s;
   &:hover { color: $white; }
@@ -406,7 +407,7 @@ const rankTitle = computed(() => {
   flex-direction: column;
   gap: 12px;
   padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .action-btn {
@@ -424,24 +425,24 @@ const rankTitle = computed(() => {
   &.main {
     background: linear-gradient(135deg, var(--class-color), var(--class-color-dark));
     box-shadow: 0 4px 0 var(--class-color-dark);
-    .shine { position: absolute; top: 0; left: 0; right: 0; height: 40%; background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent); }
+    .shine { position: absolute; top: 0; left: 0; right: 0; height: 40%; background: linear-gradient(to bottom, Rgba(255, 255, 255, 0.2), transparent); }
     &:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--class-color-dark); }
   }
 
   &.rep {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    box-shadow: 0 4px 0 #14532d;
+    background: linear-gradient(135deg, Rgba(34, 197, 94, 1), Rgba(22, 163, 74, 1));
+    box-shadow: 0 4px 0 Rgba(20, 83, 45, 1);
     &:active { transform: translateY(2px); box-shadow: 0 2px 0 #14532d; }
   }
 
   &.secondary {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #94a3b8;
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.08);
+    color: Rgba(148, 163, 184, 1);
     font-size: 8px;
     line-height: 1.4;
-    .cost { color: #f59e0b; font-size: 7px; }
-    &:hover { background: rgba(255, 255, 255, 0.05); color: $white; }
+    .cost { color: Rgba(245, 158, 11, 1); font-size: 7px; }
+    &:hover { background: Rgba(255, 255, 255, 0.05); color: $white; }
   }
 
   &.primary {
@@ -454,9 +455,9 @@ const rankTitle = computed(() => {
 
 .footer-row { display: flex; gap: 12px; }
 
-.press-start { font-family: 'Press Start 2P', cursive; }
-.green-text { color: #22c55e; }
-.red-text { color: #ef4444; }
+.press-start { @include pixelated; }
+.green-text { color: Rgba(34, 197, 94, 1); }
+.red-text { color: Rgba(239, 68, 68, 1); }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 

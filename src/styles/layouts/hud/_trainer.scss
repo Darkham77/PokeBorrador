@@ -13,8 +13,8 @@
     width: 48px;
     height: 48px;
     @include flex-center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.05);
+    border: 2px solid Rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     img { width: 32px; height: 32px; @include sprite-render; }
   }
@@ -37,7 +37,7 @@
 
   .trainer-lv {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    color: Rgba(255, 255, 255, 0.5);
     span { color: white; font-weight: 700; }
   }
 }

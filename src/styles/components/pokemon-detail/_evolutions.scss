@@ -12,10 +12,10 @@ body .evolve-pane {
       align-items: center;
       justify-content: center;
       gap: 16px;
-      background: rgba(255,255,255,0.03);
+      background: Rgba(255,255,255,0.03);
       padding: 16px 20px;
       border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.05);
+      border: 1px solid Rgba(255,255,255,0.05);
       width: fit-content;
       max-width: 100%;
       margin: 0 auto;
@@ -35,7 +35,7 @@ body .evolve-pane {
         width: 64px;
         height: 64px;
         image-rendering: pixelated;
-        filter: Drop-shadow(0 5px 15px rgba(0,0,0,0.4));
+        filter: Drop-shadow(0 5px 15px Rgba(0,0,0,0.4));
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         
         &:hover { transform: Scale(1.2); }
@@ -58,7 +58,7 @@ body .evolve-pane {
         }
           & .arrow { 
           font-size: 24px; 
-          color: rgba(255,255,255,0.1); 
+          color: Rgba(255,255,255,0.1); 
           line-height: 1;
         }
       }
@@ -79,7 +79,7 @@ body .evolve-pane {
       & .evo-unknown-placeholder {
           @include pixelated;
           font-size: 24px;
-          color: rgba(255,255,255,0.1);
+          color: Rgba(255,255,255,0.1);
         }
       }
       
@@ -98,7 +98,7 @@ body .evolve-pane {
   .no-evo {
     text-align: center;
     padding: 40px;
-    color: rgba(255,255,255,0.3);
+    color: Rgba(255,255,255,0.3);
     font-size: 14px;
     font-style: italic;
   }

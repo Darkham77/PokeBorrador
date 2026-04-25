@@ -14,14 +14,14 @@ defineEmits(['update:modelValue'])
       <button 
         class="login-server-tab" 
         :class="{ active: modelValue === 'online' }"
-        @click="$emit('update:modelValue', 'online')"
+        @click.stop="$emit('update:modelValue', 'online')"
       >
         🌐 Online
       </button>
       <button 
         class="login-server-tab" 
         :class="{ active: modelValue === 'local' }"
-        @click="$emit('update:modelValue', 'local')"
+        @click.stop="$emit('update:modelValue', 'local')"
       >
         💻 Local
       </button>

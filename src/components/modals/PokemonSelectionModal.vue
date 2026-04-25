@@ -253,7 +253,7 @@ function openDetail(item) {
           <button
             v-if="searchQuery"
             class="clear-search"
-            @click="searchQuery = ''"
+            @click.stop="searchQuery = ''"
           >
             ✕
           </button>
@@ -268,7 +268,7 @@ function openDetail(item) {
           >
             <button
               :class="{ active: sortBy === 'recent' }"
-              @click="setSort('recent')"
+              @click.stop="setSort('recent')"
             >
               REC {{ sortBy === 'recent' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
             </button>
@@ -281,7 +281,7 @@ function openDetail(item) {
           >
             <button
               :class="{ active: sortBy === 'level' }"
-              @click="setSort('level')"
+              @click.stop="setSort('level')"
             >
               LVL {{ sortBy === 'level' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
             </button>
@@ -294,7 +294,7 @@ function openDetail(item) {
           >
             <button
               :class="{ active: sortBy === 'ivs' }"
-              @click="setSort('ivs')"
+              @click.stop="setSort('ivs')"
             >
               IVs {{ sortBy === 'ivs' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
             </button>
@@ -307,7 +307,7 @@ function openDetail(item) {
           >
             <button
               :class="{ active: sortBy === 'bst' }"
-              @click="setSort('bst')"
+              @click.stop="setSort('bst')"
             >
               BST {{ sortBy === 'bst' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
             </button>
@@ -320,7 +320,7 @@ function openDetail(item) {
             <button
               v-if="activeTags.length > 0 || searchQuery || sortBy !== 'recent'"
               class="clear-all-btn"
-              @click="clearFilters"
+              @click.stop="clearFilters"
             >
               LIMPIAR FILTROS
             </button>
@@ -335,7 +335,7 @@ function openDetail(item) {
             >
               <button
                 :class="{ active: activeTags.includes(t.id) }"
-                @click="toggleTagFilter(t.id)"
+                @click.stop="toggleTagFilter(t.id)"
               >
                 <span class="icon">{{ t.icon }}</span>
                 <span class="label">{{ t.shortLabel || t.label }}</span>
@@ -349,7 +349,7 @@ function openDetail(item) {
             >
               <button
                 :class="{ active: activeTags.includes('shiny') }"
-                @click="toggleTagFilter('shiny')"
+                @click.stop="toggleTagFilter('shiny')"
               >
                 <span class="icon">{{ POKEMON_BADGES.shiny.icon }}</span>
                 <span class="label">{{ POKEMON_BADGES.shiny.shortLabel }}</span>
@@ -362,7 +362,7 @@ function openDetail(item) {
             >
               <button
                 :class="{ active: activeTags.includes('team') }"
-                @click="toggleTagFilter('team')"
+                @click.stop="toggleTagFilter('team')"
               >
                 <span class="icon">🎒</span>
                 <span class="label">TEAM</span>
@@ -400,7 +400,7 @@ function openDetail(item) {
         <button 
           class="btn-confirm" 
           :disabled="selectedUids.length < (config.minSelect || 1)"
-          @click="confirm"
+          @click.stop="confirm"
         >
           CONFIRMAR
         </button>

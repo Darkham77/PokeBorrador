@@ -3,30 +3,30 @@
 @use 'sass:color';
 @use 'variables' as *;
 
-@mixin glass($bg: rgba(5, 5, 5, 0.8), $blur: 14px) {
+@mixin glass($bg: Rgba(5, 5, 5, 0.8), $blur: 14px) {
   background: $bg;
   -webkit-backdrop-filter: Blur($blur);
   backdrop-filter: Blur($blur);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid Rgba(255, 255, 255, 0.12);
 }
 
-@mixin glass-solid($bg: rgba(13, 17, 23, 1)) {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%), $bg;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+@mixin glass-solid($bg: Rgba(13, 17, 23, 1)) {
+  background: linear-gradient(180deg, Rgba(255, 255, 255, 0.03) 0%, Rgba(255, 255, 255, 0) 100%), $bg;
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 40px Rgba(0, 0, 0, 0.6);
 }
 
 @mixin card-premium($radius: 24px) {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.3) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, Rgba(255, 255, 255, 0.08) 0%, Rgba(0, 0, 0, 0.3) 100%);
+  border: 1px solid Rgba(255, 255, 255, 0.12);
   border-radius: $radius;
   box-shadow: 
-    0 20px 50px rgba(0, 0, 0, 0.7),
-    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    0 20px 50px Rgba(0, 0, 0, 0.7),
+    inset 0 1px 1px Rgba(255, 255, 255, 0.05);
 }
 
 @mixin premium-gradient {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.15) 100%);
+  background: linear-gradient(180deg, Rgba(255, 255, 255, 0.03) 0%, Rgba(0, 0, 0, 0.15) 100%);
 }
 
 @mixin flex-center {
@@ -54,6 +54,7 @@
 }
 
 @mixin pixelated {
+  font-family: var(--font-pixel, 'Press Start 2P', monospace) !important;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: auto;
   font-smooth: never;
@@ -67,6 +68,12 @@
   -webkit-text-stroke: 0;
 }
 
+@mixin pixel-perfect($size: 8px) {
+  @include pixelated;
+  font-size: $size;
+  line-height: 1;
+}
+
 @mixin hover-neon-yellow($border-width: 1px) {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   
@@ -74,9 +81,9 @@
     border-color: var(--yellow) !important;
     box-shadow: 
       0 0 0 #{$border-width} var(--yellow),
-      0 0 20px rgba(255, 214, 10, 0.4),
-      0 0 40px rgba(255, 214, 10, 0.2),
-      inset 0 0 10px rgba(255, 214, 10, 0.1) !important;
+      0 0 20px Rgba(255, 214, 10, 0.4),
+      0 0 40px Rgba(255, 214, 10, 0.2),
+      inset 0 0 10px Rgba(255, 214, 10, 0.1) !important;
     z-index: 10;
   }
 }
@@ -215,14 +222,14 @@
     background: color.scale($base-color, $lightness: 15%);
     box-shadow: 
       0 $depth 0 $shadow,
-      0 0 15px rgba($base-color, 0.4);
-    border: 2px solid rgba(255, 255, 255, 0.8);
+      0 0 15px Rgba($base-color, 0.4);
+    border: 2px solid Rgba(255, 255, 255, 0.8);
     transform: none !important;
     
     &:hover:not(:disabled) {
       background: color.scale($base-color, $lightness: 20%);
       transform: TranslateY(-1px) !important;
-      box-shadow: 0 ($depth + 1px) 0 $shadow, 0 0 20px rgba($base-color, 0.6);
+      box-shadow: 0 ($depth + 1px) 0 $shadow, 0 0 20px Rgba($base-color, 0.6);
     }
   }
 }
@@ -249,23 +256,23 @@
   align-items: center;
   justify-content: center;
   font-size: $font-size;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: Rgba(0, 0, 0, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
   transition: all 0.3s;
 
   &.male, &.gender-male { 
     color: #3b8bff; 
-    border-color: rgba(59, 139, 255, 0.4);
-    text-shadow: 0 0 8px rgba(59, 139, 255, 0.3);
+    border-color: Rgba(59, 139, 255, 0.4);
+    text-shadow: 0 0 8px Rgba(59, 139, 255, 0.3);
   }
   &.female, &.gender-female { 
     color: #ff6eff; 
-    border-color: rgba(255, 110, 255, 0.4);
-    text-shadow: 0 0 8px rgba(255, 110, 255, 0.3);
+    border-color: Rgba(255, 110, 255, 0.4);
+    text-shadow: 0 0 8px Rgba(255, 110, 255, 0.3);
   }
 }
 
-@mixin pokemon-silhouette($outline-color: rgba(255, 255, 255, 0.6)) {
+@mixin pokemon-silhouette($outline-color: Rgba(255, 255, 255, 0.6)) {
   filter: Brightness(0) Drop-Shadow(0 0 2px $outline-color) !important;
   opacity: 1 !important;
 }
@@ -281,9 +288,9 @@
   font-size: $size;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.8), -1px -1px 0 rgba(0,0,0,0.8), 1px -1px 0 rgba(0,0,0,0.8), -1px 1px 0 rgba(0,0,0,0.8);
+  box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  text-shadow: 1px 1px 0 Rgba(0,0,0,0.8), -1px -1px 0 Rgba(0,0,0,0.8), 1px -1px 0 Rgba(0,0,0,0.8), -1px 1px 0 Rgba(0,0,0,0.8);
   @include pixelated;
   transition: all 0.3s ease;
 }
@@ -307,9 +314,9 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     transition: inherit;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
 
     &::before, &::after {
       content: '';
@@ -318,7 +325,7 @@
       left: 50%;
       width: 16px;
       height: 2px;
-      background: rgba(255, 255, 255, 0.5);
+      background: Rgba(255, 255, 255, 0.5);
       border-radius: 2px;
       transition: inherit;
     }
@@ -332,8 +339,8 @@
     transform-origin: center;
     
     & .close-icon-wrapper {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: rgba(239, 68, 68, 0.3);
+      background: Rgba(239, 68, 68, 0.2);
+      border-color: Rgba(239, 68, 68, 0.3);
       transform: Rotate(180deg);
 
       &::before, &::after {

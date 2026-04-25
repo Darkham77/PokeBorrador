@@ -63,7 +63,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         <button
           class="faction-btn union-btn"
           :disabled="isProcessing"
-          @click="chooseFaction('union')"
+          @click.stop="chooseFaction('union')"
         >
           <div class="faction-icon-wrap">
             <img
@@ -81,7 +81,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         <button
           class="faction-btn poder-btn"
           :disabled="isProcessing"
-          @click="chooseFaction('poder')"
+          @click.stop="chooseFaction('poder')"
         >
           <div class="faction-icon-wrap">
             <img
@@ -135,7 +135,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 .faction-btn {
   width: 100%;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.4);
+  background: Rgba(0, 0, 0, 0.4);
   border-radius: 16px;
   cursor: pointer;
   display: flex;
@@ -147,14 +147,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
   &.union-btn {
     border: 2px solid #3b82f6;
-    box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.1);
-    &:hover:not(:disabled) { background: rgba(59, 130, 246, 0.1); transform: Scale(1.02); }
+    box-shadow: inset 0 0 20px Rgba(59, 130, 246, 0.1);
+    &:hover:not(:disabled) { background: Rgba(59, 130, 246, 0.1); transform: Scale(1.02); }
   }
 
   &.poder-btn {
     border: 2px solid #ef4444;
-    box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.1);
-    &:hover:not(:disabled) { background: rgba(239, 68, 68, 0.1); transform: Scale(1.02); }
+    box-shadow: inset 0 0 20px Rgba(239, 68, 68, 0.1);
+    &:hover:not(:disabled) { background: Rgba(239, 68, 68, 0.1); transform: Scale(1.02); }
   }
 
   &:disabled {

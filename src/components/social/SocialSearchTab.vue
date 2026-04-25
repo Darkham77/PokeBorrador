@@ -51,7 +51,7 @@ async function handleSearch() {
           <button 
             v-if="player.status === 'none'" 
             class="btn-add" 
-            @click="socialStore.sendFriendRequest(player.id)"
+            @click.stop="socialStore.sendFriendRequest(player.id)"
           >
             ➕ AGREGAR
           </button>
@@ -74,21 +74,22 @@ async function handleSearch() {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .search-bar {
   margin-bottom: 20px;
   position: relative;
 
   input {
     width: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(199, 125, 255, 0.2);
+    background: Rgba(0, 0, 0, 0.3);
+    border: 1px solid Rgba(199, 125, 255, 0.2);
     border-radius: 12px;
     padding: 12px 16px;
-    color: $white;
+    color: var(--white);
     font-size: 14px;
     outline: none;
 
-    &:focus { border-color: var(--purple-light); box-shadow: 0 0 15px rgba(157, 78, 221, 0.1); }
+    &:focus { border-color: var(--purple-light); box-shadow: 0 0 15px Rgba(157, 78, 221, 0.1); }
   }
   
   .loader-mini {
@@ -98,7 +99,7 @@ async function handleSearch() {
     transform: translateY(-50%);
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid Rgba(255, 255, 255, 0.1);
     border-top-color: var(--purple-light);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -112,8 +113,8 @@ async function handleSearch() {
 }
 
 .search-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.04);
   border-radius: 16px;
   padding: 12px;
   display: flex;
@@ -122,33 +123,33 @@ async function handleSearch() {
 
   .player-info {
     flex: 1;
-    .name { font-weight: 700; color: $white; }
-    .meta { font-size: 11px; color: $muted; }
+    .name { font-weight: 700; color: var(--white); }
+    .meta { font-size: 11px; color: Rgba(255, 255, 255, 0.5); }
   }
 }
 
 .btn-add {
-  background: rgba(157, 78, 221, 0.15);
-  border: 1px solid rgba(157, 78, 221, 0.3);
+  background: Rgba(157, 78, 221, 0.15);
+  border: 1px solid Rgba(157, 78, 221, 0.3);
   color: var(--purple-light);
   padding: 8px 12px;
   border-radius: 8px;
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 6px;
   cursor: pointer;
   transition: all 0.2s;
 
-  &:hover { background: var(--purple); color: $white; }
+  &:hover { background: var(--purple); color: var(--white); }
 }
 
 .status-badge {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 6px;
   padding: 8px 12px;
   border-radius: 8px;
   
-  &.pending { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
-  &.friend { background: rgba(34, 197, 94, 0.1); color: #4ade80; }
+  &.pending { background: Rgba(255, 193, 7, 0.1); color: Rgba(255, 193, 7, 1); }
+  &.friend { background: Rgba(34, 197, 94, 0.1); color: Rgba(74, 222, 128, 1); }
 }
 
 @keyframes spin { to { transform: translateY(-50%) Rotate(360deg); } }

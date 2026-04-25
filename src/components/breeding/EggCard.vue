@@ -25,7 +25,7 @@ const formatDate = (dateStr) => {
       </div>
       <button
         class="collect-btn-retro"
-        @click="emit('collect', egg)"
+        @click.stop="emit('collect', egg)"
       >
         RECOGER
       </button>
@@ -43,20 +43,20 @@ const formatDate = (dateStr) => {
 @use "@/styles/core/_mixins" as *;
 .egg-card-retro {
   background: $card-dark; 
-  border: 1px solid rgba(255,255,255,0.06); 
+  border: 1px solid Rgba(255,255,255,0.06); 
   padding: 20px; 
   border-radius: 16px;
   display: flex; 
   gap: 15px; 
   position: relative;
   
-  &:hover { border-color: rgba(255,255,255,0.12); }
+  &:hover { border-color: Rgba(255,255,255,0.12); }
   
   .egg-icon-box { 
     font-size: 32px; 
     width: 60px; 
     height: 60px; 
-    background: rgba(0,0,0,0.3); 
+    background: Rgba(0,0,0,0.3); 
     border-radius: 12px; 
     display: flex; 
     align-items: center; 
@@ -69,7 +69,7 @@ const formatDate = (dateStr) => {
   .collect-btn-retro { 
     width: 100%; 
     padding: 10px; 
-    background: #a855f7; 
+    background: Rgba(168, 85, 247, 1); 
     color: $white; 
     border: none; 
     border-radius: 8px;
@@ -78,7 +78,7 @@ const formatDate = (dateStr) => {
     cursor: pointer;
     box-shadow: 0 4px 0 #7e22ce;
     
-    &:active { transform: translateY(2px); box-shadow: none; }
+    &:active { transform: translateY(2px); box-shadow: 0 2px 0 #7e22ce; }
   }
   
   .scan-tag { 
@@ -86,8 +86,8 @@ const formatDate = (dateStr) => {
     top: -10px; 
     right: -10px; 
     background: $black; 
-    border: 1px solid #a855f7; 
-    color: #a855f7; 
+    border: 1px solid Rgba(168, 85, 247, 1); 
+    color: Rgba(168, 85, 247, 1); 
     padding: 4px 8px; 
     border-radius: 8px; 
     font-size: 9px; 

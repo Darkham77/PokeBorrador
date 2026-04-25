@@ -115,7 +115,7 @@ const getSprite = (id, shiny) => {
           v-for="p in filteredPokemon" 
           :key="p.uid" 
           class="poke-card-vicio"
-          @click="selectPokemon(p)"
+          @click.stop="selectPokemon(p)"
         >
           <div class="sprite-box">
             <img
@@ -177,7 +177,7 @@ const getSprite = (id, shiny) => {
     <template #footer>
       <button
         class="btn-vicio-secondary btn-vicio-full"
-        @click="emit('close')"
+        @click.stop="emit('close')"
       >
         CANCELAR
       </button>
@@ -186,6 +186,7 @@ const getSprite = (id, shiny) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .picker-content {
@@ -197,8 +198,8 @@ const getSprite = (id, shiny) => {
 
 .picker-search {
   padding: 16px 20px;
-  background: rgba(0, 0, 0, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 
   .search-input-wrapper {
     position: relative;
@@ -214,20 +215,20 @@ const getSprite = (id, shiny) => {
     
     input {
       width: 100%;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.03);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
       padding: 12px 12px 12px 40px;
       border-radius: 12px;
       color: $white;
       font-size: 12px;
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       outline: none;
       transition: all 0.2s;
       @include pixelated;
       
       &:focus {
         border-color: var(--yellow);
-        background: rgba(255, 255, 255, 0.05);
+        background: Rgba(255, 255, 255, 0.05);
       }
     }
   }
@@ -243,8 +244,8 @@ const getSprite = (id, shiny) => {
 }
 
 .poke-card-vicio {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 12px;
   display: flex;
@@ -255,7 +256,7 @@ const getSprite = (id, shiny) => {
   position: relative;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     border-color: var(--yellow);
     transform: translateX(4px);
     
@@ -266,7 +267,7 @@ const getSprite = (id, shiny) => {
 .sprite-box {
   width: 48px;
   height: 48px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -292,7 +293,7 @@ const getSprite = (id, shiny) => {
   align-items: center;
   
   .name {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 10px;
     color: $white;
     transition: color 0.2s;
@@ -302,27 +303,27 @@ const getSprite = (id, shiny) => {
   .lv {
     font-size: 9px;
     color: var(--gray);
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     @include pixelated;
   }
 }
 
 .genetics {
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.4);
+  color: Rgba(255, 255, 255, 0.4);
   font-family: monospace;
 }
 
 .compat-status {
   font-size: 8px;
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   margin-top: 4px;
   display: flex;
   justify-content: space-between;
   @include pixelated;
 }
 
-.waiting-status { color: rgba(255, 255, 255, 0.2); }
+.waiting-status { color: Rgba(255, 255, 255, 0.2); }
 .egg-hint { color: var(--purple-light); }
 
 .vigor-badge {
@@ -330,18 +331,18 @@ const getSprite = (id, shiny) => {
   top: 8px;
   right: 8px;
   font-size: 7px;
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   padding: 4px 6px;
   border-radius: 4px;
-  background: rgba(34, 197, 94, 0.1);
+  background: Rgba(34, 197, 94, 0.1);
   color: #22c55e;
-  border: 1px solid rgba(34, 197, 94, 0.2);
+  border: 1px solid Rgba(34, 197, 94, 0.2);
   @include pixelated;
 
   &.low {
-    background: rgba(239, 68, 68, 0.1);
+    background: Rgba(239, 68, 68, 0.1);
     color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.2);
+    border-color: Rgba(239, 68, 68, 0.2);
   }
 }
 
@@ -350,6 +351,6 @@ const getSprite = (id, shiny) => {
   padding: 60px 20px;
   
   .empty-icon { font-size: 32px; margin-bottom: 16px; opacity: 0.3; }
-  p { font-family: 'Press Start 2P', cursive; font-size: 8px; color: rgba(255, 255, 255, 0.2); @include pixelated; }
+  p { @include pixelated; font-size: 8px; color: Rgba(255, 255, 255, 0.2); @include pixelated; }
 }
 </style>

@@ -91,7 +91,7 @@ onMounted(async () => {
     <div
       class="hatch-immersion-container"
       :class="stage"
-      @click="stage === 'egg' ? handleEggClick() : null"
+      @click.stop="stage === 'egg' ? handleEggClick() : null"
     >
       <!-- Egg Phase -->
       <div
@@ -154,7 +154,7 @@ onMounted(async () => {
         <button
           class="btn-vicio-primary btn-vicio-full"
           style="max-width: 200px; margin-top: 40px;"
-          @click="handleClose"
+          @click.stop="handleClose"
         >
           CONTINUAR
         </button>
@@ -177,6 +177,7 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .hatch-immersion-container {
@@ -187,7 +188,7 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.4) 0%, transparent 100%);
+  background: radial-gradient(circle at center, Rgba(30, 41, 59, 0.4) 0%, transparent 100%);
   @include gpu-layer;
 }
 
@@ -198,7 +199,7 @@ onMounted(async () => {
   .egg-sprite {
     width: 140px;
     @include sprite-render;
-    filter: Drop-Shadow(0 0 20px rgba(255,255,255,0.2));
+    filter: Drop-Shadow(0 0 20px Rgba(255,255,255,0.2));
     animation: bounce 2s infinite ease-in-out;
   }
   .egg-sprite.shake {
@@ -211,7 +212,7 @@ onMounted(async () => {
   top: 50%; left: 50%;
   transform: Translate(-50%, -50%);
   width: 200px; height: 200px;
-  border: 2px solid rgba(255,255,255,0.1);
+  border: 2px solid Rgba(255,255,255,0.1);
   border-radius: 50%;
   animation: pulse-ring 2s infinite;
   @include gpu-layer;
@@ -241,17 +242,17 @@ onMounted(async () => {
 }
 
 .splash-text {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 14px;
   color: $white;
   margin-top: 30px;
-  text-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  text-shadow: 0 4px 8px Rgba(0,0,0,0.5);
   @include pixelated;
 }
 
 .stats-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 15px 20px;
   margin-top: 25px;
@@ -319,7 +320,7 @@ onMounted(async () => {
 .shimmer-bg {
   position: absolute;
   inset: -100px;
-  background: radial-gradient(circle at center, rgba(255,217,61,0.1) 0%, transparent 70%);
+  background: radial-gradient(circle at center, Rgba(255,217,61,0.1) 0%, transparent 70%);
   animation: rotate 10s linear infinite;
   @include gpu-layer;
 }
@@ -334,9 +335,9 @@ onMounted(async () => {
   bottom: -60px;
   left: 50%;
   transform: TranslateX(-50%);
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 10px;
-  color: rgba(255,255,255,0.6);
+  color: Rgba(255,255,255,0.6);
   white-space: nowrap;
   animation: pulse-hint 1.5s infinite;
   @include pixelated;
@@ -361,6 +362,6 @@ onMounted(async () => {
 }
 
 :deep(.base-modal-overlay) {
-  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
 }
 </style>

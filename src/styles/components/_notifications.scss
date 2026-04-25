@@ -27,7 +27,7 @@
   color: $white;
   pointer-events: all;
   border-left: 3px solid $green;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 40px Rgba(0, 0, 0, 0.6);
   animation: slideIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
   @include gpu-layer;
   

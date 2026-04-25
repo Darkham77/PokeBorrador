@@ -39,10 +39,10 @@ const factionLabel = computed(() => {
 
 const factionColor = computed(() => {
   const f = gs.value.faction
-  if (f === 'union') return '#3b82f6'
-  if (f === 'poder') return '#ef4444'
-  if (f === 'rocket') return '#94a3b8'
-  return '#94a3b8'
+  if (f === 'union') return 'Rgba(59, 130, 246, 1)'
+  if (f === 'poder') return 'Rgba(239, 68, 68, 1)'
+  if (f === 'rocket') return 'Rgba(148, 163, 184, 1)'
+  return 'Rgba(148, 163, 184, 1)'
 })
 
 const trainerName = computed(() => {
@@ -97,7 +97,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     :show="show"
     title="MI PERFIL"
     title-color="var(--yellow)"
-    :header-background="gs.playerClass === 'rocket' ? 'rgba(239, 68, 68, 0.15)' : (gs.playerClass === 'cazabichos' ? 'rgba(34, 197, 94, 0.15)' : (gs.playerClass === 'entrenador' ? 'rgba(59, 130, 246, 0.15)' : (gs.playerClass === 'criador' ? 'rgba(168, 85, 247, 0.15)' : 'rgba(15, 23, 42, 0.8)')))"
+    :header-background="gs.playerClass === 'rocket' ? 'Rgba(239, 68, 68, 0.15)' : (gs.playerClass === 'cazabichos' ? 'Rgba(34, 197, 94, 0.15)' : (gs.playerClass === 'entrenador' ? 'Rgba(59, 130, 246, 0.15)' : (gs.playerClass === 'criador' ? 'Rgba(168, 85, 247, 0.15)' : 'Rgba(15, 23, 42, 0.8)')))"
     type="side-right"
     max-width="420px"
     :show-close-button="true"
@@ -163,7 +163,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
               id="change-faction-btn"
               href="#"
               class="change-link"
-              @click.prevent="handleFactionChoice"
+              @click.prevent.stop="handleFactionChoice"
             >
               🔗 {{ gs.faction ? 'CAMBIAR' : 'ELEGIR' }}
             </a>
@@ -199,20 +199,20 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         <div class="profile-actions-legacy">
           <button
             class="logout-btn-legacy"
-            @click="handleLogout"
+            @click.stop="handleLogout"
           >
             🚪 CERRAR SESIÓN
           </button>
           <button
             class="edit-btn-legacy"
-            @click="handleEditProfile"
+            @click.stop="handleEditProfile"
           >
             ✏️ Editar
           </button>
           <div class="reset-wrap-legacy">
             <button
               class="reset-btn-legacy"
-              @click="handleResetEncounter"
+              @click.stop="handleResetEncounter"
             >
               ⚠️ RESETEAR ENCUENTROS
             </button>
@@ -227,6 +227,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .profile-panel-content {
@@ -239,10 +240,10 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   @include gpu-layer;
   
   // Custom backgrounds by class fading to transparent
-  .rocket & { background: linear-gradient(180deg, rgba(239, 68, 68, 0.15) 0%, transparent 60%); }
-  .cazabichos & { background: linear-gradient(180deg, rgba(34, 197, 94, 0.15) 0%, transparent 60%); }
-  .entrenador & { background: linear-gradient(180deg, rgba(59, 130, 246, 0.15) 0%, transparent 60%); }
-  .criador & { background: linear-gradient(180deg, rgba(168, 85, 247, 0.15) 0%, transparent 60%); }
+  .rocket & { background: linear-gradient(180deg, Rgba(239, 68, 68, 0.15) 0%, transparent 60%); }
+  .cazabichos & { background: linear-gradient(180deg, Rgba(34, 197, 94, 0.15) 0%, transparent 60%); }
+  .entrenador & { background: linear-gradient(180deg, Rgba(59, 130, 246, 0.15) 0%, transparent 60%); }
+  .criador & { background: linear-gradient(180deg, Rgba(168, 85, 247, 0.15) 0%, transparent 60%); }
 }
 
 .profile-header-premium {
@@ -277,34 +278,34 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     // Legacy Elemental Aura Restorations
     :deep(.trainer-avatar-container) {
       border: 2px solid var(--yellow) !important;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5) !important;
+      box-shadow: 0 0 10px Rgba(0,0,0,0.5) !important;
 
       &.av-fire {
-        border-color: #ff4400 !important;
-        box-shadow: 0 0 0 3px #ff4400, 0 0 0 5px rgba(255, 136, 0, 0.4), 0 0 16px rgba(255, 68, 0, 0.5) !important;
+        border-color: Rgba(255, 68, 0, 1) !important;
+        box-shadow: 0 0 0 3px Rgba(255, 68, 0, 1), 0 0 0 5px Rgba(255, 136, 0, 0.4), 0 0 16px Rgba(255, 68, 0, 0.5) !important;
         &::before {
           content: ''; position: absolute; inset: -8px; border-radius: 50%;
-          background: conic-gradient(#ff0000,#ff8800,#ffcc00,#ff4400,#ff0000);
+          background: conic-gradient(Rgba(255, 0, 0, 1),Rgba(255, 136, 0, 1),Rgba(255, 204, 0, 1),Rgba(255, 68, 0, 1),Rgba(255, 0, 0, 1));
           z-index: -1; animation: spin-slow 2s linear infinite;
         }
       }
       
       &.av-water {
-        border-color: #0088ff !important;
-        box-shadow: 0 0 0 3px #0088ff, 0 0 0 5px rgba(0, 170, 255, 0.3), 0 0 14px rgba(0, 102, 255, 0.4) !important;
+        border-color: Rgba(0, 136, 255, 1) !important;
+        box-shadow: 0 0 0 3px Rgba(0, 136, 255, 1), 0 0 0 5px Rgba(0, 170, 255, 0.3), 0 0 14px Rgba(0, 102, 255, 0.4) !important;
         &::before {
           content: ''; position: absolute; inset: -9px; border-radius: 50%;
-          background: conic-gradient(#0033cc,#00aaff,#44eeff,#0066ff,#0033cc);
+          background: conic-gradient(Rgba(0, 51, 204, 1),Rgba(0, 170, 255, 1),Rgba(68, 238, 255, 1),Rgba(0, 102, 255, 1),Rgba(0, 51, 204, 1));
           z-index: -1; animation: spin-slow 4s linear infinite;
         }
       }
 
       &.av-legend {
-        border-color: #ffdd00 !important;
-        box-shadow: 0 0 0 3px #ffdd00, 0 0 18px rgba(255, 170, 0, 0.5) !important;
+        border-color: Rgba(255, 221, 0, 1) !important;
+        box-shadow: 0 0 0 3px Rgba(255, 221, 0, 1), 0 0 18px Rgba(255, 170, 0, 0.5) !important;
         &::before {
           content: ''; position: absolute; inset: -10px; border-radius: 50%;
-          background: conic-gradient(#ff0000,#ff8800,#ffff00,#00ff88,#00ffff,#0088ff,#ff00ff,#ff0000);
+          background: conic-gradient(Rgba(255, 0, 0, 1),Rgba(255, 136, 0, 1),Rgba(255, 255, 0, 1),Rgba(0, 255, 136, 1),Rgba(0, 255, 255, 1),Rgba(0, 136, 255, 1),Rgba(255, 0, 255, 1),Rgba(255, 0, 0, 1));
           z-index: -1; animation: spin-slow 2s linear infinite;
         }
       }
@@ -314,7 +315,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   @keyframes spin-slow { from{transform:Rotate(0deg)} to{transform:Rotate(360deg)} }
 
   .profile-username {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 16px;
     color: var(--yellow);
     margin-bottom: 12px;
@@ -323,14 +324,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
   .profile-email {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.4);
+    color: Rgba(255, 255, 255, 0.4);
     @include pixelated;
     margin-bottom: 8px;
   }
 
   .profile-profession {
     font-size: 10px;
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     text-transform: uppercase;
     @include pixelated;
   }
@@ -338,14 +339,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
 .profile-section-card {
   padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
+  background: Rgba(255, 255, 255, 0.02);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 
   .section-label {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 8px;
-    color: rgba(255, 255, 255, 0.3);
+    color: Rgba(255, 255, 255, 0.3);
     margin-bottom: 16px;
     letter-spacing: 1px;
     @include pixelated;
@@ -371,7 +372,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   }
 
   .change-link {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 8px;
     color: var(--yellow);
     text-decoration: none;
@@ -385,7 +386,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   .save-status {
     @include pixelated;
     font-size: 12px;
-    color: $white;
+    color: var(--white);
     @include pixelated;
   }
 }
@@ -401,7 +402,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     padding: 16px;
     border-radius: 16px;
     border: none;
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 9px;
     cursor: pointer;
     transition: all 0.2s;
@@ -415,11 +416,11 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   }
 
   .edit-btn-legacy {
-    background: rgba(255, 255, 255, 0.05);
-    color: $white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.05);
+    color: var(--white);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     @include hover-neon-yellow(1px);
-    &:hover { background: rgba(255, 255, 255, 0.1); }
+    &:hover { background: Rgba(255, 255, 255, 0.1); }
   }
 
   .reset-wrap-legacy {
@@ -427,20 +428,20 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     text-align: center;
     .reset-btn-legacy {
       background: transparent;
-      color: rgba(255, 255, 255, 0.2);
+      color: Rgba(255, 255, 255, 0.2);
       font-size: 8px;
-      &:hover { color: #f59e0b; }
+      &:hover { color: Rgba(245, 158, 11, 1); }
     }
     .hint-text-legacy {
       margin-top: 8px;
       font-size: 10px;
-      color: rgba(255, 255, 255, 0.2);
+      color: Rgba(255, 255, 255, 0.2);
     }
   }
 }
 
 .profile-modal-legacy {
-  border-left: 2px solid rgba(255, 255, 255, 0.05) !important;
+  border-left: 2px solid Rgba(255, 255, 255, 0.05) !important;
   
   :deep(.modal-scrollable-content) {
     background: transparent !important;

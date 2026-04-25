@@ -121,7 +121,7 @@ const dayCycle = computed(() => {
       <div
         id="hud-egg-container"
         class="hud-pill egg-pill"
-        @click="uiStore.toggleProfile()"
+        @click.stop="uiStore.toggleProfile()"
       >
         <span>🥚</span>
         <span
@@ -157,8 +157,8 @@ const dayCycle = computed(() => {
   
   &:hover {
     transform: TranslateY(-2px);
-    background: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: Rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.2);
   }
 
   .currency-icon-hud {

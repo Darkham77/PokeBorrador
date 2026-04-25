@@ -39,13 +39,13 @@ const handleCancel = () => {
       <div class="confirm-footer">
         <button 
           class="btn-cancel" 
-          @click="handleCancel"
+          @click.stop="handleCancel"
         >
           {{ cancelText }}
         </button>
         <button 
           class="btn-confirm" 
-          @click="handleConfirm"
+          @click.stop="handleConfirm"
         >
           {{ confirmText }}
         </button>
@@ -55,6 +55,7 @@ const handleCancel = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "sass:math";
 @use "@/styles/core/tools" as *;
 
@@ -65,7 +66,7 @@ const handleCancel = () => {
     margin: 0;
     font-size: 14px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.8);
+    color: Rgba(255, 255, 255, 0.8);
     font-family: 'Inter', sans-serif;
     text-align: center;
   }
@@ -82,7 +83,7 @@ const handleCancel = () => {
     border-radius: 12px;
     font-size: 10px;
     font-weight: 700;
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     cursor: pointer;
     transition: all 0.2s;
     @include pixelated;
@@ -93,11 +94,11 @@ const handleCancel = () => {
   }
   
   .btn-cancel {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.5);
+    background: Rgba(255, 255, 255, 0.05);
+    color: Rgba(255, 255, 255, 0.5);
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: $white;
+      background: Rgba(255, 255, 255, 0.1);
+      color: var(--white);
     }
   }
   

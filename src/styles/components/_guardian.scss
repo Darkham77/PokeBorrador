@@ -22,15 +22,15 @@
   flex-direction: column !important;
   align-items: center !important;
   pointer-events: auto !important;
-  background: rgba(0, 0, 0, 0.85) !important;
+  background: Rgba(0, 0, 0, 0.85) !important;
   border-radius: 8px !important;
   padding: 4px !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+  border: 1.5px solid Rgba(255, 255, 255, 0.3) !important;
   -webkit-backdrop-filter: Blur(20px) !important;
   -webkit-backdrop-filter: Blur(20px) !important; -webkit-backdrop-filter: Blur(20px) !important; backdrop-filter: Blur(20px) !important;
   width: auto !important;
   height: auto !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
+  box-shadow: 0 4px 15px Rgba(0,0,0,0.6) !important;
   cursor: help !important;
 }
 
@@ -47,7 +47,7 @@
   @include gpu-layer;
 
   &:not(.spawn-silhouette) {
-    filter: Drop-Shadow(0 0 5px rgba(255,255,255,0.4)) !important;
+    filter: Drop-Shadow(0 0 5px Rgba(255,255,255,0.4)) !important;
     
     &.captured {
       filter: Grayscale(100%) !important;
@@ -68,18 +68,18 @@
   font-weight: 900 !important;
   color: $white !important;
   text-transform: uppercase !important;
-  background: #ff3e3e !important; /* Red for pending */
+  background: Rgba(255, 62, 62, 1) !important; /* Red for pending */
   padding: 2px 5px !important;
   border-radius: 4px !important;
   margin-top: 3px !important;
   letter-spacing: 0.5px !important;
-  font-family: $font-ui !important; // Was 'Nunito'
+  font-family: var(--font-ui) !important; // Was 'Nunito'
   white-space: nowrap !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.4) !important;
+  box-shadow: 0 2px 4px Rgba(0,0,0,0.4) !important;
   line-height: 1 !important;
   
   &.captured {
-    background: #22c55e !important; /* Vivid Green for captured */
+    background: Rgba(34, 197, 94, 1) !important; /* Vivid Green for captured */
   }
 }
 

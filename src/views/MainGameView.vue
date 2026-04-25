@@ -421,6 +421,7 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   display: block; // Switched to block to fix padding-bottom scroll issue
+  min-height: 0; // Fixes flex scroll collapse
   overflow-y: auto;
   overflow-x: hidden;
   padding-top: var(--hud-top-padding, 180px);
@@ -461,19 +462,19 @@ onUnmounted(() => {
   padding: 10px 14px;
 }
 .rocket-hint {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--red);
+  background: Rgba(239, 68, 68, 0.08);
+  border: 1px solid Rgba(239, 68, 68, 0.2);
 }
 .release-hint {
   color: var(--red);
-  background: rgba(255, 59, 59, 0.08);
-  border: 1px solid rgba(255, 59, 59, 0.2);
+  background: Rgba(239, 68, 68, 0.08);
+  border: 1px solid Rgba(239, 68, 68, 0.2);
 }
 .overlay-fixed {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: Rgba(0, 0, 0, 0.9);
   z-index: var(--z-overlay);
   display: flex;
   align-items: center;

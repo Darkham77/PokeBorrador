@@ -128,14 +128,14 @@ function close() {
         <button 
           class="btn-heal" 
           :disabled="isHealing || team.length === 0 || (cost > 0 && gameStore.state.money < cost)"
-          @click="handleHeal"
+          @click.stop="handleHeal"
         >
           {{ isHealing ? 'CURANDO...' : 'RESTAURAR EQUIPO' }}
         </button>
         <button
           class="btn-cancel"
           :disabled="isHealing"
-          @click="close"
+          @click.stop="close"
         >
           VOLVER
         </button>
@@ -148,7 +148,7 @@ function close() {
 .pokemon-center-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: Rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,12 +163,12 @@ function close() {
   padding: 40px 30px;
   border-radius: 30px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px Rgba(0, 0, 0, 0.5);
 }
 
 .glass {
-  background: rgba(13, 17, 23, 0.98);
+  background: Rgba(13, 17, 23, 0.98);
 }
 
 .header {
@@ -179,26 +179,26 @@ function close() {
   font-size: 40px;
   width: 80px;
   height: 80px;
-  background: rgba(239, 68, 68, 0.15);
+  background: Rgba(239, 68, 68, 0.15);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 15px;
-  border: 2px solid rgba(239, 68, 68, 0.3);
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+  border: 2px solid Rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 20px Rgba(239, 68, 68, 0.2);
 }
 
 h2 {
   font-size: 24px;
   font-weight: 800;
-  color: $white;
+  color: var(--white);
   margin: 0;
   letter-spacing: 0.5px;
 }
 
 .subtitle {
-  color: rgba(255, 255, 255, 0.5);
+  color: Rgba(255, 255, 255, 0.5);
   font-size: 14px;
   margin-top: 5px;
 }
@@ -212,20 +212,20 @@ h2 {
 
 .slot {
   aspect-ratio: 1;
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   border-radius: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
   opacity: 0.3;
 }
 
 .slot.active {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: Rgba(255, 255, 255, 0.08);
+  border-color: Rgba(255, 255, 255, 0.2);
 }
 
 .slot.empty {
@@ -234,9 +234,9 @@ h2 {
 }
 
 .slot.healing {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.5);
-  box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+  background: Rgba(34, 197, 94, 0.1);
+  border-color: Rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 15px Rgba(34, 197, 94, 0.2);
   transform: Scale(1.05);
 }
 
@@ -256,7 +256,7 @@ h2 {
 
 @keyframes pulse {
   from { transform: Scale(1); filter: Brightness(1); }
-  to { transform: Scale(1.2); filter: Brightness(1.5) Drop-Shadow(0 0 5px #ff5555); }
+  to { transform: Scale(1.2); filter: Brightness(1.5) Drop-Shadow(0 0 5px Rgba(255, 85, 85, 1)); }
 }
 
 .progress-container {
@@ -265,7 +265,7 @@ h2 {
 
 .progress-bar {
   height: 8px;
-  background: rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 10px;
@@ -273,13 +273,13 @@ h2 {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #22c55e, #4ade80);
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+  background: linear-gradient(90deg, Rgba(34, 197, 94, 1), Rgba(74, 222, 128, 1));
+  box-shadow: 0 0 10px Rgba(34, 197, 94, 0.5);
   transition: width 0.1s linear;
 }
 
 .healing-text {
-  color: #4ade80;
+  color: Rgba(74, 222, 128, 1);
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
@@ -287,20 +287,20 @@ h2 {
 }
 
 .info-text p {
-  color: rgba(255, 255, 255, 0.7);
+  color: Rgba(255, 255, 255, 0.7);
   font-size: 15px;
   line-height: 1.5;
 }
 
 .cost-notice {
-  background: rgba(239, 68, 68, 0.1);
+  background: Rgba(239, 68, 68, 0.1);
   padding: 15px;
   border-radius: 15px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid Rgba(239, 68, 68, 0.2);
 }
 
 .cost-notice p {
-  color: #ef4444 !important;
+  color: Rgba(239, 68, 68, 1) !important;
   font-weight: 700;
   margin-bottom: 5px;
 }
@@ -308,13 +308,13 @@ h2 {
 .price-tag {
   font-size: 24px;
   font-weight: 900;
-  color: $white;
+  color: var(--white);
 }
 
 .cost-notice small {
   display: block;
   margin-top: 5px;
-  color: rgba(239, 68, 68, 0.6);
+  color: Rgba(239, 68, 68, 0.6);
   font-size: 11px;
 }
 
@@ -326,8 +326,8 @@ h2 {
 }
 
 .btn-heal {
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
-  color: $white;
+  background: linear-gradient(135deg, Rgba(239, 68, 68, 1), Rgba(185, 28, 28, 1));
+  color: var(--white);
   border: none;
   padding: 16px;
   border-radius: 15px;
@@ -335,12 +335,12 @@ h2 {
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 10px 20px -5px Rgba(239, 68, 68, 0.4);
 }
 
 .btn-heal:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 15px 25px -5px rgba(239, 68, 68, 0.5);
+  box-shadow: 0 15px 25px -5px Rgba(239, 68, 68, 0.5);
 }
 
 .btn-heal:active:not(:disabled) {
@@ -348,16 +348,16 @@ h2 {
 }
 
 .btn-heal:disabled {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.3);
+  background: Rgba(255, 255, 255, 0.1);
+  color: Rgba(255, 255, 255, 0.3);
   cursor: not-allowed;
   box-shadow: none;
 }
 
 .btn-cancel {
   background: transparent;
-  color: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: Rgba(255, 255, 255, 0.5);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   padding: 14px;
   border-radius: 15px;
   font-weight: 700;
@@ -366,8 +366,8 @@ h2 {
 }
 
 .btn-cancel:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   color: $white;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: Rgba(255, 255, 255, 0.3);
 }
 </style>

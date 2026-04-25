@@ -37,7 +37,7 @@ async function clearPvpTeam() {
           <button
             class="btn-vicio-neutral btn-vicio-sm"
             :class="{ active: ui.debugPokedexMode === 'caught' }"
-            @click="setDebugPokedex('caught')"
+            @click.stop="setDebugPokedex('caught')"
           >
             ATRAPAR
           </button>
@@ -46,7 +46,7 @@ async function clearPvpTeam() {
           <button
             class="btn-vicio-neutral btn-vicio-sm"
             :class="{ active: ui.debugPokedexMode === 'none' }"
-            @click="setDebugPokedex('none')"
+            @click.stop="setDebugPokedex('none')"
           >
             NUNCA VISTO
           </button>
@@ -55,7 +55,7 @@ async function clearPvpTeam() {
           <button
             class="btn-vicio-neutral btn-vicio-sm"
             :class="{ active: ui.debugPokedexMode === 'seen' }"
-            @click="setDebugPokedex('seen')"
+            @click.stop="setDebugPokedex('seen')"
           >
             VISTOS
           </button>
@@ -64,7 +64,7 @@ async function clearPvpTeam() {
           <button
             class="btn-vicio-primary btn-vicio-sm"
             :class="{ active: ui.debugPokedexMode === null }"
-            @click="setDebugPokedex('real')"
+            @click.stop="setDebugPokedex('real')"
           >
             REAL
           </button>
@@ -77,7 +77,7 @@ async function clearPvpTeam() {
           <PVTooltip title="Sincroniza la pokedex con lo que tienes en el equipo/caja">
             <button
               class="btn-vicio-secondary btn-vicio-sm"
-              @click="syncPokedexFromCollection"
+              @click.stop="syncPokedexFromCollection"
             >
               RECALCULAR POKEDEX
             </button>
@@ -85,7 +85,7 @@ async function clearPvpTeam() {
           <PVTooltip title="Borra todo el progreso de la pokedex">
             <button
               class="btn-vicio-danger btn-vicio-sm"
-              @click="resetPokedexDB"
+              @click.stop="resetPokedexDB"
             >
               RESET POKEDEX
             </button>
@@ -94,7 +94,7 @@ async function clearPvpTeam() {
             <button
               class="btn-vicio-secondary btn-vicio-sm"
               :class="{ active: ui.pvpAutoFillDisabled }"
-              @click="ui.pvpAutoFillDisabled = !ui.pvpAutoFillDisabled"
+              @click.stop="ui.pvpAutoFillDisabled = !ui.pvpAutoFillDisabled"
             >
               {{ ui.pvpAutoFillDisabled ? 'HABILITAR AUTO-PVP' : 'DESHABILITAR AUTO-PVP' }}
             </button>
@@ -102,7 +102,7 @@ async function clearPvpTeam() {
           <PVTooltip title="Limpia todos los slots del equipo PVP">
             <button
               class="btn-vicio-danger btn-vicio-sm"
-              @click="clearPvpTeam"
+              @click.stop="clearPvpTeam"
             >
               LIMPIAR EQUIPO PVP
             </button>
@@ -135,8 +135,8 @@ async function clearPvpTeam() {
 }
 
 .debug-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 16px;
   
@@ -170,7 +170,7 @@ async function clearPvpTeam() {
 .debug-danger-zone {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px dashed rgba(124, 58, 237, 0.3);
+  border-top: 1px dashed Rgba(124, 58, 237, 0.3);
   text-align: right;
 }
 

@@ -14,7 +14,7 @@ defineProps({
 
 const emit = defineEmits(['select', 'openDetail'])
 
-const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || '#aaa'
+const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 </script>
 
 <template>
@@ -22,7 +22,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || '#aaa'
     class="list-item"
     :class="{ selected: isSelected }"
     :style="{ '--type-color': getTypeColor(item.pokemon.types?.[0] || item.pokemon.type) }"
-    @click="emit('select', item)"
+    @click.stop="emit('select', item)"
   >
     <div class="poke-preview-container">
       <PVTooltip

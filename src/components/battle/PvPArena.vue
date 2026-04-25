@@ -122,13 +122,13 @@ const handleSwitch = () => {
         <div class="pvp-actions">
           <button
             class="action-btn switch"
-            @click="handleSwitch"
+            @click.stop="handleSwitch"
           >
             CAMBIAR
           </button>
           <button
             class="action-btn forfeit"
-            @click="handleForfeit"
+            @click.stop="handleForfeit"
           >
             RENDIRSE
           </button>
@@ -155,7 +155,7 @@ const handleSwitch = () => {
 .battle-arena {
   height: 300px;
   position: relative;
-  background: linear-gradient(to bottom, #1e293b, #0f172a);
+  background: linear-gradient(to bottom, Rgba(30, 41, 59, 1), Rgba(15, 23, 42, 1));
 }
 
 .trainer-header {
@@ -164,12 +164,12 @@ const handleSwitch = () => {
   padding: 8px 16px;
   @include pixelated;
   font-size: 8px;
-  color: #94a3b8;
+  color: Rgba(148, 163, 184, 1);
 }
 
 .pvp-log-container {
   flex: 1;
-  background: rgba(0,0,0,0.4);
+  background: Rgba(0,0,0,0.4);
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -180,11 +180,11 @@ const handleSwitch = () => {
   text-align: center;
   @include pixelated;
   font-size: 10px;
-  background: rgba(255,255,255,0.05);
+  background: Rgba(255,255,255,0.05);
   
-  .choosing { color: #4ade80; }
-  .waiting { color: #facc15; }
-  .resolving { color: #60a5fa; }
+  .choosing { color: Rgba(74, 222, 128, 1); }
+  .waiting { color: Rgba(250, 204, 21, 1); }
+  .resolving { color: Rgba(96, 165, 250, 1); }
 }
 
 .logs-area {
@@ -199,12 +199,12 @@ const handleSwitch = () => {
 .log-entry {
   margin-bottom: 8px;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid Rgba(255,255,255,0.03);
 }
 
 #move-panel {
   padding: 20px;
-  background: #1e293b;
+  background: Rgba(30, 41, 59, 1);
   &.disabled {
     opacity: 0.6;
     pointer-events: none;
@@ -228,14 +228,14 @@ const handleSwitch = () => {
   transition: all 0.2s;
   
   &.switch {
-    background: #334155;
+    background: Rgba(51, 65, 85, 1);
     color: $white;
   }
   
   &.forfeit {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: Rgba(239, 68, 68, 0.1);
+    color: Rgba(239, 68, 68, 1);
+    border: 1px solid Rgba(239, 68, 68, 0.2);
   }
   
   &:hover {

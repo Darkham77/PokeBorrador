@@ -36,7 +36,7 @@ const getFactionIcon = (faction) => {
         <header class="war-header">
           <button
             class="close-btn"
-            @click="close"
+            @click.stop="close"
           >
             ✕
           </button>
@@ -119,7 +119,7 @@ const getFactionIcon = (faction) => {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  background: rgba(0, 0, 0, 0.9);
+  background: Rgba(0, 0, 0, 0.9);
   -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   -webkit-backdrop-filter: Blur(10px);
   display: flex;
@@ -133,20 +133,20 @@ const getFactionIcon = (faction) => {
   width: 100%;
   max-width: 900px;
   height: 90vh;
-  background: #0a0a0b;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(10, 10, 11, 1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 32px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+  box-shadow: 0 50px 100px Rgba(0,0,0,0.8);
 }
 
 .war-header {
   padding: 40px;
   position: relative;
   text-align: center;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent);
+  background: linear-gradient(to bottom, Rgba(255,255,255,0.02), transparent);
 }
 
 .close-btn {
@@ -195,8 +195,8 @@ const getFactionIcon = (faction) => {
   @include pixelated;
   font-size: 10px;
 
-  &.union { color: #3b82f6; }
-  &.poder { color: #ef4444; }
+  &.union { color: Rgba(59, 130, 246, 1); }
+  &.poder { color: Rgba(239, 68, 68, 1); }
 
   .faction-icon {
     width: 32px;
@@ -213,7 +213,7 @@ const getFactionIcon = (faction) => {
 
 .dominance-bar {
   height: 12px;
-  background: rgba(255,255,255,0.05);
+  background: Rgba(255,255,255,0.05);
   border-radius: 6px;
   display: flex;
   overflow: hidden;
@@ -222,9 +222,9 @@ const getFactionIcon = (faction) => {
   .segment {
     height: 100%;
     transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-    &.union { background: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
-    &.contested { background: #444; }
-    &.poder { background: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+    &.union { background: Rgba(59, 130, 246, 1); box-shadow: 0 0 20px Rgba(59, 130, 246, 0.4); }
+    &.contested { background: Rgba(68, 68, 68, 1); }
+    &.poder { background: Rgba(239, 68, 68, 1); box-shadow: 0 0 20px Rgba(239, 68, 68, 0.4); }
   }
 }
 
@@ -233,7 +233,7 @@ const getFactionIcon = (faction) => {
   justify-content: space-between;
   font-size: 10px;
   font-weight: 800;
-  color: #555;
+  color: Rgba(85, 85, 85, 1);
 }
 
 .war-content {
@@ -251,7 +251,7 @@ const getFactionIcon = (faction) => {
   display: flex;
   align-items: center;
   gap: 15px;
-  &:after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.05); }
+  &:after { content: ''; flex: 1; height: 1px; background: Rgba(255,255,255,0.05); }
 }
 
 .map-grid {
@@ -263,8 +263,8 @@ const getFactionIcon = (faction) => {
 
 .war-footer {
   padding: 30px 40px;
-  background: rgba(0,0,0,0.3);
-  border-top: 1px solid rgba(255,255,255,0.05);
+  background: Rgba(0,0,0,0.3);
+  border-top: 1px solid Rgba(255,255,255,0.05);
 }
 
 .rule-box {

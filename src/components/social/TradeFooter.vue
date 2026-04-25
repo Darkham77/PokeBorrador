@@ -32,7 +32,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
       <button
         class="send-offer-btn"
         :disabled="isSending"
-        @click="$emit('send')"
+        @click.stop="$emit('send')"
       >
         <span v-if="isSending">PROCESANDO...</span>
         <span v-else>ENVIAR OFERTA</span>
@@ -53,8 +53,8 @@ defineEmits(['update:message', 'update:isGift', 'send'])
 .trade-message-input {
   width: 100%;
   height: 60px;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(0,0,0,0.3);
+  border: 1px solid Rgba(255,255,255,0.1);
   border-radius: 14px;
   padding: 12px;
   color: $white;
@@ -87,7 +87,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
 
 .send-offer-btn {
   padding: 16px 32px;
-  background: linear-gradient(135deg, var(--purple), #8e24aa);
+  background: linear-gradient(135deg, var(--purple), Rgba(142, 36, 170, 1));
   border: none;
   border-radius: 14px;
   color: $white;
@@ -95,12 +95,12 @@ defineEmits(['update:message', 'update:isGift', 'send'])
   font-size: 9px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 4px 15px Rgba(168, 85, 247, 0.3);
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+    box-shadow: 0 6px 20px Rgba(168, 85, 247, 0.5);
     filter: Brightness(1.1);
   }
 

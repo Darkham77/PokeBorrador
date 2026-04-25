@@ -1,3 +1,4 @@
+@use "@/styles/core/mixins" as *;
 // src/styles/components/pokemon-detail/_tms.scss
 @use "@/styles/core/tools" as *;
 
@@ -8,10 +9,10 @@
     align-items: center;
     gap: 16px;
     margin-bottom: 20px;
-    background: rgba(0,0,0,0.2);
+    background: Rgba(0,0,0,0.2);
     padding: 8px 12px;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid Rgba(255,255,255,0.05);
 
     & .search-box {
       flex: 1;
@@ -30,7 +31,7 @@
         outline: none;
         font-family: 'Inter', sans-serif;
         
-        &::placeholder { color: rgba(255,255,255,0.2); }
+        &::placeholder { color: Rgba(255,255,255,0.2); }
       }
     }
 
@@ -39,11 +40,11 @@
       gap: 4px;
       
       & .sort-btn {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.1);
-        color: rgba(255,255,255,0.4);
+        background: Rgba(255,255,255,0.03);
+        border: 1px solid Rgba(255,255,255,0.1);
+        color: Rgba(255,255,255,0.4);
         font-size: 8px;
-        font-family: 'Press Start 2P', cursive;
+        @include pixelated;
         padding: 6px 8px;
         border-radius: 6px;
         cursor: pointer;
@@ -53,7 +54,7 @@
           background: var(--yellow);
           color: $black;
           border-color: var(--yellow);
-          box-shadow: 0 0 10px rgba(255, 214, 10, 0.3);
+          box-shadow: 0 0 10px Rgba(255, 214, 10, 0.3);
         }
       }
     }
@@ -69,9 +70,9 @@
       align-items: center;
       gap: 12px;
       padding: 12px;
-      background: rgba(255,255,255,0.04);
+      background: Rgba(255,255,255,0.04);
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.05);
+      border: 1px solid Rgba(255,255,255,0.05);
       transition: all 0.2s;
       
       &.incompatible {
@@ -89,7 +90,7 @@
         font-size: 10px;
         font-weight: 900;
         color: $black;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 8px Rgba(0,0,0,0.3);
       }
       
       .tm-info {
@@ -98,7 +99,7 @@
         flex-direction: column;
         
         .tm-name { font-size: 11px; font-weight: 800; color: $white; margin-bottom: 2px; }
-        .tm-type { font-size: 8px; font-weight: 900; color: rgba(255,255,255,0.3); }
+        .tm-type { font-size: 8px; font-weight: 900; color: Rgba(255,255,255,0.3); }
       }
       
       .tm-check {
@@ -112,7 +113,7 @@
       }
       
       &:hover:not(.incompatible) {
-        background: rgba(255,255,255,0.08);
+        background: Rgba(255,255,255,0.08);
         transform: TranslateY(-2px);
       }
     }

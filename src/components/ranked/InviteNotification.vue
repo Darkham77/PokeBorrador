@@ -50,13 +50,13 @@ const decline = async () => {
     <div class="actions">
       <button
         class="accept-btn press-start"
-        @click="accept"
+        @click.stop="accept"
       >
         ✓ ACEPTAR
       </button>
       <button
         class="decline-btn press-start"
-        @click="decline"
+        @click.stop="decline"
       >
         ✕ RECHAZAR
       </button>
@@ -75,11 +75,11 @@ const decline = async () => {
   z-index: var(--z-toast);
   width: 90%;
   max-width: 360px;
-  background: rgba(15, 23, 42, 0.95);
+  background: Rgba(15, 23, 42, 0.95);
   -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
   -webkit-backdrop-filter: Blur(12px);
-  border: 1px solid rgba(139, 92, 246, 0.4);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  border: 1px solid Rgba(139, 92, 246, 0.4);
+  box-shadow: 0 10px 40px Rgba(0, 0, 0, 0.8);
   border-radius: 20px;
   padding: 20px;
   text-align: center;
@@ -104,7 +104,7 @@ const decline = async () => {
   .challenger {
     font-size: 14px;
     font-weight: bold;
-    color: $white;
+    color: var(--white);
     display: block;
     margin-bottom: 4px;
   }
@@ -135,22 +135,22 @@ button {
 }
 
 .accept-btn {
-  background: rgba(107, 203, 119, 0.15);
+  background: Rgba(107, 203, 119, 0.15);
   color: var(--green);
-  border-color: rgba(107, 203, 119, 0.3);
+  border-color: Rgba(107, 203, 119, 0.3);
 
   &:hover {
-    background: rgba(107, 203, 119, 0.25);
+    background: Rgba(107, 203, 119, 0.25);
   }
 }
 
 .decline-btn {
-  background: rgba(255, 59, 59, 0.1);
+  background: Rgba(255, 59, 59, 0.1);
   color: var(--red);
-  border-color: rgba(255, 59, 59, 0.2);
+  border-color: Rgba(255, 59, 59, 0.2);
 
   &:hover {
-    background: rgba(255, 59, 59, 0.2);
+    background: Rgba(255, 59, 59, 0.2);
   }
 }
 

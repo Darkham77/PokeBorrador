@@ -64,8 +64,8 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 15px rgba($yellow, 0.25); }
-  50% { box-shadow: 0 0 30px rgba($yellow, 0.55); }
+  0%, 100% { box-shadow: 0 0 15px Rgba($yellow, 0.25); }
+  50% { box-shadow: 0 0 30px Rgba($yellow, 0.55); }
 }
 
 @keyframes scaleOut {
@@ -95,8 +95,8 @@
 
 @keyframes rival-flicker {
   0%, 100% { background: transparent; }
-  20%, 60% { background: rgba(255, 255, 255, 0.4); }
-  40%, 80% { background: rgba(255, 0, 0, 0.3); }
+  20%, 60% { background: Rgba(255, 255, 255, 0.4); }
+  40%, 80% { background: Rgba(255, 0, 0, 0.3); }
 }
 
 @keyframes pulse-exclamation {

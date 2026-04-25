@@ -112,7 +112,7 @@ const _getSprite = (id, shiny) => {
         <h3>🔍 ESCÁNER DE HUEVOS</h3>
         <button
           class="close-btn"
-          @click="emit('close')"
+          @click.stop="emit('close')"
         >
           ✕
         </button>
@@ -128,7 +128,7 @@ const _getSprite = (id, shiny) => {
               v-for="egg in allEggs" 
               :key="egg.type + egg.id" 
               class="egg-item"
-              @click="scanEgg(egg)"
+              @click.stop="scanEgg(egg)"
             >
               <div class="egg-icon">
                 🥚
@@ -200,20 +200,20 @@ const _getSprite = (id, shiny) => {
             <div class="actions">
               <button
                 class="keep-btn"
-                @click="handleKeep"
+                @click.stop="handleKeep"
               >
                 REGISTRAR
               </button>
               <button
                 class="sell-btn"
-                @click="handleSell"
+                @click.stop="handleSell"
               >
                 VENDER (₽{{ scanningResult.sellPrice }})
               </button>
             </div>
             <button
               class="back-link"
-              @click="scanningResult = null"
+              @click.stop="scanningResult = null"
             >
               Volver a la lista
             </button>
@@ -237,7 +237,7 @@ const _getSprite = (id, shiny) => {
 .scanner-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: Rgba(0, 0, 0, 0.85);
   -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   -webkit-backdrop-filter: Blur(8px);
   z-index: var(--z-modal);
@@ -252,16 +252,16 @@ const _getSprite = (id, shiny) => {
   background: #1a1a2e;
   width: 100%; max-width: 400px;
   border-radius: 24px;
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  border: 1px solid Rgba(168, 85, 247, 0.3);
   display: flex; flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 80px rgba(0,0,0,0.8);
+  box-shadow: 0 20px 80px Rgba(0,0,0,0.8);
 }
 
 .scanner-header {
   padding: 24px;
   display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+  border-bottom: 1px solid Rgba(168, 85, 247, 0.1);
 }
 
 .scanner-header h3 {
@@ -285,15 +285,15 @@ const _getSprite = (id, shiny) => {
 }
 
 .egg-item {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: Rgba(255,255,255,0.04);
+  border: 1px solid Rgba(255,255,255,0.08);
   border-radius: 16px;
   padding: 12px 16px;
   display: flex; align-items: center; gap: 15px;
   cursor: pointer; transition: 0.2s;
 }
 
-.egg-item:hover { background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.3); }
+.egg-item:hover { background: Rgba(168, 85, 247, 0.1); border-color: Rgba(168, 85, 247, 0.3); }
 
 .egg-icon { font-size: 24px; }
 .egg-info { flex: 1; }
@@ -311,8 +311,8 @@ const _getSprite = (id, shiny) => {
 .result-title { font-size: 18px; font-weight: 900; color: $white; }
 
 .stats-card {
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(0,0,0,0.3);
+  border: 1px solid Rgba(255,255,255,0.1);
   border-radius: 16px; padding: 15px;
 }
 
@@ -321,7 +321,7 @@ const _getSprite = (id, shiny) => {
 .iv-item span { color: var(--gray); }
 
 .total-bar {
-  border-top: 1px solid rgba(255,255,255,0.1);
+  border-top: 1px solid Rgba(255,255,255,0.1);
   padding-top: 12px;
   display: flex; justify-content: space-between; align-items: center;
 }
@@ -336,8 +336,8 @@ const _getSprite = (id, shiny) => {
 }
 
 .sell-btn {
-  padding: 14px; background: rgba(234, 179, 8, 0.1); color: #eab308; 
-  border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 12px;
+  padding: 14px; background: Rgba(234, 179, 8, 0.1); color: #eab308; 
+  border: 1px solid Rgba(234, 179, 8, 0.3); border-radius: 12px;
   @include pixelated; font-size: 8px; cursor: pointer;
 }
 
@@ -347,12 +347,12 @@ const _getSprite = (id, shiny) => {
 }
 
 .loading-overlay {
-  position: absolute; inset: 0; background: rgba(26, 26, 46, 0.95);
+  position: absolute; inset: 0; background: Rgba(26, 26, 46, 0.95);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;
 }
 
 .loader {
-  width: 40px; height: 40px; border: 4px solid rgba(168, 85, 247, 0.1);
+  width: 40px; height: 40px; border: 4px solid Rgba(168, 85, 247, 0.1);
   border-top: 4px solid #a855f7; border-radius: 50%; animation: spin 1s linear infinite;
 }
 

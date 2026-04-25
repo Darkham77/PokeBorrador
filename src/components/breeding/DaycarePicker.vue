@@ -62,7 +62,7 @@ const selectPokemon = (p) => {
         </p>
         <button
           class="btn-close"
-          @click="emit('close')"
+          @click.stop="emit('close')"
         >
           ×
         </button>
@@ -80,7 +80,7 @@ const selectPokemon = (p) => {
             v-for="p in availablePokemon" 
             :key="p.uid" 
             class="pokemon-card"
-            @click="selectPokemon(p)"
+            @click.stop="selectPokemon(p)"
           >
             <div class="sprite-wrap">
               <img
@@ -124,7 +124,7 @@ const selectPokemon = (p) => {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  background: rgba(0, 0, 0, 0.8);
+  background: Rgba(0, 0, 0, 0.8);
   -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
   -webkit-backdrop-filter: Blur(4px);
   display: flex;
@@ -135,7 +135,7 @@ const selectPokemon = (p) => {
 }
 
 .daycare-picker {
-  background: #1e293b;
+  background: Rgba(30, 41, 59, 1);
   width: 100%;
   max-width: 500px;
   max-height: 80vh;
@@ -144,17 +144,17 @@ const selectPokemon = (p) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 50px Rgba(0, 0, 0, 0.5);
 
   header {
     padding: 20px;
-    background: rgba(15, 23, 42, 0.5);
+    background: Rgba(15, 23, 42, 0.5);
     border-bottom: 1px solid #334155;
     position: relative;
     text-align: center;
 
     h3 { font-size: 16px; font-weight: 700; color: $white; margin-bottom: 4px; }
-    p { font-size: 12px; color: #94a3b8; }
+    p { font-size: 12px; color: Rgba(148, 163, 184, 1); }
     
     .btn-close {
       position: absolute;
@@ -162,7 +162,7 @@ const selectPokemon = (p) => {
       right: 15px;
       background: none;
       border: none;
-      color: #94a3b8;
+      color: Rgba(148, 163, 184, 1);
       font-size: 24px;
       cursor: pointer;
       &:hover { color: $white; }
@@ -186,8 +186,8 @@ const selectPokemon = (p) => {
 }
 
 .pokemon-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 10px;
   display: flex;
@@ -197,8 +197,8 @@ const selectPokemon = (p) => {
   transition: all 0.2s;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: Rgba(255, 255, 255, 0.08);
+    border-color: Rgba(255, 255, 255, 0.2);
     transform: translateX(4px);
   }
 }
@@ -206,7 +206,7 @@ const selectPokemon = (p) => {
 .sprite-wrap {
   width: 48px;
   height: 48px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -222,16 +222,16 @@ const selectPokemon = (p) => {
     justify-content: space-between;
     margin-bottom: 4px;
     .name { font-size: 14px; font-weight: 700; color: $white; }
-    .lvl { font-size: 11px; color: #94a3b8; }
+    .lvl { font-size: 11px; color: Rgba(148, 163, 184, 1); }
   }
   .stats {
     display: flex;
     gap: 12px;
     font-size: 11px;
-    color: #cbd5e1;
+    color: Rgba(203, 213, 225, 1);
     .gender {
-      &.m { color: #3b82f6; }
-      &.f { color: #ec4899; }
+      &.m { color: Rgba(59, 130, 246, 1); }
+      &.f { color: Rgba(236, 72, 153, 1); }
     }
   }
 }
@@ -245,8 +245,8 @@ const selectPokemon = (p) => {
   margin-top: 6px;
   text-transform: uppercase;
   
-  &.level-0 { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-  &.level-1 { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-  &.level-2, &.level-3 { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+  &.level-0 { background: Rgba(239, 68, 68, 0.1); color: Rgba(239, 68, 68, 1); }
+  &.level-1 { background: Rgba(245, 158, 11, 0.1); color: Rgba(245, 158, 11, 1); }
+  &.level-2, &.level-3 { background: Rgba(34, 197, 94, 0.1); color: Rgba(34, 197, 94, 1); }
 }
 </style>

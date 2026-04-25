@@ -60,14 +60,14 @@ graph TD
 > [!IMPORTANT]
 > **IMMUTABLE STEPS**: You MUST follow every step in this diagram. You are allowed to add intermediate sub-tasks for complex features, but you are FORBIDDEN from deleting or skipping any original design steps.
 
-### 1. Planning & Task Initialization
+### 1. Planificación y Trazabilidad (MANDATORY)
 
-Before writing any code or finalizing changes, analyze the work done.
+Antes de realizar cualquier cambio significativo o finalizar tareas, se DEBE garantizar la máxima trazabilidad del proceso.
 
-- **Mandatory Planning**: Create an `implementation_plan.md` artifact detailing the proposed changes and wait for user approval.
-- **Task Tracking**: Create or update `task.md` in the agent's private directory. This file is your **source of truth**; use it to track every granular step.
-- **Dynamic Updates**: If you discover new complex problems during the process, you MUST immediately add them as new items to `task.md` to ensure no requirement is forgotten.
-- Verify that every change aligns with the **Hybrid Retro-Modern** identity.
+- **Mandatory Planning**: Crear el artefacto `implementation_plan.md` detallando la arquitectura y el plan de verificación. **DETENERSE** y esperar la aprobación explícita del usuario ("ok") antes de proceder.
+- **Rigor en el Seguimiento**: Crear o actualizar `task.md`. Este archivo es la **fuente de verdad absoluta**; debe registrar cada paso granular, incluyendo descubrimientos y sub-tareas imprevistas.
+- **Cierre Documentado**: Actualizar siempre `walkthrough.md` con evidencia (capturas, logs de tests) para cerrar el ciclo de rigor técnico.
+- Verificar que cada cambio se alinee con la identidad **Hybrid Retro-Modern**.
 
 ### 2. Test Gap Analysis
 
@@ -144,13 +144,18 @@ Push changes and notify the user.
 
 ## Commit Message Standards (The Elegant Protocol)
 
-Commit messages MUST NOT be terse. They MUST provide a clear overview of the "what" and the "why" to maintain the project's high-rigor history.
+Commit messages MUST NOT be terse. They MUST provide a clear, technical chronicle of the "what", "why", and "how" to maintain the project's high-rigor history.
+
+### 0. Source of Truth
+
+- **MANDATORY**: Use the current `task.md` and `walkthrough.md` as the primary sources for the commit message. A commit message that ignores the granular steps recorded in these artifacts is considered a failure.
 
 ### 1. Structure Requirement
 
 - **Header**: Conventional Commit format (`type(scope): description`) in lowercase, summary of the main impact.
-- **Body**: A blank line followed by a bulleted list (`-`) of specific technical changes.
-- **Technical Detail**: Mention specific files, scripts, or metrics (e.g., "Verified via 240 unit tests").
+- **Body**: A blank line followed by a detailed, bulleted list (`-`) of specific technical changes.
+- **Audit Milestone**: Mention the specific results of the "Zero-Warning Audit" (e.g., "Pass 27 Reach", "0 colisiones de redundancia").
+- **Verification Metrics**: Explicitly state the number of unit tests passed and build status (e.g., "Verified via 243 unit tests and production build pass").
 
 ### 2. Master Example (The Gold Standard)
 

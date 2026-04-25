@@ -53,7 +53,7 @@ const selectTab = (tabId) => {
             :key="cat.id"
             class="library-nav-item"
             :class="{ active: selectedTab === cat.id }"
-            @click="selectTab(cat.id)"
+            @click.stop="selectTab(cat.id)"
           >
             {{ cat.label }}
           </div>
@@ -77,6 +77,7 @@ const selectTab = (tabId) => {
 </template>
 
 <style lang="scss" scoped>
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .fade-enter-active, .fade-leave-active {
@@ -106,8 +107,8 @@ const selectTab = (tabId) => {
 }
 
 .library-sidebar {
-  background: rgba(10, 10, 15, 0.4);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(10, 10, 15, 0.4);
+  border-right: 1px solid Rgba(255, 255, 255, 0.05);
   overflow: hidden;
   height: 100%;
   position: relative;
@@ -116,7 +117,7 @@ const selectTab = (tabId) => {
     width: 100%;
     height: auto;
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -147,7 +148,7 @@ const selectTab = (tabId) => {
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 12px;
     line-height: 1.2;
     font-weight: 400;
@@ -163,17 +164,17 @@ const selectTab = (tabId) => {
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.04);
+      background: Rgba(255, 255, 255, 0.04);
       color: $white;
       padding-left: 20px;
-      border-color: rgba(250, 204, 21, 0.2);
+      border-color: Rgba(250, 204, 21, 0.2);
     }
 
     &.active {
-      background: rgba(250, 204, 21, 0.1);
-      border-color: rgba(250, 204, 21, 0.3);
+      background: Rgba(250, 204, 21, 0.1);
+      border-color: Rgba(250, 204, 21, 0.3);
       color: var(--yellow);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.2);
     }
 
     @media (max-width: 900px) {
@@ -188,7 +189,7 @@ const selectTab = (tabId) => {
 
 .library-content {
   overflow-y: auto !important;
-  background: rgba(0, 0, 0, 0.08);
+  background: Rgba(0, 0, 0, 0.08);
   height: 100%;
   min-height: 0; // Prevent flex collapse
   position: relative;
@@ -201,11 +202,11 @@ const selectTab = (tabId) => {
   color: #ddd;
 
   :deep(h1) {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 20px;
     color: var(--yellow);
     margin-bottom: 24px;
-    text-shadow: 3px 3px 0px rgba(0,0,0,0.8);
+    text-shadow: 3px 3px 0px Rgba(0,0,0,0.8);
     @include pixelated;
   }
 
@@ -214,14 +215,14 @@ const selectTab = (tabId) => {
     margin: 32px 0 16px;
     font-size: 18px;
     font-weight: 800;
-    text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 0px Rgba(0,0,0,0.5);
     @include pixelated;
   }
 
   :deep(p) {
     margin-bottom: 20px;
     font-size: 15px;
-    color: rgba(255, 255, 255, 0.85);
+    color: Rgba(255, 255, 255, 0.85);
   }
 
   :deep(ul) {
@@ -229,7 +230,7 @@ const selectTab = (tabId) => {
     padding-left: 20px;
     li { 
       margin-bottom: 10px; 
-      color: rgba(255, 255, 255, 0.8);
+      color: Rgba(255, 255, 255, 0.8);
     }
   }
 
@@ -243,22 +244,22 @@ const selectTab = (tabId) => {
     border-collapse: separate;
     border-spacing: 0;
     margin: 24px 0;
-    background: rgba(255, 255, 255, 0.02);
+    background: Rgba(255, 255, 255, 0.02);
     border-radius: 12px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
     
     th, td {
       padding: 12px 16px;
       text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
     }
     
     th { 
-      background: rgba(255, 255, 255, 0.05);
+      background: Rgba(255, 255, 255, 0.05);
       color: var(--yellow);
       font-size: 10px;
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       text-transform: uppercase;
       @include pixelated;
     }
@@ -273,11 +274,11 @@ const selectTab = (tabId) => {
   }
 
   :deep(.class-info-box) {
-    background: rgba(255, 255, 255, 0.03);
+    background: Rgba(255, 255, 255, 0.03);
     border-radius: 12px;
     padding: 24px;
     margin-bottom: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
   }
 }
 </style>

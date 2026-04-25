@@ -91,7 +91,7 @@ const genderSymbol = (g) => {
 
       <button
         class="action-btn withdraw"
-        @click="emit('withdraw', slotIndex)"
+        @click.stop="emit('withdraw', slotIndex)"
       >
         RETIRAR
       </button>
@@ -107,7 +107,7 @@ const genderSymbol = (g) => {
       <span class="empty-text">— Vacía —</span>
       <button
         class="action-btn deposit"
-        @click="emit('deposit', slotIndex)"
+        @click.stop="emit('deposit', slotIndex)"
       >
         DEPOSITAR
       </button>
@@ -118,8 +118,8 @@ const genderSymbol = (g) => {
 <style lang="scss" scoped>
 @use "@/styles/core/_mixins" as *;
 .breeding-slot {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(15, 23, 42, 0.8);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 16px;
   min-height: 200px;
@@ -131,7 +131,7 @@ const genderSymbol = (g) => {
 
   &.is-empty {
     border-style: dashed;
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: Rgba(255, 255, 255, 0.2);
     justify-content: center;
     align-items: center;
   }
@@ -151,7 +151,7 @@ const genderSymbol = (g) => {
     img {
       height: 80px;
       image-rendering: pixelated;
-      filter: Drop-Shadow(0 4px 8px rgba(0,0,0,0.5));
+      filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
     }
   }
 
@@ -179,16 +179,16 @@ const genderSymbol = (g) => {
       margin-bottom: 8px;
       .gender {
         font-weight: 900;
-        &.M { color: #3498db; }
-        &.F { color: #e84393; }
+        &.M { color: Rgba(52, 152, 219, 1); }
+        &.F { color: Rgba(232, 67, 147, 1); }
       }
       .nature { color: var(--yellow, #fbbf24); }
-      .vigor { color: #10b981; }
+      .vigor { color: Rgba(16, 185, 129, 1); }
     }
 
     .ivs-bar {
       font-size: 10px;
-      background: rgba(0,0,0,0.3);
+      background: Rgba(0,0,0,0.3);
       padding: 4px 8px;
       border-radius: 4px;
       .label { color: $muted; margin-right: 4px; }
@@ -204,16 +204,16 @@ const genderSymbol = (g) => {
       gap: 6px;
       font-size: 11px;
       color: $white;
-      background: rgba(139, 92, 246, 0.2);
+      background: Rgba(139, 92, 246, 0.2);
       padding: 6px;
       border-radius: 8px;
-      border: 1px solid rgba(139, 92, 246, 0.3);
+      border: 1px solid Rgba(139, 92, 246, 0.3);
     }
     select {
       width: 100%;
-      background: #0f172a;
+      background: Rgba(15, 23, 42, 1);
       color: $white;
-      border: 1px solid #334155;
+      border: 1px solid Rgba(51, 65, 85, 1);
       padding: 6px;
       border-radius: 8px;
       font-size: 11px;
@@ -234,14 +234,14 @@ const genderSymbol = (g) => {
     &:active { transform: Scale(0.95); }
 
     &.withdraw {
-      background: rgba(239, 68, 68, 0.1);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.2);
+      background: Rgba(239, 68, 68, 0.1);
+      color: Rgba(248, 113, 113, 1);
+      border: 1px solid Rgba(239, 68, 68, 0.2);
     }
     &.deposit {
-      background: rgba(139, 92, 246, 0.1);
-      color: #a78bfa;
-      border: 1px solid rgba(139, 92, 246, 0.2);
+      background: Rgba(139, 92, 246, 0.1);
+      color: Rgba(167, 139, 250, 1);
+      border: 1px solid Rgba(139, 92, 246, 0.2);
     }
   }
 

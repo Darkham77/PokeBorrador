@@ -22,7 +22,7 @@ const isEmpty = computed(() => !props.pokemon)
     <div
       v-if="isEmpty"
       class="empty-placeholder"
-      @click="emit('select', index)"
+      @click.stop="emit('select', index)"
     >
       <span class="plus-icon">✚</span>
       <span class="label">{{ isPvp ? 'ELEGIR GUERRA' : 'AÑADIR' }}</span>
@@ -34,7 +34,7 @@ const isEmpty = computed(() => !props.pokemon)
       :index="index"
       :is-pvp="isPvp"
       :max-obey-lv="maxObeyLv"
-      @click="emit('open-detail', index)"
+      @click.stop="emit('open-detail', index)"
       @open-detail="emit('open-detail', index)"
       @open-item="emit('open-item', index)"
       @send-to-box="emit('send-to-box', index)"
@@ -54,8 +54,8 @@ const isEmpty = computed(() => !props.pokemon)
 
 .empty-placeholder {
   flex: 1;
-  background: rgba(255, 255, 255, 0.02);
-  border: 2px dashed rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.02);
+  border: 2px dashed Rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -66,14 +66,14 @@ const isEmpty = computed(() => !props.pokemon)
   transition: all 0.3s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     border-color: var(--yellow);
     transform: TranslateY(-4px);
     
     .plus-icon {
       transform: Scale(1.2) Rotate(90deg);
       filter: Drop-shadow(0 0 15px var(--yellow));
-      color: $white;
+      color: var(--white);
     }
     
     .label {
@@ -83,7 +83,7 @@ const isEmpty = computed(() => !props.pokemon)
 
   .plus-icon {
     font-size: 32px;
-    color: rgba(255, 255, 255, 0.3);
+    color: Rgba(255, 255, 255, 0.3);
     transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
@@ -97,7 +97,7 @@ const isEmpty = computed(() => !props.pokemon)
 
 .pvp-slot {
   .empty-placeholder {
-    border-color: rgba(199, 125, 255, 0.3);
+    border-color: Rgba(199, 125, 255, 0.3);
     
     &:hover {
       border-color: var(--purple-light);

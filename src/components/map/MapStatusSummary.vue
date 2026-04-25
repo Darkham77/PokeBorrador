@@ -32,7 +32,7 @@ const bannerStyle = computed(() => ({
     <div class="pc-left">
       <div
         class="pokecenter-banner"
-        @click="emit('openCenter')"
+        @click.stop="emit('openCenter')"
       >
         <div 
           class="banner-bg" 
@@ -57,7 +57,8 @@ const bannerStyle = computed(() => ({
         <div
           class="pc-banner event-banner"
           :class="{ active: rivalEventActive }"
-          @click="rivalEventActive && emit('openEvent')"
+          :style="{ '--card-seed': 0.2 }"
+          @click.stop="rivalEventActive && emit('openEvent')"
         >
           <div class="pc-banner-icon">
             {{ rivalEventIcon }}
@@ -83,7 +84,7 @@ const bannerStyle = computed(() => ({
         <!-- 2. Guardería -->
         <div
           class="pc-banner"
-          @click="emit('openTab', 'daycare')"
+          @click.stop="emit('openTab', 'daycare')"
         >
           <div class="pc-banner-icon">
             📜
@@ -132,7 +133,7 @@ const bannerStyle = computed(() => ({
         <!-- 3. Gimnasios -->
         <div
           class="pc-banner"
-          @click="emit('openTab', 'gyms')"
+          @click.stop="emit('openTab', 'gyms')"
         >
           <div class="pc-banner-icon">
             🏆
@@ -171,7 +172,7 @@ const bannerStyle = computed(() => ({
         <!-- 4. Crianza -->
         <div
           class="pc-banner"
-          @click="emit('openTab', 'daycare')"
+          @click.stop="emit('openTab', 'daycare')"
         >
           <div class="pc-banner-icon">
             🥚
@@ -233,8 +234,8 @@ const bannerStyle = computed(() => ({
   position: relative;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,0,0,0.5);
-  border: 4px solid #ff007f !important;
+  box-shadow: 0 10px 40px Rgba(0,0,0,0.6), inset 0 0 15px Rgba(0,0,0,0.5);
+  border: 4px solid Rgba(255, 0, 127, 1) !important;
   overflow: hidden; // Crucial para que la imagen siga la curva
   
   .banner-bg {
@@ -242,7 +243,7 @@ const bannerStyle = computed(() => ({
     inset: -5px; // Sangrado profundo para asegurar que cubra debajo del marco
     background-size: cover;
     background-position: center 20%;
-    z-index: 1;
+    z-index: calc(var(--z-base) + 1);
     border-radius: 16px; // Ajustado para curva interna (20px - 4px)
     @include pixelated;
     image-rendering: pixelated;
@@ -253,8 +254,8 @@ const bannerStyle = computed(() => ({
     content: '';
     position: absolute;
     inset: -5px; // Sangrado profundo
-    background: linear-gradient(to top, $black 0%, rgba(0,0,0,0.85) 35%, transparent 70%);
-    z-index: 2;
+    background: linear-gradient(to top, $black 0%, Rgba(0,0,0,0.85) 35%, transparent 70%);
+    z-index: calc(var(--z-base) + 2);
     pointer-events: none;
     border-radius: 16px;
   }
@@ -263,8 +264,8 @@ const bannerStyle = computed(() => ({
     transform: translateY(-6px);
     border-color: var(--yellow) !important;
     box-shadow: 
-      0 20px 50px rgba(0, 0, 0, 0.7), 
-      0 0 30px rgba(255, 214, 10, 0.5);
+      0 20px 50px Rgba(0, 0, 0, 0.7), 
+      0 0 30px Rgba(255, 214, 10, 0.5);
   }
 }
 
@@ -275,22 +276,25 @@ const bannerStyle = computed(() => ({
   right: -2px;
   padding: 24px;
   text-align: left;
-  z-index: 3;
+  z-index: calc(var(--z-base) + 3);
   border-radius: 0 0 16px 16px;
-  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  background: linear-gradient(to top, Rgba(0,0,0,0.4), transparent);
 }
 
 .banner-title {
   @include pixelated;
   font-size: 24px;
+  font-weight: 700; // Keep titles bold
   color: white;
   margin-bottom: 4px;
-  text-shadow: 0 4px 12px rgba(0,0,0,1);
+  text-shadow: 0 4px 12px Rgba(0,0,0,1);
 }
 
 .banner-desc {
-  font-size: 11px;
-  color: rgba(255,255,255,0.8);
+  @include pixelated;
+  font-size: 8px;
+  font-weight: 400 !important; // Remove bold
+  color: Rgba(255,255,255,0.8);
   max-width: 90%;
 }
 
@@ -298,14 +302,14 @@ const bannerStyle = computed(() => ({
   position: absolute;
   top: 15px;
   right: 15px;
-  background: #ff3333;
-  color: white;
+  background: Rgba(255, 51, 51, 1);
+  color: var(--white);
   padding: 6px 12px;
   border-radius: 10px;
   @include pixelated;
   font-size: 8px;
-  box-shadow: 0 4px 10px rgba(255,51,51,0.3);
-  z-index: 4;
+  box-shadow: 0 4px 10px Rgba(255,51,51,0.3);
+  z-index: calc(var(--z-base) + 4);
 }
 
 .pc-banner-grid {
@@ -320,7 +324,7 @@ const bannerStyle = computed(() => ({
 }
 
 .pc-banner {
-  @include glass-solid(rgba(15, 23, 42, 0.95));
+  @include glass-solid(Rgba(15, 23, 42, 0.95));
   border-radius: 16px;
   padding: 12px 16px; // Reduced vertical padding
   display: flex;
@@ -331,25 +335,25 @@ const bannerStyle = computed(() => ({
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 85px;
   
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   box-shadow: 
-    0 8px 30px rgba(0, 0, 0, 0.5), 
-    inset 0 1px 1px rgba(255, 255, 255, 0.12),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.3);
+    0 8px 30px Rgba(0, 0, 0, 0.5), 
+    inset 0 1px 1px Rgba(255, 255, 255, 0.12),
+    inset 0 -1px 2px Rgba(0, 0, 0, 0.3);
   
   transform: TranslateZ(0);
   backface-visibility: hidden;
   will-change: transform, background;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: Rgba(255, 255, 255, 0.12);
     border-color: var(--yellow);
     box-shadow: 
       0 0 0 1px var(--yellow), 
-      0 12px 30px rgba(0, 0, 0, 0.6), 
-      0 0 20px rgba(255, 214, 10, 0.4);
+      0 12px 30px Rgba(0, 0, 0, 0.6), 
+      0 0 20px Rgba(255, 214, 10, 0.4);
     transform: translateY(-4px);
-    z-index: 5;
+    z-index: calc(var(--z-base) + 5);
   }
 
   &::after {
@@ -358,9 +362,9 @@ const bannerStyle = computed(() => ({
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.01));
-    -webkit-mask: linear-gradient($white 0 0) content-box, linear-gradient($white 0 0);
-    mask: linear-gradient($white 0 0) content-box, linear-gradient($white 0 0);
+    background: linear-gradient(180deg, Rgba(255,255,255,0.08), Rgba(255,255,255,0.01));
+    -webkit-mask: linear-gradient(var(--white) 0 0) content-box, linear-gradient(var(--white) 0 0);
+    mask: linear-gradient(var(--white) 0 0) content-box, linear-gradient(var(--white) 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -371,11 +375,11 @@ const bannerStyle = computed(() => ({
   width: 44px;
   height: 44px;
   @include flex-center;
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   font-size: 24px;
   flex-shrink: 0;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+  box-shadow: inset 0 0 10px Rgba(0,0,0,0.3);
 }
 
 .pc-banner-content-wrapper {
@@ -389,6 +393,7 @@ const bannerStyle = computed(() => ({
 .pc-banner-title {
   @include pixelated;
   font-size: 8px;
+  font-weight: 700; // Keep titles bold
   color: var(--gray);
   text-transform: uppercase;
   @include pixelated;
@@ -405,23 +410,28 @@ const bannerStyle = computed(() => ({
 }
 
 .pc-banner-text {
-  font-size: 13px;
-  font-weight: 700;
+  @include pixelated;
+  font-size: 8px;
+  font-weight: 400 !important; // Remove bold
   line-height: 1.4;
-  color: $white;
+  color: var(--white);
   flex: 1 1 180px; 
   min-width: 0;
   white-space: normal; // Ensure wrapping
   word-break: break-word;
   
-  span { color: var(--yellow); }
+  span { 
+    color: var(--yellow);
+    font-weight: normal !important;
+  }
+  
   .text-highlight { 
     color: var(--yellow); 
     @include pixelated;
-    font-size: 9px;
+    font-size: 8px !important; // Match base text size
+    font-weight: normal !important;
     display: block;
     margin-bottom: 4px;
-    @include pixelated;
     white-space: normal;
   }
 }
@@ -441,7 +451,7 @@ const bannerStyle = computed(() => ({
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: Drop-Shadow(0 4px 6px rgba(0,0,0,0.4));
+    filter: Drop-Shadow(0 4px 6px Rgba(0,0,0,0.4));
   }
 
   img {
@@ -460,7 +470,7 @@ const bannerStyle = computed(() => ({
     align-items: center;
     justify-content: center;
     font-size: 14px;
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     border-radius: 6px;
     color: $muted;
   }
@@ -470,10 +480,10 @@ const bannerStyle = computed(() => ({
     @include pixelated;
     font-size: 8px;
     color: var(--yellow);
-    background: rgba(0, 0, 0, 0.4);
+    background: Rgba(0, 0, 0, 0.4);
     padding: 4px 6px;
     border-radius: 6px;
-    border: 1px solid rgba(255, 217, 61, 0.2);
+    border: 1px solid Rgba(255, 217, 61, 0.2);
     @include pixelated;
     display: flex;
     align-items: center;
@@ -485,35 +495,35 @@ const bannerStyle = computed(() => ({
 .event-banner {
   &.active {
     background: linear-gradient(135deg, 
-      rgba(255, 214, 10, 0.2) 0%, 
-      rgba(15, 23, 42, 0.95) 100%
+      Rgba(255, 214, 10, 0.2) 0%, 
+      Rgba(15, 23, 42, 0.95) 100%
     ) !important;
-    border-color: rgba(255, 214, 10, 0.8) !important;
+    border-color: Rgba(255, 214, 10, 0.8) !important;
     box-shadow: 
-      0 10px 30px rgba(0, 0, 0, 0.6),
-      0 0 20px rgba(255, 214, 10, 0.25);
+      0 10px 30px Rgba(0, 0, 0, 0.6),
+      0 0 20px Rgba(255, 214, 10, 0.25);
     
     .pc-banner-title { color: var(--yellow); opacity: 1; }
     .pc-banner-icon { 
-      background: rgba(255, 214, 10, 0.3);
+      background: Rgba(255, 214, 10, 0.3);
       color: var(--yellow); 
-      box-shadow: 0 0 15px rgba(255, 214, 10, 0.4);
+      box-shadow: 0 0 15px Rgba(255, 214, 10, 0.4);
     }
 
     &::after {
-      background: linear-gradient(180deg, rgba(255, 214, 10, 0.3), rgba(255, 214, 10, 0.05));
+      background: linear-gradient(180deg, Rgba(255, 214, 10, 0.3), Rgba(255, 214, 10, 0.05));
     }
 
     &:hover {
       background: linear-gradient(135deg, 
-        rgba(255, 214, 10, 0.3) 0%, 
-        rgba(30, 41, 59, 0.95) 100%
+        Rgba(255, 214, 10, 0.3) 0%, 
+        Rgba(30, 41, 59, 0.95) 100%
       ) !important;
       border-color: var(--yellow) !important;
       box-shadow: 
         0 0 0 2px var(--yellow), 
-        0 15px 40px rgba(0, 0, 0, 0.7), 
-        0 0 35px rgba(255, 214, 10, 0.6);
+        0 15px 40px Rgba(0, 0, 0, 0.7), 
+        0 0 35px Rgba(255, 214, 10, 0.6);
     }
   }
 }

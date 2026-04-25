@@ -22,10 +22,10 @@ const activeDisplayEvents = computed(() => {
   >
     <TransitionGroup name="banner-slide">
       <div 
-        v-for="event in activeDisplayEvents" 
+        v-for="(event, index) in activeDisplayEvents" 
         :key="event.id" 
         class="event-banner"
-        :style="{ '--event-color': event.color }"
+        :style="{ '--event-color': event.color, '--event-seed': index * 0.33 }"
       >
         <div class="glow" />
         <div class="event-banner-content">
@@ -63,7 +63,7 @@ const activeDisplayEvents = computed(() => {
 
 .event-banner {
   position: relative;
-  background: rgba(0, 0, 0, 0.7);
+  background: Rgba(0, 0, 0, 0.7);
   -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   border-left: 4px solid var(--event-color);
   padding: 12px 20px;
@@ -71,7 +71,7 @@ const activeDisplayEvents = computed(() => {
   display: flex;
   align-items: center;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.3);
   min-width: 280px;
   @include gpu-layer;
   
@@ -103,6 +103,7 @@ const activeDisplayEvents = computed(() => {
         font-size: 1.2rem;
         filter: Drop-Shadow(0 0 5px var(--event-color));
         animation: pulse 2s infinite;
+        animation-delay: calc(var(--event-seed, 0) * -2s);
         flex-shrink: 0;
       }
       
@@ -120,7 +121,7 @@ const activeDisplayEvents = computed(() => {
     .event-banner-body {
       .desc {
         font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.8);
+        color: Rgba(255, 255, 255, 0.8);
         line-height: 1.4;
         white-space: normal;
         max-width: 100%;

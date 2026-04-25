@@ -178,8 +178,8 @@ const handlePokemonClick = (index) => {
 
 .rocket-hint {
   color: #ef4444;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: Rgba(239, 68, 68, 0.08);
+  border: 1px solid Rgba(239, 68, 68, 0.2);
 }
 
 .normal-hint {

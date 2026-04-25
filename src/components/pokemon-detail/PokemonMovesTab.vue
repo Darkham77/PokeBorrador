@@ -37,10 +37,10 @@ const hexToRgb = (hex) => {
           :style="{ 
             '--m-type-color': PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'],
             '--m-type-rgb': hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal']),
-            background: `linear-gradient(135deg, rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%)`,
-            borderColor: `rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.15)`
+            background: `linear-gradient(135deg, Rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.1) 0%, Rgba(255, 255, 255, 0.02) 100%)`,
+            borderColor: `Rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.15)`
           }"
-          @click="uiStore.openMoveDetail(m.name)"
+          @click.stop="uiStore.openMoveDetail(m.name)"
         >
           <div class="move-top">
             <span class="m-name pixelated">{{ m.name }}</span>
@@ -151,7 +151,7 @@ const hexToRgb = (hex) => {
             v-for="m in moveDetails"
             :key="m.name"
             class="clickable-row"
-            @click="uiStore.openMoveDetail(m.name)"
+            @click.stop="uiStore.openMoveDetail(m.name)"
           >
             <td class="vp-move-lv pixelated">
               {{ m.level }}

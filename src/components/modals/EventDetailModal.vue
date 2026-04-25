@@ -24,15 +24,15 @@ const sched = computed(() => {
 })
 
 const bonusMap = {
-  expMult:      { label: '⚡ EXP', color: '#a78bfa' },
-  moneyMult:    { label: '💰 Dinero', color: '#fbbf24' },
-  bcMult:       { label: '🪙 Battle Coins', color: '#60a5fa' },
-  shinyMult:    { label: '✨ Shiny Rate (Salvaje)', color: '#f472b6' },
-  eggShinyMult: { label: '✨ Shiny Rate (Huevos)', color: '#f472b6' },
-  hatchMult:    { label: '🥚 Eclosión Rápida', color: '#34d399' },
-  rivalMult:    { label: '😈 Aparición de Rival', color: '#ef4444' },
-  trainerMult:  { label: '🎒 Aparición de Entrenadores', color: '#3b82f6' },
-  fishingMult:  { label: '🎣 Eventos de Pesca', color: '#0ea5e9' },
+  expMult:      { label: '⚡ EXP', color: 'Rgba(167, 139, 250, 1)' },
+  moneyMult:    { label: '💰 Dinero', color: 'Rgba(251, 191, 36, 1)' },
+  bcMult:       { label: '🪙 Battle Coins', color: 'Rgba(96, 165, 250, 1)' },
+  shinyMult:    { label: '✨ Shiny Rate (Salvaje)', color: 'Rgba(244, 114, 182, 1)' },
+  eggShinyMult: { label: '✨ Shiny Rate (Huevos)', color: 'Rgba(244, 114, 182, 1)' },
+  hatchMult:    { label: '🥚 Eclosión Rápida', color: 'Rgba(52, 211, 153, 1)' },
+  rivalMult:    { label: '😈 Aparición de Rival', color: 'Rgba(239, 68, 68, 1)' },
+  trainerMult:  { label: '🎒 Aparición de Entrenadores', color: 'Rgba(59, 130, 246, 1)' },
+  fishingMult:  { label: '🎣 Eventos de Pesca', color: 'Rgba(14, 165, 233, 1)' },
 }
 
 const activeBonuses = computed(() => {
@@ -199,7 +199,7 @@ const scheduleText = computed(() => {
       <!-- Botón Entendido -->
       <button 
         class="legacy-confirm-btn"
-        @click="emit('close')"
+        @click.stop="emit('close')"
       >
         ¡ENTENDIDO!
       </button>
@@ -219,7 +219,7 @@ const scheduleText = computed(() => {
   font-size: 64px;
   text-align: center;
   margin-bottom: 10px;
-  filter: Drop-Shadow(0 0 15px rgba(255, 214, 10, 0.4));
+  filter: Drop-Shadow(0 0 15px Rgba(255, 214, 10, 0.4));
 }
 
 .event-header {
@@ -237,7 +237,7 @@ const scheduleText = computed(() => {
 
   .event-desc {
     font-size: 13px;
-    color: #94a3b8;
+    color: Rgba(148, 163, 184, 1);
     line-height: 1.6;
     padding: 0 20px;
   }
@@ -268,10 +268,10 @@ const scheduleText = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 14px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 
   .bonus-left {
     display: flex;
@@ -285,7 +285,7 @@ const scheduleText = computed(() => {
 
   .bonus-label {
     font-size: 14px;
-    color: #cbd5e1;
+    color: Rgba(203, 213, 225, 1);
   }
 
   .bonus-value {
@@ -296,7 +296,7 @@ const scheduleText = computed(() => {
 }
 
 .prizes-container {
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -320,24 +320,24 @@ const scheduleText = computed(() => {
     font-weight: 600;
   }
 
-  &.gold { .rank, .desc { color: #fde68a; } }
-  &.silver { .rank, .desc { color: #cbd5e1; } }
-  &.bronze { .rank, .desc { color: #b45309; } }
+  &.gold { .rank, .desc { color: Rgba(253, 230, 138, 1); } }
+  &.silver { .rank, .desc { color: Rgba(203, 213, 225, 1); } }
+  &.bronze { .rank, .desc { color: Rgba(180, 83, 9, 1); } }
 }
 
 .info-box {
-  background: rgba(255, 255, 255, 0.04);
+  background: Rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 15px 20px;
   font-size: 14px;
-  color: #cbd5e1;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: Rgba(203, 213, 225, 1);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   text-align: center;
 
   &.active {
-    background: rgba(34, 197, 94, 0.1);
-    border-color: rgba(34, 197, 94, 0.2);
-    color: #4ade80;
+    background: Rgba(34, 197, 94, 0.1);
+    border-color: Rgba(34, 197, 94, 0.2);
+    color: Rgba(74, 222, 128, 1);
   }
 }
 

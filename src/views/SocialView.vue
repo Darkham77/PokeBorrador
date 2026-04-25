@@ -26,14 +26,14 @@ onMounted(() => {
       <button 
         class="tab-link" 
         :class="{ active: activeTab === 'friends' }"
-        @click="activeTab = 'friends'"
+        @click.stop="activeTab = 'friends'"
       >
         <span class="tab-label">AMIGOS</span>
       </button>
       <button 
         class="tab-link rankings" 
         :class="{ active: activeTab === 'rankings' }"
-        @click="activeTab = 'rankings'"
+        @click.stop="activeTab = 'rankings'"
       >
         <div class="glow-box" />
         <span class="tab-label">HALL</span>
@@ -41,14 +41,14 @@ onMounted(() => {
       <button 
         class="tab-link" 
         :class="{ active: activeTab === 'search' }"
-        @click="activeTab = 'search'"
+        @click.stop="activeTab = 'search'"
       >
         <span class="tab-label">BUSCAR</span>
       </button>
       <button 
         class="tab-link" 
         :class="{ active: activeTab === 'requests' }"
-        @click="activeTab = 'requests'"
+        @click.stop="activeTab = 'requests'"
       >
         <span class="tab-label">PEDIDOS</span>
         <span
@@ -81,9 +81,10 @@ onMounted(() => {
 
 .tabs-nav {
   display: flex;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0,0,0,0.4);
-  -webkit-backdrop-filter: Blur(5px); -webkit-backdrop-filter: Blur(5px); backdrop-filter: Blur(5px);
+  border-bottom: 2px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: Blur(5px);
+  backdrop-filter: Blur(5px);
   position: sticky;
   top: 0;
   z-index: var(--z-base);
@@ -95,7 +96,7 @@ onMounted(() => {
   background: none;
   border: none;
   padding: 20px 10px;
-  color: #888;
+  color: var(--gray);
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
@@ -111,7 +112,7 @@ onMounted(() => {
   }
 
   &.active {
-    color: $white;
+    color: var(--white);
     &:after {
       content: '';
       position: absolute;
@@ -119,24 +120,24 @@ onMounted(() => {
       left: 10%;
       width: 80%;
       height: 2px;
-      background: $white;
-      box-shadow: 0 0 10px $white;
+      background: var(--white);
+      box-shadow: 0 0 10px var(--white);
     }
   }
 
   &.rankings {
-    color: #fbbf24;
+    color: var(--yellow);
     &.active {
       &:after {
-        background: #fbbf24;
-        box-shadow: 0 0 10px #fbbf24;
+        background: var(--yellow);
+        box-shadow: 0 0 10px var(--yellow);
       }
     }
 
     .glow-box {
       position: absolute;
       inset: 5px;
-      background: rgba(251, 191, 36, 0.05);
+      background: Rgba(255, 184, 0, 0.05);
       border-radius: 8px;
       opacity: 0;
       transition: opacity 0.3s;
@@ -151,8 +152,8 @@ onMounted(() => {
     position: absolute;
     top: 8px;
     right: 4px;
-    background: #ff4757;
-    color: white;
+    background: var(--red);
+    color: var(--white);
     border-radius: 50%;
     width: 16px;
     height: 16px;
@@ -161,13 +162,13 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     font-family: sans-serif;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    box-shadow: 0 2px 4px Rgba(0,0,0,0.4);
   }
 }
 
 .social-view-content {
   padding: 15px var(--ui-h-padding);
-  background: rgba(0,0,0,0.1);
+  background: Rgba(0,0,0,0.1);
   @include gpu-layer;
 }
 

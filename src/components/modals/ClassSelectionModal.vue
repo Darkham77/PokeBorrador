@@ -46,7 +46,7 @@ const getButtonVariant = (clsId) => {
     :show="show"
     title="⚡ ELEGÍ TU CLASE ⚡"
     title-color="var(--yellow)"
-    header-background="#1a1c2e"
+    header-background="Rgba(26, 28, 46, 1)"
     max-width="95%"
     variant="retro"
     @close="close"
@@ -114,7 +114,7 @@ const getButtonVariant = (clsId) => {
           <button 
             :class="['btn-vicio-' + getButtonVariant(cls.id), 'btn-vicio-full']"
             :disabled="classStore.playerClass === cls.id"
-            @click="handleSelect(cls.id)"
+            @click.stop="handleSelect(cls.id)"
           >
             <div class="btn-label-stack">
               <span class="btn-label">
@@ -133,6 +133,7 @@ const getButtonVariant = (clsId) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .class-selection-container {
@@ -146,8 +147,8 @@ const getButtonVariant = (clsId) => {
   text-align: center;
   .selection-subtitle {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
-    font-family: 'Press Start 2P', cursive;
+    color: Rgba(255, 255, 255, 0.5);
+    @include pixelated;
     line-height: 1.6;
     max-width: 800px;
     margin: 0 auto;
@@ -164,9 +165,9 @@ const getButtonVariant = (clsId) => {
 
 .class-card-premium {
   position: relative;
-  background: rgba(30, 41, 59, 0.4);
+  background: Rgba(30, 41, 59, 0.4);
   -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 32px 20px;
   display: flex;
@@ -187,15 +188,15 @@ const getButtonVariant = (clsId) => {
   }
 
   &.is-current {
-    border-color: #22c55e;
+    border-color: Rgba(34, 197, 94, 1);
     &::after {
       content: 'ACTUAL';
       position: absolute;
       top: 12px;
       right: 12px;
       font-size: 8px;
-      font-family: 'Press Start 2P', cursive;
-      color: #22c55e;
+      @include pixelated;
+      color: Rgba(34, 197, 94, 1);
     }
   }
 
@@ -214,7 +215,7 @@ const getButtonVariant = (clsId) => {
   .avatar-circle {
     width: 100px;
     height: 100px;
-    background: rgba(0, 0, 0, 0.3);
+    background: Rgba(0, 0, 0, 0.3);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -230,7 +231,7 @@ const getButtonVariant = (clsId) => {
 }
 
 .class-title {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 14px;
   color: var(--cls-color);
   margin-bottom: 16px;
@@ -240,7 +241,7 @@ const getButtonVariant = (clsId) => {
 
 .class-desc {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: Rgba(255, 255, 255, 0.6);
   text-align: center;
   line-height: 1.5;
   margin-bottom: 24px;
@@ -260,7 +261,7 @@ const getButtonVariant = (clsId) => {
   .stats-section {
     h3 {
       font-size: 9px;
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
@@ -268,8 +269,8 @@ const getButtonVariant = (clsId) => {
       @include pixelated;
     }
     
-    &.pros h3 { color: #22c55e; }
-    &.cons h3 { color: #ef4444; }
+    &.pros h3 { color: Rgba(34, 197, 94, 1); }
+    &.cons h3 { color: Rgba(239, 68, 68, 1); }
 
     ul {
       list-style: none;
@@ -279,7 +280,7 @@ const getButtonVariant = (clsId) => {
       gap: 8px;
       li {
         font-size: 11px;
-        color: rgba(255, 255, 255, 0.7);
+        color: Rgba(255, 255, 255, 0.7);
         line-height: 1.4;
         position: relative;
         padding-left: 12px;
@@ -287,7 +288,7 @@ const getButtonVariant = (clsId) => {
           content: '•';
           position: absolute;
           left: 0;
-          color: rgba(255, 255, 255, 0.3);
+          color: Rgba(255, 255, 255, 0.3);
         }
       }
     }

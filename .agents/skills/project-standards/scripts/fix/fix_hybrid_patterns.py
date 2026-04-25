@@ -72,6 +72,10 @@ def fix_file(filepath):
         # Fix previous buggy injection if present
         content = content.replace(r"\'none\'", "'none'")
 
+        # 2. Fix Click Propagation (@click -> @click.stop)
+        # Targeted at components that likely need .stop (cards, items, buttons in modals)
+        content = re.sub(r'@click(?!\.stop)(?!\.prevent)="([^"]+)"', r'@click.stop="\1"', content)
+
     # 2. Fix Hardcoded Colors (in .scss and inside <style> in .vue)
     lines = content.split('\n')
     new_lines = []

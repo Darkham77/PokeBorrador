@@ -13,8 +13,8 @@
 }
 
 .pokedex-header {
-  @include glass-solid(rgba(15, 23, 42, 0.95));
-  padding: 40px;
+  @include glass-solid(Rgba(15, 23, 42, 0.95));
+  padding: 20px 30px; // Reduced from 40px
   border-radius: 24px;
   
   .header-content {
@@ -29,10 +29,11 @@
     h1 {
       @include pixelated;
       font-size: 24px;
-      color: $white;
+      color: var(--white);
       margin: 0 0 12px 0;
-      background: linear-gradient(to bottom, $white, #94a3b8);
+      background: linear-gradient(to bottom, var(--white), var(--gray));
       -webkit-background-clip: text;
+      -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;
       -webkit-text-fill-color: transparent;
       @include pixelated;
     }
@@ -53,21 +54,21 @@
   gap: 20px;
 
   .stat-card {
-    background: rgba(255, 255, 255, 0.03);
-    padding: 20px 32px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.03);
+    padding: 12px 20px; // Reduced from 20px 32px
+    border-radius: 16px;
+    border: 1px solid Rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 140px;
+    min-width: 110px; // Reduced from 140px
     @include will-animate(transform, background-color);
     transition: all 0.3s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: Rgba(255, 255, 255, 0.08);
       transform: TranslateY(-2px);
-      border-color: rgba(255, 255, 255, 0.1);
+      border-color: Rgba(255, 255, 255, 0.1);
     }
 
     .stat-label {
@@ -75,54 +76,52 @@
       color: var(--gray);
       margin-bottom: 8px;
       @include pixelated;
-      @include pixelated;
     }
     span.stat-value {
       font-size: 24px;
       font-weight: 700;
-      color: #f8fafc;
-      @include pixelated;
+      color: var(--white);
       @include pixelated;
       
       small { font-size: 8px; color: var(--gray); margin-left: 4px; }
     }
 
     &.highlight {
-      background: rgba(255, 214, 10, 0.05);
-      border-color: rgba(255, 214, 10, 0.2);
+      background: Rgba(255, 184, 0, 0.05);
+      border-color: Rgba(255, 184, 0, 0.2);
       
       span.stat-value { 
         color: var(--yellow); 
-        text-shadow: 0 0 15px rgba(255, 214, 10, 0.3); 
+        text-shadow: 0 0 15px Rgba(255, 184, 0, 0.3); 
       }
     }
   }
 }
 
 .pokedex-controls {
-  @include glass-solid(rgba(15, 23, 42, 0.95));
-  padding: 20px;
-  border-radius: 20px;
+  @include glass-solid(Rgba(15, 23, 42, 0.95));
+  padding: 10px 16px; // Reduced from 12px 20px
+  border-radius: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
+  gap: 20px;
+  flex-wrap: nowrap;
 
-  @include responsive(hud-mobile) {
+  @media (max-width: 1000px) {
+    flex-wrap: wrap;
     flex-direction: column;
     align-items: stretch;
-    gap: 16px;
-    padding: 16px;
+    gap: 12px;
   }
 }
 
 .gen-tabs {
   display: flex;
-  background: rgba(0,0,0,0.3);
+  background: Rgba(0, 0, 0, 0.3);
   padding: 6px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   
   .tab-btn {
     padding: 10px 24px;
@@ -135,15 +134,14 @@
     border-radius: 8px;
     @include will-animate(transform, background-color, color);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    @include pixelated;
 
-    &:hover { color: $white; }
+    &:hover { color: var(--white); }
     &.active {
-      background: rgba(255, 255, 255, 0.1);
-      color: $white;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      background: Rgba(255, 255, 255, 0.1);
+      color: var(--white);
+      box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.3);
       transform: Scale(1.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
     }
   }
 }
@@ -151,15 +149,14 @@
 .controls-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
   flex: 1;
   justify-content: flex-end;
+  min-width: 0; // Allow shrinking
 
-  @include responsive(hud-mobile) {
-    flex-direction: column;
-    align-items: stretch;
+  @media (max-width: 1000px) {
     width: 100%;
-    gap: 12px;
+    justify-content: space-between;
   }
 }
 
@@ -167,10 +164,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(0,0,0,0.2);
+  background: Rgba(0, 0, 0, 0.2);
   padding: 6px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  flex: none; // Don't grow
 
   @include responsive(hud-mobile) {
     width: 100%;
@@ -181,35 +179,37 @@
     font-size: 8px;
     color: var(--gray);
     @include pixelated;
-    @include pixelated;
   }
 
   .pdex-sort-btn {
-    padding: 8px 12px;
-    background: none;
-    border: 1px solid transparent;
+    padding: 8px 16px;
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     color: var(--gray);
     @include pixelated;
     font-size: 8px;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 8px;
     transition: all 0.2s;
-    @include pixelated;
 
-    &:hover { color: $white; }
+    &:hover { 
+      background: Rgba(255, 255, 255, 0.08);
+      color: var(--white); 
+    }
     &.active {
-      background: rgba(255,255,255,0.08);
-      color: $white;
-      border-color: rgba(255,255,255,0.1);
+      background: Rgba(255, 255, 255, 0.15);
+      color: var(--yellow);
+      border-color: var(--yellow);
+      box-shadow: 0 0 15px Rgba(255, 184, 0, 0.1);
     }
   }
 }
 
 .search-wrapper {
   position: relative;
-  flex: 1;
-  min-width: 200px;
-  max-width: 400px;
+  flex: 1; // Grow to take available space
+  max-width: 350px; // But not too much
+  min-width: 140px;
 
   @include responsive(hud-mobile) {
     width: 100%;
@@ -228,20 +228,20 @@
   
   .pdex-search-input {
     width: 100%;
-    background: rgba(0,0,0,0.25);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: Rgba(0, 0, 0, 0.25);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 12px 16px 12px 44px;
-    color: $white;
+    color: var(--white);
     font-size: 14px;
     font-family: 'Inter', sans-serif;
     outline: none;
     transition: all 0.3s ease;
 
     &:focus {
-      background: rgba(0,0,0,0.35);
+      background: Rgba(0, 0, 0, 0.35);
       border-color: var(--yellow);
-      box-shadow: 0 0 20px rgba(255, 214, 10, 0.15);
+      box-shadow: 0 0 20px Rgba(255, 184, 0, 0.15);
       
       & + .pdex-search-icon { opacity: 0.8; }
     }
@@ -257,7 +257,7 @@
 
 .pokemon-card {
   position: relative;
-  @include glass(rgba(30, 41, 59, 0.3), 12px);
+  @include glass(Rgba(30, 41, 59, 0.3), 12px);
   border-radius: 20px;
   padding: 6px 8px; // Reduced from 10px
   cursor: pointer;
@@ -275,20 +275,20 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent 70%);
+    background: radial-gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
     opacity: 0;
     transition: opacity 0.3s;
   }
 
   &:hover:not(.is-unseen) {
     transform: TranslateY(-8px);
-    background: rgba(30, 41, 59, 0.5);
+    background: Rgba(30, 41, 59, 0.5);
     border-color: var(--yellow);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 20px rgba(255, 214, 10, 0.2);
+    box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.5), 0 0 20px Rgba(255, 184, 0, 0.2);
     
     &::before { opacity: 1; }
     & .pdx-pokemon-sprite { transform: Scale(1.15) Rotate(5deg); }
-    & .pdx-pokemon-name { color: $white; }
+    & .pdx-pokemon-name { color: var(--white); }
   }
 
   &.is-unseen {
@@ -299,8 +299,8 @@
   }
 
   &.is-caught {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.7) 100%);
-    border-color: rgba(255, 214, 10, 0.3);
+    background: linear-gradient(135deg, Rgba(30, 41, 59, 0.4) 0%, Rgba(15, 23, 42, 0.7) 100%);
+    border-color: Rgba(255, 184, 0, 0.3);
   }
 
   .dex-number {
@@ -308,8 +308,7 @@
     top: 12px; // Increased to give more room from the corner
     left: 12px; // Increased to give more room from the corner
     font-size: 7px; // Slightly smaller
-    color: rgba(255, 255, 255, 0.2);
-    @include pixelated;
+    color: Rgba(255, 255, 255, 0.2);
     @include pixelated;
   }
 
@@ -329,10 +328,10 @@
       height: 100%;
       @include sprite-render;
       transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      filter: Drop-Shadow(0 10px 15px rgba(0,0,0,0.3));
+      filter: Drop-Shadow(0 10px 15px Rgba(0, 0, 0, 0.3));
       
       &.silhouette {
-        filter: Brightness(0) Drop-Shadow(0 0 1px rgba(255,255,255,0.2));
+        filter: Brightness(0) Drop-Shadow(0 0 1px Rgba(255, 255, 255, 0.2));
         opacity: 1; // Solid black as requested
       }
     }
@@ -340,9 +339,9 @@
 
     .unknown-placeholder {
       font-size: 32px; // Smaller to fit
-      color: rgba(255, 255, 255, 0.08); // Brighter than the card background
+      color: Rgba(255, 255, 255, 0.08); // Brighter than the card background
       @include pixelated;
-      text-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+      text-shadow: 0 0 15px Rgba(255, 255, 255, 0.05);
     }
   }
 
@@ -363,11 +362,10 @@
       text-align: center;
       transition: color 0.3s;
       letter-spacing: 0.5px; // Tighter
-      @include pixelated;
     }
   }
 }
 
 .glass-morphism {
-  @include glass(rgba(30, 41, 59, 0.5), 16px);
+  @include glass(Rgba(30, 41, 59, 0.5), 16px);
 }

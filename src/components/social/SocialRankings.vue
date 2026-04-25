@@ -11,11 +11,11 @@ onMounted(() => {
 
 const getFactionColor = (faction) => {
   const colors = {
-    'magma': '#ef4444',
-    'aqua': '#3b82f6',
-    'galactic': '#a78bfa'
+    'magma': 'Rgba(239, 68, 68, 1)',
+    'aqua': 'Rgba(59, 130, 246, 1)',
+    'galactic': 'Rgba(167, 139, 250, 1)'
   }
-  return colors[faction?.toLowerCase()] || '#9ca3af'
+  return colors[faction?.toLowerCase()] || 'Rgba(156, 163, 175, 1)'
 }
 </script>
 
@@ -127,11 +127,11 @@ const getFactionColor = (faction) => {
 }
 
 .season-info {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(0, 0, 0, 0.4));
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: linear-gradient(135deg, Rgba(251, 191, 36, 0.1), Rgba(0, 0, 0, 0.4));
+  border: 1px solid Rgba(251, 191, 36, 0.3);
   border-radius: 14px;
   padding: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.3);
 
   .season-header {
     display: flex;
@@ -143,7 +143,7 @@ const getFactionColor = (faction) => {
     .season-name {
       @include pixelated;
       font-size: 8px;
-      color: #fbbf24;
+      color: Rgba(251, 191, 36, 1);
       letter-spacing: 1px;
     }
   }
@@ -160,17 +160,17 @@ const getFactionColor = (faction) => {
 
       .rule-label {
         font-size: 9px;
-        color: #888;
+        color: Rgba(136, 136, 136, 1);
         text-transform: uppercase;
       }
       .rule-val {
         font-size: 11px;
-        color: $white;
+        color: var(--white);
         font-weight: bold;
 
         &.shiny {
-          color: #f472ae;
-          text-shadow: 0 0 5px rgba(244, 114, 174, 0.5);
+          color: Rgba(244, 114, 174, 1);
+          text-shadow: 0 0 5px Rgba(244, 114, 174, 0.5);
         }
       }
     }
@@ -187,27 +187,27 @@ const getFactionColor = (faction) => {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 10px 15px;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     transform: Scale(1.01);
   }
 
-  &.rank-1 { background: linear-gradient(90deg, rgba(251, 191, 36, 0.15), rgba(0,0,0,0)); border-color: rgba(251, 191, 36, 0.4); }
-  &.rank-2 { background: linear-gradient(90deg, rgba(148, 163, 184, 0.15), rgba(0,0,0,0)); border-color: rgba(148, 163, 184, 0.4); }
-  &.rank-3 { background: linear-gradient(90deg, rgba(180, 83, 9, 0.15), rgba(0,0,0,0)); border-color: rgba(180, 83, 9, 0.4); }
+  &.rank-1 { background: linear-gradient(90deg, Rgba(251, 191, 36, 0.15), Rgba(0,0,0,0)); border-color: Rgba(251, 191, 36, 0.4); }
+  &.rank-2 { background: linear-gradient(90deg, Rgba(148, 163, 184, 0.15), Rgba(0,0,0,0)); border-color: Rgba(148, 163, 184, 0.4); }
+  &.rank-3 { background: linear-gradient(90deg, Rgba(180, 83, 9, 0.15), Rgba(0,0,0,0)); border-color: Rgba(180, 83, 9, 0.4); }
 }
 
 .rank-number {
   @include pixelated;
   font-size: 10px;
   width: 24px;
-  color: #666;
+  color: Rgba(102, 102, 102, 1);
 }
 
 .rank-avatar {
@@ -220,9 +220,9 @@ const getFactionColor = (faction) => {
     right: -2px;
     width: 8px;
     height: 8px;
-    background: #10b981;
+    background: Rgba(16, 185, 129, 1);
     border-radius: 50%;
-    border: 1px solid $card2;
+    border: 1px solid Rgba(16, 24, 34, 1);
   }
 }
 
@@ -233,7 +233,7 @@ const getFactionColor = (faction) => {
   .player-name {
     font-size: 13px;
     font-weight: bold;
-    color: $white;
+    color: var(--white);
     margin-bottom: 3px;
     display: flex;
     align-items: center;
@@ -251,7 +251,7 @@ const getFactionColor = (faction) => {
 
   .player-meta {
     font-size: 10px;
-    color: #888;
+    color: Rgba(136, 136, 136, 1);
   }
 }
 
@@ -266,14 +266,14 @@ const getFactionColor = (faction) => {
 .loader {
   text-align: center;
   padding: 40px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   font-size: 12px;
 
   .spinner {
     width: 30px;
     height: 30px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: #fbbf24;
+    border: 3px solid Rgba(255, 255, 255, 0.1);
+    border-top-color: Rgba(251, 191, 36, 1);
     border-radius: 50%;
     margin: 0 auto 15px;
     animation: spin 1s linear infinite;
@@ -287,7 +287,7 @@ const getFactionColor = (faction) => {
 .empty-state {
   text-align: center;
   padding: 40px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   font-size: 12px;
 }
 </style>

@@ -105,7 +105,7 @@ const close = () => { emit('close'); multiSelectMode.value = null; selectedItems
           :key="cat.id"
           class="cat-btn"
           :class="{ active: bagCategory === cat.id }"
-          @click="inventoryStore.bagCategory = cat.id"
+          @click.stop="inventoryStore.bagCategory = cat.id"
         >
           <span class="icon">{{ cat.icon }}</span><span class="label">{{ cat.label }}</span>
         </button>
@@ -133,7 +133,7 @@ const close = () => { emit('close'); multiSelectMode.value = null; selectedItems
               :item="item"
               :is-selected="selectedItems.has(item.name)"
               :multi-select-mode="!!multiSelectMode"
-              @click="handleItemClick(item)"
+              @click.stop="handleItemClick(item)"
             />
           </div>
           <div
@@ -156,13 +156,13 @@ const close = () => { emit('close'); multiSelectMode.value = null; selectedItems
         >
           <button
             class="action-btn"
-            @click="multiSelectMode = 'sell'"
+            @click.stop="multiSelectMode = 'sell'"
           >
             <span class="icon">💰</span> VENDER A ROCKET
           </button>
           <button
             class="action-btn"
-            @click="multiSelectMode = 'release'"
+            @click.stop="multiSelectMode = 'release'"
           >
             <span class="icon">🗑️</span> TIRAR OBJETOS
           </button>
@@ -177,7 +177,7 @@ const close = () => { emit('close'); multiSelectMode.value = null; selectedItems
           <div class="action-buttons">
             <button
               class="btn-cancel"
-              @click="selectedItems.clear(); multiSelectMode = null"
+              @click.stop="selectedItems.clear(); multiSelectMode = null"
             >
               CANCELAR
             </button>
@@ -185,7 +185,7 @@ const close = () => { emit('close'); multiSelectMode.value = null; selectedItems
               class="btn-execute"
               :class="multiSelectMode"
               :disabled="selectedItems.size === 0"
-              @click="handleMultiExecute"
+              @click.stop="handleMultiExecute"
             >
               {{ multiSelectMode === 'sell' ? 'CONFIRMAR VENTA' : 'CONFIRMAR ELIMINACIÓN' }}
             </button>

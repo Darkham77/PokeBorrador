@@ -46,7 +46,7 @@ const onUseItem = (name) => {
             v-for="cat in categories" 
             :key="cat.id"
             :class="['tab-btn', { active: inventoryStore.activeCategory === cat.id }]"
-            @click="inventoryStore.setCategory(cat.id)"
+            @click.stop="inventoryStore.setCategory(cat.id)"
           >
             {{ cat.label }}
           </button>
@@ -65,13 +65,13 @@ const onUseItem = (name) => {
           <button 
             class="btn btn-green" 
             :disabled="Object.keys(inventoryStore.bagSellSelected).length === 0"
-            @click="inventoryStore.confirmBagSell"
+            @click.stop="inventoryStore.confirmBagSell"
           >
             Confirmar Venta
           </button>
           <button
             class="btn btn-gray"
-            @click="inventoryStore.toggleBagSellMode"
+            @click.stop="inventoryStore.toggleBagSellMode"
           >
             Cancelar
           </button>
@@ -96,7 +96,7 @@ const onUseItem = (name) => {
             v-for="item in inventoryStore.bagItems" 
             :key="item.name"
             :class="['item-card', { selected: !!inventoryStore.bagSellSelected[item.name] }]"
-            @click="inventoryStore.bagSellMode ? inventoryStore.toggleBagSellSelect(item.name, item.qty) : null"
+            @click.stop="inventoryStore.bagSellMode ? inventoryStore.toggleBagSellSelect(item.name, item.qty) : null"
           >
             <div class="item-icon-container">
               <img
@@ -132,7 +132,7 @@ const onUseItem = (name) => {
               class="sell-qty-selector"
               @click.stop
             >
-              <button @click="inventoryStore.updateBagSellQty(item.name, inventoryStore.bagSellSelected[item.name] - 1, item.qty)">
+              <button @click.stop="inventoryStore.updateBagSellQty(item.name, inventoryStore.bagSellSelected[item.name] - 1, item.qty)">
                 -
               </button>
               <input 
@@ -140,7 +140,7 @@ const onUseItem = (name) => {
                 :value="inventoryStore.bagSellSelected[item.name]" 
                 @input="inventoryStore.updateBagSellQty(item.name, $event.target.value, item.qty)"
               >
-              <button @click="inventoryStore.updateBagSellQty(item.name, inventoryStore.bagSellSelected[item.name] + 1, item.qty)">
+              <button @click.stop="inventoryStore.updateBagSellQty(item.name, inventoryStore.bagSellSelected[item.name] + 1, item.qty)">
                 +
               </button>
             </div>
@@ -155,7 +155,7 @@ const onUseItem = (name) => {
       >
         <button
           class="btn-sell-mode"
-          @click="inventoryStore.toggleBagSellMode"
+          @click.stop="inventoryStore.toggleBagSellMode"
         >
           💰 Vender Objetos
         </button>
@@ -169,8 +169,8 @@ const onUseItem = (name) => {
 
 .bag-view {
   padding: 0;
-  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.05), transparent),
-              radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.05), transparent);
+  background: radial-gradient(circle at top left, Rgba(59, 130, 246, 0.05), transparent),
+              radial-gradient(circle at bottom right, Rgba(16, 185, 129, 0.05), transparent);
   display: flex;
   justify-content: center;
 }
@@ -199,18 +199,18 @@ const onUseItem = (name) => {
 .title-section h1 {
   @include pixelated;
   font-size: 16px;
-  color: $white;
+  color: var(--white);
   margin: 0;
 }
 
 .icon { font-size: 24px; }
 
 .money-badge {
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: Rgba(34, 197, 94, 0.15);
+  border: 1px solid Rgba(34, 197, 94, 0.3);
   padding: 8px 16px;
   border-radius: 20px;
-  color: #22c55e;
+  color: var(--green-bright);
   @include pixelated;
   font-size: 10px;
 }
@@ -224,10 +224,10 @@ const onUseItem = (name) => {
 .search-input {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  color: $white;
+  color: var(--white);
   outline: none;
 }
 
@@ -242,8 +242,8 @@ const onUseItem = (name) => {
   white-space: nowrap;
   padding: 8px 16px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
   color: var(--gray);
   font-size: 11px;
   cursor: pointer;
@@ -252,7 +252,7 @@ const onUseItem = (name) => {
 
 .tab-btn.active {
   background: var(--purple);
-  color: $white;
+  color: var(--white);
   border-color: var(--purple-light);
 }
 
@@ -267,8 +267,8 @@ const onUseItem = (name) => {
 }
 
 .item-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -281,13 +281,13 @@ const onUseItem = (name) => {
 }
 
 .item-card:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: Rgba(255, 255, 255, 0.06);
   transform: TranslateY(-2px);
 }
 
 .item-card.selected {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.05);
+  border-color: var(--green-bright);
+  background: Rgba(16, 185, 129, 0.05);
 }
 
 .item-icon-container {
@@ -308,7 +308,7 @@ const onUseItem = (name) => {
   bottom: -4px;
   right: -4px;
   background: var(--purple);
-  color: $white;
+  color: var(--white);
   font-size: 9px;
   padding: 2px 6px;
   border-radius: 6px;
@@ -319,7 +319,7 @@ const onUseItem = (name) => {
   font-size: 12px;
   font-weight: bold;
   text-align: center;
-  color: $white;
+  color: var(--white);
 }
 
 .use-btn {
@@ -327,15 +327,15 @@ const onUseItem = (name) => {
   border-radius: 8px;
   border: none;
   background: var(--purple);
-  color: $white;
+  color: var(--white);
   font-size: 10px;
   font-weight: bold;
   cursor: pointer;
 }
 
 .sell-actions {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: Rgba(16, 185, 129, 0.1);
+  border: 1px solid Rgba(16, 185, 129, 0.2);
   padding: 16px;
   border-radius: 16px;
   display: flex;
@@ -354,16 +354,16 @@ const onUseItem = (name) => {
   cursor: pointer;
 }
 
-.btn-green { background: #10b981; color: $white; }
-.btn-gray { background: rgba(255, 255, 255, 0.1); color: $white; }
+.btn-green { background: var(--green-bright); color: var(--white); }
+.btn-gray { background: Rgba(255, 255, 255, 0.1); color: var(--white); }
 
 .btn-sell-mode {
   width: 100%;
   padding: 14px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: $white;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
+  color: var(--white);
   @include pixelated;
   font-size: 10px;
   cursor: pointer;
@@ -378,17 +378,17 @@ const onUseItem = (name) => {
 
 .sell-qty-selector input {
   width: 40px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: $white;
+  background: Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  color: var(--white);
   text-align: center;
   border-radius: 4px;
 }
 
 .sell-qty-selector button {
-  background: rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.1);
   border: none;
-  color: $white;
+  color: var(--white);
   width: 24px;
   height: 24px;
   border-radius: 4px;

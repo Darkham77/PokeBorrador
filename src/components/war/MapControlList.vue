@@ -68,14 +68,15 @@ const allMaps = computed(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .map-control-list {
   margin-top: 20px;
 }
 
 .wc-section-title {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 10px;
-  color: #555;
+  color: Rgba(85, 85, 85, 1);
   margin-bottom: 16px;
   text-align: center;
 }
@@ -87,19 +88,19 @@ const allMaps = computed(() => {
 }
 
 .map-row {
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: Rgba(255, 255, 255, 0.06);
     transform: translateX(4px);
   }
 
-  &.union { border-left: 4px solid #3b82f6; }
-  &.poder { border-left: 4px solid #ef4444; }
+  &.union { border-left: 4px solid Rgba(59, 130, 246, 1); }
+  &.poder { border-left: 4px solid Rgba(239, 68, 68, 1); }
 }
 
 .map-info {
@@ -111,17 +112,17 @@ const allMaps = computed(() => {
   .map-name {
     font-size: 11px;
     font-weight: 600;
-    color: #ccc;
+    color: Rgba(204, 204, 204, 1);
   }
 
   .winner-badge {
     font-size: 8px;
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     padding: 2px 6px;
     border-radius: 4px;
     
-    .union & { background: #3b82f6; color: white; }
-    .poder & { background: #ef4444; color: white; }
+    .union & { background: Rgba(59, 130, 246, 1); color: var(--white); }
+    .poder & { background: Rgba(239, 68, 68, 1); color: var(--white); }
   }
 }
 
@@ -142,8 +143,8 @@ const allMaps = computed(() => {
     color: white;
     transition: width 0.5s ease;
 
-    &.union { background: #3b82f6; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-    &.poder { background: #ef4444; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
+    &.union { background: Rgba(59, 130, 246, 1); box-shadow: inset 0 0 10px Rgba(0, 0, 0, 0.3); }
+    &.poder { background: Rgba(239, 68, 68, 1); box-shadow: inset 0 0 10px Rgba(0, 0, 0, 0.3); }
   }
 }
 </style>

@@ -50,7 +50,7 @@ const selectAvatar = (id) => {
             :key="style.id"
             class="style-card"
             :class="{ active: cosmeticsStore.equippedNickStyle === style.id }"
-            @click="selectNick(style.id)"
+            @click.stop="selectNick(style.id)"
           >
             <div class="preview-area">
               <span
@@ -85,7 +85,7 @@ const selectAvatar = (id) => {
             :key="style.id"
             class="style-card avatar-item"
             :class="{ active: cosmeticsStore.equippedAvatarStyle === style.id }"
-            @click="selectAvatar(style.id)"
+            @click.stop="selectAvatar(style.id)"
           >
             <div class="avatar-preview-box">
               <div
@@ -131,13 +131,13 @@ const selectAvatar = (id) => {
     align-items: center;
     gap: 12px;
     margin-bottom: 8px;
-    h3 { font-size: 18px; color: $white; font-weight: 700; }
+    h3 { font-size: 18px; color: var(--white); font-weight: 700; }
     .badge {
       font-size: 9px;
-      background: rgba(255, 255, 255, 0.05);
+      background: Rgba(255, 255, 255, 0.05);
       padding: 2px 8px;
       border-radius: 4px;
-      color: #94a3b8;
+      color: Rgba(148, 163, 184, 1);
       font-weight: 800;
     }
   }
@@ -155,8 +155,8 @@ const selectAvatar = (id) => {
 }
 
 .style-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -168,15 +168,15 @@ const selectAvatar = (id) => {
   position: relative;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: Rgba(255, 255, 255, 0.06);
     transform: TranslateY(-4px);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: Rgba(255, 255, 255, 0.1);
   }
 
   &.active {
-    background: rgba(59, 130, 246, 0.08);
-    border-color: #3b82f6;
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+    background: Rgba(59, 130, 246, 0.08);
+    border-color: Rgba(59, 130, 246, 1);
+    box-shadow: 0 0 20px Rgba(59, 130, 246, 0.15);
   }
 
   .preview-area {
@@ -198,12 +198,12 @@ const selectAvatar = (id) => {
     .style-name {
       display: block;
       font-size: 11px;
-      color: #94a3b8;
+      color: Rgba(148, 163, 184, 1);
       font-weight: 600;
     }
     .status-tag {
       font-size: 9px;
-      color: #3b82f6;
+      color: Rgba(59, 130, 246, 1);
       font-weight: 800;
       margin-top: 4px;
       display: block;
@@ -219,7 +219,7 @@ const selectAvatar = (id) => {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #1e293b;
+  background: Rgba(30, 41, 59, 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -231,33 +231,33 @@ const selectAvatar = (id) => {
 
 .modal-footer-internal {
   text-align: center;
-  p { font-size: 11px; color: #475569; }
+  p { font-size: 11px; color: Rgba(71, 85, 105, 1); }
 }
 
 /* --- NICK STYLE CLASSES --- */
-.nt-gold { color: $coin-gold; text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
-.nt-silver { color: #E2E8F0; text-shadow: 0 0 8px rgba(226, 232, 240, 0.4); }
-.nt-bronze { color: #CD7F32; text-shadow: 0 0 5px rgba(205, 127, 50, 0.4); }
-.nt-fire { color: #FF4500; animation: anim-fire 2s infinite alternate; }
-.nt-water { color: #38bdf8; animation: anim-water 3s infinite linear; }
-.nt-spark { color: #facc15; animation: anim-spark 0.5s infinite; }
-.nt-dark { color: #6d28d9; text-shadow: 0 0 10px #4c1d95; }
-.nt-royal { color: #ec4899; text-shadow: 0 0 10px #db2777; font-style: italic; }
-.nt-ghost { color: #94a3b8; opacity: 0.7; filter: Blur(0.5px); }
+.nt-gold { color: $coin-gold; text-shadow: 0 0 8px Rgba(255, 215, 0, 0.6); }
+.nt-silver { color: Rgba(226, 232, 240, 1); text-shadow: 0 0 8px Rgba(226, 232, 240, 0.4); }
+.nt-bronze { color: Rgba(205, 127, 50, 1); text-shadow: 0 0 5px Rgba(205, 127, 50, 0.4); }
+.nt-fire { color: Rgba(255, 69, 0, 1); animation: anim-fire 2s infinite alternate; }
+.nt-water { color: Rgba(56, 189, 248, 1); animation: anim-water 3s infinite linear; }
+.nt-spark { color: Rgba(250, 204, 21, 1); animation: anim-spark 0.5s infinite; }
+.nt-dark { color: Rgba(109, 40, 217, 1); text-shadow: 0 0 10px Rgba(76, 29, 149, 1); }
+.nt-royal { color: Rgba(236, 72, 153, 1); text-shadow: 0 0 10px Rgba(219, 39, 119, 1); font-style: italic; }
+.nt-ghost { color: Rgba(148, 163, 184, 1); opacity: 0.7; filter: Blur(0.5px); }
 
 /* --- AVATAR FRAME CLASSES --- */
-.av-water { border-color: #0ea5e9; box-shadow: 0 0 15px #0ea5e9; }
-.av-fire { border-color: #f97316; box-shadow: 0 0 15px #f97316; animation: anim-pulse 2s infinite; }
-.av-ice { border-color: #7dd3fc; box-shadow: 0 0 15px #7dd3fc; border-style: double; }
-.av-dragon { border-color: #8b5cf6; box-shadow: 0 0 20px #8b5cf6; }
-.av-legend { border-color: #fbbf24; box-shadow: 0 0 25px #fbbf24; }
-.av-master { border-color: #ef4444; box-shadow: 0 0 20px #ef4444; border-width: 4px; }
+.av-water { border-color: Rgba(14, 165, 233, 1); box-shadow: 0 0 15px Rgba(14, 165, 233, 1); }
+.av-fire { border-color: Rgba(249, 115, 22, 1); box-shadow: 0 0 15px Rgba(249, 115, 22, 1); animation: anim-pulse 2s infinite; }
+.av-ice { border-color: Rgba(125, 211, 252, 1); box-shadow: 0 0 15px Rgba(125, 211, 252, 1); border-style: double; }
+.av-dragon { border-color: Rgba(139, 92, 246, 1); box-shadow: 0 0 20px Rgba(139, 92, 246, 1); }
+.av-legend { border-color: Rgba(251, 191, 36, 1); box-shadow: 0 0 25px Rgba(251, 191, 36, 1); }
+.av-master { border-color: Rgba(239, 68, 68, 1); box-shadow: 0 0 20px Rgba(239, 68, 68, 1); border-width: 4px; }
 .av-ghost { border-color: $muted; opacity: 0.8; box-shadow: 0 0 10px $muted; }
 
 /* --- ANIMATIONS --- */
 @keyframes anim-fire {
-  from { text-shadow: 0 0 5px #ef4444; }
-  to { text-shadow: 0 0 15px #f97316, 0 0 25px #facc15; }
+  from { text-shadow: 0 0 5px Rgba(239, 68, 68, 1); }
+  to { text-shadow: 0 0 15px Rgba(249, 115, 22, 1), 0 0 25px Rgba(250, 204, 21, 1); }
 }
 
 @keyframes anim-water {

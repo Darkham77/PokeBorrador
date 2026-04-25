@@ -7,7 +7,8 @@ import sys
 TRAPS = [
     'scale', 'grayscale', 'invert', 'opacity', 'brightness', 
     'blur', 'rotate', 'translate', 'saturate', 'drop-shadow',
-    'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix'
+    'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix',
+    'rgb', 'rgba'
 ]
 
 # Regex explanation:
@@ -47,7 +48,7 @@ def fix_file(filepath):
 
 def main():
     target_dirs = ['src']
-    extensions = ['.scss', '.vue']
+    extensions = ['.scss', '.vue', '.js', '.ts']
     fixed_count = 0
 
     for root_dir in target_dirs:

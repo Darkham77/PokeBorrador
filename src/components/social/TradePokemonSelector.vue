@@ -53,9 +53,9 @@ const getIVTotal = (ivs) => {
 }
 
 const getIVColor = (val) => {
-  if (val >= 28) return '#4ade80'
-  if (val >= 15) return '#fbbf24'
-  return '#f87171'
+  if (val >= 28) return 'Rgba(74, 222, 128, 1)'
+  if (val >= 15) return 'Rgba(251, 191, 36, 1)'
+  return 'Rgba(248, 113, 113, 1)'
 }
 
 const select = (poke) => {
@@ -69,7 +69,7 @@ const select = (poke) => {
     <div
       v-if="show"
       class="selector-overlay"
-      @click.self="$emit('close')"
+      @click.self.stop="$emit('close')"
     >
       <div
         class="selector-card animate-slide-up"
@@ -81,7 +81,7 @@ const select = (poke) => {
           </div>
           <button
             class="close-btn"
-            @click="$emit('close')"
+            @click.stop="$emit('close')"
           >
             ✕
           </button>
@@ -100,21 +100,21 @@ const select = (poke) => {
             <button 
               class="filter-btn fav" 
               :class="{ active: filters.fav }"
-              @click="filters.fav = !filters.fav"
+              @click.stop="filters.fav = !filters.fav"
             >
               ⭐ Fav
             </button>
             <button 
               class="filter-btn breed" 
               :class="{ active: filters.breed }"
-              @click="filters.breed = !filters.breed"
+              @click.stop="filters.breed = !filters.breed"
             >
               ❤️ Crianza
             </button>
             <button 
               class="filter-btn iv31" 
               :class="{ active: filters.iv31 }"
-              @click="filters.iv31 = !filters.iv31"
+              @click.stop="filters.iv31 = !filters.iv31"
             >
               🧬 IV 31
             </button>
@@ -155,7 +155,7 @@ const select = (poke) => {
             :key="poke.uid"
             class="poke-row"
             :class="{ locked: lockedUids.has(poke.uid) }"
-            @click="select(poke)"
+            @click.stop="select(poke)"
           >
             <div class="poke-main">
               <div class="sprite-wrapper">
@@ -238,10 +238,11 @@ const select = (poke) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .selector-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: Rgba(0, 0, 0, 0.9);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -254,17 +255,17 @@ const select = (poke) => {
 
 .selector-card {
   width: min(500px, 100%);
-  background: #0f172a;
+  background: Rgba(15, 23, 42, 1);
   border-radius: 24px;
   display: flex;
   flex-direction: column;
   max-height: 90vh;
   overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 60px Rgba(0,0,0,0.8);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 
-  &.offer { border-color: rgba(168, 85, 247, 0.3); }
-  &.request { border-color: rgba(251, 191, 36, 0.3); }
+  &.offer { border-color: Rgba(168, 85, 247, 0.3); }
+  &.request { border-color: Rgba(251, 191, 36, 0.3); }
 }
 
 .card-header {
@@ -272,32 +273,32 @@ const select = (poke) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.02);
+  background: Rgba(255, 255, 255, 0.02);
   
   .title {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 10px;
     color: var(--yellow, #facc15);
   }
 
   .close-btn {
-    background: none; border: none; color: #666; font-size: 20px; cursor: pointer;
-    &:hover { color: white; }
+    background: none; border: none; color: Rgba(102, 102, 102, 1); font-size: 20px; cursor: pointer;
+    &:hover { color: var(--white); }
   }
 }
 
 .filters-section {
   padding: 20px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 
   .search-input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     padding: 12px;
     border-radius: 12px;
     color: white;
@@ -315,16 +316,16 @@ const select = (poke) => {
       padding: 8px;
       font-size: 10px;
       border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(255, 255, 255, 0.03);
-      color: #888;
+      border: 1px solid Rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.03);
+      color: Rgba(136, 136, 136, 1);
       cursor: pointer;
       transition: all 0.2s;
 
       &.active {
-        &.fav { border-color: #fbbf24; background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
-        &.breed { border-color: #f87171; background: rgba(248, 113, 113, 0.1); color: #f87171; }
-        &.iv31 { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); color: #4ade80; }
+        &.fav { border-color: Rgba(251, 191, 36, 1); background: Rgba(251, 191, 36, 0.1); color: Rgba(251, 191, 36, 1); }
+        &.breed { border-color: Rgba(248, 113, 113, 1); background: Rgba(248, 113, 113, 0.1); color: Rgba(248, 113, 113, 1); }
+        &.iv31 { border-color: Rgba(74, 222, 128, 1); background: Rgba(74, 222, 128, 0.1); color: Rgba(74, 222, 128, 1); }
       }
     }
   }
@@ -333,7 +334,7 @@ const select = (poke) => {
     display: flex;
     gap: 16px;
     font-size: 11px;
-    color: #666;
+    color: Rgba(102, 102, 102, 1);
 
     label {
       display: flex;
@@ -357,8 +358,8 @@ const select = (poke) => {
 }
 
 .poke-row {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 12px;
   cursor: pointer;
@@ -368,8 +369,8 @@ const select = (poke) => {
   gap: 12px;
 
   &:hover:not(.locked) {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.06);
+    border-color: Rgba(255, 255, 255, 0.1);
     transform: translateX(4px);
   }
 
@@ -394,7 +395,7 @@ const select = (poke) => {
       width: 100%;
       height: 100%;
       image-rendering: pixelated;
-      &.shiny { filter: Drop-Shadow(0 0 5px rgba(255, 255, 0, 0.5)); }
+      &.shiny { filter: Drop-Shadow(0 0 5px Rgba(255, 255, 0, 0.5)); }
     }
 
     .shiny-star {
@@ -419,11 +420,11 @@ const select = (poke) => {
         padding: 2px 6px;
         border-radius: 4px;
         text-transform: uppercase;
-        &.team { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-        &.box { background: rgba(255, 255, 255, 0.05); color: #888; }
+        &.team { background: Rgba(59, 130, 246, 0.2); color: Rgba(96, 165, 250, 1); }
+        &.box { background: Rgba(255, 255, 255, 0.05); color: Rgba(136, 136, 136, 1); }
       }
     }
-    .meta { font-size: 11px; color: #666; }
+    .meta { font-size: 11px; color: Rgba(102, 102, 102, 1); }
     .tags { display: flex; gap: 4px; margin-top: 4px; }
   }
 }
@@ -437,13 +438,13 @@ const select = (poke) => {
     .iv-bar-wrap {
       flex: 1;
       height: 4px;
-      background: rgba(255, 255, 255, 0.05);
+      background: Rgba(255, 255, 255, 0.05);
       border-radius: 2px;
       overflow: hidden;
       .iv-fill { height: 100%; transition: width 0.3s; }
     }
   }
-  .iv-total { font-size: 10px; color: #555; font-weight: 800; }
+  .iv-total { font-size: 10px; color: Rgba(85, 85, 85, 1); font-weight: 800; }
 }
 
 .select-row-btn {
@@ -453,14 +454,14 @@ const select = (poke) => {
   border: none;
   background: var(--yellow, #facc15);
   color: $black;
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 8px;
   font-weight: 900;
   cursor: pointer;
   
   &:disabled {
-    background: #333;
-    color: #666;
+    background: Rgba(51, 51, 51, 1);
+    color: Rgba(102, 102, 102, 1);
     cursor: not-allowed;
   }
 }
@@ -468,7 +469,7 @@ const select = (poke) => {
 .empty-list {
   text-align: center;
   padding: 40px 20px;
-  color: #555;
+  color: Rgba(85, 85, 85, 1);
   font-size: 14px;
 }
 

@@ -112,7 +112,7 @@ function getSprite(pokemon) {
 
         <button 
           class="buy-btn"
-          @click="handleBuy(item)"
+          @click.stop="handleBuy(item)"
         >
           COMPRAR
         </button>
@@ -139,8 +139,8 @@ function getSprite(pokemon) {
 }
 
 .listing-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 12px;
   display: flex;
@@ -150,7 +150,7 @@ function getSprite(pokemon) {
   &:hover {
     transform: translateY(-3px);
     border-color: #a855f755;
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -161,7 +161,7 @@ function getSprite(pokemon) {
   color: $muted;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .card-body {
@@ -173,7 +173,7 @@ function getSprite(pokemon) {
 .visual-area {
   width: 64px;
   height: 64px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -198,7 +198,7 @@ function getSprite(pokemon) {
     padding: 2px 6px;
     border-radius: 8px;
     color: $white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 5px Rgba(0,0,0,0.3);
   }
 }
 
@@ -222,7 +222,7 @@ function getSprite(pokemon) {
     gap: 6px;
     margin-bottom: 8px;
     font-size: 10px;
-    color: #94a3b8;
+    color: Rgba(148, 163, 184, 1);
   }
 
   .price-tag {
@@ -238,30 +238,30 @@ function getSprite(pokemon) {
   font-size: 8px;
   text-transform: uppercase;
   color: $white;
-  &.fire { background: #ff4422; }
-  &.water { background: #3399ff; }
-  &.grass { background: #77cc55; }
-  &.electric { background: #ffcc33; }
-  &.psychic { background: #ff5599; }
-  &.normal { background: #aaaa99; }
-  &.rock { background: #bbaa66; }
-  &.ground { background: #ddbb55; }
-  &.poison { background: #aa5599; }
-  &.bug { background: #aabb22; }
-  &.flying { background: #8899ff; }
-  &.ghost { background: #6666bb; }
-  &.ice { background: #66ccff; }
-  &.dragon { background: #7766ee; }
-  &.fighting { background: #bb5544; }
-  &.dark { background: #775544; }
-  &.steel { background: #aaaabb; }
+  &.fire { background: Rgba(255, 68, 68, 1); }
+  &.water { background: Rgba(59, 130, 246, 1); }
+  &.grass { background: Rgba(52, 211, 153, 1); }
+  &.electric { background: Rgba(251, 191, 36, 1); }
+  &.psychic { background: Rgba(168, 85, 247, 1); }
+  &.normal { background: Rgba(148, 163, 184, 1); }
+  &.rock { background: Rgba(187, 170, 102, 1); }
+  &.ground { background: Rgba(221, 187, 85, 1); }
+  &.poison { background: Rgba(170, 85, 153, 1); }
+  &.bug { background: Rgba(170, 187, 34, 1); }
+  &.flying { background: Rgba(136, 153, 255, 1); }
+  &.ghost { background: Rgba(102, 102, 187, 1); }
+  &.ice { background: Rgba(102, 204, 255, 1); }
+  &.dragon { background: Rgba(119, 102, 238, 1); }
+  &.fighting { background: Rgba(187, 85, 68, 1); }
+  &.dark { background: Rgba(119, 85, 68, 1); }
+  &.steel { background: Rgba(170, 170, 187, 1); }
 }
 
 .buy-btn {
   width: 100%;
   padding: 10px;
   border: none;
-  background: #a855f7;
+  background: Rgba(168, 85, 247, 1);
   color: $white;
   border-radius: 10px;
   font-size: 10px;
@@ -271,11 +271,11 @@ function getSprite(pokemon) {
   
   &:hover {
     background: $purple;
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+    box-shadow: 0 0 15px Rgba(168, 85, 247, 0.4);
   }
   
   &:disabled {
-    background: #334155;
+    background: Rgba(51, 65, 85, 1);
     color: $muted;
     cursor: not-allowed;
   }
@@ -298,8 +298,8 @@ function getSprite(pokemon) {
 .loader {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(168, 85, 247, 0.2);
-  border-top-color: #a855f7;
+  border: 3px solid Rgba(168, 85, 247, 0.2);
+  border-top-color: Rgba(168, 85, 247, 1);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;

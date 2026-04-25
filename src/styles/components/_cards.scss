@@ -7,12 +7,12 @@
   padding: spacing(5);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px Rgba(0, 0, 0, 0.3);
   @include gpu-layer;
 
   &::before {
@@ -31,7 +31,7 @@
   &:hover {
     transform: translate3d(0, -8px, 0);
     border-color: $yellow;
-    box-shadow: 0 0 0 1px $yellow, 0 12px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 1px $yellow, 0 12px 30px Rgba(0, 0, 0, 0.5);
     z-index: var(--z-base);
     
     &::before {

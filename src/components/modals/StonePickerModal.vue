@@ -77,7 +77,7 @@ const getPokemonName = (id) => {
     :show="show && options.length > 0"
     title="EVOLUCIÓN POR PIEDRA"
     title-color="var(--yellow)"
-    header-background="#1a1c2e"
+    header-background="Rgba(26, 28, 46, 1)"
     max-width="380px"
     variant="retro"
     @close="close"
@@ -119,7 +119,7 @@ const getPokemonName = (id) => {
           <button 
             class="use-btn-vicio"
             :disabled="(gameStore.state.inventory[opt.stone] || 0) <= 0"
-            @click="useStone(opt.stone, opt.to)"
+            @click.stop="useStone(opt.stone, opt.to)"
           >
             USAR
           </button>
@@ -130,7 +130,7 @@ const getPokemonName = (id) => {
     <template #footer>
       <button
         class="btn-vicio-secondary btn-vicio-full"
-        @click="close"
+        @click.stop="close"
       >
         CANCELAR
       </button>
@@ -139,6 +139,7 @@ const getPokemonName = (id) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .stone-picker-content {
@@ -147,7 +148,7 @@ const getPokemonName = (id) => {
 
 .stone-help {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: Rgba(255, 255, 255, 0.5);
   text-align: center;
   margin-bottom: 24px;
   
@@ -167,8 +168,8 @@ const getPokemonName = (id) => {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   padding: 12px;
   transition: all 0.2s;
@@ -179,7 +180,7 @@ const getPokemonName = (id) => {
   }
 
   &:not(.disabled):hover {
-    background: rgba(251, 191, 36, 0.1);
+    background: Rgba(251, 191, 36, 0.1);
     border-color: var(--yellow);
     transform: translateX(4px);
     
@@ -190,7 +191,7 @@ const getPokemonName = (id) => {
 .stone-sprite-box {
   width: 44px;
   height: 44px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -215,16 +216,16 @@ const getPokemonName = (id) => {
   }
   .evo-target {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: Rgba(255, 255, 255, 0.3);
     margin-top: 2px;
   }
 }
 
 .use-btn-vicio {
-  background: rgba(251, 191, 36, 0.15);
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: Rgba(251, 191, 36, 0.15);
+  border: 1px solid Rgba(251, 191, 36, 0.3);
   color: var(--yellow);
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 8px;
   padding: 10px 14px;
   border-radius: 8px;

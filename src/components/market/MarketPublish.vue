@@ -47,13 +47,13 @@ const net = computed(() => price.value - fee.value)
       <div class="mode-selector">
         <button 
           :class="{ active: activeMode === 'pokemon' }"
-          @click="activeMode = 'pokemon'; selection = null"
+          @click.stop="activeMode = 'pokemon'; selection = null"
         >
           POKÉMON
         </button>
         <button 
           :class="{ active: activeMode === 'item' }"
-          @click="activeMode = 'item'; selection = null"
+          @click.stop="activeMode = 'item'; selection = null"
         >
           OBJETOS
         </button>
@@ -72,7 +72,7 @@ const net = computed(() => price.value - fee.value)
             :key="p.uid"
             class="selectable-card pokemon"
             :class="{ selected: selection?.uid === p.uid }"
-            @click="selectItem(p)"
+            @click.stop="selectItem(p)"
           >
             <div
               class="tier-mark"
@@ -102,7 +102,7 @@ const net = computed(() => price.value - fee.value)
             :key="i.name"
             class="selectable-card item"
             :class="{ selected: selection?.name === i.name }"
-            @click="selectItem(i)"
+            @click.stop="selectItem(i)"
           >
             <span class="i-icon">📦</span>
             <div class="i-info">
@@ -154,7 +154,7 @@ const net = computed(() => price.value - fee.value)
           <button 
             class="confirm-btn" 
             :disabled="gtsStore.publishing || gtsStore.activeMyListings.length >= gtsStore.MAX_LISTINGS"
-            @click="handlePublish"
+            @click.stop="handlePublish"
           >
             {{ gtsStore.publishing ? 'PROCESANDO...' : 'PUBLICAR OFERTA' }}
           </button>
@@ -196,7 +196,7 @@ const net = computed(() => price.value - fee.value)
 
 .mode-selector {
   display: flex;
-  background: rgba(0, 0, 0, 0.3);
+  background: Rgba(0, 0, 0, 0.3);
   padding: 4px;
   border-radius: 12px;
   gap: 4px;
@@ -213,9 +213,9 @@ const net = computed(() => price.value - fee.value)
     transition: all 0.2s;
 
     &.active {
-      background: #a855f7;
+      background: Rgba(168, 85, 247, 1);
       color: $white;
-      box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+      box-shadow: 0 0 15px Rgba(168, 85, 247, 0.3);
     }
   }
 }
@@ -229,7 +229,7 @@ const net = computed(() => price.value - fee.value)
 }
 
 .selection-list {
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 20px;
   padding: 15px;
   overflow-y: auto;
@@ -244,18 +244,18 @@ const net = computed(() => price.value - fee.value)
   align-items: center;
   gap: 12px;
   padding: 10px 15px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
   overflow: hidden;
 
-  &:hover { background: rgba(255, 255, 255, 0.08); }
+  &:hover { background: Rgba(255, 255, 255, 0.08); }
   &.selected {
-    border-color: #a855f7;
-    background: rgba(168, 85, 247, 0.1);
+    border-color: Rgba(168, 85, 247, 1);
+    background: Rgba(168, 85, 247, 0.1);
   }
 
   .tier-mark {
@@ -270,7 +270,7 @@ const net = computed(() => price.value - fee.value)
   .p-info, .i-info {
     display: flex;
     flex-direction: column;
-    .p-name, .i-name { font-size: 13px; font-weight: bold; color: $white; }
+    .p-name, .i-name { font-size: 13px; font-weight: bold; color: var(--white); }
     .p-lvl, .i-qty { font-size: 10px; color: $muted; }
   }
   
@@ -278,9 +278,9 @@ const net = computed(() => price.value - fee.value)
 }
 
 .publish-panel {
-  background: rgba(255, 255, 255, 0.02);
+  background: Rgba(255, 255, 255, 0.02);
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -304,7 +304,7 @@ const net = computed(() => price.value - fee.value)
 .selected-summary {
   text-align: center;
   .label { display: block; font-size: 9px; color: $muted; margin-bottom: 5px; }
-  .val { font-size: 18px; font-weight: 900; color: $white; text-transform: uppercase; }
+  .val { font-size: 18px; font-weight: 900; color: var(--white); text-transform: uppercase; }
 }
 
 .input-group {
@@ -312,14 +312,14 @@ const net = computed(() => price.value - fee.value)
     display: block;
     font-size: 9px;
     @include pixelated;
-    color: #a855f7;
+    color: Rgba(168, 85, 247, 1);
     margin-bottom: 12px;
     text-align: center;
   }
   .price-input {
     width: 100%;
-    background: $black;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: var(--black);
+    border: 2px solid Rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     padding: 16px;
     color: $coin-gold;
@@ -327,12 +327,12 @@ const net = computed(() => price.value - fee.value)
     font-size: 16px;
     text-align: center;
     outline: none;
-    &:focus { border-color: #ffd70044; }
+    &:focus { border-color: Rgba(255, 215, 0, 0.27); }
   }
 }
 
 .financials {
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 16px;
   padding: 15px;
   display: flex;
@@ -343,35 +343,35 @@ const net = computed(() => price.value - fee.value)
     display: flex;
     justify-content: space-between;
     font-size: 11px;
-    color: #94a3b8;
+    color: Rgba(148, 163, 184, 1);
     &.total {
-       border-top: 1px solid rgba(255, 255, 255, 0.05);
+       border-top: 1px solid Rgba(255, 255, 255, 0.05);
        padding-top: 10px;
        margin-top: 5px;
        font-weight: bold;
        font-size: 13px;
-       color: $white;
+       color: var(--white);
     }
-    .neg { color: #f87171; }
-    .pos { color: #22c55e; }
+    .neg { color: Rgba(248, 113, 113, 1); }
+    .pos { color: Rgba(34, 197, 94, 1); }
   }
 }
 
 .confirm-btn {
   width: 100%;
   padding: 18px;
-  background: linear-gradient(135deg, #a855f7, #7c3aed);
-  color: $white;
+  background: linear-gradient(135deg, Rgba(168, 85, 247, 1), Rgba(124, 58, 237, 1));
+  color: var(--white);
   border: none;
   border-radius: 16px;
   @include pixelated;
   font-size: 10px;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 4px 20px Rgba(124, 58, 237, 0.3);
   transition: all 0.2s;
 
-  &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(124, 58, 237, 0.5); }
-  &:disabled { background: #334155; color: $muted; box-shadow: none; cursor: not-allowed; }
+  &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 25px Rgba(124, 58, 237, 0.5); }
+  &:disabled { background: Rgba(51, 65, 85, 1); color: $muted; box-shadow: none; cursor: not-allowed; }
 }
 
 .empty-list { text-align: center; padding: 40px; color: $muted; font-size: 12px; }

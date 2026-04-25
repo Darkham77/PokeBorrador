@@ -193,9 +193,9 @@ const handleMoveSelection = (moveIdx) => {
 }
 
 .card-glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 24px;
   @include gpu-layer;
 }
@@ -262,7 +262,7 @@ const handleMoveSelection = (moveIdx) => {
   left: 50%;
   transform: TranslateX(-50%);
   z-index: var(--z-base);
-  background: rgba(0, 0, 0, 0.6);
+  background: Rgba(0, 0, 0, 0.6);
   padding: 10px 20px;
   border-radius: 20px;
   border: 1px solid var(--blue);
@@ -281,7 +281,7 @@ const handleMoveSelection = (moveIdx) => {
 .waiting-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: Rgba(0, 0, 0, 0.4);
   -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
   display: flex;
   flex-direction: column;

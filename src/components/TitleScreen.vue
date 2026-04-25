@@ -39,7 +39,8 @@ const handleLogout = () => {
       <!-- Bulbasaur -->
       <div
         class="starter-card grass"
-        @click="handleChooseStarter('bulbasaur')"
+        :style="{ '--card-seed': 0.1 }"
+        @click.stop="handleChooseStarter('bulbasaur')"
       >
         <div class="starter-img-container">
           <img
@@ -51,7 +52,7 @@ const handleLogout = () => {
           >
           <span
             id="starter-emo-bulbasaur"
-            class="starter-emoji-fallback"
+            class="starter-emoji"
           >🌿</span>
         </div>
         <div class="starter-name">
@@ -74,7 +75,8 @@ const handleLogout = () => {
       <!-- Charmander -->
       <div
         class="starter-card fire"
-        @click="handleChooseStarter('charmander')"
+        :style="{ '--card-seed': 0.5 }"
+        @click.stop="handleChooseStarter('charmander')"
       >
         <div class="starter-img-container">
           <img
@@ -86,7 +88,7 @@ const handleLogout = () => {
           >
           <span
             id="starter-emo-charmander"
-            class="starter-emoji-fallback"
+            class="starter-emoji"
           >🔥</span>
         </div>
         <div class="starter-name">
@@ -109,7 +111,8 @@ const handleLogout = () => {
       <!-- Squirtle -->
       <div
         class="starter-card water"
-        @click="handleChooseStarter('squirtle')"
+        :style="{ '--card-seed': 0.9 }"
+        @click.stop="handleChooseStarter('squirtle')"
       >
         <div class="starter-img-container">
           <img
@@ -121,7 +124,7 @@ const handleLogout = () => {
           >
           <span
             id="starter-emo-squirtle"
-            class="starter-emoji-fallback"
+            class="starter-emoji"
           >💧</span>
         </div>
         <div class="starter-name">
@@ -145,7 +148,7 @@ const handleLogout = () => {
     <div class="title-footer">
       <button
         class="logout-btn-trigger"
-        @click="handleLogout"
+        @click.stop="handleLogout"
       >
         <i class="fas fa-sign-out-alt" /> 
         <span>CERRAR SESIÓN</span>
@@ -176,11 +179,6 @@ const handleLogout = () => {
   width: 80px;
   height: 80px;
   image-rendering: pixelated;
-}
-
-.starter-emoji-fallback {
-  font-size: 60px;
-  display: none;
 }
 
 .title-footer {

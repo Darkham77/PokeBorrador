@@ -117,7 +117,7 @@ const close = () => {
             <p>¡{{ oldName }} evolucionó a <span class="highlight">{{ newName }}</span>!</p>
             <button
               class="btn-confirm"
-              @click="close"
+              @click.stop="close"
             >
               CONTINUAR
             </button>
@@ -129,6 +129,7 @@ const close = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "sass:math";
 @use "sass:string";
 
@@ -136,11 +137,11 @@ const close = () => {
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay);
-  background: radial-gradient(circle at center, #1a1a2e 0%, $dark 100%);
+  background: radial-gradient(circle at center, Rgba(26, 26, 46, 1) 0%, $dark 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   -webkit-backdrop-filter: Blur(10px);
   transform: translateZ(0);
@@ -166,22 +167,22 @@ const close = () => {
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background: var(--blue, #3b82f6);
+  background: var(--blue, Rgba(59, 130, 246, 1));
   filter: Blur(40px);
   opacity: 0.2;
   transition: all 1s ease;
   
   &.flashing {
-    background: $white;
+    background: var(--white);
     opacity: 0.5;
     transform: Scale(1.5);
   }
   
   &.transformed, &.final {
-    background: var(--yellow, #fbbf24);
+    background: var(--yellow, Rgba(251, 191, 36, 1));
     opacity: 0.6;
     transform: Scale(1.5);
-    box-shadow: 0 0 60px rgba(251, 191, 36, 0.4);
+    box-shadow: 0 0 60px Rgba(251, 191, 36, 0.4);
   }
 }
 
@@ -213,41 +214,41 @@ const close = () => {
 }
 
 .status-text {
-  color: $white;
+  color: var(--white);
   font-size: 12px;
   line-height: 1.6;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 4px Rgba(0,0,0,0.5);
 }
 
 .result-text {
   animation: fadeIn 0.5s ease;
   p {
-    color: $white;
+    color: var(--white);
     font-size: 13px;
     margin-bottom: 24px;
     line-height: 1.8;
   }
   .highlight {
-    color: var(--yellow, #fbbf24);
+    color: var(--yellow, Rgba(251, 191, 36, 1));
     font-weight: bold;
   }
 }
 
 .btn-confirm {
-  background: var(--blue, #3b82f6);
-  color: $white;
+  background: var(--blue, Rgba(59, 130, 246, 1));
+  color: var(--white);
   border: none;
   padding: 12px 24px;
   font-family: inherit;
   font-size: 10px;
   border-radius: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 0 #2563eb;
+  box-shadow: 0 4px 0 Rgba(37, 99, 235, 1);
   transition: transform 0.1s;
   
   &:active {
     transform: translateY(2px);
-    box-shadow: 0 2px 0 #2563eb;
+    box-shadow: 0 2px 0 Rgba(37, 99, 235, 1);
   }
 }
 
@@ -262,7 +263,7 @@ const close = () => {
   position: absolute;
   width: 4px;
   height: 4px;
-  background: $white;
+  background: var(--white);
   border-radius: 2px;
   opacity: 0;
   

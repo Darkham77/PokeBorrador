@@ -38,13 +38,13 @@ async function handleLogout() {
           <div class="actions">
             <button
               class="btn-vicio-primary"
-              @click="handleReconnect"
+              @click.stop="handleReconnect"
             >
               USAR AQUÍ
             </button>
             <button
               class="btn-vicio-danger"
-              @click="handleLogout"
+              @click.stop="handleLogout"
             >
               CERRAR SESIÓN
             </button>
@@ -60,6 +60,7 @@ async function handleLogout() {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .fade-enter-active, .fade-leave-active {
@@ -73,8 +74,8 @@ async function handleLogout() {
   position: fixed;
   inset: 0;
   z-index: var(--z-critical);
-  background: rgba(0, 0, 0, 0.9);
-  -webkit-backdrop-filter: Blur(20px) Saturate(1.8); -webkit-backdrop-filter: Blur(20px) Saturate(1.8); backdrop-filter: Blur(20px) Saturate(1.8);
+  background: Rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: Blur(20px) Saturate(1.8); backdrop-filter: Blur(20px) Saturate(1.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -83,15 +84,15 @@ async function handleLogout() {
 }
 
 .blocked-card {
-  background: rgba(20, 20, 22, 0.9);
-  border: 1px solid rgba(255, 214, 10, 0.3);
+  background: Rgba(20, 20, 22, 0.9);
+  border: 1px solid Rgba(255, 214, 10, 0.3);
   border-radius: 32px;
   width: 100%;
   max-width: 420px;
   padding: 48px;
   text-align: center;
-  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9),
-              0 0 40px rgba(255, 214, 10, 0.1);
+  box-shadow: 0 40px 80px Rgba(0, 0, 0, 0.9),
+              0 0 40px Rgba(255, 214, 10, 0.1);
   @include gpu-layer;
 }
 
@@ -99,12 +100,12 @@ async function handleLogout() {
   margin-bottom: 32px;
   .warning-icon {
     font-size: 56px;
-    filter: Drop-Shadow(0 0 20px rgba(255, 214, 10, 0.6));
+    filter: Drop-Shadow(0 0 20px Rgba(255, 214, 10, 0.6));
   }
 }
 
 h2 {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 16px;
   color: $yellow;
   margin-bottom: 24px;
@@ -112,7 +113,7 @@ h2 {
 }
 
 .msg {
-  color: rgba(255, 255, 255, 0.6);
+  color: Rgba(255, 255, 255, 0.6);
   font-size: 16px;
   line-height: 1.7;
   margin-bottom: 40px;
@@ -127,8 +128,8 @@ h2 {
 
 .footer {
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.2);
-  font-family: 'Press Start 2P', cursive;
+  color: Rgba(255, 255, 255, 0.2);
+  @include pixelated;
   @include pixelated;
   code { color: $purple; }
 }

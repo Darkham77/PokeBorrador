@@ -104,7 +104,7 @@ const onDrop = (e, targetIndex) => {
       :is-selected="isSelected(i)"
       :select-type="selectType"
       :max-obey-lv="maxObeyLv"
-      @click="handleCardClick"
+      @click.stop="handleCardClick"
       @open-detail="handleCardClick"
       @open-item="openItem"
       @send-to-box="sendToBox"
@@ -129,10 +129,10 @@ const onDrop = (e, targetIndex) => {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  background: #111;
-  border: 4px solid #333;
-  box-shadow: 0 0 0 4px $black;
-  color: #888;
+  background: Rgba(17, 17, 17, 1);
+  border: 4px solid Rgba(51, 51, 51, 1);
+  box-shadow: 0 0 0 4px var(--black);
+  color: Rgba(136, 136, 136, 1);
   @include pixelated;
   font-size: 10px;
   text-align: center;

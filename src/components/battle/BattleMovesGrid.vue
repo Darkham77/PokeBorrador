@@ -9,10 +9,10 @@ const props = defineProps({
 const emit = defineEmits(['use-move'])
 
 const TYPE_COLORS = {
-  normal: '#aaa', fire: '#FF6B35', water: '#3B8BFF', grass: '#6BCB77',
-  electric: '#FFD93D', ice: '#7DF9FF', fighting: '#FF3B3B', poison: '#C77DFF',
-  ground: '#c8a060', flying: '#89CFF0', psychic: '#FF6EFF', bug: '#8BC34A',
-  rock: '#c8a060', ghost: '#7B2FBE', dragon: '#5C16C5', dark: '#555', steel: '#9E9E9E'
+  normal: 'Rgba(170, 170, 170, 1)', fire: 'Rgba(255, 107, 53, 1)', water: 'Rgba(59, 139, 255, 1)', grass: 'Rgba(107, 203, 119, 1)',
+  electric: 'Rgba(255, 217, 61, 1)', ice: 'Rgba(125, 249, 255, 1)', fighting: 'Rgba(255, 59, 59, 1)', poison: 'Rgba(199, 125, 255, 1)',
+  ground: 'Rgba(221, 187, 85, 1)', flying: 'Rgba(136, 153, 255, 1)', psychic: 'Rgba(255, 110, 255, 1)', bug: 'Rgba(139, 195, 74, 1)',
+  rock: 'Rgba(187, 170, 102, 1)', ghost: 'Rgba(123, 47, 190, 1)', dragon: 'Rgba(92, 22, 197, 1)', dark: 'Rgba(119, 85, 68, 1)', steel: 'Rgba(170, 170, 187, 1)'
 }
 
 const CAT_ICON = { physical: '⚔️', special: '✨', status: '🔮' }
@@ -56,7 +56,7 @@ const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') wi
       class="move-button-card"
       :style="{ '--move-color': getMoveColor(move.name) }"
       :disabled="isMoveDisabled(move)"
-      @click="emit('use-move', i)"
+      @click.stop="emit('use-move', i)"
       @mouseenter="showTooltip($event, move.name)"
       @mouseleave="hideTooltip"
     >
@@ -85,8 +85,8 @@ const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') wi
 }
 
 .move-button-card {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(30, 41, 59, 0.6);
+  border: 1px solid Rgba(255,255,255,0.1);
   border-left: 5px solid var(--move-color);
   border-radius: 12px;
   padding: 15px;
@@ -97,7 +97,7 @@ const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') wi
 }
 
 .move-button-card:hover:not(:disabled) {
-  background: rgba(30, 41, 59, 0.9);
+  background: Rgba(30, 41, 59, 0.9);
   transform: translateY(-2px);
   border-color: var(--move-color);
 }
@@ -105,7 +105,7 @@ const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') wi
 .move-button-card:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  filter: #{"grayScale(0.8)"};
+  filter: Grayscale(0.8);
 }
 
 .move-name-txt {

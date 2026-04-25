@@ -35,7 +35,7 @@ const emit = defineEmits(['pokemonClick'])
       :index="item.index"
       :is-selected="rocketSelection.includes(item.index)"
       :is-rocket-mode="isRocketMode"
-      @click="emit('pokemonClick', item.index)"
+      @click.stop="emit('pokemonClick', item.index)"
     />
   </div>
 </template>
@@ -53,9 +53,9 @@ const emit = defineEmits(['pokemonClick'])
   text-align: center;
   font-size: 13px;
   color: var(--gray);
-  background: rgba(255, 255, 255, 0.02);
+  background: Rgba(255, 255, 255, 0.02);
   border-radius: 20px;
-  border: 1px dashed rgba(255, 255, 255, 0.05);
+  border: 1px dashed Rgba(255, 255, 255, 0.05);
 }
 
 .empty-icon {

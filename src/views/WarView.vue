@@ -39,7 +39,7 @@ onMounted(async () => {
         class="change-faction-hint"
       >
         ¿Quieres cambiar de bando? 
-        <button @click="showChoiceModal = true">
+        <button @click.stop="showChoiceModal = true">
           MODIFICAR FACCIÓN
         </button>
       </div>
@@ -54,6 +54,7 @@ onMounted(async () => {
 </template>
 
 <style lang="scss" scoped>
+@use "@/styles/core/_mixins" as *;
 .war-page {
   min-height: 100vh;
   background: radial-gradient(circle at top, $card2 0%, $dark 100%);
@@ -71,7 +72,7 @@ onMounted(async () => {
   margin-bottom: 40px;
 
   h1 {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 24px;
     color: white;
     margin-bottom: 12px;
@@ -80,8 +81,8 @@ onMounted(async () => {
 
   .subtitle {
     font-size: 12px;
-    color: #888;
-    font-family: 'Press Start 2P', cursive;
+    color: var(--gray);
+    @include pixelated;
   }
 }
 
@@ -89,15 +90,15 @@ onMounted(async () => {
   margin-top: 40px;
   text-align: center;
   font-size: 11px;
-  color: #555;
+  color: Rgba(255, 255, 255, 0.4);
   
   button {
     background: none;
     border: none;
-    color: #888;
+    color: var(--gray);
     text-decoration: underline;
     cursor: pointer;
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 8px;
     margin-left: 8px;
     

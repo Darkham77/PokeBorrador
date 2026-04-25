@@ -1,3 +1,4 @@
+@use "@/styles/core/mixins" as *;
 // src/styles/components/_map-card-render.scss
 @use 'sass:string';
 @use '../core/tools' as *;
@@ -10,7 +11,7 @@
   height: 220px;
   background: transparent; 
   border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border: 2px solid Rgba(255, 255, 255, 0.2) !important;
   padding: 15px;
   cursor: pointer;
   // transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -51,9 +52,9 @@
     inset: 0;
     border-radius: 18px;
     background: linear-gradient(to top, 
-      rgba(0, 0, 0, 0.85) 0%, 
-      rgba(0, 0, 0, 0.2) 50%, 
-      rgba(0, 0, 0, 0.8) 100%
+      Rgba(0, 0, 0, 0.85) 0%, 
+      Rgba(0, 0, 0, 0.2) 50%, 
+      Rgba(0, 0, 0, 0.8) 100%
     );
     opacity: 0.35;
     transition: opacity 0.3s ease;
@@ -65,8 +66,8 @@
     transform: translateY(-8px);
     box-shadow: 
       0 0 0 2px var(--yellow), 
-      0 15px 35px rgba(0,0,0,0.6), 
-      0 0 25px rgba(255, 204, 0, 0.4);
+      0 15px 35px Rgba(0,0,0,0.6), 
+      0 0 25px Rgba(255, 204, 0, 0.4);
     border-color: var(--yellow) !important;
 
     &::before { 
@@ -77,9 +78,9 @@
     &::after {
       opacity: 1;
       background: linear-gradient(to top, 
-        rgba(0, 0, 0, 0.9) 0%, 
-        rgba(0, 0, 0, 0.4) 50%, 
-        rgba(0, 0, 0, 0.8) 100%
+        Rgba(0, 0, 0, 0.9) 0%, 
+        Rgba(0, 0, 0, 0.4) 50%, 
+        Rgba(0, 0, 0, 0.8) 100%
       );
     }
   }
@@ -130,8 +131,8 @@
   image-rendering: pixelated !important;
 
   &.show-debug-grid .spawn-slot {
-    outline: 1px solid #ff00ff;
-    background: rgba(255, 0, 255, 0.05);
+    outline: 1px solid Rgba(255, 0, 255, 1);
+    background: Rgba(255, 0, 255, 0.05);
   }
 }
 
@@ -154,16 +155,18 @@
     
     &.rare-spawn {
       animation: pulse-sprite-zoom 2s infinite ease-in-out;
+      animation-delay: calc(var(--spawn-seed, 0) * -10s);
       
       &::after {
         content: '';
         position: absolute;
         inset: -2%;
-        background: radial-gradient(circle, rgba(255, 0, 0, 0.7) 0%, transparent 70%);
+        background: radial-gradient(circle, Rgba(255, 0, 0, 0.7) 0%, transparent 70%);
         filter: Blur(2px);
         z-index: -1;
         opacity: 0.6;
         animation: pulse-aura-modern 2s infinite ease-in-out;
+        animation-delay: calc(var(--spawn-seed, 0) * -10s);
         pointer-events: none;
       }
     }
@@ -175,9 +178,9 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      border: 1.5px solid $black;
+      border: 1.5px solid var(--black);
       background: linear-gradient(to bottom, #ff4b4b 50%, white 50%);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.4);
       z-index: var(--z-base);
       pointer-events: none;
       @include smooth;
@@ -191,7 +194,7 @@
         width: 4px;
         height: 4px;
         background: white;
-        border: 1px solid $black;
+        border: 1px solid var(--black);
         border-radius: 50%;
       }
       
@@ -202,7 +205,7 @@
         left: 0;
         right: 0;
         height: 1.5px;
-        background: $black;
+        background: var(--black);
         transform: translateY(-50%);
       }
     }
@@ -217,7 +220,7 @@
     image-rendering: pixelated !important;
     image-rendering: crisp-edges !important;
     
-    filter: pokemon-outline-performance($black);
+    filter: pokemon-outline-performance(var(--black));
     
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
@@ -248,19 +251,19 @@
 
 .lock-text {
   @include pixelated;
-  font-family: var(--font-pixel);
+  @include pixelated;
   font-size: 13px;
   text-align: center;
   line-height: 1.4;
   padding: 0 10px;
-  color: #ff4747;
-  text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 2px 4px rgba(0,0,0,1);
+  color: Rgba(255, 71, 71, 1);
+  text-shadow: 0 0 10px Rgba(255, 0, 0, 0.8), 0 2px 4px Rgba(0,0,0,1);
   letter-spacing: 1px;
 }
 
 .safari-locked .lock-text {
-  color: #ffa500;
-  text-shadow: 0 0 10px rgba(255, 165, 0, 0.8), 0 2px 4px rgba(0,0,0,1);
+  color: Rgba(255, 165, 0, 1);
+  text-shadow: 0 0 10px Rgba(255, 165, 0, 0.8), 0 2px 4px Rgba(0,0,0,1);
 }
 
 /* Miscellaneous */
@@ -273,7 +276,7 @@
   
   &.winning {
     color: var(--yellow);
-    border-color: rgba(255, 215, 0, 0.3);
+    border-color: Rgba(255, 215, 0, 0.3);
   }
 }
 
@@ -283,7 +286,5 @@
   left: 12px;
 }
 
-.faction-logo { width: 32px; height: 32px; filter: Drop-Shadow(0 2px 4px rgba(0,0,0,0.8)); }
+.faction-logo { width: 32px; height: 32px; filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8)); }
 .pulse { animation: pulse 2s infinite; }
-
-

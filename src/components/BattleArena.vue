@@ -135,7 +135,7 @@ watch(() => player.value?.hp, (newHp) => {
         >
           <button
             class="continue-btn-final"
-            @click="battleStore.completeBattleFlow()"
+            @click.stop="battleStore.completeBattleFlow()"
           >
             CONTINUAR ➔
           </button>
@@ -154,8 +154,8 @@ watch(() => player.value?.hp, (newHp) => {
 .battle-screen-grid {
   width: 100%;
   height: 100%;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 20px 50px Rgba(0,0,0,0.7);
+  border: 1px solid Rgba(255,255,255,0.05);
 }
 
 .battle-arena {
@@ -181,7 +181,7 @@ watch(() => player.value?.hp, (newHp) => {
 
 #move-panel {
   padding: 20px;
-  background: rgba(0,0,0,0.2);
+  background: Rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -190,7 +190,7 @@ watch(() => player.value?.hp, (newHp) => {
 .battle-finish-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: Rgba(0,0,0,0.6);
   -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   display: flex;
   align-items: center;
@@ -208,6 +208,6 @@ watch(() => player.value?.hp, (newHp) => {
   font-size: 14px;
   border-radius: 16px;
   cursor: pointer;
-  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 10px 30px Rgba(37, 99, 235, 0.4);
 }
 </style>

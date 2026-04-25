@@ -60,7 +60,7 @@ async function refresh() {
           <button
             class="refresh-btn"
             :disabled="gtsStore.loading"
-            @click="refresh"
+            @click.stop="refresh"
           >
             {{ gtsStore.loading ? '...' : '🔄' }}
           </button>
@@ -73,7 +73,7 @@ async function refresh() {
           :key="tab.id"
           class="tab-btn"
           :class="{ active: activeTab === tab.id }"
-          @click="activeTab = tab.id"
+          @click.stop="activeTab = tab.id"
         >
           <span class="t-icon">{{ tab.icon }}</span>
           <span class="t-label">{{ tab.label }}</span>
@@ -89,7 +89,7 @@ async function refresh() {
         <span class="icon">🛰️</span>
         <h2>SIN CONEXIÓN</h2>
         <p>El GTS requiere conexión a la Red Satelital de Kanto para sincronizar ofertas con otros entrenadores.</p>
-        <button @click="$emit('close')">
+        <button @click.stop="$emit('close')">
           VOLVER
         </button>
       </div>
@@ -133,18 +133,18 @@ async function refresh() {
   flex-direction: column;
   height: 600px;
   max-width: 900px;
-  background: #0d1117;
+  background: Rgba(13, 17, 23, 1);
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 50px Rgba(0, 0, 0, 0.5);
   position: relative;
 }
 
 .gts-header {
   padding: 24px 30px 0;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .header-main {
@@ -158,9 +158,9 @@ async function refresh() {
   h1 {
     @include pixelated;
     font-size: 14px;
-    color: #a855f7;
+    color: Rgba(168, 85, 247, 1);
     margin: 0 0 8px 0;
-    text-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+    text-shadow: 0 0 15px Rgba(168, 85, 247, 0.3);
   }
   .subtitle {
     font-size: 11px;
@@ -175,10 +175,10 @@ async function refresh() {
   gap: 15px;
 
   .stat {
-    background: rgba(0, 0, 0, 0.3);
+    background: Rgba(0, 0, 0, 0.3);
     padding: 8px 16px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -189,8 +189,8 @@ async function refresh() {
 }
 
 .refresh-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   color: $white;
   width: 40px;
   height: 40px;
@@ -200,7 +200,7 @@ async function refresh() {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); transform: Rotate(45deg); }
+  &:hover:not(:disabled) { background: Rgba(255, 255, 255, 0.1); transform: Rotate(45deg); }
   &:disabled { opacity: 0.5; cursor: wait; }
 }
 
@@ -225,11 +225,11 @@ async function refresh() {
   .t-icon { font-size: 14px; }
   .t-label { font-size: 10px; font-weight: bold; }
 
-  &:hover { color: $white; background: rgba(255, 255, 255, 0.03); }
+  &:hover { color: $white; background: Rgba(255, 255, 255, 0.03); }
   &.active {
-    color: #a855f7;
-    background: rgba(168, 85, 247, 0.05);
-    border-bottom-color: #a855f7;
+    color: Rgba(168, 85, 247, 1);
+    background: Rgba(168, 85, 247, 0.05);
+    border-bottom-color: Rgba(168, 85, 247, 1);
   }
 }
 
@@ -266,10 +266,10 @@ async function refresh() {
   
   .offline-card {
     max-width: 400px;
-    background: rgba(255, 255, 255, 0.03);
+    background: Rgba(255, 255, 255, 0.03);
     padding: 40px;
     border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid Rgba(255, 255, 255, 0.08);
 
     .icon { font-size: 64px; margin-bottom: 20px; display: block; filter: Grayscale(100%); opacity: 0.3; }
     h2 { @include pixelated; font-size: 14px; color: $white; margin-bottom: 20px; }
@@ -277,7 +277,7 @@ async function refresh() {
     
     button {
       padding: 12px 30px;
-      background: #a855f7;
+      background: Rgba(168, 85, 247, 1);
       border: none;
       color: $white;
       border-radius: 12px;

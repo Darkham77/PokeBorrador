@@ -48,7 +48,7 @@ const handlePanelClick = (event) => {
   <div
     id="hud-trainer-panel"
     class="hud-trainer pointer-cursor"
-    @click="handlePanelClick"
+    @click.stop="handlePanelClick"
   >
     <TrainerAvatar
       id="hud-class-avatar"
@@ -100,11 +100,20 @@ const handlePanelClick = (event) => {
   </div>
 </template>
 
-<style scoped>
-@use "@/styles/core/_mixins" as *;
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
+.trainer-lv {
+  @include pixelated;
+  font-size: 8px;
+  color: var(--gray);
+  margin-top: 2px;
+  
+  span { color: var(--yellow); }
+}
 .exp-bar-container {
   margin-top: 5px;
-  background: rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   height: 5px;
   width: 140px;
@@ -113,7 +122,7 @@ const handlePanelClick = (event) => {
 
 .exp-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #C77DFF, #9b4dca);
+  background: linear-gradient(90deg, Rgba(199, 125, 255, 1), Rgba(155, 77, 202, 1));
   border-radius: 10px;
   transition: width 0.5s;
 }
@@ -130,7 +139,7 @@ const handlePanelClick = (event) => {
   position: absolute;
   top: -2px;
   right: -2px;
-  background: #ef4444;
+  background: Rgba(239, 68, 68, 1);
   color: white;
   width: 18px;
   height: 18px;
@@ -141,16 +150,16 @@ const handlePanelClick = (event) => {
   @include pixelated;
   font-size: 8px;
   font-weight: bold;
-  border: 2px solid $white;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+  border: 2px solid var(--white);
+  box-shadow: 0 0 10px Rgba(239, 68, 68, 0.5);
   animation: pulse-red 2s infinite;
   z-index: var(--z-base);
 }
 
 @keyframes pulse-red {
-  0% { transform: Scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { transform: Scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-  100% { transform: Scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% { transform: Scale(1); box-shadow: 0 0 0 0 Rgba(239, 68, 68, 0.7); }
+  70% { transform: Scale(1.1); box-shadow: 0 0 0 10px Rgba(239, 68, 68, 0); }
+  100% { transform: Scale(1); box-shadow: 0 0 0 0 Rgba(239, 68, 68, 0); }
 }
 
 .trainer-content {

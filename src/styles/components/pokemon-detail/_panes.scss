@@ -1,3 +1,4 @@
+@use "@/styles/core/mixins" as *;
 // src/styles/components/pokemon-detail/_panes.scss
 @use "@/styles/core/tools" as *;
 
@@ -9,10 +10,10 @@
     margin-bottom: 32px;
     
         & .info-item {
-      background: rgba(255,255,255,0.04);
+      background: Rgba(255,255,255,0.04);
       padding: 16px;
       border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.05);
+      border: 1px solid Rgba(255,255,255,0.05);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -20,20 +21,20 @@
       min-height: 85px; 
       text-align: center;
       
-      & .ps-card-label { 
+      & .ps-card-label, & .upd-info-label { 
         display: block; 
-        font-size: 8px; 
-        color: rgba(255,255,255,0.4); 
-        margin-bottom: 6px; 
+        font-size: 7px; 
+        color: Rgba(255,255,255,0.4); 
+        margin-bottom: 4px; 
         font-weight: 800; 
         line-height: 1.4;
         @include pixelated;
       }
       & .ps-info-value { 
-        font-size: 16px; 
-        font-weight: 900; 
+        font-size: 10px; 
+        font-weight: 500; 
         color: $white; 
-        line-height: 1.5;
+        line-height: 1;
         @include pixelated;
       }
     }
@@ -42,9 +43,9 @@
       & .description { 
     font-size: 15px; 
     line-height: 1.7; 
-    color: rgba(255,255,255,0.7); 
+    color: Rgba(255,255,255,0.7); 
     font-style: italic;
-    background: rgba(255,255,255,0.02);
+    background: Rgba(255,255,255,0.02);
     padding: 20px;
     border-radius: 16px;
     border-left: 4px solid var(--type-color, var(--yellow));
@@ -62,13 +63,13 @@
       width: 45px; 
       font-size: 8px; 
       font-weight: 900; 
-      color: rgba(255,255,255,0.4); 
+      color: Rgba(255,255,255,0.4); 
       @include pixelated;
     }
         & .pdex-stat-value { 
       width: 40px; 
-      font-size: 16px; 
-      font-weight: 900; 
+      font-size: 10px; 
+      font-weight: 500; 
       color: $white; 
       text-align: right; 
       @include pixelated;
@@ -76,7 +77,7 @@
     .stat-bar-bg { 
       flex: 1; 
       height: 10px; 
-      background: rgba(255,255,255,0.05); 
+      background: Rgba(255,255,255,0.05); 
       border-radius: 5px; 
       overflow: hidden; 
       padding: 2px;
@@ -85,23 +86,23 @@
       height: 100%; 
       border-radius: 3px; 
       transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      box-shadow: 0 0 10px Rgba(0,0,0,0.3);
     }
   }
   
   .pdex-total-stat-value {
     margin-top: 24px;
     padding: 16px;
-    background: rgba(255,255,255,0.02);
+    background: Rgba(255,255,255,0.02);
     border-radius: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid Rgba(255,255,255,0.05);
     
-      & .ps-card-label {
+      & .ps-card-label, & .upd-info-label {
       @include pixelated;
-      font-size: 8px;
+      font-size: 7px;
       color: var(--gray);
       letter-spacing: 1px;
       @include pixelated;
@@ -109,7 +110,8 @@
     
       & .ps-info-value {
       @include pixelated;
-      font-size: 16px;
+      font-size: 10px;
+      font-weight: 500;
       color: var(--yellow);
       @include pixelated;
     }
@@ -125,7 +127,7 @@
     th {
       text-align: left;
       font-size: 9px;
-      color: rgba(255,255,255,0.3);
+      color: Rgba(255,255,255,0.3);
       padding: 0 16px 8px;
       font-weight: 800;
       letter-spacing: 1px;
@@ -138,7 +140,7 @@
     
     td {
       padding: 12px 16px;
-      background: rgba(255,255,255,0.03);
+      background: Rgba(255,255,255,0.03);
       font-size: 13px;
       font-weight: 700;
 
@@ -152,7 +154,7 @@
     }
     
     .ps-move-lv { 
-      font-family: 'Press Start 2P', cursive; 
+      @include pixelated; 
       font-size: 8px; 
       color: var(--yellow);
     }
@@ -179,8 +181,8 @@
     }
     
     .move-power, .move-pp {
-      color: rgba(255,255,255,0.5);
-      font-family: 'Press Start 2P', cursive;
+      color: Rgba(255,255,255,0.5);
+      @include pixelated;
       font-size: 8px;
     }
   }

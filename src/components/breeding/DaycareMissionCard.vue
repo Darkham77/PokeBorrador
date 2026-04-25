@@ -47,7 +47,7 @@ const emit = defineEmits(['deliver'])
     <button
       v-if="!mission.completed"
       class="deliver-btn-retro"
-      @click="emit('deliver')"
+      @click.stop="emit('deliver')"
     >
       ENTREGAR
     </button>
@@ -64,24 +64,24 @@ const emit = defineEmits(['deliver'])
 @use "@/styles/core/_mixins" as *;
 .mission-card-retro {
   background: $card-dark; 
-  border: 1px solid rgba(255,255,255,0.06); 
+  border: 1px solid Rgba(255,255,255,0.06); 
   padding: 20px; 
   border-radius: 20px;
   display: flex; 
   flex-direction: column; 
   gap: 15px;
   
-  &.completed { border-color: rgba(34, 197, 94, 0.3); background: rgba(34, 197, 94, 0.03); }
+  &.completed { border-color: Rgba(34, 197, 94, 0.3); background: Rgba(34, 197, 94, 0.03); }
   
   .mission-head {
     display: flex; gap: 15px;
-    .avatar-retro { font-size: 24px; width: 48px; height: 48px; background: rgba(0,0,0,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .avatar-retro { font-size: 24px; width: 48px; height: 48px; background: Rgba(0,0,0,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
     .t-name { font-size: 10px; color: $muted; margin-bottom: 5px; font-weight: bold; }
     .t-dialogue { font-size: 12px; color: $white; font-style: italic; opacity: 0.8; }
   }
   
   .mission-request {
-    background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 10px;
+    background: Rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 10px;
     .req-label { color: $muted; font-weight: bold; margin-right: 10px; }
     .req-val { color: $coin-gold; font-weight: 900; }
   }
@@ -90,7 +90,7 @@ const emit = defineEmits(['deliver'])
     display: flex; align-items: center; gap: 12px;
     .rew-icon { font-size: 24px; }
     .rew-label { font-size: 9px; color: $muted; margin-bottom: 3px; }
-    .rew-val { font-size: 12px; color: #22c55e; font-weight: 900; }
+    .rew-val { font-size: 12px; color: Rgba(34, 197, 94, 1); font-weight: 900; }
   }
 
   .deliver-btn-retro {
@@ -99,6 +99,6 @@ const emit = defineEmits(['deliver'])
     box-shadow: 0 4px 0 #6d28d9;
     &:hover { filter: Brightness(1.1); }
   }
-  .completed-banner { text-align: center; color: #22c55e; @include pixelated; font-size: 7px; padding: 14px; }
+  .completed-banner { text-align: center; color: Rgba(34, 197, 94, 1); @include pixelated; font-size: 7px; padding: 14px; }
 }
 </style>

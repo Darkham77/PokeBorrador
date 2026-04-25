@@ -93,7 +93,7 @@ const hasBadges = computed(() => {
   <div
     ref="cardRef"
     :class="cardClasses"
-    @click="emit('openDetail', index)"
+    @click.stop="emit('openDetail', index)"
   >
     <!-- Top Row: Items/Tags + Tier -->
     <div class="top-row">

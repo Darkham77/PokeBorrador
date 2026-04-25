@@ -88,7 +88,7 @@ const handleForget = () => {
           :key="index"
           class="move-card"
           :style="{ '--move-color': getMoveColor(m.name) }"
-          @click="handleReplace(index)"
+          @click.stop="handleReplace(index)"
         >
           <div class="move-main">
             <span class="move-name">{{ m.name }}</span>
@@ -106,7 +106,7 @@ const handleForget = () => {
 
       <button
         class="forget-btn"
-        @click="handleForget"
+        @click.stop="handleForget"
       >
         ❌ CANCELAR Y NO APRENDER
       </button>
@@ -115,10 +115,11 @@ const handleForget = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .learning-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: Rgba(0, 0, 0, 0.92);
   -webkit-backdrop-filter: Blur(10px);
   -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   z-index: var(--z-modal);
@@ -133,10 +134,10 @@ const handleForget = () => {
   width: 100%;
   max-width: 420px;
   background: $dark;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid Rgba(255,255,255,0.1);
   border-radius: 28px;
   padding: 24px;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+  box-shadow: 0 30px 60px Rgba(0,0,0,0.8);
 }
 
 .card-header {
@@ -147,17 +148,17 @@ const handleForget = () => {
     display: inline-block;
     padding: 4px 12px;
     background: var(--yellow);
-    color: $black;
-    font-family: 'Press Start 2P', cursive;
+    color: var(--black);
+    @include pixelated;
     font-size: 8px;
     border-radius: 8px;
     margin-bottom: 12px;
   }
 
   h2 {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 14px;
-    color: $white;
+    color: var(--white);
     margin: 0 0 12px 0;
   }
 
@@ -174,7 +175,7 @@ const handleForget = () => {
 }
 
 .instruction {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 8px;
   color: var(--gray);
   margin-bottom: 16px;
@@ -190,8 +191,8 @@ const handleForget = () => {
 }
 
 .move-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: Rgba(255,255,255,0.03);
+  border: 1px solid Rgba(255,255,255,0.08);
   border-radius: 16px;
   padding: 14px;
   cursor: pointer;
@@ -200,7 +201,7 @@ const handleForget = () => {
   overflow: hidden;
 
   &:hover {
-    background: rgba(255,255,255,0.06);
+    background: Rgba(255,255,255,0.06);
     border-color: var(--move-color);
     transform: TranslateX(4px);
     
@@ -208,9 +209,9 @@ const handleForget = () => {
   }
 
   &.is-new {
-    background: rgba(255, 217, 61, 0.05);
+    background: Rgba(255, 217, 61, 0.05);
     border: 2px solid var(--move-color);
-    box-shadow: 0 0 20px rgba(255, 217, 61, 0.1);
+    box-shadow: 0 0 20px Rgba(255, 217, 61, 0.1);
     cursor: default;
     &:hover { transform: none; }
   }
@@ -221,7 +222,7 @@ const handleForget = () => {
     align-items: center;
     margin-bottom: 6px;
 
-    .move-name { font-size: 15px; font-weight: 800; color: $white; }
+    .move-name { font-size: 15px; font-weight: 800; color: var(--white); }
   }
 
   .move-stats {
@@ -236,9 +237,9 @@ const handleForget = () => {
     position: absolute;
     right: 14px;
     bottom: 14px;
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 7px;
-    color: #ef4444;
+    color: Rgba(239, 68, 68, 1);
     opacity: 0;
     transform: TranslateX(10px);
     transition: all 0.2s;
@@ -248,19 +249,19 @@ const handleForget = () => {
 .forget-btn {
   width: 100%;
   padding: 16px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: Rgba(255,255,255,0.03);
+  border: 1px solid Rgba(255,255,255,0.06);
   border-radius: 14px;
   color: var(--gray);
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 9px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: #f87171;
-    border-color: #ef4444;
+    background: Rgba(239, 68, 68, 0.1);
+    color: Rgba(248, 113, 113, 1);
+    border-color: Rgba(239, 68, 68, 1);
   }
 }
 

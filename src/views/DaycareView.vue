@@ -55,7 +55,7 @@ const getGenderClass = (gender) => {
           v-for="tab in ['breeding', 'eggs', 'missions']" 
           :key="tab"
           :class="{ active: activeTab === tab }"
-          @click="activeTab = tab"
+          @click.stop="activeTab = tab"
         >
           {{ tab === 'breeding' ? 'Crianza' : tab === 'eggs' ? 'Almacén' : 'Misiones' }}
           <span
@@ -99,7 +99,7 @@ const getGenderClass = (gender) => {
             <button
               v-else
               class="btn-deposit"
-              @click="openPicker(0)"
+              @click.stop="openPicker(0)"
             >
               <span>+</span>
               DEPOSITAR
@@ -135,7 +135,7 @@ const getGenderClass = (gender) => {
             <button
               v-else
               class="btn-deposit"
-              @click="openPicker(1)"
+              @click.stop="openPicker(1)"
             >
               <span>+</span>
               DEPOSITAR
@@ -172,10 +172,11 @@ const getGenderClass = (gender) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .daycare-view {
-  color: #f8fafc;
+  color: var(--white);
   font-family: 'Inter', system-ui, sans-serif;
 }
 
@@ -190,12 +191,12 @@ const getGenderClass = (gender) => {
     margin-bottom: 8px;
     background: linear-gradient(to right, #8b5cf6, #3b82f6);
     -webkit-background-clip: text;
-    -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;;;;;;;;;;
+    -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;
     -webkit-text-fill-color: transparent;
   }
   
   .subtitle {
-    color: #94a3b8;
+    color: var(--gray);
     font-size: 14px;
     margin-bottom: 32px;
   }
@@ -211,7 +212,7 @@ const getGenderClass = (gender) => {
     background: none;
     border: none;
     padding: 12px 24px;
-    color: #94a3b8;
+    color: var(--gray);
     font-weight: 600;
     font-size: 14px;
     cursor: pointer;
@@ -219,7 +220,7 @@ const getGenderClass = (gender) => {
     transition: color 0.2s;
     
     &.active {
-      color: $white;
+      color: var(--white);
       &::after {
         content: '';
         position: absolute;
@@ -227,7 +228,7 @@ const getGenderClass = (gender) => {
         left: 0;
         right: 0;
         height: 2px;
-        background: #8b5cf6;
+        background: Rgba(139, 92, 246, 1);
       }
     }
     
@@ -235,8 +236,8 @@ const getGenderClass = (gender) => {
       position: absolute;
       top: 4px;
       right: 4px;
-      background: #ef4444;
-      color: $white;
+      background: var(--red);
+      color: var(--white);
       font-size: 10px;
       padding: 2px 6px;
       border-radius: 99px;
@@ -259,24 +260,24 @@ const getGenderClass = (gender) => {
 
 .daycare-slot {
   flex: 1;
-  background: #1e293b;
+  background: Rgba(30, 41, 59, 1);
   border-radius: 20px;
   aspect-ratio: 1/1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #334155;
+  border: 1px solid Rgba(51, 65, 85, 1);
   transition: all 0.2s;
   @include will-animate(transform);
   
   &:not(.empty):hover {
     transform: TranslateY(-4px);
-    border-color: #475569;
+    border-color: Rgba(71, 85, 105, 1);
   }
   
   &.empty {
     border-style: dashed;
-    background: rgba(30, 41, 59, 0.4);
+    background: Rgba(30, 41, 59, 0.4);
   }
 }
 
@@ -295,16 +296,16 @@ const getGenderClass = (gender) => {
   .gender {
     font-size: 16px;
     font-weight: 900;
-    &.gender-m { color: #3b82f6; }
-    &.gender-f { color: #ec4899; }
+    &.gender-m { color: Rgba(59, 130, 246, 1); }
+    &.gender-f { color: Rgba(236, 72, 153, 1); }
   }
 }
 
 .btn-deposit {
   background: none;
   border: none;
-  color: $muted;
-  font-family: 'Press Start 2P', cursive;
+  color: var(--gray);
+  @include pixelated;
   font-size: 8px;
   display: flex;
   flex-direction: column;
@@ -318,7 +319,7 @@ const getGenderClass = (gender) => {
   }
   
   &:hover {
-    color: #94a3b8;
+    color: var(--gray);
   }
 }
 
@@ -338,9 +339,9 @@ const getGenderClass = (gender) => {
     margin-bottom: 4px;
   }
   .timer {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 10px;
-    color: $white;
+    color: var(--white);
   }
 }
 
@@ -359,17 +360,17 @@ const getGenderClass = (gender) => {
 }
 
 @keyframes pulse {
-  0% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 rgba(239, 68, 68, 0)); }
-  50% { transform: Scale(1.2); filter: Drop-Shadow(0 0 15px rgba(239, 68, 68, 0.6)); }
-  100% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 rgba(239, 68, 68, 0)); }
+  0% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
+  50% { transform: Scale(1.2); filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
+  100% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
 }
 
 .breeding-forecast {
-  background: #1e293b;
+  background: Rgba(30, 41, 59, 1);
   border-radius: 20px;
   padding: 24px;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  border: 1px solid Rgba(139, 92, 246, 0.3);
+  box-shadow: 0 10px 30px Rgba(0,0,0,0.2);
   
   .forecast-header {
     display: flex;
@@ -377,13 +378,13 @@ const getGenderClass = (gender) => {
     gap: 12px;
     margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid Rgba(255,255,255,0.05);
     
     .icon { font-size: 20px; }
     h4 {
       font-size: 14px;
       font-weight: 800;
-      color: $white;
+      color: var(--white);
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -402,42 +403,42 @@ const getGenderClass = (gender) => {
   flex-direction: column;
   gap: 4px;
   padding: 12px;
-  background: rgba(0,0,0,0.2);
+  background: Rgba(0,0,0,0.2);
   border-radius: 12px;
   border: 1px solid transparent;
   transition: all 0.3s;
   
   .label {
     font-size: 10px;
-    color: $muted;
+    color: var(--gray);
     font-weight: 600;
   }
   
   .value {
     font-size: 12px;
-    color: $white;
+    color: var(--white);
     font-weight: 700;
   }
   
   &.active {
-    border-color: rgba(139, 92, 246, 0.4);
-    background: rgba(139, 92, 246, 0.05);
-    .value { color: #a78bfa; }
+    border-color: Rgba(139, 92, 246, 0.4);
+    background: Rgba(139, 92, 246, 0.05);
+    .value { color: Rgba(167, 139, 250, 1); }
   }
   
   &.positive {
-    border-color: rgba(34, 197, 94, 0.4);
-    background: rgba(34, 197, 94, 0.05);
-    .value { color: #4ade80; }
+    border-color: Rgba(34, 197, 94, 0.4);
+    background: Rgba(34, 197, 94, 0.05);
+    .value { color: Rgba(74, 222, 128, 1); }
   }
 }
 
 .forecast-help {
   padding-top: 12px;
-  border-top: 1px dashed #334155;
+  border-top: 1px dashed Rgba(51, 65, 85, 1);
   p {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--gray);
     line-height: 1.5;
   }
 }
@@ -445,7 +446,7 @@ const getGenderClass = (gender) => {
 .empty-state {
   text-align: center;
   padding: 60px 0;
-  color: $muted;
+  color: var(--gray);
   .icon {
     font-size: 48px;
     margin-bottom: 16px;

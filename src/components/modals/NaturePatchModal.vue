@@ -41,8 +41,8 @@ const close = () => {
   <BaseModal
     :show="true"
     title="PARCHE DE NATURALEZA"
-    title-color="#4ade80"
-    header-background="#161a2e"
+    title-color="Rgba(74, 222, 128, 1)"
+    header-background="Rgba(26, 26, 46, 1)"
     max-width="400px"
     @close="close"
   >
@@ -57,7 +57,7 @@ const close = () => {
           :key="n" 
           class="nature-btn"
           :class="{ active: naturePokemon?.nature === n }"
-          @click="handleApplyNature(n)"
+          @click.stop="handleApplyNature(n)"
         >
           <span class="n-name">{{ n }}</span>
           <span class="n-info">{{ getNatureInfo(n) }}</span>
@@ -91,8 +91,8 @@ const close = () => {
   padding-right: 8px;
 
   .nature-btn {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: Rgba(255,255,255,0.03);
+    border: 1px solid Rgba(255,255,255,0.08);
     border-radius: 14px;
     padding: 14px;
     text-align: left;
@@ -100,18 +100,18 @@ const close = () => {
     transition: all 0.2s;
 
     &:hover { 
-      background: rgba(255,255,255,0.06); 
+      background: Rgba(255,255,255,0.06); 
       transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.2);
+      border-color: Rgba(255, 255, 255, 0.2);
     }
     
     &.active { 
       border-color: var(--yellow); 
-      background: rgba(255, 214, 10, 0.05);
+      background: Rgba(255, 214, 10, 0.05);
       .n-name { color: var(--yellow); }
     }
 
-    .n-name { display: block; font-weight: 800; color: $white; font-size: 14px; }
+    .n-name { display: block; font-weight: 800; color: var(--white); font-size: 14px; }
     .n-info { display: block; font-size: 10px; color: var(--gray); margin-top: 4px; }
   }
 }

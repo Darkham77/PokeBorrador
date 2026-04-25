@@ -42,13 +42,13 @@ const socialStore = useSocialStore()
       <div class="friend-actions">
         <button
           class="friend-btn accept"
-          @click="socialStore.respondRequest(req.id, 'accepted')"
+          @click.stop="socialStore.respondRequest(req.id, 'accepted')"
         >
           ✓ ACEPTAR
         </button>
         <button
           class="friend-btn remove"
-          @click="socialStore.respondRequest(req.id, 'rejected')"
+          @click.stop="socialStore.respondRequest(req.id, 'rejected')"
         >
           ✕ RECHAZAR
         </button>
@@ -66,8 +66,8 @@ const socialStore = useSocialStore()
   display: flex;
   align-items: center;
   gap: 15px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 12px 15px;
   margin-bottom: 12px;
@@ -82,12 +82,12 @@ const socialStore = useSocialStore()
   .friend-name {
     font-size: 14px;
     font-weight: 900;
-    color: $white;
+    color: var(--white);
     margin-bottom: 4px;
   }
   .friend-meta {
     font-size: 11px;
-    color: #888;
+    color: Rgba(136, 136, 136, 1);
   }
 }
 
@@ -102,32 +102,32 @@ const socialStore = useSocialStore()
   font-size: 10px;
   font-weight: bold;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
-  color: $white;
+  border: 1px solid Rgba(255, 255, 255, 0.2);
+  background: Rgba(255, 255, 255, 0.05);
+  color: var(--white);
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.1);
   }
 
   &.accept {
-    background: rgba(107, 203, 119, 0.2);
-    color: #6bcb77;
-    border-color: rgba(107, 203, 119, 0.4);
+    background: Rgba(107, 203, 119, 0.2);
+    color: Rgba(107, 203, 119, 1);
+    border-color: Rgba(107, 203, 119, 0.4);
   }
 
   &.remove {
-    background: rgba(255, 71, 87, 0.1);
-    color: #ff4757;
-    border-color: rgba(255, 71, 87, 0.2);
+    background: Rgba(255, 71, 87, 0.1);
+    color: Rgba(255, 71, 87, 1);
+    border-color: Rgba(255, 71, 87, 0.2);
   }
 }
 
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   font-size: 12px;
   line-height: 1.6;
 

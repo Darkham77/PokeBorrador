@@ -105,7 +105,7 @@ const leaderSpriteUrl = computed(() => {
               :key="d"
               class="diff-btn-retro"
               :class="{ active: selectedDifficulty === d, [d]: true }"
-              @click="selectedDifficulty = d"
+              @click.stop="selectedDifficulty = d"
             >
               {{ d === 'easy' ? 'FÁCIL' : d === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
             </button>
@@ -113,7 +113,7 @@ const leaderSpriteUrl = computed(() => {
           <button
             class="retro-challenge-btn"
             :style="{ background: `linear-gradient(135deg, ${gym.typeColor}, ${gym.typeColor}cc)`, boxShadow: `0 4px 14px ${gym.typeColor}66` }"
-            @click="handleChallenge"
+            @click.stop="handleChallenge"
           >
             ⚔️ {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR' }}
           </button>
@@ -130,13 +130,13 @@ const leaderSpriteUrl = computed(() => {
   background: $card-dark;
   border-radius: 20px;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.05);
+  border: 2px solid Rgba(255, 255, 255, 0.05);
   transition: all 0.3s;
   display: flex;
   flex-direction: column;
 
   &.defeated {
-    border-color: rgba(107, 203, 119, 0.5);
+    border-color: Rgba(107, 203, 119, 0.5);
   }
 
   &.locked {
@@ -152,7 +152,7 @@ const leaderSpriteUrl = computed(() => {
 
 .card-header-legacy {
   padding: 16px 20px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .header-main {
@@ -179,12 +179,12 @@ const leaderSpriteUrl = computed(() => {
   }
 }
 
-.location { font-size: 11px; color: #888; margin-bottom: 2px; }
+.location { font-size: 11px; color: Rgba(136, 136, 136, 1); margin-bottom: 2px; }
 .leader-title {
   font-size: 13px;
   font-weight: 700;
   margin-bottom: 4px;
-  span { color: #eee; }
+  span { color: Rgba(238, 238, 238, 1); }
 }
 
 .badges-row {
@@ -196,7 +196,7 @@ const leaderSpriteUrl = computed(() => {
 
   .type-badge {
     background: var(--gym-color);
-    color: $white;
+    color: var(--white);
     font-size: 9px;
     padding: 3px 10px;
     border-radius: 10px;
@@ -217,7 +217,7 @@ const leaderSpriteUrl = computed(() => {
     height: 90px;
     width: auto;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 2px 8px rgba(0,0,0,0.5));
+    filter: Drop-Shadow(0 2px 8px Rgba(0,0,0,0.5));
   }
 }
 
@@ -232,7 +232,7 @@ const leaderSpriteUrl = computed(() => {
 
 .progress-txt {
   font-size: 9px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   font-weight: 700;
 }
 
@@ -241,22 +241,22 @@ const leaderSpriteUrl = computed(() => {
 }
 
 .locked-tag {
-  color: #ef4444;
+  color: Rgba(239, 68, 68, 1);
   font-size: 10px;
-  background: rgba(239, 68, 68, 0.1);
+  background: Rgba(239, 68, 68, 0.1);
   padding: 5px 12px;
   border-radius: 20px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid Rgba(239, 68, 68, 0.2);
 }
 
 .won-tag {
-  color: #22c55e;
+  color: Rgba(34, 197, 94, 1);
   font-size: 10px;
   font-weight: 700;
-  background: rgba(34, 197, 94, 0.1);
+  background: Rgba(34, 197, 94, 0.1);
   padding: 5px 12px;
   border-radius: 20px;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  border: 1px solid Rgba(34, 197, 94, 0.3);
 }
 
 .challenge-group {
@@ -276,19 +276,19 @@ const leaderSpriteUrl = computed(() => {
   font-size: 6px;
   padding: 6px 8px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   background: transparent;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   cursor: pointer;
 
   &.active {
     border-color: var(--gym-color);
     background: Rgba(var(--gym-color), 0.2);
-    color: $white;
+    color: var(--white);
     
-    &.easy { color: #22c55e; }
+    &.easy { color: Rgba(34, 197, 94, 1); }
     &.normal { color: $coin-gold; }
-    &.hard { color: #ef4444; }
+    &.hard { color: Rgba(239, 68, 68, 1); }
   }
 }
 
@@ -298,7 +298,7 @@ const leaderSpriteUrl = computed(() => {
   border-radius: 20px;
   @include pixelated;
   font-size: 8px;
-  color: $white;
+  color: var(--white);
   font-weight: 900;
   cursor: pointer;
   transition: all 0.2s;

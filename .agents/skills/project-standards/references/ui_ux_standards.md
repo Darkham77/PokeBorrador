@@ -33,10 +33,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 ### 2. Pixel-Perfect Typography (Sharpness Mandate)
 
-- **Grid Alignment**: Pixel fonts (especially `Press Start 2P`) MUST strictly use multiples of their native 8px design grid (**8px, 16px, 24px, 32px**).
+- **Grid Alignment**: Pixel fonts (especially `Press Start 2P`) SHOULD use sizes that maintain aesthetic balance. While multiples of 8px are technically perfect, intermediate sizes (10px, 11px) are allowed for readability.
 - **Anti-Alias Ban**: ALWAYS apply `@include pixelated;` to pixel fonts to force `-webkit-font-smoothing: none !important`.
 - **FORBIDDEN**:
-  - Intermediate sizes (9px, 10px, 11px, 13px, 15px) as they trigger subpixel interpolation.
   - Using `text-shadow` with any blur radius (must be 0px).
 - **Centering**: Use **Flexbox/Grid** for centering. Avoid `transform: translate(-50%, -50%)` as it causes subpixel blurring in Chrome.
 - **BST Aesthetics**: Game-world data (Stats, IVs, Levels) MUST prioritize these sharp pixelated tokens to reinforce the "Retro Heart".
@@ -107,6 +106,14 @@ The `BaseModal.vue` component supports parameterized aesthetics to maintain cons
 - **Close Button Hierarchy**: The close button MUST be the LAST element in the modal's DOM structure. This guarantees it sits above all slotted content regardless of internal component complexity.
 - **padding="raw"**: Use for full-bleed content (e.g., Shop/Inventory grids). The `retro` variant respects this to avoid double-padding.
 
+### 7. Admin Tool Modal Standards
+
+For complex developer tools or admin panels with high-density forms:
+
+- **Minimum Width**: Use `max-width: 500px` to accommodate multi-column inputs and sub-grids (Stats/IVs) without text clipping.
+- **Responsive Stacking**: Use `repeat(auto-fit, minmax(210px, 1fr))` for main layout grids. This ensures content stacks vertically in narrow viewports, maintaining horizontal fit.
+- **Space Efficiency**: Reduce internal `gap` and `padding` to `6px-8px` in dense grids to maximize usable horizontal space.
+
 ### 6. Premium 3D Action Buttons
 
 Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
@@ -159,7 +166,7 @@ To prevent "z-index wars" and ensure consistent interaction, all layers MUST fol
 - **Pattern**: Use `z-index: var(--z-critical)` (999,999) via `<Teleport to="body">`.
 - **Admin Panel Exception**: Tooltips spawned inside admin panels MUST use this critical layer to remain visible above the panel's high stacking context.
 - **Stacking Context Isolation**: Use `isolation: isolate;` on complex UI cards (like MapCards). This allows the use of negative `z-index` values for background/atmosphere layers that remain contained within the component, preventing them from bleeding behind the main layout.
-- **Standard Map Layers**: 
+- **Standard Map Layers**:
   - Background: `z-index: -3`
   - Weather: `z-index: -2`
   - Atmosphere/Filters: `z-index: -1`

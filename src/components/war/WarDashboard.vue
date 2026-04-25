@@ -148,6 +148,7 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .war-dashboard {
   display: flex;
   flex-direction: column;
@@ -163,19 +164,19 @@ onMounted(async () => {
   border-style: solid;
   
   &.dispute {
-    background: rgba(255, 136, 0, 0.1);
-    border-color: #ff8800;
-    .phase-title { color: #ff8800; }
+    background: Rgba(255, 136, 0, 0.1);
+    border-color: Rgba(255, 136, 0, 1);
+    .phase-title { color: Rgba(255, 136, 0, 1); }
   }
   
   &.dominance {
-    background: rgba(68, 255, 68, 0.1);
-    border-color: #44ff44;
-    .phase-title { color: #44ff44; }
+    background: Rgba(68, 255, 68, 0.1);
+    border-color: Rgba(68, 255, 68, 1);
+    .phase-title { color: Rgba(68, 255, 68, 1); }
   }
 
   .phase-title {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 11px;
     margin-bottom: 8px;
   }
@@ -190,10 +191,10 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   padding: 24px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
 
   .team {
     display: flex;
@@ -207,7 +208,7 @@ onMounted(async () => {
     }
     
     .count {
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       font-size: 20px;
     }
     
@@ -217,12 +218,12 @@ onMounted(async () => {
       margin-top: 4px;
     }
 
-    &.union { color: #3b82f6; }
-    &.poder { color: #ef4444; }
+    &.union { color: Rgba(59, 130, 246, 1); }
+    &.poder { color: Rgba(239, 68, 68, 1); }
   }
 
   .vs {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 12px;
     color: var(--gray, #666);
   }
@@ -232,7 +233,7 @@ onMounted(async () => {
   background: $card2;
   padding: 20px;
   border-radius: 20px;
-  border: 1px solid #333;
+  border: 1px solid Rgba(51, 51, 51, 1);
 
   .card-header {
     display: flex;
@@ -240,13 +241,13 @@ onMounted(async () => {
     margin-bottom: 20px;
     
     .title {
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       font-size: 10px;
       color: var(--yellow, #facc15);
     }
     
     .pts {
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       font-size: 10px;
     }
   }
@@ -265,9 +266,9 @@ onMounted(async () => {
     
     .fill {
       height: 100%;
-      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      background: linear-gradient(90deg, Rgba(59, 130, 246, 1), Rgba(96, 165, 250, 1));
       transition: width 0.5s ease-out;
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+      box-shadow: 0 0 10px Rgba(59, 130, 246, 0.5);
     }
   }
 
@@ -288,8 +289,8 @@ onMounted(async () => {
       .dot {
         width: 20px;
         height: 20px;
-        background: #333;
-        border: 2px solid $black;
+        background: Rgba(51, 51, 51, 1);
+        border: 2px solid var(--black);
         border-radius: 50%;
         margin-bottom: 4px;
         transition: all 0.3s;
@@ -297,15 +298,15 @@ onMounted(async () => {
       
       .pt-label {
         font-size: 8px;
-        color: #666;
-        font-family: 'Press Start 2P', cursive;
+        color: Rgba(102, 102, 102, 1);
+        @include pixelated;
       }
 
       &.achieved {
         .dot {
-          background: #3b82f6;
-          border-color: $white;
-          box-shadow: 0 0 8px #3b82f6;
+          background: Rgba(59, 130, 246, 1);
+          border-color: var(--white);
+          box-shadow: 0 0 8px Rgba(59, 130, 246, 1);
         }
         .pt-label { color: white; }
       }
@@ -315,9 +316,9 @@ onMounted(async () => {
 
 .reward-preview {
   font-size: 11px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   text-align: center;
-  background: rgba(0,0,0,0.3);
+  background: Rgba(0,0,0,0.3);
   padding: 10px;
   border-radius: 8px;
   
@@ -333,20 +334,20 @@ onMounted(async () => {
   gap: 12px;
 
   .stat-item {
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     padding: 16px;
     border-radius: 16px;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
 
     .label {
       font-size: 9px;
-      color: #888;
+      color: Rgba(136, 136, 136, 1);
       margin-bottom: 8px;
     }
     
     .value {
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       font-size: 12px;
       color: white;
     }

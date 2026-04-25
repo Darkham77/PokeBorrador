@@ -131,7 +131,7 @@ const mapImageUrl = computed(() => {
         <button 
           v-if="mapData.winner === warStore.faction"
           class="protect-btn"
-          @click="window.openSelectDefensePokeModal?.(map.id)"
+          @click.stop="window.openSelectDefensePokeModal?.(map.id)"
         >
           🛡️ PROTEGER
         </button>
@@ -146,7 +146,7 @@ const mapImageUrl = computed(() => {
   position: relative;
   height: 140px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid Rgba(255,255,255,0.15);
   background-size: cover;
   background-position: center;
   overflow: hidden;
@@ -154,14 +154,14 @@ const mapImageUrl = computed(() => {
 
   &:hover { transform: #{'Scale(1.03)'}; z-index: var(--z-base); }
   
-  &.glow-union { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); border-color: #3b82f6; }
-  &.glow-poder { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); border-color: #ef4444; }
+  &.glow-union { box-shadow: 0 0 15px Rgba(59, 130, 246, 0.4); border-color: Rgba(59, 130, 246, 1); }
+  &.glow-poder { box-shadow: 0 0 15px Rgba(239, 68, 68, 0.4); border-color: Rgba(239, 68, 68, 1); }
 }
 
 .war-card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: Rgba(0,0,0,0.5);
   display: flex;
   flex-direction: column;
   padding: 10px;
@@ -170,8 +170,8 @@ const mapImageUrl = computed(() => {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    .map-name { @include pixelated; font-size: 7px; color: #eee; }
-    .war-tag { font-size: 7px; color: #fbbf24; font-weight: bold; }
+    .map-name { @include pixelated; font-size: 7px; color: Rgba(238, 238, 238, 1); }
+    .war-tag { font-size: 7px; color: Rgba(251, 191, 36, 1); font-weight: bold; }
   }
 }
 
@@ -190,26 +190,26 @@ const mapImageUrl = computed(() => {
   margin-bottom: 4px;
 
   &.pts { margin-top: 4px; opacity: 0.8; }
-  .u-text { color: #3b82f6; }
-  .p-text { color: #ef4444; }
+  .u-text { color: Rgba(59, 130, 246, 1); }
+  .p-text { color: Rgba(239, 68, 68, 1); }
 }
 
 .war-progress-bar {
   height: 8px;
-  background: #222;
+  background: Rgba(34, 34, 34, 1);
   border-radius: 4px;
   overflow: hidden;
   display: flex;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid Rgba(255,255,255,0.1);
 
-  .bar-union { background: #3b82f6; }
-  .bar-poder { background: #ef4444; }
+  .bar-union { background: Rgba(59, 130, 246, 1); }
+  .bar-poder { background: Rgba(239, 68, 68, 1); }
 }
 
 .card-footer {
   text-align: center;
   font-size: 8px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   font-style: italic;
 }
 
@@ -219,9 +219,9 @@ const mapImageUrl = computed(() => {
   pointer-events: none;
   z-index: var(--z-base);
 
-  &.union { background: linear-gradient(0deg, rgba(59, 130, 246, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%); }
-  &.poder { background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(80, 0, 0, 0.6) 100%); }
-  &:not(.union):not(.poder) { background: rgba(0,0,0,0.6); }
+  &.union { background: linear-gradient(0deg, Rgba(59, 130, 246, 0.6) 0%, Rgba(255, 255, 255, 0.2) 100%); }
+  &.poder { background: linear-gradient(0deg, Rgba(0, 0, 0, 0.8) 0%, Rgba(80, 0, 0, 0.6) 100%); }
+  &:not(.union):not(.poder) { background: Rgba(0,0,0,0.6); }
 }
 
 .dom-content {
@@ -242,30 +242,30 @@ const mapImageUrl = computed(() => {
   letter-spacing: 2px;
   margin-bottom: 6px;
 
-  &.union { color: #3b82f6; text-shadow: 0 0 10px #3b82f6, 0 2px 4px $black; }
-  &.poder { color: #ef4444; text-shadow: 0 0 10px #ef4444, 0 2px 4px $black; }
-  &:not(.union):not(.poder) { color: #555; font-size: 8px; }
+  &.union { color: Rgba(59, 130, 246, 1); text-shadow: 0 0 10px Rgba(59, 130, 246, 1), 0 2px 4px var(--black); }
+  &.poder { color: Rgba(239, 68, 68, 1); text-shadow: 0 0 10px Rgba(239, 68, 68, 1), 0 2px 4px var(--black); }
+  &:not(.union):not(.poder) { color: Rgba(85, 85, 85, 1); font-size: 8px; }
 }
 
 .map-subname {
   @include pixelated;
   font-size: 6px;
-  color: rgba(255,255,255,0.6);
+  color: Rgba(255,255,255,0.6);
 }
 
 .protect-btn {
   margin-top: 15px;
   width: 90%;
   padding: 8px;
-  background: rgba(74, 222, 128, 0.8);
-  border: 2px solid #4ade80;
+  background: Rgba(74, 222, 128, 0.8);
+  border: 2px solid Rgba(74, 222, 128, 1);
   border-radius: 8px;
   color: $white;
   @include pixelated;
   font-size: 7px;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+  box-shadow: 0 0 10px Rgba(74, 222, 128, 0.4);
 
-  &:hover { background: #4ade80; transform: translateY(-2px); }
+  &:hover { background: Rgba(74, 222, 128, 1); transform: translateY(-2px); }
 }
 </style>

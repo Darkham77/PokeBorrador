@@ -40,13 +40,13 @@ const socialStore = useSocialStore()
         <div class="request-btns">
           <button
             class="btn-accept"
-            @click="socialStore.respondRequest(req.id, 'accepted')"
+            @click.stop="socialStore.respondRequest(req.id, 'accepted')"
           >
             ACEPTAR
           </button>
           <button
             class="btn-reject"
-            @click="socialStore.respondRequest(req.id, 'rejected')"
+            @click.stop="socialStore.respondRequest(req.id, 'rejected')"
           >
             ×
           </button>
@@ -57,6 +57,7 @@ const socialStore = useSocialStore()
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .requests-list {
   display: flex;
   flex-direction: column;
@@ -64,8 +65,8 @@ const socialStore = useSocialStore()
 }
 
 .request-card {
-  background: rgba(157, 78, 221, 0.05);
-  border: 1px solid rgba(157, 78, 221, 0.1);
+  background: Rgba(157, 78, 221, 0.05);
+  border: 1px solid Rgba(157, 78, 221, 0.1);
   border-radius: 16px;
   padding: 12px;
   display: flex;
@@ -79,8 +80,8 @@ const socialStore = useSocialStore()
     
     .text {
       font-size: 12px;
-      color: #94a3b8;
-      .username { color: $white; font-weight: 700; margin-right: 4px; }
+      color: Rgba(148, 163, 184, 1);
+      .username { color: var(--white); font-weight: 700; margin-right: 4px; }
     }
   }
 
@@ -89,20 +90,20 @@ const socialStore = useSocialStore()
     gap: 8px;
 
     .btn-accept {
-      background: #22c55e;
+      background: Rgba(34, 197, 94, 1);
       border: none;
-      color: $white;
+      color: var(--white);
       padding: 8px 12px;
       border-radius: 8px;
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       font-size: 6px;
       cursor: pointer;
     }
 
     .btn-reject {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      color: #f87171;
+      background: Rgba(239, 68, 68, 0.1);
+      border: 1px solid Rgba(239, 68, 68, 0.2);
+      color: Rgba(248, 113, 113, 1);
       width: 32px;
       height: 32px;
       border-radius: 8px;
@@ -115,7 +116,7 @@ const socialStore = useSocialStore()
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #94a3b8;
+  color: Rgba(148, 163, 184, 1);
   .icon { font-size: 40px; margin-bottom: 15px; opacity: 0.5; }
   p { font-size: 14px; margin-bottom: 20px; }
 }

@@ -53,7 +53,7 @@ const openParticipationModal = (event) => {
       <button
         class="retro-btn refresh"
         :disabled="isLoading"
-        @click="eventStore.fetchEvents()"
+        @click.stop="eventStore.fetchEvents()"
       >
         {{ isLoading ? '...' : 'REFRESCAR' }}
       </button>
@@ -78,7 +78,7 @@ const openParticipationModal = (event) => {
             </div>
             <button
               class="retro-btn claim"
-              @click="eventStore.claimAward(award.id)"
+              @click.stop="eventStore.claimAward(award.id)"
             >
               RECLAMAR
             </button>
@@ -140,7 +140,7 @@ const openParticipationModal = (event) => {
             <button 
               v-if="event.type === 'competition'" 
               class="retro-btn action"
-              @click="openParticipationModal(event)"
+              @click.stop="openParticipationModal(event)"
             >
               PARTICIPAR
             </button>
@@ -162,8 +162,8 @@ const openParticipationModal = (event) => {
 
 .events-view {
   padding: 0 0 40px;
-  background: #0d1117;
-  color: $white;
+  background: var(--bg-dark);
+  color: var(--white);
 }
 
 /* 1:1 LEGACY COMPONENT STYLES */
@@ -174,7 +174,7 @@ const openParticipationModal = (event) => {
   align-items: center;
   margin-bottom: 30px;
   padding-bottom: 15px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 
   .header-left {
     display: flex;
@@ -182,16 +182,16 @@ const openParticipationModal = (event) => {
     gap: 15px;
   }
 
-  .icon { font-size: 32px; filter: Drop-Shadow(0 0 10px rgba(255, 215, 0, 0.4)); }
+  .icon { font-size: 32px; filter: Drop-Shadow(0 0 10px Rgba(255, 215, 0, 0.4)); }
 
   h1 {
     @include pixelated;
     font-size: 14px;
-    color: $coin-gold;
+    color: var(--yellow);
     margin: 0 0 8px 0;
-    text-shadow: 0 2px 0 $black;
+    text-shadow: 0 2px 0 var(--black);
   }
-  p { font-size: 10px; color: #888; margin: 0; }
+  p { font-size: 10px; color: var(--gray); margin: 0; }
 }
 
 .retro-btn {
@@ -199,33 +199,33 @@ const openParticipationModal = (event) => {
   font-size: 8px;
   padding: 10px 16px;
   border-radius: 8px;
-  border: 2px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.05);
-  color: $white;
+  border: 2px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
+  color: var(--white);
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
-    background: rgba(255,255,255,0.12);
+    background: Rgba(255, 255, 255, 0.12);
     transform: TranslateY(-2px);
-    border-color: rgba(255,255,255,0.2);
+    border-color: Rgba(255, 255, 255, 0.2);
   }
 
-  &.claim { background: #22c55e; border-color: #4ade80; color: $white; }
-  &.action { background: $coin-gold; border-color: $white; color: $black; text-shadow: none; }
+  &.claim { background: var(--green); border-color: var(--green-bright); color: var(--white); }
+  &.action { background: var(--yellow); border-color: var(--white); color: var(--black); text-shadow: none; }
 }
 
 /* REWARD BOX */
 
 .awards-box {
-  background: #22c55e11;
-  border: 1px solid #22c55e44;
+  background: Rgba(34, 197, 94, 0.05);
+  border: 1px solid Rgba(34, 197, 94, 0.2);
   border-radius: 16px;
   padding: 4px;
   margin-bottom: 30px;
 
   .box-inner {
-    background: rgba(0,0,0,0.3);
+    background: Rgba(0, 0, 0, 0.3);
     border-radius: 12px;
     padding: 15px;
   }
@@ -233,7 +233,7 @@ const openParticipationModal = (event) => {
   h3 {
     @include pixelated;
     font-size: 9px;
-    color: #4ade80;
+    color: var(--green-bright);
     margin-bottom: 15px;
   }
 
@@ -241,14 +241,14 @@ const openParticipationModal = (event) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
     padding: 12px 18px;
     border-radius: 12px;
     margin-bottom: 10px;
 
     .award-name { display: block; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
-    .award-prize { font-size: 11px; color: #94a3b8; }
+    .award-prize { font-size: 11px; color: var(--gray); }
   }
 }
 
@@ -262,17 +262,17 @@ const openParticipationModal = (event) => {
 
 .event-card {
   background: $card-dark;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 
-  &:hover { border-color: #ffd70088; transform: TranslateY(-3px); }
+  &:hover { border-color: Rgba(255, 215, 0, 0.5); transform: TranslateY(-3px); }
 
   .banner-box {
     height: 150px;
-    background: $black;
+    background: var(--black);
     img { width: 100%; height: 100%; object-fit: cover; }
   }
 
@@ -285,13 +285,13 @@ const openParticipationModal = (event) => {
 
     .event-id-icon {
       width: 50px; height: 50px;
-      background: rgba(0,0,0,0.3);
+      background: Rgba(0, 0, 0, 0.3);
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
-      border: 1px solid rgba(255,255,255,0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.05);
     }
 
     h2 { font-size: 15px; font-weight: bold; margin: 0 0 6px 0; }
@@ -299,13 +299,13 @@ const openParticipationModal = (event) => {
       font-size: 8px;
       padding: 3px 8px;
       border-radius: 6px;
-      background: #3b82f622;
-      color: #60a5fa;
+      background: Rgba(59, 130, 246, 0.1);
+      color: var(--blue-bright);
       font-weight: bold;
     }
   }
 
-  .description { font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 20px; flex: 1; }
+  .description { font-size: 12px; color: var(--gray); line-height: 1.5; margin-bottom: 20px; flex: 1; }
 
   .card-footer {
     display: flex;
@@ -313,8 +313,8 @@ const openParticipationModal = (event) => {
     align-items: flex-end;
 
     .timer-box {
-      .label { display: block; font-size: 8px; color: $muted; margin-bottom: 5px; }
-      .value { @include pixelated; font-size: 9px; color: #f87171; }
+      .label { display: block; font-size: 8px; color: var(--gray); margin-bottom: 5px; }
+      .value { @include pixelated; font-size: 9px; color: var(--red); }
     }
     
     .active-badge {
@@ -322,29 +322,29 @@ const openParticipationModal = (event) => {
       font-size: 8px;
       padding: 10px 16px;
       border-radius: 8px;
-      background: rgba(74, 222, 128, 0.2);
-      border: 1px solid #4ade80;
-      color: #4ade80;
-      text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+      background: Rgba(74, 222, 128, 0.1);
+      border: 1px solid var(--green-bright);
+      color: var(--green-bright);
+      text-shadow: 0 0 10px Rgba(74, 222, 128, 0.3);
       animation: pulseActive 2s infinite;
     }
   }
 }
 
 @keyframes pulseActive {
-  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+  0% { box-shadow: 0 0 0 0 Rgba(74, 222, 128, 0.4); }
+  70% { box-shadow: 0 0 0 6px Rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 Rgba(74, 222, 128, 0); }
 }
 
 .no-events {
   grid-column: 1 / -1;
   text-align: center;
   padding: 60px;
-  background: rgba(255,255,255,0.02);
+  background: Rgba(255, 255, 255, 0.02);
   border-radius: 20px;
-  border: 1px dashed rgba(255,255,255,0.1);
-  color: #555;
+  border: 1px dashed Rgba(255, 255, 255, 0.1);
+  color: var(--gray);
   font-style: italic;
 }
 </style>

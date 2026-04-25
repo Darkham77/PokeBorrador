@@ -34,9 +34,9 @@ const handleSelect = async (index) => {
 
 const getHpColor = (p) => {
   const pct = (p.hp / p.maxHp) * 100
-  if (pct > 50) return '#4caf50'
-  if (pct > 20) return '#ffeb3b'
-  return '#f44336'
+  if (pct > 50) return 'Rgba(34, 197, 94, 1)'
+  if (pct > 20) return 'Rgba(250, 204, 21, 1)'
+  return 'Rgba(239, 68, 68, 1)'
 }
 </script>
 
@@ -57,7 +57,7 @@ const getHpColor = (p) => {
           v-for="(p, index) in team" 
           :key="p.uid || index"
           class="target-row"
-          @click="handleSelect(index)"
+          @click.stop="handleSelect(index)"
         >
           <div class="poke-sprite">
             <img
@@ -102,7 +102,7 @@ const getHpColor = (p) => {
     <template #footer>
       <button
         class="cancel-btn-primary"
-        @click="close"
+        @click.stop="close"
       >
         CANCELAR
       </button>
@@ -118,7 +118,7 @@ const getHpColor = (p) => {
 
 .target-help-text {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: Rgba(255, 255, 255, 0.5);
   margin-bottom: 20px;
   text-align: center;
 }
@@ -137,8 +137,8 @@ const getHpColor = (p) => {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 12px;
   cursor: pointer;
@@ -146,9 +146,9 @@ const getHpColor = (p) => {
   position: relative;
 
   &:hover {
-    background: rgba(255, 215, 0, 0.08);
-    border-color: rgba(255, 215, 0, 0.3);
-    box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.3);
+    background: Rgba(255, 215, 0, 0.08);
+    border-color: Rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 0 1px Rgba(255, 215, 0, 0.3);
     transform: translateX(4px);
     .select-hint { opacity: 1; }
   }
@@ -168,17 +168,17 @@ const getHpColor = (p) => {
     align-items: center;
     gap: 8px;
     margin-bottom: 6px;
-    .p-name { font-weight: 700; font-size: 14px; color: $white; }
+    .p-name { font-weight: 700; font-size: 14px; color: var(--white); }
     .p-lv { font-size: 10px; color: var(--gray); @include pixelated; }
   }
 
   .hp-bar-container {
     height: 6px;
-    background: rgba(0, 0, 0, 0.3);
+    background: Rgba(0, 0, 0, 0.3);
     border-radius: 3px;
     overflow: hidden;
     margin-bottom: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
   }
 
   .hp-bar-fill {
@@ -204,8 +204,8 @@ const getHpColor = (p) => {
 .cancel-btn-primary {
   width: 100%;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   color: var(--gray);
   @include pixelated;
@@ -214,8 +214,8 @@ const getHpColor = (p) => {
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: Rgba(255, 255, 255, 0.1);
+    color: var(--white);
     transform: translateY(-2px);
   }
 }

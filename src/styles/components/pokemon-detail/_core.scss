@@ -14,7 +14,7 @@
   & .sprite-container {
     position: relative;
     z-index: var(--z-base);
-    background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 80%);
+    background: radial-gradient(circle, Rgba(255,255,255,0.12) 0%, transparent 80%);
     border-radius: 50%;
     
         & .main-sprite { 
@@ -23,7 +23,7 @@
       image-rendering: pixelated; 
       position: relative; 
       z-index: var(--z-base);
-      filter: Drop-shadow(0 20px 40px rgba(0,0,0,0.7));
+      filter: Drop-shadow(0 20px 40px Rgba(0,0,0,0.7));
       transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       transform: TranslateY($sprite-translate); 
       
@@ -55,10 +55,10 @@
 
 .pdex-detail-tabs {
   display: flex;
-  background: rgba(15, 23, 42, 0.6);
+  background: Rgba(15, 23, 42, 0.6);
   -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   padding: 0 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid Rgba(255,255,255,0.05);
   position: relative;
   z-index: var(--z-base);
   padding-top: 30px;
@@ -72,31 +72,33 @@
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    color: rgba(255,255,255,0.3);
+    color: Rgba(255,255,255,0.3);
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     
     i.tab-icon { font-size: 18px; transition: transform 0.3s; }
     .tab-label { font-size: 9px; font-weight: 800; letter-spacing: 0.5px; }
     
-    &:hover { 
-      color: rgba(255,255,255,0.7);
-      i.tab-icon { transform: TranslateY(-2px); }
+    &:hover:not(.active) { 
+      color: Rgba(255,255,255,0.7);
+      background: radial-gradient(circle at bottom, Rgba(255,255,255,0.06) 0%, transparent 80%);
+      i.tab-icon { transform: TranslateY(-3px); }
     }
     
     &.active {
       color: var(--yellow);
-      background: rgba(255, 214, 10, 0.03);
+      background: radial-gradient(circle at bottom, Rgba(var(--type-color-rgb), 0.15) 0%, transparent 70%);
+      transform: TranslateY(-2px);
       
       &::after {
         content: '';
         position: absolute;
-        bottom: 0; left: 15%; right: 15%;
-        height: 2px;
+        bottom: 0; left: 10%; right: 10%;
+        height: 3px;
         background: var(--yellow);
-        border-radius: 2px 2px 0 0;
-        box-shadow: 0 0 10px var(--yellow);
+        border-radius: 3px 3px 0 0;
+        box-shadow: 0 0 15px var(--yellow);
       }
     }
   }
@@ -104,15 +106,24 @@
 
 .upd-core-body {
   flex: 1;
-  overflow-y: auto;
-  padding: 32px;
   min-height: 0;
+  position: relative;
+  z-index: var(--z-base);
+  background: Rgba(10, 12, 20, 1);
+  padding: 32px;
+  pointer-events: auto !important;
+  overflow: visible !important; // Critical fix: allow wheel events to bubble
+  @include smooth-scroll;
+
+  @media (max-width: 480px) {
+    padding: 20px 16px;
+  }
   
   &::-webkit-scrollbar { width: 8px; }
-  &::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+  &::-webkit-scrollbar-track { background: Rgba(255, 255, 255, 0.05); }
   &::-webkit-scrollbar-thumb { 
-    background: rgba(255, 255, 255, 0.1); 
+    background: Rgba(255, 255, 255, 0.1); 
     border-radius: 4px;
-    &:hover { background: rgba(255, 255, 255, 0.15); }
+    &:hover { background: Rgba(255, 255, 255, 0.15); }
   }
 }

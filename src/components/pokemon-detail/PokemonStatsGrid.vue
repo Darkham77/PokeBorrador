@@ -17,9 +17,9 @@ const labels = {
 }
 
 const getIvColor = (val) => {
-  if (val >= 28) return '#6BCB77' // Green (Elite)
-  if (val >= 15) return '#FFD93D' // Yellow (Good)
-  return '#FF3B3B' // Red (Poor)
+  if (val >= 28) return 'Rgba(107, 203, 119, 1)' // Green (Elite)
+  if (val >= 15) return 'Rgba(255, 217, 61, 1)' // Yellow (Good)
+  return 'Rgba(255, 59, 59, 1)' // Red (Poor)
 }
 </script>
 
@@ -80,8 +80,8 @@ const getIvColor = (val) => {
   </div>
 </template>
 
-<style scoped>
-@use "@/styles/core/_mixins" as *;
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
 .stats-container { margin-bottom: 24px; }
 
 .vp-section-title {
@@ -100,18 +100,18 @@ const getIvColor = (val) => {
 }
 
 .stat-box {
-  background: rgba(255,255,255,0.02);
+  background: Rgba(255,255,255,0.02);
   border-radius: 12px;
   padding: 12px;
   text-align: center;
-  border: 1px solid rgba(255,255,255,0.03);
+  border: 1px solid Rgba(255,255,255,0.03);
 }
 
-.stat-box span { display: block; font-size: 8px; color: #888; margin-bottom: 4px; @include pixelated; }
-.stat-box strong { font-size: 16px; color: #efefef; @include pixelated; }
+.stat-box span { display: block; font-size: 8px; color: Rgba(136, 136, 136, 1); margin-bottom: 4px; @include pixelated; }
+.stat-box strong { font-size: 16px; color: Rgba(238, 238, 238, 1); @include pixelated; }
 
 .glass-inset-dark {
-  background: rgba(0,0,0,0.5);
+  background: Rgba(0,0,0,0.5);
   border-radius: 20px;
   padding: 20px;
 }
@@ -123,8 +123,8 @@ const getIvColor = (val) => {
   margin-bottom: 10px;
 }
 
-.iv-label { width: 60px; font-size: 10px; color: #888; }
-.iv-track { flex: 1; height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; }
+.iv-label { width: 60px; font-size: 10px; color: Rgba(136, 136, 136, 1); }
+.iv-track { flex: 1; height: 6px; background: Rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; }
 .iv-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease-out; }
 .iv-val { width: 24px; text-align: right; font-size: 11px; font-weight: bold; }
 </style>

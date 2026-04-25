@@ -136,7 +136,7 @@ const getTrainerSprite = (id) => {
       <div class="dashboard-actions">
         <button 
           class="missions-btn-wide"
-          @click="emit('openMissions')"
+          @click.stop="emit('openMissions')"
         >
           <span class="icon">📋</span> MISIONES PASIVAS
         </button>
@@ -144,7 +144,7 @@ const getTrainerSprite = (id) => {
         <div class="action-footer">
           <button
             class="btn-secondary"
-            @click="emit('changeClass')"
+            @click.stop="emit('changeClass')"
           >
             <span class="icon">🔄</span>
             <div class="btn-label-stack">
@@ -154,7 +154,7 @@ const getTrainerSprite = (id) => {
           </button>
           <button
             class="btn-primary"
-            @click="emit('close')"
+            @click.stop="emit('close')"
           >
             <span class="icon check-icon">✓</span> ENTENDIDO
           </button>
@@ -165,6 +165,7 @@ const getTrainerSprite = (id) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .dashboard-layout {
@@ -174,13 +175,13 @@ const getTrainerSprite = (id) => {
   overflow: hidden;
   
   // Base dark background
-  background: #0a0c14;
+  background: Rgba(10, 12, 20, 1);
   
   // Custom class gradients
-  .rocket & { background: linear-gradient(135deg, #1a0505 0%, #050202 100%); }
-  .cazabichos & { background: linear-gradient(135deg, #051405 0%, #020602 100%); }
-  .entrenador & { background: linear-gradient(135deg, #050a14 0%, #020406 100%); }
-  .criador & { background: linear-gradient(135deg, #0a0514 0%, #030206 100%); }
+  .rocket & { background: linear-gradient(135deg, Rgba(26, 5, 5, 1) 0%, Rgba(5, 2, 2, 1) 100%); }
+  .cazabichos & { background: linear-gradient(135deg, Rgba(5, 20, 5, 1) 0%, Rgba(2, 6, 2, 1) 100%); }
+  .entrenador & { background: linear-gradient(135deg, Rgba(5, 10, 20, 1) 0%, Rgba(2, 4, 6, 1) 100%); }
+  .criador & { background: linear-gradient(135deg, Rgba(10, 5, 20, 1) 0%, Rgba(3, 2, 6, 1) 100%); }
 
   &::before {
     content: '';
@@ -195,8 +196,8 @@ const getTrainerSprite = (id) => {
 .dashboard-sidebar {
   width: 380px;
   padding: 48px 32px;
-  background: rgba(0, 0, 0, 0.15);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.15);
+  border-right: 1px solid Rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -208,9 +209,9 @@ const getTrainerSprite = (id) => {
       position: relative;
       width: 300px;
       height: 300px;
-      background: rgba(0, 0, 0, 0.3);
+      background: Rgba(0, 0, 0, 0.3);
       border-radius: 32px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.05);
       margin-bottom: 40px;
       display: flex;
       align-items: center;
@@ -227,7 +228,7 @@ const getTrainerSprite = (id) => {
       .trainer-big-img {
         height: 220px;
         image-rendering: pixelated;
-        filter: Drop-Shadow(0 20px 40px rgba(0,0,0,0.8));
+        filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.8));
         z-index: var(--z-base);
         transition: transform 0.3s ease;
         &:hover { transform: Scale(1.05); }
@@ -239,7 +240,7 @@ const getTrainerSprite = (id) => {
         left: 24px;
         width: 60px;
         height: 60px;
-        background: #1e293b;
+        background: Rgba(30, 41, 59, 1);
         border: 3px solid var(--cls-color);
         border-radius: 50%;
         display: flex;
@@ -247,7 +248,7 @@ const getTrainerSprite = (id) => {
         justify-content: center;
         overflow: hidden;
         z-index: var(--z-base);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.6), 0 0 15px var(--cls-color)44;
+        box-shadow: 0 8px 25px Rgba(0,0,0,0.6), 0 0 15px var(--cls-color)44;
 
         .avatar-pixel {
           width: 100%;
@@ -264,7 +265,7 @@ const getTrainerSprite = (id) => {
     }
 
   .class-main-title {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 20px;
     color: var(--cls-color);
     margin-bottom: 16px;
@@ -274,7 +275,7 @@ const getTrainerSprite = (id) => {
 
   .class-slogan {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.6);
+    color: Rgba(255, 255, 255, 0.6);
     font-style: italic;
     line-height: 1.6;
     margin-bottom: 48px;
@@ -290,8 +291,8 @@ const getTrainerSprite = (id) => {
   gap: 16px;
 
   .rank-card {
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: Rgba(15, 23, 42, 0.4);
+    border: 1px solid Rgba(255, 255, 255, 0.08);
     border-radius: 24px;
     padding: 24px;
     display: flex;
@@ -300,11 +301,11 @@ const getTrainerSprite = (id) => {
     text-align: left;
     transition: all 0.2s;
 
-    &:hover { background: rgba(15, 23, 42, 0.6); transform: TranslateX(5px); }
+    &:hover { background: Rgba(15, 23, 42, 0.6); transform: TranslateX(5px); }
 
     .card-icon { 
       width: 48px; height: 48px;
-      background: rgba(0, 0, 0, 0.3);
+      background: Rgba(0, 0, 0, 0.3);
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-size: 24px; 
@@ -312,8 +313,8 @@ const getTrainerSprite = (id) => {
     .card-text {
       display: flex;
       flex-direction: column;
-      .label { font-size: 8px; font-family: 'Press Start 2P', cursive; color: rgba(255,255,255,0.4); margin-bottom: 8px; }
-      .value { font-family: 'Press Start 2P', cursive; font-size: 14px; color: $white; }
+      .label { font-size: 8px; @include pixelated; color: Rgba(255,255,255,0.4); margin-bottom: 8px; }
+      .value { @include pixelated; font-size: 14px; color: var(--white); }
       .highlight { color: var(--yellow); }
     }
   }
@@ -339,16 +340,16 @@ const getTrainerSprite = (id) => {
     .header-line {
       width: 4px;
       height: 24px;
-      background: #22c55e;
+      background: Rgba(34, 197, 94, 1);
       border-radius: 2px;
-      box-shadow: 0 0 10px #22c55e;
-      &.red { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+      box-shadow: 0 0 10px Rgba(34, 197, 94, 1);
+      &.red { background: Rgba(239, 68, 68, 1); box-shadow: 0 0 10px Rgba(239, 68, 68, 1); }
     }
     
     h2 {
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       font-size: 11px;
-      color: $white;
+      color: var(--white);
       letter-spacing: 1px;
       @include pixelated;
     }
@@ -361,36 +362,36 @@ const getTrainerSprite = (id) => {
   gap: 12px;
 
   .ability-item {
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: Rgba(15, 23, 42, 0.4);
+    border: 1px solid Rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     padding: 16px 20px;
     display: flex;
     align-items: center;
     gap: 16px;
     transition: all 0.2s;
-    border-left: 3px solid #22c55e;
+    border-left: 3px solid Rgba(34, 197, 94, 1);
 
-    &:hover { background: rgba(255, 255, 255, 0.06); }
+    &:hover { background: Rgba(255, 255, 255, 0.06); }
 
     .ability-checkbox { 
       width: 28px; height: 28px;
-      background: rgba(0,0,0,0.4);
+      background: Rgba(0,0,0,0.4);
       border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
       font-size: 14px; 
     }
-    .ability-content { flex: 1; p { font-size: 13px; color: #cbd5e1; margin: 0; } }
+    .ability-content { flex: 1; p { font-size: 13px; color: Rgba(203, 213, 225, 1); margin: 0; } }
     .ability-help {
       width: 20px; height: 20px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px; color: #ef4444; cursor: help;
+      font-size: 16px; color: Rgba(239, 68, 68, 1); cursor: help;
       font-weight: 900;
     }
 
     &.limitation { 
-      border-left: 3px solid #ef4444; 
-      border-color: rgba(239, 68, 68, 0.3);
+      border-left: 3px solid Rgba(239, 68, 68, 1); 
+      border-color: Rgba(239, 68, 68, 0.3);
     }
 
     &.locked { 
@@ -402,17 +403,17 @@ const getTrainerSprite = (id) => {
     .req-hint {
       display: block;
       font-size: 9px;
-      color: rgba(255,255,255,0.3);
+      color: Rgba(255,255,255,0.3);
       margin-top: 4px;
     }
 
     .lv-badge {
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       font-size: 8px;
-      background: rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.1);
       padding: 4px 8px;
       border-radius: 4px;
-      color: #94a3b8;
+      color: Rgba(148, 163, 184, 1);
     }
 
     .text-locked { color: $muted !important; }
@@ -436,7 +437,7 @@ const getTrainerSprite = (id) => {
     .btn-secondary {
       @include btn-vicio('secondary', 'md', true);
       
-      .btn-label { font-size: 8px; color: rgba(255, 255, 255, 0.7); }
+      .btn-label { font-size: 8px; color: Rgba(255, 255, 255, 0.7); }
       .price { color: var(--yellow); font-size: 9px; }
       .icon { opacity: 0.8; }
     }

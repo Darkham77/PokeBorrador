@@ -82,7 +82,7 @@ const cancelSearch = () => {
       <button 
         v-if="!isSearching"
         class="search-btn press-start"
-        @click="startSearch"
+        @click.stop="startSearch"
       >
         <span class="btn-icon">⚔️</span> BUSCAR COMBATE RANKED
       </button>
@@ -94,7 +94,7 @@ const cancelSearch = () => {
         <span class="press-start">BUSCANDO RIVAL...</span>
         <button
           class="cancel-btn"
-          @click="cancelSearch"
+          @click.stop="cancelSearch"
         >
           CANCELAR
         </button>
@@ -106,14 +106,14 @@ const cancelSearch = () => {
       <button 
         class="tab-btn press-start" 
         :class="{ active: activeTab === 'overview' }"
-        @click="activeTab = 'overview'"
+        @click.stop="activeTab = 'overview'"
       >
         PROGRESO
       </button>
       <button 
         class="tab-btn press-start" 
         :class="{ active: activeTab === 'ranking' }"
-        @click="activeTab = 'ranking'"
+        @click.stop="activeTab = 'ranking'"
       >
         RANKING GLOBAL
       </button>
@@ -186,9 +186,9 @@ const cancelSearch = () => {
 }
 
 .card-glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 16px;
   @include gpu-layer;
@@ -199,7 +199,7 @@ const cancelSearch = () => {
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+  background: linear-gradient(135deg, Rgba(59, 130, 246, 0.1), Rgba(139, 92, 246, 0.1));
 }
 
 .season-tag {
@@ -212,7 +212,7 @@ const cancelSearch = () => {
 .season-name {
   margin: 0;
   font-size: 20px;
-  color: $white;
+  color: var(--white);
 }
 
 .dates {
@@ -256,12 +256,12 @@ const cancelSearch = () => {
 .search-btn {
   width: 100%;
   padding: 18px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(90deg, Rgba(59, 130, 246, 1), Rgba(139, 92, 246, 1));
   border: none;
   border-radius: 12px;
-  color: $white;
+  color: var(--white);
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 15px Rgba(59, 130, 246, 0.3);
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -271,7 +271,7 @@ const cancelSearch = () => {
 
   &:hover {
     transform: TranslateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 6px 20px Rgba(59, 130, 246, 0.4);
     filter: Brightness(1.1);
   }
 }
@@ -286,16 +286,16 @@ const cancelSearch = () => {
   .spinner {
     width: 20px;
     height: 20px;
-    border: 3px solid rgba(59, 130, 246, 0.2);
-    border-top-color: #3b82f6;
+    border: 3px solid Rgba(59, 130, 246, 0.2);
+    border-top-color: Rgba(59, 130, 246, 1);
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
 }
 
 .cancel-btn {
-  background: rgba(255, 59, 59, 0.1);
-  border: 1px solid rgba(255, 59, 59, 0.2);
+  background: Rgba(255, 59, 59, 0.1);
+  border: 1px solid Rgba(255, 59, 59, 0.2);
   color: var(--red);
   padding: 6px 12px;
   border-radius: 8px;
@@ -304,14 +304,14 @@ const cancelSearch = () => {
   font-weight: bold;
 
   &:hover {
-    background: rgba(255, 59, 59, 0.2);
+    background: Rgba(255, 59, 59, 0.2);
   }
 }
 
 .tabs-nav {
   display: flex;
   gap: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
   padding-bottom: 8px;
 }
 
@@ -330,7 +330,7 @@ const cancelSearch = () => {
   }
 
   &:hover:not(.active) {
-    color: $white;
+    color: var(--white);
   }
 }
 
@@ -373,7 +373,7 @@ const cancelSearch = () => {
   .val {
     font-size: 14px;
     font-weight: bold;
-    color: $white;
+    color: var(--white);
   }
 }
 
@@ -383,7 +383,7 @@ const cancelSearch = () => {
   border-radius: 8px;
   text-transform: uppercase;
   font-weight: bold;
-  background: rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.1);
 }
 
 @keyframes spin {
@@ -391,8 +391,8 @@ const cancelSearch = () => {
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  0% { box-shadow: 0 0 0 0 Rgba(59, 130, 246, 0.4); }
+  70% { box-shadow: 0 0 0 10px Rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 Rgba(59, 130, 246, 0); }
 }
 </style>

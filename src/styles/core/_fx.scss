@@ -4,9 +4,10 @@
    GLOBAL SPECIAL EFFECTS SYSTEM
    ========================================================================== */
 
-@mixin aura-guardian($color: rgba(255, 255, 255, 0.8)) {
+@mixin aura-guardian($color: Rgba(255, 255, 255, 0.8)) {
   filter: Drop-Shadow(0 0 10px $color) Drop-Shadow(0 0 5px $color);
   animation: pulse-aura-vibrant 2s infinite ease-in-out;
+  animation-delay: calc(var(--fx-seed, 0) * -2s);
   @include gpu-layer;
   will-change: filter;
 }
@@ -44,7 +45,7 @@
   z-index: var(--z-base, 5);
   transform-origin: center center;
   animation: sparkle-pop 2.5s infinite ease-out;
-  animation-delay: $delay;
+  animation-delay: calc(#{$delay} + (var(--fx-seed, 0) * -2.5s));
 
   &::after {
     content: '';
@@ -97,8 +98,8 @@
 
 /* Animations */
 @keyframes pulse-aura-vibrant {
-  0%, 100% { filter: Drop-Shadow(0 10px 20px rgba(0,0,0,0.6)) Drop-Shadow(0 0 8px rgba(255, 255, 255, 0.4)) Drop-Shadow(0 0 2px rgba(255, 255, 255, 0.2)); }
-  50% { filter: Drop-Shadow(0 10px 20px rgba(0,0,0,0.6)) Drop-Shadow(0 0 18px rgba(255, 255, 255, 0.9)) Drop-Shadow(0 0 8px rgba(255, 255, 255, 0.6)); }
+  0%, 100% { filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.6)) Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.4)) Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.2)); }
+  50% { filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.6)) Drop-Shadow(0 0 18px Rgba(255, 255, 255, 0.9)) Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.6)); }
 }
 
 @keyframes sparkle-pop {
@@ -110,7 +111,7 @@
     opacity: 1; 
     transform: Translate(-50%, -10px) Scale(1.2) Rotate(180deg); 
     // Optimized: Only 2 drop-shadows instead of 5
-    filter: Drop-Shadow(0 0 2px rgba(0,0,0,1)) Drop-Shadow(0 0 4px gold);
+    filter: Drop-Shadow(0 0 2px Rgba(0,0,0,1)) Drop-Shadow(0 0 4px gold);
   }
   50% { 
     opacity: 0; 

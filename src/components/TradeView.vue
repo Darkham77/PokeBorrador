@@ -212,10 +212,10 @@ const requestSummary = computed(() => {
   align-items: center;
   gap: 15px;
   margin-bottom: 24px;
-  background: rgba(0,0,0,0.3);
+  background: Rgba(0,0,0,0.3);
   padding: 16px;
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.05);
 
   .summary-box { 
     flex: 1; 

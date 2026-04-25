@@ -43,8 +43,8 @@ const close = () => {
   <BaseModal
     :show="true"
     title="SUBIDA DE PP"
-    title-color="#60a5fa"
-    header-background="#161a2e"
+    title-color="Rgba(96, 165, 250, 1)"
+    header-background="Rgba(26, 26, 46, 1)"
     max-width="400px"
     @close="close"
   >
@@ -58,7 +58,7 @@ const close = () => {
           v-for="(m, i) in ppPokemon?.moves" 
           :key="i" 
           class="move-btn"
-          @click="handleApplyPPUp(i)"
+          @click.stop="handleApplyPPUp(i)"
         >
           <div class="m-main">
             <span class="m-name">{{ m.name }}</span>
@@ -77,6 +77,7 @@ const close = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .ppup-modal-inner {
@@ -97,35 +98,35 @@ const close = () => {
 }
 
 .move-btn {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: Rgba(255,255,255,0.03);
+  border: 1px solid Rgba(255,255,255,0.08);
   border-radius: 16px;
   padding: 18px;
   text-align: left;
   cursor: pointer;
   transition: all 0.2s;
-  color: $white;
+  color: var(--white);
 
   &:hover { 
-    background: rgba(255,255,255,0.08); 
+    background: Rgba(255,255,255,0.08); 
     transform: translateX(4px);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: Rgba(255, 255, 255, 0.2);
   }
 
   .m-main { display: flex; justify-content: space-between; margin-bottom: 10px; }
   .m-name { font-weight: 800; font-size: 15px; }
   .m-pp { 
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 8px;
     color: var(--yellow);
   }
   
-  .m-bar { height: 6px; background: rgba(0,0,0,0.3); border-radius: 3px; overflow: hidden; }
+  .m-bar { height: 6px; background: Rgba(0,0,0,0.3); border-radius: 3px; overflow: hidden; }
   .m-fill { 
     height: 100%; 
-    background: linear-gradient(90deg, var(--blue), #60a5fa); 
+    background: linear-gradient(90deg, var(--blue), Rgba(96, 165, 250, 1)); 
     transition: width 0.3s;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 10px Rgba(59, 130, 246, 0.3);
   }
 }
 </style>

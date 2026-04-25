@@ -71,7 +71,7 @@ onMounted(() => {
           <button 
             class="buy-btn" 
             :disabled="isPurchased(item.id) || gameStore.state.money < getPrice(item)"
-            @click="shopStore.buyBlackMarketItem(item.id); refresh()"
+            @click.stop="shopStore.buyBlackMarketItem(item.id); refresh()"
           >
             {{ isPurchased(item.id) ? 'VENDIDO' : 'COMPRAR' }}
           </button>
@@ -84,10 +84,10 @@ onMounted(() => {
 <style scoped lang="scss">
 @use "sass:string";
 .black-market-section {
-  background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
+  background: linear-gradient(180deg, Rgba(239, 68, 68, 0.05) 0%, Rgba(0, 0, 0, 0) 100%);
   border-radius: 20px;
   padding: 30px;
-  border: 1px solid rgba(239, 68, 68, 0.15);
+  border: 1px solid Rgba(239, 68, 68, 0.15);
   margin-bottom: 40px;
 }
 
@@ -104,15 +104,15 @@ onMounted(() => {
     h3 { 
       @include pixelated;
       font-size: 14px;
-      color: #ef4444;
+      color: Rgba(239, 68, 68, 1);
       margin: 0;
-      text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+      text-shadow: 0 0 10px Rgba(239, 68, 68, 0.3);
     }
   }
   
   .desc {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    color: Rgba(255, 255, 255, 0.5);
     line-height: 1.5;
     margin: 0;
   }
@@ -125,15 +125,15 @@ onMounted(() => {
 }
 
 .market-card {
-  background: rgba(20, 20, 25, 0.8);
+  background: Rgba(20, 20, 25, 0.8);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
   
   &:hover:not(.sold-out) {
-    border-color: rgba(239, 68, 68, 0.4);
+    border-color: Rgba(239, 68, 68, 0.4);
     transform: translateY(-5px);
   }
   
@@ -146,14 +146,14 @@ onMounted(() => {
 .sold-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: Rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: var(--z-base);
   @include pixelated;
   font-size: 12px;
-  color: #ef4444;
+  color: Rgba(239, 68, 68, 1);
   transform: Rotate(-15deg);
   pointer-events: none;
 }
@@ -179,14 +179,14 @@ onMounted(() => {
     height: 48px;
     image-rendering: pixelated;
     z-index: var(--z-base);
-    filter: Drop-Shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+    filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.5));
   }
   
   .glow {
     position: absolute;
     width: 40px;
     height: 40px;
-    background: radial-gradient(circle, rgba(239, 68, 68, 0.2) 0%, transparent 70%);
+    background: radial-gradient(circle, Rgba(239, 68, 68, 0.2) 0%, transparent 70%);
     border-radius: 50%;
   }
 }
@@ -200,13 +200,13 @@ onMounted(() => {
   .item-name {
     @include pixelated;
     font-size: 8px;
-    color: $white;
+    color: var(--white);
   }
   
   .item-price {
     @include pixelated;
     font-size: 10px;
-    color: #ef4444;
+    color: Rgba(239, 68, 68, 1);
   }
 }
 
@@ -215,21 +215,21 @@ onMounted(() => {
   padding: 12px;
   border: none;
   border-radius: 10px;
-  background: #ef4444;
-  color: $white;
+  background: Rgba(239, 68, 68, 1);
+  color: var(--white);
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;
   
   &:hover:not(:disabled) {
-    background: #dc2626;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    background: Rgba(220, 38, 38, 1);
+    box-shadow: 0 0 15px Rgba(239, 68, 68, 0.4);
   }
   
   &:disabled {
-    background: #27272a;
-    color: #52525b;
+    background: Rgba(39, 39, 42, 1);
+    color: Rgba(82, 82, 91, 1);
     cursor: not-allowed;
   }
 }

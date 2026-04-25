@@ -5,6 +5,7 @@ import sys
 
 # Script to normalize typography usage.
 # Replaces direct font-family declarations with standardized mixins.
+# Does NOT enforce specific font sizes to allow aesthetic flexibility.
 
 IGNORE_DIRS = ['node_modules', '.git', 'dist', 'backup_legacy_code', 'core', 'tokens']
 EXTENSIONS = ['.vue', '.scss']
@@ -17,21 +18,22 @@ def fix_file(filepath):
         original_content = content
         
         # 1. Replace Press Start 2P with @include pixelated;
-        pattern = re.compile(r"font-family:\s*['\"]Press Start 2P['\"],\s*monospace;")
-        pattern_simple = re.compile(r"font-family:\s*['\"]Press Start 2P['\"];")
+        pattern = re.compile(r"font-family:\s*(['\"]Press Start 2P['\"]|var\(--font-pixel\))[^;]*;")
         
-        content = pattern.sub("@include pixelated;", content)
-        content = pattern_simple.sub("@include pixelated;", content)
+        def safe_sub(match):
+            return "@include pixelated;"
+
+        content = pattern.sub(safe_sub, content)
         
         if content != original_content:
             # 2. Ensure mixins are imported if we added an include
-            if "@include pixelated;" in content and "@use" not in content and "@import" not in content:
+            has_mixin = re.search(r'@(use|import).+(_mixins|mixins)', content)
+            
+            if "@include pixelated;" in content and not has_mixin:
                 if filepath.endswith('.vue'):
-                    # Inject at start of style block
                     content = re.sub(r'(<style[^>]*>)', r'\1\n@use "@/styles/core/_mixins" as *;', content)
                 elif filepath.endswith('.scss'):
-                    # Inject at start of file
-                    content = '@use "../core/mixins" as *;\n' + content
+                    content = '@use "@/styles/core/mixins" as *;\n' + content
 
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(content)

@@ -35,15 +35,16 @@ onMounted(async () => {
           TUS MEDALLAS
         </div>
         <div class="badge-list">
-          <div
-            v-for="gym in gymsStore.gyms"
+          <button 
+            v-for="gym in gymsStore.gyms" 
             :key="gym.id"
             class="badge-item-retro"
             :class="{ active: gymsStore.isGymDefeated(gym.id) }"
             :title="gym.badgeName"
+            @click.stop
           >
             {{ gymsStore.isGymDefeated(gym.id) ? gym.badge : '?' }}
-          </div>
+          </button>
         </div>
       </div>
     </div>
@@ -66,7 +67,7 @@ onMounted(async () => {
 
 .gyms-view-legacy {
   padding: 0 0 40px;
-  background: #0d1117;
+  background: var(--bg-dark);
 }
 
 .gyms-header-legacy {
@@ -75,7 +76,7 @@ onMounted(async () => {
   align-items: flex-start;
   margin-bottom: 40px;
   gap: 30px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
   padding-bottom: 20px;
   
   @media (max-width: 1024px) {
@@ -86,21 +87,21 @@ onMounted(async () => {
 .view-title {
   @include pixelated;
   font-size: 14px;
-  color: $coin-gold;
+  color: var(--yellow);
   margin: 0 0 10px 0;
-  text-shadow: 0 2px 0 $black;
+  text-shadow: 0 2px 0 var(--black);
 }
 
 .view-desc {
   font-size: 10px;
-  color: #888;
+  color: var(--gray);
   line-height: 1.6;
   max-width: 500px;
 }
 
 .badge-summary-legacy {
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(0, 0, 0, 0.3);
+  border: 2px solid Rgba(255, 255, 255, 0.1);
   padding: 20px;
   border-radius: 20px;
   min-width: 300px;
@@ -109,7 +110,7 @@ onMounted(async () => {
 .badge-title {
   @include pixelated;
   font-size: 8px;
-  color: $coin-gold;
+  color: var(--yellow);
   margin-bottom: 20px;
   text-align: center;
 }
@@ -124,26 +125,21 @@ onMounted(async () => {
 .badge-item-retro {
   width: 35px;
   height: 35px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
   transition: all 0.3s;
-  &.beaten {
-    filter: Grayscale(100%);
-    opacity: 0.6;
-    &:hover { filter: Grayscale(100%); opacity: 1; }
-  }
+  cursor: default;
 
   &.active {
     opacity: 1;
-    filter: Grayscale(100%);
-    background: rgba(255, 215, 0, 0.1);
-    border-color: $coin-gold;
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    background: Rgba(255, 215, 0, 0.1);
+    border-color: var(--yellow);
+    box-shadow: 0 0 15px Rgba(255, 215, 0, 0.3);
     transform: Scale(1.1);
   }
 }

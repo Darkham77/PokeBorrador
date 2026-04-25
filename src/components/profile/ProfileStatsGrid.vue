@@ -55,8 +55,8 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
 }
 
 .legacy-stat-item {
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(15, 23, 42, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 18px;
   padding: 16px 12px;
   text-align: center;
@@ -67,19 +67,19 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
   -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
 
   &:hover {
-    background: rgba(30, 41, 59, 0.5);
-    border-color: rgba(255, 214, 10, 0.2);
-    box-shadow: 0 0 0 1px rgba(255, 214, 10, 0.2);
+    background: Rgba(30, 41, 59, 0.5);
+    border-color: Rgba(255, 214, 10, 0.2);
+    box-shadow: 0 0 0 1px Rgba(255, 214, 10, 0.2);
     transform: translateY(-2px);
   }
 
   &.highlight {
-    background: linear-gradient(135deg, rgba(255, 214, 10, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%);
-    border-color: rgba(255, 214, 10, 0.1);
+    background: linear-gradient(135deg, Rgba(255, 214, 10, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
+    border-color: Rgba(255, 214, 10, 0.1);
     
     .legacy-stat-val {
       color: $yellow;
-      text-shadow: 0 0 10px rgba(255, 214, 10, 0.3);
+      text-shadow: 0 0 10px Rgba(255, 214, 10, 0.3);
     }
   }
 }
@@ -98,7 +98,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
 .legacy-stat-lbl {
   @include pixelated;
   font-size: 6px;
-  color: rgba(255, 255, 255, 0.3);
+  color: Rgba(255, 255, 255, 0.3);
   text-transform: uppercase;
   letter-spacing: 1px;
   @include pixelated;

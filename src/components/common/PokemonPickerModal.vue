@@ -64,7 +64,7 @@ const handleConfirm = () => {
         </p>
         <button
           class="close-btn"
-          @click="emit('close')"
+          @click.stop="emit('close')"
         >
           ✕
         </button>
@@ -86,7 +86,7 @@ const handleConfirm = () => {
             :key="p.uid || p.originalIndex"
             class="pokemon-item"
             :class="{ selected: selectedIndices.includes(p.originalIndex) }"
-            @click="toggleSelect(p.originalIndex)"
+            @click.stop="toggleSelect(p.originalIndex)"
           >
             <div class="selection-indicator">
               <span v-if="selectedIndices.includes(p.originalIndex)">✓</span>
@@ -115,7 +115,7 @@ const handleConfirm = () => {
         <button 
           class="confirm-btn" 
           :disabled="selectedIndices.length === 0"
-          @click="handleConfirm"
+          @click.stop="handleConfirm"
         >
           CONFIRMAR
         </button>
@@ -128,9 +128,8 @@ const handleConfirm = () => {
 .picker-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
-  -webkit-backdrop-filter: Blur(8px);
+  background: Rgba(0, 0, 0, 0.8);
+  -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
@@ -142,18 +141,18 @@ const handleConfirm = () => {
 .picker-modal {
   width: 100%;
   max-width: 450px;
-  background: #111;
+  background: Rgba(17, 17, 17, 1);
   border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid Rgba(255,255,255,0.1);
   display: flex;
   flex-direction: column;
   max-height: 80vh;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  box-shadow: 0 20px 40px Rgba(0,0,0,0.6);
 }
 
 .picker-header {
   padding: 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid Rgba(255,255,255,0.05);
   position: relative;
   text-align: center;
 
@@ -161,7 +160,7 @@ const handleConfirm = () => {
   .subtitle { font-size: 12px; color: var(--gray); margin: 4px 0 0; }
   .close-btn { 
     position: absolute; top: 15px; right: 15px; 
-    background: none; border: none; color: #666; font-size: 18px; cursor: pointer;
+    background: none; border: none; color: Rgba(102, 102, 102, 1); font-size: 18px; cursor: pointer;
     &:hover { color: $white; }
   }
 }
@@ -184,27 +183,27 @@ const handleConfirm = () => {
   align-items: center;
   gap: 12px;
   padding: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: Rgba(255,255,255,0.03);
+  border: 1px solid Rgba(255,255,255,0.06);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
 
   &:hover {
-    background: rgba(255,255,255,0.05);
-    border-color: rgba(255,255,255,0.15);
+    background: Rgba(255,255,255,0.05);
+    border-color: Rgba(255,255,255,0.15);
   }
 
   &.selected {
-    background: rgba(199, 125, 255, 0.1);
+    background: Rgba(199, 125, 255, 0.1);
     border-color: var(--purple);
   }
 
   .selection-indicator {
     width: 20px;
     height: 20px;
-    border: 2px solid rgba(255,255,255,0.1);
+    border: 2px solid Rgba(255,255,255,0.1);
     border-radius: 6px;
     display: flex;
     align-items: center;
@@ -237,7 +236,7 @@ const handleConfirm = () => {
 
 .picker-footer {
   padding: 20px;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid Rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
   justify-content: space-between;

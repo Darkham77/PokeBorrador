@@ -57,13 +57,13 @@ const handleCancel = () => {
       <div class="prompt-footer">
         <button 
           class="btn-cancel" 
-          @click="handleCancel"
+          @click.stop="handleCancel"
         >
           {{ cancelText }}
         </button>
         <button 
           class="btn-confirm" 
-          @click="handleConfirm"
+          @click.stop="handleConfirm"
         >
           {{ confirmText }}
         </button>
@@ -73,6 +73,7 @@ const handleCancel = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "sass:math";
 @use "@/styles/core/tools" as *;
 
@@ -82,17 +83,17 @@ const handleCancel = () => {
   p {
     margin: 0 0 16px;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
+    color: Rgba(255, 255, 255, 0.7);
     font-family: 'Inter', sans-serif;
   }
   
   .prompt-input {
     width: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(0, 0, 0, 0.3);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 12px 16px;
-    color: $white;
+    color: var(--white);
     font-family: 'Inter', sans-serif;
     font-size: 16px;
     outline: none;
@@ -100,7 +101,7 @@ const handleCancel = () => {
     
     &:focus {
       border-color: var(--yellow);
-      box-shadow: 0 0 12px rgba(255, 214, 10, 0.2);
+      box-shadow: 0 0 12px Rgba(255, 214, 10, 0.2);
     }
   }
 }
@@ -116,7 +117,7 @@ const handleCancel = () => {
     border-radius: 12px;
     font-size: 9px;
     font-weight: 700;
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     cursor: pointer;
     transition: all 0.2s;
     @include pixelated;
@@ -127,18 +128,18 @@ const handleCancel = () => {
   }
   
   .btn-cancel {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.5);
+    background: Rgba(255, 255, 255, 0.05);
+    color: Rgba(255, 255, 255, 0.5);
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: $white;
+      background: Rgba(255, 255, 255, 0.1);
+      color: var(--white);
     }
   }
   
   .btn-confirm {
     background: var(--yellow);
-    color: $black;
-    box-shadow: 0 4px 15px rgba(255, 214, 10, 0.3);
+    color: Rgba(0, 0, 0, 1);
+    box-shadow: 0 4px 15px Rgba(255, 214, 10, 0.3);
     &:hover {
       background: $yellow;
     }

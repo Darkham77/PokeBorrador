@@ -50,7 +50,7 @@ const openDetail = (p) => {
         v-for="p in pokemonList" 
         :key="p.id" 
         :p="p"
-        @click="openDetail(p)"
+        @click.stop="openDetail(p)"
       />
     </div>
   </div>

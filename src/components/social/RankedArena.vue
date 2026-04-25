@@ -109,7 +109,7 @@ function startSearch() {
           <button
             :class="{ active: pvp.passiveTeamActive }" 
             class="toggle-btn"
-            @click="pvp.togglePassiveTeam"
+            @click.stop="pvp.togglePassiveTeam"
           >
             {{ pvp.passiveTeamActive ? 'ACTIVADO' : 'DESACTIVADO' }}
           </button>
@@ -156,7 +156,7 @@ function startSearch() {
             <button
               v-if="isUnlocked(m.elo) && !isClaimed(m.id)" 
               class="claim-btn"
-              @click="pvp.claimReward(m.id)"
+              @click.stop="pvp.claimReward(m.id)"
             >
               RECLAMAR
             </button>
@@ -207,7 +207,7 @@ function startSearch() {
         <button 
           class="search-btn" 
           :disabled="!seasonActive"
-          @click="startSearch"
+          @click.stop="startSearch"
         >
           <span class="icon">{{ livePvP.isSearching ? '🛑' : '🔍' }}</span>
           {{ seasonActive ? (livePvP.isSearching ? 'CANCELAR BÚSQUEDA' : 'BUSCAR PARTIDA') : 'TEMPORADA CERRADA' }}
@@ -217,22 +217,22 @@ function startSearch() {
   </div>
 </template>
 
-<style scoped>
-@use "@/styles/core/_mixins" as *;
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
 .arena-container {
   height: 600px;
   position: relative;
-  background: var(--card, #1c1c1e);
+  background: var(--card, Rgba(28, 28, 30, 1));
   border-radius: 24px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid Rgba(255,255,255,0.08);
 }
 
 .offline-mask {
   position: absolute;
   inset: 0;
   z-index: var(--z-base);
-  background: rgba(0,0,0,0.8);
+  background: Rgba(0,0,0,0.8);
   -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   display: flex;
   align-items: center;
@@ -246,8 +246,8 @@ function startSearch() {
 }
 
 .lock-card .icon { font-size: 48px; display: block; margin-bottom: 20px; }
-.lock-card h3 { @include pixelated; font-size: 12px; color: $white; margin-bottom: 15px; }
-.lock-card p { font-size: 12px; color: #888; line-height: 1.5; }
+.lock-card h3 { @include pixelated; font-size: 12px; color: var(--white); margin-bottom: 15px; }
+.lock-card p { font-size: 12px; color: Rgba(136, 136, 136, 1); line-height: 1.5; }
 
 .arena-main {
   padding: 30px;
@@ -260,10 +260,10 @@ function startSearch() {
 }
 
 .rank-card {
-  background: rgba(255,255,255,0.03);
+  background: Rgba(255,255,255,0.03);
   padding: 24px;
   border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.05);
 }
 
 .tier-display {
@@ -280,7 +280,7 @@ function startSearch() {
   align-items: center;
   justify-content: center;
   position: relative;
-  filter: Drop-Shadow(0 0 15px rgba(255, 215, 0, 0.2));
+  filter: Drop-Shadow(0 0 15px Rgba(255, 215, 0, 0.2));
   animation: float 4s ease-in-out infinite;
 }
 
@@ -305,12 +305,12 @@ function startSearch() {
 .tier-label {
   font-size: 9px;
   @include pixelated;
-  color: #666;
+  color: Rgba(102, 102, 102, 1);
 }
 
 .elo-badge {
   display: inline-block;
-  background: rgba(255,255,255,0.1);
+  background: Rgba(255,255,255,0.1);
   padding: 4px 10px;
   border-radius: 10px;
   @include pixelated;
@@ -320,19 +320,19 @@ function startSearch() {
 .arena-stats {
   display: flex;
   justify-content: space-around;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid Rgba(255,255,255,0.05);
   padding-top: 20px;
 }
 
 .stat-item { text-align: center; }
 .stat-item .val { display: block; font-size: 18px; font-weight: bold; }
-.stat-item .lab { font-size: 10px; color: #666; font-weight: bold; }
+.stat-item .lab { font-size: 10px; color: Rgba(102, 102, 102, 1); font-weight: bold; }
 
 .passive-defense {
-  background: $black;
+  background: Rgba(0, 0, 0, 1);
   padding: 20px;
   border-radius: 20px;
-  border: 1px solid #333;
+  border: 1px solid Rgba(51, 51, 51, 1);
 }
 
 .def-header {
@@ -343,7 +343,7 @@ function startSearch() {
 }
 
 .def-header h3 { margin: 0; font-size: 14px; font-weight: 800; }
-.def-header p { margin: 4px 0 0; font-size: 11px; color: #666; }
+.def-header p { margin: 4px 0 0; font-size: 11px; color: Rgba(102, 102, 102, 1); }
 
 .toggle-btn {
   padding: 8px 16px;
@@ -352,20 +352,20 @@ function startSearch() {
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
-  background: #333;
-  color: #666;
+  background: Rgba(51, 51, 51, 1);
+  color: Rgba(102, 102, 102, 1);
   transition: all 0.2s;
 }
 
 .toggle-btn.active {
-  background: #30D158;
-  color: $black;
-  box-shadow: 0 0 15px rgba(48, 209, 88, 0.4);
+  background: Rgba(48, 209, 88, 1);
+  color: Rgba(0, 0, 0, 1);
+  box-shadow: 0 0 15px Rgba(48, 209, 88, 0.4);
 }
 
 .def-status { font-size: 10px; padding: 10px; border-radius: 10px; text-align: center; font-weight: bold; }
-.def-status.active { background: rgba(48, 209, 88, 0.1); color: #30D158; }
-.def-status.inactive { background: rgba(255, 69, 58, 0.1); color: $red; }
+.def-status.active { background: Rgba(48, 209, 88, 0.1); color: Rgba(48, 209, 88, 1); }
+.def-status.inactive { background: Rgba(255, 69, 58, 0.1); color: Rgba(239, 68, 68, 1); }
 
 .milestone-track .header-with-timer {
   display: flex;
@@ -377,8 +377,8 @@ function startSearch() {
 .season-timer {
   @include pixelated;
   font-size: 7px;
-  color: var(--yellow, $yellow);
-  background: rgba(255, 214, 10, 0.1);
+  color: var(--yellow, Rgba(255, 193, 7, 1));
+  background: Rgba(255, 214, 10, 0.1);
   padding: 4px 8px;
   border-radius: 6px;
 }
@@ -396,22 +396,22 @@ function startSearch() {
   display: flex;
   align-items: center;
   padding: 14px;
-  background: rgba(255,255,255,0.02);
+  background: Rgba(255,255,255,0.02);
   border-radius: 16px;
   gap: 15px;
   position: relative;
 }
 
 .milestone-card.locked { opacity: 0.5; }
-.milestone-card.claimed { background: rgba(48, 209, 88, 0.05); }
+.milestone-card.claimed { background: Rgba(48, 209, 88, 0.05); }
 
 .m-icon { font-size: 24px; }
 .m-info { flex: 1; }
-.m-elo { display: block; @include pixelated; font-size: 8px; color: #888; margin-bottom: 4px; }
+.m-elo { display: block; @include pixelated; font-size: 8px; color: Rgba(136, 136, 136, 1); margin-bottom: 4px; }
 .m-prize { font-weight: 600; font-size: 13px; }
 
 .claim-btn {
-  background: var(--blue, $blue);
+  background: var(--blue, Rgba(59, 130, 246, 1));
   color: white;
   border: none;
   padding: 8px 16px;
@@ -421,7 +421,7 @@ function startSearch() {
   cursor: pointer;
 }
 
-.claimed-badge { color: #30D158; font-weight: bold; }
+.claimed-badge { color: Rgba(48, 209, 88, 1); font-weight: bold; }
 .lock-badge { font-size: 14px; }
 
 .matchmaking-actions {
@@ -429,15 +429,15 @@ function startSearch() {
   flex-direction: column;
   gap: 16px;
   padding: 20px;
-  background: rgba(255,255,255,0.02);
+  background: Rgba(255,255,255,0.02);
   border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.05);
 }
 
 .rules-hint h4 {
   @include pixelated;
   font-size: 8px;
-  color: #666;
+  color: Rgba(102, 102, 102, 1);
   margin-bottom: 12px;
 }
 
@@ -458,13 +458,13 @@ function startSearch() {
   font-size: 9px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.1);
 }
 
 .all-types-allowed {
   font-size: 11px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   font-style: italic;
 }
 
@@ -473,7 +473,7 @@ function startSearch() {
   padding: 16px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, $blue, #0056b3);
+  background: linear-gradient(135deg, Rgba(59, 130, 246, 1), Rgba(0, 86, 179, 1));
   color: white;
   @include pixelated;
   font-size: 10px;
@@ -483,17 +483,17 @@ function startSearch() {
   justify-content: center;
   gap: 12px;
   transition: all 0.2s;
-  box-shadow: 0 4px 15px rgba(10, 132, 255, 0.3);
+  box-shadow: 0 4px 15px Rgba(10, 132, 255, 0.3);
 }
 
 .search-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(10, 132, 255, 0.4);
+  box-shadow: 0 6px 20px Rgba(10, 132, 255, 0.4);
 }
 
 .search-btn:disabled {
-  background: #333;
-  color: #666;
+  background: Rgba(51, 51, 51, 1);
+  color: Rgba(102, 102, 102, 1);
   cursor: not-allowed;
   box-shadow: none;
 }

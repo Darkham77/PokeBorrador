@@ -12,7 +12,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
     <div class="action-row-complex">
       <button
         class="legacy-action-btn switch"
-        @click="emit('switch')"
+        @click.stop="emit('switch')"
       >
         <span class="icon">🔄</span> CAMBIAR
       </button>
@@ -25,7 +25,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
         >
           <button
             class="btn-catch-ball"
-            @click="emit('catch')"
+            @click.stop="emit('catch')"
           >
             <span>CAPTURAR</span>
           </button>
@@ -34,7 +34,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
 
       <button
         class="legacy-action-btn bag"
-        @click="emit('bag')"
+        @click.stop="emit('bag')"
       >
         <span class="icon">🎒</span> MOCHILA
       </button>
@@ -43,7 +43,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
     <button
       v-if="!isFinishing"
       class="huir-button"
-      @click="emit('run')"
+      @click.stop="emit('run')"
     >
       🏃 HUIR
     </button>
@@ -66,8 +66,8 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
 }
 
 .legacy-action-btn {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.1);
   border-radius: 14px;
   padding: 15px;
   color: $white;
@@ -79,7 +79,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
 
 .legacy-action-btn.switch { border-color: var(--purple); color: var(--purple-light); }
 .legacy-action-btn.bag { border-color: var(--green); color: var(--green-light); }
-.legacy-action-btn:hover { background: rgba(255,255,255,0.1); }
+.legacy-action-btn:hover { background: Rgba(255,255,255,0.1); }
 
 /* The Iconic Pokeball Button */
 .btn-catch-ball {
@@ -89,7 +89,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   background: $white !important;
   position: relative;
   border: 4px solid #333 !important;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 -4px 0 rgba(0,0,0,0.1) !important;
+  box-shadow: 0 10px 20px Rgba(0,0,0,0.4), inset 0 -4px 0 Rgba(0,0,0,0.1) !important;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
@@ -103,7 +103,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   left: 0;
   width: 100%;
   height: 50%;
-  background: #ef5350;
+  background: Rgba(239, 83, 80, 1);
   border-bottom: 4px solid #333;
 }
 
@@ -119,20 +119,20 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   border: 4px solid #333;
   border-radius: 50%;
   z-index: var(--z-base);
-  box-shadow: 0 0 0 4px $white, 0 0 15px rgba(0,0,0,0.2);
+  box-shadow: 0 0 0 4px $white, 0 0 15px Rgba(0,0,0,0.2);
 }
 
 .btn-catch-ball:hover {
-  transform: #{"Scale(1.15)"} Rotate(15deg);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+  transform: Scale(1.15) Rotate(15deg);
+  box-shadow: 0 15px 30px Rgba(0,0,0,0.5);
 }
 
 .btn-catch-ball span { display: none; }
 
 .huir-button {
   width: 100%;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: Rgba(0,0,0,0.3);
+  border: 1px solid Rgba(255,255,255,0.05);
   border-radius: 12px;
   padding: 10px;
   color: var(--orange);

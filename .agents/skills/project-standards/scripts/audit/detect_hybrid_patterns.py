@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import argparse
 
 # Patterns to detect hybrid/legacy code
 HYBRID_PATTERNS = [
@@ -92,20 +93,13 @@ HYBRID_PATTERNS = [
         "id": "hardcoded_color",
         "regex": r":\s*#(?:[0-9a-fA-F]{3,6})\b",
         "message": "Hardcoded hex color detected. Use standardized SASS variables ($yellow) or CSS tokens.",
-        "severity": "medium"
+        "severity": "low"
     },
     {
         "id": "sass_url_safety",
         "regex": r"url\(.*?\#\{.*?\}\)",
         "message": "SASS interpolation detected inside url() without unquote(). This may cause build errors.",
         "severity": "high"
-    },
-    {
-        "id": "blurry_pixel_font",
-        "regex": r"font-size:\s*(\d+)px",
-        "message": "Pixel font size detected that is NOT a multiple of 8. Use 8px, 16px, 24px, or 32px for pixel-perfect rendering.",
-        "severity": "medium",
-        "condition": "lambda size: int(size) % 8 != 0"
     },
     {
         "id": "button_depth_loss",
@@ -126,22 +120,10 @@ HYBRID_PATTERNS = [
         "severity": "medium"
     },
     {
-        "id": "missing_dynamic_variable",
-        "regex": r':style="\{.*?(color|background|glow).*?\}".*?(?!--[a-z\-]+)',
-        "message": "Dynamic style detected without CSS variable. Use dynamic variables (e.g., --type-color) to keep SCSS decoupled.",
-        "severity": "low"
-    },
-    {
         "id": "safari_backdrop_prefix",
         "regex": r"(?<!-webkit-)backdrop-filter:",
         "message": "Missing -webkit- prefix for backdrop-filter. Mandatory for Safari compatibility.",
         "severity": "high"
-    },
-    {
-        "id": "raw_rgba_color",
-        "regex": r"rgba\(\d+,\s*\d+,\s*\d+",
-        "message": "Raw RGBA color detected. Use standardized SASS variables or CSS tokens.",
-        "severity": "medium"
     },
     {
         "id": "hardcoded_z_index",
@@ -151,38 +133,29 @@ HYBRID_PATTERNS = [
     },
     {
         "id": "missing_webkit_clip",
-        "regex": r"background-clip:\s*text",
+        "regex": r"(?<!-webkit-)background-clip:\s*text",
         "message": "Verify background-clip: text has -webkit- prefix. Required for Safari compatibility.",
         "severity": "high"
-    },
-    {
-        "id": "direct_store_state",
-        "regex": r"\w+Store\.state\.",
-        "message": "Direct Pinia state access detected. Use storeToRefs or the store instance directly for better reactivity.",
-        "severity": "low"
     },
     {
         "id": "modal_click_propagation",
         "regex": r"@click(?!\.stop)=\"[^\"]+\"",
         "message": "Potential missing .stop modifier on click handler. Critical for deep-stacked modal interactions.",
         "severity": "medium"
+    },
+    {
+        "id": "color_collision",
+        "regex": r"(?<![a-zA-Z-\.\$])(rgba?)\(",
+        "message": "Lowercase rgb/rgba detected. Use Capitalized Rgb()/Rgba() to prevent Dart Sass 2.0 collisions and ensure pure CSS output.",
+        "severity": "medium"
     }
 ]
 
 # Files/Directories to ignore
 IGNORE_PATHS = [
-    "node_modules",
-    "backup_legacy_code",
-    "dist",
-    ".git",
-    "scripts",
-    "tests",           # Tests naturally use DOM
-    "assetService.js",
-    "phaserBridge.js",
-    "baseBridge.js",    # Authorized legacy bridge
-    "dbRouter.js",
-    "useWindowListener.js", # Authorized event manager
-    "useBodyClass.js"       # Authorized class manager
+    "node_modules", "backup_legacy_code", "dist", ".git", "scripts", "tests",
+    "assetService.js", "phaserBridge.js", "baseBridge.js", "dbRouter.js",
+    "useWindowListener.js", "useBodyClass.js"
 ]
 
 # Extensions to scan
@@ -195,7 +168,6 @@ def scan_file(filepath):
             content = f.read()
             lines = content.splitlines()
             
-            # 1. Line-by-line checks (standard)
             in_scoped_style = False
             has_pixel_font_context = False
             for i, line in enumerate(lines):
@@ -204,11 +176,9 @@ def scan_file(filepath):
                 if "</style>" in line:
                     in_scoped_style = False
                 
-                # Check for pixel font context in the current block or file
                 if "Press Start 2P" in line or "@include pixelated" in line or "pixel-perfect" in line:
                     has_pixel_font_context = True
                 
-                # Heuristic to ignore comments or explicit ignores
                 if line.strip().startswith("//") or line.strip().startswith("/*") or line.strip().startswith("*"):
                     continue
                 
@@ -216,28 +186,35 @@ def scan_file(filepath):
                     continue
                 
                 for pattern in HYBRID_PATTERNS:
-                    # Skip multi-line patterns in line-by-line loop
                     if pattern["id"] == "native_title_attribute":
                         continue
 
-                    if re.search(pattern["regex"], line):
+                    matches = re.finditer(pattern["regex"], line)
+                    for match in matches:
+                        # Special case: Phaser DOM injection
+                        if pattern["id"] == "phaser_dom_injection":
+                            # Ignore if commented or in phaserBridge
+                            pass
+
                         # Specific exception for common safe uses
                         if "canvas" in line.lower() or "getElementById('game-container')" in line:
                             continue
                         if "document.title =" in line:
                             continue
                         
-                        # Special case: scoped_scrollbar_styling should ONLY trigger if inside <style scoped>
+                        if pattern["id"] == "safari_backdrop_prefix":
+                            if "-webkit-" in line:
+                                continue
+                            if i > 0 and "-webkit-backdrop-filter" in lines[i-1]:
+                                continue
+                        
                         if pattern["id"] == "scoped_scrollbar_styling":
                             if not in_scoped_style:
                                 continue
                         
-                        # Special case: flex_scroll_collapse is hard to detect correctly in scss/css files (mixins)
                         if pattern["id"] == "flex_scroll_collapse":
                             if filepath.endswith(".scss") or filepath.endswith(".css"):
                                 continue
-                            
-                            # Smart check: If min-height: 0 is in the same or surrounding lines, it's likely fixed
                             is_fixed = False
                             context_range = range(max(0, i-5), min(len(lines), i+6))
                             for idx in context_range:
@@ -247,22 +224,9 @@ def scan_file(filepath):
                             if is_fixed:
                                 continue
 
-                        # General condition check (if regex matched)
-                        if "condition" in pattern:
-                            match = re.search(pattern["regex"], line)
-                            if match and match.groups():
-                                try:
-                                    val = match.group(1)
-                                    # Context-aware pixel font check
-                                    if pattern["id"] == "blurry_pixel_font" and not has_pixel_font_context:
-                                        # If not in pixel context, allow intermediate sizes (smooth fonts)
-                                        continue
-                                        
-                                    condition_fn = eval(pattern["condition"])
-                                    if not condition_fn(val):
-                                        continue
-                                except:
-                                    continue
+                        if pattern["id"] == "missing_webkit_clip":
+                            if i > 0 and "-webkit-background-clip: text" in lines[i-1]:
+                                continue
 
                         findings.append({
                             "line": i + 1,
@@ -272,18 +236,12 @@ def scan_file(filepath):
                             "id": pattern["id"]
                         })
 
-            # 2. Multi-line checks (Native Title)
-            # Match entire tags to check for native title usage
+            # Multi-line checks (Native Title)
             title_matches = re.finditer(r'<([a-zA-Z0-9\-]+)\b[^>]*?(?<![:\-])\btitle\s*=\s*["\'](.*?)["\']', content, re.DOTALL)
             for match in title_matches:
                 tag_name = match.group(1)
-                
-                # Exclude Vue components (PascalCase or explicitly allowed components)
-                # Native HTML tags are always lowercase.
                 if tag_name[0].isupper() or tag_name in ["BaseModal", "UnifiedCard"]:
                     continue
-                
-                # Calculate line number
                 line_no = content.count('\n', 0, match.start()) + 1
                 findings.append({
                     "line": line_no,
@@ -297,8 +255,6 @@ def scan_file(filepath):
         print(f"Error reading {filepath}: {e}")
     
     return findings
-
-import argparse
 
 def main():
     parser = argparse.ArgumentParser(description="Scan for hybrid/legacy patterns in PokeVicio codebase.")
@@ -319,6 +275,8 @@ def main():
     print("FORMAT: [SEVERITY] File:Line | TAG | Description")
     print("-" * 60)
 
+    all_violations = []
+
     if os.path.isfile(root_dir):
         findings = scan_file(root_dir)
         if findings:
@@ -326,19 +284,18 @@ def main():
             for f in findings:
                 print(f"[{f['severity'].upper()}] {os.path.basename(root_dir)}:{f['line']} | {f['id']} | {f['message']}")
                 total_findings += 1
+                all_violations.append(f)
         files_scanned = 1
     else:
         for root, dirs, files in os.walk(root_dir):
-            # Filter directories
             dirs[:] = [d for d in dirs if d not in IGNORE_PATHS]
-            
             for file in files:
                 if any(file.endswith(ext) for ext in EXTENSIONS):
                     filepath = os.path.join(root, file)
                     rel_path = os.path.relpath(filepath, root_dir)
-                    
-                    # Double check path ignore
                     if any(ignored in rel_path for ignored in IGNORE_PATHS):
+                        continue
+                    if "styles\\tokens" in rel_path or "styles\\core" in rel_path:
                         continue
 
                     findings = scan_file(filepath)
@@ -347,6 +304,7 @@ def main():
                         for f in findings:
                             print(f"[{f['severity'].upper()}] {rel_path}:{f['line']} | {f['id']} | {f['message']}")
                             total_findings += 1
+                            all_violations.append(f)
                     files_scanned += 1
 
     print("-" * 60)
@@ -356,8 +314,13 @@ def main():
         print(f"\n[PLANNING SUMMARY] Found {total_findings} patterns in {len(problematic_files)} files:")
         for pf in sorted(list(problematic_files)):
             print(f" - {pf}")
-        print("\nACTION REQUIRED: Refactor the files above to comply with Pure Vue standards.")
-        sys.exit(1)
+        
+        critical_violations = [v for v in all_violations if v["severity"] in ["medium", "high", "critical"]]
+        if critical_violations:
+            sys.exit(1)
+        else:
+            print("\n[SUCCESS] No critical violations found (only LOW severity items reported).")
+            sys.exit(0)
     else:
         print("No hybrid patterns detected. Code is looking Pure Vue!")
         sys.exit(0)

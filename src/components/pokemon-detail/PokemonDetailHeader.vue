@@ -57,7 +57,7 @@ const getSprite = (id, isShiny) => {
             <button 
               class="tag-btn" 
               :class="{ active: p.tags?.includes('fav') }"
-              @click="emit('toggle-tag', 'fav')"
+              @click.stop="emit('toggle-tag', 'fav')"
             >
               ⭐
             </button>
@@ -71,7 +71,7 @@ const getSprite = (id, isShiny) => {
             <button 
               class="tag-btn" 
               :class="{ active: p.tags?.includes('breed') }"
-              @click="emit('toggle-tag', 'breed')"
+              @click.stop="emit('toggle-tag', 'breed')"
             >
               ❤️
             </button>
@@ -85,7 +85,7 @@ const getSprite = (id, isShiny) => {
             <button 
               class="tag-btn" 
               :class="{ active: p.tags?.includes('iv31') }"
-              @click="emit('toggle-tag', 'iv31')"
+              @click.stop="emit('toggle-tag', 'iv31')"
             >
               31
             </button>
@@ -95,7 +95,7 @@ const getSprite = (id, isShiny) => {
     </div>
     <button
       class="close-btn"
-      @click="emit('close')"
+      @click.stop="emit('close')"
     >
       ✕
     </button>
@@ -119,13 +119,13 @@ const getSprite = (id, isShiny) => {
 .sprite-box {
   width: 90px;
   height: 90px;
-  background: rgba(255,255,255,0.05);
+  background: Rgba(255,255,255,0.05);
   border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid Rgba(255,255,255,0.1);
 }
 
 .main-sprite {
@@ -156,8 +156,8 @@ const getSprite = (id, isShiny) => {
   margin-bottom: 12px;
 }
 
-.level-badge { font-weight: bold; color: $white; font-size: 12px; }
-.id-badge { color: rgba(255,255,255,0.3); font-size: 11px; font-weight: bold; }
+.level-badge { font-weight: bold; color: var(--white); font-size: 12px; }
+.id-badge { color: Rgba(255,255,255,0.3); font-size: 11px; font-weight: bold; }
 
 .tags-row {
   display: flex;
@@ -168,27 +168,27 @@ const getSprite = (id, isShiny) => {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.3);
+  background: Rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.1);
+  color: Rgba(255,255,255,0.3);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .tag-btn.active {
-  background: rgba(255, 215, 0, 0.2);
+  background: Rgba(255, 215, 0, 0.2);
   border-color: gold;
-  color: $white;
+  color: var(--white);
   filter: grayScale(100%);
 }
 
 .close-btn {
-  background: rgba(255,255,255,0.1);
+  background: Rgba(255,255,255,0.1);
   border: none;
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  color: $white;
+  color: var(--white);
   cursor: pointer;
   font-size: 20px;
   transition: all 0.2s;
@@ -197,6 +197,6 @@ const getSprite = (id, isShiny) => {
 .close-btn:hover { background: var(--red); }
 
 /* Gender Colors */
-.gender-m { color: #3b8bff; }
-.gender-f { color: #ff6eff; }
+.gender-m { color: Rgba(59, 139, 255, 1); }
+.gender-f { color: Rgba(255, 110, 255, 1); }
 </style>

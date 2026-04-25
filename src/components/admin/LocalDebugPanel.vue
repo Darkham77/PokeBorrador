@@ -32,7 +32,7 @@ const selectedCategory = ref('stats')
     <button
       class="trigger-btn"
       :class="{ active: isOpen }"
-      @click="isOpen = true"
+      @click.stop="isOpen = true"
     >
       <span class="icon">🛠️</span>
       <span class="label">DEBUG</span>
@@ -42,7 +42,7 @@ const selectedCategory = ref('stats')
       :show="isOpen"
       title="ADMIN DEBUG TOOLS"
       type="side-left"
-      max-width="460px"
+      max-width="500px"
       padding="raw"
       overlay="none"
       :lock-scroll="false"
@@ -90,7 +90,7 @@ const selectedCategory = ref('stats')
           >
             <button 
               :class="{ active: selectedCategory === cat.id }"
-              @click="selectedCategory = cat.id"
+              @click.stop="selectedCategory = cat.id"
             >
               {{ cat.label }}
             </button>
@@ -148,15 +148,15 @@ const selectedCategory = ref('stats')
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
-  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 25px Rgba(124, 58, 237, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   gap: 12px;
 
   &:hover {
     transform: TranslateY(-2px) Scale(1.05);
-    box-shadow: 0 12px 30px rgba(124, 58, 237, 0.5);
+    box-shadow: 0 12px 30px Rgba(124, 58, 237, 0.5);
   }
 }
 
@@ -169,8 +169,8 @@ const selectedCategory = ref('stats')
 
 .debug-status-bar {
   padding: 12px 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -187,16 +187,16 @@ const selectedCategory = ref('stats')
   width: fit-content;
   margin: 0;
 
-  &.offline { background: rgba(52, 211, 153, 0.1); color: $green; border: 1px solid rgba(52, 211, 153, 0.2); }
-  &.admin { background: rgba(248, 113, 113, 0.1); color: $red; border: 1px solid rgba(248, 113, 113, 0.2); }
+  &.offline { background: Rgba(52, 211, 153, 0.1); color: $green; border: 1px solid Rgba(52, 211, 153, 0.2); }
+  &.admin { background: Rgba(248, 113, 113, 0.1); color: $red; border: 1px solid Rgba(248, 113, 113, 0.2); }
 }
 
 .debug-nav {
   display: flex;
-  background: rgba(255, 255, 255, 0.02);
+  background: Rgba(255, 255, 255, 0.02);
   padding: 4px;
   gap: 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 
   button {
     flex: 1;
@@ -211,18 +211,18 @@ const selectedCategory = ref('stats')
     border-radius: 12px;
     transition: all 0.2s;
 
-    &:hover { color: $white; background: rgba(255, 255, 255, 0.05); }
+    &:hover { color: $white; background: Rgba(255, 255, 255, 0.05); }
     &.active {
-      background: rgba(124, 58, 237, 0.15);
+      background: Rgba(124, 58, 237, 0.15);
       color: $purple;
-      box-shadow: inset 0 0 10px rgba(124, 58, 237, 0.1), 0 2px 0 rgba(0,0,0,0.2);
+      box-shadow: inset 0 0 10px Rgba(124, 58, 237, 0.1), 0 2px 0 Rgba(0,0,0,0.2);
     }
   }
 }
 
 .debug-content {
   flex: 1;
-  padding: 24px;
+  padding: 20px 16px;
   overflow-y: auto;
   min-height: 0;
   overscroll-behavior: contain;
@@ -239,9 +239,9 @@ const selectedCategory = ref('stats')
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     border-radius: 10px;
-    &:hover { background: rgba(255, 255, 255, 0.1); }
+    &:hover { background: Rgba(255, 255, 255, 0.1); }
   }
 }
 

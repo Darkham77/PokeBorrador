@@ -34,7 +34,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
         {{ p.name }}&nbsp;<span v-if="p.isShiny">✨</span>
       </span>
       <span
-        class="\&quot;bh-gender-badge\&quot;"
+        class="bh-gender-badge"
         :class="getGenderCls(p.gender)"
       >{{ getGenderText(p.gender) }}</span>
       <img
@@ -87,13 +87,13 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 @use "@/styles/core/tools" as *;
 
 .glass-card {
-  background: rgba(15, 23, 42, 0.7);
-  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: Rgba(15, 23, 42, 0.7);
+  -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
   border-radius: 18px;
   padding: 15px;
   min-width: 200px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
   color: $white;
   @include gpu-layer;
 }
@@ -121,11 +121,11 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 .hp-bar-outer, .exp-bar-outer {
   width: 100%;
   height: 8px;
-  background: rgba(0,0,0,0.4);
+  background: Rgba(0,0,0,0.4);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 4px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid Rgba(255,255,255,0.1);
 }
 
 .exp-bar-outer { height: 4px; }
@@ -141,9 +141,9 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   @include will-animate(width);
 }
 
-.hp-high { background: linear-gradient(90deg, #10b981, #34d399); }
-.hp-mid { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.hp-low { background: linear-gradient(90deg, #ef4444, #f87171); }
+.hp-high { background: linear-gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); }
+.hp-mid { background: linear-gradient(90deg, Rgba(245, 158, 11, 1), Rgba(251, 191, 36, 1)); }
+.hp-low { background: linear-gradient(90deg, Rgba(239, 68, 68, 1), Rgba(248, 113, 113, 1)); }
 
 .hp-values {
   @include pixelated;
@@ -157,13 +157,13 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   margin-top: 5px;
   font-size: 8px;
   padding: 2px 6px;
-  background: #444;
+  background: Rgba(68, 68, 68, 1);
   border-radius: 4px;
   font-weight: bold;
 }
 
-.gender-male { color: #3b8bff; }
-.gender-female { color: #ff6eff; }
+.gender-male { color: Rgba(59, 139, 255, 1); }
+.gender-female { color: Rgba(255, 110, 255, 1); }
 
 .caught-icon {
   width: 16px;

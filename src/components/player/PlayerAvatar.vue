@@ -28,9 +28,9 @@ const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
 
 const borderColor = computed(() => {
   if (props.customBorder) return props.customBorder;
-  if (trainerLevel.value >= 20) return '$coin-gold'; // Gold
-  if (trainerLevel.value >= 10) return '#c0c0c0'; // Silver
-  return '#cd7f32'; // Bronze
+  if (trainerLevel.value >= 20) return 'Rgba(255, 215, 0, 1)'; // Gold
+  if (trainerLevel.value >= 10) return 'Rgba(192, 192, 192, 1)'; // Silver
+  return 'Rgba(205, 127, 50, 1)'; // Bronze
 });
 
 const avatarUrl = computed(() => {
@@ -67,7 +67,7 @@ const containerStyle = computed(() => ({
 .player-avatar {
   border-radius: 50%;
   border: 2px solid;
-  background-color: #1e293b;
+  background-color: Rgba(30, 41, 59, 1);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -81,7 +81,7 @@ const containerStyle = computed(() => ({
   box-sizing: border-box;
 
   &.no-class {
-    background: #1e293b;
+    background: Rgba(30, 41, 59, 1);
   }
 }
 </style>

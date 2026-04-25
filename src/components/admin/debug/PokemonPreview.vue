@@ -33,7 +33,7 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
         <button
           class="flag-btn shiny"
           :class="{ active: isShiny }"
-          @click="$emit('toggleShiny')"
+          @click.stop="$emit('toggleShiny')"
         >
           ✨
         </button>
@@ -45,7 +45,7 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
         <button
           class="flag-btn guardian"
           :class="{ active: isGuardian }"
-          @click="$emit('toggleGuardian')"
+          @click.stop="$emit('toggleGuardian')"
         >
           🛡️
         </button>
@@ -57,7 +57,7 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
         <button
           class="flag-btn gender"
           :class="[gender === 'M' ? 'male' : 'female']"
-          @click="$emit('toggleGender')"
+          @click.stop="$emit('toggleGender')"
         >
           {{ gender === 'M' ? '♂️' : '♀️' }}
         </button>
@@ -68,21 +68,21 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
 
 <style lang="scss" scoped>
 .preview-box {
-  background: rgba(0, 0, 0, 0.4);
+  background: Rgba(0, 0, 0, 0.4);
   border-radius: 16px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
 
   .preview-sprite {
     height: 120px;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 0 10px rgba(0, 0, 0, 0.5));
+    filter: Drop-Shadow(0 0 10px Rgba(0, 0, 0, 0.5));
   }
 
   .preview-flags {
@@ -92,8 +92,8 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
     .flag-btn {
       width: 32px;
       height: 32px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -101,8 +101,8 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
       cursor: pointer;
       transition: all 0.2s;
 
-      &:hover { background: rgba(255, 255, 255, 0.1); }
-      &.active { border-color: var(--vicio-primary); background: rgba(124, 58, 237, 0.1); }
+      &:hover { background: Rgba(255, 255, 255, 0.1); }
+      &.active { border-color: var(--vicio-primary); background: Rgba(124, 58, 237, 0.1); }
       
       &.male { color: #3b82f6; }
       &.female { color: #ec4899; }

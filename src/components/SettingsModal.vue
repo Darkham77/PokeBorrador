@@ -30,7 +30,7 @@ const updateZoom = (val) => {
     :show="show"
     title="CONFIGURACIÓN"
     title-color="var(--yellow)"
-    header-background="#1a1c2e"
+    header-background="Rgba(26, 28, 46, 1)"
     max-width="440px"
     variant="retro"
     @close="emit('close')"
@@ -61,7 +61,7 @@ const updateZoom = (val) => {
       <div class="settings-actions">
         <button 
           class="btn-vicio-primary btn-vicio-full"
-          @click="emit('close')"
+          @click.stop="emit('close')"
         >
           GUARDAR Y CERRAR
         </button>
@@ -71,6 +71,7 @@ const updateZoom = (val) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .settings-container {
@@ -84,7 +85,7 @@ const updateZoom = (val) => {
 .zoom-label {
   display: block;
   font-size: 14px;
-  color: $white;
+  color: var(--white);
   margin-bottom: 20px;
   font-weight: 700;
 }
@@ -107,8 +108,8 @@ const updateZoom = (val) => {
   justify-content: space-between;
   margin-top: 16px;
   font-size: 8px;
-  color: rgba(255, 255, 255, 0.2);
-  font-family: 'Press Start 2P', cursive;
+  color: Rgba(255, 255, 255, 0.2);
+  @include pixelated;
   @include pixelated;
 }
 </style>

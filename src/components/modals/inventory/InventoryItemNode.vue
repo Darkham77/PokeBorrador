@@ -17,7 +17,7 @@ defineEmits(['click'])
       selected: isSelected,
       'multi-mode': multiSelectMode
     }"
-    @click="$emit('click')"
+    @click.stop="$emit('click')"
   >
     <div class="item-icon-wrap">
       <img
@@ -57,9 +57,10 @@ defineEmits(['click'])
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .item-node {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 12px 16px;
   display: flex;
@@ -70,20 +71,20 @@ defineEmits(['click'])
   position: relative;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.05);
+    border-color: Rgba(255, 255, 255, 0.1);
     transform: TranslateX(4px);
   }
 
   &.selected {
     border-color: var(--yellow);
-    background: rgba(255, 214, 10, 0.05);
+    background: Rgba(255, 214, 10, 0.05);
   }
 
   .item-icon-wrap {
     width: 60px;
     height: 60px;
-    background: rgba(0, 0, 0, 0.2);
+    background: Rgba(0, 0, 0, 0.2);
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -98,18 +99,18 @@ defineEmits(['click'])
       bottom: -4px;
       right: -4px;
       background: var(--yellow);
-      color: $black;
+      color: Rgba(0, 0, 0, 1);
       font-size: 9px;
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       padding: 2px 6px;
       border-radius: 6px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 5px Rgba(0,0,0,0.3);
     }
   }
 
   .item-info {
     flex: 1;
-    .item-name { font-weight: 800; font-size: 15px; color: #f1f5f9; margin-bottom: 4px; }
+    .item-name { font-weight: 800; font-size: 15px; color: Rgba(241, 245, 249, 1); margin-bottom: 4px; }
     .item-desc { font-size: 11px; color: $muted; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   }
 
@@ -118,7 +119,7 @@ defineEmits(['click'])
       width: 24px;
       height: 24px;
       border-radius: 6px;
-      border: 2px solid rgba(255, 255, 255, 0.1);
+      border: 2px solid Rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -127,7 +128,7 @@ defineEmits(['click'])
       &.checked {
         background: var(--yellow);
         border-color: var(--yellow);
-        span { color: $black; font-weight: 900; }
+        span { color: Rgba(0, 0, 0, 1); font-weight: 900; }
       }
     }
   }

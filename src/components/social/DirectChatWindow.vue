@@ -71,7 +71,7 @@ onMounted(() => {
     <!-- Header -->
     <header
       class="chat-header"
-      @click="toggleCollapse"
+      @click.stop="toggleCollapse"
     >
       <div class="header-left">
         <div
@@ -130,7 +130,7 @@ onMounted(() => {
         >
         <button
           class="send-btn"
-          @click="handleSendMessage"
+          @click.stop="handleSendMessage"
         >
           ➤
         </button>
@@ -140,17 +140,18 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "sass:string";
 
 .direct-chat-window {
   width: 280px;
-  background: rgba(13, 17, 23, 0.95);
+  background: Rgba(13, 17, 23, 0.95);
   -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
-  border: 1px solid rgba(199, 125, 255, 0.2);
+  border: 1px solid Rgba(199, 125, 255, 0.2);
   border-radius: 12px 12px 0 0;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
   transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 
@@ -162,7 +163,7 @@ onMounted(() => {
 .chat-header {
   height: 40px;
   padding: 0 12px;
-  background: linear-gradient(90deg, var(--purple), #9d4edd);
+  background: linear-gradient(90deg, var(--purple), Rgba(157, 78, 221, 1));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -178,17 +179,17 @@ onMounted(() => {
   .unread-dot {
     width: 8px;
     height: 8px;
-    background: $white;
+    background: var(--white);
     border-radius: 50%;
-    box-shadow: 0 0 10px $white;
+    box-shadow: 0 0 10px var(--white);
     animation: pulse 1.5s infinite;
   }
 
   .title {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 7px;
-    color: $white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: var(--white);
+    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.3);
   }
 
   .header-right {
@@ -197,9 +198,9 @@ onMounted(() => {
   }
 
   .header-btn {
-    background: rgba(0, 0, 0, 0.1);
+    background: Rgba(0, 0, 0, 0.1);
     border: none;
-    color: $white;
+    color: var(--white);
     width: 24px;
     height: 24px;
     border-radius: 6px;
@@ -210,8 +211,8 @@ onMounted(() => {
     justify-content: center;
     transition: background 0.2s;
 
-    &:hover { background: rgba(255, 255, 255, 0.1); }
-    &.close:hover { background: rgba(239, 68, 68, 0.4); }
+    &:hover { background: Rgba(255, 255, 255, 0.1); }
+    &.close:hover { background: Rgba(239, 68, 68, 0.4); }
   }
 }
 
@@ -223,12 +224,12 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
 }
 
 .chat-start-hint {
   font-size: 9px;
-  color: $muted;
+  color: Rgba(255, 255, 255, 0.5);
   text-align: center;
   margin-bottom: 5px;
   font-style: italic;
@@ -241,20 +242,20 @@ onMounted(() => {
   &.is-me {
     align-items: flex-end;
     .bubble {
-      background: rgba(157, 78, 221, 0.25);
-      color: #e9d5ff;
+      background: Rgba(157, 78, 221, 0.25);
+      color: Rgba(233, 213, 255, 1);
       border-bottom-right-radius: 2px;
-      border: 1px solid rgba(157, 78, 221, 0.3);
+      border: 1px solid Rgba(157, 78, 221, 0.3);
     }
   }
 
   &:not(.is-me) {
     align-items: flex-start;
     .bubble {
-      background: rgba(255, 255, 255, 0.05);
-      color: #eee;
+      background: Rgba(255, 255, 255, 0.05);
+      color: Rgba(238, 238, 238, 1);
       border-bottom-left-radius: 2px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
     }
   }
 }
@@ -272,16 +273,16 @@ onMounted(() => {
   padding: 10px;
   display: flex;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.2);
+  border-top: 1px solid Rgba(255, 255, 255, 0.05);
 
   input {
     flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(0, 0, 0, 0.3);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 8px 10px;
-    color: $white;
+    color: var(--white);
     font-size: 12px;
     outline: none;
 
@@ -294,14 +295,14 @@ onMounted(() => {
     border-radius: 8px;
     width: 32px;
     height: 32px;
-    color: $white;
+    color: var(--white);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 14px;
     
-    &:hover { background: #9d4edd; }
+    &:hover { background: Rgba(157, 78, 221, 1); }
   }
 }
 

@@ -54,7 +54,7 @@ const handleSwitch = async (index) => {
     :show="show"
     :title="isForced ? '¡ELIGE UN POKÉMON!' : 'CAMBIAR POKÉMON'"
     title-color="var(--purple-light)"
-    header-background="#1a1c2e"
+    header-background="Rgba(26, 28, 46, 1)"
     max-width="440px"
     variant="retro"
     :prevent-close="isForced"
@@ -74,7 +74,7 @@ const handleSwitch = async (index) => {
           <div 
             v-if="p.uid !== activePoke?.uid && p.hp > 0"
             class="target-row-vicio"
-            @click="handleSwitch(index)"
+            @click.stop="handleSwitch(index)"
           >
             <div class="poke-sprite-box">
               <img
@@ -117,7 +117,7 @@ const handleSwitch = async (index) => {
       <button
         v-if="!isForced"
         class="btn-vicio-secondary btn-vicio-full"
-        @click="close"
+        @click.stop="close"
       >
         CANCELAR
       </button>
@@ -126,6 +126,7 @@ const handleSwitch = async (index) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .switch-modal-body {
@@ -133,7 +134,7 @@ const handleSwitch = async (index) => {
 }
 
 .switch-help {
-  color: rgba(255, 255, 255, 0.5);
+  color: Rgba(255, 255, 255, 0.5);
   font-size: 11px;
   line-height: 1.5;
   margin-bottom: 24px;
@@ -152,8 +153,8 @@ const handleSwitch = async (index) => {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   padding: 12px;
   cursor: pointer;
@@ -161,7 +162,7 @@ const handleSwitch = async (index) => {
   position: relative;
 
   &:hover {
-    background: rgba(157, 78, 221, 0.1);
+    background: Rgba(157, 78, 221, 0.1);
     border-color: var(--purple-light);
     transform: translateX(4px);
     
@@ -173,7 +174,7 @@ const handleSwitch = async (index) => {
 .poke-sprite-box {
   width: 52px;
   height: 52px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -196,7 +197,7 @@ const handleSwitch = async (index) => {
 }
 
 .p-name {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 10px;
   color: $white;
   transition: color 0.2s;
@@ -206,33 +207,33 @@ const handleSwitch = async (index) => {
 .p-lv {
   font-size: 8px;
   color: var(--gray);
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   @include pixelated;
 }
 
 .hp-bar-container {
   height: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.05);
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .hp-bar-fill {
   height: 100%;
   transition: width 0.5s ease;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 10px Rgba(0, 0, 0, 0.5);
 }
 
 .hp-text {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.3);
+  color: Rgba(255, 255, 255, 0.3);
   font-family: monospace;
 }
 
 .select-hint {
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   font-size: 7px;
   color: var(--purple-light);
   opacity: 0;

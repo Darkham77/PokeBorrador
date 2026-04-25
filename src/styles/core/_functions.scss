@@ -6,7 +6,7 @@
 }
 
 @function cl-alpha($color, $opacity) {
-  @return rgba($color, $opacity);
+  @return Rgba($color, $opacity);
 }
 
 // Z-index helper using the planned map in tokens

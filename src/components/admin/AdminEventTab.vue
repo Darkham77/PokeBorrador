@@ -69,14 +69,14 @@ defineEmits(['toggle-editing'])
       <button
         v-if="!isEditing"
         class="add-btn"
-        @click="isEditing = true; Object.assign(currentEvent, DEFAULT_EVENT)"
+        @click.stop="isEditing = true; Object.assign(currentEvent, DEFAULT_EVENT)"
       >
         + NUEVO EVENTO
       </button>
       <button
         v-else
         class="back-btn"
-        @click="isEditing = false"
+        @click.stop="isEditing = false"
       >
         CANCELAR
       </button>
@@ -101,7 +101,7 @@ defineEmits(['toggle-editing'])
           </div>
         </div>
         <div class="actions">
-          <button @click="editEvent(ev)">
+          <button @click.stop="editEvent(ev)">
             EDITAR
           </button>
         </div>
@@ -202,7 +202,7 @@ defineEmits(['toggle-editing'])
 
       <button
         class="save-btn press-start"
-        @click="saveEvent"
+        @click.stop="saveEvent"
       >
         GUARDAR CAMBIOS
       </button>
@@ -211,13 +211,14 @@ defineEmits(['toggle-editing'])
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .tab-actions {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 20px;
 }
 
-.press-start { font-family: 'Press Start 2P', cursive; font-size: 10px; letter-spacing: 1px; }
+.press-start { @include pixelated; font-size: 10px; letter-spacing: 1px; }
 .sub-title { margin: 30px 0 15px; color: #fbbf24; font-size: 8px; }
 
 .add-btn { background: #22c55e; color: $white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
@@ -230,10 +231,10 @@ defineEmits(['toggle-editing'])
 }
 
 .ev-admin-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   padding: 20px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -249,13 +250,13 @@ defineEmits(['toggle-editing'])
 
   button {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid Rgba(255, 255, 255, 0.2);
     color: $white;
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 11px;
     cursor: pointer;
-    &:hover { background: rgba(255, 255, 255, 0.05); border-color: #fbbf24; }
+    &:hover { background: Rgba(255, 255, 255, 0.05); border-color: #fbbf24; }
   }
 
   &.inactive { opacity: 0.6; filter: Grayscale(1); }
@@ -274,8 +275,8 @@ defineEmits(['toggle-editing'])
     gap: 8px;
     label { font-size: 11px; color: #94a3b8; font-weight: 700; }
     input, textarea, select {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: Rgba(0, 0, 0, 0.3);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
       padding: 12px;
       border-radius: 12px;
       color: $white;
@@ -309,7 +310,7 @@ defineEmits(['toggle-editing'])
     cursor: pointer;
     font-size: 11px;
     font-weight: 800;
-    box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+    box-shadow: 0 10px 20px Rgba(245, 158, 11, 0.2);
   }
 }
 

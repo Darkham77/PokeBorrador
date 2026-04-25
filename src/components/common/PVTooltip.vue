@@ -181,13 +181,13 @@ const hide = () => {
   position: absolute;
   z-index: var(--z-critical); // Above everything (even Debug Panel at 100,000)
   pointer-events: none;
-  background: rgba(10, 10, 20, 0.98);
+  background: Rgba(10, 10, 20, 0.98);
   border: 1px solid $yellow;
   border-radius: 12px;
   padding: 10px 14px;
   min-width: 120px;
   max-width: 300px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8);
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
   @include gpu-layer;
@@ -203,14 +203,14 @@ const hide = () => {
     font-family: $font-pixel;
     font-size: 8px;
     color: $yellow;
-    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
+    text-shadow: 1px 1px 0px Rgba(0, 0, 0, 0.5);
     margin-bottom: 6px;
     line-height: 1.4;
     display: block;
   }
 
   .pv-tooltip-desc {
-    color: rgba(255, 255, 255, 0.9);
+    color: Rgba(255, 255, 255, 0.9);
     font-size: 11px;
     line-height: 1.5;
   }

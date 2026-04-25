@@ -43,7 +43,7 @@ const clear = () => {
         <PVTooltip title="Fuerza la regeneración de nuevas misiones de guardería.">
           <button 
             class="small-btn primary"
-            @click="regenerate"
+            @click.stop="regenerate"
           >
             REGENERAR AHORA
           </button>
@@ -51,7 +51,7 @@ const clear = () => {
         <PVTooltip title="Borra todas las misiones activas de la base de datos local.">
           <button 
             class="small-btn danger"
-            @click="clear"
+            @click.stop="clear"
           >
             LIMPIAR TODO
           </button>
@@ -78,7 +78,7 @@ const clear = () => {
 
 .debug-json {
   font-size: 8px;
-  background: rgba(0,0,0,0.3);
+  background: Rgba(0,0,0,0.3);
   padding: 10px;
   border-radius: 8px;
   color: $green;

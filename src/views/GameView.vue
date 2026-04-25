@@ -54,7 +54,7 @@
 .game-view {
   min-height: 100vh;
   background: var(--darker);
-  color: white;
+  color: var(--white);
   padding: 20px;
 }
 
@@ -83,16 +83,16 @@
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(18, 18, 20, 0.95);
-  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(0, 0, 0, 0.95);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   padding: 8px 16px;
   display: flex;
   gap: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
   z-index: var(--z-navigation);
-  -webkit-backdrop-filter: Blur(10px);
   transform: translateX(-50%) translateZ(0);
 }
 
@@ -115,12 +115,12 @@
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
+  background: Rgba(255, 255, 255, 0.05);
+  color: var(--white);
 }
 
 .nav-item.active {
-  background: rgba(255, 217, 61, 0.1);
+  background: Rgba(255, 184, 0, 0.1);
   color: var(--yellow);
 }
 

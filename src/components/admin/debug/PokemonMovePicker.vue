@@ -52,7 +52,7 @@ function removeMove(slotIndex) {
       >
         <button
           class="btn-magic-fill"
-          @click="$emit('autoFill')"
+          @click.stop="$emit('autoFill')"
         >
           🪄
         </button>
@@ -109,14 +109,14 @@ function removeMove(slotIndex) {
               v-for="m in filteredMoves" 
               :key="m" 
               class="move-item"
-              @click="addMove(m, i-1)"
+              @click.stop="addMove(m, i-1)"
             >
               {{ m.toUpperCase() }}
             </div>
           </div>
           <button
             class="close-picker"
-            @click="activeMoveSlot = null"
+            @click.stop="activeMoveSlot = null"
           >
             CERRAR
           </button>
@@ -137,11 +137,11 @@ function removeMove(slotIndex) {
     justify-content: space-between;
     align-items: center;
     
-    label { font-size: 10px; color: rgba(255, 255, 255, 0.4); }
+    label { font-size: 10px; color: Rgba(255, 255, 255, 0.4); }
     
     .btn-magic-fill {
-      background: rgba(124, 58, 237, 0.1);
-      border: 1px solid rgba(124, 58, 237, 0.2);
+      background: Rgba(124, 58, 237, 0.1);
+      border: 1px solid Rgba(124, 58, 237, 0.2);
       color: var(--vicio-primary);
       width: 24px;
       height: 24px;
@@ -172,24 +172,24 @@ function removeMove(slotIndex) {
   }
 
   .move-pill {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    padding: 10px 14px;
+    padding: 8px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover { background: rgba(255, 255, 255, 0.1); }
+    &:hover { background: Rgba(255, 255, 255, 0.1); }
     
     .m-name { font-size: 11px; font-weight: bold; color: white; }
     
     .remove-move {
-      background: rgba(239, 68, 68, 0.1);
+      background: Rgba(239, 68, 68, 0.1);
       border: none;
-      color: #ef4444;
+      color: Rgba(239, 68, 68, 1);
       width: 18px;
       height: 18px;
       border-radius: 4px;
@@ -199,13 +199,13 @@ function removeMove(slotIndex) {
       cursor: pointer;
       font-size: 14px;
       
-      &:hover { background: #ef4444; color: white; }
+      &:hover { background: Rgba(239, 68, 68, 1); color: white; }
     }
 
     &.empty {
       border-style: dashed;
-      color: rgba(255, 255, 255, 0.3);
-      font-size: 10px;
+      color: Rgba(255, 255, 255, 0.3);
+      font-size: 8px;
       justify-content: center;
       
       &:hover { color: white; border-color: var(--vicio-primary); }
@@ -220,18 +220,18 @@ function removeMove(slotIndex) {
     max-height: 300px;
     margin-bottom: 12px;
     z-index: var(--z-critical);
-    background: rgba(10, 12, 16, 0.98);
+    background: Rgba(10, 12, 16, 0.98);
     -webkit-backdrop-filter: Blur(20px); backdrop-filter: Blur(20px);
     border-radius: 16px;
     padding: 12px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 50px Rgba(0, 0, 0, 1);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
 
     .move-search-input {
       width: 100%;
       padding: 10px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       color: white;
       font-size: 11px;
@@ -246,12 +246,13 @@ function removeMove(slotIndex) {
       flex-direction: column;
       gap: 4px;
       max-height: 200px;
+      min-height: 0;
       overflow-y: auto;
       margin-bottom: 10px;
 
       .move-group-label {
         font-size: 9px;
-        color: rgba(255, 255, 255, 0.3);
+        color: Rgba(255, 255, 255, 0.3);
         padding: 4px 8px;
         letter-spacing: 1px;
       }
@@ -263,21 +264,21 @@ function removeMove(slotIndex) {
         cursor: pointer;
         transition: all 0.2s;
         
-        &:hover { background: rgba(124, 58, 237, 0.1); color: var(--vicio-primary); }
+        &:hover { background: Rgba(124, 58, 237, 0.1); color: var(--vicio-primary); }
       }
     }
 
     .close-picker {
       width: 100%;
       padding: 8px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
       border-radius: 8px;
-      color: rgba(255, 255, 255, 0.5);
+      color: Rgba(255, 255, 255, 0.5);
       font-size: 9px;
       cursor: pointer;
       
-      &:hover { color: white; background: rgba(255, 255, 255, 0.1); }
+      &:hover { color: white; background: Rgba(255, 255, 255, 0.1); }
     }
   }
 }

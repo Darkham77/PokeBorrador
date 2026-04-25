@@ -59,7 +59,7 @@ const getUnreadCount = (friendId) => {
       <div class="friend-actions">
         <button
           class="friend-btn chat"
-          @click="openChat(friend)"
+          @click.stop="openChat(friend)"
         >
           💬 Chat
           <span 
@@ -69,19 +69,19 @@ const getUnreadCount = (friendId) => {
         </button>
         <button
           class="friend-btn trade"
-          @click="socialStore.openTradeModal(friend.id, friend.username)"
+          @click.stop="socialStore.openTradeModal(friend.id, friend.username)"
         >
           🔄 Intercambiar
         </button>
         <button
           class="friend-btn battle"
-          @click="socialStore.sendBattleInvite(friend.id, friend.username)"
+          @click.stop="socialStore.sendBattleInvite(friend.id, friend.username)"
         >
           ⚔️ Batallar
         </button>
         <button
           class="friend-btn remove"
-          @click="socialStore.removeFriend(friend.id)"
+          @click.stop="socialStore.removeFriend(friend.id)"
         >
           ✕
         </button>
@@ -99,8 +99,8 @@ const getUnreadCount = (friendId) => {
   display: flex;
   align-items: center;
   gap: 15px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 12px 15px;
   margin-bottom: 12px;
@@ -108,7 +108,7 @@ const getUnreadCount = (friendId) => {
   transition: transform 0.2s, background 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     transform: translateX(5px);
   }
 }
@@ -130,13 +130,13 @@ const getUnreadCount = (friendId) => {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #4b5563; // offline
-  border: 2px solid $card2;
-  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  background: Rgba(75, 85, 99, 1); // offline
+  border: 2px solid Rgba(16, 24, 34, 1);
+  box-shadow: 0 0 5px Rgba(0,0,0,0.5);
 
   &.online {
-    background: #10b981;
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    background: Rgba(16, 185, 129, 1);
+    box-shadow: 0 0 8px Rgba(16, 185, 129, 0.4);
   }
 }
 
@@ -147,7 +147,7 @@ const getUnreadCount = (friendId) => {
   .friend-name {
     font-size: 14px;
     font-weight: 900;
-    color: $white;
+    color: var(--white);
     margin-bottom: 4px;
     white-space: nowrap;
     overflow: hidden;
@@ -156,7 +156,7 @@ const getUnreadCount = (friendId) => {
 
   .friend-meta {
     font-size: 11px;
-    color: #888;
+    color: Rgba(136, 136, 136, 1);
   }
 }
 
@@ -171,38 +171,38 @@ const getUnreadCount = (friendId) => {
   font-size: 10px;
   font-weight: bold;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
-  color: $white;
+  border: 1px solid Rgba(255, 255, 255, 0.2);
+  background: Rgba(255, 255, 255, 0.05);
+  color: var(--white);
   transition: all 0.2s;
   position: relative;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.1);
   }
 
   &.chat {
-    background: rgba(107, 203, 119, 0.15);
-    color: #6bcb77;
-    border-color: rgba(107, 203, 119, 0.3);
+    background: Rgba(107, 203, 119, 0.15);
+    color: Rgba(107, 203, 119, 1);
+    border-color: Rgba(107, 203, 119, 0.3);
   }
 
   &.trade {
-    background: rgba(255, 217, 61, 0.15);
-    color: #ffd93d;
-    border-color: rgba(255, 217, 61, 0.3);
+    background: Rgba(255, 217, 61, 0.15);
+    color: Rgba(255, 217, 61, 1);
+    border-color: Rgba(255, 217, 61, 0.3);
   }
 
   &.battle {
-    background: rgba(199, 125, 255, 0.15);
-    color: #c77dff;
-    border-color: rgba(199, 125, 255, 0.3);
+    background: Rgba(199, 125, 255, 0.15);
+    color: Rgba(199, 125, 255, 1);
+    border-color: Rgba(199, 125, 255, 0.3);
   }
 
   &.remove {
-    background: rgba(255, 71, 87, 0.1);
-    color: #ff4757;
-    border-color: rgba(255, 71, 87, 0.2);
+    background: Rgba(255, 71, 87, 0.1);
+    color: Rgba(255, 71, 87, 1);
+    border-color: Rgba(255, 71, 87, 0.2);
     padding: 6px 8px;
   }
 
@@ -210,7 +210,7 @@ const getUnreadCount = (friendId) => {
     position: absolute;
     top: -6px;
     right: -6px;
-    background: #ff4757;
+    background: Rgba(255, 71, 87, 1);
     color: white;
     border-radius: 50%;
     width: 16px;
@@ -220,15 +220,15 @@ const getUnreadCount = (friendId) => {
     align-items: center;
     justify-content: center;
     font-family: sans-serif;
-    border: 1px solid rgba(0,0,0,0.3);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    border: 1px solid Rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px Rgba(0,0,0,0.3);
   }
 }
 
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   font-size: 12px;
   line-height: 1.6;
 

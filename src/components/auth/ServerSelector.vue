@@ -14,14 +14,14 @@ const emit = defineEmits(['update:serverType'])
     <div class="server-tabs">
       <button 
         :class="['server-tab', { active: serverType === 'online' }]" 
-        @click="emit('update:serverType', 'online')"
+        @click.stop="emit('update:serverType', 'online')"
       >
         <span class="btn-icon">🌐</span>
         <span class="btn-text">Online</span>
       </button>
       <button 
         :class="['server-tab', { active: serverType === 'local' }]" 
-        @click="emit('update:serverType', 'local')"
+        @click.stop="emit('update:serverType', 'local')"
       >
         <span class="btn-icon">💻</span>
         <span class="btn-text">Local</span>
@@ -34,10 +34,10 @@ const emit = defineEmits(['update:serverType'])
 @use "@/styles/core/_mixins" as *;
 .server-selector {
   margin-bottom: 24px;
-  background: rgba(0, 0, 0, 0.3);
+  background: Rgba(0, 0, 0, 0.3);
   padding: 14px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
 }
 
 .server-selector-label {
@@ -60,8 +60,8 @@ const emit = defineEmits(['update:serverType'])
 .server-tab {
   flex: 1;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
   color: $gray;
   border-radius: 10px;
   cursor: pointer;

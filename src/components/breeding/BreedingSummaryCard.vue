@@ -111,11 +111,11 @@ const geneticsSummary = computed(() => {
 <style lang="scss" scoped>
 @use "@/styles/core/_mixins" as *;
 .breeding-summary-card {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
-  border: 1px solid rgba(139, 92, 246, 0.5);
+  background: linear-gradient(135deg, Rgba(30, 41, 59, 0.9), Rgba(15, 23, 42, 0.95));
+  border: 1px solid Rgba(139, 92, 246, 0.5);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 32px Rgba(0, 0, 0, 0.6);
   position: relative;
   overflow: hidden;
   text-align: left;
@@ -134,9 +134,9 @@ const geneticsSummary = computed(() => {
     text-align: center;
     @include pixelated;
     font-size: 10px;
-    color: #a78bfa;
+    color: Rgba(167, 139, 250, 1);
     margin-bottom: 20px;
-    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+    text-shadow: 0 0 10px Rgba(139, 92, 246, 0.5);
     position: relative;
     z-index: var(--z-base);
   }
@@ -153,7 +153,7 @@ const geneticsSummary = computed(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.4);
+    background: Rgba(0, 0, 0, 0.4);
     padding: 12px;
     border-radius: 12px;
     border-left: 4px solid $white;
@@ -170,19 +170,19 @@ const geneticsSummary = computed(() => {
       color: $white;
     }
 
-    &.specie { border-left-color: #10b981; }
-    &.nature { border-left-color: #fbbf24; }
+    &.specie { border-left-color: Rgba(16, 185, 129, 1); }
+    &.nature { border-left-color: Rgba(251, 191, 36, 1); }
     &.genetics {
       flex-direction: column;
       align-items: flex-start;
-      border-left-color: #3b82f6;
+      border-left-color: Rgba(59, 130, 246, 1);
       
       .genetics-list {
         margin-top: 8px;
         width: 100%;
         .gen-line {
           font-size: 11px;
-          color: #3b82f6;
+          color: Rgba(59, 130, 246, 1);
           font-weight: 700;
           line-height: 1.5;
         }
@@ -195,7 +195,7 @@ const geneticsSummary = computed(() => {
     z-index: var(--z-base);
     margin-top: 20px;
     padding-top: 15px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    border-top: 1px dashed Rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     font-size: 11px;
@@ -203,8 +203,8 @@ const geneticsSummary = computed(() => {
 
     span {
       font-weight: 800;
-      &.cost { color: #fbbf24; }
-      &.time { color: #10b981; }
+      &.cost { color: Rgba(251, 191, 36, 1); }
+      &.time { color: Rgba(16, 185, 129, 1); }
     }
   }
 }

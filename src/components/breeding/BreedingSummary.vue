@@ -31,7 +31,7 @@ const formatTime = (ms) => {
     <div class="compat-section">
       <div
         class="compat-indicator"
-        :style="{ color: COMPAT_TEXT[breedingStore.compatibility.level]?.color || '#94a3b8' }"
+        :style="{ color: COMPAT_TEXT[breedingStore.compatibility.level]?.color || 'Rgba(148, 163, 184, 1)' }"
       >
         <div class="compat-label">
           {{ breedingStore.compatibility.label || COMPAT_TEXT[breedingStore.compatibility.level]?.label }}
@@ -103,6 +103,7 @@ const formatTime = (ms) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .breeding-summary {
   display: flex;
   flex-direction: column;
@@ -125,7 +126,7 @@ const formatTime = (ms) => {
     text-transform: uppercase;
   }
   .timer {
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
     font-size: 10px;
     color: $white;
     margin-top: 8px;
@@ -146,17 +147,17 @@ const formatTime = (ms) => {
 }
 
 @keyframes pulse {
-  0% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 rgba(239, 68, 68, 0)); }
-  50% { transform: Scale(1.2); filter: Drop-Shadow(0 0 15px rgba(239, 68, 68, 0.6)); }
-  100% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 rgba(239, 68, 68, 0)); }
+  0% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
+  50% { transform: Scale(1.2); filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
+  100% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
 }
 
 .forecast-card {
-  background: rgba(30, 41, 59, 0.7);
+  background: Rgba(30, 41, 59, 0.7);
   border-radius: 20px;
   padding: 24px;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  border: 1px solid Rgba(139, 92, 246, 0.3);
+  box-shadow: 0 10px 30px Rgba(0,0,0,0.2);
   
   .forecast-header {
     display: flex;
@@ -164,7 +165,7 @@ const formatTime = (ms) => {
     gap: 12px;
     margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid Rgba(255,255,255,0.05);
     
     .icon { font-size: 20px; }
     h4 {
@@ -189,7 +190,7 @@ const formatTime = (ms) => {
   flex-direction: column;
   gap: 4px;
   padding: 12px;
-  background: rgba(0,0,0,0.2);
+  background: Rgba(0,0,0,0.2);
   border-radius: 12px;
   border: 1px solid transparent;
   transition: all 0.3s;
@@ -207,24 +208,24 @@ const formatTime = (ms) => {
   }
   
   &.active {
-    border-color: rgba(139, 92, 246, 0.4);
-    background: rgba(139, 92, 246, 0.05);
-    .value { color: #a78bfa; }
+    border-color: Rgba(139, 92, 246, 0.4);
+    background: Rgba(139, 92, 246, 0.05);
+    .value { color: Rgba(167, 139, 250, 1); }
   }
   
   &.positive {
-    border-color: rgba(34, 197, 94, 0.4);
-    background: rgba(34, 197, 94, 0.05);
-    .value { color: #4ade80; }
+    border-color: Rgba(34, 197, 94, 0.4);
+    background: Rgba(34, 197, 94, 0.05);
+    .value { color: Rgba(74, 222, 128, 1); }
   }
 }
 
 .forecast-help {
   padding-top: 12px;
-  border-top: 1px dashed #334155;
+  border-top: 1px dashed Rgba(51, 65, 85, 1);
   p {
     font-size: 11px;
-    color: #94a3b8;
+    color: Rgba(148, 163, 184, 1);
     line-height: 1.5;
   }
 }

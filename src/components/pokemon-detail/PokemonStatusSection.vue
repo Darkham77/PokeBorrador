@@ -33,7 +33,7 @@ const natureStyle = computed(() => {
   const colors = {
     'Ataque': '$red',
     'Defensa': '$yellow',
-    'At. Esp': '#3B8BFF',
+    'At. Esp': 'Rgba(59, 139, 255, 1)',
     'Def. Esp': '$green',
     'Velocidad': '$purple'
   }
@@ -150,18 +150,18 @@ const abilityStyle = computed(() => ({
   @include pixelated;
   font-size: 10px;
   margin-bottom: 14px;
-  color: $white;
+  color: var(--white);
   opacity: 0.9;
   @include pixelated;
 }
 
 .progress-outer {
   height: 16px;
-  background: rgba(0,0,0,0.4);
+  background: Rgba(0,0,0,0.4);
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+  border: 1px solid Rgba(255,255,255,0.1);
+  box-shadow: inset 0 2px 4px Rgba(0,0,0,0.3);
 }
 
 .progress-inner { 
@@ -170,13 +170,13 @@ const abilityStyle = computed(() => ({
   box-shadow: 0 0 10px currentColor;
   @include will-animate(width);
 }
-.hp-high { background: linear-gradient(90deg, #10b981, #34d399); color: #10b981; }
-.hp-mid { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #f59e0b; }
-.hp-low { background: linear-gradient(90deg, #ef4444, #f87171); color: #ef4444; }
+.hp-high { background: linear-gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); color: Rgba(16, 185, 129, 1); }
+.hp-mid { background: linear-gradient(90deg, Rgba(245, 158, 11, 1), Rgba(251, 191, 36, 1)); color: Rgba(245, 158, 11, 1); }
+.hp-low { background: linear-gradient(90deg, Rgba(239, 68, 68, 1), Rgba(248, 113, 113, 1)); color: Rgba(239, 68, 68, 1); }
 
 .exp-fill { 
-  background: linear-gradient(90deg, #8b5cf6, #a855f7); 
-  color: #8b5cf6;
+  background: linear-gradient(90deg, Rgba(139, 92, 246, 1), Rgba(168, 85, 247, 1)); 
+  color: Rgba(139, 92, 246, 1);
   @include will-animate(width);
 }
 
@@ -188,7 +188,7 @@ const abilityStyle = computed(() => ({
 }
 
 .info-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   border-radius: 16px;
   padding: 16px 8px; // Slightly less horizontal padding to allow more space
   display: flex !important; // Override PVTooltip inline-flex
@@ -196,13 +196,13 @@ const abilityStyle = computed(() => ({
   align-items: center;
   justify-content: center;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   transition: transform 0.2s;
   cursor: help;
   min-height: 70px; // Ensure consistent height
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.05);
     transform: TranslateY(-2px);
   }
 }
@@ -222,12 +222,12 @@ const abilityStyle = computed(() => ({
   display: block;
   @include pixelated;
   font-size: 10px; // Standardized size for all values
-  color: $white;
+  color: var(--white);
   @include pixelated;
   
   &.interactive-val {
     display: inline-block; // To keep the dotted border tight
-    border-bottom: 2px dotted rgba(255,255,255,0.3);
+    border-bottom: 2px dotted Rgba(255,255,255,0.3);
     padding-bottom: 2px;
   }
 }
@@ -240,7 +240,7 @@ const abilityStyle = computed(() => ({
 
 .vigor-val { 
   color: var(--yellow) !important; 
-  text-shadow: 0 0 10px rgba(255, 214, 10, 0.3) !important;
+  text-shadow: 0 0 10px Rgba(255, 214, 10, 0.3) !important;
 }
 
 .mt-12 { margin-top: 12px; }

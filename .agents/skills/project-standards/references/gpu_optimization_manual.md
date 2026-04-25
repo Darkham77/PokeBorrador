@@ -1,0 +1,28 @@
+# GPU Optimization & Performance Manual
+
+This manual details the mandatory techniques for maintaining stable 60 FPS in a high-fidelity visual environment.
+
+## 1. GPU Layer Promotion
+
+All heavy components or those that animate frequently must be promoted to a GPU compositor layer.
+
+- **Mandatory**: Use `@include gpu-layer` on Modals, Overlays, MapCards, PC Box, and HUD.
+- **Technique**: This injects `transform: translate3d(0,0,0)` and `backface-visibility: hidden`.
+- **Golden Rule**: If an element uses `backdrop-filter: Blur()`, it **MUST** have layer promotion to avoid stuttering.
+
+## 2. Low-Cost Animations
+
+- **Allowed Properties**: `transform` (scale, translate, rotate) and `opacity`.
+- **Forbidden Properties**: `margin`, `padding`, `width`, `height`, `top`, `left`, `right`, `bottom`.
+- **Will-Change**: Use `@include will-animate(transform, opacity)` only on elements with constant animations (e.g., auras, Shiny pulses). Do not abuse, as it consumes video memory.
+
+## 3. Smooth Scroll & Gutter
+
+- **Standard**: Use `@include smooth-scroll`.
+- **Zero Scrollbar Gutter**: `scrollbar-gutter: stable` is forbidden. Layouts must be fluid and edge-to-edge.
+- **Padding**: Delegate padding to the innermost scrollable component to prevent glow effects from being clipped by the parent container.
+
+## 4. Complexity Management (LOD)
+
+- **LOD (Level of Detail)**: For very long lists (Pokedex, PC Box with 500+ Pokemon), implement virtualization or lazy loading.
+- **Memoization**: Use `computed` in Vue to avoid O(N) calculations in every template rendering cycle.

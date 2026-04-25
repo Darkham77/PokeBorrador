@@ -24,7 +24,7 @@ const getSprite = (id, shiny) => {
   <div
     class="daycare-slot-legacy"
     :class="{ empty: !pokemon }"
-    @click="!pokemon ? emit('deposit') : null"
+    @click.stop="!pokemon ? emit('deposit') : null"
   >
     <div class="slot-marker">
       RANURA {{ slotId.toUpperCase() }}
@@ -81,7 +81,7 @@ const getSprite = (id, shiny) => {
         <div class="vigor-bar-bg">
           <div
             class="vigor-fill"
-            :style="{ width: ((pokemon.vigor || 0) * 10) + '%', background: (pokemon.vigor <= 2 ? '#ef4444' : '#22c55e') }"
+            :style="{ width: ((pokemon.vigor || 0) * 10) + '%', background: (pokemon.vigor <= 2 ? 'Rgba(239, 68, 68, 1)' : 'Rgba(34, 197, 94, 1)') }"
           />
         </div>
       </div>
@@ -115,7 +115,7 @@ const getSprite = (id, shiny) => {
 @use "@/styles/core/_mixins" as *;
 .daycare-slot-legacy {
   background: $card-dark;
-  border: 2px solid rgba(255,255,255,0.06);
+  border: 2px solid Rgba(255,255,255,0.06);
   border-radius: 16px;
   padding: 20px;
   min-height: 250px;
@@ -129,11 +129,11 @@ const getSprite = (id, shiny) => {
     cursor: pointer;
     justify-content: center;
     align-items: center;
-    background: rgba(0,0,0,0.2);
+    background: Rgba(0,0,0,0.2);
     &:hover { border-color: $coin-gold; .plus-icon { color: $coin-gold; transform: #{'Scale(1.1)'}; } }
   }
 
-  &:not(.empty):hover { border-color: rgba(255,255,255,0.15); }
+  &:not(.empty):hover { border-color: Rgba(255,255,255,0.15); }
 }
 
 .slot-marker {
@@ -145,8 +145,8 @@ const getSprite = (id, shiny) => {
 
 .slot-empty {
   text-align: center;
-  .plus-icon { font-size: 30px; color: #334155; margin-bottom: 10px; transition: all 0.2s; }
-  .hint { @include pixelated; font-size: 7px; color: #475569; }
+  .plus-icon { font-size: 30px; color: Rgba(51, 65, 85, 1); margin-bottom: 10px; transition: all 0.2s; }
+  .hint { @include pixelated; font-size: 7px; color: Rgba(71, 85, 105, 1); }
 }
 
 .slot-filled {
@@ -163,7 +163,7 @@ const getSprite = (id, shiny) => {
 
 .sprite-box {
   width: 64px; height: 64px;
-  background: rgba(0,0,0,0.3);
+  background: Rgba(0,0,0,0.3);
   border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   .pixel-sprite { width: 56px; height: 56px; image-rendering: pixelated; }
@@ -177,10 +177,10 @@ const getSprite = (id, shiny) => {
     .lv { @include pixelated; font-size: 8px; color: $coin-gold; }
   }
   .stats-line {
-    font-size: 10px; color: #94a3b8; font-family: monospace;
+    font-size: 10px; color: Rgba(148, 163, 184, 1); font-family: monospace;
     .gender { margin-left: 8px; font-weight: bold; }
-    .M { color: #38bdf8; }
-    .F { color: #fb7185; }
+    .M { color: Rgba(56, 189, 248, 1); }
+    .F { color: Rgba(251, 113, 133, 1); }
   }
   .nature-line { font-size: 10px; color: $coin-gold; margin-top: 4px; font-weight: bold; }
 }
@@ -188,7 +188,7 @@ const getSprite = (id, shiny) => {
 .vigor-status {
   margin-bottom: 15px;
   .label { font-size: 9px; font-weight: bold; color: $muted; margin-bottom: 6px; }
-  .vigor-bar-bg { height: 4px; background: rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; }
+  .vigor-bar-bg { height: 4px; background: Rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; }
   .vigor-fill { height: 100%; transition: width 0.3s; }
 }
 
@@ -196,22 +196,22 @@ const getSprite = (id, shiny) => {
   margin-bottom: 20px;
   .item-badge {
     padding: 8px 12px; border-radius: 10px; font-size: 10px;
-    &.active { background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); color: $white; }
-    &.none { background: rgba(0,0,0,0.2); color: #475569; font-style: italic; border: 1px dashed rgba(255,255,255,0.05); }
+    &.active { background: Rgba(168, 85, 247, 0.1); border: 1px solid Rgba(168, 85, 247, 0.2); color: $white; }
+    &.none { background: Rgba(0,0,0,0.2); color: Rgba(71, 85, 105, 1); font-style: italic; border: 1px dashed Rgba(255,255,255,0.05); }
   }
 }
 
 .withdraw-btn-retro {
   margin-top: auto;
   padding: 12px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: Rgba(255,255,255,0.03);
+  border: 1px solid Rgba(255,255,255,0.1);
   border-radius: 12px;
-  color: #94a3b8;
+  color: Rgba(148, 163, 184, 1);
   @include pixelated;
   font-size: 7px;
   cursor: pointer;
   
-  &:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
+  &:hover { background: Rgba(239, 68, 68, 0.1); color: Rgba(248, 113, 113, 1); border-color: Rgba(239, 68, 68, 0.2); }
 }
 </style>

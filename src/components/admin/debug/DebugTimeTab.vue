@@ -52,14 +52,14 @@ function toggleCycle(c) {
         >
         <div class="button-row">
           <PVTooltip title="Aplica la fecha y hora seleccionada al motor del juego.">
-            <button @click="updateMockTime">
+            <button @click.stop="updateMockTime">
               APLICAR
             </button>
           </PVTooltip>
           <PVTooltip title="Restaura la hora real del sistema.">
             <button
               class="secondary"
-              @click="resetTime"
+              @click.stop="resetTime"
             >
               RESET
             </button>
@@ -72,17 +72,17 @@ function toggleCycle(c) {
       <label>Atajos Rápidos</label>
       <div class="button-row">
         <PVTooltip title="Añadir 1 hora al tiempo actual.">
-          <button @click="addHours(1)">
+          <button @click.stop="addHours(1)">
             +1h
           </button>
         </PVTooltip>
         <PVTooltip title="Añadir 6 horas al tiempo actual.">
-          <button @click="addHours(6)">
+          <button @click.stop="addHours(6)">
             +6h
           </button>
         </PVTooltip>
         <PVTooltip title="Añadir 24 horas al tiempo actual.">
-          <button @click="addHours(24)">
+          <button @click.stop="addHours(24)">
             +24h
           </button>
         </PVTooltip>
@@ -95,7 +95,7 @@ function toggleCycle(c) {
         <PVTooltip title="Forzar amanecer.">
           <button
             :class="{ active: mapStore.forcedCycle === 'morning' }"
-            @click="toggleCycle('morning')"
+            @click.stop="toggleCycle('morning')"
           >
             🌅 AM
           </button>
@@ -103,7 +103,7 @@ function toggleCycle(c) {
         <PVTooltip title="Forzar día.">
           <button
             :class="{ active: mapStore.forcedCycle === 'day' }"
-            @click="toggleCycle('day')"
+            @click.stop="toggleCycle('day')"
           >
             ☀️ DÍA
           </button>
@@ -111,7 +111,7 @@ function toggleCycle(c) {
         <PVTooltip title="Forzar atardecer.">
           <button
             :class="{ active: mapStore.forcedCycle === 'dusk' }"
-            @click="toggleCycle('dusk')"
+            @click.stop="toggleCycle('dusk')"
           >
             🌇 AT
           </button>
@@ -119,7 +119,7 @@ function toggleCycle(c) {
         <PVTooltip title="Forzar noche.">
           <button
             :class="{ active: mapStore.forcedCycle === 'night' }"
-            @click="toggleCycle('night')"
+            @click.stop="toggleCycle('night')"
           >
             🌙 NC
           </button>
@@ -146,7 +146,7 @@ function toggleCycle(c) {
         >
           <button
             :class="{ active: mapStore.globalWeather === w.id }"
-            @click="toggleWeather(w.id)"
+            @click.stop="toggleWeather(w.id)"
           >
             {{ w.label }}
           </button>

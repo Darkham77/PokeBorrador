@@ -31,7 +31,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
       <div
         v-if="pokemon"
         class="poke-preview"
-        @click="$emit('open-selector')"
+        @click.stop="$emit('open-selector')"
       >
         <img
           :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny })"
@@ -53,7 +53,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
       <button
         v-else
         class="btn-open-selector"
-        @click="$emit('open-selector')"
+        @click.stop="$emit('open-selector')"
       >
         + {{ isFriendSide ? 'PEDIR' : 'SELECCIONAR' }} POKÉMON
       </button>
@@ -68,7 +68,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
         :key="name"
         class="trade-item-pill"
         :class="{ selected: selectedItems[name] }"
-        @click="$emit('toggle-item', name)"
+        @click.stop="$emit('toggle-item', name)"
       >
         {{ name }} ({{ qty }})
       </div>
@@ -121,17 +121,17 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
 .btn-open-selector {
   width: 100%;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px dashed rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 2px dashed Rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  color: #888;
+  color: Rgba(136, 136, 136, 1);
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: Rgba(255, 255, 255, 0.06);
     border-color: var(--purple);
     color: $white;
   }
@@ -141,7 +141,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   display: flex;
   align-items: center;
   gap: 15px;
-  background: rgba(168, 85, 247, 0.1);
+  background: Rgba(168, 85, 247, 0.1);
   border: 1px solid var(--purple);
   padding: 12px;
   border-radius: 16px;
@@ -150,12 +150,12 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(168, 85, 247, 0.15);
+    background: Rgba(168, 85, 247, 0.15);
     .change-hint { opacity: 1; }
   }
 
   .preview-sprite { width: 48px; height: 48px; image-rendering: pixelated; }
-  .preview-info { flex: 1; .name { font-weight: 800; font-size: 14px; color: $white; } .meta { font-size: 11px; color: #888; } }
+  .preview-info { flex: 1; .name { font-weight: 800; font-size: 14px; color: var(--white); } .meta { font-size: 11px; color: Rgba(136, 136, 136, 1); } }
   .change-hint { position: absolute; right: 15px; font-size: 8px; @include pixelated; color: var(--purple); opacity: 0.6; transition: opacity 0.2s; }
 }
 
@@ -172,15 +172,15 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
 .trade-item-pill {
   font-size: 9px;
   padding: 8px 12px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: Rgba(255,255,255,0.04);
+  border: 1px solid Rgba(255,255,255,0.06);
   border-radius: 10px;
   cursor: pointer;
   color: var(--gray);
   transition: all 0.2s;
 
-  &:hover { background: rgba(255,255,255,0.08); }
-  &.selected { background: var(--purple); color: $white; border-color: var(--purple); box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
+  &:hover { background: Rgba(255,255,255,0.08); }
+  &.selected { background: var(--purple); color: $white; border-color: var(--purple); box-shadow: 0 0 10px Rgba(168, 85, 247, 0.3); }
 }
 
 .money-input-group {
@@ -189,8 +189,8 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   gap: 8px;
   label { font-size: 9px; @include pixelated; color: var(--gray); }
   input {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: Rgba(0,0,0,0.3);
+    border: 1px solid Rgba(255,255,255,0.1);
     padding: 12px;
     border-radius: 12px;
     color: var(--yellow);
@@ -206,14 +206,14 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(107, 203, 119, 0.05);
-  border: 2px dashed rgba(107, 203, 119, 0.2);
+  background: Rgba(107, 203, 119, 0.05);
+  border: 2px dashed Rgba(107, 203, 119, 0.2);
   border-radius: 20px;
   padding: 30px;
   text-align: center;
   .gift-icon { font-size: 40px; display: block; margin-bottom: 12px; }
   .gift-title { font-weight: 900; font-size: 14px; color: var(--green); display: block; margin-bottom: 8px; }
-  .gift-text { font-size: 11px; color: rgba(255, 255, 255, 0.5); margin: 0; }
+  .gift-text { font-size: 11px; color: Rgba(255, 255, 255, 0.5); margin: 0; }
 }
 
 </style>

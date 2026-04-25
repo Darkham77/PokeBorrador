@@ -51,7 +51,7 @@ const handleFishingStart = () => {
           </div>
           <button 
             class="fishing-btn" 
-            @click="handleFishingStart"
+            @click.stop="handleFishingStart"
           >
             🎣 ¡MINIJUEGO DE PESCA!
           </button>
@@ -77,7 +77,7 @@ const handleFishingStart = () => {
 .rival-flicker {
   position: fixed;
   inset: 0;
-  background: white;
+  background: var(--white);
   animation: rivalFlash 0.15s ease infinite;
   pointer-events: none;
   z-index: calc(var(--z-max) + 1);
@@ -87,8 +87,8 @@ const handleFishingStart = () => {
   position: relative;
   @include pixelated;
   font-size: 80px;
-  color: #ff3b30;
-  text-shadow: 0 0 20px rgba(255, 59, 48, 0.6);
+  color: Rgba(255, 59, 48, 1);
+  text-shadow: 0 0 20px Rgba(255, 59, 48, 0.6);
   z-index: calc(var(--z-max) + 2);
   animation: bounceExcl 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) infinite;
 }
@@ -108,7 +108,7 @@ const handleFishingStart = () => {
   position: fixed;
   inset: 0;
   z-index: var(--z-max);
-  background: rgba(0, 0, 0, 0.85);
+  background: Rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,7 +127,7 @@ const handleFishingStart = () => {
   border: 2px solid var(--blue);
   text-align: center;
   position: relative;
-  box-shadow: 0 0 30px rgba(10, 132, 255, 0.4);
+  box-shadow: 0 0 30px Rgba(10, 132, 255, 0.4);
 }
 
 .fishing-icon {
@@ -146,7 +146,7 @@ const handleFishingStart = () => {
 
 .fishing-text {
   font-size: 14px;
-  color: #eee;
+  color: Rgba(238, 238, 238, 1);
   margin: 16px 0;
   line-height: 1.6;
 }
@@ -158,9 +158,9 @@ const handleFishingStart = () => {
   border: none;
   border-radius: 14px;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--blue), #2563eb);
-  color: $white;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
+  background: linear-gradient(135deg, var(--blue), Rgba(37, 99, 235, 1));
+  color: var(--white);
+  box-shadow: 0 4px 16px Rgba(59, 130, 246, 0.5);
   margin-top: 12px;
   width: 100%;
   transition: transform 0.2s;

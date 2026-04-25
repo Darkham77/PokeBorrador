@@ -21,7 +21,7 @@ const togglePerf = () => window.__VITE_DEBUG__.togglePerf()
           <button
             class="small-btn"
             :class="{ active: ui.isDebugGridMode }"
-            @click="toggleGrid"
+            @click.stop="toggleGrid"
           >
             MOSTRAR BORDES (ROSA)
           </button>
@@ -36,7 +36,7 @@ const togglePerf = () => window.__VITE_DEBUG__.togglePerf()
           <button
             class="small-btn"
             :class="{ active: ui.isDebugPerformanceMode }"
-            @click="togglePerf"
+            @click.stop="togglePerf"
           >
             SIMPLIFICAR MAPA (MODO PERF)
           </button>

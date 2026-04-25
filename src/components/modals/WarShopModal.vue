@@ -29,8 +29,8 @@ if (typeof window !== 'undefined') {
   <BaseModal
     :show="isOpen"
     title="🛒 TIENDA DE GUERRA"
-    title-color="#ef4444"
-    header-background="#1a1c2e"
+    title-color="Rgba(239, 68, 68, 1)"
+    header-background="Rgba(26, 28, 46, 1)"
     max-width="440px"
     @close="closeWarShop"
   >
@@ -79,7 +79,7 @@ if (typeof window !== 'undefined') {
   text-align: center;
   @include pixelated;
   font-size: 9px;
-  color: $white;
+  color: var(--white);
 
   .coins-count {
     color: var(--yellow);
@@ -94,8 +94,8 @@ if (typeof window !== 'undefined') {
   gap: 12px;
 
   .war-item-row {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
     border-radius: 16px;
     padding: 16px;
     display: flex;
@@ -104,20 +104,20 @@ if (typeof window !== 'undefined') {
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.06);
+      border-color: Rgba(255, 255, 255, 0.1);
       transform: translateY(-2px);
     }
 
     .item-icon-box {
       width: 54px;
       height: 54px;
-      background: rgba(0, 0, 0, 0.2);
+      background: Rgba(0, 0, 0, 0.2);
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.05);
 
       img {
         width: 36px;
@@ -132,20 +132,20 @@ if (typeof window !== 'undefined') {
       .item-name {
         font-weight: 800;
         font-size: 14px;
-        color: $white;
+        color: var(--white);
         margin-bottom: 4px;
       }
 
       .item-desc {
         font-size: 11px;
-        color: rgba(255, 255, 255, 0.5);
+        color: Rgba(255, 255, 255, 0.5);
         line-height: 1.4;
       }
     }
 
     .buy-btn {
-      background: linear-gradient(135deg, var(--yellow), #f59e0b);
-      color: $black;
+      background: linear-gradient(135deg, var(--yellow), Rgba(245, 158, 11, 1));
+      color: Rgba(0, 0, 0, 1);
       border: none;
       border-radius: 10px;
       padding: 10px 16px;
@@ -153,18 +153,18 @@ if (typeof window !== 'undefined') {
       font-size: 8px;
       font-weight: 900;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+      box-shadow: 0 4px 12px Rgba(245, 158, 11, 0.2);
       transition: all 0.2s;
 
       &:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4);
+        box-shadow: 0 6px 15px Rgba(245, 158, 11, 0.4);
         filter: Brightness(1.1);
       }
 
       &:disabled {
-        background: #27272a;
-        color: #52525b;
+        background: Rgba(39, 39, 42, 1);
+        color: Rgba(82, 82, 91, 1);
         box-shadow: none;
         cursor: not-allowed;
         opacity: 0.6;

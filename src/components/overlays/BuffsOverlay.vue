@@ -64,19 +64,19 @@ const formatTime = (secs) => {
 .buff-badge {
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(0, 0, 0, 0.6);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 6px 10px;
   pointer-events: auto; /* Tooltip needs pointer */
   -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 6px Rgba(0,0,0,0.3);
   transition: all 0.3s ease;
   cursor: help;
   @include gpu-layer;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.8);
+    background: Rgba(0, 0, 0, 0.8);
     border-color: var(--yellow, #ffd93d);
     box-shadow: 0 0 0 1px var(--yellow, #ffd93d);
     transform: TranslateX(4px);
@@ -88,7 +88,7 @@ const formatTime = (secs) => {
   height: 24px;
   @include sprite-render;
   margin-right: 8px;
-  filter: Drop-Shadow(0 2px 2px rgba(0,0,0,0.5));
+  filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.5));
 }
 
 .buff-info {

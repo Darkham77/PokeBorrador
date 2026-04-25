@@ -59,11 +59,11 @@ const factionLabel = computed(() => {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: rgba(0, 0, 0, 0.8);
+  background: Rgba(0, 0, 0, 0.8);
   -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   border-radius: 8px;
   padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   min-width: 120px;
   z-index: var(--z-base);
   pointer-events: none;
@@ -104,13 +104,13 @@ const factionLabel = computed(() => {
 
   // State modifiers
   &.union {
-    border-color: rgba(10, 132, 255, 0.4);
+    border-color: Rgba(10, 132, 255, 0.4);
     .status-dot { background: var(--blue); box-shadow: 0 0 5px var(--blue); }
     .label { color: var(--blue); }
   }
   
   &.poder {
-    border-color: rgba(255, 69, 58, 0.4);
+    border-color: Rgba(255, 69, 58, 0.4);
     .status-dot { background: var(--red); box-shadow: 0 0 5px var(--red); }
     .label { color: var(--red); }
   }

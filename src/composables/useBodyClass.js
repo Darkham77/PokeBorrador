@@ -1,4 +1,5 @@
 import { watch, onUnmounted } from 'vue'
+// [PureVue-Ignore]
 
 /**
  * useBodyClass

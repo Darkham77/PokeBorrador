@@ -41,7 +41,7 @@ async function addItem(item, qty = 10) {
       >
         <div
           class="debug-item-card"
-          @click="addItem(item)"
+          @click.stop="addItem(item)"
         >
           <span class="icon">{{ item.icon || '🎒' }}</span>
           <span class="name">{{ item.name }}</span>
@@ -64,8 +64,8 @@ async function addItem(item, qty = 10) {
 .search-input {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(0, 0, 0, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   color: $white;
   border-radius: 12px;
   font-size: 16px;
@@ -87,15 +87,15 @@ async function addItem(item, qty = 10) {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.03);
   border: 1px solid transparent;
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.07);
+    border-color: Rgba(255, 255, 255, 0.1);
     transform: translateX(4px);
   }
 

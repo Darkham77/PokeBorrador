@@ -30,7 +30,7 @@ onMounted(() => {
     :show="show"
     title="CENTRO SOCIAL"
     title-color="var(--purple-light)"
-    header-background="#101822"
+    header-background="Rgba(16, 24, 34, 1)"
     max-width="500px"
     padding="raw"
     @close="emit('close')"
@@ -39,7 +39,7 @@ onMounted(() => {
       <nav class="modal-tabs">
         <button 
           :class="{ active: activeTab === 'friends' }" 
-          @click="activeTab = 'friends'"
+          @click.stop="activeTab = 'friends'"
         >
           AMIGOS
           <span
@@ -49,7 +49,7 @@ onMounted(() => {
         </button>
         <button 
           :class="{ active: activeTab === 'requests' }" 
-          @click="activeTab = 'requests'"
+          @click.stop="activeTab = 'requests'"
         >
           SOLICITUDES
           <span
@@ -59,13 +59,13 @@ onMounted(() => {
         </button>
         <button 
           :class="{ active: activeTab === 'search' }" 
-          @click="activeTab = 'search'"
+          @click.stop="activeTab = 'search'"
         >
           BUSCAR
         </button>
         <button 
           :class="{ active: activeTab === 'claims' }" 
-          @click="activeTab = 'claims'"
+          @click.stop="activeTab = 'claims'"
         >
           RECLAMOS
           <span
@@ -111,12 +111,13 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "sass:string";
 
 .social-modal-content-inner {
   display: flex;
   flex-direction: column;
-  background: #101822;
+  background: Rgba(16, 24, 34, 1);
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
   overflow: hidden;
@@ -124,18 +125,18 @@ onMounted(() => {
 
 .modal-tabs {
   display: flex;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   padding: 4px;
   gap: 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 
   button {
     flex: 1;
     background: transparent;
     border: none;
     padding: 12px;
-    color: $muted;
-    font-family: 'Press Start 2P', cursive;
+    color: Rgba(255, 255, 255, 0.5);
+    @include pixelated;
     font-size: 7px;
     cursor: pointer;
     border-radius: 12px;
@@ -143,14 +144,14 @@ onMounted(() => {
     position: relative;
 
     &.active {
-      background: rgba(157, 78, 221, 0.15);
+      background: Rgba(157, 78, 221, 0.15);
       color: var(--purple-light);
-      box-shadow: inset 0 0 10px rgba(157, 78, 221, 0.1);
+      box-shadow: inset 0 0 10px Rgba(157, 78, 221, 0.1);
     }
 
     .badge-mini {
       font-size: 9px;
-      background: rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.1);
       padding: 2px 5px;
       border-radius: 6px;
       margin-left: 5px;
@@ -161,8 +162,8 @@ onMounted(() => {
       top: 50%;
       right: 10px;
       transform: TranslateY(-50%);
-      background: #ef4444;
-      color: $white;
+      background: Rgba(239, 68, 68, 1);
+      color: var(--white);
       font-size: 9px;
       min-width: 16px;
       height: 16px;
@@ -170,7 +171,7 @@ onMounted(() => {
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+      box-shadow: 0 0 10px Rgba(239, 68, 68, 0.5);
     }
   }
 }

@@ -32,8 +32,8 @@ body .selection-container {
 
   .ps-search-input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 12px 35px 12px 40px;
     color: white;
@@ -43,14 +43,14 @@ body .selection-container {
 
     &:focus {
       border-color: var(--yellow);
-      background: rgba(255, 255, 255, 0.08);
+      background: Rgba(255, 255, 255, 0.08);
     }
   }
 
   .clear-search {
     position: absolute;
     right: 12px;
-    background: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.1);
     border: none;
     border-radius: 50%;
     width: 20px;
@@ -64,7 +64,7 @@ body .selection-container {
     transition: all 0.2s;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: Rgba(255, 255, 255, 0.2);
       transform: Scale(1.1);
     }
   }
@@ -82,24 +82,24 @@ body .selection-container {
 
   button {
     width: 100%;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 8px;
     color: var(--gray);
     @include pixelated;
-    font-size: 8px;
+    font-size: 7px;
     cursor: pointer;
     transition: all 0.2s;
 
     &.active {
-      background: rgba(255, 215, 0, 0.1);
+      background: Rgba(255, 215, 0, 0.1);
       border-color: var(--yellow);
       color: var(--yellow);
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: Rgba(255, 255, 255, 0.06);
     }
   }
 }
@@ -119,14 +119,14 @@ body .selection-container {
 
   .section-label {
     @include pixelated;
-    font-size: 8px;
-    color: rgba(255, 255, 255, 0.4);
+    font-size: 7px;
+    color: Rgba(255, 255, 255, 0.4);
     letter-spacing: 1px;
   }
 
   .clear-all-btn {
-    background: rgba(255, 69, 58, 0.1);
-    border: 1px solid rgba(255, 69, 58, 0.2);
+    background: Rgba(255, 69, 58, 0.1);
+    border: 1px solid Rgba(255, 69, 58, 0.2);
     border-radius: 6px;
     padding: 4px 8px;
     color: $red;
@@ -137,7 +137,7 @@ body .selection-container {
     letter-spacing: 0.5px;
 
     &:hover {
-      background: rgba(255, 69, 58, 0.2);
+      background: Rgba(255, 69, 58, 0.2);
       transform: TranslateY(-1px);
     }
   }
@@ -147,47 +147,49 @@ body .selection-container {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 5px; // Reduced from 8px
   padding: 2px 0;
 
   button {
-    height: 28px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    height: 24px; // Reduced from 28px
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border-radius: 8px; // More compact
     display: flex;
     align-items: center;
-    padding: 0 10px;
-    gap: 6px;
+    padding: 0 6px; // Reduced from 10px
+    gap: 4px; // Reduced from 6px
     cursor: pointer;
     transition: all 0.2s;
     filter: Grayscale(1);
     opacity: 0.6;
 
-        & .icon {
-      font-size: 10px;
+    & .icon {
+      font-size: 9px; // Reduced from 10px
     }
 
-    & .ps-item-label {
+    & .label { // Fixed selector from .ps-item-label
       @include pixelated;
-      font-size: 8px;
+      font-size: 7px !important; // Increased from 6px
+      font-weight: normal !important;
       color: var(--gray);
+      text-transform: uppercase;
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
-      transform: TranslateY(-2px);
+      background: Rgba(255, 255, 255, 0.08);
+      transform: TranslateY(-1px); // Reduced from -2px
       opacity: 1;
     }
 
     &.active {
-      background: rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.1);
       border-color: var(--yellow);
       filter: Grayscale(0);
       opacity: 1;
-      box-shadow: 0 0 10px rgba(255, 214, 10, 0.2);
+      box-shadow: 0 0 8px Rgba(255, 214, 10, 0.15);
 
-    & .ps-item-label {
+      & .label {
         color: var(--yellow);
       }
     }
@@ -207,7 +209,7 @@ body .selection-container {
     width: 6px;
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.1);
     border-radius: 10px;
   }
 }
@@ -216,8 +218,8 @@ body .selection-container {
   display: flex;
   align-items: center;
   padding: 14px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -231,25 +233,25 @@ body .selection-container {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03));
+    background: linear-gradient(90deg, transparent, Rgba(255, 255, 255, 0.03));
     opacity: 0;
     transition: opacity 0.3s;
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: Rgba(255, 255, 255, 0.05);
+    border-color: Rgba(255, 255, 255, 0.15);
     transform: TranslateY(-4px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 12px 30px Rgba(0, 0, 0, 0.5);
     will-change: transform;
 
     &::before { opacity: 1; }
   }
 
   &.selected {
-    background: rgba(255, 255, 255, 0.08);
+    background: Rgba(255, 255, 255, 0.08);
     border-color: var(--yellow);
-    box-shadow: 0 0 20px rgba(255, 214, 10, 0.15);
+    box-shadow: 0 0 20px Rgba(255, 214, 10, 0.15);
   }
 }
 
@@ -283,7 +285,7 @@ body .selection-container {
     image-rendering: pixelated;
     position: relative;
     z-index: var(--z-base);
-    filter: Drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    filter: Drop-shadow(0 4px 8px Rgba(0,0,0,0.5));
     transition: transform 0.3s ease;
   }
 
@@ -298,11 +300,11 @@ body .selection-container {
   display: flex;
   align-items: center;
   gap: 3px;
-  background: rgba(0, 0, 0, 0.6);
+  background: Rgba(0, 0, 0, 0.6);
   padding: 3px 6px;
   min-height: 14px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
   z-index: var(--z-base);
 
@@ -354,7 +356,7 @@ body .selection-container {
       .ps-species-subtitle {
         @include pixelated;
         font-size: 8px;
-        color: rgba(255, 255, 255, 0.3);
+        color: Rgba(255, 255, 255, 0.3);
         text-transform: uppercase;
         @include pixelated;
       }
@@ -394,9 +396,9 @@ body .selection-container {
         border-radius: 4px;
         color: white;
         @include pixelated;
-        background: rgba(255, 255, 255, 0.1);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: Rgba(255, 255, 255, 0.1);
+        text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
+        border: 1px solid Rgba(255, 255, 255, 0.1);
       }
     }
 
@@ -409,13 +411,13 @@ body .selection-container {
         font-size: 8px;
         color: var(--gray);
         @include pixelated;
-        background: rgba(255, 255, 255, 0.03);
+        background: Rgba(255, 255, 255, 0.03);
         padding: 3px 6px;
         border-radius: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border: 1px solid Rgba(255, 255, 255, 0.05);
 
-        &.ivs { color: #88ccff; }
-        &.bst { color: #ffcc88; }
+        &.ivs { color: Rgba(136, 204, 255, 1); }
+        &.bst { color: Rgba(255, 204, 136, 1); }
       }
     }
 
@@ -425,8 +427,8 @@ body .selection-container {
       padding: 2px 6px;
       border-radius: 4px;
       font-weight: 900;
-      &.team { background: rgba(59, 139, 255, 0.1); color: #3b8bff; border: 1px solid rgba(59, 139, 255, 0.2); }
-      &.box { background: rgba(255, 255, 255, 0.05); color: #888; border: 1px solid rgba(255, 255, 255, 0.1); }
+      &.team { background: Rgba(59, 139, 255, 0.1); color: Rgba(59, 139, 255, 1); border: 1px solid Rgba(59, 139, 255, 0.2); }
+      &.box { background: Rgba(255, 255, 255, 0.05); color: Rgba(136, 136, 136, 1); border: 1px solid Rgba(255, 255, 255, 0.1); }
     }
   }
 }
@@ -435,7 +437,7 @@ body .selection-container {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid Rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;

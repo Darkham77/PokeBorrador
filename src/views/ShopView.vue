@@ -100,7 +100,7 @@ onMounted(() => {
         :key="cat"
         class="tab-btn-retro"
         :class="{ active: shopStore.marketCategory === cat }"
-        @click="shopStore.marketCategory = cat"
+        @click.stop="shopStore.marketCategory = cat"
       >
         {{ shopStore.CATEGORY_LABELS[cat] }}
       </button>
@@ -206,7 +206,7 @@ onMounted(() => {
         <button 
           class="buy-btn-retro"
           :disabled="gs.trainerLevel < (item.unlockLv || 1) || (activeTab === 'market' ? gs.money < (getPrice(item) * shopStore.getQuantity(item.id)) : (gs.battleCoins || 0) < item.bcPrice)"
-          @click="handleBuy(item)"
+          @click.stop="handleBuy(item)"
         >
           <template v-if="gs.trainerLevel < (item.unlockLv || 1)">
             BLOQUEADO
@@ -231,21 +231,21 @@ onMounted(() => {
 
 .shop-view-legacy {
   padding: 0 0 40px;
-  background: #0d1117;
+  background: var(--bg-dark);
 }
 
 /* RANK BAR */
 .rank-status-bar {
-  background: rgba(0,0,0,0.3);
+  background: Rgba(0, 0, 0, 0.3);
   padding: 15px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   text-align: center;
   margin-bottom: 25px;
 
-  .rank-txt { font-size: 11px; color: #a855f7; margin-right: 15px; }
-  .rank-name { color: $white; text-shadow: 0 0 10px rgba(168, 85, 247, 0.4); }
-  .rank-hint { font-size: 10px; color: $muted; }
+  .rank-txt { font-size: 11px; color: Rgba(168, 85, 247, 1); margin-right: 15px; }
+  .rank-name { color: var(--white); text-shadow: 0 0 10px Rgba(168, 85, 247, 0.4); }
+  .rank-hint { font-size: 10px; color: var(--gray); }
 }
 
 /* MONEY COUNTERS */
@@ -261,14 +261,14 @@ onMounted(() => {
     align-items: center;
     gap: 8px;
 
-    .label { font-size: 9px; color: $muted; font-weight: bold; }
+    .label { font-size: 9px; color: var(--gray); font-weight: bold; }
     .value { 
       @include pixelated; 
       font-size: 12px; 
     }
 
-    &.money .value { color: $coin-gold; text-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
-    &.coins .value { color: #a855f7; text-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
+    &.money .value { color: var(--yellow); text-shadow: 0 0 15px Rgba(255, 215, 0, 0.3); }
+    &.coins .value { color: Rgba(168, 85, 247, 1); text-shadow: 0 0 15px Rgba(168, 85, 247, 0.3); }
   }
 }
 
@@ -278,10 +278,10 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 25px;
-  background: rgba(255,255,255,0.03);
+  background: Rgba(255, 255, 255, 0.03);
   padding: 5px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
 .tab-btn-retro {
@@ -289,30 +289,30 @@ onMounted(() => {
   padding: 12px;
   border: none;
   background: transparent;
-  color: $muted;
+  color: var(--gray);
   @include pixelated;
   font-size: 7px;
   cursor: pointer;
   transition: all 0.2s;
   border-radius: 8px;
 
-  &:hover { background: rgba(255,255,255,0.05); color: $white; }
-  &.active { background: #a855f7; color: $white; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
+  &:hover { background: Rgba(255, 255, 255, 0.05); color: var(--white); }
+  &.active { background: Rgba(168, 85, 247, 1); color: var(--white); box-shadow: 0 4px 15px Rgba(168, 85, 247, 0.4); }
 }
 
 /* SEARCH */
 .search-box { margin-bottom: 30px; }
 .retro-input {
   width: 100%;
-  background: rgba(0,0,0,0.3);
-  border: 2px solid rgba(255,255,255,0.1);
+  background: Rgba(0,0,0,0.3);
+  border: 2px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 14px 20px;
-  color: $white;
+  color: var(--white);
   @include pixelated;
   font-size: 8px;
   outline: none;
-  &:focus { border-color: #ffd70044; }
+  &:focus { border-color: Rgba(255, 215, 0, 0.3); }
 }
 
 /* GRID */
@@ -327,13 +327,13 @@ onMounted(() => {
   background: $card-dark;
   border-radius: 16px;
   padding: 20px;
-  border: 2px solid rgba(255,255,255,0.06);
+  border: 2px solid Rgba(255, 255, 255, 0.06);
   position: relative;
   display: flex;
   flex-direction: column;
   transition: all 0.2s;
 
-  &:hover:not(.locked) { border-color: #ffd70088; transform: TranslateY(-3px); }
+  &:hover:not(.locked) { border-color: Rgba(255, 215, 0, 0.5); transform: TranslateY(-3px); }
   &.locked { opacity: 0.3; filter: Grayscale(1.0); }
 
   .tier-tag {
@@ -345,10 +345,10 @@ onMounted(() => {
     padding: 3px 8px;
     border-radius: 10px;
     
-    &.tier-common { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
-    &.tier-rare { background: rgba(59, 131, 246, 0.2); color: #60a5fa; }
-    &.tier-epic { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
-    &.tier-legend { background: rgba(234, 179, 8, 0.2); color: #fbbf24; }
+    &.tier-common { background: Rgba(148, 163, 184, 0.1); color: var(--gray); }
+    &.tier-rare { background: Rgba(59, 131, 246, 0.1); color: Rgba(96, 165, 250, 1); }
+    &.tier-epic { background: Rgba(168, 85, 247, 0.1); color: Rgba(192, 132, 252, 1); }
+    &.tier-legend { background: Rgba(234, 179, 8, 0.1); color: var(--yellow); }
   }
 
   .item-visual {
@@ -357,7 +357,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     margin-bottom: 15px;
-    .pixel-sprite { width: 42px; height: 42px; @include sprite-render; filter: Drop-Shadow(0 2px 5px rgba(0,0,0,0.5)); }
+    .pixel-sprite { width: 42px; height: 42px; @include sprite-render; filter: Drop-Shadow(0 2px 5px Rgba(0, 0, 0, 0.5)); }
     .item-emoji { font-size: 36px; }
   }
 
@@ -366,13 +366,13 @@ onMounted(() => {
     font-size: 8px;
     text-align: center;
     margin-bottom: 10px;
-    color: $white;
+    color: var(--white);
     line-height: 1.4;
   }
 
   .item-desc {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--gray);
     text-align: center;
     margin-bottom: 15px;
     line-height: 1.5;
@@ -382,10 +382,10 @@ onMounted(() => {
   .item-price {
     @include pixelated;
     font-size: 10px;
-    color: $coin-gold;
+    color: var(--yellow);
     text-align: center;
     margin-bottom: 15px;
-    &.rocket-tax { color: #f87171; }
+    &.rocket-tax { color: var(--red); }
     small { font-size: 7px; opacity: 0.7; }
   }
 
@@ -396,14 +396,14 @@ onMounted(() => {
     gap: 10px;
     margin-bottom: 12px;
     font-size: 10px;
-    label { font-weight: bold; color: $muted; }
+    label { font-weight: bold; color: var(--gray); }
     .qty-input {
       width: 60px;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: Rgba(0, 0, 0, 0.3);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       padding: 5px;
-      color: $white;
+      color: var(--white);
       text-align: center;
       outline: none;
     }
@@ -412,7 +412,7 @@ onMounted(() => {
   .item-total {
     text-align: center;
     font-size: 10px;
-    color: #22c55e;
+    color: var(--green-bright);
     font-weight: bold;
     margin-bottom: 15px;
   }
@@ -422,16 +422,16 @@ onMounted(() => {
     padding: 12px;
     border: none;
     border-radius: 12px;
-    background: linear-gradient(135deg, $coin-gold, #f59e0b);
-    color: $black;
+    background: linear-gradient(135deg, var(--yellow), #f59e0b);
+    color: var(--black);
     @include pixelated;
     font-size: 8px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover:not(:disabled) { transform: Scale(1.03); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
-    &:disabled { background: #334155; color: $muted; cursor: not-allowed; }
+    &:hover:not(:disabled) { transform: Scale(1.03); box-shadow: 0 4px 15px Rgba(255, 215, 0, 0.4); }
+    &:disabled { background: Rgba(51, 65, 85, 1); color: var(--gray); cursor: not-allowed; }
   }
 }
 </style>

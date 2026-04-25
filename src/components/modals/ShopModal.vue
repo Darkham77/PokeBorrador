@@ -44,7 +44,7 @@ const buy = (item) => {
     :show="show"
     title="POKÉ MARKET"
     title-color="var(--yellow)"
-    header-background="#1a1c2e"
+    header-background="Rgba(26, 28, 46, 1)"
     max-width="900px"
     variant="retro"
     padding="raw"
@@ -57,7 +57,7 @@ const buy = (item) => {
             v-for="(label, cat) in shopStore.CATEGORY_LABELS" 
             :key="cat"
             :class="{ active: activeTab === cat }"
-            @click="activeTab = cat"
+            @click.stop="activeTab = cat"
           >
             {{ label }}
           </button>
@@ -119,7 +119,7 @@ const buy = (item) => {
 
             <div class="item-actions">
               <div class="qty-control">
-                <button @click="shopStore.setQuantity(item.id, shopStore.getQuantity(item.id) - 1)">
+                <button @click.stop="shopStore.setQuantity(item.id, shopStore.getQuantity(item.id) - 1)">
                   -
                 </button>
                 <input 
@@ -127,13 +127,13 @@ const buy = (item) => {
                   :value="shopStore.getQuantity(item.id)"
                   @change="e => shopStore.setQuantity(item.id, e.target.value)"
                 >
-                <button @click="shopStore.setQuantity(item.id, shopStore.getQuantity(item.id) + 1)">
+                <button @click.stop="shopStore.setQuantity(item.id, shopStore.getQuantity(item.id) + 1)">
                   +
                 </button>
               </div>
               <button
                 class="buy-btn"
-                @click="buy(item)"
+                @click.stop="buy(item)"
               >
                 COMPRAR
               </button>
@@ -153,6 +153,7 @@ const buy = (item) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "sass:math";
 @use "@/styles/core/tools" as *;
 
@@ -165,8 +166,8 @@ const buy = (item) => {
 
 .sidebar {
   width: 200px;
-  background: rgba(0, 0, 0, 0.2);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.2);
+  border-right: 1px solid Rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -183,20 +184,20 @@ const buy = (item) => {
       border-radius: 12px;
       border: 1px solid transparent;
       background: transparent;
-      color: rgba(255, 255, 255, 0.4);
+      color: Rgba(255, 255, 255, 0.4);
       cursor: pointer;
       transition: all 0.2s;
       font-size: 13px;
       font-weight: 600;
       
       &:hover {
-        background: rgba(255, 255, 255, 0.03);
-        color: $white;
+        background: Rgba(255, 255, 255, 0.03);
+        color: var(--white);
       }
       
       &.active {
-        background: rgba(250, 204, 21, 0.1);
-        border-color: rgba(250, 204, 21, 0.3);
+        background: Rgba(250, 204, 21, 0.1);
+        border-color: Rgba(250, 204, 21, 0.3);
         color: var(--yellow);
       }
     }
@@ -204,18 +205,18 @@ const buy = (item) => {
 
   .player-stats {
     padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid Rgba(255, 255, 255, 0.05);
     
     .money {
       font-size: 18px;
       font-weight: 800;
-      color: $white;
+      color: var(--white);
       margin-bottom: 4px;
     }
     
     .level {
       font-size: 10px;
-      color: rgba(255, 255, 255, 0.3);
+      color: Rgba(255, 255, 255, 0.3);
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -231,12 +232,12 @@ const buy = (item) => {
 
 .content-header {
   padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
   
   .search-bar {
     width: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(0, 0, 0, 0.2);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     padding: 12px 16px;
     border-radius: 12px;
     color: white;
@@ -245,7 +246,7 @@ const buy = (item) => {
     
     &:focus {
       border-color: var(--yellow);
-      box-shadow: 0 0 12px rgba(250, 204, 21, 0.15);
+      box-shadow: 0 0 12px Rgba(250, 204, 21, 0.15);
     }
   }
 }
@@ -261,8 +262,8 @@ const buy = (item) => {
 }
 
 .item-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 20px;
   padding: 16px;
   display: flex;
@@ -271,8 +272,8 @@ const buy = (item) => {
   transition: all 0.2s;
 
   &:hover:not(.locked) {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(250, 204, 21, 0.3);
+    background: Rgba(255, 255, 255, 0.04);
+    border-color: Rgba(250, 204, 21, 0.3);
     transform: translateY(-2px);
   }
 
@@ -298,7 +299,7 @@ const buy = (item) => {
   .lock-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: Rgba(0, 0, 0, 0.6);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -306,14 +307,14 @@ const buy = (item) => {
     border-radius: 12px;
     
     span {
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       font-size: 7px;
-      color: #ff5555;
+      color: Rgba(255, 85, 85, 1);
     }
     
     small {
       font-size: 9px;
-      color: $white;
+      color: var(--white);
       margin-top: 4px;
     }
   }
@@ -324,7 +325,7 @@ const buy = (item) => {
   .name {
     font-weight: 700;
     font-size: 15px;
-    color: $white;
+    color: var(--white);
     margin-bottom: 2px;
   }
   .price {
@@ -335,7 +336,7 @@ const buy = (item) => {
   }
   .desc {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    color: Rgba(255, 255, 255, 0.5);
     line-height: 1.4;
   }
 }
@@ -346,8 +347,8 @@ const buy = (item) => {
   
   .qty-control {
     display: flex;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: Rgba(0, 0, 0, 0.2);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     overflow: hidden;
     
@@ -357,7 +358,7 @@ const buy = (item) => {
       background: transparent;
       color: white;
       cursor: pointer;
-      &:hover { background: rgba(255, 255, 255, 0.1); }
+      &:hover { background: Rgba(255, 255, 255, 0.1); }
     }
     
     input { 
@@ -383,7 +384,7 @@ const buy = (item) => {
   grid-column: 1 / -1;
   text-align: center;
   padding: 60px;
-  color: rgba(255, 255, 255, 0.2);
+  color: Rgba(255, 255, 255, 0.2);
   font-size: 14px;
 }
 </style>

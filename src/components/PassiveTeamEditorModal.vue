@@ -55,7 +55,7 @@ if (typeof window !== 'undefined') {
     <template #footer>
       <button
         class="btn-vicio-success btn-vicio-full"
-        @click="confirmSave"
+        @click.stop="confirmSave"
       >
         💾 GUARDAR CONFIGURACIÓN
       </button>
@@ -72,7 +72,7 @@ if (typeof window !== 'undefined') {
 
 .editor-help-text {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: Rgba(255, 255, 255, 0.5);
   line-height: 1.5;
   margin-bottom: 24px;
 }
@@ -91,8 +91,8 @@ if (typeof window !== 'undefined') {
 
 // Global injections styles (Legacy)
 :deep(.passive-poke-slot) {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 8px;

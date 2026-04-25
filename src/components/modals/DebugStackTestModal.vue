@@ -25,7 +25,7 @@ const emit = defineEmits(['close'])
       </h1>
       <button
         class="pixel-btn"
-        @click="emit('close')"
+        @click.stop="emit('close')"
       >
         CERRAR
       </button>
@@ -34,6 +34,7 @@ const emit = defineEmits(['close'])
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .test-content {
@@ -46,11 +47,11 @@ const emit = defineEmits(['close'])
 }
 
 .big-number {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 80px;
-  color: $white;
   @include pixelated;
-  text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+  font-size: 80px;
+  color: var(--white);
+  @include pixelated;
+  text-shadow: 4px 4px 0px Rgba(0, 0, 0, 0.5);
   margin: 0;
 }
 

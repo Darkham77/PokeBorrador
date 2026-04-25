@@ -50,6 +50,7 @@ const isMax = computed(() => criminality.value >= 100)
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .criminality-container {
@@ -71,7 +72,7 @@ const isMax = computed(() => criminality.value >= 100)
   content: '';
   position: absolute;
   inset: -5px;
-  background: rgba(0, 0, 0, 0.8);
+  background: Rgba(0, 0, 0, 0.8);
   filter: Blur(15px);
   border-radius: 40px;
   z-index: -1;
@@ -81,29 +82,29 @@ const isMax = computed(() => criminality.value >= 100)
   writing-mode: vertical-lr;
   transform: Rotate(180deg);
   font-size: 8px;
-  color: #ef4444;
+  color: Rgba(239, 68, 68, 1);
   margin-bottom: 8px;
-  text-shadow: 1px 1px $black, 0 0 5px rgba(239, 68, 68, 0.4);
-  font-family: 'Press Start 2P', cursive;
+  text-shadow: 1px 1px var(--black), 0 0 5px Rgba(239, 68, 68, 0.4);
+  @include pixelated;
 }
 
 .bar-bg {
   width: 12px;
   height: 200px;
-  background: $black;
-  border: 2px solid #333;
+  background: var(--black);
+  border: 2px solid Rgba(51, 51, 51, 1);
   border-radius: 10px;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), inset 0 0 5px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 10px Rgba(0, 0, 0, 0.5), inset 0 0 5px Rgba(0, 0, 0, 0.8);
 }
 
 .bar-fill {
   width: 100%;
-  background: #ef4444;
+  background: Rgba(239, 68, 68, 1);
   transition: height 0.3s ease;
-  box-shadow: 0 0 15px #ef4444;
+  box-shadow: 0 0 15px Rgba(239, 68, 68, 1);
   position: relative;
 }
 
@@ -111,8 +112,8 @@ const isMax = computed(() => criminality.value >= 100)
   margin-top: 8px;
   font-size: 10px;
   font-weight: 800;
-  color: #ef4444;
-  text-shadow: 1px 1px $black, 0 0 5px rgba(239, 68, 68, 0.4);
+  color: Rgba(239, 68, 68, 1);
+  text-shadow: 1px 1px var(--black), 0 0 5px Rgba(239, 68, 68, 0.4);
 }
 
 .blinking {
@@ -120,9 +121,9 @@ const isMax = computed(() => criminality.value >= 100)
 }
 
 @keyframes blinkRed {
-  0% { background: #ef4444; box-shadow: 0 0 20px #ef4444; }
-  50% { background: #991b1b; box-shadow: 0 0 5px #991b1b; }
-  100% { background: #ef4444; box-shadow: 0 0 20px #ef4444; }
+  0% { background: Rgba(239, 68, 68, 1); box-shadow: 0 0 20px Rgba(239, 68, 68, 1); }
+  50% { background: Rgba(153, 27, 27, 1); box-shadow: 0 0 5px Rgba(153, 27, 27, 1); }
+  100% { background: Rgba(239, 68, 68, 1); box-shadow: 0 0 20px Rgba(239, 68, 68, 1); }
 }
 
 .slide-right-enter-active, .slide-right-leave-active {

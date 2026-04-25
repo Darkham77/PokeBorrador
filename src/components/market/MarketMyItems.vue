@@ -63,7 +63,7 @@ async function handleCancel(id) {
 
           <button
             class="cancel-btn"
-            @click="handleCancel(item.id)"
+            @click.stop="handleCancel(item.id)"
           >
             CANCELAR
           </button>
@@ -118,7 +118,7 @@ async function handleCancel(id) {
 .mkt-section-title {
   @include pixelated;
   font-size: 8px;
-  color: #a855f7;
+  color: Rgba(168, 85, 247, 1);
   margin-bottom: 15px;
   letter-spacing: 1px;
 }
@@ -130,8 +130,8 @@ async function handleCancel(id) {
 }
 
 .my-listing-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 10px 15px;
   display: flex;
@@ -141,7 +141,7 @@ async function handleCancel(id) {
   .card-visual {
     width: 48px;
     height: 48px;
-    background: rgba(0, 0, 0, 0.2);
+    background: Rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -158,26 +158,26 @@ async function handleCancel(id) {
     flex: 1;
     display: flex;
     flex-direction: column;
-    .name { font-size: 13px; font-weight: bold; color: $white; }
+    .name { font-size: 13px; font-weight: bold; color: var(--white); }
     .price { @include pixelated; font-size: 8px; color: $coin-gold; margin-top: 4px;}
   }
 
   .cancel-btn {
     padding: 6px 10px;
-    background: rgba(248, 113, 113, 0.1);
-    border: 1px solid rgba(248, 113, 113, 0.3);
-    color: #f87171;
+    background: Rgba(248, 113, 113, 0.1);
+    border: 1px solid Rgba(248, 113, 113, 0.3);
+    color: Rgba(248, 113, 113, 1);
     border-radius: 6px;
     font-size: 9px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
-    &:hover { background: #f87171; color: $white; }
+    &:hover { background: Rgba(248, 113, 113, 1); color: var(--white); }
   }
 }
 
 .history-list {
-  background: rgba(0, 0, 0, 0.15);
+  background: Rgba(0, 0, 0, 0.15);
   border-radius: 16px;
   max-height: 250px;
   overflow-y: auto;
@@ -189,7 +189,7 @@ async function handleCancel(id) {
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
   &:last-child { border-bottom: none; }
 
   .sale-info {
@@ -197,14 +197,14 @@ async function handleCancel(id) {
     flex-direction: column;
     gap: 4px;
     .date { font-size: 10px; color: $muted; }
-    .item-name { font-size: 13px; color: $white; strong { color: #a855f7; } }
+    .item-name { font-size: 13px; color: var(--white); strong { color: Rgba(168, 85, 247, 1); } }
   }
 
   .sale-value {
     text-align: right;
     display: flex;
     flex-direction: column;
-    .net-gain { font-size: 14px; font-weight: bold; color: #22c55e; }
+    .net-gain { font-size: 14px; font-weight: bold; color: Rgba(34, 197, 94, 1); }
     .gross-price { font-size: 9px; color: $muted; }
   }
 }
@@ -214,9 +214,9 @@ async function handleCancel(id) {
   text-align: center;
   color: $muted;
   font-size: 12px;
-  background: rgba(255, 255, 255, 0.01);
+  background: Rgba(255, 255, 255, 0.01);
   border-radius: 12px;
-  border: 1px dashed rgba(255, 255, 255, 0.05);
+  border: 1px dashed Rgba(255, 255, 255, 0.05);
 }
 
 </style>

@@ -23,7 +23,7 @@ const tradeStore = useTradeStore()
       </div>
       <button
         class="notif-action-btn"
-        @click="tradeStore.claimTrade(t.id)"
+        @click.stop="tradeStore.claimTrade(t.id)"
       >
         ENTENDIDO
       </button>
@@ -40,13 +40,13 @@ const tradeStore = useTradeStore()
       <div class="notif-actions">
         <button
           class="notif-btn accept"
-          @click="tradeStore.acceptTrade(t.id)"
+          @click.stop="tradeStore.acceptTrade(t.id)"
         >
           ACEPTAR
         </button>
         <button
           class="notif-btn reject"
-          @click="tradeStore.rejectTrade(t.id)"
+          @click.stop="tradeStore.rejectTrade(t.id)"
         >
           RECHAZAR
         </button>
@@ -64,26 +64,26 @@ const tradeStore = useTradeStore()
 .info-label {
   @include pixelated;
   font-size: 9px;
-  color: $white;
-  text-shadow: 1px 1px 0 $black, -1px -1px 0 $black, 1px -1px 0 $black, -1px 1px 0 $black;
+  color: var(--white);
+  text-shadow: 1px 1px 0 Rgba(0, 0, 0, 1), -1px -1px 0 Rgba(0, 0, 0, 1), 1px -1px 0 Rgba(0, 0, 0, 1), -1px 1px 0 Rgba(0, 0, 0, 1);
   margin-bottom: 12px;
 }
 
 .trade-notif-card-legacy {
-  background: rgba(0, 0, 0, 0.3);
+  background: Rgba(0, 0, 0, 0.3);
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 10px;
   border-left: 4px solid $muted;
   
-  &.accepted { border-left-color: #22c55e; }
-  &.pending { border-left-color: #facc15; }
+  &.accepted { border-left-color: Rgba(34, 197, 94, 1); }
+  &.pending { border-left-color: Rgba(250, 204, 21, 1); }
 }
 
 .notif-header {
   @include pixelated;
   font-size: 8px;
-  color: $white;
+  color: var(--white);
   margin-bottom: 12px;
 }
 
@@ -101,17 +101,17 @@ const tradeStore = useTradeStore()
   font-size: 6px;
   cursor: pointer;
   
-  &.accept { background: #22c55e; color: $white; }
-  &.reject { background: #ef4444; color: $white; }
+  &.accept { background: Rgba(34, 197, 94, 1); color: var(--white); }
+  &.reject { background: Rgba(239, 68, 68, 1); color: var(--white); }
 }
 
 .notif-action-btn {
   width: 100%;
-  background: #22c55e;
+  background: Rgba(34, 197, 94, 1);
   border: none;
   border-radius: 8px;
   padding: 10px;
-  color: $white;
+  color: var(--white);
   @include pixelated;
   font-size: 8px;
   cursor: pointer;

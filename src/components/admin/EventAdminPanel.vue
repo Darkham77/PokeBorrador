@@ -12,13 +12,13 @@ const activeTab = ref('events'); // 'events' | 'ranked'
       <div class="tabs-nav">
         <button 
           :class="{ active: activeTab === 'events' }" 
-          @click="activeTab = 'events'"
+          @click.stop="activeTab = 'events'"
         >
           EVENTOS
         </button>
         <button 
           :class="{ active: activeTab === 'ranked' }" 
-          @click="activeTab = 'ranked'"
+          @click.stop="activeTab = 'ranked'"
         >
           RANKED
         </button>
@@ -34,12 +34,13 @@ const activeTab = ref('events'); // 'events' | 'ranked'
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 .admin-panel {
   padding: 30px;
   background: #0f172a;
   color: $white;
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
 }
 
 .admin-header {
@@ -47,7 +48,7 @@ const activeTab = ref('events'); // 'events' | 'ranked'
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
   padding-bottom: 20px;
 
   .tabs-nav {
@@ -57,7 +58,7 @@ const activeTab = ref('events'); // 'events' | 'ranked'
       background: transparent;
       border: none;
       color: $muted;
-      font-family: 'Press Start 2P', cursive;
+      @include pixelated;
       font-size: 10px;
       cursor: pointer;
       padding: 10px 0;
