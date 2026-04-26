@@ -11,6 +11,7 @@ import InventorySidebar from './inventory/InventorySidebar.vue'
 import InventoryItemCard from './inventory/InventoryItemCard.vue'
 import InventoryControls from './inventory/InventoryControls.vue'
 import InventoryTargetOverlay from './inventory/InventoryTargetOverlay.vue'
+import InventoryQuantityOverlay from './inventory/InventoryQuantityOverlay.vue'
 
 defineProps({ show: { type: Boolean, default: false } })
 const emit = defineEmits(['close'])
@@ -21,9 +22,10 @@ const uiStore = useUIStore()
 
 // State
 const multiSelectMode = ref(null)
-const selectedItems = reactive(new Set())
+const selectedItems = reactive(new Map()) // name -> qty
 const targetingItem = ref(null)
 const showTargetOverlay = ref(false)
+const quantitySelectionItem = ref(null)
 
 // Getters from store
 const filteredItems = computed(() => inventoryStore.bagItems)
@@ -31,7 +33,11 @@ const filteredItems = computed(() => inventoryStore.bagItems)
 // Handlers
 const handleItemClick = (item) => {
   if (multiSelectMode.value) {
-    selectedItems.has(item.name) ? selectedItems.delete(item.name) : selectedItems.add(item.name)
+    if (selectedItems.has(item.name)) {
+      selectedItems.delete(item.name)
+    } else {
+      quantitySelectionItem.value = item
+    }
     return
   }
 
@@ -69,11 +75,11 @@ const handleMultiExecute = async () => {
     message: `¿Estás seguro que deseas ${actionText} estos ${selectedItems.size} objetos?`,
     confirmText: mode === 'sell' ? 'VENDER' : 'TIRAR',
     onConfirm: async () => {
-      for (const name of selectedItems) { 
+      for (const [name, qty] of selectedItems.entries()) { 
         if (mode === 'sell') {
-          await inventoryStore.sellItem(name, 999) 
+          await inventoryStore.sellItem(name, qty) 
         } else {
-          await inventoryStore.removeItem(name, 999) 
+          await inventoryStore.removeItem(name, qty) 
         }
       }
       uiStore.notify(mode === 'sell' ? 'Venta realizada' : 'Objetos eliminados', mode === 'sell' ? '💰' : '🗑️')
@@ -81,6 +87,13 @@ const handleMultiExecute = async () => {
       multiSelectMode.value = null
     }
   })
+}
+
+const handleQuantityConfirm = (qty) => {
+  if (quantitySelectionItem.value) {
+    selectedItems.set(quantitySelectionItem.value.name, qty)
+    quantitySelectionItem.value = null
+  }
 }
 
 const handleCancelSelection = () => {
@@ -193,6 +206,15 @@ const close = () => {
           uiStore.notify(res.msg, '⚠️') 
         }
       }"
+    />
+
+    <InventoryQuantityOverlay
+      v-if="quantitySelectionItem"
+      :item="quantitySelectionItem"
+      :mode="multiSelectMode"
+      @close="quantitySelectionItem = null"
+      @sell="handleQuantityConfirm"
+      @discard="handleQuantityConfirm"
     />
   </BaseModal>
 </template>
