@@ -39,7 +39,8 @@ const handleItemClick = (item) => {
     if (selectedItems.has(item.name)) {
       selectedItems.delete(item.name)
     } else {
-      quantitySelectionItem.value = item
+      // Auto-select the entire stack for bulk actions
+      selectedItems.set(item.name, item.qty)
     }
     return
   }
@@ -77,9 +78,21 @@ const handleMultiExecute = async () => {
   const mode = multiSelectMode.value
   const actionText = mode === 'sell' ? 'vender' : 'tirar'
   
+  let estimatedGain = 0
+  if (mode === 'sell') {
+    for (const [name, qty] of selectedItems.entries()) {
+      const itemInfo = SHOP_ITEMS.find(i => i.name === name)
+      if (itemInfo) estimatedGain += Math.floor((itemInfo.price || 0) * 0.5) * qty
+    }
+  }
+
+  const message = mode === 'sell' 
+    ? `¿Estás seguro que deseas vender estos ${selectedItems.size} tipos de objetos por un total de ₱${estimatedGain.toLocaleString()}?`
+    : `¿Estás seguro que deseas tirar estos ${selectedItems.size} tipos de objetos?`
+  
   uiStore.openConfirm({
     title: `CONFIRMAR ACCIÓN`, 
-    message: `¿Estás seguro que deseas ${actionText} estos ${selectedItems.size} tipos de objetos?`,
+    message,
     confirmText: mode === 'sell' ? 'VENDER' : 'TIRAR',
     onConfirm: async () => {
       const totalGain = await inventoryStore.processBatchAction(selectedItems, mode)
