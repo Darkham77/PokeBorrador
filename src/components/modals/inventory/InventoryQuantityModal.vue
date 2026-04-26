@@ -151,9 +151,10 @@ const handleConfirm = () => {
       color: var(--yellow);
     }
     .sub-title {
-      font-size: 8px;
-      color: Rgba(255, 255, 255, 0.4);
+      font-size: 11px;
+      color: Rgba(255, 255, 255, 0.6);
       font-weight: 700;
+      margin-top: 2px;
     }
   }
 }

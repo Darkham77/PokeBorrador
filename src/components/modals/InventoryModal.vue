@@ -101,7 +101,6 @@ const handleQuantityConfirm = async (qty) => {
     const itemName = quantitySelectionItem.value.name
     
     // If NOT in a persistent multi-select session (single action), execute immediately
-    // Wait, how do we know? If multiSelectMode was set by the menu but selectedItems is empty.
     if (selectedItems.size === 0) {
       const singleMap = new Map([[itemName, qty]])
       const mode = multiSelectMode.value
@@ -256,13 +255,13 @@ const close = () => {
       </template>
       <div class="action-menu-body">
         <button
-          class="menu-btn"
+          class="menu-btn use"
           @click.stop="handleActionSelect('use')"
         >
           <span class="icon">✨</span> USAR
         </button>
         <button
-          class="menu-btn"
+          class="menu-btn sell"
           @click.stop="handleActionSelect('sell')"
         >
           <span class="icon">💰</span> VENDER
@@ -299,16 +298,46 @@ const close = () => {
   .menu-btn {
     @include btn-vicio('neutral', 'md');
     justify-content: flex-start;
-    gap: 12px;
-    font-size: 12px;
+    gap: 14px;
+    font-size: 11px;
+    height: 52px;
+    padding: 0 20px;
+    border: 1px solid Rgba(255, 255, 255, 0.05);
+    background: linear-gradient(to right, Rgba(255, 255, 255, 0.05), transparent);
+    transition: all 0.3s ease;
     
-    .icon { font-size: 16px; }
+    .icon { 
+      font-size: 18px; 
+      filter: Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.2));
+    }
+
+    &.use {
+      &:hover {
+        background: linear-gradient(to right, Rgba(59, 130, 246, 0.2), transparent);
+        border-color: #3b82f6;
+        color: #60a5fa;
+      }
+    }
+
+    &.sell {
+      &:hover {
+        background: linear-gradient(to right, Rgba(255, 214, 10, 0.15), transparent);
+        border-color: var(--yellow);
+        color: var(--yellow);
+      }
+    }
 
     &.danger {
-      color: #f87171;
-      &:hover { background: Rgba(248, 113, 113, 0.1); }
+      &:hover { 
+        background: linear-gradient(to right, Rgba(248, 113, 113, 0.2), transparent);
+        border-color: #f87171;
+        color: #fca5a5;
+      }
+    }
+
+    &:active {
+      transform: Scale(0.96);
     }
   }
 }
 </style>
-
