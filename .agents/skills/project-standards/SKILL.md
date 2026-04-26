@@ -52,16 +52,16 @@ Refer to these manuals for complex implementation specifications:
 
 ### 4. SASS & Build Integrity
 
-- **Capitalization Mandate**: Use Capitalized Filters (`Scale()`, `Blur()`, `Brightness()`, `Rgba()`, `Rgb()`) to avoid Dart Sass 2.0 collisions. This applies to `.scss`, `.vue`, and constant files (`.js`, `.ts`).
+- **Capitalization Mandate**: Use Capitalized Filters (`Scale()`, `Blur()`, `Brightness()`, `Rgba()`, `Rgb()`, `Linear-Gradient()`, `Radial-Gradient()`) to avoid Dart Sass 2.0 collisions. This applies to `.scss`, `.vue`, and constant files (`.js`, `.ts`).
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. Eliminate unused vars and computed properties immediately.
-- **CSS Redundancy Audit**: Use `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py` before commit. To bypass valid nested override flags, use SASS ampersand nesting (`& .class-name {`).
+- **CSS Redundancy Audit**: Use `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py` before commit. To bypass valid nested override flags, use SASS ampersand nesting (`& .class-name {`) to explicitly declare inheritance and avoid duplicate selector penalties.
 - **Click Propagation**: Always use `@click.stop` for interactive elements in layered UIs (cards, lists, modals) to prevent accidental bubbling to background containers. **CRITICAL**: When using `.stop` on a custom component listener in the parent, the child MUST pass the event object in the emit (e.g., `@click.stop="$emit('click', $event)"`) to avoid `stopPropagation` of undefined crashes.
 - **Media Query Nesting**: To avoid CSS redundancy flags, always nest media queries within their respective class selectors. Avoid global `@media` blocks that repeat selectors.
 - **Flex Scroll Collapse**: Containers with `overflow-y: auto` that are children of flex parents MUST include `min-height: 0` to prevent layout colapse across modern browsers.
 - **UI Interaction**: Use `@include btn-vicio-primary('sm')` for secondary modal buttons to avoid 100% width collisions. All interactive filter/sort controls MUST include a `PVTooltip`.
 - **Vue Template Integrity**: NEVER use JS-style (`//`) or HTML comments inside Vue tags or attributes. This causes Vite compilation errors ("Illegal '/' in tags").
-- **Z-Index Layering**: Hardcoded numbers are forbidden. Use system CSS variables (`--z-low`, `--z-base`, etc.) exclusively.
+- **Z-Index Layering**: Hardcoded numbers are forbidden. Use system CSS variables (`--z-low`, `--z-base`, etc.) exclusively. If a precise micro-offset is required (e.g., between two layers of the same tier), use `calc(var(--z-base) + N)` to maintain relative hierarchy without breaking the audit engine.
 
 ### 5. CLI-First Debugging
 
