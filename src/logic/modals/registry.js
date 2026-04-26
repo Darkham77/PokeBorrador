@@ -45,5 +45,6 @@ export const MODAL_REGISTRY = {
   EncounterSequence: defineAsyncComponent(() => import('@/components/game/EncounterSequence.vue')),
   EventDetail: defineAsyncComponent(() => import('@/components/modals/EventDetailModal.vue')),
   TeamManagement: defineAsyncComponent(() => import('@/components/modals/TeamManagementModal.vue')),
-  BoxPokemonMenu: defineAsyncComponent(() => import('@/components/box/BoxPokemonMenu.vue'))
+  BoxPokemonMenu: defineAsyncComponent(() => import('@/components/box/BoxPokemonMenu.vue')),
+  DebugStackTest: defineAsyncComponent(() => import('@/components/modals/DebugStackTestModal.vue'))
 }

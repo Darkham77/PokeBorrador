@@ -29,19 +29,20 @@ const itemIcon = computed(() => {
 </script>
 
 <template>
-  <PVTooltip
-    :title="item.name"
-    :description="item.desc"
-    position="top"
+  <div 
+    class="inventory-item-card"
+    :class="{ 
+      selected: isSelected,
+      'multi-mode': multiSelectMode,
+      [tierClass]: true
+    }"
+    @click.stop="$emit('click', $event)"
   >
-    <div 
-      class="inventory-item-card"
-      :class="{ 
-        selected: isSelected,
-        'multi-mode': multiSelectMode,
-        [tierClass]: true
-      }"
-      @click.stop="$emit('click', $event)"
+    <PVTooltip
+      :title="item.name"
+      :description="item.desc"
+      position="top"
+      class="card-tooltip-trigger"
     >
       <!-- TIER BADGE -->
       <div class="item-tier-badge">
@@ -88,8 +89,8 @@ const itemIcon = computed(() => {
           <span v-if="isSelected">✓</span>
         </div>
       </div>
-    </div>
-  </PVTooltip>
+    </PVTooltip>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -98,18 +99,26 @@ const itemIcon = computed(() => {
 .inventory-item-card {
   @include card-premium(16px);
   width: 100%;
+  min-width: 0; // Fix grid cell overflow
   aspect-ratio: 1 / 1.1;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
+  align-self: start; // Prevent vertical stretch
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: Rgba(255, 255, 255, 0.02);
   border: 1px solid Rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+
+  :deep(.card-tooltip-trigger) {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 12px;
+    gap: 8px;
+    box-sizing: border-box;
+  }
 
   @include hover-neon-yellow(1px);
 

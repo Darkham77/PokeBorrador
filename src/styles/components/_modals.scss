@@ -198,7 +198,7 @@
   }
 }
 
-    & .error-footer {
+.error-footer {
   padding: 20px;
   background: Rgba(0, 0, 0, 0.2);
   display: flex;
@@ -207,7 +207,7 @@
   justify-content: flex-end;
 }
 
-    & .error-btn {
+.error-btn {
   padding: 12px 20px;
   border: none;
   border-radius: 10px;
@@ -241,13 +241,3 @@
   }
 }
 
-@media (max-width: 480px) {
-    & .error-footer {
-    flex-direction: column;
-  }
-
-    & .error-btn {
-    width: 100%;
-    justify-content: center;
-  }
-}

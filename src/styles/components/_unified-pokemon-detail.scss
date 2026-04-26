@@ -1,3 +1,4 @@
+@use "@/styles/core/mixins" as *;
 // src/styles/components/_unified-pokemon-detail.scss
 @use "@/styles/core/tools" as *;
 @use "@/styles/core/fx" as *;
@@ -8,15 +9,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 32px;
-  position: relative;
-  z-index: var(--z-base);
+  padding: 16px 24px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: var(--z-low);
   
   .close-vicio {
-    @include btn-close-premium;
+    @include btn-close-premium; 
     position: absolute;
-    top: 24px;
-    right: 24px;
+    top: 15px;
+    right: 15px;
+    pointer-events: auto;
   }
 
   .poke-identity {
@@ -75,10 +81,10 @@
 // Unified Display specialization
 .upd-main-display {
   @include detail.pokemon-main-display(
-    $height: 120px,
-    $margin-bottom: 30px, // Pushes tabs down to give room
-    $sprite-translate: -40px, // Lifts Charizard up
-    $sprite-size: 160px
+    $height: 140px,
+    $margin-bottom: 0px,
+    $sprite-translate: 0%, 
+    $sprite-size: 140px
   );
   
   z-index: var(--z-base); 
@@ -88,21 +94,22 @@
 }
 
 .upd-core-container {
-  flex: 1;
-  min-height: 0;
   position: relative;
-  z-index: var(--z-base);
+  z-index: var(--z-hud);
   background: Rgba(10, 12, 20, 1);
-  padding: 32px 32px 8px;
+  padding: 0;
   pointer-events: auto !important;
 
+  & > * {
+    padding: 12px;
+  }
 }
 
 .pdex-detail-content {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  max-height: 100%;
+  width: 700px;
+  min-width: 700px;
   overflow: hidden; // Parent MUST NOT scroll
   position: relative;
   background: Rgba(10, 12, 20, 1);
@@ -123,13 +130,13 @@
 // Specialized components for Unified View
 .premium-tabs {
   @extend .pdex-detail-tabs;
-  margin-top: -40px; 
+  margin-top: 0; 
   position: relative;
   z-index: var(--z-base); // Increased to be above the sprite container (150)
   background: Rgba(10, 12, 20, 1) !important;
   border-bottom: 1px solid Rgba(255,255,255,0.05) !important;
   -webkit-backdrop-filter: Blur(10px) !important; -webkit-backdrop-filter: Blur(10px) !important; backdrop-filter: Blur(10px) !important;
-  padding: 0 !important;
+  padding: 10px 0 0 !important;
 
   // Tabs are managed in _core.scss.
 }
@@ -143,8 +150,8 @@
 
 .upd-floating-tags {
   position: absolute;
-  top: 40px;
-  right: 20px;
+  top: 90px;
+  right: 24px;
   z-index: var(--z-low);
   pointer-events: auto !important;
 }
@@ -201,44 +208,52 @@
   position: relative;
   display: grid;
   place-items: center;
-  height: 180px; 
+  height: 160px; 
   width: 100%;
   margin-bottom: 10px;
   overflow: visible !important;
   z-index: var(--z-base); 
-  pointer-events: none !important; // Don't block scroll
+  pointer-events: none !important;
 
   & > .pv-fx-wrapper {
     margin: 0 auto;
-    // Lift the wrapper so sparkles follow
-    transform: translate3d(0, -70px, 0) !important; 
+    transform: translate3d(0, -20px, 0) !important; 
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    pointer-events: none !important; // Don't block scroll
+    pointer-events: none !important;
 
     &:hover {
-      transform: translate3d(0, -80px, 0) Scale(1.05) !important;
+      transform: translate3d(0, -30px, 0) Scale(1.05) !important;
     }
   }
 
   & .main-sprite {
-    width: 180px !important;
-    height: 180px !important;
+    width: 140px !important;
+    height: 140px !important;
     object-fit: contain;
     display: block;
     margin: 0 auto;
-    // Remove transform from image, it's on wrapper now
     transform: none !important; 
-    pointer-events: auto !important; // Allow hover on the image itself
+    pointer-events: auto !important;
     @include sprite-render;
     filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.4));
     transition: transform 0.3s ease-out;
 
     &:hover {
-      transform: none !important; // Handled by wrapper or just disabled for simplicity
+      transform: none !important; 
     }
   }
 }
 
+
+.p-nickname-prefix {
+  @include pixelated;
+  font-size: 8px;
+  color: var(--type-color);
+  opacity: 0.8;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
 
 .name-container {
   display: flex;
@@ -270,3 +285,4 @@
     transform: Scale(1.2);
   }
 }
+

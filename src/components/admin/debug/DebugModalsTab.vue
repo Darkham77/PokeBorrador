@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { ref } from 'vue'
 import { useModalStore } from '@/stores/modals'

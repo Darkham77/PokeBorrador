@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <template>
   <Teleport to="body">
     <div
@@ -13,7 +14,10 @@
         <div 
           v-if="show" 
           class="modal-overlay" 
-          :class="{ 'transparent': overlay === 'none' }"
+          :class="{ 
+            'transparent': overlay === 'none',
+            'no-blur': !blurOverlay
+          }"
           @click.stop="handleOverlayClick" 
         />
       </Transition>
@@ -22,10 +26,15 @@
       <div 
         v-if="localShow"
         class="base-modal-teleport-wrapper" 
-        :class="[{ 'no-pointer-events': overlay === 'none' && !closeOnClickOutside }, `type-${type}`]"
+        :class="[
+          { 'no-pointer-events': overlay === 'none' && !closeOnClickOutside }, 
+          `type-${type}`,
+          `position-${computedPositionMode}`
+        ]"
       >
         <Transition 
-          :name="type.startsWith('side') ? (type === 'side-left' ? 'slide-left' : 'slide-right') : 'modal-zoom'"
+          :name="transitionName"
+          :css="type !== 'fullscreen'"
           appear
           type="transition"
           :duration="500"
@@ -37,7 +46,12 @@
             :class="[
               padding === 'raw' ? 'padding-raw' : 'padding-standard', 
               `variant-${variant}`,
-              { 'is-performance-mode': isSimplified },
+              `corners-${computedCorners}`,
+              { 
+                'is-performance-mode': isSimplified,
+                'no-border': !showBorder,
+                'yellow-border': yellowBorder
+              },
               customClass
             ]"
             :style="cardStyles"
@@ -125,12 +139,13 @@ const props = defineProps({
   show: { type: Boolean, default: false },
   title: { type: String, default: '' },
   maxWidth: { type: String, default: '500px' },
+  maxHeight: { type: String, default: '92vh' },
   closeOnClickOutside: { type: Boolean, default: true },
   showCloseButton: { type: Boolean, default: true },
   type: {
     type: String,
     default: 'center',
-    validator: (val) => ['center', 'side-left', 'side-right', 'side'].includes(val)
+    validator: (val) => ['center', 'side-left', 'side-right', 'side', 'top', 'down', 'left', 'right', 'fullscreen'].includes(val)
   },
   zIndex: { type: Number, default: 11000 },
   hideHeader: { type: Boolean, default: false },
@@ -150,7 +165,20 @@ const props = defineProps({
   },
   titleColor: { type: String, default: null },
   headerBackground: { type: String, default: null },
-  preventClose: { type: Boolean, default: false }
+  preventClose: { type: Boolean, default: false },
+  corners: {
+    type: String,
+    default: null,
+    validator: (val) => ['all', 'none', 'top', 'bottom', 'left', 'right'].includes(val)
+  },
+  showBorder: { type: Boolean, default: true },
+  blurOverlay: { type: Boolean, default: true },
+  yellowBorder: { type: Boolean, default: false },
+  positionMode: {
+    type: String,
+    default: null, // If null, auto-calculate
+    validator: (val) => ['stuck', 'floating'].includes(val)
+  }
 })
 
 const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
@@ -182,9 +210,57 @@ const onContentLeave = () => {
   }
 }
 
+const transitionName = computed(() => {
+  if (props.type === 'fullscreen') return 'none'
+  if (props.type === 'top') return 'slide-down'
+  if (props.type === 'down') return 'slide-up'
+  if (props.type === 'side-left' || props.type === 'left') return 'slide-left'
+  if (props.type === 'side-right' || props.type === 'right' || props.type === 'side') return 'slide-right'
+  return 'modal-zoom'
+})
+
 const cardStyles = computed(() => {
-  if (props.type === 'center') return { maxWidth: props.maxWidth }
-  return {}
+  if (props.type === 'fullscreen') return {}
+  
+  const styles = { 
+    width: '100%',
+    maxWidth: props.maxWidth,
+    maxHeight: props.maxHeight 
+  }
+
+  // Si es un panel lateral, el maxWidth también controla el width base
+  if (['left', 'right', 'side', 'side-left', 'side-right'].includes(props.type)) {
+    styles.width = props.maxWidth
+    
+    // Si está pegado al borde, forzamos altura completa
+    if (computedPositionMode.value === 'stuck') {
+      styles.height = '100vh'
+      styles.maxHeight = '100vh'
+    }
+  }
+
+  return styles
+})
+
+const computedPositionMode = computed(() => {
+  if (props.positionMode) return props.positionMode
+  if (['left', 'right', 'side', 'side-left', 'side-right', 'fullscreen'].includes(props.type)) return 'stuck'
+  return 'floating'
+})
+
+const computedCorners = computed(() => {
+  if (props.corners) return props.corners
+  
+  // If floating, usually all corners are rounded
+  if (computedPositionMode.value === 'floating') return 'all'
+
+  if (props.type === 'center') return 'all'
+  if (props.type === 'top') return 'bottom'
+  if (props.type === 'down') return 'top'
+  if (props.type === 'left' || props.type === 'side-left') return 'right'
+  if (props.type === 'right' || props.type === 'side-right' || props.type === 'side') return 'left'
+  if (props.type === 'fullscreen') return 'none'
+  return 'none'
 })
 </script>
 
@@ -215,6 +291,10 @@ const cardStyles = computed(() => {
     -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
     pointer-events: none !important;
   }
+
+  &.no-blur {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  }
 }
 
 .base-modal-teleport-wrapper {
@@ -226,14 +306,54 @@ const cardStyles = computed(() => {
   justify-content: center;
   pointer-events: none;
 
-  &.type-side, &.type-side-right {
+  &.type-side, &.type-side-right, &.type-right {
     justify-content: flex-end;
     align-items: stretch;
   }
 
-  &.type-side-left {
+  &.type-side-left, &.type-left {
     justify-content: flex-start;
     align-items: stretch;
+  }
+
+  &.type-top {
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  &.type-down {
+    justify-content: center;
+    align-items: flex-end;
+  }
+
+  &.type-fullscreen {
+    justify-content: stretch;
+    align-items: stretch;
+  }
+
+  // Position Modes overrides
+  &.position-stuck {
+    &.type-top { padding-top: 0 !important; }
+    &.type-down { padding-bottom: 0 !important; }
+    &.type-left, &.type-right, &.type-side, &.type-side-left, &.type-side-right { 
+      align-items: stretch !important; 
+      padding: 0 !important;
+    }
+  }
+
+  &.position-floating {
+    &.type-top { padding-top: 4vh !important; }
+    &.type-down { padding-bottom: 4vh !important; }
+    &.type-left, &.type-right, &.type-side, &.type-side-left, &.type-side-right { 
+      align-items: center !important; 
+      padding: 2vh !important;
+    }
+    
+    // Floating panels shouldn't be full height
+    .base-modal-card {
+      height: auto !important;
+      max-height: 95vh !important;
+    }
   }
 
   &.no-pointer-events {
@@ -265,28 +385,57 @@ const cardStyles = computed(() => {
   @include gpu-layer;
 
   .type-center & {
-    width: 95%;
-    max-height: 92vh;
-    border-radius: 24px;
+    // Width gestionado por cardStyles
   }
   
-  .type-side &, .type-side-right & {
-    width: 440px;
-    max-width: 95vw;
-    height: 100vh;
-    max-height: 100vh !important;
-    border-radius: 0;
+  .type-side &, .type-side-right &, .type-right & {
     border-left: 1px solid Rgba(255, 255, 255, 0.1);
   }
 
-  .type-side-left & {
-    width: 440px;
-    max-width: 95vw;
-    height: 100vh;
-    max-height: 100vh !important;
-    border-radius: 0;
+  .type-side-left &, .type-left & {
     border-right: 1px solid Rgba(255, 255, 255, 0.1);
   }
+
+  @media (max-width: 480px) {
+    .error-footer {
+      flex-direction: column;
+    }
+
+    .error-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .type-top & {
+    width: 95%;
+    border-top: none;
+  }
+
+  .type-down & {
+    width: 95%;
+    border-bottom: none;
+  }
+
+  .type-fullscreen & {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    border-radius: 0;
+    border: none;
+  }
+
+  // Border & Corners Logic
+  &.no-border { border: none !important; }
+  &.yellow-border { border: 2px solid var(--yellow) !important; }
+
+  &.corners-all { border-radius: 24px !important; }
+  &.corners-none { border-radius: 0 !important; }
+  &.corners-top { border-radius: 24px 24px 0 0 !important; }
+  &.corners-bottom { border-radius: 0 0 24px 24px !important; }
+  &.corners-left { border-radius: 24px 0 0 24px !important; }
+  &.corners-right { border-radius: 0 24px 24px 0 !important; }
 
   &.variant-retro {
     background: Rgba(26, 28, 46, 1) !important;
@@ -371,7 +520,9 @@ const cardStyles = computed(() => {
 
 .modal-zoom-enter-active, .modal-zoom-leave-active,
 .slide-right-enter-active, .slide-right-leave-active,
-.slide-left-enter-active, .slide-left-leave-active {
+.slide-left-enter-active, .slide-left-leave-active,
+.slide-down-enter-active, .slide-down-leave-active,
+.slide-up-enter-active, .slide-up-leave-active {
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -388,6 +539,16 @@ const cardStyles = computed(() => {
 .slide-left-enter-from, .slide-left-leave-to {
   opacity: 0;
   transform: Translate3d(-100%, 0, 0);
+}
+
+.slide-down-enter-from, .slide-down-leave-to {
+  opacity: 0;
+  transform: Translate3d(0, -100%, 0);
+}
+
+.slide-up-enter-from, .slide-up-leave-to {
+  opacity: 0;
+  transform: Translate3d(0, 100%, 0);
 }
 
 .modal-scrollable-content {

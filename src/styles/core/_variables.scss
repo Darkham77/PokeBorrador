@@ -43,6 +43,8 @@ $legacy-glow:  Rgba(255, 217, 61, 0.25);
   --gray: #{$gray};
   --coin-gold: #{$coin-gold};
   --pokecenter-pink: #{$pokecenter-pink};
+  --purple-light: #{color.scale($purple, $lightness: 25%)};
+  --blue-light: #{color.scale($blue, $lightness: 25%)};
 
   --bg-main: #{$legacy-bg};
   --bg-card: #{$legacy-card};

@@ -148,7 +148,7 @@ function selectAdventure(_slotIndex) {
     title="GESTIÓN DE EQUIPO"
     title-color="var(--yellow)"
     header-background="Rgba(15, 23, 42, 0.8)"
-    max-width="1000px"
+    max-width="1100px"
     padding="raw"
     @close="uiStore.toggleTeamManagement"
   >

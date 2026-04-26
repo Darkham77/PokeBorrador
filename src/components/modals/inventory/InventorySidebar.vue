@@ -111,14 +111,12 @@ const setCategory = (id) => {
     color: var(--yellow);
     
     .cat-icon-frame {
-      background: Rgba(255, 214, 10, 0.15);
-      border-color: Rgba(255, 214, 10, 0.2);
       box-shadow: 0 0 15px Rgba(255, 214, 10, 0.1);
     }
 
     .active-indicator {
       position: absolute;
-      left: -4px;
+      left: 0;
       top: 20%;
       bottom: 20%;
       width: 3px;

@@ -51,8 +51,7 @@ const handleDetail = () => {
 }
 
 const handleUseItem = () => {
-  uiStore.isInventoryOpen = true
-  emit('close')
+  uiStore.toggleInventory()
 }
 
 const handleMoveToBox = () => {
@@ -99,16 +98,15 @@ const handleToggleTag = (tag) => {
   boxStore.togglePokeTag(props.boxIndex, tag)
 }
 
-// Mobile detection for dynamic layout
-const isMobile = computed(() => uiStore.windowWidth < 400)
 </script>
 
 <template>
   <BaseModal
     :show="show"
-    :title="pokemon?.nickname || pokemon?.name || 'POKÉMON'"
     variant="retro"
-    max-width="650px"
+    max-width="500px"
+    hide-header
+    padding="raw"
     @close="emit('close')"
   >
     <div
@@ -134,14 +132,17 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
             </PVSpriteFX>
           </div>
           <div class="meta-info">
-            <span class="level">NV. {{ pokemon.level }}</span>
-            <h3 class="p-name">
-              {{ pokemon.nickname || pokemon.name }}
-            </h3>
-            <span
-              v-if="pokemon.nickname"
-              class="p-species"
-            >#{{ pokemon.name }}</span>
+            <div class="info-main">
+              <span
+                v-if="pokemon.nickname"
+                class="p-nickname-prefix"
+              >{{ pokemon.nickname }}</span>
+              <h3 class="p-name">
+                {{ pokemon.name }}
+              </h3>
+              <span class="level-badge">NV. {{ pokemon.level }}</span>
+            </div>
+
             <div class="details">
               <PVTooltip
                 :title="pokemon.nature"
@@ -159,19 +160,19 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
                 <span class="interactive-text">{{ pokemon.ability }}</span>
               </PVTooltip>
             </div>
-          </div>
 
-          <!-- Badges at the right, vertical and symmetric (Horizontal on mobile) -->
-          <div class="header-badges">
-            <UnifiedBadgePill 
-              :pokemon="pokemon" 
-              size="lg" 
-              editable
-              show-all
-              :vertical="!isMobile"
-              inline
-              @toggle-tag="handleToggleTag"
-            />
+            <!-- Badges integrated horizontally -->
+            <div class="header-badges">
+              <UnifiedBadgePill 
+                :pokemon="pokemon" 
+                size="md" 
+                editable
+                show-all
+                :vertical="false"
+                inline
+                @toggle-tag="handleToggleTag"
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -254,13 +255,13 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
 .box-menu-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-width: 320px;
-  padding: 16px 24px;
+  gap: 10px;
+  min-width: 300px;
+  padding: 10px 12px;
 
   @media (max-width: 500px) {
-    padding: 12px 8px;
-    gap: 12px;
+    padding: 8px 10px;
+    gap: 8px;
   }
 }
 
@@ -268,9 +269,9 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   background: Rgba(255, 255, 255, 0.03);
-  padding: 12px 16px;
+  padding: 12px;
   border-radius: 20px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
   position: relative;
@@ -298,35 +299,70 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
     gap: 16px;
     width: 100%;
     
-    @media (max-width: 400px) {
+    @media (max-width: 450px) {
+      flex-direction: column;
       gap: 10px;
     }
   }
 
   .sprite-box {
     flex: 0 0 auto;
-    width: 64px;
-    height: 64px;
+    width: 112px;
+    height: 112px;
     @include flex-center;
     background: radial-gradient(circle, Rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+    position: relative;
     
     .menu-sprite {
-      width: 100%;
-      height: 100%;
+      width: 140px;
+      height: 140px;
       @include sprite-render;
+      filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.4));
     }
   }
 
   .meta-info {
     flex: 0 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
 
-    @media (max-width: 400px) {
-      text-align: center;
+    .info-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    .level { @include pixelated; font-size: 9px; color: var(--yellow); display: block; margin-bottom: 4px; }
-    .p-name { @include pixelated; font-size: 18px; color: var(--white); text-transform: uppercase; margin: 2px 0; line-height: 1.2; }
-    .p-species { @include pixelated; font-size: 10px; color: var(--gray); text-transform: uppercase; opacity: 0.6; display: block; margin: 4px 0; }
+    .p-nickname-prefix {
+      @include pixelated;
+      font-size: 8px;
+      color: var(--yellow);
+      opacity: 0.8;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .p-name { 
+      @include pixelated; 
+      font-size: 18px; 
+      color: var(--white); 
+      text-transform: uppercase; 
+      margin: 0; 
+      line-height: 1; 
+    }
+
+    .level-badge { 
+      @include pixelated; 
+      font-size: 8px; 
+      color: var(--yellow); 
+      background: Rgba(255, 214, 10, 0.1);
+      border: 1px solid Rgba(255, 214, 10, 0.2);
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin-top: 4px;
+    }
     .details { 
       font-size: 11px; 
       color: var(--gray); 
@@ -348,8 +384,10 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
   }
 
   .header-badges {
-    flex: 0 0 auto;
-    @include flex-center;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -373,8 +411,8 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
 .team-swap-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding: 2px;
+  gap: 6px;
+  padding: 0;
 
   @media (max-width: 600px) {
     grid-template-columns: repeat(2, 1fr);
@@ -386,11 +424,10 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
 }
 
 .team-swap-slot {
-  aspect-ratio: 1.2;
   background: Rgba(0, 0, 0, 0.3);
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 10px;
+  border-radius: 12px;
+  padding: 6px;
   @include flex-center;
   flex-direction: column;
   cursor: pointer;
@@ -425,8 +462,8 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
     width: 100%;
     display: flex;
     justify-content: center;
-    margin-bottom: 6px;
-    min-height: 14px;
+    margin-bottom: 2px;
+    min-height: 10px;
 
     @media (max-width: 500px) {
       position: absolute;
@@ -477,8 +514,8 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
 .footer-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 8px;
   
   @media (max-width: 400px) {
     grid-template-columns: 1fr;

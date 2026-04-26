@@ -2,10 +2,19 @@
 import BaseModal from '@/components/common/BaseModal.vue'
 
 defineProps({
-  number: {
-    type: Number,
-    required: true
-  }
+  number: { type: Number, required: true },
+  type: { type: String, default: 'center' },
+  // Estética
+  variant: { type: String, default: 'modern' },
+  hideHeader: { type: Boolean, default: false },
+  corners: { type: String, default: null },
+  showBorder: { type: Boolean, default: true },
+  blurOverlay: { type: Boolean, default: true },
+  yellowBorder: { type: Boolean, default: false },
+  overlay: { type: String, default: 'dark' },
+  maxWidth: { type: String, default: '340px' },
+  padding: { type: String, default: 'standard' },
+  positionMode: { type: String, default: null }
 })
 
 const emit = defineEmits(['close'])
@@ -15,8 +24,17 @@ const emit = defineEmits(['close'])
   <BaseModal
     :show="true"
     :title="`MODAL TEST #${number}`"
-    max-width="340px"
-    variant="retro"
+    :type="type"
+    :variant="variant"
+    :hide-header="hideHeader"
+    :corners="corners"
+    :show-border="showBorder"
+    :blur-overlay="blurOverlay"
+    :yellow-border="yellowBorder"
+    :overlay="overlay"
+    :max-width="maxWidth"
+    :padding="padding"
+    :position-mode="positionMode"
     @close="emit('close')"
   >
     <div class="test-content">
@@ -42,8 +60,10 @@ const emit = defineEmits(['close'])
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 0; // Removed to let BaseModal padding show
   gap: 30px;
+  background: Rgba(255, 255, 255, 0.05); // Added background to visualize space
+  width: 100%;
 }
 
 .big-number {

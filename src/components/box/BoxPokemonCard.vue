@@ -65,7 +65,7 @@ const bst = computed(() => {
 <template>
   <div
     :class="['box-pokemon-card', { selected: isSelected, 'with-badges': hasBadges, 'performance-mode': isPerformanceActive }]"
-    @click.stop="emit('click', index)"
+    @click.stop="emit('click', $event, index)"
   >
     <!-- Badge Tier -->
     <div

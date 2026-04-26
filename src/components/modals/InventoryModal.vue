@@ -146,7 +146,7 @@ const close = () => {
 <template>
   <BaseModal
     :show="show"
-    max-width="1000px"
+    max-width="800px"
     variant="retro"
     padding="raw"
     @close="close"
@@ -308,7 +308,6 @@ const close = () => {
   padding: 10px 0;
 
   .menu-btn {
-    @include btn-vicio('neutral', 'md');
     justify-content: flex-start;
     gap: 14px;
     font-size: 11px;
@@ -324,6 +323,7 @@ const close = () => {
     }
 
     &.use {
+      @include btn-vicio("primary", "md");
       &:hover {
         background: linear-gradient(to right, Rgba(59, 130, 246, 0.2), transparent);
         border-color: #3b82f6;
@@ -332,6 +332,7 @@ const close = () => {
     }
 
     &.sell {
+      @include btn-vicio("warning", "md");
       &:hover {
         background: linear-gradient(to right, Rgba(255, 214, 10, 0.15), transparent);
         border-color: var(--yellow);
@@ -340,6 +341,7 @@ const close = () => {
     }
 
     &.danger {
+      @include btn-vicio("danger", "md");
       &:hover { 
         background: linear-gradient(to right, Rgba(248, 113, 113, 0.2), transparent);
         border-color: #f87171;

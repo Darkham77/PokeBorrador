@@ -440,6 +440,20 @@ export const useDebugStore = defineStore('debug', () => {
     })
 
     register({
+      id: 'modal-test-pos',
+      label: 'TEST MODAL POS',
+      command: 'openTestModal',
+      category: 'modals',
+      action: (type = 'center') => {
+        modalStore.open('DebugStackTest', { 
+          number: Math.floor(Math.random() * 100),
+          type 
+        })
+      },
+      description: 'Abre un modal de prueba con el posicionamiento especificado (top, down, left, right, fullscreen, center).'
+    })
+
+    register({
       id: 'core-trigger-error',
       label: 'DISPARAR ERROR',
       command: 'triggerTestError',

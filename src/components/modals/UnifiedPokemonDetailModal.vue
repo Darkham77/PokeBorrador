@@ -10,7 +10,6 @@ import { MOVE_DATA } from '@/data/moves'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
@@ -292,7 +291,8 @@ const captureDateFormatted = computed(() => {
 <template>
   <BaseModal
     :show="show"
-    max-width="750px"
+    width="700px"
+    max-width="700px"
     padding="raw"
     :hide-header="true"
     custom-class="pokedex-detail-modal"
@@ -300,7 +300,7 @@ const captureDateFormatted = computed(() => {
   >
     <div
       v-if="species"
-      class="upd-core-content"
+      class="upd-core-container"
       :class="{ 'instance-mode': isInstance }"
       :style="{ 
         '--type-color': PDEX_TYPE_COLORS[species.type[0].toLowerCase()],
@@ -314,29 +314,32 @@ const captureDateFormatted = computed(() => {
           :class="{ 'has-nickname': targetPokemon?.nickname }"
         >
           <span class="p-id">#{{ species.nationalId.padStart(3, '0') }}</span>
-          <div class="name-container">
-            <h2 class="p-name">
-              {{ (targetPokemon?.nickname || species.name).toUpperCase() }}
-              <PVTooltip
-                v-if="isInstance"
-                title="APODO"
-                description="Cambiar el nombre de este Pokémon."
-                position="top"
-              >
-                <button 
-                  class="edit-nick-btn" 
-                  @click.stop="handleEditNickname"
-                >
-                  ✏️
-                </button>
-              </PVTooltip>
-            </h2>
-            <span
-              v-if="targetPokemon?.nickname"
-              class="p-species-subtitle"
+          <div
+            class="name-with-edit"
+            style="display: flex; align-items: center; gap: 8px;"
+          >
+            <button 
+              v-if="isInstance" 
+              class="edit-nick-btn" 
+              style="font-size: 10px; padding: 0; opacity: 0.5; cursor: pointer; flex-shrink: 0;"
+              @click.stop="handleEditNickname"
             >
-              {{ species.name.toUpperCase() }}
-            </span>
+              ✏️
+            </button>
+            <div class="name-container">
+              <span
+                v-if="targetPokemon?.nickname"
+                class="p-nickname-prefix"
+              >
+                {{ targetPokemon.nickname }}
+              </span>
+              <h2
+                class="p-name"
+                style="margin: 0;"
+              >
+                {{ species.name.toUpperCase() }}
+              </h2>
+            </div>
           </div>
         </div>
 

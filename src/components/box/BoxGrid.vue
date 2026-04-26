@@ -41,7 +41,7 @@ const emit = defineEmits(['pokemonClick'])
       :is-rocket-mode="isRocketMode"
       :is-performance-mode="isPerformanceMode"
       data-ignore="[PureVue-Ignore]"
-      @click.stop="emit('pokemonClick', item.index)"
+      @click.stop="(e, idx) => emit('pokemonClick', idx ?? item.index)"
     />
   </div>
 </template>
