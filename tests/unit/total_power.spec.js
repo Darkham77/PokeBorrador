@@ -40,22 +40,22 @@ describe('useBoxFilters - Total Power (BST + IVs)', () => {
 
   it('should filter by TOTAL power range', () => {
     // Filter for > 500
-    filtersObj.filters.bstMin = 500
+    filtersObj.filters.value.bstMin = 500
     let results = filtersObj.processedBoxList.value
     expect(results).toHaveLength(1)
     expect(results[0].p.id).toBe('pikachu')
 
     // Filter for < 400
-    filtersObj.filters.bstMin = 0
-    filtersObj.filters.bstMax = 400
+    filtersObj.filters.value.bstMin = 0
+    filtersObj.filters.value.bstMax = 400
     results = filtersObj.processedBoxList.value
     expect(results).toHaveLength(1)
     expect(results[0].p.id).toBe('bulbasaur')
   })
 
   it('should sort by TOTAL power (BST + IVs)', () => {
-    filtersObj.sortMode = 'bst'
-    filtersObj.sortDirection = 'desc'
+    filtersObj.sortMode.value = 'bst'
+    filtersObj.sortDirection.value = 'desc'
     const results = filtersObj.processedBoxList.value
     expect(results[0].p.id).toBe('pikachu') // 506
     expect(results[1].p.id).toBe('bulbasaur') // 318

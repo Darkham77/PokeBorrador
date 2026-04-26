@@ -18,28 +18,28 @@ describe('useBoxFilters', () => {
   })
 
   it('should filter by species name', () => {
-    filtersObj.filters.search = 'pika'
+    filtersObj.filters.value.search = 'pika'
     const results = filtersObj.processedBoxList.value
     expect(results).toHaveLength(1)
     expect(results[0].p.id).toBe('pikachu')
   })
 
   it('should filter by nickname', () => {
-    filtersObj.filters.search = 'sparky'
+    filtersObj.filters.value.search = 'sparky'
     const results = filtersObj.processedBoxList.value
     expect(results).toHaveLength(1)
     expect(results[0].p.id).toBe('pikachu')
   })
 
   it('should filter by emoji nickname', () => {
-    filtersObj.filters.search = '🔥'
+    filtersObj.filters.value.search = '🔥'
     const results = filtersObj.processedBoxList.value
     expect(results).toHaveLength(1)
     expect(results[0].p.id).toBe('charmander')
   })
 
   it('should be case-insensitive for nicknames', () => {
-    filtersObj.filters.search = 'SPARKY'
+    filtersObj.filters.value.search = 'SPARKY'
     const results = filtersObj.processedBoxList.value
     expect(results).toHaveLength(1)
     expect(results[0].p.id).toBe('pikachu')

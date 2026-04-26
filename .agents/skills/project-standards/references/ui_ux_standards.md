@@ -40,6 +40,10 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - Using `text-shadow` with any blur radius (must be 0px).
 - **Centering**: Use **Flexbox/Grid** for centering. Avoid `transform: translate(-50%, -50%)` as it causes subpixel blurring in Chrome.
 - **BST Aesthetics**: Game-world data (Stats, IVs, Levels) MUST prioritize these sharp pixelated tokens to reinforce the "Retro Heart".
+- **Stat Color Standardization**:
+    - **Nivel (NV)**: Púrpura (`#a855f7`).
+    - **Estadísticas/IVs**: Verde (`#4ade80`).
+    - **Poder Total (BST)**: Amarillo/Oro (`#fbbf24`).
 
 ### 3. Safari Compatibility (Prefix Mandate)
 

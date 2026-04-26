@@ -71,6 +71,7 @@ Refer to these manuals for complex implementation specifications:
 ### 6. Vue & UI Patterns
 
 - **Reactivity with Spread**: Forcing reactivity in Vue 3 `reactive` objects when modifying nested properties requires re-assigning the root property using the spread operator (e.g., `state.inventory = { ...state.inventory }`). This guarantees the virtual DOM reflects deep state changes.
+- **v-model Object Pattern**: State objects intended to be used with `v-model` in child components MUST be defined as `ref` instead of `reactive`. This allows the parent to handle the `update:modelValue` event by re-assigning the entire object (e.g., `filters.value = newValue`), which is the standard behavior for one-way data flow in Vue 3.
 - **BaseModal Overlays**: Prefer `BaseModal` over custom absolute-positioned overlays for complex user interactions (like quantity selectors). This ensures consistent backdrop handling, Z-index management, and keyboard accessibility.
 - **Semantic Action Menus**: Group multi-stage interactions (Use, Sell, Discard) into dedicated action menus. Use themed buttons (Success/Primary for usage, Warning for sales, Danger for deletion) to provide clear visual hierarchy and intent.
 - **Bulk Operation Optimization**: In management views (inventory, boxes), multi-selection modes should default to "Full Stack" (selecting all items of that type) to minimize modal interactions.

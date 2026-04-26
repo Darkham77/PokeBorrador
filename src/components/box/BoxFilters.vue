@@ -312,7 +312,7 @@ const AVAILABLE_TAGS = [
                     type="range"
                     min="0"
                     max="31"
-                    :style="[getSliderStyle(filters.ivMin, 31, STAT_COLORS.HP), { '--stat-color': STAT_COLORS.HP }]"
+                    :style="[getSliderStyle(filters.ivMin, 31, '#4ade80'), { '--stat-color': '#4ade80' }]"
                     @input="updateFilter('ivMin', Number($event.target.value))"
                   >
                   <span class="val">{{ filters.ivMin }}</span>
@@ -324,7 +324,7 @@ const AVAILABLE_TAGS = [
                     type="range"
                     min="0"
                     max="31"
-                    :style="[getSliderStyle(filters.ivMax, 31, STAT_COLORS.SPE), { '--stat-color': STAT_COLORS.SPE }]"
+                    :style="[getSliderStyle(filters.ivMax, 31, '#4ade80'), { '--stat-color': '#4ade80' }]"
                     @input="updateFilter('ivMax', Number($event.target.value))"
                   >
                   <span class="val">{{ filters.ivMax }}</span>
@@ -337,7 +337,7 @@ const AVAILABLE_TAGS = [
                     min="0"
                     max="1000"
                     step="10"
-                    :style="[getSliderStyle(filters.bstMin, 1000, STAT_COLORS.TOTAL), { '--stat-color': STAT_COLORS.TOTAL }]"
+                    :style="[getSliderStyle(filters.bstMin, 1000, '#fbbf24'), { '--stat-color': '#fbbf24' }]"
                     @input="updateFilter('bstMin', Number($event.target.value))"
                   >
                   <span class="val">{{ filters.bstMin }}</span>

@@ -14,7 +14,15 @@ const gameStore = useGameStore()
 const boxStore = useBoxStore()
 const uiStore = useUIStore()
 const battleStore = useBattleStore()
-const { filters, sortMode, hasActiveFilters, displayList, resetFilters } = useBoxFilters(
+const { 
+  filters, 
+  isFiltersOpen,
+  sortMode, 
+  sortDirection,
+  hasActiveFilters, 
+  processedBoxList: displayList, 
+  resetFilters 
+} = useBoxFilters(
   computed(() => boxStore.box),
   computed(() => boxStore.currentBoxIndex)
 )
@@ -56,8 +64,10 @@ const onPokemonClick = (index) => {
 
         <BoxFilters
           v-model:filters="filters"
+          v-model:is-filters-open="isFiltersOpen"
           v-model:sort-mode="sortMode"
-          :has-active="hasActiveFilters"
+          v-model:sort-direction="sortDirection"
+          :has-active-filters="hasActiveFilters"
           :results-count="displayList.length"
           @reset="resetFilters"
         />
