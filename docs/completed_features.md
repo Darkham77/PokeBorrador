@@ -21,6 +21,7 @@ Este documento sirve como referencia de los componentes, menús y herramientas q
 | **CAMBIO DE BANDO** | Finalizado | `ClassSelectionModal.vue`, `FactionChoiceModal.vue`, `playerClass.js` (Store) |
 | **BUSCADOR DE POKEMON** | Finalizado | `PokemonSelectionModal.vue`, `BoxFilters.vue`, `ui.js` (Store) |
 | **VISOR DE DETALLES** | Finalizado | `UnifiedPokemonDetailModal.vue`, `pokemonDataProvider.js` |
+| **MOCHILA** | Finalizado | `InventoryModal.vue`, `InventorySidebar.vue`, `InventoryItemCard.vue`, `inventory.js` (Store), `_inventory.scss` |
 
 ## Uso como Guía de Migración
 

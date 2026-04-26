@@ -9,6 +9,7 @@ import { usePvPStore } from './pvp'
 import { useBreedingStore } from './breeding'
 import { useModalStore } from './modals'
 import { useErrorStore } from './errorStore'
+import { SHOP_ITEMS } from '@/data/items'
 
 export const useDebugStore = defineStore('debug', () => {
   const auth = useAuthStore()
@@ -366,6 +367,21 @@ export const useDebugStore = defineStore('debug', () => {
         game.saveGame(false)
       },
       description: 'Añade una cantidad de un item a la mochila.'
+    })
+
+    register({
+      id: 'item-fill-all',
+      label: 'LLENAR MOCHILA',
+      command: 'fillInventory',
+      category: 'items',
+      action: (qty = 50) => {
+        SHOP_ITEMS.forEach(item => {
+          game.state.inventory[item.name] = qty
+        })
+        ui.notify(`Debug: Mochila llena (${SHOP_ITEMS.length} tipos de objetos)`, '🎒')
+        game.saveGame(false)
+      },
+      description: 'Añade una cantidad de TODOS los objetos de la base de datos.'
     })
 
     // MISSIONS

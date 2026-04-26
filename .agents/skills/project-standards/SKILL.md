@@ -34,7 +34,7 @@ Refer to these manuals for complex implementation specifications:
 
 - **Modern Shell**: Glassmorphism, gradients, HSL shadows for containers.
 - **Retro Heart**: Pixel Art and Sharp typography (`Press Start 2P`) for game content.
-- **Pixel-Perfect**: Pixelated elements MUST use `@include pixelated`. Font size should prioritize readability and aesthetic balance.
+- **Pixel-Perfect**: Pixelated elements MUST use `@include pixelated`. Font size should prioritize readability and aesthetic balance. Statistics, credits, and numerical counters in UI headers MUST always use pixelated typography.
 
 ### 2. GPU & Rendering
 
@@ -56,7 +56,9 @@ Refer to these manuals for complex implementation specifications:
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. Eliminate unused vars and computed properties immediately.
 - **CSS Redundancy Audit**: Use `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py` before commit. To bypass valid nested override flags, use SASS ampersand nesting (`& .class-name {`).
-- **Click Propagation**: Always use `@click.stop` for interactive elements in layered UIs (cards, lists, modals) to prevent accidental bubbling to background containers. If a numeric emit is required and `.stop` is incompatible, use `data-ignore="[PureVue-Ignore]"` on the SAME line as the handler.
+- **Click Propagation**: Always use `@click.stop` for interactive elements in layered UIs (cards, lists, modals) to prevent accidental bubbling to background containers. **CRITICAL**: When using `.stop` on a custom component listener in the parent, the child MUST pass the event object in the emit (e.g., `@click.stop="$emit('click', $event)"`) to avoid `stopPropagation` of undefined crashes.
+- **Media Query Nesting**: To avoid CSS redundancy flags, always nest media queries within their respective class selectors. Avoid global `@media` blocks that repeat selectors.
+- **Flex Scroll Collapse**: Containers with `overflow-y: auto` that are children of flex parents MUST include `min-height: 0` to prevent layout colapse across modern browsers.
 - **UI Interaction**: Use `@include btn-vicio-primary('sm')` for secondary modal buttons to avoid 100% width collisions. All interactive filter/sort controls MUST include a `PVTooltip`.
 - **Vue Template Integrity**: NEVER use JS-style (`//`) or HTML comments inside Vue tags or attributes. This causes Vite compilation errors ("Illegal '/' in tags").
 - **Z-Index Layering**: Hardcoded numbers are forbidden. Use system CSS variables (`--z-low`, `--z-base`, etc.) exclusively.
