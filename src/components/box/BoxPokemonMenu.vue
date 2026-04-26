@@ -13,7 +13,6 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { useModalStore } from '@/stores/modals'
 import { calculateTotalPower, getPokemonTier } from '@/logic/pokemonUtils'
-import { POKEMON_BADGES } from '@/logic/constants/tags'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 
 const props = defineProps({
@@ -103,9 +102,6 @@ const handleRelease = () => {
   })
 }
 
-const handleToggleTag = (tag) => {
-  boxStore.togglePokeTag(props.boxIndex, tag)
-}
 const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 
 </script>
@@ -239,7 +235,11 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
               :class="{ 'has-pokemon': !!t }"
               @click.stop="handleSwap(i)"
             >
-              <div v-if="t" class="slot-rank" :style="{ color: getPokemonTier(t).color, background: getPokemonTier(t).bg }">
+              <div
+                v-if="t"
+                class="slot-rank"
+                :style="{ color: getPokemonTier(t).color, background: getPokemonTier(t).bg }"
+              >
                 {{ getPokemonTier(t).tier }}
               </div>
               <div class="slot-badges">
@@ -267,7 +267,10 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
                   >
                 </PVSpriteFX>
               </div>
-              <span v-if="t" class="ts-name">{{ t.nickname || t.name }}</span>
+              <span
+                v-if="t"
+                class="ts-name"
+              >{{ t.nickname || t.name }}</span>
             </div>
           </div>
         </div>

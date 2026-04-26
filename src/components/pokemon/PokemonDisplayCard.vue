@@ -9,7 +9,6 @@ import { ref, inject } from 'vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/constants/tiers'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { calculateTotalPower } from '@/logic/pokemonUtils'
 
 const props = defineProps({

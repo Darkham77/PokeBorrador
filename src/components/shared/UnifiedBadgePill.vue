@@ -83,7 +83,10 @@ const handleItemImageError = (e) => {
               class="badge-item-img"
               @error="handleItemImageError"
             >
-            <span v-else class="fallback-icon">{{ badge.icon || '🎒' }}</span>
+            <span
+              v-else
+              class="fallback-icon"
+            >{{ badge.icon || '🎒' }}</span>
           </template>
           <template v-else>
             {{ badge.icon }}
