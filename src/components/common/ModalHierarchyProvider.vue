@@ -1,5 +1,5 @@
 <script setup>
-import { provide, computed } from 'vue'
+import { provide, toRef } from 'vue'
 
 const props = defineProps({
   isTop: { type: Boolean, default: true },
@@ -7,7 +7,7 @@ const props = defineProps({
 })
 
 // Provide the performance state to all children (BaseModal, PokemonDisplayCard, etc.)
-provide('isModalPerformanceMode', computed(() => props.isSimplified))
+provide('isModalPerformanceMode', toRef(props, 'isSimplified'))
 </script>
 
 <template>

@@ -21,8 +21,7 @@ To maintain 60FPS on mobile devices, we follow strict rendering rules. Global "d
 - **Layering**: Group sprites by texture atlas in the scene rendering order to maximize batching efficiency.
 - **Filter Cumulative Cost**: Avoid using expensive CSS filters like `backdrop-filter` or `drop-shadow` inside large loops (e.g., map grid icons).
 - **Opacity Optimization**: Always prefer the `opacity: X` property over the `filter: opacity(X)` function. The property is significantly cheaper for the GPU and avoids SASS deprecation warnings.
-- **Lightweight Rendering Mode**: To maximize performance during CPU/GPU-intensive scenes (like Battles), non-essential background components (MapCards, HUD Crime Bars) **MUST** implement a conditional rendering logic using `v-if` to remove complex DOM nodes and expensive filters entirely.
-- **JS Side-Effect Pausing**: When entering Lightweight Rendering, components **MUST** pause all non-essential JavaScript side-effects (e.g., `setInterval` for weather animations, lightning calculations) using reactive watchers on the performance state.
+- **Lightweight Rendering Mode**: To maximize performance during CPU/GPU-intensive scenes, non-essential background components must implement conditional rendering. For the specific rules on what content is hidden and when, see [game_rules_manual.md](./game_rules_manual.md).
 
 ---
 

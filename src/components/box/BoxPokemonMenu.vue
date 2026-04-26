@@ -13,7 +13,7 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 
 const props = defineProps({
-  show: { type: Boolean, default: false },
+  show: { type: Boolean, default: true },
   boxIndex: { type: Number, required: true }
 })
 
@@ -108,6 +108,7 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
     :show="show"
     :title="pokemon?.nickname || pokemon?.name || 'POKÉMON'"
     variant="retro"
+    max-width="650px"
     @close="emit('close')"
   >
     <div
@@ -255,7 +256,12 @@ const isMobile = computed(() => uiStore.windowWidth < 400)
   flex-direction: column;
   gap: 16px;
   min-width: 320px;
-  padding: 8px;
+  padding: 16px 24px;
+
+  @media (max-width: 500px) {
+    padding: 12px 8px;
+    gap: 12px;
+  }
 }
 
 .pokemon-summary {

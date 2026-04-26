@@ -6,7 +6,8 @@ defineProps({
   rocketSelection: { type: Array, default: () => [] },
   isRocketMode: { type: Boolean, default: false },
   isBoxEmpty: { type: Boolean, default: false },
-  hasActiveFilters: { type: Boolean, default: false }
+  hasActiveFilters: { type: Boolean, default: false },
+  isPerformanceMode: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['pokemonClick'])
@@ -38,8 +39,9 @@ const emit = defineEmits(['pokemonClick'])
       :index="item.index"
       :is-selected="rocketSelection.includes(item.index)"
       :is-rocket-mode="isRocketMode"
+      :is-performance-mode="isPerformanceMode"
       data-ignore="[PureVue-Ignore]"
-      @click="emit('pokemonClick', item.index)"
+      @click.stop="emit('pokemonClick', item.index)"
     />
   </div>
 </template>

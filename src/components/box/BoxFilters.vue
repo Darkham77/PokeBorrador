@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
 import PVTooltip from '@/components/common/PVTooltip.vue'

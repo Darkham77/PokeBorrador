@@ -2,6 +2,8 @@
 import { onMounted, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBoxStore } from '@/stores/box'
+import { useBattleStore } from '@/stores/battle'
+import { useUIStore } from '@/stores/ui'
 import { useBoxFilters } from '@/composables/useBoxFilters'
 import BoxHeader from '@/components/box/BoxHeader.vue'
 import BoxTabs from '@/components/box/BoxTabs.vue'
@@ -10,10 +12,16 @@ import BoxGrid from '@/components/box/BoxGrid.vue'
 
 const gameStore = useGameStore()
 const boxStore = useBoxStore()
+const uiStore = useUIStore()
+const battleStore = useBattleStore()
 const { filters, sortMode, hasActiveFilters, displayList, resetFilters } = useBoxFilters(
   computed(() => boxStore.box),
   computed(() => boxStore.currentBoxIndex)
 )
+
+const isPerformanceMode = computed(() => {
+  return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode
+})
 
 onMounted(() => {
   // Inicialización si es necesario
@@ -31,33 +39,36 @@ const onPokemonClick = (index) => {
 </script>
 
 <template>
-  <div class="pc-box-view">
+  <div :class="['pc-box-view', { 'performance-mode': isPerformanceMode }]">
     <div class="pc-container">
-      <BoxHeader 
-        :count="boxStore.box.length" 
-        :max="boxStore.boxCapacity" 
-      />
+      <template v-if="!isPerformanceMode">
+        <BoxHeader 
+          :count="boxStore.box.length" 
+          :max="boxStore.boxCapacity" 
+        />
 
-      <BoxTabs
-        :current-index="boxStore.currentBoxIndex"
-        :count="boxStore.boxCount"
-        @switch="boxStore.switchBox"
-        @buy="boxStore.buyNewBox"
-      />
+        <BoxTabs
+          :current-index="boxStore.currentBoxIndex"
+          :count="boxStore.boxCount"
+          @switch="boxStore.switchBox"
+          @buy="boxStore.buyNewBox"
+        />
 
-      <BoxFilters
-        v-model:filters="filters"
-        v-model:sort-mode="sortMode"
-        :has-active="hasActiveFilters"
-        :results-count="displayList.length"
-        @reset="resetFilters"
-      />
+        <BoxFilters
+          v-model:filters="filters"
+          v-model:sort-mode="sortMode"
+          :has-active="hasActiveFilters"
+          :results-count="displayList.length"
+          @reset="resetFilters"
+        />
+      </template>
 
       <!-- Acciones de modo (Liberar/Rocket) -->
       <div
-        v-if="boxStore.releaseMode || boxStore.rocketMode"
+        v-if="(boxStore.releaseMode || boxStore.rocketMode) && !isPerformanceMode"
         class="mode-actions"
       >
+        ... (rest of the code)
         <div class="mode-info">
           <span
             v-if="boxStore.releaseMode"
@@ -104,13 +115,14 @@ const onPokemonClick = (index) => {
           :is-box-empty="boxStore.box.length === 0"
           :is-rocket-mode="boxStore.rocketMode || boxStore.releaseMode"
           :rocket-selection="[... (boxStore.releaseMode ? boxStore.releaseSelected : boxStore.rocketSelected)]"
+          :is-performance-mode="isPerformanceMode"
           @pokemon-click="onPokemonClick"
         />
       </div>
 
       <!-- Footer Buttons -->
       <div
-        v-if="!boxStore.releaseMode && !boxStore.rocketMode"
+        v-if="!boxStore.releaseMode && !boxStore.rocketMode && !isPerformanceMode"
         class="pc-footer"
       >
         <button

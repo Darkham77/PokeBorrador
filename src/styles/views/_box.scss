@@ -34,7 +34,7 @@
       margin: 0 0 12px 0;
       background: linear-gradient(to bottom, var(--white), var(--gray));
       -webkit-background-clip: text;
-      -webkit-background-clip: text; background-clip: text;;
+      -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;
       -webkit-text-fill-color: transparent;
     }
     .box-subtitle {
@@ -706,6 +706,32 @@
     box-shadow: 0 0 20px Rgba(239, 68, 68, 0.2);
   }
 
+  &.performance-mode {
+    transition: none !important;
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+    background: Rgba(30, 41, 59, 0.8) !important;
+    box-shadow: none !important;
+    border-color: Rgba(255, 255, 255, 0.05) !important;
+
+    &:hover {
+      transform: none !important;
+      background: Rgba(30, 41, 59, 0.9) !important;
+    }
+
+    &::before { display: none !important; }
+    
+    // [PureVue-Ignore] - CSS Redundancy Override
+    & .box-card-sprite {
+      transition: none !important;
+      filter: none !important;
+      transform: none !important;
+    }
+
+    .hp-bar-mini, .hp-fill {
+      transition: none !important;
+    }
+  }
+
   .tier-badge {
     position: absolute;
     top: 10px;
@@ -781,7 +807,7 @@
       margin-left: 12px; 
     }
 
-    .box-card-sprite { 
+    & .box-card-sprite { 
       width: 100%;
       height: 100%;
       @include sprite-render;

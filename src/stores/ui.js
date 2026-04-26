@@ -193,10 +193,8 @@ export const useUIStore = defineStore('ui', () => {
 
     if (obscuringModals.length === 0) return false
 
-    const hasFullyOpen = obscuringModals.some(m => !m.opening)
-    const hasNotClosing = obscuringModals.some(m => !m.closing)
-
-    return hasFullyOpen && hasNotClosing
+    // Performance Mode triggers immediately when an obscuring modal is added.
+    return obscuringModals.some(m => !m.closing)
   })
   
   const isAnyModalOpen = computed(() => {

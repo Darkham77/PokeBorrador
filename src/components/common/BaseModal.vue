@@ -37,6 +37,7 @@
             :class="[
               padding === 'raw' ? 'padding-raw' : 'padding-standard', 
               `variant-${variant}`,
+              { 'is-performance-mode': isSimplified },
               customClass
             ]"
             :style="cardStyles"
@@ -111,8 +112,10 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, inject } from 'vue'
 import { useBodyClass } from '@/composables/useBodyClass'
+
+const isSimplified = inject('isModalPerformanceMode', ref(false))
 
 defineOptions({
   inheritAttrs: false
@@ -293,6 +296,28 @@ const cardStyles = computed(() => {
 
     .type-center & {
       border-radius: 30px !important;
+    }
+  }
+
+  &.is-performance-mode {
+    filter: Brightness(0.6) Blur(1px); // Slightly darker and blurred
+    pointer-events: none !important;
+    
+    // Kill all animations and transitions for performance
+    &, * {
+      transition: none !important;
+      animation: none !important;
+      @include gpu-layer; 
+    }
+
+    // Optional: Hide non-essential decorative elements if they have a class
+    .sparkle, .glow, .aura {
+      display: none !important;
+    }
+
+    // Hide heavy visual elements
+    .modal-close-btn, .modal-close-btn-floating {
+      display: none !important;
     }
   }
 }

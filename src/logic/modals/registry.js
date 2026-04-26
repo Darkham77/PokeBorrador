@@ -43,7 +43,7 @@ export const MODAL_REGISTRY = {
   StonePicker: defineAsyncComponent(() => import('@/components/modals/StonePickerModal.vue')),
   Fishing: defineAsyncComponent(() => import('@/components/modals/FishingModal.vue')),
   EncounterSequence: defineAsyncComponent(() => import('@/components/game/EncounterSequence.vue')),
-  DebugStackTest: defineAsyncComponent(() => import('@/components/modals/DebugStackTestModal.vue')),
   EventDetail: defineAsyncComponent(() => import('@/components/modals/EventDetailModal.vue')),
-  TeamManagement: defineAsyncComponent(() => import('@/components/modals/TeamManagementModal.vue'))
+  TeamManagement: defineAsyncComponent(() => import('@/components/modals/TeamManagementModal.vue')),
+  BoxPokemonMenu: defineAsyncComponent(() => import('@/components/box/BoxPokemonMenu.vue'))
 }

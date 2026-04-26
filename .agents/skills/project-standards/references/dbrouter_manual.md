@@ -45,20 +45,9 @@ When you call `DBRouter.from('table').select('*').eq('id', 1)`, an immediate ins
 
 ---
 
-## 🔒 Session Isolation & Concurrency
+## 🔒 Session & Data Isolation
 
-The DBRouter is the guardian of the **"Last-In-Wins"** principle.
-
-### Session Lock
-
-* Each tab generates a unique `SessionID`.
-* Upon start, the DBRouter updates the `current_session_id` column in the `profiles` table (Online).
-* **Realtime Monitoring**: Listens for changes in that same column. If it detects that the ID in the database has changed, it means another tab or device has taken control.
-* **Reaction**: Immediately disables write access for the local instance to prevent data corruption.
-
-### Global vs Local Isolation
-
-It is **strictly forbidden** for a local session to read data from the cloud or for an online session to save progress in the local database (except for non-critical UI configurations).
+The DBRouter enforces strict session management and data isolation boundaries. For the core principles governing these rules (e.g., **"Last-In-Wins"** and **Global vs Local Isolation**), see [game_rules_manual.md](./game_rules_manual.md).
 
 ---
 

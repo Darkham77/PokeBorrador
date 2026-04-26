@@ -14,15 +14,12 @@ const topActiveModalId = computed(() => {
   return activeModals.length > 0 ? activeModals[activeModals.length - 1].id : null
 })
 
-/**
- * El modal que está "Bloqueando" el performance de los de abajo.
- * Solo bloquea si ya terminó su animación de apertura (!opening).
- */
 const blockingModalIndex = computed(() => {
-  // Buscamos el índice del último modal que está totalmente abierto y no cerrándose
+  // El "principal" es el último modal que NO se está cerrando.
+  // Buscamos su índice para simplificar todo lo que esté por debajo.
   for (let i = modalStore.stack.length - 1; i >= 0; i--) {
     const m = modalStore.stack[i]
-    if (!m.opening && !m.closing) return i
+    if (!m.closing) return i
   }
   return -1
 })

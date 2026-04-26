@@ -65,7 +65,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **MANDATORY**: Use **Capitalized** `TranslateY()` and `Rotate()` for SASS compliance.
 - **Cycle**: A slow 4-second `infinite ease-in-out` loop is recommended for an organic feel.
 - **Pixel Art Sharpness**: NEVER use non-integer `Scale()` transformations on pixel art elements (sprites, icons) as it causes interpolation blur. Prefer subtle `TranslateY()` for hover feedback.
-- **Night Illumination Overrides**: Weather effects that use bright/white overlays (fog, snow, blizzard) MUST implement night-specific overrides using dark tints (`rgba(0,0,0,x)`) to prevent the atmosphere from unnaturally illuminating the night cycle.
+- **Night Cycle Lighting**: Atmospheric and weather effects must adapt to the night cycle. For the specific logic rules (illumination overrides, tints), see [game_rules_manual.md](./game_rules_manual.md).
 
 ---
 
@@ -127,7 +127,7 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Typography**: Must use `'Press Start 2P'` with `@include pixelated`.
 - **Constraint**: Primary action buttons (yellow) MUST follow this pattern to maintain visual parity.
 - **Active State Unification**: Selected/Active buttons (`.active`) MUST preserve their 3D shadow depth. Use a 2px white solid border and a selection glow (`box-shadow`), but keep the dark bottom shadow to avoid a "flat" or "broken" look.
-- **Atmospheric Clarity**: Weather effects (rain, snow, storm), environmental emojis, and atmospheric filters MUST be hidden for locked or restricted UI components (e.g., locked map routes). This maintains focus on playable areas and reduces cognitive noise.
+- **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. See [game_rules_manual.md](./game_rules_manual.md) for visibility rules.
 
 > [!IMPORTANT]
 > **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.

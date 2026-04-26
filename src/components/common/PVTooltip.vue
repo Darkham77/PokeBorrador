@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, inject } from 'vue'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -8,6 +8,7 @@ const props = defineProps({
   delay: { type: Number, default: 0 }
 })
 
+const isSimplified = inject('isModalPerformanceMode', ref(false))
 const isVisible = ref(false)
 const trigger = ref(null)
 const tooltip = ref(null)
@@ -108,6 +109,7 @@ const updatePosition = () => {
 }
 
 const show = () => {
+  if (isSimplified.value) return // Don't show tooltips in performance mode
   if (timeout) clearTimeout(timeout)
   timeout = setTimeout(async () => {
     isVisible.value = true

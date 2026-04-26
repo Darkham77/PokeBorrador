@@ -65,13 +65,13 @@ describe('Modal Hierarchy & Performance Logic', () => {
       expect(providers[0].attributes('data-top')).toBe('true')
       expect(providers[0].attributes('data-simplified')).toBe('false')
 
-      // 2. Open Modal B (A should not be simplified yet because B is "opening")
+      // 2. Open Modal B (A should be simplified IMMEDIATELY to avoid FX during animation)
       modalStore.open('TestModal')
       await wrapper.vm.$nextTick()
       
       providers = wrapper.findAll('.hierarchy-provider')
       expect(providers.length).toBe(2)
-      expect(providers[0].attributes('data-simplified')).toBe('false') // B is still opening
+      expect(providers[0].attributes('data-simplified')).toBe('true')
       expect(providers[1].attributes('data-top')).toBe('true')
 
       // 3. Finish B's opening animation

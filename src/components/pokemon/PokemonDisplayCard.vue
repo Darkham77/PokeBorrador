@@ -27,9 +27,15 @@ const { isVisible } = useElementVisibility(cardRef)
 const uiStore = useUIStore()
 
 // Hierarchy & Performance Injections
-const isModalBelow = inject('isModalPerformanceMode', ref(false))
+const isModalPerformance = inject('isModalPerformanceMode', null)
 const isPerformanceActive = computed(() => {
-  return isModalBelow.value || uiStore.isSimplifiedModalsMode
+  if (uiStore.isSimplifiedModalsMode) return true
+  
+  if (isModalPerformance !== null) {
+    return isModalPerformance.value
+  } else {
+    return uiStore.isAnyBlockingModalOpen
+  }
 })
 
 const hpPct = computed(() => props.pokemon.hp / props.pokemon.maxHp)

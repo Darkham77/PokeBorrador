@@ -23,6 +23,7 @@ Refer to these manuals for complex implementation specifications:
 | **Sync & Security** | [security_and_sync_manual.md](./references/security_and_sync_manual.md) |
 | **Asset Pipeline** | [asset_service_manual.md](./references/asset_service_manual.md) |
 | **Map & Spawns** | [spawn_grid_manual.md](./references/spawn_grid_manual.md) |
+| **Reglas & Mecánicas** | [game_rules_manual.md](./references/game_rules_manual.md) |
 | **Finalized Features** | [completed_features.md](../../../docs/completed_features.md) |
 
 ---
@@ -33,10 +34,7 @@ Refer to these manuals for complex implementation specifications:
 
 - **Modern Shell**: Glassmorphism, gradients, HSL shadows for containers.
 - **Retro Heart**: Pixel Art and Sharp typography (`Press Start 2P`) for game content.
-- **TOTAL Power (TOT)**: Defined as `Base Stats + Total IVs`. This is the primary metric for all Pokémon power displays. Sliders and filters must support ranges up to 1000.
-- **Discovery**: Solid black silhouettes for uncaught. Placeholder `?` for unknown.
 - **Pixel-Perfect**: Pixelated elements MUST use `@include pixelated`. Font size should prioritize readability and aesthetic balance.
-- **Sprite Over Emoji**: Native emojis are forbidden for items; always use the official pixelated sprite.
 
 ### 2. GPU & Rendering
 
@@ -49,13 +47,15 @@ Refer to these manuals for complex implementation specifications:
 
 - **500-Line Rule**: No logic or style file may exceed 500 lines (except databases).
 - **Zero-Invention**: Reuse `BaseModal`, `UnifiedCard`, and global mixins before creating ad-hoc styles.
-- **Modal Lifecycle**: Synchronize performance mode with modal transitions. See [modal_performance.md](./references/modal_performance.md).
+- **Modal Lifecycle**: Synchronize performance mode with modal transitions. Avoid "Modal Islands" (manual template rendering); always use `uiStore.open`. See [modal_performance.md](./references/modal_performance.md).
+- **Immediate Simplification**: Activate background performance mode **IMMEDIATELY** when an obscuring modal begins its opening animation to prevent noisy FX during transitions.
 
 ### 4. SASS & Build Integrity
 
 - **Capitalization Mandate**: Use Capitalized Filters (`Scale()`, `Blur()`, `Brightness()`, `Rgba()`, `Rgb()`) to avoid Dart Sass 2.0 collisions. This applies to `.scss`, `.vue`, and constant files (`.js`, `.ts`).
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. Eliminate unused vars and computed properties immediately.
+- **CSS Redundancy Audit**: Use `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py` before commit. To bypass valid nested override flags, use SASS ampersand nesting (`& .class-name {`).
 - **Click Propagation**: Always use `@click.stop` for interactive elements in layered UIs (cards, lists, modals) to prevent accidental bubbling to background containers. If a numeric emit is required and `.stop` is incompatible, use `data-ignore="[PureVue-Ignore]"` on the SAME line as the handler.
 - **UI Interaction**: Use `@include btn-vicio-primary('sm')` for secondary modal buttons to avoid 100% width collisions. All interactive filter/sort controls MUST include a `PVTooltip`.
 - **Vue Template Integrity**: NEVER use JS-style (`//`) or HTML comments inside Vue tags or attributes. This causes Vite compilation errors ("Illegal '/' in tags").

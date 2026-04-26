@@ -4,7 +4,7 @@
  * Componente centralizado para efectos visuales en sprites de Pokémon.
  * Soporta: Shiny Sparkles, Guardian Aura y es fácilmente extensible.
  */
-import { computed, inject, ref } from 'vue'
+import { computed, inject } from 'vue'
 import { useUIStore } from '@/stores/ui'
 
 const props = defineProps({
@@ -23,14 +23,20 @@ const props = defineProps({
 })
 
 const uiStore = useUIStore()
-const isModalBelow = inject('isModalPerformanceMode', ref(false))
+const isModalPerformance = inject('isModalPerformanceMode', null)
 
 const isSimplified = computed(() => {
-  // Desactivado si: 
-  // 1. Se pasó enabled: false explícitamente
-  // 2. El modal está por debajo de otro
-  // 3. El modo debug de modales simplificados está activo
-  return !props.enabled || isModalBelow.value || uiStore.isSimplifiedModalsMode
+  // 1. Force off if debug or manual override
+  if (!props.enabled || uiStore.isSimplifiedModalsMode) return true
+  
+  // 2. Logic depends on context (In Modal vs On Map)
+  if (isModalPerformance !== null) {
+    // Inside a modal: only simplify if this modal is "below" the principal one
+    return isModalPerformance.value
+  } else {
+    // On the map: simplify if ANY obscuring modal is open
+    return uiStore.isAnyBlockingModalOpen
+  }
 })
 
 // Generar una semilla aleatoria para desincronizar animaciones

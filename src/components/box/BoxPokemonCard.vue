@@ -7,11 +7,28 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
 
+import { inject } from 'vue'
+import { useUIStore } from '@/stores/ui'
+
+const uiStore = useUIStore()
+
 const props = defineProps({
   pokemon: { type: Object, required: true },
   index: { type: Number, required: true },
   isSelected: { type: Boolean, default: false },
-  isRocketMode: { type: Boolean, default: false }
+  isRocketMode: { type: Boolean, default: false },
+  isPerformanceMode: { type: Boolean, default: false }
+})
+
+const isModalPerformance = inject('isModalPerformanceMode', null)
+const isPerformanceActive = computed(() => {
+  if (props.isPerformanceMode || uiStore.isSimplifiedModalsMode) return true
+  
+  if (isModalPerformance !== null) {
+    return isModalPerformance.value
+  } else {
+    return uiStore.isAnyBlockingModalOpen
+  }
 })
 
 const emit = defineEmits(['click'])
@@ -47,7 +64,7 @@ const bst = computed(() => {
 
 <template>
   <div
-    :class="['box-pokemon-card', { selected: isSelected, 'with-badges': hasBadges }]"
+    :class="['box-pokemon-card', { selected: isSelected, 'with-badges': hasBadges, 'performance-mode': isPerformanceActive }]"
     @click.stop="emit('click', index)"
   >
     <!-- Badge Tier -->
@@ -89,11 +106,12 @@ const bst = computed(() => {
         :is-shiny="pokemon.isShiny"
         :is-guardian="pokemon.isGuardian"
         :sparkle-count="5"
+        :enabled="!isPerformanceActive"
       >
         <img
           :src="spriteUrl"
           class="box-card-sprite"
-          :class="[pokemon.aura ? `aura-${pokemon.aura}-mini` : '']"
+          :class="[(pokemon.aura && !isPerformanceActive) ? `aura-${pokemon.aura}-mini` : '']"
           alt="pokemon"
           @error="e => e.target.style.display = 'none'"
         >

@@ -8,8 +8,8 @@ The modal system must integrate perfectly with the background rendering engine (
 
 ### Entrance Synchronization
 
-- **Rule**: Activate background simplification **AFTER** the entrance animation of the first obscuring modal is complete.
-- **Reason**: Prevents the user from seeing the background "disappear" or change abruptly while the modal is still transparent or scaling.
+- **Rule**: Activate background simplification **IMMEDIATELY** when an obscuring modal starts opening.
+- **Reason**: Prevents the user from seeing noisy or non-performant effects during the entrance transition.
 
 ### Exit Synchronization
 

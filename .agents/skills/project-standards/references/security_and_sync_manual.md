@@ -15,13 +15,9 @@ This manual describes the mechanisms designed to ensure player data integrity, p
 
 The security system is based on continuous validation of the game state before every persistence event.
 
-### 1. Data Validation (`validateAndSanitize`)
+### 1. Data Integrity
 
-Every time the game attempts to save, the data passes through an integrity filter that:
-
-* **Corrects Numerical Values**: Ensures Money, BattleCoins, and levels are not negative.
-* **Inventory Cleanup**: Removes negative quantities in items.
-* **UID Integrity (Anti-Cloning)**: The system verifies that no two Pokémon share the same **Unique ID (UID)** across the team and box. Duplicates are automatically removed to prevent cloning exploits.
+Every save attempt passes through a technical filter. For gameplay-specific rules (e.g., non-negative money, UID uniqueness), see [game_rules_manual.md](./game_rules_manual.md).
 
 ### 2. Security Versions (v1 vs v2)
 
@@ -103,23 +99,13 @@ The Realtime system is the engine behind:
 
 Server-centric architecture to ensure the integrity of Pokémon and items and prevent transaction spam.
 
-### 1. Server-Side Escrow Model
+### 1. Asset Escrow & Claims
 
-Every trade or sale moves assets out of the player's inventory and places them under direct server custody.
+Trading and sales follow a server-side escrow model. Refer to [game_rules_manual.md](./game_rules_manual.md) for rules regarding atomic claiming and claim queues.
 
-* **Claim Queues**: Received (or canceled) assets are not automatically re-injected into the save. They are held in a "Pending Claim" table.
-* **Active Claiming**: The user must click "Receive" to download the asset to their inventory. This process is atomic and requires a prior save from the local cache to the cloud.
-* **'Receive All' Function**: Batches all pending assets. In case of delays, the system displays a progress Toast (e.g., "Processing 3/10 assets...") to inform the user.
+### 2. Anti-Spam & Quotas
 
-### 2. Anti-Spam Policies & Throttling
-
-To prevent script abuse and database overload, the following limits are applied:
-
-* **Interface Throttling**: Mandatory **5-second cooldown** between each individual claim action. If clicked earlier, the system displays a Toast: *"Wait 5 seconds before claiming again"*.
-* **Modular Quotas (Centralized Config)**: Each interaction type has an independent capacity limit of **50 slots**, easily adjustable from the global constants file:
-  * Maximum 50 pending Friend Requests.
-  * Maximum 50 active Trade Offers.
-  * Maximum 50 simultaneous GTS Listings.
+To prevent server overload, the system enforces cooldowns and capacity limits. See the [game_rules_manual.md](./game_rules_manual.md) for the specific cooldown and quota values.
 
 ### 3. Orphan Record Cleanup
 

@@ -49,54 +49,9 @@ export function calculateSpawnGrid(spawnsCount, preferredCols = 3) {
 - **Rationale**: Highest structural rigidity and ease of debug visualization.
 - **Scale Strategy**: `transform: scale()` or `calc()` width to allow organic overlap without breaking the grid flow.
 
-## 4. Discovery System (Fog of War)
+## 🔍 Discovery & Fog of War
 
-### 4.1 Two Independent Flags
-
-Map spawns use **two independent boolean flags** computed from the player's Pokédex state:
-
-| Flag | Source | Effect |
-| :--- | :--- | :--- |
-| `isSeen` | `seenPokedex.includes(id)` OR `pokedex.includes(id)` | Reveals name + type info in **tooltips** |
-| `isCaught` | `pokedex.includes(id)` | Removes the **silhouette** from the sprite |
-
-These flags are computed in `processedGrid` and `processedGuardian` inside `MapCard.vue`.
-
-### 4.2 Map vs Pokédex Visual Behavior
-
-The Map and Pokédex intentionally use **different visuals** for the "never seen" state:
-W
-
-| Context | Never Seen | Seen (not caught) | Caught |
-| :--- | :--- | :--- | :--- |
-| **Map** | Silhouette (black sprite) | Silhouette + name in tooltip | Full color |
-| **Pokédex** | `???` text, no image | Silhouette + name | Full color |
-
-The Map is the **only** place where never-seen Pokémon show a silhouette. This is an intentional design choice for the exploration feel. Do not add silhouettes to the Pokédex for unknown entries.
-
-### 4.3 Canonical Filter Point
-
-- **Map**: All discovery logic lives in `MapCard.vue` → `processedGrid` and `processedGuardian` computed.
-- **Pokédex**: All discovery logic lives in `src/composables/usePokedex.js` → `pokemonList` computed.
-
-When adding a new debug mode or changing visibility rules, **both** files must be updated — they are independent systems.
-
-### 4.4 Debug Mode Override Pattern
-
-Both systems follow the same 4-state if/else pattern:
-
-```js
-if (debugMode === 'none') {
-  isSeen = false; isCaught = false        // Force unknown
-} else if (debugMode === 'seen') {
-  isSeen = true; isCaught = false         // Force seen-only
-} else if (debugMode === 'caught') {
-  isSeen = true; isCaught = true          // Force caught
-} else {
-  isSeen = seenPokedex.includes(id) || pokedex.includes(id)  // Real
-  isCaught = pokedex.includes(id)
-}
-```
+Refer to the [game_rules_manual.md](./game_rules_manual.md) for the authoritative definitions of the Discovery System (`isSeen`, `isCaught`) and visual differences between Map and Pokédex.
 
 ## 5. Map Card Rendering Layers
 

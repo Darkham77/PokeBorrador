@@ -10,7 +10,7 @@ import BoxHeader from './box/BoxHeader.vue'
 import BoxTabs from './box/BoxTabs.vue'
 import BoxFilters from './box/BoxFilters.vue'
 import BoxGrid from './box/BoxGrid.vue'
-import BoxPokemonMenu from './box/BoxPokemonMenu.vue'
+
 
 const gameStore = useGameStore()
 const boxStore = useBoxStore()
@@ -19,10 +19,8 @@ const gs = computed(() => gameStore.state)
 
 // Store-bound state
 const currentBoxIndex = computed(() => boxStore.currentBoxIndex)
-const isRocketMode = computed(() => boxStore.boxRocketMode)
-const rocketSelection = computed(() => boxStore.boxRocketSelected)
-const isBoxMenuOpen = computed(() => uiStore.isBoxMenuOpen)
-const selectedBoxIndex = computed(() => uiStore.selectedBoxIndex)
+const isRocketMode = computed(() => uiStore.isRocketMode)
+const rocketSelection = computed(() => boxStore.boxRocketSelection)
 
 // ----- ESTADO Y FILTROS -----
 const { 
@@ -96,8 +94,7 @@ const handlePokemonClick = (index) => {
   if (isRocketMode.value) {
     boxStore.toggleBoxRocketSelect(index)
   } else {
-    uiStore.selectedBoxIndex = index
-    uiStore.isBoxMenuOpen = true
+    uiStore.open('BoxPokemonMenu', { boxIndex: index })
   }
 }
 </script>
@@ -142,13 +139,6 @@ const handlePokemonClick = (index) => {
       :is-box-empty="!gs.box || gs.box.length === 0"
       :has-active-filters="hasActiveFilters"
       @pokemon-click="handlePokemonClick"
-    />
-
-    <BoxPokemonMenu
-      v-if="isBoxMenuOpen"
-      :show="isBoxMenuOpen"
-      :box-index="selectedBoxIndex"
-      @close="uiStore.isBoxMenuOpen = false"
     />
   </div>
 </template>
