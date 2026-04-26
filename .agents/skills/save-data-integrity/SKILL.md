@@ -60,7 +60,14 @@ If you change how a key piece of data is formatted (e.g. converting `badges` fro
   - **PATTERN**: If the target team slot is empty, use `moveBoxToTeam(boxIndex)`. If the slot is occupied, use `swapBoxWithTeam(boxIndex, teamIndex)`.
   - **WHY**: Simple addition (push) will fail if the team is already at its maximum capacity (6 members). Implementing a dedicated swap mechanism ensures that team rotations are always possible regardless of current occupancy.
 
-## 7. Pre-Flight Checklist
+## 7. Batch Processing & Atomic Saves
+
+When performing multiple mutations that trigger persistent saves (e.g., selling multiple item stacks, releasing several Pokémon), avoid calling `save()` or the database router inside loops.
+
+- **PATTERN**: Implement a `processBatchAction` that performs all necessary state modifications locally first (using atomic updates) and calls the save operation exactly once at the end.
+- **WHY**: This minimizes database overhead, reduces the risk of partial state corruption if a connection fails mid-loop, and ensures that UI reactivity is synchronized with the final saved state.
+
+## 8. Pre-Flight Checklist
 
 Before applying any change relating to data persistence:
 

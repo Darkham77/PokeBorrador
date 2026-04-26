@@ -76,7 +76,6 @@ const handleActionSelect = (type) => {
 const handleMultiExecute = async () => {
   if (selectedItems.size === 0) return
   const mode = multiSelectMode.value
-  const actionText = mode === 'sell' ? 'vender' : 'tirar'
   
   let estimatedGain = 0
   if (mode === 'sell') {

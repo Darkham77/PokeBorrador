@@ -68,6 +68,14 @@ Refer to these manuals for complex implementation specifications:
 - **Efficiency Over GUI**: Use `window.__VITE_DEBUG__` commands to simulate states, levels, and money.
 - **Verification**: It is MANDATORY to verify new content via CLI before commits.
 
+### 6. Vue & UI Patterns
+
+- **Reactivity with Spread**: Forcing reactivity in Vue 3 `reactive` objects when modifying nested properties requires re-assigning the root property using the spread operator (e.g., `state.inventory = { ...state.inventory }`). This guarantees the virtual DOM reflects deep state changes.
+- **BaseModal Overlays**: Prefer `BaseModal` over custom absolute-positioned overlays for complex user interactions (like quantity selectors). This ensures consistent backdrop handling, Z-index management, and keyboard accessibility.
+- **Semantic Action Menus**: Group multi-stage interactions (Use, Sell, Discard) into dedicated action menus. Use themed buttons (Success/Primary for usage, Warning for sales, Danger for deletion) to provide clear visual hierarchy and intent.
+- **Bulk Operation Optimization**: In management views (inventory, boxes), multi-selection modes should default to "Full Stack" (selecting all items of that type) to minimize modal interactions.
+- **Financial Transparency**: Always display estimated total profits in confirmation dialogs for bulk selling operations to provide immediate user feedback.
+
 ---
 
 ## 🏗️ Workflow & Artifact Governance (MANDATORY)
