@@ -105,6 +105,9 @@ export const useInventoryStore = defineStore('inventory', () => {
       if (gameStore.state.inventory[name] <= 0) delete gameStore.state.inventory[name]
     })
 
+    // Force reactivity for inventory object
+    gameStore.state.inventory = { ...gameStore.state.inventory }
+
     gameStore.state.money += totalGain
     toggleBagSellMode()
     gameStore.save()
@@ -112,13 +115,17 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   function removeItem(itemName, qty = 1) {
-    if (!gameStore.state.inventory[itemName]) return
+    if (!gameStore.state.inventory || !gameStore.state.inventory[itemName]) return
+    
     if (qty === 999) {
       delete gameStore.state.inventory[itemName]
     } else {
       gameStore.state.inventory[itemName] -= qty
       if (gameStore.state.inventory[itemName] <= 0) delete gameStore.state.inventory[itemName]
     }
+    
+    // Force reactivity for inventory object
+    gameStore.state.inventory = { ...gameStore.state.inventory }
     gameStore.save(false)
   }
 
@@ -126,20 +133,55 @@ export const useInventoryStore = defineStore('inventory', () => {
     if (!itemName) return
     const inventory = gameStore.state.inventory || {}
     inventory[itemName] = (inventory[itemName] || 0) + qty
-    gameStore.state.inventory = inventory
+    gameStore.state.inventory = { ...inventory } // Force reactivity
     gameStore.save(false)
   }
 
   function sellItem(itemName, qty = 1) {
     const itemInfo = SHOP_ITEMS.find(i => i.name === itemName || i.id === itemName)
-    if (!itemInfo || !gameStore.state.inventory[itemInfo.name]) return
+    if (!itemInfo) return
     
-    const actualQty = qty === 999 ? gameStore.state.inventory[itemInfo.name] : qty
-    const gain = Math.floor(itemInfo.price * 0.5) * actualQty
+    const actualName = itemInfo.name
+    if (!gameStore.state.inventory || !gameStore.state.inventory[actualName]) return
     
-    removeItem(itemInfo.name, actualQty)
+    const inventoryQty = gameStore.state.inventory[actualName]
+    const sellQty = qty === 999 ? inventoryQty : Math.min(qty, inventoryQty)
+    
+    const gain = Math.floor((itemInfo.price || 0) * 0.5) * sellQty
+    
+    removeItem(actualName, sellQty)
     gameStore.state.money += gain
     gameStore.save(false)
+  }
+
+  /**
+   * Processes multiple actions in a single save cycle to ensure reactivity and performance.
+   * @param {Map<string, number>} itemMap - name -> quantity
+   * @param {string} mode - 'sell' | 'release'
+   */
+  async function processBatchAction(itemMap, mode) {
+    let totalGain = 0
+    const inventory = gameStore.state.inventory || {}
+
+    for (const [name, qty] of itemMap.entries()) {
+      if (!inventory[name]) continue
+      
+      const actualQty = Math.min(qty, inventory[name])
+      
+      if (mode === 'sell') {
+        const itemInfo = SHOP_ITEMS.find(i => i.name === name)
+        if (itemInfo) totalGain += Math.floor((itemInfo.price || 0) * 0.5) * actualQty
+      }
+
+      inventory[name] -= actualQty
+      if (inventory[name] <= 0) delete inventory[name]
+    }
+
+    gameStore.state.inventory = { ...inventory }
+    if (mode === 'sell') gameStore.state.money += totalGain
+    
+    await gameStore.save(false)
+    return totalGain
   }
 
   // --- ITEM ACTIONS ---
@@ -326,7 +368,8 @@ export const useInventoryStore = defineStore('inventory', () => {
     activeItemToUse,
     addItem,
     removeItem,
-    sellItem
+    sellItem,
+    processBatchAction
   }
 })
 

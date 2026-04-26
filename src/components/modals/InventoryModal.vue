@@ -11,7 +11,7 @@ import InventorySidebar from './inventory/InventorySidebar.vue'
 import InventoryItemCard from './inventory/InventoryItemCard.vue'
 import InventoryControls from './inventory/InventoryControls.vue'
 import InventoryTargetOverlay from './inventory/InventoryTargetOverlay.vue'
-import InventoryQuantityOverlay from './inventory/InventoryQuantityOverlay.vue'
+import InventoryQuantityModal from './inventory/InventoryQuantityModal.vue'
 
 defineProps({ show: { type: Boolean, default: false } })
 const emit = defineEmits(['close'])
@@ -26,9 +26,12 @@ const selectedItems = reactive(new Map()) // name -> qty
 const targetingItem = ref(null)
 const showTargetOverlay = ref(false)
 const quantitySelectionItem = ref(null)
+const itemActionMenu = ref(null) // { item, type: 'sell'|'release'|'menu' }
 
-// Getters from store
+// Getters
 const filteredItems = computed(() => inventoryStore.bagItems)
+const totalObjectsCount = computed(() => Object.values(gameStore.state.inventory || {}).reduce((s, v) => s + v, 0))
+const selectedObjectsTotal = computed(() => Array.from(selectedItems.values()).reduce((s, v) => s + v, 0))
 
 // Handlers
 const handleItemClick = (item) => {
@@ -41,27 +44,31 @@ const handleItemClick = (item) => {
     return
   }
 
-  // --- EGG HANDLING ---
-  if (item.isEgg) {
-    if (item.ready) {
-      uiStore.open('HatchAnimation', { egg: item.eggData })
-      emit('close')
-    } else {
-      uiStore.notify(`Este huevo aún no está listo (${Math.ceil(item.steps)} pasos restantes)`, '🥚')
-    }
-    return
-  }
+  // If not in multi-mode, open action menu
+  itemActionMenu.value = item
+}
 
-  const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
-  if (!dbItem) return
+const handleActionSelect = (type) => {
+  const item = itemActionMenu.value
+  if (!item) return
   
-  if (['stones', 'pociones'].includes(dbItem.cat) || dbItem.id === 'rare_candy') {
-    targetingItem.value = dbItem
-    showTargetOverlay.value = true
-  } else if (dbItem.cat === 'held') {
-    uiStore.notify(`Equipa este item desde el detalle del Pokémon`, '🎒')
+  if (type === 'use') {
+    // Legacy logic for using items
+    const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
+    if (['stones', 'pociones'].includes(dbItem?.cat) || dbItem?.id === 'rare_candy') {
+      targetingItem.value = dbItem
+      showTargetOverlay.value = true
+    } else if (dbItem?.cat === 'held') {
+      uiStore.notify(`Equipa este item desde el detalle del Pokémon`, '🎒')
+    } else {
+      uiStore.notify(`Este objeto no se puede usar desde aquí`, '🚫')
+    }
+    itemActionMenu.value = null
   } else {
-    uiStore.notify(`Este objeto no se puede usar desde aquí`, '🚫')
+    // Open quantity modal for sell/release
+    multiSelectMode.value = type
+    quantitySelectionItem.value = item
+    itemActionMenu.value = null
   }
 }
 
@@ -72,26 +79,43 @@ const handleMultiExecute = async () => {
   
   uiStore.openConfirm({
     title: `CONFIRMAR ACCIÓN`, 
-    message: `¿Estás seguro que deseas ${actionText} estos ${selectedItems.size} objetos?`,
+    message: `¿Estás seguro que deseas ${actionText} estos ${selectedItems.size} tipos de objetos?`,
     confirmText: mode === 'sell' ? 'VENDER' : 'TIRAR',
     onConfirm: async () => {
-      for (const [name, qty] of selectedItems.entries()) { 
-        if (mode === 'sell') {
-          await inventoryStore.sellItem(name, qty) 
-        } else {
-          await inventoryStore.removeItem(name, qty) 
-        }
+      const totalGain = await inventoryStore.processBatchAction(selectedItems, mode)
+
+      if (mode === 'sell') {
+        uiStore.notify(`Venta realizada: +₱${totalGain.toLocaleString()}`, '💰')
+      } else {
+        uiStore.notify('Objetos eliminados correctamente', '🗑️')
       }
-      uiStore.notify(mode === 'sell' ? 'Venta realizada' : 'Objetos eliminados', mode === 'sell' ? '💰' : '🗑️')
+
       selectedItems.clear()
       multiSelectMode.value = null
     }
   })
 }
 
-const handleQuantityConfirm = (qty) => {
+const handleQuantityConfirm = async (qty) => {
   if (quantitySelectionItem.value) {
-    selectedItems.set(quantitySelectionItem.value.name, qty)
+    const itemName = quantitySelectionItem.value.name
+    
+    // If NOT in a persistent multi-select session (single action), execute immediately
+    // Wait, how do we know? If multiSelectMode was set by the menu but selectedItems is empty.
+    if (selectedItems.size === 0) {
+      const singleMap = new Map([[itemName, qty]])
+      const mode = multiSelectMode.value
+      const totalGain = await inventoryStore.processBatchAction(singleMap, mode)
+      
+      if (mode === 'sell') uiStore.notify(`Venta realizada: +₱${totalGain.toLocaleString()}`, '💰')
+      else uiStore.notify('Objeto eliminado', '🗑️')
+      
+      multiSelectMode.value = null
+    } else {
+      // In a persistent multi-select session, just add to selection
+      selectedItems.set(itemName, qty)
+    }
+    
     quantitySelectionItem.value = null
   }
 }
@@ -131,7 +155,7 @@ const close = () => {
         <div class="header-stats">
           <div class="stat-node">
             <span class="label">OBJETOS TOTALES</span>
-            <span class="value">{{ Object.values(gameStore.state.inventory || {}).reduce((s, v) => s + v, 0) }}</span>
+            <span class="value">{{ totalObjectsCount }}</span>
           </div>
           <div class="stat-node money">
             <span class="label">MIS CRÉDITOS</span>
@@ -150,7 +174,7 @@ const close = () => {
         <!-- CONTROLS -->
         <InventoryControls 
           v-model:multi-select-mode="multiSelectMode"
-          :selected-count="selectedItems.size"
+          :selected-count="selectedObjectsTotal"
           @execute="handleMultiExecute"
           @cancel="handleCancelSelection"
         />
@@ -208,18 +232,83 @@ const close = () => {
       }"
     />
 
-    <InventoryQuantityOverlay
+    <InventoryQuantityModal
       v-if="quantitySelectionItem"
+      :show="!!quantitySelectionItem"
       :item="quantitySelectionItem"
       :mode="multiSelectMode"
-      @close="quantitySelectionItem = null"
-      @sell="handleQuantityConfirm"
-      @discard="handleQuantityConfirm"
+      @close="() => { quantitySelectionItem = null; if (selectedItems.size === 0) multiSelectMode = null; }"
+      @confirm="handleQuantityConfirm"
     />
+
+    <!-- SINGLE ITEM ACTION MENU -->
+    <BaseModal
+      v-if="itemActionMenu"
+      :show="!!itemActionMenu"
+      max-width="300px"
+      variant="retro"
+      @close="itemActionMenu = null"
+    >
+      <template #header>
+        <div class="action-menu-header">
+          {{ itemActionMenu.name }}
+        </div>
+      </template>
+      <div class="action-menu-body">
+        <button
+          class="menu-btn"
+          @click.stop="handleActionSelect('use')"
+        >
+          <span class="icon">✨</span> USAR
+        </button>
+        <button
+          class="menu-btn"
+          @click.stop="handleActionSelect('sell')"
+        >
+          <span class="icon">💰</span> VENDER
+        </button>
+        <button
+          class="menu-btn danger"
+          @click.stop="handleActionSelect('release')"
+        >
+          <span class="icon">🗑️</span> TIRAR
+        </button>
+      </div>
+    </BaseModal>
   </BaseModal>
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/components/inventory";
+
+.action-menu-header {
+  @include pixelated;
+  font-size: 10px;
+  color: var(--yellow);
+  text-align: center;
+  width: 100%;
+}
+
+.action-menu-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+
+  .menu-btn {
+    @include btn-vicio('neutral', 'md');
+    justify-content: flex-start;
+    gap: 12px;
+    font-size: 12px;
+    
+    .icon { font-size: 16px; }
+
+    &.danger {
+      color: #f87171;
+      &:hover { background: Rgba(248, 113, 113, 0.1); }
+    }
+  }
+}
 </style>
 

@@ -106,7 +106,19 @@ describe('Inventory Store', () => {
     
     store.addItem('Poción', 1)
     store.useItem('Poción', 'team', 0)
-    
     expect(gameStore.state.inventory['Poción']).toBe(5) // Had 5 + 1 - 1 = 5
+  })
+
+  it('sells specific quantity correctly', () => {
+    const store = useInventoryStore()
+    const gameStore = useGameStore()
+    gameStore.state.inventory['Pokéball'] = 50
+    const initialMoney = gameStore.state.money
+    
+    // Pokéball price 200 -> sell 100
+    store.sellItem('Pokéball', 10)
+    
+    expect(gameStore.state.inventory['Pokéball']).toBe(40)
+    expect(gameStore.state.money).toBe(initialMoney + 1000)
   })
 })
