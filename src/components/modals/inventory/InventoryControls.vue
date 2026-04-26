@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useInventoryStore } from '@/stores/inventory'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 defineProps({
   multiSelectMode: { type: String, default: null },
@@ -46,20 +47,33 @@ const startMode = (mode) => {
     <!-- ACTIONS SECTION -->
     <div class="actions-section">
       <template v-if="!multiSelectMode">
-        <button
-          class="vicio-btn secondary sm"
-          @click.stop="startMode('sell')"
+        <PVTooltip
+          title="Venta por Lote"
+          description="Selecciona objetos para vender sus PILAS COMPLETAS. Para vender una cantidad específica, haz clic directo en el objeto."
+          position="bottom"
         >
-          <span class="icon">💰</span>
-          <span class="label">MODO VENTA</span>
-        </button>
-        <button
-          class="vicio-btn danger sm"
-          @click.stop="startMode('release')"
+          <button
+            class="vicio-btn secondary sm"
+            @click.stop="startMode('sell')"
+          >
+            <span class="icon">💰</span>
+            <span class="label">MODO VENTA</span>
+          </button>
+        </PVTooltip>
+
+        <PVTooltip
+          title="Tirar por Lote"
+          description="Selecciona objetos para tirar sus PILAS COMPLETAS. Para tirar una cantidad específica, haz clic directo en el objeto."
+          position="bottom"
         >
-          <span class="icon">🗑️</span>
-          <span class="label">TIRAR OBJETOS</span>
-        </button>
+          <button
+            class="vicio-btn danger sm"
+            @click.stop="startMode('release')"
+          >
+            <span class="icon">🗑️</span>
+            <span class="label">TIRAR OBJETOS</span>
+          </button>
+        </PVTooltip>
       </template>
 
       <template v-else>

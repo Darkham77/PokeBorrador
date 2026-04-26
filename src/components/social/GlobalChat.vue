@@ -242,7 +242,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
 .chat-header {
   padding: 20px;
-  background: linear-gradient(to bottom, Rgba(157, 78, 221, 0.1), transparent);
+  background: Linear-Gradient(to bottom, Rgba(157, 78, 221, 0.1), transparent);
   display: flex;
   justify-content: space-between;
   align-items: center;

@@ -165,7 +165,7 @@ const itemIcon = computed(() => {
       position: absolute;
       width: 60%;
       height: 60%;
-      background: radial-gradient(circle, Rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      background: Radial-Gradient(circle, Rgba(255, 255, 255, 0.1) 0%, transparent 70%);
       filter: Blur(5px);
       z-index: var(--z-base);
     }
@@ -192,7 +192,7 @@ const itemIcon = computed(() => {
       display: flex;
       align-items: center;
       gap: 1px;
-      background: linear-gradient(135deg, #1e293b, #0f172a);
+      background: Linear-Gradient(135deg, #1e293b, #0f172a);
       border: 1px solid Rgba(255, 255, 255, 0.15);
       padding: 2px 6px;
       border-radius: 8px;
@@ -262,19 +262,19 @@ const itemIcon = computed(() => {
   &.tier-rare {
     border-color: Rgba(59, 130, 246, 0.2);
     .item-tier-badge { color: $blue; }
-    .item-bg-glow { background: radial-gradient(circle, Rgba(59, 130, 246, 0.15) 0%, transparent 70%); }
+    .item-bg-glow { background: Radial-Gradient(circle, Rgba(59, 130, 246, 0.15) 0%, transparent 70%); }
   }
 
   &.tier-epic {
     border-color: Rgba(168, 85, 247, 0.2);
     .item-tier-badge { color: $purple; }
-    .item-bg-glow { background: radial-gradient(circle, Rgba(168, 85, 247, 0.15) 0%, transparent 70%); }
+    .item-bg-glow { background: Radial-Gradient(circle, Rgba(168, 85, 247, 0.15) 0%, transparent 70%); }
   }
 
   &.tier-legend {
     border-color: Rgba(245, 158, 11, 0.2);
     .item-tier-badge { color: var(--yellow); }
-    .item-bg-glow { background: radial-gradient(circle, Rgba(245, 158, 11, 0.15) 0%, transparent 70%); }
+    .item-bg-glow { background: Radial-Gradient(circle, Rgba(245, 158, 11, 0.15) 0%, transparent 70%); }
   }
 
   &:hover {

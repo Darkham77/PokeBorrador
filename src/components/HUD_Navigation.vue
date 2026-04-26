@@ -250,7 +250,7 @@ const toggleGroupMenu = (name) => {
     padding: 0 10px;
     
     // GLASSMORPHISM ENHANCED
-    @include glass-solid(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
+    @include glass-solid(Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%));
     
     // MULTI-LAYER REFLECTIONS & CONTRAST
     border-top: 1px solid Rgba(255, 255, 255, 0.18);
@@ -267,7 +267,7 @@ const toggleGroupMenu = (name) => {
       left: 0;
       right: 0;
       height: 1px;
-      background: linear-gradient(90deg, 
+      background: Linear-Gradient(90deg, 
         transparent, 
         Rgba(255, 255, 255, 0.3), 
         transparent
@@ -359,7 +359,7 @@ const toggleGroupMenu = (name) => {
   position: absolute;
   flex-direction: column;
   gap: 6px;
-  @include glass-solid(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
+  @include glass-solid(Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%));
   border: 1px solid Rgba(255, 255, 255, 0.15);
   border-radius: 14px;
   padding: 8px;

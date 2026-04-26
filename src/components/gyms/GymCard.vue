@@ -39,7 +39,7 @@ const leaderSpriteUrl = computed(() => {
     <!-- LEGACY HEADER: Gradient + Info -->
     <div
       class="card-header-legacy"
-      :style="{ background: `linear-gradient(135deg, ${gym.typeColor}22, ${gym.typeColor}08)` }"
+      :style="{ background: `Linear-Gradient(135deg, ${gym.typeColor}22, ${gym.typeColor}08)` }"
     >
       <div class="header-main">
         <div class="leader-info">
@@ -112,7 +112,7 @@ const leaderSpriteUrl = computed(() => {
           </div>
           <button
             class="retro-challenge-btn"
-            :style="{ background: `linear-gradient(135deg, ${gym.typeColor}, ${gym.typeColor}cc)`, boxShadow: `0 4px 14px ${gym.typeColor}66` }"
+            :style="{ background: `Linear-Gradient(135deg, ${gym.typeColor}, ${gym.typeColor}cc)`, boxShadow: `0 4px 14px ${gym.typeColor}66` }"
             @click.stop="handleChallenge"
           >
             ⚔️ {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR' }}

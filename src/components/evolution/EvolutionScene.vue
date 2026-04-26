@@ -137,7 +137,7 @@ const close = () => {
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay);
-  background: radial-gradient(circle at center, Rgba(26, 26, 46, 1) 0%, $dark 100%);
+  background: Radial-Gradient(circle at center, Rgba(26, 26, 46, 1) 0%, $dark 100%);
   display: flex;
   align-items: center;
   justify-content: center;

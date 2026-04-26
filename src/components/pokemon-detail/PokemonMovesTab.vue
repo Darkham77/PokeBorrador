@@ -37,7 +37,7 @@ const hexToRgb = (hex) => {
           :style="{ 
             '--m-type-color': PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'],
             '--m-type-rgb': hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal']),
-            background: `linear-gradient(135deg, Rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.25) 0%, Rgba(255, 255, 255, 0.05) 100%)`,
+            background: `Linear-Gradient(135deg, Rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.25) 0%, Rgba(255, 255, 255, 0.05) 100%)`,
             borderColor: `Rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.3)`
           }"
           @click.stop="uiStore.openMoveDetail(m.name)"

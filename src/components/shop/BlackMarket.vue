@@ -84,7 +84,7 @@ onMounted(() => {
 <style scoped lang="scss">
 @use "sass:string";
 .black-market-section {
-  background: linear-gradient(180deg, Rgba(239, 68, 68, 0.05) 0%, Rgba(0, 0, 0, 0) 100%);
+  background: Linear-Gradient(180deg, Rgba(239, 68, 68, 0.05) 0%, Rgba(0, 0, 0, 0) 100%);
   border-radius: 20px;
   padding: 30px;
   border: 1px solid Rgba(239, 68, 68, 0.15);
@@ -186,7 +186,7 @@ onMounted(() => {
     position: absolute;
     width: 40px;
     height: 40px;
-    background: radial-gradient(circle, Rgba(239, 68, 68, 0.2) 0%, transparent 70%);
+    background: Radial-Gradient(circle, Rgba(239, 68, 68, 0.2) 0%, transparent 70%);
     border-radius: 50%;
   }
 }

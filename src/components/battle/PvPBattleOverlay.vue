@@ -179,7 +179,7 @@ const handleMoveSelection = (moveIdx) => {
   overflow: hidden;
 
   &.is-ranked {
-    background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+    background: Radial-Gradient(circle at center, #1e293b 0%, #0f172a 100%);
   }
 }
 

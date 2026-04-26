@@ -1,24 +1,42 @@
 <script setup>
 import { useInventoryStore } from '@/stores/inventory'
+import { useUIStore } from '@/stores/ui'
 import { computed } from 'vue'
 
 const inventoryStore = useInventoryStore()
 
-const categories = [
-  { id: 'todos', label: 'Todos', icon: '📦' },
-  { id: 'pokeballs', label: 'Balls', icon: '⚪' },
-  { id: 'pociones', label: 'Cura', icon: '🧪' },
-  { id: 'stones', label: 'Piedras', icon: '💎' },
-  { id: 'held', label: 'Equipo', icon: '🎒' },
-  { id: 'breeding', label: 'Crianza', icon: '🥚' },
-  { id: 'especial', label: 'Otros', icon: '✨' }
-]
-
 const activeCategory = computed(() => inventoryStore.activeCategory)
+const uiStore = useUIStore()
+
+const categories = computed(() => {
+  const list = [
+    { id: 'todos', label: 'Todos', icon: '📦' },
+    { id: 'pokeballs', label: 'Balls', icon: '⚪' },
+    { id: 'pociones', label: 'Cura', icon: '🧪' },
+    { id: 'stones', label: 'Piedras', icon: '💎' },
+    { id: 'held', label: 'Equipo', icon: '🎒' },
+    { id: 'breeding', label: 'Crianza', icon: '🥚' },
+    { id: 'especial', label: 'Otros', icon: '✨' }
+  ]
+
+  if (uiStore.inventoryTarget) {
+    list.unshift({ id: 'utilizables', label: 'Utilizables', icon: '⭐' })
+  }
+
+  return list
+})
 
 const setCategory = (id) => {
   inventoryStore.activeCategory = id
 }
+
+// Ensure the active category is always valid within the current context
+import { watch } from 'vue'
+watch(() => categories.value, (newCats) => {
+  if (!newCats.find(c => c.id === inventoryStore.activeCategory)) {
+    inventoryStore.activeCategory = 'todos'
+  }
+}, { immediate: true })
 </script>
 
 <template>

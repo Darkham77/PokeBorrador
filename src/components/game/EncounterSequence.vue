@@ -158,7 +158,7 @@ const handleFishingStart = () => {
   border: none;
   border-radius: 14px;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--blue), Rgba(37, 99, 235, 1));
+  background: Linear-Gradient(135deg, var(--blue), Rgba(37, 99, 235, 1));
   color: var(--white);
   box-shadow: 0 4px 16px Rgba(59, 130, 246, 0.5);
   margin-top: 12px;

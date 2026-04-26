@@ -360,7 +360,7 @@ const net = computed(() => price.value - fee.value)
 .confirm-btn {
   width: 100%;
   padding: 18px;
-  background: linear-gradient(135deg, Rgba(168, 85, 247, 1), Rgba(124, 58, 237, 1));
+  background: Linear-Gradient(135deg, Rgba(168, 85, 247, 1), Rgba(124, 58, 237, 1));
   color: var(--white);
   border: none;
   border-radius: 16px;

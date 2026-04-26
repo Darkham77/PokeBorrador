@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { getPokemonTier } from '@/logic/pokemonUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
@@ -118,6 +119,7 @@ const bst = computed(() => {
       </PVSpriteFX>
     </div>
 
+
     <!-- Info Footer -->
     <div class="card-info">
       <div class="box-pokemon-name">
@@ -179,6 +181,7 @@ const bst = computed(() => {
   &.daycare { top: 18px; background: var(--blue); color: $white; }
   &.defense { top: 36px; background: var(--green); color: $white; }
 }
+
 
 .selection-overlay {
   position: absolute;

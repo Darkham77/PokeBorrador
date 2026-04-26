@@ -124,7 +124,7 @@ const close = () => {
   .m-bar { height: 6px; background: Rgba(0,0,0,0.3); border-radius: 3px; overflow: hidden; }
   .m-fill { 
     height: 100%; 
-    background: linear-gradient(90deg, var(--blue), Rgba(96, 165, 250, 1)); 
+    background: Linear-Gradient(90deg, var(--blue), Rgba(96, 165, 250, 1)); 
     transition: width 0.3s;
     box-shadow: 0 0 10px Rgba(59, 130, 246, 0.3);
   }

@@ -112,7 +112,7 @@ h3 {
 .battle-btn {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, Rgba(251, 191, 36, 1), Rgba(245, 158, 11, 1));
+  background: Linear-Gradient(135deg, Rgba(251, 191, 36, 1), Rgba(245, 158, 11, 1));
   border: none;
   border-radius: 16px;
   color: Rgba(0, 0, 0, 1);

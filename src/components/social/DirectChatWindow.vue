@@ -163,7 +163,7 @@ onMounted(() => {
 .chat-header {
   height: 40px;
   padding: 0 12px;
-  background: linear-gradient(90deg, var(--purple), Rgba(157, 78, 221, 1));
+  background: Linear-Gradient(90deg, var(--purple), Rgba(157, 78, 221, 1));
   display: flex;
   justify-content: space-between;
   align-items: center;

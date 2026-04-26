@@ -5,6 +5,7 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
 import { POKEMON_TAGS, POKEMON_BADGES, hasPokemonTag } from '@/logic/constants/tags'
 import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 
 defineProps({
   item: { type: Object, required: true },
@@ -46,35 +47,6 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
           >
         </PVSpriteFX>
       </PVTooltip>
-
-      <!-- Action badges (Held Item + Tags) -->
-      <div
-        v-if="item.pokemon.heldItem || item.pokemon.tags?.length"
-        class="mini-badges"
-      >
-        <PVTooltip
-          v-if="item.pokemon.heldItem"
-          :title="POKEMON_BADGES.heldItem.label"
-          :description="`${POKEMON_BADGES.heldItem.desc} (${item.pokemon.heldItem})`"
-          position="top"
-        >
-          <span class="mini-icon">{{ POKEMON_BADGES.heldItem.icon }}</span>
-        </PVTooltip>
-
-        <template
-          v-for="t in POKEMON_TAGS"
-          :key="t.id"
-        >
-          <PVTooltip
-            v-if="hasPokemonTag(item.pokemon, t.id)"
-            :title="t.label"
-            :description="t.desc"
-            position="top"
-          >
-            <span class="mini-icon">{{ t.icon }}</span>
-          </PVTooltip>
-        </template>
-      </div>
     </div>
 
     <div class="poke-details">
@@ -93,7 +65,17 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
           >
             {{ item.pokemon.gender === 'M' ? '♂' : '♀' }}
           </span>
+
+          <!-- Action badges relocated next to gender -->
+          <UnifiedBadgePill 
+            :pokemon="item.pokemon" 
+            size="sm"
+            :vertical="false"
+            :inline="true"
+            class="header-pill"
+          />
         </div>
+
         <div class="actions-right">
           <span class="lvl">Nv.{{ item.pokemon.level ?? 1 }}</span>
         </div>

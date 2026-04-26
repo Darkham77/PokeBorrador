@@ -144,7 +144,7 @@ if (typeof window !== 'undefined') {
     }
 
     .buy-btn {
-      background: linear-gradient(135deg, var(--yellow), Rgba(245, 158, 11, 1));
+      background: Linear-Gradient(135deg, var(--yellow), Rgba(245, 158, 11, 1));
       color: Rgba(0, 0, 0, 1);
       border: none;
       border-radius: 10px;

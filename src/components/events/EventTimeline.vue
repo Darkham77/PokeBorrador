@@ -181,7 +181,7 @@ const formatBonus = (key, val) => {
 }
 
 .event-card {
-  background: linear-gradient(135deg, Rgba(255, 255, 255, 0.05), Rgba(255, 255, 255, 0.02));
+  background: Linear-Gradient(135deg, Rgba(255, 255, 255, 0.05), Rgba(255, 255, 255, 0.02));
   border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 20px;

@@ -232,7 +232,7 @@ function handleClose() {
   position: absolute;
   width: 100px;
   height: 100px;
-  background: radial-gradient(circle, var(--yellow) 0%, transparent 70%);
+  background: Radial-Gradient(circle, var(--yellow) 0%, transparent 70%);
   opacity: 0;
   border-radius: 50%;
   filter: Blur(15px);
@@ -245,11 +245,11 @@ function handleClose() {
   }
   
   &.revealed {
-    background: radial-gradient(circle, var(--white) 0%, transparent 70%);
+    background: Radial-Gradient(circle, var(--white) 0%, transparent 70%);
   }
   
   &.is-shiny {
-    background: radial-gradient(circle, gold 0%, transparent 70%);
+    background: Radial-Gradient(circle, gold 0%, transparent 70%);
   }
 }
 

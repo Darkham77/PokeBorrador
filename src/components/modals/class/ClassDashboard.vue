@@ -178,16 +178,16 @@ const getTrainerSprite = (id) => {
   background: Rgba(10, 12, 20, 1);
   
   // Custom class gradients
-  .rocket & { background: linear-gradient(135deg, Rgba(26, 5, 5, 1) 0%, Rgba(5, 2, 2, 1) 100%); }
-  .cazabichos & { background: linear-gradient(135deg, Rgba(5, 20, 5, 1) 0%, Rgba(2, 6, 2, 1) 100%); }
-  .entrenador & { background: linear-gradient(135deg, Rgba(5, 10, 20, 1) 0%, Rgba(2, 4, 6, 1) 100%); }
-  .criador & { background: linear-gradient(135deg, Rgba(10, 5, 20, 1) 0%, Rgba(3, 2, 6, 1) 100%); }
+  .rocket & { background: Linear-Gradient(135deg, Rgba(26, 5, 5, 1) 0%, Rgba(5, 2, 2, 1) 100%); }
+  .cazabichos & { background: Linear-Gradient(135deg, Rgba(5, 20, 5, 1) 0%, Rgba(2, 6, 2, 1) 100%); }
+  .entrenador & { background: Linear-Gradient(135deg, Rgba(5, 10, 20, 1) 0%, Rgba(2, 4, 6, 1) 100%); }
+  .criador & { background: Linear-Gradient(135deg, Rgba(10, 5, 20, 1) 0%, Rgba(3, 2, 6, 1) 100%); }
 
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 70% 30%, var(--cls-color) 0%, transparent 50%);
+    background: Radial-Gradient(circle at 70% 30%, var(--cls-color) 0%, transparent 50%);
     opacity: 0.08;
     pointer-events: none;
   }
@@ -221,7 +221,7 @@ const getTrainerSprite = (id) => {
       .avatar-glow {
         position: absolute;
         inset: 0;
-        background: radial-gradient(circle at center, var(--cls-color) 0%, transparent 80%);
+        background: Radial-Gradient(circle at center, var(--cls-color) 0%, transparent 80%);
         opacity: 0.1;
       }
       

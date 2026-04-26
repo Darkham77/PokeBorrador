@@ -155,7 +155,7 @@ const handleSwitch = () => {
 .battle-arena {
   height: 300px;
   position: relative;
-  background: linear-gradient(to bottom, Rgba(30, 41, 59, 1), Rgba(15, 23, 42, 1));
+  background: Linear-Gradient(to bottom, Rgba(30, 41, 59, 1), Rgba(15, 23, 42, 1));
 }
 
 .trainer-header {

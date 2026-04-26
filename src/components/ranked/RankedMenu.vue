@@ -199,7 +199,7 @@ const cancelSearch = () => {
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  background: linear-gradient(135deg, Rgba(59, 130, 246, 0.1), Rgba(139, 92, 246, 0.1));
+  background: Linear-Gradient(135deg, Rgba(59, 130, 246, 0.1), Rgba(139, 92, 246, 0.1));
 }
 
 .season-tag {
@@ -256,7 +256,7 @@ const cancelSearch = () => {
 .search-btn {
   width: 100%;
   padding: 18px;
-  background: linear-gradient(90deg, Rgba(59, 130, 246, 1), Rgba(139, 92, 246, 1));
+  background: Linear-Gradient(90deg, Rgba(59, 130, 246, 1), Rgba(139, 92, 246, 1));
   border: none;
   border-radius: 12px;
   color: var(--white);

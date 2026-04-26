@@ -105,18 +105,18 @@
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; height: 50%;
-    background: linear-gradient(180deg, Rgba(255, 255, 255, 0.25) 0%, Rgba(255, 255, 255, 0) 100%);
+    background: Linear-Gradient(180deg, Rgba(255, 255, 255, 0.25) 0%, Rgba(255, 255, 255, 0) 100%);
     border-radius: inherit;
   }
   
-  &.hp-high { background: linear-gradient(90deg, #10b981, #34d399); filter: Drop-Shadow(0 0 8px Rgba(16, 185, 129, 0.6)); }
-  &.hp-mid  { background: linear-gradient(90deg, #f59e0b, #fbbf24); filter: Drop-Shadow(0 0 8px Rgba(245, 158, 11, 0.6)); }
-  &.hp-low  { background: linear-gradient(90deg, #ef4444, #f87171); filter: Drop-Shadow(0 0 8px Rgba(239, 68, 68, 0.6)); }
+  &.hp-high { background: Linear-Gradient(90deg, #10b981, #34d399); filter: Drop-Shadow(0 0 8px Rgba(16, 185, 129, 0.6)); }
+  &.hp-mid  { background: Linear-Gradient(90deg, #f59e0b, #fbbf24); filter: Drop-Shadow(0 0 8px Rgba(245, 158, 11, 0.6)); }
+  &.hp-low  { background: Linear-Gradient(90deg, #ef4444, #f87171); filter: Drop-Shadow(0 0 8px Rgba(239, 68, 68, 0.6)); }
 }
 
 .exp-bar {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #a855f7);
+  background: Linear-Gradient(90deg, #6366f1, #a855f7);
   border-radius: 20px;
   transition: width 0.6s ease;
   box-shadow: inset 0 1px 1px Rgba(255, 255, 255, 0.3);
@@ -125,7 +125,7 @@
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; height: 50%;
-    background: linear-gradient(180deg, Rgba(255, 255, 255, 0.2) 0%, Rgba(255, 255, 255, 0) 100%);
+    background: Linear-Gradient(180deg, Rgba(255, 255, 255, 0.2) 0%, Rgba(255, 255, 255, 0) 100%);
     border-radius: inherit;
   }
 }

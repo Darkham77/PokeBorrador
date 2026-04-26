@@ -141,9 +141,9 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   @include will-animate(width);
 }
 
-.hp-high { background: linear-gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); }
-.hp-mid { background: linear-gradient(90deg, Rgba(245, 158, 11, 1), Rgba(251, 191, 36, 1)); }
-.hp-low { background: linear-gradient(90deg, Rgba(239, 68, 68, 1), Rgba(248, 113, 113, 1)); }
+.hp-high { background: Linear-Gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); }
+.hp-mid { background: Linear-Gradient(90deg, Rgba(245, 158, 11, 1), Rgba(251, 191, 36, 1)); }
+.hp-low { background: Linear-Gradient(90deg, Rgba(239, 68, 68, 1), Rgba(248, 113, 113, 1)); }
 
 .hp-values {
   @include pixelated;

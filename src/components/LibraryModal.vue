@@ -94,7 +94,7 @@ const selectTab = (tabId) => {
   height: 600px;
   max-height: 85vh;
   overflow: hidden;
-  background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
+  background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
 

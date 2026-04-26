@@ -57,7 +57,7 @@ onMounted(async () => {
 @use "@/styles/core/_mixins" as *;
 .war-page {
   min-height: 100vh;
-  background: radial-gradient(circle at top, $card2 0%, $dark 100%);
+  background: Radial-Gradient(circle at top, $card2 0%, $dark 100%);
   padding: 40px 20px;
   overflow-y: auto; /* [PureVue-Ignore] Root element with min-height: 100vh is safe */
 }

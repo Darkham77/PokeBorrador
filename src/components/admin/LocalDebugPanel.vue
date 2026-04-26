@@ -139,7 +139,7 @@ const selectedCategory = ref('stats')
 }
 
 .trigger-btn {
-  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  background: Linear-Gradient(135deg, #7c3aed 0%, #4f46e5 100%);
   color: white;
   border: none;
   padding: 10px 20px;

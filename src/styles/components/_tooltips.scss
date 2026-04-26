@@ -196,9 +196,9 @@
 .tooltip-neutral { color: $gray; font-style: italic; }
 
 /* ===== GLOBAL HP BAR COLORS ===== */
-.hp-high { background: linear-gradient(90deg, $green, #28a745) !important; }
-.hp-mid  { background: linear-gradient(90deg, $yellow, #eab308) !important; }
-.hp-low  { background: linear-gradient(90deg, $red, #dc2626) !important; }
+.hp-high { background: Linear-Gradient(90deg, $green, #28a745) !important; }
+.hp-mid  { background: Linear-Gradient(90deg, $yellow, #eab308) !important; }
+.hp-low  { background: Linear-Gradient(90deg, $red, #dc2626) !important; }
 
 /* ===== INTERACTIVE POKEMON TAGS ===== */
 .poke-tag {

@@ -203,7 +203,7 @@ const getButtonVariant = (clsId) => {
   .card-glow {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at center, var(--cls-color) 0%, transparent 70%);
+    background: Radial-Gradient(circle at center, var(--cls-color) 0%, transparent 70%);
     opacity: 0.05;
     transition: opacity 0.4s;
     pointer-events: none;

@@ -77,7 +77,7 @@ const avatarStyles = computed(() => {
   return {
     ...baseStyles,
     backgroundColor: 'transparent',
-    backgroundImage: `radial-gradient(circle, ${cls.value.color}44 0%, transparent 80%), url('${displayUrl}')`,
+    backgroundImage: `Radial-Gradient(circle, ${cls.value.color}44 0%, transparent 80%), url('${displayUrl}')`,
     backgroundSize: `cover, ${bgSize}`,
     backgroundPosition: `center, ${bgPos}`,
     backgroundRepeat: 'no-repeat',

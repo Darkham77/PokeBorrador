@@ -8,7 +8,7 @@ TRAPS = [
     'scale', 'grayscale', 'invert', 'opacity', 'brightness', 
     'blur', 'rotate', 'translate', 'saturate', 'drop-shadow',
     'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix',
-    'rgb', 'rgba'
+    'rgb', 'rgba', 'linear-gradient', 'radial-gradient'
 ]
 
 # Regex explanation:

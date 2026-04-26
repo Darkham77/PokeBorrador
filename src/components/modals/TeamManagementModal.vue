@@ -49,9 +49,16 @@ function openDetail(pokemon) {
 
 function openItem(pokemon) {
   if (!pokemon) return
-  const idx = gameStore.state.team.findIndex(p => p.uid === pokemon.uid)
-  if (idx > -1 && typeof window.openTeamItemMenu === 'function') {
-    window.openTeamItemMenu(idx)
+  // Try to find in team first
+  let idx = gameStore.state.team.findIndex(p => p && p.uid === pokemon.uid)
+  if (idx > -1) {
+    uiStore.toggleInventory('team', idx)
+    return
+  }
+  // Fallback to box (for PVP/WAR slots that might be in box)
+  idx = gameStore.state.box.findIndex(p => p && p.uid === pokemon.uid)
+  if (idx > -1) {
+    uiStore.toggleInventory('box', idx)
   }
 }
 
@@ -359,7 +366,7 @@ function selectAdventure(_slotIndex) {
   .line {
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--white), transparent);
+    background: Linear-Gradient(90deg, transparent, var(--white), transparent);
   }
 
   .diamond {

@@ -87,7 +87,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
 
 .send-offer-btn {
   padding: 16px 32px;
-  background: linear-gradient(135deg, var(--purple), Rgba(142, 36, 170, 1));
+  background: Linear-Gradient(135deg, var(--purple), Rgba(142, 36, 170, 1));
   border: none;
   border-radius: 14px;
   color: $white;

@@ -146,7 +146,7 @@ const getFactionIcon = (faction) => {
   padding: 40px;
   position: relative;
   text-align: center;
-  background: linear-gradient(to bottom, Rgba(255,255,255,0.02), transparent);
+  background: Linear-Gradient(to bottom, Rgba(255,255,255,0.02), transparent);
 }
 
 .close-btn {

@@ -273,7 +273,7 @@ h2 {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, Rgba(34, 197, 94, 1), Rgba(74, 222, 128, 1));
+  background: Linear-Gradient(90deg, Rgba(34, 197, 94, 1), Rgba(74, 222, 128, 1));
   box-shadow: 0 0 10px Rgba(34, 197, 94, 0.5);
   transition: width 0.1s linear;
 }
@@ -326,7 +326,7 @@ h2 {
 }
 
 .btn-heal {
-  background: linear-gradient(135deg, Rgba(239, 68, 68, 1), Rgba(185, 28, 28, 1));
+  background: Linear-Gradient(135deg, Rgba(239, 68, 68, 1), Rgba(185, 28, 28, 1));
   color: var(--white);
   border: none;
   padding: 16px;

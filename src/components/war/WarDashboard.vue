@@ -266,7 +266,7 @@ onMounted(async () => {
     
     .fill {
       height: 100%;
-      background: linear-gradient(90deg, Rgba(59, 130, 246, 1), Rgba(96, 165, 250, 1));
+      background: Linear-Gradient(90deg, Rgba(59, 130, 246, 1), Rgba(96, 165, 250, 1));
       transition: width 0.5s ease-out;
       box-shadow: 0 0 10px Rgba(59, 130, 246, 0.5);
     }

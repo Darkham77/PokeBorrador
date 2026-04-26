@@ -158,8 +158,8 @@ const onPokemonClick = (index) => {
 
 .pc-box-view {
   padding: 0;
-  background: radial-gradient(circle at top right, Rgba(147, 51, 234, 0.05), transparent),
-              radial-gradient(circle at bottom left, Rgba(59, 130, 246, 0.05), transparent);
+  background: Radial-Gradient(circle at top right, Rgba(147, 51, 234, 0.05), transparent),
+              Radial-Gradient(circle at bottom left, Rgba(59, 130, 246, 0.05), transparent);
   display: flex;
   justify-content: center;
 }

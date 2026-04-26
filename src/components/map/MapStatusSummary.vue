@@ -254,7 +254,7 @@ const bannerStyle = computed(() => ({
     content: '';
     position: absolute;
     inset: -5px; // Sangrado profundo
-    background: linear-gradient(to top, $black 0%, Rgba(0,0,0,0.85) 35%, transparent 70%);
+    background: Linear-Gradient(to top, $black 0%, Rgba(0,0,0,0.85) 35%, transparent 70%);
     z-index: calc(var(--z-base) + 2);
     pointer-events: none;
     border-radius: 16px;
@@ -278,7 +278,7 @@ const bannerStyle = computed(() => ({
   text-align: left;
   z-index: calc(var(--z-base) + 3);
   border-radius: 0 0 16px 16px;
-  background: linear-gradient(to top, Rgba(0,0,0,0.4), transparent);
+  background: Linear-Gradient(to top, Rgba(0,0,0,0.4), transparent);
 }
 
 .banner-title {
@@ -362,9 +362,9 @@ const bannerStyle = computed(() => ({
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(180deg, Rgba(255,255,255,0.08), Rgba(255,255,255,0.01));
-    -webkit-mask: linear-gradient(var(--white) 0 0) content-box, linear-gradient(var(--white) 0 0);
-    mask: linear-gradient(var(--white) 0 0) content-box, linear-gradient(var(--white) 0 0);
+    background: Linear-Gradient(180deg, Rgba(255,255,255,0.08), Rgba(255,255,255,0.01));
+    -webkit-mask: Linear-Gradient(var(--white) 0 0) content-box, Linear-Gradient(var(--white) 0 0);
+    mask: Linear-Gradient(var(--white) 0 0) content-box, Linear-Gradient(var(--white) 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -494,7 +494,7 @@ const bannerStyle = computed(() => ({
 
 .event-banner {
   &.active {
-    background: linear-gradient(135deg, 
+    background: Linear-Gradient(135deg, 
       Rgba(255, 214, 10, 0.2) 0%, 
       Rgba(15, 23, 42, 0.95) 100%
     ) !important;
@@ -511,11 +511,11 @@ const bannerStyle = computed(() => ({
     }
 
     &::after {
-      background: linear-gradient(180deg, Rgba(255, 214, 10, 0.3), Rgba(255, 214, 10, 0.05));
+      background: Linear-Gradient(180deg, Rgba(255, 214, 10, 0.3), Rgba(255, 214, 10, 0.05));
     }
 
     &:hover {
-      background: linear-gradient(135deg, 
+      background: Linear-Gradient(135deg, 
         Rgba(255, 214, 10, 0.3) 0%, 
         Rgba(30, 41, 59, 0.95) 100%
       ) !important;

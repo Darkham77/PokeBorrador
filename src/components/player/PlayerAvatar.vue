@@ -46,7 +46,7 @@ const containerStyle = computed(() => ({
   minHeight: `${props.size}px`,
   borderColor: borderColor.value,
   boxShadow: `0 0 ${props.size / 4}px ${borderColor.value}66`,
-  backgroundImage: cls.value ? `radial-gradient(circle, ${cls.value.color}44 0%, transparent 80%), url('${avatarUrl.value}')` : 'none'
+  backgroundImage: cls.value ? `Radial-Gradient(circle, ${cls.value.color}44 0%, transparent 80%), url('${avatarUrl.value}')` : 'none'
 }));
 </script>
 

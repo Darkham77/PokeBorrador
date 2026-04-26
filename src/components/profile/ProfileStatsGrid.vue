@@ -74,7 +74,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
   }
 
   &.highlight {
-    background: linear-gradient(135deg, Rgba(255, 214, 10, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
+    background: Linear-Gradient(135deg, Rgba(255, 214, 10, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
     border-color: Rgba(255, 214, 10, 0.1);
     
     .legacy-stat-val {

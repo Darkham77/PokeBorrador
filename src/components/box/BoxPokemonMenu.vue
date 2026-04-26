@@ -11,6 +11,10 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import { useModalStore } from '@/stores/modals'
+import { calculateTotalPower, getPokemonTier } from '@/logic/pokemonUtils'
+import { POKEMON_BADGES } from '@/logic/constants/tags'
+import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 
 const props = defineProps({
   show: { type: Boolean, default: true },
@@ -25,6 +29,8 @@ const boxStore = useBoxStore()
 
 const pokemon = computed(() => gameStore.state.box[props.boxIndex])
 const team = computed(() => gameStore.state.team)
+const totalPower = computed(() => calculateTotalPower(pokemon.value))
+const tierInfo = computed(() => getPokemonTier(pokemon.value))
 
 const handleMoveToTeam = () => {
   const res = boxStore.moveBoxToTeam(props.boxIndex)
@@ -51,7 +57,10 @@ const handleDetail = () => {
 }
 
 const handleUseItem = () => {
-  uiStore.toggleInventory()
+  // Set target context directly in uiStore and open modal via modalStore 
+  // to avoid circular dependency issues with uiStore.toggleInventory
+  uiStore.inventoryTarget = { context: 'box', index: props.boxIndex }
+  useModalStore().open('Inventory')
 }
 
 const handleMoveToBox = () => {
@@ -97,6 +106,7 @@ const handleRelease = () => {
 const handleToggleTag = (tag) => {
   boxStore.togglePokeTag(props.boxIndex, tag)
 }
+const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 
 </script>
 
@@ -116,10 +126,23 @@ const handleToggleTag = (tag) => {
       <!-- Pokémon Header (Clickable to detail) -->
       <header 
         class="pokemon-summary is-interactive" 
+        :style="{ '--type-color': getTypeColor(pokemon.types?.[0] || pokemon.type) }"
         @click.stop="handleDetail"
       >
+        <div class="summary-badges-right">
+          <div
+            class="tier-badge"
+            :style="{ color: tierInfo.color, background: tierInfo.bg }"
+          >
+            {{ tierInfo.tier }}
+          </div>
+        </div>
+
         <div class="summary-top">
-          <div class="sprite-box">
+          <div 
+            class="sprite-box"
+            :style="{ '--glow-color': getTypeColor(pokemon.types?.[0] || pokemon.type) }"
+          >
             <PVSpriteFX
               :is-shiny="pokemon.isShiny"
               :is-guardian="pokemon.isGuardian"
@@ -139,8 +162,29 @@ const handleToggleTag = (tag) => {
               >{{ pokemon.nickname }}</span>
               <h3 class="p-name">
                 {{ pokemon.name }}
+                <span
+                  v-if="pokemon.gender"
+                  :class="['gender-icon', pokemon.gender === 'M' ? 'male' : 'female']"
+                >
+                  {{ pokemon.gender === 'M' ? '♂' : '♀' }}
+                </span>
               </h3>
-              <span class="level-badge">NV. {{ pokemon.level }}</span>
+              <div class="level-row">
+                <span class="level-badge">NV. {{ pokemon.level }}</span>
+                <span class="tot-badge ivs">IV {{ Object.values(pokemon.ivs || {}).reduce((s,v)=>s+(v||0),0) }}</span>
+                <span class="tot-badge">TOT {{ totalPower }}</span>
+              </div>
+              
+              <div class="types-row-header">
+                <span 
+                  v-for="t in pokemon.types || [pokemon.type]" 
+                  :key="t"
+                  class="type-pill-mini"
+                  :style="{ background: getTypeColor(t) }"
+                >
+                  {{ t?.toUpperCase() }}
+                </span>
+              </div>
             </div>
 
             <div class="details">
@@ -161,16 +205,12 @@ const handleToggleTag = (tag) => {
               </PVTooltip>
             </div>
 
-            <!-- Badges integrated horizontally -->
             <div class="header-badges">
               <UnifiedBadgePill 
                 :pokemon="pokemon" 
                 size="md" 
-                editable
-                show-all
                 :vertical="false"
                 inline
-                @toggle-tag="handleToggleTag"
               />
             </div>
           </div>
@@ -196,18 +236,27 @@ const handleToggleTag = (tag) => {
               v-for="(t, i) in team"
               :key="t.uid"
               class="team-swap-slot"
+              :class="{ 'has-pokemon': !!t }"
               @click.stop="handleSwap(i)"
             >
+              <div v-if="t" class="slot-rank" :style="{ color: getPokemonTier(t).color, background: getPokemonTier(t).bg }">
+                {{ getPokemonTier(t).tier }}
+              </div>
               <div class="slot-badges">
                 <UnifiedBadgePill 
+                  v-if="t"
                   :pokemon="t" 
                   size="sm" 
                   :vertical="false"
                   inline
                 />
               </div>
-              <div class="ts-sprite-container">
+              <div 
+                class="ts-sprite-container"
+                :style="{ '--glow-color': getTypeColor(t?.types?.[0] || t?.type) }"
+              >
                 <PVSpriteFX
+                  v-if="t"
                   :is-shiny="t.isShiny"
                   :is-guardian="t.isGuardian"
                 >
@@ -218,7 +267,7 @@ const handleToggleTag = (tag) => {
                   >
                 </PVSpriteFX>
               </div>
-              <span class="ts-name">{{ t.nickname || t.name }}</span>
+              <span v-if="t" class="ts-name">{{ t.nickname || t.name }}</span>
             </div>
           </div>
         </div>
@@ -227,13 +276,13 @@ const handleToggleTag = (tag) => {
       <!-- General Actions -->
       <div class="footer-actions">
         <button
-          class="menu-action-btn warning"
+          class="menu-action-btn"
           @click.stop="handleUseItem"
         >
           <span class="icon">🎒</span> USAR OBJETO
         </button>
         <button
-          class="menu-action-btn warning"
+          class="menu-action-btn"
           @click.stop="handleMoveToBox"
         >
           <span class="icon">📦</span> MOVER CAJA
@@ -310,8 +359,16 @@ const handleToggleTag = (tag) => {
     width: 112px;
     height: 112px;
     @include flex-center;
-    background: radial-gradient(circle, Rgba(255, 255, 255, 0.08) 0%, transparent 70%);
     position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: Radial-Gradient(circle, var(--glow-color, white) 0%, transparent 65%);
+      opacity: 0.25;
+      z-index: var(--z-base);
+    }
     
     .menu-sprite {
       width: 140px;
@@ -351,6 +408,28 @@ const handleToggleTag = (tag) => {
       text-transform: uppercase; 
       margin: 0; 
       line-height: 1; 
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      .gender-icon {
+        font-size: 14px;
+        &.male { color: #55aaff; }
+        &.female { color: #ff88aa; }
+      }
+    }
+
+    .level-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+
+      .tot-badge.ivs {
+        background: Rgba(255, 217, 61, 0.1);
+        color: var(--yellow);
+        border: 1px solid Rgba(255, 217, 61, 0.2);
+      }
     }
 
     .level-badge { 
@@ -361,8 +440,12 @@ const handleToggleTag = (tag) => {
       border: 1px solid Rgba(255, 214, 10, 0.2);
       border-radius: 4px;
       padding: 2px 6px;
-      margin-top: 4px;
     }
+    
+    .tot-badge {
+      @include badge-tot;
+    }
+    
     .details { 
       font-size: 11px; 
       color: var(--gray); 
@@ -383,24 +466,79 @@ const handleToggleTag = (tag) => {
     }
   }
 
-  .header-badges {
-    margin-top: 4px;
+  .pokemon-summary {
+    position: relative;
+    padding: 16px;
+    background: Linear-Gradient(135deg, Rgba(255,255,255,0.05) 0%, Rgba(0,0,0,0.2) 100%);
+    border-bottom: 1px solid Rgba(255,255,255,0.05);
     display: flex;
+    gap: 16px;
     align-items: center;
-    justify-content: center;
+    border-radius: 12px 12px 0 0;
+    transition: all 0.3s ease;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--type-color, var(--purple));
+      box-shadow: 0 0 10px var(--type-color);
+      opacity: 0.6;
+    }
+
+    &.is-interactive:hover {
+      background: Linear-Gradient(135deg, Rgba(255,255,255,0.08) 0%, Rgba(0,0,0,0.25) 100%);
+    }
+  }
+
+  .types-row-header {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+
+    .type-pill-mini {
+      font-size: 7px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      @include pixelated;
+      color: white;
+      text-shadow: 1px 1px 0 Rgba(0,0,0,0.3);
+      box-shadow: 0 1px 3px Rgba(0,0,0,0.2);
+    }
+  }
+
+  .summary-badges-right {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    z-index: var(--z-low);
+
+    .tier-badge {
+      font-size: 8px;
+      min-width: 16px;
+      height: 16px;
+      @include flex-center;
+      padding: 2px;
+      border-radius: 4px;
+      @include pixelated;
+      line-height: 1;
+      box-shadow: 0 2px 5px Rgba(0,0,0,0.3);
+    }
   }
 }
 
 .menu-action-btn {
-  @include btn-vicio('neutral', 'sm', true);
+  @include btn-vicio('primary', 'sm', true);
   margin-bottom: 8px;
   
-  &.primary { @include btn-vicio-secondary('sm', true); }
   &.secondary { @include btn-vicio-success('sm', true); }
   &.danger { @include btn-vicio-danger('sm', true); margin-top: 12px; }
-  &.warning { @include btn-vicio('warning', 'sm', true); }
-  &.rocket { @include btn-vicio-danger('sm', true); }
-  &.flat { @include btn-vicio('neutral', 'sm', true); }
 }
 
 .swap-section {
@@ -434,6 +572,23 @@ const handleToggleTag = (tag) => {
   transition: all 0.2s;
   position: relative;
   overflow: visible;
+
+  .slot-rank {
+    position: absolute;
+    bottom: 12px;
+    left: 8px;
+    @include pixelated;
+    font-size: 8px;
+    background: Rgba(0, 0, 0, 0.6);
+    color: var(--vicio-gold);
+    padding: 2px 4px;
+    border-radius: 4px;
+    z-index: calc(var(--z-base) + 5);
+    box-shadow: 0 2px 8px Rgba(0,0,0,0.4);
+    font-weight: 900;
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    line-height: 1;
+  }
 
   @media (max-width: 768px) {
     aspect-ratio: auto;
@@ -477,7 +632,17 @@ const handleToggleTag = (tag) => {
   .ts-sprite-container {
     width: 48px;
     height: 48px;
+    position: relative;
     @include flex-center;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: Radial-Gradient(circle, var(--glow-color, white) 0%, transparent 75%);
+      opacity: 0.35;
+      z-index: var(--z-base);
+    }
 
     @media (max-width: 500px) {
       width: 32px;

@@ -32,9 +32,9 @@
       font-size: 24px;
       color: var(--white);
       margin: 0 0 12px 0;
-      background: linear-gradient(to bottom, var(--white), var(--gray));
+      background: Linear-Gradient(to bottom, var(--white), var(--gray));
       -webkit-background-clip: text;
-      -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;
+      -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;
       -webkit-text-fill-color: transparent;
     }
     .box-subtitle {
@@ -466,7 +466,7 @@
       content: '';
       flex: 1;
       height: 1px;
-      background: linear-gradient(to right, Rgba(255,255,255,0.05), transparent);
+      background: Linear-Gradient(to right, Rgba(255,255,255,0.05), transparent);
     }
   }
 }
@@ -682,7 +682,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
+    background: Radial-Gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
     opacity: 0;
     transition: opacity 0.3s;
   }

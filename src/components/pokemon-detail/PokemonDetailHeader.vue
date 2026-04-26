@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { calculateTotalPower } from '@/logic/pokemonUtils'
 
 const props = defineProps({
   pokemon: { type: Object, required: true }
@@ -14,6 +15,8 @@ const p = computed(() => props.pokemon)
 const getSprite = (id, isShiny) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
+
+const totalPower = computed(() => calculateTotalPower(p.value))
 </script>
 
 <template>
@@ -46,6 +49,7 @@ const getSprite = (id, isShiny) => {
             :class="'type-' + p.type.toLowerCase()"
           >{{ p.type }}</span>
           <span class="level-badge">Nv. {{ p.level }}</span>
+          <span class="tot-badge">TOT {{ totalPower }}</span>
           <span class="id-badge">#{{ String(p.id).padStart(3, '0') }}</span>
         </div>
         <div class="tags-row">
@@ -157,6 +161,9 @@ const getSprite = (id, isShiny) => {
 }
 
 .level-badge { font-weight: bold; color: var(--white); font-size: 12px; }
+.tot-badge {
+  @include badge-tot;
+}
 .id-badge { color: Rgba(255,255,255,0.3); font-size: 11px; font-weight: bold; }
 
 .tags-row {

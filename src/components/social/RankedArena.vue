@@ -473,7 +473,7 @@ function startSearch() {
   padding: 16px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, Rgba(59, 130, 246, 1), Rgba(0, 86, 179, 1));
+  background: Linear-Gradient(135deg, Rgba(59, 130, 246, 1), Rgba(0, 86, 179, 1));
   color: white;
   @include pixelated;
   font-size: 10px;

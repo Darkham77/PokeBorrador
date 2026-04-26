@@ -111,7 +111,7 @@ const geneticsSummary = computed(() => {
 <style lang="scss" scoped>
 @use "@/styles/core/_mixins" as *;
 .breeding-summary-card {
-  background: linear-gradient(135deg, Rgba(30, 41, 59, 0.9), Rgba(15, 23, 42, 0.95));
+  background: Linear-Gradient(135deg, Rgba(30, 41, 59, 0.9), Rgba(15, 23, 42, 0.95));
   border: 1px solid Rgba(139, 92, 246, 0.5);
   border-radius: 16px;
   padding: 20px;

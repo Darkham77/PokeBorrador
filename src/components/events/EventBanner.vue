@@ -81,7 +81,7 @@ const activeDisplayEvents = computed(() => {
     left: 0;
     width: 60px;
     height: 100%;
-    background: linear-gradient(90deg, var(--event-color) -100%, transparent 100%);
+    background: Linear-Gradient(90deg, var(--event-color) -100%, transparent 100%);
     opacity: 0.2;
     pointer-events: none;
   }

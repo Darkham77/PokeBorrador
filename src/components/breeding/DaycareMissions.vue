@@ -236,7 +236,7 @@ const handleDelivery = (pokemon) => {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  background: Linear-Gradient(135deg, #8b5cf6, #6366f1);
   color: $white;
   border: none;
   @include pixelated;

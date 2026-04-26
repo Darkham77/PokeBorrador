@@ -127,7 +127,7 @@ const getFactionColor = (faction) => {
 }
 
 .season-info {
-  background: linear-gradient(135deg, Rgba(251, 191, 36, 0.1), Rgba(0, 0, 0, 0.4));
+  background: Linear-Gradient(135deg, Rgba(251, 191, 36, 0.1), Rgba(0, 0, 0, 0.4));
   border: 1px solid Rgba(251, 191, 36, 0.3);
   border-radius: 14px;
   padding: 15px;
@@ -198,9 +198,9 @@ const getFactionColor = (faction) => {
     transform: Scale(1.01);
   }
 
-  &.rank-1 { background: linear-gradient(90deg, Rgba(251, 191, 36, 0.15), Rgba(0,0,0,0)); border-color: Rgba(251, 191, 36, 0.4); }
-  &.rank-2 { background: linear-gradient(90deg, Rgba(148, 163, 184, 0.15), Rgba(0,0,0,0)); border-color: Rgba(148, 163, 184, 0.4); }
-  &.rank-3 { background: linear-gradient(90deg, Rgba(180, 83, 9, 0.15), Rgba(0,0,0,0)); border-color: Rgba(180, 83, 9, 0.4); }
+  &.rank-1 { background: Linear-Gradient(90deg, Rgba(251, 191, 36, 0.15), Rgba(0,0,0,0)); border-color: Rgba(251, 191, 36, 0.4); }
+  &.rank-2 { background: Linear-Gradient(90deg, Rgba(148, 163, 184, 0.15), Rgba(0,0,0,0)); border-color: Rgba(148, 163, 184, 0.4); }
+  &.rank-3 { background: Linear-Gradient(90deg, Rgba(180, 83, 9, 0.15), Rgba(0,0,0,0)); border-color: Rgba(180, 83, 9, 0.4); }
 }
 
 .rank-number {

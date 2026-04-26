@@ -10,6 +10,7 @@ import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/constants/tiers'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { calculateTotalPower } from '@/logic/pokemonUtils'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -47,7 +48,10 @@ const getHpClass = (pct) => {
 }
 
 const tierInfo = computed(() => getPokemonTier(props.pokemon))
-const hasBadges = computed(() => getPokemonVisualBadges(props.pokemon).length > 0)
+
+const badgesCount = computed(() => getPokemonVisualBadges(props.pokemon).length)
+const hasBadges = computed(() => badgesCount.value > 0)
+const hasManyBadges = computed(() => badgesCount.value >= 6)
 
 const disobeys = computed(() => props.pokemon.level > props.maxObeyLv)
 
@@ -57,19 +61,13 @@ const spriteUrl = computed(() => {
   })
 })
 
-const totalPower = computed(() => {
-  const p = props.pokemon
-  const species = pokemonDataProvider.getPokemonData(p.id)
-  const bst = species ? ((species.hp || 0) + (species.atk || 0) + (species.def || 0) + (species.spa || 0) + (species.spd || 0) + (species.spe || 0)) : 0
-  const ivs = p.ivs || {}
-  const totalIvs = Object.values(ivs).reduce((s, v) => s + (v || 0), 0)
-  return bst + totalIvs
-})
+const totalPower = computed(() => calculateTotalPower(props.pokemon))
 
 const cardClasses = computed(() => {
   const classes = ['pokemon-display-card']
   if (props.pokemon.onMission) classes.push('on-mission')
   if (hasBadges.value) classes.push('with-badges')
+  if (hasManyBadges.value) classes.push('many-badges')
   if (isPerformanceActive.value) {
     classes.push('is-performance-mode')
     return classes
@@ -232,13 +230,7 @@ function getGenderClass(gender) {
 @use "@/styles/components/pokemon-display-card" as *;
 
 .tot-badge {
-  @include pixelated;
-  font-size: 8px;
-  color: var(--yellow);
-  background: Rgba(255, 214, 10, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid Rgba(255, 214, 10, 0.2);
+  @include badge-tot;
   margin-left: 8px;
 }
 </style>

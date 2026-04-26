@@ -219,8 +219,8 @@ const mapImageUrl = computed(() => {
   pointer-events: none;
   z-index: var(--z-base);
 
-  &.union { background: linear-gradient(0deg, Rgba(59, 130, 246, 0.6) 0%, Rgba(255, 255, 255, 0.2) 100%); }
-  &.poder { background: linear-gradient(0deg, Rgba(0, 0, 0, 0.8) 0%, Rgba(80, 0, 0, 0.6) 100%); }
+  &.union { background: Linear-Gradient(0deg, Rgba(59, 130, 246, 0.6) 0%, Rgba(255, 255, 255, 0.2) 100%); }
+  &.poder { background: Linear-Gradient(0deg, Rgba(0, 0, 0, 0.8) 0%, Rgba(80, 0, 0, 0.6) 100%); }
   &:not(.union):not(.poder) { background: Rgba(0,0,0,0.6); }
 }
 

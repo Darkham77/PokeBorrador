@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useGameStore } from './game'
 import { useBattleStore } from './battle'
 import { useUIStore } from './ui'
@@ -17,44 +17,44 @@ export const useInventoryStore = defineStore('inventory', () => {
   const bagSellSelected = ref({}) // { itemName: quantity }
   const isItemTargetModalOpen = ref(false)
   const activeItemToUse = ref(null)
-  const activeCategory = ref('todos')
+  const activeCategory = ref(localStorage.getItem('inventory_last_tab') || 'todos')
   const searchQuery = ref('')
+
+  watch(activeCategory, (newVal) => {
+    localStorage.setItem('inventory_last_tab', newVal)
+  })
+
+  // We no longer force "utilizables" category on target change 
+  // to respect the user's last selected tab as requested.
 
   // --- GETTERS ---
   const bagItems = computed(() => {
     const inventory = gameStore.state.inventory || {}
-    const items = Object.entries(inventory)
+    let items = Object.entries(inventory)
       .map(([name, qty]) => {
         const item = SHOP_ITEMS.find(i => i.name === name)
         if (!item) return { name, qty, id: name, cat: 'otros', sprite: '', desc: 'Objeto desconocido' }
         return { ...item, qty }
       })
 
-    // Inject Eggs as virtual items
-    const eggs = (gameStore.state.eggs || []).map(egg => {
-      const speciesName = pokemonDataProvider.getPokemonData(egg.id)?.name || 'Pokémon'
-      return {
-        id: egg.uid,
-        name: `Huevo ${speciesName}`,
-        qty: 1,
-        cat: 'breeding',
-        sprite: 'egg',
-        isEgg: true,
-        ready: egg.ready || egg.steps <= 0,
-        steps: egg.steps,
-        desc: egg.steps > 0 ? `Le faltan ${Math.ceil(egg.steps)} pasos para eclosionar.` : '¡Está listo para eclosionar!',
-        eggData: egg
+    if (activeCategory.value === 'utilizables') {
+      const target = uiStore.inventoryTarget
+      if (target) {
+        const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
+        const pokemon = list[target.index]
+        items = items.filter(item => isItemUsableOn(item.name, pokemon))
       }
-    })
+    }
 
-    return [...items, ...eggs].filter(item => {
-      if (activeCategory.value !== 'todos' && item.cat !== activeCategory.value) return false
+    return items.filter(item => {
+      if (activeCategory.value !== 'todos' && activeCategory.value !== 'utilizables' && item.cat !== activeCategory.value) return false
       if (searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
       return true
     })
   })
 
   const CATEGORY_LABELS = {
+    utilizables: 'Utilizables',
     todos: 'Todos',
     pokeballs: 'Balls',
     pociones: 'Cura',
@@ -295,6 +295,29 @@ export const useInventoryStore = defineStore('inventory', () => {
         delete gameStore.state.inventory[itemName]
       }
     }
+  }
+
+  function isItemUsableOn(itemName, pokemon) {
+    if (!pokemon) return false
+    if (isGlobalItem(itemName)) return false
+
+    // Check if it's a held item (always equippable)
+    const item = SHOP_ITEMS.find(i => i.name === itemName)
+    if (item && (item.cat === 'held' || item.type === 'held')) return true
+
+    // Deep clone to avoid side effects during check
+    const p = JSON.parse(JSON.stringify(pokemon))
+
+    // Check main effects
+    const effectFn = ITEM_EFFECTS[itemName]
+    if (effectFn) {
+      const res = effectFn(p)
+      return res && res.success
+    }
+
+    // Check dynamic effects (TMs, stones)
+    const dynamicRes = getDynamicItemEffect(itemName, p)
+    return dynamicRes && dynamicRes.success
   }
 
   function equipItem(itemName, context, index) {

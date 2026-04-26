@@ -167,7 +167,7 @@ const closeRankedSeason = async () => {
 .save-btn {
   margin-top: 20px;
   padding: 16px;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: Linear-Gradient(135deg, #fbbf24, #f59e0b);
   border: none;
   border-radius: 16px;
   color: $black;

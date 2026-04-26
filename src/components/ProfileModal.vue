@@ -240,10 +240,10 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   @include gpu-layer;
   
   // Custom backgrounds by class fading to transparent
-  .rocket & { background: linear-gradient(180deg, Rgba(239, 68, 68, 0.15) 0%, transparent 60%); }
-  .cazabichos & { background: linear-gradient(180deg, Rgba(34, 197, 94, 0.15) 0%, transparent 60%); }
-  .entrenador & { background: linear-gradient(180deg, Rgba(59, 130, 246, 0.15) 0%, transparent 60%); }
-  .criador & { background: linear-gradient(180deg, Rgba(168, 85, 247, 0.15) 0%, transparent 60%); }
+  .rocket & { background: Linear-Gradient(180deg, Rgba(239, 68, 68, 0.15) 0%, transparent 60%); }
+  .cazabichos & { background: Linear-Gradient(180deg, Rgba(34, 197, 94, 0.15) 0%, transparent 60%); }
+  .entrenador & { background: Linear-Gradient(180deg, Rgba(59, 130, 246, 0.15) 0%, transparent 60%); }
+  .criador & { background: Linear-Gradient(180deg, Rgba(168, 85, 247, 0.15) 0%, transparent 60%); }
 }
 
 .profile-header-premium {

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useModalStore } from '@/stores/modals'
+import { useModalStore } from './modals'
 import { useLoadingStore } from '@/stores/loading'
 
 export const useUIStore = defineStore('ui', () => {
@@ -38,6 +38,9 @@ export const useUIStore = defineStore('ui', () => {
   // Detalle data
   const selectedPokemon = ref(null)
   const selectedMove = ref(null)
+
+  // Item Target context (for using items from Box Menu, etc)
+  const inventoryTarget = ref(null) // { context: 'team' | 'box', index: number }
 
   // Zoom initialization
   const getInitialZoom = () => {
@@ -104,6 +107,18 @@ export const useUIStore = defineStore('ui', () => {
     } else {
       openHudGroup.value = name
     }
+  }
+
+  function toggleInventory(context = null, index = null) {
+    const modalStore = useModalStore()
+    if (context !== null && index !== null) {
+      inventoryTarget.value = { context, index }
+    } else {
+      inventoryTarget.value = null
+    }
+
+    if (modalStore.isOpen('Inventory')) modalStore.close('Inventory')
+    else modalStore.open('Inventory')
   }
 
   function notify(msg, icon = '🔔') {
@@ -338,6 +353,8 @@ export const useUIStore = defineStore('ui', () => {
     activeFossil,
 
     isInventoryOpen,
+    toggleInventory,
+    inventoryTarget,
     isCosmeticsModalOpen,
     isPokedexOpen,
     isPvPBattleOpen: ref(false),

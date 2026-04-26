@@ -295,7 +295,7 @@ const rankTitle = computed(() => {
   position: relative;
   width: 100%;
   max-width: 300px;
-  background: radial-gradient(circle, Rgba(var(--class-color), 0.15) 0%, transparent 70%);
+  background: Radial-Gradient(circle, Rgba(var(--class-color), 0.15) 0%, transparent 70%);
   border-radius: 30px;
   padding: 20px;
   display: flex;
@@ -423,14 +423,14 @@ const rankTitle = computed(() => {
   overflow: hidden;
 
   &.main {
-    background: linear-gradient(135deg, var(--class-color), var(--class-color-dark));
+    background: Linear-Gradient(135deg, var(--class-color), var(--class-color-dark));
     box-shadow: 0 4px 0 var(--class-color-dark);
-    .shine { position: absolute; top: 0; left: 0; right: 0; height: 40%; background: linear-gradient(to bottom, Rgba(255, 255, 255, 0.2), transparent); }
+    .shine { position: absolute; top: 0; left: 0; right: 0; height: 40%; background: Linear-Gradient(to bottom, Rgba(255, 255, 255, 0.2), transparent); }
     &:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--class-color-dark); }
   }
 
   &.rep {
-    background: linear-gradient(135deg, Rgba(34, 197, 94, 1), Rgba(22, 163, 74, 1));
+    background: Linear-Gradient(135deg, Rgba(34, 197, 94, 1), Rgba(22, 163, 74, 1));
     box-shadow: 0 4px 0 Rgba(20, 83, 45, 1);
     &:active { transform: translateY(2px); box-shadow: 0 2px 0 #14532d; }
   }
@@ -446,7 +446,7 @@ const rankTitle = computed(() => {
   }
 
   &.primary {
-    background: linear-gradient(135deg, var(--class-color), var(--class-color-dark));
+    background: Linear-Gradient(135deg, var(--class-color), var(--class-color-dark));
     box-shadow: 0 4px 0 var(--class-color-dark);
     font-size: 10px;
     &:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--class-color-dark); }

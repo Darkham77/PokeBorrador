@@ -54,13 +54,30 @@ const handleActionSelect = (type) => {
   if (!item) return
   
   if (type === 'use') {
-    // Legacy logic for using items
     const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
+    
+    if (uiStore.inventoryTarget) {
+      // Logic for pre-selected target
+      if (dbItem.cat === 'held' || dbItem.type === 'held') {
+        const success = inventoryStore.equipItem(dbItem.name, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
+        if (success) uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
+        else uiStore.notify(`No se pudo equipar`, '⚠️')
+      } else {
+        const res = inventoryStore.useItem(dbItem.name, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
+        if (res.success) uiStore.notify(res.msg, '✨')
+        else uiStore.notify(res.msg, '⚠️')
+      }
+      
+      itemActionMenu.value = null
+      return
+    }
+
+    // Traditional targeting if no pre-selected target
     if (['stones', 'pociones'].includes(dbItem?.cat) || dbItem?.id === 'rare_candy') {
       targetingItem.value = dbItem
       showTargetOverlay.value = true
-    } else if (dbItem?.cat === 'held') {
-      uiStore.notify(`Equipa este item desde el detalle del Pokémon`, '🎒')
+    } else if (dbItem?.cat === 'held' || dbItem?.type === 'held') {
+      uiStore.notify(`Equipa este item desde el detalle del Pokémon o ábrelo desde su menú`, '🎒')
     } else {
       uiStore.notify(`Este objeto no se puede usar desde aquí`, '🚫')
     }
@@ -140,6 +157,7 @@ const close = () => {
   emit('close')
   handleCancelSelection()
   showTargetOverlay.value = false 
+  uiStore.inventoryTarget = null
 }
 </script>
 
@@ -256,7 +274,7 @@ const close = () => {
     <BaseModal
       v-if="itemActionMenu"
       :show="!!itemActionMenu"
-      max-width="300px"
+      max-width="320px"
       variant="retro"
       @close="itemActionMenu = null"
     >
@@ -267,19 +285,20 @@ const close = () => {
       </template>
       <div class="action-menu-body">
         <button
-          class="menu-btn use"
+          v-if="uiStore.inventoryTarget"
+          class="menu-btn vicio-primary"
           @click.stop="handleActionSelect('use')"
         >
-          <span class="icon">✨</span> USAR
+          <span class="icon">✨</span> USAR / EQUIPAR
         </button>
         <button
-          class="menu-btn sell"
+          class="menu-btn vicio-warning"
           @click.stop="handleActionSelect('sell')"
         >
           <span class="icon">💰</span> VENDER
         </button>
         <button
-          class="menu-btn danger"
+          class="menu-btn vicio-danger"
           @click.stop="handleActionSelect('release')"
         >
           <span class="icon">🗑️</span> TIRAR
@@ -304,54 +323,18 @@ const close = () => {
 .action-menu-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 10px 0;
+  gap: 12px;
+  padding: 16px 0;
 
   .menu-btn {
-    justify-content: flex-start;
-    gap: 14px;
-    font-size: 11px;
-    height: 52px;
-    padding: 0 20px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
-    background: linear-gradient(to right, Rgba(255, 255, 255, 0.05), transparent);
-    transition: all 0.3s ease;
+    width: 100%;
+    margin-bottom: 8px;
     
-    .icon { 
-      font-size: 18px; 
-      filter: Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.2));
-    }
-
-    &.use {
-      @include btn-vicio("primary", "md");
-      &:hover {
-        background: linear-gradient(to right, Rgba(59, 130, 246, 0.2), transparent);
-        border-color: #3b82f6;
-        color: #60a5fa;
-      }
-    }
-
-    &.sell {
-      @include btn-vicio("warning", "md");
-      &:hover {
-        background: linear-gradient(to right, Rgba(255, 214, 10, 0.15), transparent);
-        border-color: var(--yellow);
-        color: var(--yellow);
-      }
-    }
-
-    &.danger {
-      @include btn-vicio("danger", "md");
-      &:hover { 
-        background: linear-gradient(to right, Rgba(248, 113, 113, 0.2), transparent);
-        border-color: #f87171;
-        color: #fca5a5;
-      }
-    }
-
-    &:active {
-      transform: Scale(0.96);
-    }
+    &.vicio-primary { @include btn-vicio('primary', 'md', true); }
+    &.vicio-warning { @include btn-vicio('primary', 'md', true); }
+    &.vicio-danger  { @include btn-vicio('danger', 'md', true); }
+    
+    .icon { font-size: 16px; }
   }
 }
 </style>

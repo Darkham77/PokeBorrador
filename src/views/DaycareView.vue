@@ -182,16 +182,16 @@ const getGenderClass = (gender) => {
 
 .daycare-header {
   padding: 40px 20px 0;
-  background: linear-gradient(to bottom, #1e293b, #0f172a);
+  background: Linear-Gradient(to bottom, #1e293b, #0f172a);
   text-align: center;
   
   h1 {
     font-size: 24px;
     font-weight: 800;
     margin-bottom: 8px;
-    background: linear-gradient(to right, #8b5cf6, #3b82f6);
+    background: Linear-Gradient(to right, #8b5cf6, #3b82f6);
     -webkit-background-clip: text;
-    -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;;;
+    -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;;;;;
     -webkit-text-fill-color: transparent;
   }
   

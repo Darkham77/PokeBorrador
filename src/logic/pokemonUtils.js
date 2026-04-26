@@ -7,6 +7,20 @@ import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 export { getPokemonTier, BOX_TIER_CONFIG, getSpeciesHistory };
 
 /**
+ * Calculates the total power of a pokemon (BST + total IVs).
+ * @param {Object} p - The pokemon object.
+ * @returns {number}
+ */
+export function calculateTotalPower(p) {
+  if (!p) return 0;
+  const species = pokemonDataProvider.getPokemonData(p.id);
+  const bst = species ? ((species.hp || 0) + (species.atk || 0) + (species.def || 0) + (species.spa || 0) + (species.spd || 0) + (species.spe || 0)) : 0;
+  const ivs = p.ivs || {};
+  const totalIvs = Object.values(ivs).reduce((s, v) => s + (v || 0), 0);
+  return bst + totalIvs;
+}
+
+/**
  * Genera la URL del sprite usando el sistema centralizado de AssetService.
  */
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';

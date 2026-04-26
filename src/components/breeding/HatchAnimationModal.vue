@@ -188,7 +188,7 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, Rgba(30, 41, 59, 0.4) 0%, transparent 100%);
+  background: Radial-Gradient(circle at center, Rgba(30, 41, 59, 0.4) 0%, transparent 100%);
   @include gpu-layer;
 }
 
@@ -320,7 +320,7 @@ onMounted(async () => {
 .shimmer-bg {
   position: absolute;
   inset: -100px;
-  background: radial-gradient(circle at center, Rgba(255,217,61,0.1) 0%, transparent 70%);
+  background: Radial-Gradient(circle at center, Rgba(255,217,61,0.1) 0%, transparent 70%);
   animation: rotate 10s linear infinite;
   @include gpu-layer;
 }

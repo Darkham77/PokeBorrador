@@ -1,3 +1,5 @@
+import { getItemByName, getItemById } from '@/data/items'
+
 /**
  * TAG_DEFINITIONS - The Single Source of Truth for all Pokemon classification tags.
  */
@@ -25,14 +27,6 @@ export const TAG_DEFINITIONS = {
     icon: '🏆', 
     color: '#34C759', 
     desc: 'Pokémon entrenado y listo para torneos y duelos de alto nivel.' 
-  },
-  box: { 
-    id: 'box', 
-    label: 'CAJA', 
-    shortLabel: 'CAJA',
-    icon: '📦', 
-    color: '#007AFF', 
-    desc: 'Marcado para almacenamiento a largo plazo en el PC.' 
   },
   trade: { 
     id: 'trade', 
@@ -99,15 +93,31 @@ export function getPokemonVisualBadges(pokemon) {
   }
 
   // 3. Automatic: Held Item
-  if (pokemon.heldItem || (pokemon.item && pokemon.item !== 'none')) {
-    badges.push({ ...POKEMON_BADGES.item, isAutomatic: true })
+  const heldItemRaw = pokemon.heldItem || (pokemon.item && pokemon.item !== 'none' ? pokemon.item : null)
+  if (heldItemRaw) {
+    // Normalizar para búsqueda: "Rare Candy" -> "rare_candy" o "Caramelo Raro" -> "Caramelo Raro"
+    const normalizedId = String(heldItemRaw).toLowerCase().replace(/ /g, '_')
+    const itemData = getItemById(heldItemRaw) || 
+                    getItemById(normalizedId) || 
+                    getItemByName(heldItemRaw) ||
+                    getItemByName(heldItemRaw.charAt(0).toUpperCase() + heldItemRaw.slice(1).toLowerCase())
+
+    badges.push({ 
+      ...POKEMON_BADGES.item, 
+      id: 'item',
+      label: itemData ? itemData.name.toUpperCase() : String(heldItemRaw).toUpperCase(),
+      desc: itemData ? itemData.desc : POKEMON_BADGES.item.desc,
+      isAutomatic: true,
+      itemId: itemData ? itemData.id : normalizedId
+    })
   }
 
   // 4. Manual Tags (From pokemon.tags array)
   if (pokemon.tags && Array.isArray(pokemon.tags)) {
     pokemon.tags.forEach(tagId => {
       // Avoid duplicating iv31 if already added automatically
-      if (tagId === 'iv31') return 
+      // Also ignore 'box' tag as it's being deprecated/replaced
+      if (tagId === 'iv31' || tagId === 'box') return 
       
       const def = TAG_DEFINITIONS[tagId]
       if (def) badges.push({ ...def, isAutomatic: false })

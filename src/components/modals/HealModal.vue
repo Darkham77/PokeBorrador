@@ -258,7 +258,7 @@ onMounted(() => {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, Rgba(34, 197, 94, 1), Rgba(74, 222, 128, 1));
+  background: Linear-Gradient(90deg, Rgba(34, 197, 94, 1), Rgba(74, 222, 128, 1));
   box-shadow: 0 0 15px Rgba(34, 197, 94, 0.5);
   transition: width 0.1s linear;
 }

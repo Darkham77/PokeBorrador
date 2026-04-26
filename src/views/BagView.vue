@@ -169,8 +169,8 @@ const onUseItem = (name) => {
 
 .bag-view {
   padding: 0;
-  background: radial-gradient(circle at top left, Rgba(59, 130, 246, 0.05), transparent),
-              radial-gradient(circle at bottom right, Rgba(16, 185, 129, 0.05), transparent);
+  background: Radial-Gradient(circle at top left, Rgba(59, 130, 246, 0.05), transparent),
+              Radial-Gradient(circle at bottom right, Rgba(16, 185, 129, 0.05), transparent);
   display: flex;
   justify-content: center;
 }

@@ -210,7 +210,7 @@ h3 {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #c8a060, #9E9E9E, #FFB800, #E5C100, #89CFF0, $coin-gold);
+  background: Linear-Gradient(90deg, #c8a060, #9E9E9E, #FFB800, #E5C100, #89CFF0, $coin-gold);
   border-radius: 999px;
   transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

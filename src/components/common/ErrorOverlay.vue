@@ -180,7 +180,7 @@ const closeError = () => {
 }
 
 .error-header {
-  background: linear-gradient(135deg, var(--red), #c0392b);
+  background: Linear-Gradient(135deg, var(--red), #c0392b);
   padding: 24px 20px;
   display: flex;
   align-items: center;

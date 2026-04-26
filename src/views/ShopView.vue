@@ -422,7 +422,7 @@ onMounted(() => {
     padding: 12px;
     border: none;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--yellow), #f59e0b);
+    background: Linear-Gradient(135deg, var(--yellow), #f59e0b);
     color: var(--black);
     @include pixelated;
     font-size: 8px;

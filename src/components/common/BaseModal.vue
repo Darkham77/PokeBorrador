@@ -372,7 +372,7 @@ const computedCorners = computed(() => {
   box-shadow: 0 40px 100px Rgba(0, 0, 0, 0.9);
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
+  background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   overflow: hidden;
   backface-visibility: hidden;

@@ -200,7 +200,7 @@ watch(() => player.value?.hp, (newHp) => {
 }
 
 .continue-btn-final {
-  background: linear-gradient(135deg, var(--blue), #2563eb);
+  background: Linear-Gradient(135deg, var(--blue), #2563eb);
   color: $white;
   border: none;
   padding: 20px 50px;

@@ -138,7 +138,7 @@ const getRankIcon = (tierId) => {
 
 .ranking-header {
   padding: 30px;
-  background: linear-gradient(to bottom, Rgba(255,255,255,0.02), transparent);
+  background: Linear-Gradient(to bottom, Rgba(255,255,255,0.02), transparent);
   border-bottom: 1px solid Rgba(255,255,255,0.05);
 }
 
@@ -215,8 +215,8 @@ h2 {
   border: 2px solid Rgba(255, 255, 255, 0.1);
 }
 
-.avatar-circle.rocket { border-color: Rgba(239, 68, 68, 1); background: linear-gradient(45deg, Rgba(34, 34, 34, 1), Rgba(239, 68, 68, 0.44)); }
-.avatar-circle.police { border-color: Rgba(59, 130, 246, 1); background: linear-gradient(45deg, Rgba(34, 34, 34, 1), Rgba(59, 130, 246, 0.44)); }
+.avatar-circle.rocket { border-color: Rgba(239, 68, 68, 1); background: Linear-Gradient(45deg, Rgba(34, 34, 34, 1), Rgba(239, 68, 68, 0.44)); }
+.avatar-circle.police { border-color: Rgba(59, 130, 246, 1); background: Linear-Gradient(45deg, Rgba(34, 34, 34, 1), Rgba(59, 130, 246, 0.44)); }
 
 .player-info {
   flex: 1;

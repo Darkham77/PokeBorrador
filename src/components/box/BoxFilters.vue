@@ -51,7 +51,7 @@ const STAT_COLORS = {
 const getSliderStyle = (val, max, color) => {
   const percentage = (val / max) * 100
   return {
-    background: `linear-gradient(to right, ${color} 0%, ${color} ${percentage}%, Rgba(255,255,255,0.1) ${percentage}%, Rgba(255,255,255,0.1) 100%)`
+    background: `Linear-Gradient(to right, ${color} 0%, ${color} ${percentage}%, Rgba(255,255,255,0.1) ${percentage}%, Rgba(255,255,255,0.1) 100%)`
   }
 }
 
@@ -65,7 +65,6 @@ const AVAILABLE_TAGS = [
   { id: 'fav', label: 'FAV', icon: '⭐' },
   { id: 'breed', label: 'CRIA', icon: '❤️' },
   { id: 'comp', label: 'COMP', icon: '🏆' },
-  { id: 'caja', label: 'CAJA', icon: '📦' },
   { id: 'trade', label: 'TRADE', icon: '🔄' },
   { id: 'iv31', label: 'IV', icon: '31' },
   { id: 'shy', label: 'SHY', icon: '✨' },
@@ -196,7 +195,6 @@ const AVAILABLE_TAGS = [
               :description="tag.id === 'fav' ? 'Pokémon marcados con estrella.' : 
                 tag.id === 'breed' ? 'Pokémon aptos para reproducirse.' :
                 tag.id === 'comp' ? 'Pokémon entrenados para torneos.' :
-                tag.id === 'caja' ? 'Pokémon que no están en el equipo.' :
                 tag.id === 'trade' ? 'Pokémon listos para intercambio.' :
                 tag.id === 'iv31' ? 'Pokémon con estadísticas perfectas (31 IV).' :
                 tag.id === 'shy' ? 'Pokémon Shiny con colores alternativos.' :
@@ -447,7 +445,7 @@ const AVAILABLE_TAGS = [
       content: '';
       flex: 1;
       height: 1px;
-      background: linear-gradient(to right, Rgba(255,255,255,0.05), transparent);
+      background: Linear-Gradient(to right, Rgba(255,255,255,0.05), transparent);
     }
   }
 }

@@ -16,11 +16,15 @@ Before attempting any browser-based testing, you **MUST** ensure the development
 Before attempting to start a new server, you **MUST** verify if the port `5173` is already listening. This is the fastest and most reliable way to detect an active development environment.
 
 ```bash
+# Windows (PowerShell/CMD)
+curl.exe -I http://localhost:5173
+
+# Linux / macOS / Bash
 curl -I http://localhost:5173
 ```
 
-- **If curl returns 200/302/OK**: The server is ALREADY active. **DO NOT** run `npm run dev`. Proceed directly to testing.
-- **If curl fails (Connection Refused)**: The server is down. Proceed to Step 2.
+- **If the command returns 200/302/OK**: The server is ALREADY active. **DO NOT** run `npm run dev`. Proceed directly to testing.
+- **If the command fails (Connection Refused)**: The server is down. Proceed to Step 2.
 
 ### Step 2: Reuse or Start Server
 

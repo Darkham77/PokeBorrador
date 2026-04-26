@@ -105,7 +105,7 @@ const select = (id) => {
 
             <button
               class="select-btn press-start"
-              :style="{ background: `linear-gradient(135deg, ${cls.color}, ${cls.colorDark})` }"
+              :style="{ background: `Linear-Gradient(135deg, ${cls.color}, ${cls.colorDark})` }"
             >
               {{ currentClassId === cls.id ? '✓ CLASE ACTUAL' : (isChange ? '🔄 CAMBIAR' : '▶ ELEGIR') }}
             </button>

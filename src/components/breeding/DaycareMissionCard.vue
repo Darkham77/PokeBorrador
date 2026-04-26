@@ -94,7 +94,7 @@ const emit = defineEmits(['deliver'])
   }
 
   .deliver-btn-retro {
-    padding: 14px; background: linear-gradient(135deg, #a855f7, #7e22ce); color: $white; border: none; border-radius: 12px;
+    padding: 14px; background: Linear-Gradient(135deg, #a855f7, #7e22ce); color: $white; border: none; border-radius: 12px;
     @include pixelated; font-size: 7px; cursor: pointer;
     box-shadow: 0 4px 0 #6d28d9;
     &:hover { filter: Brightness(1.1); }

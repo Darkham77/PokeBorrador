@@ -122,7 +122,7 @@ const handlePanelClick = (event) => {
 
 .exp-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, Rgba(199, 125, 255, 1), Rgba(155, 77, 202, 1));
+  background: Linear-Gradient(90deg, Rgba(199, 125, 255, 1), Rgba(155, 77, 202, 1));
   border-radius: 10px;
   transition: width 0.5s;
 }
