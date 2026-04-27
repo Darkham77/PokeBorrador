@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, shallowRef } from 'vue';
 import * as Phaser from 'phaser';
 import { phaserConfig } from '@/phaser/config';
 import { phaserBridge } from '@/logic/phaserBridge';
+import { useLoadingStore } from '@/stores/loading';
 
 /**
  * PhaserGame.vue
@@ -34,6 +35,11 @@ onUnmounted(() => {
     gameInstance.value.destroy(true);
     gameInstance.value = null;
     phaserBridge.setGame(null);
+    
+    // Safety cleanup of loading states
+    const loadingStore = useLoadingStore();
+    loadingStore.finish('phaser_boot');
+    
     console.log('[PhaserGame] Instance destroyed');
   }
 });

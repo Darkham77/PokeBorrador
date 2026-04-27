@@ -11,7 +11,8 @@ WHITELIST = [
     "pokemonDB.js",
     "moves.js",
     "items.js",
-    "migrations_data.js"
+    "migrations_data.js",
+    "weather-tables.js"
 ]
 
 IGNORE_COMMENT = "[PureVue-Ignore-Length]"

@@ -2,23 +2,63 @@
 
 ## Ciclo Día/Noche
 
-El ciclo se basa en la **hora local del dispositivo del jugador**:
+El ciclo se basa en el **tiempo del servidor sincronizado**, con la siguiente progresión:
+1 Día Real = 3 Días de Juego. Cada ciclo dura 2 horas reales.
 
 ```javascript
-function getDayCycle() {
-  const hour = new Date().getHours();
-  if (hour >= 6  && hour < 9)  return 'morning';  // Alba: 6:00–8:59
-  if (hour >= 9  && hour < 18) return 'day';       // Día: 9:00–17:59
-  if (hour >= 18 && hour < 21) return 'dusk';      // Crepúsculo: 18:00–20:59
-  return 'night';                                   // Noche: 21:00–5:59
+// Phases: morning (2hs), day (2hs), dusk (2hs), night (2hs).
+function getDayCycle(now = getServerTime()) {
+  const totalHours = Math.floor(now / (1000 * 60 * 60));
+  const phase = totalHours % 8;
+  
+  if (phase < 2) return 'morning';
+  if (phase < 4) return 'day';
+  if (phase < 6) return 'dusk';
+  return 'night';
 }
 ```
 
 El ciclo afecta:
-- Qué Pokémon aparecen en cada zona
-- Las tasas de aparición de cada Pokémon
-- El fondo de batalla (sprite de escenario)
-- El ícono y color del HUD
+
+- Qué Pokémon aparecen en cada zona.
+- Las tasas de aparición de cada Pokémon.
+- El fondo de batalla (sprite de escenario).
+- El ícono y color del HUD.
+- **Probabilidades de Clima.**
+
+---
+
+## Sistema de Clima Dinámico
+
+El clima en Poké Vicio es determinista y cambia cada hora. Las probabilidades de cada tipo de clima dependen de la **Ruta**, la **Estación** y el **Ciclo Horario**.
+
+### Factores de Influencia por Horario
+
+Según el ciclo del día, el generador de clima ajusta las probabilidades de la siguiente manera:
+
+1. **La Mañana (Amanecer)**
+   - **Niebla y Bruma**: Es uno de los momentos principales de aparición de niebla.
+   - **Tormentas**: Alta concentración de tormentas eléctricas (el 50% de las tormentas ocurren alrededor de la salida del sol).
+   - **Temperatura**: Inicia en su punto más bajo y comienza a subir gradualmente.
+
+2. **El Día (Mediodía)**
+   - **Calor Extremo**: Aumento constante de temperatura. En biomas como los desiertos, el calor diurno se vuelve extremo (`heatwave`).
+   - **Brisa Marina**: En zonas litorales, el aumento de temperatura en tierra crea una brisa que sopla desde el agua hacia la tierra.
+
+3. **La Tarde (Ocaso)**
+   - **Inestabilidad**: Pico de inestabilidad climática. Alta probabilidad de tormentas eléctricas, aguaceros pesados y niebla.
+   - **Temperatura**: Alcanza su máximo al inicio de la tarde y luego desciende gradualmente hacia el anochecer.
+
+4. **La Noche**
+   - **Descenso Térmico**: Las temperaturas bajan constantemente. En zonas áridas, la ausencia de nubes provoca desplomes térmicos.
+   - **Brisa Terrestre**: El fenómeno del viento se invierte, soplando desde la costa hacia el mar.
+
+### Implementación Técnica
+
+El motor de clima (`weatherUtils.js`) utiliza una tabla de probabilidades anidada:
+`ROUTE_WEATHER_TABLES[mapId][seasonId][cycleId]`
+
+El clima es **persistente para todos los jugadores** en la misma zona durante la misma hora del servidor, garantizando una experiencia compartida sincronizada.
 
 ---
 
@@ -68,8 +108,6 @@ if (trainerChance < 20) trainerChance += 5;
 ```
 
 Esto crea un sistema de **pity suave**: si el jugador no ve entrenadores, la probabilidad sube gradualmente hasta un máximo del 20%. Al encontrar uno, vuelve a 5%.
-
-> El jugador puede resetear manualmente via botón en el perfil: `resetEncounterPity()`
 
 ---
 
@@ -127,18 +165,11 @@ Esto crea un sistema de **pity suave**: si el jugador no ve entrenadores, la pro
 | 7 | `cinnabar` | Blaine | Fuego | Growlithe (42), Ponyta (40), Rapidash (42), Arcanine (47) | 6 |
 | 8 | `viridian` | Giovanni | Tierra | Rhyhorn (45), Dugtrio (42), Nidoqueen (44), Nidoking (45), Rhydon (50) | 7 |
 
-### Recompensa de gimnasio
-```javascript
-moneyWon = enemy.level × 80  // (el nivel del último Pokémon del líder)
-coins    = floor(enemy.level × 2)
-badge++  // solo la primera vez
-```
-
 ---
 
 ## Entrenadores NPC aleatorios
 
-Hay 10 tipos de entrenadores con pools fijos de Pokémon:
+Hay 10 tipos de entrenadores con pools fijos de Pokémon. La recompensa al derrotarlos es `nivel × 40` PokePesetas y `nivel × 2` Battle Coins (aprox).
 
 | Tipo | Pool de Pokémon |
 |---|---|
@@ -152,16 +183,3 @@ Hay 10 tipos de entrenadores con pools fijos de Pokémon:
 | Médium | Abra, Drowzee |
 | Motorista | Koffing, Grimer, Rattata |
 | Montañero | Geodude, Sandshrew, Rhyhorn |
-
-**Generación del equipo del entrenador:**
-```javascript
-teamSize = Math.floor(Math.random() × 3) + 1  // 1, 2, o 3 Pokémon
-trainerLv = loc.lv[0] + 2  // Nivel base de la zona + 2
-```
-
-**Recompensa al derrotar entrenador:**
-```javascript
-moneyWon = enemy.level × 20 × 2  // Doble que salvaje
-coins    = floor(enemy.level × 2)
-// 5% de probabilidad de recibir un huevo de encuentro
-```

@@ -25,7 +25,7 @@ const isEmpty = computed(() => !props.pokemon)
       @click.stop="emit('select', index)"
     >
       <span class="plus-icon">✚</span>
-      <span class="label">{{ isPvp ? 'ELEGIR GUERRA' : 'AÑADIR' }}</span>
+      <span class="label">AÑADIR</span>
     </div>
     
     <PokemonDisplayCard

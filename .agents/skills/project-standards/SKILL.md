@@ -62,6 +62,7 @@ Refer to these manuals for complex implementation specifications:
 - **UI Interaction**: Use `@include btn-vicio-primary('sm')` for secondary modal buttons to avoid 100% width collisions. All interactive filter/sort controls MUST include a `PVTooltip`.
 - **Vue Template Integrity**: NEVER use JS-style (`//`) or HTML comments inside Vue tags or attributes. This causes Vite compilation errors ("Illegal '/' in tags").
 - **Z-Index Layering**: Hardcoded numbers are forbidden. Use system CSS variables (`--z-low`, `--z-base`, etc.) exclusively. If a precise micro-offset is required (e.g., between two layers of the same tier), use `calc(var(--z-base) + N)` to maintain relative hierarchy without breaking the audit engine.
+- **Data Integrity Directive**: Large data files (like weather tables or spawn grids) MUST include the comment `// [PureVue-Ignore-Length]` at the top. This prevents build tools and agents from fragmenting the object, ensuring architectural integrity during refactors.
 
 ### 5. Asset Pipeline & 1:1 Resolution
 
@@ -85,6 +86,7 @@ Refer to these manuals for complex implementation specifications:
 - **Semantic Action Menus**: Group multi-stage interactions (Use, Sell, Discard) into dedicated action menus. Use themed buttons (Success/Primary for usage, Warning for sales, Danger for deletion) to provide clear visual hierarchy and intent.
 - **Bulk Operation Optimization**: In management views (inventory, boxes), multi-selection modes should default to "Full Stack" (selecting all items of that type) to minimize modal interactions.
 - **Financial Transparency**: Always display estimated total profits in confirmation dialogs for bulk selling operations to provide immediate user feedback.
+- **Tabbed Modal Pattern**: For high-density management modals, use a tabbed interface by placing buttons in the `BaseModal` slot `#header`. Set `header-background="transparent"` to maintain glassmorphism continuity and use `PVTooltip` on each tab to explain its context.
 
 ### 8. Logic & Determinism
 

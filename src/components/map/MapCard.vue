@@ -346,7 +346,6 @@ onUnmounted(() => {
 const lockReason = computed(() => {
   if (props.isSafariLocked) return 'REQUIERE TICKET SAFARI'
   if (!props.isLocked) return ''
-  if (props.map.id === 'cerulean_cave' && props.badgeCount < 8) return '8 MEDALLAS / TICKET'
   if (props.badgeCount < props.map.badges) return `REQUIERE ${props.map.badges} MEDALLAS`
   return 'BLOQUEADO'
 })
@@ -354,7 +353,6 @@ const lockReason = computed(() => {
 const lockDescription = computed(() => {
   if (props.isSafariLocked) return 'Necesitas un Ticket Safari para entrar a esta zona.'
   if (!props.isLocked) return ''
-  if (props.map.id === 'cerulean_cave') return 'Necesitas 8 medallas o un Ticket Cueva Celeste.'
   return `Consigue ${props.map.badges} medallas para acceder a esta zona.`
 })
 

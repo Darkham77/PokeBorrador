@@ -1,13 +1,16 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBoxStore } from '@/stores/box'
 import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+
+const activeTab = ref('adventure') // 'adventure', 'pvp', 'war'
 
 const adventureTeam = computed(() => {
   const team = gameStore.state.team || []
@@ -40,6 +43,12 @@ const warTeam = computed(() => {
   }
   return slots
 })
+
+// Counts for tabs
+const adventureCount = computed(() => gameStore.state.team.filter(Boolean).length)
+const pvpCount = computed(() => (gameStore.state.pvpTeam || []).length)
+const warCount = computed(() => (gameStore.state.warTeam || []).length)
+const maxWarSlots = computed(() => gameStore.state.warSlots || 6)
 
 function openDetail(pokemon) {
   if (!pokemon) return
@@ -152,254 +161,216 @@ function selectAdventure(_slotIndex) {
 <template>
   <BaseModal
     show
-    title="GESTIÓN DE EQUIPO"
-    title-color="var(--yellow)"
-    header-background="Rgba(15, 23, 42, 0.8)"
-    max-width="1100px"
-    padding="raw"
+    header-background="transparent"
+    max-width="940px"
+    padding="standard"
     @close="uiStore.toggleTeamManagement"
   >
-    <template #header-icon>
-      <span class="header-team-icon">👥</span>
+    <template #header>
+      <div class="team-header-tabs">
+        <PVTooltip 
+          title="EQUIPO DE AVENTURA"
+          description="Tu equipo principal para viajar por el mapa y enfrentarte a gimnasios."
+          position="top"
+        >
+          <button 
+            class="tm-tab" 
+            :class="{ active: activeTab === 'adventure' }"
+            @click.stop="activeTab = 'adventure'"
+          >
+            <span class="icon">🎒</span>
+            AVENTURA
+            <span class="tab-count">{{ adventureCount }}/6</span>
+          </button>
+        </PVTooltip>
+
+        <PVTooltip 
+          title="EQUIPO COMPETITIVO (PVP)"
+          description="El equipo que utilizas en la Arena para subir de rango y ganar recompensas."
+          position="top"
+        >
+          <button 
+            class="tm-tab" 
+            :class="{ active: activeTab === 'pvp' }"
+            @click.stop="activeTab = 'pvp'"
+          >
+            <span class="icon">⚔️</span>
+            PVP
+            <span class="tab-count">{{ pvpCount }}/3</span>
+          </button>
+        </PVTooltip>
+
+        <PVTooltip 
+          title="EQUIPO DE GUERRA"
+          description="Pokémon asignados para defender y atacar en eventos de Facciones."
+          position="top"
+        >
+          <button 
+            class="tm-tab" 
+            :class="{ active: activeTab === 'war' }"
+            @click.stop="activeTab = 'war'"
+          >
+            <span class="icon">🛡️</span>
+            GUERRA
+            <span class="tab-count">{{ warCount }}/{{ maxWarSlots }}</span>
+          </button>
+        </PVTooltip>
+      </div>
     </template>
-    <div class="team-modal-content glass scrollbar">
-      <!-- SUBTITLE (Optional inside if desired, or just remove header) -->
 
-      <!-- ADVENTURE SECTION -->
-      <section class="team-section adventure-section">
-        <div class="section-header">
-          <span class="section-icon">🎒</span>
-          <h2 class="tm-section-title">
-            EQUIPO DE AVENTURA
-          </h2>
-          <span class="count">{{ gameStore.state.team.length }}/6</span>
-        </div>
-        
-        <div class="slots-grid adventure-grid">
-          <UnifiedTeamSlot
-            v-for="(p, i) in adventureTeam"
-            :key="'adv-' + i"
-            :pokemon="p"
-            :index="i"
-            @open-detail="openDetail(p)"
-            @open-item="openItem(p)"
-            @send-to-box="sendToBox(p)"
-            @select="selectAdventure"
-          />
-        </div>
-      </section>
-
-      <!-- DIVIDER -->
-      <div class="panel-divider">
-        <div class="line" />
-        <div class="diamond" />
-        <div class="line" />
+    <!-- ADVENTURE SECTION -->
+    <section
+      v-if="activeTab === 'adventure'"
+      class="tm-section-container"
+    >
+      <div class="slots-grid">
+        <UnifiedTeamSlot
+          v-for="(p, i) in adventureTeam"
+          :key="'adv-' + i"
+          :pokemon="p"
+          :index="i"
+          @open-detail="openDetail(p)"
+          @open-item="openItem(p)"
+          @send-to-box="sendToBox(p)"
+          @select="selectAdventure"
+        />
       </div>
+    </section>
 
-      <!-- PVP SECTION -->
-      <section class="team-section pvp-section">
-        <div class="section-header">
-          <span class="section-icon">⚔️</span>
-          <h2 class="tm-section-title">
-            EQUIPO COMPETITIVO
-          </h2>
-          <span class="badge">RANKED</span>
-        </div>
-
-        <div class="slots-grid pvp-grid">
-          <UnifiedTeamSlot
-            v-for="(p, i) in pvpTeam"
-            :key="'pvp-' + i"
-            :pokemon="p"
-            :index="i"
-            is-pvp
-            @open-detail="openDetail(p)"
-            @open-item="openItem(p)"
-            @select="selectPvp(i)"
-          />
-        </div>
-        
-        <p class="pvp-hint">
-          * Tu equipo PVP/Ranked se autocompleta con tus mejores Pokémon.
-        </p>
-      </section>
-
-      <!-- DIVIDER -->
-      <div class="panel-divider">
-        <div class="line" />
-        <div class="diamond" />
-        <div class="line" />
+    <!-- PVP SECTION -->
+    <section
+      v-if="activeTab === 'pvp'"
+      class="tm-section-container"
+    >
+      <div class="slots-grid">
+        <UnifiedTeamSlot
+          v-for="(p, i) in pvpTeam"
+          :key="'pvp-' + i"
+          :pokemon="p"
+          :index="i"
+          is-pvp
+          @open-detail="openDetail(p)"
+          @open-item="openItem(p)"
+          @select="selectPvp(i)"
+        />
       </div>
+    </section>
 
-      <!-- WAR SECTION -->
-      <section class="team-section war-section">
-        <div class="section-header">
-          <span class="section-icon">🛡️</span>
-          <h2 class="tm-section-title">
-            EQUIPO DE GUERRA
-          </h2>
-          <span class="badge war-badge">EVENTO</span>
-        </div>
-
-        <div class="slots-grid war-grid">
-          <UnifiedTeamSlot
-            v-for="(p, i) in warTeam"
-            :key="'war-' + i"
-            :pokemon="p"
-            :index="i"
-            is-pvp
-            @open-detail="openDetail(p)"
-            @open-item="openItem(p)"
-            @select="selectWar(i)"
-          />
-        </div>
-        
-        <p class="pvp-hint">
-          * Este equipo se utiliza exclusivamente en eventos de Guerra de Facciones.
-        </p>
-      </section>
-    </div>
+    <!-- WAR SECTION -->
+    <section
+      v-if="activeTab === 'war'"
+      class="tm-section-container"
+    >
+      <div class="slots-grid">
+        <UnifiedTeamSlot
+          v-for="(p, i) in warTeam"
+          :key="'war-' + i"
+          :pokemon="p"
+          :index="i"
+          is-pvp
+          @open-detail="openDetail(p)"
+          @open-item="openItem(p)"
+          @select="selectWar(i)"
+        />
+      </div>
+    </section>
   </BaseModal>
 </template>
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
-.header-team-icon {
-  font-size: 20px;
+
+.team-header-tabs {
+  display: flex;
+  gap: 12px;
+  margin-left: 20px;
 }
 
-.team-modal-content {
-  padding: 40px;
-  max-height: 85vh;
-  overflow-y: auto;
-  min-height: 0;
-  background: Rgba(15, 23, 42, 0.8);
-}
+.tm-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: var(--gray);
+  cursor: pointer;
+  @include pixelated;
+  font-size: 8px;
+  transition: all .2s;
+  letter-spacing: 1px;
+  position: relative;
 
-.panel-intro {
-  text-align: center;
-  margin-bottom: 30px;
+  .icon { font-size: 14px; }
 
-  .panel-subtitle {
-    font-size: 13px;
-    color: var(--gray);
-    opacity: 0.8;
+  .tab-count {
+    margin-left: 4px;
+    font-size: 7px;
+    opacity: 0.6;
+    background: Rgba(0, 0, 0, 0.2);
+    padding: 2px 4px;
+    border-radius: 4px;
   }
-}
 
-.team-section {
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
+  &.active {
+    background: Rgba(255, 255, 255, 0.08);
+    border-color: var(--yellow);
+    color: var(--yellow);
+    box-shadow: 0 0 15px Rgba(255, 214, 10, 0.15);
 
-    .section-icon { font-size: 24px; }
-    
-    .tm-section-title {
-      @include pixelated;
-      font-size: 12px;
+    .tab-count {
+      opacity: 1;
+      color: var(--white);
+      background: Rgba(255, 214, 10, 0.1);
+    }
+  }
+
+  &:hover:not(.active) {
+    background: Rgba(255, 255, 255, 0.1);
     color: var(--white);
-      margin: 0;
-    }
-
-    .count, .badge {
-      @include pixelated;
-      font-size: 8px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: Rgba(255, 255, 255, 0.05);
-      color: var(--gray);
-    }
-
-    .badge {
-      background: Rgba(168, 85, 247, 0.1);
-      color: var(--purple-light);
-      border: 1px solid Rgba(168, 85, 247, 0.2);
-    }
   }
+}
+
+.tm-section-container {
+  animation: fadeIn 0.3s ease-out;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .slots-grid {
   display: grid;
-  gap: 20px;
-}
-
-.adventure-grid {
+  gap: 12px;
   grid-template-columns: repeat(3, 1fr);
   
-  @media (max-width: 900px) {
+  @media (max-width: 850px) {
     grid-template-columns: repeat(2, 1fr);
   }
-  @media (max-width: 600px) {
+  @media (max-width: 580px) {
     grid-template-columns: 1fr;
   }
 }
 
-.pvp-grid, .war-grid {
-  grid-template-columns: repeat(3, 1fr);
-  max-width: 800px;
-  margin: 0 auto;
-
-  @media (max-width: 700px) {
-    grid-template-columns: 1fr;
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.war-grid {
-  // Can be adjusted if more than 6 slots are ever needed
-  grid-template-columns: repeat(3, 1fr);
-  
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
+:deep(.modal-header-premium) {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
 }
 
-.panel-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin: 50px 0;
-  opacity: 0.3;
-
-  .line {
-    flex: 1;
-    height: 1px;
-    background: Linear-Gradient(90deg, transparent, var(--white), transparent);
-  }
-
-  .diamond {
-    width: 10px;
-    height: 10px;
-    background: var(--white);
-    transform: Rotate(45deg);
-  }
+:deep(.modal-content-premium) {
+  background: Rgba(15, 23, 42, 0.95) !important;
+  -webkit-backdrop-filter: Blur(25px) !important;
+  backdrop-filter: Blur(25px) !important;
 }
 
-.pvp-hint {
-  text-align: center;
-  margin-top: 24px;
-  font-size: 11px;
-  color: Rgba(255, 255, 255, 0.2);
-  font-style: italic;
-}
-
-.pvp-section {
-  .section-title {
-    color: var(--purple-light) !important;
-  }
-}
-
-.war-section {
-  .section-title {
-    color: var(--red) !important;
-  }
-  
-  .war-badge {
-    background: Rgba(239, 68, 68, 0.1);
-    color: var(--red);
-    border: 1px solid Rgba(239, 68, 68, 0.2);
-  }
+:deep(.modal-scrollable-content) {
+  padding: 15px !important;
 }
 </style>

@@ -52,13 +52,8 @@ const getMapData = (loc) => {
 }
 
 const isMapLocked = (loc) => {
-  const isBadgeLocked = props.badgeCount < loc.badges
   if (loc.id === 'safari_zone') return props.safariTicketSecs <= 0
-  if (loc.id === 'cerulean_cave') {
-    if (props.ceruleanTicketSecs > 0) return false
-    return isBadgeLocked
-  }
-  return isBadgeLocked
+  return props.badgeCount < loc.badges
 }
 
 const getDominanceForMap = (mapId) => {

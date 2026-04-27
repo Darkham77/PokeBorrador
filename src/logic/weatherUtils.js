@@ -1,5 +1,5 @@
 import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables';
-import { getServerTime } from '@/logic/timeUtils';
+import { getServerTime, getDayCycle } from '@/logic/timeUtils';
 
 /**
  * Simple 32-bit hash function (DJB2) for string to number.
@@ -42,7 +42,12 @@ export function getRouteWeather(mapId, seasonId, epochHour) {
     return 'clear'; // Fallback for missing tables
   }
   
-  const table = routeTables[seasonId];
+  // Calculate cycle based on epochHour (continuous hours from epoch)
+  const cycle = getDayCycle(epochHour * 3600000);
+  const seasonTable = routeTables[seasonId];
+  
+  // Get the specific table for the cycle, or fallback to the season root if not using cycles yet
+  const table = seasonTable[cycle] || seasonTable;
   
   // 2. Generate Deterministic Seed
   const mapHash = hashString(mapId);

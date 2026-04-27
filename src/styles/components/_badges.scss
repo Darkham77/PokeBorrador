@@ -22,7 +22,7 @@
   @include badge-level;
 }
 
-// 2. ID BADGE (#000)
+// 2. ID BADGE ($black)
 @mixin badge-id {
   @include pixelated;
   font-size: 11px;

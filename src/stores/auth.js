@@ -306,6 +306,9 @@ export const useAuthStore = defineStore('auth', () => {
     session.value = null
     sessionConflict.value = false
     sessionMode.value = 'online'
+    
+    // CRITICAL: Clear any pending loading states (like phaser_boot)
+    useLoadingStore().clearAll()
   }
 
   function setConnectionLost(val) {

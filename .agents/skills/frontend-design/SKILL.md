@@ -113,6 +113,9 @@ Before any design work, ANSWER THESE or ASK USER:
   - **PATTERN**: When selecting an item for a specific slot, calculate the `excludeIds` array from the current state and pass it to the selector to hide assigned members.
   - **WHY**: This keeps the interface clean, prevents redundant actions, and ensures the user only sees valid choices for the current operation.
 
+- **Space Optimization: Hints to Tooltips**: For complex management interfaces (modals, dashboards), move static textual hints (e.g., "* This team is for...") to dynamic `PVTooltip` components on the relevant triggers (tabs, buttons).
+  - **WHY**: This reduces modal height, eliminates visual clutter (Miller's Law), and provides information only when the user explicitly seeks context, keeping the primary interface clean and focused.
+
 ### Emotional Design Levels
 
 ```text
