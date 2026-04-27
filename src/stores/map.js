@@ -2,7 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { FIRE_RED_MAPS } from '@/data/maps'
 import { generateEncounter } from '@/logic/encounters'
-import { getDayCycle, syncServerTime } from '@/logic/timeUtils'
+import { getDayCycle, getSeason, syncServerTime, getServerTime } from '@/logic/timeUtils'
+import { getRouteWeather } from '@/logic/weatherUtils'
 import { useGameStore } from './game'
 import { useBattleStore } from './battle'
 import { useUIStore } from './ui'
@@ -16,19 +17,38 @@ export const useMapStore = defineStore('map', () => {
   })
   const region = computed(() => gs.state.map?.region || 'kanto')
 
-  const globalWeather = ref('clear')
+  const globalWeather = ref(null) // Si está forzado anula el determinístico
   const forcedCycle = ref(null) // null, morning, day, dusk, night
+  const forcedSeason = ref(null) // null, spring, summer, autumn, winter
+  const currentEpochHour = ref(Math.floor(getServerTime() / 3600000))
+
+  // Sync epoch hour every minute
+  if (typeof window !== 'undefined') {
+    setInterval(() => {
+      currentEpochHour.value = Math.floor(getServerTime() / 3600000)
+    }, 60000)
+  }
 
   const currentCycle = computed(() => {
     if (forcedCycle.value) return forcedCycle.value
-    return getDayCycle()
+    return getDayCycle(currentEpochHour.value * 3600000)
+  })
+  
+  const currentSeason = computed(() => {
+    if (forcedSeason.value) return forcedSeason.value
+    return getSeason(currentEpochHour.value * 3600000)
+  })
+  
+  const currentWeather = computed(() => {
+    if (globalWeather.value) return globalWeather.value
+    return getRouteWeather(currentMap.value, currentSeason.value.id, currentEpochHour.value)
   })
   
   // React to debug time changes immediately
   if (typeof window !== 'undefined') {
     window.addEventListener('time-sync-update', () => {
       console.log('[MapStore] Time sync detected');
-      // No longer need to manually update currentCycle as it's computed
+      currentEpochHour.value = Math.floor(getServerTime() / 3600000);
     });
   }
 
@@ -100,9 +120,13 @@ export const useMapStore = defineStore('map', () => {
   return {
     currentMap,
     region,
+    currentEpochHour,
     currentCycle,
+    currentSeason,
+    currentWeather,
     globalWeather,
     forcedCycle,
+    forcedSeason,
     maps,
     activeEvents,
     pendingAwards,

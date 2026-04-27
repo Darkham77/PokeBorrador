@@ -27,10 +27,17 @@ function resetTime() {
 function addHours(h) {
   window.__VITE_DEBUG__.addHours(h)
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
+  window.dispatchEvent(new CustomEvent('time-sync-update'))
+}
+
+function addWeeks(w) {
+  window.__VITE_DEBUG__.addWeeks(w)
+  timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
+  window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
 function toggleWeather(w) {
-  const next = mapStore.globalWeather === w ? 'clear' : w
+  const next = mapStore.globalWeather === w ? null : w
   window.__VITE_DEBUG__.setWeather(next)
 }
 
@@ -84,6 +91,14 @@ function toggleCycle(c) {
         <PVTooltip title="Añadir 24 horas al tiempo actual.">
           <button @click.stop="addHours(24)">
             +24h
+          </button>
+        </PVTooltip>
+        <PVTooltip title="Añadir 1 semana (cambia la estación).">
+          <button
+            class="primary"
+            @click.stop="addWeeks(1)"
+          >
+            +1 Sem
           </button>
         </PVTooltip>
       </div>
@@ -156,7 +171,7 @@ function toggleCycle(c) {
 
     <div class="debug-info-box">
       <span>Estado:</span>
-      <strong>{{ mapStore.currentCycle.toUpperCase() }} | {{ mapStore.globalWeather.toUpperCase() }}</strong>
+      <strong>{{ mapStore.currentCycle?.toUpperCase() }} | CLIMA LOCAL: {{ mapStore.currentWeather?.toUpperCase() }}</strong>
     </div>
   </div>
 </template>

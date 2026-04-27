@@ -30,17 +30,15 @@ export class DBRouter {
    * Time Mocking Methods (SECURITY: ONLY FOR OFFLINE MODE)
    */
   setTimeOffset(ms) {
-    if (this.mode === 'online') {
-      console.warn('[DBRouter] Security Block: Cannot mock time in ONLINE mode.');
-      return;
-    }
+    // Permitido en debug: Removemos el bloqueo de online para poder simular todo tipo de climas (ilegales o no)
     this._timeOffset = ms;
-    window.dispatchEvent(new CustomEvent('time-sync-update', { detail: { offset: ms } }));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('time-sync-update', { detail: { offset: ms } }));
+    }
     console.log(`[DBRouter] Time offset set to: ${ms}ms`);
   }
 
   setMockTime(dateStr) {
-    if (this.mode === 'online') return;
     const targetDate = new Date(dateStr);
     if (isNaN(targetDate.getTime())) return;
     const offset = targetDate.getTime() - Date.now();
@@ -52,7 +50,7 @@ export class DBRouter {
   }
 
   getTimeOffset() {
-    return this.mode === 'offline' ? this._timeOffset : 0;
+    return this._timeOffset || 0;
   }
 
   /**

@@ -16,9 +16,6 @@ const uiStore = useUIStore()
 const eventStore = useEventStore()
 const modalStore = useModalStore()
 
-const gs = computed(() => gameStore.state)
-const ms = computed(() => mapStore)
-
 const navigateToMap = (mapId) => mapStore.navigate(mapId)
 
 const openTab = (tab) => {
@@ -31,12 +28,12 @@ const openCenter = () => {
 
 // Mapeo de misiones para los sprites
 const missionSprites = computed(() => {
-  const missions = gs.value.daycare_missions || []
+  const missions = gameStore.state.daycare_missions || []
   return Array.from(new Set(missions.map(m => m?.trainerSprite).filter(Boolean))).slice(0, 4)
 })
 
 const gymSprites = computed(() => {
-  const defeatedIds = gs.value.defeatedGyms || []
+  const defeatedIds = gameStore.state.defeatedGyms || []
   return GYMS.filter(g => !defeatedIds.includes(g.id))
     .slice(0, 8)
     .map(g => g.sprite)
@@ -57,20 +54,20 @@ const activeEventData = computed(() => {
   <div class="map-view-container legacy-ui">
     <!-- Header de Eventos -->
     <MapEventCarousel
-      v-if="ms.activeEvents.length > 0 || ms.pendingAwards.length > 0"
-      :events="ms.activeEvents"
-      :awards="ms.pendingAwards"
+      v-if="mapStore.activeEvents.length > 0 || mapStore.pendingAwards.length > 0"
+      :events="mapStore.activeEvents"
+      :awards="mapStore.pendingAwards"
       @open-event="navigateToMap"
       @open-award="navigateToMap"
     />
 
     <!-- Estatus Superior (PC, Guardería, etc) -->
     <MapStatusSummary
-      :missions-remaining="gs.daycare_missions?.length || 0"
+      :missions-remaining="gameStore.state.daycare_missions?.length || 0"
       :mission-sprites="missionSprites"
-      :gym-rematches="8 - (gs.defeatedGyms?.length || 0)" 
+      :gym-rematches="8 - (gameStore.state.defeatedGyms?.length || 0)" 
       :gym-sprites="gymSprites"
-      :egg-count="gs.eggs?.length || 0"
+      :egg-count="gameStore.state.eggs?.length || 0"
       :rival-event-active="activeEventData.active"
       :rival-event-text="activeEventData.text"
       :rival-event-icon="activeEventData.icon"
@@ -85,16 +82,16 @@ const activeEventData = computed(() => {
     </div>
 
     <MapGrid
-      :maps="ms.maps"
-      :badge-count="gs.badges || 0"
-      :cycle="ms.currentCycle"
-      :weather="ms.globalWeather"
-      :player-class="gs.playerClass"
-      :class-data="gs.classData"
-      :safari-ticket-secs="gs.safariTicketSecs || 0"
-      :cerulean-ticket-secs="gs.ceruleanTicketSecs || 0"
-      :dominance-data="ms.mapWinners"
-      :daily-guardian-captures="ms.dailyGuardianCaptures"
+      :maps="mapStore.maps"
+      :badge-count="gameStore.state.badges || 0"
+      :cycle="mapStore.currentCycle"
+      :weather="mapStore.globalWeather"
+      :player-class="gameStore.state.playerClass"
+      :class-data="gameStore.state.classData"
+      :safari-ticket-secs="gameStore.state.safariTicketSecs || 0"
+      :cerulean-ticket-secs="gameStore.state.ceruleanTicketSecs || 0"
+      :dominance-data="mapStore.mapWinners"
+      :daily-guardian-captures="mapStore.dailyGuardianCaptures"
       @navigate="navigateToMap"
     />
   </div>

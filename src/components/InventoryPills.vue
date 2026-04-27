@@ -22,14 +22,16 @@ const dayCycle = computed(() => {
   return info[cycle] || { icon: '☀️', label: 'Día', color: '#FFEEAD' }
 })
 
+const currentSeason = computed(() => mapStore.currentSeason)
+
 </script>
 
 <template>
   <div class="hud-items">
     <!-- CICLO HORARIO REACTIVO -->
     <PVTooltip
-      :title="dayCycle.label.toUpperCase()"
-      description="El mundo cambia cada 4 horas. ¡Diferentes Pokémon aparecen según la hora!"
+      :title="`${dayCycle.label.toUpperCase()} - ${currentSeason.label.toUpperCase()}`"
+      description="El mundo cambia cada 8 horas. ¡Las estaciones cambian cada semana!"
       position="bottom"
     >
       <div
@@ -40,8 +42,12 @@ const dayCycle = computed(() => {
         <span
           id="time-label"
           class="pill-value"
-          :style="{ color: dayCycle.color }"
+          :style="{ color: dayCycle.color, fontSize: '8px' }"
         >{{ dayCycle.label }}</span>
+        <span
+          class="pill-value season-label"
+          style="color: #A0C4FF; font-size: 7px; margin-top: -3px;"
+        >{{ currentSeason.label }}</span>
       </div>
     </PVTooltip>
 

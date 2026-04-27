@@ -355,6 +355,21 @@ export const useDebugStore = defineStore('debug', () => {
       description: 'Añade una cantidad de horas al offset de tiempo actual.'
     })
 
+    register({
+      id: 'time-add-weeks',
+      label: 'AÑADIR SEMANAS',
+      command: 'addWeeks',
+      category: 'time',
+      action: (w) => {
+        const current = game.db.getTimeOffset()
+        // 1 week = 7 days * 24 hours * 3600 seconds * 1000 ms
+        game.db.setTimeOffset(current + (w * 7 * 24 * 3600 * 1000))
+        ui.notify(`Debug: +${w} semanas añadidas`, '⏩')
+        window.dispatchEvent(new CustomEvent('time-sync-update'))
+      },
+      description: 'Añade semanas completas para simular cambios de estación.'
+    })
+
     // ITEMS
     register({
       id: 'item-add',

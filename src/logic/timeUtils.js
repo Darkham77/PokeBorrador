@@ -65,15 +65,37 @@ export function getGMT3Date() {
 }
 
 /**
- * Returns the current day cycle based on GMT-3 time.
+ * Returns the current day cycle based on continuous Epoch time.
+ * 1 Real Day = 3 Game Days. 1 Game Day = 8 Real Hours.
+ * Phases: Morning (2hs), Day (2hs), Dusk (2hs), Night (2hs).
  */
-export function getDayCycle() {
-  const hour = getGMT3Date().getHours();
-  // Standard Gen 3-like cycles
-  if (hour >= 6 && hour < 12) return 'morning';
-  if (hour >= 12 && hour < 18) return 'day';
-  if (hour >= 18 && hour < 21) return 'dusk';
+export function getDayCycle(now = getServerTime()) {
+  const totalHours = Math.floor(now / (1000 * 60 * 60));
+  const phase = totalHours % 8;
+  
+  if (phase < 2) return 'morning';
+  if (phase < 4) return 'day';
+  if (phase < 6) return 'dusk';
   return 'night';
+}
+
+/**
+ * Returns the current season based on continuous Epoch time.
+ * Changes every 7 real days (1 week).
+ */
+export function getSeason(now = getServerTime()) {
+  // 1000ms * 60s * 60m * 24h * 7d = 604800000ms per week
+  const totalWeeks = Math.floor(now / 604800000);
+  const seasonIndex = totalWeeks % 4;
+  
+  const seasons = [
+    { id: 'spring', label: 'Primavera', icon: '🌸' },
+    { id: 'summer', label: 'Verano', icon: '☀️' },
+    { id: 'autumn', label: 'Otoño', icon: '🍂' },
+    { id: 'winter', label: 'Invierno', icon: '❄️' }
+  ];
+  
+  return seasons[seasonIndex];
 }
 
 // Initial sync on module load REMOVED to avoid errors before login

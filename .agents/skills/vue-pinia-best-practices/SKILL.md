@@ -38,3 +38,5 @@ Pinia best practices, common gotchas, and state management patterns.
 - **MANDATORY**: When delegating core store logic to a specialized sub-store (e.g., moving modal logic to `modalStore`), you **MUST** maintain proxy methods in the primary store (e.g., `uiStore.open()`).
 - **Why**: This maintains a stable API for components and prevents "breaking changes" across the codebase during architectural refactors.
 - **Export Integrity (Refactor Safety)**: When moving, renaming, or deleting state variables/methods within a store, you **MUST** immediately synchronize the `return { ... }` object. Leaving orphaned references in the export block will cause a `ReferenceError` during application boot.
+- **Setup Store Visibility**: Properties and refs defined inside a setup store are **NOT** automatically reactive or visible to components unless explicitly exported in the `return` block. Failure to export a state property (e.g., `currentEpochHour`) will result in `undefined` values in consuming components, potentially breaking downstream logic that expects a numeric or reactive value.
+

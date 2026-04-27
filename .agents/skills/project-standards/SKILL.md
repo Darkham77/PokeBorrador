@@ -86,6 +86,12 @@ Refer to these manuals for complex implementation specifications:
 - **Bulk Operation Optimization**: In management views (inventory, boxes), multi-selection modes should default to "Full Stack" (selecting all items of that type) to minimize modal interactions.
 - **Financial Transparency**: Always display estimated total profits in confirmation dialogs for bulk selling operations to provide immediate user feedback.
 
+### 8. Logic & Determinism
+
+- **Authoritative Time**: Always use `getServerTime()` for game-logic-critical timestamps. Avoid `Date.now()` to ensure administrative time-travel debugging works correctly. See [security_and_sync_manual.md](./references/security_and_sync_manual.md).
+- **PRNG Avalanche Protocol**: When using deterministic seeds for gameplay features (weather, spawns), the PRNG **MUST** discard the first 3 generated values to ensure high entropy between sequential seeds.
+
+
 ---
 
 ## 🏗️ Workflow & Artifact Governance (MANDATORY)

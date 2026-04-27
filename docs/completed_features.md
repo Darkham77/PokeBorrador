@@ -22,6 +22,7 @@ Este documento sirve como referencia de los componentes, menús y herramientas q
 | **BUSCADOR DE POKEMON** | Finalizado | `PokemonSelectionModal.vue`, `BoxFilters.vue`, `ui.js` (Store) |
 | **VISOR DE DETALLES** | Finalizado | `UnifiedPokemonDetailModal.vue`, `pokemonDataProvider.js` |
 | **MOCHILA** | Finalizado | `InventoryModal.vue`, `InventorySidebar.vue`, `InventoryItemCard.vue`, `inventory.js` (Store), `_inventory.scss` |
+| **MOTOR DE CLIMA** | Finalizado | `weatherUtils.js`, `weather-tables.js`, `timeUtils.js`, `map.js` (Store) |
 
 ## Uso como Guía de Migración
 

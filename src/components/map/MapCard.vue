@@ -10,6 +10,8 @@ import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
+import { useMapStore } from '@/stores/map'
+import { getRouteWeather } from '@/logic/weatherUtils'
 import { useElementVisibility } from '@/composables/useElementVisibility'
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
 
@@ -29,6 +31,7 @@ const emit = defineEmits(['navigate'])
 
 const uiStore = useUIStore()
 const battleStore = useBattleStore()
+const mapStore = useMapStore()
 
 // Refs & Performance
 const cardRef = ref(null)
@@ -58,9 +61,18 @@ const cycleName = computed(() => {
     morning: 'Mañana',
     day: 'Día',
     afternoon: 'Tarde',
+    dusk: 'Atardecer',
     night: 'Noche'
   }
   return names[props.cycle] || 'Normal'
+})
+
+const seasonName = computed(() => mapStore.currentSeason.label)
+const seasonEmoji = computed(() => mapStore.currentSeason.icon)
+
+const computedWeather = computed(() => {
+  if (mapStore.globalWeather) return mapStore.globalWeather
+  return getRouteWeather(props.map.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
 })
 
 const weatherEmoji = computed(() => {
@@ -74,7 +86,7 @@ const weatherEmoji = computed(() => {
     sandstorm: '🏜️', 
     heatwave: '🔥' 
   }
-  return emojis[props.weather] || ''
+  return emojis[computedWeather.value] || ''
 })
 
 const weatherName = computed(() => {
@@ -89,7 +101,7 @@ const weatherName = computed(() => {
     fog: 'Niebla',
     heatwave: 'Ola de Calor'
   }
-  return names[props.weather] || 'Normal'
+  return names[computedWeather.value] || 'Normal'
 })
 
 const atmosphereStyles = computed(() => {
@@ -136,9 +148,9 @@ const atmosphereStyles = computed(() => {
   // NO mostrar clima si la ruta está bloqueada
   const showWeather = !props.isLocked && !props.isSafariLocked
 
-  if (showWeather && weatherAdjustments[props.weather]) {
-    finalBaseFilter = weatherAdjustments[props.weather].base
-    finalHoverFilter = weatherAdjustments[props.weather].hover
+  if (showWeather && weatherAdjustments[computedWeather.value]) {
+    finalBaseFilter = weatherAdjustments[computedWeather.value].base
+    finalHoverFilter = weatherAdjustments[computedWeather.value].hover
   }
 
   return {
@@ -149,7 +161,6 @@ const atmosphereStyles = computed(() => {
     '--card-speed': 0.6 + (animSeed * 1.0) // Factor entre 0.6x y 1.6x
   }
 })
-
 
 const animSeed = Math.random()
 
@@ -163,14 +174,14 @@ function updateLightningPos() {
   lightningPos.value = { x1, x2 }
 }
 
-watch([() => props.weather, isPerformanceMode], ([newWeather, perfMode]) => {
+watch([computedWeather, isPerformanceMode], ([newWeather, perfMode]) => {
   if (newWeather === 'storm' && !perfMode) {
     updateLightningPos()
     if (!lightningInterval) {
       // Usar un delay inicial aleatorio para desincronizar los intervalos
       const initialDelay = Math.random() * 7000
       setTimeout(() => {
-        if (props.weather === 'storm' && !isPerformanceMode.value) {
+        if (computedWeather.value === 'storm' && !isPerformanceMode.value) {
           updateLightningPos()
           lightningInterval = setInterval(updateLightningPos, 7000)
         }
@@ -198,7 +209,7 @@ const weatherAnimClass = computed(() => {
     rain: 'anim-shake',
     storm: 'anim-shake'
   }
-  return anims[props.weather] || ''
+  return anims[computedWeather.value] || ''
 })
 
 const factionAnimClass = computed(() => {
@@ -384,28 +395,28 @@ const spawnGrid = computed(() => {
 
     <!-- Weather Layer -->
     <div
-      v-show="weather !== 'clear' && isVisible && !isPerformanceMode && !isLocked && !isSafariLocked"
-      :class="['weather-overlay', weather]"
+      v-show="computedWeather !== 'clear' && isVisible && !isPerformanceMode && !isLocked && !isSafariLocked"
+      :class="['weather-overlay', computedWeather]"
     >
       <!-- Rain & Storm -->
-      <template v-if="weather === 'rain' || weather === 'storm'">
+      <template v-if="computedWeather === 'rain' || computedWeather === 'storm'">
         <div class="rain-layer layer-1" />
         <div class="rain-layer layer-2" />
         <div
-          v-if="weather === 'storm'"
+          v-if="computedWeather === 'storm'"
           class="lightning-bolt"
           :style="{ '--lx1': lightningPos.x1 + '%', '--lx2': lightningPos.x2 + '%' }"
         />
       </template>
 
       <!-- Snow & Blizzard -->
-      <template v-if="weather === 'snow' || weather === 'blizzard'">
+      <template v-if="computedWeather === 'snow' || computedWeather === 'blizzard'">
         <div class="snow-layer layer-1" />
         <div class="snow-layer layer-2" />
       </template>
 
       <!-- Sandstorm -->
-      <template v-if="weather === 'sandstorm'">
+      <template v-if="computedWeather === 'sandstorm'">
         <div class="sandstorm-layer layer-1" />
         <div class="sandstorm-layer layer-2" />
       </template>
@@ -451,14 +462,14 @@ const spawnGrid = computed(() => {
     <PVTooltip
       :class="['location-tag', (isLocked || isSafariLocked) ? 'tag-locked' : 'tag-wild', weatherAnimClass]"
       :title="(isLocked || isSafariLocked) ? 'ZONA BLOQUEADA' : 'ESTADO AMBIENTAL'"
-      :description="(isLocked || isSafariLocked) ? lockDescription : `Clima: ${weatherName} | Ciclo: ${cycleName}`"
+      :description="(isLocked || isSafariLocked) ? lockDescription : `Clima: ${weatherName} | Ciclo: ${cycleName} | Estación: ${seasonName}`"
       position="top"
     >
       <span class="pill-content">
         <template v-if="isLocked || isSafariLocked">🔒</template>
         <template v-else>
           <span class="tag-icon">
-            {{ cycleEmoji }}{{ weatherEmoji }}
+            {{ cycleEmoji }}{{ seasonEmoji }}{{ weatherEmoji }}
           </span>
         </template>
       </span>
