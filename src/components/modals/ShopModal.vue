@@ -101,7 +101,7 @@ const buy = (item) => {
                 class="lock-overlay"
               >
                 <span>BLOQUEADO</span>
-                <small>Nv. {{ item.unlockLv }}</small>
+                <small class="m-badge-level">Nv. {{ item.unlockLv }}</small>
               </div>
             </div>
 

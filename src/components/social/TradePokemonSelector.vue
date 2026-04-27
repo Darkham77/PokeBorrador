@@ -179,7 +179,7 @@ const select = (poke) => {
                   >{{ poke._source === 'team' ? 'Equipo' : 'PC' }}</span>
                 </div>
                 <div class="meta">
-                  Nv. {{ poke.level }} · {{ poke.nature }}
+                  <span class="m-badge-level">Nv. {{ poke.level }}</span> · {{ poke.nature }}
                 </div>
                 
                 <div class="tags">

@@ -52,7 +52,7 @@ const getUnreadCount = (friendId) => {
           {{ friend.username }}
         </div>
         <div class="friend-meta">
-          Nv. {{ friend.level }} &nbsp;·&nbsp; {{ friend.badges }} medallas
+          <span class="m-badge-level">Nv. {{ friend.level }}</span> &nbsp;·&nbsp; {{ friend.badges }} medallas
         </div>
       </div>
 

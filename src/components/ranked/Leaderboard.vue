@@ -81,7 +81,7 @@ const formatRank = (index) => `#${index + 1}`;
               class="trainer-name"
               :class="row.nick_style"
             >{{ row.username }}</span>
-            <span class="trainer-level">Nv. {{ row.level }} • {{ row.badges }} 🏅</span>
+            <span class="trainer-level m-badge-level">Nv. {{ row.level }} • {{ row.badges }} 🏅</span>
           </div>
         </div>
 

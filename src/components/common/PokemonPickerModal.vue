@@ -101,7 +101,7 @@ const handleConfirm = () => {
                 {{ p.name }}
               </div>
               <div class="p-lv">
-                Nv. {{ p.level }} · {{ p.type }}
+                <span class="m-badge-level">Nv. {{ p.level }}</span> · {{ p.type }}
               </div>
             </div>
           </div>

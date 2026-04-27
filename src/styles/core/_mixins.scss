@@ -303,6 +303,22 @@
   text-shadow: 1px 1px 0 Rgba(0,0,0,0.8), -1px -1px 0 Rgba(0,0,0,0.8), 1px -1px 0 Rgba(0,0,0,0.8), -1px 1px 0 Rgba(0,0,0,0.8);
   @include pixelated;
   transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+@mixin type-pill-mini($size: 7px) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 10px;
+  @include pixelated;
+  font-size: $size;
+  color: white;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 Rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
 }
 
 @mixin btn-close-premium {

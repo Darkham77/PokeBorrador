@@ -67,9 +67,8 @@ const bst = computed(() => {
     :class="['box-pokemon-card', { selected: isSelected, 'with-badges': hasBadges, 'performance-mode': isPerformanceActive }]"
     @click.stop="emit('click', $event, index)"
   >
-    <!-- Badge Tier -->
     <div
-      class="tier-badge"
+      class="tier-badge m-badge-tier"
       :style="{ color: tierInfo.color, background: tierInfo.bg }"
     >
       {{ tierInfo.tier }}
@@ -125,13 +124,13 @@ const bst = computed(() => {
         {{ props.pokemon.nickname || props.pokemon.name }}
       </div>
       <div class="stats-column">
-        <div class="level">
-          NV. {{ props.pokemon.level }}
+        <div class="level m-badge-level">
+          Nv. {{ props.pokemon.level }}
         </div>
-        <div class="mini-stat ivs">
+        <div class="mini-stat m-badge-tot ivs">
           IV {{ totalIvs }}
         </div>
-        <div class="mini-stat bst">
+        <div class="mini-stat m-badge-tot">
           TOT {{ bst + totalIvs }}
         </div>
       </div>

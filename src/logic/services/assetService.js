@@ -5,10 +5,10 @@ import { MAPS_WITH_CYCLES } from '@/data/map-assets';
 
 
 /**
- * POKEAPI_BASE: Official PokeAPI sprites repository.
+ * POKEAPI_BASE: Now local paths for downloaded sprites.
  */
-const POKEAPI_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
-const POKEAPI_ITEM_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/';
+const POKEAPI_BASE = '/assets/sprites/pokemon/';
+const POKEAPI_ITEM_BASE = '/assets/items/';
 
 /**
  * ITEM_MAPPING: Maps internal item names to PokeAPI names.
@@ -109,11 +109,11 @@ export const getAssetUrl = (type, rawId, options = {}) => {
   switch (type) {
     case ASSET_TYPES.POKEMON: {
       const num = POKEMON_SPRITE_IDS[id.toLowerCase()] || id;
-      if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return `${POKEAPI_ITEM_BASE}egg.png`;
+      if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`${POKEAPI_ITEM_BASE}egg${extension}`);
       
       const folder = isShiny ? 'shiny/' : '';
       const back = isBack ? 'back/' : '';
-      return `${POKEAPI_BASE}${back}${folder}${num}.png`;
+      return resolveAsset(`${POKEAPI_BASE}${back}${folder}${num}${extension}`);
     }
 
     case ASSET_TYPES.MAP: {
@@ -154,25 +154,14 @@ export const getAssetUrl = (type, rawId, options = {}) => {
       const sanitizedId = id.toLowerCase().replace(/[\s.]/g, '');
       const finalId = LEGACY_MAPPING[sanitizedId] || sanitizedId;
 
-      // Remote Showdown sprites mapping
-      const showdownTrainers = [
-        'brock', 'misty', 'ltsurge', 'erika', 'koga', 'sabrina', 'blaine', 'giovanni',
-        'rainbowrocketgrunt', 'bugcatcher-gen6', 'red-lgpe', 'jacq', 'blue-gen3',
-        'biker', 'blackbelt', 'beauty', 'birdkeeper', 'burglar', 'channeler', 'cooltrainer',
-        'cueball', 'engineer', 'gentleman', 'hiker', 'juggler', 'lass', 'maniac', 
-        'psychic', 'rocker', 'roughneck', 'sailor', 'scientist', 'supernerd', 'swimmer',
-        'youngster'
-      ];
-      if (showdownTrainers.includes(finalId)) {
-        return `https://play.pokemonshowdown.com/sprites/trainers/${finalId}.png`;
-      }
+      // Remote Showdown sprites mapping (Now all local)
+      // All previous showdownTrainers are now in public/assets/sprites/trainers/
       
-      // Other remote URLs
-      if (id.startsWith('http')) return id;
+      // Other remote URLs fallback
+      if (typeof id === 'string' && id.startsWith('http')) return id;
       
-      // Local assets
-      const localPath = `/assets/sprites/trainers/${finalId}${extension}`;
-      return resolveAsset(localPath);
+      // Local assets (prioritized)
+      return resolveAsset(`/assets/sprites/trainers/${finalId}${extension}`);
     }
 
     case ASSET_TYPES.BANNER:
@@ -214,7 +203,7 @@ export const getAssetUrl = (type, rawId, options = {}) => {
                        ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar', 'awakening'].some(k => mappedId.includes(k));
 
       if (isPokeAPI) {
-        return `${POKEAPI_ITEM_BASE}${mappedId}.png`;
+        return resolveAsset(`${POKEAPI_ITEM_BASE}${mappedId}${extension}`);
       }
       
       // Local fallback

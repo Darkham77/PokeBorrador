@@ -87,7 +87,7 @@ const handleSwitch = async (index) => {
             <div class="poke-info">
               <div class="name-line">
                 <span class="p-name">{{ p.name }}</span>
-                <span class="p-lv">Nv.{{ p.level }}</span>
+                <span class="m-badge-level">Nv. {{ p.level }}</span>
               </div>
               
               <div class="hp-bar-container">

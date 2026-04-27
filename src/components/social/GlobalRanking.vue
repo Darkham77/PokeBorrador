@@ -96,7 +96,7 @@ const getRankIcon = (tierId) => {
               >TÚ</span>
             </div>
             <div class="meta-row">
-              <span class="level">Nv. {{ p.level }}</span>
+              <span class="level m-badge-level">Nv. {{ p.level }}</span>
               <span
                 class="faction"
                 :class="p.faction"

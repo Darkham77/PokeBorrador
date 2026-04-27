@@ -98,7 +98,7 @@ const getFactionColor = (faction) => {
               </span>
             </div>
             <div class="player-meta">
-              Nv. {{ player.level }} · {{ player.elo }} ELO
+              <span class="m-badge-level">Nv. {{ player.level }}</span> · {{ player.elo }} ELO
             </div>
           </div>
 

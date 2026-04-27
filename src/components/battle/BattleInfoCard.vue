@@ -45,7 +45,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
       >
     </div>
     
-    <div class="poke-level">
+    <div class="poke-level m-badge-level">
       Nv. {{ p.level }}
     </div>
 
@@ -112,9 +112,6 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 }
 
 .poke-level {
-  font-size: 11px;
-  color: var(--yellow);
-  font-weight: bold;
   margin-bottom: 8px;
 }
 

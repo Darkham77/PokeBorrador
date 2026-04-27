@@ -43,7 +43,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
             {{ pokemon.name }}
           </div>
           <div class="meta">
-            Nv. {{ pokemon.level }}
+            <span class="m-badge-level">Nv. {{ pokemon.level }}</span>
           </div>
         </div>
         <div class="change-hint">

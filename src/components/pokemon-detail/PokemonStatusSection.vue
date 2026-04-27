@@ -97,7 +97,7 @@ const abilityStyle = computed(() => ({
         <span class="label">Naturaleza</span>
         <div class="value-wrap">
           <span
-            class="val interactive-val"
+            class="val interactive-val m-interactive-label"
             :style="natureStyle"
           >{{ p.nature || 'Serio' }}</span>
         </div>
@@ -112,7 +112,7 @@ const abilityStyle = computed(() => ({
         <span class="label">Habilidad</span>
         <div class="value-wrap">
           <span
-            class="val interactive-val"
+            class="val interactive-val m-interactive-label"
             :style="abilityStyle"
           >{{ p.ability || '—' }}</span>
         </div>
@@ -227,8 +227,6 @@ const abilityStyle = computed(() => ({
   
   &.interactive-val {
     display: inline-block; // To keep the dotted border tight
-    border-bottom: 2px dotted Rgba(255,255,255,0.3);
-    padding-bottom: 2px;
   }
 }
 

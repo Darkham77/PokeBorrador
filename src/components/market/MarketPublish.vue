@@ -85,7 +85,7 @@ const net = computed(() => price.value - fee.value)
             >
             <div class="p-info">
               <span class="p-name">{{ p.name }}</span>
-              <span class="p-lvl">Nv. {{ p.level }}</span>
+              <span class="p-lvl m-badge-level">Nv. {{ p.level }}</span>
             </div>
           </div>
           <div
@@ -271,7 +271,7 @@ const net = computed(() => price.value - fee.value)
     display: flex;
     flex-direction: column;
     .p-name, .i-name { font-size: 13px; font-weight: bold; color: var(--white); }
-    .p-lvl, .i-qty { font-size: 10px; color: $muted; }
+    .i-qty { font-size: 10px; color: $muted; }
   }
   
   .i-icon { font-size: 24px; }

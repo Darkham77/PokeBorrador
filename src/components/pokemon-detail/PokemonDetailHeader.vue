@@ -39,7 +39,7 @@ const totalPower = computed(() => calculateTotalPower(p.value))
       </div>
       <div class="name-info">
         <h2 class="poke-name">
-          {{ p.name }}&nbsp;<span :class="'gender-' + (p.gender || 'none').toLowerCase()">
+          {{ p.name }}&nbsp;<span :class="['m-badge-gender', 'gender-' + (p.gender || 'none').toLowerCase()]">
             {{ (p.gender === 'M' ? '♂' : p.gender === 'F' ? '♀' : '') }}
           </span>
         </h2>
@@ -48,9 +48,9 @@ const totalPower = computed(() => calculateTotalPower(p.value))
             class="type-badge"
             :class="'type-' + p.type.toLowerCase()"
           >{{ p.type }}</span>
-          <span class="level-badge">Nv. {{ p.level }}</span>
-          <span class="tot-badge">TOT {{ totalPower }}</span>
-          <span class="id-badge">#{{ String(p.id).padStart(3, '0') }}</span>
+          <span class="level-badge m-badge-level">Nv. {{ p.level }}</span>
+          <span class="tot-badge m-badge-tot">TOT {{ totalPower }}</span>
+          <span class="id-badge m-badge-id">#{{ String(p.id).padStart(3, '0') }}</span>
         </div>
         <div class="tags-row">
           <PVTooltip
@@ -160,11 +160,11 @@ const totalPower = computed(() => calculateTotalPower(p.value))
   margin-bottom: 12px;
 }
 
-.level-badge { font-weight: bold; color: var(--white); font-size: 12px; }
+.level-badge { font-weight: bold; font-size: 12px; }
 .tot-badge {
-  @include badge-tot;
+  // Styles handled by m-badge-tot
 }
-.id-badge { color: Rgba(255,255,255,0.3); font-size: 11px; font-weight: bold; }
+.id-badge { font-size: 11px; font-weight: bold; }
 
 .tags-row {
   display: flex;
@@ -203,7 +203,5 @@ const totalPower = computed(() => calculateTotalPower(p.value))
 
 .close-btn:hover { background: var(--red); }
 
-/* Gender Colors */
-.gender-m { color: Rgba(59, 139, 255, 1); }
-.gender-f { color: Rgba(255, 110, 255, 1); }
+/* Gender Colors handled by m-badge-gender */
 </style>

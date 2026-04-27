@@ -60,7 +60,7 @@ function getSprite(pokemon) {
           <div class="visual-area">
             <template v-if="item.listing_type === 'pokemon'">
               <div
-                class="market-tier-badge"
+                class="market-tier-badge m-badge-tier"
                 :style="{ background: getTierData(item.data).bg }"
               >
                 {{ getTierData(item.data).tier }}
@@ -84,16 +84,18 @@ function getSprite(pokemon) {
               v-if="item.listing_type === 'pokemon'"
               class="meta"
             >
-              <span class="lvl">Nv. {{ item.data.level }}</span>
+              <span class="lvl m-badge-level">Nv. {{ item.data.level }}</span>
               <span class="types">
                 <span
                   class="type-tag"
                   :class="item.data.type"
+                  :style="{ background: getTypeColor(item.data.type) }"
                 >{{ item.data.type }}</span>
                 <span
                   v-if="item.data.type2"
                   class="type-tag"
                   :class="item.data.type2"
+                  :style="{ background: getTypeColor(item.data.type2) }"
                 >{{ item.data.type2 }}</span>
               </span>
             </div>
@@ -193,12 +195,7 @@ function getSprite(pokemon) {
     position: absolute;
     top: -6px;
     right: -6px;
-    font-size: 8px;
-    font-weight: 900;
-    padding: 2px 6px;
-    border-radius: 8px;
-    color: $white;
-    box-shadow: 0 2px 5px Rgba(0,0,0,0.3);
+    z-index: var(--z-low);
   }
 }
 
@@ -233,28 +230,7 @@ function getSprite(pokemon) {
 }
 
 .type-tag {
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 8px;
-  text-transform: uppercase;
-  color: $white;
-  &.fire { background: Rgba(255, 68, 68, 1); }
-  &.water { background: Rgba(59, 130, 246, 1); }
-  &.grass { background: Rgba(52, 211, 153, 1); }
-  &.electric { background: Rgba(251, 191, 36, 1); }
-  &.psychic { background: Rgba(168, 85, 247, 1); }
-  &.normal { background: Rgba(148, 163, 184, 1); }
-  &.rock { background: Rgba(187, 170, 102, 1); }
-  &.ground { background: Rgba(221, 187, 85, 1); }
-  &.poison { background: Rgba(170, 85, 153, 1); }
-  &.bug { background: Rgba(170, 187, 34, 1); }
-  &.flying { background: Rgba(136, 153, 255, 1); }
-  &.ghost { background: Rgba(102, 102, 187, 1); }
-  &.ice { background: Rgba(102, 204, 255, 1); }
-  &.dragon { background: Rgba(119, 102, 238, 1); }
-  &.fighting { background: Rgba(187, 85, 68, 1); }
-  &.dark { background: Rgba(119, 85, 68, 1); }
-  &.steel { background: Rgba(170, 170, 187, 1); }
+  @include type-pill-mini;
 }
 
 .buy-btn {

@@ -76,7 +76,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
         </div>
 
         <div class="actions-right">
-          <span class="lvl">Nv.{{ item.pokemon.level ?? 1 }}</span>
+          <span class="m-badge-level">Nv. {{ item.pokemon.level ?? 1 }}</span>
         </div>
       </div>
       <div class="bottom-line">
@@ -90,13 +90,11 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
             {{ t?.toUpperCase() }}
           </span>
         </div>
-        <div class="stats-summary">
-          <span
-            v-if="item.pokemon.ivs"
-            class="stat-badge ivs"
-          >IVs: {{ Object.values(item.pokemon.ivs).reduce((s,v)=>s+(v||0),0) }}</span>
-          <span class="stat-badge TOT">TOT: {{ total }}</span>
-        </div>
+        <span
+          v-if="item.pokemon.ivs"
+          class="m-badge-iv"
+        >IVs: {{ Object.values(item.pokemon.ivs).reduce((s,v)=>s+(v||0),0) }}</span>
+        <span class="m-badge-tot">TOT: {{ total }}</span>
         <span
           class="source-tag"
           :class="item._source"

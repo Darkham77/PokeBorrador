@@ -1,0 +1,116 @@
+// src/styles/components/_badges.scss
+@use "../core/tools" as *;
+
+/**
+ * MASTER BADGE SYSTEM
+ * Unified indicators for Pokemon properties (Level, ID, TOT, Tier, Gender).
+ */
+
+// 1. LEVEL BADGE (NV.)
+@mixin badge-level {
+  @include pixelated;
+  font-size: 8px;
+  color: #a855f7;
+  background: Rgba(168, 85, 247, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid Rgba(168, 85, 247, 0.2);
+  font-weight: bold;
+}
+
+.m-badge-level {
+  @include badge-level;
+}
+
+// 2. ID BADGE (#000)
+@mixin badge-id {
+  @include pixelated;
+  font-size: 11px;
+  font-weight: bold;
+  color: Rgba(255, 255, 255, 0.3);
+}
+
+.m-badge-id {
+  @include badge-id;
+}
+
+// 3. TOT & IV BADGES
+@mixin badge-iv {
+  @include pixelated;
+  font-size: 8px;
+  color: #4ade80;
+  background: Rgba(74, 222, 128, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid Rgba(74, 222, 128, 0.2);
+}
+
+.m-badge-iv {
+  @include badge-iv;
+}
+
+@mixin badge-tot {
+  @include pixelated;
+  font-size: 8px;
+  color: var(--yellow);
+  background: Rgba(255, 214, 10, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid Rgba(255, 214, 10, 0.2);
+}
+
+.m-badge-tot {
+  @include badge-tot;
+  
+  // Backward compatibility
+  &.ivs, &.iv {
+    @include badge-iv;
+  }
+}
+
+// 4. TIER BADGE (S+, S, A...)
+@mixin badge-tier($size: 16px) {
+  min-width: $size;
+  height: $size;
+  @include flex-center;
+  padding: 2px;
+  border-radius: 4px;
+  @include pixelated;
+  line-height: 1;
+  font-size: calc($size * 0.5);
+  box-shadow: 0 2px 5px Rgba(0, 0, 0, 0.3);
+  font-weight: 900;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+}
+
+.m-badge-tier {
+  @include badge-tier;
+}
+
+// 5. GENDER BADGE (♂/♀)
+@mixin badge-gender {
+  @include pixelated;
+  display: inline-flex;
+  align-items: center;
+  
+  &.male, &.gender-male, &.gender-m { color: #55aaff; }
+  &.female, &.gender-female, &.gender-f { color: #ff88aa; }
+}
+
+.m-badge-gender {
+  @include badge-gender;
+  font-size: 14px;
+}
+
+// 6. INTERACTIVE LABELS (Nature, Ability)
+@mixin interactive-label {
+  display: inline-block;
+  border-bottom: 2px dotted Rgba(255, 255, 255, 0.3);
+  padding-bottom: 2px;
+  cursor: help;
+  @include pixelated;
+}
+
+.m-interactive-label {
+  @include interactive-label;
+}

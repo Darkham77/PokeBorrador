@@ -242,7 +242,7 @@ const bannerStyle = computed(() => ({
     position: absolute;
     inset: -5px; // Sangrado profundo para asegurar que cubra debajo del marco
     background-size: cover;
-    background-position: center 20%;
+    background-position: center center;
     z-index: calc(var(--z-base) + 1);
     border-radius: 16px; // Ajustado para curva interna (20px - 4px)
     @include pixelated;
@@ -254,7 +254,7 @@ const bannerStyle = computed(() => ({
     content: '';
     position: absolute;
     inset: -5px; // Sangrado profundo
-    background: Linear-Gradient(to top, $black 0%, Rgba(0,0,0,0.85) 35%, transparent 70%);
+    background: Linear-Gradient(to top, $black 0%, Rgba(0,0,0,0.6) 30%, transparent 55%);
     z-index: calc(var(--z-base) + 2);
     pointer-events: none;
     border-radius: 16px;

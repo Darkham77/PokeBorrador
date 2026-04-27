@@ -13,36 +13,36 @@ describe('AssetService & Resolver', () => {
   })
 
   describe('AssetService: Pokemon Routing', () => {
-    it('debe resolver sprites base desde PokeAPI usando el mapeo interno', () => {
+    it('debe resolver sprites base desde PokeAPI usando el mapeo interno (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'bulbasaur'))
-        .toBe('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png')
+        .toBe('/assets/sprites/pokemon/1.webp')
     })
 
-    it('debe soportar variantes Shiny', () => {
+    it('debe soportar variantes Shiny (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu', { isShiny: true }))
-        .toBe('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/25.png')
+        .toBe('/assets/sprites/pokemon/shiny/25.webp')
     })
 
-    it('debe soportar variantes de espalda (Back)', () => {
+    it('debe soportar variantes de espalda (Back) (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'mew', { isBack: true }))
-        .toBe('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/151.png')
+        .toBe('/assets/sprites/pokemon/back/151.webp')
     })
 
-    it('debe combinar Shiny + Back correctamente', () => {
+    it('debe combinar Shiny + Back correctamente (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'charizard', { isShiny: true, isBack: true }))
-        .toBe('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/shiny/6.png')
+        .toBe('/assets/sprites/pokemon/back/shiny/6.webp')
     })
 
-    it('debe manejar huevos como ítems especiales', () => {
+    it('debe manejar huevos como ítems especiales (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'egg_water'))
-        .toBe('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/egg.png')
+        .toBe('/assets/items/egg.webp')
     })
   })
 
   describe('AssetService: Item Routing', () => {
-    it('debe mapear nombres internos a IDs de PokeAPI', () => {
+    it('debe mapear nombres internos a IDs de PokeAPI (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.ITEM, 'super_pocion'))
-        .toBe('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-potion.png')
+        .toBe('/assets/items/super-potion.webp')
     })
 
     it('debe usar fallback local para ítems no mapeados o custom', () => {
@@ -52,9 +52,9 @@ describe('AssetService & Resolver', () => {
   })
 
   describe('AssetService: Trainer Routing', () => {
-    it('debe usar Showdown para líderes de gimnasio reconocidos', () => {
+    it('debe usar activos locales para líderes de gimnasio (anteriormente externos)', () => {
       expect(getAssetUrl(ASSET_TYPES.TRAINER, 'brock'))
-        .toBe('https://play.pokemonshowdown.com/sprites/trainers/brock.png')
+        .toBe('/assets/sprites/trainers/brock.webp')
     })
 
     it('debe usar activos locales para otros entrenadores (sin LOD)', () => {

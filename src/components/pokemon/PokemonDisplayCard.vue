@@ -113,7 +113,7 @@ function getGenderClass(gender) {
       />
 
       <div
-        class="card-tier-badge"
+        class="card-tier-badge m-badge-tier"
         :style="{ '--tier-bg': tierInfo.bg, '--tier-color': tierInfo.color }"
       >
         {{ tierInfo.tier }}
@@ -160,8 +160,8 @@ function getGenderClass(gender) {
       </div>
       
       <div class="level-line">
-        <span>Nv. {{ pokemon.level }}</span>
-        <span class="tot-badge">TOT {{ totalPower }}</span>
+        <span class="m-badge-level">Nv. {{ pokemon.level }}</span>
+        <span class="tot-badge m-badge-tot">TOT {{ totalPower }}</span>
       </div>
 
       <!-- Status Labels (Floating) -->
@@ -229,7 +229,6 @@ function getGenderClass(gender) {
 @use "@/styles/components/pokemon-display-card" as *;
 
 .tot-badge {
-  @include badge-tot;
   margin-left: 8px;
 }
 </style>

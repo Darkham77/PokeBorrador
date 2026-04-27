@@ -16,10 +16,10 @@ const url = getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu', { isShiny: false });
 
 | Type | Source | Description |
 | :--- | :--- | :--- |
-| `POKEMON` | PokeAPI / Local | Resolves to PokeAPI by default. Supports `isShiny` and `isBack`. |
-| `ITEM` | PokeAPI / Local | Maps item names to PokeAPI IDs. Falls back to local PNG if missing. |
+| `POKEMON` | Local (WebP) | (Formerly PokeAPI) Resolves to local sprites in `/assets/sprites/pokemon/`. Supports `isShiny` and `isBack`. |
+| `ITEM` | Local (WebP) | (Formerly PokeAPI) Maps item names to internal IDs in `/assets/items/`. |
 | `MAP` | Local (WebP) | Resolves map IDs to `/assets/maps/`. |
-| `TRAINER` | Showdown / Local | Resolves IDs to Showdown sprites for leaders, or local for others. |
+| `TRAINER` | Local (WebP) | (Formerly Showdown) Resolves all trainer IDs (Leaders & Generic) to `/assets/sprites/trainers/`. |
 | `BANNER` | Local (WebP) | Route banners in `/assets/ui/banners/`. |
 | `BATTLE_BG` | Local (WebP) | Battle backgrounds in `/assets/sprites/battle/`. |
 | `UI` | Local (WebP) | General UI assets in `/assets/ui/`. |
@@ -63,7 +63,6 @@ To ensure minimal data transfer and optimal load times, all visual assets must b
 
 - **MANDATORY**: All final images used in the project (`public/assets/`) **MUST** be in **WebP** format.
 - **FORBIDDEN**: Storing raw `.png`, `.jpg`, or `.jpeg` files in the final destination directories.
-- **EXCEPTION**: Data fetched dynamically from PokeAPI **MUST** use **PNG** format.
 
 #### Folder Architecture
 

@@ -127,7 +127,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
       >
         <div class="summary-badges-right">
           <div
-            class="tier-badge"
+            class="tier-badge m-badge-tier"
             :style="{ color: tierInfo.color, background: tierInfo.bg }"
           >
             {{ tierInfo.tier }}
@@ -160,15 +160,15 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
                 {{ pokemon.name }}
                 <span
                   v-if="pokemon.gender"
-                  :class="['gender-icon', pokemon.gender === 'M' ? 'male' : 'female']"
+                  :class="['gender-icon m-badge-gender', pokemon.gender === 'M' ? 'male' : 'female']"
                 >
                   {{ pokemon.gender === 'M' ? '♂' : '♀' }}
                 </span>
               </h3>
               <div class="level-row">
-                <span class="level-badge">NV. {{ pokemon.level }}</span>
-                <span class="tot-badge ivs">IV {{ Object.values(pokemon.ivs || {}).reduce((s,v)=>s+(v||0),0) }}</span>
-                <span class="tot-badge">TOT {{ totalPower }}</span>
+                <span class="level-badge m-badge-level">Nv. {{ pokemon.level }}</span>
+                <span class="tot-badge m-badge-tot ivs">IV {{ Object.values(pokemon.ivs || {}).reduce((s,v)=>s+(v||0),0) }}</span>
+                <span class="tot-badge m-badge-tot">TOT {{ totalPower }}</span>
               </div>
               
               <div class="types-row-header">
@@ -237,7 +237,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
             >
               <div
                 v-if="t"
-                class="slot-rank"
+                class="slot-rank m-badge-tier"
                 :style="{ color: getPokemonTier(t).color, background: getPokemonTier(t).bg }"
               >
                 {{ getPokemonTier(t).tier }}
@@ -344,6 +344,16 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
     }
   }
 
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--type-color, var(--purple));
+    box-shadow: 0 0 10px var(--type-color);
+    opacity: 0.6;
+  }
+
   .summary-top {
     display: flex;
     align-items: center;
@@ -414,41 +424,14 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
       display: flex;
       align-items: center;
       gap: 6px;
-
-      .gender-icon {
-        font-size: 14px;
-        &.male { color: #55aaff; }
-        &.female { color: #ff88aa; }
-      }
     }
 
     .level-row {
       display: flex;
-      align-items: center;
       gap: 6px;
-      margin-top: 4px;
-
-      .tot-badge.ivs {
-        background: Rgba(255, 217, 61, 0.1);
-        color: var(--yellow);
-        border: 1px solid Rgba(255, 217, 61, 0.2);
-      }
+      margin-top: 8px;
     }
 
-    .level-badge { 
-      @include pixelated; 
-      font-size: 8px; 
-      color: var(--yellow); 
-      background: Rgba(255, 214, 10, 0.1);
-      border: 1px solid Rgba(255, 214, 10, 0.2);
-      border-radius: 4px;
-      padding: 2px 6px;
-    }
-    
-    .tot-badge {
-      @include badge-tot;
-    }
-    
     .details { 
       font-size: 11px; 
       color: var(--gray); 
@@ -469,46 +452,13 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
     }
   }
 
-  .pokemon-summary {
-    position: relative;
-    padding: 16px;
-    background: Linear-Gradient(135deg, Rgba(255,255,255,0.05) 0%, Rgba(0,0,0,0.2) 100%);
-    border-bottom: 1px solid Rgba(255,255,255,0.05);
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    border-radius: 12px 12px 0 0;
-    transition: all 0.3s ease;
-    overflow: hidden;
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 3px;
-      background: var(--type-color, var(--purple));
-      box-shadow: 0 0 10px var(--type-color);
-      opacity: 0.6;
-    }
-
-    &.is-interactive:hover {
-      background: Linear-Gradient(135deg, Rgba(255,255,255,0.08) 0%, Rgba(0,0,0,0.25) 100%);
-    }
-  }
-
   .types-row-header {
     display: flex;
     gap: 4px;
     margin-top: 6px;
 
     .type-pill-mini {
-      font-size: 7px;
-      padding: 1px 6px;
-      border-radius: 10px;
-      @include pixelated;
-      color: white;
-      text-shadow: 1px 1px 0 Rgba(0,0,0,0.3);
-      box-shadow: 0 1px 3px Rgba(0,0,0,0.2);
+      @include type-pill-mini;
     }
   }
 
@@ -521,18 +471,6 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
     align-items: center;
     gap: 6px;
     z-index: var(--z-low);
-
-    .tier-badge {
-      font-size: 8px;
-      min-width: 16px;
-      height: 16px;
-      @include flex-center;
-      padding: 2px;
-      border-radius: 4px;
-      @include pixelated;
-      line-height: 1;
-      box-shadow: 0 2px 5px Rgba(0,0,0,0.3);
-    }
   }
 }
 
@@ -580,17 +518,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
     position: absolute;
     bottom: 12px;
     left: 8px;
-    @include pixelated;
-    font-size: 8px;
-    background: Rgba(0, 0, 0, 0.6);
-    color: var(--vicio-gold);
-    padding: 2px 4px;
-    border-radius: 4px;
     z-index: calc(var(--z-base) + 5);
-    box-shadow: 0 2px 8px Rgba(0,0,0,0.4);
-    font-weight: 900;
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    line-height: 1;
   }
 
   @media (max-width: 768px) {

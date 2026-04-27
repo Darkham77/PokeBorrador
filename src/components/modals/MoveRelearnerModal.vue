@@ -120,7 +120,7 @@ const consumeItem = (name) => {
         >
           <div class="move-info">
             <span class="move-name">{{ mv.name }}</span>
-            <span class="move-lv">Nv. {{ mv.lv || '—' }}</span>
+            <span class="move-lv m-badge-level">Nv. {{ mv.lv || '—' }}</span>
           </div>
           <div class="move-pp">
             PP {{ mv.pp }}/{{ mv.pp }}

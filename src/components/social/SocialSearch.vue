@@ -49,7 +49,7 @@ const handleSearch = () => {
             {{ result.username }}
           </div>
           <div class="friend-meta">
-            Nv. {{ result.level }}
+            <span class="m-badge-level">Nv. {{ result.level }}</span>
           </div>
         </div>
          

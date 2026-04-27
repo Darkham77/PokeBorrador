@@ -169,6 +169,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | Clean up | Avoid side effects |
 | **JSDOM Safety Checks** | Browser APIs (e.g., `IntersectionObserver`, `localStorage`) may be undefined in tests. Always include safety checks (e.g., `if (typeof API === 'undefined') return`) in composables to prevent test crashes. |
 | **Prop-Based UI Testing** | For modern components (e.g., `PVTooltip`), verify **Props/Attributes** instead of searching for nested DOM elements. This avoids breakage when elements are **Teleported** or refactored internally. |
+| **Asset Resolution Parity** | When migrating assets from external to local, ALWAYS update the corresponding unit tests (e.g., `assets.spec.js`) to verify the new local path resolution and `.webp` extension. |
 
 ---
 

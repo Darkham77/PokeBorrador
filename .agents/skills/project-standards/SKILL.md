@@ -68,6 +68,8 @@ Refer to these manuals for complex implementation specifications:
 - **Resolution Policy**: Use 1:1 original quality for all assets. Multi-resolution (LOD) systems are strictly forbidden to ensure architectural simplicity and visual consistency.
 - **WebP Standard**: All local assets MUST be converted to WebP via the Zero-Config pipeline.
 - **Mirroring**: The `_raw-assets/` directory mirrors the `public/assets/` structure 1:1. Never use intermediate control folders like `lod/` or `original/`.
+- **Localization Mandate**: To ensure offline capability and consistent performance, all external assets (PokeAPI, Showdown) MUST be localized to `_raw-assets/` and optimized into WebP format.
+- **Mapping Consistency**: Filenames for localized assets MUST match the sanitized/mapped IDs (lowercase, no spaces/dots, English slugs for items) used in `assetService.js`.
 - **Texture Atlases**: Use `.atlas/` folders for batched sprites (VFX, Phaser animations) to optimize draw calls.
 
 ### 6. CLI-First Debugging
