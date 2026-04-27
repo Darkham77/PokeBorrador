@@ -63,12 +63,19 @@ Refer to these manuals for complex implementation specifications:
 - **Vue Template Integrity**: NEVER use JS-style (`//`) or HTML comments inside Vue tags or attributes. This causes Vite compilation errors ("Illegal '/' in tags").
 - **Z-Index Layering**: Hardcoded numbers are forbidden. Use system CSS variables (`--z-low`, `--z-base`, etc.) exclusively. If a precise micro-offset is required (e.g., between two layers of the same tier), use `calc(var(--z-base) + N)` to maintain relative hierarchy without breaking the audit engine.
 
-### 5. CLI-First Debugging
+### 5. Asset Pipeline & 1:1 Resolution
+
+- **Resolution Policy**: Use 1:1 original quality for all assets. Multi-resolution (LOD) systems are strictly forbidden to ensure architectural simplicity and visual consistency.
+- **WebP Standard**: All local assets MUST be converted to WebP via the Zero-Config pipeline.
+- **Mirroring**: The `_raw-assets/` directory mirrors the `public/assets/` structure 1:1. Never use intermediate control folders like `lod/` or `original/`.
+- **Texture Atlases**: Use `.atlas/` folders for batched sprites (VFX, Phaser animations) to optimize draw calls.
+
+### 6. CLI-First Debugging
 
 - **Efficiency Over GUI**: Use `window.__VITE_DEBUG__` commands to simulate states, levels, and money.
 - **Verification**: It is MANDATORY to verify new content via CLI before commits.
 
-### 6. Vue & UI Patterns
+### 7. Vue & UI Patterns
 
 - **Reactivity with Spread**: Forcing reactivity in Vue 3 `reactive` objects when modifying nested properties requires re-assigning the root property using the spread operator (e.g., `state.inventory = { ...state.inventory }`). This guarantees the virtual DOM reflects deep state changes.
 - **v-model Object Pattern**: State objects intended to be used with `v-model` in child components MUST be defined as `ref` instead of `reactive`. This allows the parent to handle the `update:modelValue` event by re-assigning the entire object (e.g., `filters.value = newValue`), which is the standard behavior for one-way data flow in Vue 3.

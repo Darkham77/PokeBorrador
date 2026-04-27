@@ -43,10 +43,9 @@ class ShelfPacker:
         
         return padding, y_start + padding
 
-def generate_atlas(source_dir, output_base_path, atlas_name, lod_scales=[1.0, 0.5, 0.25]):
+def generate_atlas(source_dir, output_base_path, atlas_name):
     """
     Generates a Texture Atlas (JSON + WebP) from a directory of images.
-    Supports multiple LOD scales automatically.
     """
     source_path = Path(source_dir)
     images = []
@@ -89,72 +88,44 @@ def generate_atlas(source_dir, output_base_path, atlas_name, lod_scales=[1.0, 0.
         else:
             print(f"   [ATLAS] Warning: {item['name']} did not fit in atlas.")
 
-    # Generate the Atlas files for each LOD
-    for scale in lod_scales:
-        suffix = ""
-        if scale == 0.5: suffix = "@0.5x"
-        elif scale == 0.25: suffix = "@0.25x"
+    # Generate only the original (1x) Atlas files
+    atlas_img_name = f"{atlas_name}.webp"
+    atlas_json_name = f"{atlas_name}.json"
+    
+    # Create destination image
+    atlas_img = Image.new('RGBA', (packer.used_width, packer.used_height), (0, 0, 0, 0))
+    
+    final_frames = {}
+    for name, data in frames.items():
+        f = data['frame']
+        # Find original image
+        orig = next(x for x in images if x['name'] == name)
+        atlas_img.paste(orig['img'], (f['x'], f['y']))
         
-        atlas_img_name = f"{atlas_name}{suffix}.webp"
-        atlas_json_name = f"{atlas_name}{suffix}.json"
-        
-        scaled_width = int(packer.used_width * scale)
-        scaled_height = int(packer.used_height * scale)
-        
-        # Create destination image
-        atlas_img = Image.new('RGBA', (scaled_width, scaled_height), (0, 0, 0, 0))
-        
-        scaled_frames = {}
-        for name, data in frames.items():
-            f = data['frame']
-            # Scale coordinates and dimensions
-            sx = int(f['x'] * scale)
-            sy = int(f['y'] * scale)
-            # Apply Smart Scaling logic for individual sprites in the atlas
-            sprite_scale = scale
-            if f['w'] < 500:
-                sprite_scale = 1.0 # Keep 100% size for small sprites
-            elif scale == 0.25 and f['w'] < 1000:
-                sprite_scale = 0.5 # Minimum 50% for medium sprites
-            
-            sw = max(1, int(f['w'] * sprite_scale))
-            sh = max(1, int(f['h'] * sprite_scale))
-            
-            # Find original image
-            orig = next(x for x in images if x['name'] == name)
-            resized_sub = orig['img'].resize((sw, sh), Image.Resampling.LANCZOS)
-            atlas_img.paste(resized_sub, (sx, sy))
-            
-            scaled_frames[name] = {
-                'frame': {'x': sx, 'y': sy, 'w': sw, 'h': sh},
-                'rotated': False,
-                'trimmed': False,
-                'spriteSourceSize': {'x': 0, 'y': 0, 'w': sw, 'h': sh},
-                'sourceSize': {'w': sw, 'h': sh}
-            }
+        final_frames[name] = data
 
-        # Save Image
-        output_img_path = Path(output_base_path) / atlas_img_name
-        atlas_img.save(output_img_path, 'WEBP', lossless=True)
-        
-        # Save JSON (Phaser Format)
-        atlas_data = {
-            'frames': scaled_frames,
-            'meta': {
-                'app': 'PokéVicio Atlas Gen',
-                'version': '1.0',
-                'image': atlas_img_name,
-                'format': 'RGBA8888',
-                'size': {'w': scaled_width, 'h': scaled_height},
-                'scale': str(scale)
-            }
+    # Save Image
+    output_img_path = Path(output_base_path) / atlas_img_name
+    atlas_img.save(output_img_path, 'WEBP', lossless=True)
+    
+    # Save JSON (Phaser Format)
+    atlas_data = {
+        'frames': final_frames,
+        'meta': {
+            'app': 'PokéVicio Atlas Gen',
+            'version': '1.0',
+            'image': atlas_img_name,
+            'format': 'RGBA8888',
+            'size': {'w': packer.used_width, 'h': packer.used_height},
+            'scale': "1.0"
         }
+    }
+    
+    output_json_path = Path(output_base_path) / atlas_json_name
+    with open(output_json_path, 'w', encoding='utf-8') as f:
+        json.dump(atlas_data, f, indent=2)
         
-        output_json_path = Path(output_base_path) / atlas_json_name
-        with open(output_json_path, 'w', encoding='utf-8') as f:
-            json.dump(atlas_data, f, indent=2)
-            
-        print(f"[OK] Generated Atlas LOD ({scale}x): {output_img_path.name}")
+    print(f"[OK] Generated Atlas: {output_img_path.name}")
 
     return True
 

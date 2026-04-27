@@ -1,6 +1,8 @@
 import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants';
 export { POKEMON_SPRITE_IDS };
 import { resolveAsset } from '../utils/assetResolver';
+import { MAPS_WITH_CYCLES } from '@/data/map-assets';
+
 
 /**
  * POKEAPI_BASE: Official PokeAPI sprites repository.
@@ -115,9 +117,23 @@ export const getAssetUrl = (type, rawId, options = {}) => {
     }
 
     case ASSET_TYPES.MAP: {
-      const mapPath = `/assets/maps/${id}${extension}`;
-      return resolveAsset(mapPath, true);
+      let finalId = id;
+      
+      // Aplicar sufijos de ciclo horario si el mapa lo soporta
+      if (options.cycle && MAPS_WITH_CYCLES.includes(id)) {
+        const suffixes = {
+          morning: '_amanecer',
+          day: '_dia',
+          dusk: '_atardecer',
+          night: '_noche'
+        };
+        finalId = `${id}${suffixes[options.cycle] || '_dia'}`;
+      }
+
+      const mapPath = `/assets/maps/${finalId}${extension}`;
+      return resolveAsset(mapPath);
     }
+
 
     case ASSET_TYPES.TRAINER: {
       // Legacy mapping for mission keys (if trainerType was used as spriteId)
@@ -156,31 +172,31 @@ export const getAssetUrl = (type, rawId, options = {}) => {
       
       // Local assets
       const localPath = `/assets/sprites/trainers/${finalId}${extension}`;
-      return resolveAsset(localPath, true);
+      return resolveAsset(localPath);
     }
 
     case ASSET_TYPES.BANNER:
-      return resolveAsset(`/assets/ui/banners/${id}${extension}`, true);
+      return resolveAsset(`/assets/ui/banners/${id}${extension}`);
 
     case ASSET_TYPES.BATTLE_BG:
-      return resolveAsset(`/assets/sprites/battle/${id}${extension}`, true);
+      return resolveAsset(`/assets/sprites/battle/${id}${extension}`);
 
     case ASSET_TYPES.UI:
     case ASSET_TYPES.VFX:
     case ASSET_TYPES.ATLAS:
-      return resolveAsset(`/assets/ui/${id}${extension}`, true);
+      return resolveAsset(`/assets/ui/${id}${extension}`);
 
     case ASSET_TYPES.FACTION:
-      return resolveAsset(`/assets/factions/${id}${extension}`, true);
+      return resolveAsset(`/assets/factions/${id}${extension}`);
 
     case ASSET_TYPES.RANK:
-      return resolveAsset(`/assets/ui/ranks/${id}${extension}`, true);
+      return resolveAsset(`/assets/ui/ranks/${id}${extension}`);
 
     case ASSET_TYPES.ICON:
-      return resolveAsset(`/assets/ui/icons/${id}${extension}`, true);
+      return resolveAsset(`/assets/ui/icons/${id}${extension}`);
 
     case ASSET_TYPES.DATA:
-      return resolveAsset(`/assets/data/${id}.json`, true);
+      return resolveAsset(`/assets/data/${id}.json`);
 
     case ASSET_TYPES.ITEM: {
       const idStr = String(id).toLowerCase();
@@ -202,7 +218,7 @@ export const getAssetUrl = (type, rawId, options = {}) => {
       }
       
       // Local fallback
-      return resolveAsset(`/assets/items/${idStr}${extension}`, true);
+      return resolveAsset(`/assets/items/${idStr}${extension}`);
     }
 
     default:

@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import { useWarStore } from '@/stores/war'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
+
 
 const props = defineProps({
   map: { type: Object, required: true }
@@ -28,39 +30,13 @@ const getWinnerLabel = (winner) => {
 }
 
 const mapImageUrl = computed(() => {
-  const mapping = {
-    route1: 'ruta 1',
-    route2: 'ruta 2',
-    forest: 'bosque viridian',
-    route22: 'ruta 22',
-    route3: 'ruta 3',
-    mt_moon: 'mt. moon',
-    route4: 'ruta 4',
-    route24: 'ruta 24',
-    route25: 'ruta 25',
-    route5: 'ruta 5',
-    route6: 'ruta 6',
-    route11: 'ruta 11',
-    diglett_cave: 'cueva diglett',
-    route9: 'ruta 9',
-    rock_tunnel: 'tunel roca',
-    route10: 'ruta 10',
-    power_plant: 'central de energia',
-    route8: 'ruta 8',
-    pokemon_tower: 'torre pokemon',
-    route12: 'ruta 12',
-    route13: 'ruta 13',
-    safari_zone: 'zona safari',
-    seafoam_islands: 'islas espuma',
-    fishing_island: 'islas espuma',
-    mansion: 'mansion pokemon',
-    route23: 'ruta 23',
-    victory_road: 'calle victoria',
-    cerulean_cave: 'cueva celeste'
-  }
-  const fileName = mapping[props.map.id] || 'default'
-  return getAssetUrl(ASSET_TYPES.MAP, fileName)
+  const fileName = MAP_ROUTE_MAPPING[props.map.id] || 'default'
+  // En WarMapCard usamos la versión de día por defecto si el mapa soporta ciclos
+  return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: 'day' })
 })
+
+
+
 </script>
 
 <template>
@@ -149,8 +125,12 @@ const mapImageUrl = computed(() => {
   border: 1px solid Rgba(255,255,255,0.15);
   background-size: cover;
   background-position: center;
-  overflow: hidden;
-  transition: transform 0.2s;
+  @include pixelated;
+  image-rendering: pixelated !important;
+  image-rendering: crisp-edges !important;
+  -ms-interpolation-mode: nearest-neighbor !important;
+
+
 
   &:hover { transform: #{'Scale(1.03)'}; z-index: var(--z-base); }
   

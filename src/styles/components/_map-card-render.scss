@@ -42,8 +42,15 @@
     z-index: -3;
     will-change: filter, transform;
     transform: TranslateZ(0); 
-    @include smooth;
+    
+    // Pixelated rendering (MANDATORY for pixel art maps)
+    @include pixelated;
+    image-rendering: pixelated !important;
+    image-rendering: crisp-edges !important;
+    -ms-interpolation-mode: nearest-neighbor !important;
   }
+
+
 
   // Layer 1: Vignette
   &::after {

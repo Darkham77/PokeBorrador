@@ -31,7 +31,6 @@
       animation-delay: calc(var(--card-seed, 0) * -7.5s);
       background-size: 197px 197px; 
       opacity: 0.6; 
-      filter: Blur(0.5px); 
     }
     
     &.night { background: Rgba(0, 0, 0, 0.4) !important; }
@@ -40,7 +39,6 @@
   // Tormenta (Diagonal + Rayos)
   &.storm {
     background: Rgba(0, 10, 25, 0.3);
-    -webkit-backdrop-filter: Blur(1.2px); -webkit-backdrop-filter: Blur(1.2px); backdrop-filter: Blur(1.2px);
     animation: storm-lightning-main 7s linear infinite;
     animation-delay: calc(var(--card-seed, 0) * -7s);
     
@@ -63,7 +61,6 @@
       animation-delay: calc(var(--card-seed, 0) * -13.3s);
       background-size: 128px 128px; 
       opacity: 0.75; 
-      filter: Blur(0.5px); 
     }
 
     .lightning-bolt {
@@ -74,7 +71,7 @@
       background-repeat: no-repeat;
       background-size: 80px 180px;
       opacity: 0;
-      filter: Blur(0.5px) Drop-shadow(0 0 10px Rgba(255, 255, 255, 0.9)) Brightness(2);
+      filter: Drop-shadow(0 0 10px Rgba(255, 255, 255, 0.9)) Brightness(2);
       animation: lightning-strike 7s steps(1) infinite;
       animation-delay: calc(var(--card-seed, 0) * -7s);
     }
@@ -85,7 +82,6 @@
   // Nieve
   &.snow {
     background: Rgba(255, 255, 255, 0.15);
-    -webkit-backdrop-filter: Blur(1.5px); -webkit-backdrop-filter: Blur(1.5px); backdrop-filter: Blur(1.5px);
 
     &.night {
       background: Rgba(0, 0, 0, 0.3) !important;
@@ -108,13 +104,11 @@
       opacity: 0.6; 
       background-size: 160px 160px;
       background-position: 40px 20px;
-      filter: Blur(1px); 
     }
   }
 
   &.blizzard {
     background: Rgba(255, 255, 255, 0.25);
-    -webkit-backdrop-filter: Blur(2.5px); -webkit-backdrop-filter: Blur(2.5px); backdrop-filter: Blur(2.5px);
 
     &.night {
       background: Rgba(0, 0, 0, 0.4) !important;
@@ -137,7 +131,6 @@
       animation-delay: calc(var(--card-seed, 0) * -12.4s);
       opacity: 0.7; 
       background-size: 192px 192px; 
-      filter: Blur(1.5px); 
     }
     
     &::after {
@@ -164,7 +157,7 @@
       animation-delay: calc(var(--card-seed, 0) * -10s);
       background-size: 64px 64px;
       opacity: 0.8;
-      filter: Blur(0.3px) Contrast(1.6) Brightness(0.9) Drop-shadow(0 0 2px Rgba(0,0,0,0.6));
+      filter: Contrast(1.6) Brightness(0.9) Drop-shadow(0 0 2px Rgba(0,0,0,0.6));
     }
 
     & .layer-2 {
@@ -178,8 +171,7 @@
 
   // Niebla
   &.fog {
-    background: Rgba(255, 255, 255, 0.15);
-    -webkit-backdrop-filter: Blur(1px); -webkit-backdrop-filter: Blur(1px); backdrop-filter: Blur(1px);
+    background: Rgba(255, 255, 255, 0.25);
     animation: fog-pulse calc(8s / var(--card-speed, 1)) ease-in-out infinite;
     animation-delay: calc(var(--card-seed, 0) * -10s);
   }
@@ -191,6 +183,7 @@
     animation-delay: calc(var(--card-seed, 0) * -10s);
   }
 }
+
 
 // ANIMACIONES CENTRALIZADAS
 @keyframes rain-fall-vertical-1 {

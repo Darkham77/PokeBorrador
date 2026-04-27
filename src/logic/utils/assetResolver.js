@@ -1,88 +1,42 @@
 /**
  * assetResolver.js
- * Centralized logic for resolving optimized asset URLs (LOD).
+ * Centralized logic for resolving optimized asset URLs.
+ * LOD (multi-resolution) system has been removed as per user request.
  */
 
-import { ref, onMounted, onUnmounted } from 'vue';
-
-const BREAKPOINTS = {
-  MOBILE: 600,
-  TABLET: 1024
-};
+import { ref } from 'vue';
 
 /**
- * Global reactive state for current LOD suffix.
+ * Global reactive state for current resolution suffix.
+ * Always empty string as multi-resolution is disabled.
  */
 export const currentLODSuffix = ref('');
 
-const updateGlobalSuffix = () => {
-  if (typeof window === 'undefined') return;
-  const width = window.innerWidth;
-  if (width < BREAKPOINTS.MOBILE) currentLODSuffix.value = '@0.25x';
-  else if (width < BREAKPOINTS.TABLET) currentLODSuffix.value = '@0.5x';
-  else currentLODSuffix.value = '';
-};
-
-// Initial check and listener
-if (typeof window !== 'undefined') {
-  updateGlobalSuffix();
-  window.addEventListener('resize', updateGlobalSuffix); // [PureVue-Ignore]
-}
-
 /**
  * Detects the best resolution suffix for the current viewport.
- * @returns {string} '@0.25x', '@0.5x' or '' (empty for original)
+ * Always returns '' as multi-resolution is disabled.
+ * @returns {string} Always ''
  */
-export const getResolutionSuffix = () => currentLODSuffix.value;
+export const getResolutionSuffix = () => '';
 
-export const resolveAsset = (url, isLodEnabled = true) => {
-  if (!isLodEnabled || !url) return url;
-  
-  const isWebp = url.includes('.webp');
-  const isJson = url.includes('.json');
-  
-  if (!isWebp && !isJson) return url;
-  
-  const suffix = getResolutionSuffix();
-  if (!suffix) return url;
-
-  // We only append the suffix if it's not already there
-  if (url.includes('@')) return encodeURI(url);
-
-  if (isWebp) return encodeURI(url.replace('.webp', `${suffix}.webp`));
-  if (isJson) return encodeURI(url.replace('.json', `${suffix}.json`));
-  
+/**
+ * Resolves an asset URL.
+ * Simply returns the original URL as multi-resolution is disabled.
+ */
+export const resolveAsset = (url) => {
+  if (!url) return '';
   return encodeURI(url);
 };
 
 /**
- * Vue Composable for reactive LOD resolution.
+ * Vue Composable for asset resolution.
+ * Multi-resolution logic removed.
  */
-
 export function useAssetResolver() {
-  const currentSuffix = ref(getResolutionSuffix());
+  const currentSuffix = ref('');
 
-  const handleResize = () => {
-    currentSuffix.value = getResolutionSuffix();
-  };
-
-  onMounted(() => window.addEventListener('resize', handleResize)); // [PureVue-Ignore]
-  onUnmounted(() => window.removeEventListener('resize', handleResize));
-
-  const resolve = (url, isLodEnabled = true) => {
-    if (!isLodEnabled || !url) return url;
-    
-    const isWebp = url.includes('.webp');
-    const isJson = url.includes('.json');
-    if (!isWebp && !isJson) return url;
-    if (url.includes('@')) return url;
-
-    const suffix = currentSuffix.value;
-    if (!suffix) return url;
-
-    if (isWebp) return url.replace('.webp', `${suffix}.webp`);
-    if (isJson) return url.replace('.json', `${suffix}.json`);
-    
+  const resolve = (url) => {
+    if (!url) return '';
     return url;
   };
 

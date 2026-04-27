@@ -1,4 +1,4 @@
-# Asset Service & LOD Manual
+# Asset Service Manual
 
 This document details the centralized asset management system. All visual resources must be requested through this service to ensure performance, consistency, and multi-platform support.
 
@@ -18,30 +18,12 @@ const url = getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu', { isShiny: false });
 | :--- | :--- | :--- |
 | `POKEMON` | PokeAPI / Local | Resolves to PokeAPI by default. Supports `isShiny` and `isBack`. |
 | `ITEM` | PokeAPI / Local | Maps item names to PokeAPI IDs. Falls back to local PNG if missing. |
-| `MAP` | Local (WebP) | Resolves map IDs to `/assets/maps/`. Includes **LOD support**. |
+| `MAP` | Local (WebP) | Resolves map IDs to `/assets/maps/`. |
 | `TRAINER` | Showdown / Local | Resolves IDs to Showdown sprites for leaders, or local for others. |
-| `BANNER` | Local (WebP) | Route banners in `/assets/ui/banners/`. Includes **LOD support**. |
+| `BANNER` | Local (WebP) | Route banners in `/assets/ui/banners/`. |
 | `BATTLE_BG` | Local (WebP) | Battle backgrounds in `/assets/sprites/battle/`. |
 | `UI` | Local (WebP) | General UI assets in `/assets/ui/`. |
 | `FACTION` | Local (WebP) | Faction icons in `/assets/factions/`. |
-
-## LOD (Level of Detail) System
-
-The system automatically detects device capabilities and serves scaled versions of local assets if available.
-
-### Scaling Rules
-
-Assets processed through the `lod/` pipeline generate:
-
-- **@1x**: Original resolution (100%).
-- **@0.5x**: Half resolution (50%).
-- **@0.25x**: Quarter resolution (25%).
-
-### Automatic Resolution
-
-The `assetResolver` (used internally by `AssetService`) will append the suffix based on `window.devicePixelRatio` or performance settings:
-
-- `map_ruta1.webp` -> `map_ruta1@0.5x.webp`
 
 ## Implementation Guidelines
 
@@ -79,32 +61,20 @@ To ensure minimal data transfer and optimal load times, all visual assets must b
 
 #### Mandatory Formats
 
-- **MANDATORY**: All final images used in the project (`src/assets/`, `public/assets/`) **MUST** be in **WebP** format.
+- **MANDATORY**: All final images used in the project (`public/assets/`) **MUST** be in **WebP** format.
 - **FORBIDDEN**: Storing raw `.png`, `.jpg`, or `.jpeg` files in the final destination directories.
 - **EXCEPTION**: Data fetched dynamically from PokeAPI **MUST** use **PNG** format.
 
-#### Folder Mirroring Architecture
+#### Folder Architecture
 
 To process raw images, place them in the root `_raw-assets/` directory:
 
 ```text
 _raw-assets/
-├── lod/                           <-- Generates multi-size LODs (@1x, @0.5x, @0.25x)
-│   ├── public/assets/maps/        <-- Mirrors the exact destination in the project
-│   └── src/assets/ui/
-└── original/                      <-- Generates 1:1 size only (No LODs)
-    ├── public/assets/sprites/
-    └── src/assets/vfx/
-        └── explosions.atlas/      <-- Folders ending in .atlas will be packed
+├── public/assets/maps/        <-- Mirrors the exact destination in the project
+└── src/assets/ui/
+    └── icons.atlas/           <-- Folders ending in .atlas will be packed
 ```
-
-#### Smart Dynamic Scaling (LOD Rules)
-
-The pipeline applies smart breakpoints to preserve pixel-perfect clarity:
-
-- **< 500px**: No downscaling. Generates all LODs at **100% scale** (prevents blurriness).
-- **500px to 999px**: Generates `@1x` (100%), `@0.5x` (50%), and `@0.25x` (50%).
-- **>= 1000px**: Generates `@1x` (100%), `@0.5x` (50%), and `@0.25x` (25%).
 
 #### Texture Atlas Mandate
 

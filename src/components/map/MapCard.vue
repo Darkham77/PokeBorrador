@@ -5,6 +5,8 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
+
+
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
@@ -39,8 +41,11 @@ const isPerformanceMode = computed(() => {
 
 const imgPath = computed(() => {
   const fileName = MAP_ROUTE_MAPPING[props.map.id] || 'default'
-  return getAssetUrl(ASSET_TYPES.MAP, fileName)
+  return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: props.cycle })
 })
+
+
+
 
 
 const cycleEmoji = computed(() => {
@@ -88,71 +93,63 @@ const weatherName = computed(() => {
 })
 
 const atmosphereStyles = computed(() => {
-  const filters = {
-    morning: 'Brightness(0.6) contrast(1.2) Saturate(1.2) hue-rotate(-15deg)',
-    day: 'Brightness(1.0) contrast(1.0) Saturate(1.0)',
-    dusk: 'Brightness(0.6) contrast(1.4) Saturate(1.8) sepia(0.5) hue-rotate(-25deg)',
-    night: 'Brightness(0.35) contrast(1.3) Saturate(0.6) hue-rotate(210deg)'
-  }
-
-  const hoverFilters = {
-    morning: 'Brightness(0.5) contrast(1.2)',
-    day: 'Brightness(0.65) contrast(1.1)',
-    dusk: 'Brightness(0.5) contrast(1.4) sepia(0.3)',
-    night: 'Brightness(0.25) contrast(1.2)'
-  }
-
-  let baseFilter = filters[props.cycle] || filters.day
-  let hoverFilter = hoverFilters[props.cycle] || hoverFilters.day
+  // Ahora el fondo cambia por imagen, no por filtros. 
+  // Solo aplicamos brillo base de hover.
+  const baseFilter = 'Brightness(1.0) Contrast(1.0) Saturate(1.0)'
+  const hoverFilter = 'Brightness(0.65) Contrast(1.1)'
 
   const isNight = props.cycle === 'night'
   const weatherAdjustments = {
     rain: { 
-      base: ` Blur(0.4px) ${isNight ? '' : 'Brightness(0.7) Saturate(0.8)'}`, 
-      hover: ` Blur(0.4px) ${isNight ? 'Brightness(1.1)' : 'Brightness(0.8) Saturate(0.9)'}` 
+      base: ` ${isNight ? 'Brightness(0.6)' : 'Brightness(0.7) Saturate(0.8)'}`, 
+      hover: ` ${isNight ? 'Brightness(0.8)' : 'Brightness(0.8) Saturate(0.9)'}` 
     },
     storm: { 
-      base: ` Blur(0.4px) ${isNight ? '' : 'Brightness(0.8) Contrast(1.2) Hue-rotate(15deg)'}`, 
-      hover: ` Blur(0.4px) ${isNight ? 'Brightness(1.1)' : 'Brightness(0.9) Contrast(1.3) Hue-rotate(15deg)'}` 
+      base: ` ${isNight ? 'Brightness(0.6)' : 'Brightness(0.8) Contrast(1.2) Hue-rotate(15deg)'}`, 
+      hover: ` ${isNight ? 'Brightness(0.8)' : 'Brightness(0.9) Contrast(1.3) Hue-rotate(15deg)'}` 
     },
     fog: { 
-      base: ` Blur(4px) ${isNight ? 'Brightness(0.8) Grayscale(0.3)' : 'Brightness(1.05) Grayscale(0.45) Saturate(0.5)'}`, 
-      hover: ` Blur(2px) ${isNight ? 'Brightness(1.0) Grayscale(0.2)' : 'Brightness(1.15) Grayscale(0.3) Saturate(0.7)'}` 
+      base: ` ${isNight ? 'Brightness(0.6) Grayscale(0.5)' : 'Brightness(1.1) Grayscale(0.6) Saturate(0.4)'}`, 
+      hover: ` ${isNight ? 'Brightness(0.8) Grayscale(0.4)' : 'Brightness(1.2) Grayscale(0.5) Saturate(0.5)'}` 
     },
     snow: { 
-      base: ` Blur(0.3px) ${isNight ? 'Brightness(0.8) Grayscale(0.3)' : 'Brightness(1.05) Grayscale(0.35) Saturate(0.5)'}`, 
-      hover: ` Blur(0.3px) ${isNight ? 'Brightness(1.0) Grayscale(0.2)' : 'Brightness(1.1) Grayscale(0.3) Saturate(0.6)'}` 
+      base: ` ${isNight ? 'Brightness(0.7) Grayscale(0.3)' : 'Brightness(1.05) Grayscale(0.35) Saturate(0.6)'}`, 
+      hover: ` ${isNight ? 'Brightness(0.9) Grayscale(0.2)' : 'Brightness(1.15) Grayscale(0.3) Saturate(0.7)'}` 
     },
     blizzard: { 
-      base: ` Blur(1.5px) ${isNight ? 'Brightness(0.7) Grayscale(0.5)' : 'Brightness(1.2) Grayscale(0.6) Saturate(0.25)'}`, 
-      hover: ` Blur(1px) ${isNight ? 'Brightness(0.9) Grayscale(0.4)' : 'Brightness(1.3) Grayscale(0.5) Saturate(0.35)'}` 
+      base: ` ${isNight ? 'Brightness(0.6) Grayscale(0.5)' : 'Brightness(1.2) Grayscale(0.6) Saturate(0.4)'}`, 
+      hover: ` ${isNight ? 'Brightness(0.8) Grayscale(0.4)' : 'Brightness(1.3) Grayscale(0.5) Saturate(0.5)'}` 
     },
     sandstorm: { 
-      base: ` Sepia(0.5) ${isNight ? '' : 'Contrast(1.2) Brightness(0.9)'}`, 
-      hover: ` Sepia(0.4) ${isNight ? 'Brightness(1.1)' : 'Contrast(1.1) Brightness(1.0)'}` 
+      base: ` Sepia(0.5) ${isNight ? 'Brightness(0.7)' : 'Contrast(1.2) Brightness(0.9)'}`, 
+      hover: ` Sepia(0.4) ${isNight ? 'Brightness(0.9)' : 'Contrast(1.1) Brightness(1.0)'}` 
     },
     heatwave: { 
-      base: ` Saturate(1.5) ${isNight ? '' : 'Contrast(1.1) Brightness(1.1) Hue-rotate(-10deg)'}`, 
-      hover: ` Saturate(1.8) ${isNight ? 'Brightness(1.2)' : 'Contrast(1.2) Brightness(1.2) Hue-rotate(-15deg)'}` 
+      base: ` Saturate(1.5) ${isNight ? 'Brightness(0.8)' : 'Contrast(1.1) Brightness(1.1) Hue-rotate(-10deg)'}`, 
+      hover: ` Saturate(1.8) ${isNight ? 'Brightness(1.0)' : 'Contrast(1.2) Brightness(1.2) Hue-rotate(-15deg)'}` 
     }
   }
+
+  let finalBaseFilter = baseFilter
+  let finalHoverFilter = hoverFilter
 
   // NO mostrar clima si la ruta está bloqueada
   const showWeather = !props.isLocked && !props.isSafariLocked
 
   if (showWeather && weatherAdjustments[props.weather]) {
-    baseFilter += weatherAdjustments[props.weather].base
-    hoverFilter += weatherAdjustments[props.weather].hover
+    finalBaseFilter = weatherAdjustments[props.weather].base
+    finalHoverFilter = weatherAdjustments[props.weather].hover
   }
 
   return {
-    '--atmosphere-filter': baseFilter,
-    '--atmosphere-filter-hover': hoverFilter,
+    '--atmosphere-filter': finalBaseFilter,
+    '--atmosphere-filter-hover': finalHoverFilter,
     '--bg-image': `url('${imgPath.value}')`,
     '--card-seed': animSeed,
     '--card-speed': 0.6 + (animSeed * 1.0) // Factor entre 0.6x y 1.6x
   }
 })
+
 
 const animSeed = Math.random()
 

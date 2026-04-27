@@ -15,13 +15,9 @@ export default class PhaserAssetService {
     scene.load.image(key, url);
   }
 
-  /**
-   * Load a Texture Atlas with full LOD support.
-   */
   static loadAtlas(scene, key, atlasId) {
     if (scene.textures.exists(key)) return;
     
-    // AssetService handles the @0.5x/@0.25x suffix resolution internally
     const imgUrl = getAssetUrl(ASSET_TYPES.ATLAS, `${atlasId}.webp`);
     const jsonUrl = getAssetUrl(ASSET_TYPES.ATLAS, `${atlasId}.json`);
     

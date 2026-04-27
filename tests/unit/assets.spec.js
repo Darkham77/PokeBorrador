@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import * as resolver from '@/logic/utils/assetResolver'
 
-describe('AssetService & Resolver (LOD System)', () => {
+describe('AssetService & Resolver', () => {
   beforeEach(() => {
     // Reset window width to Desktop default
     vi.stubGlobal('innerWidth', 1200)
@@ -57,46 +57,25 @@ describe('AssetService & Resolver (LOD System)', () => {
         .toBe('https://play.pokemonshowdown.com/sprites/trainers/brock.png')
     })
 
-    it('debe usar activos locales con LOD para otros entrenadores', () => {
-      // Forzamos resolución móvil para ver el LOD en acción
+    it('debe usar activos locales para otros entrenadores (sin LOD)', () => {
       vi.stubGlobal('innerWidth', 400)
-      window.dispatchEvent(new Event('resize'))
       expect(getAssetUrl(ASSET_TYPES.TRAINER, 'hero'))
-        .toBe('/assets/sprites/trainers/hero@0.25x.webp')
+        .toBe('/assets/sprites/trainers/hero.webp')
     })
   })
 
-  describe('AssetResolver: LOD Logic', () => {
-    it('debe devolver sufijo @0.25x en móviles (< 600px)', () => {
-      vi.stubGlobal('innerWidth', 599)
-      window.dispatchEvent(new Event('resize'))
-      expect(resolver.getResolutionSuffix()).toBe('@0.25x')
-    })
-
-    it('debe devolver sufijo @0.5x en tablets (600px - 1023px)', () => {
-      vi.stubGlobal('innerWidth', 800)
-      window.dispatchEvent(new Event('resize'))
-      expect(resolver.getResolutionSuffix()).toBe('@0.5x')
-    })
-
-    it('no debe devolver sufijo en pantallas grandes (>= 1024px)', () => {
-      vi.stubGlobal('innerWidth', 1024)
-      window.dispatchEvent(new Event('resize'))
+  describe('AssetResolver', () => {
+    it('no debe devolver sufijo independientemente del ancho', () => {
+      vi.stubGlobal('innerWidth', 400)
+      expect(resolver.getResolutionSuffix()).toBe('')
+      
+      vi.stubGlobal('innerWidth', 1200)
       expect(resolver.getResolutionSuffix()).toBe('')
     })
 
-    it('no debe duplicar el sufijo si ya existe en la URL', () => {
-      vi.stubGlobal('innerWidth', 400)
-      window.dispatchEvent(new Event('resize'))
-      const url = '/assets/maps/city@0.5x.webp'
-      expect(resolver.resolveAsset(url)).toBe(url)
-    })
-
-    it('no debe procesar archivos que no sean WebP', () => {
-      vi.stubGlobal('innerWidth', 400)
-      window.dispatchEvent(new Event('resize'))
-      const url = '/assets/items/potion.png'
-      expect(resolver.resolveAsset(url)).toBe(url)
+    it('debe devolver la URL original codificada', () => {
+      const url = '/assets/maps/ruta 1.webp'
+      expect(resolver.resolveAsset(url)).toBe('/assets/maps/ruta%201.webp')
     })
   })
 })

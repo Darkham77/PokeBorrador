@@ -26,42 +26,13 @@ def process_assets(base_dir="_raw-assets"):
         print(f"Error: Source directory '{base_dir}' not found at {base_path}.")
         sys.exit(1)
 
-    lod_dir = base_path / "lod"
-    original_dir = base_path / "original"
-
+    # Source and destination roots
+    source_root = base_path
     converted_count = 0
     errors = []
 
-    def cleanup_managed_folders():
-        print("[CLEANUP] Cleaning managed asset folders...")
-        import shutil
-        
-        folders_to_delete = set()
-        for source_dir in [lod_dir, original_dir]:
-            if not source_dir.exists(): continue
-            for item in source_dir.iterdir():
-                if item.is_dir():
-                    # Scan for 'assets' folders within the mirrored roots
-                    for sub_item in item.rglob('*'):
-                        if sub_item.is_dir() and sub_item.name == 'assets':
-                            rel_path = sub_item.relative_to(source_dir)
-                            folders_to_delete.add(Path.cwd() / rel_path)
-                    
-                    # Also consider the item itself if it's 'assets' (less common but possible)
-                    if item.name == 'assets':
-                        folders_to_delete.add(Path.cwd() / 'assets')
-        
-        for folder in folders_to_delete:
-            if folder.exists():
-                print(f"   Removing stale directory: {folder.relative_to(Path.cwd())}")
-                try:
-                    shutil.rmtree(folder)
-                except Exception as e:
-                    print(f"      Error deleting {folder.name}: {e}")
-        print("[CLEANUP] Cleanup complete.")
-
     # Processing function
-    def process_directory(source_dir, use_lod):
+    def process_directory(source_dir):
         nonlocal converted_count
         if not source_dir.exists():
             return
@@ -80,11 +51,10 @@ def process_assets(base_dir="_raw-assets"):
                     
                     print(f"[ATLAS] Compiling: {rel_atlas_path} -> {dest_atlas_path.relative_to(Path.cwd())}")
                     
-                    lod_scales = [1.0, 0.5, 0.25] if use_lod else [1.0]
-                    success = generate_atlas(atlas_path, dest_atlas_path, atlas_name, lod_scales=lod_scales)
+                    success = generate_atlas(atlas_path, dest_atlas_path, atlas_name)
                     
                     if success:
-                        converted_count += len(lod_scales)
+                        converted_count += 1
                     
                     # Remove from walk so we don't process internal files individually
                     dirs.remove(d)
@@ -123,49 +93,21 @@ def process_assets(base_dir="_raw-assets"):
                         else:
                             save_kwargs = {'quality': 80, 'method': 6}
                         
-                        # Generate sizes
-                        sizes_to_generate = [(1.0, f"{base_name}.webp")] # Default @1x
+                        # Only generate original @1x
+                        out_file = dest_path / f"{base_name}.webp"
+                        img.save(out_file, 'WEBP', **save_kwargs)
                         
-                        if use_lod:
-                            # Apply Smart Scaling Breakpoints from project-standards:
-                            # < 500px: No LOD (always 100%)
-                            # 500-999px: @1x (100%), @0.5x (50%), @0.25x (now 50% to avoid extreme blur)
-                            # >= 1000px: @1x (100%), @0.5x (50%), @0.25x (25%)
-                            
-                            scale_05 = 0.5 if width >= 500 else 1.0
-                            scale_025 = 0.25 if width >= 1000 else (0.5 if width >= 500 else 1.0)
-                            
-                            sizes_to_generate.append((scale_05, f"{base_name}@0.5x.webp"))
-                            sizes_to_generate.append((scale_025, f"{base_name}@0.25x.webp"))
-                        
-                        for scale, out_name in sizes_to_generate:
-                            out_file = dest_path / out_name
-                            if scale == 1.0:
-                                img.save(out_file, 'WEBP', **save_kwargs)
-                            else:
-                                # Safe Resize: Ensure we don't shrink small images
-                                new_width = max(1, int(width * scale))
-                                new_height = max(1, int(height * scale))
-                                resized_img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
-                                resized_img.save(out_file, 'WEBP', **save_kwargs)
-                            
-                            print(f"[OK] Generated: {out_file.relative_to(Path.cwd())} ({'Lossless' if is_lossless else 'Lossy'})")
-                            converted_count += 1
+                        print(f"[OK] Generated: {out_file.relative_to(Path.cwd())} ({'Lossless' if is_lossless else 'Lossy'})")
+                        converted_count += 1
                 
                 except Exception as e:
                     print(f"[ERROR] Error processing {file_path}: {e}")
                     errors.append(f"{file_path}: {e}")
 
-    print(">>> Initiating Zero-Config LOD Asset Pipeline...")
+    print(">>> Initiating Zero-Config Asset Pipeline...")
     
-    # Clean destinations first to remove stale assets
-    # cleanup_managed_folders() 
-    
-    print("\n--- Processing /lod/ (Dynamic Scaling) ---")
-    process_directory(lod_dir, use_lod=True)
-    
-    print("\n--- Processing /original/ (1:1 WebP only) ---")
-    process_directory(original_dir, use_lod=False)
+    # Process the entire _raw-assets folder structure
+    process_directory(source_root)
     
     print("\n--- SUMMARY ---")
     print(f"Total WebP files generated: {converted_count}")
