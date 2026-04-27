@@ -1,7 +1,12 @@
-import os
+import sys
 import json
-from PIL import Image
 from pathlib import Path
+
+try:
+    from PIL import Image
+except ImportError:
+    print("[PYTHON_DEPENDENCY_ERROR] Missing library: Pillow. Run 'pip install Pillow' to fix image processing.")
+    sys.exit(1)
 
 class ShelfPacker:
     """
@@ -48,6 +53,10 @@ def generate_atlas(source_dir, output_base_path, atlas_name):
     Generates a Texture Atlas (JSON + WebP) from a directory of images.
     """
     source_path = Path(source_dir)
+    if not source_path.exists():
+        print(f"   [ATLAS_ERROR] Source directory does not exist: {source_dir}")
+        return False
+
     images = []
     
     # Load and sort images by height (descending) for better packing
@@ -105,7 +114,8 @@ def generate_atlas(source_dir, output_base_path, atlas_name):
         final_frames[name] = data
 
     # Save Image
-    output_img_path = Path(output_base_path) / atlas_img_name
+    output_base_path = Path(output_base_path)
+    output_img_path = output_base_path / atlas_img_name
     atlas_img.save(output_img_path, 'WEBP', lossless=True)
     
     # Save JSON (Phaser Format)
@@ -121,16 +131,13 @@ def generate_atlas(source_dir, output_base_path, atlas_name):
         }
     }
     
-    output_json_path = Path(output_base_path) / atlas_json_name
-    with open(output_json_path, 'w', encoding='utf-8') as f:
-        json.dump(atlas_data, f, indent=2)
+    output_json_path = output_base_path / atlas_json_name
+    output_json_path.write_text(json.dumps(atlas_data, indent=2), encoding='utf-8')
         
     print(f"[OK] Generated Atlas: {output_img_path.name}")
 
     return True
 
 if __name__ == "__main__":
-    # Example usage (will be called by convert_to_webp.py)
-    import sys
     if len(sys.argv) > 3:
         generate_atlas(sys.argv[1], sys.argv[2], sys.argv[3])

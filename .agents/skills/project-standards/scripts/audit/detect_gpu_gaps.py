@@ -1,12 +1,12 @@
-import os
 import re
 import sys
+from pathlib import Path
 
 # Utility to detect GPU optimization gaps in the project.
 # It scans .vue and .scss files for patterns that should be optimized for hardware acceleration.
 
-IGNORE_DIRS = ['node_modules', '.git', 'dist', 'backup_legacy_code', 'public']
-EXTENSIONS = ['.vue', '.scss']
+IGNORE_DIRS = {'node_modules', '.git', 'dist', 'backup_legacy_code', 'public'}
+EXTENSIONS = {'.vue', '.scss'}
 
 # Patterns to detect
 PATTERNS = {
@@ -57,43 +57,49 @@ PATTERNS = {
     }
 }
 
-def scan_file(filepath):
+def scan_file(filepath: Path):
     gaps = []
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            content = f.read()
+        content = filepath.read_text(encoding='utf-8')
+        
+        for key, config in PATTERNS.items():
+            flags = re.MULTILINE
+            if key != 'sass_capitalization_trap':
+                flags |= re.IGNORECASE
             
-            for key, config in PATTERNS.items():
-                # For CSS blocks, we need to be more careful about the context
-                # This is a simplified regex approach
-                # Using re.MULTILINE and not IGNORECASE for capitalization trap
-                flags = re.MULTILINE
-                if key != 'sass_capitalization_trap':
-                    flags |= re.IGNORECASE
-                
-                matches = re.finditer(config['regex'], content, flags)
-                for match in matches:
-                    line_no = content.count('\n', 0, match.start()) + 1
-                    gaps.append({
-                        'file': filepath,
-                        'line': line_no,
-                        'pattern': key,
-                        'message': config['message'],
-                        'severity': config['severity'],
-                        'context': match.group(0).strip()
-                    })
+            matches = re.finditer(config['regex'], content, flags)
+            for match in matches:
+                line_no = content.count('\n', 0, match.start()) + 1
+                gaps.append({
+                    'file': str(filepath),
+                    'line': line_no,
+                    'pattern': key,
+                    'message': config['message'],
+                    'severity': config['severity'],
+                    'context': match.group(0).strip()
+                })
     except Exception as e:
         print(f"Error reading {filepath}: {e}")
     return gaps
 
 def main(root_dir):
     all_gaps = []
-    for root, dirs, files in os.walk(root_dir):
-        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
-        for file in files:
-            if any(file.endswith(ext) for ext in EXTENSIONS):
-                filepath = os.path.join(root, file)
-                all_gaps.extend(scan_file(filepath))
+    root_path = Path(root_dir)
+    
+    if not root_path.exists():
+        print(f"Error: Path {root_dir} does not exist.")
+        return
+
+    for filepath in root_path.rglob("*"):
+        if not filepath.is_file():
+            continue
+            
+        if filepath.suffix in EXTENSIONS:
+            # Check if any part of the path is in IGNORE_DIRS
+            if any(part in IGNORE_DIRS for part in filepath.parts):
+                continue
+                
+            all_gaps.extend(scan_file(filepath))
 
     if not all_gaps:
         print("No GPU optimization gaps detected!")

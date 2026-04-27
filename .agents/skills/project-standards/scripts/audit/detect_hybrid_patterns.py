@@ -1,7 +1,7 @@
-import os
 import re
 import sys
 import argparse
+from pathlib import Path
 
 # Patterns to detect hybrid/legacy code
 HYBRID_PATTERNS = [
@@ -152,104 +152,93 @@ HYBRID_PATTERNS = [
 ]
 
 # Files/Directories to ignore
-IGNORE_PATHS = [
+IGNORE_PATHS = {
     "node_modules", "backup_legacy_code", "dist", ".git", "scripts", "tests",
     "assetService.js", "phaserBridge.js", "baseBridge.js", "dbRouter.js",
     "useWindowListener.js", "useBodyClass.js"
-]
+}
 
 # Extensions to scan
-EXTENSIONS = [".vue", ".js", ".ts", ".scss", ".css"]
+EXTENSIONS = {".vue", ".js", ".ts", ".scss", ".css"}
 
-def scan_file(filepath):
+def scan_file(filepath: Path):
     findings = []
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            content = f.read()
-            lines = content.splitlines()
+        content = filepath.read_text(encoding="utf-8")
+        lines = content.splitlines()
+        
+        in_scoped_style = False
+        for i, line in enumerate(lines):
+            if "<style" in line and "scoped" in line:
+                in_scoped_style = True
+            if "</style>" in line:
+                in_scoped_style = False
             
-            in_scoped_style = False
-            has_pixel_font_context = False
-            for i, line in enumerate(lines):
-                if "<style" in line and "scoped" in line:
-                    in_scoped_style = True
-                if "</style>" in line:
-                    in_scoped_style = False
-                
-                if "Press Start 2P" in line or "@include pixelated" in line or "pixel-perfect" in line:
-                    has_pixel_font_context = True
-                
-                if line.strip().startswith("//") or line.strip().startswith("/*") or line.strip().startswith("*"):
+            if line.strip().startswith(("//", "/*", "*")):
+                continue
+            
+            if "[PureVue-Ignore]" in line:
+                continue
+            
+            for pattern in HYBRID_PATTERNS:
+                if pattern["id"] == "native_title_attribute":
                     continue
-                
-                if "[PureVue-Ignore]" in line:
-                    continue
-                
-                for pattern in HYBRID_PATTERNS:
-                    if pattern["id"] == "native_title_attribute":
+
+                matches = re.finditer(pattern["regex"], line)
+                for match in matches:
+                    if "canvas" in line.lower() or "getElementById('game-container')" in line:
                         continue
-
-                    matches = re.finditer(pattern["regex"], line)
-                    for match in matches:
-                        # Special case: Phaser DOM injection
-                        if pattern["id"] == "phaser_dom_injection":
-                            # Ignore if commented or in phaserBridge
-                            pass
-
-                        # Specific exception for common safe uses
-                        if "canvas" in line.lower() or "getElementById('game-container')" in line:
+                    if "document.title =" in line:
+                        continue
+                    
+                    if pattern["id"] == "safari_backdrop_prefix":
+                        if "-webkit-" in line:
                             continue
-                        if "document.title =" in line:
+                        if i > 0 and "-webkit-backdrop-filter" in lines[i-1]:
                             continue
-                        
-                        if pattern["id"] == "safari_backdrop_prefix":
-                            if "-webkit-" in line:
-                                continue
-                            if i > 0 and "-webkit-backdrop-filter" in lines[i-1]:
-                                continue
-                        
-                        if pattern["id"] == "scoped_scrollbar_styling":
-                            if not in_scoped_style:
-                                continue
-                        
-                        if pattern["id"] == "flex_scroll_collapse":
-                            if filepath.endswith(".scss") or filepath.endswith(".css"):
-                                continue
-                            is_fixed = False
-                            context_range = range(max(0, i-5), min(len(lines), i+6))
-                            for idx in context_range:
-                                if idx < len(lines) and "min-height: 0" in lines[idx]:
-                                    is_fixed = True
-                                    break
-                            if is_fixed:
-                                continue
+                    
+                    if pattern["id"] == "scoped_scrollbar_styling":
+                        if not in_scoped_style:
+                            continue
+                    
+                    if pattern["id"] == "flex_scroll_collapse":
+                        if filepath.suffix in [".scss", ".css"]:
+                            continue
+                        is_fixed = False
+                        context_range = range(max(0, i-5), min(len(lines), i+6))
+                        for idx in context_range:
+                            if idx < len(lines) and "min-height: 0" in lines[idx]:
+                                is_fixed = True
+                                break
+                        if is_fixed:
+                            continue
 
-                        if pattern["id"] == "missing_webkit_clip":
-                            if i > 0 and "-webkit-background-clip: text" in lines[i-1]:
-                                continue
+                    if pattern["id"] == "missing_webkit_clip":
+                        if i > 0 and "-webkit-background-clip: text" in lines[i-1]:
+                            continue
 
-                        findings.append({
-                            "line": i + 1,
-                            "content": line.strip(),
-                            "message": pattern["message"],
-                            "severity": pattern["severity"],
-                            "id": pattern["id"]
-                        })
+                    findings.append({
+                        "line": i + 1,
+                        "content": line.strip(),
+                        "message": pattern["message"],
+                        "severity": pattern["severity"],
+                        "id": pattern["id"]
+                    })
 
-            # Multi-line checks (Native Title)
-            title_matches = re.finditer(r'<([a-zA-Z0-9\-]+)\b[^>]*?(?<![:\-])\btitle\s*=\s*["\'](.*?)["\']', content, re.DOTALL)
-            for match in title_matches:
-                tag_name = match.group(1)
-                if tag_name[0].isupper() or tag_name in ["BaseModal", "UnifiedCard"]:
-                    continue
-                line_no = content.count('\n', 0, match.start()) + 1
-                findings.append({
-                    "line": line_no,
-                    "content": match.group(0).strip().split('\n')[0] + "...",
-                    "message": f"Native 'title' attribute detected on <{tag_name}>. Use PVTooltip instead.",
-                    "severity": "medium",
-                    "id": "native_title_attribute"
-                })
+        # Multi-line checks (Native Title)
+        title_matches = re.finditer(r'<([a-zA-Z0-9\-]+)\b[^>]*?(?<![:\-])\btitle\s*=\s*["\'](.*?)["\']', content, re.DOTALL)
+        for match in title_matches:
+            tag_name = match.group(1)
+            if tag_name[0].isupper() or tag_name in ["BaseModal", "UnifiedCard"]:
+                continue
+            line_no = content.count('\n', 0, match.start()) + 1
+            findings.append({
+                "line": line_no,
+                "content": match.group(0).strip().split('\n')[0] + "...",
+                "message": f"Native 'title' attribute detected on <{tag_name}>. Use PVTooltip instead.",
+                "severity": "medium",
+                "id": "native_title_attribute"
+            })
 
     except Exception as e:
         print(f"Error reading {filepath}: {e}")
@@ -261,52 +250,57 @@ def main():
     parser.add_argument("path", nargs="?", default=".", help="Path to a file or directory to scan.")
     args = parser.parse_args()
 
-    root_dir = os.path.abspath(args.path)
+    root_path = Path(args.path).resolve()
     total_findings = 0
     files_scanned = 0
     problematic_files = set()
 
-    if not os.path.exists(root_dir):
-        print(f"Error: Path {root_dir} does not exist.")
+    if not root_path.exists():
+        print(f"Error: Path {root_path} does not exist.")
         sys.exit(1)
 
-    print(f"\n[HYBRID PATTERN SCANNER] Scanning {root_dir}...")
+    print(f"\n[HYBRID PATTERN SCANNER] Scanning {root_path}...")
     print("-" * 60)
     print("FORMAT: [SEVERITY] File:Line | TAG | Description")
     print("-" * 60)
 
     all_violations = []
 
-    if os.path.isfile(root_dir):
-        findings = scan_file(root_dir)
+    if root_path.is_file():
+        findings = scan_file(root_path)
         if findings:
-            problematic_files.add(root_dir)
+            problematic_files.add(str(root_path))
             for f in findings:
-                print(f"[{f['severity'].upper()}] {os.path.basename(root_dir)}:{f['line']} | {f['id']} | {f['message']}")
+                print(f"[{f['severity'].upper()}] {root_path.name}:{f['line']} | {f['id']} | {f['message']}")
                 total_findings += 1
                 all_violations.append(f)
         files_scanned = 1
     else:
-        for root, dirs, files in os.walk(root_dir):
-            dirs[:] = [d for d in dirs if d not in IGNORE_PATHS]
-            for file in files:
-                if any(file.endswith(ext) for ext in EXTENSIONS):
-                    filepath = os.path.join(root, file)
-                    rel_path = os.path.relpath(filepath, root_dir)
-                    if any(ignored in rel_path for ignored in IGNORE_PATHS):
-                        continue
-                    normalized_path = filepath.replace("\\", "/")
-                    if "/tokens/" in normalized_path or "/core/" in normalized_path:
-                        continue
+        # Use rglob for recursive scan
+        for filepath in root_path.rglob("*"):
+            if not filepath.is_file():
+                continue
+            
+            if filepath.suffix not in EXTENSIONS:
+                continue
+                
+            # Check if any part of the path is in IGNORE_PATHS or is a specific ignored filename
+            if any(part in IGNORE_PATHS for part in filepath.parts) or filepath.name in IGNORE_PATHS:
+                continue
+                
+            # Infrastructure check (tokens/core)
+            if any(part in ["tokens", "core"] for part in filepath.parts):
+                continue
 
-                    findings = scan_file(filepath)
-                    if findings:
-                        problematic_files.add(rel_path)
-                        for f in findings:
-                            print(f"[{f['severity'].upper()}] {rel_path}:{f['line']} | {f['id']} | {f['message']}")
-                            total_findings += 1
-                            all_violations.append(f)
-                    files_scanned += 1
+            rel_path = filepath.relative_to(root_path)
+            findings = scan_file(filepath)
+            if findings:
+                problematic_files.add(str(rel_path))
+                for f in findings:
+                    print(f"[{f['severity'].upper()}] {rel_path}:{f['line']} | {f['id']} | {f['message']}")
+                    total_findings += 1
+                    all_violations.append(f)
+            files_scanned += 1
 
     print("-" * 60)
     print(f"Scan complete. Scanned {files_scanned} files.")

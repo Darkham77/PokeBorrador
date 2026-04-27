@@ -1,26 +1,10 @@
 #!/usr/bin/env python3
-try:
-    import os
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: os. Run 'pip install os' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import re
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: re. Run 'pip install re' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import sys
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
-    import sys
-    sys.exit(1)
+import re
+import sys
+from pathlib import Path
 
 # Regex to find lowercase filter/transform functions that collide with SASS built-ins
 # We specifically look for lowercase versions. Capitalized versions (Scale, Grayscale) are SAFE.
-# We exclude names prefixed by a dot (e.g., color.scale) to avoid false positives with built-in modules.
 FILTER_COLLISION_REGEX = re.compile(r'(?<![a-zA-Z-\.\$])(?:scale|grayscale|invert|opacity|brightness|blur|rotate|translate|saturate|drop-shadow|translatex|translatey|translatez|skewx|skewy|matrix)\(')
 
 # Regex to find filter: ... opacity() which is inefficient compared to opacity: property
@@ -53,17 +37,17 @@ COLOR_VAR_COLLISION_REGEX = re.compile(r'(?:scale-color|color\.scale|lighten|dar
 # Regex to find deprecated @import (excluding CSS url imports)
 IMPORT_DEPRECATION_REGEX = re.compile(r'@import\s+(?!url\()["\']([^"\']+)["\'];?')
 
-def check_file(filepath):
+def check_file(filepath: Path):
     errors = []
     
-    with open(filepath, 'r', encoding='utf-8') as f:
-        content = f.read()
+    try:
+        content = filepath.read_text(encoding='utf-8')
         lines = content.splitlines()
         
         has_interpolation = bool(SCSS_INTERPOLATION_REGEX.search(content))
         has_lang_scss = bool(LANG_SCSS_REGEX.search(content))
         
-        is_sass_context = filepath.endswith('.scss') or has_lang_scss
+        is_sass_context = filepath.suffix == '.scss' or has_lang_scss
         
         for i, line in enumerate(lines, 1):
             if not is_sass_context:
@@ -102,24 +86,29 @@ def check_file(filepath):
                 errors.append(f"L{i}: Deprecated @import detected: {line.strip()}. Use modern @use or @forward instead.")
 
         # Check for interpolation in non-SCSS block (only for .vue)
-        if filepath.endswith('.vue') and has_interpolation and not has_lang_scss:
+        if filepath.suffix == '.vue' and has_interpolation and not has_lang_scss:
             errors.append("CRITICAL: SASS Interpolation #{...} detected in a Vue file missing lang=\"scss\"")
+            
+    except Exception as e:
+        print(f"Error reading {filepath}: {e}")
             
     return errors
 
 def main():
     target_dirs = ['src']
-    extensions = ['.scss', '.vue']
+    extensions = {'.scss', '.vue'}
     all_errors = {}
 
-    for root_dir in target_dirs:
-        for root, _, files in os.walk(root_dir):
-            for file in files:
-                if any(file.endswith(ext) for ext in extensions):
-                    path = os.path.join(root, file)
-                    errors = check_file(path)
-                    if errors:
-                        all_errors[path] = errors
+    for dir_name in target_dirs:
+        root_path = Path(dir_name)
+        if not root_path.exists():
+            continue
+            
+        for filepath in root_path.rglob("*"):
+            if filepath.is_file() and filepath.suffix in extensions:
+                errors = check_file(filepath)
+                if errors:
+                    all_errors[str(filepath)] = errors
 
     if all_errors:
         print("[SASS VALIDATION FAILED]")

@@ -1,41 +1,38 @@
 #!/usr/bin/env python3
-import os
 import sys
+from pathlib import Path
 
 # MANDATORY: No .vue, .js, or .scss file may exceed 500 lines (except "databases" style files).
 MAX_LINES = 500
 
 # Hardcoded whitelist for known "database" files
-WHITELIST = [
+WHITELIST = {
     "speciesMetadata.js",
     "pokemonDB.js",
     "moves.js",
     "items.js",
     "migrations_data.js",
     "weather-tables.js"
-]
+}
 
 IGNORE_COMMENT = "[PureVue-Ignore-Length]"
 
-def check_file(filepath):
+def check_file(filepath: Path):
     """Returns True if file is valid, False otherwise."""
-    filename = os.path.basename(filepath)
-    
-    if filename in WHITELIST:
+    if filepath.name in WHITELIST:
         return True, 0
     
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            first_line = f.readline()
-            if IGNORE_COMMENT in first_line:
-                return True, 0
+        content = filepath.read_text(encoding='utf-8')
+        lines = content.splitlines()
+        
+        if lines and IGNORE_COMMENT in lines[0]:
+            return True, 0
             
-            # Reset to count all lines
-            f.seek(0)
-            line_count = sum(1 for _ in f)
-            
-            if line_count > MAX_LINES:
-                return False, line_count
+        line_count = len(lines)
+        
+        if line_count > MAX_LINES:
+            return False, line_count
     except Exception as e:
         print(f"Error reading {filepath}: {e}")
         return True, 0 # Skip on error
@@ -44,19 +41,21 @@ def check_file(filepath):
 
 def main():
     target_dirs = ['src']
-    extensions = ['.vue', '.js', '.scss']
+    extensions = {'.vue', '.js', '.scss'}
     violations = []
     files_scanned = 0
 
-    for root_dir in target_dirs:
-        for root, _, files in os.walk(root_dir):
-            for file in files:
-                if any(file.endswith(ext) for ext in extensions):
-                    path = os.path.join(root, file)
-                    is_valid, count = check_file(path)
-                    if not is_valid:
-                        violations.append((path, count))
-                    files_scanned += 1
+    for dir_name in target_dirs:
+        root_path = Path(dir_name)
+        if not root_path.exists():
+            continue
+            
+        for filepath in root_path.rglob("*"):
+            if filepath.is_file() and filepath.suffix in extensions:
+                is_valid, count = check_file(filepath)
+                if not is_valid:
+                    violations.append((str(filepath), count))
+                files_scanned += 1
 
     if violations:
         print("[FILE LENGTH AUDIT FAILED]")
