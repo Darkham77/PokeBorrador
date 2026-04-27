@@ -244,22 +244,14 @@ const getSprite = (id, shiny) => {
 }
 
 .poke-card-vicio {
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  @include pokemon-list-item-standard(12px);
   padding: 12px;
   display: flex;
   align-items: center;
   gap: 16px;
   cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.05);
-    border-color: var(--yellow);
-    transform: translateX(4px);
-    
     .name { color: var(--yellow); }
   }
 }

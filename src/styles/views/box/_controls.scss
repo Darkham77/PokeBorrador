@@ -1,0 +1,167 @@
+// src/styles/views/box/_controls.scss
+@use "../../core/tools" as *;
+
+.box-controls-wrapper {
+  margin-bottom: 0;
+  position: relative;
+}
+
+.box-controls-compact {
+  @include glass-solid(Rgba(15, 23, 42, 0.95));
+  padding: 12px 20px;
+  border-radius: 20px;
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 16px 24px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+
+  .search-row-integrated {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex: 1 1 650px; 
+    min-width: 0;
+  }
+
+  .tags-row-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex: 1 1 500px; 
+    min-width: 300px;
+    
+    @media (max-width: 1360px) {
+      padding-top: 12px;
+      border-top: 1px solid Rgba(255, 255, 255, 0.03);
+      flex-basis: 100%;
+    }
+  }
+}
+
+.box-search-wrapper {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .box-search-icon {
+    position: absolute;
+    left: 16px;
+    font-size: 14px;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .box-search-input {
+    width: 100%;
+    height: 40px; 
+    background: Rgba(0, 0, 0, 0.3);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    padding: 0 44px 0 44px; 
+    border-radius: 12px;
+    color: var(--white);
+    font-size: 8px;
+    line-height: 40px; 
+    @include pixelated;
+    outline: none;
+    transition: all 0.3s;
+
+    &::placeholder {
+      color: var(--gray);
+      opacity: 0.5;
+    }
+
+    &:focus {
+      outline: none;
+      background: Rgba(255, 255, 255, 0.05);
+      border-color: var(--purple);
+      box-shadow: 0 0 15px Rgba(199, 125, 255, 0.1);
+    }
+  }
+
+  .box-search-clear {
+    position: absolute;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    @include flex-center;
+    background: Rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    color: var(--gray);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    @include pixelated;
+    z-index: var(--z-low);
+
+    &:hover {
+      background: Rgba(255, 255, 255, 0.1);
+      color: var(--white);
+      border-color: var(--purple);
+      box-shadow: 0 0 10px Rgba(199, 125, 255, 0.2);
+    }
+  }
+}
+
+.box-tabs {
+  display: flex;
+  background: Rgba(0, 0, 0, 0.3);
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  overflow-x: auto;
+  gap: 4px;
+  
+  &::-webkit-scrollbar { height: 4px; }
+  
+  .box-tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    color: var(--gray);
+    @include pixelated;
+    font-size: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover { color: var(--white); background: Rgba(255, 255, 255, 0.05); }
+    &.active {
+      background: Rgba(255, 255, 255, 0.1);
+      color: var(--white);
+      transform: Scale(1.05);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .box-buy-new-btn {
+    @include btn-vicio('warning', 'sm', true);
+    margin-left: 12px;
+    width: fit-content; 
+    min-width: 160px;
+    flex: 0 0 auto;
+    height: 32px;
+    font-size: 7px;
+    border-radius: 8px;
+
+    .currency-symbol {
+      font-family: sans-serif;
+      font-size: 11px;
+      vertical-align: baseline;
+      transform: TranslateX(-1px);
+      margin-left: 2px;
+      letter-spacing: -1px;
+    }
+
+    &:hover {
+      transform: TranslateY(-2px) Scale(1.02);
+      box-shadow: 0 4px 15px Rgba(255, 184, 0, 0.2);
+    }
+  }
+}

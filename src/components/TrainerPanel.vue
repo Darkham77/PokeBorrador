@@ -79,7 +79,7 @@ const handlePanelClick = (event) => {
       </div>
       <div class="trainer-info">
         <div class="trainer-lv">
-          Entrenador Nv. <span>{{ gs.trainerLevel }}</span>
+          Nivel <span>{{ gs.trainerLevel }}</span>
         </div>
       </div>
       <div class="exp-bar-container">

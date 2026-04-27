@@ -33,7 +33,7 @@
       margin: 0 0 12px 0;
       background: Linear-Gradient(to bottom, var(--white), var(--gray));
       -webkit-background-clip: text;
-      -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;;;;;;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       @include pixelated;
     }
@@ -256,52 +256,30 @@
   padding-bottom: 250px;
 }
 
-.pokemon-card {
-  position: relative;
-  @include glass(Rgba(30, 41, 59, 0.3), 12px);
-  border-radius: 20px;
-  padding: 6px 8px; // Reduced from 10px
+.pdx-pokemon-card {
+  @include pokemon-card-standard(20px);
+  padding: 6px 8px;
   cursor: pointer;
-  @include will-animate(transform, box-shadow);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: hidden;
-  height: 140px; // Reduced from 170px to eliminate dead space
+  height: 140px;
   width: 100%;
   justify-content: space-between;
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: Radial-Gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
   &:hover:not(.is-unseen) {
-    transform: TranslateY(-8px);
-    background: Rgba(30, 41, 59, 0.5);
-    border-color: var(--yellow);
-    box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.5), 0 0 20px Rgba(255, 184, 0, 0.2);
-    
-    &::before { opacity: 1; }
-    & .pdx-pokemon-sprite { transform: Scale(1.15) Rotate(5deg); }
+    & .pdx-pokemon-sprite { @include pokemon-sprite-hover-standard; }
     & .pdx-pokemon-name { color: var(--white); }
   }
 
   &.is-unseen {
-    opacity: 0.7; // Increased from 0.4
+    opacity: 0.7;
     cursor: default;
     filter: Grayscale(100%);
-    &:hover { transform: none; box-shadow: none; &::before { opacity: 0; } }
   }
 
   &.is-caught {
-    background: Linear-Gradient(135deg, Rgba(30, 41, 59, 0.4) 0%, Rgba(15, 23, 42, 0.7) 100%);
-    border-color: Rgba(255, 184, 0, 0.3);
+    // No border here, let standard mixin handle it
   }
 
   .dex-number {
@@ -327,9 +305,7 @@
     .pdx-pokemon-sprite {
       width: 100%;
       height: 100%;
-      @include sprite-render;
-      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      filter: Drop-Shadow(0 10px 15px Rgba(0, 0, 0, 0.3));
+      @include pokemon-sprite-base-standard;
       
       &.silhouette {
         filter: Brightness(0) Drop-Shadow(0 0 1px Rgba(255, 255, 255, 0.2));

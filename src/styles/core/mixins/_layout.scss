@@ -1,0 +1,80 @@
+// src/styles/core/mixins/_layout.scss
+@use "sass:map";
+@use "../variables" as vars;
+
+@mixin premium-gradient {
+  background: Linear-Gradient(180deg, Rgba(255, 255, 255, 0.03) 0%, Rgba(0, 0, 0, 0.15) 100%);
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin responsive($breakpoint) {
+  @if map.has-key(vars.$breakpoints, $breakpoint) {
+    @media (max-width: map.get(vars.$breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @media (max-width: $breakpoint) {
+      @content;
+    }
+  }
+}
+
+@mixin responsive-zoom {
+  @media (max-width: 467px) { zoom: 0.9; }
+  @media (max-width: 420px) { zoom: 0.8; }
+  @media (max-width: 380px) { zoom: 0.7; }
+  @media (max-width: 340px) { zoom: 0.6; }
+}
+
+@mixin pixelated {
+  font-family: var(--font-pixel, 'Press Start 2P', monospace) !important;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: auto;
+  font-smooth: never;
+  text-rendering: optimizeSpeed;
+  image-rendering: pixelated;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  
+  // Prevent subpixel antialiasing
+  font-variant-ligatures: none;
+  -webkit-text-stroke: 0;
+}
+
+@mixin pixel-perfect($size: 8px) {
+  @include pixelated;
+  font-size: $size;
+  line-height: 1;
+}
+
+@mixin smooth {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  image-rendering: auto; // Ensures smooth backgrounds
+}
+
+@mixin hover-neon-yellow($border-width: 1px) {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    border-color: var(--yellow) !important;
+    box-shadow: 
+      0 0 0 #{$border-width} var(--yellow),
+      0 0 20px Rgba(255, 214, 10, 0.4),
+      0 0 40px Rgba(255, 214, 10, 0.2),
+      inset 0 0 10px Rgba(255, 214, 10, 0.1) !important;
+    z-index: 10;
+  }
+}
+
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -25,26 +25,30 @@
     pointer-events: auto;
   }
 
-  .poke-identity {
+  & .poke-identity {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     pointer-events: auto;
     
-    .p-id {
-      background: var(--type-color);
+    & .p-id {
+      background: Linear-Gradient(to bottom, var(--type-color) 0%, Rgba(var(--type-color-rgb), 0.8) 100%);
       color: var(--black);
       @include pixelated;
-      font-size: 8px;
-      padding: 4px 8px;
-      border-radius: 4px;
+      font-size: 7px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 900;
+      box-shadow: 0 4px 15px Rgba(var(--type-color-rgb), 0.3);
     }
     
-    .p-name {
+    & .p-name {
       @include pixelated;
-      font-size: 16px;
+      font-size: 20px;
       color: var(--white);
       text-transform: uppercase;
+      letter-spacing: 1px;
+      text-shadow: 0 0 20px Rgba(255, 255, 255, 0.2);
     }
   }
 
@@ -52,7 +56,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-right: 40px; // Safety space for the X button
+    margin-right: 60px; // Safety space for the X button
     pointer-events: auto;
 
     .p-types {
@@ -64,18 +68,6 @@
       }
     }
   }
-}
-
-.pdex-bg-glow {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: TranslateX(-50%);
-  width: 100%;
-  height: 300px;
-  background: Radial-Gradient(circle at center 30%, Rgba(var(--type-color-rgb), 0.2) 0%, transparent 70%);
-  z-index: var(--z-base); // Behind everything including body
-  pointer-events: none;
 }
 
 // Unified Display specialization
@@ -90,7 +82,6 @@
   z-index: var(--z-base); 
   overflow: visible;
   pointer-events: none !important;
-
 }
 
 .upd-core-container {
@@ -110,10 +101,14 @@
   flex-direction: column;
   width: 700px;
   min-width: 700px;
-  overflow: hidden; // Parent MUST NOT scroll
+  overflow: hidden; 
   position: relative;
-  background: Rgba(10, 12, 20, 1);
-  border-radius: 20px;
+  @include glass(Rgba(10, 12, 20, 0.98), 24px);
+  border-radius: 24px;
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 40px 100px Rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px Rgba(255, 255, 255, 0.03);
   
   &.instance-mode {
     padding-bottom: 0; 
@@ -130,15 +125,38 @@
 // Specialized components for Unified View
 .premium-tabs {
   @extend .pdex-detail-tabs;
-  margin-top: 0; 
+  margin-top: 0 !important; 
   position: relative;
-  z-index: var(--z-base); // Increased to be above the sprite container (150)
-  background: Rgba(10, 12, 20, 1) !important;
+  z-index: var(--z-base); 
+  background: Linear-Gradient(to bottom, Rgba(10, 12, 20, 0.8) 0%, Rgba(10, 12, 20, 1) 100%) !important;
   border-bottom: 1px solid Rgba(255,255,255,0.05) !important;
-  -webkit-backdrop-filter: Blur(10px) !important; -webkit-backdrop-filter: Blur(10px) !important; backdrop-filter: Blur(10px) !important;
-  padding: 10px 0 0 !important;
+  -webkit-backdrop-filter: Blur(10px) !important; backdrop-filter: Blur(10px) !important;
+  padding: 0 !important;
 
-  // Tabs are managed in _core.scss.
+  & .upd-tab-btn {
+    padding: 12px 0 8px !important;
+    transform: none !important; // Prevent jumpy layouts
+  }
+
+  & .pdex-tab {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.4;
+    
+    &.active {
+      opacity: 1;
+      background: Radial-Gradient(circle at bottom, Rgba(var(--type-color-rgb), 0.1) 0%, transparent 70%);
+      
+      &::after {
+        background: var(--type-color);
+        box-shadow: 0 0 15px Rgba(var(--type-color-rgb), 0.5);
+      }
+    }
+
+    &:hover:not(.active) {
+      opacity: 0.7;
+      background: Rgba(255, 255, 255, 0.03);
+    }
+  }
 }
 
 // ... existing minor styles ...
@@ -220,6 +238,20 @@
     transform: translate3d(0, -20px, 0) !important; 
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     pointer-events: none !important;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      @include gpu-layer;
+      transform: Translate3d(-50%, -50%, 0);
+      width: 280px;
+      height: 280px;
+      background: Radial-Gradient(circle, Rgba(var(--type-color-rgb), 0.35) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: -1;
+      pointer-events: none;
+    }
 
     &:hover {
       transform: translate3d(0, -30px, 0) Scale(1.05) !important;

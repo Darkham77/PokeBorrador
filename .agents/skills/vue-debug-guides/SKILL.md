@@ -215,6 +215,7 @@ For development best practices and common gotchas, use `vue-best-practices`.
 - Scoped styles not applying to slot content → See [sfc-scoped-css-slot-content](references/sfc-scoped-css-slot-content.md)
 - Tailwind classes missing when built dynamically → See [tailwind-dynamic-class-generation](references/tailwind-dynamic-class-generation.md)
 - Recursive components not rendering due to name conflicts → See [self-referencing-component-name](references/self-referencing-component-name.md)
+- **Vite HMR SASS crash after style block removal**: If a `.vue` component previously had a `<style>` block that was fully removed (e.g., to centralize styles in a global `.scss` file), Vite's HMR can crash with `[sass] expected "{"` because the SASS loader tries to process the `<script>` block as a stylesheet. The fix is to always leave an empty `<style lang="scss"></style>` stub at the bottom of the SFC. This is required for any component from which styles are migrated to a global file.
 
 ### Plugins
 

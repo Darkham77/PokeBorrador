@@ -11,6 +11,7 @@ import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evol
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 
@@ -286,6 +287,18 @@ const captureDateFormatted = computed(() => {
     return null
   }
 })
+
+const getCategoryDescription = (cat) => {
+  const c = cat.toLowerCase()
+  if (c.includes('nueva especie')) return 'Pokémon extremadamente raro que contiene el ADN de todos los demás Pokémon. Se creía puramente mitológico.'
+  if (c.includes('genético')) return 'Pokémon creado artificialmente mediante manipulación avanzada de ADN y experimentos científicos.'
+  if (c.includes('legendario')) return 'Pokémon de gran poder que aparece en los mitos y leyendas. Suele ser único en su especie.'
+  if (c.includes('mítico')) return 'Pokémon tan singular que su existencia es cuestionada por muchos científicos y exploradores.'
+  if (c.includes('inicial')) return 'Pokémon que suele entregarse a los entrenadores que comienzan su aventura regional.'
+  if (c.includes('fósil')) return 'Pokémon prehistórico resucitado a partir de material genético preservado en fósiles.'
+  
+  return `Clasificación: ${cat}. Define los rasgos biológicos principales y el comportamiento predominante de esta especie.`
+}
 </script>
 
 <template>
@@ -357,9 +370,6 @@ const captureDateFormatted = computed(() => {
         </div>
       </header>
 
-      <!-- BACKGROUND GLOW -->
-      <div class="pdex-bg-glow" />
-
       <!-- TOP DISPLAY -->
       <div class="upd-main-display">
         <div class="upd-sprite-container">
@@ -419,8 +429,16 @@ const captureDateFormatted = computed(() => {
         >
           <div class="info-grid">
             <div class="info-item">
-              <span class="upd-info-label pixelated">CATEGORÍA</span>
-              <span class="ps-info-value pixelated">{{ cleanCategory }}</span>
+              <PVTooltip
+                :title="'CATEGORÍA: ' + cleanCategory"
+                :description="getCategoryDescription(cleanCategory)"
+                position="top"
+              >
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  <span class="upd-info-label pixelated">CATEGORÍA</span>
+                  <span class="ps-info-value pixelated">{{ cleanCategory }}</span>
+                </div>
+              </PVTooltip>
             </div>
             <div class="info-item">
               <span class="upd-info-label pixelated">ALTURA</span>

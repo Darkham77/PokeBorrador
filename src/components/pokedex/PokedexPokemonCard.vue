@@ -10,7 +10,7 @@ defineEmits(['click'])
 
 <template>
   <div 
-    class="pokemon-card"
+    class="pdx-pokemon-card"
     :class="{ 
       'is-caught': p.isCaught, 
       'is-unseen': !p.isSeen,
@@ -58,6 +58,5 @@ defineEmits(['click'])
   </div>
 </template>
 
-<style scoped lang="scss">
-@use "@/styles/views/pokedex";
+<style lang="scss">
 </style>

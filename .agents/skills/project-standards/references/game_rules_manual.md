@@ -37,6 +37,8 @@ All discovery systems must follow a standard 4-state debug pattern:
 3. `caught`: Force caught (seen=true, caught=true).
 4. `default`: Real Pokédex state.
 
+- **Debug Persistence**: When implementing administrative cleanup tools (e.g., `clearPvpTeam`, `clearWarTeam`), the logic MUST ensure that the state change is immediately flushed to the database (Supabase) and the local session. This prevents desyncs where the UI appears cleared but the data persists after a refresh.
+
 ---
 
 ## 🌩️ Environment & Atmosphere
@@ -73,6 +75,70 @@ All discovery systems must follow a standard 4-state debug pattern:
 
 - **Lightning strikes**: Must use a `setInterval` with a random initial `setTimeout` to ensure lightning doesn't strike simultaneously across different routes or instances.
 - **Visual Clarity**: Weather effects and atmospheric filters MUST be hidden for locked or restricted UI components (e.g., locked map routes) to reduce cognitive noise.
+
+---
+
+## 📐 Fórmulas Matemáticas
+
+### ⚔️ Combate & Daño
+
+Basado en la mecánica de Gen 4+ con adaptaciones para el flujo de juego web.
+
+- **Daño Base**:
+  `Daño = floor(((2 * Nivel / 5 + 2) * Poder * (A / D)) / 50) + 2`
+  - `A`: Ataque o At. Especial (aplica quemadura -50% físico y multiplicadores de nivel de stat).
+  - `D`: Defensa o Def. Especial (aplica multiplicadores de nivel de stat).
+
+- **Multiplicadores Finales**:
+  `Daño Final = floor(Daño * STAB * Habilidad * Efectividad * Aleatorio * Crítico * Clima * Objeto)`
+  - **STAB**: `1.5` si el tipo coincide (o `2.0` con habilidad Adaptable).
+  - **Crítico**: Multiplicador `2.0`. Probabilidad base: 6%.
+  - **Aleatorio**: Factor de variación entre `0.85` y `1.0`.
+  - **Efectividad**: Multiplicadores: `0`, `0.25`, `0.5`, `1`, `2`, o `4`.
+
+### 🎒 Captura
+
+`Rate = min(255, floor(RatioBase * MultiplicadorBola * FactorHP * MultiplicadorEstado))`
+
+- **Factor HP**: `(3 * MaxHP - 2 * ActualHP) / (3 * MaxHP)`
+- **Multiplicadores de Bola**: Poké Ball (1x), Super Ball (1.5x), Ultra Ball (2x).
+- **Multiplicadores de Estado**: Dormido/Congelado (2x), Otros estados (1.5x).
+- **Éxito**: Captura garantizada si `Random(0, 255) < Rate`. Las Master Ball ignoran esta fórmula (`Rate = 255`).
+
+### 📈 Estadísticas (Stats) & Niveles
+
+- **Puntos de Salud (PS)**:
+  `PS = floor((Base * 2 + IV) * Nivel / 100 + Nivel + 10)`
+- **Estadísticas de Combate**:
+  `Stat = floor(floor((Base * 2 + IV) * Nivel / 100 + 5) * Naturaleza)`
+  - `Naturaleza`: Multiplicador `1.1` (azul/favorable), `0.9` (rojo/desfavorable), `1.0` (neutra).
+- **Curva de Nivel (Medium Fast)**:
+  `ExpNecesaria = floor((Nivel + 1)^3 - Nivel^3)`
+
+### 🌟 Experiencia & Recompensas
+
+- **Experiencia Ganada**:
+  `Exp = floor(ExpBase * Reparto * MultClase * MultGlobal)`
+  - `ExpBase = NivelEnemigo * 4`
+  - `Reparto`: `1.0` si participó, `0.5` si tiene Compartir EXP (sin participar).
+- **Monedas (BattleCoins)**:
+  `Monedas = floor(NivelEnemigo * 10 * MultClase * MultGlobal)`
+
+### 🥚 Crianza (Hereditariedad & Costos)
+
+- **Herencia de IVs**: Se heredan **3 IVs** aleatorios de los padres (o **4** si el jugador es clase Criador). Los objetos "Recios" fuerzan la herencia de un stat específico.
+- **Costos del Centro**: Basado en el total de IVs perfectos (30 o 31) de ambos padres:
+  - 0 a 2 IVs: `2,000 BC`
+  - 3 a 5 IVs: `5,000 BC`
+  - 6 a 8 IVs: `12,000 BC`
+  - 9 a 11 IVs: `25,000 BC`
+  - 12 IVs (Perfectos): `50,000 BC`
+
+### 💰 Economía (Ventas NPC)
+
+- **Objetos**: `floor(PrecioCompra * 0.5)`. Objetos sin precio de mercado no pueden venderse.
+- **Pokémon (Mercado Negro / Rocket)**:
+  `Precio = floor((Nivel * 50 + (TotalIVs / 186) * 500) * 0.8)`
 
 ---
 

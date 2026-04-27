@@ -160,6 +160,7 @@ When refactoring legacy or generic components:
   - **SASS vs CSS Variables**: SASS color functions (like `color.scale`, `lighten()`, `darken()`) cannot process `var(--color)`. For interactive highlights/hovers, use static SASS fallbacks (e.g. `$yellow`) for calculations while maintaining the CSS variable for the main render to support dynamic themes.
   - **Variable Isolation**: In high-density or dynamically scoped components (e.g., within specialized filters or grids), if core SASS variables are not reliably available without manual imports, use **Direct Hex Values** to ensure visual stability and prevent "Color not defined" build errors.
 - **Modern Control Flow**: The legacy ternary `if()` function is deprecated in SASS 1.8+. Always use standard `@if / @else` blocks for conditional styling logic to ensure build-log cleanliness.
+- **Positioning & Micro-offsets**: Avoid using negative margins (`margin-top: -1px`) to correct alignment of symbols or small icons. This causes layout instability and triggers redundancy alerts. Use **TranslateY()** or **TranslateX()** (Capitalized) for hardware-accelerated positioning that doesn't affect the box model.
 - **Global Pollution**: Do not define variables or mixins directly in component styles; always centralize them in tokens/partials and `@use` them.
 
 ### 4. CSS Redundancy & "Single Source of Truth"

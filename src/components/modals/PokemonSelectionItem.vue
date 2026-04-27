@@ -1,27 +1,34 @@
 <script setup>
+import { computed } from 'vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-
 import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
-defineProps({
+const props = defineProps({
   item: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
-    total: { type: Number, required: true }
+  total: { type: Number, required: true }
 })
 
 const emit = defineEmits(['select', 'openDetail'])
 
 const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
+
+const tierData = computed(() => getPokemonTier(props.item.pokemon))
+const ivTotal = computed(() => Object.values(props.item.pokemon.ivs || {}).reduce((s, v) => s + (v || 0), 0))
 </script>
 
 <template>
   <div 
     class="list-item"
     :class="{ selected: isSelected }"
-    :style="{ '--type-color': getTypeColor(item.pokemon.types?.[0] || item.pokemon.type) }"
+    :style="{ 
+      '--tier-color': tierData.color,
+      '--tier-bg': tierData.bg
+    }"
     @click.stop="emit('select', item)"
   >
     <div class="poke-preview-container">
@@ -37,7 +44,6 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
           :is-guardian="item.pokemon.isGuardian"
           :sparkle-count="5"
         >
-          <div class="preview-bg" />
           <img
             :src="getAssetUrl(ASSET_TYPES.POKEMON, item.pokemon.id, { isShiny: item.pokemon.isShiny })"
             alt=""
@@ -76,7 +82,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
         </div>
 
         <div class="actions-right">
-          <span class="m-badge-level">Nv. {{ item.pokemon.level ?? 1 }}</span>
+          <span class="m-badge-tier">{{ tierData.tier }}</span>
         </div>
       </div>
       <div class="bottom-line">
@@ -90,11 +96,12 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
             {{ t?.toUpperCase() }}
           </span>
         </div>
+        <span class="m-badge-level">Nv. {{ item.pokemon.level ?? 1 }}</span>
         <span
           v-if="item.pokemon.ivs"
           class="m-badge-iv"
-        >IVs: {{ Object.values(item.pokemon.ivs).reduce((s,v)=>s+(v||0),0) }}</span>
-        <span class="m-badge-tot">TOT: {{ total }}</span>
+        >IVs {{ ivTotal }}</span>
+        <span class="m-badge-tot">TOT {{ total }}</span>
         <span
           class="source-tag"
           :class="item._source"
@@ -109,3 +116,24 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+@use "@/styles/components/badges" as *;
+
+.m-badge-level {
+  @include badge-level;
+}
+
+.m-badge-iv {
+  @include badge-iv;
+}
+
+.m-badge-tot {
+  @include badge-tot;
+}
+
+.m-badge-tier {
+  @include badge-tier(24px);
+  flex-shrink: 0;
+}
+</style>

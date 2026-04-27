@@ -1,13 +1,11 @@
 <script setup>
+
 defineProps({
-  playerClass: { type: String, default: null },
-  isRocketMode: { type: Boolean, default: false },
   count: { type: Number, default: 0 },
   max: { type: Number, default: 0 },
   hint: { type: String, default: '' }
 })
 
-const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
 </script>
 
 <template>
@@ -45,36 +43,6 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
             <span class="hint-text">{{ hint }}</span>
           </div>
         </div>
-
-        <div
-          v-if="playerClass === 'rocket'"
-          class="actions-group"
-        >
-          <button
-            v-if="!isRocketMode"
-            class="rocket-action-btn"
-            @click.stop="emit('toggleRocket')"
-          >
-            🚀 MERCADO NEGRO
-          </button>
-          <div
-            v-else
-            class="rocket-confirm-group"
-          >
-            <button
-              class="confirm-btn"
-              @click.stop="emit('confirmRocket')"
-            >
-              ✓ VENDER
-            </button>
-            <button
-              class="cancel-btn"
-              @click.stop="emit('cancelRocket')"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   </header>
@@ -84,10 +52,10 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
 @use "@/styles/core/tools" as *;
 
 .box-header-premium {
-  padding: 16px 24px;
+  padding: 12px 24px;
   border-radius: 20px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  margin-bottom: 12px;
+  margin-bottom: 0;
   @include gpu-layer;
 
   .header-layout {
@@ -176,46 +144,19 @@ const emit = defineEmits(['toggleRocket', 'confirmRocket', 'cancelRocket'])
 }
 
 .rocket-action-btn {
-  @include pixelated;
-  padding: 8px 16px;
-  background: Rgba(255, 184, 0, 0.1);
-  border: 1px solid Rgba(255, 184, 0, 0.3);
-  border-radius: 10px;
-  color: var(--yellow);
-  font-size: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: Rgba(255, 184, 0, 0.2);
-    box-shadow: 0 0 15px Rgba(255, 184, 0, 0.1);
-  }
+  @include btn-vicio('danger', 'sm');
 }
 
 .rocket-confirm-group {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 
   .confirm-btn {
-    @include pixelated;
-    padding: 8px 16px;
-    background: Rgba(34, 197, 94, 0.1);
-    border: 1px solid Rgba(34, 197, 94, 0.3);
-    border-radius: 10px;
-    color: #4ade80;
-    font-size: 8px;
-    cursor: pointer;
+    @include btn-vicio('danger', 'sm');
   }
 
   .cancel-btn {
-    @include pixelated;
-    padding: 8px 12px;
-    background: Rgba(239, 68, 68, 0.1);
-    border: 1px solid Rgba(239, 68, 68, 0.3);
-    border-radius: 10px;
-    color: #f87171;
-    font-size: 8px;
-    cursor: pointer;
+    @include btn-vicio('danger', 'sm');
   }
 }
 

@@ -23,6 +23,10 @@ export const useUIStore = defineStore('ui', () => {
   const isDebugGridMode = ref(false)
   const debugPokedexMode = ref(null) // 'none' | 'seen' | 'caught' | null (real)
   
+  // Team Management Debug Flags
+  const pvpAutoFillDisabled = ref(false)
+  const warAutoFillDisabled = ref(false)
+
   const _isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
   
   // Data for modals (still needed in the store if shared)
@@ -325,6 +329,9 @@ export const useUIStore = defineStore('ui', () => {
     
     setDebugPokedex: (mode) => { debugPokedexMode.value = mode },
     
+    pvpAutoFillDisabled,
+    warAutoFillDisabled,
+
     isTeamManagementOpen,
     
     // Relearner

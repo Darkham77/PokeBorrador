@@ -47,7 +47,7 @@ const isEmpty = computed(() => !props.pokemon)
 @use "@/styles/core/_mixins" as *;
 .team-slot {
   width: 100%;
-  min-height: 220px;
+  min-height: 260px;
   display: flex;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

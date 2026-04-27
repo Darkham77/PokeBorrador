@@ -16,8 +16,14 @@ Antes de comenzar, asegúrate de tener instalado **Node.js (NPM)** y **Python** 
 
 - **Linux (Ubuntu/Debian)**:
 
+     ```bash
+     sudo apt update && sudo apt install nodejs npm
+     ```
+
+- **Actualizar NPM** (Opcional):
+
     ```bash
-    sudo apt update && sudo apt install nodejs npm
+    npm install -g npm@latest
     ```
 
 ### 🐍 Instalación de Python y Pip

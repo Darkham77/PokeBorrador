@@ -102,9 +102,12 @@ const handleMultiExecute = async () => {
     }
   }
 
+  const totalQty = Array.from(selectedItems.values()).reduce((s, v) => s + v, 0)
+  const itemsText = totalQty === 1 ? '1 objeto' : `${totalQty} objetos`
+  
   const message = mode === 'sell' 
-    ? `¿Estás seguro que deseas vender estos ${selectedItems.size} tipos de objetos por un total de ₱${estimatedGain.toLocaleString()}?`
-    : `¿Estás seguro que deseas tirar estos ${selectedItems.size} tipos de objetos?`
+    ? `¿Estás seguro que deseas vender ${itemsText} por un total de ₱${estimatedGain.toLocaleString()}?`
+    : `¿Estás seguro que deseas tirar ${itemsText}?`
   
   uiStore.openConfirm({
     title: `CONFIRMAR ACCIÓN`, 

@@ -17,23 +17,14 @@
 }
 
 .team-card {
-  background: Linear-Gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
-  border-radius: 12px;
+  @include pokemon-card-standard(20px);
   padding: 12px;
   text-align: center;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: visible; 
   cursor: pointer;
   @include gpu-layer;
-  box-shadow: 0 10px 25px Rgba(0, 0, 0, 0.5);
 
   &:hover {
-    border-color: Rgba($yellow, 0.3);
-    box-shadow: 0 0 0 1px Rgba($yellow, 0.3), 0 15px 35px Rgba(0, 0, 0, 0.7);
-    transform: scale3d(1.05, 1.05, 1) translateY(-4px);
-    z-index: var(--z-base);
+    & .team-sprite { @include pokemon-sprite-hover-standard; }
   }
 }
 
@@ -81,15 +72,6 @@
   &.tier-c { color: $green; background: Rgba(50, 215, 75, 0.15); border-color: Rgba(50, 215, 75, 0.3); }
 }
 
-.level-badge {
-  background: Rgba(255, 255, 255, 0.05);
-  color: $yellow;
-  border: 1px solid Rgba(255, 217, 61, 0.2);
-  border-radius: 6px;
-  padding: 3px 6px;
-  font-size: 9px;
-  font-weight: 800;
-}
 
   & .gender-badge {
   display: inline-flex;

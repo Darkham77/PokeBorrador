@@ -179,26 +179,12 @@ const handleConfirm = () => {
 }
 
 .pokemon-item {
+  @include pokemon-list-item-standard(12px);
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px;
-  background: Rgba(255,255,255,0.03);
-  border: 1px solid Rgba(255,255,255,0.06);
-  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-
-  &:hover {
-    background: Rgba(255,255,255,0.05);
-    border-color: Rgba(255,255,255,0.15);
-  }
-
-  &.selected {
-    background: Rgba(199, 125, 255, 0.1);
-    border-color: var(--purple);
-  }
 
   .selection-indicator {
     width: 20px;

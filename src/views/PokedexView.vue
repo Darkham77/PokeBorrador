@@ -57,6 +57,5 @@ const openDetail = (p) => {
   </div>
 </template>
 
-<style lang="scss" scoped>
-@use "@/styles/views/pokedex";
+<style lang="scss">
 </style>

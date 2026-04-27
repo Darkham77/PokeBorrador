@@ -295,7 +295,8 @@ def main():
                     rel_path = os.path.relpath(filepath, root_dir)
                     if any(ignored in rel_path for ignored in IGNORE_PATHS):
                         continue
-                    if "styles\\tokens" in rel_path or "styles\\core" in rel_path:
+                    normalized_path = filepath.replace("\\", "/")
+                    if "/tokens/" in normalized_path or "/core/" in normalized_path:
                         continue
 
                     findings = scan_file(filepath)

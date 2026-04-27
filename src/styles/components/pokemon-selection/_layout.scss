@@ -1,0 +1,232 @@
+// src/styles/components/pokemon-selection/_layout.scss
+@use "@/styles/core/tools" as *;
+
+body .selection-container {
+  padding: 20px 0 0 0; 
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.filters-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 5px;
+  padding: 0 20px;
+}
+
+.ps-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 15px;
+    font-size: 14px;
+    opacity: 0.5;
+  }
+
+  .ps-search-input {
+    width: 100%;
+    background: Rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 35px 12px 40px;
+    color: white;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+
+    &:focus {
+      border-color: var(--yellow);
+      background: Rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  .clear-search {
+    position: absolute;
+    right: 12px;
+    background: Rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: Rgba(255, 255, 255, 0.2);
+      transform: Scale(1.1);
+    }
+  }
+}
+
+.ps-sort-btns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+
+  .ps-sort-wrapper {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px;
+    color: var(--gray);
+    @include pixelated;
+    font-size: 7px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.active {
+      background: Rgba(255, 215, 0, 0.1);
+      border-color: var(--yellow);
+      color: var(--yellow);
+    }
+
+    &:hover {
+      background: Rgba(255, 255, 255, 0.06);
+    }
+  }
+}
+
+.ps-tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 5px;
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+  }
+
+  .section-label {
+    @include pixelated;
+    font-size: 7px;
+    color: Rgba(255, 255, 255, 0.4);
+    letter-spacing: 1px;
+  }
+
+  .clear-all-btn {
+    background: Rgba(255, 69, 58, 0.1);
+    border: 1px solid Rgba(255, 69, 58, 0.2);
+    border-radius: 6px;
+    padding: 4px 8px;
+    color: $red;
+    @include pixelated;
+    font-size: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+
+    &:hover {
+      background: Rgba(255, 69, 58, 0.2);
+      transform: TranslateY(-1px);
+    }
+  }
+}
+
+.ps-tags-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 2px 0;
+
+  button {
+    height: 24px;
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    filter: Grayscale(1);
+    opacity: 0.6;
+
+    & .icon {
+      font-size: 9px;
+    }
+
+    & .label {
+      @include pixelated;
+      font-size: 7px !important;
+      font-weight: normal !important;
+      color: var(--gray);
+      text-transform: uppercase;
+    }
+
+    &:hover {
+      background: Rgba(255, 255, 255, 0.08);
+      transform: TranslateY(-1px);
+      opacity: 1;
+    }
+
+    &.active {
+      background: Rgba(255, 255, 255, 0.1);
+      border-color: var(--yellow);
+      filter: Grayscale(0);
+      opacity: 1;
+      box-shadow: 0 0 8px Rgba(255, 214, 10, 0.15);
+
+      & .label {
+        color: var(--yellow);
+      }
+    }
+  }
+}
+
+.modal-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  .count {
+    @include pixelated;
+    font-size: 8px;
+    color: var(--gray);
+    text-align: center;
+  }
+
+  .btn-confirm {
+    width: auto;
+    min-width: 200px;
+    margin: 0 auto;
+    @include btn-vicio-primary('sm');
+
+    &:disabled {
+      filter: Grayscale(1);
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+  }
+}
+
+.empty-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--gray);
+  @include pixelated;
+  font-size: 8px;
+}

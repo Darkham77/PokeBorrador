@@ -5,6 +5,7 @@ import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemonUtils'
 
 export const useBoxStore = defineStore('box', () => {
   const gameStore = useGameStore()
@@ -140,6 +141,8 @@ export const useBoxStore = defineStore('box', () => {
            f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 || f.ivMin > 0 || f.ivMax < 31
   })
 
+  const boxRocketSellValue = computed(() => getRocketSellValue())
+
   // --- ACTIONS ---
   function toggleFilters() {
     filters.value.isOpen = !filters.value.isOpen
@@ -226,6 +229,11 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
+  function toggleSelection(index) {
+    if (boxReleaseMode.value) toggleBoxReleaseSelect(index)
+    else if (boxRocketMode.value) toggleBoxRocketSelect(index)
+  }
+
   function toggleBoxRocketSelect(index) {
     const idx = boxRocketSelected.value.indexOf(index)
     if (idx > -1) {
@@ -240,11 +248,7 @@ export const useBoxStore = defineStore('box', () => {
     boxRocketSelected.value.forEach(i => {
       const p = gameStore.state.box[i]
       if (!p) return
-      const ivs = p.ivs || {}
-      const totalIv = Object.values(ivs).reduce((s, v) => s + (v || 0), 0)
-      // Legacy formula: Math.floor((p.level * 50 + (totalIv / 186) * 500) * 0.8)
-      const price = Math.floor((p.level * 50 + (totalIv / 186) * 500) * 0.8)
-      total += price
+      total += calculatePrice(p)
     })
     return total
   }
@@ -379,7 +383,11 @@ export const useBoxStore = defineStore('box', () => {
     const count = teamRocketSelected.value.length
     if (count === 0) return
 
-    const totalGain = count * 1500
+    let totalGain = 0
+    teamRocketSelected.value.forEach(i => {
+      const p = gameStore.state.team[i]
+      if (p) totalGain += calculatePrice(p)
+    })
 
     uiStore.openConfirm({
       title: 'Vender Pokémon (Team Rocket)',
@@ -479,6 +487,7 @@ export const useBoxStore = defineStore('box', () => {
     boxReleaseSelected,
     boxRocketMode,
     boxRocketSelected,
+    boxRocketSellValue,
     filters,
     filteredBox,
     hasActiveFilters,
@@ -495,6 +504,7 @@ export const useBoxStore = defineStore('box', () => {
     doBoxRelease,
     toggleBoxRocketMode,
     toggleBoxRocketSelect,
+    toggleSelection,
     getRocketSellValue,
     doBoxRocketSell,
     movePokemonToBox,

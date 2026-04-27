@@ -2,10 +2,12 @@
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
+import { useModalStore } from '@/stores/modals'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const game = useGameStore()
 const mapStore = useMapStore()
+const modalStore = useModalStore()
 
 const debugDate = ref(new Date().toISOString().slice(0, 16))
 const timeOffsetLabel = ref(`${game.db.getTimeOffset()}ms`)
@@ -143,7 +145,17 @@ function toggleCycle(c) {
     </div>
 
     <div class="debug-card">
-      <label>Clima Global (Pruebas)</label>
+      <div class="header-with-action">
+        <label>Clima Global (Pruebas)</label>
+        <PVTooltip title="Ver todas las tablas de probabilidad de clima por ruta/estación/ciclo.">
+          <button 
+            class="btn-vicio-neutral btn-vicio-sm"
+            @click.stop="modalStore.open('DebugWeatherTables')"
+          >
+            📋 VER TABLAS
+          </button>
+        </PVTooltip>
+      </div>
       <div class="button-row weather-grid">
         <PVTooltip
           v-for="w in [
@@ -183,5 +195,20 @@ function toggleCycle(c) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.header-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  label { margin-bottom: 0; }
+}
+
+.btn-vicio-neutral.btn-vicio-sm {
+  padding: 4px 10px;
+  font-size: 8px;
+  height: auto;
 }
 </style>

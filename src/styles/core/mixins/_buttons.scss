@@ -1,0 +1,216 @@
+// src/styles/core/mixins/_buttons.scss
+@use "sass:color";
+@use "layout" as *;
+
+// ── PREMIUM BUTTONS (Vicio Design System) ────────────────────────────────────
+
+// 1. BASE: The structural skeleton
+@mixin btn-vicio-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.5;
+  border: none;
+  font-family: 'Press Start 2P', monospace;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
+  @include pixelated;
+  gap: 12px;
+
+  // Icon Standardization
+  .icon, i, .fas, .far {
+    font-size: 1.4em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: transform 0.2s;
+    
+    // Fine-tune vertical alignment for pixel fonts/emojis
+    transform: translateY(-1px); 
+  }
+
+  // Handle multi-line stacks (e.g. Price + Label)
+  .btn-label-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
+  }
+
+  &:disabled {
+    filter: Grayscale(1);
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+// 2. SIZE: Dimensions and depth
+@mixin btn-vicio-size($size: 'md') {
+  $padding: 18px;
+  $font-size: 11px;
+  $radius: 15px;
+  $depth: 4px;
+
+  @if $size == 'sm' {
+    $padding: 8px 12px;
+    $font-size: 8px;
+    $radius: 8px;
+    $depth: 3px;
+  }
+
+  padding: $padding;
+  font-size: $font-size;
+  border-radius: $radius;
+  
+  // Set the depth variable for variants to consume
+  --v-depth: #{$depth};
+}
+
+// 3. VARIANT: Colors and 3D shadows
+@mixin btn-vicio-variant($variant: 'primary', $size: 'md') {
+  $base-color: #facc15; // default yellow
+  $shadow: #b45309;
+  $text: #000;
+
+  @if $variant == 'secondary' {
+    $base-color: #7c3aed;
+    $shadow: #5b21b6;
+    $text: #fff;
+  } @else if $variant == 'danger' {
+    $base-color: #ef4444;
+    $shadow: #991b1b;
+    $text: #fff;
+  } @else if $variant == 'info' {
+    $base-color: #60a5fa;
+    $shadow: #2563eb;
+    $text: #fff;
+  } @else if $variant == 'success' {
+    $base-color: #22c55e;
+    $shadow: #15803d;
+    $text: #fff;
+  } @else if $variant == 'neutral' {
+    $base-color: #94a3b8;
+    $shadow: #475569;
+    $text: #fff;
+  }
+
+  // Use the CSS variable for the main background to support dynamic themes,
+  // but use the SASS color for the active/hover manipulations.
+  $bg-render: $base-color;
+  @if $variant == 'primary' {
+    $bg-render: var(--yellow, #{$base-color});
+  }
+
+  background: $bg-render;
+  color: $text;
+  
+  $depth: 4px;
+  @if $size == 'sm' { $depth: 3px; }
+
+  box-shadow: 0 $depth 0 $shadow;
+
+  &:hover:not(:disabled) {
+    filter: Brightness(1.1);
+    transform: TranslateY(-1px);
+    box-shadow: 0 ($depth + 1px) 0 $shadow;
+  }
+
+  &:active:not(:disabled) {
+    transform: TranslateY(2px);
+    box-shadow: 0 (max(0px, $depth - 2px)) 0 $shadow;
+  }
+
+  &.active {
+    background: color.scale($base-color, $lightness: 15%);
+    box-shadow: 
+      0 $depth 0 $shadow,
+      0 0 15px Rgba($base-color, 0.4);
+    border: 2px solid Rgba(255, 255, 255, 0.8);
+    transform: none !important;
+    
+    &:hover:not(:disabled) {
+      background: color.scale($base-color, $lightness: 20%);
+      transform: TranslateY(-1px) !important;
+      box-shadow: 0 ($depth + 1px) 0 $shadow, 0 0 20px Rgba($base-color, 0.6);
+    }
+  }
+}
+
+// 4. MASTER: The convenient bundle
+@mixin btn-vicio($variant: 'primary', $size: 'md', $fullWidth: false) {
+  @include btn-vicio-base;
+  @include btn-vicio-size($size);
+  @include btn-vicio-variant($variant, $size);
+  @if $fullWidth { width: 100%; } @else { width: auto; }
+}
+
+// Legacy aliases for backward compatibility
+@mixin btn-vicio-primary($size: 'md', $fullWidth: false) { @include btn-vicio('primary', $size, $fullWidth); }
+@mixin btn-vicio-secondary($size: 'md', $fullWidth: false) { @include btn-vicio('secondary', $size, $fullWidth); }
+@mixin btn-vicio-danger($size: 'md', $fullWidth: false) { @include btn-vicio('danger', $size, $fullWidth); }
+@mixin btn-vicio-success($size: 'md', $fullWidth: false) { @include btn-vicio('success', $size, $fullWidth); }
+
+
+@mixin btn-close-premium {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: var(--z-low);
+  pointer-events: auto;
+
+    & .close-icon-wrapper {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: Rgba(255, 255, 255, 0.05);
+    transition: inherit;
+    border: 1px solid Rgba(255, 255, 255, 0.05);
+
+    &::before, &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 2px;
+      background: Rgba(255, 255, 255, 0.5);
+      border-radius: 2px;
+      transition: inherit;
+    }
+
+    &::before { transform: Translate(-50%, -50%) Rotate(45deg); }
+    &::after { transform: Translate(-50%, -50%) Rotate(-45deg); }
+  }
+  
+  &:hover {
+    transform: Scale(1.1);
+    transform-origin: center;
+    
+    & .close-icon-wrapper {
+      background: Rgba(239, 68, 68, 0.2);
+      border-color: Rgba(239, 68, 68, 0.3);
+      transform: Rotate(180deg);
+
+      &::before, &::after {
+        background: #ef4444;
+      }
+    }
+  }
+
+  &:active {
+    transform: Scale(0.9);
+  }
+}

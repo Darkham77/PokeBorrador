@@ -186,21 +186,12 @@ const selectPokemon = (p) => {
 }
 
 .pokemon-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  @include pokemon-list-item-standard(12px);
   padding: 10px;
   display: flex;
   align-items: center;
   gap: 15px;
   cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: Rgba(255, 255, 255, 0.08);
-    border-color: Rgba(255, 255, 255, 0.2);
-    transform: translateX(4px);
-  }
 }
 
 .sprite-wrap {

@@ -17,6 +17,22 @@
     line-height: 1.4;
   }
 
+  .debug-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    
+    & .debug-section-title {
+      margin-bottom: 0;
+    }
+    
+    button {
+      @include btn-vicio-secondary('sm', true);
+      font-size: 8px;
+    }
+  }
+
   .creator-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));

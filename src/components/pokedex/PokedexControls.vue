@@ -54,6 +54,5 @@ defineEmits(['update:currentGen', 'update:sortBy', 'update:searchQuery'])
   </div>
 </template>
 
-<style scoped lang="scss">
-@use "@/styles/views/pokedex";
+<style lang="scss">
 </style>

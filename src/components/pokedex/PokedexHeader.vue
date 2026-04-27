@@ -27,7 +27,6 @@ defineProps({
     </div>
   </header>
 </template>
-
-<style scoped lang="scss">
-@use "@/styles/views/pokedex";
+<style lang="scss">
 </style>
+

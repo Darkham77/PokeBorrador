@@ -1,0 +1,172 @@
+// src/styles/components/pokemon-selection/_cards.scss
+@use "@/styles/core/tools" as *;
+
+.ps-vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 5px 20px 20px 20px;
+
+  @include smooth-scroll;
+  &::-webkit-scrollbar { width: 6px; }
+}
+
+.list-item {
+  @include pokemon-list-item-standard(20px);
+  display: flex;
+  align-items: center;
+  padding: 14px;
+  cursor: pointer;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0; 
+  min-height: 100px;
+}
+
+.poke-preview-container {
+  position: relative;
+}
+
+.poke-preview {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  overflow: visible;
+  z-index: var(--z-base);
+
+  img {
+    width: 56px;
+    height: 56px;
+    image-rendering: pixelated;
+    position: relative;
+    z-index: var(--z-base);
+    filter: Drop-shadow(0 4px 8px Rgba(0,0,0,0.5));
+    transition: transform 0.3s ease;
+  }
+}
+
+.mini-badges {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: TranslateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: Rgba(0, 0, 0, 0.6);
+  padding: 3px 6px;
+  min-height: 14px;
+  border-radius: 8px;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
+  z-index: var(--z-base);
+
+  .mini-icon {
+    font-size: 8px;
+    font-weight: bold;
+    color: white;
+    line-height: 1;
+    display: block;
+  }
+}
+
+.poke-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .top-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .name-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      .name {
+        font-weight: 800;
+        color: white;
+        @include pixelated;
+        font-size: 8px;
+      }
+
+      .ps-species-subtitle {
+        @include pixelated;
+        font-size: 8px;
+        color: Rgba(255, 255, 255, 0.3);
+        text-transform: uppercase;
+      }
+    }
+
+    .actions-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  }
+
+  .bottom-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 10px;
+    color: var(--gray);
+
+    .types-row {
+      display: flex;
+      gap: 5px;
+
+      .type-pill {
+        font-size: 8px;
+        padding: 3px 6px;
+        border-radius: 4px;
+        color: white;
+        @include pixelated;
+        background: Rgba(255, 255, 255, 0.1);
+        text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
+        border: 1px solid Rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    .source-tag {
+      margin-left: auto;
+      font-size: 8px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 900;
+      @include pixelated;
+      &.team { background: Rgba(59, 139, 255, 0.1); color: Rgba(59, 139, 255, 1); border: 1px solid Rgba(59, 139, 255, 0.2); }
+      &.box { background: Rgba(255, 255, 255, 0.05); color: Rgba(136, 136, 136, 1); border: 1px solid Rgba(255, 255, 255, 0.1); }
+    }
+  }
+}
+
+.check-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid Rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--yellow);
+  transition: all 0.2s;
+}
+
+.selected .check-circle {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: black;
+}

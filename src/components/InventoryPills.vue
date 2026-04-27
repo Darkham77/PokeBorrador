@@ -42,7 +42,7 @@ const currentSeason = computed(() => mapStore.currentSeason)
         <span
           id="time-label"
           class="pill-value"
-          :style="{ color: dayCycle.color, fontSize: '8px' }"
+          :style="{ color: dayCycle.color, fontSize: '6.5px' }"
         >{{ dayCycle.label }}</span>
         <span
           class="pill-value season-label"

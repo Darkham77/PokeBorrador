@@ -55,6 +55,8 @@ Refer to these manuals for complex implementation specifications:
 - **Capitalization Mandate**: Use Capitalized Filters (`Scale()`, `Blur()`, `Brightness()`, `Rgba()`, `Rgb()`, `Linear-Gradient()`, `Radial-Gradient()`) to avoid Dart Sass 2.0 collisions. This applies to `.scss`, `.vue`, and constant files (`.js`, `.ts`).
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. Eliminate unused vars and computed properties immediately.
+- **Design Token Mandate (Hover Colors)**: Hardcoding color values (e.g., `#ffb800`, `Rgba(255, 184, 0, ...)`) in hover effects is forbidden. The standard hover border and glow color is always `var(--yellow)` (`#ffd60a`). For glow shadows, use `Rgba(255, 214, 10, 0.2)` to match the token exactly. This ensures a single source of truth in `_variables.scss`.
+- **Mixin Dependency Declaration**: A mixin that calls utilities from a separate file (e.g., `pokemon-sprite-base-standard` using `sprite-render` from `_gpu.scss`) MUST declare that dependency with `@use` at the top of its own file. This makes the mixin self-contained and prevents "Undefined mixin" errors when the file is compiled in an isolated context.
 - **CSS Redundancy Audit**: Use `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py` before commit. To bypass valid nested override flags, use SASS ampersand nesting (`& .class-name {`) to explicitly declare inheritance and avoid duplicate selector penalties.
 - **Click Propagation**: Always use `@click.stop` for interactive elements in layered UIs (cards, lists, modals) to prevent accidental bubbling to background containers. **CRITICAL**: When using `.stop` on a custom component listener in the parent, the child MUST pass the event object in the emit (e.g., `@click.stop="$emit('click', $event)"`) to avoid `stopPropagation` of undefined crashes.
 - **Media Query Nesting**: To avoid CSS redundancy flags, always nest media queries within their respective class selectors. Avoid global `@media` blocks that repeat selectors.
@@ -62,6 +64,7 @@ Refer to these manuals for complex implementation specifications:
 - **UI Interaction**: Use `@include btn-vicio-primary('sm')` for secondary modal buttons to avoid 100% width collisions. All interactive filter/sort controls MUST include a `PVTooltip`.
 - **Vue Template Integrity**: NEVER use JS-style (`//`) or HTML comments inside Vue tags or attributes. This causes Vite compilation errors ("Illegal '/' in tags").
 - **Z-Index Layering**: Hardcoded numbers are forbidden. Use system CSS variables (`--z-low`, `--z-base`, etc.) exclusively. If a precise micro-offset is required (e.g., between two layers of the same tier), use `calc(var(--z-base) + N)` to maintain relative hierarchy without breaking the audit engine.
+- **Positioning & Spacing**: Avoid using negative margins (`margin-top: -1px`) to fix alignment or layering "ghosts". This triggers redundancy and stacking warnings. Use `transform: TranslateY(-1px)` or Flexbox `gap` to ensure responsive stability.
 - **Data Integrity Directive**: Large data files (like weather tables or spawn grids) MUST include the comment `// [PureVue-Ignore-Length]` at the top. This prevents build tools and agents from fragmenting the object, ensuring architectural integrity during refactors.
 
 ### 5. Asset Pipeline & 1:1 Resolution
@@ -86,12 +89,15 @@ Refer to these manuals for complex implementation specifications:
 - **Semantic Action Menus**: Group multi-stage interactions (Use, Sell, Discard) into dedicated action menus. Use themed buttons (Success/Primary for usage, Warning for sales, Danger for deletion) to provide clear visual hierarchy and intent.
 - **Bulk Operation Optimization**: In management views (inventory, boxes), multi-selection modes should default to "Full Stack" (selecting all items of that type) to minimize modal interactions.
 - **Financial Transparency**: Always display estimated total profits in confirmation dialogs for bulk selling operations to provide immediate user feedback.
+- **Mass Selection Aesthetic**: Multi-selection modes for destructive or high-impact actions (Selling, Releasing) MUST use a **vibrant Red border** (`var(--red)`) and a pulsing animation to emphasize the significance of the selection.
 - **Tabbed Modal Pattern**: For high-density management modals, use a tabbed interface by placing buttons in the `BaseModal` slot `#header`. Set `header-background="transparent"` to maintain glassmorphism continuity and use `PVTooltip` on each tab to explain its context.
+- **Narrative Dynamic Tooltips**: Enrich technical categories with descriptive tooltips using local mapping functions (e.g., `getCategoryDescription`). This pattern transforms cold data into narrative context (Legendary, Mythic, Genetic) without bloating the global store or specialized components.
 
 ### 8. Logic & Determinism
 
 - **Authoritative Time**: Always use `getServerTime()` for game-logic-critical timestamps. Avoid `Date.now()` to ensure administrative time-travel debugging works correctly. See [security_and_sync_manual.md](./references/security_and_sync_manual.md).
 - **PRNG Avalanche Protocol**: When using deterministic seeds for gameplay features (weather, spawns), the PRNG **MUST** discard the first 3 generated values to ensure high entropy between sequential seeds.
+- **Linguistic Standardization**: Use the term **"LIBERAR"** (Release) exclusively instead of "SOLTAR" (Let go) when referring to the permanent removal of a Pokémon from the user's storage or team.
 
 ---
 

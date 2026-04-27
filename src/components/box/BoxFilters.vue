@@ -19,8 +19,6 @@ const emit = defineEmits([
   'update:filters', 
   'reset'
 ])
-
-const toggleFilters = () => emit('update:isFiltersOpen', !props.isFiltersOpen)
 const setSortMode = (val) => emit('update:sortMode', val)
 const toggleSortDirection = () => emit('update:sortDirection', props.sortDirection === 'desc' ? 'asc' : 'desc')
 
@@ -82,10 +80,17 @@ const AVAILABLE_TAGS = [
           <input
             :value="filters.search"
             type="text"
-            placeholder="Buscar por nombre o ID..."
+            placeholder="Buscar..."
             class="box-search-input"
             @input="updateFilter('search', $event.target.value)"
           >
+          <button
+            v-if="filters.search"
+            class="box-search-clear"
+            @click.stop="updateFilter('search', '')"
+          >
+            ✕
+          </button>
         </div>
         
         <PVTooltip
@@ -209,10 +214,10 @@ const AVAILABLE_TAGS = [
                 <span class="tag-text-small">{{ tag.label }}</span>
               </button>
             </PVTooltip>
-          </div>
-        </div>
-      </div>
-    </div>
+          </div> <!-- end tags-scroll-container -->
+        </div> <!-- end tags-group-mini -->
+      </div> <!-- end tags-row-compact -->
+    </div> <!-- end box-controls-compact -->
 
     <!-- Panel Extendido de Filtros (Optimizado Mixto) -->
     <Transition name="pixel-slide">
@@ -518,5 +523,19 @@ const AVAILABLE_TAGS = [
   padding: 6px 12px;
   border-radius: 8px;
   border: 1px solid Rgba(255, 214, 10, 0.1);
+}
+
+.rocket-filter-trigger {
+  @include btn-vicio('danger', 'sm');
+  margin-left: auto;
+  font-size: 7px;
+  height: 28px;
+  padding: 0 16px;
+  white-space: nowrap;
+
+  .icon {
+    font-size: 10px;
+    margin-right: 4px;
+  }
 }
 </style>

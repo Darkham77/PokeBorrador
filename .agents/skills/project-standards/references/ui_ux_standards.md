@@ -57,6 +57,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Glassmorphism**: Always apply `@include glass-solid` with a thin themed border (`rgba(79, 172, 254, 0.4)` for Fishing).
 - **Abbreviated Labels (shortLabel)**: In compact UI (list buttons, small cards), use the `shortLabel` property from `tags.js` to prevent text overflow. Maintain the full `label` in tooltips.
 - **Badge Centralization**: All Pokémon status indicators (shiny, items, tags) MUST have their icon and label metadata centralized in `src/logic/constants/tags.js`.
+- **Gender Badge Module**: ALWAYS use the `.m-badge-gender` standard class and symbols (♂/♀) for gender rendering. For compact displays (e.g., inside level badges), use a `.mini` modifier that utilizes `@include badge-gender(Npx)` to maintain design token consistency.
+- **Pokemon Identity Stack**: Standardize name display on cards using the "Name Stack": The current nickname (or name) as the primary pixel title, with the species name as a small, uppercase, low-opacity subtitle.
 
 ---
 
@@ -111,6 +113,7 @@ The `BaseModal.vue` component supports parameterized aesthetics to maintain cons
 - **hide-header**: Use to remove the header bar for content-focused modals. The close button (`X`) will automatically transition to a floating position (`modal-close-btn-floating`).
 - **Close Button Hierarchy**: The close button MUST be the LAST element in the modal's DOM structure. This guarantees it sits above all slotted content regardless of internal component complexity.
 - **padding="raw"**: Use for full-bleed content (e.g., Shop/Inventory grids). The `retro` variant respects this to avoid double-padding.
+- **BaseModal Inheritance (X Logic)**: Respect `BaseModal`'s responsibility for rendering the close button. If `hide-header` is used, the button automatically transitions to a floating position. Never manually include an "X" or close button in custom header slots, as this leads to UI duplication.
 
 ### 7. Admin Tool Modal Standards
 

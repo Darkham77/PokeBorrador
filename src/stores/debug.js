@@ -322,6 +322,21 @@ export const useDebugStore = defineStore('debug', () => {
       description: 'Limpia los slots del equipo PVP y desactiva el auto-rellenado.'
     })
 
+    register({
+      id: 'poke-clear-war',
+      label: 'LIMPIAR EQUIPO GUERRA',
+      command: 'clearWarTeam',
+      category: 'pokes',
+      action: async (force = false) => {
+        if (!force && !confirm('¿Limpiar equipo de Guerra de forma permanente?')) return
+        ui.warAutoFillDisabled = true
+        game.state.warTeam = []
+        await game.saveGame(false)
+        ui.notify('Equipo de Guerra limpiado y auto-rellenado desactivado', '🧹')
+      },
+      description: 'Limpia los slots del equipo de Guerra y desactiva el auto-rellenado.'
+    })
+
     // TIME
     register({
       id: 'core-set-mock-time',

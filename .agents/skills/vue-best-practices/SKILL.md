@@ -161,6 +161,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **WHY**: Using legacy global store refs (e.g., `uiStore.pokemonSelectionConfig`) for modal configuration causes synchronization issues if the ref is not manually cleared or if multiple modals are opened in sequence. Props ensure each modal instance has its own unique, immutable configuration.
 - **Tooltip Teleportation Mandate**: Always use `<Teleport to="body">` for tooltips (e.g., `PVTooltip`) to avoid `z-index` collisions and `overflow: hidden` clipping from parent containers.
 - **Mandatory Mixin Environment**: When using project-standard mixins (e.g., `btn-vicio-primary`, `pixelated`), the `<style>` block **MUST** use `lang="scss"` and explicitly import tools: `@use "@/styles/core/tools" as *;`.
+- **No Redundant SCSS Imports in SFCs**: Never add a `@use` import inside a `.vue` component's `<style>` block for a file that is already globally forwarded through `_index.scss`. Doing so creates a second compilation pass of that file's content, which can cause Vite to attempt to parse the component's `<script>` block as a stylesheet, leading to confusing `[sass] expected "{"` errors. If a component needs mixins, ensure they are available globally via `_index.scss` → `_mixins.scss` → `@forward`.
 - **Mandatory Child Component Registration**: In Vue 3 `<script setup>`, sub-components (extracted for modularity) DO NOT inherit global component registration from parent modals unless they are registered in the main application instance.
   - **REQUIRED**: Always explicitly import and register common components like `PVTooltip` or `BaseModal` inside the sub-component's `<script setup>` to prevent "undefined component" rendering errors.
 
@@ -184,6 +185,8 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **Rule**: For complex modals or views with long lists, always separate the header and the body using flexbox to keep the header fixed.
   - **Implementation**: Parent `.wrapper { display: flex; flex-direction: column; height: 100%; overflow: hidden; }`. Header `.header { flex: 0 0 auto; }`. Body `.body { flex: 1 1 auto; overflow-y: auto; @include smooth-scroll; }`.
   - **Why**: This prevents the header from scrolling away and eliminates nested scroll conflicts.
+- **Business Logic Parity Mandate**: Critical logic used in multiple contexts (e.g., selling prices calculated in both individual menus and mass selection) MUST be centralized in utility files (e.g., `src/logic/pokemonUtils.js`). This prevents calculation discrepancies between different UI layers.
+- **Utility Component Schema Awareness**: Always verify the prop schema for common utility components. For example, `PVTooltip` expects `title` and `description` props; using an incorrect prop like `text` will result in empty tooltips.
 
 ## 6) Final self-check before finishing
 

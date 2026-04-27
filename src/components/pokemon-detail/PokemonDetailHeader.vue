@@ -17,6 +17,11 @@ const getSprite = (id, isShiny) => {
 }
 
 const totalPower = computed(() => calculateTotalPower(p.value))
+const totalIvs = computed(() => {
+  const ivs = p.value.ivs || {}
+  return Object.values(ivs).reduce((s, v) => s + (v || 0), 0)
+})
+const hasIvs = computed(() => Object.keys(p.value.ivs || {}).length > 0)
 </script>
 
 <template>
@@ -39,7 +44,7 @@ const totalPower = computed(() => calculateTotalPower(p.value))
       </div>
       <div class="name-info">
         <h2 class="poke-name">
-          {{ p.name }}&nbsp;<span :class="['m-badge-gender', 'gender-' + (p.gender || 'none').toLowerCase()]">
+          {{ p.name }}&nbsp;<span :class="['m-badge-gender', p.gender === 'M' ? 'male' : 'female']">
             {{ (p.gender === 'M' ? '♂' : p.gender === 'F' ? '♀' : '') }}
           </span>
         </h2>
@@ -48,9 +53,13 @@ const totalPower = computed(() => calculateTotalPower(p.value))
             class="type-badge"
             :class="'type-' + p.type.toLowerCase()"
           >{{ p.type }}</span>
-          <span class="level-badge m-badge-level">Nv. {{ p.level }}</span>
-          <span class="tot-badge m-badge-tot">TOT {{ totalPower }}</span>
-          <span class="id-badge m-badge-id">#{{ String(p.id).padStart(3, '0') }}</span>
+          <span class="m-badge-level">Nv. {{ p.level }}</span>
+          <span
+            v-if="hasIvs"
+            class="m-badge-iv"
+          >IV {{ totalIvs }}</span>
+          <span class="m-badge-tot">TOT {{ totalPower }}</span>
+          <span class="m-badge-id">#{{ String(p.id).padStart(3, '0') }}</span>
         </div>
         <div class="tags-row">
           <PVTooltip
@@ -160,10 +169,6 @@ const totalPower = computed(() => calculateTotalPower(p.value))
   margin-bottom: 12px;
 }
 
-.level-badge { font-weight: bold; font-size: 12px; }
-.tot-badge {
-  // Styles handled by m-badge-tot
-}
 .id-badge { font-size: 11px; font-weight: bold; }
 
 .tags-row {

@@ -28,6 +28,7 @@ Pinia best practices, common gotchas, and state management patterns.
 - **Centralized Loading Stack**: For complex apps with concurrent async processes, use a **stack-based** loading store. Instead of a single `isLoading` boolean, push loading objects `{ id, message, isGlobal }` to an array. The UI should render the top-most item (or prioritize `isGlobal` overlays). This prevents concurrent tasks from "clobbering" each other's messages and ensures the loader only disappears when the stack is empty.
 - **State Synchronization (Cross-Store)**: When a local store property must reflect and persist in a global state (e.g., `gameStore.state`), use a `computed` property with a getter and setter. This ensures 1:1 synchronization and avoids "ghost" local state that desyncs from the source of truth after persistence cycles.
 - **Circular Dependency Resolution**: To break loops between stores (e.g., `ui` -> `game` -> `ui`), move shared state to an independent "leaf" store (e.g., `profileStore`) that doesn't import the other stores. If cross-imports are unavoidable, use `useOtherStore()` locally inside actions instead of at the top level.
+- **UI State Toggles (Auto-fill Protection)**: When implementing automated UI features (e.g., auto-filling PVP/War teams), ALWAYS provide reactive bypass flags (e.g., `pvpAutoFillDisabled`) in the `uiStore`. This allows administrative or debug operations to override automation without complex logic branches.
 
 ## Timers & Side Effects
 

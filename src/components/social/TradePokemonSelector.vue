@@ -358,26 +358,18 @@ const select = (poke) => {
 }
 
 .poke-row {
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  @include pokemon-list-item-standard(16px);
   padding: 12px;
   cursor: pointer;
-  transition: all 0.2s;
   display: flex;
   flex-direction: column;
   gap: 12px;
-
-  &:hover:not(.locked) {
-    background: Rgba(255, 255, 255, 0.06);
-    border-color: Rgba(255, 255, 255, 0.1);
-    transform: translateX(4px);
-  }
 
   &.locked {
     opacity: 0.5;
     cursor: not-allowed;
     filter: grayScale(1);
+    &:hover { transform: none; background: inherit; border-color: inherit; }
   }
 }
 
@@ -394,7 +386,7 @@ const select = (poke) => {
     img {
       width: 100%;
       height: 100%;
-      image-rendering: pixelated;
+      @include pokemon-sprite-base-standard;
       &.shiny { filter: Drop-Shadow(0 0 5px Rgba(255, 255, 0, 0.5)); }
     }
 

@@ -66,7 +66,7 @@ El clima es **persistente para todos los jugadores** en la misma zona durante la
 
 Al llamar `goLocation(locId)`, se ejecuta en orden:
 
-```
+```text
 1. ¿Equipo vivo? → Si no, mostrar aviso de curar
 2. Progresar huevos (hatchEggs)
 3. ¿Repelente activo? → Si sí, bloquear y mostrar tiempo restante
@@ -114,7 +114,7 @@ Esto crea un sistema de **pity suave**: si el jugador no ve entrenadores, la pro
 ## Tabla de mapas completa
 
 | ID | Nombre | Medallas req. | Niveles | Pokémon día |
-|---|---|---|---|---|
+| :--- | :--- | :--- | :--- | :--- |
 | `route1` | Ruta 1 | 0 | 2–5 | Pidgey, Rattata |
 | `route2` | Ruta 2 | 0 | 3–5 | Pidgey, Rattata, Caterpie, Weedle |
 | `forest` | Bosque Viridian | 0 | 3–6 | Caterpie, Metapod, Weedle, Kakuna, Pikachu (10%), Nidoran♀/♂ (5% c/u) |
@@ -155,7 +155,7 @@ Esto crea un sistema de **pity suave**: si el jugador no ve entrenadores, la pro
 ## Gimnasios
 
 | # | ID | Líder | Tipo | Pokémon (niveles) | Medallas req. |
-|---|---|---|---|---|---|
+| :--- | :--- | :--- | :--- | :--- | :--- |
 | 1 | `pewter` | Brock | Roca | Geodude (12), Onix (14) | 0 |
 | 2 | `cerulean` | Misty | Agua | Staryu (18), Starmie (21) | 1 |
 | 3 | `vermilion` | Lt. Surge | Eléctrico | Voltorb (21), Pikachu (24), Raichu (28) | 2 |
@@ -172,7 +172,7 @@ Esto crea un sistema de **pity suave**: si el jugador no ve entrenadores, la pro
 Hay 10 tipos de entrenadores con pools fijos de Pokémon. La recompensa al derrotarlos es `nivel × 40` PokePesetas y `nivel × 2` Battle Coins (aprox).
 
 | Tipo | Pool de Pokémon |
-|---|---|
+| :--- | :--- |
 | Caza Bichos | Caterpie, Metapod, Weedle, Kakuna, Paras, Venonat |
 | Ornitólogo | Pidgey, Spearow, Doduo |
 | Científico | Magnemite, Voltorb, Ditto, Grimer |

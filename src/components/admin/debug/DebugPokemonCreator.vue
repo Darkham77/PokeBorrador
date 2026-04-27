@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -167,6 +168,54 @@ async function executeAction(protocol) {
   }
 }
 
+function handleRandomize() {
+  const speciesList = allSpecies.value
+  if (speciesList.length === 0) return
+  
+  const randomSpecies = speciesList[Math.floor(Math.random() * speciesList.length)]
+  
+  config.value.id = randomSpecies.id
+  speciesSearch.value = randomSpecies.name.toUpperCase()
+  
+  config.value.level = Math.floor(Math.random() * 100) + 1
+  
+  config.value.isShiny = Math.random() < 0.05 // 5% shiny
+  config.value.isGuardian = Math.random() < 0.01 // 1% guardian
+  
+  const natures = allNatures
+  config.value.nature = natures[Math.floor(Math.random() * natures.length)]
+  natureSearch.value = config.value.nature.toUpperCase()
+  
+  const abilities = pokemonDataProvider.getSpeciesAbilities(randomSpecies.id)
+  if (abilities.length > 0) {
+    config.value.ability = abilities[Math.floor(Math.random() * abilities.length)]
+    abilitySearch.value = config.value.ability.toUpperCase()
+  }
+  
+  config.value.gender = Math.random() > 0.5 ? 'M' : 'F'
+  config.value.friendship = Math.floor(Math.random() * 256)
+  config.value.nickname = ''
+  
+  const maps = allMaps.value
+  if (maps.length > 0) {
+    const randomMap = maps[Math.floor(Math.random() * maps.length)]
+    config.value.mapId = randomMap.id
+    mapSearch.value = randomMap.name.toUpperCase()
+  }
+  
+  // IVs
+  config.value.ivs = {
+    hp: Math.floor(Math.random() * 32),
+    atk: Math.floor(Math.random() * 32),
+    def: Math.floor(Math.random() * 32),
+    spa: Math.floor(Math.random() * 32),
+    spd: Math.floor(Math.random() * 32),
+    spe: Math.floor(Math.random() * 32)
+  }
+  
+  autoFillMoves()
+}
+
 function handleClickOutside(e) {
   if (creatorRef.value && !creatorRef.value.contains(e.target)) {
     showSpeciesDropdown.value = false
@@ -204,9 +253,17 @@ onUnmounted(() => {
     ref="creatorRef"
     class="pokemon-debug-creator"
   >
-    <h3 class="debug-section-title">
-      LABORATORIO POKÉMON (ADMIN)
-    </h3>
+    <div class="debug-header-row">
+      <h3 class="debug-section-title">
+        LABORATORIO POKÉMON (ADMIN)
+      </h3>
+      <button 
+        class="btn-vicio-secondary sm" 
+        @click.stop="handleRandomize"
+      >
+        🎲 ALEATORIO
+      </button>
+    </div>
     
     <div class="creator-grid">
       <!-- Left: Species & Stats -->

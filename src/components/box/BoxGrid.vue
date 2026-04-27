@@ -3,8 +3,8 @@ import BoxPokemonCard from './BoxPokemonCard.vue'
 
 defineProps({
   displayList: { type: Array, required: true },
-  rocketSelection: { type: Array, default: () => [] },
-  isRocketMode: { type: Boolean, default: false },
+  selection: { type: Array, default: () => [] },
+  selectionType: { type: String, default: null }, // 'rocket' | 'release' | null
   isBoxEmpty: { type: Boolean, default: false },
   hasActiveFilters: { type: Boolean, default: false },
   isPerformanceMode: { type: Boolean, default: false }
@@ -37,8 +37,8 @@ const emit = defineEmits(['pokemonClick'])
       :key="item.index"
       :pokemon="item.p"
       :index="item.index"
-      :is-selected="rocketSelection.includes(item.index)"
-      :is-rocket-mode="isRocketMode"
+      :is-selected="selection.includes(item.index)"
+      :selection-type="selectionType"
       :is-performance-mode="isPerformanceMode"
       data-ignore="[PureVue-Ignore]"
       @click.stop="(e, idx) => emit('pokemonClick', idx ?? item.index)"
@@ -47,7 +47,6 @@ const emit = defineEmits(['pokemonClick'])
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/views/box";
 @use "@/styles/core/tools" as *;
 
 .empty-state {

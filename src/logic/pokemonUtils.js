@@ -21,6 +21,19 @@ export function calculateTotalPower(p) {
 }
 
 /**
+ * Calculates the price for selling a pokemon to the Black Market (Team Rocket).
+ * @param {Object} p - The pokemon object.
+ * @returns {number}
+ */
+export function calculateRocketSellPrice(p) {
+  if (!p) return 0;
+  const ivs = p.ivs || {};
+  const totalIvs = Object.values(ivs).reduce((s, v) => s + (v || 0), 0);
+  // Formula: (Level * 50 + (Total IVs / Max IVs) * 500) * 0.8 (Rocket Cut)
+  return Math.floor((p.level * 50 + (totalIvs / 186) * 500) * 0.8);
+}
+
+/**
  * Genera la URL del sprite usando el sistema centralizado de AssetService.
  */
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';

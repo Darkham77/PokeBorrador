@@ -3,7 +3,9 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBoxStore } from '@/stores/box'
 import { useUIStore } from '@/stores/ui'
+import { usePlayerClassStore } from '@/stores/playerClass'
 import { useBoxFilters } from '@/composables/useBoxFilters'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 // Sub-componentes
 import BoxHeader from './box/BoxHeader.vue'
@@ -15,12 +17,16 @@ import BoxGrid from './box/BoxGrid.vue'
 const gameStore = useGameStore()
 const boxStore = useBoxStore()
 const uiStore = useUIStore()
+const classStore = usePlayerClassStore()
 const gs = computed(() => gameStore.state)
+
+// Clase Rocket: fuente canónica reactiva
+const isRocket = computed(() => classStore.playerClass === 'rocket')
 
 // Store-bound state
 const currentBoxIndex = computed(() => boxStore.currentBoxIndex)
-const isRocketMode = computed(() => uiStore.isRocketMode)
-const rocketSelection = computed(() => boxStore.boxRocketSelection)
+const isRocketMode = computed(() => boxStore.boxRocketMode)
+const rocketSelection = computed(() => boxStore.boxRocketSelected)
 
 // ----- ESTADO Y FILTROS -----
 const { 
@@ -53,6 +59,10 @@ const switchBox = (i) => {
 
 const toggleRocketMode = () => {
   boxStore.toggleBoxRocketMode()
+}
+
+const toggleReleaseMode = () => {
+  boxStore.toggleBoxReleaseMode()
 }
 
 const getBoxBuyCost = () => boxStore.getBoxBuyCost()
@@ -90,9 +100,25 @@ const handleConfirmRocketSell = () => {
   })
 }
 
+const handleConfirmRelease = () => {
+  const count = boxStore.boxReleaseSelected.length
+  if (count === 0) return
+  
+  uiStore.openConfirm({
+    title: 'LIBERAR POKÉMON',
+    message: `¿Estás seguro de que querés liberar ${count} Pokémon? Esta acción es permanente.`,
+    onConfirm: () => {
+      const names = boxStore.doBoxRelease()
+      uiStore.notify(`¡${names.length} Pokémon liberados! 🌿`, '🌿')
+    }
+  })
+}
+
 const handlePokemonClick = (index) => {
   if (isRocketMode.value) {
     boxStore.toggleBoxRocketSelect(index)
+  } else if (boxStore.boxReleaseMode) {
+    boxStore.toggleBoxReleaseSelect(index)
   } else {
     uiStore.open('BoxPokemonMenu', { boxIndex: index })
   }
@@ -102,16 +128,11 @@ const handlePokemonClick = (index) => {
 <template>
   <div class="box-view">
     <BoxHeader
-      :player-class="gs.playerClass"
-      :is-rocket-mode="isRocketMode"
       :count="gs.box?.length || 0"
       :max="maxCapacity"
       :hint="isRocketMode 
         ? 'Venta en Mercado Negro activa.' 
         : 'Intercambio con equipo disponible.'"
-      @toggle-rocket="toggleRocketMode"
-      @confirm-rocket="handleConfirmRocketSell"
-      @cancel-rocket="toggleRocketMode"
     />
 
     <BoxTabs
@@ -132,10 +153,87 @@ const handlePokemonClick = (index) => {
       @reset="resetFilters"
     />
 
+    <!-- Acciones de Modo: solo visibles fuera del modo selección -->
+    <div
+      v-if="!isRocketMode && !boxStore.boxReleaseMode"
+      class="mode-trigger-bar"
+    >
+      <PVTooltip
+        v-if="isRocket"
+        title="MODO MERCADO NEGRO"
+        description="Seleccioná Pokémon para vender por pesos al Team Rocket."
+        position="top"
+      >
+        <button
+          class="rocket-trigger-btn"
+          @click.stop="toggleRocketMode"
+        >
+          💀 MERCADO NEGRO
+        </button>
+      </PVTooltip>
+
+      <PVTooltip
+        title="MODO LIBERACIÓN"
+        description="Seleccioná Pokémon para soltarlos permanentemente al bosque."
+        position="top"
+      >
+        <button
+          class="release-trigger-btn"
+          @click.stop="toggleReleaseMode"
+        >
+          🌿 LIBERAR POKÉMON
+        </button>
+      </PVTooltip>
+    </div>
+
+    <!-- Barra de Acciones de Modo (Venta/Liberación) -->
+    <div
+      v-if="isRocketMode || boxStore.boxReleaseMode"
+      class="mode-actions-bar glass-morphism"
+    >
+      <div class="selection-info">
+        <span class="count">{{ isRocketMode ? boxStore.boxRocketSelected.length : boxStore.boxReleaseSelected.length }}</span>
+        <span class="label">{{ isRocketMode ? 'PARA MERCADO NEGRO' : 'PARA LIBERAR' }}</span>
+        
+        <div
+          v-if="isRocketMode"
+          class="earnings"
+        >
+          <span class="currency">₽</span>
+          <span class="value">{{ boxStore.getRocketSellValue().toLocaleString() }}</span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button
+          class="btn-cancel"
+          @click.stop="isRocketMode ? toggleRocketMode() : toggleReleaseMode()"
+        >
+          CANCELAR
+        </button>
+        <button 
+          v-if="isRocketMode"
+          class="btn-confirm-rocket" 
+          :disabled="boxStore.boxRocketSelected.length === 0"
+          @click.stop="handleConfirmRocketSell"
+        >
+          💀 VENDER LOTE
+        </button>
+        <button 
+          v-else
+          class="btn-confirm-release" 
+          :disabled="boxStore.boxReleaseSelected.length === 0"
+          @click.stop="handleConfirmRelease"
+        >
+          🌿 LIBERAR LOTE
+        </button>
+      </div>
+    </div>
+
     <BoxGrid
       :display-list="displayList"
-      :rocket-selection="rocketSelection"
-      :is-rocket-mode="isRocketMode"
+      :selection="isRocketMode ? rocketSelection : boxStore.boxReleaseSelected"
+      :selection-type="isRocketMode ? 'rocket' : (boxStore.boxReleaseMode ? 'release' : null)"
       :is-box-empty="!gs.box || gs.box.length === 0"
       :has-active-filters="hasActiveFilters"
       @pokemon-click="handlePokemonClick"
@@ -145,5 +243,73 @@ const handlePokemonClick = (index) => {
 
 <style scoped lang="scss">
 @use "@/styles/views/box";
+@use "@/styles/core/tools" as *;
+
+.mode-trigger-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 12px 4px 12px;
+}
+
+.rocket-trigger-btn {
+  @include btn-vicio('danger', 'sm');
+}
+
+.release-trigger-btn {
+  @include btn-vicio('secondary', 'sm');
+}
+
+.mode-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-radius: 16px;
+  margin: 0 12px 16px 12px;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(15, 23, 42, 0.8);
+  box-shadow: 0 8px 32px Rgba(0, 0, 0, 0.4);
+
+  .selection-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .count {
+      font-size: 16px;
+      color: var(--yellow);
+      @include pixelated;
+    }
+
+    .label {
+      font-size: 8px;
+      color: Rgba(255, 255, 255, 0.6);
+      @include pixelated;
+    }
+
+    .earnings {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 12px;
+      padding-left: 12px;
+      border-left: 1px solid Rgba(255, 255, 255, 0.1);
+
+      .currency { font-family: sans-serif; color: var(--green); }
+      .value { color: var(--white); @include pixelated; font-size: 10px; }
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+
+    .btn-cancel { @include btn-vicio('neutral', 'sm'); }
+    .btn-confirm-rocket { @include btn-vicio('danger', 'sm'); }
+    .btn-confirm-release { @include btn-vicio('success', 'sm'); }
+  }
+}
+
 </style>
 

@@ -1,0 +1,23 @@
+// src/styles/core/mixins/_glass.scss
+
+@mixin glass($bg: Rgba(5, 5, 5, 0.8), $blur: 14px) {
+  background: $bg;
+  -webkit-backdrop-filter: Blur($blur);
+  backdrop-filter: Blur($blur);
+  border: 1px solid Rgba(255, 255, 255, 0.12);
+}
+
+@mixin glass-solid($bg: Rgba(13, 17, 23, 1)) {
+  background: Linear-Gradient(180deg, Rgba(255, 255, 255, 0.03) 0%, Rgba(255, 255, 255, 0) 100%), $bg;
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 40px Rgba(0, 0, 0, 0.6);
+}
+
+@mixin card-premium($radius: 24px) {
+  background: Linear-Gradient(180deg, Rgba(255, 255, 255, 0.08) 0%, Rgba(0, 0, 0, 0.3) 100%);
+  border: 1px solid Rgba(255, 255, 255, 0.12);
+  border-radius: $radius;
+  box-shadow: 
+    0 20px 50px Rgba(0, 0, 0, 0.7),
+    inset 0 1px 1px Rgba(255, 255, 255, 0.05);
+}

@@ -1,0 +1,113 @@
+@use "../mixins/glass" as *;
+@use "../gpu" as *;
+
+@mixin pokemon-card-standard($radius: 20px) {
+  position: relative;
+  @include glass(Rgba(30, 41, 59, 0.3), 12px);
+  border-radius: $radius;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: Radial-Gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: TranslateY(-6px);
+    background: Rgba(30, 41, 59, 0.5);
+    border-color: var(--yellow);
+    box-shadow: 0 15px 30px Rgba(0, 0, 0, 0.4), 0 0 15px Rgba(255, 214, 10, 0.2);
+    &::before { opacity: 1; }
+  }
+
+  &.selected {
+    border: 2px solid var(--red) !important;
+    background: Rgba(239, 68, 68, 0.08) !important;
+    box-shadow: 0 0 20px Rgba(239, 68, 68, 0.2) !important;
+    &::before { opacity: 0 !important; }
+    
+    &:hover {
+      border-color: #ff4d4d !important; // Brighter red on hover
+      box-shadow: 0 15px 30px Rgba(239, 68, 68, 0.3), 0 0 25px Rgba(239, 68, 68, 0.2) !important;
+    }
+  }
+}
+
+@mixin pokemon-list-item-standard($radius: 12px) {
+  @include glass(Rgba(30, 41, 59, 0.2), 8px);
+  border-radius: $radius;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+
+  &:hover:not(.locked):not(.disabled) {
+    background: Rgba(30, 41, 59, 0.4);
+    border-color: var(--yellow);
+    transform: translateX(6px);
+    box-shadow: 0 5px 15px Rgba(0, 0, 0, 0.3), 0 0 10px Rgba(255, 214, 10, 0.15);
+  }
+
+  &.selected {
+    border: 2px solid var(--red) !important;
+    background: Rgba(239, 68, 68, 0.1) !important;
+    box-shadow: 0 0 15px Rgba(239, 68, 68, 0.15) !important;
+  }
+}
+
+@mixin pokemon-sprite-base-standard {
+  @include sprite-render;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: Drop-Shadow(0 8px 12px Rgba(0, 0, 0, 0.3));
+}
+
+@mixin pokemon-sprite-hover-standard {
+  transform: TranslateY(-6px);
+  filter: Brightness(1.1) Drop-Shadow(0 15px 25px Rgba(0, 0, 0, 0.5));
+}
+
+@mixin pokemon-silhouette($outline-color: Rgba(255, 255, 255, 0.6)) {
+  filter: Brightness(0) Drop-Shadow(0 0 2px $outline-color) !important;
+  opacity: 1 !important;
+}
+
+@mixin type-pill($size: 7px) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 60px;
+  color: white;
+  font-weight: 900;
+  font-size: $size;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  text-shadow: 1px 1px 0 Rgba(0,0,0,0.8), -1px -1px 0 Rgba(0,0,0,0.8), 1px -1px 0 Rgba(0,0,0,0.8), -1px 1px 0 Rgba(0,0,0,0.8);
+  font-family: var(--font-pixel, 'Press Start 2P', monospace);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+@mixin type-pill-mini($size: 7px) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-family: var(--font-pixel, 'Press Start 2P', monospace);
+  font-size: $size;
+  color: white;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 Rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}

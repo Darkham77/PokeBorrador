@@ -21,6 +21,10 @@ async function syncPokedexFromCollection() {
 async function clearPvpTeam() {
   window.__VITE_DEBUG__.clearPvpTeam()
 }
+
+async function clearWarTeam() {
+  window.__VITE_DEBUG__.clearWarTeam()
+}
 </script>
 
 <template>
@@ -90,10 +94,10 @@ async function clearPvpTeam() {
               RESET POKEDEX
             </button>
           </PVTooltip>
-          <PVTooltip title="Desactivar el rellenado automático de equipo PVP">
+          <PVTooltip title="Alternar rellenado automático de equipo PVP">
             <button
               class="btn-vicio-secondary btn-vicio-sm"
-              :class="{ active: ui.pvpAutoFillDisabled }"
+              :class="{ active: !ui.pvpAutoFillDisabled }"
               @click.stop="ui.pvpAutoFillDisabled = !ui.pvpAutoFillDisabled"
             >
               {{ ui.pvpAutoFillDisabled ? 'HABILITAR AUTO-PVP' : 'DESHABILITAR AUTO-PVP' }}
@@ -105,6 +109,24 @@ async function clearPvpTeam() {
               @click.stop="clearPvpTeam"
             >
               LIMPIAR EQUIPO PVP
+            </button>
+          </PVTooltip>
+          
+          <PVTooltip title="Alternar rellenado automático de equipo de Guerra">
+            <button
+              class="btn-vicio-secondary btn-vicio-sm"
+              :class="{ active: !ui.warAutoFillDisabled }"
+              @click.stop="ui.warAutoFillDisabled = !ui.warAutoFillDisabled"
+            >
+              {{ ui.warAutoFillDisabled ? 'HABILITAR AUTO-GUERRA' : 'DESHABILITAR AUTO-GUERRA' }}
+            </button>
+          </PVTooltip>
+          <PVTooltip title="Limpia todos los slots del equipo de Guerra">
+            <button
+              class="btn-vicio-danger btn-vicio-sm"
+              @click.stop="clearWarTeam"
+            >
+              LIMPIAR EQUIPO GUERRA
             </button>
           </PVTooltip>
         </div>

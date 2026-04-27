@@ -44,11 +44,7 @@ const router = createRouter({
           name: 'war',
           component: () => import('@/views/WarView.vue'),
         },
-        {
-          path: 'pc',
-          name: 'pc',
-          component: () => import('@/views/PCBoxView.vue'),
-        },
+
         {
           path: 'bag',
           name: 'bag',

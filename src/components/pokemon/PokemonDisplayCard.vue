@@ -9,6 +9,7 @@ import { ref, inject } from 'vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/constants/tiers'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import { calculateTotalPower } from '@/logic/pokemonUtils'
 
 const props = defineProps({
@@ -153,15 +154,22 @@ function getGenderClass(gender) {
         </div>
         <div
           v-if="pokemon.gender"
-          :class="['gender-pill', getGenderClass(pokemon.gender)]"
+          :class="['pdc-gender-badge', getGenderClass(pokemon.gender)]"
         >
           {{ renderGenderSymbol(pokemon.gender) }}
         </div>
       </div>
+
+      <!-- Types Pills -->
+      <PokemonTypePills 
+        :pokemon="pokemon" 
+        size="sm"
+        class="pdc-types"
+      />
       
       <div class="level-line">
         <span class="m-badge-level">Nv. {{ pokemon.level }}</span>
-        <span class="tot-badge m-badge-tot">TOT {{ totalPower }}</span>
+        <span class="m-badge-tot">TOT {{ totalPower }}</span>
       </div>
 
       <!-- Status Labels (Floating) -->

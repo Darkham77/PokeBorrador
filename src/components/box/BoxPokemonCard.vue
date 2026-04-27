@@ -9,6 +9,7 @@ import { getPokemonVisualBadges } from '@/logic/constants/tags'
 
 import { inject } from 'vue'
 import { useUIStore } from '@/stores/ui'
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 
 const uiStore = useUIStore()
 
@@ -16,7 +17,7 @@ const props = defineProps({
   pokemon: { type: Object, required: true },
   index: { type: Number, required: true },
   isSelected: { type: Boolean, default: false },
-  isRocketMode: { type: Boolean, default: false },
+  selectionType: { type: String, default: null }, // 'rocket' | 'release' | null
   isPerformanceMode: { type: Boolean, default: false }
 })
 
@@ -33,14 +34,26 @@ const isPerformanceActive = computed(() => {
 
 const emit = defineEmits(['click'])
 
-const hasBadges = computed(() => getPokemonVisualBadges(props.pokemon).length > 0)
+const visualBadges = computed(() => getPokemonVisualBadges(props.pokemon))
+const numBadges = computed(() => visualBadges.value.length)
+const hasBadges = computed(() => numBadges.value > 0)
+const hasManyBadges = computed(() => numBadges.value > 3)
 const tierInfo = computed(() => getPokemonTier(props.pokemon))
 const spriteUrl = computed(() => getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
   isShiny: props.pokemon.isShiny 
 }))
 
+const hpRatio = computed(() => {
+  const p = props.pokemon
+  if (!p) return 1
+  const hp = p.hp !== undefined ? p.hp : (p.stats?.hp || p.maxHp || 100)
+  const maxHp = p.maxHp || p.stats?.hp || 100
+  if (maxHp === 0) return 1
+  return Math.max(0, Math.min(1, hp / maxHp))
+})
+
 const statColor = computed(() => {
-  const ratio = props.pokemon.hp / props.pokemon.maxHp
+  const ratio = hpRatio.value
   if (ratio > 0.5) return 'var(--green)'
   if (ratio > 0.2) return 'var(--yellow)'
   return 'var(--red)'
@@ -64,7 +77,16 @@ const bst = computed(() => {
 
 <template>
   <div
-    :class="['box-pokemon-card', { selected: isSelected, 'with-badges': hasBadges, 'performance-mode': isPerformanceActive }]"
+    :class="[
+      'box-pokemon-card', 
+      { 
+        selected: isSelected, 
+        [`mode-${selectionType}`]: !!selectionType,
+        'with-badges': hasBadges, 
+        'many-badges': hasManyBadges,
+        'performance-mode': isPerformanceActive 
+      }
+    ]"
     @click.stop="emit('click', $event, index)"
   >
     <div
@@ -120,17 +142,30 @@ const bst = computed(() => {
 
     <!-- Info Footer -->
     <div class="card-info">
-      <div class="box-pokemon-name">
-        {{ props.pokemon.nickname || props.pokemon.name }}
+      <div class="box-pokemon-name-row">
+        <span class="box-pokemon-name">{{ props.pokemon.nickname || props.pokemon.name }}</span>
       </div>
+      <PokemonTypePills 
+        :pokemon="pokemon" 
+        size="sm"
+        class="box-types"
+      />
       <div class="stats-column">
-        <div class="level m-badge-level">
-          Nv. {{ props.pokemon.level }}
+        <div class="level-gender-row">
+          <div class="m-badge-level">
+            Nv. {{ props.pokemon.level }}
+          </div>
+          <div 
+            v-if="pokemon.gender"
+            :class="['m-badge-gender', 'mini', pokemon.gender === 'M' ? 'male' : 'female']"
+          >
+            {{ pokemon.gender === 'M' ? '♂' : '♀' }}
+          </div>
         </div>
-        <div class="mini-stat m-badge-tot ivs">
+        <div class="m-badge-iv">
           IV {{ totalIvs }}
         </div>
-        <div class="mini-stat m-badge-tot">
+        <div class="m-badge-tot">
           TOT {{ bst + totalIvs }}
         </div>
       </div>
@@ -139,72 +174,29 @@ const bst = computed(() => {
       <div class="hp-bar-mini">
         <div
           class="hp-fill"
-          :style="{ width: (props.pokemon.hp / props.pokemon.maxHp * 100) + '%', background: statColor }"
+          :style="{ 
+            width: (hpRatio * 100) + '%', 
+            background: statColor 
+          }"
         />
       </div>
     </div>
 
-    <!-- Selection Indicator -->
+    <!-- Selection Indicator (Inventory Style) -->
     <div
-      v-if="isRocketMode"
-      class="selection-overlay"
+      v-if="selectionType"
+      class="selection-check"
     >
-      <div class="selection-circle">
-        <span v-if="isSelected">🚀</span>
+      <div
+        class="check-box"
+        :class="{ checked: isSelected }"
+      >
+        <span v-if="isSelected">✓</span>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/views/box";
 @use "@/styles/core/tools" as *;
-
-.status-indicator {
-  position: absolute;
-  right: -2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 8px;
-  @include pixelated;
-  z-index: var(--z-low);
-  box-shadow: 0 2px 4px Rgba(0,0,0,0.3);
-  border: 1px solid Rgba(255,255,255,0.2);
-
-  &.mission { top: 0; background: var(--yellow); color: $black; }
-  &.daycare { top: 18px; background: var(--blue); color: $white; }
-  &.defense { top: 36px; background: var(--green); color: $white; }
-}
-
-
-.selection-overlay {
-  position: absolute;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: calc(var(--z-low) + 1);
-
-  .selection-circle {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 2px solid Rgba(255, 255, 255, 0.3);
-    background: Rgba(0, 0, 0, 0.4);
-    @include flex-center;
-    font-size: 12px;
-  }
-}
-
-.selected .selection-circle {
-  border-color: var(--red);
-  background: var(--red);
-  box-shadow: 0 0 10px Rgba(239, 68, 68, 0.5);
-}
 </style>

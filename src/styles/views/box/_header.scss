@@ -1,0 +1,53 @@
+// src/styles/views/box/_header.scss
+@use "../../core/tools" as *;
+
+.box-header {
+  @include glass-solid(Rgba(15, 23, 42, 0.95));
+  padding: 20px 30px;
+  border-radius: 24px;
+  
+  .box-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+
+  .box-title-stack {
+    h2 {
+      @include pixelated;
+      font-size: 24px;
+      color: var(--white);
+      margin: 0 0 12px 0;
+      background: Linear-Gradient(to bottom, var(--white), var(--gray));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .box-subtitle {
+      color: var(--gray);
+      font-size: 8px;
+      letter-spacing: 4px;
+      margin: 0;
+      text-transform: uppercase;
+      font-weight: 700;
+      @include pixelated;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+  }
+}
+
+.box-meta {
+  padding: 0 10px;
+  font-size: 8px;
+  color: var(--gray);
+  @include pixelated;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.6;
+}

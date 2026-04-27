@@ -116,6 +116,11 @@ Before any design work, ANSWER THESE or ASK USER:
 - **Space Optimization: Hints to Tooltips**: For complex management interfaces (modals, dashboards), move static textual hints (e.g., "* This team is for...") to dynamic `PVTooltip` components on the relevant triggers (tabs, buttons).
   - **WHY**: This reduces modal height, eliminates visual clutter (Miller's Law), and provides information only when the user explicitly seeks context, keeping the primary interface clean and focused.
 
+- **Search UI Reset Pattern**: All text search filters (e.g., PC Box, Selection) SHOULD include a clear button (X) for immediate reset. This follows Hick's Law by reducing the effort required to clear a query and restart a search.
+- **Placeholder Conciseness**: In high-density search rows or small inputs, use concise placeholders (e.g., "Buscar...") instead of long descriptive ones to prevent visual truncation and maintain a clean aesthetic.
+- **Grid Truncation Prevention**: In high-density grids containing variable-length text (e.g., Pokémon names), prioritize generous minimum widths (e.g., 145px) to prevent excessive ellipsis truncation. This maintains readability and visceral recognition.
+- **Badge Semantic Independence**: Separate semantic indicators (e.g., Gender and Level) MUST NOT be nested within each other's containers. Use a flex row container (e.g., `.level-gender-row`) to ensure both badges maintain their independent visual borders, mixins, and design tokens.
+
 ### Emotional Design Levels
 
 ```text
