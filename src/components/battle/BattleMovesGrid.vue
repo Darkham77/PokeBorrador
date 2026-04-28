@@ -58,6 +58,7 @@ const isMoveDisabled = (move) => {
       :key="i"
       :delay="400" 
       position="top"
+      hide-on-click
     >
       <template #content>
         <MoveTooltip :move="getMoveData(move)" />

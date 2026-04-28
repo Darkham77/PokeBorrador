@@ -7,7 +7,8 @@ const props = defineProps({
   position: { type: String, default: 'top' }, // top, bottom, left, right
   delay: { type: Number, default: 0 },
   tag: { type: String, default: 'span' },
-  disabled: { type: Boolean, default: false }
+  disabled: { type: Boolean, default: false },
+  hideOnClick: { type: Boolean, default: false }
 })
 
 const isSimplified = inject('isModalPerformanceMode', ref(false))
@@ -132,7 +133,12 @@ const hide = () => {
   isVisible.value = false
 }
 
-const handleTriggerClick = () => {
+const handleTriggerClick = (event) => {
+  if (!props.hideOnClick) return
+  
+  // Intercept if we need to hide it
+  event.stopPropagation()
+  
   hide()
   isBlockedByClick.value = true
   
@@ -161,7 +167,7 @@ watch(() => props.disabled, (newVal) => {
     @mouseleave="hide"
     @touchstart="show"
     @touchend="hide"
-    @click.stop="handleTriggerClick"
+    v-on:click="handleTriggerClick"
   >
     <slot />
     
@@ -202,7 +208,6 @@ watch(() => props.disabled, (newVal) => {
 .pv-tooltip-wrapper {
   display: inline-flex;
   align-items: center;
-  cursor: help;
 }
 
 .pv-tooltip-teleported {
