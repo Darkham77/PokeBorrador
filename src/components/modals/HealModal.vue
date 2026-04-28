@@ -1,8 +1,14 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { useModalStore } from '@/stores/modals'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { getPokemonTier } from '@/logic/pokemon/tierEngine'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 defineProps({
@@ -22,9 +28,51 @@ const healedCount = ref(0)
 const cost = computed(() => shopStore.getHealCost())
 const team = computed(() => gameStore.state.team || [])
 
-async function handleHeal() {
-  if (team.value.length === 0) return
+const TYPE_COLORS = {
+  normal: '#A8A878',
+  fire: '#F08030',
+  water: '#6890F0',
+  grass: '#78C850',
+  electric: '#F8D030',
+  ice: '#98D8D8',
+  fighting: '#C03028',
+  poison: '#A040A0',
+  ground: '#E0C068',
+  flying: '#A890F0',
+  psychic: '#F85888',
+  bug: '#A8B820',
+  rock: '#B8A038',
+  ghost: '#705898',
+  dragon: '#7038F8',
+  dark: '#705848',
+  steel: '#B8B8D0',
+  fairy: '#EE99AC'
+}
+
+function getPokemonFX(p) {
+  if (!p) return {}
+  const data = pokemonDataProvider.getPokemonData(p.id || p.name)
+  const tier = getPokemonTier(p)
+  const primaryType = data?.types?.[0] || 'normal'
   
+  return {
+    typeColor: TYPE_COLORS[primaryType] || '#A8A878',
+    isShiny: p.shiny,
+    isLegendary: tier.tier === 'S+' || tier.tier === 'S',
+    tierColor: tier.color
+  }
+}
+
+async function handleHeal() {
+  if (cost.value === 0) {
+    const damagedCount = team.value.filter(p => p.hp < p.maxHp || p.status || p.moves.some(m => m.pp < (m.maxPP || 0))).length
+    if (damagedCount === 0) {
+      uiStore.notify('Tu equipo ya está en perfectas condiciones.', '💖')
+      emit('close')
+      return
+    }
+  }
+
   if (cost.value > 0 && gameStore.state.money < cost.value) {
     uiStore.notify('No tenés suficiente dinero para la enfermería.', '💸')
     return
@@ -42,7 +90,7 @@ async function handleHeal() {
     
     if (progress.value >= 100) {
       clearInterval(interval)
-      const success = shopStore.healAllPokemon()
+      const success = shopStore.healAllPokemon(cost.value)
       if (success) {
         setTimeout(() => {
           isHealing.value = false
@@ -60,19 +108,27 @@ function handleClose() {
   emit('close')
 }
 
-// ── LEGACY COMPATIBILITY ─────────────────────────────────────────────────────
+// ── AUTO-HEAL LOGIC ──────────────────────────────────────────────────────────
 onMounted(() => {
+  // If no cost, check if healing is needed
+  if (cost.value === 0 && team.value.length > 0) {
+    const damagedCount = team.value.filter(p => p.hp < p.maxHp || p.status || p.moves.some(m => m.pp < (m.maxPP || 0))).length
+    if (damagedCount === 0) {
+      uiStore.notify('Tu equipo ya se encuentra recuperado.', '🏥')
+      emit('close')
+      return
+    }
+    
+    setTimeout(() => {
+      handleHeal()
+    }, 600)
+  }
+
   window.showHealEffect = (active) => {
     if (active) {
-      // In dynamic system, we should ideally trigger through modalStore
-      // but for legacy events we can still use this if it's called from outside Vue
-      import('@/stores/modals').then(module => {
-        if (module && module.useModalStore) {
-          const modalStore = module.useModalStore()
-          modalStore.open('HealOverlay')
-          setTimeout(() => handleHeal(), 100)
-        }
-      })
+      const modalStore = useModalStore()
+      modalStore.open('HealOverlay')
+      setTimeout(() => handleHeal(), 100)
     }
   }
 })
@@ -84,7 +140,7 @@ onMounted(() => {
     title="🏥 CENTRO POKÉMON"
     title-color="Rgba(239, 68, 68, 1)"
     header-background="Rgba(26, 28, 46, 1)"
-    max-width="420px"
+    max-width="360px"
     variant="retro"
     padding="raw"
     @close="handleClose"
@@ -97,14 +153,42 @@ onMounted(() => {
       <div class="status-section">
         <div class="team-slots">
           <div 
-            v-for="i in 6" 
-            :key="i" 
+            v-for="(p, i) in team" 
+            :key="p.uid || i" 
             class="slot"
             :class="{ 
-              'active': i <= team.length, 
-              'healing': isHealing && i <= healedCount,
-              'empty': i > team.length
+              'active': true, 
+              'healing': isHealing && i < healedCount,
+              'is-guardian': p.isGuardian,
+              'is-legendary': getPokemonFX(p).isLegendary
             }"
+            :style="{ 
+              '--type-color': getPokemonFX(p).typeColor,
+              '--tier-color': getPokemonFX(p).tierColor 
+            }"
+          >
+            <!-- Standardized FX Module -->
+            <PVSpriteFX
+              :is-shiny="p.shiny"
+              :is-guardian="p.isGuardian"
+              :sparkle-count="8"
+              :vibrant="true"
+            >
+              <!-- Type Glow Aura -->
+              <div class="type-aura" />
+              
+              <img 
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id || p.name, { shiny: p.shiny })" 
+                class="poke-sprite"
+                :alt="p.name"
+              >
+            </PVSpriteFX>
+          </div>
+          
+          <div 
+            v-for="i in (6 - team.length)" 
+            :key="'empty-' + i"
+            class="slot empty"
           >
             <div class="ball-icon">
               🔴
@@ -144,14 +228,23 @@ onMounted(() => {
             <small
               v-if="gameStore.state.playerClass === 'rocket'"
               class="rocket-surcharge"
-            >Recargo: Team Rocket (2x)</small>
+            >Recargo: Miembro del Equipo Rocket (2x)</small>
+            <small
+              v-else-if="gameStore.state.playerClass === 'criador'"
+              class="rocket-surcharge"
+            >Recargo: Criador Profesional</small>
           </div>
-          <p
+          <div
             v-else
-            class="free-msg"
+            class="free-notice"
           >
-            ¡Hola! Restauraremos a tus Pokémon al instante.
-          </p>
+            <div class="pixel-nurse">
+              👩‍⚕️
+            </div>
+            <p class="free-msg">
+              ¡Hola! Restauraremos a tus Pokémon al instante. El servicio es gratuito para entrenadores.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -188,30 +281,38 @@ onMounted(() => {
 .subtitle {
   color: Rgba(255, 255, 255, 0.4);
   font-size: 8px;
-  margin-bottom: 30px;
+  margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
   @include pixelated;
 }
 
 .team-slots {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 10px 20px 10px;
 }
 
 .slot {
-  aspect-ratio: 1;
+  width: 90px;
+  height: 90px;
   background: Rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
+  border: 2px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.2;
-
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible; // Critical for PVSpriteFX particles
+  
+  &.empty {
+    opacity: 0.3;
+    border-style: dashed;
+  }
+  
   &.active {
     opacity: 1;
     background: Rgba(255, 255, 255, 0.06);
@@ -225,34 +326,91 @@ onMounted(() => {
   }
 }
 
-.ball-icon {
-  font-size: 24px;
-  filter: Grayscale(1);
+.poke-sprite {
+  width: 72px;
+  height: 72px;
+  @include sprite-render;
+  filter: Grayscale(0.8) Brightness(0.5);
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  z-index: calc(var(--z-base) + 2);
 }
 
-.slot.active .ball-icon {
-  filter: Grayscale(0);
+.type-aura {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: Radial-Gradient(circle, var(--type-color) 0%, transparent 70%);
+  opacity: 0.15;
+  transition: opacity 0.3s;
+  z-index: calc(var(--z-base) + 1);
 }
 
-.slot.healing .ball-icon {
-  animation: pulse-ball 0.6s infinite alternate;
+.slot.active {
+  .type-aura { opacity: 0.3; }
+  .poke-sprite { filter: Grayscale(0) Brightness(1); }
 }
 
-@keyframes pulse-ball {
-  from { transform: Scale(1); filter: Brightness(1); }
-  to { transform: Scale(1.2); filter: Brightness(1.4) Drop-Shadow(0 0 10px Rgba(255, 68, 68, 1)); }
+.slot.healing {
+  background: Rgba(34, 197, 94, 0.05);
+  border-color: Rgba(34, 197, 94, 0.3);
+  
+  .type-aura {
+    opacity: 0.6;
+    animation: pulse-aura 1.5s infinite;
+  }
+  
+  .poke-sprite {
+    filter: Brightness(1.2) Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.6));
+    animation: pulse-sprite 0.6s infinite alternate;
+  }
+}
+
+.slot.is-shiny {
+  border-color: Rgba(255, 214, 10, 0.4);
+  box-shadow: 0 0 20px Rgba(255, 214, 10, 0.1);
+}
+
+.slot.is-legendary {
+  border-color: var(--tier-color);
+  box-shadow: 0 0 20px Rgba(255, 255, 255, 0.1);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    border: 1px solid var(--tier-color);
+    opacity: 0.5;
+    animation: rotate-border 4s linear infinite;
+  }
+}
+
+@keyframes rotate-border {
+  from { transform: Rotate(0deg); }
+  to { transform: Rotate(360deg); }
+}
+
+@keyframes pulse-aura {
+  0%, 100% { transform: Scale(1); opacity: 0.4; }
+  50% { transform: Scale(1.2); opacity: 0.7; }
+}
+
+@keyframes pulse-sprite {
+  from { transform: Scale(1) Rotate(0deg); }
+  to { transform: Scale(1.15) Rotate(3deg); }
 }
 
 .progress-container {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .progress-bar {
-  height: 8px;
+  height: 6px;
   background: Rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
@@ -270,39 +428,62 @@ onMounted(() => {
   @include pixelated;
 }
 
+.free-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.pixel-nurse {
+  font-size: 32px;
+  filter: Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.2));
+  animation: float 3s infinite ease-in-out;
+}
+
+@keyframes float {
+  0%, 100% { transform: TranslateY(0); }
+  50% { transform: TranslateY(-5px); }
+}
+
 .free-msg {
   @include pixelated;
   color: Rgba(255, 255, 255, 0.6);
   font-size: 8px;
   line-height: 1.6;
+  max-width: 250px;
+  margin: 0 auto;
 }
 
 .cost-notice {
   background: Rgba(239, 68, 68, 0.05);
-  padding: 20px;
+  padding: 16px;
   border-radius: 16px;
-  border: 1px solid Rgba(239, 68, 68, 0.15);
+  border: 1px solid Rgba(239, 68, 68, 0.2);
+  @include glass;
   
   .cost-label {
     font-size: 7px;
     color: Rgba(239, 68, 68, 1);
     margin-bottom: 12px;
     @include pixelated;
+    letter-spacing: 1px;
   }
   
   .price-tag {
-    font-size: 16px;
+    font-size: 20px;
     color: var(--white);
-    text-shadow: 0 0 10px Rgba(255, 255, 255, 0.1);
+    text-shadow: 0 0 15px Rgba(255, 255, 255, 0.2);
     @include pixelated;
   }
   
   .rocket-surcharge {
     display: block;
-    margin-top: 8px;
-    color: Rgba(239, 68, 68, 0.5);
-    font-size: 8px;
+    margin-top: 10px;
+    color: Rgba(239, 68, 68, 0.6);
+    font-size: 7px;
     @include pixelated;
+    text-transform: uppercase;
   }
 }
 
@@ -321,8 +502,8 @@ onMounted(() => {
   background: Rgba(255, 255, 255, 0.03);
   color: Rgba(255, 255, 255, 0.4);
   border: 1px solid Rgba(255, 255, 255, 0.1);
-  padding: 16px;
-  border-radius: 14px;
+  padding: 12px;
+  border-radius: 12px;
   font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;

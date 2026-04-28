@@ -27,3 +27,21 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 
 - **LOD (Level of Detail)**: For very long lists (Pokedex, PC Box with 500+ Pokemon), implement virtualization or lazy loading.
 - **Memoization**: Use `computed` in Vue to avoid O(N) calculations in every template rendering cycle.
+
+---
+
+## 5. Sincronización de Modales y Performance
+
+El sistema de modales debe integrarse con el motor de renderizado de fondo (Phaser/Mapa) para optimizar recursos.
+
+### Ciclo de Vida del Modo Performance
+
+- **Entrada**: Activa la simplificación del fondo **INMEDIATAMENTE** cuando un modal que oscurece la pantalla empieza a abrirse. Esto evita ruido visual durante la transición.
+- **Salida**: Restaura la fidelidad total del fondo **INMEDIATAMENTE** cuando el último modal empieza su animación de cierre (`close`). Esto permite al usuario ver el mundo regresar a través del overlay que se desvanece.
+
+### Inmersión y Desbordamiento (Clipping FX)
+
+Para eventos cinemáticos (Evolución, Eclosión), el modal debe permitir que los efectos visuales desborden su contenedor:
+
+- **Configuración**: Usa `overflow: visible !important` y fondos transparentes en `BaseModal`.
+- **Z-Index**: Los efectos de partículas deben estar por encima del contenido del modal pero por debajo del botón de cierre.

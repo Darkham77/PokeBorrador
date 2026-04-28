@@ -1,31 +1,23 @@
 ---
 name: pokemon-ability-validator
-description: MANDATORY skill for validating Pokémon ability implementations and descriptions against PokeAPI standards.
+description: Validador de habilidades. Delega las reglas de negocio al manual `@/project-standards/references/validation_manual.md`.
 ---
 
-# Pokémon Ability Validator
+# Skill: Validador de Habilidades
 
-> Ensures game abilities match official PokeAPI mechanical and descriptive standards.
+> [!IMPORTANT]
+> Antes de agregar habilidades, consulta el [Manual de Validación](../project-standards/references/validation_manual.md) para los estándares de descripción y lógica.
 
-## Usage
+## Uso del Validador
 
-Run the validator to compare local ability data with official PokeAPI entries:
+Ejecuta el script para verificar la integridad de `ABILITY_DATA` y su implementación en el motor de batalla:
 
 ```bash
 node .agents/skills/pokemon-ability-validator/scripts/validator.js
 ```
 
-### What it checks:
-1. **Presence**: Verifies that abilities assigned to Pokémon in `src/data/pokemonDB.js` exist in `src/data/abilities.js`.
-2. **Descriptions**: Compares local descriptions in `ABILITY_DATA` against official Spanish flavor text from PokeAPI.
-3. **Mechanics**: Surfaces technical effect descriptions (in English) to help developers ensure battle logic in `src/logic/battle/battleAbilities.js` is correct.
+### Qué verifica
 
-### Assets
-The skill uses a local cache to avoid hitting the API rate limits:
-- `assets/pokeapi_ability_cache.json`: Cached ability data from PokeAPI.
-
-### Troubleshooting
-If a new ability is added to PokeAPI and not found in the cache, delete the cache file and re-run the script:
-```bash
-rm .agents/skills/pokemon-ability-validator/assets/pokeapi_ability_cache.json
-```
+- Existencia de descripciones en español.
+- Paridad con PokeAPI.
+- Implementación de lógica en `battleAbilities.js`.

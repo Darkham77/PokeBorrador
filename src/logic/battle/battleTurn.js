@@ -37,6 +37,8 @@ export async function executeTurn(store, moveIndex) {
       await runPlayerAction(store, moveIndex)
     }
   }
+  
+  if (store.persistBattle) store.persistBattle()
 }
 
 export async function runPlayerAction(store, moveIndex) {
@@ -59,7 +61,9 @@ export async function runPlayerAction(store, moveIndex) {
   if (!p.atk || !e.def || (move.power === undefined && move.cat !== 'status')) {
     store.addLog(`[Error] Datos faltantes: Atk:${p.atk} Def:${e.def} Pwr:${move.power}`, 'log-error')
   }
-  store.participants.add(p.uid)
+  if (!store.activeBattle.participants.includes(p.uid)) {
+    store.activeBattle.participants.push(p.uid)
+  }
 
   try {
     const result = calculateDamage(p, e, move, { 
@@ -198,9 +202,11 @@ export async function runEnemyAction(store) {
     store.addLog(`¡${p.name} cayó debilitado!`, 'log-player', p)
     phaserBridge.sendCommand('BattleScene', 'PLAY_FAINT', { side: 'player' })
     
-    // Solo termina el combate si NO quedan Pokémon disponibles
-    const hasMore = store.gs.state.team.some(poke => poke.hp > 0 && !poke.onMission && !poke.onDefense)
+    // Solo termina el combate si NO quedan Pokémon disponibles (excluyendo al que acaba de caer)
+    const hasMore = store.gs.state.team.some(poke => poke.hp > 0 && poke.uid !== p.uid && !poke.onMission && !poke.onDefense)
+    
     if (!hasMore) {
+      console.log('[BATTLE] Jugador derrotado y sin más Pokémon. Terminando combate.')
       await store.endBattle(false)
     } else {
       store.addLog('¡Envía a otro Pokémon!', 'log-info', p)
@@ -208,4 +214,6 @@ export async function runEnemyAction(store) {
       uiStore.isBattleSwitchForced = true
     }
   }
+
+  if (store.persistBattle) store.persistBattle()
 }

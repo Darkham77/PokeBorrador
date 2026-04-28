@@ -5,135 +5,88 @@ description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-
 
 # Project Standards (Lean Core)
 
-This skill governs the project's DNA. Technical implementation details are delegated to specialized manuals to ensure a "Lean" and effective primary ruleset.
+Este skill gobierna el ADN del proyecto. Los detalles de implementación técnica se delegan en manuales especializados para asegurar una base de reglas ligera y efectiva.
 
 ## 🧭 Navigation Hub
 
-Refer to these manuals for complex implementation specifications:
+Consulta estos manuales para especificaciones detalladas de implementación:
 
-| Domain | Manual |
+| Dominio | Manual de Referencia |
 | :--- | :--- |
+| **Creación de Contenido** | [content_creation_manual.md](./references/content_creation_manual.md) |
+| **Mecánicas de Batalla** | [battle_mechanics_manual.md](./references/battle_mechanics_manual.md) |
+| **Mecánicas & UX** | [game_mechanics_manual.md](./references/game_mechanics_manual.md) |
+| **Estándares UI/UX** | [ui_ux_standards.md](./references/ui_ux_standards.md) |
+| **Fórmulas & Ratios** | [game_formulas_manual.md](./references/game_formulas_manual.md) |
+| **Sistema de Ítems** | [item_system_manual.md](./references/item_system_manual.md) |
+| **Guerra & Facciones** | [war_system_manual.md](./references/war_system_manual.md) |
+| **Gimnasios & Rematch** | [gym_system_manual.md](./references/gym_system_manual.md) |
+| **Social & Trade** | [trade_social_manual.md](./references/trade_social_manual.md) |
+| **Arquitectura DB** | [dbrouter_manual.md](./references/dbrouter_manual.md) |
+| **Validación & Calidad** | [validation_manual.md](./references/validation_manual.md) |
+| **Guardado & Persistencia** | [save_system_manual.md](./references/save_system_manual.md) |
+| **Testing & Simulación** | [browser_testing_manual.md](./references/browser_testing_manual.md) |
+| **Phaser & Rendering** | [phaser_guidelines.md](./references/phaser_guidelines.md) |
 | **Animaciones & FX** | [animation_standards.md](./references/animation_standards.md) |
 | **GPU & Performance** | [gpu_optimization_manual.md](./references/gpu_optimization_manual.md) |
-| **Modales & Performance** | [modal_performance.md](./references/modal_performance.md) |
-| **Phaser & Rendering** | [phaser_guidelines.md](./references/phaser_guidelines.md) |
-| **UI/UX & Aesthetics** | [ui_ux_standards.md](./references/ui_ux_standards.md) |
-| **SASS Styling** | [sass_styling_manual.md](./references/sass_styling_manual.md) |
-| **Database Architecture** | [dbrouter_manual.md](./references/dbrouter_manual.md) |
-| **Sync & Security** | [security_and_sync_manual.md](./references/security_and_sync_manual.md) |
+| **SASS & Estilos** | [sass_styling_manual.md](./references/sass_styling_manual.md) |
 | **Asset Pipeline** | [asset_service_manual.md](./references/asset_service_manual.md) |
-| **Map & Spawns** | [spawn_grid_manual.md](./references/spawn_grid_manual.md) |
-| **Reglas & Mecánicas** | [game_rules_manual.md](./references/game_rules_manual.md) |
-| **Finalized Features** | [completed_features.md](../../../docs/completed_features.md) |
+| **Mapa & Spawns** | [spawn_grid_manual.md](./references/spawn_grid_manual.md) |
+
+### 🛠️ Migración & Soporte Técnico
+
+- **Legacy Migration Hub**: [legacy_migration_manual.md](./references/legacy_migration_manual.md)
+- **Notas Técnicas de DB**: [references/migration/](./references/migration/)
 
 ---
 
-## 🏛️ Core Mandates
+## 🏛️ Mandatos Principales (Core Mandates)
 
-### 1. Hybrid Retro-Modern Identity
+### 1. Identidad Hybrid Retro-Modern
 
-- **Modern Shell**: Glassmorphism, gradients, HSL shadows for containers.
-- **Retro Heart**: Pixel Art and Sharp typography (`Press Start 2P`) for game content.
-- **Pixel-Perfect**: Pixelated elements MUST use `@include pixelated`. Font size should prioritize readability and aesthetic balance. Statistics, credits, and numerical counters in UI headers MUST always use pixelated typography.
+- **Modern Shell**: Glassmorphism, gradientes, sombras HSL para contenedores.
+- **Retro Heart**: Pixel Art y tipografía Sharp (`Press Start 2P`) para contenido de juego.
+- **Pixel-Perfect**: Elementos pixelados DEBEN usar `@include pixelated`. La tipografía de estadísticas y encabezados siempre debe ser pixelada.
 
 ### 2. GPU & Rendering
 
-- **GPU First**: Prioritize GPU-accelerated rendering. See [gpu_optimization_manual.md](./references/gpu_optimization_manual.md).
-- **Sprite Standard**: Use `@include sprite-render` for all game assets.
-- **Organic Feel**: De-synchronize animations with seeds and vary speeds. See [animation_standards.md](./references/animation_standards.md).
-- **GPU Efficiency**: Use the native `opacity` property instead of `filter: Opacity()` to avoid unnecessary compositor layers.
+- **GPU First**: Prioriza el renderizado acelerado por hardware. Ver [gpu_optimization_manual.md](./references/gpu_optimization_manual.md).
+- **Sprite Standard**: Usa `@include sprite-render` para todos los assets del juego.
+- **Organic Feel**: Desincroniza animaciones con semillas y varía velocidades.
 
-### 3. Modularity & Hierarchy
+### 3. Modularidad & Jerarquía
 
-- **500-Line Rule**: No logic or style file may exceed 500 lines (except databases).
-- **Zero-Invention**: Reuse `BaseModal`, `UnifiedCard`, and global mixins before creating ad-hoc styles.
-- **Modal Lifecycle**: Synchronize performance mode with modal transitions. Avoid "Modal Islands" (manual template rendering); always use `uiStore.open`. See [modal_performance.md](./references/modal_performance.md).
-- **Immediate Simplification**: Activate background performance mode **IMMEDIATELY** when an obscuring modal begins its opening animation to prevent noisy FX during transitions.
+- **Regla de las 500 líneas**: Ningún archivo de lógica o estilo puede exceder las 500 líneas (excepto bases de datos masivas).
+- **Zero-Invention**: Reutiliza `BaseModal`, `UnifiedCard` y mixins globales antes de crear estilos ad-hoc.
+- **Modal Lifecycle**: Sincroniza el modo performance con las transiciones de modales.
 
-### 4. SASS & Build Integrity
+### 4. Integridad de SASS y Build
 
-- **Capitalization Mandate**: Use Capitalized Filters (`Scale()`, `Blur()`, `Brightness()`, `Contrast()`, `Saturate()`, `Rgba()`, `Rgb()`, `Linear-Gradient()`, `Radial-Gradient()`) to avoid Dart Sass 2.0 collisions. This applies to `.scss`, `.vue`, and constant files (`.js`, `.ts`).
-- **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
-- **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. Eliminate unused vars and computed properties immediately.
-- **Design Token Mandate (Hover Colors)**: Hardcoding color values (e.g., `#ffb800`, `Rgba(255, 184, 0, ...)`) in hover effects is forbidden. The standard hover border and glow color is always `var(--yellow)` (`#ffd60a`). For glow shadows, use `Rgba(255, 214, 10, 0.2)` to match the token exactly. This ensures a single source of truth in `_variables.scss`.
-- **Mixin Dependency Declaration**: A mixin that calls utilities from a separate file (e.g., `pokemon-sprite-base-standard` using `sprite-render` from `_gpu.scss`) MUST declare that dependency with `@use` at the top of its own file. This makes the mixin self-contained and prevents "Undefined mixin" errors when the file is compiled in an isolated context.
-- **Cross-Platform Automation**: All automation scripts (Python/JS) MUST use native path libraries (`pathlib` in Python, `path` in Node.js) instead of manual string normalization. Bypassing Windows/Linux path collisions via `replace("\\", "/")` is deprecated. Use `Path.parts` and `Path.rglob` to ensure 100% OS-agnostic execution.
-- **CSS Class Collision Avoidance**: Use prefix-based class names (e.g. `.ps-tag-label`, `.inv-stat-label`) for component-specific styles. Avoid using generic names like `.label` or `.icon` at the root of a style file, as they will collide with other components and fail the redundancy audit.
-- **Media Query Nesting**: To avoid CSS redundancy flags and ensure clean inheritance, always nest media queries within their respective class selectors using the ampersand (`&`). Avoid global `@media` blocks that repeat selector names across the file.
-- **Script Dependency Shield**: Any script that uses non-standard libraries (e.g., `Pillow` in Python) MUST include a `try...except ImportError` block. It must print a clear error message including the installation command (`pip install ...`) and exit with a non-zero code.
-- **Dynamic Import Zero-Warning**: To avoid static analysis warnings (IDE) in scripts that modify `sys.path` dynamically, imports of local modules MUST be performed locally within the classes or methods that use them.
-- **CSS Redundancy Audit**: Use `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py` before commit. To bypass valid nested override flags, use SASS ampersand nesting (`& .class-name {`) to explicitly declare inheritance and avoid duplicate selector penalties.
-- **Click Propagation**: Always use `@click.stop` for interactive elements in layered UIs (cards, lists, modals) to prevent accidental bubbling to background containers. **CRITICAL**: When using `.stop` on a custom component listener in the parent, the child MUST pass the event object in the emit (e.g., `@click.stop="$emit('click', $event)"`) to avoid `stopPropagation` of undefined crashes.
-- **Media Query Nesting**: To avoid CSS redundancy flags, always nest media queries within their respective class selectors. Avoid global `@media` blocks that repeat selectors.
-- **Flex Scroll Collapse**: Containers with `overflow-y: auto` that are children of flex parents MUST include `min-height: 0` to prevent layout colapse across modern browsers.
-- **UI Interaction**: Use `@include btn-vicio-primary('sm')` for secondary modal buttons to avoid 100% width collisions. All interactive filter/sort controls MUST include a `PVTooltip`.
-- **Vue Template Integrity**: NEVER use JS-style (`//`) or HTML comments inside Vue tags or attributes. This causes Vite compilation errors ("Illegal '/' in tags").
-- **Z-Index Layering**: Hardcoded numbers are strictly forbidden. Use system CSS variables (`var(--z-low)`, `var(--z-base)`, etc.) exclusively. If a precise micro-offset is required (e.g., between two layers of the same tier), use `calc(var(--z-base) + N)` to maintain relative hierarchy without breaking the audit engine.
-- **Positioning & Spacing**: Avoid using negative margins (`margin-top: -1px`) to fix alignment or layering "ghosts". This triggers redundancy and stacking warnings. Use `transform: TranslateY(-1px)` or Flexbox `gap` to ensure responsive stability.
-- **Pill Scaling & Overflow Prevention**: Type pills (e.g., `m-type-tag`) with long names (like "FIGHTING") MUST use `width: auto` and `min-width` instead of `width: 100%`. This prevents text from overflowing or being cut off by the pill's fixed container.
-- **Draggable Cursor Inheritance**: When using a functional component (like a Tooltip) as a wrapper for a draggable card, ensure the `cursor: grab` style is correctly applied to the wrapper itself. Use specific classes (e.g., `.is-draggable`) to toggle the cursor based on context (e.g., enable in info panels, disable in combat).
-- **Data Integrity Directive**: Large data files (like weather tables or spawn grids) MUST include the comment `// [PureVue-Ignore-Length]` at the top. This prevents build tools and agents from fragmenting the object, ensuring architectural integrity during refactors.
+- **Mandato de Capitalización**: Usa filtros capitalizados (`Scale()`, `Blur()`, `Linear-Gradient()`) para evitar colisiones con Dart Sass 2.0.
+- **Estándar @use**: Prohibido el uso de `@import`. Usa `@use` y `@forward`.
+- **Zero-Warning**: Mantén siempre 0 errores y 0 advertencias en `lint` y `vue-tsc`.
+- **Escudo de Dependencias**: Scripts con librerías externas deben manejar `ImportError` y dar instrucciones de instalación.
 
-### 5. Asset Pipeline & 1:1 Resolution
+### 5. CLI-First Debugging
 
-- **Resolution Policy**: Use 1:1 original quality for all assets. Multi-resolution (LOD) systems are strictly forbidden to ensure architectural simplicity and visual consistency.
-- **WebP Standard**: All local assets MUST be converted to WebP via the Zero-Config pipeline.
-- **Mirroring**: The `_raw-assets/` directory mirrors the `public/assets/` structure 1:1. Never use intermediate control folders like `lod/` or `original/`.
-- **Localization Mandate**: To ensure offline capability and consistent performance, all external assets (PokeAPI, Showdown) MUST be localized to `_raw-assets/` and optimized into WebP format.
-- **Mapping Consistency**: Filenames for localized assets MUST match the sanitized/mapped IDs (lowercase, no spaces/dots, English slugs for items) used in `assetService.js`.
-- **Texture Atlases**: Use `.atlas/` folders for batched sprites (VFX, Phaser animations) to optimize draw calls.
-
-### 6. CLI-First Debugging
-
-- **Efficiency Over GUI**: Use `window.__VITE_DEBUG__` commands to simulate states, levels, and money.
-- **Verification**: It is MANDATORY to verify new content via CLI before commits.
-
-### 7. Vue & UI Patterns
-
-- **Reactivity with Spread**: Forcing reactivity in Vue 3 `reactive` objects when modifying nested properties requires re-assigning the root property using the spread operator (e.g., `state.inventory = { ...state.inventory }`). This guarantees the virtual DOM reflects deep state changes.
-- **v-model Object Pattern**: State objects intended to be used with `v-model` in child components MUST be defined as `ref` instead of `reactive`. This allows the parent to handle the `update:modelValue` event by re-assigning the entire object (e.g., `filters.value = newValue`), which is the standard behavior for one-way data flow in Vue 3.
-- **BaseModal Overlays**: Prefer `BaseModal` over custom absolute-positioned overlays for complex user interactions (like quantity selectors). This ensures consistent backdrop handling, Z-index management, and keyboard accessibility.
-- **Semantic Action Menus**: Group multi-stage interactions (Use, Sell, Discard) into dedicated action menus. Use themed buttons (Success/Primary for usage, Warning for sales, Danger for deletion) to provide clear visual hierarchy and intent.
-- **Bulk Operation Optimization**: In management views (inventory, boxes), multi-selection modes should default to "Full Stack" (selecting all items of that type) to minimize modal interactions.
-- **Financial Transparency**: Always display estimated total profits in confirmation dialogs for bulk selling operations to provide immediate user feedback.
-- **Mass Selection Aesthetic**: Multi-selection modes for destructive or high-impact actions (Selling, Releasing) MUST use a **vibrant Red border** (`var(--red)`) and a pulsing animation to emphasize the significance of the selection.
-- **Tabbed Modal Pattern**: For high-density management modals, use a tabbed interface by placing buttons in the `BaseModal` slot `#header`. Set `header-background="transparent"`.
-- **Utility Component Schema Awareness**: Always verify the prop schema for common utility components. For example, `PVTooltip` expects `title` and `description` props; using an incorrect prop like `text` will result in empty tooltips.
-- **Mandatory SFC Imports**: When using Vue core features (like `watch` or `nextTick`) inside `<script setup>`, always verify their explicit import from `'vue'`. Missing imports can lead to silent failures or `ReferenceError` crashes during component initialization, especially after adding new logic to existing files.
-- **Narrative Dynamic Tooltips**: Enrich technical categories with descriptive tooltips using local mapping functions (e.g., `getCategoryDescription`). This pattern transforms cold data into narrative context (Legendary, Mythic, Genetic) without bloating the global store or specialized components.
-- **DND Position Feedback**: Interactive reordering (Drag-and-Drop) MUST provide large, pixelated position numbers (1-6 for teams, 1-4 for moves) as an overlay on the target slots. Use a semi-transparent dark backdrop with `backdrop-filter: Blur(Npx)` to ensure the number is readable regardless of the element's content.
-- **Tooltip UX & Interference**: Tooltips MUST be suppressible during complex interactions. Use a `disabled` prop on `PVTooltip` and toggle it during Drag-and-Drop operations to prevent the description box from obstructing the target drop zone.
-- **Wrapper-level Tooltips**: For grid items or interactive cards, the `PVTooltip` should act as the root wrapper (`tag="div"`) instead of being placed inside. This ensures the entire card area triggers the tooltip and maintains a consistent interaction hit-box.
-
-### 8. Logic & Determinism
-
-- **Authoritative Time**: Always use `getServerTime()` for game-logic-critical timestamps. Avoid `Date.now()` to ensure administrative time-travel debugging works correctly. See [security_and_sync_manual.md](./references/security_and_sync_manual.md).
-- **PRNG Avalanche Protocol**: When using deterministic seeds for gameplay features (weather, spawns), the PRNG **MUST** discard the first 3 generated values to ensure high entropy between sequential seeds.
-- **Linguistic Standardization**: Use the term **"LIBERAR"** (Release) exclusively instead of "SOLTAR" (Let go) when referring to the permanent removal of a Pokémon from the user's storage or team.
+- **Eficiencia sobre GUI**: Usa comandos `window.__VITE_DEBUG__` para simular estados. Es MANDATORIO verificar contenido nuevo vía CLI antes de commitear.
 
 ---
 
-## 🏗️ Workflow & Artifact Governance (MANDATORY)
+## 🏗️ Gobernanza de Artefactos (MANDATORIO)
 
-To ensure rigor and traceability, every complex task MUST follow the Artifact lifecycle.
+Para asegurar el rigor y la trazabilidad, toda tarea compleja DEBE seguir el ciclo de vida de artefactos:
 
-1. **Planning**: Create `implementation_plan.md`. Wait for user "ok".
-2. **Execution**: Maintain `task.md` as the absolute source of truth for granular steps.
-3. **Closure**: Create `walkthrough.md` with evidence (screenshots, tests) of the task's success.
+1. **Planning**: Crear `implementation_plan.md`. Esperar "ok" del usuario.
+2. **Execution**: Mantener `task.md` como fuente de verdad.
+3. **Closure**: Crear `walkthrough.md` con evidencia (capturas, tests) del éxito de la tarea.
 
 ---
 
 ## 🛠️ Aesthetic Audit Checklist
 
-- [ ] **Architectural Reuse**: Have I reused existing components?
-- [ ] **GPU Acceleration**: Have I applied layer promotion on heavy elements?
-- [ ] **Pixel Parity**: Is all game content pixelated and sharp?
-- [ ] **CLI-First**: Have I verified the state via console?
-- [ ] **Zero-Warning**: Do `npm run lint` and `build` pass without warnings?
-
-### 9. Map & Encounter UX
-
-- **Spawn Time Emojis**: Use emojis (🌅, ☀️, 🌇, 🌙) instead of text in tooltips for spawn cycles to maintain a clean Retro-Modern UI.
-- **Encounter Spoiler Shield**: Hide specific spawn times for unknown Pokémon (not seen/caught) to prevent spoilers. Use the generic text "No es común en esta ruta" for time-restricted unknown spawns.
-- **Concise UI Labels**: Prefer short, direct labels (e.g., "Horarios habituales: [Emojis]") over long sentences in tooltips to minimize text clutter.
-- **Fishing vs. Time Restriction**: Pokémon present in the fishing pool are considered 24h available; do not mark them with time restrictions even if they are missing from some land-based cycles.
+- [ ] **Architectural Reuse**: ¿He reutilizado componentes existentes?
+- [ ] **GPU Acceleration**: ¿He aplicado promoción de capas en elementos pesados?
+- [ ] **Pixel Parity**: ¿Todo el contenido de juego es pixelado y nítido?
+- [ ] **CLI-First**: ¿He verificado el estado vía consola?
+- [ ] **Zero-Warning**: ¿`npm run lint` y `build` pasan sin advertencias?

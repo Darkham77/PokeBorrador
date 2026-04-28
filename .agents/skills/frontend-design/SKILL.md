@@ -1,7 +1,6 @@
 ---
 name: frontend-design
 description: Design thinking and decision-making for web UI. Use when designing components, layouts, color schemes, typography, or creating aesthetic interfaces. Teaches principles, not fixed values.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Frontend Design System
@@ -26,16 +25,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | [decision-trees.md](references/decision-trees.md) | ⚪ Optional | Context templates |
 
 > 🔴 **ux-psychology.md = ALWAYS READ. Others = only if relevant.**
-
----
-
-## 🔧 Runtime Scripts
-
-**Execute these for audits (don't read, just run):**
-
-| Script | Purpose | Usage |
-| :--- | :--- | :--- |
-| `scripts/ux_audit.py` | UX Psychology & Accessibility Audit | `python scripts/ux_audit.py <project_path>` |
 
 ---
 
@@ -64,10 +53,6 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | **Glassmorphism** | AI's idea of "premium" | How about solid, high-contrast flat? |
 | **Deep Cyan / Fintech Blue** | Safe harbor from purple ban | Why not Red, Black, or Neon Green? |
 | **"Orchestrate / Empower"** | AI-generated copywriting | How would a human say this? |
-| Dark background + neon glow | Overused, "AI look" | What does the BRAND actually need? |
-| **Rounded everything** | Generic/Safe | Where can I use sharp, brutalist edges? |
-
-> 🔴 **"Every 'safe' structure you choose brings you one step closer to a generic template. TAKE RISKS."**
 
 ---
 
@@ -83,17 +68,6 @@ Before any design work, ANSWER THESE or ASK USER:
 | **Tech** | What stack? | Affects capabilities |
 | **Audience** | Who exactly? | Drives all visual decisions |
 
-### Audience → Design Approach
-
-| Audience | Think About |
-| :--- | :--- |
-| **Gen Z** | Bold, fast, mobile-first, authentic |
-| **Millennials** | Clean, minimal, value-driven |
-| **Gen X** | Familiar, trustworthy, clear |
-| **Boomers** | Readable, high contrast, simple |
-| **B2B** | Professional, data-focused, trust |
-| **Luxury** | Restrained elegance, whitespace |
-
 ---
 
 ## 2. UX Psychology Principles
@@ -107,35 +81,6 @@ Before any design work, ANSWER THESE or ASK USER:
 | **Miller's Law** | ~7 items in working memory | Chunk content into groups |
 | **Von Restorff** | Different = memorable | Make CTAs visually distinct |
 | **Serial Position** | First/last remembered most | Key info at start/end |
-| **Contextual Filter** | Filter active items from list | Hide already-assigned members in selectors |
-
-- **Contextual Filtering in Selection Lists**: To reduce cognitive load and prevent input errors (Hick's Law), selection lists SHOULD automatically filter out items that are already active in the target context.
-  - **PATTERN**: When selecting an item for a specific slot, calculate the `excludeIds` array from the current state and pass it to the selector to hide assigned members.
-  - **WHY**: This keeps the interface clean, prevents redundant actions, and ensures the user only sees valid choices for the current operation.
-
-- **Space Optimization: Hints to Tooltips**: For complex management interfaces (modals, dashboards), move static textual hints (e.g., "* This team is for...") to dynamic `PVTooltip` components on the relevant triggers (tabs, buttons).
-  - **WHY**: This reduces modal height, eliminates visual clutter (Miller's Law), and provides information only when the user explicitly seeks context, keeping the primary interface clean and focused.
-
-- **Search UI Reset Pattern**: All text search filters (e.g., PC Box, Selection) SHOULD include a clear button (X) for immediate reset. This follows Hick's Law by reducing the effort required to clear a query and restart a search.
-- **Placeholder Conciseness**: In high-density search rows or small inputs, use concise placeholders (e.g., "Buscar...") instead of long descriptive ones to prevent visual truncation and maintain a clean aesthetic.
-- **Grid Truncation Prevention**: In high-density grids containing variable-length text (e.g., Pokémon names), prioritize generous minimum widths (e.g., 145px) to prevent excessive ellipsis truncation. This maintains readability and visceral recognition.
-- **Badge Semantic Independence**: Separate semantic indicators (e.g., Gender and Level) MUST NOT be nested within each other's containers. Use a flex row container (e.g., `.level-gender-row`) to ensure both badges maintain their independent visual borders, mixins, and design tokens.
-
-### Emotional Design Levels
-
-```text
-VISCERAL (instant)  → First impression: colors, imagery, overall feel
-BEHAVIORAL (use)    → Using it: speed, feedback, efficiency
-REFLECTIVE (memory) → After: "I like what this says about me"
-```
-
-### Trust Building
-
-- Security indicators on sensitive actions
-- Social proof where relevant
-- Clear contact/support access
-- Consistent, professional design
-- Transparent policies
 
 ---
 
@@ -158,8 +103,7 @@ All spacing and sizing in multiples of 8:
 ├── Small: 8px
 ├── Medium: 16px
 ├── Large: 24px, 32px
-├── XL: 48px, 64px, 80px
-└── Adjust based on content density
+└── XL: 48px, 64px, 80px
 ```
 
 ### Key Sizing Principles
@@ -171,75 +115,19 @@ All spacing and sizing in multiples of 8:
 | **Inputs** | Match button height for alignment |
 | **Cards** | Consistent padding, breathable |
 | **Reading width** | 45-75 characters optimal |
-| **Tab Persistence** | Active states (e.g. `TranslateY`, glow) MUST be permanent for selected items, not just hover-based. |
-| **System Reuse** | Always extend `BaseModal` or `UnifiedCard` instead of creating ad-hoc windows |
-| **Button Reuse** | ALWAYS use `@include btn-vicio-primary` or `btn-vicio-danger` mixins. Do NOT hardcode button backgrounds. |
-| **Admin UI Volume** | Administrative tools (Debug/Admin panels) MUST use the standardized 3D button mixins to maintain visual volume and consistent press feedback. |
 
-### Layout & CSS Quirks (Lessons Learned)
+---
 
-- **`fit-content` vs Flexbox Wrap**: Using `width: 100%` or `flex-basis: 100%` to force line breaks in Flexbox will break `width: fit-content` on the parent, forcing it to stretch to the viewport. For multi-row `fit-content` containers, use **CSS Grid** (`display: grid`) instead of Flexbox wrap.
-- **Flex Column Collapse Bug**: In `flex-direction: column`, children with `flex: 1` evaluate their base height as `0px`. If their content relies on percentage heights (`height: 100%`) or absolute positioning, the child collapses to `0px` and disappears. Fix by using `min-height` on the child instead of `height`, or assigning `flex: 1` directly to the inner percentage-based content.
-- **`position: fixed` Conflicts**: Applying a `transform` (e.g., via GPU acceleration mixins like `translate3d(0,0,0)`) to an ancestor element creates a new containing block. This completely breaks `position: fixed` for all descendants, causing them to scroll with the document instead of staying pinned to the viewport.
-- **Absolute Inset for Scrolling**: If nested flex height inheritance fails or feels flaky, use a wrapper with `position: absolute; inset: 0` inside a relative parent. This forces the child to fill the container exactly and triggers `overflow: auto` reliably across all browsers.
-- **Card Header Offsets**: For absolute-positioned headers in cards/modals, use a standard `top: 15px` to `20px` offset. Placing headers at `0-10px` often causes visual clipping against container borders or overlap with corner badges/tags.
-- **Explicit Pseudo-element Smoothing**: When using pseudo-elements (`::before`/`::after`) for backgrounds (especially with `background: inherit`), ALWAYS apply the `smooth` mixin directly to the pseudo-element. Browser inheritance for `image-rendering` can be inconsistent with inherited backgrounds, leading to unwanted pixelation.
-- **Cross-Browser Sharpness (Prefix Mandate)**: To maintain the "Hybrid Retro-Modern" sharpness across all engines:
-
-  - **Safari/iOS/Edge**: Always include `image-rendering: -webkit-optimize-contrast;` before `pixelated` to prevent blurry scaling.
-  - **Typography**: Always pair `font-smooth: never;` with `-webkit-font-smoothing: none;` and `-moz-osx-font-smoothing: grayscale;` to ensure pixel fonts snap to the grid on all OSs.
-- **SASS Function Collisions (Workaround)**: When using CSS transforms in `.vue` files or SCSS, always CAPITALIZE the functions (e.g., `transform: Scale(1.1)`, `filter: Grayscale(1)`) to prevent SASS from trying to evaluate them as its internal color/math functions. Lowercase functions with unitless numbers (e.g., `scale(1.2)`) cause build failures like `$color is not a color`.
-- **Smooth Gradient Transitions**: To transition between gradient intensities (e.g., subtle to dark on hover), use a separate pseudo-element (`::after`) for the gradient and transition its `opacity`. Transitioning `background-image` directly is not supported and will result in a "jump".
-- **Background Fitting (1:1 Logic)**: For reliable "adjusted to smallest size" (1:1 aspect) fitting without tiling, use `background-size: cover` combined with `background-repeat: no-repeat` and `background-position: center`. Avoid hardcoded large percentages like `175%` which are prone to tiling on large containers.
-- **Interactive Component Offsets**: Interactive elements in cards (like spawns or badges) may need significant vertical offsets (e.g., `bottom: 35px`) to ensure they remain accessible and visible after applying overlays or zoom effects to the container.
-- **Right-Aligned Overlapping Stacks**: When using `justify-content: flex-end` for a list of overlapping sprites (e.g., Pokémon spawns), apply negative margins via `margin-right: -12px` to the elements. This ensures that the natural DOM order correctly stacks elements from right-to-left, which is more intuitive for right-aligned grids.
-- **GPU Rendering Persistence**: Browsers often release hardware-accelerated layers after a CSS transition/animation ends, which can cause environmental backgrounds to "snap" from smooth to pixelated. Fix by using `will-change: filter, transform;` combined with `transform: TranslateZ(0);` to force the layer to stay on the GPU.
-- **Layered Sprite UI (Pop-out)**: For premium detail modals, create depth by allowing the main character sprite to overlap navigation elements (tabs/headers). Use `z-index` layering and negative margins (e.g., `margin-bottom: -60px`) on the sprite container. Ensure the container has `pointer-events: none` to keep the underlying tabs interactive.
-- **Vertical Centering in Sub-cards**: For info blocks with varying text lengths (e.g., "Category" vs "Pokémon Name"), use `display: flex; flex-direction: column; justify-content: center; align-items: center;` with a consistent `min-height` (e.g., `85px`). This prevents layout shifts and ensures multi-line text blocks remain balanced with single-line ones.
-- **Atmospheric Clarity**: Environmental effects (rain, snow, weather emojis) and atmospheric filters MUST be hidden for locked, restricted, or inaccessible components (e.g., locked map routes). This reduces cognitive noise and maintains focus on playable content.
-- **Vertical Floating Badges**: When dealing with variable lists of icons/tags in small containers (cards/tiles), align them in vertical columns with `position: absolute`. This prevents the "layout stretch" effect where a horizontal list would expand the container's height or cover critical centered content like sprites.
-- **Balanced Info Lanes (Clearance)**: To avoid collision between absolute-positioned side elements (like badges) and centered content (like HP bars or names), do not use unilateral padding. Instead, use a centered "lane" strategy: set a `width` (e.g., 85%) on the info container, apply `margin: 0 auto`, and add balanced horizontal padding. This ensures the content remains centered relative to the card while maintaining safe clearance on both sides.
-- **Absolute Centering Pattern**: When positioning floating elements (like sparkles or badges) relative to a center point, always use `left: 50%` combined with `transform: TranslateX(-50%)`. This ensures the element's own width doesn't cause a visual shift to the right.
-- **Image Wrapper Stability**: For wrappers around pixel-art sprites, use `display: inline-block` and `line-height: 0`. This ensures the container matches the image dimensions exactly, prevents 0x0 collapses, and eliminates extra whitespace below the image.
-- **Decoupled Sprite Effects**: To prevent performance-killing filter stacks (10+ filters), separate the core black border (applied directly to the `img`) from decorative effects like glows or auras (applied to a parent `.sprite-wrapper`). This allows independent management of visual layers without exceeding GPU filter budgets.
-- **CSS Filter Performance & Dropouts**: Stacking multiple `Drop-Shadow()` filters on many small animated elements can hit browser rendering limits (GPU thread saturation), causing the browser to stop rendering some layers or animations ("dropout"). Optimize by collapsing multiple shadows into a maximum of 2-3 combined filters.
-- **Animation Visibility Gap**: In looping animations with random delays (e.g. sparkles), ensure the "visible" portion of the cycle is long enough (at least 30-40% of duration) so the user perceives the intended density without flickering or "empty" states.
-- **GPU Layer Management (Container Rule)**: Avoid applying `@include gpu-layer` or `will-change` to every small child in a high-density effect (like 50+ sparkles). Instead, apply the GPU acceleration mixins to the parent container to reduce the number of compositor layers the browser must manage.
-- **Dynamic Arrow Alignment**: When nudging tooltips, use CSS variables to reposition the arrow so it stays aligned with the trigger element's center.
-- **Scroll Architecture (Vicio Standard)**:
-  - **Single Scroll Layer**: NEVER use nested scrollable containers (`overflow-y: auto` inside another `overflow-y: auto`) in modals. This causes event hijacking and dead zones.
-  - **Fixed Header Pattern**: For custom list modals, use a fixed header (`flex: 0 0 auto`) and a scrolling body (`flex: 1 1 auto; overflow-y: auto`).
-  - **Safety Margins**: For absolute-positioned floating buttons (like close "X"), implement a minimum `margin-right: 60px` on adjacent dynamic content to prevent overlap.
-- **Padding Delegation**: Always delegate padding to the innermost scrollable component. Never apply padding to parent layout containers.
-- **Zero Gutter**: Prohibit `scrollbar-gutter: stable`.
-- **Layout Parity Mandate**: When refactoring or restoring components, ensure HTML classes exactly match the SCSS selectors (e.g., `list-item` vs `poke-card`). Inconsistency between template and style breaks layout fidelity.
-- **Dynamic Variable Binding**: Visual effects depending on context (e.g., type-based "glows" or "auras") MUST be implemented by binding dynamic CSS variables (e.g., `:style="{ '--type-color': color }"`) to the parent container.
-- **Anchored UI Context**: Absolute positioned elements (like `mini-badges` or floating status icons) MUST be nested within a `position: relative` container (e.g., `.poke-preview-container`) to prevent them from floating outside their visual target.
-- **Grid Cell Aspect-Ratio & Tooltips**: Avoid wrapping CSS Grid cells with `inline-flex` components (like Tooltips), as the wrapper becomes the grid item and breaks `aspect-ratio` and stretching constraints. Instead, place the Tooltip *inside* the grid item (which should have `min-width: 0` and `align-self: start`) and set the Tooltip wrapper to `display: flex; width: 100%; height: 100%`. This prevents long text from blowing out column widths and stretching the entire row's height.
-- **Double Active States**: Avoid applying active visual states (borders, backgrounds, glows) simultaneously to both a parent button container and its inner icon wrapper. This creates a visually broken "box-in-a-box" effect and disconnects absolute-positioned indicators. Apply the active state cleanly to only one level of the hierarchy.
-- **External Sprite Padding**: Assets from external APIs (like PokéAPI sprites) often contain varying amounts of internal transparent padding. Do not use CSS `transform: scale()` to "visually equalize" them if they share a standardized container size (e.g., `48x48`), as this breaks layout consistency and introduces arbitrary scaling values that deform the grid perception.
-- **Dynamic Sprite Positioning**: In combat arenas, use `Clamp()` combined with container query units (e.g. `12cqw`) for `left`/`right` properties of sprites.
-  - **WHY**: This ensures that as the container narrows, sprites smoothly move towards the edges or maintain a safe separation without overlapping or looking static.
-
-### Admin & Debug UI Patterns
-
-- **Specific Class Naming**: To avoid global CSS collisions and satisfy standards audits, use component-prefixed class names for shared UI elements (e.g., `.card-tier-badge`, `.ranked-tier-badge`, `.market-tier-badge`) instead of generic names like `.tier-badge`.
-- **Dense Panel Ergonomics**: For administrative panels with complex data (e.g., Debug Creator), prioritize **Two-Column Grids** (`grid-template-columns: 1fr 1.2fr`) over vertical stacks. This layout maximizes vertical space and allows simultaneous inspection of character previews and management lists.
-
-- **Stacked Sprite Separation**: Avoid using negative margins for overlapping sprites with opaque backgrounds in banners (e.g., Daycare). Use `gap` or absolute positioning with clear offsets to maintain legibility.
-
-## 3.1 Asynchronous Interaction Feedback
+## 4. Asynchronous Interaction Feedback
 
 - **REQUIRED**: Any UI element that triggers an asynchronous operation (RPC, Database Save, Auth) **MUST** provide immediate visual feedback.
 - **Patterns**:
   - Show a loading spinner or "Processing..." state on the button itself.
-  - Display a toast notification *before* or *during* the save operation to signal that the interaction was registered ("Saving...").
-- **Global Overlay Priority**: In stack-based loading systems, full-screen global overlays MUST take visual precedence over local or non-blocking progress messages. This ensures that critical state changes (like a major database commit or session check) are not obscured by less important background tasks.
-- **Why**: Instant feedback prevents users from feeling the UI is "stuck" and discourages double-clicking or refreshing while data is being committed.
+  - Display a toast notification *before* or *during* the save operation.
 
 ---
 
-## 4. Color Principles
+## 5. Color Principles
 
 ### 60-30-10 Rule
 
@@ -249,28 +137,9 @@ All spacing and sizing in multiples of 8:
 10% → Accent (CTAs, highlights, attention)
 ```
 
-### Color Psychology (For Decision Making)
-
-| If You Need... | Consider Hues | Avoid |
-| :--- | :--- | :--- |
-| Trust, calm | Blue family | Aggressive reds |
-| Growth, nature | Green family | Industrial grays |
-| Energy, urgency | Orange, red | Passive blues |
-| Luxury, creativity | Deep Teal, Gold, Emerald | Cheap-feeling brights |
-| Clean, minimal | Neutrals | Overwhelming color |
-
-### Selection Process
-
-1. **What's the industry?** (narrows options)
-2. **What's the emotion?** (picks primary)
-3. **Light or dark mode?** (sets foundation)
-4. **ASK USER** if not specified
-
-For detailed color theory: [color-system.md](references/color-system.md)
-
 ---
 
-## 5. Typography Principles
+## 6. Typography Principles
 
 ### Scale Selection
 
@@ -281,123 +150,9 @@ For detailed color theory: [color-system.md](references/color-system.md)
 | Editorial | 1.333 | Readable, spacious |
 | Hero/display | 1.5-1.618 | Dramatic impact |
 
-### Pairing Concept
-
-```text
-Contrast + Harmony:
-├── DIFFERENT enough for hierarchy
-├── SIMILAR enough for cohesion
-└── Usually: display + neutral, or serif + sans
-```
-
-### Readability Rules
-
-- **Line length**: 45-75 characters optimal
-- **Line height**: 1.4-1.6 for body text
-- **Contrast**: Check WCAG requirements
-- **Size**: 16px+ for body on web
-
-For detailed typography: [typography-system.md](references/typography-system.md)
-
 ---
 
-## 6. Visual Effects Principles
-
-### Glassmorphism (When Appropriate)
-
-```text
-Key properties:
-├── Semi-transparent background
-├── Backdrop blur
-├── Subtle border for definition
-└── ⚠️ **WARNING:** Standard blue/white glassmorphism is a modern cliché. Use it radically or not at all.
-```
-
-### Shadow Hierarchy
-
-```text
-Elevation concept:
-├── Higher elements = larger shadows
-├── Y-offset > X-offset (light from above)
-├── Multiple layers = more realistic
-└── Dark mode: may need glow instead
-```
-
-### Gradient Usage
-
-```text
-Harmonious gradients:
-├── Adjacent colors on wheel (analogous)
-├── OR same hue, different lightness
-├── Avoid harsh complementary pairs
-├── 🚫 **NO Mesh/Aurora Gradients** (floating blobs)
-└── VARY from project to project radically
-```
-
-For complete effects guide: [visual-effects.md](references/visual-effects.md)
-
----
-
-## 7. Animation Principles
-
-### Timing Concept
-
-```text
-Duration based on:
-├── Distance (further = longer)
-├── Size (larger = slower)
-├── Importance (critical = clear)
-└── Context (urgent = fast, luxury = slow)
-```
-
-### Easing Selection
-
-| Action | Easing | Why |
-| :--- | :--- | :--- |
-| Entering | Ease-out | Decelerate, settle in |
-| Leaving | Ease-in | Accelerate, exit |
-| Emphasis | Ease-in-out | Smooth, deliberate |
-| Playful | Bounce | Fun, energetic |
-
-### Performance
-
-- Animate only transform and opacity
-- Respect reduced-motion preference
-- Test on low-end devices
-
-For animation patterns: [animation-guide.md](references/animation-guide.md), for advanced: [motion-graphics.md](references/motion-graphics.md)
-
----
-
-## 8. "Wow Factor" Checklist
-
-### Premium Indicators
-
-- [ ] Generous whitespace (luxury = breathing room)
-- [ ] Subtle depth and dimension
-- [ ] Smooth, purposeful animations
-- [ ] Attention to detail (alignment, consistency)
-- [ ] Cohesive visual rhythm
-- [ ] Custom elements (not all defaults)
-
-### Trust Builders
-
-- [ ] Security cues where appropriate
-- [ ] Social proof / testimonials
-- [ ] Clear value proposition
-- [ ] Professional imagery
-- [ ] Consistent design language
-
-### Emotional Triggers
-
-- [ ] Hero that evokes intended emotion
-- [ ] Human elements (faces, stories)
-- [ ] Progress/achievement indicators
-- [ ] Moments of delight
-
----
-
-## 9. Anti-Patterns (What NOT to Do)
+## 7. Anti-Patterns (What NOT to Do)
 
 ### ❌ Lazy Design Indicators
 
@@ -406,91 +161,7 @@ For animation patterns: [animation-guide.md](references/animation-guide.md), for
 - Inconsistent spacing
 - Too many competing colors
 - Walls of text without hierarchy
-- Inaccessible contrast
-
-### ❌ AI Tendency Patterns (AVOID!)
-
-- **Same colors every project**
-- **Dark + neon as default**
-- **Purple/violet everything (PURPLE BAN ✅)**
-- **Bento grids for simple landing pages**
-- **Mesh Gradients & Glow Effects**
-- **Same layout structure / Vercel clone**
-- **Not asking user preferences**
-
-### ❌ Dark Patterns (Unethical)
-
-- Hidden costs
-- Fake urgency
-- Forced actions
-- Deceptive UI
-- Confirmshaming
 
 ---
 
-## 10. Decision Process Summary
-
-```text
-For EVERY design task:
-
-1. CONSTRAINTS
-   └── What's the timeline, brand, tech, audience?
-   └── If unclear → ASK
-
-2. CONTENT
-   └── What content exists?
-   └── What's the hierarchy?
-
-3. STYLE DIRECTION
-   └── What's appropriate for context?
-   └── If unclear → ASK (don't default!)
-
-4. EXECUTION
-   └── Apply principles above
-   └── Check against anti-patterns
-
-5. REVIEW
-   └── "Does this serve the user?"
-   └── "Is this different from my defaults?"
-   └── "Would I be proud of this?"
-```
-
----
-
-## Reference Files
-
-For deeper guidance on specific areas:
-
-- [color-system.md](references/color-system.md) - Color theory and selection process
-- [typography-system.md](references/typography-system.md) - Font pairing and scale decisions
-- [visual-effects.md](references/visual-effects.md) - Effects principles and techniques
-- [animation-guide.md](references/animation-guide.md) - Motion design principles
-- [motion-graphics.md](references/motion-graphics.md) - Advanced: Lottie, GSAP, SVG, 3D, Particles
-- [decision-trees.md](references/decision-trees.md) - Context-specific templates
-- [ux-psychology.md](references/ux-psychology.md) - User psychology deep dive
-
----
-
-## Related Skills
-
-| Skill | When to Use |
-| :--- | :--- |
-| **frontend-design** (this) | Before coding - Learn design principles (color, typography, UX psychology) |
-| **[web-design-guidelines](../web-design-guidelines/SKILL.md)** | After coding - Audit for accessibility, performance, and best practices |
-
-## Post-Design Workflow
-
-After implementing your design, run the audit:
-
-```text
-1. DESIGN   → Read frontend-design principles ← YOU ARE HERE
-2. CODE     → Implement the design
-3. AUDIT    → Run web-design-guidelines review
-4. FIX      → Address findings from audit
-```
-
-> **Next Step:** After coding, use `web-design-guidelines` skill to audit your implementation for accessibility, focus states, animations, and performance issues.
-
----
-
-> **Remember:** Design is THINKING, not copying. Every project deserves fresh consideration based on its unique context and users. **Avoid the Modern SaaS Safe Harbor!**
+> **Note for Poké Vicio**: All project-specific UI rules (Hybrid Retro-Modern, SASS filters, specific badge layouts) have been moved to the [Manual de Estándares UI/UX](../project-standards/references/ui_ux_standards.md).

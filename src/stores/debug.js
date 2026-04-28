@@ -350,6 +350,18 @@ export const useDebugStore = defineStore('debug', () => {
       description: 'Limpia los slots del equipo de Guerra y desactiva el auto-rellenado.'
     })
 
+    register({
+      id: 'poke-force-starter',
+      label: 'FORZAR PANTALLA INICIAL',
+      command: 'forceStarterScreen',
+      category: 'pokes',
+      action: () => {
+        game.state.starterChosen = false
+        ui.notify('Debug: Pantalla de Iniciales forzada', '🛡️')
+      },
+      description: 'Fuerza la aparición de la pantalla de selección de Pokémon inicial.'
+    })
+
     // TIME
     register({
       id: 'core-set-mock-time',

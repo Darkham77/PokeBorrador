@@ -146,7 +146,7 @@ export const useGameStore = defineStore('game', () => {
     addPokemon(starter, { notify: false })
     
     state.starterChosen = true
-    uiStore.activeTab = 'team'
+    uiStore.activeTab = 'map'
     
     const speciesData = pokemonDataProvider.getPokemonData(id)
     uiStore.notify(`¡${speciesData.name} es tu compañero! ¡Buena suerte!`, '🎉')

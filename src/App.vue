@@ -22,6 +22,7 @@ import { useBodyClass } from '@/composables/useBodyClass'
 import { useWindowListener } from '@/composables/useWindowListener'
 
 import { useProfileStore } from '@/stores/profile'
+import { useRoute } from 'vue-router'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -30,8 +31,11 @@ const profileStore = useProfileStore()
 const classStore = usePlayerClassStore()
 const _battleStore = useBattleStore()
 const loadingStore = useLoadingStore()
+const route = useRoute()
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref(null)
+
+const isLoginPage = computed(() => route.path === '/login')
 
 const loadingInfo = computed(() => {
   // 1. Centralized Loading Store (Highest Priority)
@@ -45,18 +49,25 @@ const loadingInfo = computed(() => {
     }
   }
 
-  // 2. Legacy/Automatic states (Backwards Compatibility)
+  // 2. Auth Loading
   if (authStore.loading) {
     return { active: true, msg: 'Iniciando sesión...', sub: 'Conectando con el servidor', global: false }
   }
   
-  if (authStore.user && !gameStore.isReady) {
-    let msg = 'Escribiendo tu historia...'
-    if (!gameStore.isDataLoaded) msg = 'Cargando datos...'
-    else if (!gameStore.isEngineReady) msg = 'Cargando motor...'
-    return { active: true, msg, sub: 'Preparando entorno de juego', global: false }
+  // 3. Game Data & Engine Boot (ULTRA-STICKY GATE)
+  // No soltamos la pantalla negra hasta que TODO el motor esté listo
+  if (authStore.user && (!gameStore.isDataLoaded || !gameStore.isEngineReady)) {
+    const msg = !gameStore.isDataLoaded ? 'Cargando datos...' : 'Iniciando motor...'
+    
+    return { 
+      active: true, 
+      msg, 
+      sub: 'Preparando entorno de juego', 
+      global: false 
+    }
   }
 
+  // 4. Manual Overlays
   if (gameStore.state.isOverlayLoading) {
     return { 
       active: true, 
@@ -67,6 +78,10 @@ const loadingInfo = computed(() => {
   }
 
   return { active: false, msg: '', sub: '', global: false }
+})
+
+const isReadyToSeeGame = computed(() => {
+  return authStore.user && gameStore.isReady && !loadingInfo.value.active
 })
 
 onMounted(async () => {
@@ -88,6 +103,12 @@ onMounted(async () => {
     
     // Si la DB es compatible, cargar la partida
     await gameStore.loadGame()
+    
+    // Restaurar combate si existe uno activo en el estado guardado
+    if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
+      console.log('[App] Detectado combate persistente. Restaurando estado...')
+      _battleStore.syncFromLegacy(gameStore.state.activeBattle)
+    }
     
     // Sincronizar datos del perfil
     profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
@@ -164,12 +185,15 @@ const handleRetry = () => {
 
 <template>
   <div id="vue-app">
-    <!-- RESTORE LEGACY BACKGROUND -->
-    <div class="global-background-stars" />
+    <!-- RESTORE LEGACY BACKGROUND (Only visible when game is fully ready and NOT loading) -->
+    <div 
+      v-show="isReadyToSeeGame || isLoginPage"
+      class="global-background-stars" 
+    />
 
-    <!-- Pantalla de carga unificada -->
+    <!-- Pantalla de carga unificada (v-show para evitar parpadeos de DOM) -->
     <div
-      v-if="loadingInfo.active"
+      v-show="loadingInfo.active"
       class="loading-overlay"
       :class="{ 'global-overlay': loadingInfo.global }"
     >
@@ -186,7 +210,7 @@ const handleRetry = () => {
     <!-- Capa de Juego (Phaser debe cargar en segundo plano para disparar isReady) -->
     <template v-if="authStore.user">
       <PhaserGame 
-        v-show="!uiStore.isAnyFullscreenModalOpen"
+        v-show="!isLoginPage && !uiStore.isAnyFullscreenModalOpen"
         class="phaser-background" 
       />
       
@@ -216,7 +240,7 @@ const handleRetry = () => {
       </template>
     </template>
 
-    <!-- El LoginView se renderiza aquí si no hay sesión y terminó de cargar auth -->
+    <!-- El LoginView o vistas de ruta solo si NO hay usuario o estamos en una ruta pública -->
     <router-view v-else-if="!authStore.loading" />
 
 

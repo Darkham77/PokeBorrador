@@ -3,23 +3,25 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
+import { useModalStore } from '@/stores/modals'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getStatusIcon } from '@/logic/battle/battleStatus'
 import BaseModal from '@/components/common/BaseModal.vue'
 
+defineProps({
+  show: { type: Boolean, default: false }
+})
+
 const gameStore = useGameStore()
 const invStore = useInventoryStore()
 const uiStore = useUIStore()
+const modalStore = useModalStore()
 
-const isOpen = computed({
-  get: () => invStore.isItemTargetModalOpen,
-  set: (val) => { invStore.isItemTargetModalOpen = val }
-})
 const itemName = computed(() => invStore.activeItemToUse)
 const team = computed(() => gameStore.state.team || [])
 
 const close = () => {
-  isOpen.value = false
+  modalStore.close()
 }
 
 const handleSelect = async (index) => {
@@ -42,7 +44,7 @@ const getHpColor = (p) => {
 
 <template>
   <BaseModal
-    :show="isOpen"
+    :show="show"
     :title="`USAR ${itemName?.toUpperCase() || 'ÍTEM'}`"
     max-width="400px"
     @close="close"

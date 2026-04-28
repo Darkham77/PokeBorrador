@@ -16,8 +16,10 @@ export default class BootScene extends Phaser.Scene {
     // 1. Setup Loading UI
 
     // 2. Preload recurring UI/VFX Assets
+    if (!this.game || this.game.pendingDestroy) return;
+
     const loadingStore = useLoadingStore()
-    loadingStore.start('phaser_boot', 'Iniciando Motor...', 'Cargando recursos base', false)
+    loadingStore.start('phaser_boot', 'Iniciando motor...', 'Cargando recursos base', true)
     
     this.load.on('progress', (value) => {
       loadingStore.setProgress('phaser_boot', null, `Cargando recursos: ${Math.round(value * 100)}%`)
@@ -31,20 +33,26 @@ export default class BootScene extends Phaser.Scene {
 
   create() {
     console.log('[BootScene] Engine Assets Loaded');
-    useLoadingStore().finish('phaser_boot')
     
-    // Notify Vue that the engine is ready
-    window.dispatchEvent(new CustomEvent('game-state-ready'));
-    window.legacyGameReady = true; // For race condition guard in App.vue
-    
-    // Transition to the first actual scene (e.g., WeatherScene or BattleScene when triggered)
-    // For now, we launch the WeatherScene in the background if it exists and isn't running
-    const weatherScene = this.scene.manager.getScene('WeatherScene');
-    if (weatherScene && !this.scene.isActive('WeatherScene')) {
-      this.scene.launch('WeatherScene');
-    }
+    // Garantizar que la fase de "Iniciando" dure al menos 500ms para estabilidad visual y renderizado
+    setTimeout(() => {
+      // Cláusula de guarda: si el juego se destruyó durante la espera, salir silenciosamente
+      if (!this.scene || !this.scene.manager || (this.game && this.game.pendingDestroy)) return;
 
-    this.scene.stop();
+      useLoadingStore().finish('phaser_boot')
+      
+      // Notify Vue that the engine is ready
+      window.dispatchEvent(new CustomEvent('game-state-ready'));
+      window.legacyGameReady = true; // For race condition guard in App.vue
+      
+      // Transition to the first actual scene
+      const weatherScene = this.scene.manager.getScene('WeatherScene');
+      if (weatherScene && !this.scene.isActive('WeatherScene')) {
+        this.scene.launch('WeatherScene');
+      }
+
+      this.scene.stop();
+    }, 500);
   }
 
   /**

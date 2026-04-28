@@ -292,6 +292,9 @@ CPU-intensive (SLOW):
 2. **Avoid layout triggers** (size/position changes)
 3. **Use will-change sparingly** (hints to browser)
 4. **Test on low-end devices** (not just dev machine)
+- **Transform Conflict/Override**: CSS animations that define `transform` (e.g., `translateY`) will completely override any static `transform` applied to the element via another CSS class. If an element needs both a static offset (e.g., floating height) and an idle animation, DO NOT use `transform` for both.
+  - **Pattern**: Use `margin-bottom` or `padding-top` for the static offset/elevation, and reserve `transform` exclusively for the animation.
+  - **Why**: This prevents the animation from "resetting" or fighting with the base positioning logic.
 
 ### Respecting User Preferences
 

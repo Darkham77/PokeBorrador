@@ -43,16 +43,45 @@ const atmosphereStyles = computed(() => {
   else if (isMorning) { brightness = 1.1; saturate = 0.9; hue = 5; }
 
   const w = props.weather
-  if (w === 'rain' || w === 'storm') { brightness *= 0.8; saturate *= 0.7; }
-  else if (w === 'fog') { brightness *= 1.1; saturate *= 0.5; }
-  else if (w === 'snow' || w === 'blizzard') { brightness *= 1.1; saturate *= 0.6; }
-  else if (w === 'sandstorm') { brightness *= 0.9; contrast *= 1.2; }
-  else if (w === 'heatwave') { brightness *= 1.1; saturate *= 1.5; hue -= 10; }
+  let wBrightness = 1.0
+  let wSaturate = 1.0
+  let wContrast = 1.0
+  let wHue = 0
+
+  if (w === 'rain' || w === 'storm') { wBrightness = 0.8; wSaturate = 0.7; }
+  else if (w === 'fog') { wBrightness = 1.1; wSaturate = 0.5; }
+  else if (w === 'snow' || w === 'blizzard') { wBrightness = 1.1; wSaturate = 0.6; }
+  else if (w === 'sandstorm') { wBrightness = 0.9; wContrast = 1.2; }
+  else if (w === 'heatwave') { wBrightness = 1.1; wSaturate = 1.5; wHue = -10; }
+
+  // Aplicamos clima sobre el ciclo para el estilo completo
+  const finalBrightness = brightness * wBrightness
+  const finalSaturate = saturate * wSaturate
+  const finalContrast = contrast * wContrast
+  const finalHue = hue + wHue
 
   return {
-    filter: `Brightness(${brightness}) contrast(${contrast}) Saturate(${saturate}) hue-rotate(${hue}deg)`,
+    filter: `Brightness(${finalBrightness}) Contrast(${finalContrast}) Saturate(${finalSaturate}) hue-rotate(${finalHue}deg)`,
     '--card-seed': animSeed.value,
     '--card-speed': 0.6 + (animSeed.value * 1.0)
+  }
+})
+
+const weatherOnlyStyles = computed(() => {
+  const w = props.weather
+  let brightness = 1.0
+  let saturate = 1.0
+  let contrast = 1.0
+  let hue = 0
+
+  if (w === 'rain' || w === 'storm') { brightness = 0.8; saturate = 0.7; }
+  else if (w === 'fog') { brightness = 1.1; saturate = 0.5; }
+  else if (w === 'snow' || w === 'blizzard') { brightness = 1.1; saturate = 0.6; }
+  else if (w === 'sandstorm') { brightness = 0.9; contrast = 1.2; }
+  else if (w === 'heatwave') { brightness = 1.1; saturate = 1.5; hue = -10; }
+
+  return {
+    filter: `Brightness(${brightness}) Contrast(${contrast}) Saturate(${saturate}) hue-rotate(${hue}deg)`
   }
 })
 
@@ -95,6 +124,7 @@ onUnmounted(() => {
 
 defineExpose({
   atmosphereStyles,
+  weatherOnlyStyles,
   animClass
 })
 

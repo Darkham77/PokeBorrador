@@ -1,7 +1,6 @@
 ---
 name: game-development
 description: Game development orchestrator. YOU MUST use this skill whenever the user asks to build a game, mentions Phaser, game design, multiplayer networking, sprites, 2D/3D development, or anything related to game engines and mechanics. Routes to platform-specific references based on project needs.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Game Development
@@ -13,6 +12,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ## When to Use This Skill
 
 You are working on a game development project. This skill teaches the PRINCIPLES of game development and directs you to the right sub-skill based on context.
+
+> [!IMPORTANT]
+> Si estás trabajando en **Poké Vicio**, DEBES consultar adicionalmente el [Manual de Mecánicas y UX de Juego](../project-standards/references/game_mechanics_manual.md) para reglas específicas del motor y la interfaz.
 
 ---
 
@@ -64,11 +66,6 @@ RENDER → Draw the frame (interpolated)
 - Rendering: As fast as possible
 - Interpolate between states for smooth visuals
 
-**Asset Loading Progress**:
-
-- **Pattern**: In hybrid games (Vue + Phaser), connect the engine's loading events (`this.load.on('progress')`) to a centralized UI store.
-- **Why**: This provides real-time feedback to the user during heavy asset loads (e.g., textures, audio) and keeps the loading screen feeling responsive and "alive" instead of static.
-
 ---
 
 ### 2. Pattern Selection Matrix
@@ -83,7 +80,7 @@ RENDER → Draw the frame (interpolated)
 | **Behavior Tree** | Complex AI decisions | Enemy AI |
 | **Singleton Scene** | Prevent double-mount | Weather, Global FX |
 
-**Decision Rule:** Start with State Machine. Add ECS only when performance demands. Use internal flags (e.g., `_isCreated`) and `scene.isActive` checks to prevent redundant scene initialization.
+**Decision Rule:** Start with State Machine. Add ECS only when performance demands.
 
 ---
 
@@ -96,30 +93,9 @@ Abstract input into ACTIONS, not raw keys:
 "move"  → WASD, Left stick, Virtual joystick
 ```
 
-**Why:** Enables multi-platform, rebindable controls.
+---
 
-**Event Interdiction (Vue + Phaser Hybrid):**
-
-- **Rule**: Standardize event blocking in `App.vue` to prevent Phaser from hijacking scroll/wheel events when the user is interacting with UI overlays (modals).
-- **Pattern**: Detect scrollable Vue containers dynamically (recursive search for `overflow: auto/scroll`). If the user is inside a modal or scrollable area, stop propagation to Phaser (`e.stopPropagation()`) but allow the browser to bubble the event for natural scrolling.
-
-### 4. Slot-Based Selection Parity
-
-In RPG/Team-based games, any UI slot that displays a current team member (Adventure, PVP, War) SHOULD provide a "REEMPLAZAR" (Swap/Replace) interaction even if it's not a competitive mode.
-
-- **Rule**: If a slot can be filled, it must also be replaceable without forcing the user to manually "remove" the existing item first.
-- **Pattern**: Provide a dedicated "Select/Replace" button (🔄) on the card that opens the inventory/box selector with a callback designed to handle the swap logic.
-- **Why**: Reduces friction in team management and ensures a consistent UX across all game modes.
-
-### 5. Reorder & Drag-and-Drop (DND) Logic
-
-In team-based or item-based games, reordering logic must respect the persistence model of the target collection:
-
-- **Adventure/Index-Based**: When reordering a physical team (e.g., `gameStore.state.team`), use an "insert/shift" logic. Splicing an item from `fromIndex` and inserting it at `toIndex` shifts all intermediate items.
-- **PVP/War/UID-Based**: When reordering teams stored as UID arrays, manipulate the array of IDs directly. The UI should reactively reflect the new order by mapping these IDs to their respective objects.
-- **Persistence**: ALWAYS trigger a silent save (e.g., `save(false)`) after a reorder operation to ensure the new state is preserved across sessions without interrupting the user flow with notifications.
-
-### 5. Performance Budget (60 FPS = 16.67ms)
+### 4. Performance Budget (60 FPS = 16.67ms)
 
 | System | Budget |
 | :--- | :--- |
@@ -134,34 +110,9 @@ In team-based or item-based games, reordering logic must respect the persistence
 
 1. Algorithm (O(n²) → O(n log n))
 2. Batching (reduce draw calls via Texture Atlases)
-3. **Sprite Rendering**: Use `@include sprite-render` for all pixel-art game objects to ensure GPU-accelerated sharp scaling.
-4. **SASS Integrity**: Use Capitalized functions (e.g., `Scale()`, `Blur()`, `Translate3D()`) to prevent Dart Sass 2.0 compilation traps.
-5. **GPU Layer Throttling**: For high-density UI effects (like many sparkles or particles), avoid applying `@include gpu-layer` to every individual child element. Instead, promote the common parent container to a GPU layer to reduce compositor overhead and prevent browser rendering dropouts.
-6. Pooling (avoid GC spikes)
-7. LOD (detail by distance)
-8. Culling (skip invisible)
-
----
-
-### 5. AI Selection by Complexity
-
-| AI Type | Complexity | Use When |
-| :--- | :--- | :--- |
-| **FSM** | Simple | 3-5 states, predictable behavior |
-| **Behavior Tree** | Medium | Modular, designer-friendly |
-| **GOAP** | High | Emergent, planning-based |
-| **Utility AI** | High | Scoring-based decisions |
-
----
-
-### 6. Collision Strategy
-
-| Type | Best For |
-| :--- | :--- |
-| **AABB** | Rectangles, fast checks |
-| **Circle** | Round objects, cheap |
-| **Spatial Hash** | Many similar-sized objects |
-| **Quadtree** | Large worlds, varying sizes |
+3. Pooling (avoid GC spikes)
+4. LOD (detail by distance)
+5. Culling (skip invisible)
 
 ---
 
@@ -174,27 +125,6 @@ In team-based or item-based games, reordering logic must respect the persistence
 | Cache nothing | Cache references |
 | Optimize without profiling | Profile first |
 | Mix input with logic | Abstract input layer |
-
----
-
-## Routing Examples
-
-### Example 1: "I want to make a browser-based 2D platformer"
-
-→ Start with `references/web-games.md` for framework selection
-→ Then `references/2d-games.md` for sprite/tilemap patterns
-→ Reference `references/game-design.md` for level design
-
-### Example 2: "Mobile puzzle game for iOS and Android"
-
-→ Start with `references/mobile-games.md` for touch input and stores
-→ Use `references/game-design.md` for puzzle balancing
-
-### Example 3: "Multiplayer VR shooter"
-
-→ `references/vr-ar.md` for comfort and immersion
-→ `references/3d-games.md` for rendering
-→ `references/multiplayer.md` for networking
 
 ---
 

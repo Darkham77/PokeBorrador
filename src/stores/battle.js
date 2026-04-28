@@ -36,15 +36,39 @@ export const useBattleStore = defineStore('battle', () => {
 
   const playerStages = ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 })
   const enemyStages = ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 })
-  const participants = ref(new Set())
+  const upcomingPokemon = ref(null)
 
   const player = computed(() => activeBattle.value?.player)
   const enemy = computed(() => activeBattle.value?.enemy)
 
   const syncFromLegacy = (battleData) => {
+    if (!battleData) {
+      activeBattle.value = null
+      isBattleActive.value = false
+      return
+    }
     activeBattle.value = battleData
-    isBattleActive.value = !!battleData && !battleData.over
-    if (!battleData || !battleData.over) isFinishing.value = false
+    if (battleData.playerStages) playerStages.value = battleData.playerStages
+    if (battleData.enemyStages) enemyStages.value = battleData.enemyStages
+    if (battleData.battleLogs) battleLogs.value = battleData.battleLogs
+    
+    isBattleActive.value = !battleData.over
+    isFinishing.value = false
+  }
+
+  const persistBattle = () => {
+    if (!activeBattle.value || activeBattle.value.over) {
+      gs.state.activeBattle = null
+      return
+    }
+    gs.state.activeBattle = {
+      ...activeBattle.value,
+      playerStages: playerStages.value,
+      enemyStages: enemyStages.value,
+      battleLogs: battleLogs.value.slice(-10)
+    }
+    // No notificamos el guardado para evitar spam visual
+    gs.save(false)
   }
 
   const _startBattle = async (enemyPoke, options = {}) => {
@@ -62,28 +86,39 @@ export const useBattleStore = defineStore('battle', () => {
 
     // Si hay un combate activo pero NO está en fase de finalización, forzamos huida.
     // Si ya está en isFinishing (viendo recompensas), podemos simplemente pisarlo.
-    if (isBattleActive.value && !isFinishing.value && !activeBattle.value?.over) {
+    if (isBattleActive.value && !isFinishing.value && !activeBattle.value?.over && !isSearching.value) {
       console.warn('[BATTLE] Combate en curso detectado. Forzando huida del anterior.')
       await endBattle(false, true)
     }
 
+    // Efecto de búsqueda: si estamos buscando, mostramos el pokemon tras los arbustos un momento
+    if (isSearching.value) {
+      upcomingPokemon.value = enemyPoke
+      await new Promise(r => setTimeout(r, 1500)) // Pausa dramática para ver el pokemon en el pasto
+      upcomingPokemon.value = null
+    }
+
     isSearching.value = false
     clearLogs()
-    isBattleActive.value = true
-    isFinishing.value = false
 
     playerPoke.confused = 0; playerPoke.flinched = false
     enemyPoke.confused = 0; enemyPoke.flinched = false
 
+    const { useMapStore } = await import('./map')
+    const mapStore = useMapStore()
+    
+    // IMPORTANTE: Seteamos el combate ANTES de quitar isFinishing 
+    // para que la sombra y otros elementos no parpadeen
     activeBattle.value = {
       enemy: enemyPoke, player: playerPoke, isGym, gymId, isTrainer, enemyTeam,
       trainerName, locationId, turn: 'player', turnCount: 1, over: false,
-      weather: gs.state.weather || { type: 'clear', turns: 0 },
+      weather: { type: mapStore.currentWeather || 'clear', turns: -1 },
       playerTeamIndex: gs.state.team.indexOf(playerPoke),
       participants: [playerPoke.uid], learnQueue: [], ...battleOptions
     }
 
-    if (isTrainer || isGym) await gs.saveGame()
+    persistBattle()
+    if (isTrainer || isGym) await gs.save()
     gs.registerPokedex(enemyPoke.id, false)
     if (isTrainer && enemyTeam) enemyTeam.forEach(p => gs.registerPokedex(p.id, false))
 
@@ -93,6 +128,10 @@ export const useBattleStore = defineStore('battle', () => {
     const startMsg = isTrainer ? `¡${trainerName} te desafía!` : isGym ? `¡Combate de Gimnasio contra ${enemyPoke.name}!` : `¡Un ${enemyPoke.name} salvaje apareció!`
     addLog(startMsg, 'log-info', enemyPoke)
     handleEntryAbilities(playerPoke, enemyPoke, playerStages.value, enemyStages.value, addLog)
+    
+    // IMPORTANTE: Seteamos estos flags al FINAL para evitar parpadeos visuales
+    isFinishing.value = false
+    isBattleActive.value = true
   }
 
   const addLog = (msg, type = 'log-info', source = null) => {
@@ -131,7 +170,7 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const clearLogs = () => {
-    battleLogs.value = []; logQueue.value = []; isProcessingLogs.value = false; participants.value.clear()
+    battleLogs.value = []; logQueue.value = []; isProcessingLogs.value = false;
     playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
     enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
   }
@@ -164,6 +203,7 @@ export const useBattleStore = defineStore('battle', () => {
       await endBattle(true, false)
     } else if (res.action !== 'fail') {
       addLog(`Usaste ${itemName}`, 'log-info', itemName)
+      persistBattle()
       await new Promise(r => setTimeout(r, 800))
       await runEnemyAction(thisStore)
     }
@@ -176,6 +216,9 @@ export const useBattleStore = defineStore('battle', () => {
       isFinishing.value = false
       return
     }
+
+    activeBattle.value.over = true
+    gs.state.activeBattle = null
     
     if (win && !fled) calculateRewards()
     
@@ -207,6 +250,29 @@ export const useBattleStore = defineStore('battle', () => {
       await completeBattleFlow('map')
     } else {
       isFinishing.value = true
+      
+      // Pre-generar el próximo encuentro si es una batalla salvaje y ganamos
+      const isWild = !activeBattle.value.isTrainer && !activeBattle.value.isGym
+      if (isWild && activeBattle.value.enemy.hp <= 0) {
+        const { generateEncounter } = await import('@/logic/encounters')
+        const { useMapStore } = await import('./map')
+        const { useEventStore } = await import('./events')
+        const mapStore = useMapStore()
+        const eventStore = useEventStore()
+        
+        const encounter = await generateEncounter(activeBattle.value.locationId, gs.state, {
+          activeEvents: mapStore.activeEvents,
+          dominanceData: mapStore.mapWinners,
+          shinyMultiplier: eventStore.globalMultipliers?.shiny || 1
+        })
+        
+        if (encounter && encounter.type === 'wild') {
+          console.log('[BATTLE] Pre-generado próximo encuentro:', encounter.pokemon.name)
+          upcomingPokemon.value = encounter.pokemon
+        } else {
+          console.warn('[BATTLE] No se pudo pre-generar encuentro:', encounter?.type)
+        }
+      }
     }
 
     // Persistir estado inmediatamente después del combate
@@ -218,12 +284,15 @@ export const useBattleStore = defineStore('battle', () => {
     const baseExp = calculateBaseExp(e)
     const warMods = getBattleRewardModifiers(activeBattle.value.locationId, gs.state.faction, warStore.mapDominance)
     const totalExpMult = warMods.expMult + ((eventStore.globalMultipliers?.exp || 1) - 1)
+    const classMult = classStore.getModifier('expMult', { isTrainer: activeBattle.value.isTrainer })
 
     gs.state.team.forEach(p => {
-      const reward = processExpGain(p, baseExp, participants.value, {
+      const participantsSet = new Set(activeBattle.value.participants)
+      const reward = processExpGain(p, baseExp, participantsSet, {
         isActive: p.uid === activeBattle.value.player.uid,
-        classMult: classStore.getModifier('expMult', { isTrainer: activeBattle.value.isTrainer }),
-        totalExpMult, participantsSet: participants.value
+        classMult,
+        totalExpMult,
+        participantsSet
       })
       if (reward) {
         addLog(`${p.name} ganó ${reward.gained} EXP.`, 'log-player', p)
@@ -269,12 +338,15 @@ export const useBattleStore = defineStore('battle', () => {
     await new Promise(r => setTimeout(r, 600))
     oldPoke.confused = 0; oldPoke.flinched = false
     activeBattle.value.player = newPoke; activeBattle.value.playerTeamIndex = teamIndex
-    activeBattle.value.participants.push(newPoke.uid)
+    if (!activeBattle.value.participants.includes(newPoke.uid)) {
+      activeBattle.value.participants.push(newPoke.uid)
+    }
     playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
     addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
     phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
     await new Promise(r => setTimeout(r, 600))
     handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog)
+    persistBattle()
     if (!isForced) await runEnemyAction(thisStore)
     isProcessing.value = false
   }
@@ -293,14 +365,20 @@ export const useBattleStore = defineStore('battle', () => {
     if (battleEndCallback.value) { battleEndCallback.value(); battleEndCallback.value = null }; 
     
     if (option === 'search' && locId) {
-      // Flujo optimizado: NO cerramos el modal ni borramos el activeBattle aún
-      // Solo indicamos que estamos buscando para que la UI pueda reaccionar (ej: mostrar loading)
+      // Flujo optimizado: Si ya tenemos el upcomingPokemon, entramos en combate directo
+      if (upcomingPokemon.value) {
+        const nextPoke = upcomingPokemon.value
+        await _startBattle(nextPoke, { locationId: locId })
+        upcomingPokemon.value = null // Limpiamos DESPUÉS de iniciar para que la sombra no parpadee
+        return
+      }
+
+      // Fallback si no había pre-generado (ej: recarga de página)
       isSearching.value = true
       isFinishing.value = false
       isProcessing.value = false
       
       const { useMapStore } = await import('./map')
-      // Esto disparará un nuevo _startBattle que pisará el activeBattle actual y hará clearLogs()
       await useMapStore().navigate(locId)
       return
     }
@@ -318,14 +396,22 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const thisStore = reactive({ 
-    activeBattle, playerStages, enemyStages, participants, addLog, endBattle, gs, completeBattleFlow,
-    attackerSide, activeMove
+    activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
+    attackerSide, activeMove, persistBattle
   })
+
+  if (typeof window !== 'undefined') {
+    window.__VITE_DEBUG__ = window.__VITE_DEBUG__ || {}
+    window.__VITE_DEBUG__.forceFlee = async () => {
+      console.warn('[DEBUG] Forzando huida del combate...')
+      await endBattle(false, true)
+    }
+  }
 
   return {
     state: activeBattle, battleLogs, isBattleActive, isFinishing, isProcessing, player, enemy,
-    playerStages, enemyStages, participants, attackerSide, activeMove,
-    syncFromLegacy, addLog, clearLogs, executeMove, 
+    playerStages, enemyStages, attackerSide, activeMove, upcomingPokemon,
+    syncFromLegacy, addLog, clearLogs, executeMove, persistBattle,
     flee: async () => { 
       if (isProcessing.value) return; 
       useUIStore().openConfirm({
@@ -333,7 +419,7 @@ export const useBattleStore = defineStore('battle', () => {
         message: '¿Estás seguro que deseas huir de este encuentro?',
         confirmText: 'SÍ, HUIR',
         cancelText: 'VOLVER',
-        type: 'danger',
+        type: 'primary',
         variant: 'retro',
         onConfirm: async () => {
           audio.flee(); 

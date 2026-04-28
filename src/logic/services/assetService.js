@@ -80,6 +80,7 @@ export const ASSET_TYPES = {
   FACTION: 'faction',
   RANK: 'rank',
   ICON: 'icon',
+  ENVIRONMENT: 'environment',
   DATA: 'data'
 };
 
@@ -154,15 +155,15 @@ export const getAssetUrl = (type, rawId, options = {}) => {
       const sanitizedId = id.toLowerCase().replace(/[\s.]/g, '');
       const finalId = LEGACY_MAPPING[sanitizedId] || sanitizedId;
 
-      // Remote Showdown sprites mapping (Now all local)
-      // All previous showdownTrainers are now in public/assets/sprites/trainers/
-      
       // Other remote URLs fallback
       if (typeof id === 'string' && id.startsWith('http')) return id;
       
       // Local assets (prioritized)
       return resolveAsset(`/assets/sprites/trainers/${finalId}${extension}`);
     }
+
+    case ASSET_TYPES.ENVIRONMENT:
+      return resolveAsset(`/assets/environment/${id}.webp`);
 
     case ASSET_TYPES.BANNER:
       return resolveAsset(`/assets/ui/banners/${id}${extension}`);

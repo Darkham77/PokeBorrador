@@ -166,7 +166,7 @@ export default class BattleScene extends Phaser.Scene {
     // Get pokemon data from the stored battle data
     const pokemon = isPlayer ? this.currentBattleData?.player : this.currentBattleData?.enemy;
     const speciesData = pokemon ? pokemonDataProvider.getPokemonData(pokemon.id) : null;
-    const isFlying = speciesData?.type === 'flying' || speciesData?.secondaryType === 'flying';
+    const isFlying = speciesData?.isFloating || false;
     
     let shadow = isPlayer ? this.playerShadow : this.enemyShadow;
     

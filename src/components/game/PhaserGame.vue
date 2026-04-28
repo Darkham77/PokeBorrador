@@ -35,13 +35,9 @@ onUnmounted(() => {
     gameInstance.value.destroy(true);
     gameInstance.value = null;
     phaserBridge.setGame(null);
-    
-    // Safety cleanup of loading states
-    const loadingStore = useLoadingStore();
-    loadingStore.finish('phaser_boot');
-    
     console.log('[PhaserGame] Instance destroyed');
   }
+  useLoadingStore().finish('phaser_boot');
 });
 
 // Expose the instance if needed by parent components (rarely used, prefer bridge)

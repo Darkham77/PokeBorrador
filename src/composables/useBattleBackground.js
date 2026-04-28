@@ -49,24 +49,30 @@ export function useBattleBackground() {
    * @param {string} locationId 
    * @param {string} cycle - dawn | day | dusk | night
    * @param {boolean} isFishing 
+   * @returns {{ url: string, isBakedIn: boolean }}
    */
   function getBackgroundUrl(locationId, cycle = 'day', isFishing = false) {
-    if (isFishing) return getAssetUrl(ASSET_TYPES.BATTLE_BG, 'bg_fishing')
+    if (isFishing) return { url: getAssetUrl(ASSET_TYPES.BATTLE_BG, 'bg_fishing'), isBakedIn: false }
 
     const biome = BIOME_MAP[locationId] || 'ruta'
     const assetDef = BG_ASSETS[biome]
 
     let fileName;
+    let isBakedIn = false
     if (Array.isArray(assetDef)) {
       // Check if the specific cycle exists for this biome, fallback to 'day'
       const variant = assetDef.includes(cycle) ? cycle : 'day'
       fileName = `${biome}_${variant}`
+      isBakedIn = variant !== 'day' // Si no es el default, tiene el ciclo horneado
     } else {
       // Static biome image
       fileName = assetDef
     }
 
-    return getAssetUrl(ASSET_TYPES.BATTLE_BG, fileName)
+    return {
+      url: getAssetUrl(ASSET_TYPES.BATTLE_BG, fileName),
+      isBakedIn
+    }
   }
 
   return {

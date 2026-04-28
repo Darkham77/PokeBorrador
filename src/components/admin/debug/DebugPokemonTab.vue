@@ -25,6 +25,10 @@ async function clearPvpTeam() {
 async function clearWarTeam() {
   window.__VITE_DEBUG__.clearWarTeam()
 }
+
+async function forceStarterScreen() {
+  window.__VITE_DEBUG__.forceStarterScreen()
+}
 </script>
 
 <template>
@@ -131,6 +135,20 @@ async function clearWarTeam() {
           </PVTooltip>
         </div>
       </div>
+
+      <!-- Starter Reset -->
+      <div class="debug-danger-zone no-border">
+        <div class="button-row">
+          <PVTooltip title="Fuerza la pantalla de elección de inicial para pruebas visuales">
+            <button
+              class="btn-vicio-secondary btn-vicio-sm"
+              @click.stop="forceStarterScreen"
+            >
+              ATRAPAR INICIAL
+            </button>
+          </PVTooltip>
+        </div>
+      </div>
     </div>
 
     <!-- Pokemon Creator -->
@@ -194,6 +212,8 @@ async function clearWarTeam() {
   padding-top: 12px;
   border-top: 1px dashed Rgba(124, 58, 237, 0.3);
   text-align: right;
+
+  &.no-border { border-top: none; }
 }
 
 .danger-label {

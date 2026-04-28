@@ -1,202 +1,51 @@
-# Architectural Design & Concepts: DBRouter
+# Manual de Persistencia y DBRouter (Poké Vicio)
 
-The **DBRouter** is the core component of Pokémon Online's data architecture. Its purpose is to act as a unified abstraction layer that allows the game to function identically in both connected environments (Online/Global) and local environments (Offline/Local).
+Este manual documenta la arquitectura de persistencia híbrida que permite el juego Online (Supabase) y Offline (SQLite WASM) con total aislamiento.
 
-## 🎯 Philosophy & Objectives
+## 🧱 Arquitectura DBRouter
 
-1. **Transparent Parity**: The rest of the code should not know whether the database is Supabase or SQLite.
-2. **Strict Isolation**: Ensuring that data from a Global session never mixes with a Local session.
-3. **Decoupling**: Preventing UI components (Vue) from depending on specific database drivers.
+### 1. Aislamiento Estricto
 
----
+El sistema **NUNCA** escribe en ambas bases de datos simultáneamente. El modo se determina al inicio de la sesión (`online` o `offline`).
 
-## 🏗️ Dual Architecture
+### 2. Lógica "Last-In-Wins"
 
-The DBRouter operates in two mutually exclusive modes, determined during the user's session initialization.
-
-### 1. Online Mode (Global)
-
-* **Provider**: Supabase (PostgreSQL + PostgREST).
-* **Scope**: Persistent world shared with other players.
-* **Technology**: Uses the official Supabase client for queries, RPCs, and Realtime.
-
-### 2. Offline Mode (Local)
-
-* **Provider**: SQLite (WASM) + IndexedDB.
-* **Scope**: Private world processed entirely in the user's browser.
-* **Technology**: Uses `sql.js` for the SQL engine and `IndexedDB` for binary `.sqlite` file persistence.
-  * **WASM Parity**: The `initSqlJs` `locateFile` path **MUST** point to the exact same version/CDN as the main library script in `index.html` to avoid `LinkError`.
+Para el modo Online, se utiliza un `current_session_id`. Si se detecta un cambio en este ID desde otro cliente, la sesión actual entra en conflicto y se bloquea para evitar corrupción de datos por escrituras concurrentes.
 
 ---
 
-## 🖇️ ProxyQuery & API Parity
+## ⏳ Protocolo de Tiempo y Simulación
 
-To ensure a local SQL database behaves exactly like a Supabase REST API, the DBRouter implements the **ProxyQuery** pattern.
+### 1. getServerTime()
 
-### How it works?
+- **Online**: Obtiene el tiempo real mediante un RPC al servidor para evitar trampas con el reloj local.
+- **Offline**: Utiliza el reloj local pero permite el uso de un **Time Offset**.
 
-When you call `DBRouter.from('table').select('*').eq('id', 1)`, an immediate instruction is not executed. Instead, a `ProxyQuery` instance is created that:
+### 2. Time Mocking (Solo Debug/Offline)
 
-1. **Captures the chain**: Stores filters (`eq`, `neq`, `gt`, etc.) and the action (`select`, `upsert`, `update`, `delete`).
-2. **Detects the mode**:
-    * **If Online**: Translates the chain directly into Supabase client calls.
-    * **If Offline**: Translates the chain into a **pure SQL** statement (e.g., `SELECT * FROM table WHERE id = ?`).
-3. **Executes**: Returns an object with the standard `{ data, error }` format.
+Permite adelantar o atrasar el tiempo del motor para probar:
 
----
-
-## 🔒 Session & Data Isolation
-
-The DBRouter enforces strict session management and data isolation boundaries. For the core principles governing these rules (e.g., **"Last-In-Wins"** and **Global vs Local Isolation**), see [game_rules_manual.md](./game_rules_manual.md).
+- Ciclos de Día/Noche.
+- Climas dinámicos.
+- Finalización de misiones IDLE.
 
 ---
 
-## 🛠️ Initialization Workflow
+## 🔄 Sincronización y Versiones
 
-1. **AuthStore**: Determines the session mode during login (`authStore.sessionMode`).
-2. **GameStore**: Instantiates the `DBRouter` using the detected mode.
-3. **Components**: Access the database agnostically via modular imports:
+### 1. CLIENT_DB_VERSION
 
-    ```javascript
-    import { DBRouter } from '@/logic/db/dbRouter';
-    
-    const { data } = await DBRouter.from('inventory').select('*');
-    ```
+- Se calcula automáticamente basándose en la longitud del array `DATABASE_MIGRATIONS`.
+- El cliente **NUNCA** debe conectarse a un servidor cuya versión de DB sea menor a la versión del cliente.
 
-### Modular Import Mandate
+### 2. Persistencia en SQLite
 
-* **REQUIRED**: All database interactions **MUST** use modular imports from `@/logic/db/dbRouter`.
-* **FORBIDDEN**: Accessing the database via `window.DBRouter`. This is part of the final Vue 3 migration to eliminate global namespace pollution.
+En modo offline, los cambios se guardan en memoria y se sincronizan con el sistema de archivos del navegador mediante `persistSQLite()` al final de cada operación importante (ej. después de capturar un Pokémon).
 
 ---
 
-## 📖 Quick Usage Guide
+## 🚨 Reglas de Uso para Desarrolladores
 
-### Basic Queries
-
-```javascript
-// Fetch filtered data
-const { data, error } = await DBRouter.from('pokemon')
-  .select('nickname, level')
-  .eq('trainer_id', myId)
-  .order('level', { ascending: false });
-```
-
-### Write Operations
-
-```javascript
-// Automatic Upsert (Insert or Update)
-await DBRouter.from('game_saves').upsert({
-  user_id: user.id,
-  save_data: currentData
-});
-```
-
-### Remote Procedure Calls (RPC)
-
-The DBRouter emulates Supabase RPC behavior locally through mock logic or specific SQL execution:
-
-```javascript
-const { data } = await DBRouter.rpc('fn_add_bonus_exp', { amount: 100 });
-```
-
----
-
-## 🧪 Testing & Isolated Environments
-
-To ensure unit tests do not corrupt production or local save data, the `DBRouter` supports a **Test Mode**.
-
-### Initialization Options
-
-When initializing the router in a test environment (e.g., Vitest), use the following configuration:
-
-```javascript
-import { DBRouter } from '@/logic/db/dbRouter';
-
-// Initialize in-memory for volatile tests
-await DBRouter.init({ 
-  mode: 'local', 
-  inMemory: true 
-});
-
-// OR initialize with a specific test database name
-await DBRouter.init({ 
-  mode: 'local', 
-  dbName: 'pokevicio_test_db' 
-});
-```
-
-### Mandate
-
-* **FORBIDDEN**: Running tests against the default `pokevicio_idb` or Supabase production.
-
-* **REQUIRED**: Always use `inMemory: true` for pure logic tests.
-
----
-
-## 🛠️ Schema & Migration Management
-
-The project follows a strict **Triple Source of Truth** pattern to ensure absolute integrity between the production server, local databases, and the codebase.
-
-### 1. Mandatory Triple Parity (Automated)
-
-Every change to the database structure **MUST** be documented in two manual places and one automated place:
-
-* **SQL Migration File**: Located in `database/migrations/` with the format `YYYYMMDDHHMMSS_description.sql`. This is the primary delta.
-* **Automated Logic Sync**: The **Vite Migration Plugin** automatically reads the migration folder and synchronizes the local engine via `src/logic/db/migrations_data.js`. Manual editing of the migration array is **strictly forbidden**.
-* **Absolute Schema File**: The corresponding file in `database/schemas/` MUST be updated to reflect the table's new absolute state.
-
-### 2. Migration Workflow
-
-* **Schemas (`database/schemas/`)**: Represent the **current and absolute** state of the tables. Mandatory for clean installs and architectural reference.
-* **Migrations (`database/migrations/`)**: Represent the history of **deltas**. Mandatory for tracking changes and team deployments.
-* **Transparency**: When proposing a migration, the AI or developer **MUST** show the user the exact SQL code block to be executed in Supabase.
-* **SQLite Compatibility**: The local engine automatically strips the `public.` schema prefix. Ensure SQL migrations are written to be schema-agnostic or rely on this stripping logic.
-* **Migration ID Parity**: Always use `m.id` (not `m.name`) to match the generated `migrations_data.js` objects during the application loop.
-* **SQLite ALTER TABLE Limitations**: In SQLite, adding a column with `PRIMARY KEY` or `AUTOINCREMENT` constraints via `ALTER TABLE` is strictly **FORBIDDEN**.
-  * **Self-Healing**: The `sqliteEngine.js` automatically strips these keywords during auto-repair to prevent crashes, but manual migrations must avoid them to maintain structural integrity. Recreating the table is the only standard way to add a PK/AI column.
-
----
-
-## 📂 Key Files
-
-## Security & Compatibility: Versioning
-
-To ensure the client is compatible with the database schema, `DBRouter` provides a compatibility check.
-
-### Client-DB Parity
-
-1. **`CLIENT_DB_VERSION`**: A constant defined in `src/logic/db/dbRouter.js`.
-2. **`system_config` / `config`**: Tables where the current database version is stored. (Local mode supports both for migration compatibility).
-
-### Check Procedure
-
-During app initialization (`App.vue`), the `checkDBCompatibility(router)` function is called:
-
-* If **Client Version > DB Version**: The app triggers a blocking state (`OUTDATED_SERVER`).
-* If **Client Version <= DB Version**: The app proceeds normally.
-
-### Migration Version Mandate
-
-Every migration SQL script **MUST** end with a command that sets the version to its own timestamp ID:
-
-* **Supabase**:
-
-  ```sql
-  UPDATE public.system_config SET value = jsonb_build_object('db_version', '20260418120000') WHERE key = 'db_version';
-  ```
-
-* **SQLite**:
-
-  ```sql
-  UPDATE config SET value = '20260418120000' WHERE key = 'db_version';
-  ```
-
-> [!CAUTION]
-> If you perform a breaking schema change, you **MUST** increment the `CLIENT_DB_VERSION` in `dbRouter.js` (using the migration's timestamp) and ensure the migration sets the database version accordingly.
-
-## Relevant Files
-
-* [src/logic/db/dbRouter.js](../../../../src/logic/db/dbRouter.js): Main class handling the routing.
-* [src/logic/db/proxyQuery.js](../../../../src/logic/db/proxyQuery.js): Query builder and SQL translator.
-* [src/logic/db/sqliteEngine.js](../../../../src/logic/db/sqliteEngine.js): Low-level engine for SQLite and IndexedDB persistence.
+- **No usar Supabase Directo**: Siempre usa `gameStore.db` o el router inyectado.
+- **RPCs**: Si creas un RPC en el servidor, DEBES crear su equivalente o un mock en `dbRouter.js` para que el modo offline no rompa.
+- **Transacciones**: No hay transacciones multi-tabla garantizadas en el router; diseña la lógica para ser atómica a nivel de fila siempre que sea posible.

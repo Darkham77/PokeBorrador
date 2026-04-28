@@ -80,7 +80,9 @@ export const useMapStore = defineStore('map', () => {
       return
     }
 
-    // Actualizar ubicación actual
+    // Actualizar ubicación actual y sincronizar tiempo ambiental
+    await syncServerTime()
+    currentEpochHour.value = Math.floor(getServerTime() / 3600000)
     currentMap.value = locId
 
     // 2. Progreso de eclosión

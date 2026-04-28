@@ -25,6 +25,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **EXCEPTION: Premium Branding**: High-res logos or emblems **SHOULD** use smooth rendering (`image-rendering: auto;`) to enhance the contrast.
 - **GPU Persistence Rule**: To prevent "snapping" from smooth to pixelated after CSS transitions (especially on environmental backgrounds), use `image-rendering: auto` explicitly in `smooth` mixins and force GPU layer persistence with `will-change: filter, transform;` and `transform: TranslateZ(0);`.
 - **Dynamic Variable Binding**: Context-dependent visual effects (glows, auras) MUST use dynamic CSS variables (e.g., `:style="{ '--type-color': color }"`) injected from the template to allow SCSS to remain generic.
+- **Silhouette Integrity**: When rendering "Search Mode" or silhouetted Pokémon, use a solid black appearance (`filter: Brightness(0)`). To ensure visibility against dark battle backgrounds, ALWAYS apply a subtle white `drop-shadow(0 0 1px white)`.
+- **Aesthetic Metadata Mandate**: Do not derive aesthetic traits (like "floating/flying height") purely from game types (e.g., Flying type). Use a centralized metadata registry (e.g., `POKEMON_AESTHETICS`) to explicitly flag species that should float (Magneton, Geodude) versus those that remain grounded (Charizard).
+- **Environment Clipping (Bushes)**: In the combat arena, environmental assets (like grass/bushes) MUST be suppressed if the Pokémon is flagged as `isFloating`. This prevents visual clipping and reinforces the species' spatial identity.
 
 ---
 
@@ -74,7 +77,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **MANDATORY**: Use **Capitalized** `TranslateY()` and `Rotate()` for SASS compliance.
 - **Cycle**: A slow 4-second `infinite ease-in-out` loop is recommended for an organic feel.
 - **Pixel Art Sharpness**: NEVER use non-integer `Scale()` transformations on pixel art elements (sprites, icons) as it causes interpolation blur. Prefer subtle `TranslateY()` for hover feedback.
-- **Night Cycle Lighting**: Atmospheric and weather effects must adapt to the night cycle. For the specific logic rules (illumination overrides, tints), see [game_rules_manual.md](./game_rules_manual.md).
+- **Night Cycle Lighting**: Atmospheric and weather effects must adapt to the night cycle. For the specific logic rules (illumination overrides, tints), ver [game_mechanics_manual.md](./game_mechanics_manual.md).
 
 ---
 
@@ -137,7 +140,7 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Typography**: Must use `'Press Start 2P'` with `@include pixelated`.
 - **Constraint**: Primary action buttons (yellow) MUST follow this pattern to maintain visual parity.
 - **Active State Unification**: Selected/Active buttons (`.active`) MUST preserve their 3D shadow depth. Use a 2px white solid border and a selection glow (`box-shadow`), but keep the dark bottom shadow to avoid a "flat" or "broken" look.
-- **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. See [game_rules_manual.md](./game_rules_manual.md) for visibility rules.
+- **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. ver [game_mechanics_manual.md](./game_mechanics_manual.md) para las reglas de visibilidad.
 
 > [!IMPORTANT]
 > **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.

@@ -1,8 +1,10 @@
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
+import { useBattleStore } from '@/stores/battle'
+import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { SHOP_ITEMS } from '@/data/items'
 
@@ -10,25 +12,39 @@ import { SHOP_ITEMS } from '@/data/items'
 import InventorySidebar from './inventory/InventorySidebar.vue'
 import InventoryItemCard from './inventory/InventoryItemCard.vue'
 import InventoryControls from './inventory/InventoryControls.vue'
-import InventoryTargetOverlay from './inventory/InventoryTargetOverlay.vue'
 import InventoryQuantityModal from './inventory/InventoryQuantityModal.vue'
 
-defineProps({ show: { type: Boolean, default: false } })
+const props = defineProps({ 
+  show: { type: Boolean, default: false },
+  battleMode: { type: Boolean, default: false },
+  initialCategory: { type: String, default: null }
+})
 const emit = defineEmits(['close'])
 
 const gameStore = useGameStore()
-const inventoryStore = useInventoryStore()
 const uiStore = useUIStore()
+const inventoryStore = useInventoryStore()
+const modalStore = useModalStore()
+
+// Battle Mode auto-category
+watch(() => props.show, (val) => {
+  if (val) {
+    if (props.initialCategory) {
+      inventoryStore.activeCategory = props.initialCategory
+    } else if (props.battleMode) {
+      inventoryStore.activeCategory = 'pociones'
+    }
+  }
+}, { immediate: true })
 
 // State
 const multiSelectMode = ref(null)
 const selectedItems = reactive(new Map()) // name -> qty
-const targetingItem = ref(null)
-const showTargetOverlay = ref(false)
 const quantitySelectionItem = ref(null)
 const itemActionMenu = ref(null) // { item, type: 'sell'|'release'|'menu' }
 
 // Getters
+const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
 const filteredItems = computed(() => inventoryStore.bagItems)
 const totalObjectsCount = computed(() => Object.values(gameStore.state.inventory || {}).reduce((s, v) => s + v, 0))
 const selectedObjectsTotal = computed(() => Array.from(selectedItems.values()).reduce((s, v) => s + v, 0))
@@ -45,6 +61,12 @@ const handleItemClick = (item) => {
     return
   }
 
+  if (props.battleMode) {
+    itemActionMenu.value = item
+    handleActionSelect('use')
+    return
+  }
+
   // If not in multi-mode, open action menu
   itemActionMenu.value = item
 }
@@ -56,6 +78,15 @@ const handleActionSelect = (type) => {
   if (type === 'use') {
     const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
     
+    // Battle Mode: Handle Pokeballs directly
+    if (props.battleMode && dbItem.cat === 'pokeballs') {
+      const battleStore = useBattleStore()
+      battleStore.useItemInBattle(dbItem.name)
+      itemActionMenu.value = null
+      close()
+      return
+    }
+
     if (uiStore.inventoryTarget) {
       // Logic for pre-selected target
       if (dbItem.cat === 'held' || dbItem.type === 'held') {
@@ -74,8 +105,8 @@ const handleActionSelect = (type) => {
 
     // Traditional targeting if no pre-selected target
     if (['stones', 'pociones'].includes(dbItem?.cat) || dbItem?.id === 'rare_candy') {
-      targetingItem.value = dbItem
-      showTargetOverlay.value = true
+      inventoryStore.activeItemToUse = dbItem.name
+      modalStore.open('ItemTarget')
     } else if (dbItem?.cat === 'held' || dbItem?.type === 'held') {
       uiStore.notify(`Equipa este item desde el detalle del Pokémon o ábrelo desde su menú`, '🎒')
     } else {
@@ -159,7 +190,6 @@ const handleCancelSelection = () => {
 const close = () => { 
   emit('close')
   handleCancelSelection()
-  showTargetOverlay.value = false 
   uiStore.inventoryTarget = null
 }
 </script>
@@ -167,7 +197,7 @@ const close = () => {
 <template>
   <BaseModal
     :show="show"
-    max-width="800px"
+    :max-width="modalWidth"
     variant="retro"
     padding="raw"
     @close="close"
@@ -197,14 +227,18 @@ const close = () => {
       </div>
     </template>
 
-    <div class="inventory-modal-container">
-      <!-- SIDEBAR -->
-      <InventorySidebar />
+    <div 
+      class="inventory-modal-container"
+      :class="{ 'is-battle-mode': battleMode }"
+    >
+      <!-- SIDEBAR (Hidden in battle mode) -->
+      <InventorySidebar v-if="!battleMode" />
 
       <!-- MAIN CONTENT -->
       <div class="inventory-main">
-        <!-- CONTROLS -->
+        <!-- CONTROLS (Hidden in battle mode) -->
         <InventoryControls 
+          v-if="!battleMode"
           v-model:multi-select-mode="multiSelectMode"
           :selected-count="selectedObjectsTotal"
           @execute="handleMultiExecute"
@@ -247,23 +281,6 @@ const close = () => {
     </div>
 
     <!-- OVERLAYS -->
-    <InventoryTargetOverlay
-      v-if="showTargetOverlay"
-      :show="true"
-      :item="targetingItem"
-      @close="showTargetOverlay = false"
-      @select="async (p, i) => { 
-        const res = await inventoryStore.useItem(targetingItem.name, 'team', i); 
-        if (res.success) { 
-          uiStore.notify(res.msg, '✨'); 
-          showTargetOverlay.value = false; 
-          targetingItem.value = null 
-        } else {
-          uiStore.notify(res.msg, '⚠️') 
-        }
-      }"
-    />
-
     <InventoryQuantityModal
       v-if="quantitySelectionItem"
       :show="!!quantitySelectionItem"
@@ -295,12 +312,14 @@ const close = () => {
           <span class="icon">✨</span> USAR / EQUIPAR
         </button>
         <button
+          v-if="!battleMode"
           class="menu-btn vicio-warning"
           @click.stop="handleActionSelect('sell')"
         >
           <span class="icon">💰</span> VENDER
         </button>
         <button
+          v-if="!battleMode"
           class="menu-btn vicio-danger"
           @click.stop="handleActionSelect('release')"
         >
@@ -338,6 +357,18 @@ const close = () => {
     &.vicio-danger  { @include btn-vicio('danger', 'md', true); }
     
     .icon { font-size: 16px; }
+  }
+}
+
+.is-battle-mode {
+  height: 520px !important;
+
+  .inventory-main {
+    border-radius: 0 0 24px 24px;
+  }
+
+  :deep(.item-premium-grid) {
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 }
 </style>

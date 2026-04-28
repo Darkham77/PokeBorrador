@@ -1,28 +1,21 @@
 ---
 name: populate-tester-inventory
-description: Quick script to fill the player's inventory with essential items for testing purposes.
+description: Script de utilidad para llenar el inventario con ítems de prueba. Delega el protocolo de uso al manual `@/project-standards/references/browser_testing_manual.md`.
 ---
 
-# Populate Tester Inventory
+# Skill: Populate Tester Inventory
 
-> Adds a comprehensive set of items to the current session for testing.
+> [!TIP]
+> Esta herramienta es ideal para preparar el entorno antes de realizar pruebas funcionales detalladas en el navegador.
 
-## Usage
+## Uso Rápido
 
-1. Run the script to generate the injection snippet:
+1. Genera el snippet de inyección:
 
    ```bash
    node .agents/skills/populate-tester-inventory/scripts/populate_inventory.js
    ```
 
-2. Copy the output snippet.
-3. Paste it into the browser console (F12) while logged into the game.
+2. Sigue el protocolo de inyección detallado en el [Manual de Testing en Navegador](../project-standards/references/browser_testing_manual.md).
 
-## Items Included
-
-- Full set of Potions and Revives.
-- All Status Heals.
-- PP recovery items.
-- All Evolution Stones.
-- Rare Candies and PP Ups.
-- Repels.
+Para conocer qué ítems se incluyen y cómo expandir el script, consulta el manual de estándares.

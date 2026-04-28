@@ -135,6 +135,12 @@ export const pokemonDebugService = {
     const battleStore = useBattleStore();
     const _ui = useUIStore();
 
+    // 1. Force flee if there's an active battle
+    if (battleStore.isBattleActive) {
+      console.warn('[DEBUG] Combate activo detectado. Forzando huida del anterior para iniciar el nuevo...');
+      await battleStore.endBattle(false, true);
+    }
+
     console.log(`[DEBUG] Triggering encounter with ${p.name} at ${mapId}`);
     
     // Register as seen

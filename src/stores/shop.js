@@ -111,31 +111,35 @@ export const useShopStore = defineStore('shop', () => {
 
   function getHealCost() {
     const team = gameStore.state.team || []
-    const damagedCount = team.filter(p => p.hp < p.maxHp || p.status || p.moves.some(m => m.pp < (m.maxPP || 0))).length
+    const damagedCount = team.filter(p => {
+      const isDamaged = p.hp < p.maxHp
+      const hasStatus = !!p.status
+      const needsPP = p.moves?.some(m => m.pp < (m.maxPP || 0))
+      return isDamaged || hasStatus || needsPP
+    }).length
+
     if (damagedCount === 0) return 0
 
-    const playerClass = gameStore.state.playerClass
-    let mult = 1.0
+    // Force explicit check for Rocket class
+    const pClass = String(gameStore.state.playerClass || '').toLowerCase()
     
-    if (playerClass && PLAYER_CLASSES[playerClass]) {
-      mult = PLAYER_CLASSES[playerClass].modifiers.healCostMult || 1.0
-      
-      // Criador specific logic: cost 0 if there's a foreign pokemon? 
-      // (Simplified: if criador, mult is 1.0 anyway in playerClasses.js)
+    if (pClass === 'rocket') {
+      // Rocket pays 50 per damaged pokemon (base cost for penalized classes)
+      return 50 * damagedCount
     }
 
-    if (mult <= 1.0) return 0
-    return Math.floor(50 * damagedCount * (mult - 1.0))
+    return 0
   }
 
-  function healAllPokemon() {
-    const cost = getHealCost()
-    if (gameStore.state.money < cost) {
-      useUIStore().notify('No tenés suficiente dinero para la enfermería.', '💸')
+  function healAllPokemon(manualCost = null) {
+    const costToCharge = manualCost !== null ? manualCost : getHealCost()
+    
+    if (gameStore.state.money < costToCharge) {
+      uiStore.notify('No tenés suficiente dinero para la enfermería.', '💸')
       return false
     }
 
-    gameStore.state.money -= cost
+    gameStore.state.money -= costToCharge
     
     // Restore all pokemon in team
     gameStore.state.team.forEach(p => {
@@ -148,7 +152,12 @@ export const useShopStore = defineStore('shop', () => {
       }
     })
 
-    useUIStore().notify('¡Tus Pokémon están totalmente recuperados!', '🏥')
+    if (costToCharge > 0) {
+      uiStore.notify(`¡Sanación pagada! Gastaste ₽${costToCharge.toLocaleString()}`, '💰')
+    } else {
+      uiStore.notify('¡Tus Pokémon están totalmente recuperados!', '🏥')
+    }
+
     gameStore.scheduleSave()
     return true
   }

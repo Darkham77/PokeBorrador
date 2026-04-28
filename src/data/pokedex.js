@@ -98,6 +98,53 @@ export const PDEX_TYPE_COLORS = {
   rock:'#c8a060', ghost:'#7B2FBE', dragon:'#5C16C5', dark:'#555', steel:'#9E9E9E'
 };
 
+export const POKEMON_AESTHETICS = {
+  // Floating species (visually not on the ground, regardless of type)
+  bulbasaur: { floating: false },
+  ivysaur: { floating: false },
+  venusaur: { floating: false },
+  charmander: { floating: false },
+  charmeleon: { floating: false },
+  charizard: { floating: true },
+  butterfree: { floating: true },
+  beedrill: { floating: true },
+  pidgey: { floating: true },
+  pidgeotto: { floating: true },
+  pidgeot: { floating: true },
+  spearow: { floating: true },
+  fearow: { floating: true },
+  zubat: { floating: true },
+  golbat: { floating: true },
+  geodude: { floating: true },
+  magnemite: { floating: true },
+  magneton: { floating: true },
+  gastly: { floating: true },
+  haunter: { floating: true },
+  gengar: { floating: true },
+  koffing: { floating: true },
+  weezing: { floating: true },
+  mew: { floating: true },
+  mewtwo: { floating: true },
+  celebi: { floating: true },
+  misdreavus: { floating: true },
+  unown: { floating: true },
+  staryu: { floating: true },
+  starmie: { floating: true },
+  porygon: { floating: true },
+  porygon2: { floating: true },
+  lugia: { floating: true },
+  ho_oh: { floating: true },
+  articuno: { floating: true },
+  zapdos: { floating: true },
+  moltres: { floating: true },
+  dragonite: { floating: true },
+  gyarados: { floating: true },
+  scyther: { floating: true },
+  aerodactyl: { floating: true }
+};
+
+
+
 export const POKEMON_SPRITE_IDS = {
   bulbasaur: 1, ivysaur: 2, venusaur: 3,
   charmander: 4, charmeleon: 5, charizard: 6,

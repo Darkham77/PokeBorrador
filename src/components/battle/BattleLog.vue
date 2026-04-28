@@ -53,6 +53,7 @@ onMounted(() => {
             @error="e => e.target.style.display = 'none'"
           >
         </div>
+        <!-- eslint-disable-next-line vue/no-v-html -->
         <span
           class="log-text"
           v-html="log.msg"
@@ -78,7 +79,7 @@ onMounted(() => {
   .log-scroll-inner {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     width: 100%;
   }
 
@@ -96,16 +97,17 @@ onMounted(() => {
   line-height: 1.6;
   color: Rgba(255,255,255,0.9);
   animation: slideIn 0.3s ease-out;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
   border-bottom: 1px solid Rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
   gap: 12px;
+  min-height: 32px;
 
   .log-icon-wrapper {
     flex-shrink: 0;
     width: 56px !important;
-    height: 56px !important;
+    height: 32px !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -115,6 +117,7 @@ onMounted(() => {
     padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
+    position: relative;
 
     &::before, &::after { display: none !important; }
 
@@ -124,13 +127,17 @@ onMounted(() => {
   }
 
   .log-icon {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: 100%;
-    max-height: 100%;
+    width: 56px !important;
+    height: 56px !important;
+    max-width: none !important;
+    max-height: none !important;
     object-fit: contain;
     image-rendering: pixelated;
     filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: Translate(-50%, -50%);
   }
 
   .log-text {

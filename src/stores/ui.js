@@ -28,7 +28,7 @@ export const useUIStore = defineStore('ui', () => {
   const pvpAutoFillDisabled = ref(false)
   const warAutoFillDisabled = ref(false)
 
-  const _isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
+  const isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
   
   // Data for modals (still needed in the store if shared)
   const activePokemonForRelearner = ref(null)
@@ -383,6 +383,7 @@ export const useUIStore = defineStore('ui', () => {
     isPvPBattleOpen: ref(false),
     isRankedMenuOpen: ref(false),
     currentPvPInvite: ref(null),
+    isBattleSwitchForced,
 
     // Confirmation
     openConfirm: (options) => useModalStore().open('Confirm', options),

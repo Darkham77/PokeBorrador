@@ -167,7 +167,7 @@ watch(() => props.disabled, (newVal) => {
     @mouseleave="hide"
     @touchstart="show"
     @touchend="hide"
-    v-on:click="handleTriggerClick"
+    @click.stop="handleTriggerClick"
   >
     <slot />
     

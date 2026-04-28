@@ -50,10 +50,6 @@ const handleLogout = () => {
             class="starter-sprite"
             @error="e => e.target.style.display = 'none'"
           >
-          <span
-            id="starter-emo-bulbasaur"
-            class="starter-emoji"
-          >🌿</span>
         </div>
         <div class="starter-name">
           Bulbasaur
@@ -86,10 +82,6 @@ const handleLogout = () => {
             class="starter-sprite"
             @error="e => e.target.style.display = 'none'"
           >
-          <span
-            id="starter-emo-charmander"
-            class="starter-emoji"
-          >🔥</span>
         </div>
         <div class="starter-name">
           Charmander
@@ -122,10 +114,6 @@ const handleLogout = () => {
             class="starter-sprite"
             @error="e => e.target.style.display = 'none'"
           >
-          <span
-            id="starter-emo-squirtle"
-            class="starter-emoji"
-          >💧</span>
         </div>
         <div class="starter-name">
           Squirtle
@@ -176,8 +164,8 @@ const handleLogout = () => {
 }
 
 .starter-sprite {
-  width: 80px;
-  height: 80px;
+  width: 160px;
+  height: 160px;
   image-rendering: pixelated;
 }
 
