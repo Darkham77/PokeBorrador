@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import { ASSET_TYPES } from '@/logic/services/assetService';
 import PhaserAssetService from '../services/PhaserAssetService';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 /**
  * BattleScene.js
@@ -13,6 +14,8 @@ export default class BattleScene extends Phaser.Scene {
     this.vignette = null;
     this.playerSprite = null;
     this.enemySprite = null;
+    this.playerShadow = null;
+    this.enemyShadow = null;
     this.currentBattleData = null;
   }
 
@@ -49,8 +52,11 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   rescaleBackground() {
+    if (!this.bg || !this.bg.texture) return;
     const { width, height } = this.cameras.main;
-    const scale = Math.max(width / this.bg.width, height / this.bg.height);
+    const bgWidth = this.bg.width || 1;
+    const bgHeight = this.bg.height || 1;
+    const scale = Math.max(width / bgWidth, height / bgHeight);
     this.bg.setScale(scale).setOrigin(0.5).setPosition(width / 2, height / 2);
   }
 
@@ -121,15 +127,68 @@ export default class BattleScene extends Phaser.Scene {
       sprite.setPosition(width * 0.75, height * 0.35).setOrigin(0.5, 1);
     }
 
-    // Refresh idle animation (simple float)
+    // 3. Update Shadow
+    this.updateShadow(side);
+    const shadow = isPlayer ? this.playerShadow : this.enemyShadow;
+
+    // Refresh idle animation (Sway + Float)
+    // We de-synchronize with a random duration and slight x/y offset
+    const duration = 2000 + Math.random() * 1000;
+    const sway = isPlayer ? 5 : -5;
+    
     this.tweens.add({
       targets: sprite,
       y: sprite.y - 10,
-      duration: 2000,
+      x: sprite.x + sway,
+      duration: duration,
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut'
     });
+
+    if (shadow) {
+      this.tweens.add({
+        targets: shadow,
+        x: shadow.x + sway,
+        duration: duration,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+    }
+  }
+
+  updateShadow(side) {
+    const isPlayer = side === 'player';
+    const sprite = isPlayer ? this.playerSprite : this.enemySprite;
+    if (!sprite) return;
+
+    // Get pokemon data from the stored battle data
+    const pokemon = isPlayer ? this.currentBattleData?.player : this.currentBattleData?.enemy;
+    const speciesData = pokemon ? pokemonDataProvider.getPokemonData(pokemon.id) : null;
+    const isFlying = speciesData?.type === 'flying' || speciesData?.secondaryType === 'flying';
+    
+    let shadow = isPlayer ? this.playerShadow : this.enemyShadow;
+    
+    // Rule: Fly shadow depends on height metadata or default offset
+    // Height in SPECIES_METADATA is in meters. We scale it for Phaser.
+    const height = speciesData?.height || 1;
+    const verticalOffset = isFlying ? Math.min(height * 40, 60) : 0;
+
+    const shadowX = sprite.x;
+    const shadowY = sprite.y + verticalOffset; // Place shadow "below" the floating sprite
+    const shadowWidth = isPlayer ? 100 : 70;
+    const shadowHeight = shadowWidth * 0.3;
+
+    if (!shadow) {
+      shadow = this.add.ellipse(shadowX, shadowY, shadowWidth, shadowHeight, 0x000000, 0.25);
+      shadow.setDepth(sprite.depth - 1);
+      if (isPlayer) this.playerShadow = shadow;
+      else this.enemyShadow = shadow;
+    } else {
+      shadow.setPosition(shadowX, shadowY);
+      shadow.setAlpha(0.25);
+    }
   }
 
   getBgKey(locationId, cycle) {
@@ -161,6 +220,7 @@ export default class BattleScene extends Phaser.Scene {
 
   playWithdraw(side) {
     const sprite = side === 'player' ? this.playerSprite : this.enemySprite;
+    const shadow = side === 'player' ? this.playerShadow : this.enemyShadow;
     if (!sprite) return;
 
     this.tweens.add({
@@ -168,11 +228,18 @@ export default class BattleScene extends Phaser.Scene {
       scale: 0,
       alpha: 0,
       duration: 500,
-      ease: 'Back.in',
-      onComplete: () => {
-        sprite.setAlpha(0);
-      }
+      ease: 'Back.in'
     });
+
+    if (shadow) {
+      this.tweens.add({
+        targets: shadow,
+        scale: 0,
+        alpha: 0,
+        duration: 500,
+        ease: 'Back.in'
+      });
+    }
   }
 
   playDamage(side) {
@@ -197,6 +264,7 @@ export default class BattleScene extends Phaser.Scene {
 
   playFaint(side) {
     const sprite = side === 'player' ? this.playerSprite : this.enemySprite;
+    const shadow = side === 'player' ? this.playerShadow : this.enemyShadow;
     if (!sprite) return;
 
     this.tweens.add({
@@ -206,13 +274,38 @@ export default class BattleScene extends Phaser.Scene {
       duration: 1000,
       ease: 'Power2'
     });
+
+    if (shadow) {
+      this.tweens.add({
+        targets: shadow,
+        alpha: 0,
+        duration: 800,
+        ease: 'Power2'
+      });
+    }
   }
 
   playMoveFX(side, type = 'normal') {
     const isPlayer = side === 'player';
+    const attacker = isPlayer ? this.playerSprite : this.enemySprite;
+    const attackerShadow = isPlayer ? this.playerShadow : this.enemyShadow;
     const targetSprite = isPlayer ? this.enemySprite : this.playerSprite;
-    if (!targetSprite) return;
+    
+    if (!attacker || !targetSprite) return;
 
+    // 1. Attack Animation (Side-to-side dash)
+    
+    const dashDistance = isPlayer ? 50 : -50;
+
+    this.tweens.add({
+      targets: [attacker, attackerShadow],
+      x: (target) => target.x + dashDistance,
+      duration: 150,
+      yoyo: true,
+      ease: 'Quad.easeOut'
+    });
+
+    // 2. Particles on Target
     const colors = {
       fire: 0xff4f00, water: 0x00aaff, grass: 0x4caf50,
       electric: 0xffeb3b, ice: 0x00ffff, poison: 0xa33ea1, normal: 0xffffff

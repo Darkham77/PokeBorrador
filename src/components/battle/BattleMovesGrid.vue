@@ -1,35 +1,39 @@
 <script setup>
+import PVTooltip from '@/components/common/PVTooltip.vue'
+import MoveTooltip from '@/components/battle/MoveTooltip.vue'
+import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
+import { MOVE_DATA } from '@/data/moves'
 
 const props = defineProps({
   moves: { type: Array, required: true },
   isProcessing: { type: Boolean, default: false },
-  playerInfo: { type: Object, required: true }
+  playerInfo: { type: Object, required: true },
+  canReorder: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['use-move'])
 
-const TYPE_COLORS = {
-  normal: 'Rgba(170, 170, 170, 1)', fire: 'Rgba(255, 107, 53, 1)', water: 'Rgba(59, 139, 255, 1)', grass: 'Rgba(107, 203, 119, 1)',
-  electric: 'Rgba(255, 217, 61, 1)', ice: 'Rgba(125, 249, 255, 1)', fighting: 'Rgba(255, 59, 59, 1)', poison: 'Rgba(199, 125, 255, 1)',
-  ground: 'Rgba(221, 187, 85, 1)', flying: 'Rgba(136, 153, 255, 1)', psychic: 'Rgba(255, 110, 255, 1)', bug: 'Rgba(139, 195, 74, 1)',
-  rock: 'Rgba(187, 170, 102, 1)', ghost: 'Rgba(123, 47, 190, 1)', dragon: 'Rgba(92, 22, 197, 1)', dark: 'Rgba(119, 85, 68, 1)', steel: 'Rgba(170, 170, 187, 1)'
+const getMoveData = (move) => {
+  const md = MOVE_DATA[move.name] || {}
+  return {
+    ...move,
+    type: md.type || 'normal',
+    power: md.power,
+    acc: md.acc,
+    cat: md.cat || 'physical'
+  }
 }
 
-const CAT_ICON = { physical: '⚔️', special: '✨', status: '🔮' }
-
-const getMoveColor = (moveName) => {
-  const md = window.MOVE_DATA?.[moveName] || { type: 'normal' }
-  return TYPE_COLORS[md.type] || '#aaa'
-}
-
-const getMoveType = (moveName) => {
-  const md = window.MOVE_DATA?.[moveName] || { type: 'normal' }
-  return md.type || '???'
-}
-
-const getMoveCatIcon = (moveName) => {
-  const md = window.MOVE_DATA?.[moveName] || { cat: 'physical' }
-  return CAT_ICON[md.cat] || ''
+const hexToRgb = (hex) => {
+  if (!hex) return '255, 255, 255'
+  let h = hex.replace('#', '')
+  if (h.length === 3) {
+    h = h.split('').map(c => c + c).join('')
+  }
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  return `${r}, ${g}, ${b}`
 }
 
 const isMoveDisabled = (move) => {
@@ -44,93 +48,106 @@ const isMoveDisabled = (move) => {
   return false
 }
 
-const showTooltip = (e, name) => { if (typeof window.showMoveTooltip === 'function') window.showMoveTooltip(e, name) }
-const hideTooltip = () => { if (typeof window.hideMoveTooltip === 'function') window.hideMoveTooltip() }
+
 </script>
 
 <template>
-  <div class="moves-grid">
-    <button 
+  <div class="moves-grid-vicio">
+    <PVTooltip
       v-for="(move, i) in moves" 
       :key="i"
-      class="move-button-card"
-      :style="{ '--move-color': getMoveColor(move.name) }"
-      :disabled="isMoveDisabled(move)"
-      @click.stop="emit('use-move', i)"
-      @mouseenter="showTooltip($event, move.name)"
-      @mouseleave="hideTooltip"
+      :delay="400" 
+      position="top"
     >
-      <div class="move-header">
-        <span class="move-name-txt">{{ move.name }}</span>
-      </div>
-      <div class="move-footer">
-        <span
-          class="move-type-pill"
-          :class="'type-' + getMoveType(move.name).toLowerCase()"
-        >
-          {{ getMoveType(move.name).toUpperCase() }}
-        </span>
-        <span class="move-pp-txt">{{ getMoveCatIcon(move.name) }} PP:{{ move.pp }}/{{ move.maxPP }}</span>
-      </div>
-    </button>
+      <template #content>
+        <MoveTooltip :move="getMoveData(move)" />
+      </template>
+
+      <button 
+        class="move-card-vicio"
+        :class="{ 
+          'disabled-move': isMoveDisabled(move),
+          'is-draggable': canReorder 
+        }"
+        :draggable="canReorder"
+        :style="{ 
+          '--m-type-color': PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal'],
+          '--m-type-rgb': hexToRgb(PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal']),
+          background: `Linear-Gradient(135deg, Rgba(${hexToRgb(PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal'])}, 0.25) 0%, Rgba(255, 255, 255, 0.05) 100%)`,
+          borderColor: `Rgba(${hexToRgb(PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal'])}, 0.7)`
+        }"
+        :disabled="isMoveDisabled(move)"
+        @click.stop="emit('use-move', i)"
+      >
+        <div class="move-top">
+          <span class="m-name pixelated">{{ (move && move.name) ? move.name.toUpperCase() : '???' }}</span>
+          <span
+            class="m-type-tag pixelated"
+            :style="{ background: PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal'] }"
+          >
+            {{ (getMoveData(move).type || 'normal').toUpperCase() }}
+          </span>
+        </div>
+        
+        <div class="move-details-row">
+          <div class="detail-item">
+            <span class="d-label pixelated">POT:</span>
+            <span class="d-val pixelated">{{ getMoveData(move).power || '-' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label pixelated">PREC:</span>
+            <span class="d-val pixelated">
+              <span
+                v-if="getMoveData(move).acc === 1000"
+                class="infinity-emoji"
+              >♾️</span>
+              <template v-else>{{ getMoveData(move).acc || '-' }}</template>
+            </span>
+          </div>
+          <div class="detail-item">
+            <span class="d-label pixelated">CAT:</span>
+            <span class="d-val pixelated">
+              {{ { physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' }[getMoveData(move).cat] || '🔮 Estado' }}
+            </span>
+          </div>
+          <div class="m-pp-wrap">
+            <span class="m-pp-label pixelated">PP</span>
+            <span class="m-pp-val pixelated">{{ move.pp }}/{{ move.maxPP }}</span>
+          </div>
+        </div>
+      </button>
+    </PVTooltip>
   </div>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-.moves-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+@use "@/styles/core/tools" as *;
+@use "@/styles/tokens/colors" as *;
+@use "@/styles/components/pokemon-detail/_vicio-panes.scss";
+
+.move-card-vicio {
+  text-align: left; 
+  width: 100%;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: Grayscale(1);
+    
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
 }
 
-.move-button-card {
-  background: Rgba(30, 41, 59, 0.6);
-  border: 1px solid Rgba(255,255,255,0.1);
-  border-left: 5px solid var(--move-color);
-  border-radius: 12px;
-  padding: 15px;
-  color: $white;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
-}
-
-.move-button-card:hover:not(:disabled) {
-  background: Rgba(30, 41, 59, 0.9);
-  transform: translateY(-2px);
-  border-color: var(--move-color);
-}
-
-.move-button-card:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: Grayscale(0.8);
-}
-
-.move-name-txt {
-  @include pixelated;
-  font-size: 10px;
+/* Fix for Tooltip wrapper not expanding in grid */
+:deep(.pv-tooltip-wrapper) {
+  width: 100%;
+  height: 100%;
   display: block;
-  margin-bottom: 10px;
 }
-
-.move-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.move-type-pill {
-  font-size: 9px;
-  font-weight: bold;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: var(--move-color);
-}
-
-.move-pp-txt {
-  font-size: 10px;
-  opacity: 0.8;
+.move-card-vicio {
+  height: 100%;
 }
 </style>

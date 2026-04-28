@@ -58,10 +58,10 @@ To avoid performance death by a thousand reactivity "checks":
 
 ---
 
-## 🛠️ Performance Audit Checklist
+### 3. Dynamic Combat FX & Shadows
+- **Flying Species Shadow Offset**: Shadows for flying Pokémon in Phaser scenes MUST be offset vertically based on the `height` property from `SPECIES_METADATA`. Use a proportional multiplier (e.g., `height * 40`) to simulate the Pokémon floating above the terrain.
+- **Dynamic Sprite Separation**: In narrow combat viewports (under 690px), use `Clamp()` and container units (`cqw`) for sprite positioning (e.g., `left/right: Clamp(2%, 12cqw, 12%)`). This ensures sprites move towards the edges as space shrinks, preventing them from overlapping the central UI.
 
-If your changes involve any game scenes or entities, you **MUST** verify:
+---
 
-1. `[ ]` **Asset Check**: Are all new sprites part of a Texture Atlas?
-2. `[ ]` **Memory Check**: If spawning entities, is an Object Pool being used?
-3. `[ ]` **Reactivity Check**: Are Phaser objects kept out of Vue's reactive state (refs/Pinia)?
+## 🌉 Phaser + Vue Integration Rules

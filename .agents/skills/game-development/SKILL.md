@@ -111,6 +111,14 @@ In RPG/Team-based games, any UI slot that displays a current team member (Advent
 - **Pattern**: Provide a dedicated "Select/Replace" button (🔄) on the card that opens the inventory/box selector with a callback designed to handle the swap logic.
 - **Why**: Reduces friction in team management and ensures a consistent UX across all game modes.
 
+### 5. Reorder & Drag-and-Drop (DND) Logic
+
+In team-based or item-based games, reordering logic must respect the persistence model of the target collection:
+
+- **Adventure/Index-Based**: When reordering a physical team (e.g., `gameStore.state.team`), use an "insert/shift" logic. Splicing an item from `fromIndex` and inserting it at `toIndex` shifts all intermediate items.
+- **PVP/War/UID-Based**: When reordering teams stored as UID arrays, manipulate the array of IDs directly. The UI should reactively reflect the new order by mapping these IDs to their respective objects.
+- **Persistence**: ALWAYS trigger a silent save (e.g., `save(false)`) after a reorder operation to ensure the new state is preserved across sessions without interrupting the user flow with notifications.
+
 ### 5. Performance Budget (60 FPS = 16.67ms)
 
 | System | Budget |

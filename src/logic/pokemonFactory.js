@@ -76,6 +76,23 @@ export function recalcPokemonStats(p) {
   p.spa = getStat(base.spa || base.atk, p.ivs.spa, p.level, 'At. Esp');
   p.spd = getStat(base.spd || base.def, p.ivs.spd, p.level, 'Def. Esp');
   p.spe = getStat(base.spe || 45, p.ivs.spe, p.level, 'Velocidad');
+
+  // --- Saneamiento de Movimientos (Auto-Healing) ---
+  if (p.moves && Array.isArray(p.moves)) {
+    p.moves.forEach(m => {
+      if (m && m.name && (m.power === undefined || m.type === undefined)) {
+        const moveData = pokemonDataProvider.getMoveData(m.name);
+        if (moveData) {
+          if (m.power === undefined) m.power = moveData.power || 0;
+          if (m.type === undefined) m.type = moveData.type || 'normal';
+          if (m.acc === undefined) m.acc = moveData.acc || 100;
+          if (m.cat === undefined) m.cat = moveData.cat || 'physical';
+          if (m.pp === undefined) m.pp = moveData.pp || 35;
+          if (m.maxPP === undefined) m.maxPP = moveData.pp || 35;
+        }
+      }
+    });
+  }
 }
 
 /**
@@ -85,6 +102,9 @@ export function recalcPokemonStats(p) {
  * @param {Object} options - Opciones de generación (ivs, shiny, etc)
  */
 export function makePokemon(id, level, options = {}) {
+  if (!id) return null;
+  id = id.toLowerCase();
+  
   if (level > 100) level = 100;
   let base = pokemonDataProvider.getPokemonData(id);
   if (!base) {

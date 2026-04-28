@@ -18,7 +18,8 @@ const props = defineProps({
   isPvp: { type: Boolean, default: false },
   maxObeyLv: { type: Number, default: 100 },
   // Permite configurar qué botones se muestran: 'item', 'details', 'box'
-  actions: { type: Array, default: () => ['item', 'details', 'box'] }
+  actions: { type: Array, default: () => ['item', 'details', 'box'] },
+  disableCardClick: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['click', 'openDetail', 'openItem', 'sendToBox', 'select', 'toggle-tag'])
@@ -95,8 +96,8 @@ function getGenderClass(gender) {
 <template>
   <div
     ref="cardRef"
-    :class="cardClasses"
-    @click.stop="emit('openDetail', index)"
+    :class="[cardClasses, { 'disable-click': disableCardClick }]"
+    @click.stop="!disableCardClick && emit('openDetail', index)"
   >
     <!-- Top Row: Items/Tags + Tier -->
     <div class="top-row">

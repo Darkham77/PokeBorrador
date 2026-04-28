@@ -80,11 +80,13 @@ export function getMovesAtLevel(id, level) {
   return last4.map(m => {
     const moveData = pokemonDataProvider.getMoveData(m.name) || {};
     return { 
-      name: m.name, 
+      name: m.name || '???', 
       pp: m.pp || moveData.pp || 35, 
       maxPP: m.pp || moveData.pp || 35,
       type: moveData.type || 'normal',
-      power: moveData.power || 0
+      power: moveData.power || 0,
+      acc: moveData.acc || 100,
+      cat: moveData.cat || 'physical'
     };
   });
 }

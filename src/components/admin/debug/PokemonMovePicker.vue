@@ -14,7 +14,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'autoFill'])
+const emit = defineEmits(['update:modelValue', 'autoFill', 'randomFill'])
 
 const moveSearch = ref('')
 const activeMoveSlot = ref(null)
@@ -46,17 +46,30 @@ function removeMove(slotIndex) {
   <div class="moves-section">
     <div class="section-header-row">
       <label>ATAQUES (MODO HÍBRIDO)</label>
-      <PVTooltip
-        title="Autocompletar ataques"
-        description="Asigna automáticamente los últimos 4 ataques aprendidos por nivel."
-      >
-        <button
-          class="btn-magic-fill"
-          @click.stop="$emit('autoFill')"
+      <div class="header-actions">
+        <PVTooltip
+          title="Autocompletar ataques"
+          description="Asigna automáticamente los últimos 4 ataques aprendidos por nivel."
         >
-          🪄
-        </button>
-      </PVTooltip>
+          <button
+            class="btn-magic-fill"
+            @click.stop="$emit('autoFill')"
+          >
+            🪄
+          </button>
+        </PVTooltip>
+        <PVTooltip
+          title="Ataques al azar"
+          description="Selecciona 4 ataques al azar de todo su learnset."
+        >
+          <button
+            class="btn-magic-fill btn-random-fill"
+            @click.stop="$emit('randomFill')"
+          >
+            🎲
+          </button>
+        </PVTooltip>
+      </div>
     </div>
     <div class="move-slots">
       <div
@@ -139,6 +152,11 @@ function removeMove(slotIndex) {
     
     label { font-size: 10px; color: Rgba(255, 255, 255, 0.4); }
     
+    .header-actions {
+      display: flex;
+      gap: 6px;
+    }
+
     .btn-magic-fill {
       background: Rgba(124, 58, 237, 0.1);
       border: 1px solid Rgba(124, 58, 237, 0.2);
@@ -151,6 +169,14 @@ function removeMove(slotIndex) {
       justify-content: center;
       cursor: pointer;
       transition: all 0.2s;
+
+      &.btn-random-fill {
+        background: Rgba(255, 170, 0, 0.1);
+        border-color: Rgba(255, 170, 0, 0.2);
+        color: #ffaa00;
+        
+        &:hover { background: #ffaa00; color: white; }
+      }
       
       &:hover {
         background: var(--vicio-primary);

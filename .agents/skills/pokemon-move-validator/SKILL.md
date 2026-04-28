@@ -65,9 +65,14 @@ Every entry in `MOVE_DATA` must follow this mandatory structure:
    > - `special`: Uses `spa` (Attacker) vs `spd` (Defender).
    > - `physical`: Uses `atk` (Attacker) vs `def` (Defender).
 
-2. **Effect String Registry**: Before adding an `effect` string to `MOVE_DATA`, verify it exists in `applyMoveEffect` (src/logic/battle/battleMoves.js).
+2. **Battle Engine Shielding**:
+   - **MANDATORY**: The engine MUST perform a last-resort lookup if a move object is missing `power`, `type`, or `cat`.
+   - **CAT Initialization**: Every move injected into a Pokémon's `moves` array MUST include the `cat` (physical/special/status) property. Missing categories lead to animation failures and damage calculation bugs.
+   - **STATUS MOVES**: Moves with `cat: 'status'` MUST explicitly return `dmg: 0` to prevent the base damage constant (+2) from inflicting unintentional damage.
 
-3. **Verification**: After implementation, you **MUST**:
+3. **Effect String Registry**: Before adding an `effect` string to `MOVE_DATA`, verify it exists in `applyMoveEffect` (src/logic/battle/battleMoves.js).
+
+4. **Verification**: After implementation, you **MUST**:
    - Run `node backup_legacy_code/unit_test_battle.js` to verify general logic.
    - Check that `getMoveDescription` in `src/data/moves.js` properly describes the new effect.
 

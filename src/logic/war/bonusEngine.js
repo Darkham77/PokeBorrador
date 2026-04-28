@@ -1,4 +1,5 @@
 import { calculateMapBonuses } from './warEngine'
+import { recalcPokemonStats } from '@/logic/pokemonFactory'
 
 /**
  * Applies map dominance bonuses to a generated Pokémon.
@@ -27,6 +28,9 @@ export function applyEncounterBonuses(pokemon, mapId, faction, dominanceData) {
     Object.keys(pokemon.ivs).forEach(stat => {
       pokemon.ivs[stat] = Math.max(pokemon.ivs[stat], 15) // Boost to at least 15
     })
+    
+    // CRITICAL: Recalculate stats after IV changes
+    recalcPokemonStats(pokemon)
   }
 
   return pokemon

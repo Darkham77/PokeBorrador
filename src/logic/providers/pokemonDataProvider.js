@@ -40,13 +40,15 @@ export const pokemonDataProvider = {
      * @returns {Object|null}
      */
     getPokemonData(id) {
-        const data = _pokemonDb.value[id];
+        if (!id) return null;
+        const normalizedId = id.toLowerCase();
+        const data = _pokemonDb.value[normalizedId];
         if (!data) return null;
         const cloned = deepClone(data);
-        cloned.id = id;
+        cloned.id = normalizedId;
 
         // Merge metadata if available
-        const metadata = _speciesMetadata.value[id] || {};
+        const metadata = _speciesMetadata.value[normalizedId] || {};
         return {
             ...cloned,
             category: metadata.category || 'Pokémon Desconocido',

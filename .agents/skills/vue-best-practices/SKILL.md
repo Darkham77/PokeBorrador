@@ -187,6 +187,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **Why**: This prevents the header from scrolling away and eliminates nested scroll conflicts.
 - **Business Logic Parity Mandate**: Critical logic used in multiple contexts (e.g., selling prices calculated in both individual menus and mass selection) MUST be centralized in utility files (e.g., `src/logic/pokemonUtils.js`). This prevents calculation discrepancies between different UI layers.
 - **Utility Component Schema Awareness**: Always verify the prop schema for common utility components. For example, `PVTooltip` expects `title` and `description` props; using an incorrect prop like `text` will result in empty tooltips.
+- **Mandatory SFC Imports**: When using Vue core features (like `watch` or `nextTick`) inside `<script setup>`, always verify their explicit import from `'vue'`. Missing imports can lead to silent failures or `ReferenceError` crashes during component initialization, especially after adding new logic to existing files.
 
 ## 6) Final self-check before finishing
 

@@ -14,6 +14,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Techniques**: Glassmorphism (`-webkit-backdrop-filter: Blur(); backdrop-filter: Blur();`), HSL gradients, smooth shadows, and fluid transitions.
 - **Goal**: The "frame" must feel premium, modern, and reactive.
 - **Dynamic Layout Balance**: Use `flex-wrap: wrap` with flexible bases (e.g., `flex: 1 1 650px`) to create organic responsive transitions that adapt to intermediate viewports (like 1360px) without rigid breakpoints.
+- **Elastic Chat Pattern (Combat)**: In vertical combat layouts, the Battle Log (Chat) MUST use `flex: 1` and `min-height: 0` to act as the primary space absorber. This ensures the arena stays at the top and the action buttons stay pinned to the bottom of the modal/screen.
+- **Fullscreen 100vh Integrity**: Fullscreen combat modals MUST force `height: 100vh` across all parent containers (including `modal-scrollable-content`) to prevent background "bleed" or purple gaps at the bottom.
+- **Bottom Anchor Precision**: In fullscreen mode, action buttons MUST be positioned with a maximum of `2px` from the bottom edge (or `0px` with a slight negative margin) to ensure they feel physically anchored to the device frame.
 
 ### 2. Pixel Art Content (The "Game Heart")
 

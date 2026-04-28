@@ -64,7 +64,7 @@ export const useMapStore = defineStore('map', () => {
   const setGlobalWeather = (w) => { globalWeather.value = w }
   const setGlobalCycle = (c) => { forcedCycle.value = c }
 
-  const navigate = (locId) => {
+  const navigate = async (locId) => {
     const now = Date.now()
     if (now - lastNavigateTime.value < 400) return // Throttling
     lastNavigateTime.value = now
@@ -88,7 +88,7 @@ export const useMapStore = defineStore('map', () => {
 
     // 3. Generar Encuentro
     const eventStore = useEventStore()
-    const encounter = generateEncounter(locId, gs.state, {
+    const encounter = await generateEncounter(locId, gs.state, {
       activeEvents: activeEvents.value,
       dominanceData: mapWinners.value,
       shinyMultiplier: eventStore.globalMultipliers?.shiny || 1
@@ -101,12 +101,12 @@ export const useMapStore = defineStore('map', () => {
 
     // 4. Procesar Tipo de Encuentro
     if (encounter.type === 'wild') {
-      battleStore.startBattle(encounter.pokemon, { locationId: locId })
+      battleStore._startBattle(encounter.pokemon, { locationId: locId })
     } else if (encounter.type === 'guardian') {
       // El componente MapView debe manejar la notificación visual o podemos dispararla aquí si es modal
       // Por ahora, iniciamos la batalla marcando que es un Guardián
       encounter.pokemon.isGuardian = true
-      battleStore.startBattle(encounter.pokemon, { 
+      battleStore._startBattle(encounter.pokemon, { 
         locationId: locId,
         battleOptions: { isGuardian: true, pts: encounter.pts }
       })

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, nextTick, onMounted } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 
 const battleStore = useBattleStore()
@@ -7,34 +7,58 @@ const logContainer = ref(null)
 
 const logs = computed(() => battleStore.battleLogs)
 
-// Auto-scroll to bottom when new logs appear.
-// The legacy system used unshift(), but the log normally grows downwards.
-// I'll stick to the store's push logic if I change it, but currently it's unshift.
-// If it's unshift, new logs are at the TOP.
-watch(logs, () => {
-  // If growth is downwards, scroll to bottom.
-  // If growth is upwards (unshift), scroll to top.
-  // Legacy look had new messages appearing at the bottom typically.
-}, { deep: true })
+const scrollToBottom = async () => {
+  await nextTick()
+  setTimeout(() => {
+    if (logContainer.value) {
+      logContainer.value.scrollTop = logContainer.value.scrollHeight
+    }
+  }, 50)
+}
+
+// Watch both length and internal content changes
+watch(logs, scrollToBottom, { deep: true })
+
+onMounted(() => {
+  scrollToBottom()
+  if (logContainer.value) {
+    const observer = new ResizeObserver(scrollToBottom)
+    observer.observe(logContainer.value)
+  }
+})
 
 </script>
 
 <template>
   <div
     ref="logContainer"
-    class="battle-log"
+    class="battle-log custom-scrollbar-vicio"
   >
-    <!-- Reversing logs to show oldest first if using unshift, 
-         or just keep as is if we want new ones at the bottom -->
-    <!-- eslint-disable vue/no-v-html -->
-    <div 
-      v-for="log in logs.slice().reverse()" 
-      :key="log.id" 
-      class="log-entry"
-      :class="log.type"
-      v-html="log.msg"
-    />
-    <!-- eslint-enable vue/no-v-html -->
+    <div class="log-scroll-inner">
+      <div 
+        v-for="log in logs" 
+        :key="log.id" 
+        class="log-entry"
+        :class="log.type"
+      >
+        <div
+          v-if="log.icon"
+          class="log-icon-wrapper"
+          :class="log.iconType"
+        >
+          <img
+            :src="log.icon"
+            class="log-icon"
+            loading="lazy"
+            @error="e => e.target.style.display = 'none'"
+          >
+        </div>
+        <span
+          class="log-text"
+          v-html="log.msg"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -43,17 +67,27 @@ watch(logs, () => {
 
 .battle-log {
   height: 100%;
+  width: 100%;
   min-height: 0;
   padding: 20px;
-  background: Rgba(15, 23, 42, 0.5);
-  -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
-  border-radius: 20px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column-reverse; /* New ones at bottom, but we reverse slice in template */
-  gap: 12px;
+  overflow-y: auto !important;
+  display: block;
   @include smooth-scroll;
   @include gpu-layer;
+
+  .log-scroll-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  @media (max-width: 560px) {
+    padding: 10px !important;
+    .log-scroll-inner {
+      gap: 4px !important;
+    }
+  }
 }
 
 .log-entry {
@@ -64,6 +98,59 @@ watch(logs, () => {
   animation: slideIn 0.3s ease-out;
   padding-bottom: 8px;
   border-bottom: 1px solid Rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .log-icon-wrapper {
+    flex-shrink: 0;
+    width: 56px !important;
+    height: 56px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+
+    &::before, &::after { display: none !important; }
+
+    &.item, &.pokemon {
+      background: transparent !important;
+    }
+  }
+
+  .log-icon {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
+  }
+
+  .log-text {
+    flex: 1;
+  }
+
+  @media (max-width: 560px) {
+    font-size: 11px !important;
+    padding: 2px 0 !important;
+    margin: 0 !important;
+    line-height: 1.3 !important;
+    border-bottom: 1px solid Rgba(255,255,255,0.03) !important;
+    min-height: 0 !important;
+    gap: 8px !important;
+
+    .log-icon-wrapper {
+      width: 28px !important;
+      height: 28px !important;
+    }
+  }
 }
 
 .log-entry:last-child {
@@ -75,9 +162,15 @@ watch(logs, () => {
   to { opacity: 1; transform: TranslateX(0); }
 }
 
-/* Color overrides mapping to global types */
-:deep(.log-info) { color: $white; font-weight: 500; }
-:deep(.log-damage) { color: Rgba(248, 113, 113, 1); }
-:deep(.log-heal) { color: Rgba(52, 211, 153, 1); }
-:deep(.log-status) { color: Rgba(192, 132, 252, 1); }
+/* Color overrides mapping to legacy types */
+:deep(.log-info) { color: $yellow; font-weight: 500; }
+:deep(.log-player) { color: $green; }
+:deep(.log-enemy) { color: $red; }
+:deep(.log-catch) { color: $purple; }
+
+/* Compatibility with new types */
+:deep(.log-damage) { color: $red; }
+:deep(.log-heal) { color: $green; }
+:deep(.log-status) { color: $purple; }
+
 </style>

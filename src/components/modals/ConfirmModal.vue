@@ -6,7 +6,9 @@ defineProps({
   title: { type: String, default: '¿ESTÁS SEGURO?' },
   message: { type: String, default: '' },
   confirmText: { type: String, default: 'ACEPTAR' },
-  cancelText: { type: String, default: 'CANCELAR' }
+  cancelText: { type: String, default: 'CANCELAR' },
+  type: { type: String, default: 'primary' },
+  variant: { type: String, default: 'modern' }
 })
 
 const emit = defineEmits(['confirm', 'cancel', 'close'])
@@ -27,7 +29,7 @@ const handleCancel = () => {
     :show="show"
     :title="title"
     max-width="400px"
-    variant="retro"
+    :variant="variant"
     padding="raw"
     @close="handleCancel"
   >
@@ -45,6 +47,7 @@ const handleCancel = () => {
         </button>
         <button 
           class="btn-confirm" 
+          :class="{ 'is-danger': type === 'danger' }"
           @click.stop="handleConfirm"
         >
           {{ confirmText }}
@@ -72,6 +75,36 @@ const handleCancel = () => {
   }
 }
 
+// Retro Yellow Variant Styles
+:deep(.variant-retro) {
+  .confirm-body p {
+    color: $coin-gold; // Gold/Yellow text for retro
+    @include pixelated;
+    font-size: 12px;
+    text-shadow: 2px 2px 0 Rgba(0,0,0,0.5);
+  }
+
+  .confirm-footer {
+    .btn-cancel {
+      border: 2px solid #555;
+      background: #333;
+      color: #999;
+    }
+    .btn-confirm {
+      background: Linear-Gradient(135deg, $coin-gold, #b8860b);
+      color: $black;
+      border: 2px solid $black;
+      box-shadow: 4px 4px 0 Rgba(0,0,0,0.3);
+      
+      &:hover {
+        background: Linear-Gradient(135deg, $white, $coin-gold);
+        transform: Translate(-2px, -2px);
+        box-shadow: 6px 6px 0 Rgba(0,0,0,0.4);
+      }
+    }
+  }
+}
+
 .confirm-footer {
   display: flex;
   gap: 12px;
@@ -86,7 +119,6 @@ const handleCancel = () => {
     @include pixelated;
     cursor: pointer;
     transition: all 0.2s;
-    @include pixelated;
     
     &:active {
       transform: Scale(0.95);
@@ -104,7 +136,16 @@ const handleCancel = () => {
   
   .btn-confirm {
     @include btn-vicio-primary;
-    padding: 14px; // Keep more compact for confirm modal
+    padding: 14px; 
+
+    &.is-danger {
+      background: Linear-Gradient(135deg, var(--red), #dc2626);
+      box-shadow: 0 4px 15px Rgba(220, 38, 38, 0.4);
+      &:hover {
+        background: Linear-Gradient(135deg, #ef4444, #b91c1c);
+        box-shadow: 0 6px 20px Rgba(220, 38, 38, 0.5);
+      }
+    }
   }
 }
 </style>

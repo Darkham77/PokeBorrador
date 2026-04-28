@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useModalStore } from './modals'
+import { useBattleStore } from './battle'
 import { useLoadingStore } from '@/stores/loading'
 
 export const useUIStore = defineStore('ui', () => {
@@ -133,6 +134,17 @@ export const useUIStore = defineStore('ui', () => {
     }, 4000)
   }
 
+  const isAnyFullscreenModalOpen = computed(() => {
+    const modalStore = useModalStore()
+    const battleStore = useBattleStore()
+    
+    // Check if battle is active and we are in mobile/fullscreen mode (<= 950px)
+    const isBattleFullscreen = battleStore.isBattleActive && window.innerWidth <= 950
+    const isStackFullscreen = modalStore.stack.some(m => (m.props.type === 'fullscreen' || m.props.maxHeight === '100vh') && !m.closing)
+    
+    return isBattleFullscreen || isStackFullscreen
+  })
+
   const isLoading = ref(false)
   function setLoading(val, msg = 'Procesando...', sub = 'Por favor espera') { 
     isLoading.value = val 
@@ -204,13 +216,16 @@ export const useUIStore = defineStore('ui', () => {
    */
   const isAnyBlockingModalOpen = computed(() => {
     const modalStore = useModalStore()
+    const battleStore = useBattleStore()
     const obscuringModals = modalStore.stack.filter(m => {
       if (NON_OBSCURING_MODALS.includes(m.name)) return false
       if (m.props?.overlay === 'none') return false
       return true
     })
+    
+    const isBattleObscuring = battleStore.isBattleActive
 
-    if (obscuringModals.length === 0) return false
+    if (obscuringModals.length === 0 && !isBattleObscuring) return false
 
     // Performance Mode triggers immediately when an obscuring modal is added.
     return obscuringModals.some(m => !m.closing)
@@ -262,6 +277,7 @@ export const useUIStore = defineStore('ui', () => {
   return {
     isAnyModalOpen,
     isAnyBlockingModalOpen,
+    isAnyFullscreenModalOpen,
     isDebugPerformanceMode,
     isSimplifiedModalsMode,
     isDebugGridMode,

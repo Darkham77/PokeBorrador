@@ -275,7 +275,7 @@ function formatRouteName(id) {
     content: "";
     position: absolute;
     top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, Rgba(255, 255, 255, 0.1), transparent);
+    background: Linear-Gradient(90deg, transparent, Rgba(255, 255, 255, 0.1), transparent);
   }
 }
 

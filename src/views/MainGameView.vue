@@ -18,7 +18,6 @@ import ActionButtons from '@/components/ActionButtons.vue'
 import TrainerPanel from '@/components/TrainerPanel.vue'
 import HUD_Navigation from '@/components/HUD_Navigation.vue'
 import InventoryPills from '@/components/InventoryPills.vue'
-import BattleArena from '@/components/BattleArena.vue'
 import PvPArena from '@/components/battle/PvPArena.vue'
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
@@ -200,199 +199,200 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <TitleScreen />
+  <div class="main-game-view-root">
+    <TitleScreen />
   
 
-  <div
-    v-show="gs.starterChosen"
-    id="game-screen"
-    class="screen"
-  >
-    <!-- HUD PRINCIPAL (RESTAURADO) -->
     <div
-      ref="hudRef"
-      class="hud-container"
-      :class="{ 'hud-hidden': isHudHidden }"
+      v-show="gs.starterChosen"
+      id="game-screen"
+      class="screen"
     >
-      <div 
-        ref="innerHudRef"
-        class="hud"
+      <!-- HUD PRINCIPAL (RESTAURADO) -->
+      <div
+        ref="hudRef"
+        class="hud-container"
+        :class="{ 'hud-hidden': isHudHidden }"
       >
-        <!-- 1. Entrenador (Siempre Arriba) -->
-        <TrainerPanel class="hud-left" />
+        <div 
+          ref="innerHudRef"
+          class="hud"
+        >
+          <!-- 1. Entrenador (Siempre Arriba) -->
+          <TrainerPanel class="hud-left" />
 
-        <!-- 2. Botones Especiales -->
-        <ActionButtons class="hud-actions" />
+          <!-- 2. Botones Especiales -->
+          <ActionButtons class="hud-actions" />
 
-        <!-- 3. Navegación -->
-        <HUD_Navigation class="hud-center" />
+          <!-- 3. Navegación -->
+          <HUD_Navigation class="hud-center" />
 
-        <!-- 4. Inventario (Baja < 670px) -->
-        <InventoryPills class="hud-right" />
+          <!-- 4. Inventario (Baja < 670px) -->
+          <InventoryPills class="hud-right" />
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div
+        id="zoomable-content"
+        class="zoom-target content-area"
+        :style="{ 
+          '--hud-top-padding': Math.max(100, hudHeight + 20) + 'px',
+          '--hud-bottom-padding': (hudBottomHeight > 0 ? (hudBottomHeight + 20) : 0) + 'px'
+        }"
+      >
+        <!-- TAB CONTENTS -->
+        <div
+          v-show="activeTab === 'map'"
+          id="tab-map"
+          class="tab-content"
+        >
+          <MapView />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'pokedex'"
+          id="tab-pokedex"
+          class="tab-content"
+        >
+          <PokedexView />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'bag'"
+          id="tab-bag"
+          class="tab-content"
+        >
+          <BagView />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'box'"
+          id="tab-box"
+          class="tab-content"
+        >
+          <BoxView />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'gyms'"
+          id="tab-gyms"
+          class="tab-content"
+        >
+          <GymsView />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'daycare'"
+          id="tab-daycare"
+          class="tab-content"
+        >
+          <DaycareView v-if="activeTab === 'daycare'" />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'market'"
+          id="tab-market"
+          class="tab-content"
+        >
+          <ShopView />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'trainer-shop'"
+          id="tab-trainer-shop"
+          class="tab-content"
+        >
+          <ShopView />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'online-market'"
+          id="tab-online-market"
+          class="tab-content"
+        >
+          <GlobalMarket v-if="activeTab === 'online-market'" />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'events'"
+          id="tab-events"
+          class="tab-content"
+        >
+          <EventsView />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'social'"
+          id="tab-social"
+          class="tab-content"
+        >
+          <SocialView />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'arena'"
+          id="tab-arena"
+          class="tab-content"
+        >
+          <RankedArena v-if="activeTab === 'arena'" />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <div
+          v-show="activeTab === 'ranking'"
+          id="tab-ranking"
+          class="tab-content"
+        >
+          <GlobalRanking v-if="activeTab === 'ranking'" />
+          <div class="hud-spacer-bottom" />
+        </div>
+
+        <PvPArena v-show="livePvP.battleState.active" />
+      </div>
+
+      <!-- MODALS & OVERLAYS -->
+      <CriminalityBar />
+
+      <BuffsOverlay />
+
+      <!-- SIDEBAR IZQUIERDA (BARRA DE HERRAMIENTAS) -->
+      <HUD_SidebarLeft>
+        <GlobalChat />
+        <LocalDebugPanel />
+      </HUD_SidebarLeft>
+
+      <!-- VENTANAS DE CHAT PRIVADO (Phase 24) -->
+      <div class="private-chats-container">
+        <DirectChatWindow 
+          v-for="(chat, friendId) in chatStore.privateChats" 
+          :key="friendId"
+          :friend-id="friendId"
+        />
       </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div
-      id="zoomable-content"
-      class="zoom-target content-area"
-      :style="{ 
-        '--hud-top-padding': Math.max(100, hudHeight + 20) + 'px',
-        '--hud-bottom-padding': (hudBottomHeight > 0 ? (hudBottomHeight + 20) : 0) + 'px'
-      }"
+    <div 
+      v-if="gs.starterChosen"
+      ref="hudBottomRef"
+      class="hud-bottom-wrapper"
     >
-      <!-- TAB CONTENTS -->
-      <div
-        v-show="activeTab === 'map'"
-        id="tab-map"
-        class="tab-content"
-      >
-        <MapView />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'pokedex'"
-        id="tab-pokedex"
-        class="tab-content"
-      >
-        <PokedexView />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'bag'"
-        id="tab-bag"
-        class="tab-content"
-      >
-        <BagView />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'box'"
-        id="tab-box"
-        class="tab-content"
-      >
-        <BoxView />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'gyms'"
-        id="tab-gyms"
-        class="tab-content"
-      >
-        <GymsView />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'daycare'"
-        id="tab-daycare"
-        class="tab-content"
-      >
-        <DaycareView v-if="activeTab === 'daycare'" />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'market'"
-        id="tab-market"
-        class="tab-content"
-      >
-        <ShopView />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'trainer-shop'"
-        id="tab-trainer-shop"
-        class="tab-content"
-      >
-        <ShopView />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'online-market'"
-        id="tab-online-market"
-        class="tab-content"
-      >
-        <GlobalMarket v-if="activeTab === 'online-market'" />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'events'"
-        id="tab-events"
-        class="tab-content"
-      >
-        <EventsView />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'social'"
-        id="tab-social"
-        class="tab-content"
-      >
-        <SocialView />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'arena'"
-        id="tab-arena"
-        class="tab-content"
-      >
-        <RankedArena v-if="activeTab === 'arena'" />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <div
-        v-show="activeTab === 'ranking'"
-        id="tab-ranking"
-        class="tab-content"
-      >
-        <GlobalRanking v-if="activeTab === 'ranking'" />
-        <div class="hud-spacer-bottom" />
-      </div>
-
-      <BattleArena v-show="battleStore.isBattleActive" />
-      <PvPArena v-show="livePvP.battleState.active" />
-    </div>
-
-    <!-- MODALS & OVERLAYS -->
-    <CriminalityBar />
-
-    <BuffsOverlay />
-
-    <!-- SIDEBAR IZQUIERDA (BARRA DE HERRAMIENTAS) -->
-    <HUD_SidebarLeft>
-      <GlobalChat />
-      <LocalDebugPanel />
-    </HUD_SidebarLeft>
-
-    <!-- VENTANAS DE CHAT PRIVADO (Phase 24) -->
-    <div class="private-chats-container">
-      <DirectChatWindow 
-        v-for="(chat, friendId) in chatStore.privateChats" 
-        :key="friendId"
-        :friend-id="friendId"
+      <HUD_Navigation 
+        class="mobile-only-nav"
+        position="bottom" 
       />
     </div>
-  </div>
-
-  <div 
-    v-if="gs.starterChosen"
-    ref="hudBottomRef"
-    class="hud-bottom-wrapper"
-  >
-    <HUD_Navigation 
-      class="mobile-only-nav"
-      position="bottom" 
-    />
   </div>
 </template>
 

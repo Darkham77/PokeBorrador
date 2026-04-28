@@ -2,6 +2,7 @@ import { makePokemon, recalcPokemonStats, getExpNeeded } from '@/logic/pokemonFa
 import { useGameStore } from '@/stores/game';
 import { useBattleStore } from '@/stores/battle';
 import { useUIStore } from '@/stores/ui';
+import { useModalStore } from '@/stores/modals';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 /**
@@ -45,9 +46,13 @@ export const pokemonDebugService = {
       p.moves = moves.map(mName => {
         const mData = pokemonDataProvider.getMoveData(mName) || {};
         return { 
-          name: mName, 
+          name: mName || '???', 
           pp: mData.pp || 35, 
-          maxPP: mData.pp || 35 
+          maxPP: mData.pp || 35,
+          type: mData.type || 'normal',
+          power: mData.power || 0,
+          acc: mData.acc || 100,
+          cat: mData.cat || 'physical'
         };
       }).slice(0, 4);
     }
@@ -128,7 +133,7 @@ export const pokemonDebugService = {
    */
   async triggerEncounter(p, mapId = 'plains') {
     const battleStore = useBattleStore();
-    const ui = useUIStore();
+    const _ui = useUIStore();
 
     console.log(`[DEBUG] Triggering encounter with ${p.name} at ${mapId}`);
     
@@ -142,6 +147,7 @@ export const pokemonDebugService = {
       battleOptions: { isDebug: true }
     });
 
-    ui.closeAllModals();
+    const modalStore = useModalStore();
+    modalStore.closeAll();
   }
 };

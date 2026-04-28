@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -31,12 +32,15 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
         class="poke-name" 
         :class="isPlayer ? nickStyle : ''"
       >
-        {{ p.name }}&nbsp;<span v-if="p.isShiny">✨</span>
+        {{ p.name }}
       </span>
-      <span
-        class="bh-gender-badge"
+      <div
+        v-if="p.gender"
+        class="m-badge-gender"
         :class="getGenderCls(p.gender)"
-      >{{ getGenderText(p.gender) }}</span>
+      >
+        {{ getGenderText(p.gender) }}
+      </div>
       <img
         v-if="!isPlayer && p.caught"
         :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
@@ -45,8 +49,15 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
       >
     </div>
     
-    <div class="poke-level m-badge-level">
-      Nv. {{ p.level }}
+    <div class="level-row">
+      <div class="poke-level m-badge-level">
+        Nv. {{ p.level }}
+      </div>
+      <PokemonTypePills 
+        :pokemon="p" 
+        size="sm"
+        class="poke-types"
+      />
     </div>
 
     <div class="hp-status">
@@ -112,6 +123,13 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 }
 
 .poke-level {
+  margin-bottom: 0;
+}
+
+.level-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
 }
 
@@ -152,6 +170,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 .status-badge {
   display: inline-block;
   margin-top: 5px;
+  @include pixelated;
   font-size: 8px;
   padding: 2px 6px;
   background: Rgba(68, 68, 68, 1);

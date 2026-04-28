@@ -11,7 +11,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   <div class="actions-container">
     <div class="action-row-complex">
       <button
-        class="legacy-action-btn switch"
+        class="btn-vicio-secondary switch"
         @click.stop="emit('switch')"
       >
         <span class="icon">🔄</span> CAMBIAR
@@ -33,63 +33,53 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
       </div>
 
       <button
-        class="legacy-action-btn bag"
+        class="btn-vicio-success bag"
         @click.stop="emit('bag')"
       >
         <span class="icon">🎒</span> MOCHILA
       </button>
     </div>
-    
-    <button
-      v-if="!isFinishing"
-      class="huir-button"
-      @click.stop="emit('run')"
-    >
-      🏃 HUIR
-    </button>
   </div>
 </template>
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+@use "@/styles/core/tools" as *;
+
 .actions-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
 }
 
 .action-row-complex {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: 20px;
+  gap: 12px;
   align-items: center;
+
+  .btn-vicio-secondary, .btn-vicio-success {
+    padding: 10px 16px;
+    font-size: 8px;
+    border-radius: 10px;
+  }
 }
 
-.legacy-action-btn {
-  background: Rgba(255,255,255,0.05);
-  border: 1px solid Rgba(255,255,255,0.1);
-  border-radius: 14px;
-  padding: 15px;
-  color: $white;
-  @include pixelated;
-  font-size: 9px;
-  cursor: pointer;
-  transition: all 0.2s;
+.catch-btn-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-.legacy-action-btn.switch { border-color: var(--purple); color: var(--purple-light); }
-.legacy-action-btn.bag { border-color: var(--green); color: var(--green-light); }
-.legacy-action-btn:hover { background: Rgba(255,255,255,0.1); }
 
 /* The Iconic Pokeball Button */
 .btn-catch-ball {
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   border-radius: 50% !important;
   background: $white !important;
   position: relative;
-  border: 4px solid #333 !important;
-  box-shadow: 0 10px 20px Rgba(0,0,0,0.4), inset 0 -4px 0 Rgba(0,0,0,0.1) !important;
+  border: 3px solid #333 !important;
+  box-shadow: 0 6px 15px Rgba(0,0,0,0.4), inset 0 -3px 0 Rgba(0,0,0,0.1) !important;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
@@ -104,7 +94,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   width: 100%;
   height: 50%;
   background: Rgba(239, 83, 80, 1);
-  border-bottom: 4px solid #333;
+  border-bottom: 3px solid #333;
 }
 
 .btn-catch-ball::after {
@@ -113,31 +103,21 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   top: 50%;
   left: 50%;
   transform: Translate(-50%, -50%);
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   background: $white;
-  border: 4px solid #333;
+  border: 3px solid #333;
   border-radius: 50%;
   z-index: var(--z-base);
-  box-shadow: 0 0 0 4px $white, 0 0 15px Rgba(0,0,0,0.2);
+  box-shadow: 0 0 0 3px $white, 0 0 10px Rgba(0,0,0,0.2);
 }
 
 .btn-catch-ball:hover {
-  transform: Scale(1.15) Rotate(15deg);
-  box-shadow: 0 15px 30px Rgba(0,0,0,0.5);
+  transform: Scale(1.1) Rotate(10deg);
+  box-shadow: 0 10px 20px Rgba(0,0,0,0.5);
 }
 
 .btn-catch-ball span { display: none; }
 
-.huir-button {
-  width: 100%;
-  background: Rgba(0,0,0,0.3);
-  border: 1px solid Rgba(255,255,255,0.05);
-  border-radius: 12px;
-  padding: 10px;
-  color: var(--orange);
-  @include pixelated;
-  font-size: 9px;
-  cursor: pointer;
-}
+
 </style>

@@ -47,45 +47,6 @@ const abilityStyle = computed(() => ({
 
 <template>
   <div class="status-container">
-    <!-- HP & EXP -->
-    <div class="status-section glass-inset">
-      <div class="bar-group">
-        <div class="bar-header">
-          <span>HP</span>
-          <span>{{ p.hp }} / {{ p.maxHp }}</span>
-        </div>
-        <div class="progress-outer">
-          <div 
-            class="progress-inner" 
-            :class="getHpClass(getHpPct(p.hp, p.maxHp))"
-            :style="{ width: getHpPct(p.hp, p.maxHp) + '%' }"
-          />
-        </div>
-      </div>
-      <div
-        v-if="context === 'team'"
-        class="bar-group mt-12"
-      >
-        <div class="bar-header">
-          <span>EXPERIENCIA</span>
-          <span
-            v-if="p.level >= 100"
-            class="max-text"
-          >MAX</span>
-          <span
-            v-else
-            class="exp-text"
-          >{{ p.exp || 0 }} / {{ p.expNeeded || 0 }}</span>
-        </div>
-        <div class="progress-outer exp">
-          <div 
-            class="progress-inner exp-fill" 
-            :style="{ width: (p.level >= 100 ? 100 : (p.exp / p.expNeeded * 100)) + '%' }"
-          />
-        </div>
-      </div>
-    </div>
-
     <!-- General Info Grid -->
     <div class="info-grid">
       <PVTooltip
@@ -128,6 +89,45 @@ const abilityStyle = computed(() => ({
         <span class="val vigor-val">⚡{{ p.vigor || 0 }}</span>
       </PVTooltip>
     </div>
+
+    <!-- HP & EXP -->
+    <div class="status-section glass-inset">
+      <div class="bar-group">
+        <div class="bar-header">
+          <span>HP</span>
+          <span>{{ p.hp }} / {{ p.maxHp }}</span>
+        </div>
+        <div class="progress-outer">
+          <div 
+            class="progress-inner" 
+            :class="getHpClass(getHpPct(p.hp, p.maxHp))"
+            :style="{ width: getHpPct(p.hp, p.maxHp) + '%' }"
+          />
+        </div>
+      </div>
+      <div
+        v-if="context === 'team'"
+        class="bar-group mt-12"
+      >
+        <div class="bar-header">
+          <span>EXPERIENCIA</span>
+          <span
+            v-if="p.level >= 100"
+            class="max-text"
+          >MAX</span>
+          <span
+            v-else
+            class="exp-text"
+          >{{ p.exp || 0 }} / {{ p.expNeeded || 0 }}</span>
+        </div>
+        <div class="progress-outer exp">
+          <div 
+            class="progress-inner exp-fill" 
+            :style="{ width: (p.level >= 100 ? 100 : (p.exp / p.expNeeded * 100)) + '%' }"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -136,7 +136,7 @@ const abilityStyle = computed(() => ({
 
 .glass-inset {
   padding: 0; // Remove padding
-  margin-bottom: 40px; // More space
+  margin-bottom: 0; // Standardized gap handled by parent or previous element
   background: none; // Remove frame
   border: none; // Remove frame
   box-shadow: none; // Remove frame
@@ -184,7 +184,7 @@ const abilityStyle = computed(() => ({
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 24px;
 }
 
 .info-card {

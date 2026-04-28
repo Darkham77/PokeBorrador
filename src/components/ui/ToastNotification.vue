@@ -9,6 +9,7 @@ const uiStore = useUIStore()
     <div
       id="notification-stack"
       class="toast-stack"
+      :class="{ 'is-fullscreen-toast': uiStore.isAnyFullscreenModalOpen }"
     >
       <TransitionGroup name="toast">
         <div 
@@ -35,6 +36,12 @@ const uiStore = useUIStore()
   z-index: var(--z-toast);
   pointer-events: none;
   max-width: 300px;
+  @include gpu-layer;
+
+  &.is-fullscreen-toast {
+    top: 20px;
+    z-index: var(--z-max-value);
+  }
 }
 
 .toast-item {
@@ -82,13 +89,15 @@ const uiStore = useUIStore()
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   .toast-stack {
-    top: auto;
-    bottom: 100px;
-    left: 20px;
+    top: 20px;
+    bottom: auto;
+    left: auto;
     right: 20px;
-    max-width: none;
+    max-width: calc(100vw - 40px);
+    align-items: flex-end;
+    z-index: var(--z-max-value); // Ensure it's above EVERYTHING
   }
 }
 </style>

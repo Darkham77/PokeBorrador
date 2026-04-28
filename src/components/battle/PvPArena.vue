@@ -9,11 +9,11 @@ import { phaserBridge } from '@/logic/phaserBridge'
 // Sub-components (Reusing from battle directory)
 import BattleInfoCard from './BattleInfoCard.vue'
 import BattleMovesGrid from './BattleMovesGrid.vue'
-import BattleSwitchModal from './BattleSwitchModal.vue'
+import { useModalStore } from '@/stores/modals'
 
 const gameStore = useGameStore()
 const livePvP = useLivePvPStore()
-const uiStore = useUIStore()
+const _uiStore = useUIStore()
 const { _getHpPct, _getHpClass } = useBattleVisuals()
 
 const gs = computed(() => gameStore.state)
@@ -53,7 +53,21 @@ const handleForfeit = () => {
 }
 
 const handleSwitch = () => {
-  uiStore.isBattleSwitchOpen = true
+  useModalStore().open('BattleSwitch', {
+    title: 'CAMBIAR POKÉMON',
+    isBattleSwitch: true,
+    battleMode: 'pvp',
+    includeTeam: true,
+    activePokemonUid: battle.value.myTeam[battle.value.myActiveIdx].uid,
+    onConfirm: (pokes) => {
+      if (pokes.length > 0) {
+        const index = gameStore.state.team.findIndex(p => p.uid === pokes[0].uid)
+        if (index !== -1) {
+          livePvP._commitPick({ type: 'switch', switchIndex: index })
+        }
+      }
+    }
+  })
 }
 
 </script>
@@ -135,9 +149,6 @@ const handleSwitch = () => {
         </div>
       </div>
     </div>
-
-    <!-- Switch Modal -->
-    <BattleSwitchModal v-if="uiStore.isBattleSwitchOpen" />
   </div>
 </template>
 
@@ -203,7 +214,7 @@ const handleSwitch = () => {
 }
 
 #move-panel {
-  padding: 20px;
+  padding: 16px;
   background: Rgba(30, 41, 59, 1);
   &.disabled {
     opacity: 0.6;
@@ -215,7 +226,7 @@ const handleSwitch = () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 .action-btn {

@@ -52,12 +52,14 @@ Refer to these manuals for complex implementation specifications:
 
 ### 4. SASS & Build Integrity
 
-- **Capitalization Mandate**: Use Capitalized Filters (`Scale()`, `Blur()`, `Brightness()`, `Rgba()`, `Rgb()`, `Linear-Gradient()`, `Radial-Gradient()`) to avoid Dart Sass 2.0 collisions. This applies to `.scss`, `.vue`, and constant files (`.js`, `.ts`).
+- **Capitalization Mandate**: Use Capitalized Filters (`Scale()`, `Blur()`, `Brightness()`, `Contrast()`, `Saturate()`, `Rgba()`, `Rgb()`, `Linear-Gradient()`, `Radial-Gradient()`) to avoid Dart Sass 2.0 collisions. This applies to `.scss`, `.vue`, and constant files (`.js`, `.ts`).
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. Eliminate unused vars and computed properties immediately.
 - **Design Token Mandate (Hover Colors)**: Hardcoding color values (e.g., `#ffb800`, `Rgba(255, 184, 0, ...)`) in hover effects is forbidden. The standard hover border and glow color is always `var(--yellow)` (`#ffd60a`). For glow shadows, use `Rgba(255, 214, 10, 0.2)` to match the token exactly. This ensures a single source of truth in `_variables.scss`.
 - **Mixin Dependency Declaration**: A mixin that calls utilities from a separate file (e.g., `pokemon-sprite-base-standard` using `sprite-render` from `_gpu.scss`) MUST declare that dependency with `@use` at the top of its own file. This makes the mixin self-contained and prevents "Undefined mixin" errors when the file is compiled in an isolated context.
 - **Cross-Platform Automation**: All automation scripts (Python/JS) MUST use native path libraries (`pathlib` in Python, `path` in Node.js) instead of manual string normalization. Bypassing Windows/Linux path collisions via `replace("\\", "/")` is deprecated. Use `Path.parts` and `Path.rglob` to ensure 100% OS-agnostic execution.
+- **CSS Class Collision Avoidance**: Use prefix-based class names (e.g. `.ps-tag-label`, `.inv-stat-label`) for component-specific styles. Avoid using generic names like `.label` or `.icon` at the root of a style file, as they will collide with other components and fail the redundancy audit.
+- **Media Query Nesting**: To avoid CSS redundancy flags and ensure clean inheritance, always nest media queries within their respective class selectors using the ampersand (`&`). Avoid global `@media` blocks that repeat selector names across the file.
 - **Script Dependency Shield**: Any script that uses non-standard libraries (e.g., `Pillow` in Python) MUST include a `try...except ImportError` block. It must print a clear error message including the installation command (`pip install ...`) and exit with a non-zero code.
 - **Dynamic Import Zero-Warning**: To avoid static analysis warnings (IDE) in scripts that modify `sys.path` dynamically, imports of local modules MUST be performed locally within the classes or methods that use them.
 - **CSS Redundancy Audit**: Use `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py` before commit. To bypass valid nested override flags, use SASS ampersand nesting (`& .class-name {`) to explicitly declare inheritance and avoid duplicate selector penalties.
@@ -66,8 +68,10 @@ Refer to these manuals for complex implementation specifications:
 - **Flex Scroll Collapse**: Containers with `overflow-y: auto` that are children of flex parents MUST include `min-height: 0` to prevent layout colapse across modern browsers.
 - **UI Interaction**: Use `@include btn-vicio-primary('sm')` for secondary modal buttons to avoid 100% width collisions. All interactive filter/sort controls MUST include a `PVTooltip`.
 - **Vue Template Integrity**: NEVER use JS-style (`//`) or HTML comments inside Vue tags or attributes. This causes Vite compilation errors ("Illegal '/' in tags").
-- **Z-Index Layering**: Hardcoded numbers are forbidden. Use system CSS variables (`--z-low`, `--z-base`, etc.) exclusively. If a precise micro-offset is required (e.g., between two layers of the same tier), use `calc(var(--z-base) + N)` to maintain relative hierarchy without breaking the audit engine.
+- **Z-Index Layering**: Hardcoded numbers are strictly forbidden. Use system CSS variables (`var(--z-low)`, `var(--z-base)`, etc.) exclusively. If a precise micro-offset is required (e.g., between two layers of the same tier), use `calc(var(--z-base) + N)` to maintain relative hierarchy without breaking the audit engine.
 - **Positioning & Spacing**: Avoid using negative margins (`margin-top: -1px`) to fix alignment or layering "ghosts". This triggers redundancy and stacking warnings. Use `transform: TranslateY(-1px)` or Flexbox `gap` to ensure responsive stability.
+- **Pill Scaling & Overflow Prevention**: Type pills (e.g., `m-type-tag`) with long names (like "FIGHTING") MUST use `width: auto` and `min-width` instead of `width: 100%`. This prevents text from overflowing or being cut off by the pill's fixed container.
+- **Draggable Cursor Inheritance**: When using a functional component (like a Tooltip) as a wrapper for a draggable card, ensure the `cursor: grab` style is correctly applied to the wrapper itself. Use specific classes (e.g., `.is-draggable`) to toggle the cursor based on context (e.g., enable in info panels, disable in combat).
 - **Data Integrity Directive**: Large data files (like weather tables or spawn grids) MUST include the comment `// [PureVue-Ignore-Length]` at the top. This prevents build tools and agents from fragmenting the object, ensuring architectural integrity during refactors.
 
 ### 5. Asset Pipeline & 1:1 Resolution
@@ -93,8 +97,13 @@ Refer to these manuals for complex implementation specifications:
 - **Bulk Operation Optimization**: In management views (inventory, boxes), multi-selection modes should default to "Full Stack" (selecting all items of that type) to minimize modal interactions.
 - **Financial Transparency**: Always display estimated total profits in confirmation dialogs for bulk selling operations to provide immediate user feedback.
 - **Mass Selection Aesthetic**: Multi-selection modes for destructive or high-impact actions (Selling, Releasing) MUST use a **vibrant Red border** (`var(--red)`) and a pulsing animation to emphasize the significance of the selection.
-- **Tabbed Modal Pattern**: For high-density management modals, use a tabbed interface by placing buttons in the `BaseModal` slot `#header`. Set `header-background="transparent"` to maintain glassmorphism continuity and use `PVTooltip` on each tab to explain its context.
+- **Tabbed Modal Pattern**: For high-density management modals, use a tabbed interface by placing buttons in the `BaseModal` slot `#header`. Set `header-background="transparent"`.
+- **Utility Component Schema Awareness**: Always verify the prop schema for common utility components. For example, `PVTooltip` expects `title` and `description` props; using an incorrect prop like `text` will result in empty tooltips.
+- **Mandatory SFC Imports**: When using Vue core features (like `watch` or `nextTick`) inside `<script setup>`, always verify their explicit import from `'vue'`. Missing imports can lead to silent failures or `ReferenceError` crashes during component initialization, especially after adding new logic to existing files.
 - **Narrative Dynamic Tooltips**: Enrich technical categories with descriptive tooltips using local mapping functions (e.g., `getCategoryDescription`). This pattern transforms cold data into narrative context (Legendary, Mythic, Genetic) without bloating the global store or specialized components.
+- **DND Position Feedback**: Interactive reordering (Drag-and-Drop) MUST provide large, pixelated position numbers (1-6 for teams, 1-4 for moves) as an overlay on the target slots. Use a semi-transparent dark backdrop with `backdrop-filter: Blur(Npx)` to ensure the number is readable regardless of the element's content.
+- **Tooltip UX & Interference**: Tooltips MUST be suppressible during complex interactions. Use a `disabled` prop on `PVTooltip` and toggle it during Drag-and-Drop operations to prevent the description box from obstructing the target drop zone.
+- **Wrapper-level Tooltips**: For grid items or interactive cards, the `PVTooltip` should act as the root wrapper (`tag="div"`) instead of being placed inside. This ensures the entire card area triggers the tooltip and maintains a consistent interaction hit-box.
 
 ### 8. Logic & Determinism
 
@@ -121,3 +130,10 @@ To ensure rigor and traceability, every complex task MUST follow the Artifact li
 - [ ] **Pixel Parity**: Is all game content pixelated and sharp?
 - [ ] **CLI-First**: Have I verified the state via console?
 - [ ] **Zero-Warning**: Do `npm run lint` and `build` pass without warnings?
+
+### 9. Map & Encounter UX
+
+- **Spawn Time Emojis**: Use emojis (🌅, ☀️, 🌇, 🌙) instead of text in tooltips for spawn cycles to maintain a clean Retro-Modern UI.
+- **Encounter Spoiler Shield**: Hide specific spawn times for unknown Pokémon (not seen/caught) to prevent spoilers. Use the generic text "No es común en esta ruta" for time-restricted unknown spawns.
+- **Concise UI Labels**: Prefer short, direct labels (e.g., "Horarios habituales: [Emojis]") over long sentences in tooltips to minimize text clutter.
+- **Fishing vs. Time Restriction**: Pokémon present in the fishing pool are considered 24h available; do not mark them with time restrictions even if they are missing from some land-based cycles.

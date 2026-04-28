@@ -61,7 +61,7 @@
       align-items: flex-end;
       gap: 4px;
 
-      .label {
+      .inv-stat-label {
         @include pixelated;
         font-size: 6px;
         color: Rgba(255, 255, 255, 0.3);

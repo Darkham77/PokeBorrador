@@ -207,7 +207,7 @@ export const useDebugStore = defineStore('debug', () => {
       category: 'time',
       action: (w) => {
         map.setGlobalWeather(w)
-        ui.notify(`Clima: ${w.toUpperCase()}`, '🌥️')
+        ui.notify(`Clima: ${w ? w.toUpperCase() : 'RESETEADO'}`, '🌥️')
       },
       description: 'Cambia el clima global.'
     })
@@ -305,6 +305,19 @@ export const useDebugStore = defineStore('debug', () => {
         await pokemonDebugService.triggerEncounter(p, params.mapId || 'plains')
       },
       description: 'Inicia un combate contra un pokemon personalizado en la ruta especificada.'
+    })
+
+    register({
+      id: 'poke-start-battle',
+      label: 'INICIAR COMBATE (SIMPLE)',
+      command: 'startBattle',
+      category: 'pokes',
+      action: async (id = 'pikachu', level = 5, shiny = false) => {
+        const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
+        const p = pokemonDebugService.generate({ id, level, isShiny: shiny })
+        await pokemonDebugService.triggerEncounter(p)
+      },
+      description: 'Inicia un combate rápido contra un pokemon específico.'
     })
 
     register({

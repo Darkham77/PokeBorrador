@@ -17,6 +17,9 @@ const props = defineProps({
   
   // Control de performance
   enabled: { type: Boolean, default: true },
+
+  // Estilo visual
+  vibrant: { type: Boolean, default: false },
   
   // Metadata para futuras herramientas de testing/debug
   metadata: { type: Object, default: () => ({}) }
@@ -45,6 +48,7 @@ const animSeed = Math.random()
 const wrapperClasses = computed(() => ({
   'pv-fx-wrapper': true,
   'is-guardian': props.isGuardian && !isSimplified.value,
+  'is-vibrant': props.vibrant && !isSimplified.value,
   'is-simplified': isSimplified.value
 }))
 </script>

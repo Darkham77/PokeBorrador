@@ -44,11 +44,44 @@ const warTeam = computed(() => {
   return slots
 })
 
-// Counts for tabs
 const adventureCount = computed(() => gameStore.state.team.filter(Boolean).length)
 const pvpCount = computed(() => (gameStore.state.pvpTeam || []).length)
 const warCount = computed(() => (gameStore.state.warTeam || []).length)
 const maxWarSlots = computed(() => gameStore.state.warSlots || 6)
+
+// Drag and Drop Logic
+const draggedIndex = ref(null)
+const isDragging = ref(false)
+
+function handleDragStart(index) {
+  draggedIndex.value = index
+  isDragging.value = true
+  
+  // Set global listener for drag end (safety)
+  window.addEventListener('dragend', handleDragEnd, { once: true })
+}
+
+function handleDragEnd() {
+  isDragging.value = false
+  draggedIndex.value = null
+}
+
+function handleDrop(targetIndex) {
+  if (draggedIndex.value === null || draggedIndex.value === targetIndex) return
+  
+  if (activeTab.value === 'adventure') {
+    // Only reorder if there's a pokemon at the dragged source
+    if (gameStore.state.team[draggedIndex.value]) {
+      gameStore.reorderTeam(draggedIndex.value, targetIndex)
+    }
+  } else if (activeTab.value === 'pvp') {
+    gameStore.reorderPvpTeam(draggedIndex.value, targetIndex)
+  } else if (activeTab.value === 'war') {
+    gameStore.reorderWarTeam(draggedIndex.value, targetIndex)
+  }
+  
+  handleDragEnd()
+}
 
 function openDetail(pokemon) {
   if (!pokemon) return
@@ -229,10 +262,13 @@ function selectAdventure(_slotIndex) {
           :key="'adv-' + i"
           :pokemon="p"
           :index="i"
+          :is-dragging-any="isDragging"
           @open-detail="openDetail(p)"
           @open-item="openItem(p)"
           @send-to-box="sendToBox(p)"
           @select="selectAdventure"
+          @drag-start="handleDragStart"
+          @drop-pokemon="handleDrop"
         />
       </div>
     </section>
@@ -248,10 +284,13 @@ function selectAdventure(_slotIndex) {
           :key="'pvp-' + i"
           :pokemon="p"
           :index="i"
+          :is-dragging-any="isDragging"
           is-pvp
           @open-detail="openDetail(p)"
           @open-item="openItem(p)"
           @select="selectPvp(i)"
+          @drag-start="handleDragStart"
+          @drop-pokemon="handleDrop"
         />
       </div>
     </section>
@@ -267,10 +306,13 @@ function selectAdventure(_slotIndex) {
           :key="'war-' + i"
           :pokemon="p"
           :index="i"
+          :is-dragging-any="isDragging"
           is-pvp
           @open-detail="openDetail(p)"
           @open-item="openItem(p)"
           @select="selectWar(i)"
+          @drag-start="handleDragStart"
+          @drop-pokemon="handleDrop"
         />
       </div>
     </section>

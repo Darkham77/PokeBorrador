@@ -173,10 +173,10 @@ export const POKEMON_SPRITE_IDS = {
 };
 
 export const PDEX_TYPE_COLORS = {
-  normal:'#aaa', fire:'#FF6B35', water:'#3B8BFF', grass:'#6BCB77',
-  electric:'#FFD93D', ice:'#7DF9FF', fighting:'#FF3B3B', poison:'#C77DFF',
-  ground:'#c8a060', flying:'#89CFF0', psychic:'#FF6EFF', bug:'#8BC34A',
-  rock:'#c8a060', ghost:'#7B2FBE', dragon:'#5C16C5', dark:'#555', steel:'#9E9E9E'
+  normal:'#A8A878', fire:'#F08030', water:'#6890F0', grass:'#78C850',
+  electric:'#F8D030', ice:'#98D8D8', fighting:'#C03028', poison:'#A040A0',
+  ground:'#E0C068', flying:'#A890F0', psychic:'#F85888', bug:'#A8B820',
+  rock:'#B8A038', ghost:'#705898', dragon:'#7038F8', dark:'#705848', steel:'#B8B8D0'
 };
 
 export const GAME_TMS = [

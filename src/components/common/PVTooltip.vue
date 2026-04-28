@@ -1,11 +1,13 @@
 <script setup>
-import { ref, nextTick, inject } from 'vue'
+import { ref, nextTick, inject, watch } from 'vue'
 
 const props = defineProps({
   title: { type: String, default: '' },
   description: { type: String, default: '' },
   position: { type: String, default: 'top' }, // top, bottom, left, right
-  delay: { type: Number, default: 0 }
+  delay: { type: Number, default: 0 },
+  tag: { type: String, default: 'span' },
+  disabled: { type: Boolean, default: false }
 })
 
 const isSimplified = inject('isModalPerformanceMode', ref(false))
@@ -109,7 +111,7 @@ const updatePosition = () => {
 }
 
 const show = () => {
-  if (isSimplified.value) return // Don't show tooltips in performance mode
+  if (isSimplified.value || props.disabled || isBlockedByClick.value) return 
   if (timeout) clearTimeout(timeout)
   timeout = setTimeout(async () => {
     isVisible.value = true
@@ -122,20 +124,44 @@ const show = () => {
   }, props.delay)
 }
 
+const isBlockedByClick = ref(false)
+let clickBlockTimeout = null
+
 const hide = () => {
   if (timeout) clearTimeout(timeout)
   isVisible.value = false
 }
+
+const handleTriggerClick = () => {
+  hide()
+  isBlockedByClick.value = true
+  
+  if (clickBlockTimeout) clearTimeout(clickBlockTimeout)
+  clickBlockTimeout = setTimeout(() => {
+    isBlockedByClick.value = false
+  }, 5000)
+}
+
+const handleMouseEnter = () => {
+  show()
+}
+
+// If it becomes disabled while showing, hide it immediately
+watch(() => props.disabled, (newVal) => {
+  if (newVal) hide()
+})
 </script>
 
 <template>
-  <span 
+  <component 
+    :is="tag"
     ref="trigger" 
     class="pv-tooltip-wrapper"
-    @mouseenter="show" 
+    @mouseenter="handleMouseEnter" 
     @mouseleave="hide"
     @touchstart="show"
     @touchend="hide"
+    @click.stop="handleTriggerClick"
   >
     <slot />
     
@@ -167,7 +193,7 @@ const hide = () => {
         </div>
       </Transition>
     </Teleport>
-  </span>
+  </component>
 </template>
 
 <style lang="scss">
@@ -219,6 +245,7 @@ const hide = () => {
     color: Rgba(255, 255, 255, 0.9);
     font-size: 11px;
     line-height: 1.5;
+    white-space: pre-wrap;
   }
 
 

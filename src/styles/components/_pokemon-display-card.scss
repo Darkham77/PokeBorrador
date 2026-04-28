@@ -9,6 +9,12 @@
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  user-select: none;
+
+  &.disable-click {
+    cursor: grab;
+    &:active { cursor: grabbing; }
+  }
 
   &:hover {
     & .pokemon-sprite { @include pokemon-sprite-hover-standard; }

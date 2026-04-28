@@ -69,6 +69,16 @@
     img, .sprite-layer {
       @include aura-guardian;
     }
+
+    &.is-vibrant {
+      img, .sprite-layer {
+        filter: 
+          Drop-Shadow(0 0 15px Rgba(255, 255, 255, 1)) 
+          Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.8))
+          Drop-Shadow(0 5px 15px Rgba(0, 0, 0, 0.5));
+        animation-name: pulse-aura-battle;
+      }
+    }
   }
 
   &.is-simplified {
@@ -97,9 +107,37 @@
 }
 
 /* Animations */
+@keyframes pulse-aura-battle {
+  0%, 100% { 
+    filter: 
+      Drop-Shadow(0 0 1px white)
+      Drop-Shadow(0 0 2px white)
+      Drop-Shadow(0 0 15px Rgba(255, 255, 255, 1)) 
+      Drop-Shadow(0 0 5px Rgba(255, 255, 255, 0.8))
+      Drop-Shadow(0 4px 12px Rgba(0,0,0,0.4)); 
+  }
+  50% { 
+    filter: 
+      Drop-Shadow(0 0 2px white)
+      Drop-Shadow(0 0 4px white)
+      Drop-Shadow(0 0 40px Rgba(255, 255, 255, 1)) 
+      Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.9))
+      Drop-Shadow(0 8px 25px Rgba(0,0,0,0.5)); 
+  }
+}
 @keyframes pulse-aura-vibrant {
-  0%, 100% { filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.6)) Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.4)) Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.2)); }
-  50% { filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.6)) Drop-Shadow(0 0 18px Rgba(255, 255, 255, 0.9)) Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.6)); }
+  0%, 100% { 
+    filter: 
+      Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.9)) 
+      Drop-Shadow(0 0 4px Rgba(255, 255, 255, 0.6))
+      Drop-Shadow(0 3px 6px Rgba(0,0,0,0.3)); 
+  }
+  50% { 
+    filter: 
+      Drop-Shadow(0 0 24px Rgba(255, 255, 255, 1)) 
+      Drop-Shadow(0 0 12px Rgba(255, 255, 255, 0.9))
+      Drop-Shadow(0 5px 12px Rgba(0,0,0,0.4)); 
+  }
 }
 
 @keyframes sparkle-pop {

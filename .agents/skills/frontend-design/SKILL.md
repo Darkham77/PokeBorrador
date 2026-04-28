@@ -218,6 +218,8 @@ All spacing and sizing in multiples of 8:
 - **Grid Cell Aspect-Ratio & Tooltips**: Avoid wrapping CSS Grid cells with `inline-flex` components (like Tooltips), as the wrapper becomes the grid item and breaks `aspect-ratio` and stretching constraints. Instead, place the Tooltip *inside* the grid item (which should have `min-width: 0` and `align-self: start`) and set the Tooltip wrapper to `display: flex; width: 100%; height: 100%`. This prevents long text from blowing out column widths and stretching the entire row's height.
 - **Double Active States**: Avoid applying active visual states (borders, backgrounds, glows) simultaneously to both a parent button container and its inner icon wrapper. This creates a visually broken "box-in-a-box" effect and disconnects absolute-positioned indicators. Apply the active state cleanly to only one level of the hierarchy.
 - **External Sprite Padding**: Assets from external APIs (like PokéAPI sprites) often contain varying amounts of internal transparent padding. Do not use CSS `transform: scale()` to "visually equalize" them if they share a standardized container size (e.g., `48x48`), as this breaks layout consistency and introduces arbitrary scaling values that deform the grid perception.
+- **Dynamic Sprite Positioning**: In combat arenas, use `Clamp()` combined with container query units (e.g. `12cqw`) for `left`/`right` properties of sprites.
+  - **WHY**: This ensures that as the container narrows, sprites smoothly move towards the edges or maintain a safe separation without overlapping or looking static.
 
 ### Admin & Debug UI Patterns
 

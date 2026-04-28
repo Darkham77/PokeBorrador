@@ -186,11 +186,11 @@ const close = () => {
         
         <div class="header-stats">
           <div class="stat-node">
-            <span class="label">OBJETOS TOTALES</span>
+            <span class="inv-stat-label">OBJETOS TOTALES</span>
             <span class="value">{{ totalObjectsCount }}</span>
           </div>
           <div class="stat-node money">
-            <span class="label">MIS CRÉDITOS</span>
+            <span class="inv-stat-label">MIS CRÉDITOS</span>
             <span class="value">₱{{ gameStore.state.money.toLocaleString() }}</span>
           </div>
         </div>

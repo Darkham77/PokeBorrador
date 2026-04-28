@@ -16,7 +16,7 @@
           class="modal-overlay" 
           :class="{ 
             'transparent': overlay === 'none',
-            'no-blur': !blurOverlay
+            'no-blur': !blurOverlay || isSimplified
           }"
           @click.stop="handleOverlayClick" 
         />
@@ -80,6 +80,10 @@
               <button
                 v-if="showCloseButton"
                 class="modal-close-btn"
+                :class="{ 
+                  'is-solid': closeButtonVariant === 'solid',
+                  'is-yellow-solid': closeButtonVariant === 'yellow-solid' 
+                }"
                 :disabled="preventClose"
                 @click.stop="handleClose"
               >
@@ -113,6 +117,10 @@
             <button
               v-if="hideHeader && showCloseButton"
               class="modal-close-btn-floating"
+              :class="{ 
+                'is-solid': closeButtonVariant === 'solid',
+                'is-yellow-solid': closeButtonVariant === 'yellow-solid' 
+              }"
               :disabled="preventClose"
               @click.stop="handleClose"
             >
@@ -178,6 +186,11 @@ const props = defineProps({
     type: String,
     default: null, // If null, auto-calculate
     validator: (val) => ['stuck', 'floating'].includes(val)
+  },
+  closeButtonVariant: {
+    type: String,
+    default: 'transparent',
+    validator: (val) => ['transparent', 'solid', 'yellow-solid'].includes(val)
   }
 })
 
@@ -278,12 +291,13 @@ const computedCorners = computed(() => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: Rgba(0, 0, 0, 0.7);
-  -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  background: Rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: Blur(6px); backdrop-filter: Blur(6px);
   z-index: var(--z-base);
   pointer-events: auto;
   // GPU Acceleration
   transform: TranslateZ(0);
+  
   will-change: opacity;
 
   &.transparent {
@@ -496,12 +510,46 @@ const computedCorners = computed(() => {
 
 .modal-close-btn, .modal-close-btn-floating {
   @include btn-close-premium;
+
+  &.is-solid {
+    & .close-icon-wrapper {
+      background: Rgba(15, 23, 42, 0.95);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.5);
+      
+      &::before, &::after {
+        background: $white;
+      }
+    }
+    
+    &:hover {
+      & .close-icon-wrapper {
+        background: Rgba(239, 68, 68, 0.95);
+        border-color: Rgba(239, 68, 68, 0.2);
+        
+        &::before, &::after {
+          background: $white;
+        }
+      }
+    }
+  }
 }
 
 .modal-close-btn-floating {
   position: absolute;
   top: 16px;
   right: 16px;
+
+  &.is-yellow-solid .close-icon-wrapper {
+    background: #ffd93d !important;
+    border: 1px solid #ffd93d;
+    box-shadow: 0 4px 12px Rgba(255, 217, 61, 0.4);
+    
+    &::before, &::after {
+      background: $black;
+      height: 2px;
+    }
+  }
 }
 
 .modal-footer-premium {
@@ -564,7 +612,10 @@ const computedCorners = computed(() => {
     &.variant-retro { padding: 20px; }
   }
   
-  &.padding-raw { padding: 0 !important; }
+  &.padding-raw { 
+    padding: 0 !important; 
+    overflow: hidden !important;
+  }
 }
 
 .no-scroll { overflow-y: hidden !important; }

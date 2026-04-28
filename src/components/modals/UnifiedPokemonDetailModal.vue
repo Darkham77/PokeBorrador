@@ -299,6 +299,12 @@ const getCategoryDescription = (cat) => {
   
   return `Clasificación: ${cat}. Define los rasgos biológicos principales y el comportamiento predominante de esta especie.`
 }
+
+const handleReorderMoves = (from, to) => {
+  if (isInstance.value) {
+    gameStore.reorderMoves(targetPokemon.value, from, to)
+  }
+}
 </script>
 
 <template>
@@ -428,31 +434,39 @@ const getCategoryDescription = (cat) => {
           class="pdex-summary-pane"
         >
           <div class="info-grid">
-            <div class="info-item">
-              <PVTooltip
-                :title="'CATEGORÍA: ' + cleanCategory"
-                :description="getCategoryDescription(cleanCategory)"
-                position="top"
-              >
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                  <span class="upd-info-label pixelated">CATEGORÍA</span>
-                  <span class="ps-info-value pixelated">{{ cleanCategory }}</span>
-                </div>
-              </PVTooltip>
-            </div>
-            <div class="info-item">
+            <PVTooltip
+              :title="'CATEGORÍA: ' + cleanCategory"
+              :description="getCategoryDescription(cleanCategory)"
+              position="top"
+              tag="div"
+              class="info-item"
+            >
+              <span class="upd-info-label pixelated">CATEGORÍA</span>
+              <span class="ps-info-value pixelated">{{ cleanCategory }}</span>
+            </PVTooltip>
+
+            <PVTooltip
+              title="ALTURA"
+              description="La altura promedio de esta especie de Pokémon."
+              position="top"
+              tag="div"
+              class="info-item"
+            >
               <span class="upd-info-label pixelated">ALTURA</span>
               <span class="ps-info-value pixelated">{{ isInstance ? instancePhysicalData.height + 'm' : formatRange(species.height, 'm') }}</span>
-            </div>
-            <div class="info-item">
+            </PVTooltip>
+
+            <PVTooltip
+              title="PESO"
+              description="El peso promedio de esta especie de Pokémon."
+              position="top"
+              tag="div"
+              class="info-item"
+            >
               <span class="upd-info-label pixelated">PESO</span>
               <span class="ps-info-value pixelated">{{ isInstance ? instancePhysicalData.weight + 'kg' : formatRange(species.weight, 'kg') }}</span>
-            </div>
+            </PVTooltip>
           </div>
-          <p class="description">
-            {{ species.description || 'No hay datos disponibles en la Pokédex.' }}
-          </p>
-
           <div
             v-if="isInstance"
             class="instance-status-section"
@@ -462,6 +476,10 @@ const getCategoryDescription = (cat) => {
               :context="context"
             />
           </div>
+
+          <p class="description">
+            {{ species.description || 'No hay datos disponibles en la Pokédex.' }}
+          </p>
 
           <!-- DB Info (UID + Capture Date) -->
           <div
@@ -497,6 +515,7 @@ const getCategoryDescription = (cat) => {
           :is-instance="isInstance"
           :current-moves="currentMoves"
           :move-details="moveDetails"
+          @reorder-moves="handleReorderMoves"
         />
 
         <!-- TMs Tab -->

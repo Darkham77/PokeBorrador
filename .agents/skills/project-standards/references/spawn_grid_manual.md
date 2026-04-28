@@ -79,3 +79,13 @@ Layers are ordered from back to front using the following `z-index` standard:
   - Background scales up and brightens (`Brightness(1.0)`).
   - Atmosphere (`::after`) opacity increases with a dark gradient to maintain text legibility against the brighter background.
   - Interactive content MUST NOT have its opacity reduced; it remains at `1.0` to ensure interactivity.
+
+## 6. Tooltip & Discovery Policy
+
+To maintain the "Fog of War" and a clean UI, tooltips on route cards follow these standards:
+
+- **Cycle Emojis**: Use `🌅 (Morning)`, `☀️ (Day)`, `🌇 (Dusk)`, and `🌙 (Night)` to represent time restrictions.
+- **Discovery State**:
+  - **Known (Seen/Caught)**: Display exact cycles using emojis: `Horarios habituales: 🌅 ☀️`.
+  - **Unknown**: Use the generic label `No es común en esta ruta` for any Pokémon with time restrictions to avoid spoilers.
+- **24h Consistency**: Pokémon also available via **Fishing** are treated as 24h spawns; they do not display time restrictions.

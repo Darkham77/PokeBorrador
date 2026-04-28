@@ -5,10 +5,10 @@ import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const _gameStore = useGameStore()
+const _uiStore = useUIStore()
 const mapStore = useMapStore()
-const gs = computed(() => gameStore.state)
+const gs = computed(() => _gameStore.state)
 
 // Time cycle logic synced with Map/Logic
 const dayCycle = computed(() => {
@@ -127,7 +127,7 @@ const currentSeason = computed(() => mapStore.currentSeason)
       <div
         id="hud-egg-container"
         class="hud-pill egg-pill"
-        @click.stop="uiStore.toggleProfile()"
+        @click.stop="_uiStore.toggleProfile()"
       >
         <span>🥚</span>
         <span

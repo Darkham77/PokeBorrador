@@ -12,9 +12,11 @@ import ModalHost from '@/components/common/ModalHost.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
 import LivePvPArena from '@/components/battle/LivePvPArena.vue'
+import BattleArena from '@/components/BattleArena.vue'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import PhaserGame from '@/components/game/PhaserGame.vue'
 import { useUIStore } from '@/stores/ui'
+import { useBattleStore } from '@/stores/battle'
 import { useLoadingStore } from '@/stores/loading'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useWindowListener } from '@/composables/useWindowListener'
@@ -26,6 +28,7 @@ const gameStore = useGameStore()
 const uiStore = useUIStore()
 const profileStore = useProfileStore()
 const classStore = usePlayerClassStore()
+const _battleStore = useBattleStore()
 const loadingStore = useLoadingStore()
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref(null)
@@ -182,10 +185,13 @@ const handleRetry = () => {
 
     <!-- Capa de Juego (Phaser debe cargar en segundo plano para disparar isReady) -->
     <template v-if="authStore.user">
-      <PhaserGame class="phaser-background" />
+      <PhaserGame 
+        v-show="!uiStore.isAnyFullscreenModalOpen"
+        class="phaser-background" 
+      />
       
       <template v-if="gameStore.isReady">
-        <MainGameView />
+        <MainGameView v-show="!uiStore.isAnyFullscreenModalOpen" />
         
         <!-- Bloqueo por Versión Outdated -->
         <div
@@ -220,6 +226,7 @@ const handleRetry = () => {
     <ToastNotification />
     <ConnectionWarning />
     <LivePvPArena />
+    <BattleArena />
   </div>
 </template>
 

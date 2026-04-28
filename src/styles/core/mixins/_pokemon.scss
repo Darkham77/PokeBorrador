@@ -107,7 +107,7 @@
   font-size: $size;
   color: white;
   text-transform: uppercase;
-  text-shadow: 1px 1px 0 Rgba(0, 0, 0, 0.3);
+  text-shadow: 1px 1px 0 Rgba(0,0,0,0.8), -1px -1px 0 Rgba(0,0,0,0.8), 1px -1px 0 Rgba(0,0,0,0.8), -1px 1px 0 Rgba(0,0,0,0.8);
   box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.2);
   white-space: nowrap;
 }

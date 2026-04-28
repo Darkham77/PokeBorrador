@@ -2,6 +2,8 @@
 import { ref, computed, watch } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
+import { useBattleVisuals } from '@/composables/useBattleVisuals'
+import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -20,8 +22,15 @@ const props = defineProps({
   minSelect: { type: Number, default: 1 },
   autoConfirm: { type: Boolean, default: false },
   callbackConfirm: { type: Function, default: null },
-  onConfirm: { type: Function, default: null }
+  onConfirm: { type: Function, default: null },
+  // Battle context props
+  isBattleSwitch: { type: Boolean, default: false },
+  battleMode: { type: String, default: null }, // 'wild', 'pvp', 'war'
+  activePokemonUid: { type: String, default: null },
+  preventClose: { type: Boolean, default: false }
 })
+
+const { _getHpColor } = useBattleVisuals()
 
 const config = computed(() => {
   return {
@@ -57,18 +66,55 @@ const availablePokemon = computed(() => {
   const box = gameStore.state.box || []
   const team = gameStore.state.team || []
   
-  const sourceList = config.value.includeTeam !== false
-    ? [
-        ...team.map((p, i) => ({ pokemon: p, _source: 'team', index: i })),
-        ...box.map((p, i) => ({ pokemon: p, _source: 'box', index: i }))
-      ]
-    : box.map((p, i) => ({ pokemon: p, _source: 'box', index: i }))
+  let sourceList;
+  
+  // Custom logic for different battle modes
+  if (config.value.battleMode === 'pvp') {
+    // PvP mode: only show pvpTeam
+    const pvpUids = gameStore.state.pvpTeam || []
+    const allPokes = [...team, ...box]
+    sourceList = allPokes
+      .filter(p => pvpUids.includes(p.uid))
+      .map(p => ({ 
+        pokemon: p, 
+        _source: team.some(tp => tp.uid === p.uid) ? 'team' : 'box',
+        index: pvpUids.indexOf(p.uid) 
+      }))
+  } else if (config.value.battleMode === 'war') {
+    // War mode: only show warTeam
+    const warUids = gameStore.state.warTeam || []
+    const allPokes = [...team, ...box]
+    sourceList = allPokes
+      .filter(p => warUids.includes(p.uid))
+      .map(p => ({ 
+        pokemon: p, 
+        _source: team.some(tp => tp.uid === p.uid) ? 'team' : 'box',
+        index: warUids.indexOf(p.uid)
+      }))
+  } else if (config.value.battleMode === 'wild' || config.value.isBattleSwitch) {
+    // Adventure/Wild mode: only show team
+    sourceList = team.map((p, i) => ({ pokemon: p, _source: 'team', index: i }))
+  } else {
+    // Default mode: include everything based on includeTeam prop
+    sourceList = config.value.includeTeam !== false
+      ? [
+          ...team.map((p, i) => ({ pokemon: p, _source: 'team', index: i })),
+          ...box.map((p, i) => ({ pokemon: p, _source: 'box', index: i }))
+        ]
+      : box.map((p, i) => ({ pokemon: p, _source: 'box', index: i }))
+  }
 
   // Filter
   let filtered = sourceList.filter(item => {
     const p = item.pokemon
     if (!p) return false
     if (p.onMission || p.inDaycare) return false
+    
+    // Filter out active pokemon in battle
+    if (config.value.isBattleSwitch && config.value.activePokemonUid === p.uid) return false
+    
+    // In battle, filter out fainted pokemon (unless the modal is not for switching)
+    if (config.value.isBattleSwitch && p.hp <= 0) return false
     
     if (searchQuery.value) {
       const q = searchQuery.value.toLowerCase()
@@ -110,10 +156,9 @@ const availablePokemon = computed(() => {
       valA = getPokemonTotalPower(pA)
       valB = getPokemonTotalPower(pB)
     } else {
-      // Recent (usar el orden original invertido o no)
-      // Damos prioridad a los de la caja como "más recientes" si se concatenan después
-      valA = (a._source === 'box' ? 1000 : 0) + a.index
-      valB = (b._source === 'box' ? 1000 : 0) + b.index
+      // Recent (usar el timestamp exacto si existe, si no fallback al index)
+      valA = pA.obtainedAt || ((a._source === 'box' ? 1000 : 0) + a.index)
+      valB = pB.obtainedAt || ((b._source === 'box' ? 1000 : 0) + b.index)
     }
 
     if (valA === valB) {
@@ -159,11 +204,17 @@ function confirm() {
   if (typeof cb === 'function') {
     cb(selectedObjects)
   }
-  close()
+  forceClose()
 }
 
 function close() {
-  uiStore.close('PokemonSelection')
+  if (props.preventClose) return
+  forceClose()
+}
+
+function forceClose() {
+  useModalStore().close('BattleSwitch')
+  useModalStore().close('PokemonSelection')
 }
 
 function setSort(type) {
@@ -240,7 +291,8 @@ function openDetail(item) {
     max-width="650px"
     variant="retro"
     padding="raw"
-    no-scroll
+    :prevent-close="preventClose"
+    :show-close-button="!preventClose"
     @close="close"
   >
     <div class="selection-container">
@@ -318,59 +370,53 @@ function openDetail(item) {
         </div>
 
         <div class="ps-tags-section">
-          <div class="section-header">
-            <span class="section-label">ETIQUETAS:</span>
-            <button
-              v-if="activeTags.length > 0 || searchQuery || sortBy !== 'recent'"
-              class="clear-all-btn"
-              @click.stop="clearFilters"
-            >
-              LIMPIAR FILTROS
-            </button>
-          </div>
-          <div class="ps-tags-bar">
-            <PVTooltip 
-              v-for="t in POKEMON_TAGS" 
-              :key="t.id"
-              :title="t.label" 
-              :description="t.desc" 
-              position="bottom"
-            >
-              <button
-                :class="{ active: activeTags.includes(t.id) }"
-                @click.stop="toggleTagFilter(t.id)"
-              >
-                <span class="icon">{{ t.icon }}</span>
-                <span class="label">{{ t.shortLabel || t.label }}</span>
-              </button>
-            </PVTooltip>
+          <div class="ps-tags-row-unified">
+            <span class="ps-section-label">ETIQUETAS:</span>
             
-            <PVTooltip 
-              :title="POKEMON_BADGES.shiny.label" 
-              :description="POKEMON_BADGES.shiny.desc" 
-              position="bottom"
-            >
-              <button
-                :class="{ active: activeTags.includes('shiny') }"
-                @click.stop="toggleTagFilter('shiny')"
-              >
-                <span class="icon">{{ POKEMON_BADGES.shiny.icon }}</span>
-                <span class="label">{{ POKEMON_BADGES.shiny.shortLabel }}</span>
-              </button>
-            </PVTooltip>
             <PVTooltip
-              title="EQUIPO"
-              description="Pokémon de tu equipo actual."
-              position="bottom"
+              title="LIMPIAR FILTROS"
+              description="Resetear búsqueda, orden y etiquetas."
             >
               <button
-                :class="{ active: activeTags.includes('team') }"
-                @click.stop="toggleTagFilter('team')"
+                v-if="activeTags.length > 0 || searchQuery || sortBy !== 'recent'"
+                class="ps-clear-icon-btn"
+                @click.stop="clearFilters"
               >
-                <span class="icon">🎒</span>
-                <span class="label">TEAM</span>
+                🧹
               </button>
             </PVTooltip>
+
+            <div class="ps-tags-list-horizontal">
+              <PVTooltip 
+                v-for="t in POKEMON_TAGS" 
+                :key="t.id"
+                :title="t.label" 
+                :description="t.desc" 
+                position="bottom"
+              >
+                <button
+                  :class="{ active: activeTags.includes(t.id) }"
+                  @click.stop="toggleTagFilter(t.id)"
+                >
+                  <span class="icon">{{ t.icon }}</span>
+                  <span class="ps-tag-label">{{ t.shortLabel || t.label }}</span>
+                </button>
+              </PVTooltip>
+              
+              <PVTooltip 
+                :title="POKEMON_BADGES.shiny.label" 
+                :description="POKEMON_BADGES.shiny.desc" 
+                position="bottom"
+              >
+                <button
+                  :class="{ active: activeTags.includes('shiny') }"
+                  @click.stop="toggleTagFilter('shiny')"
+                >
+                  <span class="icon">{{ POKEMON_BADGES.shiny.icon }}</span>
+                  <span class="ps-tag-label">{{ POKEMON_BADGES.shiny.shortLabel }}</span>
+                </button>
+              </PVTooltip>
+            </div>
           </div>
         </div>
       </div>
@@ -382,6 +428,7 @@ function openDetail(item) {
           :item="item"
           :is-selected="selectedUids.includes(item.pokemon.uid)"
           :total="getPokemonTotalPower(item.pokemon)"
+          :is-battle-context="isBattleSwitch"
           @select="toggleSelection"
           @open-detail="openDetail"
         />

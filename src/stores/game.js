@@ -509,6 +509,33 @@ export const useGameStore = defineStore('game', () => {
     save(false)
   }
 
+  function reorderPvpTeam(draggedIndex, targetIndex) {
+    if (draggedIndex === targetIndex) return
+    const newPvpTeam = [...(state.pvpTeam || [])]
+    const [moved] = newPvpTeam.splice(draggedIndex, 1)
+    newPvpTeam.splice(targetIndex, 0, moved)
+    state.pvpTeam = newPvpTeam
+    save(false)
+  }
+
+  function reorderWarTeam(draggedIndex, targetIndex) {
+    if (draggedIndex === targetIndex) return
+    const newWarTeam = [...(state.warTeam || [])]
+    const [moved] = newWarTeam.splice(draggedIndex, 1)
+    newWarTeam.splice(targetIndex, 0, moved)
+    state.warTeam = newWarTeam
+    save(false)
+  }
+
+  function reorderMoves(pokemon, fromIndex, toIndex) {
+    if (fromIndex === toIndex || !pokemon || !pokemon.moves) return
+    const newMoves = [...pokemon.moves]
+    const [moved] = newMoves.splice(fromIndex, 1)
+    newMoves.splice(toIndex, 0, moved)
+    pokemon.moves = newMoves
+    save(false)
+  }
+
   function sendToBox(index) {
     if (state.team.length <= 1) {
       useUIStore().notify('No puedes quedarte sin Pokémon en el equipo.', '⚠️')
@@ -564,6 +591,9 @@ export const useGameStore = defineStore('game', () => {
     getTrainerRank,
     getMaxObeyLevel,
     reorderTeam,
+    reorderPvpTeam,
+    reorderWarTeam,
+    reorderMoves,
     sendToBox,
     addPokemon,
     removePokemon,

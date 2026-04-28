@@ -6,6 +6,7 @@
 
 import { getStatMultiplier } from '../pokemon/statEngine';
 import { getTypeEffectiveness, getCombinedEffectiveness } from '../pokemon/typeEngine';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 export { getTypeEffectiveness, getCombinedEffectiveness, getStatMultiplier };
 
@@ -19,10 +20,27 @@ export { getTypeEffectiveness, getCombinedEffectiveness, getStatMultiplier };
 export function calculateDamage(attacker, defender, move, ctx = {}) {
   const { atkStages = 0, defStages = 0, weather = null } = ctx;
   
-  let power = move.power || 0;
-  if (power === 0) return { dmg: 0, eff: 1 };
+  let power = move.power;
+  let moveType = move.type;
+  let moveCat = move.cat;
 
-  const isPhysical = move.cat === 'physical';
+  // Last-resort lookup if properties are missing (e.g. from legacy debug pokemons)
+  if (power === undefined || !moveType || !moveCat) {
+    const md = pokemonDataProvider.getMoveData(move.name);
+    if (md) {
+      if (power === undefined) power = md.power || 0;
+      if (!moveType) moveType = md.type || 'normal';
+      if (!moveCat) moveCat = md.cat || 'physical';
+    } else {
+      power = power || 0;
+      moveType = moveType || 'normal';
+      moveCat = moveCat || 'physical';
+    }
+  }
+
+  if (moveCat === 'status' || (power === 0 && moveCat !== 'status')) return { dmg: 0, eff: 1 };
+
+  const isPhysical = moveCat === 'physical';
   const atkStat = isPhysical ? attacker.atk : (attacker.spa || attacker.atk);
   const defStat = isPhysical ? defender.def : (defender.spd || defender.def);
   
@@ -40,10 +58,10 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
   const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
 
   // Ability & STAB modifiers
-  let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplier(attacker, defender, move);
+  let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplier(attacker, defender, { ...move, type: moveType, power });
   
   // Thick Fat (Sebo)
-  if (defender.ability === 'Sebo' && (move.type === 'fire' || move.type === 'ice')) {
+  if (defender.ability === 'Sebo' && (moveType === 'fire' || moveType === 'ice')) {
     finalAbilityMult *= 0.5;
     triggeredAbility = 'Sebo';
   }
@@ -54,25 +72,25 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
     const h = attacker.heldItem;
     // Type boosters (20%)
     const typeBoosters = { 'Carbón': 'fire', 'Imán': 'electric', 'Agua Mística': 'water', 'Semilla Milagro': 'grass', 'Cinturón Negro': 'fighting', 'Cuchara Torcida': 'psychic', 'Hechizo': 'ghost', 'Polvo Plata': 'bug', 'Flecha Venenosa': 'poison' };
-    if (typeBoosters[h] === move.type) itemMult = 1.2;
+    if (typeBoosters[h] === moveType) itemMult = 1.2;
     
     // Global Power Items
-    if (h === 'Cinta Elegida' && move.cat === 'physical') itemMult = 1.5;
+    if (h === 'Cinta Elegida' && moveCat === 'physical') itemMult = 1.5;
   }
 
   // STAB
-  let stab = (move.type === attacker.type || move.type === attacker.type2) ? 1.5 : 1;
+  let stab = (moveType === attacker.type || moveType === attacker.type2) ? 1.5 : 1;
   if (attacker.ability === 'Adaptable' && stab > 1) stab = 2;
 
   // Weather Multiplier
   let weatherMult = 1;
   if (weather && weather.turns > 0) {
     if (weather.type === 'sun') {
-      if (move.type === 'fire') weatherMult = 1.5;
-      else if (move.type === 'water') weatherMult = 0.5;
+      if (moveType === 'fire') weatherMult = 1.5;
+      else if (moveType === 'water') weatherMult = 0.5;
     } else if (weather.type === 'rain') {
-      if (move.type === 'water') weatherMult = 1.5;
-      else if (move.type === 'fire') weatherMult = 0.5;
+      if (moveType === 'water') weatherMult = 1.5;
+      else if (moveType === 'fire') weatherMult = 0.5;
     }
   }
 
@@ -89,7 +107,7 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
   const random = 0.85 + Math.random() * 0.15;
 
   // Effectiveness
-  const eff = getCombinedEffectiveness(move.type, defender, attacker);
+  const eff = getCombinedEffectiveness(moveType, defender, attacker);
 
   // Final Damage calculation
   const finalDmg = eff > 0 

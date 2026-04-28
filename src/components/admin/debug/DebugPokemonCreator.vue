@@ -154,6 +154,23 @@ function autoFillMoves() {
   config.value.moves = finalMoves
 }
 
+function randomFillMoves() {
+  const data = pokemonDataProvider.getPokemonData(config.value.id)
+  if (!data?.learnset || data.learnset.length === 0) return
+
+  // Get all unique move names from learnset
+  const allLearnsetMoves = [...new Set(data.learnset.map(m => m.name))]
+  
+  // Shuffle and pick 4
+  const shuffled = allLearnsetMoves.sort(() => 0.5 - Math.random())
+  const selected = shuffled.slice(0, 4)
+  
+  // Pad with nulls
+  while (selected.length < 4) selected.push(null)
+  
+  config.value.moves = selected
+}
+
 // --- ACTIONS ---
 async function executeAction(protocol) {
   if (!window.__VITE_DEBUG__) return
@@ -213,7 +230,7 @@ function handleRandomize() {
     spe: Math.floor(Math.random() * 32)
   }
   
-  autoFillMoves()
+  randomFillMoves()
 }
 
 function handleClickOutside(e) {
@@ -406,6 +423,7 @@ onUnmounted(() => {
           v-model="config.moves"
           :species-moves="speciesMoves"
           @auto-fill="autoFillMoves"
+          @random-fill="randomFillMoves"
         />
       </div>
 

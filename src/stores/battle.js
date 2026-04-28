@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGameStore } from './game'
 import { handleEntryAbilities, applyEndTurnWeather } from '../logic/battle/battleFlow'
 import { calculateBaseExp, processExpGain, calculateMoneyGain } from '../logic/battle/battleRewards'
@@ -24,11 +25,14 @@ export const useBattleStore = defineStore('battle', () => {
   const activeBattle = ref(null)
   const isBattleActive = ref(false)
   const isFinishing = ref(false)
+  const isProcessing = ref(false)
+  const isSearching = ref(false)
   const battleLogs = ref([])
   const logQueue = ref([])
   const isProcessingLogs = ref(false)
   const battleEndCallback = ref(null)
-  const isProcessing = ref(false)
+  const attackerSide = ref(null) // 'player' or 'enemy'
+  const activeMove = ref(null)
 
   const playerStages = ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 })
   const enemyStages = ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 })
@@ -51,12 +55,25 @@ export const useBattleStore = defineStore('battle', () => {
     } = options
 
     const playerPoke = gs.state.team.find(p => p.hp > 0 && !p.onMission && !p.onDefense)
-    if (!playerPoke) return
+    if (!playerPoke) {
+      useUIStore().notify('No tienes Pokémon sanos para combatir', '❌')
+      return
+    }
+
+    // Si hay un combate activo pero NO está en fase de finalización, forzamos huida.
+    // Si ya está en isFinishing (viendo recompensas), podemos simplemente pisarlo.
+    if (isBattleActive.value && !isFinishing.value && !activeBattle.value?.over) {
+      console.warn('[BATTLE] Combate en curso detectado. Forzando huida del anterior.')
+      await endBattle(false, true)
+    }
+
+    isSearching.value = false
+    clearLogs()
+    isBattleActive.value = true
+    isFinishing.value = false
 
     playerPoke.confused = 0; playerPoke.flinched = false
     enemyPoke.confused = 0; enemyPoke.flinched = false
-
-    isBattleActive.value = true; isFinishing.value = false; clearLogs()
 
     activeBattle.value = {
       enemy: enemyPoke, player: playerPoke, isGym, gymId, isTrainer, enemyTeam,
@@ -67,19 +84,40 @@ export const useBattleStore = defineStore('battle', () => {
     }
 
     if (isTrainer || isGym) await gs.saveGame()
-    gs.registerSeen(enemyPoke.id)
-    if (isTrainer && enemyTeam) enemyTeam.forEach(p => gs.registerSeen(p.id))
+    gs.registerPokedex(enemyPoke.id, false)
+    if (isTrainer && enemyTeam) enemyTeam.forEach(p => gs.registerPokedex(p.id, false))
 
     phaserBridge.sendCommand('BattleScene', 'START_BATTLE', { player: playerPoke, enemy: enemyPoke, locationId })
     enemyPoke.isShiny ? audio.shiny() : (isTrainer || isGym) ? audio.rival() : null
 
     const startMsg = isTrainer ? `¡${trainerName} te desafía!` : isGym ? `¡Combate de Gimnasio contra ${enemyPoke.name}!` : `¡Un ${enemyPoke.name} salvaje apareció!`
-    addLog(startMsg, 'log-info')
+    addLog(startMsg, 'log-info', enemyPoke)
     handleEntryAbilities(playerPoke, enemyPoke, playerStages.value, enemyStages.value, addLog)
   }
 
-  const addLog = (msg, type = 'log-info') => {
-    logQueue.value.push({ id: Date.now() + Math.random(), msg, type })
+  const addLog = (msg, type = 'log-info', source = null) => {
+    let icon = null
+    let iconType = null
+    
+    if (source) {
+      if (typeof source === 'object' && source.id) {
+        // Es un pokemon
+        icon = getAssetUrl(ASSET_TYPES.POKEMON, source.id, { isShiny: source.isShiny })
+        iconType = 'pokemon'
+      } else if (typeof source === 'string') {
+        // Asumimos que es un item si pasamos un string
+        icon = getAssetUrl(ASSET_TYPES.ITEM, source)
+        iconType = 'item'
+      }
+    }
+
+    logQueue.value.push({ 
+      id: Date.now() + Math.random(), 
+      msg, 
+      type,
+      icon,
+      iconType
+    })
     if (!isProcessingLogs.value) processNextLog()
   }
 
@@ -87,8 +125,8 @@ export const useBattleStore = defineStore('battle', () => {
     if (logQueue.value.length === 0) { isProcessingLogs.value = false; return }
     isProcessingLogs.value = true
     const nextItem = logQueue.value.shift()
-    battleLogs.value.unshift(nextItem)
-    if (battleLogs.value.length > 30) battleLogs.value.pop()
+    battleLogs.value.push(nextItem)
+    if (battleLogs.value.length > 30) battleLogs.value.shift()
     setTimeout(processNextLog, nextItem.type === 'log-info' ? 800 : 1200)
   }
 
@@ -125,6 +163,7 @@ export const useBattleStore = defineStore('battle', () => {
       gs.addPokemon(res.pokemon, { notify: true })
       await endBattle(true, false)
     } else if (res.action !== 'fail') {
+      addLog(`Usaste ${itemName}`, 'log-info', itemName)
       await new Promise(r => setTimeout(r, 800))
       await runEnemyAction(thisStore)
     }
@@ -132,13 +171,17 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const endBattle = async (win, fled = false) => {
-    isFinishing.value = true
-    if (win && !fled) calculateRewards()
-    const teamIdx = gs.state.team.findIndex(p => p.uid === activeBattle.value.player.uid)
-    if (teamIdx !== -1) {
-      gs.state.team[teamIdx].hp = activeBattle.value.player.hp
-      gs.state.team[teamIdx].exp = activeBattle.value.player.exp
+    if (!activeBattle.value) {
+      isBattleActive.value = false
+      isFinishing.value = false
+      return
     }
+    
+    if (win && !fled) calculateRewards()
+    
+    // Sincronizar HP antes de guardar
+    syncTeamHP();
+
     if (win && !fled) {
       const locId = activeBattle.value.locationId
       const isTr = activeBattle.value.isTrainer || activeBattle.value.isGym
@@ -149,12 +192,25 @@ export const useBattleStore = defineStore('battle', () => {
         const gid = activeBattle.value.gymId
         if (!gs.state.defeatedGyms.includes(gid)) {
           gs.state.defeatedGyms.push(gid); gs.state.badges++
-          if (activeBattle.value.rewardTM) { gs.state.inventory[activeBattle.value.rewardTM] = (gs.state.inventory[activeBattle.value.rewardTM] || 0) + 1; addLog(`¡Recibiste la ${activeBattle.value.rewardTM}!`, 'log-info') }
+          if (activeBattle.value.rewardTM) { 
+            gs.state.inventory[activeBattle.value.rewardTM] = (gs.state.inventory[activeBattle.value.rewardTM] || 0) + 1
+            addLog(`¡Recibiste la ${activeBattle.value.rewardTM}!`, 'log-info', activeBattle.value.rewardTM) 
+          }
           useUIStore().notify(`¡Ganaste la medalla del Gimnasio ${gid}!`, '🏆')
           await gs.save(false)
         }
       }
     }
+    
+    if (fled) {
+      // Si el jugador huye, cerrar el combate inmediatamente y volver al mapa
+      await completeBattleFlow('map')
+    } else {
+      isFinishing.value = true
+    }
+
+    // Persistir estado inmediatamente después del combate
+    await gs.save(false)
   }
 
   const calculateRewards = () => {
@@ -170,8 +226,8 @@ export const useBattleStore = defineStore('battle', () => {
         totalExpMult, participantsSet: participants.value
       })
       if (reward) {
-        addLog(`${p.name} ganó ${reward.gained} EXP.`, 'log-player')
-        if (reward.levelUp) { audio.levelUp(); addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info') }
+        addLog(`${p.name} ganó ${reward.gained} EXP.`, 'log-player', p)
+        if (reward.levelUp) { audio.levelUp(); addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info', p) }
       }
     })
 
@@ -181,20 +237,41 @@ export const useBattleStore = defineStore('battle', () => {
     addLog(`¡Ganaste ₽${moneyGained}!`, 'log-info')
   }
 
+  /**
+   * Forzar sincronización de HP de TODO el equipo al GameStore.
+   * Útil para asegurar persistencia atómica tras combates o cambios.
+   */
+  const syncTeamHP = () => {
+    if (!activeBattle.value) return;
+    
+    // Sincronizar el activo actual
+    if (activeBattle.value.player) {
+      const currentIdx = activeBattle.value.playerTeamIndex ?? gs.state.team.findIndex(p => p.uid === activeBattle.value.player.uid);
+      if (currentIdx !== -1) {
+        gs.state.team[currentIdx].hp = activeBattle.value.player.hp;
+        gs.state.team[currentIdx].status = activeBattle.value.player.status;
+      }
+    }
+
+    // Nota: Otros miembros del equipo que hayan recibido daño (p.ej. púas, persecución)
+    // ya deberían estar sincronizados si se mantienen las referencias de objetos,
+    // pero este método asegura al menos el estado del Pokémon que cerró la batalla.
+  }
+
   const _executeSwitch = async (teamIndex, isForced = false) => {
     if (isProcessing.value && !isForced) return
     isProcessing.value = true
     const newPoke = gs.state.team[teamIndex]
     if (!newPoke || newPoke.hp <= 0) { isProcessing.value = false; return }
     const oldPoke = activeBattle.value.player
-    addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info')
+    addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', oldPoke)
     phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'player' })
     await new Promise(r => setTimeout(r, 600))
     oldPoke.confused = 0; oldPoke.flinched = false
     activeBattle.value.player = newPoke; activeBattle.value.playerTeamIndex = teamIndex
     activeBattle.value.participants.push(newPoke.uid)
     playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
-    addLog(`¡Adelante, ${newPoke.name}!`, 'log-player')
+    addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
     phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
     await new Promise(r => setTimeout(r, 600))
     handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog)
@@ -209,16 +286,65 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
-  const thisStore = { 
-    activeBattle, playerStages, enemyStages, participants, addLog, endBattle 
+  const completeBattleFlow = async (option = 'continue') => { 
+    const uiStore = useUIStore()
+    const locId = activeBattle.value?.locationId
+    
+    if (battleEndCallback.value) { battleEndCallback.value(); battleEndCallback.value = null }; 
+    
+    if (option === 'search' && locId) {
+      // Flujo optimizado: NO cerramos el modal ni borramos el activeBattle aún
+      // Solo indicamos que estamos buscando para que la UI pueda reaccionar (ej: mostrar loading)
+      isSearching.value = true
+      isFinishing.value = false
+      isProcessing.value = false
+      
+      const { useMapStore } = await import('./map')
+      // Esto disparará un nuevo _startBattle que pisará el activeBattle actual y hará clearLogs()
+      await useMapStore().navigate(locId)
+      return
+    }
+
+    isFinishing.value = false; isBattleActive.value = false; activeBattle.value = null; isSearching.value = false; clearLogs() 
+
+    if (option === 'map') {
+      uiStore.activeTab = 'map'
+    }
+
+    if (option === 'search' && locId) {
+      const { useMapStore } = await import('./map')
+      useMapStore().navigate(locId)
+    }
   }
 
+  const thisStore = reactive({ 
+    activeBattle, playerStages, enemyStages, participants, addLog, endBattle, gs, completeBattleFlow,
+    attackerSide, activeMove
+  })
+
   return {
-    state: activeBattle, activeBattle, battleLogs, isBattleActive, isFinishing, isProcessing, player, enemy,
-    playerStages, enemyStages, participants,
-    syncFromLegacy, addLog, clearLogs, executeMove, flee: async () => { if (isProcessing.value) return; audio.flee(); addLog('¡Huiste!', 'log-info'); await endBattle(false, true) },
+    state: activeBattle, battleLogs, isBattleActive, isFinishing, isProcessing, player, enemy,
+    playerStages, enemyStages, participants, attackerSide, activeMove,
+    syncFromLegacy, addLog, clearLogs, executeMove, 
+    flee: async () => { 
+      if (isProcessing.value) return; 
+      useUIStore().openConfirm({
+        title: 'HUIR DEL COMBATE',
+        message: '¿Estás seguro que deseas huir de este encuentro?',
+        confirmText: 'SÍ, HUIR',
+        cancelText: 'VOLVER',
+        type: 'danger',
+        variant: 'retro',
+        onConfirm: async () => {
+          audio.flee(); 
+          addLog('¡Huiste!', 'log-info'); 
+          await endBattle(false, true);
+        }
+      });
+    },
+    completeBattleFlow,
     setFinishing: (cb) => { isFinishing.value = true; battleEndCallback.value = cb },
-    completeBattleFlow: () => { if (battleEndCallback.value) { battleEndCallback.value(); battleEndCallback.value = null }; isFinishing.value = false; isBattleActive.value = false; activeBattle.value = null; clearLogs() },
-    useItemInBattle, endBattle
+    useItemInBattle, endBattle, _startBattle, executeSwitch: _executeSwitch,
+    isSearching
   }
 })

@@ -62,3 +62,6 @@ If no files specified, ASK the user which files to review.
 - **Informative Blocked States**: Locked UI elements (like routes, buttons, or areas) MUST explain the specific reason for the lock via tooltips. Avoid generic "Locked" or "Blocked" messages. If a specific requirement (e.g., medals, items, level) is missing, state it clearly to guide the user on how to unlock it.
 - **Selection Indicator Placement**: Multi-selection indicators (checks, toggles) SHOULD be placed in the **bottom-right** corner of cards or slots to avoid overlapping with Tier/Rank badges (usually in the top-right).
 - **Mass Operation Feedback**: Always provide success notifications after batch operations (mass release, mass sell) detailing the quantitative results, such as the total money earned or the number of items processed.
+- **Drag-and-Drop Interaction Priority**: Draggable elements (team slots, moves) MUST prioritize the "grab" intent.
+  - **Cursor**: Use `cursor: grab` on hover and `cursor: grabbing` while active.
+  - **Click Interdiction**: Disable or interdict general clicks (like navigating to details) while an element is being dragged (`isDragging`). Detail actions should be delegated to dedicated buttons (e.g., "DATOS") to avoid ambiguous user intent.

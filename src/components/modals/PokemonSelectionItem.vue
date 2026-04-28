@@ -6,11 +6,15 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
+import { useBattleVisuals } from '@/composables/useBattleVisuals'
+
+const { getHpColor } = useBattleVisuals()
 
 const props = defineProps({
   item: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
-  total: { type: Number, required: true }
+  total: { type: Number, required: true },
+  isBattleContext: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['select', 'openDetail'])
@@ -107,6 +111,25 @@ const ivTotal = computed(() => Object.values(props.item.pokemon.ivs || {}).reduc
           :class="item._source"
         >{{ item._source === 'team' ? 'EQUIPO' : 'CAJA' }}</span>
       </div>
+
+      <!-- Battle HP Status -->
+      <div
+        v-if="isBattleContext"
+        class="battle-hp-status"
+      >
+        <div class="hp-bar-container">
+          <div 
+            class="hp-bar-fill" 
+            :style="{ 
+              width: (item.pokemon.hp / item.pokemon.maxHp * 100) + '%',
+              backgroundColor: getHpColor(item.pokemon.hp / item.pokemon.maxHp * 100)
+            }"
+          />
+        </div>
+        <div class="hp-text">
+          {{ item.pokemon.hp }} / {{ item.pokemon.maxHp }} HP
+        </div>
+      </div>
     </div>
 
     <div class="selection-indicator">
@@ -135,5 +158,31 @@ const ivTotal = computed(() => Object.values(props.item.pokemon.ivs || {}).reduc
 .m-badge-tier {
   @include badge-tier(24px);
   flex-shrink: 0;
+}
+
+.battle-hp-status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+
+  .hp-bar-container {
+    height: 6px;
+    background: Rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid Rgba(255, 255, 255, 0.05);
+  }
+
+  .hp-bar-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+  }
+
+  .hp-text {
+    font-size: 8px;
+    color: Rgba(255, 255, 255, 0.4);
+    @include pixelated;
+  }
 }
 </style>

@@ -14,7 +14,7 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
   } = options
 
   if (itemName.toLowerCase().includes('ball')) {
-    addLog(`¡Has lanzado una ${itemName}!`, 'log-info')
+    addLog(`¡Has lanzado una ${itemName}!`, 'log-catch', itemName)
     const eventCatchMult = eventStore.globalMultipliers?.catch || 1
     const caught = calculateCatchRate(e, itemName, eventCatchMult)
     
@@ -22,7 +22,7 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
 
     if (caught) {
       audio.caught()
-      addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch')
+      addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
       consumeItem(itemName)
       
       // Captured!
@@ -33,7 +33,7 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
   } else {
     const result = useItemOnPokemon(itemName, p)
     if (result) {
-      addLog(`Usaste ${itemName}. ¡${p.name} ${result}!`, 'log-player')
+      addLog(`Usaste ${itemName}. ¡${p.name} ${result}!`, 'log-catch', itemName)
       consumeItem(itemName)
       return { action: 'heal' }
     } else {

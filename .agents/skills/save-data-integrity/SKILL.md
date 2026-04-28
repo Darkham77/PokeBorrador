@@ -60,7 +60,15 @@ If you change how a key piece of data is formatted (e.g. converting `badges` fro
   - **PATTERN**: If the target team slot is empty, use `moveBoxToTeam(boxIndex)`. If the slot is occupied, use `swapBoxWithTeam(boxIndex, teamIndex)`.
   - **WHY**: Simple addition (push) will fail if the team is already at its maximum capacity (6 members). Implementing a dedicated swap mechanism ensures that team rotations are always possible regardless of current occupancy.
 
-## 7. Batch Processing & Atomic Saves
+## 7. Self-Healing and Data Sanitization
+
+ Pokémon created via legacy systems or debug tools may lack critical combat data (`power`, `type`, `cat`, `pp`).
+
+- **MANDATORY**: Implement "Self-Healing" logic in all centralization points (e.g., `recalcPokemonStats` in `pokemonFactory.js`).
+- **PATTERN**: If an object exists but its properties are `undefined`, use a data provider to fetch and merge missing properties from the Source of Truth (`MOVE_DATA`).
+- **WHY**: This prevents `NaN` or `0` damage bugs in combat and ensures a consistent experience without needing manual data migrations for every debug/legacy unit.
+
+## 8. Batch Processing & Atomic Saves
 
 When performing multiple mutations that trigger persistent saves (e.g., selling multiple item stacks, releasing several Pokémon), avoid calling `save()` or the database router inside loops.
 
