@@ -50,7 +50,40 @@ export const useGameStore = defineStore('game', () => {
     }
     
     const uiStore = useUIStore()
-    const { data, issues, lastSaveId, isNewerThanCloud } = await loadBestSave(authStore.user, db.value)
+    
+    let data, issues, lastSaveId, isNewerThanCloud;
+    try {
+      // PROMISE RACE CON TIMEOUT DE 8 SEGUNDOS PARA EVITAR CUELGUES EN MÓVILES
+      const loadPromise = loadBestSave(authStore.user, db.value)
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('LOAD_TIMEOUT')), 8000)
+      );
+      
+      const result = await Promise.race([loadPromise, timeoutPromise]);
+      data = result.data;
+      issues = result.issues;
+      lastSaveId = result.lastSaveId;
+      isNewerThanCloud = result.isNewerThanCloud;
+      
+    } catch (error) {
+      console.warn('[LOAD] Error o timeout al cargar la partida:', error);
+      
+      if (error.message === 'LOAD_TIMEOUT') {
+        if (!navigator.onLine) {
+          loadingStore.setProgress('game_data', 'Sin conexión a Internet', 'Esperando señal para reintentar...');
+          
+          window.addEventListener('online', () => {
+            window.location.reload();
+          }, { once: true });
+          
+          return;
+        } else {
+          loadingStore.setProgress('game_data', 'Red inestable...', 'Reconectando al servidor...');
+          window.location.reload();
+          return;
+        }
+      }
+    }
     
     if (data) {
       updateState(data)
@@ -67,7 +100,6 @@ export const useGameStore = defineStore('game', () => {
       if (authStore.user.db_version < 2) {
         uiStore.notify('Cuenta actualizada a Seguridad v2', '✨')
         authStore.user.db_version = 2
-        // El watcher en authStore persistirá esto en localStorage automáticamente en modo offline
       }
 
       if (isNewerThanCloud) {

@@ -90,3 +90,12 @@ To optimize performance and server load:
 Pokémon created by debug tools or legacy systems may lack critical properties (`power`, `type`, `pp`).
 
 - **Mandatory**: Implement "Self-Healing" logic at centralization points (e.g., `recalcPokemonStats` in `pokemonFactory.js`) to fill in missing data from `MOVE_DATA`.
+
+---
+
+## 📶 Mobile Resilience (Connection Timeouts)
+
+Mobile browsers frequently suspend inactive tabs and silently drop network connections.
+
+- **Explicit Timeouts**: Operations involving cloud fetches (such as loading game saves) MUST implement a strict timeout (e.g., 8 seconds using `Promise.race`) to avoid permanent loading hangs.
+- **Network Awareness**: Before forcing a page reload on timeout, verify `navigator.onLine`. If offline, wait for the `online` event before retrying.

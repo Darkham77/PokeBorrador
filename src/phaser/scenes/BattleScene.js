@@ -107,7 +107,7 @@ export default class BattleScene extends Phaser.Scene {
     const isPlayer = side === 'player';
     const textureKey = await PhaserAssetService.loadPokemonAsync(this, pokemon.id, pokemon.isShiny, isPlayer);
 
-    const { width, height } = this.cameras.main;
+    const { width } = this.cameras.main;
     
     let sprite = isPlayer ? this.playerSprite : this.enemySprite;
 

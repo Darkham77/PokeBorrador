@@ -49,6 +49,7 @@ export default [
       'public/js/**',
       'scripts/**',
       '.agents/**',
+      'tmp/**',
     ],
   },
 ];
