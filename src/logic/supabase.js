@@ -22,7 +22,13 @@ if (!supabaseUrl || !supabaseKey) {
   console.warn('Please check your .env file.')
 } else {
   try {
-    rawClient = createClient(supabaseUrl, supabaseKey)
+    rawClient = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: {
+          'ngrok-skip-browser-warning': '1' // Bypasses the Ngrok free tier interstitial warning page for API calls
+        }
+      }
+    })
   } catch (err) {
     console.error('[Supabase] Failed to initialize client:', err)
   }

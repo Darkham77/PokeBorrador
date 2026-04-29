@@ -88,7 +88,13 @@ export const useGameStore = defineStore('game', () => {
     if (!data && lastError) {
       console.error('[LOAD] Todos los intentos de carga fallaron.', lastError);
       
-      if (lastError.message === 'LOAD_TIMEOUT') {
+      const isTimeout = lastError.message === 'LOAD_TIMEOUT';
+      const isNetworkError = lastError.message && (
+        lastError.message.toLowerCase().includes('fetch') || 
+        lastError.message.toLowerCase().includes('network')
+      );
+      
+      if (isTimeout || isNetworkError || !navigator.onLine) {
         if (!navigator.onLine) {
           loadingStore.setProgress('game_data', 'Sin conexión a Internet', 'Esperando señal para reintentar...');
           
