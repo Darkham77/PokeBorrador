@@ -5,88 +5,88 @@ description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-
 
 # Project Standards (Lean Core)
 
-Este skill gobierna el ADN del proyecto. Los detalles de implementación técnica se delegan en manuales especializados para asegurar una base de reglas ligera y efectiva.
+This skill governs the DNA of the project. Technical implementation details are delegated to specialized manuals to ensure a lightweight and effective rule base.
 
 ## 🧭 Navigation Hub
 
-Consulta estos manuales para especificaciones detalladas de implementación:
+Consult these manuals for detailed implementation specifications:
 
-| Dominio | Manual de Referencia |
+| Domain | Reference Manual |
 | :--- | :--- |
-| **Creación de Contenido** | [content_creation_manual.md](./references/content_creation_manual.md) |
-| **Mecánicas de Batalla** | [battle_mechanics_manual.md](./references/battle_mechanics_manual.md) |
-| **Mecánicas & UX** | [game_mechanics_manual.md](./references/game_mechanics_manual.md) |
-| **Estándares UI/UX** | [ui_ux_standards.md](./references/ui_ux_standards.md) |
-| **Fórmulas & Ratios** | [game_formulas_manual.md](./references/game_formulas_manual.md) |
-| **Sistema de Ítems** | [item_system_manual.md](./references/item_system_manual.md) |
-| **Guerra & Facciones** | [war_system_manual.md](./references/war_system_manual.md) |
-| **Gimnasios & Rematch** | [gym_system_manual.md](./references/gym_system_manual.md) |
+| **Content Creation** | [content_creation_manual.md](./references/content_creation_manual.md) |
+| **Battle Mechanics** | [battle_mechanics_manual.md](./references/battle_mechanics_manual.md) |
+| **Mechanics & UX** | [game_mechanics_manual.md](./references/game_mechanics_manual.md) |
+| **UI/UX Standards** | [ui_ux_standards.md](./references/ui_ux_standards.md) |
+| **Formulas & Ratios** | [game_formulas_manual.md](./references/game_formulas_manual.md) |
+| **Item System** | [item_system_manual.md](./references/item_system_manual.md) |
+| **War & Factions** | [war_system_manual.md](./references/war_system_manual.md) |
+| **Gyms & Rematch** | [gym_system_manual.md](./references/gym_system_manual.md) |
 | **Social & Trade** | [trade_social_manual.md](./references/trade_social_manual.md) |
-| **Arquitectura DB** | [dbrouter_manual.md](./references/dbrouter_manual.md) |
-| **Validación & Calidad** | [validation_manual.md](./references/validation_manual.md) |
-| **Guardado & Persistencia** | [save_system_manual.md](./references/save_system_manual.md) |
-| **Testing & Simulación** | [browser_testing_manual.md](./references/browser_testing_manual.md) |
+| **DB Architecture** | [dbrouter_manual.md](./references/dbrouter_manual.md) |
+| **Validation & Quality** | [validation_manual.md](./references/validation_manual.md) |
+| **Save & Persistence** | [save_system_manual.md](./references/save_system_manual.md) |
+| **Testing & Simulation** | [browser_testing_manual.md](./references/browser_testing_manual.md) |
 | **Phaser & Rendering** | [phaser_guidelines.md](./references/phaser_guidelines.md) |
-| **Animaciones & FX** | [animation_standards.md](./references/animation_standards.md) |
+| **Animations & FX** | [animation_standards.md](./references/animation_standards.md) |
 | **GPU & Performance** | [gpu_optimization_manual.md](./references/gpu_optimization_manual.md) |
-| **SASS & Estilos** | [sass_styling_manual.md](./references/sass_styling_manual.md) |
+| **SASS & Styling** | [sass_styling_manual.md](./references/sass_styling_manual.md) |
 | **Asset Pipeline** | [asset_service_manual.md](./references/asset_service_manual.md) |
-| **Mapa & Spawns** | [spawn_grid_manual.md](./references/spawn_grid_manual.md) |
+| **Map & Spawns** | [spawn_grid_manual.md](./references/spawn_grid_manual.md) |
 
-### 🛠️ Migración & Soporte Técnico
+### 🛠️ Migration & Technical Support
 
 - **Legacy Migration Hub**: [legacy_migration_manual.md](./references/legacy_migration_manual.md)
-- **Notas Técnicas de DB**: [references/migration/](./references/migration/)
+- **DB Technical Notes**: [references/migration/](./references/migration/)
 
 ---
 
-## 🏛️ Mandatos Principales (Core Mandates)
+## 🏛️ Core Mandates
 
-### 1. Identidad Hybrid Retro-Modern
+### 1. Hybrid Retro-Modern Identity
 
-- **Modern Shell**: Glassmorphism, gradientes, sombras HSL para contenedores.
-- **Retro Heart**: Pixel Art y tipografía Sharp (`Press Start 2P`) para contenido de juego.
-- **Pixel-Perfect**: Elementos pixelados DEBEN usar `@include pixelated`. La tipografía de estadísticas y encabezados siempre debe ser pixelada.
+- **Modern Shell**: Glassmorphism, gradients, HSL shadows for containers.
+- **Retro Heart**: Pixel Art and Sharp typography (`Press Start 2P`) for game content.
+- **Pixel-Perfect**: Pixelated elements MUST use `@include pixelated`. Typography for stats and headers must always be pixelated.
 
 ### 2. GPU & Rendering
 
-- **GPU First**: Prioriza el renderizado acelerado por hardware. Ver [gpu_optimization_manual.md](./references/gpu_optimization_manual.md).
-- **Sprite Standard**: Usa `@include sprite-render` para todos los assets del juego.
-- **Organic Feel**: Desincroniza animaciones con semillas y varía velocidades.
+- **GPU First**: Prioritize hardware-accelerated rendering. See [gpu_optimization_manual.md](./references/gpu_optimization_manual.md).
+- **Sprite Standard**: Use `@include sprite-render` for all game assets.
+- **Organic Feel**: Desynchronize animations using seeds and vary speeds.
 
-### 3. Modularidad & Jerarquía
+### 3. Modularity & Hierarchy
 
-- **Regla de las 500 líneas**: Ningún archivo de lógica o estilo puede exceder las 500 líneas (excepto bases de datos masivas).
-- **Zero-Invention**: Reutiliza `BaseModal`, `UnifiedCard` y mixins globales antes de crear estilos ad-hoc.
-- **Modal Lifecycle**: Sincroniza el modo performance con las transiciones de modales.
+- **500-Line Rule**: No logic or style file may exceed 500 lines (except for massive databases).
+- **Zero-Invention**: Reuse `BaseModal`, `UnifiedCard`, and global mixins before creating ad-hoc styles.
+- **Modal Lifecycle**: Synchronize performance mode with modal transitions.
 
-### 4. Integridad de SASS y Build
+### 4. SASS and Build Integrity
 
-- **Mandato de Capitalización**: Usa filtros capitalizados (`Scale()`, `Blur()`, `Linear-Gradient()`) para evitar colisiones con Dart Sass 2.0.
-- **Estándar @use**: Prohibido el uso de `@import`. Usa `@use` y `@forward`.
-- **Zero-Warning**: Mantén siempre 0 errores y 0 advertencias en `lint` y `vue-tsc`.
-- **Escudo de Dependencias**: Scripts con librerías externas deben manejar `ImportError` y dar instrucciones de instalación.
+- **Capitalization Mandate**: Use capitalized filters (`Scale()`, `Blur()`, `Linear-Gradient()`) to avoid collisions with Dart Sass 2.0.
+- **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
+- **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`.
+- **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.
 
 ### 5. CLI-First Debugging
 
-- **Eficiencia sobre GUI**: Usa comandos `window.__VITE_DEBUG__` para simular estados. Es MANDATORIO verificar contenido nuevo vía CLI antes de commitear.
+- **Efficiency Over GUI**: Use `window.__VITE_DEBUG__` commands to simulate states. It is MANDATORY to verify new content via CLI before committing.
 
 ---
 
-## 🏗️ Gobernanza de Artefactos (MANDATORIO)
+## 🏗️ Artifact Governance (MANDATORY)
 
-Para asegurar el rigor y la trazabilidad, toda tarea compleja DEBE seguir el ciclo de vida de artefactos:
+To ensure rigor and traceability, every complex task MUST follow the artifact lifecycle:
 
-1. **Planning**: Crear `implementation_plan.md`. Esperar "ok" del usuario.
-2. **Execution**: Mantener `task.md` como fuente de verdad.
-3. **Closure**: Crear `walkthrough.md` con evidencia (capturas, tests) del éxito de la tarea.
+1. **Planning**: Create `implementation_plan.md`. Wait for "ok" from the user.
+2. **Execution**: Maintain `task.md` as the source of truth.
+3. **Closure**: Create `walkthrough.md` with evidence (screenshots, tests) of task success.
 
 ---
 
 ## 🛠️ Aesthetic Audit Checklist
 
-- [ ] **Architectural Reuse**: ¿He reutilizado componentes existentes?
-- [ ] **GPU Acceleration**: ¿He aplicado promoción de capas en elementos pesados?
-- [ ] **Pixel Parity**: ¿Todo el contenido de juego es pixelado y nítido?
-- [ ] **CLI-First**: ¿He verificado el estado vía consola?
-- [ ] **Zero-Warning**: ¿`npm run lint` y `build` pasan sin advertencias?
+- [ ] **Architectural Reuse**: Have I reused existing components?
+- [ ] **GPU Acceleration**: Have I applied layer promotion on heavy elements?
+- [ ] **Pixel Parity**: Is all game content pixelated and sharp?
+- [ ] **CLI-First**: Have I verified the state via console?
+- [ ] **Zero-Warning**: Do `npm run lint` and `build` pass without warnings?

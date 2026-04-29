@@ -101,12 +101,12 @@ onMounted(() => {
   border-bottom: 1px solid Rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 4px !important; // Máxima cercanía
   min-height: 32px;
 
   .log-icon-wrapper {
     flex-shrink: 0;
-    width: 56px !important;
+    width: 42px !important; // Punto medio para sprites grandes
     height: 32px !important;
     display: flex;
     align-items: center;

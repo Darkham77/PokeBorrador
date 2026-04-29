@@ -1,25 +1,25 @@
 ---
 name: item-validator
-description: Validador de ítems. Delega las reglas de negocio y schemas al manual `@/project-standards/references/item_system_manual.md`.
+description: Item validator. Delegates business rules and schemas to the `@/project-standards/references/item_system_manual.md` manual.
 ---
 
-# Skill: Validador de Ítems
+# Skill: Item Validator
 
 > [!IMPORTANT]
-> Antes de agregar o modificar ítems, consulta el [Manual del Sistema de Ítems](../project-standards/references/item_system_manual.md) para conocer los schemas obligatorios.
+> Before adding or modifying items, consult the [Item System Manual](../project-standards/references/item_system_manual.md) for mandatory schemas.
 
-## Uso del Validador
+## Validator Usage
 
-Ejecuta el script de validación para asegurar que los cambios en `src/data/items.js` no rompan la integridad del inventario o del combate:
+Run the validation script to ensure that changes in `src/data/items.js` do not break inventory or combat integrity:
 
 ```bash
 node .agents/skills/item-validator/scripts/validate_items.js
 ```
 
-### Qué verifica
+### What it checks
 
-- Existencia de campos obligatorios (`id`, `cat`, `sprite`, etc.).
-- Coherencia entre `SHOP_ITEMS` y `HEALING_ITEMS`.
-- Restricciones de uso en combate.
+- Existence of mandatory fields (`id`, `cat`, `sprite`, etc.).
+- Consistency between `SHOP_ITEMS` and `HEALING_ITEMS`.
+- Usage restrictions in combat.
 
-Para más detalles sobre las categorías y el comportamiento esperado, revisa el [Manual de Validación](../project-standards/references/validation_manual.md).
+For more details on categories and expected behavior, review the [Validation Manual](../project-standards/references/validation_manual.md).

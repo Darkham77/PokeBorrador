@@ -1,6 +1,6 @@
 ---
 name: migrator-legacy-vue
-description: MANDATORY skill for migrating legacy code from `backup_legacy_code/` to Vue 3. triggers when user asks to "migrar", "modernizar", or "restaurar" legacy features. Guarantees 1:1 visual parity, strict project standards, and MANDATORY unit testing for ALL changes and components.
+description: MANDATORY skill for migrating legacy code from `backup_legacy_code/` to Vue 3. Triggers when user asks to "migrate", "modernize", or "restore" legacy features. Guarantees 1:1 visual parity, strict project standards, and MANDATORY unit testing for ALL changes and components.
 ---
 
 # Migrator Legacy Vue
@@ -87,6 +87,6 @@ Legacy code **MUST** be modified during migration to comply with all current pro
 
 ## Example Invocations
 
-- "Migra el sistema de misiones del código viejo."
-- "Restaura la estética original del menú de batalla."
-- "Pasa el archivo pvp.js de public a un composable de Vue."
+- "Migrate the mission system from the old code."
+- "Restore the original aesthetic of the battle menu."
+- "Move the pvp.js file from public to a Vue composable."

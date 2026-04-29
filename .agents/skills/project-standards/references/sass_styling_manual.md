@@ -27,6 +27,11 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 > [!WARNING]
 > **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, `Rotate()`, `TranslateY()`, and `Grayscale()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
 
+### 2. Specificity vs. !important
+When applying filters to sprites (especially in global components like `MapCard` or `Pokedex`), you **MUST NOT** use `!important`.
+- **Reasoning**: Using `!important` on base filters blocks the application of silhouette classes (`.spawn-silhouette`, `.unknown-pokemon`) used to hide uncaptured species.
+- **Requirement**: Use CSS specificity (nesting or multiple classes) to allow conditional overrides.
+
 ### 2. Preference: Capitalization vs. Unquote/Interpolation
 
 To bypass SASS color function collisions, we strictly follow a hierarchy of methods.
@@ -153,12 +158,13 @@ When refactoring legacy or generic components:
 
 - **Nesting Depth**: Never exceed **3 levels** of nesting in SCSS. Excessive nesting creates specificity wars and bloated CSS.
 - **Color Management**:
-  - Use **Native CSS Variables** (`var(--color)`) for UI-wide palettes that might change dynamically (e.g., Theme coloring).
-  - Use **Sass Variables** (`$token`) for technical constraints, sizing, and shared internal logic.
+  - **FORBIDDEN**: Hardcoded hex values (e.g., `#ff0000`) for standard UI elements. Use **Native CSS Variables** (`var(--color)`) or SASS variables (`$color`) from the project tokens.
   - **MANDATORY Capitalization**: You **MUST** use **Rgba()** and **Rgb()** (Capitalized) instead of lowercase `rgba()`/`rgb()`. This prevents SASS from intercepting them as internal color functions and ensures literal CSS output.
-  - **Local/One-off Colors**: Capitalized Rgba/Rgb or Hex values ARE PERMITTED for local, non-recurring styles within a component's `<style scoped>` block.
+  - **Local/One-off Colors**: Capitalized Rgba/Rgb or Hex values ARE PERMITTED for local, non-recurring styles within a component's `<style scoped>` block, but variables are always preferred.
   - **SASS vs CSS Variables**: SASS color functions (like `color.scale`, `lighten()`, `darken()`) cannot process `var(--color)`. For interactive highlights/hovers, use static SASS fallbacks (e.g. `$yellow`) for calculations while maintaining the CSS variable for the main render to support dynamic themes.
   - **Variable Isolation**: In high-density or dynamically scoped components (e.g., within specialized filters or grids), if core SASS variables are not reliably available without manual imports, use **Direct Hex Values** to ensure visual stability and prevent "Color not defined" build errors.
+- **Z-Index Standardization**:
+  - **MANDATORY**: Never use hardcoded numbers for `z-index` (e.g., `z-index: 10;`). Use CSS variables (`var(--z-low)`, `var(--z-base)`, `var(--z-modal)`, `var(--z-critical)`) for consistent layering and to pass aesthetics audits.
 - **Modern Control Flow**: The legacy ternary `if()` function is deprecated in SASS 1.8+. Always use standard `@if / @else` blocks for conditional styling logic to ensure build-log cleanliness.
 - **Positioning & Micro-offsets**: Avoid using negative margins (`margin-top: -1px`) to correct alignment of symbols or small icons. This causes layout instability and triggers redundancy alerts. Use **TranslateY()** or **TranslateX()** (Capitalized) for hardware-accelerated positioning that doesn't affect the box model.
 - **Global Pollution**: Do not define variables or mixins directly in component styles; always centralize them in tokens/partials and `@use` them.
@@ -169,6 +175,7 @@ Avoid spreading definitions for the same component across multiple files. This i
 
 - **MANDATORY**: Each core component (`.map-card`, `.base-modal`, `.hud-bar`) must have ONE primary SCSS file.
 - **FORBIDDEN**: Redefining a root class in multiple stylesheets (e.g., having `.map-card` in `_render.scss`, `_items.scss`, and `_grid.scss`).
+- **Responsive SASS**: When possible, consolidate media queries into the main component file instead of creating separate `-responsive.scss` files for the same classes. This avoids redundancy audit triggers.
 - **Audit Requirement**: Before committing UI changes, you MUST run the redundancy audit:
   `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py`
 - **Bypass Rule**: If the audit flags a valid nested override (e.g., a performance mode variant) as redundant, use the SASS ampersand operator (`& .class-name {`) to break the exact line-start regex pattern while maintaining identical CSS output.

@@ -11,7 +11,7 @@ This skill provides a secure, read-only interface to the legacy codebase stored 
 
 Use this skill when:
 
-- The user mentions "código viejo", "backup", "antes de Vue", "versión legacy", or "legacy code".
+- The user mentions "old code", "backup", "pre-Vue", "legacy version", or "legacy code".
 - You encounter a bug that seems to be a regression from the old system.
 - You need to understand the original JavaScript logic that preceded a current Vue component.
 

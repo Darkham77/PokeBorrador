@@ -1,34 +1,34 @@
-# Manual de Testing y Simulación en Navegador
+# Browser Testing and Simulation Manual
 
-Este manual establece el protocolo estándar para la verificación visual y funcional del proyecto usando automatización de navegador y herramientas de debug CLI.
+This manual establishes the standard protocol for visual and functional verification of the project using browser automation and CLI debug tools.
 
-## 🌐 Configuración del Entorno Local
+## 🌐 Local Environment Configuration
 
 - **URL**: `http://localhost:5173` (Vite).
-- **Usuario de Test**: `ASH`.
-- **Autenticación**: Los campos de contraseña no son requeridos en local; solo el nombre de usuario identifica la sesión.
+- **Test User**: `ASH`.
+- **Authentication**: Password fields are not required locally; only the username identifies the session.
 
 ---
 
-## 🛠️ Protocolo de Login y Navegación
+## 🛠️ Login and Navigation Protocol
 
-### 1. Verificación de Sesión
+### 1. Session Verification
 
-Antes de cualquier test, verifica si ya estás logueado como `ASH` mediante `window.__VITE_DEBUG__.getGameStore().auth.user.username`.
+Before any test, verify if you are already logged in as `ASH` using `window.__VITE_DEBUG__.getGameStore().auth.user.username`.
 
-### 2. Login vía UI (MANDATORIO)
+### 2. Login via UI (MANDATORY)
 
-Si no hay sesión activa:
+If there is no active session:
 
-1. Navega a `/login`.
-2. Escribe `ASH` en el campo de usuario.
-3. Haz clic en el botón de Login.
+1. Navigate to `/login`.
+2. Type `ASH` in the username field.
+3. Click the Login button.
 
-> No uses `evaluate` para saltarte el login; es necesario inicializar `window.__VITE_DEBUG__` a través del flujo normal de la UI.
+> Do not use `evaluate` to skip the login; it is necessary to initialize `window.__VITE_DEBUG__` through the normal UI flow.
 
-### 3. Navegación Rápida (CLI-First)
+### 3. Fast Navigation (CLI-First)
 
-Una vez logueado, usa comandos para limpiar la UI y saltar al objetivo:
+Once logged in, use commands to clear the UI and jump to the target:
 
 - `window.__VITE_DEBUG__.closeAllModals()`
 - `window.__VITE_DEBUG__.navigate(tabId)`
@@ -36,30 +36,36 @@ Una vez logueado, usa comandos para limpiar la UI y saltar al objetivo:
 
 ---
 
-## 🏎️ Eficiencia del Subagente de Navegador
+## 🏎️ Browser Subagent Efficiency
 
-Para evitar lag y saturación de la IDE:
+To avoid lag and IDE saturation:
 
-- **NO retornes el DOM raw**.
-- Define condiciones de éxito atómicas (ej. "Para cuando veas el ID #dashboard-loaded").
-- Limita las acciones a un máximo de 6 por tarea.
+- Define atomic success conditions (e.g., "Stop when you see ID #dashboard-loaded").
+- Limit actions to a maximum of 6 per task.
 
 ---
 
-## ⚔️ Simulación de Combate y Estado
+## ⚔️ Combat and State Simulation
 
-Al probar estados complejos (ej. derrota), sincroniza el motor Phaser con el estado de Pinia:
+When testing complex states (e.g., defeat), synchronize the Phaser engine with the Pinia state:
 
-1. Trigger visual vía `phaserBridge.sendCommand('BattleScene', 'EVENT', data)`.
-2. Actualización de Store (ej. `pokemon.hp = 0`).
-3. Prioriza el uso de `BattleDebugTools.vue` antes de inyectar estados manualmente por consola.
+1. Visual trigger via `phaserBridge.sendCommand('BattleScene', 'EVENT', data)`.
+2. Store update (e.g., `pokemon.hp = 0`).
+3. Prioritize using `BattleDebugTools.vue` before injecting states manually via console.
+
+### 4. UI Overrides vs. Database State
+
+When testing visual states (e.g., forcing Pokedex "Caught" status via debug buttons), remember that these are **ephemeral Pinia states** (`uiStore`).
+
+- **Safety**: Visual overrides NEVER modify the actual save file (`saveService.js`).
+- **Clarification**: Always inform the user that changes are temporary and will disappear on refresh, to avoid confusion regarding data persistence.
 
 ---
 
 ## 🚨 Roadblock Policy
 
-Si el test falla o el navegador se queda "congelado":
+If the test fails or the browser stays "frozen":
 
-1. **DETENTE**: No intentes adivinar el estado de la UI.
-2. **Diagnóstico Dual**: Revisa los logs de la consola del navegador Y los logs del servidor (`npm run dev`) simultáneamente.
-3. **Reparación Prioritaria**: Arregla cualquier error de consola o SSR antes de reintentar el test.
+1. **STOP**: Do not attempt to guess the UI state.
+2. **Dual Diagnosis**: Check the browser console logs AND the server logs (`npm run dev`) simultaneously.
+3. **Priority Repair**: Fix any console or SSR errors before retrying the test.

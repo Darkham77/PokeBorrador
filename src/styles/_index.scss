@@ -31,7 +31,7 @@
 @use 'components/map-cards';
 @use 'components/map-card-render';
 @use 'components/map-card-item';
-@use 'components/battle';
+
 @use 'components/team';
 @use 'components/guardian';
 @use 'components/notifications';
@@ -45,6 +45,7 @@
 @use 'layouts/hud';
 @use 'layouts/navigation';
 @use 'layouts/screens';
+@use 'components/battle';
 
 // Global Responsive & Overrides
 @use 'core/responsive';

@@ -104,8 +104,8 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
       &:hover { background: Rgba(255, 255, 255, 0.1); }
       &.active { border-color: var(--vicio-primary); background: Rgba(124, 58, 237, 0.1); }
       
-      &.male { color: #3b82f6; }
-      &.female { color: #ec4899; }
+      &.male { color: $gender-male; }
+      &.female { color: $gender-female; }
     }
   }
 }

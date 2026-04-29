@@ -37,10 +37,10 @@ const activeTab = ref('events'); // 'events' | 'ranked'
 @use "@/styles/core/_mixins" as *;
 .admin-panel {
   padding: 30px;
-  background: #0f172a;
+  background: var(--glass-bg);
   color: $white;
   border-radius: 24px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
 }
 
 .admin-header {
@@ -66,8 +66,8 @@ const activeTab = ref('events'); // 'events' | 'ranked'
       transition: all 0.2s;
       &:hover { color: $white; }
       &.active {
-        color: #fbbf24;
-        border-bottom-color: #fbbf24;
+        color: var(--yellow);
+        border-bottom-color: var(--yellow);
       }
     }
   }

@@ -33,7 +33,7 @@
       margin: 0 0 12px 0;
       background: Linear-Gradient(to bottom, var(--white), var(--gray));
       -webkit-background-clip: text;
-      -webkit-background-clip: text; background-clip: text;;
+      -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;
       -webkit-text-fill-color: transparent;
       @include pixelated;
     }
@@ -306,10 +306,10 @@
       width: 100%;
       height: 100%;
       @include pokemon-sprite-base-standard;
+      filter: Drop-Shadow(1px 0 0 $black) Drop-Shadow(-1px 0 0 $black) Drop-Shadow(0 1px 0 $black) Drop-Shadow(0 -1px 0 $black);
       
       &.silhouette {
-        filter: Brightness(0) Drop-Shadow(0 0 1px Rgba(255, 255, 255, 0.2));
-        opacity: 1; // Solid black as requested
+        @include pokemon-silhouette(Rgba(255, 255, 255, 0.4));
       }
     }
 

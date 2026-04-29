@@ -1,63 +1,63 @@
-# Manual del Sistema de Guerra (Poké Vicio)
+# War System Manual (Poké Vicio)
 
-Este manual documenta las reglas de bando, el sistema de dominancia de mapas y la economía de guerra.
+This manual documents the faction rules, the map dominance system, and the war economy.
 
-## ⚔️ Facos y Bandas
+## ⚔️ Factions and Teams
 
-### 1. Facciones Disponibles
+### 1. Available Factions
 
-- **Unión**: Fieles a la liga y el orden.
-- **Poder**: Buscan la fuerza por encima de todo.
-- **Rocket**: Clase especial (requiere membresía/evento) con mecánicas de criminalidad.
+- **Union**: Loyal to the league and order.
+- **Power**: Seek strength above all else.
+- **Rocket**: Special class (requires membership/event) with criminality mechanics.
 
-### 2. Cambio de Bando
+### 2. Changing Factions
 
-- **Costo**: 25,000 PokéDólares.
-- **Penalización**: El cambio de bando resetea todos los puntos acumulados en la semana actual.
-
----
-
-## 🗺️ Dominancia y Puntos de Guerra
-
-### 1. Obtención de Puntos (PT)
-
-Se ganan puntos por actividades en mapas en disputa:
-
-- **Captura**: 10 PT base.
-- **Derrota de Líder**: 50 PT.
-- **Guardián**: 100 PT.
-
-### 2. Límites Diarios (Daily Cap)
-
-- **Por Mapa**: Máximo 500 PT por mapa al día para evitar el abuso de una sola zona.
-- **Monedas de Guerra**: Máximo 50 monedas al día (1 moneda por cada 10 PT ganados).
-
-### 3. Fase de Disputa vs Fase de Dominancia
-
-- **Lunes a Viernes**: Fase de Disputa (se acumulan puntos).
-- **Sábado y Domingo**: Fase de Dominancia (el bando ganador controla los beneficios del mapa).
+- **Cost**: 25,000 PokéDollars.
+- **Penalty**: Changing factions resets all points accumulated in the current week.
 
 ---
 
-## 🏆 Recompensas Semanales
+## 🗺️ Dominance and War Points
 
-Al final de la semana (Domingo 23:59), se distribuyen Monedas de Guerra según el desempeño individual:
+### 1. Earning Points (PT)
 
-- **Milestone 1 (500 PT)**: 10 Monedas.
-- **Milestone 2 (1500 PT)**: 25 Monedas.
-- **Milestone 3 (3000 PT)**: 50 Monedas.
-- **Bono de Ganador**: +10 Monedas si tu bando dominó más del 50% de los mapas.
+Points are earned for activities on disputed maps:
+
+- **Catch**: 10 PT base.
+- **Leader Defeat**: 50 PT.
+- **Guardian**: 100 PT.
+
+### 2. Daily Limits (Daily Cap)
+
+- **Per Map**: Maximum 500 PT per map per day to prevent abuse of a single area.
+- **War Coins**: Maximum 50 coins per day (1 coin for every 10 PT earned).
+
+### 3. Dispute Phase vs. Dominance Phase
+
+- **Monday to Friday**: Dispute Phase (points accumulate).
+- **Saturday and Sunday**: Dominance Phase (the winning faction controls the map's benefits).
 
 ---
 
-## 🐉 Sistema de Guardianes
+## 🏆 Weekly Rewards
 
-### 1. Aparición
+At the end of the week (Sunday 23:59), War Coins are distributed according to individual performance:
 
-- Tienen una probabilidad base de aparición (**GUARDIAN_CHANCE**) del 1% por cada encuentro salvaje en mapas en disputa.
+- **Milestone 1 (500 PT)**: 10 Coins.
+- **Milestone 2 (1500 PT)**: 25 Coins.
+- **Milestone 3 (3000 PT)**: 50 Coins.
+- **Winner Bonus**: +10 Coins if your faction dominated more than 50% of the maps.
 
-### 2. Captura vs Derrota
+---
 
-- **Captura**: Otorga el 100% de los puntos de guerra del guardián.
-- **Derrota**: Otorga el 70% de los puntos.
-- **Límite**: Solo se puede reclamar un guardián por mapa al día.
+## 🐉 Guardian System
+
+### 1. Appearance
+
+- They have a base appearance probability (**GUARDIAN_CHANCE**) of 1% for every wild encounter on disputed maps.
+
+### 2. Catch vs. Defeat
+
+- **Catch**: Grants 100% of the guardian's war points.
+- **Defeat**: Grants 70% of the points.
+- **Limit**: Only one guardian can be claimed per map per day.

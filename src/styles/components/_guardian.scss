@@ -17,7 +17,7 @@
   position: absolute !important;
   top: 6px !important;
   left: 6px !important;
-  z-index: var(--z-max) !important; /* Standardized Layer */
+  z-index: 10 !important; /* Standardized Layer */
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;

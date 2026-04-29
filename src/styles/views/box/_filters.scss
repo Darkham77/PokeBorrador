@@ -22,7 +22,7 @@
     color: $black;
     border-color: var(--yellow);
     font-weight: bold;
-    box-shadow: 0 0 15px Rgba(255, 184, 0, 0.2);
+    box-shadow: 0 0 15px Rgba(255, 214, 10, 0.2);
   }
 
   .box-icon-ref { font-size: 10px; }
@@ -77,7 +77,7 @@
 
     &:hover { color: var(--white); background: Rgba(255, 255, 255, 0.05); }
     &.active {
-      background: Rgba(255, 184, 0, 0.1);
+      background: Rgba(255, 214, 10, 0.1);
       border-color: var(--yellow);
       color: var(--yellow);
     }

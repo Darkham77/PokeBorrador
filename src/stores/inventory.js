@@ -15,8 +15,6 @@ export const useInventoryStore = defineStore('inventory', () => {
   // --- BAG STATE ---
   const bagSellMode = ref(false)
   const bagSellSelected = ref({}) // { itemName: quantity }
-  const isItemTargetModalOpen = ref(false)
-  const activeItemToUse = ref(null)
   const activeCategory = ref(localStorage.getItem('inventory_last_tab') || 'todos')
   const searchQuery = ref('')
 
@@ -352,20 +350,6 @@ export const useInventoryStore = defineStore('inventory', () => {
     return item
   }
 
-  function openStoneMenu(stoneName) {
-    activeItemToUse.value = stoneName
-    isItemTargetModalOpen.value = true
-  }
-
-  function openItemMenu(itemName) {
-    activeItemToUse.value = itemName
-    isItemTargetModalOpen.value = true
-  }
-
-  function closeItemTargetModal() {
-    isItemTargetModalOpen.value = false
-    activeItemToUse.value = null
-  }
 
   return {
     // Bag
@@ -384,11 +368,6 @@ export const useInventoryStore = defineStore('inventory', () => {
     useItem,
     equipItem,
     unequipItem,
-    openStoneMenu,
-    openItemMenu,
-    closeItemTargetModal,
-    isItemTargetModalOpen,
-    activeItemToUse,
     addItem,
     removeItem,
     sellItem,

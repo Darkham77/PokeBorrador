@@ -21,7 +21,7 @@ To maintain 60FPS on mobile devices, we follow strict rendering rules. Global "d
 - **Layering**: Group sprites by texture atlas in the scene rendering order to maximize batching efficiency.
 - **Filter Cumulative Cost**: Avoid using expensive CSS filters like `backdrop-filter` or `drop-shadow` inside large loops (e.g., map grid icons).
 - **Opacity Optimization**: Always prefer the `opacity: X` property over the `filter: opacity(X)` function. The property is significantly cheaper for the GPU and avoids SASS deprecation warnings.
-- **Lightweight Rendering Mode**: To maximize performance during CPU/GPU-intensive scenes, non-essential background components must implement conditional rendering. For the specific rules on what content is hidden and when, see [game_rules_manual.md](./game_rules_manual.md).
+- **Lightweight Rendering Mode**: To maximize performance during CPU/GPU-intensive scenes, non-essential background components must implement conditional rendering. For specific visibility rules, see [game_mechanics_manual.md](./game_mechanics_manual.md).
 
 ---
 
@@ -61,7 +61,3 @@ To avoid performance death by a thousand reactivity "checks":
 ### 3. Dynamic Combat FX & Shadows
 - **Flying Species Shadow Offset**: Shadows for flying Pokémon in Phaser scenes MUST be offset vertically based on the `height` property from `SPECIES_METADATA`. Use a proportional multiplier (e.g., `height * 40`) to simulate the Pokémon floating above the terrain.
 - **Dynamic Sprite Separation**: In narrow combat viewports (under 690px), use `Clamp()` and container units (`cqw`) for sprite positioning (e.g., `left/right: Clamp(2%, 12cqw, 12%)`). This ensures sprites move towards the edges as space shrinks, preventing them from overlapping the central UI.
-
----
-
-## 🌉 Phaser + Vue Integration Rules

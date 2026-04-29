@@ -1,92 +1,92 @@
-# Manual del Sistema de Guardado y Sincronización
+# Save System and Synchronization Manual
 
-Este manual garantiza la integridad de los datos de los jugadores y la compatibilidad entre versiones del juego (Supabase + SQLite).
+This manual ensures the integrity of player data and compatibility between game versions (Supabase + SQLite).
 
-## 🛡️ Reglas de Oro de Persistencia
+## 🛡️ Persistence Golden Rules
 
-### 1. Compatibilidad hacia Atrás
+### 1. Backward Compatibility
 
-Al agregar propiedades a `INITIAL_STATE` (`src/stores/game.js`), los guardados antiguos tendrán `undefined`.
+When adding properties to `INITIAL_STATE` (`src/stores/game.js`), old saves will have `undefined`.
 
-- **Obligatorio**: Usar fallbacks: `state.newFeature = state.newFeature || defaultValue;`.
-- **Migraciones**: Si cambias el formato de un dato crítico, implementa un bloque de migración en la inicialización del store.
+- **Mandatory**: Use fallbacks: `state.newFeature = state.newFeature || defaultValue;`.
+- **Migrations**: If you change the format of a critical data point, implement a migration block in the store's initialization.
 
-### 2. Protocolo de Guardado (Upsert)
+### 2. Save Protocol (Upsert)
 
-El guardado en Supabase (`game_saves`) sobrescribe todo el JSON.
+Saving in Supabase (`game_saves`) overwrites the entire JSON.
 
-- **Defensa**: NUNCA sobrescribas con un estado vacío. Verifica siempre el flag `_saveLoaded` antes de permitir `saveGame()`.
-- **Carrera de Guardado**: El `DBRouter` hace competir el guardado local (SQLite/IndexedDB) con la nube. Se prefiere siempre el dato con el timestamp más reciente.
+- **Defense**: NEVER overwrite with an empty state. Always verify the `_saveLoaded` flag before allowing `saveGame()`.
+- **Save Race**: The `DBRouter` makes local saving (SQLite/IndexedDB) compete with the cloud. Data with the most recent timestamp is always preferred.
 
-### 3. Integridad del "Real Index"
+### 3. "Real Index" Integrity
 
-NUNCA confíes en los índices pasados desde la UI (que pueden estar filtrados o sorteados).
+NEVER trust indices passed from the UI (which may be filtered or sorted).
 
-- **Patrón**: Busca siempre el elemento en el array original del Store usando su `UID` antes de aplicar una mutación.
-
----
-
-## 🏗️ Arquitectura de Datos (DBRouter)
-
-### Sincronización Triple Parity
-
-Si modificas el esquema de la base de datos:
-
-1. Crea la migración SQL en `database/migrations/`.
-2. Verifica que el plugin de Vite regenere `src/logic/db/migrations_data.js`.
-3. Actualiza el esquema absoluto en `database/schemas/`.
-
-## 🆔 Integridad de UIDs (Anti-Clonación)
-
-- **Unicidad**: Ningún par de Pokémon puede compartir el mismo **Unique ID (UID)** entre el equipo y la caja.
-- **Detección**: Si se detectan duplicados en cuentas v1, se sanitizan. En cuentas v2+, una inconsistencia crítica activa el **Protocolo de Rollback**.
+- **Pattern**: Always look for the element in the original Store array using its `UID` before applying a mutation.
 
 ---
 
-## 🔒 Conflictos de Sesión (Last-In-Wins)
+## 🏗️ Data Architecture (DBRouter)
 
-Cada pestaña del navegador genera un `SessionID` único:
+### Triple Parity Synchronization
 
-- **Detección de Conflictos**: Si se detecta un cambio en el `current_session_id` de la DB desde otra pestaña, la instancia actual DEBE deshabilitar los permisos de escritura inmediatamente para evitar la corrupción de datos.
-- **Notificación**: Se debe disparar el evento `session-conflict` para avisar al usuario.
+If you modify the database schema:
 
----
+1. Create the SQL migration in `database/migrations/`.
+2. Verify that the Vite plugin regenerates `src/logic/db/migrations_data.js`.
+3. Update the absolute schema in `database/schemas/`.
 
-## 🔄 Sincronización Avanzada
+## 🆔 UID Integrity (Anti-Cloning)
 
-### 1. Delta Merge (Post-Combate)
-
-Si el jugador recibe una actualización externa (ej. un intercambio aceptado) mientras está en combate:
-
-- **Diferimiento**: El sistema encola los cambios externos para evitar corromper la pelea activa.
-- **Merge**: Tras el combate, el cliente descarga la "verdad" del servidor y aplica los resultados (EXP, Oro) ganados localmente sobre ese nuevo estado.
-
-### 2. Principio de los 60 Segundos
-
-Para optimizar el rendimiento y carga del servidor:
-
-- **Caché Local**: Los cambios menores se acumulan localmente y se sincronizan cada 60 segundos.
-- **Eventos Críticos**: Acciones como ganar una medalla, capturar un legendario o realizar un intercambio fuerzan un guardado atómico inmediato.
-- **Flush Pre-Acción**: Antes de cualquier acción social, se fuerza un guardado para asegurar que el estado local coincida con el servidor.
+- **Uniqueness**: No pair of Pokémon can share the same **Unique ID (UID)** between the team and the box.
+- **Detection**: If duplicates are detected in v1 accounts, they are sanitized. In v2+ accounts, a critical inconsistency activates the **Rollback Protocol**.
 
 ---
 
-## 🛡️ Seguridad Administrativa
+## 🔒 Session Conflicts (Last-In-Wins)
 
-### 1. Panel de Debug (LocalDebugPanel.vue)
+Each browser tab generates a unique `SessionID`:
 
-- **Modo Online**: Acceso estrictamente limitado a cuentas con rol `admin`. No debe renderizarse (`v-if`) si el chequeo falla.
-- **Protocolo Auto-Ban**: Cualquier intento de llamada no autorizada a comandos CLI administrativos en sesión online dispara el flag `is_banned: true` en la base de datos y fuerza el logout.
-
-### 2. Comandos de Emergencia
-
-- `factoryResetLocal()`: Purga total de storage local.
-- `forceSyncCloud()`: Ignora el acelerador de 60s y empuja el estado actual a la nube.
+- **Conflict Detection**: If a change in the `current_session_id` of the DB is detected from another tab, the current instance MUST immediately disable write permissions to prevent data corruption.
+- **Notification**: The `session-conflict` event must be triggered to warn the user.
 
 ---
 
-## 🏥 Auto-Sanación de Datos
+## 🔄 Advanced Synchronization
 
-Los Pokémon creados por herramientas de debug o sistemas antiguos pueden carecer de propiedades críticas (`power`, `type`, `pp`).
+### 1. Delta Merge (Post-Battle)
 
-- **Obligatorio**: Implementar lógica de "Self-Healing" en los puntos de centralización (ej. `recalcPokemonStats` en `pokemonFactory.js`) para rellenar datos faltantes desde `MOVE_DATA`.
+If the player receives an external update (e.g., an accepted trade) while in battle:
+
+- **Deferral**: The system queues external changes to avoid corrupting the active fight.
+- **Merge**: After the battle, the client downloads the "truth" from the server and applies the results (EXP, Gold) earned locally on top of that new state.
+
+### 2. The 60-Second Principle
+
+To optimize performance and server load:
+
+- **Local Cache**: Minor changes accumulate locally and are synchronized every 60 seconds.
+- **Critical Events**: Actions such as winning a badge, catching a legendary, or performing a trade force an immediate atomic save.
+- **Pre-Action Flush**: Before any social action, a save is forced to ensure that the local state matches the server.
+
+---
+
+## 🛡️ Administrative Security
+
+### 1. Debug Panel (LocalDebugPanel.vue)
+
+- **Online Mode**: Access strictly limited to accounts with the `admin` role. It must not render (`v-if`) if the check fails.
+- **Auto-Ban Protocol**: Any unauthorized attempt to call administrative CLI commands in an online session triggers the `is_banned: true` flag in the database and forces a logout.
+
+### 2. Emergency Commands
+
+- `factoryResetLocal()`: Total purge of local storage.
+- `forceSyncCloud()`: Ignores the 60s throttle and pushes the current state to the cloud.
+
+---
+
+## 🏥 Data Self-Healing
+
+Pokémon created by debug tools or legacy systems may lack critical properties (`power`, `type`, `pp`).
+
+- **Mandatory**: Implement "Self-Healing" logic at centralization points (e.g., `recalcPokemonStats` in `pokemonFactory.js`) to fill in missing data from `MOVE_DATA`.

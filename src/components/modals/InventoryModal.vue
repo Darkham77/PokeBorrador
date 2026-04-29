@@ -7,6 +7,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { SHOP_ITEMS } from '@/data/items'
+import { isValidTarget } from '@/logic/items/itemEffects'
 
 // Sub-components
 import InventorySidebar from './inventory/InventorySidebar.vue'
@@ -46,7 +47,10 @@ const itemActionMenu = ref(null) // { item, type: 'sell'|'release'|'menu' }
 // Getters
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
 const filteredItems = computed(() => inventoryStore.bagItems)
-const totalObjectsCount = computed(() => Object.values(gameStore.state.inventory || {}).reduce((s, v) => s + v, 0))
+const totalObjectsCount = computed(() => {
+  const source = props.battleMode ? filteredItems.value : Object.entries(gameStore.state.inventory || {}).map(([name, qty]) => ({ name, qty }))
+  return source.reduce((s, v) => s + (v.qty || 0), 0)
+})
 const selectedObjectsTotal = computed(() => Array.from(selectedItems.values()).reduce((s, v) => s + v, 0))
 
 // Handlers
@@ -104,14 +108,38 @@ const handleActionSelect = (type) => {
     }
 
     // Traditional targeting if no pre-selected target
-    if (['stones', 'pociones'].includes(dbItem?.cat) || dbItem?.id === 'rare_candy') {
-      inventoryStore.activeItemToUse = dbItem.name
-      modalStore.open('ItemTarget')
-    } else if (dbItem?.cat === 'held' || dbItem?.type === 'held') {
-      uiStore.notify(`Equipa este item desde el detalle del Pokémon o ábrelo desde su menú`, '🎒')
-    } else {
-      uiStore.notify(`Este objeto no se puede usar desde aquí`, '🚫')
+    const validTargets = gameStore.state.team.filter(p => isValidTarget(dbItem.name, p))
+    
+    if (validTargets.length === 0) {
+      uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒')
+      itemActionMenu.value = null
+      return
     }
+
+    const battleStore = useBattleStore()
+    modalStore.open('PokemonSelection', {
+      title: `USAR ${dbItem.name?.toUpperCase()}`,
+      isBattleSwitch: props.battleMode,
+      includeTeam: true,
+      allowDead: dbItem.name?.toLowerCase().includes('revivir') || !props.battleMode,
+      allowedIds: validTargets.map(p => p.uid), // ONLY show valid targets
+      activePokemonUid: battleStore.isBattleActive ? battleStore.player?.uid : null,
+      onConfirm: (selected) => {
+        if (selected && selected.length > 0) {
+          const index = gameStore.state.team.findIndex(p => p.uid === selected[0].uid)
+          if (index !== -1) {
+            const res = inventoryStore.useItem(dbItem.name, 'team', index)
+            if (res.success) {
+              uiStore.notify(res.msg, '✨')
+              if (props.battleMode) close() // Close inventory ONLY on success in battle
+            } else {
+              uiStore.notify(res.msg, '⚠️')
+              // Keep inventory open on failure
+            }
+          }
+        }
+      }
+    })
     itemActionMenu.value = null
   } else {
     // Open quantity modal for sell/release
@@ -200,6 +228,7 @@ const close = () => {
     :max-width="modalWidth"
     variant="retro"
     padding="raw"
+    :no-scroll="!!battleMode"
     @close="close"
   >
     <template #header>
@@ -219,7 +248,10 @@ const close = () => {
             <span class="inv-stat-label">OBJETOS TOTALES</span>
             <span class="value">{{ totalObjectsCount }}</span>
           </div>
-          <div class="stat-node money">
+          <div 
+            v-if="!battleMode"
+            class="stat-node money"
+          >
             <span class="inv-stat-label">MIS CRÉDITOS</span>
             <span class="value">₱{{ gameStore.state.money.toLocaleString() }}</span>
           </div>

@@ -86,6 +86,14 @@ watch(() => [battle.value?.player?.hp, battle.value?.enemy?.hp], () => {
 onMounted(() => {
   if (battleStore.isBattleActive) syncBattleToPhaser()
 })
+
+const handleClose = () => {
+  if (battleStore.isFinishing) {
+    battleStore.completeBattleFlow('map')
+  } else {
+    battleStore.flee()
+  }
+}
 </script>
 
 <template>
@@ -97,12 +105,12 @@ onMounted(() => {
     variant="modern"
     overlay="dark"
     close-button-variant="yellow-solid"
-    :prevent-close="battleStore.isFinishing || battleStore.isProcessing"
+    :prevent-close="battleStore.isProcessing"
     :close-on-click-outside="false"
     :hide-header="true"
     padding="raw"
     custom-class="battle-arena-modal"
-    @close="battleStore.flee"
+    @close="handleClose"
   >
     <div class="battle-header-actions">
       <div 
@@ -155,16 +163,16 @@ onMounted(() => {
 <style lang="scss">
 /* Modal customization */
 .battle-arena-modal {
-  .modal-content-premium.type-fullscreen {
-    height: 100vh !important;
-    max-height: 100vh !important;
+  .modal-content-premium {
     overflow: hidden !important;
   }
-  .modal-scrollable-content.padding-raw {
+  
+  .modal-scrollable-content {
     padding: 0 !important;
     display: flex !important;
     flex-direction: column !important;
     height: 100% !important;
+    overflow: hidden !important; // Bloqueo total
   }
 }
 </style>
@@ -182,7 +190,7 @@ onMounted(() => {
   border-bottom: 1px solid Rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px; // Texto más cerca del icono
 
   .log-icon-wrapper {
     flex-shrink: 0;
@@ -286,8 +294,8 @@ onMounted(() => {
     grid-template-areas: 
       "log arena"
       "log moves";
-    height: auto;
-    max-height: 94vh;
+    height: 100%; // Llenado total
+    max-height: 100%;
     width: 100%;
     max-width: 1230px; /* 280px log + 950px arena */
   }
@@ -298,7 +306,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   background: Rgba(0, 0, 0, 0.2);
-  border-right: 1px solid Rgba(255, 255, 255, 0.1);
+  border-right: 1px solid Rgba(255, 255, 255, 0.3) !important; // Más brillo para que se note
   overflow: hidden;
   min-height: 0;
   position: relative;
@@ -315,7 +323,7 @@ onMounted(() => {
   }
 
   @media (min-width: 960px) {
-    border-radius: 24px 0 0 24px;
+    border-radius: 0; // Cuadrado para integrarse al modal
     :deep(.battle-log) { position: absolute; inset: 0; }
   }
 }
@@ -326,9 +334,17 @@ onMounted(() => {
   aspect-ratio: 16 / 11 !important;
   width: 100%;
   height: auto !important;
-  max-height: calc(92vh - 320px);
   object-fit: contain;
+
+  @media (min-width: 951px) {
+    height: 100% !important;
+    max-height: none !important;
+    object-fit: cover;
+  }
 }
-:deep(#move-panel) { grid-area: moves; }
+:deep(#move-panel) { 
+  grid-area: moves; 
+  z-index: var(--z-low); // Asegurar que todo el panel de control esté sobre el fondo
+}
 
 </style>

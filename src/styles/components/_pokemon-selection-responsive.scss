@@ -7,7 +7,6 @@
     padding-top: 8px; 
     
     & .filters-bar { gap: 4px; margin-bottom: 2px; padding: 0 15px; }
-    & .ps-search-box .ps-search-input { padding: 8px 30px 8px 35px; font-size: 11px; }
     & .ps-sort-btns button { padding: 6px; font-size: 7px; }
     & .ps-tags-bar { gap: 5px; }
     & .ps-tags-bar button { height: 24px; padding: 0 6px; gap: 4px; }
@@ -30,14 +29,12 @@
 @media (max-height: 500px) {
   .modal-content-premium {
 body .modal-header-premium { padding: 8px 16px !important; min-height: 40px !important; }
-    .modal-title-text { font-size: 10px !important; }
 body .modal-footer-premium { padding: 8px 20px !important; }
   }
 
   body .selection-container {
     & .ps-tags-section { display: none; } 
     & .filters-bar { margin-bottom: 0; gap: 2px; }
-    & .ps-search-box .ps-search-input { padding: 6px 25px 6px 30px; }
     & .ps-vertical-list { padding-top: 2px; padding-bottom: 5px; gap: 8px; }
     & .list-item { min-height: 60px; padding: 8px; border-radius: 12px; }
     & .poke-preview { width: 40px; height: 40px; img { width: 32px; height: 32px; } }

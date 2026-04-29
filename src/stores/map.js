@@ -90,11 +90,23 @@ export const useMapStore = defineStore('map', () => {
 
     // 3. Generar Encuentro
     const eventStore = useEventStore()
-    const encounter = await generateEncounter(locId, gs.state, {
-      activeEvents: activeEvents.value,
-      dominanceData: mapWinners.value,
-      shinyMultiplier: eventStore.globalMultipliers?.shiny || 1
-    })
+    
+    // MODO DEBUG: Si hay un bucle infinito activo, lo usamos
+    const encounter = battleStore.debugLoopPokemon 
+      ? (() => {
+          const nextPoke = JSON.parse(JSON.stringify(battleStore.debugLoopPokemon))
+          nextPoke.hp = nextPoke.maxHp
+          nextPoke.status = null
+          nextPoke.confused = 0
+          nextPoke.flinched = false
+          console.log('[DEBUG] Navegación: Usando bucle infinito de', nextPoke.name)
+          return { type: 'wild', pokemon: nextPoke }
+        })()
+      : await generateEncounter(locId, gs.state, {
+          activeEvents: activeEvents.value,
+          dominanceData: mapWinners.value,
+          shinyMultiplier: eventStore.globalMultipliers?.shiny || 1
+        })
 
     if (!encounter) {
       // No pasó nada, solo nos movemos (efecto visual en el componente)

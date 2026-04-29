@@ -1,23 +1,23 @@
 ---
 name: pokemon-ability-validator
-description: Validador de habilidades. Delega las reglas de negocio al manual `@/project-standards/references/validation_manual.md`.
+description: Ability validator. Delegates business rules to the `@/project-standards/references/validation_manual.md` manual.
 ---
 
-# Skill: Validador de Habilidades
+# Skill: Ability Validator
 
 > [!IMPORTANT]
-> Antes de agregar habilidades, consulta el [Manual de Validación](../project-standards/references/validation_manual.md) para los estándares de descripción y lógica.
+> Before adding abilities, consult the [Validation Manual](../project-standards/references/validation_manual.md) for description and logic standards.
 
-## Uso del Validador
+## Validator Usage
 
-Ejecuta el script para verificar la integridad de `ABILITY_DATA` y su implementación en el motor de batalla:
+Run the script to verify the integrity of `ABILITY_DATA` and its implementation in the battle engine:
 
 ```bash
 node .agents/skills/pokemon-ability-validator/scripts/validator.js
 ```
 
-### Qué verifica
+### What it checks
 
-- Existencia de descripciones en español.
-- Paridad con PokeAPI.
-- Implementación de lógica en `battleAbilities.js`.
+- Existence of descriptions in Spanish.
+- Parity with PokeAPI.
+- Implementation of logic in `battleAbilities.js`.

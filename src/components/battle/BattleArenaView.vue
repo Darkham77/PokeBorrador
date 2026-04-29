@@ -410,6 +410,7 @@ onMounted(() => {
               <img
                 :src="playerTrainerSpriteUrl"
                 class="trainer-image"
+                @error="e => e.target.style.display = 'none'"
               >
             </div>
 
@@ -470,7 +471,6 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   min-height: 350px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
   overflow: hidden;
   container-type: inline-size;
   flex-shrink: 0;
@@ -492,9 +492,8 @@ onMounted(() => {
   top: 0; left: 0; width: 100%; height: 100%;
   object-fit: cover;
   z-index: calc(var(--z-base) + 1);
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  image-rendering: -moz-crisp-edges;
+  image-rendering: pixelated !important;
+  image-rendering: crisp-edges !important;
 }
 
 .weather-overlay {

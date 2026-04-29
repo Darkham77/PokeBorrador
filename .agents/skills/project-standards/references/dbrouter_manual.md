@@ -1,51 +1,51 @@
-# Manual de Persistencia y DBRouter (Poké Vicio)
+# Persistence and DBRouter Manual (Poké Vicio)
 
-Este manual documenta la arquitectura de persistencia híbrida que permite el juego Online (Supabase) y Offline (SQLite WASM) con total aislamiento.
+This manual documents the hybrid persistence architecture that enables Online (Supabase) and Offline (SQLite WASM) gameplay with total isolation.
 
-## 🧱 Arquitectura DBRouter
+## 🧱 DBRouter Architecture
 
-### 1. Aislamiento Estricto
+### 1. Strict Isolation
 
-El sistema **NUNCA** escribe en ambas bases de datos simultáneamente. El modo se determina al inicio de la sesión (`online` o `offline`).
+The system **NEVER** writes to both databases simultaneously. The mode is determined at the beginning of the session (`online` or `offline`).
 
-### 2. Lógica "Last-In-Wins"
+### 2. "Last-In-Wins" Logic
 
-Para el modo Online, se utiliza un `current_session_id`. Si se detecta un cambio en este ID desde otro cliente, la sesión actual entra en conflicto y se bloquea para evitar corrupción de datos por escrituras concurrentes.
+For Online mode, a `current_session_id` is used. If a change in this ID is detected from another client, the current session enters a conflict and is blocked to prevent data corruption by concurrent writes.
 
 ---
 
-## ⏳ Protocolo de Tiempo y Simulación
+## ⏳ Time Protocol and Simulation
 
 ### 1. getServerTime()
 
-- **Online**: Obtiene el tiempo real mediante un RPC al servidor para evitar trampas con el reloj local.
-- **Offline**: Utiliza el reloj local pero permite el uso de un **Time Offset**.
+- **Online**: Obtains real time via an RPC to the server to prevent cheating with the local clock.
+- **Offline**: Uses the local clock but allows the use of a **Time Offset**.
 
-### 2. Time Mocking (Solo Debug/Offline)
+### 2. Time Mocking (Debug/Offline only)
 
-Permite adelantar o atrasar el tiempo del motor para probar:
+Allows advancing or delaying the engine time to test:
 
-- Ciclos de Día/Noche.
-- Climas dinámicos.
-- Finalización de misiones IDLE.
+- Day/Night cycles.
+- Dynamic weather.
+- Completion of IDLE missions.
 
 ---
 
-## 🔄 Sincronización y Versiones
+## 🔄 Synchronization and Versions
 
 ### 1. CLIENT_DB_VERSION
 
-- Se calcula automáticamente basándose en la longitud del array `DATABASE_MIGRATIONS`.
-- El cliente **NUNCA** debe conectarse a un servidor cuya versión de DB sea menor a la versión del cliente.
+- Calculated automatically based on the length of the `DATABASE_MIGRATIONS` array.
+- The client **MUST NEVER** connect to a server whose DB version is lower than the client's version.
 
-### 2. Persistencia en SQLite
+### 2. SQLite Persistence
 
-En modo offline, los cambios se guardan en memoria y se sincronizan con el sistema de archivos del navegador mediante `persistSQLite()` al final de cada operación importante (ej. después de capturar un Pokémon).
+In offline mode, changes are saved in memory and synchronized with the browser's file system using `persistSQLite()` at the end of each important operation (e.g., after catching a Pokémon).
 
 ---
 
-## 🚨 Reglas de Uso para Desarrolladores
+## 🚨 Usage Rules for Developers
 
-- **No usar Supabase Directo**: Siempre usa `gameStore.db` o el router inyectado.
-- **RPCs**: Si creas un RPC en el servidor, DEBES crear su equivalente o un mock en `dbRouter.js` para que el modo offline no rompa.
-- **Transacciones**: No hay transacciones multi-tabla garantizadas en el router; diseña la lógica para ser atómica a nivel de fila siempre que sea posible.
+- **Do Not Use Supabase Directly**: Always use `gameStore.db` or the injected router.
+- **RPCs**: If you create an RPC on the server, you MUST create its equivalent or a mock in `dbRouter.js` so that offline mode does not break.
+- **Transactions**: There are no guaranteed multi-table transactions in the router; always design logic to be atomic at the row level whenever possible.

@@ -11,6 +11,20 @@ import { makePokemon } from '../pokemonFactory';
  * Returns { success: boolean, message: string, resultType?: string }
  */
 
+/**
+ * Checks if an item can be applied to a pokemon without actually applying it.
+ */
+export const isValidTarget = (itemName, pokemon) => {
+  if (!pokemon) return false;
+  const effect = itemEffects[itemName] || ((p) => getDynamicItemEffect(itemName, p));
+  if (typeof effect !== 'function') return false;
+
+  // Clone to avoid mutation during check
+  const pClone = { ...pokemon, moves: pokemon.moves ? pokemon.moves.map(m => ({ ...m })) : [] };
+  const result = effect(pClone);
+  return result && result.success;
+};
+
 export const itemEffects = {
   // --- Healing & Status ---
   'Poción': (p) => healHp(p, 20),

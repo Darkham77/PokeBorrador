@@ -30,18 +30,18 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 
 ---
 
-## 5. Sincronización de Modales y Performance
+## 5. Modal Synchronization & Performance
 
-El sistema de modales debe integrarse con el motor de renderizado de fondo (Phaser/Mapa) para optimizar recursos.
+The modal system must integrate with the background rendering engine (Phaser/Map) to optimize resources.
 
-### Ciclo de Vida del Modo Performance
+### Performance Mode Lifecycle
 
-- **Entrada**: Activa la simplificación del fondo **INMEDIATAMENTE** cuando un modal que oscurece la pantalla empieza a abrirse. Esto evita ruido visual durante la transición.
-- **Salida**: Restaura la fidelidad total del fondo **INMEDIATAMENTE** cuando el último modal empieza su animación de cierre (`close`). Esto permite al usuario ver el mundo regresar a través del overlay que se desvanece.
+- **Entrance**: Activate background simplification **IMMEDIATELY** when a modal that obscures the screen begins to open. This avoids visual noise during the transition.
+- **Exit**: Restore full background fidelity **IMMEDIATELY** when the last modal begins its `close` animation. This allows the user to see the world return through the fading overlay.
 
-### Inmersión y Desbordamiento (Clipping FX)
+### Immersion and Overflow (Clipping FX)
 
-Para eventos cinemáticos (Evolución, Eclosión), el modal debe permitir que los efectos visuales desborden su contenedor:
+For cinematic events (Evolution, Hatching), the modal must allow visual effects to overflow its container:
 
-- **Configuración**: Usa `overflow: visible !important` y fondos transparentes en `BaseModal`.
-- **Z-Index**: Los efectos de partículas deben estar por encima del contenido del modal pero por debajo del botón de cierre.
+- **Configuration**: Use `overflow: visible !important` and transparent backgrounds in `BaseModal`.
+- **Z-Index**: Particle effects must be above the modal content but below the close button.

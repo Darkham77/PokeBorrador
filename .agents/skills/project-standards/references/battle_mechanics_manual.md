@@ -1,62 +1,71 @@
-# Manual de Mecánicas de Batalla (Poké Vicio)
+# Battle Mechanics Manual (Poké Vicio)
 
-Este manual documenta el funcionamiento interno del motor de combate, desde el cálculo de daño hasta las habilidades especiales.
+This manual documents the internal workings of the battle engine, from damage calculation to special abilities.
 
-## ⚔️ Cálculo de Daño (Gen 4+)
+## ⚔️ Damage Calculation (Gen 4+)
 
-### 1. Fórmula de Daño Base
+### 1. Base Damage Formula
+
 ```text
-Daño = floor(((2 * Nivel / 5 + 2) * Poder * A / D) / 50) + 2
+Damage = floor(((2 * Level / 5 + 2) * Power * A / D) / 50) + 2
 ```
-- **A**: Ataque o At. Especial (reducido al 50% si el atacante está quemado y el movimiento es físico).
-- **D**: Defensa o Def. Especial.
 
-### 2. Multiplicadores Finales
-`Daño Final = floor(Daño * STAB * Habilidad * Efectividad * Aleatorio * Crítico * Clima * Objeto)`
-- **STAB**: 1.5x (o 2.0x con habilidad **Adaptable**).
-- **Efectividad**: 0x, 0.25x, 0.5x, 1x, 2x, 4x.
-- **Aleatorio**: Variación entre **0.85 y 1.0**.
-- **Crítico**: 2.0x. Probabilidad base 6% (12% con **Lente Zoom**, 25% tras **Foco Energía**). Inmune contra **Caparazón** o **Armadura Batalla**.
+- **A**: Attack or Sp. Attack (reduced to 50% if the attacker is burned and the move is physical).
+- **D**: Defense or Sp. Defense.
 
----
+### 2. Final Multipliers
 
-## 🌪️ Influencia del Clima
+`Final Damage = floor(Damage * STAB * Ability * Effectiveness * Random * Critical * Weather * Item)`
 
-- **Sol (Sun)**: 1.5x Daño Fuego, 0.5x Daño Agua.
-- **Lluvia (Rain)**: 1.5x Daño Agua, 0.5x Daño Fuego.
+- **STAB**: 1.5x (or 2.0x with **Adaptability** ability).
+- **Effectiveness**: 0x, 0.25x, 0.5x, 1x, 2x, 4x.
+- **Random**: Variation between **0.85 and 1.0**.
+- **Critical**: 2.0x. Base probability 6% (12% with **Zoom Lens**, 25% after **Focus Energy**). Immune against **Shell Armor** or **Battle Armor**.
 
 ---
 
-## 🧪 Habilidades Críticas en Combate
+## 🌪️ Weather Influence
 
-### 1. Al Entrar en Batalla (Entry)
-- **Intimidación**: Baja un nivel el Ataque del oponente.
-- **Rastro (Trace)**: Copia la habilidad del oponente al entrar.
-
-### 2. Defensivas y de Estado
-- **Robustez (Sturdy)**: Permite sobrevivir con 1 HP ante un golpe letal si el usuario tenía el 100% de HP.
-- **Cura Natural**: Sana problemas de estado al ser retirado del combate.
-- **Sincronía**: Si el usuario recibe un estado, lo devuelve al atacante automáticamente.
-
-### 3. De Contacto (30% de Probabilidad)
-Se activan al recibir movimientos de categoría **Física**:
-- **Electricidad Estática**: Paraliza.
-- **Punto Tóxico**: Envenena.
-- **Cuerpo Llama**: Quema.
-- **Efecto Espora**: Duerme, paraliza o envenena aleatoriamente.
-
-### 4. Ofensivas Especiales
-- **Experto (Technician)**: 1.5x de potencia para movimientos con poder base <= 60.
-- **Agallas (Guts)**: 1.5x Ataque Físico si el usuario tiene un problema de estado.
-- **Sebo (Thick Fat)**: Reduce al 50% el daño recibido de tipo Fuego o Hielo.
-- **Boosters de 1/3 HP (1.5x)**: Mar llamas, Torrente, Espesura, Enjambre.
+- **Sun**: 1.5x Fire Damage, 0.5x Water Damage.
+- **Rain**: 1.5x Water Damage, 0.5x Fire Damage.
 
 ---
 
-## 🏃 Velocidad y Prioridad
+## 🧪 Critical Battle Abilities
 
-- **Parálisis**: Reduce la velocidad real al 50%.
-- **Clima y Habilidad (2x Speed)**:
-    - **Clorofila**: Durante la Mañana/Día.
-    - **Nado Rápido**: Durante la Tarde/Noche.
-- **Fuga**: 2x Speed si el usuario tiene un problema de estado.
+### 1. On Entering Battle (Entry)
+
+- **Intimidate**: Lowers the opponent's Attack by one stage.
+- **Trace**: Copies the opponent's ability upon entering.
+
+### 2. Defensive and Status
+
+- **Sturdy**: Allows surviving with 1 HP against a lethal hit if the user had 100% HP.
+- **Natural Cure**: Heals status problems when withdrawn from combat.
+- **Synchronize**: If the user receives a status condition, it is automatically passed back to the attacker.
+
+### 3. Contact (30% Probability)
+
+Activated when receiving movements of the **Physical** category:
+
+- **Static**: Paralysis.
+- **Poison Point**: Poison.
+- **Flame Body**: Burn.
+- **Effect Spore**: Randomly causes sleep, paralysis, or poison.
+
+### 4. Special Offensive
+
+- **Technician**: 1.5x power for moves with base power <= 60.
+- **Guts**: 1.5x Physical Attack if the user has a status problem.
+- **Thick Fat**: Reduces damage taken from Fire or Ice type by 50%.
+- **1/3 HP Boosters (1.5x)**: Blaze, Torrent, Overgrow, Swarm.
+
+---
+
+## 🏃 Speed and Priority
+
+- **Paralysis**: Reduces actual speed to 50%.
+- **Weather and Ability (2x Speed)**:
+  - **Chlorophyll**: During Morning/Day.
+  - **Swift Swim**: During Evening/Night.
+- **Run Away**: 2x Speed if the user has a status problem.

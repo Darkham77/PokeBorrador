@@ -60,14 +60,15 @@ graph TD
 > [!IMPORTANT]
 > **IMMUTABLE STEPS**: You MUST follow every step in this diagram. You are allowed to add intermediate sub-tasks for complex features, but you are FORBIDDEN from deleting or skipping any original design steps.
 
-### 1. Planificación y Trazabilidad (MANDATORY)
+### 1. Planning and Traceability (MANDATORY)
 
-Antes de realizar cualquier cambio significativo o finalizar tareas, se DEBE garantizar la máxima trazabilidad del proceso.
+Before making any significant changes or finalizing tasks, maximum traceability of the process MUST be guaranteed.
 
-- **Mandatory Planning**: Crear el artefacto `implementation_plan.md` detallando la arquitectura y el plan de verificación. **DETENERSE** y esperar la aprobación explícita del usuario ("ok") antes de proceder.
-- **Rigor en el Seguimiento**: Crear o actualizar `task.md`. Este archivo es la **fuente de verdad absoluta**; debe registrar cada paso granular, incluyendo descubrimientos y sub-tareas imprevistas.
-- **Cierre Documentado**: Actualizar siempre `walkthrough.md` con evidencia (capturas, logs de tests) para cerrar el ciclo de rigor técnico.
-- Verificar que cada cambio se alinee con la identidad **Hybrid Retro-Modern**.
+- **Mandatory Planning**: Create a **NEW** `implementation_plan.md` artifact detailing the architecture and verification plan. **Reusing plans from previous tasks is strictly forbidden.** **STOP** and wait for explicit user approval ("ok") before proceeding.
+- **Rigor in Tracking**: Create a **NEW** `task.md` artifact. This file is the **absolute source of truth**; it must record every granular step from scratch, avoiding inheriting tasks from previous sessions.
+- **Incremental Update**: Keep `task.md` and `implementation_plan.md` updated **phase by phase**. Upon completing each step (Planning, Gap Analysis, Audit, etc.), update the progress in the artifacts before continuing.
+- **Documented Closure**: Always update `walkthrough.md` with evidence (screenshots, test logs) to close the technical rigor cycle.
+- Verify that every change aligns with the **Hybrid Retro-Modern** identity.
 
 ### 2. Test Gap Analysis
 
@@ -107,7 +108,7 @@ If the database schema has changed:
 - > [!CAUTION]
   > **STOP ON FAILURE**: If something does not work or a test fails, you MUST fix it immediately. It is forbidden to proceed to the next step or attempt the commit if the verification cycle is not perfect.
 - > [!IMPORTANT]
-  > **WORKFLOW PROJECTION**: After any fix or test creation, you MUST explicitly update `task.md` and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks (including newly discovered sub-tasks) are completed.
+  > **WORKFLOW PROJECTION & PROGRESS UPDATE**: After any correction, test creation, or **upon finalizing a logical phase**, you MUST explicitly update `task.md` and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks (including newly discovered sub-tasks) are completed.
 
 ### 6. Workspace Cleanup (MANDATORY)
 

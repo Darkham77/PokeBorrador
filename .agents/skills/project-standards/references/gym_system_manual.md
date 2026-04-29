@@ -1,40 +1,40 @@
-# Manual de Gimnasios y Progresión (Poké Vicio)
+# Gym and Progression Manual (Poké Vicio)
 
-Este manual define el comportamiento de los Líderes de Gimnasio, su escalado de dificultad y el sistema de medallas.
+This manual defines the behavior of Gym Leaders, their difficulty scaling, and the badge system.
 
-## 🏅 Sistema de Medallas
+## 🏅 Badge System
 
-- **Progreso Lineal**: Los gimnasios están bloqueados por cantidad de medallas requeridas (ej. Misty requiere 1 medalla, Surge requiere 2).
-- **Control de Nivel**: Las medallas determinan el nivel máximo de obediencia de los Pokémon (Regla Gen 1-4).
-
----
-
-## 🧗 Niveles de Dificultad (Rematch)
-
-Cada gimnasio puede enfrentarse en tres dificultades:
-
-### 1. Easy (Modo Viaje)
-
-- **Equipo**: 2-3 Pokémon base.
-- **Niveles**: 12 - 50.
-- **Recompensa**: Medalla y MT específica (primera vez).
-
-### 2. Normal (Modo Veterano)
-
-- **Equipo**: 4 Pokémon evolucionados.
-- **Niveles**: 30 - 70.
-- **Recompensa**: Battle Coins y mayor XP.
-
-### 3. Hard (Modo Maestro)
-
-- **Equipo**: 6 Pokémon con IVs perfectos y Held Items estratégicos.
-- **Niveles**: 65 - 90+.
-- **Recompensa**: Held Items raros y posibilidad de TM exclusiva.
+- **Linear Progress**: Gyms are locked by the number of badges required (e.g., Misty requires 1 badge, Surge requires 2).
+- **Level Control**: Badges determine the maximum obedience level of Pokémon (Gen 1-4 rule).
 
 ---
 
-## 🧠 Lógica de Combate de Líderes
+## 🧗 Difficulty Levels (Rematch)
 
-1. **El As (Ace)**: El último Pokémon del equipo es siempre el "As" del líder y suele llevar un objeto equipado.
-2. **Prioridad de IA**: Los líderes tienen una IA mejorada que prioriza movimientos súper efectivos y cambios de estado.
-3. **Rewards**: El `rewardTM` se otorga únicamente en la primera victoria. En rematches, se otorga dinero escalado según la dificultad.
+Each gym can be faced in three difficulties:
+
+### 1. Easy (Journey Mode)
+
+- **Team**: 2-3 base Pokémon.
+- **Levels**: 12 - 50.
+- **Reward**: Badge and specific TM (first time).
+
+### 2. Normal (Veteran Mode)
+
+- **Team**: 4 evolved Pokémon.
+- **Levels**: 30 - 70.
+- **Reward**: Battle Coins and higher XP.
+
+### 3. Hard (Master Mode)
+
+- **Team**: 6 Pokémon with perfect IVs and strategic Held Items.
+- **Levels**: 65 - 90+.
+- **Reward**: Rare Held Items and possibility of exclusive TM.
+
+---
+
+## 🧠 Leader Battle Logic
+
+1.  **The Ace**: The last Pokémon of the team is always the leader's "Ace" and usually carries an equipped item.
+2.  **AI Priority**: Leaders have an improved AI that prioritizes super-effective moves and status changes.
+3.  **Rewards**: The `rewardTM` is granted only on the first victory. In rematches, scaled money is granted according to the difficulty.

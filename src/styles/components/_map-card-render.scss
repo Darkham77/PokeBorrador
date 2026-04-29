@@ -121,7 +121,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-base); 
+  z-index: var(--z-low) !important; 
   pointer-events: none;
 }
 
@@ -186,7 +186,7 @@
       height: 12px;
       border-radius: 50%;
       border: 1.5px solid var(--black);
-      background: Linear-Gradient(to bottom, #ff4b4b 50%, white 50%);
+      background: Linear-Gradient(to bottom, var(--red) 50%, var(--white) 50%);
       box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.4);
       z-index: var(--z-base);
       pointer-events: none;
@@ -226,8 +226,10 @@
     @include pixelated;
     image-rendering: pixelated !important;
     image-rendering: crisp-edges !important;
-    
-    filter: pokemon-outline-performance(var(--black));
+    &.pixelated, & {
+      // Robust 1px black outline for pixel art sprites
+      filter: Drop-Shadow(1px 0 0 $black) Drop-Shadow(-1px 0 0 $black) Drop-Shadow(0 1px 0 $black) Drop-Shadow(0 -1px 0 $black);
+    }
     
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
@@ -235,7 +237,7 @@
 
     &:hover {
       transform: Scale(1.1) TranslateY(-2px);
-      z-index: 100 !important;
+      z-index: var(--z-low) !important;
       pointer-events: auto;
     }
   }
@@ -252,7 +254,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-base);
+  z-index: var(--z-low);
   pointer-events: none;
 }
 

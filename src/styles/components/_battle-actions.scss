@@ -3,25 +3,28 @@
 @use '../core/variables' as *;
 
 #move-panel {
-  padding: 6px 10px;
-  margin-bottom: 12px;
+  padding: 6px 10px 0 10px !important;
+  margin: 0 !important;
 
   @media (min-width: 1360px) {
     grid-area: panel;
-    margin-bottom: 0;
+    margin: 0 !important;
+    padding: 16px 16px 0 16px !important;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     width: 100%;
+    background: Rgba(0, 0, 0, 0.15); // Fondo sutil integrado
+    border-top: 1px solid Rgba(255, 255, 255, 0.05);
   }
 }
 
 .battle-actions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+  gap: 0;
   grid-auto-rows: 1fr;
-  margin-bottom: 12px;
+  margin-bottom: 0;
   width: 100%;
 
   @media (max-width: 400px) {
@@ -31,16 +34,16 @@
 
   @media (min-width: 1360px) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: 0;
+    margin-bottom: 0;
   }
 }
 
 .move-btn {
-  @include glass(Rgba(10, 10, 14, 0.95), 12px);
+  @include glass(Rgba(10, 10, 14, 0.95), 0); // Radio 0
   border: 1px solid Rgba(255,255,255,0.05) !important;
   border-left: 4px solid var(--move-color, Rgba(255, 255, 255, 0.1)) !important;
-  border-radius: 12px;
+  border-radius: 0;
   padding: 10px 8px;
   color: $white !important;
   cursor: pointer;
@@ -125,7 +128,7 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   grid-template-rows: auto auto;
-  gap: 12px;
+  gap: 0;
   width: 100%;
   
   #btn-switch { grid-column: 1; grid-row: 1; }

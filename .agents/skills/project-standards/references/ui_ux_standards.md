@@ -77,7 +77,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **MANDATORY**: Use **Capitalized** `TranslateY()` and `Rotate()` for SASS compliance.
 - **Cycle**: A slow 4-second `infinite ease-in-out` loop is recommended for an organic feel.
 - **Pixel Art Sharpness**: NEVER use non-integer `Scale()` transformations on pixel art elements (sprites, icons) as it causes interpolation blur. Prefer subtle `TranslateY()` for hover feedback.
-- **Night Cycle Lighting**: Atmospheric and weather effects must adapt to the night cycle. For the specific logic rules (illumination overrides, tints), ver [game_mechanics_manual.md](./game_mechanics_manual.md).
+- **Night Cycle Lighting**: Atmospheric and weather effects must adapt to the night cycle. For the specific logic rules (illumination overrides, tints), see [game_mechanics_manual.md](./game_mechanics_manual.md).
 
 ---
 
@@ -140,7 +140,7 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Typography**: Must use `'Press Start 2P'` with `@include pixelated`.
 - **Constraint**: Primary action buttons (yellow) MUST follow this pattern to maintain visual parity.
 - **Active State Unification**: Selected/Active buttons (`.active`) MUST preserve their 3D shadow depth. Use a 2px white solid border and a selection glow (`box-shadow`), but keep the dark bottom shadow to avoid a "flat" or "broken" look.
-- **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. ver [game_mechanics_manual.md](./game_mechanics_manual.md) para las reglas de visibilidad.
+- **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. see [game_mechanics_manual.md](./game_mechanics_manual.md) for visibility rules.
 
 > [!IMPORTANT]
 > **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.
@@ -160,6 +160,8 @@ To ensure a seamless transition between full-map exploration and focused modal i
 - **Entrance Timing**: Activate simplification **AFTER** the entrance animation of the first obscuring modal is complete. This avoids a visual "pop" during the fade-in.
 - **Exit Timing**: Restore the full-fidelity map **AS SOON AS** the closing animation of the last obscuring modal begins. This provides a premium feel by letting the user see the world return while the overlay disappears.
 - **Persistence**: The simplified state must remain active as long as any obscuring modal exists in the LIFO stack.
+- **Battle Modal Jitter**: Combat arenas and control panels MUST use `overflow: hidden !important` (or `overflow: clip`) to prevent unintended scrollbars during scaling animations or VFX.
+- **Selective Targeting**: Selection modals (`PokemonSelectionModal`) MUST support and use the `allowedIds` filter when a specific context (like item usage) restricts the valid targets. This eliminates noise and prevents user error.
 
 ---
 

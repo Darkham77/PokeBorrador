@@ -1,102 +1,102 @@
-# Manual de Fórmulas y Ratios Matemáticos (Poké Vicio)
+# Game Formulas and Mathematical Ratios Manual (Poké Vicio)
 
-Este manual documenta las fórmulas matemáticas y constantes de balance que rigen el motor de juego. Cualquier cambio en estos valores debe ser reflejado aquí para mantener la coherencia del diseño.
+This manual documents the mathematical formulas and balance constants that govern the game engine. Any changes to these values must be reflected here to maintain design consistency.
 
-## ⚔️ Fórmulas de Combate
+## ⚔️ Combat Formulas
 
-### 1. Cálculo de Daño (Core V5)
-Inspirado en Gen 4 con modificaciones para balance de juego web.
+### 1. Damage Calculation (Core V5)
+Inspired by Gen 4 with modifications for web game balance.
 ```text
-Daño = Math.floor(((2 * Nivel / 5 + 2) * Poder * (A / D)) / 50) + 2
+Damage = Math.floor(((2 * Level / 5 + 2) * Power * (A / D)) / 50) + 2
 ```
-*Donde:*
-- **A (Ataque)**: Incluye quemadura (x0.5) y multiplicadores de Naturaleza/Habilidad.
-- **D (Defensa)**: Incluye multiplicadores de Naturaleza/Habilidad.
-- **Modificadores Finales**: `Daño * STAB * Efectividad * Factor_Random (0.85-1.0) * Crítico * Clima * Items`.
+*Where:*
+- **A (Attack)**: Includes burn (x0.5) and Nature/Ability multipliers.
+- **D (Defense)**: Includes Nature/Ability multipliers.
+- **Final Modifiers**: `Damage * STAB * Effectiveness * Random_Factor (0.85-1.0) * Critical * Weather * Items`.
 
-### 2. Multiplicadores de Stage (-6 a +6)
+### 2. Stage Multipliers (-6 to +6)
 | Stage | -6 | -5 | -4 | -3 | -2 | -1 | 0 | +1 | +2 | +3 | +4 | +5 | +6 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Stat** | 0.25 | 0.28 | 0.33 | 0.40 | 0.50 | 0.66 | 1.0 | 1.5 | 2.0 | 2.5 | 3.0 | 3.5 | 4.0 |
 | **Acc/Eva** | 0.33 | 0.37 | 0.43 | 0.50 | 0.60 | 0.75 | 1.0 | 1.33 | 1.66 | 2.0 | 2.33 | 2.66 | 3.0 |
 
-### 3. Fórmula de Captura
+### 3. Capture Formula
 ```text
-Factor_HP = (3 * HP_Max - 2 * HP_Actual) / (3 * HP_Max)
-FinalRate = Math.min(255, Math.floor(Ratio_Base * Multiplicador_Ball * Factor_HP * Multiplicador_Estado))
-Captura = Random(0-255) < FinalRate
+HP_Factor = (3 * HP_Max - 2 * HP_Actual) / (3 * HP_Max)
+FinalRate = Math.min(255, Math.floor(Base_Ratio * Ball_Multiplier * HP_Factor * Status_Multiplier))
+Capture = Random(0-255) < FinalRate
 ```
-*Multiplicadores:*
-- **Ball**: Poké (1.0), Super (1.5), Ultra (2.0), Master (Siempre 255).
-- **Estado**: Sueño/Congelación (2.0), Otros estados (1.5).
+*Multipliers:*
+- **Ball**: Poké (1.0), Great (1.5), Ultra (2.0), Master (Always 255).
+- **Status**: Sleep/Freeze (2.0), Other status conditions (1.5).
 
 ---
 
-## 📈 Ratios de Probabilidad Global
+## 📈 Global Probability Ratios
 
-- **Shiny Rate**: 1 entre 3000 encuentros.
-- **Rival (Blue)**: 0.1% de probabilidad en cualquier mapa.
-- **Legendarios (Ticket Activo)**:
-    - **Articuno**: 1% en Islas Espuma.
-    - **Mewtwo**: 0.1% en Cueva Celeste.
-- **Objetos Salvajes**: 50% de probabilidad (Común) / 5% (Raro).
+- **Shiny Rate**: 1 in 3000 encounters.
+- **Rival (Blue)**: 0.1% probability on any map.
+- **Legendaries (Active Ticket)**:
+    - **Articuno**: 1% in Seafoam Islands.
+    - **Mewtwo**: 0.1% in Cerulean Cave.
+- **Wild Items**: 50% probability (Common) / 5% (Rare).
 
 ---
 
-## 🆙 Curva de Experiencia y Nivel
+## 🆙 Experience and Level Curve
 
-### 1. Experiencia Necesaria
-El sistema utiliza un escalado dinámico por nivel:
+### 1. Required Experience
+The system uses a dynamic level-based scaling:
 ```text
-XP_Siguiente_Nivel = Math.floor(XP_Actual * 1.2)
+Next_Level_XP = Math.floor(Current_XP * 1.2)
 ```
 
-### 2. Ganancia de EXP
+### 2. EXP Gain
 ```text
-Exp = floor(ExpBase * Reparto * MultClase * MultGlobal)
+Exp = floor(BaseExp * Distribution * ClassMult * GlobalMult)
 ```
-- **ExpBase**: `Nivel_Enemigo * 4`.
-- **Reparto**: 1.0 (Activo), 0.5 (Compartir EXP).
+- **BaseExp**: `Enemy_Level * 4`.
+- **Distribution**: 1.0 (Active), 0.5 (EXP Share).
 
 ---
 
-## 🧬 Estadísticas (Stats)
+## 🧬 Statistics (Stats)
 
-- **Puntos de Salud (PS)**:
-  `PS = floor((Base * 2 + IV) * Nivel / 100 + Nivel + 10)`
-- **Stats de Combate (Atk, Def, etc)**:
-  `Stat = floor(floor((Base * 2 + IV) * Nivel / 100 + 5) * Naturaleza)`
-  *Naturaleza*: Favorable (1.1), Desfavorable (0.9), Neutra (1.0).
+- **Health Points (HP)**:
+  `HP = floor((Base * 2 + IV) * Level / 100 + Level + 10)`
+- **Combat Stats (Atk, Def, etc)**:
+  `Stat = floor(floor((Base * 2 + IV) * Level / 100 + 5) * Nature)`
+  *Nature*: Favorable (1.1), Unfavorable (0.9), Neutral (1.0).
 
 ---
 
-## 🪙 Precios de Mercado Negro (Rocket)
+## 🪙 Black Market Prices (Rocket)
 
-Fórmula de valoración para la venta de Pokémon en el mercado ilegal:
+Valuation formula for selling Pokémon on the illegal market:
 ```text
-Precio = floor((Nivel * 50 + (TotalIVs / 186) * 500) * 0.8)
+Price = floor((Level * 50 + (TotalIVs / 186) * 500) * 0.8)
 ```
-*Donde*: `TotalIVs` es la suma de los 6 stats (máx 186).
+*Where*: `TotalIVs` is the sum of the 6 stats (max 186).
 
 ---
 
-## 🎲 Ratios y Probabilidades (`GAME_RATIOS`)
+## 🎲 Ratios and Probabilities (`GAME_RATIOS`)
 
-- **Shiny Rate**: 1 en 3000 (Base). Afectado por multiplicadores de evento y dominancia de guerra.
-- **Encuentro Rival**: 0.1% en cualquier mapa.
-- **Pesca**: 10% base en mapas con agua.
-- **Held Items (Salvajes)**: Común (50%), Raro (5%).
-- **Gym TMs**: Normal (3%), Difícil (5%).
+- **Shiny Rate**: 1 in 3000 (Base). Affected by event multipliers and war dominance.
+- **Rival Encounter**: 0.1% on any map.
+- **Fishing**: 10% base on water maps.
+- **Held Items (Wild)**: Common (50%), Rare (5%).
+- **Gym TMs**: Normal (3%), Hard (5%).
 
 ---
 
-## ❄️ Sistema Determinista (Weather & PRNG)
+## ❄️ Deterministic System (Weather & PRNG)
 
 ### 1. Mulberry32 PRNG
-Se utiliza una semilla basada en `hashString(mapId) + epochHour` para garantizar que el clima sea el mismo para todos los jugadores en la misma hora y ruta.
+A seed based on `hashString(mapId) + epochHour` is used to ensure the weather is the same for all players at the same hour and route.
 
 ### 2. Avalanche Protocol
-Para romper la correlación inicial de la semilla, el motor **DEBE** descartar los primeros 3 valores generados por el PRNG:
+To break the initial seed correlation, the engine **MUST** discard the first 3 values generated by the PRNG:
 ```js
 const prng = mulberry32(seed);
 prng(); // Discard 1

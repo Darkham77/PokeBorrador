@@ -1,92 +1,93 @@
-# Manual del Sistema de Ítems (Poké Vicio)
+# Item System Manual (Poké Vicio)
 
-Este manual define la estructura, categorías y protocolos de validación para todos los ítems del juego.
+This manual defines the structure, categories, and validation protocols for all in-game items.
 
-## 📦 Estructura de Datos
+## 📦 Data Structure
 
-Los ítems se gestionan en `src/data/items.js` a través de dos objetos principales:
+Items are managed in `src/data/items.js` through two main objects:
 
-### 1. `SHOP_ITEMS` (Catálogo)
+### 1. `SHOP_ITEMS` (Catalog)
 
-Define cómo se ve y cuánto cuesta el ítem.
+Defines how the item looks and how much it costs.
 
 ```js
 {
   id: 'snake_case_id',
-  name: 'Nombre Visible',
+  name: 'Visible Name',
   cat: 'healing|held|tm|breeding|special|stone',
   sprite: 'URL_pixel_art',
   icon: 'emoji',
   price: 1000,
-  desc: 'Descripción...',
-  effect: (qty) => { inventoryStore.addItem('Nombre', qty); }
+  desc: 'Description...',
+  effect: (qty) => { inventoryStore.addItem('Name', qty); }
 }
 ```
 
-### 2. `HEALING_ITEMS` (Lógica Usable)
+### 2. `itemEffects.js` (Usable Logic)
 
-Define qué hace el ítem al usarse sobre un Pokémon o globalmente.
+Defines what the item does when used on a Pokémon or globally.
 
-- Retorno `null`: No se cumple condición (ej. HP lleno). El ítem **NO** se consume.
-- Retorno `'deferred'`: Abre un modal.
-- Retorno `string`: Mensaje de éxito. El ítem se consume automáticamente.
-
----
-
-## 💰 Economía de Ítems
-
-- **Precio de Venta**: Los ítems se venden por el **50%** de su valor de compra (`price * 0.5`).
-- **Batch Selling**: El sistema permite la venta masiva de ítems, calculando el beneficio total antes de confirmar.
+- **Pre-validation (`isValidTarget`)**: ALWAYS check targets before opening selection modals. If no targets exist, do NOT open the selector and notify the user via Toast.
+- **Consumption**: The item is automatically consumed upon success.
+- **Battle Mode**: In combat, the selection modal MUST use the `allowedIds` filter to ONLY show valid targets (e.g., only fainted Pokémon for Revives).
+- **Failure Handling**: If an item application fails, do NOT close the inventory. Notify the cause and let the user retry.
 
 ---
 
-## 📖 Uso de TMs y Evolución
+## 💰 Item Economy
 
-### 1. Máquinas Técnicas (TMs)
-
-- **Aprendizaje**: Si el Pokémon tiene < 4 movimientos, aprende el nuevo instantáneamente.
-- **Queue**: Si tiene 4 movimientos, se añade a una cola de aprendizaje (`learnQueue`) para que el usuario elija cuál olvidar.
-- **Consumo**: El ítem se consume únicamente después de confirmar el aprendizaje.
-
-### 2. Piedras Evolutivas
-
-- **Validación**: El ítem solo aparece como "Usable" si el Pokémon tiene una evolución definida con ese ítem específico en `evolutionData.js`.
-- **Trigger**: Activa la escena de evolución de Phaser antes de consumir el objeto.
-
-### 3. Objetos Especiales (Held Items)
-
-- **Equipamiento**: Al equipar un ítem, si el Pokémon ya tenía uno, este regresa automáticamente al inventario.
-- **Restricción de Batalla**: No se pueden equipar/desequipar ítems durante un combate activo.
+- **Selling Price**: Items are sold for **50%** of their purchase value (`price * 0.5`).
+- **Batch Selling**: The system allows for the bulk sale of items, calculating the total profit before confirming.
 
 ---
 
-## 🛠️ Categorías Funcionales (`cat`)
+## 📖 Use of TMs and Evolution
 
-| Categoría | Uso Principal | Entrada en `HEALING_ITEMS` |
+### 1. Technical Machines (TMs)
+
+- **Learning**: If the Pokémon has < 4 moves, it learns the new one instantly.
+- **Queue**: If it has 4 moves, it is added to a learning queue (`learnQueue`) for the user to choose which one to forget.
+- **Consumption**: The item is consumed only after confirming the learning.
+
+### 2. Evolutionary Stones
+
+- **Validation**: The item only appears as "Usable" if the Pokémon has an evolution defined with that specific item in `evolutionData.js`.
+- **Trigger**: Activates the Phaser evolution scene before consuming the object.
+
+### 3. Special Objects (Held Items)
+
+- **Equipping**: When equipping an item, if the Pokémon already had one, it automatically returns to the inventory.
+- **Battle Restriction**: Items cannot be equipped/unequipped during active combat.
+
+---
+
+## 🛠️ Functional Categories (`cat`)
+
+| Category | Primary Use | Entry in `HEALING_ITEMS` |
 | :--- | :--- | :--- |
-| `healing` | Curación, PP, Estados | ✅ Obligatoria |
-| `held` | Equipable en Pokémon (`type: 'held'`) | ❌ Prohibida |
-| `tm` | Enseñar movimientos | ✅ Obligatoria |
-| `stone` | Evolución | ✅ Obligatoria |
-| `special` | Buffs globales, Repelentes | ✅ Obligatoria |
+| `healing` | Healing, PP, Status | ✅ Mandatory |
+| `held` | Equippable on Pokémon (`type: 'held'`) | ❌ Forbidden |
+| `tm` | Teach moves | ✅ Mandatory |
+| `stone` | Evolution | ✅ Mandatory |
+| `special` | Global buffs, Repels | ✅ Mandatory |
 
 ---
 
-## 🚀 Protocolo para Agregar Ítems
+## 🚀 Protocol for Adding Items
 
-1. **Registro**: Agregar entrada en `SHOP_ITEMS`.
-2. **Lógica**: Si es usable, agregar función en `HEALING_ITEMS`.
-3. **Restricción de Combate**: Si no es usable en batalla, agregarlo a la lista `nonCombat` en `items.js`.
-4. **Validación**: Ejecutar el script:
+1. **Registration**: Add entry in `SHOP_ITEMS`.
+2. **Logic**: If usable, add function in `HEALING_ITEMS`.
+3. **Battle Restriction**: If not usable in battle, add it to the `nonCombat` list in `items.js`.
+4. **Validation**: Run the script:
 
-   ```bash
-   node .agents/skills/item-validator/scripts/validate_items.js
-   ```
+    ```bash
+    node .agents/skills/item-validator/scripts/validate_items.js
+    ```
 
 ---
 
-## 🚨 Reglas de Integridad
+## 🚨 Integrity Rules
 
-- **Detección de Assets**: El sistema busca palabras clave (ball, stone, potion) para resolver assets de PokeAPI. Si el ítem no sigue estas convenciones, debe mapearse manualmente en el resolver.
-- **Normalización**: Los IDs y nombres se tratan como case-insensitive en la lógica, pero los archivos de assets deben estar en minúsculas.
-- **Transparencia Financiera**: Todas las operaciones de venta masiva deben mostrar el beneficio total estimado en el diálogo de confirmación.
+- **Asset Detection**: The system looks for keywords (ball, stone, potion) to resolve assets from PokeAPI. If the item does not follow these conventions, it must be manually mapped in the resolver.
+- **Normalization**: IDs and names are treated as case-insensitive in the logic, but asset files must be in lowercase.
+- **Financial Transparency**: All bulk sale operations must show the total estimated profit in the confirmation dialog.

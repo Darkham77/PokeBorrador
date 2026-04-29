@@ -75,7 +75,7 @@
       }
 
       &.money .value {
-        color: #4ade80;
+        color: var(--green);
         text-shadow: 0 0 15px Rgba(74, 222, 128, 0.2);
       }
     }

@@ -173,9 +173,9 @@ function removeMove(slotIndex) {
       &.btn-random-fill {
         background: Rgba(255, 170, 0, 0.1);
         border-color: Rgba(255, 170, 0, 0.2);
-        color: #ffaa00;
+        color: var(--yellow);
         
-        &:hover { background: #ffaa00; color: white; }
+        &:hover { background: var(--yellow); color: $black; }
       }
       
       &:hover {

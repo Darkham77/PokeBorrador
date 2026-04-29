@@ -46,7 +46,7 @@
   border: 1px solid Rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
-  z-index: var(--z-base);
+  z-index: 10 !important;
   pointer-events: auto;
   transition: all 0.2s ease;
 
@@ -54,7 +54,7 @@
     transform: Scale(1.05);
     @include glass-solid(Rgba(0, 0, 0, 0.95));
     border-color: Rgba(255, 255, 255, 0.4);
-    z-index: var(--z-base);
+    z-index: 10 !important;
   }
 }
 
@@ -96,7 +96,7 @@
   position: absolute;
   bottom: 15px;
   left: 12px;
-  z-index: var(--z-base);
+  z-index: 10 !important;
 }
 
 .interactive-pill {

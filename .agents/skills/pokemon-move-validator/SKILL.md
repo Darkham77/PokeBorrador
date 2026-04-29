@@ -1,19 +1,19 @@
 ---
 name: pokemon-move-validator
-description: Validador de movimientos. Delega las reglas de negocio y schemas al manual `@/project-standards/references/validation_manual.md`.
+description: Move validator. Delegates business rules and schemas to the `@/project-standards/references/validation_manual.md` manual.
 ---
 
-# Skill: Validador de Movimientos
+# Skill: Move Validator
 
 > [!IMPORTANT]
-> Todo cambio en `MOVE_DATA` o en la lógica de combate DEBE ser validado siguiendo los protocolos del [Manual de Validación](../project-standards/references/validation_manual.md).
+> Any change in `MOVE_DATA` or combat logic MUST be validated following the protocols in the [Validation Manual](../project-standards/references/validation_manual.md).
 
-## Scripts de Validación
+## Validation Scripts
 
-Ejecuta estos scripts después de modificar cualquier movimiento:
+Run these scripts after modifying any move:
 
-1. **Estructura**: `node .agents/skills/pokemon-move-validator/scripts/validator.js`
+1. **Structure**: `node .agents/skills/pokemon-move-validator/scripts/validator.js`
 2. **PokeAPI Sync**: `node .agents/skills/pokemon-move-validator/scripts/pokeapi_sync.js`
-3. **Integridad de Batalla**: `node .agents/skills/pokemon-move-validator/scripts/check_battle_integrity.js`
+3. **Battle Integrity**: `node .agents/skills/pokemon-move-validator/scripts/check_battle_integrity.js`
 
-Para el schema detallado de `MOVE_DATA` y reglas de daño, consulta el manual de estándares.
+For the detailed `MOVE_DATA` schema and damage rules, consult the standards manual.

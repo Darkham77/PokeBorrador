@@ -63,6 +63,11 @@ function getPokemonFX(p) {
   }
 }
 
+function needsHealing(p) {
+  if (!p) return false
+  return p.hp < p.maxHp || p.status || p.moves?.some(m => m.pp < (m.maxPP || 0))
+}
+
 async function handleHeal() {
   if (cost.value === 0) {
     const damagedCount = team.value.filter(p => p.hp < p.maxHp || p.status || p.moves.some(m => m.pp < (m.maxPP || 0))).length
@@ -143,6 +148,9 @@ onMounted(() => {
     max-width="360px"
     variant="retro"
     padding="raw"
+    :show-close-button="false"
+    :close-on-click-outside="false"
+    :prevent-close="isHealing"
     @close="handleClose"
   >
     <div class="heal-modal-inner">
@@ -174,6 +182,14 @@ onMounted(() => {
               :sparkle-count="8"
               :vibrant="true"
             >
+              <!-- Indicator for injured/PP-depleted Pokemon -->
+              <div 
+                v-if="needsHealing(p)" 
+                class="needs-heal-badge"
+              >
+                🚑
+              </div>
+
               <!-- Type Glow Aura -->
               <div class="type-aura" />
               
@@ -181,6 +197,7 @@ onMounted(() => {
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id || p.name, { shiny: p.shiny })" 
                 class="poke-sprite"
                 :alt="p.name"
+                @error="e => e.target.style.display = 'none'"
               >
             </PVSpriteFX>
           </div>
@@ -234,17 +251,7 @@ onMounted(() => {
               class="rocket-surcharge"
             >Recargo: Criador Profesional</small>
           </div>
-          <div
-            v-else
-            class="free-notice"
-          >
-            <div class="pixel-nurse">
-              👩‍⚕️
-            </div>
-            <p class="free-msg">
-              ¡Hola! Restauraremos a tus Pokémon al instante. El servicio es gratuito para entrenadores.
-            </p>
-          </div>
+          <!-- Sección eliminada por redundancia -->
         </div>
       </div>
     </div>
@@ -252,6 +259,7 @@ onMounted(() => {
     <template #footer>
       <div class="heal-actions">
         <button 
+          v-if="cost > 0"
           class="btn-heal-primary" 
           :disabled="isHealing || team.length === 0 || (cost > 0 && gameStore.state.money < cost)"
           @click.stop="handleHeal"
@@ -259,6 +267,7 @@ onMounted(() => {
           {{ isHealing ? 'CURANDO...' : 'CURAR EQUIPO' }}
         </button>
         <button
+          v-if="cost > 0"
           class="btn-cancel-secondary"
           :disabled="isHealing"
           @click.stop="handleClose"
@@ -346,6 +355,22 @@ onMounted(() => {
   z-index: calc(var(--z-base) + 1);
 }
 
+.needs-heal-badge {
+  position: absolute;
+  top: 4px;
+  right: 0px;
+  font-size: 14px;
+  z-index: var(--z-low);
+  filter: Drop-Shadow(0 0 5px Rgba(239, 68, 68, 0.5));
+  animation: bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes bounce-in {
+  0% { transform: Scale(0) Rotate(-20deg); }
+  70% { transform: Scale(1.2) Rotate(10deg); }
+  100% { transform: Scale(1) Rotate(0deg); }
+}
+
 .slot.active {
   .type-aura { opacity: 0.3; }
   .poke-sprite { filter: Grayscale(0) Brightness(1); }
@@ -378,17 +403,26 @@ onMounted(() => {
   &::before {
     content: '';
     position: absolute;
-    inset: -2px;
+    inset: -1px;
     border-radius: inherit;
-    border: 1px solid var(--tier-color);
-    opacity: 0.5;
-    animation: rotate-border 4s linear infinite;
+    border: 2px solid var(--tier-color);
+    opacity: 0.6;
+    animation: pulse-tier 2s ease-in-out infinite;
+    pointer-events: none;
   }
 }
 
-@keyframes rotate-border {
-  from { transform: Rotate(0deg); }
-  to { transform: Rotate(360deg); }
+@keyframes pulse-tier {
+  0%, 100% { 
+    transform: Scale(1);
+    opacity: 0.5;
+    box-shadow: 0 0 5px var(--tier-color);
+  }
+  50% { 
+    transform: Scale(1.05);
+    opacity: 0.8;
+    box-shadow: 0 0 20px var(--tier-color);
+  }
 }
 
 @keyframes pulse-aura {

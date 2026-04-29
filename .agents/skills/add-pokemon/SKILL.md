@@ -1,41 +1,41 @@
 ---
 name: add-pokemon
-description: Orquestador para agregar nuevos Pokémon al sistema. Utiliza los scripts de fetch y delega todas las reglas de integridad y formato al manual `@/project-standards/references/content_creation_manual.md`.
+description: Orchestrator for adding new Pokémon to the system. Uses fetch scripts and delegates all integrity and formatting rules to the `@/project-standards/references/content_creation_manual.md` manual.
 ---
 
-# Skill: Agregar Pokémon (Orquestador)
+# Skill: Add Pokémon (Orchestrator)
 
 > [!IMPORTANT]
-> Esta skill es un orquestador de pasos. Antes de realizar cualquier cambio en los archivos de datos, **DEBES** leer y seguir estrictamente el [Manual de Creación de Contenido](../project-standards/references/content_creation_manual.md).
+> This skill is a step orchestrator. Before making any changes to data files, you **MUST** read and strictly follow the [Content Creation Manual](../project-standards/references/content_creation_manual.md).
 
-## Flujo de Trabajo Estándar
+## Standard Workflow
 
-### 1. Obtención de Datos Automática
+### 1. Automatic Data Fetching
 
-Utiliza el script de fetch para generar los bloques de código base:
+Use the fetch script to generate base code blocks:
 
 ```bash
-node .agents/skills/add-pokemon/scripts/fetch_pokemon.js <nombre_en_ingles>
+node .agents/skills/add-pokemon/scripts/fetch_pokemon.js <english_name>
 ```
 
-### 2. Integración de Código
+### 2. Code Integration
 
-Sigue el orden de integración definido en el manual de estándares:
+Follow the integration order defined in the standards manual:
 
 1. `POKEMON_DB` (`pokemonDB.js`)
-2. Tipos Secundarios (`types.js`)
-3. Habilidades (`abilities.js`)
-4. Evoluciones (`evolutionData.js`)
-5. Pokédex y MTs (`pokedexConstants.js`)
+2. Secondary Types (`types.js`)
+3. Abilities (`abilities.js`)
+4. Evolutions (`evolutionData.js`)
+5. Pokédex and TMs (`pokedexConstants.js`)
 
-### 3. Validación y Verificación
+### 3. Validation and Verification
 
-1. **Validadores**: Ejecuta los validadores de movimientos y habilidades detallados en el [Manual de Validación](../project-standards/references/validation_manual.md).
-2. **CLI-First**: Verifica el nuevo Pokémon en el navegador usando los comandos de `window.__VITE_DEBUG__` especificados en el [Manual de Testing](../project-standards/references/browser_testing_manual.md).
+1. **Validators**: Run the move and ability validators detailed in the [Validation Manual](../project-standards/references/validation_manual.md).
+2. **CLI-First**: Verify the new Pokémon in the browser using the `window.__VITE_DEBUG__` commands specified in the [Testing Manual](../project-standards/references/browser_testing_manual.md).
 
 ---
 
-## Referencias de Implementación
+## Implementation References
 
 - **PokeAPI**: `https://pokeapi.co/`
-- **Estándares del Proyecto**: [project-standards](../project-standards/SKILL.md)
+- **Project Standards**: [project-standards](../project-standards/SKILL.md)

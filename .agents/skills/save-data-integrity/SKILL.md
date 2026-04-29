@@ -1,17 +1,17 @@
 ---
 name: save-data-integrity
-description: Garantiza la integridad de los datos de guardado. Delega las reglas técnicas al manual `@/project-standards/references/save_system_manual.md`.
+description: Ensures the integrity of save data. Delegates technical rules to the `@/project-standards/references/save_system_manual.md` manual.
 ---
 
-# Skill: Integridad de Guardado
+# Skill: Save Integrity
 
 > [!IMPORTANT]
-> Todo cambio en los Stores de Pinia o en la lógica de persistencia DEBE seguir las reglas del [Manual del Sistema de Guardado](../project-standards/references/save_system_manual.md).
+> Any change in Pinia Stores or persistence logic MUST follow the rules in the [Save System Manual](../project-standards/references/save_system_manual.md).
 
-## Foco de la Skill
+## Skill Focus
 
-- **Compatibilidad**: Asegurar que los usuarios antiguos no pierdan progreso tras una actualización.
-- **Sincronización**: Verificar la paridad entre Supabase y el almacenamiento local (WASM SQLite).
-- **Atocimidad**: Evitar guardados parciales o corruptos durante operaciones masivas.
+- **Compatibility**: Ensure that legacy users do not lose progress after an update.
+- **Synchronization**: Verify parity between Supabase and local storage (WASM SQLite).
+- **Atomicity**: Avoid partial or corrupt saves during massive operations.
 
-Para protocolos específicos sobre migraciones de base de datos y paridad de esquemas, consulta el manual de estándares.
+For specific protocols on database migrations and schema parity, consult the standards manual.

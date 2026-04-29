@@ -6,7 +6,6 @@
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { useInventoryStore } from '@/stores/inventory';
 import { useEvolutionStore } from '@/stores/evolution';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { STONE_EVOLUTIONS } from '@/data/evolutionData';
@@ -21,7 +20,6 @@ const emit = defineEmits(['close']);
 
 const gameStore = useGameStore();
 const uiStore = useUIStore();
-const inventoryStore = useInventoryStore();
 const evolutionStore = useEvolutionStore();
 
 const pokemon = computed(() => uiStore.selectedPokemon);
@@ -44,7 +42,6 @@ const options = computed(() => {
 
 const close = () => {
   emit('close');
-  inventoryStore.closeItemTargetModal();
 };
 
 const useStone = (stoneName, toId) => {

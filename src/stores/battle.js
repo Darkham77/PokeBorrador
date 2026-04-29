@@ -37,6 +37,7 @@ export const useBattleStore = defineStore('battle', () => {
   const playerStages = ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 })
   const enemyStages = ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 })
   const upcomingPokemon = ref(null)
+  const debugLoopPokemon = ref(null) // Plantilla para bucle infinito debug
 
   const player = computed(() => activeBattle.value?.player)
   const enemy = computed(() => activeBattle.value?.enemy)
@@ -105,7 +106,12 @@ export const useBattleStore = defineStore('battle', () => {
     enemyPoke.confused = 0; enemyPoke.flinched = false
 
     const { useMapStore } = await import('./map')
+    const { sanitizePokemon } = await import('@/logic/pokemonFactory')
     const mapStore = useMapStore()
+
+    // Saneamiento de emergencia antes de empezar
+    sanitizePokemon(playerPoke)
+    sanitizePokemon(enemyPoke)
     
     // IMPORTANTE: Seteamos el combate ANTES de quitar isFinishing 
     // para que la sombra y otros elementos no parpadeen
@@ -115,6 +121,15 @@ export const useBattleStore = defineStore('battle', () => {
       weather: { type: mapStore.currentWeather || 'clear', turns: -1 },
       playerTeamIndex: gs.state.team.indexOf(playerPoke),
       participants: [playerPoke.uid], learnQueue: [], ...battleOptions
+    }
+
+    // Si es un encuentro de debug, lo guardamos para el bucle infinito
+    if (battleOptions.isDebug) {
+      debugLoopPokemon.value = JSON.parse(JSON.stringify(enemyPoke))
+    } else {
+      // Si iniciamos un combate normal, rompemos el bucle de debug previo si existía
+      // a menos que sea una navegación normal donde el próximo ya estaba pre-seteadp
+      if (!isSearching.value) debugLoopPokemon.value = null
     }
 
     persistBattle()
@@ -246,31 +261,44 @@ export const useBattleStore = defineStore('battle', () => {
     }
     
     if (fled) {
-      // Si el jugador huye, cerrar el combate inmediatamente y volver al mapa
       await completeBattleFlow('map')
     } else {
+      // 1. Activar estado de finalización para mostrar recompensas/opciones
       isFinishing.value = true
       
-      // Pre-generar el próximo encuentro si es una batalla salvaje y ganamos
+      // 2. Pre-generar el próximo encuentro
       const isWild = !activeBattle.value.isTrainer && !activeBattle.value.isGym
       if (isWild && activeBattle.value.enemy.hp <= 0) {
-        const { generateEncounter } = await import('@/logic/encounters')
-        const { useMapStore } = await import('./map')
-        const { useEventStore } = await import('./events')
-        const mapStore = useMapStore()
-        const eventStore = useEventStore()
-        
-        const encounter = await generateEncounter(activeBattle.value.locationId, gs.state, {
-          activeEvents: mapStore.activeEvents,
-          dominanceData: mapStore.mapWinners,
-          shinyMultiplier: eventStore.globalMultipliers?.shiny || 1
-        })
-        
-        if (encounter && encounter.type === 'wild') {
-          console.log('[BATTLE] Pre-generado próximo encuentro:', encounter.pokemon.name)
-          upcomingPokemon.value = encounter.pokemon
+        // PRIORIDAD: Modo Debug (Bucle Infinito)
+        if (debugLoopPokemon.value) {
+          try {
+            const nextPoke = JSON.parse(JSON.stringify(debugLoopPokemon.value))
+            nextPoke.hp = nextPoke.maxHp
+            nextPoke.status = null
+            nextPoke.confused = 0
+            nextPoke.flinched = false
+            upcomingPokemon.value = nextPoke
+            // Forzar reactividad para que aparezca en los arbustos
+            upcomingPokemon.value = { ...upcomingPokemon.value }
+            console.log('[DEBUG] Bucle infinito preparado:', nextPoke.name)
+          } catch (e) {
+            console.error('[DEBUG] Error clonando pokemon de bucle:', e)
+          }
         } else {
-          console.warn('[BATTLE] No se pudo pre-generar encuentro:', encounter?.type)
+          // MODO NORMAL: Generar encuentro aleatorio
+          const { generateEncounter } = await import('@/logic/encounters')
+          const { useMapStore } = await import('./map')
+          const { useEventStore } = await import('./events')
+          
+          const encounter = await generateEncounter(activeBattle.value.locationId, gs.state, {
+            activeEvents: useMapStore().activeEvents,
+            dominanceData: useMapStore().mapWinners,
+            shinyMultiplier: useEventStore().globalMultipliers?.shiny || 1
+          })
+          
+          if (encounter && encounter.type === 'wild') {
+            upcomingPokemon.value = encounter.pokemon
+          }
         }
       }
     }
@@ -368,8 +396,12 @@ export const useBattleStore = defineStore('battle', () => {
       // Flujo optimizado: Si ya tenemos el upcomingPokemon, entramos en combate directo
       if (upcomingPokemon.value) {
         const nextPoke = upcomingPokemon.value
-        await _startBattle(nextPoke, { locationId: locId })
-        upcomingPokemon.value = null // Limpiamos DESPUÉS de iniciar para que la sombra no parpadee
+        // IMPORTANTE: Si venimos de un bucle de debug, mantener la bandera para que no se limpie
+        await _startBattle(nextPoke, { 
+          locationId: locId,
+          battleOptions: { isDebug: !!debugLoopPokemon.value } 
+        })
+        upcomingPokemon.value = null 
         return
       }
 
@@ -410,7 +442,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   return {
     state: activeBattle, battleLogs, isBattleActive, isFinishing, isProcessing, player, enemy,
-    playerStages, enemyStages, attackerSide, activeMove, upcomingPokemon,
+    playerStages, enemyStages, attackerSide, activeMove, upcomingPokemon, debugLoopPokemon,
     syncFromLegacy, addLog, clearLogs, executeMove, persistBattle,
     flee: async () => { 
       if (isProcessing.value) return; 

@@ -20,24 +20,20 @@ const props = defineProps({
   multi: { type: Boolean, default: false },
   maxSelect: { type: Number, default: 1 },
   minSelect: { type: Number, default: 1 },
-  autoConfirm: { type: Boolean, default: false },
+  autoConfirm: { type: Boolean, default: true },
   callbackConfirm: { type: Function, default: null },
   onConfirm: { type: Function, default: null },
   // Battle context props
   isBattleSwitch: { type: Boolean, default: false },
   battleMode: { type: String, default: null }, // 'wild', 'pvp', 'war'
   activePokemonUid: { type: String, default: null },
-  preventClose: { type: Boolean, default: false }
+  preventClose: { type: Boolean, default: false },
+  allowDead: { type: Boolean, default: false },
+  // Filter by specific unique IDs (used for item application)
+  allowedIds: { type: Array, default: () => [] }
 })
 
 const { _getHpColor } = useBattleVisuals()
-
-const config = computed(() => {
-  return {
-    ...props,
-    onConfirm: props.callbackConfirm || props.onConfirm
-  }
-})
 
 let savedFilters = {}
 try {
@@ -62,15 +58,23 @@ watch([sortBy, sortOrder, activeTags, searchQuery], () => {
   }))
 }, { deep: true })
 
+const getPokemonTotalPower = (p) => {
+  if (!p) return 0;
+  const base = pokemonDataProvider.getPokemonData(p.id);
+  const s = base?.stats || base || {}
+  const TOT = (s.hp || 0) + (s.atk || 0) + (s.def || 0) + (s.spa || 0) + (s.spd || 0) + (s.spe || 0)
+  const ivs = p.ivs || {}
+  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
+  return TOT + totalIvs
+}
+
 const availablePokemon = computed(() => {
   const box = gameStore.state.box || []
   const team = gameStore.state.team || []
   
   let sourceList;
   
-  // Custom logic for different battle modes
-  if (config.value.battleMode === 'pvp') {
-    // PvP mode: only show pvpTeam
+  if (props.battleMode === 'pvp') {
     const pvpUids = gameStore.state.pvpTeam || []
     const allPokes = [...team, ...box]
     sourceList = allPokes
@@ -80,8 +84,7 @@ const availablePokemon = computed(() => {
         _source: team.some(tp => tp.uid === p.uid) ? 'team' : 'box',
         index: pvpUids.indexOf(p.uid) 
       }))
-  } else if (config.value.battleMode === 'war') {
-    // War mode: only show warTeam
+  } else if (props.battleMode === 'war') {
     const warUids = gameStore.state.warTeam || []
     const allPokes = [...team, ...box]
     sourceList = allPokes
@@ -91,12 +94,10 @@ const availablePokemon = computed(() => {
         _source: team.some(tp => tp.uid === p.uid) ? 'team' : 'box',
         index: warUids.indexOf(p.uid)
       }))
-  } else if (config.value.battleMode === 'wild' || config.value.isBattleSwitch) {
-    // Adventure/Wild mode: only show team
+  } else if (props.battleMode === 'wild' || props.isBattleSwitch) {
     sourceList = team.map((p, i) => ({ pokemon: p, _source: 'team', index: i }))
   } else {
-    // Default mode: include everything based on includeTeam prop
-    sourceList = config.value.includeTeam !== false
+    sourceList = props.includeTeam !== false
       ? [
           ...team.map((p, i) => ({ pokemon: p, _source: 'team', index: i })),
           ...box.map((p, i) => ({ pokemon: p, _source: 'box', index: i }))
@@ -104,17 +105,15 @@ const availablePokemon = computed(() => {
       : box.map((p, i) => ({ pokemon: p, _source: 'box', index: i }))
   }
 
-  // Filter
   let filtered = sourceList.filter(item => {
     const p = item.pokemon
     if (!p) return false
     if (p.onMission || p.inDaycare) return false
+    if (props.isBattleSwitch && props.activePokemonUid === p.uid) return false
+    if (props.isBattleSwitch && p.hp <= 0 && !props.allowDead) return false
     
-    // Filter out active pokemon in battle
-    if (config.value.isBattleSwitch && config.value.activePokemonUid === p.uid) return false
-    
-    // In battle, filter out fainted pokemon (unless the modal is not for switching)
-    if (config.value.isBattleSwitch && p.hp <= 0) return false
+    // Filter by specific allowed IDs
+    if (props.allowedIds && props.allowedIds.length > 0 && !props.allowedIds.includes(p.uid)) return false
     
     if (searchQuery.value) {
       const q = searchQuery.value.toLowerCase()
@@ -124,9 +123,8 @@ const availablePokemon = computed(() => {
       if (!matchName && !matchNick && !matchId) return false
     }
 
-    if (config.value.excludeUids && config.value.excludeUids.includes(p.uid)) return false
+    if (props.excludeUids && props.excludeUids.includes(p.uid)) return false
     
-    // Tags Filter
     if (activeTags.value.length > 0) {
       if (!activeTags.value.every(tag => {
         if (tag === 'shiny') return p.isShiny
@@ -139,7 +137,6 @@ const availablePokemon = computed(() => {
     return true
   })
 
-  // Sort
   return filtered.sort((a, b) => {
     const pA = a.pokemon
     const pB = b.pokemon
@@ -156,7 +153,6 @@ const availablePokemon = computed(() => {
       valA = getPokemonTotalPower(pA)
       valB = getPokemonTotalPower(pB)
     } else {
-      // Recent (usar el timestamp exacto si existe, si no fallback al index)
       valA = pA.obtainedAt || ((a._source === 'box' ? 1000 : 0) + a.index)
       valB = pB.obtainedAt || ((b._source === 'box' ? 1000 : 0) + b.index)
     }
@@ -176,31 +172,29 @@ function toggleSelection(item) {
   if (sIdx > -1) {
     selectedUids.value.splice(sIdx, 1)
   } else {
-    const maxSelect = config.value.maxSelect || 1
+    const maxSelect = props.maxSelect || 1
     if (selectedUids.value.length < maxSelect) {
       selectedUids.value.push(uid)
     } else if (maxSelect === 1) {
       selectedUids.value = [uid]
     }
   }
+
+  if (props.autoConfirm && selectedUids.value.length >= (props.minSelect || 1)) {
+    confirm()
+  }
 }
 
 function confirm() {
-  console.log('[DEBUG] PokemonSelection: confirm called', { selectedUids: selectedUids.value })
-  const minSelect = config.value.minSelect || 1
-  if (selectedUids.value.length < minSelect) {
-    console.warn('[DEBUG] PokemonSelection: Not enough items selected')
-    return
-  }
+  const minSelect = props.minSelect || 1
+  if (selectedUids.value.length < minSelect) return
   
   const selectedObjects = selectedUids.value.map(uid => {
     const item = availablePokemon.value.find(it => it.pokemon.uid === uid)
     return item ? item.pokemon : null
   }).filter(Boolean)
   
-  console.log('[DEBUG] PokemonSelection: selectedObjects to emit:', selectedObjects)
-  
-  const cb = config.value.onConfirm
+  const cb = props.callbackConfirm || props.onConfirm
   if (typeof cb === 'function') {
     cb(selectedObjects)
   }
@@ -242,25 +236,6 @@ function clearFilters() {
   activeTags.value = []
 }
 
-const getPokemonTotalPower = (p) => {
-  const getSpeciesKey = (name) => {
-    if (!name) return ''
-    const n = name.toLowerCase()
-    if (n.includes('♂')) return 'nidoran_m'
-    if (n.includes('♀')) return 'nidoran_f'
-    if (n.includes('mr.')) return 'mr_mime'
-    return n.replace(/[^a-z0-9]/g, '')
-  }
-  const speciesKey = getSpeciesKey(p.name)
-  const base = pokemonDataProvider.getPokemonData(speciesKey)
-  const s = base?.stats || base || {}
-  const TOT = (s.hp || 0) + (s.atk || 0) + (s.def || 0) + (s.spa || 0) + (s.spd || 0) + (s.spe || 0)
-  const ivs = p.ivs || {}
-  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
-  return TOT + totalIvs
-}
-
-
 if (typeof window !== 'undefined') {
   window._openPokemonSelectionModal = (opts) => {
     uiStore.open('PokemonSelection', { 
@@ -287,7 +262,7 @@ function openDetail(item) {
 <template>
   <BaseModal
     show
-    :title="config.title"
+    :title="props.title"
     max-width="650px"
     variant="retro"
     padding="raw"
@@ -295,25 +270,32 @@ function openDetail(item) {
     :show-close-button="!preventClose"
     @close="close"
   >
-    <div class="selection-container">
-      <div class="filters-bar">
-        <div class="ps-search-box">
-          <span class="search-icon">🔍</span>
+    <template #header>
+      <div class="ps-header-content">
+        <h2 class="ps-modal-title">
+          {{ props.title }}
+        </h2>
+        <div class="ps-search-box-header">
+          <span class="ps-header-search-icon">🔍</span>
           <input 
             v-model="searchQuery" 
             type="text" 
-            placeholder="Buscar por nombre o ID..."
-            class="ps-search-input"
+            placeholder="Buscar..."
+            class="ps-search-input-header"
           >
           <button
             v-if="searchQuery"
-            class="clear-search"
+            class="ps-header-clear-search"
             @click.stop="searchQuery = ''"
           >
             ✕
           </button>
         </div>
-        
+      </div>
+    </template>
+
+    <div class="selection-container">
+      <div class="filters-bar">
         <div class="ps-sort-btns">
           <PVTooltip
             title="MÁS RECIENTES"
@@ -428,7 +410,8 @@ function openDetail(item) {
           :item="item"
           :is-selected="selectedUids.includes(item.pokemon.uid)"
           :total="getPokemonTotalPower(item.pokemon)"
-          :is-battle-context="isBattleSwitch"
+          :is-battle-context="props.isBattleSwitch"
+          :auto-confirm="props.autoConfirm"
           @select="toggleSelection"
           @open-detail="openDetail"
         />
@@ -442,14 +425,17 @@ function openDetail(item) {
       </div>
     </div>
 
-    <template #footer>
+    <template 
+      v-if="!props.autoConfirm"
+      #footer
+    >
       <div class="modal-footer">
         <div class="count">
-          {{ selectedUids.length }} / {{ config.maxSelect || 1 }} SELECCIONADOS
+          {{ selectedUids.length }} / {{ props.maxSelect || 1 }} SELECCIONADOS
         </div>
         <button 
           class="btn-confirm" 
-          :disabled="selectedUids.length < (config.minSelect || 1)"
+          :disabled="selectedUids.length < (props.minSelect || 1)"
           @click.stop="confirm"
         >
           CONFIRMAR

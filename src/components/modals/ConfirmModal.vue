@@ -86,9 +86,9 @@ const handleCancel = () => {
 
   .confirm-footer {
     .btn-cancel {
-      border: 2px solid #555;
-      background: #333;
-      color: #999;
+      border: 2px solid var(--gray);
+      background: var(--card-dark);
+      color: var(--muted);
     }
     .btn-confirm {
       background: Linear-Gradient(135deg, $coin-gold, #b8860b);

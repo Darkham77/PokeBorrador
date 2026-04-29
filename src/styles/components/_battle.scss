@@ -1,4 +1,166 @@
 // src/styles/components/_battle.scss
-// ESTE ARCHIVO HA SIDO DEPRECADO Y CONSOLIDADO.
-// Todos los estilos de batalla se encuentran ahora en src/styles/layouts/_battle.scss
-// para cumplir con la regla de "Única Fuente de Verdad" y evitar redefiniciones.
+@use '../core/tools' as *;
+@use '../core/variables' as *;
+
+// Modular Partials (Cargados en el layout maestro)
+@use './battle-animations';
+@use './battle-hud';
+@use './battle-actions';
+
+/* ===== BATTLE SCREEN (ADAPTADO A MODAL NATIVO) ===== */
+#battle-screen {
+  // Ahora es relativo al modal
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+  @include smooth;
+}
+
+// Bloqueo de Scroll (Seguimos necesitándolo para el modo batalla)
+body.is-battle-active {
+  overflow: hidden !important;
+  touch-action: none; 
+}
+
+/* ===== CONTENEDOR PRINCIPAL (RESTAURADO) ===== */
+.battle-container {
+  // Eliminado card-premium para evitar doble contenedor
+  width: 100%;
+  height: 100%;
+  padding: 0; // Sin rellenos para integración total
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 0;
+  @include smooth-scroll;
+  transform-origin: top center;
+  margin: 0 auto;
+  background: transparent; // Usa el fondo del modal nativo
+  border: none;
+  box-shadow: none;
+
+  @media (max-width: 440px) {
+    padding: 0;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  // Escalado para móviles muy pequeños (Restaurado)
+  @media (max-width: 380px) {
+    transform: Scale(0.92);
+    width: 108.7%; 
+    margin-left: -4.35%;
+  }
+
+  // Layout de Escritorio (Restaurado 1:1 de ff7d107 - Adaptado)
+  @media (min-width: 1360px) {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+      "log arena"
+      "log panel";
+    gap: 0; // Eliminado el espacio entre paneles
+    max-width: 100%;
+    height: 100%; // Llenar el modal nativo
+    overflow: hidden;
+    align-items: stretch;
+    padding: 0; // Eliminado aire interno
+  }
+}
+
+/* ===== ARENA DE COMBATE (RESTAURADA) ===== */
+.battle-arena {
+  flex-shrink: 1;
+  width: 100%;
+  container-type: inline-size;
+  container-name: battle-arena;
+  aspect-ratio: 16 / 11;
+  background: $black;
+  border-radius: 0; // Aplanado total
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0;
+  box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
+
+  @media (min-width: 1360px) {
+    grid-area: arena;
+    height: 100%;
+    margin-bottom: 0;
+    aspect-ratio: auto;
+    border-radius: 0; // Integrado al modal
+  }
+}
+
+.battle-combatants {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-base);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  padding: 4cqi;
+}
+
+/* ===== LOG DE BATALLA (RESTAURADO) ===== */
+.battle-log {
+  @include card-premium(0); // Radio 0
+  background: Rgba(0, 0, 0, 0.45);
+  padding: 14px;
+  margin-bottom: 0;
+  flex: 1;
+  min-height: 80px; 
+  overflow-y: auto;
+  font-size: 11px;
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  @include smooth-scroll;
+  box-shadow: inset 0 2px 10px Rgba(0, 0, 0, 0.5);
+
+  @media (min-width: 1360px) {
+    grid-area: log;
+    height: 100%;
+    margin-bottom: 0;
+    border-radius: 0; // Integrado al modal
+  }
+
+  .log-entry {
+    margin-bottom: 4px;
+    line-height: 1.4;
+    &.log-player { color: $green; }
+    &.log-enemy { color: $red; }
+    &.log-info { color: $yellow; }
+    &.log-catch { color: $purple; }
+  }
+}
+
+/* ===== SPRITES Y ESCALADO PROPORCIONAL (RESTAURADO) ===== */
+.sprite-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  &.enemy-sprite { align-items: flex-start; justify-content: flex-end; }
+  &.player-sprite { align-items: flex-end; justify-content: flex-start; }
+}
+
+.bat-pokemon-sprite {
+  height: clamp(60px, 35cqi, 160px);
+  width: auto;
+  image-rendering: pixelated;
+  filter: Drop-Shadow(0 2cqi 2cqi Rgba(0,0,0,0.5));
+  animation: idle 3s infinite ease-in-out;
+  
+  &.back { height: clamp(80px, 45cqi, 200px); }
+}
+
+@keyframes idle {
+  0%, 100% { transform: TranslateY(0); }
+  50% { transform: TranslateY(-1.5cqi); }
+}

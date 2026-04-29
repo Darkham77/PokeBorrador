@@ -541,8 +541,8 @@ const computedCorners = computed(() => {
   right: 16px;
 
   &.is-yellow-solid .close-icon-wrapper {
-    background: #ffd93d !important;
-    border: 1px solid #ffd93d;
+    background: var(--yellow) !important;
+    border: 1px solid var(--yellow);
     box-shadow: 0 4px 12px Rgba(255, 217, 61, 0.4);
     
     &::before, &::after {

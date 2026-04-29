@@ -1,21 +1,21 @@
 ---
 name: populate-tester-inventory
-description: Script de utilidad para llenar el inventario con ítems de prueba. Delega el protocolo de uso al manual `@/project-standards/references/browser_testing_manual.md`.
+description: Utility script to fill the inventory with test items. Delegates the usage protocol to the manual `@/project-standards/references/browser_testing_manual.md`.
 ---
 
 # Skill: Populate Tester Inventory
 
 > [!TIP]
-> Esta herramienta es ideal para preparar el entorno antes de realizar pruebas funcionales detalladas en el navegador.
+> This tool is ideal for preparing the environment before performing detailed functional tests in the browser.
 
-## Uso Rápido
+## Quick Usage
 
-1. Genera el snippet de inyección:
+1. Generate the injection snippet:
 
    ```bash
    node .agents/skills/populate-tester-inventory/scripts/populate_inventory.js
    ```
 
-2. Sigue el protocolo de inyección detallado en el [Manual de Testing en Navegador](../project-standards/references/browser_testing_manual.md).
+2. Follow the detailed injection protocol in the [Browser Testing Manual](../project-standards/references/browser_testing_manual.md).
 
-Para conocer qué ítems se incluyen y cómo expandir el script, consulta el manual de estándares.
+To find out which items are included and how to expand the script, consult the standards manual.

@@ -51,7 +51,7 @@ export function calculateSpawnGrid(spawnsCount, preferredCols = 3) {
 
 ## 🔍 Discovery & Fog of War
 
-Refer to the [game_rules_manual.md](./game_rules_manual.md) for the authoritative definitions of the Discovery System (`isSeen`, `isCaught`) and visual differences between Map and Pokédex.
+Refer to the [game_mechanics_manual.md](./game_mechanics_manual.md) for the authoritative definitions of the Discovery System (`isSeen`, `isCaught`) and visual differences between Map and Pokédex.
 
 ## 5. Map Card Rendering Layers
 
@@ -86,6 +86,6 @@ To maintain the "Fog of War" and a clean UI, tooltips on route cards follow thes
 
 - **Cycle Emojis**: Use `🌅 (Morning)`, `☀️ (Day)`, `🌇 (Dusk)`, and `🌙 (Night)` to represent time restrictions.
 - **Discovery State**:
-  - **Known (Seen/Caught)**: Display exact cycles using emojis: `Horarios habituales: 🌅 ☀️`.
-  - **Unknown**: Use the generic label `No es común en esta ruta` for any Pokémon with time restrictions to avoid spoilers.
+  - **Known (Seen/Caught)**: Display exact cycles using emojis: `Usual times: 🌅 ☀️`.
+  - **Unknown**: Use the generic label `Not common in this route` for any Pokémon with time restrictions to avoid spoilers.
 - **24h Consistency**: Pokémon also available via **Fishing** are treated as 24h spawns; they do not display time restrictions.

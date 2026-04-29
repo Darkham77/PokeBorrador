@@ -1,30 +1,30 @@
-# Manual de Intercambio y Sistemas Sociales (Poké Vicio)
+# Trade and Social Systems Manual (Poké Vicio)
 
-Este manual documenta el funcionamiento técnico del GTS, intercambios directos y el sistema de amigos.
+This manual documents the technical operation of the GTS, direct trades, and the friend system.
 
-## 🤝 Modelo Escrow (Custodia)
+## 🤝 Escrow Model (Custody)
 
-Para garantizar la integridad de los datos en un entorno multijugador, Poké Vicio utiliza un modelo de custodia:
+To guarantee data integrity in a multiplayer environment, Poké Vicio uses a custody model:
 
-1. **Salida de Inventario**: Al poner un Pokémon en el GTS o enviarlo en una oferta de intercambio, el activo se elimina del inventario del jugador y se mueve a una tabla de custodia en el servidor.
-2. **Reclamo Atómico**: El receptor (o el emisor al cancelar) debe reclamar el activo manualmente. Este proceso es atómico y requiere un "Save Flush" previo.
-3. **Sync Flush**: Antes de cualquier acción social (enviar oferta, publicar en GTS), el sistema fuerza un guardado atómico para asegurar que el estado local coincida con el servidor.
-
----
-
-## 📊 Límites y Cuotas (Throttling)
-
-Para prevenir el spam y la sobrecarga de la base de datos, se aplican los siguientes límites centralizados:
-
-- **Espacios (Slots)**: Máximo **50 espacios** para:
-  - Solicitudes de amistad pendientes.
-  - Ofertas de intercambio activas.
-  - Publicaciones simultáneas en el GTS.
-- **Cooldown de Reclamo**: Tiempo de espera obligatorio de **5 segundos** entre reclamos individuales para evitar ataques de carrera (race conditions).
+1.  **Inventory Outflow**: When putting a Pokémon in the GTS or sending it in a trade offer, the asset is removed from the player's inventory and moved to a custody table on the server.
+2.  **Atomic Claim**: The receiver (or the sender upon cancellation) must manually claim the asset. This process is atomic and requires a prior "Save Flush."
+3.  **Sync Flush**: Before any social action (sending an offer, posting on GTS), the system forces an atomic save to ensure that the local state matches the server.
 
 ---
 
-## 🔄 Protocolos de Seguridad
+## 📊 Limits and Quotas (Throttling)
 
-- **Validación de Snapshot**: Al iniciar un intercambio, se toma una captura del estado del jugador. Solo se permiten incrementos lógicos.
-- **UID Integrity**: El sistema verifica que el UID del Pokémon recibido no exista ya en el bando del jugador antes de finalizar la transacción.
+To prevent spam and database overload, the following centralized limits apply:
+
+- **Slots**: Maximum **50 slots** for:
+  - Pending friend requests.
+  - Active trade offers.
+  - Simultaneous GTS postings.
+- **Claim Cooldown**: Mandatory waiting time of **5 seconds** between individual claims to avoid race conditions.
+
+---
+
+## 🔄 Security Protocols
+
+- **Snapshot Validation**: When starting a trade, a snapshot of the player's state is taken. Only logical increments are allowed.
+- **UID Integrity**: The system verifies that the UID of the received Pokémon does not already exist on the player's side before finalizing the transaction.

@@ -77,22 +77,83 @@ export function recalcPokemonStats(p) {
   p.spd = getStat(base.spd || base.def, p.ivs.spd, p.level, 'Def. Esp');
   p.spe = getStat(base.spe || 45, p.ivs.spe, p.level, 'Velocidad');
 
-  // --- Saneamiento de Movimientos (Auto-Healing) ---
-  if (p.moves && Array.isArray(p.moves)) {
-    p.moves.forEach(m => {
-      if (m && m.name && (m.power === undefined || m.type === undefined)) {
-        const moveData = pokemonDataProvider.getMoveData(m.name);
-        if (moveData) {
-          if (m.power === undefined) m.power = moveData.power || 0;
-          if (m.type === undefined) m.type = moveData.type || 'normal';
-          if (m.acc === undefined) m.acc = moveData.acc || 100;
-          if (m.cat === undefined) m.cat = moveData.cat || 'physical';
-          if (m.pp === undefined) m.pp = moveData.pp || 35;
-          if (m.maxPP === undefined) m.maxPP = moveData.pp || 35;
-        }
-      }
+  // Asegurar que todos los stats base sean números válidos
+  ['maxHp', 'atk', 'def', 'spa', 'spd', 'spe'].forEach(s => {
+    if (isNaN(p[s]) || p[s] === undefined) p[s] = 10;
+  });
+
+  sanitizePokemon(p);
+}
+
+/**
+ * Sanea y repara datos faltantes de un Pokémon (Self-Healing).
+ */
+export function sanitizePokemon(p) {
+  if (!p) return;
+
+  // 1. Validar Habilidad
+  const validAbilities = pokemonDataProvider.getSpeciesAbilities(p.id);
+  if (!p.ability || !validAbilities.includes(p.ability)) {
+    console.warn(`[Self-Healing] Reparando habilidad inválida (${p.ability}) para ${p.id}`);
+    p.ability = validAbilities[0] || 'Presión';
+  }
+
+  // 2. Validar Movimientos
+  if (!p.moves || !Array.isArray(p.moves)) p.moves = [];
+  
+  // Eliminar entradas null/undefined
+  p.moves = p.moves.filter(m => m !== null && m !== undefined);
+
+  p.moves.forEach((m, idx) => {
+    // Si el nombre es inválido, intentar recuperar de DB o asignar Placaje
+    if (!m.name || m.name === 'null' || m.name === 'undefined' || m.name === '???') {
+      console.warn(`[Self-Healing] Movimiento ${idx} corrupto detectado en ${p.id}`);
+      m.name = 'Placaje';
+    }
+
+    const moveData = pokemonDataProvider.getMoveData(m.name);
+    if (!moveData) {
+      console.warn(`[Self-Healing] Movimiento ${m.name} no existe en DB, reasignando a Placaje`);
+      m.name = 'Placaje';
+      const fallback = pokemonDataProvider.getMoveData('Placaje');
+      Object.assign(m, {
+        power: fallback.power,
+        type: fallback.type,
+        acc: fallback.acc,
+        cat: fallback.cat,
+        pp: m.pp || fallback.pp,
+        maxPP: m.maxPP || fallback.pp
+      });
+    } else {
+      // Rellenar datos faltantes
+      if (m.power === undefined) m.power = moveData.power || 0;
+      if (m.type === undefined) m.type = moveData.type || 'normal';
+      if (m.acc === undefined) m.acc = moveData.acc || 100;
+      if (m.cat === undefined) m.cat = moveData.cat || 'physical';
+      if (m.pp === undefined) m.pp = moveData.pp || 35;
+      if (m.maxPP === undefined) m.maxPP = moveData.pp || 35;
+    }
+  });
+
+  // Si no tiene movimientos, darle al menos uno
+  if (p.moves.length === 0) {
+    console.warn(`[Self-Healing] ${p.id} no tiene movimientos, asignando Placaje`);
+    const fallback = pokemonDataProvider.getMoveData('Placaje');
+    p.moves.push({
+      name: 'Placaje',
+      power: fallback.power,
+      type: fallback.type,
+      acc: fallback.acc,
+      cat: fallback.cat,
+      pp: fallback.pp,
+      maxPP: fallback.pp
     });
   }
+
+  // 3. Validar consistencia básica
+  if (!p.gender && !GENDERLESS.includes(p.id)) p.gender = assignGender(p.id);
+  if (p.hp === undefined || isNaN(p.hp)) p.hp = p.maxHp;
+  if (p.hp > p.maxHp) p.hp = p.maxHp;
 }
 
 /**
@@ -204,6 +265,7 @@ export function makePokemon(id, level, options = {}) {
 
   recalcPokemonStats(p);
   p.hp = p.maxHp;
+  sanitizePokemon(p);
   return p;
 }
 

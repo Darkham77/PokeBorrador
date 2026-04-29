@@ -14,7 +14,8 @@ const props = defineProps({
   item: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
   total: { type: Number, required: true },
-  isBattleContext: { type: Boolean, default: false }
+  isBattleContext: { type: Boolean, default: false },
+  autoConfirm: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['select', 'openDetail'])
@@ -132,7 +133,10 @@ const ivTotal = computed(() => Object.values(props.item.pokemon.ivs || {}).reduc
       </div>
     </div>
 
-    <div class="selection-indicator">
+    <div 
+      v-if="!autoConfirm"
+      class="selection-indicator"
+    >
       <div class="check-circle">
         <span v-if="isSelected">✓</span>
       </div>

@@ -1,76 +1,76 @@
-# Manual de Creación de Contenido (Poké Vicio)
+# Content Creation Manual (Poké Vicio)
 
-Este manual detalla los protocolos para agregar nuevos Pokémon, movimientos, habilidades y otros elementos de juego, asegurando la integridad de los datos y la coherencia con el motor de Poké Vicio.
+This manual details the protocols for adding new Pokémon, moves, abilities, and other game elements, ensuring data integrity and consistency with the Poké Vicio engine.
 
-## 🚨 REGLA DE ORO: INTEGRIDAD DE DATOS Y ESTÁNDARES
+## 🚨 GOLDEN RULE: DATA INTEGRITY AND STANDARDS
 
-1. **Nombres de Objetos**: Usa siempre los nombres oficiales completos. Ejemplo: **"Subida de PP"** (NO "Subida PP").
-2. **Deduplicación**: Nunca agregues un elemento (movimiento, habilidad, ítem) que ya exista. Usa los validadores antes de proceder.
-3. **Sincronización de PP**: Al inicializar un movimiento para un Pokémon, `maxPP` debe ser igual a su `pp` base inicial.
-4. **Formato de Imagen**: Todas las imágenes externas de PokeAPI **DEBEN** ser **PNG**.
-5. **Cálculo de Tiers**: La clasificación (S+, S, A, etc.) es **DINÁMICA**. No la agregues a la DB; se calcula en la UI usando `src/logic/constants/tiers.js`.
-6. **Estilo SASS**: Si creas estilos para el nuevo contenido, las directivas `@use` deben ser las **primeras líneas** del archivo. Usa capitalización para filtros (ej. `Filter: Blur(2px)`).
-7. **CLI-First Verification**: Al terminar la implementación, **DEBES** usar los comandos de `window.__VITE_DEBUG__` para verificar el contenido.
+1. **Object Names**: Always use full official names. Example: **"PP Up"** (NOT "PP Up").
+2. **Deduplication**: Never add an element (move, ability, item) that already exists. Use the validators before proceeding.
+3. **PP Synchronization**: When initializing a move for a Pokémon, `maxPP` must be equal to its initial base `pp`.
+4. **Image Format**: All external images from PokeAPI **MUST** be **PNG**.
+5. **Tier Calculation**: Classification (S+, S, A, etc.) is **DYNAMIC**. Do not add it to the DB; it is calculated in the UI using `src/logic/constants/tiers.js`.
+6. **SASS Style**: If you create styles for new content, `@use` directives must be the **first lines** of the file. Use capitalization for filters (e.g., `Filter: Blur(2px)`).
+7. **CLI-First Verification**: Upon finishing the implementation, you **MUST** use `window.__VITE_DEBUG__` commands to verify the content.
 
 ---
 
-## 🐲 Agregar un Pokémon Nuevo
+## 🐲 Adding a New Pokémon
 
-### Paso 0: Obtener datos desde PokeAPI
+### Step 0: Get data from PokeAPI
 
-Ejecuta el script de fetch (ubicado en `.agents/skills/add-pokemon/scripts/fetch_pokemon.js`) pasando el nombre en inglés:
+Run the fetch script (located in `.agents/skills/add-pokemon/scripts/fetch_pokemon.js`) passing the name in English:
 
 ```bash
-node .agents/skills/add-pokemon/scripts/fetch_pokemon.js <nombre>
+node .agents/skills/add-pokemon/scripts/fetch_pokemon.js <name>
 ```
 
-Esto genera un archivo `_output/<pokemon>_code.txt` con los bloques listos para copiar.
+This generates a `_output/<pokemon>_code.txt` file with blocks ready to copy.
 
-### Paso 1: POKEMON_DB (`src/data/pokemonDB.js`)
+### Step 1: POKEMON_DB (`src/data/pokemonDB.js`)
 
-Asegúrate de que el learnset incluya solo movimientos que existan en `MOVE_DATA`.
+Ensure that the learnset includes only moves that exist in `MOVE_DATA`.
 
-### Paso 2: Tipos y Habilidades
+### Step 2: Types and Abilities
 
-- **Tipos**: Agrega tipos secundarios en `src/data/types.js` -> `SECONDARY_TYPES`.
-- **Habilidades**: Agrega en `src/data/abilities.js` -> `POKEMON_ABILITIES`. Si la habilidad es nueva, impleméntala en `src/logic/battle/battleAbilities.js`.
+- **Types**: Add secondary types in `src/data/types.js` -> `SECONDARY_TYPES`.
+- **Abilities**: Add in `src/data/abilities.js` -> `POKEMON_ABILITIES`. If the ability is new, implement it in `src/logic/battle/battleAbilities.js`.
 
-### Paso 3: Evoluciones (`src/data/evolutionData.js`)
+### Step 3: Evolutions (`src/data/evolutionData.js`)
 
-Registra en `EVOLUTION_TABLE`, `STONE_EVOLUTIONS` o `TRADE_EVOLUTIONS`.
+Register in `EVOLUTION_TABLE`, `STONE_EVOLUTIONS`, or `TRADE_EVOLUTIONS`.
 
-### Paso 4: Pokédex (`src/logic/pokedexConstants.js`)
+### Step 4: Pokédex (`src/logic/pokedexConstants.js`)
 
-- Registra el **ID Nacional** en `POKEMON_SPRITE_IDS`.
-- Inserta en el array `PDEX_ORDER`.
-- Agrega compatibilidad de MTs en `TM_COMPAT` (según Gen 3).
+- Register the **National ID** in `POKEMON_SPRITE_IDS`.
+- Insert in the `PDEX_ORDER` array.
+- Add TM compatibility in `TM_COMPAT` (according to Gen 3).
 
 ---
 
-## 🥚 Sistema de Huevos y Eclosión
+## 🥚 Egg and Hatching System
 
-La eclosión sigue un ciclo de vida interactivo de 3 fases gerenciado por `HatchAnimationModal.vue`:
+Hatching follows an interactive 3-phase lifecycle managed by `HatchAnimationModal.vue`:
 
-1. **Fase de Huevo**: Requiere **clic manual** para progresar.
-2. **Fase de Ruptura**: Vibración y partículas.
-3. **Fase de Revelación**: Sonido `evolution_complete` y lift de `-85px` al sprite.
+1. **Egg Phase**: Requires **manual click** to progress.
+2. **Break Phase**: Vibration and particles.
+3. **Reveal Phase**: `evolution_complete` sound and a `-85px` lift for the sprite.
 
-### Comandos de Prueba
+### Test Commands
 
 ```js
-// Protocolo silencioso
+// Silent protocol
 window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch' });
-// Protocolo con animación interactiva
+// Interactive animation protocol
 window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch_anim' });
 ```
 
 ---
 
-## ✅ Checklist de Verificación Final
+## ✅ Final Verification Checklist
 
-- [ ] Entrada en `POKEMON_DB` con stats y learnset Gen 3.
-- [ ] Tipo secundario y Habilidades registradas.
-- [ ] Evolución y Pokédex IDs configurados.
-- [ ] Compatibilidad de MTs verificada.
-- [ ] **Validadores Pasados**: Ejecutar los scripts de validación de movimientos y habilidades.
-- [ ] **Persistencia**: Verificado que el Pokémon sobrevive a un `F5`.
+- [ ] Entry in `POKEMON_DB` with stats and Gen 3 learnset.
+- [ ] Secondary type and Abilities registered.
+- [ ] Evolution and Pokédex IDs configured.
+- [ ] TM compatibility verified.
+- [ ] **Validators Passed**: Run the move and ability validation scripts.
+- [ ] **Persistence**: Verified that the Pokémon survives an `F5`.

@@ -138,9 +138,11 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   flex-direction: column;
   gap: 0;
   position: relative;
+  overflow: visible !important; 
+  z-index: var(--z-low);
   
   @media (max-width: 959px) {
-    padding: 12px 12px 2px 12px;
+    padding: 12px 12px 12px 12px; // Aumentado de 2px a 12px para dar aire a las animaciones
     flex-shrink: 0;
     margin-top: auto;
   }

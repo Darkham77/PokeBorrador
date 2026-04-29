@@ -1,19 +1,19 @@
 ---
 name: project-browser-testing
-description: Orquestador de tests E2E. Delega los protocolos de entorno y simulación al manual `@/project-standards/references/browser_testing_manual.md`.
+description: E2E test orchestrator. Delegates environment and simulation protocols to the `@/project-standards/references/browser_testing_manual.md` manual.
 ---
 
-# Skill: Browser Testing (Orquestador)
+# Skill: Browser Testing (Orchestrator)
 
 > [!IMPORTANT]
-> Para realizar pruebas en navegador, **DEBES** seguir el protocolo de login y simulación detallado en el [Manual de Testing en Navegador](../project-standards/references/browser_testing_manual.md).
+> To perform browser testing, you **MUST** follow the login and simulation protocol detailed in the [Browser Testing Manual](../project-standards/references/browser_testing_manual.md).
 
-## Flujo de Ejecución
+## Execution Flow
 
-1. **Servidor Local**: Asegúrate de que `http://localhost:5173` esté activo.
-2. **Login ASH**: Identifícate como el usuario de pruebas estándar.
-3. **Comandos de Simulación**: Usa `window.__VITE_DEBUG__` para teleportarte a las vistas que deseas probar.
+1. **Local Server**: Ensure that `http://localhost:5173` is active.
+2. **ASH Login**: Log in as the standard test user.
+3. **Simulation Commands**: Use `window.__VITE_DEBUG__` to teleport to the views you want to test.
 
-## Diagnóstico
+## Diagnostics
 
-Si un test falla, realiza un diagnóstico dual revisando tanto la consola del navegador como los logs del servidor de desarrollo.
+If a test fails, perform a dual diagnostic by reviewing both the browser console and the development server logs.

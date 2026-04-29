@@ -33,7 +33,6 @@ defineEmits(['click'])
           <img 
             :src="p.spriteUrl"
             :alt="p.name" 
-            :style="{ filter: !p.isCaught ? 'Grayscale(1)' : 'none' }"
             class="pdx-pokemon-sprite"
             :class="[
               { 'silhouette': !p.isCaught },

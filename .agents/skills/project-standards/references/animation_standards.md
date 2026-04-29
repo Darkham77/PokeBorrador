@@ -42,3 +42,17 @@ For effects like rain or snow, use at least two layers with different scales, sp
 ## 4. Rarity & Sparkle FX
 
 Aura effects (`.rare-glow`) and Shiny sparkles (`.shiny-sparkles`) must apply the negative delay to ensure each flash is asynchronous relative to others on the screen.
+
+## 5. Tier S/S+ (High-IV) Pulsing
+
+Pokémon with high stats (Tier S/S+) must use a rhythmic pulsing animation instead of rotation to maintain a premium feel.
+
+- **Implementation**: Animate both `opacity` and `box-shadow` using the `--tier-color` variable.
+- **Timing**: Use a slow, ease-in-out cycle (approx. 2s) to avoid visual fatigue.
+
+```scss
+@keyframes pulse-tier {
+  0%, 100% { transform: Scale(1); opacity: 0.5; box-shadow: 0 0 5px var(--tier-color); }
+  50% { transform: Scale(1.05); opacity: 0.8; box-shadow: 0 0 20px var(--tier-color); }
+}
+```
