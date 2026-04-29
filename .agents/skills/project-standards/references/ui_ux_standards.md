@@ -183,6 +183,8 @@ To ensure a seamless transition between full-map exploration and focused modal i
 ### 8. Mobile & Responsive Refinement
 
 - **Responsive Control Stacking**: In mobile layouts, prioritize `flex-direction: column` and `flex: none` for stacked control groups (like Sort/Search bars) to prevent unintended vertical stretching.
+- **HUD Information Scaling (Combat)**: On small screens (≤ 600px), information panes should reduce their internal scale (padding, font-size, min-width) to avoid blocking the combatants and environmental sprites.
+- **Edge-Anchored Positioning**: Use a combination of `cqw` and media queries to pull HUD elements towards the edges of the viewport on mobile. This ensures the central "action zone" remains as clear as possible.
 - **Stable Positioning in Dynamic Containers**: Avoid using percentage-based vertical centering (`top: 50%`) for absolute elements within containers that might grow vertically. Use fixed pixel offsets to maintain icon alignment.
 - **Data Grid Accessibility**: Complex data tables/grids MUST be wrapped in a `.table-responsive-wrapper` with `overflow-x: auto` on mobile to prevent column clipping.
 - **Fullscreen Modal Continuity**: The primary content container (e.g., `.upd-core-container`) MUST use `min-height: 100%` in fullscreen mode to ensure the background color remains consistent across the entire viewport.

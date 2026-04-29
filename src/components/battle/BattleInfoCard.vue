@@ -109,6 +109,12 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
   color: $white;
   @include gpu-layer;
+
+  @media (max-width: 600px) {
+    padding: 8px 10px;
+    min-width: 140px;
+    border-radius: 12px;
+  }
 }
 
 .card-header {
@@ -116,12 +122,21 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   align-items: center;
   gap: 8px;
   margin-bottom: 5px;
+
+  @media (max-width: 600px) {
+    gap: 4px;
+    margin-bottom: 2px;
+  }
 }
 
 .poke-name {
   @include pixelated;
   font-size: 10px;
   letter-spacing: 0.5px;
+
+  @media (max-width: 600px) {
+    font-size: 8px;
+  }
 }
 
 .poke-level {
@@ -133,6 +148,11 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+
+  @media (max-width: 600px) {
+    gap: 4px;
+    margin-bottom: 4px;
+  }
 }
 
 .hp-bar-outer, .exp-bar-outer {
@@ -143,9 +163,14 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   overflow: hidden;
   margin-bottom: 4px;
   border: 1px solid Rgba(255,255,255,0.1);
+
+  @media (max-width: 600px) {
+    height: 6px;
+    margin-bottom: 2px;
+  }
 }
 
-.exp-bar-outer { height: 4px; }
+.exp-bar-outer { height: 4px; @media (max-width: 600px) { height: 3px; } }
 .hp-bar-inner { 
   height: 100%; 
   transition: width 0.4s ease; 
@@ -167,6 +192,10 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   font-size: 8px;
   text-align: right;
   opacity: 0.8;
+
+  @media (max-width: 600px) {
+    font-size: 7px;
+  }
 }
 
 .status-badge {
@@ -178,6 +207,11 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   background: Rgba(68, 68, 68, 1);
   border-radius: 4px;
   font-weight: bold;
+
+  @media (max-width: 600px) {
+    font-size: 7px;
+    padding: 1px 4px;
+  }
 }
 
 .gender-male { color: Rgba(59, 139, 255, 1); }
@@ -187,5 +221,10 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
   width: 16px;
   height: 16px;
   @include sprite-render;
+
+  @media (max-width: 600px) {
+    width: 12px;
+    height: 12px;
+  }
 }
 </style>

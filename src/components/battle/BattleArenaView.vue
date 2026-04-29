@@ -520,6 +520,10 @@ onMounted(() => {
   flex-direction: column;
   justify-content: space-between;
   pointer-events: none;
+
+  @media (max-width: 600px) {
+    padding: 2cqw;
+  }
 }
 
 .combatant-info-wrap { pointer-events: auto; }
