@@ -1,16 +1,21 @@
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRegisterSW } from 'virtual:pwa-register/vue'
+import { registerSW } from 'virtual:pwa-register'
 
 export function usePWA() {
   const installEvent = ref(null)
   const canInstall = ref(false)
   const isInstalled = ref(false)
 
-  // Vite PWA auto-update/prompt logic
-  const {
-    needRefresh,
-    updateServiceWorker,
-  } = useRegisterSW({
+  // Vite PWA auto-update logic (Manual reactivity for better compatibility)
+  const needRefresh = ref(false)
+  const updateServiceWorker = registerSW({
+    onNeedRefresh() {
+      needRefresh.value = true
+      console.log('SW Update available')
+    },
+    onOfflineReady() {
+      console.log('PWA Offline Ready')
+    },
     onRegistered(r) {
       console.log('SW Registered:', r)
     },
