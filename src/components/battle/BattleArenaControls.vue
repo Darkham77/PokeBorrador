@@ -150,7 +150,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   gap: 0;
   position: relative;
   overflow: visible !important; 
-  z-index: var(--z-hud); // Aseguramos que esté por encima del fondo del combate
+  z-index: var(--z-low); // Aseguramos que esté por encima del fondo del combate pero bajo modales/tooltips
   
   @media (max-width: 959px) {
     padding: 12px 12px 12px 12px;

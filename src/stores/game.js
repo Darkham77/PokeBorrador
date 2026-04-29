@@ -156,6 +156,10 @@ export const useGameStore = defineStore('game', () => {
     
     isDataLoaded.value = true
     loadingStore.finish('game_data')
+
+    // Phase 2: Signal Ready Immediately (Engine boot is now handled by Vue Mount)
+    isEngineReady.value = true
+    console.log('[GameStore] Data loaded. Ready for Vue mount.')
   }
 
   async function save(showNotif = true) {

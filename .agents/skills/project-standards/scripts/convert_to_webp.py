@@ -7,11 +7,6 @@ except ImportError:
     print("[PYTHON_DEPENDENCY_ERROR] Missing library: Pillow. Run 'pip install Pillow' to fix image processing.")
     sys.exit(1)
 
-# Ensure the script can import local dependencies when run from the project root
-sys.path.append(str(Path(__file__).parent))
-
-from generate_atlas import generate_atlas
-
 def process_assets(base_dir="_raw-assets"):
     """
     Processes the Zero-Config Asset Pipeline.
@@ -28,34 +23,15 @@ def process_assets(base_dir="_raw-assets"):
     errors = []
 
     # Processing function using pathlib rglob
-    print(">>> Initiating Zero-Config Asset Pipeline...")
+    print(">>> Initiating Zero-Config Asset Pipeline (Pure WebP Mode)...")
     
-    # We first look for .atlas folders to compile them
-    for atlas_path in base_path.rglob("*.atlas"):
-        if not atlas_path.is_dir():
-            continue
-            
-        atlas_name = atlas_path.name.replace('.atlas', '')
-        rel_atlas_path = atlas_path.relative_to(base_path)
-        dest_atlas_path = Path.cwd() / rel_atlas_path.parent
-        dest_atlas_path.mkdir(parents=True, exist_ok=True)
-        
-        print(f"[ATLAS] Compiling: {rel_atlas_path} -> {dest_atlas_path.relative_to(Path.cwd())}")
-        
-        if generate_atlas(atlas_path, dest_atlas_path, atlas_name):
-            converted_count += 1
-
-    # Then we process individual files, skipping those inside .atlas folders
+    # We process individual files
     for file_path in base_path.rglob("*"):
         if not file_path.is_file():
             continue
             
         # Only process PNGs and JPEGs
         if file_path.suffix.lower() not in {'.png', '.jpg', '.jpeg', '.webp'}:
-            continue
-            
-        # Skip files inside .atlas directories
-        if any(part.endswith('.atlas') for part in file_path.parts):
             continue
             
         try:

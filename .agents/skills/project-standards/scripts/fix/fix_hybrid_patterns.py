@@ -46,12 +46,13 @@ def inject_error_handler(match):
     if '@error' in tag.lower():
         return tag
         
-    # Find the last closing bracket of the tag
-    # We look for the '>' that is NOT followed by another part of an attribute
-    # but since it's an <img> tag, we just find the last '>'
-    parts = tag.rsplit('>', 1)
+    # Find if it's self-closing
+    is_self_closing = tag.rstrip().endswith('/>')
+    closing_seq = '/>' if is_self_closing else '>'
+    
+    parts = tag.rsplit(closing_seq, 1)
     if len(parts) == 2:
-        return parts[0].rstrip() + ' @error="e => e.target.style.display = \'none\'">' + parts[1]
+        return parts[0].rstrip() + ' @error="e => e.target.style.display = \'none\'"' + closing_seq + parts[1]
     return tag
 
 def fix_file(filepath):

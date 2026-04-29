@@ -75,10 +75,10 @@ _raw-assets/
     └── icons.atlas/           <-- Folders ending in .atlas will be packed
 ```
 
-#### Texture Atlas Mandate
+#### Asset Organization
 
-- **Individual Files**: Use for Vue UI Banners, Backgrounds, and Large Portraits.
-- **.atlas Folders**: Any folder ending in `.atlas` (e.g., `vfx.atlas/`) will be compiled into a **Texture Atlas** (JSON + WebP). Best for **Phaser FX**, **Animations**, and **Batched Sprites**.
+- **Individual Files**: All assets (Banners, Backgrounds, Sprites, Icons) must be stored as individual WebP files.
+- **Batched Sprites**: For animations, use CSS sprites or sequential WebP loading. The project no longer uses JSON atlases.
 
 #### Execution
 

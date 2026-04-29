@@ -2,7 +2,6 @@ import { calculateDamage } from '@/logic/battle/battleEngine'
 import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine'
 import { applyMoveEffect } from '@/logic/battle/battleMoves'
 import { MOVE_DATA } from '@/data/moves'
-import { phaserBridge } from '@/logic/phaserBridge'
 
 /**
  * Resolves a turn in a Live PvP battle. (Host only)
@@ -125,25 +124,21 @@ export async function applyPvPTurnResult(battleState, result, endBattleCallback)
     if (action.type === 'switch') {
       const team = isMyAction ? battleState.myTeam : battleState.enemyTeam
       battleState.logs.push(`¡${isMyAction ? 'Vas a cambiar a' : 'El rival cambió a'} ${team[action.newIdx].name}!`)
-      phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: isMyAction ? 'player' : 'enemy' })
       await new Promise(r => setTimeout(r, 600))
       if (isMyAction) battleState.myActiveIdx = action.newIdx
       else battleState.enemyActiveIdx = action.newIdx
-      phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: isMyAction ? 'player' : 'enemy', pokemon: team[action.newIdx] })
     } else {
       battleState.logs.push(`¡${isMyAction ? 'Tu' : 'El'} ${action.actorName || 'Pokémon'} usó ${action.moveName}!`)
-      phaserBridge.sendCommand('BattleScene', 'PLAY_MOVE', { side: isMyAction ? 'player' : 'enemy', type: MOVE_DATA[action.moveName]?.type || 'normal' })
       if (action.statusBlocked) battleState.logs.push(`¡No pudo moverse por ${action.statusBlocked}!`)
       else if (action.missed) battleState.logs.push('¡Falló!')
       else if (action.damage > 0) {
         battleState.logs.push(`(-${action.damage} HP)${action.eff >= 2 ? ' ¡Muy eficaz!' : action.eff <= 0.5 ? ' No muy eficaz...' : ''}`)
-        phaserBridge.sendCommand('BattleScene', 'PLAY_DAMAGE', { side: isMyAction ? 'enemy' : 'player' })
         if (isMyAction) battleState.enemyHp[battleState.enemyActiveIdx] = action.newHp
         else battleState.myHp[battleState.myActiveIdx] = action.newHp
       }
       action.effectLog?.forEach(m => battleState.logs.push(m))
     }
-    await new Promise(r => setTimeout(r, 1200))
+    await new Promise(r => setTimeout(r, 800))
   }
   
   // Post-turn checks

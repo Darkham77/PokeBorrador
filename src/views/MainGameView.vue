@@ -11,6 +11,7 @@ import { useEventStore } from '@/stores/events'
 import { useAudioStore } from '@/stores/audio'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useBreedingStore } from '@/stores/breeding'
+import { useLoadingStore } from '@/stores/loading'
 
 // Sub-components
 import TitleScreen from '@/components/TitleScreen.vue'
@@ -48,7 +49,7 @@ import GlobalRanking from '@/components/social/GlobalRanking.vue'
 
 
 
-import { phaserBridge } from '@/logic/phaserBridge'
+
 
 
 const gameStore = useGameStore()
@@ -61,12 +62,9 @@ const audioStore = useAudioStore()
 const livePvP = useLivePvPStore()
 const breedingStore = useBreedingStore()
 
-// Sync Weather & Day/Night Cycle with Phaser
-watch(() => gameStore.state.dayCycle, (cycle) => {
-  phaserBridge.sendCommand('WeatherScene', 'SET_WEATHER', {
-    cycle: cycle,
-    weather: 'clear' // Expandable to rain/sand later
-  })
+// Sync Weather & Day/Night Cycle
+watch(() => gameStore.state.dayCycle, () => {
+  // Pure Vue Managed via AtmosphereLayer/CSS
 }, { immediate: true })
 
 // Managed Body Classes
@@ -183,6 +181,10 @@ onMounted(() => {
   eventStore.checkPendingAwards()
   livePvP.initInvitePoller()
   breedingStore.checkDailyReset()
+
+  // 3. Signal that DOM is ready for removing the veil
+  const loadingStore = useLoadingStore()
+  loadingStore.markAppMounted()
 })
 
 onUnmounted(() => {
@@ -226,10 +228,10 @@ onUnmounted(() => {
       id="game-screen"
       class="screen"
     >
-      <!-- HUD PRINCIPAL (RESTAURADO) -->
+      <!-- HUD PRINCIPAL -->
       <div
         ref="hudRef"
-        class="hud-container"
+        class="hud-container main-hud-desktop"
         :class="{ 'hud-hidden': isHudHidden }"
       >
         <div 
@@ -426,6 +428,14 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.main-hud-desktop {
+  @media (min-width: 1411px) {
+    display: flex !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .content-area {

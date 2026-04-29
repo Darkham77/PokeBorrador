@@ -34,20 +34,30 @@ Every slot that displays a member of a team (Adventure, PVP, War) MUST allow dir
 
 ---
 
-## ⚙️ Engine Logic (Vue + Phaser Bridge)
+## ⚙️ Engine Logic (Vue + GameBus)
 
-### 1. Loading Stabilization
+All visual-logic communication must use the `GameBus` native event system. This architecture ensures total decoupling from any specific game engine (e.g., Phaser is deprecated).
 
-- The `BootScene` must have a minimum delay (e.g., 500ms) before signaling readiness. This ensures that the loading message is legible and the browser processes the atlases.
-- **Black Background**: During loading, the `App.vue` background must be absolute black (`var(--darker)`) to avoid visual flickering.
+### 1. Battle Animations
 
-### 2. Callback Crash Prevention
+Battle animations (faint, withdraw, send_out, status_hit) MUST be triggered via the `GameBus` using standardized event types.
 
-Any `setTimeout` or `Promise` within a Phaser scene must verify the existence of the scene before acting:
+```js
+// Standard Animation Trigger
+gameBus.emit('animation', { 
+  type: 'faint', 
+  target: 'player', 
+  index: 0 
+});
+```
+
+### 2. Component Safety
+
+Any async operation within a visual component must verify the existence of the component before acting.
 
 ```js
 setTimeout(() => {
-  if (!this.scene || !this.scene.manager || this.game?.pendingDestroy) return;
+  if (instance?.isUnmounted) return;
   // Logic...
 }, delay);
 ```
@@ -150,3 +160,4 @@ During high-load scenes (e.g., Battles), the hiding protocol is applied:
 
 - **v-if**: Non-essential elements (MapCards, NPCs, background weather animations) MUST be physically hidden.
 - **Pause**: All JS intervals (weather, buffs) must be paused while the combat state is active.
+- **Battle Finish Persistence**: During the battle's finishing phase (especially after a player's defeat), the enemy sprite MUST remain visible until the transition to the map is complete. This avoids "ghosting" and maintains visual feedback for the user's defeat.

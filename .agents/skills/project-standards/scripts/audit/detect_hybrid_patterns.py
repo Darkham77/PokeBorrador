@@ -54,12 +54,6 @@ HYBRID_PATTERNS = [
         "severity": "high"
     },
     {
-        "id": "phaser_dom_injection",
-        "regex": r"\.add\.dom\(",
-        "message": "Phaser-DOM injection detected. Use Vue overlays instead.",
-        "severity": "critical"
-    },
-    {
         "id": "extreme_z_index",
         "regex": r"z-index:\s*[0-9]{4,}",
         "message": "Extreme z-index detected (>999). Use Teleport or standardized layers.",
@@ -155,8 +149,8 @@ HYBRID_PATTERNS = [
 
 # Files/Directories to ignore
 IGNORE_PATHS = {
-    "node_modules", "backup_legacy_code", "dist", ".git", "scripts", "tests",
-    "assetService.js", "phaserBridge.js", "baseBridge.js", "dbRouter.js",
+    "node_modules", "backup_legacy_code", "dist", "dev-dist", ".git", "scripts", "tests",
+    "assetService.js", "gameBus.js", "baseBridge.js", "dbRouter.js",
     "useWindowListener.js", "useBodyClass.js"
 }
 
@@ -191,8 +185,6 @@ def scan_file(filepath: Path):
 
                 matches = re.finditer(pattern["regex"], line)
                 for match in matches:
-                    if "canvas" in line.lower() or "getElementById('game-container')" in line:
-                        continue
                     if "document.title =" in line:
                         continue
                     
@@ -236,7 +228,7 @@ def scan_file(filepath: Path):
 
 
         # Tag-based multi-line checks (@click, img fallback, native title)
-        tag_pattern = r'<([a-zA-Z0-9\-]+)\b(?:\s+[^>]*?)?>'
+        tag_pattern = r'<([a-zA-Z0-9\-]+)(?:\s+(?:(?:"[^"]*"|\'[^\']*\'|[^>])*))?>'
         is_pv_tooltip_file = 'PVTooltip' in filepath.name
         
         for match in re.finditer(tag_pattern, content, re.DOTALL):

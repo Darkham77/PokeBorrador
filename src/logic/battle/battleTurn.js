@@ -3,7 +3,7 @@ import { calculateDamage, getEffectiveSpeed } from './battleEngine'
 import { canAttack } from './battleFlow'
 import { dispatchMoveEffect } from './actions/actionRegistry'
 import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI'
-import { phaserBridge } from '@/logic/phaserBridge'
+import { gameBus } from '@/logic/gameBus'
 import { recalcPokemonStats } from '@/logic/pokemonFactory'
 
 /**
@@ -87,12 +87,12 @@ export async function runPlayerAction(store, moveIndex) {
       if (result.isSuperEffective) store.addLog('¡Es muy eficaz!', 'log-player', p)
       if (result.isNotVeryEffective) store.addLog('No es muy eficaz...', 'log-player', p)
       
-      phaserBridge.sendCommand('BattleScene', 'PLAY_MOVE', { side: 'player', type: move.type })
+    if (move.category !== 'status') {
       await new Promise(r => setTimeout(r, 600))
-      store.attackerSide = null
-      phaserBridge.sendCommand('BattleScene', 'PLAY_DAMAGE', { side: 'enemy' })
+    }
+    store.attackerSide = null
 
-      dispatchMoveEffect(move.effect, p, e, store.playerStages, store.enemyStages, store.addLog, store.activeBattle)
+    dispatchMoveEffect(move.effect, p, e, store.playerStages, store.enemyStages, store.addLog, store.activeBattle)
     }
   } catch (err) {
     console.error('[Battle] Error in runPlayerAction:', err)
@@ -103,23 +103,18 @@ export async function runPlayerAction(store, moveIndex) {
     const isTr = store.activeBattle.isTrainer || store.activeBattle.isGym
     const enemyName = isTr ? e.name : `¡${e.name} salvaje`
     store.addLog(`${enemyName} fue derrotado!`, 'log-enemy', e)
-    phaserBridge.sendCommand('BattleScene', 'PLAY_FAINT', { side: 'enemy' })
+    gameBus.emit('PLAY_FAINT', { side: 'enemy' })
     
     // Si es entrenador, retirar con animación de energía y enviar al siguiente
     if (isTr && store.activeBattle.enemyTeam) {
-      await new Promise(r => setTimeout(r, 800))
-      phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'enemy' })
-      await new Promise(r => setTimeout(r, 800))
+      gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
       
       const nextEnemy = store.activeBattle.enemyTeam.find(p => p.hp > 0)
       if (nextEnemy) {
-        store.addLog(`¡${store.activeBattle.trainerName} va a enviar a ${nextEnemy.name}!`, 'log-enemy', nextEnemy)
-        await new Promise(r => setTimeout(r, 500))
-        store.activeBattle.enemy = nextEnemy
-        nextEnemy._revealed = true
-        phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
-        await new Promise(r => setTimeout(r, 800))
-        return
+      store.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', nextEnemy)
+      gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
+      await new Promise(r => setTimeout(r, 800))
+      return
       }
     }
 
@@ -141,13 +136,12 @@ export async function runEnemyAction(store) {
     if (bestIdx !== -1) {
       const newPoke = store.activeBattle.enemyTeam[bestIdx]
       store.addLog(`¡${store.activeBattle.trainerName || 'El entrenador'} retira a ${e.name}!`, 'log-enemy', e)
-      phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'enemy' })
+      gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
       await new Promise(r => setTimeout(r, 800))
       
       store.activeBattle.enemy = newPoke
-      newPoke._revealed = true
       store.addLog(`¡Envía a ${newPoke.name}!`, 'log-enemy', newPoke)
-      phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: 'enemy', pokemon: newPoke })
+      gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: newPoke })
       await new Promise(r => setTimeout(r, 800))
       return
     }
@@ -195,12 +189,12 @@ export async function runEnemyAction(store) {
       if (eResult.isSuperEffective) store.addLog('¡Es muy eficaz!', 'log-enemy', e)
       if (eResult.isNotVeryEffective) store.addLog('No es muy eficaz...', 'log-enemy', e)
       
-      phaserBridge.sendCommand('BattleScene', 'PLAY_MOVE', { side: 'enemy', type: enemyMove.type })
+    if (enemyMove.category !== 'status') {
       await new Promise(r => setTimeout(r, 600))
-      store.attackerSide = null
-      phaserBridge.sendCommand('BattleScene', 'PLAY_DAMAGE', { side: 'player' })
+    }
+    store.attackerSide = null
 
-      dispatchMoveEffect(enemyMove.effect, e, p, store.enemyStages, store.playerStages, store.addLog, store.activeBattle)
+    dispatchMoveEffect(enemyMove.effect, e, p, store.enemyStages, store.playerStages, store.addLog, store.activeBattle)
     }
   } catch (err) {
     console.error('[Battle] Error in runEnemyAction:', err)
@@ -208,12 +202,12 @@ export async function runEnemyAction(store) {
   }
 
   if (p.hp <= 0) {
-    store.addLog(`¡${p.name} cayó debilitado!`, 'log-player', p)
-    phaserBridge.sendCommand('BattleScene', 'PLAY_FAINT', { side: 'player' })
-    await new Promise(r => setTimeout(r, 800))
+    store.addLog(`¡${e.name} enemigo se debilitó!`, 'log-enemy', e)
+    gameBus.emit('PLAY_FAINT', { side: 'player' })
+    await new Promise(r => setTimeout(r, 1000))
     
     // Si es entrenador, retirar con animación
-    phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'player' })
+    gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
     await new Promise(r => setTimeout(r, 800))
     
     // Solo termina el combate si NO quedan Pokémon disponibles (excluyendo al que acaba de caer)

@@ -114,7 +114,7 @@
   background: Rgba(10, 12, 20, 1);
   padding: 32px;
   pointer-events: auto !important;
-  overflow: visible !important; // Critical fix: allow wheel events to bubble
+  overflow-y: auto; // Required for content scrolling when it exceeds modal height
   @include smooth-scroll;
 
   @media (max-width: 480px) {

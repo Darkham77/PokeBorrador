@@ -52,7 +52,7 @@ Defines what the item does when used on a Pokémon or globally.
 ### 2. Evolutionary Stones
 
 - **Validation**: The item only appears as "Usable" if the Pokémon has an evolution defined with that specific item in `evolutionData.js`.
-- **Trigger**: Activates the Phaser evolution scene before consuming the object.
+- **Trigger**: Activates the evolution logic and updates the state.
 
 ### 3. Special Objects (Held Items)
 

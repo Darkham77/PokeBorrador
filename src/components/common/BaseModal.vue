@@ -247,8 +247,8 @@ const cardStyles = computed(() => {
     
     // Si está pegado al borde, forzamos altura completa
     if (computedPositionMode.value === 'stuck') {
-      styles.height = '100vh'
-      styles.maxHeight = '100vh'
+      styles.height = '100dvh'
+      styles.maxHeight = '100dvh'
     }
   }
 
@@ -368,7 +368,7 @@ const computedCorners = computed(() => {
     // Floating panels shouldn't be full height
     .base-modal-card {
       height: auto !important;
-      max-height: 95vh !important;
+      max-height: 95dvh !important;
     }
   }
 
@@ -437,8 +437,10 @@ const computedCorners = computed(() => {
   .type-fullscreen & {
     width: 100vw !important;
     height: 100vh !important;
+    height: 100dvh !important;
     max-width: 100vw !important;
     max-height: 100vh !important;
+    max-height: 100dvh !important;
     border-radius: 0 !important;
     border: none !important;
     box-shadow: none !important;

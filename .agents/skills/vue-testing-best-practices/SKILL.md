@@ -26,7 +26,7 @@ Vue.js testing best practices, patterns, and common gotchas.
 - **CLI Debug Tool Testing**: When unit testing CLI-first debug tools (in `debugStore.js`), you MUST mock the `DBRouter` or `supabase` layer to prevent real database interactions.
   - **Pattern**: Mock `rpc`, `upsert`, and `from().select()` chains to return predictable results.
   - **MANDATORY**: Ensure the mock handles `getTimeOffset` and `setTimeOffset` correctly if testing time-manipulation tools.
-- **Robust Mocks for Combat Logic**: When unit testing complex combat turns (e.g., `battleTurn.js`) that interact with multiple Pinia stores and Phaser bridges, ensure the mock store provides a complete and consistent state. This includes nested properties (like `activeBattle.player.moves`) and all required base stats (`atk`, `def`, `maxHp`). Insufficient or shallow mocks often lead to silent failures or "property of undefined" errors during Vitest execution.
+- **Robust Mocks for Combat Logic**: When unit testing complex combat turns (e.g., `battleTurn.js`) that interact with multiple Pinia stores and the GameBus, ensure the mock store provides a complete and consistent state. This includes nested properties (like `activeBattle.player.moves`) and all required base stats (`atk`, `def`, `maxHp`). Insufficient or shallow mocks often lead to silent failures or "property of undefined" errors during Vitest execution.
 
 ## Reference
 

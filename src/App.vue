@@ -1,11 +1,11 @@
 <script setup>
-import { onMounted, ref, watch, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
 import { initBaseBridge } from '@/logic/bridges/baseBridge'
 import { checkDBCompatibility } from '@/logic/db/dbRouter'
-import { phaserBridge } from '@/logic/phaserBridge'
+
 import MainGameView from '@/views/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
 import ModalHost from '@/components/common/ModalHost.vue'
@@ -13,8 +13,7 @@ import ToastNotification from '@/components/ui/ToastNotification.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
 import LivePvPArena from '@/components/battle/LivePvPArena.vue'
 import BattleArena from '@/components/BattleArena.vue'
-import { usePlayerClassStore } from '@/stores/playerClass'
-import PhaserGame from '@/components/game/PhaserGame.vue'
+import PWAManager from '@/components/common/PWAManager.vue'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useLoadingStore } from '@/stores/loading'
@@ -28,14 +27,16 @@ const authStore = useAuthStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const profileStore = useProfileStore()
-const classStore = usePlayerClassStore()
 const _battleStore = useBattleStore()
 const loadingStore = useLoadingStore()
 const route = useRoute()
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref(null)
 
-const isLoginPage = computed(() => route.path === '/login')
+const isLoginPage = computed(() => {
+  if (typeof window === 'undefined') return false
+  return window.location.pathname === '/login' || route.path === '/login'
+})
 
 const loadingInfo = computed(() => {
   // 1. Centralized Loading Store (Highest Priority)
@@ -56,7 +57,7 @@ const loadingInfo = computed(() => {
   
   // 3. Game Data & Engine Boot (ULTRA-STICKY GATE)
   // No soltamos la pantalla negra hasta que TODO el motor esté listo
-  if (authStore.user && (!gameStore.isDataLoaded || !gameStore.isEngineReady)) {
+  if (authStore.user && !isLoginPage.value && (!gameStore.isDataLoaded || !gameStore.isEngineReady)) {
     const msg = !gameStore.isDataLoaded ? 'Cargando datos...' : 'Iniciando motor...'
     
     return { 
@@ -81,7 +82,7 @@ const loadingInfo = computed(() => {
 })
 
 const isReadyToSeeGame = computed(() => {
-  return authStore.user && gameStore.isReady && !loadingInfo.value.active
+  return authStore.user && loadingStore.isGateOpen
 })
 
 onMounted(async () => {
@@ -90,10 +91,14 @@ onMounted(async () => {
   initBaseBridge()
 
   // 2. Recuperar sesión (Autologin)
+  if (isLoginPage.value) {
+    loadingStore.clearAll() // Limpiar TODO si es login
+    loadingStore.markAppMounted() // Abrir puerta inmediatamente
+  }
   await authStore.checkSession()
 
-  // 3. Check DB Compatibility & Load Game
-  if (authStore.user) {
+  // 3. Check DB Compatibility & Load Game (Omitir si estamos en login para evitar bloqueos)
+  if (authStore.user && !isLoginPage.value) {
     const comp = await checkDBCompatibility(gameStore.db)
     if (!comp.compatible) {
       dbIncompatible.value = true
@@ -114,23 +119,11 @@ onMounted(async () => {
     profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
   }
   
-  // Escuchar la señal de listo del motor legacy
-  window.addEventListener('game-state-ready', (_e) => {
-    console.log('[App] Game State Ready Event received');
-    gameStore.isEngineReady = true;
-    classStore.syncTheme();
-  });
-
-  // Comprobar si ya estaba listo (Race Condition Guard)
-  if (window.legacyGameReady) {
-    gameStore.isEngineReady = true;
-  }
-
   // 4. Restore Zoom Level
   uiStore.setZoom(uiStore.appZoom)
 })
 
-// Intercept low-level events to prevent them from reaching Phaser when modals are open
+// Intercept low-level events to prevent them from reaching background interactions when modals are open
 const blockEvents = (e) => {
   if (!e.target || typeof e.target.closest !== 'function') return
 
@@ -145,7 +138,7 @@ const blockEvents = (e) => {
   // Find the nearest scrollable parent
   let curr = e.target
   let foundScrollable = null
-  while (curr && curr !== document.body && curr.id !== 'phaser-container') {
+  while (curr && curr !== document.body) {
     if (isScrollable(curr)) {
       foundScrollable = curr
       break
@@ -153,7 +146,7 @@ const blockEvents = (e) => {
     curr = curr.parentElement
   }
 
-  // CRITICAL: If we are inside a modal or a scrollable view, STOP propagation to Phaser
+  // CRITICAL: If we are inside a modal or a scrollable view, STOP propagation
   if (foundScrollable || isInsideModal) {
     e.stopPropagation()
     return
@@ -173,11 +166,6 @@ useWindowListener('touchmove', blockEvents, { capture: true, passive: false }); 
 // Bloqueo de Scroll Global para Modales (Pure Vue Managed)
 useBodyClass('modal-open', () => uiStore.isAnyBlockingModalOpen)
 
-// Sync Phaser Input State
-watch(() => uiStore.isAnyBlockingModalOpen, (val) => {
-  phaserBridge.setInputEnabled(!val)
-})
-
 const handleRetry = () => {
   window.location.reload()
 }
@@ -191,9 +179,9 @@ const handleRetry = () => {
       class="global-background-stars" 
     />
 
-    <!-- Pantalla de carga unificada (v-show para evitar parpadeos de DOM) -->
+    <!-- Pantalla de carga unificada (v-if para sacar del DOM al terminar o si es login) -->
     <div
-      v-show="loadingInfo.active"
+      v-if="!loadingStore.isGateOpen && !isLoginPage"
       class="loading-overlay"
       :class="{ 'global-overlay': loadingInfo.global }"
     >
@@ -207,13 +195,12 @@ const handleRetry = () => {
       </span>
     </div>
 
-    <!-- Capa de Juego (Phaser debe cargar en segundo plano para disparar isReady) -->
-    <template v-if="authStore.user">
-      <PhaserGame 
-        v-show="!isLoginPage && !uiStore.isAnyFullscreenModalOpen"
-        class="phaser-background" 
-      />
-      
+    <!-- Vistas de Ruta (Login tiene prioridad absoluta) -->
+    <template v-if="isLoginPage">
+      <router-view />
+    </template>
+    
+    <template v-else-if="authStore.user">
       <template v-if="gameStore.isReady">
         <MainGameView v-show="!uiStore.isAnyFullscreenModalOpen" />
         
@@ -240,7 +227,6 @@ const handleRetry = () => {
       </template>
     </template>
 
-    <!-- El LoginView o vistas de ruta solo si NO hay usuario o estamos en una ruta pública -->
     <router-view v-else-if="!authStore.loading" />
 
 
@@ -251,6 +237,7 @@ const handleRetry = () => {
     <ConnectionWarning />
     <LivePvPArena />
     <BattleArena />
+    <PWAManager />
     
     <!-- Optimized SVG Filters for Pixel Art -->
     <svg
@@ -389,9 +376,4 @@ const handleRetry = () => {
   color: #ff3333;
 }
 
-.phaser-background {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-base);
-}
 </style>

@@ -81,9 +81,9 @@ const isMoveDisabled = (move) => {
         @click.stop="emit('use-move', i)"
       >
         <div class="move-top">
-          <span class="m-name pixelated">{{ (move && move.name) ? move.name.toUpperCase() : '???' }}</span>
+          <span class="mv-name pixelated">{{ (move && move.name) ? move.name.toUpperCase() : '???' }}</span>
           <span
-            class="m-type-tag pixelated"
+            class="mv-type-tag pixelated"
             :style="{ background: PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal'] }"
           >
             {{ (getMoveData(move).type || 'normal').toUpperCase() }}
@@ -108,12 +108,13 @@ const isMoveDisabled = (move) => {
           <div class="detail-item">
             <span class="d-label pixelated">CAT:</span>
             <span class="d-val pixelated">
-              {{ { physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' }[getMoveData(move).cat] || '🔮 Estado' }}
+              <span class="cat-full">{{ { physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' }[getMoveData(move).cat] || '🔮 Estado' }}</span>
+              <span class="cat-short">{{ { physical: '⚔️ FIS', special: '✨ ESP', status: '🔮 EST' }[getMoveData(move).cat] || '🔮 EST' }}</span>
             </span>
           </div>
-          <div class="m-pp-wrap">
-            <span class="m-pp-label pixelated">PP</span>
-            <span class="m-pp-val pixelated">{{ move.pp }}/{{ move.maxPP }}</span>
+          <div class="mv-pp-wrap">
+            <span class="mv-pp-label pixelated">PP</span>
+            <span class="mv-pp-val pixelated">{{ move.pp }}/{{ move.maxPP }}</span>
           </div>
         </div>
       </button>

@@ -4,6 +4,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
+import { usePWA } from '@/composables/usePWA'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 // Components
@@ -17,6 +18,11 @@ const gameStore = useGameStore()
 
 const authTab = ref('login') // 'login' | 'signup'
 const serverMode = ref('local') // 'online' | 'local'
+const { canInstall, installApp } = usePWA()
+
+const handleInstallApp = async () => {
+  await installApp()
+}
 
 const username = ref('')
 const email = ref('')
@@ -88,6 +94,15 @@ const handleLocalLogin = async () => {
     loading.value = false
   }
 }
+
+// Corregir bucle infinito si ya se está logueado
+import { onMounted } from 'vue'
+onMounted(() => {
+  if (authStore.user) {
+    console.warn('[Login] Usuario ya logueado detectado en ruta /login. Forzando logout para resetear estado.')
+    authStore.logout()
+  }
+})
 </script>
 
 <template>
@@ -240,6 +255,17 @@ const handleLocalLogin = async () => {
       </div>
 
       <div class="auth-version-footer">
+        <div
+          v-if="canInstall"
+          class="auth-pwa-install"
+        >
+          <button
+            class="pwa-install-btn"
+            @click.stop="handleInstallApp"
+          >
+            📲 INSTALAR APP (FULLSCREEN)
+          </button>
+        </div>
         {{ appVersion }}
       </div>
     </div>
@@ -251,5 +277,27 @@ const handleLocalLogin = async () => {
 
 #auth-screen {
   background-image: v-bind(wallpaperUrl);
+}
+
+.auth-pwa-install {
+  margin-bottom: 10px;
+  
+  .pwa-install-btn {
+    @include pixelated;
+    background: var(--yellow);
+    color: black;
+    border: none;
+    padding: 8px 16px;
+    font-size: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    box-shadow: 0 3px 0 #b39200;
+    transition: all 0.2s;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 0 #b39200;
+    }
+  }
 }
 </style>

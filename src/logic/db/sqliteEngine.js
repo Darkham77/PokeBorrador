@@ -30,7 +30,9 @@ export async function persistSQLite() {
   try {
     const binary = _sqliteDb.export()
     await setToIDB(_sqliteKey, binary)
-    console.log(`[SQLite] Persistence successful`)
+    // Shadow Backup for DB
+    await setToIDB(_sqliteKey + '_backup', binary)
+    console.log(`[SQLite] Persistence successful (Main + Backup)`)
   } catch (e) { console.error('[SQLite] Persistence failed', e) }
 }
 
@@ -41,11 +43,30 @@ export async function initSQLite(options = {}) {
     if (options.inMemory !== undefined) _isInMemory = options.inMemory
 
     const SQL = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}` })
-    const savedBinary = await getFromIDB(_sqliteKey)
+    let savedBinary = await getFromIDB(_sqliteKey)
+
+    if (!savedBinary) {
+      console.warn('[SQLite] Primary database missing, checking Shadow Backup...')
+      savedBinary = await getFromIDB(_sqliteKey + '_backup')
+      if (savedBinary) {
+        console.log('[SQLite] Restored from Shadow Backup!')
+      }
+    }
 
     if (savedBinary) {
-      _sqliteDb = new SQL.Database(new Uint8Array(savedBinary))
-      console.log('[SQLite] Loaded from IndexedDB')
+      try {
+        _sqliteDb = new SQL.Database(new Uint8Array(savedBinary))
+        console.log('[SQLite] Loaded from IndexedDB')
+      } catch (dbErr) {
+        console.error('[SQLite] Database corruption detected! Attempting Backup Rescue...', dbErr)
+        const backupBinary = await getFromIDB(_sqliteKey + '_backup')
+        if (backupBinary) {
+          _sqliteDb = new SQL.Database(new Uint8Array(backupBinary))
+          console.log('[SQLite] Rescue successful from Backup.')
+        } else {
+          throw dbErr
+        }
+      }
     } else {
       _sqliteDb = new SQL.Database()
       console.log('[SQLite] Created new in-memory database')

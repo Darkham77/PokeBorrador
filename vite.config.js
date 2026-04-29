@@ -5,6 +5,8 @@ import path from 'path'
 import { generateMigrations } from './scripts/generate_migrations.js'
 import { sassTrapsFixer } from './scripts/vite-plugin-sass-traps.js'
 
+import { VitePWA } from 'vite-plugin-pwa'
+
 function migrationsPlugin() {
   return {
     name: 'migrations-generator',
@@ -24,7 +26,43 @@ export default defineConfig({
   plugins: [
     vue(),
     migrationsPlugin(),
-    sassTrapsFixer()
+    sassTrapsFixer(),
+    VitePWA({
+      registerType: 'prompt',
+      includeAssets: ['/sql-wasm.wasm', '/assets/fondo/logo%203.webp'],
+      manifest: {
+        name: 'Poké Vicio',
+        short_name: 'PokéVicio',
+        description: 'El juego definitivo de Pokémon para navegador',
+        theme_color: '#161a2e',
+        background_color: '#0a0c14',
+        display: 'standalone',
+        orientation: 'any',
+        icons: [
+          {
+            src: '/assets/fondo/logo%203.webp',
+            sizes: '512x512',
+            type: 'image/webp',
+            purpose: 'any'
+          },
+          {
+            src: '/assets/fondo/logo%203.webp',
+            sizes: '512x512',
+            type: 'image/webp',
+            purpose: 'maskable'
+          }
+        ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
+        // Aumentamos el límite de tamaño para assets grandes si los hay
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module'
+      }
+    })
   ],
   define: {
     __BUILD_TIME__: JSON.stringify(new Date().getFullYear().toString()),
@@ -59,13 +97,10 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1500, // Phaser pesa ~1.3MB, evitamos el warning
+    chunkSizeWarningLimit: 800, // Reduced limit as Phaser is gone
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules/phaser')) {
-            return 'vendor-phaser';
-          }
           if (id.includes('node_modules/vue') || id.includes('node_modules/pinia') || id.includes('node_modules/vue-router')) {
             return 'vendor-vue';
           }

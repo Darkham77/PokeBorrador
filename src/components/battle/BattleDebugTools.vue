@@ -3,10 +3,10 @@
 import { ref, computed, watch } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
-import { phaserBridge } from '@/logic/phaserBridge'
 import { useUIStore } from '@/stores/ui'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/data/pokedex'
+import { gameBus } from '@/logic/gameBus'
 
 const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
@@ -38,46 +38,24 @@ const toggleSearchMode = () => {
 }
 
 const testScenario1 = () => {
-  // Si veníamos de un preview, usamos ese mismo pokemon para el combate directo
   const currentPoke = battleStore.upcomingPokemon || battleStore.enemy
+  const pokeToUse = currentPoke ? { ...currentPoke } : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHP: 20 }
   
   battleStore.isSearching = false
   battleStore.upcomingPokemon = null
+  battleStore.state.enemy = pokeToUse
+  battleStore.state.over = false
   
-  // Aseguramos que el store tenga un combate activo y al pokemon correcto para la fase 1
-  const pokeToUse = currentPoke ? { ...currentPoke } : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHP: 20 }
-  
-  if (!battleStore.state) {
-    battleStore.syncFromLegacy({
-      enemy: pokeToUse,
-      player: { id: 25, name: 'Pikachu', hp: 35, maxHP: 35 },
-      over: false,
-      isTrainer: false,
-      isGym: false
-    })
-  } else {
-    battleStore.state.enemy = pokeToUse
-    battleStore.state.over = false
-  }
-  
-  phaserBridge.emit('PLAY_WILD_EMERGENCE')
+  // Forzar animación de emergencia (Salto)
+  gameBus.emit('START_BATTLE', { enemy: pokeToUse, isTrainer: false })
 }
 
 const testScenario2 = () => {
   battleStore.isSearching = true
-  
-  // Usar el enemigo actual (si existe) o el upcoming actual. Si no hay nada, Pidgey.
   const currentPoke = battleStore.upcomingPokemon || battleStore.enemy
+  const poke = currentPoke ? { ...currentPoke } : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHP: 20 }
   
-  battleStore.upcomingPokemon = currentPoke ? { ...currentPoke } : { 
-    id: 16, 
-    name: 'Pidgey', 
-    level: 5,
-    hp: 20,
-    maxHP: 20,
-    isShiny: false, 
-    isGuardian: false 
-  }
+  battleStore.upcomingPokemon = poke
 }
 
 const testScenario3 = () => {
@@ -88,22 +66,11 @@ const testScenario3 = () => {
   
   const poke = { ...battleStore.upcomingPokemon }
   
-  phaserBridge.emit('START_BATTLE', { isTrainer: false, isGym: false })
+  // IMPORTANTE: Emitir antes de limpiar el estado para que BattleArenaView detecte que estábamos buscando
+  gameBus.emit('START_BATTLE', { enemy: poke, isTrainer: false })
   
-  // Sincronizar el enemigo real con el que estábamos viendo
-  if (!battleStore.state) {
-    battleStore.syncFromLegacy({
-      enemy: poke,
-      player: { id: 25, name: 'Pikachu', hp: 35, maxHP: 35 },
-      over: false,
-      isTrainer: false,
-      isGym: false
-    })
-  } else {
-    battleStore.state.enemy = poke
-    battleStore.state.over = false
-  }
-  
+  battleStore.state.enemy = poke
+  battleStore.state.over = false
   battleStore.isSearching = false
   
   setTimeout(() => {
@@ -118,10 +85,7 @@ const faintPlayer = async () => {
   battleStore.addLog('DEBUG: Simulando Daño Letal...', 'log-danger')
   p.hp = 0
   
-  // Sincronizar UI de Phaser
-  phaserBridge.sendCommand('BattleScene', 'PLAY_DAMAGE', { side: 'player' })
   await new Promise(r => setTimeout(r, 600))
-  phaserBridge.sendCommand('BattleScene', 'PLAY_FAINT', { side: 'player' })
   
   battleStore.addLog(`¡${p.name} cayó debilitado!`, 'log-player', p)
 
@@ -166,8 +130,6 @@ const updateVisualSwap = (side = 'enemy') => {
   } else {
     if (battleStore.state?.enemy) battleStore.state.enemy.id = targetId
   }
-  
-  phaserBridge.sendCommand('BattleScene', 'DEBUG_VISUAL_SWAP', { side, id: targetId })
 }
 
 const incrementSwap = (side = 'enemy') => {
@@ -189,13 +151,13 @@ const decrementSwap = (side = 'enemy') => {
  * Animaciones de Energía
  */
 const testCatchAnim = (side = 'enemy') => {
-  phaserBridge.sendCommand('BattleScene', 'PLAY_CATCH_ENERGY', { side })
+  gameBus.emit('PLAY_CATCH_ENERGY', { side })
+  uiStore.notify(`Debug: Animación Captura (${side})`, '⚡')
 }
 
 const testReleaseAnim = (side = 'enemy') => {
-  const pokemon = side === 'player' ? battleStore.state?.player : battleStore.state?.enemy
-  if (!pokemon) return uiStore.notify('No hay pokemon para animar', '❌')
-  phaserBridge.sendCommand('BattleScene', 'PLAY_RELEASE_ENERGY', { side, pokemon })
+  gameBus.emit('PLAY_RELEASE_ENERGY', { side })
+  uiStore.notify(`Debug: Animación Salida (${side})`, '✨')
 }
 
 </script>

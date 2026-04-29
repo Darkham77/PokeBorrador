@@ -129,7 +129,7 @@ Before extracting lessons, you MUST create or update the `walkthrough.md` artifa
 
 ### 8. Lessons Extraction (LOCAL)
 
-Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a Phaser optimization). This is a **local documentation task** and MUST NOT involve a browser subagent.
+Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a CSS/GSAP optimization). This is a **local documentation task** and MUST NOT involve a browser subagent.
 
 - **Feedback Mandatory & Hard Stop**: After @/extract-lessons presents the lesson mapping table, you MUST **STOP** immediately. You are FORBIDDEN from calling any other tool (especially `git` or `write_to_file`) until the user provides explicit approval.
 - **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the extracted lessons.

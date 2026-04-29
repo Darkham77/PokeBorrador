@@ -47,10 +47,10 @@ To avoid lag and IDE saturation:
 
 ## ⚔️ Combat and State Simulation
 
-When testing complex states (e.g., defeat), synchronize the Phaser engine with the Pinia state:
+When testing complex states (e.g., defeat), verify the Pinia state directly:
 
-1. Visual trigger via `phaserBridge.sendCommand('BattleScene', 'EVENT', data)`.
-2. Store update (e.g., `pokemon.hp = 0`).
+1. Check store state via `window.__VITE_DEBUG__.battleStore.state`.
+2. Verify DOM updates in the Vue UI.
 3. Prioritize using `BattleDebugTools.vue` before injecting states manually via console.
 
 ### 4. UI Overrides vs. Database State

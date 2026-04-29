@@ -12,6 +12,14 @@ The system **NEVER** writes to both databases simultaneously. The mode is determ
 
 For Online mode, a `current_session_id` is used. If a change in this ID is detected from another client, the current session enters a conflict and is blocked to prevent data corruption by concurrent writes.
 
+### 3. Autonomous Lazy Initialization
+
+The `DBRouter` is the absolute owner of the Supabase client lifecycle.
+
+- **Lazy Init**: The Supabase client is NEVER created on boot if the mode is `offline`. It is instantiated only when a cloud-dependent property (like `auth` or `rpc`) is accessed in `online` mode.
+- **Autonomous Configuration**: The `supabase.js` file only provides the config; the `DBRouter` imports `createClient` and manages the instance internally.
+- **Silent Boot**: This architecture prevents "Tracking Prevention" warnings on `localhost` or local-first environments.
+
 ---
 
 ## ⏳ Time Protocol and Simulation
@@ -49,3 +57,4 @@ In offline mode, changes are saved in memory and synchronized with the browser's
 - **Do Not Use Supabase Directly**: Always use `gameStore.db` or the injected router.
 - **RPCs**: If you create an RPC on the server, you MUST create its equivalent or a mock in `dbRouter.js` so that offline mode does not break.
 - **Transactions**: There are no guaranteed multi-table transactions in the router; always design logic to be atomic at the row level whenever possible.
+- **Unit Testing & Mocking**: When mocking `DBRouter` in unit tests, you MUST provide a dummy URL/Key to satisfy the configuration check and explicitly inject your mock client into the private `_realClient` property to prevent the lazy-initializer from attempting a real connection.

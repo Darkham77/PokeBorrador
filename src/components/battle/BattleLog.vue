@@ -68,10 +68,10 @@ onMounted(() => {
 @use "@/styles/core/tools" as *;
 
 .battle-log {
-  height: 100%;
-  width: 100%;
+  flex: 1;
   min-height: 0;
-  padding: 20px;
+  width: 100%;
+  padding: 10px 15px;
   overflow-y: auto !important;
   display: block;
   @include smooth-scroll;

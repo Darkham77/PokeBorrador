@@ -12,7 +12,7 @@
 What type of game?
 │
 ├── 2D Game
-│   ├── Full game engine features? → Phaser
+│   ├── Component-based (Vue/React)? → Pure Vue/GSAP
 │   └── Raw rendering power? → PixiJS
 │
 ├── 3D Game
@@ -27,7 +27,6 @@ What type of game?
 
 | Framework | Type | Best For |
 | :--- | :--- | :--- |
-| **Phaser 4** | 2D | Full game features |
 | **PixiJS 8** | 2D | Rendering, UI |
 | **Three.js** | 3D | Visualizations, lightweight |
 | **Babylon.js 7** | 3D | Full engine, XR |

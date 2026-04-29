@@ -14,7 +14,11 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Techniques**: Glassmorphism (`-webkit-backdrop-filter: Blur(); backdrop-filter: Blur();`), HSL gradients, smooth shadows, and fluid transitions.
 - **Goal**: The "frame" must feel premium, modern, and reactive.
 - **Dynamic Layout Balance**: Use `flex-wrap: wrap` with flexible bases (e.g., `flex: 1 1 650px`) to create organic responsive transitions that adapt to intermediate viewports (like 1360px) without rigid breakpoints.
-- **Elastic Chat Pattern (Combat)**: In vertical combat layouts, the Battle Log (Chat) MUST use `flex: 1` and `min-height: 0` to act as the primary space absorber. This ensures the arena stays at the top and the action buttons stay pinned to the bottom of the modal/screen.
+- **Hybrid Battle Log Layout (Combat)**:
+  - **Desktop (Side-by-side)**: The log MUST use `flex: 1` to fill the entire vertical height of the grid.
+  - **Mobile/Stacked (≤ 760px)**: The log MUST switch to a fixed/compact height (Standard: **90px** / ~2 lines) to prevent pushing action controls out of the viewport.
+  - **PWA/Split-Screen**: In split-screen mode where height is constrained but width is ample, prioritize `flex: 1` for the chat to fill available vertical space.
+  - **WHY**: Balances deep history readability on large screens with gameplay space protection on small screens.
 - **Fullscreen 100vh Integrity**: Fullscreen combat modals MUST force `height: 100vh` across all parent containers (including `modal-scrollable-content`) to prevent background "bleed" or purple gaps at the bottom.
 - **Bottom Anchor Precision**: In fullscreen mode, action buttons MUST be positioned with a maximum of `2px` from the bottom edge (or `0px` with a slight negative margin) to ensure they feel physically anchored to the device frame.
 - **HUD Padding Synchronization**: To eliminate layout shifts ("jumps") during page load or HUD transitions, the main content area MUST use dynamic CSS variables (e.g., `--hud-top-padding`) calculated from the HUD's actual height.
@@ -22,9 +26,20 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **CSS Usage**: `padding-top: var(--hud-top-padding, 110px);`.
 - **Mobile Fullscreen Mandate**: All complex management modals (Inventory, Team, Shop, Pokedex) MUST switch to `type: 'fullscreen'` on viewports ≤ 950px.
   - **WHY**: Maximizes usable space on small screens and eliminates "floating card" artifacts that reduce visibility.
-- **Scroll Delegation (Fullscreen)**: In fullscreen mode, the main modal container MUST use `overflow: hidden`. Scroll responsibility MUST be delegated to an internal `.modal-scrollable-content` with `flex: 1`, `min-height: 0`, and `overflow-y: auto`.
+- **Scroll Delegation (Fullscreen)**: In fullscreen mode, the main modal container MUST use `overflow: hidden`. Scroll responsibility MUST be delegated to an internal `.modal-scrollable-content` (or `.upd-core-body`) with `flex: 1`, `min-height: 0`, and `overflow-y: auto`.
+  - **CRITICAL**: Never use `overflow: visible !important` on scroll-delegated containers as it breaks internal scrolling and causes content clipping.
   - **WHY**: Prevents double scrollbars and ensures the header/footer remain pinned to the viewport edges.
 - **Responsive Header Stacking**: Modal headers containing both a title and a search/control group MUST switch to `flex-direction: column` and `align-items: stretch` on mobile to prevent horizontal clipping.
+- **Dynamic Viewport (dvh) Standard**: For full-screen containers (Modals, Combat Arena, Main View), use `dvh` units (e.g., `min-height: 100dvh`) instead of `vh`. This ensures the UI is resilient to browser UI bars (address bar, navigation) on iOS and Android.
+- **Loading Orchestration Gate (Sync Bypass)**: The global loading veil MUST be managed via `v-if` based on `LoadingStore.isGateOpen`.
+  - **CRITICAL**: To prevent infinite loops on authentication routes, the gate MUST be forced OPEN síncronamente in `App.vue` if `window.location.pathname === '/login'`, bypassing the standard `onMounted` flow.
+  - **WHY**: Ensures the user can always escape a corrupted session or "loading data" loop by manually navigating to login.
+
+- **PWA Integrity (Desktop-First Hybrid)**:
+  - **Display Mode**: ALWAYS use `display: standalone` in the manifest. Avoid `fullscreen` to prevent desktop browsers from hiding scrollbars or misidentifying the app as mobile-only.
+  - **Breakpoint Parity (760px)**: JS window listeners and CSS media queries MUST share the exact same pixel value (Standard: **760px**) to avoid layout "dead zones".
+  - **Forced HUD Visibility**: Use high-specificity CSS (e.g., `.main-hud-desktop`) with `min-width: 761px` to ensure HUD elements remain visible on PC screens even if PWA mode triggers mobile-first states.
+  - **Permission Persistence**: Persist PWA setup and notification permission states in `localStorage` to avoid re-triggering intrusive setup modals on every session.
 
 ### 2. Pixel Art Content (The "Game Heart")
 
@@ -80,6 +95,11 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Badge Centralization**: All Pokémon status indicators (shiny, items, tags) MUST have their icon and label metadata centralized in `src/logic/constants/tags.js`.
 - **Gender Badge Module**: ALWAYS use the `.m-badge-gender` standard class and symbols (♂/♀) for gender rendering. For compact displays (e.g., inside level badges), use a `.mini` modifier that utilizes `@include badge-gender(Npx)` to maintain design token consistency.
 - **Pokemon Identity Stack**: Standardize name display on cards using the "Name Stack": The current nickname (or name) as the primary pixel title, with the species name as a small, uppercase, low-opacity subtitle.
+- **Dynamic Abbreviation Toggle**: In responsive grids (like combat moves), use a dual-label system (`cat-full` and `cat-short`) controlled by CSS media queries.
+  - **WHY**: Allows professional full text on desktop while automatically switching to optimized abbreviations (e.g., "Físico" ➡️ "FIS") on mobile without JS overhead.
+- **Responsive Attack Grid (3-4 Row Layout)**: For combat move cards on mobile:
+  - **Threshold 1 (< 560px)**: Split stats (POT, PREC, CAT, PP) into a 2x2 grid.
+  - **Threshold 2 (< 420px)**: Move the Type Tag to Row 1 (compacted) and stack Name and Type vertically or horizontally with ellipsis if needed. Total card height should support 3-4 logical rows.
 
 ---
 
@@ -200,7 +220,7 @@ To prevent "z-index wars" and ensure consistent interaction, all layers MUST fol
 
 ### 1. Standard Layers (0-999)
 
-- **Base**: 0 (Map, Phaser Background).
+- **Base**: 0 (Map Background).
 - **HUD**: 100-200.
 - **Standard Modals**: 300-500.
 - **Overlays/Blocking Modals**: 600-800.

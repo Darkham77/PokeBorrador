@@ -33,10 +33,13 @@ export async function createTestDBRouter() {
     from: () => ({ select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }) })
   };
 
-  const router = new DBRouter(mockSupabase, 'offline', {
+  const router = new DBRouter({ url: 'http://localhost', key: 'mock' }, 'offline', {
     inMemory: true,
     dbName: 'pokevicio_unit_test_db'
   });
+
+  // Inject the mock into the internal private client to avoid lazy initialization failures in tests
+  router._realClient = mockSupabase;
 
   return router;
 }

@@ -105,9 +105,9 @@ const hexToRgb = (hex) => {
           </template>
 
           <div class="move-top">
-            <span class="m-name pixelated">{{ m.name || '???' }}</span>
+            <span class="mv-name pixelated">{{ m.name || '???' }}</span>
             <span
-              class="m-type-tag pixelated"
+              class="mv-type-tag pixelated"
               :style="{ background: PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'] }"
             >
               {{ (m.type || 'normal').toUpperCase() }}
@@ -135,9 +135,9 @@ const hexToRgb = (hex) => {
                 {{ { physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' }[m.cat] || '🔮 Estado' }}
               </span>
             </div>
-            <div class="m-pp-wrap">
-              <span class="m-pp-label pixelated">PP</span>
-              <span class="m-pp-val pixelated">{{ m.pp }}/{{ m.maxPP }}</span>
+            <div class="mv-pp-wrap">
+              <span class="mv-pp-label pixelated">PP</span>
+              <span class="mv-pp-val pixelated">{{ m.pp }}/{{ m.maxPP }}</span>
             </div>
           </div>
         </PVTooltip>
@@ -196,7 +196,7 @@ const hexToRgb = (hex) => {
             </div>
             <div class="grid-cell move-type">
               <span
-                class="m-type-tag pixelated"
+                class="mv-type-tag pixelated"
                 :style="{ background: PDEX_TYPE_COLORS[m.type.toLowerCase()] }"
               >
                 {{ m.type.toUpperCase() }}

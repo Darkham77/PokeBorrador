@@ -60,13 +60,13 @@ const close = () => {
           class="move-btn"
           @click.stop="handleApplyPPUp(i)"
         >
-          <div class="m-main">
-            <span class="m-name">{{ m.name }}</span>
-            <span class="m-pp">{{ m.pp }}/{{ m.maxPP }} PP</span>
+          <div class="mv-main">
+            <span class="mv-name">{{ m.name }}</span>
+            <span class="mv-pp">{{ m.pp }}/{{ m.maxPP }} PP</span>
           </div>
-          <div class="m-bar">
+          <div class="mv-bar">
             <div
-              class="m-fill"
+              class="mv-fill"
               :style="{ width: (m.maxPP / (pokemonDataProvider.getMoveData(m.name)?.pp * 1.6 || 64) * 100) + '%' }"
             />
           </div>
@@ -113,16 +113,16 @@ const close = () => {
     border-color: Rgba(255, 255, 255, 0.2);
   }
 
-  .m-main { display: flex; justify-content: space-between; margin-bottom: 10px; }
-  .m-name { font-weight: 800; font-size: 15px; }
-  .m-pp { 
+  .mv-main { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .mv-name { font-weight: 800; font-size: 15px; }
+  .mv-pp { 
     @include pixelated;
     font-size: 8px;
     color: var(--yellow);
   }
   
-  .m-bar { height: 6px; background: Rgba(0,0,0,0.3); border-radius: 3px; overflow: hidden; }
-  .m-fill { 
+  .mv-bar { height: 6px; background: Rgba(0,0,0,0.3); border-radius: 3px; overflow: hidden; }
+  .mv-fill { 
     height: 100%; 
     background: Linear-Gradient(90deg, var(--blue), Rgba(96, 165, 250, 1)); 
     transition: width 0.3s;

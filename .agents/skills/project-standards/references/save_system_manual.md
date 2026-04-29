@@ -24,6 +24,14 @@ NEVER trust indices passed from the UI (which may be filtered or sorted).
 
 - **Pattern**: Always look for the element in the original Store array using its `UID` before applying a mutation.
 
+### 4. Safe Storage (Privacy Resilience)
+
+Direct access to `localStorage` or `sessionStorage` can throw `SecurityError` if blocked by the browser's "Tracking Prevention" or strict privacy settings.
+
+- **Mandatory**: NEVER use `localStorage` directly. ALWAYS use the `safeStorage` helper (`src/logic/utils/storage.js`).
+- **Graceful Failure**: If storage is blocked, the system should return `null` and allow the application to continue in "Volatile Mode" instead of crashing.
+- **Boot Privacy**: During `checkSession`, skip cloud validation if `sessionMode` is `offline` to prevent unnecessary storage access triggers and browser warnings.
+
 ---
 
 ## 🏗️ Data Architecture (DBRouter)
@@ -43,8 +51,13 @@ If you modify the database schema:
 
 ---
 
-## 🔒 Session Conflicts (Last-In-Wins)
+## 🔒 Session Conflicts & Authentication
 
+### 1. Atomic Auth Cleanup
+Accessing the `/login` route MUST trigger an immediate, synchronous cleanup of local session state (clearing `authStore` and `gameStore` memory) before any data loading begins.
+- **WHY**: Prevents authenticated state from interfering with the login view and ensures the "Loading Gate" remains open for the user.
+
+### 2. Tab Conflicts (Last-In-Wins)
 Each browser tab generates a unique `SessionID`:
 
 - **Conflict Detection**: If a change in the `current_session_id` of the DB is detected from another tab, the current instance MUST immediately disable write permissions to prevent data corruption.

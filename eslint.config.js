@@ -41,6 +41,7 @@ export default [
   {
     ignores: [
       'dist/**',
+      'dev-dist/**',
       'node_modules/**',
       'backup_legacy_code/**',
       '_css_migration_backup/**',

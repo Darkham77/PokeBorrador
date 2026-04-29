@@ -3,6 +3,7 @@
  * Unified Data Persistence Layer with Strict Session Isolation.
  * Routes queries to Supabase (Cloud) OR SQLite (Local), NEVER both in the same session.
  */
+import { createClient } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery';
 import { initSQLite, persistSQLite, queryLocal } from './sqliteEngine';
 import { DATABASE_MIGRATIONS } from './migrations_data';
@@ -10,12 +11,13 @@ import { useLoadingStore } from '@/stores/loading';
 
 export class DBRouter {
   /**
-   * @param {Object} supabaseClient - The initialized Supabase client.
+   * @param {Object} config - { url, key } for Supabase.
    * @param {String} mode - 'online' | 'offline'
    * @param {Object} options - Options for local DB (e.g., { inMemory: true })
    */
-  constructor(supabaseClient, mode = 'online', options = {}) {
-    this.realClient = supabaseClient;
+  constructor(config = {}, mode = 'online', options = {}) {
+    this.config = config;
+    this._realClient = null;
     this.mode = mode;
     this.options = options;
     this._initialized = false;
@@ -24,6 +26,36 @@ export class DBRouter {
     this._timeOffset = 0; // ms
     
     console.log(`[DBRouter] Initialized in STRICT ${mode.toUpperCase()} mode.`);
+  }
+
+  /**
+   * Internal lazy initializer for Supabase client.
+   */
+  _ensureClient() {
+    if (this._realClient) return this._realClient;
+    
+    const { url, key } = this.config;
+    if (!url || !key) {
+      console.warn('[DBRouter] Missing Supabase config. Online operations will fail.');
+      return null;
+    }
+
+    try {
+      console.log('[DBRouter] Lazily initializing Supabase client...');
+      this._realClient = createClient(url, key);
+      return this._realClient;
+    } catch (err) {
+      console.error('[DBRouter] Failed to initialize Supabase client:', err);
+      return null;
+    }
+  }
+
+  /**
+   * Getter for the real Supabase client (Lazy).
+   */
+  get realClient() {
+    if (this.mode === 'offline') return null;
+    return this._ensureClient();
   }
 
   /**
@@ -200,6 +232,11 @@ export class DBRouter {
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
       };
     }
+    
+    if (!this.realClient) {
+      throw new Error('[DBRouter] Attempted to access Auth while online client is not initialized.');
+    }
+
     return this.realClient.auth;
   }
 
@@ -226,6 +263,17 @@ export class DBRouter {
       };
       return mockChannel;
     }
+
+    if (!this.realClient) {
+      console.warn(`[DBRouter] Channel '${name}' requested but online client not ready. Returning mock.`);
+      // Return a basic mock that doesn't do anything to avoid crashes
+      return {
+        on: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
+        subscribe: () => ({ unsubscribe: () => {} }),
+        send: () => Promise.resolve('ok')
+      };
+    }
+
     return this.realClient.channel(name);
   }
 }

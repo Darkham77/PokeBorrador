@@ -44,7 +44,7 @@
       margin: 0 0 12px 0;
       background: Linear-Gradient(to bottom, var(--white), var(--gray));
       -webkit-background-clip: text;
-      -webkit-background-clip: text; background-clip: text;;
+      -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;
       -webkit-text-fill-color: transparent;
       @include pixelated;
 

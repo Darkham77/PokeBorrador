@@ -13,7 +13,7 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import BattleInfoCard from './BattleInfoCard.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { phaserBridge } from '@/logic/phaserBridge'
+import { gameBus } from '@/logic/gameBus'
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
@@ -56,8 +56,8 @@ const upcomingIsEmerging = ref(false)
 const isInitialLoad = ref(true)
 
 const activeEnemyData = computed(() => {
-  // Obtenemos el enemigo oficial, pero lo ignoramos si el combate ya terminó (para evitar fantasmas)
-  const officialEnemy = (battle.value && !battle.value.over) ? enemy.value : null
+  // Obtenemos el enemigo oficial. Durante el estado final (isFinishing), lo mantenemos si sigue vivo.
+  const officialEnemy = (battle.value && (!battle.value.over || (isFinishing.value && enemy.value?.hp > 0))) ? enemy.value : null
 
   // Durante búsqueda, el 'upcoming' es prioritario.
   if (isSearching.value) return upcomingPokemon.value
@@ -256,7 +256,7 @@ const detectFeetYFromUrl = async (url, isFlying = false) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
-      const canvas = document.createElement('canvas')
+      const canvas = document.createElement('canvas') // [PureVue-Ignore]
       const ctx = canvas.getContext('2d')
       canvas.width = img.width
       canvas.height = img.height
@@ -307,7 +307,7 @@ const computedWeather = computed(() => {
 const shadowUrl = ref('')
 const generatePixelShadow = (w = 21, h = 6) => {
   if (typeof document === 'undefined') return ''
-  const canvas = document.createElement('canvas')
+  const canvas = document.createElement('canvas') // [PureVue-Ignore]
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d')
@@ -352,14 +352,14 @@ onMounted(() => {
   shadowUrl.value = generatePixelShadow()
   
   // Listen for energy animation commands
-  phaserBridge.on('PLAY_CATCH_ENERGY', (e) => handleCatchRequest(e.detail))
-  phaserBridge.on('PLAY_WITHDRAW', (e) => handleCatchRequest(e.detail))
+  gameBus.on('PLAY_CATCH_ENERGY', (e) => handleCatchRequest(e.detail))
+  gameBus.on('PLAY_WITHDRAW', (e) => handleCatchRequest(e.detail))
   
-  phaserBridge.on('PLAY_RELEASE_ENERGY', (e) => handleReleaseRequest(e.detail))
-  phaserBridge.on('PLAY_SEND_OUT', (e) => handleReleaseRequest(e.detail))
+  gameBus.on('PLAY_RELEASE_ENERGY', (e) => handleReleaseRequest(e.detail))
+  gameBus.on('PLAY_SEND_OUT', (e) => handleReleaseRequest(e.detail))
 
   // Trigger for start battle
-  phaserBridge.on('START_BATTLE', (e) => {
+  gameBus.on('START_BATTLE', (e) => {
     const wasAlreadySearching = isSearching.value || !!upcomingPokemon.value
     
     const { isTrainer, isGym } = e.detail || e
@@ -379,7 +379,7 @@ onMounted(() => {
     }
   })
 
-  phaserBridge.on('PLAY_WILD_EMERGENCE', () => triggerWildEmergence())
+  gameBus.on('PLAY_WILD_EMERGENCE', () => triggerWildEmergence())
 
   // Initial check on mount
   if (battle.value && !battle.value.over) {

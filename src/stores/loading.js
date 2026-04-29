@@ -4,6 +4,7 @@ import { ref, computed } from 'vue'
 export const useLoadingStore = defineStore('loading', () => {
   // A stack of loading states to support nested/parallel operations without overwriting each other
   const stack = ref([])
+  const isAppMounted = ref(false)
 
   /**
    * Starts a loading operation and adds it to the stack.
@@ -76,13 +77,26 @@ export const useLoadingStore = defineStore('loading', () => {
     }
   }
 
+  function markAppMounted() {
+    isAppMounted.value = true
+    console.log('[LoadingStore] App View Mounted')
+  }
+
+  const isGateOpen = computed(() => {
+    // The gate opens ONLY when the app is mounted AND there are no active loading tasks
+    return isAppMounted.value && stack.value.length === 0
+  })
+
   return {
     stack,
     current,
     isActive,
+    isAppMounted,
+    isGateOpen,
     start,
     finish,
     setProgress,
-    clearAll
+    clearAll,
+    markAppMounted
   }
 })

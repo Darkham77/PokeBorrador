@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { runPlayerAction } from '@/logic/battle/battleTurn'
-import { phaserBridge } from '@/logic/phaserBridge'
+import { gameBus } from '@/logic/gameBus'
 
-vi.mock('@/logic/phaserBridge', () => ({
-  phaserBridge: {
-    sendCommand: vi.fn(),
+vi.mock('@/logic/gameBus', () => ({
+  gameBus: {
     emit: vi.fn()
   }
 }))
@@ -54,8 +53,10 @@ describe('battleTurn.js', () => {
     }
   })
 
-  it('should trigger phaser commands during player action', async () => {
+  it('should trigger gameBus animations during player action', async () => {
+    // Mock e.hp = 0 to trigger faint emission
+    mockStore.activeBattle.enemy.hp = 0
     await runPlayerAction(mockStore, 0)
-    expect(phaserBridge.sendCommand).toHaveBeenCalled()
+    expect(gameBus.emit).toHaveBeenCalledWith('PLAY_FAINT', { side: 'enemy' })
   })
 })

@@ -1,12 +1,9 @@
 <script setup>
-import { computed, watch, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useUIStore } from '@/stores/ui'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
-import { phaserBridge } from '@/logic/phaserBridge'
-
-// Sub-components (Reusing from battle directory)
 import BattleInfoCard from './BattleInfoCard.vue'
 import BattleMovesGrid from './BattleMovesGrid.vue'
 import { useModalStore } from '@/stores/modals'
@@ -16,29 +13,15 @@ const livePvP = useLivePvPStore()
 const _uiStore = useUIStore()
 const { _getHpPct, _getHpClass } = useBattleVisuals()
 
-const gs = computed(() => gameStore.state)
 const battle = computed(() => livePvP.battleState)
 
-// Sync with Phaser
-const syncToPhaser = () => {
-  if (battle.value.active) {
-    // We reuse the BattleScene but send PvP data
-    phaserBridge.sendCommand('BattleScene', 'SYNC_BATTLE', {
-      isPvP: true,
-      locationId: 'pvp',
-      cycle: gs.value.dayCycle || 'day',
-      player: battle.value.myTeam[battle.value.myActiveIdx],
-      enemy: battle.value.enemyTeam[battle.value.enemyActiveIdx]
-    })
-  }
+// PvP Sync (Pure Vue)
+const syncToGameBus = () => {
+  // Aquí podríamos emitir eventos al gameBus si fuera necesario
 }
 
-watch(() => battle.value.active, (active) => {
-  if (active) syncToPhaser()
-}, { immediate: true })
-
 onMounted(() => {
-  if (battle.value.active) syncToPhaser()
+  syncToGameBus()
 })
 
 // Actions

@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { supabase } from '@/logic/supabase'
 import { syncServerTime } from '@/logic/timeUtils'
 import { useLoadingStore } from './loading'
+import { safeStorage } from '@/logic/utils/storage'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -10,14 +11,12 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(true)
   const sessionId = ref(crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2))
   const sessionConflict = ref(false)
-  const sessionMode = ref(localStorage.getItem('pokevicio_session_mode') || 'online') // 'online' | 'offline'
+  const sessionMode = ref(safeStorage.getItem('pokevicio_session_mode') || 'online') // 'online' | 'offline'
   const isOnline = ref(navigator.onLine)
   const connectionLost = ref(false)
   const sessionCheckInterval = ref(null)
   const isBanned = ref(false)
   const banReason = ref('')
-
-  // Monitoreo de Conectividad (Solo para modo Online)
 
   // Monitoreo de Conectividad (Solo para modo Online)
   if (typeof window !== 'undefined') {
@@ -59,13 +58,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Guardar modo de sesión para persistencia en recarga
   watch(sessionMode, (newMode) => {
-    localStorage.setItem('pokevicio_session_mode', newMode)
+    safeStorage.setItem('pokevicio_session_mode', newMode)
   })
 
   // Persistir cambios en el usuario local (como db_version) para evitar re-migraciones
   watch(user, (newUser) => {
     if (sessionMode.value === 'offline' && newUser) {
-      localStorage.setItem('pokevicio_local_user', JSON.stringify(newUser))
+      safeStorage.setItem('pokevicio_local_user', JSON.stringify(newUser))
     }
   }, { deep: true })
 
@@ -81,67 +80,71 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     useLoadingStore().start('auth_init', 'Iniciando sesión...', 'Conectando con el servidor', false)
     try {
-      // 1. Verificar sesión con timeout de seguridad (3s) para evitar bloqueos infinitos
-      const sessionPromise = supabase.auth.getSession();
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000));
-      
-      const { data } = await Promise.race([sessionPromise, timeoutPromise]);
-      
-      if (data?.session?.user) {
-        session.value = data.session
-        user.value = data.session.user
-        sessionMode.value = 'online'
-        if (supabase && typeof supabase.setMode === 'function') {
-          supabase.setMode('online')
-        }
+      if (sessionMode.value === 'online') {
+        // 1. Verificar sesión con timeout de seguridad (3s) para evitar bloqueos infinitos
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000));
         
-        // Registrar sesión en DB para unicidad con timeout
-        try {
-          const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value.id)
-          await Promise.race([updatePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('UPDATE_TIMEOUT')), 3000))])
-        } catch (e) {
-          console.warn('[Auth] Session ID update failed or timed out:', e)
-        }
-
-        startSessionMonitoring()
+        const { data } = await Promise.race([sessionPromise, timeoutPromise]);
         
-        // Fetch profile meta con timeout
-        try {
-          const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value.id).single()
-          const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 3000))])
-          
-          if (profile) {
-            user.value.db_version = profile.db_version || 1
-            if (profile.is_banned) {
-              isBanned.value = true
-              banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
-              logout() // Force out
-              return
-            }
-          }
-        } catch (e) {
-          console.warn('[Auth] Profile fetch failed or timed out:', e)
-          if (user.value && !user.value.db_version) user.value.db_version = 1
-        }
-
-        // Sync time only for online session
-        syncServerTime()
-      } else {
-        // 2. Si no hay sesión online, buscar local
-        const localUser = localStorage.getItem('pokevicio_local_user')
-        if (localUser) {
-          user.value = JSON.parse(localUser)
-          sessionMode.value = 'offline'
+        if (data?.session?.user) {
+          session.value = data.session
+          user.value = data.session.user
+          sessionMode.value = 'online'
           if (supabase && typeof supabase.setMode === 'function') {
-            supabase.setMode('offline')
+            supabase.setMode('online')
           }
-          if (!user.value.db_version) user.value.db_version = 1
+          
+          // Registrar sesión en DB para unicidad con timeout
+          try {
+            const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value.id)
+            await Promise.race([updatePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('UPDATE_TIMEOUT')), 3000))])
+          } catch (e) {
+            console.warn('[Auth] Session ID update failed or timed out:', e)
+          }
+
+          startSessionMonitoring()
+          
+          // Fetch profile meta con timeout
+          try {
+            const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value.id).single()
+            const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 3000))])
+            
+            if (profile) {
+              user.value.db_version = profile.db_version || 1
+              if (profile.is_banned) {
+                isBanned.value = true
+                banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
+                logout() // Force out
+                return
+              }
+            }
+          } catch (e) {
+            console.warn('[Auth] Profile fetch failed or timed out:', e)
+            if (user.value && !user.value.db_version) user.value.db_version = 1
+          }
+
+          // Sync time only for online session
+          syncServerTime()
+          return // Finalizamos con éxito online
         }
+      }
+
+      // Si llegamos aquí, o estamos en modo offline o falló la sesión online
+      // 2. Si no hay sesión online, buscar local
+      const localUser = safeStorage.getItem('pokevicio_local_user')
+      if (localUser) {
+        user.value = JSON.parse(localUser)
+        sessionMode.value = 'offline'
+        if (supabase && typeof supabase.setMode === 'function') {
+          supabase.setMode('offline')
+        }
+        if (!user.value.db_version) user.value.db_version = 1
       }
     } catch (e) {
       console.warn('[Auth] CheckSession failed or timed out:', e)
       // En caso de error/timeout, si hay usuario local, lo mantenemos como fallback
-      const localUser = localStorage.getItem('pokevicio_local_user')
+      const localUser = safeStorage.getItem('pokevicio_local_user')
       if (localUser && !user.value) {
         user.value = JSON.parse(localUser)
         sessionMode.value = 'offline'
@@ -255,12 +258,12 @@ export const useAuthStore = defineStore('auth', () => {
       }
       user.value = userData
       sessionMode.value = 'offline'
-      localStorage.setItem('pokevicio_session_mode', 'offline')
+      safeStorage.setItem('pokevicio_session_mode', 'offline')
       if (supabase && typeof supabase.setMode === 'function') {
         supabase.setMode('offline')
       }
       connectionLost.value = false 
-      localStorage.setItem('pokevicio_local_user', JSON.stringify(userData))
+      safeStorage.setItem('pokevicio_local_user', JSON.stringify(userData))
       
       // Sync time will handle offline state internally
       syncServerTime()
@@ -283,8 +286,8 @@ export const useAuthStore = defineStore('auth', () => {
       console.warn('SignOut error:', e)
     }
 
-    localStorage.removeItem('pokevicio_local_user')
-    localStorage.removeItem('pokevicio_session_mode')
+    safeStorage.removeItem('pokevicio_local_user')
+    safeStorage.removeItem('pokevicio_session_mode')
     
     if (sessionCheckInterval.value) clearInterval(sessionCheckInterval.value)
     
@@ -300,14 +303,14 @@ export const useAuthStore = defineStore('auth', () => {
 
   function clearSessionLocal() {
     console.log('[AuthStore] Limpiando estado local sin recarga...')
-    localStorage.removeItem('pokevicio_local_user')
-    localStorage.removeItem('pokevicio_session_mode')
+    safeStorage.removeItem('pokevicio_local_user')
+    safeStorage.removeItem('pokevicio_session_mode')
     user.value = null
     session.value = null
     sessionConflict.value = false
     sessionMode.value = 'online'
     
-    // CRITICAL: Clear any pending loading states (like phaser_boot)
+    // CRITICAL: Clear any pending loading states (like engine_boot)
     useLoadingStore().clearAll()
   }
 

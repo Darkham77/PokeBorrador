@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, and Zero-Warning SASS/Vue standards. Use this as a Navigation Hub to access technical manuals for Phaser, Database, and Assets.
+description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, and Zero-Warning SASS/Vue standards. Use this as a Navigation Hub to access technical manuals for Database, Assets, and UI.
 ---
 
 # Project Standards (Lean Core)
@@ -26,7 +26,6 @@ Consult these manuals for detailed implementation specifications:
 | **Validation & Quality** | [validation_manual.md](./references/validation_manual.md) |
 | **Save & Persistence** | [save_system_manual.md](./references/save_system_manual.md) |
 | **Testing & Simulation** | [browser_testing_manual.md](./references/browser_testing_manual.md) |
-| **Phaser & Rendering** | [phaser_guidelines.md](./references/phaser_guidelines.md) |
 | **Animations & FX** | [animation_standards.md](./references/animation_standards.md) |
 | **GPU & Performance** | [gpu_optimization_manual.md](./references/gpu_optimization_manual.md) |
 | **SASS & Styling** | [sass_styling_manual.md](./references/sass_styling_manual.md) |
@@ -59,6 +58,10 @@ Consult these manuals for detailed implementation specifications:
 - **500-Line Rule**: No logic or style file may exceed 500 lines (except for massive databases).
 - **Zero-Invention**: Reuse `BaseModal`, `UnifiedCard`, and global mixins before creating ad-hoc styles.
 - **Modal Lifecycle**: Synchronize performance mode with modal transitions.
+- **Import Hygiene**: When implementing cross-component signals (e.g., calling `loadingStore` from a View), ALWAYS verify the import is present. Missing imports in lifecycle hooks (`onMounted`) are a primary cause of initialization deadlocks.
+- **Engine Signaling (Loading Gate)**: Signal "App Mounted" only after the primary Vue views have finished mounting (`onMounted`). The loading veil MUST use `v-if` to be completely purged from the DOM after initialization, preventing blocking layers or performance issues.
+- **Dynamic Viewport (Mobile)**: Use `dvh` units (e.g., `100dvh`) for full-screen containers to ensure the UI adapts correctly to mobile browser toolbars without clipping.
+- **Decoupled FX (GameBus)**: Trigger non-critical visual effects or multi-component animations via `GameBus.emit()` to avoid direct component-to-component dependencies.
 
 ### 4. SASS and Build Integrity
 

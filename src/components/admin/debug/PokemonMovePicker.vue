@@ -82,7 +82,7 @@ function removeMove(slotIndex) {
           class="move-pill"
           @click.stop="activeMoveSlot = i"
         >
-          <span class="m-name">{{ modelValue[i-1].toUpperCase() }}</span>
+          <span class="mv-name">{{ modelValue[i-1].toUpperCase() }}</span>
           <button
             class="remove-move"
             @click.stop="removeMove(i-1)"
@@ -210,7 +210,7 @@ function removeMove(slotIndex) {
 
     &:hover { background: Rgba(255, 255, 255, 0.1); }
     
-    .m-name { font-size: 11px; font-weight: bold; color: white; }
+    .mv-name { font-size: 11px; font-weight: bold; color: white; }
     
     .remove-move {
       background: Rgba(239, 68, 68, 0.1);

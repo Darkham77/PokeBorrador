@@ -38,7 +38,7 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 
 ## 5. Modal Synchronization & Performance
 
-The modal system must integrate with the background rendering engine (Phaser/Map) to optimize resources.
+The modal system must optimize resources by managing visibility and layering.
 
 ### Performance Mode Lifecycle
 

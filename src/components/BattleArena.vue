@@ -1,8 +1,7 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
-import { phaserBridge } from '@/logic/phaserBridge'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather } from '@/logic/weatherUtils'
@@ -18,9 +17,9 @@ const battleStore = useBattleStore()
 const uiStore = useUIStore()
 
 // Responsive logic
-const isSmallScreen = ref(window.innerWidth <= 950)
+const isSmallScreen = ref(window.innerWidth <= 760)
 useWindowListener('resize', () => {
-  isSmallScreen.value = window.innerWidth <= 950
+  isSmallScreen.value = window.innerWidth <= 760
 })
 
 const battle = computed(() => battleStore.state)
@@ -63,29 +62,11 @@ const weatherAnimClass = computed(() => {
   return anims[computedWeather.value] || ''
 })
 
-// Phaser Sync
-const syncBattleToPhaser = () => {
-  if (battleStore.isBattleActive && battle.value) {
-    phaserBridge.sendCommand('BattleScene', 'SYNC_BATTLE', {
-      locationId: battle.value.locationId,
-      cycle: battle.value.cycle,
-      player: battle.value.player,
-      enemy: battle.value.enemy
-    })
-  }
-}
-
+// Body Class Management
 watch(() => battleStore.isBattleActive, (active) => {
-  if (active) syncBattleToPhaser()
+  if (active) document.body.classList.add('in-battle') // [PureVue-Ignore]
+  else document.body.classList.remove('in-battle') // [PureVue-Ignore]
 }, { immediate: true })
-
-watch(() => [battle.value?.player?.hp, battle.value?.enemy?.hp], () => {
-  if (battleStore.isBattleActive) syncBattleToPhaser()
-})
-
-onMounted(() => {
-  if (battleStore.isBattleActive) syncBattleToPhaser()
-})
 
 const handleClose = () => {
   if (battleStore.isFinishing) {
@@ -101,7 +82,7 @@ const handleClose = () => {
     :show="battleStore.isBattleActive"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     :max-width="isSmallScreen ? '100vw' : '1230px'"
-    :max-height="isSmallScreen ? '100vh' : '92vh'"
+    :max-height="isSmallScreen ? '100dvh' : '92vh'"
     variant="modern"
     overlay="dark"
     close-button-variant="yellow-solid"
@@ -173,10 +154,11 @@ const handleClose = () => {
       flex: 1 !important;
       width: 100% !important;
       max-width: 100vw !important;
-      height: auto !important;
+      height: 100% !important; // Cambiado de auto a 100%
+      max-height: 100% !important;
       min-height: 0 !important;
-      overflow: hidden !important; // Bloqueo total
-      overflow-y: hidden !important; // Prevenir desbordamiento en fullscreen
+      overflow: hidden !important;
+      overflow-y: hidden !important;
       overflow-x: hidden !important;
       
       /* Extra safety for GPU layers */
@@ -256,7 +238,7 @@ const handleClose = () => {
   .env-icon {
     font-size: 16px;
     filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
-    cursor: help;
+    cursor: pointer;
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     
     &.hover-bounce:hover {
@@ -299,7 +281,7 @@ const handleClose = () => {
   margin: 0 !important;
   overflow: hidden; // Prevenir fugas de layout de hijos
 
-  @media (min-width: 951px) {
+  @media (min-width: 761px) {
     display: grid;
     grid-template-columns: 280px 1fr;
     grid-template-rows: 1fr auto;
@@ -318,25 +300,28 @@ const handleClose = () => {
   display: flex;
   flex-direction: column;
   background: Rgba(0, 0, 0, 0.2);
-  border-right: 1px solid Rgba(255, 255, 255, 0.3) !important; // Más brillo para que se note
+  border-right: 1px solid Rgba(255, 255, 255, 0.1);
   overflow: hidden;
-  min-height: 0;
-  position: relative;
+  min-height: 120px; 
   flex: 1;
+  position: relative;
   
-  @media (max-width: 959px) {
+  @media (max-width: 760px) {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-height: 0;
+    flex: none;
+    height: 90px;
+    min-height: 72px;
     border-right: none;
     border-top: 1px solid Rgba(255, 255, 255, 0.1);
     border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
   }
 
-  @media (min-width: 960px) {
-    border-radius: 0; // Cuadrado para integrarse al modal
-    :deep(.battle-log) { position: absolute; inset: 0; }
+  @media (min-width: 761px) {
+    border-radius: 0; 
+    flex: 1;
+    height: 100%;
+    :deep(.battle-log) { position: absolute; inset: 0; padding: 20px; }
   }
 }
 
@@ -346,6 +331,8 @@ const handleClose = () => {
   aspect-ratio: 16 / 11 !important;
   width: 100%;
   height: auto !important;
+  min-height: 0; // Permitir que se encoja si el log pide espacio
+  flex: 1.5; // Prioridad de crecimiento sobre el log pero permitiendo compresión
   object-fit: contain;
 
   @media (min-width: 951px) {

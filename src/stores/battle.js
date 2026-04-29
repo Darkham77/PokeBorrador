@@ -6,7 +6,7 @@ import { useGameStore } from './game'
 import { handleEntryAbilities, applyEndTurnWeather } from '../logic/battle/battleFlow'
 import { calculateBaseExp, processExpGain, calculateMoneyGain } from '../logic/battle/battleRewards'
 import { handleItemUsage } from '../logic/battle/battleItems'
-import { phaserBridge } from '@/logic/phaserBridge'
+import { gameBus } from '@/logic/gameBus'
 import { useWarStore } from './war'
 import { useEventStore } from './events'
 import { usePlayerClassStore } from './playerClass'
@@ -139,7 +139,7 @@ export const useBattleStore = defineStore('battle', () => {
     gs.registerPokedex(enemyPoke.id, false)
     if (isTrainer && enemyTeam) enemyTeam.forEach(p => gs.registerPokedex(p.id, false))
 
-    phaserBridge.sendCommand('BattleScene', 'START_BATTLE', { player: playerPoke, enemy: enemyPoke, locationId, isTrainer, isGym })
+    gameBus.emit('START_BATTLE', { player: playerPoke, enemy: enemyPoke, locationId, isTrainer, isGym })
     enemyPoke.isShiny ? audio.shiny() : (isTrainer || isGym) ? audio.rival() : null
 
     const startMsg = isTrainer ? `¡${trainerName} te desafía!` : isGym ? `¡Combate de Gimnasio contra ${enemyPoke.name}!` : `¡Un ${enemyPoke.name} salvaje apareció!`
@@ -328,8 +328,8 @@ export const useBattleStore = defineStore('battle', () => {
         // Ejecutar en paralelo sin hacer await para no bloquear la pantalla de victoria (Fase 2 salvaje)
         (async () => {
           if (currentActive.hp > 0) {
-            phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'player' })
-            await new Promise(r => setTimeout(r, 800)) // Animación de volver a la pokebola
+            gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
+            await new Promise(r => setTimeout(r, 800)) // Animación de volver a la pokebola (Simulada)
           } else {
             await new Promise(r => setTimeout(r, 500)) // Margen para que termine la animación de muerte
           }
@@ -340,8 +340,8 @@ export const useBattleStore = defineStore('battle', () => {
           activeBattle.value.player = firstHealthy
           activeBattle.value.playerTeamIndex = gs.state.team.findIndex(p => p.uid === firstHealthy.uid)
           
-          // Lo sacamos a combatir
-          phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
+          // Lo sacamos a combatir (Silencioso en Vue)
+          gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
         })()
       }
     }
@@ -405,7 +405,6 @@ export const useBattleStore = defineStore('battle', () => {
     if (!newPoke || newPoke.hp <= 0) { isProcessing.value = false; return }
     const oldPoke = activeBattle.value.player
     addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', oldPoke)
-    phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'player' })
     await new Promise(r => setTimeout(r, 800))
     oldPoke.confused = 0; oldPoke.flinched = false
     activeBattle.value.player = newPoke; activeBattle.value.playerTeamIndex = teamIndex
@@ -414,7 +413,6 @@ export const useBattleStore = defineStore('battle', () => {
     }
     playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
     addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
-    phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
     await new Promise(r => setTimeout(r, 800))
     handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog)
     persistBattle()

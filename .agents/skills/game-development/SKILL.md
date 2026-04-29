@@ -1,6 +1,6 @@
 ---
 name: game-development
-description: Game development orchestrator. YOU MUST use this skill whenever the user asks to build a game, mentions Phaser, game design, multiplayer networking, sprites, 2D/3D development, or anything related to game engines and mechanics. Routes to platform-specific references based on project needs.
+description: Game development orchestrator. YOU MUST use this skill whenever the user asks to build a game, game design, multiplayer networking, sprites, 2D/3D development, or anything related to game engines and mechanics. Routes to platform-specific references based on project needs.
 ---
 
 # Game Development
@@ -109,7 +109,7 @@ Abstract input into ACTIONS, not raw keys:
 **Optimization Priority:**
 
 1. Algorithm (O(n²) → O(n log n))
-2. Batching (reduce draw calls via Texture Atlases)
+2. Batching (reduce draw calls via Spritesheets or batched rendering)
 3. Pooling (avoid GC spikes)
 4. LOD (detail by distance)
 5. Culling (skip invisible)
