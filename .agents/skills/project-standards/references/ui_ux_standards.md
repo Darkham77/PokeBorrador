@@ -40,6 +40,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Breakpoint Parity (760px)**: JS window listeners and CSS media queries MUST share the exact same pixel value (Standard: **760px**) to avoid layout "dead zones".
   - **Forced HUD Visibility**: Use high-specificity CSS (e.g., `.main-hud-desktop`) with `min-width: 761px` to ensure HUD elements remain visible on PC screens even if PWA mode triggers mobile-first states.
   - **Permission Persistence**: Persist PWA setup and notification permission states in `localStorage` to avoid re-triggering intrusive setup modals on every session.
+  - **Virtual Module Compatibility**: In Dev mode, if `virtual:pwa-register/vue` fails to resolve, use the base `virtual:pwa-register` and implement manual reactivity (using `ref`) for `needRefresh` and `offlineReady`.
 
 ### 2. Pixel Art Content (The "Game Heart")
 
@@ -178,6 +179,7 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. see [game_mechanics_manual.md](./game_mechanics_manual.md) for visibility rules.
 - **Cursor Consistency Mandate**: All interactive elements (badges, items, pills) that provide information via tooltips MUST use `cursor: pointer`. Avoid `cursor: help` (the question mark) to maintain a premium, responsive feel across the entire UI.
 - **Action Grouping (Box/Inventory)**: High-level management actions (e.g., Mercado Negro, Liberar) MUST be grouped in the primary navigation/header bar (slots like `#extra` in `BoxTabs`) to maximize the area dedicated to content grids.
+- **Global Event Listeners**: Window/Global event listeners (e.g., `online`, `click` retry) used outside component lifecycles (like in Pinia stores) MUST be marked with `// [PureVue-Ignore]` to satisfy audit standards while maintaining necessary logic.
 
 > [!IMPORTANT]
 > **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.

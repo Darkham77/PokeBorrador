@@ -17,6 +17,7 @@ description: "Automatic quality control, linting, and static analysis procedures
 4. **Production Build Integrity**: ALWAYS run `npm run build` after UI/SASS changes to catch syntax errors that may break the production bundle.
 5. **Reliable Lint Suppression**: In Vue templates, use `<!-- eslint-disable ... -->` at the template level or consolidate the tag into a single line if using `eslint-disable-next-line` to ensure the rule is correctly applied to attributes.
 6. **PWA Artifacts**: Auto-generated PWA directories (e.g., `dev-dist/`) must be added to `.eslintignore` or `eslint.config.js` to prevent linting failures on binary/generated artifacts.
+7. **Merge Marker Integrity**: After any `rebase` or `merge` operation, ALWAYS run `grep -r "<<<<<<< HEAD" .` to ensure no conflict markers leaked into the codebase, even if the files appear staged/resolved in Git.
 
 ### Python
 
