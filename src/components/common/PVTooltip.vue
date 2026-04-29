@@ -167,7 +167,7 @@ watch(() => props.disabled, (newVal) => {
     @mouseleave="hide"
     @touchstart="show"
     @touchend="hide"
-    @click="handleTriggerClick" <!-- [PureVue-Ignore] -->
+    @click="handleTriggerClick" audit-ignore="[PureVue-Ignore]"
   >
     <slot />
     
