@@ -42,12 +42,13 @@ onMounted(() => {
         class="log-entry"
         :class="log.type"
       >
+        <!-- Siempre renderizamos el wrapper para mantener la alineación de la columna de texto -->
         <div
-          v-if="log.icon"
           class="log-icon-wrapper"
-          :class="log.iconType"
+          :class="[log.iconType || 'empty']"
         >
           <img
+            v-if="log.icon"
             :src="log.icon"
             class="log-icon"
             loading="lazy"
@@ -101,33 +102,47 @@ onMounted(() => {
   border-bottom: 1px solid Rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
-  gap: 4px !important; // Máxima cercanía
+  gap: 8px; 
   min-height: 32px;
 
   .log-icon-wrapper {
     flex-shrink: 0;
-    width: 42px !important; // Punto medio para sprites grandes
-    height: 32px !important;
+    width: 42px; // Ancho base estándar para TODOS los casos
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent !important;
-    border-radius: 0 !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
     position: relative;
+    z-index: var(--z-low);
 
-    &::before, &::after { display: none !important; }
-
-    &.item, &.pokemon {
-      background: transparent !important;
+    // Estilos específicos para AVATAR (Entrenador)
+    &.trainer {
+      // El contenedor externo mantiene los 42px para alineación, 
+      // pero el contenido interno se centra y reduce.
+      .log-icon {
+        width: 28px !important;
+        height: 28px !important;
+        max-width: none !important;
+        max-height: none !important;
+        object-fit: cover; 
+        transform: none !important;
+        top: auto !important;
+        left: auto !important;
+        position: relative !important;
+        filter: none !important;
+        border-radius: 4px;
+        border: 1px solid Rgba(255,255,255,0.1);
+        background: Rgba(0,0,0,0.2) !important;
+      }
+    }
+    
+    &.empty {
+      opacity: 0;
     }
   }
 
   .log-icon {
-    width: 56px !important;
+    width: 56px !important; 
     height: 56px !important;
     max-width: none !important;
     max-height: none !important;
@@ -142,6 +157,8 @@ onMounted(() => {
 
   .log-text {
     flex: 1;
+    position: relative;
+    z-index: var(--z-base);
   }
 
   @media (max-width: 560px) {
@@ -156,6 +173,16 @@ onMounted(() => {
     .log-icon-wrapper {
       width: 28px !important;
       height: 28px !important;
+    }
+    
+    .log-icon:not(.trainer .log-icon) {
+      width: 38px !important;
+      height: 38px !important;
+    }
+    
+    .trainer .log-icon {
+      width: 22px !important;
+      height: 22px !important;
     }
   }
 }

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useGTSStore } from '@/stores/gts'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 defineProps({
   context: {
@@ -154,16 +155,19 @@ const getTypeEmoji = (type) => {
             Tipo
           </div>
           <div class="types-grid">
-            <button
+            <PVTooltip
               v-for="t in types"
               :key="t"
-              class="type-btn"
-              :class="{ active: filters.type === t }"
-              :title="t"
-              @click.stop="setFilter('type', t)"
+              :title="t.toUpperCase()"
             >
-              {{ getTypeEmoji(t) }}
-            </button>
+              <button
+                class="type-btn"
+                :class="{ active: filters.type === t }"
+                @click.stop="setFilter('type', t)"
+              >
+                {{ getTypeEmoji(t) }}
+              </button>
+            </PVTooltip>
           </div>
         </div>
       </template>
@@ -198,8 +202,8 @@ const getTypeEmoji = (type) => {
   </div>
 </template>
 
-<style scoped>
-@use "@/styles/core/_mixins" as *;
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
 .market-filters {
   background: Rgba(255, 255, 255, 0.03);
   border: 1px solid Rgba(255, 255, 255, 0.08);

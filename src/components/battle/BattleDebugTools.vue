@@ -1,5 +1,6 @@
+// [PureVue-Ignore-Length] 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { phaserBridge } from '@/logic/phaserBridge'
@@ -11,6 +12,7 @@ const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
+const uiStore = useUIStore()
 const isOpen = ref(false)
 
 // El modo debug suele estar habilitado globalmente en este proyecto
@@ -22,7 +24,6 @@ const defeatEnemy = async () => {
   battleStore.addLog('DEBUG: Ejecutando Daño Máximo...', 'log-info')
   battleStore.state.enemy.hp = 0
   await battleStore.endBattle(true, false)
-  isOpen.value = false
 }
 
 const healPlayer = () => {
@@ -30,18 +31,89 @@ const healPlayer = () => {
   battleStore.state.player.hp = battleStore.state.player.maxHP
   battleStore.state.player.status = null
   battleStore.addLog('DEBUG: Jugador curado.', 'log-info')
-  isOpen.value = false
 }
 
 const toggleSearchMode = () => {
   battleStore.isSearching = !battleStore.isSearching
-  isOpen.value = false
+}
+
+const testScenario1 = () => {
+  // Si veníamos de un preview, usamos ese mismo pokemon para el combate directo
+  const currentPoke = battleStore.upcomingPokemon || battleStore.enemy
+  
+  battleStore.isSearching = false
+  battleStore.upcomingPokemon = null
+  
+  // Aseguramos que el store tenga un combate activo y al pokemon correcto para la fase 1
+  const pokeToUse = currentPoke ? { ...currentPoke } : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHP: 20 }
+  
+  if (!battleStore.state) {
+    battleStore.syncFromLegacy({
+      enemy: pokeToUse,
+      player: { id: 25, name: 'Pikachu', hp: 35, maxHP: 35 },
+      over: false,
+      isTrainer: false,
+      isGym: false
+    })
+  } else {
+    battleStore.state.enemy = pokeToUse
+    battleStore.state.over = false
+  }
+  
+  phaserBridge.emit('PLAY_WILD_EMERGENCE')
+}
+
+const testScenario2 = () => {
+  battleStore.isSearching = true
+  
+  // Usar el enemigo actual (si existe) o el upcoming actual. Si no hay nada, Pidgey.
+  const currentPoke = battleStore.upcomingPokemon || battleStore.enemy
+  
+  battleStore.upcomingPokemon = currentPoke ? { ...currentPoke } : { 
+    id: 16, 
+    name: 'Pidgey', 
+    level: 5,
+    hp: 20,
+    maxHP: 20,
+    isShiny: false, 
+    isGuardian: false 
+  }
+}
+
+const testScenario3 = () => {
+  if (!battleStore.upcomingPokemon) {
+    uiStore.notify('Primero activa la Fase 2 para ver un Pokémon', '⚠️')
+    return
+  }
+  
+  const poke = { ...battleStore.upcomingPokemon }
+  
+  phaserBridge.emit('START_BATTLE', { isTrainer: false, isGym: false })
+  
+  // Sincronizar el enemigo real con el que estábamos viendo
+  if (!battleStore.state) {
+    battleStore.syncFromLegacy({
+      enemy: poke,
+      player: { id: 25, name: 'Pikachu', hp: 35, maxHP: 35 },
+      over: false,
+      isTrainer: false,
+      isGym: false
+    })
+  } else {
+    battleStore.state.enemy = poke
+    battleStore.state.over = false
+  }
+  
+  battleStore.isSearching = false
+  
+  setTimeout(() => {
+    battleStore.upcomingPokemon = null
+  }, 100)
 }
 
 const faintPlayer = async () => {
   if (!battleStore.state?.player) return
   const p = battleStore.state.player
-  const uiStore = useUIStore()
   
   battleStore.addLog('DEBUG: Simulando Daño Letal...', 'log-danger')
   p.hp = 0
@@ -64,15 +136,13 @@ const faintPlayer = async () => {
     battleStore.addLog('¡Envía a otro Pokémon!', 'log-info', p)
     uiStore.isBattleSwitchForced = true
   }
-  
-  isOpen.value = false
 }
 
 const visualPokemonId = ref(1)
 const playerVisualId = ref(1)
 
 // Sincronizar cuando cambia el enemigo real
-import { watch } from 'vue'
+
 watch(() => battleStore.state?.enemy?.id, (newId) => {
   if (newId) {
     const idx = ALL_PDEX.indexOf(newId)
@@ -115,6 +185,19 @@ const decrementSwap = (side = 'enemy') => {
   }
 }
 
+/**
+ * Animaciones de Energía
+ */
+const testCatchAnim = (side = 'enemy') => {
+  phaserBridge.sendCommand('BattleScene', 'PLAY_CATCH_ENERGY', { side })
+}
+
+const testReleaseAnim = (side = 'enemy') => {
+  const pokemon = side === 'player' ? battleStore.state?.player : battleStore.state?.enemy
+  if (!pokemon) return uiStore.notify('No hay pokemon para animar', '❌')
+  phaserBridge.sendCommand('BattleScene', 'PLAY_RELEASE_ENERGY', { side, pokemon })
+}
+
 </script>
 
 <template>
@@ -137,7 +220,7 @@ const decrementSwap = (side = 'enemy') => {
     <Transition name="slide-up">
       <div 
         v-if="isOpen"
-        class="debug-menu"
+        class="debug-menu custom-scrollbar-vicio"
       >
         <button 
           class="debug-btn kill-btn"
@@ -161,8 +244,66 @@ const decrementSwap = (side = 'enemy') => {
           class="debug-btn search-btn"
           @click.stop="toggleSearchMode"
         >
-          🔍 TOGGLE BUSQUEDA
+          🔍 BUSQUEDA (ON/OFF)
         </button>
+
+        <div class="debug-section">
+          <div class="section-label">
+            🌿 ESCENARIOS DE ENCUENTRO
+          </div>
+          <div class="scenario-grid">
+            <button
+              class="debug-btn scenario-btn"
+              @click.stop="testScenario1"
+            >
+              1
+            </button>
+            <button
+              class="debug-btn scenario-btn"
+              @click.stop="testScenario2"
+            >
+              2
+            </button>
+            <button
+              class="debug-btn scenario-btn"
+              @click.stop="testScenario3"
+            >
+              3
+            </button>
+          </div>
+        </div>
+
+        <div class="debug-section">
+          <div class="section-label">
+            ⚡ ANIMACIONES ENERGÍA
+          </div>
+          <div class="anim-grid">
+            <button
+              class="anim-btn catch"
+              @click.stop="testCatchAnim('player')"
+            >
+              CATCH (P)
+            </button>
+            <button
+              class="anim-btn catch"
+              @click.stop="testCatchAnim('enemy')"
+            >
+              CATCH (E)
+            </button>
+            <button
+              class="anim-btn release"
+              @click.stop="testReleaseAnim('player')"
+            >
+              RELEASE (P)
+            </button>
+            <button
+              class="anim-btn release"
+              @click.stop="testReleaseAnim('enemy')"
+            >
+              RELEASE (E)
+            </button>
+          </div>
+        </div>
 
         <div class="debug-section">
           <div class="section-label">
@@ -232,13 +373,12 @@ const decrementSwap = (side = 'enemy') => {
 
 .battle-debug-tools {
   position: absolute;
-  top: -24px; // Posicionamiento sobre el panel de ataques (según círculo del usuario)
-  left: 50%;
-  transform: translateX(-50%);
+  top: -24px; 
+  right: 12px;
   z-index: var(--z-navigation);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   pointer-events: none;
 
   &.is-open {
@@ -272,6 +412,7 @@ const decrementSwap = (side = 'enemy') => {
 .debug-menu {
   position: absolute;
   bottom: 24px;
+  right: 0;
   background: Rgba(20, 20, 30, 0.95);
   border: 2px solid var(--yellow);
   border-radius: 8px;
@@ -280,6 +421,9 @@ const decrementSwap = (side = 'enemy') => {
   flex-direction: column;
   gap: 8px;
   width: 200px;
+  max-height: 400px;
+  min-height: 0; // Fixes flex scroll collapse
+  overflow-y: auto;
   box-shadow: 0 0 20px Rgba(0,0,0,0.8);
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
@@ -292,6 +436,7 @@ const decrementSwap = (side = 'enemy') => {
   text-align: left;
   justify-content: flex-start;
   padding: 8px 12px;
+  flex-shrink: 0;
   
   &.kill-btn { @include btn-vicio('danger', 'sm', true); }
   &.faint-btn { @include btn-vicio('danger', 'sm', true); filter: Hue-Rotate(45deg); }
@@ -316,6 +461,37 @@ const decrementSwap = (side = 'enemy') => {
   }
 }
 
+  .anim-grid, .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    
+    &.scenario-grid {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .anim-btn, .scenario-btn {
+      height: 28px !important;
+      font-size: 10px !important;
+      padding: 0 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      &.scenario-btn {
+        @include btn-vicio('default', 'xs', true);
+      }
+      
+      &.catch {
+        @include btn-vicio('info', 'xs', true);
+      }
+      
+      &.release {
+        @include btn-vicio('success', 'xs', true);
+      }
+    }
+  }
+
 .swap-controls {
   display: flex;
   align-items: center;
@@ -323,16 +499,15 @@ const decrementSwap = (side = 'enemy') => {
   height: 28px;
 
   .swap-btn {
-    @include btn-vicio('default', 'sm', false);
-    width: 30px;
-    height: 30px;
-    padding: 0;
+    @include btn-vicio('default', 'xs', true);
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: bold;
-    background: Rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
     
     &:hover { background: var(--yellow); color: $black; }

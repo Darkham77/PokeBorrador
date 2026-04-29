@@ -1,6 +1,6 @@
 // [PureVue-Ignore-Length]
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -13,6 +13,7 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import BattleInfoCard from './BattleInfoCard.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { phaserBridge } from '@/logic/phaserBridge'
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
@@ -36,25 +37,163 @@ const isFinishing = computed(() => battleStore.isFinishing)
 const upcomingPokemon = computed(() => battleStore.upcomingPokemon)
 
 const hasBinoculars = computed(() => {
-  // El inventario es un objeto { itemId: count }
   return (gameStore.state.inventory?.['binoculars'] > 0) || false
 })
 
+// Determinar si es un encuentro salvaje inicial para evitar parpadeos de color/posición
+const isWildEncounter = computed(() => {
+  // Es encuentro salvaje si el combate activo no es entrenador/gym, 
+  // O si estamos buscando (que siempre es salvaje)
+  if (isSearching.value) return true
+  return battleStore.state && !battleStore.state.isTrainer && !battleStore.state.isGym
+})
+
+const isWildEntryAnimation = ref(false)
 const isEmerging = ref(false)
-watch(isSearching, (newVal, oldVal) => {
-  if (oldVal === true && newVal === false) {
-    isEmerging.value = true
-    setTimeout(() => { isEmerging.value = false }, 1000)
+const isWildSilhouette = ref(false)
+const wildRevealActive = ref(false)
+const upcomingIsEmerging = ref(false)
+const isInitialLoad = ref(true)
+
+const activeEnemyData = computed(() => {
+  // Obtenemos el enemigo oficial, pero lo ignoramos si el combate ya terminó (para evitar fantasmas)
+  const officialEnemy = (battle.value && !battle.value.over) ? enemy.value : null
+
+  // Durante búsqueda, el 'upcoming' es prioritario.
+  if (isSearching.value) return upcomingPokemon.value
+  
+  // Durante animación de entrada o revelación:
+  // Intentamos usar upcomingPokemon si existe (Fase 2 -> 3), 
+  // si no (Fase 1 directa), usamos el enemigo real (si no está muerto)
+  if (isWildEntryAnimation.value || isWildSilhouette.value || wildRevealActive.value) {
+    return upcomingPokemon.value || officialEnemy
+  }
+
+  // Combate normal
+  return officialEnemy || upcomingPokemon.value
+})
+
+const activeEnemyImageUrl = computed(() => {
+  const p = activeEnemyData.value
+  if (!p) return ''
+  return getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny, isBack: false })
+})
+
+const activeEnemyIsFloating = computed(() => {
+  const p = activeEnemyData.value
+  return p ? isFlying(p) : false
+})
+
+const activeEnemyIsSilhouette = computed(() => {
+  if (hasBinoculars.value) return false
+  // Forzar silueta si estamos en animación de entrada, búsqueda, revelación o si hay un pokemon en espera
+  if (isWildEntryAnimation.value || isSearching.value || upcomingIsEmerging.value || wildRevealActive.value || !!upcomingPokemon.value) return true
+  return isWildSilhouette.value
+})
+
+const revealWildPokemon = (isInstant = false) => {
+  if (isInstant) {
+    isWildSilhouette.value = false
+    isWildEntryAnimation.value = false
+    wildRevealActive.value = false
+    return
+  }
+
+  wildRevealActive.value = true
+  isWildSilhouette.value = true
+  isWildEntryAnimation.value = true
+  isEmerging.value = false 
+  
+  const duration = 100
+  
+  setTimeout(() => {
+    isWildSilhouette.value = false
+    isWildEntryAnimation.value = false
+    wildRevealActive.value = false
+  }, duration)
+}
+
+const triggerWildEmergence = () => {
+  // Evitar disparar múltiples veces si ya está activa
+  if (wildRevealActive.value) return
+
+  isWildEntryAnimation.value = true
+  isEmerging.value = true
+  isWildSilhouette.value = true
+  wildRevealActive.value = true
+  
+  setTimeout(() => { 
+    isWildEntryAnimation.value = false
+    isEmerging.value = false
+    isWildSilhouette.value = false 
+    wildRevealActive.value = false
+  }, 2200)
+}
+
+// Watcher de seguridad para asegurar que la animación inicie si el combate carga después del mount
+watch(() => battle.value, (newBattle) => {
+  if (newBattle && !newBattle.over && !newBattle.isTrainer && !newBattle.isGym && !isSearching.value && !wildRevealActive.value) {
+    triggerWildEmergence()
+  }
+}, { immediate: true })
+
+const shouldShowEncounterLayers = computed(() => {
+  // Prioridad absoluta a las animaciones de revelación/búsqueda
+  if (isSearching.value || isWildEntryAnimation.value || wildRevealActive.value) return true
+  
+  // Si el combate ya es oficial y activo (y NO estamos en la pantalla de finalización),
+  // forzamos la ocultación de arbustos incluso si queda algún residuo en upcomingPokemon
+  if (battleStore.isBattleActive && !isFinishing.value && !isWildEntryAnimation.value && !wildRevealActive.value) return false
+  
+  return !!upcomingPokemon.value
+})
+
+const skipBushesFade = ref(false)
+const bushTransitionName = computed(() => {
+  // Si es modo búsqueda (Escenario 2), siempre animamos la aparición
+  if (isSearching.value) return 'fade'
+  // Si es combate directo o transición (Escenario 1 o 3), instantáneo
+  return ''
+})
+
+watch([shouldShowEncounterLayers, isSearching], ([newLayers, newSearching], [oldLayers, oldSearching]) => {
+  if ((newLayers && oldLayers && newSearching !== oldSearching) || (newLayers && !oldLayers)) {
+    skipBushesFade.value = true
+    setTimeout(() => { skipBushesFade.value = false }, 300)
   }
 })
+
+// Observar cambios en el modo búsqueda para sincronizar estados de silueta
+watch(isSearching, (newVal, oldVal) => {
+  if (newVal) {
+    // Si empezamos a buscar, forzamos silueta
+    isWildSilhouette.value = true
+  } else if (oldVal && !newVal && isWildEncounter.value && isInitialLoad.value) {
+    // Solo actuar si estamos en carga inicial y pasamos a falso (combate directo)
+    isWildSilhouette.value = true
+    isWildEntryAnimation.value = true
+  }
+})
+
+watch(() => battleStore.upcomingPokemon, (newVal) => {
+  if (newVal) {
+    upcomingIsEmerging.value = true
+    setTimeout(() => { upcomingIsEmerging.value = false }, 1200)
+  }
+}, { immediate: true })
+
+// Animation state for energy effects
+const playerAnimState = ref(null) // 'catching', 'releasing', null
+const enemyAnimState = ref(null)
 
 const playerAnimSeed = Math.random()
 const enemyAnimSeed = Math.random()
 const _animSeed = Math.random()
 
-// Coordenada Y efectiva para el suelo (arbustos y siluetas)
 const effectiveFeetY = computed(() => {
+  // If we are searching or seeing the upcoming preview, use the pre-calculated searching feet
   if (isSearching.value || upcomingPokemon.value) return searchingFeetY.value
+  // During combat or wild entry (where the real enemy is already loaded), use the enemy feet
   return enemyFeetY.value
 })
 
@@ -63,7 +202,6 @@ const grassIsBakedIn = ref(false)
 const handleGrassLoad = (e) => {
   const src = e.target.src
   const cycleSuffixes = ['_noche', '_atardecer', '_amanecer', '_dia']
-  // Si el src contiene uno de estos sufijos (y NO es el default tall-grass), es baked-in
   grassIsBakedIn.value = cycleSuffixes.some(s => src.includes(s)) && !src.includes('tall-grass')
 }
 
@@ -71,7 +209,7 @@ const handleGrassError = (e) => {
   const defaultUrl = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
   if (e.target.src && !e.target.src.endsWith(defaultUrl)) {
     e.target.src = defaultUrl
-    grassIsBakedIn.value = false // El fallback nunca es baked-in
+    grassIsBakedIn.value = false
   }
 }
 
@@ -82,7 +220,6 @@ const playerTrainerSpriteUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.TRAINER, spriteId)
 })
 
-// Background Error Handling
 const handleBackgroundError = (e) => {
   const currentSrc = e.target.src
   if (currentSrc.includes('_')) {
@@ -93,12 +230,10 @@ const handleBackgroundError = (e) => {
   }
 }
 
-// Animation & Shadow Logic
 const getAttackAnimClass = (side) => {
   if (battleStore.attackerSide !== side || !battleStore.activeMove) return ''
   const move = battleStore.activeMove
   if (move.side !== side) return ''
-
   if (move.cat === 'physical') return 'atk-physical'
   if (move.cat === 'special') return 'atk-special'
   if (move.cat === 'status') return 'atk-status'
@@ -110,21 +245,13 @@ const isFlying = (pokemon) => {
   const data = pokemonDataProvider.getPokemonData(pokemon.id)
   return data?.isFloating || false
 }
-
-const isUpcomingFlying = computed(() => isFlying(upcomingPokemon.value))
-
 const playerFeetY = ref(0.9)
 const enemyFeetY = ref(0.9)
 const searchingFeetY = ref(0.9)
 
-/**
- * Universal Pixel-based Feet Detection
- * Finds the first non-transparent pixel from the bottom to ground the shadow/bushes.
- */
 const detectFeetYFromUrl = async (url, isFlying = false) => {
   if (!url) return 0.9
   if (isFlying) return 0.98
-
   return new Promise((resolve) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
@@ -155,37 +282,21 @@ const detectFeetYFromUrl = async (url, isFlying = false) => {
 
 watch(() => enemy.value?.id, async () => {
   if (!enemy.value) return
-  const url = getAssetUrl(ASSET_TYPES.POKEMON, enemy.value.id, { 
-    isShiny: enemy.value.isShiny, 
-    isBack: false 
-  })
+  const url = getAssetUrl(ASSET_TYPES.POKEMON, enemy.value.id, { isShiny: enemy.value.isShiny, isBack: false })
   enemyFeetY.value = await detectFeetYFromUrl(url, isFlying(enemy.value))
+}, { immediate: true })
+
+watch(() => upcomingPokemon.value?.id, async () => {
+  if (!upcomingPokemon.value) return
+  const url = getAssetUrl(ASSET_TYPES.POKEMON, upcomingPokemon.value.id, { isShiny: upcomingPokemon.value.isShiny })
+  searchingFeetY.value = await detectFeetYFromUrl(url, isFlying(upcomingPokemon.value))
 }, { immediate: true })
 
 watch([() => player.value?.id, () => player.value?.hp], async () => {
   if (!player.value) return
-  
-  const url = player.value.hp <= 0 
-    ? playerTrainerSpriteUrl.value 
-    : getAssetUrl(ASSET_TYPES.POKEMON, player.value.id, { isShiny: player.value.isShiny, isBack: true })
-  
+  const url = player.value.hp <= 0 ? playerTrainerSpriteUrl.value : getAssetUrl(ASSET_TYPES.POKEMON, player.value.id, { isShiny: player.value.isShiny, isBack: true })
   const flying = player.value.hp > 0 && isFlying(player.value)
-  
   playerFeetY.value = await detectFeetYFromUrl(url, flying)
-}, { immediate: true })
-
-// Actualizar la sombra cuando cambie el enemigo actual
-watch(enemy, async (val) => {
-  if (!val) return
-  const url = getAssetUrl(ASSET_TYPES.POKEMON, val.id, { isShiny: val.isShiny })
-  enemyFeetY.value = await detectFeetYFromUrl(url, isFlying(val))
-}, { immediate: true })
-
-// Actualizar la sombra anticipada cuando se pre-genera el próximo encuentro
-watch(() => battleStore.upcomingPokemon, async (upPoke) => {
-  if (!upPoke) return
-  const url = getAssetUrl(ASSET_TYPES.POKEMON, upPoke.id, { isShiny: upPoke.isShiny, isBack: false })
-  searchingFeetY.value = await detectFeetYFromUrl(url, isFlying(upPoke))
 }, { immediate: true })
 
 const computedWeather = computed(() => {
@@ -193,7 +304,6 @@ const computedWeather = computed(() => {
   return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour)
 })
 
-// --- PIXEL SHADOW GENERATOR ---
 const shadowUrl = ref('')
 const generatePixelShadow = (w = 21, h = 6) => {
   if (typeof document === 'undefined') return ''
@@ -201,20 +311,86 @@ const generatePixelShadow = (w = 21, h = 6) => {
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d')
-  
-  // Limpiar y dibujar óvalo sólido
   ctx.fillStyle = 'Rgba(0, 0, 0, 0.35)'
   ctx.beginPath()
-  // Usamos el centro y radios para llenar el canvas de 43x12
   ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
   ctx.fill()
-  
   return canvas.toDataURL('image/png')
 }
 
-import { onMounted } from 'vue'
+let playerAnimTimeout = null
+let enemyAnimTimeout = null
+
+// Map external legacy commands to energy animations
+const handleCatchRequest = (detail) => {
+  const { side } = detail
+  if (side === 'player') {
+    playerAnimState.value = 'catching'
+    clearTimeout(playerAnimTimeout)
+    playerAnimTimeout = setTimeout(() => { playerAnimState.value = null }, 900)
+  } else {
+    enemyAnimState.value = 'catching'
+    clearTimeout(enemyAnimTimeout)
+    enemyAnimTimeout = setTimeout(() => { enemyAnimState.value = null }, 900)
+  }
+}
+
+const handleReleaseRequest = (detail) => {
+  const { side } = detail
+  if (side === 'player') {
+    playerAnimState.value = 'releasing'
+    clearTimeout(playerAnimTimeout)
+    playerAnimTimeout = setTimeout(() => { playerAnimState.value = null }, 900)
+  } else {
+    enemyAnimState.value = 'releasing'
+    clearTimeout(enemyAnimTimeout)
+    enemyAnimTimeout = setTimeout(() => { enemyAnimState.value = null }, 900)
+  }
+}
+
 onMounted(() => {
   shadowUrl.value = generatePixelShadow()
+  
+  // Listen for energy animation commands
+  phaserBridge.on('PLAY_CATCH_ENERGY', (e) => handleCatchRequest(e.detail))
+  phaserBridge.on('PLAY_WITHDRAW', (e) => handleCatchRequest(e.detail))
+  
+  phaserBridge.on('PLAY_RELEASE_ENERGY', (e) => handleReleaseRequest(e.detail))
+  phaserBridge.on('PLAY_SEND_OUT', (e) => handleReleaseRequest(e.detail))
+
+  // Trigger for start battle
+  phaserBridge.on('START_BATTLE', (e) => {
+    const wasAlreadySearching = isSearching.value || !!upcomingPokemon.value
+    
+    const { isTrainer, isGym } = e.detail || e
+    
+    // Player release: solo si no hay ya un pokemon activo (para evitar dobles animaciones en debug)
+    if (!player.value || player.value.hp <= 0 || !wasAlreadySearching) {
+      setTimeout(() => handleReleaseRequest({ side: 'player' }), 100)
+    }
+    
+    if (isTrainer || isGym) {
+      setTimeout(() => handleReleaseRequest({ side: 'enemy' }), 200)
+    } else {
+      // Si ya teníamos previsualización, ejecutamos la FASE 3 (transición suave)
+      if (wasAlreadySearching) revealWildPokemon(false)
+      // Si es un encuentro directo, ejecutamos la FASE 1 (salto)
+      else triggerWildEmergence()
+    }
+  })
+
+  phaserBridge.on('PLAY_WILD_EMERGENCE', () => triggerWildEmergence())
+
+  // Initial check on mount
+  if (battle.value && !battle.value.over) {
+    const isTrainer = battle.value.isTrainer || battle.value.isGym
+    handleReleaseRequest({ side: 'player' })
+    if (isTrainer) handleReleaseRequest({ side: 'enemy' })
+    else triggerWildEmergence()
+  }
+
+  // Allow transitions after initial mount
+  setTimeout(() => { isInitialLoad.value = false }, 100)
 })
 
 </script>
@@ -222,10 +398,9 @@ onMounted(() => {
 <template>
   <div class="battle-arena">
     <div class="battle-arena-content">
-      <!-- Battle Background -->
-      <img 
-        :src="bgData.url" 
-        class="arena-bg" 
+      <img
+        :src="bgData.url"
+        class="arena-bg"
         :style="bgData.isBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
         alt="Battle Background"
         @error="handleBackgroundError"
@@ -233,34 +408,61 @@ onMounted(() => {
     </div>
     
     <div class="battle-sprites">
-      <!-- Enemy Sprite -->
+      <!-- Enemy Side -->
       <div class="combatant-sprite enemy-side-sprite">
-        <!-- Animator Wrapper: Handles combat animations (rotation, scale) without affecting the shadow -->
-        <div 
+        <!-- Encounter Layers - BACK (behind pokemon) -->
+        <Transition :name="bushTransitionName">
+          <div
+            v-if="shouldShowEncounterLayers"
+            class="encounter-layers-back"
+            :style="grassIsBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
+          >
+            <div
+              v-show="!activeEnemyIsFloating"
+              class="searching-bushes back"
+            >
+              <div
+                class="bush-container-ground"
+                :style="{ top: `${effectiveFeetY * 100}%` }"
+              >
+                <div class="bush-wrapper bush-back-1">
+                  <img
+                    :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
+                    class="pixel-bush"
+                    @load="handleGrassLoad"
+                    @error="handleGrassError"
+                  >
+                </div>
+                <div class="bush-wrapper bush-back-2">
+                  <img
+                    :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
+                    class="pixel-bush"
+                    @load="handleGrassLoad"
+                    @error="handleGrassError"
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+
+        <div
           class="sprite-animator"
-          :class="[
-            { 
-              'fainted': enemy.hp <= 0, 
-              'is-attacking': battleStore.attackerSide === 'enemy',
-              'is-emerging': isEmerging
-            }, 
-            getAttackAnimClass('enemy')
-          ]"
+          :class="[{ 'fainted': activeEnemyData?.hp <= 0 && !isSearching && !isWildEntryAnimation && !isWildSilhouette, 'is-attacking': battleStore.attackerSide === 'enemy', 'is-emerging': isEmerging }, getAttackAnimClass('enemy')]"
         >
-          <!-- Shadow (Behind everything) -->
+          <!-- Unified Shadow Logic -->
           <div
             class="pv-shadow"
-            :class="{ 'is-hidden': isSearching || (!upcomingPokemon && (!enemy || enemy.hp <= 0) && !isFinishing) }"
+            :class="{ 'is-hidden': (isSearching || isWildEntryAnimation) || (!upcomingPokemon && (!enemy || enemy?.hp <= 0) && !isFinishing) }"
             :style="{ backgroundImage: `url(${shadowUrl})`, top: `${effectiveFeetY * 100}%` }"
           />
 
-          <!-- Rotation Layer: Handles tilts and rotations without affecting the shadow -->
-          <div 
+          <div
             class="sprite-rotation-layer"
             :class="getAttackAnimClass('enemy')"
           >
-            <div 
-              v-if="enemy.hp <= 0 && battle.isTrainer"
+            <div
+              v-if="enemy?.hp <= 0 && battle.isTrainer"
               class="trainer-battle-sprite"
             >
               <img
@@ -270,139 +472,91 @@ onMounted(() => {
               >
             </div>
 
-            <div 
-              v-else
-              class="sprite-idle-wrapper combatant-idle-subtle"
-              :class="{ 'is-floating-species': isFlying(enemy) }"
-              :style="{ animationDelay: `calc(${enemyAnimSeed} * -3s)`, '--idle-dist': isFlying(enemy) ? '-12px' : '-3px' }"
+            <div
+              v-else-if="activeEnemyData"
+              class="sprite-idle-wrapper" 
+              :class="[{ 
+                'combatant-idle-subtle': !enemyAnimState, 
+                'is-floating-species': activeEnemyIsFloating, 
+                'energy-catching': enemyAnimState === 'catching', 
+                'energy-releasing': enemyAnimState === 'releasing' 
+              }]" 
+              :style="{ 
+                animationDelay: `calc(${enemyAnimSeed} * -3s)`, 
+                '--idle-dist': activeEnemyIsFloating ? '-12px' : '-3px',
+                '--shadow-y': `${effectiveFeetY * 100}%`
+              }"
             >
               <PVSpriteFX
-                :is-shiny="enemy.isShiny"
-                :is-guardian="enemy.isGuardian"
+                :is-shiny="activeEnemyData.isShiny"
+                :is-guardian="activeEnemyData.isGuardian"
                 :vibrant="true"
-                :sparkle-count="8"
               >
                 <img
+                  :key="activeEnemyData.id" 
                   class="pokemon-combat-image"
-                  :src="getAssetUrl(ASSET_TYPES.POKEMON, enemy.id, { isShiny: enemy.isShiny, isBack: false })"
+                  :class="{ 
+                    'is-silhouette': activeEnemyIsSilhouette,
+                    'is-emerging-anim': upcomingIsEmerging || isEmerging
+                  }" 
+                  :src="activeEnemyImageUrl" 
                   @error="e => e.target.style.display = 'none'"
                 >
               </PVSpriteFX>
-            </div> <!-- End sprite-idle-wrapper -->
-          </div> <!-- End Rotation Layer -->
-
-          <!-- Capas de Encuentro (Unificadas para sincronización total) -->
-          <Transition name="fade">
-            <div 
-              v-if="isSearching || (isFinishing && enemy?.hp <= 0 && player?.hp > 0)"
-              class="encounter-layers"
-              :style="grassIsBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
+            </div>
+          </div>
+        </div> <!-- End sprite-animator -->
+        <!-- Encounter Layers - FRONT (in front of pokemon) -->
+        <Transition :name="bushTransitionName">
+          <div
+            v-if="shouldShowEncounterLayers"
+            class="encounter-layers-front"
+            :style="grassIsBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
+          >
+            <div
+              v-show="!activeEnemyIsFloating"
+              class="searching-bushes front"
             >
-              <!-- Searching Visuals: Bushes (Capa TRASERA) -->
-              <div 
-                v-if="!isUpcomingFlying"
-                class="searching-bushes back"
+              <div
+                class="bush-container-ground"
+                :style="{ top: `${effectiveFeetY * 100}%` }"
               >
-                <div 
-                  class="bush-container-ground"
-                  :style="{ top: `${effectiveFeetY * 100}%` }"
-                >
-                  <div class="bush-wrapper bush-back-1">
-                    <img
-                      :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                      class="pixel-bush"
-                      @load="handleGrassLoad"
-                      @error="handleGrassError"
-                    >
-                  </div>
-                  <div class="bush-wrapper bush-back-2">
-                    <img
-                      :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                      class="pixel-bush"
-                      @load="handleGrassLoad"
-                      @error="handleGrassError"
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <!-- Upcoming Pokemon Preview -->
-              <div 
-                v-if="upcomingPokemon"
-                class="upcoming-preview combatant-idle-subtle"
-                :class="{ 'is-floating-species': isFlying(upcomingPokemon) }"
-                :style="{ animationDelay: `calc(${_animSeed} * -3s)`, '--idle-dist': isFlying(upcomingPokemon) ? '-12px' : '-3px' }"
-              >
-                <PVSpriteFX
-                  :is-shiny="false"
-                  :is-guardian="false"
-                >
-                  <img 
-                    :src="getAssetUrl(ASSET_TYPES.POKEMON, upcomingPokemon.id, { isShiny: upcomingPokemon.isShiny })" 
-                    class="upcoming-image"
-                    :class="{ 'is-silhouette': !hasBinoculars }"
-                    @error="e => e.target.style.display = 'none'"
+                <div class="bush-wrapper bush-front-1">
+                  <img
+                    :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
+                    class="pixel-bush"
+                    @load="handleGrassLoad"
+                    @error="handleGrassError"
                   >
-                </PVSpriteFX>
-              </div>
-
-
-              <!-- Searching Visuals: Bushes (Capa DELANTERA) -->
-              <div 
-                v-if="!isUpcomingFlying"
-                class="searching-bushes front"
-              >
-                <div 
-                  class="bush-container-ground"
-                  :style="{ top: `${effectiveFeetY * 100}%` }"
-                >
-                  <div class="bush-wrapper bush-front-1">
-                    <img
-                      :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                      class="pixel-bush"
-                      @load="handleGrassLoad"
-                      @error="handleGrassError"
-                    >
-                  </div>
-                  <div class="bush-wrapper bush-front-2">
-                    <img
-                      :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                      class="pixel-bush"
-                      @load="handleGrassLoad"
-                      @error="handleGrassError"
-                    >
-                  </div>
+                </div>
+                <div class="bush-wrapper bush-front-2">
+                  <img
+                    :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
+                    class="pixel-bush"
+                    @load="handleGrassLoad"
+                    @error="handleGrassError"
+                  >
                 </div>
               </div>
             </div>
-          </Transition>
-        </div> <!-- End sprite-animator -->
+          </div>
+        </Transition>
       </div> <!-- End combatant-sprite -->
       
       <!-- Player Side -->
       <div class="combatant-sprite player-side-sprite">
-        <div 
+        <div
           class="sprite-animator"
-          :class="[
-            { 
-              'fainted': player.hp <= 0, 
-              'is-attacking': battleStore.attackerSide === 'player' 
-            }, 
-            getAttackAnimClass('player')
-          ]"
+          :class="[{ 'fainted': player.hp <= 0, 'is-attacking': battleStore.attackerSide === 'player' }, getAttackAnimClass('player')]"
         >
-          <!-- Shadow (Behind everything) -->
           <div
             class="pv-shadow"
             :style="{ backgroundImage: `url(${shadowUrl})`, top: `${playerFeetY * 100}%` }"
           />
-
-          <!-- Rotation Layer -->
-          <div 
+          <div
             class="sprite-rotation-layer"
             :class="getAttackAnimClass('player')"
           >
-            <!-- Trainer Sprite (Visible only when fainted) -->
             <div
               v-if="player.hp <= 0"
               class="trainer-battle-sprite"
@@ -413,12 +567,11 @@ onMounted(() => {
                 @error="e => e.target.style.display = 'none'"
               >
             </div>
-
-            <div 
+            <div
               v-else
-              class="sprite-idle-wrapper combatant-idle-subtle"
-              :class="{ 'is-floating-species': isFlying(player) }"
-              :style="{ animationDelay: `calc(${playerAnimSeed} * -3s)`, '--idle-dist': isFlying(player) ? '-12px' : '-3px' }"
+              class="sprite-idle-wrapper"
+              :class="[{ 'combatant-idle-subtle': !playerAnimState, 'is-floating-species': isFlying(player), 'energy-catching': playerAnimState === 'catching', 'energy-releasing': playerAnimState === 'releasing' }]"
+              :style="{ animationDelay: `calc(${playerAnimSeed} * -3s)`, '--idle-dist': isFlying(player) ? '-12px' : '-3px', '--shadow-y': `${playerFeetY * 100}%` }"
             >
               <PVSpriteFX
                 :is-shiny="player.isShiny"
@@ -433,10 +586,10 @@ onMounted(() => {
                 >
               </PVSpriteFX>
             </div>
-          </div> <!-- End Rotation Layer -->
-        </div> <!-- End sprite-animator -->
-      </div> <!-- End combatant-sprite -->
-    </div> <!-- End battle-sprites -->
+          </div>
+        </div>
+      </div>
+    </div>
 
     <AtmosphereLayer
       ref="atmosphere"
@@ -494,14 +647,6 @@ onMounted(() => {
   object-fit: cover;
   z-index: calc(var(--z-base) + 1);
   image-rendering: pixelated !important;
-  image-rendering: crisp-edges !important;
-}
-
-.weather-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
 }
 
 .battle-sprites {
@@ -509,7 +654,7 @@ onMounted(() => {
   inset: 0;
   pointer-events: none;
   z-index: calc(var(--z-base) + 10);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .battle-info-container {
@@ -522,16 +667,14 @@ onMounted(() => {
   justify-content: space-between;
   pointer-events: none;
 
-  @media (max-width: 600px) {
-    padding: 2cqw;
-  }
+  @media (max-width: 600px) { padding: 2cqw; }
 }
 
 .combatant-info-wrap { pointer-events: auto; }
 
 .combatant-sprite {
   position: absolute;
-  width: 38cqw; // Tamaño base igual al del pokemon
+  width: 38cqw;
   height: 38cqw;
   max-width: 190px;
   max-height: 190px;
@@ -540,7 +683,7 @@ onMounted(() => {
   justify-content: Center;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   image-rendering: pixelated;
-  overflow: hidden; // Clipping del sprite al rotar/escalar
+  overflow: visible;
 
   .pokemon-combat-image {
     width: 38cqw;
@@ -549,6 +692,8 @@ onMounted(() => {
     max-height: 190px;
     object-fit: contain;
     object-position: bottom;
+    transition: filter 0.3s ease;
+    &.is-silhouette { filter: Brightness(0) Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.8)) !important; }
   }
   
   &.enemy-side-sprite {
@@ -566,13 +711,14 @@ onMounted(() => {
 
 .sprite-animator {
   position: relative;
+  z-index: var(--z-map-spawns);
   width: 100%;
   height: 100%;
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  overflow: visible;
 
-  // Translation & Scale Animations (Shadow follows these)
   &.atk-default.is-attacking, &.atk-physical.is-attacking { animation: attack-dash-enemy 0.4s ease-out; }
   &.atk-special.is-attacking { animation: attack-pulse-enemy 0.4s ease-out; }
 
@@ -591,10 +737,8 @@ onMounted(() => {
     }
   }
 
-  &.is-emerging {
-    .pokemon-combat-image {
-      animation: emerge-bounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
+  &.is-emerging, .is-emerging-anim {
+    animation: emerge-bounce 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   }
 }
 
@@ -604,16 +748,37 @@ onMounted(() => {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  overflow: hidden; // Clipping adicional para capas de rotación
+  overflow: visible;
+  z-index: var(--z-map-spawns);
 
-  // Rotation Animations (Shadow IGNORES these)
   &.atk-status { 
     animation: attack-status-enemy 0.4s ease-out; 
-    
-    .player-side-sprite & {
-      animation: attack-status-player 0.4s ease-out;
-    }
+    .player-side-sprite & { animation: attack-status-player 0.4s ease-out; }
   }
+}
+
+// --- ENERGY ANIMATIONS (GENERALIZED) ---
+.energy-catching {
+  animation: energy-catch 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  transform-origin: 50% var(--shadow-y, 90%);
+  pointer-events: none;
+}
+
+.energy-releasing {
+  animation: energy-release 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+  transform-origin: 50% var(--shadow-y, 90%);
+}
+
+@keyframes energy-catch {
+  0% { filter: none; transform: Scale(1); opacity: 1; }
+  25% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.05); }
+  100% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
+}
+
+@keyframes energy-release {
+  0% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
+  75% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.1); }
+  100% { filter: none; transform: Scale(1); opacity: 1; }
 }
 
 .trainer-battle-sprite {
@@ -622,122 +787,65 @@ onMounted(() => {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 2%; // Ajuste fino para la base
+  padding-bottom: 2%;
   animation: trainer-emerge 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-
-  .trainer-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: bottom;
-    image-rendering: pixelated;
-  }
+  .trainer-image { width: 100%; height: 100%; object-fit: contain; object-position: bottom; image-rendering: pixelated; }
 }
 
-@keyframes trainer-emerge {
-  0% { transform: TranslateY(20px); opacity: 0; }
-  100% { transform: TranslateY(0); opacity: 1; }
-}
+@keyframes trainer-emerge { 0% { transform: TranslateY(20px); opacity: 0; } 100% { transform: TranslateY(0); opacity: 1; } }
 
 .pv-shadow {
   position: absolute;
   left: 50%;
   transform: TranslateX(-50%) TranslateY(-50%);
-  width: 70%; 
-  height: 12px; 
-  
-  z-index: calc(var(--z-base) - 1);
+  width: 70%; height: 12px; z-index: calc(var(--z-base) - 1);
   pointer-events: none;
-  
-  // Posicionamos el centro de la sombra exactamente en el pixel detectado.
-  // Usamos background-size: contain para que la sombra no se corte.
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  // MAGIA PIXEL-ART: Escalado sin alias
+  background-size: 100% 100%; background-repeat: no-repeat; background-position: center;
   image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  image-rendering: -moz-crisp-edges;
-  
   filter: none;
 }
 
-.sprite-idle-wrapper {
-  width: 100%; height: 100%;
-  display: Flex; align-items: flex-end; justify-content: Center;
-  @include will-animate(transform);
-  
-}
+.sprite-idle-wrapper { width: 100%; height: 100%; display: Flex; align-items: flex-end; justify-content: Center; }
 
-.combatant-idle-subtle {
-  animation: combatant-idle-subtle 3s infinite ease-in-out !important;
-}
+.combatant-idle-subtle { animation: combatant-idle-subtle 3s infinite ease-in-out !important; }
 
-.is-floating-species {
-  margin-bottom: 25px; // Elevación base sólida
-  @media (max-width: 690px) { margin-bottom: 12px; }
-}
+.is-floating-species { margin-bottom: 25px; @media (max-width: 690px) { margin-bottom: 12px; } }
 
-@keyframes combatant-idle-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(var(--idle-dist, -6px)); }
-}
+@keyframes combatant-idle-subtle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(var(--idle-dist, -6px)); } }
 
-@keyframes attack-dash-player {
-  0% { transform: Translate(0, 0); }
-  25% { transform: Translate(50px, -50px); }
-  100% { transform: Translate(0, 0); }
-}
-
-@keyframes attack-dash-enemy {
-  0% { transform: Translate(0, 0); }
-  25% { transform: Translate(-50px, 50px); }
-  100% { transform: Translate(0, 0); }
-}
-
-@keyframes attack-pulse-player {
-  0% { transform: Scale(1); }
-  30% { transform: Scale(1.15) Translate(10px, -10px); filter: Brightness(1.3); }
-  100% { transform: Scale(1); }
-}
-@keyframes attack-pulse-enemy {
-  0% { transform: Scale(1); }
-  30% { transform: Scale(1.15) Translate(-10px, 10px); filter: Brightness(1.3); }
-  100% { transform: Scale(1); }
-}
-
-@keyframes attack-status-player {
-  0% { transform: Rotate(0deg); }
-  30% { transform: Rotate(10deg) Scale(1.1); }
-  100% { transform: Rotate(0deg); }
-}
-@keyframes attack-status-enemy {
-  0% { transform: Rotate(0deg); }
-  30% { transform: Rotate(-10deg) Scale(1.1); }
-  100% { transform: Rotate(0deg); }
-}
+@keyframes attack-dash-player { 0% { transform: Translate(0, 0); } 25% { transform: Translate(50px, -50px); } 100% { transform: Translate(0, 0); } }
+@keyframes attack-dash-enemy { 0% { transform: Translate(0, 0); } 25% { transform: Translate(-50px, 50px); } 100% { transform: Translate(0, 0); } }
+@keyframes attack-pulse-player { 0% { transform: Scale(1); } 30% { transform: Scale(1.15) Translate(10px, -10px); filter: Brightness(1.3); } 100% { transform: Scale(1); } }
+@keyframes attack-pulse-enemy { 0% { transform: Scale(1); } 30% { transform: Scale(1.15) Translate(-10px, 10px); filter: Brightness(1.3); } 100% { transform: Scale(1); } }
+@keyframes attack-status-player { 0% { transform: Rotate(0deg); } 30% { transform: Rotate(10deg) Scale(1.1); } 100% { transform: Rotate(0deg); } }
+@keyframes attack-status-enemy { 0% { transform: Rotate(0deg); } 30% { transform: Rotate(-10deg) Scale(1.1); } 100% { transform: Rotate(0deg); } }
 
 .enemy-side { align-self: flex-start; }
 .player-side { align-self: flex-end; }
 
-/* Searching Visuals */
-.searching-bushes {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  
-  &.back { z-index: calc(var(--z-base) + 4); opacity: 1; }
-  &.front { z-index: calc(var(--z-base) + 10); }
+.encounter-layers-back, .encounter-layers-front, .upcoming-preview-container {
+  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible;
+}
 
+.encounter-layers-back { z-index: calc(var(--z-map-spawns) - 5); }
+.encounter-layers-front { z-index: calc(var(--z-map-spawns) + 5); }
+.upcoming-preview-container { z-index: var(--z-map-spawns); }
+
+.searching-bushes, .upcoming-preview {
+  position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; pointer-events: none;
+  overflow: visible;
+}
+
+.searching-bushes {
+  &.back { opacity: 1; }
+  &.front { }
+  
   .bush-container-ground {
     position: absolute;
     left: 50%;
-    transform: Translate(-50%, -50%);
+    transform: TranslateX(-50%) TranslateY(-50%);
     width: 200px;
-    height: 60px;
+    height: 0;
     pointer-events: none;
     display: flex;
     justify-content: center;
@@ -746,88 +854,33 @@ onMounted(() => {
 }
 
 .bush-wrapper {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  image-rendering: pixelated;
-  
-  // Capa Frontal
-  &.bush-front-1 { --bx: -25px; --by: 12px; --bs: 1.2; z-index: calc(var(--z-base) + 12); animation: bush-wiggle 1.2s infinite ease-in-out; }
-  &.bush-front-2 { --bx: 35px; --by: 5px; --bs: 1.0; z-index: calc(var(--z-base) + 11); animation: bush-wiggle 1.5s infinite ease-in-out -0.4s; }
-  
-  // Capa Trasera
-  &.bush-back-1 { --bx: -35px; --by: -30px; --bs: 0.9; z-index: calc(var(--z-base) + 3); animation: bush-wiggle 1.8s infinite ease-in-out -0.8s; }
-  &.bush-back-2 { --bx: 20px; --by: -25px; --bs: 1.1; z-index: calc(var(--z-base) + 2); animation: bush-wiggle 2.1s infinite ease-in-out -0.2s; }
-  
+  position: absolute; width: 60px; height: 60px; image-rendering: pixelated;
+  &.bush-front-1 { --bx: -25px; --by: 12px; --bs: 1.2; animation: bush-wiggle 1.2s infinite ease-in-out; }
+  &.bush-front-2 { --bx: 35px; --by: 5px; --bs: 1.0; animation: bush-wiggle 1.5s infinite ease-in-out -0.4s; }
+  &.bush-back-1 { --bx: -35px; --by: -30px; --bs: 0.9; animation: bush-wiggle 1.8s infinite ease-in-out -0.8s; }
+  &.bush-back-2 { --bx: 20px; --by: -25px; --bs: 1.1; animation: bush-wiggle 2.1s infinite ease-in-out -0.2s; }
   transform: Translate(var(--bx), var(--by)) Scale(var(--bs));
 }
 
 .upcoming-preview {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: calc(var(--z-base) + 5);
-  pointer-events: none;
-  
-  .upcoming-image {
-    width: 38cqw;
-    height: 38cqw;
-    max-width: 190px;
-    max-height: 190px;
-    object-fit: contain;
-    object-position: bottom;
-    image-rendering: pixelated;
-    transition: filter 0.3s ease;
-
-    &.is-silhouette {
-      filter: Brightness(0) Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.8)) !important;
-    }
-
-    // No usar transform: translateY aquí para evitar desalineación con la sombra
+  position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; z-index: calc(var(--z-base) + 11); pointer-events: none;
+  .upcoming-image { width: 38cqw; height: 38cqw; max-width: 190px; max-height: 190px; object-fit: contain; object-position: bottom; image-rendering: pixelated; transition: filter 0.3s ease;
+    &.is-silhouette { filter: Brightness(0) Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.8)) !important; }
     backface-visibility: hidden;
   }
 }
 
-.pixel-bush {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  backface-visibility: hidden;
-}
+.pixel-bush { width: 100%; height: 100%; object-fit: contain; backface-visibility: hidden; }
 
-@keyframes bush-wiggle {
-  0%, 100% { transform: Translate(var(--bx), var(--by)) Rotate(0deg) Scale(var(--bs)); }
-  25% { transform: Translate(var(--bx), var(--by)) Rotate(-5deg) Scale(var(--bs)); }
-  75% { transform: Translate(var(--bx), var(--by)) Rotate(5deg) Scale(var(--bs)); }
-}
-
-/* Emerge Animation */
-.combatant-sprite.is-emerging {
-  .pokemon-combat-image {
-    animation: emerge-bounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-  }
-}
+@keyframes bush-wiggle { 0%, 100% { transform: Translate(var(--bx), var(--by)) Scale(var(--bs)) Rotate(0); } 50% { transform: Translate(var(--bx), var(--by)) Scale(var(--bs)) Rotate(5deg); } }
 
 @keyframes emerge-bounce {
-  0% { transform: translateY(40px) Scale(0.5); opacity: 0; }
-  50% { transform: translateY(-10px) Scale(1.1); opacity: 1; }
-  100% { transform: translateY(0) Scale(1); opacity: 1; }
-}
-.encounter-layers {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  will-change: opacity;
+  0% { transform: translateY(15px) Scale(0.8); }
+  60% { transform: translateY(-10px) Scale(1.05); }
+  100% { transform: translateY(0) Scale(1); }
 }
 
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.4s ease;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 1s ease-in-out; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-// Sincronización específica de la SOMBRA: 
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
 </style>

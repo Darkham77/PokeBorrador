@@ -3,6 +3,7 @@ import { onMounted, reactive } from 'vue'
 import { useGymsStore } from '@/stores/gyms'
 import { useGameStore } from '@/stores/game'
 import GymCard from '@/components/gyms/GymCard.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const gymsStore = useGymsStore()
 const gameStore = useGameStore()
@@ -35,16 +36,19 @@ onMounted(async () => {
           TUS MEDALLAS
         </div>
         <div class="badge-list">
-          <button 
+          <PVTooltip 
             v-for="gym in gymsStore.gyms" 
             :key="gym.id"
-            class="badge-item-retro"
-            :class="{ active: gymsStore.isGymDefeated(gym.id) }"
             :title="gym.badgeName"
-            @click.stop
           >
-            {{ gymsStore.isGymDefeated(gym.id) ? gym.badge : '?' }}
-          </button>
+            <button 
+              class="badge-item-retro"
+              :class="{ active: gymsStore.isGymDefeated(gym.id) }"
+              @click.stop
+            >
+              {{ gymsStore.isGymDefeated(gym.id) ? gym.badge : '?' }}
+            </button>
+          </PVTooltip>
         </div>
       </div>
     </div>

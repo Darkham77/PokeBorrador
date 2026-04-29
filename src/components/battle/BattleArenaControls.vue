@@ -33,7 +33,7 @@ const execShowBattleSwitch = () => {
     isBattleSwitch: true,
     battleMode: 'wild',
     includeTeam: true,
-    preventClose: isForced, // Impedir cerrar solo si es un cambio forzado por debilitamiento
+    preventClose: isForced, 
     activePokemonUid: player.value?.uid,
     onConfirm: (pokes) => {
       if (pokes.length > 0) {
@@ -42,7 +42,7 @@ const execShowBattleSwitch = () => {
           if (livePvP.battleState.active) {
             livePvP._commitPick({ type: 'switch', switchIndex: index })
           } else {
-            battleStore.executeSwitch(index, true) // Forzado = true
+            battleStore.executeSwitch(index, true)
           }
         }
       }
@@ -51,15 +51,18 @@ const execShowBattleSwitch = () => {
 }
 
 const execTryCatch = () => { 
+  // This is now mainly for "no balls" or fallback
   const balls = Object.keys(gs.value.inventory).filter(n => n.toLowerCase().includes('ball'))
-  if (balls.length === 1) {
-    battleStore.useItemInBattle(balls[0])
-  } else {
-    modalStore.open('Inventory', { 
-      battleMode: true, 
-      initialCategory: 'pokeballs' 
-    })
+  if (balls.length === 0) {
+    uiStore.notify('¡No tienes Poké Balls!', '🚫')
+    return
   }
+  
+  // If called from a legacy place or fallback, open inventory
+  modalStore.open('Inventory', { 
+    battleMode: true, 
+    initialCategory: 'pokeballs' 
+  })
 }
 
 const execShowBattleBag = () => { 
@@ -72,7 +75,6 @@ const execShowBattleBag = () => {
 // Watcher robusto para cambio forzado
 watch(() => uiStore.isBattleSwitchForced, (val) => {
   if (val) {
-    // Si el combate está procesando una animación, esperamos un poco
     if (battleStore.isProcessing) {
       const checkReady = setInterval(() => {
         if (!battleStore.isProcessing) {
@@ -109,6 +111,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
         @bag="execShowBattleBag"
         @run="battleStore.flee"
         @catch="execTryCatch"
+        @select-ball="(name) => battleStore.useItemInBattle(name)"
       />
 
       <div
@@ -147,10 +150,10 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   gap: 0;
   position: relative;
   overflow: visible !important; 
-  z-index: var(--z-low);
+  z-index: var(--z-hud); // Aseguramos que esté por encima del fondo del combate
   
   @media (max-width: 959px) {
-    padding: 12px 12px 12px 12px; // Aumentado de 2px a 12px para dar aire a las animaciones
+    padding: 12px 12px 12px 12px;
     flex-shrink: 0;
     margin-top: auto;
   }

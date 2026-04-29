@@ -64,3 +64,45 @@ When applying interactive animations (hover/active) to elements that have a non-
 - **Standard**: Hover offsets should ideally be subtle (10-15px relative shift).
 - **Implementation**: If base is `TranslateY(10px)`, hover should be `TranslateY(-5px)` to produce a 15px upward movement.
 ```
+
+## 7. DOM-Independent State Phases (Transitions & v-show)
+
+When animating complex multi-phase states (like wild encounters transitioning from silhouette to full color, or dynamically showing/hiding environment elements), the underlying DOM structure MUST be preserved to avoid abruptly severing CSS transitions.
+
+- **Rule**: NEVER use `v-if` for elements that need to smoothly transition their visibility, opacity, or position across state phases if they are dependent on reactive data that changes during the transition. Use `v-show` instead.
+- **Example**: If a floating Pokémon should not display ground bushes, use `v-show="!isFloating"`. This ensures the DOM node remains present (`display: none`) so that if the battle transitions to a non-floating Pokémon, the entrance animations can hook onto the existing element without re-mounting jolts.
+
+## 8. Asynchronous Coordinators & Layout Thrashing Prevention
+
+When an animation sequence requires swapping reactive data that will trigger Vue re-renders (like changing the active player's Pokémon `src`), this data swap MUST NOT occur simultaneously with the start of an unrelated CSS animation (e.g., the enemy's Phase 3 entrance).
+
+- **Problem**: Instantaneous reactive data swaps cause "Layout Thrashing" and frame drops, which immediately break or stutter ongoing CSS transitions on sibling components.
+- **Solution (The Coordinator Pattern)**: Execute data swaps **asynchronously in the background** during UX wait states (e.g., Victory Screens or Dialog pauses). Use a background `async` IIFE to:
+  1. Animate the withdrawal of the current element.
+  2. Wait for the animation to finish (`await new Promise`).
+  3. Swap the reactive data silently while the DOM is stable.
+  4. Animate the entrance of the new element.
+  
+This ensures the DOM is fully prepared and stable *before* the user clicks a button to advance to the next highly-animated phase.
+
+## 9. Animation Timeout Collisions (Race Conditions)
+
+When manually managing CSS animation classes via JavaScript timeouts (e.g., toggling between `energy-catching` and `energy-releasing` classes), timers used to clean up those classes MUST be meticulously tracked and cleared.
+
+- **The Flicker Problem**: A `setTimeout` designed to remove an animation class after `900ms` will execute regardless of state changes. If the component intentionally advances to a new animation state at `800ms`, the original timeout will fire `100ms` later, prematurely stripping the new animation class. This causes the element to abort its CSS `forwards` state and instantly pop to `Scale(1)`, creating a severe visual flicker.
+- **Standard Protocol**: Always track animation timeouts and invoke `clearTimeout()` immediately before assigning a new animation state.
+
+```javascript
+let currentAnimTimeout = null;
+
+const playAnimation = (stateClass, duration) => {
+  animState.value = stateClass;
+  
+  // MANDATORY: Clear previous overlapping timers to prevent premature class stripping
+  clearTimeout(currentAnimTimeout); 
+  
+  currentAnimTimeout = setTimeout(() => {
+    animState.value = null;
+  }, duration);
+};
+```

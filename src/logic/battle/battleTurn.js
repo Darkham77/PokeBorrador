@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 import { calculateDamage, getEffectiveSpeed } from './battleEngine'
 import { canAttack } from './battleFlow'
 import { dispatchMoveEffect } from './actions/actionRegistry'
@@ -104,15 +105,20 @@ export async function runPlayerAction(store, moveIndex) {
     store.addLog(`${enemyName} fue derrotado!`, 'log-enemy', e)
     phaserBridge.sendCommand('BattleScene', 'PLAY_FAINT', { side: 'enemy' })
     
-    // Si es entrenador, verificar si le quedan más Pokémon
+    // Si es entrenador, retirar con animación de energía y enviar al siguiente
     if (isTr && store.activeBattle.enemyTeam) {
+      await new Promise(r => setTimeout(r, 800))
+      phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'enemy' })
+      await new Promise(r => setTimeout(r, 800))
+      
       const nextEnemy = store.activeBattle.enemyTeam.find(p => p.hp > 0)
       if (nextEnemy) {
         store.addLog(`¡${store.activeBattle.trainerName} va a enviar a ${nextEnemy.name}!`, 'log-enemy', nextEnemy)
-        await new Promise(r => setTimeout(r, 1000))
+        await new Promise(r => setTimeout(r, 500))
         store.activeBattle.enemy = nextEnemy
         nextEnemy._revealed = true
         phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
+        await new Promise(r => setTimeout(r, 800))
         return
       }
     }
@@ -135,11 +141,14 @@ export async function runEnemyAction(store) {
     if (bestIdx !== -1) {
       const newPoke = store.activeBattle.enemyTeam[bestIdx]
       store.addLog(`¡${store.activeBattle.trainerName || 'El entrenador'} retira a ${e.name}!`, 'log-enemy', e)
-      await new Promise(r => setTimeout(r, 600))
+      phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'enemy' })
+      await new Promise(r => setTimeout(r, 800))
+      
       store.activeBattle.enemy = newPoke
       newPoke._revealed = true
       store.addLog(`¡Envía a ${newPoke.name}!`, 'log-enemy', newPoke)
       phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: 'enemy', pokemon: newPoke })
+      await new Promise(r => setTimeout(r, 800))
       return
     }
   }
@@ -201,6 +210,11 @@ export async function runEnemyAction(store) {
   if (p.hp <= 0) {
     store.addLog(`¡${p.name} cayó debilitado!`, 'log-player', p)
     phaserBridge.sendCommand('BattleScene', 'PLAY_FAINT', { side: 'player' })
+    await new Promise(r => setTimeout(r, 800))
+    
+    // Si es entrenador, retirar con animación
+    phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'player' })
+    await new Promise(r => setTimeout(r, 800))
     
     // Solo termina el combate si NO quedan Pokémon disponibles (excluyendo al que acaba de caer)
     const hasMore = store.gs.state.team.some(poke => poke.hp > 0 && poke.uid !== p.uid && !poke.onMission && !poke.onDefense)

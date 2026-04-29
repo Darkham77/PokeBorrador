@@ -211,6 +211,21 @@ While `hud-mobile` (1410px) is the primary target for HUD shifts, complex compon
 
 ---
 
+## 🔍 Pure Vue Auditor Compatibility
+
+To ensure a smooth "Zero-Warning" audit process and avoid false positives:
+
+### 1. Comment Tag Avoidance
+The "Pure Vue" auditor scans the entire file content, including comments. To prevent false positives (e.g., `missing_img_fallback`), avoid using real HTML tags like `<img>` inside comments. Use textual descriptions instead (e.g., "image element").
+
+### 2. Attribute Order for Fallbacks
+When using `<img>` tags with extremely long attributes (such as base64 data URIs in `src`), the auditor's regex may stop at the first `>` character within the string. To ensure the `@error` fallback is correctly detected, always place the `@error` attribute **BEFORE** any long data attributes.
+
+### 3. SASS Language Declaration
+Vue components utilizing SASS features (variables, mixins, capitalized filters) **MUST** declare `lang="scss"` in the `<style>` tag. Failure to do so will result in SASS syntax being treated as invalid CSS by the auditor and the IDE.
+
+---
+
 ## 📱 Safari & Mobile Compatibility (Prefix Mandate)
 
 Safari (macOS/iOS) does NOT support `backdrop-filter` without the `-webkit-` prefix. Since this project relies heavily on Glassmorphism for its premium modern shell, you **MUST** always include the prefix.

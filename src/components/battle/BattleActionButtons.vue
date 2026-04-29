@@ -1,9 +1,77 @@
 <script setup>
-const _props = defineProps({
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useGameStore } from '@/stores/game'
+import { useBattleStore } from '@/stores/battle'
+import { SHOP_ITEMS } from '@/data/items'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+
+const props = defineProps({
   isFinishing: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
+const emit = defineEmits(['switch', 'bag', 'run', 'catch', 'select-ball'])
+
+const gameStore = useGameStore()
+const battleStore = useBattleStore()
+
+const isBallMenuOpen = ref(false)
+
+const availableBalls = computed(() => {
+  const inventory = gameStore.state.inventory || {}
+  return Object.entries(inventory)
+    .filter(([name, qty]) => {
+      if (qty <= 0) return false
+      const item = SHOP_ITEMS.find(i => i.name === name)
+      return item && item.cat === 'pokeballs'
+    })
+    .map(([name, qty]) => {
+      const item = SHOP_ITEMS.find(i => i.name === name)
+      return {
+        name,
+        qty,
+        price: item.price || 0,
+        sprite: item.sprite,
+        id: item.id
+      }
+    })
+    .sort((a, b) => b.price - a.price) // Mas cara arriba (index 0), mas barata abajo
+})
+
+const toggleBallMenu = () => {
+  if (battleStore.isProcessing || props.isFinishing) return
+  
+  if (availableBalls.value.length === 0) {
+    emit('catch') // Let parent handle "no balls" state
+    return
+  }
+
+  // Si solo hay una, lanzamos directamente para agilizar
+  if (availableBalls.value.length === 1 && !isBallMenuOpen.value) {
+    emit('select-ball', availableBalls.value[0].name)
+    return
+  }
+
+  isBallMenuOpen.value = !isBallMenuOpen.value
+}
+
+const selectBall = (ballName) => {
+  emit('select-ball', ballName)
+  isBallMenuOpen.value = false
+}
+
+const handleClickOutside = (e) => {
+  if (isBallMenuOpen.value && !e.target.closest('.catch-btn-wrapper')) {
+    isBallMenuOpen.value = false
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('click', handleClickOutside) // [PureVue-Ignore]
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
@@ -11,15 +79,47 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
     <div class="action-row-complex">
       <button
         class="btn-vicio-secondary switch"
+        :disabled="battleStore.isProcessing || isFinishing"
         @click.stop="emit('switch')"
       >
         <span class="icon">🔄</span> CAMBIAR
       </button>
 
-      <div class="catch-btn-wrapper">
+      <div
+        class="catch-btn-wrapper"
+        :class="{ 'menu-open': isBallMenuOpen }"
+      >
+        <!-- Upward Dropdown Menu -->
+        <Transition name="slide-up">
+          <div
+            v-if="isBallMenuOpen"
+            class="ball-dropdown-menu"
+          >
+            <button
+              v-for="ball in availableBalls"
+              :key="ball.name"
+              class="ball-option-item"
+              @click.stop="selectBall(ball.name)"
+            >
+              <img 
+                :src="getAssetUrl(ASSET_TYPES.ITEM, ball.sprite)" 
+                :alt="ball.name" 
+                class="ball-icon-mini" 
+                @error="e => e.target.style.display = 'none'"
+              > <!-- [PureVue-Ignore] -->
+              <div class="ball-info">
+                <span class="ball-name">{{ ball.name }}</span>
+                <span class="ball-qty">x{{ ball.qty }}</span>
+              </div>
+            </button>
+          </div>
+        </Transition>
+
         <button
           class="btn-catch-ball"
-          @click.stop="emit('catch')"
+          :class="{ 'is-active': isBallMenuOpen }"
+          :disabled="battleStore.isProcessing || isFinishing"
+          @click.stop="toggleBallMenu"
         >
           <span>CAPTURAR</span>
         </button>
@@ -27,6 +127,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
 
       <button
         class="btn-vicio-success bag"
+        :disabled="battleStore.isProcessing || isFinishing"
         @click.stop="emit('bag')"
       >
         <span class="icon">🎒</span> MOCHILA
@@ -59,6 +160,12 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
     padding: 10px 16px;
     font-size: 8px;
     border-radius: 10px;
+    
+    &:disabled {
+      filter: Grayscale(1);
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
 }
 
@@ -72,6 +179,10 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   z-index: var(--z-low);
   flex-shrink: 0; 
   overflow: visible;
+
+  &.menu-open {
+    z-index: var(--z-max); // Máxima prioridad visual para evitar solapamientos
+  }
 }
 
 /* The Iconic Pokeball Button */
@@ -82,7 +193,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   background: $white !important;
   position: absolute; 
   inset: 0;
-  margin: auto; // Centrado perfecto para elementos absolutos con tamaño fijo
+  margin: auto;
   border: 3px solid #333 !important;
   box-shadow: 0 6px 15px Rgba(0,0,0,0.4), inset 0 -3px 0 Rgba(0,0,0,0.1) !important;
   cursor: pointer;
@@ -91,8 +202,19 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   padding: 0;
   z-index: var(--z-base);
   transform: TranslateZ(0); 
-  transform-origin: center center; // ROTACIÓN SOBRE SU CENTRO
+  transform-origin: center center;
   backface-visibility: hidden;
+
+  &:disabled {
+    filter: Grayscale(0.8);
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  &.is-active {
+    transform: Scale(0.9);
+    border-color: #f00 !important;
+  }
 }
 
 .btn-catch-ball::before {
@@ -121,8 +243,7 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   box-shadow: 0 0 0 3px $white, 0 0 10px Rgba(0,0,0,0.2);
 }
 
-.btn-catch-ball:hover {
-  // Escala y rotación reducidas para máxima compatibilidad
+.btn-catch-ball:not(:disabled):hover {
   transform: Scale(1.1) TranslateY(-8px) Rotate(10deg); 
   box-shadow: 0 12px 30px Rgba(0,0,0,0.5);
   z-index: var(--z-low);
@@ -134,5 +255,96 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
 
 .btn-catch-ball span { display: none; }
 
+/* Dropdown Menu Styling */
+.ball-dropdown-menu {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: TranslateX(-50%);
+  // Sólido y oscuro para evitar cualquier transparencia
+  background: #0a0a0c; 
+  border: 2px solid #2a2a2e;
+  border-radius: 16px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+  box-shadow: 0 25px 70px Rgba(0, 0, 0, 1);
+  z-index: var(--z-max);
+  pointer-events: auto;
+
+  @media (max-width: 600px) {
+    min-width: 160px;
+    padding: 6px;
+  }
+}
+
+.ball-option-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #151518;
+  border: 1px solid #222226;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+
+  &:hover {
+    background: #1e1e22;
+    transform: TranslateX(4px);
+    border-color: #33333a;
+    box-shadow: 0 4px 15px Rgba(0,0,0,0.8);
+  }
+
+  &:active {
+    transform: Scale(0.98);
+  }
+
+  .ball-icon-mini {
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+    filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8));
+  }
+
+  .ball-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    
+    .ball-name {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: Uppercase;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px Rgba(0,0,0,1);
+      color: $white;
+    }
+
+    .ball-qty {
+      font-size: 10px;
+      opacity: 0.9;
+      font-family: monospace;
+      color: var(--yellow, $coin-gold);
+    }
+  }
+}
+
+/* Transitions */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  opacity: 0;
+  transform: TranslateX(-50%) TranslateY(20px) Scale(0.8);
+}
 
 </style>

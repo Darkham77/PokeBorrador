@@ -109,7 +109,8 @@ export const getAssetUrl = (type, rawId, options = {}) => {
 
   switch (type) {
     case ASSET_TYPES.POKEMON: {
-      const num = POKEMON_SPRITE_IDS[id.toLowerCase()] || id;
+      const stringId = String(id).toLowerCase();
+      const num = POKEMON_SPRITE_IDS[stringId] || id;
       if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`${POKEAPI_ITEM_BASE}egg${extension}`);
       
       const folder = isShiny ? 'shiny/' : '';

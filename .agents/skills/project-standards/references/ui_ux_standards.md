@@ -65,7 +65,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Reasoning**: The property is hardware-accelerated and significantly more efficient for mobile GPUs than the filter function. It also avoids SASS deprecation warnings entirely.
   - ✅ `opacity: 0.5;`
   - ❌ `filter: Opacity(0.5);` (Inefficient)
-- **Shadow Performance (Drop-Shadow vs Box-Shadow)**: 
+- **Shadow Performance (Drop-Shadow vs Box-Shadow)**:
   - `box-shadow`: Fast, native GPU hardware. Use for UI cards, frames, and rectangular containers.
   - `filter: Drop-Shadow()`: Expensive, pixel-by-pixel analysis. Use ONLY for pixel-art sprites or non-rectangular elements where the shadow must follow the silhouette.
   - **DENSITY RULE**: In grids with 50+ items (Box, Bag), NEVER aply more than one `Drop-Shadow()` per item to avoid "GPU Fill-Rate Starvation".

@@ -72,29 +72,46 @@ def fix_file(filepath):
         # Fix previous buggy injection if present
         content = content.replace(r"\'none\'", "'none'")
 
-    # 2. Line-by-line fixes (Clicks, Colors, and Ignore Tags)
+    # 2. Fix Click Propagation (Multi-line aware, only in .vue)
+    if filepath.endswith('.vue'):
+        is_pv_tooltip_file = 'PVTooltip' in filepath
+        
+        def click_replacer(tag_match):
+            tag_full = tag_match.group(0)
+            
+            # Rule A: Skip if it contains the global ignore tag
+            if "[PureVue-Ignore]" in tag_full:
+                return tag_full
+                
+            # Rule B: Skip if it's PVTooltip or we are in PVTooltip.vue (which is the core component)
+            tag_name_match = re.match(r'<([a-zA-Z0-9_-]+)', tag_full)
+            if tag_name_match:
+                tag_name = tag_name_match.group(1)
+                if tag_name == 'PVTooltip' or is_pv_tooltip_file:
+                    return tag_full
+            
+            # Rule C: Apply @click -> @click.stop
+            # We use a regex that handles the replacement within this tag's attributes
+            return re.sub(r'@click(?!\.stop)(?!\.prevent)="([^"]+)"', 
+                          r'@click.stop="\1"', 
+                          tag_full)
+
+        # Find all HTML tags (handles multi-line because of re.DOTALL)
+        content = re.sub(r'<[a-zA-Z0-9_-]+(?:\s+[^>]*?)?>', click_replacer, content, flags=re.DOTALL)
+
+    # 3. Line-by-line fixes (Colors and Legacy Ignore Tags for non-tag lines)
     lines = content.split('\n')
     new_lines = []
     
-    is_pv_tooltip = 'PVTooltip' in filepath
-
     for line in lines:
-        # GLOBAL IGNORE CHECK
+        # GLOBAL IGNORE CHECK (for SASS or single line comments)
         if "[PureVue-Ignore]" in line:
             new_lines.append(line)
             continue
             
         processed_line = line
         
-        # 2a. Fix Click Propagation (@click -> @click.stop)
-        if filepath.endswith('.vue') and '@click' in processed_line and not is_pv_tooltip:
-            # We skip if the line specifically mentions PVTooltip too
-            if 'PVTooltip' not in processed_line:
-                processed_line = re.sub(r'@click(?!\.stop)(?!\.prevent)="([^"]+)"', 
-                                     lambda m: m.group(0).replace('@click', '@click.stop'), 
-                                     processed_line)
-
-        # 2b. Fix Hardcoded Colors (in .scss and inside <style> in .vue)
+        # 3a. Fix Hardcoded Colors (in .scss and inside <style> in .vue)
         if processed_line.strip().startswith('$') and ':' in processed_line:
             # Skip SASS variable definitions
             pass

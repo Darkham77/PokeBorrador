@@ -38,6 +38,9 @@ class PhaserBridge {
    * Send a command directly to a specific Phaser Scene.
    */
   sendCommand(sceneKey, command, data) {
+    // Also emit as a global event so Vue components can react
+    this.emit(command, data);
+
     if (!this.game) return;
     const scene = this.game.scene.getScene(sceneKey);
     if (scene && typeof scene.handleCommand === 'function') {

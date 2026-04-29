@@ -85,9 +85,10 @@ HYBRID_PATTERNS = [
     },
     {
         "id": "missing_img_fallback",
-        "regex": r"<img(?!.*?@error).*?>",
+        "regex": r"<img\b(?![^>]*?@error)[^>]*?>",
         "message": "Image tag missing @error fallback handler. Every game asset MUST have a fallback.",
-        "severity": "high"
+        "severity": "high",
+        "is_tag_rule": True
     },
     {
         "id": "hardcoded_color",
@@ -139,9 +140,10 @@ HYBRID_PATTERNS = [
     },
     {
         "id": "modal_click_propagation",
-        "regex": r"@click(?!\.stop)=\"[^\"]+\"",
+        "regex": r"@click(?!\.stop)(?!\.prevent)=\"[^\"]+\"",
         "message": "Potential missing .stop modifier on click handler. Critical for deep-stacked modal interactions.",
-        "severity": "medium"
+        "severity": "medium",
+        "is_tag_rule": True
     },
     {
         "id": "color_collision",
@@ -184,7 +186,7 @@ def scan_file(filepath: Path):
                 continue
             
             for pattern in HYBRID_PATTERNS:
-                if pattern["id"] == "native_title_attribute":
+                if pattern.get("is_tag_rule"):
                     continue
 
                 matches = re.finditer(pattern["regex"], line)
@@ -232,22 +234,55 @@ def scan_file(filepath: Path):
                         "id": pattern["id"]
                     })
 
-        # Multi-line checks (Native Title)
-        title_matches = re.finditer(r'<([a-zA-Z0-9\-]+)\b[^>]*?(?<![:\-])\btitle\s*=\s*["\'](.*?)["\']', content, re.DOTALL)
-        for match in title_matches:
-            if "[PureVue-Ignore]" in match.group(0):
-                continue
+
+        # Tag-based multi-line checks (@click, img fallback, native title)
+        tag_pattern = r'<([a-zA-Z0-9\-]+)\b(?:\s+[^>]*?)?>'
+        is_pv_tooltip_file = 'PVTooltip' in filepath.name
+        
+        for match in re.finditer(tag_pattern, content, re.DOTALL):
+            tag_full = match.group(0)
             tag_name = match.group(1)
-            if tag_name[0].isupper() or tag_name in ["BaseModal", "UnifiedCard"]:
+            
+            # GLOBAL IGNORE CHECK
+            if "[PureVue-Ignore]" in tag_full:
                 continue
+                
             line_no = content.count('\n', 0, match.start()) + 1
-            findings.append({
-                "line": line_no,
-                "content": match.group(0).strip().split('\n')[0] + "...",
-                "message": f"Native 'title' attribute detected on <{tag_name}>. Use PVTooltip instead.",
-                "severity": "medium",
-                "id": "native_title_attribute"
-            })
+            
+            # Rule: modal_click_propagation
+            if tag_name != "PVTooltip" and not is_pv_tooltip_file:
+                click_match = re.search(r'@click(?!\.stop)(?!\.prevent)="([^"]+)"', tag_full)
+                if click_match:
+                    findings.append({
+                        "line": line_no,
+                        "content": tag_full.strip().split('\n')[0] + "...",
+                        "message": "Potential missing .stop modifier on click handler.",
+                        "severity": "medium",
+                        "id": "modal_click_propagation"
+                    })
+
+            # Rule: missing_img_fallback
+            if tag_name == "img":
+                if "@error" not in tag_full.lower():
+                    findings.append({
+                        "line": line_no,
+                        "content": tag_full.strip().split('\n')[0] + "...",
+                        "message": "Image tag missing @error fallback handler.",
+                        "severity": "high",
+                        "id": "missing_img_fallback"
+                    })
+
+            # Rule: native_title_attribute
+            title_match = re.search(r'\btitle\s*=\s*["\'](.*?)["\']', tag_full)
+            if title_match:
+                if not (tag_name[0].isupper() or tag_name in ["BaseModal", "UnifiedCard", "PVTooltip"]):
+                    findings.append({
+                        "line": line_no,
+                        "content": tag_full.strip().split('\n')[0] + "...",
+                        "message": f"Native 'title' attribute detected on <{tag_name}>. Use PVTooltip instead.",
+                        "severity": "medium",
+                        "id": "native_title_attribute"
+                    })
 
     except Exception as e:
         print(f"Error reading {filepath}: {e}")

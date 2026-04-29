@@ -105,10 +105,10 @@ const currentSeason = computed(() => mapStore.currentSeason)
       <div class="hud-pill ball-pill">
         <div class="ball-icon-wrap">
           <img
+            @error="e => e.target.style.display = 'none'"
             src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'><circle cx='20' cy='20' r='19' fill='%23222' stroke='%23111' stroke-width='1.5'/><path d='M1 20 A19 19 0 0 1 39 20 Z' fill='%23e63030'/><path d='M1 20 A19 19 0 0 0 39 20 Z' fill='%23f5f5f5'/><rect x='1' y='18' width='38' height='4' fill='%23111'/><circle cx='20' cy='20' r='6' fill='%23111'/><circle cx='20' cy='20' r='4' fill='%23f5f5f5'/><circle cx='18' cy='18' r='1.2' fill='%23ffffff' opacity='0.7'/></svg>"
             width="24"
             height="24"
-            @error="e => e.target.style.display = 'none'"
           >
         </div>
         <span

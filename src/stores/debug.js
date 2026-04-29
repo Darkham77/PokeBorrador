@@ -314,10 +314,50 @@ export const useDebugStore = defineStore('debug', () => {
       category: 'pokes',
       action: async (id = 'pikachu', level = 5, shiny = false) => {
         const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
+        
+        if (id === 'wild') {
+          const { generateEncounter } = await import('@/logic/encounters')
+          const encounter = await generateEncounter(useMapStore().currentLocationId || 'plains', useGameStore().state)
+          if (encounter && encounter.pokemon) {
+            await pokemonDebugService.triggerEncounter(encounter.pokemon)
+          }
+          return
+        }
+
         const p = pokemonDebugService.generate({ id, level, isShiny: shiny })
         await pokemonDebugService.triggerEncounter(p)
       },
       description: 'Inicia un combate rápido contra un pokemon específico.'
+    })
+
+    register({
+      id: 'poke-debug-catch-anim',
+      label: 'TEST ANIM CAPTURA',
+      command: 'playCatchAnim',
+      category: 'pokes',
+      action: (side = 'enemy') => {
+        const { phaserBridge } = require('@/logic/phaserBridge')
+        phaserBridge.sendCommand('BattleScene', 'PLAY_CATCH_ENERGY', { side })
+        ui.notify(`Debug: Animación Captura (${side})`, '⚡')
+      },
+      description: 'Ejecuta la nueva animación de captura (energía) sobre un sprite.'
+    })
+
+    register({
+      id: 'poke-debug-release-anim',
+      label: 'TEST ANIM SALIDA',
+      command: 'playReleaseAnim',
+      category: 'pokes',
+      action: (side = 'enemy') => {
+        const { useBattleStore } = require('./battle')
+        const { phaserBridge } = require('@/logic/phaserBridge')
+        const battle = useBattleStore()
+        const pokemon = side === 'player' ? battle.player : battle.enemy
+        if (!pokemon) return ui.notify('No hay pokemon activo', '❌')
+        phaserBridge.sendCommand('BattleScene', 'PLAY_RELEASE_ENERGY', { side, pokemon })
+        ui.notify(`Debug: Animación Salida (${side})`, '✨')
+      },
+      description: 'Ejecuta la nueva animación de salida (energía) sobre un sprite.'
     })
 
     register({

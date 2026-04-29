@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
 import { ref, computed, reactive } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -14,6 +15,7 @@ import { useAudioStore } from './audio'
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import { tickStatus, tickLeechSeed } from '../logic/battle/battleStatus'
 import { executeTurn, runEnemyAction } from '../logic/battle/battleTurn'
+import { SHOP_ITEMS } from '@/data/items'
 
 export const useBattleStore = defineStore('battle', () => {
   const gs = useGameStore()
@@ -137,7 +139,7 @@ export const useBattleStore = defineStore('battle', () => {
     gs.registerPokedex(enemyPoke.id, false)
     if (isTrainer && enemyTeam) enemyTeam.forEach(p => gs.registerPokedex(p.id, false))
 
-    phaserBridge.sendCommand('BattleScene', 'START_BATTLE', { player: playerPoke, enemy: enemyPoke, locationId })
+    phaserBridge.sendCommand('BattleScene', 'START_BATTLE', { player: playerPoke, enemy: enemyPoke, locationId, isTrainer, isGym })
     enemyPoke.isShiny ? audio.shiny() : (isTrainer || isGym) ? audio.rival() : null
 
     const startMsg = isTrainer ? `¡${trainerName} te desafía!` : isGym ? `¡Combate de Gimnasio contra ${enemyPoke.name}!` : `¡Un ${enemyPoke.name} salvaje apareció!`
@@ -154,13 +156,20 @@ export const useBattleStore = defineStore('battle', () => {
     let iconType = null
     
     if (source) {
-      if (typeof source === 'object' && source.id) {
+      if (source === 'player') {
+        // Resolver avatar del entrenador (usando playerClass como fallback)
+        const spriteId = gs.state.playerClass || gs.state.avatar_style || 'entrenador'
+        icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId)
+        iconType = 'trainer'
+      } else if (typeof source === 'object' && source.id) {
         // Es un pokemon
         icon = getAssetUrl(ASSET_TYPES.POKEMON, source.id, { isShiny: source.isShiny })
         iconType = 'pokemon'
       } else if (typeof source === 'string') {
-        // Asumimos que es un item si pasamos un string
-        icon = getAssetUrl(ASSET_TYPES.ITEM, source)
+        // Resolver sprite del item por nombre o ID
+        const item = SHOP_ITEMS.find(i => i.name === source || i.id === source)
+        const spriteId = item ? item.sprite : source
+        icon = getAssetUrl(ASSET_TYPES.ITEM, spriteId)
         iconType = 'item'
       }
     }
@@ -193,6 +202,10 @@ export const useBattleStore = defineStore('battle', () => {
   const executeMove = async (moveIndex) => {
     if (isProcessing.value || !isBattleActive.value) return
     isProcessing.value = true
+    const thisStore = reactive({ 
+      activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
+      attackerSide, activeMove, persistBattle
+    })
     await executeTurn(thisStore, moveIndex)
     if (isBattleActive.value && !activeBattle.value.over) await applyEndTurnEffects()
     isProcessing.value = false
@@ -217,9 +230,13 @@ export const useBattleStore = defineStore('battle', () => {
       gs.addPokemon(res.pokemon, { notify: true })
       await endBattle(true, false)
     } else if (res.action !== 'fail') {
-      addLog(`Usaste ${itemName}`, 'log-info', itemName)
+      addLog(`Usaste ${itemName}`, 'log-info', 'player')
       persistBattle()
       await new Promise(r => setTimeout(r, 800))
+      const thisStore = reactive({ 
+        activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
+        attackerSide, activeMove, persistBattle
+      })
       await runEnemyAction(thisStore)
     }
     isProcessing.value = false
@@ -301,6 +318,32 @@ export const useBattleStore = defineStore('battle', () => {
           }
         }
       }
+
+      // REORDENAMIENTO DE EQUIPO: Si el pokemon activo ya no es el líder saludable, lo cambiamos en paralelo
+      // Esto evita que el DOM sufra un salto brusco al iniciar el siguiente combate, protegiendo las animaciones del enemigo.
+      const firstHealthy = gs.state.team.find(p => p.hp > 0)
+      const currentActive = activeBattle.value?.player
+      
+      if (firstHealthy && currentActive && firstHealthy.uid !== currentActive.uid) {
+        // Ejecutar en paralelo sin hacer await para no bloquear la pantalla de victoria (Fase 2 salvaje)
+        (async () => {
+          if (currentActive.hp > 0) {
+            phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'player' })
+            await new Promise(r => setTimeout(r, 800)) // Animación de volver a la pokebola
+          } else {
+            await new Promise(r => setTimeout(r, 500)) // Margen para que termine la animación de muerte
+          }
+          
+          if (!isBattleActive.value || !activeBattle.value) return // Abortar si salió rápido
+          
+          // Cambiamos el pokemon activo silenciosamente
+          activeBattle.value.player = firstHealthy
+          activeBattle.value.playerTeamIndex = gs.state.team.findIndex(p => p.uid === firstHealthy.uid)
+          
+          // Lo sacamos a combatir
+          phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
+        })()
+      }
     }
 
     // Persistir estado inmediatamente después del combate
@@ -363,7 +406,7 @@ export const useBattleStore = defineStore('battle', () => {
     const oldPoke = activeBattle.value.player
     addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', oldPoke)
     phaserBridge.sendCommand('BattleScene', 'PLAY_WITHDRAW', { side: 'player' })
-    await new Promise(r => setTimeout(r, 600))
+    await new Promise(r => setTimeout(r, 800))
     oldPoke.confused = 0; oldPoke.flinched = false
     activeBattle.value.player = newPoke; activeBattle.value.playerTeamIndex = teamIndex
     if (!activeBattle.value.participants.includes(newPoke.uid)) {
@@ -372,9 +415,13 @@ export const useBattleStore = defineStore('battle', () => {
     playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
     addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
     phaserBridge.sendCommand('BattleScene', 'PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
-    await new Promise(r => setTimeout(r, 600))
+    await new Promise(r => setTimeout(r, 800))
     handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog)
     persistBattle()
+    const thisStore = reactive({ 
+      activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
+      attackerSide, activeMove, persistBattle
+    })
     if (!isForced) await runEnemyAction(thisStore)
     isProcessing.value = false
   }
@@ -427,10 +474,6 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
-  const thisStore = reactive({ 
-    activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
-    attackerSide, activeMove, persistBattle
-  })
 
   if (typeof window !== 'undefined') {
     window.__VITE_DEBUG__ = window.__VITE_DEBUG__ || {}

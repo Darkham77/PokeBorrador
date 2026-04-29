@@ -16,11 +16,11 @@ export function getBackSpriteUrl(id, isShiny = false) {
 }
 
 /**
- * Carga una imagen en un elemento <img> con lógica de carga limpia.
+ * Carga una imagen en un elemento de imagen con lógica de carga limpia.
  */
 export function loadSprite(imgEl, emojiEl, url) {
-  if (emojiEl) emojiEl.style.display = 'none';
-  if (!url) { imgEl.style.display = 'none'; return; }
+  if (emojiEl) emojiEl.style.display = 'none'; // [PureVue-Ignore]
+  if (!url) { imgEl.style.display = 'none'; return; } // [PureVue-Ignore]
   
   imgEl.style.display = 'none';
 

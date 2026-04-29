@@ -278,9 +278,7 @@ const handleClose = () => {
   transition: opacity 0.3s ease;
 
   &.is-searching {
-    opacity: 0.6;
     pointer-events: none;
-    filter: Saturate(0.5);
   }
 
   &.is-fullscreen {

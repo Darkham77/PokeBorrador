@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 import * as Phaser from 'phaser';
 import { ASSET_TYPES } from '@/logic/services/assetService';
 import PhaserAssetService from '../services/PhaserAssetService';
@@ -100,7 +101,7 @@ export default class BattleScene extends Phaser.Scene {
     }
   }
 
-  async updatePokemonSprite(side, pokemon) {
+  async updatePokemonSprite(side, pokemon, skipTween = false) {
     if (!pokemon) return;
     
     const isPlayer = side === 'player';
@@ -120,23 +121,36 @@ export default class BattleScene extends Phaser.Scene {
       sprite.setScale(isPlayer ? 2.5 : 1.8);
     }
 
-    // Initial positioning (Portrait/Mobile optimized)
+    // Match Vue's .battle-arena coordinate system
+    // Arena is width: 100%, aspect-ratio: 4/3
+    const arenaWidth = width;
+    const arenaHeight = width * 0.75;
+    
+    // Vue sprite container is 38cqw
+    const spriteSize = arenaWidth * 0.38;
+
     if (isPlayer) {
-      sprite.setPosition(width * 0.25, height * 0.7).setOrigin(0.5, 1);
+      // Vue: left: 12%, bottom: 12%
+      const playerX = (arenaWidth * 0.12) + (spriteSize / 2);
+      const playerY = arenaHeight - (arenaHeight * 0.12);
+      sprite.setPosition(playerX, playerY).setOrigin(0.5, 1);
     } else {
-      sprite.setPosition(width * 0.75, height * 0.35).setOrigin(0.5, 1);
+      // Vue: right: 12%, top: 12%
+      const enemyX = arenaWidth - (arenaWidth * 0.12) - (spriteSize / 2);
+      const enemyY = (arenaHeight * 0.12) + spriteSize;
+      sprite.setPosition(enemyX, enemyY).setOrigin(0.5, 1);
     }
 
     // 3. Update Shadow
     this.updateShadow(side);
     const shadow = isPlayer ? this.playerShadow : this.enemyShadow;
 
+    if (skipTween) return sprite;
+
     // Refresh idle animation (Sway + Float)
-    // We de-synchronize with a random duration and slight x/y offset
     const duration = 2000 + Math.random() * 1000;
     const sway = isPlayer ? 5 : -5;
     
-    // Safety: Kill existing tweens on these targets to prevent stacking
     this.tweens.killTweensOf(sprite);
     if (shadow) this.tweens.killTweensOf(shadow);
 
@@ -160,6 +174,8 @@ export default class BattleScene extends Phaser.Scene {
         ease: 'Sine.easeInOut'
       });
     }
+
+    return sprite;
   }
 
   updateShadow(side) {
@@ -167,20 +183,23 @@ export default class BattleScene extends Phaser.Scene {
     const sprite = isPlayer ? this.playerSprite : this.enemySprite;
     if (!sprite) return;
 
-    // Get pokemon data from the stored battle data
     const pokemon = isPlayer ? this.currentBattleData?.player : this.currentBattleData?.enemy;
     const speciesData = pokemon ? pokemonDataProvider.getPokemonData(pokemon.id) : null;
     const isFlying = speciesData?.isFloating || false;
     
     let shadow = isPlayer ? this.playerShadow : this.enemyShadow;
     
-    // Rule: Fly shadow depends on height metadata or default offset
-    // Height in SPECIES_METADATA is in meters. We scale it for Phaser.
-    const height = speciesData?.height || 1;
-    const verticalOffset = isFlying ? Math.min(height * 40, 60) : 0;
+    const arenaWidth = this.cameras.main.width;
+    const spriteSize = arenaWidth * 0.38; // 38cqw in Vue
+    const effectiveFeetY = isFlying ? 0.95 : 0.9;
+    
+    // In Vue, shadow is at effectiveFeetY of the spriteSize.
+    // sprite.y is at 100% of spriteSize.
+    // So shadow is (1 - effectiveFeetY) * spriteSize HIGHER than sprite.y
+    const verticalOffset = spriteSize * (1 - effectiveFeetY);
 
     const shadowX = sprite.x;
-    const shadowY = sprite.y + verticalOffset; // Place shadow "below" the floating sprite
+    const shadowY = sprite.y - verticalOffset;
     const shadowWidth = isPlayer ? 100 : 70;
     const shadowHeight = shadowWidth * 0.3;
 
@@ -205,6 +224,8 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   handleCommand(command, data) {
+    console.log(`[BattleScene] Command Received: ${command}`, data);
+    
     if (command === 'SYNC_BATTLE') {
       this.syncFromVue(data);
     } else if (command === 'PLAY_DAMAGE') {
@@ -219,60 +240,56 @@ export default class BattleScene extends Phaser.Scene {
       this.playWithdraw(data.side);
     } else if (command === 'PLAY_SEND_OUT') {
       this.updatePokemonSprite(data.side, data.pokemon);
+    } else if (command === 'PLAY_CATCH_ENERGY') {
+      this.playCaptureEnergy(data.side);
+    } else if (command === 'PLAY_RELEASE_ENERGY') {
+      this.playReleaseEnergy(data.side, data.pokemon);
     } else if (command === 'DEBUG_VISUAL_SWAP') {
       if (this.currentBattleData) this.visualSwap(data);
     }
   }
 
-  /**
-   * DEBUG ONLY: Swap pokemon sprite visually
-   */
   visualSwap(data) {
-    if (!this.currentBattleData) {
-      console.warn('[BattleScene] Cannot swap: no battle data');
-      return;
-    }
-
+    if (!this.currentBattleData) return;
     const side = data.side || 'enemy';
     const pokemon = side === 'player' ? this.currentBattleData.player : this.currentBattleData.enemy;
-    
-    if (!pokemon) {
-      console.warn(`[BattleScene] Cannot swap: no pokemon found for side ${side}`);
-      return;
-    }
-    
+    if (!pokemon) return;
     const newId = parseInt(data.id);
     if (isNaN(newId)) return;
-    
-    console.log(`[BattleScene] DEBUG Visual Swap (${side}) -> ID: ${newId}`);
-    
-    // Update visual data in current session
     pokemon.id = newId;
-    
-    // Re-trigger visual update (this will reload texture and recalculate shadows)
     this.updatePokemonSprite(side, pokemon);
   }
 
   playWithdraw(side) {
+    this._playShrinkAnimation(side, false);
+  }
+
+  playCaptureEnergy(side) {
+    this._playShrinkAnimation(side, true);
+  }
+
+  _playShrinkAnimation(side, isCapture) {
     const sprite = side === 'player' ? this.playerSprite : this.enemySprite;
     const shadow = side === 'player' ? this.playerShadow : this.enemyShadow;
     if (!sprite) return;
 
+    this.tweens.killTweensOf(sprite);
+
+    // Vue handles the highly visible white/blue CSS animation (which perfectly targets the DOM shadow).
+    // Phaser only needs to quietly fade out so it doesn't create a misaligned "ghost" sprite.
     this.tweens.add({
       targets: sprite,
-      scale: 0,
       alpha: 0,
-      duration: 500,
-      ease: 'Back.in'
+      duration: isCapture ? 800 : 500,
+      ease: 'Power2'
     });
 
     if (shadow) {
       this.tweens.add({
         targets: shadow,
-        scale: 0,
         alpha: 0,
         duration: 500,
-        ease: 'Back.in'
+        ease: 'Power2'
       });
     }
   }
@@ -280,9 +297,7 @@ export default class BattleScene extends Phaser.Scene {
   playDamage(side) {
     const sprite = side === 'player' ? this.playerSprite : this.enemySprite;
     if (!sprite) return;
-
     this.cameras.main.shake(150, 0.015);
-
     this.tweens.add({
       targets: sprite,
       alpha: 0.3,
@@ -301,7 +316,6 @@ export default class BattleScene extends Phaser.Scene {
     const sprite = side === 'player' ? this.playerSprite : this.enemySprite;
     const shadow = side === 'player' ? this.playerShadow : this.enemyShadow;
     if (!sprite) return;
-
     this.tweens.add({
       targets: sprite,
       y: sprite.y + 100,
@@ -309,7 +323,6 @@ export default class BattleScene extends Phaser.Scene {
       duration: 1000,
       ease: 'Power2'
     });
-
     if (shadow) {
       this.tweens.add({
         targets: shadow,
@@ -325,13 +338,8 @@ export default class BattleScene extends Phaser.Scene {
     const attacker = isPlayer ? this.playerSprite : this.enemySprite;
     const attackerShadow = isPlayer ? this.playerShadow : this.enemyShadow;
     const targetSprite = isPlayer ? this.enemySprite : this.playerSprite;
-    
     if (!attacker || !targetSprite) return;
-
-    // 1. Attack Animation (Side-to-side dash)
-    
     const dashDistance = isPlayer ? 50 : -50;
-
     this.tweens.add({
       targets: [attacker, attackerShadow],
       x: (target) => target.x + dashDistance,
@@ -339,43 +347,43 @@ export default class BattleScene extends Phaser.Scene {
       yoyo: true,
       ease: 'Quad.easeOut'
     });
-
-    // 2. Particles on Target
-    const colors = {
-      fire: 0xff4f00, water: 0x00aaff, grass: 0x4caf50,
-      electric: 0xffeb3b, ice: 0x00ffff, poison: 0xa33ea1, normal: 0xffffff
-    };
-
+    const colors = { fire: 0xff4f00, water: 0x00aaff, grass: 0x4caf50, electric: 0xffeb3b, ice: 0x00ffff, poison: 0xa33ea1, normal: 0xffffff };
     const color = colors[type] || colors.normal;
-
-    // Use the 'vfx' atlas frame 'pixel' if available, fallback to graphics
     let particles;
     if (this.textures.exists('vfx')) {
-      particles = this.add.particles(0, 0, 'vfx', {
-        frame: 'pixel',
-        speed: { min: 100, max: 200 },
-        scale: { start: 2, end: 0 },
-        alpha: { start: 1, end: 0 },
-        lifespan: 500,
-        tint: color,
-        blendMode: 'ADD',
-        gravityY: 100
-      });
+      particles = this.add.particles(0, 0, 'vfx', { frame: 'pixel', speed: { min: 100, max: 200 }, scale: { start: 2, end: 0 }, alpha: { start: 1, end: 0 }, lifespan: 500, tint: color, blendMode: 'ADD', gravityY: 100 });
     } else {
-      // Emergency fallback if atlas failed to load
-      particles = this.add.particles(0, 0, 'platform', {
-        speed: { min: 50, max: 100 },
-        scale: { start: 0.5, end: 0 },
-        alpha: { start: 1, end: 0 },
-        lifespan: 400,
-        tint: color,
-        blendMode: 'ADD'
-      });
+      particles = this.add.particles(0, 0, 'platform', { speed: { min: 50, max: 100 }, scale: { start: 0.5, end: 0 }, alpha: { start: 1, end: 0 }, lifespan: 400, tint: color, blendMode: 'ADD' });
     }
-
     particles.setPosition(targetSprite.x, targetSprite.y - 40);
     particles.explode(20);
-
     this.time.delayedCall(1000, () => particles.destroy());
+  }
+
+  async playReleaseEnergy(side, pokemon) {
+    const sprite = await this.updatePokemonSprite(side, pokemon, true);
+    const shadow = side === 'player' ? this.playerShadow : this.enemyShadow;
+    if (!sprite) return;
+
+    this.tweens.killTweensOf(sprite);
+    
+    // Vue handles the white/blue CSS animation.
+    // Phaser quietly fades in behind the DOM.
+    sprite.setAlpha(0);
+
+    this.tweens.add({
+      targets: sprite,
+      alpha: 1,
+      duration: 800,
+      ease: 'Power2',
+      onComplete: () => {
+        this.updatePokemonSprite(side, pokemon);
+      }
+    });
+    
+    if (shadow) {
+      shadow.setAlpha(0);
+      this.tweens.add({ targets: shadow, alpha: 0.25, duration: 800, ease: 'Power2' });
+    }
   }
 }

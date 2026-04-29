@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useBuffsStore } from '@/stores/buffs'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const buffsStore = useBuffsStore()
 
@@ -23,23 +24,24 @@ const formatTime = (secs) => {
       tag="div"
       class="buffs-list"
     >
-      <div 
+      <PVTooltip 
         v-for="buff in buffsStore.activeBuffs" 
         :key="buff.id" 
-        class="buff-badge"
         :title="buff.desc"
       >
-        <img
-          :src="buff.icon"
-          :alt="buff.name"
-          class="buff-icon"
-          @error="e => e.target.style.display = 'none'"
-        >
-        <div class="buff-info">
-          <span class="buff-name">{{ buff.name }}</span>
-          <span class="buff-time">{{ formatTime(buff.secs) }}</span>
+        <div class="buff-badge">
+          <img
+            :src="buff.icon"
+            :alt="buff.name"
+            class="buff-icon"
+            @error="e => e.target.style.display = 'none'"
+          >
+          <div class="buff-info">
+            <span class="buff-name">{{ buff.name }}</span>
+            <span class="buff-time">{{ formatTime(buff.secs) }}</span>
+          </div>
         </div>
-      </div>
+      </PVTooltip>
     </transition-group>
   </div>
 </template>

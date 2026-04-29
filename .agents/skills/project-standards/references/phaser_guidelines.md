@@ -49,6 +49,7 @@ To avoid performance death by a thousand reactivity "checks":
 - **The Bridge Pattern**: Use an event bus or a non-reactive "Game Instance Router" to pass data from Vue to Phaser.
 - **Shallow Refs**: If you must store the Phaser Game instance in a Vue component, use `shallowRef()`.
 - **Global Debugging Bridge**: To facilitate runtime auditing of textures, memory, and engine state, the `phaserBridge` **MUST** be exposed to the global `window` object in the development environment. Use `window.phaserBridge.game.textures.list` in the console to verify asset loading.
+- **Combat Animation Synchronization**: Critical battle actions (faint, withdraw, switch, item usage) **MUST** trigger explicit Phaser commands via `phaserBridge.sendCommand` (e.g., `PLAY_FAINT`, `PLAY_WITHDRAW`, `PLAY_CATCH_ENERGY`) to maintain visual-logic parity between the Vue UI and the Phaser rendering layer.
 
 ### 3. Initialization & Blocking
 
@@ -59,5 +60,6 @@ To avoid performance death by a thousand reactivity "checks":
 ---
 
 ### 3. Dynamic Combat FX & Shadows
+
 - **Flying Species Shadow Offset**: Shadows for flying Pokémon in Phaser scenes MUST be offset vertically based on the `height` property from `SPECIES_METADATA`. Use a proportional multiplier (e.g., `height * 40`) to simulate the Pokémon floating above the terrain.
 - **Dynamic Sprite Separation**: In narrow combat viewports (under 690px), use `Clamp()` and container units (`cqw`) for sprite positioning (e.g., `left/right: Clamp(2%, 12cqw, 12%)`). This ensures sprites move towards the edges as space shrinks, preventing them from overlapping the central UI.
