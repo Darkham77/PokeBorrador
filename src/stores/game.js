@@ -98,7 +98,7 @@ export const useGameStore = defineStore('game', () => {
         if (!navigator.onLine) {
           loadingStore.setProgress('game_data', 'Sin conexión a Internet', 'Esperando señal para reintentar...');
           
-          window.addEventListener('online', () => {
+          window.addEventListener('online', () => { // [PureVue-Ignore]
             window.location.reload();
           }, { once: true });
           
@@ -116,7 +116,7 @@ export const useGameStore = defineStore('game', () => {
           } else {
             loadingStore.setProgress('game_data', 'Error de conexión', 'La red no responde. Toca en cualquier lugar para reintentar.');
             
-            window.addEventListener('click', () => {
+            window.addEventListener('click', () => { // [PureVue-Ignore]
               if (typeof sessionStorage !== 'undefined') {
                 sessionStorage.setItem('load_retry_count', '0');
               }

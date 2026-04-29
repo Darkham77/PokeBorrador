@@ -228,7 +228,7 @@ def scan_file(filepath: Path):
 
 
         # Tag-based multi-line checks (@click, img fallback, native title)
-        tag_pattern = r'<([a-zA-Z0-9\-]+)(?:\s+(?:(?:"[^"]*"|\'[^\']*\'|[^>])*))?>'
+        tag_pattern = r'<([a-zA-Z0-9\-]+)(\s+(?:[^>"\']|"[^"]*"|\'[^\']*\')*)?>'
         is_pv_tooltip_file = 'PVTooltip' in filepath.name
         
         for match in re.finditer(tag_pattern, content, re.DOTALL):
