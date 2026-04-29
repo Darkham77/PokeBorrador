@@ -241,8 +241,9 @@ const rankTitle = computed(() => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
   -webkit-backdrop-filter: Blur(4px);
+  backdrop-filter: Blur(4px);
+  @include gpu-layer;
   animation: fadeIn 0.2s ease;
   transform: translateZ(0);
 }

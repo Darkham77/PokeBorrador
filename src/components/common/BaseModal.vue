@@ -292,7 +292,9 @@ const computedCorners = computed(() => {
   position: fixed;
   inset: 0;
   background: Rgba(0, 0, 0, 0.5);
-  -webkit-backdrop-filter: Blur(6px); backdrop-filter: Blur(6px);
+  -webkit-backdrop-filter: Blur(6px);
+  backdrop-filter: Blur(6px);
+  @include gpu-layer;
   z-index: var(--z-base);
   pointer-events: auto;
   // GPU Acceleration

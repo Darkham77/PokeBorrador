@@ -75,7 +75,7 @@ useBodyClass('is-battle-active', () => battleStore.isBattleActive)
 const hudRef = ref(null)
 const hudBottomRef = ref(null)
 const innerHudRef = ref(null)
-const hudHeight = ref(160)
+const hudHeight = ref(110) // Updated to a more realistic default to minimize the initial jump
 const hudBottomHeight = ref(gameStore.state.starterChosen ? 80 : 0)
 const isHudHidden = ref(false)
 
@@ -99,65 +99,80 @@ function handleOutsideClick(e) {
   }
 }
 
-// Scroll listener for dynamic HUD visibility
+// Scroll listener for dynamic HUD visibility (THROTTLED for performance)
 let lastScrollY = 0
+let scrollTicking = false
 function handleScroll(e) {
-  let target = e.target
-  if (target === document || target === window) target = document.documentElement
+  if (scrollTicking) return
+  scrollTicking = true
   
-  // Only hide/show if the main tab or document is scrolling (ignore inner tiny scrolls)
-  if (target.tagName !== 'HTML' && (!target.classList || !target.classList.contains('tab-content'))) {
-    return
-  }
+  requestAnimationFrame(() => {
+    let target = e.target
+    if (target === document || target === window) target = document.documentElement
+    
+    if (target.tagName !== 'HTML' && (!target.classList || !target.classList.contains('tab-content'))) {
+      scrollTicking = false
+      return
+    }
 
-  const currentScrollY = target.scrollTop
-  
-  if (currentScrollY <= 50) {
-    isHudHidden.value = false
-    lastScrollY = currentScrollY
-    return
-  }
+    const currentScrollY = target.scrollTop
+    
+    if (currentScrollY <= 50) {
+      if (isHudHidden.value) isHudHidden.value = false
+      lastScrollY = currentScrollY
+      scrollTicking = false
+      return
+    }
 
-  // Hide on scroll down, show on scroll up (with a 20px threshold)
-  if (currentScrollY > lastScrollY + 20) {
-    isHudHidden.value = true
-    lastScrollY = currentScrollY
-  } else if (currentScrollY < lastScrollY - 20) {
-    isHudHidden.value = false
-    lastScrollY = currentScrollY
-  }
+    // Hide on scroll down, show on scroll up (with a 40px threshold for stability)
+    const diff = currentScrollY - lastScrollY
+    if (Math.abs(diff) > 40) {
+      const nextHidden = diff > 0
+      if (isHudHidden.value !== nextHidden) {
+        isHudHidden.value = nextHidden
+      }
+      lastScrollY = currentScrollY
+    }
+    
+    scrollTicking = false
+  })
 }
 
+let isUpdatingHeight = false
 function updateHudHeight() {
-  if (innerHudRef.value) {
-    hudHeight.value = innerHudRef.value.offsetHeight
-  } else if (hudRef.value) {
-    hudHeight.value = hudRef.value.offsetHeight
-  }
+  if (isUpdatingHeight) return
+  isUpdatingHeight = true
   
-  // Update bottom HUD height if it exists (mobile nav)
-  const bottomEl = hudBottomRef.value?.$el || hudBottomRef.value
-  if (bottomEl) {
-    hudBottomHeight.value = bottomEl.offsetHeight
-  } else {
-    hudBottomHeight.value = 0
-  }
+  requestAnimationFrame(() => {
+    let newHeight = 0
+    if (innerHudRef.value) {
+      newHeight = innerHudRef.value.offsetHeight
+    } else if (hudRef.value) {
+      newHeight = hudRef.value.offsetHeight
+    }
+
+    // Only update if change is significant (> 2px) to avoid micro-reflows
+    if (Math.abs(hudHeight.value - newHeight) > 2) {
+      hudHeight.value = newHeight
+    }
+    
+    // Update bottom HUD height
+    const bottomEl = hudBottomRef.value?.$el || hudBottomRef.value
+    const newBottomHeight = bottomEl ? bottomEl.offsetHeight : 0
+    if (Math.abs(hudBottomHeight.value - newBottomHeight) > 2) {
+      hudBottomHeight.value = newBottomHeight
+    }
+    
+    isUpdatingHeight = false
+  })
 }
 
 onMounted(() => {
   console.log('[MainGameView] MOUNTED. activeTab:', activeTab.value)
-  // 1. Dynamic HUD Height Tracking
-  if (hudRef.value) {
-    resizeObserver = new ResizeObserver(() => updateHudHeight())
-    resizeObserver.observe(hudRef.value)
-  }
   
-  if (hudBottomRef.value) {
-    const el = hudBottomRef.value?.$el || hudBottomRef.value
-    if (el) resizeObserver.observe(el)
-  }
-  
-  setTimeout(updateHudHeight, 300) // Initial guarantee with delay for transitions
+  // Initial height calculation: Immediate + Short delay for dynamic content
+  updateHudHeight()
+  setTimeout(updateHudHeight, 100) 
 
   // 2. Load essential game data
   warStore.loadWarData()
@@ -167,19 +182,19 @@ onMounted(() => {
   breedingStore.checkDailyReset()
 })
 
-watch(hudBottomRef, (newVal) => {
-  if (newVal) {
-    const el = newVal?.$el || newVal
-    if (el) resizeObserver.observe(el)
-  }
-})
-
 onUnmounted(() => {
   console.log('[MainGameView] UNMOUNTED.')
 })
 
-// REFACTORED: Use managed listeners
-useWindowListener('resize', updateHudHeight, { passive: true })
+// REFACTORED: Only update on TRUE window resize
+let lastWindowWidth = window.innerWidth
+useWindowListener('resize', () => {
+  if (window.innerWidth !== lastWindowWidth) {
+    lastWindowWidth = window.innerWidth
+    updateHudHeight()
+  }
+}, { passive: true })
+
 useWindowListener('scroll', handleScroll, { passive: true, capture: true })
 useDocumentListener('click', handleOutsideClick)
 
@@ -237,67 +252,69 @@ onUnmounted(() => {
         id="zoomable-content"
         class="zoom-target content-area"
         :style="{ 
-          '--hud-top-padding': Math.max(100, hudHeight + 20) + 'px',
+          '--hud-top-padding': Math.max(90, hudHeight + 15) + 'px',
           '--hud-bottom-padding': (hudBottomHeight > 0 ? (hudBottomHeight + 20) : 0) + 'px'
         }"
       >
-        <!-- TAB CONTENTS -->
-        <div
-          v-show="activeTab === 'map'"
-          id="tab-map"
-          class="tab-content"
-        >
-          <MapView />
-          <div class="hud-spacer-bottom" />
-        </div>
+        <!-- CORE VIEWS (KEPT ALIVE) -->
+        <KeepAlive :include="['MapView', 'PokedexView', 'BagView', 'BoxView']">
+          <div
+            v-if="activeTab === 'map'"
+            key="map"
+            class="tab-content"
+          >
+            <MapView />
+            <div class="hud-spacer-bottom" />
+          </div>
+
+          <div
+            v-else-if="activeTab === 'pokedex'"
+            key="pokedex"
+            class="tab-content"
+          >
+            <PokedexView />
+            <div class="hud-spacer-bottom" />
+          </div>
+
+          <div
+            v-else-if="activeTab === 'bag'"
+            key="bag"
+            class="tab-content"
+          >
+            <BagView />
+            <div class="hud-spacer-bottom" />
+          </div>
+
+          <div
+            v-else-if="activeTab === 'box'"
+            key="box"
+            class="tab-content"
+          >
+            <BoxView />
+            <div class="hud-spacer-bottom" />
+          </div>
+
+          <div
+            v-else-if="activeTab === 'gyms'"
+            key="gyms"
+            class="tab-content"
+          >
+            <GymsView />
+            <div class="hud-spacer-bottom" />
+          </div>
+
+          <div
+            v-else-if="activeTab === 'daycare'"
+            key="daycare"
+            class="tab-content"
+          >
+            <DaycareView />
+            <div class="hud-spacer-bottom" />
+          </div>
+        </KeepAlive>
 
         <div
-          v-show="activeTab === 'pokedex'"
-          id="tab-pokedex"
-          class="tab-content"
-        >
-          <PokedexView />
-          <div class="hud-spacer-bottom" />
-        </div>
-
-        <div
-          v-show="activeTab === 'bag'"
-          id="tab-bag"
-          class="tab-content"
-        >
-          <BagView />
-          <div class="hud-spacer-bottom" />
-        </div>
-
-        <div
-          v-show="activeTab === 'box'"
-          id="tab-box"
-          class="tab-content"
-        >
-          <BoxView />
-          <div class="hud-spacer-bottom" />
-        </div>
-
-        <div
-          v-show="activeTab === 'gyms'"
-          id="tab-gyms"
-          class="tab-content"
-        >
-          <GymsView />
-          <div class="hud-spacer-bottom" />
-        </div>
-
-        <div
-          v-show="activeTab === 'daycare'"
-          id="tab-daycare"
-          class="tab-content"
-        >
-          <DaycareView v-if="activeTab === 'daycare'" />
-          <div class="hud-spacer-bottom" />
-        </div>
-
-        <div
-          v-show="activeTab === 'market'"
+          v-if="activeTab === 'market'"
           id="tab-market"
           class="tab-content"
         >
@@ -306,7 +323,7 @@ onUnmounted(() => {
         </div>
 
         <div
-          v-show="activeTab === 'trainer-shop'"
+          v-if="activeTab === 'trainer-shop'"
           id="tab-trainer-shop"
           class="tab-content"
         >
@@ -315,7 +332,7 @@ onUnmounted(() => {
         </div>
 
         <div
-          v-show="activeTab === 'online-market'"
+          v-if="activeTab === 'online-market'"
           id="tab-online-market"
           class="tab-content"
         >
@@ -324,7 +341,7 @@ onUnmounted(() => {
         </div>
 
         <div
-          v-show="activeTab === 'events'"
+          v-if="activeTab === 'events'"
           id="tab-events"
           class="tab-content"
         >
@@ -333,7 +350,7 @@ onUnmounted(() => {
         </div>
 
         <div
-          v-show="activeTab === 'social'"
+          v-if="activeTab === 'social'"
           id="tab-social"
           class="tab-content"
         >
@@ -342,7 +359,7 @@ onUnmounted(() => {
         </div>
 
         <div
-          v-show="activeTab === 'arena'"
+          v-if="activeTab === 'arena'"
           id="tab-arena"
           class="tab-content"
         >
@@ -351,7 +368,7 @@ onUnmounted(() => {
         </div>
 
         <div
-          v-show="activeTab === 'ranking'"
+          v-if="activeTab === 'ranking'"
           id="tab-ranking"
           class="tab-content"
         >

@@ -86,6 +86,7 @@
   background: Rgba(0, 0, 0, 0.95);
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
+  @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   padding: 8px 16px;

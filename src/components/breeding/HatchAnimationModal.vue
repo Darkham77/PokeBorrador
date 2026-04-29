@@ -362,6 +362,8 @@ onMounted(async () => {
 }
 
 :deep(.base-modal-overlay) {
-  -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
 }
 </style>

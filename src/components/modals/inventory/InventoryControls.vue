@@ -116,6 +116,7 @@ const startMode = (mode) => {
   border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
+  @include gpu-layer;
 }
 
 .search-section {

@@ -27,8 +27,13 @@
 @function pokemon-outline-2px($color: $darker) {
   @return Drop-Shadow(2px 0 0 $color) Drop-Shadow(-2px 0 0 $color) Drop-Shadow(0 2px 0 $color) Drop-Shadow(0 -2px 0 $color);
 }
+
 @function pokemon-outline-performance($color: $darker) {
   @return Drop-Shadow(2px 2px 0.5px $color) Drop-Shadow(-2px -2px 0.5px $color);
+}
+
+@function pokemon-outline-optimized() {
+  @return url(#pixel-outline-optimized);
 }
 @function aura-red-classic($color: #ff0000) {
   @return Drop-Shadow(0 0 2px $color) Drop-Shadow(0 0 5px $color);

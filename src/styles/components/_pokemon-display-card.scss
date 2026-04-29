@@ -20,13 +20,18 @@
     & .pokemon-sprite { @include pokemon-sprite-hover-standard; }
   }
 
+  &.is-premium-tier {
+    @include pokemon-card-premium-tier;
+  }
+
   &.is-performance-mode {
     background: Rgba(30, 41, 59, 0.6) !important;
     border: 1px solid Rgba(255, 255, 255, 0.05) !important;
     box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.4) !important;
     transition: none !important;
 
-    &::before { display: none !important; }
+    &::before, &::after { display: none !important; }
+    animation: none !important;
 
     & .pokemon-sprite {
       filter: none !important;
@@ -89,7 +94,8 @@
       padding: 6px 3px;
       border-radius: 10px;
       border: 1px solid Rgba(255, 255, 255, 0.1);
-      -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+      -webkit-backdrop-filter: Blur(10px);
+      backdrop-filter: Blur(10px);
       box-shadow: 0 4px 15px Rgba(0,0,0,0.5);
       @include gpu-layer;
     }
@@ -257,7 +263,8 @@
 
       &:hover {
         background: Rgba(255, 255, 255, 0.12);
-        border-color: Rgba(255, 214, 10, 0.4);
+        border-color: var(--blue) !important; // Distinguish from Gold Tier
+        box-shadow: 0 0 10px Rgba(10, 132, 255, 0.3);
         transform: Scale(1.03);
       }
 

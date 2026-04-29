@@ -5,11 +5,9 @@
    ========================================================================== */
 
 @mixin aura-guardian($color: Rgba(255, 255, 255, 0.8)) {
-  filter: Drop-Shadow(0 0 10px $color) Drop-Shadow(0 0 5px $color);
-  animation: pulse-aura-vibrant 2s infinite ease-in-out;
+  filter: Drop-Shadow(0 0 8px $color); // Single, high-perf shadow
+  animation: pulse-aura-vibrant-simple 2s infinite ease-in-out;
   animation-delay: calc(var(--fx-seed, 0) * -2s);
-  @include gpu-layer;
-  will-change: filter;
 }
 
 @mixin fx-shiny($particle-count: 5) {
@@ -125,18 +123,12 @@
       Drop-Shadow(0 8px 25px Rgba(0,0,0,0.5)); 
   }
 }
-@keyframes pulse-aura-vibrant {
+@keyframes pulse-aura-vibrant-simple {
   0%, 100% { 
-    filter: 
-      Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.9)) 
-      Drop-Shadow(0 0 4px Rgba(255, 255, 255, 0.6))
-      Drop-Shadow(0 3px 6px Rgba(0,0,0,0.3)); 
+    filter: Drop-Shadow(0 0 5px Rgba(255, 255, 255, 0.4));
   }
   50% { 
-    filter: 
-      Drop-Shadow(0 0 24px Rgba(255, 255, 255, 1)) 
-      Drop-Shadow(0 0 12px Rgba(255, 255, 255, 0.9))
-      Drop-Shadow(0 5px 12px Rgba(0,0,0,0.4)); 
+    filter: Drop-Shadow(0 0 12px Rgba(255, 255, 255, 0.8));
   }
 }
 
@@ -169,4 +161,13 @@
 @keyframes float-fx {
   from { transform: translateY(0px) Scale(1); }
   to { transform: translateY(-5px) Scale(1.05); }
+}
+
+@keyframes pulse-tier {
+  0%, 100% { 
+    opacity: 0.6;
+  }
+  50% { 
+    opacity: 1;
+  }
 }

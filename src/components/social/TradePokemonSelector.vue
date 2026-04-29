@@ -248,8 +248,9 @@ const select = (poke) => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   -webkit-backdrop-filter: Blur(8px);
+  backdrop-filter: Blur(8px);
+  @include gpu-layer;
   transform: translateZ(0);
 }
 

@@ -204,7 +204,7 @@ const bannerStyle = computed(() => ({
 .pc-split-container {
   display: flex;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 10px;
   align-items: stretch;
 
   @media (max-width: 1100px) {

@@ -5,6 +5,9 @@ import { useGameStore } from '@/stores/game'
 import { phaserBridge } from '@/logic/phaserBridge'
 import { useUIStore } from '@/stores/ui'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/data/pokedex'
+
+const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
@@ -65,6 +68,53 @@ const faintPlayer = async () => {
   isOpen.value = false
 }
 
+const visualPokemonId = ref(1)
+const playerVisualId = ref(1)
+
+// Sincronizar cuando cambia el enemigo real
+import { watch } from 'vue'
+watch(() => battleStore.state?.enemy?.id, (newId) => {
+  if (newId) {
+    const idx = ALL_PDEX.indexOf(newId)
+    visualPokemonId.value = idx !== -1 ? idx + 1 : 1
+  }
+}, { immediate: true })
+
+watch(() => battleStore.state?.player?.id, (newId) => {
+  if (newId) {
+    const idx = ALL_PDEX.indexOf(newId)
+    playerVisualId.value = idx !== -1 ? idx + 1 : 1
+  }
+}, { immediate: true })
+
+const updateVisualSwap = (side = 'enemy') => {
+  const num = side === 'player' ? playerVisualId.value : visualPokemonId.value
+  const targetId = ALL_PDEX[Math.max(0, num - 1)] || ALL_PDEX[0]
+  
+  if (side === 'player') {
+    if (battleStore.state?.player) battleStore.state.player.id = targetId
+  } else {
+    if (battleStore.state?.enemy) battleStore.state.enemy.id = targetId
+  }
+  
+  phaserBridge.sendCommand('BattleScene', 'DEBUG_VISUAL_SWAP', { side, id: targetId })
+}
+
+const incrementSwap = (side = 'enemy') => {
+  if (side === 'player') playerVisualId.value++
+  else visualPokemonId.value++
+  updateVisualSwap(side)
+}
+
+const decrementSwap = (side = 'enemy') => {
+  const val = side === 'player' ? playerVisualId.value : visualPokemonId.value
+  if (val > 1) {
+    if (side === 'player') playerVisualId.value--
+    else visualPokemonId.value--
+    updateVisualSwap(side)
+  }
+}
+
 </script>
 
 <template>
@@ -113,6 +163,60 @@ const faintPlayer = async () => {
         >
           🔍 TOGGLE BUSQUEDA
         </button>
+
+        <div class="debug-section">
+          <div class="section-label">
+            VISUAL SWAP (Opponent)
+          </div>
+          <div class="swap-controls">
+            <button
+              class="swap-btn"
+              @click.stop="decrementSwap('enemy')"
+            >
+              -
+            </button>
+            <input 
+              v-model.number="visualPokemonId" 
+              type="number" 
+              class="swap-input"
+              @change="updateVisualSwap('enemy')"
+              @click.stop
+            >
+            <button
+              class="swap-btn"
+              @click.stop="incrementSwap('enemy')"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <div class="debug-section">
+          <div class="section-label">
+            VISUAL SWAP (Player)
+          </div>
+          <div class="swap-controls">
+            <button
+              class="swap-btn"
+              @click.stop="decrementSwap('player')"
+            >
+              -
+            </button>
+            <input 
+              v-model.number="playerVisualId" 
+              type="number" 
+              class="swap-input"
+              @change="updateVisualSwap('player')"
+              @click.stop
+            >
+            <button
+              class="swap-btn"
+              @click.stop="incrementSwap('player')"
+            >
+              +
+            </button>
+          </div>
+        </div>
         
         <div class="debug-footer">
           VITE_DEBUG_ACTIVE
@@ -123,6 +227,7 @@ const faintPlayer = async () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .battle-debug-tools {
@@ -176,7 +281,9 @@ const faintPlayer = async () => {
   gap: 8px;
   width: 200px;
   box-shadow: 0 0 20px Rgba(0,0,0,0.8);
-  -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
 }
 
 .debug-btn {
@@ -190,6 +297,67 @@ const faintPlayer = async () => {
   &.faint-btn { @include btn-vicio('danger', 'sm', true); filter: Hue-Rotate(45deg); }
   &.heal-btn { @include btn-vicio('success', 'sm', true); }
   &.search-btn { @include btn-vicio('info', 'sm', true); }
+}
+
+.debug-section {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid Rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .section-label {
+    font-size: 8px;
+    color: var(--yellow);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+  }
+}
+
+.swap-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+
+  .swap-btn {
+    @include btn-vicio('default', 'sm', false);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    background: Rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+    
+    &:hover { background: var(--yellow); color: $black; }
+  }
+
+  .swap-input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    background: $black;
+    border: 1px solid Rgba(255, 255, 255, 0.2);
+    color: white;
+    @include pixelated;
+    font-size: 12px;
+    text-align: center;
+    height: 100%;
+    border-radius: 4px;
+    
+    &::-webkit-inner-spin-button { display: none; }
+    
+    &:focus {
+      outline: none;
+      border-color: var(--yellow);
+    }
+  }
 }
 
 .debug-footer {

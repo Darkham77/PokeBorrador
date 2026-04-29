@@ -266,18 +266,6 @@ const spawnGrid = computed(() => {
       </span>
     </PVTooltip>
 
-    <div
-      v-if="!isPerformanceMode"
-      class="location-header"
-    >
-      <div class="location-name">
-        {{ map.name }}
-      </div>
-      <div class="location-desc">
-        {{ map.desc }}
-      </div>
-    </div>
-
     <!-- 3. Faction Status (Middle Left, below Guardian) -->
     <PVTooltip
       v-if="dominance?.winner && dominance?.winner !== 'none' && !isPerformanceMode && !isLocked && !isSafariLocked"
@@ -306,7 +294,7 @@ const spawnGrid = computed(() => {
       </div>
     </PVTooltip>
 
-    <!-- 5. Spawns Grid -->
+    <!-- 5. Spawns Grid (MOVED UP to be behind other UI elements) -->
     <div
       v-if="!isLocked && !isPerformanceMode"
       class="location-spawns"
@@ -345,6 +333,18 @@ const spawnGrid = computed(() => {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div
+      v-if="!isPerformanceMode"
+      class="location-header"
+    >
+      <div class="location-name">
+        {{ map.name }}
+      </div>
+      <div class="location-desc">
+        {{ map.desc }}
       </div>
     </div>
 

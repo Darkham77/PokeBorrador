@@ -47,12 +47,13 @@ Aura effects (`.rare-glow`) and Shiny sparkles (`.shiny-sparkles`) must apply th
 
 Pokémon with high stats (Tier S/S+) must use a rhythmic pulsing animation instead of rotation to maintain a premium feel.
 
-- **Implementation**: Animate both `opacity` and `box-shadow` using the `--tier-color` variable.
+- **Implementation**: Animate `opacity` and `Filter()` intensity using the `--tier-color` variable.
 - **Timing**: Use a slow, ease-in-out cycle (approx. 2s) to avoid visual fatigue.
+- **Safety Warning**: Avoid `Scale()` for ambient pulsing in containers with `overflow: hidden` (like Box cards) to prevent visual clipping. Prefer `Opacity()` or `Filter: Brightness()`.
 
 ```scss
 @keyframes pulse-tier {
-  0%, 100% { transform: Scale(1); opacity: 0.5; box-shadow: 0 0 5px var(--tier-color); }
-  50% { transform: Scale(1.05); opacity: 0.8; box-shadow: 0 0 20px var(--tier-color); }
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 ```

@@ -227,7 +227,8 @@ const hexToRgba = (hex, alpha) => {
   padding: 24px;
   border-radius: 20px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  -webkit-backdrop-filter: Blur(5px); -webkit-backdrop-filter: Blur(5px); backdrop-filter: Blur(5px);
+  -webkit-backdrop-filter: Blur(5px);
+  backdrop-filter: Blur(5px);
   @include gpu-layer;
 }
 

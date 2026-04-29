@@ -76,8 +76,9 @@ const decline = async () => {
   width: 90%;
   max-width: 360px;
   background: Rgba(15, 23, 42, 0.95);
-  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
   -webkit-backdrop-filter: Blur(12px);
+  backdrop-filter: Blur(12px);
+  @include gpu-layer;
   border: 1px solid Rgba(139, 92, 246, 0.4);
   box-shadow: 0 10px 40px Rgba(0, 0, 0, 0.8);
   border-radius: 20px;

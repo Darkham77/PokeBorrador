@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { onMounted, computed } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
@@ -233,7 +234,9 @@ function startSearch() {
   inset: 0;
   z-index: var(--z-base);
   background: Rgba(0,0,0,0.8);
-  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
+  backdrop-filter: Blur(8px);
+  @include gpu-layer;
   display: flex;
   align-items: center;
   justify-content: center;

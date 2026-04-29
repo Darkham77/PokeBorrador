@@ -10,7 +10,8 @@ REPAIRS = [
     ("Safari Compatibility", ".agents/skills/project-standards/scripts/fix/fix_webkit_prefixes.py"),
     ("Z-Index Standardization", ".agents/skills/project-standards/scripts/fix/fix_z_indexes.py"),
     ("Empty Style Cleanup", ".agents/skills/project-standards/scripts/fix/fix_empty_styles.py"),
-    ("Typography Normalization", ".agents/skills/project-standards/scripts/fix/fix_typography.py")
+    ("Typography Normalization", ".agents/skills/project-standards/scripts/fix/fix_typography.py"),
+    ("GPU & Performance Optimization", ".agents/skills/project-standards/scripts/fix/fix_gpu_gaps.py")
 ]
 
 def run_repair(name, script):

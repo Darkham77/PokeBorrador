@@ -140,6 +140,7 @@
   background: Rgba(10, 15, 25, 0.95);
   -webkit-backdrop-filter: Blur(12px);
   backdrop-filter: Blur(12px);
+  @include gpu-layer;
   transform: translateZ(0);
   border: 1px solid Rgba(255, 255, 255, 0.15);
   border-left: 4px solid var(--move-color, $white);

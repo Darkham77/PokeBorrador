@@ -7,7 +7,12 @@ import { useModalStore } from '@/stores/modals'
 import { useLivePvPStore } from '@/stores/livePvP'
 import BattleMovesGrid from './BattleMovesGrid.vue'
 import BattleActionButtons from './BattleActionButtons.vue'
-import BattleDebugTools from './BattleDebugTools.vue'
+import { defineAsyncComponent } from 'vue'
+
+const isDebugActive = !!window.__VITE_DEBUG__
+const BattleDebugTools = isDebugActive 
+  ? defineAsyncComponent(() => import('./BattleDebugTools.vue'))
+  : null
 
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
@@ -86,7 +91,10 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 <template>
   <div id="move-panel">
     <div class="controls-content">
-      <BattleDebugTools />
+      <component
+        :is="BattleDebugTools"
+        v-if="BattleDebugTools"
+      />
       <BattleMovesGrid 
         v-if="player"
         :moves="player.moves" 
@@ -168,7 +176,9 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   align-items: center;
   justify-content: center;
   z-index: var(--z-low);
-  -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px);
+  backdrop-filter: Blur(4px);
+  @include gpu-layer;
 }
 
 .continue-btn-final {

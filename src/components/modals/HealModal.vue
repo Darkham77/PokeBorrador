@@ -168,7 +168,7 @@ onMounted(() => {
               'active': true, 
               'healing': isHealing && i < healedCount,
               'is-guardian': p.isGuardian,
-              'is-legendary': getPokemonFX(p).isLegendary
+              'is-premium-tier': getPokemonFX(p).isLegendary
             }"
             :style="{ 
               '--type-color': getPokemonFX(p).typeColor,
@@ -251,7 +251,6 @@ onMounted(() => {
               class="rocket-surcharge"
             >Recargo: Criador Profesional</small>
           </div>
-          <!-- Sección eliminada por redundancia -->
         </div>
       </div>
     </div>
@@ -396,33 +395,8 @@ onMounted(() => {
   box-shadow: 0 0 20px Rgba(255, 214, 10, 0.1);
 }
 
-.slot.is-legendary {
-  border-color: var(--tier-color);
-  box-shadow: 0 0 20px Rgba(255, 255, 255, 0.1);
-  
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    border: 2px solid var(--tier-color);
-    opacity: 0.6;
-    animation: pulse-tier 2s ease-in-out infinite;
-    pointer-events: none;
-  }
-}
-
-@keyframes pulse-tier {
-  0%, 100% { 
-    transform: Scale(1);
-    opacity: 0.5;
-    box-shadow: 0 0 5px var(--tier-color);
-  }
-  50% { 
-    transform: Scale(1.05);
-    opacity: 0.8;
-    box-shadow: 0 0 20px var(--tier-color);
-  }
+.slot.is-premium-tier {
+  @include pokemon-card-premium-tier;
 }
 
 @keyframes pulse-aura {
@@ -460,33 +434,6 @@ onMounted(() => {
   font-size: 7px;
   letter-spacing: 1px;
   @include pixelated;
-}
-
-.free-notice {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.pixel-nurse {
-  font-size: 32px;
-  filter: Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.2));
-  animation: float 3s infinite ease-in-out;
-}
-
-@keyframes float {
-  0%, 100% { transform: TranslateY(0); }
-  50% { transform: TranslateY(-5px); }
-}
-
-.free-msg {
-  @include pixelated;
-  color: Rgba(255, 255, 255, 0.6);
-  font-size: 8px;
-  line-height: 1.6;
-  max-width: 250px;
-  margin: 0 auto;
 }
 
 .cost-notice {

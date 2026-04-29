@@ -47,7 +47,9 @@ const uiStore = useUIStore()
 .toast-item {
   pointer-events: all;
   background: Rgba(10, 12, 18, 0.9);
-  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px);
+  backdrop-filter: Blur(12px);
+  @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.15);
   border-left: 3px solid var(--yellow, Rgba(241, 196, 15, 1));
   padding: 10px 14px;

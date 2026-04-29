@@ -251,6 +251,40 @@ const handleRetry = () => {
     <ConnectionWarning />
     <LivePvPArena />
     <BattleArena />
+    
+    <!-- Optimized SVG Filters for Pixel Art -->
+    <svg
+      style="visibility: hidden; position: absolute;"
+      width="0"
+      height="0"
+      xmlns="http://www.w3.org/2000/svg"
+      version="1.1"
+    >
+      <defs>
+        <filter id="pixel-outline-optimized">
+          <feMorphology
+            in="SourceAlpha"
+            result="expanded"
+            operator="dilate"
+            radius="1"
+          />
+          <feFlood
+            flood-color="black"
+            result="black"
+          />
+          <feComposite
+            in="black"
+            in2="expanded"
+            operator="in"
+            result="outline"
+          />
+          <feMerge>
+            <feMergeNode in="outline" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+    </svg>
   </div>
 </template>
 

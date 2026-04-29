@@ -28,7 +28,27 @@ PATTERNS = {
     'heavy_filter_no_gpu': {
         'regex': r'backdrop-filter:\s*Blur\([^)]+\)(?![^}]*(@include gpu-layer|transform:\s*TranslateZ\(0\)))',
         'message': 'Expensive backdrop-filter Blur detected without GPU layer promotion (@include gpu-layer).',
+        'severity': 'CRITICAL'
+    },
+    'redundant_gpu_layer': {
+        'regex': r'@include\s+gpu-layer(?=[^}]*(@include\s+aura-guardian|@include\s+fx-shiny))',
+        'message': 'Potential Layer Explosion: Auras/Sparkles should inherit GPU promotion from their parent card instead of creating redundant compositor layers.',
         'severity': 'HIGH'
+    },
+    'clipping_scale_trap': {
+        'regex': r'Scale\([^\)]+\)(?=[^}]*overflow:\s*hidden)',
+        'message': 'Visual Clipping Risk: Scale() animation detected in a container with overflow:hidden. Prefer Opacity or Filter: Brightness for ambient pulses.',
+        'severity': 'HIGH'
+    },
+    'expensive_shadow_abuse': {
+        'regex': r'(Drop-Shadow\([^\)]+\)[^;]*){2,}',
+        'message': 'GPU Fill-Rate Warning: Excessive Drop-Shadow detected (2+ layers). Use box-shadow for general glows in high-density grids.',
+        'severity': 'MEDIUM'
+    },
+    'scroll_reactivity_trap': {
+        'regex': r'(isScrolling|scrollState)\s*=\s*ref\(|watch\(.*(isScrolling|scrollState)|:class=".*(isScrolling|scrollState)"',
+        'message': 'Scroll Reactivity Trap: Using reactive state for scroll-time visibility causes massive re-renders. Use direct DOM classList toggling instead.',
+        'severity': 'MEDIUM'
     },
     'transition_no_will_change': {
         'regex': r'transition:\s*[^;]+(?![^}]*(@include\s+will-animate|will-change))',
@@ -108,12 +128,13 @@ def main(root_dir):
     print(f"Found {len(all_gaps)} potential GPU optimization gaps:\n")
     
     # Sort by severity
-    severity_order = {'HIGH': 0, 'MEDIUM': 1, 'LOW': 2}
-    all_gaps.sort(key=lambda x: severity_order.get(x['severity'], 3))
+    severity_order = {'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3}
+    all_gaps.sort(key=lambda x: severity_order.get(x['severity'], 4))
 
     for gap in all_gaps:
         icon = ""
-        if gap['severity'] == 'HIGH': icon = "[!]"
+        if gap['severity'] == 'CRITICAL': icon = "[!!!]"
+        elif gap['severity'] == 'HIGH': icon = "[!]"
         elif gap['severity'] == 'MEDIUM': icon = "[?]"
         else: icon = "[i]"
         

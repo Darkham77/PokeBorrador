@@ -82,6 +82,12 @@ const handleActionSelect = (type) => {
   if (type === 'use') {
     const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
     
+    if (!dbItem) {
+      uiStore.notify(`Error: Objeto "${item.name}" no reconocido.`, '⚠️')
+      itemActionMenu.value = null
+      return
+    }
+    
     // Battle Mode: Handle Pokeballs directly
     if (props.battleMode && dbItem.cat === 'pokeballs') {
       const battleStore = useBattleStore()

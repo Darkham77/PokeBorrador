@@ -28,7 +28,7 @@ export const isValidTarget = (itemName, pokemon) => {
 export const itemEffects = {
   // --- Healing & Status ---
   'Poción': (p) => healHp(p, 20),
-  'Super Poción': (p) => healHp(p, 50),
+  'Súper Poción': (p) => healHp(p, 50),
   'Hiper Poción': (p) => healHp(p, 200),
   'Poción Máxima': (p) => healHp(p, p.maxHp),
   'Revivir': (p) => revive(p, Math.floor(p.maxHp / 2)),

@@ -67,7 +67,9 @@
   min-height: 14px;
   border-radius: 8px;
   border: 1px solid Rgba(255, 255, 255, 0.1);
-  -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px);
+  backdrop-filter: Blur(4px);
+  @include gpu-layer;
   z-index: var(--z-base);
 
   .mini-icon {
@@ -161,12 +163,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--yellow);
+  color: var(--blue);
   transition: all 0.2s;
 }
 
 .selected .check-circle {
-  background: var(--yellow);
-  border-color: var(--yellow);
+  background: var(--blue);
+  border-color: var(--blue);
   color: black;
+  box-shadow: 0 0 15px Rgba(10, 132, 255, 0.5);
 }

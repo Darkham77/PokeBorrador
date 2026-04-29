@@ -13,7 +13,8 @@ body .nav {
   right: 0;
   background: Rgba(10, 10, 10, 0.85);
   -webkit-backdrop-filter: Blur(20px);
-  -webkit-backdrop-filter: Blur(20px); -webkit-backdrop-filter: Blur(20px); backdrop-filter: Blur(20px);
+  backdrop-filter: Blur(20px);
+  @include gpu-layer;
   margin-bottom: 0;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));

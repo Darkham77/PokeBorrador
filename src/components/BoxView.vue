@@ -141,8 +141,42 @@ const handlePokemonClick = (index) => {
       :buy-cost="getBoxBuyCost()"
       @switch="switchBox"
       @buy="buyNewBox"
-    />
+    >
+      <template #extra>
+        <div
+          v-if="!isRocketMode && !boxStore.boxReleaseMode"
+          class="mode-trigger-bar-inline"
+        >
+          <PVTooltip
+            v-if="isRocket"
+            title="MODO MERCADO NEGRO"
+            description="Seleccioná Pokémon para vender por pesos al Team Rocket."
+            position="top"
+          >
+            <button
+              class="rocket-trigger-btn"
+              @click.stop="toggleRocketMode"
+            >
+              💀 MERCADO NEGRO
+            </button>
+          </PVTooltip>
 
+          <PVTooltip
+            title="MODO LIBERACIÓN"
+            description="Seleccioná Pokémon para soltarlos permanentemente al bosque."
+            position="top"
+          >
+            <button
+              class="release-trigger-btn"
+              @click.stop="toggleReleaseMode"
+            >
+              🌿 LIBERAR POKÉMON
+            </button>
+          </PVTooltip>
+        </div>
+      </template>
+    </BoxTabs>
+    
     <BoxFilters
       v-model:filters="filters"
       v-model:is-filters-open="isFiltersOpen"
@@ -152,39 +186,6 @@ const handlePokemonClick = (index) => {
       :results-count="(processedBoxList || []).length"
       @reset="resetFilters"
     />
-
-    <!-- Acciones de Modo: solo visibles fuera del modo selección -->
-    <div
-      v-if="!isRocketMode && !boxStore.boxReleaseMode"
-      class="mode-trigger-bar"
-    >
-      <PVTooltip
-        v-if="isRocket"
-        title="MODO MERCADO NEGRO"
-        description="Seleccioná Pokémon para vender por pesos al Team Rocket."
-        position="top"
-      >
-        <button
-          class="rocket-trigger-btn"
-          @click.stop="toggleRocketMode"
-        >
-          💀 MERCADO NEGRO
-        </button>
-      </PVTooltip>
-
-      <PVTooltip
-        title="MODO LIBERACIÓN"
-        description="Seleccioná Pokémon para soltarlos permanentemente al bosque."
-        position="top"
-      >
-        <button
-          class="release-trigger-btn"
-          @click.stop="toggleReleaseMode"
-        >
-          🌿 LIBERAR POKÉMON
-        </button>
-      </PVTooltip>
-    </div>
 
     <!-- Barra de Acciones de Modo (Venta/Liberación) -->
     <div
@@ -245,11 +246,10 @@ const handlePokemonClick = (index) => {
 @use "@/styles/views/box";
 @use "@/styles/core/tools" as *;
 
-.mode-trigger-bar {
+.mode-trigger-bar-inline {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: 12px;
-  padding: 0 12px 4px 12px;
 }
 
 .rocket-trigger-btn {

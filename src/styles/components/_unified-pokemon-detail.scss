@@ -130,7 +130,9 @@
   z-index: var(--z-base); 
   background: Linear-Gradient(to bottom, Rgba(10, 12, 20, 0.8) 0%, Rgba(10, 12, 20, 1) 100%) !important;
   border-bottom: 1px solid Rgba(255,255,255,0.05) !important;
-  -webkit-backdrop-filter: Blur(10px) !important; backdrop-filter: Blur(10px) !important;
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
   padding: 0 !important;
 
   & .upd-tab-btn {
@@ -317,4 +319,3 @@
     transform: Scale(1.2);
   }
 }
-

@@ -138,8 +138,9 @@ const select = (id) => {
   padding: 40px 16px;
   overflow-y: auto;
   min-height: 0;
-  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
   -webkit-backdrop-filter: Blur(8px);
+  backdrop-filter: Blur(8px);
+  @include gpu-layer;
   animation: fadeIn 0.3s ease;
   transform: translateZ(0);
 }

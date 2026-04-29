@@ -160,7 +160,9 @@ const closeError = () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
   animation: fadeIn 0.3s ease;
   font-family: 'Nunito', sans-serif;
   @include gpu-layer;

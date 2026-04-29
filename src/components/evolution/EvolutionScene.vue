@@ -142,8 +142,9 @@ const close = () => {
   align-items: center;
   justify-content: center;
   @include pixelated;
-  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
   -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
   transform: translateZ(0);
 }
 

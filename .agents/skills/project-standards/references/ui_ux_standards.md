@@ -17,6 +17,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Elastic Chat Pattern (Combat)**: In vertical combat layouts, the Battle Log (Chat) MUST use `flex: 1` and `min-height: 0` to act as the primary space absorber. This ensures the arena stays at the top and the action buttons stay pinned to the bottom of the modal/screen.
 - **Fullscreen 100vh Integrity**: Fullscreen combat modals MUST force `height: 100vh` across all parent containers (including `modal-scrollable-content`) to prevent background "bleed" or purple gaps at the bottom.
 - **Bottom Anchor Precision**: In fullscreen mode, action buttons MUST be positioned with a maximum of `2px` from the bottom edge (or `0px` with a slight negative margin) to ensure they feel physically anchored to the device frame.
+- **HUD Padding Synchronization**: To eliminate layout shifts ("jumps") during page load or HUD transitions, the main content area MUST use dynamic CSS variables (e.g., `--hud-top-padding`) calculated from the HUD's actual height.
+  - **Implementation**: Use a `ResizeObserver` or a standardized `updateHudHeight` function in the root view (`MainGameView.vue`).
+  - **CSS Usage**: `padding-top: var(--hud-top-padding, 110px);`.
 
 ### 2. Pixel Art Content (The "Game Heart")
 
@@ -53,8 +56,15 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 ### 3. Safari Compatibility (Prefix Mandate)
 
-- **REQUIRED**: Always precede `backdrop-filter` with `-webkit-backdrop-filter`.
-- **Standard Parity**: Pair vendor prefixes with standard properties (e.g., `-webkit-line-clamp` + `line-clamp`).
+- **REQUIRED**: Always use the `opacity: X` property instead of `filter: Opacity(X)`.
+- **Reasoning**: The property is hardware-accelerated and significantly more efficient for mobile GPUs than the filter function. It also avoids SASS deprecation warnings entirely.
+  - ✅ `opacity: 0.5;`
+  - ❌ `filter: Opacity(0.5);` (Inefficient)
+- **Shadow Performance (Drop-Shadow vs Box-Shadow)**: 
+  - `box-shadow`: Fast, native GPU hardware. Use for UI cards, frames, and rectangular containers.
+  - `filter: Drop-Shadow()`: Expensive, pixel-by-pixel analysis. Use ONLY for pixel-art sprites or non-rectangular elements where the shadow must follow the silhouette.
+  - **DENSITY RULE**: In grids with 50+ items (Box, Bag), NEVER aply more than one `Drop-Shadow()` per item to avoid "GPU Fill-Rate Starvation".
+- **The Clipping Trap (Scale vs Overflow)**: NEVER use `Scale()` animations for ambient effects (pulsing) on elements contained by `overflow: hidden`. This causes visual clipping or makes content "flicker" as it exceeds the parent box. Use `Opacity()` or `Filter: Brightness()` for ambient "breathing" instead.
 
 ### 4. Interactive Pills & Badges
 
@@ -141,6 +151,8 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Constraint**: Primary action buttons (yellow) MUST follow this pattern to maintain visual parity.
 - **Active State Unification**: Selected/Active buttons (`.active`) MUST preserve their 3D shadow depth. Use a 2px white solid border and a selection glow (`box-shadow`), but keep the dark bottom shadow to avoid a "flat" or "broken" look.
 - **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. see [game_mechanics_manual.md](./game_mechanics_manual.md) for visibility rules.
+- **Cursor Consistency Mandate**: All interactive elements (badges, items, pills) that provide information via tooltips MUST use `cursor: pointer`. Avoid `cursor: help` (the question mark) to maintain a premium, responsive feel across the entire UI.
+- **Action Grouping (Box/Inventory)**: High-level management actions (e.g., Mercado Negro, Liberar) MUST be grouped in the primary navigation/header bar (slots like `#extra` in `BoxTabs`) to maximize the area dedicated to content grids.
 
 > [!IMPORTANT]
 > **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.
@@ -187,7 +199,16 @@ To prevent "z-index wars" and ensure consistent interaction, all layers MUST fol
   - Background: `z-index: -3`
   - Weather: `z-index: -2`
   - Atmosphere/Filters: `z-index: -1`
-  - Interactive Content: `z-index: var(--z-base)` (0)
+  - Interactive Content: `z-index: var(--z-map-spawns)` (10)
+  - UI Layer (Header, Pills, Guardian): `z-index: var(--z-map-ui)` (20)
+
+### 3. Layering Delta Standard (+10)
+
+To ensure consistent interaction feedback, the UI/Control layer of an interactive component MUST always be positioned at least **+10 levels** above the primary content/entity layer (e.g., entity spawns).
+
+### 4. Audit-Safe Z-Index
+
+Hardcoded numeric values for `z-index` (e.g., `10`, `20`) are strictly FORBIDDEN in SCSS. Using them triggers audit failures and aggressive auto-repair scripts. Always use standardized CSS variables (e.g., `var(--z-map-spawns)`) defined in `_variables.scss`.
 
 ---
 

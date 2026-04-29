@@ -121,7 +121,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-low) !important; 
+  z-index: var(--z-map-spawns) !important; 
   pointer-events: none;
 }
 
@@ -227,8 +227,13 @@
     image-rendering: pixelated !important;
     image-rendering: crisp-edges !important;
     &.pixelated, & {
-      // Robust 1px black outline for pixel art sprites
-      filter: Drop-Shadow(1px 0 0 $black) Drop-Shadow(-1px 0 0 $black) Drop-Shadow(0 1px 0 $black) Drop-Shadow(0 -1px 0 $black);
+      // High-performance 1px black outline using SVG Filter
+      filter: pokemon-outline-optimized();
+
+      // Disable outline in performance mode for maximum FPS
+      .performance-mode & {
+        filter: none !important;
+      }
     }
     
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -237,8 +242,7 @@
 
     &:hover {
       transform: Scale(1.1) TranslateY(-2px);
-      z-index: var(--z-low) !important;
-      pointer-events: auto;
+      z-index: 11 !important; /* Above other spawns (10) but below UI (20) */
     }
   }
 

@@ -189,6 +189,7 @@ function handleClose() {
   background: Rgba(0, 0, 0, 0.96);
   -webkit-backdrop-filter: Blur(15px);
   backdrop-filter: Blur(15px);
+  @include gpu-layer;
   display: flex;
   flex-direction: column;
   align-items: center;

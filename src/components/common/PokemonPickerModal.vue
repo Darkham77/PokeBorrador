@@ -129,7 +129,9 @@ const handleConfirm = () => {
   position: fixed;
   inset: 0;
   background: Rgba(0, 0, 0, 0.8);
-  -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
+  backdrop-filter: Blur(8px);
+  @include gpu-layer;
   z-index: var(--z-modal);
   display: flex;
   align-items: center;

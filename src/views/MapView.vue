@@ -109,7 +109,7 @@ const activeEventData = computed(() => {
   display: flex;
   align-items: center;
   gap: 20px;
-  margin: 40px 0 20px;
+  margin: 20px 0 20px;
 }
 
 .legacy-divider::before,

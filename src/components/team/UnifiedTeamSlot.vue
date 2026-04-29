@@ -113,17 +113,17 @@ function onDrop(e) {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.05);
-    border-color: var(--yellow);
+    border-color: var(--blue);
     transform: TranslateY(-4px);
     
     .plus-icon {
       transform: Scale(1.2) Rotate(90deg);
-      filter: Drop-shadow(0 0 15px var(--yellow));
+      filter: Drop-shadow(0 0 15px var(--blue));
       color: var(--white);
     }
     
     .label {
-      color: var(--yellow);
+      color: var(--blue);
     }
   }
 
@@ -160,25 +160,27 @@ function onDrop(e) {
   align-items: center;
   justify-content: center;
   background: Rgba(0, 0, 0, 0.4);
-  -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px);
+  backdrop-filter: Blur(4px);
+  @include gpu-layer;
   border-radius: 20px;
   z-index: var(--z-low);
-  pointer-events: none; // Permite soltar sobre el slot
-  border: 2px dashed var(--yellow);
+  pointer-events: none; 
+  border: 2px dashed var(--blue);
   transition: all 0.2s;
 
   .pos-number {
     font-size: 80px;
-    color: var(--yellow);
+    color: var(--blue);
     @include pixelated;
     opacity: 0.8;
-    filter: Drop-shadow(0 0 10px Rgba(255, 214, 10, 0.5));
+    filter: Drop-shadow(0 0 10px Rgba(10, 132, 255, 0.5));
     transition: all 0.2s;
   }
 }
 
 .is-drag-over .drag-position-overlay {
-  background: Rgba(255, 214, 10, 0.15);
+  background: Rgba(10, 132, 255, 0.15);
   border-style: solid;
   border-width: 3px;
 

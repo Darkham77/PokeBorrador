@@ -236,7 +236,8 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   display: flex;
   flex-direction: column;
   background: transparent;
-  -webkit-backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px);
+  backdrop-filter: Blur(12px);
   @include gpu-layer;
   
   // Custom backgrounds by class fading to transparent

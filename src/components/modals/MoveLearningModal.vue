@@ -121,7 +121,8 @@ const handleForget = () => {
   inset: 0;
   background: Rgba(0, 0, 0, 0.92);
   -webkit-backdrop-filter: Blur(10px);
-  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
   z-index: var(--z-modal);
   display: flex;
   align-items: center;

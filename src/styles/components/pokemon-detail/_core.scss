@@ -56,7 +56,9 @@
 .pdex-detail-tabs {
   display: flex;
   background: Rgba(15, 23, 42, 0.6);
-  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
   padding: 0 16px;
   border-bottom: 1px solid Rgba(255,255,255,0.05);
   position: relative;

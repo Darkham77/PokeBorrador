@@ -112,7 +112,9 @@ const handleItemImageError = (e) => {
     gap: 4px;
     background: Rgba(0, 0, 0, 0.7);
     border: 1px solid Rgba(255, 255, 255, 0.1);
-    -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+    -webkit-backdrop-filter: Blur(10px);
+    backdrop-filter: Blur(10px);
+    @include gpu-layer;
     box-shadow: 0 4px 15px Rgba(0,0,0,0.5);
     line-height: 0;
 
@@ -125,19 +127,11 @@ const handleItemImageError = (e) => {
       transition: all 0.2s ease;
 
       &:hover {
-        cursor: help; // Default tooltip cursor
+        cursor: pointer; // Unified pointer for all interactive badges
         
         .badge-icon {
           transform: Scale(1.3) !important;
           filter: Brightness(1.2);
-          
-          &.can-edit {
-            cursor: pointer;
-          }
-        }
-
-        &:has(.can-edit) {
-          cursor: pointer;
         }
       }
     }

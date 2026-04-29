@@ -22,7 +22,7 @@ export const MARKET_CAT_ORDER = {
 
 // What unlocks at each trainer level
 export const MARKET_UNLOCKS = {
-  3: ['Súper Ball', 'Super Poción'],
+  3: ['Súper Ball', 'Súper Poción'],
   5: ['Red Ball', 'Ocaso Ball', 'Cura Total', 'Compartir EXP', 'MT27 Retribución'],
   8: ['Hiper Poción', 'Ultra Ball', 'Revivir', 'Lente Zoom', 'Subida de PP'],
   10: ['Turno Ball', 'Restos', 'Cascabel Concha', 'Piedras de Evolución'],
@@ -138,7 +138,7 @@ export const SHOP_ITEMS = [
   },
   {
     id: 'super_pocion', cat: 'pociones', sprite: 'super-potion',
-    name: 'Super Poción', icon: '🔵', price: 600, unlockLv: 3, tier: 'rare',
+    name: 'Súper Poción', icon: '🔵', price: 600, unlockLv: 3, tier: 'rare',
     desc: 'Restaura 50 HP a un Pokémon.'
   },
   {

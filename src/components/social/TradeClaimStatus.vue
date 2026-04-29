@@ -126,7 +126,9 @@ const getSpriteUrl = (id) => {
   border-radius: 16px;
   padding: 16px;
   margin-top: 15px;
-  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
 }
 
 .claim-header {

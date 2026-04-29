@@ -151,7 +151,9 @@ onUnmounted(() => {
   inset: 0;
   z-index: var(--z-modal);
   background: Rgba(0, 0, 0, 0.9);
-  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
   display: flex;
   align-items: center;
   justify-content: center;

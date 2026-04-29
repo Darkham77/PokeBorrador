@@ -43,23 +43,32 @@ export const pokemonDataProvider = {
      */
     getPokemonData(id) {
         if (!id) return null;
-        const normalizedId = id.toLowerCase();
-        const data = _pokemonDb.value[normalizedId];
-        if (!data) return null;
-        const cloned = deepClone(data);
-        cloned.id = normalizedId;
-
+        const normalizedId = String(id).toLowerCase();
+        const dbData = _pokemonDb.value[normalizedId];
+        
         // Merge metadata if available
-        const metadata = _speciesMetadata.value[normalizedId] || {};
-        const aesthetics = _pokemonAesthetics.value[normalizedId] || {};
+        const metadata = _speciesMetadata.value[normalizedId];
+        const aesthetics = _pokemonAesthetics.value[normalizedId];
+
+        // Si no hay absolutamente nada, entonces sí es null
+        if (!dbData && !metadata && !aesthetics) return null;
+
+        const data = dbData ? deepClone(dbData) : {
+            name: normalizedId.charAt(0).toUpperCase() + normalizedId.slice(1),
+            type: 'normal',
+            hp: 100, atk: 100, def: 100, spa: 100, spd: 100, spe: 100,
+            learnset: []
+        };
+
+        data.id = normalizedId;
 
         return {
-            ...cloned,
-            category: metadata.category || 'Pokémon Desconocido',
-            height: metadata.height || null,
-            weight: metadata.weight || null,
-            description: metadata.description || 'No hay datos disponibles en la Pokédex.',
-            isFloating: aesthetics.floating || false
+            ...data,
+            category: metadata?.category || 'Pokémon Desconocido',
+            height: metadata?.height || null,
+            weight: metadata?.weight || null,
+            description: metadata?.description || 'No hay datos disponibles en la Pokédex.',
+            isFloating: aesthetics?.floating || false
         };
     },
 

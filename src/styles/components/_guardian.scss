@@ -17,7 +17,7 @@
   position: absolute !important;
   top: 6px !important;
   left: 6px !important;
-  z-index: 10 !important; /* Standardized Layer */
+  z-index: var(--z-map-ui) !important; /* Standardized Layer (+10 vs Spawns) */
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -26,12 +26,13 @@
   border-radius: 8px !important;
   padding: 4px !important;
   border: 1.5px solid Rgba(255, 255, 255, 0.3) !important;
-  -webkit-backdrop-filter: Blur(20px) !important;
-  -webkit-backdrop-filter: Blur(20px) !important; -webkit-backdrop-filter: Blur(20px) !important; backdrop-filter: Blur(20px) !important;
+  -webkit-backdrop-filter: Blur(20px);
+  backdrop-filter: Blur(20px);
+  @include gpu-layer;
   width: auto !important;
   height: auto !important;
   box-shadow: 0 4px 15px Rgba(0,0,0,0.6) !important;
-  cursor: help !important;
+  cursor: pointer !important;
 }
 
 /* The small sprite icon - Force small size even on PC (Literal 33) */

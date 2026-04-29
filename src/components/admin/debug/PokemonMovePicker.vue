@@ -247,7 +247,9 @@ function removeMove(slotIndex) {
     margin-bottom: 12px;
     z-index: var(--z-critical);
     background: Rgba(10, 12, 16, 0.98);
-    -webkit-backdrop-filter: Blur(20px); backdrop-filter: Blur(20px);
+    -webkit-backdrop-filter: Blur(20px);
+    backdrop-filter: Blur(20px);
+    @include gpu-layer;
     border-radius: 16px;
     padding: 12px;
     box-shadow: 0 20px 50px Rgba(0, 0, 0, 1);

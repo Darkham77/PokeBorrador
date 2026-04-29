@@ -64,6 +64,8 @@ const spriteUrl = computed(() => {
 
 const totalPower = computed(() => calculateTotalPower(props.pokemon))
 
+const isPremiumTier = computed(() => tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+')
+
 const cardClasses = computed(() => {
   const classes = ['pokemon-display-card']
   if (props.pokemon.onMission) classes.push('on-mission')
@@ -77,6 +79,7 @@ const cardClasses = computed(() => {
   if (props.pokemon.aura) classes.push(`aura-${props.pokemon.aura}-mini`)
   if (props.pokemon.isShiny) classes.push('is-shiny')
   if (props.pokemon.isGuardian) classes.push('is-guardian')
+  if (isPremiumTier.value) classes.push('is-premium-tier')
   return classes
 })
 
@@ -97,6 +100,7 @@ function getGenderClass(gender) {
   <div
     ref="cardRef"
     :class="[cardClasses, { 'disable-click': disableCardClick }]"
+    :style="{ '--tier-color': tierInfo.color }"
     @click.stop="!disableCardClick && emit('openDetail', index)"
   >
     <!-- Top Row: Items/Tags + Tier -->

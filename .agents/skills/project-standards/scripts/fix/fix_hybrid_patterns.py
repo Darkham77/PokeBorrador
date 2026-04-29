@@ -74,7 +74,11 @@ def fix_file(filepath):
 
         # 2. Fix Click Propagation (@click -> @click.stop)
         # Targeted at components that likely need .stop (cards, items, buttons in modals)
-        content = re.sub(r'@click(?!\.stop)(?!\.prevent)="([^"]+)"', r'@click.stop="\1"', content)
+        # EXCEPTION: PVTooltip MUST bubble up to allow interaction with parent containers (MapCard, etc)
+        if 'PVTooltip' not in filepath:
+            content = re.sub(r'@click(?!\.stop)(?!\.prevent)="([^"]+)"', 
+                            lambda m: m.group(0) if 'PVTooltip' in m.group(0) else m.group(0).replace('@click', '@click.stop'), 
+                            content)
 
     # 2. Fix Hardcoded Colors (in .scss and inside <style> in .vue)
     lines = content.split('\n')

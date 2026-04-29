@@ -357,14 +357,14 @@ function selectAdventure(_slotIndex) {
 
   &.active {
     background: Rgba(255, 255, 255, 0.08);
-    border-color: var(--yellow);
-    color: var(--yellow);
-    box-shadow: 0 0 15px Rgba(255, 214, 10, 0.15);
+    border-color: var(--blue);
+    color: var(--blue);
+    box-shadow: 0 0 15px Rgba(10, 132, 255, 0.15);
 
     .tab-count {
       opacity: 1;
       color: var(--white);
-      background: Rgba(255, 214, 10, 0.1);
+      background: Rgba(10, 132, 255, 0.1);
     }
   }
 
@@ -408,8 +408,9 @@ function selectAdventure(_slotIndex) {
 
 :deep(.modal-content-premium) {
   background: Rgba(15, 23, 42, 0.95) !important;
-  -webkit-backdrop-filter: Blur(25px) !important;
-  backdrop-filter: Blur(25px) !important;
+  -webkit-backdrop-filter: Blur(25px);
+  backdrop-filter: Blur(25px);
+  @include gpu-layer;
 }
 
 :deep(.modal-scrollable-content) {

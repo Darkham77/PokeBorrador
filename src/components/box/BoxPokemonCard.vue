@@ -73,6 +73,8 @@ const bst = computed(() => {
   return (baseData.hp || 0) + (baseData.atk || 0) + (baseData.def || 0) + 
          (baseData.spa || 0) + (baseData.spd || 0) + (baseData.spe || 0)
 })
+
+const isPremiumTier = computed(() => tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+')
 </script>
 
 <template>
@@ -84,7 +86,8 @@ const bst = computed(() => {
         [`mode-${selectionType}`]: !!selectionType,
         'with-badges': hasBadges, 
         'many-badges': hasManyBadges,
-        'performance-mode': isPerformanceActive 
+        'performance-mode': isPerformanceActive,
+        'is-premium-tier': isPremiumTier
       }
     ]"
     @click.stop="emit('click', $event, index)"
@@ -199,4 +202,15 @@ const bst = computed(() => {
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
+
+.box-pokemon-card {
+  @include pokemon-card-standard(20px);
+  transform: translateZ(0); // Hardware acceleration
+  will-change: transform; // Layer promotion
+  
+  &.is-premium-tier {
+    --tier-color: v-bind('tierInfo.color');
+    @include pokemon-card-premium-tier;
+  }
+}
 </style>

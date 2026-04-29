@@ -170,7 +170,9 @@
   text-align: left;
   white-space: normal;
   line-height: 1.5;
-  -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px);
+  backdrop-filter: Blur(12px);
+  @include gpu-layer;
 
   .tooltip-wrap:hover &, .tooltip-wrap.touched & {
     display: block;

@@ -176,7 +176,9 @@
     position: absolute;
     inset: 0;
     background: Rgba(0, 0, 0, 0.6);
-    -webkit-backdrop-filter: Blur(6px); backdrop-filter: Blur(6px);
+    -webkit-backdrop-filter: Blur(6px);
+    backdrop-filter: Blur(6px);
+    @include gpu-layer;
     display: flex;
     align-items: center;
     justify-content: center;

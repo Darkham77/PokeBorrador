@@ -64,7 +64,9 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
   flex-direction: column;
   gap: 10px;
   transition: all 0.2s ease;
-  -webkit-backdrop-filter: Blur(8px); -webkit-backdrop-filter: Blur(8px); backdrop-filter: Blur(8px);
+  -webkit-backdrop-filter: Blur(8px);
+  backdrop-filter: Blur(8px);
+  @include gpu-layer;
 
   &:hover {
     background: Rgba(30, 41, 59, 0.5);

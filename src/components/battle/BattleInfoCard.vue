@@ -99,7 +99,9 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
 
 .glass-card {
   background: Rgba(15, 23, 42, 0.7);
-  -webkit-backdrop-filter: Blur(12px); backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px);
+  backdrop-filter: Blur(12px);
+  @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.15);
   border-radius: 18px;
   padding: 15px;

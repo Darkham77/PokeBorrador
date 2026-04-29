@@ -136,6 +136,10 @@ export default class BattleScene extends Phaser.Scene {
     const duration = 2000 + Math.random() * 1000;
     const sway = isPlayer ? 5 : -5;
     
+    // Safety: Kill existing tweens on these targets to prevent stacking
+    this.tweens.killTweensOf(sprite);
+    if (shadow) this.tweens.killTweensOf(shadow);
+
     this.tweens.add({
       targets: sprite,
       y: sprite.y - 10,
@@ -215,7 +219,38 @@ export default class BattleScene extends Phaser.Scene {
       this.playWithdraw(data.side);
     } else if (command === 'PLAY_SEND_OUT') {
       this.updatePokemonSprite(data.side, data.pokemon);
+    } else if (command === 'DEBUG_VISUAL_SWAP') {
+      if (this.currentBattleData) this.visualSwap(data);
     }
+  }
+
+  /**
+   * DEBUG ONLY: Swap pokemon sprite visually
+   */
+  visualSwap(data) {
+    if (!this.currentBattleData) {
+      console.warn('[BattleScene] Cannot swap: no battle data');
+      return;
+    }
+
+    const side = data.side || 'enemy';
+    const pokemon = side === 'player' ? this.currentBattleData.player : this.currentBattleData.enemy;
+    
+    if (!pokemon) {
+      console.warn(`[BattleScene] Cannot swap: no pokemon found for side ${side}`);
+      return;
+    }
+    
+    const newId = parseInt(data.id);
+    if (isNaN(newId)) return;
+    
+    console.log(`[BattleScene] DEBUG Visual Swap (${side}) -> ID: ${newId}`);
+    
+    // Update visual data in current session
+    pokemon.id = newId;
+    
+    // Re-trigger visual update (this will reload texture and recalculate shadows)
+    this.updatePokemonSprite(side, pokemon);
   }
 
   playWithdraw(side) {

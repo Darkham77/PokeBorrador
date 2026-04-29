@@ -159,7 +159,9 @@ When refactoring legacy or generic components:
 - **Nesting Depth**: Never exceed **3 levels** of nesting in SCSS. Excessive nesting creates specificity wars and bloated CSS.
 - **Color Management**:
   - **FORBIDDEN**: Hardcoded hex values (e.g., `#ff0000`) for standard UI elements. Use **Native CSS Variables** (`var(--color)`) or SASS variables (`$color`) from the project tokens.
-  - **MANDATORY Capitalization**: You **MUST** use **Rgba()** and **Rgb()** (Capitalized) instead of lowercase `rgba()`/`rgb()`. This prevents SASS from intercepting them as internal color functions and ensures literal CSS output.
+  - **MANDATORY Capitalization**: You **MUST** use **Rgba()**, **Rgb()**, and **Linear-Gradient()** (Capitalized) instead of lowercase. This prevents SASS from intercepting them as internal color functions and ensures literal CSS output.
+  - ✅ `background: Rgba(255, 255, 255, 0.5);`
+  - ❌ `background: rgba(255, 255, 255, 0.5);` (Collision)
   - **Local/One-off Colors**: Capitalized Rgba/Rgb or Hex values ARE PERMITTED for local, non-recurring styles within a component's `<style scoped>` block, but variables are always preferred.
   - **SASS vs CSS Variables**: SASS color functions (like `color.scale`, `lighten()`, `darken()`) cannot process `var(--color)`. For interactive highlights/hovers, use static SASS fallbacks (e.g. `$yellow`) for calculations while maintaining the CSS variable for the main render to support dynamic themes.
   - **Variable Isolation**: In high-density or dynamically scoped components (e.g., within specialized filters or grids), if core SASS variables are not reliably available without manual imports, use **Direct Hex Values** to ensure visual stability and prevent "Color not defined" build errors.

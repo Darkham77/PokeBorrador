@@ -187,7 +187,9 @@ const cancelSearch = () => {
 
 .card-glass {
   background: Rgba(255, 255, 255, 0.03);
-  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 16px;

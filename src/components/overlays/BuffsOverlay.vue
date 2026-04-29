@@ -69,7 +69,9 @@ const formatTime = (secs) => {
   border-radius: 12px;
   padding: 6px 10px;
   pointer-events: auto; /* Tooltip needs pointer */
-  -webkit-backdrop-filter: Blur(4px); -webkit-backdrop-filter: Blur(4px); backdrop-filter: Blur(4px);
+  -webkit-backdrop-filter: Blur(4px);
+  backdrop-filter: Blur(4px);
+  @include gpu-layer;
   box-shadow: 0 4px 6px Rgba(0,0,0,0.3);
   transition: all 0.3s ease;
   cursor: help;

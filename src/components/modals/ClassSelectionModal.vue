@@ -166,7 +166,9 @@ const getButtonVariant = (clsId) => {
 .class-card-premium {
   position: relative;
   background: Rgba(30, 41, 59, 0.4);
-  -webkit-backdrop-filter: Blur(10px); -webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 32px 20px;

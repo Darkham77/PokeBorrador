@@ -85,6 +85,7 @@ onMounted(() => {
   background: Rgba(0, 0, 0, 0.4);
   -webkit-backdrop-filter: Blur(5px);
   backdrop-filter: Blur(5px);
+  @include gpu-layer;
   position: sticky;
   top: 0;
   z-index: var(--z-base);

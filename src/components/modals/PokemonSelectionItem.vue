@@ -24,12 +24,16 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
 
 const tierData = computed(() => getPokemonTier(props.item.pokemon))
 const ivTotal = computed(() => Object.values(props.item.pokemon.ivs || {}).reduce((s, v) => s + (v || 0), 0))
+const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.value.tier === 'S+')
 </script>
 
 <template>
   <div 
     class="list-item"
-    :class="{ selected: isSelected }"
+    :class="{ 
+      selected: isSelected,
+      'is-premium-tier': isPremiumTier 
+    }"
     :style="{ 
       '--tier-color': tierData.color,
       '--tier-bg': tierData.bg
@@ -146,6 +150,14 @@ const ivTotal = computed(() => Object.values(props.item.pokemon.ivs || {}).reduc
 
 <style scoped lang="scss">
 @use "@/styles/components/badges" as *;
+
+.list-item {
+  position: relative;
+  
+  &.is-premium-tier {
+    @include pokemon-card-premium-tier;
+  }
+}
 
 .m-badge-level {
   @include badge-level;
