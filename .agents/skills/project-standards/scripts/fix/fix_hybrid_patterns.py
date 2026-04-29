@@ -84,6 +84,10 @@ def fix_file(filepath):
     lines = content.split('\n')
     new_lines = []
     for line in lines:
+        if "[PureVue-Ignore]" in line:
+            new_lines.append(line)
+            continue
+            
         if line.strip().startswith('$') and ':' in line:
             new_lines.append(line)
             continue
