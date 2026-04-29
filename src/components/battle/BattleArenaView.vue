@@ -53,6 +53,7 @@ const isEmerging = ref(false)
 const isWildSilhouette = ref(false)
 const wildRevealActive = ref(false)
 const upcomingIsEmerging = ref(false)
+const isWildSilhouetteHalfway = ref(false)
 const isInitialLoad = ref(true)
 
 const activeEnemyData = computed(() => {
@@ -86,8 +87,16 @@ const activeEnemyIsFloating = computed(() => {
 
 const activeEnemyIsSilhouette = computed(() => {
   if (hasBinoculars.value) return false
-  // Forzar silueta si estamos en animación de entrada, búsqueda, revelación o si hay un pokemon en espera
-  if (isWildEntryAnimation.value || isSearching.value || upcomingIsEmerging.value || wildRevealActive.value || !!upcomingPokemon.value) return true
+  
+  // Durante búsqueda o previsualización siempre es silueta
+  if (isSearching.value || upcomingIsEmerging.value || !!upcomingPokemon.value) return true
+  
+  // Si las animaciones de intro terminaron y el combate es activo, forzar limpieza
+  if (!isIntroInProgress.value && battleStore.isBattleActive && !isFinishing.value) return false
+
+  // Durante la animación de entrada oficial
+  if (isWildEntryAnimation.value || wildRevealActive.value) return true
+  
   return isWildSilhouette.value
 })
 
@@ -104,7 +113,7 @@ const revealWildPokemon = (isInstant = false) => {
   isWildEntryAnimation.value = true
   isEmerging.value = false 
   
-  const duration = 100
+  const duration = 600
   
   setTimeout(() => {
     isWildSilhouette.value = false
@@ -121,14 +130,53 @@ const triggerWildEmergence = () => {
   isEmerging.value = true
   isWildSilhouette.value = true
   wildRevealActive.value = true
+  isWildSilhouetteHalfway.value = false
   
+  // La sombra aparece solo a mitad del salto (Fase 1)
+  setTimeout(() => { isWildSilhouetteHalfway.value = true }, 1100)
+
   setTimeout(() => { 
     isWildEntryAnimation.value = false
     isEmerging.value = false
     isWildSilhouette.value = false 
     wildRevealActive.value = false
+    isWildSilhouetteHalfway.value = false
   }, 2200)
 }
+
+// Animation state for energy effects
+const playerAnimState = ref(null) // 'catching', 'releasing', null
+const enemyAnimState = ref(null)
+
+// Control global de animaciones de intro para el store
+const isIntroInProgress = computed(() => {
+  return isWildEntryAnimation.value || 
+         wildRevealActive.value || 
+         isEmerging.value || 
+         upcomingIsEmerging.value || 
+         playerAnimState.value !== null || 
+         enemyAnimState.value !== null
+})
+
+const isShadowVisible = computed(() => {
+  // Regla para Fase 2 (Búsqueda): No mostrar hasta que termine de emerger
+  if (upcomingIsEmerging.value) return false
+  
+  // Regla para Fase 1 (Salto): No mostrar hasta la mitad de la animación
+  if (isWildEntryAnimation.value && !isWildSilhouetteHalfway.value) return false
+  
+  // Ocultar durante búsqueda activa o si no hay datos
+  if (isSearching.value || !activeEnemyData.value) return false
+
+  // Ocultar si el bicho está debilitado (y no estamos en intro)
+  if (activeEnemyData.value.hp <= 0 && !isWildEntryAnimation.value && !wildRevealActive.value) return false
+
+  return true
+})
+
+watch(isIntroInProgress, (val) => {
+  battleStore.isIntroAnimating = val
+}, { immediate: true })
 
 // Watcher de seguridad para asegurar que la animación inicie si el combate carga después del mount
 watch(() => battle.value, (newBattle) => {
@@ -183,9 +231,6 @@ watch(() => battleStore.upcomingPokemon, (newVal) => {
 }, { immediate: true })
 
 // Animation state for energy effects
-const playerAnimState = ref(null) // 'catching', 'releasing', null
-const enemyAnimState = ref(null)
-
 const playerAnimSeed = Math.random()
 const enemyAnimSeed = Math.random()
 const _animSeed = Math.random()
@@ -280,20 +325,31 @@ const detectFeetYFromUrl = async (url, isFlying = false) => {
   })
 }
 
-watch(() => enemy.value?.id, async () => {
+watch(() => enemy.value?.id, async (newId) => {
   if (!enemy.value) return
+  
+  // Si el nuevo enemigo es el que estábamos previsualizando, heredamos sus pies
+  // para evitar recálculos y garantizar paridad visual absoluta
+  if (upcomingPokemon.value && upcomingPokemon.value.id === newId) {
+    enemyFeetY.value = searchingFeetY.value
+    return
+  }
+
+  enemyFeetY.value = 0.9 // Reset sincrónico para evitar saltos desde el poke anterior
   const url = getAssetUrl(ASSET_TYPES.POKEMON, enemy.value.id, { isShiny: enemy.value.isShiny, isBack: false })
   enemyFeetY.value = await detectFeetYFromUrl(url, isFlying(enemy.value))
 }, { immediate: true })
 
 watch(() => upcomingPokemon.value?.id, async () => {
   if (!upcomingPokemon.value) return
+  searchingFeetY.value = 0.9 // Reset sincrónico para evitar saltos desde el poke anterior
   const url = getAssetUrl(ASSET_TYPES.POKEMON, upcomingPokemon.value.id, { isShiny: upcomingPokemon.value.isShiny })
   searchingFeetY.value = await detectFeetYFromUrl(url, isFlying(upcomingPokemon.value))
 }, { immediate: true })
 
 watch([() => player.value?.id, () => player.value?.hp], async () => {
   if (!player.value) return
+  playerFeetY.value = 0.9 // Reset sincrónico para evitar saltos
   const url = player.value.hp <= 0 ? playerTrainerSpriteUrl.value : getAssetUrl(ASSET_TYPES.POKEMON, player.value.id, { isShiny: player.value.isShiny, isBack: true })
   const flying = player.value.hp > 0 && isFlying(player.value)
   playerFeetY.value = await detectFeetYFromUrl(url, flying)
@@ -446,17 +502,17 @@ onMounted(() => {
           </div>
         </Transition>
 
+        <!-- Unified Shadow Logic (Outside animator to prevent bouncing) -->
+        <div
+          class="pv-shadow"
+          :class="{ 'is-hidden': !isShadowVisible }"
+          :style="{ backgroundImage: `url(${shadowUrl})`, top: `${effectiveFeetY * 100}%` }"
+        />
+
         <div
           class="sprite-animator"
           :class="[{ 'fainted': activeEnemyData?.hp <= 0 && !isSearching && !isWildEntryAnimation && !isWildSilhouette, 'is-attacking': battleStore.attackerSide === 'enemy', 'is-emerging': isEmerging }, getAttackAnimClass('enemy')]"
         >
-          <!-- Unified Shadow Logic -->
-          <div
-            class="pv-shadow"
-            :class="{ 'is-hidden': (isSearching || isWildEntryAnimation) || (!upcomingPokemon && (!enemy || enemy?.hp <= 0) && !isFinishing) }"
-            :style="{ backgroundImage: `url(${shadowUrl})`, top: `${effectiveFeetY * 100}%` }"
-          />
-
           <div
             class="sprite-rotation-layer"
             :class="getAttackAnimClass('enemy')"

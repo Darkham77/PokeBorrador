@@ -16,11 +16,17 @@ const canBuy = computed(() => {
   if (!props.extra) return false
   return gameStore.state.money >= props.extra.price
 })
+
+const hasActions = computed(() => {
+  if (props.context === 'team') return props.canEvolveStone
+  if (props.context === 'market') return !!props.extra
+  return false
+})
 </script>
 
 <template>
   <footer
-    v-if="context === 'team' || context === 'market'"
+    v-if="hasActions"
     class="modal-footer"
   >
     <!-- Evolution Action -->

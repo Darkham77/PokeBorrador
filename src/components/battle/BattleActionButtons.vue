@@ -38,7 +38,7 @@ const availableBalls = computed(() => {
 })
 
 const toggleBallMenu = () => {
-  if (battleStore.isProcessing || props.isFinishing) return
+  if (battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating) return
   
   if (availableBalls.value.length === 0) {
     emit('catch') // Let parent handle "no balls" state
@@ -79,7 +79,7 @@ onUnmounted(() => {
     <div class="action-row-complex">
       <button
         class="btn-vicio-secondary switch"
-        :disabled="battleStore.isProcessing || isFinishing"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating"
         @click.stop="emit('switch')"
       >
         <span class="icon">🔄</span> CAMBIAR
@@ -118,7 +118,7 @@ onUnmounted(() => {
         <button
           class="btn-catch-ball"
           :class="{ 'is-active': isBallMenuOpen }"
-          :disabled="battleStore.isProcessing || isFinishing"
+          :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating"
           @click.stop="toggleBallMenu"
         >
           <span>CAPTURAR</span>
@@ -127,7 +127,7 @@ onUnmounted(() => {
 
       <button
         class="btn-vicio-success bag"
-        :disabled="battleStore.isProcessing || isFinishing"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating"
         @click.stop="emit('bag')"
       >
         <span class="icon">🎒</span> MOCHILA

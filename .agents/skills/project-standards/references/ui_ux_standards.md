@@ -214,6 +214,14 @@ To ensure a seamless transition between full-map exploration and focused modal i
 - **Fullscreen Modal Continuity**: The primary content container (e.g., `.upd-core-container`) MUST use `min-height: 100%` in fullscreen mode to ensure the background color remains consistent across the entire viewport.
 - **Standardized Content Body**: Always use the `.upd-core-body` class for modal tab contents to inherit project-standard padding, scrolling, and background styles.
 
+### 9. Asset Parity & Positional Inheritance
+
+To guarantee a seamless "Live" feel during multi-phase transitions (e.g., from Search Preview to Battle), components MUST implement positional inheritance.
+
+- **Rule**: If two sequential objects share the same ID (e.g., the previewed Pokémon and the actual battle enemy), the secondary object MUST inherit the calculated metadata (like `feetY` ground position) from the primary object.
+- **Why**: Eliminates 1-frame position jumps ("teleports") and avoids redundant asynchronous calculations that degrade the user experience.
+- **Stable Grounding**: Ground shadows and environmental effects (like grass) MUST be placed in a non-animated container (or a sibling of the animated one). This ensures that even if the sprite bounces or jump-attacks, its shadow remains physically anchored to the floor coordinates.
+
 ---
 
 ## 📏 Layering & Z-Index Governance

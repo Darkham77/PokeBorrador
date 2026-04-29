@@ -100,13 +100,13 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
       <BattleMovesGrid 
         v-if="player"
         :moves="player.moves" 
-        :is-processing="battleStore.isProcessing"
+        :is-processing="battleStore.isProcessing || battleStore.isIntroAnimating"
         :player-info="player"
         @use-move="(idx) => battleStore.executeMove(idx)"
       />
 
       <BattleActionButtons 
-        :is-finishing="battleStore.isFinishing"
+        :is-finishing="battleStore.isFinishing || battleStore.isIntroAnimating"
         @switch="execShowBattleSwitch"
         @bag="execShowBattleBag"
         @run="battleStore.flee"

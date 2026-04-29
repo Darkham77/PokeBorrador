@@ -28,6 +28,7 @@ export const useBattleStore = defineStore('battle', () => {
   const isBattleActive = ref(false)
   const isFinishing = ref(false)
   const isProcessing = ref(false)
+  const isIntroAnimating = ref(false)
   const isSearching = ref(false)
   const battleLogs = ref([])
   const logQueue = ref([])
@@ -98,7 +99,6 @@ export const useBattleStore = defineStore('battle', () => {
     if (isSearching.value) {
       upcomingPokemon.value = enemyPoke
       await new Promise(r => setTimeout(r, 1500)) // Pausa dramática para ver el pokemon en el pasto
-      upcomingPokemon.value = null
     }
 
     isSearching.value = false
@@ -149,6 +149,9 @@ export const useBattleStore = defineStore('battle', () => {
     // IMPORTANTE: Seteamos estos flags al FINAL para evitar parpadeos visuales
     isFinishing.value = false
     isBattleActive.value = true
+    
+    // Limpieza final de previsualización
+    setTimeout(() => { upcomingPokemon.value = null }, 100)
   }
 
   const addLog = (msg, type = 'log-info', source = null) => {
@@ -504,6 +507,6 @@ export const useBattleStore = defineStore('battle', () => {
     completeBattleFlow,
     setFinishing: (cb) => { isFinishing.value = true; battleEndCallback.value = cb },
     useItemInBattle, endBattle, _startBattle, executeSwitch: _executeSwitch,
-    isSearching
+    isSearching, isIntroAnimating
   }
 })

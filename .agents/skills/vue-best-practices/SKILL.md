@@ -145,6 +145,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 
 ## 5) DOM & Event Quirks (Lessons Learned)
 
+- **Script Setup Initialization Order**: In `<script setup>`, always define `refs` before any `computed` properties or `watchers` that consume them. Failure to do so can result in a `ReferenceError: Cannot access 'X' before initialization` during the initial reactive cycle if the computed/watcher triggers immediately.
 - **Scroll Event Bubbling**: Native `scroll` events do not bubble in the DOM. If your app relies on internal scrollable containers (e.g., `.tab-content` with `overflow-y: auto`), a `window.addEventListener('scroll')` will never fire. You **must** use the capture phase: `window.addEventListener('scroll', handler, { capture: true })`.
 - **ResizeObserver on Fixed Containers**: `ResizeObserver` can report inaccurate heights (`0px`) when observing `position: fixed` elements, especially those using `container-type` or containing only absolute/percentage-based children. Always observe the true inner relative/static content wrapper to guarantee accurate dynamic height calculations.
 - **ResizeObserver for Responsive Components**: Use `ResizeObserver` instead of media queries or window resize events for components that need to adapt their layout (e.g., column count) based on their own container width rather than the viewport. This is essential for components inside dynamic grids (like `MapCard`).

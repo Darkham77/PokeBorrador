@@ -106,3 +106,18 @@ const playAnimation = (stateClass, duration) => {
   }, duration);
 };
 ```
+
+## 10. Animation State Hygiene & Interaction Locks
+
+Every global blocking state triggered by an animation (e.g., `battleStore.isIntroAnimating`) MUST have a guaranteed reset mechanism to prevent the UI from becoming permanently non-interactive.
+
+- **Rule**: If an animation blocks user input, the cleanup (`flag = false`) MUST be explicitly called in the final `setTimeout` or event callback of that animation sequence.
+- **Safety**: Avoid nested or conditional timeouts that might skip the cleanup phase if the logic branches.
+
+## 11. Aesthetic Reveal Delays (Shadow & Metadata)
+
+To hide micro-adjustments in position or "feetY" calculation during rapid transitions (like Phase 1 jump or Phase 2 emergence), apply intentional delays to the visibility of auxiliary elements.
+
+- **Standard**: Ground shadows should be hidden for at least 50% of an entrance animation duration, appearing smoothly only once the object is nearing its final coordinates.
+- **Implementation**: Use a separate flag (e.g., `isHalfway`) to toggle shadow visibility mid-sequence.
+
