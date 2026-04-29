@@ -171,7 +171,11 @@ const handleClose = () => {
     padding: 0 !important;
     display: flex !important;
     flex-direction: column !important;
-    height: 100% !important;
+    flex: 1 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: auto !important;
+    min-height: 0 !important;
     overflow: hidden !important; // Bloqueo total
   }
 }
@@ -258,8 +262,10 @@ const handleClose = () => {
 
 
 .battle-screen-grid {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -273,7 +279,8 @@ const handleClose = () => {
   }
 
   &.is-fullscreen {
-    height: 100vh;
+    flex: 1;
+    height: auto;
     :deep(.battle-log) { padding: 6px 12px !important; gap: 5px !important; }
     :deep(.log-entry) { font-size: 11px !important; padding-bottom: 4px !important; line-height: 1.4 !important; }
   }
@@ -282,10 +289,11 @@ const handleClose = () => {
 .battle-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  max-height: 100vh;
+  flex: 1;
   min-height: 0;
-  width: 100%;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
 
   @media (min-width: 951px) {
     display: grid;

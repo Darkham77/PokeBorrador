@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useWindowListener } from '@/composables/useWindowListener'
 import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -15,6 +16,10 @@ const emit = defineEmits(['close'])
 const shopStore = useShopStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+
+const isSmallScreen = ref(window.innerWidth <= 950)
+const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
+useWindowListener('resize', handleResize)
 
 const activeTab = ref('todos')
 const search = ref('')
@@ -45,7 +50,8 @@ const buy = (item) => {
     title="POKÉ MARKET"
     title-color="var(--yellow)"
     header-background="Rgba(26, 28, 46, 1)"
-    max-width="900px"
+    :type="isSmallScreen ? 'fullscreen' : 'center'"
+    :max-width="isSmallScreen ? '100vw' : '900px'"
     variant="retro"
     padding="raw"
     @close="emit('close')"
@@ -386,5 +392,42 @@ const buy = (item) => {
   padding: 60px;
   color: Rgba(255, 255, 255, 0.2);
   font-size: 14px;
+}
+
+@media (max-width: 950px) {
+  .shop-container {
+    flex-direction: column;
+    height: 100%;
+    max-height: none;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+    padding: 12px 16px;
+
+    .categories {
+      flex-direction: row;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      gap: 8px;
+      
+      button {
+        white-space: nowrap;
+        padding: 8px 12px;
+      }
+    }
+
+    .player-stats {
+      display: none; // Hidden on mobile to save space
+    }
+  }
+
+  .items-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
 }
 </style>

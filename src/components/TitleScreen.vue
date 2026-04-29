@@ -155,6 +155,7 @@ const handleLogout = () => {
   color: var(--gray);
   font-size: 14px;
   margin-bottom: 30px;
+  text-align: center;
 }
 
 .starter-img-container {
@@ -189,5 +190,6 @@ const handleLogout = () => {
   color: var(--gray);
   font-style: italic;
   opacity: 0.8;
+  text-align: center;
 }
 </style>

@@ -1,4 +1,6 @@
 <script setup>
+import { ref } from 'vue';
+import { useWindowListener } from '@/composables/useWindowListener';
 import { usePlayerClassStore } from '@/stores/playerClass';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
@@ -16,6 +18,9 @@ const emit = defineEmits(['close', 'confirm', 'cancel', 'submit']);
 defineOptions({ inheritAttrs: false });
 
 const classStore = usePlayerClassStore();
+const isSmallScreen = ref(window.innerWidth <= 950);
+const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 };
+useWindowListener('resize', handleResize);
 
 const close = () => { 
   emit('close');
@@ -45,9 +50,10 @@ const getButtonVariant = (clsId) => {
   <BaseModal
     :show="show"
     title="⚡ ELEGÍ TU CLASE ⚡"
+    :type="isSmallScreen ? 'fullscreen' : 'center'"
     title-color="var(--yellow)"
     header-background="Rgba(26, 28, 46, 1)"
-    max-width="95%"
+    :max-width="isSmallScreen ? '100vw' : '1230px'"
     variant="retro"
     @close="close"
   >
@@ -313,5 +319,25 @@ const getButtonVariant = (clsId) => {
 
 @media (max-width: 640px) {
   .classes-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 950px) {
+  .class-selection-container {
+    padding: 16px;
+    gap: 20px;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    @include smooth-scroll;
+  }
+
+  .class-card-premium {
+    padding: 24px 16px;
+    
+    .class-desc {
+      height: auto;
+      margin-bottom: 16px;
+    }
+  }
 }
 </style>

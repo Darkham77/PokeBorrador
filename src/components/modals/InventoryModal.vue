@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, reactive, watch } from 'vue'
+import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
@@ -26,6 +27,10 @@ const gameStore = useGameStore()
 const uiStore = useUIStore()
 const inventoryStore = useInventoryStore()
 const modalStore = useModalStore()
+
+const isSmallScreen = ref(window.innerWidth <= 950)
+const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
+useWindowListener('resize', handleResize)
 
 // Battle Mode auto-category
 watch(() => props.show, (val) => {
@@ -231,7 +236,8 @@ const close = () => {
 <template>
   <BaseModal
     :show="show"
-    :max-width="modalWidth"
+    :type="isSmallScreen ? 'fullscreen' : 'center'"
+    :max-width="isSmallScreen ? '100vw' : modalWidth"
     variant="retro"
     padding="raw"
     :no-scroll="!!battleMode"

@@ -433,13 +433,24 @@ const computedCorners = computed(() => {
     border-bottom: none;
   }
 
+  // Force fullscreen absolute priority
   .type-fullscreen & {
-    width: 100vw;
-    height: 100vh;
+    width: 100vw !important;
+    height: 100vh !important;
     max-width: 100vw !important;
     max-height: 100vh !important;
-    border-radius: 0;
-    border: none;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+
+    .modal-scrollable-content.padding-raw {
+      overflow-y: auto !important;
+      flex: 1 !important;
+      min-height: 0 !important;
+      height: auto !important;
+    }
   }
 
   // Border & Corners Logic
@@ -494,6 +505,11 @@ const computedCorners = computed(() => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+
+  @media (max-width: 600px) {
+    min-height: 50px;
+    padding: 10px 16px;
+  }
 }
 
 .modal-header-left {
@@ -616,7 +632,7 @@ const computedCorners = computed(() => {
   
   &.padding-raw { 
     padding: 0 !important; 
-    overflow: hidden !important;
+    overflow: hidden;
   }
 }
 

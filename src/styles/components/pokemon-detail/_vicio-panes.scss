@@ -327,9 +327,27 @@
   }
 }
 
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 24px;
+  padding-bottom: 8px; // Space for scrollbar
+  
+  &::-webkit-scrollbar { height: 4px; }
+  &::-webkit-scrollbar-track { background: Rgba(255, 255, 255, 0.05); }
+  &::-webkit-scrollbar-thumb { 
+    background: Rgba(var(--type-color-rgb, 255, 214, 10), 0.3); 
+    border-radius: 4px;
+  }
+}
+
+
 .vp-moves-list-grid {
   width: 100%;
   margin-top: 10px;
+  min-width: 480px; // Ensure columns don't compress too much on mobile
 
   .grid-header {
     display: grid;

@@ -14,15 +14,26 @@
 
 .pokedex-header {
   @include glass-solid(Rgba(15, 23, 42, 0.95));
-  padding: 20px 30px; // Reduced from 40px
+  padding: 20px 30px;
   border-radius: 24px;
+  
+  @include responsive(950px) {
+    padding: 15px 20px;
+    border-radius: 16px;
+  }
   
   .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 32px;
+    gap: 16px;
+
+    @include responsive(950px) {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
   }
 
   .title-group {
@@ -33,9 +44,14 @@
       margin: 0 0 12px 0;
       background: Linear-Gradient(to bottom, var(--white), var(--gray));
       -webkit-background-clip: text;
-      -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;;;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       @include pixelated;
+
+      @include responsive(950px) {
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
     }
     .subtitle {
       color: var(--gray);
@@ -45,6 +61,10 @@
       text-transform: uppercase;
       font-weight: 700;
       @include pixelated;
+
+      @include responsive(950px) {
+        letter-spacing: 2px;
+      }
     }
   }
 }
@@ -52,6 +72,12 @@
 .stats-grid {
   display: flex;
   gap: 20px;
+
+  @include responsive(950px) {
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+  }
 
   .stat-card {
     background: Rgba(255, 255, 255, 0.03);
@@ -104,10 +130,10 @@
   border-radius: 16px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   flex-wrap: nowrap;
 
-  @media (max-width: 1000px) {
+  @include responsive(768px) {
     flex-wrap: wrap;
     flex-direction: column;
     align-items: stretch;
@@ -125,12 +151,12 @@
   gap: 4px;
   
   .tab-btn {
-    padding: 8px 20px;
+    padding: 8px 16px;
     border: none;
     background: transparent;
     color: var(--gray);
     @include pixelated;
-    font-size: 8px;
+    font-size: 7px;
     cursor: pointer;
     border-radius: 8px;
     @include will-animate(background-color, color, box-shadow);
@@ -154,40 +180,48 @@
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   min-width: 0;
+
+  @include responsive(768px) {
+    flex: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
 }
 
 .sort-group {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   background: Rgba(0, 0, 0, 0.2);
   padding: 6px 12px;
   border-radius: 12px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
 
-  @include responsive(hud-mobile) {
+  @include responsive(768px) {
+    flex: none;
     width: 100%;
     justify-content: center;
   }
 
   .sort-label {
-    font-size: 8px;
+    font-size: 7px;
     color: var(--gray);
     @include pixelated;
   }
 
   .pdex-sort-btn {
-    padding: 8px 16px;
+    padding: 6px 12px;
     background: Rgba(255, 255, 255, 0.03);
     border: 1px solid Rgba(255, 255, 255, 0.1);
     color: var(--gray);
     @include pixelated;
-    font-size: 8px;
+    font-size: 7px;
     cursor: pointer;
     border-radius: 8px;
     transition: all 0.2s;
@@ -207,12 +241,12 @@
 
 .search-wrapper {
   position: relative;
-  flex: 0 0 220px; 
-  width: 220px;
-  max-width: 220px;
+  flex: 1;
+  max-width: 300px;
   min-width: 140px;
 
-  @include responsive(hud-mobile) {
+  @include responsive(768px) {
+    flex: none;
     width: 100%;
     max-width: none;
   }
@@ -220,11 +254,14 @@
   .pdex-search-icon {
     position: absolute;
     left: 16px;
-    top: 50%;
-    transform: TranslateY(-50%);
+    top: 14px; // Fixed top instead of 50% to avoid stretching issues
     font-size: 16px;
     opacity: 0.3;
     transition: opacity 0.2s;
+
+    @include responsive(950px) {
+      top: 12px;
+    }
   }
   
   .pdex-search-input {

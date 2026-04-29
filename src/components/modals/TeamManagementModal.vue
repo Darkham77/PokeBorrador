@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBoxStore } from '@/stores/box'
@@ -9,6 +10,10 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+
+const isSmallScreen = ref(window.innerWidth <= 950)
+const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
+useWindowListener('resize', handleResize)
 
 const activeTab = ref('adventure') // 'adventure', 'pvp', 'war'
 
@@ -51,6 +56,7 @@ const maxWarSlots = computed(() => gameStore.state.warSlots || 6)
 
 // Drag and Drop Logic
 const draggedIndex = ref(null)
+const touchOverIndex = ref(null)
 const isDragging = ref(false)
 
 function handleDragStart(index) {
@@ -64,6 +70,7 @@ function handleDragStart(index) {
 function handleDragEnd() {
   isDragging.value = false
   draggedIndex.value = null
+  touchOverIndex.value = null
 }
 
 function handleDrop(targetIndex) {
@@ -195,7 +202,8 @@ function selectAdventure(_slotIndex) {
   <BaseModal
     show
     header-background="transparent"
-    max-width="940px"
+    :type="isSmallScreen ? 'fullscreen' : 'center'"
+    :max-width="isSmallScreen ? '100vw' : '940px'"
     padding="standard"
     @close="uiStore.toggleTeamManagement"
   >
@@ -263,11 +271,14 @@ function selectAdventure(_slotIndex) {
           :pokemon="p"
           :index="i"
           :is-dragging-any="isDragging"
+          :is-touch-over="touchOverIndex === i"
           @open-detail="openDetail(p)"
           @open-item="openItem(p)"
           @send-to-box="sendToBox(p)"
           @select="selectAdventure"
           @drag-start="handleDragStart"
+          @drag-over="(idx) => touchOverIndex = idx"
+          @drag-end="handleDragEnd"
           @drop-pokemon="handleDrop"
         />
       </div>
@@ -285,11 +296,14 @@ function selectAdventure(_slotIndex) {
           :pokemon="p"
           :index="i"
           :is-dragging-any="isDragging"
+          :is-touch-over="touchOverIndex === i"
           is-pvp
           @open-detail="openDetail(p)"
           @open-item="openItem(p)"
           @select="selectPvp(i)"
           @drag-start="handleDragStart"
+          @drag-over="(idx) => touchOverIndex = idx"
+          @drag-end="handleDragEnd"
           @drop-pokemon="handleDrop"
         />
       </div>
@@ -307,11 +321,14 @@ function selectAdventure(_slotIndex) {
           :pokemon="p"
           :index="i"
           :is-dragging-any="isDragging"
+          :is-touch-over="touchOverIndex === i"
           is-pvp
           @open-detail="openDetail(p)"
           @open-item="openItem(p)"
           @select="selectWar(i)"
           @drag-start="handleDragStart"
+          @drag-over="(idx) => touchOverIndex = idx"
+          @drag-end="handleDragEnd"
           @drop-pokemon="handleDrop"
         />
       </div>
@@ -325,7 +342,18 @@ function selectAdventure(_slotIndex) {
 .team-header-tabs {
   display: flex;
   gap: 12px;
-  margin-left: 20px;
+  margin-left: 0;
+  padding: 4px 0;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+  -webkit-overflow-scrolling: touch;
+  
+
+  @media (max-width: 600px) {
+    gap: 8px;
+    padding-right: 40px; // Space for close button
+  }
 }
 
 .tm-tab {
@@ -340,6 +368,8 @@ function selectAdventure(_slotIndex) {
   cursor: pointer;
   @include pixelated;
   font-size: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all .2s;
   letter-spacing: 1px;
   position: relative;
@@ -403,7 +433,7 @@ function selectAdventure(_slotIndex) {
 
 :deep(.modal-header-premium) {
   border-bottom: none !important;
-  padding-bottom: 0 !important;
+  padding: 12px 16px !important;
 }
 
 :deep(.modal-content-premium) {

@@ -147,79 +147,81 @@ const hexToRgb = (hex) => {
     <h4 class="vp-section-title">
       APRENDIZAJE POR NIVEL
     </h4>
-    <div class="vp-moves-list-grid">
-      <!-- Header -->
-      <div class="grid-header">
-        <div class="h-col">
-          NV
+    <div class="table-responsive-wrapper">
+      <div class="vp-moves-list-grid">
+        <!-- Header -->
+        <div class="grid-header">
+          <div class="h-col">
+            NV
+          </div>
+          <div class="h-col">
+            ATAQUE
+          </div>
+          <div class="h-col">
+            TIPO
+          </div>
+          <div class="h-col">
+            CAT
+          </div>
+          <div class="h-col">
+            POT
+          </div>
+          <div class="h-col">
+            PREC
+          </div>
+          <div class="h-col">
+            PP
+          </div>
         </div>
-        <div class="h-col">
-          ATAQUE
-        </div>
-        <div class="h-col">
-          TIPO
-        </div>
-        <div class="h-col">
-          CAT
-        </div>
-        <div class="h-col">
-          POT
-        </div>
-        <div class="h-col">
-          PREC
-        </div>
-        <div class="h-col">
-          PP
-        </div>
-      </div>
 
-      <!-- Rows -->
-      <div class="grid-body">
-        <PVTooltip 
-          v-for="m in moveDetails" 
-          :key="m.name"
-          tag="div"
-          class="grid-row"
-          position="top"
-          :delay="150"
-        >
-          <template #content>
-            <MoveTooltip :move="m" />
-          </template>
-
-          <div class="grid-cell vp-move-lv pixelated">
-            {{ m.level }}
-          </div>
-          <div class="grid-cell vp-move-name pixelated">
-            {{ m.name }}
-          </div>
-          <div class="grid-cell move-type">
-            <span
-              class="m-type-tag pixelated"
-              :style="{ background: PDEX_TYPE_COLORS[m.type.toLowerCase()] }"
-            >
-              {{ m.type.toUpperCase() }}
-            </span>
-          </div>
-          <div class="grid-cell move-cat pixelated">
-            {{ { physical: '⚔️ FÍSICO', special: '✨ ESPECIAL', status: '🔮 ESTADO' }[m.cat] || '🔮 ESTADO' }}
-          </div>
-          <div class="grid-cell move-power pixelated">
-            {{ m.power }}
-          </div>
-          <div class="grid-cell move-acc pixelated">
-            <span
-              v-if="m.acc === 1000"
-              class="infinity-emoji"
-            >♾️</span>
-            <template v-else>
-              {{ m.acc }}
+        <!-- Rows -->
+        <div class="grid-body">
+          <PVTooltip 
+            v-for="m in moveDetails" 
+            :key="m.name"
+            tag="div"
+            class="grid-row"
+            position="top"
+            :delay="150"
+          >
+            <template #content>
+              <MoveTooltip :move="m" />
             </template>
-          </div>
-          <div class="grid-cell move-pp pixelated">
-            {{ m.pp }}
-          </div>
-        </PVTooltip>
+
+            <div class="grid-cell vp-move-lv pixelated">
+              {{ m.level }}
+            </div>
+            <div class="grid-cell vp-move-name pixelated">
+              {{ m.name }}
+            </div>
+            <div class="grid-cell move-type">
+              <span
+                class="m-type-tag pixelated"
+                :style="{ background: PDEX_TYPE_COLORS[m.type.toLowerCase()] }"
+              >
+                {{ m.type.toUpperCase() }}
+              </span>
+            </div>
+            <div class="grid-cell move-cat pixelated">
+              {{ { physical: '⚔️ FÍSICO', special: '✨ ESPECIAL', status: '🔮 ESTADO' }[m.cat] || '🔮 ESTADO' }}
+            </div>
+            <div class="grid-cell move-power pixelated">
+              {{ m.power }}
+            </div>
+            <div class="grid-cell move-acc pixelated">
+              <span
+                v-if="m.acc === 1000"
+                class="infinity-emoji"
+              >♾️</span>
+              <template v-else>
+                {{ m.acc }}
+              </template>
+            </div>
+            <div class="grid-cell move-pp pixelated">
+              {{ m.pp }}
+            </div>
+          </PVTooltip>
+        </div>
       </div>
     </div>
   </div>

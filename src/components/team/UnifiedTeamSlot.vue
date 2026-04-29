@@ -7,10 +7,16 @@ const props = defineProps({
   index: { type: Number, required: true },
   isPvp: { type: Boolean, default: false },
   maxObeyLv: { type: Number, default: 100 },
-  isDraggingAny: { type: Boolean, default: false }
+  isDraggingAny: { type: Boolean, default: false },
+  isTouchOver: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['select', 'open-detail', 'open-item', 'send-to-box', 'drag-start', 'drop-pokemon'])
+const emit = defineEmits(['select', 'open-detail', 'open-item', 'send-to-box', 'drag-start', 'drag-over', 'drop-pokemon', 'drag-end'])
+
+const touchTimer = ref(null)
+const isTouchDragging = ref(false)
+const touchStartX = ref(0)
+const touchStartY = ref(0)
 
 const isEmpty = computed(() => !props.pokemon)
 const isDragOver = ref(false)
@@ -37,6 +43,73 @@ function onDrop(e) {
   isDragOver.value = false
   emit('drop-pokemon', props.index)
 }
+
+// ── TOUCH HANDLERS (MOBILE LONG-PRESS) ───────────────────────────────────────
+
+function handleTouchStart(e) {
+  if (isEmpty.value) return
+  const touch = e.touches[0]
+  touchStartX.value = touch.clientX
+  touchStartY.value = touch.clientY
+  isTouchDragging.value = false
+  
+  touchTimer.value = setTimeout(() => {
+    isTouchDragging.value = true
+    if (e.currentTarget) e.currentTarget.style.touchAction = 'none'
+    emit('drag-start', props.index)
+    if ('vibrate' in navigator) navigator.vibrate(50)
+  }, 800) // Long press threshold
+}
+
+function handleTouchMove(e) {
+  if (isTouchDragging.value) {
+    e.preventDefault()
+    
+    // Temporarily disable pointer events to detect what's UNDER the finger
+    const el = e.currentTarget
+    el.style.pointerEvents = 'none'
+    
+    const touch = e.touches[0]
+    const target = document.elementFromPoint(touch.clientX, touch.clientY)
+    const slot = target?.closest('.team-slot')
+    
+    // Restore pointer events
+    el.style.pointerEvents = 'auto'
+
+    if (slot && slot.dataset.index !== undefined) {
+      const targetIndex = parseInt(slot.dataset.index)
+      // Emit event so parent can manage the "over" state
+      emit('drag-over', targetIndex)
+    } else {
+      emit('drag-over', null)
+    }
+  } else {
+    const touch = e.touches[0]
+    const deltaX = Math.abs(touch.clientX - touchStartX.value)
+    const deltaY = Math.abs(touch.clientY - touchStartY.value)
+    if (deltaX > 10 || deltaY > 10) {
+      clearTimeout(touchTimer.value)
+    }
+  }
+}
+
+function handleTouchEnd(e) {
+  clearTimeout(touchTimer.value)
+  if (isTouchDragging.value) {
+    if (e.currentTarget) e.currentTarget.style.touchAction = ''
+    const touch = e.changedTouches[0]
+    const target = document.elementFromPoint(touch.clientX, touch.clientY)
+    const slot = target?.closest('.team-slot')
+    
+    if (slot && slot.dataset.index !== undefined) {
+      const targetIndex = parseInt(slot.dataset.index)
+      emit('drop-pokemon', targetIndex)
+    } else {
+      emit('drag-end')
+    }
+    isTouchDragging.value = false
+  }
+}
 </script>
 
 <template>
@@ -46,13 +119,18 @@ function onDrop(e) {
       'empty': isEmpty, 
       'pvp-slot': isPvp, 
       'is-dragging-any': isDraggingAny,
-      'is-drag-over': isDragOver 
+      'is-drag-over': isDragOver || isTouchOver 
     }"
+    :data-index="index"
     :draggable="!isEmpty"
     @dragstart="onDragStart"
     @dragover="onDragOver"
     @dragleave="onDragLeave"
     @drop="onDrop"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
+    @touchcancel="handleTouchEnd"
   >
     <div
       v-if="isEmpty"

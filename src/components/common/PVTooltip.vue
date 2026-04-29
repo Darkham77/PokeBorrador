@@ -163,11 +163,12 @@ watch(() => props.disabled, (newVal) => {
     :is="tag"
     ref="trigger" 
     class="pv-tooltip-wrapper"
-    @mouseenter="handleMouseEnter" 
+    audit-ignore="[PureVue-Ignore]" 
+    @mouseenter="handleMouseEnter"
     @mouseleave="hide"
     @touchstart="show"
     @touchend="hide"
-    @click="handleTriggerClick" audit-ignore="[PureVue-Ignore]"
+    @click.stop="handleTriggerClick"
   >
     <slot />
     

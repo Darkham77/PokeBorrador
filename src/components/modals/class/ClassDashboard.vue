@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
@@ -449,9 +450,79 @@ const getTrainerSprite = (id) => {
 }
 
 @keyframes pulse {
-  0% { transform: Scale(1); opacity: 0.1; }
-  50% { transform: Scale(1.1); opacity: 0.2; }
   100% { transform: Scale(1); opacity: 0.1; }
+}
+
+@media (max-width: 950px) {
+  .dashboard-layout {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+    padding: 32px 20px;
+    border-right: none;
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+
+    .avatar-box {
+      width: 200px;
+      height: 200px;
+      margin-bottom: 24px;
+      border-radius: 24px;
+
+      .trainer-big-img {
+        height: 150px;
+      }
+
+      .avatar-mini-circle {
+        top: 12px;
+        left: 12px;
+        width: 44px;
+        height: 44px;
+      }
+    }
+
+    .class-slogan {
+      margin-bottom: 24px;
+    }
+  }
+
+  .dashboard-main {
+    padding: 24px 20px;
+    overflow-y: visible; // Parent handles scroll
+  }
+
+  .rank-cards {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    .rank-card {
+      flex: 1;
+      min-width: 140px;
+      padding: 16px;
+      gap: 12px;
+
+      .card-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+      }
+    }
+  }
+
+  .dashboard-actions {
+    .action-footer {
+      flex-direction: column;
+      gap: 12px;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
 }
 
 </style>

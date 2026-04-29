@@ -16,89 +16,122 @@
   transition: 
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
     opacity 0.2s ease;
-  contain: layout; // Changed from paint to layout to prevent submenu clipping
+  contain: layout; 
   overflow: visible !important;
 
   &.hud-hidden {
     transform: TranslateY(calc(-100% - 20px)) Translate3D(0, 0, 0) !important;
     opacity: 0;
     pointer-events: none;
-    visibility: hidden; // Critical: Tell the browser to ignore this branch
+    visibility: hidden; 
+  }
+
+  .hud {
+    pointer-events: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    container-type: inline-size; 
+    
+    @include glass-solid(Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%));
+    border-radius: 20px;
+    padding: 10px 24px;
+    gap: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    
+    border: 1px solid Rgba(255, 255, 255, 0.12);
+    box-shadow: 
+      0 8px 20px Rgba(0, 0, 0, 0.5), 
+      inset 0 1px 1px Rgba(255, 255, 255, 0.2),
+      inset 0 -1px 2px Rgba(0, 0, 0, 0.4);
+      
+    @include will-animate(transform, opacity);
+    transition: 
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      opacity 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+    backface-visibility: hidden; 
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: Linear-Gradient(180deg, Rgba(255,255,255,0.1), Rgba(255,255,255,0.02));
+      -webkit-mask: Linear-Gradient($white 0 0) content-box, Linear-Gradient($white 0 0);
+      mask: Linear-Gradient($white 0 0) content-box, Linear-Gradient($white 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    @media (max-width: 920px) {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      justify-content: center !important;
+      gap: 12px;
+      white-space: normal;
+
+      & .hud-left { grid-column: 1; grid-row: 1; }
+      & .hud-actions { grid-column: 2; grid-row: 1; display: flex; justify-content: flex-end; }
+      
+      .hud-center { display: none !important; }
+      
+      & .hud-right { 
+        grid-column: 1 / -1; 
+        grid-row: 2; 
+        width: 100%; 
+        display: flex; 
+        flex-wrap: wrap; 
+        justify-content: center !important; 
+        margin-left: 0; 
+        gap: 10px; 
+        padding: 4px 0; 
+        
+        & .hud-pill {
+          min-width: 58px;
+          height: 58px;
+          border-radius: 14px;
+          padding: 6px 8px;
+          gap: 2px;
+          
+          i, span:first-child { 
+            font-size: 16px; 
+            height: 22px; 
+            &.currency-icon-money { font-size: 20px; }
+          }
+          .pill-value { font-size: 9px; }
+        }
+      }
+      
+      @include responsive-zoom;
+    }
   }
 }
 
-    & .hud {
-  pointer-events: auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  container-type: inline-size; // Moved from container to isolate sub-queries
-  
-  @include glass-solid(Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%));
-  border-radius: 20px;
-  padding: 10px 24px;
-  gap: 15px;
-  width: 100%;
-  box-sizing: border-box;
-  
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  box-shadow: 
-    0 8px 20px Rgba(0, 0, 0, 0.5), 
-    inset 0 1px 1px Rgba(255, 255, 255, 0.2),
-    inset 0 -1px 2px Rgba(0, 0, 0, 0.4);
-    
-  @include will-animate(transform, opacity);
-  transition: 
-    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.2s ease,
-    box-shadow 0.2s ease,
-    opacity 0.2s ease;
-  white-space: nowrap;
-  position: relative;
-  backface-visibility: hidden; // GPU isolation
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: Linear-Gradient(180deg, Rgba(255,255,255,0.1), Rgba(255,255,255,0.02));
-    -webkit-mask: Linear-Gradient($white 0 0) content-box, Linear-Gradient($white 0 0);
-    mask: Linear-Gradient($white 0 0) content-box, Linear-Gradient($white 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-
-  @media (max-width: 920px) {
-    display: grid;
-    grid-template-columns: auto auto;
-    grid-template-rows: auto auto;
-    width: fit-content;
-    margin: 0 auto;
-    padding: 12px;
-    justify-content: center !important;
-    gap: 16px;
-    white-space: normal;
-
-    .hud-left { grid-column: 1; grid-row: 1; }
-    & .hud-actions { grid-column: 2; grid-row: 1; display: flex; justify-content: center; }
-    & .hud-right { grid-column: 1 / -1; grid-row: 2; width: auto; display: flex; flex-wrap: wrap; justify-content: center !important; margin-left: 0; gap: 8px; padding: 8px 0; }
-    
-    @include responsive-zoom;
-  }
-}
-
-/* PC COMPACT MODES (CRITICAL FOR VISUAL PARITY) */
+/* PC COMPACT MODES */
 @container (max-width: 1775px) {
-    & .hud {
+  .hud-container .hud {
     padding: 8px 16px;
     gap: 12px;
   }
 }
 
 @include responsive(hud-mobile) {
-    & .hud { justify-content: flex-start; padding: 10px 20px; }
+  .hud-container .hud { 
+    justify-content: flex-start; 
+    padding: 10px 20px; 
+    
     & .hud-right { margin-left: auto; }
+  }
 }

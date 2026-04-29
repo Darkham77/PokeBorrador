@@ -19,7 +19,7 @@
   position: fixed;
   bottom: 20px;
   left: 20px;
-  z-index: var(--z-max);
+  z-index: var(--z-hud);
   display: flex;
   flex-direction: column-reverse;
   gap: 12px;
@@ -33,7 +33,7 @@
   }
 
   @include responsive(hud-mobile) {
-    bottom: 110px;
+    bottom: 100px;
   }
 }
 </style>

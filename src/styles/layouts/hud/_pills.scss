@@ -103,7 +103,7 @@
   transform: TranslateY(-2px);
 }
 
-.hud-pill {
+.hud-container .hud-pill {
   @include hud-pill-base;
 
   i, span:first-child { 

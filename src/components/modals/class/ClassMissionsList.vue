@@ -201,4 +201,43 @@ function getMissionDesc(mId, clsId) {
   &.locked { opacity: 0.5; }
 }
 
+@media (max-width: 950px) {
+  .missions-layout {
+    padding: 24px 20px;
+    height: auto;
+    gap: 24px;
+    overflow: visible;
+  }
+
+  .missions-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    
+    h1 {
+      font-size: 14px;
+    }
+  }
+
+  .active-mission-banner {
+    flex-direction: column;
+    padding: 20px;
+    gap: 16px;
+    text-align: center;
+
+    .collect-btn {
+      width: 100%;
+    }
+  }
+
+  .missions-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .mission-card {
+    padding: 20px;
+  }
+}
+
 </style>

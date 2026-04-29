@@ -15,8 +15,8 @@
   height: 100%;
   z-index: var(--z-base);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
   min-height: 0;
   padding: 0;
   @include smooth;
@@ -41,7 +41,7 @@ body.is-battle-active {
   min-height: 0;
   @include smooth-scroll;
   transform-origin: top center;
-  margin: 0 auto;
+  margin: 0;
   background: transparent; // Usa el fondo del modal nativo
   border: none;
   box-shadow: none;
@@ -52,12 +52,7 @@ body.is-battle-active {
     border-radius: 0;
   }
 
-  // Escalado para móviles muy pequeños (Restaurado)
-  @media (max-width: 380px) {
-    transform: Scale(0.92);
-    width: 108.7%; 
-    margin-left: -4.35%;
-  }
+  // Eliminado escalado legacy que causaba desajustes
 
   // Layout de Escritorio (Restaurado 1:1 de ff7d107 - Adaptado)
   @media (min-width: 1360px) {

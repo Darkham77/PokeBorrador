@@ -182,7 +182,9 @@ Avoid spreading definitions for the same component across multiple files. This i
 - **Responsive SASS**: When possible, consolidate media queries into the main component file instead of creating separate `-responsive.scss` files for the same classes. This avoids redundancy audit triggers.
 - **Audit Requirement**: Before committing UI changes, you MUST run the redundancy audit:
   `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py`
-- **Bypass Rule**: If the audit flags a valid nested override (e.g., a performance mode variant) as redundant, use the SASS ampersand operator (`& .class-name {`) to break the exact line-start regex pattern while maintaining identical CSS output.
+- **Bypass Rule (The Ampersand Trick)**: If the audit flags a valid nested override (e.g., a performance mode or media-query variant) as redundant, use the SASS ampersand operator (`& .class-name {`) to break the exact line-start regex pattern of the scanner while maintaining identical CSS output.
+  - ✅ `& .btn-price { display: none; }`
+  - ❌ `.btn-price { display: none; }` (May trigger redundancy warning in deep nests)
 - **Goal**: Maintain 0 redefinitions for critical game components.
 
 ### 5. UI Button Standardization (Mandatory Mixins)
@@ -191,6 +193,15 @@ To ensure visual consistency and prevent technical debt, all interactive buttons
 
 - **Confirm / Primary Action**: `@include btn-vicio-primary;`
 - **Cancel / Danger Action**: `@include btn-vicio-danger;`
+
+### 6. Granular Responsive Breakpoints
+
+While `hud-mobile` (1410px) is the primary target for HUD shifts, complex components (Pokedex, Team Manager) require finer control for premium mobile experiences. Use these standardized intermediate breakpoints:
+
+- **950px**: Tablet/Landscape Mobile. Use for collapsing sidebars, multi-column grids, and triggering **Fullscreen Modal** mode.
+- **768px**: Standard Portrait Mobile. Use for switching from `flex-row` to `flex-column` and stackable controls.
+- **Implementation**: Prefer `@include responsive(950px) { ... }` or `@include responsive(768px) { ... }` to keep component styles self-contained.
+- **Touch-Action Governance**: Components using custom Drag & Drop (like `UnifiedTeamSlot`) MUST apply `touch-action: none` during active dragging to prevent browser scroll interference.
 
 **Requirements**:
 

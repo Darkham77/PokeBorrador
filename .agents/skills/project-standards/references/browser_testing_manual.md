@@ -62,6 +62,23 @@ When testing visual states (e.g., forcing Pokedex "Caught" status via debug butt
 
 ---
 
+## 📱 Mobile Interaction Protocols
+
+For complex UI components (Team Management, Bag), we use custom touch handlers to bypass native browser limitations.
+
+### 1. Long-Press Trigger
+
+- **Standard**: Use an **800ms** threshold for long-press actions (like starting a Drag & Drop).
+- **Feedback**: ALWAYS provide tactile feedback using `navigator.vibrate(50)` when the long-press threshold is met.
+- **Reasoning**: This prevents accidental drags while the user is trying to scroll the container.
+
+### 2. Touch Drag Detection
+
+- **Collision Detection**: During `touchmove`, you MUST temporarily set `pointer-events: none` on the dragged element to allow `document.elementFromPoint(x, y)` to identify the underlying target slot.
+- **Scroll Suppression**: You MUST apply `touch-action: none` to the interactive element while dragging to prevent the viewport from scrolling.
+
+---
+
 ## 🚨 Roadblock Policy
 
 If the test fails or the browser stays "frozen":

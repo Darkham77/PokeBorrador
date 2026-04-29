@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useWindowListener } from '@/composables/useWindowListener'
 import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useGameStore } from '@/stores/game'
@@ -21,6 +22,10 @@ const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
 const uiStore = useUIStore()
 const classStore = usePlayerClassStore()
 const gameStore = useGameStore()
+
+const isSmallScreen = ref(window.innerWidth <= 950)
+const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
+useWindowListener('resize', handleResize)
 
 // Removed isOpen computed as we now use 'show' prop from host
 
@@ -110,9 +115,10 @@ const isMissionDone = computed(() => {
   <BaseModal
     :show="show"
     title="GESTIÓN DE CLASE"
+    :type="isSmallScreen ? 'fullscreen' : 'center'"
     :title-color="currentClass?.color || 'var(--yellow)'"
     :header-background="currentClass ? (currentClass.color + '1A') : 'Rgba(15, 23, 42, 0.8)'"
-    max-width="1000px"
+    :max-width="isSmallScreen ? '100vw' : '1000px'"
     :show-close-button="true"
     padding="raw"
     @close="close"
@@ -164,9 +170,16 @@ const isMissionDone = computed(() => {
 
 <style scoped lang="scss">
 .class-modal-shell {
-  min-height: 600px;
+  min-height: 400px;
+  height: 100%;
   background: transparent;
   color: $white;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 950px) {
+    min-height: auto;
+  }
 }
 
 .fade-quick-enter-active, .fade-quick-leave-active {

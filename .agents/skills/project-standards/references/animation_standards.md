@@ -56,4 +56,11 @@ Pokémon with high stats (Tier S/S+) must use a rhythmic pulsing animation inste
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
 }
+
+## 6. Proportional Interaction Offsets
+
+When applying interactive animations (hover/active) to elements that have a non-zero base offset (e.g., a sprite already lowered with `TranslateY`), the animation transform MUST be relative to that base.
+- **Rule**: Avoid large jumps (e.g., from `10px` to `-30px`).
+- **Standard**: Hover offsets should ideally be subtle (10-15px relative shift).
+- **Implementation**: If base is `TranslateY(10px)`, hover should be `TranslateY(-5px)` to produce a 15px upward movement.
 ```

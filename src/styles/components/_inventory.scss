@@ -90,6 +90,13 @@
   background: Rgba(0, 0, 0, 0.1);
   border-radius: 0 0 24px 24px;
   overflow: hidden;
+
+  @media (max-width: 950px) {
+    height: auto;
+    flex: 1;
+    max-height: none;
+    border-radius: 0;
+  }
 }
 
 .inventory-main {

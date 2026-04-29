@@ -20,6 +20,11 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **HUD Padding Synchronization**: To eliminate layout shifts ("jumps") during page load or HUD transitions, the main content area MUST use dynamic CSS variables (e.g., `--hud-top-padding`) calculated from the HUD's actual height.
   - **Implementation**: Use a `ResizeObserver` or a standardized `updateHudHeight` function in the root view (`MainGameView.vue`).
   - **CSS Usage**: `padding-top: var(--hud-top-padding, 110px);`.
+- **Mobile Fullscreen Mandate**: All complex management modals (Inventory, Team, Shop, Pokedex) MUST switch to `type: 'fullscreen'` on viewports ≤ 950px.
+  - **WHY**: Maximizes usable space on small screens and eliminates "floating card" artifacts that reduce visibility.
+- **Scroll Delegation (Fullscreen)**: In fullscreen mode, the main modal container MUST use `overflow: hidden`. Scroll responsibility MUST be delegated to an internal `.modal-scrollable-content` with `flex: 1`, `min-height: 0`, and `overflow-y: auto`.
+  - **WHY**: Prevents double scrollbars and ensures the header/footer remain pinned to the viewport edges.
+- **Responsive Header Stacking**: Modal headers containing both a title and a search/control group MUST switch to `flex-direction: column` and `align-items: stretch` on mobile to prevent horizontal clipping.
 
 ### 2. Pixel Art Content (The "Game Heart")
 
@@ -174,6 +179,14 @@ To ensure a seamless transition between full-map exploration and focused modal i
 - **Persistence**: The simplified state must remain active as long as any obscuring modal exists in the LIFO stack.
 - **Battle Modal Jitter**: Combat arenas and control panels MUST use `overflow: hidden !important` (or `overflow: clip`) to prevent unintended scrollbars during scaling animations or VFX.
 - **Selective Targeting**: Selection modals (`PokemonSelectionModal`) MUST support and use the `allowedIds` filter when a specific context (like item usage) restricts the valid targets. This eliminates noise and prevents user error.
+
+### 8. Mobile & Responsive Refinement
+
+- **Responsive Control Stacking**: In mobile layouts, prioritize `flex-direction: column` and `flex: none` for stacked control groups (like Sort/Search bars) to prevent unintended vertical stretching.
+- **Stable Positioning in Dynamic Containers**: Avoid using percentage-based vertical centering (`top: 50%`) for absolute elements within containers that might grow vertically. Use fixed pixel offsets to maintain icon alignment.
+- **Data Grid Accessibility**: Complex data tables/grids MUST be wrapped in a `.table-responsive-wrapper` with `overflow-x: auto` on mobile to prevent column clipping.
+- **Fullscreen Modal Continuity**: The primary content container (e.g., `.upd-core-container`) MUST use `min-height: 100%` in fullscreen mode to ensure the background color remains consistent across the entire viewport.
+- **Standardized Content Body**: Always use the `.upd-core-body` class for modal tab contents to inherit project-standard padding, scrolling, and background styles.
 
 ---
 

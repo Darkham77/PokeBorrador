@@ -1,6 +1,6 @@
 @use '../../core/tools' as *;
 
-    & .hud-trainer {
+.hud-trainer {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -43,10 +43,13 @@
 }
 
 @container (max-width: 900px) {
-  .hud-trainer .trainer-avatar {
-    width: 38px;
-    height: 38px;
-    font-size: 24px;
+  .hud-container .hud-trainer {
+    min-width: auto;
+    
+    & .trainer-avatar {
+      width: 38px;
+      height: 38px;
+      font-size: 24px;
+    }
   }
-    & .hud-trainer { min-width: auto; }
 }

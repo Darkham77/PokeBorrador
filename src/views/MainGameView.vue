@@ -81,6 +81,9 @@ const isHudHidden = ref(false)
 
 const gs = computed(() => gameStore.state)
 const activeTab = computed(() => uiStore.activeTab)
+watch(activeTab, () => {
+  isHudHidden.value = false
+})
 
 // Sync logic watchdog
 let watchdog = null
@@ -517,7 +520,7 @@ onUnmounted(() => {
   }
 
   @include responsive(hud-mobile) {
-    bottom: 170px;
+    bottom: 100px;
   }
 }
 

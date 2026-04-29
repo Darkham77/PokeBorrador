@@ -551,6 +551,21 @@ const bannerStyle = computed(() => ({
   .pc-right {
     flex: 1;
   }
-  .pc-banner { height: 70px; }
+  
+  .pc-banner-text {
+    flex: 1 1 120px; // More flexible for small screens
+  }
+
+  .pc-banner { 
+    height: auto; 
+    min-height: 70px;
+    padding: 10px 12px;
+  }
+
+  .pc-banner-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
 }
 </style>

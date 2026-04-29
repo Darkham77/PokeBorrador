@@ -476,8 +476,9 @@ onMounted(() => {
   flex-shrink: 0;
 
   @media (max-width: 959px) {
-    height: 60vh;
-    max-height: 500px;
+    height: auto;
+    min-height: 280px;
+    max-height: none;
   }
 }
 

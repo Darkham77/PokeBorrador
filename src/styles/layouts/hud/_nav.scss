@@ -3,7 +3,7 @@
 @use 'pills';
 
 /* ===== HUD NAVIGATION (SINGLE SOURCE OF TRUTH) ===== */
-    & .hud-nav {
+.hud-container .hud-nav {
   display: flex;
   gap: spacing(2);
   align-items: center;
@@ -17,9 +17,8 @@
 }
 
 .hud-nav-btn {
-  @include pills.hud-pill-base; // Mantiene el alma del componente
+  @include pills.hud-pill-base; 
   
-  // Valores estandarizados de la versión "ganadora" (navigation.scss)
   background: Rgba(26, 26, 32, 1);
   border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 12px;
@@ -33,14 +32,14 @@
   transition: all 0.18s ease;
   white-space: nowrap;
   box-shadow: 0 6px 16px Rgba(0, 0, 0, 0.35), inset 0 1px 0 Rgba(255, 255, 255, 0.12);
-  height: auto; // Permite que el padding spacing() controle el tamaño
+  height: auto; 
 
   i, span:first-child {
     font-size: 16px;
     margin-bottom: 0;
   }
 
-    & .nav-item-label {
+  .nav-item-label {
     display: block;
     line-height: 1;
   }
@@ -71,12 +70,13 @@
   }
 }
 
+/* Container query for hud-nav gap */
 @container (max-width: 1775px) {
-    & .hud-nav { gap: 6px; }
+  .hud-nav { gap: 6px; }
 }
 
 /* ===== HUD ACTIONS & ITEMS ===== */
-    & .hud-actions {
+.hud-container .hud-actions {
   display: flex;
   align-items: center;
   gap: 10px;

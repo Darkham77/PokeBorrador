@@ -2,6 +2,7 @@
 <script setup>
 // Universal Pokémon info panel (Pokedex + Instance).
 import { ref, computed } from 'vue'
+import { useWindowListener } from '@/composables/useWindowListener'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -34,6 +35,10 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 const uiStore = useUIStore()
 const gameStore = useGameStore()
+
+const isSmallScreen = ref(window.innerWidth <= 950)
+const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
+useWindowListener('resize', handleResize)
 
 const activeTab = ref('summary')
 
@@ -310,8 +315,9 @@ const handleReorderMoves = (from, to) => {
 <template>
   <BaseModal
     :show="show"
-    width="700px"
-    max-width="700px"
+    :type="isSmallScreen ? 'fullscreen' : 'center'"
+    :width="isSmallScreen ? '100vw' : '700px'"
+    :max-width="isSmallScreen ? '100vw' : '700px'"
     padding="raw"
     :hide-header="true"
     custom-class="pokedex-detail-modal"
@@ -427,7 +433,7 @@ const handleReorderMoves = (from, to) => {
       </nav>
 
       <!-- TAB BODY -->
-      <div class="upd-core-container">
+      <div class="upd-core-body">
         <!-- Summary Tab -->
         <div
           v-if="activeTab === 'summary'"

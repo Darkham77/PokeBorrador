@@ -26,7 +26,8 @@ const emit = defineEmits(['switch', 'buy'])
         class="box-buy-new-btn"
         @click.stop="emit('buy')"
       >
-        + ADQUIRIR(<span class="currency-symbol">₱</span>{{ buyCost.toLocaleString() }})
+        <span class="btn-text">+ ADQUIRIR</span>
+        <span class="btn-price">(<span class="currency-symbol">₱</span>{{ buyCost.toLocaleString() }})</span>
       </button>
     </div>
 
@@ -44,20 +45,63 @@ const emit = defineEmits(['switch', 'buy'])
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
-  gap: 12px;
-  overflow-x: auto;
+  gap: 16px;
+  flex-wrap: wrap;
   
   .tabs-list {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .tabs-extra-actions {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-left: auto;
+    flex-shrink: 0;
+    
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: flex-end;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid Rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  @media (max-width: 1100px) {
+    padding: 12px;
+  }
+}
+
+.box-buy-new-btn {
+  @include btn-vicio('warning', 'sm', false);
+  margin-left: 8px;
+  height: 32px;
+  font-size: 7px;
+  border-radius: 8px;
+  padding: 0 12px;
+  flex-shrink: 0;
+
+  .btn-price {
+    margin-left: 4px;
+    opacity: 0.8;
+  }
+
+  @media (max-width: 900px) {
+    .btn-price { display: none; }
+    padding: 0 8px;
+    margin-left: 4px;
+  }
+
+  .currency-symbol {
+    font-family: sans-serif;
+    font-size: 11px;
+    vertical-align: baseline;
+    margin-left: 2px;
   }
 }
 </style>
