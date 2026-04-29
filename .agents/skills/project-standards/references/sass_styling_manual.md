@@ -33,6 +33,7 @@ When applying filters to sprites (especially in global components like `MapCard`
 
 - **Reasoning**: Using `!important` on base filters blocks the application of silhouette classes (`.spawn-silhouette`, `.unknown-pokemon`) used to hide uncaptured species.
 - **Requirement**: Use CSS specificity (nesting or multiple classes) to allow conditional overrides.
+- **Fullscreen Stability**: Overriding `BaseModal` fullscreen defaults requires ultra-specific selectors (e.g., `.base-modal-root .type-fullscreen.custom-class .base-modal-card`) to win against core `!important` rules. Use `contain: content` for maximum layout stability in these high-density game modals.
 
 ### 2. Preference: Capitalization vs. Unquote/Interpolation
 

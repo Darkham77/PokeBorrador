@@ -161,22 +161,27 @@ const handleClose = () => {
 
 
 <style lang="scss">
-/* Modal customization */
-.battle-arena-modal {
-  .modal-content-premium {
+/* Ultra-specific override to kill scrolls even in fullscreen padding-raw mode */
+.base-modal-root .type-fullscreen.battle-arena-modal {
+  .base-modal-card {
     overflow: hidden !important;
-  }
-  
-  .modal-scrollable-content {
-    padding: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    height: auto !important;
-    min-height: 0 !important;
-    overflow: hidden !important; // Bloqueo total
+    
+    .modal-scrollable-content.padding-raw {
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      flex: 1 !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      height: auto !important;
+      min-height: 0 !important;
+      overflow: hidden !important; // Bloqueo total
+      overflow-y: hidden !important; // Prevenir desbordamiento en fullscreen
+      overflow-x: hidden !important;
+      
+      /* Extra safety for GPU layers */
+      contain: content;
+    }
   }
 }
 </style>
@@ -294,6 +299,7 @@ const handleClose = () => {
   width: 100% !important;
   max-width: none !important;
   margin: 0 !important;
+  overflow: hidden; // Prevenir fugas de layout de hijos
 
   @media (min-width: 951px) {
     display: grid;

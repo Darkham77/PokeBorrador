@@ -126,6 +126,10 @@ const emit = defineEmits(['switch', 'bag', 'run', 'catch'])
   transform: Scale(1.1) TranslateY(-8px) Rotate(10deg); 
   box-shadow: 0 12px 30px Rgba(0,0,0,0.5);
   z-index: var(--z-low);
+
+  @media (max-width: 600px) {
+    transform: Scale(1.05) TranslateY(-4px) Rotate(5deg);
+  }
 }
 
 .btn-catch-ball span { display: none; }

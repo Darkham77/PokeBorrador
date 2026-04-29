@@ -90,6 +90,14 @@ def scan_file(filepath: Path):
             matches = re.finditer(config['regex'], content, flags)
             for match in matches:
                 line_no = content.count('\n', 0, match.start()) + 1
+                lines = content.splitlines()
+                
+                # Ignore tag check
+                if "[PureVue-Ignore]" in lines[line_no - 1]:
+                    continue
+                if line_no > 1 and "[PureVue-Ignore]" in lines[line_no - 2]:
+                    continue
+
                 gaps.append({
                     'file': str(filepath),
                     'line': line_no,

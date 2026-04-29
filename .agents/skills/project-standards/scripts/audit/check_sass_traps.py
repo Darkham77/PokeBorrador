@@ -53,6 +53,11 @@ def check_file(filepath: Path):
             if not is_sass_context:
                 continue
 
+            if "[PureVue-Ignore]" in line:
+                continue
+            if i > 1 and "[PureVue-Ignore]" in lines[i-2]: # lines is 0-indexed, i is 1-indexed
+                continue
+
             # 1. Lowercase collision check
             if FILTER_COLLISION_REGEX.search(line):
                 errors.append(f"L{i}: Lowercase filter/transform collision detected: {line.strip()}. Use Capitalization (e.g., Grayscale(1)) instead.")

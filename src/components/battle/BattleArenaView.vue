@@ -509,6 +509,7 @@ onMounted(() => {
   inset: 0;
   pointer-events: none;
   z-index: calc(var(--z-base) + 10);
+  overflow: hidden;
 }
 
 .battle-info-container {
@@ -539,6 +540,7 @@ onMounted(() => {
   justify-content: Center;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   image-rendering: pixelated;
+  overflow: hidden; // Clipping del sprite al rotar/escalar
 
   .pokemon-combat-image {
     width: 38cqw;
@@ -602,6 +604,7 @@ onMounted(() => {
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  overflow: hidden; // Clipping adicional para capas de rotación
 
   // Rotation Animations (Shadow IGNORES these)
   &.atk-status { 

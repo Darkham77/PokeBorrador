@@ -168,7 +168,7 @@ watch(() => props.disabled, (newVal) => {
     @mouseleave="hide"
     @touchstart="show"
     @touchend="hide"
-    @click.stop="handleTriggerClick"
+    @click="handleTriggerClick"
   >
     <slot />
     

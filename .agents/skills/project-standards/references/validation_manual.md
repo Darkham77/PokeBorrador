@@ -44,8 +44,9 @@ The project has custom audit scripts in `.agents/skills/project-standards/script
 1. **Zero-Warning**: `npm run lint` and `npx vue-tsc --noEmit` MUST return 0 errors and 0 warnings before any commit.
 2. **SASS Capitalization**: All CSS filters (`Blur()`, `Scale()`) must be capitalized to avoid collisions with Dart Sass 2.0.
 3. **Dependency Shield**: Any script using external libraries (e.g., `Pillow`) must handle `ImportError` and provide clear installation instructions.
-4. **Audit Bypass**: If a violation is intentional by design, use the `// [PureVue-Ignore]` comment on the affected line.
+4. **Audit Bypass**: If a violation is intentional by design, use the `// [PureVue-Ignore]` comment. The audit engine checks the **current line and the line immediately above** to support Vue/HTML attributes that span multiple lines.
 5. **Large Data Integrity**: Massive data files (e.g., spawn grids) must carry `// [PureVue-Ignore-Length]` at the beginning to avoid fragmentation by agents.
 6. **ESLint Optimization**: To avoid `no-useless-assignment` errors, prefer using ternary operators or immediate-return logic instead of initializing variables with `null` and assigning them within `if/else` blocks.
 7. **Database Parity**: Automated sync of SQL migrations via the Vite build process is mandatory. Always verify that `src/logic/db/migrations_data.js` is regenerated after schema changes.
 8. **Automated Repair Safety (Click Propagation)**: Repair scripts MUST NOT inject `.stop` modifiers into components that rely on event bubbling (e.g., `PVTooltip`). Blocking propagation in tooltips breaks interaction with parent containers (like MapCards). Components of this type must be explicitly exempted in `fix_hybrid_patterns.py`.
+9. **Multi-line Tag Auditing**: Audit scripts must account for HTML tags starting on one line and finishing on another (multi-line attributes) to avoid false positives on native attributes like `title`.

@@ -177,7 +177,10 @@ def scan_file(filepath: Path):
             if line.strip().startswith(("//", "/*", "*")):
                 continue
             
+            # Check current line or previous line for ignore tag
             if "[PureVue-Ignore]" in line:
+                continue
+            if i > 0 and "[PureVue-Ignore]" in lines[i-1]:
                 continue
             
             for pattern in HYBRID_PATTERNS:
@@ -217,6 +220,10 @@ def scan_file(filepath: Path):
                         if i > 0 and "-webkit-background-clip: text" in lines[i-1]:
                             continue
 
+                    if pattern["id"] == "modal_click_propagation":
+                        if "PVTooltip" in line or "PVTooltip" in filepath.name:
+                            continue
+
                     findings.append({
                         "line": i + 1,
                         "content": line.strip(),
@@ -228,6 +235,8 @@ def scan_file(filepath: Path):
         # Multi-line checks (Native Title)
         title_matches = re.finditer(r'<([a-zA-Z0-9\-]+)\b[^>]*?(?<![:\-])\btitle\s*=\s*["\'](.*?)["\']', content, re.DOTALL)
         for match in title_matches:
+            if "[PureVue-Ignore]" in match.group(0):
+                continue
             tag_name = match.group(1)
             if tag_name[0].isupper() or tag_name in ["BaseModal", "UnifiedCard"]:
                 continue
