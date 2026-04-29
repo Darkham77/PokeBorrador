@@ -52,23 +52,43 @@ export const useGameStore = defineStore('game', () => {
     const uiStore = useUIStore()
     
     let data, issues, lastSaveId, isNewerThanCloud;
-    try {
-      // PROMISE RACE CON TIMEOUT DE 8 SEGUNDOS PARA EVITAR CUELGUES EN MÓVILES
-      const loadPromise = loadBestSave(authStore.user, db.value)
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('LOAD_TIMEOUT')), 8000)
-      );
+    let attempts = 0;
+    const maxAttempts = 2;
+    let lastError = null;
+
+    while (attempts < maxAttempts) {
+      try {
+        const loadPromise = loadBestSave(authStore.user, db.value)
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('LOAD_TIMEOUT')), 8000)
+        );
+        
+        const result = await Promise.race([loadPromise, timeoutPromise]);
+        data = result.data;
+        issues = result.issues;
+        lastSaveId = result.lastSaveId;
+        isNewerThanCloud = result.isNewerThanCloud;
+        
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('load_retry_count', '0');
+        }
+        break;
+      } catch (error) {
+        attempts++;
+        lastError = error;
+        console.warn(`[LOAD] Intento ${attempts} de carga fallido:`, error);
+        
+        if (attempts < maxAttempts) {
+          loadingStore.setProgress('game_data', 'Conexión lenta...', `Reintentando (${attempts}/${maxAttempts})...`);
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+      }
+    }
+    
+    if (!data && lastError) {
+      console.error('[LOAD] Todos los intentos de carga fallaron.', lastError);
       
-      const result = await Promise.race([loadPromise, timeoutPromise]);
-      data = result.data;
-      issues = result.issues;
-      lastSaveId = result.lastSaveId;
-      isNewerThanCloud = result.isNewerThanCloud;
-      
-    } catch (error) {
-      console.warn('[LOAD] Error o timeout al cargar la partida:', error);
-      
-      if (error.message === 'LOAD_TIMEOUT') {
+      if (lastError.message === 'LOAD_TIMEOUT') {
         if (!navigator.onLine) {
           loadingStore.setProgress('game_data', 'Sin conexión a Internet', 'Esperando señal para reintentar...');
           
@@ -78,9 +98,27 @@ export const useGameStore = defineStore('game', () => {
           
           return;
         } else {
-          loadingStore.setProgress('game_data', 'Red inestable...', 'Reconectando al servidor...');
-          window.location.reload();
-          return;
+          const retryCount = typeof sessionStorage !== 'undefined' ? parseInt(sessionStorage.getItem('load_retry_count') || '0') : 0;
+          
+          if (retryCount < 1) {
+            if (typeof sessionStorage !== 'undefined') {
+              sessionStorage.setItem('load_retry_count', (retryCount + 1).toString());
+            }
+            loadingStore.setProgress('game_data', 'Red inestable...', 'Reconectando al servidor...');
+            window.location.reload();
+            return;
+          } else {
+            loadingStore.setProgress('game_data', 'Error de conexión', 'La red no responde. Toca en cualquier lugar para reintentar.');
+            
+            window.addEventListener('click', () => {
+              if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.setItem('load_retry_count', '0');
+              }
+              window.location.reload();
+            }, { once: true });
+            
+            return;
+          }
         }
       }
     }

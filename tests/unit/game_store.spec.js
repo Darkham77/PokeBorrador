@@ -14,7 +14,7 @@ vi.mock('@/logic/supabase', () => ({
   }
 }))
 
-describe('Game Store - loadGame with Timeout', () => {
+describe('Game Store - loadGame with Timeout & Retries', () => {
   let useGameStore
   let useAuthStore
   let useLoadingStore
@@ -26,11 +26,19 @@ describe('Game Store - loadGame with Timeout', () => {
     vi.useFakeTimers()
     vi.clearAllMocks()
 
-    // Mock global de localStorage antes de importar los stores
+    // Mock global de localStorage y sessionStorage
     vi.stubGlobal('localStorage', {
       getItem: vi.fn(() => 'online'),
       setItem: vi.fn(),
       removeItem: vi.fn(),
+      clear: vi.fn()
+    })
+
+    const sessionStoreMock = {}
+    vi.stubGlobal('sessionStorage', {
+      getItem: vi.fn((key) => sessionStoreMock[key] || null),
+      setItem: vi.fn((key, val) => { sessionStoreMock[key] = val.toString() }),
+      removeItem: vi.fn((key) => { delete sessionStoreMock[key] }),
       clear: vi.fn()
     })
 
@@ -47,7 +55,7 @@ describe('Game Store - loadGame with Timeout', () => {
       get: () => true
     })
 
-    // Importar dinámicamente los módulos para que usen los globales mockeados
+    // Importar dinámicamente los módulos
     const gameModule = await import('@/stores/game')
     const authModule = await import('@/stores/auth')
     const loadingModule = await import('@/stores/loading')
@@ -91,25 +99,25 @@ describe('Game Store - loadGame with Timeout', () => {
     expect(loadingStore.isActive).toBe(false)
   })
 
-  it('debe dar timeout si loadBestSave tarda más de 8 segundos y recargar si está online', async () => {
+  it('debe reintentar y dar timeout final si loadBestSave tarda más de 8 segundos y recargar si está online', async () => {
     const gameStore = useGameStore()
     const authStore = useAuthStore()
     const loadingStore = useLoadingStore()
 
     authStore.user = { id: 'user123' }
-    
     loadBestSaveMock.mockReturnValue(new Promise(() => {}))
 
     const loadPromise = gameStore.loadGame()
 
-    await vi.advanceTimersByTimeAsync(8500)
+    // Avanzar tiempo suficiente para 2 intentos de 8s + 1.5s espera
+    await vi.advanceTimersByTimeAsync(20000)
     await loadPromise
 
     expect(loadingStore.current.message).toBe('Red inestable...')
     expect(window.location.reload).toHaveBeenCalledTimes(1)
   })
 
-  it('debe dar timeout si loadBestSave tarda más de 8 segundos y esperar señal si está offline', async () => {
+  it('debe reintentar y dar timeout final si está offline esperando señal', async () => {
     const gameStore = useGameStore()
     const authStore = useAuthStore()
     const loadingStore = useLoadingStore()
@@ -122,16 +130,35 @@ describe('Game Store - loadGame with Timeout', () => {
     })
 
     const addEventSpy = vi.spyOn(window, 'addEventListener')
-    
     loadBestSaveMock.mockReturnValue(new Promise(() => {}))
 
     const loadPromise = gameStore.loadGame()
 
-    await vi.advanceTimersByTimeAsync(8500)
+    await vi.advanceTimersByTimeAsync(20000)
     await loadPromise
 
     expect(loadingStore.current.message).toBe('Sin conexión a Internet')
     expect(window.location.reload).not.toHaveBeenCalled()
     expect(addEventSpy).toHaveBeenCalledWith('online', expect.any(Function), { once: true })
+  })
+
+  it('debe evitar bucles infinitos de recarga si ya se recargó antes', async () => {
+    const gameStore = useGameStore()
+    const authStore = useAuthStore()
+    const loadingStore = useLoadingStore()
+
+    authStore.user = { id: 'user123' }
+    
+    // Simular que ya se recargó una vez
+    sessionStorage.setItem('load_retry_count', '1')
+    loadBestSaveMock.mockReturnValue(new Promise(() => {}))
+
+    const loadPromise = gameStore.loadGame()
+
+    await vi.advanceTimersByTimeAsync(20000)
+    await loadPromise
+
+    expect(loadingStore.current.message).toBe('Error de conexión')
+    expect(window.location.reload).not.toHaveBeenCalled()
   })
 })
