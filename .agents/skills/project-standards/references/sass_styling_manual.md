@@ -28,7 +28,9 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 > **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, `Rotate()`, `TranslateY()`, and `Grayscale()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
 
 ### 2. Specificity vs. !important
+
 When applying filters to sprites (especially in global components like `MapCard` or `Pokedex`), you **MUST NOT** use `!important`.
+
 - **Reasoning**: Using `!important` on base filters blocks the application of silhouette classes (`.spawn-silhouette`, `.unknown-pokemon`) used to hide uncaptured species.
 - **Requirement**: Use CSS specificity (nesting or multiple classes) to allow conditional overrides.
 
