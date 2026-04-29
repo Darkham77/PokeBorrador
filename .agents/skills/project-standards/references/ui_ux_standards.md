@@ -178,7 +178,7 @@ To ensure a seamless transition between full-map exploration and focused modal i
 - **Exit Timing**: Restore the full-fidelity map **AS SOON AS** the closing animation of the last obscuring modal begins. This provides a premium feel by letting the user see the world return while the overlay disappears.
 - **Persistence**: The simplified state must remain active as long as any obscuring modal exists in the LIFO stack.
 - **Battle Modal Jitter**: Combat arenas, control panels, and individual sprite containers MUST use `overflow: hidden !important` (or `overflow: clip`) to prevent unintended scrollbars during scaling, rotation, or VFX.
-- **Selective Targeting**: Selection modals (`PokemonSelectionModal`) MUST support and use the `allowedIds` filter cuando un contexto específico (como el uso de ítems) restringe los objetivos válidos.
+- **Selective Targeting**: Selection modals (`PokemonSelectionModal`) MUST support and use the `allowedIds` filter when a specific context (like item usage) restricts the valid targets.
 - **Interactive Tooltip Bubbling**: Tooltips attached to interactive elements (buttons, pills) MUST allow event bubbling. NEVER use `.stop` on a tooltip's click handler if it blocks the parent's interaction.
 - **Mobile Fullscreen Stability**: In `type-fullscreen` modals, use ultra-specific selectors and `contain: content` to ensure the layout remains static and jitter-free during internal animations.
 
