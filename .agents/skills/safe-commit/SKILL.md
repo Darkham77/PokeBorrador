@@ -58,15 +58,16 @@ graph TD
 ```
 
 > [!IMPORTANT]
-> **IMMUTABLE STEPS**: You MUST follow every step in this diagram. You are allowed to add intermediate sub-tasks for complex features, but you are FORBIDDEN from deleting or skipping any original design steps.
+>
+> - **IMMUTABLE STEPS**: You MUST follow every step in this diagram. You are allowed to add intermediate sub-tasks for complex features, but you are FORBIDDEN from deleting or skipping any original design steps.
+> - **Incremental Update & Visual Proof**: Keep `task.md` and `implementation_plan.md` updated **phase by phase**. After updating `task.md`, you MUST include a small snippet of the updated checklist in your response to the USER as visual proof of progress. **Advancing without updating the source of truth is a violation of project standards.**
 
 ### 1. Planning and Traceability (MANDATORY)
 
 Before making any significant changes or finalizing tasks, maximum traceability of the process MUST be guaranteed.
 
-- **Mandatory Planning**: Create a **NEW** `implementation_plan.md` artifact detailing the architecture and verification plan. **Reusing plans from previous tasks is strictly forbidden.** **STOP** and wait for explicit user approval ("ok") before proceeding.
+- **Mandatory Planning**: Create a **NEW** `implementation_plan.md` artifact detailing the architecture and verification plan. **Reusing plans from previous tasks is strictly forbidden.** Proceed directly with execution after plan creation, maintaining traceability in `task.md`.
 - **Rigor in Tracking**: Create a **NEW** `task.md` artifact. This file is the **absolute source of truth**; it must record every granular step from scratch, avoiding inheriting tasks from previous sessions.
-- **Incremental Update**: Keep `task.md` and `implementation_plan.md` updated **phase by phase**. Upon completing each step (Planning, Gap Analysis, Audit, etc.), update the progress in the artifacts before continuing.
 - **Documented Closure**: Always update `walkthrough.md` with evidence (screenshots, test logs) to close the technical rigor cycle.
 - Verify that every change aligns with the **Hybrid Retro-Modern** identity.
 
@@ -75,7 +76,7 @@ Before making any significant changes or finalizing tasks, maximum traceability 
 Review all modified files in `src/logic/`.
 
 - Identify any new logic (battle calculations, move effects, evolution logic) that lacks corresponding tests in `tests/unit/`.
-- **MANDATORY SUB-TASK**: If a module or file lacks critical unit tests and it is "worthy" (worth the effort for stability), you MUST create a new unit test. Add this as a **SUB-TASK** in `task.md` immediately.
+- **ABSOLUTE MANDATORY SUB-TASK**: If any modified file in `src/logic/` lacks unit tests, you **MUST** implement them immediately. There is no "worthy" exception; any logic change requires a corresponding test to ensure zero regressions. Add this as a high-priority **SUB-TASK** in `task.md`.
 - **NEVER FORGET**: While adding tests, the general objective of committing clean, verified code must remain the priority.
 
 ### 3. Active Verification Cycle (The "Zero-Warning" Audit)
@@ -130,8 +131,9 @@ Before extracting lessons, you MUST create or update the `walkthrough.md` artifa
 
 Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a Phaser optimization). This is a **local documentation task** and MUST NOT involve a browser subagent.
 
-- **Feedback Mandatory**: After @/extract-lessons presents the lesson mapping table, you MUST stop and wait for the user to approve the changes.
+- **Feedback Mandatory & Hard Stop**: After @/extract-lessons presents the lesson mapping table, you MUST **STOP** immediately. You are FORBIDDEN from calling any other tool (especially `git` or `write_to_file`) until the user provides explicit approval.
 - **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the extracted lessons.
+- **Mental State Check**: Before requesting approval, read `task.md` one last time to ensure every single sub-item is marked as `[x]`.
 
 ### 9. The Safe Commit
 
@@ -189,3 +191,9 @@ docs(standards): modernize add-pokemon skill and enforce Zero-Warning culture
 5. [ ] **Wait for User Approval** (Step 7.1).
 6. [ ] Git commit & push (Step 8).
 "
+
+### 11. Rigor Enforcement (Anti-Shortcut Rule)
+
+- **No Phase-Jumping**: It is strictly forbidden to execute steps 9 or 10 if steps 1-8 are not fully documented and checked in `task.md`.
+- **Test Implementation Check**: You are FORBIDDEN from committing if there are identified "Missing Tests" in Step 2 that haven't been implemented and marked as `[x]`.
+- **Contextual Review**: Before each tool call in the verification cycle, ask yourself: "Is my task.md updated with the result of the *previous* tool call?". If not, update it first.

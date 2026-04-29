@@ -19,6 +19,16 @@ Any change in `src/data/moves.js` or in battle logic must be validated:
 
 ---
 
+## 🧪 Testing Standards
+
+Core logic modules and critical system components MUST have dedicated unit tests in `tests/unit/`.
+
+1. **Factory Integrity**: Every data factory (e.g., `pokemonFactory.js`) must be covered by unit tests verifying generation, level-up, and sanitization (Self-Healing).
+2. **Regression Prevention**: When modifying `src/logic/`, perform a **Test Gap Analysis**; if a module is "worthy" (core behavior), create a new `.spec.js` file.
+3. **Execution**: Run `npm run test` before every commit to ensure 100% pass rate.
+
+---
+
 ## 🛠️ Standards Audit (Local Scripts)
 
 The project has custom audit scripts in `.agents/skills/project-standards/scripts/audit/`:
@@ -37,3 +47,4 @@ The project has custom audit scripts in `.agents/skills/project-standards/script
 4. **Audit Bypass**: If a violation is intentional by design, use the `// [PureVue-Ignore]` comment on the affected line.
 5. **Large Data Integrity**: Massive data files (e.g., spawn grids) must carry `// [PureVue-Ignore-Length]` at the beginning to avoid fragmentation by agents.
 6. **ESLint Optimization**: To avoid `no-useless-assignment` errors, prefer using ternary operators or immediate-return logic instead of initializing variables with `null` and assigning them within `if/else` blocks.
+7. **Database Parity**: Automated sync of SQL migrations via the Vite build process is mandatory. Always verify that `src/logic/db/migrations_data.js` is regenerated after schema changes.

@@ -15,6 +15,7 @@ description: "Automatic quality control, linting, and static analysis procedures
 2. **Type Check:** Execute `npx tsc --noEmit`
 3. **Audit Security:** Run `npm audit --audit-level=high`
 4. **Production Build Integrity**: ALWAYS run `npm run build` after UI/SASS changes to catch syntax errors that may break the production bundle.
+5. **Reliable Lint Suppression**: In Vue templates, use `<!-- eslint-disable ... -->` at the template level or consolidate the tag into a single line if using `eslint-disable-next-line` to ensure the rule is correctly applied to attributes.
 
 ### Python
 

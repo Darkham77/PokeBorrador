@@ -88,6 +88,12 @@ export function recalcPokemonStats(p) {
 /**
  * Sanea y repara datos faltantes de un Pokémon (Self-Healing).
  */
+/**
+ * Sanitizes Pokémon data to ensure all mandatory battle fields are present.
+ * This is a 'self-healing' mechanism that prevents "damage 0" bugs by
+ * injecting missing move metadata in real-time.
+ * @param {Object} p - The raw pokemon data to sanitize
+ */
 export function sanitizePokemon(p) {
   if (!p) return;
 

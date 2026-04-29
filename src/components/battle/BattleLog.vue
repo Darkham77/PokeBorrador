@@ -30,6 +30,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <!-- eslint-disable vue/no-v-html -->
   <div
     ref="logContainer"
     class="battle-log custom-scrollbar-vicio"
@@ -53,7 +54,6 @@ onMounted(() => {
             @error="e => e.target.style.display = 'none'"
           >
         </div>
-        <!-- eslint-disable-next-line vue/no-v-html -->
         <span
           class="log-text"
           v-html="log.msg"
