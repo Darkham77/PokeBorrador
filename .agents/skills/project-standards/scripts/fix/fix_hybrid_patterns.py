@@ -72,32 +72,41 @@ def fix_file(filepath):
         # Fix previous buggy injection if present
         content = content.replace(r"\'none\'", "'none'")
 
-        # 2. Fix Click Propagation (@click -> @click.stop)
-        # Targeted at components that likely need .stop (cards, items, buttons in modals)
-        # EXCEPTION: PVTooltip MUST bubble up to allow interaction with parent containers (MapCard, etc)
-        if 'PVTooltip' not in filepath:
-            content = re.sub(r'@click(?!\.stop)(?!\.prevent)="([^"]+)"', 
-                            lambda m: m.group(0) if 'PVTooltip' in m.group(0) else m.group(0).replace('@click', '@click.stop'), 
-                            content)
-
-    # 2. Fix Hardcoded Colors (in .scss and inside <style> in .vue)
+    # 2. Line-by-line fixes (Clicks, Colors, and Ignore Tags)
     lines = content.split('\n')
     new_lines = []
+    
+    is_pv_tooltip = 'PVTooltip' in filepath
+
     for line in lines:
+        # GLOBAL IGNORE CHECK
         if "[PureVue-Ignore]" in line:
             new_lines.append(line)
             continue
             
-        if line.strip().startswith('$') and ':' in line:
-            new_lines.append(line)
-            continue
-        new_lines.append(line)
+        processed_line = line
+        
+        # 2a. Fix Click Propagation (@click -> @click.stop)
+        if filepath.endswith('.vue') and '@click' in processed_line and not is_pv_tooltip:
+            # We skip if the line specifically mentions PVTooltip too
+            if 'PVTooltip' not in processed_line:
+                processed_line = re.sub(r'@click(?!\.stop)(?!\.prevent)="([^"]+)"', 
+                                     lambda m: m.group(0).replace('@click', '@click.stop'), 
+                                     processed_line)
+
+        # 2b. Fix Hardcoded Colors (in .scss and inside <style> in .vue)
+        if processed_line.strip().startswith('$') and ':' in processed_line:
+            # Skip SASS variable definitions
+            pass
+        else:
+            sorted_colors = sorted(COLOR_MAP.items(), key=lambda x: len(x[0]), reverse=True)
+            for hex_code, var in sorted_colors:
+                pattern = re.escape(hex_code) + r'(?![0-9a-fA-F])'
+                processed_line = re.sub(pattern, var, processed_line, flags=re.IGNORECASE)
+        
+        new_lines.append(processed_line)
     
     content = '\n'.join(new_lines)
-    sorted_colors = sorted(COLOR_MAP.items(), key=lambda x: len(x[0]), reverse=True)
-    for hex_code, var in sorted_colors:
-        pattern = re.escape(hex_code) + r'(?![0-9a-fA-F])'
-        content = re.sub(pattern, var, content, flags=re.IGNORECASE)
 
     if content != original_content:
         with open(filepath, 'w', encoding='utf-8') as f:
