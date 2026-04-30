@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#161a2e">
     <title>Poké Vicio - Vue Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
@@ -16,8 +20,16 @@
         color: #fff;
         margin: 0;
         padding: 0;
+        width: 100dvw;
+        height: 100dvh;
+        overflow: hidden;
       }
-      #app { background: #0a0a0a; min-height: 100vh; }
+      #app { 
+        background: #0a0a0a; 
+        width: 100dvw;
+        height: 100dvh; 
+        overflow: hidden;
+      }
     </style>
     
     <!-- CONFIG INJECTION -->

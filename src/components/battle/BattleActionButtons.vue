@@ -194,7 +194,7 @@ onUnmounted(() => {
   position: absolute; 
   inset: 0;
   margin: auto;
-  border: 3px solid #333 !important;
+  border: 3px solid var(--dark) !important;
   box-shadow: 0 6px 15px Rgba(0,0,0,0.4), inset 0 -3px 0 Rgba(0,0,0,0.1) !important;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -213,7 +213,7 @@ onUnmounted(() => {
 
   &.is-active {
     transform: Scale(0.9);
-    border-color: #f00 !important;
+    border-color: var(--red) !important;
   }
 }
 
@@ -225,7 +225,7 @@ onUnmounted(() => {
   width: 100%;
   height: 50%;
   background: Rgba(239, 83, 80, 1);
-  border-bottom: 3px solid #333;
+  border-bottom: 3px solid var(--dark);
 }
 
 .btn-catch-ball::after {
@@ -237,7 +237,7 @@ onUnmounted(() => {
   width: 18px;
   height: 18px;
   background: $white;
-  border: 3px solid #333;
+  border: 3px solid var(--dark);
   border-radius: 50%;
   z-index: var(--z-low);
   box-shadow: 0 0 0 3px $white, 0 0 10px Rgba(0,0,0,0.2);
@@ -262,8 +262,8 @@ onUnmounted(() => {
   left: 50%;
   transform: TranslateX(-50%);
   // Sólido y oscuro para evitar cualquier transparencia
-  background: #0a0a0c; 
-  border: 2px solid #2a2a2e;
+  background: var(--darker); 
+  border: 2px solid var(--glass-border);
   border-radius: 16px;
   padding: 8px;
   display: flex;
@@ -285,8 +285,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #151518;
-  border: 1px solid #222226;
+  background: var(--card);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
   color: white;
   cursor: pointer;
@@ -295,9 +295,9 @@ onUnmounted(() => {
   text-align: left;
 
   &:hover {
-    background: #1e1e22;
+    background: var(--card2);
     transform: TranslateX(4px);
-    border-color: #33333a;
+    border-color: var(--glass-edge);
     box-shadow: 0 4px 15px Rgba(0,0,0,0.8);
   }
 

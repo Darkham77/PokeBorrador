@@ -279,7 +279,8 @@ const handleRetry = () => {
 @use "@/styles/core/tools" as *;
 
 #vue-app {
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   overflow: hidden;
   position: relative;
 }
@@ -293,8 +294,8 @@ const handleRetry = () => {
 .loading-overlay {
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: center;

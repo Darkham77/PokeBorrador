@@ -298,7 +298,21 @@ export const useAuthStore = defineStore('auth', () => {
     sessionConflict.value = false
     
     sessionStorage.setItem('block_autologin', 'true')
-    window.location.href = '/login?logout=' + Date.now()
+    
+    // FORZAR LIMPIEZA DE CACHÉ DEL SERVICE WORKER
+    // El problema principal es que el Service Worker está cacheando el index.html viejo
+    // que NO TENÍA los meta tags de PWA ni el width:100% que acabo de añadir.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister()
+        }
+      })
+    }
+    
+    // Recargar exactamente la página actual asegura un reinicio completo del DOM.
+    // El router interceptará la falta de sesión y te moverá a /login suavemente.
+    window.location.reload()
   }
 
   function clearSessionLocal() {

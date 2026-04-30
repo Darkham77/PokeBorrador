@@ -52,7 +52,7 @@
 
 <style scoped>
 .game-view {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--darker);
   color: var(--white);
   padding: 20px;
@@ -63,7 +63,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 40px);
+  min-height: calc(100dvh - 40px);
 }
 
 .content-area {

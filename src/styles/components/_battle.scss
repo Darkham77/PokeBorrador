@@ -1,3 +1,4 @@
+@use "@/styles/core/mixins" as *;
 // src/styles/components/_battle.scss
 @use '../core/tools' as *;
 @use '../core/variables' as *;
@@ -71,28 +72,140 @@ body.is-battle-active {
   }
 }
 
-/* ===== ARENA DE COMBATE (RESTAURADA) ===== */
+/* ===== ARENA DE COMBATE (VIEWPORT DE CAMARA) ===== */
 .battle-arena {
-  flex-shrink: 1;
+  flex-shrink: 0;
   width: 100%;
-  container-type: inline-size;
-  container-name: battle-arena;
-  aspect-ratio: 16 / 11;
+  aspect-ratio: 16 / 9; // Ratio base recomendado
   background: $black;
-  border-radius: 0; // Aplanado total
   position: relative;
   overflow: hidden;
-  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
 
   @media (min-width: 1360px) {
     grid-area: arena;
     height: 100%;
-    margin-bottom: 0;
     aspect-ratio: auto;
-    border-radius: 0; // Integrado al modal
   }
 }
+
+.camera-frame {
+  position: relative;
+  overflow: hidden;
+  background-color: $black;
+  @include gpu-layer;
+}
+
+.map-virtual-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2000px;
+  height: 2000px;
+  transform-origin: 0 0;
+  will-change: transform;
+  image-rendering: pixelated;
+  @include gpu-layer;
+}
+
+/* ===== GUIAS DE SEGURIDAD (DEBUG) ===== */
+.camera-debug-guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-navigation);
+
+  .safe-zone-box {
+    position: absolute;
+    left: 500px;
+    top: 500px;
+    width: 1000px;
+    height: 1000px;
+    border: 4px dashed Rgba(255, 255, 255, 0.4);
+    background: Rgba(255, 255, 255, 0.05);
+    
+    &::after {
+      content: 'SAFE ZONE (1000x1000)';
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      @include pixelated;
+      font-size: 20px;
+      color: white;
+      text-shadow: 2px 2px black;
+    }
+  }
+
+  .entity-anchor {
+    position: absolute;
+    border: 4px solid red;
+    background: Rgba(255, 0, 0, 0.2);
+    
+    &.p1 { left: 500px; top: 1100px; width: 400px; height: 400px; }
+    &.p2 { left: 1100px; top: 500px; width: 400px; height: 400px; }
+  }
+
+  .map-border {
+    position: absolute;
+    inset: 0;
+    border: 10px solid Rgba(255, 0, 0, 0.5);
+    box-sizing: border-box;
+  }
+}
+
+/* ===== OBJETOS DEL MUNDO (CON ESCALADO DINÁMICO) ===== */
+.pv-shadow {
+  position: absolute;
+  left: 50%;
+  transform: TranslateX(-50%) TranslateY(-50%);
+  // Escalado dinámico basado en la constante del sistema de cámara
+  width: 70%; 
+  height: calc(var(--obj-scale, 1) * 6px); 
+  z-index: calc(var(--z-base) - 1);
+  pointer-events: none;
+  background-size: 100% 100%; 
+  background-repeat: no-repeat; 
+  background-position: center;
+  image-rendering: pixelated;
+  filter: none;
+}
+
+.is-floating-species { 
+  margin-bottom: calc(var(--obj-scale, 1) * 12px); 
+}
+
+.searching-bushes {
+  .bush-container-ground {
+    position: absolute;
+    left: 50%;
+    transform: TranslateX(-50%) TranslateY(-50%);
+    width: calc(var(--obj-scale, 1) * 100px);
+    height: 0;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+  }
+}
+
+.bush-wrapper {
+  position: absolute; 
+  width: calc(var(--obj-scale, 1) * 30px); 
+  height: calc(var(--obj-scale, 1) * 30px); 
+  image-rendering: pixelated;
+  
+  // Offsets también escalados
+  &.bush-front-1 { --bx: calc(var(--obj-scale, 1) * -12px); --by: calc(var(--obj-scale, 1) * 6px); --bs: 1.2; animation: bush-wiggle 1.2s infinite ease-in-out; }
+  &.bush-front-2 { --bx: calc(var(--obj-scale, 1) * 17px); --by: calc(var(--obj-scale, 1) * 2px); --bs: 1.0; animation: bush-wiggle 1.5s infinite ease-in-out -0.4s; }
+  &.bush-back-1 { --bx: calc(var(--obj-scale, 1) * -17px); --by: calc(var(--obj-scale, 1) * -15px); --bs: 0.9; animation: bush-wiggle 1.8s infinite ease-in-out -0.8s; }
+  &.bush-back-2 { --bx: calc(var(--obj-scale, 1) * 10px); --by: calc(var(--obj-scale, 1) * -12px); --bs: 1.1; animation: bush-wiggle 2.1s infinite ease-in-out -0.2s; }
+  
+  transform: Translate(var(--bx), var(--by)) Scale(var(--bs));
+}
+
 
 .battle-combatants {
   position: absolute;

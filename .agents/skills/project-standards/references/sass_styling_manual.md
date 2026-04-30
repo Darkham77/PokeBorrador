@@ -33,7 +33,15 @@ When applying filters to sprites (especially in global components like `MapCard`
 
 - **Reasoning**: Using `!important` on base filters blocks the application of silhouette classes (`.spawn-silhouette`, `.unknown-pokemon`) used to hide uncaptured species.
 - **Requirement**: Use CSS specificity (nesting or multiple classes) to allow conditional overrides.
+- **FORBIDDEN !important**: Never use `!important` on base width/height or alignment classes in SASS. This blocks the ability for Vue `:style` bindings to calculate and inject precise virtual-world coordinates at runtime.
 - **Fullscreen Stability**: Overriding `BaseModal` fullscreen defaults requires ultra-specific selectors (e.g., `.base-modal-root .type-fullscreen.custom-class .base-modal-card`) to win against core `!important` rules. Use `contain: content` for maximum layout stability in these high-density game modals.
+
+### 3. Combat Performance Override (High Fidelity)
+
+In scenarios where pixel-perfect alignment is critical (Combat Arena), components MUST ignore global performance/simplification modes.
+
+- **Implementation**: Use `provide('forceHighFidelity', true)` in the parent battle view.
+- **Usage**: Components like `PVSpriteFX` MUST check for `forceHighFidelity` before simplifying filters or animations.
 
 ### 2. Preference: Capitalization vs. Unquote/Interpolation
 

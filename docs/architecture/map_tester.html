@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cámara Dinámica Vue 3 - Barras Negras</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --panel-bg: #1e1e1e;
+      --text-color: #e0e0e0;
+      --accent: #42b883;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    /* Contenedor Resizable (Viewport) */
+    .viewport {
+      width: 500px;
+      height: 300px;
+      min-width: 150px;
+      min-height: 150px;
+      max-width: 90vw;
+      max-height: 70vh;
+      resize: both;
+      overflow: hidden;
+      position: relative;
+      background-color: #000;
+      border: 2px solid var(--accent);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .viewport::after {
+      content: 'Arrastra aquí ↘';
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      font-size: 10px;
+      color: var(--accent);
+      pointer-events: none;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 2px 4px;
+      border-radius: 4px;
+      z-index: 20;
+    }
+
+    .camera-frame {
+      position: relative;
+      overflow: hidden;
+      background-color: #1a1a1a;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    /* El Mapa Virtual 2000x2000 */
+    .map-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 2000px;
+      height: 2000px;
+      transform-origin: 0 0;
+      will-change: transform;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #ff69b4;
+      /* Fondo rosa de advertencia */
+      image-rendering: pixelated;
+    }
+
+    .map-canvas::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border: 4px solid red;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+
+    .focal-point {
+      position: absolute;
+      left: 1000px;
+      top: 1000px;
+      width: 20px;
+      height: 20px;
+      background-color: red;
+      border: 2px solid white;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+      z-index: 10;
+    }
+
+    .focal-point::after {
+      content: '1000,1000';
+      position: absolute;
+      top: -20px;
+      font-size: 12px;
+      color: white;
+      text-shadow: 1px 1px 2px black;
+      white-space: nowrap;
+    }
+
+    .safe-zone {
+      position: absolute;
+      left: 500px;
+      top: 500px;
+      width: 1000px;
+      height: 1000px;
+      border: 2px dashed rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+    }
+
+    .safe-zone::before {
+      content: 'Zona Base 1000x1000';
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      color: white;
+      font-size: 10px;
+      text-shadow: 1px 1px 2px black;
+    }
+
+    /* Rectángulos guía rojos */
+    .guide-rect {
+      position: absolute;
+      border: 2px solid red;
+      color: white;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-shadow: 1px 1px 2px black;
+      pointer-events: none;
+      box-sizing: border-box;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      image-rendering: pixelated;
+    }
+
+    .hud {
+      margin-top: 20px;
+      background: var(--panel-bg);
+      padding: 15px;
+      border-radius: 8px;
+      min-width: 300px;
+    }
+
+    .hud p {
+      margin: 5px 0;
+    }
+
+    .highlight {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .warning {
+      color: #ff5555;
+      font-size: 0.9em;
+    }
+
+    .controls {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--panel-bg);
+      padding: 15px;
+      border-radius: 8px;
+      min-width: 300px;
+    }
+
+    .controls input[type="text"] {
+      width: 100%;
+      padding: 6px;
+      box-sizing: border-box;
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+    }
+
+    .controls input[type="file"] {
+      font-family: inherit;
+      color: var(--text-color);
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .controls-row input[type="number"] {
+      width: 100%;
+      padding: 6px;
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+      box-sizing: border-box;
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid #444;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <h1>Cámara Dinámica (Corrección Geométrica)</h1>
+
+    <div ref="viewportRef" class="viewport">
+
+      <div class="camera-frame" :style="{ width: `${camWidth}px`, height: `${camHeight}px` }">
+        <div class="map-canvas" :style="{ 
+            transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
+            backgroundImage: `url(${bgUrl})`
+          }">
+          <div class="safe-zone"></div>
+          <div class="focal-point"></div>
+
+          <!-- Rectángulos Guía (Anclados a 500px del borde del mapa 2000x2000) -->
+          <div class="guide-rect" :style="{ 
+            width: rect1Size + 'px', 
+            height: rect1Size + 'px', 
+            left: '500px', 
+            bottom: '500px',
+            backgroundImage: rect1Img ? `url(${rect1Img})` : 'none',
+            backgroundColor: rect1Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)'
+          }">
+            <span v-if="!rect1Img">Inf. Izq.</span>
+          </div>
+          <div class="guide-rect" :style="{ 
+            width: rect2Size + 'px', 
+            height: rect2Size + 'px', 
+            right: '500px', 
+            top: '500px',
+            backgroundImage: rect2Img ? `url(${rect2Img})` : 'none',
+            backgroundColor: rect2Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)'
+          }">
+            <span v-if="!rect2Img">Sup. Der.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+      <label>Subir imagen local:</label>
+      <input type="file" @change="cambiarFondoArchivo" accept="image/*">
+      <label>O ingresar URL:</label>
+      <input type="text" v-model="bgUrl" placeholder="https://ejemplo.com/imagen.jpg">
+
+      <hr>
+
+      <label>Guía Inferior Izquierda (Tamaño Cuadrado):</label>
+      <div class="controls-row">
+        <input type="number" v-model.number="rect1Size" min="10" max="1000" title="Tamaño">
+        <input type="file" @change="cargarImgRect1" accept="image/*" title="Cargar imagen en guía 1">
+      </div>
+
+      <label>Guía Superior Derecha (Tamaño Cuadrado):</label>
+      <div class="controls-row">
+        <input type="number" v-model.number="rect2Size" min="10" max="1000" title="Tamaño">
+        <input type="file" @change="cargarImgRect2" accept="image/*" title="Cargar imagen en guía 2">
+      </div>
+    </div>
+
+    <!-- HUD -->
+    <div class="hud">
+      <p>Viewport Total: <span class="highlight">{{ Math.round(vpWidth) }}x{{ Math.round(vpHeight) }}</span></p>
+      <p>Resolución Cámara: <span class="highlight">{{ Math.round(camWidth) }}x{{ Math.round(camHeight) }}</span></p>
+      <p>Ratio actual: <span class="highlight">{{ (camWidth / camHeight).toFixed(2) }}:1</span>
+        <span v-if="vpWidth / vpHeight > 2 || vpHeight / vpWidth > 2" class="warning">(Barras activas limitando a
+          2:1)</span>
+      </p>
+      <p>Escala: <span class="highlight">{{ scale.toFixed(2) }}x</span></p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+  <script>
+    const { createApp, ref, onMounted, onUnmounted } = Vue;
+
+    createApp({
+      setup() {
+        const viewportRef = ref(null);
+
+        const vpWidth = ref(500);
+        const vpHeight = ref(300);
+
+        const camWidth = ref(500);
+        const camHeight = ref(300);
+
+        const tx = ref(0);
+        const ty = ref(0);
+        const scale = ref(1);
+
+        const bgUrl = ref('https://picsum.photos/id/1018/2000/2000');
+
+        const rect1Size = ref(450);
+        const rect2Size = ref(450);
+
+        const rect1Img = ref('');
+        const rect2Img = ref('');
+
+        const TARGET_X = 1000;
+        const TARGET_Y = 1000;
+        const VISIBLE_UNITS = 1000;
+        const MAP_WIDTH = 2000;
+        const MAP_HEIGHT = 2000;
+
+        // El ratio matemáticamente estricto para encajar 1000px de acción en 2000px de mundo
+        const RATIO_MAX = MAP_WIDTH / VISIBLE_UNITS; // 2.0
+        const RATIO_MIN = VISIBLE_UNITS / MAP_HEIGHT; // 0.5
+
+        let resizeObserver = null;
+
+        const cambiarFondoArchivo = (event) => {
+          const file = event.target.files[0];
+          if (file) bgUrl.value = URL.createObjectURL(file);
+        };
+
+        const cargarImgRect1 = (event) => {
+          const file = event.target.files[0];
+          if (file) rect1Img.value = URL.createObjectURL(file);
+        };
+
+        const cargarImgRect2 = (event) => {
+          const file = event.target.files[0];
+          if (file) rect2Img.value = URL.createObjectURL(file);
+        };
+
+        const actualizarCamara = (width, height) => {
+          let cw = width;
+          let ch = height;
+          const ratio = width / height;
+
+          // 1. Limitar proporciones estrictamente para impedir conflicto de visión
+          if (ratio > RATIO_MAX) {
+            cw = height * RATIO_MAX;
+          } else if (ratio < RATIO_MIN) {
+            ch = width / RATIO_MIN;
+          }
+
+          camWidth.value = cw;
+          camHeight.value = ch;
+
+          // 2. Escala determinista. 
+          // Gracias al nuevo ratio de 1.5, esta fórmula asegura que:
+          // A) La Zona 1000x1000 SIEMPRE esté visible sin importar la orientación.
+          // B) El fondo NUNCA traspase los límites del mapa 1500x1500.
+          const currentScale = Math.min(cw, ch) / VISIBLE_UNITS;
+
+          // 3. Centrado
+          tx.value = (cw / 2) - (TARGET_X * currentScale);
+          ty.value = (ch / 2) - (TARGET_Y * currentScale);
+          scale.value = currentScale;
+        };
+
+        onMounted(() => {
+          resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+              const { width, height } = entry.contentRect;
+              if (width > 0 && height > 0) {
+                vpWidth.value = width;
+                vpHeight.value = height;
+                actualizarCamara(width, height);
+              }
+            }
+          });
+
+          if (viewportRef.value) {
+            resizeObserver.observe(viewportRef.value);
+          }
+        });
+
+        onUnmounted(() => {
+          if (resizeObserver) resizeObserver.disconnect();
+        });
+
+        return {
+          viewportRef,
+          vpWidth, vpHeight,
+          camWidth, camHeight,
+          tx, ty, scale,
+          bgUrl, cambiarFondoArchivo,
+          rect1Size, rect2Size,
+          rect1Img, rect2Img,
+          cargarImgRect1, cargarImgRect2
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+
+</html>

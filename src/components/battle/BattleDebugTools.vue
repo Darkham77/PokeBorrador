@@ -16,7 +16,7 @@ const uiStore = useUIStore()
 const isOpen = ref(false)
 
 // El modo debug suele estar habilitado globalmente en este proyecto
-const isDebug = computed(() => !!window.__VITE_DEBUG__)
+const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_DEBUG__)
 
 const defeatEnemy = async () => {
   if (!battleStore.state?.enemy) return
@@ -208,6 +208,26 @@ const testReleaseAnim = (side = 'enemy') => {
         >
           🔍 BUSQUEDA (ON/OFF)
         </button>
+
+        <div class="debug-section">
+          <div class="section-label">
+            🎥 CAMARA Y MAPA
+          </div>
+          <div class="anim-grid">
+            <button 
+              class="anim-btn release"
+              @click.stop="gameBus.emit('TOGGLE_CAMERA_GUIDES')"
+            >
+              GUIAS CAMARA
+            </button>
+            <button 
+              class="anim-btn catch"
+              @click.stop="() => (typeof window !== 'undefined' && window.__VITE_DEBUG__?.toggleGrid())"
+            >
+              BORDES MAPA
+            </button>
+          </div>
+        </div>
 
         <div class="debug-section">
           <div class="section-label">

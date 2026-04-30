@@ -436,10 +436,10 @@ const computedCorners = computed(() => {
   // Force fullscreen absolute priority
   .type-fullscreen & {
     width: 100vw !important;
-    height: 100vh !important;
+    height: 100dvh !important;
     height: 100dvh !important;
     max-width: 100vw !important;
-    max-height: 100vh !important;
+    max-height: 100dvh !important;
     max-height: 100dvh !important;
     border-radius: 0 !important;
     border: none !important;

@@ -221,6 +221,42 @@ To guarantee a seamless "Live" feel during multi-phase transitions (e.g., from S
 - **Rule**: If two sequential objects share the same ID (e.g., the previewed Pokémon and the actual battle enemy), the secondary object MUST inherit the calculated metadata (like `feetY` ground position) from the primary object.
 - **Why**: Eliminates 1-frame position jumps ("teleports") and avoids redundant asynchronous calculations that degrade the user experience.
 - **Stable Grounding**: Ground shadows and environmental effects (like grass) MUST be placed in a non-animated container (or a sibling of the animated one). This ensures that even if the sprite bounces or jump-attacks, its shadow remains physically anchored to the floor coordinates.
+- **Bottom-Anchor Grounding**: For entity positioning in the virtual world, always prioritize `bottom`-relative coordinates over `top` percentages. This ensures that sprites with different amounts of empty space in their PNG source remain perfectly anchored to the ground line.
+
+---
+
+## 🗺️ Virtual World & Entity Alignment
+
+To maintain pixel-perfect alignment in the high-fidelity 2D combat arena (2000x2000 world):
+
+### 1. Entity Square Logic (400x400)
+
+- **Standard**: All combatants are allocated a 400x400 virtual unit square.
+- **Scaling**: All internal entity assets (shadows, bushes, sprites) MUST be expressed as percentages relative to this 400x400 container.
+- **Center Alignment**: Sprites MUST be centered horizontally and vertically within this square (`object-position: center`) to maintain a common focal point.
+
+### 2. Shadow & Ground Synchronization
+
+- **Rendered Parity**: Shadow positions MUST be calculated based on the *rendered* height of the sprite (`object-fit: contain`) inside the entity square.
+- **Formula**: `top% = (topOffset + feetFraction * renderedHeight) / 400 * 100`.
+- **WHY**: This ensures the shadow sits exactly at the feet even if the sprite is wide or centered.
+
+### 3. Depth Sorting (3D Perspective in 2D)
+
+- **Encounter Layers**: To simulate depth, use distinct vertical offsets for environmental layers relative to the feet line:
+  - **Back Layers**: `top: calc(feetLine - 3%)` (Positions assets behind the feet).
+  - **Front Layers**: `top: calc(feetLine + 5%)` (Positions assets in front of the feet).
+- **WHY**: Creates a "sandwich" effect where the Pokémon is truly embedded in the environment.
+
+### 4. Camera Scaling & Asymmetrical Framing
+
+To maximize action zone visibility while protecting the UI in high-density combat views:
+
+- **Dual-Axis Constraints**: Use independent `VISIBLE_UNITS` for X and Y axes. Calculate scale as `min(cw / unitsX, ch / unitsY)` to allow dynamic behavior like "zero side padding in portrait" while enforcing top margins.
+- **Asymmetrical Margins**: Shift the `TARGET_Y` away from the center to create uneven padding.
+  - **Standard**: Pin the bottom boundary to 0 padding to maximize action menu space.
+  - **Standard**: Maintain a minimum 100u (~9%) top margin to clear weather/close icons.
+- **WHY**: Ensures Pokémon remain as large as possible across all device ratios without being obscured by permanent HUD elements.
 
 ---
 

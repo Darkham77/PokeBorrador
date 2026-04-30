@@ -142,7 +142,6 @@ export const useGameStore = defineStore('game', () => {
 
       // Notificar migración V2 si aplica
       if (authStore.user.db_version < 2) {
-        uiStore.notify('Cuenta actualizada a Seguridad v2', '✨')
         authStore.user.db_version = 2
       }
 

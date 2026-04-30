@@ -424,7 +424,7 @@ onUnmounted(() => {
 /* Scoped styles for the main container or specific integrated elements */
 
 #game-screen {
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;

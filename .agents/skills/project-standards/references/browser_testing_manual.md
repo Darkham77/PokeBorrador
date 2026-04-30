@@ -60,6 +60,12 @@ When testing visual states (e.g., forcing Pokedex "Caught" status via debug butt
 - **Safety**: Visual overrides NEVER modify the actual save file (`saveService.js`).
 - **Clarification**: Always inform the user that changes are temporary and will disappear on refresh, to avoid confusion regarding data persistence.
 
+### 5. Visual Coordinate Verification (Combat)
+When testing sprite alignment and virtual world coordinates:
+- **Scaling Parity**: Debug guides (rectangles, size labels) MUST use the exact same `OBJECT_SCALE` as the entities they represent.
+- **Real-Size Guides**: In search or battle modes, use `.guide-real-size` overlays to compare the virtual container footprint with the original sprite's `naturalSize`.
+- **Anchor Feedback**: Use visible dot markers at calculated `feetY` coordinates to verify that shadows and environment layers share the same physical baseline.
+
 ---
 
 ## 📱 Mobile Interaction Protocols

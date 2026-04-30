@@ -28,7 +28,7 @@ export default defineConfig({
     migrationsPlugin(),
     sassTrapsFixer(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       includeAssets: ['/sql-wasm.wasm', '/assets/fondo/logo%203.webp'],
       manifest: {
         name: 'Poké Vicio',
@@ -38,6 +38,8 @@ export default defineConfig({
         background_color: '#0a0c14',
         display: 'standalone',
         orientation: 'any',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
             src: '/assets/fondo/logo%203.webp',
@@ -54,6 +56,8 @@ export default defineConfig({
         ]
       },
       workbox: {
+        cleanupOutdatedCaches: true,
+        suppressGlobWarnings: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
         // Aumentamos el límite de tamaño para assets grandes si los hay
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024

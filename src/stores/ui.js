@@ -140,7 +140,7 @@ export const useUIStore = defineStore('ui', () => {
     
     // Check if battle is active and we are in mobile/fullscreen mode (<= 950px)
     const isBattleFullscreen = battleStore.isBattleActive && window.innerWidth <= 950
-    const isStackFullscreen = modalStore.stack.some(m => (m.props.type === 'fullscreen' || m.props.maxHeight === '100vh') && !m.closing)
+    const isStackFullscreen = modalStore.stack.some(m => (m.props.type === 'fullscreen' || m.props.maxHeight === '100dvh') && !m.closing)
     
     return isBattleFullscreen || isStackFullscreen
   })

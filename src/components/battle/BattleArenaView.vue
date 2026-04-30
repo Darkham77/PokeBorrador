@@ -1,6 +1,6 @@
 // [PureVue-Ignore-Length]
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, provide } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -14,12 +14,20 @@ import BattleInfoCard from './BattleInfoCard.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { gameBus } from '@/logic/gameBus'
+import { useCombatCamera } from '@/composables/useCombatCamera'
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
 const mapStore = useMapStore()
 const uiStore = useUIStore()
+
+// Forzar Alta Fidelidad en el Combate (Ignorar modo performance de modales)
+provide('forceHighFidelity', true)
+provide('isModalPerformanceMode', computed(() => false))
 const { getBackgroundUrl } = useBattleBackground()
+
+const arenaRef = ref(null)
+const { cameraStyles, worldStyles, entity1Styles, entity2Styles, showGuides } = useCombatCamera(arenaRef)
 
 const bgData = computed(() => {
   return getBackgroundUrl(battle.value?.locationId || 'route1', mapStore.currentCycle)
@@ -294,6 +302,64 @@ const playerFeetY = ref(0.9)
 const enemyFeetY = ref(0.9)
 const searchingFeetY = ref(0.9)
 
+// OBJECT_SCALE se obtiene destructurado de useCombatCamera arriba
+
+const p1VirtualStyle = computed(() => {
+  // Ahora el Pokémon ocupa toda la zona roja (400x400)
+  return {
+    width: '100%',
+    height: '100%'
+  }
+})
+
+const p2VirtualStyle = computed(() => {
+  return {
+    width: '100%',
+    height: '100%'
+  }
+})
+
+const p1ShadowStyle = computed(() => {
+  if (p1NaturalSize.value.w === 0) return { top: '90%', width: '70%' }
+  
+  // Cálculo basado en sprite CENTRADO en caja de 400x400 con object-fit: contain
+  const ratio = p1NaturalSize.value.w / p1NaturalSize.value.h
+  let rW, rH
+  if (ratio > 1) { 
+    rW = 400; rH = 400 / ratio 
+  } else { 
+    rH = 400; rW = 400 * ratio 
+  }
+  
+  const topOffset = (400 - rH) / 2
+  const feetY = topOffset + (playerFeetY.value * rH)
+  
+  return {
+    top: `${(feetY / 400) * 100}%`,
+    width: `${(rW * 0.8 / 400) * 100}%`
+  }
+})
+
+const p2ShadowStyle = computed(() => {
+  if (p2NaturalSize.value.w === 0) return { top: '90%', width: '70%' }
+  
+  const ratio = p2NaturalSize.value.w / p2NaturalSize.value.h
+  let rW, rH
+  if (ratio > 1) { 
+    rW = 400; rH = 400 / ratio 
+  } else { 
+    rH = 400; rW = 400 * ratio 
+  }
+  
+  const topOffset = (400 - rH) / 2
+  const feetY = topOffset + (effectiveFeetY.value * rH)
+  
+  return {
+    top: `${(feetY / 400) * 100}%`,
+    width: `${(rW * 0.8 / 400) * 100}%`
+  }
+})
+
 const detectFeetYFromUrl = async (url, isFlying = false) => {
   if (!url) return 0.9
   if (isFlying) return 0.98
@@ -361,6 +427,15 @@ const computedWeather = computed(() => {
 })
 
 const shadowUrl = ref('')
+const p1NaturalSize = ref({ w: 0, h: 0 })
+const p2NaturalSize = ref({ w: 0, h: 0 })
+
+const handleP1Load = (e) => {
+  p1NaturalSize.value = { w: e.target.naturalWidth, h: e.target.naturalHeight }
+}
+const handleP2Load = (e) => {
+  p2NaturalSize.value = { w: e.target.naturalWidth, h: e.target.naturalHeight }
+}
 const generatePixelShadow = (w = 21, h = 6) => {
   if (typeof document === 'undefined') return ''
   const canvas = document.createElement('canvas') // [PureVue-Ignore]
@@ -452,201 +527,262 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="battle-arena">
-    <div class="battle-arena-content">
-      <img
-        :src="bgData.url"
-        class="arena-bg"
-        :style="bgData.isBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
-        alt="Battle Background"
-        @error="handleBackgroundError"
+  <div
+    ref="arenaRef"
+    class="battle-arena"
+  >
+    <div
+      class="camera-frame"
+      :style="cameraStyles"
+    >
+      <div
+        class="map-virtual-world"
+        :style="worldStyles"
       >
-    </div>
-    
-    <div class="battle-sprites">
-      <!-- Enemy Side -->
-      <div class="combatant-sprite enemy-side-sprite">
-        <!-- Encounter Layers - BACK (behind pokemon) -->
-        <Transition :name="bushTransitionName">
-          <div
-            v-if="shouldShowEncounterLayers"
-            class="encounter-layers-back"
-            :style="grassIsBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
+        <!-- Background Layer -->
+        <div class="battle-arena-content">
+          <img
+            :src="bgData.url"
+            class="arena-bg"
+            :style="bgData.isBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
+            alt="Battle Background"
+            @error="handleBackgroundError"
           >
+        </div>
+
+        <!-- Sprites Layer -->
+        <div class="battle-sprites">
+          <!-- Enemy Side (Player 2) -->
+          <div
+            class="combatant-sprite enemy-side-sprite"
+            :style="entity2Styles"
+          >
+            <!-- Encounter Layers - BACK (behind pokemon) -->
+            <Transition :name="bushTransitionName">
+              <div
+                v-if="shouldShowEncounterLayers"
+                class="encounter-layers-back"
+                :style="grassIsBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
+              >
+                <div
+                  v-show="!activeEnemyIsFloating"
+                  class="searching-bushes back"
+                >
+                  <div
+                    class="bush-container-ground"
+                    :style="{ top: `calc(${p2ShadowStyle.top} - 3%)` }"
+                  >
+                    <div class="bush-wrapper bush-back-1">
+                      <img
+                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
+                        class="pixel-bush"
+                        @load="handleGrassLoad"
+                        @error="handleGrassError"
+                      >
+                    </div>
+                    <div class="bush-wrapper bush-back-2">
+                      <img
+                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
+                        class="pixel-bush"
+                        @load="handleGrassLoad"
+                        @error="handleGrassError"
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+
+            <!-- Unified Shadow Logic -->
             <div
-              v-show="!activeEnemyIsFloating"
-              class="searching-bushes back"
+              class="pv-shadow"
+              :class="{ 'is-hidden': !isShadowVisible }"
+              :style="{ backgroundImage: `url(${shadowUrl})`, ...p2ShadowStyle }"
+            />
+
+            <div
+              class="sprite-animator"
+              :class="[{ 'fainted': activeEnemyData?.hp <= 0 && !isSearching && !isWildEntryAnimation && !isWildSilhouette, 'is-attacking': battleStore.attackerSide === 'enemy', 'is-emerging': isEmerging }, getAttackAnimClass('enemy')]"
             >
               <div
-                class="bush-container-ground"
-                :style="{ top: `${effectiveFeetY * 100}%` }"
+                class="sprite-rotation-layer"
+                :class="getAttackAnimClass('enemy')"
               >
-                <div class="bush-wrapper bush-back-1">
+                <div
+                  v-if="enemy?.hp <= 0 && battle.isTrainer"
+                  class="trainer-battle-sprite"
+                >
                   <img
-                    :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                    class="pixel-bush"
-                    @load="handleGrassLoad"
-                    @error="handleGrassError"
+                    :src="enemyTrainerSpriteUrl"
+                    class="trainer-image"
+                    @error="e => e.target.style.display = 'none'"
                   >
                 </div>
-                <div class="bush-wrapper bush-back-2">
-                  <img
-                    :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                    class="pixel-bush"
-                    @load="handleGrassLoad"
-                    @error="handleGrassError"
+
+                <div
+                  v-else-if="activeEnemyData"
+                  class="sprite-idle-wrapper" 
+                  :class="[{ 
+                    'combatant-idle-subtle': !enemyAnimState, 
+                    'is-floating-species': activeEnemyIsFloating, 
+                    'energy-catching': enemyAnimState === 'catching', 
+                    'energy-releasing': enemyAnimState === 'releasing' 
+                  }]" 
+                  :style="{ 
+                    animationDelay: `calc(${enemyAnimSeed} * -3s)`, 
+                    '--idle-dist': activeEnemyIsFloating ? '-12px' : '-3px',
+                    '--shadow-y': p2ShadowStyle.top
+                  }"
+                >
+                  <PVSpriteFX
+                    :is-shiny="activeEnemyData.isShiny"
+                    :is-guardian="activeEnemyData.isGuardian"
+                    :vibrant="true"
+                    :style="p2VirtualStyle"
                   >
+                    <img
+                      :key="activeEnemyData.id" 
+                      class="pokemon-combat-image"
+                      :class="{ 
+                        'is-silhouette': activeEnemyIsSilhouette,
+                        'is-emerging-anim': upcomingIsEmerging || isEmerging
+                      }" 
+                      :src="activeEnemyImageUrl" 
+                      @load="handleP2Load"
+                      @error="e => e.target.style.display = 'none'"
+                    >
+                  </PVSpriteFX>
+                  
+                  <!-- Guía de tamaño real (Debug) -->
+                  <div 
+                    v-if="showGuides && p2NaturalSize.w > 0" 
+                    class="guide-real-size"
+                    :style="{ width: p2NaturalSize.w + 'px', height: p2NaturalSize.h + 'px' }"
+                  >
+                    <span>{{ p2NaturalSize.w }}x{{ p2NaturalSize.h }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Encounter Layers - FRONT (in front of pokemon) -->
+            <Transition :name="bushTransitionName">
+              <div
+                v-if="shouldShowEncounterLayers"
+                class="encounter-layers-front"
+                :style="grassIsBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
+              >
+                <div
+                  v-show="!activeEnemyIsFloating"
+                  class="searching-bushes front"
+                >
+                  <div
+                    class="bush-container-ground"
+                    :style="{ top: `calc(${p2ShadowStyle.top} + 5%)` }"
+                  >
+                    <div class="bush-wrapper bush-front-1">
+                      <img
+                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
+                        class="pixel-bush"
+                        @load="handleGrassLoad"
+                        @error="handleGrassError"
+                      >
+                    </div>
+                    <div class="bush-wrapper bush-front-2">
+                      <img
+                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
+                        class="pixel-bush"
+                        @load="handleGrassLoad"
+                        @error="handleGrassError"
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+          </div>
+
+          <!-- Player Side (Player 1) -->
+          <div
+            class="combatant-sprite player-side-sprite"
+            :style="entity1Styles"
+          >
+            <div
+              class="sprite-animator"
+              :class="[{ 'fainted': player.hp <= 0, 'is-attacking': battleStore.attackerSide === 'player' }, getAttackAnimClass('player')]"
+            >
+              <div
+                class="pv-shadow"
+                :style="{ backgroundImage: `url(${shadowUrl})`, ...p1ShadowStyle }"
+              />
+              <div
+                class="sprite-rotation-layer"
+                :class="getAttackAnimClass('player')"
+              >
+                <div
+                  v-if="player.hp <= 0"
+                  class="trainer-battle-sprite"
+                >
+                  <img
+                    :src="playerTrainerSpriteUrl"
+                    class="trainer-image"
+                    @error="e => e.target.style.display = 'none'"
+                  >
+                </div>
+                <div
+                  v-else
+                  class="sprite-idle-wrapper"
+                  :class="[{ 'combatant-idle-subtle': !playerAnimState, 'is-floating-species': isFlying(player), 'energy-catching': playerAnimState === 'catching', 'energy-releasing': playerAnimState === 'releasing' }]"
+                  :style="{ animationDelay: `calc(${playerAnimSeed} * -3s)`, '--idle-dist': isFlying(player) ? '-12px' : '-3px', '--shadow-y': p1ShadowStyle.top }"
+                >
+                  <PVSpriteFX
+                    :is-shiny="player.isShiny"
+                    :is-guardian="player.isGuardian"
+                    :vibrant="true"
+                    :sparkle-count="8"
+                    :style="p1VirtualStyle"
+                  >
+                    <img
+                      class="pokemon-combat-image"
+                      :src="getAssetUrl(ASSET_TYPES.POKEMON, player.id, { isShiny: player.isShiny, isBack: true })"
+                      @load="handleP1Load"
+                      @error="e => e.target.style.display = 'none'"
+                    >
+                  </PVSpriteFX>
+
+                  <!-- Guía de tamaño real (Debug) -->
+                  <div 
+                    v-if="showGuides && p1NaturalSize.w > 0" 
+                    class="guide-real-size"
+                    :style="{ width: p1NaturalSize.w + 'px', height: p1NaturalSize.h + 'px' }"
+                  >
+                    <span>{{ p1NaturalSize.w }}x{{ p1NaturalSize.h }}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </Transition>
+        </div>
 
-        <!-- Unified Shadow Logic (Outside animator to prevent bouncing) -->
+        <!-- Debug Guides Layer -->
         <div
-          class="pv-shadow"
-          :class="{ 'is-hidden': !isShadowVisible }"
-          :style="{ backgroundImage: `url(${shadowUrl})`, top: `${effectiveFeetY * 100}%` }"
-        />
-
-        <div
-          class="sprite-animator"
-          :class="[{ 'fainted': activeEnemyData?.hp <= 0 && !isSearching && !isWildEntryAnimation && !isWildSilhouette, 'is-attacking': battleStore.attackerSide === 'enemy', 'is-emerging': isEmerging }, getAttackAnimClass('enemy')]"
+          v-if="showGuides"
+          class="camera-debug-guides"
         >
-          <div
-            class="sprite-rotation-layer"
-            :class="getAttackAnimClass('enemy')"
-          >
-            <div
-              v-if="enemy?.hp <= 0 && battle.isTrainer"
-              class="trainer-battle-sprite"
-            >
-              <img
-                :src="enemyTrainerSpriteUrl"
-                class="trainer-image"
-                @error="e => e.target.style.display = 'none'"
-              >
-            </div>
-
-            <div
-              v-else-if="activeEnemyData"
-              class="sprite-idle-wrapper" 
-              :class="[{ 
-                'combatant-idle-subtle': !enemyAnimState, 
-                'is-floating-species': activeEnemyIsFloating, 
-                'energy-catching': enemyAnimState === 'catching', 
-                'energy-releasing': enemyAnimState === 'releasing' 
-              }]" 
-              :style="{ 
-                animationDelay: `calc(${enemyAnimSeed} * -3s)`, 
-                '--idle-dist': activeEnemyIsFloating ? '-12px' : '-3px',
-                '--shadow-y': `${effectiveFeetY * 100}%`
-              }"
-            >
-              <PVSpriteFX
-                :is-shiny="activeEnemyData.isShiny"
-                :is-guardian="activeEnemyData.isGuardian"
-                :vibrant="true"
-              >
-                <img
-                  :key="activeEnemyData.id" 
-                  class="pokemon-combat-image"
-                  :class="{ 
-                    'is-silhouette': activeEnemyIsSilhouette,
-                    'is-emerging-anim': upcomingIsEmerging || isEmerging
-                  }" 
-                  :src="activeEnemyImageUrl" 
-                  @error="e => e.target.style.display = 'none'"
-                >
-              </PVSpriteFX>
-            </div>
-          </div>
-        </div> <!-- End sprite-animator -->
-        <!-- Encounter Layers - FRONT (in front of pokemon) -->
-        <Transition :name="bushTransitionName">
-          <div
-            v-if="shouldShowEncounterLayers"
-            class="encounter-layers-front"
-            :style="grassIsBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
-          >
-            <div
-              v-show="!activeEnemyIsFloating"
-              class="searching-bushes front"
-            >
-              <div
-                class="bush-container-ground"
-                :style="{ top: `${effectiveFeetY * 100}%` }"
-              >
-                <div class="bush-wrapper bush-front-1">
-                  <img
-                    :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                    class="pixel-bush"
-                    @load="handleGrassLoad"
-                    @error="handleGrassError"
-                  >
-                </div>
-                <div class="bush-wrapper bush-front-2">
-                  <img
-                    :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                    class="pixel-bush"
-                    @load="handleGrassLoad"
-                    @error="handleGrassError"
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-        </Transition>
-      </div> <!-- End combatant-sprite -->
-      
-      <!-- Player Side -->
-      <div class="combatant-sprite player-side-sprite">
-        <div
-          class="sprite-animator"
-          :class="[{ 'fainted': player.hp <= 0, 'is-attacking': battleStore.attackerSide === 'player' }, getAttackAnimClass('player')]"
-        >
-          <div
-            class="pv-shadow"
-            :style="{ backgroundImage: `url(${shadowUrl})`, top: `${playerFeetY * 100}%` }"
-          />
-          <div
-            class="sprite-rotation-layer"
-            :class="getAttackAnimClass('player')"
-          >
-            <div
-              v-if="player.hp <= 0"
-              class="trainer-battle-sprite"
-            >
-              <img
-                :src="playerTrainerSpriteUrl"
-                class="trainer-image"
-                @error="e => e.target.style.display = 'none'"
-              >
-            </div>
-            <div
-              v-else
-              class="sprite-idle-wrapper"
-              :class="[{ 'combatant-idle-subtle': !playerAnimState, 'is-floating-species': isFlying(player), 'energy-catching': playerAnimState === 'catching', 'energy-releasing': playerAnimState === 'releasing' }]"
-              :style="{ animationDelay: `calc(${playerAnimSeed} * -3s)`, '--idle-dist': isFlying(player) ? '-12px' : '-3px', '--shadow-y': `${playerFeetY * 100}%` }"
-            >
-              <PVSpriteFX
-                :is-shiny="player.isShiny"
-                :is-guardian="player.isGuardian"
-                :vibrant="true"
-                :sparkle-count="8"
-              >
-                <img
-                  class="pokemon-combat-image"
-                  :src="getAssetUrl(ASSET_TYPES.POKEMON, player.id, { isShiny: player.isShiny, isBack: true })"
-                  @error="e => e.target.style.display = 'none'"
-                >
-              </PVSpriteFX>
-            </div>
-          </div>
+          <div class="map-border" />
+          <div class="safe-zone-box" />
+          <div class="entity-anchor p1" />
+          <div class="entity-anchor p2" />
         </div>
       </div>
     </div>
 
+    <!-- Atmosphere remains relative to battle-arena (Viewport) or camera-frame? 
+         Documentation says MAP covers the atmosphere. But AtmosphereLayer usually has its own fixed/absolute positioning.
+         I'll keep it outside the virtual world to ensure it scales with the viewport if needed, 
+         or inside if it should follow the camera. 
+         Atmosphere is usually "fullscreen" relative to the arena.
+    -->
     <AtmosphereLayer
       ref="atmosphere"
       :weather="computedWeather"
@@ -657,6 +793,7 @@ onMounted(() => {
       :seed="(battle?.locationId || 'route1').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)"
     />
 
+    <!-- HUD Layer (Fixed to Viewport) -->
     <div class="battle-info-container">
       <div class="combatant-info-wrap enemy-side">
         <BattleInfoCard :pokemon="enemy" />
@@ -673,21 +810,25 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .battle-arena {
   position: relative;
   width: 100%;
-  height: 100%;
-  min-height: 350px;
+  flex: 1;
+  width: 100%;
+  background: $black;
+  position: relative;
   overflow: hidden;
-  container-type: inline-size;
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
 
-  @media (max-width: 959px) {
-    height: auto;
-    min-height: 280px;
-    max-height: none;
+  @media (min-width: 1360px) {
+    grid-area: arena;
+    height: 100%;
   }
 }
 
@@ -729,11 +870,6 @@ onMounted(() => {
 .combatant-info-wrap { pointer-events: auto; }
 
 .combatant-sprite {
-  position: absolute;
-  width: 38cqw;
-  height: 38cqw;
-  max-width: 190px;
-  max-height: 190px;
   display: Flex;
   align-items: flex-end;
   justify-content: Center;
@@ -741,27 +877,49 @@ onMounted(() => {
   image-rendering: pixelated;
   overflow: visible;
 
+  // Garantizar que todas las capas internas llenen el contenedor 400x400
+  .sprite-animator, 
+  .sprite-rotation-layer, 
+  .sprite-idle-wrapper,
+  :deep(.pv-fx-wrapper) {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex;
+    align-items: center; // Cambiado a center por solicitud de usuario
+    justify-content: center;
+  }
+
   .pokemon-combat-image {
-    width: 38cqw;
-    height: 38cqw;
-    max-width: 190px;
-    max-height: 190px;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
-    object-position: bottom;
+    object-position: center; // Cambiado a center
     transition: filter 0.3s ease;
+    image-rendering: pixelated;
     &.is-silhouette { filter: Brightness(0) Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.8)) !important; }
   }
-  
-  &.enemy-side-sprite {
-    top: 12%;
-    right: 12%;
-    @media (max-width: 690px) { right: Clamp(2%, 12cqw, 12%); }
-  }
-  
-  &.player-side-sprite {
-    bottom: 12%;
-    left: 12%;
-    @media (max-width: 690px) { left: Clamp(2%, 12cqw, 12%); }
+}
+
+.guide-real-size {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: TranslateX(-50%);
+  border: 1px dashed Rgba(255, 255, 255, 0.5);
+  background: Rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  z-index: var(--z-hud);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    @include pixelated;
+    font-size: 8px;
+    color: white;
+    background: black;
+    padding: 2px;
+    opacity: 0.8;
   }
 }
 
@@ -854,11 +1012,16 @@ onMounted(() => {
   position: absolute;
   left: 50%;
   transform: TranslateX(-50%) TranslateY(-50%);
-  width: 70%; height: 12px; z-index: calc(var(--z-base) - 1);
+  width: 70%; 
+  height: calc(var(--obj-scale, 1) * 6px); 
+  z-index: calc(var(--z-base) - 1);
   pointer-events: none;
-  background-size: 100% 100%; background-repeat: no-repeat; background-position: center;
+  background-size: 100% 100%; 
+  background-repeat: no-repeat; 
+  background-position: center;
   image-rendering: pixelated;
   filter: none;
+  // La posición top se inyecta inline vía pXShadowStyle
 }
 
 .sprite-idle-wrapper { width: 100%; height: 100%; display: Flex; align-items: flex-end; justify-content: Center; }
@@ -900,7 +1063,7 @@ onMounted(() => {
     position: absolute;
     left: 50%;
     transform: TranslateX(-50%) TranslateY(-50%);
-    width: 200px;
+    width: 100%;
     height: 0;
     pointer-events: none;
     display: flex;
@@ -910,12 +1073,17 @@ onMounted(() => {
 }
 
 .bush-wrapper {
-  position: absolute; width: 60px; height: 60px; image-rendering: pixelated;
-  &.bush-front-1 { --bx: -25px; --by: 12px; --bs: 1.2; animation: bush-wiggle 1.2s infinite ease-in-out; }
-  &.bush-front-2 { --bx: 35px; --by: 5px; --bs: 1.0; animation: bush-wiggle 1.5s infinite ease-in-out -0.4s; }
-  &.bush-back-1 { --bx: -35px; --by: -30px; --bs: 0.9; animation: bush-wiggle 1.8s infinite ease-in-out -0.8s; }
-  &.bush-back-2 { --bx: 20px; --by: -25px; --bs: 1.1; animation: bush-wiggle 2.1s infinite ease-in-out -0.2s; }
-  transform: Translate(var(--bx), var(--by)) Scale(var(--bs));
+  position: absolute;
+  width: calc(var(--obj-scale, 1) * 60px);
+  height: calc(var(--obj-scale, 1) * 60px);
+  image-rendering: pixelated;
+  
+  &.bush-front-1 { left: 25%; bottom: 0; z-index: calc(var(--z-map-spawns) + 1); --bs: 1.2; animation: bush-wiggle 1.2s infinite ease-in-out; }
+  &.bush-front-2 { right: 25%; bottom: 0; z-index: calc(var(--z-map-spawns) + 1); --bs: 1.0; animation: bush-wiggle 1.5s infinite ease-in-out -0.4s; }
+  &.bush-back-1 { left: 10%; bottom: 0; z-index: calc(var(--z-map-spawns) - 1); --bs: 0.9; animation: bush-wiggle 1.8s infinite ease-in-out -0.8s; }
+  &.bush-back-2 { right: 10%; bottom: 0; z-index: calc(var(--z-map-spawns) - 1); --bs: 1.1; animation: bush-wiggle 2.1s infinite ease-in-out -0.2s; }
+  
+  transform: Scale(var(--bs));
 }
 
 .upcoming-preview {
@@ -928,7 +1096,10 @@ onMounted(() => {
 
 .pixel-bush { width: 100%; height: 100%; object-fit: contain; backface-visibility: hidden; }
 
-@keyframes bush-wiggle { 0%, 100% { transform: Translate(var(--bx), var(--by)) Scale(var(--bs)) Rotate(0); } 50% { transform: Translate(var(--bx), var(--by)) Scale(var(--bs)) Rotate(5deg); } }
+@keyframes bush-wiggle { 
+  0%, 100% { transform: Scale(var(--bs)) Rotate(0); } 
+  50% { transform: Scale(var(--bs)) Rotate(5deg); } 
+}
 
 @keyframes emerge-bounce {
   0% { transform: translateY(15px) Scale(0.8); }

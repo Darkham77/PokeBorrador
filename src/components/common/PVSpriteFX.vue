@@ -27,8 +27,12 @@ const props = defineProps({
 
 const uiStore = useUIStore()
 const isModalPerformance = inject('isModalPerformanceMode', null)
+const forceHighFidelity = inject('forceHighFidelity', false)
 
 const isSimplified = computed(() => {
+  // 0. Force High Fidelity (Combat/Special contexts)
+  if (forceHighFidelity) return false
+  
   // 1. Force off if debug or manual override
   if (!props.enabled || uiStore.isSimplifiedModalsMode) return true
   
