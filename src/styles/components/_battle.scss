@@ -103,12 +103,17 @@ body.is-battle-active {
   position: absolute;
   top: 0;
   left: 0;
-  width: 2000px;
-  height: 2000px;
+  width: 3000px;
+  height: 3000px;
   transform-origin: 0 0;
   will-change: transform;
   image-rendering: pixelated;
   @include gpu-layer;
+
+  .camera-debug-guides & {
+    background-color: Rgba(255, 0, 0, 0.05);
+    outline: 4px solid Rgba(255, 0, 0, 0.3);
+  }
 }
 
 /* ===== GUIAS DE SEGURIDAD (DEBUG) ===== */
@@ -120,22 +125,24 @@ body.is-battle-active {
 
   .safe-zone-box {
     position: absolute;
-    left: 500px;
-    top: 500px;
+    left: 1000px;
+    top: 1000px;
     width: 1000px;
     height: 1000px;
     border: 4px dashed Rgba(255, 255, 255, 0.4);
     background: Rgba(255, 255, 255, 0.05);
     
     &::after {
-      content: 'SAFE ZONE (1000x1000)';
+      content: 'SAFE ZONE (1000x1000px)';
       position: absolute;
-      top: 10px;
+      bottom: 10px;
       left: 10px;
-      @include pixelated;
-      font-size: 20px;
+      background: Rgba(0, 0, 0, 0.6);
       color: white;
-      text-shadow: 2px 2px black;
+      font-size: 12px;
+      padding: 4px 8px;
+      @include pixelated;
+      text-shadow: none;
     }
   }
 
@@ -144,15 +151,37 @@ body.is-battle-active {
     border: 4px solid red;
     background: Rgba(255, 0, 0, 0.2);
     
-    &.p1 { left: 500px; top: 1100px; width: 400px; height: 400px; }
-    &.p2 { left: 1100px; top: 500px; width: 400px; height: 400px; }
+    &.p1 { 
+      left: 1000px; top: 1600px; width: 400px; height: 400px; 
+      &::after { content: 'P1 ANCHOR'; position: absolute; top: 5px; left: 5px; color: white; font-size: 8px; @include pixelated; }
+    }
+    &.p2 { 
+      left: 1600px; top: 1000px; width: 400px; height: 400px; 
+      &::after { content: 'P2 ANCHOR'; position: absolute; top: 5px; left: 5px; color: white; font-size: 8px; @include pixelated; }
+    }
   }
 
   .map-border {
     position: absolute;
     inset: 0;
-    border: 10px solid Rgba(255, 0, 0, 0.5);
+    border: 20px solid Rgba(255, 0, 0, 0.6);
     box-sizing: border-box;
+    pointer-events: none;
+
+    &::after {
+      content: 'VIRTUAL WORLD BOUNDARY (3000x3000px)';
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      background: red;
+      color: white;
+      font-size: 24px;
+      padding: 10px 20px;
+      @include pixelated;
+      z-index: var(--z-low);
+      box-shadow: 0 0 30px black;
+      border: 4px solid white;
+    }
   }
 }
 
@@ -163,7 +192,7 @@ body.is-battle-active {
   transform: TranslateX(-50%) TranslateY(-50%);
   // Escalado dinámico basado en la constante del sistema de cámara
   width: 70%; 
-  height: calc(var(--obj-scale, 1) * 6px); 
+  height: calc(var(--obj-scale, 1) * 10px); 
   z-index: calc(var(--z-base) - 1);
   pointer-events: none;
   background-size: 100% 100%; 

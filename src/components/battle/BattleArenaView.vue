@@ -27,7 +27,8 @@ provide('isModalPerformanceMode', computed(() => false))
 const { getBackgroundUrl } = useBattleBackground()
 
 const arenaRef = ref(null)
-const { cameraStyles, worldStyles, entity1Styles, entity2Styles, showGuides } = useCombatCamera(arenaRef)
+const { cameraStyles, worldStyles, entity1Styles, entity2Styles, showGuides, objectScale } = useCombatCamera(arenaRef)
+const ENTITY_SIZE = objectScale * 200 // Sincronizado con BASE_ENTITY_SIZE de la cámara
 
 const bgData = computed(() => {
   return getBackgroundUrl(battle.value?.locationId || 'route1', mapStore.currentCycle)
@@ -322,21 +323,21 @@ const p2VirtualStyle = computed(() => {
 const p1ShadowStyle = computed(() => {
   if (p1NaturalSize.value.w === 0) return { top: '90%', width: '70%' }
   
-  // Cálculo basado en sprite CENTRADO en caja de 400x400 con object-fit: contain
   const ratio = p1NaturalSize.value.w / p1NaturalSize.value.h
   let rW, rH
   if (ratio > 1) { 
-    rW = 400; rH = 400 / ratio 
+    rW = ENTITY_SIZE; rH = ENTITY_SIZE / ratio 
   } else { 
-    rH = 400; rW = 400 * ratio 
+    rH = ENTITY_SIZE; rW = ENTITY_SIZE * ratio 
   }
   
-  const topOffset = (400 - rH) / 2
+  // ALINEACIÓN AL FONDO: El sprite usa align-items: flex-end
+  const topOffset = ENTITY_SIZE - rH
   const feetY = topOffset + (playerFeetY.value * rH)
   
   return {
-    top: `${(feetY / 400) * 100}%`,
-    width: `${(rW * 0.8 / 400) * 100}%`
+    top: `${(feetY / ENTITY_SIZE) * 100}%`,
+    width: `${(rW * 0.8 / ENTITY_SIZE) * 100}%`
   }
 })
 
@@ -346,17 +347,17 @@ const p2ShadowStyle = computed(() => {
   const ratio = p2NaturalSize.value.w / p2NaturalSize.value.h
   let rW, rH
   if (ratio > 1) { 
-    rW = 400; rH = 400 / ratio 
+    rW = ENTITY_SIZE; rH = ENTITY_SIZE / ratio 
   } else { 
-    rH = 400; rW = 400 * ratio 
+    rH = ENTITY_SIZE; rW = ENTITY_SIZE * ratio 
   }
   
-  const topOffset = (400 - rH) / 2
+  const topOffset = ENTITY_SIZE - rH
   const feetY = topOffset + (effectiveFeetY.value * rH)
   
   return {
-    top: `${(feetY / 400) * 100}%`,
-    width: `${(rW * 0.8 / 400) * 100}%`
+    top: `${(feetY / ENTITY_SIZE) * 100}%`,
+    width: `${(rW * 0.8 / ENTITY_SIZE) * 100}%`
   }
 })
 
@@ -436,7 +437,7 @@ const handleP1Load = (e) => {
 const handleP2Load = (e) => {
   p2NaturalSize.value = { w: e.target.naturalWidth, h: e.target.naturalHeight }
 }
-const generatePixelShadow = (w = 21, h = 6) => {
+const generatePixelShadow = (w = 12, h = 10) => {
   if (typeof document === 'undefined') return ''
   const canvas = document.createElement('canvas') // [PureVue-Ignore]
   canvas.width = w
@@ -1013,7 +1014,7 @@ onMounted(() => {
   left: 50%;
   transform: TranslateX(-50%) TranslateY(-50%);
   width: 70%; 
-  height: calc(var(--obj-scale, 1) * 6px); 
+  height: calc(var(--obj-scale, 1) * 10px); 
   z-index: calc(var(--z-base) - 1);
   pointer-events: none;
   background-size: 100% 100%; 

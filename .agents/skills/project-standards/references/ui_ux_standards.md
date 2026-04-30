@@ -307,3 +307,12 @@ For a full verification, consult the centralized **[Aesthetic Audit Checklist](.
 2. `[ ]` **Typography**: Is `@include pixelated;` used for all pixel fonts?
 3. `[ ]` **Prefixes**: Are `-webkit-backdrop-filter` and other prefixes present?
 4. `[ ]` **Stacking**: Does the modal behavior follow LIFO rules?
+
+### 10. Battle Log Accuracy & Attribution
+
+The combat log is the primary source of truth for the user. It MUST maintain absolute precision in Pokémon attribution.
+
+- **Faint Attribution**: Log messages for fainted Pokémon MUST strictly use the identity of the current defender.
+  - **Incorrect**: `¡${e.name} enemigo se debilitó!` (Hardcoded 'enemigo' while checking player HP).
+  - **Correct**: `¡${p.name} se debilitó!` or `¡${e.name} salvaje fue derrotado!`.
+- **Action Logs**: Use standardized CSS classes (`log-info`, `log-player`, `log-enemy`, `log-danger`) to color-code entries, ensuring the user can distinguish between their actions and the opponent's at a glance.

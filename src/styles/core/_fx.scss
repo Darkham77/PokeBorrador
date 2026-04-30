@@ -5,7 +5,7 @@
    ========================================================================== */
 
 @mixin aura-guardian($color: Rgba(255, 255, 255, 0.8)) {
-  filter: Drop-Shadow(0 0 8px $color); // Single, high-perf shadow
+  filter: Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 8px) $color); // Scaled
   animation: pulse-aura-vibrant-simple 2s infinite ease-in-out;
   animation-delay: calc(var(--fx-seed, 0) * -2s);
 }
@@ -37,8 +37,8 @@
   position: absolute;
   top: $top;
   left: $left;
-  width: 18px;
-  height: 18px;
+  width: calc(var(--obj-scale, 1) * 18px); // Scaled
+  height: calc(var(--obj-scale, 1) * 18px); // Scaled
   opacity: 0;
   z-index: var(--z-base, 5);
   transform-origin: center center;
@@ -71,9 +71,9 @@
     &.is-vibrant {
       img, .sprite-layer {
         filter: 
-          Drop-Shadow(0 0 15px Rgba(255, 255, 255, 1)) 
-          Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.8))
-          Drop-Shadow(0 5px 15px Rgba(0, 0, 0, 0.5));
+          Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 15px) Rgba(255, 255, 255, 1)) 
+          Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 8px) Rgba(255, 255, 255, 0.8))
+          Drop-Shadow(0 calc(var(--obj-scale, 1) * 5px) calc(var(--obj-scale, 1) * 15px) Rgba(0, 0, 0, 0.5));
         animation-name: pulse-aura-battle;
       }
     }
@@ -108,27 +108,27 @@
 @keyframes pulse-aura-battle {
   0%, 100% { 
     filter: 
-      Drop-Shadow(0 0 1px white)
-      Drop-Shadow(0 0 2px white)
-      Drop-Shadow(0 0 15px Rgba(255, 255, 255, 1)) 
-      Drop-Shadow(0 0 5px Rgba(255, 255, 255, 0.8))
-      Drop-Shadow(0 4px 12px Rgba(0,0,0,0.4)); 
+      Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 1px) white)
+      Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 2px) white)
+      Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 15px) Rgba(255, 255, 255, 1)) 
+      Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 5px) Rgba(255, 255, 255, 0.8))
+      Drop-Shadow(0 calc(var(--obj-scale, 1) * 4px) calc(var(--obj-scale, 1) * 12px) Rgba(0,0,0,0.4)); 
   }
   50% { 
     filter: 
-      Drop-Shadow(0 0 2px white)
-      Drop-Shadow(0 0 4px white)
-      Drop-Shadow(0 0 40px Rgba(255, 255, 255, 1)) 
-      Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.9))
-      Drop-Shadow(0 8px 25px Rgba(0,0,0,0.5)); 
+      Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 2px) white)
+      Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 4px) white)
+      Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 40px) Rgba(255, 255, 255, 1)) 
+      Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 15px) Rgba(255, 255, 255, 0.9))
+      Drop-Shadow(0 calc(var(--obj-scale, 1) * 8px) calc(var(--obj-scale, 1) * 25px) Rgba(0,0,0,0.5)); 
   }
 }
 @keyframes pulse-aura-vibrant-simple {
   0%, 100% { 
-    filter: Drop-Shadow(0 0 5px Rgba(255, 255, 255, 0.4));
+    filter: Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 5px) Rgba(255, 255, 255, 0.4));
   }
   50% { 
-    filter: Drop-Shadow(0 0 12px Rgba(255, 255, 255, 0.8));
+    filter: Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 12px) Rgba(255, 255, 255, 0.8));
   }
 }
 
@@ -139,13 +139,13 @@
   }
   20% { 
     opacity: 1; 
-    transform: Translate(-50%, -10px) Scale(1.2) Rotate(180deg); 
+    transform: Translate(-50%, calc(var(--obj-scale, 1) * -10px)) Scale(1.2) Rotate(180deg); 
     // Optimized: Only 2 drop-shadows instead of 5
-    filter: Drop-Shadow(0 0 2px Rgba(0,0,0,1)) Drop-Shadow(0 0 4px gold);
+    filter: Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 2px) Rgba(0,0,0,1)) Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 4px) gold);
   }
   50% { 
     opacity: 0; 
-    transform: Translate(-50%, -20px) Scale(0) Rotate(360deg); 
+    transform: Translate(-50%, calc(var(--obj-scale, 1) * -20px)) Scale(0) Rotate(360deg); 
     filter: none;
   }
   100% {

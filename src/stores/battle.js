@@ -407,22 +407,35 @@ export const useBattleStore = defineStore('battle', () => {
     const newPoke = gs.state.team[teamIndex]
     if (!newPoke || newPoke.hp <= 0) { isProcessing.value = false; return }
     const oldPoke = activeBattle.value.player
-    addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', oldPoke)
-    await new Promise(r => setTimeout(r, 800))
-    oldPoke.confused = 0; oldPoke.flinched = false
+
+    // Animación de Retirada (solo si el pokemon actual está vivo)
+    if (oldPoke && oldPoke.hp > 0) {
+      addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', oldPoke)
+      gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
+      await new Promise(r => setTimeout(r, 800))
+      oldPoke.confused = 0; oldPoke.flinched = false
+    }
+
+    // Cambio de estado
     activeBattle.value.player = newPoke; activeBattle.value.playerTeamIndex = teamIndex
     if (!activeBattle.value.participants.includes(newPoke.uid)) {
       activeBattle.value.participants.push(newPoke.uid)
     }
     playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
+    
+    // Animación de Salida
     addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
+    gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
     await new Promise(r => setTimeout(r, 800))
+    
     handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog)
     persistBattle()
+    
     const thisStore = reactive({ 
       activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
       attackerSide, activeMove, persistBattle
     })
+    
     if (!isForced) await runEnemyAction(thisStore)
     isProcessing.value = false
   }

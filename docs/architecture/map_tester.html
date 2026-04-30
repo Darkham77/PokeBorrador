@@ -71,13 +71,13 @@
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
     }
 
-    /* El Mapa Virtual 2000x2000 */
+    /* El Mapa Virtual 3000x3000 */
     .map-canvas {
       position: absolute;
       top: 0;
       left: 0;
-      width: 2000px;
-      height: 2000px;
+      width: 3000px;
+      height: 3000px;
       transform-origin: 0 0;
       will-change: transform;
       background-size: contain;
@@ -102,8 +102,8 @@
 
     .focal-point {
       position: absolute;
-      left: 1000px;
-      top: 1000px;
+      left: 1500px;
+      top: 1500px;
       width: 20px;
       height: 20px;
       background-color: red;
@@ -118,7 +118,7 @@
     }
 
     .focal-point::after {
-      content: '1000,1000';
+      content: '1500,1500';
       position: absolute;
       top: -20px;
       font-size: 12px;
@@ -129,8 +129,8 @@
 
     .safe-zone {
       position: absolute;
-      left: 500px;
-      top: 500px;
+      left: 1000px;
+      top: 1000px;
       width: 1000px;
       height: 1000px;
       border: 2px dashed rgba(255, 255, 255, 0.7);
@@ -251,12 +251,12 @@
           <div class="safe-zone"></div>
           <div class="focal-point"></div>
 
-          <!-- Rectángulos Guía (Anclados a 500px del borde del mapa 2000x2000) -->
+          <!-- Rectángulos Guía (Anclados a 1000px del borde del mapa 3000x3000) -->
           <div class="guide-rect" :style="{ 
             width: rect1Size + 'px', 
             height: rect1Size + 'px', 
-            left: '500px', 
-            bottom: '500px',
+            left: '1000px', 
+            bottom: '1000px',
             backgroundImage: rect1Img ? `url(${rect1Img})` : 'none',
             backgroundColor: rect1Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)'
           }">
@@ -265,8 +265,8 @@
           <div class="guide-rect" :style="{ 
             width: rect2Size + 'px', 
             height: rect2Size + 'px', 
-            right: '500px', 
-            top: '500px',
+            right: '1000px', 
+            top: '1000px',
             backgroundImage: rect2Img ? `url(${rect2Img})` : 'none',
             backgroundColor: rect2Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)'
           }">
@@ -304,8 +304,8 @@
       <p>Viewport Total: <span class="highlight">{{ Math.round(vpWidth) }}x{{ Math.round(vpHeight) }}</span></p>
       <p>Resolución Cámara: <span class="highlight">{{ Math.round(camWidth) }}x{{ Math.round(camHeight) }}</span></p>
       <p>Ratio actual: <span class="highlight">{{ (camWidth / camHeight).toFixed(2) }}:1</span>
-        <span v-if="vpWidth / vpHeight > 2 || vpHeight / vpWidth > 2" class="warning">(Barras activas limitando a
-          2:1)</span>
+        <span v-if="vpWidth / vpHeight > 3 || vpHeight / vpWidth > 3" class="warning">(Barras activas limitando a
+          3:1)</span>
       </p>
       <p>Escala: <span class="highlight">{{ scale.toFixed(2) }}x</span></p>
     </div>
@@ -330,7 +330,7 @@
         const ty = ref(0);
         const scale = ref(1);
 
-        const bgUrl = ref('https://picsum.photos/id/1018/2000/2000');
+        const bgUrl = ref('https://picsum.photos/id/1018/3000/3000');
 
         const rect1Size = ref(450);
         const rect2Size = ref(450);
@@ -338,15 +338,15 @@
         const rect1Img = ref('');
         const rect2Img = ref('');
 
-        const TARGET_X = 1000;
-        const TARGET_Y = 1000;
+        const TARGET_X = 1500;
+        const TARGET_Y = 1500;
         const VISIBLE_UNITS = 1000;
-        const MAP_WIDTH = 2000;
-        const MAP_HEIGHT = 2000;
+        const MAP_WIDTH = 3000;
+        const MAP_HEIGHT = 3000;
 
-        // El ratio matemáticamente estricto para encajar 1000px de acción en 2000px de mundo
-        const RATIO_MAX = MAP_WIDTH / VISIBLE_UNITS; // 2.0
-        const RATIO_MIN = VISIBLE_UNITS / MAP_HEIGHT; // 0.5
+        // El ratio matemáticamente estricto para encajar 1000px de acción en 3000px de mundo
+        const RATIO_MAX = MAP_WIDTH / VISIBLE_UNITS; // 3.0
+        const RATIO_MIN = VISIBLE_UNITS / MAP_HEIGHT; // 0.333...
 
         let resizeObserver = null;
 

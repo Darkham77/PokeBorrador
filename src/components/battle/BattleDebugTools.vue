@@ -221,10 +221,10 @@ const testReleaseAnim = (side = 'enemy') => {
               GUIAS CAMARA
             </button>
             <button 
-              class="anim-btn catch"
-              @click.stop="() => (typeof window !== 'undefined' && window.__VITE_DEBUG__?.toggleGrid())"
+              class="anim-btn info"
+              @click.stop="gameBus.emit('TOGGLE_DEBUG_ZOOM')"
             >
-              BORDES MAPA
+              ALEJAR (50%)
             </button>
           </div>
         </div>

@@ -69,3 +69,23 @@ Activated when receiving movements of the **Physical** category:
   - **Chlorophyll**: During Morning/Day.
   - **Swift Swim**: During Evening/Night.
 - **Run Away**: 2x Speed if the user has a status problem.
+
+---
+
+## 🔄 Pokemon Withdrawal & Switching
+
+### 1. Manual Switching
+
+- **Interaction Guard**: The switch action must be blocked if `isProcessing` or `isIntroAnimating` is true.
+- **Logic Sequence**:
+    1. Check if `oldPoke.hp > 0`. If true, emit `PLAY_WITHDRAW` and wait 800ms.
+    2. Swap the active player reference in the store.
+    3. Reset attribute stages (atk, def, etc.) to 0.
+    4. Emit `PLAY_SEND_OUT` and wait 800ms.
+    5. Execute entry abilities (e.g., Intimidate).
+
+### 2. Forced Switching (Faint)
+
+- When a Pokémon's HP reaches 0, the `PLAY_FAINT` animation must trigger first.
+- The `PLAY_WITHDRAW` animation is SKIPPED during a forced switch because the Pokémon is already fainted/invisible.
+- The UI MUST set `uiStore.isBattleSwitchForced = true` to prevent the user from taking other actions until a replacement is chosen.

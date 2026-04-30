@@ -202,7 +202,7 @@ export async function runEnemyAction(store) {
   }
 
   if (p.hp <= 0) {
-    store.addLog(`¡${e.name} enemigo se debilitó!`, 'log-enemy', e)
+    store.addLog(`¡${p.name} se debilitó!`, 'log-enemy', p)
     gameBus.emit('PLAY_FAINT', { side: 'player' })
     await new Promise(r => setTimeout(r, 1000))
     

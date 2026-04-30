@@ -121,3 +121,13 @@ To hide micro-adjustments in position or "feetY" calculation during rapid transi
 - **Standard**: Ground shadows should be hidden for at least 50% of an entrance animation duration, appearing smoothly only once the object is nearing its final coordinates.
 - **Implementation**: Use a separate flag (e.g., `isHalfway`) to toggle shadow visibility mid-sequence.
 
+## 12. Energy Animation & Synchronization (Withdraw/Send Out)
+
+When a Pokémon is manually or automatically switched in battle, the visual transition MUST be synchronized with the underlying state change using the `gameBus`.
+
+- **Event Lifecycle**:
+  1. `PLAY_WITHDRAW`: Triggered when a Pokémon is recalled to its Poké Ball.
+  2. `PLAY_SEND_OUT`: Triggered when a new Pokémon enters the field.
+- **Mandatory Delays**: Every energy animation event MUST be followed by a wait period (Standard: **800ms**) using `await new Promise(r => setTimeout(r, 800))`. This ensures the CSS animation (`energy-catching` / `energy-releasing`) completes before the next log message or Pokémon sprite swap occurs.
+- **Conditional Triggering**: The `PLAY_WITHDRAW` event and its associated "Regresa!" log message MUST ONLY be triggered if the Pokémon being replaced has `hp > 0`. Fainted Pokémon are already invisible and do not require a withdrawal effect.
+

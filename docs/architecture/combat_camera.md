@@ -11,19 +11,19 @@ The system consists of three nested layers: Viewport (screen) -> Camera (frame w
 
 Use the following constants:
 
-MAP_WIDTH = 2000 (Total world width).
+MAP_WIDTH = 3000 (Total world width).
 
-MAP_HEIGHT = 2000 (Total world height).
+MAP_HEIGHT = 3000 (Total world height).
 
 VISIBLE_UNITS = 1000 (Size of the action zone that MUST always be 100% visible).
 
-TARGET_X = 1000 (X coordinate of the world center and focal point).
+TARGET_X = 1500 (X coordinate of the world center and focal point).
 
-TARGET_Y = 1000 (Y coordinate of the world center and focal point).
+TARGET_Y = 1500 (Y coordinate of the world center and focal point).
 
-RATIO_MAX = 2.0 (Calculated from MAP_WIDTH / VISIBLE_UNITS).
+RATIO_MAX = 3.0 (Calculated from MAP_WIDTH / VISIBLE_UNITS).
 
-RATIO_MIN = 0.5 (Calculated from VISIBLE_UNITS / MAP_HEIGHT).
+RATIO_MIN = 0.33 (Calculated from VISIBLE_UNITS / MAP_HEIGHT).
 
 1. Camera Algorithm (Update Loop / Resize)
 

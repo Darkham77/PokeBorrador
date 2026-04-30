@@ -7,14 +7,14 @@ import { gameBus } from '@/logic/gameBus'
  */
 export function useCombatCamera(viewportRef) {
   // Constants
-  const MAP_WIDTH = 2000
-  const MAP_HEIGHT = 2000
+  const MAP_WIDTH = 3000
+  const MAP_HEIGHT = 3000
   const VISIBLE_UNITS_X = 1000 // Zona de acción pura (0 padding lateral forzado)
   const VISIBLE_UNITS_Y = 1100 // Zona de acción + padding superior (100u)
-  const TARGET_X = 1000
-  const TARGET_Y = 950 
-  const RATIO_MAX = 2.0 
-  const RATIO_MIN = 0.5 
+  const TARGET_X = 1500
+  const TARGET_Y = 1450 
+  const RATIO_MAX = 3.0 
+  const RATIO_MIN = 0.333
 
   // --- ESCALADO DE OBJETOS (SOLICITADO POR USUARIO) ---
   // Modificar esta constante para regular el tamaño base de TODO en el mundo virtual
@@ -31,6 +31,7 @@ export function useCombatCamera(viewportRef) {
   const ty = ref(0)
   const scale = ref(1)
   const showGuides = ref(false)
+  const debugZoom = ref(1)
 
   // Computed Styles
   const cameraStyles = computed(() => ({
@@ -58,24 +59,24 @@ export function useCombatCamera(viewportRef) {
   }))
 
   // Entity Styles
-  // Player 1: Bottom-Left (Centrado en zona segura 500-1500)
-  // X: 500
-  // Y: 1500 - ENTITY_SIZE
+  // Player 1: Bottom-Left (Centrado en zona segura 1000-2000)
+  // X: 1000
+  // Y: 2000 - ENTITY_SIZE
   const entity1Styles = computed(() => ({
     position: 'absolute',
-    left: '500px',
-    top: `${1500 - ENTITY_SIZE}px`,
+    left: '1000px',
+    top: `${2000 - ENTITY_SIZE}px`,
     width: `${ENTITY_SIZE}px`,
     height: `${ENTITY_SIZE}px`
   }))
 
-  // Player 2: Top-Right
-  // X: 1500 - ENTITY_SIZE
-  // Y: 500
+  // Player 2: Top-Right (Centrado en zona segura 1000-2000)
+  // X: 2000 - ENTITY_SIZE
+  // Y: 1000
   const entity2Styles = computed(() => ({
     position: 'absolute',
-    left: `${1500 - ENTITY_SIZE}px`,
-    top: '500px',
+    left: `${2000 - ENTITY_SIZE}px`,
+    top: '1000px',
     width: `${ENTITY_SIZE}px`,
     height: `${ENTITY_SIZE}px`
   }))
@@ -98,7 +99,7 @@ export function useCombatCamera(viewportRef) {
 
     const scaleX = cw / VISIBLE_UNITS_X
     const scaleY = ch / VISIBLE_UNITS_Y
-    const currentScale = Math.min(scaleX, scaleY)
+    const currentScale = Math.min(scaleX, scaleY) * debugZoom.value
     scale.value = currentScale
 
     tx.value = (cw / 2) - (TARGET_X * currentScale)
@@ -125,6 +126,14 @@ export function useCombatCamera(viewportRef) {
 
     gameBus.on('TOGGLE_CAMERA_GUIDES', () => {
       showGuides.value = !showGuides.value
+    })
+
+    gameBus.on('TOGGLE_DEBUG_ZOOM', () => {
+      debugZoom.value = debugZoom.value === 1 ? 0.4 : 1
+      if (viewportRef.value) {
+        const rect = viewportRef.value.getBoundingClientRect()
+        updateCamera(rect.width, rect.height)
+      }
     })
   })
 
