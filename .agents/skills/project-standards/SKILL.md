@@ -75,6 +75,11 @@ Consult these manuals for detailed implementation specifications:
 
 - **Efficiency Over GUI**: Use `window.__VITE_DEBUG__` commands to simulate states. It is MANDATORY to verify new content via CLI before committing.
 
+### 6. Linguistic Standard (MANDATORY)
+
+- **English First**: All skills and technical documentation (manuals, references, logic comments) MUST be written exclusively in English to ensure cross-agent compatibility and maintain project rigor.
+- **User Interaction**: All direct communication with the USER remains exclusively in Spanish as per `AGENTS.md`.
+
 ---
 
 ## 🏗️ Artifact Governance (MANDATORY)

@@ -1,12 +1,12 @@
 # Dependency Management Manual
 
-Este manual define la política de versiones y estabilidad de las librerías del proyecto Poké Vicio.
+This manual defines the versioning policy and library stability for the Poké Vicio project.
 
 ## 🛡️ Core Stable Stack
 
-Para garantizar el funcionamiento de los sistemas críticos (PWA, Service Workers, Animations), el proyecto se adhiere a un "Stack de Estabilidad Confirmada":
+To guarantee the operation of critical systems (PWA, Service Workers, Animations), the project adheres to a "Confirmed Stability Stack":
 
-| Librería | Versión | Rol |
+| Library | Version | Role |
 | :--- | :--- | :--- |
 | **Vite** | `^7.x` | Build Tool & Dev Server |
 | **Vue** | `^3.5.x` | Framework Core |
@@ -14,33 +14,34 @@ Para garantizar el funcionamiento de los sistemas críticos (PWA, Service Worker
 | **Vue Router** | `^4.x` | Routing |
 | **Vitest** | `^3.x` | Testing Framework |
 
-### Por qué no usamos "Latest" (Vite 8+, Pinia 3+)
-Aunque existan versiones más nuevas, el ecosistema de plugins (específicamente `vite-plugin-pwa`) suele tardar en alcanzar la paridad de soporte. Usar versiones de "vanguardia" rompe la política de **Zero-Warning** y la integridad del Service Worker en dispositivos móviles.
+### Why we don't use "Latest" (Vite 8+, Pinia 3+)
+
+Even if newer versions exist, the plugin ecosystem (specifically `vite-plugin-pwa`) usually takes time to reach support parity. Using "bleeding edge" versions breaks the **Zero-Warning** policy and the integrity of the Service Worker on mobile devices.
 
 ---
 
-## 🩹 Parches y Overrides
+## 🩹 Patches and Overrides
 
-Cuando se detectan vulnerabilidades críticas en sub-dependencias profundas que no han sido actualizadas por sus mantenedores, el proyecto utiliza el campo `overrides` en `package.json`.
+When critical vulnerabilities are detected in deep sub-dependencies that have not been updated by their maintainers, the project uses the `overrides` field in `package.json`.
 
 > [!IMPORTANT]
-> **Parches de Compilación Actual**: Todos los overrides (como el de `serialize-javascript`) son medidas correctivas para la compilación y el estado actual del ecosistema. Deben revisarse en cada salto mayor de versión.
+> **Current Build Patches**: All overrides (such as the one for `serialize-javascript`) are corrective measures for the current build and ecosystem state. They must be reviewed during every major version jump.
 
 ---
 
-## 🚀 Guía para Futuras Migraciones
+## 🚀 Guide for Future Migrations
 
-Antes de intentar subir de versión cualquier librería del "Core Stack", se DEBE seguir este protocolo:
+Before attempting to upgrade any library in the "Core Stack", this protocol MUST be followed:
 
-1. **Análisis de Ola (Wave Analysis)**: No actualices una pieza sola. Vite, Pinia y Vue Router suelen moverse en "olas". Verifica que existan versiones estables de las tres antes de migrar una.
-2. **Auditoría de Peer Dependencies**: Verifica explícitamente que `vite-plugin-pwa` soporte la nueva versión mayor de Vite.
-3. **Validación de Mixins SASS**: Las actualizaciones de Sass (ej. hacia 2.0) pueden romper los mixins de pixel-art. Mantén `sass` en versiones que no fuercen refactorizaciones masivas de color a menos que sea necesario.
-4. **Prueba de Build PWA**: Una migración solo se considera exitosa si `npm run build` genera un `sw.js` válido y funcional.
+1. **Wave Analysis**: Do not update a single piece in isolation. Vite, Pinia, and Vue Router usually move in "waves". Verify that stable versions exist for all three before migrating any of them.
+2. **Peer Dependencies Audit**: Explicitly verify that `vite-plugin-pwa` supports the new major version of Vite.
+3. **SASS Mixin Validation**: Sass updates (e.g., towards 2.0) can break pixel-art mixins. Keep `sass` at versions that do not force massive color refactorings unless necessary.
+4. **PWA Build Test**: A migration is only considered successful if `npm run build` generates a valid and functional `sw.js`.
 
 ---
 
-## 🛠️ Comandos de Mantenimiento
+## 🛠️ Maintenance Commands
 
-- **Verificar Vulnerabilidades**: `npm audit`
-- **Limpieza de Caché**: `npm cache clean --force`
-- **Reinstalación Limpia**: `rm -rf node_modules package-lock.json && npm install`
+- **Verify Vulnerabilities**: `npm audit`
+- **Clean Cache**: `npm cache clean --force`
+- **Clean Reinstall**: `rm -rf node_modules package-lock.json && npm install`
