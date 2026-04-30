@@ -31,6 +31,7 @@ Consult these manuals for detailed implementation specifications:
 | **SASS & Styling** | [sass_styling_manual.md](./references/sass_styling_manual.md) |
 | **Asset Pipeline** | [asset_service_manual.md](./references/asset_service_manual.md) |
 | **Map & Spawns** | [spawn_grid_manual.md](./references/spawn_grid_manual.md) |
+| **Dependencies** | [dependency_management_manual.md](./references/dependency_management_manual.md) |
 
 ### 🛠️ Migration & Technical Support
 
@@ -82,7 +83,7 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 
 1. **Planning**: Create `implementation_plan.md`. Wait for "ok" from the user.
 2. **Execution**: Maintain `task.md` as the source of truth.
-3. **Closure**: Create `walkthrough.md` with evidence (screenshots, tests) of task success.
+3. **Closure**: Create `walkthrough.md` with evidence (screenshots, test logs) of task success.
 
 ---
 
