@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
@@ -119,8 +119,16 @@ onMounted(async () => {
     profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
   }
   
-  // 4. Restore Zoom Level
+  // 4. Restore & Sync Zoom Level
   uiStore.setZoom(uiStore.appZoom)
+})
+
+// RE-APPLY ZOOM on login/user changes to prevent PWA resolution glitches
+watch(() => authStore.user, (newUser) => {
+  if (newUser) {
+    console.log('[App] Usuario detectado, re-aplicando escala visual...')
+    uiStore.setZoom(uiStore.appZoom)
+  }
 })
 
 // Intercept low-level events to prevent them from reaching background interactions when modals are open
@@ -281,8 +289,13 @@ const handleRetry = () => {
 #vue-app {
   width: 100dvw;
   height: 100dvh;
+  max-width: 100dvw;
+  max-height: 100dvh;
   overflow: hidden;
   position: relative;
+  margin: 0;
+  padding: 0;
+  background: $darker;
 }
 
 .zoom-target {

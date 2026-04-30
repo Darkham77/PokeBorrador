@@ -84,3 +84,19 @@ _raw-assets/
 
 To process the `_raw-assets/` folder, execute:
 `python3 .agents/skills/project-standards/scripts/convert_to_webp.py`
+
+---
+
+## 📦 PWA Caching & Configuration (VitePWA)
+
+To ensure game assets are correctly precached and the service worker remains stable:
+
+### 1. Workbox Validation Rules
+
+- **FORBIDDEN**: The property `suppressGlobWarnings` is deprecated in recent versions of `workbox-build`. Including it in `vite.config.js` will trigger a `ReferenceError` or validation failure that prevents the server from starting.
+- **Maximum File Size**: Large assets (like high-res backgrounds) may exceed the default Workbox limit. Use `maximumFileSizeToCacheInBytes: 5 * 1024 * 1024` (5MB) in the `workbox` config if needed.
+
+### 2. Asset Manifest Integrity
+
+- **Glob Patterns**: Ensure that `globPatterns` includes all critical game extensions: `['**/*.{js,css,html,ico,png,svg,webp,woff2}']`.
+- **Static Injections**: Use `includeAssets` for critical WASM or background files that aren't automatically discovered by the crawler.

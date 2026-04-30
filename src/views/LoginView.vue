@@ -1,7 +1,6 @@
 <script setup>
 /* global __APP_VERSION__ */
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { usePWA } from '@/composables/usePWA'
@@ -12,7 +11,6 @@ import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
 
 const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`)
 
-const router = useRouter()
 const authStore = useAuthStore()
 const gameStore = useGameStore()
 
@@ -49,7 +47,7 @@ const handleLogin = async () => {
   try {
     await authStore.login(email.value, password.value)
     await gameStore.loadGame()
-    router.push('/')
+    window.location.href = '/'
   } catch (err) {
     error.value = err.message || 'Error al iniciar sesión'
   } finally {
@@ -86,7 +84,7 @@ const handleLocalLogin = async () => {
     await authStore.localLogin(username.value)
     setTimeout(async () => {
       await gameStore.loadGame()
-      router.push('/')
+      window.location.href = '/'
     }, 800)
   } catch (_err) {
     error.value = 'Error al entrar en modo local'
@@ -96,7 +94,6 @@ const handleLocalLogin = async () => {
 }
 
 // Corregir bucle infinito si ya se está logueado
-import { onMounted } from 'vue'
 onMounted(() => {
   if (authStore.user) {
     console.warn('[Login] Usuario ya logueado detectado en ruta /login. Forzando logout para resetear estado.')

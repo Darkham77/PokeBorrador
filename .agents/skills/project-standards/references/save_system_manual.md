@@ -54,10 +54,13 @@ If you modify the database schema:
 ## 🔒 Session Conflicts & Authentication
 
 ### 1. Atomic Auth Cleanup
+
 Accessing the `/login` route MUST trigger an immediate, synchronous cleanup of local session state (clearing `authStore` and `gameStore` memory) before any data loading begins.
+
 - **WHY**: Prevents authenticated state from interfering with the login view and ensures the "Loading Gate" remains open for the user.
 
 ### 2. Tab Conflicts (Last-In-Wins)
+
 Each browser tab generates a unique `SessionID`:
 
 - **Conflict Detection**: If a change in the `current_session_id` of the DB is detected from another tab, the current instance MUST immediately disable write permissions to prevent data corruption.
@@ -112,3 +115,15 @@ Mobile browsers frequently suspend inactive tabs and silently drop network conne
 
 - **Explicit Timeouts**: Operations involving cloud fetches (such as loading game saves) MUST implement a strict timeout (e.g., 8 seconds using `Promise.race`) to avoid permanent loading hangs.
 - **Network Awareness**: Before forcing a page reload on timeout, verify `navigator.onLine`. If offline, wait for the `online` event before retrying.
+
+---
+
+## 🌐 PWA Updates & Persistence
+
+To prevent data loss during background service worker updates:
+
+### 1. The "Save-Before-Update" Protocol
+
+- **Configuration**: `vite.config.js` MUST use `registerType: 'prompt'`. Using `'autoUpdate'` is strictly FORBIDDEN as it can trigger reloads while the player is in an unsaved state.
+- **Implementation**: The update modal (`PWAManager.vue`) MUST call `gameStore.save(false)` before executing `updateServiceWorker()`.
+- **WHY**: Ensures that any progress made since the last 60s auto-save is persisted before the browser context is destroyed by the update.

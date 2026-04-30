@@ -40,6 +40,10 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Breakpoint Parity (760px)**: JS window listeners and CSS media queries MUST share the exact same pixel value (Standard: **760px**) to avoid layout "dead zones".
   - **Forced HUD Visibility**: Use high-specificity CSS (e.g., `.main-hud-desktop`) with `min-width: 761px` to ensure HUD elements remain visible on PC screens even if PWA mode triggers mobile-first states.
   - **Permission Persistence**: Persist PWA setup and notification permission states in `localStorage` to avoid re-triggering intrusive setup modals on every session.
+  - **The "Deep Reset" Mandate (Resolution Sync)**: Transitions from Login/Title screens to the main game MUST be handled via physical reload (`window.location.href = '/'`) instead of SPA navigation (`router.push`).
+    - **WHY**: Standalone PWA windows frequently glitch their internal viewport dimensions (`100dvh`) during internal navigation. A physical reload forces a hardware-level re-sync of the viewport and manifest state.
+  - **Reactive Scale Injection (Zoom)**: Any component responsible for the primary visual scale (e.g., `App.vue`) MUST use a `watch` on the user session state to re-apply the global zoom factor (`uiStore.setZoom`).
+    - **WHY**: Ensures that if the browser resets its zoom factor during a session transition, the game engine explicitly re-asserts the correct pixel-perfect scale.
   - **Virtual Module Compatibility**: In Dev mode, if `virtual:pwa-register/vue` fails to resolve, use the base `virtual:pwa-register` and implement manual reactivity (using `ref`) for `needRefresh` and `offlineReady`.
 
 ### 2. Pixel Art Content (The "Game Heart")
