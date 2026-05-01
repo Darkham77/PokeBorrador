@@ -14,7 +14,7 @@ $font-sizes: (
   "lg": 18px,
   "xl": 24px,
   "xxl": 32px,
-  "huge": clamp(24px, 5vw, 48px)
+  "huge": clamp(24px, 5dvw, 48px)
 );
 
 @mixin font-size($size) {

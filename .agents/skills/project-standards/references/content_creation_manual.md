@@ -64,6 +64,14 @@ window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch' });
 window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch_anim' });
 ```
 
+## ⚓ Visual Anchors and Shadows
+  
+To maintain absolute stability in the high-fidelity combat arena, all entity rendering must follow the **Anchored Pipeline**:
+
+1. **Feet Cache Persistence**: The system uses a `feetCache` to store the ground-anchor coordinates (`feetY`) of every detected sprite. This prevents "coordinate jumping" when a Pokémon is seen for the first time or re-appears.
+2. **Synchronous Anchoring**: When a Pokémon returns to the field, its shadow and ground position must be retrieved synchronously from the cache if available.
+3. **Shadow Identity (UID)**: Every shadow is identified by the Pokémon's `uid`. This ensures that in multi-combatant scenarios (Double/Triple battles), cada instance maintains its own stable identity.
+
 ---
 
 ## ✅ Final Verification Checklist

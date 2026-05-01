@@ -92,7 +92,7 @@ const selectTab = (tabId) => {
   grid-template-columns: 280px 1fr;
   width: 100%;
   height: 600px;
-  max-height: 85vh;
+  max-height: 85dvh;
   overflow: hidden;
   background: Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%);
   border-bottom-left-radius: 20px;
@@ -101,7 +101,7 @@ const selectTab = (tabId) => {
   @media (max-width: 900px) {
     display: flex;
     flex-direction: column;
-    height: 90vh;
+    height: 90dvh;
     border-radius: 0;
   }
 }

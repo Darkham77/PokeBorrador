@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Regex to find lowercase filter/transform functions that collide with SASS built-ins
 # We specifically look for lowercase versions. Capitalized versions (Scale, Grayscale) are SAFE.
-FILTER_COLLISION_REGEX = re.compile(r'(?<![a-zA-Z-\.\$])(?:scale|grayscale|invert|opacity|brightness|blur|rotate|translate|saturate|drop-shadow|translatex|translatey|translatez|skewx|skewy|matrix)\(')
+FILTER_COLLISION_REGEX = re.compile(r'(?<![a-zA-Z-\.\$])(?:scale|grayscale|invert|opacity|brightness|blur|rotate|translate|saturate|drop-shadow|translatex|translatey|translatez|skewx|skewy|matrix|rgba|rgb|linear-gradient|radial-gradient)\(')
 
 # Regex to find filter: ... opacity() which is inefficient compared to opacity: property
 OPACITY_FILTER_PROPERTY_REGEX = re.compile(r'filter:.*(?:opacity|Opacity)\(')

@@ -133,7 +133,7 @@ const getFactionIcon = (faction) => {
 .war-panel-premium {
   width: 100%;
   max-width: 900px;
-  height: 90vh;
+  height: 90dvh;
   background: Rgba(10, 10, 11, 1);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 32px;

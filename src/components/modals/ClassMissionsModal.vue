@@ -118,7 +118,7 @@ const isMissionDone = computed(() => {
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     :title-color="currentClass?.color || 'var(--yellow)'"
     :header-background="currentClass ? (currentClass.color + '1A') : 'Rgba(15, 23, 42, 0.8)'"
-    :max-width="isSmallScreen ? '100vw' : '1000px'"
+    :max-width="isSmallScreen ? '100dvw' : '1000px'"
     :show-close-button="true"
     padding="raw"
     @close="close"

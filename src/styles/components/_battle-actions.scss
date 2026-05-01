@@ -66,7 +66,7 @@
   .ba-move-name {
     font-family: inherit; // Usually 'Press Start 2P'
     font-weight: normal;
-    font-size: clamp(8px, 2vw, 11px);
+    font-size: clamp(8px, 2dvw, 11px);
     letter-spacing: 0px;
     text-transform: uppercase;
     text-shadow: 0 2px 4px Rgba(0, 0, 0, 0.8);
@@ -154,7 +154,7 @@
   padding: 14px;
   color: $white !important;
   font-family: inherit;
-  font-size: clamp(7px, 1.8vw, 8px);
+  font-size: clamp(7px, 1.8dvw, 8px);
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.6);

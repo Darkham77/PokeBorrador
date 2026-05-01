@@ -124,13 +124,13 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
             class="continue-btn-final search-btn"
             @click.stop="battleStore.completeBattleFlow('search')"
           >
-            🔍 BUSCAR OTRO
+            <span class="btn-emoji">🔍</span> BUSCAR
           </button>
           <button
             class="continue-btn-final map-btn"
             @click.stop="battleStore.completeBattleFlow('map')"
           >
-            🗺️ VOLVER AL MAPA
+            <span class="btn-emoji">🗺️</span> VOLVER AL MAPA
           </button>
         </div>
       </div>
@@ -153,9 +153,9 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   z-index: var(--z-low); // Aseguramos que esté por encima del fondo del combate pero bajo modales/tooltips
   
   @media (max-width: 959px) {
-    padding: 12px 12px 12px 12px;
+    padding: 12px 12px 0 12px; // Anclaje al fondo (0px bottom)
     flex-shrink: 0;
-    margin-top: auto;
+    margin-bottom: -2px; // Precisión de anclaje según estándares
   }
 }
 
@@ -187,9 +187,24 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 .continue-btn-final {
   @include btn-vicio('info', 'md', true);
   max-width: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   
   &.map-btn {
     @include btn-vicio('success', 'md', true);
+  }
+
+  .btn-emoji {
+    font-size: 32px; 
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
+    position: relative;
+    top: -2px; // Ajuste para el baseline de la fuente pixelada
   }
 }
 

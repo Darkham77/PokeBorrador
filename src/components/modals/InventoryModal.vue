@@ -237,7 +237,7 @@ const close = () => {
   <BaseModal
     :show="show"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :max-width="isSmallScreen ? '100vw' : modalWidth"
+    :max-width="isSmallScreen ? '100dvw' : modalWidth"
     variant="retro"
     padding="raw"
     :no-scroll="!!battleMode"

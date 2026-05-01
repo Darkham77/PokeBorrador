@@ -51,7 +51,7 @@ const buy = (item) => {
     title-color="var(--yellow)"
     header-background="Rgba(26, 28, 46, 1)"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :max-width="isSmallScreen ? '100vw' : '900px'"
+    :max-width="isSmallScreen ? '100dvw' : '900px'"
     variant="retro"
     padding="raw"
     @close="emit('close')"
@@ -166,7 +166,7 @@ const buy = (item) => {
 .shop-container {
   display: flex;
   height: 600px;
-  max-height: 80vh;
+  max-height: 80dvh;
   overflow: hidden;
 }
 

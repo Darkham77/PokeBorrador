@@ -53,7 +53,7 @@ const getButtonVariant = (clsId) => {
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     title-color="var(--yellow)"
     header-background="Rgba(26, 28, 46, 1)"
-    :max-width="isSmallScreen ? '100vw' : '1230px'"
+    :max-width="isSmallScreen ? '100dvw' : '1230px'"
     variant="retro"
     @close="close"
   >

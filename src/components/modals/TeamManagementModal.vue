@@ -203,7 +203,7 @@ function selectAdventure(_slotIndex) {
     show
     header-background="transparent"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :max-width="isSmallScreen ? '100vw' : '940px'"
+    :max-width="isSmallScreen ? '100dvw' : '940px'"
     padding="standard"
     @close="uiStore.toggleTeamManagement"
   >

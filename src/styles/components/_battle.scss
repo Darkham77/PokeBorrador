@@ -125,15 +125,11 @@ body.is-battle-active {
 
   .safe-zone-box {
     position: absolute;
-    left: 1000px;
-    top: 1000px;
-    width: 1000px;
-    height: 1000px;
     border: 4px dashed Rgba(255, 255, 255, 0.4);
     background: Rgba(255, 255, 255, 0.05);
     
     &::after {
-      content: 'SAFE ZONE (1000x1000px)';
+      content: attr(data-label);
       position: absolute;
       bottom: 10px;
       left: 10px;
@@ -152,11 +148,9 @@ body.is-battle-active {
     background: Rgba(255, 0, 0, 0.2);
     
     &.p1 { 
-      left: 1000px; top: 1600px; width: 400px; height: 400px; 
       &::after { content: 'P1 ANCHOR'; position: absolute; top: 5px; left: 5px; color: white; font-size: 8px; @include pixelated; }
     }
     &.p2 { 
-      left: 1600px; top: 1000px; width: 400px; height: 400px; 
       &::after { content: 'P2 ANCHOR'; position: absolute; top: 5px; left: 5px; color: white; font-size: 8px; @include pixelated; }
     }
   }
@@ -192,7 +186,7 @@ body.is-battle-active {
   transform: TranslateX(-50%) TranslateY(-50%);
   // Escalado dinámico basado en la constante del sistema de cámara
   width: 70%; 
-  height: calc(var(--obj-scale, 1) * 10px); 
+  height: calc(var(--obj-scale, 1) * 15px); 
   z-index: calc(var(--z-base) - 1);
   pointer-events: none;
   background-size: 100% 100%; 

@@ -260,7 +260,7 @@ const select = (poke) => {
   border-radius: 24px;
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
+  max-height: 90dvh;
   overflow: hidden;
   box-shadow: 0 25px 60px Rgba(0,0,0,0.8);
   border: 1px solid Rgba(255, 255, 255, 0.05);

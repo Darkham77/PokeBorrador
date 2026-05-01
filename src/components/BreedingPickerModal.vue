@@ -193,7 +193,7 @@ const getSprite = (id, shiny) => {
   display: flex;
   flex-direction: column;
   height: 500px;
-  max-height: 70vh;
+  max-height: 70dvh;
 }
 
 .picker-search {

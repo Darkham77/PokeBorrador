@@ -13,6 +13,8 @@ This checklist is used to verify the visual and functional integrity of the Pok√
 
 - [ ] **Hybrid Check**: Are modern frames combined with pixel-art content?
 - [ ] **Typography**: Is `@include pixelated;` used for all pixel fonts? Sizes are multiples of 8?
+- [ ] **Relativity**: Are technical specs explained using symbolic names (`ENTITY_SIZE_P1/P2`) and logical relationships?
+- [ ] **Outline Optimization**: Have I run `detect_outline_traps.py` to ensure no expensive Quad Drop-Shadows are present?
 - [ ] **Prefixes**: Are `-webkit-backdrop-filter` and other Safari prefixes present?
 - [ ] **Tokens**: Hardcoded hex colors replaced with variables; `$white` and `$black` used correctly.
 - [ ] **Overlay Check**: Ensure modal overlays are siblings BEHIND the card, not parents, to avoid blurring content.

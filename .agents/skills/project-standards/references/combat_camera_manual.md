@@ -1,56 +1,64 @@
-# Combat Camera Standard (Poké Vicio)
+# Combat Camera Standard (v2 - Symbolic Coordination)
 
-This manual defines the technical and mathematical standards for the combat camera system, ensuring a consistent and responsive experience across all devices.
+This manual defines the technical and mathematical standards for the combat camera system. To maintain flexibility, **DO NOT hardcode virtual dimensions** in documentation; refer to symbolic constants from the centralized coordinator.
 
 ## 🏛️ Spatial Architecture
 
 The system uses a nested coordinate system:
 **Viewport** (Browser) -> **Camera** (Letterboxed Frame) -> **Virtual World** (Canvas).
 
-### 1. Global Constants
+### 1. Spatial Coordinator (The Source of Truth)
 
-| Constant | Value | Description |
+All spatial logic is centralized in `@/logic/combat/spatialCoordinator.js`. Components and manuals must use these symbolic references to ensure integrity when constants change.
+
+| Constant | Symbolic Role | Description |
 | :--- | :--- | :--- |
-| `MAP_WIDTH` | `3000` | Total virtual width of the battle arena. |
-| `MAP_HEIGHT` | `3000` | Total virtual height of the battle arena. |
-| `VISIBLE_UNITS` | `1000` | Size of the central action zone that MUST always be visible. |
-| `TARGET_X` | `1500` | Horizontal focal point (Center of the world). |
-| `TARGET_Y` | `1500` | Vertical focal point (Center of the world). |
-| `RATIO_MAX` | `3.0` | Maximum aspect ratio before letterboxing (3:1). |
-| `RATIO_MIN` | `0.33` | Minimum aspect ratio before letterboxing (1:3). |
+| `MAP_WIDTH / HEIGHT`| **World Bounds** | The total canvas size for background and object placement. |
+| `SAFE_ZONE_WIDTH/HEIGHT`| **Action Area** | The 3:2 rectangular zone where critical combat action occurs. |
+| `VISIBLE_UNITS_X/Y`| **Camera Target** | The target unit density for visibility. Usually `HEIGHT + Padding`. |
+| `TARGET_X / Y` | **Focal Point** | The camera center. `TARGET_Y` is offset to ensure bottom-alignment. |
+| `OBJECT_SCALE` | **Pixel Density** | Multiplier to maintain pixel-art crispness at various sizes. |
+| `ENTITY_SIZE_P1/P2` | **Occupancy** | Side-specific bounding boxes for combatants. |
 
 ### 2. Entity Positioning
 
-Entities (Pokémon) are positioned relative to the `1000x1000` Safe Zone located at the center of the world (`[1000, 1000]` to `[2000, 2000]`).
+Entities are positioned relative to the `SAFE_ZONE` boundaries.
 
-- **Player 1 (Bottom-Left)**: Centered in the bottom-left quadrant of the safe zone.
-- **Player 2 (Top-Right)**: Centered in the top-right quadrant of the safe zone.
+- **Anchor P1 (Player)**: Aligned to `SAFE_ZONE_X` and `(SAFE_ZONE_Y + SAFE_ZONE_HEIGHT) - ENTITY_SIZE_P1`.
+- **Anchor P2 (Enemy)**: Aligned to `(SAFE_ZONE_X + SAFE_ZONE_WIDTH) - ENTITY_SIZE_P2` and `SAFE_ZONE_Y`.
+- **Relativity**: All environment objects (bushes, shadows) must calculate their offsets relative to these side-specific anchors.
 
 ## 📏 Mathematical Logic
 
-### Camera Scaling
-The camera scale is calculated to ensure the `VISIBLE_UNITS` (1000px) action zone fits perfectly within the viewport, regardless of orientation.
+### Camera Scaling & Letterboxing
 
-```javascript
-const scaleX = camWidth / 1000;
-const scaleY = camHeight / 1100; // Includes extra vertical padding
-const scale = Math.min(scaleX, scaleY);
-```
+The camera frame applies dynamic letterboxing/pillarboxing to protect the safe zone's aspect ratio:
 
-### Centering Formula
-The world is translated so that the `TARGET` coordinates are centered in the camera frame.
+1. **Aspect Ratio Constraints**:
+   - Max/Min ratios are defined to prevent extreme distortion on ultra-wide or ultra-tall screens.
+   - Values outside these bounds trigger black bars (Pillarbox/Letterbox).
 
-```javascript
-tx = (camWidth / 2) - (TARGET_X * scale);
-ty = (camHeight / 2) - (TARGET_Y * scale);
-```
+2. **Global Scale Calculation**:
+   - The scale is determined by the minimum ratio between the available frame and the `VISIBLE_UNITS` constants.
+   - `Scale = Math.min(FrameW / VisibleX, FrameH / VisibleY)`.
+
+3. **Bottom-Alignment Centering**:
+   - The `TARGET_Y` focal point is calculated to align the **bottom** of the Safe Zone with the **bottom** of the Viewport.
+   - `TARGET_Y = (SAFE_ZONE_Y + SAFE_ZONE_HEIGHT) - (VISIBLE_UNITS_Y / 2)`.
+   - This ensures a cinematic "grounded" look with all safety padding concentrated at the top.
 
 ## 🛠️ Debugging Standards
 
 When `showGuides` is enabled, the system MUST display:
-1. **Virtual World Boundary**: A red border representing the `3000x3000px` limits.
-2. **Safe Zone**: A dashed white box representing the `1000x1000px` action area.
-3. **Entity Anchors**: Red boxes representing the fixed 400x400 slots for combatants.
+
+1. **Virtual World Boundary**: Represents the total `MAP` limits.
+2. **Safe Zone**: Rectangular box representing the `3:2` action area.
+3. **Entity Anchors**: Side-specific boxes representing the `ENTITY_SIZE_P1/P2` footprint.
 
 > [!IMPORTANT]
-> Any changes to the virtual world dimensions MUST be reflected in `useCombatCamera.js`, `_battle.scss`, and this documentation simultaneously to maintain system integrity.
+> **Zero-Hardcoding Policy**: Documentation must explain the **Logic and Ratios**. The **Numbers** live exclusively in `spatialCoordinator.js`. If a value needs to be cited for clarity, it must be marked as "Current Example" or "Variable".
+
+## 📐 Resolution Independence
+
+- **Virtual Units vs Scale**: Always separate the logical size (e.g., 300 units) from the physical pixel scale (e.g., x2). This allows for density adjustments without re-calculating the entire world's geometry.
+- **Pixel-Perfect Integrity**: When using an `OBJECT_SCALE`, ensure that all related assets (shadows, outlines) use integer multiples of the base size to avoid sub-pixel blurring.

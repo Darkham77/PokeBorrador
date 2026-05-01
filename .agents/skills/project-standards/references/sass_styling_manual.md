@@ -170,9 +170,10 @@ When refactoring legacy or generic components:
 - **Nesting Depth**: Never exceed **3 levels** of nesting in SCSS. Excessive nesting creates specificity wars and bloated CSS.
 - **Color Management**:
   - **FORBIDDEN**: Hardcoded hex values (e.g., `#ff0000`) for standard UI elements. Use **Native CSS Variables** (`var(--color)`) or SASS variables (`$color`) from the project tokens.
-  - **MANDATORY Capitalization**: You **MUST** use **Rgba()**, **Rgb()**, and **Linear-Gradient()** (Capitalized) instead of lowercase. This prevents SASS from intercepting them as internal color functions and ensures literal CSS output.
+  - **MANDATORY Capitalization**: You **MUST** use **Rgba()**, **Rgb()**, **Linear-Gradient()**, and **Radial-Gradient()** (Capitalized) instead of lowercase. This prevents SASS from intercepting them as internal color functions and ensures literal CSS output.
   - ✅ `background: Rgba(255, 255, 255, 0.5);`
   - ❌ `background: rgba(255, 255, 255, 0.5);` (Collision)
+  - **Filter Capitalization**: This rule applies to all CSS filters (`Blur()`, `Scale()`, `Brightness()`, `Grayscale()`, etc.).
   - **Local/One-off Colors**: Capitalized Rgba/Rgb or Hex values ARE PERMITTED for local, non-recurring styles within a component's `<style scoped>` block, but variables are always preferred.
   - **SASS vs CSS Variables**: SASS color functions (like `color.scale`, `lighten()`, `darken()`) cannot process `var(--color)`. For interactive highlights/hovers, use static SASS fallbacks (e.g. `$yellow`) for calculations while maintaining the CSS variable for the main render to support dynamic themes.
   - **Variable Isolation**: In high-density or dynamically scoped components (e.g., within specialized filters or grids), if core SASS variables are not reliably available without manual imports, use **Direct Hex Values** to ensure visual stability and prevent "Color not defined" build errors.
@@ -180,6 +181,11 @@ When refactoring legacy or generic components:
   - **MANDATORY**: Never use hardcoded numbers for `z-index` (e.g., `z-index: 10;`). Use CSS variables (`var(--z-low)`, `var(--z-base)`, `var(--z-modal)`, `var(--z-critical)`) for consistent layering and to pass aesthetics audits.
 - **Modern Control Flow**: The legacy ternary `if()` function is deprecated in SASS 1.8+. Always use standard `@if / @else` blocks for conditional styling logic to ensure build-log cleanliness.
 - **Positioning & Micro-offsets**: Avoid using negative margins (`margin-top: -1px`) to correct alignment of symbols or small icons. This causes layout instability and triggers redundancy alerts. Use **TranslateY()** or **TranslateX()** (Capitalized) for hardware-accelerated positioning that doesn't affect the box model.
+- **Viewport Units (Mobile Safety)**:
+  - **MANDATORY**: Use `dvh` and `dvw` (Dynamic Viewport) for any element requiring full-screen scaling.
+  - **WHY**: Standard `vh`/`vw` units do not account for dynamic toolbars (URL bar, navigation) in mobile browsers like Safari. This leads to layout clipping or unwanted scrollbars.
+  - **FORBIDDEN**: Legacy `vh` and `vw` units accompanied by numeric values (e.g., `100vh`).
+  - **Audit**: `detect_viewport_units.py` enforces this rule and supports `--fix` for automatic migration.
 - **Global Pollution**: Do not define variables or mixins directly in component styles; always centralize them in tokens/partials and `@use` them.
 
 ### 4. CSS Redundancy & "Single Source of Truth"

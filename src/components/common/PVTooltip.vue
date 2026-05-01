@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick, inject, watch } from 'vue'
+import { ref, nextTick, inject, watch, onUnmounted } from 'vue'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -122,6 +122,11 @@ const show = () => {
     // Second calculate in case flipping changed dimensions or layout
     await nextTick()
     updatePosition()
+    
+    // Auto-hide on scroll to prevent "floating" tooltips
+    window.addEventListener('scroll', hide, { passive: true, capture: true })
+    window.addEventListener('wheel', hide, { passive: true })
+    window.addEventListener('touchmove', hide, { passive: true })
   }, props.delay)
 }
 
@@ -131,6 +136,9 @@ let clickBlockTimeout = null
 const hide = () => {
   if (timeout) clearTimeout(timeout)
   isVisible.value = false
+  window.removeEventListener('scroll', hide, { capture: true })
+  window.removeEventListener('wheel', hide)
+  window.removeEventListener('touchmove', hide)
 }
 
 const handleTriggerClick = (event) => {
@@ -155,6 +163,10 @@ const handleMouseEnter = () => {
 // If it becomes disabled while showing, hide it immediately
 watch(() => props.disabled, (newVal) => {
   if (newVal) hide()
+})
+
+onUnmounted(() => {
+  hide()
 })
 </script>
 

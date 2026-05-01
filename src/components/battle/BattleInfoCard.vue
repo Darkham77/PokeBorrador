@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 
@@ -10,6 +10,20 @@ const props = defineProps({
 })
 
 const p = computed(() => props.pokemon)
+
+// displayHp permite animar la barra desde 0 cuando el componente aparece (Fase 3)
+const displayHp = ref(0)
+
+onMounted(() => {
+  // Pequeño delay para asegurar que el componente esté en el DOM y la transición CSS se dispare
+  setTimeout(() => {
+    displayHp.value = p.value.hp
+  }, 100)
+})
+
+watch(() => p.value.hp, (newHp) => {
+  displayHp.value = newHp
+})
 
 const getHpPct = (cur, max) => (cur / max) * 100
 const getHpClass = (pct) => {
@@ -64,8 +78,8 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
       <div class="hp-bar-outer">
         <div
           class="hp-bar-inner"
-          :class="getHpClass(getHpPct(p.hp, p.maxHp))"
-          :style="{ width: getHpPct(p.hp, p.maxHp) + '%' }"
+          :class="getHpClass(getHpPct(displayHp, p.maxHp))"
+          :style="{ width: getHpPct(displayHp, p.maxHp) + '%' }"
         />
       </div>
       
@@ -81,7 +95,7 @@ const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gen
       </div>
 
       <div class="hp-values">
-        HP: {{ Math.max(0, p.hp) }}/{{ p.maxHp }}
+        HP: {{ Math.max(0, Math.round(displayHp)) }}/{{ p.maxHp }}
       </div>
     </div>
 

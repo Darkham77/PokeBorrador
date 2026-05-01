@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cámara Dinámica Vue 3 - Barras Negras</title>
+  <title>Cámara Dinámica Vue 3 - Zona Asimétrica</title>
   <style>
     :root {
       --bg-color: #121212;
@@ -129,17 +129,12 @@
 
     .safe-zone {
       position: absolute;
-      left: 1000px;
-      top: 1000px;
-      width: 1000px;
-      height: 1000px;
       border: 2px dashed rgba(255, 255, 255, 0.7);
       background: rgba(255, 255, 255, 0.1);
       pointer-events: none;
     }
 
-    .safe-zone::before {
-      content: 'Zona Base 1000x1000';
+    .safe-zone-text {
       position: absolute;
       bottom: 5px;
       left: 5px;
@@ -239,7 +234,7 @@
 <body>
 
   <div id="app">
-    <h1>Cámara Dinámica (Corrección Geométrica)</h1>
+    <h1>Cámara Dinámica (Zona {{ visibleWidth }}x{{ visibleHeight }})</h1>
 
     <div ref="viewportRef" class="viewport">
 
@@ -248,15 +243,24 @@
             transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
             backgroundImage: `url(${bgUrl})`
           }">
-          <div class="safe-zone"></div>
+          <!-- Zona Segura Dinámica -->
+          <div class="safe-zone" :style="{
+            width: visibleWidth + 'px',
+            height: visibleHeight + 'px',
+            left: (TARGET_X - visibleWidth / 2) + 'px',
+            top: (TARGET_Y - visibleHeight / 2) + 'px'
+          }">
+            <div class="safe-zone-text">Zona Base {{ visibleWidth }}x{{ visibleHeight }}</div>
+          </div>
+
           <div class="focal-point"></div>
 
-          <!-- Rectángulos Guía (Anclados a 1000px del borde del mapa 3000x3000) -->
+          <!-- Rectángulos Guía vinculados matemáticamente a la zona de acción -->
           <div class="guide-rect" :style="{ 
             width: rect1Size + 'px', 
             height: rect1Size + 'px', 
-            left: '1000px', 
-            bottom: '1000px',
+            left: (TARGET_X - visibleWidth / 2) + 'px', 
+            bottom: (MAP_HEIGHT - TARGET_Y - visibleHeight / 2) + 'px',
             backgroundImage: rect1Img ? `url(${rect1Img})` : 'none',
             backgroundColor: rect1Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)'
           }">
@@ -265,8 +269,8 @@
           <div class="guide-rect" :style="{ 
             width: rect2Size + 'px', 
             height: rect2Size + 'px', 
-            right: '1000px', 
-            top: '1000px',
+            right: (MAP_WIDTH - TARGET_X - visibleWidth / 2) + 'px', 
+            top: (TARGET_Y - visibleHeight / 2) + 'px',
             backgroundImage: rect2Img ? `url(${rect2Img})` : 'none',
             backgroundColor: rect2Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)'
           }">
@@ -279,6 +283,14 @@
 
     <!-- Controles -->
     <div class="controls">
+      <label>Zona de Acción (Ancho x Alto):</label>
+      <div class="controls-row">
+        <input type="number" v-model.number="visibleWidth" min="100" max="3000" title="Ancho">
+        <input type="number" v-model.number="visibleHeight" min="100" max="3000" title="Alto">
+      </div>
+
+      <hr>
+
       <label>Subir imagen local:</label>
       <input type="file" @change="cambiarFondoArchivo" accept="image/*">
       <label>O ingresar URL:</label>
@@ -304,8 +316,8 @@
       <p>Viewport Total: <span class="highlight">{{ Math.round(vpWidth) }}x{{ Math.round(vpHeight) }}</span></p>
       <p>Resolución Cámara: <span class="highlight">{{ Math.round(camWidth) }}x{{ Math.round(camHeight) }}</span></p>
       <p>Ratio actual: <span class="highlight">{{ (camWidth / camHeight).toFixed(2) }}:1</span>
-        <span v-if="vpWidth / vpHeight > 3 || vpHeight / vpWidth > 3" class="warning">(Barras activas limitando a
-          3:1)</span>
+        <span v-if="vpWidth / vpHeight > currentRatioMax || vpHeight / vpWidth > (1 / currentRatioMin)"
+          class="warning">(Barras activas)</span>
       </p>
       <p>Escala: <span class="highlight">{{ scale.toFixed(2) }}x</span></p>
     </div>
@@ -314,7 +326,7 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
   <script>
-    const { createApp, ref, onMounted, onUnmounted } = Vue;
+    const { createApp, ref, onMounted, onUnmounted, watch } = Vue;
 
     createApp({
       setup() {
@@ -332,21 +344,23 @@
 
         const bgUrl = ref('https://picsum.photos/id/1018/3000/3000');
 
-        const rect1Size = ref(450);
-        const rect2Size = ref(450);
+        const rect1Size = ref(600);
+        const rect2Size = ref(300);
 
         const rect1Img = ref('');
         const rect2Img = ref('');
 
         const TARGET_X = 1500;
         const TARGET_Y = 1500;
-        const VISIBLE_UNITS = 1000;
         const MAP_WIDTH = 3000;
         const MAP_HEIGHT = 3000;
 
-        // El ratio matemáticamente estricto para encajar 1000px de acción en 3000px de mundo
-        const RATIO_MAX = MAP_WIDTH / VISIBLE_UNITS; // 3.0
-        const RATIO_MIN = VISIBLE_UNITS / MAP_HEIGHT; // 0.333...
+        // --- NUEVAS VARIABLES REACTIVAS DE LA ZONA DE ACCIÓN ---
+        const visibleWidth = ref(1000);
+        const visibleHeight = ref(666); // Inicializado en 1000x666 como solicitaste
+
+        const currentRatioMax = ref(3.0);
+        const currentRatioMin = ref(0.33);
 
         let resizeObserver = null;
 
@@ -365,12 +379,21 @@
           if (file) rect2Img.value = URL.createObjectURL(file);
         };
 
-        const actualizarCamara = (width, height) => {
+        const actualizarCamara = (width = vpWidth.value, height = vpHeight.value) => {
+          if (width === 0 || height === 0) return;
+
           let cw = width;
           let ch = height;
           const ratio = width / height;
 
-          // 1. Limitar proporciones estrictamente para impedir conflicto de visión
+          // 1. Recalculamos matemáticamente los topes según la nueva proporción asimétrica
+          const RATIO_MAX = MAP_WIDTH / visibleHeight.value;
+          const RATIO_MIN = visibleWidth.value / MAP_HEIGHT;
+
+          currentRatioMax.value = RATIO_MAX;
+          currentRatioMin.value = RATIO_MIN;
+
+          // 2. Aplicamos las barreras de Letterbox / Pillarbox
           if (ratio > RATIO_MAX) {
             cw = height * RATIO_MAX;
           } else if (ratio < RATIO_MIN) {
@@ -380,17 +403,20 @@
           camWidth.value = cw;
           camHeight.value = ch;
 
-          // 2. Escala determinista. 
-          // Gracias al nuevo ratio de 1.5, esta fórmula asegura que:
-          // A) La Zona 1000x1000 SIEMPRE esté visible sin importar la orientación.
-          // B) El fondo NUNCA traspase los límites del mapa 1500x1500.
-          const currentScale = Math.min(cw, ch) / VISIBLE_UNITS;
+          // 3. Escala determinista con soporte para zonas asimétricas
+          // Garantiza que tanto el Ancho como el Alto de la zona encajen perfectamente en cámara.
+          const currentScale = Math.min(cw / visibleWidth.value, ch / visibleHeight.value);
 
-          // 3. Centrado
+          // 4. Centrado
           tx.value = (cw / 2) - (TARGET_X * currentScale);
           ty.value = (ch / 2) - (TARGET_Y * currentScale);
           scale.value = currentScale;
         };
+
+        // Escuchamos los cambios que el usuario haga en los inputs de la Zona de Acción
+        watch([visibleWidth, visibleHeight], () => {
+          actualizarCamara();
+        });
 
         onMounted(() => {
           resizeObserver = new ResizeObserver((entries) => {
@@ -421,7 +447,10 @@
           bgUrl, cambiarFondoArchivo,
           rect1Size, rect2Size,
           rect1Img, rect2Img,
-          cargarImgRect1, cargarImgRect2
+          cargarImgRect1, cargarImgRect2,
+          visibleWidth, visibleHeight,
+          TARGET_X, TARGET_Y, MAP_WIDTH, MAP_HEIGHT,
+          currentRatioMax, currentRatioMin
         };
       }
     }).mount('#app');

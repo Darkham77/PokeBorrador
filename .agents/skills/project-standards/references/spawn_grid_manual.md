@@ -11,9 +11,10 @@ The Spawn Grid is a responsive system designed to display Pokémon on route card
 The grid dimensions are calculated based on the number of Pokémon ($N$) and a preferred column count (3-5) derived from the container's width (via `ResizeObserver`).
 
 - **Responsive Columns**:
-  - Width > 580px: 5 columns
-  - Width > 420px: 4 columns
-  - Default: 3 columns
+  - **Large Viewports**: 5 columns
+  - **Medium Viewports**: 4 columns
+  - **Mobile/Default**: 3 columns
+- **Column Decision**: The number of columns is dynamically calculated via `ResizeObserver` to maintain a consistent cell aspect ratio.
 - **Minimum Rows**: Always force at least 2 rows to maintain sprite scale consistency.
 - **Filling Order**: Bottom-right to top-left.
 

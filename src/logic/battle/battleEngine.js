@@ -178,13 +178,20 @@ export function getEffectiveSpeed(pokemon, stages, options = {}) {
   return spe;
 }
 
-export function calculateCatchRate(pokemon, ballType = 'poke-ball', eventCatchMult = 1) {
+export function calculateCatchRate(pokemon, rawBallType = 'poke-ball', eventCatchMult = 1) {
+  const ballType = String(rawBallType || '').toLowerCase();
+  
+  // SHORTCUT ABSOLUTO: Si es Master Ball o debug, captura garantizada
+  if (ballType.includes('master') || ballType.includes('100')) {
+    return { caught: true, shakes: 3 };
+  }
+
+  const normalizedBall = ballType.replace(/\s/g, '-');
   const hpFactor = (3 * pokemon.maxHp - 2 * pokemon.hp) / (3 * pokemon.maxHp);
   let ballMult = 1;
   
-  if (ballType === 'super-ball') ballMult = 1.5;
-  if (ballType === 'ultra-ball') ballMult = 2;
-  if (ballType === 'master-ball') return 255; // Always captures
+  if (normalizedBall === 'super-ball' || normalizedBall === 'súper-ball') ballMult = 1.5;
+  if (normalizedBall === 'ultra-ball') ballMult = 2;
 
   const catchRate = pokemon.catchRate || 45; // Default catch rate
   const statusMult = (pokemon.status === 'sleep' || pokemon.status === 'freeze') ? 2 : 
@@ -194,6 +201,23 @@ export function calculateCatchRate(pokemon, ballType = 'poke-ball', eventCatchMu
   const eventBonus = eventCatchMult - 1;
   const totalMult = Math.max(0.1, ballMult + eventBonus);
 
-  const finalRate = Math.min(255, Math.floor(catchRate * totalMult * hpFactor * statusMult));
-  return Math.random() * 255 < finalRate;
+  const finalRate = Math.min(255, Math.max(1, Math.floor(catchRate * totalMult * hpFactor * statusMult)));
+  
+  // Official Gen 3/4 capture algorithm: 4 checks against 'b'
+  // b = 65535 / ((255/a)^(1/4))  => simplified as 65535 * (a/255)^(0.25)
+  const b = Math.floor(65535 * Math.pow(finalRate / 255, 0.25));
+  
+  let shakes = 0;
+  for (let i = 0; i < 4; i++) {
+    if (Math.random() * 65535 < b) {
+      shakes++;
+    } else {
+      break;
+    }
+  }
+
+  return {
+    caught: shakes === 4,
+    shakes: Math.min(3, shakes) // 0, 1, 2, 3 shakes before breaking or 4 means caught
+  };
 }

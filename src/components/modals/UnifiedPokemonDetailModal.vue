@@ -316,8 +316,8 @@ const handleReorderMoves = (from, to) => {
   <BaseModal
     :show="show"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :width="isSmallScreen ? '100vw' : '700px'"
-    :max-width="isSmallScreen ? '100vw' : '700px'"
+    :width="isSmallScreen ? '100dvw' : '700px'"
+    :max-width="isSmallScreen ? '100dvw' : '700px'"
     padding="raw"
     :hide-header="true"
     custom-class="pokedex-detail-modal"

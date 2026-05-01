@@ -15,22 +15,61 @@ const gameStore = useGameStore()
 const uiStore = useUIStore()
 const isOpen = ref(false)
 
-// El modo debug suele estar habilitado globalmente en este proyecto
 const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_DEBUG__)
 
 const defeatEnemy = async () => {
-  if (!battleStore.state?.enemy) return
-  
+  const e = battleStore.enemy
+  if (!e) return
   battleStore.addLog('DEBUG: Ejecutando Daño Máximo...', 'log-info')
-  battleStore.state.enemy.hp = 0
+  e.hp = 0
   await battleStore.endBattle(true, false)
 }
 
 const healPlayer = () => {
-  if (!battleStore.state?.player) return
-  battleStore.state.player.hp = battleStore.state.player.maxHP
-  battleStore.state.player.status = null
+  const p = battleStore.player
+  if (!p) return
+  p.hp = p.maxHp
+  p.status = null
   battleStore.addLog('DEBUG: Jugador curado.', 'log-info')
+}
+
+const healEnemy = () => {
+  const e = battleStore.enemy
+  if (!e) return
+  e.hp = e.maxHp
+  e.status = null
+  battleStore.addLog('DEBUG: Enemigo curado.', 'log-info')
+}
+
+const debugCapture = async () => {
+  if (!battleStore.state?.enemy || battleStore.isProcessing) return
+  
+  battleStore.isProcessing = true
+  const e = battleStore.state.enemy
+  const itemName = 'Ultra Ball'
+  
+  battleStore.addLog(`DEBUG: Lanzando ${itemName} (100% Efectividad)...`, 'log-catch')
+  
+  // 1. Animación de entrada
+  gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: itemName })
+  await new Promise(r => setTimeout(r, 1000))
+
+  // 2. Suspenso: 3 Shakes
+  for (let i = 0; i < 3; i++) {
+    gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
+    await new Promise(r => setTimeout(r, 1000))
+  }
+
+  // 3. Éxito visual y sonoro
+  await new Promise(r => setTimeout(r, 500))
+  gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
+  battleStore.addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
+  
+  battleStore.state.isCapture = true
+  gameStore.addPokemon(e, { notify: true })
+  
+  await battleStore.endBattle(true, false)
+  battleStore.isProcessing = false
 }
 
 const toggleSearchMode = () => {
@@ -39,313 +78,140 @@ const toggleSearchMode = () => {
 
 const testScenario1 = () => {
   const currentPoke = battleStore.upcomingPokemon || battleStore.enemy
-  const pokeToUse = currentPoke ? { ...currentPoke } : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHP: 20 }
-  
+  const pokeToUse = currentPoke ? { ...currentPoke } : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHp: 20 }
   battleStore.isSearching = false
   battleStore.upcomingPokemon = null
   battleStore.state.enemy = pokeToUse
   battleStore.state.over = false
-  
-  // Forzar animación de emergencia (Salto)
-  gameBus.emit('START_BATTLE', { enemy: pokeToUse, isTrainer: false })
+  gameBus.emit('START_BATTLE', { enemy: pokeToUse, isTrainer: false, animationPhase: 1 })
 }
 
 const testScenario2 = () => {
   battleStore.isSearching = true
   const currentPoke = battleStore.upcomingPokemon || battleStore.enemy
   const poke = currentPoke ? { ...currentPoke } : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHP: 20 }
-  
   battleStore.upcomingPokemon = poke
 }
 
 const testScenario3 = () => {
   if (!battleStore.upcomingPokemon) {
-    uiStore.notify('Primero activa la Fase 2 para ver un Pokémon', '⚠️')
+    uiStore.notify('Primero activa la Fase 2', '⚠️')
     return
   }
-  
   const poke = { ...battleStore.upcomingPokemon }
-  
-  // IMPORTANTE: Emitir antes de limpiar el estado para que BattleArenaView detecte que estábamos buscando
-  gameBus.emit('START_BATTLE', { enemy: poke, isTrainer: false })
-  
+  gameBus.emit('START_BATTLE', { enemy: poke, isTrainer: false, animationPhase: 3 })
   battleStore.state.enemy = poke
   battleStore.state.over = false
   battleStore.isSearching = false
-  
-  setTimeout(() => {
-    battleStore.upcomingPokemon = null
-  }, 100)
+  setTimeout(() => { battleStore.upcomingPokemon = null }, 100)
 }
 
-const faintPlayer = async () => {
-  if (!battleStore.state?.player) return
-  const p = battleStore.state.player
-  
-  battleStore.addLog('DEBUG: Simulando Daño Letal...', 'log-danger')
-  p.hp = 0
-  
-  await new Promise(r => setTimeout(r, 600))
-  
-  battleStore.addLog(`¡${p.name} cayó debilitado!`, 'log-player', p)
-
-  const hasMore = gameStore.state.team.some(poke => 
-    poke.hp > 0 && poke.uid !== p.uid && !poke.onMission && !poke.onDefense
-  )
-  
-  if (!hasMore) {
-    console.log('[DEBUG] Jugador derrotado. Terminando combate.')
-    await battleStore.endBattle(false)
-  } else {
-    battleStore.addLog('¡Envía a otro Pokémon!', 'log-info', p)
-    uiStore.isBattleSwitchForced = true
-  }
-}
-
-const visualPokemonId = ref(1)
-const playerVisualId = ref(1)
-
-// Sincronizar cuando cambia el enemigo real
-
-watch(() => battleStore.state?.enemy?.id, (newId) => {
-  if (newId) {
-    const idx = ALL_PDEX.indexOf(newId)
-    visualPokemonId.value = idx !== -1 ? idx + 1 : 1
-  }
-}, { immediate: true })
-
-watch(() => battleStore.state?.player?.id, (newId) => {
-  if (newId) {
-    const idx = ALL_PDEX.indexOf(newId)
-    playerVisualId.value = idx !== -1 ? idx + 1 : 1
-  }
-}, { immediate: true })
+const visualEnemyId = ref(1)
+const visualPlayerId = ref(1)
 
 const updateVisualSwap = (side = 'enemy') => {
-  const num = side === 'player' ? playerVisualId.value : visualPokemonId.value
+  const num = side === 'player' ? visualPlayerId.value : visualEnemyId.value
   const targetId = ALL_PDEX[Math.max(0, num - 1)] || ALL_PDEX[0]
-  
-  if (side === 'player') {
-    if (battleStore.state?.player) battleStore.state.player.id = targetId
-  } else {
-    if (battleStore.state?.enemy) battleStore.state.enemy.id = targetId
+  if (side === 'player' && battleStore.state?.player) {
+    battleStore.state.player.id = targetId
+  } else if (battleStore.state?.enemy) {
+    battleStore.state.enemy.id = targetId
   }
 }
 
 const incrementSwap = (side = 'enemy') => {
-  if (side === 'player') playerVisualId.value++
-  else visualPokemonId.value++
+  if (side === 'player') visualPlayerId.value++
+  else visualEnemyId.value++
   updateVisualSwap(side)
 }
 
 const decrementSwap = (side = 'enemy') => {
-  const val = side === 'player' ? playerVisualId.value : visualPokemonId.value
-  if (val > 1) {
-    if (side === 'player') playerVisualId.value--
-    else visualPokemonId.value--
-    updateVisualSwap(side)
-  }
+  if (side === 'player') { if (visualPlayerId.value > 1) visualPlayerId.value-- }
+  else { if (visualEnemyId.value > 1) visualEnemyId.value-- }
+  updateVisualSwap(side)
 }
 
-/**
- * Animaciones de Energía
- */
-const testCatchAnim = (side = 'enemy') => {
-  gameBus.emit('PLAY_CATCH_ENERGY', { side })
-  uiStore.notify(`Debug: Animación Captura (${side})`, '⚡')
+const toggleStatus = (side, type) => {
+  const poke = side === 'player' ? battleStore.state?.player : battleStore.state?.enemy
+  if (!poke) return
+  if (type === 'shiny') poke.isShiny = !poke.isShiny
+  if (type === 'guardian') poke.isGuardian = !poke.isGuardian
 }
-
-const testReleaseAnim = (side = 'enemy') => {
-  gameBus.emit('PLAY_RELEASE_ENERGY', { side })
-  uiStore.notify(`Debug: Animación Salida (${side})`, '✨')
-}
-
 </script>
 
 <template>
-  <div 
-    v-if="isDebug"
-    class="battle-debug-tools"
-    :class="{ 'is-open': isOpen }"
-  >
-    <PVTooltip title="Herramientas de Debug">
-      <button 
-        class="debug-trigger"
-        @click.stop="isOpen = !isOpen"
-      >
-        <span class="icon">🛠️</span>
+  <div v-if="isDebug" class="battle-debug-tools" :class="{ 'is-open': isOpen }">
+    <Transition name="slide-up">
+      <div v-if="isOpen" class="debug-menu custom-scrollbar-vicio">
+        <!-- GLOBAL / QUICK ACTIONS -->
+        <div class="debug-row">
+          <button class="debug-btn kill-btn" @click.stop="defeatEnemy">KILL ENEMY</button>
+          <button class="debug-btn heal-btn" @click.stop="healPlayer">HEAL ME</button>
+          <button class="debug-btn heal-btn" @click.stop="healEnemy">HEAL ENEMY</button>
+        </div>
+
+        <button class="debug-btn search-btn" @click.stop="toggleSearchMode">
+          SEARCH: {{ battleStore.isSearching ? 'OFF' : 'ON' }}
+        </button>
+
+        <!-- PLAYER SECTION -->
+        <div class="debug-section">
+          <div class="section-label">Player Controls</div>
+          <div class="btn-grid">
+            <button class="mini-btn" :class="{ 'active': battleStore.state?.player?.isShiny }" @click.stop="toggleStatus('player', 'shiny')">SHINY</button>
+            <button class="mini-btn" :class="{ 'active': battleStore.state?.player?.isGuardian }" @click.stop="toggleStatus('player', 'guardian')">GUARD</button>
+          </div>
+          <div class="swap-controls mt-1">
+            <button class="swap-btn" @click.stop="decrementSwap('player')">-</button>
+            <input v-model.number="visualPlayerId" type="number" class="swap-input" @change="updateVisualSwap('player')" @click.stop>
+            <button class="swap-btn" @click.stop="incrementSwap('player')">+</button>
+          </div>
+        </div>
+
+        <!-- ENEMY SECTION -->
+        <div class="debug-section">
+          <div class="section-label">Enemy Controls</div>
+          <div class="btn-grid">
+            <button class="mini-btn" :class="{ 'active': battleStore.state?.enemy?.isShiny }" @click.stop="toggleStatus('enemy', 'shiny')">SHINY</button>
+            <button class="mini-btn" :class="{ 'active': battleStore.state?.enemy?.isGuardian }" @click.stop="toggleStatus('enemy', 'guardian')">GUARD</button>
+          </div>
+          <div class="swap-controls mt-1">
+            <button class="swap-btn" @click.stop="decrementSwap('enemy')">-</button>
+            <input v-model.number="visualEnemyId" type="number" class="swap-input" @change="updateVisualSwap('enemy')" @click.stop>
+            <button class="swap-btn" @click.stop="incrementSwap('enemy')">+</button>
+          </div>
+          <button class="debug-btn catch-btn" @click.stop="debugCapture">⭐ SUPER POKEBALL</button>
+        </div>
+
+        <!-- SCENARIOS -->
+        <div class="debug-section">
+          <div class="section-label">Scenarios</div>
+          <div class="btn-grid trio">
+            <button class="mini-btn" @click.stop="testScenario1">P1</button>
+            <button class="mini-btn" @click.stop="testScenario2">P2</button>
+            <button class="mini-btn" @click.stop="testScenario3">P3</button>
+          </div>
+        </div>
+
+        <!-- CAMERA -->
+        <div class="debug-section">
+          <div class="section-label">Camera</div>
+          <div class="btn-grid">
+            <button class="mini-btn" @click.stop="gameBus.emit('TOGGLE_CAMERA_GUIDES')">GUIDES</button>
+            <button class="mini-btn" @click.stop="gameBus.emit('TOGGLE_DEBUG_ZOOM')">ZOOM</button>
+          </div>
+        </div>
+
+        <div class="debug-footer">VITE_DEBUG_ACTIVE</div>
+      </div>
+    </Transition>
+
+    <PVTooltip title="Debug Menu">
+      <button class="debug-trigger" @click.stop="isOpen = !isOpen">
+        <span class="icon">🕹️</span>
         <span class="label">DEBUG</span>
       </button>
     </PVTooltip>
-
-    <!-- Menú de Acciones -->
-    <Transition name="slide-up">
-      <div 
-        v-if="isOpen"
-        class="debug-menu custom-scrollbar-vicio"
-      >
-        <button 
-          class="debug-btn kill-btn"
-          @click.stop="defeatEnemy"
-        >
-          💀 DERROTAR ENEMIGO
-        </button>
-        <button 
-          class="debug-btn heal-btn"
-          @click.stop="healPlayer"
-        >
-          ❤️ CURAR MI POKE
-        </button>
-        <button 
-          class="debug-btn faint-btn"
-          @click.stop="faintPlayer"
-        >
-          💀 DEBILITAR MI POKE
-        </button>
-        <button 
-          class="debug-btn search-btn"
-          @click.stop="toggleSearchMode"
-        >
-          🔍 BUSQUEDA (ON/OFF)
-        </button>
-
-        <div class="debug-section">
-          <div class="section-label">
-            🎥 CAMARA Y MAPA
-          </div>
-          <div class="anim-grid">
-            <button 
-              class="anim-btn release"
-              @click.stop="gameBus.emit('TOGGLE_CAMERA_GUIDES')"
-            >
-              GUIAS CAMARA
-            </button>
-            <button 
-              class="anim-btn info"
-              @click.stop="gameBus.emit('TOGGLE_DEBUG_ZOOM')"
-            >
-              ALEJAR (50%)
-            </button>
-          </div>
-        </div>
-
-        <div class="debug-section">
-          <div class="section-label">
-            🌿 ESCENARIOS DE ENCUENTRO
-          </div>
-          <div class="scenario-grid">
-            <button
-              class="debug-btn scenario-btn"
-              @click.stop="testScenario1"
-            >
-              1
-            </button>
-            <button
-              class="debug-btn scenario-btn"
-              @click.stop="testScenario2"
-            >
-              2
-            </button>
-            <button
-              class="debug-btn scenario-btn"
-              @click.stop="testScenario3"
-            >
-              3
-            </button>
-          </div>
-        </div>
-
-        <div class="debug-section">
-          <div class="section-label">
-            ⚡ ANIMACIONES ENERGÍA
-          </div>
-          <div class="anim-grid">
-            <button
-              class="anim-btn catch"
-              @click.stop="testCatchAnim('player')"
-            >
-              CATCH (P)
-            </button>
-            <button
-              class="anim-btn catch"
-              @click.stop="testCatchAnim('enemy')"
-            >
-              CATCH (E)
-            </button>
-            <button
-              class="anim-btn release"
-              @click.stop="testReleaseAnim('player')"
-            >
-              RELEASE (P)
-            </button>
-            <button
-              class="anim-btn release"
-              @click.stop="testReleaseAnim('enemy')"
-            >
-              RELEASE (E)
-            </button>
-          </div>
-        </div>
-
-        <div class="debug-section">
-          <div class="section-label">
-            VISUAL SWAP (Opponent)
-          </div>
-          <div class="swap-controls">
-            <button
-              class="swap-btn"
-              @click.stop="decrementSwap('enemy')"
-            >
-              -
-            </button>
-            <input 
-              v-model.number="visualPokemonId" 
-              type="number" 
-              class="swap-input"
-              @change="updateVisualSwap('enemy')"
-              @click.stop
-            >
-            <button
-              class="swap-btn"
-              @click.stop="incrementSwap('enemy')"
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-        <div class="debug-section">
-          <div class="section-label">
-            VISUAL SWAP (Player)
-          </div>
-          <div class="swap-controls">
-            <button
-              class="swap-btn"
-              @click.stop="decrementSwap('player')"
-            >
-              -
-            </button>
-            <input 
-              v-model.number="playerVisualId" 
-              type="number" 
-              class="swap-input"
-              @change="updateVisualSwap('player')"
-              @click.stop
-            >
-            <button
-              class="swap-btn"
-              @click.stop="incrementSwap('player')"
-            >
-              +
-            </button>
-          </div>
-        </div>
-        
-        <div class="debug-footer">
-          VITE_DEBUG_ACTIVE
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -354,183 +220,179 @@ const testReleaseAnim = (side = 'enemy') => {
 @use "@/styles/core/tools" as *;
 
 .battle-debug-tools {
-  position: absolute;
-  top: -24px; 
-  right: 12px;
-  z-index: var(--z-navigation);
+  position: fixed;
+  bottom: 12px; 
+  left: 12px;
+  z-index: 9999;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: column-reverse;
+  align-items: flex-start;
   pointer-events: none;
-
-  &.is-open {
-    pointer-events: all;
-  }
+  font-family: 'Press Start 2P', cursive;
+  
+  &.is-open { pointer-events: all; }
 }
 
 .debug-trigger {
   @include btn-vicio('info', 'xs', true);
   pointer-events: all;
-  background: Rgba(30, 30, 40, 0.9);
-  border: 1px solid var(--yellow);
+  background: Rgba(20, 20, 30, 0.95);
+  border: 2px solid var(--yellow);
   color: var(--yellow);
-  font-size: 8px;
+  font-size: 7px;
   height: 24px;
-  padding: 0 12px;
-  border-radius: 12px 12px 0 0;
+  padding: 0 14px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 -2px 10px Rgba(0,0,0,0.5);
+  text-shadow: 1px 1px 0 $black;
+  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.6);
+  @include pixelated;
   
-  &:hover {
-    background: var(--yellow);
-    color: $black;
-  }
-
-  .icon { font-size: 10px; }
+  &:hover { background: var(--yellow); color: $black; text-shadow: none; }
 }
 
 .debug-menu {
-  position: absolute;
-  bottom: 24px;
-  right: 0;
-  background: Rgba(20, 20, 30, 0.95);
+  background: Rgba(15, 15, 25, 0.98);
   border: 2px solid var(--yellow);
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: 6px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 200px;
+  width: 180px;
   max-height: 400px;
-  min-height: 0; // Fixes flex scroll collapse
   overflow-y: auto;
-  box-shadow: 0 0 20px Rgba(0,0,0,0.8);
-  -webkit-backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
+  box-shadow: 0 10px 40px Rgba(0,0,0,0.9);
+  backdrop-filter: Blur(12px);
   @include gpu-layer;
+  margin-bottom: 8px;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+  }
 }
 
-.debug-btn {
-  @include btn-vicio('default', 'sm', true);
-  font-size: 10px;
-  text-align: left;
-  justify-content: flex-start;
-  padding: 8px 12px;
-  flex-shrink: 0;
-  
-  &.kill-btn { @include btn-vicio('danger', 'sm', true); }
-  &.faint-btn { @include btn-vicio('danger', 'sm', true); filter: Hue-Rotate(45deg); }
-  &.heal-btn { @include btn-vicio('success', 'sm', true); }
-  &.search-btn { @include btn-vicio('info', 'sm', true); }
+.debug-row {
+  display: flex;
+  gap: 4px;
+  .debug-btn { flex: 1; }
 }
 
 .debug-section {
-  margin-top: 4px;
-  padding-top: 8px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  padding: 6px 0;
+  border-top: 1px solid Rgba(255, 255, 255, 0.1);
 
   .section-label {
-    font-size: 8px;
+    font-size: 6px;
     color: var(--yellow);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.8;
+    margin-bottom: 2px;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
   }
 }
 
-  .anim-grid, .scenario-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    
-    &.scenario-grid {
-      grid-template-columns: 1fr 1fr 1fr;
-    }
-
-    .anim-btn, .scenario-btn {
-      height: 28px !important;
-      font-size: 10px !important;
-      padding: 0 !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      
-      &.scenario-btn {
-        @include btn-vicio('default', 'xs', true);
-      }
-      
-      &.catch {
-        @include btn-vicio('info', 'xs', true);
-      }
-      
-      &.release {
-        @include btn-vicio('success', 'xs', true);
-      }
-    }
+.debug-btn {
+  @include btn-vicio('default', 'xs', true);
+  font-size: 7px !important;
+  height: 24px !important;
+  text-align: center;
+  padding: 0 4px !important;
+  
+  &.kill-btn { @include btn-vicio('danger', 'xs', true); }
+  &.heal-btn { @include btn-vicio('success', 'xs', true); }
+  &.search-btn { @include btn-vicio('info', 'xs', true); border-color: var(--yellow); }
+  &.catch-btn { 
+    @include btn-vicio('primary', 'xs', true); 
+    background: Linear-Gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-color: #fff;
+    margin-top: 2px;
   }
+}
+
+.btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  
+  &.trio { grid-template-columns: 1fr 1fr 1fr; }
+}
+
+.mini-btn {
+  @include btn-vicio('default', 'xs', true);
+  height: 20px !important;
+  font-size: 6px !important;
+  padding: 0 !important;
+  
+  &.active {
+    background: var(--yellow);
+    color: $black;
+    border-color: #fff;
+  }
+}
 
 .swap-controls {
   display: flex;
   align-items: center;
-  gap: 4px;
-  height: 28px;
-
-  .swap-btn {
-    @include btn-vicio('default', 'xs', true);
-    width: 28px !important;
-    height: 28px !important;
+  gap: 6px;
+  height: 24px;
+  
+  &.mt-1 { margin-top: 2px; }
+  
+  .swap-btn { 
+    @include btn-vicio('default', 'xs', true); 
+    width: 24px !important; 
+    height: 24px !important; 
+    font-size: 10px;
     padding: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-    flex-shrink: 0;
-    
-    &:hover { background: var(--yellow); color: $black; }
   }
+  
+  .swap-input { 
+    width: 50px; 
+    background: $black; 
+    border: 1px solid Rgba(255, 255, 255, 0.4); 
+    color: white; 
+    @include pixelated; 
+    font-size: 10px; 
+    text-align: center; 
+    height: 100%; 
+    border-radius: 2px;
+    font-family: 'Press Start 2P', cursive;
 
-  .swap-input {
-    flex: 1;
-    min-width: 0;
-    width: 100%;
-    background: $black;
-    border: 1px solid Rgba(255, 255, 255, 0.2);
-    color: white;
-    @include pixelated;
-    font-size: 12px;
-    text-align: center;
-    height: 100%;
-    border-radius: 4px;
-    
-    &::-webkit-inner-spin-button { display: none; }
-    
-    &:focus {
-      outline: none;
-      border-color: var(--yellow);
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    &[type=number] {
+      -moz-appearance: textfield;
     }
   }
 }
 
-.debug-footer {
-  font-size: 7px;
-  text-align: center;
-  opacity: 0.5;
-  margin-top: 4px;
+.debug-footer { 
+  font-size: 5px; 
+  text-align: center; 
+  opacity: 0.4; 
+  margin-top: 6px;
   letter-spacing: 1px;
 }
 
-/* Transitions */
-.slide-up-enter-active, .slide-up-leave-active {
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.slide-up-enter-active, .slide-up-leave-active { 
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1.2);
 }
-.slide-up-enter-from, .slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(10px) Scale(0.9);
+.slide-up-enter-from, .slide-up-leave-to { 
+  opacity: 0; 
+  transform: translateY(20px) Scale(0.9); 
 }
 </style>

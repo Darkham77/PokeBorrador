@@ -256,7 +256,7 @@ const rankTitle = computed(() => {
   border: 1px solid Rgba(255, 255, 255, 0.1);
   box-shadow: 0 25px 50px -12px Rgba(0, 0, 0, 0.8);
   position: relative;
-  max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
   min-height: 0;
   border-color: Rgba(var(--class-color), 0.2);

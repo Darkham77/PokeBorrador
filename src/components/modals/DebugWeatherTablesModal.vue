@@ -155,7 +155,7 @@ function formatRouteName(id) {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-height: 75vh;
+  max-height: 75dvh;
   min-height: 0;
 }
 

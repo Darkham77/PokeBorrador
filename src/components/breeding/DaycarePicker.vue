@@ -139,7 +139,7 @@ const selectPokemon = (p) => {
   background: Rgba(30, 41, 59, 1);
   width: 100%;
   max-width: 500px;
-  max-height: 80vh;
+  max-height: 80dvh;
   border-radius: 20px;
   border: 1px solid #334155;
   display: flex;

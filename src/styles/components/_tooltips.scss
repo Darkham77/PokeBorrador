@@ -20,7 +20,7 @@
   font-size: 13px;
   line-height: 1.5;
   width: max-content;
-  max-width: min(350px, 90vw);
+  max-width: min(350px, 90dvw);
   white-space: normal;
   word-wrap: break-word;
   z-index: var(--z-tooltip);
@@ -141,7 +141,7 @@
   font-size: 13px;
   line-height: 1.6;
   width: 300px;
-  max-width: min(380px, 85vw);
+  max-width: min(380px, 85dvw);
   white-space: normal;
   word-wrap: break-word;
   pointer-events: none;

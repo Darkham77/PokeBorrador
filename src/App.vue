@@ -278,6 +278,29 @@ const handleRetry = () => {
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+
+        <filter id="pixel-outline-optimized-2px">
+          <feMorphology
+            in="SourceAlpha"
+            result="expanded"
+            operator="dilate"
+            radius="2"
+          />
+          <feFlood
+            flood-color="black"
+            result="black"
+          />
+          <feComposite
+            in="black"
+            in2="expanded"
+            operator="in"
+            result="outline"
+          />
+          <feMerge>
+            <feMergeNode in="outline" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
     </svg>
   </div>

@@ -10,7 +10,7 @@ $poder-color: var(--red);
   display: flex;
   flex-direction: column;
   gap: 20px;
-  min-height: 80vh;
+  min-height: 80dvh;
 
   @media (min-width: 1025px) {
     display: grid;

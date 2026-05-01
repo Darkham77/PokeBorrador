@@ -78,10 +78,10 @@ Activated when receiving movements of the **Physical** category:
 
 - **Interaction Guard**: The switch action must be blocked if `isProcessing` or `isIntroAnimating` is true.
 - **Logic Sequence**:
-    1. Check if `oldPoke.hp > 0`. If true, emit `PLAY_WITHDRAW` and wait 800ms.
+    1. Check if `oldPoke.hp > 0`. If true, emit `PLAY_WITHDRAW` and wait for the **Standard Transition Duration** (matched to CSS).
     2. Swap the active player reference in the store.
     3. Reset attribute stages (atk, def, etc.) to 0.
-    4. Emit `PLAY_SEND_OUT` and wait 800ms.
+    4. Emit `PLAY_SEND_OUT` and wait for the **Standard Transition Duration**.
     5. Execute entry abilities (e.g., Intimidate).
 
 ### 2. Forced Switching (Faint)
@@ -89,3 +89,44 @@ Activated when receiving movements of the **Physical** category:
 - When a Pokémon's HP reaches 0, the `PLAY_FAINT` animation must trigger first.
 - The `PLAY_WITHDRAW` animation is SKIPPED during a forced switch because the Pokémon is already fainted/invisible.
 - The UI MUST set `uiStore.isBattleSwitchForced = true` to prevent the user from taking other actions until a replacement is chosen.
+
+### 3. State Reactivity (Deep Watchers)
+
+- **Identity Integrity**: Watching only the `species.id` is insufficient for battle transitions. Reactivity MUST be tied to the complete `activePokemon` object or a unique `battleInstanceId`.
+- **Ground Recalculation**: Every new encounter (even with the same species) must trigger a fresh "Feet Detection" scan to prevent inheriting miscalculated ground-offsets from previous battles.
+
+## 🏗️ Rendering Pipeline Stabilization
+  
+To ensure flicker-free state transitions, the battle engine must enforce visual atomicity:
+
+### 1. The Preloading Phase (Intro)
+
+Before any intro animation (Phases 1-3) starts, the system MUST execute a `preloadCombatCoords` cycle. This cycle performs a silent, synchronous scan for feet-anchors of all participants.
+
+- **Goal**: Guarantees that shadows and bushes are positioned at their final coordinates on the very first visible frame.
+
+### 2. Shadow Ownership & Lock
+
+A combatant "owns" its shadow via its `uid`.
+
+- **Ownership Lock**: The shadow store MUST block redundant requests if a shadow with the same ID and sprite is already active.
+- **Persistence Mandate**: Do NOT clear the shadow store during the transition from Search (Phase 2) to Battle (Phase 3). Reusing the detected coordinates from the grass phase is mandatory to eliminate the "Phase 3 jump".
+
+## 📝 Combat Log Flow & Sync
+
+To maintain perfect parity between the visual action (HP bars, particles) and the battle narrative:
+
+### 1. Dynamic Batching
+
+The Combat Log MUST use a **Batching Strategy** when the queue contains more than 3 pending events.
+
+- **Congestion Level 1 (>3 messages)**: Process 2 messages per tick.
+- **Congestion Level 2 (>6 messages)**: Process 3 messages per tick.
+- **Burst Latency**: Reduce the delay between logs to **100ms** during batching (vs **350ms** in idle) to "catch up" with the battle state.
+
+### 2. Execution Order (Sync-First)
+
+Logs must be added to the queue **BEFORE** triggering animations or pauses that block the turn flow.
+
+- **Correct Sequence**: `addLog()` -> `updateHP()` -> `waitDelay()`.
+- **Why**: This allows the log's batching engine to start rendering the text while the HP bar animation is still playing, making the action feel responsive y synchronized.

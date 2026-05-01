@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, and Zero-Warning SASS/Vue standards. Use this as a Navigation Hub to access technical manuals for Database, Assets, and UI.
+description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, and Zero-Warning SASS/Vue standards. Includes diagnostic scripts for automated auditing and self-correction of viewport and GPU anti-patterns. Use this as a Navigation Hub to access technical manuals for Database, Assets, and UI.
 ---
 
 # Project Standards (Lean Core)
@@ -76,10 +76,11 @@ Consult these manuals for detailed implementation specifications:
 
 - **Efficiency Over GUI**: Use `window.__VITE_DEBUG__` commands to simulate states. It is MANDATORY to verify new content via CLI before committing.
 
-### 6. Linguistic Standard (MANDATORY)
+### 7. Symbolic Documentation & Source of Truth (Zero-Hardcoding)
 
-- **English First**: All skills and technical documentation (manuals, references, logic comments) MUST be written exclusively in English to ensure cross-agent compatibility and maintain project rigor.
-- **User Interaction**: All direct communication with the USER remains exclusively in Spanish as per `AGENTS.md`.
+- **Referential Integrity**: Documentation and manuals MUST avoid hardcoded game constants (e.g., pixel sizes, coordinate values).
+- **Source of Truth**: Always point to the centralized logic file (e.g., `spatialCoordinator.js`) as the owner of the numbers.
+- **Relativity**: Explain technical specs using symbolic names (`ENTITY_SIZE_P1/P2`) and logical relationships (`SAFE_ZONE_BOTTOM - ENTITY_SIZE_P1`) rather than absolute values.
 
 ---
 
@@ -100,3 +101,12 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 - [ ] **Pixel Parity**: Is all game content pixelated and sharp?
 - [ ] **CLI-First**: Have I verified the state via console?
 - [ ] **Zero-Warning**: Do `npm run lint` and `build` pass without warnings?
+
+## 📊 Diagnostic Tools
+
+Use these scripts to verify project standards:
+
+- `detect_gpu_gaps.py`: Scans for missing layer promotion or expensive filters.
+- `detect_outline_traps.py`: Detects expensive Quad Drop-Shadow outlines that should be migrated to SVG.
+- `detect_viewport_units.py`: Detects legacy `vw`/`vh` units that should be migrated to `dvw`/`dvh`.
+- `detect_hybrid_patterns.py`: Scans for UI/Logic identity mismatches.

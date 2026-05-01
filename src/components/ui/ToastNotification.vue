@@ -97,7 +97,7 @@ const uiStore = useUIStore()
     bottom: auto;
     left: auto;
     right: 20px;
-    max-width: calc(100vw - 40px);
+    max-width: calc(100dvw - 40px);
     align-items: flex-end;
     z-index: var(--z-max-value); // Ensure it's above EVERYTHING
   }

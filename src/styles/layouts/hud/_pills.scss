@@ -14,7 +14,11 @@
   border: 1px solid Rgba(255, 255, 255, 0.1);
   color: var(--white);
   @include will-animate(transform, box-shadow, filter);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: 
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease;
   gap: 4px;
   padding: 8px 12px;
 
@@ -55,8 +59,10 @@
       color: var(--red);
       text-shadow: 0 0 8px Rgba(255, 59, 59, 0.4);
     }
-    .ball-icon-wrap img {
-      filter: Drop-Shadow(0 0 5px Rgba(255, 59, 59, 0.6));
+    .ball-icon-wrap {
+      background: Rgba(255, 59, 59, 0.1);
+      border-radius: 50%;
+      box-shadow: 0 0 10px Rgba(255, 59, 59, 0.4);
     }
   }
 
@@ -159,7 +165,12 @@
   height: 50px;
   border-radius: 12px;
   @include will-animate(transform, box-shadow, border-color);
-  transition: all 0.2s;
+  transition: 
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
   cursor: pointer;
   padding: 4px;
   gap: 2px;

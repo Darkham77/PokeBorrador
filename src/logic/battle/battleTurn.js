@@ -28,13 +28,13 @@ export async function executeTurn(store, moveIndex) {
   if (playerFirst) {
     await runPlayerAction(store, moveIndex)
     if (e.hp > 0 && !store.activeBattle.over) {
-      await new Promise(r => setTimeout(r, 800))
+      await new Promise(r => setTimeout(r, 400)) // Reducido de 600
       await runEnemyAction(store)
     }
   } else {
     await runEnemyAction(store)
     if (p.hp > 0 && !store.activeBattle.over) {
-      await new Promise(r => setTimeout(r, 800))
+      await new Promise(r => setTimeout(r, 400)) // Reducido de 600
       await runPlayerAction(store, moveIndex)
     }
   }
@@ -78,21 +78,21 @@ export async function runPlayerAction(store, moveIndex) {
     } else {
       const damage = Math.floor(result.dmg || 0)
       
-      // Update HP
-      store.activeBattle.enemy.hp = Math.max(0, e.hp - damage)
-      
-      // Legacy style logs
+      // Lanzamos el log ANTES de la pausa para que la cola empiece a procesar
       store.addLog(`¡${e.name} recibió ${damage} de daño!`, 'log-info', e)
       if (result.isCrit) store.addLog('¡Un golpe crítico!', 'log-player', p)
       if (result.isSuperEffective) store.addLog('¡Es muy eficaz!', 'log-player', p)
       if (result.isNotVeryEffective) store.addLog('No es muy eficaz...', 'log-player', p)
-      
-    if (move.category !== 'status') {
-      await new Promise(r => setTimeout(r, 600))
-    }
-    store.attackerSide = null
 
-    dispatchMoveEffect(move.effect, p, e, store.playerStages, store.enemyStages, store.addLog, store.activeBattle)
+      // Actualizamos HP (esto dispara la animación visual de la barra)
+      store.activeBattle.enemy.hp = Math.max(0, e.hp - damage)
+      
+      if (move.category !== 'status') {
+        await new Promise(r => setTimeout(r, 300)) // Reducido de 400
+      }
+      store.attackerSide = null
+
+      dispatchMoveEffect(move.effect, p, e, store.playerStages, store.enemyStages, store.addLog, store.activeBattle)
     }
   } catch (err) {
     console.error('[Battle] Error in runPlayerAction:', err)
@@ -182,19 +182,20 @@ export async function runEnemyAction(store) {
       store.addLog('¡No afecta!', 'log-player')
     } else {
       const damage = Math.floor(eResult.dmg || 0)
-      p.hp = Math.max(0, p.hp - damage)
       
       store.addLog(`¡${p.name} recibió ${damage} de daño!`, 'log-info', p)
       if (eResult.isCrit) store.addLog('¡Un golpe crítico!', 'log-enemy', e)
       if (eResult.isSuperEffective) store.addLog('¡Es muy eficaz!', 'log-enemy', e)
       if (eResult.isNotVeryEffective) store.addLog('No es muy eficaz...', 'log-enemy', e)
-      
-    if (enemyMove.category !== 'status') {
-      await new Promise(r => setTimeout(r, 600))
-    }
-    store.attackerSide = null
 
-    dispatchMoveEffect(enemyMove.effect, e, p, store.enemyStages, store.playerStages, store.addLog, store.activeBattle)
+      p.hp = Math.max(0, p.hp - damage)
+      
+      if (enemyMove.category !== 'status') {
+        await new Promise(r => setTimeout(r, 300)) // Reducido de 400
+      }
+      store.attackerSide = null
+
+      dispatchMoveEffect(enemyMove.effect, e, p, store.enemyStages, store.playerStages, store.addLog, store.activeBattle)
     }
   } catch (err) {
     console.error('[Battle] Error in runEnemyAction:', err)

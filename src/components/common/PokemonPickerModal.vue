@@ -148,7 +148,7 @@ const handleConfirm = () => {
   border: 1px solid Rgba(255,255,255,0.1);
   display: flex;
   flex-direction: column;
-  max-height: 80vh;
+  max-height: 80dvh;
   box-shadow: 0 20px 40px Rgba(0,0,0,0.6);
 }
 

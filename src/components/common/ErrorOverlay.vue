@@ -174,7 +174,7 @@ const closeError = () => {
   border-radius: 24px;
   width: 100%;
   max-width: 600px;
-  max-height: 90vh;
+  max-height: 90dvh;
   box-shadow: 0 0 50px Rgba(255, 59, 59, 0.3);
   display: flex;
   flex-direction: column;

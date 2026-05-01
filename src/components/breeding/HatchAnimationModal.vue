@@ -79,7 +79,7 @@ onMounted(async () => {
 <template>
   <BaseModal
     :show="show"
-    max-width="100vw"
+    max-width="100dvw"
     padding="raw"
     variant="modern"
     overlay="dark"

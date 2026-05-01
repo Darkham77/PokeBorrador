@@ -89,34 +89,31 @@ export const useBattleStore = defineStore('battle', () => {
     }
 
     // Si hay un combate activo pero NO está en fase de finalización, forzamos huida.
-    // Si ya está en isFinishing (viendo recompensas), podemos simplemente pisarlo.
     if (isBattleActive.value && !isFinishing.value && !activeBattle.value?.over && !isSearching.value) {
       console.warn('[BATTLE] Combate en curso detectado. Forzando huida del anterior.')
       await endBattle(false, true)
     }
 
-    // Efecto de búsqueda: si estamos buscando, mostramos el pokemon tras los arbustos un momento
-    if (isSearching.value) {
-      upcomingPokemon.value = enemyPoke
-      await new Promise(r => setTimeout(r, 1500)) // Pausa dramática para ver el pokemon en el pasto
-    }
-
-    isSearching.value = false
-    clearLogs()
-
-    playerPoke.confused = 0; playerPoke.flinched = false
-    enemyPoke.confused = 0; enemyPoke.flinched = false
-
+    // 1. CARGA PREVIA (Async stuff first)
+    const wasSearching = isSearching.value
     const { useMapStore } = await import('./map')
     const { sanitizePokemon } = await import('@/logic/pokemonFactory')
     const mapStore = useMapStore()
 
-    // Saneamiento de emergencia antes de empezar
+    // 2. PREPARACIÓN DE DATOS
+    if (wasSearching) {
+      upcomingPokemon.value = enemyPoke
+      // Pequeño margen para asegurar que el sprite esté listo en los arbustos si no lo estaba
+      await new Promise(r => setTimeout(r, 50)) 
+    }
+
+    playerPoke.confused = 0; playerPoke.flinched = false
+    enemyPoke.confused = 0; enemyPoke.flinched = false
     sanitizePokemon(playerPoke)
     sanitizePokemon(enemyPoke)
-    
-    // IMPORTANTE: Seteamos el combate ANTES de quitar isFinishing 
-    // para que la sombra y otros elementos no parpadeen
+
+    // 3. ACTUALIZACIÓN ATÓMICA DE ESTADO
+    // Seteamos el combate. Esto disparará la reactividad en el HUD.
     activeBattle.value = {
       enemy: enemyPoke, player: playerPoke, isGym, gymId, isTrainer, enemyTeam,
       trainerName, locationId, turn: 'player', turnCount: 1, over: false,
@@ -125,31 +122,40 @@ export const useBattleStore = defineStore('battle', () => {
       participants: [playerPoke.uid], learnQueue: [], ...battleOptions
     }
 
-    // Si es un encuentro de debug, lo guardamos para el bucle infinito
     if (battleOptions.isDebug) {
       debugLoopPokemon.value = JSON.parse(JSON.stringify(enemyPoke))
     } else {
-      // Si iniciamos un combate normal, rompemos el bucle de debug previo si existía
-      // a menos que sea una navegación normal donde el próximo ya estaba pre-seteadp
-      if (!isSearching.value) debugLoopPokemon.value = null
+      if (!wasSearching) debugLoopPokemon.value = null
     }
 
-    persistBattle()
-    if (isTrainer || isGym) await gs.save()
+    // Registro en pokedex y persistencia (antes de quitar flags de búsqueda para no retrasar la intro)
     gs.registerPokedex(enemyPoke.id, false)
     if (isTrainer && enemyTeam) enemyTeam.forEach(p => gs.registerPokedex(p.id, false))
+    persistBattle()
+    
+    // 4. DISPARO DE ANIMACIÓN Y CAMBIO DE FASE
+    // Quitamos flags de búsqueda JUSTO antes de la animación para que el HUD aparezca sincronizado
+    isSearching.value = false
+    isFinishing.value = false
+    isBattleActive.value = true
+    clearLogs()
 
-    gameBus.emit('START_BATTLE', { player: playerPoke, enemy: enemyPoke, locationId, isTrainer, isGym })
+    gameBus.emit('START_BATTLE', { 
+      player: playerPoke, 
+      enemy: enemyPoke, 
+      locationId, 
+      isTrainer, 
+      isGym,
+      animationPhase: wasSearching ? 3 : 1
+    })
+
     enemyPoke.isShiny ? audio.shiny() : (isTrainer || isGym) ? audio.rival() : null
-
     const startMsg = isTrainer ? `¡${trainerName} te desafía!` : isGym ? `¡Combate de Gimnasio contra ${enemyPoke.name}!` : `¡Un ${enemyPoke.name} salvaje apareció!`
     addLog(startMsg, 'log-info', enemyPoke)
     handleEntryAbilities(playerPoke, enemyPoke, playerStages.value, enemyStages.value, addLog)
     
-    // IMPORTANTE: Seteamos estos flags al FINAL para evitar parpadeos visuales
-    isFinishing.value = false
-    isBattleActive.value = true
-    
+    if (isTrainer || isGym) await gs.save()
+
     // Limpieza final de previsualización
     setTimeout(() => { upcomingPokemon.value = null }, 100)
   }
@@ -190,10 +196,23 @@ export const useBattleStore = defineStore('battle', () => {
   const processNextLog = async () => {
     if (logQueue.value.length === 0) { isProcessingLogs.value = false; return }
     isProcessingLogs.value = true
-    const nextItem = logQueue.value.shift()
-    battleLogs.value.push(nextItem)
-    if (battleLogs.value.length > 30) battleLogs.value.shift()
-    setTimeout(processNextLog, nextItem.type === 'log-info' ? 800 : 1200)
+
+    // PROCESAMIENTO POR LOTES (Batching): 
+    // Si la cola se está acumulando, mostramos más de un mensaje a la vez para "alcanzar" al combate.
+    const batchSize = logQueue.value.length > 6 ? 3 : (logQueue.value.length > 3 ? 2 : 1)
+    
+    for (let i = 0; i < batchSize; i++) {
+      if (logQueue.value.length === 0) break
+      const nextItem = logQueue.value.shift()
+      battleLogs.value.push(nextItem)
+      if (battleLogs.value.length > 30) battleLogs.value.shift()
+    }
+
+    // Tiempos ultra-rápidos para mantener la sincronía
+    // 300ms es suficiente para que el ojo humano lea, 100ms si hay mucha cola.
+    const delay = logQueue.value.length > 0 ? 100 : 350
+    
+    setTimeout(processNextLog, delay)
   }
 
   const clearLogs = () => {
@@ -288,7 +307,7 @@ export const useBattleStore = defineStore('battle', () => {
       
       // 2. Pre-generar el próximo encuentro
       const isWild = !activeBattle.value.isTrainer && !activeBattle.value.isGym
-      if (isWild && activeBattle.value.enemy.hp <= 0) {
+      if (isWild && (activeBattle.value.enemy.hp <= 0 || activeBattle.value.isCapture)) {
         // PRIORIDAD: Modo Debug (Bucle Infinito)
         if (debugLoopPokemon.value) {
           try {
@@ -457,6 +476,12 @@ export const useBattleStore = defineStore('battle', () => {
       // Flujo optimizado: Si ya tenemos el upcomingPokemon, entramos en combate directo
       if (upcomingPokemon.value) {
         const nextPoke = upcomingPokemon.value
+        
+        // ACTIVAR MODO BÚSQUEDA (Fase 2) para que se vea el pasto antes de empezar
+        isSearching.value = true
+        isFinishing.value = false
+        isProcessing.value = false
+
         // IMPORTANTE: Si venimos de un bucle de debug, mantener la bandera para que no se limpie
         await _startBattle(nextPoke, { 
           locationId: locId,

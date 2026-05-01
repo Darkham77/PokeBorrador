@@ -31,6 +31,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **WHY**: Prevents double scrollbars and ensures the header/footer remain pinned to the viewport edges.
 - **Responsive Header Stacking**: Modal headers containing both a title and a search/control group MUST switch to `flex-direction: column` and `align-items: stretch` on mobile to prevent horizontal clipping.
 - **Dynamic Viewport (dvh) Standard**: For full-screen containers (Modals, Combat Arena, Main View), use `dvh` units (e.g., `min-height: 100dvh`) instead of `vh`. This ensures the UI is resilient to browser UI bars (address bar, navigation) on iOS and Android.
+  - **Audit Protection**: Usage of legacy `vw`/`vh` with numeric values is flagged as an error by `detect_viewport_units.py`.
+- **Bottom Anchor Precision**: In mobile fullscreen, the action zone (Map/Arena) MUST be the flexible element (`flex: 1`) to push all UI controls to the absolute bottom edge (`0px` padding, `-2px` margin).
+- **Emoji Scaling (Pixel Fonts)**: Never use `transform: Scale()` for emojis in buttons; use direct `font-size` (e.g., `32px`) and `inline-flex` with a relative offset (e.g., `top: -2px`) to center the emoji with the pixelated text baseline.
 - **Loading Orchestration Gate (Sync Bypass)**: The global loading veil MUST be managed via `v-if` based on `LoadingStore.isGateOpen`.
   - **CRITICAL**: To prevent infinite loops on authentication routes, the gate MUST be forced OPEN síncronamente in `App.vue` if `window.location.pathname === '/login'`, bypassing the standard `onMounted` flow.
   - **WHY**: Ensures the user can always escape a corrupted session or "loading data" loop by manually navigating to login.
@@ -149,6 +152,7 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 - **Hybrid Engine**: Uses a "Flip-then-Nudge" algorithm. It first attempts to flip the position (e.g., from top to bottom) if there's no space, then "nudges" the coordinates to stay within a 10px safety margin of the viewport edges.
 - **Anchor-Aware Arrows**: The tooltip arrow MUST remain aligned with the trigger element's center. When the box is nudged, use the `--arrow-x` and `--arrow-y` CSS variables to offset the arrow appropriately.
 - **Visual Standard**: Tooltips must use `'Press Start 2P'` for titles, glassmorphism (`Blur(10px)`), and a `$yellow` border.
+- **Scroll Behavior**: Tooltips MUST hide automatically as soon as the user initiates a `scroll`, `wheel`, or `touchmove` event. This prevents "floating" tooltips from losing their anchor during rapid navigation.
 
 ### 5. Modal Variants & Aesthetics
 
@@ -202,7 +206,7 @@ To ensure a seamless transition between full-map exploration and focused modal i
 - **Triggering Condition**: Only modals that obscure the background (those with overlays or full-screen) should trigger the "Simplified Map" mode.
 - **Entrance Timing**: Activate simplification **AFTER** the entrance animation of the first obscuring modal is complete. This avoids a visual "pop" during the fade-in.
 - **Exit Timing**: Restore the full-fidelity map **AS SOON AS** the closing animation of the last obscuring modal begins. This provides a premium feel by letting the user see the world return while the overlay disappears.
-- **Persistence**: The simplified state must remain active as long as any obscuring modal exists in the LIFO stack.
+
 - **Battle Modal Jitter**: Combat arenas, control panels, and individual sprite containers MUST use `overflow: hidden !important` (or `overflow: clip`) to prevent unintended scrollbars during scaling, rotation, or VFX.
 - **Selective Targeting**: Selection modals (`PokemonSelectionModal`) MUST support and use the `allowedIds` filter when a specific context (like item usage) restricts the valid targets.
 - **Interactive Tooltip Bubbling**: Tooltips attached to interactive elements (buttons, pills) MUST allow event bubbling. NEVER use `.stop` on a tooltip's click handler if it blocks the parent's interaction.
@@ -218,6 +222,19 @@ To ensure a seamless transition between full-map exploration and focused modal i
 - **Fullscreen Modal Continuity**: The primary content container (e.g., `.upd-core-container`) MUST use `min-height: 100%` in fullscreen mode to ensure the background color remains consistent across the entire viewport.
 - **Standardized Content Body**: Always use the `.upd-core-body` class for modal tab contents to inherit project-standard padding, scrolling, and background styles.
 
+### 📌 Sticky Interface Refs
+
+To prevent visual "jitter" or layout shifts during state transitions, use **Sticky Refs** (local memory variables) that hold the last valid value while the underlying store is updating or clearing.
+
+- **Combat Anchors**: Keep ground-coordinates in a local `ref` that only updates when new *confirmed* data arrives.
+- **HUD Stability**: A Pokémon's info-card MUST stay visible during finishing animations (`isFinishing`) until the Pokémon physically leaves the screen or the HP reaches zero.
+
+### 🛡️ Persistent Player HUD
+
+The player's HUD (health and status) SHOULD remain visible during the search/exploration phase.
+
+- **Why**: Prevents redundant "entry" animations when a battle starts, as the HUD is already present. It also allows the player to monitor their health between encounters without entering a menu.
+
 ### 9. Asset Parity & Positional Inheritance
 
 To guarantee a seamless "Live" feel during multi-phase transitions (e.g., from Search Preview to Battle), components MUST implement positional inheritance.
@@ -231,35 +248,37 @@ To guarantee a seamless "Live" feel during multi-phase transitions (e.g., from S
 
 ## 🗺️ Virtual World & Entity Alignment
 
-To maintain pixel-perfect alignment in the high-fidelity 2D combat arena (2000x2000 world):
+To maintain pixel-perfect alignment in the high-fidelity 2D combat arena:
 
-### 1. Entity Square Logic (400x400)
+### 1. Entity Occupancy Logic
 
-- **Standard**: All combatants are allocated a 400x400 virtual unit square.
-- **Scaling**: All internal entity assets (shadows, bushes, sprites) MUST be expressed as percentages relative to this 400x400 container.
+- **Standard**: All combatants are allocated a square bounding box defined by `ENTITY_SIZE`.
+- **Scaling**: All internal entity assets (shadows, bushes, sprites) MUST be expressed as percentages relative to this `ENTITY_SIZE` container.
 - **Center Alignment**: Sprites MUST be centered horizontally and vertically within this square (`object-position: center`) to maintain a common focal point.
 
-### 2. Shadow & Ground Synchronization
+### 2. Shadow & Ground Synchronization (Pixelated Standard)
 
 - **Rendered Parity**: Shadow positions MUST be calculated based on the *rendered* height of the sprite (`object-fit: contain`) inside the entity square.
-- **Formula**: `top% = (topOffset + feetFraction * renderedHeight) / 400 * 100`.
-- **WHY**: This ensures the shadow sits exactly at the feet even if the sprite is wide or centered.
+- **Formula**: The vertical offset is derived from the ratio between the sprite's `feetY` (ground level) and the total `ENTITY_SIZE`.
+- **Pixelation Technique**: Generate shadows on a low-resolution canvas (e.g., 10x7), disable anti-aliasing (`imageSmoothingEnabled = false`), and scale up via CSS with `image-rendering: pixelated`.
+- **Centralization**: All shadow dimensions and base offsets MUST be controlled by `spatialCoordinator.js`. Prohibit hardcoded dimensions in CSS (scoped or global) to avoid layout collisions.
+- **WHY**: Ensures the shadow sits exactly at the feet even if the sprite is wide or centered, maintaining a consistent "Retro Heart" aesthetic even during camera zooms.
 
 ### 3. Depth Sorting (3D Perspective in 2D)
 
 - **Encounter Layers**: To simulate depth, use distinct vertical offsets for environmental layers relative to the feet line:
-  - **Back Layers**: `top: calc(feetLine - 3%)` (Positions assets behind the feet).
-  - **Front Layers**: `top: calc(feetLine + 5%)` (Positions assets in front of the feet).
+  - **Back Layers**: Positions assets slightly above (behind) the feet contact point.
+  - **Front Layers**: Positions assets slightly below (in front of) the feet contact point.
 - **WHY**: Creates a "sandwich" effect where the Pokémon is truly embedded in the environment.
 
 ### 4. Camera Scaling & Asymmetrical Framing
 
 To maximize action zone visibility while protecting the UI in high-density combat views:
 
-- **Dual-Axis Constraints**: Use independent `VISIBLE_UNITS` for X and Y axes. Calculate scale as `min(cw / unitsX, ch / unitsY)` to allow dynamic behavior like "zero side padding in portrait" while enforcing top margins.
-- **Asymmetrical Margins**: Shift the `TARGET_Y` away from the center to create uneven padding.
-  - **Standard**: Pin the bottom boundary to 0 padding to maximize action menu space.
-  - **Standard**: Maintain a minimum 100u (~9%) top margin to clear weather/close icons.
+- **Dual-Axis Constraints**: Use independent `VISIBLE_UNITS` for X and Y axes. Calculate scale as the minimum ratio between the camera frame and the target units.
+- **Asymmetrical Margins**: Shift the focal point (`TARGET_Y`) away from the center to create uneven padding.
+  - **Standard**: Pin the bottom boundary with minimal padding to maximize action menu space.
+  - **Standard**: Maintain a safety margin at the top to clear atmospheric overlays or HUD icons.
 - **WHY**: Ensures Pokémon remain as large as possible across all device ratios without being obscured by permanent HUD elements.
 
 ---

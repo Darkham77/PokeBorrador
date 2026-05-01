@@ -9,7 +9,7 @@
   margin: 0 auto;
   @include gpu-layer;
   transform: translate3d(0, 0, 0);
-  width: min(1800px, 98vw);
+  width: min(1800px, 98dvw);
   z-index: var(--z-hud);
   pointer-events: none;
   @include will-animate(transform, opacity);
@@ -23,7 +23,7 @@
     transform: TranslateY(calc(-100% - 20px)) Translate3D(0, 0, 0) !important;
     opacity: 0;
     pointer-events: none;
-    visibility: hidden; 
+    // Eliminado visibility: hidden para mantener la capa GPU "caliente" y evitar re-paints secuenciales
   }
 
   .hud {

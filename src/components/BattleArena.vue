@@ -81,8 +81,8 @@ const handleClose = () => {
   <BaseModal
     :show="battleStore.isBattleActive"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :max-width="isSmallScreen ? '100vw' : '1230px'"
-    :max-height="isSmallScreen ? '100dvh' : '92vh'"
+    :max-width="isSmallScreen ? '100dvw' : '1230px'"
+    :max-height="isSmallScreen ? '100dvh' : '92dvh'"
     variant="modern"
     overlay="dark"
     close-button-variant="yellow-solid"
@@ -153,7 +153,7 @@ const handleClose = () => {
       flex-direction: column !important;
       flex: 1 !important;
       width: 100% !important;
-      max-width: 100vw !important;
+      max-width: 100dvw !important;
       height: 100% !important; // Cambiado de auto a 100%
       max-height: 100% !important;
       min-height: 0 !important;
@@ -250,7 +250,7 @@ const handleClose = () => {
 
 .battle-screen-grid {
   width: 100% !important;
-  max-width: 100vw !important;
+  max-width: 100dvw !important;
   margin: 0 !important;
   flex: 1;
   display: flex;
@@ -265,7 +265,7 @@ const handleClose = () => {
 
   &.is-fullscreen {
     flex: 1;
-    height: auto;
+    height: 100%;
     :deep(.battle-log) { padding: 6px 12px !important; gap: 5px !important; }
     :deep(.log-entry) { font-size: 11px !important; padding-bottom: 4px !important; line-height: 1.4 !important; }
   }
@@ -275,11 +275,12 @@ const handleClose = () => {
   display: flex;
   flex-direction: column;
   flex: 1;
+  height: 100%; // Asegurar llenado total en móvil
   min-height: 0;
   width: 100% !important;
   max-width: none !important;
   margin: 0 !important;
-  overflow: hidden; // Prevenir fugas de layout de hijos
+  overflow: hidden; 
 
   @media (min-width: 761px) {
     display: grid;
@@ -328,17 +329,15 @@ const handleClose = () => {
 /* Ensure controls and arena take their grid spots */
 :deep(.battle-arena) { 
   grid-area: arena; 
-  aspect-ratio: 16 / 11 !important;
   width: 100%;
-  height: auto !important;
-  min-height: 0; // Permitir que se encoja si el log pide espacio
-  flex: 1.5; // Prioridad de crecimiento sobre el log pero permitiendo compresión
+  height: 100% !important;
+  min-height: 0;
+  flex: 1; // Unificar crecimiento para evitar tirones
   object-fit: contain;
 
-  @media (min-width: 951px) {
-    height: 100% !important;
-    max-height: none !important;
-    object-fit: cover;
+  @media (max-width: 760px) {
+     flex: 1; // Crece para ocupar todo el espacio superior
+     height: auto !important;
   }
 }
 :deep(#move-panel) { 

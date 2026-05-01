@@ -74,6 +74,16 @@ PATTERNS = {
         'regex': r'overflow-y:\s*(auto|scroll)(?![^}]*padding:)',
         'message': 'Scrollable containers should have internal padding to prevent clipping of visual effects (glows/neon).',
         'severity': 'MEDIUM'
+    },
+    'visibility_glass_trap': {
+        'regex': r'visibility:\s*hidden(?=[^}]*(backdrop-filter|@include glass))',
+        'message': 'Visibility Trap: Using visibility:hidden on glass/blurred layers causes GPU layer discard and sequential re-paint glitch. Use opacity:0 and pointer-events:none.',
+        'severity': 'HIGH'
+    },
+    'transition_all_trap': {
+        'regex': r'transition:\s*all',
+        'message': 'Performance Risk: transition:all triggers layout/paint tracking for all properties. Specify only needed properties (transform, opacity).',
+        'severity': 'MEDIUM'
     }
 }
 

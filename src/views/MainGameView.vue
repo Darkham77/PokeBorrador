@@ -118,6 +118,7 @@ function handleScroll(e) {
 
     const currentScrollY = target.scrollTop
     
+    // threshold: 50px for immediate show at top
     if (currentScrollY <= 50) {
       if (isHudHidden.value) isHudHidden.value = false
       lastScrollY = currentScrollY
@@ -125,9 +126,11 @@ function handleScroll(e) {
       return
     }
 
-    // Hide on scroll down, show on scroll up (with a 40px threshold for stability)
+    // Hide on scroll down, show on scroll up (with a 60px threshold for stability)
     const diff = currentScrollY - lastScrollY
-    if (Math.abs(diff) > 40) {
+    const threshold = 60
+    
+    if (Math.abs(diff) > threshold) {
       const nextHidden = diff > 0
       if (isHudHidden.value !== nextHidden) {
         isHudHidden.value = nextHidden
@@ -145,6 +148,12 @@ function updateHudHeight() {
   isUpdatingHeight = true
   
   requestAnimationFrame(() => {
+    // Si el HUD está oculto o en transición, evitamos recalcular para prevenir layout thrashing
+    if (isHudHidden.value) {
+      isUpdatingHeight = false
+      return
+    }
+
     let newHeight = 0
     if (innerHudRef.value) {
       newHeight = innerHudRef.value.offsetHeight
@@ -522,7 +531,7 @@ onUnmounted(() => {
   gap: 10px;
   pointer-events: none;
   z-index: var(--z-hud);
-  transform: translateZ(0);
+  transform: Translate3D(0, 0, 0);
   transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   & > * {

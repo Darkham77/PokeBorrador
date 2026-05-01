@@ -147,7 +147,7 @@ const props = defineProps({
   show: { type: Boolean, default: false },
   title: { type: String, default: '' },
   maxWidth: { type: String, default: '500px' },
-  maxHeight: { type: String, default: '92vh' },
+  maxHeight: { type: String, default: '92dvh' },
   closeOnClickOutside: { type: Boolean, default: true },
   showCloseButton: { type: Boolean, default: true },
   type: {
@@ -358,11 +358,11 @@ const computedCorners = computed(() => {
   }
 
   &.position-floating {
-    &.type-top { padding-top: 4vh !important; }
-    &.type-down { padding-bottom: 4vh !important; }
+    &.type-top { padding-top: 4dvh !important; }
+    &.type-down { padding-bottom: 4dvh !important; }
     &.type-left, &.type-right, &.type-side, &.type-side-left, &.type-side-right { 
       align-items: center !important; 
-      padding: 2vh !important;
+      padding: 2dvh !important;
     }
     
     // Floating panels shouldn't be full height
@@ -435,10 +435,10 @@ const computedCorners = computed(() => {
 
   // Force fullscreen absolute priority
   .type-fullscreen & {
-    width: 100vw !important;
+    width: 100dvw !important;
     height: 100dvh !important;
     height: 100dvh !important;
-    max-width: 100vw !important;
+    max-width: 100dvw !important;
     max-height: 100dvh !important;
     max-height: 100dvh !important;
     border-radius: 0 !important;
