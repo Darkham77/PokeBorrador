@@ -15,7 +15,7 @@ export async function executeTurn(store, moveIndex) {
   const move = p.moves[moveIndex]
 
   if (move.pp <= 0) {
-    store.addLog(`¡No queda PP para ${move.name}!`, 'log-info')
+    store.addLog(`¡No queda PP para ${move.name}!`, 'log-info', p)
     return
   }
 
@@ -74,7 +74,7 @@ export async function runPlayerAction(store, moveIndex) {
     })
 
     if (result.isNoEffect) {
-      store.addLog('¡No afecta!', 'log-enemy')
+      store.addLog('¡No afecta!', 'log-enemy', e)
     } else {
       const damage = Math.floor(result.dmg || 0)
       
@@ -110,7 +110,7 @@ export async function runPlayerAction(store, moveIndex) {
       const nextEnemy = store.activeBattle.enemyTeam.find(p => p.hp > 0)
       if (nextEnemy) {
         gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
-        store.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', nextEnemy)
+        store.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
         gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
         await new Promise(r => setTimeout(r, 800))
         return
@@ -135,7 +135,7 @@ export async function runEnemyAction(store) {
     const bestIdx = findBestSwitchIndex(store.activeBattle.enemyTeam, p, e.uid)
     if (bestIdx !== -1) {
       const newPoke = store.activeBattle.enemyTeam[bestIdx]
-      store.addLog(`¡${store.activeBattle.trainerName || 'El entrenador'} retira a ${e.name}!`, 'log-enemy', e)
+      store.addLog(`¡${store.activeBattle.trainerName || 'El entrenador'} retira a ${e.name}!`, 'log-enemy', 'enemy_trainer')
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
       await new Promise(r => setTimeout(r, 800))
       
@@ -151,14 +151,14 @@ export async function runEnemyAction(store) {
     store.activeBattle.enemyUsedItem = true
     const heal = Math.floor(e.maxHp * 0.5)
     e.hp = Math.min(e.maxHp, e.hp + heal)
-    store.addLog(`¡El Líder usó una Hiper Poción!`, 'log-enemy')
-    store.addLog(`¡${e.name} recuperó salud!`, 'log-info')
+    store.addLog(`¡El Líder usó una Hiper Poción!`, 'log-enemy', 'enemy_trainer')
+    store.addLog(`¡${e.name} recuperó salud!`, 'log-info', 'hiper_pocion', 'enemy')
     return
   }
 
   const enemyMove = decideEnemyMove(e, p, store.playerStages, isWild)
   if (!enemyMove) {
-    store.addLog(`¡${e.name} no tiene más PP y usa Forcejeo!`, 'log-enemy')
+    store.addLog(`¡${e.name} no tiene más PP y usa Forcejeo!`, 'log-enemy', e)
     return
   }
 
@@ -179,7 +179,7 @@ export async function runEnemyAction(store) {
     })
 
     if (eResult.isNoEffect) {
-      store.addLog('¡No afecta!', 'log-player')
+      store.addLog('¡No afecta!', 'log-player', p)
     } else {
       const damage = Math.floor(eResult.dmg || 0)
       

@@ -32,6 +32,17 @@ Defines what the item does when used on a Pokémon or globally.
 - **Battle Mode**: In combat, the selection modal MUST use the `allowedIds` filter to ONLY show valid targets (e.g., only fainted Pokémon for Revives).
 - **Failure Handling**: If an item application fails, do NOT close the inventory. Notify the cause and let the user retry.
 
+### 3. Log Orchestration (Battle Mode)
+
+To provide clear visual feedback without redundancy, item usage logs must be split:
+
+1. **Action Log**: "¡Has usado X!" o "¡Entrenador usó X!".
+    - **Source**: `'player'` or `'enemy_trainer'`.
+    - **Visual**: Shows the trainer's avatar.
+2. **Effect Log**: "¡Recuperó HP!" o "¡Curó su parálisis!".
+    - **Source**: The item ID/Name.
+    - **Visual**: Shows the specific item sprite.
+
 ---
 
 ## 💰 Item Economy

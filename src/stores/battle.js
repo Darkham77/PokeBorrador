@@ -18,6 +18,7 @@ import { executeTurn, runEnemyAction } from '../logic/battle/battleTurn'
 import { generateEncounter } from '@/logic/encounters'
 import { useMapStore } from './map'
 import { SHOP_ITEMS } from '@/data/items'
+import { PLAYER_CLASSES } from '@/data/playerClasses'
 
 export const useBattleStore = defineStore('battle', () => {
   const gs = useGameStore()
@@ -174,33 +175,53 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
-  const addLog = (msg, type = 'log-info', source = null) => {
+  const addLog = (msg, type = 'log-info', source = null, sideOverride = null) => {
     let icon = null
     let iconType = null
     
-    if (source) {
+    if (msg.startsWith('DEBUG:')) {
+      icon = '😈'
+      iconType = 'emoji'
+    } else if (source) {
       if (source === 'player') {
-        // Resolver avatar del entrenador (usando playerClass como fallback)
-        const spriteId = gs.state.playerClass || gs.state.avatar_style || 'entrenador'
+        // Resolver avatar del jugador usando su clase activa
+        const cls = PLAYER_CLASSES[gs.state.playerClass]
+        const spriteId = cls?.avatarSpriteId || gs.state.avatar_style || 'entrenador'
         icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId)
         iconType = 'trainer'
-      } else if (typeof source === 'object' && source.id) {
-        // Es un pokemon
-        icon = getAssetUrl(ASSET_TYPES.POKEMON, source.id, { isShiny: source.isShiny })
-        iconType = 'pokemon'
+      } else if (source === 'enemy_trainer') {
+        // Resolver avatar del entrenador oponente
+        const spriteId = activeBattle.value?.trainerSprite || 'entrenador'
+        icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId)
+        iconType = 'trainer'
+      } else if (typeof source === 'object' && source) {
+        // Es un pokemon - Intentar detectar ID por varias propiedades comunes
+        const pokeId = source.id || source.pokemonId || source.pokedexId || source.id_pokemon
+        if (pokeId) {
+          icon = getAssetUrl(ASSET_TYPES.POKEMON, pokeId, { isShiny: source.isShiny })
+          iconType = 'pokemon'
+        }
       } else if (typeof source === 'string') {
-        // Resolver sprite del item por nombre o ID
-        const item = SHOP_ITEMS.find(i => i.name === source || i.id === source)
+        // Resolver sprite del item por nombre o ID (insensible a mayúsculas)
+        const sLower = source.toLowerCase()
+        const item = SHOP_ITEMS.find(i => i.name.toLowerCase() === sLower || i.id.toLowerCase() === sLower)
         const spriteId = item ? item.sprite : source
         icon = getAssetUrl(ASSET_TYPES.ITEM, spriteId)
         iconType = 'item'
       }
     }
 
-    logQueue.value.push({ 
-      id: Date.now() + Math.random(), 
-      msg, 
+    const side = sideOverride || (
+      source === 'player' || 
+      attackerSide.value === 'player' ||
+      (source && typeof source === 'object' && gs.state.team.some(p => p && p.uid === source.uid))
+    ) ? 'player' : 'enemy'
+    
+    battleLogs.value.push({
+      id: Date.now() + Math.random(),
+      msg,
       type,
+      side,
       icon,
       iconType
     })
@@ -257,19 +278,27 @@ export const useBattleStore = defineStore('battle', () => {
     applyEndTurnWeather(p, e, activeBattle.value.weather, addLog)
   }
 
-  const useItemInBattle = async (itemName) => {
+  const useItemInBattle = async (itemName, targetIndex = null) => {
     if (isProcessing.value || !isBattleActive.value) return
     isProcessing.value = true
-    const res = await handleItemUsage(itemName, activeBattle.value.player, activeBattle.value.enemy, { gs, eventStore, addLog, audio, consumeItem })
+    
+    // Si se provee un índice, usar ese pokemon del equipo, si no, el activo.
+    const targetPoke = (targetIndex !== null) ? gs.state.team[targetIndex] : activeBattle.value.player
+    
+    attackerSide.value = 'player'
+    const res = await handleItemUsage(itemName, targetPoke, activeBattle.value.enemy, { gs, eventStore, addLog, audio, consumeItem })
+    attackerSide.value = null
+    
     if (res.action === 'capture') {
       activeBattle.value.isCapture = true
       gs.addPokemon(res.pokemon, { notify: true })
-      // Pequeño delay para que la silueta no aparezca antes de que termine el primer segundo de estrellitas
-      setTimeout(() => endBattle(true, false), 500)
+      // Retraso sincronizado: 1.0s de bola llena + 1.0s de pausa dramática (vacío) antes de la Fase 2
+      setTimeout(() => endBattle(true, false), 2000)
     } else if (res.action !== 'fail') {
-      addLog(`Usaste ${itemName}`, 'log-info', 'player')
+      // El log se genera en battleItems.js (Doble entrada: Entrenador + Item)
       persistBattle()
       await new Promise(r => setTimeout(r, 800))
+      
       const thisStore = reactive({ 
         activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
         attackerSide, activeMove, persistBattle
@@ -428,7 +457,7 @@ export const useBattleStore = defineStore('battle', () => {
     const moneyGained = calculateMoneyGain(e, { bcMult: classStore.getModifier('bcMult', { isGym: activeBattle.value.isGym }), totalMoneyMult: warMods.moneyMult + ((eventStore.globalMultipliers?.money || 1) - 1) })
     gs.state.money += moneyGained
     if (moneyGained > 0) audio.money()
-    addLog(`¡Ganaste ₽${moneyGained}!`, 'log-info')
+    addLog(`¡Ganaste ₽${moneyGained}!`, 'log-info', 'player')
   }
 
   /**
@@ -461,7 +490,7 @@ export const useBattleStore = defineStore('battle', () => {
 
     // Animación de Retirada (solo si el pokemon actual está vivo)
     if (oldPoke && oldPoke.hp > 0) {
-      addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', oldPoke)
+      addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', 'player')
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
       await new Promise(r => setTimeout(r, 800))
       oldPoke.confused = 0; oldPoke.flinched = false
@@ -555,11 +584,26 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   return {
-    state: activeBattle, battleLogs, isBattleActive, isFinishing, isProcessing, player, enemy,
-    playerStages, enemyStages, attackerSide, activeMove, upcomingPokemon, debugLoopPokemon,
-    syncFromLegacy, addLog, clearLogs, executeMove, persistBattle,
-    flee: async () => { 
-      if (isProcessing.value) return; 
+    state: activeBattle,
+    battleLogs,
+    isBattleActive,
+    isFinishing,
+    isProcessing,
+    player,
+    enemy,
+    playerStages,
+    enemyStages,
+    attackerSide,
+    activeMove,
+    upcomingPokemon,
+    debugLoopPokemon,
+    syncFromLegacy,
+    addLog,
+    clearLogs,
+    executeMove,
+    persistBattle,
+    flee: async () => {
+      if (isProcessing.value) return;
       useUIStore().openConfirm({
         title: 'HUIR DEL COMBATE',
         message: '¿Estás seguro que deseas huir de este encuentro?',
@@ -568,15 +612,20 @@ export const useBattleStore = defineStore('battle', () => {
         type: 'primary',
         variant: 'retro',
         onConfirm: async () => {
-          audio.flee(); 
-          addLog('¡Huiste!', 'log-info'); 
+          audio.flee();
+          addLog('¡Huiste!', 'log-info');
           await endBattle(false, true);
         }
       });
     },
     completeBattleFlow,
     setFinishing: (cb) => { isFinishing.value = true; battleEndCallback.value = cb },
-    useItemInBattle, endBattle, _startBattle, executeSwitch: _executeSwitch,
-    isSearching, isIntroAnimating, debugBinoculars
+    useItemInBattle,
+    endBattle,
+    _startBattle,
+    executeSwitch: _executeSwitch,
+    isSearching,
+    isIntroAnimating,
+    debugBinoculars
   }
 })

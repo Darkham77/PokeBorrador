@@ -40,15 +40,19 @@ onMounted(() => {
         v-for="log in logs" 
         :key="log.id" 
         class="log-entry"
-        :class="log.type"
+        :class="[log.type, `side-${log.side}`]"
       >
         <!-- Siempre renderizamos el wrapper para mantener la alineación de la columna de texto -->
         <div
           class="log-icon-wrapper"
           :class="[log.iconType || 'empty']"
         >
+          <span
+            v-if="log.iconType === 'emoji'"
+            class="log-emoji"
+          >{{ log.icon }}</span>
           <img
-            v-if="log.icon"
+            v-else-if="log.icon"
             :src="log.icon"
             class="log-icon"
             loading="lazy"
@@ -71,7 +75,7 @@ onMounted(() => {
   flex: 1;
   min-height: 0;
   width: 100%;
-  padding: 10px 15px;
+  padding: 4px 10px;
   overflow-y: auto !important;
   display: block;
   @include smooth-scroll;
@@ -80,7 +84,7 @@ onMounted(() => {
   .log-scroll-inner {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 2px;
     width: 100%;
   }
 
@@ -117,8 +121,6 @@ onMounted(() => {
 
     // Estilos específicos para AVATAR (Entrenador)
     &.trainer {
-      // El contenedor externo mantiene los 42px para alineación, 
-      // pero el contenido interno se centra y reduce.
       .log-icon {
         width: 28px !important;
         height: 28px !important;
@@ -153,6 +155,16 @@ onMounted(() => {
     top: 50%;
     left: 50%;
     transform: Translate(-50%, -50%);
+  }
+
+  .log-emoji {
+    font-size: 24px;
+    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: Translate(-50%, -50%);
+    @include pixelated;
   }
 
   .log-text {
@@ -196,15 +208,36 @@ onMounted(() => {
   to { opacity: 1; transform: TranslateX(0); }
 }
 
-/* Color overrides mapping to legacy types */
-:deep(.log-info) { color: $yellow; font-weight: 500; }
-:deep(.log-player) { color: $green; }
-:deep(.log-enemy) { color: $red; }
-:deep(.log-catch) { color: $purple; }
+/* Side-based backgrounds (Only 2 bands) */
+.log-entry.side-player {
+  background: Linear-Gradient(90deg, Rgba(0, 255, 127, 0.06) 0%, Transparent 80%);
+  border-left: 2px solid Rgba(0, 255, 127, 0.2);
+}
+.log-entry.side-enemy {
+  background: Linear-Gradient(90deg, Rgba(255, 65, 54, 0.06) 0%, Transparent 80%);
+  border-left: 2px solid Rgba(255, 65, 54, 0.2);
+}
 
-/* Compatibility with new types */
-:deep(.log-damage) { color: $red; }
-:deep(.log-heal) { color: $green; }
-:deep(.log-status) { color: $purple; }
+/* Compatibility with new types (Text only overrides) */
+:deep(.log-info) { color: var(--yellow); font-weight: 500; }
+:deep(.log-player) { color: Rgba(0, 255, 127, 1); }
+:deep(.log-enemy) { color: Rgba(255, 65, 54, 1); }
+:deep(.log-catch) { color: Rgba(177, 13, 201, 1); }
+
+/* Semantic types */
+:deep(.log-damage) { color: Rgba(255, 65, 54, 1); }
+:deep(.log-heal) { color: Rgba(0, 255, 127, 1); }
+:deep(.log-status) { color: Rgba(177, 13, 201, 1); }
+
+.log-entry {
+  padding-left: 6px;
+  border-radius: 4px 0 0 4px;
+  transition: background 0.3s ease;
+  min-height: 28px !important;
+  
+  &:hover {
+    background-color: Rgba(255, 255, 255, 0.03) !important;
+  }
+}
 
 </style>

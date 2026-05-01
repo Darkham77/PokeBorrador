@@ -122,18 +122,17 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
         v-if="isBattleContext"
         class="battle-hp-status"
       >
+        <span class="hp-label">HP</span>
         <div class="hp-bar-container">
           <div 
             class="hp-bar-fill" 
             :style="{ 
-              width: (item.pokemon.hp / item.pokemon.maxHp * 100) + '%',
+              width: (Math.max(0, Math.min(100, (item.pokemon.hp / item.pokemon.maxHp * 100)))) + '%',
               backgroundColor: getHpColor(item.pokemon.hp / item.pokemon.maxHp * 100)
             }"
           />
         </div>
-        <div class="hp-text">
-          {{ item.pokemon.hp }} / {{ item.pokemon.maxHp }} HP
-        </div>
+        <span class="hp-text">{{ item.pokemon.hp }} / {{ item.pokemon.maxHp }}</span>
       </div>
     </div>
 
@@ -178,27 +177,44 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
 
 .battle-hp-status {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  width: 100%;
+
+  .hp-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--yellow);
+    @include pixelated;
+    flex-shrink: 0;
+  }
 
   .hp-bar-container {
-    height: 6px;
-    background: Rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
+    flex: 1;
+    height: 8px;
+    background: Rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
     overflow: hidden;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 3px Rgba(0,0,0,0.5);
   }
 
   .hp-bar-fill {
     height: 100%;
-    transition: width 0.5s ease;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px Rgba(255,255,255,0.2);
   }
 
   .hp-text {
-    font-size: 8px;
-    color: Rgba(255, 255, 255, 0.4);
+    font-size: 10px;
+    color: $white;
+    font-weight: 600;
     @include pixelated;
+    flex-shrink: 0;
+    min-width: 65px;
+    text-align: right;
   }
 }
 </style>

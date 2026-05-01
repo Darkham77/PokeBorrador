@@ -18,9 +18,9 @@ This skill ensures that NO BROKEN OR MESSY CODE is ever committed. It leverages 
 
 ```mermaid
 graph TD
-    Start((START)) --> Planning[1. Planning & Task Initialization]
-    Planning --> |"Dynamic task.md update"| Planning
-    Planning --> GapAnalysis[2. Test Gap Analysis]
+    Start((START)) --> Tracking[1. Task & Scratchpad Tracking]
+    Tracking --> |"Dynamic task update"| Tracking
+    Tracking --> GapAnalysis[2. Test Gap Analysis]
     GapAnalysis --> |"Missing Tests Detected?"| CreateTests[2.1 Create Unit Tests SUB-TASK]
     CreateTests --> Verification[3. Active Verification Cycle]
     GapAnalysis --> Verification
@@ -45,7 +45,7 @@ graph TD
     Recovery -->|PASS| Cleanup[6. Workspace Cleanup]
     Cleanup --> Walkthrough[7. Walkthrough Update]
     Walkthrough --> Lessons[8. Lessons Extraction]
-    Lessons --> Approval[8.1 User Approval]
+    Lessons --> Approval[8.1 Lesson Approval]
     
     Approval --> Commit[9. The Safe Commit]
     Commit --> Push[10. Push & Close]
@@ -60,14 +60,14 @@ graph TD
 > [!IMPORTANT]
 >
 > - **IMMUTABLE STEPS**: You MUST follow every step in this diagram. You are allowed to add intermediate sub-tasks for complex features, but you are FORBIDDEN from deleting or skipping any original design steps.
-> - **Incremental Update & Visual Proof**: Keep `task.md` and `implementation_plan.md` updated **phase by phase**. After updating `task.md`, you MUST include a small snippet of the updated checklist in your response to the USER as visual proof of progress. **Advancing without updating the source of truth is a violation of project standards.**
+> - **Incremental Update & Visual Proof**: Keep the **task** and **scratchpad** updated **phase by phase**. After updating the **task**, you MUST include a small snippet of the updated checklist in your response to the USER as visual proof of progress. **Advancing without updating the source of truth is a violation of project standards.**
 
-### 1. Planning and Traceability (MANDATORY)
+### 1. Task & Scratchpad Tracking (MANDATORY)
 
-Before making any significant changes or finalizing tasks, maximum traceability of the process MUST be guaranteed.
+Before making any significant changes or finalizing tasks, maximum traceability of the process MUST be guaranteed using only the **task** and **scratchpad** artifacts.
 
-- **Mandatory Planning**: Create a **NEW** `implementation_plan.md` artifact detailing the architecture and verification plan. **Reusing plans from previous tasks is strictly forbidden.** Proceed directly with execution after plan creation, maintaining traceability in `task.md`.
-- **Rigor in Tracking**: Create a **NEW** `task.md` artifact. This file is the **absolute source of truth**; it must record every granular step from scratch, avoiding inheriting tasks from previous sessions.
+- **Rigor in Tracking**: Create a **NEW task** artifact. This is the **absolute source of truth**; it must record every granular step from scratch, avoiding inheriting tasks from previous sessions.
+- **Scratchpad Usage**: Use the **scratchpad** artifact for temporary notes, log captures, and intermediate data processing.
 - **Documented Closure**: Always update `walkthrough.md` with evidence (screenshots, test logs) to close the technical rigor cycle.
 - Verify that every change aligns with the **Hybrid Retro-Modern** identity.
 
@@ -76,7 +76,7 @@ Before making any significant changes or finalizing tasks, maximum traceability 
 Review all modified files in `src/logic/`.
 
 - Identify any new logic (battle calculations, move effects, evolution logic) that lacks corresponding tests in `tests/unit/`.
-- **ABSOLUTE MANDATORY SUB-TASK**: If any modified file in `src/logic/` lacks unit tests, you **MUST** implement them immediately. There is no "worthy" exception; any logic change requires a corresponding test to ensure zero regressions. Add this as a high-priority **SUB-TASK** in `task.md`.
+- **ABSOLUTE MANDATORY SUB-TASK**: If any modified file in `src/logic/` lacks unit tests, you **MUST** implement them immediately. There is no "worthy" exception; any logic change requires a corresponding test to ensure zero regressions. Add this as a high-priority **SUB-TASK** in the **task**.
 - **NEVER FORGET**: While adding tests, the general objective of committing clean, verified code must remain the priority.
 
 ### 3. Active Verification Cycle (The "Zero-Warning" Audit)
@@ -109,13 +109,13 @@ If the database schema has changed:
 - > [!CAUTION]
   > **STOP ON FAILURE**: If something does not work or a test fails, you MUST fix it immediately. It is forbidden to proceed to the next step or attempt the commit if the verification cycle is not perfect.
 - > [!IMPORTANT]
-  > **WORKFLOW PROJECTION & PROGRESS UPDATE**: After any correction, test creation, or **upon finalizing a logical phase**, you MUST explicitly update `task.md` and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks (including newly discovered sub-tasks) are completed.
+  > **WORKFLOW PROJECTION & PROGRESS UPDATE**: After any correction, test creation, or **upon finalizing a logical phase**, you MUST explicitly update the **task** and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks (including newly discovered sub-tasks) are completed.
 
 ### 6. Workspace Cleanup (MANDATORY)
 
 Before extracting lessons or committing, you MUST delete all temporary artifacts created during the development or verification process.
 
-- Delete files in `<appDataDir>/brain/<conversation-id>/scratch/` if they are no longer needed.
+- Delete all files and content in the **scratchpad** that are no longer needed.
 - Delete any ad-hoc test files (e.g., `test_output.txt`, `tmp_log.json`) created in the root or subdirectories.
 - **Audit Cleanup**: Delete all `.txt` files related to auditing (generally containing `_audit_` in the name, like `audit_results.txt` or `gpu_audit_results.txt`). **CRITICAL: NEVER delete `requirements.txt` in the root.**
 - Ensure `git status` does not show untracked temporary files that should not be in the repository.
@@ -131,9 +131,9 @@ Before extracting lessons, you MUST create or update the `walkthrough.md` artifa
 
 Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a CSS/GSAP optimization). This is a **local documentation task** and MUST NOT involve a browser subagent.
 
-- **Feedback Mandatory & Hard Stop**: After @/extract-lessons presents the lesson mapping table, you MUST **STOP** immediately. You are FORBIDDEN from calling any other tool (especially `git` or `write_to_file`) until the user provides explicit approval.
+- **Lesson Approval Mandatory & Hard Stop**: After **@/extract-lessons** presents the lesson mapping table, you MUST **STOP** immediately. This approval step is exclusively for validating the new knowledge/lessons to be persisted. You are FORBIDDEN from calling any other tool (especially `git` or `write_to_file`) until the user provides explicit approval of these lessons.
 - **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the extracted lessons.
-- **Mental State Check**: Before requesting approval, read `task.md` one last time to ensure every single sub-item is marked as `[x]`.
+- **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item is marked as `[x]`.
 
 ### 9. The Safe Commit
 
@@ -151,7 +151,7 @@ Commit messages MUST NOT be terse. They MUST provide a clear, technical chronicl
 
 ### 0. Source of Truth
 
-- **MANDATORY**: Use the current `task.md` and `walkthrough.md` as the primary sources for the commit message. A commit message that ignores the granular steps recorded in these artifacts is considered a failure.
+- **MANDATORY**: Use the current **task** and `walkthrough.md` as the primary sources for the commit message. A commit message that ignores the granular steps recorded in these artifacts is considered a failure.
 
 ### 1. Structure Requirement
 
@@ -188,12 +188,12 @@ docs(standards): modernize add-pokemon skill and enforce Zero-Warning culture
 2. [ ] Run `npm run build` to verify compilation.
 3. [ ] Workspace Cleanup (Step 6).
 4. [ ] Extract lessons (Step 7).
-5. [ ] **Wait for User Approval** (Step 7.1).
-6. [ ] Git commit & push (Step 8).
+5. [ ] **Wait for Lesson Approval** (Step 8).
+6. [ ] Git commit & push (Step 9).
 "
 
 ### 11. Rigor Enforcement (Anti-Shortcut Rule)
 
-- **No Phase-Jumping**: It is strictly forbidden to execute steps 9 or 10 if steps 1-8 are not fully documented and checked in `task.md`.
+- **No Phase-Jumping**: It is strictly forbidden to execute steps 9 or 10 if steps 1-8 are not fully documented and checked in the **task**.
 - **Test Implementation Check**: You are FORBIDDEN from committing if there are identified "Missing Tests" in Step 2 that haven't been implemented and marked as `[x]`.
-- **Contextual Review**: Before each tool call in the verification cycle, ask yourself: "Is my task.md updated with the result of the *previous* tool call?". If not, update it first.
+- **Contextual Review**: Before each tool call in the verification cycle, ask yourself: "Is my task updated with the result of the *previous* tool call?". If not, update it first.

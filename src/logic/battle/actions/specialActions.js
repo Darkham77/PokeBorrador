@@ -6,12 +6,12 @@
 export const SPECIAL_ACTIONS = {
   'leech_seed': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (tgt.type === 'grass' || tgt.type2 === 'grass') {
-      addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info');
+      addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
     } else if (!tgt.seeded) {
       tgt.seeded = true;
-      addLogFn(`¡${tgt.name} fue infectado por drenadoras!`, 'log-info');
+      addLogFn(`¡${tgt.name} fue infectado por drenadoras!`, 'log-info', tgt);
     } else {
-      addLogFn(`¡${tgt.name} ya está infectado!`, 'log-info');
+      addLogFn(`¡${tgt.name} ya está infectado!`, 'log-info', tgt);
     }
   },
   'roar': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
@@ -19,7 +19,7 @@ export const SPECIAL_ACTIONS = {
     
     // Inmunidad: Succión
     if (tgt.ability === 'Succión' || tgt.ability === 'Ventosa') {
-      addLogFn(`¡La ${tgt.ability} de ${tgt.name} impidió ser arrastrado!`, 'log-info');
+      addLogFn(`¡La ${tgt.ability} de ${tgt.name} impidió ser arrastrado!`, 'log-info', tgt);
       return;
     }
 
@@ -28,7 +28,7 @@ export const SPECIAL_ACTIONS = {
     if (isPlayerAttacking) {
       if (!battleCtx.isTrainer && !battleCtx.isGym) {
         // Salva: Huye
-        addLogFn(`¡El ${tgt.name} salvaje huyó asustado!`, 'log-player');
+        addLogFn(`¡El ${tgt.name} salvaje huyó asustado!`, 'log-player', tgt);
         battleCtx.over = true;
       } else {
         // Entrenador: Cambio aleatorio
@@ -38,11 +38,11 @@ export const SPECIAL_ACTIONS = {
           return;
         }
         const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
-        addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-player');
+        addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-player', tgt);
         battleCtx.enemy = randomPick;
         // Reset stages for new entry
         Object.keys(tgtStages).forEach(k => tgtStages[k] = 0);
-        addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info');
+        addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', randomPick);
       }
     } else {
       // Enemigo ataca al jugador
@@ -55,7 +55,7 @@ export const SPECIAL_ACTIONS = {
   },
   'destiny_bond': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     src.destinyBond = true;
-    addLogFn(`¡${src.name} intenta llevarse a su rival al destino común!`, 'log-info');
+    addLogFn(`¡${src.name} intenta llevarse a su rival al destino común!`, 'log-info', src);
   },
   'perish_song': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (src.perishSongCount === undefined) src.perishSongCount = 3;
@@ -83,7 +83,7 @@ export const SPECIAL_ACTIONS = {
       m.maxPP = 5;
       return m;
     });
-    addLogFn(`¡${originalName} se transformó en ${tgt.name}!`, 'log-info');
+    addLogFn(`¡${originalName} se transformó en ${tgt.name}!`, 'log-info', src);
   },
   'reflect': (_src, _tgt, _srcStages, _tgtStages, _addLogFn, _battleCtx) => {
      // Re-exported or moved to fieldActions, keeping consistency

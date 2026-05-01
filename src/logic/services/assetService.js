@@ -30,15 +30,19 @@ const ITEM_MAPPING = {
   'piedra_hoja': 'leaf-stone',
   'piedra_luna': 'moon-stone',
   'pokeball': 'poke-ball',
+  'pokéball': 'poke-ball',
   'superball': 'super-ball',
   'super-ball': 'super-ball',
   'super ball': 'super-ball',
+  'súper ball': 'super-ball',
   'ultraball': 'ultra-ball',
   'ultra-ball': 'ultra-ball',
   'ultra ball': 'ultra-ball',
   'masterball': 'master-ball',
   'master-ball': 'master-ball',
   'master ball': 'master-ball',
+  'turnoball': 'timer-ball',
+  'turno ball': 'timer-ball',
   'repelente': 'repel',
   'super_repel': 'super-repel',
   'max_repel': 'max-repel',
@@ -155,7 +159,9 @@ export const getAssetUrl = (type, rawId, options = {}) => {
         'domador': 'tamer',
         'medium': 'entrenador',
         'motorista': 'teamrocket',
-        'montanero': 'tamer'
+        'montanero': 'tamer',
+        'rocket': 'teamrocket',
+        'cazador': 'cazabichos'
       };
 
       // Sanitize ID: remove spaces and dots (e.g., "Lt. Surge" -> "ltsurge")

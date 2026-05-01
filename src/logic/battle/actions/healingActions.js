@@ -8,7 +8,7 @@ export const HEALING_ACTIONS = {
     }
     const healAmt = Math.floor(src.maxHp / 2);
     src.hp = Math.min(src.maxHp, src.hp + healAmt);
-    addLogFn(`¡${src.name} recuperó salud! (+${healAmt} HP)`, 'log-info');
+    addLogFn(`¡${src.name} recuperó salud! (+${healAmt} HP)`, 'log-info', src);
   },
 
   'heal_weather': (src, tgt, srcStages, tgtStages, addLogFn) => {
@@ -23,26 +23,26 @@ export const HEALING_ACTIONS = {
     
     const hwAmt = Math.floor(src.maxHp * healPct);
     src.hp = Math.min(src.maxHp, src.hp + hwAmt);
-    addLogFn(`¡${src.name} recuperó salud con el clima! (+${hwAmt} HP)`, 'log-info');
+    addLogFn(`¡${src.name} recuperó salud con el clima! (+${hwAmt} HP)`, 'log-info', src);
   },
 
   'rest': (src, tgt, srcStages, tgtStages, addLogFn) => {
     src.hp = src.maxHp;
     src.status = 'sleep';
     src.sleepTurns = 2;
-    addLogFn(`¡${src.name} se recuperó completamente y se quedó dormido!`, 'log-info');
+    addLogFn(`¡${src.name} se recuperó completamente y se quedó dormido!`, 'log-info', src);
   },
 
   'leech_seed': (src, tgt, srcStages, tgtStages, addLogFn) => {
     if (tgt.type === 'grass' || tgt.type2 === 'grass') {
-      addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info');
+      addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       return;
     }
     if (!tgt.seeded) {
       tgt.seeded = true;
-      addLogFn(`¡${tgt.name} fue infectado por drenadoras!`, 'log-info');
+      addLogFn(`¡${tgt.name} fue infectado por drenadoras!`, 'log-info', tgt);
     } else {
-      addLogFn(`¡${tgt.name} ya está infectado!`, 'log-info');
+      addLogFn(`¡${tgt.name} ya está infectado!`, 'log-info', tgt);
     }
   }
 };

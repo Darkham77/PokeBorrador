@@ -15,10 +15,10 @@ const p = computed(() => props.pokemon)
 const displayHp = ref(0)
 
 onMounted(() => {
-  // Pequeño delay para asegurar que el componente esté en el DOM y la transición CSS se dispare
+  // Sincronizar con la transición de aparición del HUD
   setTimeout(() => {
     displayHp.value = p.value.hp
-  }, 100)
+  }, 50)
 })
 
 watch(() => p.value.hp, (newHp) => {

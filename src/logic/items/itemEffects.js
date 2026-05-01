@@ -149,10 +149,15 @@ export const getDynamicItemEffect = (itemName, p) => {
 
 // Helper Functions
 function healHp(p, amount) {
-  if (p.hp >= p.maxHp) return { success: false, message: 'HP ya está al máximo.' };
-  if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
-  const prev = p.hp;
-  p.hp = Math.min(p.maxHp, p.hp + amount);
+  const currentHp = Number(p.hp || 0);
+  const maxHp = Number(p.maxHp || 0);
+  const healAmount = Number(amount || 0);
+
+  if (currentHp >= maxHp) return { success: false, message: 'HP ya está al máximo.' };
+  if (currentHp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
+  
+  const prev = currentHp;
+  p.hp = Math.min(maxHp, currentHp + healAmount);
   return { success: true, message: `restauró ${p.hp - prev} HP` };
 }
 
@@ -163,6 +168,7 @@ function revive(p, amount) {
 }
 
 function clearStatus(p, type) {
+  if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
   if (p.status !== type && type !== 'any') return { success: false, message: 'No tiene ese estado.' };
   if (!p.status) return { success: false, message: 'No tiene problemas de estado.' };
   const old = p.status;
@@ -172,8 +178,9 @@ function clearStatus(p, type) {
 }
 
 function curaTotal(p) {
-  if (!p.status && p.hp === p.maxHp) return { success: false, message: 'No tiene efecto.' };
-  p.hp = p.maxHp;
+  if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
+  if (!p.status && Number(p.hp) === Number(p.maxHp)) return { success: false, message: 'No tiene efecto.' };
+  p.hp = Number(p.maxHp);
   p.status = null;
   p.sleepTurns = 0;
   return { success: true, message: 'se curó completamente' };

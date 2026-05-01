@@ -130,7 +130,7 @@ const handleActionSelect = (type) => {
     const battleStore = useBattleStore()
     modalStore.open('PokemonSelection', {
       title: `USAR ${dbItem.name?.toUpperCase()}`,
-      isBattleSwitch: props.battleMode,
+      isBattleSwitch: false, // Permitir seleccionar al activo para curaciones
       includeTeam: true,
       allowDead: dbItem.name?.toLowerCase().includes('revivir') || !props.battleMode,
       allowedIds: validTargets.map(p => p.uid), // ONLY show valid targets

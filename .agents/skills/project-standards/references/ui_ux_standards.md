@@ -29,7 +29,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Desktop (Side-by-side)**: The log MUST use `flex: 1` to fill the entire vertical height of the grid.
   - **Mobile/Stacked (≤ 760px)**: The log MUST switch to a fixed/compact height (Standard: **90px** / ~2 lines) to prevent pushing action controls out of the viewport.
   - **PWA/Split-Screen**: In split-screen mode where height is constrained but width is ample, prioritize `flex: 1` for the chat to fill available vertical space.
-  - **WHY**: Balances deep history readability on large screens with gameplay space protection on small screens.
+  - **Compact Density**: Use minimal `gap` (**2px**) between log entries and reduced `padding` (**4px**) for the main container to maximize information density.
+  - **Side-Based Tinting**: Every log entry MUST be visually associated with its side (Player vs Enemy) using a subtle background gradient (`Linear-Gradient` at **0.06 - 0.08** opacity) and a colored `border-left` (2px).
+  - **WHY**: Balances deep history readability on large screens with gameplay space protection on small screens while providing instant side-recognition.
 - **Fullscreen 100vh Integrity**: Fullscreen combat modals MUST force `height: 100vh` across all parent containers (including `modal-scrollable-content`) to prevent background "bleed" or purple gaps at the bottom.
 - **Bottom Anchor Precision**: In fullscreen mode, action buttons MUST be positioned with a maximum of `2px` from the bottom edge (or `0px` with a slight negative margin) to ensure they feel physically anchored to the device frame.
 - **HUD Padding Synchronization**: To eliminate layout shifts ("jumps") during page load or HUD transitions, the main content area MUST use dynamic CSS variables (e.g., `--hud-top-padding`) calculated from the HUD's actual height.
@@ -348,3 +350,17 @@ The combat log is the primary source of truth for the user. It MUST maintain abs
   - **Incorrect**: `¡${e.name} enemigo se debilitó!` (Hardcoded 'enemigo' while checking player HP).
   - **Correct**: `¡${p.name} se debilitó!` or `¡${e.name} salvaje fue derrotado!`.
 - **Action Logs**: Use standardized CSS classes (`log-info`, `log-player`, `log-enemy`, `log-danger`) to color-code entries, ensuring the user can distinguish between their actions and the opponent's at a glance.
+
+### 11. Selection Modal Heuristics
+
+To ensure a frictionless management experience, selection modals (`PokemonSelectionModal`) must adapt their information density based on the inferred context:
+
+- **HP Visibility**: Automatically show the HP bar and numeric status if `allowedIds` is present (implying item application) or if opened in a battle context.
+- **Inline Layout**: The HP status (label, bar, and text) MUST occupy a single horizontal row to maintain compactness and professional alignment.
+
+### 12. Debug Visibility Standards
+
+To clearly separate development feedback from game narrative:
+
+- **Debug Iconography**: Any log message generated for debugging (starting with `DEBUG:`) MUST use the 😈 emoji as its primary icon.
+- **Emoji Rendering**: Emojis in logs must be rendered as text spans with `font-size: 24px` and a subtle shadow, ensuring they stand out without requiring external image assets.

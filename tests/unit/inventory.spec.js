@@ -99,7 +99,7 @@ describe('Inventory Store', () => {
     const gameStore = useGameStore()
     
     // Setup a mock pokemon
-    gameStore.state.team = [{ name: 'Pikachu', hp: 50, maxHP: 100 }]
+    gameStore.state.team = [{ name: 'Pikachu', hp: 50, maxHp: 100 }]
     
     // Pokéball usually fails if not in battle context, but let's check consumption
     // Actually useItem logic handles many cases.

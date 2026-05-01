@@ -82,6 +82,7 @@ const handleClose = () => {
     :show="battleStore.isBattleActive"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     :max-width="isSmallScreen ? '100dvw' : '1230px'"
+    :height="isSmallScreen ? '100dvh' : '92dvh'"
     :max-height="isSmallScreen ? '100dvh' : '92dvh'"
     variant="modern"
     overlay="dark"
@@ -143,7 +144,8 @@ const handleClose = () => {
 
 <style lang="scss">
 /* Ultra-specific override to kill scrolls even in fullscreen padding-raw mode */
-.base-modal-root .type-fullscreen.battle-arena-modal {
+.base-modal-root .type-fullscreen.battle-arena-modal,
+.base-modal-root .type-center.battle-arena-modal {
   .base-modal-card {
     overflow: hidden !important;
     
@@ -154,7 +156,7 @@ const handleClose = () => {
       flex: 1 !important;
       width: 100% !important;
       max-width: 100dvw !important;
-      height: 100% !important; // Cambiado de auto a 100%
+      height: 100% !important; 
       max-height: 100% !important;
       min-height: 0 !important;
       overflow: hidden !important;
@@ -266,7 +268,7 @@ const handleClose = () => {
   &.is-fullscreen {
     flex: 1;
     height: 100%;
-    :deep(.battle-log) { padding: 6px 12px !important; gap: 5px !important; }
+    :deep(.battle-log) { padding: 2px 4px !important; gap: 2px !important; }
     :deep(.log-entry) { font-size: 11px !important; padding-bottom: 4px !important; line-height: 1.4 !important; }
   }
 }
@@ -322,7 +324,7 @@ const handleClose = () => {
     border-radius: 0; 
     flex: 1;
     height: 100%;
-    :deep(.battle-log) { position: absolute; inset: 0; padding: 20px; }
+    :deep(.battle-log) { position: absolute; inset: 0; padding: 4px; }
   }
 }
 

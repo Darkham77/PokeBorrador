@@ -187,6 +187,16 @@ export const useInventoryStore = defineStore('inventory', () => {
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box
     const pokemon = list[index]
     
+    // --- INTEGRACIÓN CON COMBATE (Prioridad Absoluta) ---
+    // Si estamos en combate, delegamos toda la lógica (aplicación, consumo y logs) 
+    // al battleStore para mantener la sincronía del turno.
+    const battleStore = useBattleStore()
+    if (battleStore.isBattleActive && !battleStore.isProcessing) {
+      battleStore.useItemInBattle(itemName, context === 'team' ? index : null)
+      return { success: true, msg: 'Usando objeto en combate...' }
+    }
+
+    // --- LÓGICA FUERA DE COMBATE ---
     // Global items (Repels, etc.)
     if (isGlobalItem(itemName)) {
       const effectFn = ITEM_EFFECTS[itemName]
@@ -272,16 +282,9 @@ export const useInventoryStore = defineStore('inventory', () => {
       return { success: true, msg: result.message }
     }
 
-    // --- INSTANT LOGIC ---
+    // --- LÓGICA DE PERSISTENCIA (Fuera de Combate) ---
     consumeItem(itemName)
     gameStore.save()
-
-    // --- BATTLE INTEGRATION ---
-    const battleStore = useBattleStore()
-    if (battleStore.isBattleActive && !battleStore.isProcessing) {
-      battleStore.addLog(`¡${pokemon.name} ${result.message}!`, 'log-player')
-      battleStore.useItemInBattle(itemName) 
-    }
 
     return { success: true, msg: result.message }
   }

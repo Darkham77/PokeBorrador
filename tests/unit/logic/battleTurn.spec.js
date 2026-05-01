@@ -30,8 +30,8 @@ describe('battleTurn.js', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    const p = { id: 25, uid: 'p1', name: 'Pikachu', hp: 100, maxHP: 100, level: 50, atk: 100, spa: 100, moves: [{ name: 'Tackle', power: 40, pp: 10 }] }
-    const e = { id: 16, name: 'Pidgey', hp: 100, maxHP: 100, level: 5, def: 50, spd: 50 }
+    const p = { id: 25, uid: 'p1', name: 'Pikachu', hp: 100, maxHp: 100, level: 50, atk: 100, spa: 100, moves: [{ name: 'Tackle', power: 40, pp: 10 }] }
+    const e = { id: 16, name: 'Pidgey', hp: 100, maxHp: 100, level: 5, def: 50, spd: 50 }
     
     mockStore = {
       activeBattle: {
@@ -70,6 +70,6 @@ describe('battleTurn.js', () => {
 
     expect(gameBus.emit).toHaveBeenCalledWith('PLAY_WITHDRAW', { side: 'enemy' })
     expect(gameBus.emit).toHaveBeenCalledWith('PLAY_SEND_OUT', expect.objectContaining({ side: 'enemy', pokemon: nextPokemon }))
-    expect(mockStore.addLog).toHaveBeenCalledWith(expect.stringContaining('¡Entrenador envía a Rattata!'), 'log-enemy', nextPokemon)
+    expect(mockStore.addLog).toHaveBeenCalledWith(expect.stringContaining('¡Entrenador envía a Rattata!'), 'log-enemy', 'enemy_trainer')
   })
 })

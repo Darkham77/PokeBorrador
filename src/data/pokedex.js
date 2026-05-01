@@ -109,7 +109,7 @@ export const POKEMON_AESTHETICS = {
   butterfree: { floating: true },
   beedrill: { floating: true },
   pidgey: { floating: false },
-  pidgeotto: { floating: false },
+  pidgeotto: { floating: true },
   pidgeot: { floating: false },
   spearow: { floating: false },
   fearow: { floating: true },

@@ -30,7 +30,8 @@ const props = defineProps({
   preventClose: { type: Boolean, default: false },
   allowDead: { type: Boolean, default: false },
   // Filter by specific unique IDs (used for item application)
-  allowedIds: { type: Array, default: () => [] }
+  allowedIds: { type: Array, default: () => [] },
+  isItemContext: { type: Boolean, default: false }
 })
 
 const { _getHpColor } = useBattleVisuals()
@@ -410,7 +411,7 @@ function openDetail(item) {
           :item="item"
           :is-selected="selectedUids.includes(item.pokemon.uid)"
           :total="getPokemonTotalPower(item.pokemon)"
-          :is-battle-context="props.isBattleSwitch"
+          :is-battle-context="props.isBattleSwitch || props.isItemContext || (props.allowedIds && props.allowedIds.length > 0)"
           :auto-confirm="props.autoConfirm"
           @select="toggleSelection"
           @open-detail="openDetail"

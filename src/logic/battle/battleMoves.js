@@ -8,52 +8,52 @@ export function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn
   switch (effect) {
     case 'atk+1': 
       srcStages.atk = Math.min(6, (srcStages.atk || 0) + 1);
-      addLogFn(`¡El Ataque de ${src.name} subió!`, 'log-info'); break;
+      addLogFn(`¡El Ataque de ${src.name} subió!`, 'log-info', src); break;
     case 'def+1': 
       srcStages.def = Math.min(6, (srcStages.def || 0) + 1);
-      addLogFn(`¡La Defensa de ${src.name} subió!`, 'log-info'); break;
+      addLogFn(`¡La Defensa de ${src.name} subió!`, 'log-info', src); break;
     case 'spa+1': 
       srcStages.spa = Math.min(6, (srcStages.spa || 0) + 1);
-      addLogFn(`¡El At. Esp de ${src.name} subió!`, 'log-info'); break;
+      addLogFn(`¡El At. Esp de ${src.name} subió!`, 'log-info', src); break;
     case 'spd+1': 
       srcStages.spd = Math.min(6, (srcStages.spd || 0) + 1);
-      addLogFn(`¡La Def. Esp de ${src.name} subió!`, 'log-info'); break;
+      addLogFn(`¡La Def. Esp de ${src.name} subió!`, 'log-info', src); break;
     case 'spe+1': 
       srcStages.spe = Math.min(6, (srcStages.spe || 0) + 1);
-      addLogFn(`¡La Velocidad de ${src.name} subió!`, 'log-info'); break;
+      addLogFn(`¡La Velocidad de ${src.name} subió!`, 'log-info', src); break;
     
     case 'atk-1': 
       tgtStages.atk = Math.max(-6, (tgtStages.atk || 0) - 1);
-      addLogFn(`¡El Ataque de ${tgt.name} bajó!`, 'log-info'); break;
+      addLogFn(`¡El Ataque de ${tgt.name} bajó!`, 'log-info', tgt); break;
     case 'def-1': 
       tgtStages.def = Math.max(-6, (tgtStages.def || 0) - 1);
-      addLogFn(`¡La Defensa de ${tgt.name} bajó!`, 'log-info'); break;
+      addLogFn(`¡La Defensa de ${tgt.name} bajó!`, 'log-info', tgt); break;
     case 'spe-1': 
       tgtStages.spe = Math.max(-6, (tgtStages.spe || 0) - 1);
-      addLogFn(`¡La Velocidad de ${tgt.name} bajó!`, 'log-info'); break;
+      addLogFn(`¡La Velocidad de ${tgt.name} bajó!`, 'log-info', tgt); break;
 
     case 'poison':
       if (tgt.status) { addLogFn('¡Pero falló!', 'log-info'); }
       else if (tgt.type === 'poison' || tgt.type === 'steel' || tgt.type2 === 'poison' || tgt.type2 === 'steel') {
-        addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info');
+        addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       } else {
-        tgt.status = 'poison'; addLogFn(`¡${tgt.name} fue envenenado!`, 'log-info');
+        tgt.status = 'poison'; addLogFn(`¡${tgt.name} fue envenenado!`, 'log-info', tgt);
       }
       break;
     case 'paralyze':
       if (tgt.status) { addLogFn('¡Pero falló!', 'log-info'); }
       else if (tgt.type === 'electric' || tgt.type2 === 'electric') {
-        addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info');
+        addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       } else {
-        tgt.status = 'paralyze'; addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info');
+        tgt.status = 'paralyze'; addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info', tgt);
       }
       break;
     case 'burn':
       if (tgt.status) { addLogFn('¡Pero falló!', 'log-info'); }
       else if (tgt.type === 'fire' || tgt.type2 === 'fire') {
-        addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info');
+        addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       } else {
-        tgt.status = 'burn'; addLogFn(`¡${tgt.name} fue quemado!`, 'log-info');
+        tgt.status = 'burn'; addLogFn(`¡${tgt.name} fue quemado!`, 'log-info', tgt);
       }
       break;
     case 'sleep':
@@ -61,7 +61,7 @@ export function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn
       else {
         tgt.status = 'sleep';
         tgt.sleepTurns = 1 + Math.floor(Math.random() * 3);
-        addLogFn(`¡${tgt.name} se quedó dormido!`, 'log-info');
+        addLogFn(`¡${tgt.name} se quedó dormido!`, 'log-info', tgt);
       }
       break;
     
@@ -69,7 +69,7 @@ export function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn
       if (tgt.confused) { addLogFn('¡Pero falló!', 'log-info'); }
       else {
         tgt.confused = 2 + Math.floor(Math.random() * 4);
-        addLogFn(`¡${tgt.name} está confundido!`, 'log-info');
+        addLogFn(`¡${tgt.name} está confundido!`, 'log-info', tgt);
       }
       break;
 

@@ -74,12 +74,15 @@ export function useCombatCamera(viewportRef) {
 
   onMounted(() => {
     resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect
-        vpWidth.value = width
-        vpHeight.value = height
-        updateCamera(width, height)
-      }
+      requestAnimationFrame(() => {
+        if (!resizeObserver) return // Safety check if unmounted
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect
+          vpWidth.value = width
+          vpHeight.value = height
+          updateCamera(width, height)
+        }
+      })
     })
 
     if (viewportRef.value) {

@@ -68,8 +68,11 @@ const debugCapture = async () => {
   battleStore.state.isCapture = true
   gameStore.addPokemon(e, { notify: true })
   
-  await battleStore.endBattle(true, false)
-  battleStore.isProcessing = false
+  // Sincronizar con el tiempo de animación: 1s bola llena + 1s de vacío
+  setTimeout(async () => {
+    await battleStore.endBattle(true, false)
+    battleStore.isProcessing = false
+  }, 2000)
 }
 
 const toggleBinoculars = () => {
@@ -154,7 +157,7 @@ const decrementSwap = (side = 'enemy') => {
 }
 
 const toggleStatus = (side, type) => {
-  const poke = side === 'player' ? battleStore.state?.player : battleStore.state?.enemy
+  const poke = side === 'player' ? battleStore.state?.player : (battleStore.upcomingPokemon || battleStore.state?.enemy)
   if (!poke) return
   if (type === 'shiny') poke.isShiny = !poke.isShiny
   if (type === 'guardian') poke.isGuardian = !poke.isGuardian
@@ -199,7 +202,7 @@ const toggleStatus = (side, type) => {
             Environment & Behavior
           </div>
           <div class="debug-row">
-            <PVTooltip text="Binocs: Ver el Pokémon en COLOR (Binoculares) o en SILUETA (Normal)">
+            <PVTooltip description="Binocs: Ver el Pokémon en COLOR (Binoculares) o en SILUETA (Normal)">
               <button
                 class="debug-btn search-btn"
                 :class="{ 'btn-active': battleStore.debugBinoculars }"
@@ -209,7 +212,7 @@ const toggleStatus = (side, type) => {
               </button>
             </PVTooltip>
             
-            <PVTooltip text="Chain: El siguiente Pokémon aparece automáticamente al ganar">
+            <PVTooltip description="Chain: El siguiente Pokémon aparece automáticamente al ganar">
               <button
                 class="debug-btn search-btn"
                 :class="{ 'btn-active': battleStore.isSearching }"
@@ -229,14 +232,14 @@ const toggleStatus = (side, type) => {
           <div class="btn-grid">
             <button
               class="mini-btn"
-              :class="{ 'active': battleStore.state?.player?.isShiny }"
+              :class="{ active: battleStore.state?.player?.isShiny }"
               @click.stop="toggleStatus('player', 'shiny')"
             >
               SHINY
             </button>
             <button
               class="mini-btn"
-              :class="{ 'active': battleStore.state?.player?.isGuardian }"
+              :class="{ active: battleStore.state?.player?.isGuardian }"
               @click.stop="toggleStatus('player', 'guardian')"
             >
               GUARD
@@ -273,14 +276,14 @@ const toggleStatus = (side, type) => {
           <div class="btn-grid">
             <button
               class="mini-btn"
-              :class="{ 'active': battleStore.state?.enemy?.isShiny }"
+              :class="{ active: (battleStore.upcomingPokemon || battleStore.state?.enemy)?.isShiny }"
               @click.stop="toggleStatus('enemy', 'shiny')"
             >
               SHINY
             </button>
             <button
               class="mini-btn"
-              :class="{ 'active': battleStore.state?.enemy?.isGuardian }"
+              :class="{ active: (battleStore.upcomingPokemon || battleStore.state?.enemy)?.isGuardian }"
               @click.stop="toggleStatus('enemy', 'guardian')"
             >
               GUARD

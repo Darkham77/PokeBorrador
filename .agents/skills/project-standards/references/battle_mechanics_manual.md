@@ -131,6 +131,23 @@ Logs must be added to the queue **BEFORE** triggering animations or pauses that 
 - **Correct Sequence**: `addLog()` -> `updateHP()` -> `waitDelay()`.
 - **Why**: This allows the log's batching engine to start rendering the text while the HP bar animation is still playing, making the action feel responsive y synchronized.
 
+### 3. Iconography & Source Mapping
+
+To ensure every log entry displays the correct sprite, the `addLog(msg, type, source)` method MUST receive a valid `source` identifier:
+
+- **Pokémon**: Pass the actual Pokémon instance/object. The system will resolve its sprite and check its team membership for side-based background tinting.
+- **Player**: Pass the string `'player'` to show the player's current class avatar.
+- **Enemy Trainer**: Pass the string `'enemy_trainer'` to show the rival's avatar.
+- **Items**: Pass the Item name or ID (string). The system will resolve the item's sprite automatically.
+- **Side Override**: Pass `'player'` or `'enemy'` as the 4th argument (`sideOverride`) to force a specific background tint, overriding the automatic detection logic.
+
+### 4. Defensive Programming (Zero-Crash Policy)
+
+The log processing engine handles diverse data types. To prevent runtime errors like `Cannot read properties of null (reading 'uid')`:
+
+- **Null-Safety**: Always implement defensive checks when resolving the log's side or icon. Use `source && typeof source === 'object'` before accessing properties.
+- **Array Validation**: When scanning the team for UID matches, ensure each member `p` is truthy before accessing `p.uid`.
+
 ## 📡 Encounter Lifecycle & Proactive Pre-generation
 
 To ensure absolute visual continuity and eliminate latency between encounters, the system uses proactive pre-generation in the background.
@@ -148,4 +165,71 @@ The environmental "sandwich" (CombatGrass) and ground anchors must only be revea
 
 - **Rule**: Never show encounter layers (Stage 2) until the `upcomingPokemon` data is fully loaded and pre-calculated.
 - **Faint Continuity**: During the transition from Stage 1 (Faint) to Stage 2 (Bushes), the system must wait for the definitive death animation to complete (1.3s) before allowing the next encounter's environment to appear.
-- **UID Persistence**: Reusing the same object instance (`uid`) between the preview phase and the active battle phase is MANDATORY to ensure CSS transitions (like silhouette reveals) remain fluid and do not re-mount the component.
+
+## 🔄 Battle Lifecycle & State Transitions
+
+The combat engine follows a strictly phased lifecycle to ensure visual continuity and state integrity.
+
+### 1. Global State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> PRE_BATTLE: Encounter Triggered
+    
+    state PRE_BATTLE {
+        [*] --> GEN_ENCOUNTER: generateEncounter()
+        GEN_ENCOUNTER --> PRELOAD_COORDS: preloadCombatCoords()
+        PRELOAD_COORDS --> INTRO_ANIM: PLAY_WILD_INTRO (Phase 1)
+    }
+    
+    PRE_BATTLE --> ACTIVE_BATTLE: Intro Finished
+    
+    state ACTIVE_BATTLE {
+        [*] --> WAIT_INPUT: Show HUDs
+        WAIT_INPUT --> EXEC_TURN: Move/Item Selected
+        EXEC_TURN --> WAIT_INPUT: HP > 0
+        EXEC_TURN --> CATCH_PROCESS: Poké Ball Thrown
+        
+        state CATCH_PROCESS {
+            [*] --> CATCH_SHAKE: Shake Logic
+            CATCH_SHAKE --> CATCH_BREAK: Escaped
+            CATCH_SHAKE --> CATCH_SUCCESS: Sparkles (1.0s Visible)
+            CATCH_SUCCESS --> CATCH_VOID: Ball Disappears (1.0s Empty)
+            CATCH_VOID --> FINISH_CAPTURE: Transition to Phase 2
+        }
+        
+        CATCH_BREAK --> WAIT_INPUT
+        EXEC_TURN --> FAINT_PROCESS: enemyHP <= 0
+        
+        state FAINT_PROCESS {
+            [*] --> PLAY_FAINT: Faint Anim (1.3s)
+            PLAY_FAINT --> FINISH_FAINT: Transition to Phase 2
+        }
+    }
+    
+    ACTIVE_BATTLE --> PHASE_2: endBattle() / isSearching = true
+    
+    state PHASE_2 {
+        [*] --> BUSH_ANIM: Show Bushes (Phase 2)
+        BUSH_ANIM --> PRE_BATTLE: "Search" Clicked / Auto-next
+        BUSH_ANIM --> EXIT_BATTLE: "Return to Map"
+    }
+    
+    EXIT_BATTLE --> [*]
+```
+
+### 2. Capture Timing Precision (The "2.0s Rule")
+
+To maintain a cinematic feel, the capture success sequence follows a non-negotiable timing protocol:
+
+| Time | Event | Visual State |
+| :--- | :--- | :--- |
+| **0.0s** | `CATCH_SUCCESS` | Sparkles start. Poké Ball visible & shaking. Enemy Sprite HIDDEN. |
+| **1.0s** | **Midpoint** | Sparkles end. Poké Ball despawns. |
+| **1.0s - 2.0s** | **The Void** | Stage is COMPLETELY EMPTY. No sprites, no balls, no HUDs. |
+| **2.0s** | **Phase 2 Trigger** | `isSearching = true`. Transition to bushes starts. |
+
+### 3. Exit Procedures
+
+- **Search (Loop)**: Resets `over` state, clears old logs, but **persists** the camera and ground coordinates to avoid jumps.
+- **Return to Map**: Triggers `closeModal`. The `isBattleActive` flag MUST be cleared last to ensure all components can unmount cleanly without trying to read stale battle data.

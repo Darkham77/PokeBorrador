@@ -155,6 +155,7 @@ const props = defineProps({
     default: 'center',
     validator: (val) => ['center', 'side-left', 'side-right', 'side', 'top', 'down', 'left', 'right', 'fullscreen'].includes(val)
   },
+  height: { type: String, default: 'auto' },
   zIndex: { type: Number, default: 11000 },
   hideHeader: { type: Boolean, default: false },
   padding: { type: String, default: 'standard' },
@@ -238,6 +239,7 @@ const cardStyles = computed(() => {
   const styles = { 
     width: '100%',
     maxWidth: props.maxWidth,
+    height: props.height,
     maxHeight: props.maxHeight 
   }
 
@@ -365,9 +367,8 @@ const computedCorners = computed(() => {
       padding: 2dvh !important;
     }
     
-    // Floating panels shouldn't be full height
+    // Floating panels height management
     .base-modal-card {
-      height: auto !important;
       max-height: 95dvh !important;
     }
   }
