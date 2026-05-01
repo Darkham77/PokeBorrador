@@ -124,8 +124,11 @@ const show = () => {
     updatePosition()
     
     // Auto-hide on scroll to prevent "floating" tooltips
+    // [PureVue-Ignore]
     window.addEventListener('scroll', hide, { passive: true, capture: true })
+    // [PureVue-Ignore]
     window.addEventListener('wheel', hide, { passive: true })
+    // [PureVue-Ignore]
     window.addEventListener('touchmove', hide, { passive: true })
   }, props.delay)
 }

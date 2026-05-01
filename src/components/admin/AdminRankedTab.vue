@@ -140,7 +140,7 @@ const closeRankedSeason = async () => {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    label { font-size: 11px; color: #94a3b8; font-weight: 700; }
+    label { font-size: 11px; color: var(--muted); font-weight: 700; }
     input {
       background: Rgba(0, 0, 0, 0.3);
       border: 1px solid Rgba(255, 255, 255, 0.1);
@@ -159,15 +159,15 @@ const closeRankedSeason = async () => {
   background: Rgba(239, 68, 68, 0.05);
   border: 1px solid Rgba(239, 68, 68, 0.2);
   border-radius: 20px;
-  h3 { color: #ef4444; margin-bottom: 10px; font-size: 10px; }
-  p { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
-  .danger-btn { width: 100%; padding: 16px; background: #ef4444; color: $white; border: none; border-radius: 12px; cursor: pointer; font-size: 9px; }
+  h3 { color: var(--red); margin-bottom: 10px; font-size: 10px; }
+  p { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .danger-btn { width: 100%; padding: 16px; background: var(--red); color: $white; border: none; border-radius: 12px; cursor: pointer; font-size: 9px; }
 }
 
 .save-btn {
   margin-top: 20px;
   padding: 16px;
-  background: Linear-Gradient(135deg, #fbbf24, #f59e0b);
+  background: Linear-Gradient(135deg, var(--yellow), var(--orange));
   border: none;
   border-radius: 16px;
   color: $black;

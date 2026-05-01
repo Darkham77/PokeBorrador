@@ -93,9 +93,11 @@ Visual transitions MUST be synchronized with state changes using the `gameBus`.
 
 ## 13. Faint Animation & Shadow Sync
 
-- **Duration**: The `anim-faint` duration is standardized at **1.1s** to allow for a dramatic, premium exit.
+- **Sequence Duration**: The standard faint sequence lasts **1.3s** (0.8s animation + 0.5s pause).
+- **Visual Pattern**: Use a **5-cycle transparency blink** before final disappearance. 
+- **State Guard**: Use a dedicated flag (`isFaintInProgress`) to maintain the "invisible" state until the encounter phase fully resets.
 - **Shadow Lifecycle**: Ground shadows MUST be linked to the Pokémon's health state. They must vanish immediately during the faint animation and remain hidden until the ground position of the replacement is fully calculated.
-- **Timing Guard**: Use a safety delay (approx. 800ms) between battle phases to allow the UI to settle before revealing the new combatant.
+- **Timing Guard**: Never reveal encounter layers (bushes) until the faint sequence is 100% complete.
 
 ## 14. Shadow Dash Synchronization
 
@@ -116,3 +118,17 @@ The Poké Ball interaction follows a 3-state cycle: `catching` (energy beam) ➡
 
 - **Shadow Visibility**: Ground shadows MUST be hidden during the `trapped` state to prevent the "shadow under the ball" artifact.
 - **Visual Switch**: The Pokémon sprite is replaced by the `.trapped-pokeball` element during the `trapped` state.
+
+## 17. Feedback Lifecycle Decoupling
+
+Visual feedback effects (Catch Sparkles, Level-up particles) MUST be decoupled from the lifecycle of the triggering object.
+
+- **Standard**: Render feedback elements in a separate layer or as siblings (not children) of the primary actor.
+- **WHY**: Ensures the feedback persists and completes its animation even if the actor (e.g., Poké Ball, Pokémon) is cleared or unmounted during a successful capture.
+
+## 18. Selective Emergence Guards
+
+Entrance animations (e.g., `is-emerging` bounce) MUST be gated by the active encounter phase.
+
+- **Rule**: Only trigger emergence animations when the user is actively "Searching" or during the initial spawn.
+- **Gating**: NEVER allow background proactive pre-generation of encounters to trigger visual resets or bounce animations on current combatants.

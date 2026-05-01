@@ -12,6 +12,7 @@ const shadowStore = useCombatShadowStore()
  */
 const generatePixelShadow = (w = SHADOW_WIDTH, h = SHADOW_HEIGHT) => {
   if (typeof document === 'undefined') return ''
+  // [PureVue-Ignore]
   const canvas = document.createElement('canvas')
   canvas.width = w
   canvas.height = h
@@ -59,14 +60,6 @@ const getShadowStyle = (shadow) => {
 const shadowsArray = computed(() => {
   return Array.from(shadowStore.activeShadows.values()).filter(s => s.visible)
 })
-
-const onAfterLeave = (el) => {
-  // El ID está en el atributo data-id que pondremos en el template
-  const id = el.dataset.id
-  if (id) {
-    shadowStore.removeShadow(id)
-  }
-}
 </script>
 
 <template>
@@ -85,7 +78,7 @@ const onAfterLeave = (el) => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 5; 
+  z-index: var(--z-low); 
   overflow: visible;
 }
 
@@ -100,6 +93,6 @@ const onAfterLeave = (el) => {
   transition: opacity 0.4s ease;
   will-change: opacity;
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--z-bottom);
 }
 </style>

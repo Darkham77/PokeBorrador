@@ -33,9 +33,9 @@ const cls = computed(() => {
 
 const borderColor = computed(() => {
   if (props.borderOverride) return props.borderOverride;
-  if (props.level >= 20) return '$coin-gold'; // Gold
-  if (props.level >= 10) return '#c0c0c0'; // Silver
-  return '#cd7f32'; // Bronze
+  if (props.level >= 20) return 'var(--yellow)';
+  if (props.level >= 10) return 'var(--silver)';
+  return 'var(--bronze)';
 });
 
 const avatarClass = computed(() => {
@@ -62,7 +62,7 @@ const avatarStyles = computed(() => {
   if (!cls.value) {
     return {
       ...baseStyles,
-      background: '#1e293b',
+      background: 'var(--bg-card)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -110,12 +110,12 @@ const avatarStyles = computed(() => {
 
   &.blink-red {
     animation: blinkRed 1.5s infinite;
-    animation-delay: calc(var(--avatar-seed, 0) * -1.5s);
+    animation-delay: Calc(var(--avatar-seed, 0) * -1.5s);
   }
 }
 
 @keyframes blinkRed {
-  0%, 100% { box-shadow: 0 0 5px #ef4444; border-color: #ef4444; }
-  50% { box-shadow: 0 0 15px #ef4444; border-color: #f87171; }
+  0%, 100% { box-shadow: 0 0 5px var(--red); border-color: var(--red); }
+  50% { box-shadow: 0 0 15px var(--red); border-color: var(--red-light); }
 }
 </style>

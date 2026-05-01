@@ -92,3 +92,10 @@ If the test fails or the browser stays "frozen":
 1. **STOP**: Do not attempt to guess the UI state.
 2. **Dual Diagnosis**: Check the browser console logs AND the server logs (`npm run dev`) simultaneously.
 3. **Priority Repair**: Fix any console or SSR errors before retrying the test.
+## 🧪 Unit Testing and Regression
+  
+To maintain system stability, every core logic change MUST be validated against the Vitest suite:
+
+1. **Test Payload Parity**: When modifying event payloads in `gameBus` (e.g., adding `ballId` to `PLAY_CATCH_ENERGY`), you MUST update corresponding unit tests. Discrepancies between implementation and test expectations are the primary cause of CI failure.
+2. **State Snapshotting**: Use `vi.clearAllMocks()` in `beforeEach` to ensure isolation between test cases.
+3. **Mocking External Services**: Always mock global state providers (e.g., `gameStore`, `battleStore`) to avoid side effects during logic-only testing.

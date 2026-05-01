@@ -181,6 +181,9 @@ When refactoring legacy or generic components:
   - **MANDATORY**: Never use hardcoded numbers for `z-index` (e.g., `z-index: 10;`). Use CSS variables (`var(--z-low)`, `var(--z-base)`, `var(--z-modal)`, `var(--z-critical)`) for consistent layering and to pass aesthetics audits.
 - **Modern Control Flow**: The legacy ternary `if()` function is deprecated in SASS 1.8+. Always use standard `@if / @else` blocks for conditional styling logic to ensure build-log cleanliness.
 - **Positioning & Micro-offsets**: Avoid using negative margins (`margin-top: -1px`) to correct alignment of symbols or small icons. This causes layout instability and triggers redundancy alerts. Use **TranslateY()** or **TranslateX()** (Capitalized) for hardware-accelerated positioning that doesn't affect the box model.
+- **CSS Animation Composition**: When applying multiple classes that define an `animation` to the same element, you MUST ensure they do not override each other.
+  - **Standard**: If an element needs to Shake AND Flash, use a combined rule: `animation: wobble 0.6s, flash 0.3s;`.
+  - **WHY**: CSS properties follow a "last-one-wins" rule. Declaring `animation` in two separate classes applied to the same element will result in only the last class's animation being executed.
 - **Viewport Units (Mobile Safety)**:
   - **MANDATORY**: Use `dvh` and `dvw` (Dynamic Viewport) for any element requiring full-screen scaling.
   - **WHY**: Standard `vh`/`vw` units do not account for dynamic toolbars (URL bar, navigation) in mobile browsers like Safari. This leads to layout clipping or unwanted scrollbars.

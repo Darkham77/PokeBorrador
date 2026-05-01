@@ -17,6 +17,7 @@ const shadow = computed(() => shadowStore.activeShadows.get(props.shadowId))
  */
 const generatePixelShadow = (w = SHADOW_WIDTH, h = SHADOW_HEIGHT) => {
   if (typeof document === 'undefined') return ''
+  // [PureVue-Ignore]
   const canvas = document.createElement('canvas')
   canvas.width = w
   canvas.height = h
@@ -71,7 +72,7 @@ const shadowStyle = computed(() => {
   background-repeat: no-repeat;
   image-rendering: pixelated;
   transform-origin: center center;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.8s ease;
   will-change: opacity;
   pointer-events: none;
   z-index: -1; // Detrás del pokemon

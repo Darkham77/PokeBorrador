@@ -63,6 +63,7 @@
       background: Rgba(255, 59, 59, 0.1);
       border-radius: 50%;
       box-shadow: 0 0 10px Rgba(255, 59, 59, 0.4);
+      transform: Scale3D(0.9, 0.9, 1);
     }
   }
 
@@ -144,7 +145,6 @@
 
   &.ball-pill {
     & .pill-value { color: var(--red); }
-    .ball-icon-wrap { transform: Scale3D(0.9, 0.9, 1); }
   }
 
   &.egg-pill {

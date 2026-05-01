@@ -186,25 +186,29 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 
 .continue-btn-final {
   @include btn-vicio('info', 'md', true);
-  max-width: 240px;
+  max-width: 300px; // Aumentado para mayor estabilidad
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+  justify-content: flex-start;
+  padding-left: 48px; // Padding fijo para alinear el inicio de todos los botones
+  gap: 16px;
+  text-align: left;
   
   &.map-btn {
     @include btn-vicio('success', 'md', true);
   }
 
   .btn-emoji {
-    font-size: 32px; 
+    width: 32px; // Ancho fijo para el contenedor del emoji
+    font-size: 28px; 
     line-height: 1;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
     position: relative;
-    top: -2px; // Ajuste para el baseline de la fuente pixelada
+    top: -1px;
+    flex-shrink: 0;
   }
 }
 

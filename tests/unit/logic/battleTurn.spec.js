@@ -59,4 +59,17 @@ describe('battleTurn.js', () => {
     await runPlayerAction(mockStore, 0)
     expect(gameBus.emit).toHaveBeenCalledWith('PLAY_FAINT', { side: 'enemy' })
   })
+
+  it('should handle trainer switching pokemon when one faints', async () => {
+    mockStore.activeBattle.isTrainer = true
+    mockStore.activeBattle.enemy.hp = 0
+    const nextPokemon = { name: 'Rattata', hp: 100 }
+    mockStore.activeBattle.enemyTeam = [nextPokemon]
+
+    await runPlayerAction(mockStore, 0)
+
+    expect(gameBus.emit).toHaveBeenCalledWith('PLAY_WITHDRAW', { side: 'enemy' })
+    expect(gameBus.emit).toHaveBeenCalledWith('PLAY_SEND_OUT', expect.objectContaining({ side: 'enemy', pokemon: nextPokemon }))
+    expect(mockStore.addLog).toHaveBeenCalledWith(expect.stringContaining('¡Entrenador envía a Rattata!'), 'log-enemy', nextPokemon)
+  })
 })

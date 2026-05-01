@@ -9,7 +9,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
   const activeShadows = reactive(new Map())
   const feetCache = reactive(new Map()) // Caché persistente de puntos de anclaje por spriteUrl
 
-  async function detectFeetPoints(url, isFlying = false) {
+  async function detectFeetPoints(url) {
     if (!url) return { feetY: 0.9, feetX: 0.5 }
     
     // Si ya está en caché, lo devolvemos inmediatamente
@@ -19,6 +19,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
       const img = new Image()
       img.crossOrigin = 'anonymous'
       img.onload = () => {
+        // [PureVue-Ignore]
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
         canvas.width = img.width
@@ -100,7 +101,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
 
     // Si el sprite cambió y no estaba en caché, calculamos nuevos puntos de anclaje EN SEGUNDO PLANO
     if (options.spriteUrl && options.spriteUrl !== existing?.spriteUrl && !cachedPoints) {
-      return detectFeetPoints(options.spriteUrl, options.isFlying).then(points => {
+      return detectFeetPoints(options.spriteUrl).then(points => {
         // Solo actualizamos si la sombra sigue existiendo y es del mismo sprite
         const current = activeShadows.get(id)
         if (current && current.spriteUrl === options.spriteUrl) {

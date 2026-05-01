@@ -130,3 +130,22 @@ Logs must be added to the queue **BEFORE** triggering animations or pauses that 
 
 - **Correct Sequence**: `addLog()` -> `updateHP()` -> `waitDelay()`.
 - **Why**: This allows the log's batching engine to start rendering the text while the HP bar animation is still playing, making the action feel responsive y synchronized.
+
+## 📡 Encounter Lifecycle & Proactive Pre-generation
+
+To ensure absolute visual continuity and eliminate latency between encounters, the system uses proactive pre-generation in the background.
+
+### 1. The Proactive Generation Gate
+
+To maintain combat focus, pre-generation of the *next* encounter must occur silently while the *current* battle is active.
+
+- **Animation Guard**: Background pre-generation MUST NOT trigger any visual "emergence" or "bounce" animations on the current battlefield.
+- **Implementation**: Entrance animations (`is-emerging`) must be explicitly gated by the `isSearching` phase. If `isSearching` is false (active combat), the pre-generated Pokémon must remain static and hidden until the transition phase begins.
+
+### 2. Visual Synchronization (Bushes & Shadows)
+
+The environmental "sandwich" (CombatGrass) and ground anchors must only be revealed when the underlying data is fully ready.
+
+- **Rule**: Never show encounter layers (Stage 2) until the `upcomingPokemon` data is fully loaded and pre-calculated.
+- **Faint Continuity**: During the transition from Stage 1 (Faint) to Stage 2 (Bushes), the system must wait for the definitive death animation to complete (1.3s) before allowing the next encounter's environment to appear.
+- **UID Persistence**: Reusing the same object instance (`uid`) between the preview phase and the active battle phase is MANDATORY to ensure CSS transitions (like silhouette reveals) remain fluid and do not re-mount the component.

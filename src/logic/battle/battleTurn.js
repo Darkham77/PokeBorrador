@@ -107,18 +107,18 @@ export async function runPlayerAction(store, moveIndex) {
     
     // Si es entrenador, retirar con animación de energía y enviar al siguiente
     if (isTr && store.activeBattle.enemyTeam) {
-      gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
-      
       const nextEnemy = store.activeBattle.enemyTeam.find(p => p.hp > 0)
       if (nextEnemy) {
-      store.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', nextEnemy)
-      gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
-      await new Promise(r => setTimeout(r, 800))
-      return
+        gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
+        store.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', nextEnemy)
+        gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
+        await new Promise(r => setTimeout(r, 800))
+        return
       }
     }
 
-    await store.endBattle(true)
+    // Pequeño margen para que la animación de caída inicie antes de la Fase 2 (Búsqueda)
+    setTimeout(() => store.endBattle(true), 600)
   }
 }
 

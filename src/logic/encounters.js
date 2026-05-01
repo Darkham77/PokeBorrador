@@ -75,11 +75,10 @@ export async function generateEncounter(locId, state, options = {}) {
   const allMapIds = maps.map(m => m.id);
   
   // 1. Especial: Fase de Dominancia (Finde) - Batallas de Defensores
-  if (!isDisputePhase()) {
+  if (!isDisputePhase() && !options.forceEncounter) {
     // Chance de encontrar defensor (20% normal)
     if (Math.random() < 0.20 && state.faction) {
       // Determinamos si el mapa está dominado por el enemigo
-      // Nota: Esto requiere que el store MAP pase la información de ganadores
       const winner = (options.dominanceData || {})[locId];
       if (winner && winner !== state.faction) {
         return { type: 'defender', faction: winner };
@@ -89,7 +88,7 @@ export async function generateEncounter(locId, state, options = {}) {
 
   // 2. Especial: Guardianes (Pokémon Alfa)
   const guardian = getGuardianData(locId, allMapIds);
-  if (guardian) {
+  if (guardian && !options.forceEncounter) {
     // Verificar si ya fue capturado hoy
     const capturedToday = (state.dailyGuardianCaptures || []).includes(locId);
     if (!capturedToday && Math.random() < GUARDIAN_CHANCE) {
@@ -105,7 +104,7 @@ export async function generateEncounter(locId, state, options = {}) {
   const repellentActive = (state.repelSecs || 0) > 0;
   const firstPokemon = state.team?.[0];
   
-  if (repellentActive) {
+  if (repellentActive && !options.forceEncounter) {
     if (Math.random() < GAME_RATIOS.encounters.trainerRepel) {
       return { type: 'trainer' };
     }
@@ -125,7 +124,7 @@ export async function generateEncounter(locId, state, options = {}) {
   // 2. Base Trainer Chance
   const trainerBonus = options.eventTrainerBonus || 1;
   const tChance = Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus;
-  if (Math.random() * 100 < tChance) {
+  if (!options.forceEncounter && Math.random() * 100 < tChance) {
     return { type: 'trainer' };
   }
 

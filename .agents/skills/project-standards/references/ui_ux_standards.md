@@ -1,5 +1,16 @@
 # UI/UX & Aesthetic Standards
 
+## 🛠️ Vue.js & Component Standards
+
+To prevent initialization race conditions (TDZ) and ensure reactive stability:
+
+- **MANDATORY Setup Order**: Every `<script setup>` block MUST follow this hierarchical order:
+  1. **Refs & Constants**: Base reactive state and static data.
+  2. **Computed Properties**: Derived logic and data filtering.
+  3. **Watchers & Lifecycle Hooks**: Side effects and event listeners.
+- **WHY**: Ensures that watchers and hooks never attempt to read computed data before its dependencies are fully initialized.
+- **Modularity**: Adhere to the **500-line rule** for all UI components. If a view exceeds this, logic must be extracted to composables or sub-components.
+
 This manual defines the visual identity and interaction patterns of the Poké Vicio project, ensuring a premium **Hybrid Retro-Modern** experience.
 
 ---
@@ -243,6 +254,8 @@ To guarantee a seamless "Live" feel during multi-phase transitions (e.g., from S
 - **Why**: Eliminates 1-frame position jumps ("teleports") and avoids redundant asynchronous calculations that degrade the user experience.
 - **Stable Grounding**: Ground shadows and environmental effects (like grass) MUST be placed in a non-animated container (or a sibling of the animated one). This ensures that even if the sprite bounces or jump-attacks, its shadow remains physically anchored to the floor coordinates.
 - **Bottom-Anchor Grounding**: For entity positioning in the virtual world, always prioritize `bottom`-relative coordinates over `top` percentages. This ensures that sprites with different amounts of empty space in their PNG source remain perfectly anchored to the ground line.
+- **Continuity via UID**: When transitioning between encounter phases (e.g., Search Preview to Battle), components MUST use the instance `uid` as the `:key`.
+  - **WHY**: Ensures Vue reuses the exact same DOM node instead of re-mounting, preventing flickering and maintaining visual state (like animation frames) across phase boundaries.
 
 ---
 

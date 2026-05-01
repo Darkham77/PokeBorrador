@@ -219,10 +219,10 @@ defineEmits(['toggle-editing'])
 }
 
 .press-start { @include pixelated; font-size: 10px; letter-spacing: 1px; }
-.sub-title { margin: 30px 0 15px; color: #fbbf24; font-size: 8px; }
+.sub-title { margin: 30px 0 15px; color: var(--yellow); font-size: 8px; }
 
-.add-btn { background: #22c55e; color: $white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
-.back-btn { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px 16px; border-radius: 12px; cursor: pointer; }
+.add-btn { background: var(--green); color: $white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+.back-btn { background: transparent; border: 1px solid var(--red); color: var(--red); padding: 8px 16px; border-radius: 12px; cursor: pointer; }
 
 .event-grid {
   display: grid;
@@ -256,7 +256,7 @@ defineEmits(['toggle-editing'])
     border-radius: 8px;
     font-size: 11px;
     cursor: pointer;
-    &:hover { background: Rgba(255, 255, 255, 0.05); border-color: #fbbf24; }
+    &:hover { background: Rgba(255, 255, 255, 0.05); border-color: var(--yellow); }
   }
 
   &.inactive { opacity: 0.6; filter: Grayscale(1); }
@@ -273,7 +273,7 @@ defineEmits(['toggle-editing'])
     display: flex;
     flex-direction: column;
     gap: 8px;
-    label { font-size: 11px; color: #94a3b8; font-weight: 700; }
+    label { font-size: 11px; color: var(--muted); font-weight: 700; }
     input, textarea, select {
       background: Rgba(0, 0, 0, 0.3);
       border: 1px solid Rgba(255, 255, 255, 0.1);
@@ -303,7 +303,7 @@ defineEmits(['toggle-editing'])
   .save-btn {
     margin-top: 20px;
     padding: 16px;
-    background: Linear-Gradient(135deg, #fbbf24, #f59e0b);
+    background: Linear-Gradient(135deg, var(--yellow), var(--orange));
     border: none;
     border-radius: 16px;
     color: $black;
@@ -318,8 +318,8 @@ defineEmits(['toggle-editing'])
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #94a3b8;
+  color: var(--muted);
   font-size: 13px;
-  input { accent-color: #fbbf24; }
+  input { accent-color: var(--yellow); }
 }
 </style>

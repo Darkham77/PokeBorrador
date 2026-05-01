@@ -1,6 +1,6 @@
 // [PureVue-Ignore-Length] 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -72,13 +72,35 @@ const debugCapture = async () => {
   battleStore.isProcessing = false
 }
 
-const toggleSearchMode = () => {
+const toggleBinoculars = () => {
+  battleStore.debugBinoculars = !battleStore.debugBinoculars
+}
+
+const toggleSearchMode = async () => {
   battleStore.isSearching = !battleStore.isSearching
+  
+  // Si activamos la búsqueda y no hay un pokemon preparado, forzamos uno inmediatamente
+  if (battleStore.isSearching && !battleStore.upcomingPokemon && battleStore.state?.locationId) {
+    const { generateEncounter } = await import('@/logic/encounters')
+    const { useMapStore } = await import('@/stores/map')
+    const { useEventStore } = await import('@/stores/events')
+    
+    const encounter = await generateEncounter(battleStore.state.locationId, gameStore.state, {
+      activeEvents: useMapStore().activeEvents,
+      dominanceData: useMapStore().mapWinners,
+      shinyMultiplier: useEventStore().globalMultipliers?.shiny || 1,
+      forceEncounter: true
+    })
+    
+    if (encounter && encounter.type === 'wild') {
+      battleStore.upcomingPokemon = { ...encounter.pokemon }
+    }
+  }
 }
 
 const testScenario1 = () => {
   const currentPoke = battleStore.upcomingPokemon || battleStore.enemy
-  const pokeToUse = currentPoke ? { ...currentPoke } : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHp: 20 }
+  const pokeToUse = currentPoke ? currentPoke : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHp: 20 }
   battleStore.isSearching = false
   battleStore.upcomingPokemon = null
   battleStore.state.enemy = pokeToUse
@@ -89,7 +111,7 @@ const testScenario1 = () => {
 const testScenario2 = () => {
   battleStore.isSearching = true
   const currentPoke = battleStore.upcomingPokemon || battleStore.enemy
-  const poke = currentPoke ? { ...currentPoke } : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHP: 20 }
+  const poke = currentPoke ? currentPoke : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHp: 20 }
   battleStore.upcomingPokemon = poke
 }
 
@@ -98,7 +120,7 @@ const testScenario3 = () => {
     uiStore.notify('Primero activa la Fase 2', '⚠️')
     return
   }
-  const poke = { ...battleStore.upcomingPokemon }
+  const poke = battleStore.upcomingPokemon
   gameBus.emit('START_BATTLE', { enemy: poke, isTrainer: false, animationPhase: 3 })
   battleStore.state.enemy = poke
   battleStore.state.over = false
@@ -140,74 +162,218 @@ const toggleStatus = (side, type) => {
 </script>
 
 <template>
-  <div v-if="isDebug" class="battle-debug-tools" :class="{ 'is-open': isOpen }">
+  <div
+    v-if="isDebug"
+    class="battle-debug-tools"
+    :class="{ 'is-open': isOpen }"
+  >
     <Transition name="slide-up">
-      <div v-if="isOpen" class="debug-menu custom-scrollbar-vicio">
+      <div
+        v-if="isOpen"
+        class="debug-menu custom-scrollbar-vicio"
+      >
         <!-- GLOBAL / QUICK ACTIONS -->
         <div class="debug-row">
-          <button class="debug-btn kill-btn" @click.stop="defeatEnemy">KILL ENEMY</button>
-          <button class="debug-btn heal-btn" @click.stop="healPlayer">HEAL ME</button>
-          <button class="debug-btn heal-btn" @click.stop="healEnemy">HEAL ENEMY</button>
+          <button
+            class="debug-btn kill-btn"
+            @click.stop="defeatEnemy"
+          >
+            KILL ENEMY
+          </button>
+          <button
+            class="debug-btn heal-btn"
+            @click.stop="healPlayer"
+          >
+            HEAL ME
+          </button>
+          <button
+            class="debug-btn heal-btn"
+            @click.stop="healEnemy"
+          >
+            HEAL ENEMY
+          </button>
         </div>
 
-        <button class="debug-btn search-btn" @click.stop="toggleSearchMode">
-          SEARCH: {{ battleStore.isSearching ? 'OFF' : 'ON' }}
-        </button>
+        <div class="debug-section">
+          <div class="section-label">
+            Environment & Behavior
+          </div>
+          <div class="debug-row">
+            <PVTooltip text="Binocs: Ver el Pokémon en COLOR (Binoculares) o en SILUETA (Normal)">
+              <button
+                class="debug-btn search-btn"
+                :class="{ 'btn-active': battleStore.debugBinoculars }"
+                @click.stop="toggleBinoculars"
+              >
+                {{ battleStore.debugBinoculars ? '👁️ BINOCS: COLOR' : '🕶️ BINOCS: SILH' }}
+              </button>
+            </PVTooltip>
+            
+            <PVTooltip text="Chain: El siguiente Pokémon aparece automáticamente al ganar">
+              <button
+                class="debug-btn search-btn"
+                :class="{ 'btn-active': battleStore.isSearching }"
+                @click.stop="toggleSearchMode"
+              >
+                {{ battleStore.isSearching ? '🔗 CHAIN: ON' : '🔗 CHAIN: OFF' }}
+              </button>
+            </PVTooltip>
+          </div>
+        </div>
 
         <!-- PLAYER SECTION -->
         <div class="debug-section">
-          <div class="section-label">Player Controls</div>
+          <div class="section-label">
+            Player Controls
+          </div>
           <div class="btn-grid">
-            <button class="mini-btn" :class="{ 'active': battleStore.state?.player?.isShiny }" @click.stop="toggleStatus('player', 'shiny')">SHINY</button>
-            <button class="mini-btn" :class="{ 'active': battleStore.state?.player?.isGuardian }" @click.stop="toggleStatus('player', 'guardian')">GUARD</button>
+            <button
+              class="mini-btn"
+              :class="{ 'active': battleStore.state?.player?.isShiny }"
+              @click.stop="toggleStatus('player', 'shiny')"
+            >
+              SHINY
+            </button>
+            <button
+              class="mini-btn"
+              :class="{ 'active': battleStore.state?.player?.isGuardian }"
+              @click.stop="toggleStatus('player', 'guardian')"
+            >
+              GUARD
+            </button>
           </div>
           <div class="swap-controls mt-1">
-            <button class="swap-btn" @click.stop="decrementSwap('player')">-</button>
-            <input v-model.number="visualPlayerId" type="number" class="swap-input" @change="updateVisualSwap('player')" @click.stop>
-            <button class="swap-btn" @click.stop="incrementSwap('player')">+</button>
+            <button
+              class="swap-btn"
+              @click.stop="decrementSwap('player')"
+            >
+              -
+            </button>
+            <input
+              v-model.number="visualPlayerId"
+              type="number"
+              class="swap-input"
+              @change="updateVisualSwap('player')"
+              @click.stop
+            >
+            <button
+              class="swap-btn"
+              @click.stop="incrementSwap('player')"
+            >
+              +
+            </button>
           </div>
         </div>
 
         <!-- ENEMY SECTION -->
         <div class="debug-section">
-          <div class="section-label">Enemy Controls</div>
+          <div class="section-label">
+            Enemy Controls
+          </div>
           <div class="btn-grid">
-            <button class="mini-btn" :class="{ 'active': battleStore.state?.enemy?.isShiny }" @click.stop="toggleStatus('enemy', 'shiny')">SHINY</button>
-            <button class="mini-btn" :class="{ 'active': battleStore.state?.enemy?.isGuardian }" @click.stop="toggleStatus('enemy', 'guardian')">GUARD</button>
+            <button
+              class="mini-btn"
+              :class="{ 'active': battleStore.state?.enemy?.isShiny }"
+              @click.stop="toggleStatus('enemy', 'shiny')"
+            >
+              SHINY
+            </button>
+            <button
+              class="mini-btn"
+              :class="{ 'active': battleStore.state?.enemy?.isGuardian }"
+              @click.stop="toggleStatus('enemy', 'guardian')"
+            >
+              GUARD
+            </button>
           </div>
           <div class="swap-controls mt-1">
-            <button class="swap-btn" @click.stop="decrementSwap('enemy')">-</button>
-            <input v-model.number="visualEnemyId" type="number" class="swap-input" @change="updateVisualSwap('enemy')" @click.stop>
-            <button class="swap-btn" @click.stop="incrementSwap('enemy')">+</button>
+            <button
+              class="swap-btn"
+              @click.stop="decrementSwap('enemy')"
+            >
+              -
+            </button>
+            <input
+              v-model.number="visualEnemyId"
+              type="number"
+              class="swap-input"
+              @change="updateVisualSwap('enemy')"
+              @click.stop
+            >
+            <button
+              class="swap-btn"
+              @click.stop="incrementSwap('enemy')"
+            >
+              +
+            </button>
           </div>
-          <button class="debug-btn catch-btn" @click.stop="debugCapture">⭐ SUPER POKEBALL</button>
+          <button
+            class="debug-btn catch-btn"
+            @click.stop="debugCapture"
+          >
+            ⭐ SUPER POKEBALL
+          </button>
         </div>
 
         <!-- SCENARIOS -->
         <div class="debug-section">
-          <div class="section-label">Scenarios</div>
+          <div class="section-label">
+            Scenarios
+          </div>
           <div class="btn-grid trio">
-            <button class="mini-btn" @click.stop="testScenario1">P1</button>
-            <button class="mini-btn" @click.stop="testScenario2">P2</button>
-            <button class="mini-btn" @click.stop="testScenario3">P3</button>
+            <button
+              class="mini-btn"
+              @click.stop="testScenario1"
+            >
+              P1
+            </button>
+            <button
+              class="mini-btn"
+              @click.stop="testScenario2"
+            >
+              P2
+            </button>
+            <button
+              class="mini-btn"
+              @click.stop="testScenario3"
+            >
+              P3
+            </button>
           </div>
         </div>
 
         <!-- CAMERA -->
         <div class="debug-section">
-          <div class="section-label">Camera</div>
+          <div class="section-label">
+            Camera
+          </div>
           <div class="btn-grid">
-            <button class="mini-btn" @click.stop="gameBus.emit('TOGGLE_CAMERA_GUIDES')">GUIDES</button>
-            <button class="mini-btn" @click.stop="gameBus.emit('TOGGLE_DEBUG_ZOOM')">ZOOM</button>
+            <button
+              class="mini-btn"
+              @click.stop="gameBus.emit('TOGGLE_CAMERA_GUIDES')"
+            >
+              GUIDES
+            </button>
+            <button
+              class="mini-btn"
+              @click.stop="gameBus.emit('TOGGLE_DEBUG_ZOOM')"
+            >
+              ZOOM
+            </button>
           </div>
         </div>
 
-        <div class="debug-footer">VITE_DEBUG_ACTIVE</div>
+        <div class="debug-footer">
+          VITE_DEBUG_ACTIVE
+        </div>
       </div>
     </Transition>
 
     <PVTooltip title="Debug Menu">
-      <button class="debug-trigger" @click.stop="isOpen = !isOpen">
+      <button
+        class="debug-trigger"
+        @click.stop="isOpen = !isOpen"
+      >
         <span class="icon">🕹️</span>
         <span class="label">DEBUG</span>
       </button>
@@ -223,12 +389,12 @@ const toggleStatus = (side, type) => {
   position: fixed;
   bottom: 12px; 
   left: 12px;
-  z-index: 9999;
+  z-index: var(--z-navigation);
   display: flex;
   flex-direction: column-reverse;
   align-items: flex-start;
   pointer-events: none;
-  font-family: 'Press Start 2P', cursive;
+  @include pixelated;
   
   &.is-open { pointer-events: all; }
 }
@@ -263,8 +429,10 @@ const toggleStatus = (side, type) => {
   gap: 8px;
   width: 180px;
   max-height: 400px;
+  min-height: 0;
   overflow-y: auto;
   box-shadow: 0 10px 40px Rgba(0,0,0,0.9);
+  -webkit-backdrop-filter: Blur(12px);
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   margin-bottom: 8px;
@@ -314,8 +482,8 @@ const toggleStatus = (side, type) => {
   &.search-btn { @include btn-vicio('info', 'xs', true); border-color: var(--yellow); }
   &.catch-btn { 
     @include btn-vicio('primary', 'xs', true); 
-    background: Linear-Gradient(135deg, #f093fb 0%, #f5576c 100%);
-    border-color: #fff;
+    background: Linear-Gradient(135deg, var(--purple-light) 0%, var(--red) 100%);
+    border-color: var(--white);
     margin-top: 2px;
   }
 }
@@ -337,7 +505,7 @@ const toggleStatus = (side, type) => {
   &.active {
     background: var(--yellow);
     color: $black;
-    border-color: #fff;
+    border-color: $white;
   }
 }
 
@@ -367,7 +535,7 @@ const toggleStatus = (side, type) => {
     text-align: center; 
     height: 100%; 
     border-radius: 2px;
-    font-family: 'Press Start 2P', cursive;
+    @include pixelated;
 
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {

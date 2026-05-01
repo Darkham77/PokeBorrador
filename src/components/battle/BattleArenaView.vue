@@ -1,5 +1,15 @@
 // [PureVue-Ignore-Length]
 <script setup>
+const preloadPokemonSprite = (pokemon) => {
+  if (!pokemon) return Promise.resolve()
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = resolve
+    img.onerror = resolve
+    img.src = getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { shiny: pokemon.isShiny })
+  })
+}
+
 import { ref, computed, watch, onMounted, onUnmounted, provide, nextTick } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
@@ -18,10 +28,11 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { gameBus } from '@/logic/gameBus'
 import { useCombatCamera } from '@/composables/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-const { ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY, BUSH_SIZE, PREVIEW_SIZE, SHADOW_WIDTH, SHADOW_HEIGHT, BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
+const { ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY, BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
 import VirtualSpace from './VirtualSpace.vue'
 import VirtualEntity from './VirtualEntity.vue'
 import CombatShadow from './CombatShadow.vue'
+import CombatGrass from './CombatGrass.vue'
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
@@ -60,6 +71,35 @@ const isFinishing = computed(() => {
   return isEncounterOver(battle.value, enemy.value, player.value)
 })
 
+// === ESTADO REACTIVO DEL COMBATE (Centralizado para evitar ReferenceErrors) ===
+const isSearching = computed(() => battleStore.isSearching)
+const upcomingPokemon = computed(() => battleStore.upcomingPokemon)
+
+const isWildEntryAnimation = ref(false)
+const isEmerging = ref(false)
+const isWildSilhouette = ref(false)
+const wildRevealActive = ref(false)
+const upcomingIsEmerging = ref(false)
+const isWildSilhouetteHalfway = ref(false)
+const isInitialLoad = ref(true)
+const isPreloadingFeet = ref(true)
+const isEnemyShadowReady = ref(false)
+
+const isCaptureSequenceActive = ref(false)
+const caughtPokemonSnapshot = ref(null) 
+const isFaintInProgress = ref(false)
+const faintedPokemonSnapshot = ref(null)
+const isEnemyPreloading = ref(false)
+
+// Control de estados físicos (Poké Ball Cycle: catching -> trapped -> releasing)
+const playerAnimState = ref(null) 
+const enemyAnimState = ref(null)
+
+// Identificadores únicos para las sombras activas
+const currentPlayerShadowKey = ref(null)
+const currentEnemyShadowKey = ref(null)
+// ==============================================================================
+
 // Módulos lógicos centralizados para evitar reescritura
 const isEncounterOver = (b, e, p) => {
   if (!b?.over) return false
@@ -75,8 +115,36 @@ const isDefeated = (p) => {
   return p.hp <= 0 || (isCaptureSequenceActive.value && caughtPokemonSnapshot.value?.uid === p.uid)
 }
 
-const isSearching = computed(() => battleStore.isSearching)
-const upcomingPokemon = computed(() => battleStore.upcomingPokemon)
+const activeEnemyData = computed(() => {
+  // Prioridad 0: Si estamos en una secuencia de captura exitosa, NO mostrar nada (solo partículas)
+  if (isCaptureSequenceActive.value) return null
+
+  // Prioridad 1: Si hay un faint en curso, devolver SIEMPRE el snapshot del muerto
+  if (isFaintInProgress.value && faintedPokemonSnapshot.value) return faintedPokemonSnapshot.value
+
+  // El enemigo "oficial" viene del store o del snapshot si estamos capturando
+  const storeEnemy = (battle.value && (!battle.value.over || isFinishing.value)) ? enemy.value : null
+  const visualEnemy = (isCaptureSequenceActive.value && caughtPokemonSnapshot.value) ? caughtPokemonSnapshot.value : storeEnemy
+
+  // Un pokemon está "finalizado" visualmente si está derrotado o capturado
+  const isDone = isDefeated(visualEnemy)
+  
+  // Prioridad 2: Búsqueda activa o fase final de transición (siempre mostrar el próximo si existe)
+  if ((isSearching.value || isFinishing.value) && upcomingPokemon.value) return upcomingPokemon.value
+
+  // Prioridad 3: Enemigo visual mientras esté ACTIVO (HP > 0 y no capturado)
+  if (visualEnemy && !isDone) return visualEnemy
+  
+  // Prioridad 4: El próximo (silueta en arbustos) si el actual ya terminó
+  const isNewUpcoming = upcomingPokemon.value && 
+    (!visualEnemy || (upcomingPokemon.value.uid !== visualEnemy.uid && upcomingPokemon.value.id !== visualEnemy.id))
+  if (isNewUpcoming) return upcomingPokemon.value
+
+  // Prioridad 5: El enemigo visual "finalizado" (persistir para animaciones residuales)
+  if (visualEnemy) return visualEnemy
+
+  return upcomingPokemon.value
+})
 
 const hasBinoculars = computed(() => {
   return (gameStore.state.inventory?.['binoculars'] > 0) || false
@@ -88,45 +156,6 @@ const isWildEncounter = computed(() => {
   // O si estamos buscando (que siempre es salvaje)
   if (isSearching.value) return true
   return battleStore.state && !battleStore.state.isTrainer && !battleStore.state.isGym
-})
-
-const isWildEntryAnimation = ref(false)
-const isEmerging = ref(false)
-const isWildSilhouette = ref(false)
-const wildRevealActive = ref(false)
-const upcomingIsEmerging = ref(false)
-const isWildSilhouetteHalfway = ref(false)
-const isInitialLoad = ref(true)
-const isPreloadingFeet = ref(true)
-const isEnemyShadowReady = ref(false) // Nueva flag de sincronización atómica
-const caughtPokemonSnapshot = ref(null) 
-
-const activeEnemyData = computed(() => {
-  // El enemigo "oficial" viene del store o del snapshot si estamos capturando
-  const storeEnemy = (battle.value && (!battle.value.over || isFinishing.value)) ? enemy.value : null
-  const visualEnemy = (isCaptureSequenceActive.value && caughtPokemonSnapshot.value) ? caughtPokemonSnapshot.value : storeEnemy
-
-  // Un pokemon está "finalizado" visualmente si está derrotado o capturado
-  const isDone = isDefeated(visualEnemy)
-  
-  // El próximo solo es válido si no es el mismo que el visual (evitar falsas predicciones)
-  const isNewUpcoming = upcomingPokemon.value && 
-    (!visualEnemy || (upcomingPokemon.value.uid !== visualEnemy.uid && upcomingPokemon.value.id !== visualEnemy.id))
-
-  // Prioridad 1: Búsqueda activa (siempre mostrar el próximo)
-  if (isSearching.value) return upcomingPokemon.value
-
-  // Prioridad 2: Enemigo visual mientras esté ACTIVO (HP > 0 y no capturado)
-  if (visualEnemy && !isDone) return visualEnemy
-
-  // Prioridad 3: El próximo (silueta en arbustos) si el actual ya terminó
-  if (isNewUpcoming) return upcomingPokemon.value
-
-  // Prioridad 4: El enemigo visual "finalizado" (para animaciones de fainted o persistencia de bola)
-  if (visualEnemy) return visualEnemy
-
-  // Fallback
-  return upcomingPokemon.value
 })
 
 const activeEnemyImageUrl = computed(() => {
@@ -146,10 +175,12 @@ const activePlayerIsFloating = computed(() => {
 })
 
 const activeEnemyIsSilhouette = computed(() => {
-  if (hasBinoculars.value) return false
+  // Revelar si tiene binoculares O si estamos en modo debug binoculares O si está muriendo (queremos verlo en color)
+  if (hasBinoculars.value || battleStore.debugBinoculars || isFaintInProgress.value) return false
   
-  // Durante búsqueda o previsualización siempre es silueta
-  if (isSearching.value || upcomingIsEmerging.value || !!upcomingPokemon.value) return true
+  // Durante previsualización (emergencia) siempre es silueta si no se cumplen las condiciones de arriba
+  // Pero SOLO si estamos realmente buscando o en fase de transición final
+  if (upcomingIsEmerging.value || ((isSearching.value || isFinishing.value) && !!upcomingPokemon.value)) return true
   
   // Si las animaciones de intro terminaron y el combate es activo, forzar limpieza
   if (!isIntroInProgress.value && battleStore.isBattleActive && !isFinishing.value) return false
@@ -158,6 +189,38 @@ const activeEnemyIsSilhouette = computed(() => {
   if (isWildEntryAnimation.value || wildRevealActive.value) return true
   
   return isWildSilhouette.value
+})
+
+// === WATCHERS (Efectos Secundarios) ===
+
+// Watcher para pre-cargar la imagen del enemigo y evitar parpadeos
+watch(() => activeEnemyData.value?.uid || activeEnemyData.value?.id, async (newId) => {
+  if (!newId) return
+  isEnemyPreloading.value = true
+  try {
+    if (activeEnemyData.value) {
+      await preloadPokemonSprite(activeEnemyData.value)
+    }
+  } catch (e) {
+    console.warn('[Battle] Error pre-cargando sprite de enemigo:', e)
+  } finally {
+    isEnemyPreloading.value = false
+  }
+})
+
+// Watcher para bloquear el cambio de pokemon mientras ocurre el faint
+watch(() => enemy.value?.hp, (newHp, oldHp) => {
+  if (newHp <= 0 && oldHp > 0 && !isCaptureSequenceActive.value) {
+    // 1. Guardar copia del bicho que acaba de morir para persistencia visual
+    faintedPokemonSnapshot.value = enemy.value ? { ...enemy.value } : null
+    isFaintInProgress.value = true
+    
+    // 2. Tiempo total: 0.8s (animación) + 0.5s (espera vacía) = 1.3s
+    setTimeout(() => { 
+      isFaintInProgress.value = false 
+      faintedPokemonSnapshot.value = null
+    }, 1300)
+  }
 })
 
 const revealWildPokemon = (isInstant = false) => {
@@ -204,34 +267,15 @@ const triggerWildEmergence = () => {
   }, 2200)
 }
 
-// Control de estados físicos (Poké Ball Cycle: catching -> trapped -> releasing)
-const playerAnimState = ref(null) // 'catching', 'trapped', 'releasing', null
-const enemyAnimState = ref(null)
-
-// Identificadores únicos para las sombras activas
-const currentPlayerShadowKey = ref(null)
-const currentEnemyShadowKey = ref(null)
 
 // Coordenadas base del suelo persistente
 const stableEnemyGroundY = ref('90%')
 const stablePlayerGroundY = ref('90%')
 
 // Propiedades computadas inteligentes para el suelo (feetY si hay sombra, estable si no)
-const enemyGroundY = computed(() => {
-  const shadow = shadowStore.activeShadows.get(currentEnemyShadowKey.value)
-  if (shadow && shadow.feetY !== undefined) {
-    stableEnemyGroundY.value = `${shadow.feetY * 100}%`
-  }
-  return stableEnemyGroundY.value
-})
+const enemyGroundY = computed(() => stableEnemyGroundY.value)
 
-const playerGroundY = computed(() => {
-  const shadow = shadowStore.activeShadows.get(currentPlayerShadowKey.value)
-  if (shadow && shadow.feetY !== undefined) {
-    stablePlayerGroundY.value = `${shadow.feetY * 100}%`
-  }
-  return stablePlayerGroundY.value
-})
+const playerGroundY = computed(() => stablePlayerGroundY.value)
 
 // Propiedades computadas para que la Poké Ball siempre siga a la sombra del bando correspondiente
 const playerTrappedCoords = computed(() => {
@@ -270,9 +314,11 @@ watch(enemyTrappedCoords, (newVal) => {
 const playerTrappedBallId = ref('pokeball')
 const enemyTrappedBallId = ref('pokeball')
 
-// Refs para controlar las agitaciones (shakes) individuales
+// Refs para controlar las agitaciones (shakes) y parpadeos (flashes) individuales
 const playerIsShaking = ref(false)
+const playerIsBlinking = ref(false)
 const enemyIsShaking = ref(false)
+const enemyIsBlinking = ref(false)
 
 // Partículas de éxito de captura (sparkles)
 const catchSparkles = ref([])
@@ -281,6 +327,7 @@ const catchSparkles = ref([])
 const pokeballShadowUrl = computed(() => {
   if (typeof document === 'undefined') return ''
   const w = 10, h = 7
+  // [PureVue-Ignore]
   const canvas = document.createElement('canvas')
   canvas.width = w; canvas.height = h
   const ctx = canvas.getContext('2d')
@@ -302,7 +349,6 @@ const isIntroInProgress = computed(() => {
          isCaptureSequenceActive.value
 })
 
-const isCaptureSequenceActive = ref(false)
 
 const isShadowVisible = computed(() => {
   // Ocultar si está en la Poké Ball (Estado Atrapado)
@@ -344,9 +390,14 @@ watch(() => shadowStore.activeShadows.get(currentPlayerShadowKey.value), (shadow
 }, { deep: true })
 
 // Reset de coordenadas inteligente al cambiar de pokemon (Usar caché si existe para evitar saltos)
-watch(() => activeEnemyData.value, async (newVal) => {
+watch(() => activeEnemyData.value, async (newVal, oldVal) => {
   if (newVal) {
-    isEnemyShadowReady.value = false // Bloqueamos visibilidad hasta tener coordenadas
+    // Si es el mismo Pokémon (misma instancia o misma especie), no bloqueamos la visibilidad para evitar parpadeos
+    const isSamePokemon = oldVal && (newVal.uid === oldVal.uid || newVal.id === oldVal.id)
+    if (!isSamePokemon) {
+      isEnemyShadowReady.value = false 
+    }
+
     const url = getAssetUrl(ASSET_TYPES.POKEMON, newVal.id, { isShiny: newVal.isShiny, isBack: false })
     
     // Disparar recálculo/petición de sombra inmediatamente
@@ -368,7 +419,7 @@ watch(() => activeEnemyData.value, async (newVal) => {
       stableEnemyGroundY.value = `${cached.feetY * 100}%`
     }
     
-    isEnemyShadowReady.value = true // Desbloqueamos visibilidad
+    isEnemyShadowReady.value = true 
   }
 }, { immediate: true })
 
@@ -440,6 +491,8 @@ const preloadCombatCoords = async () => {
   }
   
   isPreloadingFeet.value = false
+  // Marcamos que la carga inicial terminó para que encuentros posteriores tengan animación
+  setTimeout(() => { isInitialLoad.value = false }, 500)
 }
 
 function getStableShadowId(pokemon, side) {
@@ -552,14 +605,20 @@ watch(() => battle.value, (newBattle) => {
 }, { immediate: true })
 
 const shouldShowEncounterLayers = computed(() => {
-  // BLOQUEO: Durante la animación física de la bola, no mostramos arbustos
-  if (enemyAnimState.value || isCaptureSequenceActive.value) return false
+  // BLOQUEO: Durante la animación física de la bola o el faint, no mostramos arbustos
+  if (enemyAnimState.value || isCaptureSequenceActive.value || isFaintInProgress.value) return false
 
   // Prioridad: Fases de búsqueda y transición salvaje
-  if (isSearching.value || isWildEntryAnimation.value || wildRevealActive.value || !!upcomingPokemon.value) return true
+  // Solo mostrar arbustos si hay un pokemon listo Y ya terminó de cargar su imagen
+  const isUpcomingReady = isSearching.value && upcomingPokemon.value && !isEnemyPreloading.value
+  if (isUpcomingReady || isWildEntryAnimation.value || wildRevealActive.value) return true
   
   // Usamos el módulo de finalización unificado
-  if (isFinishing.value) return true
+  if (isFinishing.value) {
+    // Si es un encuentro salvaje, esperamos a que el próximo bicho esté listo para no mostrar arbustos vacíos
+    if (isWildEncounter.value && !upcomingPokemon.value) return false
+    return true
+  }
   
   return false
 })
@@ -599,8 +658,12 @@ watch(isSearching, (newVal, oldVal) => {
 
 watch(() => battleStore.upcomingPokemon, (newVal) => {
   if (newVal) {
-    upcomingIsEmerging.value = true
-    setTimeout(() => { upcomingIsEmerging.value = false }, 100)
+    // Solo disparar el rebote visual de "emergencia" si estamos realmente buscando (Fase 2 inicial)
+    // No queremos que los bichos pre-generados de fondo durante el combate rebotan
+    if (isSearching.value) {
+      upcomingIsEmerging.value = true
+      setTimeout(() => { upcomingIsEmerging.value = false }, 100)
+    }
   }
 }, { immediate: true })
 
@@ -617,7 +680,7 @@ const handleGrassLoad = (e) => {
   grassIsBakedIn.value = cycleSuffixes.some(s => src.includes(s)) && !src.includes('tall-grass')
 }
 
-const handleGrassError = (e) => {
+const handleImageError = (e) => {
   const defaultUrl = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
   if (e.target.src && !e.target.src.endsWith(defaultUrl)) {
     e.target.src = defaultUrl
@@ -705,30 +768,44 @@ onMounted(() => {
     const side = detail?.side || detail
     if (side === 'player') {
       playerIsShaking.value = false
-      nextTick(() => { playerIsShaking.value = true })
-      setTimeout(() => { playerIsShaking.value = false }, 600)
+      playerIsBlinking.value = false
+      nextTick(() => { 
+        playerIsShaking.value = true 
+        playerIsBlinking.value = true
+      })
+      setTimeout(() => { 
+        playerIsShaking.value = false 
+        playerIsBlinking.value = false
+      }, 600)
     } else {
       enemyIsShaking.value = false
-      nextTick(() => { enemyIsShaking.value = true })
-      setTimeout(() => { enemyIsShaking.value = false }, 600)
+      enemyIsBlinking.value = false
+      nextTick(() => { 
+        enemyIsShaking.value = true 
+        enemyIsBlinking.value = true
+      })
+      setTimeout(() => { 
+        enemyIsShaking.value = false 
+        enemyIsBlinking.value = false
+      }, 600)
     }
   })
   gameBus.on('CATCH_SUCCESS', (e) => {
     const detail = e.detail || e
     const side = detail?.side || detail
     
-    // Iniciar secuencia de éxito
+    // 1. Iniciar secuencia de éxito
     isCaptureSequenceActive.value = true
     caughtPokemonSnapshot.value = enemy.value ? { ...enemy.value } : null
     triggerCatchSparkles(side)
     
-    // Esperar 1.2 segundos antes de limpiar y permitir modo preview
+    // 2. Tiempo total: 1.5s (estrellas + parpadeo)
     setTimeout(() => {
+      isCaptureSequenceActive.value = false
+      caughtPokemonSnapshot.value = null 
       if (side === 'player') playerAnimState.value = null
       else enemyAnimState.value = null
-      isCaptureSequenceActive.value = false
-      caughtPokemonSnapshot.value = null // Liberar persistencia
-    }, 1200)
+    }, 1500)
   })
   gameBus.on('PLAY_WITHDRAW', (e) => handleCatchRequest(e.detail || e))
   gameBus.on('PLAY_SEND_OUT', (e) => handleReleaseRequest(e.detail || e))
@@ -894,73 +971,24 @@ const handleReleaseRequest = (detail) => {
             :h="BASE_ENTITY_SIZE_ENEMY"
           >
             <!-- Encounter Layers - BACK (behind pokemon) -->
-            <Transition :name="bushTransitionName">
-              <div
-                v-if="shouldShowEncounterLayers"
-                class="encounter-layers-back"
-                :style="grassIsBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
-              >
-                <div
-                  v-show="!activeEnemyIsFloating"
-                  class="searching-bushes back"
-                >
-                  <div
-                    class="bush-container-ground"
-                    :style="{ top: enemyGroundY }"
-                  >
-                    <div class="bush-wrapper bush-back-1">
-                      <img
-                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                        class="pixel-bush"
-                        @load="handleGrassLoad"
-                        @error="handleGrassError"
-                      >
-                    </div>
-                    <div class="bush-wrapper bush-back-2">
-                      <img
-                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                        class="pixel-bush"
-                        @load="handleGrassLoad"
-                        @error="handleGrassError"
-                      >
-                    </div>
-                    <div class="bush-wrapper bush-back-3">
-                      <img
-                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                        class="pixel-bush"
-                        @load="handleGrassLoad"
-                        @error="handleGrassError"
-                      >
-                    </div>
-                    <div class="bush-wrapper bush-back-4">
-                      <img
-                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                        class="pixel-bush"
-                        @load="handleGrassLoad"
-                        @error="handleGrassError"
-                      >
-                    </div>
-                    <div class="bush-wrapper bush-back-5">
-                      <img
-                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                        class="pixel-bush"
-                        @load="handleGrassLoad"
-                        @error="handleGrassError"
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Transition>
+            <CombatGrass
+              layer="back"
+              :location-id="battle.locationId"
+              :ground-y="enemyGroundY"
+              :visible="shouldShowEncounterLayers"
+              :instant="isInitialLoad"
+            />
 
 
             <div
+              :key="activeEnemyData?.uid || 'empty'"
               class="sprite-animator"
               :class="[{ 
                 'fainted': isDefeated(activeEnemyData) && !isSearching && !isWildEntryAnimation && !isWildSilhouette && isWildEncounter, 
                 'is-attacking': battleStore.attackerSide === 'enemy', 
                 'is-emerging': isEmerging
               }, getAttackAnimClass('enemy')]"
+              :style="{ opacity: isFaintInProgress ? undefined : 1 }"
             >
               <!-- Sombra individual integrada en el animador para seguir ataques -->
               <CombatShadow 
@@ -981,15 +1009,15 @@ const handleReleaseRequest = (detail) => {
                   <img
                     :src="enemyTrainerSpriteUrl"
                     class="trainer-image"
-                    @error="e => e.target.style.display = 'none'"
+                    @error="handleImageError"
                   >
                 </div>
 
                 <div
-                   v-else-if="activeEnemyData && isEnemyShadowReady"
+                  v-else-if="activeEnemyData"
                   class="sprite-idle-wrapper" 
                   :class="[{ 
-                    'combatant-idle-subtle': !enemyAnimState, 
+                    'combatant-idle-subtle': !enemyAnimState && !isFaintInProgress, 
                     'is-floating-species': activeEnemyIsFloating, 
                     'energy-catching': enemyAnimState === 'catching', 
                     'energy-releasing': enemyAnimState === 'releasing' 
@@ -1008,6 +1036,7 @@ const handleReleaseRequest = (detail) => {
                     :style="p2VirtualStyle"
                   >
                     <img
+                      v-if="!isEnemyPreloading"
                       :key="activeEnemyData.id" 
                       class="pokemon-combat-image"
                       :class="{ 
@@ -1016,7 +1045,7 @@ const handleReleaseRequest = (detail) => {
                       }" 
                       :src="activeEnemyImageUrl" 
                       @load="handleP2Load"
-                      @error="e => e.target.style.display = 'none'"
+                      @error="handleImageError"
                     >
                   </PVSpriteFX>
                   
@@ -1035,73 +1064,53 @@ const handleReleaseRequest = (detail) => {
             <!-- Poké Ball visual as independent world object (Fixed to ground) -->
             <Transition name="ball-fade">
               <div
-                v-if="enemyAnimState === 'trapped' || enemyAnimState === 'catching' || enemyAnimState === 'releasing' || enemyAnimState === 'capturando'"
+                v-if="enemyAnimState === 'trapped' || enemyAnimState === 'catching' || enemyAnimState === 'releasing' || (isCaptureSequenceActive && caughtPokemonSnapshot)"
                 :key="`ball-enemy-${battle?.enemy?.uid || battle?.enemy?.id}`"
                 class="trapped-pokeball"
-                :class="{ 'is-shaking': enemyIsShaking }"
+                :class="{ 
+                  'is-shaking': enemyIsShaking,
+                  'is-blinking': enemyIsBlinking,
+                  'is-success': isCaptureSequenceActive && caughtPokemonSnapshot
+                }"
                 :style="stickyEnemyCoords"
               >
-                <img :src="getAssetUrl(ASSET_TYPES.ITEM, enemyTrappedBallId)" alt="Pokeball">
+                <img
+                  :src="getAssetUrl(ASSET_TYPES.ITEM, enemyTrappedBallId)"
+                  alt="Pokeball"
+                  @error="handleImageError"
+                >
                 
                 <!-- Shadow for the ball -->
-                <div class="pokeball-shadow" :style="{ backgroundImage: pokeballShadowUrl }"></div>
-
-                <!-- Success Sparkles -->
-                <div v-if="catchSparkles.some(s => s.side === 'enemy')" class="catch-success-sparkles">
-                  <span
-                    v-for="s in catchSparkles.filter(s => s.side === 'enemy')"
-                    :key="s.id"
-                    class="sparkle"
-                    :style="{ '--tx': s.tx, '--ty': s.ty, 'animation-delay': s.delay }"
-                  >✨</span>
-                </div>
+                <div
+                  class="pokeball-shadow"
+                  :style="{ backgroundImage: pokeballShadowUrl }"
+                />
               </div>
             </Transition>
+
+            <!-- Success Sparkles (Fuera de la bola para persistencia) -->
+            <div
+              v-if="catchSparkles.some(s => s.side === 'enemy')"
+              class="catch-success-sparkles"
+              :style="stickyEnemyCoords"
+            >
+              <span
+                v-for="s in catchSparkles.filter(s => s.side === 'enemy')"
+                :key="s.id"
+                class="sparkle"
+                :style="{ '--tx': s.tx, '--ty': s.ty, 'animation-delay': s.delay }"
+              >✨</span>
+            </div>
 
 
             <!-- Encounter Layers - FRONT (in front of pokemon) -->
-            <Transition :name="bushTransitionName">
-              <div
-                v-if="shouldShowEncounterLayers && isEnemyShadowReady"
-                class="encounter-layers-front"
-                :style="grassIsBakedIn ? atmosphere?.weatherOnlyStyles : atmosphere?.atmosphereStyles"
-              >
-                <div
-                  v-show="!activeEnemyIsFloating"
-                  class="searching-bushes front"
-                >
-                  <div
-                    class="bush-container-ground"
-                    :style="{ top: enemyGroundY }"
-                  >
-                    <div class="bush-wrapper bush-front-1">
-                      <img
-                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                        class="pixel-bush"
-                        @load="handleGrassLoad"
-                        @error="handleGrassError"
-                      >
-                    </div>
-                    <div class="bush-wrapper bush-front-2">
-                      <img
-                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                        class="pixel-bush"
-                        @load="handleGrassLoad"
-                        @error="handleGrassError"
-                      >
-                    </div>
-                    <div class="bush-wrapper bush-front-3">
-                      <img
-                        :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, `${battle.locationId}_tallgrass`)"
-                        class="pixel-bush"
-                        @load="handleGrassLoad"
-                        @error="handleGrassError"
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Transition>
+            <CombatGrass
+              layer="front"
+              :location-id="battle.locationId"
+              :ground-y="enemyGroundY"
+              :visible="shouldShowEncounterLayers"
+              :instant="isInitialLoad"
+            />
           </VirtualEntity>
 
           <!-- Player Side (Player 1) -->
@@ -1137,7 +1146,7 @@ const handleReleaseRequest = (detail) => {
                   <img
                     :src="playerTrainerSpriteUrl"
                     class="trainer-image"
-                    @error="e => e.target.style.display = 'none'"
+                    @error="handleImageError"
                   >
                 </div>
                 <div
@@ -1163,7 +1172,7 @@ const handleReleaseRequest = (detail) => {
                       class="pokemon-combat-image"
                       :src="getAssetUrl(ASSET_TYPES.POKEMON, player.id, { isShiny: player.isShiny, isBack: true })"
                       @load="handleP1Load"
-                      @error="e => e.target.style.display = 'none'"
+                      @error="handleImageError"
                     >
                   </PVSpriteFX>
 
@@ -1182,19 +1191,43 @@ const handleReleaseRequest = (detail) => {
             <!-- Poké Ball visual as independent world object -->
             <Transition name="ball-fade">
               <div
-                v-if="playerAnimState === 'trapped' || playerAnimState === 'catching' || playerAnimState === 'releasing' || playerAnimState === 'capturando'"
+                v-if="playerAnimState === 'trapped' || playerAnimState === 'catching' || playerAnimState === 'releasing' || (isCaptureSequenceActive && caughtPokemonSnapshot)"
                 :key="`ball-player-${player?.uid || player?.id}`"
                 class="trapped-pokeball"
-                :class="{ 'is-shaking': playerIsShaking }"
+                :class="{ 
+                  'is-shaking': playerIsShaking,
+                  'is-blinking': playerIsBlinking,
+                  'is-success': isCaptureSequenceActive && caughtPokemonSnapshot
+                }"
                 :style="stickyPlayerCoords"
               >
-                <img :src="getAssetUrl(ASSET_TYPES.ITEM, playerTrappedBallId)" alt="Pokeball">
+                <img
+                  :src="getAssetUrl(ASSET_TYPES.ITEM, playerTrappedBallId)"
+                  alt="Pokeball"
+                  @error="handleImageError"
+                >
                 
                 <!-- Shadow for the ball -->
-                <div class="pokeball-shadow" :style="{ backgroundImage: pokeballShadowUrl }"></div>
+                <div
+                  class="pokeball-shadow"
+                  :style="{ backgroundImage: pokeballShadowUrl }"
+                />
               </div>
             </Transition>
 
+            <!-- Success Sparkles (Fuera de la bola para persistencia) -->
+            <div
+              v-if="catchSparkles.some(s => s.side === 'player')"
+              class="catch-success-sparkles"
+              :style="stickyPlayerCoords"
+            >
+              <span
+                v-for="s in catchSparkles.filter(s => s.side === 'player')"
+                :key="s.id"
+                class="sparkle"
+                :style="{ '--tx': s.tx, '--ty': s.ty, 'animation-delay': s.delay }"
+              >✨</span>
+            </div>
           </VirtualEntity>
         </div>
       </VirtualSpace>
@@ -1221,8 +1254,8 @@ const handleReleaseRequest = (detail) => {
       <Transition name="hud-fade">
         <div 
           v-if="enemy && enemy.hp > 0 && isEnemyShadowReady && !isSearching && enemyAnimState !== 'trapped' && enemyAnimState !== 'catching' && enemyAnimState !== 'capturando' && !battleStore.state?.isCapture" 
-          class="combatant-info-wrap enemy-side"
           :key="enemy.uid || enemy.id"
+          class="combatant-info-wrap enemy-side"
         >
           <BattleInfoCard :pokemon="enemy" />
         </div>
@@ -1231,8 +1264,8 @@ const handleReleaseRequest = (detail) => {
       <Transition name="hud-fade">
         <div 
           v-if="player && player.hp > 0" 
-          class="combatant-info-wrap player-side"
           :key="player.uid || player.id"
+          class="combatant-info-wrap player-side"
         >
           <BattleInfoCard
             :pokemon="player"
@@ -1378,10 +1411,7 @@ const handleReleaseRequest = (detail) => {
 
   &.fainted {
     .sprite-idle-wrapper {
-      opacity: 0;
-      transform: TranslateY(20px);
-      transition: all 0.5s;
-      filter: Grayscale(1) Brightness(0.5);
+      animation: pokemon-faint 0.8s ease-in forwards !important;
       pointer-events: none;
     }
   }
@@ -1480,76 +1510,10 @@ const handleReleaseRequest = (detail) => {
 .enemy-side { align-self: flex-start; }
 .player-side { align-self: flex-end; margin-top: auto; }
 
-.encounter-layers-back, .encounter-layers-front, .upcoming-preview-container {
-  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible;
-}
-
-.encounter-layers-back { z-index: calc(var(--z-map-spawns) - 5); }
-.encounter-layers-front { z-index: calc(var(--z-map-spawns) + 5); }
-.upcoming-preview-container { z-index: var(--z-map-spawns); }
-
-.searching-bushes, .upcoming-preview {
-  position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; pointer-events: none;
-  overflow: visible;
-}
-
-.searching-bushes {
-  &.back { opacity: 1; }
-  &.front { }
-  
-  .bush-container-ground {
-    position: absolute;
-    left: 50%;
-    transform: TranslateX(-50%) TranslateY(-85%);
-    width: 100%;
-    height: 0;
-    pointer-events: none;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-  }
-}
-
-.bush-wrapper {
-  position: absolute; 
-  width: calc(var(--bush-size, 60px) * 1px);
-  height: calc(var(--bush-size, 60px) * 1px);
-  image-rendering: pixelated;
-  
-  &.bush-front-1 { transform: Translate(calc(-60 * var(--obj-scale) * 1px), calc(10 * var(--obj-scale) * 1px)) Scale(1.3); z-index: calc(var(--z-map-spawns) + 1); --ad: 1.2s; --ay: 0s; }
-  &.bush-front-2 { transform: Translate(calc(60 * var(--obj-scale) * 1px), calc(10 * var(--obj-scale) * 1px)) Scale(1.1); z-index: calc(var(--z-map-spawns) + 1); --ad: 1.5s; --ay: -0.4s; }
-  &.bush-front-3 { transform: Translate(0px, calc(22 * var(--obj-scale) * 1px)) Scale(1.2); z-index: calc(var(--z-map-spawns) + 2); --ad: 1.8s; --ay: -0.2s; }
-  
-  &.bush-back-1 { transform: Translate(calc(-80 * var(--obj-scale) * 1px), calc(-10 * var(--obj-scale) * 1px)) Scale(1.0); z-index: calc(var(--z-map-spawns) - 1); --ad: 1.8s; --ay: -0.8s; }
-  &.bush-back-2 { transform: Translate(calc(80 * var(--obj-scale) * 1px), calc(-10 * var(--obj-scale) * 1px)) Scale(1.2); z-index: calc(var(--z-map-spawns) - 1); --ad: 2.1s; --ay: -0.2s; }
-  &.bush-back-3 { transform: Translate(0px, calc(-22 * var(--obj-scale) * 1px)) Scale(0.9); z-index: calc(var(--z-map-spawns) - 2); --ad: 1.6s; --ay: -0.5s; }
-  &.bush-back-4 { transform: Translate(calc(-40 * var(--obj-scale) * 1px), calc(-17 * var(--obj-scale) * 1px)) Scale(1.1); z-index: calc(var(--z-map-spawns) - 1); --ad: 1.9s; --ay: -0.1s; }
-  &.bush-back-5 { transform: Translate(calc(40 * var(--obj-scale) * 1px), calc(-17 * var(--obj-scale) * 1px)) Scale(0.95); z-index: calc(var(--z-map-spawns) - 1); --ad: 1.7s; --ay: -0.3s; }
-}
-
-.upcoming-preview {
-  position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; z-index: calc(var(--z-base) + 11); pointer-events: none;
-  .upcoming-image { 
-    width: calc(var(--preview-size, 190px) * 1px);
-    height: calc(var(--preview-size, 190px) * 1px);
-    object-fit: contain; 
-    object-position: bottom; 
-    image-rendering: pixelated; 
-    transition: filter 0.3s ease;
-    &.is-silhouette { filter: Brightness(0) Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.8)) !important; }
-    backface-visibility: hidden;
-  }
-}
-
-.pixel-bush { 
-  width: 100%; height: 100%; object-fit: contain; backface-visibility: hidden;
-  animation: bush-wiggle var(--ad, 1.5s) infinite ease-in-out var(--ay, 0s);
-  transform-origin: bottom center;
-}
-
-@keyframes bush-wiggle { 
-  0%, 100% { transform: Rotate(0deg); } 
-  50% { transform: Rotate(5deg); } 
+@keyframes pokemon-faint {
+  0%, 14%, 28%, 42%, 56%, 70% { opacity: 1; }
+  7%, 21%, 35%, 49%, 63%, 77% { opacity: 0; }
+  100% { opacity: 0; }
 }
 
 @keyframes emerge-bounce {
@@ -1582,6 +1546,29 @@ const handleReleaseRequest = (detail) => {
   &.is-shaking img {
     animation: pokeball-wobble 0.6s ease-in-out;
   }
+
+  &.is-blinking img {
+    // Usamos composición de animaciones para que no sobrescriba al wobble si ambos están activos
+    animation: pokeball-shake-blink 0.4s ease-in-out;
+  }
+
+  &.is-shaking.is-blinking img {
+    animation: pokeball-wobble 0.6s ease-in-out, pokeball-shake-blink 0.4s ease-in-out;
+  }
+
+  &.is-success img {
+    animation: pokeball-success-blink 0.5s ease-in-out infinite;
+  }
+}
+
+@keyframes pokeball-shake-blink {
+  0%, 100% { filter: Brightness(1); }
+  50% { filter: Brightness(2) Hue-Rotate(10deg); }
+}
+
+@keyframes pokeball-success-blink {
+  0%, 100% { filter: Brightness(1); }
+  50% { filter: Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg); }
 }
 
 .pokeball-shadow {
@@ -1604,7 +1591,7 @@ const handleReleaseRequest = (detail) => {
   top: 50%;
   left: 50%;
   pointer-events: none;
-  z-index: 50; // Asegurar por encima de la bola
+  z-index: var(--z-low); // Asegurar por encima de la bola
   overflow: visible;
 
   .sparkle {
