@@ -34,21 +34,21 @@ const isPerformanceActive = computed(() => {
 
 const emit = defineEmits(['click'])
 
-const visualBadges = computed(() => getPokemonVisualBadges(props.pokemon))
+const visualBadges = computed(() => props.pokemon ? getPokemonVisualBadges(props.pokemon) : [])
 const numBadges = computed(() => visualBadges.value.length)
 const hasBadges = computed(() => numBadges.value > 0)
 const hasManyBadges = computed(() => numBadges.value > 3)
-const tierInfo = computed(() => getPokemonTier(props.pokemon))
-const spriteUrl = computed(() => getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
+const tierInfo = computed(() => props.pokemon ? getPokemonTier(props.pokemon) : { tier: '?', color: 'var(--gray)', bg: 'Rgba(255,255,255,0.05)' })
+const spriteUrl = computed(() => props.pokemon ? getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
   isShiny: props.pokemon.isShiny 
-}))
+}) : '')
 
 const hpRatio = computed(() => {
   const p = props.pokemon
-  if (!p) return 1
+  if (!p) return 0
   const hp = p.hp !== undefined ? p.hp : (p.stats?.hp || p.maxHp || 100)
   const maxHp = p.maxHp || p.stats?.hp || 100
-  if (maxHp === 0) return 1
+  if (maxHp === 0) return 0
   return Math.max(0, Math.min(1, hp / maxHp))
 })
 
@@ -62,19 +62,21 @@ const statColor = computed(() => {
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const totalIvs = computed(() => {
+  if (!props.pokemon) return 0
   const ivs = props.pokemon.ivs || {}
   return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + 
          (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
 })
 
 const bst = computed(() => {
+  if (!props.pokemon) return 0
   const baseData = pokemonDataProvider.getPokemonData(props.pokemon.id)
   if (!baseData) return 0
   return (baseData.hp || 0) + (baseData.atk || 0) + (baseData.def || 0) + 
          (baseData.spa || 0) + (baseData.spd || 0) + (baseData.spe || 0)
 })
 
-const isPremiumTier = computed(() => tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+')
+const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+'))
 </script>
 
 <template>
@@ -87,7 +89,8 @@ const isPremiumTier = computed(() => tierInfo.value.tier === 'S' || tierInfo.val
         'with-badges': hasBadges, 
         'many-badges': hasManyBadges,
         'performance-mode': isPerformanceActive,
-        'is-premium-tier': isPremiumTier
+        'is-premium-tier': isPremiumTier,
+        'is-on-mission': pokemon?.onMission
       }
     ]"
     @click.stop="emit('click', $event, index)"
@@ -211,6 +214,17 @@ const isPremiumTier = computed(() => tierInfo.value.tier === 'S' || tierInfo.val
   &.is-premium-tier {
     --tier-color: v-bind('tierInfo.color');
     @include pokemon-card-premium-tier;
+  }
+
+  &.is-on-mission {
+    .box-card-sprite {
+      filter: Grayscale(1);
+      opacity: 0.6;
+    }
+    .card-info {
+      filter: Grayscale(0.5);
+      opacity: 0.8;
+    }
   }
 }
 </style>

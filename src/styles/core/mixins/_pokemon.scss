@@ -1,5 +1,6 @@
 @use "../mixins/glass" as *;
 @use "../gpu" as *;
+@use "../functions" as *;
 
 @mixin pokemon-card-standard($radius: 20px) {
   position: relative;
@@ -98,7 +99,7 @@
 }
 
 @mixin pokemon-silhouette($outline-color: Rgba(255, 255, 255, 0.6)) {
-  filter: Brightness(0) Drop-Shadow(0 0 2px $outline-color) !important;
+  filter: pokemon-silhouette-optimized() !important;
   opacity: 1 !important;
 }
 

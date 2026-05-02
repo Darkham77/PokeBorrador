@@ -50,13 +50,14 @@ export function useBoxFilters(boxArray, _currentBoxIndex) {
     const isFiltered = hasActiveFilters.value;
     const isSorted = sortMode.value !== 'none';
     
-    // Always filter out empty slots first to avoid crashes in sort/logic
     const rawList = boxArray.value || [];
-    let result = rawList
-      .map((p, index) => ({ p, index }))
-      .filter(item => item.p != null);
+    let result = rawList.map((p, index) => ({ p, index }));
 
-    if (isFiltered) {
+    if (isFiltered || isSorted) {
+      // Filter out nulls only when we are doing active searching/sorting
+      result = result.filter(item => item.p != null);
+      
+      if (isFiltered) {
       result = result.filter(({ p }) => {
         const f = filters.value;
         const tierInfo = getPokemonTier(p);
@@ -135,6 +136,11 @@ export function useBoxFilters(boxArray, _currentBoxIndex) {
           
           cmp = (bstB + totalIvsB) - (bstA + totalIvsA);
         }
+        else if (sortMode.value === 'recent') {
+          const dateA = pA.captureDate || pA.timestamp || pA.date || pA.created_at || pA.obtainedAt || 0;
+          const dateB = pB.captureDate || pB.timestamp || pB.date || pB.created_at || pB.obtainedAt || 0;
+          cmp = dateB - dateA;
+        }
 
         if (cmp === 0) {
           return isAsc ? a.index - b.index : b.index - a.index;
@@ -142,6 +148,7 @@ export function useBoxFilters(boxArray, _currentBoxIndex) {
         return isAsc ? -cmp : cmp;
       });
     }
+  }
 
     return result;
   });

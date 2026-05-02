@@ -19,7 +19,10 @@ const emit = defineEmits([
   'update:filters', 
   'reset'
 ])
-const setSortMode = (val) => emit('update:sortMode', val)
+const setSortMode = (val) => {
+  if (props.sortMode === val) emit('update:sortMode', 'none')
+  else emit('update:sortMode', val)
+}
 const toggleSortDirection = () => emit('update:sortDirection', props.sortDirection === 'desc' ? 'asc' : 'desc')
 
 const updateFilter = (key, val) => {
@@ -117,8 +120,8 @@ const AVAILABLE_TAGS = [
               position="bottom"
             >
               <button
-                :class="['mini-sort-btn', { active: sortMode === 'none' }]"
-                @click.stop="setSortMode('none')"
+                :class="['mini-sort-btn', { active: sortMode === 'recent' }]"
+                @click.stop="setSortMode('recent')"
               >
                 REC
               </button>

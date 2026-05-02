@@ -23,6 +23,16 @@
     align-items: center;
     flex: 1 1 650px; 
     min-width: 0;
+
+    @media (max-width: 768px) {
+      flex-wrap: wrap;
+      gap: 12px;
+      
+      & .box-search-wrapper {
+        flex-basis: 100%;
+        order: -1;
+      }
+    }
   }
 
   .tags-row-compact {

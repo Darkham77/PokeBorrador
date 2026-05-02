@@ -94,6 +94,8 @@ Activated when receiving movements of the **Physical** category:
 
 - **Identity Integrity**: Watching only the `species.id` is insufficient for battle transitions. Reactivity MUST be tied to the complete `activePokemon` object or a unique `battleInstanceId`.
 - **Ground Recalculation**: Every new encounter (even with the same species) must trigger a fresh "Feet Detection" scan to prevent inheriting miscalculated ground-offsets from previous battles.
+- **Orphan Shadow Cleanup**: When a combatant is replaced (switch) or captured, the system MUST explicitly hide the previous `shadowId`. Relying on component unmounting is insufficient for the centralized store; active tracking of the `lastShadowId` is mandatory to prevent "orphan shadows" on the battlefield.
+- **Flying Species Exclusion**: Pokémon with "Flying Aesthetics" (`isFloating`) MUST NOT render environmental layers (bushes). The system must conditionally suppress the `visible` prop of `CombatGrass` based on the species' flight status to maintain visual logic.
 
 ## 🏗️ Rendering Pipeline Stabilization
   
@@ -179,7 +181,7 @@ stateDiagram-v2
     state PRE_BATTLE {
         [*] --> GEN_ENCOUNTER: generateEncounter()
         GEN_ENCOUNTER --> PRELOAD_COORDS: preloadCombatCoords()
-        PRELOAD_COORDS --> INTRO_ANIM: PLAY_WILD_INTRO (Phase 1)
+        PRELOAD_COORDS --> INTRO_ANIM: PLAY_WILD_INTRO (Phase 1: 1.1s)
     }
     
     PRE_BATTLE --> ACTIVE_BATTLE: Intro Finished
@@ -211,7 +213,13 @@ stateDiagram-v2
     
     state PHASE_2 {
         [*] --> BUSH_ANIM: Show Bushes (Phase 2)
-        BUSH_ANIM --> PRE_BATTLE: "Search" Clicked / Auto-next
+        BUSH_ANIM --> SILHOUETTE_START: "Search" Clicked / Auto-next
+        
+        state SILHOUETTE_START {
+            [*] --> SYNC_SHADOW: Silhouette + Shadow Appear TOGETHER
+            SYNC_SHADOW --> [*]: Transition to Phase 3
+        }
+        
         BUSH_ANIM --> EXIT_BATTLE: "Return to Map"
     }
     
@@ -233,3 +241,11 @@ To maintain a cinematic feel, the capture success sequence follows a non-negotia
 
 - **Search (Loop)**: Resets `over` state, clears old logs, but **persists** the camera and ground coordinates to avoid jumps.
 - **Return to Map**: Triggers `closeModal`. The `isBattleActive` flag MUST be cleared last to ensure all components can unmount cleanly without trying to read stale battle data.
+
+## 🧹 State Hygiene & Phantom Animations
+
+To prevent "Phantom Animations" (e.g., a Pokémon performing a Dash when using an item because it remembers the last attack performed):
+
+1. **Active Move Reset**: References to `activeMove` and `attackerSide` **MUST** be reset to `null` immediately after finishing a turn and at the start of each battle (`_startBattle`).
+2. **Turn Atomicity**: No animation state from the previous turn should persist in the next action. This includes clearing `activeMove` before processing item usage or Pokémon swaps.
+3. **Shadow Visibility Reset**: When starting an encounter, the shadow's opacity must be explicitly reset to prevent shadows from previous battles from appearing before the entry animation.

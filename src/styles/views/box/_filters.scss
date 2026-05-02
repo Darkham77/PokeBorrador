@@ -53,6 +53,11 @@
   display: flex;
   align-items: center;
   gap: 4px;
+
+  @include responsive(mobile) {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
 }
 
 .sort-group-mini {
@@ -104,17 +109,16 @@
 
 .tags-group-mini {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   min-width: 0;
+  width: 100%;
 
   .tags-scroll-container {
     display: flex;
-    gap: 4px;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    gap: 6px;
     padding: 4px 0;
-    @include smooth-scroll;
-    &::-webkit-scrollbar { display: none; }
   }
 
   .box-title-group {

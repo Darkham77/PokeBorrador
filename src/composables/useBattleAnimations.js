@@ -67,7 +67,7 @@ export function useBattleAnimations(battleStore, enemyRef) {
     wildRevealActive.value = true
     isWildSilhouetteHalfway.value = false
     
-    setTimeout(() => { isWildSilhouetteHalfway.value = true }, 1100)
+    setTimeout(() => { isWildSilhouetteHalfway.value = true }, 550)
 
     setTimeout(() => { 
       isWildEntryAnimation.value = false
@@ -75,7 +75,7 @@ export function useBattleAnimations(battleStore, enemyRef) {
       isWildSilhouette.value = false 
       wildRevealActive.value = false
       isWildSilhouetteHalfway.value = false
-    }, 2200)
+    }, 1100)
   }
 
   const triggerCatchSparkles = (side) => {

@@ -204,7 +204,7 @@ function getGenderClass(gender) {
 
     <!-- ACTIONS -->
     <div class="card-footer">
-      <div class="action-grid">
+      <div class="pdc-action-grid">
         <button
           v-if="actions.includes('item')"
           class="footer-btn item-btn"

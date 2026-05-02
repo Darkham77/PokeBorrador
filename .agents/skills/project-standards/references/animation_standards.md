@@ -94,7 +94,7 @@ Visual transitions MUST be synchronized with state changes using the `gameBus`.
 ## 13. Faint Animation & Shadow Sync
 
 - **Sequence Duration**: The standard faint sequence lasts **1.3s** (0.8s animation + 0.5s pause).
-- **Visual Pattern**: Use a **5-cycle transparency blink** before final disappearance. 
+- **Visual Pattern**: Use a **5-cycle transparency blink** before final disappearance.
 - **State Guard**: Use a dedicated flag (`isFaintInProgress`) to maintain the "invisible" state until the encounter phase fully resets.
 - **Shadow Lifecycle**: Ground shadows MUST be linked to the Pokémon's health state. They must vanish immediately during the faint animation and remain hidden until the ground position of the replacement is fully calculated.
 - **Timing Guard**: Never reveal encounter layers (bushes) until the faint sequence is 100% complete.
@@ -116,8 +116,23 @@ Defeat animations must adapt to the Pokémon's ownership:
 
 The Poké Ball interaction follows a 3-state cycle: `catching` (energy beam) ➡️ `trapped` (wobbling ball on ground) ➡️ `releasing` (appearing).
 
-- **Shadow Visibility**: Ground shadows MUST be hidden during the `trapped` state to prevent the "shadow under the ball" artifact.
+- **Shadow Visibility**: Ground shadows MUST be hidden during the `catching`, `trapped`, and the `releasing` states.
+  - **Timing Guard**: The shadow must vanish **BEFORE** the energy beam starts (Stage: `catching`) and reappear only **AFTER** the Pokémon has fully materialized and the energy effect is cleared (Transition: `releasing` ➡️ `null`).
 - **Visual Switch**: The Pokémon sprite is replaced by the `.trapped-pokeball` element during the `trapped` state.
+
+## 📐 Virtual World Layering (Z-Index)
+
+To maintain a coherent sense of depth in the 2D-perspective virtual world, all components MUST use relative z-indices based on the `--z-map-spawns` (Default: 10) anchor:
+
+| Layer | Formula | Logical Order |
+| :--- | :--- | :--- |
+| **Environment (Floor)** | `calc(var(--z-base) + 1)` | 1 (Bottom) |
+| **Shadows** | `calc(var(--z-map-spawns) - 7)` | 3 |
+| **Grass (Back)** | `calc(var(--z-map-spawns) - 5)` | 5 |
+| **Pokemon/Spawns** | `var(--z-map-spawns)` | 10 |
+| **Grass (Front)** | `calc(var(--z-map-spawns) + 5)` | 15 (Top) |
+
+- **Rule**: This hierarchy ensures that shadows project onto the floor but are correctly occluded by grass blades and the Pokémon's feet.
 
 ## 17. Feedback Lifecycle Decoupling
 
@@ -126,9 +141,12 @@ Visual feedback effects (Catch Sparkles, Level-up particles) MUST be decoupled f
 - **Standard**: Render feedback elements in a separate layer or as siblings (not children) of the primary actor.
 - **WHY**: Ensures the feedback persists and completes its animation even if the actor (e.g., Poké Ball, Pokémon) is cleared or unmounted during a successful capture.
 
-## 18. Selective Emergence Guards
+## 19. Wild Encounter Intro (Phase 1)
 
-Entrance animations (e.g., `is-emerging` bounce) MUST be gated by the active encounter phase.
+To ensure a fast and dynamic game flow, the initial emergence phase (the "jump" from the grass) follows a strict timing and visual protocol:
 
-- **Rule**: Only trigger emergence animations when the user is actively "Searching" or during the initial spawn.
-- **Gating**: NEVER allow background proactive pre-generation of encounters to trigger visual resets or bounce animations on current combatants.
+- **Total Duration**: **1.1s** (1100ms).
+- **Silhouette Logic**: The Pokémon MUST appear as a solid black silhouette with a white aura during the first half of the animation.
+- **Reveal Point**: The reveal transition starts at the **550ms** mark (`isWildSilhouetteHalfway`). At this point, the silhouette should begin to fade or swap to the colored sprite while the "emergence" bounce completes.
+- **Visual Behavior**: The Pokémon performs a parabolic "jump" from the grass coordinates. Auxiliary elements like name labels and HP bars remain hidden until the end of this phase to maintain focus on the Pokémon's arrival.
+- **Standard Protocol**: Use the `isWildEntryAnimation` and `isWildSilhouette` flags to synchronize this phase across all combat layers.

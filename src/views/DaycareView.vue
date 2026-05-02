@@ -182,23 +182,25 @@ const getGenderClass = (gender) => {
 
 .daycare-header {
   padding: 40px 20px 0;
-  background: Linear-Gradient(to bottom, #1e293b, #0f172a);
   text-align: center;
   
   h1 {
+    @include pixelated;
     font-size: 24px;
-    font-weight: 800;
     margin-bottom: 8px;
-    background: Linear-Gradient(to right, #8b5cf6, #3b82f6);
+    background: Linear-Gradient(to right, var(--purple-light), var(--blue-light));
     -webkit-background-clip: text;
-    -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;;;;;;;;;;;;;;;;;;;;
+    -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;
     -webkit-text-fill-color: transparent;
+    filter: Drop-Shadow(0 2px 10px Rgba(139, 92, 246, 0.3));
   }
   
   .subtitle {
+    @include pixel-perfect(8px);
     color: var(--gray);
-    font-size: 14px;
     margin-bottom: 32px;
+    opacity: 0.7;
+    letter-spacing: 1px;
   }
 }
 
@@ -260,24 +262,26 @@ const getGenderClass = (gender) => {
 
 .daycare-slot {
   flex: 1;
-  background: Rgba(30, 41, 59, 1);
+  @include glass-solid(Rgba(255, 255, 255, 0.03));
   border-radius: 20px;
   aspect-ratio: 1/1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid Rgba(51, 65, 85, 1);
-  transition: all 0.2s;
-  @include will-animate(transform);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  @include will-animate(transform, background, border-color);
   
   &:not(.empty):hover {
     transform: TranslateY(-4px);
-    border-color: Rgba(71, 85, 105, 1);
+    border-color: var(--purple-light);
+    background: Rgba(255, 255, 255, 0.06);
   }
   
   &.empty {
     border-style: dashed;
-    background: Rgba(30, 41, 59, 0.4);
+    background: Rgba(255, 255, 255, 0.01);
+    opacity: 0.5;
   }
 }
 

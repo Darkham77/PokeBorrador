@@ -21,6 +21,7 @@ import BattleCombatant from './BattleCombatant.vue'
 import BattleInfoCard from './BattleInfoCard.vue'
 import CombatGrass from './CombatGrass.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
 
@@ -97,6 +98,13 @@ const activeEnemyIsSilhouette = computed(() => {
   return false
 })
 
+const enemyIsFloating = computed(() => {
+  if (!activeEnemyData.value) return false
+  if (activeEnemyData.value.isFloating !== undefined) return activeEnemyData.value.isFloating
+  const data = pokemonDataProvider.getPokemonData(activeEnemyData.value.id)
+  return data?.isFloating || false
+})
+
 const isWildEncounter = computed(() => {
   if (isSearching.value) return true
   return battleStore.state && !battleStore.state.isTrainer && !battleStore.state.isGym
@@ -120,8 +128,12 @@ const atmosphereSeed = computed(() => {
 })
 
 // Watchers de Sincronización
-watch([() => activeEnemyData.value, p2Pos, () => enemyAnimState.value], ([data, pos, anim]) => {
-  syncEnemyShadow(!!data, data, pos, anim)
+// Watcher para sincronizar sombras (Jugador y Enemigo)
+watch([() => activeEnemyData.value, p2Pos, () => enemyAnimState.value, activeEnemyIsSilhouette], ([data, pos, anim, isSil]) => {
+  // En Fase 2 (Búsqueda), solo mostrar sombra si hay silueta activa o ya no estamos buscando
+  const isSearchPhase = isSearching.value
+  const visible = !!data && (!isSearchPhase || isSil)
+  syncEnemyShadow(visible, data, pos, anim)
 }, { immediate: true, deep: true })
 
 watch([player, p1Pos, () => playerAnimState.value], ([p, pos, anim]) => {
@@ -188,7 +200,7 @@ watch(() => battleStore.isBattleActive, (active) => {
               layer="back"
               :location-id="battle?.locationId"
               :ground-y="enemyGroundY"
-              :visible="shouldShowEncounterLayers"
+              :visible="shouldShowEncounterLayers && !enemyIsFloating"
               :instant="isInitialLoad"
             />
           </VirtualEntity>
@@ -226,7 +238,7 @@ watch(() => battleStore.isBattleActive, (active) => {
               layer="front"
               :location-id="battle?.locationId"
               :ground-y="enemyGroundY"
-              :visible="shouldShowEncounterLayers"
+              :visible="shouldShowEncounterLayers && !enemyIsFloating"
               :instant="isInitialLoad"
             />
           </VirtualEntity>

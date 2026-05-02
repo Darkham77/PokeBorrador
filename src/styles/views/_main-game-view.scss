@@ -1,0 +1,152 @@
+@use "../core/mixins" as *;
+@use "../core/tools" as *;
+
+#game-screen {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main-hud-desktop {
+  @media (min-width: 1411px) {
+    display: flex !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: visible !important; 
+  position: relative;
+  padding: 0; 
+}
+
+.tab-content {
+  position: absolute;
+  inset: 0;
+  display: block; // Switched to block to fix padding-bottom scroll issue
+  min-height: 0; // Fixes flex scroll collapse
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: var(--hud-top-padding, 180px);
+  padding-bottom: var(--hud-bottom-padding, 100px);
+  padding-inline: var(--ui-h-padding);
+  box-sizing: border-box;
+  @include gpu-layer;
+}
+
+.hud-bottom-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: var(--z-navigation);
+  
+  & > * {
+    pointer-events: auto;
+  }
+}
+
+.hud-spacer-bottom {
+  height: var(--hud-bottom-padding, 80px);
+  min-height: 80px;
+  width: 100%;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.hidden-system {
+  display: none !important;
+}
+.hint-banner {
+  font-size: 11px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.rocket-hint, .release-hint {
+  color: var(--red);
+  background: Rgba(239, 68, 68, 0.08);
+  border: 1px solid Rgba(239, 68, 68, 0.2);
+}
+.overlay-fixed {
+  position: fixed;
+  inset: 0;
+  background: Rgba(0, 0, 0, 0.9);
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transform: TranslateZ(0);
+}
+
+.private-chats-container {
+  position: fixed;
+  right: 20px;
+  bottom: 80px; /* Space for bottom nav */
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 10px;
+  pointer-events: none;
+  z-index: var(--z-hud);
+  transform: Translate3D(0, 0, 0);
+  transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  @include will-animate(bottom, transform);
+  
+  & > * {
+    pointer-events: auto;
+  }
+
+  @include responsive(hud-mobile) {
+    bottom: 100px;
+  }
+}
+
+.mobile-only-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: var(--z-navigation);
+  transform: TranslateZ(0);
+
+  @include responsive(hud-mobile) {
+    display: flex !important;
+  }
+
+  @media (max-width: 467px) { zoom: 0.9; }
+  @media (max-width: 420px) { zoom: 0.8; }
+  @media (max-width: 380px) { zoom: 0.7; }
+  @media (max-width: 340px) { zoom: 0.6; }
+  @media (min-width: 1411px) { display: none; }
+}
+
+/* --- HUD Visibility States --- */
+.hud-hidden {
+  &.main-hud-desktop { 
+    transform: TranslateY(-110%);
+    opacity: 0;
+  }
+  
+  &.hud-sidebar-tools {
+    transform: TranslateX(-150%);
+    opacity: 0;
+  }
+
+  &.hud-bottom-wrapper {
+    transform: TranslateY(110%);
+    opacity: 0;
+  }
+}
+
+.hud-container, .hud-sidebar-tools, .hud-bottom-wrapper {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  @include will-animate(transform, opacity);
+}

@@ -1,4 +1,3 @@
-// [PureVue-Ignore-Length]
 <script setup>
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
@@ -65,24 +64,9 @@ const handleUseItem = () => {
 }
 
 const handleMoveToBox = () => {
-  uiStore.openPrompt({
-    title: 'MOVER POKÉMON',
-    message: `¿A qué caja querés mover a ${pokemon.value.name}? (1 a ${gameStore.state.boxCount})`,
-    initialValue: (boxStore.currentBoxIndex + 1).toString(),
-    type: 'number',
-    onConfirm: (val) => {
-      const boxNum = parseInt(val)
-      if (isNaN(boxNum) || boxNum < 1 || boxNum > gameStore.state.boxCount) {
-        uiStore.notify('Número de caja inválido.', '⚠️')
-        return
-      }
-      
-      const res = boxStore.movePokemonToBox(props.boxIndex, boxNum - 1)
-      if (res.success) {
-        uiStore.notify(res.msg, '📦')
-        emit('close')
-      }
-    }
+  useModalStore().open('BoxMove', { 
+    pokemon: pokemon.value, 
+    boxIndex: props.boxIndex 
   })
 }
 
@@ -156,7 +140,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
             </h3>
             <span
               v-if="pokemon?.nickname"
-              class="p-species-subtitle"
+              class="box-species-subtitle"
             >
               {{ pokemon?.name }}
             </span>
@@ -200,7 +184,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
         </div>
 
         <div class="summary-meta">
-          <div class="types-row">
+          <div class="box-types-row">
             <span 
               v-for="t in pokemon?.types || [pokemon?.type]" 
               :key="t"
@@ -247,7 +231,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
       </div>
 
       <!-- Action Grid -->
-      <div class="action-grid">
+      <div class="box-action-grid">
         <button 
           v-if="team.length < 6" 
           class="menu-action-btn success-btn" 
@@ -347,274 +331,5 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
 </template>
 
 <style scoped lang="scss">
-.box-menu-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 340px;
-  padding: 16px;
-
-  @include responsive(768px) {
-    min-width: 100%;
-    padding: 12px;
-    gap: 12px;
-  }
-}
-
-.menu-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 12px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
-  position: relative;
-
-  .header-left {
-    flex: 0 0 50px;
-  }
-
-  .header-center {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-
-    .p-name-stack {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .p-name {
-      @include pixelated;
-      font-size: 20px;
-      color: var(--white);
-      text-transform: uppercase;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-shadow: 0 2px 10px Rgba(0,0,0,0.5);
-    }
-
-    .p-species-subtitle {
-      @include pixel-perfect(8px);
-      color: var(--yellow);
-      opacity: 0.8;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .header-badges {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-  }
-
-  .header-right-spacer {
-    flex: 0 0 50px;
-  }
-}
-
-.pokemon-summary-card {
-  @include glass-solid(Rgba(255, 255, 255, 0.03));
-  border-radius: 24px;
-  padding: 20px 24px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 32px;
-  cursor: pointer;
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-
-  @include responsive(768px) {
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
-  }
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.06);
-    transform: TranslateY(-2px);
-    box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.4);
-  }
-
-  .sprite-box {
-    width: 100px;
-    height: 100px;
-    @include flex-center;
-    position: relative;
-    z-index: var(--z-base);
-
-    .menu-sprite {
-      width: 130px;
-      height: 130px;
-      @include sprite-render;
-      filter: Drop-Shadow(0 15px 25px Rgba(0,0,0,0.5));
-    }
-  }
-
-  .summary-meta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    z-index: var(--z-base);
-
-    .types-row {
-      display: flex;
-      gap: 6px;
-      .type-pill-mini { @include type-pill-mini(8px); padding: 2px 10px; }
-    }
-
-    .nature-ability {
-      font-size: 11px;
-      color: Rgba(255, 255, 255, 0.4);
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      @include pixelated;
-
-      .interactive-text {
-        color: Rgba(255, 255, 255, 0.6);
-        border-bottom: 1px dotted Rgba(255, 255, 255, 0.2);
-        &:hover { color: var(--yellow); border-bottom-color: var(--yellow); }
-      }
-      .sep { opacity: 0.2; }
-    }
-
-    .tags-row {
-      margin-top: 4px;
-    }
-  }
-}
-
-.action-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  .menu-action-btn {
-    @include btn-vicio('primary', 'sm', true);
-    
-    &.success-btn { @include btn-vicio('primary', 'sm', true); }
-  }
-}
-
-.secondary-btn { @include btn-vicio('secondary', 'sm', true); }
-.danger-btn { @include btn-vicio('danger', 'sm', true); }
-
-.swap-section {
-  .section-title {
-    @include pixel-perfect(7px);
-    color: Rgba(255, 255, 255, 0.3);
-    text-align: center;
-    margin-bottom: 12px;
-    letter-spacing: 2px;
-  }
-}
-
-.team-swap-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-
-  @include responsive(768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.team-swap-card {
-  background: Linear-Gradient(180deg, Rgba(255, 255, 255, 0.05) 0%, Rgba(0, 0, 0, 0.2) 100%);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.3);
-
-  &:hover {
-    border-color: var(--purple);
-    background: Rgba(124, 58, 237, 0.1);
-    transform: scale3d(1.05, 1.05, 1) translateY(-4px);
-    box-shadow: 0 12px 30px Rgba(0, 0, 0, 0.5);
-    z-index: var(--z-low);
-  }
-
-  .slot-rank {
-    position: absolute;
-    top: 6px;
-    left: 6px;
-    z-index: var(--z-low);
-    transform: Scale(0.85);
-  }
-
-  .ts-name {
-    @include pixelated;
-    font-size: 8px;
-    color: var(--white);
-    text-align: center;
-    margin-bottom: 8px;
-    width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    text-shadow: 0 2px 4px Rgba(0,0,0,0.5);
-  }
-  
-  .ts-types {
-    margin-bottom: 4px;
-    transform: Scale(0.8);
-    height: 12px;
-  }
-
-  .ts-sprite-box {
-    width: 48px;
-    height: 48px;
-    @include flex-center;
-    position: relative;
-    transform: TranslateY(10px);
-
-    .ts-sprite {
-      width: 100%;
-      height: 100%;
-      @include sprite-render;
-      filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
-    }
-  }
-
-  .slot-tags {
-    margin-top: 8px;
-    transform: Scale(0.9);
-  }
-}
-
-.footer-actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 8px;
-
-  .menu-action-btn {
-    @include btn-vicio('primary', 'sm', true);
-    margin: 0;
-
-    &.secondary-btn { @include btn-vicio('secondary', 'sm', true); }
-    &.danger-btn { @include btn-vicio('danger', 'sm', true); }
-  }
-
-  @include responsive(480px) {
-    grid-template-columns: 1fr;
-  }
-}
+@use "../../styles/components/box-menu" as *;
 </style>

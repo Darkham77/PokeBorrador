@@ -111,7 +111,7 @@ const handleBallError = (e) => {
         'is-attacking': isAttacking 
       }, getAttackAnimClass]"
     >
-      <!-- Sombra individual integrada -->
+      <!-- Sombra integrada (Sigue el dash pero no el flotado) -->
       <CombatShadow 
         v-if="shadowKey" 
         :shadow-id="shadowKey" 
@@ -235,7 +235,7 @@ const handleBallError = (e) => {
     transition: filter 0.3s ease;
     image-rendering: pixelated;
     &.is-silhouette { 
-      filter: Brightness(0) Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.8)) !important; 
+      @include pokemon-silhouette;
       transition: none !important;
     }
   }

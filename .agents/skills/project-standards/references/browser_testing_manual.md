@@ -99,3 +99,4 @@ To maintain system stability, every core logic change MUST be validated against 
 1. **Test Payload Parity**: When modifying event payloads in `gameBus` (e.g., adding `ballId` to `PLAY_CATCH_ENERGY`), you MUST update corresponding unit tests. Discrepancies between implementation and test expectations are the primary cause of CI failure.
 2. **State Snapshotting**: Use `vi.clearAllMocks()` in `beforeEach` to ensure isolation between test cases.
 3. **Mocking External Services**: Always mock global state providers (e.g., `gameStore`, `battleStore`) to avoid side effects during logic-only testing.
+4. **Synchronous Debug Registration**: When initializing the `debugStore`, all commands **MUST** be registered synchronously, even if they depend on dynamically loaded modules (`import()`). This ensures tools like `window.__VITE_DEBUG__` are available immediately for unit tests, preventing failures due to race conditions.

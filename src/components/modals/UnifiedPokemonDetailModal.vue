@@ -1,15 +1,11 @@
-<!-- [PureVue-Ignore-Length] -->
 <script setup>
 // Universal Pokémon info panel (Pokedex + Instance).
 import { ref, computed } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { PDEX_TYPE_COLORS, POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants'
-import { MOVE_DATA } from '@/data/moves'
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { usePokemonDetail } from '@/composables/usePokemonDetail'
+import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -36,61 +32,31 @@ const emit = defineEmits(['close'])
 const uiStore = useUIStore()
 const gameStore = useGameStore()
 
+// --- COMPOSABLE LOGIC ---
+const {
+  targetPokemon,
+  isInstance,
+  targetSpeciesId,
+  species,
+  cleanCategory,
+  evolutions,
+  displayStats,
+  moveDetails,
+  currentMoves,
+  canStoneEvolve,
+  instancePhysicalData,
+  captureDateFormatted,
+  getSprite,
+  finalIndex,
+  finalContext
+} = usePokemonDetail(props)
+
+// --- LOCAL UI STATE ---
 const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
 useWindowListener('resize', handleResize)
 
 const activeTab = ref('summary')
-
-// Normalize data source (Props or UI Store)
-const uiData = computed(() => uiStore.modals?.PokemonDetail?.data || {})
-const finalIndex = computed(() => props.index !== -1 ? props.index : (uiData.value.index ?? -1))
-const finalContext = computed(() => (props.context && props.context !== 'pokedex') ? props.context : (uiData.value.context || 'pokedex'))
-
-const targetPokemon = computed(() => {
-  // Try to resolve from store first for reactivity
-  if (finalIndex.value > -1) {
-    if (finalContext.value === 'team') return gameStore.state.team[finalIndex.value]
-    if (finalContext.value === 'box') return gameStore.state.box[finalIndex.value]
-  }
-  // Fallback to passed object (e.g. for markets or non-local sources)
-  return props.pokemon || uiData.value.pokemon
-})
-
-const isInstance = computed(() => !!targetPokemon.value)
-
-const targetSpeciesId = computed(() => {
-  const id = isInstance.value ? targetPokemon.value.id : props.speciesId
-  return String(id).toLowerCase()
-})
-
-const speciesRaw = computed(() => pokemonDataProvider.getPokemonData(targetSpeciesId.value))
-
-const species = computed(() => {
-  if (!speciesRaw.value) return null
-  const s = speciesRaw.value
-  const types = Array.isArray(s.type) ? s.type : [s.type]
-  const nationalId = POKEMON_SPRITE_IDS[targetSpeciesId.value] || 0
-  
-  return {
-    ...s,
-    nationalId: nationalId.toString(),
-    type: types,
-    stats: {
-      hp: s.hp || 0,
-      atk: s.atk || 0,
-      def: s.def || 0,
-      spa: s.spa || 0,
-      spd: s.spd || 0,
-      spe: s.spe || 0
-    }
-  }
-})
-
-const cleanCategory = computed(() => {
-  if (!species.value?.category) return 'Desconocido'
-  return species.value.category.replace(/^Pokémon\s+/i, '')
-})
 
 const tabs = computed(() => {
   const base = [
@@ -110,93 +76,6 @@ const tabs = computed(() => {
   return base
 })
 
-const getSprite = (id, isShiny = false) => getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny })
-
-// Stats Calculation
-const displayStats = computed(() => {
-  if (!species.value) return []
-  const labels = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SPA', spd: 'SPD', spe: 'SPE' }
-  const colors = { 
-    hp: 'Rgba(255, 89, 89, 1)', 
-    atk: 'Rgba(245, 172, 120, 1)', 
-    def: 'Rgba(250, 224, 120, 1)', 
-    spa: 'Rgba(157, 183, 245, 1)', 
-    spd: 'Rgba(167, 219, 141, 1)', 
-    spe: 'Rgba(250, 146, 178, 1)' 
-  }
-  return Object.keys(species.value.stats).map(key => {
-    const base = species.value.stats[key]
-    const current = isInstance.value ? (targetPokemon.value[key] || base) : base
-    return {
-      id: key,
-      label: labels[key],
-      value: current,
-      baseValue: base,
-      max: 255,
-      color: colors[key],
-      iv: isInstance.value ? targetPokemon.value.ivs?.[key] : null
-    }
-  })
-})
-
-const moveDetails = computed(() => {
-  if (!species.value || !species.value.learnset) return []
-  return species.value.learnset.map(m => {
-    const data = MOVE_DATA[m.name] || {}
-    return {
-      level: m.lv,
-      name: m.name,
-      type: data.type || 'normal',
-      cat: data.cat || 'physical',
-      power: data.power || '-',
-      acc: data.acc || '-',
-      pp: data.pp || '-'
-    }
-  }).sort((a, b) => a.level - b.level)
-})
-
-const currentMoves = computed(() => {
-  if (!isInstance.value || !targetPokemon.value.moves) return []
-  return targetPokemon.value.moves.map(m => {
-    const data = MOVE_DATA[m.name] || {}
-    return { ...m, ...data }
-  })
-})
-const evolutions = computed(() => {
-  const list = []
-  const id = targetSpeciesId.value
-  const caught = gameStore.state.pokedex || []
-  const seen = gameStore.state.seenPokedex || []
-
-  const enrichEvo = (evo) => {
-    const toId = evo.to.toLowerCase()
-    const isCaught = caught.includes(toId)
-    const isSeen = isCaught || seen.includes(toId)
-    return { ...evo, isSeen, isCaught }
-  }
-
-  if (EVOLUTION_TABLE[id]) {
-    const ev = EVOLUTION_TABLE[id]
-    list.push(enrichEvo({ type: 'level', requirement: `Nv. ${ev.level}`, to: ev.to }))
-  }
-  // Handle single and multi-evolutions (like Eevee)
-  Object.keys(STONE_EVOLUTIONS).forEach(key => {
-    if (key === id || key.startsWith(`${id}_`)) {
-      const ev = STONE_EVOLUTIONS[key]
-      list.push(enrichEvo({ type: 'stone', requirement: ev.stone, to: ev.to }))
-    }
-  })
-  if (TRADE_EVOLUTIONS[id]) {
-    list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: TRADE_EVOLUTIONS[id] }))
-  }
-  return list
-})
-
-const canStoneEvolve = computed(() => {
-  const id = targetSpeciesId.value
-  return Object.keys(STONE_EVOLUTIONS).some(key => key === id || key.startsWith(`${id}_`))
-})
-
 const formatRange = (val, unit, factor = 0.15) => {
   if (!val) return '—'
   if (Array.isArray(val)) return `${val[0]}${unit} - ${val[1]}${unit}`
@@ -205,25 +84,19 @@ const formatRange = (val, unit, factor = 0.15) => {
   return `${min}${unit} - ${max}${unit}`
 }
 
-const instancePhysicalData = computed(() => {
-  if (!isInstance.value || !species.value) return null
-  const p = props.pokemon
-  const uid = p.uid || 'def'
-  const getRand = (seed, range) => {
-    if (!range) return '0.0'
-    const min = Array.isArray(range) ? range[0] : range * 0.85
-    const max = Array.isArray(range) ? range[1] : range * 1.15
-    let hash = 0
-    for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash)
-    const normalized = (Math.abs(hash) % 100) / 100
-    return (min + normalized * (max - min)).toFixed(1)
-  }
-  return {
-    height: p.height || getRand(uid + 'h', species.value.height),
-    weight: p.weight || getRand(uid + 'w', species.value.weight)
-  }
-})
+const getCategoryDescription = (cat) => {
+  const c = cat.toLowerCase()
+  if (c.includes('nueva especie')) return 'Pokémon extremadamente raro que contiene el ADN de todos los demás Pokémon. Se creía puramente mitológico.'
+  if (c.includes('genético')) return 'Pokémon creado artificialmente mediante manipulación avanzada de ADN y experimentos científicos.'
+  if (c.includes('legendario')) return 'Pokémon de gran poder que aparece en los mitos y leyendas. Suele ser único en su especie.'
+  if (c.includes('mítico')) return 'Pokémon tan singular que su existencia es cuestionada por muchos científicos y exploradores.'
+  if (c.includes('inicial')) return 'Pokémon que suele entregarse a los entrenadores que comienzan su aventura regional.'
+  if (c.includes('fósil')) return 'Pokémon prehistórico resucitado a partir de material genético preservado en fósiles.'
+  
+  return `Clasificación: ${cat}. Define los rasgos biológicos principales y el comportamiento predominante de esta especie.`
+}
 
+// --- HANDLERS ---
 const handleBuy = () => {
   if (props.extra && typeof window.buyFromMarket === 'function') {
     window.buyFromMarket(props.extra.offerId, props.extra.price, props.extra.type)
@@ -250,8 +123,6 @@ const handleToggleTag = (tagOrId) => {
   const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
   if (isInstance.value && finalIndex.value > -1 && typeof window.togglePokeTag === 'function') {
     window.togglePokeTag(finalContext.value, finalIndex.value, tagId)
-  } else {
-    console.warn('[Tag] Toggle conditions not met:', { isInstance: isInstance.value, index: finalIndex.value, hasBridge: typeof window.togglePokeTag === 'function' })
   }
 }
 
@@ -270,39 +141,6 @@ const handleEditNickname = () => {
       gameStore.save(false)
     }
   })
-}
-
-const captureDateFormatted = computed(() => {
-  const p = targetPokemon.value
-  if (!p) return null
-  const dateVal = p.captureDate || p.timestamp || p.date || p.created_at || p.obtainedAt
-  
-  if (!dateVal) return isInstance.value ? 'SIN FECHA' : null
-  
-  try {
-    const date = new Date(dateVal)
-    return date.toLocaleDateString('es-ES', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  } catch (_) {
-    return null
-  }
-})
-
-const getCategoryDescription = (cat) => {
-  const c = cat.toLowerCase()
-  if (c.includes('nueva especie')) return 'Pokémon extremadamente raro que contiene el ADN de todos los demás Pokémon. Se creía puramente mitológico.'
-  if (c.includes('genético')) return 'Pokémon creado artificialmente mediante manipulación avanzada de ADN y experimentos científicos.'
-  if (c.includes('legendario')) return 'Pokémon de gran poder que aparece en los mitos y leyendas. Suele ser único en su especie.'
-  if (c.includes('mítico')) return 'Pokémon tan singular que su existencia es cuestionada por muchos científicos y exploradores.'
-  if (c.includes('inicial')) return 'Pokémon que suele entregarse a los entrenadores que comienzan su aventura regional.'
-  if (c.includes('fósil')) return 'Pokémon prehistórico resucitado a partir de material genético preservado en fósiles.'
-  
-  return `Clasificación: ${cat}. Define los rasgos biológicos principales y el comportamiento predominante de esta especie.`
 }
 
 const handleReorderMoves = (from, to) => {
@@ -552,6 +390,6 @@ const handleReorderMoves = (from, to) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/components/pokedex-detail" as *;
-@use "@/styles/components/unified-pokemon-detail" as *;
+@use "../../styles/components/pokedex-detail" as *;
+@use "../../styles/components/unified-pokemon-detail" as *;
 </style>

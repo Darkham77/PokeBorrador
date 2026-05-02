@@ -13,6 +13,9 @@ export function useBattleShadows() {
   const currentPlayerShadowKey = ref(null)
   const currentEnemyShadowKey = ref(null)
 
+  const lastEnemyShadowId = ref(null)
+  const lastPlayerShadowId = ref(null)
+
   // Coordenadas de "suelo" persistentes para evitar saltos
   const stableEnemyGroundY = ref('90%')
   const stablePlayerGroundY = ref('90%')
@@ -38,9 +41,17 @@ export function useBattleShadows() {
   // Sincronizar visibilidad y posición de la sombra enemiga
   const syncEnemyShadow = async (visible, data, pos, animState) => {
     const shadowId = getStableShadowId(data, 'enemy')
+    
+    // Limpieza de sombras huérfanas si el ID cambia (evita duplicados al capturar/cambiar)
+    if (lastEnemyShadowId.value && lastEnemyShadowId.value !== shadowId) {
+      shadowStore.hideShadow(lastEnemyShadowId.value)
+    }
+    lastEnemyShadowId.value = shadowId
     currentEnemyShadowKey.value = shadowId
 
-    if (!visible || !data || data.hp <= 0 || !!animState) {
+    // Ocultar sombra si está en cualquier estado de transición de Poké Ball (energía)
+    const isEnergyState = !!animState 
+    if (!visible || !data || data.hp <= 0 || isEnergyState) {
       if (shadowId) shadowStore.hideShadow(shadowId)
       return
     }
@@ -60,9 +71,17 @@ export function useBattleShadows() {
   // Sincronizar visibilidad y posición de la sombra del jugador
   const syncPlayerShadow = async (pokemon, pos, animState) => {
     const shadowId = getStableShadowId(pokemon, 'player')
+
+    // Limpieza de sombras huérfanas
+    if (lastPlayerShadowId.value && lastPlayerShadowId.value !== shadowId) {
+      shadowStore.hideShadow(lastPlayerShadowId.value)
+    }
+    lastPlayerShadowId.value = shadowId
     currentPlayerShadowKey.value = shadowId
 
-    if (!pokemon || pokemon.hp <= 0 || !!animState) {
+    // Ocultar sombra durante transiciones de energía
+    const isEnergyState = !!animState
+    if (!pokemon || pokemon.hp <= 0 || isEnergyState) {
       if (shadowId) shadowStore.hideShadow(shadowId)
       return
     }

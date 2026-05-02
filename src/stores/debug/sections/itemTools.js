@@ -1,0 +1,58 @@
+import { SHOP_ITEMS } from '@/data/items'
+
+export function registerItemTools(debug, { game, ui, breedingStore }) {
+  debug.register({
+    id: 'item-add',
+    label: 'AÑADIR ITEM',
+    command: 'addItem',
+    category: 'items',
+    action: (name, qty = 10) => {
+      game.state.inventory[name] = (game.state.inventory[name] || 0) + qty
+      ui.notify(`Debug: +${qty} ${name}`, '🎒')
+      game.saveGame(false)
+    },
+    description: 'Añade una cantidad de un item a la mochila.'
+  })
+
+  debug.register({
+    id: 'item-fill-all',
+    label: 'LLENAR MOCHILA',
+    command: 'fillInventory',
+    category: 'items',
+    action: (qty = 50) => {
+      SHOP_ITEMS.forEach(item => {
+        game.state.inventory[item.name] = qty
+      })
+      ui.notify(`Debug: Mochila llena (${SHOP_ITEMS.length} tipos de objetos)`, '🎒')
+      game.saveGame(false)
+    },
+    description: 'Añade una cantidad de TODOS los objetos de la base de datos.'
+  })
+
+  // MISSIONS
+  debug.register({
+    id: 'mission-regenerate',
+    label: 'REGENERAR MISIONES',
+    command: 'regenerateMissions',
+    category: 'missions',
+    action: () => {
+      const today = new Date().toISOString().split('T')[0]
+      breedingStore.regenerateMissions(today)
+      ui.notify('Misiones de Guardería regeneradas', '📜')
+    },
+    description: 'Fuerza la regeneración de las misiones diarias de la guardería.'
+  })
+
+  debug.register({
+    id: 'mission-clear',
+    label: 'LIMPIAR MISIONES',
+    command: 'clearMissions',
+    category: 'missions',
+    action: () => {
+      game.state.daycare_missions = []
+      ui.notify('Misiones de Guardería eliminadas', '🗑️')
+      game.saveGame(false)
+    },
+    description: 'Elimina todas las misiones actuales de la guardería.'
+  })
+}

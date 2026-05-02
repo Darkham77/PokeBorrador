@@ -70,6 +70,11 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **GPU Persistence Rule**: To prevent "snapping" from smooth to pixelated after CSS transitions (especially on environmental backgrounds), use `image-rendering: auto` explicitly in `smooth` mixins and force GPU layer persistence with `will-change: filter, transform;` and `transform: TranslateZ(0);`.
 - **Dynamic Variable Binding**: Context-dependent visual effects (glows, auras) MUST use dynamic CSS variables (e.g., `:style="{ '--type-color': color }"`) injected from the template to allow SCSS to remain generic.
 - **Silhouette Integrity**: When rendering "Search Mode" or silhouetted Pokémon, use a solid black appearance (`filter: Brightness(0)`). To ensure visibility against dark battle backgrounds, ALWAYS apply a subtle white `drop-shadow(0 0 1px white)`.
+- **Advanced SVG Silhouette (Subtraction Pattern)**: For pixel-perfect silhouettes with borders, use an SVG filter with a "Subtraction" algorithm:
+  1. **Dilate** the SourceAlpha (e.g., 1.5px).
+  2. **Subtract** the original SourceAlpha (`operator="out"`) to isolate the "ring".
+  3. **Blur & Merge**: Blur only the ring and merge the original (black) body on top.
+  - **WHY**: Prevents the border color from "bleeding" into the body and ensures a sharp, controllable outline even with blur.
 - **Aesthetic Metadata Mandate**: Do not derive aesthetic traits (like "floating/flying height") purely from game types (e.g., Flying type). Use a centralized metadata registry (e.g., `POKEMON_AESTHETICS`) to explicitly flag species that should float (Magneton, Geodude) versus those that remain grounded (Charizard).
 - **Environment Clipping (Bushes)**: In the combat arena, environmental assets (like grass/bushes) MUST be suppressed if the Pokémon is flagged as `isFloating`. This prevents visual clipping and reinforces the species' spatial identity.
 
@@ -105,6 +110,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - `box-shadow`: Fast, native GPU hardware. Use for UI cards, frames, and rectangular containers.
   - `filter: Drop-Shadow()`: Expensive, pixel-by-pixel analysis. Use ONLY for pixel-art sprites or non-rectangular elements where the shadow must follow the silhouette.
   - **DENSITY RULE**: In grids with 50+ items (Box, Bag), NEVER aply more than one `Drop-Shadow()` per item to avoid "GPU Fill-Rate Starvation".
+- **Filter Specificity Trap**: When applying global image filters (e.g., `img { filter: ... }`), always use `:not(.special-class)` to exclude specific states like `.silhouette`.
+  - **WHY**: A general rule with high specificity (tag + class) can override specific class-only rules even if they use `!important`.
 - **The Clipping Trap (Scale vs Overflow)**: NEVER use `Scale()` animations for ambient effects (pulsing) on elements contained by `overflow: hidden`. This causes visual clipping or makes content "flicker" as it exceeds the parent box. Use `Opacity()` or `Filter: Brightness()` for ambient "breathing" instead.
 
 ### 4. Interactive Pills & Badges

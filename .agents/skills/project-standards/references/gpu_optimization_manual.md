@@ -22,6 +22,7 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 - **Pixel Outlines**: NEVER use "Quad Drop-Shadow" (4 offsets) for sprite outlines in high-density views (Map, Pokedex, PC Box).
   - **MANDATORY**: Use the high-performance SVG Filter `filter: pokemon-outline-optimized()`.
   - **Reasoning**: `feMorphology` dilation is a single-pass operation, reducing GPU fill-rate requirements by 75% compared to 4 Drop-Shadow calls.
+  - **Premium Glow**: For soft outlines (glows/auras), include `feGaussianBlur` (stdDeviation 0.5 - 1.0) **inside** the SVG filter. This is more efficient than combining an SVG outline with a CSS `drop-shadow`.
   - **Detection**: Run `.agents/skills/project-standards/scripts/audit/detect_outline_traps.py` to identify legacy outlines that require migration to SVG.
 - **Will-Change**: Use `@include will-animate(transform, opacity)` only on elements with constant animations (e.g., auras, Shiny pulses). Do not abuse, as it consumes video memory.
 

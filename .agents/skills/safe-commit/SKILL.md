@@ -45,9 +45,9 @@ graph TD
     Recovery -->|PASS| Cleanup[6. Workspace Cleanup]
     Cleanup --> Walkthrough[7. Walkthrough Update]
     Walkthrough --> Lessons[8. Lessons Extraction]
-    Lessons --> Approval[8.1 Lesson Approval]
+    Lessons --> LessonApproval[8.1 Lesson Approval]
     
-    Approval --> Commit[9. The Safe Commit]
+    LessonApproval --> Commit[9. Git Commit]
     Commit --> Push[10. Push & Close]
     Push --> End((END))
     
@@ -135,7 +135,7 @@ Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a CSS/G
 - **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the extracted lessons.
 - **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item is marked as `[x]`.
 
-### 9. The Safe Commit
+### 9. Git Commit
 
 1. `git status` to verify all files (including docs, `.agents/skills/` updates, and artifacts) are staged.
 2. `git add .`
@@ -157,26 +157,25 @@ Commit messages MUST NOT be terse. They MUST provide a clear, technical chronicl
 
 - **Header**: Conventional Commit format (`type(scope): description`) in lowercase, summary of the main impact.
 - **Body**: A blank line followed by a detailed, bulleted list (`-`) of specific technical changes.
-- **Audit Milestone**: Mention the specific results of the "Zero-Warning Audit" (e.g., "Pass 27 Reach", "0 colisiones de redundancia").
-- **Verification Metrics**: Explicitly state the number of unit tests passed and build status (e.g., "Verified via 243 unit tests and production build pass").
+- **Technical Context**: Include relevant data found during the process (e.g., "GPU draw call reduction", "Logic optimization for O(n) complexity", "Asset resolution improvements").
 
 ### 2. Master Example (The Gold Standard)
 
 ```text
-docs(standards): modernize add-pokemon skill and enforce Zero-Warning culture
+feat(battle): optimize silhouette rendering and sync wild encounter timing
 
-- Updated add-pokemon SKILL.md with CLI-First protocols and interactive hatching details.
-- Refactored fetch_pokemon.js for path parity with SECONDARY_TYPES and POKEMON_ABILITIES.
-- Hardened safe-commit and project-standards with new governance rules.
-- Resolved pre-existing lint warnings in debug and modal components to achieve Zero-Warning state.
-- Verified system stability via full build and 240 unit tests (100% pass).
+- Migrated silhouette filter from feFlood to feColorMatrix for improved GPU performance.
+- Reduced wild Pokémon emergence Phase 1 duration from 2.2s to 1.1s for faster gameplay.
+- Synchronized isWildSilhouetteHalfway trigger at 550ms with the sprite jump animation.
+- Implemented isFloating metadata check to automatically hide ground grass bushes for flying species.
+- Refactored useBattleAnimations.js to centralize encounter phase constants.
 ```
 
 ### 3. Forbidden Patterns
 
 - Single-word messages (e.g., `commit`, `update`, `fix`).
 - Messages without a bulleted list for changes involving 2+ files.
-- Omitting the verification results (build/tests).
+- Vague descriptions like "minor changes" without specifying the technical "what".
 
 ## Example Recovery Strategy
 
@@ -188,7 +187,7 @@ docs(standards): modernize add-pokemon skill and enforce Zero-Warning culture
 2. [ ] Run `npm run build` to verify compilation.
 3. [ ] Workspace Cleanup (Step 6).
 4. [ ] Extract lessons (Step 7).
-5. [ ] **Wait for Lesson Approval** (Step 8).
+5. [ ] **Wait for Lesson Approval** (Step 8.1).
 6. [ ] Git commit & push (Step 9).
 "
 

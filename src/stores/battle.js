@@ -136,6 +136,8 @@ export const useBattleStore = defineStore('battle', () => {
     isSearching.value = false
     isFinishing.value = false
     isBattleActive.value = true
+    attackerSide.value = null
+    activeMove.value = null
     clearLogs()
 
     gameBus.emit('START_BATTLE', { 
@@ -254,6 +256,8 @@ export const useBattleStore = defineStore('battle', () => {
     battleLogs.value = []; logQueue.value = []; isProcessingLogs.value = false;
     playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
     enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
+    activeMove.value = null
+    attackerSide.value = null
   }
 
   const executeMove = async (moveIndex) => {
@@ -265,6 +269,7 @@ export const useBattleStore = defineStore('battle', () => {
     })
     await executeTurn(thisStore, moveIndex)
     if (isBattleActive.value && !activeBattle.value.over) await applyEndTurnEffects()
+    activeMove.value = null
     isProcessing.value = false
   }
 
@@ -288,6 +293,7 @@ export const useBattleStore = defineStore('battle', () => {
     attackerSide.value = 'player'
     const res = await handleItemUsage(itemName, targetPoke, activeBattle.value.enemy, { gs, eventStore, addLog, audio, consumeItem })
     attackerSide.value = null
+    activeMove.value = null
     
     if (res.action === 'capture') {
       activeBattle.value.isCapture = true

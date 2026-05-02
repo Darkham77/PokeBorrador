@@ -79,6 +79,9 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     const cachedPoints = options.spriteUrl ? feetCache.get(options.spriteUrl) : null
     
     let feetY = options.feetY || (cachedPoints?.feetY ?? (existing?.feetY ?? 0.9))
+    // Si es volador, ignoramos el valor detectado y forzamos el suelo
+    if (options.isFlying) feetY = 0.9
+    
     let feetX = options.feetX || (cachedPoints?.feetX ?? (existing?.feetX ?? 0.5))
     let visible = options.visible !== undefined ? options.visible : true
 
@@ -105,9 +108,13 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
         // Solo actualizamos si la sombra sigue existiendo y es del mismo sprite
         const current = activeShadows.get(id)
         if (current && current.spriteUrl === options.spriteUrl) {
+          // Si es volador, forzamos el anclaje al suelo (90%) 
+          // para que los items (pokebolas) no caigan "en el aire"
+          const finalFeetY = current.isFlying ? 0.9 : points.feetY
+          
           activeShadows.set(id, {
             ...current,
-            feetY: points.feetY,
+            feetY: finalFeetY,
             feetX: points.feetX
           })
         }

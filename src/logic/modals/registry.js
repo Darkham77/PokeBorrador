@@ -44,6 +44,7 @@ export const MODAL_REGISTRY = {
   EventDetail: defineAsyncComponent(() => import('@/components/modals/EventDetailModal.vue')),
   TeamManagement: defineAsyncComponent(() => import('@/components/modals/TeamManagementModal.vue')),
   BoxPokemonMenu: defineAsyncComponent(() => import('@/components/box/BoxPokemonMenu.vue')),
+  BoxMove: defineAsyncComponent(() => import('@/components/box/BoxMoveModal.vue')),
   DebugStackTest: defineAsyncComponent(() => import('@/components/modals/DebugStackTestModal.vue')),
   DebugWeatherTables: defineAsyncComponent(() => import('@/components/modals/DebugWeatherTablesModal.vue'))
 }

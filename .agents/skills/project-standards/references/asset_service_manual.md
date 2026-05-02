@@ -87,6 +87,23 @@ To process the `_raw-assets/` folder, execute:
 
 ---
 
+## 🌓 Dynamic Shadow System
+
+To ensure visual consistency between terrestrial and flying Pokémon, the following anchoring rules must be followed:
+
+### 1. Ground Anchoring (feetY)
+- **Terrestrial**: Anchor is located at the base of the sprite.
+- **Flying/Floating**: The `feetY` value MUST be **FORCED** to **90%** (or ground coordinates) regardless of the sprite's position. This ensures:
+    - Poké Balls land on the ground.
+    - Capture energy beams point to the base.
+    - The shadow is projected correctly beneath the Pokémon.
+
+### 2. Animation Synchronization
+- Shadows must be integrated into the animation container to follow Dash and Attack movements.
+- Shadow visibility must be synchronized with the Pokémon's opacity during capture/faint sequences.
+
+---
+
 ## 📦 PWA Caching & Configuration (VitePWA)
 
 To ensure game assets are correctly precached and the service worker remains stable:

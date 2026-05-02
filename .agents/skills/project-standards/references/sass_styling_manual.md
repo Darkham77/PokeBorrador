@@ -174,6 +174,8 @@ When refactoring legacy or generic components:
   - ✅ `background: Rgba(255, 255, 255, 0.5);`
   - ❌ `background: rgba(255, 255, 255, 0.5);` (Collision)
   - **Filter Capitalization**: This rule applies to all CSS filters (`Blur()`, `Scale()`, `Brightness()`, `Grayscale()`, etc.).
+  - **SVG Filter Quoting**: When referencing filters by ID in SASS functions or mixins, ALWAYS quote the ID inside the URL: `url("#id")`.
+    - **WHY**: Prevents Dart Sass from misinterpreting the `#` as a color hex or causing compilation errors when the ID contains certain characters.
   - **Local/One-off Colors**: Capitalized Rgba/Rgb or Hex values ARE PERMITTED for local, non-recurring styles within a component's `<style scoped>` block, but variables are always preferred.
   - **SASS vs CSS Variables**: SASS color functions (like `color.scale`, `lighten()`, `darken()`) cannot process `var(--color)`. For interactive highlights/hovers, use static SASS fallbacks (e.g. `$yellow`) for calculations while maintaining the CSS variable for the main render to support dynamic themes.
   - **Variable Isolation**: In high-density or dynamically scoped components (e.g., within specialized filters or grids), if core SASS variables are not reliably available without manual imports, use **Direct Hex Values** to ensure visual stability and prevent "Color not defined" build errors.
@@ -200,9 +202,12 @@ Avoid spreading definitions for the same component across multiple files. This i
 - **Responsive SASS**: When possible, consolidate media queries into the main component file instead of creating separate `-responsive.scss` files for the same classes. This avoids redundancy audit triggers.
 - **Audit Requirement**: Before committing UI changes, you MUST run the redundancy audit:
   `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py`
-- **Bypass Rule (The Ampersand Trick)**: If the audit flags a valid nested override (e.g., a performance mode or media-query variant) as redundant, use the SASS ampersand operator (`& .class-name {`) to break the exact line-start regex pattern of the scanner while maintaining identical CSS output.
-  - ✅ `& .btn-price { display: none; }`
-  - ❌ `.btn-price { display: none; }` (May trigger redundancy warning in deep nests)
+- **Component Namespacing**: To avoid global collisions and audit-detected redundancies, all classes for new or refactored components **MUST** use a unique namespace prefix related to the component:
+    - ✅ `.box-pokemon-card`, `.upd-species-subtitle`, `.pdc-action-grid`
+    - ❌ `.pokemon-card`, `.species-subtitle`, `.action-grid` (Generic names forbidden)
+- **Bypass Rule (The Ampersand Trick)**: If the audit flags a valid override (e.g., responsive variant or performance mode) as redundant, use the ampersand operator (`& .class {`) to break the scanner's line-start pattern while maintaining identical CSS.
+    - ✅ `& .btn-price { display: none; }`
+    - ❌ `.btn-price { display: none; }` (Will trigger alert if the class exists in another file)
 - **Goal**: Maintain 0 redefinitions for critical game components.
 
 ### 5. UI Button Standardization (Mandatory Mixins)

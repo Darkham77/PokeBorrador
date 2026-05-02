@@ -139,7 +139,7 @@ export function validateAndSanitize(data) {
   const duplicateUids = new Set();
   
   const checkPoke = (p, listName) => {
-    if (!p.uid) return;
+    if (!p || !p.uid) return;
     if (uids.has(p.uid)) {
       duplicateUids.add(p.uid);
       issues.push(`Duplicado de UID detectado: ${p.uid} (${p.name}) en ${listName}`);

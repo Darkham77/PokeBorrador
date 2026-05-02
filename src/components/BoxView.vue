@@ -43,17 +43,20 @@ const maxCapacity = computed(() => (gs.value.boxCount || 4) * 50)
 
 const displayList = computed(() => {
   const list = processedBoxList.value || []
+  const isSorted = sortMode.value !== 'none'
   
-  if (hasActiveFilters.value) {
-    return list // Show all matches when searching/filtering
+  if (hasActiveFilters.value || isSorted) {
+    return list.filter(item => item.p != null) // Show all matches without nulls
   } else {
     const start = currentBoxIndex.value * 50
-    return list.slice(start, start + 50)
+    const slice = list.slice(start, start + 50)
+    return slice.filter(item => item.p != null) // Remove empty slots from the grid
   }
 })
 
 // ----- ACCIONES -----
 const switchBox = (i) => {
+  sortMode.value = 'none'
   boxStore.switchBox(i)
 }
 
@@ -115,10 +118,20 @@ const handleConfirmRelease = () => {
 }
 
 const handlePokemonClick = (index) => {
-  if (isRocketMode.value) {
-    boxStore.toggleBoxRocketSelect(index)
-  } else if (boxStore.boxReleaseMode) {
-    boxStore.toggleBoxReleaseSelect(index)
+  const pokemon = gs.value.box[index]
+  if (!pokemon) return
+
+  if (isRocketMode.value || boxStore.boxReleaseMode) {
+    if (pokemon.onMission || pokemon.inDaycare || pokemon.onDefense) {
+      uiStore.notify('Este Pokémon está ocupado y no puede seleccionarse.', '🔒')
+      return
+    }
+
+    if (isRocketMode.value) {
+      boxStore.toggleBoxRocketSelect(index)
+    } else {
+      boxStore.toggleBoxReleaseSelect(index)
+    }
   } else {
     uiStore.open('BoxPokemonMenu', { boxIndex: index })
   }

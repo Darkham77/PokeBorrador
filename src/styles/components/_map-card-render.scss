@@ -226,14 +226,20 @@
     @include pixelated;
     image-rendering: pixelated !important;
     image-rendering: crisp-edges !important;
-    &.pixelated, & {
-      // High-performance 1px black outline using SVG Filter
-      filter: pokemon-outline-optimized();
-
-      // Disable outline in performance mode for maximum FPS
-      .performance-mode & {
-        filter: none !important;
+    &:not(.spawn-silhouette) {
+      &.pixelated, & {
+        filter: pokemon-outline-optimized();
       }
+    }
+
+    &.spawn-silhouette {
+      filter: pokemon-silhouette-optimized() !important;
+      opacity: 1 !important;
+    }
+
+    // Performance mode toggle
+    .performance-mode & {
+      filter: none !important;
     }
     
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -242,12 +248,8 @@
 
     &:hover {
       transform: Scale(1.1) TranslateY(-2px);
-      z-index: 11 !important; /* Above other spawns (10) but below UI (20) */
+      z-index: 11 !important;
     }
-  }
-
-  .spawn-silhouette {
-    @include pokemon-silhouette;
   }
 }
 
