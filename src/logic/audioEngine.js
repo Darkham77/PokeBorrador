@@ -123,10 +123,27 @@ export function playLevelUpSound(ctx, dest) {
  */
 export function playCaptureSuccessSound(ctx, dest) {
   const t = ctx.currentTime + 0.05;
-  playNote(ctx, dest, 392.00, t, 0.12, 0.30, 'square');
-  playNote(ctx, dest, 369.99, t + 0.12, 0.12, 0.30, 'square');
-  playNote(ctx, dest, 392.00, t + 0.24, 0.12, 0.30, 'square');
-  playNote(ctx, dest, 493.88, t + 0.36, 0.30, 0.35, 'square');
+  playNote(ctx, dest, 392.00, t, 0.12, 0.35, 'square');
+  playNote(ctx, dest, 369.99, t + 0.12, 0.12, 0.35, 'square');
+  playNote(ctx, dest, 392.00, t + 0.24, 0.12, 0.35, 'square');
+  playNote(ctx, dest, 493.88, t + 0.36, 0.40, 0.40, 'square');
+}
+
+/**
+ * POKEBALL HIT/HIT ENERGY
+ */
+export function playBallHitSound(ctx, dest) {
+  const t = ctx.currentTime + 0.05;
+  playNoise(ctx, dest, t, 0.1, 0.25, 1200);
+  playGlide(ctx, dest, 880, 440, t, 0.15, 0.2, 'square');
+}
+
+/**
+ * POKEBALL WOBBLE SOUND
+ */
+export function playWobbleSound(ctx, dest) {
+  const t = ctx.currentTime + 0.05;
+  playNote(ctx, dest, 220.00, t, 0.06, 0.20, 'square');
 }
 
 /**

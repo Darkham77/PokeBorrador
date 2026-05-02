@@ -412,7 +412,7 @@ const close = () => {
   }
 
   :deep(.item-premium-grid) {
-    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-columns: repeat(4, 1fr) !important;
   }
 }
 </style>

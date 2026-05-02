@@ -22,6 +22,7 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
     const { caught, shakes } = calculateCatchRate(e, itemName, eventCatchMult)
     
     // 1. Iniciar animación de entrada (energía azul)
+    audio.ballHit()
     gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: itemName })
     
     // Esperar a que el Pokémon termine de entrar en la bola (800ms aprox)
@@ -29,6 +30,7 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
 
     // 2. Ejecutar los intentos de agitación (shakes)
     for (let i = 0; i < shakes; i++) {
+      audio.wobble()
       gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
       // Duración de un shake + pequeña pausa
       await new Promise(r => setTimeout(r, 1000))

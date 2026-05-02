@@ -203,11 +203,11 @@ Avoid spreading definitions for the same component across multiple files. This i
 - **Audit Requirement**: Before committing UI changes, you MUST run the redundancy audit:
   `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py`
 - **Component Namespacing**: To avoid global collisions and audit-detected redundancies, all classes for new or refactored components **MUST** use a unique namespace prefix related to the component:
-    - ✅ `.box-pokemon-card`, `.upd-species-subtitle`, `.pdc-action-grid`
-    - ❌ `.pokemon-card`, `.species-subtitle`, `.action-grid` (Generic names forbidden)
+  - ✅ `.box-pokemon-card`, `.upd-species-subtitle`, `.pdc-action-grid`
+  - ❌ `.pokemon-card`, `.species-subtitle`, `.action-grid` (Generic names forbidden)
 - **Bypass Rule (The Ampersand Trick)**: If the audit flags a valid override (e.g., responsive variant or performance mode) as redundant, use the ampersand operator (`& .class {`) to break the scanner's line-start pattern while maintaining identical CSS.
-    - ✅ `& .btn-price { display: none; }`
-    - ❌ `.btn-price { display: none; }` (Will trigger alert if the class exists in another file)
+  - ✅ `& .btn-price { display: none; }`
+  - ❌ `.btn-price { display: none; }` (Will trigger alert if the class exists in another file)
 - **Goal**: Maintain 0 redefinitions for critical game components.
 
 ### 5. UI Button Standardization (Mandatory Mixins)

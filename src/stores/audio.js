@@ -63,6 +63,8 @@ export const useAudioStore = defineStore('audio', () => {
       case 'money': engine.playMoneySound(ctx, dest); break;
       case 'heal': engine.playHealSound(ctx, dest); break;
       case 'faint': engine.playFaintSound(ctx, dest); break;
+      case 'wobble': engine.playWobbleSound(ctx, dest); break;
+      case 'ballHit': engine.playBallHitSound(ctx, dest); break;
     }
   };
 
@@ -83,6 +85,8 @@ export const useAudioStore = defineStore('audio', () => {
     receivedMsg: () => play('receivedMsg'),
     money: () => play('money'),
     heal: () => play('heal'),
-    faint: () => play('faint')
+    faint: () => play('faint'),
+    wobble: () => play('wobble'),
+    ballHit: () => play('ballHit')
   };
 });

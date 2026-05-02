@@ -61,7 +61,9 @@ When testing visual states (e.g., forcing Pokedex "Caught" status via debug butt
 - **Clarification**: Always inform the user that changes are temporary and will disappear on refresh, to avoid confusion regarding data persistence.
 
 ### 5. Visual Coordinate Verification (Combat)
+
 When testing sprite alignment and virtual world coordinates:
+
 - **Scaling Parity**: Debug guides (rectangles, size labels) MUST use the exact same `OBJECT_SCALE` as the entities they represent.
 - **Real-Size Guides**: In search or battle modes, use `.guide-real-size` overlays to compare the virtual container footprint with the original sprite's `naturalSize`.
 - **Anchor Feedback**: Use visible dot markers at calculated `feetY` coordinates to verify that shadows and environment layers share the same physical baseline.
@@ -92,6 +94,7 @@ If the test fails or the browser stays "frozen":
 1. **STOP**: Do not attempt to guess the UI state.
 2. **Dual Diagnosis**: Check the browser console logs AND the server logs (`npm run dev`) simultaneously.
 3. **Priority Repair**: Fix any console or SSR errors before retrying the test.
+
 ## 🧪 Unit Testing and Regression
   
 To maintain system stability, every core logic change MUST be validated against the Vitest suite:
