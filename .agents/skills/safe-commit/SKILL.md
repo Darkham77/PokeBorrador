@@ -49,8 +49,8 @@ graph TD
     Lessons --> LessonApproval[8.1 Lesson Approval]
     
     LessonApproval --> Commit[9. Final Optimization Commit]
-    Commit --> Push[10. Push & Close]
-    Push --> End((END))
+    Commit --> Notify[10. Final Status & Instructions]
+    Notify --> End((END))
     
     style Start fill:#f9f,stroke:#333,stroke-width:4px
     style End fill:#f9f,stroke:#333,stroke-width:4px
@@ -154,9 +154,11 @@ After the user approves the lessons, you MUST perform a second and final commit 
 3. **Commit Message (The Optimization Log)**: The header should use `refactor(audit):` or `fix(lint):`. The body MUST focus **ONLY** on the technical optimizations, linting fixes, and SASS repairs performed during Step 3.
 4. **Example**: `refactor(audit): resolve SASS traps and 12 linting warnings in BattleHUD`.
 
-### 10. Push & Close
+### 10. Final Status & Instructions
 
-Push changes and notify the user.
+Notify the user that the commits (Snapshot and Optimization) have been successfully created.
+
+- **MANUAL PUSH MANDATE**: You are FORBIDDEN from executing `git push`. You MUST inform the user that the local repository is clean and updated, and they should perform the `push` manually when ready.
 
 ## Commit Message Standards (The Elegant Protocol)
 
@@ -202,7 +204,7 @@ feat(battle): optimize silhouette rendering and sync wild encounter timing
 3. [ ] Workspace Cleanup (Step 6).
 4. [ ] Extract lessons (Step 7).
 5. [ ] **Wait for Lesson Approval** (Step 8.1).
-6. [ ] Git commit & push (Step 9).
+6. [ ] Final Optimization Commit (Step 9).
 "
 
 ### 11. Rigor Enforcement (Anti-Shortcut Rule)

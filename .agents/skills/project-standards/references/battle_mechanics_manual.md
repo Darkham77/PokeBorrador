@@ -26,7 +26,8 @@ Damage = floor(((2 * Level / 5 + 2) * Power * A / D) / 50) + 2
 
 ## 🌪️ Weather Influence
 
-- **Rain**: 1.5x Water Damage, 0.5x Fire Damage.
+- **Sun**: 1.5x Fire Damage, 0.5x Water Damage. (Activated by `Sunny Day` or environmental `Heatwave`).
+- **Rain**: 1.5x Water Damage, 0.5x Fire Damage. (Activated by `Rain Dance` or environmental `Storm`).
 - **Day Cycle (Implicit Weather)**: In the absence of active weather (or if it is "Clear"), the game cycle applies a **1.2x boost** to specific types:
   - **Day/Morning**: Fire moves (1.2x).
   - **Night/Dusk**: Water moves (1.2x).
