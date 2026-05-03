@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup>
 import { computed, ref, onMounted, watch } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -244,7 +245,10 @@ const getStatModifier = (key) => {
                 <span class="d-icon">{{ stat.icon }}</span>
                 <span class="d-label">{{ stat.label }}</span>
                 <span class="d-val">{{ p[stat.key] || 0 }}</span>
-                <span v-if="getStatModifier(stat.key) !== 0" class="d-mod">
+                <span
+                  v-if="getStatModifier(stat.key) !== 0"
+                  class="d-mod"
+                >
                   {{ getStatModifier(stat.key) > 0 ? '+' : '' }}{{ getStatModifier(stat.key) }}
                 </span>
               </div>
@@ -256,99 +260,99 @@ const getStatModifier = (key) => {
         </PVTooltip>
       </div>
         
-        <div class="level-row">
-          <div class="poke-level m-badge-level">
-            Nv. {{ p.level }}
-          </div>
-          <PokemonTypePills 
-            :pokemon="p" 
-            size="sm"
-            class="poke-types"
+      <div class="level-row">
+        <div class="poke-level m-badge-level">
+          Nv. {{ p.level }}
+        </div>
+        <PokemonTypePills 
+          :pokemon="p" 
+          size="sm"
+          class="poke-types"
+        />
+      </div>
+
+      <div class="hp-status">
+        <div class="hp-bar-outer">
+          <div
+            class="hp-bar-inner"
+            :class="getHpClass(getHpPct(displayHp, p.maxHp))"
+            :style="{ width: getHpPct(displayHp, p.maxHp) + '%' }"
+          />
+        </div>
+          
+        <!-- EXP Bar only for player -->
+        <div
+          v-if="isPlayer"
+          class="exp-bar-outer"
+        >
+          <div
+            class="exp-bar-inner"
+            :style="{ width: (p.exp / p.expNeeded * 100) + '%' }"
           />
         </div>
 
-        <div class="hp-status">
-          <div class="hp-bar-outer">
-            <div
-              class="hp-bar-inner"
-              :class="getHpClass(getHpPct(displayHp, p.maxHp))"
-              :style="{ width: getHpPct(displayHp, p.maxHp) + '%' }"
-            />
-          </div>
-          
-          <!-- EXP Bar only for player -->
-          <div
-            v-if="isPlayer"
-            class="exp-bar-outer"
-          >
-            <div
-              class="exp-bar-inner"
-              :style="{ width: (p.exp / p.expNeeded * 100) + '%' }"
-            />
-          </div>
-
-          <div class="hp-values">
-            HP: {{ Math.max(0, Math.round(displayHp)) }}/{{ p.maxHp }}
-          </div>
-        </div>
-
-        <!-- Contenedor de Estados (Primarios + Volátiles + Stages) -->
-        <div 
-          v-if="p.status || volatileStatuses.length > 0 || activeStages.length > 0"
-          class="status-container"
-        >
-          <!-- Estado Primario -->
-          <PVTooltip
-            v-if="p.status"
-            :description="STATUS_TOOLTIP_MAP[p.status.toLowerCase()] || p.status"
-            position="bottom"
-          >
-            <div
-              class="status-badge"
-              :class="p.status.toLowerCase()"
-            >
-              {{ STATUS_EMOJI_MAP[p.status.toLowerCase()] || p.status.toUpperCase() }}
-              <span
-                v-if="p.status.toLowerCase() === 'sleep' && p.sleepTurns"
-                class="status-counter"
-              >
-                {{ p.sleepTurns }}t
-              </span>
-            </div>
-          </PVTooltip>
-
-          <!-- Estados Volátiles -->
-          <PVTooltip
-            v-for="(vs, idx) in volatileStatuses"
-            :key="'vs-'+idx"
-            :description="vs.text"
-            position="bottom"
-          >
-            <div 
-              class="status-badge volatile"
-              :class="{ 'is-boosted': vs.isBoosted }"
-            >
-              {{ vs.icon }}
-            </div>
-          </PVTooltip>
-
-          <!-- Stages -->
-          <PVTooltip
-            v-for="s in activeStages"
-            :key="'stage-'+s.key"
-            :description="s.text"
-            position="bottom"
-          >
-            <div 
-              class="status-badge stage"
-              :class="s.val > 0 ? 'is-up' : 'is-down'"
-            >
-              {{ s.icon }}
-            </div>
-          </PVTooltip>
+        <div class="hp-values">
+          HP: {{ Math.max(0, Math.round(displayHp)) }}/{{ p.maxHp }}
         </div>
       </div>
+
+      <!-- Contenedor de Estados (Primarios + Volátiles + Stages) -->
+      <div 
+        v-if="p.status || volatileStatuses.length > 0 || activeStages.length > 0"
+        class="status-container"
+      >
+        <!-- Estado Primario -->
+        <PVTooltip
+          v-if="p.status"
+          :description="STATUS_TOOLTIP_MAP[p.status.toLowerCase()] || p.status"
+          position="bottom"
+        >
+          <div
+            class="status-badge"
+            :class="p.status.toLowerCase()"
+          >
+            {{ STATUS_EMOJI_MAP[p.status.toLowerCase()] || p.status.toUpperCase() }}
+            <span
+              v-if="p.status.toLowerCase() === 'sleep' && p.sleepTurns"
+              class="status-counter"
+            >
+              {{ p.sleepTurns }}t
+            </span>
+          </div>
+        </PVTooltip>
+
+        <!-- Estados Volátiles -->
+        <PVTooltip
+          v-for="(vs, idx) in volatileStatuses"
+          :key="'vs-'+idx"
+          :description="vs.text"
+          position="bottom"
+        >
+          <div 
+            class="status-badge volatile"
+            :class="{ 'is-boosted': vs.isBoosted }"
+          >
+            {{ vs.icon }}
+          </div>
+        </PVTooltip>
+
+        <!-- Stages -->
+        <PVTooltip
+          v-for="s in activeStages"
+          :key="'stage-'+s.key"
+          :description="s.text"
+          position="bottom"
+        >
+          <div 
+            class="status-badge stage"
+            :class="s.val > 0 ? 'is-up' : 'is-down'"
+          >
+            {{ s.icon }}
+          </div>
+        </PVTooltip>
+      </div>
     </div>
+  </div>
 </template>
 
 <style scoped lang="scss">

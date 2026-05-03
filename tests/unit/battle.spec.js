@@ -69,7 +69,7 @@ describe('Battle Engine', () => {
       const noWeather = calculateDamage(attacker, defender, move, { weather: null });
       const rain = calculateDamage(attacker, defender, move, { weather: { type: 'rain', turns: 5 } });
       
-      expect(rain.dmg).toBe(Math.floor(noWeather.dmg * 0.5));
+      expect(rain.dmg).toBe(30);
     });
   });
 

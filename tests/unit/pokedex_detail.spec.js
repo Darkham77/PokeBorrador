@@ -110,8 +110,8 @@ describe('Pokedex Detail UI Components', () => {
       const natureTooltip = wrapper.find('.nature-card').getComponent(PVTooltip)
       const abilityTooltip = wrapper.find('.ability-card').getComponent(PVTooltip)
       
-      expect(natureTooltip.props('description')).toBe('Naturaleza equilibrada.')
-      expect(abilityTooltip.props('description')).toBe('Aumenta el consumo de PP del rival.')
+      expect(natureTooltip.props('description')).toBe('Sin efecto en estadísticas.')
+      expect(abilityTooltip.props('description')).toBe('Hace que el rival gaste el doble de PP al usar sus movimientos.')
     })
   })
 })

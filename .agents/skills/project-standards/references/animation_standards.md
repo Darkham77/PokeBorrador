@@ -2,6 +2,11 @@
 
 To guarantee a premium and "alive" visual experience, all cyclical animations must avoid perfect synchronization between multiple instances. To maintain system flexibility, **avoid hardcoding absolute durations or offsets** in documentation; refer to relative logic and symbolic constants.
 
+### 0. Coordinate Initialization (Flicker Prevention)
+To prevent positional "jumping" or flickering during entrance animations:
+- **Rule**: Every combatant must have its `groundY` and `shadow` coordinates pre-loaded into the store BEFORE the `isVisible` flag is set.
+- **Implementation**: Use the `preloadCombatCoords` workflow to scan sprites in the background while the UI is still blocked or during the transition phase.
+
 ## 1. Phase Shift (Seed-based De-synchronization)
 
 When rendering multiple instances of the same animated component (e.g., MapCards, Sparkle FX, floating Emojis), a random seed must be used to offset the start of the animation.

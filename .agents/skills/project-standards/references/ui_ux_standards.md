@@ -459,3 +459,4 @@ To facilitate real-time mechanical verification without disrupting the "Pixel He
 - **Dedicated Trigger (❓)**: Administrative tooltips MUST be anchored to a dedicated trigger icon (standard: ❓ emoji in a circular pulse frame) in the top-right of the HUD. This avoids mouse-event conflicts with standard game tooltips.
 - **Explicit Labeling**: Every administrative panel MUST include the disclaimer "⚠️ Solo visible para ADMIN" at the bottom to maintain transparency during development reviews.
 - **Environment Detection**: Use `db.isLocal` (or the injected `DBRouter` instance) to automatically enable these tools in local/offline login instances without requiring manual role configuration.
+- **Admin HUD Persistence**: Los paneles de debug deben persistir a través de los turnos de combate, permitiendo la observación continua de modificadores de estadísticas (Stages) sin necesidad de re-activación manual.

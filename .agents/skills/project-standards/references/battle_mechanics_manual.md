@@ -26,8 +26,11 @@ Damage = floor(((2 * Level / 5 + 2) * Power * A / D) / 50) + 2
 
 ## 🌪️ Weather Influence
 
-- **Sun**: 1.5x Fire Damage, 0.5x Water Damage.
 - **Rain**: 1.5x Water Damage, 0.5x Fire Damage.
+- **Day Cycle (Implicit Weather)**: In the absence of active weather (or if it is "Clear"), the game cycle applies a **1.2x boost** to specific types:
+  - **Day/Morning**: Fire moves (1.2x).
+  - **Night/Dusk**: Water moves (1.2x).
+  - **Note**: This multiplier does NOT stack with standard Weather (Sun/Rain). Weather always takes precedence.
 
 ### 1. Atmospheric Synchronization & Integrity Protocol
 
@@ -152,6 +155,7 @@ These can coexist with primary status and other secondary effects:
 Para garantizar que la Poké Ball y la sombra coincidan milimétricamente durante el intercambio:
 
 - **Reactive Anchor Sync**: La Poké Ball DEBE calcular su posición (`left`, `top`) basándose reactivamente en los puntos `feetX` y `feetY` del `shadowStore`. No usar valores fijos (ej: 90%) si hay datos del sprite disponibles.
+- **Dynamic Anchor Calculation**: El impacto de la Poké Ball debe calcularse dinámicamente sumando los offsets de `feet-shadow` a la base de la entidad. Esto asegura que la bola "toque" los pies del Pokémon independientemente de su altura o centrado en el sprite.
 - **Immediate Cache Usage**: Si un Pokémon ya ha sido escaneado previamente, el sistema debe inyectar sus coordenadas desde el `feetCache` en el primer frame de la animación para evitar saltos visuales.
 - **Component Integrity (Key Fix)**: El componente `BattleCombatant` debe usar una `:key` basada en el `uid` del Pokémon. Esto fuerza una recreación limpia del componente durante el cambio, evitando que el nuevo Pokémon herede coordenadas "stale" del anterior.
 
@@ -184,6 +188,7 @@ To ensure flicker-free state transitions, the battle engine must enforce visual 
 Antes de que comience cualquier animación de entrada, el sistema DEBE ejecutar un ciclo de `preloadCombatCoords` que incluya a **TODOS** los integrantes de los equipos (jugador y rival).
 
 - **Parallel Execution**: Usar `Promise.all` para escanear los puntos de pies de todo el equipo simultáneamente durante el montaje de la arena.
+- **Pre-loading Mandate**: Se debe invocar `preloadCombatCoords` ANTES de cualquier transición de entrada salvaje para asegurar que los puntos de anclaje estén disponibles en el Frame 0, evitando el efecto de "salto" o "teletransporte" al aparecer.
 - **Goal**: Garantiza que las sombras y Poké Balls estén posicionadas correctamente en su primer frame visible, eliminando el lag del escaneo de píxeles asíncrono.
 
 ### 2. Shadow Ownership & Lock

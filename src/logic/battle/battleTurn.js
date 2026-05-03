@@ -7,6 +7,7 @@ import { gameBus } from '@/logic/gameBus'
 import { recalcPokemonStats } from '@/logic/pokemonFactory'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { MOVE_DATA } from '@/data/moves'
 
 /**
  * Handles the turn logic for a single move execution.
@@ -293,7 +294,7 @@ export async function runEnemyAction(store) {
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
       await new Promise(r => setTimeout(r, 800))
       
-      const oldEnemy = e
+      const _oldEnemy = e
       store.activeBattle.enemy = newPoke
       
       // Limpiar estadísticas del enemigo pero preservar efectos de campo
