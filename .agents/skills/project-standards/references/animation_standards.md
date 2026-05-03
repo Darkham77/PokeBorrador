@@ -112,8 +112,11 @@ Visual transitions MUST be synchronized with state changes using the `gameBus`.
   1. `PLAY_WITHDRAW`: Pokémon recalled.
   2. `PLAY_SEND_OUT`: New Pokémon enters.
 - **Mandatory Wait**: Every energy event MUST be followed by a wait period matched to the CSS animation duration to ensure the visual completes before the next logic step.
-- **Optimization**: Skip withdrawal effects for fainted Pokémon (invisible).
-- **Explicit Mapping**: Semantic events from the battle turn logic (e.g., `withdraw`, `send-out`) MUST be explicitly mapped to their corresponding animation handlers (`handleWithdraw`, `handleSendOut`) in the event listener setup of the animation compositor.
+- **Energy Transition Standardization**: Capture/Release effects MUST use standard keyframes (`energy-catch`, `energy-release`) to handle visual transitions.
+  - **Catch (Withdraw/Capture)**: Inverts colors and scales down (suction effect).
+  - **Release (Send Out/Emergence)**: Resets colors and scales up (expansion effect).
+- **Animation Conflict Prevention**: Never apply `pokemon-faint` and `energy-catch` animations to the same DOM element simultaneously. 
+  - **WHY**: Both target the `animation` property; the last one applied will override the other, causing visual artifacts or missing effects. Recalling an owned fainted Pokémon should prioritize the energy recall.
 - **Coordinate Reset Protocol**: Upon switching combatants (PLAY_SEND_OUT) or changing species ID, ground coordinates (`groundY`, `stableGroundY`) MUST be reset to null/zero in the same execution frame. Failure to do so causes "ghosting" where Poké Balls or entry effects inherit stale positions.
 
 ## 13. Faint Animation & Shadow Sync
@@ -187,9 +190,10 @@ To ensure a fast and dynamic game flow, the initial emergence phase (the "jump" 
 For high-fidelity particle explosions (e.g., capture success sparkles), the system follows a "Staggered Fountain" pattern:
 
 - **Asynchronous Launch**: Particles MUST NOT launch simultaneously. Use a random `animation-delay` between **0.1s and 0.4s** to create an organic burst texture.
-- **Parabolic Trajectory**: Trajectories must follow a physical arc using at least 5 keyframe points (0%, 25%, 50%, 80%, 100%) to simulate gravity and momentum.
+- **Parabolic Trajectory (Fountain Style)**: Trajectories for successful capture sparkles MUST follow a physical arc (upward radial explosion then gravity-induced fall).
+  - **Keyframes**: Use 5+ points (0%, 25%, 50%, 85%, 100%).
+  - **Variables**: Pass `--tx` (lateral), `--ty` (peak height), and `--tf` (final floor position) to the animation.
 - **Unit Handling**: To avoid browser calculation errors in `calc()`, pass unitless numeric variables from JS (e.g., `--tx: 100`) and apply units in CSS via `calc(var(--tx) * 1px)`.
-- **Case Sensitivity**: Standard CSS transforms (`translate`, `scale`, `rotate`) MUST be lowercase. Capitalized versions (SASS-style) may fail in strict browser environments, causing elements to lose their relative positioning.
 
 To provide immediate visual feedback without reloading sprites, the system uses a hybrid approach of CSS Filters and orbital particles.
 

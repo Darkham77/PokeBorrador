@@ -45,7 +45,13 @@ export function useBattleShadows() {
     // Limpieza de sombras huérfanas si el ID cambia (evita duplicados al capturar/cambiar)
     if (lastEnemyShadowId.value && lastEnemyShadowId.value !== shadowId) {
       shadowStore.hideShadow(lastEnemyShadowId.value)
-      stableEnemyGroundY.value = '90%' // Reset inmediato para evitar heredar altura del anterior
+      
+      // Intentar usar caché inmediatamente para evitar saltos al 90% si no es necesario
+      const url = data ? getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false }) : null
+      const cached = url ? shadowStore.feetCache.get(url) : null
+      const isFlyingPoke = isFlying(data)
+      
+      stableEnemyGroundY.value = isFlyingPoke ? '90%' : (cached ? `${cached.feetY * 100}%` : '90%')
     }
     lastEnemyShadowId.value = shadowId
     currentEnemyShadowKey.value = shadowId
@@ -76,7 +82,12 @@ export function useBattleShadows() {
     // Limpieza de sombras huérfanas
     if (lastPlayerShadowId.value && lastPlayerShadowId.value !== shadowId) {
       shadowStore.hideShadow(lastPlayerShadowId.value)
-      stablePlayerGroundY.value = '90%' // Reset inmediato para evitar heredar altura del anterior
+      
+      const url = pokemon ? getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true }) : null
+      const cached = url ? shadowStore.feetCache.get(url) : null
+      const isFlyingPoke = isFlying(pokemon)
+
+      stablePlayerGroundY.value = isFlyingPoke ? '90%' : (cached ? `${cached.feetY * 100}%` : '90%')
     }
     lastPlayerShadowId.value = shadowId
     currentPlayerShadowKey.value = shadowId
@@ -109,9 +120,31 @@ export function useBattleShadows() {
     if (shadow) stablePlayerGroundY.value = `${shadow.feetY * 100}%`
   }, { deep: true })
 
-  const preloadCombatCoords = async (p1Data, p2Data, p1Position, p2Position) => {
+  // Solo resetear si no hay un shadowKey válido (limpieza profunda)
+  watch(currentEnemyShadowKey, (val) => {
+    if (!val) stableEnemyGroundY.value = '90%'
+  })
+  watch(currentPlayerShadowKey, (val) => {
+    if (!val) stablePlayerGroundY.value = '90%'
+  })
+
+  const preloadTeamFeet = async (team, side) => {
+    if (!team || !Array.isArray(team)) return
+    const tasks = team.map(p => {
+      const isBack = side === 'player'
+      const url = getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny, isBack })
+      return shadowStore.detectFeetPoints(url)
+    })
+    return Promise.all(tasks)
+  }
+
+  const preloadCombatCoords = async (p1Data, p2Data, p1Position, p2Position, p1Team, p2Team) => {
     const tasks = []
     
+    // Pre-cargar puntos de pies de TODOS los equipos para evitar el lag de la "primera vez"
+    if (p1Team) tasks.push(preloadTeamFeet(p1Team, 'player'))
+    if (p2Team) tasks.push(preloadTeamFeet(p2Team, 'enemy'))
+
     if (p1Data) {
       const shadowId = getStableShadowId(p1Data, 'player')
       currentPlayerShadowKey.value = shadowId
@@ -143,7 +176,7 @@ export function useBattleShadows() {
     }
 
     if (tasks.length > 0) {
-      await Promise.all(tasks).catch(err => console.warn('[useBattleShadows] Feet preloading failed:', err))
+      await Promise.all(tasks).catch(err => console.warn('[useBattleShadows] Preloading failed:', err))
     }
   }
 

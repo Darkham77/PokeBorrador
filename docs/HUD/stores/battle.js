@@ -27,7 +27,6 @@ export const useBattleStore = defineStore('battle', () => {
   const audio = useAudioStore()
   
   const activeBattle = ref(null)
-  const faintedSides = ref(new Set())
   const isBattleActive = ref(false)
   const isFinishing = ref(false)
   const isProcessing = ref(false)
@@ -156,7 +155,6 @@ export const useBattleStore = defineStore('battle', () => {
     isBattleActive.value = true
     attackerSide.value = null
     activeMove.value = null
-    faintedSides.value.clear()
     clearLogs()
 
     gameBus.emit('START_BATTLE', { 
@@ -270,7 +268,7 @@ export const useBattleStore = defineStore('battle', () => {
     isProcessing.value = true
     const thisStore = reactive({ 
       activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
-      attackerSide, activeMove, persistBattle, handleFaint, isFinishing
+      attackerSide, activeMove, persistBattle, handleFaint
     })
     await executeTurn(thisStore, moveIndex)
     if (isBattleActive.value && !activeBattle.value.over) await applyEndTurnEffects()
@@ -343,17 +341,12 @@ export const useBattleStore = defineStore('battle', () => {
     if (isBattleActive.value && e.hp <= 0) await handleFaint('enemy')
     
     persistBattle()
-    if (activeBattle.value && !activeBattle.value.over) {
-      activeBattle.value.turnCount++
-    }
   }
 
   const handleFaint = async (side) => {
     const isPlayer = side === 'player'
     
     // Guarda centralizada en la store, no en el objeto del pokemon
-    if (faintedSides.value.has(side)) return
-    faintedSides.value.add(side)
 
     const pokemon = isPlayer ? player.value : enemy.value
     const opponent = isPlayer ? enemy.value : player.value
@@ -368,18 +361,18 @@ export const useBattleStore = defineStore('battle', () => {
       addLog(`¡${pokemon.name} se ha debilitado!`, 'log-player', pokemon)
       gameBus.emit('PLAY_FAINT', { side: 'player' })
       
-      await new Promise(r => setTimeout(r, 1300)) // Esperar Faint (1.3s)
-      
       const nextPoke = gs.state.team.find(p => p.hp > 0)
       if (!nextPoke) {
         activeBattle.value.over = true
         addLog('¡No te quedan Pokémon sanos!', 'log-error', 'player')
-        isFinishing.value = true
-        await endBattle(false)
+        setTimeout(() => { isFinishing.value = true }, 1200)
       } else {
-        addLog('¡Elige a tu próximo Pokémon!', 'log-info', 'player')
-        faintedSides.value.delete('player') // Limpiar guarda antes del relevo
-        useUIStore().isBattleSwitchForced = true
+        // Asegurar fuente 'player' absoluta para el entrenador
+        addLog('¡Envía a otro Pokémon!', 'log-info', 'player')
+        const idx = gs.state.team.indexOf(nextPoke)
+        setTimeout(() => {
+          _executeSwitch(idx, true)
+        }, 1000)
       }
     } else {
       const isTr = activeBattle.value.isTrainer || activeBattle.value.isGym
@@ -387,37 +380,19 @@ export const useBattleStore = defineStore('battle', () => {
       addLog(`${enemyName} fue derrotado!`, 'log-enemy', pokemon)
       gameBus.emit('PLAY_FAINT', { side: 'enemy' })
       
-      await new Promise(r => setTimeout(r, 1300)) // Esperar Faint (1.3s)
-      
       if (isTr && activeBattle.value.enemyTeam) {
         const nextEnemy = activeBattle.value.enemyTeam.find(p => p.hp > 0)
         if (nextEnemy) {
-          activeBattle.value.enemy = nextEnemy // Actualizar instancia ANTES de Send Out
-          
-          // Limpiar estadísticas pero preservar efectos de campo
-          const s = enemyStages.value
-          enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, 
-            reflect: s.reflect || 0, lightScreen: s.lightScreen || 0, safeguard: s.safeguard || 0, mist: s.mist || 0, spikes: s.spikes || 0 }
-          
+          gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
           addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
           gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
           await new Promise(r => setTimeout(r, 800))
-
-          // Daño por Púas
-          if (s.spikes > 0 && nextEnemy.type !== 'flying' && nextEnemy.type2 !== 'flying' && nextEnemy.ability !== 'Levitación') {
-            const dmg = Math.floor(nextEnemy.maxHp * (s.spikes / 8))
-            nextEnemy.hp = Math.max(0, nextEnemy.hp - dmg)
-            addLog(`¡${nextEnemy.name} recibió daño por las púas!`, 'log-info', nextEnemy)
-            gameBus.emit('PLAY_SOUND', 'statusDamage')
-          }
-
           return
         }
       }
       
       activeBattle.value.over = true 
-      faintedSides.value.add('enemy') // Bloquear cualquier otra acción enemiga
-      await endBattle(true)
+      setTimeout(() => endBattle(true), 800)
     }
   }
 
@@ -432,8 +407,7 @@ export const useBattleStore = defineStore('battle', () => {
     const ctx = {
       turnCount: activeBattle.value.turnCount,
       locationId: activeBattle.value.locationId,
-      weather: activeBattle.value.weather,
-      cycle: mapStore.currentCycle
+      weather: activeBattle.value.weather
     }
     const res = await handleItemUsage(itemName, targetPoke, activeBattle.value.enemy, { 
       gs, eventStore, addLog, audio, consumeItem, ctx 
@@ -443,28 +417,22 @@ export const useBattleStore = defineStore('battle', () => {
     
     if (res.action === 'capture') {
       activeBattle.value.isCapture = true
-      activeBattle.value.over = true // Regla del Vacio (Ocultar Interfaz Inmediatamente)
       gs.addPokemon(res.pokemon, { notify: true })
-      // Retraso sincronizado: 1.0s de bola llena + 1.0s de pausa dramática (vacío) antes de la Fase 2
-      setTimeout(() => {
-        isProcessing.value = false
-        endBattle(true, false)
-      }, 2000)
-      return // Retenemos el control (isProcessing queda true durante el timeout)
+      // Esperar a que terminen las animaciones de captura (2s es el estándar estable)
+      setTimeout(() => endBattle(true), 2000)
     } else if (res.action !== 'fail') {
-      // El log se genera en battleItems.js (Doble entrada: Entrenador + Item)
       persistBattle()
-      await new Promise(r => setTimeout(r, 800))
+      // Pausa para que el jugador vea el efecto del ítem antes del turno enemigo
+      await new Promise(r => setTimeout(r, 1000))
       
       const thisStore = reactive({ 
         activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
-        attackerSide, activeMove, persistBattle, handleFaint, isFinishing
+        attackerSide, activeMove, persistBattle, handleFaint
       })
       await runEnemyAction(thisStore)
     }
     isProcessing.value = false
   }
-
   const endBattle = async (win, fled = false) => {
     if (!activeBattle.value) {
       isBattleActive.value = false
@@ -472,32 +440,28 @@ export const useBattleStore = defineStore('battle', () => {
       return
     }
 
-    // 0. Capturar datos necesarios antes de cualquier cambio
     const battleData = { ...activeBattle.value }
     const locId = battleData.locationId
-    const isTr = battleData.isTrainer || battleData.isGym
     const enemyRef = battleData.enemy
     
     activeBattle.value.over = true
-    faintedSides.value.clear()
-    
-    if (win && !fled) calculateRewards()
-    
-    // Sincronizar HP antes de guardar
-    syncTeamHP();
+    syncTeamHP()
 
     if (win && !fled) {
-      // MARCAR INICIO DE FASE FINAL (Pasto/Búsqueda)
+      calculateRewards()
       isFinishing.value = true
       
       const isTr = battleData.isTrainer || battleData.isGym
       if (enemyRef.isGuardian) await warStore.addPoints(locId, 'guardian', true)
       else await warStore.addPoints(locId, isTr ? 'trainer_win' : 'wild_win', true)
+      
       if (battleData.isCapture) await eventStore.submitCompetitionEntry(enemyRef, 'hourly_competition')
+      
       if (battleData.isGym && battleData.gymId) {
         const gid = battleData.gymId
         if (!gs.state.defeatedGyms.includes(gid)) {
-          gs.state.defeatedGyms.push(gid); gs.state.badges++
+          gs.state.defeatedGyms.push(gid)
+          gs.state.badges++
           if (activeBattle.value.rewardTM) { 
             gs.state.inventory[activeBattle.value.rewardTM] = (gs.state.inventory[activeBattle.value.rewardTM] || 0) + 1
             addLog(`¡Recibiste la ${activeBattle.value.rewardTM}!`, 'log-info', activeBattle.value.rewardTM) 
@@ -506,90 +470,33 @@ export const useBattleStore = defineStore('battle', () => {
           await gs.save(false)
         }
       }
-    }
-    
-    if (fled) {
-      isFinishing.value = true
-      await completeBattleFlow('map')
-    } else {
-      // 1. Activar estado de finalización si no se hizo arriba (ya se hizo en win && !fled, pero por seguridad)
-      isFinishing.value = true
-      
-      // 2. Pre-generar el próximo encuentro
-      const isWild = !isTr
-      if (isWild && (enemyRef.hp <= 0 || battleData.isCapture)) {
-        // PRIORIDAD: Modo Debug (Bucle Infinito)
+
+      if (!isTr && (enemyRef.hp <= 0 || battleData.isCapture)) {
         if (debugLoopPokemon.value) {
-          try {
-            const nextPoke = JSON.parse(JSON.stringify(debugLoopPokemon.value))
-            nextPoke.hp = nextPoke.maxHp
-            nextPoke.status = null
-            nextPoke.confused = 0
-            nextPoke.flinched = false
-            upcomingPokemon.value = nextPoke
-            // Forzar reactividad para que aparezca en los arbustos
-            upcomingPokemon.value = { ...upcomingPokemon.value }
-            console.log('[DEBUG] Bucle infinito preparado:', nextPoke.name)
-          } catch (e) {
-            console.error('[DEBUG] Error clonando pokemon de bucle:', e)
-          }
+          const nextPoke = JSON.parse(JSON.stringify(debugLoopPokemon.value))
+          nextPoke.hp = nextPoke.maxHp
+          nextPoke.status = null
+          upcomingPokemon.value = { ...nextPoke }
         } else {
-          // MODO NORMAL: Generar encuentro aleatorio
-          
-          // Si el modo búsqueda está activo, forzamos que SIEMPRE encuentre algo (probabilidad 100%)
           const encounterOptions = {
             activeEvents: useMapStore().activeEvents,
             dominanceData: useMapStore().mapWinners,
             shinyMultiplier: useEventStore().globalMultipliers?.shiny || 1,
-            forceEncounter: isSearching.value // Nueva flag para el generador
+            forceEncounter: isSearching.value 
           }
-          
           const encounter = await generateEncounter(locId, gs.state, encounterOptions)
-          
           if (encounter && encounter.type === 'wild') {
-            // Forzar reactividad clonando el objeto para que Vue detecte el cambio de instancia
             upcomingPokemon.value = { ...encounter.pokemon }
           }
         }
       }
-
-      // REORDENAMIENTO DE EQUIPO: Si el pokemon activo ya no es el líder saludable, lo cambiamos en paralelo
-      // Esto evita que el DOM sufra un salto brusco al iniciar el siguiente combate, protegiendo las animaciones del enemigo.
-      const firstHealthy = gs.state.team.find(p => p.hp > 0)
-      if (firstHealthy && gs.state.team[0].hp <= 0) {
-        const idx = gs.state.team.indexOf(firstHealthy)
-        if (idx > 0) {
-          const [p] = gs.state.team.splice(idx, 1)
-          gs.state.team.unshift(p)
-        }
-      }
-
-      const currentActive = activeBattle.value?.player
-      
-      if (firstHealthy && currentActive && firstHealthy.uid !== currentActive.uid) {
-        // Ejecutar en paralelo sin hacer await para no bloquear la pantalla de victoria (Fase 2 salvaje)
-        (async () => {
-          if (currentActive.hp > 0) {
-            gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
-            await new Promise(r => setTimeout(r, 800)) // Animación de volver a la pokebola (Simulada)
-          } else {
-            await new Promise(r => setTimeout(r, 1300)) // Respetar 1.3s de Faint antes del relevo
-          }
-          
-          if (!isBattleActive.value || !activeBattle.value) return // Abortar si salió rápido
-          
-          // Cambiamos el pokemon activo silenciosamente
-          activeBattle.value.player = firstHealthy
-          activeBattle.value.playerTeamIndex = gs.state.team.findIndex(p => p.uid === firstHealthy.uid)
-          
-          // Lo sacamos a combatir (Silencioso en Vue)
-          gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
-        })()
-      }
     }
-
-    // Persistir estado inmediatamente después del combate
-    await gs.save(false)
+    
+    if (fled) {
+      setTimeout(() => completeBattleFlow('map'), 800)
+    } else {
+      await gs.save(false)
+    }
   }
 
   const calculateRewards = () => {
@@ -643,11 +550,6 @@ export const useBattleStore = defineStore('battle', () => {
   const _executeSwitch = async (teamIndex, isForced = false) => {
     if (isProcessing.value && !isForced) return
     isProcessing.value = true
-    
-    // Regla de Atomicidad: Limpiar estados de animación antes de cambiar
-    activeMove.value = null
-    attackerSide.value = null
-    
     const newPoke = gs.state.team[teamIndex]
     if (!newPoke || newPoke.hp <= 0) { isProcessing.value = false; return }
     const oldPoke = activeBattle.value.player
@@ -665,31 +567,19 @@ export const useBattleStore = defineStore('battle', () => {
     if (!activeBattle.value.participants.includes(newPoke.uid)) {
       activeBattle.value.participants.push(newPoke.uid)
     }
-    
-    // Limpiar estadísticas pero preservar efectos de campo
-    const s = playerStages.value
-    playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, 
-      reflect: s.reflect || 0, lightScreen: s.lightScreen || 0, safeguard: s.safeguard || 0, mist: s.mist || 0, spikes: s.spikes || 0 }
+    playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
     
     // Animación de Salida
     addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
     gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
     await new Promise(r => setTimeout(r, 800))
-
-    // Daño por Púas
-    if (playerStages.value.spikes > 0 && newPoke.type !== 'flying' && newPoke.type2 !== 'flying' && newPoke.ability !== 'Levitación') {
-      const dmg = Math.floor(newPoke.maxHp * (playerStages.value.spikes / 8))
-      newPoke.hp = Math.max(0, newPoke.hp - dmg)
-      addLog(`¡${newPoke.name} recibió daño por las púas!`, 'log-info', newPoke)
-      gameBus.emit('PLAY_SOUND', 'statusDamage')
-    }
     
     handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog)
     persistBattle()
     
     const thisStore = reactive({ 
       activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
-      attackerSide, activeMove, persistBattle, handleFaint, isFinishing
+      attackerSide, activeMove, persistBattle, handleFaint
     })
     
     if (!isForced) await runEnemyAction(thisStore)
@@ -847,7 +737,6 @@ export const useBattleStore = defineStore('battle', () => {
     useItemInBattle,
     endBattle,
     handleFaint,
-    applyEndTurnEffects,
     _startBattle,
     executeSwitch: _executeSwitch,
     isSearching,

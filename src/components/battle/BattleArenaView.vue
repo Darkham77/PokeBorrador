@@ -163,7 +163,14 @@ watch(isIntroInProgress, (val) => { battleStore.isIntroAnimating = val }, { imme
 
 onMounted(async () => {
   initListeners()
-  await preloadCombatCoords(player.value, activeEnemyData.value, p1Pos.value, p2Pos.value)
+  await preloadCombatCoords(
+    player.value, 
+    activeEnemyData.value, 
+    p1Pos.value, 
+    p2Pos.value,
+    battle.value?.playerTeam,
+    battle.value?.enemyTeam
+  )
   if (battle.value && !battle.value.over && isWildEncounter.value) triggerWildEmergence()
   setTimeout(() => { isInitialLoad.value = false }, 500)
 })
@@ -218,6 +225,7 @@ watch(() => battleStore.isBattleActive, (active) => {
 
           <!-- Enemigo -->
           <BattleCombatant
+            :key="`enemy-${activeEnemyData?.uid || activeEnemyData?.id || 'empty'}`"
             side="enemy"
             :pokemon="activeEnemyData"
             :position="p2Pos"
@@ -235,6 +243,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-capture-success="enemyCaptureActive"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
             :is-fainting="isFaintInProgress"
+            :is-emerging="isEmerging"
             :suppress-fx="isSearching || isIntroInProgress"
             :stages="battleStore.enemyStages"
           />
@@ -257,6 +266,7 @@ watch(() => battleStore.isBattleActive, (active) => {
 
           <!-- Jugador -->
           <BattleCombatant
+            :key="`player-${player?.uid || player?.id || 'empty'}`"
             side="player"
             :pokemon="player"
             :position="p1Pos"

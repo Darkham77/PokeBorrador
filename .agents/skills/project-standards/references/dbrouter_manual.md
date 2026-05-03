@@ -58,3 +58,23 @@ In offline mode, changes are saved in memory and synchronized with the browser's
 - **RPCs**: If you create an RPC on the server, you MUST create its equivalent or a mock in `dbRouter.js` so that offline mode does not break.
 - **Transactions**: There are no guaranteed multi-table transactions in the router; always design logic to be atomic at the row level whenever possible.
 - **Unit Testing & Mocking**: When mocking `DBRouter` in unit tests, you MUST provide a dummy URL/Key to satisfy the configuration check and explicitly inject your mock client into the private `_realClient` property to prevent the lazy-initializer from attempting a real connection.
+
+---
+
+## 😈 Administrative Privilege Standards
+
+### 1. Automatic Admin Status (Local Logic)
+
+Admin status does not depend on the IP address (`localhost`), but rather on the **active login instance type** in the `DBRouter`.
+
+- **Local/Offline Instances**: When using Guest login or Offline mode (SQLite), the system grants automatic administrative privileges (`isAdmin = true`). This allows for rapid testing of mechanics without database configuration.
+- **Online/Cloud Instances (Supabase)**: In online mode, admin status is restricted. It is only granted if the user's profile in the database explicitly has the admin role or flag.
+
+### 2. isLocal Detection
+
+The router's `isLocal` property acts as the trigger for this privilege escalation in controlled environments.
+
+```javascript
+// Standard pattern for debug permission verification
+const isAdmin = computed(() => profileStore.isAdmin || db.isLocal);
+```

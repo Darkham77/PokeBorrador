@@ -283,31 +283,35 @@ export function calculateCatchRate(pokemon, rawBallType = 'poke-ball', eventCatc
     'super': { mult: 1.5 },
     'súper': { mult: 1.5 },
     'red': { 
-      mult: (p) => {
+      mult: (p, c) => {
         const isWaterOrBug = [p.type, p.type2].some(t => t === 'water' || t === 'bug');
-        return isWaterOrBug ? 3.0 : 1.0;
+        const isRain = c.weather && (c.weather.type === 'rain' || c.weather.type === 'storm');
+        return (isWaterOrBug || isRain) ? 3.5 : 1.0;
       }
     },
     'net': { // Alias para Red Ball
-      mult: (p) => {
+      mult: (p, c) => {
         const isWaterOrBug = [p.type, p.type2].some(t => t === 'water' || t === 'bug');
-        return isWaterOrBug ? 3.0 : 1.0;
+        const isRain = c.weather && (c.weather.type === 'rain' || c.weather.type === 'storm');
+        return (isWaterOrBug || isRain) ? 3.5 : 1.0;
       }
     },
     'ocaso': {
       mult: (p, c) => {
-        const cycle = getDayCycle();
+        const cycle = c.cycle || getDayCycle();
         const isNight = cycle === 'night' || cycle === 'dusk';
         const isCave = c.locationId && /cave|moon|tunnel|islands|mountain|victory|mansion/i.test(c.locationId);
-        return (isNight || isCave) ? 3.0 : 1.0;
+        const isFog = c.weather && c.weather.type === 'fog';
+        return (isNight || isCave || isFog) ? 3.0 : 1.0;
       }
     },
     'dusk': { // Alias para Ocaso Ball
       mult: (p, c) => {
-        const cycle = getDayCycle();
+        const cycle = c.cycle || getDayCycle();
         const isNight = cycle === 'night' || cycle === 'dusk';
         const isCave = c.locationId && /cave|moon|tunnel|islands|mountain|victory|mansion/i.test(c.locationId);
-        return (isNight || isCave) ? 3.0 : 1.0;
+        const isFog = c.weather && c.weather.type === 'fog';
+        return (isNight || isCave || isFog) ? 3.0 : 1.0;
       }
     },
     'turno': {

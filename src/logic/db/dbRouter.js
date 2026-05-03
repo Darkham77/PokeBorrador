@@ -59,6 +59,13 @@ export class DBRouter {
   }
 
   /**
+   * Identifies if the instance is running in a local context.
+   */
+  get isLocal() {
+    return this.mode === 'offline';
+  }
+
+  /**
    * Time Mocking Methods (SECURITY: ONLY FOR OFFLINE MODE)
    */
   setTimeOffset(ms) {

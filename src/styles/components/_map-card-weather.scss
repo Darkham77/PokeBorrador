@@ -33,7 +33,8 @@
       opacity: 0.6; 
     }
     
-    &.night { background: Rgba(0, 0, 0, 0.4) !important; }
+    // Se comenta para evitar doble oscurecimiento en la noche (solicitud usuario)
+    // &.night { background: Rgba(0, 0, 0, 0.4) !important; }
   }
 
   // Tormenta (Diagonal + Rayos)
@@ -76,7 +77,8 @@
       animation-delay: calc(var(--card-seed, 0) * -7s);
     }
     
-    &.night { background: Rgba(0, 5, 20, 0.85) !important; }
+    // Se comenta para evitar doble oscurecimiento en la noche (solicitud usuario)
+    // &.night { background: Rgba(0, 5, 20, 0.85) !important; }
   }
 
   // Nieve
@@ -111,9 +113,8 @@
     background: Rgba(255, 255, 255, 0.35);
     // ... rest same
 
-    &.night {
-      background: Rgba(0, 0, 0, 0.4) !important;
-    }
+    // Se comenta para evitar doble oscurecimiento en la noche (solicitud usuario)
+    // &.night { background: Rgba(0, 0, 0, 0.4) !important; }
     
     & .snow-layer {
       position: absolute;

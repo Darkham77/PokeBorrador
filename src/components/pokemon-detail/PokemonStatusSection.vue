@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { NATURE_DATA } from '@/data/natures'
+import { ABILITY_DATA } from '@/data/abilities'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -17,13 +19,16 @@ const getHpClass = (pct) => {
 }
 
 const getNatureInfo = (nature) => {
-  return window.NATURE_DATA?.[nature] || { up: null, down: null }
+  if (!nature) return { up: null, down: null, desc: 'Sin datos de naturaleza.' }
+  const entry = NATURE_DATA[nature] || Object.entries(NATURE_DATA).find(([k]) => k.toLowerCase() === nature.toLowerCase())?.[1]
+  return entry || { up: null, down: null, desc: 'Naturaleza desconocida.' }
 }
 
 const getAbilityDesc = (ability) => {
-  const data = window.ABILITY_DATA?.[ability]
-  if (!data) return 'Habilidad especial de este Pokémon.'
-  return typeof data === 'string' ? data : (data.desc || 'Habilidad especial de este Pokémon.')
+  if (!ability) return 'Habilidad especial de este Pokémon.'
+  const entry = ABILITY_DATA[ability] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ability.toLowerCase())?.[1]
+  if (!entry) return 'Habilidad especial de este Pokémon.'
+  return typeof entry === 'string' ? entry : (entry.desc || 'Habilidad especial de este Pokémon.')
 }
 
 const natureStyle = computed(() => {

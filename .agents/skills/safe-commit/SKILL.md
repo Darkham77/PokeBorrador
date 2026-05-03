@@ -18,7 +18,8 @@ This skill ensures that NO BROKEN OR MESSY CODE is ever committed. It leverages 
 
 ```mermaid
 graph TD
-    Start((START)) --> Tracking[1. Task & Scratchpad Tracking]
+    Start((START)) --> Snapshot[0. Initial Snapshot Commit]
+    Snapshot --> Tracking[1. Task & Scratchpad Tracking]
     Tracking --> |"Dynamic task update"| Tracking
     Tracking --> GapAnalysis[2. Test Gap Analysis]
     GapAnalysis --> |"Missing Tests Detected?"| CreateTests[2.1 Create Unit Tests SUB-TASK]
@@ -47,7 +48,7 @@ graph TD
     Walkthrough --> Lessons[8. Lessons Extraction]
     Lessons --> LessonApproval[8.1 Lesson Approval]
     
-    LessonApproval --> Commit[9. Git Commit]
+    LessonApproval --> Commit[9. Final Optimization Commit]
     Commit --> Push[10. Push & Close]
     Push --> End((END))
     
@@ -61,6 +62,15 @@ graph TD
 >
 > - **IMMUTABLE STEPS**: You MUST follow every step in this diagram. You are allowed to add intermediate sub-tasks for complex features, but you are FORBIDDEN from deleting or skipping any original design steps.
 > - **Incremental Update & Visual Proof**: Keep the **task** and **scratchpad** updated **phase by phase**. After updating the **task**, you MUST include a small snippet of the updated checklist in your response to the USER as visual proof of progress. **Advancing without updating the source of truth is a violation of project standards.**
+
+### 0. Initial Snapshot Commit (CRITICAL)
+
+BEFORE touching any files or starting the verification cycle, you MUST perform an initial commit to safeguard the current state.
+
+1. `git status` to check changes.
+2. `git add .`
+3. **Commit Message**: Use the "Elegant Protocol" (Step 148) to describe the work performed so far.
+4. **Why**: This ensures that even if an automated repair tool or linter modifies files, your original logic is preserved in the history and can be easily diffed.
 
 ### 1. Task & Scratchpad Tracking (MANDATORY)
 
@@ -135,11 +145,14 @@ Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a CSS/G
 - **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the extracted lessons.
 - **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item is marked as `[x]`.
 
-### 9. Git Commit
+### 9. Final Optimization Commit
 
-1. `git status` to verify all files (including docs, `.agents/skills/` updates, and artifacts) are staged.
+After the user approves the lessons, you MUST perform a second and final commit capturing the optimizations and fixes from the audit cycle.
+
+1. `git status` to verify staged changes (only audit-related diffs should remain).
 2. `git add .`
-3. Commit with a message following conventional standards (`feat:`, `fix:`, `refactor:`, `docs:`).
+3. **Commit Message (The Optimization Log)**: The header should use `refactor(audit):` or `fix(lint):`. The body MUST focus **ONLY** on the technical optimizations, linting fixes, and SASS repairs performed during Step 3.
+4. **Example**: `refactor(audit): resolve SASS traps and 12 linting warnings in BattleHUD`.
 
 ### 10. Push & Close
 
@@ -153,11 +166,12 @@ Commit messages MUST NOT be terse. They MUST provide a clear, technical chronicl
 
 - **MANDATORY**: Use the current **task** and `walkthrough.md` as the primary sources for the commit message. A commit message that ignores the granular steps recorded in these artifacts is considered a failure.
 
-### 1. Structure Requirement
+### 1. Dual-Commit Strategy
 
-- **Header**: Conventional Commit format (`type(scope): description`) in lowercase, summary of the main impact.
-- **Body**: A blank line followed by a detailed, bulleted list (`-`) of specific technical changes.
-- **Technical Context**: Include relevant data found during the process (e.g., "GPU draw call reduction", "Logic optimization for O(n) complexity", "Asset resolution improvements").
+- **The Snapshot (Paso 0)**: Su propósito es capturar el trabajo creativo/lógico. Debe usar el "Protocolo Elegante" (Header + Body con bullets) para explicar el **qué** y el **por qué** de los cambios del usuario.
+- **The Optimization Log (Paso 9)**: Su propósito es documentar la limpieza técnica. Debe ser conciso y listar solo las reparaciones de auditoría (linting, build fixes, SASS repairs).
+
+### 2. Structure Requirement (The Elegant Protocol)
 
 ### 2. Master Example (The Gold Standard)
 

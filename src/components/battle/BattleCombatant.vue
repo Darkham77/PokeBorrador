@@ -6,6 +6,8 @@ import VirtualEntity from './VirtualEntity.vue'
 import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { useCombatShadowStore } from '@/stores/combatShadows'
+import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
 const props = defineProps({
   side: { type: String, required: true }, // 'player' | 'enemy'
@@ -25,6 +27,7 @@ const props = defineProps({
   isCaptureSuccess: { type: Boolean, default: false },
   sparkles: { type: Array, default: () => [] },
   isFainting: { type: Boolean, default: false },
+  isEmerging: { type: Boolean, default: false },
   suppressFX: { type: Boolean, default: false },
   stages: { type: Object, default: () => ({}) }
 })
@@ -81,8 +84,33 @@ const pokeballShadowUrl = computed(() => {
   return `url(${canvas.toDataURL('image/png')})`
 })
 
+const shadowStore = useCombatShadowStore()
+const currentShadow = computed(() => props.shadowKey ? shadowStore.activeShadows.get(props.shadowKey) : null)
+
+const localGroundY = computed(() => {
+  const shadow = currentShadow.value
+  if (shadow && shadow.feetY !== undefined) {
+    return `${shadow.feetY * 100}%`
+  }
+  return props.groundY
+})
+
 const stickyCoords = computed(() => {
-  return { top: props.groundY, left: '50%' }
+  const shadow = currentShadow.value
+  let left = '50%'
+  let top = localGroundY.value
+  
+  if (shadow) {
+    const scale = WORLD_CONSTANTS.OBJECT_SCALE || 2
+    const entitySize = props.baseSize * scale
+
+    if (shadow.feetX !== undefined) {
+      const offsetX = (shadow.feetX - 0.5) * entitySize
+      left = `calc(50% + ${offsetX}px)`
+    }
+  }
+  
+  return { top, left }
 })
 
 const handleImageError = (e) => {
@@ -116,13 +144,13 @@ const handleBallError = (e) => {
       <CombatShadow 
         v-if="shadowKey" 
         :shadow-id="shadowKey" 
-        :style="{ '--shadow-y': groundY }"
+        :style="{ '--shadow-y': localGroundY }"
       />
 
       <!-- Capa de Efectos de Suelo (Sigue la sombra, ignora el float) -->
       <div 
         class="ground-effects-container"
-        :style="{ top: groundY }"
+        :style="{ top: localGroundY }"
       >
         <!-- Púas -->
         <Transition name="ground-fx-pop">
@@ -160,13 +188,13 @@ const handleBallError = (e) => {
           :class="[{ 
             'combatant-idle-subtle': !animState && pokemon.status !== 'freeze', 
             'is-floating-species': isFloating, 
-            'energy-catching': animState === 'catching' || isFainting, 
-            'energy-releasing': animState === 'releasing' 
+            'energy-catching': animState === 'catching', 
+            'energy-releasing': animState === 'releasing' || isEmerging
           }]"
           :style="{ 
             animationDelay: `calc(${animSeed} * -3s)`, 
             '--idle-dist': isFloating ? '-12px' : '-3px', 
-            '--shadow-y': groundY 
+            '--shadow-y': localGroundY 
           }"
         >
           <PVSpriteFX
@@ -244,7 +272,7 @@ const handleBallError = (e) => {
           <span
             v-for="s in sparkles"
             :key="s.id"
-            class="sparkle-shiny-style"
+            class="sparkle"
             :style="{ 
               '--tx': s.tx, 
               '--ty': s.ty, 
@@ -252,7 +280,7 @@ const handleBallError = (e) => {
               '--scale': s.scale,
               'animation-delay': s.delay 
             }"
-          />
+          >✨</span>
         </div>
       </div>
     </Transition>
@@ -355,6 +383,78 @@ const handleBallError = (e) => {
 .ball-fade-enter-active, .ball-fade-leave-active { transition: opacity 0.2s ease-in-out; }
 .ball-fade-enter-from, .ball-fade-leave-to { opacity: 0; }
 
+.trapped-pokeball {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-85%);
+  width: calc(var(--obj-scale, 1) * 40px);
+  height: calc(var(--obj-scale, 1) * 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-map-ui);
+  pointer-events: none;
+  image-rendering: pixelated;
+  overflow: visible;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform-origin: 50% 70%;
+  }
+
+  &.is-shaking img { animation: pokeball-wobble 0.6s ease-in-out; }
+  &.is-blinking img { animation: pokeball-shake-blink 0.4s ease-in-out; }
+  &.is-shaking.is-blinking img { animation: pokeball-wobble 0.6s ease-in-out, pokeball-shake-blink 0.4s ease-in-out; }
+  &.is-success img { animation: pokeball-success-blink 0.5s ease-in-out infinite; }
+}
+
+@keyframes pokeball-shake-blink { 0%, 100% { filter: Brightness(1); } 50% { filter: Brightness(2) Hue-Rotate(10deg); } }
+@keyframes pokeball-success-blink { 0%, 100% { filter: Brightness(1); } 50% { filter: Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg); } }
+
+.pokeball-shadow {
+  position: absolute;
+  top: 85%;
+  left: 50%;
+  transform: TranslateX(-50%) TranslateY(-50%);
+  width: 70%;
+  height: 15%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.catch-success-sparkles {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+  z-index: var(--z-low);
+  overflow: visible;
+
+  .sparkle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: calc(var(--obj-scale, 1) * 12px);
+    transform: Translate(-50%, -50%);
+    animation: catch-sparkle-out 0.8s ease-out forwards;
+    @include pixelated;
+    text-shadow: 0 0 5px Rgba(255, 215, 0, 0.8);
+    filter: Drop-Shadow(0 0 2px white);
+  }
+}
+
+@keyframes pokeball-wobble {
+  0%, 100% { transform: Rotate(0deg); }
+  25% { transform: Rotate(-20deg); }
+  75% { transform: Rotate(20deg); }
+}
+
 .ground-effects-container {
   position: absolute;
   left: 50%;
@@ -362,7 +462,7 @@ const handleBallError = (e) => {
   width: 100%;
   height: 20px;
   pointer-events: none;
-  z-index: calc(var(--z-map-spawns) + 5); // Por encima del pokemon
+  z-index: calc(var(--z-map-spawns) + 5); 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -407,5 +507,22 @@ const handleBallError = (e) => {
   transition: opacity 0.3s ease, transform 0.3s ease;
   opacity: 0;
   transform: Scale(0);
+}
+
+@keyframes ground-pop { 0% { transform: Scale(0); opacity: 0; } 100% { transform: Scale(1); opacity: 1; } }
+@keyframes ground-grow { 0% { transform: ScaleY(0) translateY(20px); opacity: 0; } 100% { transform: ScaleY(1) translateY(5px); opacity: 1; } }
+@keyframes ground-item-jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes ground-item-pulse { 0%, 100% { transform: Scale(1); } 50% { transform: Scale(1.05); } }
+
+@keyframes energy-catch {
+  0% { filter: none; transform: Scale(1); opacity: 1; }
+  25% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.05); }
+  100% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
+}
+
+@keyframes energy-release {
+  0% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
+  75% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.1); }
+  100% { filter: none; transform: Scale(1); opacity: 1; }
 }
 </style>

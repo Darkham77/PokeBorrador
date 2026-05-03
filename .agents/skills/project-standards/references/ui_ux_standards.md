@@ -162,6 +162,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Neon Glow Intensity (High-Contrast Mandate)**: For tactical indicators (boosts/penalties) on the project's signature black backgrounds, glow effects (`box-shadow`) MUST use high intensity:
   - **Pure Colors**: Use pure RGB values (e.g., `#ff0000` for red, `#ffd700` for gold).
   - **Opacity & Radius**: Minimum `0.8` opacity for the outer glow and a spread radius of at least `20px` to ensure visibility against deep black.
+- **Pixel Art Glow Balance**: For success sparkles and non-tactical VFX (e.g., capture stars), use subtle `text-shadow` (max 5px) and `filter: drop-shadow` (max 2px).
+  - **WHY**: Preserves the sharp "Retro Heart" aesthetic without causing excessive blur or visual noise that obscures the pixel-art.
 - **Tactical Border Hierarchy**: Tactical auras (Boosted/Penalized) MUST take priority over type-based color coding. Use inline styles or high-specificity computed styles to ensure the gold/red border overrides the default type border when a modifier is active.
 - **Z-Index Layering**: HUD Navigation wrappers MUST use `pointer-events: none` and `z-index: var(--z-navigation)` to ensure they don't block interaction with Sidebar tools (Chat/Debug) while still allowing button clicks via `pointer-events: auto` on children.
 
@@ -176,7 +178,10 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **MANDATORY**: Use **Capitalized** `TranslateY()` and `Rotate()` for SASS compliance.
 - **Cycle**: A slow 4-second `infinite ease-in-out` loop is recommended for an organic feel.
 - **Pixel Art Sharpness**: NEVER use non-integer `Scale()` transformations on pixel art elements (sprites, icons) as it causes interpolation blur. Prefer subtle `TranslateY()` for hover feedback.
-- **Night Cycle Lighting**: Atmospheric and weather effects must adapt to the night cycle. For the specific logic rules (illumination overrides, tints), see [game_mechanics_manual.md](./game_mechanics_manual.md).
+- **Night Cycle Lighting**: Atmospheric and weather effects must adapt to the night cycle.
+  - **Brightness Capping**: Weather-driven brightness reductions MUST be capped during the night cycle. The base nighttime brightness factor (Standard: 0.6) acts as the absolute floor to prevent excessive darkening and maintain visibility.
+  - **Audit**: Verify this via `AtmosphereLayer.vue` computed logic.
+- **Cycle Sync in CSS**: The `AtmosphereLayer` MUST pass the current cycle (`night`, `day`, etc.) as a class to its children. This enables cycle-specific CSS overrides for weather overlays without JS overhead.
 
 ---
 
@@ -206,7 +211,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 - **MANDATORY**: Toasts must occupy the highest layer (`z-index: 999,999`).
 
-### 4. Global Tooltip Architecture (PVTooltip)
+### 5. Global Tooltip Architecture (PVTooltip)
 
 All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes are strictly FORBIDDEN.
 
@@ -215,7 +220,15 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 - **Visual Standard**: Tooltips must use `'Press Start 2P'` for titles, glassmorphism (`Blur(10px)`), and a `$yellow` border.
 - **Scroll Behavior**: Tooltips MUST hide automatically as soon as the user initiates a `scroll`, `wheel`, or `touchmove` event. This prevents "floating" tooltips from losing their anchor during rapid navigation.
 
-### 5. Modal Variants & Aesthetics
+### 6. Data-Driven Tooltips (In-Game Manuals)
+
+To ensure technical information is accurate and consistent:
+
+- **Case-Insensitive Lookup**: Every query to `ABILITY_DATA` or `NATURE_DATA` MUST normalize keys (`.toLowerCase()`). This prevents visual failures if the Pokémon database uses "OSADO" and the manual uses "Osado".
+- **Full Descriptions**: Avoid placeholders. Tooltips MUST display the `.desc` field of the data object. If it doesn't exist, use an informative fallback like "Special ability of this Pokémon."
+- **Contextual Iconography**: Use distinctive icons (e.g., 🧠 for Nature, 🧬 for Ability) in interactive labels to indicate that the element is clickable/hoverable.
+
+### 7. Modal Variants & Aesthetics
 
 The `BaseModal.vue` component supports parameterized aesthetics to maintain consistency:
 
@@ -226,15 +239,7 @@ The `BaseModal.vue` component supports parameterized aesthetics to maintain cons
 - **padding="raw"**: Use for full-bleed content (e.g., Shop/Inventory grids). The `retro` variant respects this to avoid double-padding.
 - **BaseModal Inheritance (X Logic)**: Respect `BaseModal`'s responsibility for rendering the close button. If `hide-header` is used, the button automatically transitions to a floating position. Never manually include an "X" or close button in custom header slots, as this leads to UI duplication.
 
-### 7. Admin Tool Modal Standards
-
-For complex developer tools or admin panels with high-density forms:
-
-- **Minimum Width**: Use `max-width: 500px` to accommodate multi-column inputs and sub-grids (Stats/IVs) without text clipping.
-- **Responsive Stacking**: Use `repeat(auto-fit, minmax(210px, 1fr))` for main layout grids. This ensures content stacks vertically in narrow viewports, maintaining horizontal fit.
-- **Space Efficiency**: Reduce internal `gap` and `padding` to `6px-8px` in dense grids to maximize usable horizontal space.
-
-### 6. Premium 3D Action Buttons
+### 8. Premium 3D Action Buttons
 
 Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 
@@ -250,21 +255,36 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Action Grouping (Box/Inventory)**: High-level management actions (e.g., Mercado Negro, Liberar) MUST be grouped in the primary navigation/header bar (slots like `#extra` in `BoxTabs`) to maximize the area dedicated to content grids.
 - **Global Event Listeners**: Window/Global event listeners (e.g., `online`, `click` retry) used outside component lifecycles (like in Pinia stores) MUST be marked with `// [PureVue-Ignore]` to satisfy audit standards while maintaining necessary logic.
 
-### 8. Agencia y Control en Combate
-- **Derrota Manual**: Queda terminantemente prohibido cerrar el modal de combate automáticamente tras una derrota. Se debe mostrar la pantalla de resultados y permitir al usuario salir manualmente ("Ir al Mapa") para mantener la agencia sobre los logs finales.
-- **HUD Independiente**: La visibilidad de las barras de vida debe estar ligada al estado individual del combatiente, no a la fase global de la batalla. Hiding both HUDs when only one is in transition (e.g., enemy capture) causes visual disorientation.
+### 9. Data Flow and Testability
 
-> [!IMPORTANT]
-> **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.
+- **Prop-Drilling vs. Store-Access**: Information components (like `BattleInfoCard` or `PokemonStatusSection`) MUST rely on their `props` (`pokemon`) to process statuses and descriptions.
+- **FORBIDDEN**: Avoid direct access to the global `battleStore` within stat display logic if the component can be used in other contexts (Box, Bag, Tests). This ensures the component is individually testable without requiring an active battle state.
 
----
+### 10. Admin Tool Modal Standards
 
-## 📖 Content Readability
+...
 
-- **Max-Width**: Articles must have a max-width of `1000px`.
-- **Padding**: Use `32px` internal padding for main article content.
+### 11. Admin Debug Overlays (Combat & Management)
 
-### 7. Modal Stack & Performance Synchronization
+To facilitate real-time mechanical verification without cluttering the production UI:
+
+- **Visibility Constraint**: Debug overlays MUST be wrapped in an `isAdmin` check (via `useProfileStore`).
+- **Interaction Pattern**: Use `hover` states to reveal detailed technical data (e.g., base stats, stage multipliers, internal IDs).
+- **Visual Distinction**: Admin-only tooltips should be titled with an emoji like 😈 or 🛠️ to clearly distinguish them from standard game feedback.
+- **Color Coding**: Use standard project colors (`$green` for buffs, `$red` for debuffs) within these panels to ensure data is scannable at a glance.
+
+For complex developer tools or admin panels with high-density forms:
+
+- **Minimum Width**: Use `max-width: 500px` to accommodate multi-column inputs and sub-grids (Stats/IVs) without text clipping.
+- **Responsive Stacking**: Use `repeat(auto-fit, minmax(210px, 1fr))` for main layout grids. This ensures content stacks vertically in narrow viewports, maintaining horizontal fit.
+- **Space Efficiency**: Reduce internal `gap` and `padding` to `6px-8px` in dense grids to maximize usable horizontal space.
+
+### 12. Combat Agency and Control
+
+- **Manual Defeat**: It is strictly forbidden to automatically close the battle modal after a defeat. The results screen MUST be shown, and the user MUST be allowed to exit manually ("Go to Map") to maintain agency over the final logs.
+- **Independent HUD**: Health bar visibility MUST be linked to the individual combatant's state, not the global battle phase. Hiding both HUDs when only one is in transition (e.g., enemy capture) causes visual disorientation.
+
+### 13. Modal Stack & Performance Synchronization
 
 To ensure a seamless transition between full-map exploration and focused modal interactions:
 
@@ -277,7 +297,7 @@ To ensure a seamless transition between full-map exploration and focused modal i
 - **Interactive Tooltip Bubbling**: Tooltips attached to interactive elements (buttons, pills) MUST allow event bubbling. NEVER use `.stop` on a tooltip's click handler if it blocks the parent's interaction.
 - **Mobile Fullscreen Stability**: In `type-fullscreen` modals, use ultra-specific selectors and `contain: content` to ensure the layout remains static and jitter-free during internal animations.
 
-### 8. Mobile & Responsive Refinement
+### 14. Mobile & Responsive Refinement
 
 - **Responsive Control Stacking**: In mobile layouts, prioritize `flex-direction: column` and `flex: none` for stacked control groups (like Sort/Search bars) to prevent unintended vertical stretching.
 - **HUD Information Scaling (Combat)**: On small screens (≤ 600px), information panes should reduce their internal scale (padding, font-size, min-width) to avoid blocking the combatants and environmental sprites.
@@ -287,20 +307,20 @@ To ensure a seamless transition between full-map exploration and focused modal i
 - **Fullscreen Modal Continuity**: The primary content container (e.g., `.upd-core-container`) MUST use `min-height: 100%` in fullscreen mode to ensure the background color remains consistent across the entire viewport.
 - **Standardized Content Body**: Always use the `.upd-core-body` class for modal tab contents to inherit project-standard padding, scrolling, and background styles.
 
-### 📌 Sticky Interface Refs
+### 15. Sticky Interface Refs
 
 To prevent visual "jitter" or layout shifts during state transitions, use **Sticky Refs** (local memory variables) that hold the last valid value while the underlying store is updating or clearing.
 
 - **Combat Anchors**: Keep ground-coordinates in a local `ref` that only updates when new *confirmed* data arrives.
 - **HUD Stability**: A Pokémon's info-card MUST stay visible during finishing animations (`isFinishing`) until the Pokémon physically leaves the screen or the HP reaches zero.
 
-### 🛡️ Persistent Player HUD
+### 16. Persistent Player HUD
 
 The player's HUD (health and status) SHOULD remain visible during the search/exploration phase.
 
 - **Why**: Prevents redundant "entry" animations when a battle starts, as the HUD is already present. It also allows the player to monitor their health between encounters without entering a menu.
 
-### 9. Asset Parity & Positional Inheritance
+### 17. Asset Parity & Positional Inheritance
 
 To guarantee a seamless "Live" feel during multi-phase transitions (e.g., from Search Preview to Battle), components MUST implement positional inheritance.
 
@@ -394,7 +414,7 @@ For a full verification, consult the centralized **[Aesthetic Audit Checklist](.
 3. `[ ]` **Prefixes**: Are `-webkit-backdrop-filter` and other prefixes present?
 4. `[ ]` **Stacking**: Does the modal behavior follow LIFO rules?
 
-### 10. Battle Log Accuracy & Attribution
+### 18. Battle Log Accuracy & Attribution
 
 The combat log is the primary source of truth for the user. It MUST maintain absolute precision in Pokémon attribution.
 
@@ -410,23 +430,32 @@ The combat log is the primary source of truth for the user. It MUST maintain abs
   - **Fog (🌫️)**: Accuracy penalty (60%).
   - **MANDATORY**: Each icon MUST include a `PVTooltip` explaining the exact mechanical benefits or penalties for the current Pokémon.
 
-### 11. Selection Modal Heuristics
+### 19. Selection Modal Heuristics
 
 To ensure a frictionless management experience, selection modals (`PokemonSelectionModal`) must adapt their information density based on the inferred context:
 
 - **HP Visibility**: Automatically show the HP bar and numeric status if `allowedIds` is present (implying item application) or if opened in a battle context.
 - **Inline Layout**: The HP status (label, bar, and text) MUST occupy a single horizontal row to maintain compactness and professional alignment.
 
-### 12. Debug Visibility Standards
+### 20. Debug Visibility Standards
 
 To clearly separate development feedback from game narrative:
 
 - **Debug Iconography**: Any log message generated for debugging (starting with `DEBUG:`) MUST use the 😈 emoji as its primary icon.
 - **Emoji Rendering**: Emojis in logs must be rendered as text spans with `font-size: 24px` and a subtle shadow, ensuring they stand out without requiring external image assets.
 
-### 13. DevTools Visual Feedback
+### 21. DevTools Visual Feedback
 
 Debug buttons and tools MUST provide real-time visual feedback:
 
 - **Active State**: Buttons for effects or states (Weather, Screens) must change appearance (e.g., color tint or glow) if the state is currently active in the store.
 - **Reactive Sync**: Debug UI must use Pinia stores to ensure the interface reflects changes made via CLI or other components instantly.
+
+### 22. Administrative Debug HUDs
+
+To facilitate real-time mechanical verification without disrupting the "Pixel Heart" immersion:
+
+- **HUD Centralization**: Technical data (base stats, multipliers, internal IDs) MUST be centralized in the HUD (e.g., `BattleInfoCard`) and NOT attached to the game entities (Pokémon sprites). This prevents layout shifts and "shrinking" issues during coordinate scans.
+- **Dedicated Trigger (❓)**: Administrative tooltips MUST be anchored to a dedicated trigger icon (standard: ❓ emoji in a circular pulse frame) in the top-right of the HUD. This avoids mouse-event conflicts with standard game tooltips.
+- **Explicit Labeling**: Every administrative panel MUST include the disclaimer "⚠️ Solo visible para ADMIN" at the bottom to maintain transparency during development reviews.
+- **Environment Detection**: Use `db.isLocal` (or the injected `DBRouter` instance) to automatically enable these tools in local/offline login instances without requiring manual role configuration.

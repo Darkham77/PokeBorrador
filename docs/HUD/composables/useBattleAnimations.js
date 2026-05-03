@@ -102,7 +102,7 @@ export function useBattleAnimations(battleStore, enemyRef) {
     }
     setTimeout(() => {
       catchSparkles.value = catchSparkles.value.filter(s => s.side !== side)
-    }, 1200)
+    }, 1200) 
   }
 
   const handleReleaseRequest = (detail) => {

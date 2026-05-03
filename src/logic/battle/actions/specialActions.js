@@ -35,10 +35,10 @@ export const SPECIAL_ACTIONS = {
           return;
         }
         const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
-        addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-player', tgt);
+        addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-player', 'player');
         b.enemy = randomPick;
         Object.keys(tgtStages).forEach(k => tgtStages[k] = 0);
-        addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', randomPick);
+        addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', 'enemy_trainer');
       }
     } else {
       if (!b.isTrainer && !b.isGym) {
@@ -52,10 +52,10 @@ export const SPECIAL_ACTIONS = {
           return;
         }
         const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
-        addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-enemy', src);
+        addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-enemy', 'enemy_trainer');
         b.player = randomPick;
         Object.keys(tgtStages).forEach(k => tgtStages[k] = 0);
-        addLogFn(`¡Envía a ${randomPick.name}!`, 'log-info', randomPick);
+        addLogFn(`¡Envía a ${randomPick.name}!`, 'log-info', 'player');
       }
     }
   },
@@ -131,6 +131,12 @@ export const SPECIAL_ACTIONS = {
       }
     } else {
       addLogFn("¡Pero falló!", 'log-info', src);
+    }
+  },
+  'thrash': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    if (!src.thrashTurns) {
+      src.thrashTurns = 2 + Math.floor(Math.random() * 2);
+      addLogFn(`¡${src.name} está entrando en un frenesí!`, 'log-info', src);
     }
   },
   'false_swipe': (src, tgt, srcStages, tgtStages, addLogFn) => {
@@ -259,22 +265,9 @@ export const SPECIAL_ACTIONS = {
     }
   },
   'metronome': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
-    const moveNames = Object.keys(MOVE_DATA).filter(name => name !== 'Metrónomo');
-    const randomName = moveNames[Math.floor(Math.random() * moveNames.length)];
-    const randomMove = { ...MOVE_DATA[randomName], name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_') };
-    
-    addLogFn(`¡El Metrónomo escogió ${randomName}!`, 'log-info', src);
-    
-    // Executing the effect if it exists
-    if (randomMove.effect) {
-      // Use dynamic import for avoiding circular deps if needed, 
-      // but since we are in a Registry architecture, we can just use the registration
-      // However, we don't have direct access to dispatchMoveEffect here easily without circularity.
-      // We'll use a hack or just handle simple effects here.
-      // Actually, many effects are in SPECIAL_ACTIONS/STAT_ACTIONS/STATUS_ACTIONS.
-      // We can try to find them.
-      console.log(`[Metronome] Triggering effect: ${randomMove.effect}`);
-    }
+    // La lógica de selección de movimiento se maneja en battleTurn.js para permitir daño.
+    // Este hook queda para efectos secundarios post-daño si fuera necesario, 
+    // pero el Metrónomo original ya despachó el efecto del movimiento elegido.
   },
   'encore': (src, tgt, srcStages, tgtStages, addLogFn) => {
     if (tgt.lastMove && !tgt.encoreMove) {

@@ -48,7 +48,7 @@ const atmosphereStyles = computed(() => {
   let wContrast = 1.0
   let wHue = 0
 
-  if (w === 'storm') { wBrightness = 0.5; wSaturate = 0.5; wContrast = 1.4; }
+  if (w === 'storm') { wBrightness = 0.75; wSaturate = 0.7; wContrast = 1.2; }
   else if (w === 'blizzard') { wBrightness = 0.8; wSaturate = 0.3; wContrast = 1.3; }
   else if (w === 'rain') { wBrightness = 0.8; wSaturate = 0.7; }
   else if (w === 'fog' || w === 'mist') { wBrightness = 0.9; wContrast = 0.8; }
@@ -56,8 +56,7 @@ const atmosphereStyles = computed(() => {
   else if (w === 'heatwave') { wBrightness = 1.1; wSaturate = 1.3; wContrast = 1.1; }
 
   // Aplicamos clima sobre el ciclo para el estilo completo
-  // Si es de noche, evitamos que el clima oscurezca aún más la escena (ya está oscuro)
-  const finalBrightness = isNight ? Math.max(brightness, brightness * wBrightness) : (brightness * wBrightness)
+  const finalBrightness = brightness * wBrightness
   const finalSaturate = saturate * wSaturate
   const finalContrast = contrast * wContrast
   const finalHue = hue + wHue
@@ -76,7 +75,7 @@ const weatherOnlyStyles = computed(() => {
   let contrast = 1.0
   let hue = 0
 
-  if (w === 'storm') { brightness = 0.5; saturate = 0.5; contrast = 1.4; }
+  if (w === 'storm') { brightness = 0.8; saturate = 0.7; contrast = 1.1; }
   else if (w === 'blizzard') { brightness = 0.8; saturate = 0.3; contrast = 1.3; }
   else if (w === 'rain') { brightness = 0.8; saturate = 0.7; }
   else if (w === 'fog' || w === 'mist') { brightness = 0.9; contrast = 0.8; }
@@ -176,7 +175,7 @@ const weatherOverlayStyles = computed(() => ({
   >
     <div
       class="weather-overlay"
-      :class="[weather, props.cycle, { 'is-performance': isPerformanceMode }]"
+      :class="[weather, { 'is-performance': isPerformanceMode }]"
       :style="weatherOverlayStyles"
     >
       <!-- Rain & Storm -->

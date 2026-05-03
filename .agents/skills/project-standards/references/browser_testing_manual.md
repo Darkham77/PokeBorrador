@@ -110,3 +110,24 @@ To maintain system stability, every core logic change MUST be validated against 
 2. **State Snapshotting**: Use `vi.clearAllMocks()` in `beforeEach` to ensure isolation between test cases.
 3. **Mocking External Services**: Always mock global state providers (e.g., `gameStore`, `battleStore`) to avoid side effects during logic-only testing.
 4. **Synchronous Debug Registration**: When initializing the `debugStore`, all commands **MUST** be registered synchronously, even if they depend on dynamically loaded modules (`import()`). This ensures tools like `window.__VITE_DEBUG__` are available immediately for unit tests, preventing failures due to race conditions.
+
+---
+
+## 🧪 Unit Testing Protocols (Deep Dive)
+
+To ensure unit tests are deterministic and resilient:
+
+### 1. Sanitization Requirements
+
+When testing functions that use `sanitizePokemon` (such as battle start):
+
+- **Mandatory Species ID**: Always provide a valid `id` (string) in the Pokémon mock. Critical gender and validation logic fails catastrophically (`.endsWith`) if the ID is `undefined`.
+- **Team Mocks**: Ensure that `gs.state.team` has at least one Pokémon with `hp > 0` to prevent the battle store from failing while searching for the `playerPoke`.
+
+### 2. Exporting for Atomic Testing
+
+- **Internal Functions**: If a Store function is critical for a sequential logic (e.g., `applyEndTurnEffects`), it MUST be exported in the store's `return` object, even if not directly consumed by the UI. This allows verifying state changes step-by-step without relying on complex timers or full battle flows.
+
+### 3. Promise Synchronization (Async/Await)
+
+- **Battle Start**: The `_startBattle` method is asynchronous. In tests, it MUST always be awaited (`await`) before performing any assertions on `battle.state`; otherwise, assertions will run against a `null` or incomplete state.

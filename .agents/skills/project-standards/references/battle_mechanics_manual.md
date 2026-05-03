@@ -128,8 +128,9 @@ These can coexist with primary status and other secondary effects:
 
 - **Tick Logic**: Status damage and healing (Leech Seed) are processed in `battleStatus.js` at the end of each round.
 - **Skip Logic**: Conditions like Sleep, Freeze, Paralysis, Confusion, and Attraction are evaluated in `battleFlow.js` within the `canAttack` function BEFORE move execution.
-- **Immediate Termination**: The battle engine MUST check for the `activeBattle.over` flag immediately after move execution in the `executeTurn` loop. This ensures that effects like Teleport or self-destruct that end the combat are processed instantly without waiting for the next turn cycle or input.
-- **Immediate Faint Handling**: During multi-hit moves or standard damage application, the engine MUST invoke `store.handleFaint(side)` immediately if HP reaches 0. This ensures that the `PLAY_FAINT` animation and trainer withdrawal/switch logic trigger instantly for a responsive UI and to maintain parity with event-based unit tests.
+- **Immediate Faint Handling**: Durante movimientos de múltiples golpes o daño estándar, el motor DEBE invocar `store.handleFaint(side)` inmediatamente si la HP llega a 0.
+- **Persistence Mandate (isFinishing)**: Durante toda la secuencia de debilitamiento y reemplazo, el flag `isFinishing` del store de batalla DEBE mantenerse en `true`. Esto bloquea el cierre prematuro del modal de combate y garantiza que el jugador transite correctamente hacia la Fase 2 (Búsqueda) o hacia la selección de un nuevo Pokémon.
+- **One-Turn Volatile Cleanup**: Estados volátiles de corta duración como `destiny_bond` (Mismodestino) y `snatch` (Robo) deben expirar al inicio de la siguiente acción del usuario para garantizar que solo duren exactamente un ciclo de turno.
 
 ---
 
@@ -139,11 +140,20 @@ These can coexist with primary status and other secondary effects:
 
 - **Interaction Guard**: The switch action must be blocked if `isProcessing` or `isIntroAnimating` is true.
 - **Logic Sequence**:
-    1. Check if `oldPoke.hp > 0`. If true, emit `PLAY_WITHDRAW` and wait for the **Standard Transition Duration** (matched to CSS).
+    1. Check if `oldPoke.hp > 0`. If true, emit `PLAY_WITHDRAW` and wait for the **Standard Transition Duration**.
     2. Swap the active player reference in the store.
-    3. Reset attribute stages (atk, def, etc.) to 0.
-    4. Emit `PLAY_SEND_OUT` and wait for the **Standard Transition Duration**.
-    5. Execute entry abilities (e.g., Intimidate).
+    3. **Differential Reset**: Limpiar Stages de estadísticas (`atk`, `def`, `spa`, `spd`, `spe`, `acc`, `eva`) pero PRESERVAR efectos de campo (`reflect`, `lightScreen`, `spikes`, `mist`).
+    4. Emit `PLAY_SEND_OUT` y esperar a que termine la animación.
+    5. **Entry Hazard Application**: Aplicar daño de entrada (ej: Púas) inmediatamente después de que el nuevo Pokémon toque el suelo.
+    6. Execute entry abilities (e.g., Intimidate).
+
+### 2. Coordinate Synchronization & Poké Ball Alignment
+
+Para garantizar que la Poké Ball y la sombra coincidan milimétricamente durante el intercambio:
+
+- **Reactive Anchor Sync**: La Poké Ball DEBE calcular su posición (`left`, `top`) basándose reactivamente en los puntos `feetX` y `feetY` del `shadowStore`. No usar valores fijos (ej: 90%) si hay datos del sprite disponibles.
+- **Immediate Cache Usage**: Si un Pokémon ya ha sido escaneado previamente, el sistema debe inyectar sus coordenadas desde el `feetCache` en el primer frame de la animación para evitar saltos visuales.
+- **Component Integrity (Key Fix)**: El componente `BattleCombatant` debe usar una `:key` basada en el `uid` del Pokémon. Esto fuerza una recreación limpia del componente durante el cambio, evitando que el nuevo Pokémon herede coordenadas "stale" del anterior.
 
 ### 3. State Reactivity & HUD Integrity (Stages)
 
@@ -155,9 +165,8 @@ To ensure Vue 3 correctly tracks and displays field effects and stat changes, th
 
 ### 2. Forced Switching (Faint)
 
-- When a Pokémon's HP reaches 0, the `PLAY_FAINT` animation must trigger first.
-- The `PLAY_WITHDRAW` animation is SKIPPED during a forced switch because the Pokémon is already fainted/invisible.
-- The UI MUST set `uiStore.isBattleSwitchForced = true` to prevent the user from taking other actions until a replacement is chosen.
+- **Manual Selector Override**: The system MUST NOT automatically send the next healthy Pokémon when the player's active Pokémon faints. It MUST set `uiStore.isBattleSwitchForced = true` to force manual selection via the UI, preserving tactical control.
+- **Faint Priority**: If a Pokémon faints due to secondary effects (Recoil, Self-KO, Poison), the system MUST invoke `handleFaint(side)` immediately to trigger the replacement flow without waiting for the end of the turn cycle.
 
 ### 3. State Reactivity (Deep Watchers)
 
@@ -170,11 +179,12 @@ To ensure Vue 3 correctly tracks and displays field effects and stat changes, th
   
 To ensure flicker-free state transitions, the battle engine must enforce visual atomicity:
 
-### 1. The Preloading Phase (Intro)
+### 1. Parallel Preloading (Combat Prep)
 
-Before any intro animation (Phases 1-3) starts, the system MUST execute a `preloadCombatCoords` cycle. This cycle performs a silent, synchronous scan for feet-anchors of all participants.
+Antes de que comience cualquier animación de entrada, el sistema DEBE ejecutar un ciclo de `preloadCombatCoords` que incluya a **TODOS** los integrantes de los equipos (jugador y rival).
 
-- **Goal**: Guarantees that shadows and bushes are positioned at their final coordinates on the very first visible frame.
+- **Parallel Execution**: Usar `Promise.all` para escanear los puntos de pies de todo el equipo simultáneamente durante el montaje de la arena.
+- **Goal**: Garantiza que las sombras y Poké Balls estén posicionadas correctamente en su primer frame visible, eliminando el lag del escaneo de píxeles asíncrono.
 
 ### 2. Shadow Ownership & Lock
 
@@ -207,7 +217,9 @@ To maintain a focused narrative, the combat log MUST suppress redundant or confu
 Logs must be added to the queue **BEFORE** triggering animations or pauses that block the turn flow.
 
 - **Correct Sequence**: `addLog()` -> `updateHP()` -> `waitDelay()`.
-- **Why**: This allows the log's batching engine to start rendering the text while the HP bar animation is still playing, making the action feel responsive y synchronized.
+- **Atomic State Reset**: To prevent "phantom animations", the system MUST reset `activeMove` and `attackerSide` to `null` before executing manual actions (Switch, Item) and at the end of each turn.
+- **Sync Parity**: Logic delays MUST match CSS transition times exactly (e.g., 1.3s for `PLAY_FAINT`, 0.8s for `PLAY_SEND_OUT`).
+- **Source Integrity**: Todo log debe incluir el parámetro `source` (`p` para player, `e` para enemigo) para asegurar que el HUD renderice el avatar correcto. No confiar solo en variables globales de turno.
 
 ### 3. Iconography & Source Mapping
 
@@ -216,7 +228,7 @@ To ensure every log entry displays the correct sprite, the `addLog(msg, type, so
 - **Pokémon (Mandatory)**: Pass the actual Pokémon instance/object. This is REQUIRED for all status effects and stat changes to enable automatic icon rendering. Failure to pass the source results in "anonymous" logs without sprites.
 - **UID Priority**: The side detection logic MUST prioritize matching the source's `uid` against the player's team or the active enemy. Global flags like `attackerSide` should only be used as a fallback when no identity can be established from the source.
 - **Centralized Formatting**: All log formatting logic is delegated to `battleLogger.js`. This allows for independent unit testing and keeps the store logic focused on state management.
-- **Player**: Pass the string `'player'` to show the player's current class avatar.
+- **Player**: Pass the string `'player'` to show the player's current class avatar. This is MANDATORY for trainer-sourced actions like "Send out" or "Withdraw".
 - **Enemy Trainer**: Pass the string `'enemy_trainer'` to show the rival's avatar.
 - **Items**: Pass the Item name or ID (string). The system will resolve the item's sprite automatically.
 - **Side Override**: Pass `'player'` or `'enemy'` as the 4th argument (`sideOverride`) to force a specific background tint, overriding the automatic detection logic.
@@ -315,6 +327,14 @@ To maintain a cinematic feel, the capture success sequence follows a non-negotia
 | **1.0s - 2.0s** | **The Void** | Stage is COMPLETELY EMPTY. No sprites, no balls, no HUDs. |
 | **2.0s** | **Phase 2 Trigger** | `isSearching = true`. Transition to bushes starts. |
 
+### 4. Capture Animation Fidelity
+
+To maintain the "Fase 2" premium feel, certain animations MUST NOT be simplified or removed:
+
+- **Poké Ball Wobble**: The physical balanceo of the ball during capture attempts is a core mechanical feedback and MUST be preserved in `BattleCombatant.vue` keyframes.
+- **Energy Shake/Blink**: The pulsing light effect inside the ball during the "shaking" phase must remain active to signify the capture struggle.
+- **Sparkle Coordination**: Success particles MUST be synchronized with the exact frame the ball clicks shut to reinforce the success signal.
+
 ### 3. Exit Procedures
 
 - **Search (Loop)**: Resets `over` state, clears old logs, but **persists** the camera and ground coordinates to avoid jumps.
@@ -332,7 +352,10 @@ To prevent "Phantom Animations" (e.g., a Pokémon performing a Dash when using a
 
 The battle engine uses a decoupled architecture where move effects are mapped to executable logic via the `ActionRegistry`.
 
-- **Registry Integrity**: Every `effect` string defined in `moves.js` MUST have a corresponding key in `ActionRegistry.js`. If a move is added to the database without a registry entry, it will trigger a "silent failure" (log message appears but no mechanical effect happens).
+- **Action Dispatching Order**: El motor debe seguir un orden secuencial estricto:
+    1. **Dynamic Interception**: Movimientos como Metrónomo o Espejo se resuelven ANTES del cálculo de daño.
+    2. **Primary Damage**: Cálculo y aplicación de HP.
+    3. **Post-Action Effects**: Ejecución de Recoil, Drenado y Auto-KO (Explosión) consumiendo el `lastDamage` registrado.
 - **Modular Implementation**: Logic for new effects should be grouped by type:
   - `statActions.js`: For all stage modifiers (Atk, Def, etc.).
   - `fieldActions.js`: For side-based effects (Screens, Weather, Hazards).
@@ -390,3 +413,25 @@ To ensure every log entry displays the correct sprite/avatar:
 - **Trainer Actions**: Logs for trainer actions (e.g., "Send out", "Switch", "Withdraw") MUST use the literal string `'player'` or `'enemy_trainer'` as the `source`.
 - **FORBIDDEN**: Do NOT pass the Pokémon object as the source for trainer-only logs, as it would incorrectly show the Pokémon's avatar instead of the human trainer's.
 - **Side Override**: Pass `'player'` or `'enemy'` as the 4th argument (`sideOverride`) to `addLog` to force a specific background tint, overriding the automatic detection logic based on UID.
+
+---
+
+## 🎣 Capture System Synchronization
+
+To ensure all Poké Balls comply with their official formulas and respond to the environment:
+
+### 1. Mandatory Environmental Context
+
+Every call to `calculateCatchRate` MUST receive an enriched `ctx` object from the battle store:
+
+- **`weather`**: Inject the current map weather or the temporary battle weather.
+- **`cycle`**: Inject the time cycle (`mapStore.currentCycle`) to respect time-based locks (e.g., debugging at night during noon).
+
+### 2. Environmental Multipliers (2026 Audit)
+
+- **Dusk Ball**: MUST apply its multiplier (x3.0) if `isNight || isCave || isFog` is met. Fog is considered a low-visibility environment compatible with this ball.
+- **Net Ball**: In addition to Water/Bug types, it MUST apply a bonus (x3.5) if the weather is `rain` or `storm`.
+
+### 3. Turn Counter (Timer Ball)
+
+The `turnCount` is a live state. It MUST be explicitly incremented in `applyEndTurnEffects` of the battle store. It should never be incremented before end-turn effects (poison, weather, etc.) have been processed, to maintain visual parity with the UI.

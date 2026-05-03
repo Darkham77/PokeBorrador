@@ -5,8 +5,11 @@ import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { storeToRefs } from 'pinia'
 import { useBattleStore } from '@/stores/battle'
+import { useProfileStore } from '@/stores/profile'
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
 import { getDayCycle } from '@/logic/timeUtils'
+import { ABILITY_DATA } from '@/data/abilities'
+import { supabase } from '@/logic/supabase'
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -16,7 +19,12 @@ const props = defineProps({
 
 const p = computed(() => props.pokemon)
 const battleStore = useBattleStore()
+const profileStore = useProfileStore()
 const { playerStages, enemyStages } = storeToRefs(battleStore)
+
+const isAdmin = computed(() => {
+  return profileStore.profileData.isAdmin || window.__ADMIN_DEBUG__ || supabase.isLocal
+})
 
 // displayHp permite animar la barra desde 0 cuando el componente aparece (Fase 3)
 const displayHp = ref(0)
@@ -71,7 +79,7 @@ const activeStages = computed(() => {
 // Mapeos de Estados Secundarios/Volátiles
 const volatileStatuses = computed(() => {
   const list = []
-  const target = props.isPlayer ? battleStore.player : battleStore.enemy
+  const target = p.value
   if (!target) return []
   
   // 0. Habilidad Base (MANDATORIA)
@@ -82,19 +90,21 @@ const volatileStatuses = computed(() => {
     const cycle = getDayCycle()
     
     let isAbBoosted = false
-    let abDesc = `HABILIDAD: ${ab.toUpperCase()}.`
+    const abEntry = ABILITY_DATA[ab] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ab.toLowerCase())?.[1]
+    const abDescription = abEntry?.desc || 'Sin descripción disponible.'
+    let abText = `HABILIDAD: ${ab.toUpperCase()}. ${abDescription}`
 
     const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
     const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
 
-    if (ab === 'Clorofila' && isSunActive) { isAbBoosted = true; abDesc += ' (ACTIVA por el sol/horario)' }
-    if (ab === 'Nado rápido' && isRainActive) { isAbBoosted = true; abDesc += ' (ACTIVA por la lluvia/horario)' }
-    if (ab === 'Ímpetu arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) { isAbBoosted = true; abDesc += ' (ACTIVA por la arena)' }
-    if (ab === 'Quitanieves' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) { isAbBoosted = true; abDesc += ' (ACTIVA por la nieve)' }
+    if (ab === 'Clorofila' && isSunActive) { isAbBoosted = true; abText += ' (ACTIVA por el sol/horario)' }
+    if (ab === 'Nado rápido' && isRainActive) { isAbBoosted = true; abText += ' (ACTIVA por la lluvia/horario)' }
+    if (ab === 'Ímpetu arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) { isAbBoosted = true; abText += ' (ACTIVA por la arena)' }
+    if (ab === 'Quitanieves' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) { isAbBoosted = true; abText += ' (ACTIVA por la nieve)' }
 
     list.push({ 
       icon: '🧠', 
-      text: abDesc,
+      text: abText,
       isBoosted: isAbBoosted
     })
   }
@@ -168,127 +178,177 @@ const volatileStatuses = computed(() => {
 
   return list
 })
+
+const adminStatConfig = [
+  { key: 'atk', label: 'ATK', icon: '⚔️' },
+  { key: 'def', label: 'DEF', icon: '🛡️' },
+  { key: 'spa', label: 'SPA', icon: '🔮' },
+  { key: 'spd', label: 'SPD', icon: '✨' },
+  { key: 'spe', label: 'SPE', icon: '⚡' }
+]
+
+const getStatModifier = (key) => {
+  const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
+  if (!stages) return 0
+  return stages[key] || 0
+}
 </script>
 
 <template>
   <div 
     class="glass-card battle-info-card" 
-    :class="isPlayer ? 'player-card' : 'enemy-card'"
+    :class="[isPlayer ? 'player-card' : 'enemy-card', { 'is-admin-view': isAdmin }]"
   >
-    <div class="card-header">
-      <span 
-        class="poke-name" 
-        :class="isPlayer ? nickStyle : ''"
-      >
-        {{ p.name }}
-      </span>
-      <div
-        v-if="p.gender"
-        class="m-badge-gender"
-        :class="getGenderCls(p.gender)"
-      >
-        {{ getGenderText(p.gender) }}
-      </div>
-      <img
-        v-if="!isPlayer && p.caught"
-        :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
-        class="caught-icon"
-        @error="e => e.target.style.display = 'none'"
-      >
-    </div>
-    
-    <div class="level-row">
-      <div class="poke-level m-badge-level">
-        Nv. {{ p.level }}
-      </div>
-      <PokemonTypePills 
-        :pokemon="p" 
-        size="sm"
-        class="poke-types"
-      />
-    </div>
-
-    <div class="hp-status">
-      <div class="hp-bar-outer">
-        <div
-          class="hp-bar-inner"
-          :class="getHpClass(getHpPct(displayHp, p.maxHp))"
-          :style="{ width: getHpPct(displayHp, p.maxHp) + '%' }"
-        />
-      </div>
-      
-      <!-- EXP Bar only for player -->
-      <div
-        v-if="isPlayer"
-        class="exp-bar-outer"
-      >
-        <div
-          class="exp-bar-inner"
-          :style="{ width: (p.exp / p.expNeeded * 100) + '%' }"
-        />
-      </div>
-
-      <div class="hp-values">
-        HP: {{ Math.max(0, Math.round(displayHp)) }}/{{ p.maxHp }}
-      </div>
-    </div>
-
-    <!-- Contenedor de Estados (Primarios + Volátiles + Stages) -->
-    <div 
-      v-if="p.status || volatileStatuses.length > 0 || activeStages.length > 0"
-      class="status-container"
-    >
-      <!-- Estado Primario -->
-      <PVTooltip
-        v-if="p.status"
-        :description="STATUS_TOOLTIP_MAP[p.status.toLowerCase()] || p.status"
-        position="bottom"
-      >
-        <div
-          class="status-badge"
-          :class="p.status.toLowerCase()"
+    <div class="card-content-wrapper">
+      <div class="card-header">
+        <span 
+          class="poke-name" 
+          :class="isPlayer ? nickStyle : ''"
         >
-          {{ STATUS_EMOJI_MAP[p.status.toLowerCase()] || p.status.toUpperCase() }}
-          <span
-            v-if="p.status.toLowerCase() === 'sleep' && p.sleepTurns"
-            class="status-counter"
+          {{ p.name }}
+        </span>
+        <div
+          v-if="p.gender"
+          class="m-badge-gender"
+          :class="getGenderCls(p.gender)"
+        >
+          {{ getGenderText(p.gender) }}
+        </div>
+        <img
+          v-if="!isPlayer && p.caught"
+          :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
+          class="caught-icon"
+          @error="e => e.target.style.display = 'none'"
+        >
+
+        <!-- Admin Info Icon -->
+        <PVTooltip
+          v-if="isAdmin"
+          position="bottom"
+          title="😈 ADMIN: UNIT STATS"
+          class="admin-info-trigger"
+        >
+          <span class="admin-icon-btn">❓</span>
+          
+          <template #content>
+            <div class="admin-stat-debug">
+              <div 
+                v-for="stat in adminStatConfig" 
+                :key="stat.key"
+                class="debug-stat-row"
+                :class="{
+                  'is-up': getStatModifier(stat.key) > 0,
+                  'is-down': getStatModifier(stat.key) < 0
+                }"
+              >
+                <span class="d-icon">{{ stat.icon }}</span>
+                <span class="d-label">{{ stat.label }}</span>
+                <span class="d-val">{{ p[stat.key] || 0 }}</span>
+                <span v-if="getStatModifier(stat.key) !== 0" class="d-mod">
+                  {{ getStatModifier(stat.key) > 0 ? '+' : '' }}{{ getStatModifier(stat.key) }}
+                </span>
+              </div>
+              <div class="admin-notice">
+                ⚠️ Solo visible para ADMIN
+              </div>
+            </div>
+          </template>
+        </PVTooltip>
+      </div>
+        
+        <div class="level-row">
+          <div class="poke-level m-badge-level">
+            Nv. {{ p.level }}
+          </div>
+          <PokemonTypePills 
+            :pokemon="p" 
+            size="sm"
+            class="poke-types"
+          />
+        </div>
+
+        <div class="hp-status">
+          <div class="hp-bar-outer">
+            <div
+              class="hp-bar-inner"
+              :class="getHpClass(getHpPct(displayHp, p.maxHp))"
+              :style="{ width: getHpPct(displayHp, p.maxHp) + '%' }"
+            />
+          </div>
+          
+          <!-- EXP Bar only for player -->
+          <div
+            v-if="isPlayer"
+            class="exp-bar-outer"
           >
-            {{ p.sleepTurns }}t
-          </span>
-        </div>
-      </PVTooltip>
+            <div
+              class="exp-bar-inner"
+              :style="{ width: (p.exp / p.expNeeded * 100) + '%' }"
+            />
+          </div>
 
-      <!-- Estados Volátiles (Confusión, Maldición, etc) -->
-      <PVTooltip
-        v-for="(vs, idx) in volatileStatuses"
-        :key="'vs-'+idx"
-        :description="vs.text"
-        position="bottom"
-      >
-        <div 
-          class="status-badge volatile"
-          :class="{ 'is-boosted': vs.isBoosted }"
-        >
-          {{ vs.icon }}
+          <div class="hp-values">
+            HP: {{ Math.max(0, Math.round(displayHp)) }}/{{ p.maxHp }}
+          </div>
         </div>
-      </PVTooltip>
 
-      <!-- Cambios de Estadísticas (Stages) -->
-      <PVTooltip
-        v-for="s in activeStages"
-        :key="'stage-'+s.key"
-        :description="s.text"
-        position="bottom"
-      >
+        <!-- Contenedor de Estados (Primarios + Volátiles + Stages) -->
         <div 
-          class="status-badge stage"
-          :class="s.val > 0 ? 'is-up' : 'is-down'"
+          v-if="p.status || volatileStatuses.length > 0 || activeStages.length > 0"
+          class="status-container"
         >
-          {{ s.icon }}
+          <!-- Estado Primario -->
+          <PVTooltip
+            v-if="p.status"
+            :description="STATUS_TOOLTIP_MAP[p.status.toLowerCase()] || p.status"
+            position="bottom"
+          >
+            <div
+              class="status-badge"
+              :class="p.status.toLowerCase()"
+            >
+              {{ STATUS_EMOJI_MAP[p.status.toLowerCase()] || p.status.toUpperCase() }}
+              <span
+                v-if="p.status.toLowerCase() === 'sleep' && p.sleepTurns"
+                class="status-counter"
+              >
+                {{ p.sleepTurns }}t
+              </span>
+            </div>
+          </PVTooltip>
+
+          <!-- Estados Volátiles -->
+          <PVTooltip
+            v-for="(vs, idx) in volatileStatuses"
+            :key="'vs-'+idx"
+            :description="vs.text"
+            position="bottom"
+          >
+            <div 
+              class="status-badge volatile"
+              :class="{ 'is-boosted': vs.isBoosted }"
+            >
+              {{ vs.icon }}
+            </div>
+          </PVTooltip>
+
+          <!-- Stages -->
+          <PVTooltip
+            v-for="s in activeStages"
+            :key="'stage-'+s.key"
+            :description="s.text"
+            position="bottom"
+          >
+            <div 
+              class="status-badge stage"
+              :class="s.val > 0 ? 'is-up' : 'is-down'"
+            >
+              {{ s.icon }}
+            </div>
+          </PVTooltip>
         </div>
-      </PVTooltip>
+      </div>
     </div>
-  </div>
 </template>
 
 <style scoped lang="scss">
@@ -305,7 +365,6 @@ const volatileStatuses = computed(() => {
   min-width: 200px;
   box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
   color: $white;
-  @include gpu-layer;
 
   @media (max-width: 600px) {
     padding: 8px 10px;
@@ -474,6 +533,97 @@ const volatileStatuses = computed(() => {
 .gender-male { color: Rgba(59, 139, 255, 1); }
 .gender-female { color: Rgba(255, 110, 255, 1); }
 
+@keyframes ab-glow {
+  from { transform: Scale(1); filter: Drop-Shadow(0 0 2px $coin-gold); }
+  to { transform: Scale(1.1); filter: Drop-Shadow(0 0 8px $coin-gold); }
+}
+
+.admin-info-trigger {
+  margin-left: auto;
+  pointer-events: auto;
+}
+
+.admin-icon-btn {
+  font-size: 18px;
+  cursor: help;
+  filter: Drop-Shadow(0 0 5px Rgba(255, 255, 0, 0.5));
+  animation: admin-icon-pulse 2s infinite alternate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  background: Rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  border: 1px solid Rgba(255, 255, 0, 0.3);
+  margin-left: 10px;
+  
+  &:hover {
+    filter: Drop-Shadow(0 0 10px Rgba(255, 255, 0, 0.8)) Brightness(1.3);
+    background: Rgba(255, 255, 0, 0.1);
+  }
+}
+
+@keyframes admin-icon-pulse {
+  from { transform: Scale(1); opacity: 0.8; }
+  to { transform: Scale(1.15); opacity: 1; }
+}
+
+.is-admin-view {
+  outline: 1px dashed Rgba($yellow, 0.3);
+  transition: outline 0.3s ease;
+  &:hover {
+    outline-color: $yellow;
+    outline-offset: 2px;
+  }
+}
+
+.admin-stat-debug {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 130px;
+  padding: 4px 0;
+}
+
+.debug-stat-row {
+  display: flex;
+  align-items: center;
+  @include pixelated;
+  font-size: 10px;
+
+  .d-icon { width: 18px; font-size: 12px; }
+  .d-label { width: 40px; color: var(--gray); opacity: 0.8; }
+  .d-val { font-weight: bold; margin-left: auto; color: white; }
+  .d-mod { 
+    margin-left: 8px;
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: Rgba(255, 255, 255, 0.1);
+  }
+
+  &.is-up {
+    color: $green;
+    .d-mod { background: Rgba(16, 185, 129, 0.2); }
+  }
+  &.is-down {
+    color: $red;
+    .d-mod { background: Rgba(239, 68, 68, 0.2); }
+  }
+}
+
+.admin-notice {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed Rgba(255, 255, 0, 0.2);
+  color: $yellow;
+  font-size: 8px;
+  @include pixelated;
+  text-align: center;
+  opacity: 0.8;
+}
+
 .caught-icon {
   width: 16px;
   height: 16px;
@@ -483,10 +633,5 @@ const volatileStatuses = computed(() => {
     width: 12px;
     height: 12px;
   }
-}
-
-@keyframes ab-glow {
-  from { transform: Scale(1); filter: Drop-Shadow(0 0 2px $coin-gold); }
-  to { transform: Scale(1.1); filter: Drop-Shadow(0 0 8px $coin-gold); }
 }
 </style>

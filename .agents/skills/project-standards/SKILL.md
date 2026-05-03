@@ -71,6 +71,7 @@ Consult these manuals for detailed implementation specifications:
 - **Unitless Variable Pattern**: Cuando se pasan coordenadas o tamaños dinámicos de JS a variables CSS, usar SIEMPRE valores numéricos puros. Añadir unidades en CSS usando `calc(var(--val) * 1px)`.
 - **Zero Bridges Policy**: Se prohíbe el uso de `window.state` o cualquier puente de compatibilidad global (`src/logic/bridges`). Toda la comunicación debe realizarse mediante importaciones directas (ESM) e inyección de dependencias a través de Stores de Pinia. La manipulación del estado global desde la consola debe reservarse exclusivamente para `window.__VITE_DEBUG__`.
 - **Modular Orchestration (HUD)**: Lógica de visibilidad, snapshots y estados de interfaz de combate de alta complejidad DEBEN ser extraídos a composables dedicados (ej. `useBattleHud.js`). La vista de la arena (`BattleArenaView.vue`) debe actuar exclusivamente como un orquestador visual simplificado.
+- **Reactive State Propagation**: Al pasar subconjuntos del estado a funciones lógicas externas mediante `reactive({...})`, es OBLIGATORIO incluir todas las flags de control (ej. `isFinishing`) para evitar que el motor de lógica tome decisiones basadas en estados incompletos o indefinidos.
 
 ### 4. SASS and Build Integrity
 

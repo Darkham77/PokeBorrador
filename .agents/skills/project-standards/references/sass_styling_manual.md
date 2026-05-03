@@ -70,6 +70,7 @@ To prevent layout collapse in scrollable flex containers (Common in Debug and Gr
 - **MANDATORY**: Apply `min-height: 0` to any element using `flex: 1` and `overflow: auto/hidden`.
 - **Audit Positioning**: To be correctly detected by automated audit tools, the `min-height: 0` declaration SHOULD be placed immediately adjacent to the `overflow` property.
 - **Example**:
+
   ```scss
   .scroll-container {
     flex: 1;
@@ -230,6 +231,9 @@ Avoid spreading definitions for the same component across multiple files. This i
 - **Bypass Rule (The Ampersand Trick)**: If the audit flags a valid override (e.g., responsive variant or performance mode) as redundant, use the ampersand operator (`& .class {`) to break the scanner's line-start pattern while maintaining identical CSS.
   - ✅ `& .btn-price { display: none; }`
   - ❌ `.btn-price { display: none; }` (Will trigger alert if the class exists in another file)
+- **Atmosphere & Weather Overlays**:
+  - **Avoid Redundant Darkening**: Do NOT apply black semi-transparent backgrounds (`rgba(0,0,0,X)`) to weather or atmospheric overlays if a global `AtmosphereLayer` filter is active. This prevents "double-darkening" (clipping visual range) during the night cycle.
+  - **Cycle-Specific Styles**: Use cycle-specific classes (e.g., `.night`, `.day`) passed from `AtmosphereLayer` to children for fine-grained CSS overrides instead of relying on JS logic for minor style shifts.
 - **Goal**: Maintain 0 redefinitions for critical game components.
 - **Math-Based Layout Scaling (Robust Grid Pattern)**:
   - **MANDATORY**: For complex UI panels with multiple interdependent parts (e.g., Combat Move Panels), define dimensions using CSS variables and `calc()` in the parent container.
