@@ -84,6 +84,7 @@ Legacy code **MUST** be modified during migration to comply with all current pro
 
 - **Backward Compatibility Aliases**: When refactoring stores, maintain legacy method names as aliases (e.g., `saveGame` pointing to `save`) to prevent "is not a function" crashes in unmigrated legacy components or battle logic.
 - **State Property Consistency**: Explicitly verify that component bindings match the updated store property names (e.g., using `trainerLevel` instead of the legacy `level`) to ensure reactive synchronization.
+- **Semantic Renaming**: Una vez que un bando de lógica o una función de sincronización (ej: `syncFromLegacy`) ya no sea requerida por scripts externos y esté totalmente integrada en Vue, se DEBE renombrar a un término funcional y descriptivo (ej: `restoreBattle`, `initSession`). Esto elimina la carga cognitiva de la "deuda técnica" y moderniza el lenguaje interno del motor.
 
 ## Example Invocations
 

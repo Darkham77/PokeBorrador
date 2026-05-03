@@ -10,9 +10,9 @@
 
 .main-hud-desktop {
   @media (min-width: 1411px) {
-    display: flex !important;
-    opacity: 1 !important;
-    transform: none !important;
+    display: flex;
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -47,9 +47,27 @@
   pointer-events: none;
   z-index: var(--z-navigation);
   
+  // Estado inicial Desktop: oculto
+  @media (min-width: 1411px) {
+    transform: TranslateY(110%);
+    opacity: 0;
+  }
+
+  // Estado inicial Móvil: siempre visible
+  @include responsive(hud-mobile) {
+    transform: TranslateY(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  @include will-animate(transform, opacity);
+
   & > * {
     pointer-events: auto;
   }
+
+  // Fallback removido para Desktop: No queremos que aparezca nunca en resoluciones altas
 }
 
 .hud-spacer-bottom {
@@ -109,14 +127,8 @@
 }
 
 .mobile-only-nav {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: var(--z-navigation);
-  transform: TranslateZ(0);
-
+  display: none !important; // Oculto por defecto en escritorio para evitar colisiones
+  
   @include responsive(hud-mobile) {
     display: flex !important;
   }
@@ -125,7 +137,11 @@
   @media (max-width: 420px) { zoom: 0.8; }
   @media (max-width: 380px) { zoom: 0.7; }
   @media (max-width: 340px) { zoom: 0.6; }
-  @media (min-width: 1411px) { display: none; }
+
+  // Seguridad para Desktop (> 1410px): Siempre oculto
+  @media (min-width: 1411px) { 
+    display: none !important; 
+  }
 }
 
 /* --- HUD Visibility States --- */
@@ -137,11 +153,6 @@
   
   &.hud-sidebar-tools {
     transform: TranslateX(-150%);
-    opacity: 0;
-  }
-
-  &.hud-bottom-wrapper {
-    transform: TranslateY(110%);
     opacity: 0;
   }
 }

@@ -5,6 +5,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
+import { getVisualWeather } from '@/logic/battle/weatherMapper'
 import { useCombatCamera } from '@/composables/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { getRouteWeather } from '@/logic/weatherUtils'
@@ -12,6 +13,7 @@ import { getRouteWeather } from '@/logic/weatherUtils'
 // Composables
 import { useBattleShadows } from '@/composables/useBattleShadows'
 import { useBattleAnimations } from '@/composables/useBattleAnimations'
+import { useBattleHud } from '@/composables/useBattleHud'
 
 // Componentes
 import VirtualSpace from './VirtualSpace.vue'
@@ -54,47 +56,46 @@ const {
   syncEnemyShadow, syncPlayerShadow, preloadCombatCoords 
 } = useBattleShadows()
 
+const animations = useBattleAnimations(battleStore, enemy)
 const {
   isWildEntryAnimation, isWildSilhouette, wildRevealActive, upcomingIsEmerging,
   isInitialLoad, isCaptureSequenceActive, caughtPokemonSnapshot,
   isFaintInProgress, faintedPokemonSnapshot,
   playerAnimState, enemyAnimState, activePokeballId, catchSparkles,
+  playerCaptureActive, enemyCaptureActive,
   playerIsShaking, playerIsBlinking, enemyIsShaking, enemyIsBlinking,
   isIntroInProgress, triggerWildEmergence, initListeners
-} = useBattleAnimations(battleStore, enemy)
+} = animations
 
-// Bloqueo absoluto del HUD durante finales y transiciones
-const isHudSuppressed = computed(() => {
-  return isCaptureSequenceActive.value || 
-         isFaintInProgress.value || 
-         isSearching.value || 
-         (battle.value?.over) ||
-         enemyAnimState.value === 'trapped'
-})
+const {
+  isEnemyHudSuppressed,
+  isPlayerHudSuppressed,
+  activeEnemyHudData
+} = useBattleHud(animations, battleStore, enemy)
 
 const isFinishing = computed(() => {
   if (isCaptureSequenceActive.value || isFaintInProgress.value) return true
-  if (!battle.value?.over) return false
-  return (enemy.value?.hp <= 0 || player.value?.hp <= 0) || battleStore.state?.isCapture
+  if (battle.value?.over || battleStore.isFinishing) return true
+  return false
 })
 
 const activeEnemyData = computed(() => {
-  if (isCaptureSequenceActive.value && caughtPokemonSnapshot.value) return caughtPokemonSnapshot.value
-  if (isFaintInProgress.value && faintedPokemonSnapshot.value) return faintedPokemonSnapshot.value
-  
-  const isC = battle.value?.isCapture
-  const visualEnemy = (battle.value && (!battle.value.over || isFinishing.value) && !isC) ? enemy.value : null
-  
-  if (isSearching.value || isFinishing.value) return upcomingPokemon.value || visualEnemy
-  return visualEnemy || upcomingPokemon.value
+  return activeEnemyHudData.value
 })
 
 const activeEnemyIsSilhouette = computed(() => {
   const hasBinoculars = gameStore.state.inventory?.['binoculars'] > 0
-  if (hasBinoculars || battleStore.debugBinoculars || isFaintInProgress.value) return false
-  if (isSearching.value && upcomingPokemon.value) return true
-  if (isFinishing.value && !!upcomingPokemon.value) return true
+  if (hasBinoculars || battleStore.debugBinoculars) return false
+  
+  // Prioridad: Si hay un desmayo en curso, el pokémon que se desvanece NO es silueta
+  if (isFaintInProgress.value) return false
+  
+  // Si estamos buscando o finalizando y hay un pokemon en cola, siempre es silueta
+  if ((isSearching.value || isFinishing.value) && upcomingPokemon.value) return true
+  
+  // Estados de animación intrínsecos de entrada salvaje
   if (isWildEntryAnimation.value || wildRevealActive.value || isWildSilhouette.value || upcomingIsEmerging.value) return true
+  
   return false
 })
 
@@ -111,7 +112,17 @@ const isWildEncounter = computed(() => {
 })
 
 const computedWeather = computed(() => {
+  // 1. Prioridad Absoluta: Clima de combate activo (Store de Batalla)
+  if (battleStore.state?.weather) {
+    const w = battleStore.state.weather
+    // Prioridad: Visual preservado -> Mapeo del tipo mecánico
+    return getVisualWeather(w.visual || w.type)
+  }
+  
+  // 2. Clima global de Eventos (Si no estamos en combate o no hay override)
   if (mapStore.globalWeather) return mapStore.globalWeather
+  
+  // 3. Clima determinístico de la ruta
   return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour)
 })
 
@@ -221,10 +232,11 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-attacking="battleStore.attackerSide === 'enemy'"
             :active-move="battleStore.activeMove"
             :show-guides="showGuides"
-            :is-capture-success="isCaptureSequenceActive"
+            :is-capture-success="enemyCaptureActive"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
             :is-fainting="isFaintInProgress"
             :suppress-fx="isSearching || isIntroInProgress"
+            :stages="battleStore.enemyStages"
           />
 
           <!-- Arbustos Adelante -->
@@ -257,7 +269,9 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-attacking="battleStore.attackerSide === 'player'"
             :active-move="battleStore.activeMove"
             :show-guides="showGuides"
+            :is-capture-success="playerCaptureActive"
             :sparkles="catchSparkles.filter(s => s.side === 'player')"
+            :stages="battleStore.playerStages"
           />
         </div>
       </VirtualSpace>
@@ -277,7 +291,7 @@ watch(() => battleStore.isBattleActive, (active) => {
     <div class="battle-info-container">
       <Transition name="hud-fade-enemy">
         <div
-          v-if="!isHudSuppressed && enemy && enemy.hp > 0"
+          v-if="!isEnemyHudSuppressed && enemy && enemy.hp > 0"
           class="combatant-info-wrap enemy-side"
         >
           <BattleInfoCard :pokemon="enemy" />
@@ -285,7 +299,7 @@ watch(() => battleStore.isBattleActive, (active) => {
       </Transition>
       <Transition name="hud-fade-player">
         <div
-          v-if="player && player.hp > 0"
+          v-if="!isPlayerHudSuppressed && player && player.hp > 0"
           class="combatant-info-wrap player-side"
         >
           <BattleInfoCard

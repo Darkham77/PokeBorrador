@@ -131,13 +131,15 @@ export function sanitizePokemon(p) {
         maxPP: m.maxPP || fallback.pp
       });
     } else {
-      // Rellenar datos faltantes
-      if (m.power === undefined) m.power = moveData.power || 0;
-      if (m.type === undefined) m.type = moveData.type || 'normal';
-      if (m.acc === undefined) m.acc = moveData.acc || 100;
-      if (m.cat === undefined) m.cat = moveData.cat || 'physical';
-      if (m.pp === undefined) m.pp = moveData.pp || 35;
-      if (m.maxPP === undefined) m.maxPP = moveData.pp || 35;
+      // Sincronización Mandatoria (Hotfix para datos obsoletos en el equipo del jugador)
+      m.power = moveData.power || 0;
+      m.type = moveData.type || 'normal';
+      m.acc = moveData.acc || 100;
+      m.cat = moveData.cat || moveData.category || 'physical';
+      m.effect = moveData.effect || null;
+      m.maxPP = moveData.pp || 35;
+      if (m.pp === undefined) m.pp = m.maxPP;
+      if (m.pp > m.maxPP) m.pp = m.maxPP;
     }
   });
 

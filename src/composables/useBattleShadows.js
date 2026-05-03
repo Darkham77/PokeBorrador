@@ -45,6 +45,7 @@ export function useBattleShadows() {
     // Limpieza de sombras huérfanas si el ID cambia (evita duplicados al capturar/cambiar)
     if (lastEnemyShadowId.value && lastEnemyShadowId.value !== shadowId) {
       shadowStore.hideShadow(lastEnemyShadowId.value)
+      stableEnemyGroundY.value = '90%' // Reset inmediato para evitar heredar altura del anterior
     }
     lastEnemyShadowId.value = shadowId
     currentEnemyShadowKey.value = shadowId
@@ -75,6 +76,7 @@ export function useBattleShadows() {
     // Limpieza de sombras huérfanas
     if (lastPlayerShadowId.value && lastPlayerShadowId.value !== shadowId) {
       shadowStore.hideShadow(lastPlayerShadowId.value)
+      stablePlayerGroundY.value = '90%' // Reset inmediato para evitar heredar altura del anterior
     }
     lastPlayerShadowId.value = shadowId
     currentPlayerShadowKey.value = shadowId

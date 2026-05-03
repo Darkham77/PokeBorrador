@@ -1,8 +1,8 @@
 <script setup>
-import { ref } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
+import BattleMovesGrid from '@/components/battle/BattleMovesGrid.vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 
 const _props = defineProps({
@@ -13,52 +13,10 @@ const _props = defineProps({
 })
 
 const emit = defineEmits(['reorder-moves'])
-
 const _uiStore = useUIStore()
 
-// Drag and Drop Logic
-const draggedIndex = ref(null)
-const isDragging = ref(false)
-const dragOverIndex = ref(null)
-
-function onDragStart(index, e) {
-  draggedIndex.value = index
-  isDragging.value = true
-  e.dataTransfer.effectAllowed = 'move'
-  
-  // Safety reset
-  window.addEventListener('dragend', onDragEnd, { once: true })
-}
-
-function onDragOver(index, e) {
-  e.preventDefault()
-  dragOverIndex.value = index
-}
-
-function onDrop(targetIndex, e) {
-  e.preventDefault()
-  if (draggedIndex.value !== null && draggedIndex.value !== targetIndex) {
-    emit('reorder-moves', draggedIndex.value, targetIndex)
-  }
-  onDragEnd()
-}
-
-function onDragEnd() {
-  isDragging.value = false
-  draggedIndex.value = null
-  dragOverIndex.value = null
-}
-
-const hexToRgb = (hex) => {
-  if (!hex) return '255, 255, 255'
-  let h = hex.replace('#', '')
-  if (h.length === 3) {
-    h = h.split('').map(c => c + c).join('')
-  }
-  const r = parseInt(h.slice(0, 2), 16)
-  const g = parseInt(h.slice(2, 4), 16)
-  const b = parseInt(h.slice(4, 6), 16)
-  return `${r}, ${g}, ${b}`
+function handleReorder(fromIndex, toIndex) {
+  emit('reorder-moves', fromIndex, toIndex)
 }
 </script>
 
@@ -71,77 +29,12 @@ const hexToRgb = (hex) => {
       <h4 class="vp-section-title">
         MOVIMIENTOS ACTUALES
       </h4>
-      <div 
-        class="moves-grid-vicio"
-        :class="{ 'is-reordering': isDragging }"
-      >
-        <PVTooltip
-          v-for="(m, i) in currentMoves"
-          :key="m.name + i"
-          :delay="400" 
-          position="top"
-          tag="div"
-          :disabled="draggedIndex !== null"
-          class="move-card-vicio"
-          :class="{ 
-            'is-dragging': draggedIndex === i,
-            'is-drag-over': dragOverIndex === i,
-            'is-draggable': canReorder
-          }"
-          :style="{ 
-            '--m-type-color': PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'],
-            '--m-type-rgb': hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal']),
-            background: `Linear-Gradient(135deg, Rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.25) 0%, Rgba(255, 255, 255, 0.05) 100%)`,
-            borderColor: `Rgba(${hexToRgb(PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'])}, 0.3)`
-          }"
-          :draggable="canReorder"
-          @dragstart="onDragStart(i, $event)"
-          @dragover="onDragOver(i, $event)"
-          @dragleave="dragOverIndex = null"
-          @drop="onDrop(i, $event)"
-        >
-          <template #content>
-            <MoveTooltip :move="m" />
-          </template>
-
-          <div class="move-top">
-            <span class="mv-name pixelated">{{ m.name || '???' }}</span>
-            <span
-              class="mv-type-tag pixelated"
-              :style="{ background: PDEX_TYPE_COLORS[m.type?.toLowerCase() || 'normal'] }"
-            >
-              {{ (m.type || 'normal').toUpperCase() }}
-            </span>
-          </div>
-          
-          <div class="move-details-row">
-            <div class="detail-item">
-              <span class="d-label pixelated">POT:</span>
-              <span class="d-val pixelated">{{ m.power || '-' }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="d-label pixelated">PREC:</span>
-              <span class="d-val pixelated">
-                <span
-                  v-if="m.acc === 1000"
-                  class="infinity-emoji"
-                >♾️</span>
-                <template v-else>{{ m.acc || '-' }}</template>
-              </span>
-            </div>
-            <div class="detail-item">
-              <span class="d-label pixelated">CAT:</span>
-              <span class="d-val pixelated">
-                {{ { physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' }[m.cat] || '🔮 Estado' }}
-              </span>
-            </div>
-            <div class="mv-pp-wrap">
-              <span class="mv-pp-label pixelated">PP</span>
-              <span class="mv-pp-val pixelated">{{ m.pp }}/{{ m.maxPP }}</span>
-            </div>
-          </div>
-        </PVTooltip>
-      </div>
+      
+      <BattleMovesGrid 
+        :moves="currentMoves"
+        :can-reorder="canReorder"
+        @reorder-moves="handleReorder"
+      />
     </div>
 
     <h4 class="vp-section-title">

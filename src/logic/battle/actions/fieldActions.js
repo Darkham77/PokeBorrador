@@ -6,40 +6,68 @@
 export const FIELD_ACTIONS = {
   'reflect': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (srcStages.reflect) {
-      addLogFn("¡Pero falló!", 'log-info');
+      addLogFn("¡Pero falló!", 'log-info', src);
     } else {
       srcStages.reflect = 5;
-      addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques físicos!`, 'log-info');
+      addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques físicos!`, 'log-info', src);
     }
   },
   'light_screen': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (srcStages.lightScreen) {
-      addLogFn("¡Pero falló!", 'log-info');
+      addLogFn("¡Pero falló!", 'log-info', src);
     } else {
       srcStages.lightScreen = 5;
-      addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques especiales!`, 'log-info');
+      addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques especiales!`, 'log-info', src);
     }
   },
   'safeguard': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (srcStages.safeguard) {
-      addLogFn("¡Pero falló!", 'log-info');
+      addLogFn("¡Pero falló!", 'log-info', src);
     } else {
       srcStages.safeguard = 5;
-      addLogFn(`¡Tu equipo está protegido contra estados por el Velo Sagrado!`, 'log-info');
+      addLogFn(`¡${src.name} envuelve al equipo en un Velo Sagrado!`, 'log-info', src);
     }
   },
   'hail': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
     if (battleCtx) {
       battleCtx.weather = { type: 'hail', turns: 5 };
-      addLogFn("¡Empezó a granizar!", 'log-info');
+      addLogFn("¡Empezó a granizar!", 'log-info', src);
+    }
+  },
+  'rain': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (battleCtx) {
+      battleCtx.weather = { type: 'rain', turns: 5 };
+      addLogFn("¡Empezó a llover!", 'log-info', src);
+    }
+  },
+  'sun': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (battleCtx) {
+      battleCtx.weather = { type: 'sun', turns: 5 };
+      addLogFn("¡El sol se volvió muy intenso!", 'log-info', src);
+    }
+  },
+  'sandstorm': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (battleCtx) {
+      battleCtx.weather = { type: 'sandstorm', turns: 5 };
+      addLogFn("¡Se desató una tormenta de arena!", 'log-info', src);
+    }
+  },
+  'weather_sandstorm': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    FIELD_ACTIONS.sandstorm(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
+  },
+  'break_screens': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    if (tgtStages.reflect || tgtStages.lightScreen) {
+      tgtStages.reflect = 0;
+      tgtStages.lightScreen = 0;
+      addLogFn(`¡${src.name} rompió las barreras de su oponente!`, 'log-info', src);
     }
   },
   'spikes': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     tgtStages.spikes = Math.min(3, (tgtStages.spikes || 0) + 1);
-    addLogFn(`¡${src.name} lanzó púas alrededor de su rival!`, 'log-info');
+    addLogFn(`¡${src.name} lanzó púas alrededor de su rival!`, 'log-info', src);
   },
   'mist': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     srcStages.mist = 5;
-    addLogFn(`¡Una neblina protectora rodea a ${src.name}!`, 'log-info');
+    addLogFn(`¡Una neblina protectora rodea a ${src.name}!`, 'log-info', src);
   }
 };

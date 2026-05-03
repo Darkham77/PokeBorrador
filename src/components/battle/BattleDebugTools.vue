@@ -4,23 +4,27 @@ import { ref, computed } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { useAudioStore } from '@/stores/audio'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/data/pokedex'
 import { gameBus } from '@/logic/gameBus'
+import DebugAudioAnimTab from '@/components/admin/debug/DebugAudioAnimTab.vue'
 
 const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+const audio = useAudioStore()
 const isOpen = ref(false)
+const isEffectsOpen = ref(false)
 
 const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_DEBUG__)
 
 const defeatEnemy = async () => {
   const e = battleStore.enemy
   if (!e) return
-  battleStore.addLog('DEBUG: Ejecutando Daño Máximo...', 'log-info')
+  battleStore.addLog('DEBUG: Ejecutando Daño Máximo...', 'log-info', e)
   e.hp = 0
   await battleStore.endBattle(true, false)
 }
@@ -30,7 +34,7 @@ const healPlayer = () => {
   if (!p) return
   p.hp = p.maxHp
   p.status = null
-  battleStore.addLog('DEBUG: Jugador curado.', 'log-info')
+  battleStore.addLog('DEBUG: Jugador curado.', 'log-info', p)
 }
 
 const healEnemy = () => {
@@ -38,7 +42,7 @@ const healEnemy = () => {
   if (!e) return
   e.hp = e.maxHp
   e.status = null
-  battleStore.addLog('DEBUG: Enemigo curado.', 'log-info')
+  battleStore.addLog('DEBUG: Enemigo curado.', 'log-info', e)
 }
 
 const debugCapture = async () => {
@@ -48,20 +52,23 @@ const debugCapture = async () => {
   const e = battleStore.state.enemy
   const itemName = 'Ultra Ball'
   
-  battleStore.addLog(`DEBUG: Lanzando ${itemName} (100% Efectividad)...`, 'log-catch')
+  battleStore.addLog(`DEBUG: Lanzando ${itemName} (100% Efectividad)...`, 'log-catch', itemName)
   
   // 1. Animación de entrada
+  audio.ballHit()
   gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: itemName })
   await new Promise(r => setTimeout(r, 1000))
 
   // 2. Suspenso: 3 Shakes
   for (let i = 0; i < 3; i++) {
+    audio.wobble()
     gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
     await new Promise(r => setTimeout(r, 1000))
   }
 
   // 3. Éxito visual y sonoro
   await new Promise(r => setTimeout(r, 500))
+  audio.caught()
   gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
   battleStore.addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
   
@@ -168,7 +175,7 @@ const toggleStatus = (side, type) => {
   <div
     v-if="isDebug"
     class="battle-debug-tools"
-    :class="{ 'is-open': isOpen }"
+    :class="{ 'is-open': isOpen || isEffectsOpen }"
   >
     <Transition name="slide-up">
       <div
@@ -372,15 +379,51 @@ const toggleStatus = (side, type) => {
       </div>
     </Transition>
 
-    <PVTooltip title="Debug Menu">
-      <button
-        class="debug-trigger"
-        @click.stop="isOpen = !isOpen"
+    <!-- NEW EFFECTS PANEL -->
+    <Transition name="slide-up">
+      <div
+        v-if="isEffectsOpen"
+        class="effects-menu custom-scrollbar-vicio"
       >
-        <span class="icon">🕹️</span>
-        <span class="label">DEBUG</span>
-      </button>
-    </PVTooltip>
+        <div class="effects-header">
+          <span class="icon">✨</span>
+          <span class="title">BATTLE EFFECTS & AUDIO</span>
+          <button
+            class="close-mini"
+            @click.stop="isEffectsOpen = false"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="effects-scroll-area">
+          <DebugAudioAnimTab />
+        </div>
+      </div>
+    </Transition>
+
+    <div class="debug-triggers-row">
+      <PVTooltip title="Debug Menu">
+        <button
+          class="debug-trigger"
+          :class="{ active: isOpen }"
+          @click.stop="isOpen = !isOpen; isEffectsOpen = false"
+        >
+          <span class="icon">🕹️</span>
+          <span class="label">DEBUG</span>
+        </button>
+      </PVTooltip>
+
+      <PVTooltip title="Audio & Visual Effects">
+        <button
+          class="effects-trigger"
+          :class="{ active: isEffectsOpen }"
+          @click.stop="isEffectsOpen = !isEffectsOpen; isOpen = false"
+        >
+          <span class="icon">✨</span>
+          <span class="label">EFECTOS</span>
+        </button>
+      </PVTooltip>
+    </div>
   </div>
 </template>
 
@@ -397,14 +440,20 @@ const toggleStatus = (side, type) => {
   flex-direction: column-reverse;
   align-items: flex-start;
   pointer-events: none;
+  min-height: 0; // Fix flex scroll collapse for debug-menu
   @include pixelated;
   
   &.is-open { pointer-events: all; }
 }
 
-.debug-trigger {
-  @include btn-vicio('info', 'xs', true);
+.debug-triggers-row {
+  display: flex;
+  gap: 8px;
   pointer-events: all;
+}
+
+.debug-trigger, .effects-trigger {
+  @include btn-vicio('info', 'xs', true);
   background: Rgba(20, 20, 30, 0.95);
   border: 2px solid var(--yellow);
   color: var(--yellow);
@@ -419,7 +468,51 @@ const toggleStatus = (side, type) => {
   box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.6);
   @include pixelated;
   
-  &:hover { background: var(--yellow); color: $black; text-shadow: none; }
+  &:hover, &.active { background: var(--yellow); color: $black; text-shadow: none; }
+}
+
+.effects-trigger {
+  border-color: var(--purple);
+  color: var(--purple);
+  &:hover, &.active { background: var(--purple); color: white; }
+}
+
+.effects-menu {
+  background: Rgba(15, 15, 25, 0.99);
+  border: 2px solid var(--purple);
+  border-radius: 8px;
+  width: 320px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 15px 50px Rgba(0,0,0,0.9);
+  -webkit-backdrop-filter: Blur(15px);
+  backdrop-filter: Blur(15px);
+  @include gpu-layer;
+  margin-bottom: 12px;
+  overflow: hidden;
+  min-height: 0; // Fix flex scroll collapse for effects-scroll-area
+  @include gpu-layer;
+
+  .effects-header {
+    background: Rgba(124, 58, 237, 0.15);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+
+    .title { @include pixelated; font-size: 8px; color: var(--purple); flex: 1; }
+    .close-mini { background: none; border: none; color: white; cursor: pointer; opacity: 0.5; &:hover { opacity: 1; } }
+  }
+
+  .effects-scroll-area {
+    padding: 16px;
+    min-height: 0;
+    overflow-y: auto;
+    flex: 1;
+    @include smooth-scroll;
+  }
 }
 
 .debug-menu {

@@ -151,7 +151,7 @@ const handleMove = (targetBoxIndex) => {
 }
 
 .box-select-btn {
-  @include glass(Rgba(30, 41, 59, 0.4), 12px); // Corrected mixin name
+  @include glass(Rgba(30, 41, 59, 0.4), 12px); 
   padding: 1px;
   position: relative;
   cursor: pointer;
@@ -168,7 +168,7 @@ const handleMove = (targetBoxIndex) => {
     align-items: center;
     gap: 8px;
     background: transparent;
-    z-index: 2;
+    z-index: var(--z-base);
     position: relative;
     width: 100%;
   }
@@ -179,7 +179,7 @@ const handleMove = (targetBoxIndex) => {
     background: Radial-Gradient(circle at center, Rgba(255,255,255,0.05) 0%, transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;
-    z-index: 1;
+    z-index: calc(var(--z-base) - 1);
   }
 
   &:hover:not(:disabled) {

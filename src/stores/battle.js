@@ -1,9 +1,9 @@
 // [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
-import { ref, computed, reactive } from 'vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { ref, computed, reactive, watch } from 'vue'
 import { useGameStore } from './game'
 import { handleEntryAbilities, applyEndTurnWeather } from '../logic/battle/battleFlow'
+import { getMechanicalWeather } from '../logic/battle/weatherMapper'
 import { calculateBaseExp, processExpGain, calculateMoneyGain } from '../logic/battle/battleRewards'
 import { handleItemUsage } from '../logic/battle/battleItems'
 import { gameBus } from '@/logic/gameBus'
@@ -17,8 +17,7 @@ import { tickStatus, tickLeechSeed } from '../logic/battle/battleStatus'
 import { executeTurn, runEnemyAction } from '../logic/battle/battleTurn'
 import { generateEncounter } from '@/logic/encounters'
 import { useMapStore } from './map'
-import { SHOP_ITEMS } from '@/data/items'
-import { PLAYER_CLASSES } from '@/data/playerClasses'
+import { formatBattleLog } from '../logic/battle/battleLogger'
 
 export const useBattleStore = defineStore('battle', () => {
   const gs = useGameStore()
@@ -28,6 +27,7 @@ export const useBattleStore = defineStore('battle', () => {
   const audio = useAudioStore()
   
   const activeBattle = ref(null)
+  const faintedSides = ref(new Set())
   const isBattleActive = ref(false)
   const isFinishing = ref(false)
   const isProcessing = ref(false)
@@ -41,15 +41,24 @@ export const useBattleStore = defineStore('battle', () => {
   const attackerSide = ref(null) // 'player' or 'enemy'
   const activeMove = ref(null)
 
-  const playerStages = ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 })
-  const enemyStages = ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 })
+  const playerStages = ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 })
+  const enemyStages = ref({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 })
   const upcomingPokemon = ref(null)
   const debugLoopPokemon = ref(null) // Plantilla para bucle infinito debug
 
   const player = computed(() => activeBattle.value?.player)
   const enemy = computed(() => activeBattle.value?.enemy)
 
-  const syncFromLegacy = (battleData) => {
+  const mapStore = useMapStore()
+  
+  // Sincronizar clima permanente con cambios en el mapa (tiempo real)
+  watch(() => mapStore.currentWeather, (newWeather) => {
+    if (activeBattle.value && activeBattle.value.weather?.turns === -1) {
+      activeBattle.value.weather.type = newWeather || 'clear'
+    }
+  })
+
+  const restoreBattle = (battleData) => {
     if (!battleData) {
       activeBattle.value = null
       isBattleActive.value = false
@@ -110,12 +119,21 @@ export const useBattleStore = defineStore('battle', () => {
     sanitizePokemon(playerPoke)
     sanitizePokemon(finalEnemyPoke)
 
+    // LIMPIEZA DE ESTADOS VOLÁTILES (Confusión, Drenadoras, etc)
+    clearVolatileStatus(playerPoke)
+    clearVolatileStatus(finalEnemyPoke)
+
     // 3. ACTUALIZACIÓN ATÓMICA DE ESTADO
     // Seteamos el combate. Esto disparará la reactividad en el HUD.
     activeBattle.value = {
       enemy: finalEnemyPoke, player: playerPoke, isGym, gymId, isTrainer, enemyTeam,
+      playerTeam: gs.state.team, // [NEW] Incluimos el equipo completo para resolución de efectos
       trainerName, locationId, turn: 'player', turnCount: 1, over: false,
-      weather: { type: mapStore.currentWeather || 'clear', turns: -1 },
+      weather: { 
+        type: getMechanicalWeather(mapStore.currentWeather), 
+        visual: mapStore.currentWeather, 
+        turns: -1 
+      },
       playerTeamIndex: gs.state.team.indexOf(playerPoke),
       participants: [playerPoke.uid], learnQueue: [], ...battleOptions
     }
@@ -138,6 +156,7 @@ export const useBattleStore = defineStore('battle', () => {
     isBattleActive.value = true
     attackerSide.value = null
     activeMove.value = null
+    faintedSides.value.clear()
     clearLogs()
 
     gameBus.emit('START_BATTLE', { 
@@ -176,58 +195,44 @@ export const useBattleStore = defineStore('battle', () => {
       })
     }
   }
-
-  const addLog = (msg, type = 'log-info', source = null, sideOverride = null) => {
-    let icon = null
-    let iconType = null
-    
-    if (msg.startsWith('DEBUG:')) {
-      icon = '😈'
-      iconType = 'emoji'
-    } else if (source) {
-      if (source === 'player') {
-        // Resolver avatar del jugador usando su clase activa
-        const cls = PLAYER_CLASSES[gs.state.playerClass]
-        const spriteId = cls?.avatarSpriteId || gs.state.avatar_style || 'entrenador'
-        icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId)
-        iconType = 'trainer'
-      } else if (source === 'enemy_trainer') {
-        // Resolver avatar del entrenador oponente
-        const spriteId = activeBattle.value?.trainerSprite || 'entrenador'
-        icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId)
-        iconType = 'trainer'
-      } else if (typeof source === 'object' && source) {
-        // Es un pokemon - Intentar detectar ID por varias propiedades comunes
-        const pokeId = source.id || source.pokemonId || source.pokedexId || source.id_pokemon
-        if (pokeId) {
-          icon = getAssetUrl(ASSET_TYPES.POKEMON, pokeId, { isShiny: source.isShiny })
-          iconType = 'pokemon'
-        }
-      } else if (typeof source === 'string') {
-        // Resolver sprite del item por nombre o ID (insensible a mayúsculas)
-        const sLower = source.toLowerCase()
-        const item = SHOP_ITEMS.find(i => i.name.toLowerCase() === sLower || i.id.toLowerCase() === sLower)
-        const spriteId = item ? item.sprite : source
-        icon = getAssetUrl(ASSET_TYPES.ITEM, spriteId)
-        iconType = 'item'
-      }
+  /**
+   * Añade un log al combate. 
+   * MANDATORIO: source debe ser un Pokémon o una de las constantes ('player', 'enemy_trainer')
+   */
+  const addLog = (msg, type = 'log-info', source, sideOverride = null) => {
+    const ctx = {
+      gs,
+      activeBattle: activeBattle.value,
+      attackerSide: attackerSide.value
     }
-
-    const side = sideOverride || (
-      source === 'player' || 
-      attackerSide.value === 'player' ||
-      (source && typeof source === 'object' && gs.state.team.some(p => p && p.uid === source.uid))
-    ) ? 'player' : 'enemy'
     
-    battleLogs.value.push({
-      id: Date.now() + Math.random(),
-      msg,
-      type,
-      side,
-      icon,
-      iconType
-    })
+    const logItem = formatBattleLog(msg, type, source, ctx)
+    if (sideOverride) logItem.side = sideOverride
+
+    battleLogs.value.push(logItem)
     if (!isProcessingLogs.value) processNextLog()
+  }
+
+  const clearVolatileStatus = (poke) => {
+    if (!poke) return
+    poke.confused = 0
+    poke.flinched = false
+    poke.substitute = 0
+    poke.seeded = false
+    poke.attracted = false
+    poke.cursed = false
+    poke.protect = false
+    poke.detect = false
+    poke.destinyBond = false
+    poke.perishSongCount = 0
+    poke.tauntTurns = 0
+    poke.disabledTurns = 0
+    poke.disabledMove = null
+    poke.encoreTurns = 0
+    poke.encoreMove = null
+    poke.ingrain = false
+    poke.focusEnergy = false
+    poke.lockOn = false
   }
 
   const processNextLog = async () => {
@@ -254,8 +259,8 @@ export const useBattleStore = defineStore('battle', () => {
 
   const clearLogs = () => {
     battleLogs.value = []; logQueue.value = []; isProcessingLogs.value = false;
-    playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
-    enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
+    playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+    enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
     activeMove.value = null
     attackerSide.value = null
   }
@@ -265,22 +270,136 @@ export const useBattleStore = defineStore('battle', () => {
     isProcessing.value = true
     const thisStore = reactive({ 
       activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
-      attackerSide, activeMove, persistBattle
+      attackerSide, activeMove, persistBattle, handleFaint
     })
     await executeTurn(thisStore, moveIndex)
     if (isBattleActive.value && !activeBattle.value.over) await applyEndTurnEffects()
     activeMove.value = null
-    isProcessing.value = false
+    
+    // Solo liberamos el procesamiento si el combate sigue activo y no ha terminado
+    if (activeBattle.value && !activeBattle.value.over) {
+      isProcessing.value = false
+    }
   }
 
   const applyEndTurnEffects = async () => {
     const p = activeBattle.value.player
     const e = activeBattle.value.enemy
-    tickStatus(p, addLog, 'player')
-    tickStatus(e, addLog, 'enemy')
-    tickLeechSeed(p, e, addLog)
-    tickLeechSeed(e, p, addLog)
+    
+    // Procesar Premonición (Future Sight)
+    if (activeBattle.value.futureSightTurns > 0) {
+      activeBattle.value.futureSightTurns--
+      if (activeBattle.value.futureSightTurns === 0) {
+        const fsTarget = activeBattle.value.futureSightTarget
+        if (fsTarget && fsTarget.hp > 0) {
+          const dmg = Math.max(10, Math.floor(fsTarget.maxHp * 0.15)) // Daño de premonición
+          fsTarget.hp = Math.max(0, fsTarget.hp - dmg)
+          addLog(`¡Se cumplió la premonición! ${fsTarget.name} recibió daño.`, 'log-info', fsTarget)
+          gameBus.emit('PLAY_SOUND', 'statusDamage')
+        }
+      }
+    }
+
+    // Procesa efectos y guarda si hubo daño
+    const _pDamaged = tickStatus(p, addLog, 'player')
+    const _eDamaged = tickStatus(e, addLog, 'enemy')
+    const _pSeeded = tickLeechSeed(p, e, addLog)
+    const _eSeeded = tickLeechSeed(e, p, addLog)
+    
+    // Weather Turn Logic
+    const w = activeBattle.value.weather
+    if (w && w.turns > 0) {
+      w.turns--
+      if (w.turns === 0) {
+        addLog(`¡El efecto de ${w.type} se desvaneció!`, 'log-info')
+        // Volver al clima del mapa
+        w.type = mapStore.currentWeather || 'clear'
+        w.turns = -1 // Vuelve a ser permanente siguiendo al mapa
+      }
+    }
+
+    // Field Effects (Screens/Mist/Safeguard)
+    const fieldEffects = ['reflect', 'lightScreen', 'safeguard', 'mist']
+    const sides = [
+      { stages: playerStages, name: 'Jugador', log: 'log-player' },
+      { stages: enemyStages, name: 'Enemigo', log: 'log-enemy' }
+    ]
+    sides.forEach(side => {
+      fieldEffects.forEach(effect => {
+        if (side.stages.value[effect] > 0) {
+          side.stages.value[effect]--
+          if (side.stages.value[effect] === 0) {
+            const effectLabel = effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect
+            addLog(`¡El efecto de ${effectLabel} del ${side.name} se desvaneció!`, side.log)
+          }
+        }
+      })
+    })
+
     applyEndTurnWeather(p, e, activeBattle.value.weather, addLog)
+    
+    // Si alguien murió por efectos, procesar faint
+    if (p.hp <= 0) await handleFaint('player')
+    if (isBattleActive.value && e.hp <= 0) await handleFaint('enemy')
+    
+    persistBattle()
+  }
+
+  const handleFaint = async (side) => {
+    const isPlayer = side === 'player'
+    
+    // Guarda centralizada en la store, no en el objeto del pokemon
+    if (faintedSides.value.has(side)) return
+    faintedSides.value.add(side)
+
+    const pokemon = isPlayer ? player.value : enemy.value
+    const opponent = isPlayer ? enemy.value : player.value
+    
+    if (pokemon.destinyBond && opponent && opponent.hp > 0) {
+      addLog(`¡${pokemon.name} se llevó a ${opponent.name} con él!`, 'log-info', pokemon)
+      opponent.hp = 0
+      setTimeout(() => handleFaint(isPlayer ? 'enemy' : 'player'), 500)
+    }
+
+    if (isPlayer) {
+      addLog(`¡${pokemon.name} se ha debilitado!`, 'log-player', pokemon)
+      gameBus.emit('PLAY_FAINT', { side: 'player' })
+      
+      const nextPoke = gs.state.team.find(p => p.hp > 0)
+      if (!nextPoke) {
+        activeBattle.value.over = true
+        addLog('¡No te quedan Pokémon sanos!', 'log-error', 'player')
+        setTimeout(() => { isFinishing.value = true }, 1200)
+      } else {
+        // Asegurar fuente 'player' absoluta para el entrenador
+        addLog('¡Envía a otro Pokémon!', 'log-info', 'player')
+        const idx = gs.state.team.indexOf(nextPoke)
+        setTimeout(() => {
+          faintedSides.value.delete('player') // Limpiar guarda antes del relevo
+          _executeSwitch(idx, true)
+        }, 1000)
+      }
+    } else {
+      const isTr = activeBattle.value.isTrainer || activeBattle.value.isGym
+      const enemyName = isTr ? pokemon.name : `¡${pokemon.name} salvaje`
+      addLog(`${enemyName} fue derrotado!`, 'log-enemy', pokemon)
+      gameBus.emit('PLAY_FAINT', { side: 'enemy' })
+      
+      if (isTr && activeBattle.value.enemyTeam) {
+        const nextEnemy = activeBattle.value.enemyTeam.find(p => p.hp > 0)
+        if (nextEnemy) {
+          gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
+          addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
+          gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
+          await new Promise(r => setTimeout(r, 800))
+          return
+        }
+      }
+      
+      activeBattle.value.over = true 
+      faintedSides.value.add('enemy') // Bloquear cualquier otra acción enemiga
+      setTimeout(() => endBattle(true), 800)
+    }
   }
 
   const useItemInBattle = async (itemName, targetIndex = null) => {
@@ -291,7 +410,14 @@ export const useBattleStore = defineStore('battle', () => {
     const targetPoke = (targetIndex !== null) ? gs.state.team[targetIndex] : activeBattle.value.player
     
     attackerSide.value = 'player'
-    const res = await handleItemUsage(itemName, targetPoke, activeBattle.value.enemy, { gs, eventStore, addLog, audio, consumeItem })
+    const ctx = {
+      turnCount: activeBattle.value.turnCount,
+      locationId: activeBattle.value.locationId,
+      weather: activeBattle.value.weather
+    }
+    const res = await handleItemUsage(itemName, targetPoke, activeBattle.value.enemy, { 
+      gs, eventStore, addLog, audio, consumeItem, ctx 
+    })
     attackerSide.value = null
     activeMove.value = null
     
@@ -307,7 +433,7 @@ export const useBattleStore = defineStore('battle', () => {
       
       const thisStore = reactive({ 
         activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
-        attackerSide, activeMove, persistBattle
+        attackerSide, activeMove, persistBattle, handleFaint
       })
       await runEnemyAction(thisStore)
     }
@@ -328,6 +454,7 @@ export const useBattleStore = defineStore('battle', () => {
     const enemyRef = battleData.enemy
     
     activeBattle.value.over = true
+    faintedSides.value.clear()
     
     if (win && !fled) calculateRewards()
     
@@ -357,6 +484,7 @@ export const useBattleStore = defineStore('battle', () => {
     }
     
     if (fled) {
+      isFinishing.value = true
       await completeBattleFlow('map')
     } else {
       // 1. Activar estado de finalización si no se hizo arriba (ya se hizo en win && !fled, pero por seguridad)
@@ -499,7 +627,7 @@ export const useBattleStore = defineStore('battle', () => {
       addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', 'player')
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
       await new Promise(r => setTimeout(r, 800))
-      oldPoke.confused = 0; oldPoke.flinched = false
+      clearVolatileStatus(oldPoke)
     }
 
     // Cambio de estado
@@ -507,7 +635,7 @@ export const useBattleStore = defineStore('battle', () => {
     if (!activeBattle.value.participants.includes(newPoke.uid)) {
       activeBattle.value.participants.push(newPoke.uid)
     }
-    playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 }
+    playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
     
     // Animación de Salida
     addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
@@ -519,7 +647,7 @@ export const useBattleStore = defineStore('battle', () => {
     
     const thisStore = reactive({ 
       activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
-      attackerSide, activeMove, persistBattle
+      attackerSide, activeMove, persistBattle, handleFaint
     })
     
     if (!isForced) await runEnemyAction(thisStore)
@@ -568,7 +696,7 @@ export const useBattleStore = defineStore('battle', () => {
       return
     }
 
-    isFinishing.value = false; isBattleActive.value = false; activeBattle.value = null; isSearching.value = false; clearLogs() 
+    isFinishing.value = false; isBattleActive.value = false; activeBattle.value = null; isSearching.value = false; isProcessing.value = false; clearLogs() 
 
     if (option === 'map') {
       uiStore.activeTab = 'map'
@@ -587,6 +715,54 @@ export const useBattleStore = defineStore('battle', () => {
       console.warn('[DEBUG] Forzando huida del combate...')
       await endBattle(false, true)
     }
+
+    // CLI de Combate Extendido
+    window.__VITE_DEBUG__.battle = {
+      // Acceso directo a estados
+      setPlayerStatus: (s) => activeBattle.value.player.status = s,
+      setEnemyStatus: (s) => activeBattle.value.enemy.status = s,
+      setPlayerStage: (stat, val) => playerStages.value[stat] = val,
+      setEnemyStage: (stat, val) => enemyStages.value[stat] = val,
+      
+      // Clima y Campo
+      setWeather: (w) => activeBattle.value.weather = { type: w, turns: 5 },
+      forceReflect: (side = 'player') => {
+        const s = side === 'player' ? playerStages.value : enemyStages.value
+        s.reflect = 5
+      },
+      forceLightScreen: (side = 'player') => {
+        const s = side === 'player' ? playerStages.value : enemyStages.value
+        s.lightScreen = 5
+      },
+      forceSpikes: (side = 'enemy') => {
+        const s = side === 'player' ? playerStages.value : enemyStages.value
+        s.spikes = (s.spikes || 0) + 1
+      },
+
+      // Volátiles
+      setConfused: (val = 3) => activeBattle.value.player.confused = val,
+      setSeeded: (val = true) => activeBattle.value.player.seeded = val,
+      setSubstitute: (hp = 50) => activeBattle.value.player.substitute = hp,
+      setIngrain: (val = true) => activeBattle.value.player.ingrain = val,
+      setFocusEnergy: (val = true) => activeBattle.value.player.focusEnergy = val,
+      setLockOn: (val = true) => activeBattle.value.player.lockOn = val,
+      
+      // Utilidades
+      syncMoves: async () => {
+        const p = activeBattle.value.player
+        const { sanitizePokemon } = await import('@/logic/pokemonFactory')
+        sanitizePokemon(p)
+        console.log('[DEBUG] Movimientos sincronizados para:', p.name)
+      },
+      fullHeal: () => {
+        const p = activeBattle.value.player
+        p.hp = p.maxHp; p.status = null; p.confused = 0; p.seeded = false
+      },
+      killEnemy: () => activeBattle.value.enemy.hp = 0,
+      
+      // Referencia al store
+      store: () => useBattleStore()
+    }
   }
 
   return {
@@ -603,7 +779,7 @@ export const useBattleStore = defineStore('battle', () => {
     activeMove,
     upcomingPokemon,
     debugLoopPokemon,
-    syncFromLegacy,
+    restoreBattle,
     addLog,
     clearLogs,
     executeMove,
@@ -619,7 +795,7 @@ export const useBattleStore = defineStore('battle', () => {
         variant: 'retro',
         onConfirm: async () => {
           audio.flee();
-          addLog('¡Huiste!', 'log-info');
+          addLog('¡Huiste!', 'log-info', 'player');
           await endBattle(false, true);
         }
       });
@@ -628,6 +804,7 @@ export const useBattleStore = defineStore('battle', () => {
     setFinishing: (cb) => { isFinishing.value = true; battleEndCallback.value = cb },
     useItemInBattle,
     endBattle,
+    handleFaint,
     _startBattle,
     executeSwitch: _executeSwitch,
     isSearching,

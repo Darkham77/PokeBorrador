@@ -95,11 +95,12 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
         </div>
       </div>
       <div class="bottom-line">
-        <div class="types-row">
+        <div class="sel-types-row">
           <span 
             v-for="t in item.pokemon.types || [item.pokemon.type]" 
             :key="t"
-            class="type-pill"
+            class="ps-type-pill sm"
+            :class="`type-${t?.toLowerCase()}`"
             :style="{ background: getTypeColor(t) }"
           >
             {{ t?.toUpperCase() }}

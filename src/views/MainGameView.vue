@@ -276,6 +276,7 @@ useDocumentListener('keydown', initAudio, { once: true })
         v-if="gs.starterChosen"
         ref="hudBottomRef"
         class="hud-bottom-wrapper"
+        :class="{ 'hud-visible-active': isHudHidden }"
       >
         <HUD_Navigation 
           class="mobile-only-nav"

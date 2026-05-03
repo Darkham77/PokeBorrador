@@ -121,8 +121,8 @@ const hexToRgb = (hex) => {
 
 const handleToggleTag = (tagOrId) => {
   const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
-  if (isInstance.value && finalIndex.value > -1 && typeof window.togglePokeTag === 'function') {
-    window.togglePokeTag(finalContext.value, finalIndex.value, tagId)
+  if (isInstance.value && finalIndex.value > -1) {
+    gameStore.togglePokeTag(finalContext.value, finalIndex.value, tagId)
   }
 }
 

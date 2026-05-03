@@ -10,6 +10,7 @@ import DebugTimeTab from './debug/DebugTimeTab.vue'
 import DebugModalsTab from './debug/DebugModalsTab.vue'
 import DebugMapTab from './debug/DebugMapTab.vue'
 import DebugMissionsTab from './debug/DebugMissionsTab.vue'
+import DebugAudioAnimTab from './debug/DebugAudioAnimTab.vue'
 
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -122,6 +123,9 @@ const selectedCategory = ref('stats')
           />
           <DebugMissionsTab
             v-if="selectedCategory === 'missions'"
+          />
+          <DebugAudioAnimTab
+            v-if="selectedCategory === 'audio'"
           />
         </main>
       </div>

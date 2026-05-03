@@ -217,3 +217,11 @@ export function playMoneySound(ctx, dest) {
     playNote(ctx, dest, 1975.53, t + i * 0.06, 0.05, 0.2, 'square');
   }
 }
+/**
+ * STATUS DAMAGE SOUND (8-bit impact)
+ */
+export function playStatusDamageSound(ctx, dest) {
+  const t = ctx.currentTime + 0.05;
+  playNoise(ctx, dest, t, 0.12, 0.25, 400); // Ruido sordo para el impacto
+  playGlide(ctx, dest, 110, 55, t, 0.15, 0.2, 'square'); // Pulso bajo descendente
+}

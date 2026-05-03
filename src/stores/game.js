@@ -41,7 +41,7 @@ export const useGameStore = defineStore('game', () => {
   const { autoFillPvpTeam, swapPvpSlot, reorderPvpTeam, autoFillWarTeam, swapWarSlot, reorderWarTeam } = useTeamActions(state, scheduleSave)
 
   // 3. Pokemon Actions
-  const { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam)
+  const { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam)
 
   // 4. Trainer Actions
   const { getTrainerRank, addTrainerExp, checkLevelUp, getMaxObeyLevel } = useTrainerActions(state, scheduleSave)
@@ -94,6 +94,7 @@ export const useGameStore = defineStore('game', () => {
     swapPvpSlot,
     autoFillWarTeam,
     swapWarSlot,
+    togglePokeTag,
     executeHatch,
     saveGame: save // Alias
   }

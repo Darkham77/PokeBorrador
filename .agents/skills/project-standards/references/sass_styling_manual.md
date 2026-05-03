@@ -23,6 +23,7 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 - `filter: Blur(5px);`
 - `filter: Saturate(1.5);`
 - `filter: Drop-shadow(0 4px 8px rgba(0,0,0,0.5));`
+- `background: Radial-Gradient(...) / Linear-Gradient(...);` (Essential for weather overlays)
 
 > [!WARNING]
 > **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, `Rotate()`, `TranslateY()`, and `Grayscale()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
@@ -61,6 +62,22 @@ To bypass SASS color function collisions, we strictly follow a hierarchy of meth
 - **Reasoning**: The property is hardware-accelerated and significantly more efficient for mobile GPUs than the filter function. It also avoids SASS deprecation warnings entirely.
   - ✅ `opacity: 0.5;`
   - ❌ `filter: Opacity(0.5);` (Inefficient)
+
+### 4. Layout Stability: Flex-Scroll Areas
+
+To prevent layout collapse in scrollable flex containers (Common in Debug and Grid panels), you **MUST** ensure the scrolling container can shrink correctly.
+
+- **MANDATORY**: Apply `min-height: 0` to any element using `flex: 1` and `overflow: auto/hidden`.
+- **Audit Positioning**: To be correctly detected by automated audit tools, the `min-height: 0` declaration SHOULD be placed immediately adjacent to the `overflow` property.
+- **Example**:
+  ```scss
+  .scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0; // Essential for flex-child scroll stability
+    @include smooth-scroll;
+  }
+  ```
 
 > [!IMPORTANT]
 > **VUE COMPONENT RULE**: Interpolation `#{}` only works inside `<style lang="scss">`. If you apply this fix to a `.vue` file, you **MUST** ensure the style block has the `lang="scss"` attribute.
@@ -114,6 +131,8 @@ The project employs a high-contrast **Hybrid Retro-Modern** aesthetic. We combin
 All layouts and structural containers **MUST** follow premium modern web design principles.
 
 - **Glassmorphism**: Use `-webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px); background: rgba(255, 255, 255, 0.05);` for cards and overlays.
+- **Premium Solid Glass**: For high-density game HUDs (like Battle Sidebars), use `Rgba(30, 41, 59, 0.8)` with `Blur(12px)`. This ensures readability against dynamic backgrounds without sacrificing the glass aesthetic.
+- **Opacity Accumulation**: Prohibit applying background colors or blurs to both a parent container and its children. This causes "Visual Mud" (excessive darkness). Background logic MUST be delegated to the deepest relevant element (e.g., the card).
 - **Dynamic Depth**: Use soft, multi-layered HSL shadows and subtle linear gradients.
 - **Modern Rendering**: Do **NOT** use `image-rendering: pixelated` on the UI shell or background layouts. They must remain smooth and fluid.
 
@@ -123,6 +142,8 @@ All game-specific content **MUST** be strictly Pixel Art to preserve the game's 
 
 - **Rendering**: For all sprites and pixelated assets, always use `image-rendering: pixelated;`.
 - **Icons**: Only use pixel-art icons. **FORBIDDEN**: Modern SVG icons, FontAwesome, or high-res Material icons.
+- **Scaling Standards**:
+  - **Grid Oversize**: Use **1.5x** scaling (e.g., `min-width: 60px` for a 40px slot) for item sprites in combat grids. Combined with `overflow: hidden` on parent cards, this creates a high-fidelity "clipping" effect.
 - **Typography (Game Data)**: We maintain a strict hierarchy between "Game Heart" and "Modern Shell" typography.
   - **MANDATORY Pixel Fonts**: `Press Start 2P`, `VT323`, or `Silkscreen` (Google Fonts).
   - **MANDATORY Mixin**: Any element using a pixel font **MUST** include `@include pixelated;` to disable browser font-smoothing and ensure sharp edges.
@@ -179,6 +200,7 @@ When refactoring legacy or generic components:
   - **Local/One-off Colors**: Capitalized Rgba/Rgb or Hex values ARE PERMITTED for local, non-recurring styles within a component's `<style scoped>` block, but variables are always preferred.
   - **SASS vs CSS Variables**: SASS color functions (like `color.scale`, `lighten()`, `darken()`) cannot process `var(--color)`. For interactive highlights/hovers, use static SASS fallbacks (e.g. `$yellow`) for calculations while maintaining the CSS variable for the main render to support dynamic themes.
   - **Variable Isolation**: In high-density or dynamically scoped components (e.g., within specialized filters or grids), if core SASS variables are not reliably available without manual imports, use **Direct Hex Values** to ensure visual stability and prevent "Color not defined" build errors.
+  - **Inheritance vs Mixins**: Avoid using `@extend` for classes defined in external stylesheets (e.g., `.m-type-tag`) inside global or modular components. If the base stylesheet is not included in every build chunk, `@extend` will fail. Use the underlying mixin directly (e.g., `@include type-pill;`) instead.
 - **Z-Index Standardization**:
   - **MANDATORY**: Never use hardcoded numbers for `z-index` (e.g., `z-index: 10;`). Use CSS variables (`var(--z-low)`, `var(--z-base)`, `var(--z-modal)`, `var(--z-critical)`) for consistent layering and to pass aesthetics audits.
 - **Modern Control Flow**: The legacy ternary `if()` function is deprecated in SASS 1.8+. Always use standard `@if / @else` blocks for conditional styling logic to ensure build-log cleanliness.
@@ -209,6 +231,21 @@ Avoid spreading definitions for the same component across multiple files. This i
   - ✅ `& .btn-price { display: none; }`
   - ❌ `.btn-price { display: none; }` (Will trigger alert if the class exists in another file)
 - **Goal**: Maintain 0 redefinitions for critical game components.
+- **Math-Based Layout Scaling (Robust Grid Pattern)**:
+  - **MANDATORY**: For complex UI panels with multiple interdependent parts (e.g., Combat Move Panels), define dimensions using CSS variables and `calc()` in the parent container.
+  - **Example**:
+
+    ```scss
+    #move-panel {
+      --move-card-max-width: 200px;
+      --move-panel-gap: 12px;
+      --move-panel-max-width: calc((var(--move-card-max-width) * 2) + var(--move-panel-gap));
+      
+      max-width: var(--move-panel-max-width);
+    }
+    ```
+
+  - **WHY**: Ensures the entire layout scales predictably if a single variable (like card width) is adjusted.
 
 ### 5. UI Button Standardization (Mandatory Mixins)
 
@@ -225,6 +262,14 @@ While `hud-mobile` (1410px) is the primary target for HUD shifts, complex compon
 - **768px**: Standard Portrait Mobile. Use for switching from `flex-row` to `flex-column` and stackable controls.
 - **Implementation**: Prefer `@include responsive(950px) { ... }` or `@include responsive(768px) { ... }` to keep component styles self-contained.
 - **Touch-Action Governance**: Components using custom Drag & Drop (like `UnifiedTeamSlot`) MUST apply `touch-action: none` during active dragging to prevent browser scroll interference.
+
+### 7. Global GPU Aesthetic Mixins
+
+To maintain "Zero-Warning" compliance, use the centralized GPU mixins defined in `_gpu.scss`.
+
+- **MANDATORY Smooth-Scroll**: Use `@include smooth-scroll;` for all scrolling areas.
+  - **Why**: Standardizes the aesthetic of retro-style scrollbars (thin, pixel-friendly, colored) across the entire application and ensures GPU acceleration.
+  - **FORBIDDEN**: Defining ad-hoc scrollbar styles (`::-webkit-scrollbar`) inside component files. Reuse the mixin.
 
 **Requirements**:
 

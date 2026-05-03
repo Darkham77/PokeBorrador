@@ -138,6 +138,18 @@ onMounted(() => {
       }
     }
     
+    // Estilos específicos para ITEMS (Objetos) - Reducidos a la mitad
+    &.item {
+      .log-icon {
+        width: 28px !important;
+        height: 28px !important;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+      }
+    }
+    
     &.empty {
       opacity: 0;
     }
@@ -187,14 +199,14 @@ onMounted(() => {
       height: 28px !important;
     }
     
-    .log-icon:not(.trainer .log-icon) {
+    .log-icon:not(.trainer .log-icon):not(.item .log-icon) {
       width: 38px !important;
       height: 38px !important;
     }
     
-    .trainer .log-icon {
-      width: 22px !important;
-      height: 22px !important;
+    .trainer .log-icon, .item .log-icon {
+      width: 18px !important;
+      height: 18px !important;
     }
   }
 }

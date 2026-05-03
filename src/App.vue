@@ -3,7 +3,7 @@ import { onMounted, ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
-import { initBaseBridge } from '@/logic/bridges/baseBridge'
+
 import { checkDBCompatibility } from '@/logic/db/dbRouter'
 
 import MainGameView from '@/views/MainGameView.vue'
@@ -88,7 +88,7 @@ const isReadyToSeeGame = computed(() => {
 onMounted(async () => {
   // 1. Init Global Error Handlers (Vue Bridge)
   initGlobalErrorHandlers()
-  initBaseBridge()
+
 
   // 2. Recuperar sesión (Autologin)
   if (isLoginPage.value) {
@@ -112,7 +112,7 @@ onMounted(async () => {
     // Restaurar combate si existe uno activo en el estado guardado
     if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
       console.log('[App] Detectado combate persistente. Restaurando estado...')
-      _battleStore.syncFromLegacy(gameStore.state.activeBattle)
+      _battleStore.restoreBattle(gameStore.state.activeBattle)
     }
     
     // Sincronizar datos del perfil

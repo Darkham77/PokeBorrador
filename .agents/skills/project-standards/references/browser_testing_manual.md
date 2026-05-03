@@ -60,6 +60,13 @@ When testing visual states (e.g., forcing Pokedex "Caught" status via debug butt
 - **Safety**: Visual overrides NEVER modify the actual save file (`saveService.js`).
 - **Clarification**: Always inform the user that changes are temporary and will disappear on refresh, to avoid confusion regarding data persistence.
 
+### 6. Debug Flip/Toggle Pattern
+
+Commands and buttons for binary states (Weather, Field Effects, Status) MUST implement "Flip" logic:
+
+- **Toggle**: If an effect is already active on the target side, clicking the debug button should automatically remove/clear it.
+- **Visual Sync**: Buttons must be reactively linked to the state so they stay "active" (e.g., highlighted) while the effect persists.
+
 ### 5. Visual Coordinate Verification (Combat)
 
 When testing sprite alignment and virtual world coordinates:

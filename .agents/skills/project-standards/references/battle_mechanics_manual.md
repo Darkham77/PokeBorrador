@@ -29,6 +29,34 @@ Damage = floor(((2 * Level / 5 + 2) * Power * A / D) / 50) + 2
 - **Sun**: 1.5x Fire Damage, 0.5x Water Damage.
 - **Rain**: 1.5x Water Damage, 0.5x Fire Damage.
 
+### 1. Atmospheric Synchronization & Integrity Protocol
+
+To prevent desynchronization between the Map's visual weather and the Combat Engine's mechanical effects, all weather interactions MUST pass through the `weatherMapper.js` system and use the global state.
+
+- **Single Source of Truth**: UI components (Grid, Tooltips) MUST consume weather data from `battleStore.state.weather` instead of local props or direct map state to ensure visual parity during combat transitions.
+- **Centralized Mapping**: Environmental tokens (e.g., `heatwave`, `blizzard`, `storm`) are normalized to mechanical keys (`sun`, `hail`, `rain`) via `getMechanicalWeather()`.
+- **Status Move Exclusion**: Modifier indicators (auras, "Penalizado por..." text) MUST be suppressed for moves of category `status` (except specific cases like Solar Beam). Damage multipliers from weather/cycle DO NOT affect status moves; showing these indicators constitutes a false positive.
+- **Integrity Guard**: If a weather token is NOT registered in the mapper, the system returns an `UNKNOWN` state.
+  - **HUD Feedback**: Displays a `⚠️` warning icon to notify that the weather lacks combat effects.
+  - **Dev Feedback**: Triggers a `[WeatherIntegrity]` warning in the console.
+- **Mandatory Registry**: Any new weather added to `weather-tables.js` MUST be added to `MAP_TO_MECHANICAL` and `WEATHER_UI_METADATA` in `weatherMapper.js`.
+- **Map Persistence**: Battles inherit the current route's weather. If the weather is "permanent" (turns: -1), it persists for the entire battle unless overridden.
+- **Move Override**: Weather induced by moves (e.g., Rain Dance, Hail) lasts **5 turns** and takes absolute priority over the map weather.
+- **Restoration**: Once a temporary weather effect expires, the system MUST restore the original map/route weather instead of clearing to "Clear".
+- **Visual Mapping**: The `BattleArenaView` must prioritize `battleStore.state.weather`. Mappings: `sun` -> `heatwave`, `hail` -> `blizzard`.
+
+### 2. Weather Effects Table (Gen 9 Standard)
+
+| Weather | Damage Boost | Damage Reduction | Defensive Boost | Residual Damage | Special Effects |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Sun** | Fire (1.5x) | Water (0.5x) | - | - | Solar Beam (No charge), Synthesis (66%), Thunder (50% Acc) |
+| **Rain** | Water (1.5x) | Fire (0.5x) | - | - | Thunder/Hurricane (100% Acc), Synthesis (25%) |
+| **Sandstorm** | - | - | Rock (1.5x SpD) | 1/16 HP (Non-Rock/Ground/Steel) | Solar Beam (50% Pow), Synthesis (25%) |
+| **Snow** | - | - | Ice (1.5x Def) | **NONE** | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
+| **Hail** | - | - | - | 1/16 HP (Non-Ice) | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
+| **Fog** | - | - | - | - | **Accuracy: 60% (All moves)**, Solar Beam (50% Pow), Synthesis (25%) |
+| **Blizzard** | - | - | Ice (1.5x Def) | 1/16 HP (Non-Ice) | Aggressive Snow/Hail hybrid. Blizzard (100% Acc) |
+
 ---
 
 ## 🧪 Critical Battle Abilities
@@ -62,13 +90,46 @@ Activated when receiving movements of the **Physical** category:
 
 ---
 
-## 🏃 Speed and Priority
+## 🩺 Status Conditions (Primary & Secondary)
 
-- **Paralysis**: Reduces actual speed to 50%.
-- **Weather and Ability (2x Speed)**:
-  - **Chlorophyll**: During Morning/Day.
-  - **Swift Swim**: During Evening/Night.
-- **Run Away**: 2x Speed if the user has a status problem.
+The engine implements two layers of conditions that affect the Pokémon's performance and health.
+
+### 1. Primary Status (Volatile/Non-Volatile)
+
+Only ONE primary status can affect a Pokémon at a time (except in special modes):
+
+- **Poison (PSN)**: Inflicts 1/8 of max HP damage at the end of each turn.
+- **Burn (BRN)**: Inflicts 1/8 of max HP damage at the end of each turn AND reduces Physical Attack (A) to 50%.
+- **Paralysis (PAR)**: Reduces Speed to 25% AND has a **25% probability** of causing "Fully Paralyzed," skipping the turn.
+- **Sleep (SLP)**: Prevents the Pokémon from attacking for 1 to 3 turns. Turn count is managed via `pokemon.sleepTurns`.
+- **Freeze (FRZ)**: Prevents the Pokémon from attacking. At the start of each turn, there is a **20% probability** of thawing out.
+- **Type Immunity (Status Moves)**: Unlike older generations, status moves (category `status`) MUST respect type immunities. A Normal-type status move (e.g., *Gruñido*) will have NO EFFECT on a Ghost-type Pokémon. This logic is handled in `calculateDamage` by evaluating effectiveness before returning the result.
+
+### 2. Secondary Conditions (Stackable)
+
+These can coexist with primary status and other secondary effects:
+
+- **Confusion**: Lasts 2 to 5 turns. **FX**: 💫 floating particle + sprite wobble.
+- **Attraction**: Activated by moves like *Attract*. **FX**: ❤️ floating hearts.
+- **Leech Seed**: Drains HP each turn. **FX**: 🌱 growing plants.
+- **Curse (Ghost)**: Drains 1/4 HP each turn. **FX**: 👻 floating ghost + dark aura.
+- **Trapped**: Cannot escape. **FX**: ⛓️ chains + jitter.
+- **Protection**: Avoids damage. **FX**: 🛡️ pulsing shield aura.
+- **Endure**: Survives lethal hit. **FX**: 👊 pop-in fist.
+- **Focus Energy**: Crit boost. **FX**: 🎯 spinning target + red aura.
+- **Lock-On**: No miss. **FX**: 👁️ blinking eye.
+- **Mist/Neblina**: Prevents stat drops. **FX**: 🌫️ drifting white-blue aura. Rendered with high opacity (0.8) and Normal blend mode to ensure visibility on light backgrounds.
+- **Curse (Maldición)**: This move has a **Dual Effect** based on the user's type.
+  - **Ghost-type**: User sacrifices 50% max HP to curse the target (1/4 max HP damage per turn).
+  - **Non-Ghost**: User gains +1 Atk, +1 Def, and -1 Speed.
+- **Weather Debugging**: Debug menus MUST include all visual variants (Mist, Storm, Heatwave, Blizzard) to facilitate aesthetic testing of atmosphere layers, even if they map to the same mechanical weather.
+
+### 3. Combat Loop Integration
+
+- **Tick Logic**: Status damage and healing (Leech Seed) are processed in `battleStatus.js` at the end of each round.
+- **Skip Logic**: Conditions like Sleep, Freeze, Paralysis, Confusion, and Attraction are evaluated in `battleFlow.js` within the `canAttack` function BEFORE move execution.
+- **Immediate Termination**: The battle engine MUST check for the `activeBattle.over` flag immediately after move execution in the `executeTurn` loop. This ensures that effects like Teleport or self-destruct that end the combat are processed instantly without waiting for the next turn cycle or input.
+- **Immediate Faint Handling**: During multi-hit moves or standard damage application, the engine MUST invoke `store.handleFaint(side)` immediately if HP reaches 0. This ensures that the `PLAY_FAINT` animation and trainer withdrawal/switch logic trigger instantly for a responsive UI and to maintain parity with event-based unit tests.
 
 ---
 
@@ -83,6 +144,14 @@ Activated when receiving movements of the **Physical** category:
     3. Reset attribute stages (atk, def, etc.) to 0.
     4. Emit `PLAY_SEND_OUT` and wait for the **Standard Transition Duration**.
     5. Execute entry abilities (e.g., Intimidate).
+
+### 3. State Reactivity & HUD Integrity (Stages)
+
+To ensure Vue 3 correctly tracks and displays field effects and stat changes, the system must follow strict initialization and reset protocols:
+
+- **Reactive Property Pre-initialization**: All possible field effect properties (`lightScreen`, `reflect`, `safeguard`, `mist`, `spikes`) MUST be initialized with value `0` in the `playerStages` and `enemyStages` objects at the moment of their creation. Vue cannot reactively track properties added dynamically after the object is made reactive.
+- **Full State Reset**: The `_startBattle` and `clearLogs` functions MUST explicitly reset these field properties along with the standard stat stages (`atk`, `def`, etc.) to prevent "state leakage" (e.g., starting a wild battle with a Reflect active from a previous Trainer battle).
+- **Stage Attribution**: Every modification to a stage MUST trigger an `addLog` entry that includes the responsible Pokémon as the `source` to ensure the HUD correctly attributes the advantage/disadvantage.
 
 ### 2. Forced Switching (Faint)
 
@@ -126,6 +195,13 @@ The Combat Log MUST use a **Batching Strategy** when the queue contains more tha
 - **Congestion Level 2 (>6 messages)**: Process 3 messages per tick.
 - **Burst Latency**: Reduce the delay between logs to **100ms** during batching (vs **350ms** in idle) to "catch up" with the battle state.
 
+### 2. Log Cleanliness & Noise Suppression
+
+To maintain a focused narrative, the combat log MUST suppress redundant or confusing information:
+
+- **Status Move Damage**: Moves with `cat: 'status'` MUST NOT generate a "X received 0 damage" log entry. Their effects (stat changes, status conditions) are already logged independently.
+- **Redundant Feedback**: Avoid logging numeric 0 damage for non-damaging tactical maneuvers (buffs/debuffs) to prevent cluttering the log queue during fast-paced turns.
+
 ### 2. Execution Order (Sync-First)
 
 Logs must be added to the queue **BEFORE** triggering animations or pauses that block the turn flow.
@@ -137,7 +213,9 @@ Logs must be added to the queue **BEFORE** triggering animations or pauses that 
 
 To ensure every log entry displays the correct sprite, the `addLog(msg, type, source)` method MUST receive a valid `source` identifier:
 
-- **Pokémon**: Pass the actual Pokémon instance/object. The system will resolve its sprite and check its team membership for side-based background tinting.
+- **Pokémon (Mandatory)**: Pass the actual Pokémon instance/object. This is REQUIRED for all status effects and stat changes to enable automatic icon rendering. Failure to pass the source results in "anonymous" logs without sprites.
+- **UID Priority**: The side detection logic MUST prioritize matching the source's `uid` against the player's team or the active enemy. Global flags like `attackerSide` should only be used as a fallback when no identity can be established from the source.
+- **Centralized Formatting**: All log formatting logic is delegated to `battleLogger.js`. This allows for independent unit testing and keeps the store logic focused on state management.
 - **Player**: Pass the string `'player'` to show the player's current class avatar.
 - **Enemy Trainer**: Pass the string `'enemy_trainer'` to show the rival's avatar.
 - **Items**: Pass the Item name or ID (string). The system will resolve the item's sprite automatically.
@@ -249,3 +327,66 @@ To prevent "Phantom Animations" (e.g., a Pokémon performing a Dash when using a
 1. **Active Move Reset**: References to `activeMove` and `attackerSide` **MUST** be reset to `null` immediately after finishing a turn and at the start of each battle (`_startBattle`).
 2. **Turn Atomicity**: No animation state from the previous turn should persist in the next action. This includes clearing `activeMove` before processing item usage or Pokémon swaps.
 3. **Shadow Visibility Reset**: When starting an encounter, the shadow's opacity must be explicitly reset to prevent shadows from previous battles from appearing before the entry animation.
+
+## ⚙️ Action Registry & Engine Expansion
+
+The battle engine uses a decoupled architecture where move effects are mapped to executable logic via the `ActionRegistry`.
+
+- **Registry Integrity**: Every `effect` string defined in `moves.js` MUST have a corresponding key in `ActionRegistry.js`. If a move is added to the database without a registry entry, it will trigger a "silent failure" (log message appears but no mechanical effect happens).
+- **Modular Implementation**: Logic for new effects should be grouped by type:
+  - `statActions.js`: For all stage modifiers (Atk, Def, etc.).
+  - `fieldActions.js`: For side-based effects (Screens, Weather, Hazards).
+  - `statusActions.js`: For primary status conditions (Burn, Sleep, etc.).
+  - `specialActions.js`: For unique mechanics (Transform, Roar, Metronome).
+- **Source Propagation**: All action functions MUST receive and propagate the `src` and `tgt` objects to the `addLogFn` to maintain the visual link between the action and the combatant's sprite.
+- **Data Integrity (Move Sync)**: Moves in the player's team may have stale metadata. Before processing an effect, the engine MUST verify/sync the `effect` property from the `pokemonDataProvider` if it is missing or null.
+- **Battle Context (Team Access)**: Actions that force switches (e.g., *Roar*, *Whirlwind*) or involve team data MUST have access to `activeBattle.playerTeam`. This team reference is injected during battle initialization.
+- **Technical Debugging Standard**:
+  - **Technical Logs**: Internal dispatching details, target resolution, and technical blocks (e.g., "Stat already at -6") MUST use `console.log` or `console.warn` instead of the combat log.
+  - **Game Logs**: Only "gameplay-relevant" failures (e.g., "Clear Body prevented the drop", "Type immunity") should be added to the user-facing `addLog`.
+- **Modular Stat Validation**: Functions like `checkInmunity` MUST receive `tgtStages` to validate technical limits (-6/+6) and trigger the appropriate console warnings.
+- **Relative Effects (Recoil/Drain)**: Effects that depend on damage dealt (e.g., `drain_50`, `recoil_25`) MUST consume `battleCtx.lastDamage` from the combat context to calculate the final healing or recoil amount.
+
+## 🏃 Escape & Withdrawal Actions
+
+### 1. Teleport (Gen 8+ Parity)
+
+The Teleport move follows specific logic based on the battle context to maintain competitive balance:
+
+- **Wild Battles**: The Pokémon escapes immediately. The battle ends calling `endBattle(false, true)`.
+- **Trainer Battles (Enemy)**:
+  - If the Pokémon has teammates alive, it performs a **Withdrawal** (Gen 8 style) and a replacement is sent out immediately.
+  - If it is the LAST Pokémon in the trainer's party, the battle ends as the trainer retreats/flees.
+- **Player (Safe Design)**: For security and UI simplicity, Teleport is currently restricted to failing if the player has more Pokémon, preventing potential state desynchronization in the switch-menu.
+
+## 🛡️ Engine Safety & Callbacks
+
+### 1. Robust Option Destructuring
+
+When implementing or modifying core logic functions that accept an `options` object (like `getEffectiveSpeed`), follow the **Fallback Pattern** to prevent runtime crashes:
+
+- **Rule**: NEVER destructure without a fallback to the global/imported version of the function.
+- **Implementation**:
+
+  ```javascript
+  import { globalFn } from '../utils';
+  
+  export function coreLogic(data, options = {}) {
+    const fn = options.fn || globalFn; // Safe fallback
+    return fn(data);
+  }
+  ```
+
+- **Why**: Prevents `TypeError: fn is not a function` when the function is called from turn-logic or debug-tools that may pass incomplete option objects.
+
+---
+
+## 📝 Advanced Log Attribution
+
+### 1. Trainer vs Pokémon Source
+
+To ensure every log entry displays the correct sprite/avatar:
+
+- **Trainer Actions**: Logs for trainer actions (e.g., "Send out", "Switch", "Withdraw") MUST use the literal string `'player'` or `'enemy_trainer'` as the `source`.
+- **FORBIDDEN**: Do NOT pass the Pokémon object as the source for trainer-only logs, as it would incorrectly show the Pokémon's avatar instead of the human trainer's.
+- **Side Override**: Pass `'player'` or `'enemy'` as the 4th argument (`sideOverride`) to `addLog` to force a specific background tint, overriding the automatic detection logic based on UID.

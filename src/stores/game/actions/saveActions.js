@@ -71,6 +71,7 @@ export function useSaveActions(state, authStore, db, updateState) {
             return { success: false, reconnecting: true };
           } else {
             loadingStore.setProgress('game_data', 'Error de conexión', 'La red no responde. Toca en cualquier lugar para reintentar.');
+            // [PureVue-Ignore] - Disaster recovery listener for network failures
             window.addEventListener('click', () => {
               if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('load_retry_count', '0');
               window.location.reload();

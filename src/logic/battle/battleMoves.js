@@ -33,7 +33,7 @@ export function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn
       addLogFn(`¡La Velocidad de ${tgt.name} bajó!`, 'log-info', tgt); break;
 
     case 'poison':
-      if (tgt.status) { addLogFn('¡Pero falló!', 'log-info'); }
+      if (tgt.status) { addLogFn('¡Pero falló!', 'log-info', src); }
       else if (tgt.type === 'poison' || tgt.type === 'steel' || tgt.type2 === 'poison' || tgt.type2 === 'steel') {
         addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       } else {
@@ -41,7 +41,7 @@ export function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn
       }
       break;
     case 'paralyze':
-      if (tgt.status) { addLogFn('¡Pero falló!', 'log-info'); }
+      if (tgt.status) { addLogFn('¡Pero falló!', 'log-info', src); }
       else if (tgt.type === 'electric' || tgt.type2 === 'electric') {
         addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       } else {
@@ -49,7 +49,7 @@ export function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn
       }
       break;
     case 'burn':
-      if (tgt.status) { addLogFn('¡Pero falló!', 'log-info'); }
+      if (tgt.status) { addLogFn('¡Pero falló!', 'log-info', src); }
       else if (tgt.type === 'fire' || tgt.type2 === 'fire') {
         addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       } else {
@@ -57,7 +57,7 @@ export function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn
       }
       break;
     case 'sleep':
-      if (tgt.status) { addLogFn('¡Pero falló!', 'log-info'); }
+      if (tgt.status) { addLogFn('¡Pero falló!', 'log-info', src); }
       else {
         tgt.status = 'sleep';
         tgt.sleepTurns = 1 + Math.floor(Math.random() * 3);
@@ -66,7 +66,7 @@ export function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn
       break;
     
     case 'confusion':
-      if (tgt.confused) { addLogFn('¡Pero falló!', 'log-info'); }
+      if (tgt.confused) { addLogFn('¡Pero falló!', 'log-info', src); }
       else {
         tgt.confused = 2 + Math.floor(Math.random() * 4);
         addLogFn(`¡${tgt.name} está confundido!`, 'log-info', tgt);
@@ -76,28 +76,40 @@ export function applyMoveEffect(effect, src, tgt, srcStages, tgtStages, addLogFn
     case 'sun': 
       if (b) {
         b.weather = { type: 'sun', turns: 5 }; 
-        addLogFn("¡El sol empezó a brillar con fuerza!", 'log-info');
+        addLogFn("¡El sol empezó a brillar con fuerza!", 'log-info', src);
       }
       break;
     case 'rain': 
       if (b) {
         b.weather = { type: 'rain', turns: 5 }; 
-        addLogFn("¡Empezó a llover!", 'log-info');
+        addLogFn("¡Empezó a llover!", 'log-info', src);
+      }
+      break;
+    case 'hail': 
+      if (b) {
+        b.weather = { type: 'hail', turns: 5 }; 
+        addLogFn("¡Empezó a granizar!", 'log-info', src);
+      }
+      break;
+    case 'sandstorm': 
+      if (b) {
+        b.weather = { type: 'sandstorm', turns: 5 }; 
+        addLogFn("¡Empezó una tormenta de arena!", 'log-info', src);
       }
       break;
     
     case 'reflect':
-      if (srcStages.reflect) { addLogFn("¡Pero falló!", 'log-info'); }
+      if (srcStages.reflect) { addLogFn("¡Pero falló!", 'log-info', src); }
       else {
         srcStages.reflect = 5;
-        addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques físicos!`, 'log-info');
+        addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques físicos!`, 'log-info', src);
       }
       break;
     case 'light_screen':
-      if (srcStages.lightScreen) { addLogFn("¡Pero falló!", 'log-info'); }
+      if (srcStages.lightScreen) { addLogFn("¡Pero falló!", 'log-info', src); }
       else {
         srcStages.lightScreen = 5;
-        addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques especiales!`, 'log-info');
+        addLogFn(`¡Un muro de luz protege a ${src.name} contra ataques especiales!`, 'log-info', src);
       }
       break;
   }

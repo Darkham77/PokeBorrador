@@ -14,12 +14,18 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
     consumeItem 
   } = options
 
-  if (itemName.toLowerCase().includes('ball')) {
+  const nameLower = itemName.toLowerCase()
+  const isBall = nameLower.includes('ball') || nameLower.includes('bola')
+
+  if (isBall) {
     addLog(`Usaste ${itemName}`, 'log-info', 'player')
     addLog(`¡Has lanzado una ${itemName}!`, 'log-catch', itemName, 'player')
     
+    // El ítem se consume inmediatamente al lanzarse
+    consumeItem(itemName)
+
     const eventCatchMult = eventStore.globalMultipliers?.catch || 1
-    const { caught, shakes } = calculateCatchRate(e, itemName, eventCatchMult)
+    const { caught, shakes } = calculateCatchRate(e, itemName, eventCatchMult, options.ctx || {})
     
     // 1. Iniciar animación de entrada (energía azul)
     audio.ballHit()
@@ -43,7 +49,6 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
       audio.caught()
       gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
       addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
-      consumeItem(itemName)
       
       // Captured!
       return { action: 'capture', pokemon: e }
@@ -61,11 +66,12 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
     
     const result = useItemOnPokemon(itemName, p)
     if (result) {
+      audio.heal()
       addLog(`¡${p.name} ${result}!`, 'log-info', itemName, 'player')
       consumeItem(itemName)
       return { action: 'heal' }
     } else {
-      addLog('No tuvo efecto.', 'log-info')
+      addLog('No tuvo efecto.', 'log-info', p)
       return { action: 'fail' }
     }
   }

@@ -7,6 +7,8 @@
 import { getStatMultiplier } from '../pokemon/statEngine';
 import { getTypeEffectiveness, getCombinedEffectiveness } from '../pokemon/typeEngine';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper';
+import { getDayCycle } from '../timeUtils';
 
 export { getTypeEffectiveness, getCombinedEffectiveness, getStatMultiplier };
 
@@ -38,11 +40,81 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
     }
   }
 
-  if (moveCat === 'status' || (power === 0 && moveCat !== 'status')) return { dmg: 0, eff: 1 };
+  // check status moves later after effectiveness
+  // if (moveCat === 'status' || (power === 0 && moveCat !== 'status')) return { dmg: 0, eff: 1 };
+
+  // Dream Eater: Only works if target is asleep
+  if (move.effect === 'dream_eater' && defender.status !== 'sleep') {
+    return { dmg: 0, eff: 0, isNoEffect: true };
+  }
+
+  // Magnitude: Handle random power if not already set by action
+  if (move.effect === 'magnitude' && !ctx.magnitudeSet) {
+    const magRoll = Math.random() * 100;
+    if (magRoll < 5) power = 10;
+    else if (magRoll < 15) power = 30;
+    else if (magRoll < 35) power = 50;
+    else if (magRoll < 65) power = 70;
+    else if (magRoll < 85) power = 90;
+    else if (magRoll < 95) power = 110;
+    else power = 150;
+  }
+
+  // Fury Cutter: Power doubles each consecutive use
+  if (move.id === 'fury_cutter' && attacker.furyCutterCount) {
+    power = Math.min(160, power * Math.pow(2, attacker.furyCutterCount - 1));
+  }
+
+  // Solar Beam / Solar Blade power reduction in bad weather
+  const mechWeather = getMechanicalWeather(weather?.type);
+  const cycle = getDayCycle();
+  const isSolarBoosted = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'));
+  
+  if ((move.id === 'solar_beam' || move.id === 'solar_blade') && !isSolarBoosted && mechWeather !== WEATHER_MECHANICAL.CLEAR) {
+    power = Math.floor(power * 0.5);
+  }
+
+  // 1. Daño Fijo (Fixed Damage)
+  if (move.fixedDmg) {
+    return { dmg: move.fixedDmg, eff: 1, isNoEffect: false };
+  }
+
+  // 2. Daño por Nivel (Level Damage)
+  if (move.levelDmg) {
+    return { dmg: attacker.level, eff: 1, isNoEffect: false };
+  }
+
+  // 3. Daño Porcentual (Half HP / Super Fang)
+  if (move.halfHP) {
+    const dmg = Math.max(1, Math.floor(defender.hp / 2));
+    return { dmg, eff: 1, isNoEffect: false };
+  }
+
+  // Effectiveness calculation
+  const eff = getCombinedEffectiveness(moveType, defender, attacker);
+
+  // Status moves effectiveness check (New rule: MUST respect immunities)
+  if (moveCat === 'status' || (power === 0 && moveCat !== 'status')) {
+    return { 
+      dmg: 0, 
+      eff, 
+      isNoEffect: eff === 0 
+    };
+  }
 
   const isPhysical = moveCat === 'physical';
   const atkStat = isPhysical ? attacker.atk : (attacker.spa || attacker.atk);
-  const defStat = isPhysical ? defender.def : (defender.spd || defender.def);
+  let defStat = isPhysical ? defender.def : (defender.spd || defender.def);
+
+  // Sandstorm SpD boost for Rock types
+  if (!isPhysical && mechWeather === WEATHER_MECHANICAL.SANDSTORM && (defender.type === 'rock' || defender.type2 === 'rock')) {
+    defStat = Math.floor(defStat * 1.5);
+  }
+
+  // Snow Def boost for Ice types (Gen 9)
+  if (isPhysical && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL) && (defender.type === 'ice' || defender.type2 === 'ice')) {
+    defStat = Math.floor(defStat * 1.5);
+  }
   
   const atkMult = getStatMultiplier(atkStages);
   const defMult = getStatMultiplier(defStages);
@@ -82,15 +154,25 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
   let stab = (moveType === attacker.type || moveType === attacker.type2) ? 1.5 : 1;
   if (attacker.ability === 'Adaptable' && stab > 1) stab = 2;
 
-  // Weather Multiplier
+  // Weather & Cycle Multiplier
   let weatherMult = 1;
-  if (weather && weather.turns > 0) {
-    if (weather.type === 'sun') {
+  if (weather && weather.turns !== 0) {
+    if (mechWeather === WEATHER_MECHANICAL.SUN) {
       if (moveType === 'fire') weatherMult = 1.5;
       else if (moveType === 'water') weatherMult = 0.5;
-    } else if (weather.type === 'rain') {
+    } else if (mechWeather === WEATHER_MECHANICAL.RAIN) {
       if (moveType === 'water') weatherMult = 1.5;
       else if (moveType === 'fire') weatherMult = 0.5;
+    }
+  }
+
+  // RPG Cycle Fallback (Only if no active weather or weather is clear)
+  if (weatherMult === 1 && (mechWeather === WEATHER_MECHANICAL.CLEAR || !weather)) {
+    const cycle = getDayCycle();
+    if (cycle === 'day' || cycle === 'morning') {
+      if (moveType === 'fire') weatherMult = 1.2;
+    } else if (cycle === 'night' || cycle === 'dusk') {
+      if (moveType === 'water') weatherMult = 1.2;
     }
   }
 
@@ -106,9 +188,6 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
   // Random factor
   const random = 0.85 + Math.random() * 0.15;
 
-  // Effectiveness
-  const eff = getCombinedEffectiveness(moveType, defender, attacker);
-
   // Final Damage calculation
   const finalDmg = eff > 0 
     ? Math.max(1, Math.floor(baseDamage * stab * finalAbilityMult * eff * random * critMult * weatherMult * itemMult)) 
@@ -118,6 +197,7 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
     dmg: finalDmg,
     eff,
     stab,
+    power,
     isCrit,
     isSuperEffective: eff > 1,
     isNotVeryEffective: eff < 1 && eff > 0,
@@ -157,20 +237,34 @@ export function getAbilityMultiplier(attacker, defender, move) {
 }
 
 export function getEffectiveSpeed(pokemon, stages, options = {}) {
-  const { getStatMultiplier, getDayCycle } = options;
+  const getStatMult = options.getStatMultiplier || getStatMultiplier;
+  const getCycle = options.getDayCycle || getDayCycle;
+  
   const baseSpe = pokemon.spe || 40;
   const stage = stages?.spe || 0;
-  let spe = Math.max(1, Math.floor(baseSpe * getStatMultiplier(stage)));
+  let spe = Math.max(1, Math.floor(baseSpe * getStatMult(stage)));
   
   if (pokemon.ability === 'Fuga' && pokemon.status) {
     spe *= 2;
   }
   
-  const cycle = (typeof getDayCycle === 'function') ? getDayCycle() : 'day';
-  if (pokemon.ability === 'Clorofila' && (cycle === 'day' || cycle === 'morning')) {
+  const weather = options.weather;
+  const mechWeather = getMechanicalWeather(weather?.type);
+  const cycle = getCycle();
+
+  const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'));
+  const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'));
+
+  if (pokemon.ability === 'Clorofila' && isSunActive) {
     spe *= 2;
   }
-  if (pokemon.ability === 'Nado rápido' && (cycle === 'dusk' || cycle === 'night')) {
+  if (pokemon.ability === 'Nado rápido' && isRainActive) {
+    spe *= 2;
+  }
+  if (pokemon.ability === 'Ímpetu arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
+    spe *= 2;
+  }
+  if (pokemon.ability === 'Quitanieves' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) {
     spe *= 2;
   }
 
@@ -178,24 +272,74 @@ export function getEffectiveSpeed(pokemon, stages, options = {}) {
   return spe;
 }
 
-export function calculateCatchRate(pokemon, rawBallType = 'poke-ball', eventCatchMult = 1) {
-  const ballType = String(rawBallType || '').toLowerCase();
+export function calculateCatchRate(pokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx = {}) {
+  const ballName = String(rawBallType || '').toLowerCase();
   
-  // SHORTCUT ABSOLUTO: Si es Master Ball o debug, captura garantizada
-  if (ballType.includes('master') || ballType.includes('100')) {
+  // 1. Mapeo Parametrizado de Comportamientos
+  const BALL_BEHAVIORS = {
+    'master': { guaranteed: true },
+    '100': { guaranteed: true }, // Debug ball
+    'ultra': { mult: 2.0 },
+    'super': { mult: 1.5 },
+    'súper': { mult: 1.5 },
+    'red': { 
+      mult: (p) => {
+        const isWaterOrBug = [p.type, p.type2].some(t => t === 'water' || t === 'bug');
+        return isWaterOrBug ? 3.0 : 1.0;
+      }
+    },
+    'net': { // Alias para Red Ball
+      mult: (p) => {
+        const isWaterOrBug = [p.type, p.type2].some(t => t === 'water' || t === 'bug');
+        return isWaterOrBug ? 3.0 : 1.0;
+      }
+    },
+    'ocaso': {
+      mult: (p, c) => {
+        const cycle = getDayCycle();
+        const isNight = cycle === 'night' || cycle === 'dusk';
+        const isCave = c.locationId && /cave|moon|tunnel|islands|mountain|victory|mansion/i.test(c.locationId);
+        return (isNight || isCave) ? 3.0 : 1.0;
+      }
+    },
+    'dusk': { // Alias para Ocaso Ball
+      mult: (p, c) => {
+        const cycle = getDayCycle();
+        const isNight = cycle === 'night' || cycle === 'dusk';
+        const isCave = c.locationId && /cave|moon|tunnel|islands|mountain|victory|mansion/i.test(c.locationId);
+        return (isNight || isCave) ? 3.0 : 1.0;
+      }
+    },
+    'turno': {
+      mult: (_p, c) => Math.min(4.0, 1.0 + ((c.turnCount || 1) * 0.3))
+    },
+    'timer': { // Alias para Turno Ball
+      mult: (_p, c) => Math.min(4.0, 1.0 + ((c.turnCount || 1) * 0.3))
+    }
+  };
+
+  // Identificar el comportamiento por coincidencia parcial de nombre (más robusto)
+  const behaviorEntry = Object.entries(BALL_BEHAVIORS).find(([key]) => ballName.includes(key));
+  const behavior = behaviorEntry ? behaviorEntry[1] : { mult: 1.0 };
+
+  // SHORTCUT: Captura garantizada
+  if (behavior.guaranteed) {
     return { caught: true, shakes: 3 };
   }
 
-  const normalizedBall = ballType.replace(/\s/g, '-');
-  const hpFactor = (3 * pokemon.maxHp - 2 * pokemon.hp) / (3 * pokemon.maxHp);
-  let ballMult = 1;
-  
-  if (normalizedBall === 'super-ball' || normalizedBall === 'súper-ball') ballMult = 1.5;
-  if (normalizedBall === 'ultra-ball') ballMult = 2;
+  // 2. Cálculo del multiplicador de la bola
+  let ballMult = 1.0;
+  if (typeof behavior.mult === 'function') {
+    ballMult = behavior.mult(pokemon, ctx);
+  } else if (behavior.mult) {
+    ballMult = behavior.mult;
+  }
 
-  const catchRate = pokemon.catchRate || 45; // Default catch rate
-  const statusMult = (pokemon.status === 'sleep' || pokemon.status === 'freeze') ? 2 : 
-                     (pokemon.status ? 1.5 : 1);
+  // 3. Algoritmo oficial de captura
+  const hpFactor = (3 * pokemon.maxHp - 2 * pokemon.hp) / (3 * pokemon.maxHp);
+  const catchRate = pokemon.catchRate || 45;
+  const statusMult = (pokemon.status === 'sleep' || pokemon.status === 'freeze') ? 2.0 : 
+                     (pokemon.status ? 1.5 : 1.0);
 
   // Stacking catch bonuses additively (ballMult + eventBonus)
   const eventBonus = eventCatchMult - 1;
@@ -204,7 +348,7 @@ export function calculateCatchRate(pokemon, rawBallType = 'poke-ball', eventCatc
   const finalRate = Math.min(255, Math.max(1, Math.floor(catchRate * totalMult * hpFactor * statusMult)));
   
   // Official Gen 3/4 capture algorithm: 4 checks against 'b'
-  // b = 65535 / ((255/a)^(1/4))  => simplified as 65535 * (a/255)^(0.25)
+  // b = 65535 * (a/255)^(0.25)
   const b = Math.floor(65535 * Math.pow(finalRate / 255, 0.25));
   
   let shakes = 0;
@@ -218,6 +362,6 @@ export function calculateCatchRate(pokemon, rawBallType = 'poke-ball', eventCatc
 
   return {
     caught: shakes === 4,
-    shakes: Math.min(3, shakes) // 0, 1, 2, 3 shakes before breaking or 4 means caught
+    shakes: Math.min(3, shakes) // 0, 1, 2, 3 shakes before breaking, or caught
   };
 }

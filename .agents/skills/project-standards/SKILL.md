@@ -64,11 +64,19 @@ Consult these manuals for detailed implementation specifications:
 - **Engine Signaling (Loading Gate)**: Signal "App Mounted" only after the primary Vue views have finished mounting (`onMounted`). The loading veil MUST use `v-if` to be completely purged from the DOM after initialization, preventing blocking layers or performance issues.
 - **Dynamic Viewport (Mobile)**: Use `dvh` units (e.g., `100dvh`) for full-screen containers to ensure the UI adapts correctly to mobile browser toolbars without clipping.
 - **Decoupled FX (GameBus)**: Trigger non-critical visual effects or multi-component animations via `GameBus.emit()` to avoid direct component-to-component dependencies.
-- **Pure Vue Compliance**: Avoid direct DOM/Canvas operations in Vue components. For mandatory performance-critical low-level code (e.g. Canvas generation), use the `// [PureVue-Ignore]` tag to satisfy the automated audit while maintaining GPU speed.
+- **Pure Vue Compliance**: Avoid direct DOM/Canvas operations in Vue components. For mandatory performance-critical low-level code (e.g. Canvas generation) or long data structures, use the explicit ignore tags to satisfy the automated audit:
+  - `// [PureVue-Ignore]`: Bypasses technical DOM/Window access checks.
+  - `// [PureVue-Ignore-Length]`: Bypasses the 500-line limit for data-heavy files.
+  - `// [PureVue-Ignore-Aesthetics]`: Bypasses hardcoded color/shadow audits for specialized FX or legacy styles.
+- **Unitless Variable Pattern**: Cuando se pasan coordenadas o tamaños dinámicos de JS a variables CSS, usar SIEMPRE valores numéricos puros. Añadir unidades en CSS usando `calc(var(--val) * 1px)`.
+- **Zero Bridges Policy**: Se prohíbe el uso de `window.state` o cualquier puente de compatibilidad global (`src/logic/bridges`). Toda la comunicación debe realizarse mediante importaciones directas (ESM) e inyección de dependencias a través de Stores de Pinia. La manipulación del estado global desde la consola debe reservarse exclusivamente para `window.__VITE_DEBUG__`.
+- **Modular Orchestration (HUD)**: Lógica de visibilidad, snapshots y estados de interfaz de combate de alta complejidad DEBEN ser extraídos a composables dedicados (ej. `useBattleHud.js`). La vista de la arena (`BattleArenaView.vue`) debe actuar exclusivamente como un orquestador visual simplificado.
 
 ### 4. SASS and Build Integrity
 
-- **Capitalization Mandate**: Use capitalized filters (`Scale()`, `Blur()`, `Linear-Gradient()`) to avoid collisions with Dart Sass 2.0.
+- **Capitalization Duality**:
+  - **SASS Filters**: Use capitalized filters (`Scale()`, `Blur()`, `Brightness()`) to avoid collisions with Dart Sass 2.0 native functions.
+  - **Browser Transforms**: Use standard LOWERCASE for CSS transformations (`translate`, `scale`, `rotate`). Capitalizing these may cause browser interpretation failures and break layout positioning.
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`.
 - **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.

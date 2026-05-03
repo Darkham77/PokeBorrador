@@ -1,4 +1,5 @@
 @use 'gpu' as *;
+@use 'mixins/layout' as *;
 
 /* ==========================================================================
    GLOBAL SPECIAL EFFECTS SYSTEM
@@ -91,6 +92,48 @@
        display: none !important;
     }
   }
+
+  // Status Effects (Persistent)
+  &.status-burn img { 
+    animation: pulse-aura-burn 2s infinite ease-in-out;
+    animation-delay: calc(var(--fx-seed, 0) * -2s);
+  }
+  &.status-poison img { filter: Drop-Shadow(0 0 10px Rgba(148, 0, 211, 0.6)) Hue-Rotate(60deg) Brightness(0.9) Saturate(1.2); }
+  &.status-paralyze img { filter: Drop-Shadow(0 0 10px Rgba(255, 215, 0, 0.8)) Brightness(1.3) Contrast(1.2); animation: fx-paralyze-jitter 0.2s infinite alternate; }
+  &.status-freeze img { 
+    filter: 
+      Drop-Shadow(0 0 20px Rgba(0, 255, 255, 0.8)) 
+      Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.5))
+      Brightness(1.6) 
+      Contrast(0.7) 
+      Saturate(0.4); 
+  }
+  &.status-sleep img { filter: Brightness(0.7) Contrast(0.9); }
+  
+  // Secondary Status (Volatile)
+  &.is-cursed img {
+    filter: 
+      Drop-Shadow(0 0 15px Rgba(75, 0, 130, 0.8))
+      Brightness(0.6)
+      Contrast(1.2)
+      Saturate(0.5);
+    animation: pulse-aura-curse 2.5s infinite ease-in-out;
+  }
+
+  &.is-confused img {
+    animation: fx-confusion-wobble 0.3s infinite ease-in-out;
+    filter: Hue-Rotate(180deg) Saturate(0.5);
+  }
+
+  &.is-focus-energy img {
+    animation: fx-focus-pulse 1.5s infinite ease-in-out;
+    filter: Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.1);
+  }
+
+  &.is-ingrain img {
+    filter: Drop-Shadow(0 4px 10px Rgba(34, 139, 34, 0.8));
+    animation: fx-ingrain-float 3s infinite ease-in-out;
+  }
 }
 
 .pv-fx-shiny-overlay {
@@ -104,7 +147,123 @@
   z-index: var(--z-base, 5);
 }
 
-/* Animations */
+// Keyframes used in status effects
+@keyframes pulse-aura-curse {
+  0%, 100% { filter: Drop-Shadow(0 0 5px Rgba(0, 0, 0, 0.9)) Brightness(0.5); }
+  50% { filter: Drop-Shadow(0 0 20px Rgba(75, 0, 130, 0.9)) Brightness(0.8); }
+}
+
+@keyframes fx-focus-pulse {
+  0%, 100% { filter: Drop-Shadow(0 0 5px Rgba(255, 0, 0, 0.5)) Brightness(1); }
+  50% { filter: Drop-Shadow(0 0 15px Rgba(255, 0, 0, 0.9)) Brightness(1.3); }
+}
+
+@keyframes fx-ingrain-float {
+  0%, 100% { transform: Scale(1); }
+  50% { transform: Scale(1.02); }
+}
+
+@keyframes fx-confusion-wobble {
+  0% { transform: Rotate(-3deg) TranslateX(-2px); }
+  100% { transform: Rotate(3deg) TranslateX(2px); }
+}
+
+// Contenedor de Partículas de Estado
+.pv-fx-status-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-base, 5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .status-particle {
+    position: absolute;
+    font-size: calc(var(--obj-scale, 1) * 16px);
+    @include pixelated;
+    opacity: 0;
+    animation: status-particle-orbit 2s infinite ease-in-out;
+
+    &.is-freeze {
+      background: white;
+      width: calc(var(--obj-scale, 1) * 12px);
+      height: calc(var(--obj-scale, 1) * 12px);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      animation: freeze-sparkle-shine 1.5s infinite ease-in-out;
+      filter: Drop-Shadow(0 0 5px cyan);
+    }
+  }
+}
+
+@keyframes freeze-sparkle-shine {
+  0%, 100% { transform: Scale(0); opacity: 0; }
+  50% { transform: Scale(1.2); opacity: 1; }
+}
+
+/* Status Animations */
+@keyframes fx-paralyze-jitter {
+  0% { transform: Translate(0,0); }
+  100% { transform: Translate(1px, -1px); }
+}
+
+@keyframes status-particle-orbit {
+  0% { transform: Translate(0, 0) Scale(0); opacity: 0; }
+  20% { transform: Translate(0, -10px) Scale(1.2); opacity: 1; }
+  80% { transform: Translate(var(--orbit-x), var(--orbit-y)) Scale(1); opacity: 1; }
+  100% { transform: Translate(calc(var(--orbit-x) * 1.2), calc(var(--orbit-y) * 1.2)) Scale(0); opacity: 0; }
+}
+
+@keyframes pulse-aura-burn {
+  0%, 100% { 
+    filter: 
+      Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 6px) Rgba(255, 69, 0, 0.6)) 
+      Hue-Rotate(-20deg) 
+      Brightness(1.1) 
+      Saturate(1.4); 
+  }
+  50% { 
+    filter: 
+      Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 12px) Rgba(255, 0, 0, 0.9)) 
+      Hue-Rotate(-10deg) 
+      Brightness(1.3) 
+      Saturate(1.8); 
+  }
+}
+
+/* Tactical FX Animations */
+@keyframes status-particle-jitter {
+  0%, 100% { transform: Translate(0, 0) Scale(1); }
+  50% { transform: Translate(-2px, 1px) Scale(1.1); }
+}
+
+@keyframes fx-pulse-in {
+  0%, 100% { transform: Scale(1); opacity: 0.8; filter: Drop-Shadow(0 0 5px #0a84ff); }
+  50% { transform: Scale(1.2); opacity: 1; filter: Drop-Shadow(0 0 15px #0a84ff); }
+}
+
+@keyframes fx-pop-in {
+  0% { transform: Scale(0) Rotate(-45deg); opacity: 0; }
+  70% { transform: Scale(1.3) Rotate(10deg); opacity: 1; }
+  100% { transform: Scale(1) Rotate(0deg); opacity: 1; }
+}
+
+@keyframes fx-target-spin {
+  0% { transform: Rotate(0deg) Scale(1); filter: hue-rotate(0deg); }
+  50% { transform: Rotate(180deg) Scale(1.2); filter: hue-rotate(90deg); }
+  100% { transform: Rotate(360deg) Scale(1); filter: hue-rotate(0deg); }
+}
+
+@keyframes fx-eye-blink {
+  0%, 20%, 100% { opacity: 1; transform: Scale(1); }
+  10% { opacity: 0.3; transform: Scale(1, 0.1); }
+}
+
+.tact-fx {
+  font-size: calc(var(--obj-scale, 1) * 24px) !important;
+  z-index: 10 !important;
+  filter: Drop-Shadow(0 0 8px Rgba(255,255,255,0.4));
+}
 @keyframes pulse-aura-battle {
   0%, 100% { 
     filter: 
@@ -164,10 +323,101 @@
 }
 
 @keyframes pulse-tier {
-  0%, 100% { 
-    opacity: 0.6;
-  }
-  50% { 
-    opacity: 1;
-  }
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ==========================================================================
+   COMBATANT & BATTLE TRANSITION KEYFRAMES
+   ========================================================================== */
+
+@keyframes attack-dash-player { 
+  0% { transform: Translate(0, 0); } 
+  25% { transform: Translate(50px, -50px); } 
+  100% { transform: Translate(0, 0); } 
+}
+
+@keyframes attack-dash-enemy { 
+  0% { transform: Translate(0, 0); } 
+  25% { transform: Translate(-50px, 50px); } 
+  100% { transform: Translate(0, 0); } 
+}
+
+@keyframes attack-pulse-player { 
+  0% { transform: Scale(1); } 
+  30% { transform: Scale(1.15) Translate(10px, -10px); filter: Brightness(1.3); } 
+  100% { transform: Scale(1); } 
+}
+
+@keyframes attack-pulse-enemy { 
+  0% { transform: Scale(1); } 
+  30% { transform: Scale(1.15) Translate(-10px, 10px); filter: Brightness(1.3); } 
+  100% { transform: Scale(1); } 
+}
+
+@keyframes attack-status-player { 
+  0% { transform: Rotate(0deg); } 
+  30% { transform: Rotate(10deg) Scale(1.1); } 
+  100% { transform: Rotate(0deg); } 
+}
+
+@keyframes attack-status-enemy { 
+  0% { transform: Rotate(0deg); } 
+  30% { transform: Rotate(-10deg) Scale(1.1); } 
+  100% { transform: Rotate(0deg); } 
+}
+
+@keyframes pokemon-faint {
+  0%, 14%, 28%, 42%, 56%, 70% { opacity: 1; }
+  7%, 21%, 35%, 49%, 63%, 77% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes pokeball-wobble {
+  0%, 100% { transform: Rotate(0deg); }
+  25% { transform: Rotate(-20deg); }
+  75% { transform: Rotate(20deg); }
+}
+
+@keyframes pokeball-shake-blink { 
+  0%, 100% { filter: Brightness(1); } 
+  50% { filter: Brightness(2) Hue-Rotate(10deg); } 
+}
+
+@keyframes pokeball-success-blink { 
+  0%, 100% { filter: Brightness(1); } 
+  50% { filter: Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg); } 
+}
+
+@keyframes catch-sparkle-out {
+  0% { transform: Translate(-50%, -50%) Scale(0) Rotate(0deg); opacity: 1; }
+  15% { transform: Translate(calc(-50% + var(--tx) * 0.15 * 1px), calc(-50% + var(--ty) * 0.6 * 1px)) Scale(calc(var(--scale) * 1.2)) Rotate(90deg); opacity: 1; }
+  35% { transform: Translate(calc(-50% + var(--tx) * 0.35 * 1px), calc(-50% + var(--ty) * 0.95 * 1px)) Scale(calc(var(--scale) * 1.1)) Rotate(180deg); opacity: 1; }
+  50% { transform: Translate(calc(-50% + var(--tx) * 0.5 * 1px), calc(-50% + var(--ty) * 1px)) Scale(var(--scale)) Rotate(360deg); opacity: 1; }
+  65% { transform: Translate(calc(-50% + var(--tx) * 0.65 * 1px), calc(-50% + var(--ty) * 0.95 * 1px)) Scale(calc(var(--scale) * 0.9)) Rotate(450deg); opacity: 1; }
+  85% { transform: Translate(calc(-50% + var(--tx) * 0.85 * 1px), calc(-50% + (var(--ty) * 0.5 + var(--tf) * 0.5) * 1px)) Scale(calc(var(--scale) * 0.7)) Rotate(540deg); opacity: 0.8; }
+  100% { transform: Translate(calc(-50% + var(--tx) * 1px), calc(-50% + var(--tf) * 1px)) Scale(0) Rotate(720deg); opacity: 0; }
+}
+
+@keyframes ground-pop {
+  0% { transform: Scale(0) translateY(10px) Rotate(-10deg); opacity: 0; }
+  60% { transform: Scale(1.2) translateY(-2px) Rotate(5deg); opacity: 1; }
+  100% { transform: Scale(1) translateY(0) Rotate(0deg); opacity: 1; }
+}
+
+@keyframes ground-grow {
+  0% { transform: Scale(0) translateY(20px); opacity: 0; filter: Brightness(0); }
+  100% { transform: Scale(1) translateY(5px); opacity: 1; filter: Brightness(1); }
+}
+
+@keyframes ground-item-jump {
+  0%, 100% { transform: translateY(0) Scale(1); }
+  45% { transform: translateY(-16px) Scale(1.1, 0.9); }
+  50% { transform: translateY(-20px) Scale(0.9, 1.1); }
+  55% { transform: translateY(-16px) Scale(1.1, 0.9); }
+}
+
+@keyframes ground-item-pulse {
+  0%, 100% { transform: translateY(5px) Scale(1); filter: Brightness(1); }
+  50% { transform: translateY(5px) Scale(1.03); filter: Brightness(1.2); }
 }

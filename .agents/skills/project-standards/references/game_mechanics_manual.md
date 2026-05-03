@@ -108,6 +108,8 @@ The cost in PokéDollars scales according to the total number of perfect IVs (30
 
 - **Spawn**: 1% probability on disputed maps.
 - **Limit**: Only 1 guardian catch per map per day.
+- **Trainer Attribution**: Logs for trainer actions (e.g., "Send out", "Switch") MUST use the string `'player'` or `'enemy_trainer'` as the source. Do NOT pass the Pokémon object as the source for these logs, as it would incorrectly show the Pokémon's avatar instead of the trainer's.
+- **Side Override**: Pass `'player'` or `'enemy'` as the 4th argument (`sideOverride`) to force a specific background tint, overriding the automatic detection logic.
 
 ### 3. Repels and Incenses
 
@@ -151,6 +153,11 @@ The system uses two independent flags computed from the Pokédex state:
 - **Phases (2h each)**: Morning, Day, Evening, Night.
 - **Seasons**: Change every **Real Week** (7 days) in sequence: Spring -> Summer -> Autumn -> Winter.
 - **Synchronization**: Strictly based on continuous *Epoch Time* to guarantee parity among all players without querying the DB.
+- **Weather Persistence & Priority**:
+  - **Base State**: The map weather defines the battlefield's atmospheric condition.
+  - **Combat Overrides**: Moves (Rain Dance) or Abilities (Drizzle) override the map weather for **5 turns**.
+  - **Cycle Restoration**: When a combat-induced weather expires, the engine MUST RESTORE the original map/route weather (e.g., if it was raining on the route, it returns to rain, not "clear").
+  - **Permanent States**: If a route has a permanent weather (turns: -1), it remains active for the entire battle duration unless manually overridden.
 
 ---
 
@@ -161,3 +168,18 @@ During high-load scenes (e.g., Battles), the hiding protocol is applied:
 - **v-if**: Non-essential elements (MapCards, NPCs, background weather animations) MUST be physically hidden.
 - **Pause**: All JS intervals (weather, buffs) must be paused while the combat state is active.
 - **Battle Finish Persistence**: During the battle's finishing phase (especially after a player's defeat), the enemy sprite MUST remain visible until the transition to the map is complete. This avoids "ghosting" and maintains visual feedback for the user's defeat.
+
+---
+
+## 🦄 Encounter Systems (Advanced)
+
+### 3. Phase 2 Visibility Hierarchy
+
+To ensure absolute continuity during proactive pre-generation, the HUD must follow this priority:
+
+1. **Capture Success**: Persistent snapshot of the caught Pokémon (2.0s).
+2. **Faint Animation**: Persistent snapshot of the defeated Pokémon (1.3s).
+3. **Search Phase (Phase 2)**: Show the `upcomingPokemon` immediately while waiting for player interaction.
+4. **Active Battle**: Show the current `enemy`.
+
+- **WHY**: Ensures the user always sees the proactive pre-visualization during the search phase without HUD "flickering" or showing stale data from the previous fight.

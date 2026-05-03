@@ -15,6 +15,8 @@ describe('battleItems.js', () => {
     vi.clearAllMocks()
     mockOptions = {
       addLog: vi.fn(),
+      audio: { ballHit: vi.fn(), wobble: vi.fn(), caught: vi.fn() },
+      consumeItem: vi.fn(),
       eventStore: { globalMultipliers: { catch: 1 } }
     }
   })

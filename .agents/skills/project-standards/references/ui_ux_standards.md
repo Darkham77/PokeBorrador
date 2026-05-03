@@ -10,6 +10,9 @@ To prevent initialization race conditions (TDZ) and ensure reactive stability:
   3. **Watchers & Lifecycle Hooks**: Side effects and event listeners.
 - **WHY**: Ensures that watchers and hooks never attempt to read computed data before its dependencies are fully initialized.
 - **Modularity**: Adhere to the **500-line rule** for all UI components. If a view exceeds this, logic must be extracted to composables or sub-components.
+- **Explicit Scoping Patterns**: To force styles on child components (e.g., "always small" mode), avoid relying on parent IDs (`#parent .child`) which can be blocked by Vue `scoped` CSS.
+  - **MANDATORY**: Pass an explicit class (e.g., `.is-compact`) directly to the child component or use a boolean prop to toggle internal layout classes.
+  - **WHY**: Ensures that component-level styles remain predictable and are not ignored by the browser due to scoping data-attributes.
 
 This manual defines the visual identity and interaction patterns of the Poké Vicio project, ensuring a premium **Hybrid Retro-Modern** experience.
 
@@ -54,7 +57,11 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **PWA Integrity (Desktop-First Hybrid)**:
   - **Display Mode**: ALWAYS use `display: standalone` in the manifest. Avoid `fullscreen` to prevent desktop browsers from hiding scrollbars or misidentifying the app as mobile-only.
   - **Breakpoint Parity (760px)**: JS window listeners and CSS media queries MUST share the exact same pixel value (Standard: **760px**) to avoid layout "dead zones".
+  - **Breakpoint Parity (760px)**: JS window listeners and CSS media queries MUST share the exact same pixel value (Standard: **760px**) to avoid layout "dead zones".
   - **Forced HUD Visibility**: Use high-specificity CSS (e.g., `.main-hud-desktop`) with `min-width: 761px` to ensure HUD elements remain visible on PC screens even if PWA mode triggers mobile-first states.
+  - **Navigation Fallback Synchronization**: The bottom navigation HUD (mobile-only) MUST only be visible when the top navigation is hidden.
+    - **Desktop Rule**: On screens > 1410px, the bottom nav is HIDDEN unless `isHudHidden` is true (scroll-down).
+    - **Implementation**: Sync using a `.hud-visible-active` class on the container that forces `display: flex !important`.
   - **Permission Persistence**: Persist PWA setup and notification permission states in `localStorage` to avoid re-triggering intrusive setup modals on every session.
   - **The "Deep Reset" Mandate (Resolution Sync)**: Transitions from Login/Title screens to the main game MUST be handled via physical reload (`window.location.href = '/'`) instead of SPA navigation (`router.push`).
     - **WHY**: Standalone PWA windows frequently glitch their internal viewport dimensions (`100dvh`) during internal navigation. A physical reload forces a hardware-level re-sync of the viewport and manifest state.
@@ -125,9 +132,38 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Pokemon Identity Stack**: Standardize name display on cards using the "Name Stack": The current nickname (or name) as the primary pixel title, with the species name as a small, uppercase, low-opacity subtitle.
 - **Dynamic Abbreviation Toggle**: In responsive grids (like combat moves), use a dual-label system (`cat-full` and `cat-short`) controlled by CSS media queries.
   - **WHY**: Allows professional full text on desktop while automatically switching to optimized abbreviations (e.g., "Físico" ➡️ "FIS") on mobile without JS overhead.
-- **Responsive Attack Grid (3-4 Row Layout)**: For combat move cards on mobile:
+- **Responsive Attack Grid & Unified Move Slots**:
+  - **Single Component Mandate**: The move grid MUST be handled by a single modular component (e.g., `BattleMovesGrid.vue`) that handles both battle and information modes via context-aware props (`canReorder`, `playerInfo`).
+  - **Symmetrical 2x2 Grid**: All move panels MUST maintain a fixed 2x2 layout with 4 slots always. Use `grid-auto-rows: 1fr` on the container to ensure that placeholders and move cards share the exact same height in every row.
+  - **Informative Placeholders**: Empty slots MUST NOT be invisible. Use a muted "Placeholder" design with a tooltip explaining how to manage moves (e.g., "Puedes organizar movimientos desde la ficha de información").
+  - **Unified Slot Architecture**: The move card and its info tab (`?`) MUST be wrapped in a single parent container (`move-slot-wrapper`) with unified borders and gradients. Hover effects and scaling MUST apply to this parent, ensuring the component moves as a single solid object.
+  - **Precision Spacing**: When using absolute side-tabs, reduce internal card padding on the adjacent side (Standard: **4px**) to eliminate "dead space" between the icon and content.
   - **Threshold 1 (< 560px)**: Split stats (POT, PREC, CAT, PP) into a 2x2 grid.
-  - **Threshold 2 (< 420px)**: Move the Type Tag to Row 1 (compacted) and stack Name and Type vertically or horizontally with ellipsis if needed. Total card height should support 3-4 logical rows.
+  - **Threshold 2 (< 420px)**: Move the Type Tag to Row 1 (compacted). Card height MUST be normalized to ~64px to maintain density.
+- **Combat Panel Standards (The "Always Small" Layout)**:
+  - **Constraint**: Combat move cards MUST be limited to a maximum width of **200px** to ensure a 2-column grid fits in a 412px-420px mobile viewport.
+  - **Grid Balancing**: Use asymmetric column widths (e.g., `grid-template-columns: 1.4fr 1fr`) to give more space to descriptive categories (POT/CAT) while keeping numeric stats (PREC/PP) aligned to the right.
+  - **Font Scaling**: For move names, use **8px** pixel fonts. For type tags/categories, use **5px**.
+  - **Layout Density**: In battle control grids, prioritize **zero padding** and **minimal gaps** (e.g., 4px) to maximize information density and prevent element clipping.
+  - **Text Clipping Prevention**: Use `white-space: normal` and `word-break: break-word` for move names. For detail items (CAT, PP), use `white-space: nowrap` to ensure icons and labels remain on the same line.
+  - **Category Display Logic**: In compact mode, show the full category label (e.g., "Físico") if screen width > 420px. Abbreviate to "FIS/ESP" only on viewports ≤ 420px.
+  - **Button Alignment**: Action buttons (Bag/Switch) flanking a central Poké Ball (64px) MUST use a fixed `min-height` (Standard: **40px**) instead of `100%` height to maintain visual symmetry and prevent unintended stretching.
+
+- **Sidebar HUD Standards (Team & Bag Quick-Access)**:
+  - **Aesthetic Parity**: Left (Team) and Right (Bag) sidebars MUST share identical visual traits: `Border-Radius(16px)`, `Backdrop-Filter: Blur(12px)`, and `Border(1px solid Rgba(255, 255, 255, 0.15))`.
+  - **Glassmorphism**: Use `Rgba(30, 41, 59, 0.8)` for a "Premium Solid" glass feel that ensures readability against animated battle backgrounds.
+  - **Performance Mode**: Sidebars MUST react to `is-performance-mode` by disabling `Box-Shadow`, `Filter`, and complex transitions. Hover feedback should switch to a simple background color shift (e.g., `Rgba(255, 255, 255, 0.1)`).
+  - **Container Transparency**: Sidebar containers SHOULD be transparent; background/blur logic MUST be handled by the individual item cards to prevent "opacity accumulation" (dark blocks).
+  - **Oversized Item Sprites**: Use a scale of **1.5x** (Standard: `min-width: 60px`) for items in quick-access grids. Parent cards MUST have `overflow: hidden` to enable a premium "clipping" effect.
+  - **Badge Alignment**: Numeric quantity badges in item grids MUST be centered horizontally and placed at the bottom edge (Standard: `bottom: 2px`, `left: 50%`, `TranslateX(-50%)`).
+  - **Navigation Fallback Protocol**:
+  - **Desktop (> 1410px)**: The bottom navigation HUD MUST be permanently hidden. It should NEVER appear during scroll or state transitions to avoid visual duplication and interface collision.
+  - **Mobile (≤ 1410px)**: The bottom HUD is the primary navigation and MUST be **always visible**. Use `!important` flags for opacity and transform to ensure that global scroll logic does not hide it.
+- **Neon Glow Intensity (High-Contrast Mandate)**: For tactical indicators (boosts/penalties) on the project's signature black backgrounds, glow effects (`box-shadow`) MUST use high intensity:
+  - **Pure Colors**: Use pure RGB values (e.g., `#ff0000` for red, `#ffd700` for gold).
+  - **Opacity & Radius**: Minimum `0.8` opacity for the outer glow and a spread radius of at least `20px` to ensure visibility against deep black.
+- **Tactical Border Hierarchy**: Tactical auras (Boosted/Penalized) MUST take priority over type-based color coding. Use inline styles or high-specificity computed styles to ensure the gold/red border overrides the default type border when a modifier is active.
+- **Z-Index Layering**: HUD Navigation wrappers MUST use `pointer-events: none` and `z-index: var(--z-navigation)` to ensure they don't block interaction with Sidebar tools (Chat/Debug) while still allowing button clicks via `pointer-events: auto` on children.
 
 ---
 
@@ -161,7 +197,12 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Anchored UI Context**: Absolute elements (badges, floating icons) MUST be nested within a `position: relative` container (e.g., `.poke-preview-container`) to prevent layout drift.
 - **Stacked Sprite Separation**: Avoid negative margins for overlapping sprites with opaque backgrounds. Use `gap` or explicit offsets in relative containers to ensure legibility.
 
-### 3. Notifications & Toasts
+### 3. Interactive Integrity
+
+- **Pointer Events Safety**: NEVER use `pointer-events: none` on interactive icons, badges, or pills that are intended to be clickable. This blocks the event from reaching the element or its parent's handler.
+- **Draggable Stability**: Apply `user-select: none` to draggable slots, cards, or grid items. This prevents text selection artifacts from disrupting the drag flow and ensures a stable "grab" feel.
+
+### 4. Notifications & Toasts
 
 - **MANDATORY**: Toasts must occupy the highest layer (`z-index: 999,999`).
 
@@ -208,6 +249,10 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Cursor Consistency Mandate**: All interactive elements (badges, items, pills) that provide information via tooltips MUST use `cursor: pointer`. Avoid `cursor: help` (the question mark) to maintain a premium, responsive feel across the entire UI.
 - **Action Grouping (Box/Inventory)**: High-level management actions (e.g., Mercado Negro, Liberar) MUST be grouped in the primary navigation/header bar (slots like `#extra` in `BoxTabs`) to maximize the area dedicated to content grids.
 - **Global Event Listeners**: Window/Global event listeners (e.g., `online`, `click` retry) used outside component lifecycles (like in Pinia stores) MUST be marked with `// [PureVue-Ignore]` to satisfy audit standards while maintaining necessary logic.
+
+### 8. Agencia y Control en Combate
+- **Derrota Manual**: Queda terminantemente prohibido cerrar el modal de combate automáticamente tras una derrota. Se debe mostrar la pantalla de resultados y permitir al usuario salir manualmente ("Ir al Mapa") para mantener la agencia sobre los logs finales.
+- **HUD Independiente**: La visibilidad de las barras de vida debe estar ligada al estado individual del combatiente, no a la fase global de la batalla. Hiding both HUDs when only one is in transition (e.g., enemy capture) causes visual disorientation.
 
 > [!IMPORTANT]
 > **Close Button Rule**: The "X" button MUST always be visible and correctly positioned in the top-right corner, regardless of variant or header visibility.
@@ -357,6 +402,13 @@ The combat log is the primary source of truth for the user. It MUST maintain abs
   - **Incorrect**: `¡${e.name} enemigo se debilitó!` (Hardcoded 'enemigo' while checking player HP).
   - **Correct**: `¡${p.name} se debilitó!` or `¡${e.name} salvaje fue derrotado!`.
 - **Action Logs**: Use standardized CSS classes (`log-info`, `log-player`, `log-enemy`, `log-danger`) to color-code entries, ensuring the user can distinguish between their actions and the opponent's at a glance.
+- **HUD Weather Parity**: Every active weather condition MUST display a dedicated icon in the `BattleInfoCard` status container.
+  - **Sun (☀️)**: Red tint, Fire boost.
+  - **Rain (🌧️)**: Blue tint, Water boost.
+  - **Sandstorm (🏜️)**: Rock SpD boost, residual damage.
+  - **Snow (❄️)**: Ice Def boost (Gen 9), no damage.
+  - **Fog (🌫️)**: Accuracy penalty (60%).
+  - **MANDATORY**: Each icon MUST include a `PVTooltip` explaining the exact mechanical benefits or penalties for the current Pokémon.
 
 ### 11. Selection Modal Heuristics
 
@@ -371,3 +423,10 @@ To clearly separate development feedback from game narrative:
 
 - **Debug Iconography**: Any log message generated for debugging (starting with `DEBUG:`) MUST use the 😈 emoji as its primary icon.
 - **Emoji Rendering**: Emojis in logs must be rendered as text spans with `font-size: 24px` and a subtle shadow, ensuring they stand out without requiring external image assets.
+
+### 13. DevTools Visual Feedback
+
+Debug buttons and tools MUST provide real-time visual feedback:
+
+- **Active State**: Buttons for effects or states (Weather, Screens) must change appearance (e.g., color tint or glow) if the state is currently active in the store.
+- **Reactive Sync**: Debug UI must use Pinia stores to ensure the interface reflects changes made via CLI or other components instantly.

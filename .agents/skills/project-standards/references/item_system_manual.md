@@ -32,6 +32,14 @@ Defines what the item does when used on a Pokémon or globally.
 - **Battle Mode**: In combat, the selection modal MUST use the `allowedIds` filter to ONLY show valid targets (e.g., only fainted Pokémon for Revives).
 - **Failure Handling**: If an item application fails, do NOT close the inventory. Notify the cause and let the user retry.
 
+### 2.1 Battle Quick Bag Protocol
+
+Accessing items via the combat sidebar HUD must mirror the full inventory logic:
+
+- **Immediate Action**: Direct use only for Pokéballs (targeting the enemy).
+- **Selection Flow**: For healing/buff items, ALWAYS verify `isValidTarget` first, then open `PokemonSelection` modal to pick the target.
+- **Consistency**: Never bypass the "Ask who to apply" step if the item target is the team.
+
 ### 3. Log Orchestration (Battle Mode)
 
 To provide clear visual feedback without redundancy, item usage logs must be split:

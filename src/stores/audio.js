@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { gameBus } from '@/logic/gameBus';
 import * as engine from '@/logic/audioEngine';
 
 /**
@@ -24,10 +25,18 @@ export const useAudioStore = defineStore('audio', () => {
       masterGain.value.gain.value = 0.15; // Global volume
       masterGain.value.connect(context.value.destination);
       isInitialized.value = true;
+      initListeners();
     } catch (e) {
       console.error('[Audio] Web Audio API not supported', e);
     }
   };
+
+  const initListeners = () => {
+    gameBus.on('PLAY_SOUND', (e) => {
+      const type = e.detail || e
+      play(type)
+    })
+  }
 
   /**
    * Resumes the context.
@@ -65,6 +74,7 @@ export const useAudioStore = defineStore('audio', () => {
       case 'faint': engine.playFaintSound(ctx, dest); break;
       case 'wobble': engine.playWobbleSound(ctx, dest); break;
       case 'ballHit': engine.playBallHitSound(ctx, dest); break;
+      case 'statusDamage': engine.playStatusDamageSound(ctx, dest); break;
     }
   };
 
@@ -87,6 +97,7 @@ export const useAudioStore = defineStore('audio', () => {
     heal: () => play('heal'),
     faint: () => play('faint'),
     wobble: () => play('wobble'),
-    ballHit: () => play('ballHit')
+    ballHit: () => play('ballHit'),
+    statusDamage: () => play('statusDamage')
   };
 });

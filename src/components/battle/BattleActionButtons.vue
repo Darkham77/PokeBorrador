@@ -152,15 +152,19 @@ onUnmounted(() => {
 .action-row-complex {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: 12px;
+  gap: var(--move-panel-gap, 12px);
   align-items: center;
   overflow: visible;
 
   .btn-vicio-secondary, .btn-vicio-success {
-    padding: 10px 16px;
+    padding: 6px 12px;
     font-size: 8px;
     border-radius: 10px;
-    
+    min-height: 40px; // Altura fija compacta para alineación
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     &:disabled {
       filter: Grayscale(1);
       opacity: 0.6;

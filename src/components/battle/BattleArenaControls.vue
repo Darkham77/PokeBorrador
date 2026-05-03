@@ -7,6 +7,8 @@ import { useModalStore } from '@/stores/modals'
 import { useLivePvPStore } from '@/stores/livePvP'
 import BattleMovesGrid from './BattleMovesGrid.vue'
 import BattleActionButtons from './BattleActionButtons.vue'
+import BattleQuickTeam from './BattleQuickTeam.vue'
+import BattleQuickBag from './BattleQuickBag.vue'
 import { defineAsyncComponent } from 'vue'
 
 const isDebugActive = !!window.__VITE_DEBUG__
@@ -51,14 +53,12 @@ const execShowBattleSwitch = () => {
 }
 
 const execTryCatch = () => { 
-  // This is now mainly for "no balls" or fallback
   const balls = Object.keys(gs.value.inventory).filter(n => n.toLowerCase().includes('ball'))
   if (balls.length === 0) {
     uiStore.notify('¡No tienes Poké Balls!', '🚫')
     return
   }
   
-  // If called from a legacy place or fallback, open inventory
   modalStore.open('Inventory', { 
     battleMode: true, 
     initialCategory: 'pokeballs' 
@@ -72,7 +72,6 @@ const execShowBattleBag = () => {
   })
 }
 
-// Watcher robusto para cambio forzado
 watch(() => uiStore.isBattleSwitchForced, (val) => {
   if (val) {
     if (battleStore.isProcessing) {
@@ -87,56 +86,66 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
     }
   }
 })
-
 </script>
 
 <template>
   <div id="move-panel">
-    <div class="controls-content">
-      <component
-        :is="BattleDebugTools"
-        v-if="BattleDebugTools"
-      />
-      <BattleMovesGrid 
-        v-if="player"
-        :moves="player.moves" 
-        :is-processing="battleStore.isProcessing || battleStore.isIntroAnimating"
-        :player-info="player"
-        @use-move="(idx) => battleStore.executeMove(idx)"
-      />
+    <div class="battle-controls-layout">
+      <!-- Zona 1: Equipo Rápido (Izquierda) -->
+      <aside class="quick-shortcut-zone zone-team">
+        <BattleQuickTeam />
+      </aside>
 
-      <BattleActionButtons 
-        :is-finishing="battleStore.isFinishing || battleStore.isIntroAnimating"
-        @switch="execShowBattleSwitch"
-        @bag="execShowBattleBag"
-        @run="battleStore.flee"
-        @catch="execTryCatch"
-        @select-ball="(name) => battleStore.useItemInBattle(name)"
-      />
+      <div class="controls-content">
+        <component
+          :is="BattleDebugTools"
+          v-if="BattleDebugTools"
+        />
+        <BattleMovesGrid 
+          v-if="player"
+          class="is-compact"
+          :moves="player.moves" 
+          :is-processing="battleStore.isProcessing || battleStore.isIntroAnimating"
+          :player-info="player"
+          @use-move="(idx) => battleStore.executeMove(idx)"
+        />
 
-      <div
-        v-if="battleStore.isFinishing"
-        class="battle-finish-overlay"
-      >
-        <div class="finish-actions-group">
-          <button
-            v-if="gameStore.state.team.some(p => p.hp > 0)"
-            class="continue-btn-final search-btn"
-            @click.stop="battleStore.completeBattleFlow('search')"
-          >
-            <span class="btn-emoji">🔍</span> BUSCAR
-          </button>
-          <button
-            class="continue-btn-final map-btn"
-            @click.stop="battleStore.completeBattleFlow('map')"
-          >
-            <span class="btn-emoji">🗺️</span> VOLVER AL MAPA
-          </button>
+        <BattleActionButtons 
+          :is-finishing="battleStore.isFinishing || battleStore.isIntroAnimating"
+          @switch="execShowBattleSwitch"
+          @bag="execShowBattleBag"
+          @run="battleStore.flee"
+          @catch="execTryCatch"
+          @select-ball="(name) => battleStore.useItemInBattle(name)"
+        />
+
+        <div
+          v-if="battleStore.isFinishing"
+          class="battle-finish-overlay"
+        >
+          <div class="finish-actions-group">
+            <button
+              v-if="gameStore.state.team.some(p => p.hp > 0)"
+              class="continue-btn-final search-btn"
+              @click.stop="battleStore.completeBattleFlow('search')"
+            >
+              <span class="btn-emoji">🔍</span> BUSCAR
+            </button>
+            <button
+              class="continue-btn-final map-btn"
+              @click.stop="battleStore.completeBattleFlow('map')"
+            >
+              <span class="btn-emoji">🗺️</span> VOLVER AL MAPA
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Modals (Relative to move-panel) -->
+      <!-- Zona 2: Mochila Rápida (Derecha) -->
+      <aside class="quick-shortcut-zone zone-bag">
+        <BattleQuickBag />
+      </aside>
+    </div>
   </div>
 </template>
 
@@ -144,27 +153,72 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 @use "@/styles/core/tools" as *;
 
 #move-panel {
-  padding: 16px; 
+  --move-card-max-width: 200px;
+  --move-panel-gap: 12px;
+  --info-zone-width: 16px; 
+  --move-panel-max-width: calc(((var(--move-card-max-width) + var(--info-zone-width)) * 2) + var(--move-panel-gap));
+  --shortcut-zone-width: 160px;
+  
+  padding: 0 !important; 
   display: flex;
   flex-direction: column;
   gap: 0;
   position: relative;
   overflow: visible !important; 
-  z-index: var(--z-low); // Aseguramos que esté por encima del fondo del combate pero bajo modales/tooltips
+  z-index: var(--z-low);
   
   @media (max-width: 959px) {
-    padding: 12px 12px 0 12px; // Anclaje al fondo (0px bottom)
+    padding: 0;
     flex-shrink: 0;
-    margin-bottom: -2px; // Precisión de anclaje según estándares
+    margin-bottom: -2px;
   }
+
+  @media (max-width: 420px) {
+    padding: 0 !important;
+  }
+}
+
+.battle-controls-layout {
+  display: flex;
+  align-items: stretch; // Estirar para coincidir con la altura del centro
+  justify-content: space-between;
+  gap: 5px; // Gap mínimo entre zonas
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+
+  @media (max-width: 950px) {
+    .quick-shortcut-zone {
+      display: none !important;
+    }
+    justify-content: center;
+  }
+}
+
+.quick-shortcut-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  animation: slideInUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  // Trick: height 0 + min-height 100% para que hereden la altura del padre 
+  // (definida por el centro) sin expandir el contenedor ellos mismos.
+  height: 0;
+  min-height: 100%;
+  overflow: hidden;
+  
+  &.zone-team { min-width: 220px; }
+  &.zone-bag { min-width: 140px; }
 }
 
 .controls-content {
   width: 100%;
-  max-width: 680px;
-  margin: 0 auto;
+  max-width: var(--move-panel-max-width);
   display: flex;
   flex-direction: column;
+  gap: 8px; // Gap reducido entre movimientos y botones
+  flex-shrink: 0;
+  padding-top: 8px;
 }
 
 :deep(.moves-grid-vicio) {
@@ -186,11 +240,11 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 
 .continue-btn-final {
   @include btn-vicio('info', 'md', true);
-  max-width: 300px; // Aumentado para mayor estabilidad
+  max-width: 300px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding-left: 48px; // Padding fijo para alinear el inicio de todos los botones
+  padding-left: 48px;
   gap: 16px;
   text-align: left;
   
@@ -199,7 +253,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   }
 
   .btn-emoji {
-    width: 32px; // Ancho fijo para el contenedor del emoji
+    width: 32px;
     font-size: 28px; 
     line-height: 1;
     display: flex;
@@ -219,5 +273,10 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   align-items: center;
   width: 100%;
   padding: 20px;
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

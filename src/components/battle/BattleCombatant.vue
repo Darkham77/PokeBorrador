@@ -1,5 +1,5 @@
-<script setup>
 // [PureVue-Ignore-Length]
+<script setup>
 import { ref, computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import VirtualEntity from './VirtualEntity.vue'
@@ -25,7 +25,8 @@ const props = defineProps({
   isCaptureSuccess: { type: Boolean, default: false },
   sparkles: { type: Array, default: () => [] },
   isFainting: { type: Boolean, default: false },
-  suppressFX: { type: Boolean, default: false }
+  suppressFX: { type: Boolean, default: false },
+  stages: { type: Object, default: () => ({}) }
 })
 
 const emit = defineEmits(['load'])
@@ -118,6 +119,38 @@ const handleBallError = (e) => {
         :style="{ '--shadow-y': groundY }"
       />
 
+      <!-- Capa de Efectos de Suelo (Sigue la sombra, ignora el float) -->
+      <div 
+        class="ground-effects-container"
+        :style="{ top: groundY }"
+      >
+        <!-- Púas -->
+        <Transition name="ground-fx-pop">
+          <div
+            v-if="stages.spikes > 0"
+            :key="`spikes-${side}-${stages.spikes}`"
+            class="ground-fx spikes"
+          >
+            <span
+              v-for="i in 3"
+              :key="i"
+              class="spike-item"
+            >🌵</span>
+          </div>
+        </Transition>
+        
+        <!-- Arraigo -->
+        <Transition name="ground-fx-pop">
+          <div
+            v-if="pokemon.ingrain"
+            :key="`ingrain-${side}`"
+            class="ground-fx ingrain"
+          >
+            <span class="root-item">🌳</span>
+          </div>
+        </Transition>
+      </div>
+
       <div
         class="sprite-rotation-layer"
         :class="[getAttackAnimClass, { 'is-floating-species': isFloating }]"
@@ -125,7 +158,7 @@ const handleBallError = (e) => {
         <div
           class="sprite-idle-wrapper"
           :class="[{ 
-            'combatant-idle-subtle': !animState, 
+            'combatant-idle-subtle': !animState && pokemon.status !== 'freeze', 
             'is-floating-species': isFloating, 
             'energy-catching': animState === 'catching' || isFainting, 
             'energy-releasing': animState === 'releasing' 
@@ -137,8 +170,23 @@ const handleBallError = (e) => {
           }"
         >
           <PVSpriteFX
+            :poke-id="pokemon.uid || pokemon.id"
             :is-shiny="!isSilhouette && !suppressFX && pokemon.isShiny"
             :is-guardian="!isSilhouette && !suppressFX && pokemon.isGuardian"
+            :status="!isSilhouette && !suppressFX ? pokemon.status : null"
+            :is-confused="!isSilhouette && !suppressFX && pokemon.confused > 0"
+            :is-cursed="!isSilhouette && !suppressFX && pokemon.cursed"
+            :is-seeded="!isSilhouette && !suppressFX && pokemon.seeded"
+            :is-trapped="!isSilhouette && !suppressFX && (pokemon.trapped || (pokemon.bound > 0))"
+            :attracted="!isSilhouette && !suppressFX && pokemon.attracted"
+            :is-focus-energy="!isSilhouette && !suppressFX && pokemon.focusEnergy"
+            :is-protected="!isSilhouette && !suppressFX && (pokemon.protect || pokemon.detect)"
+            :is-enduring="!isSilhouette && !suppressFX && pokemon.endure"
+            :is-lock-on="!isSilhouette && !suppressFX && pokemon.lockOn"
+            :has-reflect="!isSilhouette && !suppressFX && stages.reflect > 0"
+            :has-light-screen="!isSilhouette && !suppressFX && stages.lightScreen > 0"
+            :has-safeguard="!isSilhouette && !suppressFX && stages.safeguard > 0"
+            :has-mist="!isSilhouette && !suppressFX && stages.mist > 0"
             :vibrant="true"
             :sparkle-count="8"
             :style="virtualStyle"
@@ -196,9 +244,15 @@ const handleBallError = (e) => {
           <span
             v-for="s in sparkles"
             :key="s.id"
-            class="sparkle"
-            :style="{ '--tx': s.tx, '--ty': s.ty, 'animation-delay': s.delay }"
-          >✨</span>
+            class="sparkle-shiny-style"
+            :style="{ 
+              '--tx': s.tx, 
+              '--ty': s.ty, 
+              '--tf': s.tf,
+              '--scale': s.scale,
+              'animation-delay': s.delay 
+            }"
+          />
         </div>
       </div>
     </Transition>
@@ -298,136 +352,60 @@ const handleBallError = (e) => {
   transform-origin: 50% var(--shadow-y, 90%);
 }
 
-@keyframes energy-catch {
-  0% { filter: none; transform: Scale(1); opacity: 1; }
-  25% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.05); }
-  100% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
-}
-
-@keyframes energy-release {
-  0% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
-  75% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.1); }
-  100% { filter: none; transform: Scale(1); opacity: 1; }
-}
-
-.sprite-idle-wrapper { width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: center; }
-.combatant-idle-subtle { animation: combatant-idle-subtle 3s infinite ease-in-out !important; }
-
-@keyframes combatant-idle-subtle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(var(--idle-dist, -6px)); } }
-@keyframes attack-dash-player { 0% { transform: Translate(0, 0); } 25% { transform: Translate(50px, -50px); } 100% { transform: Translate(0, 0); } }
-@keyframes attack-dash-enemy { 0% { transform: Translate(0, 0); } 25% { transform: Translate(-50px, 50px); } 100% { transform: Translate(0, 0); } }
-@keyframes attack-pulse-player { 0% { transform: Scale(1); } 30% { transform: Scale(1.15) Translate(10px, -10px); filter: Brightness(1.3); } 100% { transform: Scale(1); } }
-@keyframes attack-pulse-enemy { 0% { transform: Scale(1); } 30% { transform: Scale(1.15) Translate(-10px, 10px); filter: Brightness(1.3); } 100% { transform: Scale(1); } }
-@keyframes attack-status-player { 0% { transform: Rotate(0deg); } 30% { transform: Rotate(10deg) Scale(1.1); } 100% { transform: Rotate(0deg); } }
-@keyframes attack-status-enemy { 0% { transform: Rotate(0deg); } 30% { transform: Rotate(-10deg) Scale(1.1); } 100% { transform: Rotate(0deg); } }
-
-@keyframes pokemon-faint {
-  0%, 14%, 28%, 42%, 56%, 70% { opacity: 1; }
-  7%, 21%, 35%, 49%, 63%, 77% { opacity: 0; }
-  100% { opacity: 0; }
-}
-
-.trapped-pokeball {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%) translateY(-85%);
-  width: calc(var(--obj-scale) * 40px);
-  height: calc(var(--obj-scale) * 40px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-map-ui);
-  pointer-events: none;
-  image-rendering: pixelated;
-  overflow: visible;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transform-origin: 50% 70%;
-  }
-
-  &.is-shaking img { animation: pokeball-wobble 0.6s ease-in-out; }
-  &.is-blinking img { animation: pokeball-shake-blink 0.4s ease-in-out; }
-  &.is-shaking.is-blinking img { animation: pokeball-wobble 0.6s ease-in-out, pokeball-shake-blink 0.4s ease-in-out; }
-  &.is-success img { animation: pokeball-success-blink 0.5s ease-in-out infinite; }
-}
-
-@keyframes pokeball-shake-blink { 0%, 100% { filter: Brightness(1); } 50% { filter: Brightness(2) Hue-Rotate(10deg); } }
-@keyframes pokeball-success-blink { 0%, 100% { filter: Brightness(1); } 50% { filter: Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg); } }
-
-.pokeball-shadow {
-  position: absolute;
-  top: 85%;
-  left: 50%;
-  transform: TranslateX(-50%) TranslateY(-50%);
-  width: 70%;
-  height: 15%;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.8;
-}
-
-.catch-success-sparkles {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  pointer-events: none;
-  z-index: var(--z-low);
-  overflow: visible;
-
-  .sparkle {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    font-size: calc(var(--obj-scale) * 12px);
-    transform: Translate(-50%, -50%);
-    animation: catch-sparkle-out 0.8s ease-out forwards;
-    @include pixelated;
-    text-shadow: 0 0 10px Rgba(255, 215, 0, 1), 0 0 20px Rgba(255, 255, 255, 0.8), 0 0 30px Rgba(255, 215, 0, 0.5);
-    filter: Drop-Shadow(0 0 5px white);
-  }
-}
-
-@keyframes catch-sparkle-out {
-  0% { transform: Translate(-50%, -50%) Scale(0); opacity: 1; }
-  20% { transform: Translate(-50%, -50%) Scale(2.5); opacity: 1; }
-  100% { transform: Translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) Scale(1.2); opacity: 0; }
-}
-
-@keyframes pokeball-wobble {
-  0%, 100% { transform: Rotate(0deg); }
-  25% { transform: Rotate(-20deg); }
-  75% { transform: Rotate(20deg); }
-}
-
-.guide-real-size {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: TranslateX(-50%);
-  border: 1px dashed Rgba(255, 255, 255, 0.5);
-  background: Rgba(255, 255, 255, 0.1);
-  pointer-events: none;
-  z-index: var(--z-hud);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  span {
-    @include pixelated;
-    font-size: 8px;
-    color: white;
-    background: black;
-    padding: 2px;
-    opacity: 0.8;
-  }
-}
-
 .ball-fade-enter-active, .ball-fade-leave-active { transition: opacity 0.2s ease-in-out; }
 .ball-fade-enter-from, .ball-fade-leave-to { opacity: 0; }
+
+.ground-effects-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: 100%;
+  height: 20px;
+  pointer-events: none;
+  z-index: calc(var(--z-map-spawns) + 5); // Por encima del pokemon
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ground-fx {
+  position: absolute;
+  display: flex;
+  gap: 8px;
+  
+  &.spikes {
+    .spike-item {
+      font-size: 28px;
+      display: inline-block;
+      animation: 
+        ground-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+        ground-item-jump 2s infinite ease-in-out 0.4s;
+      filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.3));
+      
+      &:nth-child(2) { animation-delay: 0.1s, 0.7s; }
+      &:nth-child(3) { animation-delay: 0.2s, 1s; }
+    }
+  }
+  
+  &.ingrain {
+    .root-item {
+      font-size: 42px;
+      display: inline-block;
+      transform: translateY(5px);
+      animation: 
+        ground-grow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+        ground-item-pulse 3s infinite ease-in-out 0.6s;
+    }
+  }
+}
+
+.ground-fx-pop-enter-active {
+  animation: ground-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.ground-fx-pop-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+  transform: Scale(0);
+}
 </style>

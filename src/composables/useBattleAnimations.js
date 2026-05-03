@@ -12,7 +12,9 @@ export function useBattleAnimations(battleStore, enemyRef) {
   const isInitialLoad = ref(true)
 
   // Estados de Captura / Debilitamiento
-  const isCaptureSequenceActive = ref(false)
+  const playerCaptureActive = ref(false)
+  const enemyCaptureActive = ref(false)
+  const isCaptureSequenceActive = computed(() => playerCaptureActive.value || enemyCaptureActive.value)
   const caughtPokemonSnapshot = ref(null) 
   const isFaintInProgress = ref(false)
   const faintedPokemonSnapshot = ref(null)
@@ -79,27 +81,40 @@ export function useBattleAnimations(battleStore, enemyRef) {
   }
 
   const triggerCatchSparkles = (side) => {
-    const count = 5 // Reducido a menos de la mitad (original era 12)
+    const count = 8 // Subido un poco para que se vea más lleno
     for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 * i) / count
-      const dist = 60 + Math.random() * 40
+      // Alternar bando para asegurar dispersión equilibrada
+      const direction = i % 2 === 0 ? -1 : 1
+      const tx = direction * (60 + Math.random() * 120) 
+      const ty = -(60 + Math.random() * 40) 
+      const tf = ty + (90 + Math.random() * 40) 
+      const scale = 0.5 + Math.random() * 0.8 // Variación de tamaño
+      
       catchSparkles.value.push({
-        id: Date.now() + i,
+        id: `sparkle-${side}-${Date.now()}-${i}-${Math.random()}`,
         side,
-        tx: `${Math.cos(angle) * dist}px`,
-        ty: `${Math.sin(angle) * dist}px`,
-        delay: `${Math.random() * 0.2}s`
+        tx: tx, // Pasar solo número
+        ty: ty, 
+        tf: tf,
+        scale,
+        delay: `${Math.random() * 0.2}s` // Ráfaga más compacta (0.2s max)
       })
     }
     setTimeout(() => {
       catchSparkles.value = catchSparkles.value.filter(s => s.side !== side)
-    }, 1200)
+    }, 1200) 
   }
 
   const handleReleaseRequest = (detail) => {
     const side = detail?.side || detail
+    
+    // Limpiar estados de captura inmediatamente al liberar
+    if (side === 'player') playerCaptureActive.value = false
+    else enemyCaptureActive.value = false
+
     if (side === 'player') playerAnimState.value = 'releasing'
     else enemyAnimState.value = 'releasing'
+    
     setTimeout(() => {
       if (side === 'player') playerAnimState.value = null
       else enemyAnimState.value = null
@@ -145,26 +160,73 @@ export function useBattleAnimations(battleStore, enemyRef) {
     }
   }
 
+  const handleFaintAnim = (e) => {
+    const data = e?.detail || e
+    const side = typeof data === 'string' ? data : (data?.side || 'enemy')
+    if (side === 'enemy') {
+      faintedPokemonSnapshot.value = enemyRef.value ? { ...enemyRef.value, side: 'enemy' } : { side: 'enemy' }
+      isFaintInProgress.value = true
+      setTimeout(() => { isFaintInProgress.value = false; faintedPokemonSnapshot.value = null }, 1300)
+    } else {
+      faintedPokemonSnapshot.value = { side: 'player' }
+      isFaintInProgress.value = true
+      setTimeout(() => { isFaintInProgress.value = false; faintedPokemonSnapshot.value = null }, 1300)
+    }
+  }
+
   const initListeners = () => {
+    gameBus.on('PLAY_CATCH_ENERGY', (e) => {
+      const data = e?.detail || e
+      handleCatchRequest(data)
+    })
+    gameBus.on('PLAY_WITHDRAW', (e) => {
+      const data = e?.detail || e
+      handleCatchRequest(data)
+    })
     gameBus.on('PLAY_RELEASE_ENERGY', (e) => handleReleaseRequest(e.detail || e))
-    gameBus.on('PLAY_CATCH_ENERGY', (e) => handleCatchRequest(e.detail || e))
-    gameBus.on('CATCH_SHAKE', (e) => handleShakeRequest(e.detail || e))
+    gameBus.on('PLAY_SEND_OUT', (e) => handleReleaseRequest(e.detail || e))
+    
+    gameBus.on('CATCH_SHAKE', (e) => {
+      const data = e?.detail || e
+      handleShakeRequest(data)
+    })
+    
+    gameBus.on('POKEMON_FAINT', (e) => handleFaintAnim(e))
+    gameBus.on('PLAY_FAINT', (e) => handleFaintAnim(e))
+
+    gameBus.on('PLAY_ATTACK_ANIM', (e) => {
+      const data = e?.detail || e
+      const side = typeof data === 'string' ? data : (data?.side || 'player')
+      const cat = data?.cat || 'physical'
+      
+      battleStore.attackerSide = side
+      battleStore.activeMove = { cat, side } 
+      
+      setTimeout(() => {
+        battleStore.attackerSide = null
+        battleStore.activeMove = null
+      }, 500)
+    })
+
     gameBus.on('CATCH_SUCCESS', (e) => {
-      const detail = e.detail || e
-      const side = detail?.side || detail
-      isCaptureSequenceActive.value = true
-      caughtPokemonSnapshot.value = enemyRef.value ? { ...enemyRef.value } : null
+      const data = e?.detail || e
+      const side = typeof data === 'string' ? data : (data?.side || 'enemy')
+      
+      if (side === 'player') playerCaptureActive.value = true
+      else enemyCaptureActive.value = true
+      
+      const targetRef = side === 'player' ? battleStore.player : enemyRef.value
+      caughtPokemonSnapshot.value = targetRef ? { ...targetRef } : null
       triggerCatchSparkles(side)
       
-      // Reset visual de la Poké Ball (1.0s) - Como pidió el usuario
       setTimeout(() => {
         if (side === 'player') playerAnimState.value = null
         else enemyAnimState.value = null
       }, 1000)
 
-      // Reset del estado de captura (2.0s) - 1s de bola + 1s de vacío
       setTimeout(() => {
-        isCaptureSequenceActive.value = false
+        playerCaptureActive.value = false
+        enemyCaptureActive.value = false
         caughtPokemonSnapshot.value = null
       }, 2000)
     })
@@ -172,7 +234,8 @@ export function useBattleAnimations(battleStore, enemyRef) {
     gameBus.on('START_BATTLE', (e) => {
       const detail = e.detail || e
       // Resetear estados al iniciar un nuevo combate
-      isCaptureSequenceActive.value = false
+      playerCaptureActive.value = false
+      enemyCaptureActive.value = false
       caughtPokemonSnapshot.value = null
       activePokeballId.value = 'pokeball'
       
@@ -207,6 +270,8 @@ export function useBattleAnimations(battleStore, enemyRef) {
     enemyAnimState,
     activePokeballId,
     catchSparkles,
+    playerCaptureActive,
+    enemyCaptureActive,
     playerIsShaking,
     playerIsBlinking,
     enemyIsShaking,

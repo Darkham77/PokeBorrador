@@ -18,7 +18,8 @@ const props = defineProps({
   index: { type: Number, required: true },
   isSelected: { type: Boolean, default: false },
   selectionType: { type: String, default: null }, // 'rocket' | 'release' | null
-  isPerformanceMode: { type: Boolean, default: false }
+  isPerformanceMode: { type: Boolean, default: false },
+  hideStats: { type: Boolean, default: false }
 })
 
 const isModalPerformance = inject('isModalPerformanceMode', null)
@@ -62,14 +63,14 @@ const statColor = computed(() => {
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const totalIvs = computed(() => {
-  if (!props.pokemon) return 0
+  if (props.hideStats || !props.pokemon) return 0
   const ivs = props.pokemon.ivs || {}
   return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + 
          (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
 })
 
 const bst = computed(() => {
-  if (!props.pokemon) return 0
+  if (props.hideStats || !props.pokemon) return 0
   const baseData = pokemonDataProvider.getPokemonData(props.pokemon.id)
   if (!baseData) return 0
   return (baseData.hp || 0) + (baseData.atk || 0) + (baseData.def || 0) + 
@@ -168,10 +169,16 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
             {{ pokemon.gender === 'M' ? '♂' : '♀' }}
           </div>
         </div>
-        <div class="m-badge-iv">
+        <div
+          v-if="!hideStats"
+          class="m-badge-iv"
+        >
           IV {{ totalIvs }}
         </div>
-        <div class="m-badge-tot">
+        <div
+          v-if="!hideStats"
+          class="m-badge-tot"
+        >
           TOT {{ bst + totalIvs }}
         </div>
       </div>
@@ -224,6 +231,38 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
     .card-info {
       filter: Grayscale(0.5);
       opacity: 0.8;
+    }
+  }
+
+  // --- PERFORMANCE MODE OVERRIDES ---
+  &.performance-mode {
+    transition: background-color 0.2s ease, border-color 0.2s ease !important;
+    will-change: auto; // Liberar memoria GPU si no es necesario
+    
+    &:hover {
+      transform: none !important;
+      filter: none !important;
+      background: Rgba(255, 255, 255, 0.1) !important;
+      border-color: Rgba(255, 255, 255, 0.4) !important;
+      box-shadow: inset 0 0 10px Rgba(255, 255, 255, 0.1) !important;
+      
+      &::before { opacity: 0 !important; }
+      
+      :deep(.box-card-sprite) {
+        transform: none !important;
+        filter: none !important;
+      }
+    }
+
+    &.selected {
+      background: Rgba(59, 130, 246, 0.2) !important;
+      border-color: #3b82f6 !important;
+      box-shadow: none !important;
+      
+      &:hover {
+        background: Rgba(59, 130, 246, 0.3) !important;
+        box-shadow: none !important;
+      }
     }
   }
 }

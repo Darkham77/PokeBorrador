@@ -110,5 +110,19 @@ export function usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFill
     return true
   }
 
-  return { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox }
+  function togglePokeTag(context, index, tagId) {
+    const p = context === 'team' ? state.team[index] : state.box[index]
+    if (!p) return
+    
+    if (!p.tags) p.tags = []
+    const idx = p.tags.indexOf(tagId)
+    if (idx > -1) {
+      p.tags.splice(idx, 1)
+    } else {
+      p.tags.push(tagId)
+    }
+    scheduleSave()
+  }
+
+  return { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag }
 }

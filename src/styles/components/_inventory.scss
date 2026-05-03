@@ -120,15 +120,15 @@
     gap: 16px;
     padding-bottom: 20px;
     position: relative;
-  }
 
-  @media (max-width: 768px) {
-    padding: 10px; // Reduced padding to save space
-    
-    .item-premium-grid {
+    @media (max-width: 768px) {
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
     }
+  }
+
+  @media (max-width: 768px) {
+    padding: 10px;
   }
 }
 

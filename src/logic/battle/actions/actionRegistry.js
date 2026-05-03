@@ -46,7 +46,7 @@ export function dispatchMoveEffect(effect, src, tgt, srcStages, tgtStages, addLo
   // 2. Comprobar inmunidades generales (Shield Dust / Polvo Escudo)
   if (tgt.ability === 'Polvo escudo' && chance < 100) {
     if (effectBase !== 'leech_seed' && effectBase !== 'metronome') {
-      addLogFn(`¡El Polvo escudo de ${tgt.name} evitó los efectos secundarios!`, 'log-info');
+      addLogFn(`¡El Polvo escudo de ${tgt.name} evitó los efectos secundarios!`, 'log-info', tgt);
       return;
     }
   }
@@ -55,8 +55,26 @@ export function dispatchMoveEffect(effect, src, tgt, srcStages, tgtStages, addLo
   // Prioridad al efecto completo (ej: stat_up_self_atk_2)
   let actionFn = ALL_ACTIONS[effect] || ALL_ACTIONS[effectBase];
 
+  console.log(`%c[ActionRegistry] Dispatching: ${effect} (Base: ${effectBase}) -> Found: ${!!actionFn}`, 'color: #10b981; font-weight: bold');
+
   if (actionFn) {
-    actionFn(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
+    try {
+      // Snatch (Robo) Logic: Intercept beneficial status moves
+      const snatchablePrefixes = ['stat_up_self', 'heal_50', 'heal_weather', 'rest', 'reflect', 'light_screen', 'safeguard', 'focus_energy'];
+      const isSnatchable = snatchablePrefixes.some(p => effect.startsWith(p));
+      
+      if (isSnatchable && tgt.snatching) {
+        addLogFn(`¡${tgt.name} robó el efecto con Robo!`, 'log-info', tgt);
+        tgt.snatching = false;
+        // Execute action with swapped src/tgt
+        actionFn(tgt, src, tgtStages, srcStages, addLogFn, battleCtx);
+        return;
+      }
+
+      actionFn(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
+    } catch (e) {
+      console.error(`[ActionRegistry] Error executing ${effect}:`, e);
+    }
   } else {
     // Casos especiales no modulares aún o logs de depuración
     console.warn(`[ActionRegistry] No se encontró acción para el efecto: ${effect} (${effectBase})`);

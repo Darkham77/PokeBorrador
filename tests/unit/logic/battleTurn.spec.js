@@ -49,20 +49,31 @@ describe('battleTurn.js', () => {
         }
       },
       addLog: vi.fn(),
-      endBattle: vi.fn()
+      endBattle: vi.fn(),
+      handleFaint: vi.fn((side) => {
+        gameBus.emit('PLAY_FAINT', { side })
+        if (side === 'enemy' && mockStore.activeBattle.isTrainer) {
+          const next = mockStore.activeBattle.enemyTeam[0]
+          if (next) {
+            gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
+            gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: next })
+            mockStore.addLog('¡Entrenador envía a Rattata!', 'log-enemy', 'enemy_trainer')
+          }
+        }
+      })
     }
   })
 
   it('should trigger gameBus animations during player action', async () => {
     // Mock e.hp = 0 to trigger faint emission
-    mockStore.activeBattle.enemy.hp = 0
+    mockStore.activeBattle.enemy.hp = 1
     await runPlayerAction(mockStore, 0)
     expect(gameBus.emit).toHaveBeenCalledWith('PLAY_FAINT', { side: 'enemy' })
   })
 
   it('should handle trainer switching pokemon when one faints', async () => {
     mockStore.activeBattle.isTrainer = true
-    mockStore.activeBattle.enemy.hp = 0
+    mockStore.activeBattle.enemy.hp = 1
     const nextPokemon = { name: 'Rattata', hp: 100 }
     mockStore.activeBattle.enemyTeam = [nextPokemon]
 

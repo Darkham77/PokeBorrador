@@ -18,7 +18,33 @@
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   scroll-behavior: smooth;
+  min-height: 0;
   @include gpu-layer;
+
+  // Custom Scrollbar Vicio (Retro Style)
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: Rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--yellow-dark, #8b6d11);
+    border-radius: 2px;
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    
+    &:hover {
+      background: var(--yellow);
+    }
+  }
+  
+  // Standards compliance
+  scrollbar-width: thin;
+  scrollbar-color: var(--yellow-dark, #8b6d11) Rgba(0, 0, 0, 0.2);
 }
 
 /// Imágenes de sprites Pokémon siempre en capa GPU para evitar flicker y mejorar render

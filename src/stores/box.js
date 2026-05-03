@@ -295,17 +295,7 @@ export const useBoxStore = defineStore('box', () => {
   }
 
   function togglePokeTag(boxIndex, tag) {
-    const p = gameStore.state.box[boxIndex]
-    if (!p) return
-    
-    if (!p.tags) p.tags = []
-    const idx = p.tags.indexOf(tag)
-    if (idx > -1) {
-      p.tags.splice(idx, 1)
-    } else {
-      p.tags.push(tag)
-    }
-    gameStore.save()
+    gameStore.togglePokeTag('box', boxIndex, tag)
   }
 
   // --- TEAM ACTIONS ---

@@ -81,7 +81,7 @@ const handleClose = () => {
   <BaseModal
     :show="battleStore.isBattleActive"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :max-width="isSmallScreen ? '100dvw' : '1230px'"
+    :max-width="isSmallScreen ? '100dvw' : '1600px'"
     :height="isSmallScreen ? '100dvh' : '92dvh'"
     :max-height="isSmallScreen ? '100dvh' : '92dvh'"
     variant="modern"
@@ -294,7 +294,7 @@ const handleClose = () => {
     height: 100%; // Llenado total
     max-height: 100%;
     width: 100%;
-    max-width: 1230px; /* 280px log + 950px arena */
+    max-width: 1600px; /* 280px log + 1320px arena/controls */
   }
 }
 

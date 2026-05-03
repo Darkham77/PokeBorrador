@@ -218,7 +218,6 @@ const handleItemImageError = (e) => {
     font-weight: 900;
     line-height: 1;
     text-align: center;
-    pointer-events: none;
 
     // NORMALIZACIÓN VISUAL ESTÁNDAR (MD, LG, XL)
     &.is-shiny { font-size: 0.85em; } 

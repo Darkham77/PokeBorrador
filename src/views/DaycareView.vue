@@ -190,7 +190,7 @@ const getGenderClass = (gender) => {
     margin-bottom: 8px;
     background: Linear-Gradient(to right, var(--purple-light), var(--blue-light));
     -webkit-background-clip: text;
-    -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;
+    -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;
     -webkit-text-fill-color: transparent;
     filter: Drop-Shadow(0 2px 10px Rgba(139, 92, 246, 0.3));
   }

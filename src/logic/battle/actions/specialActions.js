@@ -1,7 +1,5 @@
-/**
- * Módulo de Acciones Especiales (Special moves)
- * Maneja mecánicas complejas: Rugido, Drenadoras, Transformación, etc.
- */
+import { STATUS_ACTIONS } from './statusActions';
+import { MOVE_DATA } from '@/data/moves';
 
 export const SPECIAL_ACTIONS = {
   'leech_seed': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
@@ -16,41 +14,63 @@ export const SPECIAL_ACTIONS = {
   },
   'roar': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
     if (!battleCtx) return;
+    const b = battleCtx.activeBattle || battleCtx;
     
-    // Inmunidad: Succión
     if (tgt.ability === 'Succión' || tgt.ability === 'Ventosa') {
       addLogFn(`¡La ${tgt.ability} de ${tgt.name} impidió ser arrastrado!`, 'log-info', tgt);
       return;
     }
 
-    const isPlayerAttacking = (src === battleCtx.player);
+    const isPlayerAttacking = (src === b.player);
     
     if (isPlayerAttacking) {
-      if (!battleCtx.isTrainer && !battleCtx.isGym) {
-        // Salva: Huye
+      if (!b.isTrainer && !b.isGym) {
         addLogFn(`¡El ${tgt.name} salvaje huyó asustado!`, 'log-player', tgt);
-        battleCtx.over = true;
+        b.over = true;
       } else {
-        // Entrenador: Cambio aleatorio
-        const aliveOthers = (battleCtx.enemyTeam || []).filter(p => p.uid !== tgt.uid && p.hp > 0);
+        const team = b.enemyTeam || [];
+        const aliveOthers = team.filter(p => p.uid !== tgt.uid && p.hp > 0);
         if (aliveOthers.length === 0) {
-          addLogFn('¡Pero no surtió efecto!', 'log-enemy');
+          addLogFn('¡Pero no hay nadie para sustituirle!', 'log-info', tgt);
           return;
         }
         const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
         addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-player', tgt);
-        battleCtx.enemy = randomPick;
-        // Reset stages for new entry
+        b.enemy = randomPick;
         Object.keys(tgtStages).forEach(k => tgtStages[k] = 0);
         addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', randomPick);
       }
     } else {
-      // Enemigo ataca al jugador
-      // Note: Player switch logic is more complex because it involves store updates
-      // For now we handle it as far as possible in the context
-      addLogFn(`¡${src.name} usó Rugido!`, 'log-info');
-      // The store will need to handle the player switch event if we want full integration,
-      // but we can try basic swap here if battleCtx allows it.
+      if (!b.isTrainer && !b.isGym) {
+        addLogFn(`¡${src.name} expulsó a ${tgt.name} del combate!`, 'log-enemy', src);
+        b.over = true;
+      } else {
+        const team = b.playerTeam || [];
+        const aliveOthers = team.filter(p => p.uid !== tgt.uid && p.hp > 0);
+        if (aliveOthers.length === 0) {
+          addLogFn('¡Pero no surtió efecto!', 'log-enemy', src);
+          return;
+        }
+        const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
+        addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-enemy', src);
+        b.player = randomPick;
+        Object.keys(tgtStages).forEach(k => tgtStages[k] = 0);
+        addLogFn(`¡Envía a ${randomPick.name}!`, 'log-info', randomPick);
+      }
+    }
+  },
+  'curse': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
+    const isGhost = src.type === 'ghost' || src.type2 === 'ghost';
+    if (isGhost) {
+      const cost = Math.floor(src.maxHp / 2);
+      src.hp = Math.max(0, src.hp - cost);
+      tgt.cursed = true;
+      addLogFn(`¡${src.name} sacrificó PS para maldecir a ${tgt.name}!`, 'log-info', src);
+    } else {
+      srcStages.atk = Math.min(6, (srcStages.atk || 0) + 1);
+      srcStages.def = Math.min(6, (srcStages.def || 0) + 1);
+      srcStages.spe = Math.max(-6, (srcStages.spe || 0) - 1);
+      addLogFn(`¡${src.name} redujo su Velocidad pero subió su Ataque y Defensa!`, 'log-info', src);
     }
   },
   'destiny_bond': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
@@ -60,7 +80,7 @@ export const SPECIAL_ACTIONS = {
   'perish_song': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     if (src.perishSongCount === undefined) src.perishSongCount = 3;
     if (tgt.perishSongCount === undefined) tgt.perishSongCount = 3;
-    addLogFn('¡Todos los que escucharon el canto morirán en 3 turnos!', 'log-info');
+    addLogFn('¡Todos los que escucharon el canto morirán en 3 turnos!', 'log-info', src);
   },
   'transform': (src, tgt, srcStages, tgtStages, addLogFn, _battleCtx) => {
     const originalName = src.name;
@@ -85,7 +105,239 @@ export const SPECIAL_ACTIONS = {
     });
     addLogFn(`¡${originalName} se transformó en ${tgt.name}!`, 'log-info', src);
   },
-  'reflect': (_src, _tgt, _srcStages, _tgtStages, _addLogFn, _battleCtx) => {
-     // Re-exported or moved to fieldActions, keeping consistency
+  'tri_attack': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    const roll = Math.random();
+    if (roll < 0.066) STATUS_ACTIONS.burn(src, tgt, srcStages, tgtStages, addLogFn);
+    else if (roll < 0.132) STATUS_ACTIONS.paralyze(src, tgt, srcStages, tgtStages, addLogFn);
+    else if (roll < 0.20) STATUS_ACTIONS.freeze(src, tgt, srcStages, tgtStages, addLogFn);
+  },
+  'focus_energy': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.focusEnergy = true;
+    addLogFn(`¡${src.name} se está concentrando!`, 'log-info', src);
+  },
+  'lock_on': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.lockOn = true;
+    addLogFn(`¡${src.name} fijó el blanco en ${tgt.name}!`, 'log-info', src);
+  },
+  'mirror_move': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (tgt.lastMove && tgt.lastMove.name !== 'Movimiento Espejo') {
+      const move = tgt.lastMove;
+      addLogFn(`¡Movimiento Espejo copió ${move.name}!`, 'log-info', src);
+      // Simular ejecución: Si tiene efecto, intentar ejecutarlo
+      if (move.effect) {
+        // Buscamos en los módulos ya importados (o que se pueden importar)
+        // Por ahora, manejamos los más comunes o usamos un log
+        console.log(`[MirrorMove] Triggering: ${move.effect}`);
+      }
+    } else {
+      addLogFn("¡Pero falló!", 'log-info', src);
+    }
+  },
+  'false_swipe': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    addLogFn(`¡Un ataque contenido!`, 'log-info', src);
+  },
+  'trap': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    tgt.trapped = true;
+    addLogFn(`¡${tgt.name} no puede escapar!`, 'log-info', tgt);
+  },
+  'ingrain': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.ingrain = true;
+    addLogFn(`¡${src.name} echó raíces!`, 'log-info', src);
+  },
+  'endure': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.endure = true;
+    addLogFn(`¡${src.name} aguantará el próximo golpe!`, 'log-info', src);
+  },
+  'protect': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.protect = true;
+    addLogFn(`¡${src.name} se protegió!`, 'log-info', src);
+  },
+  'belly_drum': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    const cost = Math.floor(src.maxHp / 2);
+    if (src.hp > cost && srcStages.atk < 6) {
+      src.hp -= cost;
+      srcStages.atk = 6;
+      addLogFn(`¡${src.name} redujo su HP y maximizó su Ataque!`, 'log-info', src);
+    } else {
+      addLogFn("¡Pero falló!", 'log-info', src);
+    }
+  },
+  'teleport': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (!battleCtx) return;
+    const b = battleCtx.activeBattle;
+    const isWild = !b.isTrainer && !b.isGym;
+    
+    if (isWild) {
+      addLogFn(`¡${src.name} se teletransportó fuera del combate!`, 'log-info', src);
+      b.over = true;
+    } else {
+      const isPlayer = (src === b.player);
+      const team = isPlayer ? b.playerTeam : b.enemyTeam;
+      const aliveOthers = (team || []).filter(p => p.uid !== src.uid && p.hp > 0);
+      
+      if (aliveOthers.length === 0) {
+        addLogFn(`¡${src.name} se teletransportó fuera del combate!`, 'log-info', src);
+        b.over = true;
+      } else {
+        addLogFn(`¡${src.name} se teletransportó!`, 'log-info', src);
+        if (!isPlayer) {
+          const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
+          b.enemy = randomPick;
+          addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', randomPick);
+        } else {
+          // Para el jugador, por simplicidad en este punto, fallamos si no es el último
+          addLogFn("¡Pero no hay nadie para sustituirle!", 'log-info', src);
+        }
+      }
+    }
+  },
+  'rapid_spin': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    let cleared = false;
+    if (src.seeded) { src.seeded = false; cleared = true; }
+    if (src.bound) { src.bound = 0; cleared = true; }
+    if (srcStages.spikes) { srcStages.spikes = 0; cleared = true; }
+    
+    if (cleared) {
+      addLogFn(`¡${src.name} se libró de las trampas girando!`, 'log-info', src);
+    }
+  },
+  'identify': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    tgt.identified = true;
+    addLogFn(`¡${src.name} identificó a ${tgt.name}!`, 'log-info', src);
+  },
+  'swagger': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    tgtStages.atk = Math.min(6, (tgtStages.atk || 0) + 2);
+    addLogFn(`¡Subió mucho el Ataque de ${tgt.name}!`, 'log-info', tgt);
+    STATUS_ACTIONS.confuse(src, tgt, srcStages, tgtStages, addLogFn);
+  },
+  'recharge': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.mustRecharge = true;
+  },
+  'taunt': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    tgt.tauntTurns = 3;
+    addLogFn(`¡${tgt.name} cayó en la mofa!`, 'log-info', tgt);
+  },
+  'torment': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    tgt.tormentActive = true;
+    addLogFn(`¡${tgt.name} sufre de tormento!`, 'log-info', tgt);
+  },
+  'disable': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    if (tgt.lastMove && !tgt.disabledMove) {
+      tgt.disabledMove = tgt.lastMove;
+      tgt.disabledTurns = 4;
+      addLogFn(`¡El movimiento ${tgt.lastMove.name} de ${tgt.name} ha sido desactivado!`, 'log-info', tgt);
+    } else {
+      addLogFn("¡Pero falló!", 'log-info', src);
+    }
+  },
+  'dream_eater': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (battleCtx && battleCtx.lastDamage) {
+      const heal = Math.floor(battleCtx.lastDamage / 2);
+      src.hp = Math.min(src.maxHp, src.hp + heal);
+      addLogFn(`¡${src.name} absorbió los sueños de su rival! (+${heal} HP)`, 'log-info', src);
+    }
+  },
+  'drain_50': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (battleCtx && battleCtx.lastDamage) {
+      const heal = Math.max(1, Math.floor(battleCtx.lastDamage / 2));
+      src.hp = Math.min(src.maxHp, src.hp + heal);
+      addLogFn(`¡${src.name} recuperó salud absorbiendo energía! (+${heal} HP)`, 'log-info', src);
+    }
+  },
+  'recoil_25': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (battleCtx && battleCtx.lastDamage) {
+      const recoil = Math.max(1, Math.floor(battleCtx.lastDamage / 4));
+      src.hp = Math.max(0, src.hp - recoil);
+      addLogFn(`¡${src.name} recibió daño por el retroceso! (-${recoil} HP)`, 'log-info', src);
+    }
+  },
+  'recoil_33': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (battleCtx && battleCtx.lastDamage) {
+      const recoil = Math.max(1, Math.floor(battleCtx.lastDamage / 3));
+      src.hp = Math.max(0, src.hp - recoil);
+      addLogFn(`¡${src.name} recibió mucho daño por el retroceso! (-${recoil} HP)`, 'log-info', src);
+    }
+  },
+  'metronome': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    const moveNames = Object.keys(MOVE_DATA).filter(name => name !== 'Metrónomo');
+    const randomName = moveNames[Math.floor(Math.random() * moveNames.length)];
+    const randomMove = { ...MOVE_DATA[randomName], name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_') };
+    
+    addLogFn(`¡El Metrónomo escogió ${randomName}!`, 'log-info', src);
+    
+    // Executing the effect if it exists
+    if (randomMove.effect) {
+      // Use dynamic import for avoiding circular deps if needed, 
+      // but since we are in a Registry architecture, we can just use the registration
+      // However, we don't have direct access to dispatchMoveEffect here easily without circularity.
+      // We'll use a hack or just handle simple effects here.
+      // Actually, many effects are in SPECIAL_ACTIONS/STAT_ACTIONS/STATUS_ACTIONS.
+      // We can try to find them.
+      console.log(`[Metronome] Triggering effect: ${randomMove.effect}`);
+    }
+  },
+  'encore': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    if (tgt.lastMove && !tgt.encoreMove) {
+      tgt.encoreMove = tgt.lastMove;
+      tgt.encoreTurns = 3;
+      addLogFn(`¡${tgt.name} recibió un Otra Vez!`, 'log-info', tgt);
+    } else {
+      addLogFn("¡Pero falló!", 'log-info', src);
+    }
+  },
+  'fury_cutter': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.furyCutterCount = (src.furyCutterCount || 0) + 1;
+  },
+  'bind': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    if (!tgt.bound) {
+      tgt.bound = 4 + Math.floor(Math.random() * 2);
+      addLogFn(`¡${tgt.name} fue atrapado!`, 'log-info', tgt);
+    } else {
+      addLogFn("¡Pero falló!", 'log-info', src);
+    }
+  },
+  'rage': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.rageActive = true;
+    addLogFn(`¡${src.name} está furioso!`, 'log-info', src);
+  },
+  'future_sight_simple': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    if (!battleCtx) return;
+    battleCtx.futureSightTurns = 3;
+    battleCtx.futureSightTarget = tgt;
+    addLogFn(`¡${src.name} lanzó una premonición!`, 'log-info', src);
+  },
+  'trick': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    const temp = src.heldItem;
+    src.heldItem = tgt.heldItem;
+    tgt.heldItem = temp;
+    addLogFn(`¡${src.name} y ${tgt.name} intercambiaron objetos!`, 'log-info', src);
+  },
+  'steal_item': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    if (tgt.heldItem && !src.heldItem) {
+      src.heldItem = tgt.heldItem;
+      const stolenItem = tgt.heldItem;
+      tgt.heldItem = null;
+      addLogFn(`¡${src.name} robó ${stolenItem} de ${tgt.name}!`, 'log-info', src);
+    }
+  },
+  'skill_swap': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    const temp = src.ability;
+    src.ability = tgt.ability;
+    tgt.ability = temp;
+    addLogFn(`¡${src.name} y ${tgt.name} intercambiaron habilidades!`, 'log-info', src);
+    addLogFn(`¡${src.name} tiene ${src.ability}!`, 'log-info', src);
+    addLogFn(`¡${tgt.name} tiene ${tgt.ability}!`, 'log-info', tgt);
+  },
+  'snatch': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.snatching = true;
+    addLogFn(`¡${src.name} espera para robar un movimiento!`, 'log-info', src);
+  },
+  'explosion': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.hp = 0;
+    addLogFn(`¡${src.name} explotó!`, 'log-info', src);
+  },
+  'self_destruct': (src, tgt, srcStages, tgtStages, addLogFn) => {
+    src.hp = 0;
+    addLogFn(`¡${src.name} se autodestruyó!`, 'log-info', src);
   }
 };

@@ -16,6 +16,7 @@ import { registerPokeTools } from './debug/sections/pokeTools'
 import { registerTimeTools } from './debug/sections/timeTools'
 import { registerItemTools } from './debug/sections/itemTools'
 import { registerSystemTools } from './debug/sections/systemTools'
+import { registerAudioTools } from './debug/sections/audioTools'
 
 export const useDebugStore = defineStore('debug', () => {
   const auth = useAuthStore()
@@ -96,6 +97,7 @@ export const useDebugStore = defineStore('debug', () => {
     registerPokeTools({ register }, context)
     registerTimeTools({ register }, context)
     registerItemTools({ register }, context)
+    registerAudioTools({ register }, context)
     
     // SystemTools registration (now synchronous registration, async module resolution)
     registerSystemTools({ register }, { ...context })

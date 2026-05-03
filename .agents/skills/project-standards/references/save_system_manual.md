@@ -87,6 +87,22 @@ To optimize performance and server load:
 
 ---
 
+## 🏗️ Store Architecture Integrity
+
+### 1. Pinia Action Destructuring
+
+When adding actions to store modules (e.g., `pokemonActions.js`, `trainerActions.js`), they MUST be explicitly destructured in the root store file (e.g., `src/stores/game.js`) to be exposed to the rest of the application.
+
+- **Defense**: Failure to destructure new actions will result in a `ReferenceError` when attempting to call them from components or other stores.
+
+### 2. Consolidated Logic (Tagging Case)
+
+Business logic that affects both **Team** and **Box** contexts (e.g., toggling favorite tags, nicknames) MUST be centralized in a root store action instead of being duplicated or fragmented in specialized stores.
+
+- **WHY**: Ensures data consistency regardless of the Pokémon's current location and simplifies UI interaction handlers.
+
+---
+
 ## 🛡️ Administrative Security
 
 ### 1. Debug Panel (LocalDebugPanel.vue)
@@ -127,3 +143,11 @@ To prevent data loss during background service worker updates:
 - **Configuration**: `vite.config.js` MUST use `registerType: 'prompt'`. Using `'autoUpdate'` is strictly FORBIDDEN as it can trigger reloads while the player is in an unsaved state.
 - **Implementation**: The update modal (`PWAManager.vue`) MUST call `gameStore.save(false)` before executing `updateServiceWorker()`.
 - **WHY**: Ensures that any progress made since the last 60s auto-save is persisted before the browser context is destroyed by the update.
+
+---
+
+## 🏗️ Battle State Integrity
+
+### 1. Atomic Guards & State Persistence
+- **Avoid Proxy Flags**: NEVER use ad-hoc properties on reactive objects (e.g., `poke._isFainting`) for critical guards. These flags are lost if the object is refreshed or replaced in the store.
+- **Use Centralized Sets**: For "single-execution" processes (faints, rewards, captures), use a reactive `Set` in the store (e.g., `faintedSides`) to ensure absolute persistence during the turn regardless of object updates.
