@@ -2,8 +2,10 @@
 
 To guarantee a premium and "alive" visual experience, all cyclical animations must avoid perfect synchronization between multiple instances. To maintain system flexibility, **avoid hardcoding absolute durations or offsets** in documentation; refer to relative logic and symbolic constants.
 
-### 0. Coordinate Initialization (Flicker Prevention)
+## 0. Coordinate Initialization (Flicker Prevention)
+
 To prevent positional "jumping" or flickering during entrance animations:
+
 - **Rule**: Every combatant must have its `groundY` and `shadow` coordinates pre-loaded into the store BEFORE the `isVisible` flag is set.
 - **Implementation**: Use the `preloadCombatCoords` workflow to scan sprites in the background while the UI is still blocked or during the transition phase.
 
@@ -60,7 +62,7 @@ When applying interactive animations (hover/active) to elements with a base offs
 To provide a premium feel without compromising usability on small screens, scaling animations MUST adapt to the available viewport space.
 
 - **Standard (Desktop/Tablet)**: Use `Scale(1.08)` or `Scale(1.1)` for hover states on primary interactive cards (e.g., Moves, Pokémon Cards) to create a clear sense of depth and focus.
-- **Compact (Mobile < 420px)**: Reduce the scaling factor to `Scale(1.02)` or `Scale(1.03)`. 
+- **Compact (Mobile < 420px)**: Reduce the scaling factor to `Scale(1.02)` or `Scale(1.03)`.
 - **WHY**: Large scales on mobile frequently cause the element to overlap critical UI edges or trigger unintended horizontal scrolling (clipping).
 - **Implementation**: Use CSS Media Queries inside the component's scoped styles to override the `Scale()` factor at the standard **420px** breakpoint.
 
@@ -120,7 +122,7 @@ Visual transitions MUST be synchronized with state changes using the `gameBus`.
 - **Energy Transition Standardization**: Capture/Release effects MUST use the standard `POKEMON_RECALL` and `POKEMON_CALL` components.
   - **Recall (Withdraw/Capture)**: Inverts colors and scales down (suction effect).
   - **Call (Send Out/Emergence)**: Resets colors and scales up (expansion effect).
-- **Animation Conflict Prevention**: Never apply `pokemon-faint` and `energy-catch` animations to the same DOM element simultaneously. 
+- **Animation Conflict Prevention**: Never apply `pokemon-faint` and `energy-catch` animations to the same DOM element simultaneously.
   - **WHY**: Both target the `animation` property; the last one applied will override the other, causing visual artifacts or missing effects. Recalling an owned fainted Pokémon should prioritize the energy recall.
 - **Coordinate Reset Protocol**: Upon switching combatants (`POKEMON_CALL`) or changing species ID, ground coordinates (`groundY`, `stableGroundY`) MUST be reset to null/zero in the same execution frame. Failure to do so causes "ghosting" where Poké Balls or entry effects inherit stale positions.
 

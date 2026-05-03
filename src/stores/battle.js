@@ -18,6 +18,7 @@ import { executeTurn, runEnemyAction } from '../logic/battle/battleTurn'
 import { generateEncounter } from '@/logic/encounters'
 import { useMapStore } from './map'
 import { formatBattleLog } from '../logic/battle/battleLogger'
+import { createBattleStateMachine, BATTLE_STATES, BATTLE_SUBSTATES } from '../logic/battle/battleStateMachine'
 
 export const useBattleStore = defineStore('battle', () => {
   const gs = useGameStore()
@@ -27,12 +28,32 @@ export const useBattleStore = defineStore('battle', () => {
   const audio = useAudioStore()
   
   const activeBattle = ref(null)
+  const fsm = createBattleStateMachine()
   const faintedSides = ref(new Set())
-  const isBattleActive = ref(false)
-  const isFinishing = ref(false)
-  const isProcessing = ref(false)
+  
+  const isBattleActive = computed(() => 
+    fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE || 
+    fsm.currentState.value === BATTLE_STATES.REWARDS_PHASE ||
+    fsm.currentState.value === BATTLE_STATES.LEVEL_UP_MODAL ||
+    fsm.currentState.value === BATTLE_STATES.POST_BATTLE_STABILIZATION ||
+    fsm.currentState.value === BATTLE_STATES.REORDER_TEAM ||
+    fsm.currentState.value === BATTLE_STATES.FIRST_INTRO ||
+    fsm.currentState.value === BATTLE_STATES.INITIALIZING ||
+    fsm.currentState.value === BATTLE_STATES.SEARCH_PHASE
+  )
+  const isFinishing = computed(() => 
+    fsm.currentState.value === BATTLE_STATES.REWARDS_PHASE || 
+    fsm.currentState.value === BATTLE_STATES.LEVEL_UP_MODAL ||
+    fsm.currentState.value === BATTLE_STATES.POST_BATTLE_STABILIZATION ||
+    fsm.currentSubState.value === BATTLE_SUBSTATES.ENEMY_FAINT ||
+    fsm.currentSubState.value === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ ||
+    fsm.currentSubState.value === BATTLE_SUBSTATES.CATCH_SUCCESS
+  )
+  const isSearching = computed(() => fsm.currentState.value === BATTLE_STATES.SEARCH_PHASE)
   const isIntroAnimating = ref(false)
-  const isSearching = ref(false)
+
+  
+  const isProcessing = ref(false)
   const debugBinoculars = ref(false) // Nueva flag para debug
   const battleLogs = ref([])
   const logQueue = ref([])
@@ -61,7 +82,7 @@ export const useBattleStore = defineStore('battle', () => {
   const restoreBattle = (battleData) => {
     if (!battleData) {
       activeBattle.value = null
-      isBattleActive.value = false
+      fsm.transition(BATTLE_STATES.EXIT_BATTLE)
       return
     }
     activeBattle.value = battleData
@@ -69,8 +90,11 @@ export const useBattleStore = defineStore('battle', () => {
     if (battleData.enemyStages) enemyStages.value = battleData.enemyStages
     if (battleData.battleLogs) battleLogs.value = battleData.battleLogs
     
-    isBattleActive.value = !battleData.over
-    isFinishing.value = false
+    if (!battleData.over) {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+    } else {
+      fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+    }
   }
 
   const persistBattle = () => {
@@ -151,9 +175,16 @@ export const useBattleStore = defineStore('battle', () => {
     
     // 4. DISPARO DE ANIMACIÓN Y CAMBIO DE FASE
     // Quitamos flags de búsqueda JUSTO antes de la animación para que el HUD aparezca sincronizado
-    isSearching.value = false
-    isFinishing.value = false
-    isBattleActive.value = true
+    if (wasSearching) {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT, 1000)
+    } else {
+      fsm.transition(BATTLE_STATES.INITIALIZING)
+      setTimeout(() => {
+        fsm.transition(BATTLE_STATES.FIRST_INTRO)
+        setTimeout(() => fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT), 1000)
+      }, 50)
+    }
+    
     attackerSide.value = null
     activeMove.value = null
     faintedSides.value.clear()
@@ -268,16 +299,27 @@ export const useBattleStore = defineStore('battle', () => {
   const executeMove = async (moveIndex) => {
     if (isProcessing.value || !isBattleActive.value) return
     isProcessing.value = true
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
     const thisStore = reactive({ 
       activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
       attackerSide, activeMove, persistBattle, handleFaint, isFinishing
     })
     await executeTurn(thisStore, moveIndex)
-    if (isBattleActive.value && !activeBattle.value.over) await applyEndTurnEffects()
+    
+    // GUARDA CRÍTICA: Si el combate fue nulificado durante el turno (por salir), abortamos
+    if (!activeBattle.value) {
+      isProcessing.value = false
+      return
+    }
+
+    if (!activeBattle.value.over) await applyEndTurnEffects()
     activeMove.value = null
     
     // Solo liberamos el procesamiento si el combate sigue activo y no ha terminado
     if (activeBattle.value && !activeBattle.value.over) {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+      isProcessing.value = false
+    } else {
       isProcessing.value = false
     }
   }
@@ -350,6 +392,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   const handleFaint = async (side) => {
     const isPlayer = side === 'player'
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, isPlayer ? BATTLE_SUBSTATES.PLAYER_FAINT_SEQ : BATTLE_SUBSTATES.ENEMY_FAINT)
     
     // Guarda centralizada en la store, no en el objeto del pokemon
     if (faintedSides.value.has(side)) return
@@ -366,15 +409,17 @@ export const useBattleStore = defineStore('battle', () => {
 
     if (isPlayer) {
       addLog(`¡${pokemon.name} se ha debilitado!`, 'log-player', pokemon)
-      gameBus.emit('PLAY_FAINT', { side: 'player' })
       
-      await new Promise(r => setTimeout(r, 1300)) // Esperar Faint (1.3s)
+      // Según Manual: PLAYER_FAINT_SEQ -> TRAINER_RECALL (Modular Recall)
+      gameBus.emit('PLAY_WITHDRAW', { side: 'player', isFaint: true })
+      
+      await new Promise(r => setTimeout(r, 1300)) // Esperar Animación (1.3s)
       
       const nextPoke = gs.state.team.find(p => p.hp > 0)
       if (!nextPoke) {
         activeBattle.value.over = true
         addLog('¡No te quedan Pokémon sanos!', 'log-error', 'player')
-        isFinishing.value = true
+        // Ya no se usa isFinishing directamente como bandera, se maneja via estado
         await endBattle(false)
       } else {
         addLog('¡Elige a tu próximo Pokémon!', 'log-info', 'player')
@@ -385,9 +430,11 @@ export const useBattleStore = defineStore('battle', () => {
       const isTr = activeBattle.value.isTrainer || activeBattle.value.isGym
       const enemyName = isTr ? pokemon.name : `¡${pokemon.name} salvaje`
       addLog(`${enemyName} fue derrotado!`, 'log-enemy', pokemon)
+      
+      // Según Manual: ENEMY_FAINT -> PLAY_ENEMY_FAINT (Drop Anim)
       gameBus.emit('PLAY_FAINT', { side: 'enemy' })
       
-      await new Promise(r => setTimeout(r, 1300)) // Esperar Faint (1.3s)
+      await new Promise(r => setTimeout(r, 1300)) // Esperar Animación (1.3s)
       
       if (isTr && activeBattle.value.enemyTeam) {
         const nextEnemy = activeBattle.value.enemyTeam.find(p => p.hp > 0)
@@ -442,12 +489,14 @@ export const useBattleStore = defineStore('battle', () => {
     activeMove.value = null
     
     if (res.action === 'capture') {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CATCH_SUCCESS)
       activeBattle.value.isCapture = true
       activeBattle.value.over = true // Regla del Vacio (Ocultar Interfaz Inmediatamente)
       gs.addPokemon(res.pokemon, { notify: true })
       // Retraso sincronizado: 1.0s de bola llena + 1.0s de pausa dramática (vacío) antes de la Fase 2
       setTimeout(() => {
         isProcessing.value = false
+        fsm.transition(BATTLE_STATES.REWARDS_PHASE)
         endBattle(true, false)
       }, 2000)
       return // Retenemos el control (isProcessing queda true durante el timeout)
@@ -467,8 +516,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   const endBattle = async (win, fled = false) => {
     if (!activeBattle.value) {
-      isBattleActive.value = false
-      isFinishing.value = false
+      fsm.transition(BATTLE_STATES.EXIT_BATTLE)
       return
     }
 
@@ -487,8 +535,16 @@ export const useBattleStore = defineStore('battle', () => {
     syncTeamHP();
 
     if (win && !fled) {
-      // MARCAR INICIO DE FASE FINAL (Pasto/Búsqueda)
-      isFinishing.value = true
+      // MARCAR INICIO DE FASE FINAL (The Void Standard)
+      if (activeBattle.value && fsm.currentState.value !== BATTLE_STATES.REWARDS_PHASE) {
+        await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.VOID_STATE)
+        await new Promise(r => setTimeout(r, 1000)) // "The Void" (1.0s - Nothing Shown)
+        
+        // Verificar existencia después de la espera asíncrona
+        if (!activeBattle.value) return 
+        
+        fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.DISTRIBUTE_XP)
+      }
       
       const isTr = battleData.isTrainer || battleData.isGym
       if (enemyRef.isGuardian) await warStore.addPoints(locId, 'guardian', true)
@@ -509,11 +565,13 @@ export const useBattleStore = defineStore('battle', () => {
     }
     
     if (fled) {
-      isFinishing.value = true
+      fsm.transition(BATTLE_STATES.EXIT_BATTLE)
       await completeBattleFlow('map')
     } else {
       // 1. Activar estado de finalización si no se hizo arriba (ya se hizo en win && !fled, pero por seguridad)
-      isFinishing.value = true
+      if (fsm.currentState.value !== BATTLE_STATES.REWARDS_PHASE) {
+        fsm.transition(BATTLE_STATES.REWARDS_PHASE)
+      }
       
       // 2. Pre-generar el próximo encuentro
       const isWild = !isTr
@@ -552,44 +610,42 @@ export const useBattleStore = defineStore('battle', () => {
           }
         }
       }
-
-      // REORDENAMIENTO DE EQUIPO: Si el pokemon activo ya no es el líder saludable, lo cambiamos en paralelo
-      // Esto evita que el DOM sufra un salto brusco al iniciar el siguiente combate, protegiendo las animaciones del enemigo.
-      const firstHealthy = gs.state.team.find(p => p.hp > 0)
-      if (firstHealthy && gs.state.team[0].hp <= 0) {
-        const idx = gs.state.team.indexOf(firstHealthy)
-        if (idx > 0) {
-          const [p] = gs.state.team.splice(idx, 1)
-          gs.state.team.unshift(p)
-        }
-      }
-
-      const currentActive = activeBattle.value?.player
-      
-      if (firstHealthy && currentActive && firstHealthy.uid !== currentActive.uid) {
-        // Ejecutar en paralelo sin hacer await para no bloquear la pantalla de victoria (Fase 2 salvaje)
-        (async () => {
-          if (currentActive.hp > 0) {
-            gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
-            await new Promise(r => setTimeout(r, 800)) // Animación de volver a la pokebola (Simulada)
-          } else {
-            await new Promise(r => setTimeout(r, 1300)) // Respetar 1.3s de Faint antes del relevo
-          }
-          
-          if (!isBattleActive.value || !activeBattle.value) return // Abortar si salió rápido
-          
-          // Cambiamos el pokemon activo silenciosamente
-          activeBattle.value.player = firstHealthy
-          activeBattle.value.playerTeamIndex = gs.state.team.findIndex(p => p.uid === firstHealthy.uid)
-          
-          // Lo sacamos a combatir (Silencioso en Vue)
-          gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
-        })()
-      }
     }
 
     // Persistir estado inmediatamente después del combate
     await gs.save(false)
+
+    // 3. POST-BATTLE STABILIZATION (REORDER & LEVEL UP)
+    // Se ejecuta al final de endBattle SOLO SI HUBO VICTORIA
+    if (win && !fled) {
+      fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION)
+      
+      const firstHealthy = gs.state.team.find(p => p.hp > 0)
+      const currentActive = player.value
+      
+      if (firstHealthy && currentActive && firstHealthy.uid !== currentActive.uid) {
+        // Lanzamos reordenamiento en segundo plano (Background Task)
+        ;(async () => {
+          fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION, BATTLE_STATES.REORDER_TEAM)
+          
+          if (currentActive.hp > 0) {
+            gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
+            await new Promise(r => setTimeout(r, 800))
+          } else {
+            await new Promise(r => setTimeout(r, 1300))
+          }
+          
+          if (activeBattle.value) {
+            activeBattle.value.player = firstHealthy
+            activeBattle.value.playerTeamIndex = gs.state.team.findIndex(p => p.uid === firstHealthy.uid)
+            gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
+          }
+        })()
+      }
+    } else if (!win && !fled) {
+      // Si el jugador pierde, se va a negro y se sale
+      fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+    }
   }
 
   const calculateRewards = () => {
@@ -643,6 +699,7 @@ export const useBattleStore = defineStore('battle', () => {
   const _executeSwitch = async (teamIndex, isForced = false) => {
     if (isProcessing.value && !isForced) return
     isProcessing.value = true
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
     
     // Regla de Atomicidad: Limpiar estados de animación antes de cambiar
     activeMove.value = null
@@ -710,13 +767,13 @@ export const useBattleStore = defineStore('battle', () => {
     if (battleEndCallback.value) { battleEndCallback.value(); battleEndCallback.value = null }; 
     
     if (option === 'search' && locId) {
+      // 2. SEARCH PHASE
       // Flujo optimizado: Si ya tenemos el upcomingPokemon, entramos en combate directo
       if (upcomingPokemon.value) {
         const nextPoke = upcomingPokemon.value
         
         // ACTIVAR MODO BÚSQUEDA (Fase 2) para que se vea el pasto antes de empezar
-        isSearching.value = true
-        isFinishing.value = false
+        fsm.transition(BATTLE_STATES.SEARCH_PHASE)
         isProcessing.value = false
 
         // IMPORTANTE: Si venimos de un bucle de debug, mantener la bandera para que no se limpie
@@ -729,8 +786,7 @@ export const useBattleStore = defineStore('battle', () => {
       }
 
       // Fallback si no había pre-generado (ej: recarga de página)
-      isSearching.value = true
-      isFinishing.value = false
+      fsm.transition(BATTLE_STATES.SEARCH_PHASE)
       isProcessing.value = false
       
       const { useMapStore } = await import('./map')
@@ -738,7 +794,7 @@ export const useBattleStore = defineStore('battle', () => {
       return
     }
 
-    isFinishing.value = false; isBattleActive.value = false; activeBattle.value = null; isSearching.value = false; isProcessing.value = false; clearLogs() 
+    fsm.transition(BATTLE_STATES.EXIT_BATTLE); activeBattle.value = null; isProcessing.value = false; clearLogs() 
 
     if (option === 'map') {
       uiStore.activeTab = 'map'
@@ -843,7 +899,7 @@ export const useBattleStore = defineStore('battle', () => {
       });
     },
     completeBattleFlow,
-    setFinishing: (cb) => { isFinishing.value = true; battleEndCallback.value = cb },
+    setFinishing: (cb) => { fsm.transition(BATTLE_STATES.REWARDS_PHASE); battleEndCallback.value = cb },
     useItemInBattle,
     endBattle,
     handleFaint,
@@ -852,6 +908,7 @@ export const useBattleStore = defineStore('battle', () => {
     executeSwitch: _executeSwitch,
     isSearching,
     isIntroAnimating,
-    debugBinoculars
+    debugBinoculars,
+    fsm
   }
 })

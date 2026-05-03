@@ -26,7 +26,15 @@ const defeatEnemy = async () => {
   if (!e) return
   battleStore.addLog('DEBUG: Ejecutando Daño Máximo...', 'log-info', e)
   e.hp = 0
-  await battleStore.endBattle(true, false)
+  await battleStore.handleFaint('enemy')
+}
+
+const defeatPlayer = async () => {
+  const p = battleStore.player
+  if (!p) return
+  battleStore.addLog('DEBUG: Ejecutando Suicidio...', 'log-info', p)
+  p.hp = 0
+  await battleStore.handleFaint('player')
 }
 
 const healPlayer = () => {
@@ -182,13 +190,18 @@ const toggleStatus = (side, type) => {
         v-if="isOpen"
         class="debug-menu custom-scrollbar-vicio"
       >
-        <!-- GLOBAL / QUICK ACTIONS -->
         <div class="debug-row">
           <button
             class="debug-btn kill-btn"
             @click.stop="defeatEnemy"
           >
             KILL ENEMY
+          </button>
+          <button
+            class="debug-btn kill-btn"
+            @click.stop="defeatPlayer"
+          >
+            KILL ME
           </button>
           <button
             class="debug-btn heal-btn"
@@ -523,7 +536,7 @@ const toggleStatus = (side, type) => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 180px;
+  width: 260px;
   max-height: 400px;
   min-height: 0;
   overflow-y: auto;

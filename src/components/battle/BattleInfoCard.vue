@@ -11,6 +11,8 @@ import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_
 import { getDayCycle } from '@/logic/timeUtils'
 import { ABILITY_DATA } from '@/data/abilities'
 import { supabase } from '@/logic/supabase'
+import { getEffectiveStat, getStatBreakdown, getStatMultiplier } from '@/logic/battle/battleEngine'
+
 
 const props = defineProps({
   pokemon: { type: Object, required: true },
@@ -65,14 +67,19 @@ const activeStages = computed(() => {
     const val = s[key]
     if (val !== 0) {
       const config = STAT_EMOJI_MAP[key] || { icon: '❓', name: key }
+      const mult = getStatMultiplier(val)
+      const pct = Math.round((mult - 1) * 100)
+      const pctText = pct > 0 ? `+${pct}%` : `${pct}%`
+      
       results.push({
         key,
         val,
         icon: config.icon,
-        text: `${config.name} ${val > 0 ? '↑' : '↓'}${Math.abs(val)}`
+        text: `${config.name} ${val > 0 ? '↑' : '↓'}${Math.abs(val)} (${pctText})`
       })
     }
   }
+
   return results
 })
 
@@ -193,6 +200,18 @@ const getStatModifier = (key) => {
   if (!stages) return 0
   return stages[key] || 0
 }
+
+const getBreakdown = (key) => {
+  const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
+  const weather = battleStore.state?.weather
+  return getStatBreakdown(p.value, key, stages, weather)
+}
+
+const formatMult = (m) => {
+  if (m === 1) return ''
+  return ` x${m.toFixed(1)}`
+}
+
 </script>
 
 <template>
@@ -242,15 +261,27 @@ const getStatModifier = (key) => {
                   'is-down': getStatModifier(stat.key) < 0
                 }"
               >
-                <span class="d-icon">{{ stat.icon }}</span>
-                <span class="d-label">{{ stat.label }}</span>
-                <span class="d-val">{{ p[stat.key] || 0 }}</span>
-                <span
-                  v-if="getStatModifier(stat.key) !== 0"
-                  class="d-mod"
-                >
-                  {{ getStatModifier(stat.key) > 0 ? '+' : '' }}{{ getStatModifier(stat.key) }}
-                </span>
+                <div class="stat-main-line">
+                  <span class="d-icon">{{ stat.icon }}</span>
+                  <span class="d-label">{{ stat.label }}</span>
+                  <span class="d-val">{{ Math.round(getBreakdown(stat.key).final) }}</span>
+                  <span
+                    v-if="getStatModifier(stat.key) !== 0"
+                    class="d-mod"
+                  >
+                    {{ getStatModifier(stat.key) > 0 ? '↑' : '↓' }}{{ Math.abs(getStatModifier(stat.key)) }}
+                  </span>
+                </div>
+                <div class="stat-breakdown-line">
+                  <span class="b-base">{{ getBreakdown(stat.key).base }}</span>
+                  <span class="b-ops">
+                    {{ formatMult(getBreakdown(stat.key).weatherMult) }}
+                    {{ formatMult(getBreakdown(stat.key).stageMult) }}
+                    {{ formatMult(getBreakdown(stat.key).abilityMult) }}
+                    {{ formatMult(getBreakdown(stat.key).statusMult) }}
+                  </span>
+                </div>
+
               </div>
               <div class="admin-notice">
                 ⚠️ Solo visible para ADMIN
@@ -592,13 +623,43 @@ const getStatModifier = (key) => {
 
 .debug-stat-row {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 2px;
   @include pixelated;
-  font-size: 10px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: Rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: Rgba(255, 255, 255, 0.1);
+  }
+
+  .stat-main-line {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    font-size: 10px;
+  }
+
+  .stat-breakdown-line {
+    display: flex;
+    align-items: center;
+    font-size: 8px;
+    opacity: 0.7;
+    padding-left: 18px;
+    color: Rgba(255, 255, 255, 0.5);
+    
+    .b-ops { 
+      margin-left: auto; 
+      color: $coin-gold;
+      font-weight: bold;
+    }
+  }
 
   .d-icon { width: 18px; font-size: 12px; }
   .d-label { width: 40px; color: var(--gray); opacity: 0.8; }
-  .d-val { font-weight: bold; margin-left: auto; color: white; }
+  .d-val { font-weight: bold; margin-left: auto; color: white; font-size: 11px; }
   .d-mod { 
     margin-left: 8px;
     font-size: 9px;

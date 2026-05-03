@@ -12,6 +12,8 @@ import { getDayCycle } from '../timeUtils';
 
 export { getTypeEffectiveness, getCombinedEffectiveness, getStatMultiplier };
 
+
+
 /**
  * Core Damage Calculation (Gen 4+ Based)
  * @param {Object} attacker 
@@ -103,28 +105,9 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
   }
 
   const isPhysical = moveCat === 'physical';
-  const atkStat = isPhysical ? attacker.atk : (attacker.spa || attacker.atk);
-  let defStat = isPhysical ? defender.def : (defender.spd || defender.def);
+  const A = getEffectiveStat(attacker, isPhysical ? 'atk' : 'spa', { [isPhysical ? 'atk' : 'spa']: atkStages }, weather);
+  const D = getEffectiveStat(defender, isPhysical ? 'def' : 'spd', { [isPhysical ? 'def' : 'spd']: defStages }, weather);
 
-  // Sandstorm SpD boost for Rock types
-  if (!isPhysical && mechWeather === WEATHER_MECHANICAL.SANDSTORM && (defender.type === 'rock' || defender.type2 === 'rock')) {
-    defStat = Math.floor(defStat * 1.5);
-  }
-
-  // Snow Def boost for Ice types (Gen 9)
-  if (isPhysical && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL) && (defender.type === 'ice' || defender.type2 === 'ice')) {
-    defStat = Math.floor(defStat * 1.5);
-  }
-  
-  const atkMult = getStatMultiplier(atkStages);
-  const defMult = getStatMultiplier(defStages);
-
-  let A = Math.floor(atkStat * atkMult);
-  if (isPhysical && attacker.status === 'burn') {
-    A = Math.max(1, Math.floor(A * 0.5));
-  }
-  
-  const D = Math.max(1, Math.floor(defStat * defMult));
 
   // Base Damage Formula
   const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
@@ -206,7 +189,100 @@ export function calculateDamage(attacker, defender, move, ctx = {}) {
   };
 }
 
+
+/**
+ * Calculates the final effective stat of a pokemon considering stages, weather, status and abilities.
+ */
+export function getEffectiveStat(pokemon, statKey, stages, weather) {
+  const breakdown = getStatBreakdown(pokemon, statKey, stages, weather);
+  return breakdown.final;
+}
+
+/**
+ * Returns a detailed breakdown of a stat calculation.
+ * Useful for UI/Debug tools.
+ */
+export function getStatBreakdown(pokemon, statKey, stages, weather) {
+  const mechWeather = getMechanicalWeather(weather?.type);
+  const cycle = getDayCycle();
+  
+  let baseVal = pokemon[statKey] || 10;
+  // Fallbacks for special stats if missing
+  if (statKey === 'spa' && !pokemon.spa) baseVal = pokemon.atk;
+  if (statKey === 'spd' && !pokemon.spd) baseVal = pokemon.def;
+
+  const results = {
+    base: baseVal,
+    weatherMult: 1,
+    stageMult: 1,
+    statusMult: 1,
+    abilityMult: 1,
+    final: baseVal
+  };
+
+  // 1. Weather Modifiers (Apply to Base in Gen 4+)
+  if (statKey === 'def') {
+    if ((mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL) && (pokemon.type === 'ice' || pokemon.type2 === 'ice')) {
+      results.weatherMult = 1.5;
+      baseVal = Math.floor(baseVal * 1.5);
+    }
+  }
+  if (statKey === 'spd') {
+    if (mechWeather === WEATHER_MECHANICAL.SANDSTORM && (pokemon.type === 'rock' || pokemon.type2 === 'rock')) {
+      results.weatherMult = 1.5;
+      baseVal = Math.floor(baseVal * 1.5);
+    }
+  }
+
+  // 2. Stage Multipliers
+  const stage = stages ? (stages[statKey] || 0) : 0;
+  results.stageMult = getStatMultiplier(stage);
+  let val = Math.floor(baseVal * results.stageMult);
+
+  // 3. Ability & Status Modifiers
+  const ab = pokemon.ability;
+  const isSun = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'));
+  const isRain = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'));
+
+  if (statKey === 'atk') {
+    if (ab === 'Potencia' || ab === 'Energía pura') results.abilityMult *= 2;
+    if (ab === 'Agallas' && pokemon.status) results.abilityMult *= 1.5;
+    
+    val = Math.floor(val * results.abilityMult);
+
+    if (pokemon.status === 'burn' && ab !== 'Agallas') {
+      results.statusMult = 0.5;
+      val = Math.floor(val * 0.5);
+    }
+  }
+
+  if (statKey === 'def') {
+    if (ab === 'Escama especial' && pokemon.status) {
+      results.abilityMult = 1.5;
+      val = Math.floor(val * 1.5);
+    }
+  }
+
+  if (statKey === 'spe') {
+    if (ab === 'Clorofila' && isSun) results.abilityMult *= 2;
+    if (ab === 'Nado rápido' && isRain) results.abilityMult *= 2;
+    if (ab === 'Ímpetu arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) results.abilityMult *= 2;
+    if (ab === 'Quitanieves' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) results.abilityMult *= 2;
+    
+    val = Math.floor(val * results.abilityMult);
+
+    if (pokemon.status === 'paralyze') {
+      results.statusMult = 0.5;
+      val = Math.floor(val * 0.5);
+    }
+  }
+
+  results.final = Math.max(1, val);
+  return results;
+}
+
 export function getAbilityMultiplier(attacker, defender, move) {
+
   let mult = 1;
   let triggeredAbility = null;
   const ab = attacker.ability;
@@ -237,40 +313,9 @@ export function getAbilityMultiplier(attacker, defender, move) {
 }
 
 export function getEffectiveSpeed(pokemon, stages, options = {}) {
-  const getStatMult = options.getStatMultiplier || getStatMultiplier;
-  const getCycle = options.getDayCycle || getDayCycle;
-  
-  const baseSpe = pokemon.spe || 40;
-  const stage = stages?.spe || 0;
-  let spe = Math.max(1, Math.floor(baseSpe * getStatMult(stage)));
-  
-  if (pokemon.ability === 'Fuga' && pokemon.status) {
-    spe *= 2;
-  }
-  
-  const weather = options.weather;
-  const mechWeather = getMechanicalWeather(weather?.type);
-  const cycle = getCycle();
-
-  const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'));
-  const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'));
-
-  if (pokemon.ability === 'Clorofila' && isSunActive) {
-    spe *= 2;
-  }
-  if (pokemon.ability === 'Nado rápido' && isRainActive) {
-    spe *= 2;
-  }
-  if (pokemon.ability === 'Ímpetu arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
-    spe *= 2;
-  }
-  if (pokemon.ability === 'Quitanieves' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) {
-    spe *= 2;
-  }
-
-  if (pokemon.status === 'paralyze') spe = Math.max(1, Math.floor(spe * 0.5));
-  return spe;
+  return getEffectiveStat(pokemon, 'spe', stages, options.weather);
 }
+
 
 export function calculateCatchRate(pokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx = {}) {
   const ballName = String(rawBallType || '').toLowerCase();

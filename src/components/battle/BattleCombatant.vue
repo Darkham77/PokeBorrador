@@ -525,4 +525,15 @@ const handleBallError = (e) => {
   75% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.1); }
   100% { filter: none; transform: Scale(1); opacity: 1; }
 }
+
+/* Animaciones de Ataque de Estado (Tail Whip, Growl, etc) */
+@keyframes attack-status-player {
+  0%, 100% { transform: Scale(1) TranslateX(0); filter: Brightness(1); }
+  50% { transform: Scale(1.05) TranslateX(10px); filter: Brightness(1.3) Contrast(1.2); }
+}
+
+@keyframes attack-status-enemy {
+  0%, 100% { transform: Scale(1) TranslateX(0); filter: Brightness(1); }
+  50% { transform: Scale(1.05) TranslateX(-10px); filter: Brightness(1.3) Contrast(1.2); }
+}
 </style>

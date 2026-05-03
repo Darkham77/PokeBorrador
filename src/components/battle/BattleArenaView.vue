@@ -58,7 +58,7 @@ const {
 
 const animations = useBattleAnimations(battleStore, enemy)
 const {
-  isWildEntryAnimation, isWildSilhouette, wildRevealActive, upcomingIsEmerging,
+  isWildEntryAnimation, isWildSilhouette, wildRevealActive, upcomingIsEmerging, isEmerging,
   isInitialLoad, isCaptureSequenceActive, caughtPokemonSnapshot,
   isFaintInProgress, faintedPokemonSnapshot,
   playerAnimState, enemyAnimState, activePokeballId, catchSparkles,
@@ -66,6 +66,7 @@ const {
   playerIsShaking, playerIsBlinking, enemyIsShaking, enemyIsBlinking,
   isIntroInProgress, triggerWildEmergence, initListeners
 } = animations
+
 
 const {
   isEnemyHudSuppressed,
@@ -130,8 +131,20 @@ const shouldShowEncounterLayers = computed(() => {
   if (enemyAnimState.value === 'catching' || enemyAnimState.value === 'trapped' || enemyAnimState.value === 'releasing') return false
   if (isCaptureSequenceActive.value || isFaintInProgress.value) return false
   
+  // Las capas de encuentro (pasto) solo aparecen si:
+  // 1. Estamos buscando activamente algo pre-generado
+  // 2. Es una animación de entrada/revelación
+  // 3. El enemigo se ha ido (over/finishing) PERO no estamos en medio de un cambio forzado del jugador
   const isUpcomingReady = isSearching.value && !!upcomingPokemon.value
-  return !!(isUpcomingReady || isWildEntryAnimation.value || wildRevealActive.value || isFinishing.value)
+  
+  // Seguridad: Los arbustos NUNCA aparecen si el enemigo sigue vivo o no ha sido capturado,
+  // especialmente durante un cambio forzado de Pokémon del jugador.
+  const enemyIsDefinitivelyGone = (battle.value?.over || battleStore.isFinishing) && 
+                                  (enemy.value?.hp <= 0 || battle.value?.isCapture)
+  
+  const isEnemyGone = enemyIsDefinitivelyGone && !uiStore.isBattleSwitchForced
+  
+  return !!(isUpcomingReady || isWildEntryAnimation.value || wildRevealActive.value || isEnemyGone)
 })
 
 const atmosphereSeed = computed(() => {

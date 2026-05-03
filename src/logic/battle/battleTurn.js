@@ -62,7 +62,7 @@ export async function executeTurn(store, moveIndex) {
     }
   }
   
-  if (store.activeBattle.over) {
+  if (store.activeBattle?.over) {
     // Evitar sobreescribir una victoria (Faint) o captura que ya inició el fin del combate
     if (!store.isFinishing) {
       await store.endBattle(false, true)
@@ -114,7 +114,14 @@ export async function runPlayerAction(store, moveIndex) {
     }
   }
 
+  const normalizeCat = (c) => {
+    if (c === 'Estado' || c === 'status' || c === 3) return 'status'
+    if (c === 'Especial' || c === 'special' || c === 2) return 'special'
+    return 'physical'
+  }
+  
   store.activeMove = { ...executableMove, side: 'player' }
+  gameBus.emit('PLAY_ATTACK_ANIM', { side: 'player', cat: normalizeCat(executableMove.cat) })
 
   // Sanity check for stats & level & moves
   if (!p.atk || !p.maxHp || executableMove.power === undefined) recalcPokemonStats(p)
@@ -359,7 +366,14 @@ export async function runEnemyAction(store) {
     }
   }
 
+  const normalizeCat = (c) => {
+    if (c === 'Estado' || c === 'status' || c === 3) return 'status'
+    if (c === 'Especial' || c === 'special' || c === 2) return 'special'
+    return 'physical'
+  }
+
   store.activeMove = { ...executableMove, side: 'enemy' }
+  gameBus.emit('PLAY_ATTACK_ANIM', { side: 'enemy', cat: normalizeCat(executableMove.cat) })
 
   // Precision Check
   const moveAcc = executableMove.acc || 100;

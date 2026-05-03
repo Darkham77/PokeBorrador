@@ -116,6 +116,7 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 
 Use these scripts to verify project standards:
 
+- `verify_fsm_diagrams.js`: Scans `battle_mechanics_manual.md` Mermaid diagrams and verifies 1:1 mapping against `battleStateMachine.js` FSM. Use to detect missing states or broken transitions.
 - `detect_gpu_gaps.py`: Scans for missing layer promotion or expensive filters.
 - `detect_outline_traps.py`: Detects expensive Quad Drop-Shadow outlines that should be migrated to SVG.
 - `detect_viewport_units.py`: Detects legacy `vw`/`vh` units that should be migrated to `dvw`/`dvh`.

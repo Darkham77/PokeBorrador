@@ -188,8 +188,8 @@ HUDs should only be restored when the system returns to an interaction state or 
 - **Search Phase**: At the end of the jump sequence (`SEARCH_PHASE` -> `Show Enemy HUD / Ready`), restore the Enemy HUD.
 - **Capture Failure**: If the Pokémon escapes from the Poké Ball (`CATCH_BREAK`), restore the Enemy HUD immediately before returning to `WAIT_INPUT`.
 - **Switching (Parallel Protocol)**: HUD visibility updates are performed IN PARALLEL with the Poké Ball rendering.
-    - **Recall**: The Involved Side HUD is hidden as soon as the Poké Ball appears.
-    - **Call**: The Involved Side HUD is shown as soon as the Poké Ball appears.
+  - **Recall**: The Involved Side HUD is hidden as soon as the Poké Ball appears.
+  - **Call**: The Involved Side HUD is shown as soon as the Poké Ball appears.
 
 ### 2. State Mapping & Tooltips
 
@@ -313,8 +313,8 @@ stateDiagram-v2
         GEN_ENCOUNTER --> PRELOAD_COORDS: "preloadCombatCoords()"
     }
     
-    INITIALIZING --> FIRST_INTRO: "Initial Encounter (Map)"
-    INITIALIZING --> SEARCH_PHASE: "Search Loop (isSearching is true)"
+    INITIALIZING --> FIRST_INTRO: "Initial Encounter (Map Trigger)"
+    INITIALIZING --> SEARCH_PHASE: "Persistent Modal (isSearching is true)"
     
     state FIRST_INTRO {
         state "ENTRY_ANIM" as FIRST_ENTRY
@@ -326,19 +326,7 @@ stateDiagram-v2
         note right of FIRST_ENTRY: Executes ONLY once per Map -> Battle transition
     }
     
-    state SEARCH_PHASE {
-        state "ENTRY_ANIM" as SEARCH_ENTRY
-        state "ENCOUNTER_ANIM" as SEARCH_ENCOUNTER
-        
-        [*] --> SEARCH_ENTRY: Source_SEARCH_PHASE
-        SEARCH_ENTRY --> BUSH_IDLE: Ready_to_Search
-        BUSH_IDLE --> EXIT_BATTLE: Return_to_Map
-        BUSH_IDLE --> SEARCH_ENCOUNTER: Search_Clicked
-        SEARCH_ENCOUNTER --> [*]
-    }
-    
     FIRST_INTRO --> ACTIVE_BATTLE: "Show All HUDs / Ready"
-    SEARCH_PHASE --> ACTIVE_BATTLE: "Show Enemy HUD / Ready"
     
     state ACTIVE_BATTLE {
         [*] --> WAIT_INPUT: "User Interaction"
@@ -346,8 +334,10 @@ stateDiagram-v2
         EXEC_TURN --> WAIT_INPUT: "HP > 0"
         
         EXEC_TURN --> CATCH_PROCESS: "Hide Enemy HUD / Ball Thrown"
-        EXEC_TURN --> FAINT_PROCESS: "Hide Fainted HUD / HP <= 0"
-        EXEC_TURN --> ESCAPE_PROCESS: "Hide Escaping HUD / Teleport"
+        EXEC_TURN --> ENEMY_FAINT: "Hide Enemy HUD / Enemy HP <= 0"
+        EXEC_TURN --> PLAYER_FAINT_SEQ: "Hide Player HUD / Player HP <= 0"
+        EXEC_TURN --> ESCAPE_PROCESS: "Move-based Escape (Teleport/Roar)"
+        EXEC_TURN --> EXIT_BATTLE: "Manual Flee (Close Modal)"
         
         state CATCH_PROCESS {
             [*] --> CATCH_SHAKE: "Shake Logic"
@@ -356,9 +346,14 @@ stateDiagram-v2
             CATCH_BREAK --> [*]
         }
         
-        state FAINT_PROCESS {
-            [*] --> PLAY_FAINT: "Faint Anim (1.3s)"
-            PLAY_FAINT --> [*]
+        state ENEMY_FAINT {
+            [*] --> PLAY_ENEMY_FAINT: "Drop Anim (1.3s)"
+            PLAY_ENEMY_FAINT --> [*]
+        }
+
+        state PLAYER_FAINT_SEQ {
+            [*] --> TRAINER_RECALL: "Modular Recall (See Section 5)"
+            TRAINER_RECALL --> [*]
         }
 
         state ESCAPE_PROCESS {
@@ -368,9 +363,11 @@ stateDiagram-v2
     }
     
     CATCH_BREAK --> WAIT_INPUT: "Show Enemy HUD"
-    CATCH_SUCCESS --> REWARDS_PHASE: "Capture Sequence Finished"
-    FAINT_PROCESS --> REWARDS_PHASE: "Faint Sequence Finished"
-    ESCAPE_PROCESS --> REWARDS_PHASE: "Escape Sequence Finished"
+    CATCH_SUCCESS --> REWARDS_PHASE: "Capture Success"
+    ENEMY_FAINT --> REWARDS_PHASE: "Faint Sequence Finished"
+    PLAYER_FAINT_SEQ --> WAIT_INPUT: "Switched (Continue Battle)"
+    PLAYER_FAINT_SEQ --> EXIT_BATTLE: "Defeated (Close Modal)"
+    ESCAPE_PROCESS --> REWARDS_PHASE: "Escape Sequence Finished (Teleport/Roar)"
     
     state REWARDS_PHASE {
         [*] --> VOID_STATE: "The Void (1.0s - Nothing Shown)"
@@ -378,39 +375,61 @@ stateDiagram-v2
         DISTRIBUTE_XP --> [*]
     }
     
-    REWARDS_PHASE --> LEVEL_UP_MODAL: "Sequence End"
-    
-    state LEVEL_UP_MODAL {
-        [*] --> CHECK_PENDING: "Verify Level Ups & Moves"
-        CHECK_PENDING --> SHOW_CHOICE: "Pending Move Found"
-        SHOW_CHOICE --> APPLY_MOVE: "Skill Chosen / Replaced"
-        APPLY_MOVE --> CHECK_PENDING: "Recursive Check"
-        CHECK_PENDING --> [*]: "No More Moves"
-    }
+    REWARDS_PHASE --> POST_BATTLE_STABILIZATION: "Sequence End"
     
     state POST_BATTLE_STABILIZATION {
-        [*] --> REORDER_TEAM
+        state LEVEL_UP_MODAL {
+            [*] --> CHECK_PENDING: "Verify Level Ups & Moves"
+            CHECK_PENDING --> SHOW_CHOICE: "Pending Move Found"
+            SHOW_CHOICE --> APPLY_MOVE: "Skill Chosen / Replaced"
+            APPLY_MOVE --> CHECK_PENDING: "Recursive Check"
+            CHECK_PENDING --> [*]: "No More Moves"
+        }
         --
-        [*] --> SEARCH_PHASE
+        state REORDER_TEAM {
+            [*] --> CHECK_ACTIVE: "Check First Healthy"
+            CHECK_ACTIVE --> POKEMON_RECALL: "Change Needed"
+            POKEMON_RECALL --> POKEMON_CALL: "Switch Active Reference"
+            POKEMON_CALL --> [*]
+            CHECK_ACTIVE --> [*]: "Already Correct"
+        }
     }
 
-    LEVEL_UP_MODAL --> POST_BATTLE_STABILIZATION: "Moves Cleared"
+    POST_BATTLE_STABILIZATION --> SEARCH_PHASE: "Stabilization Finished"
     
-    state REORDER_TEAM {
-        [*] --> CHECK_ACTIVE: "Check First Healthy"
-        CHECK_ACTIVE --> POKEMON_RECALL: "Change Needed"
-        POKEMON_RECALL --> POKEMON_CALL: "Switch Active Reference"
-        POKEMON_CALL --> [*]
-        CHECK_ACTIVE --> [*]: "Already Correct"
+    state SEARCH_PHASE {
+        state "ENTRY_ANIM" as SEARCH_ENTRY
+        state "ENCOUNTER_ANIM" as SEARCH_ENCOUNTER
+        
+        [*] --> SEARCH_ENTRY: Source_SEARCH_PHASE
+        SEARCH_ENTRY --> BUSH_IDLE: Ready_to_Search
+        BUSH_IDLE --> EXIT_BATTLE: Return_to_Map
+        BUSH_IDLE --> SEARCH_ENCOUNTER: Search_Clicked
+        SEARCH_ENCOUNTER --> [*]
+        note right of SEARCH_ENCOUNTER: Continues in current modal (No visual restart)
     }
+
+    SEARCH_PHASE --> ACTIVE_BATTLE: "Show Enemy HUD / Ready"
     
     note right of LEVEL_UP_MODAL: Enemy remains in Void
     note right of REORDER_TEAM: Team Re-sync Protocol
+    note left of EXIT_BATTLE: TERMINAL - Closes Modal / Return to Map
     
     EXIT_BATTLE --> [*]
 ```
 
-### 2. Capture Timing Precision (The "Void" Protocol)
+### 3. Modal Persistence & Lifecycle Rules
+
+To ensure a seamless user experience, the combat modal follows strict persistence rules:
+
+- **Single Instance Rule**: Once the combat modal is opened (via `FIRST_INTRO`), it MUST remain the active view throughout all subsequent states (`ACTIVE_BATTLE`, `REWARDS_PHASE`, `SEARCH_PHASE`).
+- **No Visual Restarts**: Clicking "Search" in `SEARCH_PHASE` MUST NOT close and reopen the modal. It simply triggers the `ENCOUNTER_ANIM` transition and proceeds to a new `ACTIVE_BATTLE` cycle within the same component instance.
+- **Terminal Exit Only**: The modal can ONLY be closed under two conditions:
+    1. **Return to Map**: Explicitly clicking the "Return to Map" button during `SEARCH_PHASE` (triggers `EXIT_BATTLE`).
+    2. **Fleeing**: Successfully escaping from a battle (triggers `EXIT_BATTLE` via the rewards/stabilization flow if no search is intended).
+- **State Continuity**: Persistence of the modal ensures that reactive coordinates (`feetCache`) and camera settings remain stable between encounters, eliminating visual flickering.
+
+### 4. Capture Timing Precision (The "Void" Protocol)
 
 To maintain a cinematic feel, the post-capture sequence follows a strictly timed protocol synchronized with the rewards flow:
 
