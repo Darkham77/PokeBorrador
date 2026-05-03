@@ -83,3 +83,14 @@ To maintain absolute stability in the high-fidelity combat arena, all entity ren
 - [ ] TM compatibility verified.
 - [ ] **Validators Passed**: Run the move and ability validation scripts.
 - [ ] **Persistence**: Verified that the Pokémon survives an `F5`.
+
+---
+
+## 💾 Bulk Data Injection (Massive Updates)
+
+When performing massive updates on a database file (e.g., adding `catchRate` to 200+ Pokémon):
+
+1. **Automation Required**: Use Python or JS scripts to parse and modify the file. Manual editing for mass changes is forbidden.
+2. **Regex Precision**: Use robust regular expressions that account for variable whitespace and indentation to avoid breaking file formatting.
+3. **Format Integrity**: Always verify that the resulting file maintains standard project indentation (one entry per line for large objects).
+4. **Verification Sample**: Manually check the first, middle, and last entries of the modified file to ensure the injection was successful and consistent.

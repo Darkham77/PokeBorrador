@@ -131,3 +131,11 @@ When testing functions that use `sanitizePokemon` (such as battle start):
 ### 3. Promise Synchronization (Async/Await)
 
 - **Battle Start**: The `_startBattle` method is asynchronous. In tests, it MUST always be awaited (`await`) before performing any assertions on `battle.state`; otherwise, assertions will run against a `null` or incomplete state.
+
+### 4. Mocking Determinism (Randomness)
+
+To test functions that depend on probability (e.g., capture success, move accuracy, secondary effects):
+
+- **Pattern**: Use `vi.spyOn(Math, 'random')` to force specific outcomes.
+- **Verification**: Calculate the exact threshold required for success (e.g., `b / 65535` for capture) and mock values slightly above and below that threshold to verify both paths (success/failure).
+- **Cleanup**: Always use `vi.restoreAllMocks()` or `spy.mockRestore()` to avoid polluting subsequent tests.

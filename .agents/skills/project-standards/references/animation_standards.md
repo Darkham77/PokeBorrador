@@ -114,15 +114,15 @@ To hide micro-adjustments in position during rapid transitions, apply intentiona
 Visual transitions MUST be synchronized with state changes using the `gameBus`.
 
 - **Event Lifecycle**:
-  1. `PLAY_WITHDRAW`: Pokémon recalled.
-  2. `PLAY_SEND_OUT`: New Pokémon enters.
-- **Mandatory Wait**: Every energy event MUST be followed by a wait period matched to the CSS animation duration to ensure the visual completes before the next logic step.
-- **Energy Transition Standardization**: Capture/Release effects MUST use standard keyframes (`energy-catch`, `energy-release`) to handle visual transitions.
-  - **Catch (Withdraw/Capture)**: Inverts colors and scales down (suction effect).
-  - **Release (Send Out/Emergence)**: Resets colors and scales up (expansion effect).
+  1. `POKEMON_RECALL`: Pokémon withdrawn or fainted (owned).
+  2. `POKEMON_CALL`: New Pokémon enters or replacement sent.
+- **Mandatory Wait**: Every energy event MUST be followed by a wait period matched to the modular protocol's duration to ensure the visual completes before the next logic step.
+- **Energy Transition Standardization**: Capture/Release effects MUST use the standard `POKEMON_RECALL` and `POKEMON_CALL` components.
+  - **Recall (Withdraw/Capture)**: Inverts colors and scales down (suction effect).
+  - **Call (Send Out/Emergence)**: Resets colors and scales up (expansion effect).
 - **Animation Conflict Prevention**: Never apply `pokemon-faint` and `energy-catch` animations to the same DOM element simultaneously. 
   - **WHY**: Both target the `animation` property; the last one applied will override the other, causing visual artifacts or missing effects. Recalling an owned fainted Pokémon should prioritize the energy recall.
-- **Coordinate Reset Protocol**: Upon switching combatants (PLAY_SEND_OUT) or changing species ID, ground coordinates (`groundY`, `stableGroundY`) MUST be reset to null/zero in the same execution frame. Failure to do so causes "ghosting" where Poké Balls or entry effects inherit stale positions.
+- **Coordinate Reset Protocol**: Upon switching combatants (`POKEMON_CALL`) or changing species ID, ground coordinates (`groundY`, `stableGroundY`) MUST be reset to null/zero in the same execution frame. Failure to do so causes "ghosting" where Poké Balls or entry effects inherit stale positions.
 
 ## 13. Faint Animation & Shadow Sync
 
@@ -177,16 +177,16 @@ Visual feedback effects (Catch Sparkles, Level-up particles) MUST be decoupled f
 - **Standard**: Render feedback elements in a separate layer or as siblings (not children) of the primary actor.
 - **WHY**: Ensures the feedback persists and completes its animation even if the actor (e.g., Poké Ball, Pokémon) is cleared or unmounted during a successful capture.
 
-## 19. Wild Encounter Intro (Phase 1)
+## 19. Encounter Animation Protocol (The Jump)
 
-To ensure a fast and dynamic game flow, the initial emergence phase (the "jump" from the grass) follows a strict timing and visual protocol:
+To ensure a fast and dynamic game flow, the `ENCOUNTER_ANIM` phase follows a strict timing and visual protocol:
 
 - **Total Duration**: **1.1s** (1100ms).
 - **Silhouette Logic**: The Pokémon MUST appear as a solid black silhouette with a white aura during the first half of the animation.
 - **Reveal Point**: The reveal transition starts at the **550ms** mark (`isWildSilhouetteHalfway`). At this point, the silhouette should begin to fade or swap to the colored sprite while the "emergence" bounce completes.
 - **Transition Integrity**: The silhouette state MUST be inclusive. It should trigger if the system is in `isSearching` mode OR if the previous battle is marked as `over` (transition phase). This ensures that proactive encounters sitting in the queue (e.g. after a Teleport) are correctly hidden even before the searching state is explicitly set.
 - **Visual Behavior**: The Pokémon performs a parabolic "jump" from the grass coordinates. Auxiliary elements like name labels and HP bars remain hidden until the end of this phase to maintain focus on the Pokémon's arrival.
-- **Standard Protocol**: Use the `isWildEntryAnimation` and `isWildSilhouette` flags to synchronize this phase across all combat layers.
+- **Standard Protocol**: Use the `ENCOUNTER_ANIM` modular state to synchronize this phase across all combat layers.
 
 ## 20. Status Effect Visuals
 

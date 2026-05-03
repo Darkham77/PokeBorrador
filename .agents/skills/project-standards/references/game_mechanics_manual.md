@@ -167,19 +167,19 @@ During high-load scenes (e.g., Battles), the hiding protocol is applied:
 
 - **v-if**: Non-essential elements (MapCards, NPCs, background weather animations) MUST be physically hidden.
 - **Pause**: All JS intervals (weather, buffs) must be paused while the combat state is active.
-- **Battle Finish Persistence**: During the battle's finishing phase (especially after a player's defeat), the enemy sprite MUST remain visible until the transition to the map is complete. This avoids "ghosting" and maintains visual feedback for the user's defeat.
+- **The Void Protocol**: During the rewards and level-up phases, the entire stage MUST enter a "Void" state (Completely empty). The enemy sprite is hidden immediately after the faint or capture sequence finishes to focus on the rewards flow. This avoids "ghosting" and maintains a clean interface for the user's progress summary.
 
 ---
 
 ## 🦄 Encounter Systems (Advanced)
 
-### 3. Phase 2 Visibility Hierarchy
+### 3. Search Phase Visibility Hierarchy
 
 To ensure absolute continuity during proactive pre-generation, the HUD must follow this priority:
 
-1. **Capture Success**: Persistent snapshot of the caught Pokémon (2.0s).
-2. **Faint Animation**: Persistent snapshot of the defeated Pokémon (1.3s).
-3. **Search Phase (Phase 2)**: Show the `upcomingPokemon` immediately while waiting for player interaction.
+1. **Capture Success**: Persistent snapshot of the caught Pokémon (until Void).
+2. **Faint Animation**: Persistent snapshot of the defeated Pokémon (until Void).
+3. **Search Phase (SEARCH_PHASE)**: Show the `upcomingPokemon` immediately while waiting for player interaction.
 4. **Active Battle**: Show the current `enemy`.
 
 - **WHY**: Ensures the user always sees the proactive pre-visualization during the search phase without HUD "flickering" or showing stale data from the previous fight.

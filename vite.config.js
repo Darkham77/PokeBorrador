@@ -88,6 +88,7 @@ export default defineConfig({
   server: {
     port: 5173,
     allowedHosts: true,
+    host : true,
     /* hmr: {
       clientPort: 443,
     }, */

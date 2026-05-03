@@ -262,6 +262,7 @@ export function makePokemon(id, level, options = {}) {
   const p = {
     uid: getUidStr(),
     id, name: base.name, emoji: base.emoji, type: base.type,
+    catchRate: base.catchRate,
     level, exp: 0, expNeeded: getExpNeeded(level),
     ivs, nature, ability, gender, isShiny,
     moves: getMovesAtLevel(id, level),

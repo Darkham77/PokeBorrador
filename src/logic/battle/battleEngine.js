@@ -341,7 +341,10 @@ export function calculateCatchRate(pokemon, rawBallType = 'poke-ball', eventCatc
 
   // 3. Algoritmo oficial de captura
   const hpFactor = (3 * pokemon.maxHp - 2 * pokemon.hp) / (3 * pokemon.maxHp);
-  const catchRate = pokemon.catchRate || 45;
+  const catchRate = pokemon.catchRate ?? 45;
+  if (!pokemon.catchRate) {
+    console.warn(`Capture warning: Pokémon ${pokemon.name} (${pokemon.id}) missing catchRate. Falling back to 45.`);
+  }
   const statusMult = (pokemon.status === 'sleep' || pokemon.status === 'freeze') ? 2.0 : 
                      (pokemon.status ? 1.5 : 1.0);
 

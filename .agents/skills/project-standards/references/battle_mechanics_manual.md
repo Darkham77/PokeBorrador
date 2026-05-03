@@ -122,8 +122,8 @@ These can coexist with primary status and other secondary effects:
 - **Endure**: Survives lethal hit. **FX**: 👊 pop-in fist.
 - **Focus Energy**: Crit boost. **FX**: 🎯 spinning target + red aura.
 - **Lock-On**: No miss. **FX**: 👁️ blinking eye.
-- **Mist/Neblina**: Prevents stat drops. **FX**: 🌫️ drifting white-blue aura. Rendered with high opacity (0.8) and Normal blend mode to ensure visibility on light backgrounds.
-- **Curse (Maldición)**: This move has a **Dual Effect** based on the user's type.
+- **Mist**: Prevents stat drops. **FX**: 🌫️ drifting white-blue aura. Rendered with high opacity (0.8) and Normal blend mode to ensure visibility on light backgrounds.
+- **Curse**: This move has a **Dual Effect** based on the user's type.
   - **Ghost-type**: User sacrifices 50% max HP to curse the target (1/4 max HP damage per turn).
   - **Non-Ghost**: User gains +1 Atk, +1 Def, and -1 Speed.
 - **Weather Debugging**: Debug menus MUST include all visual variants (Mist, Storm, Heatwave, Blizzard) to facilitate aesthetic testing of atmosphere layers, even if they map to the same mechanical weather.
@@ -132,33 +132,33 @@ These can coexist with primary status and other secondary effects:
 
 - **Tick Logic**: Status damage and healing (Leech Seed) are processed in `battleStatus.js` at the end of each round.
 - **Skip Logic**: Conditions like Sleep, Freeze, Paralysis, Confusion, and Attraction are evaluated in `battleFlow.js` within the `canAttack` function BEFORE move execution.
-- **Immediate Faint Handling**: Durante movimientos de múltiples golpes o daño estándar, el motor DEBE invocar `store.handleFaint(side)` inmediatamente si la HP llega a 0.
-- **Persistence Mandate (isFinishing)**: Durante toda la secuencia de debilitamiento y reemplazo, el flag `isFinishing` del store de batalla DEBE mantenerse en `true`. Esto bloquea el cierre prematuro del modal de combate y garantiza que el jugador transite correctamente hacia la Fase 2 (Búsqueda) o hacia la selección de un nuevo Pokémon.
-- **One-Turn Volatile Cleanup**: Estados volátiles de corta duración como `destiny_bond` (Mismodestino) y `snatch` (Robo) deben expirar al inicio de la siguiente acción del usuario para garantizar que solo duren exactamente un ciclo de turno.
+- **Immediate Faint Handling**: During multi-hit moves or standard damage, the engine MUST invoke `store.handleFaint(side)` immediately if the HP is <= 0.
+- **Persistence Mandate (isFinishing)**: Throughout the fainting and replacement sequence, the `isFinishing` flag of the battle store MUST remain `true`. This prevents premature closing of the battle modal and ensures the player transitions correctly to `POST_BATTLE_STABILIZATION`.
+- **One-Turn Volatile Cleanup**: Short-duration volatile states like `destiny_bond` and `snatch` must expire at the start of the user's next action to ensure they last exactly one turn cycle.
 
 ---
 
-## 🔄 Pokemon Withdrawal & Switching
+## 🔄 Pokémon Withdrawal & Switching (Reorder Team)
 
 ### 1. Manual Switching
 
 - **Interaction Guard**: The switch action must be blocked if `isProcessing` or `isIntroAnimating` is true.
 - **Logic Sequence**:
-    1. Check if `oldPoke.hp > 0`. If true, emit `PLAY_WITHDRAW` and wait for the **Standard Transition Duration**.
+    1. Check if `oldPoke.hp > 0`. If true, invoke the `POKEMON_RECALL` modular protocol.
     2. Swap the active player reference in the store.
-    3. **Differential Reset**: Limpiar Stages de estadísticas (`atk`, `def`, `spa`, `spd`, `spe`, `acc`, `eva`) pero PRESERVAR efectos de campo (`reflect`, `lightScreen`, `spikes`, `mist`).
-    4. Emit `PLAY_SEND_OUT` y esperar a que termine la animación.
-    5. **Entry Hazard Application**: Aplicar daño de entrada (ej: Púas) inmediatamente después de que el nuevo Pokémon toque el suelo.
+    3. **Differential Reset**: Clear stat stages (`atk`, `def`, `spa`, `spd`, `spe`, `acc`, `eva`) but PRESERVE field effects (`reflect`, `lightScreen`, `spikes`, `mist`).
+    4. Invoke the `POKEMON_CALL` modular protocol.
+    5. **Entry Hazard Application**: Apply entry hazards (e.g. Spikes) immediately after the new Pokémon touches the ground (End of `ENERGY_RELEASE`).
     6. Execute entry abilities (e.g., Intimidate).
 
 ### 2. Coordinate Synchronization & Poké Ball Alignment
 
-Para garantizar que la Poké Ball y la sombra coincidan milimétricamente durante el intercambio:
+To ensure the Poké Ball and the shadow align perfectly during switching:
 
-- **Reactive Anchor Sync**: La Poké Ball DEBE calcular su posición (`left`, `top`) basándose reactivamente en los puntos `feetX` y `feetY` del `shadowStore`. No usar valores fijos (ej: 90%) si hay datos del sprite disponibles.
-- **Dynamic Anchor Calculation**: El impacto de la Poké Ball debe calcularse dinámicamente sumando los offsets de `feet-shadow` a la base de la entidad. Esto asegura que la bola "toque" los pies del Pokémon independientemente de su altura o centrado en el sprite.
-- **Immediate Cache Usage**: Si un Pokémon ya ha sido escaneado previamente, el sistema debe inyectar sus coordenadas desde el `feetCache` en el primer frame de la animación para evitar saltos visuales.
-- **Component Integrity (Key Fix)**: El componente `BattleCombatant` debe usar una `:key` basada en el `uid` del Pokémon. Esto fuerza una recreación limpia del componente durante el cambio, evitando que el nuevo Pokémon herede coordenadas "stale" del anterior.
+- **Reactive Anchor Sync**: The Poké Ball MUST calculate its position (`left`, `top`) reactively based on the `feetX` and `feetY` points from the `shadowStore`. Do not use fixed values (e.g., 90%) if sprite data is available.
+- **Dynamic Anchor Calculation**: The Poké Ball impact must be calculated dynamically by adding the `feet-shadow` offsets to the entity's base. This ensures the ball "touches" the Pokémon's feet regardless of its height or centering on the sprite.
+- **Immediate Cache Usage**: If a Pokémon has already been scanned previously, the system must inject its coordinates from the `feetCache` in the first frame of the animation to avoid visual jumps.
+- **Component Integrity (Key Fix)**: The `BattleCombatant` component must use a `:key` based on the Pokémon's `uid`. This forces a clean recreation of the component during the switch, preventing the new Pokémon from inheriting stale coordinates from the previous one.
 
 ### 3. State Reactivity & HUD Integrity (Stages)
 
@@ -167,6 +167,37 @@ To ensure Vue 3 correctly tracks and displays field effects and stat changes, th
 - **Reactive Property Pre-initialization**: All possible field effect properties (`lightScreen`, `reflect`, `safeguard`, `mist`, `spikes`) MUST be initialized with value `0` in the `playerStages` and `enemyStages` objects at the moment of their creation. Vue cannot reactively track properties added dynamically after the object is made reactive.
 - **Full State Reset**: The `_startBattle` and `clearLogs` functions MUST explicitly reset these field properties along with the standard stat stages (`atk`, `def`, etc.) to prevent "state leakage" (e.g., starting a wild battle with a Reflect active from a previous Trainer battle).
 - **Stage Attribution**: Every modification to a stage MUST trigger an `addLog` entry that includes the responsible Pokémon as the `source` to ensure the HUD correctly attributes the advantage/disadvantage.
+
+### 4. 🖥️ UI & HUD Orchestration
+
+To maintain immersion and visual focus, HUD elements follow a strict visibility protocol synchronized with the battle state.
+
+#### Hiding HUDs (The "Focus" Rule)
+
+Only hide the HUD of the involved side at the start of a critical sequence to focus attention on the Pokémon's animation:
+
+- **Faint Sequence**: When starting `FAINT_PROCESS`, immediately hide the HUD of the defeated Pokémon.
+- **Escape Sequence**: When starting `ESCAPE_PROCESS`, hide the HUD of the Pokémon that is fleeing or being withdrawn.
+- **Capture Sequence**: When starting `CATCH_PROCESS`, hide the Enemy HUD.
+
+#### Showing HUDs (The "Ready" Rule)
+
+HUDs should only be restored when the system returns to an interaction state or visual stability:
+
+- **Initial Encounter**: At the end of the intro sequence (`FIRST_INTRO` -> `Show All HUDs / Ready`), all HUDs are restored.
+- **Search Phase**: At the end of the jump sequence (`SEARCH_PHASE` -> `Show Enemy HUD / Ready`), restore the Enemy HUD.
+- **Capture Failure**: If the Pokémon escapes from the Poké Ball (`CATCH_BREAK`), restore the Enemy HUD immediately before returning to `WAIT_INPUT`.
+- **Switching (Parallel Protocol)**: HUD visibility updates are performed IN PARALLEL with the Poké Ball rendering.
+    - **Recall**: The Involved Side HUD is hidden as soon as the Poké Ball appears.
+    - **Call**: The Involved Side HUD is shown as soon as the Poké Ball appears.
+
+### 2. State Mapping & Tooltips
+
+- **Technical Diagnostic Interface**: To avoid overloading pixel art with debug elements, the system uses a minimalist administrative HUD.
+- **Centralized Info Card**: All debug info (current Stats, Modifiers, UID) resides within the `BattleInfoCard` to prevent overlaps with sprites.
+- **Technical Tooltip (❓)**: Stat visualization is activated via a technical help trigger (`?` index).
+- **Admin Privilege Logic**: Access to these tools is automatically managed by detecting `DBRouter.isLocalMode()`.
+- **Stat Attribution**: Stat changes must be clearly linked to the source combatant via the battle log to prevent UI ambiguity.
 
 ### 2. Forced Switching (Faint)
 
@@ -186,18 +217,18 @@ To ensure flicker-free state transitions, the battle engine must enforce visual 
 
 ### 1. Parallel Preloading (Combat Prep)
 
-Antes de que comience cualquier animación de entrada, el sistema DEBE ejecutar un ciclo de `preloadCombatCoords` que incluya a **TODOS** los integrantes de los equipos (jugador y rival).
+Before any entry animation begins, the system MUST execute a `preloadCombatCoords` cycle that includes **ALL** team members (player and rival).
 
-- **Parallel Execution**: Usar `Promise.all` para escanear los puntos de pies de todo el equipo simultáneamente durante el montaje de la arena.
-- **Pre-loading Mandate**: Se debe invocar `preloadCombatCoords` ANTES de cualquier transición de entrada salvaje para asegurar que los puntos de anclaje estén disponibles en el Frame 0, evitando el efecto de "salto" o "teletransporte" al aparecer.
-- **Goal**: Garantiza que las sombras y Poké Balls estén posicionadas correctamente en su primer frame visible, eliminando el lag del escaneo de píxeles asíncrono.
+- **Parallel Execution**: Use `Promise.all` to scan the feet points of the entire team simultaneously during arena mounting.
+- **Pre-loading Mandate**: `preloadCombatCoords` must be invoked BEFORE any wild entry transition to ensure anchor points are available at Frame 0, avoiding the "jump" or "teleport" effect upon appearing.
+- **Goal**: Ensures that shadows and Poké Balls are positioned correctly on their first visible frame, eliminating lag from asynchronous pixel scanning.
 
 ### 2. Shadow Ownership & Lock
 
 A combatant "owns" its shadow via its `uid`.
 
 - **Ownership Lock**: The shadow store MUST block redundant requests if a shadow with the same ID and sprite is already active.
-- **Persistence Mandate**: Do NOT clear the shadow store during the transition from Search (Phase 2) to Battle (Phase 3). Reusing the detected coordinates from the grass phase is mandatory to eliminate the "Phase 3 jump".
+- **Persistence Mandate**: Do NOT clear the shadow store during the transition from Search Phase to Encounter Phase. Reusing the detected coordinates from the grass phase is mandatory to eliminate the "coordinate jump".
 
 ## 📝 Combat Log Flow & Sync
 
@@ -225,7 +256,7 @@ Logs must be added to the queue **BEFORE** triggering animations or pauses that 
 - **Correct Sequence**: `addLog()` -> `updateHP()` -> `waitDelay()`.
 - **Atomic State Reset**: To prevent "phantom animations", the system MUST reset `activeMove` and `attackerSide` to `null` before executing manual actions (Switch, Item) and at the end of each turn.
 - **Sync Parity**: Logic delays MUST match CSS transition times exactly (e.g., 1.3s for `PLAY_FAINT`, 0.8s for `PLAY_SEND_OUT`).
-- **Source Integrity**: Todo log debe incluir el parámetro `source` (`p` para player, `e` para enemigo) para asegurar que el HUD renderice el avatar correcto. No confiar solo en variables globales de turno.
+- **Source Integrity**: Every log must include the `source` parameter (`p` for player, `e` for enemy) to ensure the HUD renders the correct avatar. Do not rely solely on global turn variables.
 
 ### 3. Iconography & Source Mapping
 
@@ -261,8 +292,11 @@ To maintain combat focus, pre-generation of the *next* encounter must occur sile
 
 The environmental "sandwich" (CombatGrass) and ground anchors must only be revealed when the underlying data is fully ready.
 
-- **Rule**: Never show encounter layers (Stage 2) until the `upcomingPokemon` data is fully loaded and pre-calculated.
-- **Faint Continuity**: During the transition from Stage 1 (Faint) to Stage 2 (Bushes), the system must wait for the definitive death animation to complete (1.3s) before allowing the next encounter's environment to appear.
+- **Rule**: Never show encounter layers (Search Phase) until the `upcomingPokemon` data is fully loaded and pre-calculated.
+- **Stabilization Continuity**: During the transition from `REWARDS_PHASE` to `POST_BATTLE_STABILIZATION`, the system must wait for the definitive faint animation or capture sequence to complete.
+- **Silhouette Override (Binoculars)**: By default, the wild Pokémon appears as a black silhouette during `ENTRY_ANIM` and `ENCOUNTER_ANIM`.
+  - **Mechanic**: If the player has the **Binoculars** item in their bag, the silhouette filter is bypassed in both modular phases.
+  - **Effect**: The Pokémon is rendered with its standard sprite (colored) while in the bushes and during the entry jump, allowing for immediate identification before the battle starts.
 
 ## 🔄 Battle Lifecycle & State Transitions
 
@@ -272,76 +306,251 @@ The combat engine follows a strictly phased lifecycle to ensure visual continuit
 
 ```mermaid
 stateDiagram-v2
-    [*] --> PRE_BATTLE: Encounter Triggered
+    [*] --> INITIALIZING: "Encounter Triggered"
     
-    state PRE_BATTLE {
-        [*] --> GEN_ENCOUNTER: generateEncounter()
-        GEN_ENCOUNTER --> PRELOAD_COORDS: preloadCombatCoords()
-        PRELOAD_COORDS --> INTRO_ANIM: PLAY_WILD_INTRO (Phase 1: 1.1s)
+    state INITIALIZING {
+        [*] --> GEN_ENCOUNTER: "generateEncounter()"
+        GEN_ENCOUNTER --> PRELOAD_COORDS: "preloadCombatCoords()"
     }
     
-    PRE_BATTLE --> ACTIVE_BATTLE: Intro Finished
+    INITIALIZING --> FIRST_INTRO: "Initial Encounter (Map)"
+    INITIALIZING --> SEARCH_PHASE: "Search Loop (isSearching is true)"
+    
+    state FIRST_INTRO {
+        state "ENTRY_ANIM" as FIRST_ENTRY
+        state "ENCOUNTER_ANIM" as FIRST_ENCOUNTER
+        
+        [*] --> FIRST_ENTRY: Source_FIRST_INTRO
+        FIRST_ENTRY --> FIRST_ENCOUNTER: Sequential_Start
+        FIRST_ENCOUNTER --> [*]
+        note right of FIRST_ENTRY: Executes ONLY once per Map -> Battle transition
+    }
+    
+    state SEARCH_PHASE {
+        state "ENTRY_ANIM" as SEARCH_ENTRY
+        state "ENCOUNTER_ANIM" as SEARCH_ENCOUNTER
+        
+        [*] --> SEARCH_ENTRY: Source_SEARCH_PHASE
+        SEARCH_ENTRY --> BUSH_IDLE: Ready_to_Search
+        BUSH_IDLE --> EXIT_BATTLE: Return_to_Map
+        BUSH_IDLE --> SEARCH_ENCOUNTER: Search_Clicked
+        SEARCH_ENCOUNTER --> [*]
+    }
+    
+    FIRST_INTRO --> ACTIVE_BATTLE: "Show All HUDs / Ready"
+    SEARCH_PHASE --> ACTIVE_BATTLE: "Show Enemy HUD / Ready"
     
     state ACTIVE_BATTLE {
-        [*] --> WAIT_INPUT: Show HUDs
-        WAIT_INPUT --> EXEC_TURN: Move/Item Selected
-        EXEC_TURN --> WAIT_INPUT: HP > 0
-        EXEC_TURN --> CATCH_PROCESS: Poké Ball Thrown
+        [*] --> WAIT_INPUT: "User Interaction"
+        WAIT_INPUT --> EXEC_TURN: "Action Selected"
+        EXEC_TURN --> WAIT_INPUT: "HP > 0"
+        
+        EXEC_TURN --> CATCH_PROCESS: "Hide Enemy HUD / Ball Thrown"
+        EXEC_TURN --> FAINT_PROCESS: "Hide Fainted HUD / HP <= 0"
+        EXEC_TURN --> ESCAPE_PROCESS: "Hide Escaping HUD / Teleport"
         
         state CATCH_PROCESS {
-            [*] --> CATCH_SHAKE: Shake Logic
-            CATCH_SHAKE --> CATCH_BREAK: Escaped
-            CATCH_SHAKE --> CATCH_SUCCESS: Sparkles (1.0s Visible)
-            CATCH_SUCCESS --> CATCH_VOID: Ball Disappears (1.0s Empty)
-            CATCH_VOID --> FINISH_CAPTURE: Transition to Phase 2
+            [*] --> CATCH_SHAKE: "Shake Logic"
+            CATCH_SHAKE --> CATCH_BREAK: "Escaped"
+            CATCH_SHAKE --> CATCH_SUCCESS: "Capture Success"
+            CATCH_BREAK --> [*]
         }
-        
-        CATCH_BREAK --> WAIT_INPUT
-        EXEC_TURN --> FAINT_PROCESS: enemyHP <= 0
         
         state FAINT_PROCESS {
-            [*] --> PLAY_FAINT: Faint Anim (1.3s)
-            PLAY_FAINT --> FINISH_FAINT: Transition to Phase 2
+            [*] --> PLAY_FAINT: "Faint Anim (1.3s)"
+            PLAY_FAINT --> [*]
+        }
+
+        state ESCAPE_PROCESS {
+            [*] --> PLAY_ESCAPE: "Escape Anim"
+            PLAY_ESCAPE --> [*]
         }
     }
     
-    ACTIVE_BATTLE --> PHASE_2: endBattle() / isSearching = true
+    CATCH_BREAK --> WAIT_INPUT: "Show Enemy HUD"
+    CATCH_SUCCESS --> REWARDS_PHASE: "Capture Sequence Finished"
+    FAINT_PROCESS --> REWARDS_PHASE: "Faint Sequence Finished"
+    ESCAPE_PROCESS --> REWARDS_PHASE: "Escape Sequence Finished"
     
-    state PHASE_2 {
-        [*] --> BUSH_ANIM: Show Bushes (Phase 2)
-        BUSH_ANIM --> SILHOUETTE_START: "Search" Clicked / Auto-next
-        
-        state SILHOUETTE_START {
-            [*] --> SYNC_SHADOW: Silhouette + Shadow Appear TOGETHER
-            SYNC_SHADOW --> [*]: Transition to Phase 3
-        }
-        
-        BUSH_ANIM --> EXIT_BATTLE: "Return to Map"
+    state REWARDS_PHASE {
+        [*] --> VOID_STATE: "The Void (1.0s - Nothing Shown)"
+        VOID_STATE --> DISTRIBUTE_XP: "Apply XP / Distribute Gold"
+        DISTRIBUTE_XP --> [*]
     }
+    
+    REWARDS_PHASE --> LEVEL_UP_MODAL: "Sequence End"
+    
+    state LEVEL_UP_MODAL {
+        [*] --> CHECK_PENDING: "Verify Level Ups & Moves"
+        CHECK_PENDING --> SHOW_CHOICE: "Pending Move Found"
+        SHOW_CHOICE --> APPLY_MOVE: "Skill Chosen / Replaced"
+        APPLY_MOVE --> CHECK_PENDING: "Recursive Check"
+        CHECK_PENDING --> [*]: "No More Moves"
+    }
+    
+    state POST_BATTLE_STABILIZATION {
+        [*] --> REORDER_TEAM
+        --
+        [*] --> SEARCH_PHASE
+    }
+
+    LEVEL_UP_MODAL --> POST_BATTLE_STABILIZATION: "Moves Cleared"
+    
+    state REORDER_TEAM {
+        [*] --> CHECK_ACTIVE: "Check First Healthy"
+        CHECK_ACTIVE --> POKEMON_RECALL: "Change Needed"
+        POKEMON_RECALL --> POKEMON_CALL: "Switch Active Reference"
+        POKEMON_CALL --> [*]
+        CHECK_ACTIVE --> [*]: "Already Correct"
+    }
+    
+    note right of LEVEL_UP_MODAL: Enemy remains in Void
+    note right of REORDER_TEAM: Team Re-sync Protocol
     
     EXIT_BATTLE --> [*]
 ```
 
-### 2. Capture Timing Precision (The "2.0s Rule")
+### 2. Capture Timing Precision (The "Void" Protocol)
 
-To maintain a cinematic feel, the capture success sequence follows a non-negotiable timing protocol:
+To maintain a cinematic feel, the post-capture sequence follows a strictly timed protocol synchronized with the rewards flow:
 
 | Time | Event | Visual State |
 | :--- | :--- | :--- |
 | **0.0s** | `CATCH_SUCCESS` | Sparkles start. Poké Ball visible & shaking. Enemy Sprite HIDDEN. |
-| **1.0s** | **Midpoint** | Sparkles end. Poké Ball despawns. |
-| **1.0s - 2.0s** | **The Void** | Stage is COMPLETELY EMPTY. No sprites, no balls, no HUDs. |
-| **2.0s** | **Phase 2 Trigger** | `isSearching = true`. Transition to bushes starts. |
+| **1.0s** | **Rewards Phase Start** | Sparkles end. Poké Ball despawns. **Enter The Void**. |
+| **1.0s - 2.0s** | **XP & Gold Sync** | Stage is COMPLETELY EMPTY. No sprites, no balls, no HUDs. |
+| **2.0s** | **Level Up Sequence** | Enter `LEVEL_UP_MODAL`. Stage remains in **Void** state. |
+| **Variable** | **Search Phase Trigger** | All selections cleared. `isSearching = true`. Transition to bushes starts. |
 
 ### 4. Capture Animation Fidelity
 
-To maintain the "Fase 2" premium feel, certain animations MUST NOT be simplified or removed:
+To maintain the "Search Phase" premium feel, certain animations MUST NOT be simplified or removed:
 
 - **Poké Ball Wobble**: The physical balanceo of the ball during capture attempts is a core mechanical feedback and MUST be preserved in `BattleCombatant.vue` keyframes.
 - **Energy Shake/Blink**: The pulsing light effect inside the ball during the "shaking" phase must remain active to signify the capture struggle.
 - **Sparkle Coordination**: Success particles MUST be synchronized with the exact frame the ball clicks shut to reinforce the success signal.
 
-### 3. Exit Procedures
+### 5. Player Faint Sequence (Trainer Recall)
+
+Unlike wild Pokémon, owned Pokémon are never "left behind" on the battlefield. The sequence focuses on the Trainer's reaction and team management.
+
+```mermaid
+stateDiagram-v2
+    [*] --> PLAYER_FAINT: "playerHP <= 0"
+    
+    state PLAYER_FAINT {
+        [*] --> POKEMON_RECALL
+        POKEMON_RECALL --> SHOW_TRAINER: "Recall Finished"
+    }
+    
+    SHOW_TRAINER --> CHECK_TEAM: "Team HP Check"
+    
+    state CHECK_TEAM {
+        [*] --> HAS_HEALTHY: "Any HP > 0"
+        [*] --> ALL_FAINTED: "All HP <= 0"
+    }
+    
+    HAS_HEALTHY --> SWITCH_MENU: "Open Selection"
+    note right of SWITCH_MENU: isBattleSwitchForced is true
+    
+    SWITCH_MENU --> POKEMON_CALL: "Pokemon Selected"
+    POKEMON_CALL --> [*]: "Ready to Fight"
+    
+    ALL_FAINTED --> DEFEAT_SCREEN: "Finalize Combat"
+    DEFEAT_SCREEN --> [*]
+    note right of DEFEAT_SCREEN: endBattle - Return to Map
+```
+
+### 7. Modular Animation Components
+
+To ensure visual consistency, the sending and receiving of Pokémon follow these modular protocols.
+
+#### Pokémon Recall (Receiving)
+
+```mermaid
+stateDiagram-v2
+    state POKEMON_RECALL {
+        state HUD_LAYER {
+            [*] --> HIDE_HUD: Involved_Side_Only
+            HIDE_HUD --> [*]
+        }
+        --
+        state BALL_LAYER {
+            [*] --> RENDER_BALL: Pokeball_appears
+            RENDER_BALL --> ENERGY_RECALL: PLAY_ENERGY_RECALL
+            ENERGY_RECALL --> [*]
+            note right of RENDER_BALL: Positioned at shadow feet
+            note right of ENERGY_RECALL: Shrinking Blue Energy FX (Sprite -> Ball)
+        }
+    }
+```
+
+#### Pokémon Call (Sending)
+
+```mermaid
+stateDiagram-v2
+    state POKEMON_CALL {
+        state HUD_LAYER {
+            [*] --> SHOW_HUD: Involved_Side_Only
+            SHOW_HUD --> [*]
+        }
+        --
+        state BALL_LAYER {
+            [*] --> RENDER_BALL: Pokeball_appears
+            RENDER_BALL --> ENERGY_RELEASE: PLAY_ENERGY_RELEASE
+            ENERGY_RELEASE --> POKEMON_APPEAR: Show_Sprite
+            POKEMON_APPEAR --> [*]
+            note right of RENDER_BALL: Arcs to shadow feet coordinates
+            note right of ENERGY_RELEASE: Expanding Blue Energy FX (Ball -> Sprite)
+        }
+    }
+```
+
+#### Entry Animation (Bushes)
+
+```mermaid
+stateDiagram-v2
+    state ENTRY_ANIM {
+        state BUSH_LAYER {
+            [*] --> BUSH_SETUP
+            state BUSH_SETUP <<choice>>
+            BUSH_SETUP --> INSTANT_BUSHES: First_Intro
+            BUSH_SETUP --> GRADUAL_BUSHES: Search_Phase
+            
+            state INSTANT_BUSHES {
+                [*] --> BUSH_VISIBLE: Instant_Reveal
+            }
+            state GRADUAL_BUSHES {
+                [*] --> BUSH_FADE: Gradual_Fade_In
+            }
+            note right of BUSH_SETUP: Bushes use "Sandwich" Z-index (Half front / Half behind)
+        }
+        --
+        state SILHOUETTE_LAYER {
+            [*] --> INVISIBLE: Opacity_0
+            INVISIBLE --> SILHOUETTE_FADE: Gradual_Fade_In
+            SILHOUETTE_FADE --> [*]
+            note right of SILHOUETTE_FADE: Black silhouette by default (Bypassed if Binoculars equipped)
+        }
+    }
+```
+
+#### Encounter Animation (Jump)
+
+```mermaid
+stateDiagram-v2
+    state ENCOUNTER_ANIM {
+        [*] --> BUSHES_TO_BACK: Set_Z_Index_Behind
+        BUSHES_TO_BACK --> POKEMON_JUMP: Transition_Jump
+        POKEMON_JUMP --> BUSH_DESPAWN: Gradual_Grass_Fade
+        BUSH_DESPAWN --> REVEAL_COLORS: Gradual_Color_Reveal
+        REVEAL_COLORS --> [*]
+        note right of BUSHES_TO_BACK: Overrides "Sandwich" effect
+        note right of REVEAL_COLORS: Bypassed if Binoculars (already revealed in ENTRY_ANIM)
+    }
+```
+
+### 6. Exit Procedures
 
 - **Search (Loop)**: Resets `over` state, clears old logs, but **persists** the camera and ground coordinates to avoid jumps.
 - **Return to Map**: Triggers `closeModal`. The `isBattleActive` flag MUST be cleared last to ensure all components can unmount cleanly without trying to read stale battle data.
@@ -358,10 +567,10 @@ To prevent "Phantom Animations" (e.g., a Pokémon performing a Dash when using a
 
 The battle engine uses a decoupled architecture where move effects are mapped to executable logic via the `ActionRegistry`.
 
-- **Action Dispatching Order**: El motor debe seguir un orden secuencial estricto:
-    1. **Dynamic Interception**: Movimientos como Metrónomo o Espejo se resuelven ANTES del cálculo de daño.
-    2. **Primary Damage**: Cálculo y aplicación de HP.
-    3. **Post-Action Effects**: Ejecución de Recoil, Drenado y Auto-KO (Explosión) consumiendo el `lastDamage` registrado.
+- **Action Dispatching Order**: The engine must follow a strict sequential order:
+    1. **Dynamic Interception**: Moves like Metronome or Mirror Move are resolved BEFORE damage calculation.
+    2. **Primary Damage**: Calculation and application of HP.
+    3. **Post-Action Effects**: Execution of Recoil, Drain, and Self-KO (Explosion) consuming the registered `lastDamage`.
 - **Modular Implementation**: Logic for new effects should be grouped by type:
   - `statActions.js`: For all stage modifiers (Atk, Def, etc.).
   - `fieldActions.js`: For side-based effects (Screens, Weather, Hazards).
@@ -382,11 +591,47 @@ The battle engine uses a decoupled architecture where move effects are mapped to
 
 The Teleport move follows specific logic based on the battle context to maintain competitive balance:
 
-- **Wild Battles**: The Pokémon escapes immediately. The battle ends calling `endBattle(false, true)`.
+- **Wild Battles**: The Pokémon escapes immediately. The battle sequence transitions to the `REWARDS_PHASE` (Void) before returning to `SEARCH_PHASE`.
 - **Trainer Battles (Enemy)**:
   - If the Pokémon has teammates alive, it performs a **Withdrawal** (Gen 8 style) and a replacement is sent out immediately.
-  - If it is the LAST Pokémon in the trainer's party, the battle ends as the trainer retreats/flees.
+  - If it is the LAST Pokémon in the trainer's party, the battle ends and transitions to the `REWARDS_PHASE`.
 - **Player (Safe Design)**: For security and UI simplicity, Teleport is currently restricted to failing if the player has more Pokémon, preventing potential state desynchronization in the switch-menu.
+
+### 2. Fleeing (Wild Encounters)
+
+When a Pokémon or the Player successfully flees:
+
+1. The active combatants are hidden.
+2. The system enters the `REWARDS_PHASE` for 1.0s (Void).
+3. The battle context is cleared and the system returns to the `SEARCH_PHASE` state.
+
+## 📈 Level Up & Move Learning
+
+### 1. Rewards Distribution (The Void)
+
+During the `REWARDS_PHASE` (1.0s Void), the system processes asynchronous calculations:
+
+- **XP Processing**: XP gained is calculated and applied to team members.
+- **Level Detection**: If the new XP exceeds the current level threshold, the Pokémon levels up.
+- **Gold Distribution**: Gold earned is added to the player's balance.
+
+### 2. Move Learner Modal
+
+If after processing the level it is detected that the Pokémon has moves pending to learn (defined in its progression table):
+
+1. **Modal Trigger**: The system transitions to the `LEVEL_UP_MODAL` state immediately after the `REWARDS_PHASE`.
+2. **User Choice**:
+    - If the Pokémon has < 4 moves: It is learned automatically or confirmation is requested.
+    - If the Pokémon has 4 moves: The player MUST choose a move to forget or cancel the new learning.
+3. **Recursive Check**: Since a Pokémon can level up several times at once (or learn multiple moves in the same level), the system must perform a recursive check within the `LEVEL_UP_MODAL`:
+    - If there are more pending moves -> Re-open modal with the next move.
+    - If there are no more moves -> Transition to `SEARCH_PHASE`.
+
+### 3. State Integrity
+
+- **HUD Visibility**: During move learning, combat HUDs must remain hidden to avoid visual overlaps.
+- **Enemy Visibility**: The enemy Pokémon MUST remain in the "Void" state (hidden) throughout the entire Move Selection process. The transition to the Search Phase (Bushes) only occurs after all move selections are finalized.
+- **isBattleActive**: This flag MUST remain `true` during the entire learning process to prevent the battle modal from closing prematurely and returning the player to the map before having managed their team.
 
 ## 🛡️ Engine Safety & Callbacks
 
@@ -441,3 +686,25 @@ Every call to `calculateCatchRate` MUST receive an enriched `ctx` object from th
 ### 3. Turn Counter (Timer Ball)
 
 The `turnCount` is a live state. It MUST be explicitly incremented in `applyEndTurnEffects` of the battle store. It should never be incremented before end-turn effects (poison, weather, etc.) have been processed, to maintain visual parity with the UI.
+
+---
+
+## 🎣 Capture Mechanics & Data Integrity
+
+To ensure capture difficulty aligns with official game standards and species identity:
+
+### 1. Species-Specific Catch Rates
+
+- **Database Mandate**: Every Pokémon species in `pokemonDB.js` MUST have an explicit `catchRate` property (values 3 to 255).
+- **Zero-Fallback Policy**: The battle engine MUST NOT use hardcoded magic numbers (e.g., `|| 45`) for capture rates.
+- **Diagnostic Safety**: If a Pokémon is encountered without a `catchRate`, the system MUST use a safe fallback (`?? 45`) AND trigger a `console.warn` to notify developers of the data gap.
+
+### 2. Capture Probability Formula
+
+- **HP Factor**: Capture chance increases as HP decreases.
+- **Status Multipliers**: Sleep and Freeze provide the highest boost (x2.0).
+- **Gen 3/4 Math**: The engine performs 4 consecutive checks against the `b` value. See `@/project-standards/game_formulas_manual.md` for technical details.
+
+### 3. Verification Protocol
+
+- **Mocked Randomness**: Use `vi.spyOn(Math, 'random').mockReturnValue(X)` in unit tests to verify that Pokémon are caught/escaped at specific mathematical thresholds.
