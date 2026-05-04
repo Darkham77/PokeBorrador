@@ -6,9 +6,9 @@ This manual documents the technical operation of the GTS, direct trades, and the
 
 To guarantee data integrity in a multiplayer environment, Poké Vicio uses a custody model:
 
-1.  **Inventory Outflow**: When putting a Pokémon in the GTS or sending it in a trade offer, the asset is removed from the player's inventory and moved to a custody table on the server.
-2.  **Atomic Claim**: The receiver (or the sender upon cancellation) must manually claim the asset. This process is atomic and requires a prior "Save Flush."
-3.  **Sync Flush**: Before any social action (sending an offer, posting on GTS), the system forces an atomic save to ensure that the local state matches the server.
+1. **Inventory Outflow**: When putting a Pokémon in the GTS or sending it in a trade offer, the asset is removed from the player's inventory and moved to a custody table on the server.
+2. **Atomic Claim**: The receiver (or the sender upon cancellation) must manually claim the asset. This process is atomic and requires a prior "Save Flush."
+3. **Sync Flush**: Before any social action (sending an offer, posting on GTS), the system forces an atomic save to ensure that the local state matches the server.
 
 ---
 

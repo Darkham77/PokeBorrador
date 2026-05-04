@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MANUAL_PATH = path.join(__dirname, '../.agents/skills/project-standards/references/battle_mechanics_manual.md');
-const FSM_PATH = path.join(__dirname, '../src/logic/battle/battleStateMachine.js');
+const MANUAL_PATH = path.join(__dirname, '../references/battle/battle_mechanics_manual.md');
+const FSM_PATH = path.join(__dirname, '../../../../src/logic/battle/battleStateMachine.js');
 
 function runAudit() {
   console.log('🔍 Iniciando Auditoría FSM vs Mermaid...\n');

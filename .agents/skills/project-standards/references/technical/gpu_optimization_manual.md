@@ -17,8 +17,10 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 - **Allowed Properties**: `transform` (scale, translate, rotate) and `opacity`.
 - **Transition Hygiene**: NEVER use `transition: all`. Tracking all properties triggers massive re-layout calculations. Always specify the properties to animate (e.g., `transition: transform 0.2s, opacity 0.2s`).
 - **Native Opacity**: NEVER use `filter: Opacity()` for static transparency; use the native `opacity` property to avoid redundant GPU layer creation.
-- **Forbidden Properties**: `margin`, `padding`, `width`, `height`, `top`, `left`, `right`, `bottom`.
 - **Shadow Performance**: `box-shadow` is processed by the GPU's fixed-function hardware (fast). `filter: Drop-Shadow()` requires per-pixel alpha analysis (expensive). Use `box-shadow` for regular glows and card effects. Reserve `Drop-Shadow` ONLY for complex silhouettes (like Pokémon sprites).
+  - **DENSITY RULE**: In grids with 50+ items (Box, Bag), NEVER apply more than one `Drop-Shadow()` per item to avoid "GPU Fill-Rate Starvation".
+- **Scale Animations**: Avoid non-integer `Scale()` transformations on pixel art. Use **1.03** for subtle hover feedback on mobile.
+- **Forbidden Properties**: `margin`, `padding`, `width`, `height`, `top`, `left`, `right`, `bottom` (in animations).
 - **Pixel Outlines**: NEVER use "Quad Drop-Shadow" (4 offsets) for sprite outlines in high-density views (Map, Pokedex, PC Box).
   - **MANDATORY**: Use the high-performance SVG Filter `filter: pokemon-outline-optimized()`.
   - **Reasoning**: `feMorphology` dilation is a single-pass operation, reducing GPU fill-rate requirements by 75% compared to 4 Drop-Shadow calls.

@@ -1,37 +1,13 @@
 # Battle Mechanics Manual (Poké Vicio)
 
-This manual documents the internal workings of the battle engine, from damage calculation to special abilities.
+This manual documents the internal workings of the battle engine, focusing on logic, state machines, and procedural rules.
 
-## ⚔️ Damage Calculation (Gen 4+)
-
-### 1. Base Damage Formula
-
-```text
-Damage = floor(((2 * Level / 5 + 2) * Power * A / D) / 50) + 2
-```
-
-- **A**: Attack or Sp. Attack (reduced to 50% if the attacker is burned and the move is physical).
-- **D**: Defense or Sp. Defense.
-
-### 2. Final Multipliers
-
-`Final Damage = floor(Damage * STAB * Ability * Effectiveness * Random * Critical * Weather * Item)`
-
-- **STAB**: 1.5x (or 2.0x with **Adaptability** ability).
-- **Effectiveness**: 0x, 0.25x, 0.5x, 1x, 2x, 4x.
-- **Random**: Variation between **0.85 and 1.0**.
-- **Critical**: 2.0x. Base probability 6% (12% with **Zoom Lens**, 25% after **Focus Energy**). Immune against **Shell Armor** or **Battle Armor**.
+> [!NOTE]
+> All mathematical formulas (Damage, Escape, Stats) have been centralized in the [Game Formulas Manual](../core/game_formulas_manual.md).
 
 ---
 
 ## 🌪️ Weather Influence
-
-- **Sun**: 1.5x Fire Damage, 0.5x Water Damage. (Activated by `Sunny Day` or environmental `Heatwave`).
-- **Rain**: 1.5x Water Damage, 0.5x Fire Damage. (Activated by `Rain Dance` or environmental `Storm`).
-- **Day Cycle (Implicit Weather)**: In the absence of active weather (or if it is "Clear"), the game cycle applies a **1.2x boost** to specific types:
-  - **Day/Morning**: Fire moves (1.2x).
-  - **Night/Dusk**: Water moves (1.2x).
-  - **Note**: This multiplier does NOT stack with standard Weather (Sun/Rain). Weather always takes precedence.
 
 ### 1. Atmospheric Synchronization & Integrity Protocol
 
@@ -39,27 +15,20 @@ To prevent desynchronization between the Map's visual weather and the Combat Eng
 
 - **Single Source of Truth**: UI components (Grid, Tooltips) MUST consume weather data from `battleStore.state.weather` instead of local props or direct map state to ensure visual parity during combat transitions.
 - **Centralized Mapping**: Environmental tokens (e.g., `heatwave`, `blizzard`, `storm`) are normalized to mechanical keys (`sun`, `hail`, `rain`) via `getMechanicalWeather()`.
+- **Standardized Blizzard**: The visual weather `blizzard` maps directly to mechanical weather `hail` (Granizo) to respect Gen 2-9 canonical standards.
 - **Status Move Exclusion**: Modifier indicators (auras, "Penalizado por..." text) MUST be suppressed for moves of category `status` (except specific cases like Solar Beam). Damage multipliers from weather/cycle DO NOT affect status moves; showing these indicators constitutes a false positive.
 - **Integrity Guard**: If a weather token is NOT registered in the mapper, the system returns an `UNKNOWN` state.
   - **HUD Feedback**: Displays a `⚠️` warning icon to notify that the weather lacks combat effects.
   - **Dev Feedback**: Triggers a `[WeatherIntegrity]` warning in the console.
 - **Mandatory Registry**: Any new weather added to `weather-tables.js` MUST be added to `MAP_TO_MECHANICAL` and `WEATHER_UI_METADATA` in `weatherMapper.js`.
-- **Map Persistence**: Battles inherit the current route's weather. If the weather is "permanent" (turns: -1), it persists for the entire battle unless overridden.
+- **Map Persistence**: Battles inherit the current route's weather. If the weather is "permanent" (turns: -1), it remains active for the entire battle duration unless manually overridden.
 - **Move Override**: Weather induced by moves (e.g., Rain Dance, Hail) lasts **5 turns** and takes absolute priority over the map weather.
 - **Restoration**: Once a temporary weather effect expires, the system MUST restore the original map/route weather instead of clearing to "Clear".
 - **Visual Mapping**: The `BattleArenaView` must prioritize `battleStore.state.weather`. Mappings: `sun` -> `heatwave`, `hail` -> `blizzard`.
 
-### 2. Weather Effects Table (Gen 9 Standard)
+### 2. Weather Effects Table
 
-| Weather | Damage Boost | Damage Reduction | Defensive Boost | Residual Damage | Special Effects |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Sun** | Fire (1.5x) | Water (0.5x) | - | - | Solar Beam (No charge), Synthesis (66%), Thunder (50% Acc) |
-| **Rain** | Water (1.5x) | Fire (0.5x) | - | - | Thunder/Hurricane (100% Acc), Synthesis (25%) |
-| **Sandstorm** | - | - | Rock (1.5x SpD) | 1/16 HP (Non-Rock/Ground/Steel) | Solar Beam (50% Pow), Synthesis (25%) |
-| **Snow** | - | - | Ice (1.5x Def) | **NONE** | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
-| **Hail** | - | - | - | 1/16 HP (Non-Ice) | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
-| **Fog** | - | - | - | - | **Accuracy: 60% (All moves)**, Solar Beam (50% Pow), Synthesis (25%) |
-| **Blizzard** | - | - | Ice (1.5x Def) | 1/16 HP (Non-Ice) | Aggressive Snow/Hail hybrid. Blizzard (100% Acc) |
+Refer to the [Weather Effects Table in the Game Formulas Manual](../core/game_formulas_manual.md#🌪️-weather-effects-table-gen-9-standard) for the specific damage and defensive multipliers.
 
 ---
 
@@ -78,7 +47,12 @@ To prevent desynchronization between the Map's visual weather and the Combat Eng
 
 ### 3. Contact (30% Probability)
 
-Activated when receiving movements of the **Physical** category:
+Activated when receiving moves that make contact. Since Gen 2 has no explicit contact metadata:
+
+- **Gen 2 Rules**: Activated when receiving moves of **Physical Types** (`normal`, `fighting`, `flying`, `poison`, `ground`, `rock`, `bug`, `ghost`, `steel`).
+- **Gen 4+ Rules**: Activated when receiving moves of the **Physical Category**.
+
+The available contact abilities are:
 
 - **Static**: Paralysis.
 - **Poison Point**: Poison.
@@ -89,7 +63,7 @@ Activated when receiving movements of the **Physical** category:
 
 - **Technician**: 1.5x power for moves with base power <= 60.
 - **Guts**: 1.5x Physical Attack if the user has a status problem.
-- **Thick Fat**: Reduces damage taken from Fire or Ice type by 50%.
+- **Thick Fat**: Reduces damage taken from Fire or Ice type by 50%. In Gen 2, this applies to moves of Fire/Ice types.
 - **1/3 HP Boosters (1.5x)**: Blaze, Torrent, Overgrow, Swarm.
 
 ---
@@ -103,6 +77,7 @@ The engine implements two layers of conditions that affect the Pokémon's perfor
 Only ONE primary status can affect a Pokémon at a time (except in special modes):
 
 - **Poison (PSN)**: Inflicts 1/8 of max HP damage at the end of each turn.
+- **Badly Poisoned (TOX)**: Inflicts damage that increases each turn: starts at 1/16 of max HP on the first turn, and increases by 1/16 of max HP each subsequent turn (up to 15/16). When the Pokémon is withdrawn, it reverts to standard Poison.
 - **Burn (BRN)**: Inflicts 1/8 of max HP damage at the end of each turn AND reduces Physical Attack (A) to 50%.
 - **Paralysis (PAR)**: Reduces Speed to 25% AND has a **25% probability** of causing "Fully Paralyzed," skipping the turn.
 - **Sleep (SLP)**: Prevents the Pokémon from attacking for 1 to 3 turns. Turn count is managed via `pokemon.sleepTurns`.
@@ -146,7 +121,10 @@ These can coexist with primary status and other secondary effects:
 - **Logic Sequence**:
     1. Check if `oldPoke.hp > 0`. If true, invoke the `POKEMON_RECALL` modular protocol.
     2. Swap the active player reference in the store.
-    3. **Differential Reset**: Clear stat stages (`atk`, `def`, `spa`, `spd`, `spe`, `acc`, `eva`) but PRESERVE field effects (`reflect`, `lightScreen`, `spikes`, `mist`).
+    3. **Differential Reset**:
+       - Clear stat stages (`atk`, `def`, `spa`, `spd`, `spe`, `acc`, `eva`).
+       - Clear volatile status conditions (`confusion`, `attract`, `curse`, `trapped`, `infatuation`) of the withdrawn Pokémon.
+       - PRESERVE field effects (`reflect`, `lightScreen`, `spikes`, `mist`).
     4. Invoke the `POKEMON_CALL` modular protocol.
     5. **Entry Hazard Application**: Apply entry hazards (e.g. Spikes) immediately after the new Pokémon touches the ground (End of `ENERGY_RELEASE`).
     6. Execute entry abilities (e.g., Intimidate).
@@ -197,7 +175,18 @@ HUDs should only be restored when the system returns to an interaction state or 
 - **Capture Failure**: If the Pokémon escapes from the Poké Ball (`CATCH_BREAK`), restore the Enemy HUD immediately before returning to `WAIT_INPUT`.
 - **Switching (Parallel Protocol)**: HUD visibility updates are performed IN PARALLEL with the Poké Ball rendering.
   - **Recall**: The Involved Side HUD is hidden as soon as the Poké Ball appears.
-  - **Call**: The Involved Side HUD is shown as soon as the Poké Ball appears.
+- **Call**: The Involved Side HUD is shown as soon as the Poké Ball appears.
+
+#### Data Visibility Hierarchy (The "Snapshot" Rule)
+
+To ensure absolute continuity during proactive pre-generation and transitions, the Combat HUD MUST prioritize data display according to the following hierarchy:
+
+1. **Capture Success**: Show a persistent snapshot of the caught Pokémon (prevents HUD from jumping to the next encounter before the player sees the capture log).
+2. **Faint Animation**: Show a persistent snapshot of the defeated Pokémon until the `VOID` transition.
+3. **Search Phase**: Show the `upcomingPokemon` (Predictive Slot 2) immediately during the `SEARCH_PHASE` to allow for scouting (silhouettes or full color with Binoculars).
+4. **Active Battle**: Show the current `enemy` data (Active Slot 1).
+
+**WHY**: This hierarchy prevents the HUD from "flickering" or showing stale data from a previous encounter while the system is generating the next one in the background.
 
 ### 2. State Mapping & Tooltips
 
@@ -215,7 +204,7 @@ HUDs should only be restored when the system returns to an interaction state or 
 4. **Reorder Team**: Perform team reordering in background during rewards calculation to optimize wait times.
 5. **Single Recall Protocol**: During defeat or forced switches, the system MUST NOT trigger multiple `PLAY_WITHDRAW` events. If a Pokémon has already been fainted/recalled during `handleFaint`, any subsequent stabilization logic MUST skip the withdrawal animation to prevent "Double Recall" artifacts.
 
-### 2. Forced Switching (Faint)
+### 3. Forced Switching (Faint)
 
 - **Manual Selector Override**: The system MUST NOT automatically send the next healthy Pokémon when the player's active Pokémon faints. It MUST set `uiStore.isBattleSwitchForced = true` to force manual selection via the UI, preserving tactical control.
 - **Faint Priority**: If a Pokémon faints due to secondary effects (Recoil, Self-KO, Poison), the system MUST invoke `handleFaint(side)` immediately to trigger the replacement flow without waiting for the end of the turn cycle.
@@ -358,6 +347,8 @@ stateDiagram-v2
 - **Execution Rule**: The `generateEncounter()` logic MUST query this injected table before selecting the type for a new slot.
 - **Backward Compatibility**: If NO configuration or table is provided, the engine defaults to **100% WILD** and **PERSISTENT** mode.
 
+---
+
 ## 🔄 Battle Lifecycle & State Transitions
 
 The combat engine follows a strictly phased lifecycle to ensure visual continuity and state integrity.
@@ -460,31 +451,30 @@ stateDiagram-v2
         POP_ACTION --> REORDER_TEAM: "Manual Switch"
         POP_ACTION --> CATCH_PROCESS: "Pokeball"
         POP_ACTION --> APPLY_MOVE: "Attack/Item"
+        POP_ACTION --> FLEE_ATTEMPT: "Manual Flee"
         
-        REORDER_TEAM --> CHECK_BOARD_STATE
-        APPLY_MOVE --> CHECK_BOARD_STATE
-        CATCH_PROCESS --> CHECK_BOARD_STATE: "Catch Failed"
+        REORDER_TEAM --> EVAL_HP
+        APPLY_MOVE --> EVAL_HP
+        CATCH_PROCESS --> EVAL_HP: "Catch Failed"
         CATCH_PROCESS --> [*]: "Target Caught (Exit Engine)"
         
-        state CHECK_BOARD_STATE {
-            [*] --> EVAL_HP: "Any HP <= 0?"
-            EVAL_HP --> RESOLVE_PLAYER_FAINT: "Player Fainted"
-            EVAL_HP --> RESOLVE_ENEMY_FAINT: "Enemy Fainted"
-            EVAL_HP --> TURN_CONTINUE: "Both Alive"
-            
-            RESOLVE_PLAYER_FAINT --> EVAL_HP: "Loop (Double KO)"
-            RESOLVE_ENEMY_FAINT --> EVAL_HP: "Loop (Double KO)"
-            TURN_CONTINUE --> [*]
-        }
+        FLEE_ATTEMPT --> EVAL_HP: "Flee Failed"
+        FLEE_ATTEMPT --> [*]: "Flee Success (Exit Engine)"
+        
+        state EVAL_HP <<choice>>
+        EVAL_HP --> RESOLVE_PLAYER_FAINT: "Player fainted"
+        EVAL_HP --> RESOLVE_ENEMY_FAINT: "Enemy fainted"
+        EVAL_HP --> EVAL_CONTINUE: "Both alive"
         
         RESOLVE_PLAYER_FAINT --> PLAYER_FAINT_SEQ: "Trigger Recall"
-        PLAYER_FAINT_SEQ --> CHECK_BOARD_STATE: "Return to arbiter"
+        PLAYER_FAINT_SEQ --> EVAL_CONTINUE
         
         RESOLVE_ENEMY_FAINT --> ENEMY_DEFEAT: "Trigger Animation"
         ENEMY_DEFEAT --> [*]: "Enemy KO (Exit Engine)"
         
-        CHECK_BOARD_STATE --> POP_ACTION: "More actions queued"
-        CHECK_BOARD_STATE --> [*]: "Queue empty"
+        state EVAL_CONTINUE <<choice>>
+        EVAL_CONTINUE --> POP_ACTION: "More actions queued"
+        EVAL_CONTINUE --> [*]: "Queue empty"
     }
 ```
 
@@ -505,7 +495,7 @@ stateDiagram-v2
     note left of CATCH_PROCESS: UI blocks Pokeball selection if target is TRAINER
 ```
 
-#### Enemy Faint & Escape Animations
+#### Enemy Faint Animation
 
 ```mermaid
 stateDiagram-v2
@@ -514,7 +504,12 @@ stateDiagram-v2
         HIDE_ENEMY_HUD_KO --> PLAY_ENEMY_FAINT: "Drop Anim (1.0s)"
         PLAY_ENEMY_FAINT --> [*]
     }
+```
 
+#### Escape Process
+
+```mermaid
+stateDiagram-v2
     state ESCAPE_PROCESS {
         [*] --> HIDE_ENEMY_HUD_ESC
         HIDE_ENEMY_HUD_ESC --> PLAY_ESCAPE_ANIM: "Teleport / Run Away"
@@ -870,7 +865,7 @@ stateDiagram-v2
                 [*] --> G_BINOCULARS
                 G_BINOCULARS --> SILHOUETTE_JUMP: No_Binoculars
                 G_BINOCULARS --> FULL_COLOR_JUMP: Has_Binoculars
-    
+                
                 state SILHOUETTE_JUMP {
                     [*] --> BUSHES_BACK: Set_Z_Index_Behind
                     BUSHES_BACK --> JUMP_SHADOW: Jump_As_Solid_Silhouette
@@ -878,7 +873,7 @@ stateDiagram-v2
                     BUSH_FADE --> REVEAL_COLORS: Gradual_Color_Reveal
                     REVEAL_COLORS --> [*]
                 }
-    
+                
                 state FULL_COLOR_JUMP {
                     [*] --> BUSHES_BACK_COLOR: Set_Z_Index_Behind
                     BUSHES_BACK_COLOR --> JUMP_COLOR: Jump_As_Full_Color
@@ -886,19 +881,19 @@ stateDiagram-v2
                     BUSH_FADE_COLOR --> [*]
                 }
             }
-    
+            
             state FLYING_FLOW {
                 state F_BINOCULARS <<choice>>
                 [*] --> F_BINOCULARS
                 F_BINOCULARS --> SILHOUETTE_FLY: No_Binoculars
                 F_BINOCULARS --> FULL_COLOR_FLY: Has_Binoculars
-    
+                
                 state SILHOUETTE_FLY {
                     [*] --> JUMP_SHADOW_F: Jump_As_Solid_Silhouette
                     JUMP_SHADOW_F --> REVEAL_COLORS_F: Gradual_Color_Reveal
                     REVEAL_COLORS_F --> [*]
                 }
-    
+                
                 state FULL_COLOR_FLY {
                     [*] --> JUMP_COLOR_F: Jump_As_Full_Color
                     JUMP_COLOR_F --> [*]
@@ -924,6 +919,7 @@ stateDiagram-v2
         ENTRY_CHECK --> EXECUTE_CLEANUP: "Flee Confirmed / Direct Exit"
         
         DEFEAT_WAIT --> EXECUTE_CLEANUP: "Click 'Return to Map'"
+        note right of DEFEAT_WAIT: Forces interaction to leave combat
         
         state EXECUTE_CLEANUP {
             [*] --> CLEAR_UI: "Hide HUDs & Logs"
@@ -932,10 +928,6 @@ stateDiagram-v2
             RESET_FLAGS --> [*]
         }
     }
-    
-    note right of DEFEAT_WAIT
-        Forces interaction to leave combat
-    end note
 ```
 
 - **Search (Loop)**: Resets `over` state, clears old logs, but **persists** the camera and ground coordinates to avoid jumps.
@@ -975,21 +967,20 @@ The battle engine uses a decoupled architecture where move effects are mapped to
 
 ### 1. Teleport (Gen 8+ Parity)
 
-The Teleport move follows specific logic based on the battle context to maintain competitive balance:
+The Teleport move follows specific logic based on the battle context to maintain competitive balance and team integrity:
 
-- **Wild Battles**: The Pokémon escapes immediately. The battle sequence transitions to the `REWARDS_PHASE` before returning to `SEARCH_PHASE`.
-- **Trainer Battles (Enemy)**:
-  - If the Pokémon has teammates alive, it performs a **Withdrawal** (Gen 8 style) and a replacement is sent out immediately.
-  - If it is the LAST Pokémon in the trainer's party, the battle ends and transitions to the `REWARDS_PHASE`.
-- **Player (Safe Design)**: For security and UI simplicity, Teleport is currently restricted to failing if the player has more Pokémon, preventing potential state desynchronization in the switch-menu.
+- **Wild or Trainer Combat (Relevo / Siguiente Pokémon)**:
+  - If the Pokémon that uses Teleport has more healthy teammates left in its party, it acts as a withdrawal (the Pokémon retreats immediately and the next healthy member is sent out).
+- **Terminal Case (Ultimo Pokémon)**:
+  - If the Pokémon that uses Teleport is the LAST healthy member of its party, the battle ends immediately. The sequence transitions to the `REWARDS_PHASE` or `EXIT_BATTLE` depending on the perspective.
 
-When a Pokémon successfully flees (via move logic like Teleport or Roar):
+When a Pokémon successfully flees or switches via Teleport:
 
-1. The active combatants are hidden.
-2. The system enters the `REWARDS_PHASE` (without rewards).
-3. The battle context is cleared and the system returns to the `SEARCH_PHASE` state.
+1. The active combatant is withdrawn.
+2. If there are healthy members left, the `POKEMON_CALL` sequence sends out the next available Pokémon.
+3. If no healthy members remain, the system terminates the battle loop and exits safely.
 
-*Note: Manual Fleeing (via Button) triggers `EXIT_BATTLE` and closes the modal, returning the player to the map.*
+*Note: Manual Fleeing (via Run Button) triggers `EXIT_BATTLE` directly and closes the modal, returning the player to the map. In wild battles, if the player chooses to run, the system must evaluate the escape chance based on the current generation formulas.*
 
 ## 📈 Level Up & Move Learning
 
@@ -1055,8 +1046,6 @@ To ensure every log entry displays the correct sprite/avatar:
 
 ## 🎣 Capture System Synchronization
 
-To ensure all Poké Balls comply with their official formulas and respond to the environment:
-
 ### 1. Mandatory Environmental Context
 
 Every call to `calculateCatchRate` MUST receive an enriched `ctx` object from the battle store:
@@ -1066,8 +1055,7 @@ Every call to `calculateCatchRate` MUST receive an enriched `ctx` object from th
 
 ### 2. Environmental Multipliers (2026 Audit)
 
-- **Dusk Ball**: MUST apply its multiplier (x3.0) if `isNight || isCave || isFog` is met. Fog is considered a low-visibility environment compatible with this ball.
-- **Net Ball**: In addition to Water/Bug types, it MUST apply a bonus (x3.5) if the weather is `rain` or `storm`.
+Refer to the [Capture Multipliers in the Game Formulas Manual](../core/game_formulas_manual.md) for environmental bonuses (Dusk Ball, Net Ball).
 
 ### 3. Turn Counter (Timer Ball)
 
@@ -1087,9 +1075,7 @@ To ensure capture difficulty aligns with official game standards and species ide
 
 ### 2. Capture Probability Formula
 
-- **HP Factor**: Capture chance increases as HP decreases.
-- **Status Multipliers**: Sleep and Freeze provide the highest boost (x2.0).
-- **Gen 3/4 Math**: The engine performs 4 consecutive checks against the `b` value. See `@/project-standards/game_formulas_manual.md` for technical details.
+Refer to the [Capture Formula section in the Game Formulas Manual](../core/game_formulas_manual.md) for technical details on Gen 3/4 Math.
 
 ### 3. Verification Protocol
 

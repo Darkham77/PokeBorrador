@@ -12,7 +12,7 @@ Modern Sass built-ins often collide with standard CSS functions. You **MUST** us
 
 Apply interpolation to the following CSS functions to prevent "X is not a color" errors:
 
-- `transform: Scale(1.5);`
+- `transform: Scale(1.03);`
 - `transform: TranslateY(-10px);`
 - `transform: TranslateX(50%);`
 - `transform: TranslateZ(0);`
@@ -44,7 +44,7 @@ In scenarios where pixel-perfect alignment is critical (Combat Arena), component
 - **Implementation**: Use `provide('forceHighFidelity', true)` in the parent battle view.
 - **Usage**: Components like `PVSpriteFX` MUST check for `forceHighFidelity` before simplifying filters or animations.
 
-### 2. Preference: Capitalization vs. Unquote/Interpolation
+### 4. Preference: Capitalization vs. Unquote/Interpolation
 
 To bypass SASS color function collisions, we strictly follow a hierarchy of methods.
 
@@ -56,14 +56,13 @@ To bypass SASS color function collisions, we strictly follow a hierarchy of meth
   - ✅ `transform: Scale(#{$factor});`
 - **FORBIDDEN**: **string.unquote()** for standard filters. It violates the "Zero-Warning" architecture and makes the code harder to read.
 
-### 3. GPU Optimization: Opacity property vs. filter
+### 5. GPU Performance & Hardware Acceleration (SSoT)
 
-- **REQUIRED**: Always use the `opacity: X` property instead of `filter: Opacity(X)`.
-- **Reasoning**: The property is hardware-accelerated and significantly more efficient for mobile GPUs than the filter function. It also avoids SASS deprecation warnings entirely.
-  - ✅ `opacity: 0.5;`
-  - ❌ `filter: Opacity(0.5);` (Inefficient)
+- **REQUIRED**: Prioritize the `opacity` property over `filter: opacity()` and use efficient shadow types based on element geometry.
+- **SSoT Authority**: For detailed rules on hardware-acceleration, shadow performance (`box-shadow` vs `drop-shadow`), and layer promotion, refer to the **[GPU Optimization Manual](gpu_optimization_manual.md)**.
+- **Visual Goal**: Ensure smooth 60fps transitions by following the "Density Rule" for shadows and avoiding re-layout properties in animations.
 
-### 4. Layout Stability: Flex-Scroll Areas
+### 6. Layout Stability: Flex-Scroll Areas
 
 To prevent layout collapse in scrollable flex containers (Common in Debug and Grid panels), you **MUST** ensure the scrolling container can shrink correctly.
 
@@ -83,7 +82,7 @@ To prevent layout collapse in scrollable flex containers (Common in Debug and Gr
 > [!IMPORTANT]
 > **VUE COMPONENT RULE**: Interpolation `#{}` only works inside `<style lang="scss">`. If you apply this fix to a `.vue` file, you **MUST** ensure the style block has the `lang="scss"` attribute.
 
-### 4. Modern Built-ins (math, string)
+### 7. Modern Built-ins (math, string)
 
 Global built-in functions are deprecated in Dart Sass 2.0+ and will be removed in 3.0.0. Using them generates loud build warnings.
 
@@ -102,7 +101,7 @@ Global built-in functions are deprecated in Dart Sass 2.0+ and will be removed i
   width: math.percentage(0.5);
   animation-delay: #{math.random(2000)}ms;
   // CORRECT: Using Capitalization for the transform
-  transform: Scale(1.05);
+  transform: Scale(1.03);
 }
 ```
 

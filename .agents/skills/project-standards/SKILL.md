@@ -13,30 +13,34 @@ Consult these manuals for detailed implementation specifications:
 
 | Domain | Reference Manual |
 | :--- | :--- |
-| **Content Creation** | [content_creation_manual.md](./references/content_creation_manual.md) |
-| **Battle Mechanics** | [battle_mechanics_manual.md](./references/battle_mechanics_manual.md) |
-| **Mechanics & UX** | [game_mechanics_manual.md](./references/game_mechanics_manual.md) |
-| **UI/UX Standards** | [ui_ux_standards.md](./references/ui_ux_standards.md) |
-| **Formulas & Ratios** | [game_formulas_manual.md](./references/game_formulas_manual.md) |
-| **Item System** | [item_system_manual.md](./references/item_system_manual.md) |
-| **War & Factions** | [war_system_manual.md](./references/war_system_manual.md) |
-| **Gyms & Rematch** | [gym_system_manual.md](./references/gym_system_manual.md) |
-| **Social & Trade** | [trade_social_manual.md](./references/trade_social_manual.md) |
-| **DB Architecture** | [dbrouter_manual.md](./references/dbrouter_manual.md) |
-| **Validation & Quality** | [validation_manual.md](./references/validation_manual.md) |
-| **Save & Persistence** | [save_system_manual.md](./references/save_system_manual.md) |
-| **Testing & Simulation** | [browser_testing_manual.md](./references/browser_testing_manual.md) |
-| **Animations & FX** | [animation_standards.md](./references/animation_standards.md) |
-| **GPU & Performance** | [gpu_optimization_manual.md](./references/gpu_optimization_manual.md) |
-| **SASS & Styling** | [sass_styling_manual.md](./references/sass_styling_manual.md) |
-| **Asset Pipeline** | [asset_service_manual.md](./references/asset_service_manual.md) |
-| **Map & Spawns** | [spawn_grid_manual.md](./references/spawn_grid_manual.md) |
-| **Combat Camera** | [combat_camera_manual.md](./references/combat_camera_manual.md) |
-| **Dependencies** | [dependency_management_manual.md](./references/dependency_management_manual.md) |
+| **Content Creation** | [content_creation_manual.md](./references/content/content_creation_manual.md) |
+| **Battle Mechanics** | [battle_mechanics_manual.md](./references/battle/battle_mechanics_manual.md) |
+| **Mechanics & UX** | [game_mechanics_manual.md](./references/core/game_mechanics_manual.md) |
+| **UI/UX Standards** | [ui_ux_standards.md](./references/core/ui_ux_standards.md) |
+| **Formulas & Ratios** | [game_formulas_manual.md](./references/core/game_formulas_manual.md) |
+| **Time & Seasons** | [time_system_manual.md](./references/core/time_system_manual.md) |
+| **Breeding (Daycare)** | [breeding_manual.md](./references/systems/breeding_manual.md) |
+| **Evolution System** | [evolution_manual.md](./references/systems/evolution_manual.md) |
+| **Encounter Systems** | [encounter_manual.md](./references/systems/encounter_manual.md) |
+| **Item System** | [item_system_manual.md](./references/systems/item_system_manual.md) |
+| **War & Factions** | [war_system_manual.md](./references/systems/war_system_manual.md) |
+| **Gyms & Rematch** | [gym_system_manual.md](./references/systems/gym_system_manual.md) |
+| **Social & Trade** | [trade_social_manual.md](./references/systems/trade_social_manual.md) |
+| **DB Architecture** | [dbrouter_manual.md](./references/technical/dbrouter_manual.md) |
+| **Validation & Quality** | [validation_manual.md](./references/qa/validation_manual.md) |
+| **Save & Persistence** | [save_system_manual.md](./references/technical/save_system_manual.md) |
+| **Testing & Simulation** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md) |
+| **Animations & FX** | [animation_standards.md](./references/battle/animation_standards.md) |
+| **GPU & Performance** | [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md) |
+| **SASS & Styling** | [sass_styling_manual.md](./references/technical/sass_styling_manual.md) |
+| **Asset Pipeline** | [asset_service_manual.md](./references/technical/asset_service_manual.md) |
+| **Map & Spawns** | [spawn_grid_manual.md](./references/systems/spawn_grid_manual.md) |
+| **Combat Camera** | [combat_camera_manual.md](./references/battle/combat_camera_manual.md) |
+| **Dependencies** | [dependency_management_manual.md](./references/technical/dependency_management_manual.md) |
 
 ### 🛠️ Migration & Technical Support
 
-- **Legacy Migration Hub**: [legacy_migration_manual.md](./references/legacy_migration_manual.md)
+- **Legacy Migration Hub**: [legacy_migration_manual.md](./references/migration/legacy_migration_manual.md)
 - **DB Technical Notes**: [references/migration/](./references/migration/)
 
 ---
@@ -51,7 +55,7 @@ Consult these manuals for detailed implementation specifications:
 
 ### 2. GPU & Rendering
 
-- **GPU First**: Prioritize hardware-accelerated rendering. See [gpu_optimization_manual.md](./references/gpu_optimization_manual.md).
+- **GPU First**: Prioritize hardware-accelerated rendering. See [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md).
 - **Sprite Standard**: Use `@include sprite-render` for all game assets.
 - **Organic Feel**: Desynchronize animations using seeds and vary speeds.
 

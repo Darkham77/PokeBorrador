@@ -52,7 +52,7 @@ export function calculateSpawnGrid(spawnsCount, preferredCols = 3) {
 
 ## 🔍 Discovery & Fog of War
 
-Refer to the [game_mechanics_manual.md](./game_mechanics_manual.md) for the authoritative definitions of the Discovery System (`isSeen`, `isCaught`) and visual differences between Map and Pokédex.
+Refer to the [game_mechanics_manual.md](../core/game_mechanics_manual.md) for the authoritative definitions of the Discovery System (`isSeen`, `isCaught`) and visual differences between Map and Pokédex.
 
 ## 5. Map Card Rendering Layers
 

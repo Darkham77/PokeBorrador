@@ -30,7 +30,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Dynamic Layout Balance**: Use `flex-wrap: wrap` with flexible bases (e.g., `flex: 1 1 650px`) to create organic responsive transitions that adapt to intermediate viewports (like 1360px) without rigid breakpoints.
 - **Hybrid Battle Log Layout (Combat)**:
   - **Desktop (Side-by-side)**: The log MUST use `flex: 1` to fill the entire vertical height of the grid.
-  - **Mobile/Stacked (≤ 760px)**: The log MUST switch to a fixed/compact height (Standard: **90px** / ~2 lines) to prevent pushing action controls out of the viewport.
+  - **Mobile/Stacked (≤ 768px)**: The log MUST switch to a fixed/compact height (Standard: **90px** / ~2 lines) to prevent pushing action controls out of the viewport.
   - **PWA/Split-Screen**: In split-screen mode where height is constrained but width is ample, prioritize `flex: 1` for the chat to fill available vertical space.
   - **Compact Density**: Use minimal `gap` (**2px**) between log entries and reduced `padding` (**4px**) for the main container to maximize information density.
   - **Side-Based Tinting**: Every log entry MUST be visually associated with its side (Player vs Enemy) using a subtle background gradient (`Linear-Gradient` at **0.06 - 0.08** opacity) and a colored `border-left` (2px).
@@ -56,9 +56,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 - **PWA Integrity (Desktop-First Hybrid)**:
   - **Display Mode**: ALWAYS use `display: standalone` in the manifest. Avoid `fullscreen` to prevent desktop browsers from hiding scrollbars or misidentifying the app as mobile-only.
-  - **Breakpoint Parity (760px)**: JS window listeners and CSS media queries MUST share the exact same pixel value (Standard: **760px**) to avoid layout "dead zones".
-  - **Breakpoint Parity (760px)**: JS window listeners and CSS media queries MUST share the exact same pixel value (Standard: **760px**) to avoid layout "dead zones".
-  - **Forced HUD Visibility**: Use high-specificity CSS (e.g., `.main-hud-desktop`) with `min-width: 761px` to ensure HUD elements remain visible on PC screens even if PWA mode triggers mobile-first states.
+  - **Breakpoint Parity (768px)**: JS window listeners and CSS media queries MUST share the exact same pixel value (Standard: **768px**) to avoid layout "dead zones".
+  - **Forced HUD Visibility**: Use high-specificity CSS (e.g., `.main-hud-desktop`) with `min-width: 769px` to ensure HUD elements remain visible on PC screens even if PWA mode triggers mobile-first states.
   - **Navigation Fallback Synchronization**: The bottom navigation HUD (mobile-only) MUST only be visible when the top navigation is hidden.
     - **Desktop Rule**: On screens > 1410px, the bottom nav is HIDDEN unless `isHudHidden` is true (scroll-down).
     - **Implementation**: Sync using a `.hud-visible-active` class on the container that forces `display: flex !important`.
@@ -107,16 +106,11 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Stats/IVs**: Green (`#4ade80`).
   - **Total Power (BST)**: Yellow/Gold (`#fbbf24`).
 
-### 3. Safari Compatibility (Prefix Mandate)
+### 3. Safari & GPU Performance (SSoT)
 
-- **REQUIRED**: Always use the `opacity: X` property instead of `filter: Opacity(X)`.
-- **Reasoning**: The property is hardware-accelerated and significantly more efficient for mobile GPUs than the filter function. It also avoids SASS deprecation warnings entirely.
-  - ✅ `opacity: 0.5;`
-  - ❌ `filter: Opacity(0.5);` (Inefficient)
-- **Shadow Performance (Drop-Shadow vs Box-Shadow)**:
-  - `box-shadow`: Fast, native GPU hardware. Use for UI cards, frames, and rectangular containers.
-  - `filter: Drop-Shadow()`: Expensive, pixel-by-pixel analysis. Use ONLY for pixel-art sprites or non-rectangular elements where the shadow must follow the silhouette.
-  - **DENSITY RULE**: In grids with 50+ items (Box, Bag), NEVER aply more than one `Drop-Shadow()` per item to avoid "GPU Fill-Rate Starvation".
+- **REQUIRED**: Prioritize the `opacity` property over `filter: opacity()` and use efficient shadow types based on element geometry.
+- **SSoT Authority**: For exact hardware-acceleration rules, Safari-specific prefixes, and shadow density limits, refer to the **[SASS Styling Manual](../technical/sass_styling_manual.md)**.
+- **Visual Goal**: Ensure smooth 60fps transitions on mobile devices by avoiding filter-heavy stacking in dense grids.
 - **Filter Specificity Trap**: When applying global image filters (e.g., `img { filter: ... }`), always use `:not(.special-class)` to exclude specific states like `.silhouette`.
   - **WHY**: A general rule with high specificity (tag + class) can override specific class-only rules even if they use `!important`.
 - **The Clipping Trap (Scale vs Overflow)**: NEVER use `Scale()` animations for ambient effects (pulsing) on elements contained by `overflow: hidden`. This causes visual clipping or makes content "flicker" as it exceeds the parent box. Use `Opacity()` or `Filter: Brightness()` for ambient "breathing" instead.
@@ -250,7 +244,7 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Typography**: Must use `'Press Start 2P'` with `@include pixelated`.
 - **Constraint**: Primary action buttons (yellow) MUST follow this pattern to maintain visual parity.
 - **Active State Unification**: Selected/Active buttons (`.active`) MUST preserve their 3D shadow depth. Use a 2px white solid border and a selection glow (`box-shadow`), but keep the dark bottom shadow to avoid a "flat" or "broken" look.
-- **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. see [game_mechanics_manual.md](./game_mechanics_manual.md) for visibility rules.
+- **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. see [game_mechanics_manual.md](../core/game_mechanics_manual.md) for visibility rules.
 - **Cursor Consistency Mandate**: All interactive elements (badges, items, pills) that provide information via tooltips MUST use `cursor: pointer`. Avoid `cursor: help` (the question mark) to maintain a premium, responsive feel across the entire UI.
 - **Action Grouping (Box/Inventory)**: High-level management actions (e.g., Mercado Negro, Liberar) MUST be grouped in the primary navigation/header bar (slots like `#extra` in `BoxTabs`) to maximize the area dedicated to content grids.
 - **Global Event Listeners**: Window/Global event listeners (e.g., `online`, `click` retry) used outside component lifecycles (like in Pinia stores) MUST be marked with `// [PureVue-Ignore]` to satisfy audit standards while maintaining necessary logic.
@@ -407,7 +401,7 @@ Hardcoded numeric values for `z-index` (e.g., `10`, `20`) are strictly FORBIDDEN
 
 ## 🛠️ Aesthetic Audit Checklist
 
-For a full verification, consult the centralized **[Aesthetic Audit Checklist](./audit_checklist.md)**.
+For a full verification, consult the centralized **[Aesthetic Audit Checklist](../qa/audit_checklist.md)**.
 
 1. `[ ]` **Hybrid Check**: Are modern frames combined with pixel-art content?
 2. `[ ]` **Typography**: Is `@include pixelated;` used for all pixel fonts?

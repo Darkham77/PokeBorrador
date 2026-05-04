@@ -13,9 +13,9 @@ All spatial logic is centralized in `@/logic/combat/spatialCoordinator.js`. Comp
 
 | Constant | Symbolic Role | Description |
 | :--- | :--- | :--- |
-| `MAP_WIDTH / HEIGHT`| **World Bounds** | The total canvas size for background and object placement. |
-| `SAFE_ZONE_WIDTH/HEIGHT`| **Action Area** | The 3:2 rectangular zone where critical combat action occurs. |
-| `VISIBLE_UNITS_X/Y`| **Camera Target** | The target unit density for visibility. Usually `HEIGHT + Padding`. |
+| `MAP_WIDTH / HEIGHT` | **World Bounds** | The total canvas size for background and object placement. |
+| `SAFE_ZONE_WIDTH/HEIGHT` | **Action Area** | The 3:2 rectangular zone where critical combat action occurs. |
+| `VISIBLE_UNITS_X/Y` | **Camera Target** | The target unit density for visibility. Usually `HEIGHT + Padding`. |
 | `TARGET_X / Y` | **Focal Point** | The camera center. `TARGET_Y` is offset to ensure bottom-alignment. |
 | `OBJECT_SCALE` | **Pixel Density** | Multiplier to maintain pixel-art crispness at various sizes. |
 | `ENTITY_SIZE_P1/P2` | **Occupancy** | Side-specific bounding boxes for combatants. |

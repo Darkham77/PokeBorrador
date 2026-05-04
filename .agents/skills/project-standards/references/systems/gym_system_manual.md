@@ -35,6 +35,6 @@ Each gym can be faced in three difficulties:
 
 ## 🧠 Leader Battle Logic
 
-1.  **The Ace**: The last Pokémon of the team is always the leader's "Ace" and usually carries an equipped item.
-2.  **AI Priority**: Leaders have an improved AI that prioritizes super-effective moves and status changes.
-3.  **Rewards**: The `rewardTM` is granted only on the first victory. In rematches, scaled money is granted according to the difficulty.
+1. **The Ace**: The last Pokémon of the team is always the leader's "Ace" and usually carries an equipped item.
+2. **AI Priority**: Leaders have an improved AI that prioritizes super-effective moves and status changes.
+3. **Rewards**: The `rewardTM` is granted only on the first victory. In rematches, scaled money is granted according to the difficulty.
