@@ -146,8 +146,9 @@ To prevent data loss during background service worker updates:
 
 ---
 
-## 🏗️ Battle State Integrity
+### 2. Asynchronous Object Integrity (Async Exit Guards)
 
-### 1. Atomic Guards & State Persistence
-- **Avoid Proxy Flags**: NEVER use ad-hoc properties on reactive objects (e.g., `poke._isFainting`) for critical guards. These flags are lost if the object is refreshed or replaced in the store.
-- **Use Centralized Sets**: For "single-execution" processes (faints, rewards, captures), use a reactive `Set` in the store (e.g., `faintedSides`) to ensure absolute persistence during the turn regardless of object updates.
+Functions that involve `await` or `setTimeout` (especially in battle or menu transitions) MUST NOT assume that the base store object (e.g., `activeBattle.value`) still exists after the promise resolves.
+
+- **Mandatory Guard**: Every `await` MUST be followed by a null-check: `if (!activeBattle.value) return;`.
+- **Race Prevention**: Transitions between game phases (Map -> Battle -> Map) nullify critical objects. Any asynchronous logic "floating" from the previous phase MUST exit immediately if it detects its parent object has been destroyed to prevent `Cannot read properties of null` crashes.

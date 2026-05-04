@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 
 export const BATTLE_STATES = {
   INITIALIZING: 'INITIALIZING',
@@ -24,7 +24,11 @@ export const BATTLE_SUBSTATES = {
   ESCAPE_PROCESS: 'ESCAPE_PROCESS',
   // Reward Phase Sub-states (The Void Standard)
   VOID_STATE: 'VOID_STATE',
-  DISTRIBUTE_XP: 'DISTRIBUTE_XP'
+  DISTRIBUTE_XP: 'DISTRIBUTE_XP',
+  // Search Phase Sub-states
+  ENTRY_ANIM: 'ENTRY_ANIM',    // Bushes gradual + silueta estática
+  BUSH_IDLE: 'BUSH_IDLE',      // Silueta estática esperando click en Buscar
+  ENCOUNTER_ANIM: 'ENCOUNTER_ANIM' // Jump + reveal (disparado al hacer click en Buscar)
 };
 
 export function createBattleStateMachine() {

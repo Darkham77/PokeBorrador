@@ -11,7 +11,7 @@ import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_
 import { getDayCycle } from '@/logic/timeUtils'
 import { ABILITY_DATA } from '@/data/abilities'
 import { supabase } from '@/logic/supabase'
-import { getEffectiveStat, getStatBreakdown, getStatMultiplier } from '@/logic/battle/battleEngine'
+import { getStatBreakdown, getStatMultiplier } from '@/logic/battle/battleEngine'
 
 
 const props = defineProps({
@@ -154,8 +154,72 @@ const volatileStatuses = computed(() => {
   }
 
   // 3. Clima (Solo si afecta al Pokémon)
+  const isWeatherAffecting = computed(() => {
+    const weather = battleStore.state?.weather
+    if (!weather || weather.type === 'clear') return false
+
+    const mechWeather = getMechanicalWeather(weather.type)
+    const types = []
+    if (p.value.type) types.push(p.value.type.toLowerCase())
+    if (p.value.type2) types.push(p.value.type2.toLowerCase())
+
+    const moveTypes = (p.value.moves || []).map(m => (m?.type || '').toLowerCase())
+    const moveNames = (p.value.moves || []).map(m => (m?.name || '').toLowerCase())
+
+    if (mechWeather === 'fog') return true
+    if (mechWeather === 'sandstorm') return true
+    if (mechWeather === 'hail') return true
+
+    if (mechWeather === 'sun') {
+      if (types.includes('fire') || types.includes('water')) return true
+      if (moveTypes.includes('fire') || moveTypes.includes('water')) return true
+      const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
+      if (moveNames.some(n => sunMoves.includes(n))) return true
+    }
+
+    if (mechWeather === 'rain') {
+      if (types.includes('fire') || types.includes('water')) return true
+      if (moveTypes.includes('fire') || moveTypes.includes('water') || moveTypes.includes('electric')) return true
+      const rainMoves = ['thunder', 'trueno', 'hurricane', 'vendaval', 'weather ball']
+      if (moveNames.some(n => rainMoves.includes(n))) return true
+    }
+
+    if (mechWeather === 'snow') {
+      if (types.includes('ice')) return true
+      if (moveTypes.includes('ice')) return true
+      const snowMoves = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora']
+      if (moveNames.some(n => snowMoves.includes(n))) return true
+    }
+
+    return false
+  })
+
+  const isCycleAffecting = computed(() => {
+    const cycle = getDayCycle()
+    const types = []
+    if (p.value.type) types.push(p.value.type.toLowerCase())
+    if (p.value.type2) types.push(p.value.type2.toLowerCase())
+
+    const moveTypes = (p.value.moves || []).map(m => (m?.type || '').toLowerCase())
+    const moveNames = (p.value.moves || []).map(m => (m?.name || '').toLowerCase())
+
+    if (cycle === 'morning' || cycle === 'day') {
+      if (types.includes('fire') || types.includes('water')) return true
+      if (moveTypes.includes('fire') || moveTypes.includes('water')) return true
+      const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
+      if (moveNames.some(n => sunMoves.includes(n))) return true
+    }
+
+    if (cycle === 'dusk' || cycle === 'night') {
+      if (types.includes('water')) return true
+      if (moveTypes.includes('water')) return true
+    }
+
+    return false
+  })
+
   const weather = battleStore.state?.weather
-  if (weather && weather.type !== 'clear') {
+  if (weather && weather.type !== 'clear' && isWeatherAffecting.value) {
     const visualType = weather.visual || weather.type
     const mechType = getMechanicalWeather(weather.type)
     const config = WEATHER_VISUAL_METADATA[visualType] || WEATHER_UI_METADATA[mechType]
@@ -166,7 +230,7 @@ const volatileStatuses = computed(() => {
         text: `${config.label}: ${config.description}` 
       })
     }
-  } else {
+  } else if (isCycleAffecting.value) {
     // 4. Ciclo Horario (Fallback si no hay clima)
     const cycle = getDayCycle()
     const cycleData = {
@@ -281,7 +345,6 @@ const formatMult = (m) => {
                     {{ formatMult(getBreakdown(stat.key).statusMult) }}
                   </span>
                 </div>
-
               </div>
               <div class="admin-notice">
                 ⚠️ Solo visible para ADMIN

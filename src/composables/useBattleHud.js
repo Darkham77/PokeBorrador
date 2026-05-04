@@ -12,14 +12,21 @@ export function useBattleHud(animations, battleStore, enemyRef) {
     faintedPokemonSnapshot,
     enemyCaptureActive,
     isCaptureSequenceActive,
-    caughtPokemonSnapshot
+    caughtPokemonSnapshot,
+    isIntroInProgress
   } = animations
+
+  const unwrap = (val) => (val && typeof val === 'object' && 'value' in val ? val.value : val)
 
   /**
    * Determina si el HUD del enemigo debe estar oculto.
    */
   const isEnemyHudSuppressed = computed(() => {
-    return enemyAnimState.value === 'trapped' || 
+    const state = unwrap(battleStore.fsm?.currentState)
+    return state === 'INITIALIZING' ||
+           state === 'FIRST_INTRO' ||
+           isIntroInProgress.value ||
+           enemyAnimState.value === 'trapped' || 
            enemyAnimState.value === 'catching' ||
            enemyAnimState.value === 'releasing' ||
            (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'enemy') ||
@@ -32,7 +39,11 @@ export function useBattleHud(animations, battleStore, enemyRef) {
    * Totalmente independiente de lo que le pase al enemigo.
    */
   const isPlayerHudSuppressed = computed(() => {
-    return playerAnimState.value === 'releasing' ||
+    const state = unwrap(battleStore.fsm?.currentState)
+    return state === 'INITIALIZING' ||
+           state === 'FIRST_INTRO' ||
+           isIntroInProgress.value ||
+           playerAnimState.value === 'releasing' ||
            playerAnimState.value === 'trapped' ||
            (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'player') ||
            battleStore.isSearching
@@ -48,6 +59,10 @@ export function useBattleHud(animations, battleStore, enemyRef) {
    * [FASE 2] Soporte para previsualización de próximo encuentro.
    */
   const activeEnemyHudData = computed(() => {
+    const state = unwrap(battleStore.fsm?.currentState)
+    const subState = unwrap(battleStore.fsm?.currentSubState)
+    if (state === 'REWARDS_PHASE' && subState === 'VOID_STATE') return null
+
     // 1. Prioridad: Snapshot de captura (durante la animación de éxito)
     if (isCaptureSequenceActive.value && caughtPokemonSnapshot.value) return caughtPokemonSnapshot.value
     

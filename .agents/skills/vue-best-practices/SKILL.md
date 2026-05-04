@@ -46,7 +46,7 @@ Create a brief component map before implementation for any non-trivial feature.
 
 ## 2) Apply essential Vue foundations (required)
 
-These are essential, must-know foundations. Apply all of them in every Vue task using the core references already loaded in section `1.1`.
+These are essential, must-know foundations. Apply all of them in every Vue task using the core references already loaded in section 1.1.
 
 ### Reactivity
 
@@ -198,6 +198,8 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **Long-Press Recognition**: Use a timer (e.g., `setTimeout` for 800ms) within `touchstart` and `touchend` handlers to detect long-presses for complex actions (like Drag & Drop) while allowing normal scroll.
   - **Dynamic touch-action**: Set `element.style.touchAction = 'none'` when a custom touch-interaction starts to prevent native browser scrolling. Reset to `''` when finished.
   - **Touch-Collision Detection**: During `touchmove`, set `pointer-events: none` on the dragged element and use `document.elementFromPoint(touch.clientX, touch.clientY)` to detect slots or targets underneath.
+- **Readonly Computed Store Warning**: NEVER attempt to mutate a store property that is defined as a `computed` from within a component. This triggers a `target is readonly` warning. If a property needs to be updated from a view (e.g., syncing an animation state), it MUST be defined as a `ref` in the store.
+- **Template Scope Integrity**: To avoid "property accessed during render but not defined" warnings, ensure all reactive properties or composable returns used in the `<template>` are explicitly destructured or returned from the `setup()` function (or available in `<script setup>`).
 
 ## 6) Final self-check before finishing
 

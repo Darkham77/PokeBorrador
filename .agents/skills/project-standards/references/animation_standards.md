@@ -188,7 +188,30 @@ To ensure a fast and dynamic game flow, the `ENCOUNTER_ANIM` phase follows a str
 - **Reveal Point**: The reveal transition starts at the **550ms** mark (`isWildSilhouetteHalfway`). At this point, the silhouette should begin to fade or swap to the colored sprite while the "emergence" bounce completes.
 - **Transition Integrity**: The silhouette state MUST be inclusive. It should trigger if the system is in `isSearching` mode OR if the previous battle is marked as `over` (transition phase). This ensures that proactive encounters sitting in the queue (e.g. after a Teleport) are correctly hidden even before the searching state is explicitly set.
 - **Visual Behavior**: The Pokémon performs a parabolic "jump" from the grass coordinates. Auxiliary elements like name labels and HP bars remain hidden until the end of this phase to maintain focus on the Pokémon's arrival.
-- **Standard Protocol**: Use the `ENCOUNTER_ANIM` modular state to synchronize this phase across all combat layers.
+
+## 21. Attack Category Normalization & Keyframes
+
+To ensure visual consistency, move categories MUST be normalized before being emitted to the animation bus.
+
+### 1. Normalization Protocol
+
+The battle engine MUST map all category variants to English lowercase strings:
+
+- **Estado**, **status**, or **3** ➡️ `status`
+- **Especial**, **special**, or **2** ➡️ `special`
+- **Físico**, **physical**, or **1** ➡️ `physical`
+
+### 2. Category-Specific Keyframes
+
+Each category MUST have a distinct visual pattern to represent its mechanical nature:
+
+- **Physical (`atk-physical`)**: Forward dash towards the opponent.
+- **Special (`atk-special`)**: Pulsing expansion and brightness increase.
+- **Status (`atk-status`)**: Lateral shake and brightness/contrast spike. This indicates that the move affects the state or field rather than dealing direct impact damage.
+
+### 3. Implementation Guard
+
+Never assume the category is already normalized in the move object. Always use a helper like `normalizeCat(move.cat)` when emitting `PLAY_ATTACK_ANIM`.
 
 ## 20. Status Effect Visuals
 
@@ -255,3 +278,9 @@ To ensure tactical transparency, the HUD displays all active effects in a dedica
 - **Tooltips**: Every icon in the container MUST have a `PVTooltip` explaining the mechanical implications of the effect.
 
 ---
+
+## 22. Idle Animation for Floating Pokémon
+
+To distinguish flying or hovering species from terrestrial ones, an exaggerated levitation idle animation is applied to any Pokémon with the `flying` type or that has the `isFloating` property.
+
+- **Effect**: The `combatant-idle-float` animation MUST use a duration of `3.5s` and a vertical translation of `-22px` with a rotation of `-2deg` to make the levitation clearly discernible.

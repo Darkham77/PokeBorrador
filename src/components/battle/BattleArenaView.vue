@@ -1,6 +1,7 @@
 <script setup>
 // [PureVue-Ignore-Length]
 import { computed, watch, onMounted, provide, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -28,6 +29,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
 
 const battleStore = useBattleStore()
+const { currentFsmState, isSearching, upcomingPokemon } = storeToRefs(battleStore)
 const gameStore = useGameStore()
 const mapStore = useMapStore()
 const uiStore = useUIStore()
@@ -43,9 +45,6 @@ const gs = computed(() => gameStore.state)
 const battle = computed(() => battleStore.state)
 const enemy = computed(() => battle.value?.enemy)
 const player = computed(() => battle.value?.player)
-const isSearching = computed(() => battleStore.isSearching)
-const upcomingPokemon = computed(() => battleStore.upcomingPokemon)
-
 const p1Pos = computed(() => getCombatantPosition('player'))
 const p2Pos = computed(() => getCombatantPosition('enemy'))
 
@@ -64,7 +63,7 @@ const {
   playerAnimState, enemyAnimState, activePokeballId, catchSparkles,
   playerCaptureActive, enemyCaptureActive,
   playerIsShaking, playerIsBlinking, enemyIsShaking, enemyIsBlinking,
-  isIntroInProgress, triggerWildEmergence, initListeners
+  isIntroInProgress, triggerWildEmergence, triggerSearchEntry, triggerSearchEncounter, initListeners
 } = animations
 
 
@@ -81,8 +80,15 @@ const isFinishing = computed(() => {
 })
 
 const activeEnemyData = computed(() => {
+  const s = unwrap(battleStore.fsm?.currentState)
+  const sub = unwrap(battleStore.fsm?.currentSubState)
+  if (s === 'REWARDS_PHASE' && sub === 'VOID_STATE') {
+    return null
+  }
   return activeEnemyHudData.value
 })
+
+const unwrap = (val) => (val && typeof val === 'object' && 'value' in val ? val.value : val)
 
 const activeEnemyIsSilhouette = computed(() => {
   const hasBinoculars = gameStore.state.inventory?.['binoculars'] > 0
@@ -91,13 +97,17 @@ const activeEnemyIsSilhouette = computed(() => {
   // Prioridad: Si hay un desmayo en curso, el pokémon que se desvanece NO es silueta
   if (isFaintInProgress.value) return false
   
-  // Si estamos buscando o finalizando y hay un pokemon en cola, siempre es silueta
-  if ((isSearching.value || isFinishing.value) && upcomingPokemon.value) return true
-  
-  // Estados de animación intrínsecos de entrada salvaje
-  if (isWildEntryAnimation.value || wildRevealActive.value || isWildSilhouette.value || upcomingIsEmerging.value) return true
-  
-  return false
+  const s = unwrap(battleStore.fsm?.currentState)
+  const sub = unwrap(battleStore.fsm?.currentSubState)
+
+  // Modo de introducción: Durante la carga previa, forzar silueta para evitar parpadeos
+  if (isWildEncounter.value && s === 'INITIALIZING') return true
+
+  // En SEARCH_PHASE, si estamos en ENTRY_ANIM o BUSH_IDLE, siempre es silueta.
+  if (s === 'SEARCH_PHASE' && (sub === 'ENTRY_ANIM' || sub === 'BUSH_IDLE')) return true
+
+  // En cualquier otro caso, seguimos la bandera reactiva de la animación
+  return isWildSilhouette.value
 })
 
 const enemyIsFloating = computed(() => {
@@ -131,21 +141,13 @@ const shouldShowEncounterLayers = computed(() => {
   if (enemyAnimState.value === 'catching' || enemyAnimState.value === 'trapped' || enemyAnimState.value === 'releasing') return false
   if (isCaptureSequenceActive.value || isFaintInProgress.value) return false
   
-  // Las capas de encuentro (pasto) solo aparecen si:
-  // 1. Estamos buscando activamente algo pre-generado
-  // 2. Es una animación de entrada/revelación
-  // 3. El enemigo se ha ido (over/finishing) PERO no estamos en medio de un cambio forzado del jugador
-  const isUpcomingReady = isSearching.value && !!upcomingPokemon.value
-  
-  // Seguridad: Los arbustos NUNCA aparecen si el enemigo sigue vivo o no ha sido capturado,
-  // especialmente durante un cambio forzado de Pokémon del jugador.
-  const enemyIsDefinitivelyGone = (battle.value?.over || battleStore.isFinishing) && 
-                                  (enemy.value?.hp <= 0 || battle.value?.isCapture)
-  
-  const isEnemyGone = enemyIsDefinitivelyGone && !uiStore.isBattleSwitchForced
-  
-  return !!(isUpcomingReady || isWildEntryAnimation.value || wildRevealActive.value || isEnemyGone)
+  const isWild = isWildEncounter.value
+  const isSearchingVal = isSearching.value
+  // BUSH_FADE se dispara cuando wildRevealActive pasa a false (t=1100ms según el manual).
+  // En búsqueda activa, los arbustos siempre están visibles.
+  return isWild && (isSearchingVal || wildRevealActive.value)
 })
+
 
 const atmosphereSeed = computed(() => {
   return (battle.value?.locationId || 'route1').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
@@ -163,6 +165,86 @@ watch([() => activeEnemyData.value, p2Pos, () => enemyAnimState.value, activeEne
 watch([player, p1Pos, () => playerAnimState.value], ([p, pos, anim]) => {
   syncPlayerShadow(p, pos, anim)
 }, { immediate: true, deep: true })
+
+// --- COORDINACIÓN DE PRESENTACIÓN (FSM) ---
+// Orquesta FIRST_INTRO y SEARCH_PHASE según el diagrama del manual (Sección 7).
+// Observa TANTO el estado principal como el substate para detectar la transición ENCOUNTER_ANIM.
+watch(
+  () => {
+    const fsm = battleStore.fsm
+    if (!fsm) return [null, null]
+    return [unwrap(fsm.currentState), unwrap(fsm.currentSubState)]
+  },
+  async ([newState, newSubState]) => {
+    console.log('[BattleArenaView] FSM:', newState, newSubState || '')
+    if (!newState) return
+
+    // FIRST_INTRO: ENTRY_ANIM (wild) + PLAYER_CALL en paralelo → ACTIVE_BATTLE
+    if (newState === 'FIRST_INTRO') {
+      const wildSequence = isWildEncounter.value ? triggerWildEmergence() : Promise.resolve()
+      if (isWildEncounter.value) console.log('[BattleArenaView] -> ENTRY_ANIM + ENCOUNTER_ANIM (FIRST_INTRO)')
+
+      playerAnimState.value = 'releasing'
+      const playerSequence = new Promise(resolve => {
+        console.log('[BattleArenaView] -> PLAYER_CALL Started')
+        setTimeout(() => {
+          playerAnimState.value = null
+          console.log('[BattleArenaView] -> PLAYER_CALL Finished')
+          resolve()
+        }, 1500)
+      })
+
+      await Promise.all([wildSequence, playerSequence])
+      console.log('[BattleArenaView] FIRST_INTRO complete. Transitioning to ACTIVE_BATTLE')
+      battleStore.fsm.transition('ACTIVE_BATTLE')
+    }
+
+    // SEARCH_PHASE + ENTRY_ANIM substate: bushes graduales + silueta estática
+    if (newState === 'SEARCH_PHASE' && newSubState === 'ENTRY_ANIM' && isWildEncounter.value) {
+      console.log('[BattleArenaView] -> ENTRY_ANIM (SEARCH_PHASE)')
+      triggerSearchEntry()
+      setTimeout(() => {
+        battleStore.fsm.transition('SEARCH_PHASE', 'BUSH_IDLE')
+      }, 500)
+    }
+
+    // SEARCH_PHASE + ENCOUNTER_ANIM substate: jump + reveal (usuario hizo click en Buscar)
+    if (newState === 'SEARCH_PHASE' && newSubState === 'ENCOUNTER_ANIM' && isWildEncounter.value) {
+      console.log('[BattleArenaView] -> ENCOUNTER_ANIM (SEARCH_PHASE)')
+      await triggerSearchEncounter()
+      console.log('[BattleArenaView] ENCOUNTER_ANIM complete. Transitioning to ACTIVE_BATTLE')
+      battleStore.fsm.transition('ACTIVE_BATTLE')
+    }
+
+    // REWARDS_PHASE + VOID_STATE: Limpieza completa de rastros del Pokémon
+    if (newState === 'REWARDS_PHASE' && newSubState === 'VOID_STATE') {
+      console.log('[BattleArenaView] -> VOID_STATE (REWARDS_PHASE)')
+      isWildEntryAnimation.value = false
+      isEmerging.value = false
+      isWildSilhouette.value = false
+      wildRevealActive.value = false
+      upcomingIsEmerging.value = false
+      isFaintInProgress.value = false
+      faintedPokemonSnapshot.value = null
+      enemyAnimState.value = null
+      playerAnimState.value = null
+      caughtPokemonSnapshot.value = null
+      catchSparkles.value = []
+      playerCaptureActive.value = false
+      enemyCaptureActive.value = false
+      enemyIsShaking.value = false
+      enemyIsBlinking.value = false
+      playerIsShaking.value = false
+      playerIsBlinking.value = false
+
+      battleStore.attackerSide = null
+      battleStore.activeMove = null
+      battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+    }
+  },
+  { immediate: true }
+)
+
 
 watch(() => enemy.value?.hp, (newHp, oldHp) => {
   if (newHp <= 0 && oldHp > 0 && !isCaptureSequenceActive.value) {
@@ -261,7 +343,10 @@ watch(() => battleStore.isBattleActive, (active) => {
             :stages="battleStore.enemyStages"
           />
 
-          <!-- Arbustos Adelante -->
+          <!-- Arbustos Adelante --
+          Paso BUSHES_BACK del manual: cuando isEmerging=true, los arbustos frontales
+          se mueven detrás del Pokémon (force-behind) pero siguen siendo visibles.
+          Esto permite que el sprite salte POR ENCIMA de los arbustos. -->
           <VirtualEntity
             :x="p2Pos.x"
             :y="p2Pos.y"
@@ -274,6 +359,7 @@ watch(() => battleStore.isBattleActive, (active) => {
               :ground-y="enemyGroundY"
               :visible="shouldShowEncounterLayers && !enemyIsFloating"
               :instant="isInitialLoad"
+              :force-behind="isEmerging"
             />
           </VirtualEntity>
 

@@ -26,6 +26,11 @@ const battle = computed(() => battleStore.state)
 const player = computed(() => battle.value?.player)
 const gs = computed(() => gameStore.state)
 
+const isIntroActive = computed(() => {
+  const s = battleStore.fsm.currentState
+  return s === 'INITIALIZING' || s === 'FIRST_INTRO'
+})
+
 const execShowBattleSwitch = () => { 
   const isForced = uiStore.isBattleSwitchForced
   uiStore.isBattleSwitchForced = false
@@ -89,7 +94,9 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 </script>
 
 <template>
-  <div id="move-panel">
+  <div
+    id="move-panel"
+  >
     <div class="battle-controls-layout">
       <!-- Zona 1: Equipo Rápido (Izquierda) -->
       <aside class="quick-shortcut-zone zone-team">
@@ -120,14 +127,16 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
         />
 
         <div
-          v-if="battleStore.isFinishing"
+          v-if="battleStore.isSearching"
           class="battle-finish-overlay"
         >
           <div class="finish-actions-group">
             <button
               v-if="gameStore.state.team.some(p => p.hp > 0)"
               class="continue-btn-final search-btn"
-              @click.stop="battleStore.completeBattleFlow('search')"
+              @click.stop="battleStore.isSearching
+                ? battleStore.triggerSearchEncounter()
+                : battleStore.completeBattleFlow('search')"
             >
               <span class="btn-emoji">🔍</span> BUSCAR
             </button>
@@ -199,7 +208,6 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  animation: slideInUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   
   // Trick: height 0 + min-height 100% para que hereden la altura del padre 
   // (definida por el centro) sin expandir el contenedor ellos mismos.
@@ -219,6 +227,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   gap: 8px; // Gap reducido entre movimientos y botones
   flex-shrink: 0;
   padding-top: 8px;
+  position: relative;
 }
 
 :deep(.moves-grid-vicio) {
@@ -232,7 +241,9 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-low);
+  z-index: var(--z-overlay);
+  pointer-events: all;
+  cursor: pointer;
   -webkit-backdrop-filter: Blur(4px);
   backdrop-filter: Blur(4px);
   @include gpu-layer;
@@ -243,6 +254,9 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   max-width: 300px;
   display: flex;
   align-items: center;
+  z-index: calc(var(--z-overlay) + 1);
+  pointer-events: all;
+  cursor: pointer;
   justify-content: flex-start;
   padding-left: 48px;
   gap: 16px;

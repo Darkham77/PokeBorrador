@@ -79,28 +79,28 @@ export const itemEffects = {
   },
 
   // --- Buffs Globales ---
-  'Repelente': (_state) => { useBuffsStore().addBuff('repel', 5 * 60); return `activó un Repelente (5 min)`; },
-  'Superrepelente': (_state) => { useBuffsStore().addBuff('repel', 15 * 60); return `activó un Superrepelente (15 min)`; },
-  'Máximo Repelente': (_state) => { useBuffsStore().addBuff('repel', 30 * 60); return `activó un Máximo Repelente (30 min)`; },
-  'Ticket Shiny': (_state) => { useBuffsStore().addBuff('shiny', 60 * 60); return `activó el Ticket Shiny (60 min)`; },
-  'Moneda Amuleto': (_state) => { useBuffsStore().addBuff('amulet', 60 * 60); return `activó la Moneda Amuleto (60 min)`; },
-  'Huevo Suerte Pequeño': (_state) => { useBuffsStore().addBuff('lucky-egg', 30 * 60); return `activó un Huevo Suerte (30 min)`; },
-  'Ticket Safari': (_state) => { useBuffsStore().addBuff('safari', 30 * 60); return `activó el Ticket Safari (30 min)`; },
-  'Ticket Cueva Celeste': (_state) => { useBuffsStore().addBuff('cerulean', 30 * 60); return `activó el Ticket Cueva Celeste (30 min)`; },
-  'Ticket Articuno': (_state) => { useBuffsStore().addBuff('articuno', 30 * 60); return `activó el Ticket Articuno (30 min)`; },
-  'Ticket Mewtwo': (_state) => { useBuffsStore().addBuff('mewtwo', 30 * 60); return `activó el Ticket Mewtwo (30 min)`; },
-  'Escáner de IVs': (_state) => { useBuffsStore().addBuff('iv-scanner', 60 * 60); return `activó el Escáner de IVs (60 min)`; },
-  'Incienso Fuego': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'fire'); return `activó el Incienso Fuego (30 min)`; },
-  'Incienso Agua': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'water'); return `activó el Incienso Agua (30 min)`; },
-  'Incienso Planta': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'grass'); return `activó el Incienso Planta (30 min)`; },
-  'Incienso Normal': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'normal'); return `activó el Incienso Normal (30 min)`; },
-  'Incienso Fantasma': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'ghost'); return `activó el Incienso Fantasma (30 min)`; },
-  'Incienso Psíquico': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'psychic'); return `activó el Incienso Psíquico (30 min)`; },
+  'Repelente': (_state) => { useBuffsStore().addBuff('repel', 5 * 60); return { success: true, message: `activó un Repelente (5 min)` }; },
+  'Superrepelente': (_state) => { useBuffsStore().addBuff('repel', 15 * 60); return { success: true, message: `activó un Superrepelente (15 min)` }; },
+  'Máximo Repelente': (_state) => { useBuffsStore().addBuff('repel', 30 * 60); return { success: true, message: `activó un Máximo Repelente (30 min)` }; },
+  'Ticket Shiny': (_state) => { useBuffsStore().addBuff('shiny', 60 * 60); return { success: true, message: `activó el Ticket Shiny (60 min)` }; },
+  'Moneda Amuleto': (_state) => { useBuffsStore().addBuff('amulet', 60 * 60); return { success: true, message: `activó la Moneda Amuleto (60 min)` }; },
+  'Huevo Suerte Pequeño': (_state) => { useBuffsStore().addBuff('lucky-egg', 30 * 60); return { success: true, message: `activó un Huevo Suerte (30 min)` }; },
+  'Ticket Safari': (_state) => { useBuffsStore().addBuff('safari', 30 * 60); return { success: true, message: `activó el Ticket Safari (30 min)` }; },
+  'Ticket Cueva Celeste': (_state) => { useBuffsStore().addBuff('cerulean', 30 * 60); return { success: true, message: `activó el Ticket Cueva Celeste (30 min)` }; },
+  'Ticket Articuno': (_state) => { useBuffsStore().addBuff('articuno', 30 * 60); return { success: true, message: `activó el Ticket Articuno (30 min)` }; },
+  'Ticket Mewtwo': (_state) => { useBuffsStore().addBuff('mewtwo', 30 * 60); return { success: true, message: `activó el Ticket Mewtwo (30 min)` }; },
+  'Escáner de IVs': (_state) => { useBuffsStore().addBuff('iv-scanner', 60 * 60); return { success: true, message: `activó el Escáner de IVs (60 min)` }; },
+  'Incienso Fuego': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'fire'); return { success: true, message: `activó el Incienso Fuego (30 min)` }; },
+  'Incienso Agua': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'water'); return { success: true, message: `activó el Incienso Agua (30 min)` }; },
+  'Incienso Planta': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'grass'); return { success: true, message: `activó el Incienso Planta (30 min)` }; },
+  'Incienso Normal': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'normal'); return { success: true, message: `activó el Incienso Normal (30 min)` }; },
+  'Incienso Fantasma': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'ghost'); return { success: true, message: `activó el Incienso Fantasma (30 min)` }; },
+  'Incienso Psíquico': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'psychic'); return { success: true, message: `activó el Incienso Psíquico (30 min)` }; },
 
   // --- Fósiles ---
-  'Fósil Hélix': () => reviveFossilTrigger('omanyte', 'Fósil Hélix'),
-  'Fósil Domo': () => reviveFossilTrigger('kabuto', 'Fósil Domo'),
-  'Ámbar Viejo': () => reviveFossilTrigger('aerodactyl', 'Ámbar Viejo')
+  'Fósil Hélix': () => { return { success: true, message: reviveFossilTrigger('omanyte', 'Fósil Hélix') }; },
+  'Fósil Domo': () => { return { success: true, message: reviveFossilTrigger('kabuto', 'Fósil Domo') }; },
+  'Ámbar Viejo': () => { return { success: true, message: reviveFossilTrigger('aerodactyl', 'Ámbar Viejo') }; }
 };
 
 function reviveFossilTrigger(pokemonId, itemName) {

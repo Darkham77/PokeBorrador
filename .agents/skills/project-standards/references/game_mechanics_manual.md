@@ -167,7 +167,8 @@ During high-load scenes (e.g., Battles), the hiding protocol is applied:
 
 - **v-if**: Non-essential elements (MapCards, NPCs, background weather animations) MUST be physically hidden.
 - **Pause**: All JS intervals (weather, buffs) must be paused while the combat state is active.
-- **The Void Protocol**: During the rewards and level-up phases, the entire stage MUST enter a "Void" state (Completely empty). The enemy sprite is hidden immediately after the faint or capture sequence finishes to focus on the rewards flow. This avoids "ghosting" and maintains a clean interface for the user's progress summary.
+- **The Void Protocol**: During the rewards and level-up phases, the entire stage MUST enter a "Void" state (Completely empty). The enemy sprite is hidden immediately after the faint or capture sequence finishes to focus on the rewards flow. This avoids "ghosting" and maintains a clean interface for the user's progress summary. When entering the `VOID_STATE`, all visual traces, snapshots, and animation states of the Pokémon MUST be completely removed to prevent any graphical artifacts in the subsequent steps.
+
 
 ---
 

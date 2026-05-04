@@ -124,3 +124,13 @@ prng(); // Discard 2
 prng(); // Discard 3
 const finalValue = prng(); // Use this
 ```
+
+---
+
+## 📊 Stat Visualization & Transparency
+
+To assist in debugging and provide player clarity, all stat-related UI elements MUST follow these transparency rules:
+
+- **Stat Breakdowns**: Admin/Debug tooltips (e.g., `getStatBreakdown`) MUST display the full calculation path: `Base x Clima x Stage x Habilidad x Estado = Final`.
+- **Percentage-based Stages**: Stage indicators (↑/↓) MUST display the exact percentage modifier (e.g., `+50%`, `-33%`, `+100%`) instead of just the stage level (+1, -1). This helps users visualize the real impact of the modifier.
+- **Centralized Logic**: Always use `getEffectiveStat` as the Single Source of Truth for combat calculations to ensure the HUD breakdown matches the actual damage dealt.

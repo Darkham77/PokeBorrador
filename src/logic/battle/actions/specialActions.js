@@ -169,7 +169,7 @@ export const SPECIAL_ACTIONS = {
   },
   'teleport': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
     if (!battleCtx) return;
-    const b = battleCtx.activeBattle;
+    const b = battleCtx.activeBattle || battleCtx;
     const isWild = !b.isTrainer && !b.isGym;
     
     if (isWild) {

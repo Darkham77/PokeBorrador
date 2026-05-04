@@ -21,8 +21,27 @@ const modifierInfo = computed(() => {
   const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
   const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
 
-  // Status moves don't get weather/cycle damage multipliers
-  if (m.cat === 'status' && !['solar_beam', 'solar_blade'].includes(m.id)) return null
+  const moveName = (m.name || '').toLowerCase()
+
+  // Trueno (Thunder) and Vendaval (Hurricane) are always boosted in Rain, penalized in Sun
+  if (moveName === 'trueno' || moveName === 'thunder' || moveName === 'vendaval' || moveName === 'hurricane') {
+    if (isSunActive) return { type: 'penalized', text: 'Penalizado por Sol/Horario (Precisión 50%)' }
+    if (isRainActive) return { type: 'boosted', text: 'Potenciado por Lluvia/Horario (¡No falla!)' }
+  }
+
+  // Rayo Solar (Solar Beam) and Cuchilla Solar (Solar Blade)
+  if (moveName === 'rayo solar' || moveName === 'solar beam' || moveName === 'cuchilla solar' || moveName === 'solar blade') {
+    if (mechWeather !== WEATHER_MECHANICAL.CLEAR && !isSunActive) return { type: 'penalized', text: 'Penalizado por clima adverso (0.5x)' }
+    if (isSunActive) return { type: 'boosted', text: 'Carga instantánea por Sol/Horario.' }
+  }
+
+  // Meteorobola (Weather Ball)
+  if (moveName === 'meteorobola' || moveName === 'weather ball') {
+    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'boosted', text: 'Potencia duplicada por clima.' }
+  }
+
+  // Status moves don't get weather/cycle damage multipliers (except explicit ones above)
+  if (m.cat === 'status') return null
 
   if (m.type === 'fire') {
     if (mechWeather === WEATHER_MECHANICAL.RAIN) return { type: 'penalized', text: 'Penalizado por Lluvia (0.5x)' }
@@ -31,10 +50,6 @@ const modifierInfo = computed(() => {
   if (m.type === 'water') {
     if (mechWeather === WEATHER_MECHANICAL.SUN) return { type: 'penalized', text: 'Penalizado por Sol (0.5x)' }
     if (isRainActive) return { type: 'boosted', text: `Potenciado por ${mechWeather === WEATHER_MECHANICAL.RAIN ? 'Lluvia' : 'Horario'} (1.5x/1.2x)` }
-  }
-  if (m.id === 'solar_beam' || m.id === 'solar_blade') {
-    if (mechWeather !== WEATHER_MECHANICAL.CLEAR && !isSunActive) return { type: 'penalized', text: 'Penalizado por clima adverso (0.5x)' }
-    if (isSunActive) return { type: 'boosted', text: 'Carga instantánea por Sol/Horario.' }
   }
   return null
 })

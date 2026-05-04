@@ -60,24 +60,80 @@ export function useBattleAnimations(battleStore, enemyRef) {
     }, 600)
   }
 
-  const triggerWildEmergence = () => {
-    if (wildRevealActive.value) return
+  // SEARCH_PHASE - ENTRY_ANIM: muestra arbustos + silueta sin animar el salto
+  const triggerSearchEntry = () => {
+    wildRevealActive.value = true
+    isWildEntryAnimation.value = false
+    isWildSilhouette.value = false // La silueta la maneja activeEnemyIsSilhouette via isSearching
+  }
 
-    isWildEntryAnimation.value = true
-    isEmerging.value = true
+  const triggerWildEmergence = () => {
+    return new Promise((resolve) => {
+      // Guard: solo salir si la secuencia completa ya está corriendo
+      if (isWildEntryAnimation.value) {
+        resolve()
+        return
+      }
+
+    // PASO 1: ENTRY_ANIM - SILHOUETTE_SOLID (Instantáneo)
     isWildSilhouette.value = true
     wildRevealActive.value = true
-    isWildSilhouetteHalfway.value = false
-    
-    setTimeout(() => { isWildSilhouetteHalfway.value = true }, 550)
+    isWildEntryAnimation.value = true
+    isEmerging.value = false
 
-    setTimeout(() => { 
+    // PASO 2: ENCOUNTER_ANIM - ENCOUNTER_JUMP (600ms)
+    setTimeout(() => {
+      isEmerging.value = true
+    }, 600)
+
+    // PASO 3: BUSH_FADE (1100ms) - Empieza a ocultar arbustos
+    setTimeout(() => {
+      wildRevealActive.value = false
+    }, 1100)
+
+    // PASO 4: REVEAL_COLORS (1400ms) - Quita la silueta
+    setTimeout(() => {
+      isWildSilhouette.value = false
+    }, 1400)
+
+    // PASO 5: CLEANUP (2000ms) - Fin de secuencia de entrada
+    setTimeout(() => {
       isWildEntryAnimation.value = false
       isEmerging.value = false
-      isWildSilhouette.value = false 
-      wildRevealActive.value = false
-      isWildSilhouetteHalfway.value = false
-    }, 1100)
+      resolve()
+    }, 2000)
+  })
+  }
+
+  // SEARCH_PHASE → ENCOUNTER_ANIM: Solo el jump + reveal.
+  // Asume que triggerSearchEntry() (ENTRY_ANIM) ya corrió y los arbustos + silueta están visibles.
+  const triggerSearchEncounter = () => {
+    return new Promise((resolve) => {
+      isWildEntryAnimation.value = true
+      isEmerging.value = false
+
+      // ENCOUNTER_JUMP (600ms)
+      setTimeout(() => {
+        isEmerging.value = true
+      }, 600)
+
+      // BUSH_FADE (1100ms)
+      setTimeout(() => {
+        wildRevealActive.value = false
+      }, 1100)
+
+      // REVEAL_COLORS (1400ms)
+      setTimeout(() => {
+        isWildSilhouette.value = false
+      }, 1400)
+
+      // CLEANUP (2000ms)
+      setTimeout(() => {
+        isWildEntryAnimation.value = false
+        isEmerging.value = false
+        resolve()
+      }, 2000)
+    })
   }
 
   const triggerCatchSparkles = (side) => {
@@ -232,18 +288,13 @@ export function useBattleAnimations(battleStore, enemyRef) {
     })
     
     gameBus.on('START_BATTLE', (e) => {
-      const detail = e.detail || e
-      // Resetear estados al iniciar un nuevo combate
+      // Solo resetear estado de captura/ball.
+      // La orquestación de animaciones de intro (ENTRY_ANIM / ENCOUNTER_ANIM)
+      // es responsabilidad exclusiva del watcher FSM en BattleArenaView.vue.
       playerCaptureActive.value = false
       enemyCaptureActive.value = false
       caughtPokemonSnapshot.value = null
       activePokeballId.value = 'pokeball'
-      
-      if (detail.animationPhase === 1 || !detail.animationPhase) {
-        triggerWildEmergence()
-      } else if (detail.animationPhase === 3) {
-        revealWildPokemon()
-      }
     })
 
     watch(() => battleStore.upcomingPokemon, (newVal) => {
@@ -279,6 +330,8 @@ export function useBattleAnimations(battleStore, enemyRef) {
     isIntroInProgress,
     revealWildPokemon,
     triggerWildEmergence,
+    triggerSearchEntry,
+    triggerSearchEncounter,
     triggerCatchSparkles,
     initListeners
   }

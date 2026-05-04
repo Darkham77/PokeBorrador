@@ -128,6 +128,23 @@
   100% { transform: translate3d(0, 40px, 0); opacity: 0; }
 }
 
+// ENCOUNTER_ANIM: El Pokémon salta hacia arriba al salir de los arbustos (JUMP_SHADOW)
+@keyframes pokemon-jump {
+  0%   { transform: TranslateY(0) Scale(1); }
+  25%  { transform: TranslateY(-22px) Scale(1.05, 0.95); }
+  55%  { transform: TranslateY(-32px) Scale(0.96, 1.04); }
+  75%  { transform: TranslateY(-10px) Scale(1.02, 0.98); }
+  90%  { transform: TranslateY(-4px) Scale(0.99, 1.01); }
+  100% { transform: TranslateY(0) Scale(1); }
+}
+
+// Sparkles de captura
+@keyframes catch-sparkle-out {
+  0%   { transform: Translate(calc(var(--tx, 0) * 0px), calc(var(--ty, 0) * 0px)) Scale(var(--scale, 1)); opacity: 1; }
+  60%  { opacity: 0.8; }
+  100% { transform: Translate(calc(var(--tx, 0) * 1px), calc(var(--tf, 0) * 1px)) Scale(calc(var(--scale, 1) * 0.3)); opacity: 0; }
+}
+
 .anim-attack-right { animation: attackRight 0.4s ease !important; }
 .anim-attack-left  { animation: attackLeft 0.4s ease !important; }
 .anim-damage       { animation: takeDamage 0.5s ease !important; }

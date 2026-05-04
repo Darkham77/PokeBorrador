@@ -94,8 +94,27 @@ const getMoveModifier = (move) => {
   const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
   const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
 
-  // Status moves don't get weather/cycle damage multipliers
-  if (md.cat === 'status' && !['solar_beam', 'solar_blade'].includes(md.id)) return null
+  const moveName = (md.name || '').toLowerCase()
+
+  // Trueno (Thunder) and Vendaval (Hurricane) are always boosted in Rain, penalized in Sun
+  if (moveName === 'trueno' || moveName === 'thunder' || moveName === 'vendaval' || moveName === 'hurricane') {
+    if (isSunActive) return 'penalized'
+    if (isRainActive) return 'boosted'
+  }
+
+  // Rayo Solar (Solar Beam) and Cuchilla Solar (Solar Blade)
+  if (moveName === 'rayo solar' || moveName === 'solar beam' || moveName === 'cuchilla solar' || moveName === 'solar blade') {
+    if (mechWeather !== WEATHER_MECHANICAL.CLEAR && !isSunActive) return 'penalized'
+    if (isSunActive) return 'boosted'
+  }
+
+  // Meteorobola (Weather Ball)
+  if (moveName === 'meteorobola' || moveName === 'weather ball') {
+    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return 'boosted'
+  }
+
+  // Status moves don't get weather/cycle damage multipliers (except explicit ones above)
+  if (md.cat === 'status') return null
 
   if (md.type === 'fire') {
     if (mechWeather === WEATHER_MECHANICAL.RAIN) return 'penalized'
@@ -104,10 +123,6 @@ const getMoveModifier = (move) => {
   if (md.type === 'water') {
     if (mechWeather === WEATHER_MECHANICAL.SUN) return 'penalized'
     if (isRainActive) return 'boosted'
-  }
-  if (md.id === 'solar_beam' || md.id === 'solar_blade') {
-    if (mechWeather !== WEATHER_MECHANICAL.CLEAR && !isSunActive) return 'penalized'
-    if (isSunActive) return 'boosted'
   }
   
   return null

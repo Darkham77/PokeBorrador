@@ -122,7 +122,7 @@ File to edit: UserService.ts
 > 🔴 **Rule:** Edit the file + all dependent files in the SAME task.
 > 🔴 **Never leave broken imports or missing updates.**
 > 🔴 **Structural Integrity**: When modifying `.vue` files, double-verify that `<script setup>` or closing tags are not accidentally truncated during partial replacements. If the file is complex, prefer a full `write_to_file`.
-> 🔴 **Export Integrity**: When refactoring stores or components, ALWAYS verify that the `return` object (Pinia) or exported variables match the current definitions. Stale exports or missing definitions are a primary source of `ReferenceError` during boot.
+> 🔴 **Export Integrity**: When refactoring stores or components, ALWAYS verify that the `return` object (Pinia) or exported variables match the current definitions. Stale exports or missing definitions are a primary source of `ReferenceError` during boot. **CRITICAL**: Never duplicate exports (e.g., using both `export function` and `export { ... }` for the same symbol) as it causes a `SyntaxError`.
 > 🔴 **CSS Consolidation**: In shared/generic components (e.g., `BaseModal`, `UnifiedCard`), avoid using multiple classes that define overlapping properties (like `height`, `max-height`). Consolidate styles into a single master class and use context-based nesting (e.g., `.type-center &`) to prevent specificity wars and layout bugs.
 
 ---

@@ -51,7 +51,11 @@ const isFloating = computed(() => {
   if (!props.pokemon) return false
   if (props.pokemon.isFloating !== undefined) return props.pokemon.isFloating
   const data = pokemonDataProvider.getPokemonData(props.pokemon.id)
-  return data?.isFloating || false
+  if (data?.isFloating) return true
+  const types = []
+  if (props.pokemon.type) types.push(props.pokemon.type.toLowerCase())
+  if (props.pokemon.type2) types.push(props.pokemon.type2.toLowerCase())
+  return types.includes('flying')
 })
 
 const handleLoad = (e) => {
@@ -137,7 +141,8 @@ const handleBallError = (e) => {
       class="sprite-animator"
       :class="[{ 
         'fainted': isFainting,
-        'is-attacking': isAttacking 
+        'is-attacking': isAttacking,
+        'is-jumping': isEmerging
       }, getAttackAnimClass]"
     >
       <!-- Sombra integrada (Sigue el dash pero no el flotado) -->
@@ -186,10 +191,11 @@ const handleBallError = (e) => {
         <div
           class="sprite-idle-wrapper"
           :class="[{ 
-            'combatant-idle-subtle': !animState && pokemon.status !== 'freeze', 
+            'combatant-idle-subtle': pokemon.status !== 'freeze' && animState !== 'trapped' && animState !== 'catching' && !isFloating, 
+            'combatant-idle-floating': pokemon.status !== 'freeze' && animState !== 'trapped' && animState !== 'catching' && isFloating, 
             'is-floating-species': isFloating, 
             'energy-catching': animState === 'catching', 
-            'energy-releasing': animState === 'releasing' || isEmerging
+            'energy-releasing': animState === 'releasing'
           }]"
           :style="{ 
             animationDelay: `calc(${animSeed} * -3s)`, 
@@ -201,6 +207,7 @@ const handleBallError = (e) => {
             :poke-id="pokemon.uid || pokemon.id"
             :is-shiny="!isSilhouette && !suppressFX && pokemon.isShiny"
             :is-guardian="!isSilhouette && !suppressFX && pokemon.isGuardian"
+            :is-silhouette="isSilhouette"
             :status="!isSilhouette && !suppressFX ? pokemon.status : null"
             :is-confused="!isSilhouette && !suppressFX && pokemon.confused > 0"
             :is-cursed="!isSilhouette && !suppressFX && pokemon.cursed"
@@ -236,6 +243,7 @@ const handleBallError = (e) => {
           >
             <span>{{ naturalSize.w }}x{{ naturalSize.h }}</span>
           </div>
+          <!-- NOTE: guide-real-size must be position:absolute (see styles) to avoid flex layout shifts -->
         </div>
       </div>
     </div>
@@ -309,6 +317,26 @@ const handleBallError = (e) => {
     justify-content: center;
   }
 
+  .combatant-idle-subtle {
+    animation: combatant-idle 3s infinite ease-in-out;
+    transform-origin: 50% var(--shadow-y, 90%);
+  }
+
+  .combatant-idle-floating {
+    animation: combatant-idle-float 3.5s infinite ease-in-out;
+    transform-origin: 50% var(--shadow-y, 90%);
+  }
+
+  @keyframes combatant-idle {
+    0%, 100% { transform: translateY(0) Rotate(0deg); }
+    50% { transform: translateY(-3px) Rotate(1deg); }
+  }
+
+  @keyframes combatant-idle-float {
+    0%, 100% { transform: translateY(0) Rotate(0deg); }
+    50% { transform: translateY(-22px) Rotate(-2deg); }
+  }
+
   .pokemon-combat-image {
     width: 100%;
     height: 100%;
@@ -323,7 +351,30 @@ const handleBallError = (e) => {
   }
 }
 
+// Overlay de debug que NO debe afectar el layout del flex container
+.guide-real-size {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px dashed Rgba(255, 100, 0, 0.7);
+  pointer-events: none;
+  z-index: var(--z-navigation);
+
+  span {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 9px;
+    color: Rgba(255, 180, 0, 1);
+    background: Rgba(0, 0, 0, 0.6);
+    padding: 1px 3px;
+    @include pixelated;
+  }
+}
+
 .sprite-animator {
+  transition: opacity 0.8s ease-in-out, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  &.is-jumping { animation: pokemon-jump 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
   position: relative;
   z-index: var(--z-map-spawns);
   width: 100%;

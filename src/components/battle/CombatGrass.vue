@@ -7,7 +7,9 @@ const props = defineProps({
   layer: { type: String, required: true, validator: v => ['back', 'front'].includes(v) },
   groundY: { type: String, required: true },
   visible: { type: Boolean, default: true },
-  instant: { type: Boolean, default: false }
+  instant: { type: Boolean, default: false },
+  // ENCOUNTER_ANIM - Paso BUSHES_BACK: mueve la capa frontal detrás del sprite durante el salto
+  forceBehind: { type: Boolean, default: false }
 })
 
 const transitionName = computed(() => props.instant ? 'grass-instant' : 'grass-fade')
@@ -51,7 +53,7 @@ const activeBushes = computed(() => bushes[props.layer])
     <div 
       v-if="visible" 
       class="combat-grass-container" 
-      :class="[`layer-${layer}`]"
+      :class="[`layer-${layer}`, { 'is-behind': forceBehind }]"
     >
       <div 
         class="bush-ground-anchor" 
@@ -92,7 +94,9 @@ const activeBushes = computed(() => bushes[props.layer])
   overflow: visible;
 
   &.layer-back { z-index: calc(var(--z-map-spawns) - 5); }
+  // ENCOUNTER_ANIM BUSHES_BACK: cuando forceBehind, la capa front se mueve detrás del sprite
   &.layer-front { z-index: calc(var(--z-map-spawns) + 5); }
+  &.layer-front.is-behind { z-index: calc(var(--z-map-spawns) - 4); }
 }
 
 .bush-ground-anchor {

@@ -29,6 +29,7 @@ export const useBattleStore = defineStore('battle', () => {
   
   const activeBattle = ref(null)
   const fsm = createBattleStateMachine()
+  const currentFsmState = computed(() => fsm.currentState.value)
   const faintedSides = ref(new Set())
   
   const isBattleActive = computed(() => 
@@ -38,6 +39,7 @@ export const useBattleStore = defineStore('battle', () => {
     fsm.currentState.value === BATTLE_STATES.POST_BATTLE_STABILIZATION ||
     fsm.currentState.value === BATTLE_STATES.REORDER_TEAM ||
     fsm.currentState.value === BATTLE_STATES.FIRST_INTRO ||
+    fsm.currentState.value === BATTLE_STATES.PLAYER_INTRO ||
     fsm.currentState.value === BATTLE_STATES.INITIALIZING ||
     fsm.currentState.value === BATTLE_STATES.SEARCH_PHASE
   )
@@ -174,15 +176,13 @@ export const useBattleStore = defineStore('battle', () => {
     persistBattle()
     
     // 4. DISPARO DE ANIMACIÓN Y CAMBIO DE FASE
-    // Quitamos flags de búsqueda JUSTO antes de la animación para que el HUD aparezca sincronizado
     if (wasSearching) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT, 1000)
+      // Venimos de SEARCH_PHASE: solo ENCOUNTER_ANIM (el pasto + silueta ya estaban visibles).
+      // El substate ENCOUNTER_ANIM señala a la vista que debe ejecutar triggerSearchEncounter().
+      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.ENCOUNTER_ANIM)
     } else {
       fsm.transition(BATTLE_STATES.INITIALIZING)
-      setTimeout(() => {
-        fsm.transition(BATTLE_STATES.FIRST_INTRO)
-        setTimeout(() => fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT), 1000)
-      }, 50)
+      setTimeout(() => fsm.transition(BATTLE_STATES.FIRST_INTRO), 50)
     }
     
     attackerSide.value = null
@@ -210,7 +210,7 @@ export const useBattleStore = defineStore('battle', () => {
     upcomingPokemon.value = null 
     
     // 6. Pre-generación proactiva del SIGUIENTE encuentro
-    if (wasSearching) {
+    if (!isTrainer && !isGym) {
       const encounterOptions = {
         activeEvents: useMapStore().activeEvents,
         dominanceData: useMapStore().mapWinners,
@@ -483,7 +483,7 @@ export const useBattleStore = defineStore('battle', () => {
       cycle: mapStore.currentCycle
     }
     const res = await handleItemUsage(itemName, targetPoke, activeBattle.value.enemy, { 
-      gs, eventStore, addLog, audio, consumeItem, ctx 
+      gs, eventStore, addLog, audio, consumeItem, ctx, fsm 
     })
     attackerSide.value = null
     activeMove.value = null
@@ -492,16 +492,24 @@ export const useBattleStore = defineStore('battle', () => {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CATCH_SUCCESS)
       activeBattle.value.isCapture = true
       activeBattle.value.over = true // Regla del Vacio (Ocultar Interfaz Inmediatamente)
+      activeBattle.value.enemy = null
       gs.addPokemon(res.pokemon, { notify: true })
       // Retraso sincronizado: 1.0s de bola llena + 1.0s de pausa dramática (vacío) antes de la Fase 2
       setTimeout(() => {
         isProcessing.value = false
-        fsm.transition(BATTLE_STATES.REWARDS_PHASE)
+        fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.VOID_STATE)
         endBattle(true, false)
       }, 2000)
       return // Retenemos el control (isProcessing queda true durante el timeout)
     } else if (res.action !== 'fail') {
       // El log se genera en battleItems.js (Doble entrada: Entrenador + Item)
+      
+      // FORZAR REACTIVIDAD Y ACTUALIZACIÓN: Asignar el objeto curado
+      if (res.pokemon && activeBattle.value?.player) {
+        activeBattle.value.player = { ...res.pokemon }
+        syncTeamHP()
+      }
+      
       persistBattle()
       await new Promise(r => setTimeout(r, 800))
       
@@ -510,6 +518,10 @@ export const useBattleStore = defineStore('battle', () => {
         attackerSide, activeMove, persistBattle, handleFaint, isFinishing
       })
       await runEnemyAction(thisStore)
+    }
+    
+    if (activeBattle.value && !activeBattle.value.over) {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     }
     isProcessing.value = false
   }
@@ -522,9 +534,8 @@ export const useBattleStore = defineStore('battle', () => {
 
     // 0. Capturar datos necesarios antes de cualquier cambio
     const battleData = { ...activeBattle.value }
-    const locId = battleData.locationId
-    const isTr = battleData.isTrainer || battleData.isGym
     const enemyRef = battleData.enemy
+    const locId = battleData.locationId
     
     activeBattle.value.over = true
     faintedSides.value.clear()
@@ -533,6 +544,22 @@ export const useBattleStore = defineStore('battle', () => {
     
     // Sincronizar HP antes de guardar
     syncTeamHP();
+
+    // Regla del Vacío: Borrar rastros del Pokémon para no influenciar los siguientes pasos
+    if (activeBattle.value && !activeBattle.value.isTrainer && !activeBattle.value.isGym) {
+      activeBattle.value.enemy = null
+    }
+
+    if (!win && !fled) {
+      // DERROTA TOTAL: Aislamiento absoluto de animaciones
+      // Pero mantenemos el modal abierto para mostrar resultados
+      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.VOID_STATE)
+      await new Promise(r => setTimeout(r, 1000)) // "The Void" (1.0s)
+      
+      // Sincronizar y guardar antes de permitir salida
+      await gs.save(false)
+      return 
+    }
 
     if (win && !fled) {
       // MARCAR INICIO DE FASE FINAL (The Void Standard)
@@ -567,86 +594,65 @@ export const useBattleStore = defineStore('battle', () => {
     if (fled) {
       fsm.transition(BATTLE_STATES.EXIT_BATTLE)
       await completeBattleFlow('map')
-    } else {
-      // 1. Activar estado de finalización si no se hizo arriba (ya se hizo en win && !fled, pero por seguridad)
-      if (fsm.currentState.value !== BATTLE_STATES.REWARDS_PHASE) {
-        fsm.transition(BATTLE_STATES.REWARDS_PHASE)
-      }
-      
-      // 2. Pre-generar el próximo encuentro
-      const isWild = !isTr
-      if (isWild && (enemyRef.hp <= 0 || battleData.isCapture)) {
-        // PRIORIDAD: Modo Debug (Bucle Infinito)
-        if (debugLoopPokemon.value) {
-          try {
-            const nextPoke = JSON.parse(JSON.stringify(debugLoopPokemon.value))
-            nextPoke.hp = nextPoke.maxHp
-            nextPoke.status = null
-            nextPoke.confused = 0
-            nextPoke.flinched = false
-            upcomingPokemon.value = nextPoke
-            // Forzar reactividad para que aparezca en los arbustos
-            upcomingPokemon.value = { ...upcomingPokemon.value }
-            console.log('[DEBUG] Bucle infinito preparado:', nextPoke.name)
-          } catch (e) {
-            console.error('[DEBUG] Error clonando pokemon de bucle:', e)
-          }
-        } else {
-          // MODO NORMAL: Generar encuentro aleatorio
-          
-          // Si el modo búsqueda está activo, forzamos que SIEMPRE encuentre algo (probabilidad 100%)
-          const encounterOptions = {
-            activeEvents: useMapStore().activeEvents,
-            dominanceData: useMapStore().mapWinners,
-            shinyMultiplier: useEventStore().globalMultipliers?.shiny || 1,
-            forceEncounter: isSearching.value // Nueva flag para el generador
-          }
-          
-          const encounter = await generateEncounter(locId, gs.state, encounterOptions)
-          
-          if (encounter && encounter.type === 'wild') {
-            // Forzar reactividad clonando el objeto para que Vue detecte el cambio de instancia
-            upcomingPokemon.value = { ...encounter.pokemon }
-          }
-        }
-      }
+      return
+    }
+
+    // 1. Activar estado de finalización si no se hizo arriba
+    if (fsm.currentState.value !== BATTLE_STATES.REWARDS_PHASE) {
+      fsm.transition(BATTLE_STATES.REWARDS_PHASE)
     }
 
     // Persistir estado inmediatamente después del combate
     await gs.save(false)
 
+
     // 3. POST-BATTLE STABILIZATION (REORDER & LEVEL UP)
     // Se ejecuta al final de endBattle SOLO SI HUBO VICTORIA
-    if (win && !fled) {
-      fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION)
-      
-      const firstHealthy = gs.state.team.find(p => p.hp > 0)
-      const currentActive = player.value
-      
-      if (firstHealthy && currentActive && firstHealthy.uid !== currentActive.uid) {
-        // Lanzamos reordenamiento en segundo plano (Background Task)
-        ;(async () => {
-          fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION, BATTLE_STATES.REORDER_TEAM)
-          
-          if (currentActive.hp > 0) {
-            gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
-            await new Promise(r => setTimeout(r, 800))
-          } else {
-            await new Promise(r => setTimeout(r, 1300))
-          }
-          
-          if (activeBattle.value) {
-            activeBattle.value.player = firstHealthy
-            activeBattle.value.playerTeamIndex = gs.state.team.findIndex(p => p.uid === firstHealthy.uid)
-            gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
-          }
-        })()
-      }
-    } else if (!win && !fled) {
-      // Si el jugador pierde, se va a negro y se sale
-      fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-    }
-  }
+     if (win && !fled) {
+       syncTeamHP() // Sincronización atómica antes de chequear salud
+       fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION)
+       
+       const firstHealthy = gs.state.team.find(p => p.hp > 0)
+       const currentActive = player.value
+       
+       // Solo reordenamos si el jugador NO ha sido derrotado totalmente (hay alguien sano)
+       if (firstHealthy && currentActive && firstHealthy.uid !== currentActive.uid) {
+         // Lanzamos reordenamiento en segundo plano (Background Task)
+         ;(async () => {
+           fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION, BATTLE_STATES.REORDER_TEAM)
+           
+           if (currentActive.hp > 0) {
+             gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
+             await new Promise(r => setTimeout(r, 800))
+           } else {
+             await new Promise(r => setTimeout(r, 1300))
+           }
+           
+           if (activeBattle.value) {
+             activeBattle.value.player = firstHealthy
+             activeBattle.value.playerTeamIndex = gs.state.team.findIndex(p => p.uid === firstHealthy.uid)
+             gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
+           }
+
+           // Transición automática a SEARCH_PHASE tras el reordenamiento si es salvaje
+           if (!activeBattle.value?.isTrainer) {
+             await completeBattleFlow('search')
+           }
+         })()
+       } else {
+         // Si no se necesita reordenar el equipo, transicionamos a SEARCH_PHASE tras 500ms si es salvaje
+         if (!activeBattle.value?.isTrainer) {
+           setTimeout(async () => {
+             await completeBattleFlow('search')
+           }, 500)
+         }
+       }
+     } else if (!win && !fled) {
+       // Si el jugador pierde, se va a negro y se sale
+       // El pokemon ya se retiro en handleFaint, no necesitamos animarlo de nuevo aquí
+       fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+     }
+   }
 
   const calculateRewards = () => {
     const e = activeBattle.value.enemy
@@ -767,30 +773,29 @@ export const useBattleStore = defineStore('battle', () => {
     if (battleEndCallback.value) { battleEndCallback.value(); battleEndCallback.value = null }; 
     
     if (option === 'search' && locId) {
-      // 2. SEARCH PHASE
-      // Flujo optimizado: Si ya tenemos el upcomingPokemon, entramos en combate directo
-      if (upcomingPokemon.value) {
-        const nextPoke = upcomingPokemon.value
-        
-        // ACTIVAR MODO BÚSQUEDA (Fase 2) para que se vea el pasto antes de empezar
-        fsm.transition(BATTLE_STATES.SEARCH_PHASE)
-        isProcessing.value = false
-
-        // IMPORTANTE: Si venimos de un bucle de debug, mantener la bandera para que no se limpie
-        await _startBattle(nextPoke, { 
-          locationId: locId,
-          battleOptions: { isDebug: !!debugLoopPokemon.value } 
-        })
-        upcomingPokemon.value = null 
-        return
+      // Si no hay Pokémon pre-generado, generarlo ahora para que la silueta sea visible.
+      if (!upcomingPokemon.value) {
+        const { useMapStore } = await import('./map')
+        const encounterOptions = {
+          activeEvents: useMapStore().activeEvents,
+          dominanceData: useMapStore().mapWinners,
+          shinyMultiplier: useEventStore().globalMultipliers?.shiny || 1,
+          forceEncounter: true
+        }
+        const encounter = await generateEncounter(locId, gs.state, encounterOptions)
+        if (encounter && encounter.type === 'wild') {
+          upcomingPokemon.value = { ...encounter.pokemon }
+          console.log('[Battle] Encuentro generado para ENTRY_ANIM:', upcomingPokemon.value.name)
+        }
       }
 
-      // Fallback si no había pre-generado (ej: recarga de página)
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE)
+      if (activeBattle.value && upcomingPokemon.value) {
+        activeBattle.value.enemy = { ...upcomingPokemon.value }
+      }
+
+      // SEARCH PHASE: solo ENTRY_ANIM (pasto gradual + silueta estática).
+      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.ENTRY_ANIM)
       isProcessing.value = false
-      
-      const { useMapStore } = await import('./map')
-      await useMapStore().navigate(locId)
       return
     }
 
@@ -799,12 +804,24 @@ export const useBattleStore = defineStore('battle', () => {
     if (option === 'map') {
       uiStore.activeTab = 'map'
     }
-
-    if (option === 'search' && locId) {
-      const { useMapStore } = await import('./map')
-      useMapStore().navigate(locId)
-    }
   }
+
+  const triggerSearchEncounter = async () => {
+    isProcessing.value = false
+    const locId = activeBattle.value?.locationId
+    if (!upcomingPokemon.value || !locId) {
+      console.warn('[Battle] triggerSearchEncounter: sin upcomingPokemon o locationId.')
+      return
+    }
+    const nextPoke = upcomingPokemon.value
+    upcomingPokemon.value = null
+    await _startBattle(nextPoke, {
+      locationId: locId,
+      battleOptions: { isDebug: !!debugLoopPokemon.value }
+    })
+  }
+
+
 
 
   if (typeof window !== 'undefined') {
@@ -899,6 +916,7 @@ export const useBattleStore = defineStore('battle', () => {
       });
     },
     completeBattleFlow,
+    triggerSearchEncounter,
     setFinishing: (cb) => { fsm.transition(BATTLE_STATES.REWARDS_PHASE); battleEndCallback.value = cb },
     useItemInBattle,
     endBattle,
@@ -909,6 +927,7 @@ export const useBattleStore = defineStore('battle', () => {
     isSearching,
     isIntroAnimating,
     debugBinoculars,
-    fsm
+    fsm,
+    currentFsmState
   }
 })

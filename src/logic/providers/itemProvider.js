@@ -16,7 +16,7 @@ export function useItemOnPokemon(itemName, pokemon) {
   if (!effectFn) return null;
   
   const result = effectFn(pokemon);
-  return result.success ? result.message : null;
+  return result.success ? { message: result.message, pokemon } : null;
 }
 
 /**

@@ -199,6 +199,14 @@ HUDs should only be restored when the system returns to an interaction state or 
 - **Admin Privilege Logic**: Access to these tools is automatically managed by detecting `DBRouter.isLocalMode()`.
 - **Stat Attribution**: Stat changes must be clearly linked to the source combatant via the battle log to prevent UI ambiguity.
 
+### 3. Rewards & Stabilization
+
+1. **The Void Standard**: Immediately after `ENEMY_FAINT` or `CATCH_SUCCESS`, transition to `REWARDS_PHASE` with sub-state `VOID_STATE`. Wait exactly **1.0s** before any log or UI update. When entering the `VOID_STATE`, all visual traces, snapshots, and animation states of the Pokémon MUST be completely removed to prevent any graphical artifacts in the subsequent steps.
+2. **Defeat Isolation Rule**: If the player is defeated (`lose`), bypass `POST_BATTLE_STABILIZATION` and transition directly to `EXIT_BATTLE` to prevent visual regressions (e.g., bushes appearing on defeat).
+3. **Search Persistence**: During `PLAYER_FAINT_SEQ`, keep the enemy visible and hide encounter layers. Only show bushes if the battle was won or the enemy escaped.
+4. **Reorder Team**: Perform team reordering in background during rewards calculation to optimize wait times.
+5. **Single Recall Protocol**: During defeat or forced switches, the system MUST NOT trigger multiple `PLAY_WITHDRAW` events. If a Pokémon has already been fainted/recalled during `handleFaint`, any subsequent stabilization logic MUST skip the withdrawal animation to prevent "Double Recall" artifacts.
+
 ### 2. Forced Switching (Faint)
 
 - **Manual Selector Override**: The system MUST NOT automatically send the next healthy Pokémon when the player's active Pokémon faints. It MUST set `uiStore.isBattleSwitchForced = true` to force manual selection via the UI, preserving tactical control.
@@ -316,14 +324,25 @@ stateDiagram-v2
     INITIALIZING --> FIRST_INTRO: "Initial Encounter (Map Trigger)"
     INITIALIZING --> SEARCH_PHASE: "Persistent Modal (isSearching is true)"
     
+    note left of INITIALIZING: During initialization, it generates the current AND the next Pokémon. If it's not initializing the combat modal, it only generates the next Pokémon.
+    
     state FIRST_INTRO {
-        state "ENTRY_ANIM" as FIRST_ENTRY
-        state "ENCOUNTER_ANIM" as FIRST_ENCOUNTER
+        [*] --> WILD_SEQUENCE
+        [*] --> PLAYER_SEQUENCE
         
-        [*] --> FIRST_ENTRY: Source_FIRST_INTRO
-        FIRST_ENTRY --> FIRST_ENCOUNTER: Sequential_Start
-        FIRST_ENCOUNTER --> [*]
+        state WILD_SEQUENCE {
+            [*] --> FIRST_ENTRY: "Bushes/Silhouette"
+            FIRST_ENTRY --> FIRST_ENCOUNTER: "Jump/Reveal"
+            FIRST_ENCOUNTER --> [*]
+        }
+        --
+        state PLAYER_SEQUENCE {
+            [*] --> PLAYER_CALL: "Pokeball_Throw"
+            PLAYER_CALL --> [*]
+        }
+        
         note right of FIRST_ENTRY: Executes ONLY once per Map -> Battle transition
+        note right of PLAYER_CALL: Parallel HUD restoration
     }
     
     FIRST_INTRO --> ACTIVE_BATTLE: "Show All HUDs / Ready"
@@ -398,15 +417,12 @@ stateDiagram-v2
     POST_BATTLE_STABILIZATION --> SEARCH_PHASE: "Stabilization Finished"
     
     state SEARCH_PHASE {
-        state "ENTRY_ANIM" as SEARCH_ENTRY
-        state "ENCOUNTER_ANIM" as SEARCH_ENCOUNTER
-        
-        [*] --> SEARCH_ENTRY: Source_SEARCH_PHASE
-        SEARCH_ENTRY --> BUSH_IDLE: Ready_to_Search
+        [*] --> ENTRY_ANIM: Source_SEARCH_PHASE
+        ENTRY_ANIM --> BUSH_IDLE: Ready_to_Search
         BUSH_IDLE --> EXIT_BATTLE: Return_to_Map
-        BUSH_IDLE --> SEARCH_ENCOUNTER: Search_Clicked
-        SEARCH_ENCOUNTER --> [*]
-        note right of SEARCH_ENCOUNTER: Continues in current modal (No visual restart)
+        BUSH_IDLE --> ENCOUNTER_ANIM: Search_Clicked
+        ENCOUNTER_ANIM --> [*]
+        note right of ENCOUNTER_ANIM: Continues in current modal (No visual restart). See Section 7 for full specs.
     }
 
     SEARCH_PHASE --> ACTIVE_BATTLE: "Show Enemy HUD / Ready"
@@ -435,7 +451,7 @@ To maintain a cinematic feel, the post-capture sequence follows a strictly timed
 
 | Time | Event | Visual State |
 | :--- | :--- | :--- |
-| **0.0s** | `CATCH_SUCCESS` | Sparkles start. Poké Ball visible & shaking. Enemy Sprite HIDDEN. |
+| **0.0s** | `CATCH_SUCCESS` | Sparkles start. Poké Ball visible & shaking. Enemy Sprite HIDDEN. The caught Pokémon MUST be added to the team or box (`addPokemon`) BEFORE entering the Void. |
 | **1.0s** | **Rewards Phase Start** | Sparkles end. Poké Ball despawns. **Enter The Void**. |
 | **1.0s - 2.0s** | **XP & Gold Sync** | Stage is COMPLETELY EMPTY. No sprites, no balls, no HUDs. |
 | **2.0s** | **Level Up Sequence** | Enter `LEVEL_UP_MODAL`. Stage remains in **Void** state. |
@@ -531,25 +547,44 @@ stateDiagram-v2
 stateDiagram-v2
     state ENTRY_ANIM {
         state BUSH_LAYER {
-            [*] --> BUSH_SETUP
-            state BUSH_SETUP <<choice>>
-            BUSH_SETUP --> INSTANT_BUSHES: First_Intro
-            BUSH_SETUP --> GRADUAL_BUSHES: Search_Phase
+            [*] --> AESTHETIC_CHECK
+            state AESTHETIC_CHECK <<choice>>
+            AESTHETIC_CHECK --> BUSH_FLOW: Ground_Aesthetic
+            AESTHETIC_CHECK --> SKIP_BUSHES: Flying_Aesthetic
             
-            state INSTANT_BUSHES {
-                [*] --> BUSH_VISIBLE: Instant_Reveal
+            state BUSH_FLOW {
+                [*] --> BUSH_SETUP
+                state BUSH_SETUP <<choice>>
+                BUSH_SETUP --> INSTANT_BUSHES: First_Intro
+                BUSH_SETUP --> GRADUAL_BUSHES: Search_Phase
+                
+                state INSTANT_BUSHES {
+                    [*] --> BUSH_VISIBLE: Instant_Reveal
+                }
+                state GRADUAL_BUSHES {
+                    [*] --> BUSH_FADE: Gradual_Fade_In
+                }
             }
-            state GRADUAL_BUSHES {
-                [*] --> BUSH_FADE: Gradual_Fade_In
+            state SKIP_BUSHES {
+                [*] --> HIDDEN: No_Bushes_Rendered
             }
-            note right of BUSH_SETUP: Bushes use "Sandwich" Z-index (Half front / Half behind)
+            note right of AESTHETIC_CHECK: Bushes are MANDATORY except for Flying species.
+            note right of BUSH_FLOW: Bushes use "Sandwich" Z-index (Half front / Half behind).
         }
         --
         state SILHOUETTE_LAYER {
-            [*] --> INVISIBLE: Opacity_0
-            INVISIBLE --> SILHOUETTE_FADE: Gradual_Fade_In
-            SILHOUETTE_FADE --> [*]
-            note right of SILHOUETTE_FADE: Black silhouette by default (Bypassed if Binoculars equipped)
+            [*] --> SILHOUETTE_MODE
+            state SILHOUETTE_MODE <<choice>>
+            SILHOUETTE_MODE --> SOLID_SILHOUETTE: Default
+            SILHOUETTE_MODE --> FULL_COLOR: Has_Binoculars
+            
+            state SOLID_SILHOUETTE {
+                [*] --> SILHOUETTE_READY: Opacity_1_Instant
+            }
+            state FULL_COLOR {
+                [*] --> COLOR_READY: Opacity_1_Instant
+            }
+            note right of SILHOUETTE_MODE: No appearance animations (Fade-in). Must be 100% solid from start.
         }
     }
 ```
@@ -559,13 +594,51 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     state ENCOUNTER_ANIM {
-        [*] --> BUSHES_TO_BACK: Set_Z_Index_Behind
-        BUSHES_TO_BACK --> POKEMON_JUMP: Transition_Jump
-        POKEMON_JUMP --> BUSH_DESPAWN: Gradual_Grass_Fade
-        BUSH_DESPAWN --> REVEAL_COLORS: Gradual_Color_Reveal
-        REVEAL_COLORS --> [*]
-        note right of BUSHES_TO_BACK: Overrides "Sandwich" effect
-        note right of REVEAL_COLORS: Bypassed if Binoculars (already revealed in ENTRY_ANIM)
+        [*] --> CHECK_AESTHETIC
+        state CHECK_AESTHETIC <<choice>>
+        
+        CHECK_AESTHETIC --> GROUND_FLOW: Ground_Aesthetic
+        CHECK_AESTHETIC --> FLYING_FLOW: Flying_Aesthetic
+        
+        state GROUND_FLOW {
+            [*] --> G_BINOCULARS <<choice>>
+            G_BINOCULARS --> SILHOUETTE_JUMP: No_Binoculars
+            G_BINOCULARS --> FULL_COLOR_JUMP: Has_Binoculars
+
+            state SILHOUETTE_JUMP {
+                [*] --> BUSHES_BACK: Set_Z_Index_Behind
+                BUSHES_BACK --> JUMP_SHADOW: Jump_As_Solid_Silhouette
+                JUMP_SHADOW --> BUSH_FADE: Gradual_Grass_Fade
+                BUSH_FADE --> REVEAL_COLORS: Gradual_Color_Reveal
+                REVEAL_COLORS --> [*]
+            }
+
+            state FULL_COLOR_JUMP {
+                [*] --> BUSHES_BACK_COLOR: Set_Z_Index_Behind
+                BUSHES_BACK_COLOR --> JUMP_COLOR: Jump_As_Full_Color
+                JUMP_COLOR --> BUSH_FADE_COLOR: Gradual_Grass_Fade
+                BUSH_FADE_COLOR --> [*]
+            }
+        }
+
+        state FLYING_FLOW {
+            [*] --> F_BINOCULARS <<choice>>
+            F_BINOCULARS --> SILHOUETTE_FLY: No_Binoculars
+            F_BINOCULARS --> FULL_COLOR_FLY: Has_Binoculars
+
+            state SILHOUETTE_FLY {
+                [*] --> JUMP_SHADOW_F: Jump_As_Solid_Silhouette
+                JUMP_SHADOW_F --> REVEAL_COLORS_F: Gradual_Color_Reveal
+                REVEAL_COLORS_F --> [*]
+            }
+
+            state FULL_COLOR_FLY {
+                [*] --> JUMP_COLOR_F: Jump_As_Full_Color
+                JUMP_COLOR_F --> [*]
+            }
+        }
+        
+        note right of CHECK_AESTHETIC: Flying species bypass all Bush-related states (Z-Index and Fade).
     }
 ```
 
@@ -727,3 +800,11 @@ To ensure capture difficulty aligns with official game standards and species ide
 ### 3. Verification Protocol
 
 - **Mocked Randomness**: Use `vi.spyOn(Math, 'random').mockReturnValue(X)` in unit tests to verify that Pokémon are caught/escaped at specific mathematical thresholds.
+
+### 4. Safe Context Destructuring
+
+- **Context Unpacking**: In special action handlers like `teleport` or `roar`, always destructure or check the `battleCtx` safely. Use fallbacks such as `battleCtx.activeBattle || battleCtx` to avoid accessing properties on undefined objects.
+
+### 5. Move Grid and Tooltip Modifier Sync
+
+- **Weather-Aware Moves**: Move modifiers (boosted or penalized) for complex conditions (like Thunder or Hurricane under Rain/Sun) MUST be perfectly aligned across the battle moves grid and the hovering tooltips to maintain clear informational transparency.
