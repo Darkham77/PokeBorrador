@@ -1,6 +1,7 @@
 // [PureVue-Ignore-Length]
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import VirtualEntity from './VirtualEntity.vue'
 import CombatShadow from './CombatShadow.vue'
@@ -125,6 +126,30 @@ const handleBallError = (e) => {
   // Si falla la bola, mejor dejarla invisible o usar una pokeball básica, NO pasto
   e.target.src = getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')
 }
+
+// --- ANIMACIONES DE STATS ---
+const statArrows = ref([])
+watch(() => props.stages, (newS, oldS) => {
+  if (!oldS) return
+  
+  const stats = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva']
+  stats.forEach(s => {
+    const diff = (newS[s] || 0) - (oldS[s] || 0)
+    if (diff !== 0) {
+      triggerStatArrow(s, diff > 0 ? 'up' : 'down')
+      // Emitir sonido directamente desde la vista reactiva
+      gameBus.emit('PLAY_SOUND', diff > 0 ? 'statRaise' : 'statLower')
+    }
+  })
+}, { deep: true })
+
+const triggerStatArrow = (stat, dir) => {
+  const id = Date.now() + Math.random()
+  statArrows.value.push({ id, dir, stat })
+  setTimeout(() => {
+    statArrows.value = statArrows.value.filter(a => a.id !== id)
+  }, 1200)
+}
 </script>
 
 <template>
@@ -244,6 +269,19 @@ const handleBallError = (e) => {
             <span>{{ naturalSize.w }}x{{ naturalSize.h }}</span>
           </div>
           <!-- NOTE: guide-real-size must be position:absolute (see styles) to avoid flex layout shifts -->
+          
+          <!-- Flechas de Stats -->
+          <div class="stat-arrows-container">
+            <TransitionGroup name="stat-arrow">
+              <div 
+                v-for="a in statArrows" 
+                :key="a.id"
+                :class="['stat-arrow', a.dir]"
+              >
+                {{ a.dir === 'up' ? '▲' : '▼' }}
+              </div>
+            </TransitionGroup>
+          </div>
         </div>
       </div>
     </div>
@@ -560,6 +598,64 @@ const handleBallError = (e) => {
   transform: Scale(0);
 }
 
+@keyframes pokemon-jump {
+  0% { transform: translateY(0) Scale(1, 1); }
+  20% { transform: translateY(5px) Scale(1.1, 0.85); }
+  50% { transform: translateY(-45px) Scale(0.9, 1.1); }
+  80% { transform: translateY(0) Scale(1.05, 0.95); }
+  100% { transform: translateY(0) Scale(1, 1); }
+}
+
+@keyframes pokemon-faint {
+  0% { opacity: 1; transform: translateY(0); }
+  10%, 30%, 50%, 70%, 90% { opacity: 0; }
+  20%, 40%, 60%, 80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(60px); }
+}
+
+@keyframes attack-dash-player {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-15px); }
+  50% { transform: translateX(60px) Scale(1.1); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes attack-dash-enemy {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(15px); }
+  50% { transform: translateX(-60px) Scale(1.1); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes attack-pulse-player {
+  0% { transform: Scale(1); }
+  50% { transform: Scale(1.15) translateX(15px); filter: Brightness(1.4); }
+  100% { transform: Scale(1); }
+}
+
+@keyframes attack-pulse-enemy {
+  0% { transform: Scale(1); }
+  50% { transform: Scale(1.15) translateX(-15px); filter: Brightness(1.4); }
+  100% { transform: Scale(1); }
+}
+
+@keyframes attack-status-player {
+  0% { transform: Rotate(0deg); }
+  30% { transform: Rotate(12deg) Scale(1.1); filter: Brightness(1.2); }
+  100% { transform: Rotate(0deg); }
+}
+
+@keyframes attack-status-enemy {
+  0% { transform: Rotate(0deg); }
+  30% { transform: Rotate(-12deg) Scale(1.1); filter: Brightness(1.2); }
+  100% { transform: Rotate(0deg); }
+}
+
+@keyframes catch-sparkle-out {
+  0% { transform: Translate(-50%, -50%) Scale(0) Rotate(0deg); opacity: 1; }
+  100% { transform: Translate(calc(-50% + var(--tx) * 1px), calc(-50% + var(--tf) * 1px)) Scale(0) Rotate(720deg); opacity: 0; }
+}
+
 @keyframes ground-pop { 0% { transform: Scale(0); opacity: 0; } 100% { transform: Scale(1); opacity: 1; } }
 @keyframes ground-grow { 0% { transform: ScaleY(0) translateY(20px); opacity: 0; } 100% { transform: ScaleY(1) translateY(5px); opacity: 1; } }
 @keyframes ground-item-jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
@@ -577,14 +673,33 @@ const handleBallError = (e) => {
   100% { filter: none; transform: Scale(1); opacity: 1; }
 }
 
-/* Animaciones de Ataque de Estado (Tail Whip, Growl, etc) */
-@keyframes attack-status-player {
-  0%, 100% { transform: Scale(1) TranslateX(0); filter: Brightness(1); }
-  50% { transform: Scale(1.05) TranslateX(10px); filter: Brightness(1.3) Contrast(1.2); }
+.stat-arrows-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
 }
 
-@keyframes attack-status-enemy {
-  0%, 100% { transform: Scale(1) TranslateX(0); filter: Brightness(1); }
-  50% { transform: Scale(1.05) TranslateX(-10px); filter: Brightness(1.3) Contrast(1.2); }
+.stat-arrow {
+  position: absolute;
+  font-size: 40px;
+  font-weight: bold;
+  text-shadow: 0 0 10px Rgba(0,0,0,0.5);
+  
+  &.up { color: #4ade80; }
+  &.down { color: #f87171; }
+}
+
+.stat-arrow-enter-active {
+  animation: stat-arrow-anim 1s ease-out forwards;
+}
+
+@keyframes stat-arrow-anim {
+  0% { transform: translateY(20px); opacity: 0; scale: 0.5; }
+  20% { transform: translateY(0); opacity: 1; scale: 1.2; }
+  100% { transform: translateY(-60px); opacity: 0; scale: 1; }
 }
 </style>

@@ -1,153 +1,171 @@
+/**
+ * verify_fsm_diagrams.js
+ * Auditoría FSM vs Manual: compara el diagrama Mermaid (battle_mechanics_manual.md)
+ * contra las constantes declaradas en battleStateMachine.js.
+ *
+ * 100% dinámico — no tiene listas hardcodeadas.
+ * Fuente de verdad: los bloques ```stateDiagram-v2``` del manual.
+ *
+ * Uso: node .agents/skills/project-standards/scripts/verify_fsm_diagrams.js
+ */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname  = path.dirname(__filename);
 
 const MANUAL_PATH = path.join(__dirname, '../references/battle/battle_mechanics_manual.md');
-const FSM_PATH = path.join(__dirname, '../../../../src/logic/battle/battleStateMachine.js');
+const FSM_PATH    = path.join(__dirname, '../../../../src/logic/battle/battleStateMachine.js');
 
-function runAudit() {
-  console.log('🔍 Iniciando Auditoría FSM vs Mermaid...\n');
+// ─── Utilidades ──────────────────────────────────────────────────────────────
+const sep = (c = '─', n = 60) => c.repeat(n);
 
-  // 1. LEER ARCHIVOS
-  if (!fs.existsSync(MANUAL_PATH)) return console.error('❌ No se encontró el manual:', MANUAL_PATH);
-  if (!fs.existsSync(FSM_PATH)) return console.error('❌ No se encontró el FSM:', FSM_PATH);
+function parseMermaid(manualCode) {
+  const states      = new Set();
+  const transitions = []; // { from, to, label }
 
-  const manualCode = fs.readFileSync(MANUAL_PATH, 'utf-8');
-  const fsmCode = fs.readFileSync(FSM_PATH, 'utf-8');
+  const blockRx = /```mermaid\n([\s\S]*?)```/g;
+  let blockMatch;
 
-  // 2. PARSEAR MERMAID
-  console.log('📄 Extrayendo diagramas Mermaid...');
-  const mermaidRegex = /```mermaid\n([\s\S]*?)```/g;
-  let match;
-  let mermaidBlocks = [];
-  while ((match = mermaidRegex.exec(manualCode)) !== null) {
-    if (match[1].includes('stateDiagram-v2')) {
-      mermaidBlocks.push(match[1]);
+  while ((blockMatch = blockRx.exec(manualCode)) !== null) {
+    const block = blockMatch[1];
+    if (!block.includes('stateDiagram-v2')) continue;
+
+    block.split('\n').forEach(rawLine => {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('note') || line.startsWith('%%')) return;
+
+      // state "Label" as ALIAS  →  extraer ALIAS
+      const aliasM = line.match(/^state\s+"[^"]*"\s+as\s+([A-Za-z0-9_]+)/);
+      if (aliasM) { states.add(aliasM[1]); return; }
+
+      // state NAME {  o  state NAME <<choice>>  →  extraer NAME
+      const stateM = line.match(/^state\s+([A-Za-z0-9_]+)/);
+      if (stateM) { states.add(stateM[1]); }
+
+      // A --> B  o  A --> B : Label
+      const transM = line.match(/^([A-Za-z0-9_\[\]*]+)\s+-->\s+([A-Za-z0-9_\[\]*]+)(?:\s*:\s*(.+))?/);
+      if (transM) {
+        const from  = transM[1] === '[*]' ? '__START__' : transM[1];
+        const to    = transM[2] === '[*]' ? '__END__'   : transM[2];
+        const label = transM[3]?.trim() || '';
+        states.add(from); states.add(to);
+        if (from !== '__START__' && to !== '__END__') {
+          transitions.push({ from, to, label });
+        }
+      }
+    });
+  }
+
+  // Limpiar pseudo-estados de control que no son constantes de código
+  ['__START__','__END__'].forEach(s => states.delete(s));
+  return { states, transitions };
+}
+
+function parseJsFsm(fsmCode) {
+  const allKeys = new Set();
+
+  // Capturar tanto BATTLE_STATES como BATTLE_SUBSTATES
+  const objRx = /export const BATTLE_(?:SUB)?STATES\s*=\s*\{([\s\S]*?)\};/g;
+  let m;
+  while ((m = objRx.exec(fsmCode)) !== null) {
+    const keyRx = /([A-Z][A-Z0-9_]+)\s*:/g;
+    let km;
+    while ((km = keyRx.exec(m[1])) !== null) allKeys.add(km[1]);
+  }
+
+  // Extraer validTransitions { [BATTLE_STATES.X]: [...] }
+  const vtBlock = fsmCode.match(/const validTransitions\s*=\s*\{([\s\S]*?)\};/);
+  const validTransitions = []; // { from, to }
+  if (vtBlock) {
+    const lineRx = /BATTLE_STATES\.([A-Z0-9_]+)/g;
+    const rowRx  = /\[BATTLE_STATES\.([A-Z0-9_]+)\]\s*:\s*\[([^\]]+)\]/g;
+    let row;
+    while ((row = rowRx.exec(vtBlock[1])) !== null) {
+      const from  = row[1];
+      const toAll = [...row[2].matchAll(/BATTLE_STATES\.([A-Z0-9_]+)/g)].map(x => x[1]);
+      toAll.forEach(to => validTransitions.push({ from, to }));
     }
   }
 
-  const mermaidStates = new Set();
-  const mermaidTransitions = [];
+  return { allKeys, validTransitions };
+}
 
-  mermaidBlocks.forEach(block => {
-    const lines = block.split('\n');
-    lines.forEach(line => {
-      line = line.trim();
-      if (!line || line.startsWith('note') || line.startsWith('--')) return;
+// ─── Main ─────────────────────────────────────────────────────────────────────
+function runAudit() {
+  console.log(sep('═'));
+  console.log('🔍 VERIFY FSM DIAGRAMS  (dinámico, fuente: Mermaid)');
+  console.log(sep('═'));
 
-      // Extract states: state "X" as Y  OR  state X {
-      const stateAliasMatch = line.match(/state\s+"[^"]+"\s+as\s+([A-Za-z0-9_]+)/);
-      if (stateAliasMatch) mermaidStates.add(stateAliasMatch[1]);
-      else {
-        const stateMatch = line.match(/state\s+([A-Za-z0-9_]+)/);
-        if (stateMatch) mermaidStates.add(stateMatch[1]);
-      }
+  if (!fs.existsSync(MANUAL_PATH)) return console.error('❌ Manual no encontrado:', MANUAL_PATH);
+  if (!fs.existsSync(FSM_PATH))    return console.error('❌ FSM JS no encontrado:', FSM_PATH);
 
-      // Extract transitions: A --> B
-      const transMatch = line.match(/([A-Za-z0-9_\[\]\*]+)\s+-->\s+([A-Za-z0-9_\[\]\*]+)/);
-      if (transMatch) {
-        const from = transMatch[1] === '[*]' ? 'START' : transMatch[1];
-        const to = transMatch[2] === '[*]' ? 'END' : transMatch[2];
-        if (from !== 'START' && to !== 'END') {
-          mermaidTransitions.push({ from, to });
-          mermaidStates.add(from);
-          mermaidStates.add(to);
-        }
-      }
-    });
-  });
+  const manualCode = fs.readFileSync(MANUAL_PATH, 'utf-8');
+  const fsmCode    = fs.readFileSync(FSM_PATH, 'utf-8');
 
-  // 3. PARSEAR JAVASCRIPT (CONSTANTES Y MAPAS)
-  console.log('💻 Extrayendo JavaScript FSM...');
-  const jsStates = new Set();
-  const jsTransitions = [];
-
-  // Extraer export const BATTLE_STATES = { ... }
-  const stateKeysMatch = fsmCode.match(/export const BATTLE_STATES = {([\s\S]*?)};/);
-  if (stateKeysMatch) {
-    const keys = stateKeysMatch[1].match(/[A-Z_]+/g);
-    keys?.forEach(k => jsStates.add(k));
-  }
-
-  // Extraer export const BATTLE_SUBSTATES = { ... }
-  const substateKeysMatch = fsmCode.match(/export const BATTLE_SUBSTATES = {([\s\S]*?)};/);
-  if (substateKeysMatch) {
-    const keys = substateKeysMatch[1].match(/[A-Z_]+/g);
-    keys?.forEach(k => jsStates.add(k));
-  }
-
-  // Extraer validTransitions
-  const validTransMatch = fsmCode.match(/const validTransitions = {([\s\S]*?)};/);
-  if (validTransMatch) {
-    const lines = validTransMatch[1].split('\n');
-    lines.forEach(line => {
-      const parts = line.split(':');
-      if (parts.length === 2) {
-        const fromMatch = parts[0].match(/BATTLE_STATES\.([A-Z_]+)/);
-        if (fromMatch) {
-          const from = fromMatch[1];
-          const toMatches = parts[1].match(/BATTLE_STATES\.([A-Z_]+)/g);
-          toMatches?.forEach(toStr => {
-            const to = toStr.replace('BATTLE_STATES.', '');
-            jsTransitions.push({ from, to });
-          });
-        }
-      }
-    });
-  }
-
-  // 4. COMPARAR Y AUDITAR
-  console.log('\n=======================================');
-  console.log('📊 RESULTADOS DE LA AUDITORÍA');
-  console.log('=======================================\n');
+  const { states: mermaidStates, transitions: mermaidTransitions } = parseMermaid(manualCode);
+  const { allKeys: jsKeys, validTransitions: jsTransitions }       = parseJsFsm(fsmCode);
 
   let errors = 0;
 
-  // A. Nodos Huérfanos (Están en Mermaid pero no en JS constants)
-  const missingStates = [...mermaidStates].filter(s => !jsStates.has(s) && s !== 'START' && s !== 'END');
-  if (missingStates.length > 0) {
-    console.log('⚠️  ESTADOS FALTANTES EN JAVASCRIPT:');
-    missingStates.forEach(s => console.log(`   - ${s} (Falta en BATTLE_STATES o BATTLE_SUBSTATES)`));
-    errors++;
+  // ── CHECK 1: Estados del Mermaid que no están declarados en JS ────────────
+  console.log(`\n[CHECK 1] Nodos Mermaid → Constantes JS  (${mermaidStates.size} estados extraídos)`);
+  const missing = [...mermaidStates].filter(s => !jsKeys.has(s));
+
+  // Filtrar nodos genéricos de Mermaid que no son constantes (choice, etc.)
+  const MERMAID_META = new Set(['choice']);
+  const realMissing  = missing.filter(s => !MERMAID_META.has(s.toLowerCase()));
+
+  if (realMissing.length === 0) {
+    console.log(`  ✅ Todos los ${mermaidStates.size} estados del manual existen en JS.`);
   } else {
-    console.log('✅ Todos los estados de Mermaid existen en JS.');
+    realMissing.forEach(s => { console.log(`  ❌ Faltante en JS: ${s}`); errors++; });
   }
 
-  // B. Transiciones (ValidTransitions)
-  // Nota: validTransitions en JS solo tiene las Top-Level states, no los sub-states.
-  // Podríamos filtrar solo transiciones donde 'from' y 'to' sean Top-Level (BATTLE_STATES).
-  // Para simplificar: detectamos si el 'from' es un Top-Level en JS. Si lo es, exigimos que 'to' también lo sea y esté conectado.
-  console.log('\n⚠️  ADVERTENCIAS DE TRANSICIONES:');
-  const topLevelStatesMatch = fsmCode.match(/export const BATTLE_STATES = {([\s\S]*?)};/);
-  const topLevelStates = new Set(topLevelStatesMatch ? topLevelStatesMatch[1].match(/[A-Z_]+/g) : []);
+  // ── CHECK 2: Constantes JS que no aparecen en ningún diagrama Mermaid ─────
+  console.log(`\n[CHECK 2] Constantes JS → Cobertura Mermaid  (${jsKeys.size} constantes)`);
+  const orphanJs = [...jsKeys].filter(k => !mermaidStates.has(k));
+  if (orphanJs.length === 0) {
+    console.log('  ✅ Todas las constantes JS tienen cobertura en el manual.');
+  } else {
+    console.log(`  ⚠️  ${orphanJs.length} constante(s) JS sin entrada en Mermaid (pueden ser internas):`);
+    orphanJs.slice(0, 10).forEach(k => console.log(`     - ${k}`));
+    if (orphanJs.length > 10) console.log(`     ... y ${orphanJs.length - 10} más.`);
+  }
 
-  let transWarnings = 0;
-  mermaidTransitions.forEach(t => {
-    // Si la transición es entre dos Top-Level states, DEBE estar en validTransitions de JS.
-    if (topLevelStates.has(t.from) && topLevelStates.has(t.to)) {
-      const exists = jsTransitions.some(jt => jt.from === t.from && jt.to === t.to);
-      if (!exists) {
-        console.log(`   - [Falta Enlace] En Mermaid: ${t.from} --> ${t.to}. (Falta en 'validTransitions')`);
-        transWarnings++;
-      }
+  // ── CHECK 3: Transiciones top-level del Mermaid → validTransitions JS ─────
+  // Extraer top-level states del JS (solo BATTLE_STATES, no SUBSTATES)
+  const topLevelRx = /export const BATTLE_STATES\s*=\s*\{([\s\S]*?)\};/;
+  const tlm = fsmCode.match(topLevelRx);
+  const topLevelJs = new Set(tlm ? [...tlm[1].matchAll(/([A-Z][A-Z0-9_]+)\s*:/g)].map(x => x[1]) : []);
+
+  console.log(`\n[CHECK 3] Transiciones top-level Mermaid → validTransitions JS`);
+  const topTransitions = mermaidTransitions.filter(t => topLevelJs.has(t.from) && topLevelJs.has(t.to));
+  let transErrors = 0;
+
+  topTransitions.forEach(({ from, to, label }) => {
+    const found = jsTransitions.some(jt => jt.from === from && jt.to === to);
+    if (!found) {
+      console.log(`  ❌ Falta en validTransitions: ${from} --> ${to}${label ? ` (${label})` : ''}`);
+      transErrors++;
+      errors++;
     }
   });
 
-  if (transWarnings === 0) {
-    console.log('   ✅ Todas las transiciones Top-Level están mapeadas en JS.');
-  } else {
-    errors++;
+  if (transErrors === 0) {
+    console.log(`  ✅ ${topTransitions.length} transición(es) top-level verificadas.`);
   }
 
-  console.log('\n=======================================');
-  if (errors === 0 && transWarnings === 0) {
-    console.log('🎉 AUDITORÍA PERFECTA. Código y Manual están 1:1 sincronizados.');
+  // ── RESULTADO ──────────────────────────────────────────────────────────────
+  console.log(`\n${sep('═')}`);
+  if (errors === 0) {
+    console.log('🎉 AUDITORÍA PERFECTA. Manual y código JS están 1:1 sincronizados.');
   } else {
-    console.log('🚨 SE ENCONTRARON DESALINEACIONES. Revisar los puntos marcados.');
+    console.log(`🚨 ${errors} desalineación(es) detectada(s). Revisar antes del commit.`);
+    process.exit(1);
   }
+  console.log(sep('═'));
 }
 
 runAudit();

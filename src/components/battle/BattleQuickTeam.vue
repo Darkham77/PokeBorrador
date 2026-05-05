@@ -13,14 +13,17 @@ const activePokemonUid = computed(() => battleStore.state?.player?.uid)
 const handleSwitch = (index) => {
   const pokemon = team.value[index]
   if (!pokemon || pokemon.hp <= 0 || pokemon.uid === activePokemonUid.value) return
-  if (battleStore.isProcessing) return
+  if (battleStore.isProcessing || battleStore.isIntroAnimating) return
   
   battleStore.executeSwitch(index)
 }
 </script>
 
 <template>
-  <div class="battle-quick-team premium-frame">
+  <div 
+    class="battle-quick-team premium-frame"
+    :class="{ 'is-disabled': battleStore.isProcessing || battleStore.isIntroAnimating }"
+  >
     <div class="quick-team-grid">
       <BoxPokemonCard
         v-for="(pokemon, index) in team"
@@ -60,6 +63,13 @@ const handleSwitch = (index) => {
   overflow-y: auto !important;
   @include gpu-layer;
   @include smooth-scroll;
+  transition: opacity 0.3s ease;
+
+  &.is-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: Grayscale(0.2);
+  }
 }
 
 .quick-team-grid {

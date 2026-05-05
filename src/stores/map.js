@@ -105,8 +105,10 @@ export const useMapStore = defineStore('map', () => {
       : await generateEncounter(locId, gs.state, {
           activeEvents: activeEvents.value,
           dominanceData: mapWinners.value,
-          shinyMultiplier: eventStore.globalMultipliers?.shiny || 1
+          shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
+          weather: currentWeather.value
         })
+
 
     if (!encounter) {
       // No pasó nada, solo nos movemos (efecto visual en el componente)

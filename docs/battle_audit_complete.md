@@ -5,7 +5,7 @@ Este documento rastrea la implementación de mecánicas de combate.
 ## ✅ Resumen de Progreso
 
 | Área | Estado | Detalle |
-|---|---|---|
+| --- | --- | --- |
 | **Efectos de Stats** | 🟢 100% | Todos los variantes básicos implementados. |
 | **Estados de Status** | 🟢 100% | Burn, Paralyze, Poison, Sleep, etc. |
 | **Curación** | 🟢 100% | Heal 50%, Weather Heal, Rest, Leech Seed. |
@@ -20,7 +20,7 @@ Este documento rastrea la implementación de mecánicas de combate.
 ## 🛠️ Tareas de Implementación (Prioridad 1 — Fáciles)
 
 | ID | Efecto | Estado | Archivo |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | P1-1 | `weather_sandstorm` (Alias) | ✅ Completado | `fieldActions.js` |
 | P1-2 | `belly_drum` | ✅ Completado | `specialActions.js` |
 | P1-3 | `reset_stats` (Niebla) | ✅ Completado | `statActions.js` |
@@ -34,7 +34,7 @@ Este documento rastrea la implementación de mecánicas de combate.
 ## 🛠️ Tareas de Implementación (Prioridad 2 — HUD)
 
 | ID | Mejora | Estado | Archivo |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | P2-1 | Mostrar `endure` (🛡️) | ✅ Completado | `BattleInfoCard.vue` |
 | P2-2 | Mostrar `trapped` (🪤) | ✅ Completado | `BattleInfoCard.vue` |
 | P2-3 | Turnos de sueño `(Xt)` | ✅ Completado | `BattleInfoCard.vue` |
@@ -42,7 +42,7 @@ Este documento rastrea la implementación de mecánicas de combate.
 ## 🛠️ Tareas de Implementación (Prioridad 3 — Media)
 
 | ID | Efecto | Estado | Archivo |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | P3-1 | `swagger` | ✅ Completado | `specialActions.js` |
 | P3-2 | `recharge` | ✅ Completado | `specialActions.js` |
 | P3-3 | `taunt` | ✅ Completado | `specialActions.js` |
@@ -52,7 +52,7 @@ Este documento rastrea la implementación de mecánicas de combate.
 ## 🛠️ Tareas de Implementación (Prioridad 4 — Alta)
 
 | ID | Efecto | Estado | Archivo |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | P4-1 | `bind` | ✅ Completado | `specialActions.js` / `battleStatus.js` |
 | P4-2 | `thrash` | ✅ Completado | `battleTurn.js` / `battleStatus.js` |
 | P4-3 | `rage` | ✅ Completado | `battleTurn.js` / `specialActions.js` |

@@ -20,6 +20,7 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
   if (isBall) {
     if (options.fsm) {
       options.fsm.transition('ACTIVE_BATTLE', 'CATCH_PROCESS')
+      options.fsm.transition('ACTIVE_BATTLE', 'HIDE_ENEMY_COMBAT_HUD')
     }
     addLog(`Usaste ${itemName}`, 'log-info', 'player')
     addLog(`¡Has lanzado una ${itemName}!`, 'log-catch', itemName, 'player')
@@ -60,6 +61,9 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
       addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
       
       // Captured!
+      if (options.fsm) {
+        options.fsm.transition('ACTIVE_BATTLE', 'ADD_TO_STORAGE')
+      }
       return { action: 'capture', pokemon: e }
     } else {
       // Esperar un instante tras el último shake fallido
@@ -71,6 +75,12 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
       addLog(`¡Oh, no! ¡El Pokémon se ha escapado!`, 'log-info', e)
       // Trigger energy release animation because it broke free
       gameBus.emit('PLAY_RELEASE_ENERGY', { side: 'enemy' })
+      
+      // Wait for release animation to finish before showing HUD again
+      await new Promise(r => setTimeout(r, 800))
+      if (options.fsm) {
+        options.fsm.transition('ACTIVE_BATTLE', 'SHOW_ENEMY_HUD')
+      }
     }
   } else {
     // Entrada de entrenador (siempre, para feedback inmediato)

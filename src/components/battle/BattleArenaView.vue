@@ -10,6 +10,7 @@ import { getVisualWeather } from '@/logic/battle/weatherMapper'
 import { useCombatCamera } from '@/composables/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { getRouteWeather } from '@/logic/weatherUtils'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 // Composables
 import { useBattleShadows } from '@/composables/useBattleShadows'
@@ -24,6 +25,7 @@ import BattleCombatant from './BattleCombatant.vue'
 import BattleInfoCard from './BattleInfoCard.vue'
 import CombatGrass from './CombatGrass.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
+import FishingMinigame from './FishingMinigame.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
@@ -63,7 +65,8 @@ const {
   playerAnimState, enemyAnimState, activePokeballId, catchSparkles,
   playerCaptureActive, enemyCaptureActive,
   playerIsShaking, playerIsBlinking, enemyIsShaking, enemyIsBlinking,
-  isIntroInProgress, triggerWildEmergence, triggerSearchEntry, triggerSearchEncounter, initListeners
+  isIntroInProgress, triggerWildEmergence, triggerSearchEntry, triggerSearchEncounter, initListeners,
+  trainerAnimState, isTrainerVisible, isGlobalFadeActive, isPlayerSpriteSuppressed, isEnemySpriteSuppressed
 } = animations
 
 
@@ -94,26 +97,43 @@ const activeEnemyIsSilhouette = computed(() => {
   const hasBinoculars = gameStore.state.inventory?.['binoculars'] > 0
   if (hasBinoculars || battleStore.debugBinoculars) return false
   
-  // Prioridad: Si hay un desmayo en curso, el pokémon que se desvanece NO es silueta
-  if (isFaintInProgress.value) return false
+  if (isCaptureSequenceActive.value) return false
+  if (enemyAnimState.value === 'fainting' || enemyAnimState.value === 'fainted' || (enemyAnimState.value === 'entering' && !isWildEncounter.value)) return false
   
+  if (isFaintInProgress.value) return false
+
   const s = unwrap(battleStore.fsm?.currentState)
   const sub = unwrap(battleStore.fsm?.currentSubState)
 
-  // Modo de introducción: Durante la carga previa, forzar silueta para evitar parpadeos
   if (isWildEncounter.value && s === 'INITIALIZING') return true
 
-  // En SEARCH_PHASE, si estamos en ENTRY_ANIM o BUSH_IDLE, siempre es silueta.
-  if (s === 'SEARCH_PHASE' && (sub === 'ENTRY_ANIM' || sub === 'BUSH_IDLE')) return true
+  // Utilizar FSM para mayor rigor (Phase 1)
+  if (sub === 'SILHOUETTE_LAYER' || sub === 'SILHOUETTE_MODE' || sub === 'SOLID_SILHOUETTE' || sub === 'SILHOUETTE_JUMP' || sub === 'SILHOUETTE_FLY' || sub === 'ENCOUNTER_ANIM' || sub === 'ENTRY_ANIM') {
+    return true
+  }
+
+  // En SEARCH_PHASE, si estamos en ENTRY_ANIM o BUSH_IDLE, siempre es silueta (si no hay binoculares).
+  if (s === 'SEARCH_PHASE' && (sub === 'ENTRY_ANIM' || sub === 'BUSH_IDLE' || sub === 'WILD_ENTRY')) return true
 
   // En cualquier otro caso, seguimos la bandera reactiva de la animación
   return isWildSilhouette.value
 })
 
+const isInstantBush = computed(() => {
+  if (isInitialLoad.value) return true
+  return unwrap(battleStore.fsm?.currentSubState) === 'INSTANT_BUSHES'
+})
+
 const enemyIsFloating = computed(() => {
   if (!activeEnemyData.value) return false
   if (activeEnemyData.value.isFloating !== undefined) return activeEnemyData.value.isFloating
-  const data = pokemonDataProvider.getPokemonData(activeEnemyData.value.id)
+  
+  const p = activeEnemyData.value
+  const isFlying = p.type === 'flying' || p.type2 === 'flying'
+  const isLevitating = p.ability === 'Levitación'
+  if (isFlying || isLevitating) return true
+
+  const data = pokemonDataProvider.getPokemonData(p.id)
   return data?.isFloating || false
 })
 
@@ -141,10 +161,17 @@ const shouldShowEncounterLayers = computed(() => {
   if (enemyAnimState.value === 'catching' || enemyAnimState.value === 'trapped' || enemyAnimState.value === 'releasing') return false
   if (isCaptureSequenceActive.value || isFaintInProgress.value) return false
   
+  // Si el Pokémon vuela, no mostramos capas ambientales (arbustos)
+  if (enemyIsFloating.value) return false
+
+  // Utilizar FSM para mayor rigor (Phase 1)
+  const fsmSub = unwrap(battleStore.fsm?.currentSubState)
+  if (['ENTRY_ANIM', 'ENCOUNTER_ANIM', 'BUSH_IDLE', 'BUSH_LAYER', 'WILD_ENTRY', 'BUSH_FLOW', 'BUSH_SETUP', 'GRASS_SYNC', 'PARALLEL_PREP', 'BUSHES_BACK', 'GROUND_FLOW', 'REVEAL_COLORS'].includes(fsmSub)) {
+    return isWildEncounter.value
+  }
+
   const isWild = isWildEncounter.value
   const isSearchingVal = isSearching.value
-  // BUSH_FADE se dispara cuando wildRevealActive pasa a false (t=1100ms según el manual).
-  // En búsqueda activa, los arbustos siempre están visibles.
   return isWild && (isSearchingVal || wildRevealActive.value)
 })
 
@@ -179,41 +206,23 @@ watch(
     console.log('[BattleArenaView] FSM:', newState, newSubState || '')
     if (!newState) return
 
-    // FIRST_INTRO: ENTRY_ANIM (wild) + PLAYER_CALL en paralelo → ACTIVE_BATTLE
+    // FIRST_INTRO: Gestión de visibilidad de componentes durante la entrada
     if (newState === 'FIRST_INTRO') {
-      const wildSequence = isWildEncounter.value ? triggerWildEmergence() : Promise.resolve()
-      if (isWildEncounter.value) console.log('[BattleArenaView] -> ENTRY_ANIM + ENCOUNTER_ANIM (FIRST_INTRO)')
-
-      playerAnimState.value = 'releasing'
-      const playerSequence = new Promise(resolve => {
-        console.log('[BattleArenaView] -> PLAYER_CALL Started')
-        setTimeout(() => {
-          playerAnimState.value = null
-          console.log('[BattleArenaView] -> PLAYER_CALL Finished')
-          resolve()
-        }, 1500)
-      })
-
-      await Promise.all([wildSequence, playerSequence])
-      console.log('[BattleArenaView] FIRST_INTRO complete. Transitioning to ACTIVE_BATTLE')
-      battleStore.fsm.transition('ACTIVE_BATTLE')
+      console.log('[BattleArenaView] Phase: FIRST_INTRO')
+      // Ya no llamamos a battleStore.fsm.transition('ACTIVE_BATTLE') aquí.
+      // La orquestación lógica ahora reside en el store para mayor precisión.
     }
 
     // SEARCH_PHASE + ENTRY_ANIM substate: bushes graduales + silueta estática
     if (newState === 'SEARCH_PHASE' && newSubState === 'ENTRY_ANIM' && isWildEncounter.value) {
       console.log('[BattleArenaView] -> ENTRY_ANIM (SEARCH_PHASE)')
       triggerSearchEntry()
-      setTimeout(() => {
-        battleStore.fsm.transition('SEARCH_PHASE', 'BUSH_IDLE')
-      }, 500)
     }
 
     // SEARCH_PHASE + ENCOUNTER_ANIM substate: jump + reveal (usuario hizo click en Buscar)
     if (newState === 'SEARCH_PHASE' && newSubState === 'ENCOUNTER_ANIM' && isWildEncounter.value) {
       console.log('[BattleArenaView] -> ENCOUNTER_ANIM (SEARCH_PHASE)')
       await triggerSearchEncounter()
-      console.log('[BattleArenaView] ENCOUNTER_ANIM complete. Transitioning to ACTIVE_BATTLE')
-      battleStore.fsm.transition('ACTIVE_BATTLE')
     }
 
     // REWARDS_PHASE + VOID_STATE: Limpieza completa de rastros del Pokémon
@@ -245,29 +254,44 @@ watch(
   { immediate: true }
 )
 
+const handleFishingSuccess = async () => {
+  console.log('[BattleArenaView] Fishing SUCCESS')
+  await triggerSearchEncounter()
+}
 
-watch(() => enemy.value?.hp, (newHp, oldHp) => {
-  if (newHp <= 0 && oldHp > 0 && !isCaptureSequenceActive.value) {
-    faintedPokemonSnapshot.value = enemy.value ? { ...enemy.value } : null
-    isFaintInProgress.value = true
-    setTimeout(() => { isFaintInProgress.value = false; faintedPokemonSnapshot.value = null }, 1300)
-  }
-})
+const handleFishingFail = async () => {
+  console.log('[BattleArenaView] Fishing FAIL')
+}
+
+
 
 watch(isIntroInProgress, (val) => { battleStore.isIntroAnimating = val }, { immediate: true })
 
 onMounted(async () => {
   initListeners()
   await preloadCombatCoords(
-    player.value, 
-    activeEnemyData.value, 
+    battle.value?.player || battle.value?._initialPlayer, 
+    battle.value?.enemy || battle.value?._initialEnemy, 
     p1Pos.value, 
     p2Pos.value,
     battle.value?.playerTeam,
     battle.value?.enemyTeam
   )
-  if (battle.value && !battle.value.over && isWildEncounter.value) triggerWildEmergence()
   setTimeout(() => { isInitialLoad.value = false }, 500)
+})
+
+// Ejecutar PRELOAD_COORDS para combates consecutivos (porque onMounted no se repite en modo persistente)
+watch(() => battleStore.currentSubState, async (sub) => {
+  if (sub === 'PRELOAD_COORDS') {
+    await preloadCombatCoords(
+      battle.value?.player || battle.value?._initialPlayer, 
+      battle.value?.enemy || battle.value?._initialEnemy, 
+      p1Pos.value, 
+      p2Pos.value,
+      battle.value?.playerTeam,
+      battle.value?.enemyTeam
+    )
+  }
 })
 
 // Forzar actualización de cámara cuando el combate se activa para evitar el glitch de "pantalla negra"
@@ -286,7 +310,12 @@ watch(() => battleStore.isBattleActive, (active) => {
   <div
     ref="arenaRef"
     class="battle-arena"
+    :class="{ 'is-fading': isGlobalFadeActive }"
   >
+    <!-- Overlay de Transición Global (The Void / Exit) -->
+    <Transition name="fade-overlay">
+      <div v-if="isGlobalFadeActive" class="global-transition-overlay" />
+    </Transition>
     <div
       class="battle-arena-content"
       :style="cameraStyles"
@@ -314,12 +343,32 @@ watch(() => battleStore.isBattleActive, (active) => {
               :location-id="battle?.locationId"
               :ground-y="enemyGroundY"
               :visible="shouldShowEncounterLayers && !enemyIsFloating"
-              :instant="isInitialLoad"
+              :instant="isInstantBush"
             />
+          </VirtualEntity>
+
+          <!-- Entrenador Rival (Solo en modo Trainer/Gym) -->
+          <VirtualEntity
+            v-if="isTrainerVisible && (battle?.isTrainer || battle?.isGym)"
+            :x="p2Pos.x"
+            :y="p2Pos.y"
+            :w="BASE_ENTITY_SIZE_ENEMY"
+            :h="BASE_ENTITY_SIZE_ENEMY"
+            class="trainer-entity"
+            :class="trainerAnimState"
+          >
+            <div class="trainer-sprite-wrapper">
+              <img 
+                :src="getAssetUrl(ASSET_TYPES.TRAINER, battle.trainerName || 'entrenador')" 
+                class="trainer-image"
+                @error="e => e.target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
+              >
+            </div>
           </VirtualEntity>
 
           <!-- Enemigo -->
           <BattleCombatant
+            v-if="activeEnemyData"
             :key="`enemy-${activeEnemyData?.uid || activeEnemyData?.id || 'empty'}`"
             side="enemy"
             :pokemon="activeEnemyData"
@@ -337,7 +386,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :show-guides="showGuides"
             :is-capture-success="enemyCaptureActive"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
-            :is-fainting="isFaintInProgress"
+            :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'enemy'"
             :is-emerging="isEmerging"
             :suppress-fx="isSearching || isIntroInProgress"
             :stages="battleStore.enemyStages"
@@ -358,13 +407,14 @@ watch(() => battleStore.isBattleActive, (active) => {
               :location-id="battle?.locationId"
               :ground-y="enemyGroundY"
               :visible="shouldShowEncounterLayers && !enemyIsFloating"
-              :instant="isInitialLoad"
+              :instant="isInstantBush"
               :force-behind="isEmerging"
             />
           </VirtualEntity>
 
           <!-- Jugador -->
           <BattleCombatant
+            v-if="player"
             :key="`player-${player?.uid || player?.id || 'empty'}`"
             side="player"
             :pokemon="player"
@@ -381,6 +431,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-capture-success="playerCaptureActive"
             :sparkles="catchSparkles.filter(s => s.side === 'player')"
             :stages="battleStore.playerStages"
+            :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'player'"
           />
         </div>
       </VirtualSpace>
@@ -400,10 +451,10 @@ watch(() => battleStore.isBattleActive, (active) => {
     <div class="battle-info-container">
       <Transition name="hud-fade-enemy">
         <div
-          v-if="!isEnemyHudSuppressed && enemy && enemy.hp > 0"
+          v-if="!isEnemyHudSuppressed && activeEnemyData && activeEnemyData.hp > 0"
           class="combatant-info-wrap enemy-side"
         >
-          <BattleInfoCard :pokemon="enemy" />
+          <BattleInfoCard :pokemon="activeEnemyData" />
         </div>
       </Transition>
       <Transition name="hud-fade-player">
@@ -419,6 +470,15 @@ watch(() => battleStore.isBattleActive, (active) => {
         </div>
       </Transition>
     </div>
+
+    <!-- Minijuego de Pesca -->
+    <FishingMinigame
+      v-if="unwrap(battleStore.fsm?.currentSubState) === 'MINIGAME_CHECK'"
+      :enemy="enemy"
+      :rarity="battle?.rarity || 50"
+      @success="handleFishingSuccess"
+      @fail="handleFishingFail"
+    />
   </div>
 </template>
 
@@ -428,7 +488,6 @@ watch(() => battleStore.isBattleActive, (active) => {
 .battle-arena {
   position: relative;
   width: 100%;
-  height: 100%;
   flex: 1;
   background: black;
   overflow: hidden;
@@ -447,13 +506,8 @@ watch(() => battleStore.isBattleActive, (active) => {
 .battle-sprites { position: absolute; inset: 0; pointer-events: none; z-index: calc(var(--z-base) + 10); }
 
 .battle-info-container {
-  position: absolute;
-  inset: 0;
-  z-index: calc(var(--z-base) + 30);
-  padding: 4cqw;
-  display: flex;
-  flex-direction: column;
-  pointer-events: none;
+  position: absolute; inset: 0; z-index: calc(var(--z-base) + 30);
+  padding: 4cqw; display: flex; flex-direction: column; pointer-events: none;
   @media (max-width: 600px) { padding: 2cqw; }
 }
 
@@ -468,13 +522,45 @@ watch(() => battleStore.isBattleActive, (active) => {
   @include gpu-layer;
 }
 
-.hud-fade-enemy-enter-from, .hud-fade-enemy-leave-to { 
-  opacity: 0; 
-  transform: TranslateX(-20px) Scale(0.98); 
+.hud-fade-enemy-enter-from, .hud-fade-enemy-leave-to { opacity: 0; transform: TranslateX(-20px) Scale(0.98); }
+.hud-fade-player-enter-from, .hud-fade-player-leave-to { opacity: 0; transform: TranslateX(20px) Scale(0.98); }
+
+/* --- ANIMACIONES DE ENTRENADOR Y TRANSICIONES --- */
+.global-transition-overlay {
+  position: absolute; inset: 0; background: black; z-index: var(--z-max);
+  pointer-events: none;
 }
 
-.hud-fade-player-enter-from, .hud-fade-player-leave-to { 
-  opacity: 0; 
-  transform: TranslateX(20px) Scale(0.98); 
+.fade-overlay-enter-active, .fade-overlay-leave-active { transition: opacity 0.6s ease; }
+.fade-overlay-enter-from, .fade-overlay-leave-to { opacity: 0; }
+
+.trainer-entity {
+  z-index: var(--z-map-spawns);
+  display: flex; align-items: flex-end; justify-content: center;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+  
+  &.entering { animation: trainer-slide-in 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+  &.retreating { animation: trainer-slide-out 0.8s ease-in forwards; }
+}
+
+.trainer-sprite-wrapper {
+  width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 10%; // Alineación base
+}
+
+.trainer-image {
+  height: 90%; width: auto; object-fit: contain;
+  filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
+  image-rendering: pixelated;
+}
+
+@keyframes trainer-slide-in {
+  0% { transform: TranslateX(150%) Scale(0.8); opacity: 0; }
+  100% { transform: TranslateX(0) Scale(1); opacity: 1; }
+}
+
+@keyframes trainer-slide-out {
+  0% { transform: TranslateX(0) Scale(1); opacity: 1; }
+  100% { transform: TranslateX(150%) Scale(0.8); opacity: 0; }
 }
 </style>

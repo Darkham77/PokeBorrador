@@ -6,6 +6,7 @@ import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from './ai/ba
 import { gameBus } from '@/logic/gameBus'
 import { recalcPokemonStats } from '@/logic/pokemonFactory'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper'
+import { getDayCycle } from '@/logic/timeUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { MOVE_DATA } from '@/data/moves'
 
@@ -15,7 +16,15 @@ import { MOVE_DATA } from '@/data/moves'
 export async function executeTurn(store, moveIndex) {
   const p = store.activeBattle.player
   const e = store.activeBattle.enemy
-  
+  const fsm = store.fsm
+  const BATTLE_STATES = store.BATTLE_STATES || { ACTIVE_BATTLE: 'ACTIVE_BATTLE' }
+  const BATTLE_SUBSTATES = store.BATTLE_SUBSTATES || { 
+    BUILD_QUEUE: 'BUILD_QUEUE', POP_ACTION: 'POP_ACTION', APPLY_MOVE: 'APPLY_MOVE', 
+    EVAL_HP: 'EVAL_HP', RESOLVE_PLAYER_FAINT: 'RESOLVE_PLAYER_FAINT', 
+    RESOLVE_ENEMY_FAINT: 'RESOLVE_ENEMY_FAINT', EVAL_CONTINUE: 'EVAL_CONTINUE',
+    TURN_ENGINE: 'TURN_ENGINE'
+  }
+
   // Thrash check
   if (p.thrashTurns > 0) {
     const forcedIdx = p.moves.findIndex(m => m.effect === 'thrash');
@@ -26,18 +35,18 @@ export async function executeTurn(store, moveIndex) {
   }
 
   const move = p.moves[moveIndex]
-
   if (move.pp <= 0) {
     store.addLog(`¡No queda PP para ${move.name}!`, 'log-info', p)
     return
   }
 
+  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
+
   // Determine Turn Order (Consider Priority)
-  const pMove = p.moves[moveIndex]
   const isWild = !store.activeBattle.isTrainer && !store.activeBattle.isGym
   const eMove = decideEnemyMove(e, p, store.playerStages, isWild)
   
-  const pPrio = pMove?.priority || 0
+  const pPrio = move?.priority || 0
   const ePrio = eMove?.priority || 0
 
   const pSpe = getEffectiveSpeed(p, store.playerStages, { weather: store.activeBattle.weather, getStatMultiplier: (s) => 1 + (0.5 * s) })
@@ -48,25 +57,47 @@ export async function executeTurn(store, moveIndex) {
   else if (ePrio > pPrio) playerFirst = false
   else playerFirst = pSpe >= eSpe
 
+  let queue = []
   if (playerFirst) {
-    await runPlayerAction(store, moveIndex)
-    if (e.hp > 0 && !store.activeBattle.over) {
-      await new Promise(r => setTimeout(r, 400)) // Reducido de 600
-      await runEnemyAction(store)
-    }
+    queue.push({ source: 'player', action: () => runPlayerAction(store, moveIndex) })
+    if (eMove) queue.push({ source: 'enemy', action: () => runEnemyAction(store) })
   } else {
-    await runEnemyAction(store)
-    if (p.hp > 0 && !store.activeBattle.over) {
+    if (eMove) queue.push({ source: 'enemy', action: () => runEnemyAction(store) })
+    queue.push({ source: 'player', action: () => runPlayerAction(store, moveIndex) })
+  }
+
+  while (queue.length > 0) {
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
+    const currentAction = queue.shift()
+
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
+    await currentAction.action()
+
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
+
+    if (store.activeBattle.player.hp <= 0) {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+      if (store.handleFaint) await store.handleFaint('player')
+      break;
+    }
+
+    if (store.activeBattle.enemy.hp <= 0) {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
+      if (store.handleFaint) await store.handleFaint('enemy')
+      break;
+    }
+
+    if (store.activeBattle.over) break;
+
+    if (queue.length > 0) {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_CONTINUE)
       await new Promise(r => setTimeout(r, 400)) // Reducido de 600
-      await runPlayerAction(store, moveIndex)
     }
   }
   
   if (store.activeBattle?.over) {
-    // Evitar sobreescribir una victoria (Faint) o captura que ya inició el fin del combate
-    if (!store.isFinishing) {
-      await store.endBattle(false, true)
-    }
+    // Si la batalla terminó durante este turno (ej. por un efecto secundario o captura),
+    // simplemente retornamos. Los orquestadores ya se encargaron de la terminación.
     return
   }
   
@@ -76,6 +107,9 @@ export async function executeTurn(store, moveIndex) {
 export async function runPlayerAction(store, moveIndex) {
   const p = store.activeBattle.player
   const e = store.activeBattle.enemy
+  const fsm = store.fsm
+  const BATTLE_STATES = store.BATTLE_STATES || { ACTIVE_BATTLE: 'ACTIVE_BATTLE' }
+  const BATTLE_SUBSTATES = store.BATTLE_SUBSTATES || { READ_TARGET: 'READ_TARGET', SHOW_TARGET_COMBAT_HUD: 'SHOW_TARGET_COMBAT_HUD' }
   const move = p.moves[moveIndex]
   
   if (p.tauntTurns > 0 && move.cat === 'status') {
@@ -97,6 +131,8 @@ export async function runPlayerAction(store, moveIndex) {
   
   move.pp--
   store.addLog(`¡${p.name} usó ${move.name}!`, 'log-player', p)
+  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.READ_TARGET)
+  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SHOW_TARGET_COMBAT_HUD)
 
   let executableMove = { ...move };
   if (move.effect === 'metronome') {
@@ -143,11 +179,14 @@ export async function runPlayerAction(store, moveIndex) {
     const evaStage = store.enemyStages.eva || 0;
     const weather = store.activeBattle.weather?.type;
     const mechWeather = getMechanicalWeather(weather);
+    const cycle = getDayCycle();
+    const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
+    const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
     let finalAcc = moveAcc;
     
     // Reglas de Clima para Precisión
-    if (mechWeather === WEATHER_MECHANICAL.RAIN && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100;
-    else if (mechWeather === WEATHER_MECHANICAL.SUN && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 50;
+    if (isRainActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100;
+    else if (isSunActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 50;
     else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && executableMove.id === 'blizzard') finalAcc = 100;
     else if (mechWeather === WEATHER_MECHANICAL.FOG) finalAcc = Math.floor(moveAcc * 0.6);
 
@@ -213,11 +252,12 @@ export async function runPlayerAction(store, moveIndex) {
 
         // Update HP and Context
         store.activeBattle.enemy.hp = Math.max(0, e.hp - damage)
+        gameBus.emit('PLAY_DAMAGE', { side: 'enemy', damage })
         store.activeBattle.lastDamage = damage
         hitsDealt++;
         
         if (e.hp <= 0) {
-          if (store.handleFaint) await store.handleFaint('enemy')
+          // El handleFaint se procesará en EVAL_HP
           break;
         }
         
@@ -246,7 +286,6 @@ export async function runPlayerAction(store, moveIndex) {
         if (recoilDmg > 0) {
           p.hp = Math.max(0, p.hp - recoilDmg);
           store.addLog(`¡${p.name} recibió daño por retroceso!`, 'log-info', p);
-          if (p.hp <= 0 && store.handleFaint) await store.handleFaint('player');
         }
       }
       // Drain
@@ -262,9 +301,9 @@ export async function runPlayerAction(store, moveIndex) {
     if (executableMove.selfKO) {
       p.hp = 0;
       store.addLog(`¡${p.name} se sacrificó!`, 'log-info', p);
-      if (store.handleFaint) await store.handleFaint('player');
     }
 
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HIDE_TARGET_COMBAT_HUD)
     store.attackerSide = null
 
     // Execute Move Effect (Pass the battleCtx)
@@ -282,6 +321,10 @@ export async function runEnemyAction(store) {
   const p = store.activeBattle.player
   const e = store.activeBattle.enemy
   if (e.hp <= 0) return
+  const fsm = store.fsm
+  const BATTLE_STATES = store.BATTLE_STATES || { ACTIVE_BATTLE: 'ACTIVE_BATTLE' }
+  const BATTLE_SUBSTATES = store.BATTLE_SUBSTATES || { READ_TARGET: 'READ_TARGET', SHOW_TARGET_COMBAT_HUD: 'SHOW_TARGET_COMBAT_HUD' }
+  const s = store.enemyStages
 
   if (e.tauntTurns > 0 && e.lastMove?.cat === 'status') {
     // Note: Enemy selection already happened, but if they were taunted during turn
@@ -298,6 +341,7 @@ export async function runEnemyAction(store) {
     if (bestIdx !== -1) {
       const newPoke = store.activeBattle.enemyTeam[bestIdx]
       store.addLog(`¡${store.activeBattle.trainerName || 'El entrenador'} retira a ${e.name}!`, 'log-enemy', 'enemy_trainer')
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TRAINER_RETREAT)
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
       await new Promise(r => setTimeout(r, 800))
       
@@ -349,6 +393,8 @@ export async function runEnemyAction(store) {
   e.lastMove = enemyMove
   store.attackerSide = 'enemy'
   store.addLog(`¡${e.name} usó ${enemyMove.name}!`, 'log-enemy', e)
+  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.READ_TARGET)
+  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SHOW_TARGET_COMBAT_HUD)
 
   let executableMove = { ...enemyMove };
   if (enemyMove.effect === 'metronome') {
@@ -382,11 +428,21 @@ export async function runEnemyAction(store) {
     const evaStage = store.playerStages.eva || 0;
     const weather = store.activeBattle.weather?.type;
     const mechWeather = getMechanicalWeather(weather);
+    const cycle = getDayCycle();
+    const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
+    const isSunny = mechWeather === WEATHER_MECHANICAL.SUN
+    const isDayTime = cycle === 'day' || cycle === 'morning'
+    const isNightTime = cycle === 'night' || cycle === 'dusk'
+    
+    // Potenciadores de Horario (Daño) - No afectan precisión aquí directamente pero definimos para claridad
+    const isSunActive = isSunny || (mechWeather === WEATHER_MECHANICAL.CLEAR && isDayTime)
+    const isRainActive = isRaining || (mechWeather === WEATHER_MECHANICAL.CLEAR && isNightTime)
+    
     let finalAcc = moveAcc;
 
-    // Reglas de Clima para Precisión
-    if (mechWeather === WEATHER_MECHANICAL.RAIN && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100;
-    else if (mechWeather === WEATHER_MECHANICAL.SUN && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 50;
+    // Reglas de Clima para Precisión (Solo clima real, no horario)
+    if (isRaining && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100;
+    else if (isSunny && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 50;
     else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && executableMove.id === 'blizzard') finalAcc = 100;
     else if (mechWeather === WEATHER_MECHANICAL.FOG) finalAcc = Math.floor(moveAcc * 0.6);
 
@@ -444,11 +500,11 @@ export async function runEnemyAction(store) {
         }
 
         p.hp = Math.max(0, p.hp - damage)
+        gameBus.emit('PLAY_DAMAGE', { side: 'player', damage })
         store.activeBattle.lastDamage = damage
         hitsDealt++;
 
         if (p.hp <= 0) {
-          if (store.handleFaint) await store.handleFaint('player')
           break;
         }
 
@@ -477,7 +533,6 @@ export async function runEnemyAction(store) {
         if (recoilDmg > 0) {
           e.hp = Math.max(0, e.hp - recoilDmg);
           store.addLog(`¡${e.name} recibió daño por retroceso!`, 'log-info', e);
-          if (e.hp <= 0 && store.handleFaint) await store.handleFaint('enemy');
         }
       }
       // Drain
@@ -493,9 +548,9 @@ export async function runEnemyAction(store) {
     if (executableMove.selfKO) {
       e.hp = 0;
       store.addLog(`¡${e.name} se sacrificó!`, 'log-info', e);
-      if (store.handleFaint) await store.handleFaint('enemy');
     }
 
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HIDE_TARGET_COMBAT_HUD)
     store.attackerSide = null
 
     if (executableMove.effect && hitsDealt > 0) {

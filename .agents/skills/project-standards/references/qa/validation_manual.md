@@ -54,3 +54,6 @@ The project has custom audit scripts in `.agents/skills/project-standards/script
 11. **Store-Level Event Listeners**: Window listeners used in Pinia stores (outside of the Vue component lifecycle) MUST be marked with `// [PureVue-Ignore]` if they cannot be easily replaced by standardized composables.
 12. **Computed Atomicity**: NEVER perform state mutations (e.g., `ref.value = ...`) inside a `computed` property. This causes `vue/no-side-effects-in-computed-properties` errors and architectural instability. Use `watch` or `ref` updates instead.
 13. **Diagnostic Data Warnings**: Core engine logic (Capture, Damage, Status) MUST implement `console.warn` fallbacks for missing critical Pokémon properties (e.g., `catchRate`). Use the `??` operator to provide a safe default while signaling the data gap to the developer.
+14. **Data Structure Refactoring Safety**: Al migrar una estructura de datos crítica (ej: de `Array` a `Object`), es **OBLIGATORIO** realizar un barrido completo del codebase buscando métodos incompatibles como `.includes()`, `.forEach()`, `.map()`, o `.filter()`.
+    - **Validación**: Reemplaza estos métodos por verificaciones de clave (`!!obj[id]`), iteraciones de llaves (`Object.keys(obj).forEach`) o accesos directos según corresponda para evitar `TypeErrors` en tiempo de ejecución.
+

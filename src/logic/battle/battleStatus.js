@@ -142,3 +142,31 @@ export function tickLeechSeed(pokemon, opponent, addLogFn) {
   
   return true;
 }
+
+/**
+ * Limpia todos los estados temporales/volátiles de un Pokémon al salir o entrar en combate.
+ */
+export function clearVolatileStatus(poke) {
+  if (!poke) return
+  poke.confused = 0
+  poke.flinched = false
+  poke.substitute = 0
+  poke.seeded = false
+  poke.attracted = false
+  poke.cursed = false
+  poke.protect = false
+  poke.detect = false
+  poke.destinyBond = false
+  poke.perishSongCount = 0
+  poke.tauntTurns = 0
+  poke.disabledTurns = 0
+  poke.disabledMove = null
+  poke.encoreTurns = 0
+  poke.encoreMove = null
+  poke.focusEnergy = false
+  poke.lockOn = false
+  poke.ingrain = false
+  poke.futureSightTurns = 0
+  poke.futureSightDmg = 0
+  poke.badPoison = 0
+}

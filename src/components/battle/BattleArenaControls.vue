@@ -26,9 +26,13 @@ const battle = computed(() => battleStore.state)
 const player = computed(() => battle.value?.player)
 const gs = computed(() => gameStore.state)
 
-const isIntroActive = computed(() => {
+const isControlsDisabled = computed(() => {
   const s = battleStore.fsm.currentState
-  return s === 'INITIALIZING' || s === 'FIRST_INTRO'
+  return battleStore.isProcessing || 
+         battleStore.isIntroAnimating || 
+         battleStore.isFinishing ||
+         battleStore.isSearching ||
+         ['INITIALIZING', 'FIRST_INTRO'].includes(s)
 })
 
 const execShowBattleSwitch = () => { 
@@ -112,48 +116,48 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
           v-if="player"
           class="is-compact"
           :moves="player.moves" 
-          :is-processing="battleStore.isProcessing || battleStore.isIntroAnimating"
+          :is-processing="isControlsDisabled"
           :player-info="player"
           @use-move="(idx) => battleStore.executeMove(idx)"
         />
 
         <BattleActionButtons 
-          :is-finishing="battleStore.isFinishing || battleStore.isIntroAnimating"
+          :is-finishing="isControlsDisabled"
           @switch="execShowBattleSwitch"
           @bag="execShowBattleBag"
           @run="battleStore.flee"
           @catch="execTryCatch"
           @select-ball="(name) => battleStore.useItemInBattle(name)"
         />
-
-        <div
-          v-if="battleStore.isSearching"
-          class="battle-finish-overlay"
-        >
-          <div class="finish-actions-group">
-            <button
-              v-if="gameStore.state.team.some(p => p.hp > 0)"
-              class="continue-btn-final search-btn"
-              @click.stop="battleStore.isSearching
-                ? battleStore.triggerSearchEncounter()
-                : battleStore.completeBattleFlow('search')"
-            >
-              <span class="btn-emoji">🔍</span> BUSCAR
-            </button>
-            <button
-              class="continue-btn-final map-btn"
-              @click.stop="battleStore.completeBattleFlow('map')"
-            >
-              <span class="btn-emoji">🗺️</span> VOLVER AL MAPA
-            </button>
-          </div>
-        </div>
       </div>
 
       <!-- Zona 2: Mochila Rápida (Derecha) -->
       <aside class="quick-shortcut-zone zone-bag">
         <BattleQuickBag />
       </aside>
+    </div>
+
+    <!-- Overlay de Finalización / Búsqueda (Cubre TODO el move-panel) -->
+    <div
+      v-if="(battleStore.isSearching && ['WAIT_INPUT', 'BUSH_IDLE', 'GEN_NEW_S2'].includes(battleStore.fsm.currentSubState)) || battleStore.isReadyToExit"
+      class="battle-finish-overlay"
+      :class="{ 'is-search-mode': battleStore.isSearching }"
+    >
+      <div class="finish-actions-group">
+        <button
+          v-if="battleStore.isSearching"
+          class="continue-btn-final fight-btn"
+          @click.stop="battleStore.startEncounter()"
+        >
+          <span class="btn-emoji">⚔️</span> ¡COMBATIR!
+        </button>
+        <button
+          class="continue-btn-final map-btn"
+          @click.stop="battleStore.completeBattleFlow('map')"
+        >
+          <span class="btn-emoji">🗺️</span> VOLVER AL MAPA
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -228,6 +232,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   flex-shrink: 0;
   padding-top: 8px;
   position: relative;
+  min-height: 230px; // Reserva de espacio determinista para evitar saltos de cámara
 }
 
 :deep(.moves-grid-vicio) {
@@ -247,6 +252,11 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   -webkit-backdrop-filter: Blur(4px);
   backdrop-filter: Blur(4px);
   @include gpu-layer;
+
+  &.is-search-mode {
+    align-items: flex-end;
+    padding-bottom: 20px;
+  }
 }
 
 .continue-btn-final {

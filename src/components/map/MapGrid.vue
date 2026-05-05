@@ -4,6 +4,8 @@ import { getEncounterPool } from '@/logic/encounters'
 import { useEventStore } from '@/stores/events'
 import { getGuardianData } from '@/logic/war/guardianEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { getRouteWeather } from '@/logic/weatherUtils'
+import { useMapStore } from '@/stores/map'
 
 const props = defineProps({
   maps: { type: Array, required: true },
@@ -20,12 +22,18 @@ const props = defineProps({
 
 const emit = defineEmits(['navigate'])
 const eventStore = useEventStore()
+const mapStore = useMapStore()
 
 const getMapData = (loc) => {
   if (!loc.wild) return { generic: [], specific: [], rates: {} }
 
   const activeEvents = eventStore.activeEvents || []
-  const { pool, rates } = getEncounterPool(loc, props.cycle, activeEvents)
+  
+  // Determinar clima para esta ruta específica si no hay uno global
+  const activeWeather = props.weather !== 'clear' ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
+  
+  const { pool, rates } = getEncounterPool(loc, props.cycle, activeWeather, activeEvents)
+
   
   const baseWild = loc.wild?.day || []
   const generic = []

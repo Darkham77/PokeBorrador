@@ -200,6 +200,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **Touch-Collision Detection**: During `touchmove`, set `pointer-events: none` on the dragged element and use `document.elementFromPoint(touch.clientX, touch.clientY)` to detect slots or targets underneath.
 - **Readonly Computed Store Warning**: NEVER attempt to mutate a store property that is defined as a `computed` from within a component. This triggers a `target is readonly` warning. If a property needs to be updated from a view (e.g., syncing an animation state), it MUST be defined as a `ref` in the store.
 - **Template Scope Integrity**: To avoid "property accessed during render but not defined" warnings, ensure all reactive properties or composable returns used in the `<template>` are explicitly destructured or returned from the `setup()` function (or available in `<script setup>`).
+- **Duplicate Declaration Safety**: When adding "legacy" or compatibility functions to an existing composable, ALWAYS verify that the identifier (function or variable name) is not already declared in the same file. Duplicate declarations in Javascript/Vue will result in a `SyntaxError: Identifier 'X' has already been declared` that prevents the entire application from loading.
 
 ## 6) Final self-check before finishing
 

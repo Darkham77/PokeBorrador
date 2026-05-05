@@ -85,21 +85,27 @@ const hexToRgb = (hex) => {
 }
 
 const getMoveModifier = (move) => {
-  if (!move) return null
+  if (!move || !battleStore.isBattleActive) return null
   const md = getMoveData(move)
   const weather = battleStore.state?.weather?.type
   const mechWeather = getMechanicalWeather(weather)
   const cycle = getDayCycle()
 
-  const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
-  const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
+  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
+  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN
+  const isDayTime = cycle === 'day' || cycle === 'morning'
+  const isNightTime = cycle === 'night' || cycle === 'dusk'
+
+  const isSunActive = isSunny || (mechWeather === WEATHER_MECHANICAL.CLEAR && isDayTime)
+  const isRainActive = isRaining || (mechWeather === WEATHER_MECHANICAL.CLEAR && isNightTime)
 
   const moveName = (md.name || '').toLowerCase()
 
   // Trueno (Thunder) and Vendaval (Hurricane) are always boosted in Rain, penalized in Sun
   if (moveName === 'trueno' || moveName === 'thunder' || moveName === 'vendaval' || moveName === 'hurricane') {
-    if (isSunActive) return 'penalized'
-    if (isRainActive) return 'boosted'
+    if (isSunny) return 'penalized'
+    if (isRaining) return 'boosted'
+    return null
   }
 
   // Rayo Solar (Solar Beam) and Cuchilla Solar (Solar Blade)
@@ -142,10 +148,11 @@ const isMoveDisabled = (move) => {
 </script>
 
 <template>
-  <div 
-    class="moves-grid-vicio"
-    :class="{ 'is-reordering': isDragging }"
-  >
+  <Transition name="grid-slide">
+    <div 
+      class="moves-grid-vicio"
+      :class="{ 'is-reordering': isDragging }"
+    >
     <div
       v-for="(move, i) in fullMoves" 
       :key="i"
@@ -276,6 +283,7 @@ const isMoveDisabled = (move) => {
       </button>
     </div>
   </div>
+</Transition>
 </template>
 
 <style scoped lang="scss">
@@ -490,13 +498,16 @@ const isMoveDisabled = (move) => {
     font-weight: 900;
   }
 }
-@keyframes move-glow {
-  from { box-shadow: 0 0 8px Rgba(255, 215, 0, 0.4), inset 0 0 5px Rgba(255, 215, 0, 0.2); }
-  to { box-shadow: 0 0 22px Rgba(255, 215, 0, 0.9), inset 0 0 15px Rgba(255, 215, 0, 0.5); }
-}
+@keyframes move-glow { from { box-shadow: 0 0 8px Rgba(255, 215, 0, 0.4), inset 0 0 5px Rgba(255, 215, 0, 0.2); } to { box-shadow: 0 0 22px Rgba(255, 215, 0, 0.9), inset 0 0 15px Rgba(255, 215, 0, 0.5); } }
+@keyframes penalty-glow { from { box-shadow: 0 0 8px Rgba(255, 0, 0, 0.4), inset 0 0 5px Rgba(255, 0, 0, 0.2); } to { box-shadow: 0 0 22px Rgba(255, 0, 0, 0.9), inset 0 0 15px Rgba(255, 0, 0, 0.5); } }
 
-@keyframes penalty-glow {
-  from { box-shadow: 0 0 8px Rgba(255, 0, 0, 0.4), inset 0 0 5px Rgba(255, 0, 0, 0.2); }
-  to { box-shadow: 0 0 22px Rgba(255, 0, 0, 0.9), inset 0 0 15px Rgba(255, 0, 0, 0.5); }
+/* Transición de entrada de la cuadrícula */
+.grid-slide-enter-active {
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition-delay: 0.1s; // Un poco después que los botones
+}
+.grid-slide-enter-from {
+  opacity: 0;
+  transform: translateY(40px) Scale(0.98);
 }
 </style>

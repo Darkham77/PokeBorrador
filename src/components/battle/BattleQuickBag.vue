@@ -36,7 +36,7 @@ const battleItems = computed(() => {
 })
 
 const handleUseItem = (item) => {
-  if (battleStore.isProcessing) return
+  if (battleStore.isProcessing || battleStore.isIntroAnimating) return
 
   // Algoritmo idéntico a InventoryModal.vue
   const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
@@ -82,7 +82,10 @@ const handleUseItem = (item) => {
 </script>
 
 <template>
-  <div class="battle-quick-bag premium-frame">
+  <div 
+    class="battle-quick-bag premium-frame"
+    :class="{ 'is-disabled': battleStore.isProcessing || battleStore.isIntroAnimating }"
+  >
     <div class="quick-bag-grid">
       <div
         v-for="item in battleItems"
@@ -134,6 +137,13 @@ const handleUseItem = (item) => {
   overflow-y: auto !important;
   @include gpu-layer;
   @include smooth-scroll;
+  transition: opacity 0.3s ease;
+
+  &.is-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: Grayscale(0.2);
+  }
 }
 
 .quick-bag-grid {

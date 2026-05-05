@@ -159,6 +159,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Pixel Art Glow Balance**: For success sparkles and non-tactical VFX (e.g., capture stars), use subtle `text-shadow` (max 5px) and `filter: drop-shadow` (max 2px).
   - **WHY**: Preserves the sharp "Retro Heart" aesthetic without causing excessive blur or visual noise that obscures the pixel-art.
 - **Tactical Border Hierarchy**: Tactical auras (Boosted/Penalized) MUST take priority over type-based color coding. Use inline styles or high-specificity computed styles to ensure the gold/red border overrides the default type border when a modifier is active.
+- **Battle-Aware Modifiers**: All dynamic move modifiers (glows, "boosted" text, accuracy indicators) MUST verify `battleStore.isBattleActive` before applying environmental or time-based logic. This prevents combat-only states (like night-time accuracy boosts) from leaking into the team information screens outside of active battle.
 - **Z-Index Layering**: HUD Navigation wrappers MUST use `pointer-events: none` and `z-index: var(--z-navigation)` to ensure they don't block interaction with Sidebar tools (Chat/Debug) while still allowing button clicks via `pointer-events: auto` on children.
 
 ---
@@ -218,7 +219,13 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 
 To ensure technical information is accurate and consistent:
 
+- **Cumulative Tooltip Hierarchy**: La información en los tooltips de mapa (MapCard) debe ser aditiva y evitar contradicciones semánticas.
+  - **REGLA**: El texto genérico `Habitante común` es un fallback absoluto. **NUNCA** debe mostrarse si el Pokémon tiene un modificador activo (Ciclo Horario o Clima).
+  - **Estructura**: `Aparición: [Horario] + [Modificador Clima]`.
+  - **Ejemplo**: Si es un Pokémon de Noche potenciado por Lluvia, debe mostrar: `Aparición: 🌙 (Potenciado por: 🌧️)`.
+  - **Visitantes**: Si es un visitante, el texto debe indicar explícitamente su origen climático para justificar su presencia fuera de su hábitat natural.
 - **Case-Insensitive Lookup**: Every query to `ABILITY_DATA` or `NATURE_DATA` MUST normalize keys (`.toLowerCase()`). This prevents visual failures if the Pokémon database uses "OSADO" and the manual uses "Osado".
+
 - **Full Descriptions**: Avoid placeholders. Tooltips MUST display the `.desc` field of the data object. If it doesn't exist, use an informative fallback like "Special ability of this Pokémon."
 - **Contextual Iconography**: Use distinctive icons (e.g., 🧠 for Nature, 🧬 for Ability) in interactive labels to indicate that the element is clickable/hoverable.
 

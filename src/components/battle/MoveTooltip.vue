@@ -13,20 +13,28 @@ const props = defineProps({
 const battleStore = useBattleStore()
 
 const modifierInfo = computed(() => {
+  if (!battleStore.isBattleActive) return null
+  
   const m = props.move
   const weather = battleStore.state?.weather?.type
   const mechWeather = getMechanicalWeather(weather)
   const cycle = getDayCycle()
 
-  const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
-  const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
+  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
+  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN
+  const isDayTime = cycle === 'day' || cycle === 'morning'
+  const isNightTime = cycle === 'night' || cycle === 'dusk'
+
+  const isSunActive = isSunny || (mechWeather === WEATHER_MECHANICAL.CLEAR && isDayTime)
+  const isRainActive = isRaining || (mechWeather === WEATHER_MECHANICAL.CLEAR && isNightTime)
 
   const moveName = (m.name || '').toLowerCase()
 
   // Trueno (Thunder) and Vendaval (Hurricane) are always boosted in Rain, penalized in Sun
   if (moveName === 'trueno' || moveName === 'thunder' || moveName === 'vendaval' || moveName === 'hurricane') {
-    if (isSunActive) return { type: 'penalized', text: 'Penalizado por Sol/Horario (Precisión 50%)' }
-    if (isRainActive) return { type: 'boosted', text: 'Potenciado por Lluvia/Horario (¡No falla!)' }
+    if (isSunny) return { type: 'penalized', text: 'Penalizado por Clima Soleado (Precisión 50%)' }
+    if (isRaining) return { type: 'boosted', text: 'Potenciado por Lluvia (¡No falla!)' }
+    return null
   }
 
   // Rayo Solar (Solar Beam) and Cuchilla Solar (Solar Blade)

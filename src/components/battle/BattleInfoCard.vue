@@ -43,6 +43,44 @@ watch(() => p.value.hp, (newHp) => {
   displayHp.value = newHp
 })
 
+// --- GESTIÓN DE XP Y LEVEL UP (Phase 3) ---
+const isLevelingUp = ref(false)
+const xpAnimationActive = ref(false)
+const displayExpPct = ref((p.value.exp / p.value.expNeeded) * 100)
+
+watch(() => p.value.level, (newLevel, oldLevel) => {
+  if (oldLevel && newLevel > oldLevel) {
+    // 1. Efecto de Destello (Flash)
+    isLevelingUp.value = true
+    setTimeout(() => { isLevelingUp.value = false }, 1000)
+
+    // 2. Orquestación de barra de XP (Reset suave)
+    // Primero aseguramos que la barra esté al 100%
+    displayExpPct.value = 100
+    xpAnimationActive.value = true
+    
+    // Pequeño delay para que se vea el 100% antes de resetear
+    setTimeout(() => {
+      xpAnimationActive.value = false // Desactivar transición para reset instantáneo
+      displayExpPct.value = 0
+      
+      // Siguiente tick: volver a activar transición y poner el valor real del nuevo nivel
+      setTimeout(() => {
+        xpAnimationActive.value = true
+        displayExpPct.value = (p.value.exp / p.value.expNeeded) * 100
+      }, 50)
+    }, 600)
+  }
+}, { immediate: false })
+
+watch(() => p.value.exp, (newExp) => {
+  // Solo actualizar si no estamos en medio de un reset por level up
+  if (!isLevelingUp.value) {
+    xpAnimationActive.value = true
+    displayExpPct.value = (newExp / p.value.expNeeded) * 100
+  }
+})
+
 const getHpPct = (cur, max) => (cur / max) * 100
 const getHpClass = (pct) => {
   if (pct > 50) return 'hp-high'
@@ -281,7 +319,13 @@ const formatMult = (m) => {
 <template>
   <div 
     class="glass-card battle-info-card" 
-    :class="[isPlayer ? 'player-card' : 'enemy-card', { 'is-admin-view': isAdmin }]"
+    :class="[
+      isPlayer ? 'player-card' : 'enemy-card', 
+      { 
+        'is-admin-view': isAdmin,
+        'is-leveling-up': isLevelingUp
+      }
+    ]"
   >
     <div class="card-content-wrapper">
       <div class="card-header">
@@ -381,7 +425,8 @@ const formatMult = (m) => {
         >
           <div
             class="exp-bar-inner"
-            :style="{ width: (p.exp / p.expNeeded * 100) + '%' }"
+            :class="{ 'is-animating': xpAnimationActive }"
+            :style="{ width: displayExpPct + '%' }"
           />
         </div>
 
@@ -533,8 +578,22 @@ const formatMult = (m) => {
 .exp-bar-inner { 
   height: 100%; 
   background: var(--blue); 
-  transition: width 0.4s ease; 
+  width: 0;
+  transition: none;
+  &.is-animating {
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
   @include will-animate(width);
+}
+
+.is-leveling-up {
+  animation: level-up-flash 0.8s ease-out forwards;
+}
+
+@keyframes level-up-flash {
+  0% { filter: Brightness(1) contrast(1); transform: Scale(1); }
+  20% { filter: Brightness(2) contrast(1.2); transform: Scale(1.05); border-color: Rgba(255,255,255,0.8); }
+  100% { filter: Brightness(1) contrast(1); transform: Scale(1); }
 }
 
 .hp-high { background: Linear-Gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); }

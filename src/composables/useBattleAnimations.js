@@ -1,4 +1,4 @@
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, toValue } from 'vue'
 import { gameBus } from '@/logic/gameBus'
 
 export function useBattleAnimations(battleStore, enemyRef) {
@@ -30,14 +30,34 @@ export function useBattleAnimations(battleStore, enemyRef) {
   const enemyIsShaking = ref(false)
   const enemyIsBlinking = ref(false)
 
+  // Estados de Entrenador
+  const trainerAnimState = ref(null) // 'entering' | 'retreating' | 'idle'
+  const isTrainerVisible = ref(false)
+
+  // Transiciones Globales
+  const isGlobalFadeActive = ref(false)
+
   const isIntroInProgress = computed(() => {
-    return isWildEntryAnimation.value || 
+    const s = toValue(battleStore.fsm.currentState)
+    return s === 'INITIALIZING' ||
+           s === 'FIRST_INTRO' ||
+           battleStore.isIntroAnimating ||
+           isWildEntryAnimation.value || 
            wildRevealActive.value || 
            isEmerging.value || 
            upcomingIsEmerging.value || 
            playerAnimState.value !== null || 
            enemyAnimState.value !== null ||
+           trainerAnimState.value !== null ||
            isCaptureSequenceActive.value
+  })
+
+  const isPlayerSpriteSuppressed = computed(() => {
+    return !toValue(battleStore.player)
+  })
+
+  const isEnemySpriteSuppressed = computed(() => {
+    return !toValue(battleStore.enemy)
   })
 
   const revealWildPokemon = (isInstant = false) => {
@@ -64,46 +84,151 @@ export function useBattleAnimations(battleStore, enemyRef) {
   const triggerSearchEntry = () => {
     wildRevealActive.value = true
     isWildEntryAnimation.value = false
-    isWildSilhouette.value = false // La silueta la maneja activeEnemyIsSilhouette via isSearching
+    isWildSilhouette.value = true // Aseguramos silueta inicial en arbustos
   }
 
-  const triggerWildEmergence = () => {
-    return new Promise((resolve) => {
-      // Guard: solo salir si la secuencia completa ya está corriendo
-      if (isWildEntryAnimation.value) {
-        resolve()
+  // Sincroniza las banderas de animación visual con el estado lógico de la FSM.
+  // Esto elimina la necesidad de timers duplicados y asegura que la UI siga a la lógica.
+  watch(
+    () => [toValue(battleStore.fsm.currentState), toValue(battleStore.fsm.currentSubState)],
+    ([state, sub]) => {
+      if (!state) return
+
+      // CASOS DE LIMPIEZA GLOBAL (Al entrar en combate activo o salir)
+      if (state === 'ACTIVE_BATTLE' || state === 'EXIT_BATTLE' || sub === 'WAIT_INPUT' || sub === 'SHOW_ALL_HUDS') {
+        isGlobalFadeActive.value = (state === 'EXIT_BATTLE')
+        isWildEntryAnimation.value = false
+        isEmerging.value = false
+        wildRevealActive.value = false
+        upcomingIsEmerging.value = false
+        isWildSilhouette.value = false
+        playerAnimState.value = null
+        enemyAnimState.value = null
+        trainerAnimState.value = null
+        isTrainerVisible.value = false
         return
       }
 
-    // PASO 1: ENTRY_ANIM - SILHOUETTE_SOLID (Instantáneo)
-    isWildSilhouette.value = true
-    wildRevealActive.value = true
-    isWildEntryAnimation.value = true
-    isEmerging.value = false
+      switch (sub) {
+        // 1. GESTIÓN DE SILUETAS
+        case 'SILHOUETTE_LAYER':
+        case 'SILHOUETTE_MODE':
+        case 'SOLID_SILHOUETTE':
+        case 'SILHOUETTE_JUMP':
+        case 'SILHOUETTE_FLY':
+        case 'T_SILHOUETTE':
+        case 'WILD_ENTRY':
+        case 'ENCOUNTER_ANIM':
+        case 'ENTRY_ANIM':
+          isWildSilhouette.value = true
+          wildRevealActive.value = true
+          break
+        
+        case 'COLOR_READY':
+        case 'T_FULL_COLOR':
+        case 'FULL_COLOR_JUMP':
+        case 'REVEAL_COLORS':
+          isWildSilhouette.value = false
+          break
 
-    // PASO 2: ENCOUNTER_ANIM - ENCOUNTER_JUMP (600ms)
-    setTimeout(() => {
-      isEmerging.value = true
-    }, 600)
+        // 2. GESTIÓN DE ARBUSTOS Y PARALELISMO
+        case 'WILD_ENTRY':
+        case 'ENTRY_ANIM':
+        case 'BUSH_FLOW':
+        case 'BUSH_SETUP':
+        case 'BUSH_VISIBLE':
+        case 'BUSH_IDLE':
+        case 'GRASS_SYNC':
+        case 'PARALLEL_PREP':
+        case 'GROUND_FLOW':
+        case 'BUSHES_BACK':
+          wildRevealActive.value = true
+          break
+        
+        case 'BUSH_FADE':
+        case 'BUSH_FADE_COLOR':
+          wildRevealActive.value = false
+          break
 
-    // PASO 3: BUSH_FADE (1100ms) - Empieza a ocultar arbustos
-    setTimeout(() => {
-      wildRevealActive.value = false
-    }, 1100)
+        // 3. GESTIÓN DE SALTOS (EMERGENCE)
+        case 'SILHOUETTE_JUMP':
+        case 'FULL_COLOR_JUMP':
+        case 'ENCOUNTER_ANIM':
+        case 'ENTRY_ANIM':
+        case 'SPRITE_JUMP':
+        case 'PARALLEL_PREP':
+        case 'JUMP_SHADOW':
+        case 'JUMP_COLOR':
+          isEmerging.value = true
+          isWildEntryAnimation.value = true
+          break
 
-    // PASO 4: REVEAL_COLORS (1400ms) - Quita la silueta
-    setTimeout(() => {
-      isWildSilhouette.value = false
-    }, 1400)
+        // 4. GESTIÓN DE Poké Ball (LLAMADO)
+        case 'POKEMON_CALL':
+        case 'ENERGY_RELEASE':
+        case 'PARALLEL_PREP':
+          playerAnimState.value = 'releasing'
+          break
 
-    // PASO 5: CLEANUP (2000ms) - Fin de secuencia de entrada
-    setTimeout(() => {
-      isWildEntryAnimation.value = false
-      isEmerging.value = false
-      resolve()
-    }, 2000)
-  })
-  }
+        case 'POKEMON_RECALL':
+        case 'ENERGY_RECALL':
+          playerAnimState.value = 'catching'
+          break
+
+        // 5. GESTIÓN DE REORDER / SWITCH
+        case 'REORDER_TEAM':
+        case 'CHECK_PLAYER_SLOT':
+        case 'SWITCHING':
+        case 'READ_TARGET':
+          // Preparar para el cambio (ocultar HUDs si es necesario)
+          break
+
+        // 6. GESTIÓN DE ENTRENADORES
+        case 'TRAINER_ENTRY':
+          trainerAnimState.value = 'entering'
+          isTrainerVisible.value = true
+          break
+        
+        case 'TRAINER_ENCOUNTER':
+          trainerAnimState.value = 'idle'
+          isTrainerVisible.value = true
+          break
+
+        case 'TRAINER_RETREAT':
+          trainerAnimState.value = 'retreating'
+          setTimeout(() => { isTrainerVisible.value = false; trainerAnimState.value = null }, 800)
+          break
+
+        case 'VOID_STATE':
+          isGlobalFadeActive.value = true
+          isEmerging.value = false
+          isWildEntryAnimation.value = false
+          wildRevealActive.value = false
+          upcomingIsEmerging.value = false
+          isWildSilhouette.value = false
+          playerAnimState.value = null
+          enemyAnimState.value = null
+          trainerAnimState.value = null
+          isTrainerVisible.value = false
+          break
+
+        case 'WAIT_INPUT':
+        case 'WAIT_LOG_QUEUE':
+        case 'ANIM_SYNC':
+        case null:
+          // Reset de estados de animación al volver a espera o estado neutro
+          playerAnimState.value = null
+          enemyAnimState.value = null
+          isEmerging.value = false
+          isWildEntryAnimation.value = false
+          isGlobalFadeActive.value = false
+          break
+      }
+    }
+  )
+
+  // Funciones legacy para mantener compatibilidad con BattleArenaView.vue (se pueden limpiar luego)
+  const triggerWildEmergence = () => Promise.resolve()
 
   // SEARCH_PHASE → ENCOUNTER_ANIM: Solo el jump + reveal.
   // Asume que triggerSearchEntry() (ENTRY_ANIM) ya corrió y los arbustos + silueta están visibles.
@@ -117,10 +242,10 @@ export function useBattleAnimations(battleStore, enemyRef) {
         isEmerging.value = true
       }, 600)
 
-      // BUSH_FADE (1100ms)
+      // BUSH_FADE (600ms) - Sincronizado con el salto
       setTimeout(() => {
         wildRevealActive.value = false
-      }, 1100)
+      }, 600)
 
       // REVEAL_COLORS (1400ms)
       setTimeout(() => {
@@ -217,6 +342,8 @@ export function useBattleAnimations(battleStore, enemyRef) {
   }
 
   const handleFaintAnim = (e) => {
+    if (isFaintInProgress.value) return // Idempotente
+    
     const data = e?.detail || e
     const side = typeof data === 'string' ? data : (data?.side || 'enemy')
     if (side === 'enemy') {
@@ -246,7 +373,12 @@ export function useBattleAnimations(battleStore, enemyRef) {
       const data = e?.detail || e
       handleShakeRequest(data)
     })
-    
+
+    gameBus.on('PLAY_DAMAGE', (e) => {
+      const data = e?.detail || e
+      handleShakeRequest(data)
+    })
+
     gameBus.on('POKEMON_FAINT', (e) => handleFaintAnim(e))
     gameBus.on('PLAY_FAINT', (e) => handleFaintAnim(e))
 
@@ -327,12 +459,15 @@ export function useBattleAnimations(battleStore, enemyRef) {
     playerIsBlinking,
     enemyIsShaking,
     enemyIsBlinking,
+    trainerAnimState,
+    isTrainerVisible,
+    isGlobalFadeActive,
     isIntroInProgress,
     revealWildPokemon,
     triggerWildEmergence,
-    triggerSearchEntry,
     triggerSearchEncounter,
     triggerCatchSparkles,
-    initListeners
+    initListeners,
+    isPlayerSpriteSuppressed
   }
 }

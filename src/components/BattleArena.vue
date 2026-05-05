@@ -261,10 +261,6 @@ const handleClose = () => {
   overflow: hidden;
   transition: opacity 0.3s ease;
 
-  &.is-searching {
-    pointer-events: none;
-  }
-
   &.is-fullscreen {
     flex: 1;
     height: 100%;
@@ -287,7 +283,7 @@ const handleClose = () => {
   @media (min-width: 769px) {
     display: grid;
     grid-template-columns: 280px 1fr;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: 1fr minmax(230px, auto);
     grid-template-areas: 
       "log arena"
       "log moves";

@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, and Zero-Warning SASS/Vue standards. Includes diagnostic scripts for automated auditing and self-correction of viewport and GPU anti-patterns. Use this as a Navigation Hub to access technical manuals for Database, Assets, and UI.
+description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, and Zero-Warning SASS/Vue standards. Includes diagnostic scripts for automated auditing (viewport, GPU). MANDATORY: For ANY task involving the battle engine or FSM transitions, you MUST use verify_fsm_diagrams.js and audit_fsm_implementation.js to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
 ---
 
 # Project Standards (Lean Core)
@@ -96,6 +96,12 @@ Consult these manuals for detailed implementation specifications:
 - **Source of Truth**: Always point to the centralized logic file (e.g., `spatialCoordinator.js`) as the owner of the numbers.
 - **Relativity**: Explain technical specs using symbolic names (`ENTITY_SIZE_P1/P2`) and logical relationships (`SAFE_ZONE_BOTTOM - ENTITY_SIZE_P1`) rather than absolute values.
 
+### 8. Battle Engine Integrity (FSM)
+
+- **Documentation Parity**: The code MUST remain a 1:1 implementation of the Mermaid diagrams in `battle_mechanics_manual.md`.
+- **Deterministic Flow**: Avoid naked `setTimeout` calls in combat logic. Use `await new Promise(r => setTimeout(r, ms))` to maintain atomic control.
+- **Mandatory Audit**: Run `verify_fsm_diagrams.js` and `audit_fsm_implementation.js` before every commit that touches battle logic. Zero critical errors are allowed.
+
 ---
 
 ## 🏗️ Artifact Governance (MANDATORY)
@@ -121,6 +127,7 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 Use these scripts to verify project standards:
 
 - `verify_fsm_diagrams.js`: Scans `battle_mechanics_manual.md` Mermaid diagrams and verifies 1:1 mapping against `battleStateMachine.js` FSM. Use to detect missing states or broken transitions.
+- `audit_fsm_implementation.js`: Deep audit of the battle engine. Detects race conditions (setTimeout vs await), unimplemented sub-states, HUD suppression gaps, and persistence gate integrity.
 - `detect_gpu_gaps.py`: Scans for missing layer promotion or expensive filters.
 - `detect_outline_traps.py`: Detects expensive Quad Drop-Shadow outlines that should be migrated to SVG.
 - `detect_viewport_units.py`: Detects legacy `vw`/`vh` units that should be migrated to `dvw`/`dvh`.

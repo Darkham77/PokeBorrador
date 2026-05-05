@@ -75,8 +75,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="actions-container">
-    <div class="action-row-complex">
+  <Transition name="controls-slide">
+    <div 
+      class="actions-container"
+      :class="{ 'intro-fade': battleStore.isIntroAnimating }"
+    >
+      <div class="action-row-complex">
       <button
         class="btn-vicio-secondary switch"
         :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating"
@@ -132,8 +136,9 @@ onUnmounted(() => {
       >
         <span class="icon">🎒</span> MOCHILA
       </button>
+      </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style scoped lang="scss">
@@ -147,6 +152,12 @@ onUnmounted(() => {
   overflow: visible;
   position: relative;
   z-index: var(--z-low);
+  transition: opacity 0.5s ease;
+
+  &.intro-fade {
+    opacity: 0.1;
+    pointer-events: none;
+  }
 }
 
 .action-row-complex {
@@ -351,4 +362,12 @@ onUnmounted(() => {
   transform: TranslateX(-50%) TranslateY(20px) Scale(0.8);
 }
 
+/* Transición de entrada de controles */
+.controls-slide-enter-active {
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.controls-slide-enter-from {
+  opacity: 0;
+  transform: translateY(30px) Scale(0.95);
+}
 </style>

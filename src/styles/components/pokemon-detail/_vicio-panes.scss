@@ -387,7 +387,7 @@
 
   .grid-header {
     display: grid;
-    grid-template-columns: 40px 1.5fr 80px 100px 45px 45px 45px;
+    grid-template-columns: 35px 1.2fr 65px 110px 38px 38px 38px;
     padding: 10px 8px;
     border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
     font-size: 7px;
@@ -406,7 +406,7 @@
 
   .grid-row {
     display: grid !important; 
-    grid-template-columns: 40px 1.5fr 80px 100px 45px 45px 45px;
+    grid-template-columns: 35px 1.2fr 65px 110px 38px 38px 38px;
     padding: 0;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     border-bottom: 1px solid Rgba(255, 255, 255, 0.03);
@@ -442,9 +442,10 @@
     }
 
     .move-type .mv-type-tag {
-      @include type-pill(7px);
-      min-width: 55px;
+      @include type-pill-mini(6.5px);
+      min-width: 48px;
       width: auto;
+      padding: 2px 4px;
     }
 
     .move-cat, .move-power, .move-acc, .move-pp {

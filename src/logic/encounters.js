@@ -7,20 +7,78 @@ import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
 import { useEventStore } from '@/stores/events';
 
+const WEATHER_BUFF_MULTIPLIER = 1.5;
+const VISITOR_TOTAL_WEIGHT_PERCENT = 10;
+
+/**
+ * Determina si una especie recibe el buff del clima actual basado en sus tipos.
+ */
+function isSpeciesBoosted(id, weather) {
+  const pData = pokemonDataProvider.getPokemonData(id);
+  if (!pData || !weather || weather === 'clear') return false;
+  
+  const types = Array.isArray(pData.type) ? pData.type : [pData.type];
+  const w = weather.toLowerCase();
+  
+  const weatherBoosts = {
+    rain: ['water', 'bug', 'grass'],
+    storm: ['electric', 'dragon'],
+    sun: ['fire', 'grass'],
+    snow: ['ice', 'steel'],
+    sandstorm: ['rock', 'ground', 'steel'],
+    fog: ['ghost', 'psychic', 'dark'],
+    heatwave: ['fire']
+  };
+
+  const boostedTypes = weatherBoosts[w] || [];
+  return types.some(t => boostedTypes.includes(t.toLowerCase()));
+}
+
+
 /**
  * Gets the valid pool of Pokémon for a location and time cycle.
  * Incorporates active events.
  */
-export function getEncounterPool(loc, cycle, activeEvents = []) {
+export function getEncounterPool(loc, cycle, weather = 'clear', activeEvents = []) {
   if (!loc || !loc.wild) return { pool: [], rates: [] };
   
   let pool = [...(loc.wild[cycle] || loc.wild.day || [])];
   let rates = [...(loc.rates && (loc.rates[cycle] || loc.rates.day) ? (loc.rates[cycle] || loc.rates.day) : [])];
   
-  // Ensure rates match pool length
+  // Ensure rates match pool length before transformations
   while (rates.length < pool.length) rates.push(10);
 
-  // Apply Event Injections
+  // 1. Inyección por Clima (Visitantes y Exclusivos)
+  if (weather && weather !== 'clear' && loc.weather?.[weather]) {
+    const wConfig = loc.weather[weather];
+    
+    // Especies Exclusivas (Pesos dinámicos o base 5)
+    if (wConfig.exclusive) {
+      const exclusives = Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive);
+      exclusives.forEach(id => {
+        if (!pool.includes(id)) {
+          pool.push(id);
+          const weight = Array.isArray(wConfig.exclusive) ? 5 : (wConfig.exclusive[id] || 5);
+          rates.push(weight); 
+        }
+      });
+    }
+
+    // Visitantes (Marcados con peso negativo para normalización proporcional)
+    if (wConfig.visitors) {
+      const visitors = Array.isArray(wConfig.visitors) ? wConfig.visitors : Object.keys(wConfig.visitors);
+      visitors.forEach(id => {
+        if (!pool.includes(id)) {
+          pool.push(id);
+          const weight = Array.isArray(wConfig.visitors) ? -10 : -(wConfig.visitors[id] || 10);
+          rates.push(weight); 
+        }
+      });
+    }
+
+  }
+
+  // 2. Apply Event Injections
   activeEvents.forEach(ev => {
     if (ev.active && ev.config?.ignoreTimeRestrictions && ev.config.species) {
       const eventSpecies = ev.config.species.split(',').map(s => s.trim().toLowerCase());
@@ -43,6 +101,7 @@ export function getEncounterPool(loc, cycle, activeEvents = []) {
   
   return { pool, rates };
 }
+
 
 /**
  * Selects a random Pokémon ID from a pool using weights.
@@ -109,11 +168,17 @@ export async function generateEncounter(locId, state, options = {}) {
       return { type: 'trainer' };
     }
     
-    const { pool, rates } = getEncounterPool(loc, cycle, activeEvents);
+    const weather = options.weather || 'clear';
+    const { pool, rates: rawRates } = getEncounterPool(loc, cycle, weather, activeEvents);
+    
+    // Normalizar pesos para Repelente
+    const rates = rawRates.map(r => r === -1 ? 5 : r); 
+
     // Find a pokemon with level >= firstPokemon.level
     for (let attempt = 0; attempt < 10; attempt++) {
       const selectedId = selectFromPool(pool, rates);
       const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
+
       if (!firstPokemon || level >= firstPokemon.level) {
         return { type: 'wild', pokemon: makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) };
       }
@@ -145,7 +210,35 @@ export async function generateEncounter(locId, state, options = {}) {
   }
 
   // 4. Wild Pokemon Pool Selection (Normal)
-  let { pool, rates } = getEncounterPool(loc, cycle, activeEvents);
+  const weather = options.weather || 'clear';
+  let { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents);
+
+  // 4.1 Lógica de Clima: Multiplicadores e Invasiones
+  if (weather && weather !== 'clear') {
+    const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1);
+    const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1);
+
+    // Buff x1.5 a nativos que coinciden con el clima
+    nativeIndices.forEach(idx => {
+      if (isSpeciesBoosted(pool[idx], weather)) {
+        rates[idx] *= WEATHER_BUFF_MULTIPLIER;
+      }
+    });
+
+    // Normalización Proporcional de Visitantes (10% del peso total)
+    if (visitorIndices.length > 0) {
+      const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + rates[idx], 0);
+      const visitorQuota = totalNativeWeight / 9; // 10% del total final
+      
+      // Calculamos la suma de los pesos relativos (valores absolutos de los pesos negativos)
+      const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx]), 0);
+      
+      visitorIndices.forEach(idx => {
+        const relativeWeight = Math.abs(rates[idx]) / sumRelativeWeights;
+        rates[idx] = visitorQuota * relativeWeight;
+      });
+    }
+  }
 
   // 5. Incense Effect
   if (state.incenseSecs > 0 && state.incenseType) {
@@ -165,6 +258,18 @@ export async function generateEncounter(locId, state, options = {}) {
   const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
   
   const pokemon = makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier });
+
+  // Marcar si es atmosférico para efectos visuales posteriores
+  const isVisitor = !!loc.weather?.[weather]?.visitors?.[selectedId];
+  const isExclusive = !!loc.weather?.[weather]?.exclusive?.[selectedId];
+
+  const isBuffed = !isVisitor && !isExclusive && isSpeciesBoosted(selectedId, weather);
+  
+  if (isVisitor || isExclusive || isBuffed) {
+    pokemon.isAtmospheric = true;
+    pokemon.weatherOrigin = weather;
+  }
+
 
   // 7. Apply War Dominance Bonuses
   return { 

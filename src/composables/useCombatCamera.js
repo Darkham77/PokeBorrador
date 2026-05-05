@@ -46,26 +46,31 @@ export function useCombatCamera(viewportRef) {
   }))
 
   const updateCamera = (width, height) => {
-    if (width <= 0 || height <= 0) return
+    // Filtro de Estabilidad: Ignoramos dimensiones nulas o valores de inicialización del navegador (0 o window.innerWidth exacto si no es fullscreen)
+    if (!width || !height || width < 100 || height < 100) return
 
     let cw = width
     let ch = height
-    const ratio = width / height
 
+    // Mantener la proporción dentro de los límites del manual
+    const ratio = cw / ch
     if (ratio > WORLD_CONSTANTS.RATIO_MAX) {
-      cw = height * WORLD_CONSTANTS.RATIO_MAX
+      cw = ch * WORLD_CONSTANTS.RATIO_MAX
     } else if (ratio < WORLD_CONSTANTS.RATIO_MIN) {
-      ch = width / WORLD_CONSTANTS.RATIO_MIN
+      ch = cw / WORLD_CONSTANTS.RATIO_MIN
     }
 
     camWidth.value = cw
     camHeight.value = ch
 
+    // Cálculo de escala basado estrictamente en el manual (VisibleX/Y)
     const scaleX = cw / WORLD_CONSTANTS.VISIBLE_UNITS_X
     const scaleY = ch / WORLD_CONSTANTS.VISIBLE_UNITS_Y
     const currentScale = Math.min(scaleX, scaleY) * debugZoom.value
     scale.value = currentScale
 
+    // Focal Point (Bottom-Alignment Centering)
+    // El desplazamiento Tx/Ty centra el TARGET_X/Y del coordinador en el centro del viewport físico
     tx.value = (cw / 2) - (WORLD_CONSTANTS.TARGET_X * currentScale)
     ty.value = (ch / 2) - (WORLD_CONSTANTS.TARGET_Y * currentScale)
   }

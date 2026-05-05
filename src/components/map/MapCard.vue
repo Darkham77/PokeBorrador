@@ -110,7 +110,7 @@ const processedGuardian = computed(() => {
     typeInfo, 
     captured,
     sprite: getPokemonSprite(id), 
-    seed: Math.random() 
+    seed: id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) / 100
   }
 })
 
@@ -122,6 +122,23 @@ const processedGrid = computed(() => {
   const seenPokedex = gameStore.state.seenPokedex || []
   const caughtPokedex = gameStore.state.pokedex || []
   
+  const weatherBoosts = {
+    rain: ['water', 'bug', 'grass'],
+    storm: ['electric', 'dragon'],
+    sun: ['fire', 'grass'],
+    snow: ['ice', 'steel'],
+    sandstorm: ['rock', 'ground', 'steel'],
+    fog: ['ghost', 'psychic', 'dark'],
+    heatwave: ['fire']
+  };
+
+  const isSpeciesBoostedLocal = (id, weather) => {
+    const data = pokemonDataProvider.getPokemonData(id);
+    if (!data || !weatherBoosts[weather]) return false;
+    const types = Array.isArray(data.type) ? data.type : [data.type];
+    return types.some(t => weatherBoosts[weather].includes(t.toLowerCase()));
+  }
+
   return slots.map((id, index) => {
     if (!id) return { id: null, key: `empty-${index}` }
     let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
@@ -145,11 +162,40 @@ const processedGrid = computed(() => {
     const isLimited = appearingCycles.length > 0 && appearingCycles.length < cycles.length
     
     const emojiMap = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
-    let timeText = 'Habitante común.'
+    
+    // Detección Atmosférica temprana para el texto
+    const weather = computedWeather.value
+    const isVisitor = !!props.map.weather?.[weather]?.visitors?.[id]
+    const isExclusive = !!props.map.weather?.[weather]?.exclusive?.[id]
+
+    const isBoosted = !isVisitor && !isExclusive && isSpeciesBoostedLocal(id, weather)
+    const isAtmospheric = isVisitor || isExclusive || isBoosted
+
+    let timeText = ''
+    
+    // 1. Información de Ciclo (Si es limitado y lo hemos visto)
     if (isLimited && isSeen) {
       const emojis = appearingCycles.map(c => emojiMap[c] || c).join(' ')
       timeText = `Aparición: ${emojis}`
     }
+
+    // 2. Información Atmosférica
+    if (isAtmospheric) {
+      if (isSeen) {
+        const weatherTag = isVisitor ? 'Visitante' : (isExclusive ? 'Exclusivo' : 'Potenciado')
+        const weatherLine = `${weatherEmoji.value} ${weatherTag} por el clima.`
+        timeText = timeText ? `${timeText}\n${weatherLine}` : weatherLine
+      } else {
+        timeText = `${weatherEmoji.value} Anomalía Atmosférica detectada.`
+      }
+    }
+
+    // 3. Fallback: Habitante común (Solo si no hay ciclo ni clima)
+    if (!timeText) {
+      timeText = 'Habitante común.'
+    }
+
+
 
     return {
       id, 
@@ -158,13 +204,16 @@ const processedGrid = computed(() => {
       sprite: getAssetUrl(ASSET_TYPES.POKEMON, id), 
       isSeen, 
       isCaught, 
-      isRare,
+      isRare: (rate < 10) || isVisitor || isExclusive, // Solo roja para raros, visitantes o exclusivos
+      isAtmospheric,
       tooltipTitle: name, 
       tooltipDesc: typeInfo ? `${typeInfo}\n${timeText}` : timeText, 
-      seed: Math.random()
+      seed: (id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + index) / 100
     }
+
   })
 })
+
 
 const allSpawns = computed(() => [...props.spawnPool.generic, ...props.spawnPool.specific])
 const currentCols = ref(3)
@@ -314,9 +363,10 @@ const spawnGrid = computed(() => {
             class="spawn-content"
           >
             <div 
-              :class="['sprite-wrapper', { 'rare-spawn': item.isRare }]"
+              :class="['sprite-wrapper', { 'rare-spawn': item.isRare, 'atmospheric-spawn': item.isAtmospheric }]"
               :style="{ '--spawn-seed': item.seed }"
             >
+
               <PVTooltip
                 :title="item.tooltipTitle"
                 :description="item.tooltipDesc"

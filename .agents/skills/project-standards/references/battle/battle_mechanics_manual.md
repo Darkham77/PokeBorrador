@@ -5,6 +5,35 @@ This manual documents the internal workings of the battle engine, focusing on lo
 > [!NOTE]
 > All mathematical formulas (Damage, Escape, Stats) have been centralized in the [Game Formulas Manual](../core/game_formulas_manual.md).
 
+## 🏛️ Architecture: Seats vs. Slots
+
+To support future expansions (Double Battles) and maintain deterministic transitions, the engine distinguishes between **Physical Positions** and **Data Reservations**.
+
+### 1. Seats (Physical Positions)
+
+A **Seat** is a fixed position on the battlefield where a Pokémon is rendered and interacts.
+
+- **Seat 1**: The active position for the **Player Side** (Side 1).
+- **Seat 2**: The active position for the **Enemy Side** (Side 2).
+- **Behavior**: A seat can be **Empty** (Null) or **Occupied**.
+- **Animation Rule**: `POKEMON_CALL` always targets an Empty Seat. If a seat is occupied, it must be vacated via `POKEMON_RECALL` or a `VACATE` state first.
+
+### 2. Slots (Data Reservations - Enemy Only)
+
+A **Slot** is a background data container used for encounter prediction and pre-generation.
+
+- **Slot 1 (Active Slot)**: Holds the data for the encounter currently in (or entering) **Seat 2**.
+- **Slot 2 (Predictive Slot)**: Holds the data for the *next* encounter in a search loop.
+- **Promotion**: When an encounter ends, Slot 2 data is promoted to Slot 1, and a new encounter is generated for Slot 2.
+
+### 3. Transition Matrix
+
+| Event | Action on Seat | Action on Slot |
+| :--- | :--- | :--- |
+| **New Battle** | `VACATE_ALL_SEATS` (Clean both) | Populate Slot 1 & 2 |
+| **Search Loop** | `VACATE_ENEMY_SEAT` (Clean Seat 2) | Promote S2 -> S1, Generate S2 |
+| **Mid-Battle Switch** | `POKEMON_RECALL` -> `POKEMON_CALL` | No change to Slots |
+
 ---
 
 ## 🌪️ Weather Influence
@@ -329,13 +358,14 @@ When the player enters a specific area (Route, Gym, Cave), the engine triggers t
 
 ```mermaid
 stateDiagram-v2
-    state CONTEXT_SETUP {
-        [*] --> RECEIVE_CONFIG: "Area Entry Trigger"
-        RECEIVE_CONFIG --> VALIDATE_WEIGHTS: "Sum Probabilities"
-        VALIDATE_WEIGHTS --> INJECT_FILTERS: "Apply Pool Restrictions"
-        INJECT_FILTERS --> READY_FOR_GEN: "Generator Primed"
-        READY_FOR_GEN --> [*]
-    }
+        state CONTEXT_SETUP {
+            [*] --> RECEIVE_CONFIG
+            RECEIVE_CONFIG --> VALIDATE_WEIGHTS : "Sum Probabilities"
+            VALIDATE_WEIGHTS --> INJECT_FILTERS : "Apply Pool Restrictions"
+            INJECT_FILTERS --> READY_FOR_GEN : "Generator Primed"
+            READY_FOR_GEN --> HIDE_ALL_COMBAT_HUDS : "Init Stage Clean"
+            HIDE_ALL_COMBAT_HUDS --> [*] : "Block Control Panel"
+        }
 ```
 
 - **Generation Context Configuration** object dictates how both slots are populated:
@@ -359,23 +389,23 @@ The combat engine follows a strictly phased lifecycle. This high-level diagram s
 
 ```mermaid
 stateDiagram-v2
-    [*] --> CONTEXT_SETUP: "Injected Configuration (Table/Filters)"
-    CONTEXT_SETUP --> INITIALIZING: "Context Injected"
+    [*] --> CONTEXT_SETUP : Injected Configuration
+    CONTEXT_SETUP --> INITIALIZING : Context Injected
     
-    INITIALIZING --> SEARCH_PHASE: "Slots Ready & Coords Loaded"
+    INITIALIZING --> SEARCH_PHASE : Slots Ready
     
-    REWARDS_PHASE --> CHECK_PERSISTENCE: "Rewards Completed"
+    REWARDS_PHASE --> CHECK_PERSISTENCE : Rewards Completed
     
     state CHECK_PERSISTENCE <<choice>>
-    CHECK_PERSISTENCE --> INITIALIZING: "persistenceMode == PERSISTENT"
-    CHECK_PERSISTENCE --> EXIT_BATTLE: "persistenceMode == SINGLE"
+    CHECK_PERSISTENCE --> INITIALIZING : persistenceMode == PERSISTENT
+    CHECK_PERSISTENCE --> EXIT_BATTLE : persistenceMode == SINGLE
     
-    ACTIVE_BATTLE --> EXIT_BATTLE: "Defeat / Manual Flee"
-    ACTIVE_BATTLE --> REWARDS_PHASE: "Victory / Capture"
+    ACTIVE_BATTLE --> EXIT_BATTLE : Defeat / Manual Flee
+    ACTIVE_BATTLE --> REWARDS_PHASE : Victory / Capture
     
-    SEARCH_PHASE --> ACTIVE_BATTLE: "Start Encounter"
-    SEARCH_PHASE --> EXIT_BATTLE: "Return to Map"
-    SEARCH_PHASE --> INITIALIZING: "Fail Minigame (Vanish)"
+    SEARCH_PHASE --> ACTIVE_BATTLE : Start Encounter
+    SEARCH_PHASE --> EXIT_BATTLE : Return to Map
+    SEARCH_PHASE --> INITIALIZING : Fail Minigame
     
     EXIT_BATTLE --> [*]
     
@@ -391,32 +421,34 @@ Handles data generation and coordinate pre-loading to ensure a flicker-free star
 ```mermaid
 stateDiagram-v2
     state INITIALIZING {
-        [*] --> CHECK_SLOTS: "Check current data"
+        [*] --> CHECK_SLOTS : Check current data
         
         state CHECK_SLOTS <<choice>>
-        CHECK_SLOTS --> POPULATE_BOTH: "Slot 2 is Empty (First Encounter)"
-        CHECK_SLOTS --> PROMOTE_AND_REPOPULATE: "Slot 2 exists (Loop)"
+        CHECK_SLOTS --> POPULATE_BOTH : Slots 1&2 are Empty
+        CHECK_SLOTS --> PROMOTE_AND_REPOPULATE : Slot 2 exists
         
         state POPULATE_BOTH {
-            [*] --> GEN_S1: "generate(slot1)"
-            GEN_S1 --> GEN_S2: "generate(slot2)"
-            GEN_S2 --> [*]
+            [*] --> GEN_DATA : Generate Slot 1 & 2
+            GEN_DATA --> VACATE_ALL_SEATS : Clean Stage Protocol
+            VACATE_ALL_SEATS --> [*]
         }
         
         state PROMOTE_AND_REPOPULATE {
-            [*] --> PROMOTE: "Slot 2 -> Slot 1"
-            PROMOTE --> GEN_NEW_S2: "generate(slot2)"
-            GEN_NEW_S2 --> [*]
+            [*] --> PROMOTE : Slot 2 to Slot 1
+            PROMOTE --> GEN_NEW_S2 : Generate new Slot 2
+            GEN_NEW_S2 --> VACATE_ENEMY_SEAT : Clean Enemy Seat
+            VACATE_ENEMY_SEAT --> [*]
         }
         
         POPULATE_BOTH --> PRELOAD_COORDS
         PROMOTE_AND_REPOPULATE --> PRELOAD_COORDS
         
-        PRELOAD_COORDS --> [*]: "Targetting Slot 1"
+        PRELOAD_COORDS --> [*]
     }
     
-    note right of INITIALIZING : "Centralized Data Hub - No other state alters slot assignments"
-    note right of PRELOAD_COORDS : "Ensures Slot 1 coordinates are ready before visuals start"
+    note right of INITIALIZING: Seats are active combatants on Side 1 and Side 2
+    note right of INITIALIZING: Slots are data reservations (Enemy Side)
+    note right of PRELOAD_COORDS: Preloads all available Seat and Team coordinates
 ```
 
 ### 3. Active Battle Loop
@@ -426,14 +458,18 @@ The core interaction cycle. It manages user input, turn execution, and terminal 
 ```mermaid
 stateDiagram-v2
     state ACTIVE_BATTLE {
-        [*] --> SHOW_ALL_HUDS: "Entry Hook"
-        SHOW_ALL_HUDS --> WAIT_INPUT: "Both HUDs Ready"
+        [*] --> SHOW_ALL_MISSING_COMBAT_HUDS : "Entry Hook"
+        SHOW_ALL_MISSING_COMBAT_HUDS --> WAIT_INPUT : "Both HUDs Ready"
         
-        WAIT_INPUT --> TURN_ENGINE: "Action Selected"
-        TURN_ENGINE --> WAIT_INPUT: "Turn Finished cleanly"
+        state WAIT_INPUT {
+            [*] --> [*] : "Unlock Control Panel"
+        }
         
-        TURN_ENGINE --> ENEMY_REPLACEMENT_SEQ: "Enemy KO / Caught / Escaped"
-        TURN_ENGINE --> EXIT_BATTLE: "Player Escapes"
+        WAIT_INPUT --> TURN_ENGINE : "Action Selected / Block Control Panel"
+        TURN_ENGINE --> WAIT_INPUT : "Turn Finished / Unlock Control Panel"
+        
+        TURN_ENGINE --> ENEMY_REPLACEMENT_SEQ : "Enemy KO / Caught / Escaped"
+        TURN_ENGINE --> EXIT_BATTLE : "Player Escapes"
     }
     note right of TURN_ENGINE: Sub-machine handling turn queue and resolutions
 ```
@@ -483,13 +519,13 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     state CATCH_PROCESS {
-        [*] --> HIDE_ENEMY_HUD
-        HIDE_ENEMY_HUD --> CATCH_SHAKE: "Shake Logic"
-        CATCH_SHAKE --> CATCH_BREAK: "Escaped"
-        CATCH_SHAKE --> CATCH_SUCCESS: "Capture Success"
-        CATCH_SUCCESS --> ADD_TO_STORAGE: "addPokemon(tgt)"
-        CATCH_BREAK --> SHOW_ENEMY_HUD_BK: "Return to Combat"
-        SHOW_ENEMY_HUD_BK --> [*]
+        [*] --> HIDE_ENEMY_COMBAT_HUD : "Block Control Panel"
+        HIDE_ENEMY_COMBAT_HUD --> CATCH_SHAKE : Shake Logic
+        CATCH_SHAKE --> CATCH_BREAK : Escaped
+        CATCH_SHAKE --> CATCH_SUCCESS : Capture Success
+        CATCH_SUCCESS --> ADD_TO_STORAGE : addPokemon(tgt)
+        CATCH_BREAK --> SHOW_ENEMY_COMBAT_HUD : Return to Combat / Unlock Control Panel
+        SHOW_ENEMY_COMBAT_HUD --> [*]
         ADD_TO_STORAGE --> [*]
     }
     note left of CATCH_PROCESS: UI blocks Pokeball selection if target is TRAINER
@@ -500,8 +536,8 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     state ENEMY_DEFEAT {
-        [*] --> HIDE_ENEMY_HUD_KO
-        HIDE_ENEMY_HUD_KO --> PLAY_ENEMY_FAINT: "Drop Anim (1.0s)"
+        [*] --> HIDE_ENEMY_COMBAT_HUD_KO : "Block Control Panel"
+        HIDE_ENEMY_COMBAT_HUD_KO --> PLAY_ENEMY_FAINT : Drop Anim (1.0s)
         PLAY_ENEMY_FAINT --> [*]
     }
 ```
@@ -511,8 +547,8 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     state ESCAPE_PROCESS {
-        [*] --> HIDE_ENEMY_HUD_ESC
-        HIDE_ENEMY_HUD_ESC --> PLAY_ESCAPE_ANIM: "Teleport / Run Away"
+        [*] --> HIDE_ENEMY_COMBAT_HUD_ESC : "Block Control Panel"
+        HIDE_ENEMY_COMBAT_HUD_ESC --> PLAY_ESCAPE_ANIM : Teleport / Run Away
         PLAY_ESCAPE_ANIM --> [*]
     }
 ```
@@ -539,10 +575,10 @@ stateDiagram-v2
         STABILIZE_STAGE --> AI_NEXT_PICK
         
         state AI_NEXT_PICK {
-            [*] --> SELECT_COUNTER: "Smart Selection Logic"
+            [*] --> SELECT_COUNTER: "SmartSelection Logic"
             SELECT_COUNTER --> ENCOUNTER_ANIM: "Jump Entry (Encounter)"
-            ENCOUNTER_ANIM --> SHOW_ENEMY_HUD: "Appearance Finished"
-            SHOW_ENEMY_HUD --> [*]
+            ENCOUNTER_ANIM --> SHOW_ENEMY_COMBAT_HUD: "Appearance Finished"
+            SHOW_ENEMY_COMBAT_HUD --> [*]
         }
         
         AI_NEXT_PICK --> WAIT_INPUT: "Next Pokemon Ready"
@@ -558,23 +594,23 @@ Triggered after a victory or capture. It handles the reward distribution and tea
 ```mermaid
 stateDiagram-v2
     state REWARDS_PHASE {
-        [*] --> CHECK_OUTCOME: "Battle Ended"
+        [*] --> CHECK_OUTCOME : Battle Ended
         state CHECK_OUTCOME <<choice>>
         
-        CHECK_OUTCOME --> DISTRIBUTE_XP: "Victory / Capture"
-        CHECK_OUTCOME --> WAIT_LOG_QUEUE_ONLY: "Target Escaped"
+        CHECK_OUTCOME --> DISTRIBUTE_XP : Victory / Capture
+        CHECK_OUTCOME --> WAIT_LOG_QUEUE_ONLY : Target Escaped
         
         state WAIT_LOG_QUEUE_ONLY {
-            [*] --> WAIT_LOG_QUEUE_ESC: "Wait for Flee Log"
+            [*] --> WAIT_LOG_QUEUE_ESC : Wait for Flee Log
             WAIT_LOG_QUEUE_ESC --> [*]
         }
         
         state DISTRIBUTE_XP {
-            [*] --> WAIT_LOG_QUEUE: "Wait for all entries"
-            WAIT_LOG_QUEUE --> [*]: "Log Finished"
+            [*] --> WAIT_LOG_QUEUE : Wait for all entries
+            WAIT_LOG_QUEUE --> [*] : Log Finished
         }
         
-        DISTRIBUTE_XP --> LEVEL_UP_MODAL: "All rewards displayed"
+        DISTRIBUTE_XP --> LEVEL_UP_MODAL : All rewards displayed
         
         state LEVEL_UP_MODAL {
             [*] --> CHECK_PENDING: "Check Moves"
@@ -615,27 +651,27 @@ stateDiagram-v2
             state HUD_SYNC {
                 [*] --> CHECK_BINOCULARS: "Scouting Mode"
                 state CHECK_BINOCULARS <<choice>>
-                CHECK_BINOCULARS --> SHOW_ENEMY_HUD: "Has_Binoculars"
-                CHECK_BINOCULARS --> HIDE_ENEMY_HUD: "No_Binoculars"
+                CHECK_BINOCULARS --> SHOW_ENEMY_COMBAT_HUD : "Has_Binoculars"
+                CHECK_BINOCULARS --> HIDE_ENEMY_COMBAT_HUD : "No_Binoculars"
             }
         }
         
-        PARALLEL_PREP --> BUSH_IDLE: "Buttons Enabled"
+        PARALLEL_PREP --> BUSH_IDLE : "Block Control Panel (Search Mode)"
         
-        BUSH_IDLE --> MINIGAME_CHECK: "Action Clicked"
-        BUSH_IDLE --> EXIT_BATTLE: "Return to Map"
+        BUSH_IDLE --> MINIGAME_CHECK : Click COMBATIR / Block Control Panel
+        BUSH_IDLE --> EXIT_BATTLE : Click VOLVER AL MAPA / Block Control Panel
         
         state MINIGAME_CHECK <<choice>>
-        MINIGAME_CHECK --> ENCOUNTER_ANIM: "Success / No Minigame"
-        MINIGAME_CHECK --> VANISH_LOOP: "Fail (Vanish Anim)"
+        MINIGAME_CHECK --> ENCOUNTER_ANIM : Success / No Minigame
+        MINIGAME_CHECK --> VANISH_LOOP : Fail (Vanish Anim)
         
-        VANISH_LOOP --> [*]: "Restart via INITIALIZING"
+        VANISH_LOOP --> [*] : Restart via INITIALIZING
         
-        ENCOUNTER_ANIM --> [*]: "To Active Battle"
-        EXIT_BATTLE --> [*]: "Close Modal"
+        ENCOUNTER_ANIM --> [*] : To Active Battle
+        EXIT_BATTLE --> [*] : Close Modal
     }
     
-    note right of SEARCH_PHASE : "Trainer Visuals - If Slot 1 is TRAINER, Bushes are hidden and Sprite is full color"
+    note right of SEARCH_PHASE : "Search Interface - Replaces standard combat HUD with 'Search Again' and 'Return to Map' buttons during BUSH_IDLE."
     
     note left of PARALLEL_PREP: GPU-accelerated grass entry
 ```
@@ -682,7 +718,7 @@ stateDiagram-v2
         
         state RECALL_FLOW {
             state HUD_SYNC {
-                [*] --> HIDE_PLAYER_HUD
+                [*] --> HIDE_PLAYER_COMBAT_HUD
             }
             --
             state ANIM_SYNC {
@@ -697,14 +733,14 @@ stateDiagram-v2
             [*] --> ALL_FAINTED: "All HP <= 0"
         }
         
-        HAS_HEALTHY --> SWITCH_MENU: "Open Selection"
+        HAS_HEALTHY --> SWITCH_MENU : Open Selection
         note right of SWITCH_MENU: isBattleSwitchForced is true
         
-        SWITCH_MENU --> POKEMON_CALL: "Pokemon Selected"
-        POKEMON_CALL --> SHOW_PLAYER_HUD: "Appearance Finished"
-        SHOW_PLAYER_HUD --> [*]: "Ready to Fight"
+        SWITCH_MENU --> POKEMON_CALL : Pokemon Selected
+        POKEMON_CALL --> SHOW_PLAYER_COMBAT_HUD : Appearance Finished
+        SHOW_PLAYER_COMBAT_HUD --> [*] : Ready to Fight
         
-        ALL_FAINTED --> DEFEAT_SCREEN: "Finalize Combat"
+        ALL_FAINTED --> DEFEAT_SCREEN : Finalize Combat
         DEFEAT_SCREEN --> [*]
     }
     note right of DEFEAT_SCREEN: endBattle - Return to Map
@@ -721,19 +757,24 @@ Ensures the active combatant matches the target slot (used for auto-syncing to f
 ```mermaid
 stateDiagram-v2
     state REORDER_TEAM {
-        [*] --> CHECK_PLAYER_SLOT: "Is active == target slot?"
+        [*] --> CHECK_PLAYER_SEAT : "Is Seat 1 == Target Member?"
         
-        state CHECK_PLAYER_SLOT <<choice>>
-        CHECK_PLAYER_SLOT --> [*]: "Already Active"
-        CHECK_PLAYER_SLOT --> SWITCHING: "Mismatch or Null"
+        state CHECK_PLAYER_SEAT <<choice>>
+        CHECK_PLAYER_SEAT --> [*] : "Already Active"
+        CHECK_PLAYER_SEAT --> SWITCHING : "Mismatch or Empty Seat"
         
         state SWITCHING {
-            [*] --> HIDE_TARGET_HUD: "Hide HUD of side switching"
-            HIDE_TARGET_HUD --> READ_TARGET: "Read UI Selection or Auto-First-Healthy"
-            READ_TARGET --> POKEMON_RECALL: "Recall current (if any)"
-            POKEMON_RECALL --> POKEMON_CALL: "Call Target Member"
-            POKEMON_CALL --> SHOW_TARGET_HUD: "Restore HUD"
-            SHOW_TARGET_HUD --> [*]
+            [*] --> HIDE_TARGET_COMBAT_HUD : "Hide HUD of side switching"
+            HIDE_TARGET_COMBAT_HUD --> READ_TARGET : "Read Selection or Auto-First"
+            READ_TARGET --> CHECK_OCCUPANCY : "Is current Seat occupied?"
+            
+            state CHECK_OCCUPANCY <<choice>>
+            CHECK_OCCUPANCY --> POKEMON_RECALL : "Yes"
+            CHECK_OCCUPANCY --> POKEMON_CALL : "Empty"
+            
+            POKEMON_RECALL --> POKEMON_CALL : "Recall current"
+            POKEMON_CALL --> SHOW_TARGET_COMBAT_HUD: "Restore HUD"
+            SHOW_TARGET_COMBAT_HUD --> [*]
         }
         
         SWITCHING --> [*]
@@ -1077,14 +1118,20 @@ To ensure capture difficulty aligns with official game standards and species ide
 
 Refer to the [Capture Formula section in the Game Formulas Manual](../core/game_formulas_manual.md) for technical details on Gen 3/4 Math.
 
-### 3. Verification Protocol
+### 3. Visual & Interface Definitions
+
+To prevent implementation ambiguity, we distinguish between two core interface layers:
+
+- **Combat HUD**: The high-fidelity information cards showing Pokémon HP, Status, Level, and EXP. Controlled by `SHOW_COMBAT_HUD` and `HIDE_COMBAT_HUD` states.
+- **Control Panel (Move-Panel)**: The bottom orchestration area containing Move Grid, Quick Team, and Quick Bag. It is covered by the **Search Overlay** during navigation phases.
+
+### 4. Verification Protocol
 
 - **Mocked Randomness**: Use `vi.spyOn(Math, 'random').mockReturnValue(X)` in unit tests to verify that Pokémon are caught/escaped at specific mathematical thresholds.
 
-### 4. Safe Context Destructuring
+### 5. Safe Context Destructuring
 
 - **Context Unpacking**: In special action handlers like `teleport` or `roar`, always destructure or check the `battleCtx` safely. Use fallbacks such as `battleCtx.activeBattle || battleCtx` to avoid accessing properties on undefined objects.
 
-### 5. Move Grid and Tooltip Modifier Sync
 
 - **Weather-Aware Moves**: Move modifiers (boosted or penalized) for complex conditions (like Thunder or Hurricane under Rain/Sun) MUST be perfectly aligned across the battle moves grid and the hovering tooltips to maintain clear informational transparency.

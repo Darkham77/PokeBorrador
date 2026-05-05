@@ -151,7 +151,7 @@ Capture = 4 consecutive checks where Random(0-65535) < b
 
 | Weather | Damage Boost | Damage Reduction | Defensive Boost | Residual Damage | Special Effects |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Sun** | Fire (1.5x) | Water (0.5x) | - | - | Solar Beam (No charge), Synthesis (66%), Thunder (50% Acc) |
+| **Sun** | Fire (1.5x) | Water (0.5x) | - | - | Solar Beam (No charge), Synthesis (66%), Thunder/Hurricane (50% Acc) |
 | **Rain** | Water (1.5x) | Fire (0.5x) | - | - | Thunder/Hurricane (100% Acc), Synthesis (25%) |
 | **Sandstorm** | - | - | Rock (1.5x SpD) | 1/16 HP (Non-Rock/Ground/Steel) | Solar Beam (50% Pow), Synthesis (25%) |
 | **Snow** | - | - | Ice (1.5x Def) | **NONE** | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
@@ -162,8 +162,8 @@ Capture = 4 consecutive checks where Random(0-65535) < b
 
 In the absence of active weather (or if it is "Clear"), the game cycle applies an implicit boost to specific types. This multiplier **does NOT stack** with standard Weather (Sun/Rain). Weather always takes precedence.
 
-- **Morning/Day**: Fire-type moves receive a **1.2x boost**.
-- **Dusk/Night**: Water-type moves receive a **1.2x boost**.
+- **Morning/Day**: Fire-type moves receive a **1.2x boost**. **Thunder/Hurricane** accuracy is reduced to **50%**.
+- **Dusk/Night**: Water-type moves receive a **1.2x boost**. **Thunder/Hurricane** accuracy is increased to **100%**.
 
 ---
 

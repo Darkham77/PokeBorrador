@@ -208,6 +208,13 @@ When refactoring legacy or generic components:
 - **CSS Animation Composition**: When applying multiple classes that define an `animation` to the same element, you MUST ensure they do not override each other.
   - **Standard**: If an element needs to Shake AND Flash, use a combined rule: `animation: wobble 0.6s, flash 0.3s;`.
   - **WHY**: CSS properties follow a "last-one-wins" rule. Declaring `animation` in two separate classes applied to the same element will result in only the last class's animation being executed.
+- **Aura Counter-Pulse (Sincronización Inversa)**:
+  - **REGLA**: Cuando un elemento tiene múltiples auras (ej: Roja por rareza y Cian por clima), las animaciones **DEBEN** estar en contra-fase exacta para evitar "ruido visual" y que un color eclipse al otro.
+  - **Sincronización**: Ambas animaciones deben compartir el mismo `animation-delay` basado en semilla (ej: `var(--spawn-seed)`) para asegurar que el baile sea determinista por instancia.
+  - **Comportamiento**:
+    - **Aura Principal (Rare)**: 0% Escala 1.0 (Mín) -> 50% Escala 1.05 (Máx).
+    - **Halo Secundario (Weather)**: 0% Escala 1.15 (Máx) -> 50% Escala 0.9 (Mín).
+  - **Resultado**: Mientras una se apaga, la otra brilla, manteniendo siempre un halo de color visible y distinguible.
 - **Viewport Units (Mobile Safety)**:
   - **MANDATORY**: Use `dvh` and `dvw` (Dynamic Viewport) for any element requiring full-screen scaling.
   - **WHY**: Standard `vh`/`vw` units do not account for dynamic toolbars (URL bar, navigation) in mobile browsers like Safari. This leads to layout clipping or unwanted scrollbars.
@@ -319,3 +326,12 @@ Safari (macOS/iOS) does NOT support `backdrop-filter` without the `-webkit-` pre
 ### 2. Systematic Fix
 
 If you find a raw `backdrop-filter` during an audit, you **MUST** fix it immediately. This is not optional.
+
+### 8. Data Table & Grid Spacing (Responsive Density)
+
+To ensure complex data (moves, stats, lists) remains readable and professional across all viewports:
+
+- **Proportional Column Scaling**: Use `grid-template-columns` with `fr` units (e.g., `1.2fr 1fr`) to assign more space to descriptive text (like Attack Name) while keeping numeric stats compact.
+- **Pill Scaling**: In high-density tables, always use the "mini" version of type/category pills (e.g., `@include type-pill-mini`) to prevent row height from expanding unnecessarily.
+- **Label Integrity**: Prefer full labels (e.g., "FÍSICO") over abbreviations. If using full labels, explicitly increase the column width (Standard: **110px**) to ensure the text and its icon fit without clipping.
+- **Sober Space Reduction**: Periodically audit column widths to identify and reduce "dead space" in static columns (like NV or PP), redistributing that space to the primary identifying column (Name).
