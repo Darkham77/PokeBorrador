@@ -496,7 +496,7 @@ watch(() => battleStore.isBattleActive, (active) => {
   justify-content: center;
   box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
   
-  @media (min-width: 761px) {
+  @media (min-width: 1081px) {
     grid-area: arena;
     height: 100% !important;
   }

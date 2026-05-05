@@ -200,7 +200,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   max-width: 100%;
   margin: 0;
 
-  @media (max-width: 950px) {
+  @media (max-width: 775px) {
     .quick-shortcut-zone {
       display: none !important;
     }
@@ -219,7 +219,9 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   min-height: 100%;
   overflow: hidden;
   
-  &.zone-team { min-width: 220px; }
+  &.zone-team { 
+    min-width: 110px; 
+  }
   &.zone-bag { min-width: 140px; }
 }
 

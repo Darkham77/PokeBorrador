@@ -17,9 +17,9 @@ const battleStore = useBattleStore()
 const uiStore = useUIStore()
 
 // Responsive logic
-const isSmallScreen = ref(window.innerWidth <= 768)
+const isSmallScreen = ref(window.innerWidth <= 1080)
 useWindowListener('resize', () => {
-  isSmallScreen.value = window.innerWidth <= 768
+  isSmallScreen.value = window.innerWidth <= 1080
 })
 
 const battle = computed(() => battleStore.state)
@@ -280,7 +280,7 @@ const handleClose = () => {
   margin: 0 !important;
   overflow: hidden; 
 
-  @media (min-width: 769px) {
+  @media (min-width: 1081px) {
     display: grid;
     grid-template-columns: 280px 1fr;
     grid-template-rows: 1fr minmax(230px, auto);
@@ -305,7 +305,7 @@ const handleClose = () => {
   flex: 1;
   position: relative;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1080px) {
     display: flex;
     flex-direction: column;
     flex: none;
@@ -316,7 +316,7 @@ const handleClose = () => {
     border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
   }
 
-  @media (min-width: 769px) {
+  @media (min-width: 1081px) {
     border-radius: 0; 
     flex: 1;
     height: 100%;
@@ -333,7 +333,7 @@ const handleClose = () => {
   flex: 1; // Unificar crecimiento para evitar tirones
   object-fit: contain;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1080px) {
      flex: 1; // Crece para ocupar todo el espacio superior
      height: auto !important;
   }

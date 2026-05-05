@@ -74,7 +74,8 @@ const handleSwitch = (index) => {
 
 .quick-team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(100px, 160px));
+  justify-content: center;
   gap: 8px; // Gap consistente
   width: 100%;
   padding: 4px;
