@@ -24,7 +24,8 @@ const battleItems = computed(() => {
     const itemData = SHOP_ITEMS.find(i => i.name === name)
     if (!itemData) return
     
-    if (itemData.cat === 'pokeballs' || itemData.cat === 'pociones') {
+    const isTrainer = battleStore.state?.isTrainer
+    if (itemData.cat === 'pociones' || (itemData.cat === 'pokeballs' && !isTrainer)) {
       items.push({ ...itemData, qty })
     }
   })
@@ -84,7 +85,6 @@ const handleUseItem = (item) => {
 <template>
   <div 
     class="battle-quick-bag premium-frame"
-    :class="{ 'is-disabled': battleStore.isProcessing || battleStore.isIntroAnimating }"
   >
     <div class="quick-bag-grid">
       <div
@@ -137,13 +137,7 @@ const handleUseItem = (item) => {
   overflow-y: auto !important;
   @include gpu-layer;
   @include smooth-scroll;
-  transition: opacity 0.3s ease;
-
-  &.is-disabled {
-    opacity: 0.5;
-    pointer-events: none;
-    filter: Grayscale(0.2);
-  }
+  @include smooth-scroll;
 }
 
 .quick-bag-grid {
@@ -152,7 +146,7 @@ const handleUseItem = (item) => {
   grid-template-columns: repeat(auto-fill, 76px); 
   gap: 8px;
   width: 100%;
-  padding: 12px;
+  padding: 4px;
   justify-content: center;
   align-content: start;
   min-height: 100%;

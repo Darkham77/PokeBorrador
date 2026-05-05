@@ -39,6 +39,7 @@ export async function processFaint(ctx, side) {
     fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
     gameBus.emit('PLAY_WITHDRAW', { side: 'player', isFaint: true })
     await new Promise(r => setTimeout(r, 800))
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
     ctx.activeBattle.value.player = null // Liberar asiento tras retiro
     
     fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_TEAM)
@@ -63,37 +64,40 @@ export async function processFaint(ctx, side) {
     const enemyName = isTr ? pokemon.name : `¡${pokemon.name} salvaje`
     ctx.addLog(`${enemyName} fue derrotado!`, 'log-enemy', pokemon)
     
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_DEFEAT)
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HIDE_ENEMY_COMBAT_HUD_KO)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_DEFEAT)
     
     // Secuencia de Salto + Faint
     gameBus.emit('PLAY_SOUND', 'faint')
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SPRITE_JUMP)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SPRITE_JUMP)
     await new Promise(r => setTimeout(r, 600)) // Duración del salto
     
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SPRITE_FAINT)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SPRITE_FAINT)
     gameBus.emit('PLAY_FAINT', { side: 'enemy' })
     
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_FAINT)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_FAINT)
     
     if (isTr) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy', isFaint: true })
       await new Promise(r => setTimeout(r, 800))
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+      ctx.activeBattle.value.enemy = null
     } else {
       // Para salvajes, esperamos al wait del faint
       await new Promise(r => setTimeout(r, 1000))
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+      ctx.activeBattle.value.enemy = null
     }
 
     if (isTr && ctx.activeBattle.value.enemyTeam) {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CLEANUP_MEMORY)
+      
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_REMAINING)
       const nextEnemy = ctx.activeBattle.value.enemyTeam.find(p => p.hp > 0)
       if (nextEnemy) {
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CLEANUP_MEMORY)
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.STABILIZE_STAGE)
-        ctx.activeBattle.value.enemy = nextEnemy
         
         const s = ctx.enemyStages.value
         ctx.enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, 
@@ -101,6 +105,10 @@ export async function processFaint(ctx, side) {
         
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.AI_NEXT_PICK)
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SELECT_COUNTER)
+        
+        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
+        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
+        ctx.activeBattle.value.enemy = nextEnemy
         ctx.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
         gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
         await new Promise(r => setTimeout(r, 800))
@@ -109,6 +117,7 @@ export async function processFaint(ctx, side) {
     }
     
     ctx.activeBattle.value.over = true 
+    ctx.activeBattle.value.enemy = null
     ctx.faintedSides.value.add('enemy')
     await terminateBattle(ctx, true)
   }
@@ -138,14 +147,15 @@ export async function terminateBattle(ctx, win, fled = false) {
   syncAndPersist(ctx)
 
   if (ctx.activeBattle.value) {
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
     ctx.activeBattle.value.enemy = null
-    ctx.activeBattle.value.player = null
+    ctx.activeBattle.value._initialEnemy = null
   }
 
   fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_OUTCOME)
 
   if (!win && !fled) {
-    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.VOID_STATE)
+    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
     await new Promise(r => setTimeout(r, 1000))
     await ctx.gs.save(false)
     
@@ -171,7 +181,7 @@ export async function terminateBattle(ctx, win, fled = false) {
 
   if (win && !fled) {
     if (ctx.activeBattle.value && fsm.currentState.value !== BATTLE_STATES.REWARDS_PHASE) {
-      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.VOID_STATE)
+      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
       await new Promise(r => setTimeout(r, 1000))
       if (!ctx.activeBattle.value) return
     }
@@ -206,7 +216,7 @@ export async function terminateBattle(ctx, win, fled = false) {
   syncTeamHP(ctx)
 
   // Asegurar 1 segundo de "escenario vacío" tras el faint
-  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.VOID_STATE)
+  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
   await new Promise(r => setTimeout(r, 1000))
 
   fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION)
@@ -215,16 +225,20 @@ export async function terminateBattle(ctx, win, fled = false) {
   const firstHealthy = ctx.gs.state.team.find(p => p.hp > 0)
   const currentActive = ctx.player.value
   
-  const needsReorder = firstHealthy && currentActive && firstHealthy.uid !== currentActive.uid
+  const needsReorder = firstHealthy && (!currentActive || firstHealthy.uid !== currentActive.uid)
   
   if (needsReorder) {
     fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION, BATTLE_SUBSTATES.HAS_HEALTHY)
     fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION, BATTLE_SUBSTATES.REORDER_TEAM)
-    if (currentActive.hp > 0) {
+    if (currentActive && currentActive.hp > 0) {
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
       await new Promise(r => setTimeout(r, 800))
+      fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION, BATTLE_SUBSTATES.VACATE_SEAT)
+      ctx.activeBattle.value.player = null
     }
     if (ctx.activeBattle.value) {
+      fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION, BATTLE_SUBSTATES.POKEMON_CALL)
+      fsm.transition(BATTLE_STATES.POST_BATTLE_STABILIZATION, BATTLE_SUBSTATES.OCCUPY_SEAT)
       ctx.activeBattle.value.player = firstHealthy
       ctx.activeBattle.value.playerTeamIndex = ctx.gs.state.team.findIndex(p => p.uid === firstHealthy.uid)
       gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })

@@ -22,7 +22,6 @@ const handleSwitch = (index) => {
 <template>
   <div 
     class="battle-quick-team premium-frame"
-    :class="{ 'is-disabled': battleStore.isProcessing || battleStore.isIntroAnimating }"
   >
     <div class="quick-team-grid">
       <BoxPokemonCard
@@ -63,13 +62,7 @@ const handleSwitch = (index) => {
   overflow-y: auto !important;
   @include gpu-layer;
   @include smooth-scroll;
-  transition: opacity 0.3s ease;
-
-  &.is-disabled {
-    opacity: 0.5;
-    pointer-events: none;
-    filter: Grayscale(0.2);
-  }
+  @include smooth-scroll;
 }
 
 .quick-team-grid {

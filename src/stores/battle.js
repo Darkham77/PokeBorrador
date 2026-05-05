@@ -95,7 +95,7 @@ export const useBattleStore = defineStore('battle', () => {
     playerStages, enemyStages, battleLogs, attackerSide, activeMove,
     faintedSides,
     addLog, endBattle, completeBattleFlow, persistBattle, waitForLogs, 
-    clearLogs, clearVolatileStatus, _startBattle
+    clearLogs, clearVolatileStatus, _startBattle, initBattle
   })
 
   const restoreBattle = (battleData) => restoreBattleState(getContext(), battleData)
@@ -104,7 +104,11 @@ export const useBattleStore = defineStore('battle', () => {
 
   const _startBattle = async (enemyPoke, options) => startBattleSequence(getContext(), enemyPoke, options)
   const initBattle = async (locId, isTr, trName, isGym, gymId, wasSearching) => 
-    initBattleSequence(getContext(), locId, isTr, trName, isGym, gymId, wasSearching)
+    initBattleSequence(getContext(), { 
+      locationId: locId, isTrainer: isTr, trainerName: trName, isGym, gymId, wasSearching,
+      initialEnemy: activeBattle.value?.enemy,
+      initialPlayer: gs.state.team[0]
+    })
   /**
    * Añade un log al combate. 
    * MANDATORIO: source debe ser un Pokémon o una de las constantes ('player', 'enemy_trainer')
@@ -293,13 +297,15 @@ export const useBattleStore = defineStore('battle', () => {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CATCH_SUCCESS)
       activeBattle.value.isCapture = true
       activeBattle.value.over = true // Regla del Vacio (Ocultar Interfaz Inmediatamente)
-      activeBattle.value.enemy = null
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ADD_TO_STORAGE)
       gs.addPokemon(res.pokemon, { notify: true })
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+      activeBattle.value.enemy = null
       // Retraso sincronizado: 1.0s de bola llena + 1.0s de pausa dramática (vacío) antes de la Fase 2
       await new Promise(r => setTimeout(r, 2000))
       
       isProcessing.value = false
-      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.VOID_STATE)
+      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
       await endBattle(true, false)
       return // Control liberado tras la pausa atómica
     } else if (res.action !== 'fail') {
@@ -358,10 +364,17 @@ export const useBattleStore = defineStore('battle', () => {
       addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', 'player')
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
       await new Promise(r => setTimeout(r, 800))
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+      activeBattle.value.player = null
       clearVolatileStatus(oldPoke)
     }
 
     // Cambio de estado
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RENDER_BALL)
+    await new Promise(r => setTimeout(r, 400))
+    
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
     activeBattle.value.player = newPoke; activeBattle.value.playerTeamIndex = teamIndex
     if (!activeBattle.value.participants.includes(newPoke.uid)) {
       activeBattle.value.participants.push(newPoke.uid)
@@ -372,11 +385,10 @@ export const useBattleStore = defineStore('battle', () => {
     playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, 
       reflect: s.reflect || 0, lightScreen: s.lightScreen || 0, safeguard: s.safeguard || 0, mist: s.mist || 0, spikes: s.spikes || 0 }
     
-    // Animación de Salida
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
     addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENERGY_RELEASE)
     gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
-    
+    await new Promise(r => setTimeout(r, 800))
     fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_APPEAR, 400)
     await new Promise(r => setTimeout(r, 800))
 
@@ -532,6 +544,8 @@ export const useBattleStore = defineStore('battle', () => {
             gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' });
             
             await new Promise(r => setTimeout(r, 1000));
+            await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT);
+            activeBattle.value.enemy = null;
             await endBattle(false, true);
           } else {
             activeBattle.value.escapeAttempts++;

@@ -116,35 +116,6 @@ const toggleSearchMode = async () => {
   }
 }
 
-const testScenario1 = () => {
-  const currentPoke = battleStore.upcomingPokemon || battleStore.enemy
-  const pokeToUse = currentPoke ? currentPoke : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHp: 20 }
-  battleStore.isSearching = false
-  battleStore.upcomingPokemon = null
-  battleStore.state.enemy = pokeToUse
-  battleStore.state.over = false
-  gameBus.emit('START_BATTLE', { enemy: pokeToUse, isTrainer: false, animationPhase: 1 })
-}
-
-const testScenario2 = () => {
-  battleStore.isSearching = true
-  const currentPoke = battleStore.upcomingPokemon || battleStore.enemy
-  const poke = currentPoke ? currentPoke : { id: 16, name: 'Pidgey', level: 5, hp: 20, maxHp: 20 }
-  battleStore.upcomingPokemon = poke
-}
-
-const testScenario3 = () => {
-  if (!battleStore.upcomingPokemon) {
-    uiStore.notify('Primero activa la Fase 2', '⚠️')
-    return
-  }
-  const poke = battleStore.upcomingPokemon
-  gameBus.emit('START_BATTLE', { enemy: poke, isTrainer: false, animationPhase: 3 })
-  battleStore.state.enemy = poke
-  battleStore.state.over = false
-  battleStore.isSearching = false
-  setTimeout(() => { battleStore.upcomingPokemon = null }, 100)
-}
 
 const visualEnemyId = ref(1)
 const visualPlayerId = ref(1)
@@ -172,10 +143,24 @@ const decrementSwap = (side = 'enemy') => {
 }
 
 const toggleStatus = (side, type) => {
-  const poke = side === 'player' ? battleStore.state?.player : (battleStore.upcomingPokemon || battleStore.state?.enemy)
-  if (!poke) return
-  if (type === 'shiny') poke.isShiny = !poke.isShiny
-  if (type === 'guardian') poke.isGuardian = !poke.isGuardian
+  if (side === 'player') {
+    const p = battleStore.state?.player
+    if (!p) return
+    if (type === 'shiny') p.isShiny = !p.isShiny
+    if (type === 'guardian') p.isGuardian = !p.isGuardian
+    battleStore.state.player = { ...p }
+  } else {
+    const poke = battleStore.upcomingPokemon || battleStore.state?.enemy
+    if (!poke) return
+    if (type === 'shiny') poke.isShiny = !poke.isShiny
+    if (type === 'guardian') poke.isGuardian = !poke.isGuardian
+    
+    if (battleStore.upcomingPokemon) {
+      battleStore.upcomingPokemon = { ...battleStore.upcomingPokemon }
+    } else if (battleStore.state?.enemy) {
+      battleStore.state.enemy = { ...battleStore.state.enemy }
+    }
+  }
 }
 </script>
 
@@ -338,32 +323,6 @@ const toggleStatus = (side, type) => {
           </button>
         </div>
 
-        <!-- SCENARIOS -->
-        <div class="debug-section">
-          <div class="section-label">
-            Scenarios
-          </div>
-          <div class="btn-grid trio">
-            <button
-              class="mini-btn"
-              @click.stop="testScenario1"
-            >
-              P1
-            </button>
-            <button
-              class="mini-btn"
-              @click.stop="testScenario2"
-            >
-              P2
-            </button>
-            <button
-              class="mini-btn"
-              @click.stop="testScenario3"
-            >
-              P3
-            </button>
-          </div>
-        </div>
 
         <!-- CAMERA -->
         <div class="debug-section">

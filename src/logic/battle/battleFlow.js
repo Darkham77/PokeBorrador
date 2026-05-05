@@ -2,6 +2,8 @@ import { gameBus } from '@/logic/gameBus'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper'
 
 export function handleEntryAbilities(playerPoke, enemyPoke, playerStages, enemyStages, addLog) {
+  if (!playerPoke || !enemyPoke) return // GUARDIA CRÍTICA
+
   if (playerPoke.ability === 'Intimidación') {
     enemyStages.atk = Math.max(-6, enemyStages.atk - 1)
     addLog(`¡La Intimidación de ${playerPoke.name} bajó el ataque de ${enemyPoke.name}!`, 'log-info', playerPoke)

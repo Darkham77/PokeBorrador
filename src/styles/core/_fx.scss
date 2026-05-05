@@ -64,13 +64,19 @@
   display: inline-block; 
   line-height: 0; 
   
-  &.is-guardian {
-    img, .sprite-layer {
-      @include aura-guardian;
-    }
+  .pv-fx-sprite-layer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
 
-    &.is-vibrant {
-      img, .sprite-layer {
+    &.is-guardian {
+      @include aura-guardian;
+
+      &.is-vibrant {
         filter: 
           Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 15px) Rgba(255, 255, 255, 1)) 
           Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 8px) Rgba(255, 255, 255, 0.8))

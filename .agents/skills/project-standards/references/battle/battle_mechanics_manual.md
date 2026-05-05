@@ -11,27 +11,30 @@ To support future expansions (Double Battles) and maintain deterministic transit
 
 ### 1. Seats (Physical Positions)
 
-A **Seat** is a fixed position on the battlefield where a Pokémon is rendered and interacts.
+A **Seat** is a fixed position on the battlefield where a Pokémon is rendered and its interface is synchronized.
 
 - **Seat 1**: The active position for the **Player Side** (Side 1).
 - **Seat 2**: The active position for the **Enemy Side** (Side 2).
 - **Behavior**: A seat can be **Empty** (Null) or **Occupied**.
-- **Animation Rule**: `POKEMON_CALL` always targets an Empty Seat. If a seat is occupied, it must be vacated via `POKEMON_RECALL` or a `VACATE` state first.
+- **Master Signal for HUDs**: Seat occupancy is the **atomic trigger** for Combat HUD visibility.
+  - `Seat != Null` ➔ HUD is Visible (Entry animation triggered).
+  - `Seat == Null` ➔ HUD is Hidden (Exit animation triggered).
+- **Animation Rule**: `POKEMON_CALL` always targets an Empty Seat. If a seat is occupied, it must be vacated via `POKEMON_RECALL` or a `VACATE` state (setting the seat to `null`) first. This vacancy is what logically clears the HUD.
 
 ### 2. Slots (Data Reservations - Enemy Only)
 
 A **Slot** is a background data container used for encounter prediction and pre-generation.
 
-- **Slot 1 (Active Slot)**: Holds the data for the encounter currently in (or entering) **Seat 2**.
-- **Slot 2 (Predictive Slot)**: Holds the data for the *next* encounter in a search loop.
-- **Promotion**: When an encounter ends, Slot 2 data is promoted to Slot 1, and a new encounter is generated for Slot 2.
+- **Slot 1 (Active Slot)**: The **Source of Truth** for **Seat 2**. Holds the data for the encounter currently being scouted or battled. All rendering, HUDs, and logic MUST point to Slot 1.
+- **Slot 2 (Predictive Slot)**: A background **Data Cache** for the *next* encounter. It exists only to hide generation latency. It MUST NEVER be used for direct rendering.
+- **Promotion**: During the `INITIALIZING` phase (after a battle ends), Slot 2 data is promoted to Slot 1. Only after promotion is Slot 1 used for the `SEARCH_PHASE` display.
 
 ### 3. Transition Matrix
 
 | Event | Action on Seat | Action on Slot |
 | :--- | :--- | :--- |
 | **New Battle** | `VACATE_ALL_SEATS` (Clean both) | Populate Slot 1 & 2 |
-| **Search Loop** | `VACATE_ENEMY_SEAT` (Clean Seat 2) | Promote S2 -> S1, Generate S2 |
+| **Search Loop** | *Managed by Reward Phase* | Promote S2 -> S1, Generate S2 |
 | **Mid-Battle Switch** | `POKEMON_RECALL` -> `POKEMON_CALL` | No change to Slots |
 
 ---
@@ -185,37 +188,28 @@ The **General HUD** (Move list, Chat, Player Shortcuts, Inventory access) MUST N
 
 #### Animated Combat HUDs
 
-The **Combat HUDs** (HP bars, Exp bars, Level, Name, Status icons for both sides) MUST ALWAYS use entry and exit animations. Direct visibility toggling (instant show/hide) is strictly prohibited to maintain the "Hybrid Retro-Modern" aesthetic.
+The **Combat HUDs** (HP bars, Exp bars, Level, Name, Status icons for both sides) follow a **Strict Seat-Based Visibility** rule. Entry and exit animations are triggered automatically based on the occupancy of the respective Seat.
 
-#### Hiding HUDs (The "Focus" Rule)
+- **Seat Occupied**: HUD triggers its entry animation and remains visible.
+- **Seat Empty (Null)**: HUD triggers its exit animation and remains hidden.
 
-Only hide the HUD of the involved side at the start of a critical sequence to focus attention on the Pokémon's animation:
+#### Transition Discipline (The "Seat" Rule)
 
-- **Faint Sequence**: When starting `ENEMY_DEFEAT` or `RECALL_FLOW`, immediately trigger the exit animation for the HUD of the defeated/recalled Pokémon.
-- **Escape Sequence**: When starting `ESCAPE_PROCESS`, trigger the exit animation for the HUD of the Pokémon that is fleeing.
-- **Capture Sequence**: When starting `CATCH_PROCESS`, trigger the exit animation for the Enemy HUD.
+To prevent visual artifacts or "ghost" HUDs:
 
-#### Showing HUDs (The "Ready" Rule)
-
-HUDs should only be restored when the system returns to an interaction state or visual stability:
-
-- **Initial Encounter**: At the end of the entry sequence (`ACTIVE_BATTLE` entry -> Show All HUDs / Ready), all HUDs are restored.
-- **Search Phase**: At the end of the jump sequence (`SEARCH_PHASE` -> `Show Enemy HUD / Ready`), restore the Enemy HUD **ONLY if the player has the Binoculars item**. Otherwise, the Enemy HUD remains hidden until the Pokémon enters the arena.
-- **Capture Failure**: If the Pokémon escapes from the Poké Ball (`CATCH_BREAK`), restore the Enemy HUD immediately before returning to `WAIT_INPUT`.
-- **Switching (Parallel Protocol)**: HUD visibility updates are performed IN PARALLEL with the Poké Ball rendering.
-  - **Recall**: The Involved Side HUD is hidden as soon as the Poké Ball appears.
-- **Call**: The Involved Side HUD is shown as soon as the Poké Ball appears.
+- **Recall/Faint**: The seat MUST NOT be vacated (`null`) until the withdrawal or faint animation is logically complete. This ensures the HUD remains visible with the Pokémon's snapshot data during the transition.
+- **Call/Entry**: Setting the seat to a new Pokémon instance will immediately trigger the HUD's entry animation.
 
 #### Data Visibility Hierarchy (The "Snapshot" Rule)
 
 To ensure absolute continuity during proactive pre-generation and transitions, the Combat HUD MUST prioritize data display according to the following hierarchy:
 
-1. **Capture Success**: Show a persistent snapshot of the caught Pokémon (prevents HUD from jumping to the next encounter before the player sees the capture log).
+1. **Capture Success**: Show a persistent snapshot of the caught Pokémon.
 2. **Faint Animation**: Show a persistent snapshot of the defeated Pokémon until the `VOID` transition.
-3. **Search Phase**: Show the `upcomingPokemon` (Predictive Slot 2) immediately during the `SEARCH_PHASE` to allow for scouting (silhouettes or full color with Binoculars).
-4. **Active Battle**: Show the current `enemy` data (Active Slot 1).
+3. **Active/Search State**: Show the **Active Slot 1** (`battleStore.state.enemy`).
+4. **Predictive Cache**: The `upcomingPokemon` (Slot 2) is strictly ignored by the UI and only used for background promotion.
 
-**WHY**: This hierarchy prevents the HUD from "flickering" or showing stale data from a previous encounter while the system is generating the next one in the background.
+**WHY**: Using Slot 1 as the single source for both Search and Battle phases prevents "transformation" artifacts where a Pokémon appears to change species during the intro transition.
 
 ### 2. State Mapping & Tooltips
 
@@ -363,8 +357,7 @@ stateDiagram-v2
             RECEIVE_CONFIG --> VALIDATE_WEIGHTS : "Sum Probabilities"
             VALIDATE_WEIGHTS --> INJECT_FILTERS : "Apply Pool Restrictions"
             INJECT_FILTERS --> READY_FOR_GEN : "Generator Primed"
-            READY_FOR_GEN --> HIDE_ALL_COMBAT_HUDS : "Init Stage Clean"
-            HIDE_ALL_COMBAT_HUDS --> [*] : "Block Control Panel"
+            READY_FOR_GEN --> [*] : "Generator Primed"
         }
 ```
 
@@ -421,7 +414,7 @@ Handles data generation and coordinate pre-loading to ensure a flicker-free star
 ```mermaid
 stateDiagram-v2
     state INITIALIZING {
-        [*] --> CHECK_SLOTS : Check current data
+        [*] --> CHECK_SLOTS : wasSearching = true (Default)
         
         state CHECK_SLOTS <<choice>>
         CHECK_SLOTS --> POPULATE_BOTH : Slots 1&2 are Empty
@@ -436,8 +429,7 @@ stateDiagram-v2
         state PROMOTE_AND_REPOPULATE {
             [*] --> PROMOTE : Slot 2 to Slot 1
             PROMOTE --> GEN_NEW_S2 : Generate new Slot 2
-            GEN_NEW_S2 --> VACATE_ENEMY_SEAT : Clean Enemy Seat
-            VACATE_ENEMY_SEAT --> [*]
+            GEN_NEW_S2 --> [*]
         }
         
         POPULATE_BOTH --> PRELOAD_COORDS
@@ -458,8 +450,7 @@ The core interaction cycle. It manages user input, turn execution, and terminal 
 ```mermaid
 stateDiagram-v2
     state ACTIVE_BATTLE {
-        [*] --> SHOW_ALL_MISSING_COMBAT_HUDS : "Entry Hook"
-        SHOW_ALL_MISSING_COMBAT_HUDS --> WAIT_INPUT : "Both HUDs Ready"
+        [*] --> WAIT_INPUT : "Seat Occupied"
         
         state WAIT_INPUT {
             [*] --> [*] : "Unlock Control Panel"
@@ -519,14 +510,13 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     state CATCH_PROCESS {
-        [*] --> HIDE_ENEMY_COMBAT_HUD : "Block Control Panel"
-        HIDE_ENEMY_COMBAT_HUD --> CATCH_SHAKE : Shake Logic
+        [*] --> CATCH_SHAKE : Shake Logic
         CATCH_SHAKE --> CATCH_BREAK : Escaped
         CATCH_SHAKE --> CATCH_SUCCESS : Capture Success
         CATCH_SUCCESS --> ADD_TO_STORAGE : addPokemon(tgt)
-        CATCH_BREAK --> SHOW_ENEMY_COMBAT_HUD : Return to Combat / Unlock Control Panel
-        SHOW_ENEMY_COMBAT_HUD --> [*]
-        ADD_TO_STORAGE --> [*]
+        ADD_TO_STORAGE --> VACATE_SEAT : "Free Seat"
+        CATCH_BREAK --> [*]
+        VACATE_SEAT --> [*]
     }
     note left of CATCH_PROCESS: UI blocks Pokeball selection if target is TRAINER
 ```
@@ -536,9 +526,9 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     state ENEMY_DEFEAT {
-        [*] --> HIDE_ENEMY_COMBAT_HUD_KO : "Block Control Panel"
-        HIDE_ENEMY_COMBAT_HUD_KO --> PLAY_ENEMY_FAINT : Drop Anim (1.0s)
-        PLAY_ENEMY_FAINT --> [*]
+        [*] --> PLAY_ENEMY_FAINT : Drop Anim (1.0s)
+        PLAY_ENEMY_FAINT --> VACATE_SEAT : "Free Seat"
+        VACATE_SEAT --> [*]
     }
 ```
 
@@ -547,9 +537,9 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     state ESCAPE_PROCESS {
-        [*] --> HIDE_ENEMY_COMBAT_HUD_ESC : "Block Control Panel"
-        HIDE_ENEMY_COMBAT_HUD_ESC --> PLAY_ESCAPE_ANIM : Teleport / Run Away
-        PLAY_ESCAPE_ANIM --> [*]
+        [*] --> PLAY_ESCAPE_ANIM : Teleport / Run Away (1.0s)
+        PLAY_ESCAPE_ANIM --> VACATE_SEAT : "Free Seat"
+        VACATE_SEAT --> [*]
     }
 ```
 
@@ -576,9 +566,8 @@ stateDiagram-v2
         
         state AI_NEXT_PICK {
             [*] --> SELECT_COUNTER: "SmartSelection Logic"
-            SELECT_COUNTER --> ENCOUNTER_ANIM: "Jump Entry (Encounter)"
-            ENCOUNTER_ANIM --> SHOW_ENEMY_COMBAT_HUD: "Appearance Finished"
-            SHOW_ENEMY_COMBAT_HUD --> [*]
+            SELECT_COUNTER --> ENCOUNTER_ANIM : "Jump Entry"
+            ENCOUNTER_ANIM --> [*]
         }
         
         AI_NEXT_PICK --> WAIT_INPUT: "Next Pokemon Ready"
@@ -601,8 +590,8 @@ stateDiagram-v2
         CHECK_OUTCOME --> WAIT_LOG_QUEUE_ONLY : Target Escaped
         
         state WAIT_LOG_QUEUE_ONLY {
-            [*] --> WAIT_LOG_QUEUE_ESC : Wait for Flee Log
-            WAIT_LOG_QUEUE_ESC --> [*]
+            [*] --> WAIT_LOG_QUEUE : Wait for Flee Log
+            WAIT_LOG_QUEUE --> [*]
         }
         
         state DISTRIBUTE_XP {
@@ -633,47 +622,29 @@ Allows the player to find new encounters without closing the modal.
 ```mermaid
 stateDiagram-v2
     state SEARCH_PHASE {
-        [*] --> PARALLEL_PREP: "Entry Trigger (Data Ready)"
+        [*] --> PARALLEL_PREP: "Data Ready"
         
         state PARALLEL_PREP {
-            state UI_SYNC {
-                [*] --> UPDATE_BUTTON: "Set Label (Search/Challenge/Fish)"
-            }
+            [*] --> UPDATE_BUTTON: "Label Search/Challenge"
             --
-            state GRASS_SYNC {
-                [*] --> ENTRY_ANIM: "Bushes Layer (Conditioned)"
-            }
+            [*] --> ENTRY_ANIM: "Bushes / Silhouette Layer"
             --
-            state TEAM_SYNC {
-                [*] --> REORDER_TEAM: "Ensure Slot 1 matches active fighter"
-            }
-            --
-            state HUD_SYNC {
-                [*] --> CHECK_BINOCULARS: "Scouting Mode"
-                state CHECK_BINOCULARS <<choice>>
-                CHECK_BINOCULARS --> SHOW_ENEMY_COMBAT_HUD : "Has_Binoculars"
-                CHECK_BINOCULARS --> HIDE_ENEMY_COMBAT_HUD : "No_Binoculars"
-            }
+            [*] --> REORDER_TEAM: "Sync Active Fighter"
         }
         
-        PARALLEL_PREP --> BUSH_IDLE : "Block Control Panel (Search Mode)"
+        PARALLEL_PREP --> BUSH_IDLE : "Control Panel Blocked"
         
-        BUSH_IDLE --> MINIGAME_CHECK : Click COMBATIR / Block Control Panel
-        BUSH_IDLE --> EXIT_BATTLE : Click VOLVER AL MAPA / Block Control Panel
+        BUSH_IDLE --> MINIGAME_CHECK : "Click COMBATIR"
+        BUSH_IDLE --> EXIT_BATTLE : "Click VOLVER AL MAPA"
         
         state MINIGAME_CHECK <<choice>>
-        MINIGAME_CHECK --> ENCOUNTER_ANIM : Success / No Minigame
-        MINIGAME_CHECK --> VANISH_LOOP : Fail (Vanish Anim)
+        MINIGAME_CHECK --> ENCOUNTER_ANIM : "Success / No Minigame"
+        MINIGAME_CHECK --> [*] : "Fail (Vanish)"
         
-        VANISH_LOOP --> [*] : Restart via INITIALIZING
-        
-        ENCOUNTER_ANIM --> [*] : To Active Battle
-        EXIT_BATTLE --> [*] : Close Modal
+        ENCOUNTER_ANIM --> [*] : "To Active Battle"
     }
     
     note right of SEARCH_PHASE : "Search Interface - Replaces standard combat HUD with 'Search Again' and 'Return to Map' buttons during BUSH_IDLE."
-    
-    note left of PARALLEL_PREP: GPU-accelerated grass entry
 ```
 
 ### 7. Modal Persistence & Lifecycle Rules
@@ -717,13 +688,7 @@ stateDiagram-v2
         [*] --> RECALL_FLOW: "playerHP <= 0"
         
         state RECALL_FLOW {
-            state HUD_SYNC {
-                [*] --> HIDE_PLAYER_COMBAT_HUD
-            }
-            --
-            state ANIM_SYNC {
-                [*] --> POKEMON_RECALL
-            }
+            [*] --> POKEMON_RECALL
         }
         
         RECALL_FLOW --> CHECK_TEAM: "Recall Finished"
@@ -737,8 +702,7 @@ stateDiagram-v2
         note right of SWITCH_MENU: isBattleSwitchForced is true
         
         SWITCH_MENU --> POKEMON_CALL : Pokemon Selected
-        POKEMON_CALL --> SHOW_PLAYER_COMBAT_HUD : Appearance Finished
-        SHOW_PLAYER_COMBAT_HUD --> [*] : Ready to Fight
+        POKEMON_CALL --> [*] : Ready to Fight
         
         ALL_FAINTED --> DEFEAT_SCREEN : Finalize Combat
         DEFEAT_SCREEN --> [*]
@@ -764,17 +728,8 @@ stateDiagram-v2
         CHECK_PLAYER_SEAT --> SWITCHING : "Mismatch or Empty Seat"
         
         state SWITCHING {
-            [*] --> HIDE_TARGET_COMBAT_HUD : "Hide HUD of side switching"
-            HIDE_TARGET_COMBAT_HUD --> READ_TARGET : "Read Selection or Auto-First"
-            READ_TARGET --> CHECK_OCCUPANCY : "Is current Seat occupied?"
-            
-            state CHECK_OCCUPANCY <<choice>>
-            CHECK_OCCUPANCY --> POKEMON_RECALL : "Yes"
-            CHECK_OCCUPANCY --> POKEMON_CALL : "Empty"
-            
             POKEMON_RECALL --> POKEMON_CALL : "Recall current"
-            POKEMON_CALL --> SHOW_TARGET_COMBAT_HUD: "Restore HUD"
-            SHOW_TARGET_COMBAT_HUD --> [*]
+            POKEMON_CALL --> [*]
         }
         
         SWITCHING --> [*]
@@ -788,7 +743,8 @@ stateDiagram-v2
     state POKEMON_RECALL {
         [*] --> RENDER_BALL: Pokeball_appears
         RENDER_BALL --> ENERGY_RECALL: PLAY_ENERGY_RECALL
-        ENERGY_RECALL --> [*]
+        ENERGY_RECALL --> VACATE_SEAT: Free Seat
+        VACATE_SEAT --> [*]
         
         note right of RENDER_BALL: Positioned at shadow feet
         note right of ENERGY_RECALL: Shrinking Blue Energy FX (Sprite -> Ball)
@@ -801,7 +757,8 @@ stateDiagram-v2
 stateDiagram-v2
     state POKEMON_CALL {
         [*] --> RENDER_BALL: Pokeball_appears
-        RENDER_BALL --> ENERGY_RELEASE: PLAY_ENERGY_RELEASE
+        RENDER_BALL --> OCCUPY_SEAT: Assign Seat
+        OCCUPY_SEAT --> ENERGY_RELEASE: PLAY_ENERGY_RELEASE
         ENERGY_RELEASE --> POKEMON_APPEAR: Show_Sprite
         POKEMON_APPEAR --> [*]
         
@@ -822,56 +779,15 @@ stateDiagram-v2
         ENCOUNTER_TYPE_CHECK --> TRAINER_ENTRY: "TRAINER / NPC / LEADER"
         
         state TRAINER_ENTRY {
-            state T_BUSH_LAYER {
-                [*] --> T_HIDDEN: "No Bushes Rendered"
-            }
-            --
-            state T_SPRITE_LAYER {
-                [*] --> T_SILHOUETTE: "Starts as Silhouette"
-                T_SILHOUETTE --> T_FULL_COLOR: "Quick Color Reveal Anim"
-                T_FULL_COLOR --> [*]
-            }
+            [*] --> T_VISUAL: "Show Trainer Sprite (Visual Overlay)"
+            T_VISUAL --> [*]: "Seat 2 remains EMPTY"
         }
         
         state WILD_ENTRY {
-            state BUSH_LAYER {
-                [*] --> AESTHETIC_CHECK
-                state AESTHETIC_CHECK <<choice>>
-                AESTHETIC_CHECK --> BUSH_FLOW: Ground_Aesthetic
-                AESTHETIC_CHECK --> SKIP_BUSHES: Flying_Aesthetic
-                
-                state BUSH_FLOW {
-                    [*] --> BUSH_SETUP
-                    state BUSH_SETUP <<choice>>
-                    BUSH_SETUP --> INSTANT_BUSHES: First_Intro
-                    BUSH_SETUP --> GRADUAL_BUSHES: Search_Phase
-                    
-                    state INSTANT_BUSHES {
-                        [*] --> BUSH_VISIBLE: Instant_Reveal
-                    }
-                    state GRADUAL_BUSHES {
-                        [*] --> BUSH_FADE: Gradual_Fade_In
-                    }
-                }
-                state SKIP_BUSHES {
-                    [*] --> HIDDEN: No_Bushes_Rendered
-                }
-                note right of BUSH_FLOW: Bushes use "Sandwich" Z-index.
-            }
-            --
-            state SILHOUETTE_LAYER {
+            state PARALLEL_PREP {
+                [*] --> BUSH_VISIBLE: "Z-Index Sandwich (Between layers)"
+                --
                 [*] --> SILHOUETTE_MODE
-                state SILHOUETTE_MODE <<choice>>
-                SILHOUETTE_MODE --> SOLID_SILHOUETTE: Default
-                SILHOUETTE_MODE --> FULL_COLOR: Has_Binoculars
-                
-                state SOLID_SILHOUETTE {
-                    [*] --> SILHOUETTE_READY: Opacity_1_Instant
-                }
-                state FULL_COLOR {
-                    [*] --> COLOR_READY: Opacity_1_Instant
-                }
-                note right of SILHOUETTE_MODE: Must be 100% solid from start.
             }
         }
     }
@@ -885,63 +801,30 @@ stateDiagram-v2
         [*] --> ENCOUNTER_TYPE_CHECK
         state ENCOUNTER_TYPE_CHECK <<choice>>
         
-        ENCOUNTER_TYPE_CHECK --> WILD_ENCOUNTER: "WILD / FISHING"
         ENCOUNTER_TYPE_CHECK --> TRAINER_ENCOUNTER: "TRAINER / NPC / LEADER"
-        
+        ENCOUNTER_TYPE_CHECK --> WILD_ENCOUNTER: "WILD / FISHING"
+
         state TRAINER_ENCOUNTER {
             [*] --> TRAINER_RETREAT: "Fadeout Animation"
-            TRAINER_RETREAT --> POKEMON_CALL: "Calls First Pokemon"
+            TRAINER_RETREAT --> POKEMON_CALL: "Calls Pokemon"
             POKEMON_CALL --> [*]
         }
-        
+
         state WILD_ENCOUNTER {
-            [*] --> CHECK_AESTHETIC
-            state CHECK_AESTHETIC <<choice>>
+            [*] --> CHECK_BINOCULARS
+            state CHECK_BINOCULARS <<choice>>
             
-            CHECK_AESTHETIC --> GROUND_FLOW: Ground_Aesthetic
-            CHECK_AESTHETIC --> FLYING_FLOW: Flying_Aesthetic
-            
-            state GROUND_FLOW {
-                state G_BINOCULARS <<choice>>
-                [*] --> G_BINOCULARS
-                G_BINOCULARS --> SILHOUETTE_JUMP: No_Binoculars
-                G_BINOCULARS --> FULL_COLOR_JUMP: Has_Binoculars
-                
-                state SILHOUETTE_JUMP {
-                    [*] --> BUSHES_BACK: Set_Z_Index_Behind
-                    BUSHES_BACK --> JUMP_SHADOW: Jump_As_Solid_Silhouette
-                    JUMP_SHADOW --> BUSH_FADE: Gradual_Grass_Fade
-                    BUSH_FADE --> REVEAL_COLORS: Gradual_Color_Reveal
-                    REVEAL_COLORS --> [*]
-                }
-                
-                state FULL_COLOR_JUMP {
-                    [*] --> BUSHES_BACK_COLOR: Set_Z_Index_Behind
-                    BUSHES_BACK_COLOR --> JUMP_COLOR: Jump_As_Full_Color
-                    JUMP_COLOR --> BUSH_FADE_COLOR: Gradual_Grass_Fade
-                    BUSH_FADE_COLOR --> [*]
-                }
+            CHECK_BINOCULARS --> PARALLEL_JUMP: "Start Transition"
+
+            state PARALLEL_JUMP {
+                [*] --> BUSH_FADE: "Grass Fade & Z-Index behind Pokemon"
+                --
+                [*] --> JUMP_SHADOW: "Jump Silhouette"
+                [*] --> JUMP_COLOR: "Jump Color"
             }
             
-            state FLYING_FLOW {
-                state F_BINOCULARS <<choice>>
-                [*] --> F_BINOCULARS
-                F_BINOCULARS --> SILHOUETTE_FLY: No_Binoculars
-                F_BINOCULARS --> FULL_COLOR_FLY: Has_Binoculars
-                
-                state SILHOUETTE_FLY {
-                    [*] --> JUMP_SHADOW_F: Jump_As_Solid_Silhouette
-                    JUMP_SHADOW_F --> REVEAL_COLORS_F: Gradual_Color_Reveal
-                    REVEAL_COLORS_F --> [*]
-                }
-                
-                state FULL_COLOR_FLY {
-                    [*] --> JUMP_COLOR_F: Jump_As_Full_Color
-                    JUMP_COLOR_F --> [*]
-                }
-            }
-            
-            note right of CHECK_AESTHETIC: Flying species bypass bushes logic
+            PARALLEL_JUMP --> REVEAL_COLORS: "If No Binoculars"
+            PARALLEL_JUMP --> [*]: "Finish"
         }
     }
 ```
@@ -1122,8 +1005,33 @@ Refer to the [Capture Formula section in the Game Formulas Manual](../core/game_
 
 To prevent implementation ambiguity, we distinguish between two core interface layers:
 
-- **Combat HUD**: The high-fidelity information cards showing Pokémon HP, Status, Level, and EXP. Controlled by `SHOW_COMBAT_HUD` and `HIDE_COMBAT_HUD` states.
+- **Combat HUD**: The high-fidelity information cards showing Pokémon HP, Status, Level, and EXP. Visibility is derived from **Seat Occupancy** (Master Signal).
 - **Control Panel (Move-Panel)**: The bottom orchestration area containing Move Grid, Quick Team, and Quick Bag. It is covered by the **Search Overlay** during navigation phases.
+
+#### Information Disclosure Rules (Binoculars Protocol)
+
+To maintain search tension, Pokémon data disclosure is restricted during the initial encounter phase:
+
+| State / Substate | Requirement | Data Display |
+| :--- | :--- | :--- |
+| `ENTRY_ANIM`, `BUSH_IDLE`, `SILHOUETTE_MODE` | None | Scrambled (`?`) |
+| `ENTRY_ANIM`, `BUSH_IDLE`, `SILHOUETTE_MODE` | `inventory.binoculars > 0` | Full Data |
+| **All Other States** | None | Full Data |
+
+> [!IMPORTANT]
+> This rule applies globally to the `Combat HUD` component and must be evaluated reactively against the player's inventory and the current FSM substate.
+
+#### 3.2.4 Control de Efectos Visuales (FX) en Combate
+
+El sistema de combate utiliza el componente centralizado `PVSpriteFX` para gestionar capas visuales (Shiny, Guardian, Estados). Se aplican las siguientes reglas de visibilidad:
+
+- **Modo Silueta (isSilhouette: true)**:
+  - FUERZA el **Modo Simplificado** (`isSimplified: true`).
+  - OCULTA todos los efectos visuales (Shiny sparkles, Guardian aura, partículas de estado) para mantener la integridad visual de la fase de descubrimiento.
+- **Modo Revelado (isSilhouette: false)**:
+  - DESACTIVA el Modo Simplificado (a menos que existan otras restricciones de rendimiento).
+  - RESTAURA la visibilidad de todos los FX activos.
+- **Supresión por FSM**: Ciertos estados de la máquina de estados pueden suprimir temporalmente los FX mediante la prop `suppressFX` en `BattleCombatant`.
 
 ### 4. Verification Protocol
 
@@ -1132,6 +1040,5 @@ To prevent implementation ambiguity, we distinguish between two core interface l
 ### 5. Safe Context Destructuring
 
 - **Context Unpacking**: In special action handlers like `teleport` or `roar`, always destructure or check the `battleCtx` safely. Use fallbacks such as `battleCtx.activeBattle || battleCtx` to avoid accessing properties on undefined objects.
-
 
 - **Weather-Aware Moves**: Move modifiers (boosted or penalized) for complex conditions (like Thunder or Hurricane under Rain/Sun) MUST be perfectly aligned across the battle moves grid and the hovering tooltips to maintain clear informational transparency.

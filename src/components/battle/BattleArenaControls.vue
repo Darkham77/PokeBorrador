@@ -101,45 +101,49 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   <div
     id="move-panel"
   >
-    <div class="battle-controls-layout">
-      <!-- Zona 1: Equipo Rápido (Izquierda) -->
-      <aside class="quick-shortcut-zone zone-team">
-        <BattleQuickTeam />
-      </aside>
+    <Transition name="controls-slide" appear>
+      <div 
+        class="battle-controls-layout"
+        :class="{ 'is-ui-locked': isControlsDisabled }"
+      >
+        <!-- Zona 1: Equipo Rápido (Izquierda) -->
+        <aside class="quick-shortcut-zone zone-team">
+          <BattleQuickTeam />
+        </aside>
 
-      <div class="controls-content">
-        <component
-          :is="BattleDebugTools"
-          v-if="BattleDebugTools"
-        />
-        <BattleMovesGrid 
-          v-if="player"
-          class="is-compact"
-          :moves="player.moves" 
-          :is-processing="isControlsDisabled"
-          :player-info="player"
-          @use-move="(idx) => battleStore.executeMove(idx)"
-        />
+        <div class="controls-content">
+          <component
+            :is="BattleDebugTools"
+            v-if="BattleDebugTools"
+          />
+          <BattleMovesGrid 
+            class="is-compact"
+            :moves="player?.moves || []" 
+            :is-processing="isControlsDisabled"
+            :player-info="player || {}"
+            @use-move="(idx) => battleStore.executeMove(idx)"
+          />
 
-        <BattleActionButtons 
-          :is-finishing="isControlsDisabled"
-          @switch="execShowBattleSwitch"
-          @bag="execShowBattleBag"
-          @run="battleStore.flee"
-          @catch="execTryCatch"
-          @select-ball="(name) => battleStore.useItemInBattle(name)"
-        />
+          <BattleActionButtons 
+            :is-finishing="isControlsDisabled"
+            @switch="execShowBattleSwitch"
+            @bag="execShowBattleBag"
+            @run="battleStore.flee"
+            @catch="execTryCatch"
+            @select-ball="(name) => battleStore.useItemInBattle(name)"
+          />
+        </div>
+
+        <!-- Zona 2: Mochila Rápida (Derecha) -->
+        <aside class="quick-shortcut-zone zone-bag">
+          <BattleQuickBag />
+        </aside>
       </div>
-
-      <!-- Zona 2: Mochila Rápida (Derecha) -->
-      <aside class="quick-shortcut-zone zone-bag">
-        <BattleQuickBag />
-      </aside>
-    </div>
+    </Transition>
 
     <!-- Overlay de Finalización / Búsqueda (Cubre TODO el move-panel) -->
     <div
-      v-if="(battleStore.isSearching && ['WAIT_INPUT', 'BUSH_IDLE', 'GEN_NEW_S2'].includes(battleStore.fsm.currentSubState)) || battleStore.isReadyToExit"
+      v-if="(battleStore.isSearching && ['WAIT_INPUT', 'BUSH_IDLE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2'].includes(battleStore.fsm.currentSubState)) || battleStore.isReadyToExit"
       class="battle-finish-overlay"
       :class="{ 'is-search-mode': battleStore.isSearching }"
     >
@@ -196,9 +200,16 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   align-items: stretch; // Estirar para coincidir con la altura del centro
   justify-content: space-between;
   gap: 5px; // Gap mínimo entre zonas
+  transition: filter 0.4s ease, opacity 0.4s ease;
   width: 100%;
   max-width: 100%;
   margin: 0;
+
+  &.is-ui-locked {
+    filter: Grayscale(1);
+    opacity: 0.6;
+    pointer-events: none;
+  }
 
   @media (max-width: 775px) {
     .quick-shortcut-zone {
@@ -304,5 +315,13 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 @keyframes slideInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+/* Transición de entrada Sincronizada para todo el panel de control */
+.controls-slide-enter-active {
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.controls-slide-enter-from {
+  opacity: 0;
+  transform: translateY(30px) Scale(0.95);
 }
 </style>

@@ -148,7 +148,6 @@ const isMoveDisabled = (move) => {
 </script>
 
 <template>
-  <Transition name="grid-slide">
     <div 
       class="moves-grid-vicio"
       :class="{ 'is-reordering': isDragging }"
@@ -165,7 +164,8 @@ const isMoveDisabled = (move) => {
           'is-draggable': canReorder && move,
           'is-empty': !move,
           'is-boosted': move && getMoveModifier(move) === 'boosted',
-          'is-penalized': move && getMoveModifier(move) === 'penalized'
+          'is-penalized': move && getMoveModifier(move) === 'penalized',
+          'is-disabled': move && isMoveDisabled(move)
         }
       ]"
       :style="{ 
@@ -283,7 +283,6 @@ const isMoveDisabled = (move) => {
       </button>
     </div>
   </div>
-</Transition>
 </template>
 
 <style scoped lang="scss">
@@ -304,7 +303,7 @@ const isMoveDisabled = (move) => {
   width: 100%;
   display: flex;
   align-items: stretch;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
   z-index: var(--z-base);
   border: 1px solid var(--m-type-color); 
   border-radius: 12px;
@@ -325,7 +324,7 @@ const isMoveDisabled = (move) => {
     box-shadow: 0 0 20px Rgba(255, 214, 10, 0.2);
   }
 
-  &:hover:not(.is-dragging) {
+  &:hover:not(.is-dragging):not(.is-disabled) {
     z-index: var(--z-low);
     transform: Scale(1.08);
     box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.5);
@@ -338,6 +337,16 @@ const isMoveDisabled = (move) => {
     .move-info-zone {
       color: $white;
       text-shadow: 0 0 5px var(--m-type-color);
+    }
+  }
+
+  &.is-disabled {
+    filter: Grayscale(1);
+    opacity: 0.6;
+    cursor: not-allowed;
+    
+    .move-info-zone {
+      pointer-events: none;
     }
   }
 
@@ -445,9 +454,7 @@ const isMoveDisabled = (move) => {
   user-select: none;
 
   &:disabled:not(.is-draggable) {
-    opacity: 0.5;
     cursor: not-allowed;
-    filter: Grayscale(1);
     
     &:hover {
       transform: none;
@@ -501,13 +508,4 @@ const isMoveDisabled = (move) => {
 @keyframes move-glow { from { box-shadow: 0 0 8px Rgba(255, 215, 0, 0.4), inset 0 0 5px Rgba(255, 215, 0, 0.2); } to { box-shadow: 0 0 22px Rgba(255, 215, 0, 0.9), inset 0 0 15px Rgba(255, 215, 0, 0.5); } }
 @keyframes penalty-glow { from { box-shadow: 0 0 8px Rgba(255, 0, 0, 0.4), inset 0 0 5px Rgba(255, 0, 0, 0.2); } to { box-shadow: 0 0 22px Rgba(255, 0, 0, 0.9), inset 0 0 15px Rgba(255, 0, 0, 0.5); } }
 
-/* Transición de entrada de la cuadrícula */
-.grid-slide-enter-active {
-  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transition-delay: 0.1s; // Un poco después que los botones
-}
-.grid-slide-enter-from {
-  opacity: 0;
-  transform: translateY(40px) Scale(0.98);
-}
 </style>

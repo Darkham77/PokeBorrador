@@ -41,7 +41,10 @@ const props = defineProps({
   vibrant: { type: Boolean, default: false },
   
   // Metadata para futuras herramientas de testing/debug
-  metadata: { type: Object, default: () => ({}) }
+  metadata: { type: Object, default: () => ({}) },
+  
+  // Fuerza modo simplificado para siluetas
+  isSilhouette: { type: Boolean, default: false }
 })
 
 const uiStore = useUIStore()
@@ -49,7 +52,10 @@ const isModalPerformance = inject('isModalPerformanceMode', null)
 const forceHighFidelity = inject('forceHighFidelity', false)
 
 const isSimplified = computed(() => {
-  // 0. Force High Fidelity (Combat/Special contexts)
+  // 0. Silhouette forces simplified mode (Hides FX)
+  if (props.isSilhouette) return true
+
+  // 0.1 Force High Fidelity (Combat/Special contexts)
   if (forceHighFidelity) return false
   
   // 1. Force off if debug or manual override
@@ -70,7 +76,6 @@ const animSeed = Math.random()
 
 const wrapperClasses = computed(() => ({
   'pv-fx-wrapper': true,
-  'is-guardian': props.isGuardian && !props.status && !isSimplified.value,
   'is-vibrant': props.vibrant && !isSimplified.value,
   'is-simplified': isSimplified.value,
   [`status-${props.status}`]: !!props.status && !isSimplified.value,
@@ -118,8 +123,16 @@ const particles = computed(() => {
     :class="wrapperClasses"
     :style="{ '--fx-seed': animSeed }"
   >
-    <!-- El sprite real se inyecta aquí -->
-    <slot />
+    <!-- Capa de Sprite con efectos persistentes (Aura Guardian) -->
+    <div 
+      class="pv-fx-sprite-layer"
+      :class="{ 
+        'is-guardian': isGuardian && !isSimplified,
+        'is-vibrant': vibrant && !isSimplified 
+      }"
+    >
+      <slot />
+    </div>
 
     <!-- Capa de Brillos (Shiny) -->
     <div

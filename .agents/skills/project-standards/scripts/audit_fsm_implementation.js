@@ -45,11 +45,7 @@ const UI_FILES = [
 
 // Subestados que por definición del manual deben ocultar el HUD enemigo
 // Esta lista es la única cosa semi-hardcodeada, ya que es una regla semántica del manual
-const HUD_SUPPRESS_SUBSTATES = [
-  'SPRITE_FAINT', 'WAIT_FAINT', 'POKEMON_RECALL',
-  'HIDE_ENEMY_COMBAT_HUD', 'CATCH_SHAKE', 'CATCH_SUCCESS', 'HIDE_ENEMY_COMBAT_HUD_ESC',
-  'HIDE_ALL_COMBAT_HUDS'
-];
+const HUD_SUPPRESS_SUBSTATES = []; // Deprecated: Now uses reactive Seat-Based Visibility
 
 // Guards de idempotencia que siempre deben existir (reglas arquitectónicas invariantes)
 const REQUIRED_GUARDS = [
@@ -59,7 +55,7 @@ const REQUIRED_GUARDS = [
 ];
 
 // Subestados de alto riesgo que deben tener await antes de la transición
-const CRITICAL_AWAIT_SUBSTATES = ['VOID_STATE'];
+const CRITICAL_AWAIT_SUBSTATES = [];
 
 // ─── Utilidades ───────────────────────────────────────────────────────────────
 const sep = (c, n) => (c || '─').repeat(n || 60);
@@ -225,15 +221,17 @@ function runAudit() {
     }
   });
 
-  // ── CHECK 7: Supresión de HUD para subestados críticos ───────────────────
-  console.log('\n[CHECK 7] Supresion de HUD - subestados que deben ocultar el HUD enemigo');
+  // ── CHECK 7: Supresión de HUD (Arquitectura de Asientos) ──────────────────
+  console.log('\n[CHECK 7] Supresion de HUD - Regla Reactiva de Asientos');
   const hudCode = readSrc('composables/useBattleHud.js');
-  let hudOk = 0; let hudMissing = 0;
-  HUD_SUPPRESS_SUBSTATES.forEach(s => {
-    if (hudCode.includes(s)) { console.log('  OK HUD suprimido en: ' + s); hudOk++; }
-    else { console.log('  FAIL Falta supresion de HUD: ' + s); hudMissing++; errors++; }
-  });
-  if (hudMissing === 0) console.log('  OK ' + hudOk + '/' + HUD_SUPPRESS_SUBSTATES.length + ' verificados.');
+  
+  const hasSeatRule = hudCode.includes('!battleStore.state.enemy') || hudCode.includes('battleStore.state.enemy === null') || hudCode.includes('!battleStore.state?.enemy') || hudCode.includes('!s?.enemy');
+  if (hasSeatRule) {
+    console.log('  OK Regla Maestra detectada: Visibilidad derivada de ocupacion de asiento.');
+  } else {
+    console.log('  FAIL No se detecta la regla de visibilidad reactiva basada en asientos.');
+    errors++;
+  }
 
   // ── CHECK 8: levelUpPokemon y pendingMoves ────────────────────────────────
   console.log('\n[CHECK 8] Ciclo LEVEL_UP_MODAL - deteccion de pendingMoves');

@@ -17,6 +17,14 @@ Any change in `src/data/moves.js` or in battle logic must be validated:
 - **General Validation**: `node .agents/skills/pokemon-ability-validator/scripts/validator.js`.
 - Verifies descriptions and existence of logic in `battleAbilities.js`.
 
+### 3. Battle Engine (FSM)
+
+Any modification to `orchestrator.js`, `battleFlow.js`, or the battle state machine MUST pass these audits:
+
+- **Diagram Parity**: `node .agents/skills/project-standards/scripts/verify_fsm_diagrams.js` (detects missing states or broken transitions).
+- **Implementation Integrity**: `node .agents/skills/project-standards/scripts/audit_fsm_implementation.js` (detects race conditions and unimplemented sub-states).
+- **Sequential Flow Parity**: `node .agents/skills/project-standards/scripts/audit_fsm_flow_parity.js` (ensures the orchestrator follows the manual's Mermaid diagrams 1:1).
+
 ---
 
 ## 🧪 Testing Standards

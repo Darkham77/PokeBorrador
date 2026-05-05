@@ -30,6 +30,7 @@ const props = defineProps({
   isFainting: { type: Boolean, default: false },
   isEmerging: { type: Boolean, default: false },
   suppressFX: { type: Boolean, default: false },
+  hidden: { type: Boolean, default: false },
   stages: { type: Object, default: () => ({}) }
 })
 
@@ -167,7 +168,8 @@ const triggerStatArrow = (stat, dir) => {
       :class="[{ 
         'fainted': isFainting,
         'is-attacking': isAttacking,
-        'is-jumping': isEmerging
+        'is-jumping': isEmerging,
+        'is-technical-hidden': hidden
       }, getAttackAnimClass]"
     >
       <!-- Sombra integrada (Sigue el dash pero no el flotado) -->
@@ -230,8 +232,8 @@ const triggerStatArrow = (stat, dir) => {
         >
           <PVSpriteFX
             :poke-id="pokemon.uid || pokemon.id"
-            :is-shiny="!isSilhouette && !suppressFX && pokemon.isShiny"
-            :is-guardian="!isSilhouette && !suppressFX && pokemon.isGuardian"
+            :is-shiny="pokemon.isShiny"
+            :is-guardian="pokemon.isGuardian"
             :is-silhouette="isSilhouette"
             :status="!isSilhouette && !suppressFX ? pokemon.status : null"
             :is-confused="!isSilhouette && !suppressFX && pokemon.confused > 0"
@@ -375,18 +377,17 @@ const triggerStatArrow = (stat, dir) => {
     50% { transform: translateY(-22px) Rotate(-2deg); }
   }
 
-  .pokemon-combat-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center;
-    transition: filter 0.3s ease;
-    image-rendering: pixelated;
-    &.is-silhouette { 
-      @include pokemon-silhouette;
-      transition: none !important;
+    .pokemon-combat-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      transition: filter 0.4s ease-in-out; // Permitir que el color brote del negro suavemente
+      image-rendering: pixelated;
+      &.is-silhouette { 
+        @include pokemon-silhouette;
+      }
     }
-  }
 }
 
 // Overlay de debug que NO debe afectar el layout del flex container
@@ -411,8 +412,15 @@ const triggerStatArrow = (stat, dir) => {
 }
 
 .sprite-animator {
-  transition: opacity 0.8s ease-in-out, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  &.is-jumping { animation: pokemon-jump 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+  // Las transiciones de transform deben estar desactivadas por defecto
+  // para evitar que el posicionamiento inicial parezca un salto.
+  transition: opacity 0.8s ease-in-out, transform 0s; 
+  
+  &.is-jumping { 
+    animation: pokemon-jump 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
+    transition: none !important; 
+    z-index: calc(var(--z-map-spawns) + 10); 
+  }
   position: relative;
   z-index: var(--z-map-spawns);
   width: 100%;
@@ -435,6 +443,12 @@ const triggerStatArrow = (stat, dir) => {
       animation: pokemon-faint 0.8s ease-in forwards !important;
       pointer-events: none;
     }
+  }
+
+  &.is-technical-hidden {
+    opacity: 0 !important;
+    pointer-events: none;
+    transition: none !important;
   }
 }
 
@@ -600,9 +614,9 @@ const triggerStatArrow = (stat, dir) => {
 
 @keyframes pokemon-jump {
   0% { transform: translateY(0) Scale(1, 1); }
-  20% { transform: translateY(5px) Scale(1.1, 0.85); }
-  50% { transform: translateY(-45px) Scale(0.9, 1.1); }
-  80% { transform: translateY(0) Scale(1.05, 0.95); }
+  15% { transform: translateY(8px) Scale(1.2, 0.75); } // Aplastamiento inicial más fuerte
+  45% { transform: translateY(-60px) Scale(0.85, 1.2); } // Salto más alto y estirado
+  75% { transform: translateY(0) Scale(1.1, 0.9); } // Impacto de aterrizaje
   100% { transform: translateY(0) Scale(1, 1); }
 }
 

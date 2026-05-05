@@ -16,6 +16,12 @@ import { MOVE_DATA } from '@/data/moves'
 export async function executeTurn(store, moveIndex) {
   const p = store.activeBattle.player
   const e = store.activeBattle.enemy
+  
+  if (!p || !e) {
+    console.warn('[BattleTurn] Aborting turn: Player or Enemy is null', { p, e })
+    return
+  }
+
   const fsm = store.fsm
   const BATTLE_STATES = store.BATTLE_STATES || { ACTIVE_BATTLE: 'ACTIVE_BATTLE' }
   const BATTLE_SUBSTATES = store.BATTLE_SUBSTATES || { 
@@ -109,7 +115,7 @@ export async function runPlayerAction(store, moveIndex) {
   const e = store.activeBattle.enemy
   const fsm = store.fsm
   const BATTLE_STATES = store.BATTLE_STATES || { ACTIVE_BATTLE: 'ACTIVE_BATTLE' }
-  const BATTLE_SUBSTATES = store.BATTLE_SUBSTATES || { READ_TARGET: 'READ_TARGET', SHOW_TARGET_COMBAT_HUD: 'SHOW_TARGET_COMBAT_HUD' }
+  const BATTLE_SUBSTATES = store.BATTLE_SUBSTATES || {}
   const move = p.moves[moveIndex]
   
   if (p.tauntTurns > 0 && move.cat === 'status') {
@@ -131,8 +137,6 @@ export async function runPlayerAction(store, moveIndex) {
   
   move.pp--
   store.addLog(`¡${p.name} usó ${move.name}!`, 'log-player', p)
-  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.READ_TARGET)
-  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SHOW_TARGET_COMBAT_HUD)
 
   let executableMove = { ...move };
   if (move.effect === 'metronome') {
@@ -303,7 +307,6 @@ export async function runPlayerAction(store, moveIndex) {
       store.addLog(`¡${p.name} se sacrificó!`, 'log-info', p);
     }
 
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HIDE_TARGET_COMBAT_HUD)
     store.attackerSide = null
 
     // Execute Move Effect (Pass the battleCtx)
@@ -323,7 +326,7 @@ export async function runEnemyAction(store) {
   if (e.hp <= 0) return
   const fsm = store.fsm
   const BATTLE_STATES = store.BATTLE_STATES || { ACTIVE_BATTLE: 'ACTIVE_BATTLE' }
-  const BATTLE_SUBSTATES = store.BATTLE_SUBSTATES || { READ_TARGET: 'READ_TARGET', SHOW_TARGET_COMBAT_HUD: 'SHOW_TARGET_COMBAT_HUD' }
+  const BATTLE_SUBSTATES = store.BATTLE_SUBSTATES || {}
   const s = store.enemyStages
 
   if (e.tauntTurns > 0 && e.lastMove?.cat === 'status') {
@@ -393,8 +396,6 @@ export async function runEnemyAction(store) {
   e.lastMove = enemyMove
   store.attackerSide = 'enemy'
   store.addLog(`¡${e.name} usó ${enemyMove.name}!`, 'log-enemy', e)
-  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.READ_TARGET)
-  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SHOW_TARGET_COMBAT_HUD)
 
   let executableMove = { ...enemyMove };
   if (enemyMove.effect === 'metronome') {
@@ -550,7 +551,6 @@ export async function runEnemyAction(store) {
       store.addLog(`¡${e.name} se sacrificó!`, 'log-info', e);
     }
 
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HIDE_TARGET_COMBAT_HUD)
     store.attackerSide = null
 
     if (executableMove.effect && hitsDealt > 0) {

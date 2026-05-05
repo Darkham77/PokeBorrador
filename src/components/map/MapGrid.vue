@@ -25,12 +25,14 @@ const eventStore = useEventStore()
 const mapStore = useMapStore()
 
 const getMapData = (loc) => {
-  if (!loc.wild) return { generic: [], specific: [], rates: {} }
+  if (!loc.wild) return { generic: [], specific: [], rates: {}, weather: 'clear' }
 
   const activeEvents = eventStore.activeEvents || []
   
   // Determinar clima para esta ruta específica si no hay uno global
-  const activeWeather = props.weather !== 'clear' ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
+  // RE-TRACK: Asegurar que el pool se recalcule si cambia la hora del epoch
+  const _epoch = mapStore.currentEpochHour;
+  const activeWeather = (props.weather && props.weather !== 'clear') ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
   
   const { pool, rates } = getEncounterPool(loc, props.cycle, activeWeather, activeEvents)
 
@@ -56,7 +58,7 @@ const getMapData = (loc) => {
     })
   }
 
-  return { generic, specific, rates: ratesMap }
+  return { generic, specific, rates: ratesMap, weather: activeWeather }
 }
 
 const isMapLocked = (loc) => {
@@ -93,6 +95,7 @@ const getDominanceForMap = (mapId) => {
       :is-safari-locked="loc.id === 'safari_zone' && safariTicketSecs <= 0"
       :cycle="cycle"
       :weather="weather"
+      :forced-weather="getMapData(loc).weather"
       :badge-count="badgeCount"
       :dominance="getDominanceForMap(loc.id)"
       :is-rocket-extorted="playerClass === 'rocket' && classData?.extortedRouteId === loc.id"

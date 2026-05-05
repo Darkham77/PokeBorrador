@@ -24,7 +24,8 @@ const props = defineProps({
   badgeCount: { type: Number, default: 0 },
   dominance: { type: Object, default: null },
   isRocketExtorted: { type: Boolean, default: false },
-  spawnPool: { type: Object, default: () => ({ generic: [], specific: [], rates: {} }) }
+  spawnPool: { type: Object, default: () => ({ generic: [], specific: [], rates: {} }) },
+  forcedWeather: { type: String, default: null }
 })
 
 const emit = defineEmits(['navigate'])
@@ -59,6 +60,8 @@ const seasonName = computed(() => mapStore.currentSeason.label)
 const seasonEmoji = computed(() => mapStore.currentSeason.icon)
 
 const computedWeather = computed(() => {
+  // Sincronización absoluta: Usar el clima que generó el pool si está disponible
+  if (props.forcedWeather) return props.forcedWeather
   if (mapStore.globalWeather) return mapStore.globalWeather
   return getRouteWeather(props.map.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
 })

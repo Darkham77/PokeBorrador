@@ -75,11 +75,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Transition name="controls-slide">
-    <div 
-      class="actions-container"
-      :class="{ 'intro-fade': battleStore.isIntroAnimating }"
-    >
+  <div 
+    class="actions-container"
+    :class="{ 'intro-fade': battleStore.isIntroAnimating }"
+  >
       <div class="action-row-complex">
       <button
         class="btn-vicio-secondary switch"
@@ -122,7 +121,7 @@ onUnmounted(() => {
         <button
           class="btn-catch-ball"
           :class="{ 'is-active': isBallMenuOpen }"
-          :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating"
+          :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || battleStore.state?.isTrainer"
           @click.stop="toggleBallMenu"
         >
           <span>CAPTURAR</span>
@@ -137,8 +136,7 @@ onUnmounted(() => {
         <span class="icon">🎒</span> MOCHILA
       </button>
       </div>
-    </div>
-  </Transition>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -152,7 +150,6 @@ onUnmounted(() => {
   overflow: visible;
   position: relative;
   z-index: var(--z-low);
-  transition: opacity 0.5s ease;
 
   &.intro-fade {
     opacity: 0.1;
@@ -177,8 +174,6 @@ onUnmounted(() => {
     justify-content: center;
     gap: 4px;
     &:disabled {
-      filter: Grayscale(1);
-      opacity: 0.6;
       cursor: not-allowed;
     }
   }
@@ -362,12 +357,4 @@ onUnmounted(() => {
   transform: TranslateX(-50%) TranslateY(20px) Scale(0.8);
 }
 
-/* Transición de entrada de controles */
-.controls-slide-enter-active {
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.controls-slide-enter-from {
-  opacity: 0;
-  transform: translateY(30px) Scale(0.95);
-}
 </style>

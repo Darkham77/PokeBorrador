@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, and Zero-Warning SASS/Vue standards. Includes diagnostic scripts for automated auditing (viewport, GPU). MANDATORY: For ANY task involving the battle engine or FSM transitions, you MUST use verify_fsm_diagrams.js and audit_fsm_implementation.js to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
+description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, and Zero-Warning SASS/Vue standards. Includes diagnostic scripts for automated auditing (viewport, GPU). For ANY task involving the battle engine or FSM transitions, you MUST use verify_fsm_diagrams.js, audit_fsm_implementation.js, and audit_fsm_flow_parity.js to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
 ---
 
 # Project Standards (Lean Core)
@@ -58,6 +58,7 @@ Consult these manuals for detailed implementation specifications:
 - **GPU First**: Prioritize hardware-accelerated rendering. See [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md).
 - **Sprite Standard**: Use `@include sprite-render` for all game assets.
 - **Organic Feel**: Desynchronize animations using seeds and vary speeds.
+- **VFX Integrity**: Apply complex auras (e.g. Guardian/Shiny) to the `.pv-fx-wrapper` instead of the child sprite. This prevents status effect filters (poison/burn) from overriding the aura. Persistent effects MUST decouple their visibility from status flags.
 
 ### 3. Modularity & Hierarchy
 
@@ -76,6 +77,8 @@ Consult these manuals for detailed implementation specifications:
 - **Zero Bridges Policy**: Se prohíbe el uso de `window.state` o cualquier puente de compatibilidad global (`src/logic/bridges`). Toda la comunicación debe realizarse mediante importaciones directas (ESM) e inyección de dependencias a través de Stores de Pinia. La manipulación del estado global desde la consola debe reservarse exclusivamente para `window.__VITE_DEBUG__`.
 - **Modular Orchestration (HUD)**: Lógica de visibilidad, snapshots y estados de interfaz de combate de alta complejidad DEBEN ser extraídos a composables dedicados (ej. `useBattleHud.js`). La vista de la arena (`BattleArenaView.vue`) debe actuar exclusivamente como un orquestador visual simplificado.
 - **Reactive State Propagation**: Al pasar subconjuntos del estado a funciones lógicas externas mediante `reactive({...})`, es OBLIGATORIO incluir todas las flags de control (ej. `isFinishing`) para evitar que el motor de lógica tome decisiones basadas en estados incompletos o indefinidos.
+- **Grid-to-Card Sync**: En componentes de rejilla (ej. `MapGrid`), el estado dependiente del entorno (clima, ciclo) debe calcularse una sola vez y propagarse a los hijos vía props (`forced-weather`). Esto evita desincronización visual entre el pool de datos y la interfaz.
+- **Robustness (Deterministic Environment)**: Tratar estados ambientales `null` o indefinidos como disparadores para el cálculo determinista, asegurando que nunca se omita la inyección de contenido atmosférico (visitantes).
 
 ### 4. SASS and Build Integrity
 
@@ -100,7 +103,7 @@ Consult these manuals for detailed implementation specifications:
 
 - **Documentation Parity**: The code MUST remain a 1:1 implementation of the Mermaid diagrams in `battle_mechanics_manual.md`.
 - **Deterministic Flow**: Avoid naked `setTimeout` calls in combat logic. Use `await new Promise(r => setTimeout(r, ms))` to maintain atomic control.
-- **Mandatory Audit**: Run `verify_fsm_diagrams.js` and `audit_fsm_implementation.js` before every commit that touches battle logic. Zero critical errors are allowed.
+- **Mandatory Audit**: Run `verify_fsm_diagrams.js`, `audit_fsm_implementation.js`, and `audit_fsm_flow_parity.js` before every commit that touches battle logic. Zero critical errors are allowed.
 
 ---
 
@@ -128,6 +131,7 @@ Use these scripts to verify project standards:
 
 - `verify_fsm_diagrams.js`: Scans `battle_mechanics_manual.md` Mermaid diagrams and verifies 1:1 mapping against `battleStateMachine.js` FSM. Use to detect missing states or broken transitions.
 - `audit_fsm_implementation.js`: Deep audit of the battle engine. Detects race conditions (setTimeout vs await), unimplemented sub-states, HUD suppression gaps, and persistence gate integrity.
+- `audit_fsm_flow_parity.js`: Sequential flow auditor. Compares Mermaid diagrams in the manual against the execution order in the orchestrator.
 - `detect_gpu_gaps.py`: Scans for missing layer promotion or expensive filters.
 - `detect_outline_traps.py`: Detects expensive Quad Drop-Shadow outlines that should be migrated to SVG.
 - `detect_viewport_units.py`: Detects legacy `vw`/`vh` units that should be migrated to `dvw`/`dvh`.

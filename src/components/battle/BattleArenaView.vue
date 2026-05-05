@@ -73,7 +73,8 @@ const {
 const {
   isEnemyHudSuppressed,
   isPlayerHudSuppressed,
-  activeEnemyHudData
+  activeEnemyHudData,
+  shouldScrambleEnemyData
 } = useBattleHud(animations, battleStore, enemy)
 
 const isFinishing = computed(() => {
@@ -85,43 +86,48 @@ const isFinishing = computed(() => {
 const activeEnemyData = computed(() => {
   const s = unwrap(battleStore.fsm?.currentState)
   const sub = unwrap(battleStore.fsm?.currentSubState)
-  if (s === 'REWARDS_PHASE' && sub === 'VOID_STATE') {
+
+  if (s === 'REWARDS_PHASE' && sub === 'EMPTY_WAIT') {
     return null
   }
-  return activeEnemyHudData.value
+  
+  // Si estamos en búsqueda o introducción y el asiento está vacío, 
+  // mostramos el 'initialEnemy' como silueta de seguridad (Evita fantasmas)
+  const realEnemy = activeEnemyHudData.value
+  if (!realEnemy && (s === 'FIRST_INTRO' || s === 'SEARCH_PHASE' || s === 'INITIALIZING')) {
+    return unwrap(battleStore.state)?._initialEnemy || null
+  }
+
+  return realEnemy
 })
 
 const unwrap = (val) => (val && typeof val === 'object' && 'value' in val ? val.value : val)
 
 const activeEnemyIsSilhouette = computed(() => {
-  const hasBinoculars = gameStore.state.inventory?.['binoculars'] > 0
-  if (hasBinoculars || battleStore.debugBinoculars) return false
-  
-  if (isCaptureSequenceActive.value) return false
-  if (enemyAnimState.value === 'fainting' || enemyAnimState.value === 'fainted' || (enemyAnimState.value === 'entering' && !isWildEncounter.value)) return false
-  
-  if (isFaintInProgress.value) return false
-
-  const s = unwrap(battleStore.fsm?.currentState)
   const sub = unwrap(battleStore.fsm?.currentSubState)
+  return [
+    'PARALLEL_PREP', 'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'BUSH_IDLE', 
+    'POPULATE_BOTH', 'GEN_DATA', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_JUMP'
+  ].includes(sub)
+})
 
-  if (isWildEncounter.value && s === 'INITIALIZING') return true
+// Determinismo de profundidad: El arbusto se va al fondo SOLO durante el salto o revelación cromática.
+// En PARALLEL_PREP / BUSH_VISIBLE se mantiene el efecto "sándwich" (detrás de la capa frontal).
+const bushIsBehind = computed(() => {
+  const sub = unwrap(battleStore.fsm?.currentSubState)
+  return isEmerging.value || ['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'REVEAL_COLORS', 'BUSH_FADE'].includes(sub)
+})
 
-  // Utilizar FSM para mayor rigor (Phase 1)
-  if (sub === 'SILHOUETTE_LAYER' || sub === 'SILHOUETTE_MODE' || sub === 'SOLID_SILHOUETTE' || sub === 'SILHOUETTE_JUMP' || sub === 'SILHOUETTE_FLY' || sub === 'ENCOUNTER_ANIM' || sub === 'ENTRY_ANIM') {
-    return true
-  }
-
-  // En SEARCH_PHASE, si estamos en ENTRY_ANIM o BUSH_IDLE, siempre es silueta (si no hay binoculares).
-  if (s === 'SEARCH_PHASE' && (sub === 'ENTRY_ANIM' || sub === 'BUSH_IDLE' || sub === 'WILD_ENTRY')) return true
-
-  // En cualquier otro caso, seguimos la bandera reactiva de la animación
-  return isWildSilhouette.value
+const enemyIsJumping = computed(() => {
+  const sub = unwrap(battleStore.fsm?.currentSubState)
+  return isEmerging.value || sub === 'SPRITE_JUMP' || sub === 'ENCOUNTER_ANIM' || sub === 'PARALLEL_JUMP'
 })
 
 const isInstantBush = computed(() => {
   if (isInitialLoad.value) return true
-  return unwrap(battleStore.fsm?.currentSubState) === 'INSTANT_BUSHES'
+  const sub = unwrap(battleStore.fsm?.currentSubState)
+  // En FIRST_INTRO (Entrada directa), los arbustos son instantáneos
+  return unwrap(battleStore.fsm?.currentState) === 'FIRST_INTRO' || sub === 'BUSH_VISIBLE'
 })
 
 const enemyIsFloating = computed(() => {
@@ -140,6 +146,45 @@ const enemyIsFloating = computed(() => {
 const isWildEncounter = computed(() => {
   if (isSearching.value) return true
   return battleStore.state && !battleStore.state.isTrainer && !battleStore.state.isGym
+})
+
+const isEnemyTechnicalHidden = computed(() => {
+  const sub = unwrap(battleStore.fsm?.currentSubState)
+  const isTrainer = !isWildEncounter.value
+  
+  // Lógica de ocultación técnica: Evita ghosting y parpadeos durante transiciones de asientos
+  const isSearchPreEntry = computed(() => {
+    const s = unwrap(battleStore.fsm?.currentState)
+    const subState = unwrap(battleStore.fsm?.currentSubState)
+    
+    // 1. Forzar ocultación en estados de promoción técnica (Slot 2 -> Slot 1)
+    if (['PROMOTE_AND_REPOPULATE', 'PROMOTE'].includes(subState)) return true
+    
+    // 2. Si estamos en búsqueda, ocultar solo durante la generación técnica de datos
+    if (s === 'SEARCH_PHASE') {
+      const technicalSubstates = [
+        'GEN_DATA', 'RECEIVE_CONFIG', 'VALIDATE_WEIGHTS', 'INJECT_FILTERS', 
+        'READY_FOR_GEN', 'CHECK_PERSISTENCE'
+      ]
+      return technicalSubstates.includes(subState)
+    }
+    
+    // 3. En otros estados principales (INITIALIZING, FIRST_INTRO, ACTIVE_BATTLE, REORDER_TEAM), el enemigo es visible
+    // a menos que estemos en una transición de promoción técnica (punto 1)
+    return false
+  }).value
+  
+  // El enemigo técnico está oculto mientras el entrenador es visible (Mood Visual) o en pre-entrada de búsqueda
+  return (isTrainer && ['TRAINER_ENTRY', 'T_VISUAL', 'TRAINER_RETREAT', 'POKEMON_CALL', 'RENDER_BALL'].includes(sub)) || isSearchPreEntry
+})
+
+const isPlayerTechnicalHidden = computed(() => {
+  const sub = unwrap(battleStore.fsm?.currentSubState)
+  const isTrainer = battleStore.activeBattle?.isTrainer || battleStore.activeBattle?.isGym
+  
+  // El jugador está oculto mientras el entrenador del jugador es visible (Mood Visual)
+  // Por ahora la lógica de entrada de entrenador jugador es síncrona con POKEMON_CALL
+  return isTrainer && ['TRAINER_ENTRY', 'T_VISUAL'].includes(sub)
 })
 
 const computedWeather = computed(() => {
@@ -164,15 +209,13 @@ const shouldShowEncounterLayers = computed(() => {
   // Si el Pokémon vuela, no mostramos capas ambientales (arbustos)
   if (enemyIsFloating.value) return false
 
-  // Utilizar FSM para mayor rigor (Phase 1)
   const fsmSub = unwrap(battleStore.fsm?.currentSubState)
-  if (['ENTRY_ANIM', 'ENCOUNTER_ANIM', 'BUSH_IDLE', 'BUSH_LAYER', 'WILD_ENTRY', 'BUSH_FLOW', 'BUSH_SETUP', 'GRASS_SYNC', 'PARALLEL_PREP', 'BUSHES_BACK', 'GROUND_FLOW', 'REVEAL_COLORS'].includes(fsmSub)) {
+  // Mostrar capas (arbustos) en todos los estados de búsqueda y entrada salvaje plana
+  if (['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'BUSH_IDLE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS'].includes(fsmSub)) {
     return isWildEncounter.value
   }
 
-  const isWild = isWildEncounter.value
-  const isSearchingVal = isSearching.value
-  return isWild && (isSearchingVal || wildRevealActive.value)
+  return isWildEncounter.value && (isSearching.value || wildRevealActive.value)
 })
 
 
@@ -182,10 +225,13 @@ const atmosphereSeed = computed(() => {
 
 // Watchers de Sincronización
 // Watcher para sincronizar sombras (Jugador y Enemigo)
-watch([() => activeEnemyData.value, p2Pos, () => enemyAnimState.value, activeEnemyIsSilhouette], ([data, pos, anim, isSil]) => {
-  // En Fase 2 (Búsqueda), solo mostrar sombra si hay silueta activa o ya no estamos buscando
-  const isSearchPhase = isSearching.value
-  const visible = !!data && (!isSearchPhase || isSil)
+watch([enemy, p2Pos, () => enemyAnimState.value], ([data, pos, anim]) => {
+  const fsm = battleStore.fsm
+  const sub = unwrap(fsm?.currentSubState)
+  const s = unwrap(fsm?.currentState)
+  
+  // El Pokémon es visible si el asiento está ocupado
+  const visible = !!data
   syncEnemyShadow(visible, data, pos, anim)
 }, { immediate: true, deep: true })
 
@@ -213,21 +259,9 @@ watch(
       // La orquestación lógica ahora reside en el store para mayor precisión.
     }
 
-    // SEARCH_PHASE + ENTRY_ANIM substate: bushes graduales + silueta estática
-    if (newState === 'SEARCH_PHASE' && newSubState === 'ENTRY_ANIM' && isWildEncounter.value) {
-      console.log('[BattleArenaView] -> ENTRY_ANIM (SEARCH_PHASE)')
-      triggerSearchEntry()
-    }
-
-    // SEARCH_PHASE + ENCOUNTER_ANIM substate: jump + reveal (usuario hizo click en Buscar)
-    if (newState === 'SEARCH_PHASE' && newSubState === 'ENCOUNTER_ANIM' && isWildEncounter.value) {
-      console.log('[BattleArenaView] -> ENCOUNTER_ANIM (SEARCH_PHASE)')
-      await triggerSearchEncounter()
-    }
-
-    // REWARDS_PHASE + VOID_STATE: Limpieza completa de rastros del Pokémon
-    if (newState === 'REWARDS_PHASE' && newSubState === 'VOID_STATE') {
-      console.log('[BattleArenaView] -> VOID_STATE (REWARDS_PHASE)')
+    // REWARDS_PHASE + EMPTY_WAIT: Limpieza completa de rastros del Pokémon
+    if (newState === 'REWARDS_PHASE' && newSubState === 'EMPTY_WAIT') {
+      console.log('[BattleArenaView] -> EMPTY_WAIT (REWARDS_PHASE)')
       isWildEntryAnimation.value = false
       isEmerging.value = false
       isWildSilhouette.value = false
@@ -264,14 +298,13 @@ const handleFishingFail = async () => {
 }
 
 
-
 watch(isIntroInProgress, (val) => { battleStore.isIntroAnimating = val }, { immediate: true })
 
 onMounted(async () => {
   initListeners()
   await preloadCombatCoords(
-    battle.value?.player || battle.value?._initialPlayer, 
-    battle.value?.enemy || battle.value?._initialEnemy, 
+    battle.value?.player, 
+    battle.value?.enemy, 
     p1Pos.value, 
     p2Pos.value,
     battle.value?.playerTeam,
@@ -280,12 +313,12 @@ onMounted(async () => {
   setTimeout(() => { isInitialLoad.value = false }, 500)
 })
 
-// Ejecutar PRELOAD_COORDS para combates consecutivos (porque onMounted no se repite en modo persistente)
+// Ejecutar PRELOAD_COORDS para combates consecutivos
 watch(() => battleStore.currentSubState, async (sub) => {
   if (sub === 'PRELOAD_COORDS') {
     await preloadCombatCoords(
-      battle.value?.player || battle.value?._initialPlayer, 
-      battle.value?.enemy || battle.value?._initialEnemy, 
+      battle.value?.player, 
+      battle.value?.enemy, 
       p1Pos.value, 
       p2Pos.value,
       battle.value?.playerTeam,
@@ -387,9 +420,10 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-capture-success="enemyCaptureActive"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
             :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'enemy'"
-            :is-emerging="isEmerging"
+            :is-emerging="enemyIsJumping"
             :suppress-fx="isSearching || isIntroInProgress"
             :stages="battleStore.enemyStages"
+            :hidden="isEnemyTechnicalHidden"
           />
 
           <!-- Arbustos Adelante --
@@ -408,7 +442,7 @@ watch(() => battleStore.isBattleActive, (active) => {
               :ground-y="enemyGroundY"
               :visible="shouldShowEncounterLayers && !enemyIsFloating"
               :instant="isInstantBush"
-              :force-behind="isEmerging"
+              :force-behind="bushIsBehind"
             />
           </VirtualEntity>
 
@@ -432,6 +466,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :sparkles="catchSparkles.filter(s => s.side === 'player')"
             :stages="battleStore.playerStages"
             :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'player'"
+            :hidden="isPlayerTechnicalHidden"
           />
         </div>
       </VirtualSpace>
@@ -451,15 +486,18 @@ watch(() => battleStore.isBattleActive, (active) => {
     <div class="battle-info-container">
       <Transition name="hud-fade-enemy">
         <div
-          v-if="!isEnemyHudSuppressed && activeEnemyData && activeEnemyData.hp > 0"
+          v-if="!isEnemyHudSuppressed && activeEnemyData"
           class="combatant-info-wrap enemy-side"
         >
-          <BattleInfoCard :pokemon="activeEnemyData" />
+          <BattleInfoCard 
+            :pokemon="activeEnemyData" 
+            :is-scrambled="shouldScrambleEnemyData"
+          />
         </div>
       </Transition>
       <Transition name="hud-fade-player">
         <div
-          v-if="!isPlayerHudSuppressed && player && player.hp > 0"
+          v-if="!isPlayerHudSuppressed && player"
           class="combatant-info-wrap player-side"
         >
           <BattleInfoCard

@@ -90,3 +90,13 @@ To maintain the "Fog of War" and a clean UI, tooltips on route cards follow thes
   - **Known (Seen/Caught)**: Display exact cycles using emojis: `Usual times: 🌅 ☀️`.
   - **Unknown**: Use the generic label `Not common in this route` for any Pokémon with time restrictions to avoid spoilers.
 - **24h Consistency**: Pokémon also available via **Fishing** are treated as 24h spawns; they do not display time restrictions.
+
+## 7. Synchronization & Robustness
+
+### 7.1 Grid-to-Card State Sync
+
+The environment state (weather, cycle) must be calculated once at the parent level (`MapGrid`) and propagated to children via the `forced-weather` prop. This prevents visual artifacts where the UI icon (calculated in Card) contradicts the actual spawn pool (calculated in Grid).
+
+### 7.2 Deterministic Weather (Null Handling)
+
+When calculating weather, a `null` or `undefined` global state MUST trigger the deterministic `getRouteWeather` function. Skipping this check (e.g. `if (weather !== 'clear')`) when the value is `null` causes the system to omit climate-injected visitors, breaking the atmospheric experience.

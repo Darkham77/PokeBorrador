@@ -41,7 +41,6 @@ export function useBattleAnimations(battleStore, enemyRef) {
     const s = toValue(battleStore.fsm.currentState)
     return s === 'INITIALIZING' ||
            s === 'FIRST_INTRO' ||
-           battleStore.isIntroAnimating ||
            isWildEntryAnimation.value || 
            wildRevealActive.value || 
            isEmerging.value || 
@@ -88,14 +87,20 @@ export function useBattleAnimations(battleStore, enemyRef) {
   }
 
   // Sincroniza las banderas de animación visual con el estado lógico de la FSM.
-  // Esto elimina la necesidad de timers duplicados y asegura que la UI siga a la lógica.
   watch(
     () => [toValue(battleStore.fsm.currentState), toValue(battleStore.fsm.currentSubState)],
     ([state, sub]) => {
       if (!state) return
 
-      // CASOS DE LIMPIEZA GLOBAL (Al entrar en combate activo o salir)
-      if (state === 'ACTIVE_BATTLE' || state === 'EXIT_BATTLE' || sub === 'WAIT_INPUT' || sub === 'SHOW_ALL_HUDS') {
+      // CASOS DE LIMPIEZA GLOBAL (Garantiza estado puro al iniciar o volver a búsqueda)
+      const isCleanupState = [
+        'INITIALIZING', 
+        'SEARCH_PHASE', 
+        'CONTEXT_SETUP', 
+        'EXIT_BATTLE'
+      ].includes(state) || sub === 'WAIT_INPUT'
+
+      if (isCleanupState) {
         isGlobalFadeActive.value = (state === 'EXIT_BATTLE')
         isWildEntryAnimation.value = false
         isEmerging.value = false
@@ -106,67 +111,69 @@ export function useBattleAnimations(battleStore, enemyRef) {
         enemyAnimState.value = null
         trainerAnimState.value = null
         isTrainerVisible.value = false
+        
+        // Limpieza profunda de estados de desmayo y captura
+        isFaintInProgress.value = false
+        faintedPokemonSnapshot.value = null
+        playerCaptureActive.value = false
+        enemyCaptureActive.value = false
+        caughtPokemonSnapshot.value = null
         return
       }
 
+      if (sub) console.log(`[useBattleAnimations] SubState: ${sub}`);
+
       switch (sub) {
-        // 1. GESTIÓN DE SILUETAS
-        case 'SILHOUETTE_LAYER':
-        case 'SILHOUETTE_MODE':
-        case 'SOLID_SILHOUETTE':
-        case 'SILHOUETTE_JUMP':
-        case 'SILHOUETTE_FLY':
-        case 'T_SILHOUETTE':
-        case 'WILD_ENTRY':
-        case 'ENCOUNTER_ANIM':
-        case 'ENTRY_ANIM':
+        // 1. ENTRADA PARALELA (Búsqueda o Primer Encuentro)
+        case 'GEN_DATA':
+        case 'INITIALIZING':
           isWildSilhouette.value = true
           wildRevealActive.value = true
-          break
-        
-        case 'COLOR_READY':
-        case 'T_FULL_COLOR':
-        case 'FULL_COLOR_JUMP':
-        case 'REVEAL_COLORS':
-          isWildSilhouette.value = false
+          isWildEntryAnimation.value = false
+          isEmerging.value = false // RESET AL INICIO ABSOLUTO
           break
 
-        // 2. GESTIÓN DE ARBUSTOS Y PARALELISMO
+        case 'PARALLEL_PREP':
+        case 'PARALLEL_ENTRY':
+        case 'ENTRY_ANIM':
         case 'WILD_ENTRY':
-        case 'ENTRY_ANIM':
-        case 'BUSH_FLOW':
-        case 'BUSH_SETUP':
-        case 'BUSH_VISIBLE':
         case 'BUSH_IDLE':
-        case 'GRASS_SYNC':
-        case 'PARALLEL_PREP':
-        case 'GROUND_FLOW':
-        case 'BUSHES_BACK':
+        case 'BUSH_VISIBLE':
+        case 'SILHOUETTE_MODE':
+          isWildSilhouette.value = true
           wildRevealActive.value = true
+          isWildEntryAnimation.value = false
+          // Mantenemos isEmerging como esté (evita parpadeos)
           break
         
-        case 'BUSH_FADE':
-        case 'BUSH_FADE_COLOR':
-          wildRevealActive.value = false
-          break
-
-        // 3. GESTIÓN DE SALTOS (EMERGENCE)
-        case 'SILHOUETTE_JUMP':
-        case 'FULL_COLOR_JUMP':
+        // 2. SALTO PARALELO (Salto + Desvanecimiento de Arbustos)
+        case 'PARALLEL_JUMP':
         case 'ENCOUNTER_ANIM':
-        case 'ENTRY_ANIM':
-        case 'SPRITE_JUMP':
-        case 'PARALLEL_PREP':
         case 'JUMP_SHADOW':
         case 'JUMP_COLOR':
-          isEmerging.value = true
+        case 'BUSH_FADE':
+          console.log('[useBattleAnimations] TRIGGER JUMP');
           isWildEntryAnimation.value = true
+          wildRevealActive.value = true 
+          isWildSilhouette.value = true
+          
+          if (!isEmerging.value) {
+            setTimeout(() => {
+              isEmerging.value = true
+            }, 0);
+          }
+          break
+        
+        case 'REVEAL_COLORS':
+          isWildEntryAnimation.value = true
+          wildRevealActive.value = false 
+          isWildSilhouette.value = false
+          isEmerging.value = false // RESET AL ATERRIZAR
           break
 
-        // 4. GESTIÓN DE Poké Ball (LLAMADO)
+        // 3. GESTIÓN DE Poké Ball (LLAMADO / RETIRO)
         case 'POKEMON_CALL':
         case 'ENERGY_RELEASE':
-        case 'PARALLEL_PREP':
           playerAnimState.value = 'releasing'
           break
 
@@ -175,36 +182,22 @@ export function useBattleAnimations(battleStore, enemyRef) {
           playerAnimState.value = 'catching'
           break
 
-        // 5. GESTIÓN DE REORDER / SWITCH
-        case 'REORDER_TEAM':
-        case 'CHECK_PLAYER_SLOT':
-        case 'SWITCHING':
-        case 'READ_TARGET':
-          // Preparar para el cambio (ocultar HUDs si es necesario)
-          break
-
-        // 6. GESTIÓN DE ENTRENADORES
+        // 4. GESTIÓN DE ENTRENADORES (VISUAL OVERLAY)
         case 'TRAINER_ENTRY':
+        case 'T_VISUAL':
           trainerAnimState.value = 'entering'
           isTrainerVisible.value = true
           break
         
-        case 'TRAINER_ENCOUNTER':
-          trainerAnimState.value = 'idle'
-          isTrainerVisible.value = true
-          break
-
         case 'TRAINER_RETREAT':
           trainerAnimState.value = 'retreating'
           setTimeout(() => { isTrainerVisible.value = false; trainerAnimState.value = null }, 800)
           break
 
-        case 'VOID_STATE':
-          isGlobalFadeActive.value = true
+        case 'EMPTY_WAIT':
           isEmerging.value = false
           isWildEntryAnimation.value = false
           wildRevealActive.value = false
-          upcomingIsEmerging.value = false
           isWildSilhouette.value = false
           playerAnimState.value = null
           enemyAnimState.value = null
@@ -212,16 +205,11 @@ export function useBattleAnimations(battleStore, enemyRef) {
           isTrainerVisible.value = false
           break
 
-        case 'WAIT_INPUT':
-        case 'WAIT_LOG_QUEUE':
-        case 'ANIM_SYNC':
         case null:
-          // Reset de estados de animación al volver a espera o estado neutro
           playerAnimState.value = null
           enemyAnimState.value = null
           isEmerging.value = false
           isWildEntryAnimation.value = false
-          isGlobalFadeActive.value = false
           break
       }
     }

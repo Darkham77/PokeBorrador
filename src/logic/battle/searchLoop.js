@@ -24,6 +24,9 @@ export async function handleBattleFlowCompletion(ctx, option = 'map') {
     const hasBinoculars = ctx.debugBinoculars.value
     
     // PROMOTE: Slot 2 -> Slot 1 (Ya manejado implícitamente por la lógica de slots, pero aquí lo formalizamos)
+    if (ctx.upcomingPokemon.value) {
+      ctx.activeBattle.value._initialEnemy = { ...ctx.upcomingPokemon.value }
+    }
     // GEN_NEW_S2: Generar próximo encuentro si no hay uno en el slot
     if (!ctx.upcomingPokemon.value) {
       const encounterOptions = {
@@ -37,59 +40,34 @@ export async function handleBattleFlowCompletion(ctx, option = 'map') {
         ctx.upcomingPokemon.value = { ...encounter.pokemon }
       }
     }
+    
+    // Sincronizar _initialEnemy para que cualquier silueta use los datos correctos del Slot 1 (Promovido)
+    if (ctx.upcomingPokemon.value) {
+      ctx.activeBattle.value._initialEnemy = { ...ctx.upcomingPokemon.value }
+    }
+
     fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_NEW_S2)
 
-    // VACATE_ALL_SEATS: Clean Stage Protocol (Converges here)
-    // This ensures no previous combatant sprites are visible before the new search transition
-    await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.VACATE_ALL_SEATS)
+    // PRELOAD_COORDS: Pre-calculo de anclajes antes de la fase visual
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_COORDS, 100)
 
-    // FASE: SEARCH_PHASE (Fase Visual)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE)
-    fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.GRASS_SYNC)
-    fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.ENTRY_ANIM)
-    fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.WILD_ENTRY)
-
-    const isFlying = ctx.upcomingPokemon.value?.type === 'flying' || ctx.upcomingPokemon.value?.type2 === 'flying' || ctx.upcomingPokemon.value?.ability === 'Levitación'
-    fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.AESTHETIC_CHECK)
+    // FASE: SEARCH_PHASE (Fase Visual - Sincronizada con Protocolo de Asientos)
+    // 1. Preparación Paralela (Arbustos, Siluetas, etc.)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
     
-    if (isFlying) {
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.SKIP_BUSHES)
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.HIDDEN)
-      
-      if (ctx.activeBattle.value && ctx.upcomingPokemon.value) {
-        ctx.activeBattle.value.enemy = { ...ctx.upcomingPokemon.value }
-      }
-    } else {
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_FLOW)
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_SETUP)
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.GRADUAL_BUSHES)
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_VISIBLE)
-
-      // Activar enemigo justo antes del fade de arbustos para el salto
-      if (ctx.activeBattle.value && ctx.upcomingPokemon.value) {
-        ctx.activeBattle.value.enemy = { ...ctx.upcomingPokemon.value }
-      }
-
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_FADE)
-    }
-
-    fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.SILHOUETTE_MODE)
-    if (hasBinoculars) {
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.FULL_COLOR)
-    } else {
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.SOLID_SILHOUETTE)
+    // 2. OCUPACIÓN DEL ASIENTO: El Pokémon aparece visualmente con su silueta ya preparada
+    if (ctx.upcomingPokemon.value) {
+      ctx.activeBattle.value.enemy = { ...ctx.upcomingPokemon.value }
     }
     
-    fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_IDLE)
+    ctx.isProcessing.value = false
+    return
     
     if (ctx.activeBattle.value?.isFishing) {
       fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.MINIGAME_CHECK)
       fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.JUMP_COLOR_F)
       fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.JUMP_SHADOW_F)
       fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REVEAL_COLORS_F)
-    } else if (Math.random() < 0) {
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.VANISH_LOOP)
     }
     
     ctx.isProcessing.value = false
@@ -144,18 +122,14 @@ export async function startEncounter(ctx) {
   
   ctx.isIntroAnimating.value = true
   
-  // 1. Minigame Check
-  if (ctx.activeBattle.value?.isFishing) {
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.MINIGAME_CHECK)
-  }
+  // 1. Delegar al orquestador oficial para garantizar paridad con el manual
+  const locId = ctx.activeBattle.value?.locationId
+  const isTr = ctx.activeBattle.value?.isTrainer
+  const trName = ctx.activeBattle.value?.trainerName
+  const isGym = ctx.activeBattle.value?.isGym
+  const gymId = ctx.activeBattle.value?.gymId
   
-  // 1.5 Preload Coords (Shadow/Anchor sync)
-  await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PRELOAD_COORDS, 100)
+  await ctx.initBattle(locId, isTr, trName, isGym, gymId, true)
   
-  // 2. Encounter Anim (Jump)
-  await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.ENCOUNTER_ANIM, 800)
-  
-  // 3. To Active Battle
-  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SHOW_ALL_MISSING_COMBAT_HUDS)
   ctx.isIntroAnimating.value = false
 }

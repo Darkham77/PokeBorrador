@@ -17,7 +17,8 @@ import { getStatBreakdown, getStatMultiplier } from '@/logic/battle/battleEngine
 const props = defineProps({
   pokemon: { type: Object, required: true },
   isPlayer: { type: Boolean, default: false },
-  nickStyle: { type: String, default: '' }
+  nickStyle: { type: String, default: '' },
+  isScrambled: { type: Boolean, default: false }
 })
 
 const p = computed(() => props.pokemon)
@@ -333,10 +334,10 @@ const formatMult = (m) => {
           class="poke-name" 
           :class="isPlayer ? nickStyle : ''"
         >
-          {{ p.name }}
+          {{ isScrambled ? '???' : p.name }}
         </span>
         <div
-          v-if="p.gender"
+          v-if="p.gender && !isScrambled"
           class="m-badge-gender"
           :class="getGenderCls(p.gender)"
         >
@@ -400,9 +401,10 @@ const formatMult = (m) => {
         
       <div class="level-row">
         <div class="poke-level m-badge-level">
-          Nv. {{ p.level }}
+          Nv. {{ isScrambled ? '??' : p.level }}
         </div>
         <PokemonTypePills 
+          v-if="!isScrambled"
           :pokemon="p" 
           size="sm"
           class="poke-types"
@@ -431,13 +433,13 @@ const formatMult = (m) => {
         </div>
 
         <div class="hp-values">
-          HP: {{ Math.max(0, Math.round(displayHp)) }}/{{ p.maxHp }}
+          HP: {{ isScrambled ? '???/???' : `${Math.max(0, Math.round(displayHp))}/${p.maxHp}` }}
         </div>
       </div>
 
       <!-- Contenedor de Estados (Primarios + Volátiles + Stages) -->
       <div 
-        v-if="p.status || volatileStatuses.length > 0 || activeStages.length > 0"
+        v-if="!isScrambled && (p.status || volatileStatuses.length > 0 || activeStages.length > 0)"
         class="status-container"
       >
         <!-- Estado Primario -->

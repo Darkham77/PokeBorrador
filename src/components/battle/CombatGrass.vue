@@ -137,7 +137,7 @@ const activeBushes = computed(() => bushes[props.layer])
 }
 
 .grass-fade-leave-active, .grass-instant-leave-active {
-  transition: opacity 0.25s ease-in-out;
+  transition: opacity 0.6s ease-in-out; // Sincronizado con el salto (0.6s)
 }
 
 .grass-fade-enter-from {

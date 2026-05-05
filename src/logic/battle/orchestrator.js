@@ -30,7 +30,10 @@ export async function startBattleSequence(ctx, enemyPoke, options = {}) {
     await ctx.endBattle(false, true)
   }
 
-  const wasSearching = wasSearchingOpt !== null ? wasSearchingOpt : ctx.isSearching.value
+  // [PROYECTO VICIO] Absolutamente todos los combates inician con wasSearching: true por defecto
+  // para garantizar que pasen por la fase de inicialización de slots/arbustos
+  const wasSearching = wasSearchingOpt !== null ? wasSearchingOpt : true
+  
   const { sanitizePokemon } = await import('@/logic/pokemonFactory')
   const mapStore = useMapStore()
 
@@ -90,150 +93,138 @@ export async function startBattleSequence(ctx, enemyPoke, options = {}) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
 
-  fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.RECEIVE_CONFIG)
-  fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.VALIDATE_WEIGHTS)
-  fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.INJECT_FILTERS)
-  fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.READY_FOR_GEN)
-  fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.HIDE_ALL_COMBAT_HUDS)
-
   ctx.isIntroAnimating.value = true
 
-  fsm.transition(BATTLE_STATES.INITIALIZING)
-  fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.CHECK_SLOTS)
+  // PROTOCOLO DE ASIENTOS: Fuente de Verdad para Visibilidad
+  ctx.activeBattle.value.enemy = null // El enemigo siempre se vacía al empezar un encuentro
+  
+  // El jugador solo se vacía si el Pokémon líder ha cambiado (Modo Persistente)
+  const currentP = ctx.activeBattle.value.player
+  const leaderP = ctx.player.value?.team?.[0]
+  if (!currentP || !leaderP || currentP.uid !== leaderP.uid) {
+    ctx.activeBattle.value.player = null
+  }
+  
+  ctx.clearLogs()
 
   if (wasSearching) {
     fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PROMOTE_AND_REPOPULATE)
     fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PROMOTE)
     fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_NEW_S2)
-    // PROTOCOLO DE ASIENTO VACÍO: Solo el enemigo se limpia aquí para el buscador
-    ctx.activeBattle.value.enemy = null
   } else {
     fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.POPULATE_BOTH)
     fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_DATA)
-    // No limpiamos el asiento del jugador todavía para evitar el 'flash' negro/vacío
+    await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.VACATE_ALL_SEATS)
     ctx.activeBattle.value.enemy = null
+    ctx.activeBattle.value.player = null
   }
-  ctx.isIntroAnimating.value = true
   
-  // Limpiar logs del combate anterior para evitar ruido visual
   ctx.clearLogs()
 
   if (wasSearching) {
-    // Inyectar el enemigo en el store inmediatamente para que las siluetas y animaciones de búsqueda tengan data válida
-    ctx.activeBattle.value.enemy = enemyPoke
+    // FLUJO DE BÚSQUEDA (Manual 6. SEARCH PHASE)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.GEN_DATA)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.RECEIVE_CONFIG)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.VALIDATE_WEIGHTS)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.INJECT_FILTERS)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.READY_FOR_GEN)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
+
+    // ACTIVACIÓN PARALELA PARA BÚSQUEDA (Según Manual: OCCUPY_SEAT ocurre durante PARALLEL_PREP)
+    // 1. Preparamos el terreno (Arbustos y Filtros de Silueta)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_VISIBLE)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.SILHOUETTE_MODE)
     
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.JUMP_SHADOW, 400)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSHES_BACK, 400)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REVEAL_COLORS, 600)
+    // 2. OCUPACIÓN DEL ASIENTO: El Pokémon aparece visualmente con su silueta ya preparada
+    ctx.activeBattle.value.enemy = finalEnemyPoke
+    
+    return // BLOQUEO: Esperamos interacción del usuario
   } else {
+    // ENTRADA DIRECTA (Wild, Trainer o Gym)
     fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENTRY_ANIM)
-    fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
     
     if (isTrainer || isGym) {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENTRY)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER, 800)
+      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.T_VISUAL)
     } else {
+      // Wild Entry Directa
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
+      ctx.activeBattle.value.enemy = finalEnemyPoke
     }
   }
 
-  await initBattleSequence(ctx, locationId, isTrainer, trainerName, isGym, gymId, wasSearching)
+  await initBattleSequence(ctx, { 
+    locationId, isTrainer, trainerName, isGym, gymId, wasSearching,
+    initialEnemy: finalEnemyPoke,
+    initialPlayer
+  })
 }
 
 /**
  * Visual initialization and first turn setup.
  */
-export async function initBattleSequence(ctx, locationId, isTrainer, trainerName, isGym, gymId, wasSearching) {
+export async function initBattleSequence(ctx, { locationId, isTrainer, trainerName, isGym, gymId, wasSearching, initialEnemy, initialPlayer }) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
-  const initialEnemy = ctx.activeBattle.value._initialEnemy
-  const initialPlayer = ctx.activeBattle.value._initialPlayer
 
   ctx.isIntroAnimating.value = true
 
-  // PROTOCOLO DE PRECARGA: Sincronizar anclajes de sombra antes de cualquier animación
+  // PRECARGA DE COORDENADAS
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_COORDS, 50)
 
-  if (!wasSearching) {
-    fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.AESTHETIC_CHECK)
-    const isFlying = initialEnemy.type === 'flying' || initialEnemy.type2 === 'flying' || initialEnemy.ability === 'Levitación'
+  if (wasSearching) {
+    // --- FLUJO BÚSQUEDA (Manual 7. ENCOUNTER ANIMATION) ---
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENCOUNTER)
     
-    if (isFlying) {
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.FLYING_FLOW)
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SKIP_BUSHES)
-    } else {
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.GROUND_FLOW)
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_FLOW)
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_SETUP)
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.INSTANT_BUSHES)
-    }
-
-    fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SILHOUETTE_LAYER)
+    // SALTO PARALELO (Bushes + Jump + Binoculars Check)
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.CHECK_BINOCULARS)
+    fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_JUMP)
     
-    // Inyectar enemigo inmediatamente si es salvaje para permitir renderizado de silueta
-    if (!isTrainer && !isGym) {
-      ctx.activeBattle.value.enemy = initialEnemy
-    }
-
-    fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SILHOUETTE_MODE)
-    
-    const hasBinoculars = ctx.debugBinoculars.value
-    if (hasBinoculars) {
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.FULL_COLOR)
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.COLOR_READY)
-    } else {
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SOLID_SILHOUETTE)
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SILHOUETTE_READY)
-    }
-
-    // Activación sincronizada del Enemigo
-    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_ANIM, 100)
-    if (!ctx.activeBattle.value.enemy && ctx.activeBattle.value._initialEnemy) {
-      ctx.activeBattle.value.enemy = ctx.activeBattle.value._initialEnemy
-    }
-    
-    // Esperar al salto y al fade de arbustos
-    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_FADE, 600)
-    
+    const hasBinoculars = ctx.debugBinoculars.value || (ctx.gs.state.inventory?.['binoculars'] > 0)
     if (!hasBinoculars) {
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.JUMP_COLOR)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSHES_BACK_COLOR)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.REVEAL_COLORS, 600)
+      await new Promise(r => setTimeout(r, 150))
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_FADE, 100)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.REVEAL_COLORS, 500)
+    } else {
+      await new Promise(r => setTimeout(r, 600))
     }
-
-    // [REORDER_TEAM] Flujo formal de llamado del jugador según diagramas
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_PLAYER_SEAT)
-    
-    // PROTOCOLO DE ASIENTO VACÍO (PLAYER): Solo justo antes del llamado para minimizar desaparición visual
-    ctx.activeBattle.value.player = null
-    
-    fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.SWITCHING)
-    fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.READ_TARGET)
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL, 100)
-    
-    // Inyectar al jugador tras el inicio del llamado para que se vea el efecto de salida
-    if (!ctx.activeBattle.value.player && ctx.activeBattle.value._initialPlayer) {
-      ctx.activeBattle.value.player = ctx.activeBattle.value._initialPlayer
-    }
-
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, null, 1000) // Tiempo para la Poké Ball
   } else {
-    // ACTIVACIÓN PARA BUCLE DE BÚSQUEDA (wasSearching = true)
-    // Asegurar que ambos combatientes están en el store ANTES de la transición para que las animaciones encuentren el objeto pokemon
-    if (ctx.activeBattle.value._initialEnemy) {
-      ctx.activeBattle.value.enemy = ctx.activeBattle.value._initialEnemy
+    // --- FLUJO DIRECTO (Manual 5. FIRST_INTRO / 7. ENCOUNTER_ANIM) ---
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
+
+    if (isTrainer || isGym) {
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_RETREAT, 800)
+      
+      // Llamado del Pokémon del rival (Según diagrama 840)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.POKEMON_CALL, 100)
+      ctx.activeBattle.value.enemy = initialEnemy
+    } else {
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_PREP, 400)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_VISIBLE)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SILHOUETTE_MODE)
+      // El asiento ya fue ocupado en startBattleSequence
     }
-    // Inyectar al jugador justo antes del llamado para que el componente se monte y reciba el evento
-    if (ctx.activeBattle.value._initialPlayer) {
-      ctx.activeBattle.value.player = ctx.activeBattle.value._initialPlayer
-    }
-    
-    gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: ctx.activeBattle.value.player })
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.POKEMON_CALL, 100)
-    
-    // Esperar a que las animaciones de PARALLEL_PREP se completen
-    await new Promise(r => setTimeout(r, 1200))
   }
+
+  // --- LLAMADO DEL JUGADOR (Identity Guard) ---
+  const currentPlayer = ctx.activeBattle.value.player
+  const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
+
+  if (needsCall) {
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL, 100)
+    ctx.activeBattle.value.player = initialPlayer
+  } else {
+    console.log('[Orchestrator] Player already in seat, maintaining presence')
+  }
+  
+  // --- SINCRONIZACIÓN FINAL (Audit-Compliance) ---
+  await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ANIM_SYNC, 800)
+  await fsm.transition(BATTLE_STATES.REORDER_TEAM, null)
   
   // Forzar actualización de cámara tras la activación paralela
   window.dispatchEvent(new Event('resize'))
@@ -252,18 +243,6 @@ export async function initBattleSequence(ctx, locationId, isTrainer, trainerName
   
   if (isTrainer || isGym) await ctx.gs.save()
   
-  if (wasSearching) {
-    // Detenerse en SEARCH_PHASE para permitir interacción del buscador
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.WAIT_INPUT)
-    ctx.isIntroAnimating.value = false // Liberar bloqueo para mostrar botones
-    // Flujo normal de inicio de combate
-    ctx.isIntroAnimating.value = false
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SHOW_ALL_MISSING_COMBAT_HUDS, 300)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-  }
-
-  ctx.upcomingPokemon.value = null 
-  
   if (!isTrainer && !isGym) {
     const encounterOptions = {
       activeEvents: useMapStore().activeEvents,
@@ -281,6 +260,13 @@ export async function initBattleSequence(ctx, locationId, isTrainer, trainerName
       }
     })
   }
+
+  // Flujo normal de inicio de combate directo (Entrenadores o encuentro forzado)
+  ctx.isIntroAnimating.value = false
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT, 300)
+
+  ctx.upcomingPokemon.value = null 
+
 
   ctx.isIntroAnimating.value = false
 }

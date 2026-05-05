@@ -117,13 +117,17 @@ export const useMapStore = defineStore('map', () => {
 
     // 4. Procesar Tipo de Encuentro
     if (encounter.type === 'wild') {
-      battleStore._startBattle(encounter.pokemon, { locationId: locId })
+      battleStore._startBattle(encounter.pokemon, { 
+        locationId: locId,
+        wasSearching: true 
+      })
     } else if (encounter.type === 'guardian') {
       // El componente MapView debe manejar la notificación visual o podemos dispararla aquí si es modal
       // Por ahora, iniciamos la batalla marcando que es un Guardián
       encounter.pokemon.isGuardian = true
       battleStore._startBattle(encounter.pokemon, { 
         locationId: locId,
+        wasSearching: true,
         battleOptions: { isGuardian: true, pts: encounter.pts }
       })
     } else if (encounter.type === 'defender') {

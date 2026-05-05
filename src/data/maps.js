@@ -6,7 +6,9 @@ export const FIRE_RED_MAPS = [
     weather: {
       rain: { visitors: { poliwag: 70, oddish: 30 }, exclusive: { castform: 100 } },
       storm: { visitors: { pikachu: 100 } },
-      fog: { visitors: { gastly: 100 } }
+      fog: { visitors: { gastly: 100 } },
+      snow: { visitors: { seel: 100 } },
+      blizzard: { visitors: { jynx: 95 }, exclusive: { articuno: 5 } }
     }
   },
   {
