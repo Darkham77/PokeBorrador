@@ -101,7 +101,10 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   <div
     id="move-panel"
   >
-    <Transition name="controls-slide" appear>
+    <Transition
+      name="controls-slide"
+      appear
+    >
       <div 
         class="battle-controls-layout"
         :class="{ 'is-ui-locked': isControlsDisabled }"

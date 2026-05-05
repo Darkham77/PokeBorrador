@@ -148,10 +148,10 @@ const isMoveDisabled = (move) => {
 </script>
 
 <template>
-    <div 
-      class="moves-grid-vicio"
-      :class="{ 'is-reordering': isDragging }"
-    >
+  <div 
+    class="moves-grid-vicio"
+    :class="{ 'is-reordering': isDragging }"
+  >
     <div
       v-for="(move, i) in fullMoves" 
       :key="i"

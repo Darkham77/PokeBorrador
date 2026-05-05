@@ -7,6 +7,20 @@ import { setActivePinia, createPinia } from 'pinia'
 import BattleInfoCard from '@/components/battle/BattleInfoCard.vue'
 import { useBattleStore } from '@/stores/battle'
 
+vi.mock('@/stores/battle', () => ({
+  useBattleStore: vi.fn(() => ({
+    state: { weather: { type: 'clear' } },
+    playerStages: {},
+    enemyStages: {}
+  }))
+}))
+
+vi.mock('@/stores/profile', () => ({
+  useProfileStore: vi.fn(() => ({
+    profileData: { isAdmin: false }
+  }))
+}))
+
 // Mock components that might cause issues
 vi.mock('@/components/shared/PokemonTypePills.vue', () => ({
   default: { template: '<div class="types-mock"></div>' }
@@ -15,6 +29,19 @@ vi.mock('@/components/shared/PokemonTypePills.vue', () => ({
 vi.mock('@/logic/services/assetService', () => ({
   getAssetUrl: vi.fn(),
   ASSET_TYPES: { ITEM: 'item' }
+}))
+
+vi.mock('@/logic/timeUtils', () => ({
+  getDayCycle: vi.fn(() => 'day')
+}))
+
+vi.mock('@/logic/battle/weatherMapper', () => ({
+  getMechanicalWeather: vi.fn((w) => w || 'clear'),
+  WEATHER_MECHANICAL: {
+    SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', CLEAR: 'clear'
+  },
+  WEATHER_UI_METADATA: {},
+  WEATHER_VISUAL_METADATA: {}
 }))
 
 describe('BattleInfoCard - Ability Tooltips', () => {

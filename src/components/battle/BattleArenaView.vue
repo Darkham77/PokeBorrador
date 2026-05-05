@@ -150,32 +150,26 @@ const isWildEncounter = computed(() => {
 
 const isEnemyTechnicalHidden = computed(() => {
   const sub = unwrap(battleStore.fsm?.currentSubState)
+  const state = unwrap(battleStore.fsm?.currentState)
   const isTrainer = !isWildEncounter.value
   
-  // Lógica de ocultación técnica: Evita ghosting y parpadeos durante transiciones de asientos
-  const isSearchPreEntry = computed(() => {
-    const s = unwrap(battleStore.fsm?.currentState)
-    const subState = unwrap(battleStore.fsm?.currentSubState)
-    
-    // 1. Forzar ocultación en estados de promoción técnica (Slot 2 -> Slot 1)
-    if (['PROMOTE_AND_REPOPULATE', 'PROMOTE'].includes(subState)) return true
-    
-    // 2. Si estamos en búsqueda, ocultar solo durante la generación técnica de datos
-    if (s === 'SEARCH_PHASE') {
-      const technicalSubstates = [
-        'GEN_DATA', 'RECEIVE_CONFIG', 'VALIDATE_WEIGHTS', 'INJECT_FILTERS', 
-        'READY_FOR_GEN', 'CHECK_PERSISTENCE'
-      ]
-      return technicalSubstates.includes(subState)
-    }
-    
-    // 3. En otros estados principales (INITIALIZING, FIRST_INTRO, ACTIVE_BATTLE, REORDER_TEAM), el enemigo es visible
-    // a menos que estemos en una transición de promoción técnica (punto 1)
-    return false
-  }).value
+  // 1. Forzar ocultación en estados de promoción técnica (Slot 2 -> Slot 1)
+  if (['PROMOTE_AND_REPOPULATE', 'PROMOTE'].includes(sub)) return true
   
-  // El enemigo técnico está oculto mientras el entrenador es visible (Mood Visual) o en pre-entrada de búsqueda
-  return (isTrainer && ['TRAINER_ENTRY', 'T_VISUAL', 'TRAINER_RETREAT', 'POKEMON_CALL', 'RENDER_BALL'].includes(sub)) || isSearchPreEntry
+  // 2. Si estamos en búsqueda, ocultar durante la generación técnica de datos
+  if (state === 'SEARCH_PHASE') {
+    const technicalSubstates = [
+      'GEN_DATA', 'RECEIVE_CONFIG', 'VALIDATE_WEIGHTS', 'INJECT_FILTERS', 
+      'READY_FOR_GEN', 'CHECK_PERSISTENCE'
+    ]
+    if (technicalSubstates.includes(sub)) return true
+  }
+
+  // 3. Ocultar mientras el entrenador es visible (Mood Visual)
+  const trainerVisibleStates = ['TRAINER_ENTRY', 'T_VISUAL', 'TRAINER_RETREAT', 'POKEMON_CALL', 'RENDER_BALL']
+  if (isTrainer && trainerVisibleStates.includes(sub)) return true
+  
+  return false
 })
 
 const isPlayerTechnicalHidden = computed(() => {
@@ -347,7 +341,10 @@ watch(() => battleStore.isBattleActive, (active) => {
   >
     <!-- Overlay de Transición Global (The Void / Exit) -->
     <Transition name="fade-overlay">
-      <div v-if="isGlobalFadeActive" class="global-transition-overlay" />
+      <div
+        v-if="isGlobalFadeActive"
+        class="global-transition-overlay"
+      />
     </Transition>
     <div
       class="battle-arena-content"

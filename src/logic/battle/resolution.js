@@ -3,8 +3,6 @@ import { calculateBaseExp, processExpGain, calculateMoneyGain } from './battleRe
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import { levelUpPokemon } from '@/logic/pokemonFactory'
 import { useUIStore } from '@/stores/ui'
-import { useMapStore } from '@/stores/map'
-import { useEventStore } from '@/stores/events'
 
 /**
  * Handles the fainting of a Pokémon.

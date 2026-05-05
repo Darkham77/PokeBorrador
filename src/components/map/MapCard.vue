@@ -369,7 +369,6 @@ const spawnGrid = computed(() => {
               :class="['sprite-wrapper', { 'rare-spawn': item.isRare, 'atmospheric-spawn': item.isAtmospheric }]"
               :style="{ '--spawn-seed': item.seed }"
             >
-
               <PVTooltip
                 :title="item.tooltipTitle"
                 :description="item.tooltipDesc"

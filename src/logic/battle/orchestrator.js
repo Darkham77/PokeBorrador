@@ -1,4 +1,3 @@
-import { gameBus } from '@/logic/gameBus'
 import { generateEncounter } from '@/logic/encounters'
 import { handleEntryAbilities } from './battleFlow'
 import { getMechanicalWeather } from './weatherMapper'
@@ -158,7 +157,7 @@ export async function startBattleSequence(ctx, enemyPoke, options = {}) {
   await initBattleSequence(ctx, { 
     locationId, isTrainer, trainerName, isGym, gymId, wasSearching,
     initialEnemy: finalEnemyPoke,
-    initialPlayer
+    initialPlayer: playerPoke
   })
 }
 

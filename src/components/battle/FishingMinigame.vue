@@ -111,9 +111,13 @@ onUnmounted(() => {
     <div class="rhythm-container">
       <!-- Background / Hint -->
       <div class="fishing-hint">
-        <div class="fishing-icon">🎣</div>
+        <div class="fishing-icon">
+          🎣
+        </div>
         <div class="fishing-text">
-          <h3 class="pixel-text">¡RITMO DE PESCA!</h3>
+          <h3 class="pixel-text">
+            ¡RITMO DE PESCA!
+          </h3>
           <p>Hacé clic en las notas en orden <span>1, 2, 3...</span></p>
         </div>
       </div>
@@ -134,17 +138,22 @@ onUnmounted(() => {
           @mousedown.stop="handleNoteClick(note)"
           @touchstart.prevent.stop="handleNoteClick(note)"
         >
-          <div class="rhythm-circle">{{ note.id }}</div>
+          <div class="rhythm-circle">
+            {{ note.id }}
+          </div>
           <div 
             class="rhythm-ring" 
             :style="{ animationDuration: `${speedBase}ms` }"
-          ></div>
+          />
         </div>
       </div>
 
       <!-- Feedback -->
       <Transition name="fade">
-        <div v-if="feedback" class="game-feedback pixel-text">
+        <div
+          v-if="feedback"
+          class="game-feedback pixel-text"
+        >
           {{ feedback }}
         </div>
       </Transition>
@@ -153,12 +162,15 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
+@use "@/styles/core/_mixins" as *;
 .fishing-minigame-overlay {
   position: absolute;
   inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
+  z-index: var(--z-hud);
+  background: Rgba(0, 0, 0, 0.7);
+  -webkit-backdrop-filter: Blur(8px);
+  backdrop-filter: Blur(8px);
+  @include gpu-layer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -172,10 +184,10 @@ onUnmounted(() => {
   max-width: 500px;
   height: 90%;
   max-height: 500px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(10, 132, 255, 0.3);
+  background: Rgba(255, 255, 255, 0.05);
+  border: 2px solid Rgba(10, 132, 255, 0.3);
   border-radius: 32px;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 40px Rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   padding: 24px;
@@ -186,10 +198,10 @@ onUnmounted(() => {
   align-items: center;
   gap: 16px;
   margin-bottom: 24px;
-  background: rgba(10, 132, 255, 0.1);
+  background: Rgba(10, 132, 255, 0.1);
   padding: 12px 20px;
   border-radius: 16px;
-  border: 1px solid rgba(10, 132, 255, 0.2);
+  border: 1px solid Rgba(10, 132, 255, 0.2);
 
   .fishing-icon {
     font-size: 40px;
@@ -199,14 +211,14 @@ onUnmounted(() => {
   .fishing-text {
     h3 {
       font-size: 14px;
-      color: #0a84ff;
+      color: $blue;
       margin-bottom: 4px;
-      text-shadow: 0 0 10px rgba(10, 132, 255, 0.5);
+      text-shadow: 0 0 10px Rgba(10, 132, 255, 0.5);
     }
     p {
       font-size: 11px;
       color: #ccc;
-      span { color: #fff; font-weight: bold; }
+      span { color: $white; font-weight: bold; }
     }
   }
 }
@@ -214,7 +226,7 @@ onUnmounted(() => {
 .rhythm-counter {
   text-align: center;
   font-size: 16px;
-  color: #fff;
+  color: $white;
   margin-bottom: 16px;
   letter-spacing: 1px;
 }
@@ -222,9 +234,9 @@ onUnmounted(() => {
 .game-area {
   flex: 1;
   position: relative;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   border-radius: 20px;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border: 1px dashed Rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
 
@@ -232,7 +244,7 @@ onUnmounted(() => {
   position: absolute;
   width: 70px;
   height: 70px;
-  transform: translate(-50%, -50%);
+  transform: Translate(-50%, -50%);
   cursor: pointer;
   user-select: none;
   touch-action: none;
@@ -240,16 +252,16 @@ onUnmounted(() => {
   .rhythm-circle {
     width: 100%;
     height: 100%;
-    background: rgba(10, 132, 255, 0.2);
-    border: 3px solid #0a84ff;
+    background: Rgba(10, 132, 255, 0.2);
+    border: 3px solid $blue;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-family: 'Press Start 2P', monospace;
+    color: $white;
+    @include pixelated;
     font-size: 18px;
-    box-shadow: 0 0 20px rgba(10, 132, 255, 0.4);
+    box-shadow: 0 0 20px Rgba(10, 132, 255, 0.4);
     transition: all 0.2s ease;
     z-index: 2;
     position: relative;
@@ -258,7 +270,7 @@ onUnmounted(() => {
   .rhythm-ring {
     position: absolute;
     inset: -20px;
-    border: 2px solid rgba(10, 132, 255, 0.6);
+    border: 2px solid Rgba(10, 132, 255, 0.6);
     border-radius: 50%;
     animation: ringShrink linear forwards;
     pointer-events: none;
@@ -267,8 +279,8 @@ onUnmounted(() => {
   &.success .rhythm-circle {
     background: #4ade80;
     border-color: #22c55e;
-    transform: scale(1.2);
-    box-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
+    transform: Scale(1.2);
+    box-shadow: 0 0 30px Rgba(34, 197, 94, 0.6);
   }
 }
 
@@ -279,17 +291,17 @@ onUnmounted(() => {
   transform: translateX(-50%);
   font-size: 18px;
   color: #ff4d4d;
-  text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
-  background: rgba(0, 0, 0, 0.8);
+  text-shadow: 0 0 10px Rgba(255, 77, 77, 0.5);
+  background: Rgba(0, 0, 0, 0.8);
   padding: 12px 24px;
   border-radius: 12px;
   z-index: 10;
 }
 
 @keyframes ringShrink {
-  from { transform: scale(2.5); opacity: 0; }
+  from { transform: Scale(2.5); opacity: 0; }
   20% { opacity: 1; }
-  to { transform: scale(0.6); opacity: 0; }
+  to { transform: Scale(0.6); opacity: 0; }
 }
 
 @keyframes bounce {

@@ -62,16 +62,6 @@ export async function handleBattleFlowCompletion(ctx, option = 'map') {
     
     ctx.isProcessing.value = false
     return
-    
-    if (ctx.activeBattle.value?.isFishing) {
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.MINIGAME_CHECK)
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.JUMP_COLOR_F)
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.JUMP_SHADOW_F)
-      fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REVEAL_COLORS_F)
-    }
-    
-    ctx.isProcessing.value = false
-    return
   }
 
   fsm.transition(BATTLE_STATES.EXIT_BATTLE)

@@ -79,7 +79,7 @@ onUnmounted(() => {
     class="actions-container"
     :class="{ 'intro-fade': battleStore.isIntroAnimating }"
   >
-      <div class="action-row-complex">
+    <div class="action-row-complex">
       <button
         class="btn-vicio-secondary switch"
         :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating"
@@ -135,7 +135,7 @@ onUnmounted(() => {
       >
         <span class="icon">🎒</span> MOCHILA
       </button>
-      </div>
+    </div>
   </div>
 </template>
 

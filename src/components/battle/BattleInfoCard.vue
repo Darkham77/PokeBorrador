@@ -1,6 +1,6 @@
 // [PureVue-Ignore-Length]
 <script setup>
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -33,11 +33,16 @@ const isAdmin = computed(() => {
 // displayHp permite animar la barra desde 0 cuando el componente aparece (Fase 3)
 const displayHp = ref(0)
 
+const hpTimeout = ref(null)
 onMounted(() => {
   // Sincronizar con la transición de aparición del HUD
-  setTimeout(() => {
+  hpTimeout.value = setTimeout(() => {
     displayHp.value = p.value.hp
   }, 50)
+})
+
+onUnmounted(() => {
+  if (hpTimeout.value) clearTimeout(hpTimeout.value)
 })
 
 watch(() => p.value.hp, (newHp) => {
@@ -192,98 +197,66 @@ const volatileStatuses = computed(() => {
     if (stages.spikes > 0) list.push({ icon: '📍', text: `PÚAS: Daña a los Pokémon que entran al campo (${stages.spikes} capas).` })
   }
 
-  // 3. Clima (Solo si afecta al Pokémon)
-  const isWeatherAffecting = computed(() => {
-    const weather = battleStore.state?.weather
-    if (!weather || weather.type === 'clear') return false
-
-    const mechWeather = getMechanicalWeather(weather.type)
-    const types = []
-    if (p.value.type) types.push(p.value.type.toLowerCase())
-    if (p.value.type2) types.push(p.value.type2.toLowerCase())
-
-    const moveTypes = (p.value.moves || []).map(m => (m?.type || '').toLowerCase())
-    const moveNames = (p.value.moves || []).map(m => (m?.name || '').toLowerCase())
-
-    if (mechWeather === 'fog') return true
-    if (mechWeather === 'sandstorm') return true
-    if (mechWeather === 'hail') return true
-
-    if (mechWeather === 'sun') {
-      if (types.includes('fire') || types.includes('water')) return true
-      if (moveTypes.includes('fire') || moveTypes.includes('water')) return true
-      const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
-      if (moveNames.some(n => sunMoves.includes(n))) return true
-    }
-
-    if (mechWeather === 'rain') {
-      if (types.includes('fire') || types.includes('water')) return true
-      if (moveTypes.includes('fire') || moveTypes.includes('water') || moveTypes.includes('electric')) return true
-      const rainMoves = ['thunder', 'trueno', 'hurricane', 'vendaval', 'weather ball']
-      if (moveNames.some(n => rainMoves.includes(n))) return true
-    }
-
-    if (mechWeather === 'snow') {
-      if (types.includes('ice')) return true
-      if (moveTypes.includes('ice')) return true
-      const snowMoves = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora']
-      if (moveNames.some(n => snowMoves.includes(n))) return true
-    }
-
-    return false
-  })
-
-  const isCycleAffecting = computed(() => {
-    const cycle = getDayCycle()
-    const types = []
-    if (p.value.type) types.push(p.value.type.toLowerCase())
-    if (p.value.type2) types.push(p.value.type2.toLowerCase())
-
-    const moveTypes = (p.value.moves || []).map(m => (m?.type || '').toLowerCase())
-    const moveNames = (p.value.moves || []).map(m => (m?.name || '').toLowerCase())
-
-    if (cycle === 'morning' || cycle === 'day') {
-      if (types.includes('fire') || types.includes('water')) return true
-      if (moveTypes.includes('fire') || moveTypes.includes('water')) return true
-      const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
-      if (moveNames.some(n => sunMoves.includes(n))) return true
-    }
-
-    if (cycle === 'dusk' || cycle === 'night') {
-      if (types.includes('water')) return true
-      if (moveTypes.includes('water')) return true
-    }
-
-    return false
-  })
-
+  // 3. Clima y Ciclo (Lógica Inline para evitar computed anidados)
   const weather = battleStore.state?.weather
-  if (weather && weather.type !== 'clear' && isWeatherAffecting.value) {
+  const types = []
+  if (p.value.type) types.push(p.value.type.toLowerCase())
+  if (p.value.type2) types.push(p.value.type2.toLowerCase())
+  const moveTypes = (p.value.moves || []).map(m => (m?.type || '').toLowerCase())
+  const moveNames = (p.value.moves || []).map(m => (m?.name || '').toLowerCase())
+  const cycle = getDayCycle()
+
+  let weatherAffects = false
+  if (weather && weather.type !== 'clear') {
+    const mechWeather = getMechanicalWeather(weather.type)
+    if (['fog', 'sandstorm', 'hail'].includes(mechWeather)) {
+      weatherAffects = true
+    } else if (mechWeather === 'sun') {
+      const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
+      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some(n => sunMoves.includes(n))) {
+        weatherAffects = true
+      }
+    } else if (mechWeather === 'rain') {
+      const rainMoves = ['thunder', 'trueno', 'hurricane', 'vendaval', 'weather ball']
+      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveTypes.includes('electric') || moveNames.some(n => rainMoves.includes(n))) {
+        weatherAffects = true
+      }
+    } else if (mechWeather === 'snow') {
+      const snowMoves = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora']
+      if (types.includes('ice') || moveTypes.includes('ice') || moveNames.some(n => snowMoves.includes(n))) {
+        weatherAffects = true
+      }
+    }
+  }
+
+  let cycleAffects = false
+  if (cycle === 'morning' || cycle === 'day') {
+    const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
+    if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some(n => sunMoves.includes(n))) {
+      cycleAffects = true
+    }
+  } else if (cycle === 'dusk' || cycle === 'night') {
+    if (types.includes('water') || moveTypes.includes('water')) {
+      cycleAffects = true
+    }
+  }
+
+  if (weather && weather.type !== 'clear' && weatherAffects) {
     const visualType = weather.visual || weather.type
     const mechType = getMechanicalWeather(weather.type)
     const config = WEATHER_VISUAL_METADATA[visualType] || WEATHER_UI_METADATA[mechType]
-    
     if (config) {
-      list.push({ 
-        icon: config.icon, 
-        text: `${config.label}: ${config.description}` 
-      })
+      list.push({ icon: config.icon, text: `${config.label}: ${config.description}` })
     }
-  } else if (isCycleAffecting.value) {
-    // 4. Ciclo Horario (Fallback si no hay clima)
-    const cycle = getDayCycle()
+  } else if (cycleAffects) {
     const cycleData = {
       morning: { icon: '🌅', label: 'MAÑANA', desc: 'Bonifica movimientos FUEGO (1.2x) y habilidades solares.' },
       day: { icon: '☀️', label: 'DÍA', desc: 'Bonifica movimientos FUEGO (1.2x) y habilidades solares.' },
       dusk: { icon: '🌆', label: 'OCASO', desc: 'Bonifica movimientos AGUA (1.2x) y habilidades nocturnas.' },
       night: { icon: '🌙', label: 'NOCHE', desc: 'Bonifica movimientos AGUA (1.2x) y habilidades nocturnas.' }
     }[cycle]
-    
     if (cycleData) {
-      list.push({
-        icon: cycleData.icon,
-        text: `HORARIO (${cycleData.label}): ${cycleData.desc}`
-      })
+      list.push({ icon: cycleData.icon, text: `HORARIO (${cycleData.label}): ${cycleData.desc}` })
     }
   }
 

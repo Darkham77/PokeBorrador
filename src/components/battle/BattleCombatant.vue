@@ -8,6 +8,7 @@ import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useCombatShadowStore } from '@/stores/combatShadows'
+import { gameBus } from '@/logic/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
 const props = defineProps({
@@ -694,7 +695,7 @@ const triggerStatArrow = (stat, dir) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: var(--z-low);
 }
 
 .stat-arrow {

@@ -4,7 +4,6 @@
  * Refer to `@/project-standards/references/core/game_formulas_manual.md` for logic details.
  */
 
-import { getStatMultiplier } from '../pokemon/statEngine';
 import { getCombinedEffectiveness } from '../pokemon/typeEngine';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper';
