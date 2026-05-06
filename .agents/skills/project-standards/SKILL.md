@@ -7,6 +7,9 @@ description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-
 
 This skill governs the DNA of the project. Technical implementation details are delegated to specialized manuals to ensure a lightweight and effective rule base.
 
+- **MANUAL PUSH MANDATE**: You are FORBIDDEN from executing `git push`. You MUST inform the user that the local repository is clean and updated, and they should perform the push manually when ready.
+- **WIP Audit Documentation**: If the commit is partial or part of an ongoing migration, it is acceptable to commit even with audit failures (SASS, Aesthetics, Length), provided they are explicitly listed in the commit message as "Pending Migrations". This allows work to be synchronized without being blocked by pre-existing technical debt, maintaining traceability.
+
 ## 🧭 Navigation Hub
 
 Consult these manuals for detailed implementation specifications:
@@ -73,12 +76,12 @@ Consult these manuals for detailed implementation specifications:
   - `// [PureVue-Ignore]`: Bypasses technical DOM/Window access checks.
   - `// [PureVue-Ignore-Length]`: Bypasses the 500-line limit for data-heavy files.
   - `// [PureVue-Ignore-Aesthetics]`: Bypasses hardcoded color/shadow audits for specialized FX or legacy styles.
-- **Unitless Variable Pattern**: Cuando se pasan coordenadas o tamaños dinámicos de JS a variables CSS, usar SIEMPRE valores numéricos puros. Añadir unidades en CSS usando `calc(var(--val) * 1px)`.
-- **Zero Bridges Policy**: Se prohíbe el uso de `window.state` o cualquier puente de compatibilidad global (`src/logic/bridges`). Toda la comunicación debe realizarse mediante importaciones directas (ESM) e inyección de dependencias a través de Stores de Pinia. La manipulación del estado global desde la consola debe reservarse exclusivamente para `window.__VITE_DEBUG__`.
-- **Modular Orchestration (HUD)**: Lógica de visibilidad, snapshots y estados de interfaz de combate de alta complejidad DEBEN ser extraídos a composables dedicados (ej. `useBattleHud.js`). La vista de la arena (`BattleArenaView.vue`) debe actuar exclusivamente como un orquestador visual simplificado.
-- **Reactive State Propagation**: Al pasar subconjuntos del estado a funciones lógicas externas mediante `reactive({...})`, es OBLIGATORIO incluir todas las flags de control (ej. `isFinishing`) para evitar que el motor de lógica tome decisiones basadas en estados incompletos o indefinidos.
-- **Grid-to-Card Sync**: En componentes de rejilla (ej. `MapGrid`), el estado dependiente del entorno (clima, ciclo) debe calcularse una sola vez y propagarse a los hijos vía props (`forced-weather`). Esto evita desincronización visual entre el pool de datos y la interfaz.
-- **Robustness (Deterministic Environment)**: Tratar estados ambientales `null` o indefinidos como disparadores para el cálculo determinista, asegurando que nunca se omita la inyección de contenido atmosférico (visitantes).
+- **Unitless Variable Pattern**: When passing coordinates or dynamic sizes from JS to CSS variables, ALWAYS use pure numeric values. Add units in CSS using `calc(var(--val) * 1px)`.
+- **Zero Bridges Policy**: The use of `window.state` or any global compatibility bridge (`src/logic/bridges`) is forbidden. All communication must be handled via direct imports (ESM) and dependency injection through Pinia stores. Global state manipulation from the console must be reserved exclusively for `window.__VITE_DEBUG__`.
+- **Modular Orchestration (HUD)**: High-complexity visibility logic, snapshots, and combat interface states MUST be extracted to dedicated composables (e.g., `useBattleHud.js`). The arena view (`BattleArenaView.vue`) must act exclusively as a simplified visual orchestrator.
+- **Reactive State Propagation**: When passing state subsets to external logic functions via `reactive({...})`, it is MANDATORY to include all control flags (e.g., `isFinishing`) to prevent the logic engine from making decisions based on incomplete or undefined states.
+- **Grid-to-Card Sync**: In grid components (e.g., `MapGrid`), environment-dependent state (weather, cycle) must be calculated once and propagated to children via props (`forced-weather`). This avoids visual desynchronization between the data pool and the interface.
+- **Robustness (Deterministic Environment)**: Treat `null` or undefined environmental states as triggers for deterministic calculation, ensuring that atmospheric content (visitors) injection is never skipped.
 
 ### 4. SASS and Build Integrity
 
@@ -87,6 +90,7 @@ Consult these manuals for detailed implementation specifications:
   - **Browser Transforms**: Use standard LOWERCASE for CSS transformations (`translate`, `scale`, `rotate`). Capitalizing these may cause browser interpretation failures and break layout positioning.
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`.
+- **Template Event Casting**: When using strict TypeScript in `.vue` files, it is mandatory to cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks on specific DOM properties.
 - **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.
 
 ### 5. CLI-First Debugging

@@ -159,6 +159,7 @@ After the user approves the lessons, you MUST perform a second and final commit 
 Notify the user that the commits (Snapshot and Optimization) have been successfully created.
 
 - **MANUAL PUSH MANDATE**: You are FORBIDDEN from executing `git push`. You MUST inform the user that the local repository is clean and updated, and they should perform the `push` manually when ready.
+- **WIP Audit Documentation**: If the commit is partial or part of an ongoing migration, it is acceptable to commit even with audit failures (SASS, Aesthetics, Length), provided they are explicitly listed in the commit message as "Pending Migrations". This allows work to be synchronized without being blocked by pre-existing technical debt, maintaining traceability.
 
 ## Commit Message Standards (The Elegant Protocol)
 
@@ -170,8 +171,8 @@ Commit messages MUST NOT be terse. They MUST provide a clear, technical chronicl
 
 ### 1. Dual-Commit Strategy
 
-- **The Snapshot (Paso 0)**: Su propósito es capturar el trabajo creativo/lógico. Debe usar el "Protocolo Elegante" (Header + Body con bullets) para explicar el **qué** y el **por qué** de los cambios del usuario.
-- **The Optimization Log (Paso 9)**: Su propósito es documentar la limpieza técnica. Debe ser conciso y listar solo las reparaciones de auditoría (linting, build fixes, SASS repairs).
+- **The Snapshot (Phase 0)**: Its purpose is to capture creative/logical work. It MUST use the "Elegant Protocol" (Header + Body with bullets) to explain the "what" and "why" of the user's changes.
+- **The Optimization Log (Phase 9)**: Its purpose is to document technical cleanup. It must be concise and list only audit repairs (linting, build fixes, SASS repairs).
 
 ### 2. Structure Requirement (The Elegant Protocol)
 
